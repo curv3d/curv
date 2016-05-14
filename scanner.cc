@@ -2,8 +2,7 @@
  * Copyright 2016 Doug Moen. See LICENCE.md file for terms of use.
  */
 #include <curv/scanner.h>
-#include <iostream>
-#include <cstdlib>
+#include <curv/exception.h>
 
 using namespace curv;
 using namespace std;
@@ -82,8 +81,7 @@ Scanner::get_token()
     --p;
 
     // report an error
-    std::cerr << "illegal character\n";
-    exit(1);
+    throw Exception("illegal character");
 
 success:
     tok.last = p - first;

@@ -58,5 +58,5 @@ struct ParenExpr : public Expr
     Token rparen;
 };
 
-}
-#endif
+} // namespace curv
+#endif // header guard

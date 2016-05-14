@@ -27,5 +27,5 @@ public:
     void push_token(Token);
 };
 
-}
-#endif
+} // namespace curv
+#endif // header guard

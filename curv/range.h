@@ -23,5 +23,5 @@ struct Range
     std::size_t size() const { return last - first; }
 };
 
-}
-#endif
+} // namespace curv
+#endif // header guard

@@ -53,15 +53,15 @@ struct Token
         k_over,
         k_end
     } kind;
-    const std::string& scriptname() { return script->name; }
-    int lineno();
+    const std::string& scriptname() const { return script->name; }
+    int lineno() const;
 
-    const char* begin() { return script->begin() + first; }
-    const char* end() { return script->begin() + last; }
-    size_t size() { return last - first; }
+    const char* begin() const { return script->begin() + first; }
+    const char* end() const { return script->begin() + last; }
+    size_t size() const { return last - first; }
 };
 
 std::ostream& operator<<(std::ostream&, const Token&);
 
-}
-#endif
+} // namespace curv
+#endif // header guard

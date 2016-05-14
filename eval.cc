@@ -1,3 +1,6 @@
+/*
+ * Copyright 2016 Doug Moen. See LICENCE.md file for terms of use.
+ */
 #include <cassert>
 #include <cstdlib>
 #include <string>

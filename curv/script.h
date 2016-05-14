@@ -26,5 +26,5 @@ struct Script : public Range<const char*>
     std::string name;
 };
 
-}
-#endif
+} // namespace curv
+#endif // header guard

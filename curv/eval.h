@@ -10,5 +10,5 @@ namespace curv {
 
 double eval(Expr&);
 
-}
-#endif
+} // namespace curv
+#endif // header guard

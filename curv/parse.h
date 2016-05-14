@@ -11,5 +11,5 @@ namespace curv {
 
 std::unique_ptr<Expr> parse(const Script&);
 
-}
-#endif
+} // namespace curv
+#endif // header guard

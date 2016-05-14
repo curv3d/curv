@@ -1,7 +1,9 @@
-#include <iostream>
-#include <cstdlib>
+/*
+ * Copyright 2016 Doug Moen. See LICENCE.md file for terms of use.
+ */
 #include <curv/parse.h>
 #include <curv/scanner.h>
+#include <curv/exception.h>
 
 using namespace std;
 using namespace curv;
@@ -12,7 +14,6 @@ unique_ptr<Expr> parse_sum(Scanner&);
 unique_ptr<Expr> parse_product(Scanner&);
 unique_ptr<Expr> parse_unary(Scanner&);
 unique_ptr<Expr> parse_atom(Scanner&);
-void report_syntax_error(Token tok, const char*);
 
 // Parse a script, return a syntax tree.
 // It's a recursive descent parser.
@@ -29,7 +30,7 @@ parse(const Script& script)
     auto expr = parse_sum(scanner);
     auto tok = scanner.get_token();
     if (tok.kind != Token::k_end)
-        report_syntax_error(tok, "unexpected token at end of script");
+        throw TokException(tok, "unexpected token at end of script");
     return expr;
 }
 
@@ -101,17 +102,9 @@ parse_atom(Scanner& scanner)
         auto tok2 = scanner.get_token();
         if (tok2.kind == Token::k_rparen)
             return make_unique<ParenExpr>(tok,std::move(expr),tok2);
-        report_syntax_error(tok2, "unexpected token when expecting ')'");
+        throw TokException(tok2, "unexpected token when expecting ')'");
     }
-    report_syntax_error(tok, "unexpected token when expecting atom");
-}
-
-void
-report_syntax_error(Token tok, const char* msg)
-{
-    cerr << msg << " at " << tok.scriptname() << ":" << tok.lineno()
-        << ": " << tok << "\n";
-    exit(1);
+    throw TokException(tok, "unexpected token when expecting atom");
 }
 
 }
