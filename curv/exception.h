@@ -67,9 +67,9 @@ struct Exception : public std::exception
 };
 
 /// error containing a token (full source code location) + a message string
-struct TokException : public Exception
+struct SyntaxError : public Exception
 {
-    TokException(Token tok, const char* msg)
+    SyntaxError(Token tok, const char* msg)
     : Exception(msg), token_(std::move(tok))
     {}
     Token token_;

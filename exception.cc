@@ -7,7 +7,7 @@
 using namespace curv;
 
 void
-TokException::write(std::ostream& out) const
+SyntaxError::write(std::ostream& out) const
 {
     out << message_ << ": file " << token_.scriptname()
         << ", line " << token_.lineno()

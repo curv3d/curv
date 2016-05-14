@@ -30,7 +30,7 @@ parse(const Script& script)
     auto expr = parse_sum(scanner);
     auto tok = scanner.get_token();
     if (tok.kind != Token::k_end)
-        throw TokException(tok, "unexpected token at end of script");
+        throw SyntaxError(tok, "unexpected token at end of script");
     return expr;
 }
 
@@ -102,9 +102,9 @@ parse_atom(Scanner& scanner)
         auto tok2 = scanner.get_token();
         if (tok2.kind == Token::k_rparen)
             return make_unique<ParenExpr>(tok,std::move(expr),tok2);
-        throw TokException(tok2, "unexpected token when expecting ')'");
+        throw SyntaxError(tok2, "unexpected token when expecting ')'");
     }
-    throw TokException(tok, "unexpected token when expecting atom");
+    throw SyntaxError(tok, "unexpected token when expecting atom");
 }
 
 }
