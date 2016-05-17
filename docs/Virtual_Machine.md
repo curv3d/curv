@@ -31,12 +31,34 @@ some rough ideas and requirements:
 
 I should consider LLVM as my backend.
 * Potentially very fast runtimes (with enough work).
+* Conforming to LLVM could have payoff later for GPU code generation, which has
+  a similar model. I could target GLSL, or SPIR-V, or a mooted LLVM SPIR-V
+  target.
 * Slow compile times.
 * It's exciting tech, may create interest in the project.
 * A fast VM is a huge amount of work. So, leverage LLVM instead.
+* Bad: tail call optimization supported on Intel but not Arm.
+  The IR is basically C, not ASM. Can't branch to a function? Can't define
+  a function with multiple entry points? Options:
+  * Special case for self-tail-call: use a branch or loop.
+  * Special case for mutually recursive functions bound in the same object,
+    which can be detected by compiler.
+    * Compile these into a single function that has the union of the parameter
+      lists, plus a selector parameter specifying which function is called.
+      Internally, tail call is a branch.
+      Externally, each function has an entry point which calls the combined
+      function.
+    * Or, inline the code for a tail call to a mutually recursive function.
+  * GLSL doesn't support recursive functions. Converting tail recursion into
+    loops could have payoff for a GPU implementation. Maybe tail recursion is
+    the only recursion supported for distance functions.
+  * General case: use a trampoline. Function call op works like this:
+    a function returns either a value or a thunk continuation. If thunk is
+    returned, call it and loop. Expensive, continuation is heap allocated.
 * Potentially supports native C function interface. Instead of passing
   arguments as array of curv::Value, pass them using native types.
 * Need to learn a big API. Unknowns:
   * how to interface with existing classes like curv::Value and curv::ShPtr
     in generated code.
   * how to create debug interface
+
