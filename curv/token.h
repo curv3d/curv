@@ -1,6 +1,7 @@
-/*
- * Copyright 2016 Doug Moen. See LICENCE.md file for terms of use.
- */
+// Copyright Doug Moen 2016.
+// Distributed under the Boost Software License, Version 1.0.
+// See accompanying file LICENCE.md or http://www.boost.org/LICENSE_1_0.txt
+
 #ifndef CURV_TOKEN_H
 #define CURV_TOKEN_H
 
