@@ -118,10 +118,11 @@ Scanner::get_token()
         tok.kind = Token::k_over;
         goto success;
     }
-    --p;
 
     // report an error
-    throw Exception("illegal character");
+    tok.last = p - first;
+    ptr_ = p;
+    throw BadCharacter(tok);
 
 success:
     tok.last = p - first;

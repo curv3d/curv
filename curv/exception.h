@@ -77,6 +77,17 @@ struct SyntaxError : public Exception
     virtual void write(std::ostream&) const;
 };
 
+/// Lexical analysis error: an illegal character in the input.
+///
+/// Subclass of SyntaxError where the token spans just the illegal character.
+struct BadCharacter : public SyntaxError
+{
+    BadCharacter(Token tok)
+    : SyntaxError(std::move(tok), "illegal character")
+    {}
+    virtual void write(std::ostream&) const;
+};
+
 inline
 std::ostream& operator<<(std::ostream& out, const curv::Exception& exc)
 {

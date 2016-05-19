@@ -1,8 +1,5 @@
 add command line history
 
-"illegal character" exception uses token to record source location,
-prints illegal character.
-
 Interactive top level definitions.
 
 0/0 throws an exception
@@ -12,12 +9,15 @@ Evaluate the meaning tree (not the syntax tree).
 
 Add builtin functions like sin(x).
 
-Full syntax for numerals.
-
-Full syntax for identifiers. Support `foo` quoted identifiers.
-
 Print floating point numbers accurately.
 
 unit tests
 cmake build system
-language documentation
+language reference manual
+
+Later:
+* Digit separator ' in numerals.
+* Support ' in identifiers (like Haskell).
+* Support `foo` quoted identifiers.
+* UTF-8 support
+* localization
