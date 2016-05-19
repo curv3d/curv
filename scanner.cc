@@ -50,10 +50,41 @@ Scanner::get_token()
         goto success;
     }
 
-    // recognize a numeral
-    if (isdigit(*p)) {
+    // Recognize a numeral. Compatible with C and strtod().
+    //   numeral ::= significand exponent?
+    //   significand ::= digits | digits "." | "." digits | digits "." digits
+    //   exponent ::= "e" sign? digits
+    //   sign ::= "+" | "-"
+    //   digits ::= /[0-9]+/
+    if (isdigit(*p) || (*p == '.' && p+1 < last && isdigit(p[1]))) {
         while (p < last && isdigit(*p))
             ++p;
+        if (p < last && *p == '.') {
+            ++p;
+            while (p < last && isdigit(*p))
+                ++p;
+        }
+        if (p < last && (*p == 'e' || *p == 'E')) {
+            ++p;
+            if (p < last && (*p == '+' || *p == '-'))
+                ++p;
+            if (p == last || !isdigit(*p)) {
+                while (p < last && (isalnum(*p) || *p == '_'))
+                    ++p;
+                tok.last = p - first;
+                ptr_ = p;
+                throw SyntaxError(tok, "bad numeral");
+            }
+            while (p < last && isdigit(*p))
+                ++p;
+        }
+        if (p < last && (isalpha(*p) || *p == '_')) {
+            while (p < last && (isalnum(*p) || *p == '_'))
+                ++p;
+            tok.last = p - first;
+            ptr_ = p;
+            throw SyntaxError(tok, "bad numeral");
+        }
         tok.kind = Token::k_num;
         goto success;
     }

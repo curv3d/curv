@@ -1,4 +1,23 @@
+add command line history
+
 "illegal character" exception uses token to record source location,
 prints illegal character.
 
-top level definitions
+Interactive top level definitions.
+
+0/0 throws an exception
+
+Introduce a semantic analyzer that converts a syntax tree to a meaning tree.
+Evaluate the meaning tree (not the syntax tree).
+
+Add builtin functions like sin(x).
+
+Full syntax for numerals.
+
+Full syntax for identifiers. Support `foo` quoted identifiers.
+
+Print floating point numbers accurately.
+
+unit tests
+cmake build system
+language documentation

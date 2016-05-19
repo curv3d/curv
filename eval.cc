@@ -30,7 +30,10 @@ curv::eval(Expr& expr, const Namespace& names)
     auto num = dynamic_cast<NumExpr*>(&expr);
     if (num != nullptr) {
         string str(num->numeral.begin(), num->numeral.size());
-        return strtod(str.c_str(), nullptr);
+        char* endptr;
+        double n = strtod(str.c_str(), &endptr);
+        assert(endptr == str.c_str() + str.size());
+        return n;
     }
 
     auto ident = dynamic_cast<IdentExpr*>(&expr);
