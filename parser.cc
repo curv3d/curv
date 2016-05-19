@@ -98,6 +98,9 @@ parse_atom(Scanner& scanner)
     if (tok.kind == Token::k_num) {
         return make_unique<NumExpr>(tok);
     }
+    if (tok.kind == Token::k_ident) {
+        return make_unique<IdentExpr>(tok);
+    }
     if (tok.kind == Token::k_lparen) {
         auto expr = parse_sum(scanner);
         auto tok2 = scanner.get_token();

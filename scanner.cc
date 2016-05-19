@@ -58,6 +58,14 @@ Scanner::get_token()
         goto success;
     }
 
+    // recognize an identifier
+    if (isalpha(*p) || *p == '_') {
+        while (p < last && (isalnum(*p) || *p == '_'))
+            ++p;
+        tok.kind = Token::k_ident;
+        goto success;
+    }
+
     // recognize single-character tokens
     switch (*p++) {
     case '(':

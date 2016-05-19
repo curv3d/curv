@@ -24,9 +24,15 @@ struct Expr
     virtual ~Expr() {}
 };
 
+struct IdentExpr : public Expr
+{
+    IdentExpr(Token id) : identifier(std::move(id)) {}
+    Token identifier;
+};
+
 struct NumExpr : public Expr
 {
-    NumExpr(Token n) : numeral(n) {}
+    NumExpr(Token n) : numeral(std::move(n)) {}
     Token numeral;
 };
 

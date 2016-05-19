@@ -1,4 +1,4 @@
 "illegal character" exception uses token to record source location,
 prints illegal character.
 
-define a LICENCE
+top level definitions

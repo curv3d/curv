@@ -4,14 +4,25 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <cmath>
 #include <string>
 #include <curv/eval.h>
+#include <curv/exception.h>
+#include <boost/math/constants/constants.hpp>
 
 using namespace curv;
 using namespace std;
+using namespace boost::math::double_constants;
+
+const Namespace
+curv::builtin_namespace = {
+    {"pi", pi},
+    {"tau", two_pi},
+    {"inf", INFINITY},
+};
 
 double
-curv::eval(Expr& expr)
+curv::eval(Expr& expr, const Namespace& names)
 {
     // Hmm. Obviously, this could be done using a virtual eval function.
     // But, this code is temporary scaffolding, so I'll wait.
@@ -22,13 +33,23 @@ curv::eval(Expr& expr)
         return strtod(str.c_str(), nullptr);
     }
 
+    auto ident = dynamic_cast<IdentExpr*>(&expr);
+    if (ident != nullptr) {
+        std::string id(ident->identifier.begin(), ident->identifier.size());
+        auto p = names.find(id);
+        if (p != names.end())
+            return p->second;
+        else
+            throw SyntaxError(ident->identifier, "not defined");
+    }
+
     auto unary = dynamic_cast<UnaryExpr*>(&expr);
     if (unary != nullptr) {
         switch (unary->optor.kind) {
         case Token::k_minus:
-            return -eval(*unary->argument);
+            return -eval(*unary->argument, names);
         case Token::k_plus:
-            return +eval(*unary->argument);
+            return +eval(*unary->argument, names);
         default:
             assert(0);
         }
@@ -38,13 +59,13 @@ curv::eval(Expr& expr)
     if (binary != nullptr) {
         switch (binary->optor.kind) {
         case Token::k_plus:
-            return eval(*binary->left) + eval(*binary->right);
+            return eval(*binary->left, names) + eval(*binary->right, names);
         case Token::k_minus:
-            return eval(*binary->left) - eval(*binary->right);
+            return eval(*binary->left, names) - eval(*binary->right, names);
         case Token::k_times:
-            return eval(*binary->left) * eval(*binary->right);
+            return eval(*binary->left, names) * eval(*binary->right, names);
         case Token::k_over:
-            return eval(*binary->left) / eval(*binary->right);
+            return eval(*binary->left, names) / eval(*binary->right, names);
         default:
             assert(0);
         }
@@ -52,7 +73,7 @@ curv::eval(Expr& expr)
 
     auto paren = dynamic_cast<ParenExpr*>(&expr);
     if (paren != nullptr) {
-        return eval(*paren->argument);
+        return eval(*paren->argument, names);
     }
 
     assert(0);

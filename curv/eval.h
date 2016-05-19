@@ -5,11 +5,18 @@
 #ifndef CURV_EVAL_H
 #define CURV_EVAL_H
 
+#include <string>
+#include <map>
 #include <curv/expr.h>
 
 namespace curv {
 
-double eval(Expr&);
+using Namespace = std::map<std::string, double>;
+
+// the Curv builtin bindings
+extern const Namespace builtin_namespace;
+
+double eval(Expr&, const Namespace&);
 
 } // namespace curv
 #endif // header guard

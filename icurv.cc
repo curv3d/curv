@@ -44,7 +44,7 @@ main(int, char**)
         curv::Script script("<stdin>", line, line + strlen(line));
         try {
             auto expr = curv::parse(script);
-            double val = curv::eval(*expr);
+            double val = curv::eval(*expr, curv::builtin_namespace);
             std::cout << val << "\n";
         } catch (curv::Exception& e) {
             std::cout << e << "\n";
