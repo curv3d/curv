@@ -10,7 +10,7 @@
 
 namespace curv {
 
-std::unique_ptr<Expr> parse(const Script&);
+aux::Shared_Ptr<Expr> parse(const Script&);
 
 } // namespace curv
 #endif // header guard

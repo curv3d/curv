@@ -6,6 +6,7 @@
 #define CURV_EXPR_H
 
 #include <memory>
+#include <aux/shared.h>
 #include <curv/token.h>
 
 namespace curv {
@@ -19,7 +20,7 @@ namespace curv {
 ///   of the original tokens. So a syntax tree can be used for any purpose,
 ///   including upgrading source code from an earlier version of the language
 ///   to a newer version.
-struct Expr
+struct Expr : public aux::Shared_Base
 {
     virtual ~Expr() {}
 };
@@ -38,30 +39,30 @@ struct NumExpr : public Expr
 
 struct UnaryExpr : public Expr
 {
-    UnaryExpr(Token op, std::unique_ptr<Expr> arg)
+    UnaryExpr(Token op, aux::Shared_Ptr<Expr> arg)
     : optor(op), argument(std::move(arg))
     {}
     Token optor;
-    std::unique_ptr<Expr> argument;
+    aux::Shared_Ptr<Expr> argument;
 };
 
 struct BinaryExpr : public Expr
 {
-    BinaryExpr(Token op, std::unique_ptr<Expr> l, std::unique_ptr<Expr> r)
+    BinaryExpr(Token op, aux::Shared_Ptr<Expr> l, aux::Shared_Ptr<Expr> r)
     : optor(op), left(std::move(l)), right(std::move(r))
     {}
     Token optor;
-    std::unique_ptr<Expr> left;
-    std::unique_ptr<Expr> right;
+    aux::Shared_Ptr<Expr> left;
+    aux::Shared_Ptr<Expr> right;
 };
 
 struct ParenExpr : public Expr
 {
-    ParenExpr(Token lp, std::unique_ptr<Expr> arg, Token rp)
+    ParenExpr(Token lp, aux::Shared_Ptr<Expr> arg, Token rp)
     : lparen(lp), argument(std::move(arg)), rparen(rp)
     {}
     Token lparen;
-    std::unique_ptr<Expr> argument;
+    aux::Shared_Ptr<Expr> argument;
     Token rparen;
 };
 

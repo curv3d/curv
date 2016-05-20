@@ -1,8 +1,20 @@
 add command line history
 
+rename Expr to Syntax.
+
 Interactive top level definitions.
 
-0/0 throws an exception
+0/0 throws an exception.
+* `virtual Token curv::Exception::source_location()`
+* throw Runtime_Error(shared_ptr<Syntax>, "domain error")
+brainstorm:
+* specific: 0/0
+* general: not a number
+* domain error. Eg atan2(0,0) reports EDOM on some systems.
+How is the exception represented? It's a runtime exception.
+How do we specify the source code location?
+* maybe we include a syntax tree node. How is it used to print an error message?
+  * `virtual Token curv::Exception::source_location()`
 
 Introduce a semantic analyzer that converts a syntax tree to a meaning tree.
 Evaluate the meaning tree (not the syntax tree).
@@ -11,13 +23,20 @@ Add builtin functions like sin(x).
 
 Print floating point numbers accurately.
 
+create 'aux' library:
+* aux::Exception
+* aux::Range
+* aux::readlinex
+
 unit tests
 cmake build system
 language reference manual
 
 Later:
-* Digit separator ' in numerals.
+* Digit separator ' in numerals (like C++14).
 * Support ' in identifiers (like Haskell).
 * Support `foo` quoted identifiers.
+  Compatibility with OpenSCAD identifiers, GUI interfaces that display
+  parameter names as GUI labels, JSON object keys.
 * UTF-8 support
 * localization
