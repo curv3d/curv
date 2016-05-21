@@ -16,7 +16,7 @@ enum RLXResult { rlx_okay, rlx_eof, rlx_interrupt };
 ///
 /// This matches the behaviour of bash and many other programs that use
 /// readline. The necessary code is arcane, hence the wrapper.
-char *readlinex(const char* prompt, RLXResult* result);
+char *readlinex(const char* prompt, enum RLXResult* result);
 
 #ifdef __cplusplus
 }

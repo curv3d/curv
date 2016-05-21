@@ -13,13 +13,13 @@ sigjmp_buf rlx_env;
 // It's normally very dangerous to longjmp out of a signal handler.
 // However, the strategy is recommended by the maintainer of readline(),
 // and this interrupt handler is only installed while readline() is running.
-void rlx_interrupt_handler(int)
+void rlx_interrupt_handler(int sig)
 {
     siglongjmp(rlx_env, 1);
 }
 
 char*
-readlinex(const char* prompt, RLXResult* result)
+readlinex(const char* prompt, enum RLXResult* result)
 {
     struct sigaction interrupt_action, old_action;
     char *line = NULL;

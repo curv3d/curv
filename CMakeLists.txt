@@ -1,0 +1,6 @@
+project(curv)
+cmake_minimum_required(VERSION 3.5)
+add_executable(icurv eval.cc exception.cc icurv.cc parser.cc readlinex.c scanner.cc token.cc)
+set_property(TARGET icurv PROPERTY CXX_STANDARD 11)
+target_include_directories(icurv PUBLIC .)
+target_link_libraries(icurv PUBLIC readline)

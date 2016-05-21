@@ -28,8 +28,31 @@ create 'aux' library:
 * aux::Range
 * aux::readlinex
 
+build system?
+* cmake is popular. It generates make files. Make is neither fast nor correct.
+  (Cmake has an experimental option to generate ninja files.)
+* ninja is fast. It rebuilds if recipe changes. Header dependencies depend
+  on the gcc feature to output dependencies (suboptimal, I'd rather it monitor
+  which files are opened by build tools).
+  Need a generator: ninja+cmake, ninja+gen, ninja+bash, ...
+* tup is fast and correct. Tup determines hdr file dependencies automagically.
+  Tup rebuilds if recipe has changed. Tup deletes build products that can
+  no longer be generated. Tup has a high level command language (Lua).
+  * Tup is not in the Ubuntu package universe. There are PPAs...
+    Building from source isn't working...
+  * Tup is deeply magical and edgy. It uses FUSE, performs kernel magic to
+    overlay source and object directories, and makes tools confused
+    about what their current directory actually is, causing some things to
+    break. This can be overcome using the ^c chroot flag, which requires
+    setuid root. FUSE probably no longer works in MacOS ElCapitan due to SIP.
+  * So edgy it might discourage contributors. The automagic dependency tracking
+    requires deep magic that is also flaky: fuse, chroot, dynamic lib injection.
+    Eg, the ConEmu terminal emulator breaks DLL injection on Windows.
+    Tup is reported to not work on FreeBSD (fuse works differently).
+* redo. Simple, powerful, elegant. Also slow (as fast or slower than make).
+* So, probably cmake+ninja.
+
 unit tests
-cmake build system
 language reference manual
 
 Later:
@@ -38,5 +61,5 @@ Later:
 * Support `foo` quoted identifiers.
   Compatibility with OpenSCAD identifiers, GUI interfaces that display
   parameter names as GUI labels, JSON object keys.
-* UTF-8 support
+* UTF-8 support. Rewrite scanner in re2c.
 * localization
