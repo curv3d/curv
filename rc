@@ -1,1 +1,0 @@
-g++ -I. -std=c++1y *.cc *.c -lreadline -o icurv
