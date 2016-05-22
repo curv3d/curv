@@ -25,8 +25,7 @@ independent, and can be used by multiple front ends implementing different
 languages.
 
 Curv will include a geometry engine that supports both boundary representation
-and functional representation of full colour 2D and 3D shapes. There is
-a C++ API, which could be used independent of the virtual machine.
+and functional representation of colour 2D and 3D shapes. There is a C++ API.
 
 TeaCAD is a language: it's a technology demo for what a next generation
 OpenSCAD could look like. TeaCAD is a dynamically typed pure functional
@@ -36,17 +35,25 @@ Object and Function. (Geometric shapes are a kind of object.)
 TeaCAD is inspired by the OpenSCAD2 proposal. It's not 100% backward compatible
 with OpenSCAD, because that is a difficult problem. Instead, my strategy is to
 offer a back end virtual machine and geometry engine that can be used by both
-OpenSCAD and TeaCAD, so that a model could be created using a mixture of
-OpenSCAD and TeaCAD libraries.
+OpenSCAD and TeaCAD, so that a geometric model could be created using a mixture
+of OpenSCAD and TeaCAD libraries. It's similar to how the Java VM enables
+interoperability between JVM languages.
 
-Curv is a work in progress.
+Using LLVM, the back end compiles OpenSCAD/TeaCAD code into C callable functions
+and C++ callable classes, which call directly into the C/C++ runtime library.
+This means we can build a bridge between OpenSCAD/TeaCAD and other languages,
+in both directions.
 
-== How to Build Curv
+The Curv project began in May 2016, and is a work in progress.
+It will be a some time before we are ready for a numbered release.
+Contact the primary author Doug Moen via doug at the domain moens dot org.
+
+== How to Build Curv and TeaCAD
 After installing all of the dependencies, type `sh mk`.
 So far, this has only been tested on Ubuntu 16.04.
 
-== How to Run Curv
-The executable `build/icurv` is an interactive REPL loop.
+== How to Run TeaCAD
+The executable `build/tcad` is an interactive REPL loop.
 You type a TeaCAD expression, it compiles and evaluates the expression
 and prints the result.
 
