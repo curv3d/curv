@@ -76,13 +76,14 @@ private:
     // will ignore. (On PA-RISC and MIPS we'd use 0x7FF7 for a quiet NaN, but
     // we don't currently support those architectures.)
     static constexpr uint64_t k_nanbits = 0x7FFF'0000'0000'0000;
+    // The null value has a 48 bit payload of 0, same representation as the
+    // null pointer. So Value((Ref_Value*)0) is null.
     static constexpr uint64_t k_nullbits = k_nanbits|0;
+    // false and true have a payload of 2 and 3. The '2' bit is only set in the
+    // payload for a boolean value (assuming all Ref_Value* pointers have
+    // at least 4 byte alignment). The '1' bit is 0 or 1 for false and true.
     static constexpr uint64_t k_boolbits = k_nanbits|2;
     static constexpr uint64_t k_boolmask = 0xFFFF'FFFF'FFFF'FFFE;
-
-    friend Value mk_bool(bool);
-    friend Value mk_num(double);
-    friend Value mk_ref(aux::Shared_Ptr<Ref_Value> ptr);
 
     inline Value(const Ref_Value* r)
     {
@@ -97,10 +98,116 @@ private:
         #endif
     }
 public:
-    /// The default constructor constructs a `k_null` Value.
+    /// Construct the `null` value (default constructor).
+    ///
+    /// This is the `null` value in TeaCAD.
+    /// It corresponds to both NaN and `undef` in OpenSCAD.
     inline Value()
     {
         bits_ = k_nullbits;
+    }
+
+    /// True if value is null.
+    inline bool is_null() const
+    {
+        return bits_ == k_nullbits;
+    }
+
+    /// Construct a boolean value.
+    inline Value(bool b)
+    {
+        bits_ = k_boolbits|(uint64_t)b;
+    }
+
+    /// True if the value is boolean.
+    inline bool is_bool() const
+    {
+        return (bits_ & k_boolmask) == k_boolbits;
+    }
+    /// Convert a boolean value to `bool`.
+    ///
+    /// Only defined if is_bool() is true.
+    inline bool get_bool_unsafe() const
+    {
+        return (bool)(bits_ & 1);
+    }
+
+    /// Construct a number value.
+    ///
+    /// The Curv Number type includes all of the IEEE 64 bit floating point
+    /// values except for NaN.
+    /// If the argument is NaN, construct the null value.
+    inline Value(double n)
+    {
+        if (n == n)
+            number_ = n;
+        else
+            bits_ = k_nullbits;
+    }
+
+    /// True if the value is a number.
+    inline bool is_num() const
+    {
+        return number_ == number_;
+    }
+
+    /// Convert a number value to `double`.
+    ///
+    /// Only defined if is_num() is true.
+    inline double get_num_unsafe() const
+    {
+        return number_;
+    }
+
+    /// Construct a reference value.
+    ///
+    /// If the argument is nullptr, construct the null value.
+    inline Value(aux::Shared_Ptr<Ref_Value> ptr) : Value(ptr.detach())
+    {
+    }
+
+    /// True if the value is a reference value.
+    inline bool is_ref() const
+    {
+        // Negative numbers will have the sign bit set, which means
+        // signed_bits_ < 0. Positive infinity has all 1s in the exponent,
+        // and is 0x7FF0'0000'0000'0000. Positive numbers have a smaller
+        // exponent than this, so will test < +inf as an integer bit pattern.
+        // The positive NaNs have the largest signed integer magnitude,
+        // and all non-numeric values are encoded as positive NaNs.
+        // The 4 special immediate values, void, null, false and true,
+        // are encoded like pointer values in the range 0...3.
+        return signed_bits_ > (k_nanbits|3);
+    }
+
+    /// Convert a reference value to `Ref_Value&`.
+    ///
+    /// Unsafe unless `is_ref()` is true.
+    inline Ref_Value& get_ref_unsafe() const
+    {
+        #if UINTPTR_MAX == UINT64_MAX
+            // 64 bit pointers.
+
+            // Intel: "bits 48 through 63 of any virtual address must be copies
+            // of bit 47 (in a manner akin to sign extension), or the processor
+            // will raise an exception." https://en.wikipedia.org/wiki/X86-64
+
+            // Arm-64: also has 48 bit virtual addresses, and also seems to
+            // require the sign extension logic. "AArch64 features two 48-bit
+            // virtual address spaces, one for the kernel and one for
+            // applications. Application addressing starts at 0 and grows
+            // upwards, while kernel space grows down from 2^64; any references
+            // to unmapped addresses in between will trigger a fault. Pointers
+            // are sign extended to 64-bits, and can optionally be configured
+            // to use the upper 8-bits for tagging pointers with additional
+            // information." http://www.realworldtech.com/arm64/4/
+            return *(Ref_Value*)((signed_bits_ << 16) >> 16);
+        #elif UINTPTR_MAX == UINT32_MAX
+            // 32 bit pointers
+            return *(Ref_Value*)(uint32_t)bits_;
+        #else
+            static_assert(false, "only 32 and 64 bit architectures supported");
+        #endif
     }
 
     /// The copy constructor increments the use_count of a ref value.
@@ -144,107 +251,7 @@ public:
         if (is_ref())
             aux::intrusive_ptr_release(&get_ref_unsafe());
     }
-
-    // k_null is the TeaCAD value `null`. It corresponds to both NaN and `undef`
-    // in OpenSCAD.
-    inline bool is_null() const
-    {
-        return bits_ == k_nullbits;
-    }
-
-    // The boolean values 'true' and 'false'.
-    inline bool is_bool() const
-    {
-        return (bits_ & k_boolmask) == k_boolbits;
-    }
-    // only defined if is_bool() is true
-    inline bool get_bool_unsafe() const
-    {
-        return (bool)(bits_ & 1);
-    }
-
-    // The Curv Number type includes all of the IEEE 63 bit float values
-    // except for the NaNs. (+inf and -inf are included as Numbers.)
-
-    inline bool is_num() const
-    {
-        return number_ == number_;
-    }
-    // only defined if is_num() is true
-    inline double get_num_unsafe() const
-    {
-        return number_;
-    }
-
-    inline bool is_ref() const
-    {
-        // Negative numbers will have the sign bit set, which means
-        // signed_bits_ < 0. Positive infinity has all 1s in the exponent,
-        // and is 0x7FF0'0000'0000'0000. Positive numbers have a smaller
-        // exponent than this, so will test < +inf as an integer bit pattern.
-        // The positive NaNs have the largest signed integer magnitude,
-        // and all non-numeric values are encoded as positive NaNs.
-        // The 4 special immediate values, void, null, false and true,
-        // are encoded like pointer values in the range 0...3.
-        return signed_bits_ > (k_nanbits|3);
-    }
-    inline Ref_Value& get_ref_unsafe() const
-    {
-        #if UINTPTR_MAX == UINT64_MAX
-            // 64 bit pointers.
-
-            // Intel: "bits 48 through 63 of any virtual address must be copies
-            // of bit 47 (in a manner akin to sign extension), or the processor
-            // will raise an exception." https://en.wikipedia.org/wiki/X86-64
-
-            // Arm-64: also has 48 bit virtual addresses, and also seems to
-            // require the sign extension logic. "AArch64 features two 48-bit
-            // virtual address spaces, one for the kernel and one for
-            // applications. Application addressing starts at 0 and grows
-            // upwards, while kernel space grows down from 2^64; any references
-            // to unmapped addresses in between will trigger a fault. Pointers
-            // are sign extended to 64-bits, and can optionally be configured
-            // to use the upper 8-bits for tagging pointers with additional
-            // information." http://www.realworldtech.com/arm64/4/
-            return *(Ref_Value*)((signed_bits_ << 16) >> 16);
-        #elif UINTPTR_MAX == UINT32_MAX
-            // 32 bit pointers
-            return *(Ref_Value*)(uint32_t)bits_;
-        #else
-            static_assert(false, "only 32 and 64 bit architectures supported");
-        #endif
-    }
 };
-
-Value k_null;
-
-inline Value mk_bool(bool b)
-{
-    Value v;
-    v.bits_ = Value::k_boolbits|(uint64_t)b;
-    return v;
-}
-Value k_false = mk_bool(false);
-Value k_true = mk_bool(true);
-
-/// mk_num doesn't assert that its argument is not a NaN.
-/// That's expensive. Instead, if the argument is a machine generated NaN,
-/// then the result is k_null.
-inline Value mk_num(double n)
-{
-    Value v;
-    if (n == n)
-        v.number_ = n;
-    else
-        v.bits_ = Value::k_nullbits;
-    return v;
-}
-
-inline Value mk_ref(aux::Shared_Ptr<Ref_Value> ptr)
-{
-    // steal the reference from ptr (without incrementing use_count)
-    return Value(ptr.detach());
-}
 
 } // namespace curv
 #endif // header guard
