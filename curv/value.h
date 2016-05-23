@@ -6,6 +6,7 @@
 #define CURV_VALUE_H
 
 #include <aux/shared.h>
+#include <ostream>
 
 namespace curv {
 
@@ -251,6 +252,9 @@ public:
         if (is_ref())
             aux::intrusive_ptr_release(&get_ref_unsafe());
     }
+
+    /// Print a value like a TeaCAD expression.
+    void print(std::ostream&) const;
 };
 
 } // namespace curv
