@@ -6,7 +6,7 @@ Interactive top level definitions.
 
 0/0 throws an exception.
 * `virtual Token curv::Exception::source_location()`
-* throw Runtime_Error(shared_ptr<Syntax>, "domain error")
+* throw Runtime_Error(Shared_Ptr<Syntax>, "domain error")
 brainstorm:
 * specific: 0/0
 * general: not a number
@@ -15,6 +15,10 @@ How is the exception represented? It's a runtime exception.
 How do we specify the source code location?
 * maybe we include a syntax tree node. How is it used to print an error message?
   * `virtual Token curv::Exception::source_location()`
+
+How does this exception work when using LLVM? Can I embed object pointers
+in an LLVM generated executable? They have to survive passing through IR.
+I can embed them as uint64_t.
 
 Introduce a semantic analyzer that converts a syntax tree to a meaning tree.
 Evaluate the meaning tree (not the syntax tree).

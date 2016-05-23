@@ -45,7 +45,7 @@ This means we can build a bridge between OpenSCAD/TeaCAD and other languages,
 in both directions.
 
 The Curv project began in May 2016, and is a work in progress.
-It will be a some time before we are ready for a numbered release.
+It will be some time before we are ready for a numbered release.
 Contact the primary author Doug Moen via doug at the domain moens dot org.
 
 == How to Build Curv and TeaCAD

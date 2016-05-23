@@ -2,7 +2,7 @@
 
 The Curv project is Copyright Doug Moen 2016.
 Distributed under the Boost Software License, Version 1.0.
-See accompanying file LICENCE.md or http://www.boost.org/LICENSE_1_0.txt
+See licence below, or http://www.boost.org/LICENSE_1_0.txt
 
 == Boost Software Licence, Version 1.0
 
