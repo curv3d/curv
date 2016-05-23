@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // See accompanying file LICENCE.md or http://www.boost.org/LICENSE_1_0.txt
 
-#ifndef CURV_READLINEX_H
-#define CURV_READLINEX_H
+#ifndef AUX_READLINEX_H
+#define AUX_READLINEX_H
 
 #ifdef __cplusplus
 extern "C" {

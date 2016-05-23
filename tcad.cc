@@ -3,7 +3,7 @@
 // See accompanying file LICENCE.md or http://www.boost.org/LICENSE_1_0.txt
 
 extern "C" {
-#include <curv/readlinex.h>
+#include <aux/readlinex.h>
 #include <string.h>
 #include <signal.h>
 }

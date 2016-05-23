@@ -33,8 +33,8 @@ template<typename T, class... Args> Shared_Ptr<T> make_shared(Args&&... args)
 /// (64 bits) to precede the 32 bit use_count, for alignment reasons. This
 /// leaves room for a subclass to add another 32 bits of data without creating
 /// an alignment hole in the memory layout on 64 bit systems. I use this to
-/// reduce memory consumption for curv::String and curv::List, which put a 32
-/// bit size field in this location.
+/// reduce memory consumption for curv::Ref_Value, which puts a 32 bit type code
+/// in this location.
 ///
 /// Suppose `Foo` is a subclass of `Shared_Base`.
 /// 1. To pass an instance of `Foo` to a function `f`, pass it by reference

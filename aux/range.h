@@ -2,12 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // See accompanying file LICENCE.md or http://www.boost.org/LICENSE_1_0.txt
 
-#ifndef CURV_RANGE_H
-#define CURV_RANGE_H
+#ifndef AUX_RANGE_H
+#define AUX_RANGE_H
 
 #include <cstddef>
 
-namespace curv {
+namespace aux {
 
 /// \brief A Range is a pair of iterators.
 ///
@@ -24,5 +24,5 @@ struct Range
     std::size_t size() const { return last - first; }
 };
 
-} // namespace curv
+} // namespace aux
 #endif // header guard

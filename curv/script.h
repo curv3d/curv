@@ -5,7 +5,7 @@
 #ifndef CURV_SCRIPT_H
 #define CURV_SCRIPT_H
 
-#include <curv/range.h>
+#include <aux/range.h>
 #include <string>
 
 namespace curv {
@@ -18,7 +18,7 @@ namespace curv {
 /// The contents are a const utf-8 character array.
 /// Subclasses provide storage management for the contents:
 /// eg, a std::string, or a memory mapped file.
-struct Script : public Range<const char*>
+struct Script : public aux::Range<const char*>
 {
     Script(const std::string& nm, const char*f, const char*l)
     :

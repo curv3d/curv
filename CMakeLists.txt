@@ -2,7 +2,7 @@ project(curv)
 cmake_minimum_required(VERSION 3.5)
 include_directories(.)
 
-FILE(GLOB Src "*.cc" "*.c")
+FILE(GLOB Src "*.cc" "aux/*.c")
 add_executable(tcad ${Src})
 target_link_libraries(tcad PUBLIC readline)
 

@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // See accompanying file LICENCE.md or http://www.boost.org/LICENSE_1_0.txt
 
-#include <curv/readlinex.h>
+#include <aux/readlinex.h>
 #include <readline/readline.h>
 #include <string.h>
 #include <signal.h>
