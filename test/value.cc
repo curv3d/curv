@@ -6,9 +6,6 @@ TEST(curv, value)
 {
     Value v;
 
-    v = k_void;
-    EXPECT_TRUE(v.is_void());
-
     v = k_null;
     EXPECT_TRUE(v.is_null());
 
@@ -27,4 +24,13 @@ TEST(curv, value)
     v = mk_num(0.0/0.0);
     EXPECT_FALSE(v.is_num());
     EXPECT_TRUE(v.is_null());
+
+    auto ptr = aux::make_shared<Ref_Value>(42);
+    EXPECT_TRUE(ptr->use_count == 1);
+    v = mk_ref(ptr);
+    ASSERT_TRUE(v.is_ref());
+    EXPECT_TRUE(v.get_ref_unsafe().use_count == 2);
+    EXPECT_TRUE(v.get_ref_unsafe().type_ == 42);
+    ptr = nullptr;
+    EXPECT_TRUE(v.get_ref_unsafe().use_count == 1);
 }

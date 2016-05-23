@@ -5,9 +5,38 @@
 #ifndef CURV_VALUE_H
 #define CURV_VALUE_H
 
+#include <aux/shared.h>
+
 namespace curv {
 
-class Ref_Value;
+/// Base class for the object referenced by a curv reference value.
+///
+/// The memory layout for Ref_Value is:
+/// * vtable_pointer -- 64 bits
+/// * use_count -- 32 bits
+/// * type -- 32 bits
+///
+/// The next data member has 128 bit alignment with no hole (64 bit platforms).
+///
+/// The type_ field enables us to query the type by loading the first 128 bits
+/// of the object into a cache line, without indirecting through the vtable,
+/// which would cost a 2nd cache line hit. Note, there are an extra 3 bits in
+/// curv::Value where I could store a type code, but that adds complexity,
+/// and I doubt it increases performance, since you almost certainly have to
+/// load the object into a cache line anyway to bump the use_count. Putting a
+/// type code here lets users add lots of new types without messing with the
+/// black magic that is curv::Value.
+struct Ref_Value : public aux::Shared_Base
+{
+    uint32_t type_;
+    enum {
+        ty_string,
+        ty_list,
+        ty_function,
+        ty_object
+    };
+    Ref_Value(int type) : aux::Shared_Base(), type_(type) {}
+};
 
 /// A boxed, dynamically typed value in the Curv runtime.
 ///
@@ -16,12 +45,23 @@ class Ref_Value;
 /// with the data stored in the low order 48 bits of the NaN. This is called
 /// "NaN boxing", a technique also used by LuaJIT and JavaScriptCore.
 ///
-/// The Null, Boolean and Number values are "immediate" values, stored
-/// entirely in the 64 bit pattern of a Value. String, List, Object and Function
-/// values are "reference" values: a Ref_Value* pointer is stored in the
-/// low order 48 bits of the Value. This works on 64 bit Intel and ARM systems
-/// because those architectures use 48 bit virtual addresses, with the upper
-/// 16 bits of a 64 bit pointer being wasted space.
+/// Null, Boolean and Number values are "immediate" values, stored entirely
+/// in the 64 bit pattern of a Value. There are 3 special immediate values
+/// which aren't numbers: k_null, k_false and k_true.
+///
+/// String, List, Object and Function values are "reference" values:
+/// a Ref_Value* pointer is stored in the low order 48 bits of the Value.
+/// This works on 64 bit Intel and ARM systems because those architectures
+/// use 48 bit virtual addresses, with the upper 16 bits of a 64 bit pointer
+/// being wasted space.
+///
+/// Reference values have Shared_Ptr semantics. The copy constructor increments
+/// the reference count, the destructor decrements the reference count and
+/// deletes the object if the refcount reaches 0.
+///
+/// Each Value has a unique bit pattern (not a given: I'm forcing the values
+/// of unused bits in the NaN box to ensure this). Only positive NaNs are used.
+/// This speeds up is_ref() and some equality tests.
 class Value
 {
 private:
@@ -36,56 +76,107 @@ private:
     // will ignore. (On PA-RISC and MIPS we'd use 0x7FF7 for a quiet NaN, but
     // we don't currently support those architectures.)
     static constexpr uint64_t k_nanbits = 0x7FFF'0000'0000'0000;
-    static constexpr uint64_t k_voidbits = k_nanbits|0;
-    static constexpr uint64_t k_nullbits = k_nanbits|1;
+    static constexpr uint64_t k_nullbits = k_nanbits|0;
     static constexpr uint64_t k_boolbits = k_nanbits|2;
     static constexpr uint64_t k_boolmask = 0xFFFF'FFFF'FFFF'FFFE;
 
-    friend constexpr Value mk_void();
-    friend constexpr Value mk_null();
-    friend constexpr Value mk_bool(bool);
-    friend constexpr Value mk_num(double);
-    friend constexpr Value mk_ref(Ref_Value* r);
-public:
-    // 'k_void' is a special bit pattern that is used internally to denote
-    // the absence of a Curv Value. It differs from 'k_null', a legal value.
-    inline constexpr bool is_void() const
+    friend Value mk_bool(bool);
+    friend Value mk_num(double);
+    friend Value mk_ref(aux::Shared_Ptr<Ref_Value> ptr);
+
+    inline Value(const Ref_Value* r)
     {
-        return bits_ == k_voidbits;
+        #if UINTPTR_MAX == UINT64_MAX
+            // 64 bit pointers
+            bits_ = ((uint64_t)r & 0x0000'FFFF'FFFF'FFFF) | Value::k_nanbits;
+        #elif UINTPTR_MAX == UINT32_MAX
+            // 32 bit pointers
+            bits_ = (uint64_t)(uint32_t)r | Value::k_nanbits;
+        #else
+            static_assert(false, "only 32 and 64 bit architectures supported");
+        #endif
+    }
+public:
+    /// The default constructor constructs a `k_null` Value.
+    inline Value()
+    {
+        bits_ = k_nullbits;
     }
 
-    // k_null is the TeaCAD value 'null'. It corresponds to both NaN and undef
+    /// The copy constructor increments the use_count of a ref value.
+    inline Value(const Value& val)
+    {
+        bits_ = val.bits_;
+        if (is_ref())
+            aux::intrusive_ptr_add_ref(&get_ref_unsafe());
+    }
+
+    /// The move constructor.
+    inline Value(const Value&& val)
+    {
+        bits_ = val.bits_;
+    }
+
+    /// The assignment operator.
+    ///
+    /// There's just one assignment operator, and it's by-value.
+    /// This is simpler than `const Value&` and `const Value&&`
+    /// copy and move assignments, and allegedly the most efficient.
+    /// When possible, use `val = std::move(rhs);` for a non-rvalue rhs
+    /// for efficiency.
+    inline Value& operator=(Value rhs)
+    {
+        rhs.swap(*this);
+        return *this;
+    }
+
+    /// The swap operation.
+    void swap(Value& rhs) noexcept
+    {
+        auto tmpbits = bits_;
+        bits_ = rhs.bits_;
+        rhs.bits_ = tmpbits;
+    }
+
+    /// The destructor.
+    ~Value()
+    {
+        if (is_ref())
+            aux::intrusive_ptr_release(&get_ref_unsafe());
+    }
+
+    // k_null is the TeaCAD value `null`. It corresponds to both NaN and `undef`
     // in OpenSCAD.
-    inline constexpr bool is_null() const
+    inline bool is_null() const
     {
         return bits_ == k_nullbits;
     }
 
     // The boolean values 'true' and 'false'.
-    inline constexpr bool is_bool() const
+    inline bool is_bool() const
     {
         return (bits_ & k_boolmask) == k_boolbits;
     }
     // only defined if is_bool() is true
-    inline constexpr bool get_bool_unsafe() const
+    inline bool get_bool_unsafe() const
     {
         return (bool)(bits_ & 1);
     }
 
-    // The Curv Number type includes all of the IEEE 64 bit float values
+    // The Curv Number type includes all of the IEEE 63 bit float values
     // except for the NaNs. (+inf and -inf are included as Numbers.)
 
-    inline constexpr bool is_num() const
+    inline bool is_num() const
     {
         return number_ == number_;
     }
     // only defined if is_num() is true
-    inline constexpr double get_num_unsafe() const
+    inline double get_num_unsafe() const
     {
         return number_;
     }
 
-    inline constexpr bool is_ref() const
+    inline bool is_ref() const
     {
         // Negative numbers will have the sign bit set, which means
         // signed_bits_ < 0. Positive infinity has all 1s in the exponent,
@@ -97,7 +188,7 @@ public:
         // are encoded like pointer values in the range 0...3.
         return signed_bits_ > (k_nanbits|3);
     }
-    inline constexpr Ref_Value* get_ref_unsafe() const
+    inline Ref_Value& get_ref_unsafe() const
     {
         #if UINTPTR_MAX == UINT64_MAX
             // 64 bit pointers.
@@ -115,45 +206,31 @@ public:
             // are sign extended to 64-bits, and can optionally be configured
             // to use the upper 8-bits for tagging pointers with additional
             // information." http://www.realworldtech.com/arm64/4/
-            return (Ref_Value*)((signed_bits_ << 16) >> 16);
+            return *(Ref_Value*)((signed_bits_ << 16) >> 16);
         #elif UINTPTR_MAX == UINT32_MAX
             // 32 bit pointers
-            return (Ref_Value*)(uint32_t)bits_;
+            return *(Ref_Value*)(uint32_t)bits_;
         #else
             static_assert(false, "only 32 and 64 bit architectures supported");
         #endif
     }
 };
 
-inline constexpr Value mk_void()
-{
-    Value v;
-    v.bits_ = Value::k_voidbits;
-    return v;
-}
-constexpr Value k_void = mk_void();
+Value k_null;
 
-inline constexpr Value mk_null()
-{
-    Value v;
-    v.bits_ = Value::k_nullbits;
-    return v;
-}
-constexpr Value k_null = mk_null();
-
-inline constexpr Value mk_bool(bool b)
+inline Value mk_bool(bool b)
 {
     Value v;
     v.bits_ = Value::k_boolbits|(uint64_t)b;
     return v;
 }
-constexpr Value k_false = mk_bool(false);
-constexpr Value k_true = mk_bool(true);
+Value k_false = mk_bool(false);
+Value k_true = mk_bool(true);
 
 /// mk_num doesn't assert that its argument is not a NaN.
 /// That's expensive. Instead, if the argument is a machine generated NaN,
 /// then the result is k_null.
-inline constexpr Value mk_num(double n)
+inline Value mk_num(double n)
 {
     Value v;
     if (n == n)
@@ -163,19 +240,10 @@ inline constexpr Value mk_num(double n)
     return v;
 }
 
-inline constexpr Value mk_ref(Ref_Value* r)
+inline Value mk_ref(aux::Shared_Ptr<Ref_Value> ptr)
 {
-    Value v;
-    #if UINTPTR_MAX == UINT64_MAX
-        // 64 bit pointers
-        v.bits_ = ((uint64_t)r & 0x0000'FFFF'FFFF'FFFF) | Value::k_nanbits;
-    #elif UINTPTR_MAX == UINT32_MAX
-        // 32 bit pointers
-        v.bits_ = (uint64_t)(uint32_t)r | Value::k_nanbits;
-    #else
-        static_assert(false, "only 32 and 64 bit architectures supported");
-    #endif
-    return v;
+    // steal the reference from ptr (without incrementing use_count)
+    return Value(ptr.detach());
 }
 
 } // namespace curv
