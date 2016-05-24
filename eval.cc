@@ -22,7 +22,7 @@ curv::builtin_namespace = {
 };
 
 double
-curv::eval(Expr& expr, const Namespace& names)
+curv::eval(Syntax& expr, const Namespace& names)
 {
     // Hmm. Obviously, this could be done using a virtual eval function.
     // But, this code is temporary scaffolding, so I'll wait.

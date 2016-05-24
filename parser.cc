@@ -12,10 +12,10 @@ using namespace aux;
 
 namespace curv {
 
-Shared_Ptr<Expr> parse_sum(Scanner&);
-Shared_Ptr<Expr> parse_product(Scanner&);
-Shared_Ptr<Expr> parse_unary(Scanner&);
-Shared_Ptr<Expr> parse_atom(Scanner&);
+Shared_Ptr<Syntax> parse_sum(Scanner&);
+Shared_Ptr<Syntax> parse_product(Scanner&);
+Shared_Ptr<Syntax> parse_unary(Scanner&);
+Shared_Ptr<Syntax> parse_atom(Scanner&);
 
 // Parse a script, return a syntax tree.
 // It's a recursive descent parser.
@@ -25,7 +25,7 @@ product : unary | product * unary | product / unary
 unary : atom | - unary | + unary
 atom : numeral | ( sum )
 */
-Shared_Ptr<Expr>
+Shared_Ptr<Syntax>
 parse(const Script& script)
 {
     Scanner scanner(script);
@@ -37,7 +37,7 @@ parse(const Script& script)
 }
 
 // sum : product | sum + product | sum - product
-Shared_Ptr<Expr>
+Shared_Ptr<Syntax>
 parse_sum(Scanner& scanner)
 {
     auto left = parse_product(scanner);
@@ -57,7 +57,7 @@ parse_sum(Scanner& scanner)
 }
 
 // product : unary | product * unary | product / unary
-Shared_Ptr<Expr>
+Shared_Ptr<Syntax>
 parse_product(Scanner& scanner)
 {
     auto left = parse_unary(scanner);
@@ -77,7 +77,7 @@ parse_product(Scanner& scanner)
 }
 
 // unary : atom | - unary | + unary
-Shared_Ptr<Expr>
+Shared_Ptr<Syntax>
 parse_unary(Scanner& scanner)
 {
     auto tok = scanner.get_token();
@@ -92,7 +92,7 @@ parse_unary(Scanner& scanner)
 }
 
 // atom : numeral | ( sum )
-Shared_Ptr<Expr>
+Shared_Ptr<Syntax>
 parse_atom(Scanner& scanner)
 {
     auto tok = scanner.get_token();

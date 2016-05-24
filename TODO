@@ -1,7 +1,5 @@
 add command line history
 
-rename Expr to Syntax.
-
 Interactive top level definitions.
 
 0/0 throws an exception.

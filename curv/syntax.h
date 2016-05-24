@@ -20,49 +20,49 @@ namespace curv {
 ///   of the original tokens. So a syntax tree can be used for any purpose,
 ///   including upgrading source code from an earlier version of the language
 ///   to a newer version.
-struct Expr : public aux::Shared_Base
+struct Syntax : public aux::Shared_Base
 {
-    virtual ~Expr() {}
+    virtual ~Syntax() {}
 };
 
-struct IdentExpr : public Expr
+struct IdentExpr : public Syntax
 {
     IdentExpr(Token id) : identifier(std::move(id)) {}
     Token identifier;
 };
 
-struct NumExpr : public Expr
+struct NumExpr : public Syntax
 {
     NumExpr(Token n) : numeral(std::move(n)) {}
     Token numeral;
 };
 
-struct UnaryExpr : public Expr
+struct UnaryExpr : public Syntax
 {
-    UnaryExpr(Token op, aux::Shared_Ptr<Expr> arg)
+    UnaryExpr(Token op, aux::Shared_Ptr<Syntax> arg)
     : optor(op), argument(std::move(arg))
     {}
     Token optor;
-    aux::Shared_Ptr<Expr> argument;
+    aux::Shared_Ptr<Syntax> argument;
 };
 
-struct BinaryExpr : public Expr
+struct BinaryExpr : public Syntax
 {
-    BinaryExpr(Token op, aux::Shared_Ptr<Expr> l, aux::Shared_Ptr<Expr> r)
+    BinaryExpr(Token op, aux::Shared_Ptr<Syntax> l, aux::Shared_Ptr<Syntax> r)
     : optor(op), left(std::move(l)), right(std::move(r))
     {}
     Token optor;
-    aux::Shared_Ptr<Expr> left;
-    aux::Shared_Ptr<Expr> right;
+    aux::Shared_Ptr<Syntax> left;
+    aux::Shared_Ptr<Syntax> right;
 };
 
-struct ParenExpr : public Expr
+struct ParenExpr : public Syntax
 {
-    ParenExpr(Token lp, aux::Shared_Ptr<Expr> arg, Token rp)
+    ParenExpr(Token lp, aux::Shared_Ptr<Syntax> arg, Token rp)
     : lparen(lp), argument(std::move(arg)), rparen(rp)
     {}
     Token lparen;
-    aux::Shared_Ptr<Expr> argument;
+    aux::Shared_Ptr<Syntax> argument;
     Token rparen;
 };
 

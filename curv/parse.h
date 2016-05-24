@@ -5,12 +5,12 @@
 #ifndef CURV_PARSE_H
 #define CURV_PARSE_H
 
-#include <curv/expr.h>
+#include <curv/syntax.h>
 #include <curv/script.h>
 
 namespace curv {
 
-aux::Shared_Ptr<Expr> parse(const Script&);
+aux::Shared_Ptr<Syntax> parse(const Script&);
 
 } // namespace curv
 #endif // header guard

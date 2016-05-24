@@ -9,7 +9,7 @@ namespace curv {
 
 struct Compiler
 {
-    compile(const Expr&);
+    compile(const Syntax&);
 };
 
 } // namespace curv
