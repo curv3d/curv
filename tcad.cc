@@ -11,6 +11,7 @@ extern "C" {
 #include <curv/parse.h>
 #include <curv/eval.h>
 #include <curv/exception.h>
+#include <curv/syntax.h>
 
 bool was_interrupted = false;
 
@@ -29,6 +30,9 @@ main(int, char**)
     interrupt_action.sa_handler = interrupt_handler;
     sigaction(SIGINT, &interrupt_action, nullptr);
 
+    // top level definitions, extended by typing 'id = expr'
+    curv::Namespace names = curv::builtin_namespace;
+
     for (;;) {
         // Race condition on assignment to was_interrupted.
         was_interrupted = false;
@@ -43,9 +47,23 @@ main(int, char**)
         }
         curv::Script script("<stdin>", line, line + strlen(line));
         try {
-            auto expr = curv::parse(script);
-            double val = curv::eval(*expr, curv::builtin_namespace);
-            std::cout << val << "\n";
+            auto syntax = curv::parse(script);
+            const curv::Definition* def =
+                dynamic_cast<curv::Definition*>(syntax.get());
+            if (def != nullptr) {
+                const curv::IdentExpr* id =
+                    dynamic_cast<curv::IdentExpr*>(def->left_.get());
+                if (id == nullptr) {
+                    throw curv::SyntaxError(def->equate_,
+                        "= not preceded by identifier");
+                }
+                double val = curv::eval(*def->right_, names);
+                std::string idstr(id->identifier.begin(), id->identifier.size());
+                names[idstr] = val;
+            } else {
+                double val = curv::eval(*syntax, names);
+                std::cout << val << "\n";
+            }
         } catch (curv::Exception& e) {
             std::cout << e << "\n";
         }

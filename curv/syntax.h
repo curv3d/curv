@@ -66,5 +66,19 @@ struct ParenExpr : public Syntax
     Token rparen;
 };
 
+struct Definition : public Syntax
+{
+    Definition(
+        aux::Shared_Ptr<Syntax> left,
+        Token equate,
+        aux::Shared_Ptr<Syntax> right)
+    :
+        left_(left), equate_(equate), right_(right)
+    {}
+    aux::Shared_Ptr<Syntax> left_;
+    Token equate_;
+    aux::Shared_Ptr<Syntax> right_;
+};
+
 } // namespace curv
 #endif // header guard

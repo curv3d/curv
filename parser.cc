@@ -12,6 +12,7 @@ using namespace aux;
 
 namespace curv {
 
+Shared_Ptr<Syntax> parse_stmt(Scanner& scanner);
 Shared_Ptr<Syntax> parse_sum(Scanner&);
 Shared_Ptr<Syntax> parse_product(Scanner&);
 Shared_Ptr<Syntax> parse_unary(Scanner&);
@@ -20,6 +21,8 @@ Shared_Ptr<Syntax> parse_atom(Scanner&);
 // Parse a script, return a syntax tree.
 // It's a recursive descent parser.
 /*
+stmt : definition | sum
+definition : id = sum
 sum : product | sum + product | sum - product
 product : unary | product * unary | product / unary
 unary : atom | - unary | + unary
@@ -29,11 +32,27 @@ Shared_Ptr<Syntax>
 parse(const Script& script)
 {
     Scanner scanner(script);
-    auto expr = parse_sum(scanner);
+    auto stmt = parse_stmt(scanner);
     auto tok = scanner.get_token();
     if (tok.kind != Token::k_end)
         throw SyntaxError(tok, "unexpected token at end of script");
-    return expr;
+    return stmt;
+}
+
+// stmt : definition | sum
+// definition : id = sum
+Shared_Ptr<Syntax>
+parse_stmt(Scanner& scanner)
+{
+    auto left = parse_sum(scanner);
+    auto tok = scanner.get_token();
+    if (tok.kind == Token::k_equate) {
+        auto right = parse_sum(scanner);
+        return aux::make_shared<Definition>(left, tok, right);
+    } else {
+        scanner.push_token(tok);
+        return left;
+    }
 }
 
 // sum : product | sum + product | sum - product

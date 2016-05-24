@@ -52,6 +52,7 @@ struct Token
         k_minus,
         k_times,
         k_over,
+        k_equate,
         k_end
     } kind;
     const std::string& scriptname() const { return script->name; }

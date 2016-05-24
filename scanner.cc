@@ -117,6 +117,9 @@ Scanner::get_token()
     case '/':
         tok.kind = Token::k_over;
         goto success;
+    case '=':
+        tok.kind = Token::k_equate;
+        goto success;
     }
 
     // report an error
