@@ -19,9 +19,12 @@ curv::builtin_namespace = {
     {"pi", pi},
     {"tau", two_pi},
     {"inf", INFINITY},
+    {"null", curv::Value()},
+    {"false", curv::Value(false)},
+    {"true", curv::Value(true)},
 };
 
-double
+Value
 curv::eval(Syntax& expr, const Namespace& names)
 {
     // Hmm. Obviously, this could be done using a virtual eval function.
@@ -50,9 +53,17 @@ curv::eval(Syntax& expr, const Namespace& names)
     if (unary != nullptr) {
         switch (unary->optor.kind) {
         case Token::k_minus:
-            return -eval(*unary->argument, names);
+            {
+                Value a = eval(*unary->argument, names);
+                //if (!a.is_num())
+                //    throw Runtime_Error(unary->argument, "not a number");
+                return Value(-a.get_num_or_nan());
+            }
         case Token::k_plus:
-            return +eval(*unary->argument, names);
+            {
+                Value a = eval(*unary->argument, names);
+                return Value(+a.get_num_or_nan());
+            }
         default:
             assert(0);
         }
@@ -62,13 +73,29 @@ curv::eval(Syntax& expr, const Namespace& names)
     if (binary != nullptr) {
         switch (binary->optor.kind) {
         case Token::k_plus:
-            return eval(*binary->left, names) + eval(*binary->right, names);
+            {
+                Value a = eval(*binary->left, names);
+                Value b = eval(*binary->right, names);
+                return Value(a.get_num_or_nan() + b.get_num_or_nan());
+            }
         case Token::k_minus:
-            return eval(*binary->left, names) - eval(*binary->right, names);
+            {
+                Value a = eval(*binary->left, names);
+                Value b = eval(*binary->right, names);
+                return Value(a.get_num_or_nan() - b.get_num_or_nan());
+            }
         case Token::k_times:
-            return eval(*binary->left, names) * eval(*binary->right, names);
+            {
+                Value a = eval(*binary->left, names);
+                Value b = eval(*binary->right, names);
+                return Value(a.get_num_or_nan() * b.get_num_or_nan());
+            }
         case Token::k_over:
-            return eval(*binary->left, names) / eval(*binary->right, names);
+            {
+                Value a = eval(*binary->left, names);
+                Value b = eval(*binary->right, names);
+                return Value(a.get_num_or_nan() / b.get_num_or_nan());
+            }
         default:
             assert(0);
         }

@@ -57,12 +57,13 @@ main(int, char**)
                     throw curv::SyntaxError(def->equate_,
                         "= not preceded by identifier");
                 }
-                double val = curv::eval(*def->right_, names);
+                curv::Value val = curv::eval(*def->right_, names);
                 std::string idstr(id->identifier.begin(), id->identifier.size());
                 names[idstr] = val;
             } else {
-                double val = curv::eval(*syntax, names);
-                std::cout << val << "\n";
+                curv::Value val = curv::eval(*syntax, names);
+                val.print(std::cout);
+                std::cout << "\n";
             }
         } catch (curv::Exception& e) {
             std::cout << e << "\n";

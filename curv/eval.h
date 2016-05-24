@@ -8,15 +8,16 @@
 #include <string>
 #include <map>
 #include <curv/syntax.h>
+#include <curv/value.h>
 
 namespace curv {
 
-using Namespace = std::map<std::string, double>;
+using Namespace = std::map<std::string, Value>;
 
 // the Curv builtin bindings
 extern const Namespace builtin_namespace;
 
-double eval(Syntax&, const Namespace&);
+Value eval(Syntax&, const Namespace&);
 
 } // namespace curv
 #endif // header guard

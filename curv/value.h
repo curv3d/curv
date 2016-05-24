@@ -154,8 +154,18 @@ public:
 
     /// Convert a number value to `double`.
     ///
-    /// Only defined if is_num() is true.
+    /// Only defined if `is_num()` is true.
+    /// Potentially faster than `get_num_or_nan()`,
+    /// so call this version when guarded by `if(v.is_num())`.
     inline double get_num_unsafe() const
+    {
+        return number_;
+    }
+
+    /// Convert a number value to `double`.
+    ///
+    /// If is_num() is false then NaN is returned.
+    inline double get_num_or_nan() const
     {
         return number_;
     }
