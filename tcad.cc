@@ -48,6 +48,8 @@ main(int, char**)
         curv::Script script("<stdin>", line, line + strlen(line));
         try {
             auto syntax = curv::parse(script);
+            if (syntax == nullptr) // blank line
+                continue;
             const curv::Definition* def =
                 dynamic_cast<curv::Definition*>(syntax.get());
             if (def != nullptr) {

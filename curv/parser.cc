@@ -28,12 +28,24 @@ product : unary | product * unary | product / unary
 unary : atom | - unary | + unary
 atom : numeral | ( sum )
 */
+
+/// Parse a tcad command line.
+///
+/// Returns `nullptr` for an empty line.
+/// Returns `Shared_Ptr<Definition>` for `id = expr`.
+/// Otherwise, returns an expression.
 Shared_Ptr<Syntax>
 parse(const Script& script)
 {
     Scanner scanner(script);
-    auto stmt = parse_stmt(scanner);
+
     auto tok = scanner.get_token();
+    if (tok.kind == Token::k_end)
+        return nullptr;
+    scanner.push_token(tok);
+
+    auto stmt = parse_stmt(scanner);
+    tok = scanner.get_token();
     if (tok.kind != Token::k_end)
         throw SyntaxError(tok, "unexpected token at end of script");
     return stmt;
