@@ -12,8 +12,11 @@ namespace aux {
 /// A Range references a contiguous subsequence of a collection
 /// using a pair of iterators.
 ///
-/// It's the simplest possible range implementation,
-/// compatible with range-based for loops.
+/// Compatible with range-based for loops.
+/// TODO: rbegin(), possibly others.
+///
+/// It's the simplest possible range implementation
+/// (boost/iterator_range.hpp is 40,000 lines of code).
 template <class Iter>
 struct Range
 {

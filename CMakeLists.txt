@@ -2,12 +2,16 @@ project(curv)
 cmake_minimum_required(VERSION 3.5)
 include_directories(.)
 
-FILE(GLOB Src "*.cc" "aux/*.c" "aux/*.cc" "curv/*.cc")
-add_executable(tcad ${Src})
-target_link_libraries(tcad PUBLIC readline)
+FILE(GLOB CurvSrc "aux/*.c" "aux/*.cc" "curv/*.cc")
+add_library(curv ${CurvSrc})
 
-add_executable(tests test/tests.cc test/value.cc value.cc)
-target_link_libraries(tests PUBLIC gtest pthread)
+FILE(GLOB Src "*.cc")
+add_executable(tcad ${Src})
+target_link_libraries(tcad PUBLIC curv readline)
+
+FILE(GLOB TestSrc "test/*.cc")
+add_executable(tests ${TestSrc})
+target_link_libraries(tests PUBLIC gtest pthread curv)
 
 #set_property(GLOBAL PROPERTY CXX_STANDARD 14)
-set_property(TARGET tcad tests PROPERTY CXX_STANDARD 14)
+set_property(TARGET curv tcad tests PROPERTY CXX_STANDARD 14)
