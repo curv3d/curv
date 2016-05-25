@@ -11,22 +11,23 @@ using namespace curv;
 void
 SyntaxError::write(std::ostream& out) const
 {
-    out << message_ << ": file " << token_.scriptname()
-        << ", line " << token_.lineno()
-        << ", token " << token_;
+    out << message_ << ": file " << script_.name
+        << ", line " << token_.lineno(script_)
+        << ", token ";
+    token_.write(out, script_);
 }
 
 void
 BadCharacter::write(std::ostream& out) const
 {
     out << message_ << " ";
-    char ch = *token_.begin();
+    char ch = script_.begin()[token_.first];
     if (ch > 0x20 && ch < 0x7F)
         out << "'" << ch << "'";
     else
         out << boost::format("0x%X") % (unsigned)(unsigned char)ch;
-    out << ": file " << token_.scriptname()
-        << ", line " << token_.lineno();
+    out << ": file " << script_.name
+        << ", line " << token_.lineno(script_);
 }
 
 #if 0

@@ -16,10 +16,10 @@ namespace curv {
 /// get_token() gets the next token.
 /// push_token() pushes back a previously got token,
 /// supporting infinite lookahead.
-class Scanner
+struct Scanner
 {
-private:
     const Script& script_;
+private:
     const char* ptr_;
     std::vector<Token> lookahead_;
 public:

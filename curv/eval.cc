@@ -30,38 +30,38 @@ curv::eval(Syntax& expr, const Namespace& names)
     // Hmm. Obviously, this could be done using a virtual eval function.
     // But, this code is temporary scaffolding, so I'll wait.
 
-    auto num = dynamic_cast<NumExpr*>(&expr);
+    auto num = dynamic_cast<Numeral*>(&expr);
     if (num != nullptr) {
-        string str(num->numeral.begin(), num->numeral.size());
+        string str(num->num_.range(num->script_));
         char* endptr;
         double n = strtod(str.c_str(), &endptr);
         assert(endptr == str.c_str() + str.size());
         return n;
     }
 
-    auto ident = dynamic_cast<IdentExpr*>(&expr);
+    auto ident = dynamic_cast<Identifier*>(&expr);
     if (ident != nullptr) {
-        std::string id(ident->identifier.begin(), ident->identifier.size());
+        std::string id(ident->id_.range(ident->script_));
         auto p = names.find(id);
         if (p != names.end())
             return p->second;
         else
-            throw SyntaxError(ident->identifier, "not defined");
+            throw SyntaxError(ident->script_, ident->id_, "not defined");
     }
 
-    auto unary = dynamic_cast<UnaryExpr*>(&expr);
+    auto unary = dynamic_cast<Unary_Expr*>(&expr);
     if (unary != nullptr) {
-        switch (unary->optor.kind) {
+        switch (unary->op_.kind) {
         case Token::k_minus:
             {
-                Value a = eval(*unary->argument, names);
+                Value a = eval(*unary->arg_, names);
                 //if (!a.is_num())
-                //    throw Runtime_Error(unary->argument, "not a number");
+                //    throw Runtime_Error(unary->arg_, "not a number");
                 return Value(-a.get_num_or_nan());
             }
         case Token::k_plus:
             {
-                Value a = eval(*unary->argument, names);
+                Value a = eval(*unary->arg_, names);
                 return Value(+a.get_num_or_nan());
             }
         default:
@@ -69,31 +69,31 @@ curv::eval(Syntax& expr, const Namespace& names)
         }
     }
 
-    auto binary = dynamic_cast<BinaryExpr*>(&expr);
+    auto binary = dynamic_cast<Binary_Expr*>(&expr);
     if (binary != nullptr) {
-        switch (binary->optor.kind) {
+        switch (binary->op_.kind) {
         case Token::k_plus:
             {
-                Value a = eval(*binary->left, names);
-                Value b = eval(*binary->right, names);
+                Value a = eval(*binary->left_, names);
+                Value b = eval(*binary->right_, names);
                 return Value(a.get_num_or_nan() + b.get_num_or_nan());
             }
         case Token::k_minus:
             {
-                Value a = eval(*binary->left, names);
-                Value b = eval(*binary->right, names);
+                Value a = eval(*binary->left_, names);
+                Value b = eval(*binary->right_, names);
                 return Value(a.get_num_or_nan() - b.get_num_or_nan());
             }
         case Token::k_times:
             {
-                Value a = eval(*binary->left, names);
-                Value b = eval(*binary->right, names);
+                Value a = eval(*binary->left_, names);
+                Value b = eval(*binary->right_, names);
                 return Value(a.get_num_or_nan() * b.get_num_or_nan());
             }
         case Token::k_over:
             {
-                Value a = eval(*binary->left, names);
-                Value b = eval(*binary->right, names);
+                Value a = eval(*binary->left_, names);
+                Value b = eval(*binary->right_, names);
                 return Value(a.get_num_or_nan() / b.get_num_or_nan());
             }
         default:
@@ -101,9 +101,9 @@ curv::eval(Syntax& expr, const Namespace& names)
         }
     }
 
-    auto paren = dynamic_cast<ParenExpr*>(&expr);
+    auto paren = dynamic_cast<Paren_Expr*>(&expr);
     if (paren != nullptr) {
-        return eval(*paren->argument, names);
+        return eval(*paren->arg_, names);
     }
 
     assert(0);

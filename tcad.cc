@@ -53,15 +53,14 @@ main(int, char**)
             const curv::Definition* def =
                 dynamic_cast<curv::Definition*>(syntax.get());
             if (def != nullptr) {
-                const curv::IdentExpr* id =
-                    dynamic_cast<curv::IdentExpr*>(def->left_.get());
+                const curv::Identifier* id =
+                    dynamic_cast<curv::Identifier*>(def->left_.get());
                 if (id == nullptr) {
-                    throw curv::SyntaxError(def->equate_,
+                    throw curv::SyntaxError(script, def->equate_,
                         "= not preceded by identifier");
                 }
                 curv::Value val = curv::eval(*def->right_, names);
-                std::string idstr(id->identifier.begin(), id->identifier.size());
-                names[idstr] = val;
+                names[id->id_.range(script)] = val;
             } else {
                 curv::Value val = curv::eval(*syntax, names);
                 val.print(std::cout);

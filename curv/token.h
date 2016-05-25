@@ -7,10 +7,12 @@
 
 #include <ostream>
 #include <curv/script.h>
+#include <aux/range.h>
 
 namespace curv {
 
-/// \brief A token identified by the lexical analyzer.
+/// A lexeme identified by the lexical analyzer,
+/// or the text spanned by a parse tree node.
 ///
 /// A token is a contiguous substring of a script,
 /// represented as the half-open range (first,last).
@@ -40,30 +42,32 @@ namespace curv {
 /// That's done at a higher level. This simplifies the representation of tokens.
 struct Token
 {
-    Token(const curv::Script& s) : script(&s) {}
-    const Script* script;
     uint32_t white_first, first, last;
     enum Kind {
+        k_phrase,     ///! text spanned by a parse tree node: 1 or more tokens
+        k_bad_token,  ///! a malformed token
+        k_bad_utf8,   ///! a malformed UTF-8 sequence
         k_ident,
-        k_num,
+        k_num,        ///! floating point numeral
         k_lparen,
         k_rparen,
         k_plus,
         k_minus,
         k_times,
-        k_over,
-        k_equate,
-        k_end
+        k_over,       ///! `/` operator
+        k_equate,     ///! `=` operator
+        k_end         ///! end of script
     } kind;
-    const std::string& scriptname() const { return script->name; }
-    int lineno() const;
 
-    const char* begin() const { return script->begin() + first; }
-    const char* end() const { return script->begin() + last; }
-    size_t size() const { return last - first; }
+    inline aux::Range<const char*> range(const curv::Script& scr) const
+    {
+        return aux::Range<const char*>(scr.begin() + first, scr.begin() + last);
+    }
+
+    int lineno(const Script&) const;
+
+    void write(std::ostream&, const Script&) const;
 };
-
-std::ostream& operator<<(std::ostream&, const Token&);
 
 } // namespace curv
 #endif // header guard

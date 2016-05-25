@@ -6,6 +6,7 @@
 #define AUX_RANGE_H
 
 #include <cstddef>
+#include <string>
 
 namespace aux {
 
@@ -27,6 +28,9 @@ struct Range
     Iter end() const { return last; }
     bool empty() const { return first == last; }
     std::size_t size() const { return last - first; }
+
+    /// convert Range<const char*> to std::string
+    operator std::string() { return std::string(begin(), size()); }
 };
 
 } // namespace aux
