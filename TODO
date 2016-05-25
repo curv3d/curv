@@ -1,18 +1,23 @@
 add command line history
 
-Interactive top level definitions.
-
-0/0 throws an exception.
-* `virtual Token curv::Exception::source_location()`
-* throw Runtime_Error(Shared_Ptr<Syntax>, "domain error")
-brainstorm:
-* specific: 0/0
-* general: not a number
-* domain error. Eg atan2(0,0) reports EDOM on some systems.
-How is the exception represented? It's a runtime exception.
-How do we specify the source code location?
-* maybe we include a syntax tree node. How is it used to print an error message?
-  * `virtual Token curv::Exception::source_location()`
+Throw runtime exceptions for domain errors, instead of returning null.
+* throw Runtime_Error(Syntax&, "domain error")
+A Syntax object contains a source location (points to the span of characters
+in a particular script from the first to the last token, plus the script).
+Can print filename/lineno, or text editor can highlight the bad expression.
+* Syntax::Syntax(Script&)
+* Script& Syntax::source_file()
+* Token Syntax::first_token()
+* Token Syntax::last_token()
+* int Syntax::lineno()
+A Token does not contain a Script. That's in the Scanner, and in the Syntax.
+New design forces parser to ensure that every Syntax begins and ends in the
+same source file.
+* throw Syntax_Error(script, token, message)
+Better exception names?
+* Error_At_Token(script, tok, msg), Error_At_Syntax(syntax, msg)
+  Both have the same interface for getting filename, lineno, etc.
+  Common subclass curv::Error.
 
 How does this exception work when using LLVM? Can I embed object pointers
 in an LLVM generated executable? They have to survive passing through IR.
@@ -25,14 +30,14 @@ Add builtin functions like sin(x).
 
 Print floating point numbers accurately.
 
-create 'aux' library:
-* aux::Exception
-* aux::Range
-* aux::readlinex
-
 build system?
-* cmake is popular. It generates make files. Make is neither fast nor correct.
-  (Cmake has an experimental option to generate ninja files.)
+* Google Bazel is fast and correct. Still in beta. May not yet have the platform
+  and portability support of cmake. Wait for 1.0?
+* cmake is popular and well supported on multiple platforms.
+  It has comprehensive portability abstractions.
+  It is more correct than expected, given that it generates makefiles.
+  Rebuilds on recipe change, tracks header dependencies. Doesn't delete stale
+  products. (Has an experimental option to generate ninja files.)
 * ninja is fast. It rebuilds if recipe changes. Header dependencies depend
   on the gcc feature to output dependencies (suboptimal, I'd rather it monitor
   which files are opened by build tools).

@@ -9,10 +9,11 @@
 
 namespace aux {
 
-/// \brief A Range is a pair of iterators.
+/// A Range references a contiguous subsequence of a collection
+/// using a pair of iterators.
 ///
-/// Compatible with range-based for loop.
-/// TODO: fully implement the Container concept?
+/// It's the simplest possible range implementation,
+/// compatible with range-based for loops.
 template <class Iter>
 struct Range
 {
@@ -21,6 +22,7 @@ struct Range
     Iter last;
     Iter begin() const { return first; }
     Iter end() const { return last; }
+    bool empty() const { return first == last; }
     std::size_t size() const { return last - first; }
 };
 

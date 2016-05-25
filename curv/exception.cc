@@ -29,14 +29,10 @@ BadCharacter::write(std::ostream& out) const
         << ", line " << token_.lineno();
 }
 
+#if 0
 void
 Exception::write(std::ostream& out) const
 {
     out << message_;
 }
-
-const char*
-Exception::what() const noexcept
-{
-    return message_;
-}
+#endif
