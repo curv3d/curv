@@ -14,6 +14,8 @@ enum RLXResult { rlx_okay, rlx_eof, rlx_interrupt };
 /// A wrapper around GNU readline() which flushes its state and input
 /// and returns immediately if a keyboard interrupt is sent.
 ///
+/// If the line has any text in it, save it on the history.
+///
 /// This matches the behaviour of bash and many other programs that use
 /// readline. The necessary code is arcane, hence the wrapper.
 char *readlinex(const char* prompt, enum RLXResult* result);

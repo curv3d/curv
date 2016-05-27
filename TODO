@@ -1,5 +1,3 @@
-add command line history
-
 Throw runtime exceptions for domain errors, instead of returning null.
 * throw Runtime_Error(Syntax&, "domain error")
 A Syntax object contains a source location (points to the span of characters
@@ -31,8 +29,16 @@ Add builtin functions like sin(x).
 Print floating point numbers accurately.
 
 build system?
-* Google Bazel is fast and correct. Still in beta. May not yet have the platform
-  and portability support of cmake. Wait for 1.0?
+* Fast. Correct: auto track dependencies, rebuild on recipe change,
+  delete stale objects. High level: standard abstractions that are portable
+  across linux/osX/win. Cross project dependency discovery and configuration
+  (see pkg-config). Packageable: libcurv can be packaged for Ubuntu; build tools
+  are already in ubuntu repo.
+* Should I use pkg-config for build-time dependency discovery and configuration?
+  Do I install a *.pc file that records compiler and linker flags required to
+  use the curv library? Can I build an Ubuntu package for libcurv?
+* Google Bazel is fast, correct and high level. Still in beta. Missing some
+  platform support, cross project dependencies. Wait for 1.0 in 2017.
 * cmake is popular and well supported on multiple platforms.
   It has comprehensive portability abstractions.
   It is more correct than expected, given that it generates makefiles.

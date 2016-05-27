@@ -45,5 +45,10 @@ readlinex(const char* prompt, enum RLXResult* result)
         *result = rlx_interrupt;
     }
 
+    // If the line has any text in it, save it on the history.
+    // Same as 'bash' semantics.
+    if (line && *line)
+        add_history(line);
+
     return line;
 }
