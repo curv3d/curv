@@ -32,7 +32,7 @@ curv::eval(Syntax& expr, const Namespace& names)
 
     auto num = dynamic_cast<Numeral*>(&expr);
     if (num != nullptr) {
-        string str(num->num_.range(num->script_));
+        string str(num->location().range());
         char* endptr;
         double n = strtod(str.c_str(), &endptr);
         assert(endptr == str.c_str() + str.size());
@@ -41,12 +41,12 @@ curv::eval(Syntax& expr, const Namespace& names)
 
     auto ident = dynamic_cast<Identifier*>(&expr);
     if (ident != nullptr) {
-        std::string id(ident->id_.range(ident->script_));
+        std::string id(ident->location().range());
         auto p = names.find(id);
         if (p != names.end())
             return p->second;
         else
-            throw SyntaxError(ident->script_, ident->id_, "not defined");
+            throw Syntax_Error(*ident, "not defined");
     }
 
     auto unary = dynamic_cast<Unary_Expr*>(&expr);

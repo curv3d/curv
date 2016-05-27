@@ -69,4 +69,15 @@ Later:
   Compatibility with OpenSCAD identifiers, GUI interfaces that display
   parameter names as GUI labels, JSON object keys.
 * UTF-8 support. Rewrite scanner in re2c.
+* Parser: consider Boost::Spirit (recursive descent) or Lemon (similar to
+  Bison, thread safe, LALR(1)), or Bison with %pure-parser (thread safe).
+  Is Lemon better than Bison? Lemon:
+  * the tokenizer calls the parser (instead of vice versa)
+  * terminals/non-terminals don't need to be declared. Terminal name has
+    initial uppercase letter.
+  * productions are less error prone. Instead of $1, $2 (requires counting),
+    expr(A) ::= expr(B) PLUS expr(C). { A = B + C; }
+  * no mid-actions, one action per rule.
+  * no repetitions and optionals.
+  * small footprint: small code with no dependencies
 * localization

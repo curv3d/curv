@@ -6,17 +6,6 @@
 
 using namespace curv;
 
-int
-curv::Token::lineno(const Script& script) const
-{
-    int lineno = 1;
-    for (uint32_t i = 0; i < first; ++i) {
-        if (script.first[i] == '\n')
-            ++lineno;
-    }
-    return lineno;
-}
-
 void
 curv::Token::write(std::ostream& out, const Script& script)
 const

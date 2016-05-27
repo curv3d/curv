@@ -47,7 +47,7 @@ parse(const Script& script)
     auto stmt = parse_stmt(scanner);
     tok = scanner.get_token();
     if (tok.kind != Token::k_end)
-        throw SyntaxError(script, tok, "unexpected token at end of script");
+        throw Token_Error(script, tok, "unexpected token at end of script");
     return stmt;
 }
 
@@ -60,7 +60,7 @@ parse_stmt(Scanner& scanner)
     auto tok = scanner.get_token();
     if (tok.kind == Token::k_equate) {
         auto right = parse_sum(scanner);
-        return aux::make_shared<Definition>(scanner.script_, left, tok, right);
+        return aux::make_shared<Definition>(left, tok, right);
     } else {
         scanner.push_token(tok);
         return left;
@@ -78,7 +78,7 @@ parse_sum(Scanner& scanner)
         case Token::k_plus:
         case Token::k_minus:
             left = aux::make_shared<Binary_Expr>(
-                scanner.script_, tok, std::move(left), parse_product(scanner));
+                std::move(left), tok, parse_product(scanner));
             continue;
         default:
             scanner.push_token(tok);
@@ -98,7 +98,7 @@ parse_product(Scanner& scanner)
         case Token::k_times:
         case Token::k_over:
             left = aux::make_shared<Binary_Expr>(
-                scanner.script_, tok, std::move(left), parse_unary(scanner));
+                std::move(left), tok, parse_unary(scanner));
             continue;
         default:
             scanner.push_token(tok);
@@ -115,8 +115,7 @@ parse_unary(Scanner& scanner)
     switch (tok.kind) {
     case Token::k_plus:
     case Token::k_minus:
-        return aux::make_shared<Unary_Expr>(
-            scanner.script_, tok, parse_unary(scanner));
+        return aux::make_shared<Unary_Expr>(tok, parse_unary(scanner));
     default:
         scanner.push_token(tok);
         return parse_atom(scanner);
@@ -138,12 +137,11 @@ parse_atom(Scanner& scanner)
         auto expr = parse_sum(scanner);
         auto tok2 = scanner.get_token();
         if (tok2.kind == Token::k_rparen)
-            return aux::make_shared<Paren_Expr>(
-                scanner.script_, tok, std::move(expr), tok2);
-        throw SyntaxError(scanner.script_, tok2,
+            return aux::make_shared<Paren_Expr>(tok, std::move(expr), tok2);
+        throw Token_Error(scanner.script_, tok2,
             "unexpected token when expecting ')'");
     }
-    throw SyntaxError(scanner.script_, tok,
+    throw Token_Error(scanner.script_, tok,
         "unexpected token when expecting atom");
 }
 

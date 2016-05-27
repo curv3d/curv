@@ -64,8 +64,6 @@ struct Token
         return aux::Range<const char*>(scr.begin() + first, scr.begin() + last);
     }
 
-    int lineno(const Script&) const;
-
     void write(std::ostream&, const Script&) const;
 };
 

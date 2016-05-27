@@ -73,7 +73,7 @@ Scanner::get_token()
                     ++p;
                 tok.last = p - first;
                 ptr_ = p;
-                throw SyntaxError(script_, tok, "bad numeral");
+                throw Token_Error(script_, tok, "bad numeral");
             }
             while (p < last && isdigit(*p))
                 ++p;
@@ -83,7 +83,7 @@ Scanner::get_token()
                 ++p;
             tok.last = p - first;
             ptr_ = p;
-            throw SyntaxError(script_, tok, "bad numeral");
+            throw Token_Error(script_, tok, "bad numeral");
         }
         tok.kind = Token::k_num;
         goto success;
@@ -126,7 +126,7 @@ Scanner::get_token()
     tok.last = p - first;
     tok.kind = Token::k_bad_token;
     ptr_ = p;
-    throw BadCharacter(script_, tok);
+    throw Char_Error(script_, tok);
 
 success:
     tok.last = p - first;

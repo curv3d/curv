@@ -56,11 +56,11 @@ main(int, char**)
                 const curv::Identifier* id =
                     dynamic_cast<curv::Identifier*>(def->left_.get());
                 if (id == nullptr) {
-                    throw curv::SyntaxError(script, def->equate_,
+                    throw curv::Token_Error(script, def->equate_,
                         "= not preceded by identifier");
                 }
                 curv::Value val = curv::eval(*def->right_, names);
-                names[id->id_.range(script)] = val;
+                names[id->location().range()] = val;
             } else {
                 curv::Value val = curv::eval(*syntax, names);
                 val.print(std::cout);

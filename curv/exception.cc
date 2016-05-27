@@ -9,31 +9,23 @@
 using namespace curv;
 
 void
-SyntaxError::write(std::ostream& out) const
-{
-    out << message_ << ": file " << script_.name
-        << ", line " << token_.lineno(script_)
-        << ", token ";
-    token_.write(out, script_);
-}
-
-void
-BadCharacter::write(std::ostream& out) const
+Char_Error::write(std::ostream& out) const
 {
     out << message_ << " ";
-    char ch = script_.begin()[token_.first];
+    char ch = *loc_.range().begin();
     if (ch > 0x20 && ch < 0x7F)
         out << "'" << ch << "'";
     else
         out << boost::format("0x%X") % (unsigned)(unsigned char)ch;
-    out << ": file " << script_.name
-        << ", line " << token_.lineno(script_);
+    out << ": file " << loc_.scriptname()
+        << ", line " << loc_.lineno();
 }
 
-#if 0
 void
 Exception::write(std::ostream& out) const
 {
-    out << message_;
+    out << message_ << ": file " << loc_.scriptname()
+        << ", line " << loc_.lineno()
+        << ", token ";
+    loc_.token_.write(out, loc_.script_);
 }
-#endif

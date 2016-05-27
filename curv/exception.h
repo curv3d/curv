@@ -7,63 +7,50 @@
 
 #include <aux/exception.h>
 #include <ostream>
-#include <curv/token.h>
+#include <curv/location.h>
+#include <curv/syntax.h>
 
 namespace curv {
 
 /// Virtual base class for Curv compile time and run time errors.
 ///
-/// Has a precise source code location (where the error occurred),
-/// represented as a range of characters within a specific script.
-/// Using this interface, a CLI tool can report an error by printing
-/// a filename and line number, and an IDE can highlight the text range
-/// containing the error.
+/// Has a precise source code location (where the error occurred).
 struct Exception : public aux::Exception
 {
-    const Script& script_;
+    Location loc_;
 
-    Exception(const Script& s, const char* msg)
-    : aux::Exception(msg), script_(s) {}
+    Exception(Location loc, const char* msg)
+    : aux::Exception(msg), loc_(loc) {}
 
-#if 0
-    virtual void write(std::ostream&) const;
+    Location location() { return loc_; }
 
-    /// In which script did the error occur? (implemented by subclass)
-    virtual Script& script() const = 0;
-
-    /// In which character range did the error occur? (implemented by subclass)
-    virtual Token location() const = 0;
-
-    /// Name of script where error occurred.
-    const std::string& scriptname() const { return script()->name; }
-
-    /// Line number within script where error occurred.
-    int lineno() const { return location()->lineno(script()); }
-
-    /// Range of characters within script where error occurred.
-    Range<const char*> range() const { return location()->range(script()); }
-#endif
+    virtual void write(std::ostream&) const override;
 };
 
-/// error containing a token (full source code location) + a message string
-struct SyntaxError : public Exception
+/// Curv error, where location is specified by a token.
+struct Token_Error : public Exception
 {
-    SyntaxError(const Script& s, Token tok, const char* msg)
-    : Exception(s, msg), token_(std::move(tok))
+    Token_Error(const Script& s, Token tok, const char* msg)
+    : Exception(Location(s, std::move(tok)), msg)
     {}
-    Token token_;
-    virtual void write(std::ostream&) const;
 };
 
 /// Lexical analysis error: an illegal character in the input.
 ///
-/// Subclass of SyntaxError where the token spans just the illegal character.
-struct BadCharacter : public SyntaxError
+/// Subclass of Token_Error where the token spans just the illegal character.
+struct Char_Error : public Token_Error
 {
-    BadCharacter(const Script& s, Token tok)
-    : SyntaxError(s, std::move(tok), "illegal character")
+    Char_Error(const Script& s, Token tok)
+    : Token_Error(s, std::move(tok), "illegal character")
     {}
     virtual void write(std::ostream&) const;
+};
+
+struct Syntax_Error : public Exception
+{
+    Syntax_Error(const Syntax& syn, const char* msg)
+    : Exception(syn.location(), msg)
+    {}
 };
 
 } // namespace curv
