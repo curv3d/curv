@@ -188,7 +188,7 @@ public:
         // and all non-numeric values are encoded as positive NaNs.
         // The 4 special immediate values, void, null, false and true,
         // are encoded like pointer values in the range 0...3.
-        return signed_bits_ > (k_nanbits|3);
+        return signed_bits_ > (int64_t)(k_nanbits|3);
     }
 
     /// Convert a reference value to `Ref_Value&`.
