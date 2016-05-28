@@ -39,36 +39,43 @@ template<typename T, class... Args> Shared_Ptr<T> make_shared(Args&&... args)
 /// Suppose `Foo` is a subclass of `Shared_Base`.
 /// 1. To pass an instance of `Foo` to a function `f`, pass it by reference
 ///    (`Foo&`), not by value (it's non-copyable), and not by `Shared_Ptr<Foo>`
-///    (too expensive: that would increment/decrement the reference count).
-/// 2. If `f` needs to keep a reference alive after the function has returned,
-///    then it can create a Shared_Ptr to the instance. (That's not possible
-///    with `std::shared_ptr`.) The cost of constructing a Shared_Ptr is only
-///    incurred when required, and the interface to `f` doesn't need to change
-///    to accept a `Shared_Ptr<Foo>` argument to make this possible.
-/// 3. As a corrolary to #2, it is DANGEROUS to construct a static or auto
-///    instance of `Foo`, because the technique of #2 could result in an attempt
+///    in most cases (too expensive: that would increment/decrement the
+///    reference count).
+/// 2. As a special case, for constructors and factory functions, where the
+///    normal usage is for the caller to pass ownership of a Shared_Ptr to
+///    the constructor, then declare the argument as `Shared_Ptr<Foo>`.
+/// 3. In case #1, if `f` needs to keep a reference alive after the function
+///    has returned, then it can create a Shared_Ptr to the instance.
+///    (That's not possible with `std::shared_ptr`.) The cost of constructing
+///    a Shared_Ptr is only incurred when required, and the interface to `f`
+///    doesn't need to expose this implementation detail, by being changed
+///    to accept a `Shared_Ptr<Foo>` argument. This is particular relevant
+///    when a member function needs to construct Shared_Ptr<Foo>(this),
+///    something impossible with std::shared_ptr.
+/// 4. As a corrolary to #3, it is DANGEROUS to construct a static or auto
+///    instance of `Foo`, because the technique of #3 could result in an attempt
 ///    to delete a static or auto variable, leading to memory corruption.
 ///    Therefore, all instances of `Foo` should be constructed using
 ///    `aux::make_shared`.
-/// 4. I wish I could enforce the requirement to not construct auto or static
+/// 5. I wish I could enforce the requirement to not construct auto or static
 ///    instances. The class is non-copyable, but that's not enough.
 struct Shared_Base
 {
     Shared_Base() : use_count(0) {}
     virtual ~Shared_Base() {}
-    std::uint32_t use_count;
+    mutable std::uint32_t use_count;
 private:
     // Shared_Base is non-copyable.
     Shared_Base(const Shared_Base&) = delete;
     Shared_Base& operator=(const Shared_Base&) = delete;
 };
 
-inline void intrusive_ptr_add_ref(Shared_Base* p)
+inline void intrusive_ptr_add_ref(const Shared_Base* p)
 {
     ++p->use_count;
 }
 
-inline void intrusive_ptr_release(Shared_Base* p)
+inline void intrusive_ptr_release(const Shared_Base* p)
 {
     if (--p->use_count == 0)
         delete p;

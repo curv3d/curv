@@ -27,5 +27,5 @@ Exception::write(std::ostream& out) const
     out << message_ << ": file " << loc_.scriptname()
         << ", line " << loc_.lineno()
         << ", token ";
-    loc_.token_.write(out, loc_.script_);
+    loc_.token().write(out, loc_.script());
 }

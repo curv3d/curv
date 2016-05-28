@@ -6,25 +6,32 @@
 #define CURV_SCRIPT_H
 
 #include <aux/range.h>
+#include <aux/shared.h>
 #include <string>
 
 namespace curv {
 
-/// \brief Abstract base class: the name and contents of a script file.
+/// Abstract base class: the name and contents of a script file.
 ///
 /// The name is just an uninterpreted utf8 string for now, will later be
 /// a filename or uri.
 ///
 /// The contents are a const utf-8 character array.
 /// Subclasses provide storage management for the contents:
-/// eg, a std::string, or a memory mapped file.
-struct Script : public aux::Range<const char*>
+/// eg, a std::string, a memory mapped file, or a GNU readline() buffer.
+///
+/// To use this class, you must define a subclass, and heap-allocate
+/// instances using aux::make_shared.
+struct Script : public aux::Shared_Base, public aux::Range<const char*>
 {
+    std::string name;
+protected:
     Script(const std::string& nm, const char*f, const char*l)
     :
-        name(nm), Range(f,l)
+        Range(f,l), name(nm)
     {}
-    std::string name;
+public:
+    virtual ~Script() {}
 };
 
 } // namespace curv

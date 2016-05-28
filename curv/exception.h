@@ -20,9 +20,9 @@ struct Exception : public aux::Exception
     Location loc_;
 
     Exception(Location loc, const char* msg)
-    : aux::Exception(msg), loc_(loc) {}
+    : aux::Exception(msg), loc_(std::move(loc)) {}
 
-    Location location() { return loc_; }
+    const Location& location() { return loc_; }
 
     virtual void write(std::ostream&) const override;
 };

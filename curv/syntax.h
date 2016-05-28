@@ -75,7 +75,7 @@ struct Binary_Expr : public Syntax
     aux::Shared_Ptr<Syntax> right_;
     virtual Location location() const
     {
-        return left_->location().ending_at(right_->location().token_);
+        return left_->location().ending_at(right_->location().token());
     }
 };
 
@@ -107,7 +107,7 @@ struct Definition : public Syntax
     aux::Shared_Ptr<Syntax> right_;
     virtual Location location() const
     {
-        return left_->location().ending_at(right_->location().token_);
+        return left_->location().ending_at(right_->location().token());
     }
 };
 

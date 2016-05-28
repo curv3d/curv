@@ -6,8 +6,8 @@
 #define CURV_TOKEN_H
 
 #include <ostream>
-#include <curv/script.h>
 #include <aux/range.h>
+#include <curv/script.h>
 
 namespace curv {
 
@@ -20,7 +20,7 @@ namespace curv {
 /// to save space.
 ///
 /// Each token remembers the preceding whitespace and comments
-/// as the range (white_first, first). This is needed for processing
+/// as the range (first_white, first). This is needed for processing
 /// thingiverse customizer attributes, which are hidden in comments.
 /// The trailing whitespace at the end of the script is attached to the zero
 /// length k_end token identified at the end of script.
@@ -42,9 +42,9 @@ namespace curv {
 /// That's done at a higher level. This simplifies the representation of tokens.
 struct Token
 {
-    uint32_t white_first, first, last;
+    uint32_t first_white, first, last;
     enum Kind {
-        k_phrase,     ///! text spanned by a parse tree node: 1 or more tokens
+        k_phrase,     ///! text spanned by a parse tree node: 2 or more tokens
         k_bad_token,  ///! a malformed token
         k_bad_utf8,   ///! a malformed UTF-8 sequence
         k_ident,
@@ -58,11 +58,6 @@ struct Token
         k_equate,     ///! `=` operator
         k_end         ///! end of script
     } kind;
-
-    inline aux::Range<const char*> range(const curv::Script& scr) const
-    {
-        return aux::Range<const char*>(scr.begin() + first, scr.begin() + last);
-    }
 
     void write(std::ostream&, const Script&) const;
 };

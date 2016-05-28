@@ -39,7 +39,7 @@ Scanner::get_token()
     const char* last = script_.last;
 
     // collect whitespace and comments
-    tok.white_first = p - first;
+    tok.first_white = p - first;
     while (p < last && isspace(*p))
         ++p;
     tok.first = p - first;

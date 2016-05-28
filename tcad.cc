@@ -20,6 +20,22 @@ void interrupt_handler(int)
     was_interrupted = true;
 }
 
+struct CString_Script : public curv::Script
+{
+    char* buffer_;
+
+    CString_Script(const char* name, char* buffer)
+    :
+        curv::Script(name, buffer, buffer + strlen(buffer)),
+        buffer_(buffer)
+    {}
+
+    ~CString_Script()
+    {
+        free(buffer_);
+    }
+};
+
 int
 main(int, char**)
 {
@@ -45,9 +61,9 @@ main(int, char**)
             }
             return 0;
         }
-        curv::Script script("<stdin>", line, line + strlen(line));
+        auto script = aux::make_shared<CString_Script>("<stdin>", line);
         try {
-            auto syntax = curv::parse(script);
+            auto syntax = curv::parse(*script);
             if (syntax == nullptr) // blank line
                 continue;
             const curv::Definition* def =
@@ -56,7 +72,7 @@ main(int, char**)
                 const curv::Identifier* id =
                     dynamic_cast<curv::Identifier*>(def->left_.get());
                 if (id == nullptr) {
-                    throw curv::Token_Error(script, def->equate_,
+                    throw curv::Token_Error(*script, def->equate_,
                         "= not preceded by identifier");
                 }
                 curv::Value val = curv::eval(*def->right_, names);
@@ -69,6 +85,5 @@ main(int, char**)
         } catch (curv::Exception& e) {
             std::cout << e << "\n";
         }
-        free(line);
     }
 }

@@ -55,14 +55,18 @@ curv::eval(Syntax& expr, const Namespace& names)
         case Token::k_minus:
             {
                 Value a = eval(*unary->arg_, names);
-                //if (!a.is_num())
-                //    throw Runtime_Error(unary->arg_, "not a number");
-                return Value(-a.get_num_or_nan());
+                Value r = Value(-a.get_num_or_nan());
+                if (!r.is_num())
+                    throw Syntax_Error(*unary, "domain error");
+                return r;
             }
         case Token::k_plus:
             {
                 Value a = eval(*unary->arg_, names);
-                return Value(+a.get_num_or_nan());
+                Value r = Value(+a.get_num_or_nan());
+                if (!r.is_num())
+                    throw Syntax_Error(*unary, "domain error");
+                return r;
             }
         default:
             assert(0);
@@ -76,25 +80,37 @@ curv::eval(Syntax& expr, const Namespace& names)
             {
                 Value a = eval(*binary->left_, names);
                 Value b = eval(*binary->right_, names);
-                return Value(a.get_num_or_nan() + b.get_num_or_nan());
+                Value r = Value(a.get_num_or_nan() + b.get_num_or_nan());
+                if (!r.is_num())
+                    throw Syntax_Error(*binary, "domain error");
+                return r;
             }
         case Token::k_minus:
             {
                 Value a = eval(*binary->left_, names);
                 Value b = eval(*binary->right_, names);
-                return Value(a.get_num_or_nan() - b.get_num_or_nan());
+                Value r = Value(a.get_num_or_nan() - b.get_num_or_nan());
+                if (!r.is_num())
+                    throw Syntax_Error(*binary, "domain error");
+                return r;
             }
         case Token::k_times:
             {
                 Value a = eval(*binary->left_, names);
                 Value b = eval(*binary->right_, names);
-                return Value(a.get_num_or_nan() * b.get_num_or_nan());
+                Value r = Value(a.get_num_or_nan() * b.get_num_or_nan());
+                if (!r.is_num())
+                    throw Syntax_Error(*binary, "domain error");
+                return r;
             }
         case Token::k_over:
             {
                 Value a = eval(*binary->left_, names);
                 Value b = eval(*binary->right_, names);
-                return Value(a.get_num_or_nan() / b.get_num_or_nan());
+                Value r = Value(a.get_num_or_nan() / b.get_num_or_nan());
+                if (!r.is_num())
+                    throw Syntax_Error(*binary, "domain error");
+                return r;
             }
         default:
             assert(0);
