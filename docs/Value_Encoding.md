@@ -1,8 +1,8 @@
-= Value Encoding
+# Value Encoding
 The C++ type curv::Value represents any Curv value: null, boolean, number,
 string, list, object and function.
 
-== NaN Boxing
+## NaN Boxing
 Each Value is encoded in 64 bits, using NaN Boxing. Floating point values
 are encoded as 64 bit doubles, non-numeric values are encoded as NaNs.
 * JavaScriptCore and LuaJIT use NaN Boxing.
@@ -43,7 +43,7 @@ These complex types each have multiple representations.
 There are also some non-value types that share the NaN Box representation:
 Nil, RFunction, Macro.
 
-== Reference Counting
+## Reference Counting
 We use reference counting, not a copying garbage collector.
 The goal is a simple implementation, and a simple interface with C++ code.
 (But, we use complex techniques to avoid cyclic references. So far, I think
@@ -52,7 +52,7 @@ the net complexity is still less than copying garbage collection.)
 A value object has a 32 bit reference count. The evaluator is single threaded,
 the refcount is not atomically updated, for speed.
 
-== String
+## String
 The fastest representation is variable sized: a length followed by characters.
 That requires some infrastructure to make practical.
 
@@ -63,7 +63,7 @@ a reference to the original string.
 
 Strings are UTF-8.
 
-== List
+## List
 The obvious implementation is an array of curv::Value.
 Similar comments as for string.
 
@@ -74,7 +74,7 @@ May want an efficient range representation.
 
 May want lazy lists.
 
-== Object
+## Object
 The obvious representation is just a map from names to values,
 plus a list of indexed values.
 That works for some use cases, like reading a JSON file,
@@ -122,7 +122,7 @@ A simple implementation:
 An optimization: the first time a non-recursive thunk is evaluated, cache
 the result. Still need to keep thunk around.
 
-=== List generators
+### List generators
 List elements, generators, assertions and echoes. These are all evaluated
 at the time that the object literal/script is evaluated.
 
@@ -176,7 +176,7 @@ What action will we take to avoid creating circular references?
      but now we need a bit in the NaN box as a flag.
 
 
-== Function
+## Function
 Here's a simple native function representation:
 * array of parameter names
 * C++ function pointer: `Value (*f)(Value* args)`.
@@ -198,6 +198,6 @@ An RFunction is invoked with:
 
 A closure is a (environment,rfunction) pair--this is a function value.
 
-== Macro
+## Macro
 A builtin can be bound to a macro, which isn't a value, which is invoked
 like a function but the call is resolved at compile time.

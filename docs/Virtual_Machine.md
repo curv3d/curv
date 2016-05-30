@@ -1,11 +1,11 @@
-= Virtual Machine
+# Virtual Machine
 Curv provides a syntax-independent backend for an OpenSCAD-like language.
 It's a bit like LLVM. You write a parser which converts a source file
 into a high level AST describing the semantics, not the syntax.
 Curv provides a C++ API for constructing and evaluating the AST.
 The evaluator contains a JIT compiler, which compiles the AST to vmcode.
 
-== VMCode
+## VMCode
 VMCode is the virtual machine code.
 The VM also has registers and an execution model.
 

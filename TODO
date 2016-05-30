@@ -1,32 +1,59 @@
-Throw runtime exceptions for domain errors, instead of returning null.
-* throw Runtime_Error(Syntax&, "domain error")
-A Syntax object contains a source location (points to the span of characters
-in a particular script from the first to the last token, plus the script).
-Can print filename/lineno, or text editor can highlight the bad expression.
-* Syntax::Syntax(Script&)
-* Script& Syntax::source_file()
-* Token Syntax::first_token()
-* Token Syntax::last_token()
-* int Syntax::lineno()
-A Token does not contain a Script. That's in the Scanner, and in the Syntax.
-New design forces parser to ensure that every Syntax begins and ends in the
-same source file.
-* throw Syntax_Error(script, token, message)
-Better exception names?
-* Error_At_Token(script, tok, msg), Error_At_Syntax(syntax, msg)
-  Both have the same interface for getting filename, lineno, etc.
-  Common subclass curv::Error.
-
-How does this exception work when using LLVM? Can I embed object pointers
-in an LLVM generated executable? They have to survive passing through IR.
-I can embed them as uint64_t.
-
-Introduce a semantic analyzer that converts a syntax tree to a meaning tree.
+Introduce a semantic analyzer that converts a syntax tree to a Meaning tree.
 Evaluate the meaning tree (not the syntax tree).
+* look up identifiers
+* type inference
+* etc.
+
+refactor: rename Syntax -> Phrase. Phrase_Error, Token::k_phrase, etc.
+    stop using Expr in Phrase classes.
+
+refactor: better error messages. separate message (what()) from location.
+  ERROR: the 'what()' error message
+  file foo.scad, line 1[10-15], token foobar
+    x = foobar();
+        ^-----
+The 'location' part of the message is printed by exc.location().write(out).
+
+refactor: reimplement scanner using re2c. (Later add utf8 support.)
 
 Add builtin functions like sin(x).
 
 Print floating point numbers accurately.
+
+Full set of operators.
+
+String and list values.
+
+let() expressions.
+named functions (top level only for now).
+
+LLVM based evaluator. Compile Meaning to LLVM IR.
+* How do runtime exceptions access Syntax objects when using LLVM?
+  Can I embed object pointers in an LLVM generated executable?
+  They have to survive passing through IR. I can embed them as uint64_t.
+
+unit tests
+language reference manual
+
+Later:
+* Digit separator ' in numerals (like C++14).
+* Support ' in identifiers (like Haskell).
+* Support `foo` quoted identifiers.
+  Compatibility with OpenSCAD identifiers, GUI interfaces that display
+  parameter names as GUI labels, JSON object keys.
+* UTF-8 support. Rewrite scanner in re2c.
+* Parser: consider Boost::Spirit (recursive descent) or Lemon (similar to
+  Bison, thread safe, LALR(1)), or Bison with %pure-parser (thread safe).
+  Is Lemon better than Bison? Lemon:
+  * the tokenizer calls the parser (instead of vice versa)
+  * terminals/non-terminals don't need to be declared. Terminal name has
+    initial uppercase letter.
+  * productions are less error prone. Instead of $1, $2 (requires counting),
+    expr(A) ::= expr(B) PLUS expr(C). { A = B + C; }
+  * no mid-actions, one action per rule.
+  * no repetitions and optionals.
+  * small footprint: small code with no dependencies
+* localization
 
 build system?
 * Fast. Correct: auto track dependencies, rebuild on recipe change,
@@ -64,26 +91,3 @@ build system?
     Tup is reported to not work on FreeBSD (fuse works differently).
 * redo. Simple, powerful, elegant. Also slow (as fast or slower than make).
 * So, probably cmake+ninja.
-
-unit tests
-language reference manual
-
-Later:
-* Digit separator ' in numerals (like C++14).
-* Support ' in identifiers (like Haskell).
-* Support `foo` quoted identifiers.
-  Compatibility with OpenSCAD identifiers, GUI interfaces that display
-  parameter names as GUI labels, JSON object keys.
-* UTF-8 support. Rewrite scanner in re2c.
-* Parser: consider Boost::Spirit (recursive descent) or Lemon (similar to
-  Bison, thread safe, LALR(1)), or Bison with %pure-parser (thread safe).
-  Is Lemon better than Bison? Lemon:
-  * the tokenizer calls the parser (instead of vice versa)
-  * terminals/non-terminals don't need to be declared. Terminal name has
-    initial uppercase letter.
-  * productions are less error prone. Instead of $1, $2 (requires counting),
-    expr(A) ::= expr(B) PLUS expr(C). { A = B + C; }
-  * no mid-actions, one action per rule.
-  * no repetitions and optionals.
-  * small footprint: small code with no dependencies
-* localization

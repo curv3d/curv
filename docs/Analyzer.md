@@ -1,4 +1,4 @@
-== the Semantic Analyzer
+# the Semantic Analyzer
 It converts a parse tree to a semantics tree.
 
 If I am targetting LLVM (currently, yes), then the semantics tree is
