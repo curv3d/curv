@@ -8,7 +8,7 @@
 #include <aux/exception.h>
 #include <ostream>
 #include <curv/location.h>
-#include <curv/syntax.h>
+#include <curv/phrase.h>
 
 namespace curv {
 
@@ -46,9 +46,9 @@ struct Char_Error : public Token_Error
     virtual void write(std::ostream&) const;
 };
 
-struct Syntax_Error : public Exception
+struct Phrase_Error : public Exception
 {
-    Syntax_Error(const Syntax& syn, const char* msg)
+    Phrase_Error(const Phrase& syn, const char* msg)
     : Exception(syn.location(), msg)
     {}
 };

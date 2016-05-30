@@ -11,7 +11,7 @@ extern "C" {
 #include <curv/parse.h>
 #include <curv/eval.h>
 #include <curv/exception.h>
-#include <curv/syntax.h>
+#include <curv/phrase.h>
 
 bool was_interrupted = false;
 
@@ -63,11 +63,11 @@ main(int, char**)
         }
         auto script = aux::make_shared<CString_Script>("<stdin>", line);
         try {
-            auto syntax = curv::parse(*script);
-            if (syntax == nullptr) // blank line
+            auto phrase = curv::parse(*script);
+            if (phrase == nullptr) // blank line
                 continue;
             const curv::Definition* def =
-                dynamic_cast<curv::Definition*>(syntax.get());
+                dynamic_cast<curv::Definition*>(phrase.get());
             if (def != nullptr) {
                 const curv::Identifier* id =
                     dynamic_cast<curv::Identifier*>(def->left_.get());
@@ -78,7 +78,7 @@ main(int, char**)
                 curv::Value val = curv::eval(*def->right_, names);
                 names[id->location().range()] = val;
             } else {
-                curv::Value val = curv::eval(*syntax, names);
+                curv::Value val = curv::eval(*phrase, names);
                 val.print(std::cout);
                 std::cout << "\n";
             }

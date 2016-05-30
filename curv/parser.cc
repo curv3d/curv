@@ -12,11 +12,11 @@ using namespace aux;
 
 namespace curv {
 
-Shared_Ptr<Syntax> parse_stmt(Scanner& scanner);
-Shared_Ptr<Syntax> parse_sum(Scanner&);
-Shared_Ptr<Syntax> parse_product(Scanner&);
-Shared_Ptr<Syntax> parse_unary(Scanner&);
-Shared_Ptr<Syntax> parse_atom(Scanner&);
+Shared_Ptr<Phrase> parse_stmt(Scanner& scanner);
+Shared_Ptr<Phrase> parse_sum(Scanner&);
+Shared_Ptr<Phrase> parse_product(Scanner&);
+Shared_Ptr<Phrase> parse_unary(Scanner&);
+Shared_Ptr<Phrase> parse_atom(Scanner&);
 
 // Parse a script, return a syntax tree.
 // It's a recursive descent parser.
@@ -34,7 +34,7 @@ atom : numeral | ( sum )
 /// Returns `nullptr` for an empty line.
 /// Returns `Shared_Ptr<Definition>` for `id = expr`.
 /// Otherwise, returns an expression.
-Shared_Ptr<Syntax>
+Shared_Ptr<Phrase>
 parse(const Script& script)
 {
     Scanner scanner(script);
@@ -53,7 +53,7 @@ parse(const Script& script)
 
 // stmt : definition | sum
 // definition : id = sum
-Shared_Ptr<Syntax>
+Shared_Ptr<Phrase>
 parse_stmt(Scanner& scanner)
 {
     auto left = parse_sum(scanner);
@@ -68,7 +68,7 @@ parse_stmt(Scanner& scanner)
 }
 
 // sum : product | sum + product | sum - product
-Shared_Ptr<Syntax>
+Shared_Ptr<Phrase>
 parse_sum(Scanner& scanner)
 {
     auto left = parse_product(scanner);
@@ -77,7 +77,7 @@ parse_sum(Scanner& scanner)
         switch (tok.kind) {
         case Token::k_plus:
         case Token::k_minus:
-            left = aux::make_shared<Binary_Expr>(
+            left = aux::make_shared<Binary_Phrase>(
                 std::move(left), tok, parse_product(scanner));
             continue;
         default:
@@ -88,7 +88,7 @@ parse_sum(Scanner& scanner)
 }
 
 // product : unary | product * unary | product / unary
-Shared_Ptr<Syntax>
+Shared_Ptr<Phrase>
 parse_product(Scanner& scanner)
 {
     auto left = parse_unary(scanner);
@@ -97,7 +97,7 @@ parse_product(Scanner& scanner)
         switch (tok.kind) {
         case Token::k_times:
         case Token::k_over:
-            left = aux::make_shared<Binary_Expr>(
+            left = aux::make_shared<Binary_Phrase>(
                 std::move(left), tok, parse_unary(scanner));
             continue;
         default:
@@ -108,14 +108,14 @@ parse_product(Scanner& scanner)
 }
 
 // unary : atom | - unary | + unary
-Shared_Ptr<Syntax>
+Shared_Ptr<Phrase>
 parse_unary(Scanner& scanner)
 {
     auto tok = scanner.get_token();
     switch (tok.kind) {
     case Token::k_plus:
     case Token::k_minus:
-        return aux::make_shared<Unary_Expr>(tok, parse_unary(scanner));
+        return aux::make_shared<Unary_Phrase>(tok, parse_unary(scanner));
     default:
         scanner.push_token(tok);
         return parse_atom(scanner);
@@ -123,7 +123,7 @@ parse_unary(Scanner& scanner)
 }
 
 // atom : numeral | ( sum )
-Shared_Ptr<Syntax>
+Shared_Ptr<Phrase>
 parse_atom(Scanner& scanner)
 {
     auto tok = scanner.get_token();
@@ -137,7 +137,7 @@ parse_atom(Scanner& scanner)
         auto expr = parse_sum(scanner);
         auto tok2 = scanner.get_token();
         if (tok2.kind == Token::k_rparen)
-            return aux::make_shared<Paren_Expr>(tok, std::move(expr), tok2);
+            return aux::make_shared<Paren_Phrase>(tok, std::move(expr), tok2);
         throw Token_Error(scanner.script_, tok2,
             "unexpected token when expecting ')'");
     }

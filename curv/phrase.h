@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // See accompanying file LICENCE.md or http://www.boost.org/LICENSE_1_0.txt
 
-#ifndef CURV_EXPR_H
-#define CURV_EXPR_H
+#ifndef CURV_PHRASE_H
+#define CURV_PHRASE_H
 
 #include <memory>
 #include <aux/shared.h>
@@ -22,13 +22,13 @@ namespace curv {
 ///   of the original tokens. So a syntax tree can be used for any purpose,
 ///   including upgrading source code from an earlier version of the language
 ///   to a newer version.
-struct Syntax : public aux::Shared_Base
+struct Phrase : public aux::Shared_Base
 {
-    virtual ~Syntax() {}
+    virtual ~Phrase() {}
     virtual Location location() const = 0;
 };
 
-struct Identifier final : public Syntax
+struct Identifier final : public Phrase
 {
     Identifier(const Script& s, Token id)
     : loc_(s, std::move(id))
@@ -37,7 +37,7 @@ struct Identifier final : public Syntax
     virtual Location location() const { return loc_; }
 };
 
-struct Numeral final : public Syntax
+struct Numeral final : public Phrase
 {
     Numeral(const Script& s, Token num)
     : loc_(s, std::move(num))
@@ -46,46 +46,46 @@ struct Numeral final : public Syntax
     virtual Location location() const { return loc_; }
 };
 
-struct Unary_Expr : public Syntax
+struct Unary_Phrase : public Phrase
 {
-    Unary_Expr(Token op, aux::Shared_Ptr<Syntax> arg)
+    Unary_Phrase(Token op, aux::Shared_Ptr<Phrase> arg)
     : op_(op), arg_(std::move(arg))
     {}
     Token op_;
-    aux::Shared_Ptr<Syntax> arg_;
+    aux::Shared_Ptr<Phrase> arg_;
     virtual Location location() const
     {
         return arg_->location().starting_at(op_);
     }
 };
 
-struct Binary_Expr : public Syntax
+struct Binary_Phrase : public Phrase
 {
-    Binary_Expr(
-        aux::Shared_Ptr<Syntax> left,
+    Binary_Phrase(
+        aux::Shared_Ptr<Phrase> left,
         Token op,
-        aux::Shared_Ptr<Syntax> right)
+        aux::Shared_Ptr<Phrase> right)
     :
         left_(std::move(left)),
         op_(op),
         right_(std::move(right))
     {}
-    aux::Shared_Ptr<Syntax> left_;
+    aux::Shared_Ptr<Phrase> left_;
     Token op_;
-    aux::Shared_Ptr<Syntax> right_;
+    aux::Shared_Ptr<Phrase> right_;
     virtual Location location() const
     {
         return left_->location().ending_at(right_->location().token());
     }
 };
 
-struct Paren_Expr : public Syntax
+struct Paren_Phrase : public Phrase
 {
-    Paren_Expr(Token lp, aux::Shared_Ptr<Syntax> arg, Token rp)
+    Paren_Phrase(Token lp, aux::Shared_Ptr<Phrase> arg, Token rp)
     : lparen_(lp), arg_(std::move(arg)), rparen_(rp)
     {}
     Token lparen_;
-    aux::Shared_Ptr<Syntax> arg_;
+    aux::Shared_Ptr<Phrase> arg_;
     Token rparen_;
     virtual Location location() const
     {
@@ -93,18 +93,18 @@ struct Paren_Expr : public Syntax
     }
 };
 
-struct Definition : public Syntax
+struct Definition : public Phrase
 {
     Definition(
-        aux::Shared_Ptr<Syntax> left,
+        aux::Shared_Ptr<Phrase> left,
         Token equate,
-        aux::Shared_Ptr<Syntax> right)
+        aux::Shared_Ptr<Phrase> right)
     :
         left_(left), equate_(equate), right_(right)
     {}
-    aux::Shared_Ptr<Syntax> left_;
+    aux::Shared_Ptr<Phrase> left_;
     Token equate_;
-    aux::Shared_Ptr<Syntax> right_;
+    aux::Shared_Ptr<Phrase> right_;
     virtual Location location() const
     {
         return left_->location().ending_at(right_->location().token());

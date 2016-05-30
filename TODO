@@ -4,9 +4,6 @@ Evaluate the meaning tree (not the syntax tree).
 * type inference
 * etc.
 
-refactor: rename Syntax -> Phrase. Phrase_Error, Token::k_phrase, etc.
-    stop using Expr in Phrase classes.
-
 refactor: better error messages. separate message (what()) from location.
   ERROR: the 'what()' error message
   file foo.scad, line 1[10-15], token foobar

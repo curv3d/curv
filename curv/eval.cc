@@ -25,7 +25,7 @@ curv::builtin_namespace = {
 };
 
 Value
-curv::eval(Syntax& expr, const Namespace& names)
+curv::eval(Phrase& expr, const Namespace& names)
 {
     // Hmm. Obviously, this could be done using a virtual eval function.
     // But, this code is temporary scaffolding, so I'll wait.
@@ -46,10 +46,10 @@ curv::eval(Syntax& expr, const Namespace& names)
         if (p != names.end())
             return p->second;
         else
-            throw Syntax_Error(*ident, "not defined");
+            throw Phrase_Error(*ident, "not defined");
     }
 
-    auto unary = dynamic_cast<Unary_Expr*>(&expr);
+    auto unary = dynamic_cast<Unary_Phrase*>(&expr);
     if (unary != nullptr) {
         switch (unary->op_.kind) {
         case Token::k_minus:
@@ -57,7 +57,7 @@ curv::eval(Syntax& expr, const Namespace& names)
                 Value a = eval(*unary->arg_, names);
                 Value r = Value(-a.get_num_or_nan());
                 if (!r.is_num())
-                    throw Syntax_Error(*unary, "domain error");
+                    throw Phrase_Error(*unary, "domain error");
                 return r;
             }
         case Token::k_plus:
@@ -65,7 +65,7 @@ curv::eval(Syntax& expr, const Namespace& names)
                 Value a = eval(*unary->arg_, names);
                 Value r = Value(+a.get_num_or_nan());
                 if (!r.is_num())
-                    throw Syntax_Error(*unary, "domain error");
+                    throw Phrase_Error(*unary, "domain error");
                 return r;
             }
         default:
@@ -73,7 +73,7 @@ curv::eval(Syntax& expr, const Namespace& names)
         }
     }
 
-    auto binary = dynamic_cast<Binary_Expr*>(&expr);
+    auto binary = dynamic_cast<Binary_Phrase*>(&expr);
     if (binary != nullptr) {
         switch (binary->op_.kind) {
         case Token::k_plus:
@@ -82,7 +82,7 @@ curv::eval(Syntax& expr, const Namespace& names)
                 Value b = eval(*binary->right_, names);
                 Value r = Value(a.get_num_or_nan() + b.get_num_or_nan());
                 if (!r.is_num())
-                    throw Syntax_Error(*binary, "domain error");
+                    throw Phrase_Error(*binary, "domain error");
                 return r;
             }
         case Token::k_minus:
@@ -91,7 +91,7 @@ curv::eval(Syntax& expr, const Namespace& names)
                 Value b = eval(*binary->right_, names);
                 Value r = Value(a.get_num_or_nan() - b.get_num_or_nan());
                 if (!r.is_num())
-                    throw Syntax_Error(*binary, "domain error");
+                    throw Phrase_Error(*binary, "domain error");
                 return r;
             }
         case Token::k_times:
@@ -100,7 +100,7 @@ curv::eval(Syntax& expr, const Namespace& names)
                 Value b = eval(*binary->right_, names);
                 Value r = Value(a.get_num_or_nan() * b.get_num_or_nan());
                 if (!r.is_num())
-                    throw Syntax_Error(*binary, "domain error");
+                    throw Phrase_Error(*binary, "domain error");
                 return r;
             }
         case Token::k_over:
@@ -109,7 +109,7 @@ curv::eval(Syntax& expr, const Namespace& names)
                 Value b = eval(*binary->right_, names);
                 Value r = Value(a.get_num_or_nan() / b.get_num_or_nan());
                 if (!r.is_num())
-                    throw Syntax_Error(*binary, "domain error");
+                    throw Phrase_Error(*binary, "domain error");
                 return r;
             }
         default:
@@ -117,7 +117,7 @@ curv::eval(Syntax& expr, const Namespace& names)
         }
     }
 
-    auto paren = dynamic_cast<Paren_Expr*>(&expr);
+    auto paren = dynamic_cast<Paren_Phrase*>(&expr);
     if (paren != nullptr) {
         return eval(*paren->arg_, names);
     }
