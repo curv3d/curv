@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <string>
+#include <ostream>
 
 namespace aux {
 
@@ -32,6 +33,8 @@ struct Range
     /// convert Range<const char*> to std::string
     operator std::string() { return std::string(begin(), size()); }
 };
+
+std::ostream& operator<<(std::ostream&, const Range<const char*>&);
 
 } // namespace aux
 #endif // header guard

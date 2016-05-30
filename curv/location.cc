@@ -43,3 +43,17 @@ curv::Location::ending_at(Token tok) const
     loc.token_.kind = Token::k_phrase;
     return loc;
 }
+
+void
+curv::Location::write(std::ostream& out) const
+{
+    out << "file " << scriptname()
+        << ", line " << lineno();
+    switch (token_.kind) {
+    case Token::k_end:
+        out << ", at end of script";
+        return;
+    default:
+        out << ", token " << range();
+    }
+}

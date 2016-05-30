@@ -6,6 +6,7 @@
 #define CURV_SCANNER_H
 
 #include <vector>
+#include <curv/script.h>
 #include <curv/token.h>
 
 namespace curv {

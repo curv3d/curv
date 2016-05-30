@@ -2,12 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // See accompanying file LICENCE.md or http://www.boost.org/LICENSE_1_0.txt
 
+#include <cstdint>
+
 #ifndef CURV_TOKEN_H
 #define CURV_TOKEN_H
-
-#include <ostream>
-#include <aux/range.h>
-#include <curv/script.h>
 
 namespace curv {
 
@@ -24,10 +22,6 @@ namespace curv {
 /// thingiverse customizer attributes, which are hidden in comments.
 /// The trailing whitespace at the end of the script is attached to the zero
 /// length k_end token identified at the end of script.
-///
-/// Each token remembers what script it came from. This is needed for
-/// reporting errors in the presence of OpenSCAD `include` processing,
-/// which jumbles multiple scripts into a single token stream.
 ///
 /// We don't copy string data out of the script:
 /// this is a zero copy lexical analyzer.
@@ -58,8 +52,6 @@ struct Token
         k_equate,     ///! `=` operator
         k_end         ///! end of script
     } kind;
-
-    void write(std::ostream&, const Script&) const;
 };
 
 } // namespace curv

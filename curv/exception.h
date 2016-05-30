@@ -14,7 +14,9 @@ namespace curv {
 
 /// Virtual base class for Curv compile time and run time errors.
 ///
-/// Has a precise source code location (where the error occurred).
+/// Has two parts: a message (returned by what()), and a location() that
+/// specifies where the error occurred.
+/// These two parts are printed separately (see write()).
 struct Exception : public aux::Exception
 {
     Location loc_;
@@ -24,6 +26,9 @@ struct Exception : public aux::Exception
 
     const Location& location() { return loc_; }
 
+    /// write the message and location to a stream.
+    ///
+    /// Multiple lines may be written, but no final newline.
     virtual void write(std::ostream&) const override;
 };
 

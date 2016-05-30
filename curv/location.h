@@ -9,7 +9,7 @@
 #include <curv/token.h>
 #include <aux/range.h>
 #include <aux/shared.h>
-#include <cassert>
+#include <ostream>
 
 namespace curv {
 
@@ -32,9 +32,7 @@ public:
     :
         script_(aux::Shared_Ptr<const Script>(&script)),
         token_(std::move(token))
-    {
-        assert(script_ != nullptr);
-    }
+    {}
 
     /// Modify location to start at 'tok'
     Location starting_at(Token tok) const;
@@ -56,6 +54,9 @@ public:
 
     /// Range of characters within script where error occurred.
     aux::Range<const char*> range() const;
+
+    /// output the location part of an exception message (no final newline)
+    void write(std::ostream&) const;
 };
 
 } // namespace curv
