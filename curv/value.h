@@ -17,7 +17,7 @@ namespace curv {
 /// * use_count -- 32 bits
 /// * type -- 32 bits
 ///
-/// The next data member has 128 bit alignment with no hole (64 bit platforms).
+/// The next data member has 128 bit alignment with no hole on 64 bit platforms.
 ///
 /// The type_ field enables us to query the type by loading the first 128 bits
 /// of the object into a cache line, without indirecting through the vtable,
@@ -27,6 +27,8 @@ namespace curv {
 /// load the object into a cache line anyway to bump the use_count. Putting a
 /// type code here lets users add lots of new types without messing with the
 /// black magic that is curv::Value.
+///
+/// All Ref_Values must be allocated on the heap: see aux::Shared_Base.
 struct Ref_Value : public aux::Shared_Base
 {
     uint32_t type_;
@@ -212,6 +214,11 @@ public:
             // are sign extended to 64-bits, and can optionally be configured
             // to use the upper 8-bits for tagging pointers with additional
             // information." http://www.realworldtech.com/arm64/4/
+
+            // This sign extension may be unnecessary. Ref_Values must be
+            // allocated on the heap, and it may be that heap pointers are
+            // positive on all supported platforms. LuaJIT and SpiderMonkey
+            // both assume 47 bit pointers (not 48) in their nan boxes.
             return *(Ref_Value*)((signed_bits_ << 16) >> 16);
         #elif UINTPTR_MAX == UINT32_MAX
             // 32 bit pointers

@@ -1,15 +1,16 @@
+TCAD0 (Calculator):
+* string literals, [a,b,c] list literals, no list comprehensions
+* seq@i, len(seq), concat[s1,s2,s3]
+* && || !, if-else, relational ops
+* more math functions
+* compile parse tree into Meaning, then Meaning::eval()
+* Print floating point numbers accurately.
+
 Introduce a semantic analyzer that converts a syntax tree to a Meaning tree.
 Evaluate the meaning tree (not the syntax tree).
 * look up identifiers
 * type inference
 * etc.
-
-refactor: better error messages. separate message (what()) from location.
-  ERROR: the 'what()' error message
-  file foo.scad, line 1[10-15], token foobar
-    x = foobar();
-        ^-----
-The 'location' part of the message is printed by exc.location().write(out).
 
 refactor: reimplement scanner using re2c. (Later add utf8 support.)
 
@@ -32,7 +33,14 @@ LLVM based evaluator. Compile Meaning to LLVM IR.
 unit tests
 language reference manual
 
+---------------------------------------------------------------------------
 Later:
+better error messages, print line with caret:
+  ERROR: the 'what()' error message
+  file foo.scad, line 1[10-15], token foobar
+    x = foobar();
+        ^-----
+
 * Digit separator ' in numerals (like C++14).
 * Support ' in identifiers (like Haskell).
 * Support `foo` quoted identifiers.

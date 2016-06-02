@@ -1,0 +1,5 @@
+// primitive to triangulate a polygon.
+// http://forum.openscad.org/triangulation-of-a-multi-point-non-planar-faces-polygon-tp12793.html
+
+// OpenSCAD uses this algorithm internally, so the request is to expose it
+// in the language. It's complex to implement using the language.

@@ -67,12 +67,28 @@ Strings are UTF-8.
 The obvious implementation is an array of curv::Value.
 Similar comments as for string.
 
-Efficient array update using copy-on-write, destructive update of arrays
-with refcount==1.
+I want an efficient range representation (OpenSCAD2).
+```
+  { size_t, Value*, Shared_Ptr<List> parent }
+```
 
-May want an efficient range representation.
+I want efficient array update using copy-on-write, destructive update of arrays
+with refcount==1. For ranges, I unconditionally copy the range on write.
 
-May want lazy lists.
+Efficient concat? Functional arrays which support random access, cons, head
+and tail with reasonable efficiency:
+* One Sided Flexible Arrays
+  http://www.cs.ox.ac.uk/people/ralf.hinze/publications/ICFP02.pdf
+  Multiway trees where each node consists of an array of elements
+  and an array of subtrees; base array type is configurable.
+* Braun Trees, all ops O(log N)
+* Skew binary random-access list, log. array ops, const. list ops.
+* Finger trees
+
+I may want lazy lists. List comprehensions could be lazy. Maybe a lazy concat.
+Maybe use Haskell representation of a linked list, with Value encoding for an
+unevaluated thunk. Need to avoid cyclic references. I think this can be
+detected and prevented at compile time.
 
 ## Object
 The obvious representation is just a map from names to values,

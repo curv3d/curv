@@ -1,0 +1,8 @@
+Runsun wrote this interesting tool for making polyhedra:
+
+http://forum.openscad.org/A-faces-function-for-simple-polyhedrons-td12809.html
+
+It's called 'faces'. Basically, it takes responsibility for constructing
+a polyhedron with a particular topological structure by generating a 'faces'
+array for that structure. The vertices are specified independently.
+Then 'faces' and 'vertices' are passed to polyhedron().

@@ -1,5 +1,9 @@
-Curv is a virtual machine for 3D solid modelling.
-It's a technology demo for the OpenSCAD community, and shows off some tech
+Curv is an integrated geometry kernel and virtual machine which supports
+2D and 3D solid modelling. The integration is needed for F-Rep (Functional
+Representation): a model is represented by VM code, and the VM is special
+because it can run on an FPU as well as on a CPU.
+
+Curv is a technology demo for the OpenSCAD community, and shows off some tech
 that is proposed for incorporation into OpenSCAD.
 
 The goal is to make OpenSCAD faster and more powerful:

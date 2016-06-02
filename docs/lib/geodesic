@@ -1,0 +1,19 @@
+// wanted: generic code for building a geodesic sphere
+// "geode" is the French word for "geodesic sphere".
+
+// http://en.wikipedia.org/wiki/Geodesic_dome
+
+// OpenJSCad has one.
+// https://plus.google.com/+ReneKMueller/posts/5hp2CcMRJqu
+// http://openjscad.org/#examples/geodesic-sphere.jscad
+
+// Yona Appletree hypher@gmail.com
+// https://gist.github.com/Yona-Appletree/a03bc32a5c5ca6886e38
+// See file geodesic_example.scad within this gist.
+/*
+I've created a gist, https://gist.github.com/Yona-Appletree/a03bc32a5c5ca6886e38 with my implementation of geodesic slicing. The geodesic_example.scad file contains an example of using the library. You'll have to excuse the quality of the code... I was just learning OpenSCAD and geodesic math at the time, so it's kind of funky, but it does work correctly, as far as I know.
+*/
+
+// GeodesicSphere is a simple parametric polyhedron.
+// There is a separate WireFrame operator that converts a polyhedron
+// to a wireframe representation like http://www.thingiverse.com/thing:79337

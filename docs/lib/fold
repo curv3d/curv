@@ -1,0 +1,60 @@
+## Misc
+
+filter(p)(list) = [for (i=list) if (p(i)) i];
+map(f)(list) = [for (i=list) f(i)];
+
+## Fold
+// construct a value from all of the values in a list.
+fold(n, f)(list) =
+  if (list == []) n
+  else fold(f(n,list[0]), f) list[1..];
+
+sum = fold(0, (n,i)->n+i);
+product = fold(1, (n,i)->n*i);
+length = fold(0, (n,i)->n+1);
+reverse = fold([], (n,i)->concat([i],n));
+flatten = fold([], (n,i)->concat(n,i));
+map(p) = fold([], (n,i)->concat(n,[p[i]]));
+partition(p) =
+  fold([[],[]],
+    f(n,i) = if (p(i)) [concat(n[0],[i]),n[1]] else [n[0],concat[n[1],[i]]]);
+
+## Unfold
+The traditional implementation of 'unfold' as a function
+is very cumbersome to use. Special syntax makes it much easier to use.
+
+for (id=seed; condition; id=next-value) element-expression
+
+range(start,end) = for (i=start; i <= end; i=i+1) i;
+
+zip2(list1,list2) =
+  for (L1=list1,L2=list2; len(L1)>0 and len(L2)>0; L1=L1[1..],L2=L2[1..])
+    [L1[0], L2[0]];
+
+// aka zip
+transpose(matrix) =
+  fold([], (n,i)->
+    [for (Z=n,L=i; len(Z)>0 and len(L)>0; Z=Z[1..],L=L[1..])
+      concat(Z[0],[L[0]]))]
+  << matrix;
+
+fibonacci :: [Integer]
+  fibonacci = unfoldr (\[a,b] -> Just(a+b,[b,b+a])) [0,1]
+
+// Torsten's implementation uses sequential scoping, allows temp variables
+// in the update section.
+fibonnaci(n) =
+  [ for (a=0, b=1; b <= n; t=a, a=b, b=a+t) b ];
+
+// Use parallel assignment to get parallel update:
+fibonnaci(n) =
+  [ for (a=0, b=1; b <= n; [a,b]=[b,a+b]) b ];
+
+// ditto for prime_factors: temp variable works, but parallel update is better
+prime_factors(n) =
+[
+  for (n=n, f=2;
+       n>1;
+       [n,f] = n%f==0 ? [n/f,f] : [n,f+1])
+    if (n%f==0) f
+];

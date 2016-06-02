@@ -1,0 +1,27 @@
+// The convex, symmetrical polyhedra:
+//    5 Platonic solids
+//   13 Archimedean solids
+//   13 Catalan solids (duals of the Archimedean)
+//   92 Johnson solids
+//
+// Support all of these as parameterized polyhedra.
+// Provide operations for transforming polyhedra into other polyhedra.
+// - wireframe() converts a polyhedron to a wireframe,
+//   so you can make this: http://www.thingiverse.com/thing:282868
+// - stellate()
+// - Conway polyhedron notation is used to describe polyhedra based on
+//   a seed polyhedron modified by various operations. Can make a large
+//   number of polyhedra beginning the the Platonics.
+//   https://github.com/KitWallace/openscad/blob/master/conway.scad
+// - George Hart's extensions to Conway's operators.
+//
+// A polyhedron object contains 'metadata' to support the operations,
+// but also contains its own geometry, so it can be rendered directly.
+//
+// OpenSCAD2 uses lazy evaluation.
+// 1. This file will define the Platonic solids as name = solid.
+//    It will also define the archimedean and catalan solids as Conway
+//    operations on the Platonics. Due to laziness, you won't pay the cost
+//    of evaluating Conway operators for bindings you don't reference.
+// 2. Each polyhedron contains its own geometry. But due to lazy evaluation,
+//    that doesn't cost anything if the object isn't rendered.
