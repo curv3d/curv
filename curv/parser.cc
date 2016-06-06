@@ -2,6 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // See accompanying file LICENCE.md or http://www.boost.org/LICENSE_1_0.txt
 
+// IMPLEMENTATION NOTE:
+// The current plan is to have 2 entry points to the parser, one for parsing
+// interactive command lines, and one for parsing script files.
+// I don't know how to implement 2 entry points using a parser generator
+// (Bison or Lemon). For now, I'm using a hand coded recursive descent parser.
+// I may switch to Boost.Spirit.
+
 #include <curv/parse.h>
 #include <curv/scanner.h>
 #include <curv/exception.h>
@@ -16,6 +23,7 @@ Shared_Ptr<Phrase> parse_stmt(Scanner& scanner);
 Shared_Ptr<Phrase> parse_sum(Scanner&);
 Shared_Ptr<Phrase> parse_product(Scanner&);
 Shared_Ptr<Phrase> parse_unary(Scanner&);
+Shared_Ptr<Phrase> parse_primary(Scanner&);
 Shared_Ptr<Phrase> parse_atom(Scanner&);
 
 // Parse a script, return a syntax tree.
@@ -25,7 +33,8 @@ stmt : definition | sum
 definition : id = sum
 sum : product | sum + product | sum - product
 product : unary | product * unary | product / unary
-unary : atom | - unary | + unary
+unary : primary | - unary | + unary
+primary : atom | primary ( args )
 atom : numeral | ( sum )
 */
 
@@ -107,7 +116,7 @@ parse_product(Scanner& scanner)
     }
 }
 
-// unary : atom | - unary | + unary
+// unary : primary | - unary | + unary
 Shared_Ptr<Phrase>
 parse_unary(Scanner& scanner)
 {
@@ -118,7 +127,49 @@ parse_unary(Scanner& scanner)
         return aux::make_shared<Unary_Phrase>(tok, parse_unary(scanner));
     default:
         scanner.push_token(tok);
-        return parse_atom(scanner);
+        return parse_primary(scanner);
+    }
+}
+
+// primary : atom | primary arglist
+// arglist : ( ) | ( args ) | ( args , )
+// args : sum | args , sum
+Shared_Ptr<Phrase>
+parse_primary(Scanner& scanner)
+{
+    auto primary = parse_atom(scanner);
+    Token tok;
+    for (;;) {
+        tok = scanner.get_token();
+        if (tok.kind == Token::k_lparen) {
+            auto arglist =
+                aux::make_shared<Arglist_Phrase>(scanner.script_, tok);
+            for (;;) {
+                tok = scanner.get_token();
+                if (tok.kind == Token::k_rparen) {
+            rparen:
+                    arglist->rparen_ = tok;
+                    primary = aux::make_shared<Apply_Phrase>(primary, arglist);
+                    break;
+                }
+                scanner.push_token(tok);
+                auto expr = parse_sum(scanner);
+                auto arg = aux::make_shared<Arg_Phrase>(expr);
+                arglist->args_.push_back(arg);
+                tok = scanner.get_token();
+                if (tok.kind == Token::k_comma) {
+                    arg->comma_ = tok;
+                } else if (tok.kind == Token::k_rparen) {
+                    goto rparen;
+                } else {
+                    throw Token_Error(scanner.script_, tok,
+                        "bad token in function call argument list");
+                }
+            }
+        } else {
+            scanner.push_token(tok);
+            return primary;
+        }
     }
 }
 

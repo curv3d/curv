@@ -38,6 +38,7 @@ struct Token
 {
     uint32_t first_white, first, last;
     enum Kind {
+        k_missing,    ///! not a token; marks an uninitialized token variable.
         k_phrase,     ///! text spanned by a parse tree node: 2 or more tokens
         k_bad_token,  ///! a malformed token
         k_bad_utf8,   ///! a malformed UTF-8 sequence
@@ -45,6 +46,7 @@ struct Token
         k_num,        ///! floating point numeral
         k_lparen,
         k_rparen,
+        k_comma,
         k_plus,
         k_minus,
         k_times,
@@ -52,6 +54,8 @@ struct Token
         k_equate,     ///! `=` operator
         k_end         ///! end of script
     } kind;
+
+    Token() : kind(k_missing) {}
 };
 
 } // namespace curv

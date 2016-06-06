@@ -5,6 +5,7 @@
 #ifndef CURV_PHRASE_H
 #define CURV_PHRASE_H
 
+#include <vector>
 #include <memory>
 #include <aux/shared.h>
 #include <curv/location.h>
@@ -108,6 +109,60 @@ struct Definition : public Phrase
     virtual Location location() const
     {
         return left_->location().ending_at(right_->location().token());
+    }
+};
+
+/// a single argument expression within a function call
+struct Arg_Phrase : public Phrase
+{
+    aux::Shared_Ptr<Phrase> expr_;
+    Token comma_;
+
+    Arg_Phrase(aux::Shared_Ptr<Phrase> expr)
+    : expr_(expr)
+    {}
+
+    virtual Location location() const
+    {
+        return expr_->location().ending_at(comma_);
+    }
+};
+
+/// a parenthesized argument list, part of a function call
+struct Arglist_Phrase : public Phrase
+{
+    const Script& script_;
+    Token lparen_;
+    std::vector<aux::Shared_Ptr<Arg_Phrase>> args_;
+    Token rparen_;
+
+    Arglist_Phrase(const Script& script, Token lparen)
+    : script_(script), lparen_(lparen)
+    {}
+
+    virtual Location location() const
+    {
+        return Location(script_, lparen_).ending_at(rparen_);
+    }
+};
+
+/// a function call
+struct Apply_Phrase : public Phrase
+{
+    aux::Shared_Ptr<Phrase> function_;
+    aux::Shared_Ptr<Arglist_Phrase> arglist_;
+
+    Apply_Phrase(
+        aux::Shared_Ptr<Phrase> function,
+        aux::Shared_Ptr<Arglist_Phrase> arglist)
+    :
+        function_(function),
+        arglist_(arglist)
+    {}
+
+    virtual Location location() const
+    {
+        return function_->location().ending_at(arglist_->location().token());
     }
 };
 

@@ -227,7 +227,12 @@ A distance field can, in principle, specify a degenerate shape that has zero thi
 across some or all of its extension. Which classes of degenerate shapes that we
 actually support is an open question. We use 64 bit IEEE floats for geometry
 computations, so shapes could become degenerate as a result of floating point underflow.
-This suggests that the FG geometry engine should be very tolerant of degeneracy.
+This suggests that the FG geometry engine should be tolerant of degeneracy.
+
+(In OpenSCAD, a mesh computation with valid inputs can produce a non-manifold
+output, even though CGAL is being used throughout. And then you get CGAL
+exceptions. It's the same for all other mesh libraries. How hard is it to make
+FG robust against this kind of problem?)
 
 ### Rationale
 Why do we need to specify a bounding box?
@@ -236,11 +241,11 @@ for the preview window.
 
 There are two kinds of F-Rep geometry systems:
 * Systems like Hyperfun or ShapeJS require the user to specify a global bounding
-  box for all the geometry in a project. But primitive operations can be coded without
-  specifying a bounding box, since that's the user's problem.
+  box for all the geometry in a project. But primitive operations can be coded
+  without specifying a bounding box, since that's the user's problem.
 * Systems like ImplicitCAD, Antimony and FG automatically compute a bounding box
-  for each shape and operator, so that the user doesn't have to, but this moves the
-  complexity into the definition of each primitive.
+  for each shape and operator, so that the user doesn't have to, but this moves
+  the complexity into the definition of each primitive.
 
 Why do we need to specify a bounding box *function*, instead of just a single
 bounding box for the isosurface at value 0?
@@ -249,6 +254,9 @@ In the general case, you can't predict the bounding box of a shell from
 the bounding box of the isosurface at 0. A few primitives
 have "weird" isosurfaces with unusual bounding boxes, including
 anisotropic `scale`.
+* NOTE: I've changed my mind. Inflate will now assert that its input needs to
+  be a Euclidean distance field, and primitives lower in the tree will switch
+  to a more expensive algorithm (if required) to ensure this.
 
 ## Low Level API
 

@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <curv/value.h>
+#include <curv/function.h>
 #include <sstream>
 #include <iostream>
 using namespace curv;
@@ -14,6 +15,13 @@ bool prints_as(Value val, const char* expect)
         std::cout << "expected '" << expect << "' got '" << ss.str() << "'\n";
         return false;
     }
+}
+
+
+Value
+id(Value* args)
+{
+    return args[0];
 }
 
 TEST(curv, value)
@@ -93,4 +101,47 @@ TEST(curv, value)
     EXPECT_TRUE(v.get_ref_unsafe().type_ == 42);
     ptr = nullptr;
     EXPECT_TRUE(v.get_ref_unsafe().use_count == 1);
+
+    v = make_ref_value<Ref_Value>(17);
+    EXPECT_FALSE(v.is_null());
+    EXPECT_FALSE(v.is_bool());
+    EXPECT_FALSE(v.is_num());
+    ASSERT_TRUE(v.is_ref());
+    EXPECT_TRUE(v.get_ref_unsafe().use_count == 1);
+    EXPECT_TRUE(v.get_ref_unsafe().type_ == 17);
+
+    v = curv::make_ref_value<curv::Function>(id, 1);
+    EXPECT_FALSE(v.is_null());
+    EXPECT_FALSE(v.is_bool());
+    EXPECT_FALSE(v.is_num());
+    ASSERT_TRUE(v.is_ref());
+    EXPECT_TRUE(v.get_ref_unsafe().type_ == Ref_Value::ty_function);
+    Function* f = (Function*)&v.get_ref_unsafe();
+    EXPECT_TRUE(f->use_count == 1);
+    EXPECT_TRUE(f->type_ == Ref_Value::ty_function);
+    EXPECT_TRUE(f->nargs_ == 1);
+
+    // copy/move constructors
+    {
+        Value v0(aux::make_shared<Ref_Value>(42));
+        ASSERT_TRUE(v0.is_ref());
+        Ref_Value& r0(v0.get_ref_unsafe());
+        ASSERT_TRUE(r0.use_count == 1);
+        ASSERT_TRUE(r0.type_ == 42);
+
+        Value v1(v0);
+        ASSERT_TRUE(v1.is_ref());
+        Ref_Value& r1(v1.get_ref_unsafe());
+        ASSERT_TRUE(&r1 == &r0);
+        ASSERT_TRUE(r1.use_count == 2);
+        ASSERT_TRUE(r1.type_ == 42);
+
+        Value v2(std::move(v1));
+        ASSERT_TRUE(v1.is_null());
+        ASSERT_TRUE(v2.is_ref());
+        Ref_Value& r2(v2.get_ref_unsafe());
+        ASSERT_TRUE(&r2 == &r0);
+        ASSERT_TRUE(r2.use_count == 2);
+        ASSERT_TRUE(r2.type_ == 42);
+    }
 }

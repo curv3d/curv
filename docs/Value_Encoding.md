@@ -191,28 +191,116 @@ What action will we take to avoid creating circular references?
      detects and ignores backreferences: this eliminates the need to store NBR,
      but now we need a bit in the NaN box as a flag.
 
-
 ## Function
-Here's a simple native function representation:
-* array of parameter names
-* C++ function pointer: `Value (*f)(Value* args)`.
-  The number of arguments passed is always equal to the number of parameter
-  names.
+A design for functions with positional and labeled parameters but no
+special variables. It considers LLVM and tail calls, but not GLSL.
 
-A compiled function is represented as an RFunction (which is not a value,
-but which I expect will be nan-encoded).
-An RFunction contains an array of parameter descriptors, and a vmcode block.
-Each parameter descriptor has a name, an optional default value,
-and in the future, additional attributes and metadata.
-* Note, this representation doesn't support default values that depend on
-  other parameter values.
+### static vs dynamic functions
+A function is static if all of its external references are
+static (known at compile time). This includes builtin functions,
+and some user-defined functions.
+For dynamic functions, we need closures.
 
-An RFunction is invoked with:
-* an array of argument values, which are probably referenced via a
-  global data stack pointer
-* an environment: an object used to find the values of non-local bindings
+An interesting question is whether any user defined function can be static.
+It depends on the API for customizing an object. OpenSCAD2 admits that there
+are two cases: cheap customization (plugging new values into object slots)
+vs expensive customization (requires run-time compilation).
+If a definition within an object is declared to be `@param`, then it is cheaply
+customizable, but references to that name are non-static.
+Without @param, if a definition is compile time constant, then it is static.
 
-A closure is a (environment,rfunction) pair--this is a function value.
+### static functions
+A static function has an unboxed representation as the address of a
+typed function. We know the number of arguments, and sometimes also the unboxed
+argument types and result type. This is reflected in the function prototype.
+Eg,
+* `double sqrt(double)` for builtin.sqrt
+* `Value f(Value,Value)` for a user defined function with two arguments,
+  and no explicit or inferred type annotations. We can do this because of LLVM.
+  This gives us an efficient calling convention that allows arguments to
+  be passed in registers, and is tail-call compatible (eg, the function can
+  overwrite its arguments in a self tail call). By contrast, a varargs
+  calling convention like `Value apply(unsigned argc, Value* argv)`
+  is not tail-call compatible, and also less efficient.
+
+A builtin function is a static function for which we have the unboxed entry
+point and boxed value available at analysis time.
+It is represented by a Constant containing:
+* result and parameter types. Eg, `double sqrt(double)`.
+* unboxed entry point, eg `&sqrt`.
+  Or, code for generating an LLVM operation node for this function
+  (eg, the function could be an LLVM primitive).
+* boxed Value
+
+When calling a boxed function value, we may have both positional and labeled
+arguments, which need to be decoded into pure positional form.
+This processing is only needed if labeled arguments are present.
+If enough type information is available, we can do this at compile time.
+So we do the processing at compile time or at the call site before
+calling the boxed entry point.
+
+Similarly, if only positional arguments are present, then we do an argc check
+based on function metadata (at compile or run time) before calling the boxed
+entry point.
+
+The boxed entry point:
+* With LLVM, it would be cool if the boxed entry point (for a 2 argument
+  function) could be `Value apply(Value,Value)`, allowing registers to be used.
+  But: I don't know the number of arguments until run time, so this would
+  require generating machine code at call time.
+* So, the boxed entry point is `Value apply(Value* argv)`.
+  The argv is stack allocated with the correct size based on function metadata.
+  This works for any kind of evaluator (tree, byte code, LLVM).
+* The function knows the number of arguments at compile time.
+  This is a tail-call friendly calling convention,
+  since the function can overwrite its arguments.
+
+Therefore, a boxed function value contains:
+* List of parameter specs. len(list) is # of parameters.
+  This list is constructed at compile time.
+  A parameter spec contains:
+  * parameter name, an atom with pointer equality
+  * bool: has default value
+  * other parameter metadata that could be added in the future
+* List of default values, constructed either at compile time or at run time
+  when function value is constructed. `null` is the don't care value.
+  (Note, this representation doesn't support default values that depend on
+  other parameter values.)
+* Boxed entry point: `Value apply(Value* argv)`.
+
+The boxed entry point converts boxed arguments to unboxed arguments,
+throwing type errors, as needed, before calling unboxed entry point.
+
+If `apply` is a virtual function, then there are two cache hits to acquire
+the function pointer. It's better to store the function pointer as
+a data member, that's only one cache hit.
+
+How does the unboxed calling convention deal with reference counting?
+The called function releases argument references.
+* Hand coded static functions will pass Value by value in C++. That's simple.
+* The caller must bump refcounts on call, unless it can transfer ownership:
+  This is appropriate if argument is last use of a named temporary,
+  or argument is an rvalue, or on a tail call.
+* Compatible with an optimization: mutate a value if refcount==1.
+  Eg, O(1) array element update.
+
+How does the boxed calling convention deal with reference counting?
+For now, caller owns argv and caller releases.
+
+### dynamic functions (closures)
+
+A closure is represented by a (environment,rfunction) pair.
+* The environment is an object used to retrieve the values of
+  non-static, non-local bindings.
+* An rfunction is a static function with an extra argument,
+  the environment pointer.
+
+I expect TeaCAD will have 3 function-like value types.
+* static function
+* closure
+* parameterized object
+
+TODO: We'll need a generic code sequence for calling any value.
 
 ## Macro
 A builtin can be bound to a macro, which isn't a value, which is invoked

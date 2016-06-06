@@ -100,6 +100,7 @@ private:
             static_assert(false, "only 32 and 64 bit architectures supported");
         #endif
     }
+    template<class T, class... Args> friend Value make_ref_value(Args&&...);
 public:
     /// Construct the `null` value (default constructor).
     ///
@@ -237,9 +238,10 @@ public:
     }
 
     /// The move constructor.
-    inline Value(const Value&& val)
+    inline Value(Value&& val)
     {
         bits_ = val.bits_;
+        val.bits_ = k_nullbits;
     }
 
     /// The assignment operator.
@@ -273,6 +275,14 @@ public:
     /// Print a value like a TeaCAD expression.
     void print(std::ostream&) const;
 };
+
+/// Allocate a reference value with given class and constructor arguments.
+template<typename T, class... Args> Value make_ref_value(Args&&... args)
+{
+    T* ptr = new T(args...);
+    aux::intrusive_ptr_add_ref(ptr);
+    return Value(ptr);
+}
 
 } // namespace curv
 #endif // header guard

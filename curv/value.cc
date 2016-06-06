@@ -16,6 +16,25 @@ const
         out << (get_bool_unsafe() ? "true" : "false");
     } else if (is_num()) {
         out << get_num_unsafe();
+    } else if (is_ref()) {
+        Ref_Value& ref(get_ref_unsafe());
+        switch (ref.type_) {
+        case Ref_Value::ty_string:
+            out << "<string>";
+            break;
+        case Ref_Value::ty_list:
+            out << "<list>";
+            break;
+        case Ref_Value::ty_object:
+            out << "<object>";
+            break;
+        case Ref_Value::ty_function:
+            out << "<function>";
+            break;
+        default:
+            out << "<" << ref.type_ << ">";
+            break;
+        }
     } else {
         out << "???";
     }

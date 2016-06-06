@@ -8,11 +8,22 @@
 #include <string>
 #include <curv/eval.h>
 #include <curv/exception.h>
+#include <curv/function.h>
 #include <boost/math/constants/constants.hpp>
 
 using namespace curv;
 using namespace std;
 using namespace boost::math::double_constants;
+
+Value
+builtin_sqrt(Value* args)
+{
+    double r = sqrt(args[0].get_num_or_nan());
+    if (r == r)
+        return r;
+    else
+        throw aux::Exception("sqrt(x): domain error");
+}
 
 const Namespace
 curv::builtin_namespace = {
@@ -22,6 +33,7 @@ curv::builtin_namespace = {
     {"null", curv::Value()},
     {"false", curv::Value(false)},
     {"true", curv::Value(true)},
+    {"sqrt", curv::make_ref_value<curv::Function>(builtin_sqrt, 1)},
 };
 
 Value
@@ -114,6 +126,31 @@ curv::eval(Phrase& expr, const Namespace& names)
             }
         default:
             assert(0);
+        }
+    }
+
+    auto apply = dynamic_cast<Apply_Phrase*>(&expr);
+    if (apply != nullptr) {
+        Value funv = eval(*apply->function_, names);
+        if (!funv.is_ref())
+            throw Phrase_Error(*apply->function_, "not a function");
+        Ref_Value& funp( funv.get_ref_unsafe() );
+        if (funp.type_ != Ref_Value::ty_function)
+            throw Phrase_Error(*apply->function_, "not a function");
+        Function* fun = (Function*)&funp;
+
+        const auto& args(apply->arglist_->args_);
+        Value argv[1];
+        switch (fun->nargs_) {
+        case 1:
+            if (args.size() != 1) {
+                throw Phrase_Error(*apply->arglist_,
+                    "wrong number of arguments");
+            }
+            argv[0] = eval(*args[0]->expr_, names);
+            return fun->function_(argv);
+        default:
+            throw Phrase_Error(*apply, "unsupported argument list size");
         }
     }
 

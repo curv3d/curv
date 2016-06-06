@@ -21,9 +21,9 @@ Use a 'Meaning' tree interpreter.
 print floating point numbers accurately.
 
 sum, product, max, min
-mod, abs, floor, round, ceil
-trig: pi, tau, sin, cos, tan, acos, asin, atan
-exp: e, x^y, log(x), log(x,b), sqrt(x)
+mod(x,y), abs, floor, round, ceil
+trig: pi, tau, deg, sin, cos, tan, acos, asin, atan
+exp: e, x^y, log(x,b=e), sqrt(x)
 
 A parsimonious numeric API:
 Instead of providing a large number of 'special case' numeric functions
@@ -31,7 +31,10 @@ like expm1(x) == e^x-1, you instead write 'natural' code and the compiler
 will detect common patterns and rewrite them into more efficient/accurate
 code. For example:
 * e^x -> exp(x)
+* e^x-1 -> expm1(x)
 * log(x,10) -> log10(x)
+* log(x,2) -> log2(x)
+* log(1+x) -> log1p(x)
 * atan(x/y) -> atan2(x,y)
 
 ## Sequence

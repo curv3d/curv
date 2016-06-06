@@ -29,9 +29,11 @@ Location
 curv::Location::starting_at(Token tok) const
 {
     Location loc = *this;
-    loc.token_.first_white = tok.first_white;
-    loc.token_.first = tok.first;
-    loc.token_.kind = Token::k_phrase;
+    if (tok.kind != Token::k_missing) {
+        loc.token_.first_white = tok.first_white;
+        loc.token_.first = tok.first;
+        loc.token_.kind = Token::k_phrase;
+    }
     return loc;
 }
 
@@ -39,8 +41,10 @@ Location
 curv::Location::ending_at(Token tok) const
 {
     Location loc = *this;
-    loc.token_.last = tok.last;
-    loc.token_.kind = Token::k_phrase;
+    if (tok.kind != Token::k_missing) {
+        loc.token_.last = tok.last;
+        loc.token_.kind = Token::k_phrase;
+    }
     return loc;
 }
 
