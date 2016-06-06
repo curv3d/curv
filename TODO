@@ -1,15 +1,23 @@
 # TCAD0 (Calculator):
+* aux::prdouble(double, ostream): Print a floating point number accurately
+* aux::String, mk_string(const char*), user-defined string literal?
+* aux::String_Builder
+* aux::to_string (uses prdouble, String_Builder)
+* aux::Exception contains Shared_Ptr<String>
 * builtin functions:
   * error reporting for bad arguments:
-    * report location of bad argument. (What if two args conflict, like 0/0?)
-    * OR: throw aux::Exception(to_string(x,"/",y,": domain error"))
-  * printing a builtin function? currently, <function>
+    * for pure numeric primitives, convert arguments using arg.get_num_or_nan(),
+      check for nan result,
+      `throw aux::Exception(to_string(x,"/",y,": domain error"))`
+    * `arg_to_num(Value,char* param_name)`: throw error if not a number,
+      otherwise return double. API is independent of Value refactoring.
 * compile parse tree into Meaning, then Meaning::eval()
 * string literals, [a,b,c] list literals, no list comprehensions
-* seq@i, len(seq), concat[s1,s2,s3]
-* && || !, if-else, relational ops
+* seq@i, len(seq), concat[v1,v2,v3], strcat[s1,s2,s3]
+* && || !, if-else
+* == and !=. 6 types, all functions are == to each other.
+* <, <=, >, >=. Numbers only.
 * more math functions
-* Print floating point numbers accurately.
 * broader unit testing
 
 Introduce a semantic analyzer that converts a syntax tree to a Meaning tree.
@@ -29,17 +37,29 @@ Full set of operators.
 String and list values.
 
 # TCAD1 (basic scripting, LLVM)
-* named functions (top level only for now).
+* script files, named functions (top level only for now).
 * LLVM based evaluator. Compile Meaning to LLVM IR.
   Embed raw function pointers and Values in IR as bit patterns.
+* Benchmarks
 
 # TCAD2 (nested scopes)
 * nested functions, function literals, let() expressions.
 * script literals
-* exceptions with precise location reporting
+* stack trace: exceptions with precise location reporting
+* refactor: String, List don't contain vtable or type field. Value contains a 3
+  bit type field. Object is heavy weight, containing vtable and RTTI, since it
+  is user extensible without modifying Value.
+  Not sure about Function (3 variants: static, closure, object).
+* printing a function? currently, <function>, even for builtins
 
-more unit tests
-language reference manual
+# TCAD3 (simple geometry)
+* simple F-Rep geometry API, high level only
+* missing features: optional/keyword params, right assoc fun call, echo, ...
+* preview using ray marching--convert CSG tree to GLSL
+
+# Ongoing:
+* more unit tests
+* language reference manual
 
 ---------------------------------------------------------------------------
 Later:
