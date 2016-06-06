@@ -53,19 +53,82 @@ A value object has a 32 bit reference count. The evaluator is single threaded,
 the refcount is not atomically updated, for speed.
 
 ## String
-The fastest representation is variable sized: a length followed by characters.
-That requires some infrastructure to make practical.
-
-An easier representation to implement is <size_t,char*>.
-
-We also want efficient slices. Due to reference counting, a slice contains
-a reference to the original string.
-
 Strings are UTF-8.
+Two views of a unicode string:
+* As an array of Unicode Code Points (aka runes).
+  Runes aren't characters, they are parts of characters.
+  Operations for converting between strings and arrays of integers:
+  `str_to_code` and `code_to_str`.
+* As an array of Unicode Grapheme Clusters (aka characters).
+  `str@i` returns the i'th character (grapheme cluster), which is
+  represented as a string of length 1.
+* If you concatenation two strings of length M and length N,
+  the result should have length M+N. So a string can't begin with
+  a rune that only appears in the middle or end of a character.
+  Curv needs to enforce this on string literals and `code_to_str`.
+
+With no Char data type, this breaks the ideal of List and String being
+subtypes of Sequence, or of String being just a List of Char.
+Eg, `[for(c=str)c]` should return `str`, but doesn't.
+How important is it to support the writing of generic algorithms over lists
+and strings that don't depend on performing a type check and using conditional
+logic? Not too important. String processing is not important in TeaCAD.
+
+`str@i` is O(N) unfortunately.
+So is `len(str)` unless the # of characters is stored.
+* It's not clear I need to optimize these operations.
+* Maybe I could use a bit to record that the string is ASCII?
+  Or maybe Curv uses String and AsciiString types?
+* A unicode string is like a bidirectional linked list.
+  A tree-structured functional array can provide more efficient
+  random element access for large strings.
+
+The fastest and most memory efficient representation is variable sized:
+a small header (including a length) followed by characters.
+* `aux::String` has an 8 byte header, followed by characters and NUL.
+* can be referenced using `Shared_Ptr<String>`
+* The header is: 4 byte refcount, 4 byte size. A small header is more cache
+  friendly, which means no vtable. And that means curv::Value needs to contain
+  a type code to distinguish String from other reference types.
+
+I'll also need a String_Builder class for efficiently building an immutable
+string via repeated concatenation.
+
+Custom C++11 string literal for constructing `Shared_Ptr<String>`?
+`aux::make_shared_string("foo")` vs `"foo"_aux`.
+Is there any efficiency gain? Is it possible to construct a static String
+object without also storing a C string literal?
+
+Auto conversion from `const char*` to `Shared_Ptr<String>`?
+Is that possible in C++, or do I need a specialized `Shared_String` type?
+Is there a way to avoid copying the string data using a `"foo"_aux` literal?
+
+We want efficient slices. Due to reference counting, a slice contains
+a reference to the original string.
+* `aux::String_Slice` is <br>
+  `{ uint32_t use_count; uint32_t size; char* ptr; Shared_Ptr<String> parent; }`
+* `aux::String` is now an abstract base class with `use_count` and `size`.
+  The subclasses are now CString and String_Slice.
+  No vtable, so we steal 1 bit from the size to encode the subtype.
+
+The Aux library could generalize this with an Array template.
+So `String` is an alias for `Array<char>`, `String_Slice` becomes `Slice<char>`.
+(But this is incompatible with the 'ascii' flag?)
 
 ## List
 The obvious implementation is an array of curv::Value.
 Similar comments as for string.
+`curv::List` is an alias for `aux::Array<curv::Value>`.
+
+A list of 3 numbers is an important case to optimize
+for space and rapid element access.
+* I can cast Array<Value> to Array<double>, without copying,
+  if all elements are known to be numeric. Copy if it is a slice.
+  Eg, do this in `arg_to_vec3`.
+  (Or convert to Range<double*>, but then there's no storage management,
+  it could turn into a dangling reference.)
+* Ditto for matrices. It's nice that boxed lists are an efficient native
+  representation for vectors and matrixes, without copying.
 
 I want an efficient range representation (OpenSCAD2).
 ```
@@ -78,14 +141,36 @@ with refcount==1. For ranges, I unconditionally copy the range on write.
 Efficient concat? Functional arrays which support random access, cons, head
 and tail with reasonable efficiency:
 * One Sided Flexible Arrays
-  http://www.cs.ox.ac.uk/people/ralf.hinze/publications/ICFP02.pdf
-  Multiway trees where each node consists of an array of elements
-  and an array of subtrees; base array type is configurable.
+  * http://www.cs.ox.ac.uk/people/ralf.hinze/publications/ICFP02.pdf
+  * Multiway trees where each node consists of an array of elements
+    and an array of subtrees; base array type is configurable.
 * Braun Trees, all ops O(log N)
 * Skew binary random-access list, log. array ops, const. list ops.
-* Finger trees
+  * Okasaki, Chris. Purely Functional Data Structures.
+* Finger trees.
+  * amortized O(1) access to leaves of tree, containing the data.
+  * amortized O(1) pushing, reversing, popping, O(log n) append and split.
+  * an indexed list/array can be implemented with a labeling of nodes
+    by the count of the leaves in their children.
+
+Unlike conventional functional arrays, I have a refcount, so I can mutate the
+array if it has 1 reference. Maybe the array mutates to be more efficient
+for the operations that are being applied (indexing, vs concatenation),
+kind of like a splay tree. So now what structure is best?
+
+What I want is: O(1) `a@i`, O(1) `a@(i..j)`, O(log n) `concat[a,b]`.
+Fixed size list literals are represented as arrays, that's important.
+`concat` is allowed to construct a tree; the leaves will be arrays.
+
+Worst case might be somebody algorithmically constructing a list as linked
+list, eg like `concat[[a],concat[[b],concat[[c],[]]]]`. Maybe detect this as
+a special case and create cons cells, or even provide a cons primitive?
+(Compile `concat[[x],a]` into `cons(x,a)`.)
+With a cons list, `a@0` and `a@(1..)` are efficient and so is `for` iteration.
 
 I may want lazy lists. List comprehensions could be lazy. Maybe a lazy concat.
+* This requires some kind of linked list/tree representation. Consider this
+  in conjunction with tree based functional arrays, above.
 Maybe use Haskell representation of a linked list, with Value encoding for an
 unevaluated thunk. Need to avoid cyclic references. I think this can be
 detected and prevented at compile time.

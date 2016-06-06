@@ -1,8 +1,8 @@
 # TCAD0 (Calculator):
 * builtin functions:
   * error reporting for bad arguments:
-    * report location of bad argument
-    * OR: throw aux::Exception(to_string(x,"+",y,": domain error"))
+    * report location of bad argument. (What if two args conflict, like 0/0?)
+    * OR: throw aux::Exception(to_string(x,"/",y,": domain error"))
   * printing a builtin function? currently, <function>
 * compile parse tree into Meaning, then Meaning::eval()
 * string literals, [a,b,c] list literals, no list comprehensions
@@ -10,7 +10,7 @@
 * && || !, if-else, relational ops
 * more math functions
 * Print floating point numbers accurately.
-* better unit testing
+* broader unit testing
 
 Introduce a semantic analyzer that converts a syntax tree to a Meaning tree.
 Evaluate the meaning tree (not the syntax tree).
@@ -33,7 +33,7 @@ String and list values.
 * LLVM based evaluator. Compile Meaning to LLVM IR.
   Embed raw function pointers and Values in IR as bit patterns.
 
-# TCAD2
+# TCAD2 (nested scopes)
 * nested functions, function literals, let() expressions.
 * script literals
 * exceptions with precise location reporting

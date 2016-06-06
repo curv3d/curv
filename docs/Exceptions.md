@@ -25,7 +25,8 @@ That should be faster than checking each argument first.
 
 However, I don't report which argument was bad.
 
-[1] Instead of detecting which argument was bad
+### For Pure Numeric Operations
+Instead of detecting which argument was bad
 (and reporting the location of the bad argument),
 I could instead encode the argument values in the exception message.
 ```
@@ -37,9 +38,35 @@ aux::to_string returns an aux::Shared_Ptr<aux::String>
 and, aux::Exception now takes aux::Shared_Ptr<aux::String>
 as constructor argument.
 
-[2] Detect which argument was bad
+### Convenience in the Common Case
+In most cases, I want a convenient API for converting unboxed values to
+their required types, exiting on a type error.
+Eg,
+```
+Shared_Ptr<String> str = argv[0].get_str(); // throw exception on wrong type
+int32_t i = argv[1].get_int(); // throw exception on wrong type
+```
+
+There is no location reporting in this API.
+
+All functions parameters have names as part of their public API.
+So, I could report the parameter name:
+```
+Shared_Ptr<String> str = arg_to_str(argv[0], "str");
+int32_t i = arg_to_int(argv[1], "i");
+```
+
+The exception could contain an informative message including the parameter
+name, the expected type, the actual value. The stack trace that gets appended
+to the exception value will contain the original function call, and with the
+parameter name, that provides plenty of information.
+
+### Efficient Location Reporting
+Detect which argument was bad
 and report the location of the bad argument.
-Find a way to do this efficiently:
+Find a way to do this efficiently.
+
+This mostly looks like a giant pile of LATER.
 
 I have considered re-evaluating an arithmetic expression with
 precise error checking if it returns a NaN. Could use the tree evaluator.
@@ -65,27 +92,49 @@ There's no location information about the arguments.
 This is possible: `Value apply(Value*,Location*)`,
 but it adds cost at compile and run time.
 
-Maybe a primitive function can throw an exception with the index of the
-bad argument, and this index can be mapped to a location?
+In terms of what's easy, a primitive non-numeric function will throw
+an exception with the name of the bad argument.
+Ditto for user defined functions with parameter assertions,
+such as `(x:is_num)->...`.
+This can be combined with information from the stack trace
+to reproduce the location.
 
 ## Stack Trace
 If an exception is raised, then the exception contains a stack trace.
-So, like, a linked list of Locations (to start with).
-Whatever expression was evaluating, then function calls.
+Maybe a linked list of Locations?
+If a stack trace entry contains the boxed function value, then
+we can map parameter names to locations (see above).
+
+What's in the stack trace?
+All operator expressions and function calls?
+It seems likely that 'primitive operations' will be treated specially,
+for efficiency reasons, with less precise location reporting,
+while each 'general case function call' will appear in the stack trace.
+
+The stack trace is stored in the curv::Exception so that the Bad_Argument
+exception can access it to reproduce the Location.
+Probably, a stack trace entry is a linked list node containing a Phrase
+and a Function.
+* Using a Phrase, I'm keeping the entire parse tree around during execution.
+  (The JIT compile strategy kind of does that anyway, is this a big deal?)
+* Using a Location, I'm paying an extra compile time cost to construct the
+  Location of each function call, so that I can discard the parse tree.
 
 How do I construct the stack trace?
-* a VM register points to a stack of cons cells `(Location*,next*)`,
-  pushed/popped at each call point.
-  * thread local variable, or part of Eval_Context
-* A chain of try-except handlers at each call point.
+* Most likely: A chain of try-except handlers at each call point.
   Code bloat; overhead is low (eg 5%) until exception is thrown.
   Supposedly: one extra branch usually not taken + lost optimizations.
   What's the cost for LLVM? Itanium ABI "zero cost" exception handling.
   Windows is more expensive. This is complicated in LLVM, especially if
   Windows support is needed.
+* a VM register points to a stack of cons cells `(Location*,next*)`,
+  pushed/popped at each call point.
+  * thread local variable, or part of Eval_Context
 * Use libunwind, glibc/osx backtrace(), but this just gives native function
   addresses; Location info is harder to access and very platform dependent.
   But: no run time overhead. Encode location key into function name?
+
+The stack trace doesn't contain tail calls.
 
 Regardless of technique, can't wait until stack is unwound to get trace.
 * Which means code at each call point to construct call stack.

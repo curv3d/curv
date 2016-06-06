@@ -1,4 +1,4 @@
-= The TeaCAD Core Language
+# The TeaCAD Core Language
 
 This describes the core of the TeaCAD language, absent geometric shapes and
 geometric operations.
@@ -6,7 +6,7 @@ geometric operations.
 The TeaCAD Core is a dynamically typed, pure functional language
 with 7 kinds of values: null, boolean, number, string, list, object, function.
 
-== Error Handling
+## Error Handling
 What happens when a function is unable to compute a result
 (eg, because it is passed bad arguments)?
 In TeaCAD, there are two cases:
@@ -34,7 +34,7 @@ in code. If we discover that a particular interface is too strict, we can
 relax the interface without breaking anything, but going in the other direction
 creates upgrade problems by breaking existing code.
 
-== The null value
+## The null value
 The special value `null` indicates the absence of a result, and is returned
 when a function needs to indicate that it couldn't compute a result.
 
@@ -47,7 +47,7 @@ Unlike NaN, `null` doesn't mess with semantics of the equality operator.
 So `null==null` is `true`. This is so you can easily test if a function
 has returned `null`.
 
-== Equality
+## Equality
 `x == y` tests if the two values `x` and `y` are equal, returning a boolean,
 while `x != y` tests for inequality.
 
@@ -98,7 +98,7 @@ Maybe debugging can be kept outside of the language, and restricted to the
 debugger interface. If debug annotations need to be added to source code, maybe
 they can be clearly marked, and prevented from affecting the model geometry.
 
-== Debugging
+## Debugging
 There is an interactive debugger interface. Initially a console UI like gdb.
 You can pause a computation, get a stack trace, resume, set breakpoints.
 
@@ -122,7 +122,7 @@ I've occasionally wanted to set a breakpoint at source location B
 conditional on specific data values being detected earlier at location A.
 Maybe there's a command to set a breakpoint.
 
-== Monoids
+## Monoids
 A monoid is a binary operation which is associative, and which has
 an identity value. There are many examples of monoids in OpenSCAD,
 including addition, multiplication, min, max, concat, union, intersection.
@@ -155,7 +155,7 @@ can be written either as a list literal, or as an expression which computes
 a list at run time. There's no loss of convenience, because you can write
 `max[a,b]` instead of `max([a,b])` as an abbreviated form of function call.
 
-== Boolean values
+## Boolean values
 There are two boolean values, `true` and `false`.
 Functions that expect a boolean value will abort if a non-boolean is passed
 instead: that's considered a type error.
@@ -204,7 +204,7 @@ consistently treat 0 as false and non-zero numbers as true, then
 `if (`*bool*`) `*val1*` else `*val2*
 > conditional expression
 
-== Numbers
+## Numbers
 TeaCAD numbers are 64 bit IEEE floating point numbers, just like OpenSCAD.
 Numeric literals have the same syntax.
 I'd like to support `_` between digits, as an ignored character,
@@ -251,24 +251,35 @@ Degrees are the familiar unit for specifying angles in calls to rotate, etc.
 You can write `rotate(90*deg)`.
 This is equivalent to `rotate(tau/4)` (where `tau` is a full turn).
 
-== Sequences
+## Sequences
 Here are some operations that are generic over strings, lists and objects.
 
 ```
 len(X) -- # of elements in the sequence
 X@i -- i'th element of X
 X@(i..j) X@(i..) X@(..j) -- slice notation
-X@list -- returns sequence containing all elems whose indices are in list
+X@(i:step..j) X@(i:step..) X@(:step..j) -- slice notation with stride (alt 1)
+X@(i..j:step) X@(i..:step) X@(..j:step) -- slice notation with stride (alt 2)
+X@list -- sequence containing all elements whose indices are in list
   Note that slice notation above doesn't support a stride,
   but you can still write X@[0..len(X)-1:2].
-X & Y -- concatenation of X and Y, both strings or both lists/objects
-concat(list-of-sequences)
-for (i = X) ... -- iterate over elements of X in a list/object literal
 reverse(sequence)
 join(separator-sequence)(list-of-sequences)
   eg, join "," ["foo","bar","baz"] -> "foo,bar,baz"
-sort(sequence)
+sort(sequence,compare=(x,y)->x<=y)
 ```
+
+Strings are not lists of characters, and not all sequence operations work
+on strings. Here are some that only work on lists and objects.
+* concat(list-of-sequences)
+  * `concat[]` returns `[]`, not `""`, so `concat` is not appropriate for
+    string concatenation. Maybe use `strcat`.
+* for (i = X) ... -- iterate over elements of X in a list/object literal
+  * `[for(c=str)c]` does not return `str`.
+    But you can use `strcat[for(c=str)c]`.
+    If this were an important use case, I could provide `strfor`,
+    which strcats each element together. Or, "?for(i=s)...;",
+    since string literals are much like list comprehensions anyway.
 
 Consider if sequences were indexed using funcall notation.
 More expressive: polymorphism between sequences/functions,
@@ -276,11 +287,13 @@ ability to use the full range of function call syntax for indexing.
 * How would slice notation work?
 * This interferes with the OpenSCAD2 design for objects, where customization
   is funcall, as distinct from indexing.
+* just use i->a@i to convert sequence to function
 
 `map(f)(seq)`
 > When applied to a list,
 > `map(x->x+1) L` is like `[for (x=L) x+1]`,
-> except that it moves the list expression L to the left.
+> except that, syntactically, the list expression L is written at the end,
+> which may be useful for writing pipelines.
 > `map` preserves the stringiness of a string and the metadata of an object.
 
 `filter(f)(seq)`
@@ -289,40 +302,68 @@ ability to use the full range of function call syntax for indexing.
 > except that it moves the list expression L to the left.
 > `filter` preserves the stringiness of a string and the metadata of an object.
 
-== Strings
+## Strings
 A string is a sequence of 0 or more unicode characters.
 The two most important features are string literals, and concatenation.
 
-String literals:
-* The escape sequences `\xHHH` and `\x{HHH}` are used to represent
-  a Unicode code point in hexadecimal. Any number of hex digits may be
-  written, but an error is reported if the value isn't a legal code point.
-  This is simpler than the C-style `\x`, `\u`, `\U` syntax,
-  which is not a good match to the Unicode standard.
-* Maybe support Python style """ string literals?
-* Maybe support an escape sequence for interpolating an expression value
-  into a string? This is useful within multi-line """ string literals.
-  Compare:
-  * `str["x=",x,", y=",y]`
-  * "x=$x, y=$y"
-* Here's an alternative design for escape sequences.
-  * `$$`
-  * `$"`
-  * `$#`*hexdigits*
-  * `$#{`*hexdigits*`}`
-  * `$`*identifier*
-  * `$(`*expression`)`
-  * If we support variable substitutions, then how to distinguish between
-    interpolating a string as raw characters, vs interpolating a string
-    as a quoted string literal? In Python, `repr` converts a value into
-    a string representing a literal expression for that value.
-    So `$(repr X)` vs `$X`?
+Concatenation: `strcat[s1,s2,...]`
 
-`nl = "$#A"`
-> The `$` escape sequence design doesn't have predefined names
-> for common characters, like `\n`, but character names can be defined
-> in the standard library or by the user, so no problem. The only really
-> useful one is `\n`, so I propose to define `nl` in the standard library.
+### Escape sequences
+Which escape character should we use in string literals?
+
+OpenSCAD uses `\` as an escape sequence.
+However, for beginners, the most common use of string literals is
+file names, and on Windows, `\` is the path separator. So this causes
+confusion, which is best avoided.
+
+The second most common use of string literals is debug messages:
+echo and assert. I'd like the ability to interpolate variables,
+like `$X` in the Unix shell. The `$` character isn't the best,
+since OpenSCAD variable names can begin with `$`.
+
+TeaCAD uses `?` as the escape character, since it doesn't appear in
+file names and doesn't conflict with variable names. It's fairly readable
+and mneumonic.
+* `?`*identifier* -- interpolate as repr, common case for debugging
+* `?(`*expression*`)` -- interpolate as repr
+* `?{`*expression*`}` -- interpolate strings literally, rest as repr
+* `?+`*hexdigits* or `?+{`*hexdigits*`}`. Unicode code point.
+  Eg, U+1F600 (smiley face) is written as `"?+1F600"`.
+
+For example, `echo("x=?x, y=?y")`.
+
+Special names for characters. I don't need a lot of syntax for this,
+since those names can be defined in libraries. Eg, `nl="?+A";`
+and then `"?nl"` or "?{nl}"` for newline. I'll include `nl`
+in the standard library.
+But maybe these special cases are worth having:
+* `??` --  literal `?`
+* `?"` or `""` (undecided) --  literal `"`
+
+### String literals:
+
+`"`...`"` is a string literal (see escape sequences above).
+
+As in OpenSCAD, a string literal can span multiple lines.
+However, OpenSCAD deletes embedded the newlines, not sure why.
+
+Multiline string literals (with embedded newlines) are useful
+for outputting multi-line debug messages. The variable interpolation
+feature is useful in this context. So I'll allow multiline string
+literals and preserve the newlines.
+
+You could also write code like this:
+```
+strcat[
+  "some text?nl",
+  "some more text?nl"]
+```
+
+Python has """ style string literals, raw text literals, lots of variations
+but we don't need that much complexity in TeaCAD, since string processing
+is not a focus of the language.
+
+### Code Points vs Characters
 
 The Unicode standard doesn't define the term "character",
 but instead defines "code point" and "grapheme cluster".
@@ -334,6 +375,11 @@ Latin character like é is represented by multiple code points
 (in the general case), one for the base character and one for each accent,
 although for the most
 common cases, a single code point is also available as an alias.
+* The concatenation two strings of length M and length N
+  should have length M+N. So a string can't begin with
+  a code point that only appears in the middle or end of a character.
+  This is enforced in string literals and by `code_to_str`
+  by checking the first code point.
 
 To obtain lower level access to the Unicode string representation,
 `str_to_code` converts a string to a list of integers (each integer is
@@ -349,7 +395,7 @@ of characters. Eg, you should be able to iterate over the characters in a string
 using a `for` loop. But for this to work perfectly, we'd need a character
 data type. Not sure about this yet.
 
-== Lists
+## Lists
 constructors:
 - list literals and comprehensions, as in OpenSCAD
 - range literals are lists, as in OpenSCAD2
@@ -393,7 +439,9 @@ I want a better library of standard list functions.
 ideas from Haskell Data.List
 ```
 Basics:
-  infix append. Haskell uses ++. My idea is &.
+  I considered infix append, using ++ from Haskell, but abandoned it.
+  Instead, concat for lists and strcat for strings.
+
   head, last, tail, init -- Python does this with slices
   length (or len in OpenSCAD)
 Transformations:
@@ -461,7 +509,7 @@ and multi-dimensional slices. list@(slice1,slice2) where 'slice' is a value
 that selects either a specific item, or a list of items matching some criterion.
 Could be a DSL for specifying slices. Or regexes. Or qed addresses. Gawd.
 
-== Objects
+## Objects
 Like OpenSCAD2.
 
 The syntax of scripts and object literals is simplified
@@ -477,7 +525,7 @@ to VM code at evaluation time (so there is a simple JIT compiler).
 So it's not too expensive to reference a large library where most of the
 definitions aren't used.
 
-== Data Types and Pattern Matching
+## Data Types and Pattern Matching
 TeaCAD is a dynamically typed language.
 A "type" is a special kind of subset of the set of all values:
 it's a subset that specifies the domain or range of a function,
