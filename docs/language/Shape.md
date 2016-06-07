@@ -1,4 +1,4 @@
-= Geometric Shapes
+# Geometric Shapes
 
 Shapes are represented by objects.
 
@@ -23,7 +23,7 @@ other query operations:
 * for polyhedra:
   * 3d_points(p), 3d_faces(p) provide arguments to polyhedron().
 
-== Primitive Shapes
+## Primitive Shapes
 * Includes the OpenSCAD primitive shapes, but polyhedral and curved shapes
   are distinct: eg, cylinder() vs prism().
 * Includes the Conway operator seed shapes.
@@ -41,7 +41,7 @@ So,
 * tetrahedron, hexahedron, octahedron, dodecahedron, icosahedron
 * geode
 
-== Parameters for Primitive Shapes
+## Parameters for Primitive Shapes
 * Polyhedral and curved shapes are distinct: eg, cylinder() vs prism().
 * There's no overloading of multiple geometric primitives into a single module,
   eg, cylinder() vs cone().
@@ -78,7 +78,7 @@ can be more or less than the specified radius.
 What data structure can preserve this information until tesselation occurs?
 A CSG tree.
 
-== What is a Shape?
+## What is a Shape?
 Obviously, cube() returns a 3DShape, square() returns a 2DShape,
 and both are classified as Shape.
 
@@ -106,7 +106,7 @@ Eg, forming the 3D projection of 4D objects. (Ooh, MathArt as a project name?)
 CGAL has a d-dimensional geometry kernel, but it (apparently?) doesn't do much.
 The "Boolean" set operations are supported on 2D and 3D Nef polytopes only.
 
-== Polytope representation.
+## Polytope representation.
 In the general case, a polygon or polyhedron shape can have
 multiple disjoint figures, each with zero or more interior voids.
 * The interface for querying the vertices and faces of a polytope

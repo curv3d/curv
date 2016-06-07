@@ -1,4 +1,4 @@
-== An Idealized Implementation
+# An Idealized Implementation
 Based on Javascript and Lua implementations, here's an idealized (but ambitious)
 implementation for CurvyScript:
 - The lexer produces a stream of tokens.
@@ -41,7 +41,7 @@ In the context of CurvyCAD, a strongly-typed subset of CurvyScript will be used
 for the functional representation of shapes, and will be compiled to either
 GLSL or to optimized machine code using LLVM.
 
-== A Simple Implementation
+## A Simple Implementation
 We'll actually just do a simplified subset of the ambitious implementation.
 
 ```

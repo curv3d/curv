@@ -1,4 +1,4 @@
-= Lazy Lists
+# Lazy Lists
 Two key features of functional programming are (a) constructing new functions
 using operations on functions, and (b) lazy lists to abstract a sequence of
 iteration states away from the code that operates on that state.

@@ -113,12 +113,9 @@ while each 'general case function call' will appear in the stack trace.
 
 The stack trace is stored in the curv::Exception so that the Bad_Argument
 exception can access it to reproduce the Location.
-Probably, a stack trace entry is a linked list node containing a Phrase
-and a Function.
-* Using a Phrase, I'm keeping the entire parse tree around during execution.
-  (The JIT compile strategy kind of does that anyway, is this a big deal?)
-* Using a Location, I'm paying an extra compile time cost to construct the
-  Location of each function call, so that I can discard the parse tree.
+A stack trace entry is a linked list node containing an Apply_Phrase
+and a Function value. Both are needed to reproduce the location of a bad
+argument. The Apply_Phrase alone reproduces the location of the function call.
 
 How do I construct the stack trace?
 * Most likely: A chain of try-except handlers at each call point.

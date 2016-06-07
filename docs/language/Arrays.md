@@ -1,4 +1,4 @@
-= Arrays
+# Arrays
 TeaCAD supports arrays of numbers of arbitrary dimension,
 plus the usual linear algebra operations on vectors and matrices.
 A vector is a list of numbers, a matrix is a list of vectors, and so on.
@@ -126,7 +126,7 @@ What does this look like for `max`?
 * Or `max flatten T` to find the maximum value in an arbitrary tensor T
   of rank >= 1.
 
-== Boolean Arrays
+## Boolean Arrays
 This is a topic for future consideration.
 
 A majority of scientific and array languages generalize the relational and
@@ -198,7 +198,7 @@ Either:
 * true and false are distinct values, different from numbers, or
 * the truth values are 0 and 1, and we supply true and false as aliases.
 
-== Bibliography
+## Bibliography
 The APL family of array languages are of interest.
 * K is notable, due to its simplicity, and also because multi-dimensional arrays
   are represented as lists of lists, as in OpenSCAD.

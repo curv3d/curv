@@ -1,4 +1,4 @@
-= SCode
+# SCode
 Scode is a dynamically typed, pure functional programming language.
 It is small, simple and elegant, with 7 basic data types.
 It has a small implementation, designed for being embedded in another project.
@@ -10,7 +10,7 @@ community, to demonstrate future possibilities for that project.
 SCode will be the scripting language for Red Mercury, which is another
 technology demo.
 
-== Implementation
+## Implementation
 I should use C++ as the implementation language. That's what OpenSCAD is written in,
 and is the best choice if I want the OpenSCAD project to use my code,
 or likely if I want others to use my code.

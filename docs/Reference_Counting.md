@@ -1,4 +1,4 @@
-= Recursion and Reference Counting
+# Recursion and Reference Counting
 I can use reference counting to manage storage,
 even in the presence of first-class recursive function closures.
 Benefits:
@@ -47,13 +47,13 @@ Note if you want sequential assignment, you use let(a=X)let(b=Y)Z.
 In summary, there are no significant restrictions on recursive definitions,
 and refcounting cycles are avoided.
 
-== Older Stuff
+## Older Stuff
 I need to prove that ref-counting will work.
 My initial assumption is: no infinite/recursive data structures.
 But, I support recursive functions and closures. So that's the problem for
 which I need a non-recursive representation.
 
-== Function Definitions
+## Function Definitions
 
 The basic idea is similar to how the Y-combinator eliminates recursion.
 A potentially recursive function (prfun) is passed an additional object argument
@@ -70,7 +70,7 @@ the argument list and the implicit environment argument E.
 If E.F is used outside the context of a function call, then it is converted
 to a closure value containing E and F.
 
-== Function Literals
+## Function Literals
 
 Now add function literals. Eg,
 ```
@@ -95,7 +95,7 @@ weak pointers?
 When a function value is stored in an object, we attempt to strip it down
 to a prfun to prevent cycles?
 
-== Recursive Definitions
+## Recursive Definitions
 
 Scripts use 'recursive scope' (as in letrec), but only functions can be defined
 recursively. No recursive objects or lists. JIT compiler enforces this.

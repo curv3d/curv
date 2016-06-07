@@ -130,6 +130,11 @@ for space and rapid element access.
 * Ditto for matrices. It's nice that boxed lists are an efficient native
   representation for vectors and matrixes, without copying.
 
+LATER: I may want to use SSE/AVX/simd vector instructions on lists to implement
+vector operations. Alignment might become an issue, as there can be 16 byte
+or 32 byte alignment requirements on operands. Lists are planned to have an
+8 byte header.
+
 I want an efficient range representation (OpenSCAD2).
 ```
   { size_t, Value*, Shared_Ptr<List> parent }
@@ -145,7 +150,8 @@ and tail with reasonable efficiency:
   * Multiway trees where each node consists of an array of elements
     and an array of subtrees; base array type is configurable.
 * Braun Trees, all ops O(log N)
-* Skew binary random-access list, log. array ops, const. list ops.
+* Skew binary random-access list
+  * O(1) cons, head, tail. O(log n) array index lookup and update.
   * Okasaki, Chris. Purely Functional Data Structures.
 * Finger trees.
   * amortized O(1) access to leaves of tree, containing the data.
@@ -168,12 +174,29 @@ a special case and create cons cells, or even provide a cons primitive?
 (Compile `concat[[x],a]` into `cons(x,a)`.)
 With a cons list, `a@0` and `a@(1..)` are efficient and so is `for` iteration.
 
+Here's a simple design, optimized for front-to-back iteration, not for random
+access.
+```
+tree ::= array | slice | cons | concat
+cons ::= cons(elem, tree)
+concat ::= concat(array|slice, tree)
+```
+
+Maybe we convert to an array when random access is attempted.
+
 I may want lazy lists. List comprehensions could be lazy. Maybe a lazy concat.
-* This requires some kind of linked list/tree representation. Consider this
-  in conjunction with tree based functional arrays, above.
-Maybe use Haskell representation of a linked list, with Value encoding for an
-unevaluated thunk. Need to avoid cyclic references. I think this can be
-detected and prevented at compile time.
+Concat is only lazy if argument is a list literal.
+This requires some kind of linked list/tree representation. Maybe:
+```
+tree ::= for-thunk | concat-thunk | if-thunk
+```
+Haskell lazy lists are traversed front-to-back, and my list tree design is
+designed that way.
+
+How do these thunks work with the ref-counting/no-cycles restriction?
+* Laziness is implemented by the compiler, opportunistically, so
+  we won't create a thunk if we can't.
+* Does `ones = cons(1, ones)` work?
 
 ## Object
 The obvious representation is just a map from names to values,

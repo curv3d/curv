@@ -1,4 +1,4 @@
-= Bounding Boxes
+# Bounding Boxes
 
 Representation:
 * 2d: [[xmin,ymin],[xmax,ymax]]

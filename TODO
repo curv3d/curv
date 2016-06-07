@@ -11,7 +11,7 @@
       `throw aux::Exception(to_string(x,"/",y,": domain error"))`
     * `arg_to_num(Value,char* param_name)`: throw error if not a number,
       otherwise return double. API is independent of Value refactoring.
-* compile parse tree into Meaning, then Meaning::eval()
+* Phrase::analyze() compiles parse tree into Meaning, then Meaning::eval()
 * string literals, [a,b,c] list literals, no list comprehensions
 * seq@i, len(seq), concat[v1,v2,v3], strcat[s1,s2,s3]
 * && || !, if-else
@@ -19,22 +19,6 @@
 * <, <=, >, >=. Numbers only.
 * more math functions
 * broader unit testing
-
-Introduce a semantic analyzer that converts a syntax tree to a Meaning tree.
-Evaluate the meaning tree (not the syntax tree).
-* look up identifiers
-* type inference
-* etc.
-
-refactor: reimplement scanner using re2c. (Later add utf8 support.)
-
-Add builtin functions like sin(x).
-
-Print floating point numbers accurately.
-
-Full set of operators.
-
-String and list values.
 
 # TCAD1 (basic scripting, LLVM)
 * script files, named functions (top level only for now).
@@ -62,19 +46,20 @@ String and list values.
 * language reference manual
 
 ---------------------------------------------------------------------------
-Later:
+# Later:
 better error messages, print line with caret:
   ERROR: the 'what()' error message
   file foo.scad, line 1[10-15], token foobar
     x = foobar();
         ^-----
+And/or colour the bad text in red.
 
 * Digit separator ' in numerals (like C++14).
 * Support ' in identifiers (like Haskell).
 * Support `foo` quoted identifiers.
   Compatibility with OpenSCAD identifiers, GUI interfaces that display
   parameter names as GUI labels, JSON object keys.
-* UTF-8 support. Rewrite scanner in re2c.
+* Rewrite scanner in re2c. Then add UTF-8 support.
 * Parser: consider Boost::Spirit (recursive descent) or Lemon (similar to
   Bison, thread safe, LALR(1)), or Bison with %pure-parser (thread safe).
   Is Lemon better than Bison? Lemon:

@@ -1,4 +1,4 @@
-= Functions
+# Functions
 Like OpenSCAD2.
 
 Supports pattern matching on lists in formal parameters.
@@ -28,7 +28,7 @@ Function call syntax as in OpenSCAD2, with extensions:
 > Eg, compose a sequence of geometric transformations:
 > `compose[translate(t),rotate(r),translate(-t)]`.
 
-== Autocurrying
+## Autocurrying
 Let's say that `union` is defined like this:
 ```
   union(children=null, r=0) =
@@ -45,7 +45,7 @@ Then you have some flexibility in how you invoke `union`:
   union(r=3) children  // auto-curried
 ```
 
-== Unary Functions
+## Unary Functions
 A unary function is one that can be legally called with a single argument.
 
 `id` is the identity function: a special unary function
@@ -76,7 +76,7 @@ but adds a new kind of value that competes with lists and objects,
 which adds complexity. This particular change doesn't seem to help with
 the goals of TeaCAD, and may result in big changes to the language design.
 
-== Predicates
+## Predicates
 A predicate is a unary function that returns a boolean.
 Predicates define a subset of the set of all values.
 

@@ -1,4 +1,4 @@
-= SGDL and the Arithmetic of Forms
+# SGDL and the Arithmetic of Forms
 This is an innovative F-Rep geometry engine developed by some guys in Montreal.
 It's an original remix of functional representation, using homogenous
 coordinates and projective geometry.

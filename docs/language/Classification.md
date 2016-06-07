@@ -1,4 +1,4 @@
-= Classification of Values
+# Classification of Values
 
 Standard "type" predicates like is_boolean, is_number, ...
 
@@ -68,7 +68,7 @@ tree.vars, leaf.vars, local.vars; set, cset, append, prepend, var||default).
 And also, the default/override system in OpenSCAD2 (mixins & override,
 include and overlay).
 
-== Atoms
+## Atoms
 One of the ideas behind 'contract' and 'requirement' is to provide a way
 to create new unique "branded" values, using either a special definition
 syntax, or a special new_* function with the compile time side effect of

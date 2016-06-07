@@ -1,4 +1,4 @@
-= Name Of This Software
+# Name Of This Software
 
 The key thing I'm building is an integrated geometry kernel and VM for a
 programming language. The integration is needed because of F-Rep: a model is

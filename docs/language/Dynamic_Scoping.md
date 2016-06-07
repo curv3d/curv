@@ -1,10 +1,10 @@
-= Dynamic Scoping
+# Dynamic Scoping
 
 TeaCAD supports dynamically scoped variables.
 If a variable's name begins with `$`, then it is dynamically scoped,
 otherwise it is lexically scoped.
 
-== What Does That Mean?
+## What Does That Mean?
 A TeaCAD script file has an associated tree of lexical scopes.
 The root scope is the *builtin* scope, which contains the variables
 that are built in to the language. Under that is the file scope, and under
@@ -38,14 +38,14 @@ mean that TeaCAD is an imperative language with mutable global variables.
 The TeaCAD language specification is not biased towards one particular
 implementation.
 
-== Why Is This Useful?
+## Why Is This Useful?
 Dynamically scoped variables are used as implicit function arguments,
 in those cases where it makes sense to specify the value of a particular
 argument for all function calls in a particular call tree. This avoids the
 need to explicitly pass these arguments through every intervening function
 call up to the functions that need it.
 
-== Centralized Definitions and Default Values
+## Centralized Definitions and Default Values
 A lexically scoped variable is defined at a particular spot in the source
 code. It is possible for two different libraries to export lexical variables
 of the same name; they can be kept distinct, and disambiguated
@@ -78,7 +78,7 @@ Um, except that you can qualify builtin dynamic variables using `builtin.`
 to get their default values, for example using
 `builtin.$seed` to get the default value of `$seed`.
 
-== Setting a Dynamic Variable
+## Setting a Dynamic Variable
 Three ways to set a value for a dynamic variable:
 * `let ($foo=x) ...`
 * `f(..., $foo=x)`
@@ -103,7 +103,7 @@ since it cannot be seen inside the definition of `circ`.
 
 
 
-= Previous Draft
+# Previous Draft
 The general idea is this: When a variable is lexically scoped, the system looks
 to where the function is defined to find the value for a free variable. When
 a variable is dynamically scoped, the system looks to where the function is
@@ -138,7 +138,7 @@ can have different values on different calls. I need this for F-Rep, but
 I think a different mechanism is needed than this, since I don't necessary
 agree with call-by-name argument passing.
 
-== How It Works
+## How It Works
 A special variable is one whose name begins with `$`. Special variables are
 dynamically scoped, as defined here.
 
@@ -168,7 +168,7 @@ marked special, unlike in Lisp. This does make it possible to have module
 specific 'special' variable bindings, without name collisions.
 Eg, `fluid_let(M.$foo = 42) ...` in TeaCAD.
 
-=== idea: fluid-let
+### idea: fluid-let
 Here's an idea:
 * `let ($foo=x) ...` is the equivalent of fluid-let in Scheme. `$foo` must
   be defined in the lexical scope. Also, `let (M.$foo=x)...` is legal.
@@ -189,7 +189,7 @@ To fix this,
 
 Also, the traditional use of `{$fn=20; ...}` would not work.
 
-=== idea: single global namespace
+### idea: single global namespace
 All special variables share a single global namespace.
 
 Is there some way to globally define a default value?
@@ -231,7 +231,7 @@ Special variables expose evaluation order?
     A lazy (deferred) expression should capture special variable bindings,
     just as non-local bindings must be captured.
 
-=== incremental update of special variables
+### incremental update of special variables
 Can you set a special variable as a function of its previous value?
 
 A use case: random numbers in animations.

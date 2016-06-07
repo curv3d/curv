@@ -324,21 +324,21 @@ since OpenSCAD variable names can begin with `$`.
 TeaCAD uses `?` as the escape character, since it doesn't appear in
 file names and doesn't conflict with variable names. It's fairly readable
 and mneumonic.
-* `?`*identifier* -- interpolate as repr, common case for debugging
-* `?(`*expression*`)` -- interpolate as repr
-* `?{`*expression*`}` -- interpolate strings literally, rest as repr
+* `?`*identifier* -- interpolate as expression, common case for debugging
+* `?(`*expression*`)` -- interpolate as expression
+* `?{`*expression*`}` -- interpolate strings literally, rest as expression
 * `?+`*hexdigits* or `?+{`*hexdigits*`}`. Unicode code point.
   Eg, U+1F600 (smiley face) is written as `"?+1F600"`.
 
 For example, `echo("x=?x, y=?y")`.
 
 Special names for characters. I don't need a lot of syntax for this,
-since those names can be defined in libraries. Eg, `nl="?+A";`
-and then `"?nl"` or "?{nl}"` for newline. I'll include `nl`
-in the standard library.
-But maybe these special cases are worth having:
+since those names can be defined in libraries. The standard library
+will define `nl="?+A";`, so you can use `"?nl"` or "?{nl}"` to
+interpolate a newline.
+But these special cases are worth having:
 * `??` --  literal `?`
-* `?"` or `""` (undecided) --  literal `"`
+* `""` --  literal `"`
 
 ### String literals:
 
@@ -352,7 +352,7 @@ for outputting multi-line debug messages. The variable interpolation
 feature is useful in this context. So I'll allow multiline string
 literals and preserve the newlines.
 
-You could also write code like this:
+Note, you could also write code like this:
 ```
 strcat[
   "some text?nl",
