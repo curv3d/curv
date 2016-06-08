@@ -196,7 +196,17 @@ designed that way.
 How do these thunks work with the ref-counting/no-cycles restriction?
 * Laziness is implemented by the compiler, opportunistically, so
   we won't create a thunk if we can't.
-* Does `ones = cons(1, ones)` work?
+* Does `ones = cons(1, ones)` work? Yes.
+  In Haskell, that would evaluate to a cyclic list, the most efficient result.
+  In TeaCAD, with reference counting, the best we can do is the following
+  sequence of evaluations: cons(1,thunk) -> cons(1,cons(1,thunk)) -> ...
+  The thunk is a closure C which returns cons(1,C) when evaluated.
+  The thunk C doesn't contain cyclic references.
+  C is a pair, closure(env,f), where f = env->cons(1,closure(env,env.ones)).
+  * This is similar to the Y Combinator encoding of recursion.
+  * Thunks are passed around as Values, stored as members of lists.
+    When a Value is poked to determine its type, if it is a thunk then it is
+    evaluated: the Value is updated in-place, replaced by the thunk result.
 
 ## Object
 The obvious representation is just a map from names to values,

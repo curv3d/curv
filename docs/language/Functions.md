@@ -45,6 +45,13 @@ Then you have some flexibility in how you invoke `union`:
   union(r=3) children  // auto-curried
 ```
 
+I don't know if this technique is a good idea, but it is possible.
+
+ImplicitCAD has built-in currying (of some form), where if
+a required argument is omitted, then a partially applied function is
+returned. Eg, `f=max(4); f(5) == max(4,5)`.
+That seems too error prone, however.
+
 ## Unary Functions
 A unary function is one that can be legally called with a single argument.
 
@@ -87,23 +94,29 @@ A type predicate defines a set of values that support
 some set of operations. In OpenSCAD, idioms like `abs(X)==undef`
 are used to test if X is a number, but that won't work in TeaCAD
 due to strict argument checking. So we provide type predicates
-instead, and you use `Num(X)` to test if X is a number.
+instead, and you use `is_num(X)` to test if X is a number.
 
-Here are some useful type predicates:
-* Bool
-* Num
-* Int
-* String
-* List(type=Any,len=null)
-* Func -- all values that can be called using function call notation.
-* Obj -- all values with name/value attributes accessed using `.` notation.
-* Seq -- all sequence values that support len(X), X@i, etc.
+TeaCAD has 7 basic data types, which partition the set of all values.
+Here are the 7 corresponding type predicates:
+* is_null
+* is_bool
+* is_num
+* is_str
+* is_list(type=is_any,len=null)
+* is_fun -- all values that can be called using function call notation.
+* is_obj -- all values with name/value attributes accessed using `.` notation.
+
+Some other possible type predicates:
+* is_int
+* is_seq -- all sequence values that support len(X), X@i, etc.
+  This is complicated by the fact that strings are not first class sequences.
+  Really, there is `is_list|is_obj`, and `is_list|is_obj|is_string`.
 
 By Occam's Razor, predicates are better than 'type values' for specifying types.
 
 Some special predicates:
-* Any(p) = true
-* None(p) = false
+* is_any(p) = true
+* is_none(p) = false
 
 These predicates might be useful:
 `==X`, `!=X`, `<X`, `>X`, `<=X`, `>=X`.
@@ -119,10 +132,12 @@ Maybe these boolean operations should also have an operator form?
 `p&q`, `p|q`, `~p`.
 
 Eg,
-* filter(Int & >= 0)
+* filter(is_int & >= 0)
 * >=0 & <1
-* Tensor = Num | List(Tensor)
-  * recursion is okay here, because `f|g` compiles to `x->f(x)||g(x)`
+* is_tensor = is_num | is_list(is_tensor)
+  * Not quite correct, since it doesn't verify that the array is rectangular.
+  * This recursive definition isn't compiled into a thunk,
+    because `f|g` compiles to `x->f(x)||g(x)`.
 
 The Haskell prelude has functions for `all o map(P)` and `some o map(P)`.
 In Haskell these are `all(P)list` and `any(P)list`.

@@ -6,6 +6,8 @@ geometric operations.
 The TeaCAD Core is a dynamically typed, pure functional language
 with 7 kinds of values: null, boolean, number, string, list, object, function.
 
+There is no explicit concept of "type" or "user defined data type".
+
 ## Error Handling
 What happens when a function is unable to compute a result
 (eg, because it is passed bad arguments)?
@@ -39,9 +41,11 @@ The special value `null` indicates the absence of a result, and is returned
 when a function needs to indicate that it couldn't compute a result.
 
 The `null` value is identified with `undef` in OpenSCAD.
-It is also identified with NaN in IEEE floating point.
-If there are any cases where we want a numeric operation to return NaN,
-it will actually return `null` instead. There is no separate NaN in TeaCAD.
+
+When OpenSCAD code is executed by TeaCAD, operations that normally return NaN
+will actually return `null`. However, native TeaCAD numeric operations
+abort with a domain error if they can't compute a number.
+For example, OpenSCAD `sqrt(-1)` returns `null` while TeaCAD `sqrt(-1)` aborts.
 
 Unlike NaN, `null` doesn't mess with semantics of the equality operator.
 So `null==null` is `true`. This is so you can easily test if a function
@@ -150,10 +154,21 @@ becomes more important in the context of arrays, described later.
 
 TeaCAD does not support varargs functions, not even built-in ones.
 In all cases where a variable number of arguments is needed, a single
-list argument is used instead. This is more flexible, because the list argument
-can be written either as a list literal, or as an expression which computes
-a list at run time. There's no loss of convenience, because you can write
-`max[a,b]` instead of `max([a,b])` as an abbreviated form of function call.
+list argument is used instead.
+* This is more flexible, because the list argument can be written either as
+  a list literal, or as an expression which computes a list at run time.
+  There's no loss of convenience, because you can write
+  `max[a,b]` instead of `max([a,b])` as an abbreviated form of function call.
+* It's more consistent. All functions have a fixed number of arguments,
+  with a different name for each argument. Labeled arguments work consistently
+  for all functions.
+* It's more efficient. Since functions are first class values, we have
+  to pick a uniform calling convention. A varargs calling convention,
+  where all arguments are pushed on the stack, and the number of arguments
+  is also passed, is inefficient. Instead, functions are compiled into machine
+  code using a C style calling convention with a fixed number of arguments,
+  some of which may be placed in registers. Tail recursion optimization is not
+  possible for varargs functions, but is possible for our calling convention.
 
 ## Boolean values
 There are two boolean values, `true` and `false`.
@@ -177,28 +192,30 @@ some have advocated, and it were to
 consistently treat 0 as false and non-zero numbers as true, then
 `square(5,10)` would not report an error, instead it would center the square.
 
-*bool1* `and` *bool2*
+*bool1* `&&` *bool2*
 > `true` if both arguments are true, otherwise `false`
 > It's traditional to short-circuit the evaluation of *bool2* if *bool1*
 > is false.
 
-`all(list)` (or `every(list)`)
-> The function version of the `and` monoid: return true if all list elements
+`all(list)`
+> The function version of the `&&` monoid: return true if all list elements
 > are true. Return true if the list is empty.
+>
 > Eg, `all[for (x=L) x>0]` is true if all list elements are > 0.
-> The compiler may insert code to short-circuit the loop if a false element
-> is found. Or, as in Haskell, the short-circuit may occur due to lazy lists.
+> Note: `all` stops processing its list argument when the first false element
+> is found (short circuit evaluation). In the example, due to laziness,
+> the `for` loop will exit when the first non-positive x is found.
 
-*bool1* `or` *bool2*
+*bool1* `||` *bool2*
 > `true` if either argument is true, otherwise `false`
 
-`some(list)` (or `any(list)`)
-> The function version of the `or` monoid: return true at least one list
+`some(list)`
+> The function version of the `||` monoid: return true at least one list
 > element is true. Return false if the list is empty.
-> The compiler may insert code to short-circuit the loop if a true element
+> Note: `some` stops processing its list argument when the first true element
 > is found.
 
-`not` *bool*
+`!` *bool*
 > logical negation of argument
 
 `if (`*bool*`) `*val1*` else `*val2*
@@ -206,10 +223,10 @@ consistently treat 0 as false and non-zero numbers as true, then
 
 ## Numbers
 TeaCAD numbers are 64 bit IEEE floating point numbers, just like OpenSCAD.
-Numeric literals have the same syntax.
-I'd like to support `_` between digits, as an ignored character,
-so that large numerals can have digits broken up into groups of three,
-like `1_000_000`.
+
+Numeric literals have the same syntax as C/C++.
+I'd like to support `'` as an optional digit group separator (like in C++14).
+For example, `1'000'000`.
 
 Numeric operations don't return NaN, they abort instead.
 
@@ -219,17 +236,17 @@ Numeric operations don't return NaN, they abort instead.
 TeaCAD has the same set of numeric operations as OpenSCAD,
 with a few differences.
 
-*n1*` mod `*n2*
+`mod(x,m)`
 > modulus.
 > Unlike `%` in OpenSCAD, `mod` correctly computes the modulus for both positive
 > and negative arguments.
 > ```
-> a mod m == a - m*floor(a/m)
+> mod(x, m) == x - m*floor(x/m)
 > ```
 > Reference: http://mathworld.wolfram.com/Mod.html
 
-*n1*` ^ `*n2*
-> raise *n1* to the power of *n2*
+*x*` ^ `*y*
+> raise *x* to the power of *y*
 
 Trigonometry: `sin`, `cos` etc take arguments in radians, rather than degrees.
 Why?
@@ -243,6 +260,7 @@ Why?
   the distance around the perimeter of a circular wedge with the angle subsumed.
 
 standard trig constants:
+* `e = 2.718281828459045;`
 * `pi = 3.14159265358979323846;`
 * `tau = pi * 2;`
 * `deg = tau / 360;`
@@ -311,57 +329,56 @@ Concatenation: `strcat[s1,s2,...]`
 ### Escape sequences
 Which escape character should we use in string literals?
 
-OpenSCAD uses `\` as an escape sequence.
-However, for beginners, the most common use of string literals is
-file names, and on Windows, `\` is the path separator. So this causes
-confusion, which is best avoided.
+Here are the important use cases for string literals:
+* file names (of local resources).
+* urls (of remote resources).
+* debug messages (via echo and assert).
+* multi-line documentation strings, using some markup language
+  (MarkDown and ReStructured Text are the most popular).
 
-The second most common use of string literals is debug messages:
-echo and assert. I'd like the ability to interpolate variables,
-like `$X` in the Unix shell. The `$` character isn't the best,
-since OpenSCAD variable names can begin with `$`.
+OpenSCAD uses `\` as the escape sequence.
+It's not the best choice:
+* On Windows, `\` is the path separator. This causes confusion for beginners,
+  which is best avoided.
+* `\` is also the escape character for MarkDown and ReStructured Text.
 
-TeaCAD uses `?` as the escape character, since it doesn't appear in
-file names and doesn't conflict with variable names. It's fairly readable
-and mneumonic.
-* `?`*identifier* -- interpolate as expression, common case for debugging
-* `?(`*expression*`)` -- interpolate as expression
-* `?{`*expression*`}` -- interpolate strings literally, rest as expression
-* `?+`*hexdigits* or `?+{`*hexdigits*`}`. Unicode code point.
-  Eg, U+1F600 (smiley face) is written as `"?+1F600"`.
+For writing debug messages, I'd like the ability to interpolate variables,
+using `$X` like in the Unix shell.
+The `$` character is a pretty good choice as an escape character,
+since it doesn't conflict with filenames, urls or markup languages.
 
-For example, `echo("x=?x, y=?y")`.
+Escape sequences:
+* `$`*identifier* -- interpolate as expression, common case for debugging
+* `$(`*expression*`)` -- interpolate as expression
+* `${`*expression*`}` -- interpolate strings literally, rest as expression
+* `$+`*hexdigits* or `$+{`*hexdigits*`}`. Unicode code point.
+  Eg, U+1F600 (smiley face) is written as `"$+1F600"`.
 
-Special names for characters. I don't need a lot of syntax for this,
-since those names can be defined in libraries. The standard library
-will define `nl="?+A";`, so you can use `"?nl"` or "?{nl}"` to
-interpolate a newline.
+For example, `echo("x=$x, y=$y")`.
+
+OpenSCAD defines `\t`, `\r` and `\n` as names for special characters.
+We don't need this syntax, since character names can be defined by libraries.
+The standard library will define `nl="$+A";`,
+so you can use `"$nl"` or "${nl}"` to interpolate a newline.
 But these special cases are worth having:
-* `??` --  literal `?`
-* `""` --  literal `"`
+* `$$` --  literal `$`
+* `$"` --  literal `"`
+
+Note that a special variable like `$t` must be interpolated
+as `"${$t}"` or `"$($t)"`.
+
+Note that, because arbitrary expressions (not just variable names)
+can be interpolated into string literals, that means there's a
+recursive dependency between the lexical analyzer and the parser.
 
 ### String literals:
 
-`"`...`"` is a string literal (see escape sequences above).
+`"`...`"` is a string literal which must begin and end on the same line.
 
-As in OpenSCAD, a string literal can span multiple lines.
-However, OpenSCAD deletes embedded the newlines, not sure why.
+A Python-style multi-line text literal begins and ends with `"""`.
+These are used for debug messages and doc strings.
 
-Multiline string literals (with embedded newlines) are useful
-for outputting multi-line debug messages. The variable interpolation
-feature is useful in this context. So I'll allow multiline string
-literals and preserve the newlines.
-
-Note, you could also write code like this:
-```
-strcat[
-  "some text?nl",
-  "some more text?nl"]
-```
-
-Python has """ style string literals, raw text literals, lots of variations
-but we don't need that much complexity in TeaCAD, since string processing
-is not a focus of the language.
+Both types of string literal may contain escape sequences beginning with `$`.
 
 ### Code Points vs Characters
 
@@ -396,7 +413,8 @@ using a `for` loop. But for this to work perfectly, we'd need a character
 data type. Not sure about this yet.
 
 ## Lists
-constructors:
+
+### List Constructors
 - list literals and comprehensions, as in OpenSCAD
 - range literals are lists, as in OpenSCAD2
 
@@ -417,6 +435,74 @@ Range literal syntax:
   Python or Matlab users. It can be used as part of an extended list
   comprehension and array slice notation.
 
+### Lazy Lists
+I'd like to support lazy lists (see Why Functional Programming Matters).
+I have an implementation in mind that would support lazy infinite lists like:
+```
+ones = cons(1, ones);
+```
+
+Lazy linked lists and strict arrays have the same data type:
+there are just a multiple internal representations for the list type.
+
+These builtin functions provide the abstract interface for Lisp/Haskell style
+list algorithms:
+```
+empty(v) = len(v) == 0;
+first(v) = v@0;
+rest(v) = v@(1..);
+cons(e,v) = concat[[e],v];
+```
+
+The syntax `[a,b,c]` constructs a strict array with O(1) indexing.
+The syntax `cons(e,v)` constructs a cons cell, part of a linked list
+which is eventually terminated by an array.
+The recursive definition
+```
+ones = cons(1, ones);
+```
+causes `ones` to be implemented as a thunk, due to the fact that the compiler
+has detected recursion. This results in a lazy list, not because `cons`
+is necessarily lazy, but because `ones` is lazy.
+
+There is an `array` function which flattens a linked list to an array.
+This doesn't change its type, just the internal representation, copying the data
+if necessary in order to ensure that the result has O(1) indexing.
+* This is less abstract than providing a self-adjusting list data structure
+  that automatically reshapes itself to provide good performance for all of
+  the operations (such as the various tree-based "functional array" data
+  structures). But, the reason there are so many functional array data
+  structures is that they have different performance tradeoffs, and you need
+  to make a choice based on your performance requirements. If you are tuning
+  the performance of a TeaCAD program, then `array` may give you the ability
+  to speed things up by giving you more control over the representation.
+* It's more abstract than the common approach of providing multiple
+  incompatible 'sequence' data types (eg, list vs array) and forcing the user
+  to choose one.
+
+List comprehensions are lazy (consistent with F# seq constructors).
+Or maybe, [for (i=a) ...] returns an array if a is an array, or returns
+a lazy list if a is a lazy list. It might also depend on the size of a.
+
+What is the performance of `concat`? Copy everything and construct a flat
+array? Or is it allowed to be faster and return some kind of tree?
+* What if an infinite list is given as an argument?
+  It should be possible to prepend elements to a lazy list, and you can
+  using `cons`, but shouldn't this work as well?
+  We can mark a lazy list as having unknown length and `concat` can test this.
+* Maybe this: `concat[a,b,c]` == `cat(a,cat(b,c))` where `cat` is another node
+  type.
+
+What is the implementation of a general list comprehension?
+* With no generators, [a,b,c] is an array.
+* More generally, we process action expressions from right to left:
+  * start with result = []
+  * a series of expressions is converted to an array a,
+    then result = cat(a, result).
+  * if (c) expr -> if (c) result := cons(expr, result)
+  * for -> result := cat(for-object, result)
+
+### List Library
 I want a better library of standard list functions.
 
 `transpose(L)`
@@ -432,6 +518,8 @@ I want a better library of standard list functions.
 > The `assoc_list` is a list of `[key,value]` pairs.
 > Find the first pair with the specified key, and return the associated value.
 > If the key is not found, return `null`.
+> (Name conflicts with OpenSCAD integer lookup table function: use `find`?
+> or `search`?) Called lookup in Haskell, member in Scheme, assoc in Lisp.
 
 `flatten(L)`
 > Flatten a nested list of arbitrary depth to a flat list of non-list elements.

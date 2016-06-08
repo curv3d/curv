@@ -1,4 +1,6 @@
 # Arrays
+
+## Tensors
 TeaCAD supports arrays of numbers of arbitrary dimension,
 plus the usual linear algebra operations on vectors and matrices.
 A vector is a list of numbers, a matrix is a list of vectors, and so on.
@@ -21,19 +23,40 @@ Indexing a tensor.
   and the range syntaxes are `..`, `i..`, `..j` and `i..j`.
 * For a tensor of rank N, you can specify less than N indexes
 
+Performance note: The Curv "boxed value" format represents numbers in memory
+as 64 bit IEEE floats, and it represents lists of numbers as contiguous arrays
+of 64 bit IEEE floats. This means that vector instructions (eg, SSE or AVX
+on Intel) can be applied directly to boxed vectors, without copying the data.
+Since we compile TeaCAD directly to optimized machine code, this should
+allow for fast vector operations.
+
+## Broadcasting
 In OpenSCAD, the arithmetic operations -A, A+B, A-B support pointwise
 operation and "broadcasting" across arrays and arbitrary shaped trees,
-following the convention of most array languages. In TeaCAD, *all* of the
-numeric operations support these semantics, including A*B, abs(A), max(A,B),
-sin(A), and so on.
+following the convention of most array languages.
 
-Here's code for broadcasting unary operation `f` across a sequence:
+In TeaCAD, *all* of the numeric operations support these semantics,
+including A\*B, abs(A), max[A,B], sin(A), and so on.
+
+What does this look like for `max`?
+* `max[5, [2,4,6]] == [5,5,6]`
+* `max[[1,2], [3,0]] == [3,2]`.
+  If we interpret the argument to max as a matrix, instead of as a list of
+  two vectors, then we've computed the maximum of each column.
+* To compute the maximum of each row in matrix M,
+  you can write `max transpose M`.
+* To compute the maximum value within the matrix, you can write `max max M`
+  or `max concat M`.
+* Or `max flatten T` to find the maximum value in an arbitrary tensor T
+  of rank >= 1.
+
+Here's sample code for broadcasting unary operation `f` across a list:
 ```
-  broadcast(f)(x) =
-    if (x isa Sequence)
-      map(broadcast f)x;
+  broadcast(f)(xs) =
+    if (is_list xs)
+      map(broadcast f)xs
     else
-      f(x)
+      f(xs);
 ```
 
 I plan to base the design on Mathematica (Wolfram language),
@@ -41,26 +64,82 @@ because it is a well known, fully worked out and consistent design,
 based on a dynamically typed language where multi-dimensional arrays
 are represented as nested lists.
 
-Also important is that the Mathematica operators have consistent
-mathematical properties across all operands.
-For example, in TeaCAD, the `*` operator
-is associative, commutative and distributive for all operands, unlike in
-OpenSCAD.
-This assists humans
-in reasoning about code without knowing the types of operands.
-It also assists an optimizing compiler in optimizing expressions without
-knowing the types of operands, which is important for future optimization work.
-This is one aspect of Mathematica that is better designed
-than most other numeric and scientific programming languages.
-That's because Mathematica's symbolic algebra wouldn't work if the operators
-didn't have consistent mathematical properties.
+<!--
+Note: There may be a performance implication to generalizing ordinary
+numeric operations to operate on tensors. It's convenient, but in the
+absence of type information, the compiler can't generate efficient
+code for an expression like `x+y` (ie, a floating point add instruction),
+because x and y might be non-scalar.
 
-I'll demonstrate what this means for multiplication.
+So *maybe* I want to syntactically distinguish tensor operations from
+scalar operations. Of course, that will be ugly. One idea is to use
+`#` to indicate a tensor operation, like this:
+```
+-#x
+x +# y
+sin#(x)
+```
+So the ugly `#` is a visual reminder that you are doing something expensive.
+Alternatively, we leave it out, and if you want higher performance,
+then you add type annotations.
+
+One context where `#` is semantically useful is equality:
+`x==y` compares two tensors for equality, returning `true` or `false,
+while `x==#y` performs an element-by-element comparison, returning an array
+of booleans. Both are useful in computational geometry: eg, GLSL supports both
+forms of equality on vectors.
+-->
+
+## Generalized Multiplication
+Here are 3 ways to generalize scalar multiplication to vectors and matrices:
+* Elementwise multiplication (called Hadamard product for matrices).
+* Dot product and matrix multiplication.
+* Vector cross product.
+
+In OpenSCAD, as in Matlab, the syntax `x*y` is used for both scalar
+and matrix multiplication.
+This is convenient, if you are focussed on matrix multiplication,
+but it creates semantic inconsistencies, and other scientific/matrix-oriented
+programming languages make different choices.
+Mathematica, R, and Euler Math Toolbox use `x*y` for scalar and
+elementwise array multiplication, and a different syntax for matrix
+multiplication. I'll argue that this latter design is better.
+
+ 1. Each operator should be designed to have consistent mathematical
+    properties across all operands. For example, elementwise multiplication
+    is associative, commutative and distributive for all operands,
+    and is a monoid with identity element 1.
+    * This assists humans in reasoning about code without knowing the types
+      of operands. When you look at an arithmetic expression, you by default
+      think about what it means for scalar operands. You assume,
+      perhaps unconsciously, that x*y == y*x, and that's its okay to
+      rearrange the code under this assumption. (But matrix multiply is
+      not commutative.)
+    * It also assists an optimizing compiler in optimizing expressions without
+      knowing the types of operands, which is important for future optimization
+      work.
+
+ 2. If we are going to generalize existing scalar operations to work on arrays,
+    then we should be consistent. Elementwise operation (broadcasting) is
+    a consistent generalization.
+
+ 3. In TeaCAD and OpenSCAD, matrixes are represented as nested lists.
+    There is no 'matrix' type. TeaCAD can't distinguish between a matrix
+    and a list of 3D points (eg, the latter appears in the `polyhedron`
+    arguments). Elementwise multiplication is something that makes sense
+    in both contexts. Matrix multiplication is more specialized than this,
+    so it needs to be a different operation.
+
+Mathematica is a good language to for TeaCAD to copy, because:
+* It represents arrays as nested lists, just like OpenSCAD.
+* It is consistent by design: Mathematica's symbolic algebra wouldn't work
+  if the operators didn't have consistent mathematical properties.
+
 TeaCAD adopts 3 multiplication operators from Mathematica,
 which in TeaCAD are called `product` (*), `dot` (·)
 and `cross` (⨯). (The Mathematica names are Times, Dot and Cross.)
 
-`product` performs pointwise multiplication.
+`product[x,y]` or `x*y` performs pointwise multiplication.
 So 2*3 == 6, 2*[1,2,3]==[2,4,6], [1,2,3]*[1,2,3]==[1,4,9],
 and so on for higher dimensions. It computes the pointwise (Hadamard)
 product of two matrices of the same dimensions.
@@ -110,21 +189,7 @@ Thus applying `+*` to a rank M and a rank N tensor gives a rank M+N-2 result.
 `+*` is associative, but not commutative, and has no universal identity element.
 
 `cross(V1,V2)` is vector cross product.
-
-All of the arithmetic operations are generalized to pointwise
-operations across tensors, including max and min. (This simplifies some of the
-TeaCAD scripts I've written.)
-What does this look like for `max`?
-* `max[5, [2,4,6]] == [5,5,6]`
-* `max[[1,2], [3,0]] == [3,2]`.
-  If we interpret the argument to max as a matrix, instead of as a list of
-  two vectors, then we've computed the maximum of each column.
-* To compute the maximum of each row in matrix M,
-  you can write `max transpose M`.
-* To compute the maximum value within the matrix, you can write `max max M`
-  or `max concat M`.
-* Or `max flatten T` to find the maximum value in an arbitrary tensor T
-  of rank >= 1.
+(not commutative, not associative, no identity)
 
 ## Boolean Arrays
 This is a topic for future consideration.
