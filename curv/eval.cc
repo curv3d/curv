@@ -22,7 +22,7 @@ builtin_sqrt(Value* args)
     if (r == r)
         return r;
     else
-        throw aux::Exception(stringize("sqrt(",args[0],"): domain error"));
+        throw aux::Exception(stringify("sqrt(",args[0],"): domain error"));
 }
 
 const Namespace
@@ -70,7 +70,7 @@ curv::eval(Phrase& expr, const Namespace& names)
                 Value r = Value(-a.get_num_or_nan());
                 if (!r.is_num())
                     throw Phrase_Error(*unary,
-                        stringize("-",a,": domain error"));
+                        stringify("-",a,": domain error"));
                 return r;
             }
         case Token::k_plus:
@@ -79,7 +79,7 @@ curv::eval(Phrase& expr, const Namespace& names)
                 Value r = Value(+a.get_num_or_nan());
                 if (!r.is_num())
                     throw Phrase_Error(*unary,
-                        stringize("+",a,": domain error"));
+                        stringify("+",a,": domain error"));
                 return r;
             }
         default:
@@ -97,7 +97,7 @@ curv::eval(Phrase& expr, const Namespace& names)
                 Value r = Value(a.get_num_or_nan() + b.get_num_or_nan());
                 if (!r.is_num())
                     throw Phrase_Error(*binary,
-                        stringize(a,"+",b,": domain error"));
+                        stringify(a,"+",b,": domain error"));
                 return r;
             }
         case Token::k_minus:
@@ -107,7 +107,7 @@ curv::eval(Phrase& expr, const Namespace& names)
                 Value r = Value(a.get_num_or_nan() - b.get_num_or_nan());
                 if (!r.is_num())
                     throw Phrase_Error(*binary,
-                        stringize(a,"-",b,": domain error"));
+                        stringify(a,"-",b,": domain error"));
                 return r;
             }
         case Token::k_times:
@@ -117,7 +117,7 @@ curv::eval(Phrase& expr, const Namespace& names)
                 Value r = Value(a.get_num_or_nan() * b.get_num_or_nan());
                 if (!r.is_num())
                     throw Phrase_Error(*binary,
-                        stringize(a,"*",b,": domain error"));
+                        stringify(a,"*",b,": domain error"));
                 return r;
             }
         case Token::k_over:
@@ -127,7 +127,7 @@ curv::eval(Phrase& expr, const Namespace& names)
                 Value r = Value(a.get_num_or_nan() / b.get_num_or_nan());
                 if (!r.is_num())
                     throw Phrase_Error(*binary,
-                        stringize(a,"/",b,": domain error"));
+                        stringify(a,"/",b,": domain error"));
                 return r;
             }
         default:
@@ -140,11 +140,11 @@ curv::eval(Phrase& expr, const Namespace& names)
         Value funv = eval(*apply->function_, names);
         if (!funv.is_ref())
             throw Phrase_Error(*apply->function_,
-                stringize(funv,": not a function"));
+                stringify(funv,": not a function"));
         Ref_Value& funp( funv.get_ref_unsafe() );
         if (funp.type_ != Ref_Value::ty_function)
             throw Phrase_Error(*apply->function_,
-                stringize(funv,": not a function"));
+                stringify(funv,": not a function"));
         Function* fun = (Function*)&funp;
 
         const auto& args(apply->arglist_->args_);

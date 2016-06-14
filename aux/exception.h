@@ -47,7 +47,7 @@ namespace aux {
 /// use some kind of shared_ptr.
 ///
 /// aux::Exception represents the message string internally as
-/// a `Shared_Ptr<curv::String>`. There is a convenient API, curv::stringize(),
+/// a `Shared_Ptr<curv::String>`. There is a convenient API, curv::stringify(),
 /// for constructing a multi-component message string using a single function
 /// call. [Yeah, this looks NIH, I could have used some combination of std::
 /// and boost::. The requirements of the Curv project take precedence for now.]
@@ -62,7 +62,7 @@ namespace aux {
 ///   supported by this software).
 /// * The what() string is no longer valid after the Exception is destroyed.
 ///   That is permitted by the C standard for std::exception. But I can imagine
-///   somebody writing code that captures the what() string and preserves it
+///   somebody writing code that captures the what() pointer and preserves it
 ///   after the exception handler goes out of scope. That won't work here.
 struct Exception : public std::exception
 {
@@ -70,6 +70,7 @@ struct Exception : public std::exception
     Exception(Shared_Ptr<curv::String>);
     virtual void write(std::ostream&) const;
     virtual const char* what() const noexcept;
+    Shared_Ptr<curv::String> const shared_what() { return message_; }
 private:
     Shared_Ptr<curv::String> message_;
 };
