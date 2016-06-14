@@ -84,6 +84,11 @@ A statement is:
   at the point where the `include` statement occurs.
 * If `x` is an object, then the effect is to concatenate the fields onto
   the base object, in the manner of `concat[base,x]`.
+  If an object literal contains include statements, then the field values
+  of the resulting object are determined by first processing all of the
+  definitions, then processing the first include statement and concatenating
+  those fields (they will override definitions from the first phase),
+  then processing the second include, and so on.
 * In the initial TeaCAD implementation, we may restrict `x` to be only
   a list, or to be only a simple object (no dependencies or parameters).
 
@@ -175,6 +180,29 @@ the dependencies and parameters of scoped objects:
   The parameter status of fields within ext are ignored if those fields
   override existing fields within base. However, ext can add new parameter
   fields to the end of base's parameter list.
+
+What happens when you concatenate to or from a shape object?
+* Shape objects are internally branded by the shape3d operator,
+  and are members of the `is_shape` predicate.
+* Let's consider how user-defined object branding works.
+  You define a predicate, eg:
+        ```
+        is_polytope(x) = if (defined x.polytope) x.polytope else false;
+        ```
+  then you define `polytope=true` to brand your object.
+  This style of branding can be inherited from either the `base` or `ext`
+  arguments of object concatenation, as long as its not overridden to false
+  by `ext`.
+* By analogy, `concat[base,ext]` returns a shape if either `base` or `ext`
+  is a shape. `shape3d` is run on the result to verify that it's a valid
+  shape, and that verification may fail.
+* This is consistent with `{}` and `[]` being identity elements.
+
+For example, `concat[cube(10),{meta=42}]` shows how to add metadata
+to a shape. Of course, you need to make sure not to interfere with
+a field needed for the shape's correct operation.
+An alternative is `concat[{meta=10},cube(10)]` which guarantees not to
+override an existing field, only to add a new field if it wasn't present.
 
 ## Customization:
 * Invoke an object like a function, this creates a clone of the original

@@ -30,10 +30,10 @@ Instead of detecting which argument was bad
 (and reporting the location of the bad argument),
 I could instead encode the argument values in the exception message.
 ```
-throw aux::Exception(to_string(x,"+",y,": domain error")
+throw aux::Exception(stringize(x,"+",y,": domain error"))
 ```
 This assumes: aux::String is a ref-counted string,
-aux::to_string returns an aux::Shared_Ptr<aux::String>
+aux::stringize returns an aux::Shared_Ptr<aux::String>
 (which has a noexcept copy constructor)
 and, aux::Exception now takes aux::Shared_Ptr<aux::String>
 as constructor argument.
