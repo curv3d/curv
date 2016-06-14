@@ -7,11 +7,11 @@ add_library(curv ${CurvSrc})
 
 FILE(GLOB Src "*.cc")
 add_executable(tcad ${Src})
-target_link_libraries(tcad PUBLIC curv readline)
+target_link_libraries(tcad PUBLIC curv readline double-conversion)
 
 FILE(GLOB TestSrc "test/*.cc")
 add_executable(tests ${TestSrc})
-target_link_libraries(tests PUBLIC gtest pthread curv)
+target_link_libraries(tests PUBLIC gtest pthread curv double-conversion)
 
 #set_property(GLOBAL PROPERTY CXX_STANDARD 14)
 set_property(TARGET curv tcad tests PROPERTY CXX_STANDARD 14)

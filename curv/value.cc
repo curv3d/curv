@@ -3,6 +3,7 @@
 // See accompanying file LICENCE.md or http://www.boost.org/LICENSE_1_0.txt
 
 #include <curv/value.h>
+#include <aux/dtostr.h>
 
 using namespace curv;
 
@@ -15,7 +16,7 @@ const
     } else if (is_bool()) {
         out << (get_bool_unsafe() ? "true" : "false");
     } else if (is_num()) {
-        out << get_num_unsafe();
+        out << aux::dfmt(get_num_unsafe());
     } else if (is_ref()) {
         Ref_Value& ref(get_ref_unsafe());
         switch (ref.type_) {
