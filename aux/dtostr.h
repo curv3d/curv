@@ -19,7 +19,8 @@ namespace aux {
 /// The second argument of `dfmt` is a style, defaulting to `C`.
 /// This determines which standard the output conforms to.
 /// The 3 styles produce identical output, except in the treatment
-/// of infinity and nan. All 3 styles are compatible with `strtod`.
+/// of infinity and nan. All 3 styles are compatible with `strtod`,
+/// except the JSON handling of NaN.
 /// * `C` -- infinity prints as "inf", nan prints as "nan"
 /// * `JSON` -- infinity prints as "1e9999", nan prints as "null"
 /// * `XML` -- infinity prints as "INF", nan prints as "NaN"

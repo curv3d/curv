@@ -11,30 +11,35 @@ using namespace aux;
 bool eq(double x, double y)
 {
     if (x == x)
-        return x == y;
+        return x == y && signbit(x) == signbit(y);
     else
         return y != y;
 }
 
 void
-test(const char*file, int line, double n, const char*str)
+test(const char*file, int line, double n, const char*str, dfmt::style style)
 {
     char buf[DTOSTR_BUFSIZE];
-    aux::dtostr(n, buf);
+    aux::dtostr(n, buf, style);
     if (strcmp(buf,str) != 0) {
         cout << file << ":" << line << ":"
              << " expected " << str << " got " << buf << "\n";
         EXPECT_TRUE(false);
     }
-    double n2 = strtod(buf, NULL);
-    if (!eq(n, n2)) {
-        cout << file << ":" << line << ":"
-             << " at " << str << ", round trip failed\n";
-        EXPECT_TRUE(false);
+    if (style == dfmt::JSON && isnan(n))
+        ; // JSON uses "null" for NaN
+    else {
+        double n2 = strtod(buf, NULL);
+        if (!eq(n, n2)) {
+            cout << file << ":" << line << ":"
+                 << " at " << str << ", round trip failed\n";
+            EXPECT_TRUE(false);
+        }
     }
 }
 
-#define DTEST(n,s) test(__FILE__,__LINE__,n,s)
+#define DTEST(n,s) test(__FILE__,__LINE__,n,s,dfmt::C)
+#define DTEST_STYLE(n,str,style) test(__FILE__,__LINE__,n,str,style)
 
 TEST(aux, dtostr)
 {
@@ -66,9 +71,13 @@ TEST(aux, dtostr)
     DTEST(123.456, "123.456");
     DTEST(-0.,"-0");
     DTEST(0./0.,"nan");
+    DTEST_STYLE(0./0.,"null", dfmt::JSON);
+    DTEST_STYLE(0./0.,"NaN", dfmt::XML);
     DTEST(-0./0.,"nan");
     double infinity = 1./0.;
     DTEST(infinity,"inf");
+    DTEST_STYLE(infinity,"1e9999", dfmt::JSON);
+    DTEST_STYLE(infinity,"INF", dfmt::XML);
     DTEST(-infinity,"-inf");
     double tiny = nextafter(0., 1.);
     double tiny1 = nextafter(tiny, 1.);

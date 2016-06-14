@@ -72,49 +72,38 @@ void dtostr(double n, char* buf, dfmt::style style)
     // 1. Positive numbers < 1 begin with "0.", not ".", for JSON compatibility.
     // 2. Integers are allowed to have up to 3 trailing zeros before we switch
     //    to exponential. Eg, "1000", not "1e3".
-    // 3. Positive numbers < 1 are allowed to have up to 3 leading zeroes
+    // 3. Positive numbers < 1 are allowed to have up to 3 leading zeros
     //    after the decimal point before we switch to exponential.
     //    Eg, "0.0001", not "1e-4".
-    // dbonus is the 'decimal bonus', and implements rules 2 and 3 above.
-    int dbonus = 0;
 
-    // compute overhead of exponential format
-    int exp_overhead = 1;   // for "e"
-    if (decimal_rep_length > 1)
-        ++exp_overhead;     // for "."
-    // value of exponent in exponential format
-    int e = decimal_point - 1;
-    if (e < 0) {
-        ++exp_overhead; // for "-"
-        e = -e;
-    }
-    if (e > 99)
-        exp_overhead += 3;
-    else if (e > 9)
-        exp_overhead += 2;
-    else
-        exp_overhead += 1;
-
-    // compute overhead of decimal format
-    int decimal_overhead = 0;
+    bool use_exponential;
     if (decimal_point >= decimal_rep_length) {
-        // number of '0's to append; no decimal point
-        decimal_overhead = decimal_point - decimal_rep_length;
-        dbonus = 1;
+        // Integer with trailing zeros; no decimal point
+        int n_trailing_zeros = decimal_point - decimal_rep_length;
+        use_exponential = (n_trailing_zeros > 3);
     } else if (decimal_point <= 0) {
-        // prepend 0. and some zeroes
-        decimal_overhead = 2 - decimal_point;
-        dbonus = 2;
+        // Fraction < 1; prepend 0. and some leading zeros
+        int n_leading_zeros = -decimal_point;
+        use_exponential = (n_leading_zeros > 3);
     } else {
-        // insert '.' in the middle
-        decimal_overhead = 1;
+        // Numeral with digits before and after the '.'
+        use_exponential = false;
     }
 
     // Output the numeral in decimal or exponential form
-    if (decimal_overhead - dbonus <= exp_overhead) {
+    if (use_exponential) {
+        // exponential form
+        for (int i = 0; i < decimal_rep_length; ++i) {
+            *p++ = decimal_rep[i];
+            if (i == 0 && decimal_rep_length > 1)
+                *p++ = '.';
+        }
+        *p++ = 'e';
+        sprintf(p, "%d", decimal_point - 1);
+    } else {
         // decimal form
         if (decimal_point <= 0) {
-            // prepend 0. and some zeroes
+            // prepend 0. and some zeros
             *p++ = '0';
             *p++ = '.';
             int nzeros = -decimal_point;
@@ -123,10 +112,11 @@ void dtostr(double n, char* buf, dfmt::style style)
             memcpy(p, decimal_rep, decimal_rep_length);
             p += decimal_rep_length;
         } else if (decimal_point >= decimal_rep_length) {
-            // append some zeroes; no decimal point
+            // append some zeros; no decimal point
             memcpy(p, decimal_rep, decimal_rep_length);
             p += decimal_rep_length;
-            for (int i = 0; i < decimal_overhead; ++i)
+            int nzeros = decimal_point - decimal_rep_length;
+            for (int i = 0; i < nzeros; ++i)
                 *p++ = '0';
         } else {
             // insert '.' in the middle
@@ -137,15 +127,6 @@ void dtostr(double n, char* buf, dfmt::style style)
             }
         }
         *p = '\0';
-    } else {
-        // exponential form
-        for (int i = 0; i < decimal_rep_length; ++i) {
-            *p++ = decimal_rep[i];
-            if (i == 0 && decimal_rep_length > 1)
-                *p++ = '.';
-        }
-        *p++ = 'e';
-        sprintf(p, "%d", decimal_point - 1);
     }
 }
 
@@ -154,7 +135,7 @@ std::ostream&
 operator<<(std::ostream& out, dfmt n)
 {
     char buf[32];
-    dtostr(n.num_, buf);
+    dtostr(n.num_, buf, n.style_);
     out << buf;
     return out;
 }
