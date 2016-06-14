@@ -32,6 +32,7 @@ will detect common patterns and rewrite them into more efficient/accurate
 code. For example:
 * e^x -> exp(x)
 * e^x-1 -> expm1(x)
+* 1/sqrt(x) -> invertsqrt(x) // GLSL
 * log(x,10) -> log10(x)
 * log(x,2) -> log2(x)
 * log(1+x) -> log1p(x)

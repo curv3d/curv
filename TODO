@@ -12,23 +12,31 @@
     * `arg_to_num(Value,char* param_name)`: throw error if not a number,
       otherwise return double. API is independent of Value refactoring.
 * Phrase::analyze() compiles parse tree into Meaning, then Meaning::eval()
-* string literals, [a,b,c] list literals, no list comprehensions
-* seq@i, len(seq), concat[v1,v2,v3], strcat[s1,s2,s3]
+* string literals, $id ${id} $(id) $+EE interpolation
+* list literals: [a,b,c], [a..b], include. Using 'include' and FP, a lot of
+  comprehension-like primitives can be written.
+* seq@i, len(seq), concat[v1,v2,v3]
+* extra: strcat[s1,s2,s3]
+* simple objects {a=1,b=2}, obj.id
+* extra: obj.(str), defined obj.id, obj1 overlay obj2
 * && || !, if-else
-* == and !=. 6 types, all functions are == to each other.
+* == and !=. 7 types, all functions are == to each other.
 * <, <=, >, >=. Numbers only.
-* more math functions
+* geom: x^y, sqrt(x), min[x,y], max[x,y], abs(x), sin(x), cos(x)
 * broader unit testing
 
 # TCAD1 (basic scripting, LLVM)
 * script files, named functions (top level only for now).
+* top level if, for, echo
+* pattern matching: hypot[x,y] = sqrt(x^2+y^2).
 * LLVM based evaluator. Compile Meaning to LLVM IR.
   Embed raw function pointers and Values in IR as bit patterns.
 * Benchmarks
 
 # TCAD2 (nested scopes)
 * nested functions, function literals, let() expressions.
-* script literals
+* curried functions `dist(req)(pt) = ...;` or function literals
+* script literals. At least {dist=..,bbox=..}
 * stack trace: exceptions with precise location reporting
 * refactor: String, List don't contain vtable or type field. Value contains a 3
   bit type field. Object is heavy weight, containing vtable and RTTI, since it
@@ -37,8 +45,9 @@
 * printing a function? currently, <function>, even for builtins
 
 # TCAD3 (simple geometry)
-* simple F-Rep geometry API, high level only
-* missing features: optional/keyword params, right assoc fun call, echo, ...
+* F-Rep: cube, sphere, affine transforms, boolean CSG
+* implement 3d primitives in TeaCAD using shape3d. (also is_shape)
+  * this means: I'm implementing language features I need for defining geometry
 * preview using ray marching--convert CSG tree to GLSL
 
 # Ongoing:

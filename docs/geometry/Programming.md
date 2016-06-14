@@ -286,13 +286,21 @@ circle(r) = 2dshape(
   dist(p) = norm(p) - r,
   bbox(d)=[[-r,-r]-d,[r,r]+d]);
 ```
+
+New style:
+```
+circle(r:is_num) = shape2d{
+  dist(req)(p:is_vec3) = norm(p) - r,
+  bbox=[[-r,-r],[r,r]]};
+```
+
 The `dist` function is derived from
 [the mathematical equation for a circle](https://en.wikipedia.org/wiki/Circle#Equations):
 ```
    x^2 + y^2 = r^2
 -> sqrt(x^2 + y^2) = r
 -> sqrt(x^2 + y^2) - r = 0
--> dist([x,y]) = sqrt(x^2 + y^2) - r
+-> dist[x,y] = sqrt(x^2 + y^2) - r
 -> dist(p) = norm(p) - r
 ```
 This particular `dist` function returns the shortest euclidean distance

@@ -82,8 +82,10 @@ So is `len(str)` unless the # of characters is stored.
 * A unicode string is like a bidirectional linked list.
   A tree-structured functional array can provide more efficient
   random element access for large strings.
+  Finger String, Boehm Rope. Haskell Data.Rope is a finger tree of byte vectors
 
-The fastest and most memory efficient representation is variable sized:
+For short strings,
+the fastest and most memory efficient representation is variable sized:
 a small header (including a length) followed by characters.
 * `aux::String` has an 8 byte header, followed by characters and NUL.
 * can be referenced using `Shared_Ptr<String>`
@@ -93,6 +95,17 @@ a small header (including a length) followed by characters.
 
 I'll also need a String_Builder class for efficiently building an immutable
 string via repeated concatenation.
+
+For large strings, assuming that we have substring and concatenation operations,
+then the best representation is a balanced tree, eg a finger tree with short
+strings at the leaves, and character counts in interior nodes. This speeds
+up indexing (since utf8 is variable length), and may save space via shared
+structure.
+
+If strings are stored as trees, then it becomes possible to unify this with
+a list tree structure, and turn strings into lists of characters (with the
+option of mixed lists of characters and non-characters). What's good is that
+this simplifies, generalizes and unifies the list/string operations.
 
 Custom C++11 string literal for constructing `Shared_Ptr<String>`?
 `aux::make_shared_string("foo")` vs `"foo"_aux`.
@@ -152,12 +165,17 @@ and tail with reasonable efficiency:
 * Braun Trees, all ops O(log N)
 * Skew binary random-access list
   * O(1) cons, head, tail. O(log n) array index lookup and update.
+  * Skew binary random access lists give you O(log n) drop and random access and O(1) cons/uncons, but lose the infinite lists, etc.
   * Okasaki, Chris. Purely Functional Data Structures.
 * Finger trees.
+  * Finger trees give you O(log n) appends and random access, O(1) cons/uncons/snoc/unsnoc etc. but cost you infinite lists.
   * amortized O(1) access to leaves of tree, containing the data.
   * amortized O(1) pushing, reversing, popping, O(log n) append and split.
   * an indexed list/array can be implemented with a labeling of nodes
     by the count of the leaves in their children.
+
+Candidate: a finger tree, whose interior nodes contain subtree element counts,
+and whose leaf nodes are arrays or singleton values. Basically a Rope.
 
 Unlike conventional functional arrays, I have a refcount, so I can mutate the
 array if it has 1 reference. Maybe the array mutates to be more efficient
@@ -184,6 +202,7 @@ concat ::= concat(array|slice, tree)
 
 Maybe we convert to an array when random access is attempted.
 
+### Lazy Lists
 I may want lazy lists. List comprehensions could be lazy. Maybe a lazy concat.
 Concat is only lazy if argument is a list literal.
 This requires some kind of linked list/tree representation. Maybe:
@@ -207,6 +226,16 @@ How do these thunks work with the ref-counting/no-cycles restriction?
   * Thunks are passed around as Values, stored as members of lists.
     When a Value is poked to determine its type, if it is a thunk then it is
     evaluated: the Value is updated in-place, replaced by the thunk result.
+
+### List Concepts
+One way to figure out the right data structures:
+* Look at a representative set of algorithms.
+* Create a taxonomy of "list concepts" describing an expected set of list
+  operations and their algorithmic complexity, as required by different classes
+  of algorithms.
+* For each list concept (which describes the requirements of a class of list
+  algorithms), provide a set of list constructors and operators.
+* There are multiple internal representations, but only one List type.
 
 ## Object
 The obvious representation is just a map from names to values,

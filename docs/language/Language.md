@@ -368,8 +368,10 @@ Note that a special variable like `$t` must be interpolated
 as `"${$t}"` or `"$($t)"`.
 
 Note that, because arbitrary expressions (not just variable names)
-can be interpolated into string literals, that means there's a
+can be interpolated into string literals, that could mean there's a
 recursive dependency between the lexical analyzer and the parser.
+Or, the lexer keeps track of nesting levels for ()[]{}"" while
+tokenizing the subexpression.
 
 ### String literals:
 
@@ -434,6 +436,10 @@ Range literal syntax:
 * `[first..last:step]` is a compromise. It can't be misunderstood by either
   Python or Matlab users. It can be used as part of an extended list
   comprehension and array slice notation.
+
+Within a list constructor, `include list_expr` interpolates the elements
+of `list_expr` into the list being constructed.
+(So, I'm not using `each` or `&`.)
 
 ### Lazy Lists
 I'd like to support lazy lists (see Why Functional Programming Matters).
