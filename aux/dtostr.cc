@@ -34,10 +34,16 @@ void dtostr(double n, char* buf)
 }
 #endif
 
-void dtostr(double n, char* buf)
+struct StyleSpec { const char* inf; const char* nan; } stylespec[3] = {
+    { "inf",    "nan" },   // C
+    { "1e9999", "null" },  // JSON
+    { "INF",    "NaN" },   // XML
+};
+
+void dtostr(double n, char* buf, dfmt::style style)
 {
     if (n != n) {
-        strcpy(buf, "nan");
+        strcpy(buf, stylespec[style].nan);
         return;
     }
     char* p = buf;
@@ -46,7 +52,7 @@ void dtostr(double n, char* buf)
         n = -n;
     }
     if (n == INFINITY) {
-        strcpy(p, "inf");
+        strcpy(p, stylespec[style].inf);
         return;
     }
 
@@ -61,7 +67,16 @@ void dtostr(double n, char* buf)
         &sign, &decimal_rep_length, &decimal_point);
 
     // Choose between decimal (eg, 42) and exponential (eg, 4.2e1) formats.
-    // We rigorously choose the shortest representation.
+
+    // We choose the shortest representation, with 3 exceptions:
+    // 1. Positive numbers < 1 begin with "0.", not ".", for JSON compatibility.
+    // 2. Integers are allowed to have up to 3 trailing zeros before we switch
+    //    to exponential. Eg, "1000", not "1e3".
+    // 3. Positive numbers < 1 are allowed to have up to 3 leading zeroes
+    //    after the decimal point before we switch to exponential.
+    //    Eg, "0.0001", not "1e-4".
+    // dbonus is the 'decimal bonus', and implements rules 2 and 3 above.
+    int dbonus = 0;
 
     // compute overhead of exponential format
     int exp_overhead = 1;   // for "e"
@@ -82,35 +97,39 @@ void dtostr(double n, char* buf)
 
     // compute overhead of decimal format
     int decimal_overhead = 0;
-    if (decimal_point == decimal_rep_length)
-        decimal_overhead = 0;
-    else if (decimal_point > decimal_rep_length) {
-        // number of '0's to append
+    if (decimal_point >= decimal_rep_length) {
+        // number of '0's to append; no decimal point
         decimal_overhead = decimal_point - decimal_rep_length;
-    } else if (decimal_point < 0) {
-        // prepend . and some zeroes
-        decimal_overhead = 1 - decimal_point;
-    } else
+        dbonus = 1;
+    } else if (decimal_point <= 0) {
+        // prepend 0. and some zeroes
+        decimal_overhead = 2 - decimal_point;
+        dbonus = 2;
+    } else {
+        // insert '.' in the middle
         decimal_overhead = 1;
+    }
 
     // Output the numeral in decimal or exponential form
-    if (decimal_overhead <= exp_overhead) {
+    if (decimal_overhead - dbonus <= exp_overhead) {
         // decimal form
-        if (decimal_point < 0) {
-            // prepend . and some zeroes
+        if (decimal_point <= 0) {
+            // prepend 0. and some zeroes
+            *p++ = '0';
             *p++ = '.';
             int nzeros = -decimal_point;
             for (int i = 0; i < nzeros; ++i)
                 *p++ = '0';
             memcpy(p, decimal_rep, decimal_rep_length);
             p += decimal_rep_length;
-        } else if (decimal_point > decimal_rep_length) {
-            // append some zeroes
+        } else if (decimal_point >= decimal_rep_length) {
+            // append some zeroes; no decimal point
             memcpy(p, decimal_rep, decimal_rep_length);
             p += decimal_rep_length;
             for (int i = 0; i < decimal_overhead; ++i)
                 *p++ = '0';
         } else {
+            // insert '.' in the middle
             for (int i = 0; i < decimal_rep_length; ++i) {
                 if (i == decimal_point)
                     *p++ = '.';

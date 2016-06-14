@@ -1,5 +1,4 @@
 # TCAD0 (Calculator):
-* aux::prdouble(double, ostream): Print a floating point number accurately
 * aux::String, mk_string(const char*), user-defined string literal?
 * aux::String_Builder
 * aux::to_string (uses prdouble, String_Builder)
