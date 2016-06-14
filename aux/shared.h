@@ -7,6 +7,7 @@
 
 #include <boost/intrusive_ptr.hpp>
 #include <cstdint>
+#include <new>
 
 namespace aux {
 
@@ -18,7 +19,10 @@ template<typename T> using Shared_Ptr = boost::intrusive_ptr<T>;
 
 template<typename T, class... Args> Shared_Ptr<T> make_shared(Args&&... args)
 {
-    T* ptr = new T(args...);
+    void* raw = std::malloc(sizeof(T));
+    if (raw == nullptr)
+        throw std::bad_alloc();
+    T* ptr = new(raw) T(args...);
     return Shared_Ptr<T>(ptr);
 }
 
@@ -77,8 +81,10 @@ inline void intrusive_ptr_add_ref(const Shared_Base* p)
 
 inline void intrusive_ptr_release(const Shared_Base* p)
 {
-    if (--p->use_count == 0)
-        delete p;
+    if (--p->use_count == 0) {
+        p->~Shared_Base();
+        std::free((void*)p);
+    }
 }
 
 // How to support atomic refcount update in the future.

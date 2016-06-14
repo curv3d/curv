@@ -286,7 +286,10 @@ public:
 /// Allocate a reference value with given class and constructor arguments.
 template<typename T, class... Args> Value make_ref_value(Args&&... args)
 {
-    T* ptr = new T(args...);
+    void* raw = malloc(sizeof(T));
+    if (raw == nullptr)
+        throw std::bad_alloc();
+    T* ptr = new(raw) T(args...);
     aux::intrusive_ptr_add_ref(ptr);
     return Value(ptr);
 }

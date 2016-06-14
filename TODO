@@ -1,7 +1,4 @@
 # TCAD0 (Calculator):
-* aux::String, mk_string(const char*), user-defined string literal?
-* aux::String_Builder
-* aux::to_string (uses prdouble, String_Builder)
 * aux::Exception contains Shared_Ptr<String>
 * builtin functions:
   * error reporting for bad arguments:
@@ -80,6 +77,11 @@ And/or colour the bad text in red.
   * no repetitions and optionals.
   * small footprint: small code with no dependencies
 * localization
+* curv::String refactor
+  * String_Builder is rewritten to use a curv::String as the internal buffer
+  * User defined string literal constructs a Shared_Ptr<String>:
+    underlying object is constructed at compile time with no mallocs,
+    and without two copies of the string literal data.
 
 build system?
 * Fast. Correct: auto track dependencies, rebuild on recipe change,
