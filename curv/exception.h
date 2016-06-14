@@ -24,6 +24,9 @@ struct Exception : public aux::Exception
     Exception(Location loc, const char* msg)
     : aux::Exception(msg), loc_(std::move(loc)) {}
 
+    Exception(Location loc, aux::Shared_Ptr<String> msg)
+    : aux::Exception(std::move(msg)), loc_(std::move(loc)) {}
+
     const Location& location() { return loc_; }
 
     /// write the message and location to a stream.
@@ -55,6 +58,9 @@ struct Phrase_Error : public Exception
 {
     Phrase_Error(const Phrase& syn, const char* msg)
     : Exception(syn.location(), msg)
+    {}
+    Phrase_Error(const Phrase& syn, aux::Shared_Ptr<String> msg)
+    : Exception(syn.location(), std::move(msg))
     {}
 };
 

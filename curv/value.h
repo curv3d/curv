@@ -283,6 +283,13 @@ public:
     void print(std::ostream&) const;
 };
 
+inline std::ostream&
+operator<<(std::ostream& out, Value val)
+{
+    val.print(out);
+    return out;
+}
+
 /// Allocate a reference value with given class and constructor arguments.
 template<typename T, class... Args> Value make_ref_value(Args&&... args)
 {

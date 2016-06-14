@@ -1,10 +1,7 @@
 # TCAD0 (Calculator):
-* aux::Exception contains Shared_Ptr<String>
+* 'tcad' unit test: evaluate strings -> results
 * builtin functions:
   * error reporting for bad arguments:
-    * for pure numeric primitives, convert arguments using arg.get_num_or_nan(),
-      check for nan result,
-      `throw aux::Exception(to_string(x,"/",y,": domain error"))`
     * `arg_to_num(Value,char* param_name)`: throw error if not a number,
       otherwise return double. API is independent of Value refactoring.
 * Phrase::analyze() compiles parse tree into Meaning, then Meaning::eval()
@@ -82,6 +79,11 @@ And/or colour the bad text in red.
   * User defined string literal constructs a Shared_Ptr<String>:
     underlying object is constructed at compile time with no mallocs,
     and without two copies of the string literal data.
+* dtostr() refactor
+  * refactor logic for speed. Try to produce decimal output, return early
+    on success, fall through to exponential code if constraints not met.
+* aux::Exception/curv::String refactor. Aux shouldn't depend on Curv.
+  Original plan: to put String in Aux. But we'll see how Curv runtime evolves.
 
 build system?
 * Fast. Correct: auto track dependencies, rebuild on recipe change,

@@ -87,7 +87,7 @@ operator<<(String_Builder& b, double n)
 
 /// Variadic function that converts its arguments into a curv String.
 template<typename... Args>
-aux::Shared_Ptr<String> to_string(Args... args)
+aux::Shared_Ptr<String> stringize(Args... args)
 {
     String_Builder s;
     s.write_all(args...);

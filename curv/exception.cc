@@ -11,7 +11,7 @@ using namespace curv;
 void
 Char_Error::write(std::ostream& out) const
 {
-    out << "ERROR: " << message_ << " ";
+    out << "ERROR: " << what() << " ";
     char ch = *loc_.range().begin();
     if (ch > 0x20 && ch < 0x7F)
         out << "'" << ch << "'";
@@ -24,6 +24,6 @@ Char_Error::write(std::ostream& out) const
 void
 Exception::write(std::ostream& out) const
 {
-    out << "ERROR: " << message_ << "\n";
+    out << "ERROR: " << what() << "\n";
     loc_.write(out);
 }
