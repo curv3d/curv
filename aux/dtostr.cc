@@ -76,34 +76,30 @@ void dtostr(double n, char* buf, dfmt::style style)
     //    after the decimal point before we switch to exponential.
     //    Eg, "0.0001", not "1e-4".
 
-    bool use_exponential;
+    // parameters for the algorithm, see above
+    constexpr int max_trailing_zeros = 3;
+    constexpr int max_leading_zeros = 3;
+
+    // First, try to output in decimal format. If successful, return early.
+    // If the constraints weren't satisfied, then fall through
+    // and use exponential format.
+
     if (decimal_point >= decimal_rep_length) {
-        // Integer with trailing zeros; no decimal point
+        // Integer with trailing zeros; no decimal point.
         int n_trailing_zeros = decimal_point - decimal_rep_length;
-        use_exponential = (n_trailing_zeros > 3);
+        if (n_trailing_zeros <= max_trailing_zeros) {
+            memcpy(p, decimal_rep, decimal_rep_length);
+            p += decimal_rep_length;
+            int nzeros = decimal_point - decimal_rep_length;
+            for (int i = 0; i < nzeros; ++i)
+                *p++ = '0';
+            *p = '\0';
+            return;
+        }
     } else if (decimal_point <= 0) {
         // Fraction < 1; prepend 0. and some leading zeros
         int n_leading_zeros = -decimal_point;
-        use_exponential = (n_leading_zeros > 3);
-    } else {
-        // Numeral with digits before and after the '.'
-        use_exponential = false;
-    }
-
-    // Output the numeral in decimal or exponential form
-    if (use_exponential) {
-        // exponential form
-        for (int i = 0; i < decimal_rep_length; ++i) {
-            *p++ = decimal_rep[i];
-            if (i == 0 && decimal_rep_length > 1)
-                *p++ = '.';
-        }
-        *p++ = 'e';
-        sprintf(p, "%d", decimal_point - 1);
-    } else {
-        // decimal form
-        if (decimal_point <= 0) {
-            // prepend 0. and some zeros
+        if (n_leading_zeros <= max_leading_zeros) {
             *p++ = '0';
             *p++ = '.';
             int nzeros = -decimal_point;
@@ -111,23 +107,28 @@ void dtostr(double n, char* buf, dfmt::style style)
                 *p++ = '0';
             memcpy(p, decimal_rep, decimal_rep_length);
             p += decimal_rep_length;
-        } else if (decimal_point >= decimal_rep_length) {
-            // append some zeros; no decimal point
-            memcpy(p, decimal_rep, decimal_rep_length);
-            p += decimal_rep_length;
-            int nzeros = decimal_point - decimal_rep_length;
-            for (int i = 0; i < nzeros; ++i)
-                *p++ = '0';
-        } else {
-            // insert '.' in the middle
-            for (int i = 0; i < decimal_rep_length; ++i) {
-                if (i == decimal_point)
-                    *p++ = '.';
-                *p++ = decimal_rep[i];
-            }
+            *p = '\0';
+            return;
+        }
+    } else {
+        // Numeral with digits before and after the '.'
+        for (int i = 0; i < decimal_rep_length; ++i) {
+            if (i == decimal_point)
+                *p++ = '.';
+            *p++ = decimal_rep[i];
         }
         *p = '\0';
+        return;
     }
+
+    // Decimal format failed; use exponential format.
+    for (int i = 0; i < decimal_rep_length; ++i) {
+        *p++ = decimal_rep[i];
+        if (i == 0 && decimal_rep_length > 1)
+            *p++ = '.';
+    }
+    *p++ = 'e';
+    sprintf(p, "%d", decimal_point - 1);
 }
 
 // Print a floating point number accurately.

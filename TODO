@@ -80,8 +80,7 @@ And/or colour the bad text in red.
     underlying object is constructed at compile time with no mallocs,
     and without two copies of the string literal data.
 * dtostr() refactor
-  * refactor logic for speed. Try to produce decimal output, return early
-    on success, fall through to exponential code if constraints not met.
+  * put all 4 parameters into a DStyle struct.
 * aux::Exception/curv::String refactor. Aux shouldn't depend on Curv.
   Original plan: to put String in Aux. But we'll see how Curv runtime evolves.
 
