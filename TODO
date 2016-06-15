@@ -1,4 +1,5 @@
-# TCAD0 (Calculator):
+# TCAD0 (expressions):
+* refactor aux::Shared_Base to define operator new/delete (to use malloc/free)
 * 'tcad' unit test: evaluate strings -> results
 * builtin functions:
   * error reporting for bad arguments:
@@ -17,7 +18,7 @@
 * geom: x^y, sqrt(x), min[x,y], max[x,y], abs(x), sin(x), cos(x)
 * broader unit testing
 
-# TCAD1 (basic scripting, LLVM)
+# TCAD1 (scripts, LLVM)
 * script files, named functions (top level only for now).
 * top level if, for, echo
 * pattern matching: hypot[x,y] = sqrt(x^2+y^2).
@@ -41,6 +42,11 @@
 * implement 3d primitives in TeaCAD using shape3d. (also is_shape)
   * this means: I'm implementing language features I need for defining geometry
 * preview using ray marching--convert CSG tree to GLSL
+
+# TCAD4 (geometry export)
+* use dual contouring instead of marching cubes for STL export
+* does OpenCL speed this up?
+* SVX export?
 
 # Ongoing:
 * more unit tests

@@ -125,7 +125,12 @@ evalbad(
 TEST(tcad, eval)
 {
     // constructors
-    EVALS_TO("42", "42");
+    EVALS_TO("42.7", "42.7");
+    EVALS_TO(".1", "0.1");
+    EVALS_TO("1.", "1");
+    EVALS_TO(".1e-1", "0.01");
+    EVALS_TO("1.e+1", "10");
+    EVALS_TO("1e1", "10");
 
     // builtins
     EVALS_TO("pi",  "3.141592653589793");
@@ -137,6 +142,9 @@ TEST(tcad, eval)
     EVALS_TO("sqrt", "<function>");
 
     // runtime operations
+    EVALS_TO("-0", "-0");
+    EVALS_TO("-inf", "-inf");
+    EVAL_ERROR("1+null", "1+null: domain error");
     EVAL_ERROR("0/0", "0/0: domain error");
     EVALS_TO("1/0", "inf");
     EVALS_TO("sqrt(2)", "1.4142135623730951");
@@ -144,4 +152,5 @@ TEST(tcad, eval)
 
     // lexical errors
     EVAL_ERROR("\\foo", "illegal character '\\'");
+    EVAL_ERROR("\177", "illegal character 0x7F");
 }
