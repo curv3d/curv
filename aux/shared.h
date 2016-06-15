@@ -68,6 +68,26 @@ struct Shared_Base
     Shared_Base() : use_count(0) {}
     virtual ~Shared_Base() {}
     mutable std::uint32_t use_count;
+
+    // operator new and delete are defined to invoke malloc and free
+    // because subclasses of Shared_Base that implement variable-length objects
+    // must use malloc for their heap allocation, and we must therefore
+    // consistently use free for freeing Shared_Base objects.
+    void* operator new(std::size_t size)
+    {
+        void* p = malloc(size);
+        if (p == nullptr)
+            throw std::bad_alloc();
+        return p;
+    }
+    void* operator new(std::size_t size, void* ptr) noexcept
+    {
+        return ptr;
+    }
+    void operator delete(void* p) noexcept
+    {
+        free(p);
+    }
 private:
     // Shared_Base is non-copyable.
     Shared_Base(const Shared_Base&) = delete;
@@ -81,10 +101,8 @@ inline void intrusive_ptr_add_ref(const Shared_Base* p)
 
 inline void intrusive_ptr_release(const Shared_Base* p)
 {
-    if (--p->use_count == 0) {
-        p->~Shared_Base();
-        std::free((void*)p);
-    }
+    if (--p->use_count == 0)
+        delete p;
 }
 
 // How to support atomic refcount update in the future.
