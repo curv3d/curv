@@ -1,5 +1,7 @@
 # Objects
 
+See Records.md for a counter-proposal.
+
 An object consists of a map from names to values (these are the fields),
 plus an ordered sequence of values (these are the elements).
 
@@ -204,6 +206,25 @@ a field needed for the shape's correct operation.
 An alternative is `concat[{meta=10},cube(10)]` which guarantees not to
 override an existing field, only to add a new field if it wasn't present.
 
+## Concat and Include
+`include` is supposed to be the generator form of `concat`; they work on
+lists and objects in a consistent way.
+
+Is this true? Is the design consistent? Does it uphold Reynold's Law?
+Let's consider some algebraic identities which should hold.
+* `[a, include b]` === `concat[[a], b]`
+  * true for lists a and b.
+  * In order for this to be true for object 'b', upholding Reynold's Law,
+    the list constructor would have to return an object. Which is undesirable.
+
+An alternative is to split the design into two families of operations.
+* `concat` and `each` are list operations. An object is projected onto
+  its list of elements when used with these operations.
+* `extend` and `include` are object operations. A list is extended to
+  a simple object with elements but no fields when used with these operations.
+
+`extend(base, ext)` is maybe not a monoid. It treats the arguments differently.
+
 ## Customization:
 * Invoke an object like a function, this creates a clone of the original
   with each argument replacing an existing field that is declared as `param`.
@@ -217,11 +238,19 @@ override an existing field, only to add a new field if it wasn't present.
 optional: `only(id1,id2,...)obj` and `except(id1,id2,...)obj`
 
 ## Inheritance
-This is the most complex and heavy weight part of the OpenSCAD2 object design.
-It's the lowest priority.
-* `include obj;`
+Object concatenation for scoped objects is kind of like OOP inheritance.
+It's the most complex and heavy weight part of the OpenSCAD2 object design.
+It's a low priority; I can demo TeaCAD without it.
 
-I don't have a use for OpenSCAD mixins, not for my own stuff.
+I see no strong need for OpenSCAD mixins.
+I think you can implement them like this:
+```
+my_mixin(base) = concat[base, {
+  assert(defined base.n && is_num(base.n));
+  x = base.n + 1;
+}];
+```
+This is certainly good enough.
 
 ## Old Design Process
 Modifying an object: fast runtime operations.

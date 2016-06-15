@@ -6,12 +6,11 @@
       otherwise return double. API is independent of Value refactoring.
 * Phrase::analyze() compiles parse tree into Meaning, then Meaning::eval()
 * string literals, $id ${id} $(id) $+EE interpolation
-* list literals: [a,b,c], [a..b], include. Using 'include' and FP, a lot of
-  comprehension-like primitives can be written.
+* list literals: [a,b,c], [a..b], each. Using 'each' and FP, user-defined
+  functions can simulate list comprehensions.
 * seq@i, len(seq), concat[v1,v2,v3]
 * extra: strcat[s1,s2,s3]
-* simple objects {a=1,b=2}, obj.id
-* extra: obj.(str), defined obj.id, obj1 overlay obj2
+* records: {a=1,b=2}, r.id, defined r.id, merge[r1,r2]
 * && || !, if-else
 * == and !=. 7 types, all functions are == to each other.
 * <, <=, >, >=. Numbers only.
