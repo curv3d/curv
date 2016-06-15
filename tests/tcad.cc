@@ -63,27 +63,85 @@ struct Evaluator
 };
 
 testing::AssertionResult
-evals_to(const char* e1, const char* e2, const char* expr, const char* expected)
+evaltest(const char* expr, const char* expected, bool should_succeed)
 {
     Evaluator result(expr);
     if (result.failure_) {
-        return testing::AssertionFailure()
-            << "in expr '" << expr << "'\n"
-            << "expected: '" << expected << "'\n"
-            << "  failed: '" << result.failure_ << "'\n";
-    } else if (strcmp(expected, result.success_) == 0) {
-        return testing::AssertionSuccess();
+        // the test failed
+        if (should_succeed) {
+            return testing::AssertionFailure()
+                << "in expr '" << expr << "'\n"
+                << "expected value: '" << expected << "'\n"
+                << "  actual error: '" << result.failure_ << "'\n";
+        } else {
+            if (strcmp(expected, result.failure_) == 0) {
+                return testing::AssertionSuccess();
+            } else {
+                return testing::AssertionFailure()
+                    << "in expr '" << expr << "'\n"
+                    << "expected error: '" << expected << "'\n"
+                    << "  actual error: '" << result.failure_ << "'\n";
+            }
+        }
     } else {
-        return testing::AssertionFailure()
-            << "in expr '" << expr << "'\n"
-            << "expected: '" << expected << "'\n"
-            << "  actual: '" << result.success_ << "'\n";
+        // the test succeeded
+        if (should_succeed) {
+            if (strcmp(expected, result.success_) == 0) {
+                return testing::AssertionSuccess();
+            } else {
+                return testing::AssertionFailure()
+                    << "in expr '" << expr << "'\n"
+                    << "expected value: '" << expected << "'\n"
+                    << "  actual value: '" << result.success_ << "'\n";
+            }
+        } else {
+            return testing::AssertionFailure()
+                << "in expr '" << expr << "'\n"
+                << "expected error: '" << expected << "'\n"
+                << "  actual value: '" << result.success_ << "'\n";
+        }
     }
 }
 
-#define EVALS_TO(expr,result) EXPECT_PRED_FORMAT2(evals_to,expr,result)
+testing::AssertionResult
+evalgood(
+    const char* e1, const char* e2,
+    const char* expr, const char* expected)
+{
+    return evaltest(expr, expected, true);
+}
+
+testing::AssertionResult
+evalbad(
+    const char* e1, const char* e2,
+    const char* expr, const char* expected)
+{
+    return evaltest(expr, expected, false);
+}
+
+#define EVALS_TO(expr,result) EXPECT_PRED_FORMAT2(evalgood,expr,result)
+#define EVAL_ERROR(expr,result) EXPECT_PRED_FORMAT2(evalbad,expr,result)
 
 TEST(tcad, eval)
 {
+    // constructors
     EVALS_TO("42", "42");
+
+    // builtins
+    EVALS_TO("pi",  "3.141592653589793");
+    EVALS_TO("tau", "6.283185307179586");
+    EVALS_TO("inf", "inf");
+    EVALS_TO("null", "null");
+    EVALS_TO("false", "false");
+    EVALS_TO("true", "true");
+    EVALS_TO("sqrt", "<function>");
+
+    // runtime operations
+    EVAL_ERROR("0/0", "0/0: domain error");
+    EVALS_TO("1/0", "inf");
+    EVALS_TO("sqrt(2)", "1.4142135623730951");
+    EVAL_ERROR("sqrt(true)", "sqrt(true): domain error");
+
+    // lexical errors
+    EVAL_ERROR("\\foo", "illegal character '\\'");
 }

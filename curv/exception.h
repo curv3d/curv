@@ -41,6 +41,10 @@ struct Token_Error : public Exception
     Token_Error(const Script& s, Token tok, const char* msg)
     : Exception(Location(s, std::move(tok)), msg)
     {}
+
+    Token_Error(const Script& s, Token tok, aux::Shared_Ptr<String> msg)
+    : Exception(Location(s, std::move(tok)), std::move(msg))
+    {}
 };
 
 /// Lexical analysis error: an illegal character in the input.
@@ -48,10 +52,7 @@ struct Token_Error : public Exception
 /// Subclass of Token_Error where the token spans just the illegal character.
 struct Char_Error : public Token_Error
 {
-    Char_Error(const Script& s, Token tok)
-    : Token_Error(s, std::move(tok), "illegal character")
-    {}
-    virtual void write(std::ostream&) const;
+    Char_Error(const Script& s, Token tok);
 };
 
 struct Phrase_Error : public Exception
@@ -59,6 +60,7 @@ struct Phrase_Error : public Exception
     Phrase_Error(const Phrase& syn, const char* msg)
     : Exception(syn.location(), msg)
     {}
+
     Phrase_Error(const Phrase& syn, aux::Shared_Ptr<String> msg)
     : Exception(syn.location(), std::move(msg))
     {}
