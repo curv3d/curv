@@ -9,7 +9,7 @@ FILE(GLOB Src "*.cc")
 add_executable(tcad ${Src})
 target_link_libraries(tcad PUBLIC curv readline double-conversion)
 
-FILE(GLOB TestSrc "test/*.cc")
+FILE(GLOB TestSrc "tests/*.cc")
 add_executable(tests ${TestSrc})
 target_link_libraries(tests PUBLIC gtest pthread curv double-conversion)
 
