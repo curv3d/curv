@@ -3,6 +3,9 @@
 * Let's explore how they are connected.
 
 What is the purpose of the object design? Why include sequence values?
+* Compatibility with OpenSCAD. An OpenSCAD script is imported as an Object
+  (or as a Component in the alternate design). An OpenSCAD script with sequence
+  values is a parameterized shape.
 * It's *not* supposed to mimic Javascript and LUA objects.
   In those languages, an object is a map with string and integer keys.
   A sparse array is an object with non-contiguous integer keys.

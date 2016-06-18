@@ -18,6 +18,14 @@ Hm, maybe my treatment of tail recursion will allow semantics trees to be
 directly interpreted, with tail call optimization. I didn't previously think
 this would be feasible.
 
+Phrase::analyze(builtin_namespace) -> Meaning
+* start at root_phrase->analyze(builtin_namespace)
+* move down the tree, creating meaning nodes and symbol tables. Symbols are
+  decorated with types (eg from type assertions) on the way down.
+* at the leaves, identifiers and looked up and types become known.
+* on the way back up, type information is propagated and the meaning nodes
+  are linked together.
+
 The semantics tree could be used to upgrade source files from old, deprecated
 syntax to new, supported syntax. This requires that all of the tokens are
 present in the semantics tree, with enough of the original structure preserved

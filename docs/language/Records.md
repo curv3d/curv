@@ -7,6 +7,10 @@ called "records", and scoped objects are deferred until later.
 
 A record is a set of named fields.
 
+The Curv data model is a superset of JSON, and a Record corresponds to
+a JSON Object. When a JSON file is imported, JSON Objects are converted
+to Records.
+
 For simple dynamically typed records, the basic operations are:
 * construction: `{a=1, b=2}`. Does not introduce a scope.
 * selection: `x.a`
