@@ -140,12 +140,12 @@ struct Arglist_Phrase : public Phrase
 };
 
 /// a function call
-struct Apply_Phrase : public Phrase
+struct Call_Phrase : public Phrase
 {
     aux::Shared_Ptr<Phrase> function_;
     aux::Shared_Ptr<Arglist_Phrase> arglist_;
 
-    Apply_Phrase(
+    Call_Phrase(
         aux::Shared_Ptr<Phrase> function,
         aux::Shared_Ptr<Arglist_Phrase> arglist)
     :

@@ -135,30 +135,30 @@ curv::eval(Phrase& expr, const Namespace& names)
         }
     }
 
-    auto apply = dynamic_cast<Apply_Phrase*>(&expr);
-    if (apply != nullptr) {
-        Value funv = eval(*apply->function_, names);
+    auto call = dynamic_cast<Call_Phrase*>(&expr);
+    if (call != nullptr) {
+        Value funv = eval(*call->function_, names);
         if (!funv.is_ref())
-            throw Phrase_Error(*apply->function_,
+            throw Phrase_Error(*call->function_,
                 stringify(funv,": not a function"));
         Ref_Value& funp( funv.get_ref_unsafe() );
         if (funp.type_ != Ref_Value::ty_function)
-            throw Phrase_Error(*apply->function_,
+            throw Phrase_Error(*call->function_,
                 stringify(funv,": not a function"));
         Function* fun = (Function*)&funp;
 
-        const auto& args(apply->arglist_->args_);
+        const auto& args(call->arglist_->args_);
         Value argv[1];
         switch (fun->nargs_) {
         case 1:
             if (args.size() != 1) {
-                throw Phrase_Error(*apply->arglist_,
+                throw Phrase_Error(*call->arglist_,
                     "wrong number of arguments");
             }
             argv[0] = eval(*args[0].expr_, names);
             return fun->function_(argv);
         default:
-            throw Phrase_Error(*apply, "unsupported argument list size");
+            throw Phrase_Error(*call, "unsupported argument list size");
         }
     }
 

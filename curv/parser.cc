@@ -149,7 +149,7 @@ parse_postfix(Scanner& scanner)
                 if (tok.kind == Token::k_rparen) {
             rparen:
                     arglist->rparen_ = tok;
-                    postfix = aux::make_shared<Apply_Phrase>(postfix, arglist);
+                    postfix = aux::make_shared<Call_Phrase>(postfix, arglist);
                     break;
                 }
                 scanner.push_token(tok);
