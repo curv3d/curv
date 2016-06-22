@@ -7,7 +7,7 @@
 
 #include <vector>
 #include <memory>
-#include <aux/shared.h>
+#include <curv/shared.h>
 #include <curv/location.h>
 
 namespace curv {
@@ -49,11 +49,11 @@ struct Numeral final : public Phrase
 
 struct Unary_Phrase : public Phrase
 {
-    Unary_Phrase(Token op, aux::Shared_Ptr<Phrase> arg)
+    Unary_Phrase(Token op, Shared<Phrase> arg)
     : op_(op), arg_(std::move(arg))
     {}
     Token op_;
-    aux::Shared_Ptr<Phrase> arg_;
+    Shared<Phrase> arg_;
     virtual Location location() const
     {
         return arg_->location().starting_at(op_);
@@ -63,17 +63,17 @@ struct Unary_Phrase : public Phrase
 struct Binary_Phrase : public Phrase
 {
     Binary_Phrase(
-        aux::Shared_Ptr<Phrase> left,
+        Shared<Phrase> left,
         Token op,
-        aux::Shared_Ptr<Phrase> right)
+        Shared<Phrase> right)
     :
         left_(std::move(left)),
         op_(op),
         right_(std::move(right))
     {}
-    aux::Shared_Ptr<Phrase> left_;
+    Shared<Phrase> left_;
     Token op_;
-    aux::Shared_Ptr<Phrase> right_;
+    Shared<Phrase> right_;
     virtual Location location() const
     {
         return left_->location().ending_at(right_->location().token());
@@ -83,15 +83,15 @@ struct Binary_Phrase : public Phrase
 struct Definition : public Phrase
 {
     Definition(
-        aux::Shared_Ptr<Phrase> left,
+        Shared<Phrase> left,
         Token equate,
-        aux::Shared_Ptr<Phrase> right)
+        Shared<Phrase> right)
     :
         left_(left), equate_(equate), right_(right)
     {}
-    aux::Shared_Ptr<Phrase> left_;
+    Shared<Phrase> left_;
     Token equate_;
-    aux::Shared_Ptr<Phrase> right_;
+    Shared<Phrase> right_;
     virtual Location location() const
     {
         return left_->location().ending_at(right_->location().token());
@@ -104,10 +104,10 @@ struct Paren_Phrase : public Phrase
     // an expression followed by an optional comma
     struct Arg
     {
-        aux::Shared_Ptr<Phrase> expr_;
+        Shared<Phrase> expr_;
         Token comma_;
 
-        Arg(aux::Shared_Ptr<Phrase> expr) : expr_(expr) {}
+        Arg(Shared<Phrase> expr) : expr_(expr) {}
     };
 
     const Script& script_;
@@ -128,12 +128,12 @@ struct Paren_Phrase : public Phrase
 /// a function call
 struct Call_Phrase : public Phrase
 {
-    aux::Shared_Ptr<Phrase> function_;
-    aux::Shared_Ptr<Phrase> args_;
+    Shared<Phrase> function_;
+    Shared<Phrase> args_;
 
     Call_Phrase(
-        aux::Shared_Ptr<Phrase> function,
-        aux::Shared_Ptr<Phrase> args)
+        Shared<Phrase> function,
+        Shared<Phrase> args)
     :
         function_(function),
         args_(args)
