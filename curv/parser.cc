@@ -24,7 +24,7 @@ Shared_Ptr<Phrase> parse_sum(Scanner&);
 Shared_Ptr<Phrase> parse_product(Scanner&);
 Shared_Ptr<Phrase> parse_unary(Scanner&);
 Shared_Ptr<Phrase> parse_postfix(Scanner&);
-Shared_Ptr<Phrase> parse_atom(Scanner&);
+Shared_Ptr<Phrase> parse_atom(Scanner&,bool);
 
 // Parse a script, return a syntax tree.
 // It's a recursive descent parser.
@@ -131,54 +131,33 @@ parse_unary(Scanner& scanner)
     }
 }
 
-// postfix : atom | postfix arglist
-// arglist : ( ) | ( args ) | ( args , )
-// args : sum | args , sum
+// chain : postfix | postfix chain{begins-with-identifier}
+// postfix : atom | postfix atom{not-identifier}
 Shared_Ptr<Phrase>
 parse_postfix(Scanner& scanner)
 {
-    auto postfix = parse_atom(scanner);
+    auto postfix = parse_atom(scanner, true);
     Token tok;
     for (;;) {
         tok = scanner.get_token();
-        if (tok.kind == Token::k_lparen) {
-            auto arglist =
-                aux::make_shared<Arglist_Phrase>(scanner.script_, tok);
-            for (;;) {
-                tok = scanner.get_token();
-                if (tok.kind == Token::k_rparen) {
-            rparen:
-                    arglist->rparen_ = tok;
-                    postfix = aux::make_shared<Call_Phrase>(postfix, arglist);
-                    break;
-                }
-                scanner.push_token(tok);
-                auto expr = parse_sum(scanner);
-                Arglist_Phrase::Arg arg(expr);
-                tok = scanner.get_token();
-                if (tok.kind == Token::k_comma)
-                    arg.comma_ = tok;
-                arglist->args_.push_back(std::move(arg));
-
-                if (tok.kind == Token::k_comma) {
-                    continue;
-                } else if (tok.kind == Token::k_rparen) {
-                    goto rparen;
-                } else {
-                    throw Token_Error(scanner.script_, tok,
-                        "bad token in function call argument list");
-                }
-            }
-        } else {
+        if (tok.kind == Token::k_ident) {
             scanner.push_token(tok);
-            return postfix;
+            return aux::make_shared<Call_Phrase>(postfix,
+                parse_postfix(scanner));
         }
+        scanner.push_token(tok);
+        auto atom = parse_atom(scanner, false);
+        if (atom == nullptr)
+            return postfix;
+        postfix = aux::make_shared<Call_Phrase>(postfix, atom);
     }
 }
 
-// atom : numeral | identifier | ( sum )
+// atom : numeral | identifier | patom
+// patom : ( ) | ( args ) | ( args , )
+// args : sum | args , sum
 Shared_Ptr<Phrase>
-parse_atom(Scanner& scanner)
+parse_atom(Scanner& scanner, bool force)
 {
     auto tok = scanner.get_token();
     if (tok.kind == Token::k_num) {
@@ -188,15 +167,39 @@ parse_atom(Scanner& scanner)
         return aux::make_shared<Identifier>(scanner.script_, tok);
     }
     if (tok.kind == Token::k_lparen) {
-        auto expr = parse_sum(scanner);
-        auto tok2 = scanner.get_token();
-        if (tok2.kind == Token::k_rparen)
-            return aux::make_shared<Paren_Phrase>(tok, std::move(expr), tok2);
-        throw Token_Error(scanner.script_, tok2,
-            "unexpected token when expecting ')'");
+        auto pphrase = aux::make_shared<Paren_Phrase>(scanner.script_, tok);
+        for (;;) {
+            tok = scanner.get_token();
+            if (tok.kind == Token::k_rparen) {
+        rparen:
+                pphrase->rparen_ = tok;
+                return pphrase;
+            }
+            scanner.push_token(tok);
+            auto expr = parse_sum(scanner);
+            Paren_Phrase::Arg arg(expr);
+            tok = scanner.get_token();
+            if (tok.kind == Token::k_comma)
+                arg.comma_ = tok;
+            pphrase->args_.push_back(std::move(arg));
+
+            if (tok.kind == Token::k_comma) {
+                continue;
+            } else if (tok.kind == Token::k_rparen) {
+                goto rparen;
+            } else {
+                throw Token_Error(scanner.script_, tok,
+                    "bad token in parenthesized phrase");
+            }
+        }
     }
-    throw Token_Error(scanner.script_, tok,
-        "unexpected token when expecting atom");
+    if (force) {
+        throw Token_Error(scanner.script_, tok,
+            "unexpected token when expecting atom");
+    } else {
+        scanner.push_token(tok);
+        return nullptr;
+    }
 }
 
 }

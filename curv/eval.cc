@@ -147,24 +147,43 @@ curv::eval(Phrase& expr, const Namespace& names)
                 stringify(funv,": not a function"));
         Function* fun = (Function*)&funp;
 
-        const auto& args(call->arglist_->args_);
-        Value argv[1];
-        switch (fun->nargs_) {
-        case 1:
-            if (args.size() != 1) {
-                throw Phrase_Error(*call->arglist_,
+        auto patom = dynamic_cast<Paren_Phrase*>(&*call->args_);
+        if (patom != nullptr) {
+            // argument phrase is variable-size parenthesized arg list
+            const auto& args(patom->args_);
+            Value argv[1];
+            switch (fun->nargs_) {
+            case 1:
+                if (args.size() != 1) {
+                    throw Phrase_Error(*call->args_,
+                        "wrong number of arguments");
+                }
+                argv[0] = eval(*args[0].expr_, names);
+                return fun->function_(argv);
+            default:
+                throw Phrase_Error(*call, "unsupported argument list size");
+            }
+        } else {
+            // argument phrase is a unitary expression
+            if (fun->nargs_ != 1) {
+                throw Phrase_Error(*call->args_,
                     "wrong number of arguments");
             }
-            argv[0] = eval(*args[0].expr_, names);
+            Value argv[1];
+            argv[0] = eval(*call->args_, names);
             return fun->function_(argv);
-        default:
-            throw Phrase_Error(*call, "unsupported argument list size");
         }
     }
 
     auto paren = dynamic_cast<Paren_Phrase*>(&expr);
     if (paren != nullptr) {
-        return eval(*paren->arg_, names);
+        if (paren->args_.size() != 1
+            || paren->args_[0].comma_.kind != Token::k_comma)
+        {
+            throw Phrase_Error(*paren,
+                "parenthesized phrase is not an expression");
+        }
+        return eval(*paren->args_[0].expr_, names);
     }
 
     assert(0);

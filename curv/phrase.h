@@ -80,20 +80,6 @@ struct Binary_Phrase : public Phrase
     }
 };
 
-struct Paren_Phrase : public Phrase
-{
-    Paren_Phrase(Token lp, aux::Shared_Ptr<Phrase> arg, Token rp)
-    : lparen_(lp), arg_(std::move(arg)), rparen_(rp)
-    {}
-    Token lparen_;
-    aux::Shared_Ptr<Phrase> arg_;
-    Token rparen_;
-    virtual Location location() const
-    {
-        return arg_->location().starting_at(lparen_).ending_at(rparen_);
-    }
-};
-
 struct Definition : public Phrase
 {
     Definition(
@@ -113,7 +99,7 @@ struct Definition : public Phrase
 };
 
 /// a parenthesized argument list, part of a function call
-struct Arglist_Phrase : public Phrase
+struct Paren_Phrase : public Phrase
 {
     // an expression followed by an optional comma
     struct Arg
@@ -129,7 +115,7 @@ struct Arglist_Phrase : public Phrase
     std::vector<Arg> args_;
     Token rparen_;
 
-    Arglist_Phrase(const Script& script, Token lparen)
+    Paren_Phrase(const Script& script, Token lparen)
     : script_(script), lparen_(lparen)
     {}
 
@@ -143,19 +129,19 @@ struct Arglist_Phrase : public Phrase
 struct Call_Phrase : public Phrase
 {
     aux::Shared_Ptr<Phrase> function_;
-    aux::Shared_Ptr<Arglist_Phrase> arglist_;
+    aux::Shared_Ptr<Phrase> args_;
 
     Call_Phrase(
         aux::Shared_Ptr<Phrase> function,
-        aux::Shared_Ptr<Arglist_Phrase> arglist)
+        aux::Shared_Ptr<Phrase> args)
     :
         function_(function),
-        arglist_(arglist)
+        args_(args)
     {}
 
     virtual Location location() const
     {
-        return function_->location().ending_at(arglist_->location().token());
+        return function_->location().ending_at(args_->location().token());
     }
 };
 
