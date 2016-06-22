@@ -8,6 +8,10 @@ A "component" is:
 * A reification of a script as a first class value.
 
 The word "module" would be better, but that's already taken.
+I might rename it anyway, because this concept is a close match to
+* javascript modules
+* python modules
+* ML modules
 
 An OpenSCAD script is imported as a Component. Components are the mechanism
 by which Curv can use existing OpenSCAD scripts. There's a limitation,

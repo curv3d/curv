@@ -153,4 +153,5 @@ TEST(tcad, eval)
     // lexical errors
     EVAL_ERROR("\\foo", "illegal character '\\'");
     EVAL_ERROR("\177", "illegal character 0x7F");
+    EVAL_ERROR("42e+", "bad numeral");
 }

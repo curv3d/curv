@@ -1,0 +1,136 @@
+My idea:
+To implement the analyzer,
+rather than virtual Phrase::analyze() -> Meaning,
+instead use Phrase_Visitor.
+This modularizes the analyzer code.
+-Speed: 2 vtable lookups per phrase, an extra copy for the context argument
+and meaning result
+-Maint: lots of tiny functions, decl and def in .h/.cc
++Maint: using pure virtuals means every case is guaranteed to be covered.
+
+Alternative: using a Phrase_Type enum, store a type code in each Phrase,
+then analyze() is a switch on the Phrase_Type.
++Speed: faster
+Maint:
+* compile time guarantee that each Phrase class gets a unique type?
+  - not if coded by hand
+  + boost.variant manages to automate this
+* compile time check for missing cases in switch?
+  * gcc verbose warnings
+  * boost variant uses a visitor pattern to call an overloaded function.
+    Doesn't generate a switch statement. There's a recursive loop of if tests;
+    loop is expanded at compile time. With -O2 optimization, faster than vfun?
+* At each switch case an unsafe cast is needed.
+
+// AUX_SHARED_VARIANT
+// * Each instance contains a reference count, int type tag, and variant data.
+// * No vtable pointer is required. The reference count and type tag occupy
+//   the same space as a vtable pointer (on 64 bit architectures), so this
+//   is a compact representation. No cache hit is needed to load the vtable,
+//   so it is fast.
+// * Each instance is heap allocated and referenced using an aux::Shared_Ptr.
+// * Instances are variable sized objects, just the right size to contain
+//   the variant data (unlike a union or boost.variant).
+// * A variant is deconstructed using the visitor pattern, but underneath, a
+//   switch statement is used. A switch on an integer tag is much faster than
+//   double dispatch through virtual functions using the OOP visitor pattern.
+
+AUX_SHARED_VARIANT(Phrase,
+    Identifier,
+    Numeral,
+    String,
+    Fun_Call,
+    Prefix_Phrase,
+    Infix_Phrase);
+
+struct Phrase : public aux::Shared_Base
+{
+    enum class Tag {
+        k_Identifier,
+        k_Numeral,
+        ...
+    };
+    Tag tag_;
+    union {
+        Identifier v_Identifier;
+        ...
+    } data_;
+    Phrase(Identifier arg) : tag_(k_Identifier) { data.v_Identifier=arg; }
+    ...
+    Shared<Phrase> make_Identifier(arg...)
+    {
+        void* p = malloc(sizeof(Phrase)-sizeof(double)+sizeof(Identifier));
+        if (p == nullptr) throw bad_alloc();
+        shptr = new(p) Phrase(k_identifier);
+        new(&shptr->data_) Identifier(arg...);
+        return shptr;
+    }
+    accept(visitor)
+    {
+        switch (tag_) {
+        case k_Identifier: visitor.visit(*(Identifier*)&data_); break;
+        ...
+        }
+    }
+    template 
+};
+
+auto id = AUX_MAKE_SHARED_VARIANT(Phrase,Identifier,tok);
+ -> aux::_make_shared_variant<Phrase,Identifier>(Phrase::k_identifier,tok)
+auto id = Phrase::make_Identifier(tok);
+
+Shared<Meaning> analyze(Phrase& ph, AContext ctx)
+{
+    struct V {
+      static Shared<Meaning> visit(Identifier& id) {
+        return id.lookup(ctx);
+      }
+    }
+    return ph.accept<V>(ctx);
+}
+
+With "two phase parsing" I'm reporting syntax errors during analysis.
+Eg, <paramlist> -> <expr>, I only accept a subset of <atom> phrases as a
+<paramlist>. How do I write this particular pattern matching code?
+* a Phrase_Visitor class would be very verbose and indirect.
+* a chain of dynamic_cast tests.
+* switching on a phrase type would surely be better.
+* pattern matching on an algebraic type in Rust?
+* Boost.variant?
+  * https://github.com/jxwr/Kaleidoscope/
+  * http://ciere.com/cppnow15/x3_docs/spirit/tutorials/rexpr.html
+  * in source code, variant encoding is more compact than one class per variant
+  * safe discriminated union, uses visitor pattern to deconstruct,
+    1 overloaded function def per variant
+  * Fast, no virtual funcalls or polymorphic downcasts (they say).
+    Internally, it's a discriminated union with an 'int' discriminant.
+
+void Phrase::accept(Phrase_Analyzer&) const
+
+struct Phrase_Visitor
+{
+    virtual void visit_identifier(Identifier&) = 0;
+    ... one for each Phrase type ...
+};
+
+Shared<Meaning> analyze(Phrase& ph, AContext ctx)
+{
+    Phrase_Visitor v(ctx);
+    ph.accept(v);
+    return v.meaning;
+}
+
+struct Analyzer : public Phrase_Visitor
+{
+    Namespace& builtins_;
+
+    virtual void visit_identifier(Identifier& id)
+    {
+        std::string id(id.location().range());
+        auto p = builtins_.find(id);
+        if (p != builtins_.end())
+            return Constant(id, p->second);
+        else
+            throw Phrase_Error(*ident, "not defined");
+    }
+};

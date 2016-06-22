@@ -188,7 +188,7 @@ public:
     }
 
     /// True if the value is a reference value.
-    inline bool is_ref() const
+    inline bool is_ref() const noexcept
     {
         // Negative numbers will have the sign bit set, which means
         // signed_bits_ < 0. Positive infinity has all 1s in the exponent,
@@ -204,7 +204,7 @@ public:
     /// Convert a reference value to `Ref_Value&`.
     ///
     /// Unsafe unless `is_ref()` is true.
-    inline Ref_Value& get_ref_unsafe() const
+    inline Ref_Value& get_ref_unsafe() const noexcept
     {
         #if UINTPTR_MAX == UINT64_MAX
             // 64 bit pointers.
@@ -237,7 +237,7 @@ public:
     }
 
     /// The copy constructor increments the use_count of a ref value.
-    inline Value(const Value& val)
+    inline Value(const Value& val) noexcept
     {
         bits_ = val.bits_;
         if (is_ref())
@@ -245,7 +245,7 @@ public:
     }
 
     /// The move constructor.
-    inline Value(Value&& val)
+    inline Value(Value&& val) noexcept
     {
         bits_ = val.bits_;
         val.bits_ = k_nullbits;
@@ -258,7 +258,7 @@ public:
     /// copy and move assignments, and allegedly the most efficient.
     /// When possible, use `val = std::move(rhs);` for a non-rvalue rhs
     /// for efficiency.
-    inline Value& operator=(Value rhs)
+    inline Value& operator=(Value rhs) noexcept
     {
         rhs.swap(*this);
         return *this;

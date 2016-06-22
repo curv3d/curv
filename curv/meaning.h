@@ -5,17 +5,29 @@
 #ifndef CURV_MEANING_H
 #define CURV_MEANING_H
 
+#include <curv/shared.h>
+#include <curv/phrase.h>
+
 /*
 How do I represent operations and functions? Eg, the binary + operation
 as in 'x+y'?
  1. I could create a distinct subclass of Expression for each built-in operator.
-    Eg, Binary_Plus_Expression. So how is sin(x) represented, and do I use
-    different representations based on syntax? One difference is that 'sin'
-    is a value in TeaCAD, whereas I've made no commitment that there is a '+'
-    function in the builtin namespace.
+    Eg, Binary_Plus_Expression.
+    * So how is sin(x) represented, and do I use different representations
+      based on syntax? One difference is that 'sin' is a builtin in TeaCAD,
+      so I need a 'sin' Value and 'sin' Bindable anyway, whereas I've made no
+      commitment that there is a '+' function in the builtin namespace.
  2. General purpose function application node, with a function and a
     positional argument list. (No keyword arguments yet.) Works for x+y, sin(x),
     etc (code reuse).
+    * How far does this go? x&&y? if(a)b else c? for(i=s)x? [x,y,z]?
+      Are all of these compiled into application nodes? (Well they would be
+      in Lisp.) Eg, __for__(i,[1..10],i+1).
+    * With this design, the Call_Expression has a function Expression,
+      which has a source Phrase. What do I use for this source Phrase?
+I think that a reasonable and non-surprising approach is to use special
+meaning nodes for magic syntax, and function call nodes for function
+call syntax.
 
 Does the semantic analyzer use multiple passes? Is different information stored
 in the meaning tree depending on the pass? AMI had a single bottom up semantic
@@ -101,38 +113,139 @@ namespace curv {
 /// An abstract base class representing a semantically analyzed Phrase.
 struct Meaning : public aux::Shared_Base
 {
-    //virtual ~Meaning() {}
-    //virtual Location location() const = 0;
+    /// The original source code for this meaning, or nullptr in the case
+    /// of the Bindable objects stored in the builtin namespace.
+    ///
+    /// When a builtin is looked up, we have to copy the Bindable
+    /// to add a source reference, after which source_ is not null.
+    /// See Bindable::copy_with_source.
+    ///
+    /// The syntax of the source code need not have any relation to the meaning
+    /// class, due to compile time evaluation. And that's why we separate
+    /// the Phrase tree from the Meaning tree.
+    Shared<Phrase> source_;
+
+    Meaning(Shared<Phrase> source) : source_(std::move(source)) {}
 };
 
+#if 0 // maybe later when I need this
 /// A Bindable phrase denotes an entity that can be bound to a name.
 ///
 /// But the entity might not be a run-time value, in which case the phrase
 /// is not an Expression. Bindable is a supertype of Expression.
 ///
-/// Bindable is used to represent compile time entities that are function-like
+/// Bindable is needed to represent compile time entities that are function-like
 /// (can be invoked using function call syntax) or namespace-like
 /// (can use '.' notation to reference members), but which aren't
 /// run-time values.
 struct Bindable : public Meaning
 {
+    virtual Shared<Meaning> analyze_dot(const Identifier&) const;
+    virtual Shared<Meaning> analyze_call(Range<Shared<Phrase>*>) const;
+    virtual Shared<Expression> to_expression() const;
+    virtual Shared<Bindable> copy_with_source(const Phrase&) const;
 };
+#endif
 
 /// An Expression is a phrase that denotes a value.
-struct Expression : public Meaning
+struct Expression : public Meaning //Bindable
 {
+//  virtual Shared<Meaning> analyze_dot(const Identifier&) const override;
+//  virtual Shared<Meaning> analyze_call(Range<Shared<Phrase>*>) const override;
+//  virtual Shared<Expression> to_expression() const override;
+
+    virtual Value eval() const = 0;
 };
 
 /// A Constant is an Expression whose value is known at compile time.
 struct Constant : public Expression
 {
     Value value_;
+
+    Constant(Shared<Phrase> source, Value v)
+    : Expression(std::move(source)), value_(std::move(v))
+    {}
+
+    virtual Value eval() const override;
+};
+
+struct Dot_Expression : public Expression
+{
+    Shared<Expression> base_;
+    Shared<Identifier> id_;
+
+    Dot_Expression(
+        Shared<Phrase> source, Shared<Expression> base, Shared<Identifier> id)
+    :
+        Expression(std::move(source)),
+        base_(std::move(base)),
+        id_(std::move(id))
+    {}
+
+    virtual Value eval() const override;
+};
+
+struct Call_Expr : public Expression
+{
+    Shared<Expression> fun_;
+    std::vector<Shared<Expression>> args_;
+
+    Call_Expression(
+        Shared<Phrase> source,
+        Shared<Expression> fun,
+        std::vector<Shared<Expression>> args)
+    :
+        Expression(std::move(source)),
+        fun_(std::move(fun)),
+        args_(std::move(args))
+    {}
+
+    virtual Value eval() const override;
+};
+
+struct Prefix_Expr : public Expression
+{
+    Token::Kind op_;
+    Shared<Expression> arg_;
+
+    Prefix_Expr(
+        Shared<Phrase> source,
+        Token::Kind op,
+        Shared<Expression> arg)
+    :
+        Expression(source),
+        op_(op),
+        arg_(std::move(arg))
+    {}
+
+    virtual Value eval() const override;
+};
+
+struct Infix_Expr : public Expression
+{
+    Token::Kind op_;
+    Shared<Expression> arg1_;
+    Shared<Expression> arg2_;
+
+    Infix_Expr(
+        Shared<Phrase> source,
+        Token::Kind op,
+        Shared<Expression> arg1,
+        Shared<Expression> arg2)
+    :
+        Expression(source),
+        op_(op),
+        arg1_(std::move(arg1)),
+        arg2_(std::move(arg2))
+    {}
+
+    virtual Value eval() const override;
 };
 
 struct Definition : public Meaning
 {
-    std::string name_;
-    Shared_Ptr<Expression> value_;
+    Shared<Identifier> name_;
+    Shared<Expression> value_;
 };
 
 } // namespace curv

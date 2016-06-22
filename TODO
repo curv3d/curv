@@ -1,4 +1,6 @@
 # TCAD0 (expressions):
+* Phrase::analyze() -> Meaning
+* Meaning::eval() or jump to LLVM
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
   numeral while building a buffer for strtod.
@@ -6,10 +8,10 @@
   * error reporting for bad arguments:
     * `arg_to_num(Value,char* param_name)`: throw error if not a number,
       otherwise return double. API is independent of Value refactoring.
-* Phrase::analyze() compiles parse tree into Meaning, then Meaning::eval()
 * bool: && || !, if-else
 * num: x^y, sqrt(x), min[x,y], max[x,y], abs(x), sin(x), cos(x)
 * string: $id ${id} $(id) $+EE interpolation, strcat[s1,s2]
+  scanner has in-string flag, parser resets/sets flag during $(expr).
 * list: [a,b,c], [a..b], concat[l1,l2]
 * str&list: seq@i, len(seq)
 * records: {a=1,b=2}, r.id, defined r.id, merge[r1,r2], r1==r2

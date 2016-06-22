@@ -23,7 +23,7 @@ Shared_Ptr<Phrase> parse_stmt(Scanner& scanner);
 Shared_Ptr<Phrase> parse_sum(Scanner&);
 Shared_Ptr<Phrase> parse_product(Scanner&);
 Shared_Ptr<Phrase> parse_unary(Scanner&);
-Shared_Ptr<Phrase> parse_primary(Scanner&);
+Shared_Ptr<Phrase> parse_postfix(Scanner&);
 Shared_Ptr<Phrase> parse_atom(Scanner&);
 
 // Parse a script, return a syntax tree.
@@ -33,8 +33,8 @@ stmt : definition | sum
 definition : id = sum
 sum : product | sum + product | sum - product
 product : unary | product * unary | product / unary
-unary : primary | - unary | + unary
-primary : atom | primary ( args )
+unary : postfix | - unary | + unary
+postfix : atom | postfix ( args )
 atom : numeral | ( sum )
 */
 
@@ -116,7 +116,7 @@ parse_product(Scanner& scanner)
     }
 }
 
-// unary : primary | - unary | + unary
+// unary : postfix | - unary | + unary
 Shared_Ptr<Phrase>
 parse_unary(Scanner& scanner)
 {
@@ -127,17 +127,17 @@ parse_unary(Scanner& scanner)
         return aux::make_shared<Unary_Phrase>(tok, parse_unary(scanner));
     default:
         scanner.push_token(tok);
-        return parse_primary(scanner);
+        return parse_postfix(scanner);
     }
 }
 
-// primary : atom | primary arglist
+// postfix : atom | postfix arglist
 // arglist : ( ) | ( args ) | ( args , )
 // args : sum | args , sum
 Shared_Ptr<Phrase>
-parse_primary(Scanner& scanner)
+parse_postfix(Scanner& scanner)
 {
-    auto primary = parse_atom(scanner);
+    auto postfix = parse_atom(scanner);
     Token tok;
     for (;;) {
         tok = scanner.get_token();
@@ -149,7 +149,7 @@ parse_primary(Scanner& scanner)
                 if (tok.kind == Token::k_rparen) {
             rparen:
                     arglist->rparen_ = tok;
-                    primary = aux::make_shared<Apply_Phrase>(primary, arglist);
+                    postfix = aux::make_shared<Apply_Phrase>(postfix, arglist);
                     break;
                 }
                 scanner.push_token(tok);
@@ -168,12 +168,12 @@ parse_primary(Scanner& scanner)
             }
         } else {
             scanner.push_token(tok);
-            return primary;
+            return postfix;
         }
     }
 }
 
-// atom : numeral | ( sum )
+// atom : numeral | identifier | ( sum )
 Shared_Ptr<Phrase>
 parse_atom(Scanner& scanner)
 {
