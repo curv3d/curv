@@ -112,28 +112,21 @@ struct Definition : public Phrase
     }
 };
 
-/// a single argument expression within a function call
-struct Arg_Phrase : public Phrase
-{
-    aux::Shared_Ptr<Phrase> expr_;
-    Token comma_;
-
-    Arg_Phrase(aux::Shared_Ptr<Phrase> expr)
-    : expr_(expr)
-    {}
-
-    virtual Location location() const
-    {
-        return expr_->location().ending_at(comma_);
-    }
-};
-
 /// a parenthesized argument list, part of a function call
 struct Arglist_Phrase : public Phrase
 {
+    // an expression followed by an optional comma
+    struct Arg
+    {
+        aux::Shared_Ptr<Phrase> expr_;
+        Token comma_;
+
+        Arg(aux::Shared_Ptr<Phrase> expr) : expr_(expr) {}
+    };
+
     const Script& script_;
     Token lparen_;
-    std::vector<aux::Shared_Ptr<Arg_Phrase>> args_;
+    std::vector<Arg> args_;
     Token rparen_;
 
     Arglist_Phrase(const Script& script, Token lparen)

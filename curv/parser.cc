@@ -154,11 +154,14 @@ parse_postfix(Scanner& scanner)
                 }
                 scanner.push_token(tok);
                 auto expr = parse_sum(scanner);
-                auto arg = aux::make_shared<Arg_Phrase>(expr);
-                arglist->args_.push_back(arg);
+                Arglist_Phrase::Arg arg(expr);
                 tok = scanner.get_token();
+                if (tok.kind == Token::k_comma)
+                    arg.comma_ = tok;
+                arglist->args_.push_back(std::move(arg));
+
                 if (tok.kind == Token::k_comma) {
-                    arg->comma_ = tok;
+                    continue;
                 } else if (tok.kind == Token::k_rparen) {
                     goto rparen;
                 } else {

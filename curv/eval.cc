@@ -155,7 +155,7 @@ curv::eval(Phrase& expr, const Namespace& names)
                 throw Phrase_Error(*apply->arglist_,
                     "wrong number of arguments");
             }
-            argv[0] = eval(*args[0]->expr_, names);
+            argv[0] = eval(*args[0].expr_, names);
             return fun->function_(argv);
         default:
             throw Phrase_Error(*apply, "unsupported argument list size");

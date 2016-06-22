@@ -148,6 +148,7 @@ TEST(tcad, eval)
     EVAL_ERROR("0/0", "0/0: domain error");
     EVALS_TO("1/0", "inf");
     EVALS_TO("sqrt(2)", "1.4142135623730951");
+    EVALS_TO("sqrt(4,)", "2"); // test syntax: trailing , after last argument
     EVAL_ERROR("sqrt(true)", "sqrt(true): domain error");
 
     // lexical errors
