@@ -2,12 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // See accompanying file LICENCE.md or http://www.boost.org/LICENSE_1_0.txt
 
-// IMPLEMENTATION NOTE:
-// The current plan is to have 2 entry points to the parser, one for parsing
-// interactive command lines, and one for parsing script files.
-// I don't know how to implement 2 entry points using a parser generator
-// (Bison or Lemon). For now, I'm using a hand coded recursive descent parser.
-// I may switch to Boost.Spirit.
+// I'm currently using a hand coded recursive descent parser.
+// Alternatives are: Bison, Lemon, Boost.Spirit (maybe X3).
+//
+// Future extensions:
+// * 2 entry points to the parser, one for parsing interactive command lines,
+//   and one for parsing script files. This could be done in Bison using
+//   2 magic zero-length start tokens.
+// * Greedy implementation of 'if' and 'let' whose right expression argument
+//   consumes the longest possible match. With Bison, the obvious implementation
+//   is as a low precedence right associative operator. But, for more
+//   flexibility, I want to implement these operators as part of 'chain'.
+//   That's easy with recursive descent, but I don't know how to code that
+//   in Bison.
 
 #include <curv/parse.h>
 #include <curv/scanner.h>
@@ -28,15 +35,6 @@ Shared_Ptr<Phrase> parse_atom(Scanner&,bool);
 
 // Parse a script, return a syntax tree.
 // It's a recursive descent parser.
-/*
-stmt : definition | sum
-definition : id = sum
-sum : product | sum + product | sum - product
-product : unary | product * unary | product / unary
-unary : postfix | - unary | + unary
-postfix : atom | postfix ( args )
-atom : numeral | ( sum )
-*/
 
 /// Parse a tcad command line.
 ///

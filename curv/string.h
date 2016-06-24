@@ -85,6 +85,13 @@ operator<<(String_Builder& b, double n)
     return b;
 }
 
+inline String_Builder&
+operator<<(String_Builder& b, unsigned long n)
+{
+    (std::stringstream&)b << n;
+    return b;
+}
+
 /// Variadic function that converts its arguments into a curv String.
 template<typename... Args>
 aux::Shared_Ptr<String> stringify(Args... args)

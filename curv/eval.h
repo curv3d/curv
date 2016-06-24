@@ -9,6 +9,7 @@
 #include <map>
 #include <curv/phrase.h>
 #include <curv/value.h>
+#include <curv/meaning.h>
 
 namespace curv {
 
@@ -17,7 +18,7 @@ using Namespace = std::map<std::string, Value>;
 // the Curv builtin bindings
 extern const Namespace builtin_namespace;
 
-Value eval(Phrase&, const Namespace&);
+inline Value eval(const Expression& e) { return e.eval(); }
 
 } // namespace curv
 #endif // header guard

@@ -4,6 +4,7 @@
 #include <curv/exception.h>
 #include <curv/phrase.h>
 #include <curv/string.h>
+#include <curv/analyzer.h>
 
 using namespace std;
 using namespace aux;
@@ -40,7 +41,9 @@ struct Evaluator
                 failure_ = "definition found; expecting expression";
                 return;
             }
-            success_value_ = curv::eval(*phrase, curv::builtin_namespace);
+            AContext ctx(curv::builtin_namespace);
+            auto expr = analyze_expr(*phrase, ctx);
+            success_value_ = curv::eval(*expr);
             success_str_ = curv::stringify(success_value_);
             success_ = success_str_->c_str();
         } catch (curv::Exception& e) {

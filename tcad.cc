@@ -8,10 +8,11 @@ extern "C" {
 #include <signal.h>
 }
 #include <iostream>
+#include <curv/phrase.h>
 #include <curv/parse.h>
+#include <curv/analyzer.h>
 #include <curv/eval.h>
 #include <curv/exception.h>
-#include <curv/phrase.h>
 
 bool was_interrupted = false;
 
@@ -75,10 +76,14 @@ main(int, char**)
                     throw curv::Token_Error(*script, def->equate_,
                         "= not preceded by identifier");
                 }
-                curv::Value val = curv::eval(*def->right_, names);
+                curv::AContext actx(names);
+                auto expr = curv::analyze_expr(*def->right_, actx);
+                curv::Value val = curv::eval(*expr);
                 names[id->location().range()] = val;
             } else {
-                curv::Value val = curv::eval(*phrase, names);
+                curv::AContext actx(names);
+                auto expr = curv::analyze_expr(*phrase, actx);
+                curv::Value val = curv::eval(*expr);
                 val.print(std::cout);
                 std::cout << "\n";
             }
