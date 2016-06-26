@@ -76,12 +76,12 @@ main(int, char**)
                     throw curv::Token_Error(*script, def->equate_,
                         "= not preceded by identifier");
                 }
-                curv::AContext actx(names);
+                curv::Environ actx(names);
                 auto expr = curv::analyze_expr(*def->right_, actx);
                 curv::Value val = curv::eval(*expr);
                 names[id->location().range()] = val;
             } else {
-                curv::AContext actx(names);
+                curv::Environ actx(names);
                 auto expr = curv::analyze_expr(*phrase, actx);
                 curv::Value val = curv::eval(*expr);
                 val.print(std::cout);

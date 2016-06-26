@@ -87,7 +87,7 @@ The builtin namespace is a map from name to Constant.
 curv::Expression::eval(Context) -> Value
 Eval_Context is `(Value* slots, Value* args)`
 
-curv::Phrase::analyze_expression(ctx) -> Expression
+curv::Phrase::analyze_expression(env) -> Expression
 Analysis_Context is builtins, Script_Meaning, parameters
 ::lookup(id) -> Expression
 

@@ -79,14 +79,14 @@ auto id = AUX_MAKE_SHARED_VARIANT(Phrase,Identifier,tok);
  -> aux::_make_shared_variant<Phrase,Identifier>(Phrase::k_identifier,tok)
 auto id = Phrase::make_Identifier(tok);
 
-Shared<Meaning> analyze(Phrase& ph, AContext ctx)
+Shared<Meaning> analyze(Phrase& ph, const Environ& env)
 {
     struct V {
       static Shared<Meaning> visit(Identifier& id) {
-        return id.lookup(ctx);
+        return id.lookup(env);
       }
     }
-    return ph.accept<V>(ctx);
+    return ph.accept<V>(env);
 }
 
 With "two phase parsing" I'm reporting syntax errors during analysis.
@@ -113,9 +113,9 @@ struct Phrase_Visitor
     ... one for each Phrase type ...
 };
 
-Shared<Meaning> analyze(Phrase& ph, AContext ctx)
+Shared<Meaning> analyze(Phrase& ph, const Environ& env)
 {
-    Phrase_Visitor v(ctx);
+    Phrase_Visitor v(env);
     ph.accept(v);
     return v.meaning;
 }

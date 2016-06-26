@@ -10,19 +10,19 @@
 
 namespace curv {
 
-struct AContext
+struct Environ
 {
     const Namespace& names;
-    AContext(const Namespace& n) : names(n) {}
+    Environ(const Namespace& n) : names(n) {}
 };
 
 inline Shared<Meaning>
-analyze(Phrase& ph, AContext ctx)
+analyze(Phrase& ph, const Environ& env)
 {
-    return ph.analyze(ctx);
+    return ph.analyze(env);
 }
 
-Shared<Expression> analyze_expr(Phrase& ph, AContext ctx);
+Shared<Expression> analyze_expr(Phrase& ph, const Environ& env);
 
 } // namespace
 #endif // header guard

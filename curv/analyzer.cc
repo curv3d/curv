@@ -9,9 +9,9 @@
 using namespace curv;
 
 Shared<Expression>
-curv::analyze_expr(Phrase& ph, AContext ctx)
+curv::analyze_expr(Phrase& ph, const Environ& env)
 {
-    Shared<Meaning> m = analyze(ph, ctx);
+    Shared<Meaning> m = analyze(ph, env);
     Expression* e = dynamic_cast<Expression*>(&*m);
     if (e == nullptr)
         throw Phrase_Error(ph, "not an expression");
@@ -19,11 +19,11 @@ curv::analyze_expr(Phrase& ph, AContext ctx)
 }
 
 Shared<Meaning>
-curv::Identifier::analyze(AContext ctx) const
+curv::Identifier::analyze(const Environ& env) const
 {
     std::string id(location().range());
-    auto p = ctx.names.find(id);
-    if (p != ctx.names.end())
+    auto p = env.names.find(id);
+    if (p != env.names.end())
         return aux::make_shared<Constant>(
             Shared<const Phrase>(this), p->second);
     else
@@ -31,7 +31,7 @@ curv::Identifier::analyze(AContext ctx) const
 }
 
 Shared<Meaning>
-curv::Numeral::analyze(AContext ctx) const
+curv::Numeral::analyze(const Environ& env) const
 {
     std::string str(location().range());
     char* endptr;
@@ -41,46 +41,46 @@ curv::Numeral::analyze(AContext ctx) const
 }
 
 Shared<Meaning>
-curv::Unary_Phrase::analyze(AContext ctx) const
+curv::Unary_Phrase::analyze(const Environ& env) const
 {
     return aux::make_shared<Prefix_Expr>(
         Shared<const Phrase>(this),
         op_.kind,
-        curv::analyze_expr(*arg_, ctx));
+        curv::analyze_expr(*arg_, env));
 }
 
 Shared<Meaning>
-curv::Binary_Phrase::analyze(AContext ctx) const
+curv::Binary_Phrase::analyze(const Environ& env) const
 {
     return aux::make_shared<Infix_Expr>(
         Shared<const Phrase>(this),
         op_.kind,
-        curv::analyze_expr(*left_, ctx),
-        curv::analyze_expr(*right_, ctx));
+        curv::analyze_expr(*left_, env),
+        curv::analyze_expr(*right_, env));
 }
 
 Shared<Meaning>
-curv::Definition::analyze(AContext ctx) const
+curv::Definition::analyze(const Environ& env) const
 {
     throw Phrase_Error(*this, "not an expression");
 }
 
 Shared<Meaning>
-curv::Paren_Phrase::analyze(AContext ctx) const
+curv::Paren_Phrase::analyze(const Environ& env) const
 {
     if (args_.size() == 1
         && args_[0].comma_.kind == Token::k_missing)
     {
-        return curv::analyze_expr(*args_[0].expr_, ctx);
+        return curv::analyze_expr(*args_[0].expr_, env);
     } else {
         throw Phrase_Error(*this, "not an expression");
     }
 }
 
 Shared<Meaning>
-curv::Call_Phrase::analyze(AContext ctx) const
+curv::Call_Phrase::analyze(const Environ& env) const
 {
-    auto fun = curv::analyze_expr(*function_, ctx);
+    auto fun = curv::analyze_expr(*function_, env);
     std::vector<Shared<Expression>> args;
 
     auto patom = dynamic_cast<Paren_Phrase*>(&*args_);
@@ -88,11 +88,11 @@ curv::Call_Phrase::analyze(AContext ctx) const
         // argument phrase is a variable-length parenthesized argument list
         args.reserve(patom->args_.size());
         for (auto a : patom->args_)
-            args.push_back(curv::analyze_expr(*a.expr_, ctx));
+            args.push_back(curv::analyze_expr(*a.expr_, env));
     } else {
         // argument phrase is a unitary expression
         args.reserve(1);
-        args.push_back(curv::analyze_expr(*args_, ctx));
+        args.push_back(curv::analyze_expr(*args_, env));
     }
 
     return aux::make_shared<Call_Expr>(

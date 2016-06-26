@@ -63,7 +63,7 @@ The builtin namespace is a map from name to Constant.
 
 curv::Expression::eval() -> Value
 
-curv::Phrase::analyze_expression(ctx) -> Expression
+curv::Phrase::analyze_expression(env) -> Expression
 Analysis_Context is builtins
 ::lookup(id) -> Expression
 

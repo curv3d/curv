@@ -13,7 +13,7 @@
 namespace curv {
 
 class Meaning;
-class AContext;
+class Environ;
 
 /// Base class for a node in a syntax tree created by the parser.
 ///
@@ -30,7 +30,7 @@ struct Phrase : public aux::Shared_Base
 {
     virtual ~Phrase() {}
     virtual Location location() const = 0;
-    virtual Shared<Meaning> analyze(AContext) const = 0;
+    virtual Shared<Meaning> analyze(const Environ&) const = 0;
 };
 
 struct Identifier final : public Phrase
@@ -40,7 +40,7 @@ struct Identifier final : public Phrase
     {}
     Location loc_;
     virtual Location location() const { return loc_; }
-    virtual Shared<Meaning> analyze(AContext) const;
+    virtual Shared<Meaning> analyze(const Environ&) const;
 };
 
 struct Numeral final : public Phrase
@@ -50,7 +50,7 @@ struct Numeral final : public Phrase
     {}
     Location loc_;
     virtual Location location() const { return loc_; }
-    virtual Shared<Meaning> analyze(AContext) const;
+    virtual Shared<Meaning> analyze(const Environ&) const;
 };
 
 struct Unary_Phrase : public Phrase
@@ -64,7 +64,7 @@ struct Unary_Phrase : public Phrase
     {
         return arg_->location().starting_at(op_);
     }
-    virtual Shared<Meaning> analyze(AContext) const;
+    virtual Shared<Meaning> analyze(const Environ&) const;
 };
 
 struct Binary_Phrase : public Phrase
@@ -85,7 +85,7 @@ struct Binary_Phrase : public Phrase
     {
         return left_->location().ending_at(right_->location().token());
     }
-    virtual Shared<Meaning> analyze(AContext) const;
+    virtual Shared<Meaning> analyze(const Environ&) const;
 };
 
 struct Definition : public Phrase
@@ -104,7 +104,7 @@ struct Definition : public Phrase
     {
         return left_->location().ending_at(right_->location().token());
     }
-    virtual Shared<Meaning> analyze(AContext) const;
+    virtual Shared<Meaning> analyze(const Environ&) const;
 };
 
 /// a parenthesized argument list, part of a function call
@@ -132,7 +132,7 @@ struct Paren_Phrase : public Phrase
     {
         return Location(script_, lparen_).ending_at(rparen_);
     }
-    virtual Shared<Meaning> analyze(AContext) const;
+    virtual Shared<Meaning> analyze(const Environ&) const;
 };
 
 /// a function call
@@ -153,7 +153,7 @@ struct Call_Phrase : public Phrase
     {
         return function_->location().ending_at(args_->location().token());
     }
-    virtual Shared<Meaning> analyze(AContext) const;
+    virtual Shared<Meaning> analyze(const Environ&) const;
 };
 
 } // namespace curv
