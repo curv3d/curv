@@ -1,6 +1,9 @@
 # TCAD0 (expressions):
-* Phrase::analyze() -> Meaning
-* Meaning::eval() or jump to LLVM
+* Meaning::eval(), or LLVM, or compile to bytecode
+  * I like direct threaded code (which forces use of gcc/clang on windows)
+    LLVM has some high overheads: complexity, memory, compile speed.
+* a tcad command line is a script, which is compiled into a module.
+  Eg, `a=1;b=2;a+b;a-b`. No recursion yet. Each value printed on separate line.
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
   numeral while building a buffer for strtod.

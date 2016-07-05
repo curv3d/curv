@@ -23,8 +23,10 @@ cases of a single switch statement):
 Kinds of threaded interpreters:
 * Direct threading.
   A 'thread' is an array of code addresses.
-  An operation code block ends with 'jump *ip++'.
+  An operation code block ends with `jump *ip++`.
   Not compatible with operations as C functions.
+  Ruby has compile time options for direct, token and call-threaded code,
+  and direct threading is the default.
 * Indirect threading. Traditionally used by Forth.
   Has some benefits in convenience and compactness over direct threading.
   Code block ends with 'jump *(*ip++)'.
