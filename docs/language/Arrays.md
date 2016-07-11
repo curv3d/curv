@@ -1,7 +1,7 @@
 # Arrays
 
 ## Tensors
-TeaCAD supports arrays of numbers of arbitrary dimension,
+Curv supports arrays of numbers of arbitrary dimension,
 plus the usual linear algebra operations on vectors and matrices.
 A vector is a list of numbers, a matrix is a list of vectors, and so on.
 
@@ -27,7 +27,7 @@ Performance note: The Curv "boxed value" format represents numbers in memory
 as 64 bit IEEE floats, and it represents lists of numbers as contiguous arrays
 of 64 bit IEEE floats. This means that vector instructions (eg, SSE or AVX
 on Intel) can be applied directly to boxed vectors, without copying the data.
-Since we compile TeaCAD directly to optimized machine code, this should
+Since we compile Curv directly to optimized machine code, this should
 allow for fast vector operations.
 
 ## Broadcasting
@@ -35,7 +35,7 @@ In OpenSCAD, the arithmetic operations -A, A+B, A-B support pointwise
 operation and "broadcasting" across arrays and arbitrary shaped trees,
 following the convention of most array languages.
 
-In TeaCAD, *all* of the numeric operations support these semantics,
+In Curv, *all* of the numeric operations support these semantics,
 including A\*B, abs(A), max[A,B], sin(A), and so on.
 
 What does this look like for `max`?
@@ -123,20 +123,20 @@ multiplication. I'll argue that this latter design is better.
     then we should be consistent. Elementwise operation (broadcasting) is
     a consistent generalization.
 
- 3. In TeaCAD and OpenSCAD, matrixes are represented as nested lists.
-    There is no 'matrix' type. TeaCAD can't distinguish between a matrix
+ 3. In Curv and OpenSCAD, matrixes are represented as nested lists.
+    There is no 'matrix' type. Curv can't distinguish between a matrix
     and a list of 3D points (eg, the latter appears in the `polyhedron`
     arguments). Elementwise multiplication is something that makes sense
     in both contexts. Matrix multiplication is more specialized than this,
     so it needs to be a different operation.
 
-Mathematica is a good language to for TeaCAD to copy, because:
+Mathematica is a good language to for Curv to copy, because:
 * It represents arrays as nested lists, just like OpenSCAD.
 * It is consistent by design: Mathematica's symbolic algebra wouldn't work
   if the operators didn't have consistent mathematical properties.
 
-TeaCAD adopts 3 multiplication operators from Mathematica,
-which in TeaCAD are called `product` (*), `dot` (·)
+Curv adopts 3 multiplication operators from Mathematica,
+which in Curv are called `product` (*), `dot` (·)
 and `cross` (⨯). (The Mathematica names are Times, Dot and Cross.)
 
 `product[x,y]` or `x*y` performs pointwise multiplication.
@@ -200,7 +200,7 @@ of booleans as results.  Even GLSL has pointwise relational operators
 and vectors of booleans, so there must be a use in geometric programming.
 In GLSL, you can feed a bool vector into any() and all().
 
-In TeaCAD, all of the numeric operators are generalized to operate on 'tensors'.
+In Curv, all of the numeric operators are generalized to operate on 'tensors'.
 But the relational and boolean operators shouldn't be overloaded this way.
 Instead, we'll use different names for the pointwise versions. Why:
 * `==` can't be generalized to pointwise operation across arrays since it

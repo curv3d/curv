@@ -5,7 +5,7 @@ by the implementation in a way that can't be counterfeited from within the
 language. Built-in predicate functions like `is_bool` and `is_num`
 are provided to test these type codes.
 
-There are no user defined abstract data types in TeaCAD.
+There are no user defined abstract data types in Curv.
 In fact, there is no such thing as a type at all, there are only
 predicate functions. The additional complexity is not justified
 in a simple domain-specific language like this.
@@ -70,7 +70,7 @@ Alt syntax: test if an object field is defined:
 `defined(<selection>.<identifier>)`.
 
 It looks like almost the entire F-Rep geometry system could be defined
-using TeaCAD code. I need two primitive functions, `mk2dshape`
+using Curv code. I need two primitive functions, `mk2dshape`
 and `mk3dshape`, which take an object as an argument, check that
 get_distance_field is defined and has the right type, abort
 if the distance field uses features not portable to GLSL, return

@@ -1,11 +1,11 @@
 # Dynamic Scoping
 
-TeaCAD supports dynamically scoped variables.
+Curv supports dynamically scoped variables.
 If a variable's name begins with `$`, then it is dynamically scoped,
 otherwise it is lexically scoped.
 
 ## What Does That Mean?
-A TeaCAD script file has an associated tree of lexical scopes.
+A Curv script file has an associated tree of lexical scopes.
 The root scope is the *builtin* scope, which contains the variables
 that are built in to the language. Under that is the file scope, and under
 that are smaller nested scopes that are introduced by certain syntactic
@@ -34,8 +34,8 @@ is popped off the stack.
 These two implementations, deep binding and shallow binding, are equivalent.
 Do not be confused by the fact that the shallow binding implementation
 associates a mutable storage cell with each dynamic variable. This does not
-mean that TeaCAD is an imperative language with mutable global variables.
-The TeaCAD language specification is not biased towards one particular
+mean that Curv is an imperative language with mutable global variables.
+The Curv language specification is not biased towards one particular
 implementation.
 
 ## Why Is This Useful?
@@ -118,7 +118,7 @@ The c2.com wiki says:
   you search in the function that called the local function, then you search
   in the function that called that function, and so on, up the call stack.
 
-TeaCAD supports dynamic scoping for special variables beginning with '$'.
+Curv supports dynamic scoping for special variables beginning with '$'.
 It's for compatibility with OpenSCAD, but it's also useful.
 The semantics need to follow from the use cases.
 I'm not sure that the OpenSCAD semantics are necessarily the correct ones,
@@ -142,7 +142,7 @@ agree with call-by-name argument passing.
 A special variable is one whose name begins with `$`. Special variables are
 dynamically scoped, as defined here.
 
-In TeaCAD, it's illegal to reference a variable that isn't defined within enclosing
+In Curv, it's illegal to reference a variable that isn't defined within enclosing
 lexical scope. That also applies to special variables. The definition given by
 lexical scoping is the default value if it isn't overridden by the dynamic
 scoping mechanism.
@@ -166,7 +166,7 @@ How does this compare to special variables in Lisp?
 Scheme has lexically scoped variables, and `fluid-let`. Variables are not
 marked special, unlike in Lisp. This does make it possible to have module
 specific 'special' variable bindings, without name collisions.
-Eg, `fluid_let(M.$foo = 42) ...` in TeaCAD.
+Eg, `fluid_let(M.$foo = 42) ...` in Curv.
 
 ### idea: fluid-let
 Here's an idea:

@@ -54,7 +54,7 @@ main(int, char**)
         // Race condition on assignment to was_interrupted.
         was_interrupted = false;
         RLXResult result;
-        char* line = readlinex("tcad> ", &result);
+        char* line = readlinex("curv> ", &result);
         if (line == nullptr) {
             std::cout << "\n";
             if (result == rlx_interrupt) {

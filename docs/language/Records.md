@@ -3,7 +3,7 @@
 The Object proposal splits OpenSCAD2 objects into two types:
 "simple objects" and (a more sophisticated subtype) "scoped objects".
 In this proposal, "simple objects" are replaced by a simpler type
-called "records", and scoped objects are deferred until later.
+called "records", and scoped objects are replaced by Modules.
 
 A record is a set of named fields.
 
@@ -37,7 +37,7 @@ So until I have a solid design for libraries and parameterized shapes,
 I'm going to limit the power of records.
 
 Records don't have anonymous elements, so they aren't a subtype of list.
-It's not needed for the TCAD3 use cases. That's another possible extension that
+It's not needed for the CURV3 use cases. That's another possible extension that
 could interfere with the future design of libraries and parameterized shapes.
 
 ## Haskell Data.Map operations:
@@ -68,7 +68,7 @@ elems(map), keys(map), assocs(map)
 toList(map) -> list of key/value pairs
 fromList(assocList) -> map, last key value wins
 
-## TeaCAD Simple Object Operations
+## Curv Record Operations
 There's like 100 Haskell Data.Map operations.
 What's the minimal kernel, using which the rest can be implemented efficiently?
 

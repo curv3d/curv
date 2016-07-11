@@ -67,11 +67,84 @@ Breakpoints: Could be implemented as conditional suspend. Or by overwriting
 an instruction in a function header with the trap instruction.
 
 ## Implementation Considerations
+
+### Cancel
+We can't just immediately cancel a thread at an arbitrary machine instruction.
+The problem is that the C and C++ library functions called from Curv don't
+support this. Gcc and the C/C++ ABI used on intel Linux can support this,
+if used correctly, but existing libraries that we must link with do not.
+* In C, for example, cancelling a thread in the middle of malloc() will likely
+  corrupt the heap.
+* Even in C++, raising an exception at an unexpected location can cause bad
+  behaviour. The code might not be exception safe (eg, a library written by
+  Google). Or, if the exception is raised inside a destructor while unwinding
+  the stack to handle an exception, then std::terminate is called.
+
+So we need a co-operative thread cancel API. We periodically check a global
+`thread_is_cancelled` variable and throw an exception if it is true. This is
+performed at "cancel points", where it is safe for an exception to be thrown.
+
+Blocking I/O operations are an issue (importing a resource from a URL):
+these operations ought to be interruptible. And that can be implemented
+using Unix signals (eg, SIGINT).
+
+It would be nice if there were a standard or de-facto standard API for
+co-operative thread cancellation. Then, we'd have a chance of convincing
+third party libraries (like CGAL) to call this API from long-running functions.
+(Or, we ask the third party library to add their own propriety thread-cancel
+hooks, to avoid dependency on an external API.)
+* `pthread_cancel()` and `pthread_testcancel()` looks like it should be a
+  candidate. Unfortunately, system calls like `close()`, that might be called
+  from a C++ destructor, are cancellation points, and may spontaneously
+  "throw an exception" (unwind the stack and clean up). And that could lead
+  to `std::terminate` being called. At least, that was a danger in 2010:
+  <https://skaark.wordpress.com/2010/08/26/pthread_cancel-considered-harmful/>
+* It's possible to add code to a destructor to protect against this, but the
+  problem is that existing C/C++ libraries can't be assumed to support this.
+  So maybe you need to wrap calls to C/C++ library routines that don't support
+  `pthread_cancel` with code to disable/reenable cancellation. Which is
+  terrible.
+* Boost has interruptible threads. And it doesn't hook signal handling to turn
+  blocking system calls into cancellation points, like pthreads does, so it is
+  safer to use.
+
+Another possibility is: run the computation in a thread, and on interrupt,
+detach the thread and allow the UI to be responsive while the abandoned thread
+runs to completion. Problems:
+* The computation thread might be in an infinite loop. We still need a way
+  to interrupt interpreter loops, even if interrupting third party library
+  calls is problematic.
+* `aux::Shared_Ptr` is not thread safe.
+  * Maybe we keep track of whether the thread is currently "in the interpreter"
+    or "in a long running third party library function" (like CGAL union).
+    But how does that help? After it returns, we still need to clean up
+    interpreter resources (eg the Value stack), which needs to happen
+    synchronously.
+  * Maybe there's some kind of async programming structure that supports
+    multiple simultaneous computation threads, but only one can be in the
+    "critical section" for manipulating reference counts at a time.
+    This could allow multiple CGAL operations to run in parallel.
+  * I have a design for shared objects that are born thread-unsafe, but
+    which can optionally graduate to being thread-safe. Maybe that helps?
+    * Not all Values would be shared between threads. The concern is
+      the builtin values and the atom table. So make those thread safe?
+      * I could abandon the Session when a computation is interrupted, and
+        make a new one. Which takes care of the atom table.
+
 Interrupt is a special case of error handling: we periodically check
 a global `request_interrupt` variable and throw an error if it is true.
-The runtimes of C/C++/Rust provide no better solution than this.
-`pthread_cancel()` works this way. For compatibility with C, a foreign C
-function could use `pthread_testcancel()` to test for a pending interrupt.
+* `pthread_cancel()` works this way. For compatibility with C, a foreign C
+  function could use `pthread_testcancel()` to test for a pending interrupt.
+  But: pthread_cancel is not safe in C++. The problem is that cancel points
+  can invisibly occur in destructors due to design of the Posix C library,
+  which leads to destructors throwing exceptions on thread cancellation,
+  which leads to std::terminate being called. Eg, `close()` is a cancel point.
+  <https://skaark.wordpress.com/2010/08/26/pthread_cancel-considered-harmful/>
+  (This sounds like a platform bug. Did it ever get fixed?)
+* Boost has an API for interruptible threads. That's the closest to a de-facto
+  standard I can fine. Doesn't solve the problem of interrupting blocking
+  system calls (eg, those that do I/O), which pthread_cancel addresses.
+  I/O is an issue for importing a resource using a URL.
 * Cancellation takes effect at cancel points: just before a foreign function
   call, just before a loop iteration or recursive tail call, just before
   a function call.
@@ -100,6 +173,7 @@ function could use `pthread_testcancel()` to test for a pending interrupt.
   safe when compiling with `-fnon-call-exceptions`, which allows trapping
   instructions to throw C++ exceptions.
 
+### Suspend
 Suspending a computation?
 * Maybe, we only support pausing at "suspend points", which are likely the
   same as cancel points. From such points, metadata is available to show a

@@ -36,7 +36,7 @@ Shared_Ptr<Phrase> parse_atom(Scanner&,bool);
 // Parse a script, return a syntax tree.
 // It's a recursive descent parser.
 
-/// Parse a tcad command line.
+/// Parse a curv command line.
 ///
 /// Returns `nullptr` for an empty line.
 /// Returns `Shared_Ptr<Definition>` for `id = expr`.

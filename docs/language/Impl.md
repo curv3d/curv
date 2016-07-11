@@ -28,18 +28,68 @@ JavaScriptCore:
   optimizes.
 
 ChakraCore:
-- On first call to function, parse to AST then compile to bytecode,
+* On first call to function, parse to AST then compile to bytecode,
   which is then interpreted.
-- During interpretation, collect profile information: types and invocation
+* During interpretation, collect profile information: types and invocation
   counts.
-- If a function or loop body is evaluated more than <threshold> times,
+* If a function or loop body is evaluated more than <threshold> times,
   invoke JIT compiler in background, which uses profile data. JIT code
   bails out to interpreter if unexpected types (not predicted by profile)
   are used.
-- I see "bytecode" and "IR" representations in the source.
+* I see "bytecode" and "IR" representations in the source.
+  <https://github.com/Microsoft/ChakraCore/tree/master/lib/Runtime/ByteCode>
+* It's a register machine, eg Add_A: R0 <- R1 + R2.
+  Uses templates and macros to abstract the instruction set.
+* Only compiles using MSC++. Main interpreter loop uses `switch(op)...`
+  and inline assembler, with C++ alternative implementation.
+  Each opcode with inline arguments casts the IP (a byte pointer) to an
+  unaligned struct pointer, which is used to read the arguments from the byte
+  array. (Cost: unaligned memory reads; benefit: compact representation and
+  more cache locality.)
+  Default case asserts `__assume(false);`, like `__builtin_unreachable`,
+  to trigger optimization.
+* Register indexes are 1 byte in small layout, 2 bytes in large layout.
+  This is configured using templates.
+* GetReg(regid) is InterpreterStackFrame::m_localSlots[regid]
+
+```
+case Add_A: A2toA1Mem, JavascriptMath::Add
+
+case OpCode::Add_A:
+{
+    PROCESS_READ_LAYOUT(Add_A, Reg3, suffix);
+    SetReg(playout->R0,
+            JavascriptMath::Add(GetReg(playout->R1), GetReg(playout->R2),GetScriptContext()));
+    break;
+}
+
+#define PROCESS_READ_LAYOUT(name, layout, suffix) \
+    CompileAssert(OpCodeInfo<OpCode::name>::Layout == OpLayoutType::layout); \
+    const unaligned OpLayout##layout##suffix * playout = m_reader.layout##suffix(ip); \
+    Assert((playout != nullptr) == (Js::OpLayoutType::##layout != Js::OpLayoutType::Empty)); // Make sure playout is used
+
+m_reader.layoutReg3(ip) is
+```
 
 Guile:
-- register machine byte codes
+* Has both an S-expression interpreter and a byte-code compiler.
+  <https://www.gnu.org/software/guile/manual/html_node/A-Virtual-Machine-for-Guile.html>
+* Register machine byte codes in 2.1.1 replace a stack machine in 2.0.
+  But it is described as a stack machine, as the only actual registers
+  are IP, SP, FP.
+  "The new virtual machine's instructions can address their source and
+  destination operands by "name" (slot).  This makes access to named
+  temporary values much faster than in Guile 2.0, and removes a lot of
+  value-shuffling that the old virtual machine had to do.  The end result
+  is that loop-heavy code can be two or three times as fast with Guile 2.2
+  as in 2.0."
+* There is a single stack. A stack frame contains: intermediate values,
+  local variables, arguments, the called function pointer, return address,
+  MV return address, dynamic link (old FP). The current FP points at arg 0.
+* A function object contains: bytecode, captured lexical variables,
+  constants (aka object vector), metadata: name, arity, documentation.
+* The bytecode object-ref(n) uses FP[-1]->objects[n] to push a constant:
+  3 cache hits. There are cheaper instructions for pushing immediate values.
 
 SCode requirements:
 - Fast compilation + evaluation

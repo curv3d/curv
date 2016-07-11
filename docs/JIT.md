@@ -56,6 +56,12 @@ context object, which can be freed before running the machine code.
 May 2016: author has just learned about need for tail call support
 (LLVM had this years ago, albeit intel only).
 
+LibTcc --
+World's smallest and fastest C compiler. There is no parse tree: the parser
+outputs machine code directly into memory. Lovely. The only data structure
+you can feed it is C source, since there is no IR. Easy to use.
+Supports x86, x86_64, ARM. No optimization, obviously.
+
 LibJit -- gnu.org/software/libjit
 Created in 2004, barely updated or used any more.
 
@@ -73,6 +79,10 @@ then evaluate it.
 If I were compiling Curv to machine code,
 I'd use some optimizations that aren't really practical in the byte code VM.
 
+* **Registers.** Efficient expressions, which store temporaries in registers,
+  rather than on the stack, where feasible. An efficient calling convention,
+  that stores arguments in registers, rather than on the stack, where feasible.
+  (Note that Curv doesn't support varargs for this reason.)
 * **Lazy Boxing.**
   Keep values their unboxed representation where possible.
   Convert to boxed representation only when necessary.
@@ -96,6 +106,14 @@ I'd use some optimizations that aren't really practical in the byte code VM.
     * It's compatible with the C calling convention, which may be good for
       interoperability with C.
     * LLVM doesn't support tail-recursion optimization on ARM.
+  * The "arguments are borrowed" calling convention prevents
+    the `use_count==1` optimization for destructively updating data structures
+    like arrays.
+    * I could use the more efficient "borrowed arguments" calling convention
+      for unboxed function calls (to a function known at compile time).
+      For specific arguments that require the caller to know the use_count,
+      we provide an accurate use count. For the general "boxed" calling
+      convention, we use the "owned arguments" calling convention.
 
 These optimizations make the code run faster, but they make introspection
 of the VM state more difficult (for debugging and stack unwinding).

@@ -1,7 +1,59 @@
 # Functions
 Like OpenSCAD2.
 
-Supports pattern matching on lists in formal parameters.
+**Keyword parameters.**
+Original plan is to support this, as in OpenSCAD and OpenSCAD2.
+It's complicated to implement, so it's been delayed in the Curv prototype.
+In Javascript, object literals are used instead, and Curv has records, so
+there's little need for keyword parameters, outside of OpenSCAD compatibility.
+Keyword parameters start to look redundant.
+But then, pattern matching on records are needed as a full replacement. Eg,
+```
+cube(size, {center:is_bool=false}) = ...;
+cube(10);
+cube(20, {center=true});
+```
+
+OpenSCAD2 object parameterization (now module parameterization) relies on
+optional keyword parameters. This could be replaced by a single record
+parameter, but, it's one or the other.
+* Records are used to represent sets of model parameters.
+  So using M(record) for model customization, that looks like a good design.
+  Eg, `lollipop{height=10, radius=5}`.
+* Check out my cylinder implementation using `switch`.
+  It's based on records and pattern matching.
+  The keyword parameter version would need 7 parameters
+  and complex argument parsing logic.
+
+**Optional parameters.**
+This is more useful than keyword parameters, and I'm sure it will get
+implemented sooner. However, in the absence of optional parameters,
+one could consider implementing ImplicitCAD style curried arguments.
+That is, f(x,y) === f(x)(y).
+
+**Pattern matching in formal parameters.**
+* Pattern matching on lists is something I definitely want.
+  Eg, `f[x,y]=...`. Add default values and you support a list argument
+  of variable length. Eg, `scale[x,y,z=1]=...`.
+* Pattern matching on records is also useful.
+  * As a replacement for keyword parameters: `f{a,b,c=0}=...`.
+    If all fields in the record pattern have defaults, then the entire
+    pattern also has a default and the parameter itself is optional.
+  * As a way of selecting certain fields from a larger record:
+    `f{a,b=0,...}=` where the `...` is literal.
+
+Here's a `switch` function that implements multi-way pattern matching,
+mapping a list of functions onto a function:
+```
+cylinder =
+  switch[
+    {r,h} -> _do_cylinder(r,r,h),
+    {r1,r2,h} -> _do_cylinder(r1,r2,h),
+    {d,h} -> _do_cylinder(d/2,d/2,h),
+    {d1,d2,h} -> _do_cylinder(d1/2,d2/2,h)
+  ];
+```
+All of the functions in the list must have the same number of arguments.
 
 Function literal syntax:
     atom -> expr
@@ -13,6 +65,7 @@ where
     formal-list ::= formal | formal-list ',' formal
     formal ::= identifier | bracketed-formals
 
+**Function literals.**
 I like the look of `map(x->x+1)`. Compare:
 * `map(x->x+1)`
 * `map(\x x+1)`
@@ -81,7 +134,7 @@ and the syntax `(a,b,c)` is a tuple value.
 That makes the function call operator more orthogonal and expressive,
 but adds a new kind of value that competes with lists and objects,
 which adds complexity. This particular change doesn't seem to help with
-the goals of TeaCAD, and may result in big changes to the language design.
+the goals of Curv, and may result in big changes to the language design.
 
 ## Predicates
 A predicate is a unary function that returns a boolean.
@@ -90,21 +143,26 @@ Predicates define a subset of the set of all values.
 Predicates are used in the argument to filter, in parameter and
 argument assertions.
 
-A type predicate defines a set of values that support
-some set of operations. In OpenSCAD, idioms like `abs(X)==undef`
-are used to test if X is a number, but that won't work in TeaCAD
-due to strict argument checking. So we provide type predicates
-instead, and you use `is_num(X)` to test if X is a number.
-
-TeaCAD has 7 basic data types, which partition the set of all values.
-Here are the 7 corresponding type predicates:
+Curv has 8 basic value types, which partition the set of all values.
+Here are the 8 corresponding type predicates:
 * is_null
 * is_bool
 * is_num
 * is_str
 * is_list(type=is_any,len=null)
-* is_fun -- all values that can be called using function call notation.
-* is_obj -- all values with name/value attributes accessed using `.` notation.
+* is_fun
+* is_record
+* is_module
+
+These 8 predicates partition the value space, like the Scheme type predicates
+do. They don't all correspond precisely to a set of operations.
+
+I've also written: a type predicate defines a set of values that support
+some set of operations. But I haven't defined type predicates that work
+this way. For example: Functions and Modules are both callable using
+function call notation. So Module should be a subtype of Function.
+Records and Modules both support dot notation. So there should be a predicate
+for values that support dot notation (I guess; when would you use that?).
 
 Some other possible type predicates:
 * is_int

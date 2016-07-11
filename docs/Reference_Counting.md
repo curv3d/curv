@@ -39,7 +39,7 @@ imperative language.
   to update branches of the tree with results.
 
 let() bound definitions also use recursive scope.
-let(a=X,b=Y)Z can be rewritten as {a=X;b=Y;_=Z}._
+let(a=X,b=Y)Z can be rewritten as `{a=X;b=Y;_=Z}._`
 so no additional implementation mechanisms are strictly required.
 
 Note if you want sequential assignment, you use let(a=X)let(b=Y)Z.

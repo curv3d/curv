@@ -1,4 +1,4 @@
-# TCAD 0.1 milestone: "Lisp 1.0"
+# CURV 0.1 milestone: "Lisp 1.0"
 
 Just enough to write real programs and run benchmarks.
 * string literals, [a,b,c] list literals, no list comprehensions
@@ -37,7 +37,7 @@ contents:
   * at parse time, doesn't exist
   * at analysis time, we store the size
   * at runtime, it's a List allocated during construction
-* In TCAD0, there is one slot per definition.
+* In CURV0, there is one slot per definition.
   Initially, all of the slots hold parse trees.
   On first reference, analysis and evaluation take place, and the slot is
   updated with a Value, thunk or rfunction.
@@ -70,7 +70,7 @@ Value::select(name) -> Value
 
 ## Identifier
 An Identifier phrase is resolved to a builtin, or a top-level definition,
-or a parameter. No other choices in TCAD0, due to a lack of nested scopes.
+or a parameter. No other choices in CURV0, due to a lack of nested scopes.
 
 The VM has
 * a 'current script' register, pointing to a slot array

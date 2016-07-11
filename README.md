@@ -1,67 +1,134 @@
-Curv is an integrated geometry kernel and virtual machine which supports
-2D and 3D solid modelling. The integration is needed for F-Rep (Functional
-Representation): a model is represented by VM code, and the VM is special
-because it can run on an FPU as well as on a CPU.
+Curv is a language, virtual machine and geometry engine for 2D and 3D solid
+modelling. It's inspired by OpenSCAD, as well as ImplicitCAD, Antimony, and
+other open source solid modellers. The end goal is to contribute some
+of the Curv technology back into the OpenSCAD project.
 
-Curv is a technology demo for the OpenSCAD community, and shows off some tech
-that is proposed for incorporation into OpenSCAD.
+Curv is designed for advanced 3D printing. It supports complex models with
+massive amounts of detail, and it supports the new breed of full colour (CMYKW)
+and multi-material printers which can deposit a different colour/material
+at every voxel.
 
-The goal is to make OpenSCAD faster and more powerful:
-* Make the core language itself more expressive by incorporating ideas from the
-  OpenSCAD2 proposal: first class function values and "objects".
+The Curv geometry engine supports polyhedral meshes (for interoperability
+with STL) and functional representation. F-Rep is important because:
+* It's a resolution independent representation for arbitrary curved shapes,
+  and can represent huge of amounts detail (like high iteration fractals
+  or digital fabrics) very cheaply.
+* It can be executed quickly on a GPU, and will enable massive increases
+  in rendering speed for certain types of models.
+* It's much easier to implement geometric primitives and operations
+  using F-Rep than with B-Rep. For example, `sphere()` and `union()` are
+  each 4 lines of code in the Curv language, and they are fast.
+
+The Curv language is a simple, expressive, dynamically typed functional
+language. The syntax is based on OpenSCAD, and is easy to use for beginners.
+But it is optimized for computational geometry, and most of the geometric
+primitives are implemented in the Curv language, not in C++.
+
+The Curv VM will support 3 representations for compiled code:
+* Byte code supports fast compilation and good debugging. The goal is to have
+  roughly the same performance as CPython.
+* A subset of the language compiles into optimized GPU code. This is how the
+  previewer works.
+* Compilation into optimized native machine code (using LLVM) supports
+  fast rendering using the CPU.
+
+Curv is designed for easy interoperability with other programming languages.
+* The 6 JSON data types are the core data types of the Curv language.
+  That will be important for compatibility with JSON, OpenSCAD and Javascript,
+  and also maps well onto Python.
+* There is near term support for JSON import and export. A geometric model
+  can be exported as a "CSG tree" using JSON syntax.
+* Curv is a C++ library, with a stable API in version 1.0.
+* The Curv runtime is written in C++, using reference counted shared pointers
+  for memory management, and C++ exceptions for reporting errors. This allows
+  native functions to be written in idiomatic C++. It avoids the complex API
+  used by other VM runtimes for interacting with a tracing garbage collector.
+* Curv 'modules' are the unit of interoperability with other languages.
+  Modules written in Curv can be referenced from other languages,
+  and vice versa. In the medium term, OpenSCAD scripts can be imported
+  as Curv modules. In the long term, we may have two-way interoperability
+  with C++, Python, and other languages. Compiling Curv modules to native
+  code, shared objects or DLLs using LLVM may be part of this solution.
+* Javascript is obviously important, so that Curv can run in a browser.
+  That's a long term goal, with no fixed design yet. Perhaps we compile
+  Curv modules into Javascript.
+
+Curv is a work in progress. The project is just beginning. See below for
+a roadmap. Contributers are welcome.
+
+## Origins of the project
+Curv is an experimental sandbox for testing new ideas and technologies that
+I'd like to see added to OpenSCAD.
+
+Current goals:
+* The language is simple, expressive and powerful. It incorporate ideas from
+  the OpenSCAD2 proposal, especially functions as first class values.
+* Better error reporting and debugging.
+* Easy interoperability with other programming languages.
+* The language implementation is fast.
 * Provide a more powerful and expressive set of geometric primitives.
-* Add support for "functional representation":
-  * Because it's a resolution independent representation for arbitrary curved
-    shapes, and because it can represent huge of amounts detail (like high
-    iteration fractals or digital fabrics) very cheaply.
-  * Because it's so much easier to implement powerful new geometric primitives
-    and operations using F-Rep than with B-Rep. Unlike ImplicitCAD, I want to
-    provide an efficient low level F-Rep API in the OpenSCAD scripting language,
-    so that you don't need to use the underlying implementation language (C++).
-    For example, `sphere()` and `union()` are each 4 lines of code.
-  * Because it can be executed quickly on a GPU, and will enable massive
-    increases in rendering speed for certain types of models.
+* Most geometric primitives are implemented in the language, not in C++.
+* The representation of a shape is accessible from within the language.
+* The geometry engine is fast.
+* The system supports functional representation (F-Rep).
 
-Curv will include a back end JIT compiler and code generator for OpenSCAD-like
-languages. There are two targets: native machine code (via LLVM),
-and GPU code (possibly targetting GLSL or SPIR-V). This back-end is syntax
-independent, and can be used by multiple front ends implementing different
-languages.
+This project is the continuation of OpenSCAD2. That project stalled because
+the backward compatibility scheme made it too complex to implement. More
+generally, I can't see how to achieve the project goals by making incremental
+changes to the OpenSCAD source. In order to achieve the performance goals,
+I think we need a new architecture for the language evaluator, the previewer,
+and the renderer. It's far too difficult to experiment with radical new designs
+if backward compatibility needs to be maintained at every commit.
 
-Curv will include a geometry engine that supports both boundary representation
-and functional representation of colour 2D and 3D shapes. There is a C++ API.
+So, in order to make progress, I decided to build a new system from scratch,
+with every line of code written with the new goals in mind, and ignoring
+backward compatibility for now.
 
-TeaCAD is a language: it's a technology demo for what a next generation
-OpenSCAD could look like. TeaCAD is a dynamically typed pure functional
-language with 7 basic data types: Null, Boolean, Number, String, List,
-Object and Function. (Geometric shapes are a kind of object.)
+Once we have a working prototype, and benchmarks to demonstrate that the new
+architecture can satisfy the performance goals, then it becomes reasonable
+to consider how to bring some of the new code back into OpenSCAD.
 
-TeaCAD is inspired by the OpenSCAD2 proposal. It's not 100% backward compatible
-with OpenSCAD, because that is a difficult problem. Instead, my strategy is to
-offer a back end virtual machine and geometry engine that can be used by both
-OpenSCAD and TeaCAD, so that a geometric model could be created using a mixture
-of OpenSCAD and TeaCAD libraries. It's similar to how the Java VM enables
-interoperability between JVM languages.
-
-Using LLVM, the back end compiles OpenSCAD/TeaCAD code into C callable functions
-and C++ callable classes, which call directly into the C/C++ runtime library.
-This means we can build a bridge between OpenSCAD/TeaCAD and other languages,
-in both directions.
+## Road Map
 
 The Curv project began in May 2016, and is a work in progress.
-It will be some time before we are ready for a numbered release.
+Contributors are welcome.
 Contact the primary author Doug Moen via doug at the domain moens dot org.
 
-== How to Build Curv and TeaCAD
+**Release 0.1**
+* The Curv core language, with 8 basic types:
+  the data types Null, Boolean, Number, String, List and Record
+  that are isomorphic to JSON, plus the code types Function and Module.
+* A `curv` tool with an interactive REPL loop, and the ability to run scripts
+  specified as command line arguments, similar to the `python` tool.
+* A byte code compiler and interpreter, with performance roughly competitive
+  with CPython.
+
+**Release 0.2**
+* A new primitive function, `shape3d`, for constructing shapes using F-Rep.
+* A library of high level 3D primitives implemented in the Curv language itself,
+  using functional representation. At least: `cube`, `sphere`,
+  affine transformations, boolean CSG.
+* A previewer that works by compiling F-Rep into GLSL, for execution on a GPU
+  using ray marching.
+* A geometric model can be exported as a "CSG tree" using JSON syntax.
+
+**Release 0.3**
+* STL export. This might work by compiling the functional representation
+  into native machine code using LLVM, then using Dual Contouring to generate
+  a mesh. Maybe this can also be done on a GPU using OpenCL, but that seems
+  more difficult.
+* STL import?
+
+## How to Build Curv
 After installing all of the dependencies, type `sh mk`.
 So far, this has only been tested on Ubuntu 16.04.
 
-== How to Run TeaCAD
-The executable `build/tcad` is an interactive REPL loop.
-You type a TeaCAD expression, it compiles and evaluates the expression
+## How to Run Curv
+The executable `build/curv` is an interactive REPL loop.
+You type a Curv expression, it compiles and evaluates the expression
 and prints the result.
 
-== Dependencies
+## Dependencies
 Here's how to install dependencies on Ubuntu 16.04.
 
 The build system is `cmake`:

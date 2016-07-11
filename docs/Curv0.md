@@ -1,4 +1,4 @@
-# TCAD 0.0 milestone: "Desk Calculator"
+# CURV 0.0 milestone: "Desk Calculator"
 
 An interactive desk calculator.
 No script file parsing, user-defined functions or {...} literals.

@@ -1,22 +1,30 @@
-# The TeaCAD Core Language
+# The Curv Core Language
 
-This describes the core of the TeaCAD language, absent geometric shapes and
+This describes the core of the Curv language, absent geometric shapes and
 geometric operations.
 
-The TeaCAD Core is a dynamically typed, pure functional language
-with 7 kinds of values: null, boolean, number, string, list, object, function.
+## Types
+The Curv core language is a dynamically typed, pure functional language
+with 8 types of values.
+There are 6 data types, which correspond to the JSON data types:
+null, boolean, number, string, list, record.
+There are 2 code types, which contain compiled code: function and module.
+Everything is a first class value.
 
-There is no explicit concept of "type" or "user defined data type".
+There are no type names or user defined data types.
+The closest we get to a type name are predicate functions which test
+a value and return true or false, depending on whether they belong
+to a particular "type".
 
 ## Error Handling
 What happens when a function is unable to compute a result
 (eg, because it is passed bad arguments)?
-In TeaCAD, there are two cases:
+In Curv, there are two cases:
 * Abort, by printing an error message and terminating the program.
 * Return `null`, which is a unique value indicating failure or the
   absence of a result.
 
-TeaCAD functions are very strict about detecting bad arguments and
+Curv functions are very strict about detecting bad arguments and
 either aborting, or returning `null`. The default behaviour, absent a
 good reason to return `null`, is to abort.
 
@@ -31,7 +39,7 @@ This creates problems:
   that passes bad arguments to built-in functions or modules,
   and relies on whatever random behaviour results.
 
-By being hyper strict about bad arguments, TeaCAD helps people find bugs
+By being hyper strict about bad arguments, Curv helps people find bugs
 in code. If we discover that a particular interface is too strict, we can
 relax the interface without breaking anything, but going in the other direction
 creates upgrade problems by breaking existing code.
@@ -42,10 +50,10 @@ when a function needs to indicate that it couldn't compute a result.
 
 The `null` value is identified with `undef` in OpenSCAD.
 
-When OpenSCAD code is executed by TeaCAD, operations that normally return NaN
-will actually return `null`. However, native TeaCAD numeric operations
+When OpenSCAD code is executed by Curv, operations that normally return NaN
+will actually return `null`. However, native Curv numeric operations
 abort with a domain error if they can't compute a number.
-For example, OpenSCAD `sqrt(-1)` returns `null` while TeaCAD `sqrt(-1)` aborts.
+For example, OpenSCAD `sqrt(-1)` returns `null` while Curv `sqrt(-1)` aborts.
 
 Unlike NaN, `null` doesn't mess with semantics of the equality operator.
 So `null==null` is `true`. This is so you can easily test if a function
@@ -131,7 +139,7 @@ A monoid is a binary operation which is associative, and which has
 an identity value. There are many examples of monoids in OpenSCAD,
 including addition, multiplication, min, max, concat, union, intersection.
 
-In TeaCAD, every monoid is implemented as a function of a single argument,
+In Curv, every monoid is implemented as a function of a single argument,
 which is a list of values. The monoid operation is applied repeatedly
 to reduce the list to a single value. If the list is empty, then
 the identity element is returned. In addition, there may optionally be an
@@ -152,7 +160,7 @@ which sums a list.
 The fact that these functions all operate on a single list argument
 becomes more important in the context of arrays, described later.
 
-TeaCAD does not support varargs functions, not even built-in ones.
+Curv does not support varargs functions, not even built-in ones.
 In all cases where a variable number of arguments is needed, a single
 list argument is used instead.
 * This is more flexible, because the list argument can be written either as
@@ -179,15 +187,15 @@ Many dynamic languages permit non-booleans to be used in a boolean context,
 but no two languages agree on the meaning. In Python, 0 counts as false,
 while in Ruby, 0 counts as true.
 
-TeaCAD's strict design addresses some common problems in OpenSCAD.
+Curv's strict design addresses some common problems in OpenSCAD.
 For a beginner, it's easy to accidently type `cube(10,20,30)`
 or `square(5,10)`, instead of `cube([10,20,30])` or `square([5,10])`.
 OpenSCAD's behaviour of ignoring errors doesn't help beginners find these
 bugs. It turns out that `square(5,10)` is equivalent
 to `square(size=5,center=10)`. The `center` argument is supposed to be
-boolean, and in this context, `10` counts as false. In TeaCAD,
+boolean, and in this context, `10` counts as false. In Curv,
 `square(5,10)` will abort with an error, since the second argument
-(the `center` argument) is non-boolean. If TeaCAD were to behave as
+(the `center` argument) is non-boolean. If Curv were to behave as
 some have advocated, and it were to
 consistently treat 0 as false and non-zero numbers as true, then
 `square(5,10)` would not report an error, instead it would center the square.
@@ -222,7 +230,7 @@ consistently treat 0 as false and non-zero numbers as true, then
 > conditional expression
 
 ## Numbers
-TeaCAD numbers are 64 bit IEEE floating point numbers, just like OpenSCAD.
+Curv numbers are 64 bit IEEE floating point numbers, just like OpenSCAD.
 
 Numeric literals have the same syntax as C/C++.
 I'd like to support `'` as an optional digit group separator (like in C++14).
@@ -233,7 +241,7 @@ Numeric operations don't return NaN, they abort instead.
 `infinity`
 > `1 / 0 == infinity`
 
-TeaCAD has the same set of numeric operations as OpenSCAD,
+Curv has the same set of numeric operations as OpenSCAD,
 with a few differences.
 
 `mod(x,m)`
@@ -250,7 +258,7 @@ with a few differences.
 
 Trigonometry: `sin`, `cos` etc take arguments in radians, rather than degrees.
 Why?
-* There is a subset of TeaCAD that needs to be compiled into GLSL
+* There is a subset of Curv that needs to be compiled into GLSL
   for direct execution on a GPU, and there's a benefit if the trig functions
   match the GLSL specification.
 * Virtually every other language uses radians as input to trig functions.
@@ -386,7 +394,7 @@ Both types of string literal may contain escape sequences beginning with `$`.
 
 The Unicode standard doesn't define the term "character",
 but instead defines "code point" and "grapheme cluster".
-TeaCAD provides access to the individual characters within a string,
+Curv provides access to the individual characters within a string,
 and it considers a "character" to be a grapheme cluster. This is because
 when the `text` primitive renders a string, each "character" that we see
 in the output is actually a grapheme cluster. For example, an accented
@@ -407,7 +415,7 @@ If you need direct access to the individual code points within a string,
 as opposed to just accessing the characters (grapheme clusters),
 then you use these functions.
 
-In TeaCAD, if two grapheme clusters are guaranteed to have the same
+In Curv, if two grapheme clusters are guaranteed to have the same
 printed representation, then they compare equal.
 In the OpenSCAD2 design, I argue that strings should behave like lists
 of characters. Eg, you should be able to iterate over the characters in a string
@@ -480,7 +488,7 @@ if necessary in order to ensure that the result has O(1) indexing.
   structures). But, the reason there are so many functional array data
   structures is that they have different performance tradeoffs, and you need
   to make a choice based on your performance requirements. If you are tuning
-  the performance of a TeaCAD program, then `array` may give you the ability
+  the performance of a Curv program, then `array` may give you the ability
   to speed things up by giving you more control over the representation.
 * It's more abstract than the common approach of providing multiple
   incompatible 'sequence' data types (eg, list vs array) and forcing the user
@@ -557,7 +565,7 @@ Building lists: scans:
 accumulating maps:
   mapAccumL, mapAccumR : abstract, man
 Infinite lists:
-  iterate, repeat, replicate, cycle -- does TeaCAD need lazy lists?
+  iterate, repeat, replicate, cycle -- does Curv need lazy lists?
 Unfolding:
   unfoldr -- I prefer my 'for(;;)' syntax
 Extracting Sublists:
@@ -620,7 +628,7 @@ So it's not too expensive to reference a large library where most of the
 definitions aren't used.
 
 ## Data Types and Pattern Matching
-TeaCAD is a dynamically typed language.
+Curv is a dynamically typed language.
 A "type" is a special kind of subset of the set of all values:
 it's a subset that specifies the domain or range of a function,
 or the domain of a user-modifiable script variable.
@@ -630,12 +638,12 @@ We'll call these "type expressions".
 Here are the use cases:
 * Testing the type of a value. This is currently done in OpenSCAD by invoking
   an illegal operation on the value, and testing for a result of `undef`,
-  but that won't work in TeaCAD, since we abort on a type error.
+  but that won't work in Curv, since we abort on a type error.
 * For convenience, a pattern-matching switch statement.
 * Annotate the formal parameters of a function with their types,
   so that we can perform a run-time check and abort a function call
   if any of the arguments have the wrong types. This addresses an ease-of-use
-  issue in TeaCAD. The built-in functions all do this (check their arguments).
+  issue in Curv. The built-in functions all do this (check their arguments).
   If you can't do it for user-defined functions, then a user defined function
   might abort deep in the middle of a function call, and interpreting the
   error message may require understanding the code.

@@ -125,7 +125,7 @@ evalbad(
 #define EVALS_TO(expr,result) EXPECT_PRED_FORMAT2(evalgood,expr,result)
 #define EVAL_ERROR(expr,result) EXPECT_PRED_FORMAT2(evalbad,expr,result)
 
-TEST(tcad, eval)
+TEST(curv, eval)
 {
     // constructors
     EVALS_TO("42.7", "42.7");

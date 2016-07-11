@@ -1,8 +1,8 @@
-# TCAD0 (expressions):
+# CURV0 (expressions):
 * Meaning::eval(), or LLVM, or compile to bytecode
   * I like direct threaded code (which forces use of gcc/clang on windows)
     LLVM has some high overheads: complexity, memory, compile speed.
-* a tcad command line is a script, which is compiled into a module.
+* a curv command line is a script, which is compiled into a module.
   Eg, `a=1;b=2;a+b;a-b`. No recursion yet. Each value printed on separate line.
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
@@ -22,7 +22,7 @@
 * <, <=, >, >=. Numbers only.
 * broader unit testing
 
-# TCAD1 (scripts, LLVM)
+# CURV1 (scripts, LLVM)
 * script files, named functions (top level only for now).
 * top level if, for, echo
 * pattern matching: hypot[x,y] = sqrt(x^2+y^2).
@@ -31,7 +31,7 @@
 * Component values?
 * Benchmarks
 
-# TCAD2 (nested scopes)
+# CURV2 (nested scopes)
 * nested functions, function literals, let() expressions.
 * curried functions `dist(req)(pt) = ...;` or function literals
 * script literals. At least {dist=..,bbox=..}
@@ -42,13 +42,13 @@
   Not sure about Function (3 variants: static, closure, object).
 * printing a function? currently, <function>, even for builtins
 
-# TCAD3 (simple geometry)
+# CURV3 (simple geometry)
 * F-Rep: cube, sphere, affine transforms, boolean CSG
 * implement 3d primitives in TeaCAD using shape3d. (also is_shape)
   * this means: I'm implementing language features I need for defining geometry
 * preview using ray marching--convert CSG tree to GLSL
 
-# TCAD4 (geometry export)
+# CURV4 (geometry export)
 * use dual contouring instead of marching cubes for STL export
 * does OpenCL speed this up?
 * SVX export?

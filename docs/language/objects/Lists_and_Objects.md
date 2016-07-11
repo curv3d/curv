@@ -155,7 +155,7 @@ I need an interpolation operator that makes sense for both maps and lists.
 
 Okay, I'm liking the `include` operator.
 ```
-include script("foo.tcad");
+include script("foo.curv");
 [a, include b, c]
 ```
 In a script or scoped object literal,
