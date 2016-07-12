@@ -55,17 +55,50 @@ cylinder =
 ```
 All of the functions in the list must have the same number of arguments.
 
-Function literal syntax:
-    atom -> expr
-where
+**Special Variables.**
+Hmm.
+
+**Interoperability**
+How do we make the Curv function parameter mechanism interoperable
+with other programming languages?
+* C functions have a fixed # of parameters. This is also relevant for
+  generating machine code using LLVM. We have to choose a calling convention,
+  typically the C calling convention. So, we don't support varargs.
+* C++ additionally supports optional parameters. We can support optional
+  parameters, it doesn't break support for C.
+* Python and OpenSCAD additionally support keyword parameters.
+  JavaScript does *not* support keyword parameters in the same way.
+  Instead, by convention you pass an object literal as the final optional
+  parameter (defaulting to {}), and this is called the options argument.
+  ES 6 supports pattern matching to make this easier:
+  eg, `function({x=1,y=2}={})`. What's noteworthy about the Javascript
+  calling convention is that each parameter is designated as either positional
+  or keyword in the function definition.
+* For Curv->other language interop, I think that we don't directly support
+  keyword parameters, and instead use the Javascript technique for simulating
+  keyword parameters. By convention, there is a final 'options' parameter
+  which is a dictionary/record. This way, positional and named parameters
+  are strictly segregated. For ->Javascript, it works great, no adaptation
+  is required. For ->Python or ->OpenSCAD, the options parameter could be
+  expanded to a set of keyword parameters, and the ordering is preserved.
+  For ->C++, same, it's expanded to an ordered sequence of optional parameters.
+* For other language->Curv interop, there are two cases.
+  * First case (C++, Python, Javascript) is that the function is designed
+    for use by Curv. Those other languages support lots of types that don't
+    make sense in Curv, so Curv callable functions need to be designed as such.
+  * Second case is OpenSCAD, we want to be able to call any OpenSCAD
+    function or module.
+
+**Function literals:** `atom -> expr` where
+```
     atom ::= identifier | parenthesized-formals | bracketed-formals
     parenthesized-formals ::= '(' formals ')'
     bracketed-formals ::= '[' formals ']'
     formals ::= empty | formal-list
     formal-list ::= formal | formal-list ',' formal
     formal ::= identifier | bracketed-formals
+```
 
-**Function literals.**
 I like the look of `map(x->x+1)`. Compare:
 * `map(x->x+1)`
 * `map(\x x+1)`

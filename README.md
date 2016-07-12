@@ -54,7 +54,7 @@ Curv is designed for easy interoperability with other programming languages.
   Curv modules into Javascript.
 
 Curv is a work in progress. The project is just beginning. See below for
-a roadmap. Contributers are welcome.
+a roadmap. Contributions are welcome.
 
 ## Origins of the project
 Curv is an experimental sandbox for testing new ideas and technologies that
@@ -89,9 +89,8 @@ architecture can satisfy the performance goals, then it becomes reasonable
 to consider how to bring some of the new code back into OpenSCAD.
 
 ## Road Map
-
 The Curv project began in May 2016, and is a work in progress.
-Contributors are welcome.
+Contributions are welcome.
 Contact the primary author Doug Moen via doug at the domain moens dot org.
 
 **Release 0.1**
@@ -111,6 +110,7 @@ Contact the primary author Doug Moen via doug at the domain moens dot org.
 * A previewer that works by compiling F-Rep into GLSL, for execution on a GPU
   using ray marching.
 * A geometric model can be exported as a "CSG tree" using JSON syntax.
+  And also imported?
 
 **Release 0.3**
 * STL export. This might work by compiling the functional representation

@@ -1,56 +1,5 @@
 # Implementation of Functions and Modules
 
-## Static Expressions
-An expression is static if all of its free variables are static:
-* Builtin bindings like `true` and `sqrt` are static.
-* A function formal parameter is not static.
-* A `let` bound variable is static if its definiens is static.
-* A parameter binding of a module is not static.
-* A non-parameter binding of a module is static if its definiens is static.
-* In the case of recursive definitions within a `let` or module,
-  we tentatively assume that all non-parameter bindings are static,
-  then attempt to disprove this by finding non-static free variables
-  in the definientia. If no such non-static free variables are found,
-  then the binding is considered static.
-
-Staticness is a property of expressions which is computed by the
-semantic analyzer. It's required by the `use` operator.
-So curv::Expression has an `is_static_` member, which we can compute
-in a mostly bottom up manner.
-
-As a performance optimization, static expressions are compile time constants,
-and are computed exactly once. I want to be careful that the cost of
-constant folding doesn't exceed the performance benefit.
-* In the case of animation, the entire script is being evaluated perhaps
-  hundreds of times.
-* In another case, you interactively make changes to a script, evaluate it once,
-  then iterate. The entire cost of compilation is currently incurred when you
-  press F5. It would be better if compilation took place in the background
-  during editing, and if we cached the results of compiling parts of the
-  script so that we didn't have to recompile the world from scratch each time.
-  One easy fix is to cache the results of compiling a used module.
-
-How is compile time evaluation implemented,
-and when does compile time constant folding actually take place?
-* I want to replace the Meaning tree evaluator with a byte code compiler
-  and evaluator. The latter is faster than the tree evaluator if the same
-  subexpressions are evaluated multiple times. Plus, eliminate code duplication.
-* So it makes sense to use the byte code evaluator to reduce static
-  expressions.
-* If I do this strictly bottom up, then 2+3+4 will result in 2+3 being
-  compiled to byte code, evaluated to 5 and placed in a Constant node,
-  followed by 5+3 being compiled to byte code, evaluated, etc.
-  So this could be quite inefficient.
-* If I do this strictly top down, then we find that a script file, as a whole,
-  is a static expression (even if many of the subexpressions aren't static).
-  Top down constant folding just means compiling a script file to byte
-  code and evaluating it. This doesn't ensure that static expressions
-  are computed exactly once.
-* Constant folding is a performance optimization. It has a cost, and isn't
-  worth doing unless the expression being folded is evaluated more than once.
-* So I need a variation of top down where subexpressions that could be
-  evaluated more than once are folded first.
-
 ## Functions
 I'll assume the bytecode compiler/interpreter here.
 All runtime values are boxed, which simplifies things.
