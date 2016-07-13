@@ -5,6 +5,8 @@
 #ifndef AUX_TAIL_ARRAY_H
 #define AUX_TAIL_ARRAY_H
 
+#include <type_traits>
+
 namespace aux {
 
 /// Construct a class whose last data member is an inline variable sized array.
@@ -33,20 +35,24 @@ public:
             throw std::bad_alloc();
         Tail_Array* p = new(mem) Tail_Array();
         p->Base::size_ = size;
-        // TODO: do nothing if Base::value_type has trivial constructor.
-        for (decltype(Base::size_) i = 0; i < size; ++i)
-        {
-            new((void*)&p->Base::array_[i]) T();
+        if (!std::is_trivially_default_constructible<T>::value) {
+            for (decltype(Base::size_) i = 0; i < size; ++i)
+            {
+                new((void*)&p->Base::array_[i]) T();
+            }
         }
         return p;
     }
     ~Tail_Array()
     {
         typedef typename Base::value_type T;
-        // TODO: do nothing if Base::value_type has trivial destructor.
-        for (decltype(Base::size_) i = 0; i < Base::size_; ++i)
-        {
-            Base::array_[i].~T();
+        if (!std::is_trivially_destructible<T>::value) {
+            static_assert(std::is_nothrow_destructible<T>::value,
+                "Base::value_type destructor must be declared noexcept");
+            for (decltype(Base::size_) i = 0; i < Base::size_; ++i)
+            {
+                Base::array_[i].~T();
+            }
         }
     }
     void operator delete(void* p) noexcept
