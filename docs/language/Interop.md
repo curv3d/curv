@@ -281,10 +281,17 @@ Python function)?
 * For compatibility with Python multi-threading, we need to use deep binding,
   not shallow binding, for dynamic variables. So, there's a pointer to a
   dynamic environment that is supplied to functions.
-* Original design: a function has a fixed number of arguments, N. The entry
+* Current design: a function has a fixed number of arguments, N. The entry
   point to a function expects N values on the stack. Optional and keyword
   arguments are processed using function metadata, before the function is
-  entered.
+  entered. This design is based on efficiency: we try to do the optional
+  and labeled argument processing at compile time, where possible.
+* A more "Python compatible" design would give the function a counted list
+  of positional arguments and a set of labeled arguments. This would be
+  important if we were concerned about being able to call any Python function.
+  But we aren't. The use case for calling Python is to extend Curv with
+  functions that are easier to write in Python, *and* the Python functions we
+  are calling are specifically designed for compatibility with Curv.
 
 ## Javascript
 The use case for Javascript is running Curv code inside a web browser.
