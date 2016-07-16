@@ -58,7 +58,7 @@ variables with the same name but conflicting meanings. This is mitigated by
 the fact that new dynamic variables are rarely needed. There will never be
 a large number of them, so it's easier to avoid name conflicts.
 Still, it might be wise for user-defined libraries to use a naming convention
-that avoids conflict with other libraries: something like $*libname*_*name*
+that avoids conflict with other libraries: something like `$`*libname*`_`*name*
 would work.
 
 If there is a reference to an undefined lexical variable, then it is
@@ -72,11 +72,15 @@ of builtin dynamic variables, which may have a different default).
 Application code will typically test if a dynamic variable is `null`, and
 substitute an appropriate default.
 
-An object or library cannot export a dynamic variable.
-Dot notation does *not* work for dynamic variables: `foo.$bar` is not supported.
-Um, except that you can qualify builtin dynamic variables using `builtin.`
-to get their default values, for example using
-`builtin.$seed` to get the default value of `$seed`.
+A module or library cannot export a dynamic variable.
+A definition of `$foo` in a module `M` is considered private:
+`M.$foo` will not work and `use M` won't import `$foo`.
+* Note that you can qualify builtin dynamic variables using `builtin.`
+  to get their default values, for example using
+  `builtin.$seed` to get the default value of `$seed`.
+* Since we support JSON import of objects with arbitrary field names,
+  and JSON objects are imported as records, field names in records are
+  permitted to begin with `$`, but they aren't considered dynamic variables.
 
 ## Setting a Dynamic Variable
 Three ways to set a value for a dynamic variable:
