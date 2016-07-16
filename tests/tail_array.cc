@@ -13,6 +13,8 @@ struct A
     using value_type = double;
     short size_;
     double array_[0];
+    A(size_t size) : size_(size) {}
+    size_t size() const { return size_; }
 };
 
 TEST(aux, tail_array)
