@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
+#include <vector>
 
 using namespace std;
 using namespace aux;
@@ -23,4 +24,13 @@ TEST(aux, tail_array)
     TA *a = TA::make(3);
     ASSERT_TRUE(a->size_ == 3);
     delete a;
+
+    std::vector<double> v;
+    v.push_back(0);
+    v.push_back(1);
+    TA* b = TA::make_copy(v.data(), v.size());
+    ASSERT_TRUE(b->size_ == 2);
+    ASSERT_TRUE(b->array_[0] == 0.0);
+    ASSERT_TRUE(b->array_[1] == 1.0);
+    delete b;
 }
