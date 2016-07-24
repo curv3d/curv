@@ -7,13 +7,14 @@ using namespace curv;
 using namespace aux;
 
 Shared_Ptr<String>
-curv::mk_string(const char* str, size_t len)
+curv::String::make(const char* str, size_t len)
 {
     void* raw = malloc(sizeof(String) + len);
     if (raw == nullptr)
         throw std::bad_alloc();
     String* s = new(raw) String();
-    strcpy(s->data_, str);
+    memcpy(s->data_, str, len);
+    s->data_[len] = '\0';
     s->size_ = len;
     return Shared_Ptr<String>(s);
 }
@@ -21,5 +22,5 @@ curv::mk_string(const char* str, size_t len)
 Shared_Ptr<String>
 String_Builder::get_string()
 {
-    return mk_string(str().data(), str().size());
+    return String::make(str().data(), str().size());
 }

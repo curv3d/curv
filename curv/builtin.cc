@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <string>
-#include <curv/eval.h>
+#include <curv/builtin.h>
 #include <curv/exception.h>
 #include <curv/function.h>
 #include <boost/math/constants/constants.hpp>

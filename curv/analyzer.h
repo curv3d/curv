@@ -6,7 +6,7 @@
 #define CURV_ANALYZER_H
 
 #include <curv/meaning.h>
-#include <curv/eval.h>
+#include <curv/builtin.h>
 
 namespace curv {
 

@@ -9,6 +9,7 @@
 #include <sstream>
 #include <cstring>
 #include <aux/dtostr.h>
+#include <aux/range.h>
 
 namespace curv {
 
@@ -20,9 +21,9 @@ namespace curv {
 struct String : public Ref_Value
 {
 private:
-    // you must call mk_string to construct a String.
+    // you must call make() to construct a String.
     String() : Ref_Value(ty_string) {}
-    friend aux::Shared_Ptr<String> mk_string(const char*, size_t);
+    friend aux::Shared_Ptr<String> make(const char*, size_t);
     String(const String&) = delete;
     String(String&&) = delete;
     String& operator=(const String&) = delete;
@@ -30,6 +31,13 @@ private:
     size_t size_;
     char data_[1];
 public:
+    /// Make a curv::String from an array of characters
+    static aux::Shared_Ptr<String> make(const char*, size_t);
+    inline static aux::Shared_Ptr<String> make(aux::Range<const char*> r)
+    {
+        return make(r.begin(), r.size());
+    }
+
     // interface is based on std::string and the STL container concept
     size_t size() const { return size_; }
     bool empty() const { return size_ == 0; }
@@ -38,6 +46,8 @@ public:
     const char* begin() const { return data_; }
     const char* end() const { return data_ + size_; }
     bool operator==(const char* s) const { return strcmp(data_, s) == 0; }
+    bool operator==(const String& s) const { return strcmp(data_,s.data_)==0; }
+    bool operator<(const String& s) const { return strcmp(data_,s.data_)<0; }
 };
 
 inline std::ostream&
@@ -48,13 +58,16 @@ operator<<(std::ostream& out, const String& str)
 }
 
 /// Make a curv::String from an array of characters
-aux::Shared_Ptr<String> mk_string(const char*, size_t);
+inline aux::Shared_Ptr<String> mk_string(const char* str, size_t len)
+{
+    return String::make(str, len);
+}
 
 /// Make a curv::String from a C string
 inline aux::Shared_Ptr<String>
 mk_string(const char*str)
 {
-    return mk_string(str, strlen(str));
+    return String::make(str, strlen(str));
 }
 
 /// Factory class for building a curv::String using ostream operations.

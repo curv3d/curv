@@ -5,6 +5,7 @@
 #include <curv/phrase.h>
 #include <curv/string.h>
 #include <curv/analyzer.h>
+#include <cstdlib>
 
 using namespace std;
 using namespace aux;
@@ -122,11 +123,24 @@ evalbad(
     return evaltest(expr, expected, false);
 }
 
+int reps()
+{
+    const char* rs = getenv("REPS");
+    if (rs == nullptr)
+        return 1;
+    int r = atoi(rs);
+    if (r <= 0)
+        return 1;
+    return r;
+}
+
 #define EVALS_TO(expr,result) EXPECT_PRED_FORMAT2(evalgood,expr,result)
 #define EVAL_ERROR(expr,result) EXPECT_PRED_FORMAT2(evalbad,expr,result)
 
 TEST(curv, eval)
 {
+  int r = reps();
+  for (int i = 0; i < r; ++i) {
     // constructors
     EVALS_TO("42.7", "42.7");
     EVALS_TO(".1", "0.1");
@@ -159,4 +173,8 @@ TEST(curv, eval)
     EVAL_ERROR("\\foo", "illegal character '\\'");
     EVAL_ERROR("\177", "illegal character 0x7F");
     EVAL_ERROR("42e+", "bad numeral");
+
+    // analysis errors
+    EVAL_ERROR("fnord", "`fnord` not defined");
+  }
 }

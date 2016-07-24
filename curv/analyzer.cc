@@ -21,13 +21,13 @@ curv::analyze_expr(Phrase& ph, const Environ& env)
 Shared<Meaning>
 curv::Identifier::analyze(const Environ& env) const
 {
-    std::string id(location().range());
+    Atom id(location().range());
     auto p = env.names.find(id);
     if (p != env.names.end())
         return aux::make_shared<Constant>(
             Shared<const Phrase>(this), p->second);
     else
-        throw Phrase_Error(*this, "not defined");
+        throw Phrase_Error(*this, stringify(id," not defined"));
 }
 
 Shared<Meaning>
