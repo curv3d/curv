@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <aux/tail_array.h>
+#include <aux/array_mixin.h>
 #include <sstream>
 #include <iostream>
 #include <cstdlib>
@@ -16,11 +17,13 @@ struct A
     double array_[0];
     A(size_t size) : size_(size) {}
     size_t size() const { return size_; }
+    double* data() { return array_; }
+    const double* data() const { return array_; }
 };
 
 TEST(aux, tail_array)
 {
-    using TA = aux::Tail_Array<A>;
+    class TA final : public aux::Tail_Array<aux::Array_Mixin<A>,TA> {};
     TA *a = TA::make(3);
     ASSERT_TRUE(a->size_ == 3);
     delete a;

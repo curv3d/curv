@@ -26,6 +26,12 @@ namespace aux {
 /// polymorphic base class, and the cookie can contain a vtable pointer.
 /// For another example, the cookie can contain an intrusive reference count.
 ///
+/// To define a new tail array class:
+/// ```
+/// class Base { ... };
+/// class My_Array final : public aux::Tail_Array<Base,My_Array> {};
+/// ```
+///
 /// The `Base` class has the following requirements:
 /// * `value_type`, the type of the array elements.
 ///   It has a `noexcept` default constructor and a `noexcept` destructor.
@@ -45,29 +51,29 @@ namespace aux {
 ///
 /// Use `delete` to destroy an instance.
 ///
-/// `Tail_Array` uses `malloc` and `free` for storage management. This is
-/// because it's not obvious that C++ allocators are safe to use for this.
-/// How do you allocate a Tail_Array object with the correct number of bytes
-/// and the correct alignment? There's no way to request this.
+/// `Tail_Array` uses `malloc` and `free` for storage management.
+/// This is because C++ allocators don't provide an appropriate interface:
+/// there's no way to allocate a Tail_Array object while requesting
+/// the correct number of bytes and the correct alignment.
 ///
 /// Suppose `Base` is derived from a polymorphic base class `P`, such that
 /// you can delete a `P*`. A big clue is that `P` defines a virtual destructor.
 /// Then `P` must override operator `new` and `delete` to use `malloc` and `free`.
 ///
 /// The class constructed by the template has some restrictions:
-/// * You can't inherit from it (declared final).
+/// * You can't inherit from it (it should be declared final).
 /// * You can't construct an instance using a constructor or `new`.
 ///   There are no public constructors.
 /// * You can't assign to it, copy it or move it.
-template<typename Base>
-class Tail_Array final : public Base
+template<typename Base, typename Super>
+class Tail_Array : public Base
 {
 public:
     using value_type = typename Base::value_type;
 
     /// Allocate an instance. Array elements are default constructed.
     template<typename... Rest>
-    static Tail_Array* make(size_t size, Rest... rest)
+    static Super* make(size_t size, Rest... rest)
     {
         // allocate the object
         void* mem = malloc(sizeof(Tail_Array) + size*sizeof(value_type));
@@ -94,12 +100,12 @@ public:
             free(mem);
             throw;
         }
-        return r;
+        return (Super*)r;
     }
 
     /// Allocate an instance. Copy array elements from another array.
     template<typename... Rest>
-    static Tail_Array* make_copy(value_type* a, size_t size, Rest... rest)
+    static Super* make_copy(value_type* a, size_t size, Rest... rest)
     {
         // allocate the object
         void* mem = malloc(sizeof(Tail_Array) + size*sizeof(value_type));
@@ -137,7 +143,7 @@ public:
             free(mem);
             throw;
         }
-        return r;
+        return (Super*)r;
     }
 
     ~Tail_Array()
