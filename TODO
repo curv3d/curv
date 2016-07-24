@@ -1,9 +1,11 @@
 # CURV0 (expressions):
-* Meaning::eval(), or LLVM, or compile to bytecode
-  * I like direct threaded code (which forces use of gcc/clang on windows)
-    LLVM has some high overheads: complexity, memory, compile speed.
-* a curv command line is a script, which is compiled into a module.
-  Eg, `a=1;b=2;a+b;a-b`. No recursion yet. Each value printed on separate line.
+* The MIT Licence (not Boost)
+* Atom and Atom_Map
+* curv::List
+* curv::Module (contains an Atom_Map and List).
+  * A curv command line is a script, which is compiled into a module.
+    Eg, `a=1;b=2;a+b;a-b`. No recursion. Each value printed on separate line.
+    eval_script(Script) -> Module
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
   numeral while building a buffer for strtod.

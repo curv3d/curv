@@ -1,5 +1,21 @@
 # Implementation of Functions and Modules
 
+The fastest path to the Minimum Viable Product now appears to be
+a Meaning tree interpreter, using the runtime data structures
+I designed for the bytecode interpreter. A faster evaluator is deferred
+until later: will consider bytecode interpreter, llvm, webassembly.
+
+## Functions (Meaning Tree Interpreter)
+
+Static function value:
+* Meaning tree (Function_Meaning?)
+  * Compile-time parameter data: array of (parameter name, has default).
+* Run-time parameter data: array of default values.
+
+Closure: rfunction and environment.
+
+Modules are functions.
+
 ## Functions
 I'll assume the bytecode compiler/interpreter here.
 All runtime values are boxed, which simplifies things.

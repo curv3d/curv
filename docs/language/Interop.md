@@ -296,6 +296,15 @@ Python function)?
 ## Javascript
 The use case for Javascript is running Curv code inside a web browser.
 
+Implementation?
+* Compile Curv language into Javascript.
+* Compile Curv language into WebAssembly. I like this idea. WebAssembly
+  is a low level IR, kind of like LLVM, C and C++ compatible, but platform
+  independent and designed for fast translation to efficient machine code.
+  WebAssembly could be a general purpose JIT solution; maybe I can skip LLVM.
+* Compile the Curv compiler into Javascript or WebAssembly using Emscripten
+  or Binaryen.
+
 ### Curv calls into Javascript
 This happens when a web page calls a Curv function and passes a Javascript
 function as a parameter.

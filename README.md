@@ -24,18 +24,28 @@ language. The syntax is based on OpenSCAD, and is easy to use for beginners.
 But it is optimized for computational geometry, and most of the geometric
 primitives are implemented in the Curv language, not in C++.
 
-The Curv VM will support 3 representations for compiled code:
-* Byte code supports fast compilation and good debugging. The goal is to have
-  roughly the same performance as CPython.
-* A subset of the language compiles into optimized GPU code. This is how the
-  previewer works.
-* Compilation into optimized native machine code (using LLVM) supports
-  fast rendering using the CPU.
+The Curv language currently has a simple optimizing compiler that generates
+trees, which are interpreted. As the project progresses, these trees will be
+further compiled into other representations:
+* For fast rendering:
+  * The previewer compiles the language subset used for functional
+    representations into GLSL GPU code.
+  * The STL exporter may compile functional representations into native machine
+    code using LLVM, or into OpenCL. TBD.
+* Later, if script evaluation needs to be sped up, the options include:
+  * A byte code compiler and interpreter. Benefits are ease of implementation,
+    fast compilation and good debugging. We could expect the same performance
+    as CPython.
+  * A tracing JIT compiler, like Lua-JIT or Javascript. Very complex.
+  * Use LLVM to compile to machine code. Very slow compilation. Moderate
+    to high complexity depending on performance goals.
+  * In a future web implementation, compilation to Javascript or WebAssembly?
 
-Curv is designed for easy interoperability with other programming languages.
+Curv is designed for easy interoperability with other programming languages,
+with special attention to C++, Javascript, OpenSCAD and Python.
 * The 6 JSON data types are the core data types of the Curv language.
-  That will be important for compatibility with JSON, OpenSCAD and Javascript,
-  and also maps well onto Python.
+  That is important for compatibility with JSON, and maps well onto
+  OpenSCAD, Javascript and Python.
 * There is near term support for JSON import and export. A geometric model
   can be exported as a "CSG tree" using JSON syntax.
 * Curv is a C++ library, with a stable API in version 1.0.
@@ -46,12 +56,12 @@ Curv is designed for easy interoperability with other programming languages.
 * Curv 'modules' are the unit of interoperability with other languages.
   Modules written in Curv can be referenced from other languages,
   and vice versa. In the medium term, OpenSCAD scripts can be imported
-  as Curv modules. In the long term, we may have two-way interoperability
-  with C++, Python, and other languages. Compiling Curv modules to native
+  as Curv modules. In the long term, we will have two-way interoperability with
+  C++, Python, and perhaps other languages. Compiling Curv modules to native
   code, shared objects or DLLs using LLVM may be part of this solution.
-* Javascript is obviously important, so that Curv can run in a browser.
-  That's a long term goal, with no fixed design yet. Perhaps we compile
-  Curv modules into Javascript.
+* Curv ought to run in a web browser, and Curv ought to be supported as
+  a Javascript API. This might be achieved by compiling the Curv library and
+  Curv modules into WebAssembly and/or Javascript.
 
 Curv is a work in progress. The project is just beginning. See below for
 a roadmap. Contributions are welcome.
