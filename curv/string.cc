@@ -24,3 +24,16 @@ String_Builder::get_string()
 {
     return String::make(str().data(), str().size());
 }
+
+void
+curv::String::print(std::ostream& out) const
+{
+    out << '"';
+    for (size_t i = 0; i < size_; ++i) {
+        char c = data_[i];
+        if (c == '$' || c == '"')
+            out << '$';
+        out << c;
+    }
+    out << '"';
+}

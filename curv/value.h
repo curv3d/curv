@@ -39,6 +39,9 @@ struct Ref_Value : public aux::Shared_Base
         ty_object
     };
     Ref_Value(int type) : aux::Shared_Base(), type_(type) {}
+
+    /// Print a value like a Curv expression.
+    virtual void print(std::ostream&) const = 0;
 };
 
 /// A boxed, dynamically typed value in the Curv runtime.
@@ -65,7 +68,7 @@ struct Ref_Value : public aux::Shared_Base
 /// Each Value has a unique bit pattern (not a given: I'm forcing the values
 /// of unused bits in the NaN box to ensure this). Only positive NaNs are used.
 /// This speeds up is_ref() and some equality tests.
-class Value
+class Value final
 {
 private:
     // internal representation
@@ -111,7 +114,7 @@ private:
 public:
     /// Construct the `null` value (default constructor).
     ///
-    /// This is the `null` value in TeaCAD.
+    /// This is the `null` value in Curv.
     /// It corresponds to both NaN and `undef` in OpenSCAD.
     inline Value()
     {
@@ -279,7 +282,7 @@ public:
             aux::intrusive_ptr_release(&get_ref_unsafe());
     }
 
-    /// Print a value like a TeaCAD expression.
+    /// Print a value like a Curv expression.
     void print(std::ostream&) const;
 };
 

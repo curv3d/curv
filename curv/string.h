@@ -48,6 +48,9 @@ public:
     bool operator==(const char* s) const { return strcmp(data_, s) == 0; }
     bool operator==(const String& s) const { return strcmp(data_,s.data_)==0; }
     bool operator<(const String& s) const { return strcmp(data_,s.data_)<0; }
+
+    /// Print a value like a Curv expression.
+    virtual void print(std::ostream&) const;
 };
 
 inline std::ostream&

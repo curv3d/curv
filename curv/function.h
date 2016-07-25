@@ -23,6 +23,9 @@ struct Function : public Ref_Value
         function_(fun),
         nargs_(nargs)
     {}
+
+    /// Print a value like a Curv expression.
+    virtual void print(std::ostream&) const;
 };
 
 } // namespace curv
