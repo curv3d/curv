@@ -44,20 +44,36 @@ public:
 /// polymorphic base class, and the cookie can contain a vtable pointer.
 /// For another example, the cookie can contain an intrusive reference count.
 ///
-/// The definition of a class A containing a tail array of element type T
-/// is split over two classes:
+/// To define a class A containing a tail array of element type T:
 /// ```
-/// class Base {
-///     // data, constructors, destructor
+/// class Base : ... {
+///     ...
+/// protected:
+///     size_t size_;
+///     T array_[0];
 /// };
-/// class A final : public aux::Tail_Array<Base,T,A> {
-///     // member functions which access the tail array
-/// };
+/// using A = Tail_Array<Base>;
 /// ```
 ///
-/// The `Tail_Array` template extends the data members from Base with
-/// a tail array of element type T. It defines public members for accessing
-/// the tail array, and public members for creating/destroying instances.
+/// The `Base` class must define two data members, `size_` and `array_`.
+/// The `Base` class constructors are not responsible for initializing
+/// these members.
+/// * `size_` holds the number of elements in the array.
+/// * `array_` is declared as the last data member.
+///   This array is magically extended at construction time to contain the
+///   required number of elements, which is why it must be the last data
+///   member. This declaration relies on a non-standard extension to C++
+///   (zero length arrays) which is enabled by default in gcc, clang and msvc++.
+///
+/// The `Tail_Array` template modifies the `Base` class to support safe
+/// construction of instances.
+/// * The class is declared final. You can't inherit from it, because adding
+///   additional data members after `array_` would cause undefined behaviour.
+/// * All of the constructors are private. You can only construct instances
+///   using the supplied factory functions, because ordinary C++ constructors
+///   don't support variable-size objects.
+/// * You can't assign to it, copy it or move it.
+/// * A set of `make` factory functions are added for constructing instances.
 ///
 /// All instances of the class are allocated on the heap.
 /// The only way to construct instances are the `make` factory functions.
@@ -72,20 +88,14 @@ public:
 /// Suppose `Base` is derived from a polymorphic base class `P`, such that
 /// you can delete a `P*`. A big clue is that `P` defines a virtual destructor.
 /// Then `P` must override operator `new` and `delete` to use `malloc` and `free`.
-///
-/// The class constructed by the template has some restrictions:
-/// * You can't inherit from it (it should be declared final).
-/// * You can't construct an instance using a constructor or `new`.
-///   There are no public constructors.
-/// * You can't assign to it, copy it or move it.
-template<class Base, class Super>
-class Tail_Array : public Base
+template<class Base>
+class Tail_Array final : public Base
 {
     using _value_type = typename Base::value_type;
 public:
     /// Allocate an instance. Array elements are default constructed.
     template<typename... Rest>
-    static Super* make(size_t size, Rest... rest)
+    static Tail_Array* make(size_t size, Rest... rest)
     {
         // allocate the object
         void* mem = malloc(sizeof(Tail_Array) + size*sizeof(_value_type));
@@ -113,12 +123,12 @@ public:
             free(mem);
             throw;
         }
-        return (Super*)r;
+        return r;
     }
 
     /// Allocate an instance. Copy array elements from another array.
     template<typename... Rest>
-    static Super* make_copy(_value_type* a, size_t size, Rest... rest)
+    static Tail_Array* make_copy(_value_type* a, size_t size, Rest... rest)
     {
         // allocate the object
         void* mem = malloc(sizeof(Tail_Array) + size*sizeof(_value_type));
@@ -157,7 +167,7 @@ public:
             free(mem);
             throw;
         }
-        return (Super*)r;
+        return r;
     }
 
     ~Tail_Array()

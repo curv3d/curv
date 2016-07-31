@@ -22,7 +22,7 @@ struct List_Base : public Ref_Value, public aux::Tail_Array_Data<Value>
 /// This is a variable length object: the size and the value array
 /// are in the same object. This is very efficient for small lists:
 /// only a single cache hit is required to access both the size and the data.
-class List final : public aux::Tail_Array<List_Base, List> {};
+using List = aux::Tail_Array<List_Base>;
 
 } // namespace curv
 #endif // header guard

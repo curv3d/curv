@@ -10,7 +10,7 @@ using namespace aux;
 struct A : public Tail_Array_Data<double>
 {
 };
-class TA final : public aux::Tail_Array<A,TA> {};
+using TA = aux::Tail_Array<A>;
 
 TEST(aux, tail_array)
 {

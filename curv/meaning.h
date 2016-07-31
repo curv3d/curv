@@ -159,7 +159,7 @@ struct List_Expr_Base : public Expression,
 
     virtual Value eval() const override;
 };
-struct List_Expr : public aux::Tail_Array<List_Expr_Base, List_Expr> {};
+using List_Expr = aux::Tail_Array<List_Expr_Base>;
 
 #if 0
 struct Definition : public Meaning
