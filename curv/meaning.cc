@@ -7,6 +7,7 @@
 #include <curv/string.h>
 #include <curv/exception.h>
 #include <curv/function.h>
+#include <curv/list.h>
 
 using namespace curv;
 
@@ -113,4 +114,13 @@ curv::Infix_Expr::eval() const
     default:
         assert(0);
     }
+}
+
+Value
+curv::List_Expr_Base::eval() const
+{
+    auto list = Shared<List>(List::make(this->size()));
+    for (size_t i = 0; i < this->size(); ++i)
+        (*list)[i] = curv::eval(*(*this)[i]);
+    return Value{list};
 }

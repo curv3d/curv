@@ -16,7 +16,6 @@ namespace aux {
 /// a container class. The Base class defines the following:
 /// * typename value_type
 /// * value_type* data() noexcept
-/// * const value_type* data() const noexcept
 /// * size_t size() const noexcept
 template <class Base>
 struct Array_Mixin : public Base
@@ -82,6 +81,8 @@ struct Array_Mixin : public Base
     const_reference front() const { return (*this)[0]; }
     reference back() { return (*this)[Base::size()-1]; }
     const_reference back() const { return (*this)[Base::size()-1]; }
+
+    const typename Base::value_type* data() const noexcept { return data(); }
 };
 
 } // namespace aux

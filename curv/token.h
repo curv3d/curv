@@ -46,6 +46,8 @@ struct Token
         k_num,        ///! floating point numeral
         k_lparen,
         k_rparen,
+        k_lbracket,
+        k_rbracket,
         k_comma,
         k_plus,
         k_minus,

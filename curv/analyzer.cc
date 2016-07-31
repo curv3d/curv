@@ -78,6 +78,16 @@ curv::Paren_Phrase::analyze(const Environ& env) const
 }
 
 Shared<Meaning>
+curv::List_Phrase::analyze(const Environ& env) const
+{
+    Shared<List_Expr> list =
+        List_Expr::make(args_.size(), Shared<const Phrase>(this));
+    for (size_t i = 0; i < args_.size(); ++i)
+        (*list)[i] = analyze_expr(*args_[i].expr_, env);
+    return list;
+}
+
+Shared<Meaning>
 curv::Call_Phrase::analyze(const Environ& env) const
 {
     auto fun = curv::analyze_expr(*function_, env);

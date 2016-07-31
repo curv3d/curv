@@ -98,6 +98,7 @@ private:
     static constexpr uint64_t k_boolbits = k_nanbits|2;
     static constexpr uint64_t k_boolmask = 0xFFFF'FFFF'FFFF'FFFE;
 
+    // Note: the corresponding public constructor takes a Shared_Ptr argument.
     inline Value(const Ref_Value* r)
     {
         #if UINTPTR_MAX == UINT64_MAX
@@ -116,7 +117,7 @@ public:
     ///
     /// This is the `null` value in Curv.
     /// It corresponds to both NaN and `undef` in OpenSCAD.
-    inline Value()
+    inline Value() noexcept
     {
         bits_ = k_nullbits;
     }

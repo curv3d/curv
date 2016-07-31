@@ -107,8 +107,8 @@ struct Definition : public Phrase
     virtual Shared<Meaning> analyze(const Environ&) const;
 };
 
-/// a parenthesized argument list, part of a function call
-struct Paren_Phrase : public Phrase
+/// common implementation for `(a,b,c)` and `[a,b,c]` phrases.
+struct Delimited_Phrase : public Phrase
 {
     // an expression followed by an optional comma
     struct Arg
@@ -124,7 +124,7 @@ struct Paren_Phrase : public Phrase
     std::vector<Arg> args_;
     Token rparen_;
 
-    Paren_Phrase(const Script& script, Token lparen)
+    Delimited_Phrase(const Script& script, Token lparen)
     : script_(script), lparen_(lparen)
     {}
 
@@ -132,6 +132,17 @@ struct Paren_Phrase : public Phrase
     {
         return Location(script_, lparen_).ending_at(rparen_);
     }
+};
+
+struct Paren_Phrase : public Delimited_Phrase
+{
+    using Delimited_Phrase::Delimited_Phrase;
+    virtual Shared<Meaning> analyze(const Environ&) const;
+};
+
+struct List_Phrase : public Delimited_Phrase
+{
+    using Delimited_Phrase::Delimited_Phrase;
     virtual Shared<Meaning> analyze(const Environ&) const;
 };
 

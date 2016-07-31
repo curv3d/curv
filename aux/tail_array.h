@@ -6,8 +6,26 @@
 #define AUX_TAIL_ARRAY_H
 
 #include <type_traits>
+#include <cstdlib>
+#include <cstring>
+#include <new>
 
 namespace aux {
+
+template<typename T>
+class Tail_Array_Data
+{
+protected:
+    size_t size_;
+    T array_[0];
+public:
+    using value_type = T;
+    size_t size() const noexcept { return size_; }
+    value_type* begin() noexcept { return array_; }
+    value_type* end() noexcept { return array_ + size_; }
+    value_type& operator[](size_t i) { return array_[i]; }
+    const value_type& operator[](size_t i) const { return array_[i]; }
+};
 
 /// Construct a class whose last data member is an inline variable sized array.
 ///
@@ -26,25 +44,20 @@ namespace aux {
 /// polymorphic base class, and the cookie can contain a vtable pointer.
 /// For another example, the cookie can contain an intrusive reference count.
 ///
-/// To define a new tail array class:
+/// The definition of a class A containing a tail array of element type T
+/// is split over two classes:
 /// ```
-/// class Base { ... };
-/// class My_Array final : public aux::Tail_Array<Base,My_Array> {};
+/// class Base {
+///     // data, constructors, destructor
+/// };
+/// class A final : public aux::Tail_Array<Base,T,A> {
+///     // member functions which access the tail array
+/// };
 /// ```
 ///
-/// The `Base` class has the following requirements:
-/// * `value_type`, the type of the array elements.
-///   It has a `noexcept` default constructor and a `noexcept` destructor.
-/// * `value_type array_[0];`, declared as the last data member.
-///   This array is magically extended at construction time to contain the
-///   required number of elements, which is why it must be the last data
-///   member. This declaration relies on a non-standard extension to C++
-///   which is enabled by default in gcc, clang and msvc++.
-/// * One or more constructors whose first argument is `size_t size`,
-///   specifying the number of elements in the array. The array elements
-///   are initialized in `array_` before the `Base` constructor is called.
-///   A `Base` constructor may throw an exception.
-/// * `size_t size()`, the number of elements in the array.
+/// The `Tail_Array` template extends the data members from Base with
+/// a tail array of element type T. It defines public members for accessing
+/// the tail array, and public members for creating/destroying instances.
 ///
 /// All instances of the class are allocated on the heap.
 /// The only way to construct instances are the `make` factory functions.
@@ -65,36 +78,36 @@ namespace aux {
 /// * You can't construct an instance using a constructor or `new`.
 ///   There are no public constructors.
 /// * You can't assign to it, copy it or move it.
-template<typename Base, typename Super>
+template<class Base, class Super>
 class Tail_Array : public Base
 {
+    using _value_type = typename Base::value_type;
 public:
-    using value_type = typename Base::value_type;
-
     /// Allocate an instance. Array elements are default constructed.
     template<typename... Rest>
     static Super* make(size_t size, Rest... rest)
     {
         // allocate the object
-        void* mem = malloc(sizeof(Tail_Array) + size*sizeof(value_type));
+        void* mem = malloc(sizeof(Tail_Array) + size*sizeof(_value_type));
         if (mem == nullptr)
             throw std::bad_alloc();
         Tail_Array* r = (Tail_Array*)mem;
 
         // construct the array elements
-        if (!std::is_trivially_default_constructible<value_type>::value) {
+        if (!std::is_trivially_default_constructible<_value_type>::value) {
             static_assert(
-                std::is_nothrow_default_constructible<value_type>::value,
+                std::is_nothrow_default_constructible<_value_type>::value,
                 "value_type default constructor must be declared noexcept");
             for (size_t i = 0; i < size; ++i)
             {
-                new((void*)&r->Base::array_[i]) value_type();
+                new((void*)&r->Base::array_[i]) _value_type();
             }
         }
 
         // then construct the Base
         try {
-            new(mem) Base(size, rest...);
+            new(mem) Base(rest...);
+            r->Base::size_ = size;
         } catch(...) {
             r->destroy_array(size);
             free(mem);
@@ -105,27 +118,27 @@ public:
 
     /// Allocate an instance. Copy array elements from another array.
     template<typename... Rest>
-    static Super* make_copy(value_type* a, size_t size, Rest... rest)
+    static Super* make_copy(_value_type* a, size_t size, Rest... rest)
     {
         // allocate the object
-        void* mem = malloc(sizeof(Tail_Array) + size*sizeof(value_type));
+        void* mem = malloc(sizeof(Tail_Array) + size*sizeof(_value_type));
         if (mem == nullptr)
             throw std::bad_alloc();
         Tail_Array* r = (Tail_Array*)mem;
 
         // construct the array elements
-        if (std::is_trivially_copy_constructible<value_type>::value) {
-            memcpy((void*)r->Base::array_, (void*)a, size*sizeof(value_type));
-        } else if (std::is_nothrow_copy_constructible<value_type>::value) {
+        if (std::is_trivially_copy_constructible<_value_type>::value) {
+            memcpy((void*)r->Base::array_, (void*)a, size*sizeof(_value_type));
+        } else if (std::is_nothrow_copy_constructible<_value_type>::value) {
             for (size_t i = 0; i < size; ++i)
             {
-                new((void*)&r->Base::array_[i]) value_type(a[i]);
+                new((void*)&r->Base::array_[i]) _value_type(a[i]);
             }
         } else {
             size_t i = 0;
             try {
                 while (i < size) {
-                    new((void*)&r->Base::array_[i]) value_type(a[i]);
+                    new((void*)&r->Base::array_[i]) _value_type(a[i]);
                     ++i;
                 }
             } catch (...) {
@@ -137,7 +150,8 @@ public:
 
         // then construct the Base
         try {
-            new(mem) Base(size, rest...);
+            new(mem) Base(rest...);
+            r->Base::size_ = size;
         } catch(...) {
             r->destroy_array(size);
             free(mem);
@@ -148,7 +162,7 @@ public:
 
     ~Tail_Array()
     {
-        destroy_array(Base::size());
+        destroy_array(Base::size_);
     }
     void operator delete(void* p) noexcept
     {
@@ -159,6 +173,7 @@ private:
     Tail_Array(Tail_Array const&) = delete;
     Tail_Array(Tail_Array &&) = delete;
     Tail_Array& operator=(Tail_Array const&) = delete;
+    Tail_Array& operator=(Tail_Array &&) = delete;
     Tail_Array() : Base() { } // no public constructors
     void* operator new(std::size_t) = delete;
 
@@ -169,12 +184,12 @@ private:
 
     void destroy_array(size_t size)
     {
-        if (!std::is_trivially_destructible<value_type>::value) {
-            static_assert(std::is_nothrow_destructible<value_type>::value,
+        if (!std::is_trivially_destructible<_value_type>::value) {
+            static_assert(std::is_nothrow_destructible<_value_type>::value,
                 "value_type destructor must be declared noexcept");
             for (size_t i = 0; i < size; ++i)
             {
-                Base::array_[i].~value_type();
+                Base::array_[i].~_value_type();
             }
         }
     }

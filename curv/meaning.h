@@ -5,6 +5,7 @@
 #ifndef CURV_MEANING_H
 #define CURV_MEANING_H
 
+#include <aux/tail_array.h>
 #include <curv/shared.h>
 #include <curv/phrase.h>
 #include <curv/value.h>
@@ -149,6 +150,16 @@ struct Infix_Expr : public Expression
 
     virtual Value eval() const override;
 };
+
+struct List_Expr_Base : public Expression,
+    public aux::Tail_Array_Data<Shared<const Expression>>
+{
+    List_Expr_Base(Shared<const Phrase> source)
+    : Expression(std::move(source)) {}
+
+    virtual Value eval() const override;
+};
+struct List_Expr : public aux::Tail_Array<List_Expr_Base, List_Expr> {};
 
 #if 0
 struct Definition : public Meaning

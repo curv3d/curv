@@ -105,6 +105,12 @@ Scanner::get_token()
     case ')':
         tok.kind = Token::k_rparen;
         goto success;
+    case '[':
+        tok.kind = Token::k_lbracket;
+        goto success;
+    case ']':
+        tok.kind = Token::k_rbracket;
+        goto success;
     case ',':
         tok.kind = Token::k_comma;
         goto success;

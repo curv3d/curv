@@ -30,8 +30,8 @@ Shared_Ptr<Phrase> parse_stmt(Scanner& scanner);
 Shared_Ptr<Phrase> parse_sum(Scanner&);
 Shared_Ptr<Phrase> parse_product(Scanner&);
 Shared_Ptr<Phrase> parse_unary(Scanner&);
-Shared_Ptr<Phrase> parse_postfix(Scanner&);
-Shared_Ptr<Phrase> parse_atom(Scanner&,bool);
+Shared_Ptr<Phrase> parse_chain(Scanner&);
+Shared_Ptr<Phrase> parse_primary(Scanner&,bool);
 
 // Parse a script, return a syntax tree.
 // It's a recursive descent parser.
@@ -114,7 +114,7 @@ parse_product(Scanner& scanner)
     }
 }
 
-// unary : postfix | - unary | + unary
+// unary : chain | - unary | + unary
 Shared_Ptr<Phrase>
 parse_unary(Scanner& scanner)
 {
@@ -125,78 +125,94 @@ parse_unary(Scanner& scanner)
         return aux::make_shared<Unary_Phrase>(tok, parse_unary(scanner));
     default:
         scanner.push_token(tok);
-        return parse_postfix(scanner);
+        return parse_chain(scanner);
     }
 }
 
 // chain : postfix | postfix chain{begins-with-identifier}
-// postfix : atom | postfix atom{not-identifier}
+// postfix : primary | postfix primary{not-identifier}
 Shared_Ptr<Phrase>
-parse_postfix(Scanner& scanner)
+parse_chain(Scanner& scanner)
 {
-    auto postfix = parse_atom(scanner, true);
+    auto postfix = parse_primary(scanner, true);
     Token tok;
     for (;;) {
         tok = scanner.get_token();
         if (tok.kind == Token::k_ident) {
             scanner.push_token(tok);
             return aux::make_shared<Call_Phrase>(postfix,
-                parse_postfix(scanner));
+                parse_chain(scanner));
         }
         scanner.push_token(tok);
-        auto atom = parse_atom(scanner, false);
-        if (atom == nullptr)
+        auto primary = parse_primary(scanner, false);
+        if (primary == nullptr)
             return postfix;
-        postfix = aux::make_shared<Call_Phrase>(postfix, atom);
+        postfix = aux::make_shared<Call_Phrase>(postfix, primary);
     }
 }
 
-// atom : numeral | identifier | patom
-// patom : ( ) | ( args ) | ( args , )
+// primary : numeral | identifier | parens
+// parens : ( ) | ( args ) | ( args , )
 // args : sum | args , sum
+//
+// If `force` is false, then we are parsing an optional primary,
+// and we return nullptr if no primary is found.
 Shared_Ptr<Phrase>
-parse_atom(Scanner& scanner, bool force)
+parse_primary(Scanner& scanner, bool force)
 {
     auto tok = scanner.get_token();
-    if (tok.kind == Token::k_num) {
+    switch (tok.kind) {
+    case Token::k_num:
         return aux::make_shared<Numeral>(scanner.script_, tok);
-    }
-    if (tok.kind == Token::k_ident) {
+    case Token::k_ident:
         return aux::make_shared<Identifier>(scanner.script_, tok);
-    }
-    if (tok.kind == Token::k_lparen) {
-        auto pphrase = aux::make_shared<Paren_Phrase>(scanner.script_, tok);
-        for (;;) {
-            tok = scanner.get_token();
-            if (tok.kind == Token::k_rparen) {
-        rparen:
-                pphrase->rparen_ = tok;
-                return pphrase;
-            }
-            scanner.push_token(tok);
-            auto expr = parse_sum(scanner);
-            Paren_Phrase::Arg arg(expr);
-            tok = scanner.get_token();
-            if (tok.kind == Token::k_comma)
-                arg.comma_ = tok;
-            pphrase->args_.push_back(std::move(arg));
-
-            if (tok.kind == Token::k_comma) {
-                continue;
-            } else if (tok.kind == Token::k_rparen) {
-                goto rparen;
+    case Token::k_lparen:
+    case Token::k_lbracket:
+        {
+            Shared<Delimited_Phrase> parens;
+            Token::Kind close;
+            const char* error;
+            if (tok.kind == Token::k_lparen) {
+                parens = aux::make_shared<Paren_Phrase>(scanner.script_, tok);
+                close = Token::k_rparen;
+                error = "bad token in parenthesized phrase";
             } else {
-                throw Token_Error(scanner.script_, tok,
-                    "bad token in parenthesized phrase");
+                parens = aux::make_shared<List_Phrase>(scanner.script_, tok);
+                close = Token::k_rbracket;
+                error = "bad token in list constructor";
+            }
+            for (;;) {
+                tok = scanner.get_token();
+                if (tok.kind == close) {
+            rparen:
+                    parens->rparen_ = tok;
+                    return parens;
+                }
+                scanner.push_token(tok);
+                auto expr = parse_sum(scanner);
+                Paren_Phrase::Arg arg(expr);
+                tok = scanner.get_token();
+                if (tok.kind == Token::k_comma)
+                    arg.comma_ = tok;
+                parens->args_.push_back(std::move(arg));
+
+                if (tok.kind == Token::k_comma) {
+                    continue;
+                } else if (tok.kind == close) {
+                    goto rparen;
+                } else {
+                    throw Token_Error(scanner.script_, tok, error);
+                }
             }
         }
-    }
-    if (force) {
-        throw Token_Error(scanner.script_, tok,
-            "unexpected token when expecting atom");
-    } else {
-        scanner.push_token(tok);
-        return nullptr;
+        default:
+            if (force) {
+                throw Token_Error(scanner.script_, tok,
+                    "unexpected token when expecting primary");
+            } else {
+                scanner.push_token(tok);
+                return nullptr;
+            }
     }
 }
 

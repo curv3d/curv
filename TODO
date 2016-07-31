@@ -1,6 +1,6 @@
 # CURV0 (expressions):
 * The MIT Licence (not Boost)
-* curv::List
+* curv::List unit testing
 * curv::Module (contains an Atom_Map<Value> and List).
   * A curv command line is a script, which is compiled into a module.
     Eg, `a=1;b=2;a+b;a-b`. No recursion. Each value printed on separate line.
@@ -16,7 +16,7 @@
 * num: x^y, sqrt(x), min[x,y], max[x,y], abs(x), sin(x), cos(x)
 * string: $id ${id} $(id) $+EE interpolation, strcat[s1,s2]
   scanner has in-string flag, parser resets/sets flag during $(expr).
-* list: [a,b,c], [a..b], concat[l1,l2]
+* list: [a..b], concat[l1,l2]
 * str&list: seq@i, len(seq)
 * records: {a=1,b=2}, r.id, defined r.id, merge[r1,r2], r1==r2
 * == and !=. 7 types, all functions are == to each other.
