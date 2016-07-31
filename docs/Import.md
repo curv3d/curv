@@ -1,7 +1,19 @@
 # The Global Resource Table
 
-A *resource* is a value that is referenced via a URL, using `import`.
-`import(URL)` or `import(URL,extension)`.
+A *resource* is a value that is referenced via a filename or URL,
+using `file(URL)` or `file(URL,extension)`.
+* The *URL* argument is an absolute URL, with scheme,
+  or an absolute pathname within the file system, OS dependent syntax,
+  or a relative name not beginning with a slash or scheme.
+  Relative names are interpreted relative to the filename or URL of
+  the script calling `file`.
+* The optional *extension* argument forces the file to be interpreted
+  as the specified type, ignoring the extension of the URL argument.
+
+```
+use file "foo.curv";
+translate[1,2,3] file("bar.curv");
+```
 
 ## On-Disk Resource File Cache
 We cache copies of resource files locally, to reduce network access and avoid
@@ -23,6 +35,24 @@ The defining characteristics are:
 
 Maybe we also have an in-memory script cache. Scripts are not resource values;
 they are *source code* that is evaluated to produce a resource value.
+
+## No Recursive Imports
+Suppose there is a global Resource Cache. A recursive import pattern between
+two scripts would result in modules that point at each other, a reference
+loop that would leak storage. So that's illegal, and we have to check and
+report an error.
+
+Suppose there is no global Resource Cache. A recursive import pattern would
+result in a recursive compile time or run time loop that would blow the stack.
+So that's illegal. We have to report an error, either using the general
+mechanism for reporting unbound recursion, or using a per script module
+Resource Cache.
+
+Probably we want a global Resource Cache, to be implemented as part of the
+initial `import` implementation. Each node has a flag, "import in progress".
+Importing a resource whose import flag is set raises an error.
+Augment the flag with a reference to the node being imported, and we can
+print the recursive import path in the error message.
 
 ## Auto Reload
 You can set the Auto Reload flag on a resource file referenced by the Resource

@@ -390,6 +390,14 @@ These are used for debug messages and doc strings.
 
 Both types of string literal may contain escape sequences beginning with `$`.
 
+### Printing a String
+How are strings printed, using `$(str)` interpolation? As a quoted string,
+but how are newlines printed? Note that there is no built-in `\n` escape,
+but `${nl}` works.
+
+The simplest design is to escape `$` and `"` and print everything else
+literally. `"`...`"` string literals may span multiple lines.
+
 ### Code Points vs Characters
 
 The Unicode standard doesn't define the term "character",

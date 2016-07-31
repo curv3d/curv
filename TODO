@@ -1,8 +1,7 @@
 # CURV0 (expressions):
 * The MIT Licence (not Boost)
-* Atom and Atom_Map
 * curv::List
-* curv::Module (contains an Atom_Map and List).
+* curv::Module (contains an Atom_Map<Value> and List).
   * A curv command line is a script, which is compiled into a module.
     Eg, `a=1;b=2;a+b;a-b`. No recursion. Each value printed on separate line.
     eval_script(Script) -> Module
@@ -46,7 +45,7 @@
 
 # CURV3 (simple geometry)
 * F-Rep: cube, sphere, affine transforms, boolean CSG
-* implement 3d primitives in TeaCAD using shape3d. (also is_shape)
+* implement 3d primitives in Curv using shape3d. (also is_shape)
   * this means: I'm implementing language features I need for defining geometry
 * preview using ray marching--convert CSG tree to GLSL
 
