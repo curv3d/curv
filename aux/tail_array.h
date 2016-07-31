@@ -48,32 +48,23 @@ public:
 /// ```
 /// class Base : ... {
 ///     ...
-/// protected:
+///     using value_type = T;
 ///     size_t size_;
-///     T array_[0];
+///     value_type array_[0];
 /// };
 /// using A = Tail_Array<Base>;
 /// ```
 ///
-/// The `Base` class must define two data members, `size_` and `array_`.
-/// The `Base` class constructors are not responsible for initializing
-/// these members.
+/// The `Base` class must define a type name `value_type` and two data members,
+/// `size_` and `array_` (as protected or public). The `Base` class constructors
+/// are not responsible for initializing these two data members.
+/// * `value_type` is the type of the array elements.
 /// * `size_` holds the number of elements in the array.
 /// * `array_` is declared as the last data member.
 ///   This array is magically extended at construction time to contain the
 ///   required number of elements, which is why it must be the last data
 ///   member. This declaration relies on a non-standard extension to C++
 ///   (zero length arrays) which is enabled by default in gcc, clang and msvc++.
-///
-/// The `Tail_Array` template modifies the `Base` class to support safe
-/// construction of instances.
-/// * The class is declared final. You can't inherit from it, because adding
-///   additional data members after `array_` would cause undefined behaviour.
-/// * All of the constructors are private. You can only construct instances
-///   using the supplied factory functions, because ordinary C++ constructors
-///   don't support variable-size objects.
-/// * You can't assign to it, copy it or move it.
-/// * A set of `make` factory functions are added for constructing instances.
 ///
 /// All instances of the class are allocated on the heap.
 /// The only way to construct instances are the `make` factory functions.
@@ -88,6 +79,15 @@ public:
 /// Suppose `Base` is derived from a polymorphic base class `P`, such that
 /// you can delete a `P*`. A big clue is that `P` defines a virtual destructor.
 /// Then `P` must override operator `new` and `delete` to use `malloc` and `free`.
+///
+/// The `Tail_Array` template restricts the `Base` class to support safe
+/// construction of instances.
+/// * The class is declared final. You can't inherit from it, because adding
+///   additional data members after `array_` would cause undefined behaviour.
+/// * All of the constructors are private. You can only construct instances
+///   using the supplied factory functions, because ordinary C++ constructors
+///   don't support variable-size objects.
+/// * You can't assign to it, copy it or move it.
 template<class Base>
 class Tail_Array final : public Base
 {
