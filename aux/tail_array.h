@@ -22,6 +22,7 @@ protected:
 public:
     using value_type = T;
     size_t size() const noexcept { return size_; }
+    bool empty() const noexcept { return size_ == 0; }
     value_type* begin() noexcept { return array_; }
     value_type* end() noexcept { return array_ + size_; }
     value_type& operator[](size_t i) { return array_[i]; }

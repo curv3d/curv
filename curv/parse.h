@@ -6,11 +6,13 @@
 #define CURV_PARSE_H
 
 #include <curv/phrase.h>
+#include <curv/scanner.h>
 #include <curv/script.h>
 
 namespace curv {
 
-aux::Shared_Ptr<Phrase> parse(const Script&);
+Shared<Phrase> parse(const Script&);
+Shared<Phrase> parse_script(Scanner&);
 
 } // namespace curv
 #endif // header guard

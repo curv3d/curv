@@ -6,6 +6,9 @@
 #define CURV_MODULE_H
 
 #include <curv/value.h>
+#include <curv/atom.h>
+#include <curv/shared.h>
+#include <curv/list.h>
 
 namespace curv {
 

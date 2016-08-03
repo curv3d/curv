@@ -13,6 +13,7 @@ extern "C" {
 #include <curv/analyzer.h>
 #include <curv/eval.h>
 #include <curv/exception.h>
+#include <curv/shared.h>
 
 bool was_interrupted = false;
 
@@ -64,6 +65,7 @@ main(int, char**)
         }
         auto script = aux::make_shared<CString_Script>("<stdin>", line);
         try {
+          #if 0
             auto phrase = curv::parse(*script);
             if (phrase == nullptr) // blank line
                 continue;
@@ -87,6 +89,13 @@ main(int, char**)
                 val.print(std::cout);
                 std::cout << "\n";
             }
+          #else
+            curv::Shared<curv::Module> module{eval_script(*script, names)};
+            for (auto f : module->fields_)
+                names[f.first] = f.second;
+            for (auto e : *module->elements_)
+                std::cout << e << "\n";
+          #endif
         } catch (curv::Exception& e) {
             std::cout << e << "\n";
         } catch (std::exception& e) {

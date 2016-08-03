@@ -9,6 +9,7 @@
 #include <curv/function.h>
 #include <curv/list.h>
 #include <curv/record.h>
+#include <curv/module.h>
 
 using namespace curv;
 
@@ -117,13 +118,19 @@ curv::Infix_Expr::eval() const
     }
 }
 
-Value
-curv::List_Expr_Base::eval() const
+Shared<List>
+curv::List_Expr_Base::eval_list() const
 {
     auto list = Shared<List>(List::make(this->size()));
     for (size_t i = 0; i < this->size(); ++i)
         (*list)[i] = curv::eval(*(*this)[i]);
-    return Value{list};
+    return list;
+}
+
+Value
+curv::List_Expr_Base::eval() const
+{
+    return {eval_list()};
 }
 
 Value
@@ -138,5 +145,9 @@ curv::Record_Expr::eval() const
 Value
 curv::Module_Expr::eval() const
 {
-    return {};
+    auto module = aux::make_shared<Module>();
+    for (auto i : fields_)
+        module->fields_[i.first] = curv::eval(*i.second);
+    module->elements_ = elements_->eval_list();
+    return {module};
 }

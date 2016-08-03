@@ -10,6 +10,7 @@
 #include <curv/phrase.h>
 #include <curv/value.h>
 #include <curv/atom.h>
+#include <curv/list.h>
 
 namespace curv {
 
@@ -159,6 +160,7 @@ struct List_Expr_Base : public Expression,
     : Expression(std::move(source)) {}
 
     virtual Value eval() const override;
+    Shared<List> eval_list() const;
 };
 using List_Expr = aux::Tail_Array<List_Expr_Base>;
 
@@ -180,14 +182,6 @@ struct Module_Expr : public Expression
 
     virtual Value eval() const override;
 };
-
-#if 0
-struct Definition : public Meaning
-{
-    Shared<Identifier> name_;
-    Shared<Expression> value_;
-};
-#endif
 
 } // namespace curv
 #endif // header guard

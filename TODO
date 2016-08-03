@@ -1,9 +1,8 @@
 # CURV0 (expressions):
-* Record literals
-* Module values (eval_script(script) -> module value)
 * The MIT Licence (not Boost)
 * aux::Shared<T> and aux::shared(ptr), vs shared_ptr enable_shared_from_this
   * see also https://webkit.org/blog/5381/refptr-basics/
+  * is shared(new Foo{x}) unsafe due to evaluation order?
 * curv::List unit testing
 * curv::Module (contains an Atom_Map<Value> and List).
   * A curv command line is a script, which is compiled into a module.
