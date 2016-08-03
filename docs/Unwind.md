@@ -114,7 +114,7 @@ runs to completion. Problems:
 * The computation thread might be in an infinite loop. We still need a way
   to interrupt interpreter loops, even if interrupting third party library
   calls is problematic.
-* `aux::Shared_Ptr` is not thread safe.
+* `aux::Shared` is not thread safe.
   * Maybe we keep track of whether the thread is currently "in the interpreter"
     or "in a long running third party library function" (like CGAL union).
     But how does that help? After it returns, we still need to clean up

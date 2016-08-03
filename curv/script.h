@@ -6,7 +6,7 @@
 #define CURV_SCRIPT_H
 
 #include <aux/range.h>
-#include <aux/shared.h>
+#include <curv/shared.h>
 #include <string>
 
 namespace curv {

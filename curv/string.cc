@@ -6,7 +6,7 @@
 using namespace curv;
 using namespace aux;
 
-Shared_Ptr<String>
+Shared<String>
 curv::String::make(const char* str, size_t len)
 {
     void* raw = malloc(sizeof(String) + len);
@@ -16,10 +16,10 @@ curv::String::make(const char* str, size_t len)
     memcpy(s->data_, str, len);
     s->data_[len] = '\0';
     s->size_ = len;
-    return Shared_Ptr<String>(s);
+    return Shared<String>(s);
 }
 
-Shared_Ptr<String>
+Shared<String>
 String_Builder::get_string()
 {
     return String::make(str().data(), str().size());

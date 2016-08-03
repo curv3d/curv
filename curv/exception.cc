@@ -12,7 +12,7 @@ using namespace aux;
 
 namespace curv {
 
-Shared_Ptr<String>
+Shared<String>
 char_error_message(char ch)
 {
     String_Builder msg;

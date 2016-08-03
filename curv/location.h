@@ -8,7 +8,7 @@
 #include <curv/script.h>
 #include <curv/token.h>
 #include <aux/range.h>
-#include <aux/shared.h>
+#include <curv/shared.h>
 #include <ostream>
 
 namespace curv {
@@ -24,13 +24,13 @@ namespace curv {
 struct Location
 {
 private:
-    aux::Shared_Ptr<const Script> script_;
+    Shared<const Script> script_;
     Token token_;
 
 public:
     Location(const Script& script, Token token)
     :
-        script_(aux::Shared_Ptr<const Script>(&script)),
+        script_(Shared<const Script>(&script)),
         token_(std::move(token))
     {}
 

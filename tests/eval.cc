@@ -73,14 +73,14 @@ struct Evaluator
         }
     }
 
-    aux::Shared_Ptr<CString_Script> script_;
+    aux::Shared<CString_Script> script_;
 
     const char* failure_;
-    aux::Shared_Ptr<curv::String> failure_str_;
+    aux::Shared<curv::String> failure_str_;
 
     const char* success_;
     curv::Value success_value_;
-    aux::Shared_Ptr<curv::String> success_str_;
+    aux::Shared<curv::String> success_str_;
 };
 
 testing::AssertionResult

@@ -28,7 +28,7 @@ Maint:
 //   the same space as a vtable pointer (on 64 bit architectures), so this
 //   is a compact representation. No cache hit is needed to load the vtable,
 //   so it is fast.
-// * Each instance is heap allocated and referenced using an aux::Shared_Ptr.
+// * Each instance is heap allocated and referenced using an aux::Shared.
 // * Instances are variable sized objects, just the right size to contain
 //   the variant data (unlike a union or boost.variant).
 // * A variant is deconstructed using the visitor pattern, but underneath, a

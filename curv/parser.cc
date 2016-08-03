@@ -26,12 +26,12 @@ using namespace aux;
 
 namespace curv {
 
-Shared_Ptr<Phrase> parse_stmt(Scanner& scanner);
-Shared_Ptr<Phrase> parse_sum(Scanner&);
-Shared_Ptr<Phrase> parse_product(Scanner&);
-Shared_Ptr<Phrase> parse_unary(Scanner&);
-Shared_Ptr<Phrase> parse_chain(Scanner&);
-Shared_Ptr<Phrase> parse_primary(Scanner&,bool);
+Shared<Phrase> parse_stmt(Scanner& scanner);
+Shared<Phrase> parse_sum(Scanner&);
+Shared<Phrase> parse_product(Scanner&);
+Shared<Phrase> parse_unary(Scanner&);
+Shared<Phrase> parse_chain(Scanner&);
+Shared<Phrase> parse_primary(Scanner&,bool);
 
 // Parse a script, return a syntax tree.
 // It's a recursive descent parser.
@@ -39,9 +39,9 @@ Shared_Ptr<Phrase> parse_primary(Scanner&,bool);
 /// Parse a curv command line.
 ///
 /// Returns `nullptr` for an empty line.
-/// Returns `Shared_Ptr<Definition>` for `id = expr`.
+/// Returns `Shared<Definition>` for `id = expr`.
 /// Otherwise, returns an expression.
-Shared_Ptr<Phrase>
+Shared<Phrase>
 parse(const Script& script)
 {
     Scanner scanner(script);
@@ -86,7 +86,7 @@ parse_script(Scanner& scanner)
 
 // stmt : definition | sum
 // definition : id = sum
-Shared_Ptr<Phrase>
+Shared<Phrase>
 parse_stmt(Scanner& scanner)
 {
     auto left = parse_sum(scanner);
@@ -101,7 +101,7 @@ parse_stmt(Scanner& scanner)
 }
 
 // sum : product | sum + product | sum - product
-Shared_Ptr<Phrase>
+Shared<Phrase>
 parse_sum(Scanner& scanner)
 {
     auto left = parse_product(scanner);
@@ -121,7 +121,7 @@ parse_sum(Scanner& scanner)
 }
 
 // product : unary | product * unary | product / unary
-Shared_Ptr<Phrase>
+Shared<Phrase>
 parse_product(Scanner& scanner)
 {
     auto left = parse_unary(scanner);
@@ -141,7 +141,7 @@ parse_product(Scanner& scanner)
 }
 
 // unary : chain | - unary | + unary
-Shared_Ptr<Phrase>
+Shared<Phrase>
 parse_unary(Scanner& scanner)
 {
     auto tok = scanner.get_token();
@@ -157,7 +157,7 @@ parse_unary(Scanner& scanner)
 
 // chain : postfix | postfix chain{begins-with-identifier}
 // postfix : primary | postfix primary{not-identifier}
-Shared_Ptr<Phrase>
+Shared<Phrase>
 parse_chain(Scanner& scanner)
 {
     auto postfix = parse_primary(scanner, true);
@@ -183,7 +183,7 @@ parse_chain(Scanner& scanner)
 //
 // If `force` is false, then we are parsing an optional primary,
 // and we return nullptr if no primary is found.
-Shared_Ptr<Phrase>
+Shared<Phrase>
 parse_primary(Scanner& scanner, bool force)
 {
     auto tok = scanner.get_token();

@@ -24,7 +24,7 @@ struct Exception : public aux::Exception
     Exception(Location loc, const char* msg)
     : aux::Exception(msg), loc_(std::move(loc)) {}
 
-    Exception(Location loc, aux::Shared_Ptr<String> msg)
+    Exception(Location loc, Shared<String> msg)
     : aux::Exception(std::move(msg)), loc_(std::move(loc)) {}
 
     const Location& location() { return loc_; }
@@ -42,7 +42,7 @@ struct Token_Error : public Exception
     : Exception(Location(s, std::move(tok)), msg)
     {}
 
-    Token_Error(const Script& s, Token tok, aux::Shared_Ptr<String> msg)
+    Token_Error(const Script& s, Token tok, Shared<String> msg)
     : Exception(Location(s, std::move(tok)), std::move(msg))
     {}
 };
@@ -61,7 +61,7 @@ struct Phrase_Error : public Exception
     : Exception(syn.location(), msg)
     {}
 
-    Phrase_Error(const Phrase& syn, aux::Shared_Ptr<String> msg)
+    Phrase_Error(const Phrase& syn, Shared<String> msg)
     : Exception(syn.location(), std::move(msg))
     {}
 };

@@ -88,7 +88,7 @@ For short strings,
 the fastest and most memory efficient representation is variable sized:
 a small header (including a length) followed by characters.
 * `aux::String` has an 8 byte header, followed by characters and NUL.
-* can be referenced using `Shared_Ptr<String>`
+* can be referenced using `Shared<String>`
 * The header is: 4 byte refcount, 4 byte size. A small header is more cache
   friendly, which means no vtable. And that means curv::Value needs to contain
   a type code to distinguish String from other reference types.
@@ -107,19 +107,19 @@ a list tree structure, and turn strings into lists of characters (with the
 option of mixed lists of characters and non-characters). What's good is that
 this simplifies, generalizes and unifies the list/string operations.
 
-Custom C++11 string literal for constructing `Shared_Ptr<String>`?
+Custom C++11 string literal for constructing `Shared<String>`?
 `aux::make_shared_string("foo")` vs `"foo"_aux`.
 Is there any efficiency gain? Is it possible to construct a static String
 object without also storing a C string literal?
 
-Auto conversion from `const char*` to `Shared_Ptr<String>`?
+Auto conversion from `const char*` to `Shared<String>`?
 Is that possible in C++, or do I need a specialized `Shared_String` type?
 Is there a way to avoid copying the string data using a `"foo"_aux` literal?
 
 We want efficient slices. Due to reference counting, a slice contains
 a reference to the original string.
 * `aux::String_Slice` is <br>
-  `{ uint32_t use_count; uint32_t size; char* ptr; Shared_Ptr<String> parent; }`
+  `{ uint32_t use_count; uint32_t size; char* ptr; Shared<String> parent; }`
 * `aux::String` is now an abstract base class with `use_count` and `size`.
   The subclasses are now CString and String_Slice.
   No vtable, so we steal 1 bit from the size to encode the subtype.
@@ -150,7 +150,7 @@ or 32 byte alignment requirements on operands. Lists are planned to have an
 
 I want an efficient range representation (OpenSCAD2).
 ```
-  { size_t, Value*, Shared_Ptr<List> parent }
+  { size_t, Value*, Shared<List> parent }
 ```
 
 I want efficient array update using copy-on-write, destructive update of arrays

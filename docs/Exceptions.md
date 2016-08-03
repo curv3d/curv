@@ -33,9 +33,9 @@ I could instead encode the argument values in the exception message.
 throw aux::Exception(stringify(x,"+",y,": domain error"))
 ```
 This assumes: aux::String is a ref-counted string,
-aux::stringify returns an aux::Shared_Ptr<aux::String>
+aux::stringify returns an aux::Shared<aux::String>
 (which has a noexcept copy constructor)
-and, aux::Exception now takes aux::Shared_Ptr<aux::String>
+and, aux::Exception now takes aux::Shared<aux::String>
 as constructor argument.
 
 ### Convenience in the Common Case
@@ -43,7 +43,7 @@ In most cases, I want a convenient API for converting unboxed values to
 their required types, exiting on a type error.
 Eg,
 ```
-Shared_Ptr<String> str = argv[0].get_str(); // throw exception on wrong type
+Shared<String> str = argv[0].get_str(); // throw exception on wrong type
 int32_t i = argv[1].get_int(); // throw exception on wrong type
 ```
 
@@ -52,7 +52,7 @@ There is no location reporting in this API.
 All functions parameters have names as part of their public API.
 So, I could report the parameter name:
 ```
-Shared_Ptr<String> str = arg_to_str(argv[0], "str");
+Shared<String> str = arg_to_str(argv[0], "str");
 int32_t i = arg_to_int(argv[1], "i");
 ```
 

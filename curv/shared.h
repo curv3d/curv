@@ -9,8 +9,9 @@
 
 namespace curv {
 
-/// Terse alias for aux::Shared_Ptr in curv namespace
-template<typename T> using Shared = aux::Shared_Ptr<T>;
+/// Terse alias for aux::Shared in curv namespace
+// template<typename T> using Shared = aux::Shared<T>;
+using aux::Shared;
 
 /// An alternative to `make_shared`. It's more orthogonal and just as terse.
 /// Eg, `shared(new T(x))`.

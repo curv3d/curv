@@ -23,7 +23,7 @@ struct String : public Ref_Value
 private:
     // you must call make() to construct a String.
     String() : Ref_Value(ty_string) {}
-    friend aux::Shared_Ptr<String> make(const char*, size_t);
+    friend Shared<String> make(const char*, size_t);
     String(const String&) = delete;
     String(String&&) = delete;
     String& operator=(const String&) = delete;
@@ -32,8 +32,8 @@ private:
     char data_[1];
 public:
     /// Make a curv::String from an array of characters
-    static aux::Shared_Ptr<String> make(const char*, size_t);
-    inline static aux::Shared_Ptr<String> make(aux::Range<const char*> r)
+    static Shared<String> make(const char*, size_t);
+    inline static Shared<String> make(aux::Range<const char*> r)
     {
         return make(r.begin(), r.size());
     }
@@ -61,13 +61,13 @@ operator<<(std::ostream& out, const String& str)
 }
 
 /// Make a curv::String from an array of characters
-inline aux::Shared_Ptr<String> mk_string(const char* str, size_t len)
+inline Shared<String> mk_string(const char* str, size_t len)
 {
     return String::make(str, len);
 }
 
 /// Make a curv::String from a C string
-inline aux::Shared_Ptr<String>
+inline Shared<String>
 mk_string(const char*str)
 {
     return String::make(str, strlen(str));
@@ -79,7 +79,7 @@ struct String_Builder : public std::stringstream
     // An optimized version of this class would use a curv::String
     // as the internal string buffer.
 
-    aux::Shared_Ptr<String> get_string();
+    Shared<String> get_string();
 
     // variadic function that appends each argument to the string buffer
     template<typename First, typename... Rest>
@@ -110,7 +110,7 @@ operator<<(String_Builder& b, unsigned long n)
 
 /// Variadic function that converts its arguments into a curv String.
 template<typename... Args>
-aux::Shared_Ptr<String> stringify(Args... args)
+Shared<String> stringify(Args... args)
 {
     String_Builder s;
     s.write_all(args...);

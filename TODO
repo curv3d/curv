@@ -1,13 +1,10 @@
 # CURV0 (expressions):
+* BUG: memory leak
 * The MIT Licence (not Boost)
-* aux::Shared<T> and aux::shared(ptr), vs shared_ptr enable_shared_from_this
+* aux::shared(ptr), vs make_shared_ptr, enable_shared_from_this
   * see also https://webkit.org/blog/5381/refptr-basics/
-  * is shared(new Foo{x}) unsafe due to evaluation order?
+  * is shared(new Foo{x}) unsafe due to evaluation order? Seems likely.
 * curv::List unit testing
-* curv::Module (contains an Atom_Map<Value> and List).
-  * A curv command line is a script, which is compiled into a module.
-    Eg, `a=1;b=2;a+b;a-b`. No recursion. Each value printed on separate line.
-    eval_script(Script) -> Module
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
   numeral while building a buffer for strtod.
@@ -90,7 +87,7 @@ And/or colour the bad text in red.
 * localization
 * curv::String refactor
   * String_Builder is rewritten to use a curv::String as the internal buffer
-  * User defined string literal constructs a Shared_Ptr<String>:
+  * User defined string literal constructs a Shared<String>:
     underlying object is constructed at compile time with no mallocs,
     and without two copies of the string literal data.
 * dtostr() refactor

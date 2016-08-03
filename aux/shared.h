@@ -15,15 +15,15 @@ namespace aux {
 ///
 /// Memory overhead is one pointer, instead of two for `std::shared_ptr`.
 /// For further economies, see `aux::Shared_Base`.
-template<typename T> using Shared_Ptr = boost::intrusive_ptr<T>;
+template<typename T> using Shared = boost::intrusive_ptr<T>;
 
-template<typename T, class... Args> Shared_Ptr<T> make_shared(Args&&... args)
+template<typename T, class... Args> Shared<T> make_shared(Args&&... args)
 {
     void* raw = std::malloc(sizeof(T));
     if (raw == nullptr)
         throw std::bad_alloc();
     T* ptr = new(raw) T(args...);
-    return Shared_Ptr<T>(ptr);
+    return Shared<T>(ptr);
 }
 
 /// Common base class for cheap reference-counted objects.
@@ -42,19 +42,19 @@ template<typename T, class... Args> Shared_Ptr<T> make_shared(Args&&... args)
 ///
 /// Suppose `Foo` is a subclass of `Shared_Base`.
 /// 1. To pass an instance of `Foo` to a function `f`, pass it by reference
-///    (`Foo&`), not by value (it's non-copyable), and not by `Shared_Ptr<Foo>`
+///    (`Foo&`), not by value (it's non-copyable), and not by `Shared<Foo>`
 ///    in most cases (too expensive: that would increment/decrement the
 ///    reference count).
 /// 2. As a special case, for constructors and factory functions, where the
-///    normal usage is for the caller to pass ownership of a Shared_Ptr to
-///    the constructor, then declare the argument as `Shared_Ptr<Foo>`.
+///    normal usage is for the caller to pass ownership of a Shared to
+///    the constructor, then declare the argument as `Shared<Foo>`.
 /// 3. In case #1, if `f` needs to keep a reference alive after the function
-///    has returned, then it can create a Shared_Ptr to the instance.
+///    has returned, then it can create a Shared to the instance.
 ///    (That's not possible with `std::shared_ptr`.) The cost of constructing
-///    a Shared_Ptr is only incurred when required, and the interface to `f`
+///    a Shared is only incurred when required, and the interface to `f`
 ///    doesn't need to expose this implementation detail, by being changed
-///    to accept a `Shared_Ptr<Foo>` argument. This is particular relevant
-///    when a member function needs to construct Shared_Ptr<Foo>(this),
+///    to accept a `Shared<Foo>` argument. This is particular relevant
+///    when a member function needs to construct Shared<Foo>(this),
 ///    something impossible with std::shared_ptr.
 /// 4. As a corrolary to #3, it is DANGEROUS to construct a static or auto
 ///    instance of `Foo`, because the technique of #3 could result in an attempt

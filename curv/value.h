@@ -5,7 +5,7 @@
 #ifndef CURV_VALUE_H
 #define CURV_VALUE_H
 
-#include <aux/shared.h>
+#include <curv/shared.h>
 #include <ostream>
 
 namespace curv {
@@ -62,7 +62,7 @@ struct Ref_Value : public aux::Shared_Base
 /// use 48 bit virtual addresses, with the upper 16 bits of a 64 bit pointer
 /// being wasted space.
 ///
-/// Reference values have Shared_Ptr semantics. The copy constructor increments
+/// Reference values have Shared semantics. The copy constructor increments
 /// the reference count, the destructor decrements the reference count and
 /// deletes the object if the refcount reaches 0.
 ///
@@ -99,7 +99,7 @@ private:
     static constexpr uint64_t k_boolbits = k_nanbits|2;
     static constexpr uint64_t k_boolmask = 0xFFFF'FFFF'FFFF'FFFE;
 
-    // Note: the corresponding public constructor takes a Shared_Ptr argument.
+    // Note: the corresponding public constructor takes a Shared argument.
     inline Value(const Ref_Value* r)
     {
         #if UINTPTR_MAX == UINT64_MAX
@@ -188,7 +188,7 @@ public:
     /// Construct a reference value.
     ///
     /// If the argument is nullptr, construct the null value.
-    inline Value(aux::Shared_Ptr<Ref_Value> ptr) : Value(ptr.detach())
+    inline Value(Shared<Ref_Value> ptr) : Value(ptr.detach())
     {
     }
 

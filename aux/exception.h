@@ -47,7 +47,7 @@ namespace aux {
 /// use some kind of shared_ptr.
 ///
 /// aux::Exception represents the message string internally as
-/// a `Shared_Ptr<curv::String>`. There is a convenient API, curv::stringify(),
+/// a `Shared<curv::String>`. There is a convenient API, curv::stringify(),
 /// for constructing a multi-component message string using a single function
 /// call. [Yeah, this looks NIH, I could have used some combination of std::
 /// and boost::. The requirements of the Curv project take precedence for now.]
@@ -67,12 +67,12 @@ namespace aux {
 struct Exception : public std::exception
 {
     Exception(const char* msg);
-    Exception(Shared_Ptr<curv::String>);
+    Exception(Shared<curv::String>);
     virtual void write(std::ostream&) const;
     virtual const char* what() const noexcept;
-    Shared_Ptr<curv::String> const shared_what() { return message_; }
+    Shared<curv::String> const shared_what() { return message_; }
 private:
-    Shared_Ptr<curv::String> message_;
+    Shared<curv::String> message_;
 };
 
 inline

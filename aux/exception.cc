@@ -24,7 +24,7 @@ Exception::Exception(const char* msg)
 {
 }
 
-Exception::Exception(Shared_Ptr<curv::String> msg)
+Exception::Exception(Shared<curv::String> msg)
 :
     message_(std::move(msg))
 {
