@@ -58,6 +58,32 @@ parse(const Script& script)
     return stmt;
 }
 
+// script : | stmts | stmts ;
+// stmts : stmt | stmts ; stmt
+Shared<Phrase>
+parse_script(Scanner& scanner)
+{
+    auto module = aux::make_shared<Module_Phrase>(scanner.script_);
+    Token tok = scanner.get_token();
+    for (;;) {
+        if (tok.kind == Token::k_end)
+            break;
+        scanner.push_token(tok);
+        Module_Phrase::Statement stmt(parse_stmt(scanner));
+        tok = scanner.get_token();
+        if (tok.kind == Token::k_semicolon) {
+            stmt.semicolon_ = tok;
+            tok = scanner.get_token();
+        } else if (tok.kind != Token::k_end) {
+            throw Token_Error(scanner.script_, tok,
+                "bad token in module: expecting ';' or <end>");
+        }
+        module->stmts_.push_back(std::move(stmt));
+    }
+    module->end_ = tok;
+    return module;
+}
+
 // stmt : definition | sum
 // definition : id = sum
 Shared_Ptr<Phrase>
@@ -168,6 +194,7 @@ parse_primary(Scanner& scanner, bool force)
         return aux::make_shared<Identifier>(scanner.script_, tok);
     case Token::k_lparen:
     case Token::k_lbracket:
+    case Token::k_lbrace:
         {
             Shared<Delimited_Phrase> parens;
             Token::Kind close;
@@ -176,11 +203,15 @@ parse_primary(Scanner& scanner, bool force)
                 parens = aux::make_shared<Paren_Phrase>(scanner.script_, tok);
                 close = Token::k_rparen;
                 error = "bad token in parenthesized phrase";
-            } else {
+            } else if (tok.kind == Token::k_lbracket) {
                 parens = aux::make_shared<List_Phrase>(scanner.script_, tok);
                 close = Token::k_rbracket;
                 error = "bad token in list constructor";
-            }
+            } else if (tok.kind == Token::k_lbrace) {
+                parens = aux::make_shared<Record_Phrase>(scanner.script_, tok);
+                close = Token::k_rbrace;
+                error = "bad token in record constructor";
+            } else assert(0);
             for (;;) {
                 tok = scanner.get_token();
                 if (tok.kind == close) {
@@ -189,8 +220,8 @@ parse_primary(Scanner& scanner, bool force)
                     return parens;
                 }
                 scanner.push_token(tok);
-                auto expr = parse_sum(scanner);
-                Paren_Phrase::Arg arg(expr);
+                auto expr = parse_stmt(scanner);
+                Delimited_Phrase::Arg arg(expr);
                 tok = scanner.get_token();
                 if (tok.kind == Token::k_comma)
                     arg.comma_ = tok;

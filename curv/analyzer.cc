@@ -27,7 +27,7 @@ curv::Identifier::analyze(const Environ& env) const
         return aux::make_shared<Constant>(
             Shared<const Phrase>(this), p->second);
     else
-        throw Phrase_Error(*this, stringify(id," not defined"));
+        throw Phrase_Error(*this, stringify(id,": not defined"));
 }
 
 Shared<Meaning>
@@ -110,4 +110,57 @@ curv::Call_Phrase::analyze(const Environ& env) const
         std::move(fun),
         args_,
         std::move(args));
+}
+
+void
+analyze_definition(
+    const Definition& def,
+    Atom_Map<Shared<const Expression>>& dict,
+    const Environ& env)
+{
+    auto id = dynamic_cast<const Identifier*>(def.left_.get());
+    if (id == nullptr)
+        throw Phrase_Error(*def.left_, "not an identifier");
+    Atom name = id->location().range();
+    if (dict.find(name) != dict.end())
+        throw Phrase_Error(*def.left_, stringify(name, ": multiply defined"));
+    dict[name] = curv::analyze_expr(*def.right_, env);
+}
+
+Shared<Meaning>
+curv::Module_Phrase::analyze(const Environ& env) const
+{
+    auto self = Shared<const Phrase>(this);
+    auto module = aux::make_shared<Module_Expr>(self);
+    std::vector<Shared<Expression>> elements;
+
+    for (auto st : stmts_) {
+        const Definition* def =
+            dynamic_cast<Definition*>(st.stmt_.get());
+        if (def != nullptr) {
+            analyze_definition(*def, module->fields_, env);
+        } else {
+            elements.push_back(curv::analyze_expr(*st.stmt_, env));
+        }
+    }
+
+    module->elements_ = List_Expr::make_elements(std::move(elements), self);
+    return module;
+}
+
+Shared<Meaning>
+curv::Record_Phrase::analyze(const Environ& env) const
+{
+    Shared<Record_Expr> record =
+        aux::make_shared<Record_Expr>(Shared<const Phrase>(this));
+    for (auto i : args_) {
+        const Definition* def =
+            dynamic_cast<Definition*>(i.expr_.get());
+        if (def != nullptr) {
+            analyze_definition(*def, record->fields_, env);
+        } else {
+            throw Phrase_Error(*i.expr_, "not a definition");
+        }
+    }
+    return record;
 }

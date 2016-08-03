@@ -9,6 +9,7 @@
 #include <curv/shared.h>
 #include <curv/phrase.h>
 #include <curv/value.h>
+#include <curv/atom.h>
 
 namespace curv {
 
@@ -160,6 +161,25 @@ struct List_Expr_Base : public Expression,
     virtual Value eval() const override;
 };
 using List_Expr = aux::Tail_Array<List_Expr_Base>;
+
+struct Record_Expr : public Expression
+{
+    Atom_Map<Shared<const Expression>> fields_;
+
+    Record_Expr(Shared<const Phrase> source) : Expression(source) {}
+
+    virtual Value eval() const override;
+};
+
+struct Module_Expr : public Expression
+{
+    Atom_Map<Shared<const Expression>> fields_;
+    Shared<const List_Expr> elements_;
+
+    Module_Expr(Shared<const Phrase> source) : Expression(source) {}
+
+    virtual Value eval() const override;
+};
 
 #if 0
 struct Definition : public Meaning

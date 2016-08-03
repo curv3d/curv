@@ -111,8 +111,17 @@ Scanner::get_token()
     case ']':
         tok.kind = Token::k_rbracket;
         goto success;
+    case '{':
+        tok.kind = Token::k_lbrace;
+        goto success;
+    case '}':
+        tok.kind = Token::k_rbrace;
+        goto success;
     case ',':
         tok.kind = Token::k_comma;
+        goto success;
+    case ';':
+        tok.kind = Token::k_semicolon;
         goto success;
     case '+':
         tok.kind = Token::k_plus;

@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <new>
+#include <utility>
 
 namespace aux {
 
@@ -37,12 +38,12 @@ public:
 /// Tail_Array is an alternative to using operator `new[]`. The latter heap
 /// allocates an array prefixed with a 'cookie' that contains the size, and
 /// perhaps other information. You have no control over the size or contents
-/// of the cookie, and you can't access the size information. If you need to
-/// remember the size of the array, you have to store a second copy of the size
-/// elsewhere. With Tail_Array, you precisely specify the cookie using the Base
-/// class. For example, your tail array class can be a subclass of a common
-/// polymorphic base class, and the cookie can contain a vtable pointer.
-/// For another example, the cookie can contain an intrusive reference count.
+/// of the cookie, and you can't access the size information. Since you
+/// typically need to remember the size of the array, you have to store a second
+/// copy of the size elsewhere. With Tail_Array, you precisely specify the
+/// cookie using the Base class. For example, your tail array class can be a
+/// subclass of a common polymorphic base class, and the cookie can contain a
+/// vtable pointer. Or, the cookie can contain an intrusive reference count.
 ///
 /// To define a class A containing a tail array of element type T:
 /// ```
@@ -112,6 +113,44 @@ public:
             {
                 new((void*)&r->Base::array_[i]) _value_type();
             }
+        }
+
+        // then construct the Base
+        try {
+            new(mem) Base(rest...);
+            r->Base::size_ = size;
+        } catch(...) {
+            r->destroy_array(size);
+            free(mem);
+            throw;
+        }
+        return r;
+    }
+
+    /// Allocate an instance. Move elements from another collection.
+    template<class C, typename... Rest>
+    static Tail_Array* make_elements(C&& c, Rest... rest)
+    {
+        // allocate the object
+        auto size = c.size();
+        void* mem = malloc(sizeof(Tail_Array) + size*sizeof(_value_type));
+        if (mem == nullptr)
+            throw std::bad_alloc();
+        Tail_Array* r = (Tail_Array*)mem;
+
+        // construct the array elements
+        decltype(size) i = 0;
+        auto ptr = c.begin();
+        try {
+            while (i < size) {
+                new((void*)&r->Base::array_[i]) _value_type(std::move(*ptr));
+                ++ptr;
+                ++i;
+            }
+        } catch (...) {
+            r->destroy_array(i);
+            free(mem);
+            throw;
         }
 
         // then construct the Base

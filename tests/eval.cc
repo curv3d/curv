@@ -149,6 +149,7 @@ TEST(curv, eval)
     EVALS_TO("1.e+1", "10");
     EVALS_TO("1e1", "10");
     EVALS_TO("[1,2,3]", "[1,2,3]");
+    EVALS_TO("{x=1}", "{x=1}");
 
     // builtins
     EVALS_TO("pi",  "3.141592653589793");
@@ -176,6 +177,7 @@ TEST(curv, eval)
     EVAL_ERROR("42e+", "bad numeral");
 
     // analysis errors
-    EVAL_ERROR("fnord", "`fnord` not defined");
+    EVAL_ERROR("fnord", "fnord: not defined");
+    EVAL_ERROR("{x=1,x=2}", "x: multiply defined");
   }
 }

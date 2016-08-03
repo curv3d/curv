@@ -146,6 +146,40 @@ struct List_Phrase : public Delimited_Phrase
     virtual Shared<Meaning> analyze(const Environ&) const;
 };
 
+struct Record_Phrase : public Delimited_Phrase
+{
+    using Delimited_Phrase::Delimited_Phrase;
+    virtual Shared<Meaning> analyze(const Environ&) const;
+};
+
+struct Module_Phrase : public Phrase
+{
+    // a statement (definition or expression) followed by an optional semicolon
+    struct Statement
+    {
+        Shared<Phrase> stmt_;
+        Token semicolon_;
+
+        Statement(Shared<Phrase> stmt) : stmt_(stmt) {}
+    };
+
+    const Script& script_;
+    std::vector<Statement> stmts_;
+    Token end_;
+
+    Module_Phrase(const Script& script) : script_(script) {}
+
+    virtual Location location() const
+    {
+        if (stmts_.empty())
+            return Location(script_, end_);
+        else
+            return stmts_[0].stmt_->location().ending_at(end_);
+    }
+
+    virtual Shared<Meaning> analyze(const Environ&) const;
+};
+
 /// a function call
 struct Call_Phrase : public Phrase
 {

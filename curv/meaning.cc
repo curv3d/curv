@@ -8,6 +8,7 @@
 #include <curv/exception.h>
 #include <curv/function.h>
 #include <curv/list.h>
+#include <curv/record.h>
 
 using namespace curv;
 
@@ -123,4 +124,19 @@ curv::List_Expr_Base::eval() const
     for (size_t i = 0; i < this->size(); ++i)
         (*list)[i] = curv::eval(*(*this)[i]);
     return Value{list};
+}
+
+Value
+curv::Record_Expr::eval() const
+{
+    auto record = aux::make_shared<Record>();
+    for (auto i : fields_)
+        record->fields_[i.first] = curv::eval(*i.second);
+    return {record};
+}
+
+Value
+curv::Module_Expr::eval() const
+{
+    return {};
 }

@@ -65,7 +65,8 @@ public:
     }
     friend std::ostream& operator<<(std::ostream& out, Atom a)
     {
-        out << "`" << *a << "`";
+        //out << "`" << *a << "`";
+        out << *a;
         return out;
     }
 };
