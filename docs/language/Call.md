@@ -13,6 +13,9 @@ There is an inconsistency that bugs me about OpenSCAD2:
   This call syntax looks so similar to a chain,
   but the precedence is quite different.
 
+So the issue is prefix keyword operators: can they use the same syntax as
+function calls?
+
 Maybe unify these two syntaxes, so that `let(...)...` and `assert(...)...`
 are chains, and you use `let(...) << ...` and `assert(...) << ...`
 for the low precedence case.
@@ -28,6 +31,28 @@ x + y >> let(x=1, y=2)
 
 This simplifies the parser, since `let`, `for`, `assert`, `require`, `echo`
 are no longer keywords, but instead builtin entities which aren't values.
+(`use` is a prefix keyword operator which can't be builtin due to scoping
+issues.)
+
+There's still an inconsistency. `if(cond)stmt` has different precedence
+from the other special operations. Maybe `if` expressions are chains,
+and the 2nd and 3rd arguments are chains.
+```
+if (x > y) x else y + 1
+<=> (if (x > y) x else y) + 1
+```
+Extending this `if` to support `<<` is questionable: the syntax will be
+quite alien to C/OpenSCAD users.
+
+So I return to my original position.
+* Special operations: `let`, `for`, `assert`, `require`, `echo`, `if`
+* Special operations can't be function values, due to syntax and/or semantics:
+  * `let` and `for` are name-binding.
+  * `assert` and `echo` can be invoked as `echo(x)y` or as `echo(x)`.
+  * `if(c)a` looks functional but `if(c)a else b` is special syntax.
+* They are reserved words, known by the parser. Maybe the parser is
+  parameterized by a special-ops table, to get the benefits that would otherwise
+  be gained by representing special-ops as builtin bindings.
 
 ## Bindable Meanings that Aren't Values
 

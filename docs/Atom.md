@@ -27,7 +27,7 @@ running map iterators in parallel. Or use the same data structure everywhere.
 
 It would be nice if this global ordering were persistent across sessions.
 That would allow the ordering to be used in files that cache compilation
-or evaluation results.
+or evaluation results. Also, deterministic unit tests.
 
 Choices of global ordering:
 * Alphabetical ordering. weight balanced binary tree (used by Haskell data.map)

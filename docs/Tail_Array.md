@@ -1,5 +1,24 @@
 # Tail Arrays
 
+Defining a tail-array class X:
+* `using X = Tail_Array<X_Base>;`
+
+The base class (argument of `Tail_Array`) must define 3 members:
+* typename `value_type`, because I can't get `decltype` to work for this purpose.
+* `size_t size_` data member.
+* `value_type array_[0]` data member
+
+constructors:
+* `make_fill(size)` -- default initialize elements and base
+* `make_fill(size, value_type, ...)`
+* `make_range(input_iter, size, ...)`
+* `make_elements(const collection&, ...)`
+* `make_elements(collection&&, ...)`
+* `make_elements(initializer_list<value_type>, ...)`
+
+TODO: abstraction to extend the base class to implement the Container
+concept for an array.
+
 ## High Level Interface
 `Tail_Array<base_class,value_type>` extends an arbitrary `base_class`
 with additional private data members representing a dynamic sized inline array
@@ -206,12 +225,12 @@ std::vector constructors:
 * `initializer_list<value_type>`
 
 new idea:
-* make(size) -- default initialize elements and base
-* make(size, value_type, ...)
-* make(input_iter, size, ...)
-* make(const collection&, ...)
-* make(collection&&, ...)
-* make(`initializer_list<value_type>`, ...)
+* `make_fill(size)` -- default initialize elements and base
+* `make_fill(size, value_type, ...)`
+* `make_range(input_iter, size, ...)`
+* `make_elements(const collection&, ...)`
+* `make_elements(collection&&, ...)`
+* `make_elements(initializer_list<value_type>, ...)`
 
 ## Unique Array Pointers
 I'd like to use `unique_ptr` to manage a tail array.

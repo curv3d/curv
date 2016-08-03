@@ -1,0 +1,5 @@
+An open source image processing library, where images are represented by
+a tree of operations. This sounds compatible with the Curv processing model,
+and images are valid representions of Curv 2D objects.
+
+https://en.wikipedia.org/wiki/GEGL
