@@ -19,6 +19,7 @@ struct Record : public Ref_Value
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const;
+    bool operator==(const Record&) const;
 };
 
 } // namespace curv

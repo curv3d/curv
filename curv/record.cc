@@ -17,3 +17,21 @@ curv::Record::print(std::ostream& out) const
     }
     out << "}";
 }
+
+auto curv::Record::operator==(const Record& rec) const
+-> bool
+{
+    auto i1{fields_.begin()};
+    auto i2{rec.fields_.begin()};
+    while (i1 != fields_.end()) {
+        if (i2 == rec.fields_.end())
+            return false;
+        if (i1->first != i2->first)
+            return false;
+        if (i1->second != i2->second)
+            return false;
+        ++i1;
+        ++i2;
+    }
+    return true;
+}

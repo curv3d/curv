@@ -286,6 +286,9 @@ public:
 
     /// Print a value like a Curv expression.
     void print(std::ostream&) const;
+
+    bool operator==(Value) const;
+    bool operator!=(Value v) const { return !(*this == v); }
 };
 
 inline std::ostream&

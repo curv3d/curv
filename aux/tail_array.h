@@ -116,9 +116,9 @@ public:
             }
         }
 
-        // then construct the Base
+        // then construct the rest of the object
         try {
-            new(mem) Base(rest...);
+            new(mem) Tail_Array(rest...);
             r->Base::size_ = size;
         } catch(...) {
             r->destroy_array(size);
@@ -154,9 +154,9 @@ public:
             throw;
         }
 
-        // then construct the Base
+        // then construct the rest of the object
         try {
-            new(mem) Base(rest...);
+            new(mem) Tail_Array(rest...);
             r->Base::size_ = size;
         } catch(...) {
             r->destroy_array(size);
@@ -198,9 +198,9 @@ public:
             }
         }
 
-        // then construct the Base
+        // then construct the rest of the object
         try {
-            new(mem) Base(rest...);
+            new(mem) Tail_Array(rest...);
             r->Base::size_ = size;
         } catch(...) {
             r->destroy_array(size);
@@ -220,11 +220,9 @@ public:
     }
 
 private:
-    Tail_Array(Tail_Array const&) = delete;
-    Tail_Array(Tail_Array &&) = delete;
+    using Base::Base; // no public constructors
     Tail_Array& operator=(Tail_Array const&) = delete;
     Tail_Array& operator=(Tail_Array &&) = delete;
-    Tail_Array() : Base() { } // no public constructors
     void* operator new(std::size_t) = delete;
 
     void* operator new(std::size_t size, void* ptr) noexcept

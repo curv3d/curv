@@ -14,3 +14,15 @@ curv::List_Base::print(std::ostream& out) const
     }
     out << "]";
 }
+
+auto curv::List_Base::operator==(const List_Base& list) const
+-> bool
+{
+    if (size() != list.size())
+        return false;
+    for (size_t i = 0; i < size(); ++i) {
+        if (array_[i] != list.array_[i])
+            return false;
+    }
+    return true;
+}

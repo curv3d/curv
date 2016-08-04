@@ -15,6 +15,7 @@ struct List_Base : public Ref_Value, public aux::Tail_Array_Data<Value>
 {
     List_Base() : Ref_Value(ty_list) {}
     virtual void print(std::ostream&) const;
+    bool operator==(const List_Base&) const;
 };
 
 /// Representation of lists in the Curv runtime.
