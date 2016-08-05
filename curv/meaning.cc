@@ -75,6 +75,16 @@ curv::Prefix_Expr::eval() const
 }
 
 Value
+curv::Not_Expr::eval() const
+{
+    Value a = curv::eval(*arg_);
+    if (!a.is_bool())
+        throw Phrase_Error(*source_,
+            stringify("!",a,": domain error"));
+    return {!a.get_bool_unsafe()};
+}
+
+Value
 curv::Infix_Expr::eval() const
 {
     Value a = curv::eval(*arg1_);
@@ -124,6 +134,13 @@ curv::Equal_Expr::eval() const
     Value a = curv::eval(*arg1_);
     Value b = curv::eval(*arg2_);
     return {a == b};
+}
+Value
+curv::Not_Equal_Expr::eval() const
+{
+    Value a = curv::eval(*arg1_);
+    Value b = curv::eval(*arg2_);
+    return {a != b};
 }
 
 Shared<List>

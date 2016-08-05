@@ -197,6 +197,11 @@ TEST(curv, eval)
     EVALS_TO("[1,true]==[1,2]", "false");
     EVALS_TO("{x=1,y=2}=={x=1,y=2}", "true");
     EVALS_TO("sqrt==sqrt", "true");
+    EVALS_TO("!true", "false");
+    EVALS_TO("!false", "true");
+    EVAL_ERROR("!null", "!null: domain error");
+    EVALS_TO("null!=null", "false");
+    EVALS_TO("null!=false", "true");
 
     // lexical errors
     EVAL_ERROR("\\foo", "illegal character '\\'");

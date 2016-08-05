@@ -131,6 +131,23 @@ struct Prefix_Expr : public Expression
 
     virtual Value eval() const override;
 };
+struct Prefix_Expr_Base : public Expression
+{
+    Shared<Expression> arg_;
+
+    Prefix_Expr_Base(
+        Shared<const Phrase> source,
+        Shared<Expression> arg)
+    :
+        Expression(source),
+        arg_(std::move(arg))
+    {}
+};
+struct Not_Expr : public Prefix_Expr_Base
+{
+    using Prefix_Expr_Base::Prefix_Expr_Base;
+    virtual Value eval() const override;
+};
 
 struct Infix_Expr : public Expression
 {
@@ -152,7 +169,6 @@ struct Infix_Expr : public Expression
 
     virtual Value eval() const override;
 };
-
 struct Infix_Expr_Base : public Expression
 {
     Shared<Expression> arg1_;
@@ -168,8 +184,12 @@ struct Infix_Expr_Base : public Expression
         arg2_(std::move(arg2))
     {}
 };
-
 struct Equal_Expr : public Infix_Expr_Base
+{
+    using Infix_Expr_Base::Infix_Expr_Base;
+    virtual Value eval() const override;
+};
+struct Not_Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval() const override;

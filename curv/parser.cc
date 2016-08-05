@@ -108,6 +108,9 @@ parse_relation(Scanner& scanner)
     case Token::k_equal:
         return aux::make_shared<Binary_Phrase>(
             std::move(left), tok, parse_sum(scanner));
+    case Token::k_not_equal:
+        return aux::make_shared<Binary_Phrase>(
+            std::move(left), tok, parse_sum(scanner));
     default:
         scanner.push_token(tok);
         return left;
@@ -162,6 +165,7 @@ parse_unary(Scanner& scanner)
     switch (tok.kind) {
     case Token::k_plus:
     case Token::k_minus:
+    case Token::k_not:
         return aux::make_shared<Unary_Phrase>(tok, parse_unary(scanner));
     default:
         scanner.push_token(tok);

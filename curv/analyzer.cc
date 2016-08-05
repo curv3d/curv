@@ -43,10 +43,17 @@ curv::Numeral::analyze(const Environ& env) const
 Shared<Meaning>
 curv::Unary_Phrase::analyze(const Environ& env) const
 {
-    return aux::make_shared<Prefix_Expr>(
-        Shared<const Phrase>(this),
-        op_.kind,
-        curv::analyze_expr(*arg_, env));
+    switch (op_.kind) {
+    case Token::k_not:
+        return aux::make_shared<Not_Expr>(
+            Shared<const Phrase>(this),
+            curv::analyze_expr(*arg_, env));
+    default:
+        return aux::make_shared<Prefix_Expr>(
+            Shared<const Phrase>(this),
+            op_.kind,
+            curv::analyze_expr(*arg_, env));
+    }
 }
 
 Shared<Meaning>
@@ -55,6 +62,11 @@ curv::Binary_Phrase::analyze(const Environ& env) const
     switch (op_.kind) {
     case Token::k_equal:
         return aux::make_shared<Equal_Expr>(
+            Shared<const Phrase>(this),
+            curv::analyze_expr(*left_, env),
+            curv::analyze_expr(*right_, env));
+    case Token::k_not_equal:
+        return aux::make_shared<Not_Equal_Expr>(
             Shared<const Phrase>(this),
             curv::analyze_expr(*left_, env),
             curv::analyze_expr(*right_, env));

@@ -142,6 +142,13 @@ Scanner::get_token()
         } else
             tok.kind = Token::k_equate;
         goto success;
+    case '!':
+        if (p < last && *p == '=') {
+            tok.kind = Token::k_not_equal;
+            ++p;
+        } else
+            tok.kind = Token::k_not;
+        goto success;
     }
 
     // report an error
