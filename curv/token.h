@@ -56,6 +56,7 @@ struct Token
         k_minus,
         k_times,
         k_over,       ///! `/` operator
+        k_equals,     ///! `==` operator
         k_equate,     ///! `=` operator
         k_end         ///! end of script
     } kind;

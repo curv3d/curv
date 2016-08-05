@@ -136,7 +136,11 @@ Scanner::get_token()
         tok.kind = Token::k_over;
         goto success;
     case '=':
-        tok.kind = Token::k_equate;
+        if (p < last && *p == '=') {
+            tok.kind = Token::k_equals;
+            ++p;
+        } else
+            tok.kind = Token::k_equate;
         goto success;
     }
 

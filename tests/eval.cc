@@ -188,6 +188,16 @@ TEST(curv, eval)
     EVALS_TO("sqrt sqrt 16", "2");
     EVAL_ERROR("sqrt(true)", "sqrt(true): domain error");
 
+    EVALS_TO("null==null", "true");
+    EVALS_TO("null==false", "false");
+    EVALS_TO("false==false", "true");
+    EVALS_TO("42==42.0", "true");
+    EVALS_TO("0==false", "false");
+    EVALS_TO("[1,2]==[1,2]", "true");
+    EVALS_TO("[1,true]==[1,2]", "false");
+    EVALS_TO("{x=1,y=2}=={x=1,y=2}", "true");
+    EVALS_TO("sqrt==sqrt", "true");
+
     // lexical errors
     EVAL_ERROR("\\foo", "illegal character '\\'");
     EVAL_ERROR("\177", "illegal character 0x7F");

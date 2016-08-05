@@ -6,9 +6,6 @@
 // Alternatives are: Bison, Lemon, Boost.Spirit (maybe X3).
 //
 // Future extensions:
-// * 2 entry points to the parser, one for parsing interactive command lines,
-//   and one for parsing script files. This could be done in Bison using
-//   2 magic zero-length start tokens.
 // * Greedy implementation of 'if' and 'let' whose right expression argument
 //   consumes the longest possible match. With Bison, the obvious implementation
 //   is as a low precedence right associative operator. But, for more
@@ -27,6 +24,7 @@ using namespace aux;
 namespace curv {
 
 Shared<Phrase> parse_stmt(Scanner& scanner);
+Shared<Phrase> parse_relation(Scanner&);
 Shared<Phrase> parse_sum(Scanner&);
 Shared<Phrase> parse_product(Scanner&);
 Shared<Phrase> parse_unary(Scanner&);
@@ -84,17 +82,33 @@ parse_script(Scanner& scanner)
     return module;
 }
 
-// stmt : definition | sum
-// definition : id = sum
+// stmt : definition | relation
+// definition : id = relation
 Shared<Phrase>
 parse_stmt(Scanner& scanner)
 {
-    auto left = parse_sum(scanner);
+    auto left = parse_relation(scanner);
     auto tok = scanner.get_token();
     if (tok.kind == Token::k_equate) {
-        auto right = parse_sum(scanner);
+        auto right = parse_relation(scanner);
         return aux::make_shared<Definition>(left, tok, right);
     } else {
+        scanner.push_token(tok);
+        return left;
+    }
+}
+
+// relation : sum | sum == sum
+Shared<Phrase>
+parse_relation(Scanner& scanner)
+{
+    auto left = parse_sum(scanner);
+    auto tok = scanner.get_token();
+    switch (tok.kind) {
+    case Token::k_equals:
+        return aux::make_shared<Binary_Phrase>(
+            std::move(left), tok, parse_sum(scanner));
+    default:
         scanner.push_token(tok);
         return left;
     }

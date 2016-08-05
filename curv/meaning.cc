@@ -113,6 +113,10 @@ curv::Infix_Expr::eval() const
                     stringify(a,"/",b,": domain error"));
             return r;
         }
+    case Token::k_equals:
+        {
+            return {a == b};
+        }
     default:
         assert(0);
     }
