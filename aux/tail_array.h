@@ -1,6 +1,6 @@
 // Copyright Doug Moen 2016.
-// Distributed under the Boost Software License, Version 1.0.
-// See accompanying file LICENCE.md or http://www.boost.org/LICENSE_1_0.txt
+// Distributed under The MIT License.
+// See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
 #ifndef AUX_TAIL_ARRAY_H
 #define AUX_TAIL_ARRAY_H

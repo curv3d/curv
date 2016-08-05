@@ -1,5 +1,4 @@
 # CURV0 (expressions):
-* The MIT Licence (not Boost)
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
   numeral while building a buffer for strtod.
