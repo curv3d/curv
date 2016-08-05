@@ -25,5 +25,11 @@ struct List_Base : public Ref_Value, public aux::Tail_Array_Data<Value>
 /// only a single cache hit is required to access both the size and the data.
 using List = aux::Tail_Array<List_Base>;
 
+inline Shared<List> make_list(size_t size)
+{
+    List* list = List::make(size);
+    return {list};
+}
+
 } // namespace curv
 #endif // header guard

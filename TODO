@@ -1,9 +1,5 @@
 # CURV0 (expressions):
 * The MIT Licence (not Boost)
-* aux::shared(ptr), vs make_shared_ptr, enable_shared_from_this
-  * see also https://webkit.org/blog/5381/refptr-basics/
-  * is shared(new Foo{x}) unsafe due to evaluation order? Seems likely.
-  * each tail_array type needs its own smart-pointer make functions, I guess?
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
   numeral while building a buffer for strtod.
@@ -21,6 +17,7 @@
 * == and !=. 7 types, all functions are == to each other.
 * <, <=, >, >=. Numbers only.
 * broader unit testing
+* smart pointers, see docs/Shared_Ptr.md
 
 # CURV1 (scripts, LLVM)
 * script files, named functions (top level only for now).

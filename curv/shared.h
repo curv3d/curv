@@ -13,9 +13,5 @@ namespace curv {
 // template<typename T> using Shared = aux::Shared<T>;
 using aux::Shared;
 
-/// An alternative to `make_shared`. It's more orthogonal and just as terse.
-/// Eg, `shared(new T(x))`.
-template<class T> Shared<T> shared(T* ptr) { return Shared<T>(ptr); }
-
 } // namespace curv
 #endif // header guard

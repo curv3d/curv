@@ -121,7 +121,7 @@ curv::Infix_Expr::eval() const
 Shared<List>
 curv::List_Expr_Base::eval_list() const
 {
-    auto list = Shared<List>(List::make(this->size()));
+    auto list = make_list(this->size());
     for (size_t i = 0; i < this->size(); ++i)
         (*list)[i] = curv::eval(*(*this)[i]);
     return list;
