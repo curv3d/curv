@@ -113,13 +113,17 @@ curv::Infix_Expr::eval() const
                     stringify(a,"/",b,": domain error"));
             return r;
         }
-    case Token::k_equals:
-        {
-            return {a == b};
-        }
     default:
         assert(0);
     }
+}
+
+Value
+curv::Equal_Expr::eval() const
+{
+    Value a = curv::eval(*arg1_);
+    Value b = curv::eval(*arg2_);
+    return {a == b};
 }
 
 Shared<List>

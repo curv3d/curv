@@ -153,6 +153,28 @@ struct Infix_Expr : public Expression
     virtual Value eval() const override;
 };
 
+struct Infix_Expr_Base : public Expression
+{
+    Shared<Expression> arg1_;
+    Shared<Expression> arg2_;
+
+    Infix_Expr_Base(
+        Shared<const Phrase> source,
+        Shared<Expression> arg1,
+        Shared<Expression> arg2)
+    :
+        Expression(source),
+        arg1_(std::move(arg1)),
+        arg2_(std::move(arg2))
+    {}
+};
+
+struct Equal_Expr : public Infix_Expr_Base
+{
+    using Infix_Expr_Base::Infix_Expr_Base;
+    virtual Value eval() const override;
+};
+
 struct List_Expr_Base : public Expression,
     public aux::Tail_Array_Data<Shared<const Expression>>
 {
