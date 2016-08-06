@@ -50,6 +50,7 @@ struct Token
         k_rbracket,
         k_lbrace,
         k_rbrace,
+        k_dot,
         k_comma,
         k_semicolon,
         k_plus,
@@ -64,6 +65,7 @@ struct Token
         k_greater_or_equal, ///! `>=` operator
         k_not,              ///! `!` operator
         k_equate,           ///! `=` operator
+        k_power,            ///! `^` operator
         k_end               ///! end of script
     } kind;
 

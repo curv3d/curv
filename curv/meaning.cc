@@ -48,6 +48,37 @@ curv::Call_Expr::eval() const
 }
 
 Value
+curv::Dot_Expr::eval() const
+{
+    Value basev = curv::eval(*base_);
+    if (!basev.is_ref())
+        throw Phrase_Error(*base_->source_, "not a record or module");
+    Ref_Value& basep( basev.get_ref_unsafe() );
+    switch (basep.type_) {
+    case Ref_Value::ty_record:
+      {
+        Record* record = (Record*)&basep;
+        auto f = record->fields_.find(id_);
+        if (f != record->fields_.end())
+            return f->second;
+        throw Phrase_Error(*base_->source_,
+            stringify(".",id_,": not defined"));
+      }
+    case Ref_Value::ty_module:
+      {
+        Module* module = (Module*)&basep;
+        auto f = module->fields_.find(id_);
+        if (f != module->fields_.end())
+            return f->second;
+        throw Phrase_Error(*base_->source_,
+            stringify(".",id_,": not defined"));
+      }
+    default:
+        throw Phrase_Error(*base_->source_, "not a record or module");
+    }
+}
+
+Value
 curv::Prefix_Expr::eval() const
 {
     switch (op_) {

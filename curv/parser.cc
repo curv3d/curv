@@ -176,7 +176,10 @@ parse_unary(Scanner& scanner)
 }
 
 // chain : postfix | postfix chain{begins-with-identifier}
-// postfix : primary | postfix primary{not-identifier}
+// postfix
+//  : primary
+//  | postfix primary{not-identifier}
+//  | postfix . identifier
 Shared<Phrase>
 parse_chain(Scanner& scanner)
 {
@@ -188,6 +191,16 @@ parse_chain(Scanner& scanner)
             scanner.push_token(tok);
             return aux::make_shared<Call_Phrase>(postfix,
                 parse_chain(scanner));
+        }
+        if (tok.kind == Token::k_dot) {
+            auto tok2 = scanner.get_token();
+            if (tok2.kind != Token::k_ident) {
+                throw Token_Error(scanner.script_, tok2,
+                    ". operator not followed by identifier");
+            }
+            postfix = aux::make_shared<Dot_Phrase>(postfix, tok,
+                aux::make_shared<Identifier>(scanner.script_, tok2));
+            continue;
         }
         scanner.push_token(tok);
         auto primary = parse_primary(scanner, false);

@@ -75,14 +75,12 @@ struct Constant : public Expression
     virtual Value eval() const override;
 };
 
-#if 0
-struct Dot_Expression : public Expression
+struct Dot_Expr : public Expression
 {
     Shared<Expression> base_;
-    Shared<Identifier> id_;
+    Atom id_;
 
-    Dot_Expression(
-        Shared<const Phrase> source, Shared<Expression> base, Shared<Identifier> id)
+    Dot_Expr(Shared<const Phrase> source, Shared<Expression> base, Atom id)
     :
         Expression(std::move(source)),
         base_(std::move(base)),
@@ -91,7 +89,6 @@ struct Dot_Expression : public Expression
 
     virtual Value eval() const override;
 };
-#endif
 
 struct Call_Expr : public Expression
 {

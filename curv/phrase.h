@@ -9,6 +9,7 @@
 #include <memory>
 #include <curv/shared.h>
 #include <curv/location.h>
+#include <curv/atom.h>
 
 namespace curv {
 
@@ -39,6 +40,7 @@ struct Identifier final : public Phrase
     : loc_(s, std::move(id))
     {}
     Location loc_;
+    Atom make_atom() const { return {loc_.range()}; }
     virtual Location location() const { return loc_; }
     virtual Shared<Meaning> analyze(const Environ&) const;
 };
@@ -190,13 +192,36 @@ struct Call_Phrase : public Phrase
         Shared<Phrase> function,
         Shared<Phrase> args)
     :
-        function_(function),
-        args_(args)
+        function_(std::move(function)),
+        args_(std::move(args))
     {}
 
     virtual Location location() const
     {
         return function_->location().ending_at(args_->location().token());
+    }
+    virtual Shared<Meaning> analyze(const Environ&) const;
+};
+
+struct Dot_Phrase : public Phrase
+{
+    Shared<Phrase> left_;
+    Token dot_;
+    Shared<Identifier> id_;
+
+    Dot_Phrase(
+        Shared<Phrase> left,
+        Token dot,
+        Shared<Identifier> id)
+    :
+        left_(std::move(left)),
+        dot_(dot),
+        id_(std::move(id))
+    {}
+
+    virtual Location location() const
+    {
+        return left_->location().ending_at(id_->location().token());
     }
     virtual Shared<Meaning> analyze(const Environ&) const;
 };

@@ -1,4 +1,8 @@
 # CURV0 (expressions):
+* x^y: right associative, -x^y==-(x^y), x^-y==x^(-y)
+  **: algolw, Python, Rexx, Simula, Cobol, Ruby, Tcl
+  ^^: D
+  ^: Eiffel, Icon, Mathematica, Matlab, Basic, Awk, Bc, Lua, Julia
 * immediate Value constructors are constexpr: define union constructors.
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal

@@ -208,6 +208,7 @@ TEST(curv, eval)
     EVALS_TO("0 <= 1", "true");
     EVALS_TO("1 > 0", "true");
     EVALS_TO("1 >= 0", "true");
+    EVALS_TO("{f=sqrt}.f(4)", "2");
 
     // lexical errors
     EVAL_ERROR("\\foo", "illegal character '\\'");

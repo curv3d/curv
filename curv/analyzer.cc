@@ -152,6 +152,15 @@ curv::Call_Phrase::analyze(const Environ& env) const
         std::move(args));
 }
 
+Shared<Meaning>
+curv::Dot_Phrase::analyze(const Environ& env) const
+{
+    return aux::make_shared<Dot_Expr>(
+        Shared<const Phrase>(this),
+        curv::analyze_expr(*left_, env),
+        id_->make_atom());
+}
+
 void
 analyze_definition(
     const Definition& def,

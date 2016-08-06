@@ -117,6 +117,9 @@ Scanner::get_token()
     case '}':
         tok.kind = Token::k_rbrace;
         goto success;
+    case '.':
+        tok.kind = Token::k_dot;
+        goto success;
     case ',':
         tok.kind = Token::k_comma;
         goto success;
@@ -134,6 +137,9 @@ Scanner::get_token()
         goto success;
     case '/':
         tok.kind = Token::k_over;
+        goto success;
+    case '^':
+        tok.kind = Token::k_power;
         goto success;
     case '=':
         if (p < last && *p == '=') {
