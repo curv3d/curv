@@ -175,7 +175,10 @@ parse_unary(Scanner& scanner)
     }
 }
 
-// chain : postfix | postfix chain{begins-with-identifier}
+// chain
+//  : postfix
+//  | postfix chain{begins-with-identifier}
+//  | postfix ^ unary
 // postfix
 //  : primary
 //  | postfix primary{not-identifier}
@@ -191,6 +194,10 @@ parse_chain(Scanner& scanner)
             scanner.push_token(tok);
             return aux::make_shared<Call_Phrase>(postfix,
                 parse_chain(scanner));
+        }
+        if (tok.kind == Token::k_power) {
+            return aux::make_shared<Binary_Phrase>(
+                postfix, tok, parse_unary(scanner));
         }
         if (tok.kind == Token::k_dot) {
             auto tok2 = scanner.get_token();

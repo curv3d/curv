@@ -10,6 +10,7 @@
 #include <curv/list.h>
 #include <curv/record.h>
 #include <curv/module.h>
+#include <cmath>
 
 using namespace curv;
 
@@ -224,6 +225,16 @@ curv::Greater_Or_Equal_Expr::eval() const
         return {false};
     throw Phrase_Error(*source_,
         stringify(a,">=",b,": domain error"));
+}
+Value
+curv::Power_Expr::eval() const
+{
+    Value a = curv::eval(*arg1_);
+    Value b = curv::eval(*arg2_);
+    Value r = Value(pow(a.get_num_or_nan(), b.get_num_or_nan()));
+    if (r.is_num())
+        return r;
+    throw Phrase_Error(*source_, stringify(a,"^",b,": domain error"));
 }
 
 Shared<List>

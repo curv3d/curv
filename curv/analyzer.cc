@@ -90,6 +90,11 @@ curv::Binary_Phrase::analyze(const Environ& env) const
             Shared<const Phrase>(this),
             curv::analyze_expr(*left_, env),
             curv::analyze_expr(*right_, env));
+    case Token::k_power:
+        return aux::make_shared<Power_Expr>(
+            Shared<const Phrase>(this),
+            curv::analyze_expr(*left_, env),
+            curv::analyze_expr(*right_, env));
     default:
         return aux::make_shared<Infix_Expr>(
             Shared<const Phrase>(this),

@@ -2,7 +2,7 @@
 * x^y: right associative, -x^y==-(x^y), x^-y==x^(-y)
   **: algolw, Python, Rexx, Simula, Cobol, Ruby, Tcl
   ^^: D
-  ^: Eiffel, Icon, Mathematica, Matlab, Basic, Awk, Bc, Lua, Julia
+  ^: Eiffel, Icon, Mathematica, Matlab, Basic, Awk, Bc, Lua, Julia, R
 * immediate Value constructors are constexpr: define union constructors.
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
@@ -12,12 +12,12 @@
     * `arg_to_num(Value,char* param_name)`: throw error if not a number,
       otherwise return double. API is independent of Value refactoring.
 * bool: && || !, if-else
-* num: x^y, sqrt(x), min[x,y], max[x,y], abs(x), sin(x), cos(x)
+* num: x^y, min[x,y], max[x,y], abs(x), sin(x), cos(x)
 * string: $id ${id} $(id) $+EE interpolation, strcat[s1,s2]
   scanner has in-string flag, parser resets/sets flag during $(expr).
 * list: [a..b], concat[l1,l2]
 * str&list: seq@i, len(seq)
-* records: r.id, defined r.id, merge[r1,r2], r1==r2
+* records: defined r.id, merge[r1,r2], r1==r2
 * broader unit testing
 * smart pointers, see docs/Shared_Ptr.md
 
