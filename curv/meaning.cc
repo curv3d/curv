@@ -142,6 +142,58 @@ curv::Not_Equal_Expr::eval() const
     Value b = curv::eval(*arg2_);
     return {a != b};
 }
+Value
+curv::Less_Expr::eval() const
+{
+    Value a = curv::eval(*arg1_);
+    Value b = curv::eval(*arg2_);
+    // only 2 comparisons required to unbox two numbers and compare them, not 3
+    if (a.get_num_or_nan() < b.get_num_or_nan())
+        return {true};
+    if (a.get_num_or_nan() >= b.get_num_or_nan())
+        return {false};
+    throw Phrase_Error(*source_,
+        stringify(a,"<",b,": domain error"));
+}
+Value
+curv::Greater_Expr::eval() const
+{
+    Value a = curv::eval(*arg1_);
+    Value b = curv::eval(*arg2_);
+    // only 2 comparisons required to unbox two numbers and compare them, not 3
+    if (a.get_num_or_nan() > b.get_num_or_nan())
+        return {true};
+    if (a.get_num_or_nan() <= b.get_num_or_nan())
+        return {false};
+    throw Phrase_Error(*source_,
+        stringify(a,">",b,": domain error"));
+}
+Value
+curv::Less_Or_Equal_Expr::eval() const
+{
+    Value a = curv::eval(*arg1_);
+    Value b = curv::eval(*arg2_);
+    // only 2 comparisons required to unbox two numbers and compare them, not 3
+    if (a.get_num_or_nan() <= b.get_num_or_nan())
+        return {true};
+    if (a.get_num_or_nan() > b.get_num_or_nan())
+        return {false};
+    throw Phrase_Error(*source_,
+        stringify(a,"<=",b,": domain error"));
+}
+Value
+curv::Greater_Or_Equal_Expr::eval() const
+{
+    Value a = curv::eval(*arg1_);
+    Value b = curv::eval(*arg2_);
+    // only 2 comparisons required to unbox two numbers and compare them, not 3
+    if (a.get_num_or_nan() >= b.get_num_or_nan())
+        return {true};
+    if (a.get_num_or_nan() < b.get_num_or_nan())
+        return {false};
+    throw Phrase_Error(*source_,
+        stringify(a,">=",b,": domain error"));
+}
 
 Shared<List>
 curv::List_Expr_Base::eval_list() const

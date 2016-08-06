@@ -106,9 +106,11 @@ parse_relation(Scanner& scanner)
     auto tok = scanner.get_token();
     switch (tok.kind) {
     case Token::k_equal:
-        return aux::make_shared<Binary_Phrase>(
-            std::move(left), tok, parse_sum(scanner));
     case Token::k_not_equal:
+    case Token::k_less:
+    case Token::k_less_or_equal:
+    case Token::k_greater:
+    case Token::k_greater_or_equal:
         return aux::make_shared<Binary_Phrase>(
             std::move(left), tok, parse_sum(scanner));
     default:

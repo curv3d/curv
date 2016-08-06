@@ -149,6 +149,20 @@ Scanner::get_token()
         } else
             tok.kind = Token::k_not;
         goto success;
+    case '<':
+        if (p < last && *p == '=') {
+            tok.kind = Token::k_less_or_equal;
+            ++p;
+        } else
+            tok.kind = Token::k_less;
+        goto success;
+    case '>':
+        if (p < last && *p == '=') {
+            tok.kind = Token::k_greater_or_equal;
+            ++p;
+        } else
+            tok.kind = Token::k_greater;
+        goto success;
     }
 
     // report an error

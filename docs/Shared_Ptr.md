@@ -29,6 +29,7 @@ will be that idiom.
 * Maybe Tail_Array::make should return a unique_ptr, which is move converted
   to the smart pointer of your choice. Use make_unique or equivalent to wrap
   `new`, and ditto.
+* This adds a layer of construction/destruction which may degrade performance.
 
 C++ best practice is to use unique_ptr where possible, since shared_ptr
 is often overkill. A shared_ptr can be move constructed from a unique_ptr.

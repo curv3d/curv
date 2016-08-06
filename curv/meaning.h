@@ -194,6 +194,26 @@ struct Not_Equal_Expr : public Infix_Expr_Base
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval() const override;
 };
+struct Less_Expr : public Infix_Expr_Base
+{
+    using Infix_Expr_Base::Infix_Expr_Base;
+    virtual Value eval() const override;
+};
+struct Greater_Expr : public Infix_Expr_Base
+{
+    using Infix_Expr_Base::Infix_Expr_Base;
+    virtual Value eval() const override;
+};
+struct Less_Or_Equal_Expr : public Infix_Expr_Base
+{
+    using Infix_Expr_Base::Infix_Expr_Base;
+    virtual Value eval() const override;
+};
+struct Greater_Or_Equal_Expr : public Infix_Expr_Base
+{
+    using Infix_Expr_Base::Infix_Expr_Base;
+    virtual Value eval() const override;
+};
 
 struct List_Expr_Base : public Expression,
     public aux::Tail_Array_Data<Shared<const Expression>>

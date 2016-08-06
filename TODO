@@ -1,4 +1,5 @@
 # CURV0 (expressions):
+* immediate Value constructors are constexpr: define union constructors.
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
   numeral while building a buffer for strtod.
@@ -12,9 +13,7 @@
   scanner has in-string flag, parser resets/sets flag during $(expr).
 * list: [a..b], concat[l1,l2]
 * str&list: seq@i, len(seq)
-* records: {a=1,b=2}, r.id, defined r.id, merge[r1,r2], r1==r2
-* == and !=. 7 types, all functions are == to each other.
-* <, <=, >, >=. Numbers only.
+* records: r.id, defined r.id, merge[r1,r2], r1==r2
 * broader unit testing
 * smart pointers, see docs/Shared_Ptr.md
 

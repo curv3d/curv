@@ -70,6 +70,26 @@ curv::Binary_Phrase::analyze(const Environ& env) const
             Shared<const Phrase>(this),
             curv::analyze_expr(*left_, env),
             curv::analyze_expr(*right_, env));
+    case Token::k_less:
+        return aux::make_shared<Less_Expr>(
+            Shared<const Phrase>(this),
+            curv::analyze_expr(*left_, env),
+            curv::analyze_expr(*right_, env));
+    case Token::k_greater:
+        return aux::make_shared<Greater_Expr>(
+            Shared<const Phrase>(this),
+            curv::analyze_expr(*left_, env),
+            curv::analyze_expr(*right_, env));
+    case Token::k_less_or_equal:
+        return aux::make_shared<Less_Or_Equal_Expr>(
+            Shared<const Phrase>(this),
+            curv::analyze_expr(*left_, env),
+            curv::analyze_expr(*right_, env));
+    case Token::k_greater_or_equal:
+        return aux::make_shared<Greater_Or_Equal_Expr>(
+            Shared<const Phrase>(this),
+            curv::analyze_expr(*left_, env),
+            curv::analyze_expr(*right_, env));
     default:
         return aux::make_shared<Infix_Expr>(
             Shared<const Phrase>(this),

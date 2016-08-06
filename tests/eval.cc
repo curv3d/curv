@@ -202,6 +202,12 @@ TEST(curv, eval)
     EVAL_ERROR("!null", "!null: domain error");
     EVALS_TO("null!=null", "false");
     EVALS_TO("null!=false", "true");
+    EVALS_TO("0 < 1", "true");
+    EVALS_TO("-0 < +0", "false");
+    EVAL_ERROR("0 < null", "0<null: domain error");
+    EVALS_TO("0 <= 1", "true");
+    EVALS_TO("1 > 0", "true");
+    EVALS_TO("1 >= 0", "true");
 
     // lexical errors
     EVAL_ERROR("\\foo", "illegal character '\\'");

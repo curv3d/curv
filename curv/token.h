@@ -55,12 +55,16 @@ struct Token
         k_plus,
         k_minus,
         k_times,
-        k_over,       ///! `/` operator
-        k_equal,      ///! `==` operator
-        k_not_equal,  ///! `!=` operator
-        k_not,        ///! `!` operator
-        k_equate,     ///! `=` operator
-        k_end         ///! end of script
+        k_over,             ///! `/` operator
+        k_equal,            ///! `==` operator
+        k_not_equal,        ///! `!=` operator
+        k_less,             ///! `<` operator
+        k_less_or_equal,    ///! `<=` operator
+        k_greater,          ///! `>` operator
+        k_greater_or_equal, ///! `>=` operator
+        k_not,              ///! `!` operator
+        k_equate,           ///! `=` operator
+        k_end               ///! end of script
     } kind;
 
     Token() : kind(k_missing) {}
