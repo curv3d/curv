@@ -65,37 +65,11 @@ main(int, char**)
         }
         auto script = aux::make_shared<CString_Script>("<stdin>", line);
         try {
-          #if 0
-            auto phrase = curv::parse(*script);
-            if (phrase == nullptr) // blank line
-                continue;
-            const curv::Definition* def =
-                dynamic_cast<curv::Definition*>(phrase.get());
-            if (def != nullptr) {
-                const curv::Identifier* id =
-                    dynamic_cast<curv::Identifier*>(def->left_.get());
-                if (id == nullptr) {
-                    throw curv::Token_Error(*script, def->equate_,
-                        "= not preceded by identifier");
-                }
-                curv::Environ actx(names);
-                auto expr = curv::analyze_expr(*def->right_, actx);
-                curv::Value val = curv::eval(*expr);
-                names[id->location().range()] = val;
-            } else {
-                curv::Environ actx(names);
-                auto expr = curv::analyze_expr(*phrase, actx);
-                curv::Value val = curv::eval(*expr);
-                val.print(std::cout);
-                std::cout << "\n";
-            }
-          #else
             curv::Shared<curv::Module> module{eval_script(*script, names)};
             for (auto f : module->fields_)
                 names[f.first] = f.second;
             for (auto e : *module->elements_)
                 std::cout << e << "\n";
-          #endif
         } catch (curv::Exception& e) {
             std::cout << e << "\n";
         } catch (std::exception& e) {

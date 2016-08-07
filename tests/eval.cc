@@ -31,22 +31,6 @@ struct Evaluator
         success_(nullptr)
     {
         try {
-          #if 0
-            auto phrase = curv::parse(*script_);
-            if (phrase == nullptr) { // empty expression
-                success_ = "";
-                return;
-            }
-            const curv::Definition* def =
-                dynamic_cast<curv::Definition*>(phrase.get());
-            if (def != nullptr) {
-                failure_ = "definition found; expecting expression";
-                return;
-            }
-            Environ env(curv::builtin_namespace);
-            auto expr = analyze_expr(*phrase, env);
-            success_value_ = curv::eval(*expr);
-          #else
             Shared<Module> module{eval_script(*script_, builtin_namespace)};
             if (!module->fields_.empty()) {
                 failure_ = "definitions found; expecting only expressions";
@@ -61,7 +45,6 @@ struct Evaluator
                 return;
             }
             success_value_ = (*module->elements_)[0];
-          #endif
             success_str_ = curv::stringify(success_value_);
             success_ = success_str_->c_str();
         } catch (curv::Exception& e) {

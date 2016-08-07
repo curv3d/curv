@@ -1,9 +1,18 @@
 # CURV0 (expressions):
+* module element expressions are in the scope of module definitions.
+  * fix tests/eval to support definitions + dependent expressions.
+* immediate Value constructors are constexpr: define union constructors.
+* bug: (-1)^-0.5 error message needs parens around '-1'
+* simplify this code (narrowing a Value):
+  > auto value = eval(*expr);
+  > assert(value.is_ref());
+  > Ref_Value& ref{value.get_ref_unsafe()};
+  > Module& module{dynamic_cast<Module&>(ref)};
+  > return Shared<Module>(&module);
 * x^y: right associative, -x^y==-(x^y), x^-y==x^(-y)
   **: algolw, Python, Rexx, Simula, Cobol, Ruby, Tcl
   ^^: D
   ^: Eiffel, Icon, Mathematica, Matlab, Basic, Awk, Bc, Lua, Julia, R
-* immediate Value constructors are constexpr: define union constructors.
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
   numeral while building a buffer for strtod.

@@ -33,29 +33,7 @@ Shared<Phrase> parse_primary(Scanner&,bool);
 
 // Parse a script, return a syntax tree.
 // It's a recursive descent parser.
-
-/// Parse a curv command line.
-///
-/// Returns `nullptr` for an empty line.
-/// Returns `Shared<Definition>` for `id = expr`.
-/// Otherwise, returns an expression.
-Shared<Phrase>
-parse(const Script& script)
-{
-    Scanner scanner(script);
-
-    auto tok = scanner.get_token();
-    if (tok.kind == Token::k_end)
-        return nullptr;
-    scanner.push_token(tok);
-
-    auto stmt = parse_stmt(scanner);
-    tok = scanner.get_token();
-    if (tok.kind != Token::k_end)
-        throw Token_Error(script, tok, "unexpected token at end of script");
-    return stmt;
-}
-
+//
 // script : | stmts | stmts ;
 // stmts : stmt | stmts ; stmt
 Shared<Phrase>

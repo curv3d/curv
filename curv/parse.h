@@ -7,11 +7,9 @@
 
 #include <curv/phrase.h>
 #include <curv/scanner.h>
-#include <curv/script.h>
 
 namespace curv {
 
-Shared<Phrase> parse(const Script&);
 Shared<Phrase> parse_script(Scanner&);
 
 } // namespace curv
