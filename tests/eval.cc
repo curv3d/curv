@@ -171,6 +171,8 @@ TEST(curv, eval)
     EVALS_TO("sqrt(4,)", "2"); // test syntax: trailing , after last argument
     EVALS_TO("sqrt sqrt 16", "2");
     EVAL_ERROR("sqrt(true)", "sqrt(true): domain error");
+    EVALS_TO("len[]", "0");
+    EVAL_ERROR("len 0", "not a list");
 
     EVALS_TO("true||false", "true");
     EVALS_TO("false||true", "true");

@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <string>
+#include <curv/arg.h>
 #include <curv/builtin.h>
 #include <curv/exception.h>
 #include <curv/function.h>
@@ -25,6 +26,13 @@ builtin_sqrt(Value* args)
         throw aux::Exception(stringify("sqrt(",args[0],"): domain error"));
 }
 
+Value
+builtin_len(Value* args)
+{
+    auto& list {arg_to_list(args[0], "0")};
+    return {double(list.size())};
+}
+
 const Namespace
 curv::builtin_namespace = {
     {"pi", pi},
@@ -34,4 +42,5 @@ curv::builtin_namespace = {
     {"false", curv::Value(false)},
     {"true", curv::Value(true)},
     {"sqrt", curv::make_ref_value<curv::Function>(builtin_sqrt, 1)},
+    {"len", curv::make_ref_value<curv::Function>(builtin_len, 1)},
 };
