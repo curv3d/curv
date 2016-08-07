@@ -69,15 +69,13 @@ struct Ref_Value : public aux::Shared_Base
 /// Each Value has a unique bit pattern (not a given: I'm forcing the values
 /// of unused bits in the NaN box to ensure this). Only positive NaNs are used.
 /// This speeds up is_ref() and some equality tests.
-class Value final
+union Value
 {
 private:
     // internal representation
-    union {
-        double number_;
-        uint64_t bits_;
-        int64_t signed_bits_;
-    };
+    double number_;
+    uint64_t bits_;
+    int64_t signed_bits_;
 
     // This asserts that the binary encodings for quiet and signaling NaNs
     // are as specified in IEEE 754-2008. Will fail on PA-RISC and MIPS.
@@ -118,32 +116,26 @@ public:
     ///
     /// This is the `null` value in Curv.
     /// It corresponds to both NaN and `undef` in OpenSCAD.
-    inline Value() noexcept
-    {
-        bits_ = k_nullbits;
-    }
+    inline constexpr Value() noexcept : bits_{k_nullbits} {}
 
     /// True if value is null.
-    inline bool is_null() const
+    inline bool is_null() const noexcept
     {
         return bits_ == k_nullbits;
     }
 
     /// Construct a boolean value.
-    inline Value(bool b)
-    {
-        bits_ = k_boolbits|(uint64_t)b;
-    }
+    inline constexpr Value(bool b) : bits_{k_boolbits|(uint64_t)b} {}
 
     /// True if the value is boolean.
-    inline bool is_bool() const
+    inline bool is_bool() const noexcept
     {
         return (bits_ & k_boolmask) == k_boolbits;
     }
     /// Convert a boolean value to `bool`.
     ///
     /// Only defined if is_bool() is true.
-    inline bool get_bool_unsafe() const
+    inline bool get_bool_unsafe() const noexcept
     {
         return (bool)(bits_ & 1);
     }
@@ -162,7 +154,7 @@ public:
     }
 
     /// True if the value is a number.
-    inline bool is_num() const
+    inline bool is_num() const noexcept
     {
         return number_ == number_;
     }
@@ -172,7 +164,7 @@ public:
     /// Only defined if `is_num()` is true.
     /// Potentially faster than `get_num_or_nan()`,
     /// so call this version when guarded by `if(v.is_num())`.
-    inline double get_num_unsafe() const
+    inline double get_num_unsafe() const noexcept
     {
         return number_;
     }
@@ -180,7 +172,7 @@ public:
     /// Convert a number value to `double`.
     ///
     /// If is_num() is false then NaN is returned.
-    inline double get_num_or_nan() const
+    inline double get_num_or_nan() const noexcept
     {
         return number_;
     }
