@@ -172,6 +172,18 @@ TEST(curv, eval)
     EVALS_TO("sqrt sqrt 16", "2");
     EVAL_ERROR("sqrt(true)", "sqrt(true): domain error");
 
+    EVALS_TO("true||false", "true");
+    EVALS_TO("false||true", "true");
+    EVALS_TO("false||false", "false");
+    EVALS_TO("true||null", "true");
+    EVAL_ERROR("null||true", "not a boolean value");
+
+    EVALS_TO("false&&true", "false");
+    EVALS_TO("false&&null", "false");
+    EVALS_TO("true&&false", "false");
+    EVAL_ERROR("true&&null", "not a boolean value");
+    EVALS_TO("true&&true", "true");
+
     EVALS_TO("null==null", "true");
     EVALS_TO("null==false", "false");
     EVALS_TO("false==false", "true");

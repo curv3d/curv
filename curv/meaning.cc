@@ -161,6 +161,34 @@ curv::Infix_Expr::eval() const
 }
 
 Value
+curv::Or_Expr::eval() const
+{
+    Value a = curv::eval(*arg1_);
+    if (a == Value{true})
+        return a;
+    if (a == Value{false}) {
+        Value b = curv::eval(*arg2_);
+        if (b.is_bool())
+            return b;
+        throw Phrase_Error(*arg2_->source_, "not a boolean value");
+    }
+    throw Phrase_Error(*arg1_->source_, "not a boolean value");
+}
+Value
+curv::And_Expr::eval() const
+{
+    Value a = curv::eval(*arg1_);
+    if (a == Value{false})
+        return a;
+    if (a == Value{true}) {
+        Value b = curv::eval(*arg2_);
+        if (b.is_bool())
+            return b;
+        throw Phrase_Error(*arg2_->source_, "not a boolean value");
+    }
+    throw Phrase_Error(*arg1_->source_, "not a boolean value");
+}
+Value
 curv::Equal_Expr::eval() const
 {
     Value a = curv::eval(*arg1_);

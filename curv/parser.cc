@@ -24,6 +24,8 @@ using namespace aux;
 namespace curv {
 
 Shared<Phrase> parse_stmt(Scanner& scanner);
+Shared<Phrase> parse_disjunction(Scanner&);
+Shared<Phrase> parse_conjunction(Scanner&);
 Shared<Phrase> parse_relation(Scanner&);
 Shared<Phrase> parse_sum(Scanner&);
 Shared<Phrase> parse_product(Scanner&);
@@ -65,7 +67,7 @@ parse_script(Scanner& scanner)
 Shared<Phrase>
 parse_stmt(Scanner& scanner)
 {
-    auto left = parse_relation(scanner);
+    auto left = parse_disjunction(scanner);
     auto tok = scanner.get_token();
     if (tok.kind == Token::k_equate) {
         auto right = parse_relation(scanner);
@@ -73,6 +75,44 @@ parse_stmt(Scanner& scanner)
     } else {
         scanner.push_token(tok);
         return left;
+    }
+}
+
+// disjunction : conjunction | disjunction || conjunction
+Shared<Phrase>
+parse_disjunction(Scanner& scanner)
+{
+    auto left = parse_conjunction(scanner);
+    for (;;) {
+        auto tok = scanner.get_token();
+        switch (tok.kind) {
+        case Token::k_or:
+            left = aux::make_shared<Binary_Phrase>(
+                std::move(left), tok, parse_conjunction(scanner));
+            continue;
+        default:
+            scanner.push_token(tok);
+            return left;
+        }
+    }
+}
+
+// conjunction : relation | conjunction && relation
+Shared<Phrase>
+parse_conjunction(Scanner& scanner)
+{
+    auto left = parse_relation(scanner);
+    for (;;) {
+        auto tok = scanner.get_token();
+        switch (tok.kind) {
+        case Token::k_and:
+            left = aux::make_shared<Binary_Phrase>(
+                std::move(left), tok, parse_relation(scanner));
+            continue;
+        default:
+            scanner.push_token(tok);
+            return left;
+        }
     }
 }
 

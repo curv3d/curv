@@ -169,6 +169,20 @@ Scanner::get_token()
         } else
             tok.kind = Token::k_greater;
         goto success;
+    case '&':
+        if (p < last && *p == '&') {
+            tok.kind = Token::k_and;
+            ++p;
+        } else
+            goto error;
+        goto success;
+    case '|':
+        if (p < last && *p == '|') {
+            tok.kind = Token::k_or;
+            ++p;
+        } else
+            goto error;
+        goto success;
     case '"':
         for (;;) {
             if (p == last) {
@@ -187,6 +201,7 @@ Scanner::get_token()
     }
 
     // report an error
+error:
     tok.last = p - first;
     tok.kind = Token::k_bad_token;
     ptr_ = p;

@@ -72,6 +72,16 @@ Shared<Meaning>
 curv::Binary_Phrase::analyze(const Environ& env) const
 {
     switch (op_.kind) {
+    case Token::k_or:
+        return aux::make_shared<Or_Expr>(
+            Shared<const Phrase>(this),
+            curv::analyze_expr(*left_, env),
+            curv::analyze_expr(*right_, env));
+    case Token::k_and:
+        return aux::make_shared<And_Expr>(
+            Shared<const Phrase>(this),
+            curv::analyze_expr(*left_, env),
+            curv::analyze_expr(*right_, env));
     case Token::k_equal:
         return aux::make_shared<Equal_Expr>(
             Shared<const Phrase>(this),

@@ -181,6 +181,16 @@ struct Infix_Expr_Base : public Expression
         arg2_(std::move(arg2))
     {}
 };
+struct Or_Expr : public Infix_Expr_Base
+{
+    using Infix_Expr_Base::Infix_Expr_Base;
+    virtual Value eval() const override;
+};
+struct And_Expr : public Infix_Expr_Base
+{
+    using Infix_Expr_Base::Infix_Expr_Base;
+    virtual Value eval() const override;
+};
 struct Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;

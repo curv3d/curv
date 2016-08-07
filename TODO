@@ -1,4 +1,6 @@
 # CURV0 (expressions):
+* bool: && || !, if-else
+  C syntax || && !, or Python-like syntax: x and y, x or y, not x? Or both?
 * module element expressions are in the scope of module definitions.
   * fix tests/eval to support definitions + dependent expressions.
 * bug: (-1)^-0.5 error message needs parens around '-1'
@@ -19,13 +21,12 @@
   * error reporting for bad arguments:
     * `arg_to_num(Value,char* param_name)`: throw error if not a number,
       otherwise return double. API is independent of Value refactoring.
-* bool: && || !, if-else
 * num: min[x,y], max[x,y], abs(x), sin(x), cos(x)
-* string: $id ${id} $(id) $+EE interpolation, strcat[s1,s2]
+* string: $$ $" $id ${id} $(id) $+EE interpolation, strcat[s1,s2]
   scanner has in-string flag, parser resets/sets flag during $(expr).
 * list: [a..b], concat[l1,l2]
 * str&list: seq@i, len(seq)
-* records: defined r.id, merge[r1,r2], r1==r2
+* records: defined r.id, merge[r1,r2]
 * broader unit testing
 * smart pointers, see docs/Shared_Ptr.md
 
@@ -35,7 +36,7 @@
 * pattern matching: hypot[x,y] = sqrt(x^2+y^2).
 * LLVM based evaluator. Compile Meaning to LLVM IR.
   Embed raw function pointers and Values in IR as bit patterns.
-* Component values?
+* Module values?
 * Benchmarks
 
 # CURV2 (nested scopes)
