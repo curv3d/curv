@@ -34,24 +34,28 @@ struct Phrase : public aux::Shared_Base
     virtual Shared<Meaning> analyze(const Environ&) const = 0;
 };
 
-struct Identifier final : public Phrase
+/// Abstract implementation base class for Phrase classes
+/// that encapsulate a single token.
+struct Token_Phrase : public Phrase
 {
-    Identifier(const Script& s, Token id)
-    : loc_(s, std::move(id))
-    {}
     Location loc_;
-    Atom make_atom() const { return {loc_.range()}; }
+    Token_Phrase(const Script& s, Token tok) : loc_(s, std::move(tok)) {}
     virtual Location location() const { return loc_; }
+};
+struct Identifier final : public Token_Phrase
+{
+    using Token_Phrase::Token_Phrase;
+    Atom make_atom() const { return {loc_.range()}; }
     virtual Shared<Meaning> analyze(const Environ&) const;
 };
-
-struct Numeral final : public Phrase
+struct Numeral final : public Token_Phrase
 {
-    Numeral(const Script& s, Token num)
-    : loc_(s, std::move(num))
-    {}
-    Location loc_;
-    virtual Location location() const { return loc_; }
+    using Token_Phrase::Token_Phrase;
+    virtual Shared<Meaning> analyze(const Environ&) const;
+};
+struct String_Phrase final : public Token_Phrase
+{
+    using Token_Phrase::Token_Phrase;
     virtual Shared<Meaning> analyze(const Environ&) const;
 };
 

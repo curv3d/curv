@@ -148,6 +148,7 @@ TEST(curv, eval)
     EVALS_TO(".1e-1", "0.01");
     EVALS_TO("1.e+1", "10");
     EVALS_TO("1e1", "10");
+    EVALS_TO("\"abc\"", "\"abc\"");
     EVALS_TO("[1,2,3]", "[1,2,3]");
     EVALS_TO("{x=1}", "{x=1}");
 

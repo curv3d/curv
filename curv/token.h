@@ -44,6 +44,7 @@ struct Token
         k_bad_utf8,   ///! a malformed UTF-8 sequence
         k_ident,
         k_num,        ///! floating point numeral
+        k_string,
         k_lparen,
         k_rparen,
         k_lbracket,

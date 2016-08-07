@@ -210,6 +210,8 @@ parse_primary(Scanner& scanner, bool force)
         return aux::make_shared<Numeral>(scanner.script_, tok);
     case Token::k_ident:
         return aux::make_shared<Identifier>(scanner.script_, tok);
+    case Token::k_string:
+        return aux::make_shared<String_Phrase>(scanner.script_, tok);
     case Token::k_lparen:
     case Token::k_lbracket:
     case Token::k_lbrace:

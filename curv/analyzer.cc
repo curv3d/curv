@@ -39,6 +39,18 @@ curv::Numeral::analyze(const Environ& env) const
     assert(endptr == str.c_str() + str.size());
     return aux::make_shared<Constant>(Shared<const Phrase>(this), n);
 }
+Shared<Meaning>
+curv::String_Phrase::analyze(const Environ& env) const
+{
+    auto str = location().range();
+    assert(str.size() >= 2); // includes start and end " characters
+    assert(*str.begin() == '"');
+    assert(*(str.begin()+str.size()-1) == '"');
+    ++str.first;
+    --str.last;
+    return aux::make_shared<Constant>(Shared<const Phrase>(this),
+        Value{String::make(str.begin(),str.size())});
+}
 
 Shared<Meaning>
 curv::Unary_Phrase::analyze(const Environ& env) const

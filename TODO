@@ -1,7 +1,6 @@
 # CURV0 (expressions):
 * module element expressions are in the scope of module definitions.
   * fix tests/eval to support definitions + dependent expressions.
-* immediate Value constructors are constexpr: define union constructors.
 * bug: (-1)^-0.5 error message needs parens around '-1'
 * simplify this code (narrowing a Value):
   > auto value = eval(*expr);
@@ -21,7 +20,7 @@
     * `arg_to_num(Value,char* param_name)`: throw error if not a number,
       otherwise return double. API is independent of Value refactoring.
 * bool: && || !, if-else
-* num: x^y, min[x,y], max[x,y], abs(x), sin(x), cos(x)
+* num: min[x,y], max[x,y], abs(x), sin(x), cos(x)
 * string: $id ${id} $(id) $+EE interpolation, strcat[s1,s2]
   scanner has in-string flag, parser resets/sets flag during $(expr).
 * list: [a..b], concat[l1,l2]

@@ -97,7 +97,7 @@ Scanner::get_token()
         goto success;
     }
 
-    // recognize single-character tokens
+    // recognize remaining tokens
     switch (*p++) {
     case '(':
         tok.kind = Token::k_lparen;
@@ -169,6 +169,21 @@ Scanner::get_token()
         } else
             tok.kind = Token::k_greater;
         goto success;
+    case '"':
+        for (;;) {
+            if (p == last) {
+                tok.last = p - first;
+                tok.kind = Token::k_bad_token;
+                ptr_ = p;
+                throw Token_Error(script_, tok, "unterminated string literal");
+            }
+            if (*p == '"') {
+                ++p;
+                tok.kind = Token::k_string;
+                goto success;
+            }
+            ++p;
+        }
     }
 
     // report an error
