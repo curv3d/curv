@@ -1,6 +1,4 @@
 # CURV0 (expressions):
-* bool: && || !, if-else
-  C syntax || && !, or Python-like syntax: x and y, x or y, not x? Or both?
 * module element expressions are in the scope of module definitions.
   * fix tests/eval to support definitions + dependent expressions.
 * bug: (-1)^-0.5 error message needs parens around '-1'

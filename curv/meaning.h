@@ -257,5 +257,26 @@ struct Module_Expr : public Expression
     virtual Value eval() const override;
 };
 
+struct If_Expr : public Expression
+{
+    Shared<Expression> arg1_;
+    Shared<Expression> arg2_;
+    Shared<Expression> arg3_;
+
+    If_Expr(
+        Shared<const Phrase> source,
+        Shared<Expression> arg1,
+        Shared<Expression> arg2,
+        Shared<Expression> arg3)
+    :
+        Expression(source),
+        arg1_(std::move(arg1)),
+        arg2_(std::move(arg2)),
+        arg3_(std::move(arg3))
+    {}
+
+    virtual Value eval() const override;
+};
+
 } // namespace curv
 #endif // header guard

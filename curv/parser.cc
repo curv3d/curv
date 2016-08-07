@@ -23,7 +23,7 @@ using namespace aux;
 
 namespace curv {
 
-Shared<Phrase> parse_stmt(Scanner& scanner);
+Shared<Phrase> parse_expr(Scanner& scanner);
 Shared<Phrase> parse_disjunction(Scanner&);
 Shared<Phrase> parse_conjunction(Scanner&);
 Shared<Phrase> parse_relation(Scanner&);
@@ -47,7 +47,7 @@ parse_script(Scanner& scanner)
         if (tok.kind == Token::k_end)
             break;
         scanner.push_token(tok);
-        Module_Phrase::Statement stmt(parse_stmt(scanner));
+        Module_Phrase::Statement stmt(parse_expr(scanner));
         tok = scanner.get_token();
         if (tok.kind == Token::k_semicolon) {
             stmt.semicolon_ = tok;
@@ -65,7 +65,7 @@ parse_script(Scanner& scanner)
 // stmt : definition | relation
 // definition : id = relation
 Shared<Phrase>
-parse_stmt(Scanner& scanner)
+parse_expr(Scanner& scanner)
 {
     auto left = parse_disjunction(scanner);
     auto tok = scanner.get_token();
@@ -235,9 +235,10 @@ parse_chain(Scanner& scanner)
     }
 }
 
-// primary : numeral | identifier | parens
+// primary : numeral | identifier | string | parens | list | record
+//  | 'if' ( expr ) expr 'else' expr
 // parens : ( ) | ( args ) | ( args , )
-// args : sum | args , sum
+// args : expr | args , expr
 //
 // If `force` is false, then we are parsing an optional primary,
 // and we return nullptr if no primary is found.
@@ -252,58 +253,71 @@ parse_primary(Scanner& scanner, bool force)
         return aux::make_shared<Identifier>(scanner.script_, tok);
     case Token::k_string:
         return aux::make_shared<String_Phrase>(scanner.script_, tok);
+    case Token::k_if:
+      {
+        auto condition = parse_primary(scanner, true);
+        if (dynamic_cast<Paren_Phrase*>(condition.get()) == nullptr)
+            throw Phrase_Error(*condition, "not a parenthesized expression");
+        auto then_expr = parse_expr(scanner);
+        Token tok2 = scanner.get_token();
+        if (tok2.kind != Token::k_else)
+            throw Token_Error(scanner.script_, tok2, "not the keyword 'else'");
+        auto else_expr = parse_expr(scanner);
+        return aux::make_shared<If_Phrase>(
+            tok, condition, then_expr, tok2, else_expr);
+      }
     case Token::k_lparen:
     case Token::k_lbracket:
     case Token::k_lbrace:
-        {
-            Shared<Delimited_Phrase> parens;
-            Token::Kind close;
-            const char* error;
-            if (tok.kind == Token::k_lparen) {
-                parens = aux::make_shared<Paren_Phrase>(scanner.script_, tok);
-                close = Token::k_rparen;
-                error = "bad token in parenthesized phrase";
-            } else if (tok.kind == Token::k_lbracket) {
-                parens = aux::make_shared<List_Phrase>(scanner.script_, tok);
-                close = Token::k_rbracket;
-                error = "bad token in list constructor";
-            } else if (tok.kind == Token::k_lbrace) {
-                parens = aux::make_shared<Record_Phrase>(scanner.script_, tok);
-                close = Token::k_rbrace;
-                error = "bad token in record constructor";
-            } else assert(0);
-            for (;;) {
-                tok = scanner.get_token();
-                if (tok.kind == close) {
-            rparen:
-                    parens->rparen_ = tok;
-                    return parens;
-                }
-                scanner.push_token(tok);
-                auto expr = parse_stmt(scanner);
-                Delimited_Phrase::Arg arg(expr);
-                tok = scanner.get_token();
-                if (tok.kind == Token::k_comma)
-                    arg.comma_ = tok;
-                parens->args_.push_back(std::move(arg));
+      {
+        Shared<Delimited_Phrase> parens;
+        Token::Kind close;
+        const char* error;
+        if (tok.kind == Token::k_lparen) {
+            parens = aux::make_shared<Paren_Phrase>(scanner.script_, tok);
+            close = Token::k_rparen;
+            error = "bad token in parenthesized phrase";
+        } else if (tok.kind == Token::k_lbracket) {
+            parens = aux::make_shared<List_Phrase>(scanner.script_, tok);
+            close = Token::k_rbracket;
+            error = "bad token in list constructor";
+        } else if (tok.kind == Token::k_lbrace) {
+            parens = aux::make_shared<Record_Phrase>(scanner.script_, tok);
+            close = Token::k_rbrace;
+            error = "bad token in record constructor";
+        } else assert(0);
+        for (;;) {
+            tok = scanner.get_token();
+            if (tok.kind == close) {
+        rparen:
+                parens->rparen_ = tok;
+                return parens;
+            }
+            scanner.push_token(tok);
+            auto expr = parse_expr(scanner);
+            Delimited_Phrase::Arg arg(expr);
+            tok = scanner.get_token();
+            if (tok.kind == Token::k_comma)
+                arg.comma_ = tok;
+            parens->args_.push_back(std::move(arg));
 
-                if (tok.kind == Token::k_comma) {
-                    continue;
-                } else if (tok.kind == close) {
-                    goto rparen;
-                } else {
-                    throw Token_Error(scanner.script_, tok, error);
-                }
+            if (tok.kind == Token::k_comma) {
+                continue;
+            } else if (tok.kind == close) {
+                goto rparen;
+            } else {
+                throw Token_Error(scanner.script_, tok, error);
             }
         }
-        default:
-            if (force) {
-                throw Token_Error(scanner.script_, tok,
-                    "unexpected token when expecting primary");
-            } else {
-                scanner.push_token(tok);
-                return nullptr;
-            }
+      }
+    default:
+        if (force) {
+            throw Token_Error(scanner.script_, tok,
+                "unexpected token when expecting primary");
+        } else {
+            scanner.push_token(tok);
+            return nullptr;
+        }
     }
 }
 

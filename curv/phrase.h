@@ -230,5 +230,36 @@ struct Dot_Phrase : public Phrase
     virtual Shared<Meaning> analyze(const Environ&) const;
 };
 
+struct If_Phrase : public Phrase
+{
+    Token if_;
+    Shared<Phrase> condition_;
+    Shared<Phrase> then_expr_;
+    Token else_;
+    Shared<Phrase> else_expr_;
+
+    If_Phrase(
+        Token t_if,
+        Shared<Phrase> condition,
+        Shared<Phrase> then_expr,
+        Token t_else,
+        Shared<Phrase> else_expr)
+    :
+        if_(t_if),
+        condition_(condition),
+        then_expr_(then_expr),
+        else_(t_else),
+        else_expr_(else_expr)
+    {}
+
+    virtual Location location() const
+    {
+        return condition_->location()
+            .starting_at(if_)
+            .ending_at(else_expr_->location().token());
+    }
+    virtual Shared<Meaning> analyze(const Environ&) const;
+};
+
 } // namespace curv
 #endif // header guard

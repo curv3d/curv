@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <string>
+#include <cstring>
 #include <ostream>
 
 namespace aux {
@@ -35,6 +36,14 @@ struct Range
 };
 
 std::ostream& operator<<(std::ostream&, const Range<const char*>&);
+
+inline bool operator==(Range<const char*> r, const char* s)
+{
+    size_t size = r.size();
+    if (size != strlen(s))
+        return false;
+    return memcmp(r.begin(), s, size) == 0;
+}
 
 } // namespace aux
 #endif // header guard

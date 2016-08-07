@@ -93,7 +93,13 @@ Scanner::get_token()
     if (isalpha(*p) || *p == '_') {
         while (p < last && (isalnum(*p) || *p == '_'))
             ++p;
-        tok.kind = Token::k_ident;
+        aux::Range<const char*> id(first+tok.first, p);
+        if (id == "if")
+            tok.kind = Token::k_if;
+        else if (id == "else")
+            tok.kind = Token::k_else;
+        else
+            tok.kind = Token::k_ident;
         goto success;
     }
 

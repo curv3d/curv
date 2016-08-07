@@ -184,6 +184,8 @@ TEST(curv, eval)
     EVAL_ERROR("true&&null", "not a boolean value");
     EVALS_TO("true&&true", "true");
 
+    EVALS_TO("1 + if (true) 2 else 5", "3");
+
     EVALS_TO("null==null", "true");
     EVALS_TO("null==false", "false");
     EVALS_TO("false==false", "true");
