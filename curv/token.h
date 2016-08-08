@@ -56,6 +56,8 @@ struct Token
         k_dot,
         k_comma,
         k_semicolon,
+        k_at,               ///! `@` operator
+        k_power,            ///! `^` operator
         k_plus,
         k_minus,
         k_times,
@@ -68,7 +70,6 @@ struct Token
         k_greater_or_equal, ///! `>=` operator
         k_not,              ///! `!` operator
         k_equate,           ///! `=` operator
-        k_power,            ///! `^` operator
         k_and,              ///! `&&` operator
         k_or,               ///! `||` operator
         k_end               ///! end of script

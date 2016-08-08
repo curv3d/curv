@@ -212,6 +212,8 @@ TEST(curv, eval)
     EVALS_TO("4^0.5", "2");
     EVALS_TO("4^-1", "0.25");
     EVALS_TO("-2^2", "-4");
+    EVALS_TO("[1,2,3]@1","2");
+    EVAL_ERROR("[1,2,3]@1.1","not an integer");
 
     // lexical errors
     EVAL_ERROR("\\foo", "illegal character '\\'");

@@ -108,6 +108,13 @@ operator<<(String_Builder& b, unsigned long n)
     return b;
 }
 
+inline String_Builder&
+operator<<(String_Builder& b, int n)
+{
+    (std::stringstream&)b << n;
+    return b;
+}
+
 /// Variadic function that converts its arguments into a curv String.
 template<typename... Args>
 Shared<String> stringify(Args... args)

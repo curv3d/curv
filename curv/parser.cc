@@ -227,6 +227,11 @@ parse_chain(Scanner& scanner)
                 aux::make_shared<Identifier>(scanner.script_, tok2));
             continue;
         }
+        if (tok.kind == Token::k_at) {
+            postfix = aux::make_shared<Binary_Phrase>(postfix, tok,
+                parse_primary(scanner, true));
+            continue;
+        }
         scanner.push_token(tok);
         auto primary = parse_primary(scanner, false);
         if (primary == nullptr)

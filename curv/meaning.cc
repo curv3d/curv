@@ -2,6 +2,7 @@
 // Distributed under The MIT License.
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
+#include <curv/arg.h>
 #include <curv/meaning.h>
 #include <curv/eval.h>
 #include <curv/string.h>
@@ -273,6 +274,15 @@ curv::Power_Expr::eval() const
     if (r.is_num())
         return r;
     throw Phrase_Error(*source_, stringify(a,"^",b,": domain error"));
+}
+Value
+curv::At_Expr::eval() const
+{
+    Value a = curv::eval(*arg1_);
+    Value b = curv::eval(*arg2_);
+    auto& list {arg_to_list(a, *arg1_->source_)};
+    int i = arg_to_int(b, 0, (int)(list.size()-1), *arg2_->source_);
+    return list[i];
 }
 
 Shared<List>

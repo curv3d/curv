@@ -7,8 +7,54 @@ until later: will consider bytecode interpreter, llvm, webassembly.
 
 ## Functions (Meaning Tree Interpreter)
 
+### Representation of Code
+If I use a meaning tree interpreter, how does the debug interface work?
+In particular, single stepping? Even if I use the tree representation,
+I still need a virtual state machine with a PC and registers.
+The tree node 'eval' function needs to advance the state.
+Worry about this later, once I've worked through the requirements for the
+analyzer, which works on the meaning tree.
+
+### Representation of Function Values
+
+Let's start with top level lambda expressions in the builtin context.
+How are closures implemented?
+```
+x->y->x+y
+```
+A closure consists of: the compile time meaning tree, and the runtime
+environment list. The environment list contains non-local bindings which
+are non-static. For this particular case, a tail-array representation of
+the closure would be efficient.
+
+There are three kinds of environments:
+* function parameter list
+* let bindings
+* module bindings
+
+With the 2nd and 3rd kind, there's a danger of a reference loop,
+and the 'rfunction' technique must be used to represent binding values
+in those cases. The 'rfunction' technique can't be used in the first case?
+
+Proposal: a closure value contains a code pointer (compile time meaning tree),
+an environment pointer, and a tail-array of slots. There are 3 classes
+of non-local references:
+* static -- converted to Constant nodes in the code tree.
+* non-static, non-recursive -- copied into slot array at construction time.
+* non-static, recursive -- referenced via environment pointer.
+
+I think there are also 3 classes of function representation:
+* static: only need a code tree
+* non-static, non-recursive: a closure with slots (see above)
+* non-static, recursive: occurs as a let or module binding.
+  Only the code pointer is stored in the let/module slot array.
+  The function can be called without constructing a closure, because
+  non-locals are stored in let- or module- environments. When a function value
+  is needed, it's constructed from a code pointer and an environment object.
+
+----------------------------------------------------------------
 Static function value:
-* Meaning tree (Function_Meaning?)
+* Meaning tree (`Function_Expr`?)
   * Compile-time parameter data: array of (parameter name, has default).
 * Run-time parameter data: array of default values.
 

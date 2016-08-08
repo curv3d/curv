@@ -23,7 +23,7 @@
 * string: $$ $" $id ${id} $(id) $+EE interpolation, strcat[s1,s2]
   scanner has in-string flag, parser resets/sets flag during $(expr).
 * list: [a..b], concat[l1,l2]
-* str&list: seq@i, len(seq)
+* string: str@i, len(str) -- either ASCII-only, or proper Unicode
 * records: defined r.id, merge[r1,r2]
 * broader unit testing
 * smart pointers, see docs/Shared_Ptr.md

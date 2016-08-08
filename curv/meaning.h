@@ -226,6 +226,11 @@ struct Power_Expr : public Infix_Expr_Base
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval() const override;
 };
+struct At_Expr : public Infix_Expr_Base
+{
+    using Infix_Expr_Base::Infix_Expr_Base;
+    virtual Value eval() const override;
+};
 
 struct List_Expr_Base : public Expression,
     public aux::Tail_Array_Data<Shared<const Expression>>

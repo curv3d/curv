@@ -147,6 +147,9 @@ Scanner::get_token()
     case '^':
         tok.kind = Token::k_power;
         goto success;
+    case '@':
+        tok.kind = Token::k_at;
+        goto success;
     case '=':
         if (p < last && *p == '=') {
             tok.kind = Token::k_equal;
