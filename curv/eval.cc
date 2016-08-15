@@ -13,11 +13,8 @@ auto curv::eval_script(const Script& script, const Namespace& names)
 {
     Scanner scanner{script};
     auto phrase = parse_script(scanner);
-    Environ env{names};
-    auto expr = analyze_expr(*phrase, env);
-    auto value = eval(*expr);
-    assert(value.is_ref());
-    Ref_Value& ref{value.get_ref_unsafe()};
-    Module& module{dynamic_cast<Module&>(ref)};
-    return Shared<Module>(&module);
+    Builtin_Environ env{names};
+    auto expr = phrase->analyze_module(env);
+    auto value = expr->eval_module();
+    return value;
 }

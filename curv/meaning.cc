@@ -16,15 +16,21 @@
 using namespace curv;
 
 Value
-curv::Constant::eval() const
+curv::Constant::eval(Frame&) const
 {
     return value_;
 }
 
 Value
-curv::Call_Expr::eval() const
+curv::Module_Ref::eval(Frame& f) const
 {
-    Value funv = curv::eval(*fun_);
+    return f.module_.fields_[atom_];
+}
+
+Value
+curv::Call_Expr::eval(Frame& f) const
+{
+    Value funv = curv::eval(*fun_, f);
     if (!funv.is_ref())
         throw Phrase_Error(*fun_->source_,
             stringify(funv,": not a function"));
@@ -41,7 +47,7 @@ curv::Call_Expr::eval() const
             throw Phrase_Error(*argsource_,
                 "wrong number of arguments");
         }
-        argv[0] = curv::eval(*args_[0]);
+        argv[0] = curv::eval(*args_[0], f);
         return fun->function_(argv);
     default:
         throw Phrase_Error(*source_,
@@ -50,9 +56,9 @@ curv::Call_Expr::eval() const
 }
 
 Value
-curv::Dot_Expr::eval() const
+curv::Dot_Expr::eval(Frame& f) const
 {
-    Value basev = curv::eval(*base_);
+    Value basev = curv::eval(*base_, f);
     if (!basev.is_ref())
         throw Phrase_Error(*base_->source_, "not a record or module");
     Ref_Value& basep( basev.get_ref_unsafe() );
@@ -81,12 +87,12 @@ curv::Dot_Expr::eval() const
 }
 
 Value
-curv::Prefix_Expr::eval() const
+curv::Prefix_Expr::eval(Frame& f) const
 {
     switch (op_) {
     case Token::k_minus:
         {
-            Value a = curv::eval(*arg_);
+            Value a = curv::eval(*arg_, f);
             Value r = Value(-a.get_num_or_nan());
             if (!r.is_num())
                 throw Phrase_Error(*source_,
@@ -95,7 +101,7 @@ curv::Prefix_Expr::eval() const
         }
     case Token::k_plus:
         {
-            Value a = curv::eval(*arg_);
+            Value a = curv::eval(*arg_, f);
             Value r = Value(+a.get_num_or_nan());
             if (!r.is_num())
                 throw Phrase_Error(*source_,
@@ -108,9 +114,9 @@ curv::Prefix_Expr::eval() const
 }
 
 Value
-curv::Not_Expr::eval() const
+curv::Not_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg_);
+    Value a = curv::eval(*arg_, f);
     if (!a.is_bool())
         throw Phrase_Error(*source_,
             stringify("!",a,": domain error"));
@@ -118,10 +124,10 @@ curv::Not_Expr::eval() const
 }
 
 Value
-curv::Infix_Expr::eval() const
+curv::Infix_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_);
-    Value b = curv::eval(*arg2_);
+    Value a = curv::eval(*arg1_, f);
+    Value b = curv::eval(*arg2_, f);
 
     switch (op_) {
     case Token::k_plus:
@@ -162,13 +168,13 @@ curv::Infix_Expr::eval() const
 }
 
 Value
-curv::Or_Expr::eval() const
+curv::Or_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_);
+    Value a = curv::eval(*arg1_, f);
     if (a == Value{true})
         return a;
     if (a == Value{false}) {
-        Value b = curv::eval(*arg2_);
+        Value b = curv::eval(*arg2_, f);
         if (b.is_bool())
             return b;
         throw Phrase_Error(*arg2_->source_, "not a boolean value");
@@ -176,13 +182,13 @@ curv::Or_Expr::eval() const
     throw Phrase_Error(*arg1_->source_, "not a boolean value");
 }
 Value
-curv::And_Expr::eval() const
+curv::And_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_);
+    Value a = curv::eval(*arg1_, f);
     if (a == Value{false})
         return a;
     if (a == Value{true}) {
-        Value b = curv::eval(*arg2_);
+        Value b = curv::eval(*arg2_, f);
         if (b.is_bool())
             return b;
         throw Phrase_Error(*arg2_->source_, "not a boolean value");
@@ -190,34 +196,34 @@ curv::And_Expr::eval() const
     throw Phrase_Error(*arg1_->source_, "not a boolean value");
 }
 Value
-curv::If_Expr::eval() const
+curv::If_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_);
+    Value a = curv::eval(*arg1_, f);
     if (a == Value{true})
-        return curv::eval(*arg2_);
+        return curv::eval(*arg2_, f);
     if (a == Value{false})
-        return curv::eval(*arg3_);
+        return curv::eval(*arg3_, f);
     throw Phrase_Error(*arg1_->source_, "not a boolean value");
 }
 Value
-curv::Equal_Expr::eval() const
+curv::Equal_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_);
-    Value b = curv::eval(*arg2_);
+    Value a = curv::eval(*arg1_, f);
+    Value b = curv::eval(*arg2_, f);
     return {a == b};
 }
 Value
-curv::Not_Equal_Expr::eval() const
+curv::Not_Equal_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_);
-    Value b = curv::eval(*arg2_);
+    Value a = curv::eval(*arg1_, f);
+    Value b = curv::eval(*arg2_, f);
     return {a != b};
 }
 Value
-curv::Less_Expr::eval() const
+curv::Less_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_);
-    Value b = curv::eval(*arg2_);
+    Value a = curv::eval(*arg1_, f);
+    Value b = curv::eval(*arg2_, f);
     // only 2 comparisons required to unbox two numbers and compare them, not 3
     if (a.get_num_or_nan() < b.get_num_or_nan())
         return {true};
@@ -227,10 +233,10 @@ curv::Less_Expr::eval() const
         stringify(a,"<",b,": domain error"));
 }
 Value
-curv::Greater_Expr::eval() const
+curv::Greater_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_);
-    Value b = curv::eval(*arg2_);
+    Value a = curv::eval(*arg1_, f);
+    Value b = curv::eval(*arg2_, f);
     // only 2 comparisons required to unbox two numbers and compare them, not 3
     if (a.get_num_or_nan() > b.get_num_or_nan())
         return {true};
@@ -240,10 +246,10 @@ curv::Greater_Expr::eval() const
         stringify(a,">",b,": domain error"));
 }
 Value
-curv::Less_Or_Equal_Expr::eval() const
+curv::Less_Or_Equal_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_);
-    Value b = curv::eval(*arg2_);
+    Value a = curv::eval(*arg1_, f);
+    Value b = curv::eval(*arg2_, f);
     // only 2 comparisons required to unbox two numbers and compare them, not 3
     if (a.get_num_or_nan() <= b.get_num_or_nan())
         return {true};
@@ -253,10 +259,10 @@ curv::Less_Or_Equal_Expr::eval() const
         stringify(a,"<=",b,": domain error"));
 }
 Value
-curv::Greater_Or_Equal_Expr::eval() const
+curv::Greater_Or_Equal_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_);
-    Value b = curv::eval(*arg2_);
+    Value a = curv::eval(*arg1_, f);
+    Value b = curv::eval(*arg2_, f);
     // only 2 comparisons required to unbox two numbers and compare them, not 3
     if (a.get_num_or_nan() >= b.get_num_or_nan())
         return {true};
@@ -266,55 +272,63 @@ curv::Greater_Or_Equal_Expr::eval() const
         stringify(a,">=",b,": domain error"));
 }
 Value
-curv::Power_Expr::eval() const
+curv::Power_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_);
-    Value b = curv::eval(*arg2_);
+    Value a = curv::eval(*arg1_, f);
+    Value b = curv::eval(*arg2_, f);
     Value r = Value(pow(a.get_num_or_nan(), b.get_num_or_nan()));
     if (r.is_num())
         return r;
     throw Phrase_Error(*source_, stringify(a,"^",b,": domain error"));
 }
 Value
-curv::At_Expr::eval() const
+curv::At_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_);
-    Value b = curv::eval(*arg2_);
+    Value a = curv::eval(*arg1_, f);
+    Value b = curv::eval(*arg2_, f);
     auto& list {arg_to_list(a, *arg1_->source_)};
     int i = arg_to_int(b, 0, (int)(list.size()-1), *arg2_->source_);
     return list[i];
 }
 
 Shared<List>
-curv::List_Expr_Base::eval_list() const
+curv::List_Expr_Base::eval_list(Frame& f) const
 {
     auto list = make_list(this->size());
     for (size_t i = 0; i < this->size(); ++i)
-        (*list)[i] = curv::eval(*(*this)[i]);
+        (*list)[i] = curv::eval(*(*this)[i], f);
     return list;
 }
 
 Value
-curv::List_Expr_Base::eval() const
+curv::List_Expr_Base::eval(Frame& f) const
 {
-    return {eval_list()};
+    return {eval_list(f)};
 }
 
 Value
-curv::Record_Expr::eval() const
+curv::Record_Expr::eval(Frame& f) const
 {
     auto record = aux::make_shared<Record>();
     for (auto i : fields_)
-        record->fields_[i.first] = curv::eval(*i.second);
+        record->fields_[i.first] = curv::eval(*i.second, f);
     return {record};
 }
 
 Value
-curv::Module_Expr::eval() const
+curv::Module_Expr::eval(Frame&) const
+{
+    auto module = eval_module();
+    return {module};
+}
+
+Shared<Module>
+curv::Module_Expr::eval_module() const
 {
     auto module = aux::make_shared<Module>();
+    Frame f(*module);
     for (auto i : fields_)
-        module->fields_[i.first] = curv::eval(*i.second);
-    module->elements_ = elements_->eval_list();
-    return {module};
+        module->fields_[i.first] = curv::eval(*i.second, f);
+    module->elements_ = elements_->eval_list(f);
+    return module;
 }

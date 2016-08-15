@@ -14,6 +14,7 @@
 namespace curv {
 
 class Meaning;
+class Module_Expr;
 class Environ;
 
 /// Base class for a node in a syntax tree created by the parser.
@@ -184,6 +185,7 @@ struct Module_Phrase : public Phrase
     }
 
     virtual Shared<Meaning> analyze(const Environ&) const;
+    Shared<Module_Expr> analyze_module(const Environ&) const;
 };
 
 /// a function call

@@ -14,7 +14,17 @@
 
 namespace curv {
 
-inline Value eval(const Expression& e) { return e.eval(); }
+/// a Frame is an evaluation context.
+/// TODO: Future design of Frame:
+/// * Value* nonlocal;
+/// * Value local[0]; // tail array
+struct Frame
+{
+    Module& module_;
+    Frame(Module& m) : module_(m) {}
+};
+
+inline Value eval(const Expression& e, Frame& f) { return e.eval(f); }
 
 Shared<Module> eval_script(const Script&, const Namespace& names);
 

@@ -1,6 +1,11 @@
-# CURV0 (expressions):
 * module element expressions are in the scope of module definitions.
   * fix tests/eval to support definitions + dependent expressions.
+* 'curv <filename>' evaluates a script file.
+* let expressions: 1 frame
+* lambda expressions: x->expr: stack of frames
+* better error messages
+
+# CURV0 (expressions):
 * bug: (-1)^-0.5 error message needs parens around '-1'
 * simplify this code (narrowing a Value):
   > auto value = eval(*expr);

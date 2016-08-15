@@ -38,7 +38,7 @@ Shared<Phrase> parse_primary(Scanner&,bool);
 //
 // script : | stmts | stmts ;
 // stmts : stmt | stmts ; stmt
-Shared<Phrase>
+Shared<Module_Phrase>
 parse_script(Scanner& scanner)
 {
     auto module = aux::make_shared<Module_Phrase>(scanner.script_);

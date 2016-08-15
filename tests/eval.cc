@@ -32,10 +32,12 @@ struct Evaluator
     {
         try {
             Shared<Module> module{eval_script(*script_, builtin_namespace)};
+          #if 0
             if (!module->fields_.empty()) {
                 failure_ = "definitions found; expecting only expressions";
                 return;
             }
+          #endif
             if (module->elements_->empty()) {
                 success_ = "";
                 return;
@@ -214,6 +216,7 @@ TEST(curv, eval)
     EVALS_TO("-2^2", "-4");
     EVALS_TO("[1,2,3]@1","2");
     EVAL_ERROR("[1,2,3]@1.1","not an integer");
+    EVALS_TO("x+y;x=1;y=2", "3");
 
     // lexical errors
     EVAL_ERROR("\\foo", "illegal character '\\'");

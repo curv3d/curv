@@ -19,15 +19,41 @@ curv::analyze_expr(Phrase& ph, const Environ& env)
 }
 
 Shared<Meaning>
+curv::Environ::lookup(const Identifier& id) const
+{
+    Atom a(id.location().range());
+    for (const Environ* e = this; e != nullptr; e = e->parent) {
+        auto m = e->single_lookup(id, a);
+        if (m != nullptr)
+            return m;
+    }
+    throw Phrase_Error(id, stringify(a,": not defined"));
+}
+
+Shared<Meaning>
+curv::Builtin_Environ::single_lookup(const Identifier& id, Atom a) const
+{
+    auto p = names.find(a);
+    if (p != names.end())
+        return aux::make_shared<Constant>(
+            Shared<const Phrase>(&id), p->second);
+    return nullptr;
+}
+
+Shared<Meaning>
+curv::Module_Environ::single_lookup(const Identifier& id, Atom a) const
+{
+    auto p = names.find(a);
+    if (p != names.end())
+        return aux::make_shared<Module_Ref>(
+            Shared<const Phrase>(&id), a);
+    return nullptr;
+}
+
+Shared<Meaning>
 curv::Identifier::analyze(const Environ& env) const
 {
-    Atom id(location().range());
-    auto p = env.names.find(id);
-    if (p != env.names.end())
-        return aux::make_shared<Constant>(
-            Shared<const Phrase>(this), p->second);
-    else
-        throw Phrase_Error(*this, stringify(id,": not defined"));
+    return env.lookup(*this);
 }
 
 Shared<Meaning>
@@ -211,21 +237,43 @@ analyze_definition(
 Shared<Meaning>
 curv::Module_Phrase::analyze(const Environ& env) const
 {
-    auto self = Shared<const Phrase>(this);
-    auto module = aux::make_shared<Module_Expr>(self);
-    std::vector<Shared<Expression>> elements;
+    return analyze_module(env);
+}
 
+Shared<Module_Expr>
+curv::Module_Phrase::analyze_module(const Environ& env) const
+{
+    // phase 1: Create a dictionary of field phrases, a list of element phrases
+    Atom_Map<Shared<Phrase>> fields;
+    std::vector<Shared<Phrase>> elements;
     for (auto st : stmts_) {
         const Definition* def =
             dynamic_cast<Definition*>(st.stmt_.get());
         if (def != nullptr) {
-            analyze_definition(*def, module->fields_, env);
+            auto id = dynamic_cast<const Identifier*>(def->left_.get());
+            if (id == nullptr)
+                throw Phrase_Error(*def->left_, "not an identifier");
+            Atom name = id->location().range();
+            if (fields.find(name) != fields.end())
+                throw Phrase_Error(*def->left_,
+                    stringify(name, ": multiply defined"));
+            fields[name] = def->right_;
         } else {
-            elements.push_back(curv::analyze_expr(*st.stmt_, env));
+            elements.push_back(st.stmt_);
         }
     }
 
-    module->elements_ = List_Expr::make_elements(std::move(elements), self);
+    // phase 2: Construct an environment from the field dictionary
+    // and use it to perform semantic analysis.
+    Module_Environ env2(&env, fields);
+    auto self = Shared<const Phrase>(this);
+    auto module = aux::make_shared<Module_Expr>(self);
+    for (auto f : fields)
+        module->fields_[f.first] = curv::analyze_expr(*f.second, env2);
+    auto xelements = List_Expr::make(elements.size(), self);
+    for (size_t i = 0; i < elements.size(); ++i)
+        (*xelements)[i] = curv::analyze_expr(*elements[i], env2);
+    module->elements_ = xelements;
     return module;
 }
 

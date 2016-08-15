@@ -11,8 +11,11 @@
 #include <curv/value.h>
 #include <curv/atom.h>
 #include <curv/list.h>
+#include <curv/module.h>
 
 namespace curv {
+
+class Frame; // evaluation context, defined in eval.h
 
 /// An abstract base class representing a semantically analyzed Phrase.
 struct Meaning : public aux::Shared_Base
@@ -60,7 +63,7 @@ struct Expression : public Meaning //Bindable
 //  virtual Shared<Meaning> analyze_call(Range<Shared<const Phrase>*>) const override;
 //  virtual Shared<Expression> to_expression() const override;
 
-    virtual Value eval() const = 0;
+    virtual Value eval(Frame&) const = 0;
 };
 
 /// A Constant is an Expression whose value is known at compile time.
@@ -72,7 +75,18 @@ struct Constant : public Expression
     : Expression(std::move(source)), value_(std::move(v))
     {}
 
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
+};
+
+struct Module_Ref : public Expression
+{
+    Atom atom_;
+
+    Module_Ref(Shared<const Phrase> source, Atom a)
+    : Expression(std::move(source)), atom_(a)
+    {}
+
+    virtual Value eval(Frame&) const override;
 };
 
 struct Dot_Expr : public Expression
@@ -87,7 +101,7 @@ struct Dot_Expr : public Expression
         id_(std::move(id))
     {}
 
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 
 struct Call_Expr : public Expression
@@ -108,7 +122,7 @@ struct Call_Expr : public Expression
         args_(std::move(args))
     {}
 
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 
 struct Prefix_Expr : public Expression
@@ -126,7 +140,7 @@ struct Prefix_Expr : public Expression
         arg_(std::move(arg))
     {}
 
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 struct Prefix_Expr_Base : public Expression
 {
@@ -143,7 +157,7 @@ struct Prefix_Expr_Base : public Expression
 struct Not_Expr : public Prefix_Expr_Base
 {
     using Prefix_Expr_Base::Prefix_Expr_Base;
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 
 struct Infix_Expr : public Expression
@@ -164,7 +178,7 @@ struct Infix_Expr : public Expression
         arg2_(std::move(arg2))
     {}
 
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 struct Infix_Expr_Base : public Expression
 {
@@ -184,52 +198,52 @@ struct Infix_Expr_Base : public Expression
 struct Or_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 struct And_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 struct Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 struct Not_Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 struct Less_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 struct Greater_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 struct Less_Or_Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 struct Greater_Or_Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 struct Power_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 struct At_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 
 struct List_Expr_Base : public Expression,
@@ -238,8 +252,8 @@ struct List_Expr_Base : public Expression,
     List_Expr_Base(Shared<const Phrase> source)
     : Expression(std::move(source)) {}
 
-    virtual Value eval() const override;
-    Shared<List> eval_list() const;
+    virtual Value eval(Frame&) const override;
+    Shared<List> eval_list(Frame&) const;
 };
 using List_Expr = aux::Tail_Array<List_Expr_Base>;
 
@@ -249,7 +263,7 @@ struct Record_Expr : public Expression
 
     Record_Expr(Shared<const Phrase> source) : Expression(source) {}
 
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 
 struct Module_Expr : public Expression
@@ -259,7 +273,8 @@ struct Module_Expr : public Expression
 
     Module_Expr(Shared<const Phrase> source) : Expression(source) {}
 
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
+    Shared<Module> eval_module() const;
 };
 
 struct If_Expr : public Expression
@@ -280,7 +295,7 @@ struct If_Expr : public Expression
         arg3_(std::move(arg3))
     {}
 
-    virtual Value eval() const override;
+    virtual Value eval(Frame&) const override;
 };
 
 } // namespace curv

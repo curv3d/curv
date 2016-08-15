@@ -1,5 +1,119 @@
 # Implementation of Functions and Modules
 
+## Script Module (without functions or let)
+A script module is the only kind of environment. Definitions may refer to each
+other, order doesn't matter, there are edge cases where recursion makes sense.
+Temporary implementation:
+* initialize all binding values to Missing (a special marker value).
+* Evaluate definientia expressions one at a time. If they reference a
+  Missing value, then:
+  * set the slot to Pending
+  * evaluate the expression
+  * store the result in the slot
+* If a definiens slot contains Pending when you evaluate it, then report
+  an "illegal recursive reference". Eg, you'll get that for the second `x`
+  in `x=x+1`.
+
+Analyzer:
+* the Environment contains the builtin namespace and the module namespace
+* An Identifier is looked up in the environment. The result is a `Module_Ref`
+  (containing an Atom) or a Constant (in the case of a builtin).
+
+Evaluator:
+* The eval() virtual function now takes a Frame argument.
+  The frame points to the partially initialized script module value.
+* `Module_Ref::eval(frame)` works as specified above.
+
+## Environments and Bindings
+Kinds of environments:
+* function parameter list
+* let bindings
+* module bindings (script module and submodule)
+* the builtin environment
+
+Kinds of bindings and references:
+* static -- References are Constant nodes in the code tree.
+  True for some let and module bindings, all builtin bindings.
+* non-static, non-recursive --
+  A references is an index into a run-time slot array, yielding a Value.
+  True for all function parameters.
+* non-static, recursive --
+  We can't just use a slot index, where the slot contains a Value, because
+  of reference counting and cyclic references. Instead, the Value is
+  represented by an RFunction or RThunk, which must be combined at reference
+  time with a pointer to a refcounted environment object (containing a
+  slot array associated with a let or module scope).
+  * In some cases, the RFunction/RThunk is known at compile time when the
+    reference is compiled. That will be true for: let bindings; and
+    non-parameter module bindings where the module binding is referenced
+    directly and not using the dot operator. So the reference node contains
+    the RFunction/RThunk pointer. The environment object is loaded dynamically.
+    In the case of a module, the slot array stills need to contain
+    the RFunction/RThunk pointer, due to the dot operator.
+  * In other cases, the RFunction/RThunk pointer is loaded from a slot and
+    discovered at run time.
+
+## References at Runtime
+The VM has a current call frame, which contains:
+* a tail array of slots, for local references, containing:
+  * an argument vector
+  * stack of let-binding slot arrays
+  * other temporaries, as needed
+* `Value* nonlocal`, a slot array for accessing nonlocal values
+  * in a script module scope, these are the module slots.
+  * when calling a closure, these are the nonlocals in the closure
+  * when calling an RFunction/RThunk, these are the slots in the env argument
+* debug metadata:
+  * function value
+  * pointer to previous call frame
+  * optional RFunction/RThunk environment pointer?
+  * maybe, access to argument locations, to store in bad argument exceptions
+
+To call a Curv function: allocate a call frame for the function (size of frame
+is in the function value), store arg values and metadata, call function code.
+
+In the Meaning tree interpreter, the `Meaning::eval` virtual function is passed
+the current call frame as an argument. All expressions are evaluated in the
+context of a call frame, that's required by the `let` implementation.
+
+Bindings that are local to a call frame are accessed via call frame slots.
+Non-local bindings are accessed via the function value (a closure), or if
+an RFunction/RThunk is called, then via the environment argument.
+
+The debugger needs a way to inspect the lexical environment when the program
+is paused in an arbitrary Meaning phrase. We need the ability to find a
+symbol table for the lexical environment at a given meaning, and the ability to
+look up run time binding values. It's too much to worry about right now.
+* Due to nested `let` expressions, there are different local lexical
+  environments for different Meanings within the same call frame.
+  A brute force way to get symbols: When the debugger is first invoked,
+  traverse the meaning tree and build a map from meaning pointers to symbol
+  tables. Or, store an Environ pointer in each Meaning during analysis.
+
+Within a function body, reference node types:
+* function parameter: slot index in call frame
+* local let binding:
+  * static: a Constant node
+  * non-static non-recursive: slot index in call frame
+  * non-static recursive
+    * RThunk: RThunk in reference node, call the RThunk with current call
+      frame as environment argument.
+    * call to RFunction: call the RFunction with current call frame as
+      environment argument, plus arguments.
+    * non-call RFunction reference: create closure value from RFunction ptr
+      and environment.
+* local submodule field reference:
+  * Probably, a submodule expression just uses the surrounding call frame
+    for let bindings, rather than creating a new frame. So then, we construct
+    an uninitialized submodule object and put it into a call frame slot M while
+    it is being initialized. During initialization, field references indirect
+    through slot M. Afterwards, the submodule may contain thunks and functions
+    which get their own call frame when evaluated.
+* non-local binding:
+
+Outside a function body, reference node types:
+
+## Code Representation
 The fastest path to the Minimum Viable Product now appears to be
 a Meaning tree interpreter, using the runtime data structures
 I designed for the bytecode interpreter. A faster evaluator is deferred
@@ -139,6 +253,24 @@ Top-level modules (script modules) are the unit of separate compilation.
     on its internals.
 * Eventually, we can use LLVM to compile script files to optimized shared
   object or DLL files.
+* BUT: what are the semantics of `use file M1; use file M2; ...`?
+  If there are no duplicate definitions between M1, M2 and ..., then it's
+  obvious. But what if a change to script module M1 or M2 creates
+  a new definition and makes existing code ambiguous?
+  * Under my current design, `use` is evaluated during analysis, and that means
+    script module changes *can* force reanalysis of dependent modules.
+  * Or, `use` is evaluated at run time. (But, when is that? Any module member
+    that depends on a binding B imported via `use` has an RThunk which searches
+    for B in all of the `use`d modules.)
+  * With these run-time semantics, we might want to change `use` to force
+    a more efficient implementation: `use(id1,id2,...)module`.
+    * Now, analysis can accurately determine a binding's definition at
+      analysis time, and we don't have to search all the used modules on
+      each reference to a builtin. We still need to thunk any definiens
+      that references an external module binding, though.
+    * The implementation of `use` is much simpler with this interface.
+      No "Russell's paradox" and no need to implement analysis-time
+      evaluation.
 
 Top-level modules are the unit of memory management for compiled code.
 You can't keep one function or submodule within a compiled module alive,
