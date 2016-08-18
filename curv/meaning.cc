@@ -11,9 +11,22 @@
 #include <curv/list.h>
 #include <curv/record.h>
 #include <curv/module.h>
+#include <curv/thunk.h>
 #include <cmath>
 
 using namespace curv;
+
+// special marker values used by module evaluator
+struct Not_A_Value : public Ref_Value
+{
+    Not_A_Value() : Ref_Value(ty_not_a_value) {}
+    void print(std::ostream& out) const override
+    {
+        out << "<not-a-value>";
+    }
+};
+//Value missing {aux::make_shared<Not_A_Value>()};
+Value pending {aux::make_shared<Not_A_Value>()};
 
 Value
 curv::Constant::eval(Frame&) const
@@ -24,7 +37,38 @@ curv::Constant::eval(Frame&) const
 Value
 curv::Module_Ref::eval(Frame& f) const
 {
-    return f.module_.fields_[atom_];
+    // Modules are lazily evaluated. From here, I need access to both the module
+    // field Value (if computed), and the original field Expression (otherwise).
+    // Implementation options:
+    // 1. Initialize f.module_.fields with the Expression values, which are
+    //    effectively lazy evaluation thunks. Replace with Values on demand.
+    // 2. Instead of making Expression a subclass of Ref_Value, introduce
+    //    a Lazy_Thunk value class. It's a variation of Function. It contains
+    //    the # of local frame slots needed to evaluate `let` exprs in the
+    //    definiens, plus the Expression.
+    // 3. Store a reference to the Expression in Module_Ref.
+    // 4. Store a reference to the Module_Expr in Frame.
+    // Choice: #2.
+    Value val = f.module_.fields_[atom_];
+    if (val.is_ref()) {
+        auto& ref {val.get_ref_unsafe()};
+        switch (ref.type_) {
+        case Ref_Value::ty_thunk:
+          {
+            Thunk* thunk {(Thunk*)(&ref)};
+            f.module_.fields_[atom_] = pending;
+            val = thunk->expr_->eval(f);
+            f.module_.fields_[atom_] = val;
+            return val;
+          }
+        case Ref_Value::ty_not_a_value:
+            throw Phrase_Error(*source_, "illegal recursive reference");
+        default:
+            return val;
+        }
+    } else {
+        return val;
+    }
 }
 
 Value
@@ -328,7 +372,7 @@ curv::Module_Expr::eval_module() const
     auto module = aux::make_shared<Module>();
     Frame f(*module);
     for (auto i : fields_)
-        module->fields_[i.first] = curv::eval(*i.second, f);
+        module->fields_[i.first] = {aux::make_shared<Thunk>(i.second)};
     module->elements_ = elements_->eval_list(f);
     return module;
 }

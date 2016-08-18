@@ -217,6 +217,8 @@ TEST(curv, eval)
     EVALS_TO("[1,2,3]@1","2");
     EVAL_ERROR("[1,2,3]@1.1","not an integer");
     EVALS_TO("x+y;x=1;y=2", "3");
+    EVALS_TO("a=c+1;b=1;c=b+1;a", "3");
+    EVAL_ERROR("x=x;x", "illegal recursive reference");
 
     // lexical errors
     EVAL_ERROR("\\foo", "illegal character '\\'");
