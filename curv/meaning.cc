@@ -16,18 +16,6 @@
 
 using namespace curv;
 
-// special marker values used by module evaluator
-struct Not_A_Value : public Ref_Value
-{
-    Not_A_Value() : Ref_Value(ty_not_a_value) {}
-    void print(std::ostream& out) const override
-    {
-        out << "<not-a-value>";
-    }
-};
-//Value missing {aux::make_shared<Not_A_Value>()};
-Value pending {aux::make_shared<Not_A_Value>()};
-
 Value
 curv::Constant::eval(Frame&) const
 {
@@ -49,26 +37,19 @@ curv::Module_Ref::eval(Frame& f) const
     // 3. Store a reference to the Expression in Module_Ref.
     // 4. Store a reference to the Module_Expr in Frame.
     // Choice: #2.
-    Value val = f.module_.fields_[atom_];
-    if (val.is_ref()) {
-        auto& ref {val.get_ref_unsafe()};
-        switch (ref.type_) {
-        case Ref_Value::ty_thunk:
-          {
-            Thunk* thunk {(Thunk*)(&ref)};
-            f.module_.fields_[atom_] = pending;
-            val = thunk->expr_->eval(f);
-            f.module_.fields_[atom_] = val;
-            return val;
-          }
-        case Ref_Value::ty_not_a_value:
-            throw Phrase_Error(*source_, "illegal recursive reference");
-        default:
-            return val;
-        }
-    } else {
-        return val;
-    }
+
+    return force_ref(f.module_.fields_[atom_], *source_, f);
+}
+
+Value
+curv::Let_Ref::eval(Frame& f) const
+{
+    // Let bindings are represented as slots in the frame, and are lazily
+    // evaluated. The slots are initialized with thunks. On first reference,
+    // the thunk is evaluated and the slot is updated with the resulting value.
+    // Recursion is detected and causes an error.
+
+    return force_ref(f[slot_], *source_, f);
 }
 
 Value
@@ -76,12 +57,10 @@ curv::Call_Expr::eval(Frame& f) const
 {
     Value funv = curv::eval(*fun_, f);
     if (!funv.is_ref())
-        throw Phrase_Error(*fun_->source_,
-            stringify(funv,": not a function"));
+        throw Phrase_Error(*fun_->source_, stringify(funv,": not a function"));
     Ref_Value& funp( funv.get_ref_unsafe() );
     if (funp.type_ != Ref_Value::ty_function)
-        throw Phrase_Error(*fun_->source_,
-            stringify(funv,": not a function"));
+        throw Phrase_Error(*fun_->source_, stringify(funv,": not a function"));
     Function* fun = (Function*)&funp;
 
     Value argv[1];
@@ -370,9 +349,20 @@ Shared<Module>
 curv::Module_Expr::eval_module() const
 {
     auto module = aux::make_shared<Module>();
-    Frame f(*module);
+    std::unique_ptr<Frame> f { Frame::make(frame_nslots_, *module) };
     for (auto i : fields_)
         module->fields_[i.first] = {aux::make_shared<Thunk>(i.second)};
-    module->elements_ = elements_->eval_list(f);
+    for (auto i : fields_)
+        force(module->fields_[i.first], *f);
+    module->elements_ = elements_->eval_list(*f);
     return module;
+}
+
+Value
+curv::Let_Expr::eval(Frame& f) const
+{
+    Value* slots = &f[first_slot_];
+    for (size_t i = 0; i < values_.size(); ++i)
+        slots[i] = values_[i];
+    return curv::eval(*body_, f);
 }

@@ -32,7 +32,7 @@ struct Phrase : public aux::Shared_Base
 {
     virtual ~Phrase() {}
     virtual Location location() const = 0;
-    virtual Shared<Meaning> analyze(const Environ&) const = 0;
+    virtual Shared<Meaning> analyze(Environ&) const = 0;
 };
 
 /// Abstract implementation base class for Phrase classes
@@ -47,17 +47,17 @@ struct Identifier final : public Token_Phrase
 {
     using Token_Phrase::Token_Phrase;
     Atom make_atom() const { return {loc_.range()}; }
-    virtual Shared<Meaning> analyze(const Environ&) const;
+    virtual Shared<Meaning> analyze(Environ&) const;
 };
 struct Numeral final : public Token_Phrase
 {
     using Token_Phrase::Token_Phrase;
-    virtual Shared<Meaning> analyze(const Environ&) const;
+    virtual Shared<Meaning> analyze(Environ&) const;
 };
 struct String_Phrase final : public Token_Phrase
 {
     using Token_Phrase::Token_Phrase;
-    virtual Shared<Meaning> analyze(const Environ&) const;
+    virtual Shared<Meaning> analyze(Environ&) const;
 };
 
 struct Unary_Phrase : public Phrase
@@ -71,7 +71,7 @@ struct Unary_Phrase : public Phrase
     {
         return arg_->location().starting_at(op_);
     }
-    virtual Shared<Meaning> analyze(const Environ&) const;
+    virtual Shared<Meaning> analyze(Environ&) const;
 };
 
 struct Binary_Phrase : public Phrase
@@ -92,7 +92,7 @@ struct Binary_Phrase : public Phrase
     {
         return left_->location().ending_at(right_->location().token());
     }
-    virtual Shared<Meaning> analyze(const Environ&) const;
+    virtual Shared<Meaning> analyze(Environ&) const;
 };
 
 struct Definition : public Phrase
@@ -111,7 +111,7 @@ struct Definition : public Phrase
     {
         return left_->location().ending_at(right_->location().token());
     }
-    virtual Shared<Meaning> analyze(const Environ&) const;
+    virtual Shared<Meaning> analyze(Environ&) const;
 };
 
 /// common implementation for `(a,b,c)` and `[a,b,c]` phrases.
@@ -144,19 +144,19 @@ struct Delimited_Phrase : public Phrase
 struct Paren_Phrase : public Delimited_Phrase
 {
     using Delimited_Phrase::Delimited_Phrase;
-    virtual Shared<Meaning> analyze(const Environ&) const;
+    virtual Shared<Meaning> analyze(Environ&) const;
 };
 
 struct List_Phrase : public Delimited_Phrase
 {
     using Delimited_Phrase::Delimited_Phrase;
-    virtual Shared<Meaning> analyze(const Environ&) const;
+    virtual Shared<Meaning> analyze(Environ&) const;
 };
 
 struct Record_Phrase : public Delimited_Phrase
 {
     using Delimited_Phrase::Delimited_Phrase;
-    virtual Shared<Meaning> analyze(const Environ&) const;
+    virtual Shared<Meaning> analyze(Environ&) const;
 };
 
 struct Module_Phrase : public Phrase
@@ -184,8 +184,8 @@ struct Module_Phrase : public Phrase
             return stmts_[0].stmt_->location().ending_at(end_);
     }
 
-    virtual Shared<Meaning> analyze(const Environ&) const;
-    Shared<Module_Expr> analyze_module(const Environ&) const;
+    virtual Shared<Meaning> analyze(Environ&) const;
+    Shared<Module_Expr> analyze_module(Environ&) const;
 };
 
 /// a function call
@@ -206,7 +206,7 @@ struct Call_Phrase : public Phrase
     {
         return function_->location().ending_at(args_->location().token());
     }
-    virtual Shared<Meaning> analyze(const Environ&) const;
+    virtual Shared<Meaning> analyze(Environ&) const;
 };
 
 struct Dot_Phrase : public Phrase
@@ -229,7 +229,7 @@ struct Dot_Phrase : public Phrase
     {
         return left_->location().ending_at(id_->location().token());
     }
-    virtual Shared<Meaning> analyze(const Environ&) const;
+    virtual Shared<Meaning> analyze(Environ&) const;
 };
 
 struct If_Phrase : public Phrase
@@ -260,7 +260,30 @@ struct If_Phrase : public Phrase
             .starting_at(if_)
             .ending_at(else_expr_->location().token());
     }
-    virtual Shared<Meaning> analyze(const Environ&) const;
+    virtual Shared<Meaning> analyze(Environ&) const;
+};
+
+struct Let_Phrase : public Phrase
+{
+    Token let_;
+    Shared<Paren_Phrase> bindings_;
+    Shared<Phrase> body_;
+
+    Let_Phrase(
+        Token let,
+        Shared<Paren_Phrase> bindings,
+        Shared<Phrase> body)
+    :
+        let_(let),
+        bindings_(bindings),
+        body_(body)
+    {}
+
+    virtual Location location() const
+    {
+        return body_->location().starting_at(let_);
+    }
+    virtual Shared<Meaning> analyze(Environ&) const;
 };
 
 } // namespace curv

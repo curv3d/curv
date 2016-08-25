@@ -5,6 +5,7 @@
 #ifndef CURV_MEANING_H
 #define CURV_MEANING_H
 
+#include <vector>
 #include <aux/tail_array.h>
 #include <curv/shared.h>
 #include <curv/phrase.h>
@@ -12,10 +13,9 @@
 #include <curv/atom.h>
 #include <curv/list.h>
 #include <curv/module.h>
+#include <curv/frame.h>
 
 namespace curv {
-
-class Frame; // evaluation context, defined in eval.h
 
 /// An abstract base class representing a semantically analyzed Phrase.
 struct Meaning : public aux::Shared_Base
@@ -84,6 +84,17 @@ struct Module_Ref : public Expression
 
     Module_Ref(Shared<const Phrase> source, Atom a)
     : Expression(std::move(source)), atom_(a)
+    {}
+
+    virtual Value eval(Frame&) const override;
+};
+
+struct Let_Ref : public Expression
+{
+    int slot_;
+
+    Let_Ref(Shared<const Phrase> source, int slot)
+    : Expression(std::move(source)), slot_(slot)
     {}
 
     virtual Value eval(Frame&) const override;
@@ -270,11 +281,33 @@ struct Module_Expr : public Expression
 {
     Atom_Map<Shared<const Expression>> fields_;
     Shared<const List_Expr> elements_;
+    size_t frame_nslots_;
 
     Module_Expr(Shared<const Phrase> source) : Expression(source) {}
 
     virtual Value eval(Frame&) const override;
     Shared<Module> eval_module() const;
+};
+
+struct Let_Expr : public Expression
+{
+    size_t first_slot_;
+    std::vector<Value> values_; // or, a Tail_Array
+    Shared<const Expression> body_;
+
+    Let_Expr(
+        Shared<const Phrase> source,
+        size_t first_slot,
+        std::vector<Value> values,
+        Shared<const Expression> body)
+    :
+        Expression(std::move(source)),
+        first_slot_(first_slot),
+        values_(std::move(values)),
+        body_(std::move(body))
+    {}
+
+    virtual Value eval(Frame&) const override;
 };
 
 struct If_Expr : public Expression

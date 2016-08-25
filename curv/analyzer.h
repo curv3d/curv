@@ -12,10 +12,13 @@ namespace curv {
 
 struct Environ
 {
-protected:
-    const Environ* parent;
-public:
-    Environ(const Environ* p = nullptr) : parent(p) {}
+    Environ* parent;
+    size_t frame_nslots;
+    size_t frame_maxslots;
+
+    Environ(Environ* p = nullptr)
+    : parent(p), frame_nslots(0), frame_maxslots(0)
+    { }
     Shared<Meaning> lookup(const Identifier& id) const;
     virtual Shared<Meaning> single_lookup(const Identifier&, Atom) const = 0;
 };
@@ -25,7 +28,7 @@ struct Builtin_Environ : public Environ
 protected:
     const Namespace& names;
 public:
-    Builtin_Environ(const Namespace& n, const Environ* p = nullptr)
+    Builtin_Environ(const Namespace& n, Environ* p = nullptr)
     : Environ(p), names(n)
     {}
     virtual Shared<Meaning> single_lookup(const Identifier&, Atom) const;
@@ -37,7 +40,7 @@ protected:
     const Atom_Map<Shared<Phrase>>& names;
 public:
     Module_Environ(
-        const Environ* p,
+        Environ* p,
         const Atom_Map<Shared<Phrase>>& n)
     : Environ(p), names(n)
     {}
@@ -45,12 +48,12 @@ public:
 };
 
 inline Shared<Meaning>
-analyze(Phrase& ph, const Environ& env)
+analyze(Phrase& ph, Environ& env)
 {
     return ph.analyze(env);
 }
 
-Shared<Expression> analyze_expr(Phrase& ph, const Environ& env);
+Shared<Expression> analyze_expr(Phrase& ph, Environ& env);
 
 } // namespace
 #endif // header guard

@@ -1,9 +1,7 @@
-* module element expressions are in the scope of module definitions.
-  * fix tests/eval to support definitions + dependent expressions.
-* 'curv <filename>' evaluates a script file.
-* let expressions: 1 frame
 * lambda expressions: x->expr: stack of frames
+* 'curv <filename>' evaluates a script file.
 * better error messages
+* interactive curv: special variable `_` is last value. _1,_2, or $1,$2 ...
 
 # CURV0 (expressions):
 * bug: (-1)^-0.5 error message needs parens around '-1'

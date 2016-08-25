@@ -12,8 +12,13 @@
 
 namespace curv {
 
-/// A boxed static function.
-struct Module : public Ref_Value
+/// A module value contains a set of fields and a list of elements.
+///
+/// TODO: Are module expressions strictly or lazily evaluated?
+/// I've wanted lazy evaluation as a performance optimization, especially for
+/// large libraries where most components aren't used. However, for now,
+/// strict evaluation is simpler.
+struct Module : public Ref_Value 
 {
     Atom_Map<Value> fields_;
     Shared<List> elements_;

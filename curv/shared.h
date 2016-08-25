@@ -13,5 +13,12 @@ namespace curv {
 // template<typename T> using Shared = aux::Shared<T>;
 using aux::Shared;
 
+template<class T, class U>
+inline Shared<T>
+dynamic_shared_cast(Shared<U> p)
+{
+    return Shared<T>(dynamic_cast<T*>(p.get()));
+}
+
 } // namespace curv
 #endif // header guard

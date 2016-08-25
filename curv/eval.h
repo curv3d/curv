@@ -5,7 +5,7 @@
 #ifndef CURV_EVAL_H
 #define CURV_EVAL_H
 
-#include <curv/value.h>
+#include <curv/frame.h>
 #include <curv/meaning.h>
 #include <curv/shared.h>
 #include <curv/module.h>
@@ -13,16 +13,6 @@
 #include <curv/builtin.h>
 
 namespace curv {
-
-/// a Frame is an evaluation context.
-/// TODO: Future design of Frame:
-/// * Value* nonlocal;
-/// * Value local[0]; // tail array
-struct Frame
-{
-    Module& module_;
-    Frame(Module& m) : module_(m) {}
-};
 
 inline Value eval(const Expression& e, Frame& f) { return e.eval(f); }
 

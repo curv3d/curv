@@ -97,7 +97,7 @@ class Tail_Array final : public Base
 public:
     /// Allocate an instance. Array elements are default constructed.
     template<typename... Rest>
-    static Tail_Array* make(size_t size, Rest... rest)
+    static Tail_Array* make(size_t size, Rest&&... rest)
     {
         // allocate the object
         void* mem = malloc(sizeof(Tail_Array) + size*sizeof(_value_type));
@@ -118,7 +118,7 @@ public:
 
         // then construct the rest of the object
         try {
-            new(mem) Tail_Array(rest...);
+            new(mem) Tail_Array(std::forward<Rest>(rest)...);
             r->Base::size_ = size;
         } catch(...) {
             r->destroy_array(size);

@@ -271,6 +271,15 @@ parse_primary(Scanner& scanner, bool force)
         return aux::make_shared<If_Phrase>(
             tok, condition, then_expr, tok2, else_expr);
       }
+    case Token::k_let:
+      {
+        auto p = parse_primary(scanner, true);
+        auto args = dynamic_shared_cast<Paren_Phrase>(p);
+        if (args == nullptr)
+            throw Phrase_Error(*p, "not a parenthesized expression");
+        auto expr = parse_expr(scanner);
+        return aux::make_shared<Let_Phrase>(tok, args, expr);
+      }
     case Token::k_lparen:
     case Token::k_lbracket:
     case Token::k_lbrace:

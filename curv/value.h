@@ -38,7 +38,7 @@ struct Ref_Value : public aux::Shared_Base
         ty_function,
         ty_record,
         ty_module,
-        ty_not_a_value,
+        ty_missing,
         ty_thunk
     };
     Ref_Value(int type) : aux::Shared_Base(), type_(type) {}
