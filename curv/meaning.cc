@@ -87,7 +87,7 @@ curv::Call_Expr::eval(Frame& f) const
       {
         // currently, lambdas accept exactly 1 argument
         Lambda* fun = (Lambda*)&funp;
-        if (args_.size() != 1) {
+        if (args_.size() != fun->nargs_) {
             throw Phrase_Error(*argsource_,
                 "wrong number of arguments");
         }

@@ -32,12 +32,14 @@ struct Function : public Ref_Value
 struct Lambda : public Ref_Value
 {
     Shared<const Expression> expr_;
+    size_t nargs_;
     size_t nslots_; // size of call frame
 
-    Lambda(Shared<const Expression> expr, size_t nslots)
+    Lambda(Shared<const Expression> expr, size_t nargs, size_t nslots)
     :
         Ref_Value(ty_lambda),
         expr_(expr),
+        nargs_(nargs),
         nslots_(nslots)
     {}
 

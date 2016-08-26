@@ -133,7 +133,7 @@ analyze_lambda(const Phrase& source, const Phrase& left, const Phrase& right)
 
     return aux::make_shared<Constant>(
         Shared<const Phrase>(&source),
-        Value{aux::make_shared<Lambda>(expr, env2.frame_maxslots)});
+        Value{aux::make_shared<Lambda>(expr, 1, env2.frame_maxslots)});
 }
 
 Shared<Meaning>
