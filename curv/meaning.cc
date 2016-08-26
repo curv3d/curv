@@ -85,8 +85,12 @@ curv::Call_Expr::eval(Frame& f) const
       }
     case Ref_Value::ty_lambda:
       {
-        // currently, there is exactly 1 argument
+        // currently, lambdas accept exactly 1 argument
         Lambda* fun = (Lambda*)&funp;
+        if (args_.size() != 1) {
+            throw Phrase_Error(*argsource_,
+                "wrong number of arguments");
+        }
         std::unique_ptr<Frame> f2 { Frame::make(fun->nslots_, f.module_) };
         (*f2)[0] = curv::eval(*args_[0], f);
         return fun->expr_->eval(*f2);

@@ -222,6 +222,7 @@ TEST(curv, eval)
     EVALS_TO("x=1;let(y=2)let(z=3)x+y+z", "6");
     EVAL_ERROR("let(x=x)x", "illegal recursive reference");
     EVALS_TO("f=x->let(a=x+1)a; f 2", "3");
+    EVAL_ERROR("f=x->x; f()", "wrong number of arguments");
 
     // lexical errors
     EVAL_ERROR("\\foo", "illegal character '\\'");
