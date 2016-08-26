@@ -58,6 +58,7 @@ struct Token
         k_comma,
         k_semicolon,
         k_at,               ///! `@` operator
+        k_right_arrow,      ///! `->` operator
         k_power,            ///! `^` operator
         k_plus,
         k_minus,

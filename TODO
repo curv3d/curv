@@ -1,5 +1,27 @@
 * lambda expressions: x->expr: stack of frames
+  * lambda syntax: a->expr, (a,b)->expr, [a,b]->expr, {a,b}->expr
+    * Currying: (a)(b)(c)->expr, like a->b->c->expr.
+      This abbreviation hardly seems worthwhile, only shows value in
+      the context `f(a)(b)=...` definition which is patterned after ML.
+    * Chains: `f x->x+1` parses as `f(x->x+1)`.
+      Not a high priority, as infix operators generally don't work in chains.
+    * For now, the left arg of `->` is a primary, anything else is an error.
+      `->` has a low precedence.
+      `a b->...` is an error (no currying or chaining).
+    * `x->expr`  Special case when there is exactly one argument,
+      doesn't work with the Currying abbreviation.
+    * Maybe `f(x,y)children=...` is legal; naked identifier legal as final
+      curried argument; this abbreviates `f=(x,y)children->...`.
+  * syntax: is lambda a chain or an expr?
+    * how is this parsed: `a b->expr` ?
+      * As `(a b)->expr`, like `a->b->expr`? Expr interpretation.
+        Doesn't generalize to `a b c->expr`. Not good. The dual,
+        `f a b=expr`, doesn't work.
+      * As `a(b->expr)`? Chain interpretation. Consistent with the general
+        chain syntax.
+      * An error.
 * 'curv <filename>' evaluates a script file.
+* comments
 * better error messages
 * interactive curv: special variable `_` is last value. _1,_2, or $1,$2 ...
 
@@ -14,7 +36,7 @@
 * x^y: right associative, -x^y==-(x^y), x^-y==x^(-y)
   **: algolw, Python, Rexx, Simula, Cobol, Ruby, Tcl
   ^^: D
-  ^: Eiffel, Icon, Mathematica, Matlab, Basic, Awk, Bc, Lua, Julia, R
+  ^: Eiffel, Icon, Mathematica, Maple, Matlab, Basic, Awk, Bc, Lua, Julia, R
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
   numeral while building a buffer for strtod.

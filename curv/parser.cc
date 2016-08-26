@@ -62,17 +62,24 @@ parse_script(Scanner& scanner)
     return module;
 }
 
-// stmt : definition | relation
-// definition : id = relation
+// Low precedence right associative infix operators:
+//
+// expr : disjunction | definition | lambda
+// definition : id = expr
+// lambda : primary -> expr
 Shared<Phrase>
 parse_expr(Scanner& scanner)
 {
     auto left = parse_disjunction(scanner);
     auto tok = scanner.get_token();
-    if (tok.kind == Token::k_equate) {
-        auto right = parse_relation(scanner);
-        return aux::make_shared<Definition>(left, tok, right);
-    } else {
+    switch (tok.kind) {
+    case Token::k_equate:
+        return aux::make_shared<Definition>(
+            std::move(left), tok, parse_expr(scanner));
+    case Token::k_right_arrow:
+        return aux::make_shared<Binary_Phrase>(
+            std::move(left), tok, parse_expr(scanner));
+    default:
         scanner.push_token(tok);
         return left;
     }
@@ -116,7 +123,10 @@ parse_conjunction(Scanner& scanner)
     }
 }
 
-// relation : sum | sum == sum
+// relation : sum
+//  | sum == sum | sum != sum
+//  | sum < sum | sum > sum
+//  | sum <= sum | sum >= sum
 Shared<Phrase>
 parse_relation(Scanner& scanner)
 {
@@ -201,6 +211,7 @@ parse_unary(Scanner& scanner)
 //  : primary
 //  | postfix primary{not-identifier}
 //  | postfix . identifier
+//  | postfix @ primary
 Shared<Phrase>
 parse_chain(Scanner& scanner)
 {

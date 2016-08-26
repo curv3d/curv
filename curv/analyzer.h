@@ -48,12 +48,12 @@ public:
 };
 
 inline Shared<Meaning>
-analyze(Phrase& ph, Environ& env)
+analyze(const Phrase& ph, Environ& env)
 {
     return ph.analyze(env);
 }
 
-Shared<Expression> analyze_expr(Phrase& ph, Environ& env);
+Shared<Expression> analyze_expr(const Phrase& ph, Environ& env);
 
 } // namespace
 #endif // header guard

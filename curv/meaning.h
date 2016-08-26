@@ -100,6 +100,17 @@ struct Let_Ref : public Expression
     virtual Value eval(Frame&) const override;
 };
 
+struct Arg_Ref : public Expression
+{
+    int slot_;
+
+    Arg_Ref(Shared<const Phrase> source, int slot)
+    : Expression(std::move(source)), slot_(slot)
+    {}
+
+    virtual Value eval(Frame&) const override;
+};
+
 struct Dot_Expr : public Expression
 {
     Shared<Expression> base_;
@@ -326,6 +337,21 @@ struct If_Expr : public Expression
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2)),
         arg3_(std::move(arg3))
+    {}
+
+    virtual Value eval(Frame&) const override;
+};
+
+struct Lambda_Expr : public Expression
+{
+    Shared<Expression> body_;
+
+    Lambda_Expr(
+        Shared<const Phrase> source,
+        Shared<Expression> body)
+    :
+        Expression(source),
+        body_(std::move(body))
     {}
 
     virtual Value eval(Frame&) const override;

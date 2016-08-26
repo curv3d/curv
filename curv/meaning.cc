@@ -53,28 +53,46 @@ curv::Let_Ref::eval(Frame& f) const
 }
 
 Value
+curv::Arg_Ref::eval(Frame& f) const
+{
+    return f[slot_];
+}
+
+Value
 curv::Call_Expr::eval(Frame& f) const
 {
     Value funv = curv::eval(*fun_, f);
     if (!funv.is_ref())
         throw Phrase_Error(*fun_->source_, stringify(funv,": not a function"));
     Ref_Value& funp( funv.get_ref_unsafe() );
-    if (funp.type_ != Ref_Value::ty_function)
-        throw Phrase_Error(*fun_->source_, stringify(funv,": not a function"));
-    Function* fun = (Function*)&funp;
-
-    Value argv[1];
-    switch (fun->nargs_) {
-    case 1:
-        if (args_.size() != 1) {
-            throw Phrase_Error(*argsource_,
-                "wrong number of arguments");
+    switch (funp.type_) {
+    case Ref_Value::ty_function:
+      {
+        Function* fun = (Function*)&funp;
+        Value argv[1];
+        switch (fun->nargs_) {
+        case 1:
+            if (args_.size() != 1) {
+                throw Phrase_Error(*argsource_,
+                    "wrong number of arguments");
+            }
+            argv[0] = curv::eval(*args_[0], f);
+            return fun->function_(argv);
+        default:
+            throw Phrase_Error(*source_,
+                stringify("unsupported argument list size ",args_.size()));
         }
-        argv[0] = curv::eval(*args_[0], f);
-        return fun->function_(argv);
+      }
+    case Ref_Value::ty_lambda:
+      {
+        // currently, there is exactly 1 argument
+        Lambda* fun = (Lambda*)&funp;
+        std::unique_ptr<Frame> f2 { Frame::make(fun->nslots_, f.module_) };
+        (*f2)[0] = curv::eval(*args_[0], f);
+        return fun->expr_->eval(*f2);
+      }
     default:
-        throw Phrase_Error(*source_,
-            stringify("unsupported argument list size ",args_.size()));
+        throw Phrase_Error(*fun_->source_, stringify(funv,": not a function"));
     }
 }
 

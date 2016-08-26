@@ -138,7 +138,11 @@ Scanner::get_token()
         tok.kind = Token::k_plus;
         goto success;
     case '-':
-        tok.kind = Token::k_minus;
+        if (p < last && *p == '>') {
+            tok.kind = Token::k_right_arrow;
+            ++p;
+        } else
+            tok.kind = Token::k_minus;
         goto success;
     case '*':
         tok.kind = Token::k_times;

@@ -7,10 +7,13 @@
 #include <curv/shared.h>
 #include <curv/exception.h>
 #include <curv/thunk.h>
-using namespace curv;
+#include <curv/function.h>
+
+namespace curv
+{
 
 Shared<Expression>
-curv::analyze_expr(Phrase& ph, Environ& env)
+analyze_expr(const Phrase& ph, Environ& env)
 {
     Shared<Meaning> m = analyze(ph, env);
     Expression* e = dynamic_cast<Expression*>(&*m);
@@ -20,7 +23,7 @@ curv::analyze_expr(Phrase& ph, Environ& env)
 }
 
 Shared<Meaning>
-curv::Environ::lookup(const Identifier& id) const
+Environ::lookup(const Identifier& id) const
 {
     Atom a(id.location().range());
     for (const Environ* e = this; e != nullptr; e = e->parent) {
@@ -32,7 +35,7 @@ curv::Environ::lookup(const Identifier& id) const
 }
 
 Shared<Meaning>
-curv::Builtin_Environ::single_lookup(const Identifier& id, Atom a) const
+Builtin_Environ::single_lookup(const Identifier& id, Atom a) const
 {
     auto p = names.find(a);
     if (p != names.end())
@@ -42,7 +45,7 @@ curv::Builtin_Environ::single_lookup(const Identifier& id, Atom a) const
 }
 
 Shared<Meaning>
-curv::Module_Environ::single_lookup(const Identifier& id, Atom a) const
+Module_Environ::single_lookup(const Identifier& id, Atom a) const
 {
     auto p = names.find(a);
     if (p != names.end())
@@ -52,13 +55,13 @@ curv::Module_Environ::single_lookup(const Identifier& id, Atom a) const
 }
 
 Shared<Meaning>
-curv::Identifier::analyze(Environ& env) const
+Identifier::analyze(Environ& env) const
 {
     return env.lookup(*this);
 }
 
 Shared<Meaning>
-curv::Numeral::analyze(Environ& env) const
+Numeral::analyze(Environ& env) const
 {
     std::string str(location().range());
     char* endptr;
@@ -67,7 +70,7 @@ curv::Numeral::analyze(Environ& env) const
     return aux::make_shared<Constant>(Shared<const Phrase>(this), n);
 }
 Shared<Meaning>
-curv::String_Phrase::analyze(Environ& env) const
+String_Phrase::analyze(Environ& env) const
 {
     auto str = location().range();
     assert(str.size() >= 2); // includes start and end " characters
@@ -80,7 +83,7 @@ curv::String_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-curv::Unary_Phrase::analyze(Environ& env) const
+Unary_Phrase::analyze(Environ& env) const
 {
     switch (op_.kind) {
     case Token::k_not:
@@ -96,7 +99,45 @@ curv::Unary_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-curv::Binary_Phrase::analyze(Environ& env) const
+analyze_lambda(const Phrase& source, const Phrase& left, const Phrase& right)
+{
+    // Initially, only the syntax `identifier->expr` is supported.
+    // So, just one argument, like lambda calculus.
+
+    // Initially, nonlocal bindings aren't supported.
+
+    auto id = dynamic_cast<const Identifier*>(&left);
+    if (id == nullptr)
+        throw Phrase_Error(left, "not an identifier");
+    Atom name = id->location().range();
+
+    struct Arg_Environ : public Environ
+    {
+    protected:
+        const Atom name_;
+    public:
+        Arg_Environ(Atom name) : name_(name)
+        {
+            frame_nslots = 1;
+            frame_maxslots = 1;
+        }
+        virtual Shared<Meaning> single_lookup(const Identifier& id, Atom a) const
+        {
+            if (a == name_)
+                return aux::make_shared<Arg_Ref>(Shared<const Phrase>(&id), 0);
+            return nullptr;
+        }
+    };
+    Arg_Environ env2(name);
+    auto expr = curv::analyze_expr(right, env2);
+
+    return aux::make_shared<Constant>(
+        Shared<const Phrase>(&source),
+        Value{aux::make_shared<Lambda>(expr, env2.frame_maxslots)});
+}
+
+Shared<Meaning>
+Binary_Phrase::analyze(Environ& env) const
 {
     switch (op_.kind) {
     case Token::k_or:
@@ -149,6 +190,8 @@ curv::Binary_Phrase::analyze(Environ& env) const
             Shared<const Phrase>(this),
             curv::analyze_expr(*left_, env),
             curv::analyze_expr(*right_, env));
+    case Token::k_right_arrow:
+        return analyze_lambda(*this, *left_, *right_);
     default:
         return aux::make_shared<Infix_Expr>(
             Shared<const Phrase>(this),
@@ -159,13 +202,13 @@ curv::Binary_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-curv::Definition::analyze(Environ& env) const
+Definition::analyze(Environ& env) const
 {
     throw Phrase_Error(*this, "not an expression");
 }
 
 Shared<Meaning>
-curv::Paren_Phrase::analyze(Environ& env) const
+Paren_Phrase::analyze(Environ& env) const
 {
     if (args_.size() == 1
         && args_[0].comma_.kind == Token::k_missing)
@@ -177,7 +220,7 @@ curv::Paren_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-curv::List_Phrase::analyze(Environ& env) const
+List_Phrase::analyze(Environ& env) const
 {
     Shared<List_Expr> list =
         List_Expr::make(args_.size(), Shared<const Phrase>(this));
@@ -187,7 +230,7 @@ curv::List_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-curv::Call_Phrase::analyze(Environ& env) const
+Call_Phrase::analyze(Environ& env) const
 {
     auto fun = curv::analyze_expr(*function_, env);
     std::vector<Shared<Expression>> args;
@@ -212,7 +255,7 @@ curv::Call_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-curv::Dot_Phrase::analyze(Environ& env) const
+Dot_Phrase::analyze(Environ& env) const
 {
     return aux::make_shared<Dot_Expr>(
         Shared<const Phrase>(this),
@@ -236,13 +279,13 @@ analyze_definition(
 }
 
 Shared<Meaning>
-curv::Module_Phrase::analyze(Environ& env) const
+Module_Phrase::analyze(Environ& env) const
 {
     return analyze_module(env);
 }
 
 Shared<Module_Expr>
-curv::Module_Phrase::analyze_module(Environ& env) const
+Module_Phrase::analyze_module(Environ& env) const
 {
     // phase 1: Create a dictionary of field phrases, a list of element phrases
     Atom_Map<Shared<Phrase>> fields;
@@ -280,7 +323,7 @@ curv::Module_Phrase::analyze_module(Environ& env) const
 }
 
 Shared<Meaning>
-curv::Record_Phrase::analyze(Environ& env) const
+Record_Phrase::analyze(Environ& env) const
 {
     Shared<Record_Expr> record =
         aux::make_shared<Record_Expr>(Shared<const Phrase>(this));
@@ -297,7 +340,7 @@ curv::Record_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-curv::If_Phrase::analyze(Environ& env) const
+If_Phrase::analyze(Environ& env) const
 {
     return aux::make_shared<If_Expr>(
         Shared<const Phrase>(this),
@@ -307,7 +350,7 @@ curv::If_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-curv::Let_Phrase::analyze(Environ& env) const
+Let_Phrase::analyze(Environ& env) const
 {
     // `let` supports mutually recursive bindings, like let-rec in Scheme.
     //
@@ -392,3 +435,5 @@ curv::Let_Phrase::analyze(Environ& env) const
     return aux::make_shared<Let_Expr>(Shared<const Phrase>(this),
         first_slot, std::move(values), body);
 }
+
+} // namespace curv

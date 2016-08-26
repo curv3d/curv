@@ -64,31 +64,40 @@ because it is a well known, fully worked out and consistent design,
 based on a dynamically typed language where multi-dimensional arrays
 are represented as nested lists.
 
-<!--
-Note: There may be a performance implication to generalizing ordinary
-numeric operations to operate on tensors. It's convenient, but in the
-absence of type information, the compiler can't generate efficient
-code for an expression like `x+y` (ie, a floating point add instruction),
-because x and y might be non-scalar.
-
-So *maybe* I want to syntactically distinguish tensor operations from
-scalar operations. Of course, that will be ugly. One idea is to use
-`#` to indicate a tensor operation, like this:
+### Explicit Broadcasting
+In Maple, broadcasting is specified explicitly using the `~` suffix:
 ```
--#x
-x +# y
-sin#(x)
+-~x
+x +~ y
+sin~(x)
+x ==~ y
 ```
-So the ugly `#` is a visual reminder that you are doing something expensive.
-Alternatively, we leave it out, and if you want higher performance,
-then you add type annotations.
 
-One context where `#` is semantically useful is equality:
-`x==y` compares two tensors for equality, returning `true` or `false,
-while `x==#y` performs an element-by-element comparison, returning an array
-of booleans. Both are useful in computational geometry: eg, GLSL supports both
-forms of equality on vectors.
--->
+Benefits:
+* The non-broadcast version of the operators may run slightly faster due
+  to the elimination of some conditional logic.
+* Compile time type inference and optimization:
+  `x*y` is known at compile time to return a number,
+  therefore in `a*b+c*d`, the `+` can be specialized at compile time to
+  a float add instruction with no type tests.
+* This syntax distinguishes between normal and element-wise equality,
+  which are semantically different.
+  (Element-wise equality *must* be marked in some way, unless I go full APL/K
+  and use extra marking for non-element-wise equality.)
+* Works for all user-defined functions. (With the implicit approach, only
+  user defined functions that are designed to broadcast will do so, and more
+  complicated code may be required.)
+* The extra syntax reminds you that this is a more expensive operation?
+
+Drawback: it looks ugly. `M1 +~ M2` is not the usual math notation for
+matrix addition.
+
+Wait and see if this helps in any way with generating GLSL code.
+
+Matlab uses a `.` suffix for this, in some contexts but not others.
+However, `sin x` vs `sin~ x` works, doesn't quite work using `.`.
+I also thought of `#`, which resembles a matrix,
+but maybe the denser the symbol, the uglier it is.
 
 ## Generalized Multiplication
 Here are 3 ways to generalize scalar multiplication to vectors and matrices:
