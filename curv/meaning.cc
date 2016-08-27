@@ -92,7 +92,8 @@ curv::Call_Expr::eval(Frame& f) const
                 "wrong number of arguments");
         }
         std::unique_ptr<Frame> f2 { Frame::make(fun->nslots_, f.module_) };
-        (*f2)[0] = curv::eval(*args_[0], f);
+        for (size_t i = 0; i < args_.size(); ++i)
+            (*f2)[i] = curv::eval(*args_[i], f);
         return fun->expr_->eval(*f2);
       }
     default:

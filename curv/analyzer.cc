@@ -106,34 +106,53 @@ analyze_lambda(const Phrase& source, const Phrase& left, const Phrase& right)
 
     // Initially, nonlocal bindings aren't supported.
 
-    auto id = dynamic_cast<const Identifier*>(&left);
-    if (id == nullptr)
-        throw Phrase_Error(left, "not an identifier");
-    Atom name = id->location().range();
+    // phase 1: Create a dictionary of parameters.
+    Atom_Map<int> params;
+    int slot = 0;
+    if (auto id = dynamic_cast<const Identifier*>(&left))
+    {
+        Atom name = id->location().range();
+        params[name] = slot++;
+    }
+    else if (auto parens = dynamic_cast<const Paren_Phrase*>(&left))
+    {
+        for (auto a : parens->args_) {
+            if (auto id = dynamic_cast<const Identifier*>(a.expr_.get())) {
+                Atom name = id->location().range();
+                params[name] = slot++;
+            } else
+                throw Phrase_Error(*a.expr_, "not a parameter");
+        }
+    }
+    else
+        throw Phrase_Error(left, "not a parameter");
 
+    // Phase 2: make an Environ from the parameters and analyze the body.
     struct Arg_Environ : public Environ
     {
     protected:
-        const Atom name_;
+        Atom_Map<int>& names_;
     public:
-        Arg_Environ(Atom name) : name_(name)
+        Arg_Environ(Atom_Map<int>& names) : names_(names)
         {
-            frame_nslots = 1;
-            frame_maxslots = 1;
+            frame_nslots = names.size();
+            frame_maxslots = names.size();
         }
         virtual Shared<Meaning> single_lookup(const Identifier& id, Atom a) const
         {
-            if (a == name_)
-                return aux::make_shared<Arg_Ref>(Shared<const Phrase>(&id), 0);
+            auto p = names_.find(a);
+            if (p != names_.end())
+                return aux::make_shared<Arg_Ref>(
+                    Shared<const Phrase>(&id), p->second);
             return nullptr;
         }
     };
-    Arg_Environ env2(name);
+    Arg_Environ env2(params);
     auto expr = curv::analyze_expr(right, env2);
 
     return aux::make_shared<Constant>(
         Shared<const Phrase>(&source),
-        Value{aux::make_shared<Lambda>(expr, 1, env2.frame_maxslots)});
+        Value{aux::make_shared<Lambda>(expr, params.size(), env2.frame_maxslots)});
 }
 
 Shared<Meaning>
