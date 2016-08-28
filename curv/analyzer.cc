@@ -99,12 +99,15 @@ Unary_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-analyze_lambda(const Phrase& source, const Phrase& left, const Phrase& right)
+analyze_lambda(
+    const Phrase& source,
+    const Phrase& left, const Phrase& right,
+    Environ& env)
 {
-    // Initially, only the syntax `identifier->expr` is supported.
-    // So, just one argument, like lambda calculus.
+    // Syntax: id->expr or (a,b,...)->expr
+    // TODO: pattern matching: [a,b]->expr, {a,b}->expr
 
-    // Initially, nonlocal bindings aren't supported.
+    // nonlocal binding support: none
 
     // phase 1: Create a dictionary of parameters.
     Atom_Map<int> params;
@@ -132,8 +135,10 @@ analyze_lambda(const Phrase& source, const Phrase& left, const Phrase& right)
     {
     protected:
         Atom_Map<int>& names_;
+        Environ& super_;
     public:
-        Arg_Environ(Atom_Map<int>& names) : names_(names)
+        Arg_Environ(Atom_Map<int>& names, Environ& super)
+        : names_(names), super_(super)
         {
             frame_nslots = names.size();
             frame_maxslots = names.size();
@@ -144,10 +149,18 @@ analyze_lambda(const Phrase& source, const Phrase& left, const Phrase& right)
             if (p != names_.end())
                 return aux::make_shared<Arg_Ref>(
                     Shared<const Phrase>(&id), p->second);
+            // TODO: temporary kludge until general recursion is supported
+            auto m = super_.lookup(id);
+            if (m != nullptr) {
+                if (dynamic_cast<Constant*>(m.get()) != nullptr)
+                    return m;
+                throw Phrase_Error(id,
+                    "nonlocal reference of unsupported type");
+            }
             return nullptr;
         }
     };
-    Arg_Environ env2(params);
+    Arg_Environ env2(params, env);
     auto expr = curv::analyze_expr(right, env2);
 
     return aux::make_shared<Constant>(
@@ -210,7 +223,7 @@ Binary_Phrase::analyze(Environ& env) const
             curv::analyze_expr(*left_, env),
             curv::analyze_expr(*right_, env));
     case Token::k_right_arrow:
-        return analyze_lambda(*this, *left_, *right_);
+        return analyze_lambda(*this, *left_, *right_, env);
     default:
         return aux::make_shared<Infix_Expr>(
             Shared<const Phrase>(this),

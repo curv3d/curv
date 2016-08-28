@@ -1,5 +1,66 @@
 # Implementation of Functions and Modules
 
+## Next Steps: Nonlocal References In A Lambda
+What's the next baby step towards supporting non-local references?
+
+Done:
+* If the nonlocal is a Constant, the reference is allowed.
+  So I can reference builtins.
+
+Possible next steps:
+ * Recursive constant functions. Constant folding optimization.
+   Add a new pass so that recursive functions can be classified as constants.
+   No closures yet, but now I've got the same power as C functions.
+ * Non-recursive closures. If a nonlocal is a function parameter,
+   the reference is allowed. Now I've got the same power as the lambda
+   calculus, and can define the Y combinator.
+
+These changes take me quite a ways, without the need for RThunks/RFunctions.
+Might be good enough for the minimum viable product.
+
+* How would I support access to nonlocal let bindings?
+  The current dynamic thunk mechanism would create cyclic references to
+  recursive functions, if I allowed functions to be defined recursively.
+  The RFunction/RThunk mechanism requires compile time analysis
+  of let bindings to detect recursion and mutual recursion.
+  * A non-recursive binding is a strict reference to the env vector.
+    The value is copied to the closure during construction.
+
+## Nonlocal References (in a function)
+A call frame consists of
+* `Value* nonlocal;` -- used for non-Constant, non-local lexical bindings,
+  which are referenced using compile-time array indexes.
+* `Value local[];` -- tail array. Used for bindings that are local to a
+  particular function call: arguments, let bindings, other temporaries.
+  Referenced using compile-time array indexes.
+
+Three kinds of frame reference nodes:
+* `Strict_Local_Ref`: contains a slot index into the `local` array. The slot
+  already contains a proper value (ie, not a thunk).
+* `Lazy_Local_Ref`: contains a slot index into the `local` array. The slot
+  may contain a thunk: if so, then when the Ref is evaluated, the thunk is
+  evaluated and the slot is updated with a proper value.
+* `Nonlocal_Ref`: contains a slot index into the `nonlocal` array,
+  which only contains proper values.
+
+There is a top level call frame used to evaluate a script module,
+and a call frame for each function call.
+
+A Closure is the most general form of a user-defined function value.
+It contains:
+* a code pointer. `Shared<const Expression>`, a shared pointer because
+  the same lambda expression may be evaluated multiple times to produce
+  different closure values, each with the same code pointer.
+* an environment. Maybe `unique_ptr<List>`, or a tail array of Value.
+  Contains an array of nonlocal values, referenced by the call frame for
+  that function.
+
+A script Module contains an array of slots, referenced by the `nonlocal` pointer
+in the Frame used to initialize the Module.
+
+The Closure value for a recursively defined function can't a cyclic reference
+to that same value in the environment array. That would cause a storage leak.
+
 ## Script Module (without functions or let)
 A script module is the only kind of environment. Definitions may refer to each
 other, order doesn't matter, there are edge cases where recursion makes sense.
