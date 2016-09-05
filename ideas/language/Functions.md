@@ -56,7 +56,7 @@ cylinder =
 All of the functions in the list must have the same number of arguments.
 
 **Special Variables.**
-Hmm.
+Hmm. Not needed in the Minimum Viable Product.
 
 **Interoperability**
 How do we make the Curv function parameter mechanism interoperable

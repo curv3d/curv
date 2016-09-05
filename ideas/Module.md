@@ -7,16 +7,40 @@ Done:
 * If the nonlocal is a Constant, the reference is allowed.
   So I can reference builtins.
 
-Possible next steps:
- * Recursive constant functions. Constant folding optimization.
-   Add a new pass so that recursive functions can be classified as constants.
-   No closures yet, but now I've got the same power as C functions.
- * Non-recursive closures. If a nonlocal is a function parameter,
-   the reference is allowed. Now I've got the same power as the lambda
-   calculus, and can define the Y combinator.
+**Non-recursive closures.**
+ 1. If a nonlocal is a function parameter, the reference is allowed.
+    Now I've got the same power as the lambda calculus.
+ 2. If a nonlocal is a let or module binding, then I signal an error if the
+    binding is *pending* when I try to capture it.
 
-These changes take me quite a ways, without the need for RThunks/RFunctions.
-Might be good enough for the minimum viable product.
+**Recursive static functions.** Constant folding optimization.
+Static functions aren't closures: all nonlocals referenced as Constant nodes
+or as Code references, see below. They have the same power as C functions.
+* Recursive functions can't reference themselves using counted references,
+  that's a cyclic reference and storage leak.
+  * Can't use a Constant node.
+  * Can't use an `RFunction_Ref` node containing a `Shared<Expression>`.
+  * Can use a relative branch from inside byte code.
+  * Can use an index into the nonlocals array to get an RFunction.
+  * Can use an atom to index a "global bindings" dictionary (which we don't
+    have in Curv).
+  * Can use an index into a top-level-module Code object:
+    * Suppose that for every function, the compiled code is owned by a
+      particular top-level-module. This compiled code is contained
+      in a module_code object which:
+      * is constructed at compile time, and contains only VM code,
+        no captured nonlocal binding values.
+      * can be indexed to get a specific function entry point.
+    * The Frame provides access to the current Code object (or there is a VM
+      register).
+    * To call a static function in the same top-level-module, reference it
+      using an index into the current Code object.
+    * A Closure value contains a Code pointer, the index of the entry point,
+      and captured nonlocal values.
+
+**Recursive Closures.**
+The final step, requires RThunks/RFunctions or some new design.
+Might not need this for the minimum viable product.
 
 * How would I support access to nonlocal let bindings?
   The current dynamic thunk mechanism would create cyclic references to

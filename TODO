@@ -1,6 +1,13 @@
-* Recursive constant functions (non closures). C function equivalency.
-* Nonrecursive closures: can reference nonlocal parameters, which values are
-  copied into a closure. Lambda calculus equivalency.
+* Modules store their values in a slot array.
+* Frame contains `Value* nonlocal;` data member, which references the slot
+  array of a module or (in future) closure.
+* Non-recursive closures:
+  * If a nonlocal is a function parameter, the reference is allowed,
+    value is copied into the closure.
+    Now I've got the same power as the lambda calculus.
+  * If a nonlocal is a let or module binding, then I signal an error if the
+    binding is *pending* when I try to capture it.
+* Recursive static functions (non closures). C function equivalency.
 * lambda expressions: x->expr: stack of frames
   * lambda syntax: a->expr, (a,b)->expr, [a,b]->expr, {a,b}->expr
     * Currying: (a)(b)(c)->expr, like a->b->c->expr.

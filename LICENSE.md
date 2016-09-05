@@ -1,10 +1,12 @@
-= Copyright, License and Credits
+# Copyright, License and Credits
 
 The Curv project is Copyright Doug Moen 2016.
 Distributed under The MIT License.
 See license below, or https://opensource.org/licenses/MIT
 
-== The MIT License
+Note, this license requires attribution in a binary-only distribution.
+
+## The MIT License
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),

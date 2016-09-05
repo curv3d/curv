@@ -108,6 +108,19 @@ foo = script("foo.curv");
 use foo;
 ```
 
+My current proposal avoids all these problems, and instead provides
+```
+use (a,b,c) module;
+```
+or
+```
+{a,b,c,...} = module;
+```
+as a syntax for explicitly importing specified bindings by name from a
+module value. There is no "import all" operation (in the minimum viable
+product), and no need to implement static expressions as a language visible
+feature.
+
 ## Type Predicates and Equality
 Decision:
 * The set of all values is partitioned by the type predicates
