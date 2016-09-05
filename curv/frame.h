@@ -14,11 +14,16 @@ class Module;
 
 struct Frame_Base
 {
-    // top level module value
-    Module& module_;
+    /// Slot array containing the values of nonlocal bindings.
+    ///
+    /// This is either the slot array for the top level module value
+    /// (for a top level module frame), or its the slot array contained
+    /// in a closure value (for a function call frame). May be `nullptr`
+    /// if there are no slots.
+    Value* nonlocal;
 
-    // tail array, containing the slots used for function arguments,
-    // `let` bindings and other local, temporary values.
+    // Tail array, containing the slots used for local bindings:
+    // function arguments, `let` bindings and other local, temporary values.
     using value_type = Value;
     size_t size_;
     value_type array_[0];
@@ -29,15 +34,17 @@ struct Frame_Base
         return array_[i];
     }
 
-    Frame_Base(Module& m) : module_(m) {}
+    Frame_Base(Value* nl) : nonlocal(nl) {}
 };
 
 /// A Frame is an evaluation context.
-/// Currently, each top-level module has a frame for evaluating subexpressions.
-/// In the future, user-defined functions will have call frames.
-/// TODO: Future design of Frame:
-/// * Value* nonlocal;
-/// * Value local[0]; // tail array
+///
+/// You can think of a Frame as containing all of the registers used
+/// by the Curv virtual machine.
+///
+/// Each top-level module has a frame for evaluating subexpressions
+/// while constructing the module value.
+/// User-defined functions have call frames.
 using Frame = aux::Tail_Array<Frame_Base>;
 
 } // namespace curv

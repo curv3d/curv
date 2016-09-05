@@ -1,6 +1,3 @@
-* Modules store their values in a slot array.
-* Frame contains `Value* nonlocal;` data member, which references the slot
-  array of a module or (in future) closure.
 * Non-recursive closures:
   * If a nonlocal is a function parameter, the reference is allowed,
     value is copied into the closure.

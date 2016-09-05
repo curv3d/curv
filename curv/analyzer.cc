@@ -47,10 +47,9 @@ Builtin_Environ::single_lookup(const Identifier& id, Atom a) const
 Shared<Meaning>
 Module_Environ::single_lookup(const Identifier& id, Atom a) const
 {
-    auto p = names.find(a);
-    if (p != names.end())
-        return aux::make_shared<Module_Ref>(
-            Shared<const Phrase>(&id), a);
+    auto b = dictionary_->find(a);
+    if (b != dictionary_->end())
+        return aux::make_shared<Module_Ref>(Shared<const Phrase>(&id), b->second);
     return nullptr;
 }
 
@@ -316,37 +315,56 @@ Module_Phrase::analyze(Environ& env) const
     return analyze_module(env);
 }
 
+void
+Bindings_Analyzer::add_definition(Shared<Phrase> phrase)
+{
+    const Definition* def = dynamic_cast<Definition*>(phrase.get());
+    if (def == nullptr)
+        throw Phrase_Error(*phrase, "not a definition");
+    auto id = dynamic_cast<const Identifier*>(def->left_.get());
+    if (id == nullptr)
+        throw Phrase_Error(*def->left_, "not an identifier");
+    Atom name = id->location().range();
+    if (dictionary_->find(name) != dictionary_->end())
+        throw Phrase_Error(*def->left_,
+            stringify(name, ": multiply defined"));
+    (*dictionary_)[name] = cur_position_++;
+    slot_phrases_.push_back(def->right_);
+}
+
+Shared<List>
+Bindings_Analyzer::analyze_values(Environ& env)
+{
+    auto slots = make_list(slot_phrases_.size());
+    size_t n = slot_phrases_.size();
+    for (size_t i = 0; i < n; ++i) {
+        auto expr = curv::analyze_expr(*slot_phrases_[i], env);
+        (*slots)[i] = {aux::make_shared<Thunk>(expr)};
+    }
+    return slots;
+}
+
 Shared<Module_Expr>
 Module_Phrase::analyze_module(Environ& env) const
 {
     // phase 1: Create a dictionary of field phrases, a list of element phrases
-    Atom_Map<Shared<Phrase>> fields;
+    Bindings_Analyzer fields;
     std::vector<Shared<Phrase>> elements;
     for (auto st : stmts_) {
-        const Definition* def =
-            dynamic_cast<Definition*>(st.stmt_.get());
-        if (def != nullptr) {
-            auto id = dynamic_cast<const Identifier*>(def->left_.get());
-            if (id == nullptr)
-                throw Phrase_Error(*def->left_, "not an identifier");
-            Atom name = id->location().range();
-            if (fields.find(name) != fields.end())
-                throw Phrase_Error(*def->left_,
-                    stringify(name, ": multiply defined"));
-            fields[name] = def->right_;
-        } else {
+        if (dynamic_cast<Definition*>(st.stmt_.get()) != nullptr)
+            fields.add_definition(st.stmt_);
+        else
             elements.push_back(st.stmt_);
-        }
     }
 
     // phase 2: Construct an environment from the field dictionary
     // and use it to perform semantic analysis.
-    Module_Environ env2(&env, fields);
+    Module_Environ env2(&env, fields.dictionary_);
     auto self = Shared<const Phrase>(this);
     auto module = aux::make_shared<Module_Expr>(self);
-    for (auto f : fields)
-        module->fields_[f.first] = curv::analyze_expr(*f.second, env2);
-    auto xelements = List_Expr::make(elements.size(), self);
+    module->dictionary_ = fields.dictionary_;
+    module->slots_ = fields.analyze_values(env2);
+    Shared<List_Expr> xelements = {List_Expr::make(elements.size(), self)};
     for (size_t i = 0; i < elements.size(); ++i)
         (*xelements)[i] = curv::analyze_expr(*elements[i], env2);
     module->elements_ = xelements;

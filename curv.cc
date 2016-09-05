@@ -66,9 +66,9 @@ main(int, char**)
         auto script = aux::make_shared<CString_Script>("<stdin>", line);
         try {
             curv::Shared<curv::Module> module{eval_script(*script, names)};
-            for (auto f : module->fields_)
+            for (auto f : *module)
                 names[f.first] = f.second;
-            for (auto e : *module->elements_)
+            for (auto e : *module->elements())
                 std::cout << e << "\n";
         } catch (curv::Exception& e) {
             std::cout << e << "\n";

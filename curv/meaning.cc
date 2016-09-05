@@ -38,7 +38,7 @@ curv::Module_Ref::eval(Frame& f) const
     // 4. Store a reference to the Module_Expr in Frame.
     // Choice: #2.
 
-    return force_ref(f.module_.fields_[atom_], *source_, f);
+    return force_ref(f.nonlocal[slot_], *source_, f);
 }
 
 Value
@@ -91,7 +91,7 @@ curv::Call_Expr::eval(Frame& f) const
             throw Phrase_Error(*argsource_,
                 "wrong number of arguments");
         }
-        std::unique_ptr<Frame> f2 { Frame::make(fun->nslots_, f.module_) };
+        std::unique_ptr<Frame> f2 { Frame::make(fun->nslots_, f.nonlocal) };
         for (size_t i = 0; i < args_.size(); ++i)
             (*f2)[i] = curv::eval(*args_[i], f);
         return fun->expr_->eval(*f2);
@@ -121,9 +121,9 @@ curv::Dot_Expr::eval(Frame& f) const
     case Ref_Value::ty_module:
       {
         Module* module = (Module*)&basep;
-        auto f = module->fields_.find(id_);
-        if (f != module->fields_.end())
-            return f->second;
+        auto b = module->dictionary_->find(id_);
+        if (b != module->dictionary_->end())
+            return (*module->slots_)[b->second];
         throw Phrase_Error(*base_->source_,
             stringify(".",id_,": not defined"));
       }
@@ -372,12 +372,13 @@ Shared<Module>
 curv::Module_Expr::eval_module() const
 {
     auto module = aux::make_shared<Module>();
-    std::unique_ptr<Frame> f { Frame::make(frame_nslots_, *module) };
-    for (auto i : fields_)
-        module->fields_[i.first] = {aux::make_shared<Thunk>(i.second)};
-    for (auto i : fields_)
-        force(module->fields_[i.first], *f);
-    module->elements_ = elements_->eval_list(*f);
+    module->dictionary_ = dictionary_;
+    module->slots_ = List::make_copy(slots_->begin(), slots_->size());
+    std::unique_ptr<Frame> frame
+        {Frame::make(frame_nslots_, module->slots_->begin())};
+    for (Value& s : *module->slots_)
+        force(s, *frame);
+    module->elements_ = elements_->eval_list(*frame);
     return module;
 }
 

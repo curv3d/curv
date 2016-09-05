@@ -8,7 +8,7 @@ void
 curv::Module::print(std::ostream& out) const
 {
     out << "{";
-    for (auto f : fields_) {
+    for (auto f : *this) {
         out << f.first << "=";
         f.second.print(out);
         out << ";";

@@ -80,10 +80,10 @@ struct Constant : public Expression
 
 struct Module_Ref : public Expression
 {
-    Atom atom_;
+    size_t slot_;
 
-    Module_Ref(Shared<const Phrase> source, Atom a)
-    : Expression(std::move(source)), atom_(a)
+    Module_Ref(Shared<const Phrase> source, size_t slot)
+    : Expression(std::move(source)), slot_(slot)
     {}
 
     virtual Value eval(Frame&) const override;
@@ -290,7 +290,8 @@ struct Record_Expr : public Expression
 
 struct Module_Expr : public Expression
 {
-    Atom_Map<Shared<const Expression>> fields_;
+    Shared<Module::Dictionary> dictionary_;
+    Shared<List> slots_; // or, a Tail_Array
     Shared<const List_Expr> elements_;
     size_t frame_nslots_;
 
