@@ -346,13 +346,22 @@ struct If_Expr : public Expression
 struct Lambda_Expr : public Expression
 {
     Shared<Expression> body_;
+    Shared<List_Expr> nonlocals_;
+    size_t nargs_;
+    size_t nslots_;
 
     Lambda_Expr(
         Shared<const Phrase> source,
-        Shared<Expression> body)
+        Shared<Expression> body,
+        Shared<List_Expr> nonlocals,
+        size_t nargs,
+        size_t nslots)
     :
         Expression(source),
-        body_(std::move(body))
+        body_(std::move(body)),
+        nonlocals_(std::move(nonlocals)),
+        nargs_(nargs),
+        nslots_(nslots)
     {}
 
     virtual Value eval(Frame&) const override;

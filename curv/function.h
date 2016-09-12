@@ -7,6 +7,7 @@
 
 #include <curv/value.h>
 #include <curv/meaning.h>
+#include <curv/list.h>
 
 namespace curv {
 
@@ -32,13 +33,18 @@ struct Function : public Ref_Value
 struct Lambda : public Ref_Value
 {
     Shared<const Expression> expr_;
+    Shared<List> nonlocals_;
     size_t nargs_;
     size_t nslots_; // size of call frame
 
-    Lambda(Shared<const Expression> expr, size_t nargs, size_t nslots)
+    Lambda(
+        Shared<const Expression> expr,
+        Shared<List> nonlocals,
+        size_t nargs, size_t nslots)
     :
         Ref_Value(ty_lambda),
-        expr_(expr),
+        expr_(std::move(expr)),
+        nonlocals_(std::move(nonlocals)),
         nargs_(nargs),
         nslots_(nslots)
     {}

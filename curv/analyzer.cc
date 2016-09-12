@@ -161,10 +161,11 @@ analyze_lambda(
     };
     Arg_Environ env2(params, env);
     auto expr = curv::analyze_expr(right, env2);
+    Shared<const Phrase> src = &source;
+    Shared<List_Expr> nonlocals = List_Expr::make(0, src); // TODO: stub
 
-    return aux::make_shared<Constant>(
-        Shared<const Phrase>(&source),
-        Value{aux::make_shared<Lambda>(expr, params.size(), env2.frame_maxslots)});
+    return aux::make_shared<Lambda_Expr>(
+        src, expr, nonlocals, params.size(), env2.frame_maxslots);
 }
 
 Shared<Meaning>

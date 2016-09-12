@@ -85,13 +85,13 @@ curv::Call_Expr::eval(Frame& f) const
       }
     case Ref_Value::ty_lambda:
       {
-        // currently, lambdas accept exactly 1 argument
         Lambda* fun = (Lambda*)&funp;
         if (args_.size() != fun->nargs_) {
             throw Phrase_Error(*argsource_,
                 "wrong number of arguments");
         }
-        std::unique_ptr<Frame> f2 { Frame::make(fun->nslots_, f.nonlocal) };
+        std::unique_ptr<Frame> f2
+            { Frame::make(fun->nslots_, fun->nonlocals_->begin()) };
         for (size_t i = 0; i < args_.size(); ++i)
             (*f2)[i] = curv::eval(*args_[i], f);
         return fun->expr_->eval(*f2);
@@ -389,4 +389,14 @@ curv::Let_Expr::eval(Frame& f) const
     for (size_t i = 0; i < values_.size(); ++i)
         slots[i] = values_[i];
     return curv::eval(*body_, f);
+}
+
+Value
+curv::Lambda_Expr::eval(Frame& f) const
+{
+    return Value{aux::make_shared<Lambda>(
+        body_,
+        nonlocals_->eval_list(f),
+        nargs_,
+        nslots_)};
 }
