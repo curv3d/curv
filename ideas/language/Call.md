@@ -54,6 +54,22 @@ So I return to my original position.
   parameterized by a special-ops table, to get the benefits that would otherwise
   be gained by representing special-ops as builtin bindings.
 
+## Generalized Chains
+In Rust and Perl, the `if` has mandatory braces around the consequent and
+alternate. This eliminates the style debate over whether to use braces,
+and eliminates the dangling `else` ambiguity.
+
+In Curv, the corresponding decision is to model `if` expressions as chains.
+Same with let, for, echo, assert, etc. The only context where we greedily
+consume an entire *expr* as an argument is in low-precedence right associative
+infix operators like `=` and `->`, which also have symbolic names.
+
+So,
+* if (cond) nprimary
+* if (cond) chain
+* if (cond) nprimary else nprimary
+* if (cond) nprimary else chain
+
 ## Bindable Meanings that Aren't Values
 
 So the builtin namespace becomes a map from names to meanings

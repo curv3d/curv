@@ -4,7 +4,68 @@
     Now I've got the same power as the lambda calculus.
   * If a nonlocal is a let or module binding, then I signal an error if the
     binding is *pending* when I try to capture it.
-* Recursive static functions (non closures). C function equivalency.
+  * When a lambda phrase is analyzed: use a special Environ to capture a
+    list of all the nonlocal references, as a Meaning array. Each nonlocal
+    reference is converted to a nonlocal slot reference. Store this array in
+    the Lambda_Expr.
+    * Or: a Dictionary of name->slot and a Meaning array, so each name
+      is represented once. The Meaning array is converted to a List_Expr.
+  * When a Lambda_Expr is evaluated, evaluate the nonlocals Meaning array
+    to construct a List of values, stored in the Lambda. (Not a tail array.)
+    Recursion causes an error (at this stage).
+  * When a Lambda value is called, the nonlocals List is referenced as the
+    nonlocals in the call Frame.
+* Recursive functions
+  * Special cases:
+    * Recursive static functions (non closures), C function equivalency.
+    * supported: Self-recursive function.
+    * supported: Mutually recursive functions in the same let or module scope.
+    * causes an error: any other kind of recursive definition.
+  * RFunctions: All of the functions in a mutual-recursion group (within a
+    let or module scope) share the same nonlocal slot vector. These functions
+    reference themselves and each other, not by Constant nodes, but by
+    nonlocal references, and the slots themselves contain RFunction refs,
+    not proper Values. The shared slot vector is represented as a List and
+    stored in an additional slot associated with the let or module expression.
+    * Hence, recursive functions are not Constants.
+    * An RFun reference is a special Meaning class that contains the slot ids
+      of the RFun code reference and the nonlocals list. There are local and
+      nonlocal variants. When eval'ed, an RFun reference fetches the contents
+      of the two slots and constructs a closure Value.
+    * Future optimization: use a special operation to call a function via an
+      RFun ref without constructing the closure as a temporary Value.
+      (Peephole optimization: super-operator.)
+  * How to analyze a recursive function.
+    * Analysis of a phrase tree is a depth-first recursive process.
+      Previously, I map a let/module bound identifier to a slot reference
+      with no further analysis. Now, I recursively analyze the definiens phrase,
+      and store the resulting Expression.
+      * If it is already analyzed, then it's a thunk or rfun.
+        Return the corresponding ref type.
+        Future optimization: add a third category, proper value.
+      * If is an unanalyzed phrase, then mark the symbol table entry as pending,
+        then analyze the phrase.
+      * If it is a pending phrase, then if a lambda phrase, mark it as an RFun,
+        otherwise mark it as a Thunk. analyze() returns a slot reference.
+      * Future optimization: add a fourth category, Constant.
+    * RFuns in the same mutual recursion group must share a nonlocals list,
+      otherwise, if they have separate lists, then there will be reference
+      cycles between these lists.
+    * Therefore, after analyzing all of the definitions in a let/module scope,
+      visit all of the RFun bindings, amalgamate all of the nonlocal arrays
+      into a single shared nonlocal array for the scope. A new compile phase,
+      post analysis, is needed to assign nonlocal slot ids.
+    * A nonlocal ref created during analysis needs to store a key that can be
+      mapped to a slot id after amalgamation. This is a Ref_ID, possibly a
+      bitfield containing a stack depth and slot index. Or an Atom.
+    * As a special case, the nonlocal array for a module will use the same slot
+      array as the field values.
+  * Simplified Design: All let/module function definitions are analyzed as
+    RFunctions. Nonlocal slot indexes are assigned during analysis, no need for
+    a new compiler pass. If a let has function definitions, then an extra slot
+    is added for the function nonlocals list. The slot contains a thunk for
+    a list constructor, so it's lazy. In a module, the nonlocals are added
+    directly to the module's slot array.
 * lambda expressions: x->expr: stack of frames
   * lambda syntax: a->expr, (a,b)->expr, [a,b]->expr, {a,b}->expr
     * Currying: (a)(b)(c)->expr, like a->b->c->expr.
@@ -31,6 +92,9 @@
 * comments
 * better error messages
 * interactive curv: special variable `_` is last value. _1,_2, or $1,$2 ...
+
+Refactor:
+* analyze let expressions using Bindings_Analyzer
 
 # CURV0 (expressions):
 * bug: (-1)^-0.5 error message needs parens around '-1'
