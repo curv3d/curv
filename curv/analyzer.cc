@@ -22,11 +22,11 @@ analyze_expr(const Phrase& ph, Environ& env)
     return Shared<Expression>(e);
 }
 
-Shared<Meaning>
-Environ::lookup(const Identifier& id) const
+Shared<Expression>
+Environ::lookup(const Identifier& id)
 {
     Atom a(id.location().range());
-    for (const Environ* e = this; e != nullptr; e = e->parent) {
+    for (Environ* e = this; e != nullptr; e = e->parent) {
         auto m = e->single_lookup(id, a);
         if (m != nullptr)
             return m;
@@ -34,8 +34,8 @@ Environ::lookup(const Identifier& id) const
     throw Phrase_Error(id, stringify(a,": not defined"));
 }
 
-Shared<Meaning>
-Builtin_Environ::single_lookup(const Identifier& id, Atom a) const
+Shared<Expression>
+Builtin_Environ::single_lookup(const Identifier& id, Atom a)
 {
     auto p = names.find(a);
     if (p != names.end())
@@ -44,8 +44,8 @@ Builtin_Environ::single_lookup(const Identifier& id, Atom a) const
     return nullptr;
 }
 
-Shared<Meaning>
-Module_Environ::single_lookup(const Identifier& id, Atom a) const
+Shared<Expression>
+Module_Environ::single_lookup(const Identifier& id, Atom a)
 {
     auto b = dictionary_->find(a);
     if (b != dictionary_->end())
@@ -106,8 +106,6 @@ analyze_lambda(
     // Syntax: id->expr or (a,b,...)->expr
     // TODO: pattern matching: [a,b]->expr, {a,b}->expr
 
-    // nonlocal binding support: none
-
     // phase 1: Create a dictionary of parameters.
     Atom_Map<int> params;
     int slot = 0;
@@ -132,29 +130,37 @@ analyze_lambda(
     // Phase 2: make an Environ from the parameters and analyze the body.
     struct Arg_Environ : public Environ
     {
-    protected:
         Atom_Map<int>& names_;
         Environ& super_;
-    public:
+        Module::Dictionary nonlocal_dictionary_;
+        std::vector<Shared<const Expression>> nonlocal_exprs_;
+
         Arg_Environ(Atom_Map<int>& names, Environ& super)
         : names_(names), super_(super)
         {
             frame_nslots = names.size();
             frame_maxslots = names.size();
         }
-        virtual Shared<Meaning> single_lookup(const Identifier& id, Atom a) const
+        virtual Shared<Expression> single_lookup(const Identifier& id, Atom a)
         {
             auto p = names_.find(a);
             if (p != names_.end())
                 return aux::make_shared<Arg_Ref>(
                     Shared<const Phrase>(&id), p->second);
-            // TODO: temporary kludge until general recursion is supported
+            auto n = nonlocal_dictionary_.find(a);
+            if (n != nonlocal_dictionary_.end()) {
+                return aux::make_shared<Nonlocal_Ref>(
+                    Shared<const Phrase>(&id), n->second);
+            }
             auto m = super_.lookup(id);
             if (m != nullptr) {
                 if (dynamic_cast<Constant*>(m.get()) != nullptr)
                     return m;
-                throw Phrase_Error(id,
-                    "nonlocal reference of unsupported type");
+                size_t slot = nonlocal_exprs_.size();
+                nonlocal_dictionary_[a] = slot;
+                nonlocal_exprs_.push_back(m);
+                return aux::make_shared<Nonlocal_Ref>(
+                    Shared<const Phrase>(&id), slot);
             }
             return nullptr;
         }
@@ -162,7 +168,11 @@ analyze_lambda(
     Arg_Environ env2(params, env);
     auto expr = curv::analyze_expr(right, env2);
     Shared<const Phrase> src = &source;
-    Shared<List_Expr> nonlocals = List_Expr::make(0, src); // TODO: stub
+    Shared<List_Expr> nonlocals =
+        List_Expr::make(env2.nonlocal_exprs_.size(), src);
+    // TODO: use some kind of Tail_Array move constructor
+    for (size_t i = 0; i < env2.nonlocal_exprs_.size(); ++i)
+        (*nonlocals)[i] = env2.nonlocal_exprs_[i];
 
     return aux::make_shared<Lambda_Expr>(
         src, expr, nonlocals, params.size(), env2.frame_maxslots);
@@ -462,7 +472,7 @@ Let_Phrase::analyze(Environ& env) const
             frame_nslots += n.size();
             frame_maxslots = std::max(frame_maxslots, frame_nslots);
         }
-        virtual Shared<Meaning> single_lookup(const Identifier& id, Atom a) const
+        virtual Shared<Expression> single_lookup(const Identifier& id, Atom a)
         {
             auto p = names.find(a);
             if (p != names.end())

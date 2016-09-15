@@ -42,6 +42,12 @@ curv::Module_Ref::eval(Frame& f) const
 }
 
 Value
+curv::Nonlocal_Ref::eval(Frame& f) const
+{
+    return f.nonlocal[slot_];
+}
+
+Value
 curv::Let_Ref::eval(Frame& f) const
 {
     // Let bindings are represented as slots in the frame, and are lazily

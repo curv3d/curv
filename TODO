@@ -1,20 +1,3 @@
-* Non-recursive closures:
-  * If a nonlocal is a function parameter, the reference is allowed,
-    value is copied into the closure.
-    Now I've got the same power as the lambda calculus.
-  * If a nonlocal is a let or module binding, then I signal an error if the
-    binding is *pending* when I try to capture it.
-  * When a lambda phrase is analyzed: use a special Environ to capture a
-    list of all the nonlocal references, as a Meaning array. Each nonlocal
-    reference is converted to a nonlocal slot reference. Store this array in
-    the Lambda_Expr.
-    * Or: a Dictionary of name->slot and a Meaning array, so each name
-      is represented once. The Meaning array is converted to a List_Expr.
-  * When a Lambda_Expr is evaluated, evaluate the nonlocals Meaning array
-    to construct a List of values, stored in the Lambda. (Not a tail array.)
-    Recursion causes an error (at this stage).
-  * When a Lambda value is called, the nonlocals List is referenced as the
-    nonlocals in the call Frame.
 * Recursive functions
   * Special cases:
     * Recursive static functions (non closures), C function equivalency.

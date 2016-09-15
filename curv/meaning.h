@@ -89,6 +89,17 @@ struct Module_Ref : public Expression
     virtual Value eval(Frame&) const override;
 };
 
+struct Nonlocal_Ref : public Expression
+{
+    size_t slot_;
+
+    Nonlocal_Ref(Shared<const Phrase> source, size_t slot)
+    : Expression(std::move(source)), slot_(slot)
+    {}
+
+    virtual Value eval(Frame&) const override;
+};
+
 struct Let_Ref : public Expression
 {
     int slot_;

@@ -224,6 +224,7 @@ TEST(curv, eval)
     EVALS_TO("f=x->let(a=x+1)a; f 2", "3");
     EVAL_ERROR("f=x->x; f()", "wrong number of arguments");
     EVALS_TO("add=(x,y)->x+y;add(1,2)", "3");
+    EVALS_TO("add=x->y->x+y;add(1)(2)", "3");
     EVALS_TO(
         "sum = (list,i,f)->if (i < len list) list@i+f(list,i+1,f) else 0;"
         "sum([1,2,3],0,sum)",
