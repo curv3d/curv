@@ -11,7 +11,7 @@ curv::Function::print(std::ostream& out) const
 }
 
 void
-curv::Lambda::print(std::ostream& out) const
+curv::Closure::print(std::ostream& out) const
 {
     out << "<function>";
 }

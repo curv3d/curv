@@ -11,7 +11,7 @@
 
 namespace curv {
 
-/// A boxed static function.
+/// A built-in function value, represented by a boxed native C function.
 struct Function : public Ref_Value
 {
     Value (*function_)(Value* argv);
@@ -30,19 +30,21 @@ struct Function : public Ref_Value
     virtual void print(std::ostream&) const;
 };
 
-struct Lambda : public Ref_Value
+/// A user-defined function value,
+/// represented by a closure over a lambda expression.
+struct Closure : public Ref_Value
 {
     Shared<const Expression> expr_;
     Shared<List> nonlocals_;
     size_t nargs_;
     size_t nslots_; // size of call frame
 
-    Lambda(
+    Closure(
         Shared<const Expression> expr,
         Shared<List> nonlocals,
         size_t nargs, size_t nslots)
     :
-        Ref_Value(ty_lambda),
+        Ref_Value(ty_closure),
         expr_(std::move(expr)),
         nonlocals_(std::move(nonlocals)),
         nargs_(nargs),

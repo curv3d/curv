@@ -89,9 +89,9 @@ curv::Call_Expr::eval(Frame& f) const
                 stringify("unsupported argument list size ",args_.size()));
         }
       }
-    case Ref_Value::ty_lambda:
+    case Ref_Value::ty_closure:
       {
-        Lambda* fun = (Lambda*)&funp;
+        Closure* fun = (Closure*)&funp;
         if (args_.size() != fun->nargs_) {
             throw Phrase_Error(*argsource_,
                 "wrong number of arguments");
@@ -400,7 +400,7 @@ curv::Let_Expr::eval(Frame& f) const
 Value
 curv::Lambda_Expr::eval(Frame& f) const
 {
-    return Value{aux::make_shared<Lambda>(
+    return Value{aux::make_shared<Closure>(
         body_,
         nonlocals_->eval_list(f),
         nargs_,
