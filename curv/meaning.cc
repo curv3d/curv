@@ -97,7 +97,7 @@ curv::Call_Expr::eval(Frame& f) const
                 "wrong number of arguments");
         }
         std::unique_ptr<Frame> f2
-            { Frame::make(fun->nslots_, fun->nonlocals_->begin()) };
+            { Frame::make(fun->nslots_, *fun->nonlocals_) };
         for (size_t i = 0; i < args_.size(); ++i)
             (*f2)[i] = curv::eval(*args_[i], f);
         return fun->expr_->eval(*f2);
@@ -381,7 +381,7 @@ curv::Module_Expr::eval_module() const
     module->dictionary_ = dictionary_;
     module->slots_ = List::make_copy(slots_->begin(), slots_->size());
     std::unique_ptr<Frame> frame
-        {Frame::make(frame_nslots_, module->slots_->begin())};
+        {Frame::make(frame_nslots_, *module->slots_)};
     for (Value& s : *module->slots_)
         force(s, *frame);
     module->elements_ = elements_->eval_list(*frame);

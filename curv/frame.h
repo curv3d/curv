@@ -7,10 +7,9 @@
 
 #include <aux/tail_array.h>
 #include <curv/value.h>
+#include <curv/list.h>
 
 namespace curv {
-
-class Module;
 
 struct Frame_Base
 {
@@ -18,9 +17,8 @@ struct Frame_Base
     ///
     /// This is either the slot array for the top level module value
     /// (for a top level module frame), or its the slot array contained
-    /// in a closure value (for a function call frame). May be `nullptr`
-    /// if there are no slots.
-    Value* nonlocal;
+    /// in a Closure value (for a function call frame).
+    List& nonlocal;
 
     // Tail array, containing the slots used for local bindings:
     // function arguments, `let` bindings and other local, temporary values.
@@ -34,7 +32,7 @@ struct Frame_Base
         return array_[i];
     }
 
-    Frame_Base(Value* nl) : nonlocal(nl) {}
+    Frame_Base(List& nl) : nonlocal(nl) {}
 };
 
 /// A Frame is an evaluation context.

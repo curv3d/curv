@@ -30,6 +30,31 @@ struct Function : public Ref_Value
     virtual void print(std::ostream&) const;
 };
 
+/// The run-time representation of a compiled lambda expression.
+///
+/// This is the compile-time component of a function value, minus the
+/// values of non-local variables, which are captured at run time in a Closure.
+/// It's not a proper value, but can be stored in a Value slot.
+struct Lambda : public Ref_Value
+{
+    Shared<const Expression> expr_;
+    size_t nargs_;
+    size_t nslots_; // size of call frame
+
+    Lambda(
+        Shared<const Expression> expr,
+        size_t nargs, size_t nslots)
+    :
+        Ref_Value(ty_lambda),
+        expr_(std::move(expr)),
+        nargs_(nargs),
+        nslots_(nslots)
+    {}
+
+    /// Print a value like a Curv expression.
+    virtual void print(std::ostream&) const;
+};
+
 /// A user-defined function value,
 /// represented by a closure over a lambda expression.
 struct Closure : public Ref_Value

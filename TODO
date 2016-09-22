@@ -1,4 +1,28 @@
 * Recursive functions
+  * Run time data structures:
+    * Lambda is an improper value type, a lambda expression without the data
+      for nonlocal values.
+    * Closure is a proper value type, a Lambda + nonlocal data, the latter
+      represented as a List.
+    * a Module's slot array contains field values and nonlocal bindings
+      referenced by function fields, represented as a List.
+      * For function fields, the slot contains a Lambda not a Closure.
+      * For nonlocal function bindings, the slot contains a Closure.
+        At first glance, that could lead to reference cycles, as in:
+          m = {f(x) = g(x);};
+          g = m.f;
+        Except that this generates an "illegal recursive reference" error.
+    * In a module frame, slot 0 is the Module's slot array (a List value).
+      Alternatively, I could change Frame to use `List& nonlocal`, then I don't
+      need slot 0. Same performance.
+    * A let expression has a frame slot containing the nonlocal values
+      referenced by function bindings. Slots for function bindings contain
+      Lambdas.
+  * Analysis time data structures:
+    * a Local_Function_Ref contains a lambda_slot and a nonlocals_slot.
+      The eval() function combines these into a Closure value.
+    * A Module_Function_Ref contains a lambda_slot (nonlocal) and implicitly
+      references local slot 0, combining these into a Closure value.
   * Special cases:
     * Recursive static functions (non closures), C function equivalency.
     * supported: Self-recursive function.
