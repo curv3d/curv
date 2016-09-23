@@ -224,10 +224,20 @@ public:
             // to use the upper 8-bits for tagging pointers with additional
             // information." http://www.realworldtech.com/arm64/4/
 
-            // This sign extension may be unnecessary. Ref_Values must be
-            // allocated on the heap, and it may be that heap pointers are
-            // positive on all supported platforms. LuaJIT and SpiderMonkey
-            // both assume 47 bit pointers (not 48) in their nan boxes.
+            // The following code truncates to 48 bits, then fills the upper
+            // 16 bits using sign extension. Is this sign extension necessary?
+            // LuaJIT and SpiderMonkey both assume 47 bit pointers (not 48)
+            // in their NaN boxes. They assume all pointers are positive.
+            //
+            // The sign extension is necessary. Here's a LuaJIT bug where
+            // a negative 48 bit pointer on ARM64 leads to a crash.
+            // https://github.com/LuaJIT/LuaJIT/issues/49
+            //
+            // ARMv8.2 will support 52 bit virtual addresses.
+            // That can still work (a NaN has a 52 bit payload). We'll need
+            // changes to the Value internals but the API won't change.
+            // I don't store type codes in the NaN box (unlike LuaJIT)
+            // which will make this change easier.
             return *(Ref_Value*)((signed_bits_ << 16) >> 16);
         #elif UINTPTR_MAX == UINT32_MAX
             // 32 bit pointers

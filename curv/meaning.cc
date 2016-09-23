@@ -65,6 +65,22 @@ curv::Arg_Ref::eval(Frame& f) const
 }
 
 Value
+curv::Local_Function_Ref::eval(Frame& f) const
+{
+    return {aux::make_shared<Closure>(
+        (Lambda&) f[lambda_slot_].get_ref_unsafe(),
+        (List&) f[env_slot_].get_ref_unsafe())};
+}
+
+Value
+curv::Nonlocal_Function_Ref::eval(Frame& f) const
+{
+    return {aux::make_shared<Closure>(
+        (Lambda&) f.nonlocal[lambda_slot_].get_ref_unsafe(),
+        f.nonlocal)};
+}
+
+Value
 curv::Call_Expr::eval(Frame& f) const
 {
     Value funv = curv::eval(*fun_, f);

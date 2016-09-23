@@ -76,6 +76,17 @@ struct Closure : public Ref_Value
         nslots_(nslots)
     {}
 
+    Closure(
+        Lambda& lambda,
+        List& nonlocals)
+    :
+        Ref_Value(ty_closure),
+        expr_(lambda.expr_),
+        nonlocals_(Shared<List>(&nonlocals)),
+        nargs_(lambda.nargs_),
+        nslots_(lambda.nslots_)
+    {}
+
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const;
 };

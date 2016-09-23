@@ -20,48 +20,21 @@ namespace curv {
 /// An abstract base class representing a semantically analyzed Phrase.
 struct Meaning : public aux::Shared_Base
 {
-    /// The original source code for this meaning, or nullptr in the case
-    /// of the Bindable objects stored in the builtin namespace.
-    ///
-    /// When a builtin is looked up, we have to copy the Bindable
-    /// to add a source reference, after which source_ is not null.
-    /// See Bindable::copy_with_source.
+    /// The original source code for this meaning.
     ///
     /// The syntax of the source code need not have any relation to the meaning
-    /// class, due to compile time evaluation. And that's why we separate
-    /// the Phrase tree from the Meaning tree.
+    /// class. Eg, an Identifier phrase can be analyzed into a variety of
+    /// different meanings. That's why we separate the Phrase tree from the
+    /// Meaning tree.
     Shared<const Phrase> source_;
 
     Meaning(Shared<const Phrase> source) : source_(std::move(source)) {}
 };
 
-#if 0 // maybe later when I need this
-/// A Bindable phrase denotes an entity that can be bound to a name.
-///
-/// But the entity might not be a run-time value, in which case the phrase
-/// is not an Expression. Bindable is a supertype of Expression.
-///
-/// Bindable is needed to represent compile time entities that are function-like
-/// (can be invoked using function call syntax) or namespace-like
-/// (can use '.' notation to reference members), but which aren't
-/// run-time values.
-struct Bindable : public Meaning
-{
-    virtual Shared<Meaning> analyze_dot(const Identifier&) const;
-    virtual Shared<Meaning> analyze_call(Range<Shared<const Phrase>*>) const;
-    virtual Shared<Expression> to_expression() const;
-    virtual Shared<Bindable> copy_with_source(const Phrase&) const;
-};
-#endif
-
 /// An Expression is a phrase that denotes a value.
-struct Expression : public Meaning //Bindable
+struct Expression : public Meaning
 {
     using Meaning::Meaning;
-
-//  virtual Shared<Meaning> analyze_dot(const Identifier&) const override;
-//  virtual Shared<Meaning> analyze_call(Range<Shared<const Phrase>*>) const override;
-//  virtual Shared<Expression> to_expression() const override;
 
     virtual Value eval(Frame&) const = 0;
 };
@@ -117,6 +90,39 @@ struct Arg_Ref : public Expression
 
     Arg_Ref(Shared<const Phrase> source, int slot)
     : Expression(std::move(source)), slot_(slot)
+    {}
+
+    virtual Value eval(Frame&) const override;
+};
+
+struct Local_Function_Ref : public Expression
+{
+    int lambda_slot_; ///! local slot containing Lambda value
+    int env_slot_;    ///! local slot containing List of nonlocal values
+
+    Local_Function_Ref(
+        Shared<const Phrase> source,
+        int lambda_slot,
+        int env_slot)
+    :
+        Expression(std::move(source)),
+        lambda_slot_(lambda_slot),
+        env_slot_(env_slot)
+    {}
+
+    virtual Value eval(Frame&) const override;
+};
+
+struct Nonlocal_Function_Ref : public Expression
+{
+    int lambda_slot_; ///! nonlocal slot containing Lambda value
+
+    Nonlocal_Function_Ref(
+        Shared<const Phrase> source,
+        int lambda_slot)
+    :
+        Expression(std::move(source)),
+        lambda_slot_(lambda_slot)
     {}
 
     virtual Value eval(Frame&) const override;
