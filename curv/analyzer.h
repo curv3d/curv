@@ -10,8 +10,8 @@
 
 namespace curv {
 
-/// This is used to analyze a list of module definitions, record definitions,
-/// let definitions, or function parameters.
+/// This is used to analyze a set of module definitions, and in future,
+/// record definitions, let definitions, or function parameters.
 struct Bindings_Analyzer
 {
     size_t cur_position_;
@@ -34,7 +34,7 @@ struct Bindings_Analyzer
     // I have no way to make this generic right now.
 
     // Fourth, analyze the binding phrases, and construct a list of compile
-    // time Values (either constants or thunks),
+    // time Values (constants, lambdas or thunks),
     // using the above Environ if they are mutually recursive:
     Shared<List> analyze_values(Environ& env);
 

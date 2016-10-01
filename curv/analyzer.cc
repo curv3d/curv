@@ -98,10 +98,7 @@ Unary_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-analyze_lambda(
-    const Phrase& source,
-    const Phrase& left, const Phrase& right,
-    Environ& env)
+Lambda_Phrase::analyze(Environ& env) const
 {
     // Syntax: id->expr or (a,b,...)->expr
     // TODO: pattern matching: [a,b]->expr, {a,b}->expr
@@ -109,12 +106,12 @@ analyze_lambda(
     // phase 1: Create a dictionary of parameters.
     Atom_Map<int> params;
     int slot = 0;
-    if (auto id = dynamic_cast<const Identifier*>(&left))
+    if (auto id = dynamic_cast<const Identifier*>(left_.get()))
     {
         Atom name = id->location().range();
         params[name] = slot++;
     }
-    else if (auto parens = dynamic_cast<const Paren_Phrase*>(&left))
+    else if (auto parens = dynamic_cast<const Paren_Phrase*>(left_.get()))
     {
         for (auto a : parens->args_) {
             if (auto id = dynamic_cast<const Identifier*>(a.expr_.get())) {
@@ -125,7 +122,7 @@ analyze_lambda(
         }
     }
     else
-        throw Phrase_Error(left, "not a parameter");
+        throw Phrase_Error(*left_, "not a parameter");
 
     // Phase 2: make an Environ from the parameters and analyze the body.
     struct Arg_Environ : public Environ
@@ -166,8 +163,8 @@ analyze_lambda(
         }
     };
     Arg_Environ env2(params, env);
-    auto expr = curv::analyze_expr(right, env2);
-    Shared<const Phrase> src = &source;
+    auto expr = curv::analyze_expr(*right_, env2);
+    auto src = Shared<const Lambda_Phrase>(this);
     Shared<List_Expr> nonlocals =
         List_Expr::make(env2.nonlocal_exprs_.size(), src);
     // TODO: use some kind of Tail_Array move constructor
@@ -232,8 +229,6 @@ Binary_Phrase::analyze(Environ& env) const
             Shared<const Phrase>(this),
             curv::analyze_expr(*left_, env),
             curv::analyze_expr(*right_, env));
-    case Token::k_right_arrow:
-        return analyze_lambda(*this, *left_, *right_, env);
     default:
         return aux::make_shared<Infix_Expr>(
             Shared<const Phrase>(this),
@@ -346,8 +341,8 @@ Bindings_Analyzer::add_definition(Shared<Phrase> phrase)
 Shared<List>
 Bindings_Analyzer::analyze_values(Environ& env)
 {
-    auto slots = make_list(slot_phrases_.size());
     size_t n = slot_phrases_.size();
+    auto slots = make_list(n);
     for (size_t i = 0; i < n; ++i) {
         auto expr = curv::analyze_expr(*slot_phrases_[i], env);
         (*slots)[i] = {aux::make_shared<Thunk>(expr)};

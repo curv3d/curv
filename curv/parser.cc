@@ -77,7 +77,7 @@ parse_expr(Scanner& scanner)
         return aux::make_shared<Definition>(
             std::move(left), tok, parse_expr(scanner));
     case Token::k_right_arrow:
-        return aux::make_shared<Binary_Phrase>(
+        return aux::make_shared<Lambda_Phrase>(
             std::move(left), tok, parse_expr(scanner));
     default:
         scanner.push_token(tok);
