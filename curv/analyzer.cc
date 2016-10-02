@@ -131,19 +131,24 @@ Lambda_Phrase::analyze(Environ& env) const
         Environ& super_;
         Module::Dictionary nonlocal_dictionary_;
         std::vector<Shared<const Expression>> nonlocal_exprs_;
+        bool recursive_;
 
-        Arg_Environ(Atom_Map<int>& names, Environ& super)
-        : names_(names), super_(super)
+        Arg_Environ(Atom_Map<int>& names, Environ& super, bool recursive)
+        : names_(names), super_(super), recursive_(recursive)
         {
             frame_nslots = names.size();
             frame_maxslots = names.size();
         }
+        // TODO: Environ::lookup() ought to be virtual, and this function
+        // should be an overload of lookup(). It would be cleaner.
         virtual Shared<Expression> single_lookup(const Identifier& id, Atom a)
         {
             auto p = names_.find(a);
             if (p != names_.end())
                 return aux::make_shared<Arg_Ref>(
                     Shared<const Phrase>(&id), p->second);
+            if (recursive_)
+                return nullptr;
             auto n = nonlocal_dictionary_.find(a);
             if (n != nonlocal_dictionary_.end()) {
                 return aux::make_shared<Nonlocal_Ref>(
@@ -162,7 +167,7 @@ Lambda_Phrase::analyze(Environ& env) const
             return nullptr;
         }
     };
-    Arg_Environ env2(params, env);
+    Arg_Environ env2(params, env, recursive_);
     auto expr = curv::analyze_expr(*right_, env2);
     auto src = Shared<const Lambda_Phrase>(this);
     Shared<List_Expr> nonlocals =
