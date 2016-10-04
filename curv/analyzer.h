@@ -52,7 +52,7 @@ struct Environ
     : parent(p), frame_nslots(0), frame_maxslots(0)
     { }
     Shared<Expression> lookup(const Identifier& id);
-    virtual Shared<Expression> single_lookup(const Identifier&, Atom) = 0;
+    virtual Shared<Expression> single_lookup(const Identifier&) = 0;
 };
 
 struct Builtin_Environ : public Environ
@@ -63,7 +63,7 @@ public:
     Builtin_Environ(const Namespace& n, Environ* p = nullptr)
     : Environ(p), names(n)
     {}
-    virtual Shared<Expression> single_lookup(const Identifier&, Atom);
+    virtual Shared<Expression> single_lookup(const Identifier&);
 };
 
 struct Module_Environ : public Environ
@@ -78,7 +78,7 @@ public:
         Environ(p),
         dictionary_(std::move(d))
     {}
-    virtual Shared<Expression> single_lookup(const Identifier&, Atom);
+    virtual Shared<Expression> single_lookup(const Identifier&);
 };
 
 inline Shared<Meaning>

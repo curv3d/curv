@@ -25,19 +25,18 @@ analyze_expr(const Phrase& ph, Environ& env)
 Shared<Expression>
 Environ::lookup(const Identifier& id)
 {
-    Atom a(id.location().range());
     for (Environ* e = this; e != nullptr; e = e->parent) {
-        auto m = e->single_lookup(id, a);
+        auto m = e->single_lookup(id);
         if (m != nullptr)
             return m;
     }
-    throw Phrase_Error(id, stringify(a,": not defined"));
+    throw Phrase_Error(id, stringify(id.atom_,": not defined"));
 }
 
 Shared<Expression>
-Builtin_Environ::single_lookup(const Identifier& id, Atom a)
+Builtin_Environ::single_lookup(const Identifier& id)
 {
-    auto p = names.find(a);
+    auto p = names.find(id.atom_);
     if (p != names.end())
         return aux::make_shared<Constant>(
             Shared<const Phrase>(&id), p->second);
@@ -45,9 +44,9 @@ Builtin_Environ::single_lookup(const Identifier& id, Atom a)
 }
 
 Shared<Expression>
-Module_Environ::single_lookup(const Identifier& id, Atom a)
+Module_Environ::single_lookup(const Identifier& id)
 {
-    auto b = dictionary_->find(a);
+    auto b = dictionary_->find(id.atom_);
     if (b != dictionary_->end())
         return aux::make_shared<Module_Ref>(Shared<const Phrase>(&id), b->second);
     return nullptr;
@@ -141,15 +140,15 @@ Lambda_Phrase::analyze(Environ& env) const
         }
         // TODO: Environ::lookup() ought to be virtual, and this function
         // should be an overload of lookup(). It would be cleaner.
-        virtual Shared<Expression> single_lookup(const Identifier& id, Atom a)
+        virtual Shared<Expression> single_lookup(const Identifier& id)
         {
-            auto p = names_.find(a);
+            auto p = names_.find(id.atom_);
             if (p != names_.end())
                 return aux::make_shared<Arg_Ref>(
                     Shared<const Phrase>(&id), p->second);
             if (recursive_)
                 return nullptr;
-            auto n = nonlocal_dictionary_.find(a);
+            auto n = nonlocal_dictionary_.find(id.atom_);
             if (n != nonlocal_dictionary_.end()) {
                 return aux::make_shared<Nonlocal_Ref>(
                     Shared<const Phrase>(&id), n->second);
@@ -159,7 +158,7 @@ Lambda_Phrase::analyze(Environ& env) const
                 if (dynamic_cast<Constant*>(m.get()) != nullptr)
                     return m;
                 size_t slot = nonlocal_exprs_.size();
-                nonlocal_dictionary_[a] = slot;
+                nonlocal_dictionary_[id.atom_] = slot;
                 nonlocal_exprs_.push_back(m);
                 return aux::make_shared<Nonlocal_Ref>(
                     Shared<const Phrase>(&id), slot);
@@ -302,7 +301,7 @@ Dot_Phrase::analyze(Environ& env) const
     return aux::make_shared<Dot_Expr>(
         Shared<const Phrase>(this),
         curv::analyze_expr(*left_, env),
-        id_->make_atom());
+        id_->atom_);
 }
 
 void
@@ -472,9 +471,9 @@ Let_Phrase::analyze(Environ& env) const
             frame_nslots += n.size();
             frame_maxslots = std::max(frame_maxslots, frame_nslots);
         }
-        virtual Shared<Expression> single_lookup(const Identifier& id, Atom a)
+        virtual Shared<Expression> single_lookup(const Identifier& id)
         {
-            auto p = names.find(a);
+            auto p = names.find(id.atom_);
             if (p != names.end())
                 return aux::make_shared<Let_Ref>(
                     Shared<const Phrase>(&id), p->second.slot_);

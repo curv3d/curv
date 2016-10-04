@@ -45,8 +45,14 @@ struct Token_Phrase : public Phrase
 };
 struct Identifier final : public Token_Phrase
 {
-    using Token_Phrase::Token_Phrase;
-    Atom make_atom() const { return {loc_.range()}; }
+    Atom atom_;
+
+    Identifier(const Script& s, Token tok)
+    :
+        Token_Phrase(s, std::move(tok)),
+        atom_{loc_.range()}
+    {}
+
     virtual Shared<Meaning> analyze(Environ&) const;
 };
 struct Numeral final : public Token_Phrase
