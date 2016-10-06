@@ -44,12 +44,12 @@ struct Bindings_Analyzer
 
 struct Environ
 {
-    Environ* parent;
+    Environ* parent_;
     size_t frame_nslots;
     size_t frame_maxslots;
 
     Environ(Environ* p = nullptr)
-    : parent(p), frame_nslots(0), frame_maxslots(0)
+    : parent_(p), frame_nslots(0), frame_maxslots(0)
     { }
     Shared<Expression> lookup(const Identifier& id);
     virtual Shared<Expression> single_lookup(const Identifier&) = 0;

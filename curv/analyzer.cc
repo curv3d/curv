@@ -25,7 +25,7 @@ analyze_expr(const Phrase& ph, Environ& env)
 Shared<Expression>
 Environ::lookup(const Identifier& id)
 {
-    for (Environ* e = this; e != nullptr; e = e->parent) {
+    for (Environ* e = this; e != nullptr; e = e->parent_) {
         auto m = e->single_lookup(id);
         if (m != nullptr)
             return m;
@@ -127,13 +127,12 @@ Lambda_Phrase::analyze(Environ& env) const
     struct Arg_Environ : public Environ
     {
         Atom_Map<int>& names_;
-        Environ& super_;
         Module::Dictionary nonlocal_dictionary_;
         std::vector<Shared<const Expression>> nonlocal_exprs_;
         bool recursive_;
 
-        Arg_Environ(Atom_Map<int>& names, Environ& super, bool recursive)
-        : names_(names), super_(super), recursive_(recursive)
+        Arg_Environ(Environ* parent, Atom_Map<int>& names, bool recursive)
+        : Environ(parent), names_(names), recursive_(recursive)
         {
             frame_nslots = names.size();
             frame_maxslots = names.size();
@@ -147,13 +146,13 @@ Lambda_Phrase::analyze(Environ& env) const
             if (recursive_)
                 return nullptr;
             // In non-recursive mode, we return a definitive result.
-            // We don't return nullptr (meaning try again in parent).
+            // We don't return nullptr (meaning try again in parent_).
             auto n = nonlocal_dictionary_.find(id.atom_);
             if (n != nonlocal_dictionary_.end()) {
                 return aux::make_shared<Nonlocal_Ref>(
                     Shared<const Phrase>(&id), n->second);
             }
-            auto m = super_.lookup(id);
+            auto m = parent_->lookup(id);
             if (dynamic_cast<Constant*>(m.get()) != nullptr)
                 return m;
             size_t slot = nonlocal_exprs_.size();
@@ -163,7 +162,7 @@ Lambda_Phrase::analyze(Environ& env) const
                 Shared<const Phrase>(&id), slot);
         }
     };
-    Arg_Environ env2(params, env, recursive_);
+    Arg_Environ env2(&env, params, recursive_);
     auto expr = curv::analyze_expr(*right_, env2);
     auto src = Shared<const Lambda_Phrase>(this);
     Shared<List_Expr> nonlocals =
