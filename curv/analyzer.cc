@@ -138,8 +138,6 @@ Lambda_Phrase::analyze(Environ& env) const
             frame_nslots = names.size();
             frame_maxslots = names.size();
         }
-        // TODO: Environ::lookup() ought to be virtual, and this function
-        // should be an overload of lookup(). It would be cleaner.
         virtual Shared<Expression> single_lookup(const Identifier& id)
         {
             auto p = names_.find(id.atom_);
@@ -148,22 +146,21 @@ Lambda_Phrase::analyze(Environ& env) const
                     Shared<const Phrase>(&id), p->second);
             if (recursive_)
                 return nullptr;
+            // In non-recursive mode, we return a definitive result.
+            // We don't return nullptr (meaning try again in parent).
             auto n = nonlocal_dictionary_.find(id.atom_);
             if (n != nonlocal_dictionary_.end()) {
                 return aux::make_shared<Nonlocal_Ref>(
                     Shared<const Phrase>(&id), n->second);
             }
             auto m = super_.lookup(id);
-            if (m != nullptr) {
-                if (dynamic_cast<Constant*>(m.get()) != nullptr)
-                    return m;
-                size_t slot = nonlocal_exprs_.size();
-                nonlocal_dictionary_[id.atom_] = slot;
-                nonlocal_exprs_.push_back(m);
-                return aux::make_shared<Nonlocal_Ref>(
-                    Shared<const Phrase>(&id), slot);
-            }
-            return nullptr;
+            if (dynamic_cast<Constant*>(m.get()) != nullptr)
+                return m;
+            size_t slot = nonlocal_exprs_.size();
+            nonlocal_dictionary_[id.atom_] = slot;
+            nonlocal_exprs_.push_back(m);
+            return aux::make_shared<Nonlocal_Ref>(
+                Shared<const Phrase>(&id), slot);
         }
     };
     Arg_Environ env2(params, env, recursive_);
