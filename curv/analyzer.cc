@@ -322,7 +322,7 @@ Module_Phrase::analyze(Environ& env) const
 }
 
 void
-Bindings_Analyzer::add_definition(Shared<Phrase> phrase)
+Bindings::add_definition(Shared<Phrase> phrase)
 {
     const Definition* def = dynamic_cast<Definition*>(phrase.get());
     if (def == nullptr)
@@ -339,7 +339,7 @@ Bindings_Analyzer::add_definition(Shared<Phrase> phrase)
 }
 
 Shared<List>
-Bindings_Analyzer::analyze_values(Environ& env)
+Bindings::analyze_values(Environ& env)
 {
     size_t n = slot_phrases_.size();
     auto slots = make_list(n);
@@ -354,7 +354,7 @@ Shared<Module_Expr>
 Module_Phrase::analyze_module(Environ& env) const
 {
     // phase 1: Create a dictionary of field phrases, a list of element phrases
-    Bindings_Analyzer fields;
+    Bindings fields;
     std::vector<Shared<Phrase>> elements;
     for (auto st : stmts_) {
         if (dynamic_cast<Definition*>(st.stmt_.get()) != nullptr)

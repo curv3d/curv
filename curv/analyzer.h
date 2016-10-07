@@ -12,14 +12,14 @@ namespace curv {
 
 /// This is used to analyze a set of module definitions, and in future,
 /// record definitions, let definitions, or function parameters.
-struct Bindings_Analyzer
+struct Bindings
 {
     size_t cur_position_;
     Shared<Module::Dictionary> dictionary_;
     std::vector<Shared<const Phrase>> slot_phrases_;
 
     // First, construct the Binding_Analyzer:
-    Bindings_Analyzer()
+    Bindings()
     :
         cur_position_(0),
         dictionary_(aux::make_shared<Module::Dictionary>()),
