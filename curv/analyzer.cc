@@ -44,10 +44,10 @@ Builtin_Environ::single_lookup(const Identifier& id)
 }
 
 Shared<Expression>
-Module_Environ::single_lookup(const Identifier& id)
+Bindings::Environ::single_lookup(const Identifier& id)
 {
-    auto b = dictionary_->find(id.atom_);
-    if (b != dictionary_->end())
+    auto b = bindings_.dictionary_->find(id.atom_);
+    if (b != bindings_.dictionary_->end())
         return aux::make_shared<Module_Ref>(Shared<const Phrase>(&id), b->second);
     return nullptr;
 }
@@ -365,7 +365,7 @@ Module_Phrase::analyze_module(Environ& env) const
 
     // phase 2: Construct an environment from the field dictionary
     // and use it to perform semantic analysis.
-    Module_Environ env2(&env, fields.dictionary_);
+    Bindings::Environ env2(&env, fields);
     auto self = Shared<const Phrase>(this);
     auto module = aux::make_shared<Module_Expr>(self);
     module->dictionary_ = fields.dictionary_;

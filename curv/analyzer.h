@@ -10,38 +10,6 @@
 
 namespace curv {
 
-/// This is used to analyze a set of module definitions, and in future,
-/// record definitions, let definitions, or function parameters.
-struct Bindings
-{
-    size_t cur_position_;
-    Shared<Module::Dictionary> dictionary_;
-    std::vector<Shared<const Phrase>> slot_phrases_;
-
-    // First, construct the Binding_Analyzer:
-    Bindings()
-    :
-        cur_position_(0),
-        dictionary_(aux::make_shared<Module::Dictionary>()),
-        slot_phrases_()
-    {}
-
-    // Second, add some bindings:
-    void add_definition(Shared<Phrase> phrase);
-    //void add_parameter(Shared<Phrase> phrase);
-
-    // Third, construct an Environ from the bindings dictionary.
-    // I have no way to make this generic right now.
-
-    // Fourth, analyze the binding phrases, and construct a list of compile
-    // time Values (constants, lambdas or thunks),
-    // using the above Environ if they are mutually recursive:
-    Shared<List> analyze_values(Environ& env);
-
-    // Fifth, construct a Let_Expr, Module_Expr, Record_Expr
-    // or function parameter list.
-};
-
 struct Environ
 {
     Environ* parent_;
@@ -66,19 +34,49 @@ public:
     virtual Shared<Expression> single_lookup(const Identifier&);
 };
 
-struct Module_Environ : public Environ
+/// This is used to analyze a set of module definitions, and in future,
+/// record definitions, let definitions, or function parameters.
+struct Bindings
 {
-protected:
+    size_t cur_position_;
     Shared<Module::Dictionary> dictionary_;
-public:
-    Module_Environ(
-        Environ* p,
-        Shared<Module::Dictionary> d)
+    std::vector<Shared<const Phrase>> slot_phrases_;
+
+    // First, construct the Binding_Analyzer:
+    Bindings()
     :
-        Environ(p),
-        dictionary_(std::move(d))
+        cur_position_(0),
+        dictionary_(aux::make_shared<Module::Dictionary>()),
+        slot_phrases_()
     {}
-    virtual Shared<Expression> single_lookup(const Identifier&);
+
+    // Second, add some bindings:
+    void add_definition(Shared<Phrase> phrase);
+    //void add_parameter(Shared<Phrase> phrase);
+
+    // Third, construct an Environ from the bindings dictionary.
+    struct Environ : public curv::Environ
+    {
+    protected:
+        Bindings& bindings_;
+    public:
+        Environ(
+            curv::Environ* p,
+            Bindings& b)
+        :
+            curv::Environ(p),
+            bindings_(b)
+        {}
+        virtual Shared<Expression> single_lookup(const Identifier&);
+    };
+
+    // Fourth, analyze the binding phrases, and construct a list of compile
+    // time Values (constants, lambdas or thunks),
+    // using the above Environ if they are mutually recursive:
+    Shared<List> analyze_values(Environ& env);
+
+    // Fifth, construct a Let_Expr, Module_Expr, Record_Expr
+    // or function parameter list.
 };
 
 inline Shared<Meaning>
