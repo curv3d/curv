@@ -229,6 +229,10 @@ TEST(curv, eval)
         "sum = (list,i,f)->if (i < len list) list@i+f(list,i+1,f) else 0;"
         "sum([1,2,3],0,sum)",
         "6");
+    EVALS_TO(
+        "sum = (list,i)->if (i < len list) list@i+sum(list,i+1) else 0;"
+        "sum([1,2,3],0)",
+        "6");
 
     // lexical errors
     EVAL_ERROR("\\foo", "illegal character '\\'");

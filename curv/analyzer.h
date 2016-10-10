@@ -50,6 +50,8 @@ struct Bindings
         slot_phrases_()
     {}
 
+    bool is_recursive_function(size_t);
+
     // Second, add some bindings:
     void add_definition(Shared<Phrase> phrase);
     //void add_parameter(Shared<Phrase> phrase);

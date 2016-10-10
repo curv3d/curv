@@ -43,13 +43,62 @@ Builtin_Environ::single_lookup(const Identifier& id)
     return nullptr;
 }
 
+void
+Bindings::add_definition(Shared<Phrase> phrase)
+{
+    const Definition* def = dynamic_cast<Definition*>(phrase.get());
+    if (def == nullptr)
+        throw Phrase_Error(*phrase, "not a definition");
+    auto id = dynamic_cast<const Identifier*>(def->left_.get());
+    if (id == nullptr)
+        throw Phrase_Error(*def->left_, "not an identifier");
+    Atom name = id->atom_;
+    if (dictionary_->find(name) != dictionary_->end())
+        throw Phrase_Error(*def->left_,
+            stringify(name, ": multiply defined"));
+    (*dictionary_)[name] = cur_position_++;
+    slot_phrases_.push_back(def->right_);
+
+    auto lambda = dynamic_cast<Lambda_Phrase*>(def->right_.get());
+    if (lambda != nullptr)
+        lambda->recursive_ = true;
+}
+
+bool
+Bindings::is_recursive_function(size_t slot)
+{
+    return isa_shared<const Lambda_Phrase>(slot_phrases_[slot]);
+}
+
 Shared<Expression>
 Bindings::Environ::single_lookup(const Identifier& id)
 {
     auto b = bindings_.dictionary_->find(id.atom_);
-    if (b != bindings_.dictionary_->end())
-        return aux::make_shared<Module_Ref>(Shared<const Phrase>(&id), b->second);
+    if (b != bindings_.dictionary_->end()) {
+        if (bindings_.is_recursive_function(b->second))
+            return aux::make_shared<Nonlocal_Function_Ref>(
+                Shared<const Phrase>(&id), b->second);
+        else
+            return aux::make_shared<Module_Ref>(
+                Shared<const Phrase>(&id), b->second);
+    }
     return nullptr;
+}
+
+Shared<List>
+Bindings::analyze_values(Environ& env)
+{
+    size_t n = slot_phrases_.size();
+    auto slots = make_list(n);
+    for (size_t i = 0; i < n; ++i) {
+        auto expr = curv::analyze_expr(*slot_phrases_[i], env);
+        if (is_recursive_function(i)) {
+            auto& l = dynamic_cast<Lambda_Expr&>(*expr);
+            (*slots)[i] = {aux::make_shared<Lambda>(l.body_,l.nargs_,l.nslots_)};
+        } else
+            (*slots)[i] = {aux::make_shared<Thunk>(expr)};
+    }
+    return slots;
 }
 
 Shared<Meaning>
@@ -319,35 +368,6 @@ Shared<Meaning>
 Module_Phrase::analyze(Environ& env) const
 {
     return analyze_module(env);
-}
-
-void
-Bindings::add_definition(Shared<Phrase> phrase)
-{
-    const Definition* def = dynamic_cast<Definition*>(phrase.get());
-    if (def == nullptr)
-        throw Phrase_Error(*phrase, "not a definition");
-    auto id = dynamic_cast<const Identifier*>(def->left_.get());
-    if (id == nullptr)
-        throw Phrase_Error(*def->left_, "not an identifier");
-    Atom name = id->location().range();
-    if (dictionary_->find(name) != dictionary_->end())
-        throw Phrase_Error(*def->left_,
-            stringify(name, ": multiply defined"));
-    (*dictionary_)[name] = cur_position_++;
-    slot_phrases_.push_back(def->right_);
-}
-
-Shared<List>
-Bindings::analyze_values(Environ& env)
-{
-    size_t n = slot_phrases_.size();
-    auto slots = make_list(n);
-    for (size_t i = 0; i < n; ++i) {
-        auto expr = curv::analyze_expr(*slot_phrases_[i], env);
-        (*slots)[i] = {aux::make_shared<Thunk>(expr)};
-    }
-    return slots;
 }
 
 Shared<Module_Expr>

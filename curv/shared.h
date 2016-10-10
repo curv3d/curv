@@ -20,5 +20,12 @@ dynamic_shared_cast(Shared<U> p)
     return Shared<T>(dynamic_cast<T*>(p.get()));
 }
 
+template<class T, class U>
+inline bool
+isa_shared(Shared<U> p)
+{
+    return dynamic_cast<T*>(p.get()) != nullptr;
+}
+
 } // namespace curv
 #endif // header guard
