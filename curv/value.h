@@ -197,7 +197,7 @@ public:
         // exponent than this, so will test < +inf as an integer bit pattern.
         // The positive NaNs have the largest signed integer magnitude,
         // and all non-numeric values are encoded as positive NaNs.
-        // The 4 special immediate values, void, null, false and true,
+        // The 3 special immediate values (null, false and true)
         // are encoded like pointer values in the range 0...3.
         return signed_bits_ > (int64_t)(k_nanbits|3);
     }

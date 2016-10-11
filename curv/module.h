@@ -40,10 +40,21 @@ struct Module : public Ref_Value
     /// can be shared between multiple module values.
     Shared<Dictionary> dictionary_;
 
-    /// The `slots` array contains field values, and may in future contain
-    /// additional values. In any case, the number of slots is determined
-    /// at compile time, and slot indexes are determined at compile time.
-    /// TODO: tail array?
+    /// The `slots` array contains field values. In the future, for submodules,
+    /// it will also contain nonlocals.
+    ///
+    /// Field values that come from lambda expressions are represented in the
+    /// slot array as Lambdas, not as Closures. (Otherwise, there would be a
+    /// reference cycle from slots_ -> closure -> slots_, causing a storage
+    /// leak.) To avoid the storage leak, we construct a Closure value each
+    /// time such a slot is referenced via the `get` function.
+    /// 
+    /// The number of slots is determined at compile time, and slot indexes are
+    /// determined at compile time. Which slots contain Lambdas is also known
+    /// at compile time.
+    ///
+    /// This is not tail array because it may also be referenced by a Closure.
+    /// (Well, unless we change Closure to contain a Module reference.)
     Shared<List> slots_;
 
     /// The `elements` array contains module elements. The number of
@@ -56,6 +67,9 @@ struct Module : public Ref_Value
     {}
 
     friend class curv::Module_Expr;
+
+    /// Fetch the value stored at slot index `i`.
+    Value get(size_t i) const;
 
     // We provide a container interface for accessing the fields, like std::map.
     size_t size() const { return dictionary_->size(); }
@@ -73,7 +87,7 @@ struct Module : public Ref_Value
         }
         std::pair<Atom,Value> operator*()
         {
-            return { iter_->first, (*m_.slots_)[iter_->second] };
+            return { iter_->first, m_.get(iter_->second) };
         }
         bool operator==(const iterator& i)
         {
@@ -93,7 +107,7 @@ struct Module : public Ref_Value
 
     Value operator[](Atom id) const
     {
-        return (*slots_)[(*dictionary_)[id]];
+        return get((*dictionary_)[id]);
     }
 
     Shared<List> elements() const { return elements_; }

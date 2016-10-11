@@ -3,6 +3,7 @@
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
 #include <curv/module.h>
+#include <curv/function.h>
 
 void
 curv::Module::print(std::ostream& out) const
@@ -17,4 +18,16 @@ curv::Module::print(std::ostream& out) const
         out << e << ";";
     }
     out << "}";
+}
+
+curv::Value
+curv::Module::get(size_t i) const
+{
+    Value val = (*slots_)[i];
+    if (val.is_ref()) {
+        auto& ref = val.get_ref_unsafe();
+        if (ref.type_ == Ref_Value::ty_lambda)
+            return {aux::make_shared<Closure>((Lambda&)ref, *slots_)};
+    }
+    return val;
 }
