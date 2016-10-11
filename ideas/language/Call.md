@@ -69,6 +69,13 @@ So,
 * if (cond) chain
 * if (cond) nprimary else nprimary
 * if (cond) nprimary else chain
+```
+if (x > y) x else y + 1
+<=> (if (x > y) x else y) + 1
+```
+
+Also, `assert` becomes an ordinary function (since functions have access to the
+source code of their arguments).
 
 ## Bindable Meanings that Aren't Values
 

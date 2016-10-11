@@ -285,7 +285,8 @@ len(X) -- # of elements in the sequence
 X@i -- i'th element of X
 X@(i..j) X@(i..) X@(..j) -- slice notation
 X@(i:step..j) X@(i:step..) X@(:step..j) -- slice notation with stride (alt 1)
-X@(i..j:step) X@(i..:step) X@(..j:step) -- slice notation with stride (alt 2)
+  This is very close to the Matlab/Julia/OpenSCAD range syntax of
+  start:step:end, but less confusing/ambiguous for Python programmers.
 X@list -- sequence containing all elements whose indices are in list
   Note that slice notation above doesn't support a stride,
   but you can still write X@[0..len(X)-1:2].
@@ -293,6 +294,14 @@ reverse(sequence)
 join(separator-sequence)(list-of-sequences)
   eg, join "," ["foo","bar","baz"] -> "foo,bar,baz"
 sort(sequence,compare=(x,y)->x<=y)
+```
+
+F# uses `X.[i]` to index into a sequence.
+By extension, I could also use `X.{key}` to index into a map (record or module),
+where `key` is a string. This is elegant and consistent, at least.
+```
+[1,2].[0] == 1
+{x=1,y=2}.{"x"} == 1
 ```
 
 Strings are not lists of characters, and not all sequence operations work

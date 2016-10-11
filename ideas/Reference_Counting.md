@@ -1,8 +1,13 @@
+"A Unified Theory of Garbage Collection"
+* http://www.cs.virginia.edu/~cs415/reading/bacon-garbage.pdf
+* Tracing and reference counting GC are duals of each other, in their simple
+  naive form. All high performance GCs are hybrids.
+
 # Recursion and Reference Counting
 I can use reference counting to manage storage,
 even in the presence of first-class recursive function closures.
 Benefits:
-* easy C++ integration
+* easy C++ integration.
 * 'mutable' data structures: upd(array,index,newval) returns a copy of array
   with one element updated, and can be used to implement constant-time
   array update algorithms. Implementation: modify array in place if refcount==1.

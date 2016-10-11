@@ -1,107 +1,15 @@
-* Recursive functions
-  * Run time data structures:
-    * Lambda is an improper value type, a lambda expression without the data
-      for nonlocal values.
-    * Closure is a proper value type, a Lambda + nonlocal data, the latter
-      represented as a List.
-    * a Module's slot array contains field values and nonlocal bindings
-      referenced by function fields, represented as a List.
-      * For function fields, the slot contains a Lambda not a Closure.
-      * For nonlocal function bindings, the slot contains a Closure.
-        At first glance, that could lead to reference cycles, as in:
-          m = {f(x) = g(x);};
-          g = m.f;
-        Except that this generates an "illegal recursive reference" error.
-    * In a module frame, slot 0 is the Module's slot array (a List value).
-      Alternatively, I could change Frame to use `List& nonlocal`, then I don't
-      need slot 0. Same performance.
-    * A let expression has a frame slot containing the nonlocal values
-      referenced by function bindings. Slots for function bindings contain
-      Lambdas.
-  * Analysis time data structures:
-    * a Local_Function_Ref contains a lambda_slot and a nonlocals_slot.
-      The eval() function combines these into a Closure value.
-    * A Module_Function_Ref contains a lambda_slot (nonlocal) and implicitly
-      references local slot 0, combining these into a Closure value.
-  * Special cases:
-    * Recursive static functions (non closures), C function equivalency.
-    * supported: Self-recursive function.
-    * supported: Mutually recursive functions in the same let or module scope.
-    * causes an error: any other kind of recursive definition.
-  * RFunctions: All of the functions in a mutual-recursion group (within a
-    let or module scope) share the same nonlocal slot vector. These functions
-    reference themselves and each other, not by Constant nodes, but by
-    nonlocal references, and the slots themselves contain RFunction refs,
-    not proper Values. The shared slot vector is represented as a List and
-    stored in an additional slot associated with the let or module expression.
-    * Hence, recursive functions are not Constants.
-    * An RFun reference is a special Meaning class that contains the slot ids
-      of the RFun code reference and the nonlocals list. There are local and
-      nonlocal variants. When eval'ed, an RFun reference fetches the contents
-      of the two slots and constructs a closure Value.
-    * Future optimization: use a special operation to call a function via an
-      RFun ref without constructing the closure as a temporary Value.
-      (Peephole optimization: super-operator.)
-  * How to analyze a recursive function.
-    * Analysis of a phrase tree is a depth-first recursive process.
-      Previously, I map a let/module bound identifier to a slot reference
-      with no further analysis. Now, I recursively analyze the definiens phrase,
-      and store the resulting Expression.
-      * If it is already analyzed, then it's a thunk or rfun.
-        Return the corresponding ref type.
-        Future optimization: add a third category, proper value.
-      * If is an unanalyzed phrase, then mark the symbol table entry as pending,
-        then analyze the phrase.
-      * If it is a pending phrase, then if a lambda phrase, mark it as an RFun,
-        otherwise mark it as a Thunk. analyze() returns a slot reference.
-      * Future optimization: add a fourth category, Constant.
-    * RFuns in the same mutual recursion group must share a nonlocals list,
-      otherwise, if they have separate lists, then there will be reference
-      cycles between these lists.
-    * Therefore, after analyzing all of the definitions in a let/module scope,
-      visit all of the RFun bindings, amalgamate all of the nonlocal arrays
-      into a single shared nonlocal array for the scope. A new compile phase,
-      post analysis, is needed to assign nonlocal slot ids.
-    * A nonlocal ref created during analysis needs to store a key that can be
-      mapped to a slot id after amalgamation. This is a Ref_ID, possibly a
-      bitfield containing a stack depth and slot index. Or an Atom.
-    * As a special case, the nonlocal array for a module will use the same slot
-      array as the field values.
-  * Simplified Design: All let/module function definitions are analyzed as
-    RFunctions. Nonlocal slot indexes are assigned during analysis, no need for
-    a new compiler pass. If a let has function definitions, then an extra slot
-    is added for the function nonlocals list. The slot contains a thunk for
-    a list constructor, so it's lazy. In a module, the nonlocals are added
-    directly to the module's slot array.
-* lambda expressions: x->expr: stack of frames
-  * lambda syntax: a->expr, (a,b)->expr, [a,b]->expr, {a,b}->expr
-    * Currying: (a)(b)(c)->expr, like a->b->c->expr.
-      This abbreviation hardly seems worthwhile, only shows value in
-      the context `f(a)(b)=...` definition which is patterned after ML.
-    * Chains: `f x->x+1` parses as `f(x->x+1)`.
-      Not a high priority, as infix operators generally don't work in chains.
-    * For now, the left arg of `->` is a primary, anything else is an error.
-      `->` has a low precedence.
-      `a b->...` is an error (no currying or chaining).
-    * `x->expr`  Special case when there is exactly one argument,
-      doesn't work with the Currying abbreviation.
-    * Maybe `f(x,y)children=...` is legal; naked identifier legal as final
-      curried argument; this abbreviates `f=(x,y)children->...`.
-  * syntax: is lambda a chain or an expr?
-    * how is this parsed: `a b->expr` ?
-      * As `(a b)->expr`, like `a->b->expr`? Expr interpretation.
-        Doesn't generalize to `a b c->expr`. Not good. The dual,
-        `f a b=expr`, doesn't work.
-      * As `a(b->expr)`? Chain interpretation. Consistent with the general
-        chain syntax.
-      * An error.
+# 0.1: Minimum Viable Language
 * 'curv <filename>' evaluates a script file.
+* file(filename) imports a curv module file.
 * comments
 * better error messages
-* interactive curv: special variable `_` is last value. _1,_2, or $1,$2 ...
+* top level if(b)c, for, echo, assert actions
 
-Refactor:
-* analyze let expressions using Bindings_Analyzer
+Other:
+* Interactive curv: special variable `_` is last value. _1,_2, or $1,$2 ...
+* Introduce submodules (with recursive functions)
+* Extend `let` to support recursive functions. Or provide `let` and `letrec`.
+
 
 # CURV0 (expressions):
 * bug: (-1)^-0.5 error message needs parens around '-1'
@@ -125,7 +33,7 @@ Refactor:
 * num: min[x,y], max[x,y], abs(x), sin(x), cos(x)
 * string: $$ $" $id ${id} $(id) $+EE interpolation, strcat[s1,s2]
   scanner has in-string flag, parser resets/sets flag during $(expr).
-* list: [a..b], concat[l1,l2]
+* list: [a..b] or [a to b by step], concat[l1,l2]
 * string: str@i, len(str) -- either ASCII-only, or proper Unicode
 * records: defined r.id, merge[r1,r2]
 * broader unit testing

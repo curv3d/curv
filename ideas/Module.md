@@ -1,5 +1,198 @@
 # Implementation of Functions and Modules
 
+## TODO: Recursive Functions
+* Script-Module recursive bindings
+  * Lambda_Phrase has data field 'bool recursive'. Default false, set true if
+    definiens of a module binding. It means: During analysis, shared nonlocals
+    dictionary is constructed by module, so don't use own nonlocals dictionary
+    and slot mappings when resolving nonlocals, delegate to parent module.
+  * Lambda_Expr::eval won't be called. 
+  * Bindings_Analyzer contains the shared nonlocals dictionary. Right now,
+    there are no private bindings, and for script modules, all nonlocals are
+    builtin constants, so the current dictionary doesn't need any more entries.
+  * Bindings_Analyzer::add_definition() should set lambda->recursive = true.
+    Do we need to perform additional book keeping to keep track of the
+    lambda entries, like a flag in the dictionary entry?
+  * Module_Environ::single_lookup must now return a Module_Ref or a
+    Nonlocal_Function_Ref, based on the dictionary lookup. Either store a
+    lambda flag in dictionary (need an analysis-time Dictionary type), or use
+    an isa test on the slot_phrases vector
+    (Module_Environ must reference the Bindings_Analyzer).
+  * Bindings_Analyzer::analyze_values() must store a constant, lambda or
+    thunk. I can determine this using current data structure.
+* `Bindings_Analyzer` (or just `Bindings`). This seems like the key abstraction.
+  Will evolve the data structure and API to support additional planned features.
+  * supported language features:
+    * scriptmodule. each slot <=> a module binding. dictionary contains
+      public module bindings only.
+    * submodule. each slot <=> a module binding or a nonlocal. All slots
+      nonlocal. internal dictionary of module bindings and nonlocals.
+      public dictionary (for Module value) of module bindings only.
+    * let expression. local slots: let bindings. nonlocal slots: let bindings
+      and nonlocal bindings. The same let binding can be in two places (to
+      avoid this, we need an extra compile pass).
+      * How to determine which slot to use for a given lookup? Easy, change the
+        env passed to analyze() based on whether we are analyzing a function
+        definiens.
+      * Could have 2 dictionaries, local and nonlocal. Or, a unified dictionary
+        plus a bool in the env used during lookup.
+    * pattern matching definitions. non-trivial definiendum patterns result
+      in a local temp slot (for the value to be pattern matched), plus local
+      or nonlocal let/module slots for the bound names.
+    * parameterized module. Here's one simple implementation:
+      * to call a module, copy the nonlocals list, then update parameter slots
+        in that list using argument values.
+      * a definiens that references parameter slots is compiled into a thunk
+        that is evaluated every time the binding is referenced.
+  * the data structure should keep track of:
+    * nonlocal slots (environment vector for module or recursive functions
+      in a let)
+    * argument slots
+    * local slots (including anonymous temporaries)
+    * mapping from names to slots
+  * For Sub-Modules, `Bindings` needs:
+    * Dictionary from field names to slots, for Module. (no nonlocals).
+    * List of compile time slot values, for Module (fields and nonlocals).
+      Construct in phase 3, after analysis of definientia.
+    * Vector of slot exprs, constructed during phase 2 (analysis of definientia)
+    * Vector of slot definientia phrases, phase 1.
+    * Dictionary from names to slots, constructed phase 1 & 2.
+      Used for Environ lookups in phase 2. Also need flag (is this a function
+      member?), which: could be in dictionary, could be determined from slot id
+      using: is_function_member(slot) = is this a member slot (range check)
+      and is definiens a Lambda_Phrase (from vector of definientia phrases)?
+  * For Script-Modules only, we don't remember nonlocals in phase 2, so:
+    * `dictionary`: Dictionary from field names to slots.
+      Used for Module value, and for Environ lookups in phase 2.
+  * Eh:
+    We add a sequence of definitions (name/phrase pairs).
+    Then we begin analyzing phrases, we discover nonlocals, and add them to
+    the dictionary and slot map as name/expr pairs.
+    In the end, we'll produce a map from slots to exprs, which we convert
+    to a List of compile time values.
+
+* Recursive functions
+  * How do I hook analyze_lambda() so that it uses a shared nonlocals dictionary
+    for module function members?
+    * Modify the Lambda_Phrase so that it knows it's a module member.
+      Add a new data member (bool or pointer).
+    * The shared nonlocals dictionary is in the env passed to analyze_lambda.
+      * So analyze_lambda checks the bool, downcasts the env to access the
+        dictionary?
+      * Or the new Lambda_Phrase data member is a pointer that provides access
+        to the dictionary? (Does the referenced object have the same lifetime
+        as the Lambda_Phrase?) This reminds me of a proposal to add an Environ*
+        to every Expression so that the debugger can look up symbols when a
+        program is suspended.
+      * Or, the lookup() function has a second flag argument that defaults to
+        false and is not propagated to parent lookups. If true, the lookup is
+        cached in the shared nonlocals dictionary.
+    * When a nonlocal is looked up, a function in the same scope as the
+      recursive lambda is treated specially (a Function_Ref rather than a Ref).
+      How is that triggered?
+      * Normally analyze_lambda() calls lookup() on its env argument. But now,
+        we need to know the lookup is coming from a recursive function.
+        So, an extra flag argument to lookup() that defaults to false and is not
+        propagated to parent lookups. If true, then:
+        * Cache the result in the shared nonlocals dictionary.
+        * If the result is a function in this scope, return a Function_Ref.
+  * Run time data structures:
+    * Lambda is an improper value type, a lambda expression without the data
+      for nonlocal values.
+    * Closure is a proper value type, a Lambda + nonlocal data, the latter
+      represented as a List.
+    * a Module's slot array contains field values and nonlocal bindings
+      referenced by function fields, represented as a List.
+      * For function fields, the slot contains a Lambda not a Closure.
+      * For nonlocal function bindings, the slot contains a Closure.
+        At first glance, that could lead to reference cycles, as in:
+          m = {f(x) = g(x);};
+          g = m.f;
+        Except that this generates an "illegal recursive reference" error.
+    * In a module frame, slot 0 is the Module's slot array (a List value).
+      Alternatively, I could change Frame to use `List& nonlocal`, then I don't
+      need slot 0. Same performance.
+    * A let expression has a frame slot containing the nonlocal values
+      referenced by function bindings. Slots for function bindings contain
+      Lambdas.
+  * Analysis time data structures:
+    * a Local_Function_Ref contains a lambda_slot and a nonlocals_slot.
+      The eval() function combines these into a Closure value.
+    * A Module_Function_Ref contains a lambda_slot (nonlocal) and implicitly
+      references local slot 0, combining these into a Closure value.
+  * Special cases:
+    * Recursive static functions (non closures), C function equivalency.
+    * supported: Self-recursive function.
+    * supported: Mutually recursive functions in the same let or module scope.
+    * causes an error: any other kind of recursive definition.
+  * RFunctions: All of the functions in a mutual-recursion group (within a
+    let or module scope) share the same nonlocal slot vector. These functions
+    reference themselves and each other, not by Constant nodes, but by
+    nonlocal references, and the slots themselves contain RFunction refs,
+    not proper Values. The shared slot vector is represented as a List and
+    stored in an additional slot associated with the let or module expression.
+    * Hence, recursive functions are not Constants.
+    * An RFun reference is a special Meaning class that contains the slot ids
+      of the RFun code reference and the nonlocals list. There are local and
+      nonlocal variants. When eval'ed, an RFun reference fetches the contents
+      of the two slots and constructs a closure Value.
+    * Future optimization: use a special operation to call a function via an
+      RFun ref without constructing the closure as a temporary Value.
+      (Peephole optimization: super-operator.)
+  * How to analyze a recursive function.
+    * Analysis of a phrase tree is a depth-first recursive process.
+      Previously, I map a let/module bound identifier to a slot reference
+      with no further analysis. Now, I recursively analyze the definiens phrase,
+      and store the resulting Expression.
+      * If it is already analyzed, then it's a thunk or rfun.
+        Return the corresponding ref type.
+        Future optimization: add a third category, proper value.
+      * If is an unanalyzed phrase, then mark the symbol table entry as pending,
+        then analyze the phrase.
+      * If it is a pending phrase, then if a lambda phrase, mark it as an RFun,
+        otherwise mark it as a Thunk. analyze() returns a slot reference.
+      * Future optimization: add a fourth category, Constant.
+    * RFuns in the same mutual recursion group must share a nonlocals list,
+      otherwise, if they have separate lists, then there will be reference
+      cycles between these lists.
+    * Therefore, after analyzing all of the definitions in a let/module scope,
+      visit all of the RFun bindings, amalgamate all of the nonlocal arrays
+      into a single shared nonlocal array for the scope. A new compile phase,
+      post analysis, is needed to assign nonlocal slot ids.
+    * A nonlocal ref created during analysis needs to store a key that can be
+      mapped to a slot id after amalgamation. This is a Ref_ID, possibly a
+      bitfield containing a stack depth and slot index. Or an Atom.
+    * As a special case, the nonlocal array for a module will use the same slot
+      array as the field values.
+  * Simplified Design: All let/module function definitions are analyzed as
+    RFunctions. Nonlocal slot indexes are assigned during analysis, no need for
+    a new compiler pass. If a let has function definitions, then an extra slot
+    is added for the function nonlocals list. The slot contains a thunk for
+    a list constructor, so it's lazy. In a module, the nonlocals are added
+    directly to the module's slot array.
+* lambda expressions: x->expr: stack of frames
+  * lambda syntax: a->expr, (a,b)->expr, [a,b]->expr, {a,b}->expr
+    * Currying: (a)(b)(c)->expr, like a->b->c->expr.
+      This abbreviation hardly seems worthwhile, only shows value in
+      the context `f(a)(b)=...` definition which is patterned after ML.
+    * Chains: `f x->x+1` parses as `f(x->x+1)`.
+      Not a high priority, as infix operators generally don't work in chains.
+    * For now, the left arg of `->` is a primary, anything else is an error.
+      `->` has a low precedence.
+      `a b->...` is an error (no currying or chaining).
+    * `x->expr`  Special case when there is exactly one argument,
+      doesn't work with the Currying abbreviation.
+    * Maybe `f(x,y)children=...` is legal; naked identifier legal as final
+      curried argument; this abbreviates `f=(x,y)children->...`.
+  * syntax: is lambda a chain or an expr?
+    * how is this parsed: `a b->expr` ?
+      * As `(a b)->expr`, like `a->b->expr`? Expr interpretation.
+        Doesn't generalize to `a b c->expr`. Not good. The dual,
+        `f a b=expr`, doesn't work.
+      * As `a(b->expr)`? Chain interpretation. Consistent with the general
+        chain syntax.
+      * An error.
+
 ## Next Steps: Nonlocal References In A Lambda
 What's the next baby step towards supporting non-local references?
 
