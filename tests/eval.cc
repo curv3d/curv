@@ -214,8 +214,8 @@ TEST(curv, eval)
     EVALS_TO("4^0.5", "2");
     EVALS_TO("4^-1", "0.25");
     EVALS_TO("-2^2", "-4");
-    EVALS_TO("[1,2,3]@1","2");
-    EVAL_ERROR("[1,2,3]@1.1","not an integer");
+    EVALS_TO("[1,2,3].[1]","2");
+    EVAL_ERROR("[1,2,3].[1.1]","not an integer");
     EVALS_TO("x+y;x=1;y=2", "3");
     EVALS_TO("a=c+1;b=1;c=b+1;a", "3");
     EVAL_ERROR("x=x;x", "illegal recursive reference");
@@ -226,11 +226,11 @@ TEST(curv, eval)
     EVALS_TO("add=(x,y)->x+y;add(1,2)", "3");
     EVALS_TO("add=x->y->x+y;add(1)(2)", "3");
     EVALS_TO(
-        "sum = (list,i,f)->if (i < len list) list@i+f(list,i+1,f) else 0;"
+        "sum = (list,i,f)->if (i < len list) list.[i]+f(list,i+1,f) else 0;"
         "sum([1,2,3],0,sum)",
         "6");
     EVALS_TO(
-        "sum = (list,i)->if (i < len list) list@i+sum(list,i+1) else 0;"
+        "sum = (list,i)->if (i < len list) list.[i]+sum(list,i+1) else 0;"
         "sum([1,2,3],0)",
         "6");
 

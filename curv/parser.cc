@@ -37,7 +37,7 @@ Shared<Phrase> parse_primary(Scanner&,bool);
 // It's a recursive descent parser.
 //
 // script : | stmts | stmts ;
-// stmts : stmt | stmts ; stmt
+// stmts : expr | stmts ; expr
 Shared<Module_Phrase>
 parse_script(Scanner& scanner)
 {
@@ -211,7 +211,7 @@ parse_unary(Scanner& scanner)
 //  : primary
 //  | postfix primary{not-identifier}
 //  | postfix . identifier
-//  | postfix @ primary
+//  | postfix . list
 Shared<Phrase>
 parse_chain(Scanner& scanner)
 {
@@ -229,16 +229,6 @@ parse_chain(Scanner& scanner)
                 postfix, tok, parse_unary(scanner));
         }
         if (tok.kind == Token::k_dot) {
-            auto tok2 = scanner.get_token();
-            if (tok2.kind != Token::k_ident) {
-                throw Token_Error(scanner.script_, tok2,
-                    ". operator not followed by identifier");
-            }
-            postfix = aux::make_shared<Dot_Phrase>(postfix, tok,
-                aux::make_shared<Identifier>(scanner.script_, tok2));
-            continue;
-        }
-        if (tok.kind == Token::k_at) {
             postfix = aux::make_shared<Binary_Phrase>(postfix, tok,
                 parse_primary(scanner, true));
             continue;
@@ -253,8 +243,12 @@ parse_chain(Scanner& scanner)
 
 // primary : numeral | identifier | string | parens | list | record
 //  | 'if' ( expr ) expr 'else' expr
-// parens : ( ) | ( args ) | ( args , )
-// args : expr | args , expr
+//  | 'let' parens expr
+// parens : ( args )
+// list : [ args ]
+// record : { args }
+// args : ( ) | ( arglist ) | ( arglist , )
+// arglist : expr | arglist , expr
 //
 // If `force` is false, then we are parsing an optional primary,
 // and we return nullptr if no primary is found.

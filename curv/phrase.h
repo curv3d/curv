@@ -228,29 +228,6 @@ struct Call_Phrase : public Phrase
     virtual Shared<Meaning> analyze(Environ&) const;
 };
 
-struct Dot_Phrase : public Phrase
-{
-    Shared<Phrase> left_;
-    Token dot_;
-    Shared<Identifier> id_;
-
-    Dot_Phrase(
-        Shared<Phrase> left,
-        Token dot,
-        Shared<Identifier> id)
-    :
-        left_(std::move(left)),
-        dot_(dot),
-        id_(std::move(id))
-    {}
-
-    virtual Location location() const
-    {
-        return left_->location().ending_at(id_->location().token());
-    }
-    virtual Shared<Meaning> analyze(Environ&) const;
-};
-
 struct If_Phrase : public Phrase
 {
     Token if_;

@@ -273,11 +273,31 @@ Binary_Phrase::analyze(Environ& env) const
             Shared<const Phrase>(this),
             curv::analyze_expr(*left_, env),
             curv::analyze_expr(*right_, env));
-    case Token::k_at:
-        return aux::make_shared<At_Expr>(
-            Shared<const Phrase>(this),
-            curv::analyze_expr(*left_, env),
-            curv::analyze_expr(*right_, env));
+    case Token::k_dot:
+      {
+        auto id = dynamic_shared_cast<Identifier>(right_);
+        if (id != nullptr)
+            return aux::make_shared<Dot_Expr>(
+                Shared<const Phrase>(this),
+                curv::analyze_expr(*left_, env),
+                id->atom_);
+        auto list = dynamic_shared_cast<List_Phrase>(right_);
+        if (list != nullptr) {
+            Shared<Expression> index;
+            if (list->args_.size() == 1
+                && list->args_[0].comma_.kind == Token::k_missing)
+            {
+                index = curv::analyze_expr(*list->args_[0].expr_, env);
+            } else {
+                throw Phrase_Error(*this, "not an expression");
+            }
+            return aux::make_shared<At_Expr>(
+                Shared<const Phrase>(this),
+                curv::analyze_expr(*left_, env),
+                index);
+        }
+        throw Phrase_Error(*right_, "invalid expression after '.'");
+      }
     default:
         return aux::make_shared<Infix_Expr>(
             Shared<const Phrase>(this),
@@ -338,15 +358,6 @@ Call_Phrase::analyze(Environ& env) const
         std::move(fun),
         args_,
         std::move(args));
-}
-
-Shared<Meaning>
-Dot_Phrase::analyze(Environ& env) const
-{
-    return aux::make_shared<Dot_Expr>(
-        Shared<const Phrase>(this),
-        curv::analyze_expr(*left_, env),
-        id_->atom_);
 }
 
 void
