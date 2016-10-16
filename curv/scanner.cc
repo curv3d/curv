@@ -40,8 +40,49 @@ Scanner::get_token()
 
     // collect whitespace and comments
     tok.first_white = p - first;
-    while (p < last && isspace(*p))
-        ++p;
+    while (p < last) {
+        if (isspace(*p)) {
+            ++p;
+        }
+        else if (*p == '/' && p+1 < last) {
+            if (p[1] == '/') {
+                // A '//' comment continues to the end of the file or the line.
+                p += 2;
+                for (;;) {
+                    if (p == last) break;
+                    if (*p == '\n') {
+                        ++p;
+                        break;
+                    }
+                    ++p;
+                }
+            }
+            else if (p[1] == '*') {
+                // A '/*' comment continues to the matching '*/', as in C.
+                // An unterminated comment is an error.
+                const char* begin_comment = p;
+                p += 2;
+                for (;;) {
+                    if (p+1 < last && p[0]=='*' && p[1]=='/') {
+                        p += 2;
+                        break;
+                    }
+                    if (p == last) {
+                        ptr_ = p;
+                        tok.kind = Token::k_bad_token;
+                        tok.first = begin_comment - first;
+                        tok.last = last - first;
+                        throw Token_Error(script_, tok, "unterminated comment");
+                    }
+                    ++p;
+                }
+            }
+            else
+                break;
+        }
+        else
+            break;
+    }
     tok.first = p - first;
 
     // recognize end of script

@@ -230,14 +230,21 @@ TEST(curv, eval)
         "sum([1,2,3],0,sum)",
         "6");
     EVALS_TO(
+        "/* tail-recursive function */"
         "sum = (list,i)->if (i < len list) list.[i]+sum(list,i+1) else 0;"
         "sum([1,2,3],0)",
+        "6");
+    EVALS_TO(
+        "// factorial (non-tail-recursive function)\n"
+        "f = x->if (x <= 1) 1 else x * f(x-1);\n"
+        "f(3)",
         "6");
 
     // lexical errors
     EVAL_ERROR("\\foo", "illegal character '\\'");
     EVAL_ERROR("\177", "illegal character 0x7F");
     EVAL_ERROR("42e+", "bad numeral");
+    EVAL_ERROR("/* foo", "unterminated comment");
 
     // analysis errors
     EVAL_ERROR("fnord", "fnord: not defined");
