@@ -17,7 +17,7 @@ using namespace std;
 using namespace boost::math::double_constants;
 
 Value
-builtin_sqrt(Value* args)
+builtin_sqrt(Value* args, const Phrase&)
 {
     double r = sqrt(args[0].get_num_or_nan());
     if (r == r)
@@ -27,9 +27,9 @@ builtin_sqrt(Value* args)
 }
 
 Value
-builtin_len(Value* args)
+builtin_len(Value* args, const Phrase& argsource)
 {
-    auto& list {arg_to_list(args[0], "0")};
+    auto& list {arg_to_list(args[0], get_arg(argsource, 0))};
     return {double(list.size())};
 }
 

@@ -6,15 +6,16 @@
 #include <curv/arg.h>
 #include <curv/exception.h>
 
-auto curv::arg_to_list(Value val, const char* name)
--> List&
+auto curv::get_arg(const Phrase& argsource, size_t i)
+-> const Phrase&
 {
-    if (!val.is_ref())
-        throw Arg_Error(name, "not a list");
-    Ref_Value& ref( val.get_ref_unsafe() );
-    if (ref.type_ != Ref_Value::ty_list)
-        throw Arg_Error(name, "not a list");
-    return (List&)ref;
+    auto parens = dynamic_cast<const Paren_Phrase*>(&argsource);
+    if (parens != nullptr) {
+        assert(i < parens->args_.size());
+        return *parens->args_[i].expr_;
+    }
+    assert(i < 1);
+    return argsource;
 }
 
 auto curv::arg_to_list(Value val, const Phrase& source)

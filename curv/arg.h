@@ -10,10 +10,15 @@
 
 namespace curv {
 
-List& arg_to_list(Value, const char*);
-
 List& arg_to_list(Value, const Phrase&);
 int arg_to_int(Value, int, int, const Phrase&);
+
+/// Get the source code for the i'th function argument from argsource.
+/// Used to construct an argument for `arg_to_*()` or `throw Phrase_Error()`.
+///
+/// TODO: Consider the performance cost of this function, in the case where
+/// it is used with `arg_to_*()`.
+const Phrase& get_arg(const Phrase& argsource, size_t i);
 
 } // namespace curv
 #endif // header guard

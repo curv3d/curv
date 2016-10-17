@@ -1,7 +1,7 @@
 # 0.1: Minimum Viable Language
-* 'curv <filename>' evaluates a script file.
-* file(filename) imports a curv module file.
 * better error messages
+* file(filename) imports a curv module file.
+* 'curv <filename>' evaluates a script file.
 * top level if(b)c, for, echo, assert actions
 
 Other:

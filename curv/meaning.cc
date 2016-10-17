@@ -99,7 +99,7 @@ curv::Call_Expr::eval(Frame& f) const
                     "wrong number of arguments");
             }
             argv[0] = curv::eval(*args_[0], f);
-            return fun->function_(argv);
+            return fun->function_(argv, *argsource_);
         default:
             throw Phrase_Error(*source_,
                 stringify("unsupported argument list size ",args_.size()));
