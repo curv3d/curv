@@ -76,12 +76,21 @@ curv::Location::write(std::ostream& out) const
         ++len;
     }
     out << "\n  ";
+    struct Caret {
+        bool first = true;
+        void put(std::ostream& out, char c)
+        {
+            out << (first ? '^' : '-');
+            if (c == '\t') out << '-';
+            first = false;
+        }
+    } caret;
     unsigned startcol = info.start_column_num;
     unsigned endcol =
         info.end_line_num > info.start_line_num ? len : info.end_column_num;
     for (unsigned i = 0; i < len; ++i) {
         if (i >= startcol && i < endcol) {
-            if (line[i] == '\t') out << "~~"; else out << '~';
+            caret.put(out, line[i]);
         } else {
             if (line[i] == '\t') out << "  "; else out << ' ';
         }
