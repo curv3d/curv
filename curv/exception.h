@@ -66,18 +66,5 @@ struct Phrase_Error : public Exception
     {}
 };
 
-struct Arg_Error : public aux::Exception
-{
-    const char* argname_;
-
-    Arg_Error(const char* argname, const char* msg)
-    : aux::Exception(msg), argname_(argname)
-    {}
-
-    Arg_Error(const char* argname, Shared<String> msg)
-    : aux::Exception(std::move(msg)), argname_(argname)
-    {}
-};
-
 } // namespace curv
 #endif // header guard

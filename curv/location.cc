@@ -51,8 +51,9 @@ curv::Location::ending_at(Token tok) const
 void
 curv::Location::write(std::ostream& out) const
 {
-    out << "file " << scriptname()
-        << ", line " << lineno();
+    if (!scriptname().empty())
+        out << "file " << scriptname() << ", ";
+    out << "line " << lineno();
     switch (token_.kind) {
     case Token::k_end:
         out << ", at end of script";

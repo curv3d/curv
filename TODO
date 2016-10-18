@@ -1,5 +1,12 @@
 # 0.1: Minimum Viable Language
 * better error messages
+  * print source code at error location
+    ERROR: the 'what()' error message
+    file foo.scad, line 1[10-15], token foobar
+      x = foobar();
+          ^-----
+    And/or colour the bad text in red.
+  * print stack trace
 * file(filename) imports a curv module file.
 * 'curv <filename>' evaluates a script file.
 * top level if(b)c, for, echo, assert actions

@@ -63,7 +63,7 @@ main(int, char**)
             }
             return 0;
         }
-        auto script = aux::make_shared<CString_Script>("<stdin>", line);
+        auto script = aux::make_shared<CString_Script>("", line);
         try {
             curv::Shared<curv::Module> module{eval_script(*script, names)};
             for (auto f : *module)
