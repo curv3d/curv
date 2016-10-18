@@ -14,7 +14,8 @@ namespace curv {
 /// Abstract base class: the name and contents of a script file.
 ///
 /// The name is just an uninterpreted utf8 string for now, will later be
-/// a filename or uri.
+/// a filename or uri. If there is no filename, then the name is a zero-length
+/// string, which won't be reported in error messages.
 ///
 /// The contents are a const utf-8 character array.
 /// Subclasses provide storage management for the contents:

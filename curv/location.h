@@ -55,13 +55,16 @@ public:
     /// output the location part of an exception message (no final newline)
     void write(std::ostream&) const;
 
-    /// line and column information for a Location
+    /// Line and column information for a Location
+    ///
+    /// Line and column numbers begin at 0.
+    /// [start_column_num,end_column_num) is a half-open range.
     struct Line_Info
     {
         unsigned start_line_num;
         unsigned start_column_num;
-        //unsigned end_line_num;
-        //unsigned end_column_num;
+        unsigned end_line_num;
+        unsigned end_column_num;
         //aux::Range<const char*> start_line_text;
     };
     Line_Info line_info() const;

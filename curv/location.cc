@@ -22,18 +22,55 @@ auto Location::line_info() const
 -> Line_Info
 {
     Line_Info info;
-    unsigned lineno = 1;
-    unsigned colno = 1;
-    for (uint32_t i = 0; i < token_.first; ++i) {
+    unsigned lineno = 0;
+    unsigned colno = 0;
+    uint32_t i = 0;
+    for (; i < token_.first; ++i) {
         if (script_->first[i] == '\n') {
             ++lineno;
-            colno = 1;
+            colno = 0;
         } else
             ++colno;
     }
     info.start_line_num = lineno;
     info.start_column_num = colno;
+    for (; i < token_.last; ++i) {
+        if (script_->first[i] == '\n') {
+            ++lineno;
+            colno = 0;
+        } else
+            ++colno;
+    }
+    info.end_line_num = lineno;
+    info.end_column_num = colno;
     return info;
+}
+
+void
+curv::Location::write(std::ostream& out) const
+{
+    if (!scriptname().empty())
+        out << "file " << scriptname() << ", ";
+    auto info = line_info();
+    if (info.start_line_num == info.end_line_num) {
+        out << "line " << info.start_line_num+1 << "[";
+        if (info.end_column_num - info.start_column_num <= 1)
+            out << info.start_column_num+1;
+        else
+            out << info.start_column_num+1 << "-" << info.end_column_num;
+        out << "]";
+    } else {
+        out << "lines "
+            << info.start_line_num+1 << "[" << info.start_column_num+1 << "]-"
+            << info.end_line_num+1 << "[" << info.end_column_num << "]";
+    }
+    switch (token_.kind) {
+    case Token::k_end:
+        out << ", at end of script";
+        return;
+    default:
+        out << ", token " << range();
+    }
 }
 
 Range<const char*>
@@ -64,20 +101,4 @@ curv::Location::ending_at(Token tok) const
         loc.token_.kind = Token::k_phrase;
     }
     return loc;
-}
-
-void
-curv::Location::write(std::ostream& out) const
-{
-    if (!scriptname().empty())
-        out << "file " << scriptname() << ", ";
-    auto info = line_info();
-    out << "line " << info.start_line_num << "[" << info.start_column_num << "]";
-    switch (token_.kind) {
-    case Token::k_end:
-        out << ", at end of script";
-        return;
-    default:
-        out << ", token " << range();
-    }
 }
