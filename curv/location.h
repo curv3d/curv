@@ -59,13 +59,15 @@ public:
     ///
     /// Line and column numbers begin at 0.
     /// [start_column_num,end_column_num) is a half-open range.
+    /// start_line_begin is the 0 based byte index into the script of the
+    /// start line.
     struct Line_Info
     {
         unsigned start_line_num;
         unsigned start_column_num;
         unsigned end_line_num;
         unsigned end_column_num;
-        //aux::Range<const char*> start_line_text;
+        unsigned start_line_begin;
     };
     Line_Info line_info() const;
 };

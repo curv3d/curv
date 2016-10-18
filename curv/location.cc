@@ -7,33 +7,25 @@
 using namespace curv;
 using namespace aux;
 
-/*
-    struct Line_Info
-    {
-        unsigned start_line_num;
-        unsigned start_column_num;
-        unsigned end_line_num;
-        unsigned end_column_num;
-        aux::Range<const char*> start_line_text;
-    };
-*/
-
 auto Location::line_info() const
 -> Line_Info
 {
     Line_Info info;
     unsigned lineno = 0;
     unsigned colno = 0;
+    unsigned linebegin = 0;
     uint32_t i = 0;
     for (; i < token_.first; ++i) {
         if (script_->first[i] == '\n') {
             ++lineno;
+            linebegin = i + 1;
             colno = 0;
         } else
             ++colno;
     }
     info.start_line_num = lineno;
     info.start_column_num = colno;
+    info.start_line_begin = linebegin;
     for (; i < token_.last; ++i) {
         if (script_->first[i] == '\n') {
             ++lineno;
@@ -49,6 +41,8 @@ auto Location::line_info() const
 void
 curv::Location::write(std::ostream& out) const
 {
+    // TODO: more expressive and helpful diagnostics.
+    // Inspiration: http://clang.llvm.org/diagnostics.html
     if (!scriptname().empty())
         out << "file " << scriptname() << ", ";
     auto info = line_info();
@@ -67,10 +61,33 @@ curv::Location::write(std::ostream& out) const
     switch (token_.kind) {
     case Token::k_end:
         out << ", at end of script";
-        return;
+        break;
     default:
-        out << ", token " << range();
+        break;
     }
+    out << "\n  ";
+    const char* line = script_->first + info.start_line_begin;
+    unsigned len = 0;
+    for (const char* p = line; p < script_->last && *p != '\n'; ++p) {
+        if (*p == '\t')
+            out << "  ";
+        else
+            out << *p;
+        ++len;
+    }
+    out << "\n  ";
+    unsigned startcol = info.start_column_num;
+    unsigned endcol =
+        info.end_line_num > info.start_line_num ? len : info.end_column_num;
+    for (unsigned i = 0; i < len; ++i) {
+        if (i >= startcol && i < endcol) {
+            if (line[i] == '\t') out << "~~"; else out << '~';
+        } else {
+            if (line[i] == '\t') out << "  "; else out << ' ';
+        }
+    }
+    if (startcol == len)
+        out << '^';
 }
 
 Range<const char*>
