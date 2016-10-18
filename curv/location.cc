@@ -7,15 +7,33 @@
 using namespace curv;
 using namespace aux;
 
-int
-curv::Location::lineno() const
+/*
+    struct Line_Info
+    {
+        unsigned start_line_num;
+        unsigned start_column_num;
+        unsigned end_line_num;
+        unsigned end_column_num;
+        aux::Range<const char*> start_line_text;
+    };
+*/
+
+auto Location::line_info() const
+-> Line_Info
 {
-    int lineno = 1;
+    Line_Info info;
+    unsigned lineno = 1;
+    unsigned colno = 1;
     for (uint32_t i = 0; i < token_.first; ++i) {
-        if (script_->first[i] == '\n')
+        if (script_->first[i] == '\n') {
             ++lineno;
+            colno = 1;
+        } else
+            ++colno;
     }
-    return lineno;
+    info.start_line_num = lineno;
+    info.start_column_num = colno;
+    return info;
 }
 
 Range<const char*>
@@ -53,7 +71,8 @@ curv::Location::write(std::ostream& out) const
 {
     if (!scriptname().empty())
         out << "file " << scriptname() << ", ";
-    out << "line " << lineno();
+    auto info = line_info();
+    out << "line " << info.start_line_num << "[" << info.start_column_num << "]";
     switch (token_.kind) {
     case Token::k_end:
         out << ", at end of script";

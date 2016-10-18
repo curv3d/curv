@@ -49,14 +49,22 @@ public:
     /// Name of script where error occurred.
     const std::string& scriptname() const { return script_->name; }
 
-    /// Line number within script where error occurred.
-    int lineno() const;
-
     /// Range of characters within script where error occurred.
     aux::Range<const char*> range() const;
 
     /// output the location part of an exception message (no final newline)
     void write(std::ostream&) const;
+
+    /// line and column information for a Location
+    struct Line_Info
+    {
+        unsigned start_line_num;
+        unsigned start_column_num;
+        //unsigned end_line_num;
+        //unsigned end_column_num;
+        //aux::Range<const char*> start_line_text;
+    };
+    Line_Info line_info() const;
 };
 
 } // namespace curv
