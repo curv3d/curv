@@ -7,6 +7,7 @@
 
 #include <aux/range.h>
 #include <curv/shared.h>
+#include <curv/string.h>
 #include <string>
 
 namespace curv {
@@ -25,14 +26,27 @@ namespace curv {
 /// instances using aux::make_shared.
 struct Script : public aux::Shared_Base, public aux::Range<const char*>
 {
-    std::string name;
+    Shared<String> name;
 protected:
-    Script(const std::string& nm, const char*f, const char*l)
+    Script(Shared<String> nm, const char*f, const char*l)
     :
-        Range(f,l), name(nm)
+        Range(f,l), name(std::move(nm))
     {}
 public:
     virtual ~Script() {}
+};
+
+/// A concrete Script subclass where the contents are represented as a String.
+struct String_Script : public curv::Script
+{
+    Shared<String> buffer_;
+
+    String_Script(Shared<String> name, Shared<String> buffer)
+    :
+        curv::Script(
+            std::move(name), buffer->data(), buffer->data() + buffer->size()),
+        buffer_(std::move(buffer))
+    {}
 };
 
 } // namespace curv

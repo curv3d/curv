@@ -63,6 +63,17 @@ template<typename T, class... Args> Shared<T> make_shared(Args&&... args)
 ///    `aux::make_shared`.
 /// 5. I wish I could enforce the requirement to not construct auto or static
 ///    instances. The class is non-copyable, but that's not enough.
+///    And this is already causing problems for me.
+///    * If a function takes a Foo& rather than a Shared<Foo> argument (but
+///      retains a reference as in #3), then I'm tempted to construct an auto
+///      variable, rather than call make_shared. It's just habit. So #1 is
+///      looking like bad advice (for ensuring code correctness).
+///    * Protected constructors would help with this. But then, every subclass
+///      needs a friend declaration for make_shared.
+///    * Or, we protect the Shared constructor. For #3, you must call
+///      shared_from_this<T>(T*). Instead of #4, we allow static/auto instances,
+///      but we can detect them at runtime because use_count==0.
+///      `shared_from_this` aborts if use_count==0.
 struct Shared_Base
 {
     Shared_Base() : use_count(0) {}

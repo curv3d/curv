@@ -29,6 +29,17 @@ auto curv::arg_to_list(Value val, const Phrase& source)
     return (List&)ref;
 }
 
+auto curv::arg_to_string(Value val, const Phrase& source)
+-> String&
+{
+    if (!val.is_ref())
+        throw Phrase_Error(source, "not a string");
+    Ref_Value& ref( val.get_ref_unsafe() );
+    if (ref.type_ != Ref_Value::ty_string)
+        throw Phrase_Error(source, "not a string");
+    return (String&)ref;
+}
+
 int curv::arg_to_int(Value val, int lo, int hi, const Phrase& source)
 {
     if (!val.is_num())

@@ -6,11 +6,13 @@
 #define CURV_ARG_H
 
 #include <curv/list.h>
+#include <curv/string.h>
 #include <curv/phrase.h>
 
 namespace curv {
 
 List& arg_to_list(Value, const Phrase&);
+String& arg_to_string(Value, const Phrase&);
 int arg_to_int(Value, int, int, const Phrase&);
 
 /// Get the source code for the i'th function argument from argsource.

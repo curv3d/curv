@@ -17,7 +17,7 @@ struct CString_Script : public curv::Script
 
     CString_Script(const char* name, const char* buffer)
     :
-        curv::Script(name, buffer, buffer + strlen(buffer)),
+        curv::Script(mk_string(name), buffer, buffer + strlen(buffer)),
         buffer_(buffer)
     {}
 };

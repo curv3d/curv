@@ -1,14 +1,18 @@
 # 0.1: Minimum Viable Language
-* better error messages
-  * print stack trace
-* file(filename) imports a curv module file.
 * 'curv <filename>' evaluates a script file.
+* better error messages: print stack trace
 * top level if(b)c, for, echo, assert actions
 
 Other:
 * Interactive curv: special variable `_` is last value. _1,_2, or $1,$2 ...
 * Introduce submodules (with recursive functions)
 * Extend `let` to support recursive functions. Or provide `let` and `letrec`.
+* Shared constructor is protected. Add shared_from_this<T>(T*) which aborts
+  if use_count==0.
+* Unit test `file`. Maybe use a pluggable file system abstraction, with file
+  contents embedded in the unit tests?
+  Or a directory of test files, plus 'mk test' support to run the tests
+  in the correct directory.
 
 
 # CURV0 (expressions):

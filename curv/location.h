@@ -47,7 +47,7 @@ public:
     Token token() const { return token_; }
 
     /// Name of script where error occurred.
-    const std::string& scriptname() const { return script_->name; }
+    const String& scriptname() const { return *script_->name; }
 
     /// Range of characters within script where error occurred.
     aux::Range<const char*> range() const;
