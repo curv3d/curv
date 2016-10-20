@@ -6,7 +6,6 @@
 #include <cstdlib>
 #include <cmath>
 #include <string>
-#include <fstream>
 #include <curv/arg.h>
 #include <curv/builtin.h>
 #include <curv/eval.h>
@@ -38,22 +37,12 @@ builtin_len(Value* args, const Phrase& argsource)
 Value
 builtin_file(Value* args, const Phrase& argsource)
 {
-    // TODO: Cache multiple references to the same file.
     // TODO: Pluggable file system abstraction, for unit testing and
     // abstracting the behaviour of `file` (would also support caching).
-    // TODO: More precise error message when open fails.
     // TODO: The builtin_namespace used by `file` is a pluggable parameter
     // at compile time.
     String& path {arg_to_string(args[0], get_arg(argsource, 0))};
-    std::ifstream t;
-    t.open(path.c_str());
-    if (t.fail())
-        throw aux::Exception(stringify("can't open file ", path.c_str()));
-    String_Builder buffer;
-    buffer << t.rdbuf();
-    auto script = aux::make_shared<String_Script>(
-        Shared<String>(&path), buffer.get_string());
-    return {eval_script(*script, builtin_namespace)};
+    return {eval_file(path)};
 }
 
 const Namespace

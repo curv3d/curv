@@ -26,9 +26,9 @@ namespace curv {
 /// instances using aux::make_shared.
 struct Script : public aux::Shared_Base, public aux::Range<const char*>
 {
-    Shared<String> name;
+    Shared<const String> name;
 protected:
-    Script(Shared<String> nm, const char*f, const char*l)
+    Script(Shared<const String> nm, const char*f, const char*l)
     :
         Range(f,l), name(std::move(nm))
     {}
@@ -39,9 +39,9 @@ public:
 /// A concrete Script subclass where the contents are represented as a String.
 struct String_Script : public curv::Script
 {
-    Shared<String> buffer_;
+    Shared<const String> buffer_;
 
-    String_Script(Shared<String> name, Shared<String> buffer)
+    String_Script(Shared<const String> name, Shared<const String> buffer)
     :
         curv::Script(
             std::move(name), buffer->data(), buffer->data() + buffer->size()),

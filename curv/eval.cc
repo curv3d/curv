@@ -2,11 +2,13 @@
 // Distributed under The MIT License.
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
-#include <curv/scanner.h>
-#include <curv/parse.h>
+#include <fstream>
 #include <curv/analyzer.h>
 #include <curv/builtin.h>
 #include <curv/eval.h>
+#include <curv/exception.h>
+#include <curv/parse.h>
+#include <curv/scanner.h>
 
 auto curv::eval_script(const Script& script, const Namespace& names)
 -> Shared<Module>
@@ -17,4 +19,24 @@ auto curv::eval_script(const Script& script, const Namespace& names)
     auto expr = phrase->analyze_module(env);
     auto value = expr->eval_module();
     return value;
+}
+
+auto curv::eval_file(const String& path)
+-> Shared<Module>
+{
+    // TODO: Cache multiple references to the same file.
+    // TODO: Pluggable file system abstraction, for unit testing and
+    // abstracting the behaviour of `file` (would also support caching).
+    // TODO: More precise error message when open fails.
+    // TODO: The builtin_namespace used by `file` is a pluggable parameter
+    // at compile time.
+    std::ifstream t;
+    t.open(path.c_str());
+    if (t.fail())
+        throw aux::Exception(stringify("can't open file ", path.c_str()));
+    String_Builder buffer;
+    buffer << t.rdbuf();
+    auto script = aux::make_shared<String_Script>(
+        Shared<const String>(&path), buffer.get_string());
+    return eval_script(*script, builtin_namespace);
 }
