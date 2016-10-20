@@ -42,10 +42,25 @@ struct CString_Script : public curv::Script
 int
 main(int argc, char** argv)
 {
-    if (argc != 1) {
+    if (argc > 2) {
         std::cerr << "too many arguments\n";
         exit(1);
     }
+    if (argc == 2) {
+        try {
+            auto module = eval_file(*curv::mk_string(argv[1]));
+            for (auto e : *module->elements())
+                std::cout << e << "\n";
+        } catch (curv::Exception& e) {
+            std::cerr << e << "\n";
+            exit(1);
+        } catch (std::exception& e) {
+            std::cerr << "ERROR: " << e.what() << "\n";
+            exit(1);
+        }
+        exit(0);
+    }
+
     // Catch keyboard interrupts, and set was_interrupted = true.
     // This is/will be used to interrupt the evaluator.
     struct sigaction interrupt_action;
