@@ -145,7 +145,7 @@ curv::Dot_Expr::eval(Frame& f) const
         Module* module = (Module*)&basep;
         auto b = module->dictionary_->find(id_);
         if (b != module->dictionary_->end())
-            return (*module->slots_)[b->second];
+            return module->get(b->second);
         throw Phrase_Error(*base_->source_,
             stringify(".",id_,": not defined"));
       }
