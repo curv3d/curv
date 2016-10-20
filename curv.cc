@@ -6,6 +6,7 @@ extern "C" {
 #include <aux/readlinex.h>
 #include <string.h>
 #include <signal.h>
+#include <stdlib.h>
 }
 #include <iostream>
 #include <curv/phrase.h>
@@ -39,8 +40,12 @@ struct CString_Script : public curv::Script
 };
 
 int
-main(int, char**)
+main(int argc, char** argv)
 {
+    if (argc != 1) {
+        std::cerr << "too many arguments\n";
+        exit(1);
+    }
     // Catch keyboard interrupts, and set was_interrupted = true.
     // This is/will be used to interrupt the evaluator.
     struct sigaction interrupt_action;
