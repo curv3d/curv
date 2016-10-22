@@ -15,10 +15,11 @@ struct Frame_Base
 {
     /// Slot array containing the values of nonlocal bindings.
     ///
-    /// This is either the slot array for the top level module value
-    /// (for a top level module frame), or its the slot array contained
-    /// in a Closure value (for a function call frame).
-    List& nonlocal;
+    /// This is:
+    /// * the slot array of Module value, for a top level module frame
+    /// * the slot array of a Closure value, for a function call frame
+    /// * nullptr, for a call to a builtin function.
+    List* nonlocal;
 
     // Tail array, containing the slots used for local bindings:
     // function arguments, `let` bindings and other local, temporary values.
@@ -32,7 +33,7 @@ struct Frame_Base
         return array_[i];
     }
 
-    Frame_Base(List& nl) : nonlocal(nl) {}
+    Frame_Base(List* nl) : nonlocal(nl) {}
 };
 
 /// A Frame is an evaluation context.
@@ -42,7 +43,7 @@ struct Frame_Base
 ///
 /// Each top-level module has a frame for evaluating subexpressions
 /// while constructing the module value.
-/// User-defined functions have call frames.
+/// Builtin and user-defined functions have call frames.
 using Frame = aux::Tail_Array<Frame_Base>;
 
 } // namespace curv

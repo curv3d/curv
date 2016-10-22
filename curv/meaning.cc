@@ -38,13 +38,13 @@ curv::Module_Ref::eval(Frame& f) const
     // 4. Store a reference to the Module_Expr in Frame.
     // Choice: #2.
 
-    return force_ref(f.nonlocal[slot_], *source_, f);
+    return force_ref((*f.nonlocal)[slot_], *source_, f);
 }
 
 Value
 curv::Nonlocal_Ref::eval(Frame& f) const
 {
-    return f.nonlocal[slot_];
+    return (*f.nonlocal)[slot_];
 }
 
 Value
@@ -76,8 +76,8 @@ Value
 curv::Nonlocal_Function_Ref::eval(Frame& f) const
 {
     return {aux::make_shared<Closure>(
-        (Lambda&) f.nonlocal[lambda_slot_].get_ref_unsafe(),
-        f.nonlocal)};
+        (Lambda&) (*f.nonlocal)[lambda_slot_].get_ref_unsafe(),
+        *f.nonlocal)};
 }
 
 Value
@@ -87,23 +87,20 @@ curv::Call_Expr::eval(Frame& f) const
     if (!funv.is_ref())
         throw Phrase_Error(*fun_->source_, stringify(funv,": not a function"));
     Ref_Value& funp( funv.get_ref_unsafe() );
+    // TODO: these two cases are so similar, can we unify them?
     switch (funp.type_) {
     case Ref_Value::ty_function:
       {
         Function* fun = (Function*)&funp;
-        Value argv[1];
-        switch (fun->nargs_) {
-        case 1:
-            if (args_.size() != 1) {
-                throw Phrase_Error(*argsource_,
-                    "wrong number of arguments");
-            }
-            argv[0] = curv::eval(*args_[0], f);
-            return fun->function_(argv, *argsource_);
-        default:
-            throw Phrase_Error(*source_,
-                stringify("unsupported argument list size ",args_.size()));
+        if (args_.size() != fun->nargs_) {
+            throw Phrase_Error(*argsource_,
+                "wrong number of arguments");
         }
+        std::unique_ptr<Frame> f2
+            { Frame::make(fun->nargs_, nullptr) };
+        for (size_t i = 0; i < args_.size(); ++i)
+            (*f2)[i] = curv::eval(*args_[i], f);
+        return fun->function_(*f2, *argsource_);
       }
     case Ref_Value::ty_closure:
       {
@@ -113,7 +110,7 @@ curv::Call_Expr::eval(Frame& f) const
                 "wrong number of arguments");
         }
         std::unique_ptr<Frame> f2
-            { Frame::make(fun->nslots_, *fun->nonlocals_) };
+            { Frame::make(fun->nslots_, &*fun->nonlocals_) };
         for (size_t i = 0; i < args_.size(); ++i)
             (*f2)[i] = curv::eval(*args_[i], f);
         return fun->expr_->eval(*f2);
@@ -397,7 +394,7 @@ curv::Module_Expr::eval_module() const
     module->dictionary_ = dictionary_;
     module->slots_ = List::make_copy(slots_->begin(), slots_->size());
     std::unique_ptr<Frame> frame
-        {Frame::make(frame_nslots_, *module->slots_)};
+        {Frame::make(frame_nslots_, &*module->slots_)};
     for (Value& s : *module->slots_)
         force(s, *frame);
     module->elements_ = elements_->eval_list(*frame);

@@ -1,7 +1,10 @@
 # 0.1: Minimum Viable Language
-* 'curv <filename>' evaluates a script file.
 * better error messages: print stack trace
+  - curv::Function::function_(Frame&); arguments passed in Frame.
+  - Frame contains Frame* parent_frame; and Shared<Phrase> call_phrase;
+    Latter is null in module frames.
 * top level if(b)c, for, echo, assert actions
+* len(module), module.[i]
 
 Other:
 * Interactive curv: special variable `_` is last value. _1,_2, or $1,$2 ...
