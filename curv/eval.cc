@@ -10,18 +10,19 @@
 #include <curv/parse.h>
 #include <curv/scanner.h>
 
-auto curv::eval_script(const Script& script, const Namespace& names)
+auto curv::eval_script(const Script& script, const Namespace& names,
+    Frame* f)
 -> Shared<Module>
 {
     Scanner scanner{script};
     auto phrase = parse_script(scanner);
     Builtin_Environ env{names};
     auto expr = phrase->analyze_module(env);
-    auto value = expr->eval_module();
+    auto value = expr->eval_module(f);
     return value;
 }
 
-auto curv::eval_file(const String& path)
+auto curv::eval_file(const String& path, Frame* f)
 -> Shared<Module>
 {
     // TODO: Cache multiple references to the same file.
@@ -38,5 +39,5 @@ auto curv::eval_file(const String& path)
     buffer << t.rdbuf();
     auto script = aux::make_shared<String_Script>(
         Shared<const String>(&path), buffer.get_string());
-    return eval_script(*script, builtin_namespace);
+    return eval_script(*script, builtin_namespace, f);
 }

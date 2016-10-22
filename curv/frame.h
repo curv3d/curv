@@ -11,8 +11,24 @@
 
 namespace curv {
 
+class Frame_Base;
+
+/// A Frame is an evaluation context.
+///
+/// You can think of a Frame as containing all of the registers used
+/// by the Curv virtual machine.
+///
+/// Each top-level module has a frame for evaluating subexpressions
+/// while constructing the module value.
+/// Builtin and user-defined functions have call frames.
+using Frame = aux::Tail_Array<Frame_Base>;
+
 struct Frame_Base
 {
+    /// Frames are linked into a stack. This is metadata used for printing
+    /// a stack trace and by the debugger. It is not used during evaluation.
+    Frame* parent_frame;
+
     /// Slot array containing the values of nonlocal bindings.
     ///
     /// This is:
@@ -33,18 +49,8 @@ struct Frame_Base
         return array_[i];
     }
 
-    Frame_Base(List* nl) : nonlocal(nl) {}
+    Frame_Base(Frame* parent, List* nl) : parent_frame(parent), nonlocal(nl) {}
 };
-
-/// A Frame is an evaluation context.
-///
-/// You can think of a Frame as containing all of the registers used
-/// by the Curv virtual machine.
-///
-/// Each top-level module has a frame for evaluating subexpressions
-/// while constructing the module value.
-/// Builtin and user-defined functions have call frames.
-using Frame = aux::Tail_Array<Frame_Base>;
 
 } // namespace curv
 #endif // header guard

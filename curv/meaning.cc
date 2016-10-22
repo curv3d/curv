@@ -97,7 +97,7 @@ curv::Call_Expr::eval(Frame& f) const
                 "wrong number of arguments");
         }
         std::unique_ptr<Frame> f2
-            { Frame::make(fun->nargs_, nullptr) };
+            { Frame::make(fun->nargs_, &f, nullptr) };
         for (size_t i = 0; i < args_.size(); ++i)
             (*f2)[i] = curv::eval(*args_[i], f);
         return fun->function_(*f2, *argsource_);
@@ -110,7 +110,7 @@ curv::Call_Expr::eval(Frame& f) const
                 "wrong number of arguments");
         }
         std::unique_ptr<Frame> f2
-            { Frame::make(fun->nslots_, &*fun->nonlocals_) };
+            { Frame::make(fun->nslots_, &f, &*fun->nonlocals_) };
         for (size_t i = 0; i < args_.size(); ++i)
             (*f2)[i] = curv::eval(*args_[i], f);
         return fun->expr_->eval(*f2);
@@ -381,20 +381,20 @@ curv::Record_Expr::eval(Frame& f) const
 }
 
 Value
-curv::Module_Expr::eval(Frame&) const
+curv::Module_Expr::eval(Frame& f) const
 {
-    auto module = eval_module();
+    auto module = eval_module(&f);
     return {module};
 }
 
 Shared<Module>
-curv::Module_Expr::eval_module() const
+curv::Module_Expr::eval_module(Frame* f) const
 {
     auto module = aux::make_shared<Module>();
     module->dictionary_ = dictionary_;
     module->slots_ = List::make_copy(slots_->begin(), slots_->size());
     std::unique_ptr<Frame> frame
-        {Frame::make(frame_nslots_, &*module->slots_)};
+        {Frame::make(frame_nslots_, f, &*module->slots_)};
     for (Value& s : *module->slots_)
         force(s, *frame);
     module->elements_ = elements_->eval_list(*frame);

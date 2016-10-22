@@ -42,7 +42,7 @@ builtin_file(Frame& args, const Phrase& argsource)
     // TODO: The builtin_namespace used by `file` is a pluggable parameter
     // at compile time.
     String& path {arg_to_string(args[0], get_arg(argsource, 0))};
-    return {eval_file(path)};
+    return {eval_file(path, &args)};
 }
 
 const Namespace

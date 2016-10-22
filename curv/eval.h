@@ -16,9 +16,9 @@ namespace curv {
 
 inline Value eval(const Expression& e, Frame& f) { return e.eval(f); }
 
-Shared<Module> eval_script(const Script&, const Namespace& names);
+Shared<Module> eval_script(const Script&, const Namespace& names, Frame* f = nullptr);
 
-Shared<Module> eval_file(const String& filename);
+Shared<Module> eval_file(const String& filename, Frame* f = nullptr);
 
 } // namespace curv
 #endif // header guard
