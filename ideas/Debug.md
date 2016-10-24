@@ -50,6 +50,42 @@ This gets called in the following situations:
   single-step, resume.
 * A breakpoint was reached or a single-step has completed.
 ### Stack Trace on Error
+Store a list of call phrases in curv::Exception, to print stack trace.
+Choices:
+
+ 1. Pass the top-of-stack around as `Frame*` arguments, and then into the
+    curv::Exception constructor.
+    * This is more functional and explicit, so maybe I have a better idea what
+      the code is doing, and what the dependencies are?
+    * Need to add `Frame*` arguments to:
+      * Phrase::analyze (maybe put Frame* into curv::Environ)
+      * `arg_to_*`
+      * parser & scanner. Maybe put `Frame*` into curv::Scanner.
+
+    Let's define the Context of an error to be the Location of the program
+    text containing the error, plus the call stack (Locations of each call).
+    Now, some functions like eval_file() might be called from the evaluator,
+    where there is a context, or direct from the UI, which has no context.
+    I need a representation for an optional Context, which can be passed
+    as an argument to the Exception constructor, arg_to_string, eval_file, etc.
+    I want to be able to write an expression which constructs either an
+    empty Context, or a Context constructed from a Phrase and a Frame.
+    So maybe `{}` and `{phrase,frame}`? Prefer to pass as `const Context&`.
+
+ 2. A thread-local variable points to top-of-stack. The curv::Exception
+    constructor extracts the call phrase list from the stack by global
+    variable reference, not by parameter. Less code.
+
+This makes me think about the compile-time stack vs the run-time stack.
+The compile-time stack only needs a new entry each time a new file is opened,
+not like Environ. Currently this only happens in `file()` at run time, so
+nothing special needed right now. If we implement `use module` then we'll need
+to implement `file()` at compile time, but that's compile-time evaluation,
+and then we'll push Frames at compile time. Which leads to a stack trace
+with alternating zones of run-time and compile-time frames.
+Later.
+
+old
   - Frame contains a parent_frame and a call_phrase; latter is null for the
     base module frame. This forms a stack that can be dumped to print a stack
     trace.
