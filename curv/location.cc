@@ -43,20 +43,23 @@ curv::Location::write(std::ostream& out) const
 {
     // TODO: more expressive and helpful diagnostics.
     // Inspiration: http://clang.llvm.org/diagnostics.html
+    // TODO: unicode underlining? a̲b̲c̲d̲e̲f̲ (won't work on Windows)
     if (!scriptname().empty())
-        out << "file " << scriptname() << ", ";
+        out << "file \"" << scriptname() << "\", ";
     auto info = line_info();
     if (info.start_line_num == info.end_line_num) {
-        out << "line " << info.start_line_num+1 << "[";
+        out << "line " << info.start_line_num+1 << "(";
         if (info.end_column_num - info.start_column_num <= 1)
-            out << info.start_column_num+1;
+            out << "column " << info.start_column_num+1;
         else
-            out << info.start_column_num+1 << "-" << info.end_column_num;
-        out << "]";
+            out << "columns " << info.start_column_num+1
+                << "-" << info.end_column_num;
+        out << ")";
     } else {
         out << "lines "
-            << info.start_line_num+1 << "[" << info.start_column_num+1 << "]-"
-            << info.end_line_num+1 << "[" << info.end_column_num << "]";
+            << info.start_line_num+1 << "(column " << info.start_column_num+1
+            << ")-"
+            << info.end_line_num+1 << "(column " << info.end_column_num << ")";
     }
     switch (token_.kind) {
     case Token::k_end:
