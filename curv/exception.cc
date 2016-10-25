@@ -32,7 +32,7 @@ Char_Error::Char_Error(const Script& s, Token tok)
 void
 Exception::write(std::ostream& out) const
 {
-    out << "ERROR: " << what() << "\n";
+    out << what() << "\n";
     loc_.write(out);
 }
 

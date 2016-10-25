@@ -66,5 +66,11 @@ struct Phrase_Error : public Exception
     {}
 };
 
+inline std::ostream& operator<<(std::ostream& out, const Exception& e)
+{
+    e.write(out);
+    return out;
+}
+
 } // namespace curv
 #endif // header guard

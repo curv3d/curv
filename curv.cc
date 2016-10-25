@@ -52,7 +52,7 @@ main(int argc, char** argv)
             for (auto e : *module->elements())
                 std::cout << e << "\n";
         } catch (curv::Exception& e) {
-            std::cerr << e << "\n";
+            std::cerr << "ERROR: " << e << "\n";
             exit(1);
         } catch (std::exception& e) {
             std::cerr << "ERROR: " << e.what() << "\n";
@@ -91,7 +91,7 @@ main(int argc, char** argv)
             for (auto e : *module->elements())
                 std::cout << e << "\n";
         } catch (curv::Exception& e) {
-            std::cout << e << "\n";
+            std::cout << "ERROR: " << e << "\n";
         } catch (std::exception& e) {
             std::cout << "ERROR: " << e.what() << "\n";
         }

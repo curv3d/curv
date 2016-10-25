@@ -1,8 +1,13 @@
 # 0.1: Minimum Viable Language
 * better error messages: print stack trace
-  - curv::Function::function_(Frame&); arguments passed in Frame.
-  - Frame contains Frame* parent_frame; and Shared<Phrase> call_phrase;
-    Latter is null in module frames.
+  - Exception contains a list of Locations; Context is an abstract class that
+    generates a list of Locations; Exception(const Context&,String) is a new
+    constructor; At_Token{Token,Scanner} is a subclass of Context,
+    replaces Token_Error.
+  - unit test for `file` function.
+  - add Frame* eval_frame_ to Scanner. Token errors now have a stack trace
+    when `file` includes a bad script.
+  - ...keep going, add stack traces to all exceptions.
 * top level if(b)c, for, echo, assert actions
 * len(module), module.[i]
 
