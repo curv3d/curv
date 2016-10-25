@@ -1,9 +1,8 @@
 # 0.1: Minimum Viable Language
 * better error messages: print stack trace
-  - Exception contains a list of Locations; Context is an abstract class that
-    generates a list of Locations; Exception(const Context&,String) is a new
-    constructor; At_Token{Token,Scanner} is a subclass of Context,
-    replaces Token_Error.
+  - Context is an abstract class that generates a list of Locations;
+    Exception(const Context&,String) is a new constructor;
+    At_Token{Token,Scanner} is a subclass of Context, replaces Token_Error.
   - unit test for `file` function.
   - add Frame* eval_frame_ to Scanner. Token errors now have a stack trace
     when `file` includes a bad script.

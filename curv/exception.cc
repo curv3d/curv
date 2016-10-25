@@ -32,8 +32,11 @@ Char_Error::Char_Error(const Script& s, Token tok)
 void
 Exception::write(std::ostream& out) const
 {
-    out << what() << "\n";
-    loc_.write(out);
+    out << what();
+    for (auto L : loc_) {
+        out << "\n";
+        L.write(out);
+    }
 }
 
 }

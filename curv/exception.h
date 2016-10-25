@@ -5,6 +5,7 @@
 #ifndef CURV_EXCEPTION_H
 #define CURV_EXCEPTION_H
 
+#include <list>
 #include <aux/exception.h>
 #include <ostream>
 #include <curv/location.h>
@@ -19,15 +20,15 @@ namespace curv {
 /// These two parts are printed separately (see write()).
 struct Exception : public aux::Exception
 {
-    Location loc_;
+    std::list<Location> loc_;
 
     Exception(Location loc, const char* msg)
-    : aux::Exception(msg), loc_(std::move(loc)) {}
+    : aux::Exception(msg), loc_({std::move(loc)}) {}
 
     Exception(Location loc, Shared<String> msg)
-    : aux::Exception(std::move(msg)), loc_(std::move(loc)) {}
+    : aux::Exception(std::move(msg)), loc_({std::move(loc)}) {}
 
-    const Location& location() { return loc_; }
+    //const Location& location() { return loc_; }
 
     /// write the message and location to a stream.
     ///
