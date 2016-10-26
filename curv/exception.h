@@ -13,6 +13,25 @@
 
 namespace curv {
 
+/// A Context describes the source code Location and call stack
+/// of a compile-time or run time error.
+///
+/// More specifically, Context is an abstract interface to an object that
+/// converts compile-time or run-time data structures into a list of Locations.
+///
+/// Context objects are not allocated on the heap, and don't own the data
+/// structures that they point to. Instances of Context subclasses are
+/// constructed in argument position as rvalues, are passed as `const Context&`
+/// parameters to functions that may throw a curv::Exception, and are finally
+/// consumed by the curv::Exception constructor.
+///
+/// An empty Context argument is `{}`.
+/// Subclasses of Context are used for non-empty contexts.
+struct Context
+{
+    virtual void emit_locations(std::list<Location>&) const {}
+};
+
 /// Virtual base class for Curv compile time and run time errors.
 ///
 /// Has two parts: a message (returned by what()), and a location() that
@@ -25,8 +44,20 @@ struct Exception : public aux::Exception
     Exception(Location loc, const char* msg)
     : aux::Exception(msg), loc_({std::move(loc)}) {}
 
-    Exception(Location loc, Shared<String> msg)
+    Exception(Location loc, Shared<const String> msg)
     : aux::Exception(std::move(msg)), loc_({std::move(loc)}) {}
+
+    Exception(const Context& cx, const char* msg)
+    : aux::Exception(msg)
+    {
+        cx.emit_locations(loc_);
+    }
+
+    Exception(const Context& cx, Shared<const String> msg)
+    : aux::Exception(msg)
+    {
+        cx.emit_locations(loc_);
+    }
 
     //const Location& location() { return loc_; }
 
@@ -43,7 +74,7 @@ struct Token_Error : public Exception
     : Exception(Location(s, std::move(tok)), msg)
     {}
 
-    Token_Error(const Script& s, Token tok, Shared<String> msg)
+    Token_Error(const Script& s, Token tok, Shared<const String> msg)
     : Exception(Location(s, std::move(tok)), std::move(msg))
     {}
 };
@@ -62,7 +93,7 @@ struct Phrase_Error : public Exception
     : Exception(syn.location(), msg)
     {}
 
-    Phrase_Error(const Phrase& syn, Shared<String> msg)
+    Phrase_Error(const Phrase& syn, Shared<const String> msg)
     : Exception(syn.location(), std::move(msg))
     {}
 };

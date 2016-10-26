@@ -24,7 +24,7 @@ Exception::Exception(const char* msg)
 {
 }
 
-Exception::Exception(Shared<curv::String> msg)
+Exception::Exception(Shared<const curv::String> msg)
 :
     message_(std::move(msg))
 {
