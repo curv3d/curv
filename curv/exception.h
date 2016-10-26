@@ -29,7 +29,7 @@ namespace curv {
 /// Subclasses of Context are used for non-empty contexts.
 struct Context
 {
-    virtual void emit_locations(std::list<Location>&) const {}
+    virtual void get_locations(std::list<Location>&) const {}
 };
 
 /// Virtual base class for Curv compile time and run time errors.
@@ -50,13 +50,13 @@ struct Exception : public aux::Exception
     Exception(const Context& cx, const char* msg)
     : aux::Exception(msg)
     {
-        cx.emit_locations(loc_);
+        cx.get_locations(loc_);
     }
 
     Exception(const Context& cx, Shared<const String> msg)
     : aux::Exception(msg)
     {
-        cx.emit_locations(loc_);
+        cx.get_locations(loc_);
     }
 
     //const Location& location() { return loc_; }
@@ -67,25 +67,7 @@ struct Exception : public aux::Exception
     virtual void write(std::ostream&) const override;
 };
 
-/// Curv error, where location is specified by a token.
-struct Token_Error : public Exception
-{
-    Token_Error(const Script& s, Token tok, const char* msg)
-    : Exception(Location(s, std::move(tok)), msg)
-    {}
-
-    Token_Error(const Script& s, Token tok, Shared<const String> msg)
-    : Exception(Location(s, std::move(tok)), std::move(msg))
-    {}
-};
-
-/// Lexical analysis error: an illegal character in the input.
-///
-/// Subclass of Token_Error where the token spans just the illegal character.
-struct Char_Error : public Token_Error
-{
-    Char_Error(const Script& s, Token tok);
-};
+Shared<const String> illegal_character_message(char ch);
 
 struct Phrase_Error : public Exception
 {

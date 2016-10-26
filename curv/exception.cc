@@ -12,8 +12,8 @@ using namespace aux;
 
 namespace curv {
 
-Shared<String>
-char_error_message(char ch)
+Shared<const String>
+illegal_character_message(char ch)
 {
     String_Builder msg;
     msg << "illegal character ";
@@ -23,11 +23,6 @@ char_error_message(char ch)
         msg << boost::format("0x%X") % (unsigned)(unsigned char)ch;
     return msg.get_string();
 }
-
-Char_Error::Char_Error(const Script& s, Token tok)
-:
-    Token_Error(s, tok, char_error_message(*Location(s,tok).range().begin()))
-{}
 
 void
 Exception::write(std::ostream& out) const

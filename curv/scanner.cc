@@ -72,7 +72,8 @@ Scanner::get_token()
                         tok.kind = Token::k_bad_token;
                         tok.first = begin_comment - first;
                         tok.last = last - first;
-                        throw Token_Error(script_, tok, "unterminated comment");
+                        throw Exception(At_Token(tok, *this),
+                            "unterminated comment");
                     }
                     ++p;
                 }
@@ -114,7 +115,7 @@ Scanner::get_token()
                     ++p;
                 tok.last = p - first;
                 ptr_ = p;
-                throw Token_Error(script_, tok, "bad numeral");
+                throw Exception(At_Token(tok, *this), "bad numeral");
             }
             while (p < last && isdigit(*p))
                 ++p;
@@ -124,7 +125,7 @@ Scanner::get_token()
                 ++p;
             tok.last = p - first;
             ptr_ = p;
-            throw Token_Error(script_, tok, "bad numeral");
+            throw Exception(At_Token(tok, *this), "bad numeral");
         }
         tok.kind = Token::k_num;
         goto success;
@@ -245,7 +246,8 @@ Scanner::get_token()
                 tok.last = p - first;
                 tok.kind = Token::k_bad_token;
                 ptr_ = p;
-                throw Token_Error(script_, tok, "unterminated string literal");
+                throw Exception(At_Token(tok, *this),
+                    "unterminated string literal");
             }
             if (*p == '"') {
                 ++p;
@@ -261,7 +263,7 @@ error:
     tok.last = p - first;
     tok.kind = Token::k_bad_token;
     ptr_ = p;
-    throw Char_Error(script_, tok);
+    throw Exception(At_Token(tok, *this), illegal_character_message(p[-1]));
 
 success:
     tok.last = p - first;

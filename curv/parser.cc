@@ -53,7 +53,7 @@ parse_script(Scanner& scanner)
             stmt.semicolon_ = tok;
             tok = scanner.get_token();
         } else if (tok.kind != Token::k_end) {
-            throw Token_Error(scanner.script_, tok,
+            throw Exception(At_Token(tok, scanner),
                 "bad token in module: expecting ';' or <end>");
         }
         module->stmts_.push_back(std::move(stmt));
@@ -271,7 +271,7 @@ parse_primary(Scanner& scanner, bool force)
         auto then_expr = parse_expr(scanner);
         Token tok2 = scanner.get_token();
         if (tok2.kind != Token::k_else)
-            throw Token_Error(scanner.script_, tok2, "not the keyword 'else'");
+            throw Exception(At_Token(tok2, scanner), "not the keyword 'else'");
         auto else_expr = parse_expr(scanner);
         return aux::make_shared<If_Phrase>(
             tok, condition, then_expr, tok2, else_expr);
@@ -325,13 +325,13 @@ parse_primary(Scanner& scanner, bool force)
             } else if (tok.kind == close) {
                 goto rparen;
             } else {
-                throw Token_Error(scanner.script_, tok, error);
+                throw Exception(At_Token(tok, scanner), error);
             }
         }
       }
     default:
         if (force) {
-            throw Token_Error(scanner.script_, tok,
+            throw Exception(At_Token(tok, scanner),
                 "unexpected token when expecting primary");
         } else {
             scanner.push_token(tok);

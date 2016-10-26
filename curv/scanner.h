@@ -8,6 +8,7 @@
 #include <vector>
 #include <curv/script.h>
 #include <curv/token.h>
+#include <curv/exception.h>
 
 namespace curv {
 
@@ -27,6 +28,21 @@ public:
     Scanner(const Script&);
     Token get_token();
     void push_token(Token);
+};
+
+struct At_Token : public Context
+{
+    Token tok_;
+    const Scanner& scanner_;
+
+    At_Token(Token tok, const Scanner& scanner)
+    : tok_(std::move(tok)), scanner_(scanner)
+    {}
+
+    virtual void get_locations(std::list<Location>& locs) const
+    {
+        locs.emplace_back(scanner_.script_, tok_);
+    }
 };
 
 } // namespace curv
