@@ -276,6 +276,11 @@ TEST(curv, eval)
         "f = x->if (x <= 1) 1 else x * f(x-1);\n"
         "f(3)",
         "6");
+    FAILALL("file(\"bad_token.curv\")",
+        "unterminated comment\n"
+        "file \"bad_token.curv\", lines 1(column 5)-3(column 0)\n"
+        "  x + /********\n"
+        "      ^--------");
 
     // lexical errors
     FAILMSG("\\foo", "illegal character '\\'");

@@ -1,11 +1,6 @@
 # 0.1: Minimum Viable Language
 * better error messages: print stack trace
-  - unit test for `file` function.
-    - Use test files in file system. 
-      `mk test` support to run tests in the correct directory.
-    - Use 'virtual' files embedded as strings in C++ test suite.
-      Pluggable file system abstraction. File_System object is dynamic, not a
-      template argument, could implement caching and urls.
+  - fix bug in Location::write for column at end of range on second line
   - add Frame* eval_frame_ to Scanner. Token errors now have a stack trace
     when `file` includes a bad script.
   - At_Phrase replaces Phrase_Error.
@@ -20,10 +15,19 @@ Other:
 * Extend `let` to support recursive functions. Or provide `let` and `letrec`.
 * Shared constructor is protected. Add shared_from_this<T>(T*) which aborts
   if use_count==0.
-* Unit test `file`. Maybe use a pluggable file system abstraction, with file
-  contents embedded in the unit tests?
-  Or a directory of test files, plus 'mk test' support to run the tests
-  in the correct directory.
+* Dynamically pluggable system abstraction. `System` class with system.echo(),
+  system.warn(), system.open(), etc. System object is refcounted, available
+  during compile and run time.
+  * Scanner::system_
+  * Environ::system_. Just a single Environ object for the entire analysis
+    phase, which points to a chain of Scope objects.
+  * builtin_namespace(system) is a function that injects the system object into
+    certain builtin functions, like `file`, avoids the cost of making system
+    generally available in all evaluation contexts.
+  * Do we need the system object to be a VM register? Maybe needed if
+    system.fail(Exception) is used to throw errors (so that debugger can be
+    triggered on error). So then: thread local variable, or passed as argument
+    to eval() functions, or stored in Frame?
 
 
 # CURV0 (expressions):
