@@ -278,9 +278,14 @@ TEST(curv, eval)
         "6");
     FAILALL("file(\"bad_token.curv\")",
         "unterminated comment\n"
-        "file \"bad_token.curv\", lines 1(column 5)-3(column 0)\n"
+        "file \"bad_token.curv\", lines 1(column 5)-2(column 3)\n"
         "  x + /********\n"
         "      ^--------");
+    FAILALL("file[\n1,2];",
+        "not a string\n"
+        "lines 1(column 5)-2(column 4)\n"
+        "  file[\n"
+        "      ^");
 
     // lexical errors
     FAILMSG("\\foo", "illegal character '\\'");
@@ -300,6 +305,11 @@ TEST(curv, eval)
         "  {x=1,x=2}\n"
         "       ^   ");
     FAILALL("x+",
+        "unexpected token when expecting primary\n"
+        "line 1(column 3), at end of script\n"
+        "  x+\n"
+        "    ^");
+    FAILALL("x+\n",
         "unexpected token when expecting primary\n"
         "line 1(column 3), at end of script\n"
         "  x+\n"

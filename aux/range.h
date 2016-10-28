@@ -30,6 +30,7 @@ struct Range
     Iter end() const { return last; }
     bool empty() const { return first == last; }
     std::size_t size() const { return last - first; }
+    auto operator[](size_t i) const -> decltype(first[i]) { return first[i]; }
 
     /// convert Range<const char*> to std::string
     operator std::string() { return std::string(begin(), size()); }

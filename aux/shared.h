@@ -70,10 +70,13 @@ template<typename T, class... Args> Shared<T> make_shared(Args&&... args)
 ///      looking like bad advice (for ensuring code correctness).
 ///    * Protected constructors would help with this. But then, every subclass
 ///      needs a friend declaration for make_shared.
-///    * Or, we protect the Shared constructor. For #3, you must call
-///      shared_from_this<T>(T*). Instead of #4, we allow static/auto instances,
+///    * Or, we protect the Shared constructor.
+///      For #1, we need a conversion from `T& param` to Shared<T>.
+///      For #3, we need a conversion from `T* this` to Shared<T>.
+///      So, share(T&) -> Shared<T>.
+///      Instead of #4, we allow static/auto instances,
 ///      but we can detect them at runtime because use_count==0.
-///      `shared_from_this` aborts if use_count==0.
+///      `share()` aborts if use_count==0.
 struct Shared_Base
 {
     Shared_Base() : use_count(0) {}

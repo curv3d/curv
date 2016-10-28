@@ -10,31 +10,51 @@ using namespace aux;
 auto Location::line_info() const
 -> Line_Info
 {
+    // The line/col of a character position is ambiguous, if the position
+    // points at the next position after a newline. Cases:
+    // - The first index in a non-empty range is ambiguous:
+    //   Use next line #, col 0.
+    // - The last index in a non-empty range is ambiguous:
+    //   Use prev line #, col == # chars in line including newline.
+    // - Empty range, first==last, ambiguous (only happens for EOF token):
+    //   Use prev line #, col == # chars in line including newline.
     Line_Info info;
     unsigned lineno = 0;
     unsigned colno = 0;
     unsigned linebegin = 0;
-    uint32_t i = 0;
-    for (; i < token_.first; ++i) {
-        if (script_->first[i] == '\n') {
+    uint32_t size = script_->size();
+    for (uint32_t i = 0; i <= size; ++i) {
+        if (i == token_.first) {
+            info.start_line_num = lineno;
+            info.start_column_num = colno;
+            info.start_line_begin = linebegin;
+        }
+        if (i == token_.last) {
+            info.end_line_num = lineno;
+            info.end_column_num = colno;
+        }
+        if (i > 0 && (*script_)[i-1] == '\n') {
+            // ambiguous character position, see above.
             ++lineno;
-            linebegin = i + 1;
+            linebegin = i;
             colno = 0;
-        } else
-            ++colno;
+            if (i == token_.first) {
+                if (token_.first == token_.last) {
+                    // a zero-length EOF token, preceded by \n.
+                    // Moving the token to precede the \n so that the
+                    // caret is positioned in a more readable place for write().
+                    --info.start_column_num;
+                    --info.end_column_num;
+                } else {
+                    // a non-empty token that starts at the beginning of a line
+                    info.start_line_num = lineno;
+                    info.start_column_num = colno;
+                    info.start_line_begin = linebegin;
+                }
+            }
+        }
+        ++colno;
     }
-    info.start_line_num = lineno;
-    info.start_column_num = colno;
-    info.start_line_begin = linebegin;
-    for (; i < token_.last; ++i) {
-        if (script_->first[i] == '\n') {
-            ++lineno;
-            colno = 0;
-        } else
-            ++colno;
-    }
-    info.end_line_num = lineno;
-    info.end_column_num = colno;
     return info;
 }
 
@@ -43,7 +63,7 @@ curv::Location::write(std::ostream& out) const
 {
     // TODO: more expressive and helpful diagnostics.
     // Inspiration: http://clang.llvm.org/diagnostics.html
-    // TODO: unicode underlining? a̲b̲c̲d̲e̲f̲ (won't work on Windows)
+    // TODO: unicode underlining? a̲b̲c̲d̲e̲f̲
     if (!scriptname().empty())
         out << "file \"" << scriptname() << "\", ";
     auto info = line_info();
