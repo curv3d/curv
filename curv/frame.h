@@ -5,6 +5,7 @@
 #ifndef CURV_FRAME_H
 #define CURV_FRAME_H
 
+#include <list>
 #include <aux/tail_array.h>
 #include <curv/value.h>
 #include <curv/list.h>
@@ -60,6 +61,13 @@ struct Frame_Base
         call_phrase(src),
         nonlocal(nl)
     {}
+
+    static void get_locations(const Frame* f, std::list<Location>& locs)
+    {
+        for (; f != nullptr; f = f->parent_frame)
+            if (f->call_phrase != nullptr)
+                locs.push_back(f->call_phrase->location());
+    }
 };
 
 } // namespace curv

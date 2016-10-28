@@ -9,6 +9,7 @@
 #include <curv/script.h>
 #include <curv/token.h>
 #include <curv/exception.h>
+#include <curv/frame.h>
 
 namespace curv {
 
@@ -21,11 +22,12 @@ namespace curv {
 struct Scanner
 {
     const Script& script_;
+    Frame* eval_frame_;
 private:
     const char* ptr_;
     std::vector<Token> lookahead_;
 public:
-    Scanner(const Script&);
+    Scanner(const Script&, Frame*);
     Token get_token();
     void push_token(Token);
 };
@@ -42,6 +44,7 @@ struct At_Token : public Context
     virtual void get_locations(std::list<Location>& locs) const
     {
         locs.emplace_back(scanner_.script_, tok_);
+        Frame::get_locations(scanner_.eval_frame_, locs);
     }
 };
 

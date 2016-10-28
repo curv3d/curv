@@ -280,7 +280,10 @@ TEST(curv, eval)
         "unterminated comment\n"
         "file \"bad_token.curv\", lines 1(column 5)-2(column 3)\n"
         "  x + /********\n"
-        "      ^--------");
+        "      ^--------\n"
+        "line 1(columns 1-22)\n"
+        "  file(\"bad_token.curv\")\n"
+        "  ^---------------------");
     FAILALL("file[\n1,2];",
         "not a string\n"
         "lines 1(column 5)-2(column 4)\n"

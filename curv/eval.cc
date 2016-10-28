@@ -14,7 +14,7 @@ auto curv::eval_script(const Script& script, const Namespace& names,
     Frame* f)
 -> Shared<Module>
 {
-    Scanner scanner{script};
+    Scanner scanner{script, f};
     auto phrase = parse_script(scanner);
     Builtin_Environ env{names};
     auto expr = phrase->analyze_module(env);

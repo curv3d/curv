@@ -8,9 +8,10 @@
 using namespace curv;
 using namespace std;
 
-Scanner::Scanner(const Script& s)
+Scanner::Scanner(const Script& s, Frame* f)
 :
     script_(s),
+    eval_frame_(f),
     ptr_(s.begin()),
     lookahead_()
 {
