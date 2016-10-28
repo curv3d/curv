@@ -276,6 +276,7 @@ TEST(curv, eval)
         "f = x->if (x <= 1) 1 else x * f(x-1);\n"
         "f(3)",
         "6");
+
     FAILALL("file(\"bad_token.curv\")",
         "unterminated comment\n"
         "file \"bad_token.curv\", lines 1(column 5)-2(column 3)\n"
@@ -289,6 +290,12 @@ TEST(curv, eval)
         "lines 1(column 5)-2(column 4)\n"
         "  file[\n"
         "      ^");
+    FAILALL("file \"nonexistent\"",
+        "can't open file nonexistent\n"
+        "line 1(columns 1-18)\n"
+        "  file \"nonexistent\"\n"
+        "  ^-----------------");
+
 
     // lexical errors
     FAILMSG("\\foo", "illegal character '\\'");

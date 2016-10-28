@@ -34,7 +34,8 @@ auto curv::eval_file(const String& path, Frame* f)
     std::ifstream t;
     t.open(path.c_str());
     if (t.fail())
-        throw aux::Exception(stringify("can't open file ", path.c_str()));
+        throw Exception(At_Frame(f),
+            stringify("can't open file ", path.c_str()));
     String_Builder buffer;
     buffer << t.rdbuf();
     auto script = aux::make_shared<String_Script>(
