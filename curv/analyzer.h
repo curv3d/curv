@@ -13,12 +13,20 @@ namespace curv {
 struct Environ
 {
     Environ* parent_;
+    /// eval_frame_ is nullptr, unless we are analyzing a script due to an
+    /// evaluation-time call to `file`. It's used as an Exception Context,
+    /// to add a stack trace to compile time errors.
+    Frame* eval_frame_;
     size_t frame_nslots;
     size_t frame_maxslots;
 
-    Environ(Environ* p = nullptr)
-    : parent_(p), frame_nslots(0), frame_maxslots(0)
-    { }
+    Environ(Environ* p)
+    :
+        parent_(p),
+        eval_frame_(p == nullptr ? nullptr : p->eval_frame_),
+        frame_nslots(0),
+        frame_maxslots(0)
+    {}
     Shared<Expression> lookup(const Identifier& id);
     virtual Shared<Expression> single_lookup(const Identifier&) = 0;
 };
@@ -28,9 +36,13 @@ struct Builtin_Environ : public Environ
 protected:
     const Namespace& names;
 public:
-    Builtin_Environ(const Namespace& n, Environ* p = nullptr)
-    : Environ(p), names(n)
-    {}
+    Builtin_Environ(const Namespace& n, Frame* f)
+    :
+        Environ(nullptr),
+        names(n)
+    {
+        eval_frame_ = f;
+    }
     virtual Shared<Expression> single_lookup(const Identifier&);
 };
 
