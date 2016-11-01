@@ -39,6 +39,7 @@ struct Context
 /// These two parts are printed separately (see write()).
 struct Exception : public aux::Exception
 {
+    // TODO: use std::shared_ptr so copy-ctor doesn't throw?
     std::list<Location> loc_;
 
     Exception(Location loc, const char* msg)

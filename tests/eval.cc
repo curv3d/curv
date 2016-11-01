@@ -201,7 +201,14 @@ TEST(curv, eval)
     SUCCESS("sqrt(2)", "1.4142135623730951");
     SUCCESS("sqrt(4,)", "2"); // test syntax: trailing , after last argument
     SUCCESS("sqrt sqrt 16", "2");
-    FAILMSG("sqrt(true)", "sqrt(true): domain error");
+    FAILALL("f=()->sqrt(true);\nf()",
+        "sqrt(true): domain error\n"
+        "line 1(columns 12-15)\n"
+        "  f=()->sqrt(true);\n"
+        "             ^---  \n"
+        "line 2(columns 1-3)\n"
+        "  f()\n"
+        "  ^--");
     SUCCESS("len[]", "0");
     FAILALL("len 0",
         "not a list\n"

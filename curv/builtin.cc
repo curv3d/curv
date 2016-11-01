@@ -24,7 +24,8 @@ builtin_sqrt(Frame& args)
     if (r == r)
         return r;
     else
-        throw aux::Exception(stringify("sqrt(",args[0],"): domain error"));
+        throw Exception(At_Arg(0, &args),
+            stringify("sqrt(",args[0],"): domain error"));
 }
 
 Value
