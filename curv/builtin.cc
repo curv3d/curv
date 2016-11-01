@@ -18,7 +18,7 @@ using namespace std;
 using namespace boost::math::double_constants;
 
 Value
-builtin_sqrt(Frame& args, const Phrase&)
+builtin_sqrt(Frame& args)
 {
     double r = sqrt(args[0].get_num_or_nan());
     if (r == r)
@@ -28,14 +28,14 @@ builtin_sqrt(Frame& args, const Phrase&)
 }
 
 Value
-builtin_len(Frame& args, const Phrase&)
+builtin_len(Frame& args)
 {
     auto& list {arg_to_list(args[0], At_Arg(0, &args))};
     return {double(list.size())};
 }
 
 Value
-builtin_file(Frame& args, const Phrase&)
+builtin_file(Frame& args)
 {
     // TODO: Pluggable file system abstraction, for unit testing and
     // abstracting the behaviour of `file` (would also support caching).

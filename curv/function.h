@@ -14,11 +14,11 @@ namespace curv {
 /// A built-in function value, represented by a boxed native C function.
 struct Function : public Ref_Value
 {
-    Value (*function_)(Frame& f, const Phrase& argsource);
+    Value (*function_)(Frame& f);
     unsigned nargs_;
 
     Function(
-        Value (*fun)(Frame&, const Phrase&),
+        Value (*fun)(Frame&),
         unsigned nargs)
     :
         Ref_Value(ty_function),

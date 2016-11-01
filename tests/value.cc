@@ -20,7 +20,7 @@ bool prints_as(Value val, const char* expect)
 
 
 Value
-id(Frame& args, const Phrase&)
+id(Frame& args)
 {
     return args[0];
 }

@@ -1,6 +1,5 @@
 # 0.1: Minimum Viable Language
 * better error messages: print stack trace
-  - remove argsource argument from Function::function_
   - add exception context to builtin_sqrt
   - ...keep going, add stack traces to all exceptions.
 * top level if(b)c, for, echo, assert actions
