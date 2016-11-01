@@ -1,7 +1,7 @@
 # 0.1: Minimum Viable Language
 * better error messages: print stack trace
   - At_Phrase replaces Phrase_Error.
-  - add Frame* to At_Phrase.
+  - add exception context to builtin_sqrt
   - ...keep going, add stack traces to all exceptions.
 * top level if(b)c, for, echo, assert actions
 * len(module), module.[i]
@@ -25,6 +25,16 @@ Other:
     system.fail(Exception) is used to throw errors (so that debugger can be
     triggered on error). So then: thread local variable, or passed as argument
     to eval() functions, or stored in Frame?
+* still need this?
+  - Environ must contain a Frame and a System. How?
+    - Every Environ contains a copy of the Frame and System pointers.
+    - A single mutable Environ object for the entire analysis phase,
+      which points to a stack of Scope objects.
+      Use RAII (in Scope class) to push/pop scopes.
+      So Scope contains a reference to Environ.
+      Environ::lookup calls Scope::lookup.
+      More complex, but a cleaner data model, since it doesn't make it look
+      like each Scope has an independent choice of Frame and System.
 
 
 # CURV0 (expressions):

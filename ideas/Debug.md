@@ -49,6 +49,7 @@ This gets called in the following situations:
   reaches a "safe point". The call stack is available. You can exit,
   single-step, resume.
 * A breakpoint was reached or a single-step has completed.
+
 ### Stack Trace on Error
 Store a list of call phrases in curv::Exception, to print stack trace.
 Choices:
@@ -118,7 +119,7 @@ using the debugger. Function arguments are passed in this Frame.
 
 How and when does debug() get called?
 
-  1. Each Frame is owned by a local unique_ptr variable (current design).
+  1. Each Frame is owned by a local `unique_ptr` variable (current design).
      All the frames are destroyed when the curv::Exception propagate back up
      to the eval_script() call, so debug() must be called before the exception
      is thrown.
@@ -140,3 +141,12 @@ Suppose a Function calls a library routine which throws an exception.
 What happens?
  1. Function must catch exception then call error().
  2. No extra code required.
+
+### Examine Variables in a Stack Frame while Program Paused
+A Frame contains a pointer to a stack of Dictionaries, which map local
+identifiers onto local slot ids. A parameter dictionary is initially pushed
+onto a call frame, then `let` expressions push and pop dictionaries.
+
+Frame::nonlocal now points to an object containing a dictionary reference
+(mapping nonlocal identifiers) plus slots.
+[class name: Slots? Bindings? Variables?]
