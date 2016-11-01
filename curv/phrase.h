@@ -24,10 +24,10 @@ class Environ;
 ///   delayed until JIT compile time).
 /// * Can reconstruct its Location in the source code, for error reporting.
 ///   This doesn't need to be fast.
-/// * Preserves the original source code in full, which means preserving all
-///   of the original tokens. So a syntax tree can be used for any purpose,
-///   including upgrading source code from an earlier version of the language
-///   to a newer version.
+/// * Preserves the original source code in full, which means preserving all of
+///   the original tokens and white space. So a syntax tree can be used for any
+///   purpose, including upgrading source code from an earlier version of the
+///   language to a newer version.
 struct Phrase : public aux::Shared_Base
 {
     virtual ~Phrase() {}

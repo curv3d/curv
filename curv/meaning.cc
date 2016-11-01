@@ -12,6 +12,7 @@
 #include <curv/record.h>
 #include <curv/module.h>
 #include <curv/thunk.h>
+#include <curv/analyzer.h>
 #include <cmath>
 
 using namespace curv;
@@ -85,7 +86,8 @@ curv::Call_Expr::eval(Frame& f) const
 {
     Value funv = curv::eval(*fun_, f);
     if (!funv.is_ref())
-        throw Phrase_Error(*fun_->source_, stringify(funv,": not a function"));
+        throw Exception(At_Phrase(*fun_->source_, &f),
+            stringify(funv,": not a function"));
     Ref_Value& funp( funv.get_ref_unsafe() );
     // TODO: these two cases are so similar, can we unify them?
     switch (funp.type_) {
@@ -93,7 +95,7 @@ curv::Call_Expr::eval(Frame& f) const
       {
         Function* fun = (Function*)&funp;
         if (args_.size() != fun->nargs_) {
-            throw Phrase_Error(*argsource_,
+            throw Exception(At_Phrase(*argsource_, &f),
                 "wrong number of arguments");
         }
         std::unique_ptr<Frame> f2
@@ -106,7 +108,7 @@ curv::Call_Expr::eval(Frame& f) const
       {
         Closure* fun = (Closure*)&funp;
         if (args_.size() != fun->nargs_) {
-            throw Phrase_Error(*argsource_,
+            throw Exception(At_Phrase(*argsource_, &f),
                 "wrong number of arguments");
         }
         std::unique_ptr<Frame> f2
@@ -116,7 +118,8 @@ curv::Call_Expr::eval(Frame& f) const
         return fun->expr_->eval(*f2);
       }
     default:
-        throw Phrase_Error(*fun_->source_, stringify(funv,": not a function"));
+        throw Exception(At_Phrase(*fun_->source_, &f),
+            stringify(funv,": not a function"));
     }
 }
 
@@ -125,16 +128,17 @@ curv::Dot_Expr::eval(Frame& f) const
 {
     Value basev = curv::eval(*base_, f);
     if (!basev.is_ref())
-        throw Phrase_Error(*base_->source_, "not a record or module");
+        throw Exception(At_Phrase(*base_->source_, &f),
+            "not a record or module");
     Ref_Value& basep( basev.get_ref_unsafe() );
     switch (basep.type_) {
     case Ref_Value::ty_record:
       {
         Record* record = (Record*)&basep;
-        auto f = record->fields_.find(id_);
-        if (f != record->fields_.end())
-            return f->second;
-        throw Phrase_Error(*base_->source_,
+        auto fp = record->fields_.find(id_);
+        if (fp != record->fields_.end())
+            return fp->second;
+        throw Exception(At_Phrase(*base_->source_, &f),
             stringify(".",id_,": not defined"));
       }
     case Ref_Value::ty_module:
@@ -143,11 +147,12 @@ curv::Dot_Expr::eval(Frame& f) const
         auto b = module->dictionary_->find(id_);
         if (b != module->dictionary_->end())
             return module->get(b->second);
-        throw Phrase_Error(*base_->source_,
+        throw Exception(At_Phrase(*base_->source_, &f),
             stringify(".",id_,": not defined"));
       }
     default:
-        throw Phrase_Error(*base_->source_, "not a record or module");
+        throw Exception(At_Phrase(*base_->source_, &f),
+            "not a record or module");
     }
 }
 
@@ -160,7 +165,7 @@ curv::Prefix_Expr::eval(Frame& f) const
             Value a = curv::eval(*arg_, f);
             Value r = Value(-a.get_num_or_nan());
             if (!r.is_num())
-                throw Phrase_Error(*source_,
+                throw Exception(At_Phrase(*source_, &f),
                     stringify("-",a,": domain error"));
             return r;
         }
@@ -169,7 +174,7 @@ curv::Prefix_Expr::eval(Frame& f) const
             Value a = curv::eval(*arg_, f);
             Value r = Value(+a.get_num_or_nan());
             if (!r.is_num())
-                throw Phrase_Error(*source_,
+                throw Exception(At_Phrase(*source_, &f),
                     stringify("+",a,": domain error"));
             return r;
         }
@@ -183,7 +188,7 @@ curv::Not_Expr::eval(Frame& f) const
 {
     Value a = curv::eval(*arg_, f);
     if (!a.is_bool())
-        throw Phrase_Error(*source_,
+        throw Exception(At_Phrase(*source_, &f),
             stringify("!",a,": domain error"));
     return {!a.get_bool_unsafe()};
 }
@@ -199,7 +204,7 @@ curv::Infix_Expr::eval(Frame& f) const
         {
             Value r = Value(a.get_num_or_nan() + b.get_num_or_nan());
             if (!r.is_num())
-                throw Phrase_Error(*source_,
+                throw Exception(At_Phrase(*source_, &f),
                     stringify(a,"+",b,": domain error"));
             return r;
         }
@@ -207,7 +212,7 @@ curv::Infix_Expr::eval(Frame& f) const
         {
             Value r = Value(a.get_num_or_nan() - b.get_num_or_nan());
             if (!r.is_num())
-                throw Phrase_Error(*source_,
+                throw Exception(At_Phrase(*source_, &f),
                     stringify(a,"-",b,": domain error"));
             return r;
         }
@@ -215,7 +220,7 @@ curv::Infix_Expr::eval(Frame& f) const
         {
             Value r = Value(a.get_num_or_nan() * b.get_num_or_nan());
             if (!r.is_num())
-                throw Phrase_Error(*source_,
+                throw Exception(At_Phrase(*source_, &f),
                     stringify(a,"*",b,": domain error"));
             return r;
         }
@@ -223,7 +228,7 @@ curv::Infix_Expr::eval(Frame& f) const
         {
             Value r = Value(a.get_num_or_nan() / b.get_num_or_nan());
             if (!r.is_num())
-                throw Phrase_Error(*source_,
+                throw Exception(At_Phrase(*source_, &f),
                     stringify(a,"/",b,": domain error"));
             return r;
         }
@@ -242,9 +247,9 @@ curv::Or_Expr::eval(Frame& f) const
         Value b = curv::eval(*arg2_, f);
         if (b.is_bool())
             return b;
-        throw Phrase_Error(*arg2_->source_, "not a boolean value");
+        throw Exception(At_Phrase(*arg2_->source_, &f), "not a boolean value");
     }
-    throw Phrase_Error(*arg1_->source_, "not a boolean value");
+    throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
 }
 Value
 curv::And_Expr::eval(Frame& f) const
@@ -256,9 +261,9 @@ curv::And_Expr::eval(Frame& f) const
         Value b = curv::eval(*arg2_, f);
         if (b.is_bool())
             return b;
-        throw Phrase_Error(*arg2_->source_, "not a boolean value");
+        throw Exception(At_Phrase(*arg2_->source_, &f), "not a boolean value");
     }
-    throw Phrase_Error(*arg1_->source_, "not a boolean value");
+    throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
 }
 Value
 curv::If_Expr::eval(Frame& f) const
@@ -268,7 +273,7 @@ curv::If_Expr::eval(Frame& f) const
         return curv::eval(*arg2_, f);
     if (a == Value{false})
         return curv::eval(*arg3_, f);
-    throw Phrase_Error(*arg1_->source_, "not a boolean value");
+    throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
 }
 Value
 curv::Equal_Expr::eval(Frame& f) const
@@ -294,7 +299,7 @@ curv::Less_Expr::eval(Frame& f) const
         return {true};
     if (a.get_num_or_nan() >= b.get_num_or_nan())
         return {false};
-    throw Phrase_Error(*source_,
+    throw Exception(At_Phrase(*source_, &f),
         stringify(a,"<",b,": domain error"));
 }
 Value
@@ -307,7 +312,7 @@ curv::Greater_Expr::eval(Frame& f) const
         return {true};
     if (a.get_num_or_nan() <= b.get_num_or_nan())
         return {false};
-    throw Phrase_Error(*source_,
+    throw Exception(At_Phrase(*source_, &f),
         stringify(a,">",b,": domain error"));
 }
 Value
@@ -320,7 +325,7 @@ curv::Less_Or_Equal_Expr::eval(Frame& f) const
         return {true};
     if (a.get_num_or_nan() > b.get_num_or_nan())
         return {false};
-    throw Phrase_Error(*source_,
+    throw Exception(At_Phrase(*source_, &f),
         stringify(a,"<=",b,": domain error"));
 }
 Value
@@ -333,7 +338,7 @@ curv::Greater_Or_Equal_Expr::eval(Frame& f) const
         return {true};
     if (a.get_num_or_nan() < b.get_num_or_nan())
         return {false};
-    throw Phrase_Error(*source_,
+    throw Exception(At_Phrase(*source_, &f),
         stringify(a,">=",b,": domain error"));
 }
 Value
@@ -344,7 +349,8 @@ curv::Power_Expr::eval(Frame& f) const
     Value r = Value(pow(a.get_num_or_nan(), b.get_num_or_nan()));
     if (r.is_num())
         return r;
-    throw Phrase_Error(*source_, stringify(a,"^",b,": domain error"));
+    throw Exception(At_Phrase(*source_, &f),
+        stringify(a,"^",b,": domain error"));
 }
 Value
 curv::At_Expr::eval(Frame& f) const

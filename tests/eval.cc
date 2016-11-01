@@ -276,6 +276,14 @@ TEST(curv, eval)
         "f = x->if (x <= 1) 1 else x * f(x-1);\n"
         "f(3)",
         "6");
+    FAILALL("f=x->x x; f 0",
+        "0: not a function\n"
+        "line 1(column 6)\n"
+        "  f=x->x x; f 0\n"
+        "       ^       \n"
+        "line 1(columns 11-13)\n"
+        "  f=x->x x; f 0\n"
+        "            ^--");
 
     FAILALL("file(\"bad_token.curv\")",
         "unterminated comment\n"

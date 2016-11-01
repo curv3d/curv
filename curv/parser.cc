@@ -16,6 +16,7 @@
 #include <curv/parse.h>
 #include <curv/scanner.h>
 #include <curv/exception.h>
+#include <curv/analyzer.h>
 
 using namespace std;
 using namespace curv;
@@ -267,7 +268,8 @@ parse_primary(Scanner& scanner, bool force)
       {
         auto condition = parse_primary(scanner, true);
         if (dynamic_cast<Paren_Phrase*>(condition.get()) == nullptr)
-            throw Phrase_Error(*condition, "not a parenthesized expression");
+            throw Exception(At_Phrase(*condition, scanner.eval_frame_),
+                "not a parenthesized expression");
         auto then_expr = parse_expr(scanner);
         Token tok2 = scanner.get_token();
         if (tok2.kind != Token::k_else)
@@ -281,7 +283,8 @@ parse_primary(Scanner& scanner, bool force)
         auto p = parse_primary(scanner, true);
         auto args = dynamic_shared_cast<Paren_Phrase>(p);
         if (args == nullptr)
-            throw Phrase_Error(*p, "not a parenthesized expression");
+            throw Exception(At_Phrase(*p, scanner.eval_frame_),
+                "not a parenthesized expression");
         auto expr = parse_expr(scanner);
         return aux::make_shared<Let_Phrase>(tok, args, expr);
       }

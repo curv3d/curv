@@ -65,7 +65,7 @@ struct Bindings
     bool is_recursive_function(size_t);
 
     // Second, add some bindings:
-    void add_definition(Shared<Phrase> phrase);
+    void add_definition(Shared<Phrase> phrase, curv::Environ& env);
     //void add_parameter(Shared<Phrase> phrase);
 
     // Third, construct an Environ from the bindings dictionary.
@@ -91,6 +91,28 @@ struct Bindings
 
     // Fifth, construct a Let_Expr, Module_Expr, Record_Expr
     // or function parameter list.
+};
+
+
+/// Exception Context where we know the Phrase that contains the error.
+struct At_Phrase : public Context
+{
+    const Phrase& phrase_;
+    Frame* frame_;
+
+    At_Phrase(const Phrase& phrase, Frame* frame)
+    : phrase_(phrase), frame_(frame)
+    {}
+
+    At_Phrase(const Phrase& phrase, Environ& env)
+    : phrase_(phrase), frame_(env.eval_frame_)
+    {}
+
+    virtual void get_locations(std::list<Location>& locs) const
+    {
+        locs.push_back(phrase_.location());
+        Frame::get_locations(frame_, locs);
+    }
 };
 
 inline Shared<Meaning>

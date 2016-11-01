@@ -4,6 +4,7 @@
 
 #include <curv/thunk.h>
 #include <curv/exception.h>
+#include <curv/analyzer.h>
 
 namespace curv
 {
@@ -39,16 +40,12 @@ force_ref(Value& slot, const Phrase& identifier, Frame& f)
             // If there is recursion (eg, `x=x+1`), force_ref will be called
             // recursively. The second call will see the 'missing' value
             // and take the 'ty_missing' branch of the switch.
-        #if 1
             slot = expr->eval(f);
-        #else
-            auto val = expr_->eval(f);
-            slot = val;
-        #endif
             return slot;
           }
         case Ref_Value::ty_missing:
-            throw Phrase_Error(identifier, "illegal recursive reference");
+            throw Exception(At_Phrase(identifier, &f),
+                "illegal recursive reference");
         default:
             return slot;
         }
