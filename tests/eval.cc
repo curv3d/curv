@@ -203,8 +203,11 @@ TEST(curv, eval)
     SUCCESS("sqrt sqrt 16", "2");
     FAILMSG("sqrt(true)", "sqrt(true): domain error");
     SUCCESS("len[]", "0");
-    FAILMSG("len 0", "not a list");
-
+    FAILALL("len 0",
+        "not a list\n"
+        "line 1(column 5)\n"
+        "  len 0\n"
+        "      ^");
     SUCCESS("true||false", "true");
     SUCCESS("false||true", "true");
     SUCCESS("false||false", "false");

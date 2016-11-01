@@ -28,20 +28,20 @@ builtin_sqrt(Frame& args, const Phrase&)
 }
 
 Value
-builtin_len(Frame& args, const Phrase& argsource)
+builtin_len(Frame& args, const Phrase&)
 {
-    auto& list {arg_to_list(args[0], get_arg(argsource, 0))};
+    auto& list {arg_to_list(args[0], At_Arg(0, &args))};
     return {double(list.size())};
 }
 
 Value
-builtin_file(Frame& args, const Phrase& argsource)
+builtin_file(Frame& args, const Phrase&)
 {
     // TODO: Pluggable file system abstraction, for unit testing and
     // abstracting the behaviour of `file` (would also support caching).
     // TODO: The builtin_namespace used by `file` is a pluggable parameter
     // at compile time.
-    String& path {arg_to_string(args[0], get_arg(argsource, 0))};
+    String& path {arg_to_string(args[0], At_Arg(0, &args))};
     return {eval_file(path, &args)};
 }
 

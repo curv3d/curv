@@ -357,8 +357,9 @@ curv::At_Expr::eval(Frame& f) const
 {
     Value a = curv::eval(*arg1_, f);
     Value b = curv::eval(*arg2_, f);
-    auto& list {arg_to_list(a, *arg1_->source_)};
-    int i = arg_to_int(b, 0, (int)(list.size()-1), *arg2_->source_);
+    auto& list {arg_to_list(a, At_Phrase(*arg1_->source_, &f))};
+    int i =
+        arg_to_int(b, 0, (int)(list.size()-1), At_Phrase(*arg2_->source_, &f));
     return list[i];
 }
 

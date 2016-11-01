@@ -69,17 +69,6 @@ struct Exception : public aux::Exception
 
 Shared<const String> illegal_character_message(char ch);
 
-struct Phrase_Error : public Exception
-{
-    Phrase_Error(const Phrase& syn, const char* msg)
-    : Exception(syn.location(), msg)
-    {}
-
-    Phrase_Error(const Phrase& syn, Shared<const String> msg)
-    : Exception(syn.location(), std::move(msg))
-    {}
-};
-
 inline std::ostream& operator<<(std::ostream& out, const Exception& e)
 {
     e.write(out);

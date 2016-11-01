@@ -8,19 +8,24 @@
 #include <curv/list.h>
 #include <curv/string.h>
 #include <curv/phrase.h>
+#include <curv/frame.h>
 
 namespace curv {
 
-List& arg_to_list(Value, const Phrase&);
-String& arg_to_string(Value, const Phrase&);
-int arg_to_int(Value, int, int, const Phrase&);
+List& arg_to_list(Value, const Context&);
+String& arg_to_string(Value, const Context&);
+int arg_to_int(Value, int, int, const Context&);
 
-/// Get the source code for the i'th function argument from argsource.
-/// Used to construct an argument for `arg_to_*()` or `throw Phrase_Error()`.
-///
-/// TODO: Consider the performance cost of this function, in the case where
-/// it is used with `arg_to_*()`.
-const Phrase& get_arg(const Phrase& argsource, size_t i);
+/// The exception context for the i'th argument in a function call.
+struct At_Arg : public Context
+{
+    size_t arg_index_;
+    Frame* eval_frame_;
+
+    At_Arg(size_t i, Frame* f) : arg_index_(i), eval_frame_(f) {}
+
+    void get_locations(std::list<Location>& locs) const;
+};
 
 } // namespace curv
 #endif // header guard
