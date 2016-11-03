@@ -1,7 +1,5 @@
 # 0.1: Minimum Viable Language
-* `for` loop
-  * now implement `for` using For_Expr::generate()
-* if(b)c, for, echo, assert actions
+* if(b)c, echo, assert actions
 * len(module), module.[i]
 * [a..b] or [a:step..b] or [a to b by step]
 * concat[l1,l2]

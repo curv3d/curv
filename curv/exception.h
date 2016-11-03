@@ -6,31 +6,13 @@
 #define CURV_EXCEPTION_H
 
 #include <list>
-#include <aux/exception.h>
 #include <ostream>
+#include <aux/exception.h>
 #include <curv/location.h>
-#include <curv/phrase.h>
 
 namespace curv {
 
-/// A Context describes the source code Location and call stack
-/// of a compile-time or run time error.
-///
-/// More specifically, Context is an abstract interface to an object that
-/// converts compile-time or run-time data structures into a list of Locations.
-///
-/// Context objects are not allocated on the heap, and don't own the data
-/// structures that they point to. Instances of Context subclasses are
-/// constructed in argument position as rvalues, are passed as `const Context&`
-/// parameters to functions that may throw a curv::Exception, and are finally
-/// consumed by the curv::Exception constructor.
-///
-/// An empty Context argument is `{}`.
-/// Subclasses of Context are used for non-empty contexts.
-struct Context
-{
-    virtual void get_locations(std::list<Location>&) const {}
-};
+class Context;
 
 /// Virtual base class for Curv compile time and run time errors.
 ///
@@ -42,25 +24,8 @@ struct Exception : public aux::Exception
     // TODO: use std::shared_ptr so copy-ctor doesn't throw?
     std::list<Location> loc_;
 
-    Exception(Location loc, const char* msg)
-    : aux::Exception(msg), loc_({std::move(loc)}) {}
-
-    Exception(Location loc, Shared<const String> msg)
-    : aux::Exception(std::move(msg)), loc_({std::move(loc)}) {}
-
-    Exception(const Context& cx, const char* msg)
-    : aux::Exception(msg)
-    {
-        cx.get_locations(loc_);
-    }
-
-    Exception(const Context& cx, Shared<const String> msg)
-    : aux::Exception(msg)
-    {
-        cx.get_locations(loc_);
-    }
-
-    //const Location& location() { return loc_; }
+    Exception(const Context& cx, const char* msg);
+    Exception(const Context& cx, Shared<const String> msg);
 
     /// write the message and location to a stream.
     ///

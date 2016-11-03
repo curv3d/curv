@@ -5,6 +5,7 @@
 #include <cmath>
 #include <curv/arg.h>
 #include <curv/exception.h>
+#include <curv/phrase.h>
 
 void curv::At_Arg::get_locations(std::list<Location>& locs) const
 {
@@ -30,7 +31,7 @@ void curv::At_Arg::get_locations(std::list<Location>& locs) const
     // for cosmetic reasons. It looks stupid to underline one of the
     // arguments in a function call, and on the next line,
     // underline the same entire function call.
-    Frame::get_locations(eval_frame_->parent_frame, locs);
+    get_frame_locations(eval_frame_->parent_frame, locs);
 }
 
 auto curv::arg_to_list(Value val, const Context& ctx)

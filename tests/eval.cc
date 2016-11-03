@@ -295,6 +295,7 @@ TEST(curv, eval)
         "  f=x->x x; f 0\n"
         "            ^--");
 
+    // file
     FAILALL("file(\"bad_token.curv\")",
         "unterminated comment\n"
         "file \"bad_token.curv\", lines 1(column 5)-2(column 3)\n"
@@ -314,6 +315,15 @@ TEST(curv, eval)
         "  file \"nonexistent\"\n"
         "  ^-----------------");
 
+    // for
+    FAILMSG("for", "missing argument following 'for'");
+    FAILMSG("for (i=a)", "missing expression");
+    FAILMSG("for x x", "for: malformed argument");
+    FAILMSG("for () x", "for: malformed argument");
+    FAILMSG("for (i=a,j=b) x", "for: malformed argument");
+    FAILMSG("for (i) x", "for: not a definition");
+    FAILMSG("for (42=i) x", "for: not an identifier");
+    SUCCESS("[for (i=[1,2,3]) i+1]", "[2,3,4]");
 
     // lexical errors
     FAILMSG("\\foo", "illegal character '\\'");
@@ -333,12 +343,12 @@ TEST(curv, eval)
         "  {x=1,x=2}\n"
         "       ^   ");
     FAILALL("x+",
-        "unexpected token when expecting primary\n"
+        "missing expression\n"
         "line 1(column 3), at end of script\n"
         "  x+\n"
         "    ^");
     FAILALL("x+\n",
-        "unexpected token when expecting primary\n"
+        "missing expression\n"
         "line 1(column 3), at end of script\n"
         "  x+\n"
         "    ^");

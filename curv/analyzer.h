@@ -93,28 +93,6 @@ struct Bindings
     // or function parameter list.
 };
 
-
-/// Exception Context where we know the Phrase that contains the error.
-struct At_Phrase : public Context
-{
-    const Phrase& phrase_;
-    Frame* frame_;
-
-    At_Phrase(const Phrase& phrase, Frame* frame)
-    : phrase_(phrase), frame_(frame)
-    {}
-
-    At_Phrase(const Phrase& phrase, Environ& env)
-    : phrase_(phrase), frame_(env.eval_frame_)
-    {}
-
-    virtual void get_locations(std::list<Location>& locs) const
-    {
-        locs.push_back(phrase_.location());
-        Frame::get_locations(frame_, locs);
-    }
-};
-
 inline Shared<Meaning>
 analyze(const Phrase& ph, Environ& env)
 {

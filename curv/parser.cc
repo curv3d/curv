@@ -16,7 +16,7 @@
 #include <curv/parse.h>
 #include <curv/scanner.h>
 #include <curv/exception.h>
-#include <curv/analyzer.h>
+#include <curv/context.h>
 
 using namespace std;
 using namespace curv;
@@ -32,7 +32,7 @@ Shared<Phrase> parse_sum(Scanner&);
 Shared<Phrase> parse_product(Scanner&);
 Shared<Phrase> parse_unary(Scanner&);
 Shared<Phrase> parse_chain(Scanner&);
-Shared<Phrase> parse_primary(Scanner&,bool);
+Shared<Phrase> parse_primary(Scanner&,const char* what);
 
 // Parse a script, return a syntax tree.
 // It's a recursive descent parser.
@@ -216,7 +216,7 @@ parse_unary(Scanner& scanner)
 Shared<Phrase>
 parse_chain(Scanner& scanner)
 {
-    auto postfix = parse_primary(scanner, true);
+    auto postfix = parse_primary(scanner, "expression");
     Token tok;
     for (;;) {
         tok = scanner.get_token();
@@ -231,11 +231,11 @@ parse_chain(Scanner& scanner)
         }
         if (tok.kind == Token::k_dot) {
             postfix = aux::make_shared<Binary_Phrase>(postfix, tok,
-                parse_primary(scanner, true));
+                parse_primary(scanner, "expression following '.'"));
             continue;
         }
         scanner.push_token(tok);
-        auto primary = parse_primary(scanner, false);
+        auto primary = parse_primary(scanner, nullptr);
         if (primary == nullptr)
             return postfix;
         postfix = aux::make_shared<Call_Phrase>(postfix, primary);
@@ -245,16 +245,19 @@ parse_chain(Scanner& scanner)
 // primary : numeral | identifier | string | parens | list | record
 //  | 'if' ( expr ) expr 'else' expr
 //  | 'let' parens expr
+//  | 'for' parens expr
 // parens : ( args )
 // list : [ args ]
 // record : { args }
-// args : ( ) | ( arglist ) | ( arglist , )
+// args : | arglist | arglist ,
 // arglist : expr | arglist , expr
 //
-// If `force` is false, then we are parsing an optional primary,
+// If `what` is nullptr, then we are parsing an optional primary,
 // and we return nullptr if no primary is found.
+// Otherwise, `what` is used to construct an error message if a primary
+// expression isn't found.
 Shared<Phrase>
-parse_primary(Scanner& scanner, bool force)
+parse_primary(Scanner& scanner, const char* what)
 {
     auto tok = scanner.get_token();
     switch (tok.kind) {
@@ -266,7 +269,7 @@ parse_primary(Scanner& scanner, bool force)
         return aux::make_shared<String_Phrase>(scanner.script_, tok);
     case Token::k_if:
       {
-        auto condition = parse_primary(scanner, true);
+        auto condition = parse_primary(scanner, "condition following 'if'");
         if (dynamic_cast<Paren_Phrase*>(condition.get()) == nullptr)
             throw Exception(At_Phrase(*condition, scanner.eval_frame_),
                 "not a parenthesized expression");
@@ -280,13 +283,23 @@ parse_primary(Scanner& scanner, bool force)
       }
     case Token::k_let:
       {
-        auto p = parse_primary(scanner, true);
+        auto p = parse_primary(scanner, "argument following 'let'");
         auto args = dynamic_shared_cast<Paren_Phrase>(p);
         if (args == nullptr)
             throw Exception(At_Phrase(*p, scanner.eval_frame_),
-                "not a parenthesized expression");
-        auto expr = parse_expr(scanner);
-        return aux::make_shared<Let_Phrase>(tok, args, expr);
+                "let: malformed argument");
+        auto body = parse_expr(scanner);
+        return aux::make_shared<Let_Phrase>(tok, args, body);
+      }
+    case Token::k_for:
+      {
+        auto p = parse_primary(scanner, "argument following 'for'");
+        auto args = dynamic_shared_cast<Paren_Phrase>(p);
+        if (args == nullptr)
+            throw Exception(At_Phrase(*p, scanner.eval_frame_),
+                "for: malformed argument");
+        auto body = parse_expr(scanner);
+        return aux::make_shared<For_Phrase>(tok, args, body);
       }
     case Token::k_lparen:
     case Token::k_lbracket:
@@ -332,10 +345,18 @@ parse_primary(Scanner& scanner, bool force)
             }
         }
       }
-    default:
-        if (force) {
+    case Token::k_end:
+        if (what != nullptr) {
             throw Exception(At_Token(tok, scanner),
-                "unexpected token when expecting primary");
+                stringify("missing ", what));
+        } else {
+            scanner.push_token(tok);
+            return nullptr;
+        }
+    default:
+        if (what != nullptr) {
+            throw Exception(At_Token(tok, scanner),
+                stringify("unexpected token when expecting ", what));
         } else {
             scanner.push_token(tok);
             return nullptr;

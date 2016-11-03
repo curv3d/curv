@@ -4,7 +4,7 @@
 
 #include <curv/thunk.h>
 #include <curv/exception.h>
-#include <curv/analyzer.h>
+#include <curv/context.h>
 
 namespace curv
 {

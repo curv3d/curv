@@ -12,7 +12,7 @@
 #include <curv/record.h>
 #include <curv/module.h>
 #include <curv/thunk.h>
-#include <curv/analyzer.h>
+#include <curv/context.h>
 #include <cmath>
 
 using namespace curv;
@@ -424,6 +424,23 @@ curv::Let_Expr::eval(Frame& f) const
     for (size_t i = 0; i < values_.size(); ++i)
         slots[i] = values_[i];
     return curv::eval(*body_, f);
+}
+
+Value
+curv::For_Expr::eval(Frame& f) const
+{
+    throw Exception{At_Phrase{*source_, &f}, "not an expression"};
+}
+
+void
+curv::For_Expr::generate(Frame& f, List_Builder& lb) const
+{
+    Value listval = curv::eval(*list_, f);
+    List& list = arg_to_list(listval, At_Phrase{*list_->source_, &f});
+    for (size_t i = 0; i < list.size(); ++i) {
+        f[slot_] = list[i];
+        body_->generate(f, lb);
+    }
 }
 
 Value

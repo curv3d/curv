@@ -143,6 +143,8 @@ Scanner::get_token()
             tok.kind = Token::k_else;
         else if (id == "let")
             tok.kind = Token::k_let;
+        else if (id == "for")
+            tok.kind = Token::k_for;
         else
             tok.kind = Token::k_ident;
         goto success;

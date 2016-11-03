@@ -6,18 +6,26 @@ Defining a tail-array class X:
 The base class (argument of `Tail_Array`) must define 3 members:
 * typename `value_type`, because I can't get `decltype` to work for this purpose.
 * `size_t size_` data member.
-* `value_type array_[0]` data member
+* `value_type array_[0]` data member (or, `data_`)
 
 constructors:
 * `make_fill(size)` -- default initialize elements and base
 * `make_fill(size, value_type, ...)`
 * `make_range(input_iter, size, ...)`
-* `make_elements(const collection&, ...)`
-* `make_elements(collection&&, ...)`
+* `make_elements(collection /*by value*/, ...)`
 * `make_elements(initializer_list<value_type>, ...)`
 
 TODO: abstraction to extend the base class to implement the Container
 concept for an array.
+
+## Alternate Design
+The base class exports 3 members:
+* typename `value_type`
+* `size_t size()`
+* `value_type* data()`
+
+The base class now has the flexibility to represent the size internally
+in multiple ways, as an integer, or as an end pointer.
 
 ## High Level Interface
 `Tail_Array<base_class,value_type>` extends an arbitrary `base_class`

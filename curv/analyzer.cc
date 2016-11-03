@@ -8,6 +8,7 @@
 #include <curv/exception.h>
 #include <curv/thunk.h>
 #include <curv/function.h>
+#include <curv/context.h>
 
 namespace curv
 {
@@ -156,15 +157,13 @@ Lambda_Phrase::analyze(Environ& env) const
     int slot = 0;
     if (auto id = dynamic_cast<const Identifier*>(left_.get()))
     {
-        Atom name = id->location().range();
-        params[name] = slot++;
+        params[id->atom_] = slot++;
     }
     else if (auto parens = dynamic_cast<const Paren_Phrase*>(left_.get()))
     {
         for (auto a : parens->args_) {
             if (auto id = dynamic_cast<const Identifier*>(a.expr_.get())) {
-                Atom name = id->location().range();
-                params[name] = slot++;
+                params[id->atom_] = slot++;
             } else
                 throw Exception(At_Phrase(*a.expr_, env), "not a parameter");
         }
@@ -370,7 +369,7 @@ analyze_definition(
     auto id = dynamic_cast<const Identifier*>(def.left_.get());
     if (id == nullptr)
         throw Exception(At_Phrase(*def.left_,  env), "not an identifier");
-    Atom name = id->location().range();
+    Atom name = id->atom_;
     if (dict.find(name) != dict.end())
         throw Exception(At_Phrase(*def.left_, env),
             stringify(name, ": multiply defined"));
@@ -467,14 +466,14 @@ Let_Phrase::analyze(Environ& env) const
     };
     Atom_Map<Binding> bindings;
     int slot = env.frame_nslots;
-    for (auto b : bindings_->args_) {
+    for (auto b : args_->args_) {
         const Definition* def = dynamic_cast<Definition*>(b.expr_.get());
         if (def == nullptr)
             throw Exception(At_Phrase(*b.expr_, env), "not a definition");
         auto id = dynamic_cast<const Identifier*>(def->left_.get());
         if (id == nullptr)
             throw Exception(At_Phrase(*def->left_, env), "not an identifier");
-        Atom name = id->location().range();
+        Atom name = id->atom_;
         if (bindings.find(name) != bindings.end())
             throw Exception(At_Phrase(*def->left_, env),
                 stringify(name, ": multiply defined"));
@@ -523,6 +522,72 @@ Let_Phrase::analyze(Environ& env) const
 
     return aux::make_shared<Let_Expr>(Shared<const Phrase>(this),
         first_slot, std::move(values), body);
+}
+
+Shared<Meaning>
+For_Phrase::analyze(Environ& env) const
+{
+    if (args_->args_.size() != 1)
+        throw Exception(At_Phrase(*args_, env), "for: malformed argument");
+
+#if 0
+    Token comma = args_->args_[0].comma_;
+    if (comma.kind != Token::k_missing)
+    {
+        throw Exception(
+            At_Location({args_->location().script(), comma}, env.eval_frame_),
+            "for: unexpected comma in argument");
+    }
+#endif
+
+    auto defexpr = args_->args_[0].expr_;
+    const Definition* def = dynamic_cast<Definition*>(&*defexpr);
+    if (def == nullptr)
+        throw Exception(At_Phrase(*defexpr, env),
+            "for: not a definition");
+    auto id = dynamic_cast<const Identifier*>(def->left_.get());
+    if (id == nullptr)
+        throw Exception(At_Phrase(*def->left_, env), "for: not an identifier");
+    Atom name = id->atom_;
+
+    auto list = curv::analyze_expr(*def->right_, env);
+
+#if 0
+    if (bindings.find(name) != bindings.end())
+        throw Exception(At_Phrase(*def->left_, env),
+            stringify(name, ": multiply defined"));
+    bindings[name] = Binding{slot++, def->right_};
+#endif
+
+    int slot = env.frame_nslots;
+    struct For_Environ : public Environ
+    {
+        Atom name_;
+        int slot_;
+
+        For_Environ(
+            Environ& p,
+            Atom name,
+            int slot)
+        : Environ(&p), name_(name), slot_(slot)
+        {
+            frame_nslots = p.frame_nslots + 1;
+            frame_maxslots = std::max(p.frame_maxslots, frame_nslots);
+        }
+        virtual Shared<Expression> single_lookup(const Identifier& id)
+        {
+            if (id.atom_ == name_)
+                return aux::make_shared<Let_Ref>(
+                    Shared<const Phrase>(&id), slot_);
+            return nullptr;
+        }
+    };
+    For_Environ body_env(env, name, slot);
+    auto body = curv::analyze_expr(*body_, body_env);
+    env.frame_maxslots = body_env.frame_maxslots;
+
+    return aux::make_shared<For_Expr>(Shared<const Phrase>(this),
+        slot, list, body);
 }
 
 } // namespace curv

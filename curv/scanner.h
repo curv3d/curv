@@ -10,6 +10,7 @@
 #include <curv/token.h>
 #include <curv/exception.h>
 #include <curv/frame.h>
+#include <curv/context.h>
 
 namespace curv {
 
@@ -44,7 +45,7 @@ struct At_Token : public Context
     virtual void get_locations(std::list<Location>& locs) const
     {
         locs.emplace_back(scanner_.script_, tok_);
-        Frame::get_locations(scanner_.eval_frame_, locs);
+        get_frame_locations(scanner_.eval_frame_, locs);
     }
 };
 

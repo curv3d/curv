@@ -4,6 +4,7 @@
 
 #include <curv/exception.h>
 #include <curv/string.h>
+#include <curv/context.h>
 #include <sstream>
 #include <boost/format.hpp>
 
@@ -11,6 +12,18 @@ using namespace curv;
 using namespace aux;
 
 namespace curv {
+
+Exception::Exception(const Context& cx, const char* msg)
+: aux::Exception(msg)
+{
+    cx.get_locations(loc_);
+}
+
+Exception::Exception(const Context& cx, Shared<const String> msg)
+: aux::Exception(msg)
+{
+    cx.get_locations(loc_);
+}
 
 Shared<const String>
 illegal_character_message(char ch)

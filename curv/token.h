@@ -41,11 +41,12 @@ struct Token
         k_missing,    ///! not a token; marks an uninitialized token variable.
         k_phrase,     ///! text spanned by a parse tree node: 2 or more tokens
         k_bad_token,  ///! a malformed token
-        k_bad_utf8,   ///! a malformed UTF-8 sequence
+        k_bad_utf8,   ///! a malformed UTF-8 sequence or unsupported code point
         k_ident,
         k_if,
         k_else,
         k_let,
+        k_for,
         k_num,        ///! floating point numeral
         k_string,
         k_lparen,

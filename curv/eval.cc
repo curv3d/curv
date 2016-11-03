@@ -9,6 +9,7 @@
 #include <curv/exception.h>
 #include <curv/parse.h>
 #include <curv/scanner.h>
+#include <curv/context.h>
 
 auto curv::eval_script(const Script& script, const Namespace& names,
     Frame* f)

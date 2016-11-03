@@ -7,8 +7,7 @@
 
 #include <curv/list.h>
 #include <curv/string.h>
-#include <curv/phrase.h>
-#include <curv/frame.h>
+#include <curv/context.h>
 
 namespace curv {
 
@@ -24,7 +23,7 @@ struct At_Arg : public Context
 
     At_Arg(size_t i, Frame* f) : arg_index_(i), eval_frame_(f) {}
 
-    void get_locations(std::list<Location>& locs) const;
+    void get_locations(std::list<Location>& locs) const override;
 };
 
 } // namespace curv

@@ -346,6 +346,28 @@ struct Let_Expr : public Expression
     virtual Value eval(Frame&) const override;
 };
 
+struct For_Expr : public Expression
+{
+    size_t slot_;
+    Shared<const Expression> list_;
+    Shared<const Expression> body_;
+
+    For_Expr(
+        Shared<const Phrase> source,
+        size_t slot,
+        Shared<const Expression> list,
+        Shared<const Expression> body)
+    :
+        Expression(std::move(source)),
+        slot_(slot),
+        list_(std::move(list)),
+        body_(std::move(body))
+    {}
+
+    virtual Value eval(Frame&) const override;
+    virtual void generate(Frame&, List_Builder&) const override;
+};
+
 struct If_Expr : public Expression
 {
     Shared<Expression> arg1_;
