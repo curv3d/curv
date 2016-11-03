@@ -1,16 +1,21 @@
 # 0.1: Minimum Viable Language
-* top level if(b)c, for, echo, assert actions
+* `for` loop
+  * now implement `for` using For_Expr::generate()
+* if(b)c, for, echo, assert actions
 * len(module), module.[i]
+* [a..b] or [a:step..b] or [a to b by step]
+* concat[l1,l2]
+* Extend `let` to support recursive functions. Or provide `let` and `letrec`.
+* f(x)=...
 
 Other:
 * Interactive curv: special variable `_` is last value. _1,_2, or $1,$2 ...
 * Introduce submodules (with recursive functions)
-* Extend `let` to support recursive functions. Or provide `let` and `letrec`.
-* Shared constructor is protected. Add shared_from_this<T>(T*) which aborts
+* Shared constructor is protected. Add shared<T>(T*) which aborts
   if use_count==0.
 * Dynamically pluggable system abstraction. `System` class with system.echo(),
-  system.warn(), system.open(), etc. System object is refcounted, available
-  during compile and run time.
+  system.warning(), system.error(), system.open(), system.namespace, etc.
+  System object is refcounted, available during compile and run time.
   * Scanner::system_
   * Environ::system_. Just a single Environ object for the entire analysis
     phase, which points to a chain of Scope objects.
@@ -18,9 +23,11 @@ Other:
     certain builtin functions, like `file`, avoids the cost of making system
     generally available in all evaluation contexts.
   * Do we need the system object to be a VM register? Maybe needed if
-    system.fail(Exception) is used to throw errors (so that debugger can be
-    triggered on error). So then: thread local variable, or passed as argument
-    to eval() functions, or stored in Frame?
+    system.error(Exception) is used to throw errors (so that debugger can be
+    triggered on error). So then:
+    * thread local variable
+    * store in Frame--more efficient than passing as argument to eval()
+      and Function::function_().
 * still need this?
   - Environ must contain a Frame and a System. How?
     - Every Environ contains a copy of the Frame and System pointers.
@@ -31,7 +38,6 @@ Other:
       Environ::lookup calls Scope::lookup.
       More complex, but a cleaner data model, since it doesn't make it look
       like each Scope has an independent choice of Frame and System.
-
 
 # CURV0 (expressions):
 * bug: (-1)^-0.5 error message needs parens around '-1'

@@ -18,6 +18,10 @@
 namespace curv {
 
 /// An abstract base class representing a semantically analyzed Phrase.
+///
+/// TODO: class Meaning doesn't currently pull its weight. It's an abstract
+/// class and the only subclass is Expression. I originally planned to have a
+/// Definition class: that hasn't happened.
 struct Meaning : public aux::Shared_Base
 {
     /// The original source code for this meaning.
@@ -31,12 +35,15 @@ struct Meaning : public aux::Shared_Base
     Meaning(Shared<const Phrase> source) : source_(std::move(source)) {}
 };
 
-/// An Expression is a phrase that denotes a value.
+/// An Expression is a phrase that (a) can be evaluated to produce a single 
+/// value, or (b) can be executed to generate a sequence of zero or more values
+/// within a list comprehension. Note that (a) implies (b).
 struct Expression : public Meaning
 {
     using Meaning::Meaning;
 
     virtual Value eval(Frame&) const = 0;
+    virtual void generate(Frame&, List_Builder&) const;
 };
 
 /// A Constant is an Expression whose value is known at compile time.

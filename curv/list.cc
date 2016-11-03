@@ -26,3 +26,9 @@ auto curv::List_Base::operator==(const List_Base& list) const
     }
     return true;
 }
+
+auto curv::List_Builder::get_list()
+-> Shared<List>
+{
+    return List::make_elements(*this);
+}

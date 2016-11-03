@@ -17,6 +17,12 @@
 
 using namespace curv;
 
+void
+curv::Expression::generate(Frame& f, List_Builder& lb) const
+{
+    lb.push_back(eval(f));
+}
+
 Value
 curv::Constant::eval(Frame&) const
 {
@@ -366,10 +372,13 @@ curv::At_Expr::eval(Frame& f) const
 Shared<List>
 curv::List_Expr_Base::eval_list(Frame& f) const
 {
-    auto list = make_list(this->size());
+    // TODO: This used to have a more efficient implementation, assuming that
+    // all elements of the list constructor are pure expressions. An optimizing
+    // compiler could bring that back as a special case.
+    List_Builder lb;
     for (size_t i = 0; i < this->size(); ++i)
-        (*list)[i] = curv::eval(*(*this)[i], f);
-    return list;
+        (*this)[i]->generate(f, lb);
+    return lb.get_list();
 }
 
 Value

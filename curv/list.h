@@ -8,6 +8,7 @@
 #include <curv/value.h>
 #include <aux/tail_array.h>
 #include <aux/array_mixin.h>
+#include <vector>
 
 namespace curv {
 
@@ -30,6 +31,15 @@ inline Shared<List> make_list(size_t size)
     List* list = List::make(size);
     return {list};
 }
+
+/// Factory class for building a curv::List.
+struct List_Builder : public std::vector<Value>
+{
+    // An optimized version of this class would use a curv::List
+    // as the internal buffer.
+
+    Shared<List> get_list();
+};
 
 } // namespace curv
 #endif // header guard
