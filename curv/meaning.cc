@@ -272,7 +272,7 @@ curv::And_Expr::eval(Frame& f) const
     throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
 }
 Value
-curv::If_Expr::eval(Frame& f) const
+curv::If_Else_Expr::eval(Frame& f) const
 {
     Value a = curv::eval(*arg1_, f);
     if (a == Value{true})

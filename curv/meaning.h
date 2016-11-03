@@ -368,13 +368,13 @@ struct For_Expr : public Expression
     virtual void generate(Frame&, List_Builder&) const override;
 };
 
-struct If_Expr : public Expression
+struct If_Else_Expr : public Expression
 {
     Shared<Expression> arg1_;
     Shared<Expression> arg2_;
     Shared<Expression> arg3_;
 
-    If_Expr(
+    If_Else_Expr(
         Shared<const Phrase> source,
         Shared<Expression> arg1,
         Shared<Expression> arg2,
