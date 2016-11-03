@@ -530,16 +530,6 @@ For_Phrase::analyze(Environ& env) const
     if (args_->args_.size() != 1)
         throw Exception(At_Phrase(*args_, env), "for: malformed argument");
 
-#if 0
-    Token comma = args_->args_[0].comma_;
-    if (comma.kind != Token::k_missing)
-    {
-        throw Exception(
-            At_Location({args_->location().script(), comma}, env.eval_frame_),
-            "for: unexpected comma in argument");
-    }
-#endif
-
     auto defexpr = args_->args_[0].expr_;
     const Definition* def = dynamic_cast<Definition*>(&*defexpr);
     if (def == nullptr)
@@ -551,13 +541,6 @@ For_Phrase::analyze(Environ& env) const
     Atom name = id->atom_;
 
     auto list = curv::analyze_expr(*def->right_, env);
-
-#if 0
-    if (bindings.find(name) != bindings.end())
-        throw Exception(At_Phrase(*def->left_, env),
-            stringify(name, ": multiply defined"));
-    bindings[name] = Binding{slot++, def->right_};
-#endif
 
     int slot = env.frame_nslots;
     struct For_Environ : public Environ
