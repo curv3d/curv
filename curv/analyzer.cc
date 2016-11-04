@@ -430,11 +430,18 @@ Record_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 If_Phrase::analyze(Environ& env) const
 {
-    return aux::make_shared<If_Else_Expr>(
-        Shared<const Phrase>(this),
-        curv::analyze_expr(*condition_, env),
-        curv::analyze_expr(*then_expr_, env),
-        curv::analyze_expr(*else_expr_, env));
+    if (else_expr_ == nullptr) {
+        return aux::make_shared<If_Expr>(
+            Shared<const Phrase>(this),
+            curv::analyze_expr(*condition_, env),
+            curv::analyze_expr(*then_expr_, env));
+    } else {
+        return aux::make_shared<If_Else_Expr>(
+            Shared<const Phrase>(this),
+            curv::analyze_expr(*condition_, env),
+            curv::analyze_expr(*then_expr_, env),
+            curv::analyze_expr(*else_expr_, env));
+    }
 }
 
 Shared<Meaning>

@@ -1,8 +1,9 @@
 # 0.1: Minimum Viable Language
-* if(b)c, echo, assert actions
+* echo, assert actions
 * len(module), module.[i]
 * [a..b] or [a:step..b] or [a to b by step]
-* concat[l1,l2]
+* prelude.scad loaded at startup
+* concat[l1,l2]. concat(vv) = [for(v=vv)for(i=v)i];
 * Extend `let` to support recursive functions. Or provide `let` and `letrec`.
 * f(x)=...
 

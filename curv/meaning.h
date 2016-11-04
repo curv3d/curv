@@ -368,6 +368,25 @@ struct For_Expr : public Expression
     virtual void generate(Frame&, List_Builder&) const override;
 };
 
+struct If_Expr : public Expression
+{
+    Shared<Expression> arg1_;
+    Shared<Expression> arg2_;
+
+    If_Expr(
+        Shared<const Phrase> source,
+        Shared<Expression> arg1,
+        Shared<Expression> arg2)
+    :
+        Expression(source),
+        arg1_(std::move(arg1)),
+        arg2_(std::move(arg2))
+    {}
+
+    virtual Value eval(Frame&) const override;
+    virtual void generate(Frame&, List_Builder&) const override;
+};
+
 struct If_Else_Expr : public Expression
 {
     Shared<Expression> arg1_;
@@ -387,6 +406,7 @@ struct If_Else_Expr : public Expression
     {}
 
     virtual Value eval(Frame&) const override;
+    virtual void generate(Frame&, List_Builder&) const override;
 };
 
 struct Lambda_Expr : public Expression

@@ -243,6 +243,7 @@ parse_chain(Scanner& scanner)
 }
 
 // primary : numeral | identifier | string | parens | list | record
+//  | 'if' ( expr ) expr
 //  | 'if' ( expr ) expr 'else' expr
 //  | 'let' parens expr
 //  | 'for' parens expr
@@ -275,8 +276,11 @@ parse_primary(Scanner& scanner, const char* what)
                 "not a parenthesized expression");
         auto then_expr = parse_expr(scanner);
         Token tok2 = scanner.get_token();
-        if (tok2.kind != Token::k_else)
-            throw Exception(At_Token(tok2, scanner), "not the keyword 'else'");
+        if (tok2.kind != Token::k_else) {
+            scanner.push_token(tok2);
+            return aux::make_shared<If_Phrase>(
+                tok, condition, then_expr, Token{}, nullptr);
+        }
         auto else_expr = parse_expr(scanner);
         return aux::make_shared<If_Phrase>(
             tok, condition, then_expr, tok2, else_expr);

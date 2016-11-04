@@ -41,7 +41,7 @@ struct Token_Phrase : public Phrase
 {
     Location loc_;
     Token_Phrase(const Script& s, Token tok) : loc_(s, std::move(tok)) {}
-    virtual Location location() const { return loc_; }
+    virtual Location location() const override { return loc_; }
 };
 struct Identifier final : public Token_Phrase
 {
@@ -73,7 +73,7 @@ struct Unary_Phrase : public Phrase
     {}
     Token op_;
     Shared<Phrase> arg_;
-    virtual Location location() const
+    virtual Location location() const override
     {
         return arg_->location().starting_at(op_);
     }
@@ -94,7 +94,7 @@ struct Binary_Phrase : public Phrase
     Shared<Phrase> left_;
     Token op_;
     Shared<Phrase> right_;
-    virtual Location location() const
+    virtual Location location() const override
     {
         return left_->location().ending_at(right_->location().token());
     }
@@ -126,7 +126,7 @@ struct Definition : public Phrase
     Shared<Phrase> left_;
     Token equate_;
     Shared<Phrase> right_;
-    virtual Location location() const
+    virtual Location location() const override
     {
         return left_->location().ending_at(right_->location().token());
     }
@@ -154,7 +154,7 @@ struct Delimited_Phrase : public Phrase
     : script_(script), lparen_(lparen)
     {}
 
-    virtual Location location() const
+    virtual Location location() const override
     {
         return Location(script_, lparen_).ending_at(rparen_);
     }
@@ -195,7 +195,7 @@ struct Module_Phrase : public Phrase
 
     Module_Phrase(const Script& script) : script_(script) {}
 
-    virtual Location location() const
+    virtual Location location() const override
     {
         if (stmts_.empty())
             return Location(script_, end_);
@@ -221,7 +221,7 @@ struct Call_Phrase : public Phrase
         args_(std::move(args))
     {}
 
-    virtual Location location() const
+    virtual Location location() const override
     {
         return function_->location().ending_at(args_->location().token());
     }
@@ -250,11 +250,12 @@ struct If_Phrase : public Phrase
         else_expr_(else_expr)
     {}
 
-    virtual Location location() const
+    virtual Location location() const override
     {
-        return condition_->location()
-            .starting_at(if_)
-            .ending_at(else_expr_->location().token());
+        if (else_expr_ == nullptr)
+            return then_expr_->location().starting_at(if_);
+        else
+            return else_expr_->location().starting_at(if_);
     }
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
@@ -277,7 +278,7 @@ struct Control_Phrase : public Phrase
         body_(body)
     {}
 
-    virtual Location location() const
+    virtual Location location() const override
     {
         return body_->location().starting_at(keyword_);
     }
