@@ -22,8 +22,7 @@ auto Location::line_info() const
     unsigned lineno = 0;
     unsigned colno = 0;
     unsigned linebegin = 0;
-    uint32_t size = script_->size();
-    for (uint32_t i = 0; i <= size; ++i) {
+    for (uint32_t i = 0; i <= token_.last; ++i) {
         if (i == token_.first) {
             info.start_line_num = lineno;
             info.start_column_num = colno;
