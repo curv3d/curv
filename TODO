@@ -1,6 +1,5 @@
 # 0.1: Minimum Viable Language
 * echo, assert actions
-* `let` generator
 * len(module), module.[i]
 * floor, ceil
 * [a..b]

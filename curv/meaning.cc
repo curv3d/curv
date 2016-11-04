@@ -453,6 +453,14 @@ curv::Let_Expr::eval(Frame& f) const
         slots[i] = values_[i];
     return curv::eval(*body_, f);
 }
+void
+curv::Let_Expr::generate(Frame& f, List_Builder& lb) const
+{
+    Value* slots = &f[first_slot_];
+    for (size_t i = 0; i < values_.size(); ++i)
+        slots[i] = values_[i];
+    body_->generate(f, lb);
+}
 
 Value
 curv::For_Expr::eval(Frame& f) const

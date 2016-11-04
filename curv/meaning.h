@@ -344,6 +344,7 @@ struct Let_Expr : public Expression
     {}
 
     virtual Value eval(Frame&) const override;
+    virtual void generate(Frame&, List_Builder&) const override;
 };
 
 struct For_Expr : public Expression
