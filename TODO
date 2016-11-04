@@ -1,16 +1,41 @@
 # 0.1: Minimum Viable Language
 * echo, assert actions
+* `let` generator
 * len(module), module.[i]
-* [a..b] or [a:step..b] or [a to b by step]
+* floor, ceil
+* [a..b]
+* range with step: [0..100 step 10]
+  * [i,i+step..j], Haskell, not good for tensor slice notation due to `,`
+                            and not a free-standing generator expression.
+  * [i:step..j]
+  * [i to j by step], Algolish
+  * [i..j by step]
+  * [i..step..j], F#
+  * [0..(j-i)/step]*step+i
+  * (1..10).step_by(2), Rust unstable
+  * i..j step k
+    * reverse(v) = [for (i=[len(v)-1 .. 0 step -1]) v.[i]];
+    * reverse(v) = [for (i=[len(v)-1 .. 0 by -1]) v.[i]];
 * prelude.scad loaded at startup
 * concat[l1,l2]. concat(vv) = [for(v=vv)for(i=v)i];
 * Extend `let` to support recursive functions. Or provide `let` and `letrec`.
 * f(x)=...
+* A 'sequence generator' is missing, seems like a design hole.
+  Consider this grammar:
+    list-constructor ::= [ generator ]
+    generator ::= expr
+    generator ::= generator \(, generator\)* ,\? | *empty*
+    generator ::= ( generator )
+    generator ::= if (expr) generator
+    generator ::= if (expr) generator else generator
+    generator ::= for (bindings) generator
+    generator ::= i .. j | i .. j step k
+    generator ::= let (bindings) generator
 
 Other:
 * Interactive curv: special variable `_` is last value. _1,_2, or $1,$2 ...
 * Introduce submodules (with recursive functions)
-* Shared constructor is protected. Add shared<T>(T*) which aborts
+* Shared constructor is protected. Add share<T>(T&) which aborts
   if use_count==0.
 * Dynamically pluggable system abstraction. `System` class with system.echo(),
   system.warning(), system.error(), system.open(), system.namespace, etc.
@@ -27,6 +52,14 @@ Other:
     * thread local variable
     * store in Frame--more efficient than passing as argument to eval()
       and Function::function_().
+* interrupt.
+  * Periodically test a thread local variable known to the curv core,
+    curv::interrupt_requested. Throw an exception on interrupt, or call a System
+    function to do this.
+  * Periodically call a System function. Inside this function provided by
+    the client is `if(thread_local_interrupt!=0)throw Interrupt()`.
+    This keeps the core "pure" (free of thread-local variables) at the cost
+    of a virtual function call at frequent intervals.
 * still need this?
   - Environ must contain a Frame and a System. How?
     - Every Environ contains a copy of the Frame and System pointers.

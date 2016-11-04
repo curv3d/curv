@@ -228,3 +228,65 @@ do (
         new i = i + 1;
     );
 );
+
+#### Recursive vs Sequential Scope
+I want each definition to have a consistent scope. I think this is an
+important property for a purely declarative language.
+
+This makes it difficult to fully integrate recursive and sequential bindings.
+Do-notation uses strict sequential scoping, so it's impossible to define
+recursive functions within that scoping regime. You have to define recursive
+functions in a nested child scope, or in a parent scope, where that scope
+uses recursive scoping.
+
+OpenSCAD doesn't have consistent scoping, and the behaviour is so disturbing
+that it's one of the original motivations for this project.
+```
+x = 1;
+echo(x); // ECHO: 2
+x = 2;
+```
+
+Python is less fucked up. It is more consistently a sequentially scoped,
+sequentially evaluated language. There is the appearance of forward
+references within function definitions. The reality is a bit different.
+There are only two scopes, global and local. A function definition is
+actually an assignment to a mutable variable. References to global variables
+are recognized without requiring the global variable to first be "defined".
+Python doesn't have the consistent scoping property that I want.
+
+C has consistent scoping. Definition before use, sequential scoping, but a
+function definition's scope begins in its own body.
+
+Algol and its immediate descendents have consistent scoping.
+At the top level, there are only definitions, there is no expression
+evaluation (that is confined to function definitions). So we can have
+consistent sequential scoping and sequential evaluation within a function
+or procedure, and use recursive scoping at the top level, in such a language.
+
+I came up with a possible solution for the Gen3 project. Forward references
+are legal within function bodies. If a function is evaluated before one of
+the variables it forward references is initialized, then an error occurs
+(run time, or via compile time checking).
+* This is similar to Python, so the user base would find it acceptable.
+* This is not compatible with redefinitions. A function can't contain a forward
+  reference to a variable that is redefined, because it is ambiguous which
+  definition is being referred to. (Arbitrarily, we could choose the last.)
+
+## Sequence Expressions
+* In list comprehension syntax, I want a "sequence generator".
+  Possible syntax: `(gen1,gen2,...)`.
+  It means, evaluator the generators in left-to-right order.
+* In this definition comprehension proposal, we have compound definitions.
+  Syntax: `(def1;def2;...)`.
+  And definitions can probably be replaced by generators. So it's a superset.
+
+So, it seems plausible to merge list and definition comprehensions into
+a single concept, "sequence expressions" or whatever.
+
+`;` denotes sequential evaluation, it sequences two generator expressions,
+or two sequentially scoped definitions from definition comprehensions.
+
+`,` denotes a list with no sequential semantics, no defined order of evaluation.
+It separates two expressions in a function call argument list or plain
+(non-sequential) list constructor.
