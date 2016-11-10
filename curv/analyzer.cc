@@ -47,7 +47,7 @@ Builtin_Environ::single_lookup(const Identifier& id)
 void
 Bindings::add_definition(Shared<Phrase> phrase, curv::Environ& env)
 {
-    const Definition* def = dynamic_cast<Definition*>(phrase.get());
+    const Definition_Phrase* def = dynamic_cast<Definition_Phrase*>(phrase.get());
     if (def == nullptr)
         throw Exception(At_Phrase(*phrase, env), "not a definition");
     auto id = dynamic_cast<const Identifier*>(def->left_.get());
@@ -308,7 +308,7 @@ Binary_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-Definition::analyze(Environ& env) const
+Definition_Phrase::analyze(Environ& env) const
 {
     throw Exception(At_Phrase(*this, env), "not an expression");
 }
@@ -362,7 +362,7 @@ Call_Phrase::analyze(Environ& env) const
 
 void
 analyze_definition(
-    const Definition& def,
+    const Definition_Phrase& def,
     Atom_Map<Shared<const Expression>>& dict,
     Environ& env)
 {
@@ -389,7 +389,7 @@ Module_Phrase::analyze_module(Environ& env) const
     Bindings fields;
     std::vector<Shared<Phrase>> elements;
     for (auto st : stmts_) {
-        if (dynamic_cast<Definition*>(st.stmt_.get()) != nullptr)
+        if (dynamic_cast<Definition_Phrase*>(st.stmt_.get()) != nullptr)
             fields.add_definition(st.stmt_, env);
         else
             elements.push_back(st.stmt_);
@@ -416,8 +416,8 @@ Record_Phrase::analyze(Environ& env) const
     Shared<Record_Expr> record =
         aux::make_shared<Record_Expr>(Shared<const Phrase>(this));
     for (auto i : args_) {
-        const Definition* def =
-            dynamic_cast<Definition*>(i.expr_.get());
+        const Definition_Phrase* def =
+            dynamic_cast<Definition_Phrase*>(i.expr_.get());
         if (def != nullptr) {
             analyze_definition(*def, record->fields_, env);
         } else {
@@ -474,7 +474,7 @@ Let_Phrase::analyze(Environ& env) const
     Atom_Map<Binding> bindings;
     int slot = env.frame_nslots;
     for (auto b : args_->args_) {
-        const Definition* def = dynamic_cast<Definition*>(b.expr_.get());
+        const Definition_Phrase* def = dynamic_cast<Definition_Phrase*>(b.expr_.get());
         if (def == nullptr)
             throw Exception(At_Phrase(*b.expr_, env), "not a definition");
         auto id = dynamic_cast<const Identifier*>(def->left_.get());
@@ -538,7 +538,7 @@ For_Phrase::analyze(Environ& env) const
         throw Exception(At_Phrase(*args_, env), "for: malformed argument");
 
     auto defexpr = args_->args_[0].expr_;
-    const Definition* def = dynamic_cast<Definition*>(&*defexpr);
+    const Definition_Phrase* def = dynamic_cast<Definition_Phrase*>(&*defexpr);
     if (def == nullptr)
         throw Exception(At_Phrase(*defexpr, env),
             "for: not a definition");

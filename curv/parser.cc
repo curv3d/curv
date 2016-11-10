@@ -75,7 +75,7 @@ parse_expr(Scanner& scanner)
     auto tok = scanner.get_token();
     switch (tok.kind) {
     case Token::k_equate:
-        return aux::make_shared<Definition>(
+        return aux::make_shared<Definition_Phrase>(
             std::move(left), tok, parse_expr(scanner));
     case Token::k_right_arrow:
         return aux::make_shared<Lambda_Phrase>(

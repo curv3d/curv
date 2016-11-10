@@ -114,9 +114,9 @@ struct Lambda_Phrase : public Binary_Phrase
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
-struct Definition : public Phrase
+struct Definition_Phrase : public Phrase
 {
-    Definition(
+    Definition_Phrase(
         Shared<Phrase> left,
         Token equate,
         Shared<Phrase> right)

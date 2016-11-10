@@ -21,7 +21,8 @@ namespace curv {
 ///
 /// TODO: class Meaning doesn't currently pull its weight. It's an abstract
 /// class and the only subclass is Expression. I originally planned to have a
-/// Definition class: that hasn't happened.
+/// Definition class: that hasn't happened. The proposal for definition
+/// abstractions would motivate this, however.
 struct Meaning : public aux::Shared_Base
 {
     /// The original source code for this meaning.
