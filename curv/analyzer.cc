@@ -23,6 +23,12 @@ analyze_expr(const Phrase& ph, Environ& env)
     return Shared<Expression>(e);
 }
 
+Shared<Definition>
+Phrase::analyze_def(Environ&) const
+{
+    return nullptr;
+}
+
 Shared<Expression>
 Environ::lookup(const Identifier& id)
 {
@@ -45,22 +51,16 @@ Builtin_Environ::single_lookup(const Identifier& id)
 }
 
 void
-Bindings::add_definition(Shared<Phrase> phrase, curv::Environ& env)
+Bindings::add_definition(Shared<Definition> def, curv::Environ& env)
 {
-    const Definition_Phrase* def = dynamic_cast<Definition_Phrase*>(phrase.get());
-    if (def == nullptr)
-        throw Exception(At_Phrase(*phrase, env), "not a definition");
-    auto id = dynamic_cast<const Identifier*>(def->left_.get());
-    if (id == nullptr)
-        throw Exception(At_Phrase(*def->left_, env), "not an identifier");
-    Atom name = id->atom_;
+    Atom name = def->name_->atom_;
     if (dictionary_->find(name) != dictionary_->end())
-        throw Exception(At_Phrase(*def->left_, env),
+        throw Exception(At_Phrase(*def->name_, env),
             stringify(name, ": multiply defined"));
     (*dictionary_)[name] = cur_position_++;
-    slot_phrases_.push_back(def->right_);
+    slot_phrases_.push_back(def->definiens_);
 
-    auto lambda = dynamic_cast<Lambda_Phrase*>(def->right_.get());
+    auto lambda = dynamic_cast<Lambda_Phrase*>(def->definiens_.get());
     if (lambda != nullptr)
         lambda->recursive_ = true;
 }
@@ -313,6 +313,17 @@ Definition_Phrase::analyze(Environ& env) const
     throw Exception(At_Phrase(*this, env), "not an expression");
 }
 
+Shared<Definition>
+Definition_Phrase::analyze_def(Environ& env) const
+{
+    auto id = dynamic_cast<const Identifier*>(left_.get());
+    if (id == nullptr)
+        throw Exception(At_Phrase(*left_,  env), "not an identifier");
+    return aux::make_shared<Definition>(
+        Shared<const Identifier>(id),
+        right_);
+}
+
 Shared<Meaning>
 Paren_Phrase::analyze(Environ& env) const
 {
@@ -362,18 +373,15 @@ Call_Phrase::analyze(Environ& env) const
 
 void
 analyze_definition(
-    const Definition_Phrase& def,
+    const Definition& def,
     Atom_Map<Shared<const Expression>>& dict,
     Environ& env)
 {
-    auto id = dynamic_cast<const Identifier*>(def.left_.get());
-    if (id == nullptr)
-        throw Exception(At_Phrase(*def.left_,  env), "not an identifier");
-    Atom name = id->atom_;
+    Atom name = def.name_->atom_;
     if (dict.find(name) != dict.end())
-        throw Exception(At_Phrase(*def.left_, env),
+        throw Exception(At_Phrase(*def.name_, env),
             stringify(name, ": multiply defined"));
-    dict[name] = curv::analyze_expr(*def.right_, env);
+    dict[name] = curv::analyze_expr(*def.definiens_, env);
 }
 
 Shared<Meaning>
@@ -389,8 +397,9 @@ Module_Phrase::analyze_module(Environ& env) const
     Bindings fields;
     std::vector<Shared<Phrase>> elements;
     for (auto st : stmts_) {
-        if (dynamic_cast<Definition_Phrase*>(st.stmt_.get()) != nullptr)
-            fields.add_definition(st.stmt_, env);
+        auto def = st.stmt_->analyze_def(env);
+        if (def != nullptr)
+            fields.add_definition(def, env);
         else
             elements.push_back(st.stmt_);
     }
@@ -416,8 +425,7 @@ Record_Phrase::analyze(Environ& env) const
     Shared<Record_Expr> record =
         aux::make_shared<Record_Expr>(Shared<const Phrase>(this));
     for (auto i : args_) {
-        const Definition_Phrase* def =
-            dynamic_cast<Definition_Phrase*>(i.expr_.get());
+        auto def = i.expr_->analyze_def(env);
         if (def != nullptr) {
             analyze_definition(*def, record->fields_, env);
         } else {
@@ -474,17 +482,14 @@ Let_Phrase::analyze(Environ& env) const
     Atom_Map<Binding> bindings;
     int slot = env.frame_nslots;
     for (auto b : args_->args_) {
-        const Definition_Phrase* def = dynamic_cast<Definition_Phrase*>(b.expr_.get());
+        auto def = b.expr_->analyze_def(env);
         if (def == nullptr)
             throw Exception(At_Phrase(*b.expr_, env), "not a definition");
-        auto id = dynamic_cast<const Identifier*>(def->left_.get());
-        if (id == nullptr)
-            throw Exception(At_Phrase(*def->left_, env), "not an identifier");
-        Atom name = id->atom_;
+        Atom name = def->name_->atom_;
         if (bindings.find(name) != bindings.end())
-            throw Exception(At_Phrase(*def->left_, env),
+            throw Exception(At_Phrase(*def->name_, env),
                 stringify(name, ": multiply defined"));
-        bindings[name] = Binding{slot++, def->right_};
+        bindings[name] = Binding{slot++, def->definiens_};
     }
 
     // phase 2: Construct an environment from the bindings dictionary

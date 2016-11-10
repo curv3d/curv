@@ -46,6 +46,30 @@ public:
     virtual Shared<Expression> single_lookup(const Identifier&);
 };
 
+/// A Definition is a partially analyzed phrase that binds a name to a value.
+/// (In the future, a Definition can bind multiple names.)
+///
+/// There are multiple syntactic forms for definitions, and they are all
+/// converted to Definition objects by Phrase::analyze_def(), which provides
+/// a common interface for further analysis.
+///
+/// The definiens is not analyzed. In a recursive scope, we need to catalogue
+/// all of the names bound within the scope before we analyze any of the
+/// definientia.
+struct Definition : public aux::Shared_Base
+{
+    Shared<const Identifier> name_;
+    Shared<Phrase> definiens_;
+
+    Definition(
+        Shared<const Identifier> name,
+        Shared<Phrase> definiens)
+    :
+        name_(std::move(name)),
+        definiens_(std::move(definiens))
+    {}
+};
+
 /// This is used to analyze a set of module definitions, and in future,
 /// record definitions, let definitions, or function parameters.
 struct Bindings
@@ -65,7 +89,7 @@ struct Bindings
     bool is_recursive_function(size_t);
 
     // Second, add some bindings:
-    void add_definition(Shared<Phrase> phrase, curv::Environ& env);
+    void add_definition(Shared<Definition> def, curv::Environ& env);
     //void add_parameter(Shared<Phrase> phrase);
 
     // Third, construct an Environ from the bindings dictionary.

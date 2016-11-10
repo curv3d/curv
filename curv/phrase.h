@@ -13,6 +13,7 @@
 
 namespace curv {
 
+class Definition;
 class Meaning;
 class Module_Expr;
 class Environ;
@@ -32,6 +33,7 @@ struct Phrase : public aux::Shared_Base
 {
     virtual ~Phrase() {}
     virtual Location location() const = 0;
+    virtual Shared<Definition> analyze_def(Environ&) const;
     virtual Shared<Meaning> analyze(Environ&) const = 0;
 };
 
@@ -130,6 +132,7 @@ struct Definition_Phrase : public Phrase
     {
         return left_->location().ending_at(right_->location().token());
     }
+    virtual Shared<Definition> analyze_def(Environ&) const override;
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
