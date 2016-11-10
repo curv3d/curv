@@ -273,16 +273,27 @@ the variables it forward references is initialized, then an error occurs
   reference to a variable that is redefined, because it is ambiguous which
   definition is being referred to. (Arbitrarily, we could choose the last.)
 
+Interestingly, forward references from function bodies to variables
+are fucked up in OpenSCAD. (On one hand, I can't figure out how to reconcile
+sequential scoping with recursive function definitions, and on the other hand,
+OpenSCAD implements it, but it's broken.)
+    function f() = x;
+    a = f();
+    x = 1;
+    b = f();
+    echo(a,b); // ECHO: undef,1
+
 ## Sequence Expressions
 * In list comprehension syntax, I want a "sequence generator".
   Possible syntax: `(gen1,gen2,...)`.
   It means, evaluator the generators in left-to-right order.
-* In this definition comprehension proposal, we have compound definitions.
+* In definition comprehensions, we have compound definitions.
   Syntax: `(def1;def2;...)`.
   And definitions can probably be replaced by generators. So it's a superset.
 
 So, it seems plausible to merge list and definition comprehensions into
 a single concept, "sequence expressions" or whatever.
+A 'statement' is either a generator or a sequentially-scoped definition.
 
 `;` denotes sequential evaluation, it sequences two generator expressions,
 or two sequentially scoped definitions from definition comprehensions.
@@ -290,3 +301,250 @@ or two sequentially scoped definitions from definition comprehensions.
 `,` denotes a list with no sequential semantics, no defined order of evaluation.
 It separates two expressions in a function call argument list or plain
 (non-sequential) list constructor.
+
+This unification affects list constructors.
+  [expr1, expr2, expr3]
+  [stmt1; stmt2; stmt3]
+
+### At the top level of a module:
+
+* Model 0: A module consists of top level definitions, with recursive scope.
+  The order of definitions doesn't matter.
+  Each top level definition produces 1 or more bindings:
+  * eg, a pattern matching definition like `[a,b]=expr`
+  * eg, a compound sequential definition (do block), which exports a set
+    of distinctly named bindings to the top level. As long as these compound
+    sequential definitions don't contain generators, they are order independent.
+
+  Each top level definition is represented by a thunk, which must be evaluated
+  the first time one of the bindings exported by the definition is referenced.
+  Note that the order in which do blocks are evaluated is data dependent.
+  This is because a do block can contain a forward reference to a binding
+  exported by a later do block.
+
+* Model 1, Curv: A module consists of top level definitions with recursive scope
+  (order independent), plus generator expressions that don't export bindings
+  (order dependent).
+  
+  The generators are eagerly evaluated in left to right order.
+  The top level bindings are tied to thunks and are lazily evaluated
+  in data dependency order.
+
+* Model 2: Merge 0 and 1: do blocks export bindings and contain generators.
+  Now, the order of the do blocks is significant, because the outputs of the
+  generators must be assembled in left-to-right order.
+
+  We keep the model 1 design of thunking each do block. The do blocks
+  containing generators are eagerly evaluated (in data dependent order,
+  due to forward references to other do blocks), and the output of each block
+  is stored in a temp slot. Then the results are concatenated in the correct
+  order. This means assert and echo statements are not evaluated left to right.
+  Echo results are written immediately to the console because it's a debug
+  feature, so the output doesn't appear in left-to-right order.
+
+* Model 3: We allow naked sequential definitions at the top level of a module.
+  These must be syntactically distinguished from recursive definitions.
+
+  The scope of a recursive definition is the entire module.
+  The scope of a sequential definition begins at the token following the
+  definition, and extends to the end of the module. So a sequential def'n
+  can't contain a forward reference to a later sequential def'n.
+  And the body of recursive function definition can't contain a forward
+  reference to a later sequential definition.
+
+  Possible syntax:
+  rec id = expr;  // recursively scoped definition
+  id = expr;      // sequentially scoped definition
+  new id = expr;  // sequentially scoped redefinition
+  next id = expr; // alt. redefinition syntax
+  id := expr;     // alt. redefinition syntax
+
+  Notes:
+  * `rec` keyword is found in ML, F#, other functional languages,
+    used since `let` bindings are not implicitly recursive.
+  * `id = expr;` is OpenSCAD standard syntax for sequential scoping.
+    This syntax will make sense to imperative programmers.
+
+  Recursive definitions are thunked, are lazily evaluated in data dependency
+  order. An "island" of consecutive sequential definitions can be eagerly
+  evaluated left to right, without thunking. However, that entire island
+  may need to be guarded by a thunk if recursive definitions are present. Or,
+  each definition is separately thunked. An optimizing compiler can replace
+  thunking with sequential evaluation, and can merge multiple sequential
+  variables to use a single storage location, but only when it is safe
+  to do so. If we may need thunking of sequential definitions, we also may need
+  to store generator output from sequential islands, since generators may be
+  run out-of-order.
+
+  Model 3 introduces the possibility of:
+     i = 0;
+     rec f(x) = x + i;
+     next i = i + 1;
+  a recursive definition being interposed between a sequential definition
+  of X and a redefinition of the same variable X.
+  * possible semantic issues?
+  * possible implementation issues?
+  * complicates the debug symbol table?
+
+* Model 4: Can we add restrictions to Model 3 so that sequential code can
+  be run left-to-right in one pass without thunking?
+
+  Example of problem code:
+    i = f();
+    i;
+    j = 1;
+    rec f() = j;
+    j;
+
+  (4a) One idea is to use the => operator at the top level.
+    local sequential definitions => recursive public definitions
+  One issue is that this prevents you from defining public module
+  parameters at the top of a script.
+
+  (4b) Storage locations for sequential variables are initialized
+  to a special "uninitialized" value. Sequential definitions are evaluated
+  in script order. Recursive variables are thunked. If a recursive variable
+  tries to read an uninitialized sequential variable, then an error occurs.
+
+### Embedding statements in an expression:
+* `let (compound-definition) expr` seems the most obvious.
+  You can include assert() and echo(), but not other generators.
+* Of course, this means `let(assert(x>0))x` is a way to embed an assert
+  in an expression. So I also proposed `do(assert(x>0))...`.
+* I considered `(def1;def2;expr)` as an alternative to `let`.
+  It looks good, eg `(assert(x>0);x)`.
+  However, this "qualified expression" looks too much like a compound
+  definition: the former keeps the definitions local, the latter exports them.
+* Maybe change the syntax for compound expression.
+  The obviously C-like choice is {def1;def2;...}.
+  That's even OpenSCAD compatible.
+  It conflicts with Curv/OpenSCAD2 record/module syntax, however.
+* Maybe `do (def1;def2;...)` for a compound definition.
+* Or maybe `{x:1, y:2}` for a record and `module {x=1; y=2;}` for a submodule.
+  Also `f(x:1, y:2)` for labeled arguments.
+  * Using `:` instead of `=` makes it more obvious these are not definitions
+    and no scope is created.
+  * The use of `:` is more fluent for labeled arguments.
+    You don't mentally insert 'equals' while reading a function call,
+    so you can use more English-like labels (ie, not just nouns, but also
+    verbs, gerunds and prepositions). See also Swift.
+  * The `:` syntax for records more closely resembles Python dictionaries,
+    JSON and JavaScript object literals.
+  * Need a different token for type declarations. Maybe `::` from Haskell.
+* `{}` is ambiguous if braces are used for both record literals and compound
+  statements. That's because statements can occur in expression position, eg
+  the body of an `if`.
+  * Maybe I need 4 kinds of brackets? Let's temporarily use {|...|} for compound
+    statements.
+  * In argument position of a function call, Curv has f() f[] f{}.
+    A compound statement {||} doesn't make sense.
+  * In the body of an if, we need [] {} and {||}. () doesn't make sense.
+  * Maybe (...) can be overloaded.
+    * In an Algol68/Rust style, we have (stmt1;stmt2;expr), which has side
+      effects and returns a value. As a special case (stmt1;stmt2;) just has
+      side effects.
+    * Maybe I get rid of compound definitions (as an expression that denotes
+      a definition, a concept not found in other languages). I keep
+      compound redefinitions, which play a similar role to side-effecting
+      assignment statements in procedural languages, and fit into the same
+      syntactic slot.
+
+Here's what I currently like:
+* `(def1;def2;expr)` is a qualified expression, replaces `let` expression.
+  Eg, `let(a=1,b=2)a+b` -> `(a=1;b=2;a+b)`.
+* `assert` and `echo` statements can also occur in a qualified expression.
+  Eg, `(a=1;b=2;echo(a,b);a+b)`.
+* `[x=1;for(i=a)i+x]` may replace `[let(x=1)for(i=a)i+x]`? Details are unclear:
+  can a list constructor contain both `,` and `;`?
+* `next i = i + 1;` is a simple redefinition.
+  A redefinition can be used in a qualified expression, *after* a definition
+  of the same name.
+* `(redef1;redef1;...;)` is a compound redefinition. Final `;` required.
+* `if(c)redef`, `if(c)redef1 else redef2`, `while(c)redef`, `for(r)redef`
+* `f(x:1,y:2)`: labeled arguments in function call
+* `{x:1,y:2}`: record literal.
+
+```
+sum(a) = (
+  i = 0;
+  total = 0;
+  while (i < len a) (
+    next total = total + a.[i];
+    next i = i + 1;
+  );
+  total
+);
+```
+
+### Within a List Constructor
+`[x=1;for(i=a)i+x]` may replace `[let(x=1)for(i=a)i+x]`? Details are unclear:
+can a list constructor contain both `,` and `;`?
+
+At the top level, we can have:
+* `expression;`, which adds one element to the module.
+* `generator;`, which adds 0 or more elements to the module.
+* definitions and redefinitions, which may add fields to the module (if not
+  local), and which may be referenced by expressions and generators.
+* actions (echo and assert), used for debugging, and for constraining the domain
+  of definitions.
+
+At the top level, these components are separated by semicolons.
+
+In a list constructor, we have the same components, but all definitions are
+effectively local. It's just a sequence of components, there's no semantic
+distinction to be made between `,` and `;`.
+* I could just permit either character to be used interchangeably.
+  Then it becomes a style issue.
+  Eg, I can terminate definitions with `;` and separate expressions with `,`
+  if I like.
+
+I'd like to introduce a "sequence generator" into List Comprehension syntax.
+The obvious syntax is:
+    generator ::= gen1,gen2,...
+since that's NOT an expression, and since it allows us to define
+    expr ::= [ generator ]
+as the syntax for list constructors.
+
+How do sequence generators relate to the larger design of sequence expressions?
+* In `(def1;def2;expr)`, the semicolons terminate definitions that precede
+  the final expression, which computes the value.
+* In `(gen1,gen2,...)`, all of the comma separated elements have the same
+  role, they all contribute elements to the sequence.
+
+So we have two general syntaxes: list phrases and qualified phrases.
+* A 'compound redefinition' should logically be a list phrase.
+* A qualified phrase could be represented using an infix operator, like `=>`.
+* If the two syntaxes are composed?
+  Maybe `(def1; def2; ... => elem1, elem2, ...)`.
+
+In theory, I can add local variables to a loop body using `;`,
+but the iteration variables are redefinitions separated by `,`.
+The `=>` operator is a better idea.
+With `=>`, I can make `,` and `;` synonymous.
+
+`let (a=1,b=2) a+b` is now `(a=1; b=2 => a+b)`.
+
+`[let (a=1,b=2) if (c) for (i=a) x]` is now `[a=1; b=2 => if(c)for(i=a)x]`.
+
+```
+sum(a) = (
+  i = 0;
+  total = 0;
+  while (i < len a) (
+    next total = total + a.[i];
+    next i = i + 1;
+  );
+  => total
+);
+```
+
+The => operator is right associative. Is that useful? a => b => c.
+
+How do you embed recursive definitions in a sequence expression?
+* `rec` definitions intermixed with sequential definitions at the same level.
+  This does involve complex, awkward semantics though.
+* The Curv `let` operator supports mutually recursive definitions.
+  Embed an island of mutually recursive definitions in a sequence like this:
+  s1 => (f(x)=..g(x), g(x)=..f(x)) => s2
+  No need for compound definitions to be sequential
+  because we have `=>` to express sequencing.
