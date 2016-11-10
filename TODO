@@ -1,24 +1,35 @@
 # 0.1: Minimum Viable Language
+* [x,y]=...
+  * analysis: a partially analyzed definition has one or more bound names, ...
+  * evaluation:
+    * module (recursive scope): each name has a slot containing the same thunk,
+      which when evaluated updates all of the slots with their destructured
+      values. (So the thunk doesn't return a value, it has a side effect.)
 * echo, assert actions
+  * assert(condition);     // generator, produces 0 values
+  * assert(condition) expr // expression
+  * do (assert(condition)) expr  // do notation, proposal
+  * (assert(condition) => expr)  // infix 'let' proposal (Sequence Expressions)
+  * Under these latter proposals, assert(cond) and echo(expr) look just like
+    function calls. Currently, the builtin dictionary contains values.
+    assert and echo aren't values, so they'd have to be keywords. Or:
+    * Meaning has to_expr(), call(args) and select(id) virtuals.
+      Expression implements these in the obvious way.
+    * Echo_Meaning reports an error on to_expr() and select(), returns an echo
+      generator on call(). Likewise for Assert_Meaning.
+    * The builtin dictionary contains Builtin objects with a to_meaning(id)
+      method. In most cases we use Builtin_Value, where to_meaning(id)
+      returns a Constant. Special_Builtin<Echo_Meaning>::to_meaning(id)
+      returns Echo_Meaning(id), and likewise for `assert`.
 * len(module), module.[i]
 * floor, ceil
-* [a..b]
-* range with step: [0..100 step 10]
-  * [i,i+step..j], Haskell, not good for tensor slice notation due to `,`
-                            and not a free-standing generator expression.
-  * [i:step..j]
-  * [i to j by step], Algolish
-  * [i..j by step]
-  * [i..step..j], F#
-  * [0..(j-i)/step]*step+i
-  * (1..10).step_by(2), Rust unstable
-  * i..j step k
-    * reverse(v) = [for (i=[len(v)-1 .. 0 step -1]) v.[i]];
-    * reverse(v) = [for (i=[len(v)-1 .. 0 by -1]) v.[i]];
-* prelude.scad loaded at startup
+* [a..b step c]
+* prelude.scad loaded at startup.
+  Abstract this (in eval_script) using System::namespace().
 * concat[l1,l2]. concat(vv) = [for(v=vv)for(i=v)i];
 * Extend `let` to support recursive functions. Or provide `let` and `letrec`.
-* f(x)=...
+  In Sequence Expressions, (bindings => phrase) supports a mixture of sequential
+  and recursively scoped bindings.
 * A 'sequence generator' is missing, seems like a design hole.
   Consider this grammar:
     list-constructor ::= [ generator ]
@@ -54,11 +65,13 @@ Other:
 * interrupt.
   * Periodically test a thread local variable known to the curv core,
     curv::interrupt_requested. Throw an exception on interrupt, or call a System
-    function to do this.
+    function to do this. I don't like thread local variables for stylistic
+    reasons, but it seems legit to use one for IPC.
   * Periodically call a System function. Inside this function provided by
     the client is `if(thread_local_interrupt!=0)throw Interrupt()`.
     This keeps the core "pure" (free of thread-local variables) at the cost
-    of a virtual function call at frequent intervals.
+    of a virtual function call at frequent intervals. The client will define
+    the thread-local variable instead.
 * still need this?
   - Environ must contain a Frame and a System. How?
     - Every Environ contains a copy of the Frame and System pointers.

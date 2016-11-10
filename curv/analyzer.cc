@@ -306,12 +306,27 @@ Definition_Phrase::analyze(Environ& env) const
 Shared<Definition>
 Definition_Phrase::analyze_def(Environ& env) const
 {
-    auto id = dynamic_cast<const Identifier*>(left_.get());
-    if (id == nullptr)
-        throw Exception(At_Phrase(*left_,  env), "not an identifier");
-    return aux::make_shared<Definition>(
-        Shared<const Identifier>(id),
-        right_);
+    if (auto id = dynamic_cast<const Identifier*>(left_.get())) {
+        return aux::make_shared<Definition>(
+            Shared<const Identifier>(id),
+            right_);
+    }
+
+    if (auto call = dynamic_cast<const Call_Phrase*>(left_.get())) {
+        if (auto id = dynamic_cast<const Identifier*>(call->function_.get())) {
+            return aux::make_shared<Definition>(
+                Shared<const Identifier>(id),
+                aux::make_shared<Lambda_Phrase>(
+                    call->args_,
+                    equate_,
+                    right_));
+        } else {
+            throw Exception(At_Phrase(*call->function_,  env),
+                "not an identifier");
+        }
+    }
+
+    throw Exception(At_Phrase(*left_,  env), "invalid definiendum");
 }
 
 Shared<Expression>

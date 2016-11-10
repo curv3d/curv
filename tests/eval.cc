@@ -316,6 +316,8 @@ TEST(curv, eval)
         "line 1(columns 1-18)\n"
         "  file \"nonexistent\"\n"
         "  ^-----------------");
+    SUCCESS("std = file \"std.curv\"; std.concat[[1], [2,3], [4]]",
+        "[1,2,3,4]");
 
     // for
     FAILMSG("for", "missing argument following 'for'");

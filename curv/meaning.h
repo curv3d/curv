@@ -22,7 +22,10 @@ namespace curv {
 /// TODO: class Meaning doesn't currently pull its weight. It's an abstract
 /// class and the only subclass is Expression. I originally planned to have a
 /// Definition subclass of Meaning, but definition abstractions now work
-/// differently.
+/// differently. I originally planned that value-like syntactic keywords
+/// (cf Scheme) could be bound to names, in the builtin namespace, and in
+/// user space by rebinding a builtin. These would be non-Expression subclasses
+/// of Meaning.
 struct Meaning : public aux::Shared_Base
 {
     /// The original source code for this meaning.
