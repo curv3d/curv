@@ -14,7 +14,7 @@
 namespace curv {
 
 class Definition;
-class Meaning;
+class Expression;
 class Module_Expr;
 class Environ;
 
@@ -34,7 +34,7 @@ struct Phrase : public aux::Shared_Base
     virtual ~Phrase() {}
     virtual Location location() const = 0;
     virtual Shared<Definition> analyze_def(Environ&) const;
-    virtual Shared<Meaning> analyze(Environ&) const = 0;
+    virtual Shared<Expression> analyze(Environ&) const = 0;
 };
 
 /// Abstract implementation base class for Phrase classes
@@ -55,17 +55,17 @@ struct Identifier final : public Token_Phrase
         atom_{loc_.range()}
     {}
 
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Expression> analyze(Environ&) const override;
 };
 struct Numeral final : public Token_Phrase
 {
     using Token_Phrase::Token_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Expression> analyze(Environ&) const override;
 };
 struct String_Phrase final : public Token_Phrase
 {
     using Token_Phrase::Token_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Expression> analyze(Environ&) const override;
 };
 
 struct Unary_Phrase : public Phrase
@@ -79,7 +79,7 @@ struct Unary_Phrase : public Phrase
     {
         return arg_->location().starting_at(op_);
     }
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Expression> analyze(Environ&) const override;
 };
 
 struct Binary_Phrase : public Phrase
@@ -100,7 +100,7 @@ struct Binary_Phrase : public Phrase
     {
         return left_->location().ending_at(right_->location().token());
     }
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Expression> analyze(Environ&) const override;
 };
 
 struct Lambda_Phrase : public Binary_Phrase
@@ -113,7 +113,7 @@ struct Lambda_Phrase : public Binary_Phrase
 
     using Binary_Phrase::Binary_Phrase;
 
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Expression> analyze(Environ&) const override;
 };
 
 struct Definition_Phrase : public Phrase
@@ -133,7 +133,7 @@ struct Definition_Phrase : public Phrase
         return left_->location().ending_at(right_->location().token());
     }
     virtual Shared<Definition> analyze_def(Environ&) const override;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Expression> analyze(Environ&) const override;
 };
 
 /// common implementation for `(a,b,c)` and `[a,b,c]` phrases.
@@ -166,19 +166,19 @@ struct Delimited_Phrase : public Phrase
 struct Paren_Phrase : public Delimited_Phrase
 {
     using Delimited_Phrase::Delimited_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Expression> analyze(Environ&) const override;
 };
 
 struct List_Phrase : public Delimited_Phrase
 {
     using Delimited_Phrase::Delimited_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Expression> analyze(Environ&) const override;
 };
 
 struct Record_Phrase : public Delimited_Phrase
 {
     using Delimited_Phrase::Delimited_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Expression> analyze(Environ&) const override;
 };
 
 struct Module_Phrase : public Phrase
@@ -206,7 +206,7 @@ struct Module_Phrase : public Phrase
             return stmts_[0].stmt_->location().ending_at(end_);
     }
 
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Expression> analyze(Environ&) const override;
     Shared<Module_Expr> analyze_module(Environ&) const;
 };
 
@@ -228,7 +228,7 @@ struct Call_Phrase : public Phrase
     {
         return function_->location().ending_at(args_->location().token());
     }
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Expression> analyze(Environ&) const override;
 };
 
 struct If_Phrase : public Phrase
@@ -260,7 +260,7 @@ struct If_Phrase : public Phrase
         else
             return else_expr_->location().starting_at(if_);
     }
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Expression> analyze(Environ&) const override;
 };
 
 /// This is a generic syntax scheme: keyword (args) body,
@@ -290,13 +290,13 @@ struct Control_Phrase : public Phrase
 struct Let_Phrase : public Control_Phrase
 {
     using Control_Phrase::Control_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Expression> analyze(Environ&) const override;
 };
 
 struct For_Phrase : public Control_Phrase
 {
     using Control_Phrase::Control_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Expression> analyze(Environ&) const override;
 };
 
 } // namespace curv

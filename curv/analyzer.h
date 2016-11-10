@@ -117,13 +117,10 @@ struct Bindings
     // or function parameter list.
 };
 
-inline Shared<Meaning>
-analyze(const Phrase& ph, Environ& env)
+inline Shared<Expression> analyze_expr(const Phrase& ph, Environ& env)
 {
     return ph.analyze(env);
 }
-
-Shared<Expression> analyze_expr(const Phrase& ph, Environ& env);
 
 } // namespace
 #endif // header guard
