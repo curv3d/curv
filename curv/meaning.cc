@@ -416,6 +416,18 @@ curv::List_Expr_Base::eval(Frame& f) const
 }
 
 Value
+curv::Sequence_Expr_Base::eval(Frame& f) const
+{
+    throw Exception{At_Phrase{*source_, &f}, "not an expression"};
+}
+void
+curv::Sequence_Expr_Base::generate(Frame& f, List_Builder& lb) const
+{
+    for (size_t i = 0; i < this->size(); ++i)
+        (*this)[i]->generate(f, lb);
+}
+
+Value
 curv::Record_Expr::eval(Frame& f) const
 {
     auto record = aux::make_shared<Record>();

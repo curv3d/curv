@@ -329,6 +329,10 @@ TEST(curv, eval)
     FAILMSG("for (42=i) x", "for: not an identifier");
     SUCCESS("[for (i=[1,2,3]) i+1]", "[2,3,4]");
 
+    // sequence generator
+    SUCCESS("[for (i=[1,2,3]) if (i==2) (\"two\", \"2!\") else i]", 
+        "[1,\"two\",\"2!\",3]");
+
     // lexical errors
     FAILMSG("\\foo", "illegal character '\\'");
     FAILMSG("\177", "illegal character 0x7F");

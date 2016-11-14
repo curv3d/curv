@@ -351,7 +351,11 @@ Paren_Phrase::analyze(Environ& env) const
     {
         return curv::analyze_expr(*args_[0].expr_, env);
     } else {
-        throw Exception(At_Phrase(*this, env), "not an expression");
+        Shared<Sequence_Expr> seq =
+            Sequence_Expr::make(args_.size(), Shared<const Phrase>(this));
+        for (size_t i = 0; i < args_.size(); ++i)
+            (*seq)[i] = analyze_expr(*args_[i].expr_, env);
+        return seq;
     }
 }
 

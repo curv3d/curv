@@ -310,6 +310,20 @@ struct List_Expr_Base : public Expression,
 };
 using List_Expr = aux::Tail_Array<List_Expr_Base>;
 
+/// a Sequence_Expr is a construction like (), (a,), (a,b,c)
+/// which is a generator but not an expression, and which generates
+/// a sequence of values.
+struct Sequence_Expr_Base : public Expression,
+    public aux::Tail_Array_Data<Shared<const Expression>>
+{
+    Sequence_Expr_Base(Shared<const Phrase> source)
+    : Expression(std::move(source)) {}
+
+    virtual Value eval(Frame&) const override;
+    virtual void generate(Frame&, List_Builder&) const override;
+};
+using Sequence_Expr = aux::Tail_Array<Sequence_Expr_Base>;
+
 struct Record_Expr : public Expression
 {
     Atom_Map<Shared<const Expression>> fields_;
