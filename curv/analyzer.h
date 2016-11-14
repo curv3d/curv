@@ -27,8 +27,8 @@ struct Environ
         frame_nslots(0),
         frame_maxslots(0)
     {}
-    Shared<Expression> lookup(const Identifier& id);
-    virtual Shared<Expression> single_lookup(const Identifier&) = 0;
+    Shared<Meaning> lookup(const Identifier& id);
+    virtual Shared<Meaning> single_lookup(const Identifier&) = 0;
 };
 
 struct Builtin_Environ : public Environ
@@ -43,7 +43,7 @@ public:
     {
         eval_frame_ = f;
     }
-    virtual Shared<Expression> single_lookup(const Identifier&);
+    virtual Shared<Meaning> single_lookup(const Identifier&);
 };
 
 /// A Definition is a partially analyzed phrase that binds a name to a value.
@@ -105,7 +105,7 @@ struct Bindings
             curv::Environ(p),
             bindings_(b)
         {}
-        virtual Shared<Expression> single_lookup(const Identifier&);
+        virtual Shared<Meaning> single_lookup(const Identifier&);
     };
 
     // Fourth, analyze the binding phrases, and construct a list of compile
@@ -117,10 +117,7 @@ struct Bindings
     // or function parameter list.
 };
 
-inline Shared<Expression> analyze_expr(const Phrase& ph, Environ& env)
-{
-    return ph.analyze(env);
-}
+Shared<Expression> analyze_expr(const Phrase& ph, Environ& env);
 
 } // namespace
 #endif // header guard

@@ -17,15 +17,9 @@
 
 namespace curv {
 
+class Expression;
+
 /// An abstract base class representing a semantically analyzed Phrase.
-///
-/// TODO: class Meaning doesn't currently pull its weight. It's an abstract
-/// class and the only subclass is Expression. I originally planned to have a
-/// Definition subclass of Meaning, but definition abstractions now work
-/// differently. I originally planned that value-like syntactic keywords
-/// (cf Scheme) could be bound to names, in the builtin namespace, and in
-/// user space by rebinding a builtin. These would be non-Expression subclasses
-/// of Meaning.
 struct Meaning : public aux::Shared_Base
 {
     /// The original source code for this meaning.
@@ -37,6 +31,10 @@ struct Meaning : public aux::Shared_Base
     Shared<const Phrase> source_;
 
     Meaning(Shared<const Phrase> source) : source_(std::move(source)) {}
+
+    // These functions are called during semantic analysis.
+    virtual Shared<Expression> to_expr(Environ&) = 0;
+    virtual Shared<Meaning> call(const Call_Phrase&, Environ&) = 0;
 };
 
 /// An Expression is a phrase that (a) can be evaluated to produce a single 
@@ -46,6 +44,11 @@ struct Expression : public Meaning
 {
     using Meaning::Meaning;
 
+    // These functions are called during semantic analysis.
+    virtual Shared<Expression> to_expr(Environ&);
+    virtual Shared<Meaning> call(const Call_Phrase&, Environ&);
+
+    // These functions are called during evaluation.
     virtual Value eval(Frame&) const = 0;
     virtual void generate(Frame&, List_Builder&) const;
 };

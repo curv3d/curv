@@ -13,13 +13,25 @@
 namespace curv
 {
 
+Shared<Expression>
+analyze_expr(const Phrase& ph, Environ& env)
+{
+    return ph.analyze(env)->to_expr(env);
+}
+
+Shared<Expression>
+Expression::to_expr(Environ&)
+{
+    return Shared<Expression>(this);
+}
+
 Shared<Definition>
 Phrase::analyze_def(Environ&) const
 {
     return nullptr;
 }
 
-Shared<Expression>
+Shared<Meaning>
 Environ::lookup(const Identifier& id)
 {
     for (Environ* e = this; e != nullptr; e = e->parent_) {
@@ -30,13 +42,12 @@ Environ::lookup(const Identifier& id)
     throw Exception(At_Phrase(id, *this), stringify(id.atom_,": not defined"));
 }
 
-Shared<Expression>
+Shared<Meaning>
 Builtin_Environ::single_lookup(const Identifier& id)
 {
     auto p = names.find(id.atom_);
     if (p != names.end())
-        return aux::make_shared<Constant>(
-            Shared<const Phrase>(&id), p->second);
+        return p->second->to_meaning(id);
     return nullptr;
 }
 
@@ -61,7 +72,7 @@ Bindings::is_recursive_function(size_t slot)
     return isa_shared<const Lambda_Phrase>(slot_phrases_[slot]);
 }
 
-Shared<Expression>
+Shared<Meaning>
 Bindings::Environ::single_lookup(const Identifier& id)
 {
     auto b = bindings_.dictionary_->find(id.atom_);
@@ -92,13 +103,13 @@ Bindings::analyze_values(Environ& env)
     return slots;
 }
 
-Shared<Expression>
+Shared<Meaning>
 Identifier::analyze(Environ& env) const
 {
     return env.lookup(*this);
 }
 
-Shared<Expression>
+Shared<Meaning>
 Numeral::analyze(Environ& env) const
 {
     std::string str(location().range());
@@ -107,7 +118,7 @@ Numeral::analyze(Environ& env) const
     assert(endptr == str.c_str() + str.size());
     return aux::make_shared<Constant>(Shared<const Phrase>(this), n);
 }
-Shared<Expression>
+Shared<Meaning>
 String_Phrase::analyze(Environ& env) const
 {
     auto str = location().range();
@@ -120,7 +131,7 @@ String_Phrase::analyze(Environ& env) const
         Value{String::make(str.begin(),str.size())});
 }
 
-Shared<Expression>
+Shared<Meaning>
 Unary_Phrase::analyze(Environ& env) const
 {
     switch (op_.kind) {
@@ -136,7 +147,7 @@ Unary_Phrase::analyze(Environ& env) const
     }
 }
 
-Shared<Expression>
+Shared<Meaning>
 Lambda_Phrase::analyze(Environ& env) const
 {
     // Syntax: id->expr or (a,b,...)->expr
@@ -175,7 +186,7 @@ Lambda_Phrase::analyze(Environ& env) const
             frame_nslots = names.size();
             frame_maxslots = names.size();
         }
-        virtual Shared<Expression> single_lookup(const Identifier& id)
+        virtual Shared<Meaning> single_lookup(const Identifier& id)
         {
             auto p = names_.find(id.atom_);
             if (p != names_.end())
@@ -191,13 +202,16 @@ Lambda_Phrase::analyze(Environ& env) const
                     Shared<const Phrase>(&id), n->second);
             }
             auto m = parent_->lookup(id);
-            if (dynamic_cast<Constant*>(m.get()) != nullptr)
+            if (isa_shared<Constant>(m))
                 return m;
-            size_t slot = nonlocal_exprs_.size();
-            nonlocal_dictionary_[id.atom_] = slot;
-            nonlocal_exprs_.push_back(m);
-            return aux::make_shared<Nonlocal_Ref>(
-                Shared<const Phrase>(&id), slot);
+            if (auto expr = dynamic_shared_cast<Expression>(m)) {
+                size_t slot = nonlocal_exprs_.size();
+                nonlocal_dictionary_[id.atom_] = slot;
+                nonlocal_exprs_.push_back(expr);
+                return aux::make_shared<Nonlocal_Ref>(
+                    Shared<const Phrase>(&id), slot);
+            }
+            return m;
         }
     };
     Arg_Environ env2(&env, params, recursive_);
@@ -213,7 +227,7 @@ Lambda_Phrase::analyze(Environ& env) const
         src, expr, nonlocals, params.size(), env2.frame_maxslots);
 }
 
-Shared<Expression>
+Shared<Meaning>
 Binary_Phrase::analyze(Environ& env) const
 {
     switch (op_.kind) {
@@ -297,7 +311,7 @@ Binary_Phrase::analyze(Environ& env) const
     }
 }
 
-Shared<Expression>
+Shared<Meaning>
 Definition_Phrase::analyze(Environ& env) const
 {
     throw Exception(At_Phrase(*this, env), "not an expression");
@@ -329,7 +343,7 @@ Definition_Phrase::analyze_def(Environ& env) const
     throw Exception(At_Phrase(*left_,  env), "invalid definiendum");
 }
 
-Shared<Expression>
+Shared<Meaning>
 Paren_Phrase::analyze(Environ& env) const
 {
     if (args_.size() == 1
@@ -341,7 +355,7 @@ Paren_Phrase::analyze(Environ& env) const
     }
 }
 
-Shared<Expression>
+Shared<Meaning>
 List_Phrase::analyze(Environ& env) const
 {
     Shared<List_Expr> list =
@@ -351,13 +365,19 @@ List_Phrase::analyze(Environ& env) const
     return list;
 }
 
-Shared<Expression>
+Shared<Meaning>
 Call_Phrase::analyze(Environ& env) const
 {
     auto fun = curv::analyze_expr(*function_, env);
+    return fun->call(*this, env);
+}
+
+Shared<Meaning>
+Expression::call(const Call_Phrase& src, Environ& env)
+{
     std::vector<Shared<Expression>> args;
 
-    auto patom = dynamic_cast<Paren_Phrase*>(&*args_);
+    auto patom = dynamic_cast<Paren_Phrase*>(&*src.args_);
     if (patom != nullptr) {
         // argument phrase is a variable-length parenthesized argument list
         args.reserve(patom->args_.size());
@@ -366,13 +386,13 @@ Call_Phrase::analyze(Environ& env) const
     } else {
         // argument phrase is a unitary expression
         args.reserve(1);
-        args.push_back(curv::analyze_expr(*args_, env));
+        args.push_back(curv::analyze_expr(*src.args_, env));
     }
 
     return aux::make_shared<Call_Expr>(
-        Shared<const Phrase>(this),
-        std::move(fun),
-        args_,
+        Shared<const Phrase>(&src),
+        Shared<Expression>(this),
+        src.args_,
         std::move(args));
 }
 
@@ -389,7 +409,7 @@ analyze_definition(
     dict[name] = curv::analyze_expr(*def.definiens_, env);
 }
 
-Shared<Expression>
+Shared<Meaning>
 Module_Phrase::analyze(Environ& env) const
 {
     return analyze_module(env);
@@ -424,7 +444,7 @@ Module_Phrase::analyze_module(Environ& env) const
     return module;
 }
 
-Shared<Expression>
+Shared<Meaning>
 Record_Phrase::analyze(Environ& env) const
 {
     Shared<Record_Expr> record =
@@ -440,7 +460,7 @@ Record_Phrase::analyze(Environ& env) const
     return record;
 }
 
-Shared<Expression>
+Shared<Meaning>
 If_Phrase::analyze(Environ& env) const
 {
     if (else_expr_ == nullptr) {
@@ -457,7 +477,7 @@ If_Phrase::analyze(Environ& env) const
     }
 }
 
-Shared<Expression>
+Shared<Meaning>
 Let_Phrase::analyze(Environ& env) const
 {
     // `let` supports mutually recursive bindings, like let-rec in Scheme.
@@ -516,7 +536,7 @@ Let_Phrase::analyze(Environ& env) const
             frame_nslots += n.size();
             frame_maxslots = std::max(frame_maxslots, frame_nslots);
         }
-        virtual Shared<Expression> single_lookup(const Identifier& id)
+        virtual Shared<Meaning> single_lookup(const Identifier& id)
         {
             auto p = names.find(id.atom_);
             if (p != names.end())
@@ -541,7 +561,7 @@ Let_Phrase::analyze(Environ& env) const
         first_slot, std::move(values), body);
 }
 
-Shared<Expression>
+Shared<Meaning>
 For_Phrase::analyze(Environ& env) const
 {
     if (args_->args_.size() != 1)
@@ -574,7 +594,7 @@ For_Phrase::analyze(Environ& env) const
             frame_nslots = p.frame_nslots + 1;
             frame_maxslots = std::max(p.frame_maxslots, frame_nslots);
         }
-        virtual Shared<Expression> single_lookup(const Identifier& id)
+        virtual Shared<Meaning> single_lookup(const Identifier& id)
         {
             if (id.atom_ == name_)
                 return aux::make_shared<Let_Ref>(

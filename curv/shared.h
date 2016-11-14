@@ -13,6 +13,8 @@ namespace curv {
 // template<typename T> using Shared = aux::Shared<T>;
 using aux::Shared;
 
+using aux::make_shared;
+
 template<class T, class U>
 inline Shared<T>
 dynamic_shared_cast(Shared<U> p)
@@ -25,6 +27,13 @@ inline bool
 isa_shared(Shared<U> p)
 {
     return dynamic_cast<T*>(p.get()) != nullptr;
+}
+
+template<class T>
+inline Shared<T>
+share(T& obj)
+{
+    return Shared<T>(&obj);
 }
 
 } // namespace curv

@@ -17,6 +17,23 @@ using namespace curv;
 using namespace std;
 using namespace boost::math::double_constants;
 
+Shared<Meaning>
+Builtin_Value::to_meaning(const Identifier& id) const
+{
+    return curv::make_shared<Constant>(share<const Identifier>(id), value_);
+}
+
+/*
+map["sqrt"] = {1, [](Frame& args) -> Value {
+    double r = sqrt(args[0].get_num_or_nan());
+    if (r == r)
+        return r;
+    else
+        throw Exception(At_Arg(0, &args),
+            stringify("sqrt(",args[0],"): domain error"));
+}};
+*/
+
 Value
 builtin_sqrt(Frame& args)
 {
@@ -47,14 +64,15 @@ builtin_file(Frame& args)
 }
 
 const Namespace
-curv::builtin_namespace = {
-    {"pi", pi},
-    {"tau", two_pi},
-    {"inf", INFINITY},
-    {"null", curv::Value()},
-    {"false", curv::Value(false)},
-    {"true", curv::Value(true)},
-    {"sqrt", curv::make_ref_value<curv::Function>(builtin_sqrt, 1)},
-    {"len", curv::make_ref_value<curv::Function>(builtin_len, 1)},
-    {"file", curv::make_ref_value<curv::Function>(builtin_file, 1)},
+curv::builtin_namespace =
+{
+    {"pi", curv::make_shared<Builtin_Value>(pi)},
+    {"tau", curv::make_shared<Builtin_Value>(two_pi)},
+    {"inf", curv::make_shared<Builtin_Value>(INFINITY)},
+    {"null", curv::make_shared<Builtin_Value>(Value())},
+    {"false", curv::make_shared<Builtin_Value>(Value(false))},
+    {"true", curv::make_shared<Builtin_Value>(Value(true))},
+    {"sqrt", curv::make_shared<Builtin_Value>(make_ref_value<Function>(builtin_sqrt, 1))},
+    {"len", curv::make_shared<Builtin_Value>(make_ref_value<Function>(builtin_len, 1))},
+    {"file", curv::make_shared<Builtin_Value>(make_ref_value<Function>(builtin_file, 1))},
 };

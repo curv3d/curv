@@ -87,7 +87,7 @@ main(int argc, char** argv)
         try {
             curv::Shared<curv::Module> module{eval_script(*script, names)};
             for (auto f : *module)
-                names[f.first] = f.second;
+                names[f.first] = curv::make_shared<curv::Builtin_Value>(f.second);
             for (auto e : *module->elements())
                 std::cout << e << "\n";
         } catch (curv::Exception& e) {

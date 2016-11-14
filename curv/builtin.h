@@ -5,14 +5,29 @@
 #ifndef CURV_BUILTIN_H
 #define CURV_BUILTIN_H
 
+#include <memory>
 #include <curv/atom.h>
 #include <curv/value.h>
 
 namespace curv {
 
-using Namespace = Atom_Map<Value>;
+class Meaning;
+class Identifier;
 
-/// The Curv language builtin bindings.
+struct Builtin : public aux::Shared_Base
+{
+    virtual Shared<Meaning> to_meaning(const Identifier&) const = 0;
+};
+
+struct Builtin_Value : public Builtin
+{
+    Value value_;
+    Builtin_Value(Value v) : value_(std::move(v)) {}
+    virtual Shared<Meaning> to_meaning(const Identifier&) const override;
+};
+
+using Namespace = Atom_Map<Shared<const Builtin>>;
+
 extern const Namespace builtin_namespace;
 
 } // namespace curv
