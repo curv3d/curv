@@ -7,12 +7,27 @@
 * concat[l1,l2]. concat(vv) = [for(v=vv)for(i=v)i];
 
 It's complicated...
-* [x,y]=...
-  * analysis: a partially analyzed definition has one or more bound names, ...
-  * evaluation:
-    * module (recursive scope): each name has a slot containing the same
-      Action thunk, which when evaluated updates all of the slots with their
-      destructured values. (Action::exec(f) returns void, has a side effect.)
+* names: Operation or Formula?
+  * which makes more sense in code?
+  * which makes more sense in error messages? Definition_Phrase::analyze throws
+    "not an operation"/"not a formula". Eg, body of a `for`.
+  * In math, chemistry, logic, a formula is a syntactic expression of a
+    particular class of ideas. In math, formulas are usually equations,
+    but in Curv, definitions are not formulas. Informally, a formula is a method
+    for achieving a result (which fits).
+* names: Phrase or Syntax?
+* definitions are compiled into actions.
+  * module (recursive scope): A definition may bind multiple names. Each such
+    name has a slot containing the same Action thunk, which when evaluated
+    updates all of the slots with their values.
+  * qualified expr (sequential scope): each definition is compiled into an
+    action that evaluates definientia and stores values in binding slots.
+    At run time, execute the actions in order, then evaluate the expr.
+  * record (no scope): compile definitions into actions, execute actions to
+    initialize the record value. Records don't use slots, so we need a variant
+    action type for updating record fields?
+  * Definition::analyze(env) returns an action.
+* `[x,y]=...` using above framework
 * Extend `let` to support recursive functions.
 * `expr where (defs)`, higher precedence than `let`, same semantics.
 * (def1; def2; expr) qualified expressions, sequentially scoped, see Loop.md
