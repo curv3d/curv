@@ -22,6 +22,22 @@ curv::Expression::generate(Frame& f, List_Builder& lb) const
 {
     lb.push_back(eval(f));
 }
+void
+curv::Expression::exec(Frame& f) const
+{
+    throw Exception(At_Phrase(*source_, &f), "not an action");
+}
+
+Value
+curv::Generator::eval(Frame& f) const
+{
+    throw Exception(At_Phrase(*source_, &f), "not an expression");
+}
+void
+curv::Generator::exec(Frame& f) const
+{
+    throw Exception(At_Phrase(*source_, &f), "not an action");
+}
 
 Value
 curv::Constant::eval(Frame&) const
@@ -33,9 +49,9 @@ Value
 curv::Module_Ref::eval(Frame& f) const
 {
     // Modules are lazily evaluated. From here, I need access to both the module
-    // field Value (if computed), and the original field Expression (otherwise).
+    // field Value (if computed), and the original field expression (otherwise).
     // Implementation options:
-    // 1. Initialize f.module_.fields with the Expression values, which are
+    // 1. Initialize f.module_.fields with the expression values, which are
     //    effectively lazy evaluation thunks. Replace with Values on demand.
     // 2. Instead of making Expression a subclass of Ref_Value, introduce
     //    a Lazy_Thunk value class. It's a variation of Function. It contains

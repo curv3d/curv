@@ -17,7 +17,7 @@
 
 namespace curv {
 
-class Expression;
+class Operation;
 
 /// An abstract base class representing a semantically analyzed Phrase.
 struct Meaning : public aux::Shared_Base
@@ -33,24 +33,80 @@ struct Meaning : public aux::Shared_Base
     Meaning(Shared<const Phrase> source) : source_(std::move(source)) {}
 
     // These functions are called during semantic analysis.
-    virtual Shared<Expression> to_expr(Environ&) = 0;
+    virtual Shared<Operation> to_operation(Environ&) = 0;
     virtual Shared<Meaning> call(const Call_Phrase&, Environ&) = 0;
 };
 
-/// An Expression is a phrase that (a) can be evaluated to produce a single 
-/// value, or (b) can be executed to generate a sequence of zero or more values
-/// within a list comprehension. Note that (a) implies (b).
-struct Expression : public Meaning
+/// An Operation is a fragment of executable code that "does something"
+/// at run time. A Curv script is compiled into a tree of Operations, which
+/// is then evaluated.
+///
+/// There are 3 kinds of Operation:
+///  1. An Expression can be evaluated to produce a single value,
+///     using the `eval` virtual function.
+///     For example, `2+2`.
+///  2. A Generator can be executed to produce a sequence of zero or more
+///     values, using the `generate` virtual function.
+///     For example, `for(i=[1..10])i^2`.
+///  3. An Action can be executed to cause a side effect, using the `exec`
+///     virtual function, but no value is produced.
+///     For example, `assert(x>0)`.
+struct Operation : public Meaning
 {
     using Meaning::Meaning;
 
     // These functions are called during semantic analysis.
-    virtual Shared<Expression> to_expr(Environ&);
+    virtual Shared<Operation> to_operation(Environ&);
     virtual Shared<Meaning> call(const Call_Phrase&, Environ&);
 
     // These functions are called during evaluation.
     virtual Value eval(Frame&) const = 0;
-    virtual void generate(Frame&, List_Builder&) const;
+    virtual void generate(Frame&, List_Builder&) const = 0;
+    virtual void exec(Frame&) const = 0;
+};
+
+/// This is an "implementation" class, inherited by Operation classes
+/// whose instances are always expressions. It provides sensible defaults
+/// for the eval/generate/exec virtual functions.
+///
+/// An expression is an Operation that can be evaluated to produce a single 
+/// value. All expressions are also generators that produce a single value,
+/// so the `generate` function just calls `eval`. Expressions are not actions,
+/// so the `exec` function throws an error, "not an action".
+///
+/// This is not an interface class, and not all expression objects are derived
+/// from Expression. Functions should not take Expressions as values
+/// or return Expressions as results: use Operation instead.
+struct Expression : public Operation
+{
+    using Operation::Operation;
+
+    // These functions are called during evaluation.
+    virtual Value eval(Frame&) const = 0;
+    virtual void generate(Frame&, List_Builder&) const override;
+    virtual void exec(Frame&) const override;
+};
+
+/// This is an "implementation" class, inherited by Operation classes
+/// whose instances are always generators. It provides sensible defaults
+/// for the eval/generate/exec virtual functions.
+///
+/// A generator is an Operation that produces a sequence of values: the
+/// `generate` virtual function must be so defined. A generator is not an
+/// expression, so the `eval` function throws an error, "not an expression".
+/// A generator is not an action, so `exec` throws "not an action".
+///
+/// This is not an interface class, and not all generator objects are derived
+/// from Generator. Functions should not take Generators as values
+/// or return Generators as results: use Operation instead.
+struct Generator : public Operation
+{
+    using Operation::Operation;
+
+    // These functions are called during evaluation.
+    virtual Value eval(Frame&) const override;
+    virtual void generate(Frame&, List_Builder&) const = 0;
+    virtual void exec(Frame&) const override;
 };
 
 /// A Constant is an Expression whose value is known at compile time.
@@ -144,10 +200,10 @@ struct Nonlocal_Function_Ref : public Expression
 
 struct Dot_Expr : public Expression
 {
-    Shared<Expression> base_;
+    Shared<Operation> base_;
     Atom id_;
 
-    Dot_Expr(Shared<const Phrase> source, Shared<Expression> base, Atom id)
+    Dot_Expr(Shared<const Phrase> source, Shared<Operation> base, Atom id)
     :
         Expression(std::move(source)),
         base_(std::move(base)),
@@ -159,15 +215,15 @@ struct Dot_Expr : public Expression
 
 struct Call_Expr : public Expression
 {
-    Shared<Expression> fun_;
+    Shared<Operation> fun_;
     Shared<const Phrase> argsource_;
-    std::vector<Shared<Expression>> args_;
+    std::vector<Shared<Operation>> args_;
 
     Call_Expr(
         Shared<const Phrase> source,
-        Shared<Expression> fun,
+        Shared<Operation> fun,
         Shared<const Phrase> argsource,
-        std::vector<Shared<Expression>> args)
+        std::vector<Shared<Operation>> args)
     :
         Expression(std::move(source)),
         fun_(std::move(fun)),
@@ -181,12 +237,12 @@ struct Call_Expr : public Expression
 struct Prefix_Expr : public Expression
 {
     Token::Kind op_;
-    Shared<Expression> arg_;
+    Shared<Operation> arg_;
 
     Prefix_Expr(
         Shared<const Phrase> source,
         Token::Kind op,
-        Shared<Expression> arg)
+        Shared<Operation> arg)
     :
         Expression(source),
         op_(op),
@@ -197,11 +253,11 @@ struct Prefix_Expr : public Expression
 };
 struct Prefix_Expr_Base : public Expression
 {
-    Shared<Expression> arg_;
+    Shared<Operation> arg_;
 
     Prefix_Expr_Base(
         Shared<const Phrase> source,
-        Shared<Expression> arg)
+        Shared<Operation> arg)
     :
         Expression(source),
         arg_(std::move(arg))
@@ -216,14 +272,14 @@ struct Not_Expr : public Prefix_Expr_Base
 struct Infix_Expr : public Expression
 {
     Token::Kind op_;
-    Shared<Expression> arg1_;
-    Shared<Expression> arg2_;
+    Shared<Operation> arg1_;
+    Shared<Operation> arg2_;
 
     Infix_Expr(
         Shared<const Phrase> source,
         Token::Kind op,
-        Shared<Expression> arg1,
-        Shared<Expression> arg2)
+        Shared<Operation> arg1,
+        Shared<Operation> arg2)
     :
         Expression(source),
         op_(op),
@@ -235,13 +291,13 @@ struct Infix_Expr : public Expression
 };
 struct Infix_Expr_Base : public Expression
 {
-    Shared<Expression> arg1_;
-    Shared<Expression> arg2_;
+    Shared<Operation> arg1_;
+    Shared<Operation> arg2_;
 
     Infix_Expr_Base(
         Shared<const Phrase> source,
-        Shared<Expression> arg1,
-        Shared<Expression> arg2)
+        Shared<Operation> arg1,
+        Shared<Operation> arg2)
     :
         Expression(source),
         arg1_(std::move(arg1)),
@@ -300,7 +356,7 @@ struct At_Expr : public Infix_Expr_Base
 };
 
 struct List_Expr_Base : public Expression,
-    public aux::Tail_Array_Data<Shared<const Expression>>
+    public aux::Tail_Array_Data<Shared<const Operation>>
 {
     List_Expr_Base(Shared<const Phrase> source)
     : Expression(std::move(source)) {}
@@ -314,7 +370,7 @@ using List_Expr = aux::Tail_Array<List_Expr_Base>;
 /// which is a generator but not an expression, and which generates
 /// a sequence of values.
 struct Sequence_Expr_Base : public Expression,
-    public aux::Tail_Array_Data<Shared<const Expression>>
+    public aux::Tail_Array_Data<Shared<const Operation>>
 {
     Sequence_Expr_Base(Shared<const Phrase> source)
     : Expression(std::move(source)) {}
@@ -326,7 +382,7 @@ using Sequence_Expr = aux::Tail_Array<Sequence_Expr_Base>;
 
 struct Record_Expr : public Expression
 {
-    Atom_Map<Shared<const Expression>> fields_;
+    Atom_Map<Shared<const Operation>> fields_;
 
     Record_Expr(Shared<const Phrase> source) : Expression(source) {}
 
@@ -350,13 +406,13 @@ struct Let_Expr : public Expression
 {
     size_t first_slot_;
     std::vector<Value> values_; // or, a Tail_Array
-    Shared<const Expression> body_;
+    Shared<const Operation> body_;
 
     Let_Expr(
         Shared<const Phrase> source,
         size_t first_slot,
         std::vector<Value> values,
-        Shared<const Expression> body)
+        Shared<const Operation> body)
     :
         Expression(std::move(source)),
         first_slot_(first_slot),
@@ -371,14 +427,14 @@ struct Let_Expr : public Expression
 struct For_Expr : public Expression
 {
     size_t slot_;
-    Shared<const Expression> list_;
-    Shared<const Expression> body_;
+    Shared<const Operation> list_;
+    Shared<const Operation> body_;
 
     For_Expr(
         Shared<const Phrase> source,
         size_t slot,
-        Shared<const Expression> list,
-        Shared<const Expression> body)
+        Shared<const Operation> list,
+        Shared<const Operation> body)
     :
         Expression(std::move(source)),
         slot_(slot),
@@ -392,13 +448,13 @@ struct For_Expr : public Expression
 
 struct If_Expr : public Expression
 {
-    Shared<Expression> arg1_;
-    Shared<Expression> arg2_;
+    Shared<Operation> arg1_;
+    Shared<Operation> arg2_;
 
     If_Expr(
         Shared<const Phrase> source,
-        Shared<Expression> arg1,
-        Shared<Expression> arg2)
+        Shared<Operation> arg1,
+        Shared<Operation> arg2)
     :
         Expression(source),
         arg1_(std::move(arg1)),
@@ -411,15 +467,15 @@ struct If_Expr : public Expression
 
 struct If_Else_Expr : public Expression
 {
-    Shared<Expression> arg1_;
-    Shared<Expression> arg2_;
-    Shared<Expression> arg3_;
+    Shared<Operation> arg1_;
+    Shared<Operation> arg2_;
+    Shared<Operation> arg3_;
 
     If_Else_Expr(
         Shared<const Phrase> source,
-        Shared<Expression> arg1,
-        Shared<Expression> arg2,
-        Shared<Expression> arg3)
+        Shared<Operation> arg1,
+        Shared<Operation> arg2,
+        Shared<Operation> arg3)
     :
         Expression(source),
         arg1_(std::move(arg1)),
@@ -433,14 +489,14 @@ struct If_Else_Expr : public Expression
 
 struct Lambda_Expr : public Expression
 {
-    Shared<Expression> body_;
+    Shared<Operation> body_;
     Shared<List_Expr> nonlocals_;
     size_t nargs_;
     size_t nslots_;
 
     Lambda_Expr(
         Shared<const Phrase> source,
-        Shared<Expression> body,
+        Shared<Operation> body,
         Shared<List_Expr> nonlocals,
         size_t nargs,
         size_t nslots)

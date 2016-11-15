@@ -117,7 +117,7 @@ struct Bindings
     // or function parameter list.
 };
 
-Shared<Expression> analyze_expr(const Phrase& ph, Environ& env);
+Shared<Operation> analyze_op(const Phrase& ph, Environ& env);
 
 } // namespace
 #endif // header guard

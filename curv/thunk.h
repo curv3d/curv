@@ -15,9 +15,9 @@ namespace curv {
 /// on the first reference.
 struct Thunk : public Ref_Value
 {
-    Shared<const Expression> expr_;
+    Shared<const Operation> expr_;
 
-    Thunk(Shared<const Expression> expr)
+    Thunk(Shared<const Operation> expr)
     :
         Ref_Value(ty_thunk),
         expr_(expr)

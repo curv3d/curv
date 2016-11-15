@@ -37,12 +37,12 @@ struct Function : public Ref_Value
 /// It's not a proper value, but can be stored in a Value slot.
 struct Lambda : public Ref_Value
 {
-    Shared<const Expression> expr_;
+    Shared<const Operation> expr_;
     size_t nargs_;
     size_t nslots_; // size of call frame
 
     Lambda(
-        Shared<const Expression> expr,
+        Shared<const Operation> expr,
         size_t nargs, size_t nslots)
     :
         Ref_Value(ty_lambda),
@@ -59,13 +59,13 @@ struct Lambda : public Ref_Value
 /// represented by a closure over a lambda expression.
 struct Closure : public Ref_Value
 {
-    Shared<const Expression> expr_;
+    Shared<const Operation> expr_;
     Shared<List> nonlocals_;
     size_t nargs_;
     size_t nslots_; // size of call frame
 
     Closure(
-        Shared<const Expression> expr,
+        Shared<const Operation> expr,
         Shared<List> nonlocals,
         size_t nargs, size_t nslots)
     :

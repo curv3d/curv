@@ -13,16 +13,16 @@
 namespace curv
 {
 
-Shared<Expression>
-analyze_expr(const Phrase& ph, Environ& env)
+Shared<Operation>
+analyze_op(const Phrase& ph, Environ& env)
 {
-    return ph.analyze(env)->to_expr(env);
+    return ph.analyze(env)->to_operation(env);
 }
 
-Shared<Expression>
-Expression::to_expr(Environ&)
+Shared<Operation>
+Operation::to_operation(Environ&)
 {
-    return Shared<Expression>(this);
+    return Shared<Operation>(this);
 }
 
 Shared<Definition>
@@ -93,7 +93,7 @@ Bindings::analyze_values(Environ& env)
     size_t n = slot_phrases_.size();
     auto slots = make_list(n);
     for (size_t i = 0; i < n; ++i) {
-        auto expr = curv::analyze_expr(*slot_phrases_[i], env);
+        auto expr = curv::analyze_op(*slot_phrases_[i], env);
         if (is_recursive_function(i)) {
             auto& l = dynamic_cast<Lambda_Expr&>(*expr);
             (*slots)[i] = {aux::make_shared<Lambda>(l.body_,l.nargs_,l.nslots_)};
@@ -138,12 +138,12 @@ Unary_Phrase::analyze(Environ& env) const
     case Token::k_not:
         return aux::make_shared<Not_Expr>(
             Shared<const Phrase>(this),
-            curv::analyze_expr(*arg_, env));
+            curv::analyze_op(*arg_, env));
     default:
         return aux::make_shared<Prefix_Expr>(
             Shared<const Phrase>(this),
             op_.kind,
-            curv::analyze_expr(*arg_, env));
+            curv::analyze_op(*arg_, env));
     }
 }
 
@@ -177,7 +177,7 @@ Lambda_Phrase::analyze(Environ& env) const
     {
         Atom_Map<int>& names_;
         Module::Dictionary nonlocal_dictionary_;
-        std::vector<Shared<const Expression>> nonlocal_exprs_;
+        std::vector<Shared<const Operation>> nonlocal_exprs_;
         bool recursive_;
 
         Arg_Environ(Environ* parent, Atom_Map<int>& names, bool recursive)
@@ -204,7 +204,7 @@ Lambda_Phrase::analyze(Environ& env) const
             auto m = parent_->lookup(id);
             if (isa_shared<Constant>(m))
                 return m;
-            if (auto expr = dynamic_shared_cast<Expression>(m)) {
+            if (auto expr = dynamic_shared_cast<Operation>(m)) {
                 size_t slot = nonlocal_exprs_.size();
                 nonlocal_dictionary_[id.atom_] = slot;
                 nonlocal_exprs_.push_back(expr);
@@ -215,7 +215,7 @@ Lambda_Phrase::analyze(Environ& env) const
         }
     };
     Arg_Environ env2(&env, params, recursive_);
-    auto expr = curv::analyze_expr(*right_, env2);
+    auto expr = curv::analyze_op(*right_, env2);
     auto src = Shared<const Lambda_Phrase>(this);
     Shared<List_Expr> nonlocals =
         List_Expr::make(env2.nonlocal_exprs_.size(), src);
@@ -234,69 +234,69 @@ Binary_Phrase::analyze(Environ& env) const
     case Token::k_or:
         return aux::make_shared<Or_Expr>(
             Shared<const Phrase>(this),
-            curv::analyze_expr(*left_, env),
-            curv::analyze_expr(*right_, env));
+            curv::analyze_op(*left_, env),
+            curv::analyze_op(*right_, env));
     case Token::k_and:
         return aux::make_shared<And_Expr>(
             Shared<const Phrase>(this),
-            curv::analyze_expr(*left_, env),
-            curv::analyze_expr(*right_, env));
+            curv::analyze_op(*left_, env),
+            curv::analyze_op(*right_, env));
     case Token::k_equal:
         return aux::make_shared<Equal_Expr>(
             Shared<const Phrase>(this),
-            curv::analyze_expr(*left_, env),
-            curv::analyze_expr(*right_, env));
+            curv::analyze_op(*left_, env),
+            curv::analyze_op(*right_, env));
     case Token::k_not_equal:
         return aux::make_shared<Not_Equal_Expr>(
             Shared<const Phrase>(this),
-            curv::analyze_expr(*left_, env),
-            curv::analyze_expr(*right_, env));
+            curv::analyze_op(*left_, env),
+            curv::analyze_op(*right_, env));
     case Token::k_less:
         return aux::make_shared<Less_Expr>(
             Shared<const Phrase>(this),
-            curv::analyze_expr(*left_, env),
-            curv::analyze_expr(*right_, env));
+            curv::analyze_op(*left_, env),
+            curv::analyze_op(*right_, env));
     case Token::k_greater:
         return aux::make_shared<Greater_Expr>(
             Shared<const Phrase>(this),
-            curv::analyze_expr(*left_, env),
-            curv::analyze_expr(*right_, env));
+            curv::analyze_op(*left_, env),
+            curv::analyze_op(*right_, env));
     case Token::k_less_or_equal:
         return aux::make_shared<Less_Or_Equal_Expr>(
             Shared<const Phrase>(this),
-            curv::analyze_expr(*left_, env),
-            curv::analyze_expr(*right_, env));
+            curv::analyze_op(*left_, env),
+            curv::analyze_op(*right_, env));
     case Token::k_greater_or_equal:
         return aux::make_shared<Greater_Or_Equal_Expr>(
             Shared<const Phrase>(this),
-            curv::analyze_expr(*left_, env),
-            curv::analyze_expr(*right_, env));
+            curv::analyze_op(*left_, env),
+            curv::analyze_op(*right_, env));
     case Token::k_power:
         return aux::make_shared<Power_Expr>(
             Shared<const Phrase>(this),
-            curv::analyze_expr(*left_, env),
-            curv::analyze_expr(*right_, env));
+            curv::analyze_op(*left_, env),
+            curv::analyze_op(*right_, env));
     case Token::k_dot:
       {
         auto id = dynamic_shared_cast<Identifier>(right_);
         if (id != nullptr)
             return aux::make_shared<Dot_Expr>(
                 Shared<const Phrase>(this),
-                curv::analyze_expr(*left_, env),
+                curv::analyze_op(*left_, env),
                 id->atom_);
         auto list = dynamic_shared_cast<List_Phrase>(right_);
         if (list != nullptr) {
-            Shared<Expression> index;
+            Shared<Operation> index;
             if (list->args_.size() == 1
                 && list->args_[0].comma_.kind == Token::k_missing)
             {
-                index = curv::analyze_expr(*list->args_[0].expr_, env);
+                index = curv::analyze_op(*list->args_[0].expr_, env);
             } else {
                 throw Exception(At_Phrase(*this, env), "not an expression");
             }
             return aux::make_shared<At_Expr>(
                 Shared<const Phrase>(this),
-                curv::analyze_expr(*left_, env),
+                curv::analyze_op(*left_, env),
                 index);
         }
         throw Exception(At_Phrase(*right_, env),
@@ -306,8 +306,8 @@ Binary_Phrase::analyze(Environ& env) const
         return aux::make_shared<Infix_Expr>(
             Shared<const Phrase>(this),
             op_.kind,
-            curv::analyze_expr(*left_, env),
-            curv::analyze_expr(*right_, env));
+            curv::analyze_op(*left_, env),
+            curv::analyze_op(*right_, env));
     }
 }
 
@@ -349,12 +349,12 @@ Paren_Phrase::analyze(Environ& env) const
     if (args_.size() == 1
         && args_[0].comma_.kind == Token::k_missing)
     {
-        return curv::analyze_expr(*args_[0].expr_, env);
+        return curv::analyze_op(*args_[0].expr_, env);
     } else {
         Shared<Sequence_Expr> seq =
             Sequence_Expr::make(args_.size(), Shared<const Phrase>(this));
         for (size_t i = 0; i < args_.size(); ++i)
-            (*seq)[i] = analyze_expr(*args_[i].expr_, env);
+            (*seq)[i] = analyze_op(*args_[i].expr_, env);
         return seq;
     }
 }
@@ -365,37 +365,37 @@ List_Phrase::analyze(Environ& env) const
     Shared<List_Expr> list =
         List_Expr::make(args_.size(), Shared<const Phrase>(this));
     for (size_t i = 0; i < args_.size(); ++i)
-        (*list)[i] = analyze_expr(*args_[i].expr_, env);
+        (*list)[i] = analyze_op(*args_[i].expr_, env);
     return list;
 }
 
 Shared<Meaning>
 Call_Phrase::analyze(Environ& env) const
 {
-    auto fun = curv::analyze_expr(*function_, env);
+    auto fun = curv::analyze_op(*function_, env);
     return fun->call(*this, env);
 }
 
 Shared<Meaning>
-Expression::call(const Call_Phrase& src, Environ& env)
+Operation::call(const Call_Phrase& src, Environ& env)
 {
-    std::vector<Shared<Expression>> args;
+    std::vector<Shared<Operation>> args;
 
     auto patom = dynamic_cast<Paren_Phrase*>(&*src.args_);
     if (patom != nullptr) {
         // argument phrase is a variable-length parenthesized argument list
         args.reserve(patom->args_.size());
         for (auto a : patom->args_)
-            args.push_back(curv::analyze_expr(*a.expr_, env));
+            args.push_back(curv::analyze_op(*a.expr_, env));
     } else {
         // argument phrase is a unitary expression
         args.reserve(1);
-        args.push_back(curv::analyze_expr(*src.args_, env));
+        args.push_back(curv::analyze_op(*src.args_, env));
     }
 
     return aux::make_shared<Call_Expr>(
         Shared<const Phrase>(&src),
-        Shared<Expression>(this),
+        Shared<Operation>(this),
         src.args_,
         std::move(args));
 }
@@ -403,14 +403,14 @@ Expression::call(const Call_Phrase& src, Environ& env)
 void
 analyze_definition(
     const Definition& def,
-    Atom_Map<Shared<const Expression>>& dict,
+    Atom_Map<Shared<const Operation>>& dict,
     Environ& env)
 {
     Atom name = def.name_->atom_;
     if (dict.find(name) != dict.end())
         throw Exception(At_Phrase(*def.name_, env),
             stringify(name, ": multiply defined"));
-    dict[name] = curv::analyze_expr(*def.definiens_, env);
+    dict[name] = curv::analyze_op(*def.definiens_, env);
 }
 
 Shared<Meaning>
@@ -442,7 +442,7 @@ Module_Phrase::analyze_module(Environ& env) const
     module->slots_ = fields.analyze_values(env2);
     Shared<List_Expr> xelements = {List_Expr::make(elements.size(), self)};
     for (size_t i = 0; i < elements.size(); ++i)
-        (*xelements)[i] = curv::analyze_expr(*elements[i], env2);
+        (*xelements)[i] = curv::analyze_op(*elements[i], env2);
     module->elements_ = xelements;
     module->frame_nslots_ = env2.frame_maxslots;
     return module;
@@ -470,14 +470,14 @@ If_Phrase::analyze(Environ& env) const
     if (else_expr_ == nullptr) {
         return aux::make_shared<If_Expr>(
             Shared<const Phrase>(this),
-            curv::analyze_expr(*condition_, env),
-            curv::analyze_expr(*then_expr_, env));
+            curv::analyze_op(*condition_, env),
+            curv::analyze_op(*then_expr_, env));
     } else {
         return aux::make_shared<If_Else_Expr>(
             Shared<const Phrase>(this),
-            curv::analyze_expr(*condition_, env),
-            curv::analyze_expr(*then_expr_, env),
-            curv::analyze_expr(*else_expr_, env));
+            curv::analyze_op(*condition_, env),
+            curv::analyze_op(*then_expr_, env),
+            curv::analyze_op(*else_expr_, env));
     }
 }
 
@@ -554,10 +554,10 @@ Let_Phrase::analyze(Environ& env) const
     int first_slot = env.frame_nslots;
     std::vector<Value> values(bindings.size());
     for (auto b : bindings) {
-        auto expr = curv::analyze_expr(*b.second.phrase_, env2);
+        auto expr = curv::analyze_op(*b.second.phrase_, env2);
         values[b.second.slot_-first_slot] = {aux::make_shared<Thunk>(expr)};
     }
-    auto body = curv::analyze_expr(*body_, env2);
+    auto body = curv::analyze_op(*body_, env2);
     env.frame_maxslots = env2.frame_maxslots;
     assert(env.frame_maxslots >= bindings.size());
 
@@ -581,7 +581,7 @@ For_Phrase::analyze(Environ& env) const
         throw Exception(At_Phrase(*def->left_, env), "for: not an identifier");
     Atom name = id->atom_;
 
-    auto list = curv::analyze_expr(*def->right_, env);
+    auto list = curv::analyze_op(*def->right_, env);
 
     int slot = env.frame_nslots;
     struct For_Environ : public Environ
@@ -607,7 +607,7 @@ For_Phrase::analyze(Environ& env) const
         }
     };
     For_Environ body_env(env, name, slot);
-    auto body = curv::analyze_expr(*body_, body_env);
+    auto body = curv::analyze_op(*body_, body_env);
     env.frame_maxslots = body_env.frame_maxslots;
 
     return aux::make_shared<For_Expr>(Shared<const Phrase>(this),
