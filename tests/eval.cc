@@ -360,5 +360,6 @@ TEST(curv, eval)
         "line 1(column 3), at end of script\n"
         "  x+\n"
         "    ^");
+    FAILMSG("(a=0)+1", "not an operation");
   }
 }

@@ -7,14 +7,6 @@
 * concat[l1,l2]. concat(vv) = [for(v=vv)for(i=v)i];
 
 It's complicated...
-* names: Operation or Formula?
-  * which makes more sense in code?
-  * which makes more sense in error messages? Definition_Phrase::analyze throws
-    "not an operation"/"not a formula". Eg, body of a `for`.
-  * In math, chemistry, logic, a formula is a syntactic expression of a
-    particular class of ideas. In math, formulas are usually equations,
-    but in Curv, definitions are not formulas. Informally, a formula is a method
-    for achieving a result (which fits).
 * names: Phrase or Syntax?
 * definitions are compiled into actions.
   * module (recursive scope): A definition may bind multiple names. Each such

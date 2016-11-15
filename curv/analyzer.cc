@@ -314,7 +314,7 @@ Binary_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Definition_Phrase::analyze(Environ& env) const
 {
-    throw Exception(At_Phrase(*this, env), "not an expression");
+    throw Exception(At_Phrase(*this, env), "not an operation");
 }
 
 Shared<Definition>
