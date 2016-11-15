@@ -406,6 +406,15 @@ This unification affects list constructors.
   in script order. Recursive variables are thunked. If a recursive variable
   tries to read an uninitialized sequential variable, then an error occurs.
 
+Model 1 wins. A module is a list of statements, with recursive scope.
+Each statement is either a statement or a generator, but can't be both.
+Allowing a statement to both define bindings *and* generate list values
+creates unacceptable complexity.
+
+Sequence expressions can be converted into statements in 2 ways:
+* Convert to a definition. The seqex cannot contain generators.
+* Convert to a generator. All definitions within the sequex are made local.
+
 ### Embedding statements in an expression:
 * `let (compound-definition) expr` seems the most obvious.
   You can include assert() and echo(), but not other generators.
@@ -548,3 +557,193 @@ How do you embed recursive definitions in a sequence expression?
   s1 => (f(x)=..g(x), g(x)=..f(x)) => s2
   No need for compound definitions to be sequential
   because we have `=>` to express sequencing.
+
+### Summary (Seqex)
+* Sequence expressions (sequex) are a minilanguage for imperative-style
+  programming within a pure functional language. A sequex is:
+  * a simple definition (sequentially scoped)
+  * a simple redefinition (sequentially scoped)
+  * a simple generator
+  * a sequence of sequexes
+  * a conditional sequex
+  * a for loop or a while loop
+  * an embedded module script, so that recursive definitions can be embedded
+    in a sequex.
+
+* A module is a list of statements with recursive scope. Each statement is
+  either a definition or a generator, not both.
+  At module scope, a sequex can be converted to a definition or a generator.
+  * Eg, `def <sequex>`.
+  * Eg, `gen <sequex>` or `each [<sequex>]`.
+
+* A sequex can be embedded in a list constructor. Definitions are local to the
+  constructor, generators add list elements.
+  Eg, `[ <sequex> ]`.
+
+* A sequex (containing no generators) can qualify an expression.
+  Eg, `(sequex => expr)`, `(sequex; expr)`, `expr where sequex`.
+
+Now we just need a syntax.
+
+For sequex,
+* `x=1` is a simple definition
+* `next x=x+1` is a simple redefinition
+* `f(x)+1` is a simple generator (it's just an expression)
+* `if(cond)sequex`, `if(cond)s1 else s2` are conditional sequexes
+* `s1;s2` is a sequence. How are compound sequexes bracketed?
+  The bracketing syntax must be distinct from an expression.
+  `(s1;s2)` might work. `(sequex)` also works.
+* `for(i=a)sequex`, `while(cond)seqex`.
+* `rec <script>`
+
+For list constructors, `[<sequex>]` is workable.
+Perhaps `,` and `;` are synonymous here.
+
+I need two kinds of qualified expressions: with recursive scoped definitions,
+and with a sequex containing only definitions, no generators.
+* Perhaps a set of mutually recursive definitions can be embedded in a sequex,
+  and then a sequex qualifies an expression.
+* `sequex => expr` and `expr where sequex`
+
+## Four Kinds of Phrase: Expr, Action, Def, Gen
+Phrases can be classified as one of 4 kinds:
+* an Expression, which is evaluated, returning a value.
+* an Action, which is executed, causing a side effect (but not producing
+  any value). Actions exist to support debugging, and do not have any effect
+  on the shape being computed.
+* a Definition, which binds 0 or more names to values within a scope.
+* a Generator, which produces a sequence of zero or more values.
+* Some phrases have more than one kind (can be used polymorphically in more
+  than one context):
+  * An Expression is also a Generator that produces 1 value.
+  * An Action is also a Generator that produces 0 values.
+  * An Action is also a Definition that binds 0 names.
+  * `()` belongs to all 4 kinds.
+
+Phrases can be classified at compile time.
+It's an implementation requirement that definitions are classified based
+on their syntax tree alone, prior to semantic analysis.
+Because of metafunctions, non-definition phrases must
+in general wait until semantic analysis for classification, and this can be
+done in one bottom-up pass.
+
+However, my current code base is more dynamic than this. I wait until
+evaluation time to distinguish expressions, actions and generators, and I
+report run-time errors instead of compile time errors if a phrase is used in
+the wrong context.
+* The semantic analyzer creates a tree of Expression objects (should be
+  renamed Operation). The Operation class has 3 run-time virtual functions:
+  * eval(frame) -- evaluate an expression, return a Value. Report an error
+    if the Operation is not an expression.
+  * generate(frame, list_builder) -- run a generator, append the values
+    produced to list_builder. Fail if the operation is not a generator.
+  * exec(frame) -- execute an action. Fail if the operation is not an action.
+* The current implementation leaves the door open for dynamically typed
+  'generator functions' and 'action functions' that are first-class values.
+
+### Two Languages (Def and Gen)
+There are two minilanguages: the generator language (gen), and the 
+definition language (def). Don't try to integrate them. Eg, no generator
+statements inside a while loop: accumulate a list in a variable instead.
+Rationale:
+* Might be simpler, syntax design issues might resolve.
+* Module scripts are semantically simpler if every statement is either Gen
+  or Def, but not both. So, take this idea farther.
+
+The Gen language:
+* simple: generator ::= expr
+* conditional: if(cond)gen | if(cond)gen1 else gen2
+* iteration: for(i=a)gen
+* sequence: gen1, gen2, ...
+* each expr
+* generator ::= (gen)
+* `let(defs)gen` or `defs=>gen` or `defs;gen`
+* `echo(expr)` or `echo(expr)gen`
+* `assert(expr)` or `assert(expr)gen` -- used to restrict `for` bound variable
+* ... there's no while-style iterator yet.
+
+The Def language:
+* definitions:
+  * `x=1` is a simple definition
+  * `if(cond)def1 else def2` is a conditional definition (def1 and def2 define
+     the same names). Optional feature (might be confusing?)
+  * `def1;def2` is a compound definition. Sequential scoping.
+  * `def;redef` is a compound definition. Sequential scoping. The `redef` only
+    redefines names previously defined by `def`.
+  * (def)
+  * `assert(expr)`, `echo(expr)`
+* redefinitions:
+  * `next x=x+1` is a simple redefinition
+  * `if(cond)redef`, `if(cond)redef1 else redef2` are conditional redefinitions
+  * `redef1;redef2` is a compound redefinition.
+  * (redef)
+  * `for(i=a)redef`, `while(cond)redef`.
+  * `assert(expr)`, `echo(expr)`
+
+Redefinitions within a sequence:
+ 1. `rec (def)`. No redefinitions within `def`, recursive scoping inside the
+    parentheses.
+    This seems okay:
+        ```
+        rec f(x) = ...f...;
+        n = f(a);
+        ...
+        ```
+ 2. But I don't like `(rec(f=..,g=..);expr)` very much.
+    I'd prefer `let(f=..,g=..)expr` or `expr where(f=..,g=..)`.
+    Let and Where can be composed with parenthesized qualified expressions,
+    and that's good enough.
+
+I think we can classify, at parse time (before semantic analysis) whether a
+phrase is Def, Gen or Expr, using a bottom up traversal of the parse tree.
+This could be integrated into the parser, which marks each Phrase with its
+type. Note that `assert(expr)` and `echo(expr)` are Effect phrases.
+* I might want the modularity benefits of lexically scoped metafunctions,
+  which map their arguments onto exprs, generators or effects
+  (but not definitions) during semantic analysis. In that case, detect
+  definitions at parse time (before semantic analysis), but detect expressions,
+  generators and effects during semantic analysis.
+
+Module script: a sequence of statements, which may be generators, definitions
+or effects. Recursive scoping of definitions, sequential evaluation of
+generators and effects.
+* As a module statement, `(def1;def2);` is internally a compound sequential
+  definition, but the resulting definitions are then visible across the entire
+  module scope. The whole statement is thunked.
+
+List constructor: `[gen]`.
+
+Qualified expression: `(def;expr)`.
+
+```
+sum(a) = (
+    i = 0;
+    total = 0;
+    while (i < len a) (
+        next total = total + a.[i];
+        next i = i + 1;
+    );
+    total
+);
+```
+
+Everything in this sequence language is optional.
+(Inserting debug actions into a function can be done using `let`, since
+actions are definitions.)
+You can always express this stuff in a more "functional" style.
+So this is just a convenience for (a) imperative programmers who aren't used
+to the functional style, and (b) more easily translating existing geometric
+algorithms into Curv.
+
+```
+sum(a) = iter(i=0,total=0) where (iter(i,total) =
+    if (i < len a)
+        iter(total = total + a.[i], i = i + 1)
+    else
+        total);
+```
+
+Okay, what about `next a.[i] = x`? How does that translate into
+functional style? Well, 
+`A.[i] = x` is equivalent to `A = update_list(A, i, x)`,
+even in a function call argument list.
