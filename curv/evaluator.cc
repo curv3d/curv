@@ -17,26 +17,32 @@
 
 using namespace curv;
 
+Value
+curv::Operation::eval(Frame& f) const
+{
+    throw Exception(At_Phrase(*source_, &f), "not an expression");
+}
+void
+curv::Operation::generate(Frame& f, List_Builder&) const
+{
+    throw Exception(At_Phrase(*source_, &f), "not a generator");
+}
+void
+curv::Operation::exec(Frame& f) const
+{
+    throw Exception(At_Phrase(*source_, &f), "not an action");
+}
+
 void
 curv::Expression::generate(Frame& f, List_Builder& lb) const
 {
     lb.push_back(eval(f));
 }
-void
-curv::Expression::exec(Frame& f) const
-{
-    throw Exception(At_Phrase(*source_, &f), "not an action");
-}
 
-Value
-curv::Generator::eval(Frame& f) const
-{
-    throw Exception(At_Phrase(*source_, &f), "not an expression");
-}
 void
-curv::Generator::exec(Frame& f) const
+curv::Action::generate(Frame& f, List_Builder&) const
 {
-    throw Exception(At_Phrase(*source_, &f), "not an action");
+    exec(f);
 }
 
 Value

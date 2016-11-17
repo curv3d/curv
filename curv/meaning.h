@@ -42,14 +42,15 @@ struct Meaning : public aux::Shared_Base
 /// is then evaluated.
 ///
 /// There are 3 kinds of Operation:
-///  1. An Expression can be evaluated to produce a single value,
-///     using the `eval` virtual function.
+///  1. An Expression is evaluated to produce a single value using `eval`.
+///     Every expression is also a generator that produces 1 value.
 ///     For example, `2+2`.
-///  2. A Generator can be executed to produce a sequence of zero or more
-///     values, using the `generate` virtual function.
+///  2. A Generator is executed to produce a sequence of zero or more values
+///     using `generate`.
 ///     For example, `for(i=[1..10])i^2`.
-///  3. An Action can be executed to cause a side effect, using the `exec`
-///     virtual function, but no value is produced.
+///  3. An Action is executed to cause a side effect using `exec`,
+///     and no value is produced.
+///     Every action is also a generator that produces 0 values.
 ///     For example, `assert(x>0)`.
 struct Operation : public Meaning
 {
@@ -60,9 +61,9 @@ struct Operation : public Meaning
     virtual Shared<Meaning> call(const Call_Phrase&, Environ&);
 
     // These functions are called during evaluation.
-    virtual Value eval(Frame&) const = 0;
-    virtual void generate(Frame&, List_Builder&) const = 0;
-    virtual void exec(Frame&) const = 0;
+    virtual Value eval(Frame&) const;
+    virtual void generate(Frame&, List_Builder&) const;
+    virtual void exec(Frame&) const;
 };
 
 /// This is an "implementation" class, inherited by Operation classes
@@ -70,9 +71,9 @@ struct Operation : public Meaning
 /// for the eval/generate/exec virtual functions.
 ///
 /// An expression is an Operation that can be evaluated to produce a single 
-/// value. All expressions are also generators that produce a single value,
-/// so the `generate` function just calls `eval`. Expressions are not actions,
-/// so the `exec` function throws an error, "not an action".
+/// value. The work is done by the `eval` method, which must be defined.
+/// All expressions are also generators that produce a single value,
+/// so the `generate` function just calls `eval`.
 ///
 /// This is not an interface class, and not all expression objects are derived
 /// from Expression. Functions should not take Expressions as values
@@ -84,29 +85,27 @@ struct Expression : public Operation
     // These functions are called during evaluation.
     virtual Value eval(Frame&) const = 0;
     virtual void generate(Frame&, List_Builder&) const override;
-    virtual void exec(Frame&) const override;
 };
 
 /// This is an "implementation" class, inherited by Operation classes
-/// whose instances are always generators. It provides sensible defaults
+/// whose instances are always actions. It provides sensible defaults
 /// for the eval/generate/exec virtual functions.
 ///
-/// A generator is an Operation that produces a sequence of values: the
-/// `generate` virtual function must be so defined. A generator is not an
-/// expression, so the `eval` function throws an error, "not an expression".
-/// A generator is not an action, so `exec` throws "not an action".
+/// An action is an Operation that causes a side effect and produces no values.
+/// The work is done by the `exec` method, which must be defined.
+/// All actions are generators that produce no values, so the `generate` method
+/// just calls the `exec` method.
 ///
-/// This is not an interface class, and not all generator objects are derived
-/// from Generator. Functions should not take Generators as values
-/// or return Generators as results: use Operation instead.
-struct Generator : public Operation
+/// This is not an interface class, and not all action objects are derived
+/// from Action. Functions should not take Actions as values
+/// or return Actions as results: use Operation instead.
+struct Action : public Operation
 {
     using Operation::Operation;
 
     // These functions are called during evaluation.
-    virtual Value eval(Frame&) const override;
-    virtual void generate(Frame&, List_Builder&) const = 0;
-    virtual void exec(Frame&) const override;
+    virtual void generate(Frame&, List_Builder&) const override;
+    virtual void exec(Frame&) const = 0;
 };
 
 /// A Constant is an Expression whose value is known at compile time.
@@ -355,7 +354,7 @@ struct At_Expr : public Infix_Expr_Base
     virtual Value eval(Frame&) const override;
 };
 
-struct Range_Gen : public Generator
+struct Range_Gen : public Operation
 {
     Shared<Operation> arg1_;
     Shared<Operation> arg2_;
@@ -365,7 +364,7 @@ struct Range_Gen : public Generator
         Shared<Operation> arg1,
         Shared<Operation> arg2)
     :
-        Generator(source),
+        Operation(source),
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2))
     {}
