@@ -38,6 +38,26 @@ It's complicated...
      Extend `Function` with a generate callback and add Call_Expr::generate().
   3. each(v) = for (i = v) i; Not hard: just add Call_Expr::generate().
   4. Now that I have sequence generators, `each` is not a high priority.
+* Top level sequence generator. In curv tool, I type '1,2,3' at the prompt
+  and it evaluates the sequence.
+  * Semicolon has lower precedence than colon. (C has the same precedence.)
+    Eg, so `a=1;a,a,a`.
+  * A semicolon phrase is one or more comma phrases separated by semicolons.
+    A comma phrase is zero or more rexprs separated by comma, with an optional
+    trailing comma. Any emptiness in a semicolon phrase is represented by
+    empty comma phrases. Extra semicolons `;;;` can be inserted into a
+    semicolon phrase.
+  * A comma phrase is a sequence of generators, executed in sequence.
+  * `()` is technically an empty comma phrase. It is a special phrase:
+    it's the empty generator and it is also the empty action.
+  * A semicolon phrase is a qualified expression. The initial elements are
+    definitions and actions, executed in sequence and creating a local
+    sequential scope. The final element is an operation that is bound in
+    the context of this scope. The 'result' of a semicolon phrase is the
+    final element.
+  * If the final element of a semicolon phrase is the empty action *epsilon*,
+    then the entire phrase is an action, and this is the syntax we use for
+    compound actions.
 
 Other:
 * Interactive curv: special variable `_` is last value. _1,_2, or $1,$2 ...
