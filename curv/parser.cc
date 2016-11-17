@@ -128,6 +128,7 @@ parse_conjunction(Scanner& scanner)
 //  | sum == sum | sum != sum
 //  | sum < sum | sum > sum
 //  | sum <= sum | sum >= sum
+//  | sum .. sum
 Shared<Phrase>
 parse_relation(Scanner& scanner)
 {
@@ -140,6 +141,7 @@ parse_relation(Scanner& scanner)
     case Token::k_less_or_equal:
     case Token::k_greater:
     case Token::k_greater_or_equal:
+    case Token::k_range:
         return aux::make_shared<Binary_Phrase>(
             std::move(left), tok, parse_sum(scanner));
     default:

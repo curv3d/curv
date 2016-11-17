@@ -102,7 +102,7 @@ Scanner::get_token()
     if (isdigit(*p) || (*p == '.' && p+1 < last && isdigit(p[1]))) {
         while (p < last && isdigit(*p))
             ++p;
-        if (p < last && *p == '.') {
+        if (p < last && *p == '.' && !(p+1 < last && p[1]=='.')) {
             ++p;
             while (p < last && isdigit(*p))
                 ++p;
@@ -171,7 +171,11 @@ Scanner::get_token()
         tok.kind = Token::k_rbrace;
         goto success;
     case '.':
-        tok.kind = Token::k_dot;
+        if (p < last && *p == '.') {
+            tok.kind = Token::k_range;
+            ++p;
+        } else
+            tok.kind = Token::k_dot;
         goto success;
     case ',':
         tok.kind = Token::k_comma;

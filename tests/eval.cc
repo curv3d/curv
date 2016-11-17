@@ -319,6 +319,9 @@ TEST(curv, eval)
     SUCCESS("std = file \"std.curv\"; std.concat[[1], [2,3], [4]]",
         "[1,2,3,4]");
 
+    // range generator
+    SUCCESS("[1..4]", "[1,2,3,4]");
+
     // for
     FAILMSG("for", "missing argument following 'for'");
     FAILMSG("for (i=a)", "missing expression");

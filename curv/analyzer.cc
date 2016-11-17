@@ -271,6 +271,11 @@ Binary_Phrase::analyze(Environ& env) const
             Shared<const Phrase>(this),
             curv::analyze_op(*left_, env),
             curv::analyze_op(*right_, env));
+    case Token::k_range:
+        return aux::make_shared<Range_Gen>(
+            Shared<const Phrase>(this),
+            curv::analyze_op(*left_, env),
+            curv::analyze_op(*right_, env));
     case Token::k_power:
         return aux::make_shared<Power_Expr>(
             Shared<const Phrase>(this),

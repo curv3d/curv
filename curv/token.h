@@ -65,6 +65,7 @@ struct Token
         k_minus,
         k_times,
         k_over,             ///! `/` operator
+        k_range,            ///! `..` operator
         k_equal,            ///! `==` operator
         k_not_equal,        ///! `!=` operator
         k_less,             ///! `<` operator

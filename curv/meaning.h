@@ -355,6 +355,23 @@ struct At_Expr : public Infix_Expr_Base
     virtual Value eval(Frame&) const override;
 };
 
+struct Range_Gen : public Generator
+{
+    Shared<Operation> arg1_;
+    Shared<Operation> arg2_;
+
+    Range_Gen(
+        Shared<const Phrase> source,
+        Shared<Operation> arg1,
+        Shared<Operation> arg2)
+    :
+        Generator(source),
+        arg1_(std::move(arg1)),
+        arg2_(std::move(arg2))
+    {}
+    virtual void generate(Frame&, List_Builder&) const override;
+};
+
 struct List_Expr_Base : public Expression,
     public aux::Tail_Array_Data<Shared<const Operation>>
 {

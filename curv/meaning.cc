@@ -507,6 +507,21 @@ curv::For_Expr::generate(Frame& f, List_Builder& lb) const
     }
 }
 
+void
+curv::Range_Gen::generate(Frame& f, List_Builder& lb) const
+{
+    Value a = curv::eval(*arg1_, f);
+    Value b = curv::eval(*arg2_, f);
+    double na = a.get_num_or_nan();
+    double nb = b.get_num_or_nan();
+    double delta = round(nb - na);
+    if (delta != delta)
+        throw Exception(At_Phrase(*source_, &f),
+            stringify(a,"..",b,": domain error"));
+    for (double i = 0.0; i <= delta; ++i)
+        lb.push_back(Value{na+i});
+}
+
 Value
 curv::Lambda_Expr::eval(Frame& f) const
 {
