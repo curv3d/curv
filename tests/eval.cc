@@ -321,6 +321,12 @@ TEST(curv, eval)
 
     // range generator
     SUCCESS("[1..4]", "[1,2,3,4]");
+    SUCCESS("[1..3 step 0.5]", "[1,1.5,2,2.5,3]");
+    SUCCESS("[1..1]", "[1]");
+    SUCCESS("[1..0]", "[]");
+    SUCCESS("[1..-1]", "[]");
+    SUCCESS("[1..3 step -1]", "[]");
+    SUCCESS("[3..1 step -1]", "[3,2,1]");
 
     // for
     FAILMSG("for", "missing argument following 'for'");

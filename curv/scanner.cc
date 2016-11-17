@@ -59,7 +59,7 @@ Scanner::get_token()
                 }
             }
             else if (p[1] == '*') {
-                // A '/*' comment continues to the matching '*/', as in C.
+                // A '/*' comment continues to the first '*/', as in C.
                 // An unterminated comment is an error.
                 const char* begin_comment = p;
                 p += 2;
@@ -145,6 +145,8 @@ Scanner::get_token()
             tok.kind = Token::k_let;
         else if (id == "for")
             tok.kind = Token::k_for;
+        else if (id == "step")
+            tok.kind = Token::k_step;
         else
             tok.kind = Token::k_ident;
         goto success;

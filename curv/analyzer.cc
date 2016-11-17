@@ -271,11 +271,6 @@ Binary_Phrase::analyze(Environ& env) const
             Shared<const Phrase>(this),
             curv::analyze_op(*left_, env),
             curv::analyze_op(*right_, env));
-    case Token::k_range:
-        return aux::make_shared<Range_Gen>(
-            Shared<const Phrase>(this),
-            curv::analyze_op(*left_, env),
-            curv::analyze_op(*right_, env));
     case Token::k_power:
         return aux::make_shared<Power_Expr>(
             Shared<const Phrase>(this),
@@ -617,6 +612,16 @@ For_Phrase::analyze(Environ& env) const
 
     return aux::make_shared<For_Expr>(Shared<const Phrase>(this),
         slot, list, body);
+}
+
+Shared<Meaning>
+Range_Phrase::analyze(Environ& env) const
+{
+    return aux::make_shared<Range_Gen>(
+        Shared<const Phrase>(this),
+        curv::analyze_op(*first_, env),
+        curv::analyze_op(*last_, env),
+        step_ ? curv::analyze_op(*step_, env) : nullptr);
 }
 
 } // namespace curv

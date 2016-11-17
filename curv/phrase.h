@@ -299,5 +299,36 @@ struct For_Phrase : public Control_Phrase
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
+struct Range_Phrase : public Phrase
+{
+    Range_Phrase(
+        Shared<Phrase> first,
+        Token op1,
+        Shared<Phrase> last,
+        Token op2,
+        Shared<Phrase> step)
+    :
+        first_(std::move(first)),
+        op1_(op1),
+        last_(std::move(last)),
+        op2_(op2),
+        step_(std::move(step))
+    {}
+    Shared<Phrase> first_;
+    Token op1_;
+    Shared<Phrase> last_;
+    Token op2_;
+    Shared<Phrase> step_;
+    virtual Location location() const override
+    {
+        if (step_ != nullptr) {
+            return first_->location().ending_at(step_->location().token());
+        } else {
+            return first_->location().ending_at(last_->location().token());
+        }
+    }
+    virtual Shared<Meaning> analyze(Environ&) const override;
+};
+
 } // namespace curv
 #endif // header guard

@@ -516,16 +516,31 @@ curv::For_Expr::generate(Frame& f, List_Builder& lb) const
 void
 curv::Range_Gen::generate(Frame& f, List_Builder& lb) const
 {
-    Value a = curv::eval(*arg1_, f);
-    Value b = curv::eval(*arg2_, f);
-    double na = a.get_num_or_nan();
-    double nb = b.get_num_or_nan();
-    double delta = round(nb - na);
-    if (delta != delta)
+    Value firstv = curv::eval(*arg1_, f);
+    double first = firstv.get_num_or_nan();
+
+    Value lastv = curv::eval(*arg2_, f);
+    double last = lastv.get_num_or_nan();
+
+    Value stepv;
+    double step = 1.0;
+    if (arg3_) {
+        stepv = curv::eval(*arg3_, f);
+        step = stepv.get_num_or_nan();
+    }
+
+    double delta = round((last - first)/step);
+    double countd = delta < 0.0 ? 0.0 : delta + 1.0;
+    if (countd < 1'000'000'000.0) {
+        unsigned count = (unsigned) countd;
+        for (unsigned i = 0; i < count; ++i)
+            lb.push_back(Value{first + step*i});
+    } else {
         throw Exception(At_Phrase(*source_, &f),
-            stringify(a,"..",b,": domain error"));
-    for (double i = 0.0; i <= delta; ++i)
-        lb.push_back(Value{na+i});
+            arg3_
+                ? stringify(firstv,"..",lastv," step ",stepv,": domain error")
+                : stringify(firstv,"..",lastv,": domain error"));
+    }
 }
 
 Value
