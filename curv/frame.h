@@ -6,13 +6,14 @@
 #define CURV_FRAME_H
 
 #include <aux/tail_array.h>
-#include <curv/value.h>
 #include <curv/list.h>
+#include <curv/value.h>
 
 namespace curv {
 
 class Frame_Base;
 class Phrase;
+class System;
 
 /// A Frame is an evaluation context.
 ///
@@ -26,6 +27,14 @@ using Frame = aux::Tail_Array<Frame_Base>;
 
 struct Frame_Base
 {
+    /// The System object abstracts client- and os-specific functionality.
+    /// It is owned by the client, and is generally available to the evaluator.
+    /// A reference to the global System object is stored in every Frame,
+    /// because that seems more efficient (less copying) than passing it as
+    /// a parameter to every `eval` call, and it seems cleaner than a thread
+    /// local variable. Think of the System reference as a VM register.
+    System& system;
+
     /// Frames are linked into a stack. This is metadata used for printing
     /// a stack trace and by the debugger. It is not used during evaluation.
     Frame* parent_frame;
@@ -54,8 +63,9 @@ struct Frame_Base
         return array_[i];
     }
 
-    Frame_Base(Frame* parent, const Phrase* src, List* nl)
+    Frame_Base(System& sys, Frame* parent, const Phrase* src, List* nl)
     :
+        system(sys),
         parent_frame(parent),
         call_phrase(src),
         nonlocal(nl)

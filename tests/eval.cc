@@ -1,15 +1,20 @@
+#include <cstdlib>
+
 #include <gtest/gtest.h>
-#include <curv/parse.h>
+
+#include <curv/analyzer.h>
 #include <curv/eval.h>
 #include <curv/exception.h>
+#include <curv/parse.h>
 #include <curv/phrase.h>
 #include <curv/string.h>
-#include <curv/analyzer.h>
-#include <cstdlib>
+#include <curv/system.h>
 
 using namespace std;
 using namespace aux;
 using namespace curv;
+
+System_Impl sys;
 
 struct CString_Script : public curv::Script
 {
@@ -32,7 +37,7 @@ struct Evaluator
         success_(nullptr)
     {
         try {
-            Shared<Module> module{eval_script(*script_, builtin_namespace)};
+            Shared<Module> module{eval_script(*script_, builtin_namespace, sys)};
             if (module->elements_->empty()) {
                 success_ = "";
                 return;

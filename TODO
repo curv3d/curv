@@ -1,5 +1,4 @@
 # 0.1: Minimum Viable Language
-* System abstraction, system.namespace()
 * len(module), module.[i]
 * floor, ceil
 * std.curv loaded at startup.

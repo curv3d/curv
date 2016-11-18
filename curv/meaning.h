@@ -418,7 +418,7 @@ struct Module_Expr : public Expression
     Module_Expr(Shared<const Phrase> source) : Expression(source) {}
 
     virtual Value eval(Frame&) const override;
-    Shared<Module> eval_module(Frame*) const;
+    Shared<Module> eval_module(System&, Frame*) const;
 };
 
 struct Let_Expr : public Expression

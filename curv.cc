@@ -9,12 +9,14 @@ extern "C" {
 #include <stdlib.h>
 }
 #include <iostream>
-#include <curv/phrase.h>
-#include <curv/parse.h>
+
 #include <curv/analyzer.h>
 #include <curv/eval.h>
 #include <curv/exception.h>
+#include <curv/parse.h>
+#include <curv/phrase.h>
 #include <curv/shared.h>
+#include <curv/system.h>
 
 bool was_interrupted = false;
 
@@ -39,6 +41,8 @@ struct CString_Script : public curv::Script
     }
 };
 
+curv::System_Impl sys;
+
 int
 main(int argc, char** argv)
 {
@@ -48,7 +52,7 @@ main(int argc, char** argv)
     }
     if (argc == 2) {
         try {
-            auto module = eval_file(*curv::mk_string(argv[1]));
+            auto module = eval_file(*curv::mk_string(argv[1]), sys);
             for (auto e : *module->elements())
                 std::cout << e << "\n";
         } catch (curv::Exception& e) {
@@ -85,7 +89,7 @@ main(int argc, char** argv)
         }
         auto script = aux::make_shared<CString_Script>("", line);
         try {
-            curv::Shared<curv::Module> module{eval_script(*script, names)};
+            curv::Shared<curv::Module> module{eval_script(*script, names, sys)};
             for (auto f : *module)
                 names[f.first] = curv::make_shared<curv::Builtin_Value>(f.second);
             for (auto e : *module->elements())

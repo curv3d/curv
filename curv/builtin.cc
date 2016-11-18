@@ -53,14 +53,10 @@ builtin_len(Frame& args)
 }
 
 Value
-builtin_file(Frame& args)
+builtin_file(Frame& f)
 {
-    // TODO: Pluggable file system abstraction, for unit testing and
-    // abstracting the behaviour of `file` (would also support caching).
-    // TODO: The builtin_namespace used by `file` is a pluggable parameter
-    // at compile time.
-    String& path {arg_to_string(args[0], At_Arg(0, &args))};
-    return {eval_file(path, &args)};
+    String& path {arg_to_string(f[0], At_Arg(0, &f))};
+    return {eval_file(path, f.system, &f)};
 }
 
 const Namespace
