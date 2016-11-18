@@ -44,6 +44,13 @@ Scripts occur in two contexts:
   if available.
 * `breakpoint` -- enter the debugger immediately, but don't terminate the
   program (it may be resumed).
+* Some way to measure execution time of an expression and print the result
+  to the debug console. For security and semantic reasons, I don't want these
+  timings to be accessible as values within the program.
+  * `echo_timing(string)expr` -- first evaluate expr, then echo string and
+    the timing info to the debug console, then return the value of expr.
+    Not actually an action at all, this can be used to measure the performance
+    of working code without copying it or changing the program structure.
 
 ### Polymorphic Operators
 This is a set of built-in operators that are polymorphic across phrase types.

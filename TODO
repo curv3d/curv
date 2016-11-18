@@ -1,8 +1,12 @@
 # 0.1: Minimum Viable Language
 * len(module), module.[i]
 * floor, ceil
-* std.curv loaded at startup by curv tool.
-* concat[l1,l2]. concat(vv) = [for(v=vv)for(i=v)i];
+* curv tool automatically locates std.curv
+  * install curv in /usr/local/bin, std.curv in /usr/local/lib
+  * Automatically find the lib directory using <pathname of executable>/../lib?
+    Port pn_progdir_x to boost::filesystem, put it in aux.
+    This is compatible with installation in /usr/local, or with a binary tarball
+    with bin and lib directories that is installed anywhere.
 
 It's complicated...
 * names: Phrase or Syntax?
@@ -36,8 +40,8 @@ It's complicated...
      Extend `Function` with a generate callback and add Call_Expr::generate().
   3. each(v) = for (i = v) i; Not hard: just add Call_Expr::generate().
   4. Now that I have sequence generators, `each` is not a high priority.
-* Top level sequence generator. In curv tool, I type '1,2,3' at the prompt
-  and it evaluates the sequence.
+* Top level sequence generator. In curv tool, I type `1,2,3` at the prompt
+  and it evaluates the sequence, without parens. `(1,2,3)` already works.
   * Semicolon has lower precedence than colon. (C has the same precedence.)
     Eg, so `a=1;a,a,a`.
   * A semicolon phrase is one or more comma phrases separated by semicolons.
