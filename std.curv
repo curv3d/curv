@@ -1,0 +1,2 @@
+// Curv standard library, automatically loaded at startup.
+concat(vv) = [for(v=vv) for(i=v) i];

@@ -20,10 +20,9 @@ struct System
 /// Default implementation of the System interface.
 struct System_Impl : public System
 {
-    virtual const Namespace& std_namespace() override
-    {
-        return builtin_namespace;
-    }
+    Namespace std_namespace_;
+    System_Impl(const String* stdlib_path);
+    virtual const Namespace& std_namespace() override;
 };
 
 } // namespace curv

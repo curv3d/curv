@@ -41,11 +41,14 @@ struct CString_Script : public curv::Script
     }
 };
 
-curv::System_Impl sys;
-
 int
 main(int argc, char** argv)
 {
+    const char* stdlib_cpath = getenv("CURV_STDLIB");
+    curv::Shared<const curv::String> stdlib_path =
+        (stdlib_cpath ? curv::mk_string(stdlib_cpath) : nullptr);
+    curv::System_Impl sys(stdlib_path.get());
+
     if (argc > 2) {
         std::cerr << "too many arguments\n";
         exit(1);
@@ -73,7 +76,7 @@ main(int argc, char** argv)
     sigaction(SIGINT, &interrupt_action, nullptr);
 
     // top level definitions, extended by typing 'id = expr'
-    curv::Namespace names = curv::builtin_namespace;
+    curv::Namespace names = sys.std_namespace();
 
     for (;;) {
         // Race condition on assignment to was_interrupted.
