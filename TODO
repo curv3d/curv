@@ -1,8 +1,7 @@
 # 0.1: Minimum Viable Language
 * len(module), module.[i]
 * floor, ceil
-* std.curv loaded at startup.
-  Abstract this (in eval_script) using System::namespace().
+* std.curv loaded at startup by curv tool.
 * concat[l1,l2]. concat(vv) = [for(v=vv)for(i=v)i];
 
 It's complicated...
