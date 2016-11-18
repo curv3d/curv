@@ -536,10 +536,12 @@ curv::Range_Gen::generate(Frame& f, List_Builder& lb) const
         for (unsigned i = 0; i < count; ++i)
             lb.push_back(Value{first + step*i});
     } else {
+        const char* err =
+            (countd == countd ? "too many elements in range" : "domain error");
         throw Exception(At_Phrase(*source_, &f),
             arg3_
-                ? stringify(firstv,"..",lastv," step ",stepv,": domain error")
-                : stringify(firstv,"..",lastv,": domain error"));
+                ? stringify(firstv,"..",lastv," step ",stepv,": ", err)
+                : stringify(firstv,"..",lastv,": ", err));
     }
 }
 
