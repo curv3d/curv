@@ -3,6 +3,87 @@
 This is a reference manual for the Curv core language
 (everything in the language *except* for geometric primitives).
 
+## Phrases
+Curv has a simple, elegant and powerful phrase-structured grammar.
+Programs are composed of 4 kinds of phrases, which may be combined in
+many ways to express meaning.
+
+The 4 phrase types:
+* An **expression** is evaluated to produce a single value.
+  For example, `2+2`.
+* An **action** is executed to cause a side effect, and produces no value.
+  Actions are a debugging feature, and have no effect on the value that is
+  computed by a program. Curv is a pure functional language, and the
+  order of evaluation of actions is not well defined. You can use actions to
+  discover the evaluation order of a program, and that's useful for debugging
+  and performance tuning. For example, `echo("I am here")` and `breakpoint`.
+* A **generator** is evaluated to produce a sequence of zero or more values.
+  Generators are derived from OpenSCAD, and from the list comprehensions
+  of other functional languages.
+  For example, `1..5` is a range generator which evaluates
+  to the sequence `1,2,3,4,5`. And `1,2,3,4,5` is in turn a sequence generator.
+  The expression `[`*generator*`]` is the syntax for a list constructor.
+  * Every expression is also a generator that produces 1 value.
+  * Every action is also a generator that produces 0 values.
+* A **definition** binds one or more names to values.
+  For example, `x=0`.
+
+A Curv program is called a *script*.
+Scripts occur in two contexts:
+* When you type a line of code into the interactive `curv` tool,
+  you are typing a script, which is then evaluated: results are printed
+  and definitions are added to the symbol table.
+* A Curv source file is also a script. It is evaluated to construct
+  a *module* value.
+
+### Actions
+* `echo(string)` -- print a string to the debug console.
+  String literals with `$` substitutions are commonly used here.
+* `assert(boolean)` -- if the boolean expression is false,
+  abort the program with a message and stack trace, and enter the debugger
+  if available.
+* `breakpoint` -- enter the debugger immediately, but don't terminate the
+  program (it may be resumed).
+
+### Polymorphic Operators
+This is a set of built-in operators that are polymorphic across phrase types.
+
+The **qualified phrase** (semicolon operator).
+
+The **empty action**. The syntax is nothing, a sequence of zero tokens.
+Or you can explicitly write `()`.
+The meaning is an action with no side effects, or a generator that produces
+no values, depending on context. The empty action occurs, syntactically,
+in the following contexts:
+* An empty script.
+  * In the `curv` interactive tool, if you just hit return,
+    then you've typed the empty action, and nothing happens
+    (except you get another prompt).
+  * A curv source file that is zero length is parsed as the empty action,
+    and, in that context, interpreted as the empty module.
+* An empty list constructor, `[]`. The space between the `[` and `]` tokens
+  is parsed as the empty action, is evaluated as the empty generator, finally
+  producing the empty list value.
+* If the last token in a semicolon expression is a `;`, then the missing phrase
+  following that `;` is parsed as the empty action, which becomes the body
+  of a qualified phrase. The entire qualified phrase becomes an action.
+  Here's an example of where this might occur:
+    ```
+    if (x < 0) (
+        echo("this shouldn't happen");
+        breakpoint;
+        /* this is the empty action right here */
+    );
+    ...
+    ```
+
+### Generators
+* `start .. end`, `start .. end step s` -- generate a range of numbers.
+* `for (id = list) generator` -- evaluate *generator* once for each
+  element in *list*, with `id` bound to each list element.
+* `if (condition) generator`, `if (condition) generator else generator` --
+  conditionally evaluate a generator.
+
 ## Types
 Curv is a dynamically typed pure functional language,
 where everything is a first class immutable value.
@@ -39,21 +120,11 @@ Curv functions are very strict about detecting bad arguments and
 either aborting, or returning `null`. The default behaviour, absent a
 good reason to return `null`, is to abort.
 
-By contrast, OpenSCAD is extremely forgiving about bad arguments, and
-will usually either ignore them, or return null, but it won't abort.
-This creates problems:
-* If you make a mistake, OpenSCAD usually won't tell you, and you have to
-  go searching through the code. This is particularly frustrating for
-  beginners.
-* It is technically impossible to add new semantics to an existing function,
-  because every change is a breaking change. People can and do write code
-  that passes bad arguments to built-in functions or modules,
-  and relies on whatever random behaviour results.
-
-By being hyper strict about bad arguments, Curv helps people find bugs
-in code. If we discover that a particular interface is too strict, we can
-relax the interface without breaking anything, but going in the other direction
-creates upgrade problems by breaking existing code.
+Here is the rationale for being strict about bad arguments:
+ 1. It helps people find bugs in code.
+ 2. If we discover that a particular interface is too strict, we can
+    relax the interface without breaking anything, but going in the other
+    direction creates upgrade problems by breaking existing code.
 
 ## The null value
 The special value `null` indicates the absence of a result, and is returned

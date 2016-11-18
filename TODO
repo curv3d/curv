@@ -1,4 +1,5 @@
 # 0.1: Minimum Viable Language
+* System abstraction, system.namespace()
 * len(module), module.[i]
 * floor, ceil
 * std.curv loaded at startup.
@@ -21,7 +22,7 @@ It's complicated...
 * `[x,y]=...` using above framework
 * Extend `let` to support recursive functions.
 * `expr where (defs)`, higher precedence than `let`, same semantics.
-* (def1; def2; expr) qualified expressions, sequentially scoped, see Loop.md
+* (def1; def2; phrase) qualified expressions, sequentially scoped, see Loop.md
   * Each def compiles into an action which stores values in slots.
     Actions are executed in sequence, then expr is evaluated.
 * echo, assert actions
@@ -57,6 +58,16 @@ It's complicated...
   * If the final element of a semicolon phrase is the empty action *epsilon*,
     then the entire phrase is an action, and this is the syntax we use for
     compound actions.
+  * Meaning of a semicolon phrase in different contexts:
+    * script: a module with recursive scoping.
+    * {script} -- eg, {def1;def2;} a submodule literal, with recursive binding.
+    * {def1,def2} -- a record literal with no scope
+    * let(a=...;b=...)body -- local bindings with recursive scope, ML `let rec`
+    * let(def1,def2)body -- local bindings with simultaneous scope, ML `let`
+    * (q1;q2;...;qn;body) qualified phrase, sequential scoping
+    * [q1;q2;...;qn;body] qualified generator, sequential scoping
+    * so `;` separates definitions when they are in a recursive or sequential
+      scope relationship, or `,` separates them when they can't see each other.
 
 Other:
 * Interactive curv: special variable `_` is last value. _1,_2, or $1,$2 ...
