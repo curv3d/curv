@@ -2,7 +2,6 @@
 * len(module), module.[i]
 * floor, ceil
 * curv tool automatically locates std.curv
-  * install curv in /usr/local/bin, std.curv in /usr/local/lib
   * Automatically find the lib directory using <pathname of executable>/../lib?
     Port pn_progdir_x to boost::filesystem, put it in aux.
     This is compatible with installation in /usr/local, or with a binary tarball

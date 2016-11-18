@@ -22,3 +22,6 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror" )
 
 add_custom_target(tests tester WORKING_DIRECTORY ../tests)
 add_dependencies(tests tester)
+
+install(TARGETS curv RUNTIME DESTINATION bin)
+install(FILES std.curv DESTINATION lib)
