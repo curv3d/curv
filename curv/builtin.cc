@@ -10,7 +10,9 @@
 #include <curv/builtin.h>
 #include <curv/eval.h>
 #include <curv/exception.h>
+#include <curv/file.h>
 #include <curv/function.h>
+#include <curv/system.h>
 #include <boost/math/constants/constants.hpp>
 
 using namespace curv;
@@ -56,7 +58,8 @@ Value
 builtin_file(Frame& f)
 {
     String& path {arg_to_string(f[0], At_Arg(0, &f))};
-    return {eval_file(path, f.system, &f)};
+    auto file = curv::make_shared<File_Script>(share(path), &f);
+    return {eval_script(*file, f.system, &f)};
 }
 
 const Namespace

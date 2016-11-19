@@ -13,6 +13,7 @@ extern "C" {
 #include <curv/analyzer.h>
 #include <curv/eval.h>
 #include <curv/exception.h>
+#include <curv/file.h>
 #include <curv/parse.h>
 #include <curv/phrase.h>
 #include <curv/shared.h>
@@ -55,7 +56,9 @@ main(int argc, char** argv)
     }
     if (argc == 2) {
         try {
-            auto module = eval_file(*curv::mk_string(argv[1]), sys);
+            auto file = curv::make_shared<curv::File_Script>(
+                curv::mk_string(argv[1]), nullptr);
+            auto module = eval_script(*file, sys);
             for (auto e : *module->elements())
                 std::cout << e << "\n";
         } catch (curv::Exception& e) {

@@ -8,7 +8,6 @@
 #include <aux/range.h>
 #include <curv/shared.h>
 #include <curv/string.h>
-#include <string>
 
 namespace curv {
 
