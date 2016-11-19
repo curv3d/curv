@@ -82,7 +82,7 @@ struct Closure : public Ref_Value
     :
         Ref_Value(ty_closure),
         expr_(lambda.expr_),
-        nonlocals_(Shared<List>(&nonlocals)),
+        nonlocals_(share(nonlocals)),
         nargs_(lambda.nargs_),
         nslots_(lambda.nslots_)
     {}

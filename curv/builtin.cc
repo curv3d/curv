@@ -22,7 +22,7 @@ using namespace boost::math::double_constants;
 Shared<Meaning>
 Builtin_Value::to_meaning(const Identifier& id) const
 {
-    return make<Constant>(share<const Identifier>(id), value_);
+    return make<Constant>(share(id), value_);
 }
 
 /*

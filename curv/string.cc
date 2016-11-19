@@ -16,7 +16,7 @@ curv::String::make(const char* str, size_t len)
     memcpy(s->data_, str, len);
     s->data_[len] = '\0';
     s->size_ = len;
-    return Shared<String>(s);
+    return share(*s);
 }
 
 Shared<String>

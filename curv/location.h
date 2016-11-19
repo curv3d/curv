@@ -30,7 +30,7 @@ private:
 public:
     Location(const Script& script, Token token)
     :
-        script_(Shared<const Script>(&script)),
+        script_(share(script)),
         token_(std::move(token))
     {}
 
