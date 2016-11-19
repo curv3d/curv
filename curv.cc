@@ -10,6 +10,7 @@ extern "C" {
 }
 #include <iostream>
 
+#include <aux/progdir.h>
 #include <curv/analyzer.h>
 #include <curv/context.h>
 #include <curv/eval.h>
@@ -43,13 +44,29 @@ struct CString_Script : public curv::Script
     }
 };
 
+curv::System&
+make_system(const char* argv0)
+{
+    try {
+        const char* CURV_STDLIB = getenv("CURV_STDLIB");
+        namespace fs = boost::filesystem;
+        fs::path stdlib_path;
+        if (CURV_STDLIB != nullptr)
+            stdlib_path = CURV_STDLIB;
+        else
+            stdlib_path = aux::progdir(argv0) / "../lib/std.curv";
+        static curv::System_Impl sys(curv::mk_string(stdlib_path.c_str()).get());
+        return sys;
+    } catch (std::exception& e) {
+        std::cerr << "ERROR: " << e.what() << "\n";
+        exit(1);
+    }
+}
+
 int
 main(int argc, char** argv)
 {
-    const char* stdlib_cpath = getenv("CURV_STDLIB");
-    curv::Shared<const curv::String> stdlib_path =
-        (stdlib_cpath ? curv::mk_string(stdlib_cpath) : nullptr);
-    curv::System_Impl sys(stdlib_path.get());
+    curv::System& sys(make_system(argv[0]));
 
     if (argc > 2) {
         std::cerr << "too many arguments\n";

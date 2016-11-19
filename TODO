@@ -1,11 +1,6 @@
 # 0.1: Minimum Viable Language
 * len(module), module.[i]
 * floor, ceil
-* curv tool automatically locates std.curv
-  * Automatically find the lib directory using <pathname of executable>/../lib?
-    Port pn_progdir_x to boost::filesystem, put it in aux.
-    This is compatible with installation in /usr/local, or with a binary tarball
-    with bin and lib directories that is installed anywhere.
 
 It's complicated...
 * names: Phrase or Syntax?
@@ -110,6 +105,11 @@ Other:
       Environ::lookup calls Scope::lookup.
       More complex, but a cleaner data model, since it doesn't make it look
       like each Scope has an independent choice of Frame and System.
+* refactor File_Script
+  * Provide better exception messages using strerror(errno).
+  * Possibly use mmap?
+  * I only support UTF-8. The curv tool only runs on Windows if you use pure
+    ASCII or explicitly initialize your console using `chcp 65001`.
 
 # CURV0 (expressions):
 * bug: (-1)^-0.5 error message needs parens around '-1'

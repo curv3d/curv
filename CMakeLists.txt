@@ -8,7 +8,7 @@ set_property(TARGET libcurv PROPERTY OUTPUT_NAME curv)
 
 FILE(GLOB Src "*.cc")
 add_executable(curv ${Src})
-target_link_libraries(curv PUBLIC libcurv readline double-conversion)
+target_link_libraries(curv PUBLIC libcurv readline double-conversion boost_filesystem boost_system)
 
 FILE(GLOB TestSrc "tests/*.cc")
 add_executable(tester ${TestSrc})
@@ -24,4 +24,4 @@ add_custom_target(tests tester WORKING_DIRECTORY ../tests)
 add_dependencies(tests tester)
 
 install(TARGETS curv RUNTIME DESTINATION bin)
-install(FILES std.curv DESTINATION lib)
+install(FILES lib/std.curv DESTINATION lib)
