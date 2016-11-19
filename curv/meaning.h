@@ -46,7 +46,7 @@ struct Meaning : public aux::Shared_Base
 ///     Every expression is also a generator that produces 1 value.
 ///     For example, `2+2`.
 ///  2. A Generator is executed to produce a sequence of zero or more values
-///     using `generate`.
+///     using `generate`. (Every Operation is also a generator.)
 ///     For example, `for(i=[1..10])i^2`.
 ///  3. An Action is executed to cause a side effect using `exec`,
 ///     and no value is produced.
@@ -62,7 +62,7 @@ struct Operation : public Meaning
 
     // These functions are called during evaluation.
     virtual Value eval(Frame&) const;
-    virtual void generate(Frame&, List_Builder&) const;
+    virtual void generate(Frame&, List_Builder&) const = 0;
     virtual void exec(Frame&) const;
 };
 

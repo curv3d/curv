@@ -23,11 +23,6 @@ curv::Operation::eval(Frame& f) const
     throw Exception(At_Phrase(*source_, &f), "not an expression");
 }
 void
-curv::Operation::generate(Frame& f, List_Builder&) const
-{
-    throw Exception(At_Phrase(*source_, &f), "not a generator");
-}
-void
 curv::Operation::exec(Frame& f) const
 {
     throw Exception(At_Phrase(*source_, &f), "not an action");
