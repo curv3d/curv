@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <curv/atom.h>
+#include <curv/function.h>
 #include <curv/value.h>
 
 namespace curv {
@@ -23,6 +24,10 @@ struct Builtin_Value : public Builtin
 {
     Value value_;
     Builtin_Value(Value v) : value_(std::move(v)) {}
+    Builtin_Value(unsigned nargs, Value (*fun)(Frame&))
+    :
+        value_(make_ref_value<Function>(fun, nargs))
+    {}
     virtual Shared<Meaning> to_meaning(const Identifier&) const override;
 };
 

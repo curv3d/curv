@@ -72,7 +72,7 @@ curv::builtin_namespace =
     {"null", make<Builtin_Value>(Value())},
     {"false", make<Builtin_Value>(Value(false))},
     {"true", make<Builtin_Value>(Value(true))},
-    {"sqrt", make<Builtin_Value>(make_ref_value<Function>(builtin_sqrt, 1))},
-    {"len", make<Builtin_Value>(make_ref_value<Function>(builtin_len, 1))},
-    {"file", make<Builtin_Value>(make_ref_value<Function>(builtin_file, 1))},
+    {"sqrt", make<Builtin_Value>(1, builtin_sqrt)},
+    {"len", make<Builtin_Value>(1, builtin_len)},
+    {"file", make<Builtin_Value>(1, builtin_file)},
 };
