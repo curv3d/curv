@@ -1,4 +1,5 @@
 # 0.1: Minimum Viable Language
+* echo: Builtin_Echo::call() returns an Echo_Action
 * len(module), module.[i]
 * floor, ceil
 
@@ -64,6 +65,13 @@ It's complicated...
     * [q1;q2;...;qn;body] qualified generator, sequential scoping
     * so `;` separates definitions when they are in a recursive or sequential
       scope relationship, or `,` separates them when they can't see each other.
+  * Alternately, the `,` operator works on any of the 4 phrase types, to
+    create a compound phrase of the same type. `def1,def` is a compound
+    definition which binds multiple names and is itself a definition, but
+    there's no internal scope/mutual visibility unless forced by context.
+    The `;` operator is used for (a) qualified phrases and (b) module scripts,
+    depending on context. So, `let(def1,def)body` is local bindings with
+    recursive scope and `{def1,def2}` is a record literal.
 
 Other:
 * Interactive curv: special variable `_` is last value. _1,_2, or $1,$2 ...
