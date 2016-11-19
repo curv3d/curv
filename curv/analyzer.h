@@ -82,7 +82,7 @@ struct Bindings
     Bindings()
     :
         cur_position_(0),
-        dictionary_(aux::make_shared<Module::Dictionary>()),
+        dictionary_(make<Module::Dictionary>()),
         slot_phrases_()
     {}
 

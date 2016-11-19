@@ -31,7 +31,7 @@ struct Evaluator
 {
     Evaluator(const char* source)
     :
-        script_(aux::make_shared<CString_Script>("", source)),
+        script_(make<CString_Script>("", source)),
         failmsg_(nullptr),
         failall_(nullptr),
         success_(nullptr)

@@ -91,7 +91,7 @@ curv::Arg_Ref::eval(Frame& f) const
 Value
 curv::Local_Function_Ref::eval(Frame& f) const
 {
-    return {aux::make_shared<Closure>(
+    return {make<Closure>(
         (Lambda&) f[lambda_slot_].get_ref_unsafe(),
         (List&) f[env_slot_].get_ref_unsafe())};
 }
@@ -99,7 +99,7 @@ curv::Local_Function_Ref::eval(Frame& f) const
 Value
 curv::Nonlocal_Function_Ref::eval(Frame& f) const
 {
-    return {aux::make_shared<Closure>(
+    return {make<Closure>(
         (Lambda&) (*f.nonlocal)[lambda_slot_].get_ref_unsafe(),
         *f.nonlocal)};
 }
@@ -447,7 +447,7 @@ curv::Sequence_Expr_Base::generate(Frame& f, List_Builder& lb) const
 Value
 curv::Record_Expr::eval(Frame& f) const
 {
-    auto record = aux::make_shared<Record>();
+    auto record = make<Record>();
     for (auto i : fields_)
         record->fields_[i.first] = curv::eval(*i.second, f);
     return {record};
@@ -463,7 +463,7 @@ curv::Module_Expr::eval(Frame& f) const
 Shared<Module>
 curv::Module_Expr::eval_module(System& sys, Frame* f) const
 {
-    auto module = aux::make_shared<Module>();
+    auto module = make<Module>();
     module->dictionary_ = dictionary_;
     module->slots_ = List::make_copy(slots_->begin(), slots_->size());
     std::unique_ptr<Frame> frame
@@ -543,7 +543,7 @@ curv::Range_Gen::generate(Frame& f, List_Builder& lb) const
 Value
 curv::Lambda_Expr::eval(Frame& f) const
 {
-    return Value{aux::make_shared<Closure>(
+    return Value{make<Closure>(
         body_,
         nonlocals_->eval_list(f),
         nargs_,

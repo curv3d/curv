@@ -13,10 +13,10 @@ System_Impl::System_Impl(const String* stdlib_path)
 {
     std_namespace_ = builtin_namespace;
     if (stdlib_path != 0) {
-        auto file = make_shared<File_Script>(share(*stdlib_path), Context{});
+        auto file = make<File_Script>(share(*stdlib_path), Context{});
         Shared<Module> stdlib = eval_script(*file, builtin_namespace, *this);
         for (auto b : *stdlib)
-            std_namespace_[b.first] = make_shared<Builtin_Value>(b.second);
+            std_namespace_[b.first] = make<Builtin_Value>(b.second);
     }
 }
 

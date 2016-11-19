@@ -25,7 +25,7 @@ struct Missing : public Ref_Value
         out << "<missing>";
     }
 };
-Value missing {aux::make_shared<Missing>()};
+Value missing {make<Missing>()};
 
 Value
 force_ref(Value& slot, const Phrase& identifier, Frame& f)

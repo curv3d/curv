@@ -42,7 +42,7 @@ Shared<Phrase> parse_primary(Scanner&,const char* what);
 Shared<Module_Phrase>
 parse_script(Scanner& scanner)
 {
-    auto module = aux::make_shared<Module_Phrase>(scanner.script_);
+    auto module = make<Module_Phrase>(scanner.script_);
     Token tok = scanner.get_token();
     for (;;) {
         if (tok.kind == Token::k_end)
@@ -75,10 +75,10 @@ parse_expr(Scanner& scanner)
     auto tok = scanner.get_token();
     switch (tok.kind) {
     case Token::k_equate:
-        return aux::make_shared<Definition_Phrase>(
+        return make<Definition_Phrase>(
             std::move(left), tok, parse_expr(scanner));
     case Token::k_right_arrow:
-        return aux::make_shared<Lambda_Phrase>(
+        return make<Lambda_Phrase>(
             std::move(left), tok, parse_expr(scanner));
     default:
         scanner.push_token(tok);
@@ -95,7 +95,7 @@ parse_disjunction(Scanner& scanner)
         auto tok = scanner.get_token();
         switch (tok.kind) {
         case Token::k_or:
-            left = aux::make_shared<Binary_Phrase>(
+            left = make<Binary_Phrase>(
                 std::move(left), tok, parse_conjunction(scanner));
             continue;
         default:
@@ -114,7 +114,7 @@ parse_conjunction(Scanner& scanner)
         auto tok = scanner.get_token();
         switch (tok.kind) {
         case Token::k_and:
-            left = aux::make_shared<Binary_Phrase>(
+            left = make<Binary_Phrase>(
                 std::move(left), tok, parse_relation(scanner));
             continue;
         default:
@@ -142,7 +142,7 @@ parse_relation(Scanner& scanner)
     case Token::k_less_or_equal:
     case Token::k_greater:
     case Token::k_greater_or_equal:
-        return aux::make_shared<Binary_Phrase>(
+        return make<Binary_Phrase>(
             std::move(left), tok, parse_sum(scanner));
     case Token::k_range:
       {
@@ -156,7 +156,7 @@ parse_relation(Scanner& scanner)
             tok2 = {};
             step = nullptr;
         }
-        return aux::make_shared<Range_Phrase>(
+        return make<Range_Phrase>(
             std::move(left), tok, std::move(right), tok2, std::move(step));
       }
     default:
@@ -175,7 +175,7 @@ parse_sum(Scanner& scanner)
         switch (tok.kind) {
         case Token::k_plus:
         case Token::k_minus:
-            left = aux::make_shared<Binary_Phrase>(
+            left = make<Binary_Phrase>(
                 std::move(left), tok, parse_product(scanner));
             continue;
         default:
@@ -195,7 +195,7 @@ parse_product(Scanner& scanner)
         switch (tok.kind) {
         case Token::k_times:
         case Token::k_over:
-            left = aux::make_shared<Binary_Phrase>(
+            left = make<Binary_Phrase>(
                 std::move(left), tok, parse_unary(scanner));
             continue;
         default:
@@ -214,7 +214,7 @@ parse_unary(Scanner& scanner)
     case Token::k_plus:
     case Token::k_minus:
     case Token::k_not:
-        return aux::make_shared<Unary_Phrase>(tok, parse_unary(scanner));
+        return make<Unary_Phrase>(tok, parse_unary(scanner));
     default:
         scanner.push_token(tok);
         return parse_chain(scanner);
@@ -239,15 +239,15 @@ parse_chain(Scanner& scanner)
         tok = scanner.get_token();
         if (tok.kind == Token::k_ident) {
             scanner.push_token(tok);
-            return aux::make_shared<Call_Phrase>(postfix,
+            return make<Call_Phrase>(postfix,
                 parse_chain(scanner));
         }
         if (tok.kind == Token::k_power) {
-            return aux::make_shared<Binary_Phrase>(
+            return make<Binary_Phrase>(
                 postfix, tok, parse_unary(scanner));
         }
         if (tok.kind == Token::k_dot) {
-            postfix = aux::make_shared<Binary_Phrase>(postfix, tok,
+            postfix = make<Binary_Phrase>(postfix, tok,
                 parse_primary(scanner, "expression following '.'"));
             continue;
         }
@@ -255,7 +255,7 @@ parse_chain(Scanner& scanner)
         auto primary = parse_primary(scanner, nullptr);
         if (primary == nullptr)
             return postfix;
-        postfix = aux::make_shared<Call_Phrase>(postfix, primary);
+        postfix = make<Call_Phrase>(postfix, primary);
     }
 }
 
@@ -280,11 +280,11 @@ parse_primary(Scanner& scanner, const char* what)
     auto tok = scanner.get_token();
     switch (tok.kind) {
     case Token::k_num:
-        return aux::make_shared<Numeral>(scanner.script_, tok);
+        return make<Numeral>(scanner.script_, tok);
     case Token::k_ident:
-        return aux::make_shared<Identifier>(scanner.script_, tok);
+        return make<Identifier>(scanner.script_, tok);
     case Token::k_string:
-        return aux::make_shared<String_Phrase>(scanner.script_, tok);
+        return make<String_Phrase>(scanner.script_, tok);
     case Token::k_if:
       {
         auto condition = parse_primary(scanner, "condition following 'if'");
@@ -295,11 +295,11 @@ parse_primary(Scanner& scanner, const char* what)
         Token tok2 = scanner.get_token();
         if (tok2.kind != Token::k_else) {
             scanner.push_token(tok2);
-            return aux::make_shared<If_Phrase>(
+            return make<If_Phrase>(
                 tok, condition, then_expr, Token{}, nullptr);
         }
         auto else_expr = parse_expr(scanner);
-        return aux::make_shared<If_Phrase>(
+        return make<If_Phrase>(
             tok, condition, then_expr, tok2, else_expr);
       }
     case Token::k_let:
@@ -310,7 +310,7 @@ parse_primary(Scanner& scanner, const char* what)
             throw Exception(At_Phrase(*p, scanner.eval_frame_),
                 "let: malformed argument");
         auto body = parse_expr(scanner);
-        return aux::make_shared<Let_Phrase>(tok, args, body);
+        return make<Let_Phrase>(tok, args, body);
       }
     case Token::k_for:
       {
@@ -320,7 +320,7 @@ parse_primary(Scanner& scanner, const char* what)
             throw Exception(At_Phrase(*p, scanner.eval_frame_),
                 "for: malformed argument");
         auto body = parse_expr(scanner);
-        return aux::make_shared<For_Phrase>(tok, args, body);
+        return make<For_Phrase>(tok, args, body);
       }
     case Token::k_lparen:
     case Token::k_lbracket:
@@ -330,15 +330,15 @@ parse_primary(Scanner& scanner, const char* what)
         Token::Kind close;
         const char* error;
         if (tok.kind == Token::k_lparen) {
-            parens = aux::make_shared<Paren_Phrase>(scanner.script_, tok);
+            parens = make<Paren_Phrase>(scanner.script_, tok);
             close = Token::k_rparen;
             error = "bad token in parenthesized phrase";
         } else if (tok.kind == Token::k_lbracket) {
-            parens = aux::make_shared<List_Phrase>(scanner.script_, tok);
+            parens = make<List_Phrase>(scanner.script_, tok);
             close = Token::k_rbracket;
             error = "bad token in list constructor";
         } else if (tok.kind == Token::k_lbrace) {
-            parens = aux::make_shared<Record_Phrase>(scanner.script_, tok);
+            parens = make<Record_Phrase>(scanner.script_, tok);
             close = Token::k_rbrace;
             error = "bad token in record constructor";
         } else assert(0);

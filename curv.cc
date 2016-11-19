@@ -74,7 +74,7 @@ main(int argc, char** argv)
     }
     if (argc == 2) {
         try {
-            auto file = curv::make_shared<curv::File_Script>(
+            auto file = curv::make<curv::File_Script>(
                 curv::mk_string(argv[1]), curv::Context{});
             auto module = eval_script(*file, sys);
             for (auto e : *module->elements())
@@ -111,11 +111,11 @@ main(int argc, char** argv)
             }
             return 0;
         }
-        auto script = aux::make_shared<CString_Script>("", line);
+        auto script = curv::make<CString_Script>("", line);
         try {
             curv::Shared<curv::Module> module{eval_script(*script, names, sys)};
             for (auto f : *module)
-                names[f.first] = curv::make_shared<curv::Builtin_Value>(f.second);
+                names[f.first] = curv::make<curv::Builtin_Value>(f.second);
             for (auto e : *module->elements())
                 std::cout << e << "\n";
         } catch (curv::Exception& e) {

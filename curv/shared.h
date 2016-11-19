@@ -13,7 +13,7 @@ namespace curv {
 // template<typename T> using Shared = aux::Shared<T>;
 using aux::Shared;
 
-using aux::make_shared;
+using aux::make;
 
 template<class T, class U>
 inline Shared<T>

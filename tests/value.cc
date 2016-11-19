@@ -127,7 +127,7 @@ TEST(curv, value)
 
     // copy/move constructors
     {
-        Value v0(aux::make_shared<curv::Function>(id,1));
+        Value v0(curv::make<curv::Function>(id,1));
         ASSERT_TRUE(v0.is_ref());
         Ref_Value& r0(v0.get_ref_unsafe());
         ASSERT_TRUE(r0.use_count == 1);

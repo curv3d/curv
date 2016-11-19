@@ -22,7 +22,7 @@ using namespace boost::math::double_constants;
 Shared<Meaning>
 Builtin_Value::to_meaning(const Identifier& id) const
 {
-    return curv::make_shared<Constant>(share<const Identifier>(id), value_);
+    return make<Constant>(share<const Identifier>(id), value_);
 }
 
 /*
@@ -59,20 +59,20 @@ builtin_file(Frame& f)
 {
     At_Arg ctx0(0, &f);
     String& path {arg_to_string(f[0], ctx0)};
-    auto file = curv::make_shared<File_Script>(share(path), ctx0);
+    auto file = make<File_Script>(share(path), ctx0);
     return {eval_script(*file, f.system, &f)};
 }
 
 const Namespace
 curv::builtin_namespace =
 {
-    {"pi", curv::make_shared<Builtin_Value>(pi)},
-    {"tau", curv::make_shared<Builtin_Value>(two_pi)},
-    {"inf", curv::make_shared<Builtin_Value>(INFINITY)},
-    {"null", curv::make_shared<Builtin_Value>(Value())},
-    {"false", curv::make_shared<Builtin_Value>(Value(false))},
-    {"true", curv::make_shared<Builtin_Value>(Value(true))},
-    {"sqrt", curv::make_shared<Builtin_Value>(make_ref_value<Function>(builtin_sqrt, 1))},
-    {"len", curv::make_shared<Builtin_Value>(make_ref_value<Function>(builtin_len, 1))},
-    {"file", curv::make_shared<Builtin_Value>(make_ref_value<Function>(builtin_file, 1))},
+    {"pi", make<Builtin_Value>(pi)},
+    {"tau", make<Builtin_Value>(two_pi)},
+    {"inf", make<Builtin_Value>(INFINITY)},
+    {"null", make<Builtin_Value>(Value())},
+    {"false", make<Builtin_Value>(Value(false))},
+    {"true", make<Builtin_Value>(Value(true))},
+    {"sqrt", make<Builtin_Value>(make_ref_value<Function>(builtin_sqrt, 1))},
+    {"len", make<Builtin_Value>(make_ref_value<Function>(builtin_len, 1))},
+    {"file", make<Builtin_Value>(make_ref_value<Function>(builtin_file, 1))},
 };

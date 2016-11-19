@@ -17,7 +17,8 @@ namespace aux {
 /// For further economies, see `aux::Shared_Base`.
 template<typename T> using Shared = boost::intrusive_ptr<T>;
 
-template<typename T, class... Args> Shared<T> make_shared(Args&&... args)
+/// Cheap alternative to `std::make_shared`.
+template<typename T, class... Args> Shared<T> make(Args&&... args)
 {
     void* raw = std::malloc(sizeof(T));
     if (raw == nullptr)
@@ -59,17 +60,16 @@ template<typename T, class... Args> Shared<T> make_shared(Args&&... args)
 /// 4. As a corrolary to #3, it is DANGEROUS to construct a static or auto
 ///    instance of `Foo`, because the technique of #3 could result in an attempt
 ///    to delete a static or auto variable, leading to memory corruption.
-///    Therefore, all instances of `Foo` should be constructed using
-///    `aux::make_shared`.
+///    Therefore, all instances of `Foo` should be constructed using `make`.
 /// 5. I wish I could enforce the requirement to not construct auto or static
 ///    instances. The class is non-copyable, but that's not enough.
 ///    And this is already causing problems for me.
 ///    * If a function takes a Foo& rather than a Shared<Foo> argument (but
 ///      retains a reference as in #3), then I'm tempted to construct an auto
-///      variable, rather than call make_shared. It's just habit. So #1 is
+///      variable, rather than call `make`. It's just habit. So #1 is
 ///      looking like bad advice (for ensuring code correctness).
 ///    * Protected constructors would help with this. But then, every subclass
-///      needs a friend declaration for make_shared.
+///      needs a friend declaration for `make`.
 ///    * Or, we protect the Shared constructor.
 ///      For #1, we need a conversion from `T& param` to Shared<T>.
 ///      For #3, we need a conversion from `T* this` to Shared<T>.

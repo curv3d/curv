@@ -7,7 +7,7 @@ using namespace curv;
 
 TEST(curv, parse)
 {
-    auto s1 = make_shared<String_Script>(mk_string(""), mk_string("x+\n"));
+    auto s1 = make<String_Script>(mk_string(""), mk_string("x+\n"));
     Token t1;
     t1.first = 3;
     t1.last = 3;
@@ -20,7 +20,7 @@ TEST(curv, parse)
     ASSERT_EQ(li1.end_column_num, 2); //not 3
     ASSERT_EQ(li1.start_line_begin, 0);
 
-    auto s2 = make_shared<String_Script>(mk_string(""),
+    auto s2 = make<String_Script>(mk_string(""),
         mk_string("abc\ndef\n"));
     Token t2;
     t2.first = 5;

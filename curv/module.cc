@@ -27,7 +27,7 @@ curv::Module::get(size_t i) const
     if (val.is_ref()) {
         auto& ref = val.get_ref_unsafe();
         if (ref.type_ == Ref_Value::ty_lambda)
-            return {aux::make_shared<Closure>((Lambda&)ref, *slots_)};
+            return {make<Closure>((Lambda&)ref, *slots_)};
     }
     return val;
 }
