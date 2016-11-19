@@ -34,7 +34,7 @@ struct CString_Script : public curv::Script
 
     CString_Script(const char* name, char* buffer)
     :
-        curv::Script(curv::mk_string(name), buffer, buffer + strlen(buffer)),
+        curv::Script(curv::make_string(name), buffer, buffer + strlen(buffer)),
         buffer_(buffer)
     {}
 
@@ -55,7 +55,7 @@ make_system(const char* argv0)
             stdlib_path = CURV_STDLIB;
         else
             stdlib_path = aux::progdir(argv0) / "../lib/std.curv";
-        static curv::System_Impl sys(curv::mk_string(stdlib_path.c_str()).get());
+        static curv::System_Impl sys(curv::make_string(stdlib_path.c_str()).get());
         return sys;
     } catch (std::exception& e) {
         std::cerr << "ERROR: " << e.what() << "\n";
@@ -75,7 +75,7 @@ main(int argc, char** argv)
     if (argc == 2) {
         try {
             auto file = curv::make<curv::File_Script>(
-                curv::mk_string(argv[1]), curv::Context{});
+                curv::make_string(argv[1]), curv::Context{});
             auto module = eval_script(*file, sys);
             for (auto e : *module->elements())
                 std::cout << e << "\n";

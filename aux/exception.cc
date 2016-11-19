@@ -20,7 +20,7 @@ Exception::what() const noexcept
 
 Exception::Exception(const char* msg)
 :
-    message_(curv::mk_string(msg))
+    message_(curv::make_string(msg))
 {
 }
 

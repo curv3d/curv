@@ -22,7 +22,7 @@ struct CString_Script : public curv::Script
 
     CString_Script(const char* name, const char* buffer)
     :
-        curv::Script(mk_string(name), buffer, buffer + strlen(buffer)),
+        curv::Script(make_string(name), buffer, buffer + strlen(buffer)),
         buffer_(buffer)
     {}
 };
@@ -56,7 +56,7 @@ struct Evaluator
             failall_str_ = stringify(e);
             failall_ = failall_str_->c_str();
         } catch (std::exception& e) {
-            failmsg_str_ = mk_string(e.what());
+            failmsg_str_ = make_string(e.what());
             failmsg_ = failmsg_str_->c_str();
             failall_ = failmsg_;
         }

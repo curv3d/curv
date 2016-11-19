@@ -13,7 +13,7 @@ using namespace curv;
 
 TEST(curv, string)
 {
-    auto s0 = mk_string("foo");
+    auto s0 = make_string("foo");
     ASSERT_EQ(s0->size(), 3);
     ASSERT_TRUE(strcmp(s0->data(), "foo") == 0);
     ASSERT_STREQ(s0->c_str(), "foo");

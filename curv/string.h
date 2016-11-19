@@ -61,14 +61,14 @@ operator<<(std::ostream& out, const String& str)
 }
 
 /// Make a curv::String from an array of characters
-inline Shared<String> mk_string(const char* str, size_t len)
+inline Shared<String> make_string(const char* str, size_t len)
 {
     return String::make(str, len);
 }
 
 /// Make a curv::String from a C string
 inline Shared<String>
-mk_string(const char*str)
+make_string(const char*str)
 {
     return String::make(str, strlen(str));
 }
