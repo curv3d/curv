@@ -11,6 +11,7 @@ extern "C" {
 #include <iostream>
 
 #include <curv/analyzer.h>
+#include <curv/context.h>
 #include <curv/eval.h>
 #include <curv/exception.h>
 #include <curv/file.h>
@@ -57,7 +58,7 @@ main(int argc, char** argv)
     if (argc == 2) {
         try {
             auto file = curv::make_shared<curv::File_Script>(
-                curv::mk_string(argv[1]), nullptr);
+                curv::mk_string(argv[1]), curv::Context{});
             auto module = eval_script(*file, sys);
             for (auto e : *module->elements())
                 std::cout << e << "\n";

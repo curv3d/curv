@@ -5,16 +5,17 @@
 #ifndef CURV_FILE_H
 #define CURV_FILE_H
 
-#include <curv/frame.h>
 #include <curv/script.h>
 
 namespace curv {
+
+class Context;
 
 /// A concrete Script class that represents a file.
 struct File_Script : public String_Script
 {
     // TODO: Should File_Script use mmap() to load the file into memory?
-    File_Script(Shared<const String> filename, Frame* f);
+    File_Script(Shared<const String> filename, const Context&);
 };
 
 } // namespace curv

@@ -57,8 +57,9 @@ builtin_len(Frame& args)
 Value
 builtin_file(Frame& f)
 {
-    String& path {arg_to_string(f[0], At_Arg(0, &f))};
-    auto file = curv::make_shared<File_Script>(share(path), &f);
+    At_Arg ctx0(0, &f);
+    String& path {arg_to_string(f[0], ctx0)};
+    auto file = curv::make_shared<File_Script>(share(path), ctx0);
     return {eval_script(*file, f.system, &f)};
 }
 

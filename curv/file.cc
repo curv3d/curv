@@ -10,7 +10,7 @@
 namespace curv
 {
 
-Shared<const String> readfile(const char* path, Frame* f)
+Shared<const String> readfile(const char* path, const Context& ctx)
 {
     // TODO: Cache multiple references to the same file. Where does the cache
     // go? System or Session object.
@@ -42,16 +42,15 @@ Shared<const String> readfile(const char* path, Frame* f)
     std::ifstream t;
     t.open(path);
     if (t.fail())
-        throw Exception(At_Frame(f),
-            stringify("can't open file ", path));
+        throw Exception(ctx, stringify("can't open file ", path));
     String_Builder buffer;
     buffer << t.rdbuf();
     return buffer.get_string();
 }
 
-File_Script::File_Script(Shared<const String> filename, Frame *f)
+File_Script::File_Script(Shared<const String> filename, const Context& ctx)
 :
-    String_Script(filename, readfile(filename->c_str(), f))
+    String_Script(filename, readfile(filename->c_str(), ctx))
 {
 }
 

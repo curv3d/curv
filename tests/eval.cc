@@ -318,9 +318,9 @@ TEST(curv, eval)
         "      ^");
     FAILALL("file \"nonexistent\"",
         "can't open file nonexistent\n"
-        "line 1(columns 1-18)\n"
+        "line 1(columns 6-18)\n"
         "  file \"nonexistent\"\n"
-        "  ^-----------------");
+        "       ^------------");
     SUCCESS("std = file \"std.curv\"; std.concat[[1], [2,3], [4]]",
         "[1,2,3,4]");
 
