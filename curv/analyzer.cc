@@ -379,25 +379,29 @@ Call_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Operation::call(const Call_Phrase& src, Environ& env)
 {
-    std::vector<Shared<Operation>> args;
-
-    auto patom = dynamic_cast<Paren_Phrase*>(&*src.args_);
-    if (patom != nullptr) {
-        // argument phrase is a variable-length parenthesized argument list
-        args.reserve(patom->args_.size());
-        for (auto a : patom->args_)
-            args.push_back(curv::analyze_op(*a.expr_, env));
-    } else {
-        // argument phrase is a unitary expression
-        args.reserve(1);
-        args.push_back(curv::analyze_op(*src.args_, env));
-    }
-
+    auto argv = src.analyze_args(env);
     return make<Call_Expr>(
         share(src),
         share(*this),
         src.args_,
-        std::move(args));
+        std::move(argv));
+}
+
+std::vector<Shared<Operation>>
+Call_Phrase::analyze_args(Environ& env) const
+{
+    std::vector<Shared<Operation>> argv;
+    if (auto patom = dynamic_cast<Paren_Phrase*>(&*args_)) {
+        // argument phrase is a variable-length parenthesized argument list
+        argv.reserve(patom->args_.size());
+        for (auto a : patom->args_)
+            argv.push_back(curv::analyze_op(*a.expr_, env));
+    } else {
+        // argument phrase is a unitary expression
+        argv.reserve(1);
+        argv.push_back(curv::analyze_op(*args_, env));
+    }
+    return std::move(argv);
 }
 
 void

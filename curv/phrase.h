@@ -15,6 +15,7 @@ namespace curv {
 
 class Definition;
 class Meaning;
+class Operation;
 class Module_Expr;
 class Environ;
 
@@ -229,6 +230,7 @@ struct Call_Phrase : public Phrase
         return function_->location().ending_at(args_->location().token());
     }
     virtual Shared<Meaning> analyze(Environ&) const override;
+    std::vector<Shared<Operation>> analyze_args(Environ& env) const;
 };
 
 struct If_Phrase : public Phrase
