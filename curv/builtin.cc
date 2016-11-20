@@ -3,9 +3,13 @@
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
 #include <cassert>
-#include <cstdlib>
 #include <cmath>
+#include <cstdlib>
+#include <iostream>
 #include <string>
+
+#include <boost/math/constants/constants.hpp>
+
 #include <curv/arg.h>
 #include <curv/builtin.h>
 #include <curv/eval.h>
@@ -13,7 +17,6 @@
 #include <curv/file.h>
 #include <curv/function.h>
 #include <curv/system.h>
-#include <boost/math/constants/constants.hpp>
 
 using namespace curv;
 using namespace std;
@@ -63,6 +66,39 @@ builtin_file(Frame& f)
     return {eval_script(*file, f.system, &f)};
 }
 
+/// The meaning of a call to `echo`, such as `echo("foo")`.
+struct Echo_Action : public Action
+{
+    std::vector<Shared<Operation>> argv_;
+    Echo_Action(
+        Shared<const Phrase> source,
+        std::vector<Shared<Operation>> argv)
+    :
+        Action(std::move(source)),
+        argv_(std::move(argv))
+    {}
+    virtual void exec(Frame& f) const override
+    {
+        std::cout << "ECHO: ";
+        bool first = true;
+        for (auto a : argv_) {
+            if (!first) std::cout << ",";
+            std::cout << a->eval(f);
+            first = false;
+        }
+        std::cout << "\n";
+    }
+};
+/// The meaning of the phrase `echo` in isolation.
+struct Echo_Metafunction : public Metafunction
+{
+    using Metafunction::Metafunction;
+    virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
+    {
+        return make<Echo_Action>(share(ph), ph.analyze_args(env));
+    }
+};
+
 const Namespace
 curv::builtin_namespace =
 {
@@ -75,4 +111,5 @@ curv::builtin_namespace =
     {"sqrt", make<Builtin_Value>(1, builtin_sqrt)},
     {"len", make<Builtin_Value>(1, builtin_len)},
     {"file", make<Builtin_Value>(1, builtin_file)},
+    {"echo", make<Builtin_Meaning<Echo_Metafunction>>()},
 };

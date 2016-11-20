@@ -37,9 +37,31 @@ struct Meaning : public aux::Shared_Base
     virtual Shared<Meaning> call(const Call_Phrase&, Environ&) = 0;
 };
 
-/// An Operation is a fragment of executable code that "does something"
-/// at run time. A Curv script is compiled into a tree of Operations, which
-/// is then evaluated.
+/// A Metafunction is a function that is called during analysis, instead of
+/// at run time.
+///
+/// A call to a Metafunction is compiled to a Meaning using `call`.
+/// Metafunctions enable the client to add new syntax to the language
+/// without modifying the grammar or modifying the Curv library,
+/// as long as that new syntax parses as a function call.
+///
+/// Metafunctions are not values, & Metafunction is not a subclass of Operation.
+/// Metafunctions are similar to the macros of the Scheme and Rust languages,
+/// but we currently have no plan to support user defined metafunctions.
+struct Metafunction : public Meaning
+{
+    using Meaning::Meaning;
+    virtual Shared<Operation> to_operation(Environ&) override;
+};
+
+/// An Operation is a fragment of compiled code that "does something" at run
+/// time. During analysis, a Curv script is compiled into an Operation tree.
+///
+/// At present, the Operation tree has two roles. It is our "IR" (Intermediate
+/// Representation) to which optimizations are applied, and it is also our
+/// executable format. In the future, we should separate these roles, add a
+/// separate code generation phase, and use a more efficient executable code
+/// representaton.
 ///
 /// There are 3 kinds of Operation:
 ///  1. An Expression is evaluated to produce a single value using `eval`.

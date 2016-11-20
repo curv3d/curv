@@ -31,6 +31,15 @@ struct Builtin_Value : public Builtin
     virtual Shared<Meaning> to_meaning(const Identifier&) const override;
 };
 
+template <class M>
+struct Builtin_Meaning : public Builtin
+{
+    virtual Shared<Meaning> to_meaning(const Identifier& id) const override
+    {
+        return make<M>(share(id));
+    }
+};
+
 using Namespace = Atom_Map<Shared<const Builtin>>;
 
 extern const Namespace builtin_namespace;

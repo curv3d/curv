@@ -20,6 +20,12 @@ analyze_op(const Phrase& ph, Environ& env)
 }
 
 Shared<Operation>
+Metafunction::to_operation(Environ& env)
+{
+    throw Exception(At_Phrase(*source_, env), "not an operation");
+}
+
+Shared<Operation>
 Operation::to_operation(Environ&)
 {
     return share(*this);
@@ -372,7 +378,7 @@ List_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Call_Phrase::analyze(Environ& env) const
 {
-    auto fun = curv::analyze_op(*function_, env);
+    auto fun = function_->analyze(env);
     return fun->call(*this, env);
 }
 
