@@ -378,8 +378,7 @@ List_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Call_Phrase::analyze(Environ& env) const
 {
-    auto fun = function_->analyze(env);
-    return fun->call(*this, env);
+    return function_->analyze(env)->call(*this, env);
 }
 
 Shared<Meaning>
