@@ -14,7 +14,8 @@ using namespace std;
 using namespace aux;
 using namespace curv;
 
-System_Impl sys(nullptr, std::cerr);
+std::stringstream console;
+System_Impl sys(nullptr, console);
 
 struct CString_Script : public curv::Script
 {
@@ -37,6 +38,8 @@ struct Evaluator
         success_(nullptr)
     {
         try {
+            console.str("");
+            console.clear(); // Clear state flags.
             Shared<Module> module{eval_script(*script_, builtin_namespace, sys)};
             if (module->elements_->empty()) {
                 success_ = "";
@@ -348,6 +351,10 @@ TEST(curv, eval)
     // sequence generator
     SUCCESS("[for (i=[1,2,3]) if (i==2) (\"two\", \"2!\") else i]", 
         "[1,\"two\",\"2!\",3]");
+
+    // echo action
+    SUCCESS("echo(17,42)", "");
+    EXPECT_EQ(console.str(), "ECHO: 17,42\n");
 
     // lexical errors
     FAILMSG("\\foo", "illegal character '\\'");

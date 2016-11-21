@@ -3,8 +3,6 @@ OpenSCADbis proposal
 # 0.1: Minimum Viable Language
 * echo:
   * Call_Expr constructor takes Call_Phrase argument
-  * unit test
-    * using System abstraction, capture console output for each test and compare
   * support echo inside an expression
     * `let (echo "foo") expr`
     * `(echo "foo"; expr)`
