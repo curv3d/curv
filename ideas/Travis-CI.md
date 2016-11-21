@@ -16,3 +16,6 @@ Do I need to use clang for all of my builds?
 * I'm using LLVM. Is there a compatibility issue with GCC?
   C++ name mangling in the C++11 library is incompatible, that's all I've got
   so far. Calls to C functions from jitted code should work.
+
+AppVeyor is like travis-ci for windows. But where do you get packages?
+Chocolatey is like apt-get for windows, but is missing a lot of OSS packages.

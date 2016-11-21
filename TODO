@@ -6,6 +6,8 @@ OpenSCADbis proposal
   * support echo inside an expression
     * `let (echo "foo") expr`
     * `(echo "foo"; expr)`
+      * extend grammar with semicolon-phrase and comma-phrase
+      * paren-phrase contains a semicolon-phrase
   * argument is a single string, $ substitutions in string literals
 * len(module), module.[i]
 * floor, ceil
