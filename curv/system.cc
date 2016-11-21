@@ -9,7 +9,11 @@
 
 using namespace curv;
 
-System_Impl::System_Impl(const String* stdlib_path)
+System_Impl::System_Impl(
+    const String* stdlib_path,
+    std::ostream& console)
+:
+    console_(console)
 {
     std_namespace_ = builtin_namespace;
     if (stdlib_path != 0) {
@@ -23,4 +27,9 @@ System_Impl::System_Impl(const String* stdlib_path)
 const Namespace& System_Impl::std_namespace()
 {
     return std_namespace_;
+}
+
+std::ostream& System_Impl::console()
+{
+    return console_;
 }

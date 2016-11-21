@@ -14,7 +14,7 @@ using namespace std;
 using namespace aux;
 using namespace curv;
 
-System_Impl sys(nullptr);
+System_Impl sys(nullptr, std::cerr);
 
 struct CString_Script : public curv::Script
 {

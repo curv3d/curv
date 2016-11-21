@@ -1,13 +1,10 @@
+OpenSCADbis proposal
+
 # 0.1: Minimum Viable Language
 * echo:
-  * use System abstraction for echoing
-    * std::ostream& System::console()
-    * void System::echo(const String&)
-    * void System::echo(functor with std::ostream& argument)
+  * Call_Expr constructor takes Call_Phrase argument
   * unit test
-    * run a script, capture console output, compare.
-    * using System abstraction, capture each echo call, within that call,
-      capture string to be output, and compare.
+    * using System abstraction, capture console output for each test and compare
   * support echo inside an expression
     * `let (echo "foo") expr`
     * `(echo "foo"; expr)`

@@ -5,7 +5,6 @@
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
-#include <iostream>
 #include <string>
 
 #include <boost/math/constants/constants.hpp>
@@ -79,14 +78,15 @@ struct Echo_Action : public Action
     {}
     virtual void exec(Frame& f) const override
     {
-        std::cout << "ECHO: ";
+        std::ostream& out = f.system.console();
+        out << "ECHO: ";
         bool first = true;
         for (auto a : argv_) {
-            if (!first) std::cout << ",";
-            std::cout << a->eval(f);
+            if (!first) out << ",";
+            out << a->eval(f);
             first = false;
         }
-        std::cout << "\n";
+        out << "\n";
     }
 };
 /// The meaning of the phrase `echo` in isolation.

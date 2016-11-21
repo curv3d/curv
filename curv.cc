@@ -55,7 +55,9 @@ make_system(const char* argv0)
             stdlib_path = CURV_STDLIB;
         else
             stdlib_path = aux::progdir(argv0) / "../lib/std.curv";
-        static curv::System_Impl sys(curv::make_string(stdlib_path.c_str()).get());
+        static curv::System_Impl sys(
+            curv::make_string(stdlib_path.c_str()).get(),
+            std::cerr);
         return sys;
     } catch (std::exception& e) {
         std::cerr << "ERROR: " << e.what() << "\n";
