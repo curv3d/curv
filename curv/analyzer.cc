@@ -350,6 +350,40 @@ Definition_Phrase::analyze_def(Environ& env) const
 }
 
 Shared<Meaning>
+Semicolon_Phrase::analyze(Environ& env) const
+{
+    if (args_.size() == 1)
+    {
+        return curv::analyze_op(*args_[0].expr_, env);
+    } else {
+        throw Exception(At_Phrase(*this,  env), "; phrase not implemented");
+    /*
+        Shared<Sequence_Expr> seq =
+            Sequence_Expr::make(args_.size(), share(*this));
+        for (size_t i = 0; i < args_.size(); ++i)
+            (*seq)[i] = analyze_op(*args_[i].expr_, env);
+        return seq;
+    */
+    }
+}
+
+Shared<Meaning>
+Comma_Phrase::analyze(Environ& env) const
+{
+    if (args_.size() == 1
+        && args_[0].comma_.kind == Token::k_missing)
+    {
+        return curv::analyze_op(*args_[0].expr_, env);
+    } else {
+        Shared<Sequence_Expr> seq =
+            Sequence_Expr::make(args_.size(), share(*this));
+        for (size_t i = 0; i < args_.size(); ++i)
+            (*seq)[i] = analyze_op(*args_[i].expr_, env);
+        return seq;
+    }
+}
+
+Shared<Meaning>
 Paren_Phrase::analyze(Environ& env) const
 {
     if (args_.size() == 1
@@ -428,18 +462,61 @@ Module_Phrase::analyze(Environ& env) const
     return analyze_module(env);
 }
 
+/// An adapter class for iterating over the elements of a semicolon phrase.
+struct Statements
+{
+    Statements(const Phrase& phrase)
+    {
+        auto semis = dynamic_cast<const Semicolon_Phrase*>(&phrase);
+        if (semis) {
+            first_ = &*semis->args_.front().expr_;
+            rest_ = &semis->args_;
+            size_ = semis->args_.size();
+        } else {
+            first_ = &phrase;
+            rest_ = nullptr;
+            size_ = 1;
+        }
+    }
+
+    const Phrase* first_;
+    const std::vector<Semicolon_Phrase::Arg>* rest_;
+    size_t size_;
+
+    struct iterator 
+    {
+        Statements& stmts_;
+        size_t i_;
+        iterator(Statements& stmts, size_t i) : stmts_(stmts), i_(i) {}
+        const Phrase& operator*()
+        {
+            return i_==0 ? *stmts_.first_ : *(*stmts_.rest_)[i_].expr_;
+        }
+        const void operator++()
+        {
+            ++i_;
+        }
+        bool operator!=(iterator rhs)
+        {
+            return i_ != rhs.i_;
+        }
+    };
+    iterator begin() { return iterator(*this, 0); }
+    iterator end() { return iterator(*this, size_); }
+};
+
 Shared<Module_Expr>
 Module_Phrase::analyze_module(Environ& env) const
 {
     // phase 1: Create a dictionary of field phrases, a list of element phrases
     Bindings fields;
-    std::vector<Shared<Phrase>> elements;
-    for (auto st : stmts_) {
-        auto def = st.stmt_->analyze_def(env);
+    std::vector<Shared<const Phrase>> elements;
+    for (auto& st : Statements(*body_)) {
+        auto def = st.analyze_def(env);
         if (def != nullptr)
             fields.add_definition(def, env);
         else
-            elements.push_back(st.stmt_);
+            elements.push_back(share(st));
     }
 
     // phase 2: Construct an environment from the field dictionary

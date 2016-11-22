@@ -137,6 +137,65 @@ struct Definition_Phrase : public Phrase
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
+/// `a;b;c`
+struct Semicolon_Phrase : public Phrase
+{
+    // a phrase followed by an optional semicolon
+    struct Arg
+    {
+        Shared<Phrase> expr_;
+        Token semicolon_;
+
+        Arg(Shared<Phrase> expr, Token t)
+        : expr_(std::move(expr)), semicolon_(t)
+        {}
+    };
+
+    std::vector<Arg> args_;
+
+    Semicolon_Phrase() {}
+
+    virtual Location location() const override
+    {
+        return args_.front().expr_->location()
+               .ending_at(args_.back().expr_->location().token());
+    }
+
+    virtual Shared<Meaning> analyze(Environ&) const override;
+};
+
+/// `a,b,c` -- May be zero length. If non-empty, may end in optional `,`.
+struct Comma_Phrase : public Phrase
+{
+    // an expression followed by an optional comma
+    struct Arg
+    {
+        Shared<Phrase> expr_;
+        Token comma_;
+
+        Arg(Shared<Phrase> expr, Token comma)
+        : expr_(std::move(expr)), comma_(comma)
+        {}
+    };
+
+    Location begin_;    // zero length location at start of phrase
+    std::vector<Arg> args_;
+
+    Comma_Phrase(Location begin) : begin_(std::move(begin)) {}
+
+    virtual Location location() const override
+    {
+        if (args_.empty())
+            return begin_;
+        const Arg& last = args_.back();
+        if (last.comma_.kind == Token::k_missing)
+            return begin_.ending_at(last.comma_);
+        return begin_.ending_at(last.expr_->location().token());
+    }
+
+    virtual Shared<Meaning> analyze(Environ&) const override;
+};
+
 /// common implementation for `(a,b,c)` and `[a,b,c]` phrases.
 struct Delimited_Phrase : public Phrase
 {
@@ -184,27 +243,16 @@ struct Record_Phrase : public Delimited_Phrase
 
 struct Module_Phrase : public Phrase
 {
-    // a statement (definition or expression) followed by an optional semicolon
-    struct Statement
-    {
-        Shared<Phrase> stmt_;
-        Token semicolon_;
-
-        Statement(Shared<Phrase> stmt) : stmt_(stmt) {}
-    };
-
-    const Script& script_;
-    std::vector<Statement> stmts_;
+    Shared<Phrase> body_;
     Token end_;
 
-    Module_Phrase(const Script& script) : script_(script) {}
+    Module_Phrase(Shared<Phrase> body, Token end)
+    : body_(std::move(body)), end_(end)
+    {}
 
     virtual Location location() const override
     {
-        if (stmts_.empty())
-            return Location(script_, end_);
-        else
-            return stmts_[0].stmt_->location().ending_at(end_);
+        return body_->location().ending_at(end_);
     }
 
     virtual Shared<Meaning> analyze(Environ&) const override;

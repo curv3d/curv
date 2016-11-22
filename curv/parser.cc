@@ -24,6 +24,8 @@ using namespace aux;
 
 namespace curv {
 
+Shared<Phrase> parse_semicolons(Scanner& scanner);
+Shared<Phrase> parse_commas(Scanner& scanner);
 Shared<Phrase> parse_expr(Scanner& scanner);
 Shared<Phrase> parse_disjunction(Scanner&);
 Shared<Phrase> parse_conjunction(Scanner&);
@@ -42,25 +44,89 @@ Shared<Phrase> parse_primary(Scanner&,const char* what);
 Shared<Module_Phrase>
 parse_script(Scanner& scanner)
 {
-    auto module = make<Module_Phrase>(scanner.script_);
+    auto semis = parse_semicolons(scanner);
     Token tok = scanner.get_token();
+    if (tok.kind != Token::k_end)
+        throw Exception(At_Token(tok, scanner), "illegal token");
+    return make<Module_Phrase>(semis, tok);
+}
+
+// semicolons : commas | semicolons `;` commas
+//
+// A Semicolon_Phrase is only constructed if there are two or more phrases
+// separated by semicolons. Otherwise the result of parse_commas() is returned.
+Shared<Phrase>
+parse_semicolons(Scanner& scanner)
+{
+    Shared<Semicolon_Phrase> semis;
     for (;;) {
-        if (tok.kind == Token::k_end)
-            break;
-        scanner.push_token(tok);
-        Module_Phrase::Statement stmt(parse_expr(scanner));
-        tok = scanner.get_token();
+        auto item = parse_commas(scanner);
+        auto tok = scanner.get_token();
         if (tok.kind == Token::k_semicolon) {
-            stmt.semicolon_ = tok;
-            tok = scanner.get_token();
-        } else if (tok.kind != Token::k_end) {
-            throw Exception(At_Token(tok, scanner),
-                "bad token in module: expecting ';' or <end>");
+            if (!semis) semis = make<Semicolon_Phrase>();
+            semis->args_.push_back({item, tok});
+        } else {
+            scanner.push_token(tok);
+            if (!semis)
+                return item;
+            else {
+                semis->args_.push_back({item, {}});
+                return semis;
+            }
         }
-        module->stmts_.push_back(std::move(stmt));
     }
-    module->end_ = tok;
-    return module;
+}
+
+bool
+is_list_end_token(Token::Kind k)
+{
+    switch (k) {
+    case Token::k_end:
+    case Token::k_semicolon:
+    case Token::k_rparen:
+    case Token::k_rbracket:
+    case Token::k_rbrace:
+        return true;
+    default:
+        return false;
+    }
+}
+
+// commas : empty | list | list `,`
+// list : expr | list `,` expr
+//
+// How do I detect an empty commas phrase?
+// * Peek at the first token, and if it is an end token from one of the
+//   contexts where parse_commas is called, then report empty.
+Shared<Phrase>
+parse_commas(Scanner& scanner)
+{
+    auto tok = scanner.get_token();
+    scanner.push_token(tok);
+    Token begin = tok;
+    begin.last = begin.first;
+    auto commas = make<Comma_Phrase>(Location{scanner.script_, begin});
+    for (;;) {
+        // on entry, tok is lookahead of the next token
+        if (is_list_end_token(tok.kind))
+            return commas;
+        auto expr = parse_expr(scanner);
+        tok = scanner.get_token();
+        if (tok.kind == Token::k_comma) {
+            commas->args_.push_back({expr, tok});
+            tok = scanner.get_token();
+            scanner.push_token(tok);
+        } else if (is_list_end_token(tok.kind)) {
+            scanner.push_token(tok);
+            if (commas->args_.empty())
+                return expr;
+            else {
+                commas->args_.push_back({expr, {}});
+                return commas;
+            }
+        } else
+            throw Exception(At_Token(tok, scanner), "illegal token");
+    }
 }
 
 // Low precedence right associative infix operators:
