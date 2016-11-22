@@ -41,17 +41,16 @@ struct Evaluator
             console.str("");
             console.clear(); // Clear state flags.
             Shared<Module> module{eval_script(*script_, builtin_namespace, sys)};
-            if (module->elements_->empty()) {
-                success_ = "";
-                return;
+
+            String_Builder buf;
+            bool first = true;
+            for (auto e : *module->elements()) {
+                if (!first) buf << "\n";
+                buf << e;
+                first = false;
             }
-            if (module->elements_->size() > 1) {
-                failmsg_ = "multiple values found";
-                failall_ = failmsg_;
-                return;
-            }
-            success_value_ = (*module->elements_)[0];
-            success_str_ = curv::stringify(success_value_);
+
+            success_str_ = buf.get_string();
             success_ = success_str_->c_str();
         } catch (curv::Exception& e) {
             failmsg_str_ = e.shared_what();
@@ -74,7 +73,6 @@ struct Evaluator
     aux::Shared<const curv::String> failall_str_;
 
     const char* success_;
-    curv::Value success_value_;
     aux::Shared<curv::String> success_str_;
 };
 
@@ -351,6 +349,7 @@ TEST(curv, eval)
     // sequence generator
     SUCCESS("[for (i=[1,2,3]) if (i==2) (\"two\", \"2!\") else i]", 
         "[1,\"two\",\"2!\",3]");
+    SUCCESS("1,2,3", "1\n2\n3");
 
     // echo action
     SUCCESS("echo(17,42)", "");
