@@ -526,6 +526,9 @@ curv::Range_Gen::generate(Frame& f, List_Builder& lb) const
 
     double delta = round((last - first)/step);
     double countd = delta < 0.0 ? 0.0 : delta + 1.0;
+    // Note: countd could be infinity. It could be too large to fit in an
+    // integer. It could be a float integer too large to increment (for large
+    // float i, i==i+1). So we impose a limit on the count.
     if (countd < 1'000'000'000.0) {
         unsigned count = (unsigned) countd;
         for (unsigned i = 0; i < count; ++i)
