@@ -2,6 +2,8 @@
 // Distributed under The MIT License.
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
+#include <functional>
+
 #include <curv/phrase.h>
 #include <curv/analyzer.h>
 #include <curv/shared.h>
@@ -462,48 +464,19 @@ Module_Phrase::analyze(Environ& env) const
     return analyze_module(env);
 }
 
-/// An adapter class for iterating over the elements of a semicolon phrase.
-struct Statements
+/// In the grammar, a <semicolons> phrase is one or more constituent phrases
+/// separated by semicolons. This function iterates over each constituent
+/// phrase.
+static inline void
+each_statement(const Phrase& phrase, std::function<void(const Phrase&)> func)
 {
-    Statements(const Phrase& phrase)
-    {
-        auto semis = dynamic_cast<const Semicolon_Phrase*>(&phrase);
-        if (semis) {
-            first_ = &*semis->args_.front().expr_;
-            rest_ = &semis->args_;
-            size_ = semis->args_.size();
-        } else {
-            first_ = &phrase;
-            rest_ = nullptr;
-            size_ = 1;
-        }
+    if (auto semis = dynamic_cast<const Semicolon_Phrase*>(&phrase)) {
+        for (auto& stmt : semis->args_)
+            func(*stmt.expr_);
+    } else {
+        func(phrase);
     }
-
-    const Phrase* first_;
-    const std::vector<Semicolon_Phrase::Arg>* rest_;
-    size_t size_;
-
-    struct iterator 
-    {
-        Statements& stmts_;
-        size_t i_;
-        iterator(Statements& stmts, size_t i) : stmts_(stmts), i_(i) {}
-        const Phrase& operator*()
-        {
-            return i_==0 ? *stmts_.first_ : *(*stmts_.rest_)[i_].expr_;
-        }
-        const void operator++()
-        {
-            ++i_;
-        }
-        bool operator!=(iterator rhs)
-        {
-            return i_ != rhs.i_;
-        }
-    };
-    iterator begin() { return iterator(*this, 0); }
-    iterator end() { return iterator(*this, size_); }
-};
+}
 
 Shared<Module_Expr>
 Module_Phrase::analyze_module(Environ& env) const
@@ -511,13 +484,13 @@ Module_Phrase::analyze_module(Environ& env) const
     // phase 1: Create a dictionary of field phrases, a list of element phrases
     Bindings fields;
     std::vector<Shared<const Phrase>> elements;
-    for (auto& st : Statements(*body_)) {
-        auto def = st.analyze_def(env);
+    each_statement(*body_, [&](const Phrase& stmt)->void {
+        auto def = stmt.analyze_def(env);
         if (def != nullptr)
             fields.add_definition(def, env);
         else
-            elements.push_back(share(st));
-    }
+            elements.push_back(share(stmt));
+    });
 
     // phase 2: Construct an environment from the field dictionary
     // and use it to perform semantic analysis.
