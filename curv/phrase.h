@@ -196,7 +196,30 @@ struct Comma_Phrase : public Phrase
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
-/// common implementation for `(a,b,c)` and `[a,b,c]` phrases.
+/// common implementation for `(...)`, `[...]` and `{...}` phrases.
+struct Delimited2_Phrase : public Phrase
+{
+    Token lparen_;
+    Shared<Phrase> body_;
+    Token rparen_;
+
+    Delimited2_Phrase(Token lparen, Shared<Phrase> body, Token rparen)
+    : lparen_(lparen), body_(std::move(body)), rparen_(rparen)
+    {}
+
+    virtual Location location() const override
+    {
+        return body_->location().starting_at(lparen_).ending_at(rparen_);
+    }
+};
+
+struct Paren_Phrase : public Delimited2_Phrase
+{
+    using Delimited2_Phrase::Delimited2_Phrase;
+    virtual Shared<Meaning> analyze(Environ&) const override;
+};
+
+/// TODO: DEPRECATED. common implementation for `(a,b,c)` and `[a,b,c]` phrases.
 struct Delimited_Phrase : public Phrase
 {
     // an expression followed by an optional comma
@@ -221,12 +244,6 @@ struct Delimited_Phrase : public Phrase
     {
         return Location(script_, lparen_).ending_at(rparen_);
     }
-};
-
-struct Paren_Phrase : public Delimited_Phrase
-{
-    using Delimited_Phrase::Delimited_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
 struct List_Phrase : public Delimited_Phrase
@@ -279,7 +296,39 @@ struct Call_Phrase : public Phrase
     }
     virtual Shared<Meaning> analyze(Environ&) const override;
     std::vector<Shared<Operation>> analyze_args(Environ& env) const;
+
+    const Phrase& at(size_t i) const
+    {
+        if (auto parens = dynamic_cast<Paren_Phrase*>(&*args_)) {
+            if (auto commas = dynamic_cast<Comma_Phrase*>(&*parens->body_)) {
+                assert(i < commas->args_.size());
+                return *commas->args_[i].expr_;
+            } else {
+                assert(i < 1);
+                return *parens->body_;
+            }
+        } else {
+            assert(i < 1);
+            return *args_;
+        }
+    }
 };
+
+/// Iterate over each argument in a function call argument list (Call_Phrase)
+/// or each parameter in a function formal parameter list (Lambda_Phrase).
+inline void
+each_argument(const Phrase& args, std::function<void(const Phrase&)> func)
+{
+    if (auto parens = dynamic_cast<const Paren_Phrase*>(&args)) {
+        if (auto commas = dynamic_cast<const Comma_Phrase*>(&*parens->body_)) {
+            for (auto a : commas->args_)
+                func(*a.expr_);
+        } else {
+            func(*parens->body_);
+        }
+    } else
+        func(args);
+}
 
 struct If_Phrase : public Phrase
 {

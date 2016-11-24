@@ -164,21 +164,12 @@ Lambda_Phrase::analyze(Environ& env) const
     // phase 1: Create a dictionary of parameters.
     Atom_Map<int> params;
     int slot = 0;
-    if (auto id = dynamic_cast<const Identifier*>(left_.get()))
-    {
-        params[id->atom_] = slot++;
-    }
-    else if (auto parens = dynamic_cast<const Paren_Phrase*>(left_.get()))
-    {
-        for (auto a : parens->args_) {
-            if (auto id = dynamic_cast<const Identifier*>(a.expr_.get())) {
-                params[id->atom_] = slot++;
-            } else
-                throw Exception(At_Phrase(*a.expr_, env), "not a parameter");
-        }
-    }
-    else
-        throw Exception(At_Phrase(*left_, env), "not a parameter");
+    each_argument(*left_, [&](const Phrase& p)->void {
+        if (auto id = dynamic_cast<const Identifier*>(&p))
+            params[id->atom_] = slot++;
+        else
+            throw Exception(At_Phrase(p, env), "not a parameter");
+    });
 
     // Phase 2: make an Environ from the parameters and analyze the body.
     struct Arg_Environ : public Environ
@@ -388,17 +379,7 @@ Comma_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Paren_Phrase::analyze(Environ& env) const
 {
-    if (args_.size() == 1
-        && args_[0].comma_.kind == Token::k_missing)
-    {
-        return curv::analyze_op(*args_[0].expr_, env);
-    } else {
-        Shared<Sequence_Expr> seq =
-            Sequence_Expr::make(args_.size(), share(*this));
-        for (size_t i = 0; i < args_.size(); ++i)
-            (*seq)[i] = analyze_op(*args_[i].expr_, env);
-        return seq;
-    }
+    return analyze_op(*body_, env);
 }
 
 Shared<Meaning>
@@ -432,16 +413,9 @@ std::vector<Shared<Operation>>
 Call_Phrase::analyze_args(Environ& env) const
 {
     std::vector<Shared<Operation>> argv;
-    if (auto patom = dynamic_cast<Paren_Phrase*>(&*args_)) {
-        // argument phrase is a variable-length parenthesized argument list
-        argv.reserve(patom->args_.size());
-        for (auto a : patom->args_)
-            argv.push_back(curv::analyze_op(*a.expr_, env));
-    } else {
-        // argument phrase is a unitary expression
-        argv.reserve(1);
-        argv.push_back(curv::analyze_op(*args_, env));
-    }
+    each_argument(*args_, [&](const Phrase& p)->void {
+        argv.push_back(analyze_op(p, env));
+    });
     return std::move(argv);
 }
 
@@ -569,16 +543,16 @@ Let_Phrase::analyze(Environ& env) const
     };
     Atom_Map<Binding> bindings;
     int slot = env.frame_nslots;
-    for (auto b : args_->args_) {
-        auto def = b.expr_->analyze_def(env);
+    each_argument(*args_, [&](const Phrase& p)->void {
+        auto def = p.analyze_def(env);
         if (def == nullptr)
-            throw Exception(At_Phrase(*b.expr_, env), "not a definition");
+            throw Exception(At_Phrase(p, env), "not a definition");
         Atom name = def->name_->atom_;
         if (bindings.find(name) != bindings.end())
             throw Exception(At_Phrase(*def->name_, env),
                 stringify(name, ": multiply defined"));
         bindings[name] = Binding{slot++, def->definiens_};
-    }
+    });
 
     // phase 2: Construct an environment from the bindings dictionary
     // and use it to perform semantic analysis.
@@ -627,14 +601,11 @@ Let_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 For_Phrase::analyze(Environ& env) const
 {
-    if (args_->args_.size() != 1)
-        throw Exception(At_Phrase(*args_, env), "for: malformed argument");
-
-    auto defexpr = args_->args_[0].expr_;
+    auto defexpr = args_->body_;
     const Definition_Phrase* def = dynamic_cast<Definition_Phrase*>(&*defexpr);
     if (def == nullptr)
-        throw Exception(At_Phrase(*defexpr, env),
-            "for: not a definition");
+        throw Exception(At_Phrase(*args_, env),
+            "for: malformed argument");
     auto id = dynamic_cast<const Identifier*>(def->left_.get());
     if (id == nullptr)
         throw Exception(At_Phrase(*def->left_, env), "for: not an identifier");

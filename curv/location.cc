@@ -110,6 +110,8 @@ curv::Location::write(std::ostream& out) const
     unsigned startcol = info.start_column_num;
     unsigned endcol =
         info.end_line_num > info.start_line_num ? len : info.end_column_num;
+    if (startcol == endcol)
+        ++endcol;
     for (unsigned i = 0; i < len; ++i) {
         if (i >= startcol && i < endcol) {
             caret.put(out, line[i]);

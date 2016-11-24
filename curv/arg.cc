@@ -15,18 +15,9 @@ void curv::At_Arg::get_locations(std::list<Location>& locs) const
         dynamic_cast<const Call_Phrase*>(eval_frame_->call_phrase);
     assert(call_phrase != nullptr);
 
-    const Phrase* args = &*call_phrase->args_;
-    const Phrase *arg;
-    auto parens = dynamic_cast<const Paren_Phrase*>(args);
-    if (parens != nullptr) {
-        assert(arg_index_ < parens->args_.size());
-        arg = &*parens->args_[arg_index_].expr_;
-    } else {
-        assert(arg_index_ < 1);
-        arg = args;
-    }
+    const Phrase& arg = call_phrase->at(arg_index_);
 
-    locs.push_back(arg->location());
+    locs.push_back(arg.location());
     // We only dump the stack starting at the parent call frame,
     // for cosmetic reasons. It looks stupid to underline one of the
     // arguments in a function call, and on the next line,

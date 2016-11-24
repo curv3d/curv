@@ -342,7 +342,7 @@ TEST(curv, eval)
     FAILMSG("for x x", "for: malformed argument");
     FAILMSG("for () x", "for: malformed argument");
     FAILMSG("for (i=a,j=b) x", "for: malformed argument");
-    FAILMSG("for (i) x", "for: not a definition");
+    FAILMSG("for (i) x", "for: malformed argument");
     FAILMSG("for (42=i) x", "for: not an identifier");
     SUCCESS("[for (i=[1,2,3]) i+1]", "[2,3,4]");
 
