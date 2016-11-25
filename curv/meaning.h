@@ -329,6 +329,13 @@ struct Infix_Expr_Base : public Expression
         arg2_(std::move(arg2))
     {}
 };
+struct Semicolon_Op : public Infix_Expr_Base
+{
+    using Infix_Expr_Base::Infix_Expr_Base;
+    virtual Value eval(Frame&) const override;
+    virtual void generate(Frame&, List_Builder&) const override;
+    virtual void exec(Frame&) const override;
+};
 struct Or_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;

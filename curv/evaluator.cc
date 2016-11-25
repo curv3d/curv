@@ -261,6 +261,25 @@ curv::Infix_Expr::eval(Frame& f) const
 }
 
 Value
+Semicolon_Op::eval(Frame& f) const
+{
+    arg1_->exec(f);
+    return arg2_->eval(f);
+}
+void
+Semicolon_Op::generate(Frame& f, List_Builder& lb) const
+{
+    arg1_->exec(f);
+    arg2_->generate(f, lb);
+}
+void
+Semicolon_Op::exec(Frame& f) const
+{
+    arg1_->exec(f);
+    arg2_->exec(f);
+}
+
+Value
 curv::Or_Expr::eval(Frame& f) const
 {
     Value a = curv::eval(*arg1_, f);

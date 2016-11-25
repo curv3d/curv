@@ -345,7 +345,10 @@ Definition_Phrase::analyze_def(Environ& env) const
 Shared<Meaning>
 Semicolon_Phrase::analyze(Environ& env) const
 {
-    throw Exception(At_Phrase(*this,  env), "; phrase not implemented");
+    return make<Semicolon_Op>(
+        share(*this),
+        curv::analyze_op(*left_, env),
+        curv::analyze_op(*right_, env));
 }
 
 Shared<Meaning>

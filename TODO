@@ -2,27 +2,28 @@ OpenSCADbis proposal
 
 # 0.1: Minimum Viable Language
 * semicolon and comma operators
-  * (act; act2; op)
-    * In the parser, ; is a right associative binary operator
-    * above groups as (act1;act2);op so that:
-      * (act1;act2) is compiled as a Sequence_Op (need a source object for this)
-      * (act;op) compiles as Qualified_Op
-    * BUT the grouping isn't literal, parens not intended to be used that way,
-      the ; operator is intended to behave like an n-ary operator,
-      this is just a trick of the parse tree representation.
-    * OTOH (act1;act2);op is perfectly legal and works fine. `;` is just
-      a side effect sequencing operator and nesting doesn't matter.
-      In a module scope it's different, then ; really is n-ary. But parens are
-      explicit in the parse tree so no problem.
-    * Does this nesting matter for sequential scoping (planned possible
-      extension)? If not, it implies that (def1;def2) is a sequentially
-      scoped definition, and maybe that definitions can be parenthesized.
-    * `;` is an associative binary operator.
   * [ <semicolons> ] -- just evaluate body using generate()
   * { <semicolons> } -- error on ;, each_item(phrase,functor) otherwise
   * (...<eof> error reports position of unmatched (
     * and [
     * and {
+* generalized phrases
+  * ( definition )
+  * ( action; definition )
+  * ( definition; phrase )
+  * if (...) action
+  * for (...) action
+  * let (...) action
+  * controversial:
+    * (action1 , action2) is an action, not a generator --
+      semantically consistent, but not important, and potentially confusing:
+      stylistically you should use `;` if a compound action
+      (as opposed to a compound generator) is required.
+    * (def1, def2) -- does this have any independent meaning? Or utility?
+      It's a compound definition that isn't sequentially scoped (internally).
+      It is order independent, (def2,def1) has the same meaning.
+      The external scoping rule depends on context in which it is used.
+      The independent meaning arises in let(def)phrase, {def}.
 * echo:
   * $ substitutions in string literals
   * echo argument is a single string
@@ -34,6 +35,7 @@ OpenSCADbis proposal
   * warning(string)
   * echo_timing(string,expr_value_discarded)
   * echo_timing(string) expr_value_returned
+  * enter_debugger, aka `break`, `debug`
 * len(module), module.[i]
 * floor, ceil
 

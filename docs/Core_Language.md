@@ -56,6 +56,12 @@ Scripts occur in two contexts:
 This is a set of built-in operators that are polymorphic across phrase types.
 
 The **qualified phrase** (semicolon operator).
+Right now, `;` is an associative infix operator: `action;operation`
+first performs `action`, then yields the results of performing `operation`.
+It's associative because `(act1;act2);op` is equivalent to `act1;(act2;op)`.
+This is a way of adding debug actions to any expression or generator.
+This infix operator interpretation applies within `(...)` and `[...]`:
+in a module scope, `;` has a more general interpretation.
 
 The **empty action**. The syntax is nothing, a sequence of zero tokens.
 Or you can explicitly write `()`.

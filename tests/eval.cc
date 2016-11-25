@@ -351,6 +351,10 @@ TEST(curv, eval)
         "[1,\"two\",\"2!\",3]");
     SUCCESS("1,2,3", "1\n2\n3");
 
+    // semicolon operator
+    SUCCESS("(echo 0;1)+1", "2");
+    EXPECT_EQ(console.str(), "ECHO: 0\n");
+
     // echo action
     SUCCESS("echo(17,42)", "");
     EXPECT_EQ(console.str(), "ECHO: 17,42\n");
