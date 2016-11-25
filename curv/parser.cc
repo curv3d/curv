@@ -53,26 +53,22 @@ parse_script(Scanner& scanner)
 
 // semicolons : commas | semicolons `;` commas
 //
-// A Semicolon_Phrase is only constructed if there are two or more phrases
-// separated by semicolons. Otherwise the result of parse_commas() is returned.
+// `;` is a left-associative infix operator,
+// with the lowest operator precedence.
 Shared<Phrase>
 parse_semicolons(Scanner& scanner)
 {
-    Shared<Semicolon_Phrase> semis;
+    auto left = parse_commas(scanner);
     for (;;) {
-        auto item = parse_commas(scanner);
         auto tok = scanner.get_token();
-        if (tok.kind == Token::k_semicolon) {
-            if (!semis) semis = make<Semicolon_Phrase>();
-            semis->args_.push_back({item, tok});
-        } else {
+        switch (tok.kind) {
+        case Token::k_semicolon:
+            left = make<Semicolon_Phrase>(
+                std::move(left), tok, parse_commas(scanner));
+            continue;
+        default:
             scanner.push_token(tok);
-            if (!semis)
-                return item;
-            else {
-                semis->args_.push_back({item, {}});
-                return semis;
-            }
+            return left;
         }
     }
 }

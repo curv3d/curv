@@ -345,19 +345,7 @@ Definition_Phrase::analyze_def(Environ& env) const
 Shared<Meaning>
 Semicolon_Phrase::analyze(Environ& env) const
 {
-    if (args_.size() == 1)
-    {
-        return curv::analyze_op(*args_[0].expr_, env);
-    } else {
-        throw Exception(At_Phrase(*this,  env), "; phrase not implemented");
-    /*
-        Shared<Sequence_Expr> seq =
-            Sequence_Expr::make(args_.size(), share(*this));
-        for (size_t i = 0; i < args_.size(); ++i)
-            (*seq)[i] = analyze_op(*args_[i].expr_, env);
-        return seq;
-    */
-    }
+    throw Exception(At_Phrase(*this,  env), "; phrase not implemented");
 }
 
 Shared<Meaning>
@@ -444,8 +432,8 @@ static inline void
 each_statement(const Phrase& phrase, std::function<void(const Phrase&)> func)
 {
     if (auto semis = dynamic_cast<const Semicolon_Phrase*>(&phrase)) {
-        for (auto& stmt : semis->args_)
-            func(*stmt.expr_);
+        each_statement(*semis->left_, func);
+        func(*semis->right_);
     } else {
         func(phrase);
     }

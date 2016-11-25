@@ -14,9 +14,13 @@ OpenSCADbis proposal
       a side effect sequencing operator and nesting doesn't matter.
       In a module scope it's different, then ; really is n-ary. But parens are
       explicit in the parse tree so no problem.
+    * Does this nesting matter for sequential scoping (planned possible
+      extension)? If not, it implies that (def1;def2) is a sequentially
+      scoped definition, and maybe that definitions can be parenthesized.
+    * `;` is an associative binary operator.
   * [ <semicolons> ] -- just evaluate body using generate()
   * { <semicolons> } -- error on ;, each_item(phrase,functor) otherwise
-  * (...<eof> error reports position of open (
+  * (...<eof> error reports position of unmatched (
     * and [
     * and {
 * echo:

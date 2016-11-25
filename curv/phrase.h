@@ -104,6 +104,12 @@ struct Binary_Phrase : public Phrase
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
+struct Semicolon_Phrase : public Binary_Phrase
+{
+    using Binary_Phrase::Binary_Phrase;
+    virtual Shared<Meaning> analyze(Environ&) const override;
+};
+
 struct Lambda_Phrase : public Binary_Phrase
 {
     /// Normally false, this is set to true prior to analysis
@@ -134,33 +140,6 @@ struct Definition_Phrase : public Phrase
         return left_->location().ending_at(right_->location().token());
     }
     virtual Shared<Definition> analyze_def(Environ&) const override;
-    virtual Shared<Meaning> analyze(Environ&) const override;
-};
-
-/// `a;b;c`
-struct Semicolon_Phrase : public Phrase
-{
-    // a phrase followed by an optional semicolon
-    struct Arg
-    {
-        Shared<Phrase> expr_;
-        Token semicolon_;
-
-        Arg(Shared<Phrase> expr, Token t)
-        : expr_(std::move(expr)), semicolon_(t)
-        {}
-    };
-
-    std::vector<Arg> args_;
-
-    Semicolon_Phrase() {}
-
-    virtual Location location() const override
-    {
-        return args_.front().expr_->location()
-               .ending_at(args_.back().expr_->location().token());
-    }
-
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
