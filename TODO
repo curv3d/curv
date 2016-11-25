@@ -1,14 +1,37 @@
 OpenSCADbis proposal
 
 # 0.1: Minimum Viable Language
-* echo:
+* semicolon and comma operators
   * Call_Expr constructor takes Call_Phrase argument
-  * support echo inside an expression
-    * `let (echo "foo") expr`
-    * `(echo "foo"; expr)`
-      * extend grammar with semicolon-phrase and comma-phrase
-      * paren-phrase contains a semicolon-phrase
-  * argument is a single string, $ substitutions in string literals
+  * Frame contains a Call_Expr (refactor to simplify At_Arg).
+  * (act; act2; op)
+    * In the parser, ; is a right associative binary operator
+    * above groups as (act1;act2);op so that:
+      * (act1;act2) is compiled as a Sequence_Op (need a source object for this)
+      * (act;op) compiles as Qualified_Op
+    * BUT the grouping isn't literal, parens not intended to be used that way,
+      the ; operator is intended to behave like an n-ary operator,
+      this is just a trick of the parse tree representation.
+    * OTOH (act1;act2);op is perfectly legal and works fine. `;` is just
+      a side effect sequencing operator and nesting doesn't matter.
+      In a module scope it's different, then ; really is n-ary. But parens are
+      explicit in the parse tree so no problem.
+  * [ <semicolons> ] -- just evaluate body using generate()
+  * { <semicolons> } -- error on ;, each_item(phrase,functor) otherwise
+  * (...<eof> error reports position of open (
+    * and [
+    * and {
+* echo:
+  * $ substitutions in string literals
+  * echo argument is a single string
+* more debug actions:
+  * assert(condition) <=> if (!condition) error("assertion failed")
+  * require(predicate) expr <=> let(tmp=expr)(assert(p tmp);tmp)
+  * (x : predicate) -> body
+  * error(string)
+  * warning(string)
+  * echo_timing(string,expr_value_discarded)
+  * echo_timing(string) expr_value_returned
 * len(module), module.[i]
 * floor, ceil
 

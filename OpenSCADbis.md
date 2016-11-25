@@ -4,12 +4,12 @@ This proposal is a modification of the OpenSCAD2 proposal,
 based on a year of public feedback.
 
 What I learned was:
-* The OpenSCAD2 proposal turns off some members of the community
+* The OpenSCAD2 proposal is disliked by some members of the community
   because it deprecates 3 namespaces in favour of 1 namespace.
   Some people have adopted programming idioms that require 3 namespaces,
   and don't want to give up those idioms. They also don't want to be
   locked out of new language features.
-* Other members of the community want the ability to write all of their
+* Other members of the community want the ability to write their
   new code using a single namespace, and don't want to be forced to
   continue dealing with 3 namespaces.
 * The OpenSCAD2 design is not compatible with some old code in Thingiverse.
@@ -70,3 +70,14 @@ With this design, how do we interpret function/module calls that are
 outside a new function definition? The same way as always. A new function
 definition puts its name into all 3 namespaces, and that's what makes it
 accessible to code that uses the old scoping rules.
+
+With this design, how does a new function access old-style functions and
+modules?
+* Maybe, using namespace prefixes: `f$foo` and `m$foo`.
+  Obviously there's no other choice if there is also a variable named `foo`.
+* It would be nice if there was a way to eliminate the need for namespace
+  prefixes in cases where there is no ambiguity. For future research.
+
+Suppose you write an old style function or module, and you want to accept
+a function value as an argument. How do you call that function?
+Using a namespace prefix, `v$arg(x)`.
