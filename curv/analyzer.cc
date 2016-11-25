@@ -405,7 +405,6 @@ Operation::call(const Call_Phrase& src, Environ& env)
     return make<Call_Expr>(
         share(src),
         share(*this),
-        src.args_,
         std::move(argv));
 }
 

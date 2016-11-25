@@ -12,7 +12,7 @@
 namespace curv {
 
 class Frame_Base;
-class Phrase;
+class Call_Phrase;
 class System;
 
 /// A Frame is an evaluation context.
@@ -41,7 +41,9 @@ struct Frame_Base
 
     /// If this is a function call frame, then call_phrase is the source code
     /// for the function call, otherwise it's nullptr. This is debug metadata.
-    const Phrase* call_phrase;
+    /// Module frames do not have a call_phrase. If the call_phrase is null,
+    /// then the frame does not appear in a stack trace.
+    const Call_Phrase* call_phrase;
 
     /// Slot array containing the values of nonlocal bindings.
     ///
@@ -63,7 +65,7 @@ struct Frame_Base
         return array_[i];
     }
 
-    Frame_Base(System& sys, Frame* parent, const Phrase* src, List* nl)
+    Frame_Base(System& sys, Frame* parent, const Call_Phrase* src, List* nl)
     :
         system(sys),
         parent_frame(parent),

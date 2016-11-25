@@ -2,8 +2,6 @@ OpenSCADbis proposal
 
 # 0.1: Minimum Viable Language
 * semicolon and comma operators
-  * Call_Expr constructor takes Call_Phrase argument
-  * Frame contains a Call_Expr (refactor to simplify At_Arg).
   * (act; act2; op)
     * In the parser, ; is a right associative binary operator
     * above groups as (act1;act2);op so that:

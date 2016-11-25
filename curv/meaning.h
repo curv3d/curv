@@ -237,20 +237,24 @@ struct Dot_Expr : public Expression
 struct Call_Expr : public Expression
 {
     Shared<Operation> fun_;
-    Shared<const Phrase> argsource_;
     std::vector<Shared<Operation>> args_;
 
     Call_Expr(
-        Shared<const Phrase> source,
+        Shared<const Call_Phrase> source,
         Shared<Operation> fun,
-        Shared<const Phrase> argsource,
         std::vector<Shared<Operation>> args)
     :
         Expression(std::move(source)),
         fun_(std::move(fun)),
-        argsource_(std::move(argsource)),
         args_(std::move(args))
     {}
+
+    inline const Call_Phrase* call_phrase() const
+    {
+        // This is safe because, by construction, the source_ field
+        // is initialized from a Call_Phrase. See constructor, above.
+        return (Call_Phrase*) &*source_;
+    }
 
     virtual Value eval(Frame&) const override;
 };

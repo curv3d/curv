@@ -118,11 +118,11 @@ curv::Call_Expr::eval(Frame& f) const
       {
         Function* fun = (Function*)&funp;
         if (args_.size() != fun->nargs_) {
-            throw Exception(At_Phrase(*argsource_, &f),
+            throw Exception(At_Phrase(*call_phrase()->args_, &f),
                 "wrong number of arguments");
         }
         std::unique_ptr<Frame> f2
-            { Frame::make(fun->nargs_, f.system, &f, &*source_, nullptr) };
+            { Frame::make(fun->nargs_, f.system, &f, call_phrase(), nullptr) };
         for (size_t i = 0; i < args_.size(); ++i)
             (*f2)[i] = curv::eval(*args_[i], f);
         return fun->function_(*f2);
@@ -131,11 +131,11 @@ curv::Call_Expr::eval(Frame& f) const
       {
         Closure* fun = (Closure*)&funp;
         if (args_.size() != fun->nargs_) {
-            throw Exception(At_Phrase(*argsource_, &f),
+            throw Exception(At_Phrase(*call_phrase()->args_, &f),
                 "wrong number of arguments");
         }
         std::unique_ptr<Frame> f2
-            { Frame::make(fun->nslots_, f.system, &f, &*source_, &*fun->nonlocals_) };
+            { Frame::make(fun->nslots_, f.system, &f, call_phrase(), &*fun->nonlocals_) };
         for (size_t i = 0; i < args_.size(); ++i)
             (*f2)[i] = curv::eval(*args_[i], f);
         return fun->expr_->eval(*f2);

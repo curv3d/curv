@@ -11,11 +11,8 @@ void curv::At_Arg::get_locations(std::list<Location>& locs) const
 {
     assert(eval_frame_ != nullptr);
     assert(eval_frame_->call_phrase != nullptr);
-    auto call_phrase =
-        dynamic_cast<const Call_Phrase*>(eval_frame_->call_phrase);
-    assert(call_phrase != nullptr);
 
-    const Phrase& arg = call_phrase->at(arg_index_);
+    const Phrase& arg = eval_frame_->call_phrase->at(arg_index_);
 
     locs.push_back(arg.location());
     // We only dump the stack starting at the parent call frame,

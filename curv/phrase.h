@@ -276,7 +276,9 @@ struct Module_Phrase : public Phrase
     Shared<Module_Expr> analyze_module(Environ&) const;
 };
 
-/// a function call
+/// A function call. Call_Phrase is ultimately an abstract interface
+/// that represents all function calls. If there are variant function
+/// call syntaxes, then we might need virtual functions and subclasses.
 struct Call_Phrase : public Phrase
 {
     Shared<Phrase> function_;
