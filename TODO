@@ -2,7 +2,7 @@ OpenSCADbis proposal
 
 # 0.1: Minimum Viable Language
 * semicolon and comma operators
-  * [ <semicolons> ] -- just evaluate body using generate()
+  * get rid of List_Expr (refactor)
   * { <semicolons> } -- error on ;, each_item(phrase,functor) otherwise
   * (...<eof> error reports position of unmatched (
     * and [

@@ -176,13 +176,13 @@ struct Comma_Phrase : public Phrase
 };
 
 /// common implementation for `(...)`, `[...]` and `{...}` phrases.
-struct Delimited2_Phrase : public Phrase
+struct Delimited_Phrase : public Phrase
 {
     Token lparen_;
     Shared<Phrase> body_;
     Token rparen_;
 
-    Delimited2_Phrase(Token lparen, Shared<Phrase> body, Token rparen)
+    Delimited_Phrase(Token lparen, Shared<Phrase> body, Token rparen)
     : lparen_(lparen), body_(std::move(body)), rparen_(rparen)
     {}
 
@@ -192,14 +192,20 @@ struct Delimited2_Phrase : public Phrase
     }
 };
 
-struct Paren_Phrase : public Delimited2_Phrase
+struct Paren_Phrase : public Delimited_Phrase
 {
-    using Delimited2_Phrase::Delimited2_Phrase;
+    using Delimited_Phrase::Delimited_Phrase;
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
-/// TODO: DEPRECATED. common implementation for `(a,b,c)` and `[a,b,c]` phrases.
-struct Delimited_Phrase : public Phrase
+struct List_Phrase : public Delimited_Phrase
+{
+    using Delimited_Phrase::Delimited_Phrase;
+    virtual Shared<Meaning> analyze(Environ&) const override;
+};
+
+// TODO: Derive from Delimited_Phrase.
+struct Record_Phrase : public Phrase
 {
     // an expression followed by an optional comma
     struct Arg
@@ -215,7 +221,7 @@ struct Delimited_Phrase : public Phrase
     std::vector<Arg> args_;
     Token rparen_;
 
-    Delimited_Phrase(const Script& script, Token lparen)
+    Record_Phrase(const Script& script, Token lparen)
     : script_(script), lparen_(lparen)
     {}
 
@@ -223,17 +229,7 @@ struct Delimited_Phrase : public Phrase
     {
         return Location(script_, lparen_).ending_at(rparen_);
     }
-};
 
-struct List_Phrase : public Delimited_Phrase
-{
-    using Delimited_Phrase::Delimited_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
-};
-
-struct Record_Phrase : public Delimited_Phrase
-{
-    using Delimited_Phrase::Delimited_Phrase;
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 

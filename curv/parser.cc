@@ -393,20 +393,18 @@ parse_primary(Scanner& scanner, const char* what)
         return make<Paren_Phrase>(tok, body, tok2);
       }
     case Token::k_lbracket:
+      {
+        auto body = parse_semicolons(scanner);
+        auto tok2 = scanner.get_token();
+        if (tok2.kind != Token::k_rbracket)
+            throw Exception(At_Token(tok2, scanner), "illegal token");
+        return make<List_Phrase>(tok, body, tok2);
+      }
     case Token::k_lbrace:
       {
-        Shared<Delimited_Phrase> parens;
-        Token::Kind close;
-        const char* error;
-        if (tok.kind == Token::k_lbracket) {
-            parens = make<List_Phrase>(scanner.script_, tok);
-            close = Token::k_rbracket;
-            error = "bad token in list constructor";
-        } else if (tok.kind == Token::k_lbrace) {
-            parens = make<Record_Phrase>(scanner.script_, tok);
-            close = Token::k_rbrace;
-            error = "bad token in record constructor";
-        } else assert(0);
+        auto parens = make<Record_Phrase>(scanner.script_, tok);
+        Token::Kind close = Token::k_rbrace;
+        const char* error = "bad token in record constructor";
         for (;;) {
             tok = scanner.get_token();
             if (tok.kind == close) {
@@ -416,7 +414,7 @@ parse_primary(Scanner& scanner, const char* what)
             }
             scanner.push_token(tok);
             auto expr = parse_expr(scanner);
-            Delimited_Phrase::Arg arg(expr);
+            Record_Phrase::Arg arg(expr);
             tok = scanner.get_token();
             if (tok.kind == Token::k_comma)
                 arg.comma_ = tok;

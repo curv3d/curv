@@ -407,6 +407,17 @@ struct Range_Gen : public Operation
     virtual void generate(Frame&, List_Builder&) const override;
 };
 
+struct List2_Expr : public Expression
+{
+    Shared<Operation> generator_;
+
+    List2_Expr(Shared<const Phrase> source, Shared<Operation> gen)
+    : Expression(std::move(source)), generator_(std::move(gen))
+    {}
+
+    virtual Value eval(Frame&) const override;
+};
+
 struct List_Expr_Base : public Expression,
     public aux::Tail_Array_Data<Shared<const Operation>>
 {

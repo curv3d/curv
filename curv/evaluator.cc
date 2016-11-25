@@ -452,6 +452,17 @@ curv::List_Expr_Base::eval(Frame& f) const
 }
 
 Value
+curv::List2_Expr::eval(Frame& f) const
+{
+    // TODO: if the # of elements produced by the generator is known at compile
+    // time, then the List object could be allocated directly and filled in,
+    // without a std::vector intermediate.
+    List_Builder lb;
+    generator_->generate(f, lb);
+    return {lb.get_list()};
+}
+
+Value
 curv::Sequence_Expr_Base::eval(Frame& f) const
 {
     throw Exception{At_Phrase{*source_, &f}, "not an expression"};

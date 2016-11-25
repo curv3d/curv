@@ -276,31 +276,18 @@ Binary_Phrase::analyze(Environ& env) const
             curv::analyze_op(*left_, env),
             curv::analyze_op(*right_, env));
     case Token::k_dot:
-      {
-        auto id = dynamic_shared_cast<Identifier>(right_);
-        if (id != nullptr)
+        if (auto id = dynamic_shared_cast<Identifier>(right_))
             return make<Dot_Expr>(
                 share(*this),
                 curv::analyze_op(*left_, env),
                 id->atom_);
-        auto list = dynamic_shared_cast<List_Phrase>(right_);
-        if (list != nullptr) {
-            Shared<Operation> index;
-            if (list->args_.size() == 1
-                && list->args_[0].comma_.kind == Token::k_missing)
-            {
-                index = curv::analyze_op(*list->args_[0].expr_, env);
-            } else {
-                throw Exception(At_Phrase(*this, env), "not an expression");
-            }
+        if (auto list = dynamic_shared_cast<List_Phrase>(right_))
             return make<At_Expr>(
                 share(*this),
                 curv::analyze_op(*left_, env),
-                index);
-        }
+                analyze_op(*list->body_, env));
         throw Exception(At_Phrase(*right_, env),
             "invalid expression after '.'");
-      }
     default:
         return make<Infix_Expr>(
             share(*this),
@@ -376,11 +363,7 @@ Paren_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 List_Phrase::analyze(Environ& env) const
 {
-    Shared<List_Expr> list =
-        List_Expr::make(args_.size(), share(*this));
-    for (size_t i = 0; i < args_.size(); ++i)
-        (*list)[i] = analyze_op(*args_[i].expr_, env);
-    return list;
+    return make<List2_Expr>(share(*this), analyze_op(*body_, env));
 }
 
 Shared<Meaning>
