@@ -478,7 +478,7 @@ If_Phrase::analyze(Environ& env) const
             analyze_op(*condition_, env),
             analyze_op(*then_expr_, env));
     } else {
-        return make<If_Else_Expr>(
+        return make<If_Else_Op>(
             share(*this),
             analyze_op(*condition_, env),
             analyze_op(*then_expr_, env),

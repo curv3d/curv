@@ -530,19 +530,19 @@ struct If_Op : public Operation
     virtual void exec(Frame&) const override;
 };
 
-struct If_Else_Expr : public Expression
+struct If_Else_Op : public Operation
 {
     Shared<Operation> arg1_;
     Shared<Operation> arg2_;
     Shared<Operation> arg3_;
 
-    If_Else_Expr(
+    If_Else_Op(
         Shared<const Phrase> source,
         Shared<Operation> arg1,
         Shared<Operation> arg2,
         Shared<Operation> arg3)
     :
-        Expression(source),
+        Operation(source),
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2)),
         arg3_(std::move(arg3))
@@ -550,6 +550,7 @@ struct If_Else_Expr : public Expression
 
     virtual Value eval(Frame&) const override;
     virtual void generate(Frame&, List_Builder&) const override;
+    virtual void exec(Frame&) const override;
 };
 
 struct Lambda_Expr : public Expression
