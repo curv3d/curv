@@ -15,8 +15,6 @@
 
 namespace curv {
 
-inline Value eval(const Operation& expr, Frame& f) { return expr.eval(f); }
-
 Shared<Module>
 eval_script(const Script&, const Namespace&, System&, Frame* f = nullptr);
 

@@ -107,7 +107,7 @@ curv::Nonlocal_Function_Ref::eval(Frame& f) const
 Value
 curv::Call_Expr::eval(Frame& f) const
 {
-    Value funv = curv::eval(*fun_, f);
+    Value funv = fun_->eval(f);
     if (!funv.is_ref())
         throw Exception(At_Phrase(*fun_->source_, &f),
             stringify(funv,": not a function"));
@@ -124,7 +124,7 @@ curv::Call_Expr::eval(Frame& f) const
         std::unique_ptr<Frame> f2
             { Frame::make(fun->nargs_, f.system, &f, call_phrase(), nullptr) };
         for (size_t i = 0; i < args_.size(); ++i)
-            (*f2)[i] = curv::eval(*args_[i], f);
+            (*f2)[i] = args_[i]->eval(f);
         return fun->function_(*f2);
       }
     case Ref_Value::ty_closure:
@@ -137,7 +137,7 @@ curv::Call_Expr::eval(Frame& f) const
         std::unique_ptr<Frame> f2
             { Frame::make(fun->nslots_, f.system, &f, call_phrase(), &*fun->nonlocals_) };
         for (size_t i = 0; i < args_.size(); ++i)
-            (*f2)[i] = curv::eval(*args_[i], f);
+            (*f2)[i] = args_[i]->eval(f);
         return fun->expr_->eval(*f2);
       }
     default:
@@ -149,7 +149,7 @@ curv::Call_Expr::eval(Frame& f) const
 Value
 curv::Dot_Expr::eval(Frame& f) const
 {
-    Value basev = curv::eval(*base_, f);
+    Value basev = base_->eval(f);
     if (!basev.is_ref())
         throw Exception(At_Phrase(*base_->source_, &f),
             "not a record or module");
@@ -185,7 +185,7 @@ curv::Prefix_Expr::eval(Frame& f) const
     switch (op_) {
     case Token::k_minus:
         {
-            Value a = curv::eval(*arg_, f);
+            Value a = arg_->eval(f);
             Value r = Value(-a.get_num_or_nan());
             if (!r.is_num())
                 throw Exception(At_Phrase(*source_, &f),
@@ -194,7 +194,7 @@ curv::Prefix_Expr::eval(Frame& f) const
         }
     case Token::k_plus:
         {
-            Value a = curv::eval(*arg_, f);
+            Value a = arg_->eval(f);
             Value r = Value(+a.get_num_or_nan());
             if (!r.is_num())
                 throw Exception(At_Phrase(*source_, &f),
@@ -209,7 +209,7 @@ curv::Prefix_Expr::eval(Frame& f) const
 Value
 curv::Not_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg_, f);
+    Value a = arg_->eval(f);
     if (!a.is_bool())
         throw Exception(At_Phrase(*source_, &f),
             stringify("!",a,": domain error"));
@@ -219,8 +219,8 @@ curv::Not_Expr::eval(Frame& f) const
 Value
 curv::Infix_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_, f);
-    Value b = curv::eval(*arg2_, f);
+    Value a = arg1_->eval(f);
+    Value b = arg2_->eval(f);
 
     switch (op_) {
     case Token::k_plus:
@@ -282,11 +282,11 @@ Semicolon_Op::exec(Frame& f) const
 Value
 curv::Or_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_, f);
+    Value a = arg1_->eval(f);
     if (a == Value{true})
         return a;
     if (a == Value{false}) {
-        Value b = curv::eval(*arg2_, f);
+        Value b = arg2_->eval(f);
         if (b.is_bool())
             return b;
         throw Exception(At_Phrase(*arg2_->source_, &f), "not a boolean value");
@@ -296,11 +296,11 @@ curv::Or_Expr::eval(Frame& f) const
 Value
 curv::And_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_, f);
+    Value a = arg1_->eval(f);
     if (a == Value{false})
         return a;
     if (a == Value{true}) {
-        Value b = curv::eval(*arg2_, f);
+        Value b = arg2_->eval(f);
         if (b.is_bool())
             return b;
         throw Exception(At_Phrase(*arg2_->source_, &f), "not a boolean value");
@@ -316,7 +316,7 @@ curv::If_Expr::eval(Frame& f) const
 void
 curv::If_Expr::generate(Frame& f, List_Builder& lb) const
 {
-    Value a = curv::eval(*arg1_, f);
+    Value a = arg1_->eval(f);
     if (a == Value{true})
         arg2_->generate(f, lb);
     else if (a == Value{false})
@@ -327,17 +327,17 @@ curv::If_Expr::generate(Frame& f, List_Builder& lb) const
 Value
 curv::If_Else_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_, f);
+    Value a = arg1_->eval(f);
     if (a == Value{true})
-        return curv::eval(*arg2_, f);
+        return arg2_->eval(f);
     if (a == Value{false})
-        return curv::eval(*arg3_, f);
+        return arg3_->eval(f);
     throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
 }
 void
 curv::If_Else_Expr::generate(Frame& f, List_Builder& lb) const
 {
-    Value a = curv::eval(*arg1_, f);
+    Value a = arg1_->eval(f);
     if (a == Value{true})
         arg2_->generate(f, lb);
     else if (a == Value{false})
@@ -348,22 +348,22 @@ curv::If_Else_Expr::generate(Frame& f, List_Builder& lb) const
 Value
 curv::Equal_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_, f);
-    Value b = curv::eval(*arg2_, f);
+    Value a = arg1_->eval(f);
+    Value b = arg2_->eval(f);
     return {a == b};
 }
 Value
 curv::Not_Equal_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_, f);
-    Value b = curv::eval(*arg2_, f);
+    Value a = arg1_->eval(f);
+    Value b = arg2_->eval(f);
     return {a != b};
 }
 Value
 curv::Less_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_, f);
-    Value b = curv::eval(*arg2_, f);
+    Value a = arg1_->eval(f);
+    Value b = arg2_->eval(f);
     // only 2 comparisons required to unbox two numbers and compare them, not 3
     if (a.get_num_or_nan() < b.get_num_or_nan())
         return {true};
@@ -375,8 +375,8 @@ curv::Less_Expr::eval(Frame& f) const
 Value
 curv::Greater_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_, f);
-    Value b = curv::eval(*arg2_, f);
+    Value a = arg1_->eval(f);
+    Value b = arg2_->eval(f);
     // only 2 comparisons required to unbox two numbers and compare them, not 3
     if (a.get_num_or_nan() > b.get_num_or_nan())
         return {true};
@@ -388,8 +388,8 @@ curv::Greater_Expr::eval(Frame& f) const
 Value
 curv::Less_Or_Equal_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_, f);
-    Value b = curv::eval(*arg2_, f);
+    Value a = arg1_->eval(f);
+    Value b = arg2_->eval(f);
     // only 2 comparisons required to unbox two numbers and compare them, not 3
     if (a.get_num_or_nan() <= b.get_num_or_nan())
         return {true};
@@ -401,8 +401,8 @@ curv::Less_Or_Equal_Expr::eval(Frame& f) const
 Value
 curv::Greater_Or_Equal_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_, f);
-    Value b = curv::eval(*arg2_, f);
+    Value a = arg1_->eval(f);
+    Value b = arg2_->eval(f);
     // only 2 comparisons required to unbox two numbers and compare them, not 3
     if (a.get_num_or_nan() >= b.get_num_or_nan())
         return {true};
@@ -414,8 +414,8 @@ curv::Greater_Or_Equal_Expr::eval(Frame& f) const
 Value
 curv::Power_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_, f);
-    Value b = curv::eval(*arg2_, f);
+    Value a = arg1_->eval(f);
+    Value b = arg2_->eval(f);
     Value r = Value(pow(a.get_num_or_nan(), b.get_num_or_nan()));
     if (r.is_num())
         return r;
@@ -425,8 +425,8 @@ curv::Power_Expr::eval(Frame& f) const
 Value
 curv::At_Expr::eval(Frame& f) const
 {
-    Value a = curv::eval(*arg1_, f);
-    Value b = curv::eval(*arg2_, f);
+    Value a = arg1_->eval(f);
+    Value b = arg2_->eval(f);
     auto& list {arg_to_list(a, At_Phrase(*arg1_->source_, &f))};
     int i =
         arg_to_int(b, 0, (int)(list.size()-1), At_Phrase(*arg2_->source_, &f));
@@ -474,7 +474,7 @@ curv::Record_Expr::eval(Frame& f) const
 {
     auto record = make<Record>();
     for (auto i : fields_)
-        record->fields_[i.first] = curv::eval(*i.second, f);
+        record->fields_[i.first] = i.second->eval(f);
     return {record};
 }
 
@@ -505,7 +505,7 @@ curv::Let_Op::eval(Frame& f) const
     Value* slots = &f[first_slot_];
     for (size_t i = 0; i < values_.size(); ++i)
         slots[i] = values_[i];
-    return curv::eval(*body_, f);
+    return body_->eval(f);
 }
 void
 curv::Let_Op::generate(Frame& f, List_Builder& lb) const
@@ -527,7 +527,7 @@ curv::Let_Op::exec(Frame& f) const
 void
 curv::For_Op::generate(Frame& f, List_Builder& lb) const
 {
-    Value listval = curv::eval(*list_, f);
+    Value listval = list_->eval(f);
     List& list = arg_to_list(listval, At_Phrase{*list_->source_, &f});
     for (size_t i = 0; i < list.size(); ++i) {
         f[slot_] = list[i];
@@ -537,7 +537,7 @@ curv::For_Op::generate(Frame& f, List_Builder& lb) const
 void
 curv::For_Op::exec(Frame& f) const
 {
-    Value listval = curv::eval(*list_, f);
+    Value listval = list_->eval(f);
     List& list = arg_to_list(listval, At_Phrase{*list_->source_, &f});
     for (size_t i = 0; i < list.size(); ++i) {
         f[slot_] = list[i];
@@ -548,16 +548,16 @@ curv::For_Op::exec(Frame& f) const
 void
 curv::Range_Gen::generate(Frame& f, List_Builder& lb) const
 {
-    Value firstv = curv::eval(*arg1_, f);
+    Value firstv = arg1_->eval(f);
     double first = firstv.get_num_or_nan();
 
-    Value lastv = curv::eval(*arg2_, f);
+    Value lastv = arg2_->eval(f);
     double last = lastv.get_num_or_nan();
 
     Value stepv;
     double step = 1.0;
     if (arg3_) {
-        stepv = curv::eval(*arg3_, f);
+        stepv = arg3_->eval(f);
         step = stepv.get_num_or_nan();
     }
 
