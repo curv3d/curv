@@ -346,8 +346,7 @@ Comma_Phrase::analyze(Environ& env) const
     {
         return curv::analyze_op(*args_[0].expr_, env);
     } else {
-        Shared<Sequence_Expr> seq =
-            Sequence_Expr::make(args_.size(), share(*this));
+        auto seq = Sequence_Gen::make(args_.size(), share(*this));
         for (size_t i = 0; i < args_.size(); ++i)
             (*seq)[i] = analyze_op(*args_[i].expr_, env);
         return seq;
@@ -567,7 +566,7 @@ Let_Phrase::analyze(Environ& env) const
     env.frame_maxslots = env2.frame_maxslots;
     assert(env.frame_maxslots >= bindings.size());
 
-    return make<Let_Expr>(share(*this),
+    return make<Let_Op>(share(*this),
         first_slot, std::move(values), body);
 }
 

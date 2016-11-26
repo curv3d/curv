@@ -462,13 +462,8 @@ curv::List2_Expr::eval(Frame& f) const
     return {lb.get_list()};
 }
 
-Value
-curv::Sequence_Expr_Base::eval(Frame& f) const
-{
-    throw Exception{At_Phrase{*source_, &f}, "not an expression"};
-}
 void
-curv::Sequence_Expr_Base::generate(Frame& f, List_Builder& lb) const
+curv::Sequence_Gen_Base::generate(Frame& f, List_Builder& lb) const
 {
     for (size_t i = 0; i < this->size(); ++i)
         (*this)[i]->generate(f, lb);
@@ -505,7 +500,7 @@ curv::Module_Expr::eval_module(System& sys, Frame* f) const
 }
 
 Value
-curv::Let_Expr::eval(Frame& f) const
+curv::Let_Op::eval(Frame& f) const
 {
     Value* slots = &f[first_slot_];
     for (size_t i = 0; i < values_.size(); ++i)
@@ -513,12 +508,20 @@ curv::Let_Expr::eval(Frame& f) const
     return curv::eval(*body_, f);
 }
 void
-curv::Let_Expr::generate(Frame& f, List_Builder& lb) const
+curv::Let_Op::generate(Frame& f, List_Builder& lb) const
 {
     Value* slots = &f[first_slot_];
     for (size_t i = 0; i < values_.size(); ++i)
         slots[i] = values_[i];
     body_->generate(f, lb);
+}
+void
+curv::Let_Op::exec(Frame& f) const
+{
+    Value* slots = &f[first_slot_];
+    for (size_t i = 0; i < values_.size(); ++i)
+        slots[i] = values_[i];
+    body_->exec(f);
 }
 
 Value

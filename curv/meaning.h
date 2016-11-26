@@ -418,6 +418,7 @@ struct List2_Expr : public Expression
     virtual Value eval(Frame&) const override;
 };
 
+// TODO: List_Expr is deprecated.
 struct List_Expr_Base : public Expression,
     public aux::Tail_Array_Data<Shared<const Operation>>
 {
@@ -429,19 +430,18 @@ struct List_Expr_Base : public Expression,
 };
 using List_Expr = aux::Tail_Array<List_Expr_Base>;
 
-/// a Sequence_Expr is a construction like (), (a,), (a,b,c)
+/// a Sequence_Gen is a construction like (), (a,), (a,b,c)
 /// which is a generator but not an expression, and which generates
 /// a sequence of values.
-struct Sequence_Expr_Base : public Expression,
+struct Sequence_Gen_Base : public Operation,
     public aux::Tail_Array_Data<Shared<const Operation>>
 {
-    Sequence_Expr_Base(Shared<const Phrase> source)
-    : Expression(std::move(source)) {}
+    Sequence_Gen_Base(Shared<const Phrase> source)
+    : Operation(std::move(source)) {}
 
-    virtual Value eval(Frame&) const override;
     virtual void generate(Frame&, List_Builder&) const override;
 };
-using Sequence_Expr = aux::Tail_Array<Sequence_Expr_Base>;
+using Sequence_Gen = aux::Tail_Array<Sequence_Gen_Base>;
 
 struct Record_Expr : public Expression
 {
@@ -465,19 +465,19 @@ struct Module_Expr : public Expression
     Shared<Module> eval_module(System&, Frame*) const;
 };
 
-struct Let_Expr : public Expression
+struct Let_Op : public Operation
 {
     size_t first_slot_;
     std::vector<Value> values_; // or, a Tail_Array
     Shared<const Operation> body_;
 
-    Let_Expr(
+    Let_Op(
         Shared<const Phrase> source,
         size_t first_slot,
         std::vector<Value> values,
         Shared<const Operation> body)
     :
-        Expression(std::move(source)),
+        Operation(std::move(source)),
         first_slot_(first_slot),
         values_(std::move(values)),
         body_(std::move(body))
@@ -485,6 +485,7 @@ struct Let_Expr : public Expression
 
     virtual Value eval(Frame&) const override;
     virtual void generate(Frame&, List_Builder&) const override;
+    virtual void exec(Frame&) const override;
 };
 
 struct For_Expr : public Expression

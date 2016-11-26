@@ -13,17 +13,21 @@ OpenSCADbis proposal
   * ( definition; phrase )
   * if (...) action
   * for (...) action
-  * let (...) action
-  * controversial:
+  * (def1, def2) is a compound definition that is order independent:
+    (def2,def1) has the same meaning. The scoping rules depend on context.
+    This meaning arises in let(def)phrase, {def}.
+  * In a comma phrase, definitions and operations cannot be mixed.
+    (def1,def2) is unordered, (op1,op2) is ordered.
+    * It's better if we have a clear distinction between `,` and `;`.
+      It's confusing if they overlap. Which they certainly do in module scope.
+    * In a comma phrase, can a definition be mixed with an operation?
+      Maybe no? (def1,def2) is unordered, (op1,op2) is ordered.
     * (action1 , action2) is an action, not a generator --
       semantically consistent, but not important, and potentially confusing:
       stylistically you should use `;` if a compound action
       (as opposed to a compound generator) is required.
-    * (def1, def2) -- does this have any independent meaning? Or utility?
-      It's a compound definition that isn't sequentially scoped (internally).
-      It is order independent, (def2,def1) has the same meaning.
-      The external scoping rule depends on context in which it is used.
-      The independent meaning arises in let(def)phrase, {def}.
+    * If Action <: Definition then (act,def) makes sense. But this complicates
+      the semantics (ordered vs unordered) and there's no utility.
 * echo:
   * $ substitutions in string literals
   * echo argument is a single string

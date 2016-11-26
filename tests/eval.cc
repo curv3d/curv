@@ -346,6 +346,10 @@ TEST(curv, eval)
     FAILMSG("for (42=i) x", "for: not an identifier");
     SUCCESS("[for (i=[1,2,3]) i+1]", "[2,3,4]");
 
+    // generalized actions
+    SUCCESS("let(x=1)echo x", "");
+    EXPECT_EQ(console.str(), "ECHO: 1\n");
+
     // sequence generator
     SUCCESS("[for (i=[1,2,3]) if (i==2) (\"two\", \"2!\") else i]", 
         "[1,\"two\",\"2!\",3]");
