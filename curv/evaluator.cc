@@ -308,17 +308,28 @@ curv::And_Expr::eval(Frame& f) const
     throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
 }
 Value
-curv::If_Expr::eval(Frame& f) const
+curv::If_Op::eval(Frame& f) const
 {
     throw Exception{At_Phrase{*source_, &f},
         "if: not an expression (missing else clause)"};
 }
 void
-curv::If_Expr::generate(Frame& f, List_Builder& lb) const
+curv::If_Op::generate(Frame& f, List_Builder& lb) const
 {
     Value a = arg1_->eval(f);
     if (a == Value{true})
         arg2_->generate(f, lb);
+    else if (a == Value{false})
+        return;
+    else
+        throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
+}
+void
+curv::If_Op::exec(Frame& f) const
+{
+    Value a = arg1_->eval(f);
+    if (a == Value{true})
+        arg2_->exec(f);
     else if (a == Value{false})
         return;
     else

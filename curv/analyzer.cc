@@ -473,7 +473,7 @@ Shared<Meaning>
 If_Phrase::analyze(Environ& env) const
 {
     if (else_expr_ == nullptr) {
-        return make<If_Expr>(
+        return make<If_Op>(
             share(*this),
             analyze_op(*condition_, env),
             analyze_op(*then_expr_, env));

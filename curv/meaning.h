@@ -510,23 +510,24 @@ struct For_Op : public Operation
     virtual void exec(Frame&) const override;
 };
 
-struct If_Expr : public Expression
+struct If_Op : public Operation
 {
     Shared<Operation> arg1_;
     Shared<Operation> arg2_;
 
-    If_Expr(
+    If_Op(
         Shared<const Phrase> source,
         Shared<Operation> arg1,
         Shared<Operation> arg2)
     :
-        Expression(source),
+        Operation(source),
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2))
     {}
 
-    virtual Value eval(Frame&) const override;
+    virtual Value eval(Frame&) const override; // error message: missing else
     virtual void generate(Frame&, List_Builder&) const override;
+    virtual void exec(Frame&) const override;
 };
 
 struct If_Else_Expr : public Expression
