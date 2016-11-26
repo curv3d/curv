@@ -524,20 +524,24 @@ curv::Let_Op::exec(Frame& f) const
     body_->exec(f);
 }
 
-Value
-curv::For_Expr::eval(Frame& f) const
-{
-    throw Exception{At_Phrase{*source_, &f}, "not an expression"};
-}
-
 void
-curv::For_Expr::generate(Frame& f, List_Builder& lb) const
+curv::For_Op::generate(Frame& f, List_Builder& lb) const
 {
     Value listval = curv::eval(*list_, f);
     List& list = arg_to_list(listval, At_Phrase{*list_->source_, &f});
     for (size_t i = 0; i < list.size(); ++i) {
         f[slot_] = list[i];
         body_->generate(f, lb);
+    }
+}
+void
+curv::For_Op::exec(Frame& f) const
+{
+    Value listval = curv::eval(*list_, f);
+    List& list = arg_to_list(listval, At_Phrase{*list_->source_, &f});
+    for (size_t i = 0; i < list.size(); ++i) {
+        f[slot_] = list[i];
+        body_->exec(f);
     }
 }
 

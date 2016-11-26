@@ -488,26 +488,26 @@ struct Let_Op : public Operation
     virtual void exec(Frame&) const override;
 };
 
-struct For_Expr : public Expression
+struct For_Op : public Operation
 {
     size_t slot_;
     Shared<const Operation> list_;
     Shared<const Operation> body_;
 
-    For_Expr(
+    For_Op(
         Shared<const Phrase> source,
         size_t slot,
         Shared<const Operation> list,
         Shared<const Operation> body)
     :
-        Expression(std::move(source)),
+        Operation(std::move(source)),
         slot_(slot),
         list_(std::move(list)),
         body_(std::move(body))
     {}
 
-    virtual Value eval(Frame&) const override;
     virtual void generate(Frame&, List_Builder&) const override;
+    virtual void exec(Frame&) const override;
 };
 
 struct If_Expr : public Expression

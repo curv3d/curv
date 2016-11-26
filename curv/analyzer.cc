@@ -101,7 +101,7 @@ Bindings::analyze_values(Environ& env)
     size_t n = slot_phrases_.size();
     auto slots = make_list(n);
     for (size_t i = 0; i < n; ++i) {
-        auto expr = curv::analyze_op(*slot_phrases_[i], env);
+        auto expr = analyze_op(*slot_phrases_[i], env);
         if (is_recursive_function(i)) {
             auto& l = dynamic_cast<Lambda_Expr&>(*expr);
             (*slots)[i] = {make<Lambda>(l.body_,l.nargs_,l.nslots_)};
@@ -146,12 +146,12 @@ Unary_Phrase::analyze(Environ& env) const
     case Token::k_not:
         return make<Not_Expr>(
             share(*this),
-            curv::analyze_op(*arg_, env));
+            analyze_op(*arg_, env));
     default:
         return make<Prefix_Expr>(
             share(*this),
             op_.kind,
-            curv::analyze_op(*arg_, env));
+            analyze_op(*arg_, env));
     }
 }
 
@@ -214,7 +214,7 @@ Lambda_Phrase::analyze(Environ& env) const
         }
     };
     Arg_Environ env2(&env, params, recursive_);
-    auto expr = curv::analyze_op(*right_, env2);
+    auto expr = analyze_op(*right_, env2);
     auto src = share(*this);
     Shared<List_Expr> nonlocals =
         List_Expr::make(env2.nonlocal_exprs_.size(), src);
@@ -233,58 +233,58 @@ Binary_Phrase::analyze(Environ& env) const
     case Token::k_or:
         return make<Or_Expr>(
             share(*this),
-            curv::analyze_op(*left_, env),
-            curv::analyze_op(*right_, env));
+            analyze_op(*left_, env),
+            analyze_op(*right_, env));
     case Token::k_and:
         return make<And_Expr>(
             share(*this),
-            curv::analyze_op(*left_, env),
-            curv::analyze_op(*right_, env));
+            analyze_op(*left_, env),
+            analyze_op(*right_, env));
     case Token::k_equal:
         return make<Equal_Expr>(
             share(*this),
-            curv::analyze_op(*left_, env),
-            curv::analyze_op(*right_, env));
+            analyze_op(*left_, env),
+            analyze_op(*right_, env));
     case Token::k_not_equal:
         return make<Not_Equal_Expr>(
             share(*this),
-            curv::analyze_op(*left_, env),
-            curv::analyze_op(*right_, env));
+            analyze_op(*left_, env),
+            analyze_op(*right_, env));
     case Token::k_less:
         return make<Less_Expr>(
             share(*this),
-            curv::analyze_op(*left_, env),
-            curv::analyze_op(*right_, env));
+            analyze_op(*left_, env),
+            analyze_op(*right_, env));
     case Token::k_greater:
         return make<Greater_Expr>(
             share(*this),
-            curv::analyze_op(*left_, env),
-            curv::analyze_op(*right_, env));
+            analyze_op(*left_, env),
+            analyze_op(*right_, env));
     case Token::k_less_or_equal:
         return make<Less_Or_Equal_Expr>(
             share(*this),
-            curv::analyze_op(*left_, env),
-            curv::analyze_op(*right_, env));
+            analyze_op(*left_, env),
+            analyze_op(*right_, env));
     case Token::k_greater_or_equal:
         return make<Greater_Or_Equal_Expr>(
             share(*this),
-            curv::analyze_op(*left_, env),
-            curv::analyze_op(*right_, env));
+            analyze_op(*left_, env),
+            analyze_op(*right_, env));
     case Token::k_power:
         return make<Power_Expr>(
             share(*this),
-            curv::analyze_op(*left_, env),
-            curv::analyze_op(*right_, env));
+            analyze_op(*left_, env),
+            analyze_op(*right_, env));
     case Token::k_dot:
         if (auto id = dynamic_shared_cast<Identifier>(right_))
             return make<Dot_Expr>(
                 share(*this),
-                curv::analyze_op(*left_, env),
+                analyze_op(*left_, env),
                 id->atom_);
         if (auto list = dynamic_shared_cast<List_Phrase>(right_))
             return make<At_Expr>(
                 share(*this),
-                curv::analyze_op(*left_, env),
+                analyze_op(*left_, env),
                 analyze_op(*list->body_, env));
         throw Exception(At_Phrase(*right_, env),
             "invalid expression after '.'");
@@ -292,8 +292,8 @@ Binary_Phrase::analyze(Environ& env) const
         return make<Infix_Expr>(
             share(*this),
             op_.kind,
-            curv::analyze_op(*left_, env),
-            curv::analyze_op(*right_, env));
+            analyze_op(*left_, env),
+            analyze_op(*right_, env));
     }
 }
 
@@ -334,8 +334,8 @@ Semicolon_Phrase::analyze(Environ& env) const
 {
     return make<Semicolon_Op>(
         share(*this),
-        curv::analyze_op(*left_, env),
-        curv::analyze_op(*right_, env));
+        analyze_op(*left_, env),
+        analyze_op(*right_, env));
 }
 
 Shared<Meaning>
@@ -344,7 +344,7 @@ Comma_Phrase::analyze(Environ& env) const
     if (args_.size() == 1
         && args_[0].comma_.kind == Token::k_missing)
     {
-        return curv::analyze_op(*args_[0].expr_, env);
+        return analyze_op(*args_[0].expr_, env);
     } else {
         auto seq = Sequence_Gen::make(args_.size(), share(*this));
         for (size_t i = 0; i < args_.size(); ++i)
@@ -401,7 +401,7 @@ analyze_definition(
     if (dict.find(name) != dict.end())
         throw Exception(At_Phrase(*def.name_, env),
             stringify(name, ": multiply defined"));
-    dict[name] = curv::analyze_op(*def.definiens_, env);
+    dict[name] = analyze_op(*def.definiens_, env);
 }
 
 Shared<Meaning>
@@ -447,7 +447,7 @@ Module_Phrase::analyze_module(Environ& env) const
     module->slots_ = fields.analyze_values(env2);
     Shared<List_Expr> xelements = {List_Expr::make(elements.size(), self)};
     for (size_t i = 0; i < elements.size(); ++i)
-        (*xelements)[i] = curv::analyze_op(*elements[i], env2);
+        (*xelements)[i] = analyze_op(*elements[i], env2);
     module->elements_ = xelements;
     module->frame_nslots_ = env2.frame_maxslots;
     return module;
@@ -475,14 +475,14 @@ If_Phrase::analyze(Environ& env) const
     if (else_expr_ == nullptr) {
         return make<If_Expr>(
             share(*this),
-            curv::analyze_op(*condition_, env),
-            curv::analyze_op(*then_expr_, env));
+            analyze_op(*condition_, env),
+            analyze_op(*then_expr_, env));
     } else {
         return make<If_Else_Expr>(
             share(*this),
-            curv::analyze_op(*condition_, env),
-            curv::analyze_op(*then_expr_, env),
-            curv::analyze_op(*else_expr_, env));
+            analyze_op(*condition_, env),
+            analyze_op(*then_expr_, env),
+            analyze_op(*else_expr_, env));
     }
 }
 
@@ -559,10 +559,10 @@ Let_Phrase::analyze(Environ& env) const
     int first_slot = env.frame_nslots;
     std::vector<Value> values(bindings.size());
     for (auto b : bindings) {
-        auto expr = curv::analyze_op(*b.second.phrase_, env2);
+        auto expr = analyze_op(*b.second.phrase_, env2);
         values[b.second.slot_-first_slot] = {make<Thunk>(expr)};
     }
-    auto body = curv::analyze_op(*body_, env2);
+    auto body = analyze_op(*body_, env2);
     env.frame_maxslots = env2.frame_maxslots;
     assert(env.frame_maxslots >= bindings.size());
 
@@ -583,7 +583,7 @@ For_Phrase::analyze(Environ& env) const
         throw Exception(At_Phrase(*def->left_, env), "for: not an identifier");
     Atom name = id->atom_;
 
-    auto list = curv::analyze_op(*def->right_, env);
+    auto list = analyze_op(*def->right_, env);
 
     int slot = env.frame_nslots;
     struct For_Environ : public Environ
@@ -609,11 +609,10 @@ For_Phrase::analyze(Environ& env) const
         }
     };
     For_Environ body_env(env, name, slot);
-    auto body = curv::analyze_op(*body_, body_env);
+    auto body = analyze_op(*body_, body_env);
     env.frame_maxslots = body_env.frame_maxslots;
 
-    return make<For_Expr>(share(*this),
-        slot, list, body);
+    return make<For_Op>(share(*this), slot, list, body);
 }
 
 Shared<Meaning>
@@ -621,9 +620,9 @@ Range_Phrase::analyze(Environ& env) const
 {
     return make<Range_Gen>(
         share(*this),
-        curv::analyze_op(*first_, env),
-        curv::analyze_op(*last_, env),
-        step_ ? curv::analyze_op(*step_, env) : nullptr);
+        analyze_op(*first_, env),
+        analyze_op(*last_, env),
+        step_ ? analyze_op(*step_, env) : nullptr);
 }
 
 } // namespace curv

@@ -12,7 +12,6 @@ OpenSCADbis proposal
   * ( action; definition )
   * ( definition; phrase )
   * if (...) action
-  * for (...) action
   * (def1, def2) is a compound definition that is order independent:
     (def2,def1) has the same meaning. The scoping rules depend on context.
     This meaning arises in let(def)phrase, {def}.

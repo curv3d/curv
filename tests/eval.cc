@@ -347,8 +347,10 @@ TEST(curv, eval)
     SUCCESS("[for (i=[1,2,3]) i+1]", "[2,3,4]");
 
     // generalized actions
-    SUCCESS("let(x=1)echo x", "");
-    EXPECT_EQ(console.str(), "ECHO: 1\n");
+    SUCCESS("let(a=1)for(b=[a..2])echo b;0", "0");
+    EXPECT_EQ(console.str(),
+        "ECHO: 1\n"
+        "ECHO: 2\n");
 
     // sequence generator
     SUCCESS("[for (i=[1,2,3]) if (i==2) (\"two\", \"2!\") else i]", 
