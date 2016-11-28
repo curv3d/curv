@@ -470,10 +470,7 @@ Shared<Meaning>
 Brace_Phrase::analyze(Environ& env) const
 {
     if (auto semis = dynamic_cast<const Semicolon_Phrase*>(&*body_))
-        throw Exception(
-            At_Location(
-                {semis->left_->location().script(), semis->op_},
-                env.eval_frame_),
+        throw Exception(At_Token(semis->op_, *semis, env),
             "illegal `;` in record constructor");
     auto record = make<Record_Expr>(share(*this));
     each_item(*body_, [&](const Phrase& item)->void {

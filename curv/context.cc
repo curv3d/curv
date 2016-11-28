@@ -2,18 +2,19 @@
 // Distributed under The MIT License.
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
-#include <curv/context.h>
 #include <curv/analyzer.h>
+#include <curv/context.h>
+#include <curv/scanner.h>
 
 using namespace curv;
 
 void
-curv::Context::get_locations(std::list<Location>&) const
+Context::get_locations(std::list<Location>&) const
 {
 }
 
 void
-curv::At_Frame::get_locations(std::list<Location>& locs) const
+At_Frame::get_locations(std::list<Location>& locs) const
 {
     get_frame_locations(frame_, locs);
 }
@@ -26,23 +27,37 @@ curv::get_frame_locations(const Frame* f, std::list<Location>& locs)
             locs.push_back(f->call_phrase->location());
 }
 
+At_Token::At_Token(Token tok, const Scanner& scanner)
+:
+    loc_{scanner.script_, tok},
+    eval_frame_(scanner.eval_frame_)
+{
+}
+
+At_Token::At_Token(Token tok, const Phrase& phrase, Environ& env)
+:
+    loc_{phrase.location().script(), tok},
+    eval_frame_{env.eval_frame_}
+{
+}
+
 void
-curv::At_Location::get_locations(std::list<Location>& locs) const
+At_Token::get_locations(std::list<Location>& locs) const
 {
     locs.push_back(loc_);
     get_frame_locations(eval_frame_, locs);
 }
 
-curv::At_Phrase::At_Phrase(const Phrase& phrase, Frame* frame)
+At_Phrase::At_Phrase(const Phrase& phrase, Frame* frame)
 : phrase_(phrase), frame_(frame)
 {}
 
-curv::At_Phrase::At_Phrase(const Phrase& phrase, Environ& env)
+At_Phrase::At_Phrase(const Phrase& phrase, Environ& env)
 : phrase_(phrase), frame_(env.eval_frame_)
 {}
 
 void
-curv::At_Phrase::get_locations(std::list<Location>& locs) const
+At_Phrase::get_locations(std::list<Location>& locs) const
 {
     locs.push_back(phrase_.location());
     get_frame_locations(frame_, locs);

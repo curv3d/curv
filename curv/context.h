@@ -13,6 +13,7 @@ namespace curv {
 
 class Phrase;
 class Environ;
+class Scanner;
 
 /// A Context describes the source code Location and call stack
 /// of a compile-time or run time error.
@@ -44,14 +45,13 @@ struct At_Frame : public Context
 
 void get_frame_locations(const Frame* f, std::list<Location>& locs);
 
-struct At_Location : public Context
+struct At_Token : public Context
 {
     Location loc_;
     Frame* eval_frame_;
 
-    At_Location(Location loc, Frame* f)
-    : loc_(loc), eval_frame_(f)
-    {}
+    At_Token(Token, const Scanner&);
+    At_Token(Token, const Phrase&, Environ&);
 
     virtual void get_locations(std::list<Location>&) const override;
 };

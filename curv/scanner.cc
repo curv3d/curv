@@ -4,6 +4,7 @@
 
 #include <curv/scanner.h>
 #include <curv/exception.h>
+#include <curv/context.h>
 
 using namespace curv;
 using namespace std;

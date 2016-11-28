@@ -25,7 +25,6 @@ OpenSCADbis proposal
 # Simpler, More General Grammar
 * refactor/cleanup
   * get rid of List_Expr, or rename to List_Sequence_Expr
-  * replace At_Location with At_Token(tok,phrase,env)
   * (...<eof> error reports position of unmatched (
     * and [
     * and {
