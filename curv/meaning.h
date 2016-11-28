@@ -407,28 +407,29 @@ struct Range_Gen : public Operation
     virtual void generate(Frame&, List_Builder&) const override;
 };
 
-struct List2_Expr : public Expression
+struct List_Expr : public Expression
 {
     Shared<Operation> generator_;
 
-    List2_Expr(Shared<const Phrase> source, Shared<Operation> gen)
+    List_Expr(Shared<const Phrase> source, Shared<Operation> gen)
     : Expression(std::move(source)), generator_(std::move(gen))
     {}
 
     virtual Value eval(Frame&) const override;
 };
 
-// TODO: List_Expr is deprecated.
-struct List_Expr_Base : public Expression,
+// TODO: List_Sequence_Expr is deprecated.
+// It's the same as List_Expr(Sequence_Gen).
+struct List_Sequence_Expr_Base : public Expression,
     public aux::Tail_Array_Data<Shared<const Operation>>
 {
-    List_Expr_Base(Shared<const Phrase> source)
+    List_Sequence_Expr_Base(Shared<const Phrase> source)
     : Expression(std::move(source)) {}
 
     virtual Value eval(Frame&) const override;
     Shared<List> eval_list(Frame&) const;
 };
-using List_Expr = aux::Tail_Array<List_Expr_Base>;
+using List_Sequence_Expr = aux::Tail_Array<List_Sequence_Expr_Base>;
 
 /// a Sequence_Gen is a construction like (), (a,), (a,b,c)
 /// which is a generator but not an expression, and which generates
@@ -456,7 +457,7 @@ struct Module_Expr : public Expression
 {
     Shared<Module::Dictionary> dictionary_;
     Shared<List> slots_; // or, a Tail_Array
-    Shared<const List_Expr> elements_;
+    Shared<const List_Sequence_Expr> elements_;
     size_t frame_nslots_;
 
     Module_Expr(Shared<const Phrase> source) : Expression(source) {}
@@ -556,14 +557,14 @@ struct If_Else_Op : public Operation
 struct Lambda_Expr : public Expression
 {
     Shared<Operation> body_;
-    Shared<List_Expr> nonlocals_;
+    Shared<List_Sequence_Expr> nonlocals_;
     size_t nargs_;
     size_t nslots_;
 
     Lambda_Expr(
         Shared<const Phrase> source,
         Shared<Operation> body,
-        Shared<List_Expr> nonlocals,
+        Shared<List_Sequence_Expr> nonlocals,
         size_t nargs,
         size_t nslots)
     :

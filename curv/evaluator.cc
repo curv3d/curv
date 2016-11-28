@@ -459,7 +459,7 @@ curv::At_Expr::eval(Frame& f) const
 }
 
 Shared<List>
-curv::List_Expr_Base::eval_list(Frame& f) const
+curv::List_Sequence_Expr_Base::eval_list(Frame& f) const
 {
     // TODO: This used to have a more efficient implementation, assuming that
     // all elements of the list constructor are pure expressions. An optimizing
@@ -471,13 +471,13 @@ curv::List_Expr_Base::eval_list(Frame& f) const
 }
 
 Value
-curv::List_Expr_Base::eval(Frame& f) const
+curv::List_Sequence_Expr_Base::eval(Frame& f) const
 {
     return {eval_list(f)};
 }
 
 Value
-curv::List2_Expr::eval(Frame& f) const
+curv::List_Expr::eval(Frame& f) const
 {
     // TODO: if the # of elements produced by the generator is known at compile
     // time, then the List object could be allocated directly and filled in,

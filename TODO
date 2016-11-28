@@ -24,7 +24,7 @@ OpenSCADbis proposal
 
 # Simpler, More General Grammar
 * refactor/cleanup
-  * get rid of List_Expr, or rename to List_Sequence_Expr
+  * get rid of List_Sequence_Expr
   * (...<eof> error reports position of unmatched (
     * and [
     * and {
@@ -53,7 +53,8 @@ OpenSCADbis proposal
 
 It's complicated...
 * names: Phrase or Syntax?
-* definitions are compiled into actions.
+* A definition is compiled into an action that stores a value in a run-time
+  data structure for each name that it binds (modulo constants).
   * module (recursive scope): A definition may bind multiple names. Each such
     name has a slot containing the same Action thunk, which when evaluated
     updates all of the slots with their values.
