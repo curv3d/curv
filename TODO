@@ -1,17 +1,42 @@
+# 0.2: geometry
+* simulate built-in cube using GLSL on ShaderToy.com
+  * make it rotate with mouse.
+* make same code run in an OpenGL window created using C++.
+* built-in cube(n).
+
 OpenSCADbis proposal
 
 # 0.1: Minimum Viable Language
-* semicolon and comma operators
-  * get rid of List_Expr (refactor)
+* echo:
+  * $ substitutions in string literals
+  * echo argument is a single string
+* more debug actions:
+  * assert(condition) <=> if (!condition) error("assertion failed")
+  * require(predicate) expr <=> let(tmp=expr)(assert(p tmp);tmp)
+  * (x : predicate) -> body
+  * error(string)
+  * warning(string)
+  * echo_timing(string,expr_value_discarded)
+  * echo_timing(string) expr_value_returned
+  * enter_debugger, aka `break`, `debug`
+* len(module), module.[i]
+* floor, ceil
+
+# Simpler, More General Grammar
+* refactor/cleanup
+  * get rid of List_Expr, or rename to List_Sequence_Expr
+  * replace At_Location with At_Token(tok,phrase,env)
   * { <semicolons> } -- error on ;, each_item(phrase,functor) otherwise
   * (...<eof> error reports position of unmatched (
     * and [
     * and {
+* Convert `let` and `for` into metafunctions.
+  If this causes pain, change/regularize the grammar.
+* Simple, yaccable grammar with no conflicts or precedence declarations.
 * generalized phrases
   * ( definition )
   * ( action; definition )
   * ( definition; phrase )
-  * if (...) action
   * (def1, def2) is a compound definition that is order independent:
     (def2,def1) has the same meaning. The scoping rules depend on context.
     This meaning arises in let(def)phrase, {def}.
@@ -27,20 +52,6 @@ OpenSCADbis proposal
       (as opposed to a compound generator) is required.
     * If Action <: Definition then (act,def) makes sense. But this complicates
       the semantics (ordered vs unordered) and there's no utility.
-* echo:
-  * $ substitutions in string literals
-  * echo argument is a single string
-* more debug actions:
-  * assert(condition) <=> if (!condition) error("assertion failed")
-  * require(predicate) expr <=> let(tmp=expr)(assert(p tmp);tmp)
-  * (x : predicate) -> body
-  * error(string)
-  * warning(string)
-  * echo_timing(string,expr_value_discarded)
-  * echo_timing(string) expr_value_returned
-  * enter_debugger, aka `break`, `debug`
-* len(module), module.[i]
-* floor, ceil
 
 It's complicated...
 * names: Phrase or Syntax?
