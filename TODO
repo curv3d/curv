@@ -26,7 +26,6 @@ OpenSCADbis proposal
 * refactor/cleanup
   * get rid of List_Expr, or rename to List_Sequence_Expr
   * replace At_Location with At_Token(tok,phrase,env)
-  * { <semicolons> } -- error on ;, each_item(phrase,functor) otherwise
   * (...<eof> error reports position of unmatched (
     * and [
     * and {

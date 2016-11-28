@@ -453,19 +453,35 @@ Module_Phrase::analyze_module(Environ& env) const
     return module;
 }
 
-Shared<Meaning>
-Record_Phrase::analyze(Environ& env) const
+/// In the grammar, a <commas> phrase is one or more constituent phrases
+/// separated by commas. This function iterates over each constituent phrase.
+static inline void
+each_item(const Phrase& phrase, std::function<void(const Phrase&)> func)
 {
-    Shared<Record_Expr> record =
-        make<Record_Expr>(share(*this));
-    for (auto i : args_) {
-        auto def = i.expr_->analyze_def(env);
-        if (def != nullptr) {
-            analyze_definition(*def, record->fields_, env);
-        } else {
-            throw Exception(At_Phrase(*i.expr_, env), "not a definition");
-        }
+    if (auto commas = dynamic_cast<const Comma_Phrase*>(&phrase)) {
+        for (auto& i : commas->args_)
+            func(*i.expr_);
+    } else {
+        func(phrase);
     }
+}
+
+Shared<Meaning>
+Brace_Phrase::analyze(Environ& env) const
+{
+    if (auto semis = dynamic_cast<const Semicolon_Phrase*>(&*body_))
+        throw Exception(
+            At_Location(
+                {semis->left_->location().script(), semis->op_},
+                env.eval_frame_),
+            "illegal `;` in record constructor");
+    auto record = make<Record_Expr>(share(*this));
+    each_item(*body_, [&](const Phrase& item)->void {
+        if (auto def = item.analyze_def(env))
+            analyze_definition(*def, record->fields_, env);
+        else
+            throw Exception(At_Phrase(item, env), "not a definition");
+    });
     return record;
 }
 

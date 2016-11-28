@@ -204,32 +204,9 @@ struct List_Phrase : public Delimited_Phrase
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
-// TODO: Derive from Delimited_Phrase.
-struct Record_Phrase : public Phrase
+struct Brace_Phrase : public Delimited_Phrase
 {
-    // an expression followed by an optional comma
-    struct Arg
-    {
-        Shared<Phrase> expr_;
-        Token comma_;
-
-        Arg(Shared<Phrase> expr) : expr_(expr) {}
-    };
-
-    const Script& script_;
-    Token lparen_;
-    std::vector<Arg> args_;
-    Token rparen_;
-
-    Record_Phrase(const Script& script, Token lparen)
-    : script_(script), lparen_(lparen)
-    {}
-
-    virtual Location location() const override
-    {
-        return Location(script_, lparen_).ending_at(rparen_);
-    }
-
+    using Delimited_Phrase::Delimited_Phrase;
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 

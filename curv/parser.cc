@@ -5,13 +5,16 @@
 // I'm currently using a hand coded recursive descent parser.
 // Alternatives are: Bison, Lemon, Boost.Spirit (maybe X3).
 //
-// Future extensions:
-// * Greedy implementation of 'if' and 'let' whose right expression argument
-//   consumes the longest possible match. With Bison, the obvious implementation
-//   is as a low precedence right associative operator. But, for more
-//   flexibility, I want to implement these operators as part of 'chain'.
-//   That's easy with recursive descent, but I don't know how to code that
-//   in Bison.
+// I use a greedy implementation of 'if' and 'let': the right argument consumes
+// the longest possible match. With Bison, the obvious implementation is as a
+// low precedence right associative operator. But, for more flexibility,
+// I implement these operators as part of 'chain'. That's easy with recursive
+// descent, but I don't know how to code that in Bison.
+//
+// TODO: simple yaccable grammar, no conflicts or precedence declarations.
+// TODO: $(expression) substitutions in string literals.
+// TODO: `let` and `for` are metafunctions, not part of the grammar.
+// TODO: infix `where` operator. Binds tighter than `->`.
 
 #include <curv/parse.h>
 #include <curv/scanner.h>
@@ -321,16 +324,14 @@ parse_chain(Scanner& scanner)
     }
 }
 
-// primary : numeral | identifier | string | parens | list | record
+// primary : numeral | identifier | string | parens | list | braces
 //  | 'if' ( expr ) expr
 //  | 'if' ( expr ) expr 'else' expr
 //  | 'let' parens expr
 //  | 'for' parens expr
-// parens : ( args )
-// list : [ args ]
-// record : { args }
-// args : | arglist | arglist ,
-// arglist : expr | arglist , expr
+// parens : ( semicolons )
+// list : [ semicolons ]
+// braces : { semicolons }
 //
 // If `what` is nullptr, then we are parsing an optional primary,
 // and we return nullptr if no primary is found.
@@ -402,32 +403,11 @@ parse_primary(Scanner& scanner, const char* what)
       }
     case Token::k_lbrace:
       {
-        auto parens = make<Record_Phrase>(scanner.script_, tok);
-        Token::Kind close = Token::k_rbrace;
-        const char* error = "bad token in record constructor";
-        for (;;) {
-            tok = scanner.get_token();
-            if (tok.kind == close) {
-        rparen:
-                parens->rparen_ = tok;
-                return parens;
-            }
-            scanner.push_token(tok);
-            auto expr = parse_expr(scanner);
-            Record_Phrase::Arg arg(expr);
-            tok = scanner.get_token();
-            if (tok.kind == Token::k_comma)
-                arg.comma_ = tok;
-            parens->args_.push_back(std::move(arg));
-
-            if (tok.kind == Token::k_comma) {
-                continue;
-            } else if (tok.kind == close) {
-                goto rparen;
-            } else {
-                throw Exception(At_Token(tok, scanner), error);
-            }
-        }
+        auto body = parse_semicolons(scanner);
+        auto tok2 = scanner.get_token();
+        if (tok2.kind != Token::k_rbrace)
+            throw Exception(At_Token(tok2, scanner), "illegal token");
+        return make<Brace_Phrase>(tok, body, tok2);
       }
     case Token::k_end:
         if (what != nullptr) {
