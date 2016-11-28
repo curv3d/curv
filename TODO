@@ -25,9 +25,6 @@ OpenSCADbis proposal
 # Simpler, More General Grammar
 * refactor/cleanup
   * get rid of List_Sequence_Expr
-  * (...<eof> error reports position of unmatched (
-    * and [
-    * and {
 * Convert `let` and `for` into metafunctions.
   If this causes pain, change/regularize the grammar.
 * Simple, yaccable grammar with no conflicts or precedence declarations.

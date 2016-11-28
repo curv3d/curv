@@ -324,6 +324,19 @@ parse_chain(Scanner& scanner)
     }
 }
 
+template<class Ph>
+Shared<Phrase>
+parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
+{
+    auto body = parse_semicolons(scanner);
+    auto tok2 = scanner.get_token();
+    if (tok2.kind == Token::k_end)
+        throw Exception(At_Token(tok, scanner), "unmatched delimiter");
+    if (tok2.kind != close)
+        throw Exception(At_Token(tok2, scanner), "illegal token");
+    return make<Ph>(tok, body, tok2);
+}
+
 // primary : numeral | identifier | string | parens | list | braces
 //  | 'if' ( expr ) expr
 //  | 'if' ( expr ) expr 'else' expr
@@ -386,29 +399,11 @@ parse_primary(Scanner& scanner, const char* what)
         return make<For_Phrase>(tok, args, body);
       }
     case Token::k_lparen:
-      {
-        auto body = parse_semicolons(scanner);
-        auto tok2 = scanner.get_token();
-        if (tok2.kind != Token::k_rparen)
-            throw Exception(At_Token(tok2, scanner), "illegal token");
-        return make<Paren_Phrase>(tok, body, tok2);
-      }
+        return parse_delimited<Paren_Phrase>(tok, Token::k_rparen, scanner);
     case Token::k_lbracket:
-      {
-        auto body = parse_semicolons(scanner);
-        auto tok2 = scanner.get_token();
-        if (tok2.kind != Token::k_rbracket)
-            throw Exception(At_Token(tok2, scanner), "illegal token");
-        return make<List_Phrase>(tok, body, tok2);
-      }
+        return parse_delimited<List_Phrase>(tok, Token::k_rbracket, scanner);
     case Token::k_lbrace:
-      {
-        auto body = parse_semicolons(scanner);
-        auto tok2 = scanner.get_token();
-        if (tok2.kind != Token::k_rbrace)
-            throw Exception(At_Token(tok2, scanner), "illegal token");
-        return make<Brace_Phrase>(tok, body, tok2);
-      }
+        return parse_delimited<Brace_Phrase>(tok, Token::k_rbrace, scanner);
     case Token::k_end:
         if (what != nullptr) {
             throw Exception(At_Token(tok, scanner),
