@@ -1,4 +1,19 @@
 # 0.2: geometry
+* enable WebGL in FireFox on Lux. Test with https://get.webgl.org/
+  * for Firefox and Chromium: browser supports webgl, it's disabled
+  * I have: nVidia GeForce 210, OpenGL 3.1 + the recommended binary driver.
+  * chrome://gpu says: "WebGL: Unavailable,
+    GPU process was unable to boot: GPU process launch failed
+    NVIDIA drivers before 346 lack features in NV_path_rendering and related extensions to implement driver level path rendering
+    driver: NVIDIA 340.96
+  * 346 is latest stable version as of 2015, installing looks hard:
+    http://ubuntuhandbook.org/index.php/2015/01/install-nvidia-346-35-ubuntu-1404/
+    better use this PPA: https://launchpad.net/~xorg-edgers/+archive/ubuntu/ppa
+    Nope the PPA only contains nouveau.
+  * nvidia website says that latest driver for GeForce 210 is what I have.
+    My video card is too primitive for current Firefox/Chromium.
+    Need to upgrade.
+  * MOZ_GLX_IGNORE_BLACKLIST=1 firefox
 * simulate built-in cube using GLSL on ShaderToy.com
   * make it rotate with mouse.
 * make same code run in an OpenGL window created using C++.
@@ -28,6 +43,33 @@ OpenSCADbis proposal
 * Convert `let` and `for` into metafunctions.
   If this causes pain, change/regularize the grammar.
 * Simple, yaccable grammar with no conflicts or precedence declarations.
+* each <list> generator
+  1. `each` is a builtin metafunction. Use a subclass of `Builtin`.
+  2. `each` is a builtin generator function, so `each` is a value.
+     Extend `Function` with a generate callback and add Call_Expr::generate().
+  3. each(v) = for (i = v) i; Not hard: just add Call_Expr::generate().
+* names: Phrase or Syntax?
+
+Generalized Definitions:
+* A definition may bind multiple names.
+* A Definition is compiled into an initialization Action that stores a value
+  in a run-time data structure for each name that it binds (modulo constants?).
+  * module (recursive scope): A definition may bind multiple names. Each such
+    name has a slot containing the same Action thunk, which when evaluated
+    updates all of the slots with their values.
+  * qualified expr (sequential scope): each definition is compiled into an
+    action that evaluates definientia and stores values in binding slots.
+    At run time, execute the actions in order, then evaluate the expr.
+  * record (no scope): compile definitions into actions, execute actions to
+    initialize the record value. Records don't use slots, so we need a variant
+    action type for updating record fields?
+  * Definition::analyze(env) returns an action.
+* `[x,y]=...` using above framework
+* Extend `let` to support recursive functions.
+* `expr where (defs)`, higher precedence than `let`, same semantics.
+* (def1; def2; phrase) qualified expressions, sequentially scoped, see Loop.md
+  * Each def compiles into an action which stores values in slots.
+    Actions are executed in sequence, then expr is evaluated.
 * generalized phrases
   * ( definition )
   * ( action; definition )
@@ -48,82 +90,10 @@ OpenSCADbis proposal
     * If Action <: Definition then (act,def) makes sense. But this complicates
       the semantics (ordered vs unordered) and there's no utility.
 
-It's complicated...
-* names: Phrase or Syntax?
-* A definition is compiled into an action that stores a value in a run-time
-  data structure for each name that it binds (modulo constants).
-  * module (recursive scope): A definition may bind multiple names. Each such
-    name has a slot containing the same Action thunk, which when evaluated
-    updates all of the slots with their values.
-  * qualified expr (sequential scope): each definition is compiled into an
-    action that evaluates definientia and stores values in binding slots.
-    At run time, execute the actions in order, then evaluate the expr.
-  * record (no scope): compile definitions into actions, execute actions to
-    initialize the record value. Records don't use slots, so we need a variant
-    action type for updating record fields?
-  * Definition::analyze(env) returns an action.
-* `[x,y]=...` using above framework
-* Extend `let` to support recursive functions.
-* `expr where (defs)`, higher precedence than `let`, same semantics.
-* (def1; def2; phrase) qualified expressions, sequentially scoped, see Loop.md
-  * Each def compiles into an action which stores values in slots.
-    Actions are executed in sequence, then expr is evaluated.
-* echo, assert actions
-  * assert(condition);     // generator, produces 0 values
-  * assert(condition) expr // expression
-  * (assert(condition); expr)  // see Loop.md; my current preference.
-    * assert and echo are metafunctions. Builtin_Echo::call() returns an
-      Echo_Expr, which is an effect/generator but not an expression.
-      See also `each`, below.
-* each <list> generator
-  1. `each` is a builtin metafunction. Use a subclass of `Builtin`.
-  2. `each` is a builtin generator function, so `each` is a value.
-     Extend `Function` with a generate callback and add Call_Expr::generate().
-  3. each(v) = for (i = v) i; Not hard: just add Call_Expr::generate().
-  4. Now that I have sequence generators, `each` is not a high priority.
-* Top level sequence generator. In curv tool, I type `1,2,3` at the prompt
-  and it evaluates the sequence, without parens. `(1,2,3)` already works.
-  * Semicolon has lower precedence than colon. (C has the same precedence.)
-    Eg, so `a=1;a,a,a`.
-  * A semicolon phrase is one or more comma phrases separated by semicolons.
-    A comma phrase is zero or more rexprs separated by comma, with an optional
-    trailing comma. Any emptiness in a semicolon phrase is represented by
-    empty comma phrases. Extra semicolons `;;;` can be inserted into a
-    semicolon phrase.
-  * A comma phrase is a sequence of generators, executed in sequence.
-  * `()` is technically an empty comma phrase. It is a special phrase:
-    it's the empty generator and it is also the empty action.
-  * A semicolon phrase is a qualified expression. The initial elements are
-    definitions and actions, executed in sequence and creating a local
-    sequential scope. The final element is an operation that is bound in
-    the context of this scope. The 'result' of a semicolon phrase is the
-    final element.
-  * If the final element of a semicolon phrase is the empty action *epsilon*,
-    then the entire phrase is an action, and this is the syntax we use for
-    compound actions.
-  * Meaning of a semicolon phrase in different contexts:
-    * script: a module with recursive scoping.
-    * {script} -- eg, {def1;def2;} a submodule literal, with recursive binding.
-    * {def1,def2} -- a record literal with no scope
-    * let(a=...;b=...)body -- local bindings with recursive scope, ML `let rec`
-    * let(def1,def2)body -- local bindings with simultaneous scope, ML `let`
-    * (q1;q2;...;qn;body) qualified phrase, sequential scoping
-    * [q1;q2;...;qn;body] qualified generator, sequential scoping
-    * so `;` separates definitions when they are in a recursive or sequential
-      scope relationship, or `,` separates them when they can't see each other.
-  * Alternately, the `,` operator works on any of the 4 phrase types, to
-    create a compound phrase of the same type. `def1,def` is a compound
-    definition which binds multiple names and is itself a definition, but
-    there's no internal scope/mutual visibility unless forced by context.
-    The `;` operator is used for (a) qualified phrases and (b) module scripts,
-    depending on context. So, `let(def1,def)body` is local bindings with
-    recursive scope and `{def1,def2}` is a record literal.
-
 Other:
 * Interactive curv: special variable `_` is last value. _1,_2, or $1,$2 ...
 * Introduce submodules (with recursive functions)
-* Shared constructor is protected. Add share<T>(T&) which aborts
-  if use_count==0.
+* Shared constructor is protected. share<T>(T&) aborts if use_count==0.
 * Dynamically pluggable system abstraction. `System` class with system.echo(),
   system.warning(), system.error(), system.open(), system.namespace, etc.
   System object is refcounted, available during compile and run time.
@@ -144,6 +114,8 @@ Other:
     curv::interrupt_requested. Throw an exception on interrupt, or call a System
     function to do this. I don't like thread local variables for stylistic
     reasons, but it seems legit to use one for IPC.
+  * Periodically test the variable System::interrupt_requested.
+    This is an extra pointer indirection more expensive than a thread-local var.
   * Periodically call a System function. Inside this function provided by
     the client is `if(thread_local_interrupt!=0)throw Interrupt()`.
     This keeps the core "pure" (free of thread-local variables) at the cost
