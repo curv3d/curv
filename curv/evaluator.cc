@@ -29,13 +29,13 @@ curv::Operation::exec(Frame& f) const
 }
 
 void
-curv::Expression::generate(Frame& f, List_Builder& lb) const
+curv::Just_Expression::generate(Frame& f, List_Builder& lb) const
 {
     lb.push_back(eval(f));
 }
 
 void
-curv::Action::generate(Frame& f, List_Builder&) const
+curv::Just_Action::generate(Frame& f, List_Builder&) const
 {
     exec(f);
 }

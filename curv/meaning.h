@@ -98,9 +98,9 @@ struct Operation : public Meaning
 /// so the `generate` function just calls `eval`.
 ///
 /// This is not an interface class, and not all expression objects are derived
-/// from Expression. Functions should not take Expressions as values
-/// or return Expressions as results: use Operation instead.
-struct Expression : public Operation
+/// from Just_Expression. Functions should not take Just_Expressions as values
+/// or return Just_Expressions as results: use Operation instead.
+struct Just_Expression : public Operation
 {
     using Operation::Operation;
 
@@ -119,9 +119,9 @@ struct Expression : public Operation
 /// just calls the `exec` method.
 ///
 /// This is not an interface class, and not all action objects are derived
-/// from Action. Functions should not take Actions as values
-/// or return Actions as results: use Operation instead.
-struct Action : public Operation
+/// from Just_Action. Functions should not take Just_Actions as values
+/// or return Just_Actions as results: use Operation instead.
+struct Just_Action : public Operation
 {
     using Operation::Operation;
 
@@ -131,62 +131,62 @@ struct Action : public Operation
 };
 
 /// A Constant is an Expression whose value is known at compile time.
-struct Constant : public Expression
+struct Constant : public Just_Expression
 {
     Value value_;
 
     Constant(Shared<const Phrase> source, Value v)
-    : Expression(std::move(source)), value_(std::move(v))
+    : Just_Expression(std::move(source)), value_(std::move(v))
     {}
 
     virtual Value eval(Frame&) const override;
 };
 
-struct Module_Ref : public Expression
+struct Module_Ref : public Just_Expression
 {
     size_t slot_;
 
     Module_Ref(Shared<const Phrase> source, size_t slot)
-    : Expression(std::move(source)), slot_(slot)
+    : Just_Expression(std::move(source)), slot_(slot)
     {}
 
     virtual Value eval(Frame&) const override;
 };
 
-struct Nonlocal_Ref : public Expression
+struct Nonlocal_Ref : public Just_Expression
 {
     size_t slot_;
 
     Nonlocal_Ref(Shared<const Phrase> source, size_t slot)
-    : Expression(std::move(source)), slot_(slot)
+    : Just_Expression(std::move(source)), slot_(slot)
     {}
 
     virtual Value eval(Frame&) const override;
 };
 
-struct Let_Ref : public Expression
+struct Let_Ref : public Just_Expression
 {
     int slot_;
 
     Let_Ref(Shared<const Phrase> source, int slot)
-    : Expression(std::move(source)), slot_(slot)
+    : Just_Expression(std::move(source)), slot_(slot)
     {}
 
     virtual Value eval(Frame&) const override;
 };
 
-struct Arg_Ref : public Expression
+struct Arg_Ref : public Just_Expression
 {
     int slot_;
 
     Arg_Ref(Shared<const Phrase> source, int slot)
-    : Expression(std::move(source)), slot_(slot)
+    : Just_Expression(std::move(source)), slot_(slot)
     {}
 
     virtual Value eval(Frame&) const override;
 };
 
-struct Local_Function_Ref : public Expression
+struct Local_Function_Ref : public Just_Expression
 {
     int lambda_slot_; ///! local slot containing Lambda value
     int env_slot_;    ///! local slot containing List of nonlocal values
@@ -196,7 +196,7 @@ struct Local_Function_Ref : public Expression
         int lambda_slot,
         int env_slot)
     :
-        Expression(std::move(source)),
+        Just_Expression(std::move(source)),
         lambda_slot_(lambda_slot),
         env_slot_(env_slot)
     {}
@@ -204,7 +204,7 @@ struct Local_Function_Ref : public Expression
     virtual Value eval(Frame&) const override;
 };
 
-struct Nonlocal_Function_Ref : public Expression
+struct Nonlocal_Function_Ref : public Just_Expression
 {
     int lambda_slot_; ///! nonlocal slot containing Lambda value
 
@@ -212,21 +212,21 @@ struct Nonlocal_Function_Ref : public Expression
         Shared<const Phrase> source,
         int lambda_slot)
     :
-        Expression(std::move(source)),
+        Just_Expression(std::move(source)),
         lambda_slot_(lambda_slot)
     {}
 
     virtual Value eval(Frame&) const override;
 };
 
-struct Dot_Expr : public Expression
+struct Dot_Expr : public Just_Expression
 {
     Shared<Operation> base_;
     Atom id_;
 
     Dot_Expr(Shared<const Phrase> source, Shared<Operation> base, Atom id)
     :
-        Expression(std::move(source)),
+        Just_Expression(std::move(source)),
         base_(std::move(base)),
         id_(std::move(id))
     {}
@@ -234,7 +234,7 @@ struct Dot_Expr : public Expression
     virtual Value eval(Frame&) const override;
 };
 
-struct Call_Expr : public Expression
+struct Call_Expr : public Just_Expression
 {
     Shared<Operation> fun_;
     std::vector<Shared<Operation>> args_;
@@ -244,7 +244,7 @@ struct Call_Expr : public Expression
         Shared<Operation> fun,
         std::vector<Shared<Operation>> args)
     :
-        Expression(std::move(source)),
+        Just_Expression(std::move(source)),
         fun_(std::move(fun)),
         args_(std::move(args))
     {}
@@ -259,7 +259,7 @@ struct Call_Expr : public Expression
     virtual Value eval(Frame&) const override;
 };
 
-struct Prefix_Expr : public Expression
+struct Prefix_Expr : public Just_Expression
 {
     Token::Kind op_;
     Shared<Operation> arg_;
@@ -269,14 +269,14 @@ struct Prefix_Expr : public Expression
         Token::Kind op,
         Shared<Operation> arg)
     :
-        Expression(source),
+        Just_Expression(source),
         op_(op),
         arg_(std::move(arg))
     {}
 
     virtual Value eval(Frame&) const override;
 };
-struct Prefix_Expr_Base : public Expression
+struct Prefix_Expr_Base : public Just_Expression
 {
     Shared<Operation> arg_;
 
@@ -284,7 +284,7 @@ struct Prefix_Expr_Base : public Expression
         Shared<const Phrase> source,
         Shared<Operation> arg)
     :
-        Expression(source),
+        Just_Expression(source),
         arg_(std::move(arg))
     {}
 };
@@ -294,7 +294,7 @@ struct Not_Expr : public Prefix_Expr_Base
     virtual Value eval(Frame&) const override;
 };
 
-struct Infix_Expr : public Expression
+struct Infix_Expr : public Just_Expression
 {
     Token::Kind op_;
     Shared<Operation> arg1_;
@@ -306,7 +306,7 @@ struct Infix_Expr : public Expression
         Shared<Operation> arg1,
         Shared<Operation> arg2)
     :
-        Expression(source),
+        Just_Expression(source),
         op_(op),
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2))
@@ -314,7 +314,7 @@ struct Infix_Expr : public Expression
 
     virtual Value eval(Frame&) const override;
 };
-struct Infix_Expr_Base : public Expression
+struct Infix_Expr_Base : public Just_Expression
 {
     Shared<Operation> arg1_;
     Shared<Operation> arg2_;
@@ -324,7 +324,7 @@ struct Infix_Expr_Base : public Expression
         Shared<Operation> arg1,
         Shared<Operation> arg2)
     :
-        Expression(source),
+        Just_Expression(source),
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2))
     {}
@@ -407,12 +407,12 @@ struct Range_Gen : public Operation
     virtual void generate(Frame&, List_Builder&) const override;
 };
 
-struct List_Expr : public Expression
+struct List_Expr : public Just_Expression
 {
     Shared<Operation> generator_;
 
     List_Expr(Shared<const Phrase> source, Shared<Operation> gen)
-    : Expression(std::move(source)), generator_(std::move(gen))
+    : Just_Expression(std::move(source)), generator_(std::move(gen))
     {}
 
     virtual Value eval(Frame&) const override;
@@ -420,11 +420,11 @@ struct List_Expr : public Expression
 
 // TODO: List_Sequence_Expr is deprecated.
 // It's the same as List_Expr(Sequence_Gen).
-struct List_Sequence_Expr_Base : public Expression,
+struct List_Sequence_Expr_Base : public Just_Expression,
     public aux::Tail_Array_Data<Shared<const Operation>>
 {
     List_Sequence_Expr_Base(Shared<const Phrase> source)
-    : Expression(std::move(source)) {}
+    : Just_Expression(std::move(source)) {}
 
     virtual Value eval(Frame&) const override;
     Shared<List> eval_list(Frame&) const;
@@ -444,23 +444,23 @@ struct Sequence_Gen_Base : public Operation,
 };
 using Sequence_Gen = aux::Tail_Array<Sequence_Gen_Base>;
 
-struct Record_Expr : public Expression
+struct Record_Expr : public Just_Expression
 {
     Atom_Map<Shared<const Operation>> fields_;
 
-    Record_Expr(Shared<const Phrase> source) : Expression(source) {}
+    Record_Expr(Shared<const Phrase> source) : Just_Expression(source) {}
 
     virtual Value eval(Frame&) const override;
 };
 
-struct Module_Expr : public Expression
+struct Module_Expr : public Just_Expression
 {
     Shared<Module::Dictionary> dictionary_;
     Shared<List> slots_; // or, a Tail_Array
     Shared<const List_Sequence_Expr> elements_;
     size_t frame_nslots_;
 
-    Module_Expr(Shared<const Phrase> source) : Expression(source) {}
+    Module_Expr(Shared<const Phrase> source) : Just_Expression(source) {}
 
     virtual Value eval(Frame&) const override;
     Shared<Module> eval_module(System&, Frame*) const;
@@ -554,7 +554,7 @@ struct If_Else_Op : public Operation
     virtual void exec(Frame&) const override;
 };
 
-struct Lambda_Expr : public Expression
+struct Lambda_Expr : public Just_Expression
 {
     Shared<Operation> body_;
     Shared<List_Sequence_Expr> nonlocals_;
@@ -568,7 +568,7 @@ struct Lambda_Expr : public Expression
         size_t nargs,
         size_t nslots)
     :
-        Expression(source),
+        Just_Expression(source),
         body_(std::move(body)),
         nonlocals_(std::move(nonlocals)),
         nargs_(nargs),

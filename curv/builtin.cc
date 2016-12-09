@@ -66,14 +66,14 @@ builtin_file(Frame& f)
 }
 
 /// The meaning of a call to `echo`, such as `echo("foo")`.
-struct Echo_Action : public Action
+struct Echo_Action : public Just_Action
 {
     std::vector<Shared<Operation>> argv_;
     Echo_Action(
         Shared<const Phrase> source,
         std::vector<Shared<Operation>> argv)
     :
-        Action(std::move(source)),
+        Just_Action(std::move(source)),
         argv_(std::move(argv))
     {}
     virtual void exec(Frame& f) const override
