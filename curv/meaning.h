@@ -88,14 +88,14 @@ struct Operation : public Meaning
     virtual void exec(Frame&) const;
 };
 
-/// This is an "implementation" class, inherited by Operation classes
+/// `Just_Expression` is an implementation class, inherited by Operation classes
 /// whose instances are always expressions. It provides sensible defaults
 /// for the eval/generate/exec virtual functions.
 ///
 /// An expression is an Operation that can be evaluated to produce a single 
 /// value. The work is done by the `eval` method, which must be defined.
 /// All expressions are also generators that produce a single value,
-/// so the `generate` function just calls `eval`.
+/// so the `generate` function calls `eval`.
 ///
 /// This is not an interface class, and not all expression objects are derived
 /// from Just_Expression. Functions should not take Just_Expressions as values
@@ -109,14 +109,14 @@ struct Just_Expression : public Operation
     virtual void generate(Frame&, List_Builder&) const override;
 };
 
-/// This is an "implementation" class, inherited by Operation classes
+/// `Just_Action` is an implementation class, inherited by Operation classes
 /// whose instances are always actions. It provides sensible defaults
 /// for the eval/generate/exec virtual functions.
 ///
 /// An action is an Operation that causes a side effect and produces no values.
 /// The work is done by the `exec` method, which must be defined.
 /// All actions are generators that produce no values, so the `generate` method
-/// just calls the `exec` method.
+/// calls the `exec` method.
 ///
 /// This is not an interface class, and not all action objects are derived
 /// from Just_Action. Functions should not take Just_Actions as values
@@ -294,26 +294,6 @@ struct Not_Expr : public Prefix_Expr_Base
     virtual Value eval(Frame&) const override;
 };
 
-struct Infix_Expr : public Just_Expression
-{
-    Token::Kind op_;
-    Shared<Operation> arg1_;
-    Shared<Operation> arg2_;
-
-    Infix_Expr(
-        Shared<const Phrase> source,
-        Token::Kind op,
-        Shared<Operation> arg1,
-        Shared<Operation> arg2)
-    :
-        Just_Expression(source),
-        op_(op),
-        arg1_(std::move(arg1)),
-        arg2_(std::move(arg2))
-    {}
-
-    virtual Value eval(Frame&) const override;
-};
 struct Infix_Expr_Base : public Just_Expression
 {
     Shared<Operation> arg1_;
@@ -372,6 +352,26 @@ struct Less_Or_Equal_Expr : public Infix_Expr_Base
     virtual Value eval(Frame&) const override;
 };
 struct Greater_Or_Equal_Expr : public Infix_Expr_Base
+{
+    using Infix_Expr_Base::Infix_Expr_Base;
+    virtual Value eval(Frame&) const override;
+};
+struct Add_Expr : public Infix_Expr_Base
+{
+    using Infix_Expr_Base::Infix_Expr_Base;
+    virtual Value eval(Frame&) const override;
+};
+struct Subtract_Expr : public Infix_Expr_Base
+{
+    using Infix_Expr_Base::Infix_Expr_Base;
+    virtual Value eval(Frame&) const override;
+};
+struct Multiply_Expr : public Infix_Expr_Base
+{
+    using Infix_Expr_Base::Infix_Expr_Base;
+    virtual Value eval(Frame&) const override;
+};
+struct Divide_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;

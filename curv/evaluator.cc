@@ -217,47 +217,48 @@ curv::Not_Expr::eval(Frame& f) const
 }
 
 Value
-curv::Infix_Expr::eval(Frame& f) const
+curv::Add_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-
-    switch (op_) {
-    case Token::k_plus:
-        {
-            Value r = Value(a.get_num_or_nan() + b.get_num_or_nan());
-            if (!r.is_num())
-                throw Exception(At_Phrase(*source_, &f),
-                    stringify(a,"+",b,": domain error"));
-            return r;
-        }
-    case Token::k_minus:
-        {
-            Value r = Value(a.get_num_or_nan() - b.get_num_or_nan());
-            if (!r.is_num())
-                throw Exception(At_Phrase(*source_, &f),
-                    stringify(a,"-",b,": domain error"));
-            return r;
-        }
-    case Token::k_times:
-        {
-            Value r = Value(a.get_num_or_nan() * b.get_num_or_nan());
-            if (!r.is_num())
-                throw Exception(At_Phrase(*source_, &f),
-                    stringify(a,"*",b,": domain error"));
-            return r;
-        }
-    case Token::k_over:
-        {
-            Value r = Value(a.get_num_or_nan() / b.get_num_or_nan());
-            if (!r.is_num())
-                throw Exception(At_Phrase(*source_, &f),
-                    stringify(a,"/",b,": domain error"));
-            return r;
-        }
-    default:
-        assert(0);
-    }
+    Value r = Value(a.get_num_or_nan() + b.get_num_or_nan());
+    if (!r.is_num())
+        throw Exception(At_Phrase(*source_, &f),
+            stringify(a,"+",b,": domain error"));
+    return r;
+}
+Value
+curv::Subtract_Expr::eval(Frame& f) const
+{
+    Value a = arg1_->eval(f);
+    Value b = arg2_->eval(f);
+    Value r = Value(a.get_num_or_nan() - b.get_num_or_nan());
+    if (!r.is_num())
+        throw Exception(At_Phrase(*source_, &f),
+            stringify(a,"-",b,": domain error"));
+    return r;
+}
+Value
+curv::Multiply_Expr::eval(Frame& f) const
+{
+    Value a = arg1_->eval(f);
+    Value b = arg2_->eval(f);
+    Value r = Value(a.get_num_or_nan() * b.get_num_or_nan());
+    if (!r.is_num())
+        throw Exception(At_Phrase(*source_, &f),
+            stringify(a,"*",b,": domain error"));
+    return r;
+}
+Value
+curv::Divide_Expr::eval(Frame& f) const
+{
+    Value a = arg1_->eval(f);
+    Value b = arg2_->eval(f);
+    Value r = Value(a.get_num_or_nan() / b.get_num_or_nan());
+    if (!r.is_num())
+        throw Exception(At_Phrase(*source_, &f),
+            stringify(a,"/",b,": domain error"));
+    return r;
 }
 
 Value

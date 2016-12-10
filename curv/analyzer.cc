@@ -270,6 +270,26 @@ Binary_Phrase::analyze(Environ& env) const
             share(*this),
             analyze_op(*left_, env),
             analyze_op(*right_, env));
+    case Token::k_plus:
+        return make<Add_Expr>(
+            share(*this),
+            analyze_op(*left_, env),
+            analyze_op(*right_, env));
+    case Token::k_minus:
+        return make<Subtract_Expr>(
+            share(*this),
+            analyze_op(*left_, env),
+            analyze_op(*right_, env));
+    case Token::k_times:
+        return make<Multiply_Expr>(
+            share(*this),
+            analyze_op(*left_, env),
+            analyze_op(*right_, env));
+    case Token::k_over:
+        return make<Divide_Expr>(
+            share(*this),
+            analyze_op(*left_, env),
+            analyze_op(*right_, env));
     case Token::k_power:
         return make<Power_Expr>(
             share(*this),
@@ -289,11 +309,7 @@ Binary_Phrase::analyze(Environ& env) const
         throw Exception(At_Phrase(*right_, env),
             "invalid expression after '.'");
     default:
-        return make<Infix_Expr>(
-            share(*this),
-            op_.kind,
-            analyze_op(*left_, env),
-            analyze_op(*right_, env));
+        assert(0);
     }
 }
 
