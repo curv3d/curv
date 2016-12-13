@@ -1,25 +1,12 @@
 # 0.2: geometry
-* enable WebGL in FireFox on Lux. Test with https://get.webgl.org/
-  * for Firefox and Chromium: browser supports webgl, it's disabled
-  * I have: nVidia GeForce 210, OpenGL 3.1 + the recommended binary driver.
-  * chrome://gpu says: "WebGL: Unavailable,
-    GPU process was unable to boot: GPU process launch failed
-    NVIDIA drivers before 346 lack features in NV_path_rendering and related extensions to implement driver level path rendering
-    driver: NVIDIA 340.96
-  * 346 is latest stable version as of 2015, installing looks hard:
-    http://ubuntuhandbook.org/index.php/2015/01/install-nvidia-346-35-ubuntu-1404/
-    better use this PPA: https://launchpad.net/~xorg-edgers/+archive/ubuntu/ppa
-    Nope the PPA only contains nouveau.
-  * nvidia website says that latest driver for GeForce 210 is what I have.
-    My video card is too primitive for current Firefox/Chromium.
-    Need to upgrade.
-  * MOZ_GLX_IGNORE_BLACKLIST=1 firefox
-* simulate built-in cube using GLSL on ShaderToy.com
-  * make it rotate with mouse.
+* start with 2D shapes. evaluate distance field d at each pixel,
+  color white or black as d > 0 or d <= 0.
+* square, union, translate, initially builtin shapes.
+* simulate built-in square using GLSL on ShaderToy.com
+  * make it zoom/rotate with mouse.
 * make same code run in an OpenGL window created using C++.
-* built-in cube(n).
-
-OpenSCADbis proposal
+  http://www.opengl-tutorial.org/beginners-tutorials/tutorial-1-opening-a-window/
+* built-in square(n).
 
 # 0.1: Minimum Viable Language
 * echo:
@@ -36,6 +23,27 @@ OpenSCADbis proposal
   * enter_debugger, aka `break`, `debug`
 * len(module), module.[i]
 * floor, ceil
+* Introduce submodules (with recursive functions)
+* recursive let
+* records: defined r.id, merge[r1,r2]
+  I don't want `merge` to accept modules as arguments: overriding an existing
+  module field doesn't work if the module also contains functions closed over
+  those fields.
+* num: min[x,y], max[x,y], abs(x), sin(x), cos(x)
+
+VM:
+* debugger entry on exception
+  * System::error(const Exception&) -- throw an exception, but first, enter
+    the debugger.
+  * debugger: commands are bound as Curv metafunctions.
+    * `trace` print stack trace (with numbered call frames)
+    * `frame N` specify call frame
+    * inspect variables at current frame
+      * local and nonlocal symbol table pointers in Frame
+    * `exit`
+* interrupt
+
+OpenSCADbis proposal
 
 # Simpler, More General Grammar
 * refactor/cleanup
@@ -152,37 +160,23 @@ Other:
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
   numeral while building a buffer for strtod.
-* builtin functions:
-  * error reporting for bad arguments:
-    * `arg_to_num(Value,char* param_name)`: throw error if not a number,
-      otherwise return double. API is independent of Value refactoring.
 * num: min[x,y], max[x,y], abs(x), sin(x), cos(x)
 * string: $$ $" $id ${id} $(id) $+EE interpolation, strcat[s1,s2]
   scanner has in-string flag, parser resets/sets flag during $(expr).
-* list: [a..b] or [a to b by step], concat[l1,l2]
 * string: str@i, len(str) -- either ASCII-only, or proper Unicode
 * records: defined r.id, merge[r1,r2]
 * broader unit testing
 * smart pointers, see docs/Shared_Ptr.md
 
 # CURV1 (scripts, LLVM)
-* script files, named functions (top level only for now).
-* top level if, for, echo
 * pattern matching: hypot[x,y] = sqrt(x^2+y^2).
 * LLVM based evaluator. Compile Meaning to LLVM IR.
   Embed raw function pointers and Values in IR as bit patterns.
-* Module values?
 * Benchmarks
 
 # CURV2 (nested scopes)
-* nested functions, function literals, let() expressions.
 * curried functions `dist(req)(pt) = ...;` or function literals
 * script literals. At least {dist=..,bbox=..}
-* stack trace: exceptions with precise location reporting
-* refactor: String, List don't contain vtable or type field. Value contains a 3
-  bit type field. Object is heavy weight, containing vtable and RTTI, since it
-  is user extensible without modifying Value.
-  Not sure about Function (3 variants: static, closure, object).
 * printing a function? currently, <function>, even for builtins
 
 # CURV3 (simple geometry)
@@ -202,13 +196,6 @@ Other:
 
 ---------------------------------------------------------------------------
 # Later:
-better error messages, print line with caret:
-  ERROR: the 'what()' error message
-  file foo.scad, line 1[10-15], token foobar
-    x = foobar();
-        ^-----
-And/or colour the bad text in red.
-
 * Digit separator ' in numerals (like C++14).
 * Support ' in identifiers (like Haskell).
 * Support `foo` quoted identifiers.

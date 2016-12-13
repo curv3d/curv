@@ -41,6 +41,7 @@ possible names for this software:
   a popular math curriculum for schools, a mathematica2 package. MathScape entry
   was deleted from Wikipedia.
 * SolidMath -- 83 hits -- abandoned 2011 trademark for computer software
+* MathArt
 
 hedra, hedron, hedral,
 morphic, morphos, morph,

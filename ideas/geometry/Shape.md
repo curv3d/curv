@@ -8,7 +8,7 @@ predicates:
 * is_polytope = is_polygon | is_polyhedron
 * is_polygon -- The shape is known to be a polygon due to its construction,
   and that construction provides a vertex list, which can be queried.
-  Some 2D shapes may be polygons, but TeaCAD doesn't know it, and doesn't
+  Some 2D shapes may be polygons, but Curv doesn't know it, and doesn't
   have a vertex list--for those shapes, is_polygon is false.
 * is_polyhedron -- has vertices and faces, which can be queried.
 * is_convex -- The shape is known to be convex based on how it was constructed.
@@ -83,7 +83,7 @@ Obviously, cube() returns a 3DShape, square() returns a 2DShape,
 and both are classified as Shape.
 
 What about objects (aka OpenSCAD groups)?
-* In TeaCAD, I want to generalize objects so that the list component can
+* In Curv, I want to generalize objects so that the list component can
   contain any kind of value. But I want to support OpenSCAD group semantics.
   So an object is a shape if it is empty, or if all of its list elements
   are shapes.
@@ -99,7 +99,7 @@ An object may contain a mix of 2D and 3D shapes, as with OpenSCAD groups.
   eg Finite could be true if each element is Finite, ditto for Polytope.
 * RapCAD is apparently more tolerant of a mix of 2D and 3D shapes.
   Apparently CGAL supports operations such as the intersection of a 3D shape
-  and a 2D shape. The RapCAD approach suits the TeaCAD design goals better.
+  and a 2D shape. The RapCAD approach suits the Curv design goals better.
 
 PLASM supports arbitrary-dimensional shapes. Which is useful for doing math art.
 Eg, forming the 3D projection of 4D objects. (Ooh, MathArt as a project name?)
