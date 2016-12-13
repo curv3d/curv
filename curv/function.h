@@ -18,14 +18,22 @@ namespace curv {
 struct Function : public Ref_Value
 {
     unsigned nargs_;
-    virtual Value call(Frame& args) = 0;
+    unsigned nslots_; // size of call frame
 
-    Function(
-        unsigned nargs)
+    Function(unsigned nargs)
     :
         Ref_Value(ty_function),
-        nargs_(nargs)
+        nargs_(nargs),
+        nslots_(nargs)
     {}
+    Function(unsigned nargs, unsigned nslots)
+    :
+        Ref_Value(ty_function),
+        nargs_(nargs),
+        nslots_(nslots)
+    {}
+
+    virtual Value call(Frame& args) = 0;
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const;
@@ -39,12 +47,12 @@ struct Function : public Ref_Value
 struct Lambda : public Ref_Value
 {
     Shared<const Operation> expr_;
-    size_t nargs_;
-    size_t nslots_; // size of call frame
+    unsigned nargs_;
+    unsigned nslots_; // size of call frame
 
     Lambda(
         Shared<const Operation> expr,
-        size_t nargs, size_t nslots)
+        unsigned nargs, unsigned nslots)
     :
         Ref_Value(ty_lambda),
         expr_(std::move(expr)),
@@ -58,38 +66,31 @@ struct Lambda : public Ref_Value
 
 /// A user-defined function value,
 /// represented by a closure over a lambda expression.
-struct Closure : public Ref_Value
+struct Closure : public Function
 {
     Shared<const Operation> expr_;
-    Shared<List> nonlocals_;
-    size_t nargs_;
-    size_t nslots_; // size of call frame
+    Shared<List> nonlocal_;
 
     Closure(
         Shared<const Operation> expr,
-        Shared<List> nonlocals,
-        size_t nargs, size_t nslots)
+        Shared<List> nonlocal,
+        unsigned nargs, unsigned nslots)
     :
-        Ref_Value(ty_closure),
+        Function(nargs, nslots),
         expr_(std::move(expr)),
-        nonlocals_(std::move(nonlocals)),
-        nargs_(nargs),
-        nslots_(nslots)
+        nonlocal_(std::move(nonlocal))
     {}
 
     Closure(
         Lambda& lambda,
-        List& nonlocals)
+        List& nonlocal)
     :
-        Ref_Value(ty_closure),
+        Function(lambda.nargs_, lambda.nslots_),
         expr_(lambda.expr_),
-        nonlocals_(share(nonlocals)),
-        nargs_(lambda.nargs_),
-        nslots_(lambda.nslots_)
+        nonlocal_(share(nonlocal))
     {}
 
-    /// Print a value like a Curv expression.
-    virtual void print(std::ostream&) const;
+    virtual Value call(Frame& args) override;
 };
 
 } // namespace curv

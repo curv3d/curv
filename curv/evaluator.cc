@@ -112,35 +112,19 @@ curv::Call_Expr::eval(Frame& f) const
         throw Exception(At_Phrase(*fun_->source_, &f),
             stringify(funv,": not a function"));
     Ref_Value& funp( funv.get_ref_unsafe() );
-    // TODO: these two cases are so similar, can we unify them?
-    switch (funp.type_) {
-    case Ref_Value::ty_function:
-      {
+    if (funp.type_ == Ref_Value::ty_function) {
         Function* fun = (Function*)&funp;
         if (args_.size() != fun->nargs_) {
             throw Exception(At_Phrase(*call_phrase()->args_, &f),
                 "wrong number of arguments");
         }
-        std::unique_ptr<Frame> f2
-            { Frame::make(fun->nargs_, f.system, &f, call_phrase(), nullptr) };
+        std::unique_ptr<Frame> f2 {
+            Frame::make(fun->nslots_, f.system, &f, call_phrase(), nullptr)
+        };
         for (size_t i = 0; i < args_.size(); ++i)
             (*f2)[i] = args_[i]->eval(f);
         return fun->call(*f2);
-      }
-    case Ref_Value::ty_closure:
-      {
-        Closure* fun = (Closure*)&funp;
-        if (args_.size() != fun->nargs_) {
-            throw Exception(At_Phrase(*call_phrase()->args_, &f),
-                "wrong number of arguments");
-        }
-        std::unique_ptr<Frame> f2
-            { Frame::make(fun->nslots_, f.system, &f, call_phrase(), &*fun->nonlocals_) };
-        for (size_t i = 0; i < args_.size(); ++i)
-            (*f2)[i] = args_[i]->eval(f);
-        return fun->expr_->eval(*f2);
-      }
-    default:
+    } else {
         throw Exception(At_Phrase(*fun_->source_, &f),
             stringify(funv,": not a function"));
     }

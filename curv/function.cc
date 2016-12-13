@@ -10,10 +10,11 @@ curv::Function::print(std::ostream& out) const
     out << "<function>";
 }
 
-void
-curv::Closure::print(std::ostream& out) const
+curv::Value
+curv::Closure::call(Frame& f)
 {
-    out << "<function>";
+    f.nonlocal = &*nonlocal_;
+    return expr_->eval(f);
 }
 
 void
