@@ -125,7 +125,7 @@ curv::Call_Expr::eval(Frame& f) const
             { Frame::make(fun->nargs_, f.system, &f, call_phrase(), nullptr) };
         for (size_t i = 0; i < args_.size(); ++i)
             (*f2)[i] = args_[i]->eval(f);
-        return fun->function_(*f2);
+        return fun->call(*f2);
       }
     case Ref_Value::ty_closure:
       {

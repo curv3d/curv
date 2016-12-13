@@ -28,50 +28,51 @@ Builtin_Value::to_meaning(const Identifier& id) const
     return make<Constant>(share(id), value_);
 }
 
-/*
-map["sqrt"] = {1, [](Frame& args) -> Value {
-    double r = sqrt(args[0].get_num_or_nan());
-    if (r == r)
-        return r;
-    else
-        throw Exception(At_Arg(0, args),
-            stringify("sqrt(",args[0],"): domain error"));
-}};
-*/
-
-Value
-builtin_sqrt(Frame& args)
+struct Sqrt_Function : public Function
 {
-    double r = sqrt(args[0].get_num_or_nan());
-    if (r == r)
-        return r;
-    else
-        throw Exception(At_Arg(0, args),
-            stringify("sqrt(",args[0],"): domain error"));
-}
+    Sqrt_Function() : Function(1) {}
+    Value call(Frame& args) override
+    {
+        double r = sqrt(args[0].get_num_or_nan());
+        if (r == r)
+            return r;
+        else
+            throw Exception(At_Arg(0, args),
+                stringify("sqrt(",args[0],"): domain error"));
+    }
+};
 
-Value
-builtin_len(Frame& args)
+struct Len_Function : public Function
 {
-    auto& list {arg_to_list(args[0], At_Arg(0, args))};
-    return {double(list.size())};
-}
+    Len_Function() : Function(1) {}
+    Value call(Frame& args) override
+    {
+        auto& list {arg_to_list(args[0], At_Arg(0, args))};
+        return {double(list.size())};
+    }
+};
 
-Value
-builtin_file(Frame& f)
+struct File_Function : public Function
 {
-    At_Arg ctx0(0, f);
-    String& path {arg_to_string(f[0], ctx0)};
-    auto file = make<File_Script>(share(path), ctx0);
-    return {eval_script(*file, f.system, &f)};
-}
+    File_Function() : Function(1) {}
+    Value call(Frame& f) override
+    {
+        At_Arg ctx0(0, f);
+        String& path {arg_to_string(f[0], ctx0)};
+        auto file = make<File_Script>(share(path), ctx0);
+        return {eval_script(*file, f.system, &f)};
+    }
+};
 
-Value
-builtin_shape2d(Frame& f)
+struct Shape2d_Function : public Function
 {
-    auto& record {arg_to_record(f[0], At_Arg(0, f))};
-    return {make<Shape2D>(share(record))};
-}
+    Shape2d_Function() : Function(1) {}
+    Value call(Frame& f) override
+    {
+        auto& record {arg_to_record(f[0], At_Arg(0, f))};
+        return {make<Shape2D>(share(record))};
+    }
+};
 
 /// The meaning of a call to `echo`, such as `echo("foo")`.
 struct Echo_Action : public Just_Action
@@ -116,9 +117,9 @@ curv::builtin_namespace =
     {"null", make<Builtin_Value>(Value())},
     {"false", make<Builtin_Value>(Value(false))},
     {"true", make<Builtin_Value>(Value(true))},
-    {"sqrt", make<Builtin_Value>(1, builtin_sqrt)},
-    {"len", make<Builtin_Value>(1, builtin_len)},
-    {"file", make<Builtin_Value>(1, builtin_file)},
+    {"sqrt", make<Builtin_Value>(Value{make<Sqrt_Function>()})},
+    {"len", make<Builtin_Value>(Value{make<Len_Function>()})},
+    {"file", make<Builtin_Value>(Value{make<File_Function>()})},
+    {"shape2d", make<Builtin_Value>(Value{make<Shape2d_Function>()})},
     {"echo", make<Builtin_Meaning<Echo_Metafunction>>()},
-    {"shape2d", make<Builtin_Value>(1, builtin_shape2d)},
 };

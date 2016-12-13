@@ -11,18 +11,19 @@
 
 namespace curv {
 
-/// A built-in function value, represented by a boxed native C function.
+/// A function value.
+///
+/// Functions have a fixed number of arguments, specified by nargs.
+/// Within the `call` function, use `args[i]` to fetch the i'th argument.
 struct Function : public Ref_Value
 {
-    Value (*function_)(Frame& f);
     unsigned nargs_;
+    virtual Value call(Frame& args) = 0;
 
     Function(
-        Value (*fun)(Frame&),
         unsigned nargs)
     :
         Ref_Value(ty_function),
-        function_(fun),
         nargs_(nargs)
     {}
 

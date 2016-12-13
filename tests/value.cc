@@ -19,11 +19,14 @@ bool prints_as(Value val, const char* expect)
 }
 
 
-Value
-id(Frame& args)
+struct Id_Function : public Function
 {
-    return args[0];
-}
+    Id_Function() : Function(1) {}
+    Value call(Frame& args) override
+    {
+        return args[0];
+    }
+};
 
 TEST(curv, value)
 {
@@ -113,7 +116,7 @@ TEST(curv, value)
     EXPECT_TRUE(v.get_ref_unsafe().type_ == 17);
 #endif
 
-    v = curv::make_ref_value<curv::Function>(id, 1);
+    v = make_ref_value<Id_Function>();
     EXPECT_FALSE(v.is_null());
     EXPECT_FALSE(v.is_bool());
     EXPECT_FALSE(v.is_num());
@@ -127,7 +130,7 @@ TEST(curv, value)
 
     // copy/move constructors
     {
-        Value v0(curv::make<curv::Function>(id,1));
+        Value v0(make<Id_Function>());
         ASSERT_TRUE(v0.is_ref());
         Ref_Value& r0(v0.get_ref_unsafe());
         ASSERT_TRUE(r0.use_count == 1);
