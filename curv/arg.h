@@ -7,6 +7,7 @@
 
 #include <curv/list.h>
 #include <curv/string.h>
+#include <curv/record.h>
 #include <curv/context.h>
 
 namespace curv {
@@ -14,6 +15,7 @@ namespace curv {
 List& arg_to_list(Value, const Context&);
 String& arg_to_string(Value, const Context&);
 int arg_to_int(Value, int, int, const Context&);
+Record& arg_to_record(Value, const Context&);
 
 /// The exception context for the i'th argument in a function call.
 struct At_Arg : public Context

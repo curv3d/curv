@@ -22,6 +22,7 @@ void curv::At_Arg::get_locations(std::list<Location>& locs) const
     get_frame_locations(eval_frame_->parent_frame, locs);
 }
 
+// TODO: accept a module. Return the module's elements list.
 auto curv::arg_to_list(Value val, const Context& ctx)
 -> List&
 {
@@ -31,6 +32,24 @@ auto curv::arg_to_list(Value val, const Context& ctx)
     if (ref.type_ != Ref_Value::ty_list)
         throw Exception(ctx, "not a list");
     return (List&)ref;
+}
+
+// TODO: accept a module or a record. WARNING, potential land mine.
+// * No common field interface. Provide a virtual function interface,
+//   `Ref_Value::getfield(Atom)`.
+//   New function `arg_to_fields` returns `Ref_Value&`.
+// * It is potentially incorrect to `merge` a module, because modifying
+//   a field value won't update functions that are closed over those
+//   field values. Ditto for shapes. Keep `arg_to_record` for use with `merge`.
+auto curv::arg_to_record(Value val, const Context& ctx)
+-> Record&
+{
+    if (!val.is_ref())
+        throw Exception(ctx, "not a record");
+    Ref_Value& ref( val.get_ref_unsafe() );
+    if (ref.type_ != Ref_Value::ty_record)
+        throw Exception(ctx, "not a record");
+    return (Record&)ref;
 }
 
 auto curv::arg_to_string(Value val, const Context& ctx)

@@ -37,6 +37,7 @@ struct Ref_Value : public aux::Shared_Base
         ty_list,
         ty_function,
         ty_record,
+        ty_shape2d,
         ty_module,
         ty_missing,
         ty_thunk,

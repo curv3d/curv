@@ -63,6 +63,7 @@ curv::Location::write(std::ostream& out) const
     // TODO: more expressive and helpful diagnostics.
     // Inspiration: http://clang.llvm.org/diagnostics.html
     // TODO: unicode underlining? a̲b̲c̲d̲e̲f̲
+    // TODO: mark bad text in red, ANSI escapes for console output?
     if (!scriptname().empty())
         out << "file \"" << scriptname() << "\", ";
     auto info = line_info();

@@ -15,6 +15,7 @@
 #include <curv/exception.h>
 #include <curv/file.h>
 #include <curv/function.h>
+#include <curv/shape.h>
 #include <curv/system.h>
 
 using namespace curv;
@@ -65,6 +66,13 @@ builtin_file(Frame& f)
     return {eval_script(*file, f.system, &f)};
 }
 
+Value
+builtin_shape2d(Frame& f)
+{
+    auto& record {arg_to_record(f[0], At_Arg(0, &f))};
+    return {make<Shape2D>(share(record))};
+}
+
 /// The meaning of a call to `echo`, such as `echo("foo")`.
 struct Echo_Action : public Just_Action
 {
@@ -112,4 +120,5 @@ curv::builtin_namespace =
     {"len", make<Builtin_Value>(1, builtin_len)},
     {"file", make<Builtin_Value>(1, builtin_file)},
     {"echo", make<Builtin_Meaning<Echo_Metafunction>>()},
+    {"shape2d", make<Builtin_Value>(1, builtin_shape2d)},
 };
