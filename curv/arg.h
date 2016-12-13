@@ -21,9 +21,9 @@ Record& arg_to_record(Value, const Context&);
 struct At_Arg : public Context
 {
     size_t arg_index_;
-    Frame* eval_frame_;
+    Frame& eval_frame_;
 
-    At_Arg(size_t i, Frame* f) : arg_index_(i), eval_frame_(f) {}
+    At_Arg(size_t i, Frame& f) : arg_index_(i), eval_frame_(f) {}
 
     void get_locations(std::list<Location>& locs) const override;
 };

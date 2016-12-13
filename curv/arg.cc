@@ -9,17 +9,16 @@
 
 void curv::At_Arg::get_locations(std::list<Location>& locs) const
 {
-    assert(eval_frame_ != nullptr);
-    assert(eval_frame_->call_phrase != nullptr);
+    assert(eval_frame_.call_phrase != nullptr);
 
-    const Phrase& arg = eval_frame_->call_phrase->at(arg_index_);
+    const Phrase& arg = eval_frame_.call_phrase->at(arg_index_);
 
     locs.push_back(arg.location());
     // We only dump the stack starting at the parent call frame,
     // for cosmetic reasons. It looks stupid to underline one of the
     // arguments in a function call, and on the next line,
     // underline the same entire function call.
-    get_frame_locations(eval_frame_->parent_frame, locs);
+    get_frame_locations(eval_frame_.parent_frame, locs);
 }
 
 // TODO: accept a module. Return the module's elements list.

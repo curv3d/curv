@@ -34,7 +34,7 @@ map["sqrt"] = {1, [](Frame& args) -> Value {
     if (r == r)
         return r;
     else
-        throw Exception(At_Arg(0, &args),
+        throw Exception(At_Arg(0, args),
             stringify("sqrt(",args[0],"): domain error"));
 }};
 */
@@ -46,21 +46,21 @@ builtin_sqrt(Frame& args)
     if (r == r)
         return r;
     else
-        throw Exception(At_Arg(0, &args),
+        throw Exception(At_Arg(0, args),
             stringify("sqrt(",args[0],"): domain error"));
 }
 
 Value
 builtin_len(Frame& args)
 {
-    auto& list {arg_to_list(args[0], At_Arg(0, &args))};
+    auto& list {arg_to_list(args[0], At_Arg(0, args))};
     return {double(list.size())};
 }
 
 Value
 builtin_file(Frame& f)
 {
-    At_Arg ctx0(0, &f);
+    At_Arg ctx0(0, f);
     String& path {arg_to_string(f[0], ctx0)};
     auto file = make<File_Script>(share(path), ctx0);
     return {eval_script(*file, f.system, &f)};
@@ -69,7 +69,7 @@ builtin_file(Frame& f)
 Value
 builtin_shape2d(Frame& f)
 {
-    auto& record {arg_to_record(f[0], At_Arg(0, &f))};
+    auto& record {arg_to_record(f[0], At_Arg(0, f))};
     return {make<Shape2D>(share(record))};
 }
 
