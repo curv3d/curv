@@ -10,3 +10,9 @@ curv::Shape2D::print(std::ostream& out) const
     out << "shape2d";
     record_->print(out);
 }
+
+auto curv::Shape2D::getfield(Atom name) const
+-> Value
+{
+    return record_->getfield(name);
+}

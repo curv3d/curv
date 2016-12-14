@@ -35,3 +35,12 @@ auto curv::Record::operator==(const Record& rec) const
     }
     return true;
 }
+
+auto curv::Record::getfield(Atom name) const
+-> Value
+{
+    auto fp = fields_.find(name);
+    if (fp != fields_.end())
+        return fp->second;
+    return missing;
+}

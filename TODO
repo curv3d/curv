@@ -1,13 +1,8 @@
 # pre-geometry refactoring
-* generalized fields: virtual Ref_Value::getfield(Atom) -> Value
-  Returns missing value if field not defined.
-  * default implementation in Ref_Value throws error "value has no fields".
-  * getfield is implemented by Record, Module, Shape2D
-  * Dot_Expr calls getfield
-  * arg_to_fields returns Ref_Value& if arg is record, module, shape,
-    otherwise error "value has no fields".
-  * `shape2d` calls arg_to_fields to validate its argument.
-  * `merge` calls arg_to_record to validate its arg list.
+* shape2d accepts a record or module argument.
+* value1==value2 performs a bitwise comparison (for performance),
+  to speed up code like val==true and val==missing.
+  The general (expensive) equality is val1.equals(val2)
 
 # 0.2: geometry
 * start with 2D shapes. evaluate distance field d at each pixel,

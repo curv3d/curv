@@ -134,33 +134,14 @@ Value
 curv::Dot_Expr::eval(Frame& f) const
 {
     Value basev = base_->eval(f);
-    if (!basev.is_ref())
-        throw Exception(At_Phrase(*base_->source_, &f),
-            "not a record or module");
-    Ref_Value& basep( basev.get_ref_unsafe() );
-    switch (basep.type_) {
-    case Ref_Value::ty_record:
-      {
-        Record* record = (Record*)&basep;
-        auto fp = record->fields_.find(id_);
-        if (fp != record->fields_.end())
-            return fp->second;
-        throw Exception(At_Phrase(*base_->source_, &f),
-            stringify(".",id_,": not defined"));
-      }
-    case Ref_Value::ty_module:
-      {
-        Module* module = (Module*)&basep;
-        auto b = module->dictionary_->find(id_);
-        if (b != module->dictionary_->end())
-            return module->get(b->second);
-        throw Exception(At_Phrase(*base_->source_, &f),
-            stringify(".",id_,": not defined"));
-      }
-    default:
-        throw Exception(At_Phrase(*base_->source_, &f),
-            "not a record or module");
+    if (basev.is_ref()) {
+        Ref_Value& basep( basev.get_ref_unsafe() );
+        Value val = basep.getfield(id_);
+        if (val != missing)
+            return val;
     }
+    throw Exception(At_Phrase(*base_->source_, &f),
+        stringify(".",id_,": not defined"));
 }
 
 Value

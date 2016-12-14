@@ -68,3 +68,21 @@ auto curv::Value::operator==(Value v) const
         return true;
     }
 }
+
+auto curv::Ref_Value::getfield(Atom) const
+-> Value
+{
+    return missing;
+}
+
+// special marker that denotes the absence of a value
+struct Missing : public Ref_Value
+{
+    Missing() : Ref_Value(ty_missing) {}
+
+    void print(std::ostream& out) const override
+    {
+        out << "<missing>";
+    }
+};
+Value curv::missing {make<Missing>()};

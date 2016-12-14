@@ -15,18 +15,6 @@ Thunk::print(std::ostream& out) const
     out << "<thunk>";
 }
 
-// special marker value used during lazy evaluation
-struct Missing : public Ref_Value
-{
-    Missing() : Ref_Value(ty_missing) {}
-
-    void print(std::ostream& out) const override
-    {
-        out << "<missing>";
-    }
-};
-Value missing {make<Missing>()};
-
 Value
 force_ref(Value& slot, const Phrase& identifier, Frame& f)
 {

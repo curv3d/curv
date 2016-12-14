@@ -18,8 +18,9 @@ struct Record : public Ref_Value
     Record() : Ref_Value(ty_record) {}
 
     /// Print a value like a Curv expression.
-    virtual void print(std::ostream&) const;
+    virtual void print(std::ostream&) const override;
     bool operator==(const Record&) const;
+    virtual Value getfield(Atom) const override;
 };
 
 } // namespace curv

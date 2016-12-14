@@ -105,18 +105,12 @@ struct Module : public Ref_Value
     iterator begin() const { return iterator(*this, true); }
     iterator end() const { return iterator(*this, false); }
 
-    // TODO: should throw exception if 'id' not defined!
-#if 0
-    Value operator[](Atom id) const
-    {
-        return get((*dictionary_)[id]);
-    }
-#endif
-
     Shared<List> elements() const { return elements_; }
 
     /// Print a value like a Curv expression.
-    virtual void print(std::ostream&) const;
+    virtual void print(std::ostream&) const override;
+
+    virtual Value getfield(Atom) const override;
 };
 
 } // namespace curv

@@ -10,6 +10,9 @@
 
 namespace curv {
 
+union Value;
+struct Atom;
+
 /// Base class for the object referenced by a curv reference value.
 ///
 /// The memory layout for Ref_Value is:
@@ -47,6 +50,11 @@ struct Ref_Value : public aux::Shared_Base
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const = 0;
+    
+    /// Get the value of a named field.
+    ///
+    /// Return missing if the field is not defined.
+    virtual Value getfield(Atom) const;
 };
 
 /// A boxed, dynamically typed value in the Curv runtime.
@@ -296,6 +304,9 @@ public:
     bool operator==(Value) const;
     bool operator!=(Value v) const { return !(*this == v); }
 };
+
+/// Special marker that denotes the absence of a value
+extern Value missing;
 
 inline std::ostream&
 operator<<(std::ostream& out, Value val)

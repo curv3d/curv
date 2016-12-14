@@ -229,36 +229,6 @@ and to support module customization on shapes.
 ## Generalized Functions
 
 Builtin shape classes must export a dist function value to user space.
-But, no current support for builtin closures (C function + environment).
-* Generalize curv::Function to contain an environment pointer,
-  as `Shared<Ref_Value> env_`, passed as arg to `function_`.
-  Maybe use a template, which reduces to a monomorphic type in `Call_Expr`.
-* `virtual Value GFun::call(Frame&)`.
-  Adds an extra indirection for native function calls.
-  But, it's idiomatic C++.
-* Also, provide a generic GFun interface to Function and Closure.
-
-```
-Value
-builtin_len(Frame& args)
-{
-    auto& list {arg_to_list(args[0], At_Arg(0, &args))};
-    return {double(list.size())};
-}
-{"len", make<Builtin_Value>(1, builtin_len)},
--->
-class Std_Len : public Function
-{
-    Std_Len() : Function(1) {}  // nargs
-    Value call(Frame& args)
-    {
-        auto& list {arg_to_list(args[0], At_Arg(0, &args))};
-        return {double(list.size())};
-    }
-};
-{"len", make<Builtin_Value>(make<Std_Len>())},
-```
-
 ```
 class Square : public Shape2D
 {

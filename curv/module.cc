@@ -31,3 +31,12 @@ curv::Module::get(size_t i) const
     }
     return val;
 }
+
+auto curv::Module::getfield(Atom name) const
+-> Value
+{
+    auto b = dictionary_->find(name);
+    if (b != dictionary_->end())
+        return get(b->second);
+    return missing;
+}
