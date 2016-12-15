@@ -7,6 +7,7 @@ extern "C" {
 #include <string.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <unistd.h>
 }
 #include <iostream>
 
@@ -66,37 +67,16 @@ make_system(const char* argv0)
 }
 
 int
-main(int argc, char** argv)
+interactive_mode(const char* argv0)
 {
-    curv::System& sys(make_system(argv[0]));
-
-    if (argc > 2) {
-        std::cerr << "too many arguments\n";
-        exit(1);
-    }
-    if (argc == 2) {
-        try {
-            auto file = curv::make<curv::File_Script>(
-                curv::make_string(argv[1]), curv::Context{});
-            auto module = eval_script(*file, sys);
-            for (auto e : *module->elements())
-                std::cout << e << "\n";
-        } catch (curv::Exception& e) {
-            std::cerr << "ERROR: " << e << "\n";
-            exit(1);
-        } catch (std::exception& e) {
-            std::cerr << "ERROR: " << e.what() << "\n";
-            exit(1);
-        }
-        exit(0);
-    }
-
     // Catch keyboard interrupts, and set was_interrupted = true.
     // This is/will be used to interrupt the evaluator.
     struct sigaction interrupt_action;
     memset((void*)&interrupt_action, 0, sizeof(interrupt_action));
     interrupt_action.sa_handler = interrupt_handler;
     sigaction(SIGINT, &interrupt_action, nullptr);
+
+    curv::System& sys(make_system(argv0));
 
     // top level definitions, extended by typing 'id = expr'
     curv::Namespace names = sys.std_namespace();
@@ -111,7 +91,7 @@ main(int argc, char** argv)
             if (result == rlx_interrupt) {
                 continue;
             }
-            return 0;
+            return EXIT_SUCCESS;
         }
         auto script = curv::make<CString_Script>("", line);
         try {
@@ -126,4 +106,92 @@ main(int argc, char** argv)
             std::cout << "ERROR: " << e.what() << "\n";
         }
     }
+}
+
+const char help[] =
+"Interactive mode:\n"
+"  curv\n"
+"\n"
+"Display this help information:\n"
+"  curv --help\n"
+"\n"
+"Display version:\n"
+"  curv --version\n"
+"\n"
+"Batch mode (process a file, write results to stdout):\n"
+"  curv [options] filename\n"
+"  -i script -- read definitions from <filename>, evaluate <script> as input\n"
+"  -o format -- output format:\n"
+"     curv -- default format, print values as Curv expressions\n"
+"     json -- print values as JSON expressions\n"
+"     shadertoy -- render shapes as a shadertoy.com GLSL script\n"
+"  -D definition -- override an existing definition in <filename>\n"
+"  filename -- input file, a Curv script, optional if -i specified\n"
+;
+
+int
+main(int argc, char** argv)
+{
+    if (argc < 2)
+        return interactive_mode(argv[0]);
+    if (argc == 2 && strcmp(argv[1], "--help") == 0) {
+        std::cout << help;
+        return EXIT_SUCCESS;
+    }
+    if (argc == 2 && strcmp(argv[1], "--version") == 0) {
+        std::cout << "Curv: initial development phase (no version yet)\n";
+        return EXIT_SUCCESS;
+    }
+
+    // Parse batch mode arguments.
+    const char* argv0 = argv[0];
+    //const char* fmt = nullptr;
+    int opt;
+    while ((opt = getopt(argc, argv, ":i:o:D:")) != -1) {
+        switch (opt) {
+        case 'i':
+        case 'o':
+        case 'D':
+            std::cerr << "-" << (char)opt << " option not implemented yet\n";
+            return EXIT_FAILURE;
+        case '?':
+            std::cerr << "-" << (char)optopt << ": unknown option\n"
+                     << "Use " << argv0 << " --help for help.\n";
+            return EXIT_FAILURE;
+        case ':':
+            std::cerr << "-" << (char)optopt << ": missing argument\n"
+                     << "Use " << argv0 << " --help for help.\n";
+            return EXIT_FAILURE;
+        default:
+            assert(0);
+        }
+    }
+    if (optind >= argc) {
+        std::cerr << "missing filename argument\n"
+                  << "Use " << argv0 << " --help for help.\n";
+        return EXIT_FAILURE;
+    }
+    if (argc - optind > 1) {
+        std::cerr << "too many filename arguments\n"
+                  << "Use " << argv0 << " --help for help.\n";
+        return EXIT_FAILURE;
+    }
+    const char* filename = argv[optind];
+
+    // Execute batch mode.
+    curv::System& sys(make_system(argv0));
+    try {
+        auto file = curv::make<curv::File_Script>(
+            curv::make_string(filename), curv::Context{});
+        auto module = eval_script(*file, sys);
+        for (auto e : *module->elements())
+            std::cout << e << "\n";
+    } catch (curv::Exception& e) {
+        std::cerr << "ERROR: " << e << "\n";
+        return EXIT_FAILURE;
+    } catch (std::exception& e) {
+        std::cerr << "ERROR: " << e.what() << "\n";
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }
