@@ -21,6 +21,8 @@ extern "C" {
 #include <curv/phrase.h>
 #include <curv/shared.h>
 #include <curv/system.h>
+#include <curv/list.h>
+#include <curv/record.h>
 
 bool was_interrupted = false;
 
@@ -108,6 +110,103 @@ interactive_mode(const char* argv0)
     }
 }
 
+void export_curv(curv::Module& module, std::ostream& out)
+{
+    for (auto e : *module.elements())
+        out << e << "\n";
+}
+bool is_json_data(curv::Value val)
+{
+    if (val.is_ref()) {
+        auto& ref = val.get_ref_unsafe();
+        switch (ref.type_) {
+        case curv::Ref_Value::ty_string:
+        case curv::Ref_Value::ty_list:
+        case curv::Ref_Value::ty_record:
+            return true;
+        default:
+            return false;
+        }
+    } else {
+        return true; // null, bool or num
+    }
+}
+bool export_json_value(curv::Value val, std::ostream& out)
+{
+    if (val.is_null()) {
+        out << "null";
+        return true;
+    }
+    if (val.is_bool()) {
+        out << val;
+        return true;
+    }
+    if (val.is_num()) {
+        double num = val.get_num_unsafe();
+        if (num == 1.0/0.0) // inf
+            out << "1e999";
+        else if (num == -1.0/0.0) // -inf
+            out << "-1e999";
+        else
+            out << val;
+        return true;
+    }
+    assert(val.is_ref());
+    auto& ref = val.get_ref_unsafe();
+    switch (ref.type_) {
+    case curv::Ref_Value::ty_string:
+      {
+        auto& str = (curv::String&)ref;
+        out << '"';
+        for (auto c : str) {
+            if (c == '\\' || c == '"')
+                out << '\\';
+            out << c;
+        }
+        out << '"';
+        return true;
+      }
+    case curv::Ref_Value::ty_list:
+      {
+        auto& list = (curv::List&)ref;
+        out << "[";
+        bool first = true;
+        for (auto e : list) {
+            if (is_json_data(e)) {
+                if (!first) out << ",";
+                first = false;
+                export_json_value(e, out);
+            }
+        }
+        out << "]";
+        return true;
+      }
+    case curv::Ref_Value::ty_record:
+      {
+        auto& record = (curv::Record&)ref;
+        out << "{";
+        bool first = true;
+        for (auto i : record.fields_) {
+            if (is_json_data(i.second)) {
+                if (!first) out << ",";
+                first = false;
+                out << '"' << i.first << "\":";
+                export_json_value(i.second, out);
+            }
+        }
+        out << "}";
+        return true;
+      }
+    default:
+        return false;
+    }
+}
+void export_json(curv::Module& module, std::ostream& out)
+{
+    for (auto e : *module.elements())
+        if (export_json_value(e, out)) out << "\n";
+}
+
 const char help[] =
 "Interactive mode:\n"
 "  curv\n"
@@ -145,12 +244,22 @@ main(int argc, char** argv)
 
     // Parse batch mode arguments.
     const char* argv0 = argv[0];
-    //const char* fmt = nullptr;
+    void (*exporter)(curv::Module&, std::ostream&) = export_curv;
     int opt;
     while ((opt = getopt(argc, argv, ":i:o:D:")) != -1) {
         switch (opt) {
-        case 'i':
         case 'o':
+            if (strcmp(optarg, "curv") == 0)
+                exporter = export_curv;
+            else if (strcmp(optarg, "json") == 0)
+                exporter = export_json;
+            else {
+                std::cerr << "-o: format " << optarg << " not supported\n"
+                          << "Use " << argv0 << " --help for help.\n";
+                return EXIT_FAILURE;
+            }
+            break;
+        case 'i':
         case 'D':
             std::cerr << "-" << (char)opt << " option not implemented yet\n";
             return EXIT_FAILURE;
@@ -184,8 +293,7 @@ main(int argc, char** argv)
         auto file = curv::make<curv::File_Script>(
             curv::make_string(filename), curv::Context{});
         auto module = eval_script(*file, sys);
-        for (auto e : *module->elements())
-            std::cout << e << "\n";
+        exporter(*module, std::cout);
     } catch (curv::Exception& e) {
         std::cerr << "ERROR: " << e << "\n";
         return EXIT_FAILURE;
