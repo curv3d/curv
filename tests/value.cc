@@ -45,6 +45,7 @@ TEST(curv, value)
     EXPECT_FALSE(v.is_num());
     EXPECT_FALSE(v.is_ref());
     EXPECT_TRUE(v.get_bool_unsafe() == false);
+    EXPECT_TRUE(v == false);
     EXPECT_TRUE(prints_as(v, "false"));
 
     v = Value(true);
