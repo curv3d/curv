@@ -1,10 +1,28 @@
-# pre-geometry refactoring
-* shape2d accepts a record or module argument.
-* value1==value2 performs a bitwise comparison (for performance),
-  to speed up code like val==true and val==missing.
-  The general (expensive) equality is val1.equals(val2)
+# pre-geometry
+* command line export to different file formats (-o option)
+  curv [-i node] [-o format] [-D definition] filename
+  Evaluate filename as a Curv script file, yielding a module.
+  Write the module elements to stdout, unless -i name is specified, then
+  evaluate 'name' in the context of that module to get a value which is to
+  be output.
+  By default, the output format is to output each value as a Curv expression,
+  terminated by a newline, unless a different format is specified by -o.
+  Output formats: json, shadertoy.
+  The -D flag takes a legal Curv definition as an argument.
+  This definition is added to the module being read, overriding an
+  existing top level definition. This override happens during parsing.
+* command line documentation
+  * docs/curv.1.md is converted to curv.1 by pandoc and installed
+  * curv --help
+  * curv --version
 
 # 0.2: geometry
+* curv::Shape2D is abstract, with builtin and user subclasses
+  * subclass User_Shape2D (better name?)
+    Scripted_Shape2D, Exo_Shape2D also ecto- ext-
+* builtin circle
+  * shadertoy export, eg a -o flag
+* shape2d accepts a record or module argument.
 * start with 2D shapes. evaluate distance field d at each pixel,
   color white or black as d > 0 or d <= 0.
 * square, union, translate, initially builtin shapes.
@@ -36,6 +54,12 @@
   module field doesn't work if the module also contains functions closed over
   those fields.
 * num: min[x,y], max[x,y], abs(x), sin(x), cos(x)
+
+# refactoring
+* value1==value2 performs a bitwise comparison (for performance),
+  to speed up code like val==true and val==missing.
+  The general (expensive) equality is val1.equals(val2)
+
 
 VM:
 * debugger entry on exception

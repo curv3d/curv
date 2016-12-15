@@ -160,6 +160,23 @@ A shape is a set of named fields. The `bbox` and `dist` functions
 are mandatory, some shapes have additional fields according to various
 protocols yet to be defined. The fields can be accessed using dot notation.
 
+Basic requirements for a Shape value:
+* It's a branded Value with type `ty_shape2d` or `ty_shape3d`
+* getfield("dist") returns a distance Function. class Function now has
+  a `gl_call()` virtual function for generating a GLSL call to this function.
+* getfield("bbox") returns a bounding box value,
+  represented as `[[minx,miny],[maxx,maxy]]` (2D case).
+
+Additional convenience functions, used by builtin Shape classes when
+referencing children shapes:
+* double dist(Vec2&) calls the dist function, with strong typing.
+* `GL_Value gl_dist(GL_Value)` generates a GLSL call to the dist function.
+* BBox& bbox() returns the bounding box with a stronger type.
+
+These could all be implemented by calling getfield().
+Or the typed values could be cached in the shape object.
+
+----------------------------------------------------------------
 Shapes have a *module* nature, not a *record* nature. It doesn't make sense
 to use `merge` to add new fields or especially to modify existing fields,
 since the `dist` function is closed over the original field values.
@@ -246,8 +263,8 @@ class Square : public Shape2D
             pt = get_vec2_arg(0, f);
             ...
         }
+        GL_Value gl_call(GL_Args) {...}
     };
-    void gl_encode(GL_Encoder& gl) {...}
 };
 ```
 Sucks to implement the dist function twice in a builtin shape.
