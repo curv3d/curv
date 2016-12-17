@@ -1,22 +1,13 @@
-# pre-geometry
-* command line export to different file formats (-o option)
-  curv [-i node] [-o format] [-D definition] filename
-  Evaluate filename as a Curv script file, yielding a module.
-  Write the module elements to stdout, unless -i name is specified, then
-  evaluate 'name' in the context of that module to get a value which is to
-  be output.
-  By default, the output format is to output each value as a Curv expression,
-  terminated by a newline, unless a different format is specified by -o.
-  Output formats: json, shadertoy.
-  The -D flag takes a legal Curv definition as an argument.
-  This definition is added to the module being read, overriding an
-  existing top level definition. This override happens during parsing.
-* command line documentation
-  * docs/curv.1.md is converted to curv.1 by pandoc and installed
-  * curv --help
-  * curv --version
-
 # 0.2: geometry
+* user-defined circle or square plus shadertoy export
+  * GL_Value Function::gl_call(GL_Args)
+  * GL_Value Operation::gl_eval(GL_Encoder)
+  * GL_Value: <uint32,GL_Type>, ostream<< as "r$idx"
+  * enum GL_Type: Num,Vec2,...
+  * GL_Encoder: <ostream& out, uint valcnt, newvalue(type), ...>
+    * potentially functions for each op: add(val1,val2) etc
+  * GL_Args: array of GL_Value, plus a GL_Encoder
+  * shadertoy export: shape.dist.gl_call(...)
 * curv::Shape2D is abstract, with builtin and user subclasses
   * subclass User_Shape2D (better name?)
     Scripted_Shape2D, Exo_Shape2D also ecto- ext-
@@ -59,6 +50,24 @@
 * value1==value2 performs a bitwise comparison (for performance),
   to speed up code like val==true and val==missing.
   The general (expensive) equality is val1.equals(val2)
+
+# command line arguments
+* command line export to different file formats (-o option)
+  curv [-i node] [-o format] [-D definition] filename
+  Evaluate filename as a Curv script file, yielding a module.
+  Write the module elements to stdout, unless -i name is specified, then
+  evaluate 'name' in the context of that module to get a value which is to
+  be output.
+  By default, the output format is to output each value as a Curv expression,
+  terminated by a newline, unless a different format is specified by -o.
+  Output formats: json, shadertoy.
+  The -D flag takes a legal Curv definition as an argument.
+  This definition is added to the module being read, overriding an
+  existing top level definition. This override happens during parsing.
+* command line documentation
+  * docs/curv.1.md is converted to curv.1 by pandoc and installed
+  * curv --help
+  * curv --version
 
 
 VM:

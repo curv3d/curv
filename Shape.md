@@ -161,7 +161,7 @@ are mandatory, some shapes have additional fields according to various
 protocols yet to be defined. The fields can be accessed using dot notation.
 
 Basic requirements for a Shape value:
-* It's a branded Value with type `ty_shape2d` or `ty_shape3d`
+* It's a branded `Ref_Value` with type `ty_shape2d` or `ty_shape3d`.
 * getfield("dist") returns a distance Function. class Function now has
   a `gl_call()` virtual function for generating a GLSL call to this function.
 * getfield("bbox") returns a bounding box value,
@@ -169,12 +169,24 @@ Basic requirements for a Shape value:
 
 Additional convenience functions, used by builtin Shape classes when
 referencing children shapes:
-* double dist(Vec2&) calls the dist function, with strong typing.
-* `GL_Value gl_dist(GL_Value)` generates a GLSL call to the dist function.
-* BBox& bbox() returns the bounding box with a stronger type.
+* `double dist(Vec2&, Frame* parent)` calls the dist function.
+  Rare, not in the fast path.
+* `GL_Value gl_dist(GL_Encoder&, GL_Value)` generates a GLSL call
+  to the dist function.
+* BBox2& bbox() returns the bounding box with a stronger type.
 
 These could all be implemented by calling getfield().
 Or the typed values could be cached in the shape object.
+
+Represent Vec2 and BBox2 as typed wrappers around List type.
+* A Vector has exactly the same in-memory representation as a List of numbers,
+  (including vtable and virtual functions), but the non-virtual accessor
+  functions return doubles, not Values.
+* A List* can be bitcast to a Vector* using a function that checks each element
+  for validity.
+* Vector is a subclass of List that replaces the nonvirtual collection
+  access functions, by bitcasting the `array_` data member to `double*`.
+* You can create a Vector then upcast it to a List.
 
 ----------------------------------------------------------------
 Shapes have a *module* nature, not a *record* nature. It doesn't make sense
