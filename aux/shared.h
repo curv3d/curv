@@ -23,7 +23,13 @@ template<typename T, class... Args> Shared<T> make(Args&&... args)
     void* raw = std::malloc(sizeof(T));
     if (raw == nullptr)
         throw std::bad_alloc();
-    T* ptr = new(raw) T(args...);
+    T* ptr;
+    try {
+        ptr = new(raw) T(args...);
+    } catch (...) {
+        std::free(raw);
+        throw;
+    }
     return Shared<T>(ptr);
 }
 
