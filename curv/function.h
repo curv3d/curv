@@ -8,6 +8,7 @@
 #include <curv/value.h>
 #include <curv/meaning.h>
 #include <curv/list.h>
+#include <curv/gl_compiler.h>
 
 namespace curv {
 
@@ -33,7 +34,11 @@ struct Function : public Ref_Value
         nslots_(nslots)
     {}
 
+    // call the function during evaluation
     virtual Value call(Frame& args) = 0;
+
+    // generate a call to the function during geometry compilation
+    virtual GL_Value gl_call(GL_Args&, GL_Compiler&) const;
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const;

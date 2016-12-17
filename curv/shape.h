@@ -11,7 +11,8 @@ namespace curv {
 
 // TODO: a more compact/efficient representation for Shape2D?
 // Maybe use the same internal representation as Record, with a different
-// type tag.
+// type tag?
+// TODO: Shape2D should be abstract, user defined Shape2D should be a subclass.
 
 struct Shape2D : public Ref_Value
 {

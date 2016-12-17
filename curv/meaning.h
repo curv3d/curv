@@ -5,6 +5,7 @@
 #ifndef CURV_MEANING_H
 #define CURV_MEANING_H
 
+#include <curv/gl_compiler.h>
 #include <vector>
 #include <aux/tail_array.h>
 #include <curv/shared.h>

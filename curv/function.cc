@@ -3,22 +3,32 @@
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
 #include <curv/function.h>
+#include <curv/exception.h>
+#include <curv/context.h>
+
+using namespace curv;
 
 void
-curv::Function::print(std::ostream& out) const
+Function::print(std::ostream& out) const
 {
     out << "<function>";
 }
 
-curv::Value
-curv::Closure::call(Frame& f)
+GL_Value
+Function::gl_call(GL_Args&, GL_Compiler&) const
+{
+    throw Exception({}, "the Geometry Compiler is not implemented");
+}
+
+Value
+Closure::call(Frame& f)
 {
     f.nonlocal = &*nonlocal_;
     return expr_->eval(f);
 }
 
 void
-curv::Lambda::print(std::ostream& out) const
+Lambda::print(std::ostream& out) const
 {
     out << "<lambda>";
 }
