@@ -57,9 +57,10 @@ struct GL_Value
 };
 
 /// print the GLSL variable name
-inline void operator<<(std::ostream& out, GL_Value v)
+inline std::ostream& operator<<(std::ostream& out, GL_Value v)
 {
     out << "r" << v.index;
+    return out;
 }
 
 /// A GLSL code generator.

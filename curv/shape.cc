@@ -3,16 +3,26 @@
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
 #include <curv/shape.h>
+#include <curv/exception.h>
+#include <curv/context.h>
+
+using namespace curv;
 
 void
-curv::Shape2D::print(std::ostream& out) const
+Shape2D::print(std::ostream& out) const
 {
     out << "shape2d";
     record_->print(out);
 }
 
-auto curv::Shape2D::getfield(Atom name) const
--> Value
+Value
+Shape2D::getfield(Atom name) const
 {
     return record_->getfield(name);
+}
+
+GL_Value
+Shape2D::gl_dist(GL_Value arg, GL_Compiler& gl) const
+{
+    throw Exception({}, "Shape2D::gl_dist not implemented");
 }

@@ -23,6 +23,8 @@ extern "C" {
 #include <curv/system.h>
 #include <curv/list.h>
 #include <curv/record.h>
+#include <curv/gl_compiler.h>
+#include <curv/shape.h>
 
 bool was_interrupted = false;
 
@@ -114,6 +116,16 @@ void export_curv(curv::Module& module, std::ostream& out)
 {
     for (auto e : *module.elements())
         out << e << "\n";
+}
+void export_shadertoy(curv::Module& module, std::ostream& out)
+{
+    std::vector<curv::Shared<curv::Shape2D>> shapes;
+    for (auto e : *module.elements())
+        if (auto shape = e.dycast<curv::Shape2D>())
+            shapes.push_back(shape);
+    // TODO: construct a union of `shapes`
+    if (!shapes.empty())
+        curv::gl_compile(*shapes.front(), std::cout);
 }
 bool is_json_data(curv::Value val)
 {
@@ -253,6 +265,8 @@ main(int argc, char** argv)
                 exporter = export_curv;
             else if (strcmp(optarg, "json") == 0)
                 exporter = export_json;
+            else if (strcmp(optarg, "shadertoy") == 0)
+                exporter = export_shadertoy;
             else {
                 std::cerr << "-o: format " << optarg << " not supported\n"
                           << "Use " << argv0 << " --help for help.\n";

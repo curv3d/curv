@@ -212,7 +212,11 @@ public:
 
     /// Convert a reference value to `Ref_Value&`.
     ///
-    /// Unsafe unless `is_ref()` is true.
+    /// Unsafe unless `is_ref()` is true, otherwise it returns a bad reference,
+    /// causing memory corruption or a crash if dereferenced.
+    /// Another reason it's unsafe is that the returned reference becomes
+    /// invalid if the original Value is destroyed.
+    /// See `dycast` for a completely safe alternative.
     inline Ref_Value& get_ref_unsafe() const noexcept
     {
         #if UINTPTR_MAX == UINT64_MAX
@@ -253,6 +257,18 @@ public:
         #else
             static_assert(false, "only 32 and 64 bit architectures supported");
         #endif
+    }
+
+    /// Like dynamic_cast for a Value.
+    template <class T>
+    inline Shared<T> dycast()
+    {
+        if (is_ref()) {
+            T* p = dynamic_cast<T*>(&get_ref_unsafe());
+            if (p != nullptr)
+                return share(*p);
+        }
+        return nullptr;
     }
 
     /// The copy constructor increments the use_count of a ref value.
