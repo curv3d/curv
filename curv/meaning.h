@@ -87,6 +87,9 @@ struct Operation : public Meaning
     virtual Value eval(Frame&) const;
     virtual void generate(Frame&, List_Builder&) const = 0;
     virtual void exec(Frame&) const;
+
+    // These functions are called by the Geometry Compiler.
+    virtual GL_Value gl_eval(GL_Compiler&) const;
 };
 
 /// `Just_Expression` is an implementation class, inherited by Operation classes
@@ -141,6 +144,7 @@ struct Constant : public Just_Expression
     {}
 
     virtual Value eval(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Compiler&) const override;
 };
 
 struct Module_Ref : public Just_Expression

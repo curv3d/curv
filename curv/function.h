@@ -96,6 +96,9 @@ struct Closure : public Function
     {}
 
     virtual Value call(Frame& args) override;
+
+    // generate a call to the function during geometry compilation
+     virtual GL_Value gl_call(GL_Args&, GL_Compiler&) const override;
 };
 
 } // namespace curv

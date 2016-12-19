@@ -10,6 +10,8 @@
 
 namespace curv {
 
+class Function;
+
 // TODO: a more compact/efficient representation for Shape2D?
 // Maybe use the same internal representation as Record, with a different
 // type tag?
@@ -30,6 +32,8 @@ struct Shape2D : public Ref_Value
     virtual void print(std::ostream&) const override;
 
     virtual Value getfield(Atom) const override;
+
+    Function& dist() const;
 
     /// Invoke the Geometry Compiler on the shape's `dist` function.
     GL_Value gl_dist(GL_Value, GL_Compiler&) const;

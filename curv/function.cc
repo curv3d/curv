@@ -17,7 +17,8 @@ Function::print(std::ostream& out) const
 GL_Value
 Function::gl_call(GL_Args&, GL_Compiler&) const
 {
-    throw Exception({}, "the Geometry Compiler is not implemented");
+    // TODO: exception context?
+    throw Exception({}, "this function does not support the Geometry Compiler");
 }
 
 Value
@@ -25,6 +26,12 @@ Closure::call(Frame& f)
 {
     f.nonlocal = &*nonlocal_;
     return expr_->eval(f);
+}
+
+GL_Value
+Closure::gl_call(GL_Args&, GL_Compiler& gl) const
+{
+    return expr_->gl_eval(gl);
 }
 
 void
