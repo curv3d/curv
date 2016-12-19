@@ -264,23 +264,6 @@ struct Call_Expr : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
-struct Prefix_Expr : public Just_Expression
-{
-    Token::Kind op_;
-    Shared<Operation> arg_;
-
-    Prefix_Expr(
-        Shared<const Phrase> source,
-        Token::Kind op,
-        Shared<Operation> arg)
-    :
-        Just_Expression(source),
-        op_(op),
-        arg_(std::move(arg))
-    {}
-
-    virtual Value eval(Frame&) const override;
-};
 struct Prefix_Expr_Base : public Just_Expression
 {
     Shared<Operation> arg_;
@@ -294,6 +277,16 @@ struct Prefix_Expr_Base : public Just_Expression
     {}
 };
 struct Not_Expr : public Prefix_Expr_Base
+{
+    using Prefix_Expr_Base::Prefix_Expr_Base;
+    virtual Value eval(Frame&) const override;
+};
+struct Positive_Expr : public Prefix_Expr_Base
+{
+    using Prefix_Expr_Base::Prefix_Expr_Base;
+    virtual Value eval(Frame&) const override;
+};
+struct Negative_Expr : public Prefix_Expr_Base
 {
     using Prefix_Expr_Base::Prefix_Expr_Base;
     virtual Value eval(Frame&) const override;

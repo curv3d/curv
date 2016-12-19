@@ -147,11 +147,16 @@ Unary_Phrase::analyze(Environ& env) const
         return make<Not_Expr>(
             share(*this),
             analyze_op(*arg_, env));
-    default:
-        return make<Prefix_Expr>(
+    case Token::k_plus:
+        return make<Positive_Expr>(
             share(*this),
-            op_.kind,
             analyze_op(*arg_, env));
+    case Token::k_minus:
+        return make<Negative_Expr>(
+            share(*this),
+            analyze_op(*arg_, env));
+    default:
+        assert(0);
     }
 }
 

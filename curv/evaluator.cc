@@ -145,33 +145,6 @@ curv::Dot_Expr::eval(Frame& f) const
 }
 
 Value
-curv::Prefix_Expr::eval(Frame& f) const
-{
-    switch (op_) {
-    case Token::k_minus:
-        {
-            Value a = arg_->eval(f);
-            Value r = Value(-a.get_num_or_nan());
-            if (!r.is_num())
-                throw Exception(At_Phrase(*source_, &f),
-                    stringify("-",a,": domain error"));
-            return r;
-        }
-    case Token::k_plus:
-        {
-            Value a = arg_->eval(f);
-            Value r = Value(+a.get_num_or_nan());
-            if (!r.is_num())
-                throw Exception(At_Phrase(*source_, &f),
-                    stringify("+",a,": domain error"));
-            return r;
-        }
-    default:
-        assert(0);
-    }
-}
-
-Value
 curv::Not_Expr::eval(Frame& f) const
 {
     Value a = arg_->eval(f);
@@ -179,6 +152,26 @@ curv::Not_Expr::eval(Frame& f) const
         throw Exception(At_Phrase(*source_, &f),
             stringify("!",a,": domain error"));
     return {!a.get_bool_unsafe()};
+}
+Value
+curv::Positive_Expr::eval(Frame& f) const
+{
+    Value a = arg_->eval(f);
+    Value r = Value(+a.get_num_or_nan());
+    if (!r.is_num())
+        throw Exception(At_Phrase(*source_, &f),
+            stringify("+",a,": domain error"));
+    return r;
+}
+Value
+curv::Negative_Expr::eval(Frame& f) const
+{
+    Value a = arg_->eval(f);
+    Value r = Value(-a.get_num_or_nan());
+    if (!r.is_num())
+        throw Exception(At_Phrase(*source_, &f),
+            stringify("+",a,": domain error"));
+    return r;
 }
 
 Value
