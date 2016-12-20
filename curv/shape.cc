@@ -41,5 +41,10 @@ GL_Value
 Shape2D::gl_dist(GL_Value arg, GL_Compiler& gl) const
 {
     GL_Args args { arg };
-    return dist().gl_call(args, gl);
+    auto old_arg0 = gl.arg0;
+    gl.arg0 = arg;
+    auto result = dist().gl_call(args, gl);
+    // TODO exception safety?
+    gl.arg0 = old_arg0;
+    return result;
 }

@@ -1,27 +1,17 @@
 # 0.2: geometry
-* user-defined circle or square plus shadertoy export
-  * GL_Value Function::gl_call(GL_Args)
-  * GL_Value Operation::gl_eval(GL_Encoder)
-  * GL_Value: <uint32,GL_Type>, ostream<< as "r$idx"
-  * enum GL_Type: Num,Vec2,...
-  * GL_Encoder: <ostream& out, uint valcnt, newvalue(type), ...>
-    * potentially functions for each op: add(val1,val2) etc
-  * GL_Args: array of GL_Value, plus a GL_Encoder
-  * shadertoy export: shape.dist.gl_call(...)
+Geometry Compiler refactoring:
+* GL_Compiler contains a stack of GL_Frame
+  which contains GL_Args, a closure environment, a Call_Phrase.
+* this will provide exception context for Function::gl_call
+
 * curv::Shape2D is abstract, with builtin and user subclasses
-  * subclass User_Shape2D (better name?)
+  * subclass User_Defined_Shape2D, UD_Shape2D, User_Shape2D (better name?)
     Scripted_Shape2D, Exo_Shape2D also ecto- ext-
-* builtin circle
-  * shadertoy export, eg a -o flag
 * shape2d accepts a record or module argument.
-* start with 2D shapes. evaluate distance field d at each pixel,
-  color white or black as d > 0 or d <= 0.
-* square, union, translate, initially builtin shapes.
-* simulate built-in square using GLSL on ShaderToy.com
-  * make it zoom/rotate with mouse.
+* square, union, translate
+* make it zoom/rotate with mouse.
 * make same code run in an OpenGL window created using C++.
   http://www.opengl-tutorial.org/beginners-tutorials/tutorial-1-opening-a-window/
-* built-in square(n).
 
 # 0.1: Minimum Viable Language
 * echo:

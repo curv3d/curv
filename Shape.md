@@ -1,3 +1,62 @@
+# The Geometry Compiler
+
+## 19-Dec-2016 notes, based on first successful shadertoy export.
+
+The Geometry Compiler is currently invoked after evaluation.
+* what's good: polymorphism -- the same function can be called with different
+  argument types, each call is separately inlined expanded into potentially
+  different code (based on argument types).
+* what's bad:
+  * Code bloat, probably, due to mandatory inline expansion of function calls.
+  * Type errors are reported *after* evaluation, meaning no stack trace,
+    and therefore can't enter debugger to examine stack. But, maybe we can
+    use the CSG tree to provide a different kind of stack trace.
+  * Better if type errors reported by shape2d constructor.
+
+No constant folding, so -1 becomes
+  float r3 = 1;
+  float r4 = -r3;
+The GLSL compiler should be able to optimize this. But, huge GLSL functions
+might create problems.
+
+Fluent math primitives:
+* `x^2` compiles into `x*x`
+* `exp(x,2)` compiles into `exp2(x)`
+
+If GC happens after evaluation, then potentially the constant folding
+and fluent math transformations happen twice, during analysis and during GC.
+
+Maybe the type checking and optimization phase of GC should happen earlier.
+* Do as much work as possible during semantic analysis? Maybe we give up on
+  JIT constant folding and fluent math transformations. During analysis, we
+  recognize the GL subset of Curv, and record type annotations where possible.
+  During evaluation, `shape2d` tests if the dist function is GL compatible,
+  based on annotations recorded during analysis. This loses some polymorphism
+  and probably requires user type annotations to make some code GL compatible.
+* Do type checking, at least, maybe some optimization, during evaluation
+  in `shape2d` constructor. This preserves polymorphism and eliminates need
+  for user type annotations.
+
+Thought experiment: should we compile curv Operations into an abstract GL
+operation tree, before generating GLSL code?
+* The `shape2d` function compiles the distance function value into GL IR.
+  Type errors are reported during evaluation, which is good.
+* The GL IR can be optimized, and there can be multiple backends
+  for generating GLSL, SPIR-V and LLVM code.
+* Introduce another IR? Can't we get by with just a single IR?
+  Surely the GL IR is just a subset of the Operation IR.
+* Okay, it's the same IR. So this becomes an optimization that maps a
+  Closure value's IR and environment onto a new IR tree where environment
+  values become compile time constants. We run a constant folding and
+  fluent math transformation pass on the resulting IR.
+* And, we expose this feature using an `optimize` function that compiles a
+  closure into optimized machine code using LLVM. Call this "stupid JIT",
+  since we aren't smart enough to do it automatically, and since `optimize`
+  only supports a subset of the language.
+* Sounds good. Meanwhile, the Operation IR still needs a GLSL code generator,
+  which I've already started.
+
+## Older Notes
 How to generate GPU code for previewing.
 
 A 2D shape is

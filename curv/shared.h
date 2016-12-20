@@ -9,10 +9,7 @@
 
 namespace curv {
 
-/// Terse alias for aux::Shared in curv namespace
-// template<typename T> using Shared = aux::Shared<T>;
 using aux::Shared;
-
 using aux::make;
 
 template<class T, class U>

@@ -11,6 +11,7 @@
 namespace curv {
 
 class Shape2D;
+class Operation;
 
 /// The Geometry Compiler translates the CSG tree created by the evaluator
 /// into optimized GPU code for fast rendering on a graphics display.
@@ -46,6 +47,7 @@ enum class GL_Type : unsigned
     num,
     vec2
 };
+std::ostream& operator<<(std::ostream& out, GL_Type);
 
 /// An SSA variable used during GL code generation.
 struct GL_Value
@@ -54,6 +56,7 @@ struct GL_Value
     GL_Type type;
 
     GL_Value(unsigned i, GL_Type t) : index(i), type(t) {}
+    GL_Value() {}
 };
 
 /// print the GLSL variable name
@@ -68,6 +71,7 @@ struct GL_Compiler
 {
     std::ostream& out;
     unsigned valcount;
+    GL_Value arg0;
 
     GL_Compiler(std::ostream& s) : out(s), valcount(0) {}
 
@@ -75,6 +79,8 @@ struct GL_Compiler
     {
         return GL_Value(valcount++, type);
     }
+
+    GL_Value eval_expr(Operation& op, GL_Type);
 
     // TODO: maybe add a member function for each operation that we support.
     // Maybe these can later be virtual functions, so that this interface
