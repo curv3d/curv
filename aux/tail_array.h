@@ -70,9 +70,9 @@ public:
 ///   (zero length arrays) which is enabled by default in gcc, clang and msvc++.
 ///
 /// All instances of the class are allocated on the heap.
-/// The only way to construct instances are the `make` factory functions.
-///
-/// Use `delete` to destroy an instance.
+/// The only way to construct instances are the `make` factory functions,
+/// which return std::unique_ptr. (The pointers are deleted using `delete`,
+/// but that happens internal to unique_ptr.)
 ///
 /// `Tail_Array` uses `malloc` and `free` for storage management.
 /// This is because C++ allocators don't provide an appropriate interface:
