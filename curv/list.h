@@ -28,8 +28,8 @@ using List = aux::Tail_Array<List_Base>;
 
 inline Shared<List> make_list(size_t size)
 {
-    List* list = List::make(size);
-    return {list};
+    auto list = List::make(size);
+    return {std::move(list)};
 }
 
 /// Factory class for building a curv::List.

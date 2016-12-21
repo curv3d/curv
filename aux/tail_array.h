@@ -10,6 +10,7 @@
 #include <cstring>
 #include <new>
 #include <utility>
+#include <memory>
 
 namespace aux {
 
@@ -97,7 +98,7 @@ class Tail_Array final : public Base
 public:
     /// Allocate an instance. Array elements are default constructed.
     template<typename... Rest>
-    static Tail_Array* make(size_t size, Rest&&... rest)
+    static std::unique_ptr<Tail_Array> make(size_t size, Rest&&... rest)
     {
         // allocate the object
         void* mem = malloc(sizeof(Tail_Array) + size*sizeof(_value_type));
@@ -125,12 +126,12 @@ public:
             free(mem);
             throw;
         }
-        return r;
+        return std::unique_ptr<Tail_Array>(r);
     }
 
     /// Allocate an instance. Move elements from another collection.
     template<class C, typename... Rest>
-    static Tail_Array* make_elements(C&& c, Rest... rest)
+    static std::unique_ptr<Tail_Array> make_elements(C&& c, Rest... rest)
     {
         // allocate the object
         auto size = c.size();
@@ -163,12 +164,12 @@ public:
             free(mem);
             throw;
         }
-        return r;
+        return std::unique_ptr<Tail_Array>(r);
     }
 
     /// Allocate an instance. Copy array elements from another array.
     template<typename... Rest>
-    static Tail_Array* make_copy(_value_type* a, size_t size, Rest... rest)
+    static std::unique_ptr<Tail_Array> make_copy(_value_type* a, size_t size, Rest... rest)
     {
         // allocate the object
         void* mem = malloc(sizeof(Tail_Array) + size*sizeof(_value_type));
@@ -207,7 +208,7 @@ public:
             free(mem);
             throw;
         }
-        return r;
+        return std::unique_ptr<Tail_Array>(r);
     }
 
     ~Tail_Array()

@@ -1,6 +1,5 @@
 # 0.2: geometry
 Prereqs:
-* Tail_Array<T>::make returns a unique_ptr.
 * Tail_Array<T>::make(initializer_list<value_type>, ...)
 
 Geometry Compiler refactoring:

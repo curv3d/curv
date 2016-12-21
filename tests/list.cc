@@ -14,10 +14,10 @@ using namespace curv;
 TEST(curv, list)
 {
     auto xp = List::make(2);
-    auto x = Shared<List>{xp};
+    auto x = Shared<List>{std::move(xp)};
 
     auto yp = List::make(2);
-    auto y = Shared<List>{yp};
+    auto y = Shared<List>{std::move(yp)};
 
     (*x)[0] = Value{42.0};
     (*x)[1] = Value{y};

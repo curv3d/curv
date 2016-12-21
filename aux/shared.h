@@ -40,6 +40,9 @@ struct Shared : public boost::intrusive_ptr<T>
 
     // additional constructor, for parity with std::shared_ptr
     Shared(std::unique_ptr<T> uptr) : boost::intrusive_ptr<T>(uptr.release()) {}
+    template<class Y> Shared(std::unique_ptr<Y> p)
+    : boost::intrusive_ptr<T>(p.release())
+    {}
 };
 
 /// Cheap alternative to `std::make_shared`.
