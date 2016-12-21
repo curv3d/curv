@@ -24,6 +24,7 @@ template <class Iter>
 struct Range
 {
     Range(Iter f, Iter l) : first(f), last(l) {}
+    Range(Iter p, std::size_t sz) : first(p), last(p+sz) {}
     Iter first;
     Iter last;
     Iter begin() const { return first; }
