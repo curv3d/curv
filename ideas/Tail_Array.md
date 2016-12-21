@@ -1,5 +1,32 @@
 # Tail Arrays
 
+## Dec 2016
+It would be cool if `curv::make` could be overloaded to construct tail arrays.
+Use a template specialization for `aux::Tail_Array`.
+
+That requires having a single overloaded constructor that can distinguish
+different cases from argument types. So:
+* `make<Tail_Array_Class>(size)`
+* `make<Tail_Array_Class>(size, fillvalue, ...)`
+* `make<Tail_Array_Class>(collection /*by value*/, ...)`
+  * move each element from the collection argument into the tail array.
+  * use std::move on first argument to avoid copying elements.
+* `make<Tail_Array_Class>(Range<value_type iterator>, ...)`
+  * copy each element from the referenced collection.
+  * use aux::range to specify a collection using two iterators
+  * use aux::range(ptr,size) to replace `make_copy` constructor.
+* `make<Tail_Array_Class>(initializer_list<value_type>, ...)`
+  * uses copy semantics, as required by the C++ standard.
+
+`Tail_Array<T>::make` returns a `unique_ptr` (to an object with refcount 0,
+if it is a Shared object class). It's a safe interface preventing memory leaks.
+
+`share(<unique_ptr<T>&&)` converts that to a shared pointer and bumps the
+refcount to 1. (Actually, the Shared constructor should do that.)
+
+`share(T&)` aborts if refcount is zero.
+
+## Nov 2016
 Defining a tail-array class X:
 * `using X = Tail_Array<X_Base>;`
 

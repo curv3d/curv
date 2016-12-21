@@ -1,5 +1,16 @@
 # 0.2: geometry
+Prereqs:
+* Tail_Array<T>::make returns a unique_ptr.
+* Shared<T>(std::unique_ptr<T>)
+* Tail_Array<T>::make(initializer_list<value_type>, ...)
+
 Geometry Compiler refactoring:
+* gl_call(GL_Frame&) and gl_eval(GL_Frame&).
+  A GL_Frame contains arg values, closure env, Call_Phrase, GL_Compiler&,
+  GL_Frame* parent.
+  GL_Frame is a tail array.
+
+old:
 * GL_Compiler contains a stack of GL_Frame
   which contains GL_Args, a closure environment, a Call_Phrase.
 * this will provide exception context for Function::gl_call
