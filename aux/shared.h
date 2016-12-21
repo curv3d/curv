@@ -7,6 +7,7 @@
 
 #include <boost/intrusive_ptr.hpp>
 #include <cstdint>
+#include <memory>
 #include <new>
 
 namespace aux {
@@ -15,7 +16,31 @@ namespace aux {
 ///
 /// Memory overhead is one pointer, instead of two for `std::shared_ptr`.
 /// For further economies, see `aux::Shared_Base`.
-template<typename T> using Shared = boost::intrusive_ptr<T>;
+template<typename T>
+struct Shared : public boost::intrusive_ptr<T>
+{
+    // restate base class constructors
+    Shared() noexcept : boost::intrusive_ptr<T>() {}
+    Shared(T*p) : boost::intrusive_ptr<T>(p) {}
+    Shared(const Shared& r) : boost::intrusive_ptr<T>(r) {}
+    template<class Y> Shared(Shared<Y> const& r) : boost::intrusive_ptr<T>(r) {}
+    Shared(Shared&& rhs) noexcept : boost::intrusive_ptr<T>(rhs) {}
+
+    // restating move constructor requires restatement of assignment ops
+    Shared& operator=(Shared&& rhs) noexcept
+    {
+        boost::intrusive_ptr<T>::operator=(rhs);
+        return *this;
+    }
+    Shared& operator=(Shared const& rhs)
+    {
+        boost::intrusive_ptr<T>::operator=(rhs);
+        return *this;
+    }
+
+    // additional constructor, for parity with std::shared_ptr
+    Shared(std::unique_ptr<T> uptr) : boost::intrusive_ptr<T>(uptr.release()) {}
+};
 
 /// Cheap alternative to `std::make_shared`.
 template<typename T, class... Args> Shared<T> make(Args&&... args)
