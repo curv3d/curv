@@ -5,6 +5,7 @@
 #include <curv/function.h>
 #include <curv/exception.h>
 #include <curv/context.h>
+#include <curv/gl_context.h>
 
 using namespace curv;
 
@@ -15,10 +16,10 @@ Function::print(std::ostream& out) const
 }
 
 GL_Value
-Function::gl_call(GL_Args&, GL_Compiler&) const
+Function::gl_call(GL_Frame& f) const
 {
-    // TODO: exception context?
-    throw Exception({}, "this function does not support the Geometry Compiler");
+    throw Exception(At_GL_Frame(&f),
+        "this function does not support the Geometry Compiler");
 }
 
 Value
@@ -29,9 +30,10 @@ Closure::call(Frame& f)
 }
 
 GL_Value
-Closure::gl_call(GL_Args&, GL_Compiler& gl) const
+Closure::gl_call(GL_Frame& f) const
 {
-    return expr_->gl_eval(gl);
+    f.nonlocal = &*nonlocal_;
+    return expr_->gl_eval(f);
 }
 
 void

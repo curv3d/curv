@@ -19,6 +19,10 @@ class Function;
 // it should support customization (of the underlying module).
 // TODO: Shape2D should be abstract, user defined Shape2D should be a subclass.
 // I presume that built-in shape classes don't need the record_ field.
+// TODO: exception context for reporting a bad dist function.
+// 1. Validate dist during evaluation, when shape constructed.
+//    Store the validated dist function as a data member.
+// 2. Validate dist during GL compile. Pass GL_Frame& to dist().
 
 struct Shape2D : public Ref_Value
 {
@@ -36,7 +40,7 @@ struct Shape2D : public Ref_Value
     Function& dist() const;
 
     /// Invoke the Geometry Compiler on the shape's `dist` function.
-    GL_Value gl_dist(GL_Value, GL_Compiler&) const;
+    GL_Value gl_dist(GL_Value, GL_Frame&) const;
 };
 
 } // namespace curv

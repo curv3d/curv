@@ -24,12 +24,21 @@ struct Atom;
 ///
 /// The type_ field enables us to query the type by loading the first 128 bits
 /// of the object into a cache line, without indirecting through the vtable,
-/// which would cost a 2nd cache line hit. Note, there are an extra 3 bits in
-/// curv::Value where I could store a type code, but that adds complexity,
-/// and I doubt it increases performance, since you almost certainly have to
-/// load the object into a cache line anyway to bump the use_count. Putting a
-/// type code here lets users add lots of new types without messing with the
-/// black magic that is curv::Value.
+/// which would cost a 2nd cache line hit and either a virtual function call
+/// or a RTTL, both relatively costly.
+///
+/// Why not put the type code into Value? Right now, there are an extra 3 bits
+/// in curv::Value where I could store a type code, similar to LuaJIT and most
+/// Javascript VMs.
+/// * Yes, it would make some code shorter and easier.
+/// * But, those spare bits are going away when Value supports 52 bit pointers
+///   on the ARMv8.2 platform.
+/// * A type code in Value adds complexity to an already complex class.
+/// * I doubt it increases performance, since you usually have to load the
+///   object into a cache line anyway to access the vtable, bump the use_count
+///   or access other data members.
+/// * The type code in Ref_Value has lots of room for expansion,
+///   we aren't restricted to 3 or 4 bits.
 ///
 /// All Ref_Values must be allocated on the heap: see aux::Shared_Base.
 struct Ref_Value : public aux::Shared_Base
@@ -72,7 +81,7 @@ struct Ref_Value : public aux::Shared_Base
 /// a Ref_Value* pointer is stored in the low order 48 bits of the Value.
 /// This works on 64 bit Intel and ARM systems because those architectures
 /// use 48 bit virtual addresses, with the upper 16 bits of a 64 bit pointer
-/// being wasted space.
+/// being wasted space. (A planned upgrade will support 52 bit pointers.)
 ///
 /// Reference values have Shared semantics. The copy constructor increments
 /// the reference count, the destructor decrements the reference count and

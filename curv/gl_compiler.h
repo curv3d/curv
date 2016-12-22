@@ -7,11 +7,14 @@
 
 #include <ostream>
 #include <vector>
+#include <aux/tail_array.h>
+#include <curv/list.h>
 
 namespace curv {
 
 class Shape2D;
 class Operation;
+class Call_Phrase;
 
 /// The Geometry Compiler translates the CSG tree created by the evaluator
 /// into optimized GPU code for fast rendering on a graphics display.
@@ -56,7 +59,7 @@ struct GL_Value
     GL_Type type;
 
     GL_Value(unsigned i, GL_Type t) : index(i), type(t) {}
-    GL_Value() {}
+    GL_Value() noexcept {}
 };
 
 /// print the GLSL variable name
@@ -66,7 +69,7 @@ inline std::ostream& operator<<(std::ostream& out, GL_Value v)
     return out;
 }
 
-/// A GLSL code generator.
+/// Global state for the GLSL code generator.
 struct GL_Compiler
 {
     std::ostream& out;
@@ -79,8 +82,6 @@ struct GL_Compiler
     {
         return GL_Value(valcount++, type);
     }
-
-    GL_Value eval_expr(Operation& op, GL_Type);
 
     // TODO: maybe add a member function for each operation that we support.
     // Maybe these can later be virtual functions, so that this interface
@@ -110,7 +111,57 @@ struct GL_Compiler
     // gl_call stack, once we support nested function calls in dist functions.
 };
 
-using GL_Args = std::vector<GL_Value>;
+class GL_Frame_Base;
+using GL_Frame = aux::Tail_Array<GL_Frame_Base>;
+
+/// A function call frame used by the Geometry Compiler.
+///
+/// The GL compilation process is a kind of abstract evaluation.
+/// That's really clear when you see that GL_Frame is isomorphic to Frame,
+/// with local slot Values replaced by GL_Values.
+struct GL_Frame_Base
+{
+    GL_Compiler& gl;
+
+    /// Frames are linked into a stack. This is metadata used for printing
+    /// a stack trace and by the debugger. It is not used during evaluation.
+    GL_Frame* parent_frame;
+
+    /// If this is a function call frame, then call_phrase is the source code
+    /// for the function call, otherwise it's nullptr. This is debug metadata.
+    /// Module frames do not have a call_phrase. If the call_phrase is null,
+    /// then the frame does not appear in a stack trace.
+    const Call_Phrase* call_phrase;
+
+    /// Slot array containing the values of nonlocal bindings.
+    ///
+    /// This is:
+    /// * the slot array of a Closure value, for a function call frame
+    /// * nullptr, for a call to a builtin function.
+    List* nonlocal;
+
+    // Tail array, containing the slots used for local bindings:
+    // function arguments, `let` bindings and other local, temporary values.
+    using value_type = GL_Value;
+    size_t size_;
+    value_type array_[0];
+
+    GL_Value& operator[](size_t i)
+    {
+        assert(i < size_);
+        return array_[i];
+    }
+
+    GL_Frame_Base(GL_Compiler& g, GL_Frame* parent, const Call_Phrase* src)
+    :
+        gl(g),
+        parent_frame(parent),
+        call_phrase(src),
+        nonlocal(nullptr)
+    {}
+};
+
+GL_Value gl_eval_expr(GL_Frame&, Operation& op, GL_Type);
 
 } // namespace
 #endif // header guard

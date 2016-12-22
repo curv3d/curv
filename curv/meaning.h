@@ -89,7 +89,7 @@ struct Operation : public Meaning
     virtual void exec(Frame&) const;
 
     // These functions are called by the Geometry Compiler.
-    virtual GL_Value gl_eval(GL_Compiler&) const;
+    virtual GL_Value gl_eval(GL_Frame&) const;
 };
 
 /// `Just_Expression` is an implementation class, inherited by Operation classes
@@ -144,7 +144,7 @@ struct Constant : public Just_Expression
     {}
 
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Compiler&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
 struct Module_Ref : public Just_Expression
@@ -189,7 +189,7 @@ struct Arg_Ref : public Just_Expression
     {}
 
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Compiler&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
 struct Local_Function_Ref : public Just_Expression
@@ -263,7 +263,7 @@ struct Call_Expr : public Just_Expression
     }
 
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Compiler&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
 struct Prefix_Expr_Base : public Just_Expression
@@ -292,7 +292,7 @@ struct Negative_Expr : public Prefix_Expr_Base
 {
     using Prefix_Expr_Base::Prefix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Compiler&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
 struct Infix_Expr_Base : public Just_Expression
@@ -361,25 +361,25 @@ struct Add_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Compiler&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 struct Subtract_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Compiler&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 struct Multiply_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Compiler&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 struct Divide_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Compiler&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 struct Power_Expr : public Infix_Expr_Base
 {
@@ -390,7 +390,7 @@ struct At_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Compiler&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
 struct Range_Gen : public Operation

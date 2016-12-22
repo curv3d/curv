@@ -1,20 +1,9 @@
 # 0.2: geometry
-Geometry Compiler refactoring:
-* gl_call(GL_Frame&) and gl_eval(GL_Frame&).
-  A GL_Frame contains arg values, closure env, Call_Phrase, GL_Compiler&,
-  GL_Frame* parent.
-  GL_Frame is a tail array.
-
-old:
-* GL_Compiler contains a stack of GL_Frame
-  which contains GL_Args, a closure environment, a Call_Phrase.
-* this will provide exception context for Function::gl_call
-
+* square, circle, union, intersection, translate
 * curv::Shape2D is abstract, with builtin and user subclasses
   * subclass User_Defined_Shape2D, UD_Shape2D, User_Shape2D (better name?)
     Scripted_Shape2D, Exo_Shape2D also ecto- ext-
 * shape2d accepts a record or module argument.
-* square, union, translate
 * make it zoom/rotate with mouse.
 * make same code run in an OpenGL window created using C++.
   http://www.opengl-tutorial.org/beginners-tutorials/tutorial-1-opening-a-window/

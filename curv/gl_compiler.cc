@@ -5,6 +5,7 @@
 #include <curv/gl_compiler.h>
 #include <curv/exception.h>
 #include <curv/context.h>
+#include <curv/gl_context.h>
 #include <curv/shape.h>
 #include <curv/meaning.h>
 #include <curv/function.h>
@@ -15,12 +16,13 @@ void curv::gl_compile(const Shape2D& shape, std::ostream& out)
 {
     GL_Compiler gl(out);
     GL_Value dist_param = gl.newvalue(GL_Type::vec2);
+    auto frame = GL_Frame::make(0, gl, nullptr, nullptr);
 
     out <<
         "float main_dist(vec2 " << dist_param << ")\n"
         "{\n";
 
-    GL_Value result = shape.gl_dist(dist_param, gl);
+    GL_Value result = shape.gl_dist(dist_param, *frame);
 
     out <<
         "  return " << result << ";\n"
@@ -55,105 +57,105 @@ std::ostream& curv::operator<<(std::ostream& out, GL_Type type)
     return out;
 }
 
-GL_Value Operation::gl_eval(GL_Compiler&) const
+GL_Value Operation::gl_eval(GL_Frame& f) const
 {
-    throw Exception(At_Phrase(*source_, nullptr),
+    throw Exception(At_GL_Phrase(*source_, &f),
         "this operation is not supported by the Geometry Compiler");
 }
 
-GL_Value Constant::gl_eval(GL_Compiler& gl) const
+GL_Value Constant::gl_eval(GL_Frame& f) const
 {
     if (value_.is_num()) {
-        GL_Value result = gl.newvalue(GL_Type::num);
+        GL_Value result = f.gl.newvalue(GL_Type::num);
         double num = value_.get_num_unsafe();
-        gl.out << "  float " << result << " = ";
+        f.gl.out << "  float " << result << " = ";
         if (num == 1.0/0.0) // infinity
-            gl.out << "1e999";
+            f.gl.out << "1e999";
         else if (num == -1.0/0.0) // -infinity
-            gl.out << "-1e999";
+            f.gl.out << "-1e999";
         else
-            gl.out << value_;
-        gl.out << ";\n";
+            f.gl.out << value_;
+        f.gl.out << ";\n";
         return result;
     }
-    throw Exception(At_Phrase(*source_, nullptr),
+    throw Exception(At_GL_Phrase(*source_, &f),
         stringify("value ",value_," is not supported by the Geometry Compiler"));
 }
 
-GL_Value GL_Compiler::eval_expr(Operation& op, GL_Type type)
+GL_Value curv::gl_eval_expr(GL_Frame& f, Operation& op, GL_Type type)
 {
-    GL_Value arg = op.gl_eval(*this);
+    GL_Value arg = op.gl_eval(f);
     if (arg.type != type)
-        throw Exception(At_Phrase(*op.source_, nullptr),
+        throw Exception(At_GL_Phrase(*op.source_, &f),
             stringify("argument is not a ",type));
     return arg;
 }
 
-GL_Value Negative_Expr::gl_eval(GL_Compiler& gl) const
+GL_Value Negative_Expr::gl_eval(GL_Frame& f) const
 {
-    auto arg = gl.eval_expr(*arg_, GL_Type::num);
-    GL_Value result = gl.newvalue(GL_Type::num);
-    gl.out << "  float " << result << " = -" << arg << ";\n";
+    auto arg = gl_eval_expr(f, *arg_, GL_Type::num);
+    GL_Value result = f.gl.newvalue(GL_Type::num);
+    f.gl.out << "  float " << result << " = -" << arg << ";\n";
     return result;
 }
 
-GL_Value Add_Expr::gl_eval(GL_Compiler& gl) const
+GL_Value Add_Expr::gl_eval(GL_Frame& f) const
 {
-    auto arg1 = gl.eval_expr(*arg1_, GL_Type::num);
-    auto arg2 = gl.eval_expr(*arg2_, GL_Type::num);
-    GL_Value result = gl.newvalue(GL_Type::num);
-    gl.out << "  float " << result << " = " << arg1 << " + " << arg2 << ";\n";
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::num);
+    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::num);
+    GL_Value result = f.gl.newvalue(GL_Type::num);
+    f.gl.out << "  float " << result << " = " << arg1 << " + " << arg2 << ";\n";
     return result;
 }
 
-GL_Value Subtract_Expr::gl_eval(GL_Compiler& gl) const
+GL_Value Subtract_Expr::gl_eval(GL_Frame& f) const
 {
-    auto arg1 = gl.eval_expr(*arg1_, GL_Type::num);
-    auto arg2 = gl.eval_expr(*arg2_, GL_Type::num);
-    GL_Value result = gl.newvalue(GL_Type::num);
-    gl.out << "  float " << result << " = " << arg1 << " - " << arg2 << ";\n";
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::num);
+    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::num);
+    GL_Value result = f.gl.newvalue(GL_Type::num);
+    f.gl.out << "  float " << result << " = " << arg1 << " - " << arg2 << ";\n";
     return result;
 }
 
-GL_Value Multiply_Expr::gl_eval(GL_Compiler& gl) const
+GL_Value Multiply_Expr::gl_eval(GL_Frame& f) const
 {
-    auto arg1 = gl.eval_expr(*arg1_, GL_Type::num);
-    auto arg2 = gl.eval_expr(*arg2_, GL_Type::num);
-    GL_Value result = gl.newvalue(GL_Type::num);
-    gl.out << "  float " << result << " = " << arg1 << " * " << arg2 << ";\n";
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::num);
+    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::num);
+    GL_Value result = f.gl.newvalue(GL_Type::num);
+    f.gl.out << "  float " << result << " = " << arg1 << " * " << arg2 << ";\n";
     return result;
 }
 
-GL_Value Divide_Expr::gl_eval(GL_Compiler& gl) const
+GL_Value Divide_Expr::gl_eval(GL_Frame& f) const
 {
-    auto arg1 = gl.eval_expr(*arg1_, GL_Type::num);
-    auto arg2 = gl.eval_expr(*arg2_, GL_Type::num);
-    GL_Value result = gl.newvalue(GL_Type::num);
-    gl.out << "  float " << result << " = " << arg1 << " / " << arg2 << ";\n";
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::num);
+    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::num);
+    GL_Value result = f.gl.newvalue(GL_Type::num);
+    f.gl.out << "  float " << result << " = " << arg1 << " / " << arg2 << ";\n";
     return result;
 }
 
-GL_Value Call_Expr::gl_eval(GL_Compiler& gl) const
+GL_Value Call_Expr::gl_eval(GL_Frame& f) const
 {
     if (auto func = dynamic_shared_cast<Constant>(fun_)) {
         if (auto funv = func->value_.dycast<Function>()) {
             if (args_.size() != funv->nargs_) {
-                throw Exception(At_Phrase(*call_phrase()->args_, nullptr),
+                throw Exception(At_GL_Phrase(*call_phrase()->args_, &f),
                     "wrong number of arguments");
             }
-            GL_Args args;
+            auto f2 = GL_Frame::make(funv->nslots_, f.gl, &f, call_phrase());
             for (size_t i = 0; i < args_.size(); ++i)
-                args.push_back(args_[i]->gl_eval(gl));
-            return funv->gl_call(args, gl);
+                (*f2)[i] = args_[i]->gl_eval(f);
+            return funv->gl_call(*f2);
         }
     }
-    throw Exception(At_Phrase(*source_, nullptr),
-        "this function call does not support Geometry Compiler");
+    throw Exception(At_GL_Phrase(*fun_->source_, &f),
+        "this function cannot be called by the Geometry Compiler");
 }
 
-GL_Value At_Expr::gl_eval(GL_Compiler& gl) const
+GL_Value At_Expr::gl_eval(GL_Frame& f) const
 {
-    auto arg1 = gl.eval_expr(*arg1_, GL_Type::vec2);
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::vec2);
     const char* arg2 = nullptr;
     if (auto k = dynamic_shared_cast<Constant>(arg2_)) {
         auto num = k->value_.get_num_or_nan();
@@ -163,17 +165,14 @@ GL_Value At_Expr::gl_eval(GL_Compiler& gl) const
             arg2 = ".y";
     }
     if (arg2 == nullptr)
-        throw Exception(At_Phrase(*arg2_->source_, nullptr),
+        throw Exception(At_GL_Phrase(*arg2_->source_, &f),
             "in Geometry Compiler, index must be 0 or 1");
-    GL_Value result = gl.newvalue(GL_Type::num);
-    gl.out << "  float "<<result<<" = "<<arg1<<arg2<<";\n";
+    GL_Value result = f.gl.newvalue(GL_Type::num);
+    f.gl.out << "  float "<<result<<" = "<<arg1<<arg2<<";\n";
     return result;
 }
 
-GL_Value Arg_Ref::gl_eval(GL_Compiler& gl) const
+GL_Value Arg_Ref::gl_eval(GL_Frame& f) const
 {
-    if (slot_ == 0)
-        return gl.arg0;
-    throw Exception(At_Phrase(*source_, nullptr),
-        "in Geometry Compiler, only 1 function argument supported");
+    return f[slot_];
 }

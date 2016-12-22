@@ -38,13 +38,10 @@ Shape2D::dist() const
 }
 
 GL_Value
-Shape2D::gl_dist(GL_Value arg, GL_Compiler& gl) const
+Shape2D::gl_dist(GL_Value arg, GL_Frame& f) const
 {
-    GL_Args args { arg };
-    auto old_arg0 = gl.arg0;
-    gl.arg0 = arg;
-    auto result = dist().gl_call(args, gl);
-    // TODO exception safety?
-    gl.arg0 = old_arg0;
-    return result;
+    Function& fun = dist();
+    auto f2 = GL_Frame::make(fun.nslots_, f.gl, &f, nullptr);
+    (*f2)[0] = arg;
+    return fun.gl_call(*f2);
 }

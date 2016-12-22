@@ -17,6 +17,7 @@
 #include <curv/function.h>
 #include <curv/shape.h>
 #include <curv/system.h>
+#include <curv/gl_context.h>
 
 using namespace curv;
 using namespace std;
@@ -40,16 +41,14 @@ struct Sqrt_Function : public Function
             throw Exception(At_Arg(0, args),
                 stringify("sqrt(",args[0],"): domain error"));
     }
-    GL_Value gl_call(GL_Args& args, GL_Compiler& gl) const override
+    GL_Value gl_call(GL_Frame& f) const override
     {
-        // TODO: exception context
-        if (args.size() != 1)
-            throw Exception({}, "sqrt: wrong number of arguments");
-        auto arg = args.front();
+        auto arg = f[0];
         if (arg.type != GL_Type::num)
-            throw Exception({}, "sqrt: argument is not a number");
-        auto result = gl.newvalue(GL_Type::num);
-        gl.out << "  float "<<result<<" = sqrt("<<arg<<");\n";
+            throw Exception(At_GL_Arg(0, f),
+                "sqrt: argument is not a number");
+        auto result = f.gl.newvalue(GL_Type::num);
+        f.gl.out << "  float "<<result<<" = sqrt("<<arg<<");\n";
         return result;
     }
 };

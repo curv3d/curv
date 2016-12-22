@@ -38,7 +38,7 @@ struct Function : public Ref_Value
     virtual Value call(Frame& args) = 0;
 
     // generate a call to the function during geometry compilation
-    virtual GL_Value gl_call(GL_Args&, GL_Compiler&) const;
+    virtual GL_Value gl_call(GL_Frame&) const;
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const;
@@ -98,7 +98,7 @@ struct Closure : public Function
     virtual Value call(Frame& args) override;
 
     // generate a call to the function during geometry compilation
-     virtual GL_Value gl_call(GL_Args&, GL_Compiler&) const override;
+     virtual GL_Value gl_call(GL_Frame&) const override;
 };
 
 } // namespace curv
