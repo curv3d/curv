@@ -1,7 +1,4 @@
 # 0.2: geometry
-Prereqs:
-* Tail_Array<T>::make(initializer_list<value_type>, ...)
-
 Geometry Compiler refactoring:
 * gl_call(GL_Frame&) and gl_eval(GL_Frame&).
   A GL_Frame contains arg values, closure env, Call_Phrase, GL_Compiler&,

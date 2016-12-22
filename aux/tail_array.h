@@ -211,6 +211,51 @@ public:
         return std::unique_ptr<Tail_Array>(r);
     }
 
+    /// Allocate an instance from an initializer list.
+    template<typename... Rest>
+    static std::unique_ptr<Tail_Array>
+    make(std::initializer_list<_value_type> il, Rest... rest)
+    {
+        // TODO: much code duplication here.
+        // allocate the object
+        void* mem = malloc(sizeof(Tail_Array) + il.size()*sizeof(_value_type));
+        if (mem == nullptr)
+            throw std::bad_alloc();
+        Tail_Array* r = (Tail_Array*)mem;
+
+        // construct the array elements
+        if (std::is_nothrow_copy_constructible<_value_type>::value) {
+            size_t i = 0;
+            for (auto& e : il) {
+                new((void*)&r->Base::array_[i]) _value_type(e);
+                ++i;
+            }
+        } else {
+            size_t i = 0;
+            try {
+                for (auto& e : il) {
+                    new((void*)&r->Base::array_[i]) _value_type(e);
+                    ++i;
+                }
+            } catch (...) {
+                r->destroy_array(i);
+                free(mem);
+                throw;
+            }
+        }
+
+        // then construct the rest of the object
+        try {
+            new(mem) Tail_Array(rest...);
+            r->Base::size_ = il.size();
+        } catch(...) {
+            r->destroy_array(il.size());
+            free(mem);
+            throw;
+        }
+        return std::unique_ptr<Tail_Array>(r);
+    }
+
     ~Tail_Array()
     {
         destroy_array(Base::size_);

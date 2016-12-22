@@ -8,15 +8,21 @@ That requires having a single overloaded constructor that can distinguish
 different cases from argument types. So:
 * `make<Tail_Array_Class>(size)`
 * `make<Tail_Array_Class>(size, fillvalue, ...)`
-* `make<Tail_Array_Class>(collection /*by value*/, ...)`
-  * move each element from the collection argument into the tail array.
-  * use std::move on first argument to avoid copying elements.
+* `make<Tail_Array_Class>(const Collection&, ...)`
+  * Copy each element from the collection argument into the tail array.
+* `make<Tail_Array_Class>(Collection&&, ...)`
+  * Move each element from the collection argument into the tail array.
 * `make<Tail_Array_Class>(Range<value_type iterator>, ...)`
   * copy each element from the referenced collection.
   * use aux::range to specify a collection using two iterators
   * use aux::range(ptr,size) to replace `make_copy` constructor.
 * `make<Tail_Array_Class>(initializer_list<value_type>, ...)`
-  * uses copy semantics, as required by the C++ standard.
+  * Uses copy semantics, as required by the C++ standard.
+  * By convention, `initializer_list` is passed by value.
+
+To copy from an array with a trivial copy constructor, use memcpy.
+How can I specialize on that condition?
+Treat `Range<T*>` as a special case.
 
 `Tail_Array<T>::make` returns a `unique_ptr` (to an object with refcount 0,
 if it is a Shared object class). It's a safe interface preventing memory leaks.
@@ -40,6 +46,11 @@ constructors:
 * `make_fill(size, value_type, ...)`
 * `make_range(input_iter, size, ...)`
 * `make_elements(collection /*by value*/, ...)`
+  * This can force the copy constructor for a collection.
+    Then, we'll move the elements (which pays for the copy?).
+    No, because the copy constructor will *also* allocate memory for the
+    cells needed to hold the elements, and that's a waste.
+    Finally, this doesn't work if collection is a tail array.
 * `make_elements(initializer_list<value_type>, ...)`
 
 TODO: abstraction to extend the base class to implement the Container

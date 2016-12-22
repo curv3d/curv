@@ -24,4 +24,11 @@ TEST(aux, tail_array)
     ASSERT_TRUE(b->size() == 2);
     ASSERT_TRUE(b->begin()[0] == 0.0);
     ASSERT_TRUE(b->begin()[1] == 1.0);
+    TA* p = b.release();
+    delete p; // ensure that `delete` works on raw Tail_Array pointers.
+
+    auto x = TA::make({0.0,1.0});
+    ASSERT_TRUE(x->size() == 2);
+    ASSERT_TRUE(x->begin()[0] == 0.0);
+    ASSERT_TRUE(x->begin()[1] == 1.0);
 }
