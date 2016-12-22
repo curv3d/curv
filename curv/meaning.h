@@ -147,6 +147,7 @@ struct Constant : public Just_Expression
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
+/// reference to a lazy nonlocal slot.
 struct Module_Ref : public Just_Expression
 {
     size_t slot_;
@@ -158,6 +159,7 @@ struct Module_Ref : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
+/// reference to a strict nonlocal slot (nonrecursive lambda nonlocal)
 struct Nonlocal_Ref : public Just_Expression
 {
     size_t slot_;
@@ -167,6 +169,7 @@ struct Nonlocal_Ref : public Just_Expression
     {}
 
     virtual Value eval(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
 struct Let_Ref : public Just_Expression

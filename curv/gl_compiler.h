@@ -15,6 +15,7 @@ namespace curv {
 class Shape2D;
 class Operation;
 class Call_Phrase;
+class Phrase;
 
 /// The Geometry Compiler translates the CSG tree created by the evaluator
 /// into optimized GPU code for fast rendering on a graphics display.
@@ -162,6 +163,7 @@ struct GL_Frame_Base
 };
 
 GL_Value gl_eval_expr(GL_Frame&, Operation& op, GL_Type);
+GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase&);
 
 } // namespace
 #endif // header guard

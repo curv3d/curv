@@ -57,6 +57,34 @@ std::ostream& curv::operator<<(std::ostream& out, GL_Type type)
     return out;
 }
 
+GL_Value curv::gl_eval_expr(GL_Frame& f, Operation& op, GL_Type type)
+{
+    GL_Value arg = op.gl_eval(f);
+    if (arg.type != type)
+        throw Exception(At_GL_Phrase(*op.source_, &f),
+            stringify("argument is not a ",type));
+    return arg;
+}
+
+GL_Value curv::gl_eval_const(GL_Frame& f, Value val, const Phrase& source)
+{
+    if (val.is_num()) {
+        GL_Value result = f.gl.newvalue(GL_Type::num);
+        double num = val.get_num_unsafe();
+        f.gl.out << "  float " << result << " = ";
+        if (num == 1.0/0.0) // infinity
+            f.gl.out << "1e999";
+        else if (num == -1.0/0.0) // -infinity
+            f.gl.out << "-1e999";
+        else
+            f.gl.out << "float(" << val << ")";
+        f.gl.out << ";\n";
+        return result;
+    }
+    throw Exception(At_GL_Phrase(source, &f),
+        stringify("value ",val," is not supported by the Geometry Compiler"));
+}
+
 GL_Value Operation::gl_eval(GL_Frame& f) const
 {
     throw Exception(At_GL_Phrase(*source_, &f),
@@ -65,30 +93,7 @@ GL_Value Operation::gl_eval(GL_Frame& f) const
 
 GL_Value Constant::gl_eval(GL_Frame& f) const
 {
-    if (value_.is_num()) {
-        GL_Value result = f.gl.newvalue(GL_Type::num);
-        double num = value_.get_num_unsafe();
-        f.gl.out << "  float " << result << " = ";
-        if (num == 1.0/0.0) // infinity
-            f.gl.out << "1e999";
-        else if (num == -1.0/0.0) // -infinity
-            f.gl.out << "-1e999";
-        else
-            f.gl.out << value_;
-        f.gl.out << ";\n";
-        return result;
-    }
-    throw Exception(At_GL_Phrase(*source_, &f),
-        stringify("value ",value_," is not supported by the Geometry Compiler"));
-}
-
-GL_Value curv::gl_eval_expr(GL_Frame& f, Operation& op, GL_Type type)
-{
-    GL_Value arg = op.gl_eval(f);
-    if (arg.type != type)
-        throw Exception(At_GL_Phrase(*op.source_, &f),
-            stringify("argument is not a ",type));
-    return arg;
+    return gl_eval_const(f, value_, *source_);
 }
 
 GL_Value Negative_Expr::gl_eval(GL_Frame& f) const
@@ -175,4 +180,9 @@ GL_Value At_Expr::gl_eval(GL_Frame& f) const
 GL_Value Arg_Ref::gl_eval(GL_Frame& f) const
 {
     return f[slot_];
+}
+
+GL_Value Nonlocal_Ref::gl_eval(GL_Frame& f) const
+{
+    return gl_eval_const(f, (*f.nonlocal)[slot_], *source_);
 }

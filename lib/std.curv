@@ -1,2 +1,15 @@
 // Curv standard library, automatically loaded at startup.
 concat(vv) = [for(v=vv) for(i=v) i];
+
+circle(r) = shape2d {
+    dist(p) = sqrt(p.[0]*p.[0] + p.[1]*p.[1]) - r,
+    bbox = [[-r,-r],[r,r]]
+};
+nothing = shape2d {
+    dist(p) = inf,
+    bbox = [[inf,inf],[-inf,-inf]]
+};
+everything = shape2d {
+    dist(p) = -inf,
+    bbox = [[-inf,-inf],[inf,inf]]
+};
