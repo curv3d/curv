@@ -408,5 +408,12 @@ TEST(curv, eval)
     SUCCESS("min[]", "inf");
     SUCCESS("min[1]", "1");
     SUCCESS("min[1,2]", "1");
+
+    SUCCESS("abs(-inf)", "inf");
+    SUCCESS("abs(-2)", "2");
+    SUCCESS("abs(-0)", "0");
+    SUCCESS("abs(inf)", "inf");
+    SUCCESS("abs(2)", "2");
+    SUCCESS("abs(0)", "0");
   }
 }

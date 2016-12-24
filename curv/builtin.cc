@@ -52,6 +52,29 @@ struct Sqrt_Function : public Function
         return result;
     }
 };
+struct Abs_Function : public Function
+{
+    Abs_Function() : Function(1) {}
+    Value call(Frame& args) override
+    {
+        double r = abs(args[0].get_num_or_nan());
+        if (r == r)
+            return r;
+        else
+            throw Exception(At_Arg(0, args),
+                stringify("abs(",args[0],"): domain error"));
+    }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        auto arg = f[0];
+        if (arg.type != GL_Type::num)
+            throw Exception(At_GL_Arg(0, f),
+                "abs: argument is not a number");
+        auto result = f.gl.newvalue(GL_Type::num);
+        f.gl.out << "  float "<<result<<" = abs("<<arg<<");\n";
+        return result;
+    }
+};
 
 struct Max_Function : public Function
 {
@@ -158,6 +181,7 @@ curv::builtin_namespace =
     {"false", make<Builtin_Value>(Value(false))},
     {"true", make<Builtin_Value>(Value(true))},
     {"sqrt", make<Builtin_Value>(Value{make<Sqrt_Function>()})},
+    {"abs", make<Builtin_Value>(Value{make<Abs_Function>()})},
     {"max", make<Builtin_Value>(Value{make<Max_Function>()})},
     {"min", make<Builtin_Value>(Value{make<Min_Function>()})},
     {"len", make<Builtin_Value>(Value{make<Len_Function>()})},
