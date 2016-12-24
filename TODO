@@ -1,5 +1,55 @@
 # 0.2: geometry
-* square, union, intersection, translate
+next GL extensions:
+* max, min
+* call a shape's dist function
+
+Refactor:
+* Use dtostr to print WebGL numbers. Add a WebGL format.
+* Use dtostr to print JSON numbers. Use existing JSON format.
+* Optimize `circle` using `dist p = norm p - r`
+
+square:
+* `Num v` is a predicate
+* max[n1,n2,n3]
+* abs n, abs[n1,n2]
+* [x,y] - [u,v]
+* [x,y] / 2
+* Rename `let` to `letrec`.
+* Implement `let` like Scheme let. It's easier to implement in WebGL,
+  and provides a nice idiom for normalizing sz in square.
+* square(sz) =
+    let (sz = if (Num sz) [sz,sz] else sz)
+    shape2d {
+      dist p = max(abs p - sz/2),
+      bbox = [-sz/2, sz/2]
+    };
+
+translate:
+* [x,y] - [u,v]
+* translate(delta) = shape ->
+    shape2d {
+      dist p = shape.dist(p - delta),
+      bbox = shape.bbox + delta
+    };
+
+binary union:
+* min[n1,n2]
+* union2(s1,s2) =
+    shape2d {
+      dist p = min[s1.dist p, s2.dist p],
+      bbox = [min[s1.bbox.[0],s2.bbox.[0]], max[s1.bbox.[1],s2.bbox.[1]]]
+    };
+
+nary union:
+* union shapes =
+    shape2d {
+      dist p = min [for (s = shapes) s.dist p],
+      bbox = [min[for (s=shapes) s.bbox.[0]], max[for(s=shapes)s.bbox.[1]]]
+    };
+* GL: since shapes is a constant during inline expansion, we can expand the
+  for loop into a list of expressions.
+* Or implement nary union on top of binary union.
+
 * curv::Shape2D is abstract, with builtin and user subclasses
   * subclass User_Defined_Shape2D, UD_Shape2D, User_Shape2D (better name?)
     Scripted_Shape2D, Exo_Shape2D also ecto- ext-
@@ -7,6 +57,14 @@
 * make it zoom/rotate with mouse.
 * make same code run in an OpenGL window created using C++.
   http://www.opengl-tutorial.org/beginners-tutorials/tutorial-1-opening-a-window/
+* Should `shape2d` be polymorphic? Detects if shape is 2d or 3d based on bbox.
+* Should `everything` and `nothing` be polymorphic? Has 2 dist functions,
+  2 bboxes, for 2d and 3d cases.
+  * Are there any other use cases for this?
+    * How about volumetric textures like marble.
+      Maybe these are colours, not shapes.
+  * I could also use `everything2d` and `everything3d`.
+  * Don't do this until there is a strong use case for it.
 
 # 0.1: Minimum Viable Language
 * echo:

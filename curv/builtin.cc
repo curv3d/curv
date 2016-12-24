@@ -53,6 +53,35 @@ struct Sqrt_Function : public Function
     }
 };
 
+struct Max_Function : public Function
+{
+    Max_Function() : Function(1) {}
+    Value call(Frame& args) override
+    {
+        auto& list = arg_to_list(args[0], At_Arg(0, args));
+        double result = -1.0/0.0;
+        for (auto val : list) {
+            double x = arg_to_num(val, At_Arg(0, args));
+            result = std::max(result, x);
+        }
+        return {result};
+    }
+};
+struct Min_Function : public Function
+{
+    Min_Function() : Function(1) {}
+    Value call(Frame& args) override
+    {
+        auto& list = arg_to_list(args[0], At_Arg(0, args));
+        double result = 1.0/0.0;
+        for (auto val : list) {
+            double x = arg_to_num(val, At_Arg(0, args));
+            result = std::min(result, x);
+        }
+        return {result};
+    }
+};
+
 struct Len_Function : public Function
 {
     Len_Function() : Function(1) {}
@@ -129,6 +158,8 @@ curv::builtin_namespace =
     {"false", make<Builtin_Value>(Value(false))},
     {"true", make<Builtin_Value>(Value(true))},
     {"sqrt", make<Builtin_Value>(Value{make<Sqrt_Function>()})},
+    {"max", make<Builtin_Value>(Value{make<Max_Function>()})},
+    {"min", make<Builtin_Value>(Value{make<Min_Function>()})},
     {"len", make<Builtin_Value>(Value{make<Len_Function>()})},
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},
     {"shape2d", make<Builtin_Value>(Value{make<Shape2d_Function>()})},

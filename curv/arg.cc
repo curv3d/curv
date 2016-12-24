@@ -75,3 +75,11 @@ int curv::arg_to_int(Value val, int lo, int hi, const Context& ctx)
         throw Exception(ctx, stringify("not in range [",lo,"..",hi,"]"));
     return (int)intf;
 }
+
+auto curv::arg_to_num(Value val, const Context& ctx)
+-> double
+{
+    if (!val.is_num())
+        throw Exception(ctx, "not a number");
+    return val.get_num_unsafe();
+}

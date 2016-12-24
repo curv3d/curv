@@ -400,5 +400,13 @@ TEST(curv, eval)
         "  x+\n"
         "    ^");
     FAILMSG("(a=0)+1", "not an operation");
+
+    // max, min
+    SUCCESS("max[]", "-inf");
+    SUCCESS("max[1]", "1");
+    SUCCESS("max[1,2]", "2");
+    SUCCESS("min[]", "inf");
+    SUCCESS("min[1]", "1");
+    SUCCESS("min[1,2]", "1");
   }
 }

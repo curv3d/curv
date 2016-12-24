@@ -15,6 +15,7 @@ namespace curv {
 List& arg_to_list(Value, const Context&);
 String& arg_to_string(Value, const Context&);
 int arg_to_int(Value, int, int, const Context&);
+double arg_to_num(Value, const Context&);
 Record& arg_to_record(Value, const Context&);
 
 /// The exception context for the i'th argument in a function call.
