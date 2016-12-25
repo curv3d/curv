@@ -5,6 +5,10 @@ circle(r) = shape2d {
     dist(p) = sqrt(p.[0]*p.[0] + p.[1]*p.[1]) - r,
     bbox = [[-r,-r],[r,r]]
 };
+square(sz) = shape2d {
+    dist p = max[abs p.[0] - sz/2, abs p.[1] - sz/2],
+    bbox = [[-sz/2,-sz/2], [sz/2,sz/2]],
+};
 nothing = shape2d {
     dist(p) = inf,
     bbox = [[inf,inf],[-inf,-inf]]

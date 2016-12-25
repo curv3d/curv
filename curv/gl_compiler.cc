@@ -57,7 +57,7 @@ std::ostream& curv::operator<<(std::ostream& out, GL_Type type)
     return out;
 }
 
-GL_Value curv::gl_eval_expr(GL_Frame& f, Operation& op, GL_Type type)
+GL_Value curv::gl_eval_expr(GL_Frame& f, const Operation& op, GL_Type type)
 {
     GL_Value arg = op.gl_eval(f);
     if (arg.type != type)
@@ -185,4 +185,19 @@ GL_Value Arg_Ref::gl_eval(GL_Frame& f) const
 GL_Value Nonlocal_Ref::gl_eval(GL_Frame& f) const
 {
     return gl_eval_const(f, (*f.nonlocal)[slot_], *source_);
+}
+
+GL_Value List_Expr::gl_eval(GL_Frame& f) const
+{
+    if (auto seq = dynamic_shared_cast<Sequence_Gen>(generator_)) {
+        if (seq->size() == 2) {
+            auto e1 = gl_eval_expr(f, *(*seq)[0], GL_Type::num);
+            auto e2 = gl_eval_expr(f, *(*seq)[1], GL_Type::num);
+            GL_Value result = f.gl.newvalue(GL_Type::vec2);
+            f.gl.out << "  vec2 "<<result<<" = vec2("<<e1<<","<<e2<<");\n";
+            return result;
+        }
+    }
+    throw Exception(At_GL_Phrase(*source_, &f),
+        "this list constructor does not support the Geometry Compiler");
 }

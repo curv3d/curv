@@ -162,7 +162,7 @@ struct GL_Frame_Base
     {}
 };
 
-GL_Value gl_eval_expr(GL_Frame&, Operation& op, GL_Type);
+GL_Value gl_eval_expr(GL_Frame&, const Operation& op, GL_Type);
 GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase&);
 
 } // namespace

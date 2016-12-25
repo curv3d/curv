@@ -425,6 +425,7 @@ struct List_Expr : public Just_Expression
     {}
 
     virtual Value eval(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
 // TODO: List_Sequence_Expr is deprecated.

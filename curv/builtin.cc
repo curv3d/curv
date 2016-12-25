@@ -89,6 +89,16 @@ struct Max_Function : public Function
         }
         return {result};
     }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        auto arg = f[0];
+        if (arg.type != GL_Type::vec2)
+            throw Exception(At_GL_Arg(0, f),
+                "max: argument is not a vec2");
+        auto result = f.gl.newvalue(GL_Type::num);
+        f.gl.out << "  float "<<result<<" = max("<<arg<<".x,"<<arg<<".y);\n";
+        return result;
+    }
 };
 struct Min_Function : public Function
 {
@@ -102,6 +112,16 @@ struct Min_Function : public Function
             result = std::min(result, x);
         }
         return {result};
+    }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        auto arg = f[0];
+        if (arg.type != GL_Type::vec2)
+            throw Exception(At_GL_Arg(0, f),
+                "min: argument is not a vec2");
+        auto result = f.gl.newvalue(GL_Type::num);
+        f.gl.out << "  float "<<result<<" = min("<<arg<<".x,"<<arg<<".y);\n";
+        return result;
     }
 };
 
