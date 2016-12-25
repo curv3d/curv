@@ -140,19 +140,38 @@ GL_Value Divide_Expr::gl_eval(GL_Frame& f) const
     return result;
 }
 
+// Evaluate an expression to a constant at GL compile time,
+// or return missing if it isn't a constant.
+namespace curv {
+Value gl_eval_const(Operation& op, GL_Frame& f)
+{
+    if (auto c = dynamic_cast<Constant*>(&op))
+        return c->value_;
+    else if (auto dot = dynamic_cast<Dot_Expr*>(&op)) {
+        if (auto ref = dynamic_shared_cast<Nonlocal_Ref>(dot->base_)) {
+            auto base = (*f.nonlocal)[ref->slot_];
+            if (base.is_ref())
+                return base.get_ref_unsafe().getfield(dot->id_);
+        }
+    }
+    else if (auto ref = dynamic_cast<Nonlocal_Ref*>(&op))
+        return (*f.nonlocal)[ref->slot_];
+    return missing;
+}
+}
+
 GL_Value Call_Expr::gl_eval(GL_Frame& f) const
 {
-    if (auto func = dynamic_shared_cast<Constant>(fun_)) {
-        if (auto funv = func->value_.dycast<Function>()) {
-            if (args_.size() != funv->nargs_) {
-                throw Exception(At_GL_Phrase(*call_phrase()->args_, &f),
-                    "wrong number of arguments");
-            }
-            auto f2 = GL_Frame::make(funv->nslots_, f.gl, &f, call_phrase());
-            for (size_t i = 0; i < args_.size(); ++i)
-                (*f2)[i] = args_[i]->gl_eval(f);
-            return funv->gl_call(*f2);
+    auto val = gl_eval_const(*fun_, f);
+    if (auto fun = val.dycast<Function>()) {
+        if (args_.size() != fun->nargs_) {
+            throw Exception(At_GL_Phrase(*call_phrase()->args_, &f),
+                "wrong number of arguments");
         }
+        auto f2 = GL_Frame::make(fun->nslots_, f.gl, &f, call_phrase());
+        for (size_t i = 0; i < args_.size(); ++i)
+            (*f2)[i] = args_[i]->gl_eval(f);
+        return fun->gl_call(*f2);
     }
     throw Exception(At_GL_Phrase(*fun_->source_, &f),
         "this function cannot be called by the Geometry Compiler");

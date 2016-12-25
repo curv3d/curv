@@ -17,3 +17,12 @@ everything = shape2d {
     dist(p) = -inf,
     bbox = [[-inf,-inf],[inf,inf]]
 };
+union2(s1,s2) = shape2d {
+    dist p = min[s1.dist p, s2.dist p],
+    bbox = [
+        [min[s1.bbox.[0].[0],s2.bbox.[0].[1]],
+         min[s1.bbox.[0].[1],s2.bbox.[0].[1]]],
+        [max[s1.bbox.[1].[0],s2.bbox.[1].[0]],
+         max[s1.bbox.[1].[1],s2.bbox.[1].[1]]]
+    ]
+};
