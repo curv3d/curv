@@ -17,6 +17,10 @@ everything = shape2d {
     dist(p) = -inf,
     bbox = [[-inf,-inf],[inf,inf]]
 };
+complement(s) = shape2d {
+    dist p = -s.dist p,
+    bbox = [[-inf,-inf],[inf,inf]]
+};
 union2(s1,s2) = shape2d {
     dist p = min[s1.dist p, s2.dist p],
     bbox = [
@@ -26,3 +30,13 @@ union2(s1,s2) = shape2d {
          max[s1.bbox.[1].[1],s2.bbox.[1].[1]]]
     ]
 };
+intersection2(s1,s2) = shape2d {
+    dist p = max[s1.dist p, s2.dist p],
+    bbox = [
+        [max[s1.bbox.[0].[0],s2.bbox.[0].[1]],
+         max[s1.bbox.[0].[1],s2.bbox.[0].[1]]],
+        [min[s1.bbox.[1].[0],s2.bbox.[1].[0]],
+         min[s1.bbox.[1].[1],s2.bbox.[1].[1]]]
+    ]
+};
+difference(s1,s2) = intersection2(s1, complement s2);
