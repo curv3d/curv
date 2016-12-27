@@ -11,6 +11,7 @@ extern "C" {
 }
 #include <iostream>
 
+#include <aux/dtostr.h>
 #include <aux/progdir.h>
 #include <curv/analyzer.h>
 #include <curv/context.h>
@@ -154,13 +155,7 @@ bool export_json_value(curv::Value val, std::ostream& out)
         return true;
     }
     if (val.is_num()) {
-        double num = val.get_num_unsafe();
-        if (num == 1.0/0.0) // inf
-            out << "1e999";
-        else if (num == -1.0/0.0) // -inf
-            out << "-1e999";
-        else
-            out << val;
+        out << aux::dfmt(val.get_num_unsafe(), aux::dfmt::JSON);
         return true;
     }
     assert(val.is_ref());
