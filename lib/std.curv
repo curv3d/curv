@@ -9,6 +9,7 @@ square(sz) = shape2d {
     dist p = max[abs p.[0] - sz/2, abs p.[1] - sz/2],
     bbox = [[-sz/2,-sz/2], [sz/2,sz/2]],
 };
+
 nothing = shape2d {
     dist(p) = inf,
     bbox = [[inf,inf],[-inf,-inf]]
@@ -40,3 +41,8 @@ intersection2(s1,s2) = shape2d {
     ]
 };
 difference(s1,s2) = intersection2(s1, complement s2);
+
+translate(delta) = shape -> shape2d {
+    dist p = shape.dist([p.[0] - delta.[0], p.[1] - delta.[1]]),
+    //bbox = shape.bbox + delta
+};

@@ -78,7 +78,17 @@ GL_Value curv::gl_eval_const(GL_Frame& f, Value val, const Phrase& source)
         return result;
     }
     if (auto list = val.dycast<List>()) {
-        if (list->size() == 2) {
+        if (list->size() == 2
+            && (*list)[0].is_num()
+            && (*list)[1].is_num())
+        {
+            GL_Value result = f.gl.newvalue(GL_Type::vec2);
+            f.gl.out << "  vec2 " << result << " = vec2("
+                << dfmt((*list)[0].get_num_unsafe(), dfmt::EXPR)
+                << ","
+                << dfmt((*list)[1].get_num_unsafe(), dfmt::EXPR)
+                << ");\n";
+            return result;
         }
     }
     throw Exception(At_GL_Phrase(source, &f),

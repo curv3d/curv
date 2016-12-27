@@ -1,7 +1,7 @@
 # 0.2: geometry
 2D subsystem:
 * polygon
-* translate, rotate, scale
+* rotate, scale
 
 Refactor:
 * Optimize `circle` using `dist p = norm p - r`
