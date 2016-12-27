@@ -2,6 +2,7 @@
 // Distributed under The MIT License.
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
+#include <aux/dtostr.h>
 #include <curv/gl_compiler.h>
 #include <curv/exception.h>
 #include <curv/context.h>
@@ -11,6 +12,7 @@
 #include <curv/function.h>
 
 using namespace curv;
+using aux::dfmt;
 
 void curv::gl_compile(const Shape2D& shape, std::ostream& out)
 {
@@ -71,15 +73,13 @@ GL_Value curv::gl_eval_const(GL_Frame& f, Value val, const Phrase& source)
     if (val.is_num()) {
         GL_Value result = f.gl.newvalue(GL_Type::num);
         double num = val.get_num_unsafe();
-        f.gl.out << "  float " << result << " = ";
-        if (num == 1.0/0.0) // infinity
-            f.gl.out << "1e999";
-        else if (num == -1.0/0.0) // -infinity
-            f.gl.out << "-1e999";
-        else
-            f.gl.out << "float(" << val << ")";
-        f.gl.out << ";\n";
+        f.gl.out << "  float " << result << " = "
+            << dfmt(num, dfmt::EXPR) << ";\n";
         return result;
+    }
+    if (auto list = val.dycast<List>()) {
+        if (list->size() == 2) {
+        }
     }
     throw Exception(At_GL_Phrase(source, &f),
         stringify("value ",val," is not supported by the Geometry Compiler"));

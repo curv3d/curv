@@ -34,10 +34,11 @@ void dtostr(double n, char* buf)
 }
 #endif
 
-struct StyleSpec { const char* inf; const char* nan; } stylespec[3] = {
-    { "inf",    "nan" },   // C
-    { "1e9999", "null" },  // JSON
-    { "INF",    "NaN" },   // XML
+struct StyleSpec { const char* inf; const char* nan; } stylespec[4] = {
+    { "inf",     "nan" },     // C
+    { "1e9999",  "null" },    // JSON
+    { "INF",     "NaN" },     // XML
+    { "1.0/0.0", "0.0/0.0" }, // EXPR
 };
 
 void dtostr(double n, char* buf, dfmt::style style)
@@ -93,6 +94,10 @@ void dtostr(double n, char* buf, dfmt::style style)
             int nzeros = decimal_point - decimal_rep_length;
             for (int i = 0; i < nzeros; ++i)
                 *p++ = '0';
+            if (style == dfmt::EXPR) {
+                *p++ = '.';
+                *p++ = '0';
+            }
             *p = '\0';
             return;
         }

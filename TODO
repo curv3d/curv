@@ -1,11 +1,9 @@
 # 0.2: geometry
-next GL extensions:
-* max, min
-* call a shape's dist function
+2D subsystem:
+* polygon
+* translate, rotate, scale
 
 Refactor:
-* Use dtostr to print WebGL numbers. Add a WebGL format.
-* Use dtostr to print JSON numbers. Use existing JSON format.
 * Optimize `circle` using `dist p = norm p - r`
 
 square:
