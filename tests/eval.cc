@@ -415,5 +415,10 @@ TEST(curv, eval)
     SUCCESS("abs(inf)", "inf");
     SUCCESS("abs(2)", "2");
     SUCCESS("abs(0)", "0");
+
+    SUCCESS("norm[], norm[2], norm[3,4]",
+        "0\n"
+        "2\n"
+        "5");
   }
 }

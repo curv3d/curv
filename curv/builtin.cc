@@ -125,6 +125,33 @@ struct Min_Function : public Function
     }
 };
 
+struct Norm_Function : public Function
+{
+    Norm_Function() : Function(1) {}
+    Value call(Frame& args) override
+    {
+        // TODO: use hypot() or DNRM2 from BLAS? Avoids overflow/underflow
+        // due to squaring for large/small values, not sure about speed.
+        auto& list = arg_to_list(args[0], At_Arg(0, args));
+        double sum = 0.0;
+        for (auto val : list) {
+            double x = arg_to_num(val, At_Arg(0, args));
+            sum += x * x;
+        }
+        return {sqrt(sum)};
+    }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        auto arg = f[0];
+        if (arg.type != GL_Type::vec2)
+            throw Exception(At_GL_Arg(0, f),
+                "norm: argument is not a vec2");
+        auto result = f.gl.newvalue(GL_Type::num);
+        f.gl.out << "  float "<<result<<" = length("<<arg<<");\n";
+        return result;
+    }
+};
+
 struct Len_Function : public Function
 {
     Len_Function() : Function(1) {}
@@ -204,6 +231,7 @@ curv::builtin_namespace =
     {"abs", make<Builtin_Value>(Value{make<Abs_Function>()})},
     {"max", make<Builtin_Value>(Value{make<Max_Function>()})},
     {"min", make<Builtin_Value>(Value{make<Min_Function>()})},
+    {"norm", make<Builtin_Value>(Value{make<Norm_Function>()})},
     {"len", make<Builtin_Value>(Value{make<Len_Function>()})},
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},
     {"shape2d", make<Builtin_Value>(Value{make<Shape2d_Function>()})},

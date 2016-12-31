@@ -1,4 +1,6 @@
 # 0.2: geometry
+Extend language to condense/speed up existing geometric operators.
+
 2D subsystem:
 * polygon -- convex_polygon as Nef polygon, intersection of half planes
   convex_polygon(vertices) -- vertices are in counterclockwise order, as this
@@ -45,9 +47,6 @@ Colour:
   * color operations (eg, light red)
   * Geometric transforms can be applied to colour fields.
 * Image import.
-
-Refactor:
-* Optimize `circle` using `dist p = norm p - r`
 
 square:
 * `Num v` is a predicate

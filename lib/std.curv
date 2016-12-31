@@ -2,7 +2,7 @@
 concat(vv) = [for(v=vv) for(i=v) i];
 
 circle(r) = shape2d {
-    dist p = sqrt(p'0*p'0 + p'1*p'1) - r,
+    dist p = norm p - r,
     bbox = [[-r,-r],[r,r]]
 };
 square(sz) = shape2d {
