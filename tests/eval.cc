@@ -261,12 +261,12 @@ TEST(curv, eval)
     SUCCESS("4^0.5", "2");
     SUCCESS("4^-1", "0.25");
     SUCCESS("-2^2", "-4");
-    SUCCESS("[1,2,3].[1]","2");
-    FAILALL("[1,2,3].[1.1]",
+    SUCCESS("[1,2,3]'1","2");
+    FAILALL("[1,2,3]'1.1",
         "not an integer\n"
-        "line 1(columns 10-12)\n"
-        "  [1,2,3].[1.1]\n"
-        "           ^-- ");
+        "line 1(columns 9-11)\n"
+        "  [1,2,3]'1.1\n"
+        "          ^--");
     SUCCESS("x+y;x=1;y=2", "3");
     SUCCESS("a=c+1;b=1;c=b+1;a", "3");
     FAILMSG("x=x;x", "illegal recursive reference");
@@ -281,12 +281,12 @@ TEST(curv, eval)
     SUCCESS("add=(x,y)->x+y;add(1,2)", "3");
     SUCCESS("add=x->y->x+y;add(1)(2)", "3");
     SUCCESS(
-        "sum = (list,i,f)->if (i < len list) list.[i]+f(list,i+1,f) else 0;"
+        "sum = (list,i,f)->if (i < len list) list'i+f(list,i+1,f) else 0;"
         "sum([1,2,3],0,sum)",
         "6");
     SUCCESS(
         "/* tail-recursive function */"
-        "sum = (list,i)->if (i < len list) list.[i]+sum(list,i+1) else 0;"
+        "sum = (list,i)->if (i < len list) list'i+sum(list,i+1) else 0;"
         "sum([1,2,3],0)",
         "6");
     SUCCESS(

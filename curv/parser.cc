@@ -302,25 +302,28 @@ parse_chain(Scanner& scanner)
     Token tok;
     for (;;) {
         tok = scanner.get_token();
-        if (tok.kind == Token::k_ident) {
+        switch (tok.kind) {
+        case Token::k_ident:
             scanner.push_token(tok);
             return make<Call_Phrase>(postfix,
                 parse_chain(scanner));
-        }
-        if (tok.kind == Token::k_power) {
+        case Token::k_power:
             return make<Binary_Phrase>(
                 postfix, tok, parse_unary(scanner));
-        }
-        if (tok.kind == Token::k_dot) {
-            postfix = make<Binary_Phrase>(postfix, tok,
-                parse_primary(scanner, "expression following '.'"));
+        case Token::k_dot:
+        case Token::k_apostrophe:
+            postfix = make<Binary_Phrase>(postfix, tok, parse_primary(scanner,
+                tok.kind == Token::k_dot
+                ? "expression following ."
+                : "expression following '"));
             continue;
+        default:
+            scanner.push_token(tok);
+            auto primary = parse_primary(scanner, nullptr);
+            if (primary == nullptr)
+                return postfix;
+            postfix = make<Call_Phrase>(postfix, primary);
         }
-        scanner.push_token(tok);
-        auto primary = parse_primary(scanner, nullptr);
-        if (primary == nullptr)
-            return postfix;
-        postfix = make<Call_Phrase>(postfix, primary);
     }
 }
 

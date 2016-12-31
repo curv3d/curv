@@ -205,6 +205,9 @@ Scanner::get_token()
     case '^':
         tok.kind = Token::k_power;
         goto success;
+    case '\'':
+        tok.kind = Token::k_apostrophe;
+        goto success;
     case '@':
         tok.kind = Token::k_at;
         goto success;

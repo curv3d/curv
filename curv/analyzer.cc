@@ -313,6 +313,11 @@ Binary_Phrase::analyze(Environ& env) const
                 analyze_op(*list->body_, env));
         throw Exception(At_Phrase(*right_, env),
             "invalid expression after '.'");
+    case Token::k_apostrophe:
+        return make<At_Expr>(
+            share(*this),
+            analyze_op(*left_, env),
+            analyze_op(*right_, env));
     default:
         assert(0);
     }
