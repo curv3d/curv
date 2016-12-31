@@ -1,7 +1,50 @@
 # 0.2: geometry
 2D subsystem:
-* polygon
-* rotate, scale
+* polygon -- convex_polygon as Nef polygon, intersection of half planes
+  convex_polygon(vertices) -- vertices are in counterclockwise order, as this
+  seems to be the standard convention.
+* rotate
+* scale
+* align
+* pack or row
+* crop
+  * crop(xmin=null,ymin=null,xmax=null,ymax=null)=...; // OpenSCAD style
+  * crop{xmin=null,ymin=null,xmax=null,ymax=null} shape =
+      intersection [shape,
+        if (xmin!=null) shape2d{dist p = xmin - p.[0]},
+        if (ymin!=null) shape2d{dist p = ymin - p.[1]},
+        if (xmax!=null) shape2d{dist p = p.[0] - xmax},
+        if (ymax!=null) shape2d{dist p = p.[1] - ymax},
+      ];
+* shell(n), inflate(n)
+* text (steal from openjscad to begin with)
+* rsquare, runion (rounded corners and fillets)
+* infinite patterns
+* fractals
+* morph(r,s1,s2)
+* Escher circle limit
+* minkowski sum
+* Sweep. Extends a 2D object along a path.
+* Extrusion. Extends the shape of a 2D object in a perpendicular direction into 3D space.
+* Revolve. Sweeps a 2D object around an axis.
+* Loft. Extends the contours of a shape between one or more open or closed objects.
+* Slice. Divides a solid object into two separate 3D objects.
+
+
+Colour:
+* [r,g,b] is a colour value.
+* [x,y]->[r,g,b] and [x,y,z]->[r,g,b] are 2d and 3d colour fields.
+* 2D shape with color[x,y] function.
+  * Either a shape has color or it doesn't. Union requires either both args
+    have color, or neither.
+  * When a coloured shape is transformed, the transformation is also applied
+    to the colour field.
+* `color(c) shape` applies a colour or a colour field to a shape.
+* Colour operations:
+  * predefined color values (red,orange,green,...)
+  * color operations (eg, light red)
+  * Geometric transforms can be applied to colour fields.
+* Image import.
 
 Refactor:
 * Optimize `circle` using `dist p = norm p - r`
@@ -12,7 +55,7 @@ square:
 * abs n, abs[n1,n2]
 * [x,y] - [u,v]
 * [x,y] / 2
-* Rename `let` to `letrec`.
+* Rename old `let` to `letrec` -- or to `where` with reversed arguments.
 * Implement `let` like Scheme let. It's easier to implement in WebGL,
   and provides a nice idiom for normalizing sz in square.
 * square(sz) =
@@ -47,6 +90,7 @@ nary union:
 * GL: since shapes is a constant during inline expansion, we can expand the
   for loop into a list of expressions.
 * Or implement nary union on top of binary union.
+* union shapes = reduce(nothing, union2);
 
 * curv::Shape2D is abstract, with builtin and user subclasses
   * subclass User_Defined_Shape2D, UD_Shape2D, User_Shape2D (better name?)
@@ -63,6 +107,7 @@ nary union:
       Maybe these are colours, not shapes.
   * I could also use `everything2d` and `everything3d`.
   * Don't do this until there is a strong use case for it.
+  * If `nothing` isn't polymorphic, what does `union[]` return?
 
 # 0.1: Minimum Viable Language
 * echo:

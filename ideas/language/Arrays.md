@@ -1,5 +1,121 @@
 # Arrays
 
+## Array and Record Indexing should be overloaded?
+In Javascript, array[i] and obj[key] are the same operator.
+Ditto for Python lists and dictionaries.
+
+In the original design cycle, this bugged me, and I wanted to be sure that
+these are separate operators. But that leads to inventing weird operator syntax
+for record indexing that nobody has seen before. Eg, like `rec.(key)`.
+
+Here are the advantages of overloading:
+* Don't have to invent weird operator syntax for record indexing.
+* `update(structure, index, newval)` works for all compound data structures.
+* A "path" into a compound data structure can be represented as a list of
+  index values. Eg, compare to JSON-Path.
+* Python and Javascript use the same design, so it's popular.
+
+## Array Indexing Syntax
+I've been unsure about the best syntax for indexing an array.
+
+Currently I favour `a'i`.
+The others are more worm-can-openey/yak-shavey.
+I can always change this later.
+
+In Curv, instead of writing `max([a,b])` and `matrix[i][j]`,
+you instead write `max[a,b]` and `matrix'i'j`.
+The chosen syntax is shorter, easier to read, easier to type.
+
+0. Popular syntax `a[i]` conflicts with functional-style function call,
+   and I've decided to prioritize the latter.
+   * Maybe use `a[i]` and choose a different syntax for array literals,
+     eg `{...}`.
+
+1. `a(i)` is kind of cool, and second most popular syntax. `matrix(i)(j)`
+   or `matrix(i,j)`, `bbox 0 0`. Used by Fortran, Ada, Matlab, Scala.
+   It conflicts with module customization, which must use funcall notation.
+   * Maybe a different syntax for accessing module elements.
+     We don't need Module to be a subtype of List in Curv.
+     * Elements are named by a special field name. Temp name: `__elements__`.
+       Name is used when a module shape is serialized as JCSG.
+       This also allows a module to reference its own elements by name.
+     * `elements <module>` returns the elements.
+   * Maybe function call is overloaded in modules.
+     A record argument is customization, an integer argument is element
+     selection, a string argument is field selection.
+     * Does this interfere with `cube 10` for customizing the cube prototype?
+       Must all shapes be customized using a record argument?
+   * If funcall syntax is used for function call, array indexing and
+     field selection, then a function can mimic any compound data type.
+     That's interesting...
+   * Scala uses a(i) on principle, not to mimic Fortran.
+     Array is a subtype of Function. This adds a bit of expressive power,
+     but it's not that big a deal.
+   * From a beginner's mind perspective, a(i) is simpler because it
+     requires less syntax: a(i) and f(x) are the same syntax.
+
+2. Use `a'i` as an infix operator. Eg, `bbox'0'0`, `matrix'i'j`, `record'key`.
+   Most readable, easiest to type of any infix symbol I've tested.
+   Others: `@`, `!` (Haskell), `#`. `bbox@0@0` is not readable.
+   No infix array index operator will be familiar or guessable syntax.
+
+3. F# uses `a.[i]`. I thought of also using `record.{string}`.
+   I implemented that, on the basis of similarity to the consensus syntax,
+   but now I'm not too happy with this syntax either. Not sure why.
+   * A lot of my current code is `p.[0]` and `p.[1]`.
+     The verbosity bugs me.
+   * Maybe the fact that `[i]` has a context sensitive meaning.
+     `a.[[a,b,c]]` is a bit jarring.
+   * Maybe the fact that it is so close to the consensus syntax, and
+     yet different?
+
+4. O'CAML uses `a.(i)`. Then, as a short form, `a.0` and `a.1`
+   which are terse and readable, no worse than the `a.x` and `a.y` shortcuts
+   in OpenSCAD. Then `a.[i,j]` is interpreted as `[a.(i),a.(j)]`.
+   But then `a.i` has an entirely different meaning.
+
+5. Use `a[i]` and choose a different syntax for array literals.
+   * Maybe `{1,2,3}`.
+     * translate{0,3} shape
+     * crop{xmin=0} shape
+     * What is `{}`? It kind of suggests the unification of arrays and records,
+       similar to Objects in Javascript and Lua.
+   * Maybe `(1,2,3)`.
+     * What is `f(1,2,3)`?
+
+```
+    bbox = [
+        [min[s1.bbox@0@0, s2.bbox@0@1],
+         min[s1.bbox@0@1, s2.bbox@0@1]],
+        [max[s1.bbox@1@0, s2.bbox@1@0],
+         max[s1.bbox@1@1, s2.bbox@1@1]]
+    ]
+    bbox = [
+        [min[s1.bbox!0!0, s2.bbox!0!1],
+         min[s1.bbox!0!1, s2.bbox!0!1]],
+        [max[s1.bbox!1!0, s2.bbox!1!0],
+         max[s1.bbox!1!1, s2.bbox!1!1]]
+    ]
+    bbox = [
+        [min[s1.bbox'0'0, s2.bbox'0'1],
+         min[s1.bbox'0'1, s2.bbox'0'1]],
+        [max[s1.bbox'1'0, s2.bbox'1'0],
+         max[s1.bbox'1'1, s2.bbox'1'1]]
+    ]
+    bbox = [
+        [min[s1.bbox@(0)@(0), s2.bbox@(0)@(1)],
+         min[s1.bbox@(0)@(1), s2.bbox@(0)@(1)]],
+        [max[s1.bbox@(1)@(0), s2.bbox@(1)@(0)],
+         max[s1.bbox@(1)@(1), s2.bbox@(1)@(1)]]
+    ]
+    bbox = [
+        [min[s1.bbox.[0].[0], s2.bbox.[0].[1]],
+         min[s1.bbox.[0].[1], s2.bbox.[0].[1]]],
+        [max[s1.bbox.[1].[0], s2.bbox.[1].[0]],
+         max[s1.bbox.[1].[1], s2.bbox.[1].[1]]]
+    ]
+```
+
 ## Tensors
 Curv supports arrays of numbers of arbitrary dimension,
 plus the usual linear algebra operations on vectors and matrices.
