@@ -1,5 +1,7 @@
 ,*
 .*.swp
+.*.swo
 .swp
+.swo
 /doxygen
 /build
