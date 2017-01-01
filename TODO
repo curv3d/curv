@@ -1,5 +1,19 @@
 # 0.2: geometry
 Extend language to condense/speed up existing geometric operators.
+* curried function definition
+* vectorized numeric operations (array language)
+  * arith ops: + - * / ^
+  * builtin: sqrt,abs,max,min
+  * and/or/not? if?
+    * the control structures &&, || and if are not vectorized
+    * `all` and `any` are monoid functions, and are vectorized
+    * `not` is a vectorized function replacing `!`?
+  * structure'[i,j,k] means: [structure'i,structure'j,structure'k]
+  * relations? < <= > >= (but not == !=).
+    * What is vectorized ==?
+      * could be: map(_==_), goes to one level, returns list of bool
+      * could be: array_map(_==_), returns array of bool
+* list library
 
 2D subsystem:
 * polygon -- convex_polygon as Nef polygon, intersection of half planes
@@ -22,6 +36,7 @@ Extend language to condense/speed up existing geometric operators.
 * text (steal from openjscad to begin with)
 * rsquare, runion (rounded corners and fillets)
 * infinite patterns
+* grid (map shape onto infinite repeating shape)
 * fractals
 * morph(r,s1,s2)
 * Escher circle limit
