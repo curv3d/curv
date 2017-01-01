@@ -18,6 +18,7 @@
 #include <curv/shape.h>
 #include <curv/system.h>
 #include <curv/gl_context.h>
+#include <curv/array_op.h>
 
 using namespace curv;
 using namespace std;
@@ -76,18 +77,19 @@ struct Abs_Function : public Function
     }
 };
 
+struct Max_Monoid
+{
+    static constexpr double zero = -INFINITY;
+    static double f(double x, double y) { return std::max(x,y); }
+};
 struct Max_Function : public Function
 {
     Max_Function() : Function(1) {}
     Value call(Frame& args) override
     {
         auto& list = arg_to_list(args[0], At_Arg(0, args));
-        double result = -1.0/0.0;
-        for (auto val : list) {
-            double x = arg_to_num(val, At_Arg(0, args));
-            result = std::max(result, x);
-        }
-        return {result};
+        Tensor_Monoid<Max_Monoid> tm;
+        return tm.reduce(list, At_Arg(0, args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -100,18 +102,20 @@ struct Max_Function : public Function
         return result;
     }
 };
+
+struct Min_Monoid
+{
+    static constexpr double zero = INFINITY;
+    static double f(double x, double y) { return std::min(x,y); }
+};
 struct Min_Function : public Function
 {
     Min_Function() : Function(1) {}
     Value call(Frame& args) override
     {
         auto& list = arg_to_list(args[0], At_Arg(0, args));
-        double result = 1.0/0.0;
-        for (auto val : list) {
-            double x = arg_to_num(val, At_Arg(0, args));
-            result = std::min(result, x);
-        }
-        return {result};
+        Tensor_Monoid<Min_Monoid> tm;
+        return tm.reduce(list, At_Arg(0, args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -130,15 +134,18 @@ struct Norm_Function : public Function
     Norm_Function() : Function(1) {}
     Value call(Frame& args) override
     {
-        // TODO: use hypot() or DNRM2 from BLAS? Avoids overflow/underflow
-        // due to squaring for large/small values, not sure about speed.
+        // TODO: use hypot() or BLAS DNRM2 or Eigen stableNorm/blueNorm?
+        // Avoids overflow/underflow due to squaring of large/small values.
+        // Slower.  https://forum.kde.org/viewtopic.php?f=74&t=62402
         auto& list = arg_to_list(args[0], At_Arg(0, args));
         double sum = 0.0;
         for (auto val : list) {
-            double x = arg_to_num(val, At_Arg(0, args));
+            double x = val.get_num_or_nan();
             sum += x * x;
         }
-        return {sqrt(sum)};
+        if (sum == sum)
+            return {sqrt(sum)};
+        throw Exception(At_Arg(0, args), "norm: domain error");
     }
     GL_Value gl_call(GL_Frame& f) const override
     {

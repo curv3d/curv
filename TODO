@@ -3,7 +3,7 @@ Extend language to condense/speed up existing geometric operators.
 * curried function definition
 * vectorized numeric operations (array language)
   * arith ops: + - * / ^
-  * builtin: sqrt,abs,max,min
+  * builtin: sqrt,abs
   * and/or/not? if?
     * the control structures &&, || and if are not vectorized
     * `all` and `any` are monoid functions, and are vectorized

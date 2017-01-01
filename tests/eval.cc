@@ -408,6 +408,9 @@ TEST(curv, eval)
     SUCCESS("min[]", "inf");
     SUCCESS("min[1]", "1");
     SUCCESS("min[1,2]", "1");
+    SUCCESS("max[[1,100],[10,20]], max[20,[5,17,30]]",
+        "[10,100]\n"
+        "[20,20,30]");
 
     SUCCESS("abs(-inf)", "inf");
     SUCCESS("abs(-2)", "2");

@@ -1,5 +1,8 @@
-// Curv standard library, automatically loaded at startup.
+/* Curv standard library, automatically loaded at startup. */
+
+// lists
 concat(vv) = [for(v=vv) for(i=v) i];
+map(f) = list -> [for (x=list) f x];
 
 circle(r) = shape2d {
     dist p = norm p - r,
@@ -24,25 +27,17 @@ complement(s) = shape2d {
 };
 union2(s1,s2) = shape2d {
     dist p = min[s1.dist p, s2.dist p],
-    bbox = [
-        [min[s1.bbox'0'0, s2.bbox'0'1],
-         min[s1.bbox'0'1, s2.bbox'0'1]],
-        [max[s1.bbox'1'0, s2.bbox'1'0],
-         max[s1.bbox'1'1, s2.bbox'1'1]]
-    ]
+    bbox = [min[s1.bbox'0, s2.bbox'0], max[s1.bbox'1, s2.bbox'1]]
 };
 intersection2(s1,s2) = shape2d {
     dist p = max[s1.dist p, s2.dist p],
-    bbox = [
-        [max[s1.bbox'0'0, s2.bbox'0'1],
-         max[s1.bbox'0'1, s2.bbox'0'1]],
-        [min[s1.bbox'1'0, s2.bbox'1'0],
-         min[s1.bbox'1'1, s2.bbox'1'1]]
-    ]
+    bbox = [max[s1.bbox'0, s2.bbox'0], min[s1.bbox'1, s2.bbox'1]]
 };
 difference(s1,s2) = intersection2(s1, complement s2);
 
 translate(delta) = shape -> shape2d {
     dist p = shape.dist[p'0 - delta'0, p'1 - delta'1],
     //bbox = shape.bbox + delta
+    bbox = [[shape.bbox'0'0 + delta'0, shape.bbox'0'1 + delta'1],
+            [shape.bbox'1'0 + delta'0, shape.bbox'1'1 + delta'1]]
 };
