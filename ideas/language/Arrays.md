@@ -58,6 +58,7 @@ The chosen syntax is shorter, easier to read, easier to type.
    Most readable, easiest to type of any infix symbol I've tested.
    Others: `@`, `!` (Haskell), `#`. `bbox@0@0` is not readable.
    No infix array index operator will be familiar or guessable syntax.
+   NOTE: `a'0.f` is tricky to parse correctly.
 
 3. F# uses `a.[i]`. I thought of also using `record.{string}`.
    I implemented that, on the basis of similarity to the consensus syntax,
@@ -71,7 +72,8 @@ The chosen syntax is shorter, easier to read, easier to type.
 
 4. O'CAML uses `a.(i)`. Then, as a short form, `a.0` and `a.1`
    which are terse and readable, no worse than the `a.x` and `a.y` shortcuts
-   in OpenSCAD. Then `a.[i,j]` is interpreted as `[a.(i),a.(j)]`.
+   in OpenSCAD (NOPE: a.0.1 won't be parsed correctly.)
+   Then `a.[i,j]` is interpreted as `[a.(i),a.(j)]`.
    But then `a.i` has an entirely different meaning.
 
 5. Use `a[i]` and choose a different syntax for array literals.
