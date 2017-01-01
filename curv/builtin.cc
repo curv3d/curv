@@ -77,19 +77,16 @@ struct Abs_Function : public Function
     }
 };
 
-struct Max_Monoid
-{
-    static constexpr double zero = -INFINITY;
-    static double f(double x, double y) { return std::max(x,y); }
-};
 struct Max_Function : public Function
 {
     Max_Function() : Function(1) {}
     Value call(Frame& args) override
     {
-        auto& list = arg_to_list(args[0], At_Arg(0, args));
-        Tensor_Monoid<Max_Monoid> tm;
-        return tm.reduce(list, At_Arg(0, args));
+        struct Scalar_Op {
+            static double f(double x, double y) { return std::max(x,y); }
+        };
+        static Binary_Numeric_Array_Op<Scalar_Op> array_op;
+        return array_op.reduce(-INFINITY, args[0], At_Arg(0, args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -103,19 +100,16 @@ struct Max_Function : public Function
     }
 };
 
-struct Min_Monoid
-{
-    static constexpr double zero = INFINITY;
-    static double f(double x, double y) { return std::min(x,y); }
-};
 struct Min_Function : public Function
 {
     Min_Function() : Function(1) {}
     Value call(Frame& args) override
     {
-        auto& list = arg_to_list(args[0], At_Arg(0, args));
-        Tensor_Monoid<Min_Monoid> tm;
-        return tm.reduce(list, At_Arg(0, args));
+        struct Scalar_Op {
+            static double f(double x, double y) { return std::min(x,y); }
+        };
+        static Binary_Numeric_Array_Op<Scalar_Op> array_op;
+        return array_op.reduce(INFINITY, args[0], At_Arg(0, args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {

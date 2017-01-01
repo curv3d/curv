@@ -16,19 +16,21 @@
 #include <curv/list.h>
 #include <curv/context.h>
 #include <curv/exception.h>
+#include <curv/arg.h>
 
 namespace curv {
 
-// M::f is the monoid operation, M::zero is the identity element
-template <class M>
-struct Tensor_Monoid
+template <class Scalar_Op>
+struct Binary_Numeric_Array_Op
 {
     // TODO: optimize: move semantics. unique object reuse.
+
     static Value
-    reduce(List& alist, const Context& cx)
+    reduce(double zero, Value arg, const Context& cx)
     {
-        Value result = {M::zero};
-        for (auto val : alist)
+        auto& list = arg_to_list(arg, cx);
+        Value result = {zero};
+        for (auto val : list)
             result = op(result, val, cx);
         return result;
     }
@@ -39,7 +41,7 @@ struct Tensor_Monoid
         if (x.is_num()) {
             double xnum = x.get_num_unsafe();
             if (y.is_num())
-                return {M::f(xnum, y.get_num_unsafe())};
+                return {Scalar_Op::f(xnum, y.get_num_unsafe())};
             if (auto ylist = y.dycast<List>())
                 return {broadcast_op(xnum, ylist, cx)};
         } else if (auto xlist = x.dycast<List>()) {
@@ -48,7 +50,7 @@ struct Tensor_Monoid
             if (auto ylist = y.dycast<List>())
                 return {element_wise_op(xlist, ylist, cx)};
         }
-        throw Exception(cx, "wrong type in array operation");
+        throw Exception(cx, "domain error");
     }
 
     static Shared<List>
@@ -58,11 +60,11 @@ struct Tensor_Monoid
         for (unsigned i = 0; i < ylist->size(); ++i) {
             Value e = (*ylist)[i];
             if (e.is_num())
-                (*result)[i] = {M::f(xnum, e.get_num_unsafe())};
+                (*result)[i] = {Scalar_Op::f(xnum, e.get_num_unsafe())};
             else if (auto elist = e.dycast<List>())
                 (*result)[i] = {broadcast_op(xnum, elist, cx)};
             else
-                throw Exception(cx, "wrong type in array operation");
+                throw Exception(cx, "domain error");
         }
         return result;
     }

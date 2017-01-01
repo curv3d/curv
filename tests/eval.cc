@@ -201,7 +201,7 @@ TEST(curv, eval)
     // runtime operations
     SUCCESS("-0", "-0");
     SUCCESS("-inf", "-inf");
-    FAILMSG("1+null", "1+null: domain error");
+    FAILMSG("1+null", "domain error");
     FAILMSG("0/0", "0/0: domain error");
     SUCCESS("1/0", "inf");
     SUCCESS("sqrt(2)", "1.4142135623730951");

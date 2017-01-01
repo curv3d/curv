@@ -13,6 +13,7 @@
 #include <curv/module.h>
 #include <curv/thunk.h>
 #include <curv/context.h>
+#include <curv/array_op.h>
 #include <cmath>
 
 using namespace curv;
@@ -180,10 +181,13 @@ curv::Add_Expr::eval(Frame& f) const
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
     Value r = Value(a.get_num_or_nan() + b.get_num_or_nan());
-    if (!r.is_num())
-        throw Exception(At_Phrase(*source_, &f),
-            stringify(a,"+",b,": domain error"));
-    return r;
+    if (r.is_num())
+        return r;
+    struct Scalar_Op {
+        static double f(double x, double y) { return x + y; }
+    };
+    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
+    return array_op.op(a,b, At_Phrase(*source_, &f));
 }
 Value
 curv::Subtract_Expr::eval(Frame& f) const
