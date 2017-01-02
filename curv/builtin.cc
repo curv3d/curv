@@ -80,12 +80,17 @@ struct Abs_Function : public Function
 struct Max_Function : public Function
 {
     Max_Function() : Function(1) {}
+
+    struct Scalar_Op {
+        static double f(double x, double y) { return x > y ? x : y; }
+        static const char* name() { return "max"; }
+        static Shared<const String> callstr(Value x, Value y) {
+            return stringify("max[",x,",",y,"]");
+        }
+    };
+    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        struct Scalar_Op {
-            static double f(double x, double y) { return std::max(x,y); }
-        };
-        static Binary_Numeric_Array_Op<Scalar_Op> array_op;
         return array_op.reduce(-INFINITY, args[0], At_Arg(0, args));
     }
     GL_Value gl_call(GL_Frame& f) const override
@@ -103,12 +108,17 @@ struct Max_Function : public Function
 struct Min_Function : public Function
 {
     Min_Function() : Function(1) {}
+
+    struct Scalar_Op {
+        static double f(double x, double y) { return x < y ? x : y; }
+        static const char* name() { return "min"; }
+        static Shared<const String> callstr(Value x, Value y) {
+            return stringify("min[",x,",",y,"]");
+        }
+    };
+    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        struct Scalar_Op {
-            static double f(double x, double y) { return std::min(x,y); }
-        };
-        static Binary_Numeric_Array_Op<Scalar_Op> array_op;
         return array_op.reduce(INFINITY, args[0], At_Arg(0, args));
     }
     GL_Value gl_call(GL_Frame& f) const override

@@ -60,6 +60,13 @@ operator<<(std::ostream& out, const String& str)
     return out;
 }
 
+inline std::ostream&
+operator<<(std::ostream& out, Shared<const String> str)
+{
+    out.write(str->data(), str->size());
+    return out;
+}
+
 /// Make a curv::String from an array of characters
 inline Shared<String> make_string(const char* str, size_t len)
 {

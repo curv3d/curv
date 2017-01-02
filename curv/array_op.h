@@ -38,33 +38,52 @@ struct Binary_Numeric_Array_Op
     static Value
     op(Value x, Value y, const Context& cx)
     {
-        if (x.is_num()) {
-            double xnum = x.get_num_unsafe();
-            if (y.is_num())
-                return {Scalar_Op::f(xnum, y.get_num_unsafe())};
-            if (auto ylist = y.dycast<List>())
-                return {broadcast_op(xnum, ylist, cx)};
-        } else if (auto xlist = x.dycast<List>()) {
-            if (y.is_num())
-                return {broadcast_op(y.get_num_unsafe(), xlist, cx)};
+        double r = Scalar_Op::f(x.get_num_or_nan(), y.get_num_or_nan());
+        if (r == r)
+            return {r};
+        if (auto xlist = x.dycast<List>()) {
             if (auto ylist = y.dycast<List>())
                 return {element_wise_op(xlist, ylist, cx)};
+            return {broadcast_left(xlist, y, cx)};
         }
-        throw Exception(cx, "domain error");
+        if (auto ylist = y.dycast<List>())
+            return {broadcast_right(x, ylist, cx)};
+        throw Exception(cx,
+            stringify(Scalar_Op::callstr(x,y),": domain error"));
     }
 
     static Shared<List>
-    broadcast_op(double xnum, Shared<List> ylist, const Context &cx)
+    broadcast_left(Shared<List> xlist, Value y, const Context& cx)
+    {
+        Shared<List> result = List::make(xlist->size());
+        for (unsigned i = 0; i < xlist->size(); ++i) {
+            Value ex = (*xlist)[i];
+            double r = Scalar_Op::f(ex.get_num_or_nan(),y.get_num_or_nan());
+            if (r == r)
+                (*result)[i] = {r};
+            else if (auto exlist = ex.dycast<List>())
+                (*result)[i] = {broadcast_left(exlist, y, cx)};
+            else
+                throw Exception(cx,
+                    stringify(Scalar_Op::callstr(ex,y),": domain error"));
+        }
+        return result;
+    }
+
+    static Shared<List>
+    broadcast_right(Value x, Shared<List> ylist, const Context& cx)
     {
         Shared<List> result = List::make(ylist->size());
         for (unsigned i = 0; i < ylist->size(); ++i) {
-            Value e = (*ylist)[i];
-            if (e.is_num())
-                (*result)[i] = {Scalar_Op::f(xnum, e.get_num_unsafe())};
-            else if (auto elist = e.dycast<List>())
-                (*result)[i] = {broadcast_op(xnum, elist, cx)};
+            Value ey = (*ylist)[i];
+            double r = Scalar_Op::f(x.get_num_or_nan(), ey.get_num_or_nan());
+            if (r == r)
+                (*result)[i] = {r};
+            else if (auto eylist = ey.dycast<List>())
+                (*result)[i] = {broadcast_right(x, eylist, cx)};
             else
-                throw Exception(cx, "domain error");
+                throw Exception(cx,
+                    stringify(Scalar_Op::callstr(x,ey),": domain error"));
         }
         return result;
     }
@@ -73,7 +92,10 @@ struct Binary_Numeric_Array_Op
     element_wise_op(Shared<List> xs, Shared<List> ys, const Context& cx)
     {
         if (xs->size() != ys->size())
-            throw Exception(cx, "mismatched list sizes in array operation");
+            throw Exception(cx, stringify(
+                Scalar_Op::name(),
+                ": mismatched list sizes (",
+                xs->size(),",",ys->size(),") in array operation"));
         Shared<List> result = List::make(xs->size());
         for (unsigned i = 0; i < xs->size(); ++i)
             (*result)[i] = op((*xs)[i], (*ys)[i], cx);
