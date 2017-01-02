@@ -1,3 +1,45 @@
+## Shapes, 2-Jan-2017
+Redesign shapes to support: colour, time, 2d/3d polymorphism.
+
+everything and nothing are polymorphic shapes: they are both 2d and 3d.
+union is polymorphic: it combines shapes with compatible dimensionality,
+whether 2d, 3d or both, reports an error if shapes are incompatible.
+union[] returns its identity element, nothing, which must therefore be
+polymorphic as well.
+
+Shapes have boolean attributes `is_2d` and `is_3d`
+which mark if they are 2d, 3d or both.
+
+The dist function takes [x,y,z,t] as an argument. For 2d shapes, z is ignored.
+For non-animated shapes, t is ignored.
+
+The bbox has x,y,z,t components. For 2d shapes, the z components are ignored.
+For eternal shapes (the default), tmin is -infinity and tmax is +infinity.
+
+Coloured shapes have a `color` function that maps [x,y,z,t] to [r,g,b].
+This attribute is optional. Union will combine two coloured shapes,
+or two colourless shapes, but reports an error when combining coloured with
+colourless
+(because: what does the color function return in the colourless case?).
+* There has to be a default colour when previewing shapes.
+  And this ought to be user-controllable, using a `background_color`
+  binding (which you can set to either [r,g,b] or [x,y,z,t]->[r,g,b]).
+  There is `std.default_color`, which you can override at the top level
+  of the main module.
+* Note that the main module is only known at geometry compilation time.
+  It is not known to union.
+* If union could access the default_color, it could substitute this
+  for a missing color attribute when needed. Maybe using dynamic binding,
+  a `$default_color` variable.
+  * I will later introduce an environment record, tentatively called `req`,
+    which is passed as an argument to geometry operators. The default colour
+    could go in there.
+* Or maybe there is a magic colour value which is mapped onto the default
+  colour. But what happens when you apply colour transformations to this
+  value? The colour won't be transformed, unlike with `$default_color`.
+* The default colour mechanism may be too fancy for the first cut.
+  Wait until `req` is implemented, then see.
+
 # The Geometry Compiler
 
 ## 19-Dec-2016 notes, based on first successful shadertoy export.

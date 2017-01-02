@@ -47,7 +47,6 @@ Extend language to condense/speed up existing geometric operators.
 * Loft. Extends the contours of a shape between one or more open or closed objects.
 * Slice. Divides a solid object into two separate 3D objects.
 
-
 Colour:
 * [r,g,b] is a colour value.
 * [x,y]->[r,g,b] and [x,y,z]->[r,g,b] are 2d and 3d colour fields.
@@ -122,6 +121,12 @@ nary union:
   * I could also use `everything2d` and `everything3d`.
   * Don't do this until there is a strong use case for it.
   * If `nothing` isn't polymorphic, what does `union[]` return?
+  * Why 2 dist functions? The code would be identical (since Curv isn't
+    strongly typed). Just use one dist function, and then:
+    * boolean attributes `is_2d` and `is_3d`, and one bbox. The Z components
+      of the bbox are infinite/ignored in 2D objects.
+    * Two bboxes, bbox2d and bbox3d, which also serve to tag the object as to
+      whether it is 2d or 3d or both.
 
 # 0.1: Minimum Viable Language
 * echo:

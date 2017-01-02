@@ -19,6 +19,9 @@ more precisely:
 Pure speculation:
 What if I used X/Y/Z distances, instead of a single scalar distance?
 Would that help with rendering corners, and does that makes sense?
-(The X/Y/Z distances could easily be infinity when a small sphere is nearby
-along a diagonal.)
+* (The X/Y/Z distances could easily be infinity when a small sphere is nearby
+  along a diagonal.)
 * rotation would screw up this property?
+
+What if my distance field computes 2 numbers: distance to the nearest surface,
+and distance to the nearest singularity?
