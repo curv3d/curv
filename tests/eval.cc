@@ -285,6 +285,7 @@ TEST(curv, eval)
     FAILMSG("f=x->x; f()", "wrong number of arguments");
     SUCCESS("add=(x,y)->x+y;add(1,2)", "3");
     SUCCESS("add=x->y->x+y;add(1)(2)", "3");
+    SUCCESS("add(x)(y) = x+y;add(1)(2)", "3");
     SUCCESS(
         "sum = (list,i,f)->if (i < len list) list'i+f(list,i+1,f) else 0;"
         "sum([1,2,3],0,sum)",

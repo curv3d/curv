@@ -330,29 +330,20 @@ Definition_Phrase::analyze(Environ& env) const
 }
 
 Shared<Definition>
+analyze_def_iter(Environ& env, Phrase& left, Shared<Phrase> right)
+{
+    if (auto id = dynamic_cast<const Identifier*>(&left))
+        return make<Definition>(share(*id), right);
+    if (auto call = dynamic_cast<const Call_Phrase*>(&left))
+        return analyze_def_iter(env, *call->function_,
+            make<Lambda_Phrase>(call->args_, Token(), right));
+    throw Exception(At_Phrase(left,  env), "invalid definiendum");
+}
+
+Shared<Definition>
 Definition_Phrase::analyze_def(Environ& env) const
 {
-    if (auto id = dynamic_cast<const Identifier*>(left_.get())) {
-        return make<Definition>(
-            share(*id),
-            right_);
-    }
-
-    if (auto call = dynamic_cast<const Call_Phrase*>(left_.get())) {
-        if (auto id = dynamic_cast<const Identifier*>(call->function_.get())) {
-            return make<Definition>(
-                share(*id),
-                make<Lambda_Phrase>(
-                    call->args_,
-                    equate_,
-                    right_));
-        } else {
-            throw Exception(At_Phrase(*call->function_,  env),
-                "not an identifier");
-        }
-    }
-
-    throw Exception(At_Phrase(*left_,  env), "invalid definiendum");
+    return analyze_def_iter(env, *left_, right_);
 }
 
 Shared<Meaning>
