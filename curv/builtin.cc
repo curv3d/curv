@@ -33,14 +33,16 @@ Builtin_Value::to_meaning(const Identifier& id) const
 struct Sqrt_Function : public Function
 {
     Sqrt_Function() : Function(1) {}
+    struct Scalar_Op {
+        static double f(double x) { return sqrt(x); }
+        static Shared<const String> callstr(Value x) {
+            return stringify("sqrt(",x,")");
+        }
+    };
+    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        double r = sqrt(args[0].get_num_or_nan());
-        if (r == r)
-            return r;
-        else
-            throw Exception(At_Arg(0, args),
-                stringify("sqrt(",args[0],"): domain error"));
+        return array_op.op(args[0], At_Arg(0, args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -56,14 +58,16 @@ struct Sqrt_Function : public Function
 struct Abs_Function : public Function
 {
     Abs_Function() : Function(1) {}
+    struct Scalar_Op {
+        static double f(double x) { return abs(x); }
+        static Shared<const String> callstr(Value x) {
+            return stringify("abs(",x,")");
+        }
+    };
+    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        double r = abs(args[0].get_num_or_nan());
-        if (r == r)
-            return r;
-        else
-            throw Exception(At_Arg(0, args),
-                stringify("abs(",args[0],"): domain error"));
+        return array_op.op(args[0], At_Arg(0, args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
