@@ -436,6 +436,16 @@ curv::At_Expr::eval(Frame& f) const
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
     auto& list {arg_to_list(a, At_Phrase(*arg1_->source_, &f))};
+    if (auto indices = b.dycast<List>()) {
+        Shared<List> result = List::make(indices->size());
+        int j = 0;
+        for (auto ival : *indices) {
+            int i = arg_to_int(ival, 0, (int)(list.size()-1),
+                At_Phrase(*arg2_->source_, &f));
+            (*result)[j++] = list[i];
+        }
+        return {result};
+    }
     int i =
         arg_to_int(b, 0, (int)(list.size()-1), At_Phrase(*arg2_->source_, &f));
     return list[i];

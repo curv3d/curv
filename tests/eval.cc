@@ -272,6 +272,7 @@ TEST(curv, eval)
         "line 1(columns 9-11)\n"
         "  [1,2,3]'1.1\n"
         "          ^--");
+    SUCCESS("[0..10]'[3..1 step -1]", "[3,2,1]");
     SUCCESS("x+y;x=1;y=2", "3");
     SUCCESS("a=c+1;b=1;c=b+1;a", "3");
     FAILMSG("x=x;x", "illegal recursive reference");

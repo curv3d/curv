@@ -1,0 +1,135 @@
+diff --git a/curv/analyzer.cc b/curv/analyzer.cc
+index e327138..30eaa6c 100644
+--- a/curv/analyzer.cc
++++ b/curv/analyzer.cc
+@@ -232,6 +232,25 @@ Lambda_Phrase::analyze(Environ& env) const
+ }
+ 
+ Shared<Meaning>
++make_apostrophe_expr(
++    const Phrase& source, const Phrase& left, const Phrase& right, Environ& env)
++{
++    if (auto parens = dynamic_cast<const Paren_Phrase*>(&right)) {
++        if (auto range = dynamic_cast<const Range_Phrase*>(&*parens->body_))
++            return make<Slice_Expr>(
++                share(source),
++                analyze_op(left, env),
++                range->first_ ? analyze_op(*range->first_, env) : nullptr,
++                range->last_ ? analyze_op(*range->last_, env) : nullptr,
++                range->step_ ? analyze_op(*range->step_, env) : nullptr);
++    }
++    return make<At_Expr>(
++        share(source),
++        analyze_op(left, env),
++        analyze_op(right, env));
++}
++
++Shared<Meaning>
+ Binary_Phrase::analyze(Environ& env) const
+ {
+     switch (op_.kind) {
+@@ -314,10 +333,7 @@ Binary_Phrase::analyze(Environ& env) const
+         throw Exception(At_Phrase(*right_, env),
+             "invalid expression after '.'");
+     case Token::k_apostrophe:
+-        return make<At_Expr>(
+-            share(*this),
+-            analyze_op(*left_, env),
+-            analyze_op(*right_, env));
++        return make_apostrophe_expr(*this, *left_, *right_, env);
+     default:
+         assert(0);
+     }
+diff --git a/curv/evaluator.cc b/curv/evaluator.cc
+index 077586c..94a4ee2 100644
+--- a/curv/evaluator.cc
++++ b/curv/evaluator.cc
+@@ -436,11 +436,53 @@ curv::At_Expr::eval(Frame& f) const
+     Value a = arg1_->eval(f);
+     Value b = arg2_->eval(f);
+     auto& list {arg_to_list(a, At_Phrase(*arg1_->source_, &f))};
+     if (auto indices = b.dycast<List>()) {
+         Shared<List> result = List::make(indices->size());
+         int j = 0;
+         for (auto ival : *indices) {
+             int i = arg_to_int(ival, 0, (int)(list.size()-1),
+                 At_Phrase(*arg2_->source_, &f));
+             (*result)[j++] = list[i];
+         }
+         return {result};
+     }
+     int i =
+         arg_to_int(b, 0, (int)(list.size()-1), At_Phrase(*arg2_->source_, &f));
+     return list[i];
+ }
+ 
++Value
++curv::Slice_Expr::eval(Frame& f) const
++{
++#if 0
++    // TODO: should support negative step (reversing a list), empty range.
++    // TODO: should use a 'slice' data structure for efficiency.
++    Value vlist = list_->eval(f);
++    Value vfirst = first_ ? first_->eval(f) : missing;
++    Value vlast = last_ ? last_->eval(f) : missing;
++    Value vstep = step_ ? step_->eval(f) : missing;
++
++    auto& list {arg_to_list(vlist, At_Phrase(*list_->source_, &f))};
++    int first = vfirst == missing ? 0 :
++        arg_to_int(b, -1, (int)list.size(), At_Phrase(*first_->source_, &f));
++    int last = vlast == missing ? (int)(list.size() - 1) :
++        arg_to_int(b, -1, (int)list.size(), At_Phrase(*last_->source_, &f));
++    int step = vstep == missing ? 1 :
++        arg_to_int(b, 1, (int)list.size(), At_Phrase(*step_->source_, &f));
++
++    // number of elements in result
++    int n = (last - first + 1) / step;
++    if (n < 0) n = 0;
++
++    Shared<List> result = List::make(n);
++    for (i = first; i <= last; i += step)
++        (*result)[i] = list[i];
++    return result;
++#else
++    throw Exception(At_Phrase(*source_, &f), "not implemented yet");
++#endif
++}
++
+ Shared<List>
+ curv::List_Sequence_Expr_Base::eval_list(Frame& f) const
+ {
+diff --git a/curv/meaning.h b/curv/meaning.h
+index 1d4b11b..1434d1b 100644
+--- a/curv/meaning.h
++++ b/curv/meaning.h
+@@ -396,6 +396,30 @@ struct At_Expr : public Infix_Expr_Base
+     virtual GL_Value gl_eval(GL_Frame&) const override;
+ };
+ 
++struct Slice_Expr : public Just_Expression
++{
++    Shared<Operation> list_;
++    Shared<Operation> first_;   // optional
++    Shared<Operation> last_;    // optional
++    Shared<Operation> step_;    // optional
++
++    Slice_Expr(
++        Shared<const Phrase> source,
++        Shared<Operation> list,
++        Shared<Operation> first,
++        Shared<Operation> last,
++        Shared<Operation> step)
++    :
++        Just_Expression(source),
++        list_(std::move(list)),
++        first_(std::move(first)),
++        last_(std::move(last)),
++        step_(std::move(step))
++    {}
++
++    virtual Value eval(Frame&) const override;
++};
++
+ struct Range_Gen : public Operation
+ {
+     Shared<Operation> arg1_;
