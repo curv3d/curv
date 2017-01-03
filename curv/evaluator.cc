@@ -157,22 +157,26 @@ curv::Not_Expr::eval(Frame& f) const
 Value
 curv::Positive_Expr::eval(Frame& f) const
 {
-    Value a = arg_->eval(f);
-    Value r = Value(+a.get_num_or_nan());
-    if (!r.is_num())
-        throw Exception(At_Phrase(*source_, &f),
-            stringify("+",a,": domain error"));
-    return r;
+    struct Scalar_Op {
+        static double f(double x) { return +x; }
+        static Shared<const String> callstr(Value x) {
+            return stringify("+",x);
+        }
+    };
+    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
+    return array_op.op(arg_->eval(f), At_Phrase(*source_, &f));
 }
 Value
 curv::Negative_Expr::eval(Frame& f) const
 {
-    Value a = arg_->eval(f);
-    Value r = Value(-a.get_num_or_nan());
-    if (!r.is_num())
-        throw Exception(At_Phrase(*source_, &f),
-            stringify("+",a,": domain error"));
-    return r;
+    struct Scalar_Op {
+        static double f(double x) { return -x; }
+        static Shared<const String> callstr(Value x) {
+            return stringify("-",x);
+        }
+    };
+    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
+    return array_op.op(arg_->eval(f), At_Phrase(*source_, &f));
 }
 
 Value
@@ -416,13 +420,15 @@ curv::Greater_Or_Equal_Expr::eval(Frame& f) const
 Value
 curv::Power_Expr::eval(Frame& f) const
 {
-    Value a = arg1_->eval(f);
-    Value b = arg2_->eval(f);
-    Value r = Value(pow(a.get_num_or_nan(), b.get_num_or_nan()));
-    if (r.is_num())
-        return r;
-    throw Exception(At_Phrase(*source_, &f),
-        stringify(a,"^",b,": domain error"));
+    struct Scalar_Op {
+        static double f(double x, double y) { return pow(x,y); }
+        static const char* name() { return "^"; }
+        static Shared<const String> callstr(Value x, Value y) {
+            return stringify(x,"^",y);
+        }
+    };
+    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
+    return array_op.op(arg1_->eval(f), arg2_->eval(f), At_Phrase(*source_, &f));
 }
 Value
 curv::At_Expr::eval(Frame& f) const

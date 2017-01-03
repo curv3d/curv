@@ -103,5 +103,32 @@ struct Binary_Numeric_Array_Op
     }
 };
 
+template <class Scalar_Op>
+struct Unary_Numeric_Array_Op
+{
+    // TODO: optimize: move semantics. unique object reuse.
+
+    static Value
+    op(Value x, const Context& cx)
+    {
+        double r = Scalar_Op::f(x.get_num_or_nan());
+        if (r == r)
+            return {r};
+        if (auto xlist = x.dycast<List>())
+            return {element_wise_op(xlist, cx)};
+        throw Exception(cx,
+            stringify(Scalar_Op::callstr(x),": domain error"));
+    }
+
+    static Shared<List>
+    element_wise_op(Shared<List> xs, const Context& cx)
+    {
+        Shared<List> result = List::make(xs->size());
+        for (unsigned i = 0; i < xs->size(); ++i)
+            (*result)[i] = op((*xs)[i], cx);
+        return result;
+    }
+};
+
 } // namespace
 #endif // header guard
