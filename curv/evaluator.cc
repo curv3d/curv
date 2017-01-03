@@ -194,35 +194,47 @@ curv::Add_Expr::eval(Frame& f) const
 Value
 curv::Subtract_Expr::eval(Frame& f) const
 {
+    struct Scalar_Op {
+        static double f(double x, double y) { return x - y; }
+        static const char* name() { return "-"; }
+        static Shared<const String> callstr(Value x, Value y) {
+            return stringify(x,"-",y);
+        }
+    };
+    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    Value r = Value(a.get_num_or_nan() - b.get_num_or_nan());
-    if (!r.is_num())
-        throw Exception(At_Phrase(*source_, &f),
-            stringify(a,"-",b,": domain error"));
-    return r;
+    return array_op.op(a,b, At_Phrase(*source_, &f));
 }
 Value
 curv::Multiply_Expr::eval(Frame& f) const
 {
+    struct Scalar_Op {
+        static double f(double x, double y) { return x * y; }
+        static const char* name() { return "*"; }
+        static Shared<const String> callstr(Value x, Value y) {
+            return stringify(x,"*",y);
+        }
+    };
+    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    Value r = Value(a.get_num_or_nan() * b.get_num_or_nan());
-    if (!r.is_num())
-        throw Exception(At_Phrase(*source_, &f),
-            stringify(a,"*",b,": domain error"));
-    return r;
+    return array_op.op(a,b, At_Phrase(*source_, &f));
 }
 Value
 curv::Divide_Expr::eval(Frame& f) const
 {
+    struct Scalar_Op {
+        static double f(double x, double y) { return x / y; }
+        static const char* name() { return "/"; }
+        static Shared<const String> callstr(Value x, Value y) {
+            return stringify(x,"/",y);
+        }
+    };
+    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    Value r = Value(a.get_num_or_nan() / b.get_num_or_nan());
-    if (!r.is_num())
-        throw Exception(At_Phrase(*source_, &f),
-            stringify(a,"/",b,": domain error"));
-    return r;
+    return array_op.op(a,b, At_Phrase(*source_, &f));
 }
 
 Value

@@ -202,6 +202,11 @@ TEST(curv, eval)
     SUCCESS("-0", "-0");
     SUCCESS("-inf", "-inf");
     FAILMSG("1+null", "1+null: domain error");
+    SUCCESS("[10,20]-3", "[7,17]");
+    SUCCESS("5-[1,2]", "[4,3]");
+    SUCCESS("[1,2]-[10,20]", "[-9,-18]");
+    FAILMSG("inf-inf","inf-inf: domain error");
+    FAILMSG("[]-[1]","-: mismatched list sizes (0,1) in array operation");
     FAILMSG("0/0", "0/0: domain error");
     SUCCESS("1/0", "inf");
     SUCCESS("sqrt(2)", "1.4142135623730951");
