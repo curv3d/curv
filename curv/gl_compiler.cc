@@ -11,10 +11,10 @@
 #include <curv/meaning.h>
 #include <curv/function.h>
 
-using namespace curv;
 using aux::dfmt;
+namespace curv {
 
-void curv::gl_compile(const Shape2D& shape, std::ostream& out)
+void gl_compile(const Shape2D& shape, std::ostream& out)
 {
     GL_Compiler gl(out);
     GL_Value dist_param = gl.newvalue(GL_Type::vec2);
@@ -46,7 +46,7 @@ void curv::gl_compile(const Shape2D& shape, std::ostream& out)
         ;
 }
 
-std::ostream& curv::operator<<(std::ostream& out, GL_Type type)
+std::ostream& operator<<(std::ostream& out, GL_Type type)
 {
     switch (type) {
     case GL_Type::num:
@@ -59,7 +59,7 @@ std::ostream& curv::operator<<(std::ostream& out, GL_Type type)
     return out;
 }
 
-GL_Value curv::gl_eval_expr(GL_Frame& f, const Operation& op, GL_Type type)
+GL_Value gl_eval_expr(GL_Frame& f, const Operation& op, GL_Type type)
 {
     GL_Value arg = op.gl_eval(f);
     if (arg.type != type)
@@ -68,7 +68,7 @@ GL_Value curv::gl_eval_expr(GL_Frame& f, const Operation& op, GL_Type type)
     return arg;
 }
 
-GL_Value curv::gl_eval_const(GL_Frame& f, Value val, const Phrase& source)
+GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& source)
 {
     if (val.is_num()) {
         GL_Value result = f.gl.newvalue(GL_Type::num);
@@ -114,45 +114,77 @@ GL_Value Negative_Expr::gl_eval(GL_Frame& f) const
     return result;
 }
 
+void gl_put_as(GL_Frame& f, GL_Value val, GL_Type type)
+{
+    if (val.type == type) {
+        f.gl.out << val;
+        return;
+    }
+    if (val.type == GL_Type::num) {
+        if (type == GL_Type::vec2) {
+            f.gl.out << "vec2(" << val << "," << val << ")";
+            return;
+        }
+    }
+    assert(0);
+}
+
+GL_Value
+gl_arith_expr(GL_Frame& f, const Phrase& source,
+    const Operation& xexpr, const char* op, const Operation& yexpr)
+{
+    auto x = xexpr.gl_eval(f);
+    auto y = yexpr.gl_eval(f);
+
+    GL_Type rtype;
+    if (x.type == y.type)
+        rtype = x.type;
+    else if (x.type == GL_Type::num)
+        rtype = y.type;
+    else if (y.type == GL_Type::num)
+        rtype = x.type;
+    else
+        throw Exception(At_GL_Phrase(source, &f), "GL domain error");
+
+    const char* rtypestr;
+    if (rtype == GL_Type::num)
+        rtypestr = "float";
+    else if (rtype == GL_Type::vec2)
+        rtypestr = "vec2";
+    else
+        assert(0);
+
+    GL_Value result = f.gl.newvalue(rtype);
+    f.gl.out <<"  "<<rtypestr<<" "<<result<<" = ";
+    gl_put_as(f, x, rtype);
+    f.gl.out << op;
+    gl_put_as(f, y, rtype);
+    f.gl.out << ";\n";
+    return result;
+}
+
 GL_Value Add_Expr::gl_eval(GL_Frame& f) const
 {
-    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::num);
-    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::num);
-    GL_Value result = f.gl.newvalue(GL_Type::num);
-    f.gl.out << "  float " << result << " = " << arg1 << " + " << arg2 << ";\n";
-    return result;
+    return gl_arith_expr(f, *source_, *arg1_, "+", *arg2_);
 }
 
 GL_Value Subtract_Expr::gl_eval(GL_Frame& f) const
 {
-    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::num);
-    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::num);
-    GL_Value result = f.gl.newvalue(GL_Type::num);
-    f.gl.out << "  float " << result << " = " << arg1 << " - " << arg2 << ";\n";
-    return result;
+    return gl_arith_expr(f, *source_, *arg1_, "-", *arg2_);
 }
 
 GL_Value Multiply_Expr::gl_eval(GL_Frame& f) const
 {
-    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::num);
-    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::num);
-    GL_Value result = f.gl.newvalue(GL_Type::num);
-    f.gl.out << "  float " << result << " = " << arg1 << " * " << arg2 << ";\n";
-    return result;
+    return gl_arith_expr(f, *source_, *arg1_, "*", *arg2_);
 }
 
 GL_Value Divide_Expr::gl_eval(GL_Frame& f) const
 {
-    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::num);
-    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::num);
-    GL_Value result = f.gl.newvalue(GL_Type::num);
-    f.gl.out << "  float " << result << " = " << arg1 << " / " << arg2 << ";\n";
-    return result;
+    return gl_arith_expr(f, *source_, *arg1_, "/", *arg2_);
 }
 
 // Evaluate an expression to a constant at GL compile time,
 // or return missing if it isn't a constant.
-namespace curv {
 Value gl_eval_const(Operation& op, GL_Frame& f)
 {
     if (auto c = dynamic_cast<Constant*>(&op))
@@ -167,7 +199,6 @@ Value gl_eval_const(Operation& op, GL_Frame& f)
     else if (auto ref = dynamic_cast<Nonlocal_Ref*>(&op))
         return (*f.nonlocal)[ref->slot_];
     return missing;
-}
 }
 
 GL_Value Call_Expr::gl_eval(GL_Frame& f) const
@@ -230,3 +261,5 @@ GL_Value List_Expr::gl_eval(GL_Frame& f) const
     throw Exception(At_GL_Phrase(*source_, &f),
         "this list constructor does not support the Geometry Compiler");
 }
+
+} // namespace curv
