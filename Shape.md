@@ -9,36 +9,64 @@ polymorphic as well.
 
 Shapes have boolean attributes `is_2d` and `is_3d`
 which mark if they are 2d, 3d or both.
+* Or use an attribute `dim` which is a boolean vector [Bool,Bool].
+  `dim'0` means `is_2d`, `dim'1` means `is_3d`.
+  Compute intersection and union using and/every/all, or/some/any
+  vectorized monoid functions.
+  * intersection: all[dim1,dim2]   every[dim1,dim2]   and[dim1,dim2]
+  * union:        any[dim1,dim2]   some[dim1,dim2]    or[dim1,dim2]
 
 The dist function takes [x,y,z,t] as an argument. For 2d shapes, z is ignored.
 For non-animated shapes, t is ignored.
 
 The bbox has x,y,z,t components. For 2d shapes, the z components are ignored.
-For eternal shapes (the default), tmin is -infinity and tmax is +infinity.
+For eternal shapes (the common case), tmin is -infinity and tmax is +infinity.
 
 Coloured shapes have a `color` function that maps [x,y,z,t] to [r,g,b].
-This attribute is optional. Union will combine two coloured shapes,
-or two colourless shapes, but reports an error when combining coloured with
-colourless
-(because: what does the color function return in the colourless case?).
-* There has to be a default colour when previewing shapes.
-  And this ought to be user-controllable, using a `background_color`
-  binding (which you can set to either [r,g,b] or [x,y,z,t]->[r,g,b]).
-  There is `std.default_color`, which you can override at the top level
-  of the main module.
-* Note that the main module is only known at geometry compilation time.
-  It is not known to union.
-* If union could access the default_color, it could substitute this
-  for a missing color attribute when needed. Maybe using dynamic binding,
-  a `$default_color` variable.
-  * I will later introduce an environment record, tentatively called `req`,
-    which is passed as an argument to geometry operators. The default colour
-    could go in there.
-* Or maybe there is a magic colour value which is mapped onto the default
-  colour. But what happens when you apply colour transformations to this
-  value? The colour won't be transformed, unlike with `$default_color`.
-* The default colour mechanism may be too fancy for the first cut.
-  Wait until `req` is implemented, then see.
+This attribute is optional. Union will combine two colourless shapes to
+produce a colourless shape. Or combine two coloured shapes.
+But when combining coloured with colourless, the colourless shape is
+converted to coloured by substituting the default colour.
+* `std.default_color` is the default `default_color`.
+  This can be overridden by defining `default_color` in the top-level module.
+* I guess we can also honour module bindings of `default_color` in any module
+  that is converted to a shape, overriding the value passed in from the parent.
+* I will later introduce an environment record, tentatively called `req`,
+  which is passed as an argument to `dist` functions during geometry
+  compilation. The `default_color` will be a field of `req`.
+* This looks a lot like dynamic binding in OpenSCAD. But without implementing
+  that mechanism pervasively in all function calls. The environment is passed
+  explicitly. I'll stick with that for now.
+* Until the `default_color` mechanism is implemented, union can report an
+  error when combining coloured and colourless shapes. Or we hard code a
+  default color of black [0,0,0].
+
+A simpler design is that all shapes have a geom function: [x,y,z,t]->[d,r,g,b].
+Use the simplest design that works: try this, then optimize later.
+* A colour field is virtually the same as an infinite shape, except that it
+  maps [x,y,z,t]->[r,g,b]. Just use infinite shapes instead.
+  Now intersect[colorfield,shape] applies a colourfield to a shape.
+* color(c)shape = make_shape {
+    geom p = [shape.geom(p)'0, c'0, c'1, c'2],
+    bbox = shape.bbox
+  };
+
+I'm worried that this is less efficient, particular for union and intersection.
+How does union2(s1,s2) work?
+    union2(s1,s2) = shape {
+        geom p =
+            let (g1 = s1.geom p, g2 = s2.geom p)
+            ...
+    };
+If we can prove that s1 and s2 have the same colour field, then ... is:
+    if (g1.d < g2.d) g1 else g2
+Otherwise, if we want s1 to dominate s2 where the shapes overlap, then:
+    if (g1.d <= 0 || g1.d <= g2.d) g1 else g2
+A possible optimization: a shape has an optional "colour cookie" which is
+a surrogate for its colour field, and can be compared for equality with other
+colour cookies during evaluation, when geom functions are being chosen.
+A colour cookie is an [r,g,b] triple, for solid coloured objects. I'm not
+sure anything more sophisticated is worthwhile.
 
 # The Geometry Compiler
 
@@ -53,7 +81,22 @@ The Geometry Compiler is currently invoked after evaluation.
   * Type errors are reported *after* evaluation, meaning no stack trace,
     and therefore can't enter debugger to examine stack. But, maybe we can
     use the CSG tree to provide a different kind of stack trace.
+    * There is a stack trace now, and it's fine. It's not an *evaluation* trace,
+      but you do see the current CSG stack, so it has similar utility.
   * Better if type errors reported by shape2d constructor.
+    * But it's not that bad.
+
+The code bloat is significant. The "assembler" style output has a lot to do with
+this. The output is also incomprehensible, which is a barrier to improving
+performance. What I would eventually like:
+* A SSA style optimizer in Curv. Constant folding and high level optimizations,
+  some of which are important for Curv but might not be in your GPU driver,
+  like: max[inf,...] -> inf, max[-inf,...] -> max[...].
+  * May improve performance due to extra optimizations.
+  * Shortens the code and gives you a better mental model for what the cost
+    of the code is, for performance tuning.
+* Output complex expressions, only use SSA variables when they are multiply
+  referenced. Shorter code that is easier to understand and tune.
 
 No constant folding, so -1 becomes
   float r3 = 1;

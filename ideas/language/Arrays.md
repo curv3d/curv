@@ -18,7 +18,7 @@ Here are the advantages of overloading:
 ## Array Indexing Syntax
 I've been unsure about the best syntax for indexing an array.
 
-Currently I favour `a'i`.
+Currently I favour `a'i` (design #2).
 The others are more worm-can-openey/yak-shavey.
 I can always change this later.
 
@@ -26,13 +26,22 @@ In Curv, instead of writing `max([a,b])` and `matrix[i][j]`,
 you instead write `max[a,b]` and `matrix'i'j`.
 The chosen syntax is shorter, easier to read, easier to type.
 
+The array index operator is vectorized, so list'[len(list)-1..0 step -1]
+reverses a list. By contrast,
+* With design #0, `list[[...]]` looks weird because the outer brackets have a
+  different meaning from the inner brackets.
+* With design #1, `list[i]` has a different meaning than you'd expect based
+  on the popular syntax #0. This is a cause of confusion.
+
 0. Popular syntax `a[i]` conflicts with functional-style function call,
    and I've decided to prioritize the latter.
    * Maybe use `a[i]` and choose a different syntax for array literals,
      eg `{...}`.
 
 1. `a(i)` is kind of cool, and second most popular syntax. `matrix(i)(j)`
-   or `matrix(i,j)`, `bbox 0 0`. Used by Fortran, Ada, Matlab, Scala.
+   or `matrix(i,j)`, `bbox 0 0`. Used by Fortran, Basic, Ada, Matlab, Scala.
+   * Vectorization potentially means that `matrix[i,j]` has a different
+     meaning from the popular syntax, a point of confusion.
    It conflicts with module customization, which must use funcall notation.
    * Maybe a different syntax for accessing module elements.
      We don't need Module to be a subtype of List in Curv.

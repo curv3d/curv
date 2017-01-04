@@ -1,13 +1,23 @@
+refactor/extend:
+* get rid of a.[i] syntax.
+* vectorize sqrt, abs
+* vectorize GL unary arith ops
+* vectorize GL arith builtins
+* add GL vec3, vec4
+* `all` and `some` are vectorized boolean monoids
+* `not` is a vectorized function replacing `!`. Maybe `!=` -> `/=`.
+* add sin, tan, rotate
+* generalized shapes: geom:[x,y,z,t]->[d,r,g,b]
+* add GL ?: operator
+
 # 0.2: geometry
 Extend language to condense/speed up existing geometric operators.
-* curried function definition
 * vectorized numeric operations (array language)
   * builtin: sqrt,abs
   * and/or/not? if?
     * the control structures &&, || and if are not vectorized
     * `all` and `any` are monoid functions, and are vectorized
     * `not` is a vectorized function replacing `!`?
-  * structure'[i,j,k] means: [structure'i,structure'j,structure'k]
   * relations? < <= > >= (but not == !=).
     * What is vectorized ==?
       * could be: map(_==_), goes to one level, returns list of bool
@@ -102,7 +112,9 @@ nary union:
 * GL: since shapes is a constant during inline expansion, we can expand the
   for loop into a list of expressions.
 * Or implement nary union on top of binary union.
-* union shapes = reduce(nothing, union2);
+* union = reduce(nothing, union2);
+  reduce(id,f) list = iter(id,list) where iter(first,rest) =
+    if (rest==[]) first else iter(f(first,rest'0),rest'(1..));
 
 * curv::Shape2D is abstract, with builtin and user subclasses
   * subclass User_Defined_Shape2D, UD_Shape2D, User_Shape2D (better name?)
@@ -143,12 +155,15 @@ nary union:
 * len(module), module.[i]
 * floor, ceil
 * Introduce submodules (with recursive functions)
-* recursive let
+* recursive let. Or non-recursive let and recursive where.
 * records: defined r.id, merge[r1,r2]
   I don't want `merge` to accept modules as arguments: overriding an existing
   module field doesn't work if the module also contains functions closed over
   those fields.
-* num: min[x,y], max[x,y], abs(x), sin(x), cos(x)
+* num: sin(x), cos(x)
+* modules: _foo is not exported, is omitted from the public dictionary.
+  curv::Module has a public dictionary and a debug dictionary.
+  _foo is private in std.curv, and in all other *.curv files.
 
 # refactoring
 * value1==value2 performs a bitwise comparison (for performance),
