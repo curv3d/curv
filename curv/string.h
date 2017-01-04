@@ -41,6 +41,7 @@ public:
     // interface is based on std::string and the STL container concept
     size_t size() const { return size_; }
     bool empty() const { return size_ == 0; }
+    char operator[](size_t i) const { return data_[i]; }
     const char* data() const { return data_; }
     const char* c_str() const { return data_; }
     const char* begin() const { return data_; }

@@ -59,6 +59,9 @@ public:
         return *a1 < *a2;
     }
 
+    inline size_t size() const { return (*this)->size(); }
+    inline char operator[](size_t i) const { return (**this)[i]; }
+
     friend void swap(Atom& a1, Atom& a2) noexcept
     {
         a1.swap(a2);
