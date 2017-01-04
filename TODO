@@ -1,5 +1,4 @@
 refactor/extend:
-* get rid of a.[i] syntax.
 * vectorize sqrt, abs
 * vectorize GL unary arith ops
 * vectorize GL arith builtins

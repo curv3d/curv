@@ -306,11 +306,6 @@ Binary_Phrase::analyze(Environ& env) const
                 share(*this),
                 analyze_op(*left_, env),
                 id->atom_);
-        if (auto list = dynamic_shared_cast<List_Phrase>(right_))
-            return make<At_Expr>(
-                share(*this),
-                analyze_op(*left_, env),
-                analyze_op(*list->body_, env));
         throw Exception(At_Phrase(*right_, env),
             "invalid expression after '.'");
     case Token::k_apostrophe:
