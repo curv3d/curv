@@ -1,10 +1,13 @@
 /* Curv standard library, automatically loaded at startup. */
 
 // lists
-concat(vv) = [for(v=vv) for(i=v) i];
-map(f) = list -> [for (x=list) f x];
-filter(p) = list -> [for (x=list) if (p x) x];
+concat(vv) = [for (v=vv) for (i=v) i];
+map(f) list = [for (x=list) f x];
+filter(p) list = [for (x=list) if (p x) x];
+reduce(first,f) rest =
+    if (rest==[]) first else reduce(f(first,rest'0), f) rest'[1..len(rest)-1];
 
+// primitive shapes
 circle(r) = shape2d {
     dist p = norm p - r,
     bbox = [[-r,-r],[r,r]]
@@ -14,6 +17,7 @@ square(sz) = shape2d {
     bbox = [[-sz/2,-sz/2], [sz/2,sz/2]],
 };
 
+// boolean operations
 nothing = shape2d {
     dist p = inf,
     bbox = [[inf,inf],[-inf,-inf]]
@@ -26,19 +30,23 @@ complement(s) = shape2d {
     dist p = -s.dist p,
     bbox = [[-inf,-inf],[inf,inf]]
 };
-union2(s1,s2) = shape2d {
+_union2(s1,s2) = shape2d {
     dist p = min[s1.dist p, s2.dist p],
     bbox = [min[s1.bbox'0, s2.bbox'0], max[s1.bbox'1, s2.bbox'1]]
 };
+union = reduce(nothing, _union2);
 intersection2(s1,s2) = shape2d {
     dist p = max[s1.dist p, s2.dist p],
     bbox = [max[s1.bbox'0, s2.bbox'0], min[s1.bbox'1, s2.bbox'1]]
 };
 difference(s1,s2) = intersection2(s1, complement s2);
 
-translate(delta) = shape -> shape2d {
-    dist p = shape.dist[p'0 - delta'0, p'1 - delta'1],
-    //bbox = shape.bbox + delta
-    bbox = [[shape.bbox'0'0 + delta'0, shape.bbox'0'1 + delta'1],
-            [shape.bbox'1'0 + delta'0, shape.bbox'1'1 + delta'1]]
+// affine transformations
+translate(delta) shape = shape2d {
+    dist p = shape.dist(p - delta),
+    bbox = [shape.bbox'0+delta, shape.bbox'1+delta]
+};
+scale(s) shape = shape2d {
+    dist p = s * shape.dist(p / s),
+    bbox = s * shape.bbox
 };
