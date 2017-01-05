@@ -16,39 +16,39 @@
 #include <curv/array_op.h>
 #include <cmath>
 
-using namespace curv;
+namespace curv {
 
 Value
-curv::Operation::eval(Frame& f) const
+Operation::eval(Frame& f) const
 {
     throw Exception(At_Phrase(*source_, &f), "not an expression");
 }
 void
-curv::Operation::exec(Frame& f) const
+Operation::exec(Frame& f) const
 {
     throw Exception(At_Phrase(*source_, &f), "not an action");
 }
 
 void
-curv::Just_Expression::generate(Frame& f, List_Builder& lb) const
+Just_Expression::generate(Frame& f, List_Builder& lb) const
 {
     lb.push_back(eval(f));
 }
 
 void
-curv::Just_Action::generate(Frame& f, List_Builder&) const
+Just_Action::generate(Frame& f, List_Builder&) const
 {
     exec(f);
 }
 
 Value
-curv::Constant::eval(Frame&) const
+Constant::eval(Frame&) const
 {
     return value_;
 }
 
 Value
-curv::Module_Ref::eval(Frame& f) const
+Module_Ref::eval(Frame& f) const
 {
     // Modules are lazily evaluated. From here, I need access to both the module
     // field Value (if computed), and the original field expression (otherwise).
@@ -67,13 +67,13 @@ curv::Module_Ref::eval(Frame& f) const
 }
 
 Value
-curv::Nonlocal_Ref::eval(Frame& f) const
+Nonlocal_Ref::eval(Frame& f) const
 {
     return (*f.nonlocal)[slot_];
 }
 
 Value
-curv::Let_Ref::eval(Frame& f) const
+Let_Ref::eval(Frame& f) const
 {
     // Let bindings are represented as slots in the frame, and are lazily
     // evaluated. The slots are initialized with thunks. On first reference,
@@ -84,13 +84,13 @@ curv::Let_Ref::eval(Frame& f) const
 }
 
 Value
-curv::Arg_Ref::eval(Frame& f) const
+Arg_Ref::eval(Frame& f) const
 {
     return f[slot_];
 }
 
 Value
-curv::Local_Function_Ref::eval(Frame& f) const
+Local_Function_Ref::eval(Frame& f) const
 {
     return {make<Closure>(
         (Lambda&) f[lambda_slot_].get_ref_unsafe(),
@@ -98,7 +98,7 @@ curv::Local_Function_Ref::eval(Frame& f) const
 }
 
 Value
-curv::Nonlocal_Function_Ref::eval(Frame& f) const
+Nonlocal_Function_Ref::eval(Frame& f) const
 {
     return {make<Closure>(
         (Lambda&) (*f.nonlocal)[lambda_slot_].get_ref_unsafe(),
@@ -106,7 +106,7 @@ curv::Nonlocal_Function_Ref::eval(Frame& f) const
 }
 
 Value
-curv::Call_Expr::eval(Frame& f) const
+Call_Expr::eval(Frame& f) const
 {
     Value funv = fun_->eval(f);
     if (!funv.is_ref())
@@ -132,7 +132,7 @@ curv::Call_Expr::eval(Frame& f) const
 }
 
 Value
-curv::Dot_Expr::eval(Frame& f) const
+Dot_Expr::eval(Frame& f) const
 {
     Value basev = base_->eval(f);
     if (basev.is_ref()) {
@@ -146,7 +146,7 @@ curv::Dot_Expr::eval(Frame& f) const
 }
 
 Value
-curv::Not_Expr::eval(Frame& f) const
+Not_Expr::eval(Frame& f) const
 {
     Value a = arg_->eval(f);
     if (!a.is_bool())
@@ -155,7 +155,7 @@ curv::Not_Expr::eval(Frame& f) const
     return {!a.get_bool_unsafe()};
 }
 Value
-curv::Positive_Expr::eval(Frame& f) const
+Positive_Expr::eval(Frame& f) const
 {
     struct Scalar_Op {
         static double f(double x) { return +x; }
@@ -167,7 +167,7 @@ curv::Positive_Expr::eval(Frame& f) const
     return array_op.op(arg_->eval(f), At_Phrase(*source_, &f));
 }
 Value
-curv::Negative_Expr::eval(Frame& f) const
+Negative_Expr::eval(Frame& f) const
 {
     struct Scalar_Op {
         static double f(double x) { return -x; }
@@ -180,7 +180,7 @@ curv::Negative_Expr::eval(Frame& f) const
 }
 
 Value
-curv::Add_Expr::eval(Frame& f) const
+Add_Expr::eval(Frame& f) const
 {
     struct Scalar_Op {
         static double f(double x, double y) { return x + y; }
@@ -196,7 +196,7 @@ curv::Add_Expr::eval(Frame& f) const
     return array_op.op(a,b, At_Phrase(*source_, &f));
 }
 Value
-curv::Subtract_Expr::eval(Frame& f) const
+Subtract_Expr::eval(Frame& f) const
 {
     struct Scalar_Op {
         static double f(double x, double y) { return x - y; }
@@ -211,7 +211,7 @@ curv::Subtract_Expr::eval(Frame& f) const
     return array_op.op(a,b, At_Phrase(*source_, &f));
 }
 Value
-curv::Multiply_Expr::eval(Frame& f) const
+Multiply_Expr::eval(Frame& f) const
 {
     struct Scalar_Op {
         static double f(double x, double y) { return x * y; }
@@ -226,7 +226,7 @@ curv::Multiply_Expr::eval(Frame& f) const
     return array_op.op(a,b, At_Phrase(*source_, &f));
 }
 Value
-curv::Divide_Expr::eval(Frame& f) const
+Divide_Expr::eval(Frame& f) const
 {
     struct Scalar_Op {
         static double f(double x, double y) { return x / y; }
@@ -261,7 +261,7 @@ Semicolon_Op::exec(Frame& f) const
 }
 
 Value
-curv::Or_Expr::eval(Frame& f) const
+Or_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     if (a == Value{true})
@@ -275,7 +275,7 @@ curv::Or_Expr::eval(Frame& f) const
     throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
 }
 Value
-curv::And_Expr::eval(Frame& f) const
+And_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     if (a == Value{false})
@@ -290,13 +290,13 @@ curv::And_Expr::eval(Frame& f) const
 }
 
 Value
-curv::If_Op::eval(Frame& f) const
+If_Op::eval(Frame& f) const
 {
     throw Exception{At_Phrase{*source_, &f},
         "if: not an expression (missing else clause)"};
 }
 void
-curv::If_Op::generate(Frame& f, List_Builder& lb) const
+If_Op::generate(Frame& f, List_Builder& lb) const
 {
     Value a = arg1_->eval(f);
     if (a == Value{true})
@@ -307,7 +307,7 @@ curv::If_Op::generate(Frame& f, List_Builder& lb) const
         throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
 }
 void
-curv::If_Op::exec(Frame& f) const
+If_Op::exec(Frame& f) const
 {
     Value a = arg1_->eval(f);
     if (a == Value{true})
@@ -319,7 +319,7 @@ curv::If_Op::exec(Frame& f) const
 }
 
 Value
-curv::If_Else_Op::eval(Frame& f) const
+If_Else_Op::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     if (a == Value{true})
@@ -329,7 +329,7 @@ curv::If_Else_Op::eval(Frame& f) const
     throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
 }
 void
-curv::If_Else_Op::generate(Frame& f, List_Builder& lb) const
+If_Else_Op::generate(Frame& f, List_Builder& lb) const
 {
     Value a = arg1_->eval(f);
     if (a == Value{true})
@@ -340,7 +340,7 @@ curv::If_Else_Op::generate(Frame& f, List_Builder& lb) const
         throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
 }
 void
-curv::If_Else_Op::exec(Frame& f) const
+If_Else_Op::exec(Frame& f) const
 {
     Value a = arg1_->eval(f);
     if (a == Value{true})
@@ -352,21 +352,21 @@ curv::If_Else_Op::exec(Frame& f) const
 }
 
 Value
-curv::Equal_Expr::eval(Frame& f) const
+Equal_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
     return {a == b};
 }
 Value
-curv::Not_Equal_Expr::eval(Frame& f) const
+Not_Equal_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
     return {a != b};
 }
 Value
-curv::Less_Expr::eval(Frame& f) const
+Less_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
@@ -379,7 +379,7 @@ curv::Less_Expr::eval(Frame& f) const
         stringify(a,"<",b,": domain error"));
 }
 Value
-curv::Greater_Expr::eval(Frame& f) const
+Greater_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
@@ -392,7 +392,7 @@ curv::Greater_Expr::eval(Frame& f) const
         stringify(a,">",b,": domain error"));
 }
 Value
-curv::Less_Or_Equal_Expr::eval(Frame& f) const
+Less_Or_Equal_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
@@ -405,7 +405,7 @@ curv::Less_Or_Equal_Expr::eval(Frame& f) const
         stringify(a,"<=",b,": domain error"));
 }
 Value
-curv::Greater_Or_Equal_Expr::eval(Frame& f) const
+Greater_Or_Equal_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
@@ -418,7 +418,7 @@ curv::Greater_Or_Equal_Expr::eval(Frame& f) const
         stringify(a,">=",b,": domain error"));
 }
 Value
-curv::Power_Expr::eval(Frame& f) const
+Power_Expr::eval(Frame& f) const
 {
     struct Scalar_Op {
         static double f(double x, double y) { return pow(x,y); }
@@ -431,7 +431,7 @@ curv::Power_Expr::eval(Frame& f) const
     return array_op.op(arg1_->eval(f), arg2_->eval(f), At_Phrase(*source_, &f));
 }
 Value
-curv::At_Expr::eval(Frame& f) const
+At_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
@@ -452,7 +452,7 @@ curv::At_Expr::eval(Frame& f) const
 }
 
 Shared<List>
-curv::List_Sequence_Expr_Base::eval_list(Frame& f) const
+List_Sequence_Expr_Base::eval_list(Frame& f) const
 {
     // TODO: This used to have a more efficient implementation, assuming that
     // all elements of the list constructor are pure expressions. An optimizing
@@ -464,13 +464,13 @@ curv::List_Sequence_Expr_Base::eval_list(Frame& f) const
 }
 
 Value
-curv::List_Sequence_Expr_Base::eval(Frame& f) const
+List_Sequence_Expr_Base::eval(Frame& f) const
 {
     return {eval_list(f)};
 }
 
 Value
-curv::List_Expr::eval(Frame& f) const
+List_Expr::eval(Frame& f) const
 {
     // TODO: if the # of elements produced by the generator is known at compile
     // time, then the List object could be allocated directly and filled in,
@@ -481,14 +481,14 @@ curv::List_Expr::eval(Frame& f) const
 }
 
 void
-curv::Sequence_Gen_Base::generate(Frame& f, List_Builder& lb) const
+Sequence_Gen_Base::generate(Frame& f, List_Builder& lb) const
 {
     for (size_t i = 0; i < this->size(); ++i)
         (*this)[i]->generate(f, lb);
 }
 
 Value
-curv::Record_Expr::eval(Frame& f) const
+Record_Expr::eval(Frame& f) const
 {
     auto record = make<Record>();
     for (auto i : fields_)
@@ -497,14 +497,14 @@ curv::Record_Expr::eval(Frame& f) const
 }
 
 Value
-curv::Module_Expr::eval(Frame& f) const
+Module_Expr::eval(Frame& f) const
 {
     auto module = eval_module(f.system, &f);
     return {module};
 }
 
 Shared<Module>
-curv::Module_Expr::eval_module(System& sys, Frame* f) const
+Module_Expr::eval_module(System& sys, Frame* f) const
 {
     auto module = make<Module>();
     module->dictionary_ = dictionary_;
@@ -518,7 +518,7 @@ curv::Module_Expr::eval_module(System& sys, Frame* f) const
 }
 
 Value
-curv::Let_Op::eval(Frame& f) const
+Let_Op::eval(Frame& f) const
 {
     Value* slots = &f[first_slot_];
     for (size_t i = 0; i < values_.size(); ++i)
@@ -526,7 +526,7 @@ curv::Let_Op::eval(Frame& f) const
     return body_->eval(f);
 }
 void
-curv::Let_Op::generate(Frame& f, List_Builder& lb) const
+Let_Op::generate(Frame& f, List_Builder& lb) const
 {
     Value* slots = &f[first_slot_];
     for (size_t i = 0; i < values_.size(); ++i)
@@ -534,7 +534,7 @@ curv::Let_Op::generate(Frame& f, List_Builder& lb) const
     body_->generate(f, lb);
 }
 void
-curv::Let_Op::exec(Frame& f) const
+Let_Op::exec(Frame& f) const
 {
     Value* slots = &f[first_slot_];
     for (size_t i = 0; i < values_.size(); ++i)
@@ -543,7 +543,7 @@ curv::Let_Op::exec(Frame& f) const
 }
 
 void
-curv::For_Op::generate(Frame& f, List_Builder& lb) const
+For_Op::generate(Frame& f, List_Builder& lb) const
 {
     Value listval = list_->eval(f);
     List& list = arg_to_list(listval, At_Phrase{*list_->source_, &f});
@@ -553,7 +553,7 @@ curv::For_Op::generate(Frame& f, List_Builder& lb) const
     }
 }
 void
-curv::For_Op::exec(Frame& f) const
+For_Op::exec(Frame& f) const
 {
     Value listval = list_->eval(f);
     List& list = arg_to_list(listval, At_Phrase{*list_->source_, &f});
@@ -564,7 +564,7 @@ curv::For_Op::exec(Frame& f) const
 }
 
 void
-curv::Range_Gen::generate(Frame& f, List_Builder& lb) const
+Range_Gen::generate(Frame& f, List_Builder& lb) const
 {
     Value firstv = arg1_->eval(f);
     double first = firstv.get_num_or_nan();
@@ -599,7 +599,7 @@ curv::Range_Gen::generate(Frame& f, List_Builder& lb) const
 }
 
 Value
-curv::Lambda_Expr::eval(Frame& f) const
+Lambda_Expr::eval(Frame& f) const
 {
     return Value{make<Closure>(
         body_,
@@ -607,3 +607,5 @@ curv::Lambda_Expr::eval(Frame& f) const
         nargs_,
         nslots_)};
 }
+
+} // namespace curv
