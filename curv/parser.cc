@@ -426,4 +426,4 @@ parse_primary(Scanner& scanner, const char* what)
     }
 }
 
-}
+} // namespace curv

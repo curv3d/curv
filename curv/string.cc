@@ -3,11 +3,12 @@
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
 #include <curv/string.h>
-using namespace curv;
+
 using namespace aux;
+namespace curv {
 
 Shared<String>
-curv::String::make(const char* str, size_t len)
+String::make(const char* str, size_t len)
 {
     void* raw = malloc(sizeof(String) + len);
     if (raw == nullptr)
@@ -26,7 +27,7 @@ String_Builder::get_string()
 }
 
 void
-curv::String::print(std::ostream& out) const
+String::print(std::ostream& out) const
 {
     out << '"';
     for (size_t i = 0; i < size_; ++i) {
@@ -37,3 +38,5 @@ curv::String::print(std::ostream& out) const
     }
     out << '"';
 }
+
+} // namespace curv

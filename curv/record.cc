@@ -4,8 +4,10 @@
 
 #include <curv/record.h>
 
+namespace curv {
+
 void
-curv::Record::print(std::ostream& out) const
+Record::print(std::ostream& out) const
 {
     out << "{";
     bool first = true;
@@ -18,7 +20,7 @@ curv::Record::print(std::ostream& out) const
     out << "}";
 }
 
-auto curv::Record::operator==(const Record& rec) const
+auto Record::operator==(const Record& rec) const
 -> bool
 {
     auto i1{fields_.begin()};
@@ -36,7 +38,7 @@ auto curv::Record::operator==(const Record& rec) const
     return true;
 }
 
-auto curv::Record::getfield(Atom name) const
+auto Record::getfield(Atom name) const
 -> Value
 {
     auto fp = fields_.find(name);
@@ -44,3 +46,5 @@ auto curv::Record::getfield(Atom name) const
         return fp->second;
     return missing;
 }
+
+} // namespace curv

@@ -7,7 +7,7 @@
 #include <curv/context.h>
 #include <curv/function.h>
 
-using namespace curv;
+namespace curv {
 
 void
 Shape2D::print(std::ostream& out) const
@@ -45,3 +45,5 @@ Shape2D::gl_dist(GL_Value arg, GL_Frame& f) const
     (*f2)[0] = arg;
     return fun.gl_call(*f2);
 }
+
+} // namespace curv

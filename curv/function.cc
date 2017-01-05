@@ -7,7 +7,7 @@
 #include <curv/context.h>
 #include <curv/gl_context.h>
 
-using namespace curv;
+namespace curv {
 
 void
 Function::print(std::ostream& out) const
@@ -41,3 +41,5 @@ Lambda::print(std::ostream& out) const
 {
     out << "<lambda>";
 }
+
+} // namespace curv

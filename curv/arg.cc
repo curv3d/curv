@@ -7,7 +7,9 @@
 #include <curv/exception.h>
 #include <curv/phrase.h>
 
-void curv::At_Arg::get_locations(std::list<Location>& locs) const
+namespace curv {
+
+void At_Arg::get_locations(std::list<Location>& locs) const
 {
     assert(eval_frame_.call_phrase != nullptr);
 
@@ -22,7 +24,7 @@ void curv::At_Arg::get_locations(std::list<Location>& locs) const
 }
 
 // TODO: accept a module. Return the module's elements list.
-auto curv::arg_to_list(Value val, const Context& ctx)
+auto arg_to_list(Value val, const Context& ctx)
 -> List&
 {
     if (!val.is_ref())
@@ -40,7 +42,7 @@ auto curv::arg_to_list(Value val, const Context& ctx)
 // * It is potentially incorrect to `merge` a module, because modifying
 //   a field value won't update functions that are closed over those
 //   field values. Ditto for shapes. Keep `arg_to_record` for use with `merge`.
-auto curv::arg_to_record(Value val, const Context& ctx)
+auto arg_to_record(Value val, const Context& ctx)
 -> Record&
 {
     if (!val.is_ref())
@@ -51,7 +53,7 @@ auto curv::arg_to_record(Value val, const Context& ctx)
     return (Record&)ref;
 }
 
-auto curv::arg_to_string(Value val, const Context& ctx)
+auto arg_to_string(Value val, const Context& ctx)
 -> String&
 {
     if (!val.is_ref())
@@ -62,7 +64,7 @@ auto curv::arg_to_string(Value val, const Context& ctx)
     return (String&)ref;
 }
 
-int curv::arg_to_int(Value val, int lo, int hi, const Context& ctx)
+int arg_to_int(Value val, int lo, int hi, const Context& ctx)
 {
     if (!val.is_num())
         throw Exception(ctx, "not an integer");
@@ -76,10 +78,12 @@ int curv::arg_to_int(Value val, int lo, int hi, const Context& ctx)
     return (int)intf;
 }
 
-auto curv::arg_to_num(Value val, const Context& ctx)
+auto arg_to_num(Value val, const Context& ctx)
 -> double
 {
     if (!val.is_num())
         throw Exception(ctx, "not a number");
     return val.get_num_unsafe();
 }
+
+} // namespace curv

@@ -54,4 +54,4 @@ File_Script::File_Script(Shared<const String> filename, const Context& ctx)
 {
 }
 
-}
+} // namespace curv

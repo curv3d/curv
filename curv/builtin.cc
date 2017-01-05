@@ -20,9 +20,10 @@
 #include <curv/gl_context.h>
 #include <curv/array_op.h>
 
-using namespace curv;
 using namespace std;
 using namespace boost::math::double_constants;
+
+namespace curv {
 
 Shared<Meaning>
 Builtin_Value::to_meaning(const Identifier& id) const
@@ -234,7 +235,7 @@ struct Echo_Metafunction : public Metafunction
 };
 
 const Namespace
-curv::builtin_namespace =
+builtin_namespace =
 {
     {"pi", make<Builtin_Value>(pi)},
     {"tau", make<Builtin_Value>(two_pi)},
@@ -252,3 +253,5 @@ curv::builtin_namespace =
     {"shape2d", make<Builtin_Value>(Value{make<Shape2d_Function>()})},
     {"echo", make<Builtin_Meaning<Echo_Metafunction>>()},
 };
+
+} // namespace curv

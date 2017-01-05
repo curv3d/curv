@@ -5,7 +5,7 @@
 #include <curv/analyzer.h>
 #include <curv/gl_context.h>
 
-using namespace curv;
+namespace curv {
 
 void
 At_GL_Frame::get_locations(std::list<Location>& locs) const
@@ -14,7 +14,7 @@ At_GL_Frame::get_locations(std::list<Location>& locs) const
 }
 
 void
-curv::get_gl_frame_locations(const GL_Frame* f, std::list<Location>& locs)
+get_gl_frame_locations(const GL_Frame* f, std::list<Location>& locs)
 {
     for (; f != nullptr; f = f->parent_frame)
         if (f->call_phrase != nullptr)
@@ -45,3 +45,5 @@ void At_GL_Arg::get_locations(std::list<Location>& locs) const
     // underline the same entire function call.
     get_gl_frame_locations(eval_frame_.parent_frame, locs);
 }
+
+} // namespace curv

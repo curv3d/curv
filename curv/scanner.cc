@@ -6,8 +6,8 @@
 #include <curv/exception.h>
 #include <curv/context.h>
 
-using namespace curv;
 using namespace std;
+namespace curv {
 
 Scanner::Scanner(const Script& s, Frame* f)
 :
@@ -284,3 +284,5 @@ success:
     //cerr << "get_token fresh " << tok << "\n";
     return tok;
 }
+
+} // namespace curv

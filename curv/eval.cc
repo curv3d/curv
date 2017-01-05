@@ -9,7 +9,9 @@
 #include <curv/scanner.h>
 #include <curv/system.h>
 
-auto curv::eval_script(
+namespace curv {
+
+auto eval_script(
     const Script& script, const Namespace& names,
     System& sys, Frame* f)
 -> Shared<Module>
@@ -21,3 +23,5 @@ auto curv::eval_script(
     auto value = expr->eval_module(sys, f);
     return value;
 }
+
+} // namespace curv

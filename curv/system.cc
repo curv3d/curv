@@ -7,7 +7,7 @@
 #include <curv/file.h>
 #include <curv/system.h>
 
-using namespace curv;
+namespace curv {
 
 System_Impl::System_Impl(
     const String* stdlib_path,
@@ -33,3 +33,5 @@ std::ostream& System_Impl::console()
 {
     return console_;
 }
+
+} // namespace curv

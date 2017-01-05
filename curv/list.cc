@@ -4,8 +4,10 @@
 
 #include <curv/list.h>
 
+namespace curv {
+
 void
-curv::List_Base::print(std::ostream& out) const
+List_Base::print(std::ostream& out) const
 {
     out << "[";
     for (size_t i = 0; i < size(); ++i) {
@@ -15,7 +17,7 @@ curv::List_Base::print(std::ostream& out) const
     out << "]";
 }
 
-auto curv::List_Base::operator==(const List_Base& list) const
+auto List_Base::operator==(const List_Base& list) const
 -> bool
 {
     if (size() != list.size())
@@ -27,8 +29,10 @@ auto curv::List_Base::operator==(const List_Base& list) const
     return true;
 }
 
-auto curv::List_Builder::get_list()
+auto List_Builder::get_list()
 -> Shared<List>
 {
     return List::make_elements(*this);
 }
+
+} // namespace curv

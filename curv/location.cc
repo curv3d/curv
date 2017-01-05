@@ -4,8 +4,9 @@
 
 #include <curv/location.h>
 
-using namespace curv;
 using namespace aux;
+
+namespace curv {
 
 auto Location::line_info() const
 -> Line_Info
@@ -58,7 +59,7 @@ auto Location::line_info() const
 }
 
 void
-curv::Location::write(std::ostream& out) const
+Location::write(std::ostream& out) const
 {
     // TODO: more expressive and helpful diagnostics.
     // Inspiration: http://clang.llvm.org/diagnostics.html
@@ -125,14 +126,14 @@ curv::Location::write(std::ostream& out) const
 }
 
 Range<const char*>
-curv::Location::range() const
+Location::range() const
 {
     return Range<const char*>(
         script_->first + token_.first, script_->first + token_.last);
 }
 
 Location
-curv::Location::starting_at(Token tok) const
+Location::starting_at(Token tok) const
 {
     Location loc = *this;
     if (tok.kind != Token::k_missing) {
@@ -144,7 +145,7 @@ curv::Location::starting_at(Token tok) const
 }
 
 Location
-curv::Location::ending_at(Token tok) const
+Location::ending_at(Token tok) const
 {
     Location loc = *this;
     if (tok.kind != Token::k_missing) {
@@ -153,3 +154,5 @@ curv::Location::ending_at(Token tok) const
     }
     return loc;
 }
+
+} // namespace curv

@@ -5,8 +5,10 @@
 #include <curv/module.h>
 #include <curv/function.h>
 
+namespace curv {
+
 void
-curv::Module::print(std::ostream& out) const
+Module::print(std::ostream& out) const
 {
     out << "{";
     for (auto f : *this) {
@@ -20,8 +22,8 @@ curv::Module::print(std::ostream& out) const
     out << "}";
 }
 
-curv::Value
-curv::Module::get(size_t i) const
+Value
+Module::get(size_t i) const
 {
     Value val = (*slots_)[i];
     if (val.is_ref()) {
@@ -32,7 +34,7 @@ curv::Module::get(size_t i) const
     return val;
 }
 
-auto curv::Module::getfield(Atom name) const
+auto Module::getfield(Atom name) const
 -> Value
 {
     auto b = dictionary_->find(name);
@@ -40,3 +42,5 @@ auto curv::Module::getfield(Atom name) const
         return get(b->second);
     return missing;
 }
+
+} // namespace curv

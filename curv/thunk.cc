@@ -69,4 +69,4 @@ force(Value& slot, Frame& f)
     }
 }
 
-} // end namespace
+} // namespace curv

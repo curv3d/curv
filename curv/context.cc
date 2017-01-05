@@ -6,7 +6,7 @@
 #include <curv/context.h>
 #include <curv/scanner.h>
 
-using namespace curv;
+namespace curv {
 
 void
 Context::get_locations(std::list<Location>&) const
@@ -20,7 +20,7 @@ At_Frame::get_locations(std::list<Location>& locs) const
 }
 
 void
-curv::get_frame_locations(const Frame* f, std::list<Location>& locs)
+get_frame_locations(const Frame* f, std::list<Location>& locs)
 {
     for (; f != nullptr; f = f->parent_frame)
         if (f->call_phrase != nullptr)
@@ -62,3 +62,5 @@ At_Phrase::get_locations(std::list<Location>& locs) const
     locs.push_back(phrase_.location());
     get_frame_locations(frame_, locs);
 }
+
+} // namespace curv

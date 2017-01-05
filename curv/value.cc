@@ -8,10 +8,10 @@
 #include <curv/list.h>
 #include <curv/record.h>
 
-using namespace curv;
+namespace curv {
 
 void
-curv::Value::print(std::ostream& out)
+Value::print(std::ostream& out)
 const
 {
     if (is_null()) {
@@ -27,7 +27,7 @@ const
     }
 }
 
-auto curv::Value::operator==(Value v) const
+auto Value::operator==(Value v) const
 -> bool
 {
     // Numeric equality is the fast path, so it is handled first.
@@ -69,7 +69,7 @@ auto curv::Value::operator==(Value v) const
     }
 }
 
-auto curv::Ref_Value::getfield(Atom) const
+auto Ref_Value::getfield(Atom) const
 -> Value
 {
     return missing;
@@ -85,4 +85,6 @@ struct Missing : public Ref_Value
         out << "<missing>";
     }
 };
-Value curv::missing {make<Missing>()};
+Value missing {make<Missing>()};
+
+} // namespace curv
