@@ -146,14 +146,24 @@ Dot_Expr::eval(Frame& f) const
 }
 
 Value
+eval_not(Value x, const Context& cx)
+{
+    if (x.is_bool())
+        return {!x.get_bool_unsafe()};
+    if (auto xlist = x.dycast<List>()) {
+        Shared<List> result = List::make(xlist->size());
+        for (unsigned i = 0; i < xlist->size(); ++i)
+            (*result)[i] = eval_not((*xlist)[i], cx);
+        return {result};
+    }
+    throw Exception(cx, stringify("!",x,": domain error"));
+}
+Value
 Not_Expr::eval(Frame& f) const
 {
-    Value a = arg_->eval(f);
-    if (!a.is_bool())
-        throw Exception(At_Phrase(*source_, &f),
-            stringify("!",a,": domain error"));
-    return {!a.get_bool_unsafe()};
+    return eval_not(arg_->eval(f), At_Phrase(*source_, &f));
 }
+
 Value
 Positive_Expr::eval(Frame& f) const
 {

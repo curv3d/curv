@@ -1,26 +1,18 @@
 refactor/extend:
-* vectorize sqrt, abs
+* add GL vec3, vec4, bool
 * vectorize GL unary arith ops
-* vectorize GL arith builtins
-* add GL vec3, vec4
+* vectorize GL arith builtins: sqrt, abs
 * `all` and `some` are vectorized boolean monoids
-* `not` is a vectorized function replacing `!`. Maybe `!=` -> `/=`.
 * add sin, tan, rotate
 * generalized shapes: geom:[x,y,z,t]->[d,r,g,b]
 * add GL ?: operator
+* sum, product: builtin, vectorized, known to GL compiler
 
-# 0.2: geometry
-Extend language to condense/speed up existing geometric operators.
-* vectorized numeric operations (array language)
-  * builtin: sqrt,abs
-  * and/or/not? if?
-    * the control structures &&, || and if are not vectorized
-    * `all` and `any` are monoid functions, and are vectorized
-    * `not` is a vectorized function replacing `!`?
-  * relations? < <= > >= (but not == !=).
-    * What is vectorized ==?
-      * could be: map(_==_), goes to one level, returns list of bool
-      * could be: array_map(_==_), returns array of bool
+ongoing research:
+* vectorized relations?  < <= > >= (but not == !=).
+  * What is vectorized ==?
+    * could be: map(_==_), goes to one level, returns list of bool
+    * could be: array_map(_==_), returns array of bool
 * list library
 
 2D subsystem:
@@ -35,10 +27,10 @@ Extend language to condense/speed up existing geometric operators.
   * crop(xmin=null,ymin=null,xmax=null,ymax=null)=...; // OpenSCAD style
   * crop{xmin=null,ymin=null,xmax=null,ymax=null} shape =
       intersection [shape,
-        if (xmin!=null) shape2d{dist p = xmin - p.[0]},
-        if (ymin!=null) shape2d{dist p = ymin - p.[1]},
-        if (xmax!=null) shape2d{dist p = p.[0] - xmax},
-        if (ymax!=null) shape2d{dist p = p.[1] - ymax},
+        if (xmin!=null) shape2d{dist p = xmin - p'0},
+        if (ymin!=null) shape2d{dist p = ymin - p'1},
+        if (xmax!=null) shape2d{dist p = p'0 - xmax},
+        if (ymax!=null) shape2d{dist p = p'1 - ymax},
       ];
 * shell(n), inflate(n)
 * text (steal from openjscad to begin with)
@@ -72,10 +64,6 @@ Colour:
 
 square:
 * `Num v` is a predicate
-* max[n1,n2,n3]
-* abs n, abs[n1,n2]
-* [x,y] - [u,v]
-* [x,y] / 2
 * Rename old `let` to `letrec` -- or to `where` with reversed arguments.
 * Implement `let` like Scheme let. It's easier to implement in WebGL,
   and provides a nice idiom for normalizing sz in square.
@@ -86,27 +74,11 @@ square:
       bbox = [-sz/2, sz/2]
     };
 
-translate:
-* [x,y] - [u,v]
-* translate(delta) = shape ->
-    shape2d {
-      dist p = shape.dist(p - delta),
-      bbox = shape.bbox + delta
-    };
-
-binary union:
-* min[n1,n2]
-* union2(s1,s2) =
-    shape2d {
-      dist p = min[s1.dist p, s2.dist p],
-      bbox = [min[s1.bbox.[0],s2.bbox.[0]], max[s1.bbox.[1],s2.bbox.[1]]]
-    };
-
 nary union:
 * union shapes =
     shape2d {
       dist p = min [for (s = shapes) s.dist p],
-      bbox = [min[for (s=shapes) s.bbox.[0]], max[for(s=shapes)s.bbox.[1]]]
+      bbox = [min[for (s=shapes) s.bbox'0], max[for(s=shapes)s.bbox'1]]
     };
 * GL: since shapes is a constant during inline expansion, we can expand the
   for loop into a list of expressions.
@@ -151,7 +123,7 @@ nary union:
   * echo_timing(string,expr_value_discarded)
   * echo_timing(string) expr_value_returned
   * enter_debugger, aka `break`, `debug`
-* len(module), module.[i]
+* len(module), module'i
 * floor, ceil
 * Introduce submodules (with recursive functions)
 * recursive let. Or non-recursive let and recursive where.

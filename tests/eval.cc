@@ -253,6 +253,8 @@ TEST(curv, eval)
     SUCCESS("sqrt==sqrt", "true");
     SUCCESS("!true", "false");
     SUCCESS("!false", "true");
+    SUCCESS("![false,true,[false]]","[true,false,[true]]");
+    SUCCESS("![]","[]");
     FAILMSG("!null", "!null: domain error");
     SUCCESS("null!=null", "false");
     SUCCESS("null!=false", "true");
