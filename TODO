@@ -6,7 +6,6 @@ refactor/extend:
 * add sin, tan, rotate
 * generalized shapes: geom:[x,y,z,t]->[d,r,g,b]
 * add GL ?: operator
-* sum, product: builtin, vectorized, known to GL compiler
 
 ongoing research:
 * vectorized relations?  < <= > >= (but not == !=).

@@ -7,6 +7,8 @@ map(f) list = [for (x=list) f x];
 filter(p) list = [for (x=list) if (p x) x];
 reduce(first,f) rest =
     if (rest==[]) first else reduce(f(first,rest'0), f) rest'[1..len(rest)-1];
+sum = reduce(0, (x,y)->x+y);
+product = reduce(1, (x,y)->x*y);
 
 // primitive shapes
 circle(r) = shape2d {
