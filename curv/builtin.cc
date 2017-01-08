@@ -47,13 +47,7 @@ struct Sqrt_Function : public Function
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
-        auto arg = f[0];
-        if (arg.type != GL_Type::num)
-            throw Exception(At_GL_Arg(0, f),
-                "sqrt: argument is not a number");
-        auto result = f.gl.newvalue(GL_Type::num);
-        f.gl.out << "  float "<<result<<" = sqrt("<<arg<<");\n";
-        return result;
+        return gl_call_unary_numeric(f, "sqrt");
     }
 };
 struct Abs_Function : public Function
@@ -72,13 +66,7 @@ struct Abs_Function : public Function
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
-        auto arg = f[0];
-        if (arg.type != GL_Type::num)
-            throw Exception(At_GL_Arg(0, f),
-                "abs: argument is not a number");
-        auto result = f.gl.newvalue(GL_Type::num);
-        f.gl.out << "  float "<<result<<" = abs("<<arg<<");\n";
-        return result;
+        return gl_call_unary_numeric(f, "abs");
     }
 };
 
@@ -101,10 +89,10 @@ struct Max_Function : public Function
     GL_Value gl_call(GL_Frame& f) const override
     {
         auto arg = f[0];
-        if (arg.type != GL_Type::vec2)
+        if (arg.type != GL_Type::Vec2)
             throw Exception(At_GL_Arg(0, f),
                 "max: argument is not a vec2");
-        auto result = f.gl.newvalue(GL_Type::num);
+        auto result = f.gl.newvalue(GL_Type::Num);
         f.gl.out << "  float "<<result<<" = max("<<arg<<".x,"<<arg<<".y);\n";
         return result;
     }
@@ -129,10 +117,10 @@ struct Min_Function : public Function
     GL_Value gl_call(GL_Frame& f) const override
     {
         auto arg = f[0];
-        if (arg.type != GL_Type::vec2)
+        if (arg.type != GL_Type::Vec2)
             throw Exception(At_GL_Arg(0, f),
                 "min: argument is not a vec2");
-        auto result = f.gl.newvalue(GL_Type::num);
+        auto result = f.gl.newvalue(GL_Type::Num);
         f.gl.out << "  float "<<result<<" = min("<<arg<<".x,"<<arg<<".y);\n";
         return result;
     }
@@ -159,10 +147,10 @@ struct Norm_Function : public Function
     GL_Value gl_call(GL_Frame& f) const override
     {
         auto arg = f[0];
-        if (arg.type != GL_Type::vec2)
+        if (arg.type != GL_Type::Vec2)
             throw Exception(At_GL_Arg(0, f),
                 "norm: argument is not a vec2");
-        auto result = f.gl.newvalue(GL_Type::num);
+        auto result = f.gl.newvalue(GL_Type::Num);
         f.gl.out << "  float "<<result<<" = length("<<arg<<");\n";
         return result;
     }

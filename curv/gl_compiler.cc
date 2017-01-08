@@ -17,7 +17,7 @@ namespace curv {
 void gl_compile(const Shape2D& shape, std::ostream& out)
 {
     GL_Compiler gl(out);
-    GL_Value dist_param = gl.newvalue(GL_Type::vec2);
+    GL_Value dist_param = gl.newvalue(GL_Type::Vec2);
     auto frame = GL_Frame::make(0, gl, nullptr, nullptr);
 
     out <<
@@ -46,51 +46,78 @@ void gl_compile(const Shape2D& shape, std::ostream& out)
         ;
 }
 
+GL_Type_Attr gl_types[] =
+{
+    {"bool", 1},
+    {"float", 1},
+    {"vec2", 2},
+    {"vec3", 3},
+    {"vec4", 4},
+};
+
 std::ostream& operator<<(std::ostream& out, GL_Type type)
 {
-    switch (type) {
-    case GL_Type::num:
-        out << "Num";
-        break;
-    case GL_Type::vec2:
-        out << "Vec2";
-        break;
-    }
-    return out;
+    return out << gl_type_name(type);
+}
+
+GL_Value gl_call_unary_numeric(GL_Frame& f, const char* name)
+{
+    auto arg = f[0];
+    if (!gl_type_numeric(arg.type))
+        throw Exception(At_GL_Arg(0, f),
+            stringify(name,": argument is not numeric"));
+    auto result = f.gl.newvalue(arg.type);
+    f.gl.out<<"  "<<arg.type<<" "<<result<<" = "<<name<<"("<<arg<<");\n";
+    return result;
 }
 
 GL_Value gl_eval_expr(GL_Frame& f, const Operation& op, GL_Type type)
 {
     GL_Value arg = op.gl_eval(f);
-    if (arg.type != type)
+    if (arg.type != type) {
         throw Exception(At_GL_Phrase(*op.source_, &f),
             stringify("argument is not a ",type));
+    }
     return arg;
 }
 
 GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& source)
 {
     if (val.is_num()) {
-        GL_Value result = f.gl.newvalue(GL_Type::num);
+        GL_Value result = f.gl.newvalue(GL_Type::Num);
         double num = val.get_num_unsafe();
         f.gl.out << "  float " << result << " = "
             << dfmt(num, dfmt::EXPR) << ";\n";
         return result;
     }
     if (auto list = val.dycast<List>()) {
-        if (list->size() == 2
-            && (*list)[0].is_num()
-            && (*list)[1].is_num())
-        {
-            GL_Value result = f.gl.newvalue(GL_Type::vec2);
-            f.gl.out << "  vec2 " << result << " = vec2("
-                << dfmt((*list)[0].get_num_unsafe(), dfmt::EXPR)
-                << ","
-                << dfmt((*list)[1].get_num_unsafe(), dfmt::EXPR)
-                << ");\n";
+        if (list->size() >= 2 && list->size() <= 4) {
+            static GL_Type types[5] = {
+                {}, {}, GL_Type::Vec2, GL_Type::Vec3, GL_Type::Vec4
+            };
+            GL_Value result = f.gl.newvalue(types[list->size()]);
+            f.gl.out
+                << "  "
+                << result.type
+                << " "
+                << result
+                << " = "
+                << result.type
+                << "(";
+            bool first = true;
+            for (auto e : *list) {
+                if (e.is_num()) {
+                    if (!first) f.gl.out << ",";
+                    first = false;
+                    f.gl.out << e.get_num_unsafe();
+                } else
+                    goto error;
+            }
+            f.gl.out << ")\n";
             return result;
         }
     }
+error:
     throw Exception(At_GL_Phrase(source, &f),
         stringify("value ",val," is not supported by the Geometry Compiler"));
 }
@@ -108,9 +135,12 @@ GL_Value Constant::gl_eval(GL_Frame& f) const
 
 GL_Value Negative_Expr::gl_eval(GL_Frame& f) const
 {
-    auto arg = gl_eval_expr(f, *arg_, GL_Type::num);
-    GL_Value result = f.gl.newvalue(GL_Type::num);
-    f.gl.out << "  float " << result << " = -" << arg << ";\n";
+    auto x = arg_->gl_eval(f);
+    if (!gl_type_numeric(x.type))
+        throw Exception(At_GL_Phrase(*arg_->source_, &f),
+            "argument not numeric");
+    GL_Value result = f.gl.newvalue(x.type);
+    f.gl.out<<"  "<<x.type<<" "<<result<<" = -"<<x<< ";\n";
     return result;
 }
 
@@ -120,9 +150,16 @@ void gl_put_as(GL_Frame& f, GL_Value val, GL_Type type)
         f.gl.out << val;
         return;
     }
-    if (val.type == GL_Type::num) {
-        if (type == GL_Type::vec2) {
-            f.gl.out << "vec2(" << val << "," << val << ")";
+    if (val.type == GL_Type::Num) {
+        if (gl_type_count(val.type) > 1) {
+            f.gl.out << val.type << "(";
+            bool first = true;
+            for (int i = 0; i < gl_type_count(val.type); ++i) {
+                if (!first) f.gl.out << ",";
+                f.gl.out << val;
+                first = false;
+            }
+            f.gl.out << ");\n";
             return;
         }
     }
@@ -136,26 +173,18 @@ gl_arith_expr(GL_Frame& f, const Phrase& source,
     auto x = xexpr.gl_eval(f);
     auto y = yexpr.gl_eval(f);
 
-    GL_Type rtype;
+    GL_Type rtype = GL_Type::Bool;
     if (x.type == y.type)
         rtype = x.type;
-    else if (x.type == GL_Type::num)
+    else if (x.type == GL_Type::Num)
         rtype = y.type;
-    else if (y.type == GL_Type::num)
+    else if (y.type == GL_Type::Num)
         rtype = x.type;
-    else
+    if (rtype == GL_Type::Bool)
         throw Exception(At_GL_Phrase(source, &f), "GL domain error");
 
-    const char* rtypestr;
-    if (rtype == GL_Type::num)
-        rtypestr = "float";
-    else if (rtype == GL_Type::vec2)
-        rtypestr = "vec2";
-    else
-        assert(0);
-
     GL_Value result = f.gl.newvalue(rtype);
-    f.gl.out <<"  "<<rtypestr<<" "<<result<<" = ";
+    f.gl.out <<"  "<<rtype<<" "<<result<<" = ";
     gl_put_as(f, x, rtype);
     f.gl.out << op;
     gl_put_as(f, y, rtype);
@@ -220,7 +249,7 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
 
 GL_Value At_Expr::gl_eval(GL_Frame& f) const
 {
-    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::vec2);
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Vec2);
     const char* arg2 = nullptr;
     if (auto k = dynamic_shared_cast<Constant>(arg2_)) {
         auto num = k->value_.get_num_or_nan();
@@ -232,7 +261,7 @@ GL_Value At_Expr::gl_eval(GL_Frame& f) const
     if (arg2 == nullptr)
         throw Exception(At_GL_Phrase(*arg2_->source_, &f),
             "in Geometry Compiler, index must be 0 or 1");
-    GL_Value result = f.gl.newvalue(GL_Type::num);
+    GL_Value result = f.gl.newvalue(GL_Type::Num);
     f.gl.out << "  float "<<result<<" = "<<arg1<<arg2<<";\n";
     return result;
 }
@@ -251,9 +280,9 @@ GL_Value List_Expr::gl_eval(GL_Frame& f) const
 {
     if (auto seq = dynamic_shared_cast<Sequence_Gen>(generator_)) {
         if (seq->size() == 2) {
-            auto e1 = gl_eval_expr(f, *(*seq)[0], GL_Type::num);
-            auto e2 = gl_eval_expr(f, *(*seq)[1], GL_Type::num);
-            GL_Value result = f.gl.newvalue(GL_Type::vec2);
+            auto e1 = gl_eval_expr(f, *(*seq)[0], GL_Type::Num);
+            auto e2 = gl_eval_expr(f, *(*seq)[1], GL_Type::Num);
+            GL_Value result = f.gl.newvalue(GL_Type::Vec2);
             f.gl.out << "  vec2 "<<result<<" = vec2("<<e1<<","<<e2<<");\n";
             return result;
         }

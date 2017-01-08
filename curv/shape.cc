@@ -5,6 +5,7 @@
 #include <curv/shape.h>
 #include <curv/exception.h>
 #include <curv/context.h>
+#include <curv/gl_context.h>
 #include <curv/function.h>
 
 namespace curv {
@@ -43,7 +44,12 @@ Shape2D::gl_dist(GL_Value arg, GL_Frame& f) const
     Function& fun = dist();
     auto f2 = GL_Frame::make(fun.nslots_, f.gl, &f, nullptr);
     (*f2)[0] = arg;
-    return fun.gl_call(*f2);
+    auto result = fun.gl_call(*f2);
+    if (result.type != GL_Type::Num) {
+        throw Exception(At_GL_Frame(&f),
+            stringify("dist function returns ",result.type));
+    }
+    return result;
 }
 
 } // namespace curv

@@ -48,9 +48,31 @@ void gl_compile(const Shape2D&, std::ostream&);
 /// GL data types
 enum class GL_Type : unsigned
 {
-    num,
-    vec2
+    Bool,
+    Num,
+    Vec2,
+    Vec3,
+    Vec4
 };
+extern struct GL_Type_Attr
+{
+    const char* name;
+    int count;
+} gl_types[];
+// is a number or a vector
+inline bool gl_type_numeric(GL_Type type)
+{
+    return type > GL_Type::Bool;
+}
+// if numeric, how many numbers are stored.
+inline int gl_type_count(GL_Type type)
+{
+    return (int)type;
+}
+inline const char* gl_type_name(GL_Type type)
+{
+    return gl_types[(int)type].name;
+}
 std::ostream& operator<<(std::ostream& out, GL_Type);
 
 /// An SSA variable used during GL code generation.
@@ -164,6 +186,7 @@ struct GL_Frame_Base
 
 GL_Value gl_eval_expr(GL_Frame&, const Operation& op, GL_Type);
 GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase&);
+GL_Value gl_call_unary_numeric(GL_Frame&, const char*);
 
 } // namespace
 #endif // header guard
