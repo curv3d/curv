@@ -1,5 +1,7 @@
 /* Curv standard library, automatically loaded at startup. */
 
+deg = tau/360;
+
 // lists
 concat(vv) = [for (v=vv) for (i=v) i];
 reverse v = v'[len(v)-1..0 step -1];
@@ -55,3 +57,28 @@ scale(s) shape = shape2d {
     dist p = s * shape.dist(p / s),
     bbox = s * shape.bbox
 };
+rotate(a) shape = shape2d {
+    dist p = shape.dist[cos(a)*p'0 + sin(a)*p'1, cos(a)*p'1 - sin(a)*p'0],
+    bbox = shape.bbox // TODO: fixme, see below
+};
+/*
+points_box points = [min points, max points];
+
+-- Define a Box2 around all of the given points.
+pointsBox :: [ℝ2] -> Box2
+pointsBox points =
+    let
+        (xs, ys) = unzip points
+    in
+        ((minimum xs, minimum ys), (maximum xs, maximum ys))
+getBox2 (Rotate2 θ symbObj) =
+    let
+        ((x1,y1), (x2,y2)) = getBox2 symbObj
+        rotate (x,y) = (cos(θ)*x - sin(θ)*y, sin(θ)*x + cos(θ)*y)
+    in
+        pointsBox [ rotate (x1, y1)
+                  , rotate (x1, y2)
+                  , rotate (x2, y1)
+                  , rotate (x2, y2)
+                  ]
+*/

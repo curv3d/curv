@@ -69,6 +69,44 @@ struct Abs_Function : public Function
         return gl_call_unary_numeric(f, "abs");
     }
 };
+struct Sin_Function : public Function
+{
+    Sin_Function() : Function(1) {}
+    struct Scalar_Op {
+        static double f(double x) { return sin(x); }
+        static Shared<const String> callstr(Value x) {
+            return stringify("sin(",x,")");
+        }
+    };
+    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(args[0], At_Arg(0, args));
+    }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        return gl_call_unary_numeric(f, "sin");
+    }
+};
+struct Cos_Function : public Function
+{
+    Cos_Function() : Function(1) {}
+    struct Scalar_Op {
+        static double f(double x) { return cos(x); }
+        static Shared<const String> callstr(Value x) {
+            return stringify("cos(",x,")");
+        }
+    };
+    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(args[0], At_Arg(0, args));
+    }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        return gl_call_unary_numeric(f, "cos");
+    }
+};
 
 struct Max_Function : public Function
 {
@@ -233,6 +271,8 @@ builtin_namespace =
     {"true", make<Builtin_Value>(Value(true))},
     {"sqrt", make<Builtin_Value>(Value{make<Sqrt_Function>()})},
     {"abs", make<Builtin_Value>(Value{make<Abs_Function>()})},
+    {"sin", make<Builtin_Value>(Value{make<Sin_Function>()})},
+    {"cos", make<Builtin_Value>(Value{make<Cos_Function>()})},
     {"max", make<Builtin_Value>(Value{make<Max_Function>()})},
     {"min", make<Builtin_Value>(Value{make<Min_Function>()})},
     {"norm", make<Builtin_Value>(Value{make<Norm_Function>()})},

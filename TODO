@@ -1,5 +1,4 @@
 refactor/extend:
-* add sin, cos, rotate
 * generalized shapes: geom:[x,y,z,t]->[d,r,g,b]
 * add GL ?: conditional support
 
@@ -48,7 +47,6 @@ ongoing research:
 * polygon -- convex_polygon as Nef polygon, intersection of half planes
   convex_polygon(vertices) -- vertices are in counterclockwise order, as this
   seems to be the standard convention.
-* rotate
 * align
 * pack or row
 * crop
@@ -159,7 +157,6 @@ nary union:
   I don't want `merge` to accept modules as arguments: overriding an existing
   module field doesn't work if the module also contains functions closed over
   those fields.
-* num: sin(x), cos(x)
 * modules: _foo is not exported, is omitted from the public dictionary.
   curv::Module has a public dictionary and a debug dictionary.
   _foo is private in std.curv, and in all other *.curv files.
@@ -317,7 +314,6 @@ Other:
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
   numeral while building a buffer for strtod.
-* num: min[x,y], max[x,y], abs(x), sin(x), cos(x)
 * string: $$ $" $id ${id} $(id) $+EE interpolation, strcat[s1,s2]
   scanner has in-string flag, parser resets/sets flag during $(expr).
 * string: str@i, len(str) -- either ASCII-only, or proper Unicode
