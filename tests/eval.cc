@@ -275,6 +275,7 @@ TEST(curv, eval)
         "  [1,2,3]'1.1\n"
         "          ^--");
     SUCCESS("[0..10]'[3..1 step -1]", "[3,2,1]");
+    SUCCESS("[false,true]'[[0,1],[1,0]]", "[[false,true],[true,false]]");
     SUCCESS("x+y;x=1;y=2", "3");
     SUCCESS("a=c+1;b=1;c=b+1;a", "3");
     FAILMSG("x=x;x", "illegal recursive reference");

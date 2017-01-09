@@ -440,25 +440,27 @@ Power_Expr::eval(Frame& f) const
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     return array_op.op(arg1_->eval(f), arg2_->eval(f), At_Phrase(*source_, &f));
 }
+
+Value
+eval_at(const List& list, Value index, const Context& cx)
+{
+    if (auto indices = index.dycast<List>()) {
+        Shared<List> result = List::make(indices->size());
+        int j = 0;
+        for (auto i : *indices)
+            (*result)[j++] = eval_at(list, i, cx);
+        return {result};
+    }
+    int i = arg_to_int(index, 0, (int)(list.size()-1), cx);
+    return list[i];
+}
 Value
 At_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
     auto& list {arg_to_list(a, At_Phrase(*arg1_->source_, &f))};
-    if (auto indices = b.dycast<List>()) {
-        Shared<List> result = List::make(indices->size());
-        int j = 0;
-        for (auto ival : *indices) {
-            int i = arg_to_int(ival, 0, (int)(list.size()-1),
-                At_Phrase(*arg2_->source_, &f));
-            (*result)[j++] = list[i];
-        }
-        return {result};
-    }
-    int i =
-        arg_to_int(b, 0, (int)(list.size()-1), At_Phrase(*arg2_->source_, &f));
-    return list[i];
+    return eval_at(list, b, At_Phrase(*arg2_->source_, &f));
 }
 
 Shared<List>
