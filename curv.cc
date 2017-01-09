@@ -65,9 +65,12 @@ make_system(const char* argv0)
             curv::make_string(stdlib_path.c_str()).get(),
             std::cerr);
         return sys;
+    } catch (curv::Exception& e) {
+        std::cerr << "ERROR: " << e << "\n";
+        exit(EXIT_FAILURE);
     } catch (std::exception& e) {
         std::cerr << "ERROR: " << e.what() << "\n";
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 }
 
