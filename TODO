@@ -1,17 +1,47 @@
 refactor/extend:
-* add GL vec3, vec4, bool
-* vectorize GL unary arith ops
-* vectorize GL arith builtins: sqrt, abs
-* `all` and `some` are vectorized boolean monoids
-* add sin, tan, rotate
+* add sin, cos, rotate
 * generalized shapes: geom:[x,y,z,t]->[d,r,g,b]
-* add GL ?: operator
+* add GL ?: conditional support
+
+Linear algebra:
+  dot-product (vec*vec=scalar), matrix*vec, vec*matrix and matrix*matrix
+  identity(i), pow(square_matrix,i),
+  determinant(square_matrix), inverse(square_matrix) -- difficult
+
+  cross(x,y) = [x'1*y'2 - x'2-y'1, x'2*y'0 - x'0*y'2, x'0*y'1 - x'1*y'0];
+  dot(x,y) = sum(x*y); // vector dot product
+  identity(n) = [for(i=[1..n])[for(j=[1..n])if(i==j) 1 else 0]]; // or eye
+  transpose(a) = [for(i=[0..len a'0 - 1]) [for(j=[0..len a - 1]) a'j'i]];
+
+  dom(a) = [0..len(a)-1];
+  transpose(a) = [for(i=dom a'0) [for(j=dom a) a'j'i]];
+
+  enbool(i) = [false,true]'i;
+  debool(b) = ifelse(b, 1, 0);
+  identity(n) = [for(i=[1..n]) [for(j=[1..n]) debool(i==j)]]; // or eye
+
+Vectorized boolean operations:
+* Vectorized relations are <' <=' >' >=' ==' !='.
+* `not` is vectorized version of `!`.
+* `all` and `some` are vectorized boolean monoids (alt: `and`, `or`).
+* ifelse(cond,thenval,elseval)
+* Rationale: vectorized boolean ops have different names than unvectorized ones.
+  * x==y compares vectors and returns bool, unlike xs=='ys.
+  * a&&b short circuits if a==false, but all[a,b] must evaluate b if a==false
+    to implement broadcasting.
+  * ifelse(b,c,a) must evaluate all 3 arguments if b is an array.
+  * The unvectorized relations are guaranteed to return Bool, or fail,
+    which is appropriate for the most common use case, which is to construct
+    an argument for if, &&, ||, which require a Bool argument.
+* Many languages represent boolean values as the numbers 0 and 1.
+  In an array language, an array of booleans represented as 0 and 1
+  is a useful representation, you can do arithmetic on it.
+  In Curv, booleans are not numbers, but you can convert between the two
+  representations using vectorized operations. Eg,
+  * enbool(i) = [false,true]'i;
+  * debool(b) = ifelse(b, 1, 0);
 
 ongoing research:
-* vectorized relations?  < <= > >= (but not == !=).
-  * What is vectorized ==?
-    * could be: map(_==_), goes to one level, returns list of bool
-    * could be: array_map(_==_), returns array of bool
 * list library
 
 2D subsystem:
@@ -19,7 +49,6 @@ ongoing research:
   convex_polygon(vertices) -- vertices are in counterclockwise order, as this
   seems to be the standard convention.
 * rotate
-* scale
 * align
 * pack or row
 * crop
@@ -43,7 +72,7 @@ ongoing research:
 * Sweep. Extends a 2D object along a path.
 * Extrusion. Extends the shape of a 2D object in a perpendicular direction into 3D space.
 * Revolve. Sweeps a 2D object around an axis.
-* Loft. Extends the contours of a shape between one or more open or closed objects.
+* Loft. Extends the contours of a shape between one or more open or closed objects. Simple approach: linear_extrude which morphs between two 2D endpoints.
 * Slice. Divides a solid object into two separate 3D objects.
 
 Colour:

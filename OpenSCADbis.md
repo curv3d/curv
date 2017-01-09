@@ -1,5 +1,107 @@
 # OpenSCADbis: another proposal for a next generation OpenSCAD
 
+## OpenSCAD2-2017: January 2017
+### Goals
+**1. Function Values** <br>
+Functions are first class values, which can be assigned to variables,
+passed as arguments to functions, and returned as results from functions.
+Function definitions can be nested, and there is a syntax for anonymous
+functions. Function values are lexically scoped closures.
+
+**2. Shape Values** <br>
+Shapes are first class values, which can be assigned to variables,
+passed as arguments to functions, and returned as results from functions.
+The expression syntax is extended so that module calls like
+```
+    scale([10,20,30]) sphere(10)
+    union() { cube(9); sphere(5); }
+```
+are legal expressions.
+
+**3. No Weird Syntax** <br>
+Standard looking syntax is used for defining a function,
+calling a function, and passing a function as an argument.
+We don't use `@` or sigils or any other non-standard, unfamiliar syntax
+for these operations.
+
+**4. 100% Backward Compatibility** <br>
+
+**5. The 3 Namespaces are Not Deprecated** <br>
+
+### Challenges
+There are two challenges in achieving the design goals:
+the three namespaces, and unintended dynamic scoping in function calls.
+
+OpenSCAD has 3 disjoint namespaces for variables, functions and modules.
+In the function call expression `f(x)`, the `f` is looked up in the function
+namespace, and the `x` is looked up in the variable namespace.
+This creates a challenge if we want to call a function value stored in
+a variable `f`, or if we want to pass a function `x` as an argument.
+
+Based on a conversation with Marius, OpenSCAD functions are intended to
+be lexically scoped, except for the case of variable names beginning with
+`$`, which are dynamically scoped variables. However, there are bugs in the
+implementation which cause unintended dynamic scoping for variables that
+don't begin with `$`. It's not clear whether these bugs will be fixed, because
+the community places a high value on backwards compatibility. So this proposal
+cannot depend on these bugs being fixed.
+
+The requirement for function values includes nested functions, and the
+ability for one function to construct and return another function.
+In order to implement this correctly, inner functions must capture the
+values of non-local variables (which may be parameters of an outer function),
+and retain the captured values after the inner function is returned as a
+result and the lifetime of the captured parameters has ended.
+In short, functions must be lexically scoped closures.
+This is inconsistent with dynamically scoping.
+
+### Design
+Function and module definitions from the original OpenSCAD language
+do not change in any way. The functions and modules they define are not values.
+Functions defined by old-style function definitions are not values due to
+the unintended dynamic scoping bug: as long as this buggy behaviour must be
+preserved, they aren't values.
+
+A new style function definition defines the function in the variable,
+function and module namespaces.
+
+New style functions are lexically scoped closures. The scoping rules will
+need to be defined, but the scope of each non-local variable within a
+new-style function is fixed at compile time, before evaluation begins.
+Dynamically scoped $ variables are the only exception.
+
+New style functions are values. Old style functions, and modules,
+are *not* values.
+
+Most built-in modules are defined as modules in the module namespace
+(with no change from before), but they are *also* defined as new style
+function values in the function and variable namespaces. (Some, like `for`,
+`intersection_for` and `assign`, cannot be represented as functions.)
+
+Most (all?) built-in functions are defined as function values in both the
+function and variable namespaces. (Not sure if there are any "funny"
+built-in functions for which this will not work.)
+
+In the expression `f(x)`, `f` is looked up in the function namespace,
+and `x` is looked up in the variable namespace. The namespace hacks I describe
+above make function calls work for new style function definitions, and also
+allow functions to be used in argument position of a function call.
+
+However, this hack doesn't let you use a function parameter in the
+function position of a function call. To make this work, we change the
+interpretation of function call expressions within a new style function
+definition, so that the function is looked up within the variable namespace.
+
+### Limitations
+This still leaves some edge cases, which shouldn't occur frequently:
+* a global variable F containing a function value can't be called from within
+  an old-style function definition, or from within a variable definition,
+  using the syntax `F(x)`. You have to use `(F)(x)` instead.
+* Calling an old-style function F from within a new-style function
+  is tricky, you need to use the syntax `(F)(x)`. Or convert F to the new
+  definition syntax by deleting the `function` keyword.
+
+## November 2016
 This proposal is a modification of the OpenSCAD2 proposal,
 based on a year of public feedback.
 
