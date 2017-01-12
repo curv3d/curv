@@ -187,6 +187,7 @@ struct GL_Frame_Base
 GL_Value gl_eval_expr(GL_Frame&, const Operation& op, GL_Type);
 GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase&);
 GL_Value gl_call_unary_numeric(GL_Frame&, const char*);
+void gl_put_as(GL_Frame& f, GL_Value val, GL_Type type);
 
 } // namespace
 #endif // header guard

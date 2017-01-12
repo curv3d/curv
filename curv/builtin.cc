@@ -69,6 +69,25 @@ struct Abs_Function : public Function
         return gl_call_unary_numeric(f, "abs");
     }
 };
+struct Floor_Function : public Function
+{
+    Floor_Function() : Function(1) {}
+    struct Scalar_Op {
+        static double f(double x) { return floor(x); }
+        static Shared<const String> callstr(Value x) {
+            return stringify("floor(",x,")");
+        }
+    };
+    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(args[0], At_Arg(0, args));
+    }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        return gl_call_unary_numeric(f, "floor");
+    }
+};
 struct Sin_Function : public Function
 {
     Sin_Function() : Function(1) {}
@@ -105,6 +124,48 @@ struct Cos_Function : public Function
     GL_Value gl_call(GL_Frame& f) const override
     {
         return gl_call_unary_numeric(f, "cos");
+    }
+};
+struct Atan2_Function : public Function
+{
+    Atan2_Function() : Function(2) {}
+
+    struct Scalar_Op {
+        static double f(double x, double y) { return atan2(x, y); }
+        static const char* name() { return "atan2"; }
+        static Shared<const String> callstr(Value x, Value y) {
+            return stringify("atan2(",x,",",y,")");
+        }
+    };
+    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(args[0], args[1],
+            At_Phrase(*args.call_phrase, &args));
+    }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        auto x = f[0];
+        auto y = f[1];
+
+        GL_Type rtype = GL_Type::Bool;
+        if (x.type == y.type)
+            rtype = x.type;
+        else if (x.type == GL_Type::Num)
+            rtype = y.type;
+        else if (y.type == GL_Type::Num)
+            rtype = x.type;
+        if (rtype == GL_Type::Bool)
+            throw Exception(At_GL_Phrase(*f.call_phrase, &f),
+                "GL domain error");
+
+        GL_Value result = f.gl.newvalue(rtype);
+        f.gl.out <<"  "<<rtype<<" "<<result<<" = atan(";
+        gl_put_as(f, x, rtype);
+        f.gl.out << ",";
+        gl_put_as(f, y, rtype);
+        f.gl.out << ");\n";
+        return result;
     }
 };
 
@@ -271,8 +332,10 @@ builtin_namespace =
     {"true", make<Builtin_Value>(Value(true))},
     {"sqrt", make<Builtin_Value>(Value{make<Sqrt_Function>()})},
     {"abs", make<Builtin_Value>(Value{make<Abs_Function>()})},
+    {"floor", make<Builtin_Value>(Value{make<Floor_Function>()})},
     {"sin", make<Builtin_Value>(Value{make<Sin_Function>()})},
     {"cos", make<Builtin_Value>(Value{make<Cos_Function>()})},
+    {"atan2", make<Builtin_Value>(Value{make<Atan2_Function>()})},
     {"max", make<Builtin_Value>(Value{make<Max_Function>()})},
     {"min", make<Builtin_Value>(Value{make<Min_Function>()})},
     {"norm", make<Builtin_Value>(Value{make<Norm_Function>()})},
