@@ -1,6 +1,10 @@
 /* Curv standard library, automatically loaded at startup. */
 
 deg = tau/360;
+X = 0;
+Y = 1;
+Z = 2;
+mod(a,m) = a - m * floor(a/m);
 
 // lists
 concat(vv) = [for (v=vv) for (i=v) i];
@@ -12,6 +16,12 @@ reduce(first,f) rest =
 sum = reduce(0, (x,y)->x+y);
 product = reduce(1, (x,y)->x*y);
 
+// linear algebra
+cross(p,q) = [p'Y*q'Z - p'Z-q'Y, p'Z*q'X - p'X*q'Z, p'X*q'Y - p'Y*q'X];
+dot(p,q) = sum(p*q); // vector dot product
+identity(n) = [for(i=[1..n]) [for(j=[1..n]) if(i==j) 1 else 0]];
+transpose(a) = [for(i=[0..len a'0 - 1]) [for(j=[0..len a - 1]) a'j'i]];
+
 // primitive shapes
 circle(r) = shape2d {
     dist p = norm p - r,
@@ -22,7 +32,7 @@ square(sz) = shape2d {
     bbox = [[-sz/2,-sz/2], [sz/2,sz/2]],
 };
 
-// boolean operations
+// boolean shape operations
 nothing = shape2d {
     dist p = inf,
     bbox = [[inf,inf],[-inf,-inf]]
