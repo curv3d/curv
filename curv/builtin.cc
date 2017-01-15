@@ -50,6 +50,26 @@ struct Sqrt_Function : public Function
         return gl_call_unary_numeric(f, "sqrt");
     }
 };
+// log(x) is the natural logarithm of x
+struct Log_Function : public Function
+{
+    Log_Function() : Function(1) {}
+    struct Scalar_Op {
+        static double f(double x) { return log(x); }
+        static Shared<const String> callstr(Value x) {
+            return stringify("log(",x,")");
+        }
+    };
+    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(args[0], At_Arg(0, args));
+    }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        return gl_call_unary_numeric(f, "log");
+    }
+};
 struct Abs_Function : public Function
 {
     Abs_Function() : Function(1) {}
@@ -331,6 +351,7 @@ builtin_namespace =
     {"false", make<Builtin_Value>(Value(false))},
     {"true", make<Builtin_Value>(Value(true))},
     {"sqrt", make<Builtin_Value>(Value{make<Sqrt_Function>()})},
+    {"log", make<Builtin_Value>(Value{make<Log_Function>()})},
     {"abs", make<Builtin_Value>(Value{make<Abs_Function>()})},
     {"floor", make<Builtin_Value>(Value{make<Floor_Function>()})},
     {"sin", make<Builtin_Value>(Value{make<Sin_Function>()})},
