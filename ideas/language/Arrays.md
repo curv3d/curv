@@ -302,14 +302,11 @@ sum[ [[au,av,aw],[cu,cv,cw],[eu,ev,ew]], [[bx,by,bz],[dx,dy,dz],[fx,fy,fz]] ]
 
 TA = transpose A == [[a,c,e],[b,d,f]]
 
-sum[
-  for (i=[0:len(TA)-1])
-    let (tarow=TA@i,
-         brow=B@i)
-    for (j=tarow)
-      for (k=brow)
-        j*k
-
+sum
+ [for (i=[0:len(TA)-1])
+   [for (j=TA'i)
+     [for (k=B'i)
+        j*k]]]
 
 These are just special cases of a more general operation that is defined
 for tensors of arbitrary rank >= 1.
@@ -321,6 +318,25 @@ and B has dimensions [j1,j2,...,j(n-1),j(n)],
 then the result has dimensions 
 [i1,i2,...,i(m-1),j2,...,j(n-1),j(n)].
 Thus applying `+*` to a rank M and a rank N tensor gives a rank M+N-2 result.
+
+A +* B
+Cut A into slices along its last axis, do the same with B along its first axis,
+then combine each slice from A with each slice from B using *,
+and finally perform a reduction using +.
+- each A slice has dimension [i1,...,i(m-1)]
+- each B slice has dimension [j2,...,j(n)]
+- each result slice has dimension [i1,...,i(m-1),j2,...,j(n)].
+  So it's just a cartesian product, aka APL Outer Product ∘.×
+More accurately,
+  http://stackoverflow.com/questions/20424228/how-come-x-in-apl-works-for-both-matrices-and-vectors
+
+Implementation?
+* nested for loops. The nesting level is input dependent. So...
+  * construct the for loops using function composition??
+* use a 'path' data structure and a loop that iterates over all paths into
+  an array?
+
+Try implementing outer product first. Try function composition.
 
 `+*` is associative, but not commutative, and has no universal identity element.
 

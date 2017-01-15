@@ -1,3 +1,18 @@
+kisrhombille-3-7 prerequisites:
+- required:
+  - log(x) -- natural log
+  - vector and matrix products. I'll like to use p +* q,
+    using same semantics as Dot in Mathematica.
+    Try implementing in Curv first.
+  - is_num, is_list
+optional:
+  - color(white|magenta|red|blue|green) shape
+  - functions with optional arguments
+
+gcurv -- a tool written in Python 3 -- a graphical wrapper around the curv tool
+  which reads a curv script and displays shapes in a window. Later, it can be
+  made interactive like openscad.
+
 refactor/extend:
 * generalized shapes: geom:[x,y,z,t]->[d,r,g,b]
 * add GL ?: conditional support
@@ -22,7 +37,9 @@ Linear algebra:
 Vectorized boolean operations:
 * Vectorized relations are <' <=' >' >=' ==' !='.
 * `not` is vectorized version of `!`.
-* `all` and `some` are vectorized boolean monoids (alt: `and`, `or`).
+* `all` and `any` are vectorized boolean monoids for && and ||.
+  * Name is consistent with R,Julia,Python,Matlab.
+  * Use some(pred)list, every(pred)list, name consistent with Javascript.
 * ifelse(cond,thenval,elseval)
 * Rationale: vectorized boolean ops have different names than unvectorized ones.
   * x==y compares vectors and returns bool, unlike xs=='ys.

@@ -1,3 +1,16 @@
+## 9-Jan-2017 GL Compiler
+Eliminate most of the boilerplate for vectorized unary numeric functions.
+The two parameters are a function and a name.
+In all known cases, the Curv name and the GLSL name are identical.
+Can test if the name is alphabetic for outputting call strings.
+Two cases:
+* builtin functions like abs,sin,floor.
+  Here we have a Function class with call and gl_call methods.
+* the operators +x and -x.
+  Here we have an Operation class with eval and gl_eval methods.
+Note: can't pass string literals or lambda expressions as template parameters.
+Static member functions work as a parameter mechanism.
+
 ## Shapes, 2-Jan-2017
 Redesign shapes to support: colour, time, 2d/3d polymorphism.
 
@@ -11,13 +24,38 @@ Shapes have boolean attributes `is_2d` and `is_3d`
 which mark if they are 2d, 3d or both.
 * Or use an attribute `dim` which is a boolean vector [Bool,Bool].
   `dim'0` means `is_2d`, `dim'1` means `is_3d`.
-  Compute intersection and union using and/every/all, or/some/any
-  vectorized monoid functions.
-  * intersection: all[dim1,dim2]   every[dim1,dim2]   and[dim1,dim2]
-  * union:        any[dim1,dim2]   some[dim1,dim2]    or[dim1,dim2]
+  Compute intersection and union using all/any vectorized monoid functions.
 
-The dist function takes [x,y,z,t] as an argument. For 2d shapes, z is ignored.
-For non-animated shapes, t is ignored.
+The dist function takes ([x,y,z],t) parameters. For 2d shapes, z is 0
+and usually ignored. For non-animated shapes, t is ignored.
+* 2D shapes need extra code to extract the [x,y] component of the point.
+  Eg, dist(p,t) = norm p'[0,1] - r;
+  Eg, dist([x,y,z],t) = norm[x,y] - r;
+
+The dist function ought to return 2 results, a dist and a colour.
+With inlining and SSA optimization, a big colourless shape tree will end up
+with just one colour register initialized to black, and no other expressions
+that reference colour. But, how to achieve that with Curv?
+* I could hack in support for functions that "return multiple values",
+  (which is different from returning a tuple value), similar to how functions
+  with multiple arguments (which are not a tuple value) already work.
+  We'd need some syntax `(a,b)=f(x)` to receive the values. A function would
+  advertise a fixed # of results as part of its identity. There would be slots
+  reserved for the return values in the call frame. It's known at compile time
+  how many results a given function call expression should return. (a,b) is
+  a tuple expression, can occur in limited contexts, like the body of a
+  function, or a then/else phrase. And it's also a generator, of course.
+  There is an Operator::nvalues field which might be the special value
+  INDEFINITE or GENERATOR.
+  * The number of values produced by an Operation may be known at compile
+    time: 0 is an action, 1 is a traditional expression, (3,17) has 2 values.
+    Or it may not be known until run time, in which case it is a generator.
+  * So a function can return 0 values. That means it is an action.
+    f(x) = echo(x);
+  * So, why not permit a function to return an indefinite number of values?
+    There's no implementation problem. Rather, it's a style/useability issue.
+    I don't want two competing protocols for computing a sequence of values.
+* The dist function could return a [d,[r,g,b]] value. Which isn't a GL type.
 
 The bbox has x,y,z,t components. For 2d shapes, the z components are ignored.
 For eternal shapes (the common case), tmin is -infinity and tmax is +infinity.
