@@ -15,7 +15,7 @@ using namespace aux;
 using namespace curv;
 
 std::stringstream console;
-System_Impl sys(nullptr, console);
+System_Impl sys(make_string("../lib/std.curv"), console);
 
 struct CString_Script : public curv::Script
 {
@@ -40,7 +40,7 @@ struct Evaluator
         try {
             console.str("");
             console.clear(); // Clear state flags.
-            Shared<Module> module{eval_script(*script_, builtin_namespace, sys)};
+            Shared<Module> module{eval_script(*script_, builtin_namespace(), sys)};
 
             String_Builder buf;
             bool first = true;
@@ -334,6 +334,7 @@ TEST(curv, eval)
         "       ^------------");
     SUCCESS("std = file \"std.curv\"; std.concat[[1], [2,3], [4]]",
         "[1,2,3,4]");
+    SUCCESS("file \"stdtest.curv\"", "{}");
 
     // range generator
     SUCCESS("[1..4]", "[1,2,3,4]");

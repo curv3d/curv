@@ -10,15 +10,15 @@
 namespace curv {
 
 System_Impl::System_Impl(
-    const String* stdlib_path,
+    Shared<const String> stdlib_path,
     std::ostream& console)
 :
     console_(console)
 {
-    std_namespace_ = builtin_namespace;
-    if (stdlib_path != 0) {
-        auto file = make<File_Script>(share(*stdlib_path), Context{});
-        Shared<Module> stdlib = eval_script(*file, builtin_namespace, *this);
+    std_namespace_ = builtin_namespace();
+    if (stdlib_path != nullptr) {
+        auto file = make<File_Script>(std::move(stdlib_path), Context{});
+        Shared<Module> stdlib = eval_script(*file, builtin_namespace(), *this);
         for (auto b : *stdlib)
             std_namespace_[b.first] = make<Builtin_Value>(b.second);
     }

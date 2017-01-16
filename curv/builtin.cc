@@ -382,9 +382,10 @@ struct Assert_Metafunction : public Metafunction
     }
 };
 
-const Namespace
-builtin_namespace =
+const Namespace&
+builtin_namespace()
 {
+    static const Namespace names = {
     {"pi", make<Builtin_Value>(pi)},
     {"tau", make<Builtin_Value>(two_pi)},
     {"inf", make<Builtin_Value>(INFINITY)},
@@ -407,6 +408,8 @@ builtin_namespace =
     {"shape2d", make<Builtin_Value>(Value{make<Shape2d_Function>()})},
     {"echo", make<Builtin_Meaning<Echo_Metafunction>>()},
     {"assert", make<Builtin_Meaning<Assert_Metafunction>>()},
-};
+    };
+    return names;
+}
 
 } // namespace curv

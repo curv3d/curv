@@ -28,7 +28,7 @@ struct System_Impl : public System
 {
     Namespace std_namespace_;
     std::ostream& console_;
-    System_Impl(const String* stdlib_path, std::ostream&);
+    System_Impl(Shared<const String> stdlib_path, std::ostream&);
     virtual const Namespace& std_namespace() override;
     virtual std::ostream& console() override;
 };

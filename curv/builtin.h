@@ -38,7 +38,7 @@ struct Builtin_Meaning : public Builtin
 
 using Namespace = Atom_Map<Shared<const Builtin>>;
 
-extern const Namespace builtin_namespace;
+const Namespace& builtin_namespace();
 
 } // namespace curv
 #endif // header guard
