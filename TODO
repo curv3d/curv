@@ -1,13 +1,4 @@
-kisrhombille-3-7 prerequisites:
-- required:
-  - log(x) -- natural log
-  - vector and matrix products. I'll like to use p +* q,
-    using same semantics as Dot in Mathematica.
-    Try implementing in Curv first.
-  - is_num, is_list
-optional:
-  - color(white|magenta|red|blue|green) shape
-  - functions with optional arguments
+kisrhombille-3-7: does the GL output actually work?
 
 gcurv -- a tool written in Python 3 -- a graphical wrapper around the curv tool
   which reads a curv script and displays shapes in a window. Later, it can be

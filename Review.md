@@ -7,12 +7,16 @@
 Deciding whether a*b is scalar or vector or matrix multiplication is a pain.
 Hand translating *.scad to *.curv is not easy, much more convenient if there
 was an OpenSCAD emulator. Can of worms, I know.
-    I'll add a +* b to compute dot and matrix product.
 
 a[0] -> a'0
 a[x-1] -> a'(x-1)
 a.x -> a'X
-This is weird.
+This is weird. Alternative is:
+    a(0)
+    a(x-1)
+    a(X)
+    plus confusing reinterpretation of a[i]
+at the cost of changing or omitting module/shape customization syntax.
 
 Translating
     {
@@ -41,8 +45,14 @@ Remedies:
  2. OpenSCAD2 "geometric object" syntax using {...}.
     But I don't know the semantics. If {..;..;} is both a module *and* an
     implicit union of shapes, what fields are exported?
+    * Maybe a submodule is not a shape, you need explicit conversion
+      via union {...} or emshapen {...} or whatever, same as explicit conversion
+      of a list to a shape. But now submodules are not a syntactic shorthand.
 
 Translate
     modcall() for(..) modcall();
 to
     modcall() union [for (..) modcall()]
+
+In general, you must distinguish lists from shapes in function arguments,
+inserting explicit union where needed to convert.
