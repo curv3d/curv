@@ -190,9 +190,9 @@ struct Atan2_Function : public Function
 
         GL_Value result = f.gl.newvalue(rtype);
         f.gl.out <<"  "<<rtype<<" "<<result<<" = atan(";
-        gl_put_as(f, x, rtype);
+        gl_put_as(f, x, f.call_phrase->at(0), rtype);
         f.gl.out << ",";
-        gl_put_as(f, y, rtype);
+        gl_put_as(f, y, f.call_phrase->at(1), rtype);
         f.gl.out << ");\n";
         return result;
     }

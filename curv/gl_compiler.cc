@@ -144,17 +144,17 @@ GL_Value Negative_Expr::gl_eval(GL_Frame& f) const
     return result;
 }
 
-void gl_put_as(GL_Frame& f, GL_Value val, GL_Type type)
+void gl_put_as(GL_Frame& f, GL_Value val, const Phrase& src, GL_Type type)
 {
     if (val.type == type) {
         f.gl.out << val;
         return;
     }
     if (val.type == GL_Type::Num) {
-        if (gl_type_count(val.type) > 1) {
-            f.gl.out << val.type << "(";
+        if (gl_type_count(type) > 1) {
+            f.gl.out << type << "(";
             bool first = true;
-            for (int i = 0; i < gl_type_count(val.type); ++i) {
+            for (int i = 0; i < gl_type_count(type); ++i) {
                 if (!first) f.gl.out << ",";
                 f.gl.out << val;
                 first = false;
@@ -163,7 +163,8 @@ void gl_put_as(GL_Frame& f, GL_Value val, GL_Type type)
             return;
         }
     }
-    assert(0);
+    throw Exception(At_GL_Phrase(src, &f), stringify(
+        "GL can't convert ",val.type," to ",type));
 }
 
 GL_Value
@@ -185,9 +186,9 @@ gl_arith_expr(GL_Frame& f, const Phrase& source,
 
     GL_Value result = f.gl.newvalue(rtype);
     f.gl.out <<"  "<<rtype<<" "<<result<<" = ";
-    gl_put_as(f, x, rtype);
+    gl_put_as(f, x, *xexpr.source_, rtype);
     f.gl.out << op;
-    gl_put_as(f, y, rtype);
+    gl_put_as(f, y, *yexpr.source_, rtype);
     f.gl.out << ";\n";
     return result;
 }
@@ -251,13 +252,12 @@ GL_Value At_Expr::gl_eval(GL_Frame& f) const
 {
     auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Vec2);
     const char* arg2 = nullptr;
-    if (auto k = dynamic_shared_cast<Constant>(arg2_)) {
-        auto num = k->value_.get_num_or_nan();
-        if (num == 0.0)
-            arg2 = ".x";
-        else if (num == 1.0)
-            arg2 = ".y";
-    }
+    auto k = gl_eval_const(*arg2_, f);
+    auto num = k.get_num_or_nan();
+    if (num == 0.0)
+        arg2 = ".x";
+    else if (num == 1.0)
+        arg2 = ".y";
     if (arg2 == nullptr)
         throw Exception(At_GL_Phrase(*arg2_->source_, &f),
             "in Geometry Compiler, index must be 0 or 1");
