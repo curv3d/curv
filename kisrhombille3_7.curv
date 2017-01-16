@@ -114,7 +114,7 @@ hyperLineByDirection(p,d) =
             let( c  = p + dc*(1 - dot(p,p))/(2*dot(p,dc)) )
             unitCircleInters(c,norm(c-p));
 
-hyperLineDirectionAt(p,q) =
+hyperLineDirectionAt(p,q) = /* vec2 */
     let( c = center(p,q) )
     if (c==null)
         (if (norm(p-q)>1e-6) p-q else null)
@@ -173,13 +173,13 @@ hyperRotation(x,c,a) =
         x
     else
         let( cc = center(x,c),
-             d0 = hyperLineDirectionAt(c,x),
+             d0 = hyperLineDirectionAt(c,x), /* vec2 */
              cs = cos(a/2),
              sn = sin(a/2),
-             rt = [[cs,sn],[-sn,cs]],
-             d1 = d0*rt,
+             rt = [[cs,sn],[-sn,cs]], /* mat22 */
+             d1 = dot(d0,rt),
              rl = hyperLineByDirection(c,d1))
-        hyperReflection(x,rl[0],rl[1]);
+        hyperReflection(x,rl'0,rl'1);
 
 //    
 // Euclidean geometry functions
@@ -193,19 +193,19 @@ unitCircleInters(c,r) =
     else
         let( x  = -(r*r - dot(c,c) -1)/norm(c)/2,
              y  = sqrt(1 - x*x) )
-        mult([[x,y],[x,-y]], [[c'X, c'Y],[-c'Y,c'X]])/norm(c);
+        dot([[x,y],[x,-y]], [[c'X,c'Y],[-c'Y,c'X]]) / norm(c);
 
-function unit(v) = v/norm(v);
+unit(v) = v/norm(v);
 
 // Drawing module
 
-module polyline(p, t=1) {
-    for(i=[0:len(p)-2]) {
-        v = p[i+1]-p[i];
-        h = norm(v);
+polyline(p, t/*=1*/) = union [
+    for(i=[0..len(p)-2]) (
+        let (v = p'(i+1)-p'i)
+        let (h = norm(v))
         if( h > 1e-12)
-            translate(p[i])
-                rotate(atan2(v[1],v[0])) 
-                    translate([-t/2,-t/2]) square([h+t,t]);
-    }
-}
+            translate(p'i)
+                rotate(atan2(v'Y,v'X)) 
+                    translate[-t/2,-t/2] square[h+t,t]
+    )
+];
