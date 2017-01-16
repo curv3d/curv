@@ -433,5 +433,8 @@ TEST(curv, eval)
         "0\n"
         "2\n"
         "5");
+
+    SUCCESS("is_list 0","false");
+    SUCCESS("is_list []","true");
   }
 }

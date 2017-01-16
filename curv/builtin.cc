@@ -31,6 +31,15 @@ Builtin_Value::to_meaning(const Identifier& id) const
     return make<Constant>(share(id), value_);
 }
 
+struct Is_List_Function : public Function
+{
+    Is_List_Function() : Function(1) {}
+    Value call(Frame& args) override
+    {
+        return {args[0].dycast<List>() != nullptr};
+    }
+};
+
 struct Sqrt_Function : public Function
 {
     Sqrt_Function() : Function(1) {}
@@ -350,6 +359,7 @@ builtin_namespace =
     {"null", make<Builtin_Value>(Value())},
     {"false", make<Builtin_Value>(Value(false))},
     {"true", make<Builtin_Value>(Value(true))},
+    {"is_list", make<Builtin_Value>(Value{make<Is_List_Function>()})},
     {"sqrt", make<Builtin_Value>(Value{make<Sqrt_Function>()})},
     {"log", make<Builtin_Value>(Value{make<Log_Function>()})},
     {"abs", make<Builtin_Value>(Value{make<Abs_Function>()})},
