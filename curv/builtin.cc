@@ -350,6 +350,38 @@ struct Echo_Metafunction : public Metafunction
     }
 };
 
+struct Assert_Action : public Just_Action
+{
+    Shared<Operation> arg_;
+    Assert_Action(
+        Shared<const Phrase> source,
+        Shared<Operation> arg)
+    :
+        Just_Action(std::move(source)),
+        arg_(std::move(arg))
+    {}
+    virtual void exec(Frame& f) const override
+    {
+        Value a = arg_->eval(f);
+        if (!a.is_bool())
+            throw Exception(At_Phrase(*source_, &f), "domain error");
+        bool b = a.get_bool_unsafe();
+        if (!b)
+            throw Exception(At_Phrase(*source_, &f), "assertion failed");
+    }
+};
+struct Assert_Metafunction : public Metafunction
+{
+    using Metafunction::Metafunction;
+    virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
+    {
+        auto args = ph.analyze_args(env);
+        if (args.size() != 1)
+            throw Exception(At_Phrase(ph, env), "assert: expecting 1 argument");
+        return make<Assert_Action>(share(ph), args.front());
+    }
+};
+
 const Namespace
 builtin_namespace =
 {
@@ -374,6 +406,7 @@ builtin_namespace =
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},
     {"shape2d", make<Builtin_Value>(Value{make<Shape2d_Function>()})},
     {"echo", make<Builtin_Meaning<Echo_Metafunction>>()},
+    {"assert", make<Builtin_Meaning<Assert_Metafunction>>()},
 };
 
 } // namespace curv

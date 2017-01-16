@@ -23,6 +23,13 @@ void At_Arg::get_locations(std::list<Location>& locs) const
     get_frame_locations(eval_frame_.parent_frame, locs);
 }
 
+bool arg_to_bool(Value val, const Context& ctx)
+{
+    if (!val.is_bool())
+        throw Exception(ctx, "not boolean");
+    return val.get_bool_unsafe();
+}
+
 // TODO: accept a module. Return the module's elements list.
 auto arg_to_list(Value val, const Context& ctx)
 -> List&
