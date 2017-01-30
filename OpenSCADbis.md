@@ -84,22 +84,25 @@ built-in functions for which this will not work.)
 
 In the expression `f(x)`, `f` is looked up in the function namespace,
 and `x` is looked up in the variable namespace. The namespace hacks I describe
-above make function calls work for new style function definitions, and also
-allow functions to be used in argument position of a function call.
+above make function calls work for new-style functions, and also
+allow new-style functions to be used in argument position of a function call.
 
 However, this hack doesn't let you use a function parameter in the
-function position of a function call. To make this work, we change the
-interpretation of function call expressions within a new style function
-definition, so that the function is looked up within the variable namespace.
+function position of a function call. To make this work, within a new style
+function definition, parameter and local variable names are defined in both
+the variable and the function namespaces.
 
 ### Limitations
-This still leaves some edge cases, which shouldn't occur frequently:
-* a global variable F containing a function value can't be called from within
+This still leaves some edge cases:
+* A global variable F containing a function value can't be called from within
   an old-style function definition, or from within a variable definition,
   using the syntax `F(x)`. You have to use `(F)(x)` instead.
-* Calling an old-style function F from within a new-style function
-  is tricky, you need to use the syntax `(F)(x)`. Or convert F to the new
-  definition syntax by deleting the `function` keyword.
+* Within a variable definition,
+  * You can't call a variable F except using `(F)(x)`.
+
+### Libraries
+To avoid the need for namespace prefixes, we need special handling
+for libraries (`use` and `include`).
 
 ## November 2016
 This proposal is a modification of the OpenSCAD2 proposal,

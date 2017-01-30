@@ -1,8 +1,12 @@
-kisrhombille-3-7: does the GL output actually work?
+gcurv -- tool which reads a curv script and displays shapes in a window.
+  * I'd like an FPS counter (ms/frame). Low overhead in loop so I can get
+    fast frames. Mouse zoom/pan.
+  * graphical wrapper around the curv tool?
+  * python or C++? QT5 (gui and opengl portability abstractions). C++.
 
-gcurv -- a tool written in Python 3 -- a graphical wrapper around the curv tool
-  which reads a curv script and displays shapes in a window. Later, it can be
-  made interactive like openscad.
+2d subsystem: repetition operators, and others
+
+kisrhombille-3-7: does the GL output actually work?
 
 refactor/extend:
 * generalized shapes: geom:[x,y,z,t]->[d,r,g,b]
@@ -24,6 +28,7 @@ Linear algebra:
   enbool(i) = [false,true]'i;
   debool(b) = ifelse(b, 1, 0);
   identity(n) = [for(i=[1..n]) [for(j=[1..n]) debool(i==j)]]; // or eye
+  to_bool, from_bool
 
 Vectorized boolean operations:
 * Vectorized relations are <' <=' >' >=' ==' !='.
@@ -55,7 +60,25 @@ ongoing research:
 * polygon -- convex_polygon as Nef polygon, intersection of half planes
   convex_polygon(vertices) -- vertices are in counterclockwise order, as this
   seems to be the standard convention.
+  regular_polygon(nsides) -- efficient representation using symmetry
 * align
+* Repetition operators, which repeat a shape multiple or infinite times,
+  in constant time and memory, in accordance with some symmetry pattern.
+  These operators can be composed to describe more complex symmetries.
+  * row
+    * 7 frieze groups: https://en.wikipedia.org/wiki/Frieze_group
+  * grid
+    * 17 wallpaper groups: https://en.wikipedia.org/wiki/Wallpaper_group
+  * rotate tau/N, N copies
+    * rosette groups
+  * reflect
+  * glide reflection
+  * spiral -- not sure if this is symmetric -- might have trouble defining it?
+    http://www.mathematische-basteleien.de/spiral.htm
+  * The Symmetry of Things, orbifold notation
+    * An orbifold signature does not uniquely specify a repetition operator.
+    * Find a collection of ops that can be composed to generate
+      all the repetition patterns.
 * pack or row
 * crop
   * crop(xmin=null,ymin=null,xmax=null,ymax=null)=...; // OpenSCAD style
@@ -66,6 +89,7 @@ ongoing research:
         if (xmax!=null) shape2d{dist p = p'0 - xmax},
         if (ymax!=null) shape2d{dist p = p'1 - ymax},
       ];
+* visualize the distance field using a colour_map
 * shell(n), inflate(n)
 * text (steal from openjscad to begin with)
 * rsquare, runion (rounded corners and fillets)
@@ -82,17 +106,19 @@ ongoing research:
 * Slice. Divides a solid object into two separate 3D objects.
 
 Colour:
+* spelling: "colour", as per en.oxforddictionaries.com
 * [r,g,b] is a colour value.
 * [x,y]->[r,g,b] and [x,y,z]->[r,g,b] are 2d and 3d colour fields.
-* 2D shape with color[x,y] function.
-  * Either a shape has color or it doesn't. Union requires either both args
-    have color, or neither.
+* x->[r,g,b] is a colour map from [0...1) to a colour.
+* 2D shape with colour[x,y] function.
+  * Either a shape has colour or it doesn't. Union requires either both args
+    have colour, or neither.
   * When a coloured shape is transformed, the transformation is also applied
     to the colour field.
-* `color(c) shape` applies a colour or a colour field to a shape.
+* `colour(c) shape` applies a colour or a colour field to a shape.
 * Colour operations:
-  * predefined color values (red,orange,green,...)
-  * color operations (eg, light red)
+  * predefined colour values (red,green,blue,yellow,magenta,cyan,orange,green,...)
+  * colour operations (eg, light red)
   * Geometric transforms can be applied to colour fields.
 * Image import.
 

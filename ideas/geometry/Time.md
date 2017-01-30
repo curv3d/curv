@@ -16,6 +16,8 @@ Time is relative. Since time is a coordinate, it can be transformed.
 You can apply temporal transformations to speed up or slow down the passage
 of time within a shape, loop over a specified time range, concatenate
 a sequence of fixed length animations, etc.
+* Or apply a transformation that creates motion trails from an animation.
+* motion blur: https://www.shadertoy.com/view/MdB3Dw
 
 Since time is a coordinate, animated 2D shapes are actually static objects
 in 3D space-time, and animated 3D shapes are static objects in 4D space-time.

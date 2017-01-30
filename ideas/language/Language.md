@@ -375,14 +375,15 @@ For example, `echo("x=$x, y=$y")`.
 
 OpenSCAD defines `\t`, `\r` and `\n` as names for special characters.
 We don't need this syntax, since character names can be defined by libraries.
-The standard library will define `nl="$+A";`,
-so you can use `"$nl"` or "${nl}"` to interpolate a newline.
+The standard library will define `nl="$+A";`, so you can use "${nl}"`
+to interpolate a newline. (Braces are needed for literal string interpolation.)
 But these special cases are worth having:
 * `$$` --  literal `$`
 * `$"` --  literal `"`
 
 Note that a special variable like `$t` must be interpolated
-as `"${$t}"` or `"$($t)"`.
+as `"${$t}"` or `"$($t)"`. (This seems bad, but at this point I might not
+implement special `$` variables.) Ruby uses `#{expr}` for interpolation.
 
 Note that, because arbitrary expressions (not just variable names)
 can be interpolated into string literals, that could mean there's a
@@ -398,6 +399,20 @@ A Python-style multi-line text literal begins and ends with `"""`.
 These are used for debug messages and doc strings.
 
 Both types of string literal may contain escape sequences beginning with `$`.
+
+It bugs me that Python multi-line literals can't be indented.
+Here's another syntax for multi-line string literals:
+```
+echo "first line
+     >second line
+     >third line";
+```
+PS the python solution is "implicit string concatenation",
+```
+echo "first line\n"
+     "second line\n"
+     "third line";
+```
 
 ### Printing a String
 How are strings printed, using `$(str)` interpolation? As a quoted string,
