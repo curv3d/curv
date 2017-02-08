@@ -1,9 +1,0 @@
-#! /usr/bin/env python
-from OpenGLContext import testingcontext
-BaseContext = testingcontext.getInteractive()
-from OpenGL.GL import *
-
-class MyContext(BaseContext):
-    pass
-
-MyContext.ContextMainLoop()

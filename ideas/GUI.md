@@ -1,18 +1,38 @@
 # Building a GUI
 
-I can implement in C++ or in Python.
+Currently, my GUI is glslViewer: C++ and GLFW. That's probably okay for MVP.
+
+Later, I could write a more sophisticated custom GUI.
+Maybe with an OpenSCAD-like interface.
+Or maybe a visual programming environment.
+
+My current preference is C++ and QT5, for a desktop app.
+Or focus on building a web app.
 
 QT provides a portable, high level OpenGL and GUI interface.
 (Raw OpenGL is low level, verbose, and platform dependent.)
 It's one library solving both problems.
 
-C++ is the native language for QT and OpenGL. PyQT5 supports "most" of QT.
+C++ is the native language for QT and OpenGL. Played with Python, but the
+necessary modules seem "second tier" compared to C++ libraries.
+PyQT5 supports "most" of QT.
 "Desktop bindings for OpenGL 2.0 are mostly complete."
-(QT5's OpenGL ES bindings aren't supported yet by PyQT5.)
+QT5's OpenGL ES bindings aren't supported yet by PyQT5.
 
-Use C++.
-Start with a simple QT5 app that renders a shadertoy script.
-Later, maybe reuse the OpenSCAD GUI.
+Maybe reuse the OpenSCAD GUI code.
+
+Platforms?
+* Ubuntu 16.04 is my primary platform.
+* macOS: #2, as long as my macbook holds up anyway. Not interested in buying
+  a new Mac.
+* Windows 10? Ecch. Not interested. (But it's popular!)
+* Raspberry Pi, probably Raspian. OpenGL ES2, full screen only.
+  No GLFW port. QT5 exists in full screen mode, but no standard package, you
+  compile it yourself. No gcc 6 unless you compile it yourself.
+  glslViewer has a Raspberry Pi port. Use SSH and glslViewer, that works.
+  (OpenSCAD is ported; how does it work if you can't run OpenGL in a window?)
+* The web.
+* Android??
 
 ------------------------------------------------------------------------------
 Python: PyQT5 and PyOpenGL seem good choices: popular, well supported, powerful.
