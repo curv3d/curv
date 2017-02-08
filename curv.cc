@@ -218,14 +218,8 @@ void export_json(curv::Module& module, std::ostream& out)
 }
 
 const char help[] =
-"Interactive mode:\n"
+"Interactive CLI mode:\n"
 "  curv\n"
-"\n"
-"Display this help information:\n"
-"  curv --help\n"
-"\n"
-"Display version:\n"
-"  curv --version\n"
 "\n"
 "Batch mode (process a file, write results to stdout):\n"
 "  curv [options] filename\n"
@@ -233,9 +227,15 @@ const char help[] =
 "  -o format -- output format:\n"
 "     curv -- default format, print values as Curv expressions\n"
 "     json -- print values as JSON expressions\n"
-"     shadertoy -- render shapes as a shadertoy.com GLSL script\n"
+"     shadertoy -- render shapes as a shadertoy.com image shader\n"
 "  -D definition -- override an existing definition in <filename>\n"
 "  filename -- input file, a Curv script, optional if -i specified\n"
+"\n"
+"Display version:\n"
+"  curv --version\n"
+"\n"
+"Display this help information:\n"
+"  curv --help\n"
 ;
 
 int
