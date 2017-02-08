@@ -1,0 +1,2 @@
+#!/bin/sh
+curv -o shadertoy "$@" >,curvtemp.frag && glslViewer ,curvtemp.frag
