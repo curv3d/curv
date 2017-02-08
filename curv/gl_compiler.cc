@@ -113,7 +113,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& source)
                 } else
                     goto error;
             }
-            f.gl.out << ")\n";
+            f.gl.out << ");\n";
             return result;
         }
     }
