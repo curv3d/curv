@@ -1,11 +1,13 @@
 size = 100; // of main disk
 fn  = 64;  // for the arcs
+//depth = 3;
+depth = 1;
 
 // background disk
 //translate([0,0,-5])color("white") circle(size);
 
 // kisrhombille3_7 is drawn in a unit disk
-scale(size) kisrhombille3_7(3, 0.015);
+scale(size) kisrhombille3_7(depth, 0.015);
 
 color(c) shape = shape;
 
