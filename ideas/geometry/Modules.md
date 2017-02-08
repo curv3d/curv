@@ -3,6 +3,22 @@
 This is about convenient notation and making things easier for beginners,
 not adding expressive power.
 
+## What is a Script?
+In OpenSCAD2, a script denotes a "geometric object", which is a specific
+value type. Corresponds to a Curv module. An object can behave either like
+a library or as a possibly parameterized shape.
+
+For CurvLab, I've been thinking that a Curv script should be able to denote
+any type of value. Ideas:
+ 1. Multiple file extensions. `*.cval` can denote any type of value.
+    `*.curv` is the OpenSCAD2 inspired interpretation.
+ 2. Multiple file extensions. `*.cval` is any value. `*.clib` is a library.
+    `*.curv` is specifically a shape. This removes design pressure from
+    modules to behave both like libraries and shapes.
+ 3. Single extension `*.curv`. No elements -> a library. One element -> that
+    value. Multiple shape elements -> implicit union. Otherwise `file`
+    reports an error.
+
 ## Scripts denote Shapes
 In the OpenSCAD user experience, you type in a script (with parameter settings
 and shape expressions), press Render, and you see a shape.

@@ -1,14 +1,20 @@
 gcurv -- tool which reads a curv script and displays shapes in a window.
- * glslViewer is my starting point.
+ * Centre the shape in the viewport. If infinite, choose an arbitrary bbox.
+   * Put bbox into the shadertoy output.
+   * Use bbox to center the shape in the viewport.
+ * use mouse to zoom, pan, rotate
+ * I'm using glslViewer internally.
    * fix window resize crash
    * uniform mat3 u_2dview -- use mouse to zoom, pan, rotate a 2D world,
      matrix transforms viewport coords to world coords.
+     * glslViewer has u_eye, u_normalMatrix, u_viewMatrix, etc, but only if you
+       are using a mesh. Generalize this.
    * glslViewer is not a standard Ubuntu package.
      * Instruct user to install it separately?
      * Include it as a project dependency, add to build process?
        Might be good if I depend on my latest changes.
- * gcurv filename -- process curv script, display OpenGL window.
-   $ curv -o shadertoy filename >tmp.frag && glslViewer tmp.frag
+
+Live programming:
  * lcurv filename -- watch curv src, update OpenGL window on change.
    * initially, non-interactive. glslViewer inherits lcurv stdout/err.
    * could initially be a shell script. tricky though, requires extra commands
@@ -26,11 +32,6 @@ gcurv -- tool which reads a curv script and displays shapes in a window.
  * curv CLI mode: when a Curv expression returns one or more shapes,
    print them on the console in ASCII (more useful once we have `defshape`),
    *and also* display the union of the shapes in an OpenGL window.
-or:
- * I'd like an FPS counter (ms/frame). Low overhead in loop so I can get
-   fast frames. Mouse zoom/pan.
- * graphical wrapper around the curv tool?
- * python or C++? QT5 (gui and opengl portability abstractions). C++.
 
 2d subsystem: repetition operators, and others
 
@@ -124,6 +125,9 @@ ongoing research:
 * infinite patterns
 * grid (map shape onto infinite repeating shape)
 * fractals
+  * fbm cloud colourmap (as seen in IQ's Elevated on shadertoy)
+  * fractal mountain: port IQ's Elevated
+  * Mandelbrot set
 * morph(r,s1,s2)
 * Escher circle limit
 * minkowski sum
