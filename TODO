@@ -1,8 +1,36 @@
 gcurv -- tool which reads a curv script and displays shapes in a window.
-  * I'd like an FPS counter (ms/frame). Low overhead in loop so I can get
-    fast frames. Mouse zoom/pan.
-  * graphical wrapper around the curv tool?
-  * python or C++? QT5 (gui and opengl portability abstractions). C++.
+ * glslViewer is my starting point.
+   * fix window resize crash
+   * uniform mat3 u_2dview -- use mouse to zoom, pan, rotate a 2D world,
+     matrix transforms viewport coords to world coords.
+   * glslViewer is not a standard Ubuntu package.
+     * Instruct user to install it separately?
+     * Include it as a project dependency, add to build process?
+       Might be good if I depend on my latest changes.
+ * gcurv filename -- process curv script, display OpenGL window.
+   $ curv -o shadertoy filename >tmp.frag && glslViewer tmp.frag
+ * lcurv filename -- watch curv src, update OpenGL window on change.
+   * initially, non-interactive. glslViewer inherits lcurv stdout/err.
+   * could initially be a shell script. tricky though, requires extra commands
+     like inotifywait or fswatch.
+   * eventually, I want to redraw if an included file changes. This requires
+     integration with libcurv.
+   * `fswatch` looks like a decent package on github.
+     https://github.com/emcrisostomo/fswatch/tree/master/libfswatch
+     Has both a CLI and a library with C and C++ bindings.
+     Supports all operating systems.
+   * Easier just to use a stat loop in curv.cc
+ * use `curv -w filename` for live programming mode. Maybe this *also* has an
+   interactive CLI for querying variables and debugging. GNU readline has a
+   callback-based API suitable for this: rl_callback_handler_install etc.
+ * curv CLI mode: when a Curv expression returns one or more shapes,
+   print them on the console in ASCII (more useful once we have `defshape`),
+   *and also* display the union of the shapes in an OpenGL window.
+or:
+ * I'd like an FPS counter (ms/frame). Low overhead in loop so I can get
+   fast frames. Mouse zoom/pan.
+ * graphical wrapper around the curv tool?
+ * python or C++? QT5 (gui and opengl portability abstractions). C++.
 
 2d subsystem: repetition operators, and others
 

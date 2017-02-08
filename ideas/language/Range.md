@@ -6,7 +6,8 @@ to slice notation, eg vec[a:b:c], because then there is a serious conflict
 with Python.
 
 `a..b` is a reasonable syntax for the inclusive integer range from a to b,
-because it looks like an ellipsis.
+because it looks like an ellipsis. It's the most popular syntax for this concept
+in modern programming languages, but actually goes back to Algol68.
 Similar syntax is being used in other popular languages, eg Rust and Swift.
 It generalizes nicely to slice notation, where you optionally omit the beginning
 or end of the range, eg
@@ -17,10 +18,12 @@ a@(i..j)  a@(i..)  a@(..j)
 ```
 
 How do you extend this syntax with an optional step value?
-My solution is `start:step..end`, which is very similar to
-the Matlab/Julia/OpenSCAD syntax `start:step:end`, but less
-confusing for Python programmers when used as slice notation,
-since Python uses `start:end:step` for slices.
+My solution is `a..b step c`. The `step` keyword is more readable
+than any alternative I've tested using punctuation characters.
+The `a..b` syntax is the closest I've found to a de-facto standard for
+simple integer ranges, but once you add a step argument, there's no standard,
+so any alternative using punctuation characters to designate the step is
+unreadable.
 
 It's difficult to extend this syntax with an optional step value.
 The problem is finding a readable and intuitive syntax.

@@ -1,7 +1,15 @@
 # Efficient Update of Arrays and Records
 
-So, I want to explore a nice syntax for incremental update of arrays
+I want a nice syntax for incremental update of arrays
 and records, and also an efficient implementation.
+
+Syntax:
+The current plan is for lists and records to use the same indexing operator,
+currently `x'i`, where `i` is an integer or string.
+Then `update(x,i,newval)` is the update operation for lists and records.
+Within the sequential assignment sublanguage, `next x'i = newval`
+is an abbreviation for `next x = update(x,i,newval)`.
+Likewise, `next x.f = newval` is `next x = update(x,"f",newval)`.
 
 My implementation idea is copy on write: copy the collection if `use_count>1`,
 then incrementally update. This is combined with a function calling convention

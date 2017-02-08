@@ -33,3 +33,13 @@ Benefits:
 But
     * might suck if predicate is long and complicated.
       (Use reverse funcall operator in that case?)
+
+This generalizes to using relational operators in parameter assertions
+for refutable patterns:
+```
+   f(x >= 0) = ...;
+   switch [
+   (x==0) -> ...,
+   (Nat x) -> ...
+   ]
+```

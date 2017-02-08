@@ -21,6 +21,30 @@ Can we use scripts as a notation to construct sub-shapes?
     Equivalent to `union`, unless I don't want modules to use the List
     protocol to export their elements.
 
+Use cases:
+ * Use a script to construct a subshape as an argument to a shape operation.
+   Script definitions are effectively used as local variables.
+   Multiple shape elements are implicitly unioned.
+   Because: notational convenience?
+   * I'm ambivalent about using module bindings as an alternative notation
+     for local variables in this one use case. Maybe I'd prefer a consistent,
+     orthogonal and convenient notation for local variables, which works
+     equally well for lists. Especially if "modules are not lists".
+   * `(x=1; y=2; [x,y])`
+   * `(x=1; y=2; union[s(x), c(y)])`
+   * `(x=1; y=2; {s(x), c(y)})`
+   * `{x=1; y=2; s(x); c(y);}`
+ * Prototype-oriented programming, which is the use case highlighted in
+   the OpenSCAD2 proposal. In this case, a module is bound to a name,
+   which denotes a shape, but then you can create customized versions using
+   the name. Can be used in conjunction with `defshape`.
+
+What is a script? My "sequential assignment" sublanguage has while loops.
+Can you generate a series of shapes from inside a while loop?
+What's the syntax? (Note, I found that allowing the same phrase to be both
+a definition and a generator created semantic and implementation problems,
+so that's not happening for now.)
+
 ## Modules are Shapes
 Module values are shapes. Module is a subtype of Shape.
 
