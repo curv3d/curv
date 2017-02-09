@@ -25,5 +25,3 @@ add_dependencies(tests tester)
 
 install(TARGETS curv RUNTIME DESTINATION bin)
 install(FILES lib/std.curv DESTINATION lib)
-
-add_subdirectory(gui)
