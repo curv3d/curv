@@ -48,11 +48,11 @@ void gl_compile(const Shape2D&, std::ostream&);
 /// GL data types
 enum class GL_Type : unsigned
 {
-    Bool,
-    Num,
-    Vec2,
-    Vec3,
-    Vec4
+    Bool = 0,
+    Num = 1,
+    Vec2 = 2,
+    Vec3 = 3,
+    Vec4 = 4
 };
 extern struct GL_Type_Attr
 {

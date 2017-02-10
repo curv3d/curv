@@ -3,8 +3,20 @@
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
 #include <curv/list.h>
+#include <curv/exception.h>
 
 namespace curv {
+
+const char List_Base::name[] = "list";
+
+void
+List_Data::assert_size(size_t sz, const Context& cx)
+const
+{
+    if (size() != sz)
+        throw Exception(cx,
+            stringify("list has wrong size: expected ",sz,", got ",size()));
+}
 
 void
 List_Base::print(std::ostream& out) const

@@ -22,12 +22,19 @@ protected:
     T array_[0];
 public:
     using value_type = T;
+
     size_t size() const noexcept { return size_; }
     bool empty() const noexcept { return size_ == 0; }
+
     value_type* begin() noexcept { return array_; }
     value_type* end() noexcept { return array_ + size_; }
+    const value_type* begin() const noexcept { return array_; }
+    const value_type* end() const noexcept { return array_ + size_; }
+
     value_type& operator[](size_t i) { return array_[i]; }
     const value_type& operator[](size_t i) const { return array_[i]; }
+    value_type& at(size_t i) { return array_[i]; }
+    const value_type& at(size_t i) const { return array_[i]; }
 };
 
 /// Construct a class whose last data member is an inline variable sized array.

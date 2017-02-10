@@ -7,8 +7,56 @@
 #include <curv/string.h>
 #include <curv/list.h>
 #include <curv/record.h>
+#include <curv/exception.h>
 
 namespace curv {
+
+void
+Value::to_null(const Context& cx) const
+{
+    if (!is_null()) throw Exception(cx, "value is not null");
+}
+
+bool
+Value::to_bool(const Context& cx) const
+{
+    if (!is_bool()) throw Exception(cx, "value is not a boolean");
+    return get_bool_unsafe();
+}
+
+double
+Value::to_num(const Context& cx) const
+{
+    if (!is_num()) throw Exception(cx, "value is not a number");
+    return get_num_unsafe();
+}
+
+void
+Value::to_abort [[noreturn]] (const Context& cx, const char* type)
+{
+    throw Exception(cx, stringify("value is not a ",type));
+}
+
+Value
+Value::at(Atom field, const Context& cx) const
+{
+    if (is_ref()) {
+        Ref_Value& r = get_ref_unsafe();
+        Value v = r.getfield(field);
+        if (v != missing)
+            return v;
+    }
+    throw Exception(cx, stringify(".",field,": not defined"));
+}
+
+Value
+Ref_Value::field(Atom name, const Context& cx) const
+{
+    Value v = getfield(name);
+    if (v != missing)
+        return v;
+    throw Exception(cx, stringify(".",name,": not defined"));
+}
 
 void
 Value::print(std::ostream& out)

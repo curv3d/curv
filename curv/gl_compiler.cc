@@ -28,9 +28,20 @@ void gl_compile(const Shape2D& shape, std::ostream& out)
 
     out <<
         "  return " << result << ";\n"
-        "}\n"
-        "// minX, minY, maxX, maxY\n"
-        "const vec4 bbox = vec4(-10.0,-10.0,+10.0,+10.0);\n"
+        "}\n";
+    BBox bbox = shape.bbox(At_GL_Frame(&*frame));
+    if (bbox.empty() || bbox.infinite()) {
+        out <<
+        "const vec4 bbox = vec4(-10.0,-10.0,+10.0,+10.0);\n";
+    } else {
+        out << "const vec4 bbox = vec4("
+            << bbox.xmin << ","
+            << bbox.ymin << ","
+            << bbox.xmax << ","
+            << bbox.ymax
+            << ");\n";
+    }
+    out <<
         "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n"
         "{\n"
         "    // transform `fragCoord` from viewport to world coordinates\n"

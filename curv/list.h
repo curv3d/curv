@@ -12,11 +12,20 @@
 
 namespace curv {
 
-struct List_Base : public Ref_Value, public aux::Tail_Array_Data<Value>
+class Context;
+
+struct List_Data : public aux::Tail_Array_Data<Value>
+{
+    void assert_size(size_t sz, const Context& cx) const;
+};
+
+struct List_Base : public Ref_Value, public List_Data
 {
     List_Base() : Ref_Value(ty_list) {}
     virtual void print(std::ostream&) const;
     bool operator==(const List_Base&) const;
+
+    static const char name[];
 };
 
 /// Representation of lists in the Curv runtime.

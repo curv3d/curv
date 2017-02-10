@@ -12,6 +12,7 @@ namespace curv {
 
 union Value;
 struct Atom;
+struct Context;
 
 /// Base class for the object referenced by a curv reference value.
 ///
@@ -64,6 +65,9 @@ struct Ref_Value : public aux::Shared_Base
     ///
     /// Return missing if the field is not defined.
     virtual Value getfield(Atom) const;
+
+    /// Wrapper for getfield, throw exception if field is not defined.
+    Value field(Atom, const Context&) const;
 };
 
 /// A boxed, dynamically typed value in the Curv runtime.
@@ -144,6 +148,8 @@ public:
     {
         return bits_ == k_nullbits;
     }
+    /// Abort if value is not null.
+    void to_null(const Context& cx) const;
 
     /// Construct a boolean value.
     inline constexpr Value(bool b) : bits_{k_boolbits|(uint64_t)b} {}
@@ -160,6 +166,8 @@ public:
     {
         return (bool)(bits_ & 1);
     }
+    /// Convert a Value to `bool`, throw an exception if wrong type.
+    bool to_bool(const Context&) const;
 
     /// Construct a number value.
     ///
@@ -197,6 +205,9 @@ public:
     {
         return number_;
     }
+
+    /// Convert a Value to `double`, throw an exception if wrong type.
+    double to_num(const Context&) const;
 
     /// Construct a reference value.
     ///
@@ -279,6 +290,19 @@ public:
         }
         return nullptr;
     }
+    template <class T>
+    inline Shared<T> to(const Context& cx)
+    {
+        if (is_ref()) {
+            T* p = dynamic_cast<T*>(&get_ref_unsafe());
+            if (p != nullptr)
+                return share(*p);
+        }
+        to_abort(cx, T::name);
+    }
+    static void to_abort [[noreturn]] (const Context&, const char*);
+
+    Value at(Atom fieldname, const Context& cx) const;
 
     /// The copy constructor increments the use_count of a ref value.
     inline Value(const Value& val) noexcept

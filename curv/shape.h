@@ -7,22 +7,35 @@
 
 #include <curv/record.h>
 #include <curv/gl_compiler.h>
+#include <cmath>
 
 namespace curv {
 
 class Function;
+class Context;
+
+// axis aligned bounding box
+struct BBox {
+    double xmin, ymin;
+    double xmax, ymax;
+    bool empty() {
+        return (xmin >= xmax || ymin >= ymax);
+    }
+    bool infinite() {
+        return (xmin == -INFINITY || ymin == -INFINITY ||
+                xmax == +INFINITY || ymax == +INFINITY);
+    }
+    static BBox from_value(Value, const Context&);
+};
 
 // TODO: a more compact/efficient representation for Shape2D?
 // Maybe use the same internal representation as Record, with a different
 // type tag?
 // But, shape2d should also accept a module argument, and in that case,
-// it should support customization (of the underlying module).
+// it should support customization (of the underlying module)?
+// Actually I'm not sure if that will be supported.
 // TODO: Shape2D should be abstract, user defined Shape2D should be a subclass.
 // I presume that built-in shape classes don't need the record_ field.
-// TODO: exception context for reporting a bad dist function.
-// 1. Validate dist during evaluation, when shape constructed.
-//    Store the validated dist function as a data member.
-// 2. Validate dist during GL compile. Pass GL_Frame& to dist().
 
 struct Shape2D : public Ref_Value
 {
@@ -37,7 +50,8 @@ struct Shape2D : public Ref_Value
 
     virtual Value getfield(Atom) const override;
 
-    Function& dist() const;
+    Function& dist(const Context&) const;
+    BBox bbox(const Context&) const;
 
     /// Invoke the Geometry Compiler on the shape's `dist` function.
     GL_Value gl_dist(GL_Value, GL_Frame&) const;
