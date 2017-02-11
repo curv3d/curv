@@ -1,5 +1,3 @@
-add a Makefile, then get rid of 'mk'.
-
 refactor: use new Value access API throughout code
 
 # gcurv -- tool which reads a curv script and displays shapes in a window.
