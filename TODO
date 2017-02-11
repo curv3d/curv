@@ -3,8 +3,6 @@ add a Makefile, then get rid of 'mk'.
 refactor: use new Value access API throughout code
 
 # gcurv -- tool which reads a curv script and displays shapes in a window.
- * Centre the shape in the viewport. If infinite, choose an arbitrary bbox.
-   * Use bbox to center the shape in the viewport.
  * use mouse to zoom, pan, rotate
  * I'm using glslViewer internally.
    * fix window resize crash
