@@ -85,3 +85,27 @@ Maybe check out
 * JoinDiaspora.com ("decentralized facebook")
 * Synereo.com (vague and ambitious, decentralized Attention Economy network)
   Also, total vapourware right now.
+
+## Business Model
+I like how ghost.org is a non-profit organization. Their software is open
+source, financed by the ghost.org "platform as a service", which is
+subscription based.
+
+So what can CurvHub charge for, while still keeping all of the software
+open source?
+ * 3D printing of your model (or, more likely, someone else's).
+ * T-shirt printing, and all the other ways to convert your model to a
+   physical object.
+ * This sounds similar to Shapeways, but in that model, the artist keeps
+   the model secret and charges for prints. I want to create an open source
+   community of shared remixable designs, more like shadertoy or github.
+ * Server usage fees? Doesn't make sense if you are using Curv as a hobbyist
+   and giving away your designs. Github has private repos, though.
+ * If I support private designs, how does that impact my goal to foster
+   an open source community?
+   * Is there actually an industrial use case for CurvHub?
+     What do you get from privately hosting on CurvHub?
+     * the github model: cloud hosting and team productivity
+     * the Shapeways model: sell your closed source model through a
+       CurvHub provided storefront. But that kills the opensource goal,
+       nobody shares, everybody wants to cash in.

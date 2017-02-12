@@ -19,6 +19,50 @@ any type of value. Ideas:
     value. Multiple shape elements -> implicit union. Otherwise `file`
     reports an error.
 
+### Value Scripts
+If there is a curv script type that denotes an arbitrary value, then that same
+script in parentheses ought to denote the same value. And you can type this
+kind of script on the CLI and get that value printed. And recursive definitions
+are supported. Maybe like this:
+    def1; def2; generator
+where def can be an action and generator can be an expression, and there is
+a recursive definition scope. This is equivalent:
+    (def1; def2; generator)
+It looks like there is no implicit union of top level shape expressions.
+A library of recursive definitions (module) looks like this:
+    {def1; def2; def3}
+A library doesn't contain elements. A library script needs top level braces,
+consistent with how a library value is printed.
+
+In the CLI, if commands are value scripts, then
+* 'a=2' denotes a definition, it defines 'a'.
+* 'a=2;a+1' denotes an integer, and prints '3', it doesn't also define 'a'.
+  Instead, 'a' is a local variable, just as in (a=2;a+1).
+* ';' does not sequence generators (it's an error), only ',' can do that.
+  So this is more consistent than how top level module scripts currently work.
+* In this universe, you can define local variables within a list constructor
+  like this: [a=1;a,a+1]. No need for 'let' any more.
+  So an OpenSCAD module call like
+      translate(v) {x=1;y=2;shape(x,y);}
+  becomes
+      translate(v) union[x=1;y=2;shape(x,y)]
+
+Is "prototype oriented programming" still a thing? Customizable shapes and
+libraries? Convenient syntax for defining a top level customizable shape?
+Minimize the syntactic distance between defining a shape parameter as a local
+variable, and defining a customizable shape parameter?
+```
+  param x = 1;
+  param y = 2;
+  shape(i,j) = ...; // not a parameter, just a local variable
+  union [
+    shape(x,y),
+    sphere
+  ]
+```
+So what is this thing? It's a shape S. It has fields S.x and S.y, unlike
+a union shape.
+
 ## Scripts denote Shapes
 In the OpenSCAD user experience, you type in a script (with parameter settings
 and shape expressions), press Render, and you see a shape.

@@ -63,6 +63,7 @@ Remedies:
         modcall(),
         modcall(),
     ]
+    This one makes perfect sense in the "value script" design.
  2. OpenSCAD2 "geometric object" syntax using {...}. So just use:
       {
         a = ...;
