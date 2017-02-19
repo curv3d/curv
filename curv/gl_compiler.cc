@@ -21,6 +21,9 @@ void gl_compile(const Shape2D& shape, std::ostream& out)
     auto frame = GL_Frame::make(0, gl, nullptr, nullptr);
 
     out <<
+        "#ifdef __GLSLVIEWER__\n"
+        "uniform mat3 u_view2d;\n"
+        "#endif\n"
         "float main_dist(vec2 " << dist_param << ")\n"
         "{\n";
 
@@ -44,21 +47,23 @@ void gl_compile(const Shape2D& shape, std::ostream& out)
     out <<
         "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n"
         "{\n"
-        "    // transform `fragCoord` from viewport to world coordinates\n"
         "    vec2 size = bbox.zw - bbox.xy;\n"
         "    vec2 scale2 = size / iResolution.xy;\n"
         "    vec2 offset = bbox.xy;\n"
         "    float scale;\n"
         "    if (scale2.x > scale2.y) {\n"
         "        scale = scale2.x;\n"
-        "        offset.y -= (iResolution.y*scale - size.y)/2;\n"
+        "        offset.y -= (iResolution.y*scale - size.y)/2.0;\n"
         "    } else {\n"
         "        scale = scale2.y;\n"
-        "        offset.x -= (iResolution.x*scale - size.x)/2;\n"
+        "        offset.x -= (iResolution.x*scale - size.x)/2.0;\n"
         "    }\n"
-        "    float d = main_dist(fragCoord.xy*scale+offset);\n"
+        "#ifdef __GLSLVIEWER__\n"
+        "    fragCoord = (u_view2d * vec3(fragCoord,1)).xy;\n"
+        "#endif\n"
+        "    float d = main_dist(fragCoord*scale+offset);\n"
         "    if (d < 0.0)\n"
-        "        fragColor = vec4(0,0,0,0);\n"
+        "        fragColor = vec4(0,0,0,1.0);\n"
         "    else {\n"
         "        vec2 uv = fragCoord.xy / iResolution.xy;\n"
         "        fragColor = vec4(uv,0.5+0.5*sin(iGlobalTime),1.0);\n"
