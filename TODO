@@ -1,8 +1,6 @@
 # Release 0.0: "2D subsystem"
 What remains for MVP?
 
-Update copyright to 2017.
-
 Colour. Add an optional colour function, colour:[x,y]->[r,g,b].
 
 Animation. Add an extra t argument to dist and colour functions.

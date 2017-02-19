@@ -1,4 +1,4 @@
-// Copyright Doug Moen 2016.
+// Copyright Doug Moen 2016-2017.
 // Distributed under The MIT License.
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
