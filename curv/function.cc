@@ -9,6 +9,8 @@
 
 namespace curv {
 
+const char Function::name[] = "function";
+
 void
 Function::print(std::ostream& out) const
 {

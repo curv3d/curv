@@ -74,4 +74,18 @@ Shape2D::gl_dist(GL_Value arg, GL_Frame& f) const
     return result;
 }
 
+GL_Value
+Shape2D::gl_colour(GL_Value arg, GL_Frame& f) const
+{
+    At_GL_Frame cx(&f);
+    auto fun = field("colour", cx).to<Function>(cx);
+    auto f2 = GL_Frame::make(fun->nslots_, f.gl, &f, nullptr);
+    (*f2)[0] = arg;
+    auto result = fun->gl_call(*f2);
+    if (result.type != GL_Type::Vec3) {
+        throw Exception(cx, stringify("colour function returns ",result.type));
+    }
+    return result;
+}
+
 } // namespace curv

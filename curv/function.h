@@ -42,6 +42,8 @@ struct Function : public Ref_Value
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const;
+
+    static const char name[];
 };
 
 /// The run-time representation of a compiled lambda expression.

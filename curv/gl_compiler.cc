@@ -24,10 +24,17 @@ void gl_compile(const Shape2D& shape, std::ostream& out)
         "#ifdef __GLSLVIEWER__\n"
         "uniform mat3 u_view2d;\n"
         "#endif\n"
-        "float main_dist(vec2 " << dist_param << ")\n"
+        "float main_dist(vec2 " << dist_param << ", out vec4 colour)\n"
         "{\n";
 
     GL_Value result = shape.gl_dist(dist_param, *frame);
+
+    if (shape.getfield("colour") != missing) {
+        GL_Value colour = shape.gl_colour(dist_param, *frame);
+        out << "  colour = vec4(" << colour << ", 1.0);\n";
+    } else {
+        out << "  colour = vec4(0.4, 0.0, 0.0, 1.0);\n";
+    }
 
     out <<
         "  return " << result << ";\n"
@@ -45,7 +52,7 @@ void gl_compile(const Shape2D& shape, std::ostream& out)
             << ");\n";
     }
     out <<
-        "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n"
+        "void mainImage( out vec4 fragColour, in vec2 fragCoord )\n"
         "{\n"
         "    vec2 size = bbox.zw - bbox.xy;\n"
         "    vec2 scale2 = size / iResolution.xy;\n"
@@ -61,12 +68,10 @@ void gl_compile(const Shape2D& shape, std::ostream& out)
         "#ifdef __GLSLVIEWER__\n"
         "    fragCoord = (u_view2d * vec3(fragCoord,1)).xy;\n"
         "#endif\n"
-        "    float d = main_dist(fragCoord*scale+offset);\n"
-        "    if (d < 0.0)\n"
-        "        fragColor = vec4(0,0,0,1.0);\n"
-        "    else {\n"
+        "    float d = main_dist(fragCoord*scale+offset, fragColour);\n"
+        "    if (d > 0.0) {\n"
         "        vec2 uv = fragCoord.xy / iResolution.xy;\n"
-        "        fragColor = vec4(uv,0.5+0.5*sin(iGlobalTime),1.0);\n"
+        "        fragColour = vec4(uv,0.5+0.5*sin(iGlobalTime),1.0);\n"
         "    }\n"
         "}\n"
         ;
