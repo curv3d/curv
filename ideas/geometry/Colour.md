@@ -17,15 +17,15 @@ result is determined based on the colour fields of the inputs.
 Colour:
 * Initially, [r,g,b] is a colour value. (Later I'll support alpha.)
 * [x,y]->[r,g,b] and [x,y,z]->[r,g,b] are 2d and 3d colour fields.
-* 2D shape with color[x,y] function.
-  * Either a shape has color or it doesn't. Union requires either both args
-    have color, or neither.
+* 2D shape with colour[x,y] function.
+  * Either a shape has colour or it doesn't. Union requires either both args
+    have colour, or neither.
   * When a coloured shape is transformed, the transformation is also applied
     to the colour field.
-* `color(c) shape` applies a colour or a colour field to a shape.
+* `colour(c) shape` applies a colour or a colour field to a shape.
 * Colour operations:
-  * predefined color values (red,orange,green,...)
-  * color operations (eg, light red)
+  * predefined colour values (red,orange,green,...)
+  * colour operations (eg, light red)
   * Geometric transforms can be applied to colour fields.
 * Image import.
 * Colour fields can be animated. Colour functions are passed a time coordinate.

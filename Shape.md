@@ -60,31 +60,31 @@ that reference colour. But, how to achieve that with Curv?
 The bbox has x,y,z,t components. For 2d shapes, the z components are ignored.
 For eternal shapes (the common case), tmin is -infinity and tmax is +infinity.
 
-Coloured shapes have a `color` function that maps [x,y,z,t] to [r,g,b].
+Coloured shapes have a `colour` function that maps [x,y,z,t] to [r,g,b].
 This attribute is optional. Union will combine two colourless shapes to
 produce a colourless shape. Or combine two coloured shapes.
 But when combining coloured with colourless, the colourless shape is
 converted to coloured by substituting the default colour.
-* `std.default_color` is the default `default_color`.
-  This can be overridden by defining `default_color` in the top-level module.
-* I guess we can also honour module bindings of `default_color` in any module
+* `std.default_colour` is the default `default_colour`.
+  This can be overridden by defining `default_colour` in the top-level module.
+* I guess we can also honour module bindings of `default_colour` in any module
   that is converted to a shape, overriding the value passed in from the parent.
 * I will later introduce an environment record, tentatively called `req`,
   which is passed as an argument to `dist` functions during geometry
-  compilation. The `default_color` will be a field of `req`.
+  compilation. The `default_colour` will be a field of `req`.
 * This looks a lot like dynamic binding in OpenSCAD. But without implementing
   that mechanism pervasively in all function calls. The environment is passed
   explicitly. I'll stick with that for now.
-* Until the `default_color` mechanism is implemented, union can report an
+* Until the `default_colour` mechanism is implemented, union can report an
   error when combining coloured and colourless shapes. Or we hard code a
-  default color of black [0,0,0].
+  default colour of black [0,0,0].
 
 A simpler design is that all shapes have a geom function: [x,y,z,t]->[d,r,g,b].
 Use the simplest design that works: try this, then optimize later.
 * A colour field is virtually the same as an infinite shape, except that it
   maps [x,y,z,t]->[r,g,b]. Just use infinite shapes instead.
-  Now intersect[colorfield,shape] applies a colourfield to a shape.
-* color(c)shape = make_shape {
+  Now intersect[colourfield,shape] applies a colourfield to a shape.
+* colour(c)shape = make_shape {
     geom p = [shape.geom(p)'0, c'0, c'1, c'2],
     bbox = shape.bbox
   };
@@ -221,16 +221,16 @@ float mainDist(vec2 pt)
 }
 // minX, minY, maxX, maxY
 const vec4 bbox = vec4(-10.0,-10.0,+10.0,+10.0);
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
+void mainImage( out vec4 fragColour, in vec2 fragCoord )
 {
     // transform `fragCoord` from viewport to world coordinates
     float scale = (bbox.w-bbox.y)/iResolution.y;
     float d = mainDist(fragCoord.xy*scale+bbox.xy);
     if (d < 0.0)
-        fragColor = vec4(0,0,0,0);
+        fragColour = vec4(0,0,0,0);
     else {
         vec2 uv = fragCoord.xy / iResolution.xy;
-        fragColor = vec4(uv,0.5+0.5*sin(iGlobalTime),1.0);
+        fragColour = vec4(uv,0.5+0.5*sin(iGlobalTime),1.0);
     }
 }
 ---

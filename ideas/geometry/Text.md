@@ -33,12 +33,12 @@ high-quality anti-aliasing using a single line of shader code:
 
 varying highp vec2 sampleCoord;
 uniform sampler2D texture;
-uniform lowp vec4 color;
+uniform lowp vec4 colour;
 uniform highp float distMin;
 uniform highp float distMax;
 void main() {
     gl_FragColor =
-        color * smoothstep(distMin, distMax, texture2D(texture, sampleCoord).a);
+        colour * smoothstep(distMin, distMax, texture2D(texture, sampleCoord).a);
 }
 
 smoothstep: perform Hermite interpolation between two values (GLSL, WebGL)
@@ -54,7 +54,7 @@ magnified, the thinner the soft region is.
 When the GPU is powerful enough (meaning desktop GPUs) we can even do sub-pixel
 anti-aliasing, it is just about adding some lines of shader code. Instead
 of using the distance data to compute the output pixel’s alpha, we use
-the data of the neighboring pixels to compute each color component of the
+the data of the neighboring pixels to compute each colour component of the
 output pixel separately. Five texture samples are then needed instead of
 one. The red component averages the three left-most distance field values, the
 green component averages the three middle distance field values and the blue
