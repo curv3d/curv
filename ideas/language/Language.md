@@ -192,13 +192,13 @@ For a beginner, it's easy to accidently type `cube(10,20,30)`
 or `square(5,10)`, instead of `cube([10,20,30])` or `square([5,10])`.
 OpenSCAD's behaviour of ignoring errors doesn't help beginners find these
 bugs. It turns out that `square(5,10)` is equivalent
-to `square(size=5,center=10)`. The `center` argument is supposed to be
+to `square(size=5,centre=10)`. The `centre` argument is supposed to be
 boolean, and in this context, `10` counts as false. In Curv,
 `square(5,10)` will abort with an error, since the second argument
-(the `center` argument) is non-boolean. If Curv were to behave as
+(the `centre` argument) is non-boolean. If Curv were to behave as
 some have advocated, and it were to
 consistently treat 0 as false and non-zero numbers as true, then
-`square(5,10)` would not report an error, instead it would center the square.
+`square(5,10)` would not report an error, instead it would centre the square.
 
 *bool1* `&&` *bool2*
 > `true` if both arguments are true, otherwise `false`

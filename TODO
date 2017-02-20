@@ -29,10 +29,10 @@ A reasonable set of 2D primitives:
 Regular Polygon:
 ---
 def polygon_radius(x, y, r, N):
-    """ Makes a polygon with a center-to-vertex distance r
+    """ Makes a polygon with a centre-to-vertex distance r
         The polygon is oriented so that the bottom is always flat.
     """
-    # Find the center-to-edge distance
+    # Find the centre-to-edge distance
     r_ = -r * math.cos(math.pi / N)
     # Make an offset half-region shape
     half = Shape('-f%gY' % r_)

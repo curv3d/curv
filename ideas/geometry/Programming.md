@@ -437,8 +437,8 @@ two half-spaces (one for each end cap), and an infinite cylinder
 for the body. This is similar to the construction of a cuboid
 from six half-spaces.
 
-We'll first construct an infinite cylinder centered on the Z-axis.
-To do this, we just take the distance function for a centered circle,
+We'll first construct an infinite cylinder centred on the Z-axis.
+To do this, we just take the distance function for a centred circle,
 and put that into a 3D distance function:
 ```
 dist([x,y,z]) = norm([x,y]) - r
@@ -456,7 +456,7 @@ The intersection of these three infinite solids is
 ```
 max(norm([x,y]) - r, z - h/2, -h/2 - z)
 ```
-We'll apply the same optimization for a centered object that we used for cuboid:
+We'll apply the same optimization for a centred object that we used for cuboid:
 ```
 max(norm([x,y]) - r, abs(z) - h/2)
 ```
@@ -691,7 +691,7 @@ See above.
 
 ## Translation
 translate(), align(), pack???.
-No need for center= options.
+No need for centre= options.
 
 ## Shells and Isosurfaces
 
@@ -708,7 +708,7 @@ shell(w)(shape) = 3dshape(
 Explanation:
 * `f(p) = abs(shape.f(p))` is the zero-thickness shell of `shape`.
 * `f(p) = abs(shape.f(p)) - n` (for positive n) is a shell of thickness `n*2`,
-  centered on the zero-thickness shell given above.
+  centred on the zero-thickness shell given above.
 * `f(p) = shape.f(p) + n` (for positive n) is the isosurface of `shape` at `-n`
   (it's smaller than `shape`)
 

@@ -278,7 +278,7 @@ See above.
 
 ### Translation
 translate(), align(), pack???.
-No need for center= options.
+No need for centre= options.
 
 ### Shells and Isosurfaces
 
@@ -295,7 +295,7 @@ shell(w)(shape) = 3dshape(
 Explanation:
 * `f(p) = abs(shape.f(p))` is the zero-thickness shell of `shape`.
 * `f(p) = abs(shape.f(p)) - n` (for positive n) is a shell of thickness `n*2`,
-  centered on the zero-thickness shell given above.
+  centred on the zero-thickness shell given above.
 * `f(p) = shape.f(p) + n` (for positive n) is the isosurface of `shape` at `-n`
   (it's smaller than `shape`)
 

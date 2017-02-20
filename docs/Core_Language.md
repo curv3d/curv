@@ -293,7 +293,7 @@ boolean, and in this context, `10` counts as false. In Curv,
 (the `center` argument) is non-boolean. If Curv were to behave as
 some have advocated, and it were to
 consistently treat 0 as false and non-zero numbers as true, then
-`square(5,10)` would not report an error, instead it would center the square.
+`square(5,10)` would not report an error, instead it would centre the square.
 
 *bool1* `&&` *bool2*
 > `true` if both arguments are true, otherwise `false`

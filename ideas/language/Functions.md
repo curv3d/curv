@@ -9,9 +9,9 @@ there's little need for keyword parameters, outside of OpenSCAD compatibility.
 Keyword parameters start to look redundant.
 But then, pattern matching on records are needed as a full replacement. Eg,
 ```
-cube(size, {center:is_bool=false}) = ...;
+cube(size, {centre:is_bool=false}) = ...;
 cube(10);
-cube(20, {center=true});
+cube(20, {centre=true});
 ```
 
 OpenSCAD2 object parameterization (now module parameterization) relies on
