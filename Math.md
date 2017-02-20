@@ -1,5 +1,45 @@
 # math library
 
+mag(v) = sum(v^2);
+* Magnitude of a vector. More like high-school math than 'norm', which is also
+  a more abstract and general concept.
+
+phase[x,y] = atan2(y,x).
+* Convert a 2D vector to an angle. It's a standard engineering name for the
+  concept, as per MathWorld and Wikipedia. `arg(p)` is a pure math alternative,
+  but the word "argument" has a different meaning in programming.
+  angle(z) is "phase angle" of a complex number in MatLab.
+  Python cmath has "phase".
+
+cis(theta) = [cos theta, sin theta].
+* Convert an angle to a unit vector.
+  The `cis` function is available in many high performance math libraries,
+  where it is faster than calling cos and sin separately.
+  Python cmath has "cis".
+
+Complex numbers.
+[re,im] is the representation (no abstract type).
+* mag(z) -- complex magnitude -- like abs(z) in MatLab
+* phase(z) -- complex phase
+* conj[re,im] = [re,-im] -- complex conjugate.
+  Reflects a 2-vector across the X axis.
+  Is it useful in Curv? Dunno.
+  * cmul(z, conj(z)) == a^2 + b^2, which is real and non-negative // z==[a,b]
+    and is mag(z)^2.
+  * Used when computing complex division by hand to cancel out the i's.
+  * sqrt(z) * conj(z) == mag(z)
+  * To convert a real function to a positive value, you can square it.
+    The analog for complex functions is to multiply by the conjugate.
+* from polar coordinates: r*cis(theta)
+* z+w
+* z-w
+* cmul([a,b],[c,d]) = [a*c - b*d, b*c + a*d];
+  This adds the phases and multiplies the magnitudes.
+  eg, cmul(vec,cis(theta)) rotates a 2D vector by angle theta.
+* cdiv(z,w)
+  Subtract the phases and divide the magnitudes.
+* there are also exponentials, trig
+
 Shadertoy.com classifies the following GLSL ES features as being useful.
 
 void bool int float vec2 vec3 vec4 bvec2 bvec3 bvec4 ivec2 ivec3 ivec4 mat2 mat3 mat4 sampler2D
@@ -44,6 +84,7 @@ type mix (type x, type y, float a)
 type step (type edge, type x)
 type step (float edge, type x)
     0 if x<edge, else 1
+    bit(x<edge) or bit(edge>x)
 type smoothstep (type a, type b, type x)
 type smoothstep (float a, float b, type x)
     0 if x<a, 1 if x>b, else interpolate between 0 and 1 using Hermite polynom.
@@ -83,6 +124,11 @@ bvec equal(bvec x, bvec y)
 bvec notEqual(vec x, vec y)
 bvec notEqual(ivec x, ivec y)
 bvec notEqual(bvec x, bvec y)
+* shorter names?
+* <' <=' >' >=' ==' !='
+* lesser, greater, not_lesser, not_greater, equal, not_equal
+  These are adjective forms. Predicate form is better.
+
 bool any(bvec x)
 bool all(bvec x)
 bvec not(bvec x)
