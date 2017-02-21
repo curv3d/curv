@@ -12,7 +12,6 @@ Distance field visualizer. distance_field(bbox)(2dshape)
 * Or, IF(a,b,c)=bit(a)*b + bit(!a)*c; as a quick fix.
 * This still requires boolean conditions, plus `bit`.
 So:
-* GL: implement true, false and `bit`.
 * GL: implement boolean conditions
 
 Colour.

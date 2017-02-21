@@ -121,6 +121,13 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& source)
             << dfmt(num, dfmt::EXPR) << ";\n";
         return result;
     }
+    if (val.is_bool()) {
+        GL_Value result = f.gl.newvalue(GL_Type::Bool);
+        bool b = val.get_bool_unsafe();
+        f.gl.out << "  bool " << result << " = "
+            << (b ? "true" : "false") << ";\n";
+        return result;
+    }
     if (auto list = val.dycast<List>()) {
         if (list->size() >= 2 && list->size() <= 4) {
             static GL_Type types[5] = {

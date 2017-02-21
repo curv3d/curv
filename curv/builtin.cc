@@ -39,12 +39,23 @@ struct Is_List_Function : public Function
         return {args[0].dycast<List>() != nullptr};
     }
 };
+
 struct Bit_Function : public Function
 {
     Bit_Function() : Function(1) {}
     Value call(Frame& args) override
     {
         return {double(args[0].to_bool(At_Arg(0, args)))};
+    }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        auto arg = f[0];
+        if (arg.type != GL_Type::Bool)
+            throw Exception(At_GL_Arg(0, f),
+                "bit: argument is not a bool");
+        auto result = f.gl.newvalue(GL_Type::Num);
+        f.gl.out << "  float "<<result<<" = float("<<arg<<");\n";
+        return result;
     }
 };
 
