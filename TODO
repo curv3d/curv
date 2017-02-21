@@ -1,12 +1,24 @@
 # Release 0.0: "2D subsystem"
 What remains for MVP?
 
+Distance field visualizer. distance_field(bbox)(2dshape)
+* need 'rem' function
+* which depends on 'trunc'
+* which isn't in WebGL, but is in later versions. use `#if __VERSION__`
+  in GL code generator.
+* my Curv implementation of trunc requires conditional expressions.
+* implement GL conditionals. Simple implementation that evaluates both legs
+  of the if.
+* Or, IF(a,b,c)=bit(a)*b + bit(!a)*c; as a quick fix.
+* This still requires boolean conditions, plus `bit`.
+So:
+* GL: implement true, false and `bit`.
+* GL: implement boolean conditions
+
 Colour.
 * language: defined(expr.id), eg if (defined s.colour)
 * Add colour support to shape operators. Either a shape has colour or it doesn't.
   Union requires either both args have colour, or neither.
-
-Distance field visualizer. distance_field(bbox)(2dshape)
 
 Define regular_polygon(n). See poly.curv.
 * Add `let` support to GL.

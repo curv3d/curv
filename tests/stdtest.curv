@@ -1,6 +1,8 @@
 assert(is_list 0 == false);
 assert(is_list[]);
 
+assert(bit(false)==0 && bit(true)==1);
+
 assert( dot( [], []) == 0 );
 assert( dot( [1,2], [3,4]) == 11 );
 assert( dot( [[1,2],[3,4]], [[2,0],[1,2]]) == [[4,4],[10,8]] );

@@ -39,6 +39,14 @@ struct Is_List_Function : public Function
         return {args[0].dycast<List>() != nullptr};
     }
 };
+struct Bit_Function : public Function
+{
+    Bit_Function() : Function(1) {}
+    Value call(Frame& args) override
+    {
+        return {double(args[0].to_bool(At_Arg(0, args)))};
+    }
+};
 
 struct Sqrt_Function : public Function
 {
@@ -393,6 +401,7 @@ builtin_namespace()
     {"false", make<Builtin_Value>(Value(false))},
     {"true", make<Builtin_Value>(Value(true))},
     {"is_list", make<Builtin_Value>(Value{make<Is_List_Function>()})},
+    {"bit", make<Builtin_Value>(Value{make<Bit_Function>()})},
     {"sqrt", make<Builtin_Value>(Value{make<Sqrt_Function>()})},
     {"log", make<Builtin_Value>(Value{make<Log_Function>()})},
     {"abs", make<Builtin_Value>(Value{make<Abs_Function>()})},
