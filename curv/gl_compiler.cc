@@ -21,7 +21,7 @@ void gl_compile(const Shape2D& shape, std::ostream& out)
     auto frame = GL_Frame::make(0, gl, nullptr, nullptr);
 
     out <<
-        "#ifdef __GLSLVIEWER__\n"
+        "#ifdef GLSLVIEWER\n"
         "uniform mat3 u_view2d;\n"
         "#endif\n"
         "float main_dist(vec2 " << dist_param << ", out vec4 colour)\n"
@@ -65,7 +65,7 @@ void gl_compile(const Shape2D& shape, std::ostream& out)
         "        scale = scale2.y;\n"
         "        offset.x -= (iResolution.x*scale - size.x)/2.0;\n"
         "    }\n"
-        "#ifdef __GLSLVIEWER__\n"
+        "#ifdef GLSLVIEWER\n"
         "    fragCoord = (u_view2d * vec3(fragCoord,1)).xy;\n"
         "#endif\n"
         "    float d = main_dist(fragCoord*scale+offset, fragColour);\n"
