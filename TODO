@@ -7,12 +7,6 @@ Distance field visualizer. distance_field(bbox)(2dshape)
 * which isn't in WebGL, but is in later versions. use `#if __VERSION__`
   in GL code generator.
 * my Curv implementation of trunc requires conditional expressions.
-* implement GL conditionals. Simple implementation that evaluates both legs
-  of the if.
-* Or, IF(a,b,c)=bit(a)*b + bit(!a)*c; as a quick fix.
-* This still requires boolean conditions, plus `bit`.
-So:
-* GL: implement boolean conditions
 
 Colour.
 * language: defined(expr.id), eg if (defined s.colour)
@@ -88,6 +82,14 @@ ImplicitCAD:
   size of 2D box to pack objects in, separation between objects
 * shell(w=width of shell) shape
 * union, intersection, difference, square have a radius of rounding
+
+# Nice To Have
+* GL: && || if use lazy evaluation
+* GL: if is polymorphic
+* text (for debugging).
+* a better gl_assert: multiple assertions, display text for each assertion.
+  gl_assert[["== works",()->t1==t2], ...]
+* unicode operators (needs re2c)
 
 # Older Stuff
 

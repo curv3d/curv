@@ -348,4 +348,88 @@ GL_Value List_Expr::gl_eval(GL_Frame& f) const
         "this list constructor does not support the Geometry Compiler");
 }
 
+GL_Value Not_Expr::gl_eval(GL_Frame& f) const
+{
+    auto arg = gl_eval_expr(f, *arg_, GL_Type::Bool);
+    GL_Value result = f.gl.newvalue(GL_Type::Bool);
+    f.gl.out <<"  bool "<<result<<" = !"<<arg<<";\n";
+    return result;
+}
+GL_Value Or_Expr::gl_eval(GL_Frame& f) const
+{
+    // TODO: change GL Or to use lazy evaluation.
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Bool);
+    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Bool);
+    GL_Value result = f.gl.newvalue(GL_Type::Bool);
+    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" || "<<arg2<<");\n";
+    return result;
+}
+GL_Value And_Expr::gl_eval(GL_Frame& f) const
+{
+    // TODO: change GL And to use lazy evaluation.
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Bool);
+    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Bool);
+    GL_Value result = f.gl.newvalue(GL_Type::Bool);
+    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" && "<<arg2<<");\n";
+    return result;
+}
+GL_Value If_Else_Op::gl_eval(GL_Frame& f) const
+{
+    // TODO: change GL If to use lazy evaluation.
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Bool);
+    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num);
+    auto arg3 = gl_eval_expr(f, *arg3_, GL_Type::Num);
+    GL_Value result = f.gl.newvalue(GL_Type::Num);
+    f.gl.out <<"  float "<<result<<" =("<<arg1<<" ? "<<arg2<<" : "<<arg3<<");\n";
+    return result;
+}
+GL_Value Equal_Expr::gl_eval(GL_Frame& f) const
+{
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Num);
+    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num);
+    GL_Value result = f.gl.newvalue(GL_Type::Bool);
+    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" == "<<arg2<<");\n";
+    return result;
+}
+GL_Value Not_Equal_Expr::gl_eval(GL_Frame& f) const
+{
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Num);
+    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num);
+    GL_Value result = f.gl.newvalue(GL_Type::Bool);
+    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" != "<<arg2<<");\n";
+    return result;
+}
+GL_Value Less_Expr::gl_eval(GL_Frame& f) const
+{
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Num);
+    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num);
+    GL_Value result = f.gl.newvalue(GL_Type::Bool);
+    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" < "<<arg2<<");\n";
+    return result;
+}
+GL_Value Greater_Expr::gl_eval(GL_Frame& f) const
+{
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Num);
+    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num);
+    GL_Value result = f.gl.newvalue(GL_Type::Bool);
+    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" > "<<arg2<<");\n";
+    return result;
+}
+GL_Value Less_Or_Equal_Expr::gl_eval(GL_Frame& f) const
+{
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Num);
+    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num);
+    GL_Value result = f.gl.newvalue(GL_Type::Bool);
+    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" <= "<<arg2<<");\n";
+    return result;
+}
+GL_Value Greater_Or_Equal_Expr::gl_eval(GL_Frame& f) const
+{
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Num);
+    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num);
+    GL_Value result = f.gl.newvalue(GL_Type::Bool);
+    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" >= "<<arg2<<");\n";
+    return result;
+}
+
 } // namespace curv

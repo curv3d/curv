@@ -285,6 +285,7 @@ struct Not_Expr : public Prefix_Expr_Base
 {
     using Prefix_Expr_Base::Prefix_Expr_Base;
     virtual Value eval(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 struct Positive_Expr : public Prefix_Expr_Base
 {
@@ -324,41 +325,49 @@ struct Or_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 struct And_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 struct Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 struct Not_Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 struct Less_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 struct Greater_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 struct Less_Or_Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 struct Greater_Or_Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 struct Add_Expr : public Infix_Expr_Base
 {
@@ -562,6 +571,7 @@ struct If_Else_Op : public Operation
     virtual Value eval(Frame&) const override;
     virtual void generate(Frame&, List_Builder&) const override;
     virtual void exec(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
 struct Lambda_Expr : public Just_Expression
