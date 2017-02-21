@@ -1,0 +1,28 @@
+poly(n) = shape2d {
+    dist p = norm p - cos mod(atan2(p'Y, p'X), tau / n),
+    bbox = [[-5,-5],[5,5]]
+};
+rotate(tau/4) poly 5;
+j = shape2d {
+    dist p = p'X - 1,
+    bbox = [[-5,-5],[5,5]]
+};
+//j;
+
+rep_rotate(n) = \s -> shape2d {
+    dist p =
+        //
+};
+// Partition 2-space into n pie slices, radiating from origin.
+// rotate p onto the corresponding point in the 'prime' pie slice
+//   theta = atan2(p'Y, p'X); -- or, theta = phase(p);
+//   theta_prime = mod(theta, tau/n);
+// rotate p through the angle -(theta - theta_prime)
+//   rotate_by = -(theta - theta_prime);
+// maybe construct a rotation matrix, that should be fast in GLSL.
+//   sin_r = sin(rotate_by);
+//   cos_r = cos(rotate_by);
+//   new_p = [p'X*cos_r - p'Y*sin_r, p'Y*cos_r + p'X*sin_r];
+// or
+//   v = cis(rotate_by);
+//   new_p = cmul(p, v);

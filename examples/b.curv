@@ -1,0 +1,5 @@
+xmin=-2;
+shape2d {
+    dist p = xmin - p'X,
+    bbox = [[xmin, -inf], [inf, inf]]
+};

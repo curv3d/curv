@@ -1,5 +1,14 @@
 # math library
 
+Fractional part of a number.
+Mathworld names the function `frac(n)`, gives two competing definitions:
+* sawtooth wave: mod(n,1) or n - floor(n). Result is non-negative.
+  Eg: HLSL frac, GLSL fract, Mathematica SawtoothWave, MuPad frac,
+* rem(n,1) or n - trunc(n). Result has the same sign and digits after the
+  decimal point as the argument. Eg, C Julia modf, Mathematica FractionalPart
+  Maple frac(n).
+* Notationally, I think mod(n,1) and rem(n,1) are fine.
+
 mag(v) = sum(v^2);
 * Magnitude of a vector. More like high-school math than 'norm', which is also
   a more abstract and general concept.

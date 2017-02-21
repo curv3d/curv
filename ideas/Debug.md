@@ -50,6 +50,26 @@ This gets called in the following situations:
   single-step, resume.
 * A breakpoint was reached or a single-step has completed.
 
+## Co-operative vs Pre-emptive Thread Cancellation
+Pre-emptive thread cancellation isn't supported by modern operating
+environments, unless you kill the entire process. Co-operative thread
+cancellation can work, but requires support in long-running library functions
+called by the interpreter. Eg, suppose we add the CGAL API to the language.
+CGAL isn't thread safe and doesn't have cancellation points.
+
+I could put the evaluator in a separate process from the UI.
+For the interactive CLI, the two processes exchange text: CLI sends a command
+line, receives stdout. ^C sends a co-operative interrupt request: if no response
+after N milliseconds, it asks if you want to force kill or wait.
+
+How much state is preserved after a force-kill? Maybe there's a tradeoff here
+against code complexity? How about: there's a client/server architecture as
+above. To execute a new command, the server forks a child. The original server
+process is a backup of the CLI state. If the child succeeds, it replaces the
+original server process. If the child has to be force killed, the parent
+preserves the state. The child could also crash due to stack exhaustion or
+a bug.
+
 ### Stack Trace on Error
 Store a list of call phrases in curv::Exception, to print stack trace.
 Choices:
