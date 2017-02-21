@@ -5,7 +5,11 @@ e = 2.71828182845904523536028747135266249775724709369995;
 X = 0;
 Y = 1;
 Z = 2;
+
+ceil(n) = -floor(-n);
+trunc(n) = if (n >= 0) floor(n) else ceil(n);
 mod(a,m) = a - m * floor(a/m);
+rem(a,m) = a - m * trunc(a/m);
 
 // lists
 concat(vv) = [for (v=vv) for (i=v) i];
@@ -40,6 +44,27 @@ square(sz) =
     dist p = max(abs p - s/2),
     bbox = [-s/2, s/2],
   };
+rect(bbox) =
+  let(xmin = bbox'0'X, ymin = bbox'0'Y,
+      xmax = bbox'1'X, ymax = bbox'1'Y)
+  intersection [
+    if (xmin > -inf) shape2d {
+        dist p = xmin - p'X,
+        bbox = [[xmin, -inf], [inf, inf]]
+    },
+    if (ymin > -inf) shape2d {
+        dist p = ymin - p'Y,
+        bbox = [[-inf, ymin], [inf, inf]]
+    },
+    if (xmax < inf) shape2d {
+        dist p = p'X - xmax,
+        bbox = [[-inf, -inf], [xmax, inf]]
+    },
+    if (ymax < inf) shape2d {
+        dist p = p'Y - ymax,
+        bbox = [[-inf, -inf], [inf, ymax]]
+    },
+  ];
 
 // boolean shape operations
 nothing = shape2d {
