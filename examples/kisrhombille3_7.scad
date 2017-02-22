@@ -80,7 +80,7 @@ module hyperLine(p,q, t=0.05) {
 // Hyperbolic lines in the unit disk -> Euclidean circles
 function center(p,q) = 
     abs(p*[(p-q).y, -(p-q).x]) < 1e-6 ? undef : // p, q and [0,0] are colinear
-        let( u = (p*q -1)/( 2*p*[(p-q).y, -(p-q).x] ) )
+        letrec( u = (p*q -1)/( 2*p*[(p-q).y, -(p-q).x] ) )
         (p+q)/2 - u*[(p-q).y, -(p-q).x];
 
 function radius(p,q) = norm(center(p, q)-p);
@@ -88,13 +88,13 @@ function radius(p,q) = norm(center(p, q)-p);
 // return the ideal points of a line passing thru p with direction d
 function hyperLineByDirection(p,d) =
     norm(p) < 1e-6 ? norm(d)>1e-6 ? [unit(d),-unit(d)] : undef :
-        let( dc = [-d.y, d.x] )
+        letrec( dc = [-d.y, d.x] )
         abs(p*dc) < 1e-6 ? [unit(d),-unit(d)] :
-            let( c  = p + dc*(1 - p*p)/(2*p*dc) )
+            letrec( c  = p + dc*(1 - p*p)/(2*p*dc) )
             unitCircleInters(c,norm(c-p));
 
 function hyperLineDirectionAt(p,q) =
-    let( c = center(p,q) )
+    letrec( c = center(p,q) )
     c==undef ? norm(p-q)>1e-6 ? p-q : undef :
         [ (p-c).y, -(p-c).x ];
 
@@ -102,12 +102,12 @@ function hyperLineDirectionAt(p,q) =
 // the result [a,b] is such that the hyperline thru p,q pass by the points
 // in the order a,p,q,b
 function idealPoints(p,q) =
-    let( c = center(p,q) )
+    letrec( c = center(p,q) )
     c == undef ? 
         norm(p-q) > 1e-6 ? 
             [ unit(p-q), -unit(p-q)] :
             undef :
-        let( ip = unitCircleInters(c,norm(c-p)) )
+        letrec( ip = unitCircleInters(c,norm(c-p)) )
         (ip[1]-ip[0])*(p-q) < 0 ?
             ip :
             [ip[1], ip[0]] ;
@@ -115,7 +115,7 @@ function idealPoints(p,q) =
 // Hyperbolic metric in the unit disk
 // It may return an infinity value
 function hyperDistance(p,q) =
-    let( id = idealPoints(p,q) )
+    letrec( id = idealPoints(p,q) )
     norm(p-id[0])<1e-12 || norm(id[1]-q)<1e-12 ? 1/0 : 
         ln(norm(q-id[0])*norm(id[1]-p)/norm(p-id[0])/norm(id[1]-q));
 
@@ -123,22 +123,22 @@ function hyperDistance(p,q) =
 
 // translation of x by dx
 function hyperTranslation(x, dx) =
-    let( d = 1 + 2*dx*x + dx*dx*x*x )
+    letrec( d = 1 + 2*dx*x + dx*dx*x*x )
     abs(d) < 1e-6 ? undef :
         ((1 + dx*x + x*x)*dx + (1 - dx*dx)*x)/d;
 
 function hyperReflection(x, p, q) =
-    let( c  = center(p,q)) // Euclidean circle of 
+    letrec( c  = center(p,q)) // Euclidean circle of 
                            // hyperline thru p,q
     c == undef ? undef :
-        let( r  = radius(p,q),
+        letrec( r  = radius(p,q),
              cx = x-c,     // dir of the reflected point
              s  = pow(r/norm(cx),2) )
         (c + s*cx);
 
 function hyperRotation(x,c,a) =
     norm(x-c) < 1e-6 ? x :
-        let( cc = center(x,c),
+        letrec( cc = center(x,c),
              d0 = hyperLineDirectionAt(c,x),
              cs = cos(a/2),
              sn = sin(a/2),
@@ -155,7 +155,7 @@ function hyperRotation(x,c,a) =
 // and the circle [c(enter),r(adius)]
 function unitCircleInters(c,r) =
     norm(c)<1e-6 || norm(c)-abs(r) > 1 ? [] :
-        let( x  = -(r*r - c*c -1)/norm(c)/2,
+        letrec( x  = -(r*r - c*c -1)/norm(c)/2,
              y  = sqrt(1 - x*x) )
         [ [x,y], [x,-y] ]*[[c.x, c.y],[-c.y,c.x]]/norm(c);
 

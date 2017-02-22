@@ -54,7 +54,7 @@ struct Frame_Base
     List* nonlocal;
 
     // Tail array, containing the slots used for local bindings:
-    // function arguments, `let` bindings and other local, temporary values.
+    // function arguments, `letrec` bindings and other local, temporary values.
     using value_type = Value;
     size_t size_;
     value_type array_[0];

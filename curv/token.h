@@ -46,6 +46,7 @@ struct Token
         k_if,
         k_else,
         k_let,
+        k_letrec,
         k_for,
         k_step,
         k_num,        ///! floating point numeral

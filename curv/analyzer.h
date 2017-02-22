@@ -71,7 +71,7 @@ struct Definition : public aux::Shared_Base
 };
 
 /// This is used to analyze a set of module definitions, and in future,
-/// record definitions, let definitions, or function parameters.
+/// record definitions, letrec definitions, or function parameters.
 struct Bindings
 {
     size_t cur_position_;
@@ -113,7 +113,7 @@ struct Bindings
     // using the above Environ if they are mutually recursive:
     Shared<List> analyze_values(Environ& env);
 
-    // Fifth, construct a Let_Expr, Module_Expr, Record_Expr
+    // Fifth, construct a Letrec_Expr, Module_Expr, Record_Expr
     // or function parameter list.
 };
 

@@ -57,7 +57,7 @@ Module_Ref::eval(Frame& f) const
     //    effectively lazy evaluation thunks. Replace with Values on demand.
     // 2. Instead of making Expression a subclass of Ref_Value, introduce
     //    a Lazy_Thunk value class. It's a variation of Function. It contains
-    //    the # of local frame slots needed to evaluate `let` exprs in the
+    //    the # of local frame slots needed to evaluate `letrec` exprs in the
     //    definiens, plus the Expression.
     // 3. Store a reference to the Expression in Module_Ref.
     // 4. Store a reference to the Module_Expr in Frame.
@@ -73,7 +73,7 @@ Nonlocal_Ref::eval(Frame& f) const
 }
 
 Value
-Let_Ref::eval(Frame& f) const
+Letrec_Ref::eval(Frame& f) const
 {
     // Let bindings are represented as slots in the frame, and are lazily
     // evaluated. The slots are initialized with thunks. On first reference,
@@ -530,7 +530,7 @@ Module_Expr::eval_module(System& sys, Frame* f) const
 }
 
 Value
-Let_Op::eval(Frame& f) const
+Letrec_Op::eval(Frame& f) const
 {
     Value* slots = &f[first_slot_];
     for (size_t i = 0; i < values_.size(); ++i)
@@ -538,7 +538,7 @@ Let_Op::eval(Frame& f) const
     return body_->eval(f);
 }
 void
-Let_Op::generate(Frame& f, List_Builder& lb) const
+Letrec_Op::generate(Frame& f, List_Builder& lb) const
 {
     Value* slots = &f[first_slot_];
     for (size_t i = 0; i < values_.size(); ++i)
@@ -546,7 +546,7 @@ Let_Op::generate(Frame& f, List_Builder& lb) const
     body_->generate(f, lb);
 }
 void
-Let_Op::exec(Frame& f) const
+Letrec_Op::exec(Frame& f) const
 {
     Value* slots = &f[first_slot_];
     for (size_t i = 0; i < values_.size(); ++i)

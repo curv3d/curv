@@ -279,13 +279,13 @@ TEST(curv, eval)
     SUCCESS("x+y;x=1;y=2", "3");
     SUCCESS("a=c+1;b=1;c=b+1;a", "3");
     FAILMSG("x=x;x", "illegal recursive reference");
-    SUCCESS("x=1;let(y=2)let(z=3)x+y+z", "6");
-    FAILALL("let(x=x)x",
+    SUCCESS("x=1;letrec(y=2)letrec(z=3)x+y+z", "6");
+    FAILALL("letrec(x=x)x",
         "illegal recursive reference\n"
-        "line 1(column 7)\n"
-        "  let(x=x)x\n"
-        "        ^  ");
-    SUCCESS("f=x->let(a=x+1)a; f 2", "3");
+        "line 1(column 10)\n"
+        "  letrec(x=x)x\n"
+        "           ^  ");
+    SUCCESS("f=x->letrec(a=x+1)a; f 2", "3");
     FAILMSG("f=x->x; f()", "wrong number of arguments");
     SUCCESS("add=(x,y)->x+y;add(1,2)", "3");
     SUCCESS("add=x->y->x+y;add(1)(2)", "3");
@@ -358,7 +358,7 @@ TEST(curv, eval)
     SUCCESS("[for (i=[1,2,3]) i+1]", "[2,3,4]");
 
     // generalized actions
-    SUCCESS("let(a=-2)for(b=[a..2])if(b>0)echo b;"
+    SUCCESS("letrec(a=-2)for(b=[a..2])if(b>0)echo b;"
             "for(x=[-1..1])if(x<0) echo \"-\" else if(x>0) echo \"+\";"
             "0",
         "0");

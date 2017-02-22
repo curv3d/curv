@@ -4,7 +4,6 @@ What remains for MVP?
 Distance field visualizer. distance_field(2dshape)
 * clean up and add to std
   * add scopeless 'let'
-    * rename existing let to letrec
     * add scopeless let to Curv
     * add scopeless let to GL
 

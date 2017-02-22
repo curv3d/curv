@@ -5,7 +5,7 @@
 // I'm currently using a hand coded recursive descent parser.
 // Alternatives are: Bison, Lemon, Boost.Spirit (maybe X3).
 //
-// I use a greedy implementation of 'if' and 'let': the right argument consumes
+// I use a greedy implementation of 'if' and 'letrec': the right argument consumes
 // the longest possible match. With Bison, the obvious implementation is as a
 // low precedence right associative operator. But, for more flexibility,
 // I implement these operators as part of 'chain'. That's easy with recursive
@@ -13,7 +13,7 @@
 //
 // TODO: simple yaccable grammar, no conflicts or precedence declarations.
 // TODO: $(expression) substitutions in string literals.
-// TODO: `let` and `for` are metafunctions, not part of the grammar.
+// TODO: `letrec` and `for` are metafunctions, not part of the grammar.
 // TODO: infix `where` operator. Binds tighter than `->`.
 
 #include <curv/parse.h>
@@ -343,7 +343,7 @@ parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
 // primary : numeral | identifier | string | parens | list | braces
 //  | 'if' ( expr ) expr
 //  | 'if' ( expr ) expr 'else' expr
-//  | 'let' parens expr
+//  | 'letrec' parens expr
 //  | 'for' parens expr
 // parens : ( semicolons )
 // list : [ semicolons ]
@@ -381,15 +381,15 @@ parse_primary(Scanner& scanner, const char* what)
         return make<If_Phrase>(
             tok, condition, then_expr, tok2, else_expr);
       }
-    case Token::k_let:
+    case Token::k_letrec:
       {
-        auto p = parse_primary(scanner, "argument following 'let'");
+        auto p = parse_primary(scanner, "argument following 'letrec'");
         auto args = dynamic_shared_cast<Paren_Phrase>(p);
         if (args == nullptr)
             throw Exception(At_Phrase(*p, scanner.eval_frame_),
-                "let: malformed argument");
+                "letrec: malformed argument");
         auto body = parse_expr(scanner);
-        return make<Let_Phrase>(tok, args, body);
+        return make<Letrec_Phrase>(tok, args, body);
       }
     case Token::k_for:
       {

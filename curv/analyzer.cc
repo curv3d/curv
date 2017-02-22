@@ -512,18 +512,18 @@ If_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-Let_Phrase::analyze(Environ& env) const
+Letrec_Phrase::analyze(Environ& env) const
 {
-    // `let` supports mutually recursive bindings, like let-rec in Scheme.
+    // `letrec` supports mutually recursive bindings, like let-rec in Scheme.
     //
     // To evaluate: lazy evaluation of thunks, error on illegal recursion.
     // These thunks do not get a fresh evaluation Frame, they use the Frame
-    // of the `let` expression. That's consistent with an optimizing compiler
-    // where let bindings are SSA values.
+    // of the `letrec` expression. That's consistent with an optimizing compiler
+    // where letrec bindings are SSA values.
     //
-    // To analyze: we assign a slot number to each of the let bindings,
+    // To analyze: we assign a slot number to each of the letrec bindings,
     // *then* we construct an Environ and analyze each definiens.
-    // This means no opportunity for optimization (eg, don't store a let binding
+    // This means no opportunity for optimization (eg, don't store a letrec binding
     // in a slot or create a Thunk if it is a Constant). To optimize, we need
     // another compiler pass or two, so that we do register allocation *after*
     // analysis and constant folding is complete.
@@ -553,12 +553,12 @@ Let_Phrase::analyze(Environ& env) const
 
     // phase 2: Construct an environment from the bindings dictionary
     // and use it to perform semantic analysis.
-    struct Let_Environ : public Environ
+    struct Letrec_Environ : public Environ
     {
     protected:
         const Atom_Map<Binding>& names;
     public:
-        Let_Environ(
+        Letrec_Environ(
             Environ* p,
             const Atom_Map<Binding>& n)
         : Environ(p), names(n)
@@ -574,12 +574,12 @@ Let_Phrase::analyze(Environ& env) const
         {
             auto p = names.find(id.atom_);
             if (p != names.end())
-                return make<Let_Ref>(
+                return make<Letrec_Ref>(
                     share(id), p->second.slot_);
             return nullptr;
         }
     };
-    Let_Environ env2(&env, bindings);
+    Letrec_Environ env2(&env, bindings);
 
     int first_slot = env.frame_nslots;
     std::vector<Value> values(bindings.size());
@@ -591,7 +591,7 @@ Let_Phrase::analyze(Environ& env) const
     env.frame_maxslots = env2.frame_maxslots;
     assert(env.frame_maxslots >= bindings.size());
 
-    return make<Let_Op>(share(*this),
+    return make<Letrec_Op>(share(*this),
         first_slot, std::move(values), body);
 }
 
@@ -628,7 +628,7 @@ For_Phrase::analyze(Environ& env) const
         virtual Shared<Meaning> single_lookup(const Identifier& id)
         {
             if (id.atom_ == name_)
-                return make<Let_Ref>(
+                return make<Letrec_Ref>(
                     share(id), slot_);
             return nullptr;
         }

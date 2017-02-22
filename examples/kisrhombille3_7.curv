@@ -12,7 +12,7 @@ scale(size) kisrhombille3_7(depth, 0.015);
 color(c) shape = shape;
 
 kisrhombille3_7(n,t) =
-    let (r = 0.497, // this is a magic number
+    letrec (r = 0.497, // this is a magic number
          q = [for(i=[0..6]) r*[cos(i*tau/7),sin(i*tau/7)] ])
     union[
         //color("magenta")
@@ -26,7 +26,7 @@ kisrhombille3_7(n,t) =
     ];
 
 recur_kisrhombille3_7(q1, q2, n, t) =
-    let (
+    letrec (
         p  = hyperRotation(q1,q2,tau/7),
         p1 = hyperRotation(q1,q2,2*tau/7),
         p2 = hyperRotation(q1,q2,3*tau/7),
@@ -64,12 +64,12 @@ recur_kisrhombille3_7(q1, q2, n, t) =
 
 // Hyperbolic segment joining p and q
 hyperSegment(p,q, t /*=0.05*/) =
-    let (
+    letrec (
         c = center(p,q),
     )
     union [
         if(c!=null) (
-            let (
+            letrec (
                 R = radius(p,q),
                 a01 = atan2((p-c)'1, (p-c)'0),
                 a02 = atan2((q-c)'1, (q-c)'0),
@@ -84,7 +84,7 @@ hyperSegment(p,q, t /*=0.05*/) =
     ];
 
 hyperLine(p,q, t /*=0.05*/) =
-    let (
+    letrec (
         s = idealPoints(p,q),
     )
     union [
@@ -99,7 +99,7 @@ center(p,q) =
     if (abs dot(p, [(p-q)'Y, -(p-q)'X]) < 1e-6)
         null // p, q and [0,0] are colinear
     else
-        let( u = (dot(p,q)-1)/( 2*dot(p,[(p-q)'Y, -(p-q)'X]) ) )
+        letrec( u = (dot(p,q)-1)/( 2*dot(p,[(p-q)'Y, -(p-q)'X]) ) )
         (p+q)/2 - u*[(p-q)'Y, -(p-q)'X];
 
 radius(p,q) = norm(center(p, q)-p);
@@ -109,15 +109,15 @@ hyperLineByDirection(p,d) =
     if (norm(p) < 1e-6)
         (if (norm(d)>1e-6) [unit(d),-unit(d)] else null)
     else
-        let( dc = [-d'Y, d'X] )
+        letrec( dc = [-d'Y, d'X] )
         if (abs dot(p,dc) < 1e-6)
             [unit(d),-unit(d)]
         else
-            let( c  = p + dc*(1 - dot(p,p))/(2*dot(p,dc)) )
+            letrec( c  = p + dc*(1 - dot(p,p))/(2*dot(p,dc)) )
             unitCircleInters(c,norm(c-p));
 
 hyperLineDirectionAt(p,q) = /* vec2 */
-    let( c = center(p,q) )
+    letrec( c = center(p,q) )
     if (c==null)
         (if (norm(p-q)>1e-6) p-q else null)
     else
@@ -127,14 +127,14 @@ hyperLineDirectionAt(p,q) = /* vec2 */
 // the result [a,b] is such that the hyperline thru p,q pass by the points
 // in the order a,p,q,b
 idealPoints(p,q) =
-    let( c = center(p,q) )
+    letrec( c = center(p,q) )
     if (c == null)
         if (norm(p-q) > 1e-6)
             [ unit(p-q), -unit(p-q)]
         else
             null
     else
-        let( ip = unitCircleInters(c,norm(c-p)) )
+        letrec( ip = unitCircleInters(c,norm(c-p)) )
         if (dot(ip'1-ip'0, p-q) < 0)
             ip
         else
@@ -143,7 +143,7 @@ idealPoints(p,q) =
 // Hyperbolic metric in the unit disk
 // It may return an infinity value
 hyperDistance(p,q) =
-    let( id = idealPoints(p,q) )
+    letrec( id = idealPoints(p,q) )
     if (norm(p-id'0)<1e-12 || norm(id'1-q)<1e-12)
         inf
     else
@@ -153,19 +153,19 @@ hyperDistance(p,q) =
 
 // translation of x by dx
 hyperTranslation(x, dx) =
-    let( d = 1 + 2*dx*x + dx*dx*x*x )
+    letrec( d = 1 + 2*dx*x + dx*dx*x*x )
     if (abs(d) < 1e-6)
         null
     else
         ((1 + dx*x + x*x)*dx + (1 - dx*dx)*x)/d;
 
 hyperReflection(x, p, q) =
-    let( c  = center(p,q)) // Euclidean circle of 
+    letrec( c  = center(p,q)) // Euclidean circle of 
                            // hyperline thru p,q
     if (c == null)
         null
     else
-        let( r  = radius(p,q),
+        letrec( r  = radius(p,q),
              cx = x-c,     // dir of the reflected point
              s  = (r/norm(cx))^2 )
         (c + s*cx);
@@ -174,7 +174,7 @@ hyperRotation(x,c,a) =
     if (norm(x-c) < 1e-6)
         x
     else
-        let( cc = center(x,c),
+        letrec( cc = center(x,c),
              d0 = hyperLineDirectionAt(c,x), /* vec2 */
              cs = cos(a/2),
              sn = sin(a/2),
@@ -193,7 +193,7 @@ unitCircleInters(c,r) =
     if (norm(c)<1e-6 || norm(c)-abs(r) > 1)
         []
     else
-        let( x  = -(r*r - dot(c,c) -1)/norm(c)/2,
+        letrec( x  = -(r*r - dot(c,c) -1)/norm(c)/2,
              y  = sqrt(1 - x*x) )
         dot([[x,y],[x,-y]], [[c'X,c'Y],[-c'Y,c'X]]) / norm(c);
 
@@ -203,8 +203,8 @@ unit(v) = v/norm(v);
 
 polyline(p, t/*=1*/) = union [
     for(i=[0..len(p)-2]) (
-        let (v = p'(i+1)-p'i)
-        let (h = norm(v))
+        letrec (v = p'(i+1)-p'i)
+        letrec (h = norm(v))
         if( h > 1e-12)
             translate(p'i)
                 rotate(atan2(v'Y,v'X)) 

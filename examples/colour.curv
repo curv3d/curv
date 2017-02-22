@@ -31,8 +31,8 @@ distance_field(shape) = shape2d {
 
     colour p = _colourize _prep(shape.dist p)
 
-    // let (d = shape.dist(p))
-    // let (c = rem(d,1))
+    // letrec (d = shape.dist(p))
+    // letrec (c = rem(d,1))
     // c in range [-1,1], <=0 for inside, >=0 for outside
     // red = clamp(-c, 0, 1)
     // blue = clamp(c, 0, 1)
