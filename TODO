@@ -6,8 +6,6 @@ Distance field visualizer. distance_field(bbox)(2dshape)
 * which depends on 'trunc'
 * which isn't in WebGL, but is in later versions. use `#if __VERSION__`
   in GL code generator.
-* my Curv implementation of trunc doesn't work, some GL compiler bug.
-  missing: Nonlocal_Function_Ref::gl_eval()
 
 Colour.
 * language: defined(expr.id), eg if (defined s.colour)

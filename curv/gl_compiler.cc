@@ -266,6 +266,11 @@ Value gl_eval_const(Operation& op, GL_Frame& f)
     }
     else if (auto ref = dynamic_cast<Nonlocal_Ref*>(&op))
         return (*f.nonlocal)[ref->slot_];
+    else if (auto fref = dynamic_cast<Nonlocal_Function_Ref*>(&op)) {
+        return {make<Closure>(
+            (Lambda&) (*f.nonlocal)[fref->lambda_slot_].get_ref_unsafe(),
+            *f.nonlocal)};
+    }
     return missing;
 }
 
