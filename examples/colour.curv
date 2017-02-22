@@ -13,15 +13,23 @@ white = [1, 1, 1];
 black = [0, 0, 0];
 //colour(magenta) circle(1);
 
+_prep(n) =
+    if (n >= 0)
+        ceil(n) - n
+    else
+        floor(n) - n;
+
 _colourize(c) = [max[-c,0], 0, max[c,0]];
 
 distance_field(shape) = shape2d {
-    dist = rect(shape.bbox).dist,
-    bbox = shape.bbox,
+    //dist = rect(shape.bbox).dist,
+    //bbox = shape.bbox,
+    dist = everything.dist,
+    bbox = everything.bbox,
 
     //colour p = red,
 
-    colour p = _colourize rem(shape.dist p, 1)
+    colour p = _colourize _prep(shape.dist p)
 
     // let (d = shape.dist(p))
     // let (c = rem(d,1))

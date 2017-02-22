@@ -1,11 +1,16 @@
 # Release 0.0: "2D subsystem"
 What remains for MVP?
 
-Distance field visualizer. distance_field(bbox)(2dshape)
-* need 'rem' function
-* which depends on 'trunc'
-* which isn't in WebGL, but is in later versions. use `#if __VERSION__`
-  in GL code generator.
+Distance field visualizer. distance_field(2dshape)
+* clean up and add to std
+  * add scopeless 'let'
+    * rename existing let to letrec
+    * add scopeless let to Curv
+    * add scopeless let to GL
+
+Math:
+* Native 'trunc'? Isn't in WebGL, but is in later versions.
+  Use `#if __VERSION__` in GL code generator.
 
 Colour.
 * language: defined(expr.id), eg if (defined s.colour)

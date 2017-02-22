@@ -2,4 +2,11 @@ function(f) = shape2d {
     dist p = p'Y - f(p'X),
     bbox = everything.bbox
 };
-function sin;
+function (n->
+
+if (n >= 0)
+    ceil(n) - n
+else
+    floor(n) - n
+
+);
