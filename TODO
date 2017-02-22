@@ -3,9 +3,7 @@ What remains for MVP?
 
 Distance field visualizer. distance_field(2dshape)
 * clean up and add to std
-  * add scopeless 'let'
-    * add scopeless let to Curv
-    * add scopeless let to GL
+  * add scopeless 'let' to GL
 
 Math:
 * Native 'trunc'? Isn't in WebGL, but is in later versions.
@@ -87,6 +85,7 @@ ImplicitCAD:
 * union, intersection, difference, square have a radius of rounding
 
 # Nice To Have
+* vectorize `bit`
 * GL: && || if use lazy evaluation
 * GL: if is polymorphic
 * text (for debugging).

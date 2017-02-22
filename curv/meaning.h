@@ -172,6 +172,17 @@ struct Nonlocal_Ref : public Just_Expression
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
+struct Let_Ref : public Just_Expression
+{
+    int slot_;
+
+    Let_Ref(Shared<const Phrase> source, int slot)
+    : Just_Expression(std::move(source)), slot_(slot)
+    {}
+
+    virtual Value eval(Frame&) const override;
+};
+
 struct Letrec_Ref : public Just_Expression
 {
     int slot_;
@@ -483,6 +494,29 @@ struct Module_Expr : public Just_Expression
 
     virtual Value eval(Frame&) const override;
     Shared<Module> eval_module(System&, Frame*) const;
+};
+
+struct Let_Op : public Operation
+{
+    size_t first_slot_;
+    std::vector<Shared<Operation>> exprs_; // or, a Tail_Array
+    Shared<const Operation> body_;
+
+    Let_Op(
+        Shared<const Phrase> source,
+        size_t first_slot,
+        std::vector<Shared<Operation>> exprs,
+        Shared<const Operation> body)
+    :
+        Operation(std::move(source)),
+        first_slot_(first_slot),
+        exprs_(std::move(exprs)),
+        body_(std::move(body))
+    {}
+
+    virtual Value eval(Frame&) const override;
+    virtual void generate(Frame&, List_Builder&) const override;
+    virtual void exec(Frame&) const override;
 };
 
 struct Letrec_Op : public Operation

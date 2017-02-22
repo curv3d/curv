@@ -84,6 +84,12 @@ Letrec_Ref::eval(Frame& f) const
 }
 
 Value
+Let_Ref::eval(Frame& f) const
+{
+    return f[slot_];
+}
+
+Value
 Arg_Ref::eval(Frame& f) const
 {
     return f[slot_];
@@ -527,6 +533,31 @@ Module_Expr::eval_module(System& sys, Frame* f) const
         force(s, *frame);
     module->elements_ = elements_->eval_list(*frame);
     return module;
+}
+
+Value
+Let_Op::eval(Frame& f) const
+{
+    Value* slots = &f[first_slot_];
+    for (size_t i = 0; i < exprs_.size(); ++i)
+        slots[i] = exprs_[i]->eval(f);
+    return body_->eval(f);
+}
+void
+Let_Op::generate(Frame& f, List_Builder& lb) const
+{
+    Value* slots = &f[first_slot_];
+    for (size_t i = 0; i < exprs_.size(); ++i)
+        slots[i] = exprs_[i]->eval(f);
+    body_->generate(f, lb);
+}
+void
+Let_Op::exec(Frame& f) const
+{
+    Value* slots = &f[first_slot_];
+    for (size_t i = 0; i < exprs_.size(); ++i)
+        slots[i] = exprs_[i]->eval(f);
+    body_->exec(f);
 }
 
 Value

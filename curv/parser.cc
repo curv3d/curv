@@ -343,6 +343,7 @@ parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
 // primary : numeral | identifier | string | parens | list | braces
 //  | 'if' ( expr ) expr
 //  | 'if' ( expr ) expr 'else' expr
+//  | 'let' parens expr
 //  | 'letrec' parens expr
 //  | 'for' parens expr
 // parens : ( semicolons )
@@ -380,6 +381,16 @@ parse_primary(Scanner& scanner, const char* what)
         auto else_expr = parse_expr(scanner);
         return make<If_Phrase>(
             tok, condition, then_expr, tok2, else_expr);
+      }
+    case Token::k_let:
+      {
+        auto p = parse_primary(scanner, "argument following 'let'");
+        auto args = dynamic_shared_cast<Paren_Phrase>(p);
+        if (args == nullptr)
+            throw Exception(At_Phrase(*p, scanner.eval_frame_),
+                "let: malformed argument");
+        auto body = parse_expr(scanner);
+        return make<Let_Phrase>(tok, args, body);
       }
     case Token::k_letrec:
       {

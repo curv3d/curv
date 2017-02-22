@@ -512,6 +512,63 @@ If_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
+Let_Phrase::analyze(Environ& env) const
+{
+    // `let` binds names in the parent scope, like `let` in Scheme.
+
+    int first_slot = env.frame_nslots;
+    std::vector<Shared<Operation>> exprs;
+    Atom_Map<int> names;
+
+    int slot = first_slot;
+    each_argument(*args_, [&](const Phrase& p)->void {
+        auto def = p.analyze_def(env);
+        if (def == nullptr)
+            throw Exception(At_Phrase(p, env), "not a definition");
+        Atom name = def->name_->atom_;
+        if (names.find(name) != names.end())
+            throw Exception(At_Phrase(*def->name_, env),
+                stringify(name, ": multiply defined"));
+        names[name] = slot++;
+        exprs.push_back(analyze_op(*def->definiens_, env));
+    });
+
+    struct Let_Environ : public Environ
+    {
+    protected:
+        const Atom_Map<int>& names;
+    public:
+        Let_Environ(
+            Environ* p,
+            const Atom_Map<int>& n)
+        : Environ(p), names(n)
+        {
+            if (p != nullptr) {
+                frame_nslots = p->frame_nslots;
+                frame_maxslots = p->frame_maxslots;
+            }
+            frame_nslots += n.size();
+            frame_maxslots = std::max(frame_maxslots, frame_nslots);
+        }
+        virtual Shared<Meaning> single_lookup(const Identifier& id)
+        {
+            auto p = names.find(id.atom_);
+            if (p != names.end())
+                return make<Let_Ref>(share(id), p->second);
+            return nullptr;
+        }
+    };
+    Let_Environ env2(&env, names);
+
+    auto body = analyze_op(*body_, env2);
+    env.frame_maxslots = env2.frame_maxslots;
+    assert(env.frame_maxslots >= names.size());
+
+    return make<Let_Op>(share(*this),
+        first_slot, std::move(exprs), body);
+}
+
+Shared<Meaning>
 Letrec_Phrase::analyze(Environ& env) const
 {
     // `letrec` supports mutually recursive bindings, like let-rec in Scheme.
