@@ -253,7 +253,7 @@ GL_Value Divide_Expr::gl_eval(GL_Frame& f) const
 
 // Evaluate an expression to a constant at GL compile time,
 // or return missing if it isn't a constant.
-Value gl_eval_const(Operation& op, GL_Frame& f)
+Value gl_constify(Operation& op, GL_Frame& f)
 {
     if (auto c = dynamic_cast<Constant*>(&op))
         return c->value_;
@@ -266,17 +266,20 @@ Value gl_eval_const(Operation& op, GL_Frame& f)
     }
     else if (auto ref = dynamic_cast<Nonlocal_Ref*>(&op))
         return (*f.nonlocal)[ref->slot_];
+    else if (auto ref = dynamic_cast<Module_Ref*>(&op))
+        return (*f.nonlocal)[ref->slot_];
     else if (auto fref = dynamic_cast<Nonlocal_Function_Ref*>(&op)) {
         return {make<Closure>(
             (Lambda&) (*f.nonlocal)[fref->lambda_slot_].get_ref_unsafe(),
             *f.nonlocal)};
     }
-    return missing;
+    throw Exception(At_GL_Phrase(*op.source_, &f),
+        "Geometry Compiler: not a constant");
 }
 
 GL_Value Call_Expr::gl_eval(GL_Frame& f) const
 {
-    auto val = gl_eval_const(*fun_, f);
+    auto val = gl_constify(*fun_, f);
     if (auto fun = val.dycast<Function>()) {
         if (args_.size() != fun->nargs_) {
             throw Exception(At_GL_Phrase(*call_phrase()->args_, &f),
@@ -288,7 +291,7 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
         return fun->gl_call(*f2);
     }
     throw Exception(At_GL_Phrase(*fun_->source_, &f),
-        "this function cannot be called by the Geometry Compiler");
+        stringify("Geometry Compiler: ",val," is not a function"));
 }
 
 GL_Value Let_Op::gl_eval(GL_Frame& f) const
@@ -303,7 +306,7 @@ GL_Value At_Expr::gl_eval(GL_Frame& f) const
 {
     auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Vec2);
     const char* arg2 = nullptr;
-    auto k = gl_eval_const(*arg2_, f);
+    auto k = gl_constify(*arg2_, f);
     auto num = k.get_num_or_nan();
     if (num == 0.0)
         arg2 = ".x";
@@ -311,7 +314,7 @@ GL_Value At_Expr::gl_eval(GL_Frame& f) const
         arg2 = ".y";
     if (arg2 == nullptr)
         throw Exception(At_GL_Phrase(*arg2_->source_, &f),
-            "in Geometry Compiler, index must be 0 or 1");
+            stringify("Geometry Compiler: got ",k,", expected 0 or 1"));
     GL_Value result = f.gl.newvalue(GL_Type::Num);
     f.gl.out << "  float "<<result<<" = "<<arg1<<arg2<<";\n";
     return result;
