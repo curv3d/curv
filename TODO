@@ -3,7 +3,6 @@ What remains for MVP?
 
 Distance field visualizer. distance_field(2dshape)
 * clean up and add to std
-  * add scopeless 'let' to GL
 
 Math:
 * Native 'trunc'? Isn't in WebGL, but is in later versions.

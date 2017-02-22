@@ -291,6 +291,14 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
         "this function cannot be called by the Geometry Compiler");
 }
 
+GL_Value Let_Op::gl_eval(GL_Frame& f) const
+{
+    GL_Value* slots = &f[first_slot_];
+    for (size_t i = 0; i < exprs_.size(); ++i)
+        slots[i] = exprs_[i]->gl_eval(f);
+    return body_->gl_eval(f);
+}
+
 GL_Value At_Expr::gl_eval(GL_Frame& f) const
 {
     auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Vec2);
@@ -310,6 +318,10 @@ GL_Value At_Expr::gl_eval(GL_Frame& f) const
 }
 
 GL_Value Arg_Ref::gl_eval(GL_Frame& f) const
+{
+    return f[slot_];
+}
+GL_Value Let_Ref::gl_eval(GL_Frame& f) const
 {
     return f[slot_];
 }
