@@ -19,6 +19,7 @@
 #include <curv/system.h>
 #include <curv/gl_context.h>
 #include <curv/array_op.h>
+#include <curv/analyzer.h>
 
 using namespace std;
 using namespace boost::math::double_constants;
@@ -401,6 +402,47 @@ struct Assert_Metafunction : public Metafunction
     }
 };
 
+struct Defined_Expression : public Just_Expression
+{
+    Shared<const Operation> expr_;
+    Atom id_;
+
+    Defined_Expression(
+        Shared<const Phrase> source,
+        Shared<const Operation> expr,
+        Atom id)
+    :
+        Just_Expression(std::move(source)),
+        expr_(std::move(expr)),
+        id_(std::move(id))
+    {
+    }
+
+    virtual Value eval(Frame& f) const override
+    {
+        auto val = expr_->eval(f);
+        if (val.is_ref()) {
+            auto& ref = val.get_ref_unsafe();
+            return {ref.getfield(id_) != missing};
+        } else {
+            return {false};
+        }
+    }
+};
+struct Defined_Metafunction : public Metafunction
+{
+    using Metafunction::Metafunction;
+    virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
+    {
+        auto arg = analyze_op(*ph.args_, env);
+        auto dot = dynamic_shared_cast<Dot_Expr>(arg);
+        if (dot != nullptr)
+            return make<Defined_Expression>(share(ph), dot->base_, dot->id_);
+        throw Exception(At_Phrase(*ph.args_, env),
+            "defined: argument must be `expression.identifier`");
+    }
+};
+
 const Namespace&
 builtin_namespace()
 {
@@ -428,6 +470,7 @@ builtin_namespace()
     {"shape2d", make<Builtin_Value>(Value{make<Shape2d_Function>()})},
     {"echo", make<Builtin_Meaning<Echo_Metafunction>>()},
     {"assert", make<Builtin_Meaning<Assert_Metafunction>>()},
+    {"defined", make<Builtin_Meaning<Defined_Metafunction>>()},
     };
     return names;
 }

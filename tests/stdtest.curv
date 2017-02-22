@@ -14,3 +14,6 @@ assert(
     );
 
 assert((let(n=1,a=2)n+a) == 3);
+
+let(r={a=1})
+assert(defined r.a && !defined(r.b));
