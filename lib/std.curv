@@ -126,3 +126,13 @@ getBox2 (Rotate2 θ symbObj) =
                   , rotate (x2, y2)
                   ]
 */
+
+// GL Debugging
+distance_field(shape) = shape2d {
+    dist = everything.dist,
+    bbox = everything.bbox,
+    colour p =
+        let(d = shape.dist p)
+        let(c = if (d >= 0) ceil(d)-d else floor(d)-d)
+        [max[-c,0], 0, max[c,0]],
+};

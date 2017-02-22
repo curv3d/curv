@@ -13,32 +13,4 @@ white = [1, 1, 1];
 black = [0, 0, 0];
 //colour(magenta) circle(1);
 
-_prep(n) =
-    if (n >= 0)
-        ceil(n) - n
-    else
-        floor(n) - n;
-
-_colourize(c) = [max[-c,0], 0, max[c,0]];
-
-distance_field(shape) = shape2d {
-    //dist = rect(shape.bbox).dist,
-    //bbox = shape.bbox,
-    dist = everything.dist,
-    bbox = everything.bbox,
-
-    //colour p = red,
-
-    colour p = _colourize _prep(shape.dist p)
-
-    // letrec (d = shape.dist(p))
-    // letrec (c = rem(d,1))
-    // c in range [-1,1], <=0 for inside, >=0 for outside
-    // red = clamp(-c, 0, 1)
-    // blue = clamp(c, 0, 1)
-    // return [red,0,blue]
-};
-
-distance_field(circle 5);
-
-//rect[[-1,-2],[3,4]];
+distance_field rect[[-1,-2],[3,4]];

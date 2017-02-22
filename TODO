@@ -1,9 +1,6 @@
 # Release 0.0: "2D subsystem"
 What remains for MVP?
 
-Distance field visualizer. distance_field(2dshape)
-* clean up and add to std
-
 Math:
 * Native 'trunc'? Isn't in WebGL, but is in later versions.
   Use `#if __VERSION__` in GL code generator.
