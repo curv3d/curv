@@ -103,6 +103,8 @@ scale(s) shape = shape2d {
 };
 rotate(a) shape = shape2d {
     dist p = shape.dist[cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X],
+    //dist p = shape.dist[cos(a)*p'X - sin(a)*p'Y, cos(a)*p'Y + sin(a)*p'X],
+    //dist p = shape.dist cmul(p, cis(a)),
     bbox = shape.bbox // TODO: fixme, see below
 };
 /*
@@ -126,6 +128,21 @@ getBox2 (Rotate2 θ symbObj) =
                   , rotate (x2, y2)
                   ]
 */
+
+// Coloured Shapes
+colour(rgb)(shape) = shape2d {
+    dist = shape.dist,
+    bbox = shape.bbox,
+    colour(p) = rgb
+};
+red = [1, 0, 0];
+green = [0, 1, 0];
+blue = [0, 0, 1];
+yellow = [1, 1, 0];
+cyan = [0, 1, 1];
+magenta = [1, 0, 1];
+white = [1, 1, 1];
+black = [0, 0, 0];
 
 // GL Debugging
 distance_field(shape) = shape2d {
