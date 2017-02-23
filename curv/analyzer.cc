@@ -530,8 +530,16 @@ Let_Phrase::analyze(Environ& env) const
             throw Exception(At_Phrase(*def->name_, env),
                 stringify(name, ": multiply defined"));
         names[name] = slot++;
+
         exprs.push_back(analyze_op(*def->definiens_, env));
+
+        // This is subtle: it works because the expressions in `exprs`
+        // are evaluated from first to last while populating the slots owned
+        // by the `let` expression in the same order.
+        ++env.frame_nslots;
+        env.frame_maxslots = std::max(env.frame_maxslots, env.frame_nslots);
     });
+    env.frame_nslots = first_slot;
 
     struct Let_Environ : public Environ
     {
