@@ -397,10 +397,15 @@ GL_Value If_Else_Op::gl_eval(GL_Frame& f) const
 {
     // TODO: change GL If to use lazy evaluation.
     auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Bool);
-    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num);
-    auto arg3 = gl_eval_expr(f, *arg3_, GL_Type::Num);
-    GL_Value result = f.gl.newvalue(GL_Type::Num);
-    f.gl.out <<"  float "<<result<<" =("<<arg1<<" ? "<<arg2<<" : "<<arg3<<");\n";
+    auto arg2 = arg2_->gl_eval(f);
+    auto arg3 = arg3_->gl_eval(f);
+    if (arg2.type != arg3.type) {
+        throw Exception(At_GL_Phrase(*source_, &f),
+            "Geometry Compiler: if: type mismatch in 'then' and 'else' arms");
+    }
+    GL_Value result = f.gl.newvalue(arg2.type);
+    f.gl.out <<"  "<<arg2.type<<" "<<result
+             <<" =("<<arg1<<" ? "<<arg2<<" : "<<arg3<<");\n";
     return result;
 }
 GL_Value Equal_Expr::gl_eval(GL_Frame& f) const
