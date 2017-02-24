@@ -1,17 +1,17 @@
 # Release 0.0: "2D subsystem"
 What remains for MVP?
 
+Colour.
+* Add colour support to shape operators.
+  * If the `colour` attribute is missing from the shape2d argument,
+    it defaults to `p->[0,0,0]`. So it's always available.
+
+Define regular_polygon(n). See poly.curv.
+* test rotate(a), seems flakey
+
 Math:
 * Native 'trunc'? Isn't in WebGL, but is in later versions.
   Use `#if __VERSION__` in GL code generator.
-
-Colour.
-* language: defined(expr.id), eg if (defined s.colour)
-* Add colour support to shape operators. Either a shape has colour or it doesn't.
-  Union requires either both args have colour, or neither.
-
-Define regular_polygon(n). See poly.curv.
-* Add `let` support to GL.
 
 Animation. Add an extra t argument to dist and colour functions.
 
@@ -48,7 +48,10 @@ def polygon_radius(x, y, r, N):
 Ideas for 2D primitives:
 OpenSCAD:
 * circle, square, polygon, text,
-* hull, minkowski, offset
+* hull, minkowski, mitred and rounded offset
+  * mitred offset is well defined for polytopes
+  * rounded offset is minkowski sum with sphere
+  * not all polytopes can be offset: http://mathoverflow.net/questions/206644/when-is-it-possible-to-shrink-a-polyhedron
 * colour, positioning/alignment
 Antimony:
 * text, 1 font only
@@ -83,11 +86,13 @@ ImplicitCAD:
 # Nice To Have
 * vectorize `bit`
 * GL: && || if use lazy evaluation
-* GL: if is polymorphic
 * text (for debugging).
 * a better gl_assert: multiple assertions, display text for each assertion.
   gl_assert[["== works",()->t1==t2], ...]
 * unicode operators (needs re2c)
+* GL optimizer: hand-optimizing sample output reduced # of ops in main_dist
+  from 29 to 13 (16 fewer); exe size from 9928 to 9741 (187 fewer).
+  7574 in 'empty' shader, so 2354->2167, 12.6% fewer.
 
 # Older Stuff
 
@@ -313,7 +318,7 @@ nary union:
 * floor, ceil
 * Introduce submodules (with recursive functions)
 * recursive let. Or non-recursive let and recursive where.
-* records: defined r.id, merge[r1,r2]
+* records: merge[r1,r2]
   I don't want `merge` to accept modules as arguments: overriding an existing
   module field doesn't work if the module also contains functions closed over
   those fields.
@@ -422,7 +427,11 @@ Value Scripts?
     following the last `;`. (In a long OpenSCAD script, I have to examine every
     line closely to find every statement that contributes to the geometry.
     With this syntax, you only have to look at the end of the file.)
-  * Parenthesizing a top level script preserves its meaning.
+  * If I've got 3 different syntaxes for 'let', 'letrec' and 'let*' (Scheme),
+    all of which have a body, then I can use any of these alternatives in a
+    top level script for my top level local bindings. I'm not restricted to
+    recursive bindings.
+  * A top level script is an expression; parenthesizing it preserves meaning.
     Thus `,` and `;` have more consistent meanings.
 * `def;phrase` binds def locally within phrase, with recursive scoping
   across the entire `;` chain. No need for `let`. *Not* sequential scoping.
@@ -550,7 +559,7 @@ Other:
 * string: $$ $" $id ${id} $(id) $+EE interpolation, strcat[s1,s2]
   scanner has in-string flag, parser resets/sets flag during $(expr).
 * string: str@i, len(str) -- either ASCII-only, or proper Unicode
-* records: defined r.id, merge[r1,r2]
+* records: merge[r1,r2]
 * broader unit testing
 * smart pointers, see docs/Shared_Ptr.md
 

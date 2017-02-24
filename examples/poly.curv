@@ -1,17 +1,22 @@
 poly(n) = shape2d {
-    dist p = norm p - cos mod(atan2(p'Y, p'X), tau / n),
+    dist p = norm p - cos rem(atan2(p'Y, p'X), tau / n),
     bbox = [[-5,-5],[5,5]]
 };
-rotate(tau/4) poly 5;
+//rotate(tau/4) poly 5;
 j = shape2d {
     dist p = p'X - 1,
     bbox = [[-5,-5],[5,5]]
 };
 //j;
 
-rep_rotate(n) = \s -> shape2d {
+rep_rotate(n) shape = shape2d {
     dist p =
-        //
+        let(ph = phase(p))
+        let(mph = mod(ph, tau/n))
+        let(rotangle = -(ph - mph))
+        let(rp = cmul(p, cis(rotangle)))
+        shape.dist rp,
+    bbox = everything.bbox,
 };
 // Partition 2-space into n pie slices, radiating from origin.
 // rotate p onto the corresponding point in the 'prime' pie slice
@@ -26,3 +31,61 @@ rep_rotate(n) = \s -> shape2d {
 // or
 //   v = cis(rotate_by);
 //   new_p = cmul(p, v);
+
+// phase angle of a vector, range tau/2 to -tau/2
+phase v = atan2(v'Y,v'X);
+
+// convert phase angle to unit vector
+cis(theta) = [cos theta, sin theta];
+
+mag(v) = sum(v^2);
+
+// complex numbers: [RE,IM]
+RE=0;
+IM=1;
+cmul(z,w) = [z'RE*w'RE - z'IM*w'IM, z'IM*w'RE + z'RE*w'IM];
+
+//rep_rotate(5) translate[1,1] circle(1);
+
+half_plane(v) =
+    let(m = mag v,
+        ph = phase v)
+    rotate(ph)
+    shape2d {
+        dist p = m - p'X,
+        bbox = everything.bbox
+    };
+
+rpoly(n) =
+    let(a=tau/(n*2))
+    //rotate(-a)
+    rep_rotate(n) complement half_plane(cis(a));
+union [
+  rpoly 3,
+  translate[3,0] rpoly 4,
+  translate[6,0] rpoly 5,
+
+  translate[0,4] rotate(-tau/4) rpoly 3,
+  translate[3,4] rotate(-tau/8) rpoly 4,
+  translate[6,4] rotate(-tau/16) rpoly 5,
+
+  translate[0,8] rotate(-tau/6) rpoly 3,
+  translate[3,8] rotate(-tau/8) rpoly 4,
+  translate[6,8] rotate(-tau/10) rpoly 5,
+];
+//complement half_plane cis(tau/10);
+
+_union2(s1,s2) =
+    let(d p = min[s1.dist p, s2.dist p],
+        b = [min[s1.bbox'0, s2.bbox'0], max[s1.bbox'1, s2.bbox'1]],
+        c = if (!defined(s1.colour) && !defined(s2.colour))
+                null
+            else
+                let(c1 = if (defined(s1.colour)) s1.colour else p->black,
+                    c2 = if (defined(s2.colour)) s2.colour else p->black)
+                p->if(s1.dist p <= 0) c1 p else c2 p)
+    if (c == null)
+        shape2d {dist=d, bbox=b}
+    else
+        shape2d {dist=d, bbox=b, colour=c};
+union = reduce(nothing, _union2);
