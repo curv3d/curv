@@ -1,1 +1,1 @@
-rotate(10*deg) symmetric_difference[circle 5, square 9];
+rotate(10*deg) symmetric_difference[colour(red) circle 5, colour(green) square 9];

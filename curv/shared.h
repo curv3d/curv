@@ -33,5 +33,14 @@ share(T& obj)
     return Shared<T>(&obj);
 }
 
+template<class T>
+inline T&
+update_shared(Shared<const T>& p)
+{
+    if (p->use_count > 1)
+        p = p->clone();
+    return const_cast<T&>(*p);
+}
+
 } // namespace curv
 #endif // header guard

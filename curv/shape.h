@@ -41,9 +41,7 @@ struct Shape2D : public Ref_Value
 {
     Shared<const Record> record_;
 
-    Shape2D(Shared<const Record> record)
-    : Ref_Value(ty_shape2d), record_(std::move(record))
-    {}
+    Shape2D(Shared<const Record> record);
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const override;

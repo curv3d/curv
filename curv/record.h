@@ -16,6 +16,17 @@ struct Record : public Ref_Value
     Atom_Map<Value> fields_;
 
     Record() : Ref_Value(ty_record) {}
+    Record(Atom_Map<Value> fields)
+    :
+        Ref_Value(ty_record),
+        fields_(std::move(fields))
+    {
+    }
+
+    Shared<const Record> clone() const
+    {
+        return make<const Record>(fields_);
+    }
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const override;

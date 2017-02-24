@@ -81,11 +81,13 @@ complement(s) = shape2d {
 };
 _union2(s1,s2) = shape2d {
     dist p = min[s1.dist p, s2.dist p],
+    colour p = if (s1.dist p <= 0) s1.colour p else s2.colour p,
     bbox = [min[s1.bbox'0, s2.bbox'0], max[s1.bbox'1, s2.bbox'1]]
 };
 union = reduce(nothing, _union2);
 _intersection2(s1,s2) = shape2d {
     dist p = max[s1.dist p, s2.dist p],
+    colour = s1.colour,
     bbox = [max[s1.bbox'0, s2.bbox'0], min[s1.bbox'1, s2.bbox'1]]
 };
 intersection = reduce(everything, _intersection2);
@@ -95,16 +97,19 @@ symmetric_difference shapes = difference(union shapes, intersection shapes);
 // affine transformations
 translate(delta) shape = shape2d {
     dist p = shape.dist(p - delta),
+    colour = shape.colour,
     bbox = [shape.bbox'0+delta, shape.bbox'1+delta]
 };
 scale(s) shape = shape2d {
     dist p = s * shape.dist(p / s),
+    colour = shape.colour,
     bbox = s * shape.bbox
 };
 rotate(a) shape = shape2d {
     dist p = shape.dist[cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X],
     //dist p = shape.dist[cos(a)*p'X - sin(a)*p'Y, cos(a)*p'Y + sin(a)*p'X],
     //dist p = shape.dist cmul(p, cis(a)),
+    colour = shape.colour,
     bbox = shape.bbox // TODO: fixme, see below
 };
 /*

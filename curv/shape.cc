@@ -10,6 +10,35 @@
 
 namespace curv {
 
+struct Blackfield_Function : public Function
+{
+    Blackfield_Function() : Function(1) {}
+    Value call(Frame& args) override
+    {
+        Shared<List> v = List::make({Value{0.0}, Value{0.0}, Value{0.0}});
+        return {v};
+    }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        auto result = f.gl.newvalue(GL_Type::Vec3);
+        f.gl.out << "  vec3 "<<result<<" = vec3(0.0,0.0,0.0);\n";
+        return result;
+    }
+};
+
+Shape2D::Shape2D(Shared<const Record> record)
+:
+    Ref_Value(ty_shape2d), record_(std::move(record))
+{
+    static Atom colour = "colour";
+    static Value black = {make<Blackfield_Function>()};
+    auto& fields = record_->fields_;
+    if (fields.find(colour) == fields.end()) {
+        auto& u = update_shared(record_);
+        u.fields_[colour] = black;
+    }
+}
+
 BBox
 BBox::from_value(Value val, const Context& cx)
 {
