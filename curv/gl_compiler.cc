@@ -304,7 +304,10 @@ GL_Value Let_Op::gl_eval(GL_Frame& f) const
 
 GL_Value At_Expr::gl_eval(GL_Frame& f) const
 {
-    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Vec2);
+    auto arg1 = arg1_->gl_eval(f);
+    if (gl_type_count(arg1.type) < 2)
+        throw Exception(At_GL_Phrase(*arg1_->source_, &f), "not a vector");
+
     const char* arg2 = nullptr;
     auto k = gl_constify(*arg2_, f);
     auto num = k.get_num_or_nan();
@@ -312,9 +315,15 @@ GL_Value At_Expr::gl_eval(GL_Frame& f) const
         arg2 = ".x";
     else if (num == 1.0)
         arg2 = ".y";
+    else if (num == 2.0 && gl_type_count(arg1.type) > 2)
+        arg2 = ".z";
+    else if (num == 3.0 && gl_type_count(arg1.type) > 3)
+        arg2 = ".w";
     if (arg2 == nullptr)
         throw Exception(At_GL_Phrase(*arg2_->source_, &f),
-            stringify("Geometry Compiler: got ",k,", expected 0 or 1"));
+            stringify("Geometry Compiler: got ",k,", expected 0..",
+                gl_type_count(arg1.type)-1));
+
     GL_Value result = f.gl.newvalue(GL_Type::Num);
     f.gl.out << "  float "<<result<<" = "<<arg1<<arg2<<";\n";
     return result;
