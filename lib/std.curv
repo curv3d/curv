@@ -97,19 +97,19 @@ symmetric_difference shapes = difference(union shapes, intersection shapes);
 // affine transformations
 translate(delta) shape = shape2d {
     dist p = shape.dist(p - delta),
-    colour = shape.colour,
+    colour p = shape.colour(p - delta),
     bbox = [shape.bbox'0+delta, shape.bbox'1+delta]
 };
 scale(s) shape = shape2d {
     dist p = s * shape.dist(p / s),
-    colour = shape.colour,
+    colour p = shape.colour(p / s),
     bbox = s * shape.bbox
 };
 rotate(a) shape = shape2d {
     dist p = shape.dist[cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X],
     //dist p = shape.dist[cos(a)*p'X - sin(a)*p'Y, cos(a)*p'Y + sin(a)*p'X],
     //dist p = shape.dist cmul(p, cis(a)),
-    colour = shape.colour,
+    colour p = shape.colour[cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X],
     bbox = shape.bbox // TODO: fixme, see below
 };
 /*
