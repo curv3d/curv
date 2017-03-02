@@ -1,5 +1,22 @@
 poly(n) = shape2d {
     dist p = norm p - cos rem(atan2(p'Y, p'X), tau / n),
-    bbox = [[-5,-5],[5,5]]
+    bbox = [[-1,-1],[1,1]]
 };
-rotate(tau/4) poly 5;
+//rotate(tau/4) poly 5;
+
+hsv2rgb(c) =
+    let(m = abs(mod(c'0 + [1,2/3,1/3], 1) * 6 - 3))
+    c'2 * mix(1, clamp(m - 1, 0, 1), c'1);
+
+mix(a,b,t) = a*(1-t) + b*t;
+clamp(x,lo,hi) = min[max[x,lo],hi];
+
+// phase angle of a vector, range tau/2 to -tau/2
+phase v = atan2(v'Y,v'X);
+
+// convert phase angle to unit vector
+cis(theta) = [cos theta, sin theta];
+
+colourfield(f)shape = shape2d{dist=shape.dist,colour=f,bbox=shape.bbox};
+
+colourfield(p->hsv2rgb[phase(p)/tau,1,1]) everything;

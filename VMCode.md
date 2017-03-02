@@ -2,6 +2,44 @@
 The 2017 Curv executable format, to replace the 2016 Operation class
 and its eval/exec/generate protocol.
 
+## Feb 2017
+1. Phrase tree is compiled into an "executable IR", currently an Operation tree.
+   Optimizations at this stage:
+   * tail call optimization
+   * uniqueness optimization for `update(i,x)struct`
+   Don't need a full optimizing compiler at this stage. No constant folding
+   unless I have a *semantic* need for it. LuaJIT waits until a performance
+   problem is detected before optimizing anything. My StupidJIT™ is applied
+   manually to perf.critical functions.
+2. GL compiler performs optimizations.
+   * common subexpression elimination
+   * constant folding
+   * (a*b)+c -> FMA(a,b,c)
+   * min[inf,x] -> x // for union.dist
+   * if(c)x else x -> x // for union.colour
+
+The new XIR supports:
+* single stepping
+* IR->IR transformations?
+* GL compiler can be retargeted for LLVM, for StupidJIT™ or polygonization.
+
+**Executable Format** supports single stepping. Each instruction gets its
+strict arguments from local frame slots, stuffs its result into another local
+frame slot, then jumps to its continuation. The C stack isn't used for temp
+values anymore.
+* If_Op has 2 continuations.
+* `a && b` needs to be compiled into two instructions. One tests `a` (which is
+  strict) and jumps to one of 2 continuations.
+  The other coerces the result of `b` to boolean.
+
+The `&&` op suggests that the executable format is not quite an IR? I was hoping
+it would be isomorphic to CPS. More analysis later.
+
+**GL IR**:
+* GL_Value/GL_Frame/gl_eval: not useful for optimizations. I can't test if
+  a GL_Value is constant, so no constant folding.
+
+## Jan 2017
 Goals:
 * A function can return multiple values.
   The number of values returned by a given lambda is fixed at compile time.

@@ -1,4 +1,24 @@
-# math library
+# Math Library
+
+Two questions:
+* What does the math library look like, from a user perspective?
+* Which math operations should be primitive, and which are implemented in Curv?
+  Note that functions written in Curv are still compiled into optimized GL code.
+
+## Math Library Implementation
+* Some math operations are coded in Curv. That's best if there's no efficiency
+  reason to do otherwise, because the code is shorter.
+* Some math operations are built-in functions. That's needed for efficiency
+  reasons,
+  * if the function is in the C library and is not something you'd want to
+    write in Curv, like trig and exponential functions.
+  * if the function is a SPIR-V primitive math operation, indicating that
+    it has special hardware support on GPUs. Eg, `dot`.
+* Some Curv primitive math operations are written as idioms that compile into
+  special internal operators. Eg, (a*b)+c compiles to FMA(a,b,c),
+  e^x compiles to EXP(x).
+
+## Math Library API
 
 Fractional part of a number.
 Mathworld names the function `frac(n)`, gives two competing definitions:
@@ -48,6 +68,24 @@ Complex numbers.
 * cdiv(z,w)
   Subtract the phases and divide the magnitudes.
 * there are also exponentials, trig
+
+Normalize a vector (convert to a unit vector).
+Possible names: normalize(v) -- GLSL, unit(v) -- a popular name,
+    normalize(v,p) -- Julia,
+Implementation should avoid division by zero:
+  unit v =
+    let(magv = mag v)
+    if (magv > 0) // or EPS
+      v / magv
+    else
+      v;
+  unit v = (
+    magv = mag v;
+    if (magv > 0) // or EPS
+      v / magv
+    else
+      v
+  );
 
 Shadertoy.com classifies the following GLSL ES features as being useful.
 
@@ -135,8 +173,7 @@ bvec notEqual(ivec x, ivec y)
 bvec notEqual(bvec x, bvec y)
 * shorter names?
 * <' <=' >' >=' ==' !='
-* lesser, greater, not_lesser, not_greater, equal, not_equal
-  These are adjective forms. Predicate form is better.
+* less, greater, not_less, not_greater, equal, not_equal
 
 bool any(bvec x)
 bool all(bvec x)

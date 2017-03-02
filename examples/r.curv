@@ -1,19 +1,19 @@
-Union [
-    colour(white) circle(1),
-    translate[3,0] colour(red) circle(1),
-];
-Union2(s1,s2) = (
-    let(d p = min[s1.dist p, s2.dist p],
-        b = [min[s1.bbox'0, s2.bbox'0], max[s1.bbox'1, s2.bbox'1]],
-        c = if (!defined(s1.colour) && !defined(s2.colour))
-                null
-            else
-                let(c1 = if (defined(s1.colour)) s1.colour else p->black,
-                    c2 = if (defined(s2.colour)) s2.colour else p->black)
-                p->if(s1.dist p <= 0) c1 p else c2 p)
-    if (c == null)
-        shape2d {dist=d, bbox=b}
-    else
-        shape2d {dist=d, bbox=b, colour=c}
-);
-Union = reduce(nothing, Union2);
+sq =
+    union [
+      colour(red) translate[1.5,-1.5] circle(.5),
+      colour(blue) square(5),
+    ];
+//rotate(90*deg) sq
+//rotate(tau/4) sq
+//translate[5,0]sq
+
+
+union [
+    for (i=[0..9])
+    translate[i*6,0]
+    let(a=(tau/4)/(2^i))
+    rotate(a)
+    (echo(i,2^i,a,a/deg);
+    sq
+    )
+]

@@ -1,15 +1,82 @@
-poly(n) = shape2d {
-    dist p = norm p - cos rem(atan2(p'Y, p'X), tau / n),
-    bbox = [[-5,-5],[5,5]]
-};
-//rotate(tau/4) poly 5;
-j = shape2d {
-    dist p = p'X - 1,
-    bbox = [[-5,-5],[5,5]]
-};
-//j;
+// TODO: Maybe the 'prime slice' in rep_rotate is above the X axis, centred
+// on the Y axis. More convenient to set up the shape argument.
+// Also, you can compute a better bbox.
+// For regular_polygon, I'll use a tau/2 rotation on the result.
+// TODO: Bounding box. Compute it in rep_rotate from ymax of bbox.
+// TODO: half plane API.
+// * half_plane(x) -- vertical edge sweeps along X axis from x to inf.
+//   Rotate the result as needed. rpoly uses: rotate(-tau/4) half_plane(-1)
+// * plane_segment{xmin=,ymin=,xmax=,ymax=}. rpoly uses plane_segment{ymax=1}.
+//   Has a better bounding box than a rotated half_plane.
+//   Also: crop(c)shape = intersection(shape, plane_segment c);
 
-rep_rotate(n) shape = shape2d {
+// NOTE: could optimize by checking for xmin==-xmax & using abs(p'X).
+plane_segment(limits) =
+  let(xmin = if (defined limits.xmin) limits.xmin else -inf,
+      xmax = if (defined limits.xmax) limits.xmax else inf,
+      ymin = if (defined limits.ymin) limits.ymin else -inf,
+      ymax = if (defined limits.ymax) limits.ymax else inf)
+  intersection [
+    if (xmin > -inf) shape2d {
+        dist p = xmin - p'X,
+        bbox = [[xmin, -inf], [inf, inf]]
+    },
+    if (ymin > -inf) shape2d {
+        dist p = ymin - p'Y,
+        bbox = [[-inf, ymin], [inf, inf]]
+    },
+    if (xmax < inf) shape2d {
+        dist p = p'X - xmax,
+        bbox = [[-inf, -inf], [xmax, inf]]
+    },
+    if (ymax < inf) shape2d {
+        dist p = p'Y - ymax,
+        bbox = [[-inf, -inf], [inf, ymax]]
+    },
+  ];
+
+//union[colour(red)circle(1), plane_segment{ymax=2}];
+//distance_field plane_segment{xmin=-1,xmax=1,ymin=-2,ymax=2};
+
+rep_rotate(n) shape =
+  let(na = tau/4 - tau/(n*2))
+  let(rpr(f) p =
+          let(pa = phase(p))
+          let(mpa = mod(pa - na, tau/n) + na)
+          let(rota = -(pa - mpa))
+          let(rp = cmul(p, cis(rota)))
+          f rp)
+  shape2d {
+    dist = rpr(shape.dist),
+    colour = rpr(shape.colour),
+    bbox = everything.bbox
+  };
+
+regular_polygon(n) = rotate(tau/2) rep_rotate(n) plane_segment{ymax=1};
+
+//rep_rotate(5) plane_segment{ymax=1};
+//regular_polygon(5);
+
+/* New_Syntax
+rep_rotate n shape = (
+    na = tau/4 - tau/(n*2);
+    rpr f p = (
+        pa = phase(p);
+        mpa = mod(pa - na, tau/n) + na;
+        rota = -(pa - mpa);
+        rp = cmul(p, cis(rota));
+        f rp
+    );
+    shape2d {
+        dist = rpr(shape.dist),
+        colour = rpr(shape.colour),
+        bbox = everything.bbox,
+    }
+);
+regular_polygon n = rotate (tau/2) << rep_rotate n << plane_segment {ymax=1};
+*/
+
+old_rep_rotate(n) shape = shape2d {
     dist p =
         let(ph = phase(p))
         let(mph = mod(ph, tau/n))
@@ -45,7 +112,7 @@ RE=0;
 IM=1;
 cmul(z,w) = [z'RE*w'RE - z'IM*w'IM, z'IM*w'RE + z'RE*w'IM];
 
-//rep_rotate(5) translate[1,1] circle(1);
+//old_rep_rotate(5) translate[1,1] circle(1);
 
 half_plane(v) =
     let(m = mag v,
@@ -58,34 +125,31 @@ half_plane(v) =
 
 rpoly(n) =
     let(a=tau/(n*2))
-    //rotate(-a)
-    rep_rotate(n) complement half_plane(cis(a));
+    rotate(a-tau/4)
+    old_rep_rotate(n) complement half_plane(cis(a));
+
+rp(n) =
+  let(c = sqrt(1/(1 - sin(tau/(2*n)))))
+  union[
+    regular_polygon(n),
+    colour(red) plane_segment{xmax=-c,xmin=-c-.2},
+    colour(red) plane_segment{xmin=c,xmax=c+.2},
+    //translate[.7,0] colour(red) circle(.1),
+  ];
+
+if(true) 
 union [
-  rpoly 3,
-  translate[3,0] rpoly 4,
-  translate[6,0] rpoly 5,
+  rp 3,
+  translate[3,0] rp 4,
+  translate[6,0] rp 5,
+/*
+  translate[0,4] rotate(-tau/4) rp 3,
+  translate[3,4] rotate(-tau/8) rp 4,
+  translate[6,4] rotate(-tau/16) rp 5,
 
-  translate[0,4] rotate(-tau/4) rpoly 3,
-  translate[3,4] rotate(-tau/8) rpoly 4,
-  translate[6,4] rotate(-tau/16) rpoly 5,
-
-  translate[0,8] rotate(-tau/6) rpoly 3,
-  translate[3,8] rotate(-tau/8) rpoly 4,
-  translate[6,8] rotate(-tau/10) rpoly 5,
+  translate[0,8] rotate(-tau/12) rp 3,
+  translate[3,8] rotate(-tau/8) rp 4,
+  translate[6,8] rotate(-(tau/4 - tau/10)) rp 5,
+ */
 ];
 //complement half_plane cis(tau/10);
-
-_union2(s1,s2) =
-    let(d p = min[s1.dist p, s2.dist p],
-        b = [min[s1.bbox'0, s2.bbox'0], max[s1.bbox'1, s2.bbox'1]],
-        c = if (!defined(s1.colour) && !defined(s2.colour))
-                null
-            else
-                let(c1 = if (defined(s1.colour)) s1.colour else p->black,
-                    c2 = if (defined(s2.colour)) s2.colour else p->black)
-                p->if(s1.dist p <= 0) c1 p else c2 p)
-    if (c == null)
-        shape2d {dist=d, bbox=b}
-    else
-        shape2d {dist=d, bbox=b, colour=c};
-union = reduce(nothing, _union2);

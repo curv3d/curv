@@ -8,9 +8,15 @@ since nobody will guess what it means.
 * `{1,2,3}` is a list
 * `{a=1,b=2}` is a record
 * `{}` is both the empty list and the empty record.
+  * This suggests a set of operations that are polymorphic on records and lists.
+    * s[i] -- indexing. i is integer for list, string for record
+    * len s -- # of elements of a list or record
+    * dom s -- the indexes of s. dom{3,4,5}=={0..2}, dom{a=1,b=2}=={"a","b"}.
+    * update(index,newval)struct
   * A possible issue for code that uses type tests and assumes lists and
     records are disjoint. But, this code would need to have different
     semantics for the empty list and the empty record.
+* I can keep `a'i` as an alternate syntax.
 
 ## Local Definitions and Actions
 I now have `let(defs)expr`, `letrec(defs)expr`, and `(act1;act2;expr)`.

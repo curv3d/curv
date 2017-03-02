@@ -1,5 +1,25 @@
 # Function Call Syntax
 
+On reforming function call/chain syntax.
+
+`a[i]` is now array indexing. List literals are `{a,b,c}`.
+Record literals are `{xmin=1,xmax=2}`.
+`a'i` is an experimental alternate syntax for array indexing, for now.
+
+`let` and `assert` are no longer done using chain syntax.
+Instead, `(a=1; assert(a > 0); a+1)`.
+
+Chain syntax now uses an explicit operator, `<:`.
+```
+translate{10,0} <: rotate(tau/8) <: cube(10)
+```
+Function call syntax is now more like Haskell/ML, has better support
+for functions with more than 2 curried arguments:
+```
+crop limits shape = intersection{shape, plane_segment limits};
+```
+
+## Oct 2016
 There's a variety of function call syntaxes:
 * primary: f(x,y)
 * primary: f 2, f[x,y], f{x=1,y=2}, f "abc"
