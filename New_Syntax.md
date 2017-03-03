@@ -11,16 +11,17 @@ Simple, elegant, orthogonal, powerful, looks more like a conventional language.
 Lists.
 * a[i] is array indexing.
   * a'i is an alternate array indexing syntax.
+  * future: a[i..j by k] with i,j,k optional, eg a[1..]
 * (a,b,c) is a list. () is empty list, (a,) is singleton.
   * [a,b,c] is an alternate list syntax.
 * f(x,y)=... is pattern matching on a list.
-* `i..j step k` is a list, not a generator.
+* `[i..j step k]` becomes `i..j by k`, is a list, not a generator.
 
 Records.
 * {a: 10, f(x): x+1} is a record. No = because no scope.
-* f{x,y}=... is pattern matching on a record.
-  * f{field:param}=... is future syntax for having distinct parameter and
-    field names in record pattern matching.
+* f{x,y}=... is pattern matching on a record. Extra fields on right -> error.
+  * future: {x,y,...} matches a record with extra fields.
+  * future: f{field:param}=... pattern w. distinct parameter and field names
 
 Polymorphic list/record operations:
 * s[i] or s'i are list/record indexing with int or string index.
@@ -28,7 +29,7 @@ Polymorphic list/record operations:
   * r["a","b"] -- this is a list, not a record
 * `dom s` is list of indexes of s
 * `len s` is # elements of s
-* in future, `update(index,newval) s`
+* future, `update(index,newval) s`
 
 Function Calls and Chains.
 * `f x y z` is a curried function call, like ML/Haskell.

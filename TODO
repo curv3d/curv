@@ -5,20 +5,37 @@ Define regular_polygon(n). See poly.curv.
 * live coding, please. curv -l pathname
 
 ## Language Redesign
-* {a,b,c} is a list. {} is both empty list and empty record.
-* polymorphic list/record operations:
-  * s[i] or s'i are list/record indexing with int or string index.
-  * s[{i,j}] or s'{i,j} are "swizzling", "slicing"
-  * `dom s` is list of indexes of s
-  * `len s` is # elements of s
-* v[i..j step k] with i, j, step k, all optional. Eg, v[1..].
-* `f x y z` is a curried function call, like ML/Haskell
-  * precedence of `.`? I guess f(x.i) f(x[i]) f(x'i).
-* `f << g << x` is chain notation
-* `(def1;def2;body)`: local definitions and actions with sequential scoping.
-* `body with (def1;def2;)`: local definitions, recursive scoping.
-* `module {def1;def2;}` -- recursive scoping, no elements
-* script: def1;def2;expr -- recursive scoping, I guess. `with` is available.
+Lists.
+* a[i] is array indexing.
+* (a,b,c) is a list. () is empty list, (a,) is singleton.
+* f(x,y)=... is pattern matching on a list.
+* `[i..j step k]` becomes `i..j by k`, is a list, not a generator.
+
+Records.
+* {a: 10, f(x): x+1} is a record. No = because no scope.
+* f{x,y}=... is pattern matching on a record. Extra fields on right -> error.
+
+Polymorphic list/record operations:
+* s[i] or s'i are list/record indexing with int or string index.
+* s[i,j] or s'(i,j) are "swizzling", "slicing". Index argument is a list.
+  * r["a","b"] -- this is a list, not a record
+* `dom s` is list of indexes of s
+* `len s` is # elements of s
+
+Function Calls and Chains.
+* `f x y z` is a curried function call, like ML/Haskell.
+* `f << g << x` is chain notation. Also, `x >> g >> f`.
+
+Local Definitions and Scripts.
+* `def1;def2;phrase` is a block, with recursive scoping:
+  * `(def1;def2;body)`: local definitions in a subphrase.
+  * top level script: def1;def2;expr -- Value scripts.
+* `{def1;def2;}` -- module: recursive scoping, no elements
+  * `{}` is the empty record and the empty module.
+
+Use.
+* use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace,
+  file must evaluate to a module.
 
 ## Geometry
 A top level for loop just displays the first generated shape.
