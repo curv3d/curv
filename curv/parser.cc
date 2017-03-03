@@ -214,7 +214,7 @@ parse_relation(Scanner& scanner)
         auto right = parse_sum(scanner);
         auto tok2 = scanner.get_token();
         Shared<Phrase> step;
-        if (tok2.kind == Token::k_step) {
+        if (tok2.kind == Token::k_by) {
             step = parse_sum(scanner);
         } else {
             scanner.push_token(tok2);
