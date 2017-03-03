@@ -13,18 +13,18 @@ rem(a,m) = a - m * trunc(a/m);
 
 // lists
 concat(vv) = [for (v=vv) for (i=v) i];
-reverse v = v'[len(v)-1..0 by -1];
+reverse v = v'(len(v)-1..0 by -1);
 map(f) list = [for (x=list) f x];
 filter(p) list = [for (x=list) if (p x) x];
 reduce(first,f) rest =
-    if (rest==[]) first else reduce(f(first,rest'0), f) rest'[1..len(rest)-1];
+    if (rest==[]) first else reduce(f(first,rest'0), f) rest'(1..len(rest)-1);
 sum = reduce(0, (x,y)->x+y);
 product = reduce(1, (x,y)->x*y);
 
 // linear algebra
 cross(p,q) = [p'Y*q'Z - p'Z-q'Y, p'Z*q'X - p'X*q'Z, p'X*q'Y - p'Y*q'X];
-identity(n) = [for(i=[1..n]) [for(j=[1..n]) if(i==j) 1 else 0]];
-transpose(a) = [for(i=[0..len a'0 - 1]) [for(j=[0..len a - 1]) a'j'i]];
+identity(n) = [for(i=1..n) [for(j=1..n) if(i==j) 1 else 0]];
+transpose(a) = [for(i=0..len a'0 - 1) [for(j=0..len a - 1) a'j'i]];
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
 dot(a,b) =

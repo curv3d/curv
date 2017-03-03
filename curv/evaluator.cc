@@ -606,8 +606,8 @@ For_Op::exec(Frame& f) const
     }
 }
 
-void
-Range_Gen::generate(Frame& f, List_Builder& lb) const
+Value
+Range_Expr::eval(Frame& f) const
 {
     Value firstv = arg1_->eval(f);
     double first = firstv.get_num_or_nan();
@@ -629,14 +629,16 @@ Range_Gen::generate(Frame& f, List_Builder& lb) const
     // float i, i==i+1). So we impose a limit on the count.
     if (countd < 1'000'000'000.0) {
         unsigned count = (unsigned) countd;
+        auto list = List::make(count);
         for (unsigned i = 0; i < count; ++i)
-            lb.push_back(Value{first + step*i});
+            list->at(i) = Value{first + step*i};
+        return {std::move(list)};
     } else {
         const char* err =
             (countd == countd ? "too many elements in range" : "domain error");
         throw Exception(At_Phrase(*source_, &f),
             arg3_
-                ? stringify(firstv,"..",lastv," step ",stepv,": ", err)
+                ? stringify(firstv,"..",lastv," by ",stepv,": ", err)
                 : stringify(firstv,"..",lastv,": ", err));
     }
 }

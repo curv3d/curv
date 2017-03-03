@@ -708,7 +708,7 @@ For_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Range_Phrase::analyze(Environ& env) const
 {
-    return make<Range_Gen>(
+    return make<Range_Expr>(
         share(*this),
         analyze_op(*first_, env),
         analyze_op(*last_, env),

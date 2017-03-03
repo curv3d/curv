@@ -11,7 +11,6 @@ Lists.
 * a[i] is array indexing.
 * (a,b,c) is a list. () is empty list, (a,) is singleton.
 * f(x,y)=... is pattern matching on a list.
-* `[i..j step k]` becomes `i..j by k`, is a list, not a generator.
 
 Records.
 * {a: 10, f(x): x+1} is a record. No = because no scope.
