@@ -90,7 +90,7 @@ hyperLine(p,q, t /*=0.05*/) =
     union [
         if (s!=null)
             hyperSegment(s'0,s'1,t)
-        else if (norm(p-q)>1e-6)
+        else if (mag(p-q)>1e-6)
             polyline([unit(p-q),unit(q-p)],t)
     ];
 
@@ -102,24 +102,24 @@ center(p,q) =
         letrec( u = (dot(p,q)-1)/( 2*dot(p,[(p-q)'Y, -(p-q)'X]) ) )
         (p+q)/2 - u*[(p-q)'Y, -(p-q)'X];
 
-radius(p,q) = norm(center(p, q)-p);
+radius(p,q) = mag(center(p, q)-p);
 
 // return the ideal points of a line passing thru p with direction d
 hyperLineByDirection(p,d) =
-    if (norm(p) < 1e-6)
-        (if (norm(d)>1e-6) [unit(d),-unit(d)] else null)
+    if (mag(p) < 1e-6)
+        (if (mag(d)>1e-6) [unit(d),-unit(d)] else null)
     else
         letrec( dc = [-d'Y, d'X] )
         if (abs dot(p,dc) < 1e-6)
             [unit(d),-unit(d)]
         else
             letrec( c  = p + dc*(1 - dot(p,p))/(2*dot(p,dc)) )
-            unitCircleInters(c,norm(c-p));
+            unitCircleInters(c,mag(c-p));
 
 hyperLineDirectionAt(p,q) = /* vec2 */
     letrec( c = center(p,q) )
     if (c==null)
-        (if (norm(p-q)>1e-6) p-q else null)
+        (if (mag(p-q)>1e-6) p-q else null)
     else
         [ (p-c)'Y, -(p-c)'X ];
 
@@ -129,12 +129,12 @@ hyperLineDirectionAt(p,q) = /* vec2 */
 idealPoints(p,q) =
     letrec( c = center(p,q) )
     if (c == null)
-        if (norm(p-q) > 1e-6)
+        if (mag(p-q) > 1e-6)
             [ unit(p-q), -unit(p-q)]
         else
             null
     else
-        letrec( ip = unitCircleInters(c,norm(c-p)) )
+        letrec( ip = unitCircleInters(c,mag(c-p)) )
         if (dot(ip'1-ip'0, p-q) < 0)
             ip
         else
@@ -144,10 +144,10 @@ idealPoints(p,q) =
 // It may return an infinity value
 hyperDistance(p,q) =
     letrec( id = idealPoints(p,q) )
-    if (norm(p-id'0)<1e-12 || norm(id'1-q)<1e-12)
+    if (mag(p-id'0)<1e-12 || mag(id'1-q)<1e-12)
         inf
     else
-        log(norm(q-id'0)*norm(id'1-p)/norm(p-id'0)/norm(id'1-q));
+        log(mag(q-id'0)*mag(id'1-p)/mag(p-id'0)/mag(id'1-q));
 
 // Hyperbolic transforms
 
@@ -167,11 +167,11 @@ hyperReflection(x, p, q) =
     else
         letrec( r  = radius(p,q),
              cx = x-c,     // dir of the reflected point
-             s  = (r/norm(cx))^2 )
+             s  = (r/mag(cx))^2 )
         (c + s*cx);
 
 hyperRotation(x,c,a) =
-    if (norm(x-c) < 1e-6)
+    if (mag(x-c) < 1e-6)
         x
     else
         letrec( cc = center(x,c),
@@ -190,21 +190,21 @@ hyperRotation(x,c,a) =
 // intersection points between unit circle 
 // and the circle [c(enter),r(adius)]
 unitCircleInters(c,r) =
-    if (norm(c)<1e-6 || norm(c)-abs(r) > 1)
+    if (mag(c)<1e-6 || mag(c)-abs(r) > 1)
         []
     else
-        letrec( x  = -(r*r - dot(c,c) -1)/norm(c)/2,
+        letrec( x  = -(r*r - dot(c,c) -1)/mag(c)/2,
              y  = sqrt(1 - x*x) )
-        dot([[x,y],[x,-y]], [[c'X,c'Y],[-c'Y,c'X]]) / norm(c);
+        dot([[x,y],[x,-y]], [[c'X,c'Y],[-c'Y,c'X]]) / mag(c);
 
-unit(v) = v/norm(v);
+unit(v) = v/mag(v);
 
 // Drawing module
 
 polyline(p, t/*=1*/) = union [
     for(i=0..len(p)-2) (
         letrec (v = p'(i+1)-p'i)
-        letrec (h = norm(v))
+        letrec (h = mag(v))
         if( h > 1e-12)
             translate(p'i)
                 rotate(atan2(v'Y,v'X)) 

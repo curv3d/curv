@@ -35,7 +35,7 @@ dot(a,b) =
 
 // primitive shapes
 circle(r) = shape2d {
-    dist p = norm p - r,
+    dist p = mag p - r,
     bbox = [[-r,-r],[r,r]]
 };
 square(sz) =

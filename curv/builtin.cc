@@ -274,9 +274,9 @@ struct Min_Function : public Function
     }
 };
 
-struct Norm_Function : public Function
+struct Mag_Function : public Function
 {
-    Norm_Function() : Function(1) {}
+    Mag_Function() : Function(1) {}
     Value call(Frame& args) override
     {
         // TODO: use hypot() or BLAS DNRM2 or Eigen stableNorm/blueNorm?
@@ -290,14 +290,14 @@ struct Norm_Function : public Function
         }
         if (sum == sum)
             return {sqrt(sum)};
-        throw Exception(At_Arg(0, args), "norm: domain error");
+        throw Exception(At_Arg(0, args), "mag: domain error");
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
         auto arg = f[0];
         if (arg.type != GL_Type::Vec2)
             throw Exception(At_GL_Arg(0, f),
-                "norm: argument is not a vec2");
+                "mag: argument is not a vec2");
         auto result = f.gl.newvalue(GL_Type::Num);
         f.gl.out << "  float "<<result<<" = length("<<arg<<");\n";
         return result;
@@ -464,7 +464,7 @@ builtin_namespace()
     {"atan2", make<Builtin_Value>(Value{make<Atan2_Function>()})},
     {"max", make<Builtin_Value>(Value{make<Max_Function>()})},
     {"min", make<Builtin_Value>(Value{make<Min_Function>()})},
-    {"norm", make<Builtin_Value>(Value{make<Norm_Function>()})},
+    {"mag", make<Builtin_Value>(Value{make<Mag_Function>()})},
     {"len", make<Builtin_Value>(Value{make<Len_Function>()})},
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},
     {"shape2d", make<Builtin_Value>(Value{make<Shape2d_Function>()})},
