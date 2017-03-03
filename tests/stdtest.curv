@@ -13,7 +13,17 @@ assert(
     == [[[1,2],[2,4]],[[3,6],[4,8]]]
     );
 
+assert(identity 3 ==
+  [[1,0,0],
+   [0,1,0],
+   [0,0,1]] );
+
 assert((let(a=1,b=2,c=let(x=10,y=20)[x,y])[a,b,c]) == [1,2,[10,20]]);
 
 let(r={a=1})
 assert(defined r.a && !defined(r.b));
+
+assert(0..<5 == [0,1,2,3,4]);
+
+assert(reverse[1,2,3] == [3,2,1] && reverse[] == []);
+assert(sum[1,2,3]==6 && sum[]==0);

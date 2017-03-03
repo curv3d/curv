@@ -33,6 +33,7 @@ Shared<Phrase> parse_expr(Scanner& scanner);
 Shared<Phrase> parse_disjunction(Scanner&);
 Shared<Phrase> parse_conjunction(Scanner&);
 Shared<Phrase> parse_relation(Scanner&);
+Shared<Phrase> parse_range(Scanner&);
 Shared<Phrase> parse_sum(Scanner&);
 Shared<Phrase> parse_product(Scanner&);
 Shared<Phrase> parse_unary(Scanner&);
@@ -189,16 +190,14 @@ parse_conjunction(Scanner& scanner)
     }
 }
 
-// relation : sum
-//  | sum == sum | sum != sum
-//  | sum < sum | sum > sum
-//  | sum <= sum | sum >= sum
-//  | sum .. sum
-//  | sum .. sum `step` sum
+// relation : range
+//  | range == range | range != range
+//  | range < range | range > range
+//  | range <= range | range >= range
 Shared<Phrase>
 parse_relation(Scanner& scanner)
 {
-    auto left = parse_sum(scanner);
+    auto left = parse_range(scanner);
     auto tok = scanner.get_token();
     switch (tok.kind) {
     case Token::k_equal:
@@ -208,8 +207,42 @@ parse_relation(Scanner& scanner)
     case Token::k_greater:
     case Token::k_greater_or_equal:
         return make<Binary_Phrase>(
-            std::move(left), tok, parse_sum(scanner));
+            std::move(left), tok, parse_range(scanner));
     case Token::k_range:
+    case Token::k_open_range:
+      {
+        auto right = parse_range(scanner);
+        auto tok2 = scanner.get_token();
+        Shared<Phrase> step;
+        if (tok2.kind == Token::k_by) {
+            step = parse_range(scanner);
+        } else {
+            scanner.push_token(tok2);
+            tok2 = {};
+            step = nullptr;
+        }
+        return make<Range_Phrase>(
+            std::move(left), tok, std::move(right), tok2, std::move(step));
+      }
+    default:
+        scanner.push_token(tok);
+        return left;
+    }
+}
+
+// range : sum
+//  | sum .. sum
+//  | sum .. sum `by` sum
+//  | sum ..< sum
+//  | sum ..< sum `by` sum
+Shared<Phrase>
+parse_range(Scanner& scanner)
+{
+    auto left = parse_sum(scanner);
+    auto tok = scanner.get_token();
+    switch (tok.kind) {
+    case Token::k_range:
+    case Token::k_open_range:
       {
         auto right = parse_sum(scanner);
         auto tok2 = scanner.get_token();

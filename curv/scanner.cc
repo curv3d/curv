@@ -177,8 +177,13 @@ Scanner::get_token()
         goto success;
     case '.':
         if (p < last && *p == '.') {
-            tok.kind = Token::k_range;
-            ++p;
+            if (p+1 < last && p[1] == '<') {
+                tok.kind = Token::k_open_range;
+                p += 2;
+            } else {
+                tok.kind = Token::k_range;
+                ++p;
+            }
         } else
             tok.kind = Token::k_dot;
         goto success;

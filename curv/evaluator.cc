@@ -623,7 +623,7 @@ Range_Expr::eval(Frame& f) const
     }
 
     double delta = round((last - first)/step);
-    double countd = delta < 0.0 ? 0.0 : delta + 1.0;
+    double countd = delta < 0.0 ? 0.0 : delta + (half_open_ ? 0.0 : 1.0);
     // Note: countd could be infinity. It could be too large to fit in an
     // integer. It could be a float integer too large to increment (for large
     // float i, i==i+1). So we impose a limit on the count.
@@ -636,10 +636,11 @@ Range_Expr::eval(Frame& f) const
     } else {
         const char* err =
             (countd == countd ? "too many elements in range" : "domain error");
+        const char* dots = (half_open_ ? "..<" : "..");
         throw Exception(At_Phrase(*source_, &f),
             arg3_
-                ? stringify(firstv,"..",lastv," by ",stepv,": ", err)
-                : stringify(firstv,"..",lastv,": ", err));
+                ? stringify(firstv,dots,lastv," by ",stepv,": ", err)
+                : stringify(firstv,dots,lastv,": ", err));
     }
 }
 

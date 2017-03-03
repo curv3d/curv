@@ -422,17 +422,20 @@ struct Range_Expr : public Just_Expression
     Shared<Operation> arg1_;
     Shared<Operation> arg2_;
     Shared<Operation> arg3_;
+    bool half_open_;
 
     Range_Expr(
         Shared<const Phrase> source,
         Shared<Operation> arg1,
         Shared<Operation> arg2,
-        Shared<Operation> arg3)
+        Shared<Operation> arg3,
+        bool half_open)
     :
         Just_Expression(source),
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2)),
-        arg3_(std::move(arg3))
+        arg3_(std::move(arg3)),
+        half_open_(half_open)
     {}
     virtual Value eval(Frame&) const override;
 };

@@ -712,7 +712,8 @@ Range_Phrase::analyze(Environ& env) const
         share(*this),
         analyze_op(*first_, env),
         analyze_op(*last_, env),
-        step_ ? analyze_op(*step_, env) : nullptr);
+        step_ ? analyze_op(*step_, env) : nullptr,
+        op1_.kind == Token::k_open_range);
 }
 
 } // namespace curv
