@@ -24,6 +24,7 @@ let(r={a=1})
 assert(defined r.a && !defined(r.b));
 
 assert(0..<5 == [0,1,2,3,4]);
+assert((1,2,3)==[1,2,3] && (1,)==[1] && ()==[]);
 
 assert(reverse[1,2,3] == [3,2,1] && reverse[] == []);
 assert(sum[1,2,3]==6 && sum[]==0);

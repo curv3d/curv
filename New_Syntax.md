@@ -147,6 +147,29 @@ Previously, the [] operator converted a generator to a list. Now what?
     Can't use it directly as a function argument, since it conflicts with
     array indexing, but it is a better syntax in other contexts.
 
+SO,
+* (a,b,c) is a list
+* i..j is a list
+* [a,b,c] is a list
+
+[(a,b,c)] == [[a,b,c]], by the principle of compositionality.
+
+In (a,b,c), parens are not just being used to group the comma operator.
+Instead, both the , and the parens are part of the same grammar production.
+Ditto for [a,b,c].
+
+One more context for commas: {a:1, b:2}.
+
+Can commas appear in any other contexts? What about
+* top level: a, b, c
+* [a=1;b=2;a+b] and [a=1;b=2;a,b]?
+* (a=1;b=2;a+b) and (a=1;b=2;a,b)?
+No, this is confusing and unnecessary for Curv 0.0.
+
+Unlike comma, which only exists as part of (...), [...] and {...} expessions,
+semicolon is an operator with its own semantics, orthogonal to the parenthesis.
+It now makes sense for ',' to have lower precedence than ';'.
+
 ## Local Definitions
 
 ### Goals:

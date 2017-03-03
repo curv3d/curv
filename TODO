@@ -8,7 +8,8 @@ Define regular_polygon(n). See poly.curv.
 
 ## Language Redesign
 Lists.
-* (a,b,c) is a list. () is empty list, (a,) is singleton.
+* `,` has lower precedence than `;`. `,` only occurs within () [] {}.
+* each(a,b,c) replaces old meaning of (a,b,c)
 * f(x,y)=... is pattern matching on a list.
 * a[i] is array indexing.
 

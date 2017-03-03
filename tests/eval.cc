@@ -368,9 +368,10 @@ TEST(curv, eval)
         "ECHO: \"-\"\n"
         "ECHO: \"+\"\n");
 
-    // sequence generator
+    // sequence generator (deprecated, to be replaced by each)
+    // TODO: implement 'each'
     SUCCESS("[for (i=[1,2,3]) if (i==2) (\"two\", \"2!\") else i]", 
-        "[1,\"two\",\"2!\",3]");
+        "[1,[\"two\",\"2!\"],3]");
     SUCCESS("1,2,3", "1\n2\n3");
 
     // semicolon operator
