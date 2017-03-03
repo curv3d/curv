@@ -1,6 +1,8 @@
 # Release 0.0: "2D subsystem"
 What remains for MVP?
 
+Meta: use https://opensource.guide/
+
 Define regular_polygon(n). See poly.curv.
 * live coding, please. curv -l pathname
 
