@@ -8,9 +8,9 @@ Define regular_polygon(n). See poly.curv.
 
 ## Language Redesign
 Lists.
-* a[i] is array indexing.
 * (a,b,c) is a list. () is empty list, (a,) is singleton.
 * f(x,y)=... is pattern matching on a list.
+* a[i] is array indexing.
 
 Records.
 * {a: 10, f(x): x+1} is a record. No = because no scope.
@@ -20,12 +20,12 @@ Polymorphic list/record operations:
 * s[i] or s'i are list/record indexing with int or string index.
 * s[i,j] or s'(i,j) are "swizzling", "slicing". Index argument is a list.
   * r["a","b"] -- this is a list, not a record
-* `dom s` is list of indexes of s
 * `len s` is # elements of s
+* `dom s` is list of indexes of s
 
 Function Calls and Chains.
-* `f x y z` is a curried function call, like ML/Haskell.
 * `f << g << x` is chain notation. Also, `x >> g >> f`.
+* `f x y z` is a curried function call, like ML/Haskell.
 
 Local Definitions and Scripts.
 * `def1;def2;phrase` is a block, with recursive scoping:
