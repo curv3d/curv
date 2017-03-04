@@ -131,6 +131,7 @@ rpoly(n) =
 rp(n) =
   let(c = sqrt(1/(1 - sin(tau/(2*n)))))
   union[
+    colour(red) circle(.1),
     regular_polygon(n),
     colour(red) plane_segment{xmax=-c,xmin=-c-.2},
     colour(red) plane_segment{xmin=c,xmax=c+.2},
@@ -140,8 +141,10 @@ rp(n) =
 if(true) 
 union [
   rp 3,
+  /*
   translate[3,0] rp 4,
   translate[6,0] rp 5,
+   */
 /*
   translate[0,4] rotate(-tau/4) rp 3,
   translate[3,4] rotate(-tau/8) rp 4,

@@ -440,20 +440,6 @@ struct Range_Expr : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
-struct List_Expr : public Just_Expression
-{
-    Shared<Operation> generator_;
-
-    List_Expr(Shared<const Phrase> source, Shared<Operation> gen)
-    : Just_Expression(std::move(source)), generator_(std::move(gen))
-    {}
-
-    virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
-};
-
-// TODO: List_Sequence_Expr is deprecated.
-// It's the same as List_Expr(Sequence_Gen).
 struct List_Sequence_Expr_Base : public Just_Expression,
     public aux::Tail_Array_Data<Shared<const Operation>>
 {
@@ -462,6 +448,7 @@ struct List_Sequence_Expr_Base : public Just_Expression,
 
     virtual Value eval(Frame&) const override;
     Shared<List> eval_list(Frame&) const;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 using List_Sequence_Expr = aux::Tail_Array<List_Sequence_Expr_Base>;
 

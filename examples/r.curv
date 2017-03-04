@@ -9,11 +9,11 @@ sq =
 
 
 union [
-    for (i=[0..9])
+  for (i=0..9)
     translate[i*6,0]
     let(a=(tau/4)/(2^i))
     rotate(a)
     (echo(i,2^i,a,a/deg);
-    sq
+      sq
     )
 ]

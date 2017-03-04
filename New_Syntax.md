@@ -16,6 +16,7 @@ Lists.
   * [a,b,c] is an alternate list syntax.
 * f(x,y)=... is pattern matching on a list.
 * `[i..j step k]` becomes `i..j by k`, is a list, not a generator.
+* ...a converts list to sequence generator (ES6 spread operator)
 
 Records.
 * {a: 10, f(x): x+1} is a record. No = because no scope.
@@ -102,8 +103,6 @@ OKAY BUT previously, (a,b,c) was a sequence generator phrase.
 Use case [ if(cond) (x,y,z) ] has len 0 or 3 depending on cond, as part of
 a larger list constructor. I can use 'each' to support this case.
   ( if (cond) each(x,y,z), ... )
-or
-  ( each if (cond) (x,y,z), ... )
 
 OKAY BUT previously, i..j was a generator and [i..j] was a list.
 The [] operator performed the conversion. Now what?
@@ -169,6 +168,44 @@ No, this is confusing and unnecessary for Curv 0.0.
 Unlike comma, which only exists as part of (...), [...] and {...} expessions,
 semicolon is an operator with its own semantics, orthogonal to the parenthesis.
 It now makes sense for ',' to have lower precedence than ';'.
+
+OKAY BUT I've lost (x,y,z) as a sequence generator. Need an alternate syntax.
+Popular names: the "splat" operator (Ruby), the "spread" operator (ES6).
+OpenSCAD:   each(x,y,z)
+Javascript:  ...(x,y,z)  "the spread operator" (also PHP)
+Python:        *(x,y,z)  also Ruby,Perl6
+C++             args...  also Go, CoffeeScript
+Scheme          args ...
+or maybe    with(x,y,z)
+            with(args)
+
+Use the ES6 syntax `...expr` and call it the "spread operator".
+
+Note that Javascript spread will also be available inside of object literals.
+  aWithDefaults = {x:1, y:2, ...a};
+  aWithOverrides = {...a, x:1, y:2};
+
+The args... syntax looks good, when applied to a single identifier.
+The Javascript ES6 ...expr syntax (spread operator) is designed to work
+in a more general context, eg large list literals.
+    union(
+        for (i=0..6) each(
+            hyperSegment([0,0], q'i, t),
+            hyperSegment(q'i, q'(mod(i+1,7)), t),
+            hyperSegment(q'i, q'(mod(i+2,7)), t),
+        ),
+        for(i=0..6) 
+            recur_kisrhombille3_7(q'i, q'(mod(i+1,7)), n, t)
+    );
+    union(
+        for (i=0..6) ...[
+            hyperSegment([0,0], q'i, t),
+            hyperSegment(q'i, q'(mod(i+1,7)), t),
+            hyperSegment(q'i, q'(mod(i+2,7)), t),
+        ],
+        for(i=0..6) 
+            recur_kisrhombille3_7(q'i, q'(mod(i+1,7)), n, t)
+    );
 
 ## Local Definitions
 

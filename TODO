@@ -9,7 +9,7 @@ Define regular_polygon(n). See poly.curv.
 ## Language Redesign
 Lists.
 * `,` has lower precedence than `;`. `,` only occurs within () [] {}.
-* each(a,b,c) replaces old meaning of (a,b,c)
+* ...(a,b,c) replaces old meaning of (a,b,c)
 * f(x,y)=... is pattern matching on a list.
 * a[i] is array indexing.
 

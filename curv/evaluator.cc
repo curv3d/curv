@@ -472,9 +472,8 @@ At_Expr::eval(Frame& f) const
 Shared<List>
 List_Sequence_Expr_Base::eval_list(Frame& f) const
 {
-    // TODO: This used to have a more efficient implementation, assuming that
-    // all elements of the list constructor are pure expressions. An optimizing
-    // compiler could bring that back as a special case.
+    // TODO: if the # of elements generated is known at compile time,
+    // then the List could be constructed directly without using a std::vector.
     List_Builder lb;
     for (size_t i = 0; i < this->size(); ++i)
         (*this)[i]->generate(f, lb);
@@ -485,17 +484,6 @@ Value
 List_Sequence_Expr_Base::eval(Frame& f) const
 {
     return {eval_list(f)};
-}
-
-Value
-List_Expr::eval(Frame& f) const
-{
-    // TODO: if the # of elements produced by the generator is known at compile
-    // time, then the List object could be allocated directly and filled in,
-    // without a std::vector intermediate.
-    List_Builder lb;
-    generator_->generate(f, lb);
-    return {lb.get_list()};
 }
 
 void

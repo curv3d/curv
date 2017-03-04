@@ -381,7 +381,17 @@ Paren_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 List_Phrase::analyze(Environ& env) const
 {
-    return make<List_Expr>(share(*this), analyze_op(*body_, env));
+    if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
+        auto& items = commas->args_;
+        auto list = List_Sequence_Expr::make(items.size(), share(*this));
+        for (size_t i = 0; i < items.size(); ++i)
+            (*list)[i] = analyze_op(*items[i].expr_, env);
+        return list;
+    } else {
+        auto list = List_Sequence_Expr::make(1, share(*this));
+        (*list)[0] = analyze_op(*body_, env);
+        return list;
+    }
 }
 
 Shared<Meaning>

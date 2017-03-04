@@ -197,7 +197,7 @@ void gl_put_as(GL_Frame& f, GL_Value val, const Phrase& src, GL_Type type)
                 f.gl.out << val;
                 first = false;
             }
-            f.gl.out << ");\n";
+            f.gl.out << ")";
             return;
         }
     }
@@ -343,35 +343,33 @@ GL_Value Nonlocal_Ref::gl_eval(GL_Frame& f) const
     return gl_eval_const(f, (*f.nonlocal)[slot_], *source_);
 }
 
-GL_Value List_Expr::gl_eval(GL_Frame& f) const
+GL_Value List_Sequence_Expr_Base::gl_eval(GL_Frame& f) const
 {
-    if (auto seq = dynamic_shared_cast<Sequence_Gen>(generator_)) {
-        if (seq->size() == 2) {
-            auto e1 = gl_eval_expr(f, *(*seq)[0], GL_Type::Num);
-            auto e2 = gl_eval_expr(f, *(*seq)[1], GL_Type::Num);
-            GL_Value result = f.gl.newvalue(GL_Type::Vec2);
-            f.gl.out << "  vec2 "<<result<<" = vec2("<<e1<<","<<e2<<");\n";
-            return result;
-        }
-        if (seq->size() == 3) {
-            auto e1 = gl_eval_expr(f, *(*seq)[0], GL_Type::Num);
-            auto e2 = gl_eval_expr(f, *(*seq)[1], GL_Type::Num);
-            auto e3 = gl_eval_expr(f, *(*seq)[2], GL_Type::Num);
-            GL_Value result = f.gl.newvalue(GL_Type::Vec3);
-            f.gl.out << "  vec3 "<<result<<" = vec3("
-                <<e1<<","<<e2<<","<<e3<<");\n";
-            return result;
-        }
-        if (seq->size() == 4) {
-            auto e1 = gl_eval_expr(f, *(*seq)[0], GL_Type::Num);
-            auto e2 = gl_eval_expr(f, *(*seq)[1], GL_Type::Num);
-            auto e3 = gl_eval_expr(f, *(*seq)[2], GL_Type::Num);
-            auto e4 = gl_eval_expr(f, *(*seq)[3], GL_Type::Num);
-            GL_Value result = f.gl.newvalue(GL_Type::Vec3);
-            f.gl.out << "  vec4 "<<result<<" = vec4("
-                <<e1<<","<<e2<<","<<e3<<","<<e4<<");\n";
-            return result;
-        }
+    if (this->size() == 2) {
+        auto e1 = gl_eval_expr(f, *(*this)[0], GL_Type::Num);
+        auto e2 = gl_eval_expr(f, *(*this)[1], GL_Type::Num);
+        GL_Value result = f.gl.newvalue(GL_Type::Vec2);
+        f.gl.out << "  vec2 "<<result<<" = vec2("<<e1<<","<<e2<<");\n";
+        return result;
+    }
+    if (this->size() == 3) {
+        auto e1 = gl_eval_expr(f, *(*this)[0], GL_Type::Num);
+        auto e2 = gl_eval_expr(f, *(*this)[1], GL_Type::Num);
+        auto e3 = gl_eval_expr(f, *(*this)[2], GL_Type::Num);
+        GL_Value result = f.gl.newvalue(GL_Type::Vec3);
+        f.gl.out << "  vec3 "<<result<<" = vec3("
+            <<e1<<","<<e2<<","<<e3<<");\n";
+        return result;
+    }
+    if (this->size() == 4) {
+        auto e1 = gl_eval_expr(f, *(*this)[0], GL_Type::Num);
+        auto e2 = gl_eval_expr(f, *(*this)[1], GL_Type::Num);
+        auto e3 = gl_eval_expr(f, *(*this)[2], GL_Type::Num);
+        auto e4 = gl_eval_expr(f, *(*this)[3], GL_Type::Num);
+        GL_Value result = f.gl.newvalue(GL_Type::Vec3);
+        f.gl.out << "  vec4 "<<result<<" = vec4("
+            <<e1<<","<<e2<<","<<e3<<","<<e4<<");\n";
+        return result;
     }
     throw Exception(At_GL_Phrase(*source_, &f),
         "this list constructor does not support the Geometry Compiler");
