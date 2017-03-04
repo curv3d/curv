@@ -16,7 +16,7 @@ kisrhombille3_7(n,t) =
          q = [for(i=0..6) r*[cos(i*tau/7),sin(i*tau/7)] ])
     union[
         //color("magenta")
-        for (i=0..6) (
+        for (i=0..6) ...(
             hyperSegment([0,0], q'i, t),
             hyperSegment(q'i, q'(mod(i+1,7)), t),
             hyperSegment(q'i, q'(mod(i+2,7)), t),

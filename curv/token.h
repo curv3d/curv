@@ -70,6 +70,7 @@ struct Token
         k_over,             ///! `/` operator
         k_range,            ///! `..` operator
         k_open_range,       ///! `..<` operator
+        k_ellipsis,         ///! `...` operator
         k_equal,            ///! `==` operator
         k_not_equal,        ///! `!=` operator
         k_less,             ///! `<` operator

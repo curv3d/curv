@@ -493,6 +493,14 @@ Sequence_Gen_Base::generate(Frame& f, List_Builder& lb) const
         (*this)[i]->generate(f, lb);
 }
 
+void
+Spread_Gen::generate(Frame& f, List_Builder& lb) const
+{
+    auto list = arg_->eval(f).to<const List>(At_Phrase(*source_, &f));
+    for (size_t i = 0; i < list->size(); ++i)
+        lb.push_back(list->at(i));
+}
+
 Value
 Record_Expr::eval(Frame& f) const
 {

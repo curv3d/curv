@@ -180,6 +180,9 @@ Scanner::get_token()
             if (p+1 < last && p[1] == '<') {
                 tok.kind = Token::k_open_range;
                 p += 2;
+            } else if (p+1 < last && p[1] == '.') {
+                tok.kind = Token::k_ellipsis;
+                p += 2;
             } else {
                 tok.kind = Token::k_range;
                 ++p;

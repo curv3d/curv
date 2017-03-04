@@ -29,7 +29,7 @@ namespace curv {
 
 Shared<Phrase> parse_semicolons(Scanner& scanner);
 Shared<Phrase> parse_commas(Scanner& scanner);
-Shared<Phrase> parse_expr(Scanner& scanner);
+Shared<Phrase> parse_item(Scanner& scanner);
 Shared<Phrase> parse_disjunction(Scanner&);
 Shared<Phrase> parse_conjunction(Scanner&);
 Shared<Phrase> parse_relation(Scanner&);
@@ -43,8 +43,7 @@ Shared<Phrase> parse_primary(Scanner&,const char* what);
 // Parse a script, return a syntax tree.
 // It's a recursive descent parser.
 //
-// script : | stmts | stmts ;
-// stmts : expr | stmts ; expr
+// script : semicolons EOF
 Shared<Module_Phrase>
 parse_script(Scanner& scanner)
 {
@@ -93,7 +92,7 @@ is_list_end_token(Token::Kind k)
 }
 
 // commas : empty | list | list `,`
-// list : expr | list `,` expr
+// list : item | list `,` item
 //
 // How do I detect an empty commas phrase?
 // * Peek at the first token, and if it is an end token from one of the
@@ -110,18 +109,18 @@ parse_commas(Scanner& scanner)
         // on entry, tok is lookahead of the next token
         if (is_list_end_token(tok.kind))
             return commas;
-        auto expr = parse_expr(scanner);
+        auto item = parse_item(scanner);
         tok = scanner.get_token();
         if (tok.kind == Token::k_comma) {
-            commas->args_.push_back({expr, tok});
+            commas->args_.push_back({item, tok});
             tok = scanner.get_token();
             scanner.push_token(tok);
         } else if (is_list_end_token(tok.kind)) {
             scanner.push_token(tok);
             if (commas->args_.empty())
-                return expr;
+                return item;
             else {
-                commas->args_.push_back({expr, {}});
+                commas->args_.push_back({item, {}});
                 return commas;
             }
         } else
@@ -131,21 +130,27 @@ parse_commas(Scanner& scanner)
 
 // Low precedence right associative infix operators:
 //
-// expr : disjunction | definition | lambda
-// definition : id = expr
-// lambda : primary -> expr
+// item : disjunction | definition | lambda | spread
+// definition : id = item
+// lambda : primary -> item
+// spread : ... item
 Shared<Phrase>
-parse_expr(Scanner& scanner)
+parse_item(Scanner& scanner)
 {
-    auto left = parse_disjunction(scanner);
     auto tok = scanner.get_token();
+    if (tok.kind == Token::k_ellipsis)
+        return make<Unary_Phrase>(tok, parse_item(scanner));
+
+    scanner.push_token(tok);
+    auto left = parse_disjunction(scanner);
+    tok = scanner.get_token();
     switch (tok.kind) {
     case Token::k_equate:
         return make<Definition_Phrase>(
-            std::move(left), tok, parse_expr(scanner));
+            std::move(left), tok, parse_item(scanner));
     case Token::k_right_arrow:
         return make<Lambda_Phrase>(
-            std::move(left), tok, parse_expr(scanner));
+            std::move(left), tok, parse_item(scanner));
     default:
         scanner.push_token(tok);
         return left;
@@ -374,11 +379,11 @@ parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
 }
 
 // primary : numeral | identifier | string | parens | list | braces
-//  | 'if' ( expr ) expr
-//  | 'if' ( expr ) expr 'else' expr
-//  | 'let' parens expr
-//  | 'letrec' parens expr
-//  | 'for' parens expr
+//  | 'if' ( semicolons ) item
+//  | 'if' ( semicolons ) item 'else' item
+//  | 'let' parens item
+//  | 'letrec' parens item
+//  | 'for' parens item
 // parens : ( semicolons )
 // list : [ semicolons ]
 // braces : { semicolons }
@@ -404,14 +409,14 @@ parse_primary(Scanner& scanner, const char* what)
         if (dynamic_cast<Paren_Phrase*>(condition.get()) == nullptr)
             throw Exception(At_Phrase(*condition, scanner.eval_frame_),
                 "not a parenthesized expression");
-        auto then_expr = parse_expr(scanner);
+        auto then_expr = parse_item(scanner);
         Token tok2 = scanner.get_token();
         if (tok2.kind != Token::k_else) {
             scanner.push_token(tok2);
             return make<If_Phrase>(
                 tok, condition, then_expr, Token{}, nullptr);
         }
-        auto else_expr = parse_expr(scanner);
+        auto else_expr = parse_item(scanner);
         return make<If_Phrase>(
             tok, condition, then_expr, tok2, else_expr);
       }
@@ -422,7 +427,7 @@ parse_primary(Scanner& scanner, const char* what)
         if (args == nullptr)
             throw Exception(At_Phrase(*p, scanner.eval_frame_),
                 "let: malformed argument");
-        auto body = parse_expr(scanner);
+        auto body = parse_item(scanner);
         return make<Let_Phrase>(tok, args, body);
       }
     case Token::k_letrec:
@@ -432,7 +437,7 @@ parse_primary(Scanner& scanner, const char* what)
         if (args == nullptr)
             throw Exception(At_Phrase(*p, scanner.eval_frame_),
                 "letrec: malformed argument");
-        auto body = parse_expr(scanner);
+        auto body = parse_item(scanner);
         return make<Letrec_Phrase>(tok, args, body);
       }
     case Token::k_for:
@@ -442,7 +447,7 @@ parse_primary(Scanner& scanner, const char* what)
         if (args == nullptr)
             throw Exception(At_Phrase(*p, scanner.eval_frame_),
                 "for: malformed argument");
-        auto body = parse_expr(scanner);
+        auto body = parse_item(scanner);
         return make<For_Phrase>(tok, args, body);
       }
     case Token::k_lparen:

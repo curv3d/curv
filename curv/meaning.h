@@ -70,7 +70,7 @@ struct Metafunction : public Meaning
 ///     For example, `2+2`.
 ///  2. A Generator is executed to produce a sequence of zero or more values
 ///     using `generate`. (Every Operation is also a generator.)
-///     For example, `for(i=[1..10])i^2`.
+///     For example, `for(i=1..10)i^2`.
 ///  3. An Action is executed to cause a side effect using `exec`,
 ///     and no value is produced.
 ///     Every action is also a generator that produces 0 values.
@@ -309,6 +309,21 @@ struct Negative_Expr : public Prefix_Expr_Base
     using Prefix_Expr_Base::Prefix_Expr_Base;
     virtual Value eval(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
+};
+
+struct Spread_Gen : public Operation
+{
+    Shared<Operation> arg_;
+
+    Spread_Gen(
+        Shared<const Phrase> source,
+        Shared<Operation> arg)
+    :
+        Operation(source),
+        arg_(std::move(arg))
+    {}
+
+    virtual void generate(Frame&, List_Builder&) const override;
 };
 
 struct Infix_Expr_Base : public Just_Expression

@@ -155,6 +155,10 @@ Unary_Phrase::analyze(Environ& env) const
         return make<Negative_Expr>(
             share(*this),
             analyze_op(*arg_, env));
+    case Token::k_ellipsis:
+        return make<Spread_Gen>(
+            share(*this),
+            analyze_op(*arg_, env));
     default:
         assert(0);
     }
