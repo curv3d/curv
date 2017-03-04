@@ -15,7 +15,23 @@ using namespace aux;
 using namespace curv;
 
 std::stringstream console;
-System_Impl sys(make_string("../lib/std.curv"), console);
+
+curv::System&
+make_system()
+{
+    try {
+        static curv::System_Impl sys(
+            curv::make_string("../lib/std.curv"),
+            console);
+        return sys;
+    } catch (curv::Exception& e) {
+        std::cerr << "ERROR: " << e << "\n";
+        exit(EXIT_FAILURE);
+    } catch (std::exception& e) {
+        std::cerr << "ERROR: " << e.what() << "\n";
+        exit(EXIT_FAILURE);
+    }
+}
 
 struct CString_Script : public curv::Script
 {
@@ -40,7 +56,8 @@ struct Evaluator
         try {
             console.str("");
             console.clear(); // Clear state flags.
-            Shared<Module> module{eval_script(*script_, builtin_namespace(), sys)};
+            Shared<Module> module{
+                eval_script(*script_, builtin_namespace(), make_system())};
 
             String_Builder buf;
             bool first = true;
