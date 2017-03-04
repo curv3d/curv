@@ -440,17 +440,17 @@ struct Range_Expr : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
-struct List_Sequence_Expr_Base : public Just_Expression,
+struct List_Expr_Base : public Just_Expression,
     public aux::Tail_Array_Data<Shared<const Operation>>
 {
-    List_Sequence_Expr_Base(Shared<const Phrase> source)
+    List_Expr_Base(Shared<const Phrase> source)
     : Just_Expression(std::move(source)) {}
 
     virtual Value eval(Frame&) const override;
     Shared<List> eval_list(Frame&) const;
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
-using List_Sequence_Expr = aux::Tail_Array<List_Sequence_Expr_Base>;
+using List_Expr = aux::Tail_Array<List_Expr_Base>;
 
 /// a Sequence_Gen is a construction like (), (a,), (a,b,c)
 /// which is a generator but not an expression, and which generates
@@ -478,7 +478,7 @@ struct Module_Expr : public Just_Expression
 {
     Shared<Module::Dictionary> dictionary_;
     Shared<List> slots_; // or, a Tail_Array
-    Shared<const List_Sequence_Expr> elements_;
+    Shared<const List_Expr> elements_;
     size_t frame_nslots_;
 
     Module_Expr(Shared<const Phrase> source) : Just_Expression(source) {}
@@ -603,14 +603,14 @@ struct If_Else_Op : public Operation
 struct Lambda_Expr : public Just_Expression
 {
     Shared<Operation> body_;
-    Shared<List_Sequence_Expr> nonlocals_;
+    Shared<List_Expr> nonlocals_;
     size_t nargs_;
     size_t nslots_;
 
     Lambda_Expr(
         Shared<const Phrase> source,
         Shared<Operation> body,
-        Shared<List_Sequence_Expr> nonlocals,
+        Shared<List_Expr> nonlocals,
         size_t nargs,
         size_t nslots)
     :

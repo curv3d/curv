@@ -343,7 +343,7 @@ GL_Value Nonlocal_Ref::gl_eval(GL_Frame& f) const
     return gl_eval_const(f, (*f.nonlocal)[slot_], *source_);
 }
 
-GL_Value List_Sequence_Expr_Base::gl_eval(GL_Frame& f) const
+GL_Value List_Expr_Base::gl_eval(GL_Frame& f) const
 {
     if (this->size() == 2) {
         auto e1 = gl_eval_expr(f, *(*this)[0], GL_Type::Num);

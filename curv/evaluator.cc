@@ -470,7 +470,7 @@ At_Expr::eval(Frame& f) const
 }
 
 Shared<List>
-List_Sequence_Expr_Base::eval_list(Frame& f) const
+List_Expr_Base::eval_list(Frame& f) const
 {
     // TODO: if the # of elements generated is known at compile time,
     // then the List could be constructed directly without using a std::vector.
@@ -481,7 +481,7 @@ List_Sequence_Expr_Base::eval_list(Frame& f) const
 }
 
 Value
-List_Sequence_Expr_Base::eval(Frame& f) const
+List_Expr_Base::eval(Frame& f) const
 {
     return {eval_list(f)};
 }

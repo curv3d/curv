@@ -221,8 +221,8 @@ Lambda_Phrase::analyze(Environ& env) const
     Arg_Environ env2(&env, params, recursive_);
     auto expr = analyze_op(*right_, env2);
     auto src = share(*this);
-    Shared<List_Sequence_Expr> nonlocals =
-        List_Sequence_Expr::make(env2.nonlocal_exprs_.size(), src);
+    Shared<List_Expr> nonlocals =
+        List_Expr::make(env2.nonlocal_exprs_.size(), src);
     // TODO: use some kind of Tail_Array move constructor
     for (size_t i = 0; i < env2.nonlocal_exprs_.size(); ++i)
         (*nonlocals)[i] = env2.nonlocal_exprs_[i];
@@ -370,7 +370,7 @@ Paren_Phrase::analyze(Environ& env) const
 {
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
         auto& items = commas->args_;
-        auto list = List_Sequence_Expr::make(items.size(), share(*this));
+        auto list = List_Expr::make(items.size(), share(*this));
         for (size_t i = 0; i < items.size(); ++i)
             (*list)[i] = analyze_op(*items[i].expr_, env);
         return list;
@@ -383,12 +383,12 @@ List_Phrase::analyze(Environ& env) const
 {
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
         auto& items = commas->args_;
-        auto list = List_Sequence_Expr::make(items.size(), share(*this));
+        auto list = List_Expr::make(items.size(), share(*this));
         for (size_t i = 0; i < items.size(); ++i)
             (*list)[i] = analyze_op(*items[i].expr_, env);
         return list;
     } else {
-        auto list = List_Sequence_Expr::make(1, share(*this));
+        auto list = List_Expr::make(1, share(*this));
         (*list)[0] = analyze_op(*body_, env);
         return list;
     }
@@ -474,7 +474,7 @@ Module_Phrase::analyze_module(Environ& env) const
     auto module = make<Module_Expr>(self);
     module->dictionary_ = fields.dictionary_;
     module->slots_ = fields.analyze_values(env2);
-    Shared<List_Sequence_Expr> xelements = {List_Sequence_Expr::make(elements.size(), self)};
+    Shared<List_Expr> xelements = {List_Expr::make(elements.size(), self)};
     for (size_t i = 0; i < elements.size(); ++i)
         (*xelements)[i] = analyze_op(*elements[i], env2);
     module->elements_ = xelements;
