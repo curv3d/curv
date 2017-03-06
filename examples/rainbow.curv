@@ -3,11 +3,11 @@ hsv2rgb(c) =
     c'2 * mix(1, clamp3(m - 1, 0, 1), c'1);
 
 mix(a,b,t) = a*(1-t) + b*t;
-clamp(x,lo,hi) = min[max[x,lo],hi];
+clamp(x,lo,hi) = min(max(x,lo),hi);
 clamp3(v,lo,hi) = [
-    min[max[v'X,lo],hi],
-    min[max[v'Y,lo],hi],
-    min[max[v'Z,lo],hi],
+    min(max(v'X,lo),hi),
+    min(max(v'Y,lo),hi),
+    min(max(v'Z,lo),hi),
 ];
 
 // phase angle of a vector, range tau/2 to -tau/2
@@ -18,5 +18,5 @@ cis(theta) = [cos theta, sin theta];
 
 colourfield(f)shape = shape2d{dist=shape.dist,colour=f,bbox=shape.bbox};
 
-//colourfield(p->hsv2rgb[phase(p)/tau,1,1]) everything;
-colourfield(p->hsv2rgb[p'X,1,1])everything;
+//colourfield(p->hsv2rgb(phase(p)/tau,1,1)) everything;
+colourfield(p->hsv2rgb(p'X,1,1))everything;

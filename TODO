@@ -7,10 +7,25 @@ Define regular_polygon(n). See poly.curv.
 * live coding, please. curv -l pathname
 
 gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
+curv::Function represents a variadic function.
 
 ## Language Redesign
 Lists.
 * a[i] is array indexing.
+
+ISSUE: function calls.
+* In this case, the argument needs a trailing comma, or we are passing
+  a generator as an argument (it isn't converted to a list).
+    union( for(i=a) shape(i), )
+    union([for(i=a) shape(i)])
+  I expect to use the idiom union(a,b,c) *a lot*, so I'd like to have a
+  standard way to write this code so I don't have to think about it.
+  The rule is: since union is variadic, put a trailing comma after every
+  argument.
+* In this case, the argument must not have a trailing comma.
+    abs(-1) -> 1
+    abs(-1,) -> [1]
+  Since abs is not variadic, don't use a trailing comma.
 
 Records.
 * {a: 10, f(x): x+1} is a record. No = because no scope.

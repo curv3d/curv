@@ -80,15 +80,15 @@ complement(s) = shape2d {
     bbox = [[-inf,-inf],[inf,inf]]
 };
 _union2(s1,s2) = shape2d {
-    dist p = min[s1.dist p, s2.dist p],
+    dist p = min(s1.dist p, s2.dist p),
     colour p = if (s1.dist p <= 0) s1.colour p else s2.colour p,
-    bbox = [min[s1.bbox'0, s2.bbox'0], max[s1.bbox'1, s2.bbox'1]]
+    bbox = [min(s1.bbox'0, s2.bbox'0), max(s1.bbox'1, s2.bbox'1)]
 };
 union = reduce(nothing, _union2);
 _intersection2(s1,s2) = shape2d {
-    dist p = max[s1.dist p, s2.dist p],
+    dist p = max(s1.dist p, s2.dist p),
     colour = s1.colour,
-    bbox = [max[s1.bbox'0, s2.bbox'0], min[s1.bbox'1, s2.bbox'1]]
+    bbox = [max(s1.bbox'0, s2.bbox'0), min(s1.bbox'1, s2.bbox'1)]
 };
 intersection = reduce(everything, _intersection2);
 difference(s1,s2) = _intersection2(s1, complement s2);
@@ -106,9 +106,9 @@ scale(s) shape = shape2d {
     bbox = s * shape.bbox
 };
 rotate(a) shape = shape2d {
-    dist p = shape.dist[cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X],
+    dist p = shape.dist(cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X),
     //dist p = shape.dist cmul(p, cis(-a)),
-    colour p = shape.colour[cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X],
+    colour p = shape.colour(cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X),
     bbox = shape.bbox // TODO: fixme, see below
 };
 /*
@@ -155,5 +155,5 @@ distance_field(shape) = shape2d {
     colour p =
         let(d = shape.dist p)
         let(c = if (d >= 0) ceil(d)-d else floor(d)-d)
-        [max[-c,0], 0, max[c,0]],
+        [max(-c,0), 0, max(c,0)],
 };

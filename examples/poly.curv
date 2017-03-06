@@ -35,7 +35,7 @@ plane_segment(limits) =
     },
   ];
 
-//union[colour(red)circle(1), plane_segment{ymax=2}];
+//union(colour(red)circle(1), plane_segment{ymax=2});
 //distance_field plane_segment{xmin=-1,xmax=1,ymin=-2,ymax=2};
 
 rep_rotate(n) shape =
@@ -112,7 +112,7 @@ RE=0;
 IM=1;
 cmul(z,w) = [z'RE*w'RE - z'IM*w'IM, z'IM*w'RE + z'RE*w'IM];
 
-//old_rep_rotate(5) translate[1,1] circle(1);
+//old_rep_rotate(5) translate(1,1) circle(1);
 
 half_plane(v) =
     let(m = mag v,
@@ -130,29 +130,29 @@ rpoly(n) =
 
 rp(n) =
   let(c = sqrt(1/(1 - sin(tau/(2*n)))))
-  union[
+  union(
     colour(red) circle(.1),
     regular_polygon(n),
     colour(red) plane_segment{xmax=-c,xmin=-c-.2},
     colour(red) plane_segment{xmin=c,xmax=c+.2},
-    //translate[.7,0] colour(red) circle(.1),
-  ];
+    //translate(.7,0) colour(red) circle(.1),
+  );
 
 if(true) 
-union [
+union ([
   rp 3,
   /*
-  translate[3,0] rp 4,
-  translate[6,0] rp 5,
+  translate(3,0) rp 4,
+  translate(6,0) rp 5,
    */
 /*
-  translate[0,4] rotate(-tau/4) rp 3,
-  translate[3,4] rotate(-tau/8) rp 4,
-  translate[6,4] rotate(-tau/16) rp 5,
+  translate(0,4) rotate(-tau/4) rp 3,
+  translate(3,4) rotate(-tau/8) rp 4,
+  translate(6,4) rotate(-tau/16) rp 5,
 
-  translate[0,8] rotate(-tau/12) rp 3,
-  translate[3,8] rotate(-tau/8) rp 4,
-  translate[6,8] rotate(-(tau/4 - tau/10)) rp 5,
+  translate(0,8) rotate(-tau/12) rp 3,
+  translate(3,8) rotate(-tau/8) rp 4,
+  translate(6,8) rotate(-(tau/4 - tau/10)) rp 5,
  */
-];
+]);
 //complement half_plane cis(tau/10);
