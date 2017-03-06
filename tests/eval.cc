@@ -450,12 +450,11 @@ TEST(curv, eval)
 
     SUCCESS("is_list 0","false");
     SUCCESS("is_list []","true");
-#if 0
+
     FAILALL("1,2",
-        "ERROR: syntax error\n"
+        "syntax error\n"
         "line 1(column 2)\n"
         "  1,2\n"
         "   ^ ");
-#endif
   }
 }
