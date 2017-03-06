@@ -264,16 +264,16 @@ struct Dot_Expr : public Just_Expression
 struct Call_Expr : public Just_Expression
 {
     Shared<Operation> fun_;
-    std::vector<Shared<Operation>> args_;
+    Shared<Operation> arg_;
 
     Call_Expr(
         Shared<const Call_Phrase> source,
         Shared<Operation> fun,
-        std::vector<Shared<Operation>> args)
+        Shared<Operation> arg)
     :
         Just_Expression(std::move(source)),
         fun_(std::move(fun)),
-        args_(std::move(args))
+        arg_(std::move(arg))
     {}
 
     inline const Call_Phrase* call_phrase() const

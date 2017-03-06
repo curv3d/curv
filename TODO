@@ -6,13 +6,10 @@ Meta: use https://opensource.guide/
 Define regular_polygon(n). See poly.curv.
 * live coding, please. curv -l pathname
 
+gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
+
 ## Language Redesign
 Lists.
-* f(x,y)=... is pattern matching on a list.
-  * Function is split into two classes.
-  * Function::call(Value,Frame&). no nargs_ member.
-  * Polyadic_Function has nargs_, the call(arg,f) destructures arg, populates
-    the frame, then invokes call(f). Has gl_call(f).
 * a[i] is array indexing.
 
 Records.

@@ -10,9 +10,9 @@
 
 namespace curv {
 
-struct Blackfield_Function : public Function
+struct Blackfield_Function : public Polyadic_Function
 {
-    Blackfield_Function() : Function(1) {}
+    Blackfield_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
         Shared<List> v = List::make({Value{0.0}, Value{0.0}, Value{0.0}});
@@ -69,13 +69,13 @@ Shape2D::getfield(Atom name) const
     return record_->getfield(name);
 }
 
-Function&
+Polyadic_Function&
 Shape2D::dist(const Context& cx) const
 {
     auto val = getfield("dist");
     if (val == missing)
         throw Exception(cx, "Shape2D: dist function is missing");
-    auto fun = val.dycast<Function>();
+    auto fun = val.dycast<Polyadic_Function>();
     if (fun == nullptr)
         throw Exception(cx, "Shape2D: dist is not a function");
     if (fun->nargs_ != 1)
@@ -92,7 +92,7 @@ Shape2D::bbox(const Context& cx) const
 GL_Value
 Shape2D::gl_dist(GL_Value arg, GL_Frame& f) const
 {
-    Function& fun = dist(At_GL_Frame(&f));
+    Polyadic_Function& fun = dist(At_GL_Frame(&f));
     auto f2 = GL_Frame::make(fun.nslots_, f.gl, &f, nullptr);
     (*f2)[0] = arg;
     auto result = fun.gl_call(*f2);
@@ -107,7 +107,7 @@ GL_Value
 Shape2D::gl_colour(GL_Value arg, GL_Frame& f) const
 {
     At_GL_Frame cx(&f);
-    auto fun = field("colour", cx).to<Function>(cx);
+    auto fun = field("colour", cx).to<Polyadic_Function>(cx);
     auto f2 = GL_Frame::make(fun->nslots_, f.gl, &f, nullptr);
     (*f2)[0] = arg;
     auto result = fun->gl_call(*f2);

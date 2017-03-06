@@ -126,16 +126,10 @@ Call_Expr::eval(Frame& f) const
     Ref_Value& funp( funv.get_ref_unsafe() );
     if (funp.type_ == Ref_Value::ty_function) {
         Function* fun = (Function*)&funp;
-        if (args_.size() != fun->nargs_) {
-            throw Exception(At_Phrase(*call_phrase()->args_, &f),
-                "wrong number of arguments");
-        }
         std::unique_ptr<Frame> f2 {
             Frame::make(fun->nslots_, f.system, &f, call_phrase(), nullptr)
         };
-        for (size_t i = 0; i < args_.size(); ++i)
-            (*f2)[i] = args_[i]->eval(f);
-        return fun->call(*f2);
+        return fun->call(arg_->eval(f), *f2);
     } else {
         throw Exception(At_Phrase(*fun_->source_, &f),
             stringify(funv,": not a function"));

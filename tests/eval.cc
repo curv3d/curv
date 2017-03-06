@@ -227,7 +227,7 @@ TEST(curv, eval)
     FAILMSG("0/0", "0/0: domain error");
     SUCCESS("1/0", "inf");
     SUCCESS("sqrt(2)", "1.4142135623730951");
-    SUCCESS("sqrt(4,)", "2"); // test syntax: trailing , after last argument
+    SUCCESS("max(1,2,)", "2"); // test syntax: trailing , after last argument
     SUCCESS("sqrt sqrt 16", "2");
     FAILALL("f=()->sqrt(true);\nf()",
         "sqrt(true): domain error\n"
@@ -302,7 +302,8 @@ TEST(curv, eval)
         "  letrec(x=x)x\n"
         "           ^  ");
     SUCCESS("f=x->letrec(a=x+1)a; f 2", "3");
-    FAILMSG("f=x->x; f()", "wrong number of arguments");
+    FAILMSG("f(x,y)=x; f()",
+        "function call argument is not a list of length 2");
     SUCCESS("add=(x,y)->x+y;add(1,2)", "3");
     SUCCESS("add=x->y->x+y;add(1)(2)", "3");
     SUCCESS("add(x)(y) = x+y;add(1)(2)", "3");

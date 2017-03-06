@@ -32,18 +32,18 @@ Builtin_Value::to_meaning(const Identifier& id) const
     return make<Constant>(share(id), value_);
 }
 
-struct Is_List_Function : public Function
+struct Is_List_Function : public Polyadic_Function
 {
-    Is_List_Function() : Function(1) {}
+    Is_List_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
         return {args[0].dycast<List>() != nullptr};
     }
 };
 
-struct Bit_Function : public Function
+struct Bit_Function : public Polyadic_Function
 {
-    Bit_Function() : Function(1) {}
+    Bit_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
         return {double(args[0].to_bool(At_Arg(0, args)))};
@@ -60,9 +60,9 @@ struct Bit_Function : public Function
     }
 };
 
-struct Sqrt_Function : public Function
+struct Sqrt_Function : public Polyadic_Function
 {
-    Sqrt_Function() : Function(1) {}
+    Sqrt_Function() : Polyadic_Function(1) {}
     struct Scalar_Op {
         static double f(double x) { return sqrt(x); }
         static Shared<const String> callstr(Value x) {
@@ -80,9 +80,9 @@ struct Sqrt_Function : public Function
     }
 };
 // log(x) is the natural logarithm of x
-struct Log_Function : public Function
+struct Log_Function : public Polyadic_Function
 {
-    Log_Function() : Function(1) {}
+    Log_Function() : Polyadic_Function(1) {}
     struct Scalar_Op {
         static double f(double x) { return log(x); }
         static Shared<const String> callstr(Value x) {
@@ -99,9 +99,9 @@ struct Log_Function : public Function
         return gl_call_unary_numeric(f, "log");
     }
 };
-struct Abs_Function : public Function
+struct Abs_Function : public Polyadic_Function
 {
-    Abs_Function() : Function(1) {}
+    Abs_Function() : Polyadic_Function(1) {}
     struct Scalar_Op {
         static double f(double x) { return abs(x); }
         static Shared<const String> callstr(Value x) {
@@ -118,9 +118,9 @@ struct Abs_Function : public Function
         return gl_call_unary_numeric(f, "abs");
     }
 };
-struct Floor_Function : public Function
+struct Floor_Function : public Polyadic_Function
 {
-    Floor_Function() : Function(1) {}
+    Floor_Function() : Polyadic_Function(1) {}
     struct Scalar_Op {
         static double f(double x) { return floor(x); }
         static Shared<const String> callstr(Value x) {
@@ -137,9 +137,9 @@ struct Floor_Function : public Function
         return gl_call_unary_numeric(f, "floor");
     }
 };
-struct Sin_Function : public Function
+struct Sin_Function : public Polyadic_Function
 {
-    Sin_Function() : Function(1) {}
+    Sin_Function() : Polyadic_Function(1) {}
     struct Scalar_Op {
         static double f(double x) { return sin(x); }
         static Shared<const String> callstr(Value x) {
@@ -156,9 +156,9 @@ struct Sin_Function : public Function
         return gl_call_unary_numeric(f, "sin");
     }
 };
-struct Cos_Function : public Function
+struct Cos_Function : public Polyadic_Function
 {
-    Cos_Function() : Function(1) {}
+    Cos_Function() : Polyadic_Function(1) {}
     struct Scalar_Op {
         static double f(double x) { return cos(x); }
         static Shared<const String> callstr(Value x) {
@@ -175,9 +175,9 @@ struct Cos_Function : public Function
         return gl_call_unary_numeric(f, "cos");
     }
 };
-struct Atan2_Function : public Function
+struct Atan2_Function : public Polyadic_Function
 {
-    Atan2_Function() : Function(2) {}
+    Atan2_Function() : Polyadic_Function(2) {}
 
     struct Scalar_Op {
         static double f(double x, double y) { return atan2(x, y); }
@@ -218,9 +218,9 @@ struct Atan2_Function : public Function
     }
 };
 
-struct Max_Function : public Function
+struct Max_Function : public Polyadic_Function
 {
-    Max_Function() : Function(1) {}
+    Max_Function() : Polyadic_Function(1) {}
 
     struct Scalar_Op {
         static double f(double x, double y) { return x > y ? x : y; }
@@ -246,9 +246,9 @@ struct Max_Function : public Function
     }
 };
 
-struct Min_Function : public Function
+struct Min_Function : public Polyadic_Function
 {
-    Min_Function() : Function(1) {}
+    Min_Function() : Polyadic_Function(1) {}
 
     struct Scalar_Op {
         static double f(double x, double y) { return x < y ? x : y; }
@@ -274,9 +274,9 @@ struct Min_Function : public Function
     }
 };
 
-struct Mag_Function : public Function
+struct Mag_Function : public Polyadic_Function
 {
-    Mag_Function() : Function(1) {}
+    Mag_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
         // TODO: use hypot() or BLAS DNRM2 or Eigen stableNorm/blueNorm?
@@ -304,9 +304,9 @@ struct Mag_Function : public Function
     }
 };
 
-struct Len_Function : public Function
+struct Len_Function : public Polyadic_Function
 {
-    Len_Function() : Function(1) {}
+    Len_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
         auto& list {arg_to_list(args[0], At_Arg(0, args))};
@@ -314,9 +314,9 @@ struct Len_Function : public Function
     }
 };
 
-struct File_Function : public Function
+struct File_Function : public Polyadic_Function
 {
-    File_Function() : Function(1) {}
+    File_Function() : Polyadic_Function(1) {}
     Value call(Frame& f) override
     {
         At_Arg ctx0(0, f);
@@ -326,9 +326,9 @@ struct File_Function : public Function
     }
 };
 
-struct Shape2d_Function : public Function
+struct Shape2d_Function : public Polyadic_Function
 {
-    Shape2d_Function() : Function(1) {}
+    Shape2d_Function() : Polyadic_Function(1) {}
     Value call(Frame& f) override
     {
         auto& record {arg_to_record(f[0], At_Arg(0, f))};

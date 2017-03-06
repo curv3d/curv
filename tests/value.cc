@@ -19,9 +19,9 @@ bool prints_as(Value val, const char* expect)
 }
 
 
-struct Id_Function : public Function
+struct Id_Function : public Polyadic_Function
 {
-    Id_Function() : Function(1) {}
+    Id_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
         return args[0];
@@ -124,7 +124,7 @@ TEST(curv, value)
     ASSERT_TRUE(v.is_ref());
     EXPECT_TRUE(v.get_ref_unsafe().use_count == 1);
     EXPECT_TRUE(v.get_ref_unsafe().type_ == Ref_Value::ty_function);
-    Function* f = (Function*)&v.get_ref_unsafe();
+    Polyadic_Function* f = (Polyadic_Function*)&v.get_ref_unsafe();
     EXPECT_TRUE(f->use_count == 1);
     EXPECT_TRUE(f->type_ == Ref_Value::ty_function);
     EXPECT_TRUE(f->nargs_ == 1);

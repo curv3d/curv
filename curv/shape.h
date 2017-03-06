@@ -11,7 +11,7 @@
 
 namespace curv {
 
-class Function;
+class Polyadic_Function;
 class Context;
 
 // axis aligned bounding box
@@ -48,7 +48,7 @@ struct Shape2D : public Ref_Value
 
     virtual Value getfield(Atom) const override;
 
-    Function& dist(const Context&) const;
+    Polyadic_Function& dist(const Context&) const;
     BBox bbox(const Context&) const;
 
     /// Invoke the Geometry Compiler on the shape's `dist` function.

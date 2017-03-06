@@ -408,11 +408,10 @@ Call_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Operation::call(const Call_Phrase& src, Environ& env)
 {
-    auto argv = src.analyze_args(env);
     return make<Call_Expr>(
         share(src),
         share(*this),
-        std::move(argv));
+        analyze_op(*src.args_, env));
 }
 
 std::vector<Shared<Operation>>

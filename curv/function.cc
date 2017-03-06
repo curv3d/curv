@@ -17,8 +17,26 @@ Function::print(std::ostream& out) const
     out << "<function>";
 }
 
+Value
+Polyadic_Function::call(Value arg, Frame& f)
+{
+    if (nargs_ == 1) {
+        f[0] = arg;
+        return call(f);
+    }
+    auto list = arg.dycast<const List>();
+    if (list && list->size() == nargs_) {
+        for (size_t i = 0; i < list->size(); ++i)
+            f[i] = (*list)[i];
+        return call(f);
+    } else {
+        throw Exception(At_Phrase(*f.call_phrase->args_, &f),
+            stringify("function call argument is not a list of length ",nargs_));
+    }
+}
+
 GL_Value
-Function::gl_call(GL_Frame& f) const
+Polyadic_Function::gl_call(GL_Frame& f) const
 {
     throw Exception(At_GL_Frame(&f),
         "this function does not support the Geometry Compiler");

@@ -28,3 +28,5 @@ assert((1,2,3)==[1,2,3] && (1,)==[1] && ()==[]);
 
 assert(reverse[1,2,3] == [3,2,1] && reverse[] == []);
 assert(sum[1,2,3]==6 && sum[]==0);
+
+assert((let(f(x,y)=x+y, a=(2,3)) f a) == 5);
