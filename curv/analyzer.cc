@@ -439,7 +439,7 @@ analyze_definition(
 }
 
 Shared<Meaning>
-Module_Phrase::analyze(Environ& env) const
+Program_Phrase::analyze(Environ& env) const
 {
     return analyze_module(env);
 }
@@ -461,7 +461,7 @@ each_statement(const Phrase& phrase, std::function<void(const Phrase&)> func)
 }
 
 Shared<Module_Expr>
-Module_Phrase::analyze_module(Environ& env) const
+Program_Phrase::analyze_module(Environ& env) const
 {
     // phase 1: Create a dictionary of field phrases, a list of element phrases
     Bindings fields;

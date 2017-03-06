@@ -229,12 +229,12 @@ struct Brace_Phrase : public Delimited_Phrase
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
-struct Module_Phrase : public Phrase
+struct Program_Phrase : public Phrase
 {
     Shared<Phrase> body_;
     Token end_;
 
-    Module_Phrase(Shared<Phrase> body, Token end)
+    Program_Phrase(Shared<Phrase> body, Token end)
     : body_(std::move(body)), end_(end)
     {}
 

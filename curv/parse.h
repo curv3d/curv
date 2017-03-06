@@ -10,7 +10,7 @@
 
 namespace curv {
 
-Shared<Module_Phrase> parse_script(Scanner&);
+Shared<Program_Phrase> parse_program(Scanner&);
 
 } // namespace curv
 #endif // header guard

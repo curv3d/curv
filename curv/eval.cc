@@ -17,7 +17,7 @@ auto eval_script(
 -> Shared<Module>
 {
     Scanner scanner{script, f};
-    auto phrase = parse_script(scanner);
+    auto phrase = parse_program(scanner);
     Builtin_Environ env{names, f};
     auto expr = phrase->analyze_module(env);
     auto value = expr->eval_module(sys, f);

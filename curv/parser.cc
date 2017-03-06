@@ -42,15 +42,15 @@ Shared<Phrase> parse_primary(Scanner&,const char* what);
 // Parse a script, return a syntax tree.
 // It's a recursive descent parser.
 //
-// script : commas EOF
-Shared<Module_Phrase>
-parse_script(Scanner& scanner)
+// program : commas EOF
+Shared<Program_Phrase>
+parse_program(Scanner& scanner)
 {
     auto commas = parse_commas(scanner);
     Token tok = scanner.get_token();
     if (tok.kind != Token::k_end)
-        throw Exception(At_Token(tok, scanner), "syntax error 0");
-    return make<Module_Phrase>(commas, tok);
+        throw Exception(At_Token(tok, scanner), "syntax error in program");
+    return make<Program_Phrase>(commas, tok);
 }
 
 bool
@@ -102,7 +102,7 @@ parse_commas(Scanner& scanner)
                 return commas;
             }
         } else
-            throw Exception(At_Token(tok, scanner), "syntax error 1");
+            throw Exception(At_Token(tok, scanner), "syntax error in comma phrase");
     }
 }
 
@@ -142,7 +142,7 @@ parse_semicolons(Scanner& scanner)
                 return semis;
             }
         } else
-            throw Exception(At_Token(tok, scanner), "syntax error 2");
+            throw Exception(At_Token(tok, scanner), "syntax error in semicolon phrase");
     }
 }
 
@@ -423,7 +423,7 @@ parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
     if (tok2.kind == Token::k_end)
         throw Exception(At_Token(tok, scanner), "unmatched delimiter");
     if (tok2.kind != close)
-        throw Exception(At_Token(tok2, scanner), "syntax error 3");
+        throw Exception(At_Token(tok2, scanner), "syntax error in delimited phrase");
     return make<Ph>(tok, body, tok2);
 }
 
