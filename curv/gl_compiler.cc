@@ -282,17 +282,22 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
     auto val = gl_constify(*fun_, f);
     if (auto fun = val.dycast<Polyadic_Function>()) {
         auto list = dynamic_shared_cast<List_Expr>(arg_);
-        size_t nargs = (list ? list->size() : 1);
+        size_t nargs = (
+            fun->nargs_ == 1 ? 1
+            : list ? list->size()
+            : 1
+        );
         if (nargs != fun->nargs_) {
             throw Exception(At_GL_Phrase(*call_phrase()->args_, &f),
                 "wrong number of arguments");
         }
         auto f2 = GL_Frame::make(fun->nslots_, f.gl, &f, call_phrase());
-        if (list) {
+        if (nargs == 1)
+            (*f2)[0] = arg_->gl_eval(f);
+        else {
             for (size_t i = 0; i < list->size(); ++i)
                 (*f2)[i] = (*list)[i]->gl_eval(f);
-        } else
-            (*f2)[0] = arg_->gl_eval(f);
+        }
         return fun->gl_call(*f2);
     }
     throw Exception(At_GL_Phrase(*fun_->source_, &f),
