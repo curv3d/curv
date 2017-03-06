@@ -435,9 +435,8 @@ TEST(curv, eval)
     SUCCESS("min[]", "inf");
     SUCCESS("min[1]", "1");
     SUCCESS("min[1,2]", "1");
-    SUCCESS("max[[1,100],[10,20]], max[20,[5,17,30]]",
-        "[10,100]\n"
-        "[20,20,30]");
+    SUCCESS("(max[[1,100],[10,20]], max[20,[5,17,30]])",
+        "[[10,100],[20,20,30]]");
 
     SUCCESS("abs(-inf)", "inf");
     SUCCESS("abs(-2)", "2");
@@ -446,10 +445,8 @@ TEST(curv, eval)
     SUCCESS("abs(2)", "2");
     SUCCESS("abs(0)", "0");
 
-    SUCCESS("mag[], mag[2], mag[3,4]",
-        "0\n"
-        "2\n"
-        "5");
+    SUCCESS("(mag[], mag[2], mag[3,4])",
+        "[0,2,5]");
 
     SUCCESS("is_list 0","false");
     SUCCESS("is_list []","true");

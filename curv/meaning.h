@@ -466,19 +466,6 @@ struct List_Expr_Base : public Just_Expression,
 };
 using List_Expr = aux::Tail_Array<List_Expr_Base>;
 
-/// a Sequence_Gen is a construction like (), (a,), (a,b,c)
-/// which is a generator but not an expression, and which generates
-/// a sequence of values.
-struct Sequence_Gen_Base : public Operation,
-    public aux::Tail_Array_Data<Shared<const Operation>>
-{
-    Sequence_Gen_Base(Shared<const Phrase> source)
-    : Operation(std::move(source)) {}
-
-    virtual void generate(Frame&, List_Builder&) const override;
-};
-using Sequence_Gen = aux::Tail_Array<Sequence_Gen_Base>;
-
 struct Block_Op_Base : public Operation,
     public aux::Tail_Array_Data<Shared<const Operation>>
 {

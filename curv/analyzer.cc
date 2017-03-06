@@ -363,10 +363,7 @@ Semicolon_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Comma_Phrase::analyze(Environ& env) const
 {
-    auto seq = Sequence_Gen::make(args_.size(), share(*this));
-    for (size_t i = 0; i < args_.size(); ++i)
-        (*seq)[i] = analyze_op(*args_[i].expr_, env);
-    return seq;
+    throw Exception(At_Token(args_[0].separator_, *this, env), "syntax error");
 }
 
 Shared<Meaning>
