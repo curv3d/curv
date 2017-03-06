@@ -12,8 +12,8 @@
 // descent, but I don't know how to code that in Bison.
 //
 // TODO: simple yaccable grammar, no conflicts or precedence declarations.
+// TODO: remove dangling `else` ambiguity.
 // TODO: $(expression) substitutions in string literals.
-// TODO: `letrec` and `for` are metafunctions, not part of the grammar.
 // TODO: infix `where` operator. Binds tighter than `->`.
 
 #include <curv/parse.h>
@@ -147,18 +147,38 @@ parse_semicolons(Scanner& scanner)
     }
 }
 
-// Low precedence right associative infix operators:
+// Low precedence right associative operators.
 //
-// item : disjunction | definition | lambda | spread
-// definition : id = item
+// item : disjunction | definition | lambda | spread | if
+// definition : postfix = item
 // lambda : primary -> item
 // spread : ... item
+// if : 'if' primary item
+// if : 'if' primary item 'else' item
 Shared<Phrase>
 parse_item(Scanner& scanner)
 {
     auto tok = scanner.get_token();
-    if (tok.kind == Token::k_ellipsis)
+    switch (tok.kind) {
+    case Token::k_ellipsis:
         return make<Unary_Phrase>(tok, parse_item(scanner));
+    case Token::k_if:
+      {
+        auto condition = parse_primary(scanner, "condition following 'if'");
+        auto then_expr = parse_item(scanner);
+        Token tok2 = scanner.get_token();
+        if (tok2.kind != Token::k_else) {
+            scanner.push_token(tok2);
+            return make<If_Phrase>(
+                tok, condition, then_expr, Token{}, nullptr);
+        }
+        auto else_expr = parse_item(scanner);
+        return make<If_Phrase>(
+            tok, condition, then_expr, tok2, else_expr);
+      }
+    default:
+        break;
+    }
 
     scanner.push_token(tok);
     auto left = parse_disjunction(scanner);
@@ -398,8 +418,6 @@ parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
 }
 
 // primary : numeral | identifier | string | parens | list | braces
-//  | 'if' ( semicolons ) item
-//  | 'if' ( semicolons ) item 'else' item
 //  | 'let' parens item
 //  | 'letrec' parens item
 //  | 'for' parens item
@@ -422,23 +440,6 @@ parse_primary(Scanner& scanner, const char* what)
         return make<Identifier>(scanner.script_, tok);
     case Token::k_string:
         return make<String_Phrase>(scanner.script_, tok);
-    case Token::k_if:
-      {
-        auto condition = parse_primary(scanner, "condition following 'if'");
-        if (dynamic_cast<Paren_Phrase*>(condition.get()) == nullptr)
-            throw Exception(At_Phrase(*condition, scanner.eval_frame_),
-                "not a parenthesized expression");
-        auto then_expr = parse_item(scanner);
-        Token tok2 = scanner.get_token();
-        if (tok2.kind != Token::k_else) {
-            scanner.push_token(tok2);
-            return make<If_Phrase>(
-                tok, condition, then_expr, Token{}, nullptr);
-        }
-        auto else_expr = parse_item(scanner);
-        return make<If_Phrase>(
-            tok, condition, then_expr, tok2, else_expr);
-      }
     case Token::k_let:
       {
         auto p = parse_primary(scanner, "argument following 'let'");

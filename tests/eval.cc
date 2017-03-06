@@ -257,7 +257,6 @@ TEST(curv, eval)
 
     FAILMSG("len(if (true) [])",
         "if: not an expression (missing else clause)");
-    SUCCESS("1 + if (true) 2 else 5", "3");
 
     SUCCESS("null==null", "true");
     SUCCESS("null==false", "false");
