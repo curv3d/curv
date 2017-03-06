@@ -8,18 +8,11 @@ Define regular_polygon(n). See poly.curv.
 
 ## Language Redesign
 Lists.
-* `,` has lower precedence than `;`. `,` only legal within () [] {}.
-  * ;-phrase occurs as block (item;item;item) and module {item;item;item;}.
-  * ;-phrase is parsed like ,-phrase.
-  * A semicolon_phrase is one or more items, separated by ';', with an
-    optional trailing ';' that is ignored (just like trailing ',' is ignored).
-  * If you parse a script as an expression, you use the semicolon_phrase
-    non-terminal. Empty script or top-level ',' are syntax errors.
-    This is the case for 'file "foo.curv"' (value scripts).
-  * If you parse a script as a generic phrase, you use the comma_phrase
-    non-terminal. Empty script is the empty action. Comma phrase is (probably)
-    the sequence generator. This is the case for the CLI.
 * f(x,y)=... is pattern matching on a list.
+  * Function is split into two classes.
+  * Function::call(Value,Frame&). no nargs_ member.
+  * Polyadic_Function has nargs_, the call(arg,f) destructures arg, populates
+    the frame, then invokes call(f). Has gl_call(f).
 * a[i] is array indexing.
 
 Records.

@@ -120,6 +120,12 @@ is_semicolon_end_token(Token::Kind k)
         return false;
     }
 }
+
+// A semicolon phrase is one or more items, separated by ';', with an
+// optional trailing ';' that is ignored.
+//
+// semicolons : semis | semis ';'
+// semis : item | semis ';' item
 Shared<Phrase>
 parse_semicolons(Scanner& scanner)
 {
