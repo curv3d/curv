@@ -3,13 +3,12 @@
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
 // I'm currently using a hand coded recursive descent parser.
+// * More flexible for trying out experimental syntax.
+// * More flexible for error recovery and informative error messages.
 // Alternatives are: Bison, Lemon, Boost.Spirit (maybe X3).
 //
-// I use a greedy implementation of 'if' and 'letrec': the right argument consumes
-// the longest possible match. With Bison, the obvious implementation is as a
-// low precedence right associative operator. But, for more flexibility,
-// I implement these operators as part of 'chain'. That's easy with recursive
-// descent, but I don't know how to code that in Bison.
+// However, I want a simple yaccable grammar, so once the language has
+// stabilized, I might replace this with a Bison grammar.
 //
 // TODO: simple yaccable grammar, no conflicts or precedence declarations.
 // TODO: remove dangling `else` ambiguity.
@@ -43,7 +42,7 @@ Shared<Phrase> parse_primary(Scanner&,const char* what);
 // Parse a script, return a syntax tree.
 // It's a recursive descent parser.
 //
-// script : semicolons EOF
+// script : commas EOF
 Shared<Module_Phrase>
 parse_script(Scanner& scanner)
 {
@@ -149,12 +148,13 @@ parse_semicolons(Scanner& scanner)
 
 // Low precedence right associative operators.
 //
-// item : disjunction | definition | lambda | spread | if
+// item : disjunction | definition | lambda | spread | if | for
 // definition : postfix = item
 // lambda : primary -> item
 // spread : ... item
 // if : 'if' primary item
 // if : 'if' primary item 'else' item
+// for : 'for' parens item
 Shared<Phrase>
 parse_item(Scanner& scanner)
 {
@@ -175,6 +175,16 @@ parse_item(Scanner& scanner)
         auto else_expr = parse_item(scanner);
         return make<If_Phrase>(
             tok, condition, then_expr, tok2, else_expr);
+      }
+    case Token::k_for:
+      {
+        auto p = parse_primary(scanner, "argument following 'for'");
+        auto args = dynamic_shared_cast<Paren_Phrase>(p);
+        if (args == nullptr)
+            throw Exception(At_Phrase(*p, scanner.eval_frame_),
+                "for: malformed argument");
+        auto body = parse_item(scanner);
+        return make<For_Phrase>(tok, args, body);
       }
     default:
         break;
@@ -420,7 +430,6 @@ parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
 // primary : numeral | identifier | string | parens | list | braces
 //  | 'let' parens item
 //  | 'letrec' parens item
-//  | 'for' parens item
 // parens : ( commas )
 // list : [ commas ]
 // braces : { commas }
@@ -459,16 +468,6 @@ parse_primary(Scanner& scanner, const char* what)
                 "letrec: malformed argument");
         auto body = parse_item(scanner);
         return make<Letrec_Phrase>(tok, args, body);
-      }
-    case Token::k_for:
-      {
-        auto p = parse_primary(scanner, "argument following 'for'");
-        auto args = dynamic_shared_cast<Paren_Phrase>(p);
-        if (args == nullptr)
-            throw Exception(At_Phrase(*p, scanner.eval_frame_),
-                "for: malformed argument");
-        auto body = parse_item(scanner);
-        return make<For_Phrase>(tok, args, body);
       }
     case Token::k_lparen:
         return parse_delimited<Paren_Phrase>(tok, Token::k_rparen, scanner);
