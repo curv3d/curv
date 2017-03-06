@@ -35,6 +35,11 @@ public:
     const value_type& operator[](size_t i) const { return array_[i]; }
     value_type& at(size_t i) { return array_[i]; }
     const value_type& at(size_t i) const { return array_[i]; }
+
+    value_type& front() { return array_[0]; }
+    const value_type& front() const { return array_[0]; }
+    value_type& back() { return array_[size_-1]; }
+    const value_type& back() const { return array_[size_-1]; }
 };
 
 /// Construct a class whose last data member is an inline variable sized array.

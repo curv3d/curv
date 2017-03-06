@@ -112,6 +112,12 @@ Bindings::analyze_values(Environ& env)
 }
 
 Shared<Meaning>
+Empty_Phrase::analyze(Environ& env) const
+{
+    return make<Null_Action>(share(*this));
+}
+
+Shared<Meaning>
 Identifier::analyze(Environ& env) const
 {
     return env.lookup(*this);
@@ -348,30 +354,26 @@ Definition_Phrase::analyze_def(Environ& env) const
 Shared<Meaning>
 Semicolon_Phrase::analyze(Environ& env) const
 {
-    return make<Semicolon_Op>(
-        share(*this),
-        analyze_op(*left_, env),
-        analyze_op(*right_, env));
+    auto block = Block_Op::make(args_.size(), share(*this));
+    for (size_t i = 0; i < args_.size(); ++i)
+        (*block)[i] = analyze_op(*args_[i].expr_, env);
+    return block;
 }
 
 Shared<Meaning>
 Comma_Phrase::analyze(Environ& env) const
 {
-    if (args_.size() == 1
-        && args_[0].comma_.kind == Token::k_missing)
-    {
-        return analyze_op(*args_[0].expr_, env);
-    } else {
-        auto seq = Sequence_Gen::make(args_.size(), share(*this));
-        for (size_t i = 0; i < args_.size(); ++i)
-            (*seq)[i] = analyze_op(*args_[i].expr_, env);
-        return seq;
-    }
+    auto seq = Sequence_Gen::make(args_.size(), share(*this));
+    for (size_t i = 0; i < args_.size(); ++i)
+        (*seq)[i] = analyze_op(*args_[i].expr_, env);
+    return seq;
 }
 
 Shared<Meaning>
 Paren_Phrase::analyze(Environ& env) const
 {
+    if (dynamic_shared_cast<const Empty_Phrase>(body_))
+        return List_Expr::make(0, share(*this));
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
         auto& items = commas->args_;
         auto list = List_Expr::make(items.size(), share(*this));
@@ -385,6 +387,8 @@ Paren_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 List_Phrase::analyze(Environ& env) const
 {
+    if (dynamic_shared_cast<const Empty_Phrase>(body_))
+        return List_Expr::make(0, share(*this));
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
         auto& items = commas->args_;
         auto list = List_Expr::make(items.size(), share(*this));
@@ -449,9 +453,11 @@ Module_Phrase::analyze(Environ& env) const
 static inline void
 each_statement(const Phrase& phrase, std::function<void(const Phrase&)> func)
 {
+    if (dynamic_cast<const Empty_Phrase*>(&phrase))
+        return;
     if (auto semis = dynamic_cast<const Semicolon_Phrase*>(&phrase)) {
-        each_statement(*semis->left_, func);
-        func(*semis->right_);
+        for (auto& i : semis->args_)
+            func(*i.expr_);
     } else {
         func(phrase);
     }
@@ -491,6 +497,8 @@ Module_Phrase::analyze_module(Environ& env) const
 static inline void
 each_item(const Phrase& phrase, std::function<void(const Phrase&)> func)
 {
+    if (dynamic_cast<const Empty_Phrase*>(&phrase))
+        return;
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&phrase)) {
         for (auto& i : commas->args_)
             func(*i.expr_);
@@ -502,9 +510,6 @@ each_item(const Phrase& phrase, std::function<void(const Phrase&)> func)
 Shared<Meaning>
 Brace_Phrase::analyze(Environ& env) const
 {
-    if (auto semis = dynamic_cast<const Semicolon_Phrase*>(&*body_))
-        throw Exception(At_Token(semis->op_, *semis, env),
-            "illegal `;` in record constructor");
     auto record = make<Record_Expr>(share(*this));
     each_item(*body_, [&](const Phrase& item)->void {
         if (auto def = item.analyze_def(env))

@@ -104,12 +104,6 @@ struct Binary_Phrase : public Phrase
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
-struct Semicolon_Phrase : public Binary_Phrase
-{
-    using Binary_Phrase::Binary_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
-};
-
 struct Lambda_Phrase : public Binary_Phrase
 {
     /// Normally false, this is set to true prior to analysis
@@ -143,35 +137,60 @@ struct Definition_Phrase : public Phrase
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
-/// `a,b,c` -- May be zero length. If non-empty, may end in optional `,`.
-struct Comma_Phrase : public Phrase
+struct Empty_Phrase : public Phrase
 {
-    // an expression followed by an optional comma
-    struct Arg
-    {
-        Shared<Phrase> expr_;
-        Token comma_;
-
-        Arg(Shared<Phrase> expr, Token comma)
-        : expr_(std::move(expr)), comma_(comma)
-        {}
-    };
-
     Location begin_;    // zero length location at start of phrase
-    std::vector<Arg> args_;
 
-    Comma_Phrase(Location begin) : begin_(std::move(begin)) {}
+    Empty_Phrase(Location begin) : begin_(std::move(begin)) {}
 
     virtual Location location() const override
     {
-        if (args_.empty())
-            return begin_;
-        const Arg& last = args_.back();
-        if (last.comma_.kind == Token::k_missing)
-            return begin_.ending_at(last.comma_);
-        return begin_.ending_at(last.expr_->location().token());
+        return begin_;
     }
+    virtual Shared<Meaning> analyze(Environ&) const override;
+};
 
+// common implementation for Comma_Phrase and Semicolon_Phrase
+struct Separator_Phrase : public Phrase
+{
+    // an expression followed by an optional separator
+    struct Arg
+    {
+        Shared<Phrase> expr_;
+        Token separator_;
+
+        Arg(Shared<Phrase> expr, Token separator)
+        : expr_(std::move(expr)), separator_(separator)
+        {}
+    };
+
+    std::vector<Arg> args_;
+
+    Separator_Phrase() {}
+
+    virtual Location location() const override
+    {
+        const Arg& last = args_.back();
+        return args_.front().expr_->location().ending_at(
+            last.separator_.kind == Token::k_missing
+            ? last.expr_->location().token()
+            : last.separator_);
+    }
+};
+
+/// `a,b,c` -- One or more blocks, separated by commas, with optional trailing
+/// comma. Guaranteed to contain at least one comma token.
+struct Comma_Phrase : public Separator_Phrase
+{
+    using Separator_Phrase::Separator_Phrase;
+    virtual Shared<Meaning> analyze(Environ&) const override;
+};
+
+/// `a;b;c` -- One or more items, separated by semicolons, with optional
+/// trailing semicolon. Guaranteed to contain at least one semicolon token.
+struct Semicolon_Phrase : public Separator_Phrase
+{
+    using Separator_Phrase::Separator_Phrase;
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
@@ -274,6 +293,8 @@ inline void
 each_argument(const Phrase& args, std::function<void(const Phrase&)> func)
 {
     if (auto parens = dynamic_cast<const Paren_Phrase*>(&args)) {
+        if (dynamic_cast<const Empty_Phrase*>(&*parens->body_))
+            return;
         if (auto commas = dynamic_cast<const Comma_Phrase*>(&*parens->body_)) {
             for (auto a : commas->args_)
                 func(*a.expr_);

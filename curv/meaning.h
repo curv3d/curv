@@ -147,6 +147,12 @@ struct Constant : public Just_Expression
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
+struct Null_Action : public Just_Action
+{
+    using Just_Action::Just_Action;
+    virtual void exec(Frame&) const override;
+};
+
 /// reference to a lazy nonlocal slot.
 struct Module_Ref : public Just_Expression
 {
@@ -341,13 +347,6 @@ struct Infix_Expr_Base : public Just_Expression
         arg2_(std::move(arg2))
     {}
 };
-struct Semicolon_Op : public Infix_Expr_Base
-{
-    using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval(Frame&) const override;
-    virtual void generate(Frame&, List_Builder&) const override;
-    virtual void exec(Frame&) const override;
-};
 struct Or_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
@@ -479,6 +478,18 @@ struct Sequence_Gen_Base : public Operation,
     virtual void generate(Frame&, List_Builder&) const override;
 };
 using Sequence_Gen = aux::Tail_Array<Sequence_Gen_Base>;
+
+struct Block_Op_Base : public Operation,
+    public aux::Tail_Array_Data<Shared<const Operation>>
+{
+    Block_Op_Base(Shared<const Phrase> source)
+    : Operation(std::move(source)) {}
+
+    virtual Value eval(Frame&) const override;
+    virtual void generate(Frame&, List_Builder&) const override;
+    virtual void exec(Frame&) const override;
+};
+using Block_Op = aux::Tail_Array<Block_Op_Base>;
 
 struct Record_Expr : public Just_Expression
 {

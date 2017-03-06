@@ -41,6 +41,11 @@ Just_Action::generate(Frame& f, List_Builder&) const
     exec(f);
 }
 
+void
+Null_Action::exec(Frame&) const
+{
+}
+
 Value
 Constant::eval(Frame&) const
 {
@@ -258,22 +263,24 @@ Divide_Expr::eval(Frame& f) const
 }
 
 Value
-Semicolon_Op::eval(Frame& f) const
+Block_Op_Base::eval(Frame& f) const
 {
-    arg1_->exec(f);
-    return arg2_->eval(f);
+    for (size_t i = 0; i < size()-1; ++i)
+        at(i)->exec(f);
+    return back()->eval(f);
 }
 void
-Semicolon_Op::generate(Frame& f, List_Builder& lb) const
+Block_Op_Base::generate(Frame& f, List_Builder& lb) const
 {
-    arg1_->exec(f);
-    arg2_->generate(f, lb);
+    for (size_t i = 0; i < size()-1; ++i)
+        at(i)->exec(f);
+    back()->generate(f, lb);
 }
 void
-Semicolon_Op::exec(Frame& f) const
+Block_Op_Base::exec(Frame& f) const
 {
-    arg1_->exec(f);
-    arg2_->exec(f);
+    for (size_t i = 0; i < size(); ++i)
+        at(i)->exec(f);
 }
 
 Value

@@ -27,8 +27,8 @@ using namespace aux;
 
 namespace curv {
 
-Shared<Phrase> parse_semicolons(Scanner& scanner);
 Shared<Phrase> parse_commas(Scanner& scanner);
+Shared<Phrase> parse_semicolons(Scanner& scanner);
 Shared<Phrase> parse_item(Scanner& scanner);
 Shared<Phrase> parse_disjunction(Scanner&);
 Shared<Phrase> parse_conjunction(Scanner&);
@@ -47,33 +47,11 @@ Shared<Phrase> parse_primary(Scanner&,const char* what);
 Shared<Module_Phrase>
 parse_script(Scanner& scanner)
 {
-    auto semis = parse_semicolons(scanner);
+    auto commas = parse_commas(scanner);
     Token tok = scanner.get_token();
     if (tok.kind != Token::k_end)
-        throw Exception(At_Token(tok, scanner), "illegal token");
-    return make<Module_Phrase>(semis, tok);
-}
-
-// semicolons : commas | semicolons `;` commas
-//
-// `;` is a left-associative infix operator,
-// with the lowest operator precedence.
-Shared<Phrase>
-parse_semicolons(Scanner& scanner)
-{
-    auto left = parse_commas(scanner);
-    for (;;) {
-        auto tok = scanner.get_token();
-        switch (tok.kind) {
-        case Token::k_semicolon:
-            left = make<Semicolon_Phrase>(
-                std::move(left), tok, parse_commas(scanner));
-            continue;
-        default:
-            scanner.push_token(tok);
-            return left;
-        }
-    }
+        throw Exception(At_Token(tok, scanner), "syntax error 0");
+    return make<Module_Phrase>(commas, tok);
 }
 
 bool
@@ -81,7 +59,6 @@ is_list_end_token(Token::Kind k)
 {
     switch (k) {
     case Token::k_end:
-    case Token::k_semicolon:
     case Token::k_rparen:
     case Token::k_rbracket:
     case Token::k_rbrace:
@@ -92,7 +69,7 @@ is_list_end_token(Token::Kind k)
 }
 
 // commas : empty | list | list `,`
-// list : item | list `,` item
+// list : semicolons | list `,` semicolons
 //
 // How do I detect an empty commas phrase?
 // * Peek at the first token, and if it is an end token from one of the
@@ -102,29 +79,71 @@ parse_commas(Scanner& scanner)
 {
     auto tok = scanner.get_token();
     scanner.push_token(tok);
-    Token begin = tok;
-    begin.last = begin.first;
-    auto commas = make<Comma_Phrase>(Location{scanner.script_, begin});
+    if (is_list_end_token(tok.kind)) {
+        Token begin = tok;
+        begin.last = begin.first;
+        return make<Empty_Phrase>(Location{scanner.script_, begin});
+    }
+    auto commas = make<Comma_Phrase>();
     for (;;) {
-        // on entry, tok is lookahead of the next token
-        if (is_list_end_token(tok.kind))
-            return commas;
-        auto item = parse_item(scanner);
+        auto semis = parse_semicolons(scanner);
         tok = scanner.get_token();
         if (tok.kind == Token::k_comma) {
-            commas->args_.push_back({item, tok});
+            commas->args_.push_back({semis, tok});
             tok = scanner.get_token();
             scanner.push_token(tok);
+            if (is_list_end_token(tok.kind))
+                return commas;
         } else if (is_list_end_token(tok.kind)) {
             scanner.push_token(tok);
             if (commas->args_.empty())
-                return item;
+                return semis;
             else {
-                commas->args_.push_back({item, {}});
+                commas->args_.push_back({semis, {}});
                 return commas;
             }
         } else
-            throw Exception(At_Token(tok, scanner), "illegal token");
+            throw Exception(At_Token(tok, scanner), "syntax error 1");
+    }
+}
+
+bool
+is_semicolon_end_token(Token::Kind k)
+{
+    switch (k) {
+    case Token::k_end:
+    case Token::k_comma:
+    case Token::k_rparen:
+    case Token::k_rbracket:
+    case Token::k_rbrace:
+        return true;
+    default:
+        return false;
+    }
+}
+Shared<Phrase>
+parse_semicolons(Scanner& scanner)
+{
+    auto semis = make<Semicolon_Phrase>();
+    for (;;) {
+        auto item = parse_item(scanner);
+        auto tok = scanner.get_token();
+        if (tok.kind == Token::k_semicolon) {
+            semis->args_.push_back({item, tok});
+            tok = scanner.get_token();
+            scanner.push_token(tok);
+            if (is_semicolon_end_token(tok.kind))
+                return semis;
+        } else if (is_semicolon_end_token(tok.kind)) {
+            scanner.push_token(tok);
+            if (semis->args_.empty())
+                return item;
+            else {
+                semis->args_.push_back({item, {}});
+                return semis;
+            }
+        } else
+            throw Exception(At_Token(tok, scanner), "syntax error 2");
     }
 }
 
@@ -369,12 +388,12 @@ template<class Ph>
 Shared<Phrase>
 parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
 {
-    auto body = parse_semicolons(scanner);
+    auto body = parse_commas(scanner);
     auto tok2 = scanner.get_token();
     if (tok2.kind == Token::k_end)
         throw Exception(At_Token(tok, scanner), "unmatched delimiter");
     if (tok2.kind != close)
-        throw Exception(At_Token(tok2, scanner), "illegal token");
+        throw Exception(At_Token(tok2, scanner), "syntax error 3");
     return make<Ph>(tok, body, tok2);
 }
 
@@ -384,9 +403,9 @@ parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
 //  | 'let' parens item
 //  | 'letrec' parens item
 //  | 'for' parens item
-// parens : ( semicolons )
-// list : [ semicolons ]
-// braces : { semicolons }
+// parens : ( commas )
+// list : [ commas ]
+// braces : { commas }
 //
 // If `what` is nullptr, then we are parsing an optional primary,
 // and we return nullptr if no primary is found.
