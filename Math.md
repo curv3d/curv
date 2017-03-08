@@ -8,11 +8,10 @@ Two questions:
 ## Math Library Implementation
 * Some math operations are coded in Curv. That's best if there's no efficiency
   reason to do otherwise, because the code is shorter.
-* Some math operations are built-in functions. That's needed for efficiency
-  reasons,
-  * if the function is in the C library and is not something you'd want to
+* Some math operations are built-in functions, for efficiency reasons.
+  * If the function is in the C library and is not something you'd want to
     write in Curv, like trig and exponential functions.
-  * if the function is a SPIR-V primitive math operation, indicating that
+  * If the function is a SPIR-V primitive math operation, indicating that
     it has special hardware support on GPUs. Eg, `dot`.
 * Some Curv primitive math operations are written as idioms that compile into
   special internal operators. Eg, (a*b)+c compiles to FMA(a,b,c),
