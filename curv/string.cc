@@ -7,6 +7,8 @@
 using namespace aux;
 namespace curv {
 
+const char String::name[] = "string";
+
 Shared<String>
 String::make(const char* str, size_t len)
 {

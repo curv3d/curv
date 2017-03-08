@@ -52,6 +52,7 @@ public:
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const;
+    static const char name[];
 };
 
 inline std::ostream&

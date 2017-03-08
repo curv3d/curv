@@ -449,25 +449,44 @@ Power_Expr::eval(Frame& f) const
 }
 
 Value
-eval_at(const List& list, Value index, const Context& cx)
+list_at(const List& list, Value index, const Context& cx)
 {
     if (auto indices = index.dycast<List>()) {
         Shared<List> result = List::make(indices->size());
         int j = 0;
         for (auto i : *indices)
-            (*result)[j++] = eval_at(list, i, cx);
+            (*result)[j++] = list_at(list, i, cx);
         return {result};
     }
     int i = arg_to_int(index, 0, (int)(list.size()-1), cx);
     return list[i];
 }
 Value
+record_at(const Ref_Value& ref, Value index, const Context& cx)
+{
+    if (auto indices = index.dycast<List>()) {
+        Shared<List> result = List::make(indices->size());
+        int j = 0;
+        for (auto i : *indices)
+            (*result)[j++] = record_at(ref, i, cx);
+        return {result};
+    }
+    Atom a = index.to<const String>(cx);
+    return ref.field(a, cx);
+}
+Value
 At_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    auto& list {arg_to_list(a, At_Phrase(*arg1_->source_, &f))};
-    return eval_at(list, b, At_Phrase(*arg2_->source_, &f));
+    if (auto list = a.dycast<const List>())
+        return list_at(*list, b, At_Phrase(*arg2_->source_, &f));
+    if (auto record = a.dycast<const Record>())
+        return record_at(*record, b, At_Phrase(*arg2_->source_, &f));
+    if (auto module = a.dycast<const Module>())
+        return record_at(*module, b, At_Phrase(*arg2_->source_, &f));
+    throw Exception(At_Phrase(*arg1_->source_, &f),
+        "not a list, record or module");
 }
 
 Shared<List>

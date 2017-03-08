@@ -17,19 +17,17 @@ Generator is coerced to a list in expression context. For ease of use:
 * 1..10 is a generator. [1..3, 5, 8] and for (i=1..10) both work.
 
 Records.
-* {a: 10, f(x): x+1} is a record. No = because no scope.
+* {a: 10, f x: x+1} is a record. No = because no scope.
 * f{x,y}=... is pattern matching on a record. Extra fields on right -> error.
 
 Polymorphic list/record operations:
-* s[i] or s'i are list/record indexing with int or string index.
-* s[i,j] or s'(i,j) are "swizzling", "slicing". Index argument is a list.
-  * r["a","b"] -- this is a list, not a record
 * `len s` is # elements of s
 * `dom s` is list of indexes of s
 
 Function Calls and Chains.
 * `f << g << x` is chain notation. Also, `x >> g >> f`.
 * `f x y z` is a curried function call, like ML/Haskell.
+* `f x y z = ...` and `x y z -> ...`
 
 Local Definitions and Scripts.
 * `def1;def2;phrase` is a block, with recursive scoping:

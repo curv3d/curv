@@ -22,12 +22,12 @@ namespace curv {
 ///   that atoms are unique, so we can use pointer equality as atom equality.
 ///   This will also eliminate refcount manipulation, at a cost: the atom
 ///   table slowly grows, never shrinks.
-struct Atom : private Shared<String>
+struct Atom : private Shared<const String>
 {
 private:
-    using Base = Shared<String>;
+    using Base = Shared<const String>;
 public:
-    using Shared<String>::Shared;
+    using Shared<const String>::Shared;
     inline Atom(const char* str)
     :
         Base(String::make(str, strlen(str)))
