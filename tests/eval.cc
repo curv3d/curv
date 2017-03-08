@@ -231,9 +231,9 @@ TEST(curv, eval)
     SUCCESS("sqrt sqrt 16", "2");
     FAILALL("f=()->sqrt(true);\nf()",
         "sqrt(true): domain error\n"
-        "line 1(columns 12-15)\n"
+        "line 1(columns 7-16)\n"
         "  f=()->sqrt(true);\n"
-        "             ^---  \n"
+        "        ^--------- \n"
         "line 2(columns 1-3)\n"
         "  f()\n"
         "  ^--");
@@ -339,17 +339,17 @@ TEST(curv, eval)
         "line 1(columns 1-22)\n"
         "  file(\"bad_token.curv\")\n"
         "  ^---------------------");
-    FAILALL("file[\n1,2];",
+    FAILALL("file(\n1,2);",
         "not a string\n"
         "lines 1(column 5)-2(column 4)\n"
-        "  file[\n"
+        "  file(\n"
         "      ^");
     FAILALL("file \"nonexistent\"",
         "can't open file nonexistent\n"
         "line 1(columns 6-18)\n"
         "  file \"nonexistent\"\n"
         "       ^------------");
-    SUCCESS("std = file \"std.curv\"; std.concat[[1], [2,3], [4]]",
+    SUCCESS("std = file \"std.curv\"; std.concat([1], [2,3], [4])",
         "[1,2,3,4]");
     SUCCESS("file \"stdtest.curv\"", "{}");
 
@@ -430,13 +430,13 @@ TEST(curv, eval)
     FAILMSG("(a=0)+1", "not an operation");
 
     // max, min
-    SUCCESS("max[]", "-inf");
-    SUCCESS("max[1]", "1");
-    SUCCESS("max[1,2]", "2");
-    SUCCESS("min[]", "inf");
-    SUCCESS("min[1]", "1");
-    SUCCESS("min[1,2]", "1");
-    SUCCESS("(max[[1,100],[10,20]], max[20,[5,17,30]])",
+    SUCCESS("max()", "-inf");
+    SUCCESS("max(1,)", "1");
+    SUCCESS("max(1,2)", "2");
+    SUCCESS("min()", "inf");
+    SUCCESS("min(1,)", "1");
+    SUCCESS("min(1,2)", "1");
+    SUCCESS("(max([1,100],[10,20]), max(20,[5,17,30]))",
         "[[10,100],[20,20,30]]");
 
     SUCCESS("abs(-inf)", "inf");
@@ -446,11 +446,11 @@ TEST(curv, eval)
     SUCCESS("abs(2)", "2");
     SUCCESS("abs(0)", "0");
 
-    SUCCESS("(mag[], mag[2], mag[3,4])",
+    SUCCESS("(mag(), mag(2,), mag(3,4))",
         "[0,2,5]");
 
     SUCCESS("is_list 0","false");
-    SUCCESS("is_list []","true");
+    SUCCESS("is_list ()","true");
 
     FAILALL("1,2",
         "syntax error\n"

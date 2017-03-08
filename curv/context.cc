@@ -13,6 +13,12 @@ Context::get_locations(std::list<Location>&) const
 {
 }
 
+Shared<const String>
+Context::rewrite_message(Shared<const String> msg) const
+{
+    return msg;
+}
+
 void
 At_Frame::get_locations(std::list<Location>& locs) const
 {

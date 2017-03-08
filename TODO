@@ -13,15 +13,6 @@ curv::Function represents a variadic function.
 Lists.
 * a[i] is array indexing.
 
-At_Arg(i,f) puts i into arg_index_. Later, "argument[$i]: " is
-prefixed to the message. The location stack is just a call trace.
-Context subclasses can define message_rewrite(msg) virtual.
-Call_Phrase::at(i) is removed. Can't support it because of generators in
-an argument list, etc.
-  argument: value is not a list
-    mag(true)
-    ^--------
-
 Generator is coerced to a list in expression context. For ease of use:
 * union (for (i=a) shape(i)) -- no need for trailing , or extra [ ]
 * 1..10 is a generator. [1..3, 5, 8] and for (i=1..10) both work.
@@ -158,6 +149,11 @@ ImplicitCAD:
 * GL optimizer: hand-optimizing sample output reduced # of ops in main_dist
   from 29 to 13 (16 fewer); exe size from 9928 to 9741 (187 fewer).
   7574 in 'empty' shader, so 2354->2167, 12.6% fewer.
+* improved error messages.
+  * <actual value>: not a list -- in Value::to etc.
+  * <actual argument to 'file'>: file can't be opened
+  * In At_Arg(), remove superfluous parens from arg expression
+    so that argument location is more precise.
 
 # Older Stuff
 

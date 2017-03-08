@@ -269,22 +269,6 @@ struct Call_Phrase : public Phrase
     }
     virtual Shared<Meaning> analyze(Environ&) const override;
     std::vector<Shared<Operation>> analyze_args(Environ& env) const;
-
-    const Phrase& at(size_t i) const
-    {
-        if (auto parens = dynamic_cast<Paren_Phrase*>(&*args_)) {
-            if (auto commas = dynamic_cast<Comma_Phrase*>(&*parens->body_)) {
-                assert(i < commas->args_.size());
-                return *commas->args_[i].expr_;
-            } else {
-                assert(i < 1);
-                return *parens->body_;
-            }
-        } else {
-            assert(i < 1);
-            return *args_;
-        }
-    }
 };
 
 /// Iterate over each argument in a function call argument list (Call_Phrase)

@@ -34,16 +34,16 @@ At_GL_Phrase::get_locations(std::list<Location>& locs) const
 
 void At_GL_Arg::get_locations(std::list<Location>& locs) const
 {
-    assert(eval_frame_.call_phrase != nullptr);
+    get_gl_frame_locations(&eval_frame_, locs);
+}
 
-    const Phrase& arg = eval_frame_.call_phrase->at(arg_index_);
-
-    locs.push_back(arg.location());
-    // We only dump the stack starting at the parent call frame,
-    // for cosmetic reasons. It looks stupid to underline one of the
-    // arguments in a function call, and on the next line,
-    // underline the same entire function call.
-    get_gl_frame_locations(eval_frame_.parent_frame, locs);
+Shared<const String>
+At_GL_Arg::rewrite_message(Shared<const String> msg) const
+{
+    if (arg_index_ < 0)
+        return stringify("argument: ", msg);
+    else
+        return stringify("argument[",arg_index_,"]: ", msg);
 }
 
 } // namespace curv

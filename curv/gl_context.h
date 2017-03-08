@@ -41,6 +41,7 @@ struct At_GL_Arg : public Context
     At_GL_Arg(size_t i, GL_Frame& f) : arg_index_(i), eval_frame_(f) {}
 
     void get_locations(std::list<Location>& locs) const override;
+    Shared<const String> rewrite_message(Shared<const String>) const override;
 };
 
 } // namespace curv

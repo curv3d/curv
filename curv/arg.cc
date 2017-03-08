@@ -12,15 +12,24 @@ namespace curv {
 void At_Arg::get_locations(std::list<Location>& locs) const
 {
     assert(eval_frame_.call_phrase != nullptr);
+    auto arg = eval_frame_.call_phrase->args_;
+    locs.push_back(arg->location());
 
-    const Phrase& arg = eval_frame_.call_phrase->at(arg_index_);
-
-    locs.push_back(arg.location());
     // We only dump the stack starting at the parent call frame,
     // for cosmetic reasons. It looks stupid to underline one of the
     // arguments in a function call, and on the next line,
     // underline the same entire function call.
     get_frame_locations(eval_frame_.parent_frame, locs);
+
+}
+
+Shared<const String>
+At_Arg::rewrite_message(Shared<const String> msg) const
+{
+    if (arg_index_ < 0)
+        return msg;
+    else
+        return stringify("at argument[",arg_index_,"], ", msg);
 }
 
 bool arg_to_bool(Value val, const Context& ctx)

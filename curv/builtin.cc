@@ -46,7 +46,7 @@ struct Bit_Function : public Polyadic_Function
     Bit_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
-        return {double(args[0].to_bool(At_Arg(0, args)))};
+        return {double(args[0].to_bool(At_Arg(args)))};
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -72,7 +72,7 @@ struct Sqrt_Function : public Polyadic_Function
     static Unary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(args[0], At_Arg(0, args));
+        return array_op.op(args[0], At_Frame(&args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -92,7 +92,7 @@ struct Log_Function : public Polyadic_Function
     static Unary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(args[0], At_Arg(0, args));
+        return array_op.op(args[0], At_Frame(&args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -111,7 +111,7 @@ struct Abs_Function : public Polyadic_Function
     static Unary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(args[0], At_Arg(0, args));
+        return array_op.op(args[0], At_Frame(&args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -130,7 +130,7 @@ struct Floor_Function : public Polyadic_Function
     static Unary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(args[0], At_Arg(0, args));
+        return array_op.op(args[0], At_Frame(&args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -149,7 +149,7 @@ struct Sin_Function : public Polyadic_Function
     static Unary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(args[0], At_Arg(0, args));
+        return array_op.op(args[0], At_Frame(&args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -168,7 +168,7 @@ struct Cos_Function : public Polyadic_Function
     static Unary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(args[0], At_Arg(0, args));
+        return array_op.op(args[0], At_Frame(&args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -189,8 +189,7 @@ struct Atan2_Function : public Polyadic_Function
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(args[0], args[1],
-            At_Phrase(*args.call_phrase, &args));
+        return array_op.op(args[0], args[1], At_Arg(args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -210,9 +209,9 @@ struct Atan2_Function : public Polyadic_Function
 
         GL_Value result = f.gl.newvalue(rtype);
         f.gl.out <<"  "<<rtype<<" "<<result<<" = atan(";
-        gl_put_as(f, x, f.call_phrase->at(0), rtype);
+        gl_put_as(f, x, At_GL_Arg(0, f), rtype);
         f.gl.out << ",";
-        gl_put_as(f, y, f.call_phrase->at(1), rtype);
+        gl_put_as(f, y, At_GL_Arg(1, f), rtype);
         f.gl.out << ");\n";
         return result;
     }
@@ -232,7 +231,7 @@ struct Max_Function : public Polyadic_Function
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.reduce(-INFINITY, args[0], At_Arg(0, args));
+        return array_op.reduce(-INFINITY, args[0], At_Arg(args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -260,7 +259,7 @@ struct Min_Function : public Polyadic_Function
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.reduce(INFINITY, args[0], At_Arg(0, args));
+        return array_op.reduce(INFINITY, args[0], At_Arg(args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -282,7 +281,7 @@ struct Mag_Function : public Polyadic_Function
         // TODO: use hypot() or BLAS DNRM2 or Eigen stableNorm/blueNorm?
         // Avoids overflow/underflow due to squaring of large/small values.
         // Slower.  https://forum.kde.org/viewtopic.php?f=74&t=62402
-        auto& list = arg_to_list(args[0], At_Arg(0, args));
+        auto& list = arg_to_list(args[0], At_Arg(args));
         double sum = 0.0;
         for (auto val : list) {
             double x = val.get_num_or_nan();
@@ -290,7 +289,7 @@ struct Mag_Function : public Polyadic_Function
         }
         if (sum == sum)
             return {sqrt(sum)};
-        throw Exception(At_Arg(0, args), "mag: domain error");
+        throw Exception(At_Arg(args), "mag: domain error");
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -309,7 +308,7 @@ struct Len_Function : public Polyadic_Function
     Len_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
-        auto& list {arg_to_list(args[0], At_Arg(0, args))};
+        auto& list {arg_to_list(args[0], At_Arg(args))};
         return {double(list.size())};
     }
 };
@@ -319,7 +318,7 @@ struct File_Function : public Polyadic_Function
     File_Function() : Polyadic_Function(1) {}
     Value call(Frame& f) override
     {
-        At_Arg ctx0(0, f);
+        At_Arg ctx0(f);
         String& path {arg_to_string(f[0], ctx0)};
         auto file = make<File_Script>(share(path), ctx0);
         return {eval_script(*file, f.system, &f)};
@@ -331,7 +330,7 @@ struct Shape2d_Function : public Polyadic_Function
     Shape2d_Function() : Polyadic_Function(1) {}
     Value call(Frame& f) override
     {
-        auto& record {arg_to_record(f[0], At_Arg(0, f))};
+        auto& record {arg_to_record(f[0], At_Arg(f))};
         return {make<Shape2D>(share(record))};
     }
 };

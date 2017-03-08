@@ -14,13 +14,13 @@ using namespace aux;
 namespace curv {
 
 Exception::Exception(const Context& cx, const char* msg)
-: aux::Exception(msg)
+: aux::Exception(cx.rewrite_message(make_string(msg)))
 {
     cx.get_locations(loc_);
 }
 
 Exception::Exception(const Context& cx, Shared<const String> msg)
-: aux::Exception(msg)
+: aux::Exception(cx.rewrite_message(std::move(msg)))
 {
     cx.get_locations(loc_);
 }

@@ -402,6 +402,14 @@ List_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Call_Phrase::analyze(Environ& env) const
 {
+#if 0
+    if (auto list = dynamic_shared_cast<const List_Phrase>(args_)) {
+        return make<At_Expr>(
+            share(*this),
+            analyze_op(*function_, env),
+            analyze_op(*args_, env));
+    }
+#endif
     return function_->analyze(env)->call(*this, env);
 }
 

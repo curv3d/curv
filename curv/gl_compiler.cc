@@ -182,7 +182,7 @@ GL_Value Negative_Expr::gl_eval(GL_Frame& f) const
     return result;
 }
 
-void gl_put_as(GL_Frame& f, GL_Value val, const Phrase& src, GL_Type type)
+void gl_put_as(GL_Frame& f, GL_Value val, const Context& cx, GL_Type type)
 {
     if (val.type == type) {
         f.gl.out << val;
@@ -201,8 +201,7 @@ void gl_put_as(GL_Frame& f, GL_Value val, const Phrase& src, GL_Type type)
             return;
         }
     }
-    throw Exception(At_GL_Phrase(src, &f), stringify(
-        "GL can't convert ",val.type," to ",type));
+    throw Exception(cx, stringify("GL can't convert ",val.type," to ",type));
 }
 
 GL_Value
@@ -224,9 +223,9 @@ gl_arith_expr(GL_Frame& f, const Phrase& source,
 
     GL_Value result = f.gl.newvalue(rtype);
     f.gl.out <<"  "<<rtype<<" "<<result<<" = ";
-    gl_put_as(f, x, *xexpr.source_, rtype);
+    gl_put_as(f, x, At_GL_Phrase(*xexpr.source_, &f), rtype);
     f.gl.out << op;
-    gl_put_as(f, y, *yexpr.source_, rtype);
+    gl_put_as(f, y, At_GL_Phrase(*yexpr.source_, &f), rtype);
     f.gl.out << ";\n";
     return result;
 }

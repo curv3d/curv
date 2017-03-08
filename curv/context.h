@@ -32,6 +32,7 @@ class Scanner;
 struct Context
 {
     virtual void get_locations(std::list<Location>&) const;
+    virtual Shared<const String> rewrite_message(Shared<const String>) const;
 };
 
 struct At_Frame : public Context
