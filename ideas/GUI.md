@@ -47,7 +47,7 @@ Benefits of Python?
 * Make it easier for others to modify the gui and submit changes?
 
 Benefits of C++?
-I could just steal the existing OpenSCAD C++ GUI and reuse it, maybe.
+I could just reuse the existing OpenSCAD C++ GUI.
 
 With PyOpenGL, I don't know what I'm getting. Looks like I'm using the
 deprecated immediate-mode API. Probably better if I know which version

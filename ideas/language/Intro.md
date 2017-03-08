@@ -15,14 +15,14 @@ I should use C++ as the implementation language. That's what OpenSCAD is written
 and is the best choice if I want the OpenSCAD project to use my code,
 or likely if I want others to use my code.
 That gives me compatibility with libraries like LLVM, and is a good option
-if I want to steal code from other similar language implementations,
+if I want to reuse code from other similar language implementations,
 eg like Lua, or one of the Javascripts.
 
 I'm probably going to need garbage collection, though. I'm not convinced
 that reference counting will be adequate.
 * I could generate code (byte codes? threaded code?) for a VM that 
   uses a garbage collector.
-  * Is there another VM that I can just steal? I don't have a good answer yet.
+  * Is there another VM that I can just reuse? I don't have a good answer yet.
 * But I also want to just do something quick and dirty for the first prototype.
   I might throw scode away; no sense in investing too much time in a VM.
   This suggests a simple syntax tree interpreter plus a GC that I don't have

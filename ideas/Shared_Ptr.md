@@ -41,5 +41,5 @@ Does this make sense in Curv?
 
 Other open source projects have built their own reference counting smart
 pointers, with unique features and a collection of design patterns.
-Research those and steal anything that would benefit Curv. Eg,
+Research those and reuse anything that would benefit Curv. Eg,
 * https://webkit.org/blog/5381/refptr-basics/
