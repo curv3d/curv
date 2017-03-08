@@ -16,7 +16,7 @@ plane_segment(limits) =
       xmax = if (defined limits.xmax) limits.xmax else inf,
       ymin = if (defined limits.ymin) limits.ymin else -inf,
       ymax = if (defined limits.ymax) limits.ymax else inf)
-  intersection [
+  intersection (
     if (xmin > -inf) shape2d {
         dist p = xmin - p'X,
         bbox = [[xmin, -inf], [inf, inf]]
@@ -33,7 +33,7 @@ plane_segment(limits) =
         dist p = p'Y - ymax,
         bbox = [[-inf, -inf], [inf, ymax]]
     },
-  ];
+  );
 
 //union(colour(red)circle(1), plane_segment{ymax=2});
 //distance_field plane_segment{xmin=-1,xmax=1,ymin=-2,ymax=2};

@@ -217,7 +217,7 @@ struct Paren_Phrase : public Delimited_Phrase
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
-struct List_Phrase : public Delimited_Phrase
+struct Bracket_Phrase : public Delimited_Phrase
 {
     using Delimited_Phrase::Delimited_Phrase;
     virtual Shared<Meaning> analyze(Environ&) const override;

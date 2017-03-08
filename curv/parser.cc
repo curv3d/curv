@@ -478,7 +478,7 @@ parse_primary(Scanner& scanner, const char* what)
     case Token::k_lparen:
         return parse_delimited<Paren_Phrase>(tok, Token::k_rparen, scanner);
     case Token::k_lbracket:
-        return parse_delimited<List_Phrase>(tok, Token::k_rbracket, scanner);
+        return parse_delimited<Bracket_Phrase>(tok, Token::k_rbracket, scanner);
     case Token::k_lbrace:
         return parse_delimited<Brace_Phrase>(tok, Token::k_rbrace, scanner);
     case Token::k_end:

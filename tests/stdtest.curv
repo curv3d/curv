@@ -1,5 +1,5 @@
 assert(is_list 0 == false);
-assert(is_list[]);
+assert(is_list());
 
 assert(bit(false)==0 && bit(true)==1);
 
@@ -26,7 +26,10 @@ assert(defined r.a && !defined(r.b));
 assert(0..<5 == [0,1,2,3,4]);
 assert((1,2,3)==[1,2,3] && (1,)==[1] && ()==[]);
 
-assert(reverse[1,2,3] == [3,2,1] && reverse[] == []);
-assert(sum[1,2,3]==6 && sum[]==0);
+assert(reverse(1,2,3) == [3,2,1] && reverse() == []);
+assert(sum(1,2,3)==6 && sum()==0);
 
 assert((let(f(x,y)=x+y, a=(2,3)) f a) == 5);
+
+assert((1,2,3)[0] == 1);
+assert((1,2,3)[0,2] == [1,3]);

@@ -382,7 +382,7 @@ Paren_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-List_Phrase::analyze(Environ& env) const
+Bracket_Phrase::analyze(Environ& env) const
 {
     if (dynamic_shared_cast<const Empty_Phrase>(body_))
         return List_Expr::make(0, share(*this));
@@ -402,14 +402,18 @@ List_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Call_Phrase::analyze(Environ& env) const
 {
-#if 0
-    if (auto list = dynamic_shared_cast<const List_Phrase>(args_)) {
+    if (auto brackets = dynamic_shared_cast<const Bracket_Phrase>(args_)) {
+        auto index = (
+            isa_shared<Empty_Phrase>(brackets->body_)
+            || isa_shared<Comma_Phrase>(brackets->body_)
+            ? args_
+            : brackets->body_
+        );
         return make<At_Expr>(
             share(*this),
             analyze_op(*function_, env),
-            analyze_op(*args_, env));
+            analyze_op(*index, env));
     }
-#endif
     return function_->analyze(env)->call(*this, env);
 }
 

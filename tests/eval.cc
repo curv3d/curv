@@ -237,7 +237,7 @@ TEST(curv, eval)
         "line 2(columns 1-3)\n"
         "  f()\n"
         "  ^--");
-    SUCCESS("len[]", "0");
+    SUCCESS("len()", "0");
     FAILALL("len 0",
         "not a list\n"
         "line 1(column 5)\n"

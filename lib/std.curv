@@ -47,7 +47,7 @@ square(sz) =
 rect(bbox) =
   letrec(xmin = bbox'0'X, ymin = bbox'0'Y,
       xmax = bbox'1'X, ymax = bbox'1'Y)
-  intersection [
+  intersection (
     if (xmin > -inf) shape2d {
         dist p = xmin - p'X,
         bbox = [[xmin, -inf], [inf, inf]]
@@ -64,7 +64,7 @@ rect(bbox) =
         dist p = p'Y - ymax,
         bbox = [[-inf, -inf], [inf, ymax]]
     },
-  ];
+  );
 
 // boolean shape operations
 nothing = shape2d {
