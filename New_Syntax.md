@@ -49,6 +49,28 @@ Use.
 * use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace,
   file must evaluate to a module.
 
+Sequential Assignment/Pseudo Imperative Programming
+* `var x := 0` is like `x = 0` except with sequential scoping.
+* `x := x + 1` is a redefinition of a previous sequentially scoped variable in
+  the same block. (Or a variable with the same name in an enclosing scope?)
+* `x[i] := a` means `x := update(i,a) x`
+* Syntax is similar to Javascript, using `:=` instead of `=`.
+* eg,
+  sum a = (
+    var total := 0;
+    var i := 0;
+    while (i < len a) (
+      total := total + a[i];
+      i := i + 1;
+    );
+    total
+  );
+  sum a = sums(0, 0) where sums(total, i) =
+    if (i < len a)
+      sums(total + a[i], i + 1)
+    else
+      total;
+
 ## Lists, Records, Array Indexing.
 Problem: `a'i` is a non-standard syntax for array indexing.
 Better if we used `a[i]`.
