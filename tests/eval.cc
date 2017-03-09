@@ -228,7 +228,7 @@ TEST(curv, eval)
     SUCCESS("1/0", "inf");
     SUCCESS("sqrt(2)", "1.4142135623730951");
     SUCCESS("max(1,2,)", "2"); // test syntax: trailing , after last argument
-    SUCCESS("sqrt sqrt 16", "2");
+    SUCCESS("sqrt << sqrt 16", "2");
     FAILALL("f=()->sqrt(true);\nf()",
         "sqrt(true): domain error\n"
         "line 1(columns 7-16)\n"
