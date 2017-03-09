@@ -638,16 +638,19 @@ Letrec_Phrase::analyze(Environ& env) const
         Binding(){}
     };
     Atom_Map<Binding> bindings;
+    std::vector<Shared<const Operation>> actions;
     int slot = env.frame_nslots;
     each_argument(*args_, [&](const Phrase& p)->void {
         auto def = p.analyze_def(env);
         if (def == nullptr)
-            throw Exception(At_Phrase(p, env), "not a definition");
-        Atom name = def->name_->atom_;
-        if (bindings.find(name) != bindings.end())
-            throw Exception(At_Phrase(*def->name_, env),
-                stringify(name, ": multiply defined"));
-        bindings[name] = Binding{slot++, def->definiens_};
+            actions.push_back(analyze_op(p, env));
+        else {
+            Atom name = def->name_->atom_;
+            if (bindings.find(name) != bindings.end())
+                throw Exception(At_Phrase(*def->name_, env),
+                    stringify(name, ": multiply defined"));
+            bindings[name] = Binding{slot++, def->definiens_};
+        }
     });
 
     // phase 2: Construct an environment from the bindings dictionary
@@ -691,7 +694,7 @@ Letrec_Phrase::analyze(Environ& env) const
     assert(env.frame_maxslots >= bindings.size());
 
     return make<Letrec_Op>(share(*this),
-        first_slot, std::move(values), body);
+        first_slot, std::move(values), std::move(actions), body);
 }
 
 Shared<Meaning>

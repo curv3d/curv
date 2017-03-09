@@ -528,17 +528,20 @@ struct Letrec_Op : public Operation
 {
     size_t first_slot_;
     std::vector<Value> values_; // or, a Tail_Array
+    std::vector<Shared<const Operation>> actions_;
     Shared<const Operation> body_;
 
     Letrec_Op(
         Shared<const Phrase> source,
         size_t first_slot,
         std::vector<Value> values,
+        std::vector<Shared<const Operation>> actions,
         Shared<const Operation> body)
     :
         Operation(std::move(source)),
         first_slot_(first_slot),
         values_(std::move(values)),
+        actions_(std::move(actions)),
         body_(std::move(body))
     {}
 

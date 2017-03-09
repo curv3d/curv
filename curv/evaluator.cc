@@ -575,6 +575,8 @@ Letrec_Op::eval(Frame& f) const
     Value* slots = &f[first_slot_];
     for (size_t i = 0; i < values_.size(); ++i)
         slots[i] = values_[i];
+    for (auto action : actions_)
+        action->exec(f);
     return body_->eval(f);
 }
 void
@@ -583,6 +585,8 @@ Letrec_Op::generate(Frame& f, List_Builder& lb) const
     Value* slots = &f[first_slot_];
     for (size_t i = 0; i < values_.size(); ++i)
         slots[i] = values_[i];
+    for (auto action : actions_)
+        action->exec(f);
     body_->generate(f, lb);
 }
 void
@@ -591,6 +595,8 @@ Letrec_Op::exec(Frame& f) const
     Value* slots = &f[first_slot_];
     for (size_t i = 0; i < values_.size(); ++i)
         slots[i] = values_[i];
+    for (auto action : actions_)
+        action->exec(f);
     body_->exec(f);
 }
 
