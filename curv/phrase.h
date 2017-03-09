@@ -253,7 +253,7 @@ struct Program_Phrase : public Phrase
 struct Call_Phrase : public Phrase
 {
     Shared<Phrase> function_;
-    Token op_; ///! k_missing or k_left_call
+    Token op_; ///! k_missing or k_left_call or k_right_call
     Shared<Phrase> arg_;
 
     Call_Phrase(
@@ -268,7 +268,10 @@ struct Call_Phrase : public Phrase
 
     virtual Location location() const override
     {
-        return function_->location().ending_at(arg_->location().token());
+        if (op_.kind == Token::k_right_call)
+            return arg_->location().ending_at(function_->location().token());
+        else
+            return function_->location().ending_at(arg_->location().token());
     }
     virtual Shared<Meaning> analyze(Environ&) const override;
     std::vector<Shared<Operation>> analyze_args(Environ& env) const;

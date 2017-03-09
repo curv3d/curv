@@ -216,7 +216,9 @@ parse_item(Scanner& scanner)
     }
 }
 
-// disjunction : conjunction | disjunction || conjunction
+// disjunction : conjunction
+//  | disjunction || conjunction
+//  | disjunction >> conjunction
 Shared<Phrase>
 parse_disjunction(Scanner& scanner)
 {
@@ -227,6 +229,12 @@ parse_disjunction(Scanner& scanner)
         case Token::k_or:
             left = make<Binary_Phrase>(
                 std::move(left), tok, parse_conjunction(scanner));
+            continue;
+        case Token::k_right_call:
+            left = make<Call_Phrase>(
+                parse_conjunction(scanner),
+                std::move(left),
+                tok);
             continue;
         default:
             scanner.push_token(tok);

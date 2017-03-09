@@ -13,7 +13,6 @@ curv::Function represents a variadic function.
 Function Calls and Chains.
 * `f x y z` is a curried function call, like ML/Haskell.
 * `f x y z = ...` and `x y z -> ...`
-* right_call: `x >> g >> f`.
 
 Pattern matching definitions.
 * (x,y) = (a,b);

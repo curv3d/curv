@@ -251,6 +251,9 @@ Scanner::get_token()
         if (p < last && *p == '=') {
             tok.kind = Token::k_greater_or_equal;
             ++p;
+        } else if (p < last && *p == '>') {
+            tok.kind = Token::k_right_call;
+            ++p;
         } else
             tok.kind = Token::k_greater;
         goto success;
