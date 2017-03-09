@@ -379,13 +379,13 @@ Semicolon_Phrase::analyze(Environ& env) const
         Binding(){}
     };
     Atom_Map<Binding> bindings;
-    std::vector<Shared<const Operation>> actions;
+    std::vector<Shared<const Phrase>> act_phrases;
     int slot = env.frame_nslots;
     for (size_t i = 0; i < args_.size() - 1; ++i) {
-        const Phrase& p = *args_[i].expr_;
-        auto def = p.analyze_def(env);
+        auto p = args_[i].expr_;
+        auto def = p->analyze_def(env);
         if (def == nullptr)
-            actions.push_back(analyze_op(p, env));
+            act_phrases.push_back(p);
         else {
             Atom name = def->name_->atom_;
             if (bindings.find(name) != bindings.end())
@@ -430,6 +430,10 @@ Semicolon_Phrase::analyze(Environ& env) const
     for (auto b : bindings) {
         auto expr = analyze_op(*b.second.phrase_, env2);
         values[b.second.slot_-first_slot] = {make<Thunk>(expr)};
+    }
+    std::vector<Shared<const Operation>> actions;
+    for (auto a : act_phrases) {
+        actions.push_back(analyze_op(*a, env2));
     }
     auto body = analyze_op(*args_.back().expr_, env2);
     env.frame_maxslots = env2.frame_maxslots;

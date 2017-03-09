@@ -11,7 +11,7 @@ curv::Function represents a variadic function.
 
 ## Language Redesign
 Local Definitions and Scripts.
-* blocks with recursive function definitions
+* blocks: recursive function definitions
 * `def1;def2;phrase` is a block, with recursive scoping:
   * `(def1;def2;body)`: local definitions in a subphrase.
   * top level script: def1;def2;expr -- Value scripts.

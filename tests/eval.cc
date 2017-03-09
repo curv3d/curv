@@ -391,8 +391,8 @@ TEST(curv, eval)
     SUCCESS("...[1,2,3]", "1\n2\n3");
 
     // semicolon operator
-    SUCCESS("(echo 0;1)+1", "2");
-    EXPECT_EQ(console.str(), "ECHO: 0\n");
+    SUCCESS("(a=1;echo a;a)+1", "2");
+    EXPECT_EQ(console.str(), "ECHO: 1\n");
     SUCCESS("[echo 0;1,2]", "[1,2]");
     EXPECT_EQ(console.str(), "ECHO: 0\n");
 
