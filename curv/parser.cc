@@ -154,13 +154,14 @@ parse_semicolons(Scanner& scanner)
 
 // Low precedence right associative operators.
 //
-// item : disjunction | definition | lambda | spread | if | for
+// item : disjunction | definition | lambda | spread | if | for | left_call
 // definition : postfix = item
 // lambda : primary -> item
 // spread : ... item
 // if : 'if' primary item
 // if : 'if' primary item 'else' item
 // for : 'for' parens item
+// left_call : disjunction << item
 Shared<Phrase>
 parse_item(Scanner& scanner)
 {
@@ -206,6 +207,9 @@ parse_item(Scanner& scanner)
     case Token::k_right_arrow:
         return make<Lambda_Phrase>(
             std::move(left), tok, parse_item(scanner));
+    case Token::k_left_call:
+        return make<Call_Phrase>(
+            std::move(left), parse_item(scanner), tok);
     default:
         scanner.push_token(tok);
         return left;

@@ -2,6 +2,8 @@
 // Distributed under The MIT License.
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
+// TODO: Convert to use the re2c scanner generator. Then add UTF-8 support.
+
 #include <curv/scanner.h>
 #include <curv/exception.h>
 #include <curv/context.h>
@@ -238,6 +240,9 @@ Scanner::get_token()
     case '<':
         if (p < last && *p == '=') {
             tok.kind = Token::k_less_or_equal;
+            ++p;
+        } else if (p < last && *p == '<') {
+            tok.kind = Token::k_left_call;
             ++p;
         } else
             tok.kind = Token::k_less;

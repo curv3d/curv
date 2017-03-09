@@ -253,13 +253,16 @@ struct Program_Phrase : public Phrase
 struct Call_Phrase : public Phrase
 {
     Shared<Phrase> function_;
+    Token op_; ///! k_missing or k_left_call
     Shared<Phrase> arg_;
 
     Call_Phrase(
         Shared<Phrase> function,
-        Shared<Phrase> arg)
+        Shared<Phrase> arg,
+        Token op = {})
     :
         function_(std::move(function)),
+        op_(op),
         arg_(std::move(arg))
     {}
 

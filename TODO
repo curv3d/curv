@@ -11,9 +11,9 @@ curv::Function represents a variadic function.
 
 ## Language Redesign
 Function Calls and Chains.
-* `f << g << x` is chain notation. Also, `x >> g >> f`.
 * `f x y z` is a curried function call, like ML/Haskell.
 * `f x y z = ...` and `x y z -> ...`
+* right_call: `x >> g >> f`.
 
 Pattern matching definitions.
 * (x,y) = (a,b);

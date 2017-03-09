@@ -81,6 +81,7 @@ struct Token
         k_equate,           ///! `=` operator
         k_and,              ///! `&&` operator
         k_or,               ///! `||` operator
+        k_left_call,        ///! `<<` operator
         k_end               ///! end of script
     } kind;
 
