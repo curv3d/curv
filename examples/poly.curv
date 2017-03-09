@@ -12,10 +12,10 @@
 
 // NOTE: could optimize by checking for xmin==-xmax & using abs(p'X).
 plane_segment(limits) =
-  let(xmin = if (defined limits.xmin) limits.xmin else -inf,
-      xmax = if (defined limits.xmax) limits.xmax else inf,
-      ymin = if (defined limits.ymin) limits.ymin else -inf,
-      ymax = if (defined limits.ymax) limits.ymax else inf)
+  let(xmin = if (defined(limits.xmin)) limits.xmin else -inf,
+      xmax = if (defined(limits.xmax)) limits.xmax else inf,
+      ymin = if (defined(limits.ymin)) limits.ymin else -inf,
+      ymax = if (defined(limits.ymax)) limits.ymax else inf)
   intersection (
     if (xmin > -inf) shape2d {
         dist p = xmin - p'X,
@@ -35,7 +35,7 @@ plane_segment(limits) =
     },
   );
 
-//union(colour(red)circle(1), plane_segment{ymax=2});
+//union(colour(red) << circle(1), plane_segment{ymax=2});
 //distance_field plane_segment{xmin=-1,xmax=1,ymin=-2,ymax=2};
 
 rep_rotate(n) shape =
@@ -52,9 +52,9 @@ rep_rotate(n) shape =
     bbox = everything.bbox
   };
 
-regular_polygon(n) = rotate(tau/2) rep_rotate(n) plane_segment{ymax=1};
+regular_polygon(n) = rotate(tau/2) << rep_rotate(n) << plane_segment{ymax=1};
 
-//rep_rotate(5) plane_segment{ymax=1};
+//rep_rotate(5) << plane_segment{ymax=1};
 //regular_polygon(5);
 
 /* New_Syntax
@@ -117,7 +117,7 @@ cmul(z,w) = [z'RE*w'RE - z'IM*w'IM, z'IM*w'RE + z'RE*w'IM];
 half_plane(v) =
     let(m = mag v,
         ph = phase v)
-    rotate(ph)
+    rotate(ph) <<
     shape2d {
         dist p = m - p'X,
         bbox = everything.bbox
@@ -125,34 +125,34 @@ half_plane(v) =
 
 rpoly(n) =
     let(a=tau/(n*2))
-    rotate(a-tau/4)
-    old_rep_rotate(n) complement half_plane(cis(a));
+    rotate(a-tau/4) <<
+    old_rep_rotate n << complement << half_plane(cis a);
 
 rp(n) =
   let(c = sqrt(1/(1 - sin(tau/(2*n)))))
   union(
-    colour(red) circle(.1),
+    colour(red) << circle(.1),
     regular_polygon(n),
-    colour(red) plane_segment{xmax=-c,xmin=-c-.2},
-    colour(red) plane_segment{xmin=c,xmax=c+.2},
-    //translate(.7,0) colour(red) circle(.1),
+    colour(red) << plane_segment{xmax=-c,xmin=-c-.2},
+    colour(red) << plane_segment{xmin=c,xmax=c+.2},
+    //translate(.7,0) << colour(red) << circle(.1),
   );
 
 if(true) 
 union ([
   rp 3,
   /*
-  translate(3,0) rp 4,
-  translate(6,0) rp 5,
+  translate(3,0) << rp 4,
+  translate(6,0) << rp 5,
    */
 /*
-  translate(0,4) rotate(-tau/4) rp 3,
-  translate(3,4) rotate(-tau/8) rp 4,
-  translate(6,4) rotate(-tau/16) rp 5,
+  translate(0,4) << rotate(-tau/4) << rp 3,
+  translate(3,4) << rotate(-tau/8) << rp 4,
+  translate(6,4) << rotate(-tau/16) << rp 5,
 
-  translate(0,8) rotate(-tau/12) rp 3,
-  translate(3,8) rotate(-tau/8) rp 4,
-  translate(6,8) rotate(-(tau/4 - tau/10)) rp 5,
+  translate(0,8) << rotate(-tau/12) << rp 3,
+  translate(3,8) << rotate(-tau/8) << rp 4,
+  translate(6,8) << rotate(-(tau/4 - tau/10)) << rp 5,
  */
 ]);
-//complement half_plane cis(tau/10);
+//complement << half_plane << cis(tau/10);

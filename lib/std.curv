@@ -6,18 +6,18 @@ X = 0;
 Y = 1;
 Z = 2;
 
-ceil(n) = -floor(-n);
-trunc(n) = if (n >= 0) floor(n) else ceil(n);
+ceil n = -floor(-n);
+trunc n = if (n >= 0) floor(n) else ceil(n);
 mod(a,m) = a - m * floor(a/m);
 rem(a,m) = a - m * trunc(a/m);
 
 // lists
-concat(vv) = [for (v=vv) for (i=v) i];
+concat vv = [for (v=vv) for (i=v) i];
 reverse v = v'(len(v)-1..0 by -1);
-map(f) list = [for (x=list) f x];
-filter(p) list = [for (x=list) if (p x) x];
+map f list = [for (x=list) f x];
+filter p list = [for (x=list) if (p x) x];
 reduce(first,f) rest =
-    if (rest==[]) first else reduce(f(first,rest'0), f) rest'(1..<len(rest));
+    if (rest==[]) first else reduce(f(first,rest'0), f) << rest'(1..<len(rest));
 sum = reduce(0, (x,y)->x+y);
 product = reduce(1, (x,y)->x*y);
 
@@ -34,17 +34,17 @@ dot(a,b) =
     sum(a*b);               // vector*...
 
 // primitive shapes
-circle(r) = shape2d {
+circle r = shape2d {
     dist p = mag p - r,
     bbox = [[-r,-r],[r,r]]
 };
-square(sz) =
+square sz =
   letrec (s = if (is_list sz) sz else [sz,sz])
   shape2d {
     dist p = max(abs p - s/2),
     bbox = [-s/2, s/2],
   };
-rect(bbox) =
+rect bbox =
   letrec(xmin = bbox'0'X, ymin = bbox'0'Y,
       xmax = bbox'1'X, ymax = bbox'1'Y)
   intersection (
@@ -75,7 +75,7 @@ everything = shape2d {
     dist p = -inf,
     bbox = [[-inf,-inf],[inf,inf]]
 };
-complement(s) = shape2d {
+complement s = shape2d {
     dist p = -s.dist p,
     bbox = [[-inf,-inf],[inf,inf]]
 };
@@ -95,17 +95,17 @@ difference(s1,s2) = _intersection2(s1, complement s2);
 symmetric_difference shapes = difference(union shapes, intersection shapes);
 
 // affine transformations
-translate(delta) shape = shape2d {
+translate delta shape = shape2d {
     dist p = shape.dist(p - delta),
     colour p = shape.colour(p - delta),
     bbox = [shape.bbox'0+delta, shape.bbox'1+delta]
 };
-scale(s) shape = shape2d {
+scale s shape = shape2d {
     dist p = s * shape.dist(p / s),
     colour p = shape.colour(p / s),
     bbox = s * shape.bbox
 };
-rotate(a) shape = shape2d {
+rotate a shape = shape2d {
     dist p = shape.dist(cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X),
     //dist p = shape.dist cmul(p, cis(-a)),
     colour p = shape.colour(cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X),
@@ -134,7 +134,7 @@ getBox2 (Rotate2 θ symbObj) =
 */
 
 // Coloured Shapes
-colour(rgb)(shape) = shape2d {
+colour rgb shape = shape2d {
     dist = shape.dist,
     bbox = shape.bbox,
     colour(p) = rgb
@@ -149,7 +149,7 @@ white = [1, 1, 1];
 black = [0, 0, 0];
 
 // GL Debugging
-distance_field(shape) = shape2d {
+distance_field shape = shape2d {
     dist = everything.dist,
     bbox = everything.bbox,
     colour p =

@@ -1,18 +1,18 @@
 sq =
     union (
-      colour(red) translate(1.5,-1.5) circle(.5),
-      colour(blue) square(5),
+      colour(red) << translate(1.5,-1.5) << circle(.5),
+      colour(blue) << square(5),
     );
-//rotate(90*deg) sq
-//rotate(tau/4) sq
-//translate(5,0)sq
+//rotate(90*deg) << sq
+//rotate(tau/4) << sq
+//translate(5,0) << sq
 
 
 union (
   for (i=0..9)
-    translate(i*6,0)
+    translate(i*6,0) <<
     let(a=(tau/4)/(2^i))
-    rotate(a)
+    rotate(a) <<
     (echo(i,2^i,a,a/deg);
       sq
     ),

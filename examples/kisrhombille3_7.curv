@@ -7,7 +7,7 @@ depth = 1;
 //translate([0,0,-5])color("white") circle(size);
 
 // kisrhombille3_7 is drawn in a unit disk
-scale(size) kisrhombille3_7(depth, 0.015);
+scale(size) << kisrhombille3_7(depth, 0.015);
 
 color(c) shape = shape;
 
@@ -92,7 +92,7 @@ hyperLine(p,q, t /*=0.05*/) =
 
 // Hyperbolic lines in the unit disk -> Euclidean circles
 center(p,q) = 
-    if (abs dot(p, [(p-q)'Y, -(p-q)'X]) < 1e-6)
+    if (abs(dot(p, [(p-q)'Y, -(p-q)'X])) < 1e-6)
         null // p, q and [0,0] are colinear
     else
         letrec( u = (dot(p,q)-1)/( 2*dot(p,[(p-q)'Y, -(p-q)'X]) ) )
@@ -106,7 +106,7 @@ hyperLineByDirection(p,d) =
         (if (mag(d)>1e-6) [unit(d),-unit(d)] else null)
     else
         letrec( dc = [-d'Y, d'X] )
-        if (abs dot(p,dc) < 1e-6)
+        if (abs(dot(p,dc)) < 1e-6)
             [unit(d),-unit(d)]
         else
             letrec( c  = p + dc*(1 - dot(p,p))/(2*dot(p,dc)) )
@@ -203,7 +203,7 @@ polyline(p, t/*=1*/) = union ([
         letrec (h = mag(v))
         if( h > 1e-12)
             translate(p'i)
-                rotate(atan2(v'Y,v'X)) 
-                    translate(-t/2,-t/2) square(h+t,t)
+            << rotate(atan2(v'Y,v'X)) 
+            << translate(-t/2,-t/2) << square(h+t,t)
     )
 ]);

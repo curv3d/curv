@@ -10,10 +10,6 @@ gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
 curv::Function represents a variadic function.
 
 ## Language Redesign
-Function Calls and Chains.
-* `f x y z` is a curried function call, like ML/Haskell.
-* `f x y z = ...` and `x y z -> ...`
-
 Pattern matching definitions.
 * (x,y) = (a,b);
 * {x,y} = {x:10,y:20};

@@ -13,4 +13,4 @@ white = [1, 1, 1];
 black = [0, 0, 0];
 //colour(magenta) circle(1);
 
-distance_field rect([-1,-2],[3,4]);
+distance_field << rect([-1,-2],[3,4]);

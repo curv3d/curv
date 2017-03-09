@@ -36,7 +36,7 @@ Shared<Phrase> parse_range(Scanner&);
 Shared<Phrase> parse_sum(Scanner&);
 Shared<Phrase> parse_product(Scanner&);
 Shared<Phrase> parse_unary(Scanner&);
-Shared<Phrase> parse_chain(Scanner&);
+Shared<Phrase> parse_postfix(Scanner&);
 Shared<Phrase> parse_primary(Scanner&,const char* what);
 
 // Parse a script, return a syntax tree.
@@ -375,7 +375,7 @@ parse_product(Scanner& scanner)
     }
 }
 
-// unary : chain | - unary | + unary
+// unary : postfix | - unary | + unary | ! unary
 Shared<Phrase>
 parse_unary(Scanner& scanner)
 {
@@ -387,31 +387,23 @@ parse_unary(Scanner& scanner)
         return make<Unary_Phrase>(tok, parse_unary(scanner));
     default:
         scanner.push_token(tok);
-        return parse_chain(scanner);
+        return parse_postfix(scanner);
     }
 }
 
-// chain
-//  : postfix
-//  | postfix chain{begins-with-identifier}
+// postfix : primary
+//  | postfix primary
+//  | postfix . primary
+//  | postfix ' primary
 //  | postfix ^ unary
-// postfix
-//  : primary
-//  | postfix primary{not-identifier}
-//  | postfix . identifier
-//  | postfix . list
 Shared<Phrase>
-parse_chain(Scanner& scanner)
+parse_postfix(Scanner& scanner)
 {
     auto postfix = parse_primary(scanner, "expression");
     Token tok;
     for (;;) {
         tok = scanner.get_token();
         switch (tok.kind) {
-        case Token::k_ident:
-            scanner.push_token(tok);
-            return make<Call_Phrase>(postfix,
-                parse_chain(scanner));
         case Token::k_power:
             return make<Binary_Phrase>(
                 postfix, tok, parse_unary(scanner));
