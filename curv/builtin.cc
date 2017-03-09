@@ -356,7 +356,7 @@ struct Echo_Action : public Just_Action
             out << a->eval(f);
             first = false;
         }
-        out << "\n";
+        out << std::endl;
     }
 };
 /// The meaning of the phrase `echo` in isolation.
