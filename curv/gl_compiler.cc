@@ -287,7 +287,7 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
             : 1
         );
         if (nargs != fun->nargs_) {
-            throw Exception(At_GL_Phrase(*call_phrase()->args_, &f),
+            throw Exception(At_GL_Phrase(*call_phrase()->arg_, &f),
                 "wrong number of arguments");
         }
         auto f2 = GL_Frame::make(fun->nslots_, f.gl, &f, call_phrase());

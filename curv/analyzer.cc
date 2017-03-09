@@ -341,7 +341,7 @@ analyze_def_iter(Environ& env, Phrase& left, Shared<Phrase> right)
         return make<Definition>(share(*id), right);
     if (auto call = dynamic_cast<const Call_Phrase*>(&left))
         return analyze_def_iter(env, *call->function_,
-            make<Lambda_Phrase>(call->args_, Token(), right));
+            make<Lambda_Phrase>(call->arg_, Token(), right));
     throw Exception(At_Phrase(left,  env), "invalid definiendum");
 }
 
@@ -402,11 +402,11 @@ Bracket_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Call_Phrase::analyze(Environ& env) const
 {
-    if (auto brackets = dynamic_shared_cast<const Bracket_Phrase>(args_)) {
+    if (auto brackets = dynamic_shared_cast<const Bracket_Phrase>(arg_)) {
         auto index = (
             isa_shared<Empty_Phrase>(brackets->body_)
             || isa_shared<Comma_Phrase>(brackets->body_)
-            ? args_
+            ? arg_
             : brackets->body_
         );
         return make<At_Expr>(
@@ -423,14 +423,14 @@ Operation::call(const Call_Phrase& src, Environ& env)
     return make<Call_Expr>(
         share(src),
         share(*this),
-        analyze_op(*src.args_, env));
+        analyze_op(*src.arg_, env));
 }
 
 std::vector<Shared<Operation>>
 Call_Phrase::analyze_args(Environ& env) const
 {
     std::vector<Shared<Operation>> argv;
-    each_argument(*args_, [&](const Phrase& p)->void {
+    each_argument(*arg_, [&](const Phrase& p)->void {
         argv.push_back(analyze_op(p, env));
     });
     return std::move(argv);

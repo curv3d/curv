@@ -433,11 +433,11 @@ struct Defined_Metafunction : public Metafunction
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        auto arg = analyze_op(*ph.args_, env);
+        auto arg = analyze_op(*ph.arg_, env);
         auto dot = dynamic_shared_cast<Dot_Expr>(arg);
         if (dot != nullptr)
             return make<Defined_Expression>(share(ph), dot->base_, dot->id_);
-        throw Exception(At_Phrase(*ph.args_, env),
+        throw Exception(At_Phrase(*ph.arg_, env),
             "defined: argument must be `expression.identifier`");
     }
 };

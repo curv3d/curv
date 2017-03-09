@@ -253,19 +253,19 @@ struct Program_Phrase : public Phrase
 struct Call_Phrase : public Phrase
 {
     Shared<Phrase> function_;
-    Shared<Phrase> args_;
+    Shared<Phrase> arg_;
 
     Call_Phrase(
         Shared<Phrase> function,
-        Shared<Phrase> args)
+        Shared<Phrase> arg)
     :
         function_(std::move(function)),
-        args_(std::move(args))
+        arg_(std::move(arg))
     {}
 
     virtual Location location() const override
     {
-        return function_->location().ending_at(args_->location().token());
+        return function_->location().ending_at(arg_->location().token());
     }
     virtual Shared<Meaning> analyze(Environ&) const override;
     std::vector<Shared<Operation>> analyze_args(Environ& env) const;
