@@ -11,9 +11,9 @@ scale(size) << kisrhombille3_7(depth, 0.015);
 
 color(c) shape = shape;
 
-kisrhombille3_7(n,t) =
-    letrec (r = 0.497, // this is a magic number
-         q = [for(i=0..6) r*[cos(i*tau/7),sin(i*tau/7)] ])
+kisrhombille3_7(n,t) = (
+    r = 0.497; // this is a magic number
+    q = [for(i=0..6) r*[cos(i*tau/7),sin(i*tau/7)] ];
     union([
         //color("magenta")
         for (i=0..6) ...(
@@ -23,15 +23,14 @@ kisrhombille3_7(n,t) =
         ),
         for(i=0..6) 
             recur_kisrhombille3_7(q'i, q'(mod(i+1,7)), n, t),
-    ]);
+    ])
+);
 
-recur_kisrhombille3_7(q1, q2, n, t) =
-    letrec (
-        p  = hyperRotation(q1,q2,tau/7),
-        p1 = hyperRotation(q1,q2,2*tau/7),
-        p2 = hyperRotation(q1,q2,3*tau/7),
-        q  = hyperRotation(q1,p ,tau/7),
-    )
+recur_kisrhombille3_7(q1, q2, n, t) = (
+    p  = hyperRotation(q1,q2,tau/7);
+    p1 = hyperRotation(q1,q2,2*tau/7);
+    p2 = hyperRotation(q1,q2,3*tau/7);
+    q  = hyperRotation(q1,p ,tau/7);
     union (
       //color("red") {
           hyperSegment(p ,q1,t*0.7),
@@ -56,47 +55,45 @@ recur_kisrhombille3_7(q1, q2, n, t) =
           recur_kisrhombille3_7(p1, p2, n-1, t*0.7),
           recur_kisrhombille3_7(q , p , n-1, t*0.7),
       ),
-    );
+    )
+);
 
 //
 //  Hyperbolic geometry functions and modules
 //  All points are supposed to be in a unit disk 
 
 // Hyperbolic segment joining p and q
-hyperSegment(p,q, t /*=0.05*/) =
-    letrec (
-        c = center(p,q),
-    )
+hyperSegment(p,q, t /*=0.05*/) = (
+    c = center(p,q);
     if(c!=null) (
-        letrec (
-            R = radius(p,q),
-            a01 = atan2((p-c)'1, (p-c)'0),
-            a02 = atan2((q-c)'1, (q-c)'0),
-            a1 = min(a01,a02),
-            a2=max(a01,a02),
-            a3 = if (a2-a1>tau/2) a1+tau else a1,
-            a4 = a2,
-        )
+        R = radius(p,q);
+        a01 = atan2((p-c)'1, (p-c)'0);
+        a02 = atan2((q-c)'1, (q-c)'0);
+        a1 = min(a01,a02);
+        a2=max(a01,a02);
+        a3 = if (a2-a1>tau/2) a1+tau else a1;
+        a4 = a2;
         polyline([for(a=a3..a4 by (a4-a3)/fn) R*[cos(a), sin(a)]+c ],t)
     ) else
-        polyline([p,q],t);
+        polyline([p,q],t)
+);
 
-hyperLine(p,q, t /*=0.05*/) =
-    letrec (
-        s = idealPoints(p,q),
-    )
+hyperLine(p,q, t /*=0.05*/) = (
+    s = idealPoints(p,q);
     if (s!=null)
         hyperSegment(s'0,s'1,t)
     else if (mag(p-q)>1e-6)
-        polyline([unit(p-q),unit(q-p)],t);
+        polyline([unit(p-q),unit(q-p)],t)
+);
 
 // Hyperbolic lines in the unit disk -> Euclidean circles
 center(p,q) = 
     if (abs(dot(p, [(p-q)'Y, -(p-q)'X])) < 1e-6)
         null // p, q and [0,0] are colinear
-    else
-        letrec( u = (dot(p,q)-1)/( 2*dot(p,[(p-q)'Y, -(p-q)'X]) ) )
-        (p+q)/2 - u*[(p-q)'Y, -(p-q)'X];
+    else (
+        u = (dot(p,q)-1)/( 2*dot(p,[(p-q)'Y, -(p-q)'X]) );
+        (p+q)/2 - u*[(p-q)'Y, -(p-q)'X]
+    );
 
 radius(p,q) = mag(center(p, q)-p);
 
@@ -104,80 +101,89 @@ radius(p,q) = mag(center(p, q)-p);
 hyperLineByDirection(p,d) =
     if (mag(p) < 1e-6)
         (if (mag(d)>1e-6) [unit(d),-unit(d)] else null)
-    else
-        letrec( dc = [-d'Y, d'X] )
+    else (
+        dc = [-d'Y, d'X];
         if (abs(dot(p,dc)) < 1e-6)
             [unit(d),-unit(d)]
-        else
-            letrec( c  = p + dc*(1 - dot(p,p))/(2*dot(p,dc)) )
-            unitCircleInters(c,mag(c-p));
+        else (
+            c = p + dc*(1 - dot(p,p))/(2*dot(p,dc));
+            unitCircleInters(c,mag(c-p))
+        )
+    );
 
-hyperLineDirectionAt(p,q) = /* vec2 */
-    letrec( c = center(p,q) )
+hyperLineDirectionAt(p,q) = ( /* vec2 */
+    c = center(p,q);
     if (c==null)
         (if (mag(p-q)>1e-6) p-q else null)
     else
-        [ (p-c)'Y, -(p-c)'X ];
+        [ (p-c)'Y, -(p-c)'X ]
+);
 
 // the extreme points of a hyperline thru p,q
 // the result [a,b] is such that the hyperline thru p,q pass by the points
 // in the order a,p,q,b
-idealPoints(p,q) =
-    letrec( c = center(p,q) )
+idealPoints(p,q) = (
+    c = center(p,q);
     if (c == null)
         if (mag(p-q) > 1e-6)
             [ unit(p-q), -unit(p-q)]
         else
             null
-    else
-        letrec( ip = unitCircleInters(c,mag(c-p)) )
+    else (
+        ip = unitCircleInters(c,mag(c-p));
         if (dot(ip'1-ip'0, p-q) < 0)
             ip
         else
-            [ip'1, ip'0] ;
+            [ip'1, ip'0]
+    )
+);
     
 // Hyperbolic metric in the unit disk
 // It may return an infinity value
-hyperDistance(p,q) =
-    letrec( id = idealPoints(p,q) )
+hyperDistance(p,q) = (
+    id = idealPoints(p,q);
     if (mag(p-id'0)<1e-12 || mag(id'1-q)<1e-12)
         inf
     else
-        log(mag(q-id'0)*mag(id'1-p)/mag(p-id'0)/mag(id'1-q));
+        log(mag(q-id'0)*mag(id'1-p)/mag(p-id'0)/mag(id'1-q))
+);
 
 // Hyperbolic transforms
 
 // translation of x by dx
-hyperTranslation(x, dx) =
-    letrec( d = 1 + 2*dx*x + dx*dx*x*x )
+hyperTranslation(x, dx) = (
+    d = 1 + 2*dx*x + dx*dx*x*x;
     if (abs(d) < 1e-6)
         null
     else
-        ((1 + dx*x + x*x)*dx + (1 - dx*dx)*x)/d;
+        ((1 + dx*x + x*x)*dx + (1 - dx*dx)*x)/d
+);
 
-hyperReflection(x, p, q) =
-    letrec( c  = center(p,q)) // Euclidean circle of 
-                           // hyperline thru p,q
+hyperReflection(x, p, q) = (
+    c  = center(p,q); // Euclidean circle of hyperline thru p,q
     if (c == null)
         null
-    else
-        letrec( r  = radius(p,q),
-             cx = x-c,     // dir of the reflected point
-             s  = (r/mag(cx))^2 )
-        (c + s*cx);
+    else (
+        r  = radius(p,q);
+        cx = x-c;     // dir of the reflected point
+        s  = (r/mag(cx))^2;
+        (c + s*cx)
+    )
+);
 
 hyperRotation(x,c,a) =
     if (mag(x-c) < 1e-6)
         x
-    else
-        letrec( cc = center(x,c),
-             d0 = hyperLineDirectionAt(c,x), /* vec2 */
-             cs = cos(a/2),
-             sn = sin(a/2),
-             rt = [[cs,sn],[-sn,cs]], /* mat22 */
-             d1 = dot(d0,rt),
-             rl = hyperLineByDirection(c,d1))
-        hyperReflection(x,rl'0,rl'1);
+    else (
+        cc = center(x,c);
+        d0 = hyperLineDirectionAt(c,x); /* vec2 */
+        cs = cos(a/2);
+        sn = sin(a/2);
+        rt = [[cs,sn],[-sn,cs]]; /* mat22 */
+        d1 = dot(d0,rt);
+        rl = hyperLineByDirection(c,d1);
+        hyperReflection(x,rl'0,rl'1)
+    );
 
 //    
 // Euclidean geometry functions
@@ -188,10 +194,11 @@ hyperRotation(x,c,a) =
 unitCircleInters(c,r) =
     if (mag(c)<1e-6 || mag(c)-abs(r) > 1)
         []
-    else
-        letrec( x  = -(r*r - dot(c,c) -1)/mag(c)/2,
-             y  = sqrt(1 - x*x) )
-        dot([[x,y],[x,-y]], [[c'X,c'Y],[-c'Y,c'X]]) / mag(c);
+    else (
+        x  = -(r*r - dot(c,c) -1)/mag(c)/2;
+        y  = sqrt(1 - x*x);
+        dot([[x,y],[x,-y]], [[c'X,c'Y],[-c'Y,c'X]]) / mag(c)
+    );
 
 unit(v) = v/mag(v);
 
@@ -199,8 +206,8 @@ unit(v) = v/mag(v);
 
 polyline(p, t/*=1*/) = union ([
     for(i=0..len(p)-2) (
-        letrec (v = p'(i+1)-p'i)
-        letrec (h = mag(v))
+        v = p'(i+1)-p'i;
+        h = mag(v);
         if( h > 1e-12)
             translate(p'i)
             << rotate(atan2(v'Y,v'X)) 

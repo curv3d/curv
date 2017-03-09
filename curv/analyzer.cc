@@ -354,10 +354,89 @@ Definition_Phrase::analyze_def(Environ& env) const
 Shared<Meaning>
 Semicolon_Phrase::analyze(Environ& env) const
 {
-    auto block = Block_Op::make(args_.size(), share(*this));
-    for (size_t i = 0; i < args_.size(); ++i)
-        (*block)[i] = analyze_op(*args_[i].expr_, env);
-    return block;
+    // `letrec` supports mutually recursive bindings, like let-rec in Scheme.
+    //
+    // To evaluate: lazy evaluation of thunks, error on illegal recursion.
+    // These thunks do not get a fresh evaluation Frame, they use the Frame
+    // of the `letrec` expression. That's consistent with an optimizing compiler
+    // where letrec bindings are SSA values.
+    //
+    // To analyze: we assign a slot number to each of the letrec bindings,
+    // *then* we construct an Environ and analyze each definiens.
+    // This means no opportunity for optimization (eg, don't store a letrec binding
+    // in a slot or create a Thunk if it is a Constant). To optimize, we need
+    // another compiler pass or two, so that we do register allocation *after*
+    // analysis and constant folding is complete.
+
+    // phase 1: Create a dictionary of bindings.
+    struct Binding
+    {
+        int slot_;
+        Shared<Phrase> phrase_;
+        Binding(int slot, Shared<Phrase> phrase)
+        : slot_(slot), phrase_(phrase)
+        {}
+        Binding(){}
+    };
+    Atom_Map<Binding> bindings;
+    std::vector<Shared<const Operation>> actions;
+    int slot = env.frame_nslots;
+    for (size_t i = 0; i < args_.size() - 1; ++i) {
+        const Phrase& p = *args_[i].expr_;
+        auto def = p.analyze_def(env);
+        if (def == nullptr)
+            actions.push_back(analyze_op(p, env));
+        else {
+            Atom name = def->name_->atom_;
+            if (bindings.find(name) != bindings.end())
+                throw Exception(At_Phrase(*def->name_, env),
+                    stringify(name, ": multiply defined"));
+            bindings[name] = Binding{slot++, def->definiens_};
+        }
+    }
+
+    // phase 2: Construct an environment from the bindings dictionary
+    // and use it to perform semantic analysis.
+    struct Letrec_Environ : public Environ
+    {
+    protected:
+        const Atom_Map<Binding>& names;
+    public:
+        Letrec_Environ(
+            Environ* p,
+            const Atom_Map<Binding>& n)
+        : Environ(p), names(n)
+        {
+            if (p != nullptr) {
+                frame_nslots = p->frame_nslots;
+                frame_maxslots = p->frame_maxslots;
+            }
+            frame_nslots += n.size();
+            frame_maxslots = std::max(frame_maxslots, frame_nslots);
+        }
+        virtual Shared<Meaning> single_lookup(const Identifier& id)
+        {
+            auto p = names.find(id.atom_);
+            if (p != names.end())
+                return make<Letrec_Ref>(
+                    share(id), p->second.slot_);
+            return nullptr;
+        }
+    };
+    Letrec_Environ env2(&env, bindings);
+
+    int first_slot = env.frame_nslots;
+    std::vector<Value> values(bindings.size());
+    for (auto b : bindings) {
+        auto expr = analyze_op(*b.second.phrase_, env2);
+        values[b.second.slot_-first_slot] = {make<Thunk>(expr)};
+    }
+    auto body = analyze_op(*args_.back().expr_, env2);
+    env.frame_maxslots = env2.frame_maxslots;
+    assert(env.frame_maxslots >= bindings.size());
+
+    return make<Letrec_Op>(share(*this),
+        first_slot, std::move(values), std::move(actions), body);
 }
 
 Shared<Meaning>

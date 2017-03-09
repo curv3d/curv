@@ -38,15 +38,18 @@ circle r = shape2d {
     dist p = mag p - r,
     bbox = [[-r,-r],[r,r]]
 };
-square sz =
-  letrec (s = if (is_list sz) sz else [sz,sz])
+square sz = (
+  s = if (is_list sz) sz else [sz,sz];
   shape2d {
     dist p = max(abs p - s/2),
     bbox = [-s/2, s/2],
-  };
-rect bbox =
-  letrec(xmin = bbox'0'X, ymin = bbox'0'Y,
-      xmax = bbox'1'X, ymax = bbox'1'Y)
+  }
+);
+rect bbox = (
+  xmin = bbox'0'X;
+  ymin = bbox'0'Y;
+  xmax = bbox'1'X;
+  ymax = bbox'1'Y;
   intersection (
     if (xmin > -inf) shape2d {
         dist p = xmin - p'X,
@@ -64,7 +67,8 @@ rect bbox =
         dist p = p'Y - ymax,
         bbox = [[-inf, -inf], [inf, ymax]]
     },
-  );
+  )
+);
 
 // boolean shape operations
 nothing = shape2d {
@@ -117,12 +121,12 @@ points_box points = [min points, max points];
 -- Define a Box2 around all of the given points.
 pointsBox :: [ℝ2] -> Box2
 pointsBox points =
-    letrec
+    let
         (xs, ys) = unzip points
     in
         ((minimum xs, minimum ys), (maximum xs, maximum ys))
 getBox2 (Rotate2 θ symbObj) =
-    letrec
+    let
         ((x1,y1), (x2,y2)) = getBox2 symbObj
         rotate (x,y) = (cos(θ)*x - sin(θ)*y, sin(θ)*x + cos(θ)*y)
     in
