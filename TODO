@@ -10,6 +10,20 @@ gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
 curv::Function represents a variadic function.
 
 ## Language Redesign
+`(def1;def2;phrase)` -- block with recursive scoping. mixed actions and defs.
+* Add an action list to letrec
+* Copy the letrec code to reimplement Block_Op.
+* Get rid of letrec, replace uses with blocks.
+
+Local Definitions and Scripts.
+* `def1;def2;phrase` is a block, with recursive scoping:
+  * `(def1;def2;body)`: local definitions in a subphrase.
+  * top level script: def1;def2;expr -- Value scripts.
+* `{def1;def2;}` -- module: recursive scoping, no elements
+  * `{}` is the empty record and the empty module.
+* Sequential assignment: var x := 0; x := x + 1; ...
+* `expr where definition`
+
 Pattern matching definitions.
 * (x,y) = (a,b);
 * {x,y} = {x:10,y:20};
@@ -26,15 +40,6 @@ Polymorphic list/record/module operations:
 * `dom s` is list of indexes of s
 * abolish module elements (value scripts)
 * `len s` is # elements of s
-
-Local Definitions and Scripts.
-* `def1;def2;phrase` is a block, with recursive scoping:
-  * `(def1;def2;body)`: local definitions in a subphrase.
-  * top level script: def1;def2;expr -- Value scripts.
-* `{def1;def2;}` -- module: recursive scoping, no elements
-  * `{}` is the empty record and the empty module.
-* Sequential assignment: var x := 0; x := x + 1; ...
-* `expr where definition`
 
 Use.
 * use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace,
