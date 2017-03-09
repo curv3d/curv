@@ -466,18 +466,6 @@ struct List_Expr_Base : public Just_Expression,
 };
 using List_Expr = aux::Tail_Array<List_Expr_Base>;
 
-struct Block_Op_Base : public Operation,
-    public aux::Tail_Array_Data<Shared<const Operation>>
-{
-    Block_Op_Base(Shared<const Phrase> source)
-    : Operation(std::move(source)) {}
-
-    virtual Value eval(Frame&) const override;
-    virtual void generate(Frame&, List_Builder&) const override;
-    virtual void exec(Frame&) const override;
-};
-using Block_Op = aux::Tail_Array<Block_Op_Base>;
-
 struct Record_Expr : public Just_Expression
 {
     Atom_Map<Shared<const Operation>> fields_;
@@ -524,14 +512,14 @@ struct Let_Op : public Operation
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
-struct Letrec_Op : public Operation
+struct Block_Op : public Operation
 {
     size_t first_slot_;
-    std::vector<Value> values_; // or, a Tail_Array
+    std::vector<Value> values_;
     std::vector<Shared<const Operation>> actions_;
     Shared<const Operation> body_;
 
-    Letrec_Op(
+    Block_Op(
         Shared<const Phrase> source,
         size_t first_slot,
         std::vector<Value> values,

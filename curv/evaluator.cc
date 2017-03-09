@@ -62,7 +62,7 @@ Module_Ref::eval(Frame& f) const
     //    effectively lazy evaluation thunks. Replace with Values on demand.
     // 2. Instead of making Expression a subclass of Ref_Value, introduce
     //    a Lazy_Thunk value class. It's a variation of Function. It contains
-    //    the # of local frame slots needed to evaluate `letrec` exprs in the
+    //    the # of local frame slots needed to evaluate local blocks in the
     //    definiens, plus the Expression.
     // 3. Store a reference to the Expression in Module_Ref.
     // 4. Store a reference to the Module_Expr in Frame.
@@ -254,27 +254,6 @@ Divide_Expr::eval(Frame& f) const
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
     return array_op.op(a,b, At_Phrase(*source_, &f));
-}
-
-Value
-Block_Op_Base::eval(Frame& f) const
-{
-    for (size_t i = 0; i < size()-1; ++i)
-        at(i)->exec(f);
-    return back()->eval(f);
-}
-void
-Block_Op_Base::generate(Frame& f, List_Builder& lb) const
-{
-    for (size_t i = 0; i < size()-1; ++i)
-        at(i)->exec(f);
-    back()->generate(f, lb);
-}
-void
-Block_Op_Base::exec(Frame& f) const
-{
-    for (size_t i = 0; i < size(); ++i)
-        at(i)->exec(f);
 }
 
 Value
@@ -570,7 +549,7 @@ Let_Op::exec(Frame& f) const
 }
 
 Value
-Letrec_Op::eval(Frame& f) const
+Block_Op::eval(Frame& f) const
 {
     for (size_t i = 0; i < values_.size(); ++i)
         f[first_slot_ + i] = values_[i];
@@ -579,7 +558,7 @@ Letrec_Op::eval(Frame& f) const
     return body_->eval(f);
 }
 void
-Letrec_Op::generate(Frame& f, List_Builder& lb) const
+Block_Op::generate(Frame& f, List_Builder& lb) const
 {
     for (size_t i = 0; i < values_.size(); ++i)
         f[first_slot_ + i] = values_[i];
@@ -588,7 +567,7 @@ Letrec_Op::generate(Frame& f, List_Builder& lb) const
     body_->generate(f, lb);
 }
 void
-Letrec_Op::exec(Frame& f) const
+Block_Op::exec(Frame& f) const
 {
     for (size_t i = 0; i < values_.size(); ++i)
         f[first_slot_ + i] = values_[i];

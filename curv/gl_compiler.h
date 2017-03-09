@@ -164,7 +164,7 @@ struct GL_Frame_Base
     List* nonlocal;
 
     // Tail array, containing the slots used for local bindings:
-    // function arguments, `letrec` bindings and other local, temporary values.
+    // function arguments, block bindings and other local, temporary values.
     using value_type = GL_Value;
     size_t size_;
     value_type array_[0];

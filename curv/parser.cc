@@ -439,7 +439,6 @@ parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
 
 // primary : numeral | identifier | string | parens | list | braces
 //  | 'let' parens item
-//  | 'letrec' parens item
 // parens : ( commas )
 // list : [ commas ]
 // braces : { commas }
@@ -468,16 +467,6 @@ parse_primary(Scanner& scanner, const char* what)
                 "let: malformed argument");
         auto body = parse_item(scanner);
         return make<Let_Phrase>(tok, args, body);
-      }
-    case Token::k_letrec:
-      {
-        auto p = parse_primary(scanner, "argument following 'letrec'");
-        auto args = dynamic_shared_cast<Paren_Phrase>(p);
-        if (args == nullptr)
-            throw Exception(At_Phrase(*p, scanner.eval_frame_),
-                "letrec: malformed argument");
-        auto body = parse_item(scanner);
-        return make<Letrec_Phrase>(tok, args, body);
       }
     case Token::k_lparen:
         return parse_delimited<Paren_Phrase>(tok, Token::k_rparen, scanner);
