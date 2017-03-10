@@ -9,7 +9,6 @@
 
 namespace curv {
 
-using std::move;
 using aux::Shared;
 using aux::make;
 
