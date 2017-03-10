@@ -257,7 +257,7 @@ Value gl_constify(Operation& op, GL_Frame& f)
     if (auto c = dynamic_cast<Constant*>(&op))
         return c->value_;
     else if (auto dot = dynamic_cast<Dot_Expr*>(&op)) {
-        if (auto ref = dynamic_shared_cast<Nonlocal_Ref>(dot->base_)) {
+        if (auto ref = cast<Nonlocal_Ref>(dot->base_)) {
             auto base = (*f.nonlocal)[ref->slot_];
             if (base.is_ref())
                 return base.get_ref_unsafe().getfield(dot->id_);
@@ -280,7 +280,7 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
 {
     auto val = gl_constify(*fun_, f);
     if (auto fun = val.dycast<Polyadic_Function>()) {
-        auto list = dynamic_shared_cast<List_Expr>(arg_);
+        auto list = cast<List_Expr>(arg_);
         size_t nargs = (
             fun->nargs_ == 1 ? 1
             : list ? list->size()

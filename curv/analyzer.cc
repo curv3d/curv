@@ -83,7 +83,7 @@ Bindings::add_definition(Shared<Definition> def, curv::Environ& env)
 bool
 Bindings::is_recursive_function(size_t slot)
 {
-    return isa_shared<const Lambda_Phrase>(slot_phrases_[slot]);
+    return isa<const Lambda_Phrase>(slot_phrases_[slot]);
 }
 
 Shared<Meaning>
@@ -222,9 +222,9 @@ Lambda_Phrase::analyze(Environ& env) const
                     share(id), n->second);
             }
             auto m = parent_->lookup(id);
-            if (isa_shared<Constant>(m))
+            if (isa<Constant>(m))
                 return m;
-            if (auto expr = dynamic_shared_cast<Operation>(m)) {
+            if (auto expr = cast<Operation>(m)) {
                 size_t slot = nonlocal_exprs_.size();
                 nonlocal_dictionary_[id.atom_] = slot;
                 nonlocal_exprs_.push_back(expr);
@@ -329,7 +329,7 @@ Binary_Phrase::analyze(Environ& env) const
             analyze_op(*left_, env),
             analyze_op(*right_, env));
     case Token::k_dot:
-        if (auto id = dynamic_shared_cast<Identifier>(right_))
+        if (auto id = cast<Identifier>(right_))
             return make<Dot_Expr>(
                 share(*this),
                 analyze_op(*left_, env),
@@ -472,7 +472,7 @@ Comma_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Paren_Phrase::analyze(Environ& env) const
 {
-    if (dynamic_shared_cast<const Empty_Phrase>(body_))
+    if (cast<const Empty_Phrase>(body_))
         return List_Expr::make(0, share(*this));
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
         auto& items = commas->args_;
@@ -487,7 +487,7 @@ Paren_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Bracket_Phrase::analyze(Environ& env) const
 {
-    if (dynamic_shared_cast<const Empty_Phrase>(body_))
+    if (cast<const Empty_Phrase>(body_))
         return List_Expr::make(0, share(*this));
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
         auto& items = commas->args_;
@@ -505,10 +505,10 @@ Bracket_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Call_Phrase::analyze(Environ& env) const
 {
-    if (auto brackets = dynamic_shared_cast<const Bracket_Phrase>(arg_)) {
+    if (auto brackets = cast<const Bracket_Phrase>(arg_)) {
         auto index = (
-            isa_shared<Empty_Phrase>(brackets->body_)
-            || isa_shared<Comma_Phrase>(brackets->body_)
+            isa<Empty_Phrase>(brackets->body_)
+            || isa<Comma_Phrase>(brackets->body_)
             ? arg_
             : brackets->body_
         );

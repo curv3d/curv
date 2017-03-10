@@ -187,7 +187,7 @@ parse_item(Scanner& scanner)
     case Token::k_for:
       {
         auto p = parse_primary(scanner, "argument following 'for'");
-        auto args = dynamic_shared_cast<Paren_Phrase>(p);
+        auto args = cast<Paren_Phrase>(p);
         if (args == nullptr)
             throw Exception(At_Phrase(*p, scanner.eval_frame_),
                 "for: malformed argument");
@@ -449,7 +449,7 @@ parse_primary(Scanner& scanner, const char* what)
     case Token::k_let:
       {
         auto p = parse_primary(scanner, "argument following 'let'");
-        auto args = dynamic_shared_cast<Paren_Phrase>(p);
+        auto args = cast<Paren_Phrase>(p);
         if (args == nullptr)
             throw Exception(At_Phrase(*p, scanner.eval_frame_),
                 "let: malformed argument");
