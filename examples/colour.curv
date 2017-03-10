@@ -1,7 +1,7 @@
-colour(rgb)(shape) = shape2d {
-    dist = shape.dist,
-    bbox = shape.bbox,
-    colour(p) = rgb
+colour rgb shape = shape2d {
+    dist : shape.dist,
+    bbox : shape.bbox,
+    colour(p) : rgb
 };
 red = [1, 0, 0];
 green = [0, 1, 0];
@@ -11,6 +11,6 @@ cyan = [0, 1, 1];
 magenta = [1, 0, 1];
 white = [1, 1, 1];
 black = [0, 0, 0];
-//colour(magenta) circle(1);
+//colour magenta << circle 1;
 
 distance_field << rect([-1,-2],[3,4]);

@@ -34,8 +34,8 @@ struct Meaning : public aux::Shared_Base
     Meaning(Shared<const Phrase> source) : source_(std::move(source)) {}
 
     // These functions are called during semantic analysis.
-    virtual Shared<Operation> to_operation(Environ&) = 0;
-    virtual Shared<Meaning> call(const Call_Phrase&, Environ&) = 0;
+    virtual Shared<Operation> to_operation(Environ&);
+    virtual Shared<Meaning> call(const Call_Phrase&, Environ&);
 };
 
 /// A Metafunction is a function that is called during analysis, instead of
@@ -52,7 +52,7 @@ struct Meaning : public aux::Shared_Base
 struct Metafunction : public Meaning
 {
     using Meaning::Meaning;
-    virtual Shared<Operation> to_operation(Environ&) override;
+    virtual Shared<Meaning> call(const Call_Phrase&, Environ&) override = 0;
 };
 
 /// An Operation is a fragment of compiled code that "does something" at run
@@ -626,6 +626,22 @@ struct Lambda_Expr : public Just_Expression
     {}
 
     virtual Value eval(Frame&) const override;
+};
+
+struct Assoc : public Meaning
+{
+    Shared<const Identifier> name_;
+    Shared<const Operation> definiens_;
+
+    Assoc(
+        Shared<const Phrase> source,
+        Shared<const Identifier> name,
+        Shared<const Operation> definiens)
+    :
+        Meaning(std::move(source)),
+        name_(std::move(name)),
+        definiens_(std::move(definiens))
+    {}
 };
 
 } // namespace curv

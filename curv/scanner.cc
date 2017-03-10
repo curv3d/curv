@@ -196,6 +196,9 @@ Scanner::get_token()
     case ';':
         tok.kind = Token::k_semicolon;
         goto success;
+    case ':':
+        tok.kind = Token::k_colon;
+        goto success;
     case '+':
         tok.kind = Token::k_plus;
         goto success;

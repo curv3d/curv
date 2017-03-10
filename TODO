@@ -10,8 +10,53 @@ gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
 curv::Function represents a variadic function.
 
 ## Language Redesign
+Submodules:
+* Implement as practice for recursive blocks.
+
+Local blocks:
+* Detect if the block has recursive definitions.
+  If true, compile as a recursive block.
+  Otherwise, compile as a non-recursive block (which supports GL).
+* First, just implement recursive blocks (no recursion detection).
+  * There is a single slot which points to a List of slots.
+    * This List contains binding slots and nonlocal slots.
+    * The binding slot for a function literal is initialized to a Lambda,
+      otherwise is initialized to a Thunk.
+    * Nonlocal slots are initialized to proper Values.
+  * 
+
+* recursive function definitions
+  * Copy/reuse the module analyzer.
+  * Recursive functions: we store a Lambda in the function's slot.
+  * The nonlocals list NL is separate. It could be cached in a slot, so we
+    don't recreate it on each function call. It could be thunked.
+  * We could classify each binding as recursive or non-recursive.
+    * Non-recursive bindings are sorted in dependency order. Analyze the
+      definiens and recursively analyze dependencies before assigning a slot#.
+      If a loop is detected, mark the binding as recursive.
+  * Start with a list of statements (action and definition phrases).
+    * Make a dictionary of bindings. No slots assigned yet.
+      Each entry maps name onto {slot,definiens-phrase,is_recursive}.
+    * Make an Environment.
+    * Analyze the statements in order. When a block reference is analyzed,
+      recursively analyze it. If a loop is detected, mark the binding
+      recursive and allocate a slot. Otherwise, once a definiens is
+      fully analyzed, allocate a slot.
+    * Once an action phrase is analyzed, add action to action-list.
+    * Once a definiens phrase is analyzed, add an action for initializing
+      the binding slot to the action-list.
+  * Then analyze the body.
+  * Slot initialization: first, we initialize each non-recursive slot to
+    missing, and each recursive slot to a thunk. Then, we execute the
+    action list, which runs action statements, and initializes non-recursive
+    binding slots in dependency order. Accessing a missing slot is a runtime
+    error.
+* GL support
+  * Block_Op::gl_eval() -- initialize each slot to GL_MISSING, eval each
+    binding, recursing at Letrec_Ref, detect recursive definitions. This will
+    output GLSL declarations in dependency order.
+
 Local Definitions and Scripts.
-* blocks: recursive function definitions
 * `def1;def2;phrase` is a block, with recursive scoping:
   * `(def1;def2;body)`: local definitions in a subphrase.
   * top level script: def1;def2;expr -- Value scripts.

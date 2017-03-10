@@ -154,14 +154,15 @@ parse_semicolons(Scanner& scanner)
 
 // Low precedence right associative operators.
 //
-// item : disjunction | definition | lambda | spread | if | for | left_call
-// definition : postfix = item
-// lambda : primary -> item
-// spread : ... item
-// if : 'if' primary item
-// if : 'if' primary item 'else' item
-// for : 'for' parens item
-// left_call : disjunction << item
+// item : disjunction
+//  | ... item
+//  | postfix = item
+//  | postfix : item
+//  | primary -> item
+//  | disjunction << item
+//  | 'if' primary item
+//  | 'if' primary item 'else' item
+//  | 'for' parens item
 Shared<Phrase>
 parse_item(Scanner& scanner)
 {
@@ -203,6 +204,9 @@ parse_item(Scanner& scanner)
     switch (tok.kind) {
     case Token::k_equate:
         return make<Definition_Phrase>(
+            std::move(left), tok, parse_item(scanner));
+    case Token::k_colon:
+        return make<Binary_Phrase>(
             std::move(left), tok, parse_item(scanner));
     case Token::k_right_arrow:
         return make<Lambda_Phrase>(
@@ -280,22 +284,6 @@ parse_relation(Scanner& scanner)
     case Token::k_greater_or_equal:
         return make<Binary_Phrase>(
             std::move(left), tok, parse_range(scanner));
-    case Token::k_range:
-    case Token::k_open_range:
-      {
-        auto right = parse_range(scanner);
-        auto tok2 = scanner.get_token();
-        Shared<Phrase> step;
-        if (tok2.kind == Token::k_by) {
-            step = parse_range(scanner);
-        } else {
-            scanner.push_token(tok2);
-            tok2 = {};
-            step = nullptr;
-        }
-        return make<Range_Phrase>(
-            std::move(left), tok, std::move(right), tok2, std::move(step));
-      }
     default:
         scanner.push_token(tok);
         return left;

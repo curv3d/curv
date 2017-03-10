@@ -14,7 +14,7 @@ Record::print(std::ostream& out) const
     for (auto i : fields_) {
         if (!first) out << ",";
         first = false;
-        out << i.first << "=";
+        out << i.first << ":";
         i.second.print(out);
     }
     out << "}";

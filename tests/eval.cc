@@ -204,7 +204,7 @@ TEST(curv, eval)
     SUCCESS("1e1", "10");
     SUCCESS("\"abc\"", "\"abc\"");
     SUCCESS("[1,2,3]", "[1,2,3]");
-    SUCCESS("{x=1}", "{x=1}");
+    SUCCESS("{x:1}", "{x:1}");
 
     // builtins
     SUCCESS("pi",  "3.141592653589793");
@@ -265,7 +265,7 @@ TEST(curv, eval)
     SUCCESS("0==false", "false");
     SUCCESS("[1,2]==[1,2]", "true");
     SUCCESS("[1,true]==[1,2]", "false");
-    SUCCESS("{x=1,y=2}=={x=1,y=2}", "true");
+    SUCCESS("{x:1,y:2}=={x:1,y:2}", "true");
     SUCCESS("sqrt==sqrt", "true");
     SUCCESS("!true", "false");
     SUCCESS("!false", "true");
@@ -280,7 +280,7 @@ TEST(curv, eval)
     SUCCESS("0 <= 1", "true");
     SUCCESS("1 > 0", "true");
     SUCCESS("1 >= 0", "true");
-    SUCCESS("{f=sqrt}.f(4)", "2");
+    SUCCESS("{f:sqrt}.f(4)", "2");
     SUCCESS("4^0.5", "2");
     SUCCESS("4^-1", "0.25");
     SUCCESS("-2^2", "-4");
@@ -412,10 +412,10 @@ TEST(curv, eval)
 
     // analysis errors
     FAILMSG("fnord", "fnord: not defined");
-    FAILALL("{x=1,x=2}",
+    FAILALL("{x:1,x:2}",
         "x: multiply defined\n"
         "line 1(column 6)\n"
-        "  {x=1,x=2}\n"
+        "  {x:1,x:2}\n"
         "       ^   ");
     FAILALL("x+",
         "missing expression\n"

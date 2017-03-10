@@ -35,14 +35,14 @@ dot(a,b) =
 
 // primitive shapes
 circle r = shape2d {
-    dist p = mag p - r,
-    bbox = [[-r,-r],[r,r]]
+    dist p : mag p - r,
+    bbox : [[-r,-r],[r,r]]
 };
 square sz = (
   s = if (is_list sz) sz else [sz,sz];
   shape2d {
-    dist p = max(abs p - s/2),
-    bbox = [-s/2, s/2],
+    dist p : max(abs p - s/2),
+    bbox : [-s/2, s/2],
   }
 );
 rect bbox = (
@@ -52,47 +52,47 @@ rect bbox = (
   ymax = bbox'1'Y;
   intersection (
     if (xmin > -inf) shape2d {
-        dist p = xmin - p'X,
-        bbox = [[xmin, -inf], [inf, inf]]
+        dist p : xmin - p'X,
+        bbox : [[xmin, -inf], [inf, inf]]
     },
     if (ymin > -inf) shape2d {
-        dist p = ymin - p'Y,
-        bbox = [[-inf, ymin], [inf, inf]]
+        dist p : ymin - p'Y,
+        bbox : [[-inf, ymin], [inf, inf]]
     },
     if (xmax < inf) shape2d {
-        dist p = p'X - xmax,
-        bbox = [[-inf, -inf], [xmax, inf]]
+        dist p : p'X - xmax,
+        bbox : [[-inf, -inf], [xmax, inf]]
     },
     if (ymax < inf) shape2d {
-        dist p = p'Y - ymax,
-        bbox = [[-inf, -inf], [inf, ymax]]
+        dist p : p'Y - ymax,
+        bbox : [[-inf, -inf], [inf, ymax]]
     },
   )
 );
 
 // boolean shape operations
 nothing = shape2d {
-    dist p = inf,
-    bbox = [[inf,inf],[-inf,-inf]]
+    dist p : inf,
+    bbox : [[inf,inf],[-inf,-inf]]
 };
 everything = shape2d {
-    dist p = -inf,
-    bbox = [[-inf,-inf],[inf,inf]]
+    dist p : -inf,
+    bbox : [[-inf,-inf],[inf,inf]]
 };
 complement s = shape2d {
-    dist p = -s.dist p,
-    bbox = [[-inf,-inf],[inf,inf]]
+    dist p : -s.dist p,
+    bbox : [[-inf,-inf],[inf,inf]]
 };
 _union2(s1,s2) = shape2d {
-    dist p = min(s1.dist p, s2.dist p),
-    colour p = if (s1.dist p <= 0) s1.colour p else s2.colour p,
-    bbox = [min(s1.bbox'0, s2.bbox'0), max(s1.bbox'1, s2.bbox'1)]
+    dist p : min(s1.dist p, s2.dist p),
+    colour p : if (s1.dist p <= 0) s1.colour p else s2.colour p,
+    bbox : [min(s1.bbox'0, s2.bbox'0), max(s1.bbox'1, s2.bbox'1)]
 };
 union = reduce(nothing, _union2);
 _intersection2(s1,s2) = shape2d {
-    dist p = max(s1.dist p, s2.dist p),
-    colour = s1.colour,
-    bbox = [max(s1.bbox'0, s2.bbox'0), min(s1.bbox'1, s2.bbox'1)]
+    dist p : max(s1.dist p, s2.dist p),
+    colour : s1.colour,
+    bbox : [max(s1.bbox'0, s2.bbox'0), min(s1.bbox'1, s2.bbox'1)]
 };
 intersection = reduce(everything, _intersection2);
 difference(s1,s2) = _intersection2(s1, complement s2);
@@ -100,20 +100,20 @@ symmetric_difference shapes = difference(union shapes, intersection shapes);
 
 // affine transformations
 translate delta shape = shape2d {
-    dist p = shape.dist(p - delta),
-    colour p = shape.colour(p - delta),
-    bbox = [shape.bbox'0+delta, shape.bbox'1+delta]
+    dist p : shape.dist(p - delta),
+    colour p : shape.colour(p - delta),
+    bbox : [shape.bbox'0+delta, shape.bbox'1+delta]
 };
 scale s shape = shape2d {
-    dist p = s * shape.dist(p / s),
-    colour p = shape.colour(p / s),
-    bbox = s * shape.bbox
+    dist p : s * shape.dist(p / s),
+    colour p : shape.colour(p / s),
+    bbox : s * shape.bbox
 };
 rotate a shape = shape2d {
-    dist p = shape.dist(cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X),
-    //dist p = shape.dist cmul(p, cis(-a)),
-    colour p = shape.colour(cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X),
-    bbox = shape.bbox // TODO: fixme, see below
+    dist p : shape.dist(cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X),
+    //dist p : shape.dist cmul(p, cis(-a)),
+    colour p : shape.colour(cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X),
+    bbox : shape.bbox // TODO: fixme, see below
 };
 /*
 points_box points = [min points, max points];
@@ -139,9 +139,9 @@ getBox2 (Rotate2 θ symbObj) =
 
 // Coloured Shapes
 colour rgb shape = shape2d {
-    dist = shape.dist,
-    bbox = shape.bbox,
-    colour(p) = rgb
+    dist : shape.dist,
+    bbox : shape.bbox,
+    colour(p) : rgb
 };
 red = [1, 0, 0];
 green = [0, 1, 0];
@@ -154,9 +154,9 @@ black = [0, 0, 0];
 
 // GL Debugging
 distance_field shape = shape2d {
-    dist = everything.dist,
-    bbox = everything.bbox,
-    colour p =
+    dist : everything.dist,
+    bbox : everything.bbox,
+    colour p :
         let(d = shape.dist p)
         let(c = if (d >= 0) ceil(d)-d else floor(d)-d)
         [max(-c,0), 0, max(c,0)],

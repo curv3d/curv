@@ -1,5 +1,5 @@
 poly(n) = shape2d {
-    dist p = mag p - cos(rem(atan2(p'Y, p'X), tau / n)),
-    bbox = [[-1,-1],[1,1]]
+    dist p : mag p - cos(rem(atan2(p'Y, p'X), tau / n)),
+    bbox : [[-1,-1],[1,1]]
 };
 rotate(tau/4) << poly 5;

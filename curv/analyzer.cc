@@ -22,9 +22,15 @@ analyze_op(const Phrase& ph, Environ& env)
 }
 
 Shared<Operation>
-Metafunction::to_operation(Environ& env)
+Meaning::to_operation(Environ& env)
 {
     throw Exception(At_Phrase(*source_, env), "not an operation");
+}
+
+Shared<Meaning>
+Meaning::call(const Call_Phrase&, Environ& env)
+{
+    throw Exception(At_Phrase(*source_, env), "not callable");
 }
 
 Shared<Operation>
@@ -242,6 +248,18 @@ Lambda_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
+analyze_assoc(Environ& env,
+    const Phrase& src, const Phrase& left, Shared<Phrase> right)
+{
+    if (auto id = dynamic_cast<const Identifier*>(&left))
+        return make<Assoc>(share(src), share(*id), analyze_op(*right, env));
+    if (auto call = dynamic_cast<const Call_Phrase*>(&left))
+        return analyze_assoc(env, src, *call->function_,
+            make<Lambda_Phrase>(call->arg_, Token(), right));
+    throw Exception(At_Phrase(left,  env), "invalid definiendum");
+}
+
+Shared<Meaning>
 Binary_Phrase::analyze(Environ& env) const
 {
     switch (op_.kind) {
@@ -323,6 +341,8 @@ Binary_Phrase::analyze(Environ& env) const
             share(*this),
             analyze_op(*left_, env),
             analyze_op(*right_, env));
+    case Token::k_colon:
+        return analyze_assoc(env, *this, *left_, right_);
     default:
         assert(0);
     }
@@ -520,8 +540,8 @@ Call_Phrase::analyze_args(Environ& env) const
 }
 
 void
-analyze_definition(
-    const Definition& def,
+analyze_field(
+    const Assoc& def,
     Atom_Map<Shared<const Operation>>& dict,
     Environ& env)
 {
@@ -529,7 +549,7 @@ analyze_definition(
     if (dict.find(name) != dict.end())
         throw Exception(At_Phrase(*def.name_, env),
             stringify(name, ": multiply defined"));
-    dict[name] = analyze_op(*def.definiens_, env);
+    dict[name] = def.definiens_;
 }
 
 Shared<Meaning>
@@ -603,10 +623,11 @@ Brace_Phrase::analyze(Environ& env) const
 {
     auto record = make<Record_Expr>(share(*this));
     each_item(*body_, [&](const Phrase& item)->void {
-        if (auto def = item.analyze_def(env))
-            analyze_definition(*def, record->fields_, env);
+        auto meaning = item.analyze(env);
+        if (auto def = cast<Assoc>(meaning))
+            analyze_field(*def, record->fields_, env);
         else
-            throw Exception(At_Phrase(item, env), "not a definition");
+            throw Exception(At_Phrase(item, env), "not an association");
     });
     return record;
 }
