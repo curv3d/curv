@@ -72,6 +72,14 @@ Module_Ref::eval(Frame& f) const
 }
 
 Value
+Submodule_Ref::eval(Frame& f) const
+{
+    List& list = (List&)f[slot_].get_ref_unsafe();
+    assert(list.type_ == Ref_Value::ty_list);
+    return force_ref(list[index_], *source_, f);
+}
+
+Value
 Nonlocal_Ref::eval(Frame& f) const
 {
     return (*f.nonlocal)[slot_];
@@ -114,6 +122,16 @@ Nonlocal_Function_Ref::eval(Frame& f) const
     return {make<Closure>(
         (Lambda&) (*f.nonlocal)[lambda_slot_].get_ref_unsafe(),
         *f.nonlocal)};
+}
+
+Value
+Submodule_Function_Ref::eval(Frame& f) const
+{
+    List& list = (List&)f[slot_].get_ref_unsafe();
+    assert(list.type_ == Ref_Value::ty_list);
+    Lambda& lambda = (Lambda&) list[index_].get_ref_unsafe();
+    assert(lambda.type_ == Ref_Value::ty_lambda);
+    return {make<Closure>(lambda, list)};
 }
 
 Value
@@ -520,6 +538,25 @@ Module_Expr::eval_module(System& sys, Frame* f) const
     for (Value& s : *module->slots_)
         force(s, *frame);
     module->elements_ = elements_->eval_list(*frame);
+    return module;
+}
+
+Value
+Submodule_Expr::eval(Frame& f) const
+{
+    auto module = eval_submodule(f.system, f);
+    return {module};
+}
+
+Shared<Module>
+Submodule_Expr::eval_submodule(System& sys, Frame& f) const
+{
+    auto module = make<Module>();
+    module->dictionary_ = dictionary_;
+    module->slots_ = List::make_copy(slots_->begin(), slots_->size());
+    for (Value& s : *module->slots_)
+        force(s, f);
+    module->elements_ = elements_->eval_list(f);
     return module;
 }
 

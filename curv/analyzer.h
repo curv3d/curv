@@ -29,6 +29,13 @@ struct Environ
     {}
     Shared<Meaning> lookup(const Identifier& id);
     virtual Shared<Meaning> single_lookup(const Identifier&) = 0;
+
+    /// This is called when analyzing a Lambda_Phrase whose parent scope
+    /// is a module, to look up a binding at the module scope.
+    virtual Shared<Meaning> lookup_function_nonlocal(const Identifier& id)
+    {
+        return lookup(id);
+    }
 };
 
 struct Builtin_Environ : public Environ
@@ -106,6 +113,57 @@ struct Bindings
             bindings_(b)
         {}
         virtual Shared<Meaning> single_lookup(const Identifier&);
+    };
+
+    // Fourth, analyze the binding phrases, and construct a list of compile
+    // time Values (constants, lambdas or thunks),
+    // using the above Environ if they are mutually recursive:
+    Shared<List> analyze_values(Environ& env);
+
+    // Fifth, construct a Block_Op, Module_Expr, Record_Expr
+    // or function parameter list.
+};
+
+/// This is used to analyze a set of submodule definitions.
+struct New_Bindings
+{
+    size_t cur_position_;
+    Shared<Module::Dictionary> dictionary_;
+    std::vector<Shared<const Phrase>> slot_phrases_;
+    size_t slot_;
+
+    // First, construct the Binding_Analyzer:
+    New_Bindings(curv::Environ& env)
+    :
+        cur_position_(0),
+        dictionary_(make<Module::Dictionary>()),
+        slot_phrases_()
+    {
+        slot_ = env.frame_nslots++;
+        env.frame_maxslots = std::max(env.frame_nslots, env.frame_maxslots);
+    }
+
+    bool is_recursive_function(size_t);
+
+    // Second, add some bindings:
+    void add_definition(Shared<Definition> def, curv::Environ& env);
+    //void add_parameter(Shared<Phrase> phrase);
+
+    // Third, construct an Environ from the bindings dictionary.
+    struct Environ : public curv::Environ
+    {
+    protected:
+        New_Bindings& bindings_;
+    public:
+        Environ(
+            curv::Environ* p,
+            New_Bindings& b)
+        :
+            curv::Environ(p),
+            bindings_(b)
+        {}
+        virtual Shared<Meaning> single_lookup(const Identifier&);
+        virtual Shared<Meaning> lookup_function_nonlocal(const Identifier& id);
     };
 
     // Fourth, analyze the binding phrases, and construct a list of compile

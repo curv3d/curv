@@ -66,6 +66,89 @@ Builtin_Environ::single_lookup(const Identifier& id)
 }
 
 void
+New_Bindings::add_definition(Shared<Definition> def, curv::Environ& env)
+{
+    Atom name = def->name_->atom_;
+    if (dictionary_->find(name) != dictionary_->end())
+        throw Exception(At_Phrase(*def->name_, env),
+            stringify(name, ": multiply defined"));
+    (*dictionary_)[name] = cur_position_++;
+    slot_phrases_.push_back(def->definiens_);
+
+    auto lambda = dynamic_cast<Lambda_Phrase*>(def->definiens_.get());
+    if (lambda != nullptr)
+        lambda->recursive_ = true;
+}
+
+bool
+New_Bindings::is_recursive_function(size_t slot)
+{
+    return isa<const Lambda_Phrase>(slot_phrases_[slot]);
+}
+
+Shared<Meaning>
+New_Bindings::Environ::single_lookup(const Identifier& id)
+{
+    auto b = bindings_.dictionary_->find(id.atom_);
+    if (b != bindings_.dictionary_->end()) {
+        if (bindings_.is_recursive_function(b->second))
+            return make<Submodule_Function_Ref>(
+                share(id), bindings_.slot_, b->second);
+        else
+            return make<Submodule_Ref>(
+                share(id), bindings_.slot_, b->second);
+    }
+    return nullptr;
+}
+
+Shared<Meaning>
+New_Bindings::Environ::lookup_function_nonlocal(const Identifier& id)
+{
+    auto b = bindings_.dictionary_->find(id.atom_);
+    if (b != bindings_.dictionary_->end()) {
+        if (bindings_.is_recursive_function(b->second))
+            return make<Nonlocal_Function_Ref>(share(id), b->second);
+        else
+            return make<Module_Ref>(share(id), b->second);
+    }
+
+    throw Exception(At_Phrase(id, *this), "unsupported nonlocal reference");
+#if 0
+    auto n = bindings_.nonlocal_dictionary_.find(id.atom_);
+    if (n != bindings_.nonlocal_dictionary_.end()) {
+        return make<Nonlocal_Ref>(share(id), n->second);
+    }
+    auto m = parent_->lookup(id);
+    if (isa<Constant>(m))
+        return m;
+    if (auto expr = cast<Operation>(m)) {
+        size_t slot = bindings_.dictionary_.size()
+            + bindings_.nonlocal_exprs_.size();
+        bindings_.nonlocal_dictionary_[id.atom_] = slot;
+        bindings_.nonlocal_exprs_.push_back(expr);
+        return make<Nonlocal_Ref>(share(id), slot);
+    }
+    return m;
+#endif
+}
+
+Shared<List>
+New_Bindings::analyze_values(Environ& env)
+{
+    size_t n = slot_phrases_.size();
+    auto slots = make_list(n);
+    for (size_t i = 0; i < n; ++i) {
+        auto expr = analyze_op(*slot_phrases_[i], env);
+        if (is_recursive_function(i)) {
+            auto& l = dynamic_cast<Lambda_Expr&>(*expr);
+            (*slots)[i] = {make<Lambda>(l.body_,l.nargs_,l.nslots_)};
+        } else
+            (*slots)[i] = {make<Thunk>(expr)};
+    }
+    return slots;
+}
+
+void
 Bindings::add_definition(Shared<Definition> def, curv::Environ& env)
 {
     Atom name = def->name_->atom_;
@@ -210,17 +293,12 @@ Lambda_Phrase::analyze(Environ& env) const
         {
             auto p = names_.find(id.atom_);
             if (p != names_.end())
-                return make<Arg_Ref>(
-                    share(id), p->second);
+                return make<Arg_Ref>(share(id), p->second);
             if (recursive_)
-                return nullptr;
-            // In non-recursive mode, we return a definitive result.
-            // We don't return nullptr (meaning try again in parent_).
+                return parent_->lookup_function_nonlocal(id);
             auto n = nonlocal_dictionary_.find(id.atom_);
-            if (n != nonlocal_dictionary_.end()) {
-                return make<Nonlocal_Ref>(
-                    share(id), n->second);
-            }
+            if (n != nonlocal_dictionary_.end())
+                return make<Nonlocal_Ref>(share(id), n->second);
             auto m = parent_->lookup(id);
             if (isa<Constant>(m))
                 return m;
@@ -228,8 +306,7 @@ Lambda_Phrase::analyze(Environ& env) const
                 size_t slot = nonlocal_exprs_.size();
                 nonlocal_dictionary_[id.atom_] = slot;
                 nonlocal_exprs_.push_back(expr);
-                return make<Nonlocal_Ref>(
-                    share(id), slot);
+                return make<Nonlocal_Ref>(share(id), slot);
             }
             return m;
         }
@@ -603,6 +680,36 @@ Program_Phrase::analyze_module(Environ& env) const
     return module;
 }
 
+Shared<Submodule_Expr>
+analyze_submodule(
+    Shared<const Phrase> source,
+    Shared<const Semicolon_Phrase> semis,
+    Environ& env)
+{
+    // phase 1: Create a dictionary of field phrases, a list of action phrases
+    New_Bindings fields{env};
+    std::vector<Shared<const Phrase>> act_phrases;
+    each_statement(*semis, [&](const Phrase& stmt)->void {
+        auto def = stmt.analyze_def(env);
+        if (def != nullptr)
+            fields.add_definition(def, env);
+        else
+            act_phrases.push_back(share(stmt));
+    });
+
+    // phase 2: Construct an environment from the field dictionary
+    // and use it to perform semantic analysis.
+    New_Bindings::Environ env2(&env, fields);
+    auto dictionary = fields.dictionary_;
+    auto slots = fields.analyze_values(env2);
+    Shared<List_Expr> actions = {List_Expr::make(act_phrases.size(), source)};
+    for (size_t i = 0; i < act_phrases.size(); ++i)
+        (*actions)[i] = analyze_op(*act_phrases[i], env2);
+    //module->frame_nslots_ = env2.frame_maxslots;
+
+    return make<Submodule_Expr>(source, dictionary, slots, actions);
+}
+
 /// In the grammar, a <commas> phrase is one or more constituent phrases
 /// separated by commas. This function iterates over each constituent phrase.
 static inline void
@@ -621,6 +728,8 @@ each_item(const Phrase& phrase, std::function<void(const Phrase&)> func)
 Shared<Meaning>
 Brace_Phrase::analyze(Environ& env) const
 {
+    if (auto semis = cast<Semicolon_Phrase>(body_))
+        return analyze_submodule(share(*this), semis, env);
     auto record = make<Record_Expr>(share(*this));
     each_item(*body_, [&](const Phrase& item)->void {
         auto meaning = item.analyze(env);

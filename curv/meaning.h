@@ -165,6 +165,19 @@ struct Module_Ref : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
+/// reference to a lazy nonlocal slot.
+struct Submodule_Ref : public Just_Expression
+{
+    size_t slot_;
+    size_t index_;
+
+    Submodule_Ref(Shared<const Phrase> source, size_t slot, size_t index)
+    : Just_Expression(std::move(source)), slot_(slot), index_(index)
+    {}
+
+    virtual Value eval(Frame&) const override;
+};
+
 /// reference to a strict nonlocal slot (nonrecursive lambda nonlocal)
 struct Nonlocal_Ref : public Just_Expression
 {
@@ -241,6 +254,23 @@ struct Nonlocal_Function_Ref : public Just_Expression
     :
         Just_Expression(std::move(source)),
         lambda_slot_(lambda_slot)
+    {}
+
+    virtual Value eval(Frame&) const override;
+};
+
+struct Submodule_Function_Ref : public Just_Expression
+{
+    int slot_;
+    int index_;
+
+    Submodule_Function_Ref(
+        Shared<const Phrase> source,
+        int slot, int index)
+    :
+        Just_Expression(std::move(source)),
+        slot_(slot),
+        index_(index)
     {}
 
     virtual Value eval(Frame&) const override;
@@ -486,6 +516,35 @@ struct Module_Expr : public Just_Expression
 
     virtual Value eval(Frame&) const override;
     Shared<Module> eval_module(System&, Frame*) const;
+};
+
+struct Submodule_Expr : public Just_Expression
+{
+    // maps public member names to slot #s
+    Shared<Module::Dictionary> dictionary_;
+
+    // size and initial contents of the slot list
+    Shared<List> slots_;
+
+    // actions to execute, during construction
+    Shared<const List_Expr> elements_;
+
+    //size_t frame_nslots_;
+
+    Submodule_Expr(
+        Shared<const Phrase> source,
+        Shared<Module::Dictionary> dictionary,
+        Shared<List> slots,
+        Shared<const List_Expr> elements)
+    :
+        Just_Expression(source),
+        dictionary_(std::move(dictionary)),
+        slots_(std::move(slots)),
+        elements_(std::move(elements))
+    {}
+
+    virtual Value eval(Frame&) const override;
+    Shared<Module> eval_submodule(System&, Frame&) const;
 };
 
 struct Let_Op : public Operation
