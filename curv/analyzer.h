@@ -79,14 +79,14 @@ struct Definition : public aux::Shared_Base
 
 /// This is used to analyze a set of module definitions, and in future,
 /// record definitions, block definitions, or function parameters.
-struct Bindings
+struct Old_Bindings
 {
     size_t cur_position_;
     Shared<Module::Dictionary> dictionary_;
     std::vector<Shared<const Phrase>> slot_phrases_;
 
     // First, construct the Binding_Analyzer:
-    Bindings()
+    Old_Bindings()
     :
         cur_position_(0),
         dictionary_(make<Module::Dictionary>()),
@@ -103,11 +103,11 @@ struct Bindings
     struct Environ : public curv::Environ
     {
     protected:
-        Bindings& bindings_;
+        Old_Bindings& bindings_;
     public:
         Environ(
             curv::Environ* p,
-            Bindings& b)
+            Old_Bindings& b)
         :
             curv::Environ(p),
             bindings_(b)

@@ -145,7 +145,7 @@ New_Bindings::member_values(Environ& env)
 }
 
 void
-Bindings::add_definition(Shared<Definition> def, curv::Environ& env)
+Old_Bindings::add_definition(Shared<Definition> def, curv::Environ& env)
 {
     Atom name = def->name_->atom_;
     if (dictionary_->find(name) != dictionary_->end())
@@ -160,13 +160,13 @@ Bindings::add_definition(Shared<Definition> def, curv::Environ& env)
 }
 
 bool
-Bindings::is_recursive_function(size_t slot)
+Old_Bindings::is_recursive_function(size_t slot)
 {
     return isa<const Lambda_Phrase>(slot_phrases_[slot]);
 }
 
 Shared<Meaning>
-Bindings::Environ::single_lookup(const Identifier& id)
+Old_Bindings::Environ::single_lookup(const Identifier& id)
 {
     auto b = bindings_.dictionary_->find(id.atom_);
     if (b != bindings_.dictionary_->end()) {
@@ -181,7 +181,7 @@ Bindings::Environ::single_lookup(const Identifier& id)
 }
 
 Shared<List>
-Bindings::analyze_values(Environ& env)
+Old_Bindings::analyze_values(Environ& env)
 {
     size_t n = slot_phrases_.size();
     auto slots = make_list(n);
@@ -651,7 +651,7 @@ Shared<Module_Expr>
 Program_Phrase::analyze_module(Environ& env) const
 {
     // phase 1: Create a dictionary of field phrases, a list of element phrases
-    Bindings fields;
+    Old_Bindings fields;
     std::vector<Shared<const Phrase>> elements;
     each_statement(*body_, [&](const Phrase& stmt)->void {
         auto def = stmt.analyze_def(env);
@@ -663,7 +663,7 @@ Program_Phrase::analyze_module(Environ& env) const
 
     // phase 2: Construct an environment from the field dictionary
     // and use it to perform semantic analysis.
-    Bindings::Environ env2(&env, fields);
+    Old_Bindings::Environ env2(&env, fields);
     auto self = share(*this);
     auto module = make<Module_Expr>(self);
     module->dictionary_ = fields.dictionary_;
