@@ -520,26 +520,32 @@ struct Module_Expr : public Just_Expression
 
 struct Submodule_Expr : public Just_Expression
 {
-    // maps public member names to slot #s
+    // maps public member names to slot #s in the value list.
     Shared<Module::Dictionary> dictionary_;
 
-    // size and initial contents of the slot list
-    Shared<List> slots_;
+    // location in the evaluation frame where the value list is stored.
+    size_t slot_;
+
+    // size and initial contents of the value list.
+    Shared<List> member_values_;
+    std::vector<Shared<const Operation>> nonlocal_exprs_;
 
     // actions to execute, during construction
     Shared<const List_Expr> elements_;
 
-    //size_t frame_nslots_;
-
     Submodule_Expr(
         Shared<const Phrase> source,
         Shared<Module::Dictionary> dictionary,
-        Shared<List> slots,
+        size_t slot,
+        Shared<List> member_values_,
+        std::vector<Shared<const Operation>> nonlocal_exprs,
         Shared<const List_Expr> elements)
     :
         Just_Expression(source),
         dictionary_(std::move(dictionary)),
-        slots_(std::move(slots)),
+        slot_(slot),
+        member_values_(std::move(member_values_)),
+        nonlocal_exprs_(std::move(nonlocal_exprs)),
         elements_(std::move(elements))
     {}
 

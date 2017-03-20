@@ -553,10 +553,18 @@ Submodule_Expr::eval_submodule(System& sys, Frame& f) const
 {
     auto module = make<Module>();
     module->dictionary_ = dictionary_;
-    module->slots_ = List::make_copy(slots_->begin(), slots_->size());
-    for (Value& s : *module->slots_)
-        force(s, f);
+    size_t nmembers = member_values_->size();
+    size_t nslots = nmembers + nonlocal_exprs_.size();
+    Shared<List> slots = List::make(nslots);
+    for (size_t i = 0; i < nmembers; ++i)
+        slots->at(i) = member_values_->at(i);
+    for (size_t i = nmembers; i < nslots; ++i)
+        slots->at(i) = nonlocal_exprs_[i - nmembers]->eval(f);
+    module->slots_ = slots;
+    f[slot_] = {slots};
     module->elements_ = elements_->eval_list(f);
+    for (size_t i = 0; i < nmembers; ++i)
+        force(module->slots_->at(i), f);
     return module;
 }
 

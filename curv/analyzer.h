@@ -127,17 +127,19 @@ struct Bindings
 /// This is used to analyze a set of submodule definitions.
 struct New_Bindings
 {
-    size_t cur_position_;
-    Shared<Module::Dictionary> dictionary_;
-    std::vector<Shared<const Phrase>> slot_phrases_;
+    Shared<Module::Dictionary> member_dictionary_;
+    Module::Dictionary nonlocal_dictionary_;
+    std::vector<Shared<const Phrase>> member_phrases_;
+    std::vector<Shared<const Operation>> nonlocal_exprs_;
     size_t slot_;
 
     // First, construct the Binding_Analyzer:
     New_Bindings(curv::Environ& env)
     :
-        cur_position_(0),
-        dictionary_(make<Module::Dictionary>()),
-        slot_phrases_()
+        member_dictionary_(make<Module::Dictionary>()),
+        nonlocal_dictionary_(),
+        member_phrases_(),
+        nonlocal_exprs_()
     {
         slot_ = env.frame_nslots++;
         env.frame_maxslots = std::max(env.frame_nslots, env.frame_maxslots);
@@ -169,7 +171,7 @@ struct New_Bindings
     // Fourth, analyze the binding phrases, and construct a list of compile
     // time Values (constants, lambdas or thunks),
     // using the above Environ if they are mutually recursive:
-    Shared<List> analyze_values(Environ& env);
+    Shared<List> member_values(Environ& env);
 
     // Fifth, construct a Block_Op, Module_Expr, Record_Expr
     // or function parameter list.
