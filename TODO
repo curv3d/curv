@@ -10,26 +10,11 @@ gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
 curv::Function represents a variadic function.
 
 ## Language Redesign
-Submodules (implement as practice for recursive blocks):
-* `{stmt; stmt; ...;}` where stmt is a definition or action.
-* Frame contents during construction:
-  * There is a single slot which contains a List of slots.
-  * This List contains binding slots and nonlocal slots.
-  * The binding slot for a function literal is initialized to a Lambda,
-    otherwise is initialized to an action Thunk which initializes the binding
-    slot as a side effect when executed.
-  * Nonlocal slots are initialized to proper Values.
-  * Once I support pattern matching definitions, like `(x,y)=f(a)`, then:
-    * The slots for x and y are initialized with the same action thunk,
-      which updates both slots.
-* Submodule_Expr members:
-  * dictionary_ maps public member names to slot#s.
-  * slots_ specifies the size and initial contents of the slot list.
-        It's a list of Expressions, or a List_Expr.
-  * actions_ is a list of Actions to execute during construction.
-* Submodule_Ref is a frame index of the member slot list, and a member index.
-* Analysis:
-  * Start with a list of statements (action and definition phrases).
+Submodules (prereq for recursive blocks):
+* {x=1} -- no semicolon
+* action thunks, instead of value thunks.
+* (x,y) = f(a);
+* create the action list inside of New_Bindings.
 
 Local blocks:
 * Detect if the block has recursive definitions.
@@ -41,7 +26,8 @@ Local blocks:
     * The binding slot for a function literal is initialized to a Lambda,
       otherwise is initialized to a Thunk.
     * Nonlocal slots are initialized to proper Values.
-  * 
+
+item ::= disjunction `where` item -- alternate block syntax
 
 * recursive function definitions
   * Copy/reuse the module analyzer.

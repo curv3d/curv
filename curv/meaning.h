@@ -518,6 +518,41 @@ struct Module_Expr : public Just_Expression
     Shared<Module> eval_module(System&, Frame*) const;
 };
 
+// A submodule expression is `{stmt; stmt; ...;}` where stmt is a definition
+// or action. The scope of each definition is the entire submodule. The order
+// of definitions doesn't matter. Recursive definitions are supported.
+// Actions are executed in left-to-right order.
+//
+// At runtime, a submodule expression allocates a single slot in the
+// evaluation frame (slot_), which contains the value list.
+// The value list is stored in the resulting Module value, and it is also
+// used as the nonlocal list for the closures constructed from each
+// top-level function definition.
+//
+// The value list consists of one value for each named field exported by
+// the module, followed by "nonlocal values".
+//  1. The field value for a function definition is a Lambda. This is combined
+//     with the value list to construct a Closure value when the function
+//     is referenced (see Submodule_Function_Ref). We can't store the Closure
+//     directly in the value list because that would create a reference cycle,
+//     which would cause a storage leak, since we use reference counting.
+//  2. The field value for a non-function definition is a Thunk. The Thunk is
+//     evaluated and replaced by a Value on first reference, see Submodule_Ref.
+//     This allows definitions to be written in any order. The order of
+//     definition evaluation is determined at runtime by data dependencies, and
+//     can change from one evaluation to the next, affording flexibility which
+//     is also available in Haskell. Unlike Haskell, some recursive definitions
+//     will abort, reporting illegal recursion, instead of looping forever.
+//     For example, `{x=x;}`.
+//      * TODO: Once I support pattern matching definitions, like `(x,y)=f(a)`,
+//        then the slots for x and y are initialized with the same action thunk,
+//        which updates both slots.
+//  3. The value list may contain "nonlocal values", which correspond to
+//     bindings from the parent scope which are referenced by function
+//     definitions. These are proper values, not Thunks. During analysis,
+//     a lambda expression used in a submodule function definition calls
+//     env.lookup_function_nonlocal(id) to resolve nonlocal identifiers, and
+//     this adds new nonlocals to the submodule's value list as a side effect.
 struct Submodule_Expr : public Just_Expression
 {
     // maps public member names to slot #s in the value list.
