@@ -10,50 +10,33 @@ gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
 curv::Function represents a variadic function.
 
 ## Language Redesign
-Refactor Submodules: common block/module code -> Bindings and Bindings_Environ
-* Submodule_Expr and Block_Op both contain a 'Bindings' data member that
-  encapsulates the common code.
-* New_Bindings -> Bindings_Environ
-* create the action list inside of Bindings_Environ.
-
 Submodules (prereq for recursive blocks):
 * {x=1} -- no semicolon
+* only permit actions, not generators or expressions.
 * action thunks, instead of value thunks.
 * (x,y) = f(a);
-* only permit actions, not generators or expressions.
 
 Blocks:
-* First, just implement recursive blocks (no recursion detection).
-  * Compile the definitions/actions into a submodule (1 slot containing value
-    list).
-  * Compile the body using references into the submodule.
-* Later, detect if the block has recursive definitions.
-  If true, compile as a recursive block.
-  Otherwise, compile as a non-recursive block (which supports GL).
+* Support recursive functions using Bindings_Analyzer.
+* Add GL support. How?
+   1. Detect if the block has recursive definitions.
+      If true, compile as a recursive block.
+      Otherwise, compile as a GL-compatible non-recursive block.
+   2. Or move this analysis into the GL compiler.
+      Use a simple recursion detector that aborts on recursion.
 
 item ::= disjunction `where` item -- alternate block syntax
 
 * recursive function definitions
-  * Copy/reuse the module analyzer.
-  * Recursive functions: we store a Lambda in the function's slot.
-  * The nonlocals list NL is separate. It could be cached in a slot, so we
-    don't recreate it on each function call. It could be thunked.
   * We could classify each binding as recursive or non-recursive.
     * Non-recursive bindings are sorted in dependency order. Analyze the
       definiens and recursively analyze dependencies before assigning a slot#.
       If a loop is detected, mark the binding as recursive.
   * Start with a list of statements (action and definition phrases).
-    * Make a dictionary of bindings. No slots assigned yet.
-      Each entry maps name onto {slot,definiens-phrase,is_recursive}.
-    * Make an Environment.
     * Analyze the statements in order. When a block reference is analyzed,
       recursively analyze it. If a loop is detected, mark the binding
       recursive and allocate a slot. Otherwise, once a definiens is
       fully analyzed, allocate a slot.
-    * Once an action phrase is analyzed, add action to action-list.
-    * Once a definiens phrase is analyzed, add an action for initializing
-      the binding slot to the action-list.
-  * Then analyze the body.
   * Slot initialization: first, we initialize each non-recursive slot to
     missing, and each recursive slot to a thunk. Then, we execute the
     action list, which runs action statements, and initializes non-recursive
