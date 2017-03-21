@@ -66,6 +66,14 @@ struct Module : public Ref_Value
         Ref_Value(ty_module)
     {}
 
+    Module(Shared<Dictionary> dictionary, Shared<List> values)
+    :
+        Ref_Value(ty_module),
+        dictionary_(std::move(dictionary)),
+        slots_(std::move(values)),
+        elements_(List::make(0))
+    {}
+
     friend class curv::Module_Expr;
 
     /// Fetch the value stored at slot index `i`.

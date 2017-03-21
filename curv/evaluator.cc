@@ -568,12 +568,7 @@ Submodule_Expr::eval(Frame& f) const
 Shared<Module>
 Submodule_Expr::eval_submodule(Frame& f) const
 {
-    auto module = make<Module>();
-    auto values = bindings_.eval(f);
-    module->dictionary_ = dictionary_;
-    module->slots_ = values;
-    module->elements_ = List::make(0);
-    return module;
+    return make<Module>(dictionary_, bindings_.eval(f));
 }
 
 Value
