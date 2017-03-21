@@ -66,32 +66,37 @@ Builtin_Environ::single_lookup(const Identifier& id)
 }
 
 void
-New_Bindings::add_definition(Shared<Definition> def, curv::Environ& env)
+Bindings_Analyzer::add_statement(Shared<const Phrase> stmt)
 {
-    Atom name = def->name_->atom_;
-    if (member_dictionary_->find(name) != member_dictionary_->end())
-        throw Exception(At_Phrase(*def->name_, env),
-            stringify(name, ": multiply defined"));
-    (*member_dictionary_)[name] = member_phrases_.size();
-    member_phrases_.push_back(def->definiens_);
+    auto def = stmt->analyze_def(*parent_);
+    if (def == nullptr)
+        action_phrases_.push_back(stmt);
+    else {
+        Atom name = def->name_->atom_;
+        if (defn_dictionary_->find(name) != defn_dictionary_->end())
+            throw Exception(At_Phrase(*def->name_, *parent_),
+                stringify(name, ": multiply defined"));
+        (*defn_dictionary_)[name] = defn_phrases_.size();
+        defn_phrases_.push_back(def->definiens_);
 
-    auto lambda = dynamic_cast<Lambda_Phrase*>(def->definiens_.get());
-    if (lambda != nullptr)
-        lambda->recursive_ = true;
+        auto lambda = dynamic_cast<Lambda_Phrase*>(def->definiens_.get());
+        if (lambda != nullptr)
+            lambda->recursive_ = true;
+    }
 }
 
 bool
-New_Bindings::is_recursive_function(size_t slot)
+Bindings_Analyzer::is_recursive_function(size_t slot)
 {
-    return isa<const Lambda_Phrase>(member_phrases_[slot]);
+    return isa<const Lambda_Phrase>(defn_phrases_[slot]);
 }
 
 Shared<Meaning>
-New_Bindings::Environ::single_lookup(const Identifier& id)
+Bindings_Analyzer::single_lookup(const Identifier& id)
 {
-    auto b = bindings_.member_dictionary_->find(id.atom_);
-    if (b != bindings_.member_dictionary_->end()) {
-        if (bindings_.is_recursive_function(b->second))
+    auto b = defn_dictionary_->find(id.atom_);
+    if (b != defn_dictionary_->end()) {
+        if (is_recursive_function(b->second))
             return make<Submodule_Function_Ref>(
                 share(id), bindings_.slot_, b->second);
         else
@@ -102,46 +107,53 @@ New_Bindings::Environ::single_lookup(const Identifier& id)
 }
 
 Shared<Meaning>
-New_Bindings::Environ::lookup_function_nonlocal(const Identifier& id)
+Bindings_Analyzer::lookup_function_nonlocal(const Identifier& id)
 {
-    auto b = bindings_.member_dictionary_->find(id.atom_);
-    if (b != bindings_.member_dictionary_->end()) {
-        if (bindings_.is_recursive_function(b->second))
+    auto b = defn_dictionary_->find(id.atom_);
+    if (b != defn_dictionary_->end()) {
+        if (is_recursive_function(b->second))
             return make<Nonlocal_Function_Ref>(share(id), b->second);
         else
             return make<Module_Ref>(share(id), b->second);
     }
 
-    auto n = bindings_.nonlocal_dictionary_.find(id.atom_);
-    if (n != bindings_.nonlocal_dictionary_.end())
+    auto n = nonlocal_dictionary_.find(id.atom_);
+    if (n != nonlocal_dictionary_.end())
         return make<Nonlocal_Ref>(share(id), n->second);
     auto m = parent_->lookup(id);
     if (isa<Constant>(m))
         return m;
     if (auto expr = cast<Operation>(m)) {
-        size_t slot = bindings_.member_dictionary_->size()
+        size_t slot = defn_dictionary_->size()
             + bindings_.nonlocal_exprs_.size();
-        bindings_.nonlocal_dictionary_[id.atom_] = slot;
+        nonlocal_dictionary_[id.atom_] = slot;
         bindings_.nonlocal_exprs_.push_back(expr);
         return make<Nonlocal_Ref>(share(id), slot);
     }
     return m;
 }
 
-Shared<List>
-New_Bindings::member_values(Environ& env)
+void
+Bindings_Analyzer::analyze(Shared<const Phrase> source)
 {
-    size_t n = member_phrases_.size();
-    auto slots = make_list(n);
+    // analyze definitions
+    size_t n = defn_phrases_.size();
+    auto defn_values = make_list(n);
     for (size_t i = 0; i < n; ++i) {
-        auto expr = analyze_op(*member_phrases_[i], env);
+        auto expr = analyze_op(*defn_phrases_[i], *this);
         if (is_recursive_function(i)) {
             auto& l = dynamic_cast<Lambda_Expr&>(*expr);
-            (*slots)[i] = {make<Lambda>(l.body_,l.nargs_,l.nslots_)};
+            (*defn_values)[i] = {make<Lambda>(l.body_, l.nargs_, l.nslots_)};
         } else
-            (*slots)[i] = {make<Thunk>(expr)};
+            (*defn_values)[i] = {make<Thunk>(expr)};
     }
-    return slots;
+    bindings_.defn_values_ = defn_values;
+
+    // analyze actions
+    auto actions = List_Expr::make(action_phrases_.size(), source);
+    for (size_t i = 0; i < action_phrases_.size(); ++i)
+        (*actions)[i] = analyze_op(*action_phrases_[i], *this);
+    bindings_.actions_ = share(*actions);
 }
 
 void
@@ -682,31 +694,14 @@ analyze_submodule(
     Shared<const Semicolon_Phrase> semis,
     Environ& env)
 {
-    // phase 1: Create a dictionary of field phrases, a list of action phrases
-    New_Bindings fields{env};
-    std::vector<Shared<const Phrase>> act_phrases;
+    Bindings_Analyzer fields{env};
     each_statement(*semis, [&](const Phrase& stmt)->void {
-        auto def = stmt.analyze_def(env);
-        if (def != nullptr)
-            fields.add_definition(def, env);
-        else
-            act_phrases.push_back(share(stmt));
+        fields.add_statement(share(stmt));
     });
-
-    // phase 2: Construct an environment from the field dictionary
-    // and use it to perform semantic analysis.
-    New_Bindings::Environ env2(&env, fields);
-    auto member_values = fields.member_values(env2);
-    Shared<List_Expr> actions = {List_Expr::make(act_phrases.size(), source)};
-    for (size_t i = 0; i < act_phrases.size(); ++i)
-        (*actions)[i] = analyze_op(*act_phrases[i], env2);
-
+    fields.analyze(source);
     return make<Submodule_Expr>(source,
-        std::move(fields.member_dictionary_),
-        fields.slot_,
-        std::move(member_values),
-        std::move(fields.nonlocal_exprs_),
-        std::move(actions));
+        std::move(fields.defn_dictionary_),
+        std::move(fields.bindings_));
 }
 
 /// In the grammar, a <commas> phrase is one or more constituent phrases

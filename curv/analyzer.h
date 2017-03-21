@@ -77,8 +77,7 @@ struct Definition : public aux::Shared_Base
     {}
 };
 
-/// This is used to analyze a set of module definitions, and in future,
-/// record definitions, block definitions, or function parameters.
+/// TODO: Deprecated, replaced by Bindings_Analyzer.
 struct Old_Bindings
 {
     size_t cur_position_;
@@ -124,57 +123,41 @@ struct Old_Bindings
     // or function parameter list.
 };
 
-/// This is used to analyze a set of submodule definitions.
-struct New_Bindings
+/// Analyze a set of recursive definitions and a sequence of actions,
+/// as found in a block or a module literal.
+struct Bindings_Analyzer : public Environ
 {
-    Shared<Module::Dictionary> member_dictionary_;
+    Shared<Module::Dictionary> defn_dictionary_;
     Module::Dictionary nonlocal_dictionary_;
-    std::vector<Shared<const Phrase>> member_phrases_;
-    std::vector<Shared<const Operation>> nonlocal_exprs_;
-    size_t slot_;
+    std::vector<Shared<const Phrase>> defn_phrases_;
+    std::vector<Shared<const Phrase>> action_phrases_;
+    Bindings bindings_;
 
-    // First, construct the Binding_Analyzer:
-    New_Bindings(curv::Environ& env)
+    // First, construct the Bindings_Analyzer:
+    Bindings_Analyzer(Environ& env)
     :
-        member_dictionary_(make<Module::Dictionary>()),
+        Environ(&env),
+        defn_dictionary_(make<Module::Dictionary>()),
         nonlocal_dictionary_(),
-        member_phrases_(),
-        nonlocal_exprs_()
+        defn_phrases_(),
+        action_phrases_(),
+        bindings_()
     {
-        slot_ = env.frame_nslots++;
+        bindings_.slot_ = env.frame_nslots++;
         env.frame_maxslots = std::max(env.frame_nslots, env.frame_maxslots);
     }
 
     bool is_recursive_function(size_t);
+    virtual Shared<Meaning> single_lookup(const Identifier&);
+    virtual Shared<Meaning> lookup_function_nonlocal(const Identifier& id);
 
-    // Second, add some bindings:
-    void add_definition(Shared<Definition> def, curv::Environ& env);
-    //void add_parameter(Shared<Phrase> phrase);
+    // Second, add some statements (definitions or actions):
+    void add_statement(Shared<const Phrase> statement);
 
-    // Third, construct an Environ from the bindings dictionary.
-    struct Environ : public curv::Environ
-    {
-    protected:
-        New_Bindings& bindings_;
-    public:
-        Environ(
-            curv::Environ* p,
-            New_Bindings& b)
-        :
-            curv::Environ(p),
-            bindings_(b)
-        {}
-        virtual Shared<Meaning> single_lookup(const Identifier&);
-        virtual Shared<Meaning> lookup_function_nonlocal(const Identifier& id);
-    };
+    // Third, analyze the statements and finalize the data members.
+    void analyze(Shared<const Phrase> source);
 
-    // Fourth, analyze the binding phrases, and construct a list of compile
-    // time Values (constants, lambdas or thunks),
-    // using the above Environ if they are mutually recursive:
-    Shared<List> member_values(Environ& env);
-
-    // Fifth, construct a Block_Op, Module_Expr, Record_Expr
-    // or function parameter list.
+    // Finally, move or copy the desired data members to construct a Meaning.
 };
 
 Shared<Operation> analyze_op(const Phrase& ph, Environ& env);

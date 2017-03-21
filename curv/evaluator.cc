@@ -530,16 +530,16 @@ Module_Expr::eval(Frame& f) const
 Shared<List>
 Bindings::eval(Frame& f) const
 {
-    size_t nmembers = member_values_->size();
-    size_t nvalues = nmembers + nonlocal_exprs_.size();
+    size_t ndefns = defn_values_->size();
+    size_t nvalues = ndefns + nonlocal_exprs_.size();
     Shared<List> values = List::make(nvalues);
-    for (size_t i = 0; i < nmembers; ++i)
-        values->at(i) = member_values_->at(i);
-    for (size_t i = nmembers; i < nvalues; ++i)
-        values->at(i) = nonlocal_exprs_[i - nmembers]->eval(f);
+    for (size_t i = 0; i < ndefns; ++i)
+        values->at(i) = defn_values_->at(i);
+    for (size_t i = ndefns; i < nvalues; ++i)
+        values->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
     f[slot_] = {values};
     actions_->eval(f);
-    for (size_t i = 0; i < nmembers; ++i)
+    for (size_t i = 0; i < ndefns; ++i)
         force(values->at(i), f);
     return values;
 }

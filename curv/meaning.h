@@ -542,7 +542,7 @@ struct Bindings
     size_t slot_;
 
     // size and initial contents of the value list.
-    Shared<List> member_values_;
+    Shared<const List> defn_values_;
     std::vector<Shared<const Operation>> nonlocal_exprs_;
 
     // actions to execute, during construction
@@ -550,15 +550,17 @@ struct Bindings
 
     Bindings(
         size_t slot,
-        Shared<List> member_values,
+        Shared<const List> defn_values,
         std::vector<Shared<const Operation>> nonlocal_exprs,
         Shared<const List_Expr> actions)
     :
         slot_(slot),
-        member_values_(std::move(member_values)),
+        defn_values_(std::move(defn_values)),
         nonlocal_exprs_(std::move(nonlocal_exprs)),
         actions_(std::move(actions))
     {}
+
+    Bindings() {}
 
     /// Initialize the Frame slot, execute the definitions and action list.
     /// Return the value list.
@@ -592,17 +594,11 @@ struct Submodule_Expr : public Just_Expression
     Submodule_Expr(
         Shared<const Phrase> source,
         Shared<Module::Dictionary> dictionary,
-        size_t slot,
-        Shared<List> member_values_,
-        std::vector<Shared<const Operation>> nonlocal_exprs,
-        Shared<const List_Expr> actions)
+        Bindings b)
     :
         Just_Expression(source),
         dictionary_(std::move(dictionary)),
-        bindings_(slot,
-            std::move(member_values_),
-            std::move(nonlocal_exprs),
-            std::move(actions))
+        bindings_(std::move(b))
     {}
 
     virtual Value eval(Frame&) const override;
