@@ -527,6 +527,23 @@ Module_Expr::eval(Frame& f) const
     return {module};
 }
 
+Shared<List>
+Bindings::eval(Frame& f) const
+{
+    size_t nmembers = member_values_->size();
+    size_t nvalues = nmembers + nonlocal_exprs_.size();
+    Shared<List> values = List::make(nvalues);
+    for (size_t i = 0; i < nmembers; ++i)
+        values->at(i) = member_values_->at(i);
+    for (size_t i = nmembers; i < nvalues; ++i)
+        values->at(i) = nonlocal_exprs_[i - nmembers]->eval(f);
+    f[slot_] = {values};
+    actions_->eval(f);
+    for (size_t i = 0; i < nmembers; ++i)
+        force(values->at(i), f);
+    return values;
+}
+
 Shared<Module>
 Module_Expr::eval_module(System& sys, Frame* f) const
 {
@@ -544,27 +561,18 @@ Module_Expr::eval_module(System& sys, Frame* f) const
 Value
 Submodule_Expr::eval(Frame& f) const
 {
-    auto module = eval_submodule(f.system, f);
+    auto module = eval_submodule(f);
     return {module};
 }
 
 Shared<Module>
-Submodule_Expr::eval_submodule(System& sys, Frame& f) const
+Submodule_Expr::eval_submodule(Frame& f) const
 {
     auto module = make<Module>();
+    auto values = bindings_.eval(f);
     module->dictionary_ = dictionary_;
-    size_t nmembers = member_values_->size();
-    size_t nslots = nmembers + nonlocal_exprs_.size();
-    Shared<List> slots = List::make(nslots);
-    for (size_t i = 0; i < nmembers; ++i)
-        slots->at(i) = member_values_->at(i);
-    for (size_t i = nmembers; i < nslots; ++i)
-        slots->at(i) = nonlocal_exprs_[i - nmembers]->eval(f);
-    module->slots_ = slots;
-    f[slot_] = {slots};
-    module->elements_ = elements_->eval_list(f);
-    for (size_t i = 0; i < nmembers; ++i)
-        force(module->slots_->at(i), f);
+    module->slots_ = values;
+    module->elements_ = List::make(0);
     return module;
 }
 

@@ -505,6 +505,66 @@ struct Record_Expr : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
+/// 'Bindings' represents a set of recursive definitions, and an ordered
+/// sequence of actions, as found in a module literal or block.
+///
+/// At runtime, a slot in the evaluation frame (slot_) contains the value list.
+/// The value list is used as the nonlocal list for the closures constructed
+/// from each top-level function definition. If this Bindings is used to
+/// construct a Module value, then the value list is stored in the Module.
+///
+/// The value list has a value for each binding, followed by "nonlocal values".
+///  1. The value for a function definition is a Lambda. This is combined
+///     with the value list to construct a Closure value when the function
+///     is referenced (see Submodule_Function_Ref). We can't store the Closure
+///     directly in the value list because that would create a reference cycle,
+///     which would cause a storage leak, since we use reference counting.
+///  2. The value for a non-function definition is a Thunk. The Thunk is
+///     evaluated and replaced by a Value on first reference, see Submodule_Ref.
+///     This allows definitions to be written in any order. The order of
+///     definition evaluation is determined at runtime by data dependencies, and
+///     can change from one evaluation to the next, affording flexibility which
+///     is also available in Haskell. Unlike Haskell, some recursive definitions
+///     will abort, reporting illegal recursion, instead of looping forever.
+///     For example, `{x=x;}`.
+///      * TODO: Once I support pattern matching definitions, like `(x,y)=f(a)`,
+///        then the slots for x and y are initialized with the same action
+///        thunk, which updates both slots.
+///  3. The value list may contain "nonlocal values", which correspond to
+///     bindings from the parent scope which are referenced by function
+///     definitions. These are proper values, not Thunks. During analysis,
+///     a lambda expression used in a named function definition calls
+///     env.lookup_function_nonlocal(id) to resolve nonlocal identifiers, and
+///     this adds new nonlocals to the value list as a side effect.
+struct Bindings
+{
+    // location in the evaluation frame where the value list is stored.
+    size_t slot_;
+
+    // size and initial contents of the value list.
+    Shared<List> member_values_;
+    std::vector<Shared<const Operation>> nonlocal_exprs_;
+
+    // actions to execute, during construction
+    Shared<const List_Expr> actions_;
+
+    Bindings(
+        size_t slot,
+        Shared<List> member_values,
+        std::vector<Shared<const Operation>> nonlocal_exprs,
+        Shared<const List_Expr> actions)
+    :
+        slot_(slot),
+        member_values_(std::move(member_values)),
+        nonlocal_exprs_(std::move(nonlocal_exprs)),
+        actions_(std::move(actions))
+    {}
+
+    /// Initialize the Frame slot, execute the definitions and action list.
+    /// Return the value list.
+    Shared<List> eval(Frame&) const;
+};
+
 struct Module_Expr : public Just_Expression
 {
     Shared<Module::Dictionary> dictionary_;
@@ -522,51 +582,12 @@ struct Module_Expr : public Just_Expression
 // or action. The scope of each definition is the entire submodule. The order
 // of definitions doesn't matter. Recursive definitions are supported.
 // Actions are executed in left-to-right order.
-//
-// At runtime, a submodule expression allocates a single slot in the
-// evaluation frame (slot_), which contains the value list.
-// The value list is stored in the resulting Module value, and it is also
-// used as the nonlocal list for the closures constructed from each
-// top-level function definition.
-//
-// The value list consists of one value for each named field exported by
-// the module, followed by "nonlocal values".
-//  1. The field value for a function definition is a Lambda. This is combined
-//     with the value list to construct a Closure value when the function
-//     is referenced (see Submodule_Function_Ref). We can't store the Closure
-//     directly in the value list because that would create a reference cycle,
-//     which would cause a storage leak, since we use reference counting.
-//  2. The field value for a non-function definition is a Thunk. The Thunk is
-//     evaluated and replaced by a Value on first reference, see Submodule_Ref.
-//     This allows definitions to be written in any order. The order of
-//     definition evaluation is determined at runtime by data dependencies, and
-//     can change from one evaluation to the next, affording flexibility which
-//     is also available in Haskell. Unlike Haskell, some recursive definitions
-//     will abort, reporting illegal recursion, instead of looping forever.
-//     For example, `{x=x;}`.
-//      * TODO: Once I support pattern matching definitions, like `(x,y)=f(a)`,
-//        then the slots for x and y are initialized with the same action thunk,
-//        which updates both slots.
-//  3. The value list may contain "nonlocal values", which correspond to
-//     bindings from the parent scope which are referenced by function
-//     definitions. These are proper values, not Thunks. During analysis,
-//     a lambda expression used in a submodule function definition calls
-//     env.lookup_function_nonlocal(id) to resolve nonlocal identifiers, and
-//     this adds new nonlocals to the submodule's value list as a side effect.
 struct Submodule_Expr : public Just_Expression
 {
     // maps public member names to slot #s in the value list.
     Shared<Module::Dictionary> dictionary_;
 
-    // location in the evaluation frame where the value list is stored.
-    size_t slot_;
-
-    // size and initial contents of the value list.
-    Shared<List> member_values_;
-    std::vector<Shared<const Operation>> nonlocal_exprs_;
-
-    // actions to execute, during construction
-    Shared<const List_Expr> elements_;
+    Bindings bindings_;
 
     Submodule_Expr(
         Shared<const Phrase> source,
@@ -574,18 +595,18 @@ struct Submodule_Expr : public Just_Expression
         size_t slot,
         Shared<List> member_values_,
         std::vector<Shared<const Operation>> nonlocal_exprs,
-        Shared<const List_Expr> elements)
+        Shared<const List_Expr> actions)
     :
         Just_Expression(source),
         dictionary_(std::move(dictionary)),
-        slot_(slot),
-        member_values_(std::move(member_values_)),
-        nonlocal_exprs_(std::move(nonlocal_exprs)),
-        elements_(std::move(elements))
+        bindings_(slot,
+            std::move(member_values_),
+            std::move(nonlocal_exprs),
+            std::move(actions))
     {}
 
     virtual Value eval(Frame&) const override;
-    Shared<Module> eval_submodule(System&, Frame&) const;
+    Shared<Module> eval_submodule(Frame&) const;
 };
 
 struct Let_Op : public Operation

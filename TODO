@@ -10,22 +10,26 @@ gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
 curv::Function represents a variadic function.
 
 ## Language Redesign
+Refactor Submodules: common block/module code -> Bindings and Bindings_Environ
+* Submodule_Expr and Block_Op both contain a 'Bindings' data member that
+  encapsulates the common code.
+* New_Bindings -> Bindings_Environ
+* create the action list inside of Bindings_Environ.
+
 Submodules (prereq for recursive blocks):
 * {x=1} -- no semicolon
 * action thunks, instead of value thunks.
 * (x,y) = f(a);
-* create the action list inside of New_Bindings.
+* only permit actions, not generators or expressions.
 
-Local blocks:
-* Detect if the block has recursive definitions.
+Blocks:
+* First, just implement recursive blocks (no recursion detection).
+  * Compile the definitions/actions into a submodule (1 slot containing value
+    list).
+  * Compile the body using references into the submodule.
+* Later, detect if the block has recursive definitions.
   If true, compile as a recursive block.
   Otherwise, compile as a non-recursive block (which supports GL).
-* First, just implement recursive blocks (no recursion detection).
-  * There is a single slot which points to a List of slots.
-    * This List contains binding slots and nonlocal slots.
-    * The binding slot for a function literal is initialized to a Lambda,
-      otherwise is initialized to a Thunk.
-    * Nonlocal slots are initialized to proper Values.
 
 item ::= disjunction `where` item -- alternate block syntax
 
