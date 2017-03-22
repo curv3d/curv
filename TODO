@@ -12,10 +12,6 @@ curv::Function represents a variadic function.
 ## Language Redesign
 Submodules (prereq for recursive blocks):
 * {x=1} -- no semicolon
-* only permit actions, not generators or expressions.
-  Bindings:  std::vector<Shared<const Operation>> actions_;
-    for (auto action : actions_)
-        action->exec(f);
 * action thunks, instead of value thunks.
 * (x,y) = f(a);
 

@@ -546,13 +546,13 @@ struct Bindings
     std::vector<Shared<const Operation>> nonlocal_exprs_;
 
     // actions to execute, during construction
-    Shared<const List_Expr> actions_;
+    std::vector<Shared<const Operation>> actions_;
 
     Bindings(
         size_t slot,
         Shared<const List> defn_values,
         std::vector<Shared<const Operation>> nonlocal_exprs,
-        Shared<const List_Expr> actions)
+        std::vector<Shared<const Operation>> actions)
     :
         slot_(slot),
         defn_values_(std::move(defn_values)),

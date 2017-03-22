@@ -538,7 +538,8 @@ Bindings::exec(Frame& f) const
     for (size_t i = ndefns; i < nvalues; ++i)
         values->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
     f[slot_] = {values};
-    actions_->eval(f);
+    for (auto action : actions_)
+        action->exec(f);
 }
 
 Shared<List>
@@ -552,7 +553,8 @@ Bindings::eval(Frame& f) const
     for (size_t i = ndefns; i < nvalues; ++i)
         values->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
     f[slot_] = {values};
-    actions_->eval(f);
+    for (auto action : actions_)
+        action->exec(f);
     for (size_t i = 0; i < ndefns; ++i)
         force(values->at(i), f);
     return values;

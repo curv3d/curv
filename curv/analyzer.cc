@@ -150,10 +150,8 @@ Bindings_Analyzer::analyze(Shared<const Phrase> source)
     bindings_.defn_values_ = defn_values;
 
     // analyze actions
-    Shared<List_Expr> actions = List_Expr::make(action_phrases_.size(), source);
     for (size_t i = 0; i < action_phrases_.size(); ++i)
-        (*actions)[i] = analyze_op(*action_phrases_[i], *this);
-    bindings_.actions_ = actions;
+        bindings_.actions_.push_back(analyze_op(*action_phrases_[i], *this));
 
     parent_->frame_maxslots_ = frame_maxslots_;
 }
