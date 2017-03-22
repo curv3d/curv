@@ -17,15 +17,15 @@ struct Environ
     /// evaluation-time call to `file`. It's used as an Exception Context,
     /// to add a stack trace to compile time errors.
     Frame* eval_frame_;
-    size_t frame_nslots;
-    size_t frame_maxslots;
+    size_t frame_nslots_;
+    size_t frame_maxslots_;
 
     Environ(Environ* p)
     :
         parent_(p),
         eval_frame_(p == nullptr ? nullptr : p->eval_frame_),
-        frame_nslots(0),
-        frame_maxslots(0)
+        frame_nslots_(0),
+        frame_maxslots_(0)
     {}
     Shared<Meaning> lookup(const Identifier& id);
     virtual Shared<Meaning> single_lookup(const Identifier&) = 0;
@@ -143,10 +143,10 @@ struct Bindings_Analyzer : public Environ
         action_phrases_(),
         bindings_()
     {
-        frame_nslots = parent.frame_nslots;
-        frame_maxslots = parent.frame_maxslots;
-        bindings_.slot_ = frame_nslots++;
-        frame_maxslots = std::max(frame_nslots, frame_maxslots);
+        frame_nslots_ = parent.frame_nslots_;
+        frame_maxslots_ = parent.frame_maxslots_;
+        bindings_.slot_ = frame_nslots_++;
+        frame_maxslots_ = std::max(frame_nslots_, frame_maxslots_);
     }
 
     bool is_recursive_function(size_t);

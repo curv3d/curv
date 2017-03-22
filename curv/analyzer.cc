@@ -155,7 +155,7 @@ Bindings_Analyzer::analyze(Shared<const Phrase> source)
         (*actions)[i] = analyze_op(*action_phrases_[i], *this);
     bindings_.actions_ = actions;
 
-    parent_->frame_maxslots = frame_maxslots;
+    parent_->frame_maxslots_ = frame_maxslots_;
 }
 
 void
@@ -296,8 +296,8 @@ Lambda_Phrase::analyze(Environ& env) const
         Arg_Environ(Environ* parent, Atom_Map<int>& names, bool recursive)
         : Environ(parent), names_(names), recursive_(recursive)
         {
-            frame_nslots = names.size();
-            frame_maxslots = names.size();
+            frame_nslots_ = names.size();
+            frame_maxslots_ = names.size();
         }
         virtual Shared<Meaning> single_lookup(const Identifier& id)
         {
@@ -331,7 +331,7 @@ Lambda_Phrase::analyze(Environ& env) const
         (*nonlocals)[i] = env2.nonlocal_exprs_[i];
 
     return make<Lambda_Expr>(
-        src, expr, nonlocals, params.size(), env2.frame_maxslots);
+        src, expr, nonlocals, params.size(), env2.frame_maxslots_);
 }
 
 Shared<Meaning>
@@ -467,7 +467,7 @@ Semicolon_Phrase::analyze(Environ& env) const
         bind.add_statement(args_[i].expr_);
     bind.analyze(share(*this));
     auto body = analyze_op(*args_.back().expr_, bind);
-    env.frame_maxslots = bind.frame_maxslots;
+    env.frame_maxslots_ = bind.frame_maxslots_;
     return make<Block_Op>(share(*this), std::move(bind.bindings_), std::move(body));
 }
 
@@ -607,7 +607,7 @@ Program_Phrase::analyze_module(Environ& env) const
     for (size_t i = 0; i < elements.size(); ++i)
         (*xelements)[i] = analyze_op(*elements[i], env2);
     module->elements_ = xelements;
-    module->frame_nslots_ = env2.frame_maxslots;
+    module->frame_nslots_ = env2.frame_maxslots_;
     return module;
 }
 
@@ -680,7 +680,7 @@ Let_Phrase::analyze(Environ& env) const
 {
     // `let` binds names in the parent scope, like `let` in Scheme.
 
-    int first_slot = env.frame_nslots;
+    int first_slot = env.frame_nslots_;
     std::vector<Shared<Operation>> exprs;
     Atom_Map<int> names;
 
@@ -700,10 +700,10 @@ Let_Phrase::analyze(Environ& env) const
         // This is subtle: it works because the expressions in `exprs`
         // are evaluated from first to last while populating the slots owned
         // by the `let` expression in the same order.
-        ++env.frame_nslots;
-        env.frame_maxslots = std::max(env.frame_maxslots, env.frame_nslots);
+        ++env.frame_nslots_;
+        env.frame_maxslots_ = std::max(env.frame_maxslots_, env.frame_nslots_);
     });
-    env.frame_nslots = first_slot;
+    env.frame_nslots_ = first_slot;
 
     struct Let_Environ : public Environ
     {
@@ -716,11 +716,11 @@ Let_Phrase::analyze(Environ& env) const
         : Environ(p), names(n)
         {
             if (p != nullptr) {
-                frame_nslots = p->frame_nslots;
-                frame_maxslots = p->frame_maxslots;
+                frame_nslots_ = p->frame_nslots_;
+                frame_maxslots_ = p->frame_maxslots_;
             }
-            frame_nslots += n.size();
-            frame_maxslots = std::max(frame_maxslots, frame_nslots);
+            frame_nslots_ += n.size();
+            frame_maxslots_ = std::max(frame_maxslots_, frame_nslots_);
         }
         virtual Shared<Meaning> single_lookup(const Identifier& id)
         {
@@ -733,8 +733,8 @@ Let_Phrase::analyze(Environ& env) const
     Let_Environ env2(&env, names);
 
     auto body = analyze_op(*body_, env2);
-    env.frame_maxslots = env2.frame_maxslots;
-    assert(env.frame_maxslots >= names.size());
+    env.frame_maxslots_ = env2.frame_maxslots_;
+    assert(env.frame_maxslots_ >= names.size());
 
     return make<Let_Op>(share(*this),
         first_slot, std::move(exprs), body);
@@ -755,7 +755,7 @@ For_Phrase::analyze(Environ& env) const
 
     auto list = analyze_op(*def->right_, env);
 
-    int slot = env.frame_nslots;
+    int slot = env.frame_nslots_;
     struct For_Environ : public Environ
     {
         Atom name_;
@@ -767,8 +767,8 @@ For_Phrase::analyze(Environ& env) const
             int slot)
         : Environ(&p), name_(name), slot_(slot)
         {
-            frame_nslots = p.frame_nslots + 1;
-            frame_maxslots = std::max(p.frame_maxslots, frame_nslots);
+            frame_nslots_ = p.frame_nslots_ + 1;
+            frame_maxslots_ = std::max(p.frame_maxslots_, frame_nslots_);
         }
         virtual Shared<Meaning> single_lookup(const Identifier& id)
         {
@@ -780,7 +780,7 @@ For_Phrase::analyze(Environ& env) const
     };
     For_Environ body_env(env, name, slot);
     auto body = analyze_op(*body_, body_env);
-    env.frame_maxslots = body_env.frame_maxslots;
+    env.frame_maxslots_ = body_env.frame_maxslots_;
 
     return make<For_Op>(share(*this), slot, list, body);
 }
