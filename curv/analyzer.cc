@@ -150,10 +150,12 @@ Bindings_Analyzer::analyze(Shared<const Phrase> source)
     bindings_.defn_values_ = defn_values;
 
     // analyze actions
-    auto actions = List_Expr::make(action_phrases_.size(), source);
+    Shared<List_Expr> actions = List_Expr::make(action_phrases_.size(), source);
     for (size_t i = 0; i < action_phrases_.size(); ++i)
         (*actions)[i] = analyze_op(*action_phrases_[i], *this);
-    bindings_.actions_ = share(*actions);
+    bindings_.actions_ = actions;
+
+    parent_->frame_maxslots = frame_maxslots;
 }
 
 void
@@ -460,92 +462,13 @@ Shared<Meaning>
 Semicolon_Phrase::analyze(Environ& env) const
 {
     // Blocks support mutually recursive bindings, like let-rec in Scheme.
-    //
-    // To evaluate: lazy evaluation of thunks, error on illegal recursion.
-    // These thunks do not get a fresh evaluation Frame, they use the Frame
-    // of the block expression. That's consistent with an optimizing compiler
-    // where block bindings are SSA values.
-    //
-    // To analyze: we assign a slot number to each of the block bindings,
-    // *then* we construct an Environ and analyze each definiens.
-    // This means no opportunity for optimization (eg, don't store a block binding
-    // in a slot or create a Thunk if it is a Constant). To optimize, we need
-    // another compiler pass or two, so that we do register allocation *after*
-    // analysis and constant folding is complete.
-
-    // phase 1: Create a dictionary of bindings.
-    struct Binding
-    {
-        int slot_;
-        Shared<Phrase> phrase_;
-        Binding(int slot, Shared<Phrase> phrase)
-        : slot_(slot), phrase_(phrase)
-        {}
-        Binding(){}
-    };
-    Atom_Map<Binding> bindings;
-    std::vector<Shared<const Phrase>> act_phrases;
-    int slot = env.frame_nslots;
-    for (size_t i = 0; i < args_.size() - 1; ++i) {
-        auto p = args_[i].expr_;
-        auto def = p->analyze_def(env);
-        if (def == nullptr)
-            act_phrases.push_back(p);
-        else {
-            Atom name = def->name_->atom_;
-            if (bindings.find(name) != bindings.end())
-                throw Exception(At_Phrase(*def->name_, env),
-                    stringify(name, ": multiply defined"));
-            bindings[name] = Binding{slot++, def->definiens_};
-        }
-    }
-
-    // phase 2: Construct an environment from the bindings dictionary
-    // and use it to perform semantic analysis.
-    struct Block_Environ : public Environ
-    {
-    protected:
-        const Atom_Map<Binding>& names;
-    public:
-        Block_Environ(
-            Environ* p,
-            const Atom_Map<Binding>& n)
-        : Environ(p), names(n)
-        {
-            if (p != nullptr) {
-                frame_nslots = p->frame_nslots;
-                frame_maxslots = p->frame_maxslots;
-            }
-            frame_nslots += n.size();
-            frame_maxslots = std::max(frame_maxslots, frame_nslots);
-        }
-        virtual Shared<Meaning> single_lookup(const Identifier& id)
-        {
-            auto p = names.find(id.atom_);
-            if (p != names.end())
-                return make<Letrec_Ref>(
-                    share(id), p->second.slot_);
-            return nullptr;
-        }
-    };
-    Block_Environ env2(&env, bindings);
-
-    int first_slot = env.frame_nslots;
-    std::vector<Value> values(bindings.size());
-    for (auto b : bindings) {
-        auto expr = analyze_op(*b.second.phrase_, env2);
-        values[b.second.slot_-first_slot] = {make<Thunk>(expr)};
-    }
-    std::vector<Shared<const Operation>> actions;
-    for (auto a : act_phrases) {
-        actions.push_back(analyze_op(*a, env2));
-    }
-    auto body = analyze_op(*args_.back().expr_, env2);
-    env.frame_maxslots = env2.frame_maxslots;
-    assert(env.frame_maxslots >= bindings.size());
-
-    return make<Block_Op>(share(*this),
-        first_slot, std::move(values), std::move(actions), body);
+    Bindings_Analyzer bind{env};
+    for (size_t i = 0; i < args_.size() - 1; ++i)
+        bind.add_statement(args_[i].expr_);
+    bind.analyze(share(*this));
+    auto body = analyze_op(*args_.back().expr_, bind);
+    env.frame_maxslots = bind.frame_maxslots;
+    return make<Block_Op>(share(*this), std::move(bind.bindings_), std::move(body));
 }
 
 Shared<Meaning>

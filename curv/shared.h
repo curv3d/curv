@@ -30,6 +30,7 @@ template<class T>
 inline Shared<T>
 share(T& obj)
 {
+    assert(obj.use_count > 0);
     return Shared<T>(&obj);
 }
 

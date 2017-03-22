@@ -527,6 +527,20 @@ Module_Expr::eval(Frame& f) const
     return {module};
 }
 
+void
+Bindings::exec(Frame& f) const
+{
+    size_t ndefns = defn_values_->size();
+    size_t nvalues = ndefns + nonlocal_exprs_.size();
+    Shared<List> values = List::make(nvalues);
+    for (size_t i = 0; i < ndefns; ++i)
+        values->at(i) = defn_values_->at(i);
+    for (size_t i = ndefns; i < nvalues; ++i)
+        values->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
+    f[slot_] = {values};
+    actions_->eval(f);
+}
+
 Shared<List>
 Bindings::eval(Frame& f) const
 {
@@ -599,28 +613,19 @@ Let_Op::exec(Frame& f) const
 Value
 Block_Op::eval(Frame& f) const
 {
-    for (size_t i = 0; i < values_.size(); ++i)
-        f[first_slot_ + i] = values_[i];
-    for (auto action : actions_)
-        action->exec(f);
+    bindings_.exec(f);
     return body_->eval(f);
 }
 void
 Block_Op::generate(Frame& f, List_Builder& lb) const
 {
-    for (size_t i = 0; i < values_.size(); ++i)
-        f[first_slot_ + i] = values_[i];
-    for (auto action : actions_)
-        action->exec(f);
+    bindings_.exec(f);
     body_->generate(f, lb);
 }
 void
 Block_Op::exec(Frame& f) const
 {
-    for (size_t i = 0; i < values_.size(); ++i)
-        f[first_slot_ + i] = values_[i];
-    for (auto action : actions_)
-        action->exec(f);
+    bindings_.exec(f);
     body_->exec(f);
 }
 

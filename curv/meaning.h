@@ -565,6 +565,7 @@ struct Bindings
     /// Initialize the Frame slot, execute the definitions and action list.
     /// Return the value list.
     Shared<List> eval(Frame&) const;
+    void exec(Frame&) const;
 };
 
 struct Module_Expr : public Just_Expression
@@ -631,22 +632,16 @@ struct Let_Op : public Operation
 
 struct Block_Op : public Operation
 {
-    size_t first_slot_;
-    std::vector<Value> values_;
-    std::vector<Shared<const Operation>> actions_;
+    Bindings bindings_;
     Shared<const Operation> body_;
 
     Block_Op(
         Shared<const Phrase> source,
-        size_t first_slot,
-        std::vector<Value> values,
-        std::vector<Shared<const Operation>> actions,
+        Bindings b,
         Shared<const Operation> body)
     :
         Operation(std::move(source)),
-        first_slot_(first_slot),
-        values_(std::move(values)),
-        actions_(std::move(actions)),
+        bindings_(std::move(b)),
         body_(std::move(body))
     {}
 

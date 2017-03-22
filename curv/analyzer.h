@@ -134,17 +134,19 @@ struct Bindings_Analyzer : public Environ
     Bindings bindings_;
 
     // First, construct the Bindings_Analyzer:
-    Bindings_Analyzer(Environ& env)
+    Bindings_Analyzer(Environ& parent)
     :
-        Environ(&env),
+        Environ(&parent),
         defn_dictionary_(make<Module::Dictionary>()),
         nonlocal_dictionary_(),
         defn_phrases_(),
         action_phrases_(),
         bindings_()
     {
-        bindings_.slot_ = env.frame_nslots++;
-        env.frame_maxslots = std::max(env.frame_nslots, env.frame_maxslots);
+        frame_nslots = parent.frame_nslots;
+        frame_maxslots = parent.frame_maxslots;
+        bindings_.slot_ = frame_nslots++;
+        frame_maxslots = std::max(frame_nslots, frame_maxslots);
     }
 
     bool is_recursive_function(size_t);

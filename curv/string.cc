@@ -19,7 +19,7 @@ String::make(const char* str, size_t len)
     memcpy(s->data_, str, len);
     s->data_[len] = '\0';
     s->size_ = len;
-    return share(*s);
+    return Shared<String>{s};
 }
 
 Shared<String>
