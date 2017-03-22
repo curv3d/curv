@@ -10,8 +10,7 @@ gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
 curv::Function represents a variadic function.
 
 ## Language Redesign
-Submodules (prereq for recursive blocks):
-* {x=1} -- no semicolon
+Bindings:
 * action thunks, instead of value thunks.
 * (x,y) = f(a);
 

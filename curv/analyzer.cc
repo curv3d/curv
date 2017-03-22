@@ -609,22 +609,6 @@ Program_Phrase::analyze_module(Environ& env) const
     return module;
 }
 
-Shared<Submodule_Expr>
-analyze_submodule(
-    Shared<const Phrase> source,
-    Shared<const Semicolon_Phrase> semis,
-    Environ& env)
-{
-    Bindings_Analyzer fields{env};
-    each_statement(*semis, [&](const Phrase& stmt)->void {
-        fields.add_statement(share(stmt));
-    });
-    fields.analyze(source);
-    return make<Submodule_Expr>(source,
-        std::move(fields.defn_dictionary_),
-        std::move(fields.bindings_));
-}
-
 /// In the grammar, a <commas> phrase is one or more constituent phrases
 /// separated by commas. This function iterates over each constituent phrase.
 static inline void
@@ -643,9 +627,28 @@ each_item(const Phrase& phrase, std::function<void(const Phrase&)> func)
 Shared<Meaning>
 Brace_Phrase::analyze(Environ& env) const
 {
-    if (auto semis = cast<Semicolon_Phrase>(body_))
-        return analyze_submodule(share(*this), semis, env);
-    auto record = make<Record_Expr>(share(*this));
+    auto source = share(*this);
+
+    // Analyze as a submodule, if body is a definition or semicolon phrase.
+    auto semis = cast<Semicolon_Phrase>(body_);
+    auto def = body_->analyze_def(env);
+    if (semis || def) {
+        Bindings_Analyzer fields{env};
+        if (semis) {
+            each_statement(*semis, [&](const Phrase& stmt)->void {
+                fields.add_statement(share(stmt));
+            });
+        } else {
+            fields.add_statement(body_);
+        }
+        fields.analyze(source);
+        return make<Submodule_Expr>(source,
+            std::move(fields.defn_dictionary_),
+            std::move(fields.bindings_));
+    }
+
+    // Otherwise, analyze as a record literal.
+    auto record = make<Record_Expr>(source);
     each_item(*body_, [&](const Phrase& item)->void {
         auto meaning = item.analyze(env);
         if (auto def = cast<Assoc>(meaning))
