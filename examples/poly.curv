@@ -11,70 +11,54 @@
 //   Also: crop(c)shape = intersection(shape, plane_segment c);
 
 // NOTE: could optimize by checking for xmin==-xmax & using abs(p'X).
-plane_segment(limits) =
-  let(xmin = if (defined(limits.xmin)) limits.xmin else -inf,
-      xmax = if (defined(limits.xmax)) limits.xmax else inf,
-      ymin = if (defined(limits.ymin)) limits.ymin else -inf,
-      ymax = if (defined(limits.ymax)) limits.ymax else inf)
-  intersection (
-    if (xmin > -inf) shape2d {
-        dist p : xmin - p'X,
-        bbox : [[xmin, -inf], [inf, inf]]
-    },
-    if (ymin > -inf) shape2d {
-        dist p : ymin - p'Y,
-        bbox : [[-inf, ymin], [inf, inf]]
-    },
-    if (xmax < inf) shape2d {
-        dist p : p'X - xmax,
-        bbox : [[-inf, -inf], [xmax, inf]]
-    },
-    if (ymax < inf) shape2d {
-        dist p : p'Y - ymax,
-        bbox : [[-inf, -inf], [inf, ymax]]
-    },
-  );
+plane_segment limits = (
+    xmin = if (defined(limits.xmin)) limits.xmin else -inf;
+    xmax = if (defined(limits.xmax)) limits.xmax else inf;
+    ymin = if (defined(limits.ymin)) limits.ymin else -inf;
+    ymax = if (defined(limits.ymax)) limits.ymax else inf;
+    intersection (
+        if (xmin > -inf) shape2d {
+            dist p : xmin - p'X,
+            bbox : [[xmin, -inf], [inf, inf]]
+        },
+        if (ymin > -inf) shape2d {
+            dist p : ymin - p'Y,
+            bbox : [[-inf, ymin], [inf, inf]]
+        },
+        if (xmax < inf) shape2d {
+            dist p : p'X - xmax,
+            bbox : [[-inf, -inf], [xmax, inf]]
+        },
+        if (ymax < inf) shape2d {
+            dist p : p'Y - ymax,
+            bbox : [[-inf, -inf], [inf, ymax]]
+        },
+    )
+);
 
 //union(colour(red) << circle(1), plane_segment{ymax:2});
 //distance_field plane_segment{xmin:-1,xmax:1,ymin:-2,ymax:2};
 
-rep_rotate(n) shape =
-  let(na = tau/4 - tau/(n*2))
-  let(rpr(f) p =
-          let(pa = phase(p))
-          let(mpa = mod(pa - na, tau/n) + na)
-          let(rota = -(pa - mpa))
-          let(rp = cmul(p, cis(rota)))
-          f rp)
-  shape2d {
-    dist : rpr(shape.dist),
-    colour : rpr(shape.colour),
-    bbox : everything.bbox
-  };
-
-regular_polygon(n) = rotate(tau/2) << rep_rotate(n) << plane_segment{ymax:1};
-
-//rep_rotate(5) << plane_segment{ymax:1};
-//regular_polygon(5);
-
-/* New_Syntax
 rep_rotate n shape = (
     na = tau/4 - tau/(n*2);
     rpr f p = (
-        pa = phase(p);
-        mpa = mod(pa - na, tau/n) + na;
-        rota = -(pa - mpa);
-        rp = cmul(p, cis(rota));
+        let (pa = phase p)
+        let (mpa = mod(pa - na, tau/n) + na)
+        let (rota = -(pa - mpa))
+        let (rp = cmul(p, cis rota))
         f rp
     );
     shape2d {
         dist : rpr(shape.dist),
         colour : rpr(shape.colour),
-        bbox : everything.bbox,
+        bbox : everything.bbox
     }
 );
-regular_polygon n = rotate (tau/2) << rep_rotate n << plane_segment {ymax:1};
-*/
+
+regular_polygon(n) = rotate(tau/2) << rep_rotate(n) << plane_segment{ymax:1};
+
+//rep_rotate(5) << plane_segment{ymax:1};
+//regular_polygon(5);
 
 old_rep_rotate(n) shape = shape2d {
     dist p :
@@ -114,32 +98,33 @@ cmul(z,w) = [z'RE*w'RE - z'IM*w'IM, z'IM*w'RE + z'RE*w'IM];
 
 //old_rep_rotate(5) translate(1,1) circle(1);
 
-half_plane(v) =
-    let(m = mag v,
-        ph = phase v)
-    rotate(ph) <<
-    shape2d {
+half_plane(v) = (
+    m = mag v;
+    ph = phase v;
+    rotate(ph) << shape2d {
         dist p : m - p'X,
         bbox : everything.bbox
-    };
+    }
+);
 
-rpoly(n) =
-    let(a=tau/(n*2))
-    rotate(a-tau/4) <<
-    old_rep_rotate n << complement << half_plane(cis a);
+rpoly n = (
+    a = tau/(n*2);
+    rotate(a-tau/4) << old_rep_rotate n << complement << half_plane(cis a)
+);
 
-rp(n) =
-  let(c = sqrt(1/(1 - sin(tau/(2*n)))))
-  union(
-    colour(red) << circle(.1),
-    regular_polygon(n),
-    colour(red) << plane_segment{xmax:-c,xmin:-c-.2},
-    colour(red) << plane_segment{xmin:c,xmax:c+.2},
-    //translate(.7,0) << colour(red) << circle(.1),
-  );
+rp n = (
+    c = sqrt(1/(1 - sin(tau/(2*n))));
+    union(
+        colour(red) << circle(.1),
+        regular_polygon(n),
+        colour(red) << plane_segment{xmax:-c,xmin:-c-.2},
+        colour(red) << plane_segment{xmin:c,xmax:c+.2},
+        //translate(.7,0) << colour(red) << circle(.1),
+    )
+);
 
 if(true) 
-union ([
+union (
   rp 3,
   /*
   translate(3,0) << rp 4,
@@ -154,5 +139,5 @@ union ([
   translate(3,8) << rotate(-tau/8) << rp 4,
   translate(6,8) << rotate(-(tau/4 - tau/10)) << rp 5,
  */
-]);
+);
 //complement << half_plane << cis(tau/10);
