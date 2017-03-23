@@ -163,6 +163,7 @@ parse_semicolons(Scanner& scanner)
 //  | 'if' primary item
 //  | 'if' primary item 'else' item
 //  | 'for' parens item
+//  | 'let' parens item
 Shared<Phrase>
 parse_item(Scanner& scanner)
 {
@@ -193,6 +194,16 @@ parse_item(Scanner& scanner)
                 "for: malformed argument");
         auto body = parse_item(scanner);
         return make<For_Phrase>(tok, args, body);
+      }
+    case Token::k_let:
+      {
+        auto p = parse_primary(scanner, "argument following 'let'");
+        auto args = cast<Paren_Phrase>(p);
+        if (args == nullptr)
+            throw Exception(At_Phrase(*p, scanner.eval_frame_),
+                "let: malformed argument");
+        auto body = parse_item(scanner);
+        return make<Let_Phrase>(tok, args, body);
       }
     default:
         break;
@@ -425,10 +436,9 @@ parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
     return make<Ph>(tok, body, tok2);
 }
 
-// primary : numeral | identifier | string | parens | list | braces
-//  | 'let' parens item
+// primary : numeral | identifier | string | parens | brackets | braces
 // parens : ( commas )
-// list : [ commas ]
+// brackets : [ commas ]
 // braces : { commas }
 //
 // If `what` is nullptr, then we are parsing an optional primary,
@@ -446,16 +456,6 @@ parse_primary(Scanner& scanner, const char* what)
         return make<Identifier>(scanner.script_, tok);
     case Token::k_string:
         return make<String_Phrase>(scanner.script_, tok);
-    case Token::k_let:
-      {
-        auto p = parse_primary(scanner, "argument following 'let'");
-        auto args = cast<Paren_Phrase>(p);
-        if (args == nullptr)
-            throw Exception(At_Phrase(*p, scanner.eval_frame_),
-                "let: malformed argument");
-        auto body = parse_item(scanner);
-        return make<Let_Phrase>(tok, args, body);
-      }
     case Token::k_lparen:
         return parse_delimited<Paren_Phrase>(tok, Token::k_rparen, scanner);
     case Token::k_lbracket:
