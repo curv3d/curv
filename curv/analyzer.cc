@@ -627,36 +627,46 @@ each_item(const Phrase& phrase, std::function<void(const Phrase&)> func)
 Shared<Meaning>
 Brace_Phrase::analyze(Environ& env) const
 {
+    // A brace phrase is a comma separated list of actions and either
+    // definitions or assocs/field generators.
+    // We do a pre-analysis scan looking for definitions. If we don't find any,
+    // then we analyze as a record, otherwise we analyze as a module.
+
+    bool is_module = false;
+    if (isa<Empty_Phrase>(body_)) {
+        ;
+    } else if (auto commas = cast<Comma_Phrase>(body_)) {
+        for (auto& item : commas->args_)
+            if (item.expr_->analyze_def(env)) {
+                is_module = true;
+                break;
+            }
+    } else {
+        is_module = (body_->analyze_def(env) != nullptr);
+    }
+
     auto source = share(*this);
 
-    // Analyze as a submodule, if body is a definition or semicolon phrase.
-    auto semis = cast<Semicolon_Phrase>(body_);
-    auto def = body_->analyze_def(env);
-    if (semis || def) {
+    if (is_module) {
         Bindings_Analyzer fields{env};
-        if (semis) {
-            each_statement(*semis, [&](const Phrase& stmt)->void {
-                fields.add_statement(share(stmt));
-            });
-        } else {
-            fields.add_statement(body_);
-        }
+        each_item(*body_, [&](const Phrase& stmt)->void {
+            fields.add_statement(share(stmt));
+        });
         fields.analyze(source);
         return make<Submodule_Expr>(source,
             std::move(fields.defn_dictionary_),
             std::move(fields.bindings_));
+    } else {
+        auto record = make<Record_Expr>(source);
+        each_item(*body_, [&](const Phrase& item)->void {
+            auto meaning = item.analyze(env);
+            if (auto def = cast<Assoc>(meaning))
+                analyze_field(*def, record->fields_, env);
+            else
+                throw Exception(At_Phrase(item, env), "not an association");
+        });
+        return record;
     }
-
-    // Otherwise, analyze as a record literal.
-    auto record = make<Record_Expr>(source);
-    each_item(*body_, [&](const Phrase& item)->void {
-        auto meaning = item.analyze(env);
-        if (auto def = cast<Assoc>(meaning))
-            analyze_field(*def, record->fields_, env);
-        else
-            throw Exception(At_Phrase(item, env), "not an association");
-    });
-    return record;
 }
 
 Shared<Meaning>

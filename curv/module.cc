@@ -11,13 +11,12 @@ void
 Module::print(std::ostream& out) const
 {
     out << "{";
-    for (auto f : *this) {
-        out << f.first << "=";
-        f.second.print(out);
-        out << ";";
-    }
-    for (auto e : *elements_) {
-        out << e << ";";
+    bool first = true;
+    for (auto i : *this) {
+        if (!first) out << ",";
+        first = false;
+        out << i.first << "=";
+        i.second.print(out);
     }
     out << "}";
 }

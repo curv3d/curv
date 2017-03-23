@@ -11,9 +11,6 @@ curv::Function represents a variadic function.
 
 ## Language Redesign
 Submodules:
-* The separator is comma, not semicolon.
-  If any of the items in {i1,i2,...} are definitions, then the remaining items
-  must be actions (not assocs).
 * Extend shape2d to take a module argument.
 
 Bindings:

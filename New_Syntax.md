@@ -41,6 +41,16 @@ for me that would be error prone and confusing.
 
 expr where (def1,def2,...) -- uses commas, not semicolons.
 
+Okay, {x=1, y=2} is reasonable module syntax, since it couldn't mean anything
+else, and looks good for short module expressions.
+
+Now, should top-level semicolon phrases be legal in braces?
+Eg, {x=1; y=2; z:x+y} is a record, exporting only z (not x and y).
+No, because {x=1; y=2; ...} is confusingly similar to {x=1, y=2, ...}.
+The former is better written as {(x=1; y=2; z:x+y)}.
+*Maybe* we allow a choice of , or ; to separate module statements?
+Not yet, though. That creates an inconsistency with paren phrases.
+
 ## Language Redesign
 Simple, elegant, orthogonal, powerful, looks more like a conventional language.
 
