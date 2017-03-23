@@ -264,13 +264,18 @@ struct Submodule_Function_Ref : public Just_Expression
     int slot_;
     int index_;
 
+    /// A prefix of the value list, of length `nlazy_`, may contain thunks
+    /// which can only be evaluated in the caller's frame.
+    int nlazy_;
+
     Submodule_Function_Ref(
         Shared<const Phrase> source,
-        int slot, int index)
+        int slot, int index, int nlazy)
     :
         Just_Expression(std::move(source)),
         slot_(slot),
-        index_(index)
+        index_(index),
+        nlazy_(nlazy)
     {}
 
     virtual Value eval(Frame&) const override;

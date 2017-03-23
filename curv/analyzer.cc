@@ -97,8 +97,8 @@ Bindings_Analyzer::single_lookup(const Identifier& id)
     auto b = defn_dictionary_->find(id.atom_);
     if (b != defn_dictionary_->end()) {
         if (is_recursive_function(b->second))
-            return make<Submodule_Function_Ref>(
-                share(id), bindings_.slot_, b->second);
+            return make<Submodule_Function_Ref>(share(id),
+                bindings_.slot_, b->second, defn_dictionary_->size());
         else
             return make<Submodule_Ref>(
                 share(id), bindings_.slot_, b->second);

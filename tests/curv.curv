@@ -54,3 +54,10 @@ assert(
     );
     f 3.25 == -.75
 );
+assert(
+    n=4; s=sqrt; (
+        na = (n+5);
+        rpr f = f na;
+        rpr s
+    ) == 3
+);

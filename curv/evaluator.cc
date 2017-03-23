@@ -129,6 +129,8 @@ Submodule_Function_Ref::eval(Frame& f) const
 {
     List& list = (List&)f[slot_].get_ref_unsafe();
     assert(list.type_ == Ref_Value::ty_list);
+    for (int i = 0; i < nlazy_; ++i)
+        force(list[i], f);
     Lambda& lambda = (Lambda&) list[index_].get_ref_unsafe();
     assert(lambda.type_ == Ref_Value::ty_lambda);
     return {make<Closure>(lambda, list)};
