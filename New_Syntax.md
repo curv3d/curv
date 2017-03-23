@@ -5,6 +5,42 @@ Goals:
 * not overly cryptic or clumsy
 * powerful enough: not missing essential features
 
+## Feedback on Language Redesign (22 Mar 2017)
+Comma has lower precedence than semicolon, because there is no longer a
+comma operator. Instead, comma is part of the syntax of (...), [...] and {...}.
+
+f(
+  x=1; y=2;
+  x+y
+);
+works.
+
+If there is a comma separated list, the block attaches to only one of the items.
+This applies to (...) and [...].
+
+But braces are different, and that feels inconsistent.
+  {x=1; y=2; z=3} is a module
+  {x:1, y:2, z:3} is a record
+I might want to add "field generators" to record literals, to make record
+comprehensions. The ... operator is quite useful. But then we'd expect this:
+  {x=1; y=2; z:x+y} is a record, exporting only z (not x and y)
+This is confusingly similar to a module that exports x and y.
+
+It would be more consistent for module members to be comma separated.
+Commas always separate members of a collection.
+Semicolons always introduce local variables in a block.
+  {x=1, y=2, z=3} is a module
+  {x:1, y:2, z:3} is a record
+
+This syntax suggests the possibility of {x=1, y:2}, but I won't pursue that.
+If any of the items in {i1,i2,...} are definitions, then the remaining items
+must be actions.
+
+I'm not going to permit a definition to be the body of a block, because
+for me that would be error prone and confusing.
+
+expr where (def1,def2,...) -- uses commas, not semicolons.
+
 ## Language Redesign
 Simple, elegant, orthogonal, powerful, looks more like a conventional language.
 

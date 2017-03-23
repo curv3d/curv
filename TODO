@@ -10,6 +10,12 @@ gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
 curv::Function represents a variadic function.
 
 ## Language Redesign
+Submodules:
+* The separator is comma, not semicolon.
+  If any of the items in {i1,i2,...} are definitions, then the remaining items
+  must be actions (not assocs).
+* Extend shape2d to take a module argument.
+
 Bindings:
 * action thunks, instead of value thunks.
 * (x,y) = f(a);
@@ -23,6 +29,7 @@ Blocks:
       Use a simple recursion detector that aborts on recursion.
 
 item ::= disjunction `where` item -- alternate block syntax
+`expr where (def1,def2,...)` -- uses commas, not semicolons.
 
 * recursive function definitions
   * We could classify each binding as recursive or non-recursive.
@@ -185,6 +192,10 @@ ImplicitCAD:
   * <actual argument to 'file'>: file can't be opened
   * In At_Arg(), remove superfluous parens from arg expression
     so that argument location is more precise.
+* debugger
+  Create an interactive debugger, action to jump into the debugger,
+  debug command to dump a specified frame, showing exact contents of local
+  and non-local slots without evaluation.
 
 # Older Stuff
 
