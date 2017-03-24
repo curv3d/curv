@@ -321,7 +321,7 @@ struct File_Function : public Polyadic_Function
         At_Arg ctx0(f);
         String& path {arg_to_string(f[0], ctx0)};
         auto file = make<File_Script>(share(path), ctx0);
-        return {eval_script(*file, f.system, &f)};
+        return {eval_module_script(*file, f.system, &f)};
     }
 };
 

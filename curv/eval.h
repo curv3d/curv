@@ -16,12 +16,12 @@
 namespace curv {
 
 Shared<Module>
-eval_script(const Script&, const Namespace&, System&, Frame* f = nullptr);
+eval_module_script(const Script&, const Namespace&, System&, Frame* f = nullptr);
 
 inline Shared<Module>
-eval_script(const Script& scr, System& sys, Frame* f = nullptr)
+eval_module_script(const Script& scr, System& sys, Frame* f = nullptr)
 {
-    return eval_script(scr, sys.std_namespace(), sys, f);
+    return eval_module_script(scr, sys.std_namespace(), sys, f);
 }
 
 } // namespace curv

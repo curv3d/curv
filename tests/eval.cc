@@ -57,7 +57,7 @@ struct Evaluator
             console.str("");
             console.clear(); // Clear state flags.
             Shared<Module> module{
-                eval_script(*script_, builtin_namespace(), make_system())};
+                eval_module_script(*script_, builtin_namespace(), make_system())};
 
             String_Builder buf;
             bool first = true;

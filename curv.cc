@@ -103,7 +103,7 @@ interactive_mode(const char* argv0)
         }
         auto script = curv::make<CString_Script>("", line);
         try {
-            curv::Shared<curv::Module> module{eval_script(*script, names, sys)};
+            curv::Shared<curv::Module> module{eval_module_script(*script, names, sys)};
             for (auto f : *module)
                 names[f.first] = curv::make<curv::Builtin_Value>(f.second);
             for (auto e : *module->elements())
@@ -304,7 +304,7 @@ main(int argc, char** argv)
     try {
         auto file = curv::make<curv::File_Script>(
             curv::make_string(filename), curv::Context{});
-        auto module = eval_script(*file, sys);
+        auto module = eval_module_script(*file, sys);
         exporter(*module, std::cout);
     } catch (curv::Exception& e) {
         std::cerr << "ERROR: " << e << "\n";

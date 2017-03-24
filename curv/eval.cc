@@ -11,7 +11,7 @@
 
 namespace curv {
 
-auto eval_script(
+auto eval_module_script(
     const Script& script, const Namespace& names,
     System& sys, Frame* f)
 -> Shared<Module>
