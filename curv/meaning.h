@@ -34,7 +34,7 @@ struct Meaning : public aux::Shared_Base
     Meaning(Shared<const Phrase> source) : source_(std::move(source)) {}
 
     // These functions are called during semantic analysis.
-    virtual Shared<Operation> to_operation(Environ&);
+    virtual Shared<Operation> to_operation(Frame*);
     virtual Shared<Meaning> call(const Call_Phrase&, Environ&);
 };
 
@@ -80,7 +80,7 @@ struct Operation : public Meaning
     using Meaning::Meaning;
 
     // These functions are called during semantic analysis.
-    virtual Shared<Operation> to_operation(Environ&);
+    virtual Shared<Operation> to_operation(Frame*);
     virtual Shared<Meaning> call(const Call_Phrase&, Environ&);
 
     // These functions are called during evaluation.

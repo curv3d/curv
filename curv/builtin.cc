@@ -321,7 +321,9 @@ struct File_Function : public Polyadic_Function
         At_Arg ctx0(f);
         String& path {arg_to_string(f[0], ctx0)};
         auto file = make<File_Script>(share(path), ctx0);
-        return eval_script(*file, f.system, &f);
+        Eval ev{*file, f.system};
+        ev.compile(nullptr, &f);
+        return ev.eval();
     }
 };
 

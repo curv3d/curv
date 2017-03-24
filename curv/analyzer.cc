@@ -18,13 +18,13 @@ namespace curv
 Shared<Operation>
 analyze_op(const Phrase& ph, Environ& env)
 {
-    return ph.analyze(env)->to_operation(env);
+    return ph.analyze(env)->to_operation(env.eval_frame_);
 }
 
 Shared<Operation>
-Meaning::to_operation(Environ& env)
+Meaning::to_operation(Frame* f)
 {
-    throw Exception(At_Phrase(*source_, env), "not an operation");
+    throw Exception(At_Phrase(*source_, f), "not an operation");
 }
 
 Shared<Meaning>
@@ -34,7 +34,7 @@ Meaning::call(const Call_Phrase&, Environ& env)
 }
 
 Shared<Operation>
-Operation::to_operation(Environ&)
+Operation::to_operation(Frame*)
 {
     return share(*this);
 }

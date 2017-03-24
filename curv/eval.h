@@ -24,14 +24,30 @@ eval_module_script(const Script& scr, System& sys, Frame* f = nullptr)
     return eval_module_script(scr, sys.std_namespace(), sys, f);
 }
 
-Value
-eval_script(const Script&, const Namespace&, System&, Frame* f = nullptr);
-
-inline Value
-eval_script(const Script& scr, System& sys, Frame* f = nullptr)
+struct Eval
 {
-    return eval_script(scr, sys.std_namespace(), sys, f);
-}
+    const Script& script_;
+    System& system_;
+    const Namespace* names_ = nullptr;
+    Frame *parent_frame_ = nullptr;
+    Shared<const Phrase> phrase_ = nullptr;
+    Shared<Meaning> meaning_ = nullptr;
+    std::unique_ptr<Frame> frame_ = nullptr;
+
+    Eval(
+        const Script& script,
+        System& system)
+    :
+        script_(script),
+        system_(system)
+    {}
+
+    void compile(
+        const Namespace* names = nullptr,
+        Frame *parent_frame = nullptr);
+
+    Value eval();
+};
 
 } // namespace curv
 #endif // header guard

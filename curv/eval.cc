@@ -24,18 +24,30 @@ eval_module_script(
     return value;
 }
 
-Value
-eval_script(
-    const Script& script, const Namespace& names,
-    System& sys, Frame* f)
+void
+Eval::compile(const Namespace* names, Frame* parent_frame)
 {
-    Scanner scanner{script, f};
-    auto phrase = parse_program(scanner);
-    Builtin_Environ env{names, f};
-    auto expr = analyze_op(*phrase, env);
-    std::unique_ptr<Frame> frame
-        {Frame::make(env.frame_maxslots_, sys, f, nullptr, nullptr)};
-    return expr->eval(*frame);
+    if (names == nullptr)
+        names_ = &system_.std_namespace();
+    else
+        names_ = names;
+    parent_frame_ = parent_frame;
+
+    Scanner scanner{script_, parent_frame};
+    phrase_ = parse_program(scanner);
+
+    Builtin_Environ env{*names_, parent_frame};
+    meaning_ = phrase_->analyze(env);
+
+    frame_ = {Frame::make(env.frame_maxslots_,
+        system_, parent_frame, nullptr, nullptr)};
+}
+
+Value
+Eval::eval()
+{
+    auto expr = meaning_->to_operation(parent_frame_);
+    return expr->eval(*frame_);
 }
 
 } // namespace curv
