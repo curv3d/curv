@@ -24,5 +24,14 @@ eval_module_script(const Script& scr, System& sys, Frame* f = nullptr)
     return eval_module_script(scr, sys.std_namespace(), sys, f);
 }
 
+Value
+eval_script(const Script&, const Namespace&, System&, Frame* f = nullptr);
+
+inline Value
+eval_script(const Script& scr, System& sys, Frame* f = nullptr)
+{
+    return eval_script(scr, sys.std_namespace(), sys, f);
+}
+
 } // namespace curv
 #endif // header guard

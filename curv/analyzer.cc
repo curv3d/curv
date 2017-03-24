@@ -561,7 +561,7 @@ analyze_field(
 Shared<Meaning>
 Program_Phrase::analyze(Environ& env) const
 {
-    return analyze_module(env);
+    return analyze_op(*body_, env);
 }
 
 /// In the grammar, a <semicolons> phrase is one or more constituent phrases
@@ -624,6 +624,13 @@ each_item(const Phrase& phrase, std::function<void(const Phrase&)> func)
     }
 }
 
+bool
+is_colon_phrase(const Phrase& ph)
+{
+    auto b = dynamic_cast<const Binary_Phrase*>(&ph);
+    return b != nullptr && b->op_.kind == Token::k_colon;
+}
+
 Shared<Meaning>
 Brace_Phrase::analyze(Environ& env) const
 {
@@ -632,6 +639,7 @@ Brace_Phrase::analyze(Environ& env) const
     // We do a pre-analysis scan looking for definitions. If we don't find any,
     // then we analyze as a record, otherwise we analyze as a module.
 
+#if 0
     bool is_module = false;
     if (isa<Empty_Phrase>(body_)) {
         ;
@@ -644,6 +652,22 @@ Brace_Phrase::analyze(Environ& env) const
     } else {
         is_module = (body_->analyze_def(env) != nullptr);
     }
+#else
+    bool is_module;
+    if (isa<Empty_Phrase>(body_)) {
+        is_module = false;
+    } else if (auto commas = cast<Comma_Phrase>(body_)) {
+        is_module = true;
+        for (auto& item : commas->args_) {
+            if (is_colon_phrase(*item.expr_)) {
+                is_module = false;
+                break;
+            }
+        }
+    } else {
+        is_module = !is_colon_phrase(*body_);
+    }
+#endif
 
     auto source = share(*this);
 
@@ -784,8 +808,7 @@ For_Phrase::analyze(Environ& env) const
         virtual Shared<Meaning> single_lookup(const Identifier& id)
         {
             if (id.atom_ == name_)
-                return make<Letrec_Ref>(
-                    share(id), slot_);
+                return make<Letrec_Ref>(share(id), slot_);
             return nullptr;
         }
     };

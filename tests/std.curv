@@ -1,3 +1,4 @@
 // proposed standard library
-
-concat(vv) = [for (v = vv) for (i = v) i];
+{
+concat(vv) = [for (v = vv) for (i = v) i],
+}
