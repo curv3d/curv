@@ -5,7 +5,64 @@ Goals:
 * not overly cryptic or clumsy
 * powerful enough: not missing essential features
 
-## Feedback on Language Redesign (22 Mar 2017)
+## Submodule_Function_Ref
+is broken.
+
+It iterates over the values list, calling force on each slot.
+What problem does this solve? The thunks in the values list can't correctly
+be evaluated both inside a submodule member function, and outside.
+The slot containing the value list is different in these two contexts.
+
+But, if a definition calls a function in that module, which calls another,
+then you may have an infinite loop.
+* Set a flag on the values list during the force loop, and don't reenter the
+  loop if one is running. Fixes my immediate problem with std.lib.
+
+I don't think this works. Instead, thunks in the value list need to work
+in any context from which they are called. The value list already captures
+non-locals from the submodule's surrounding context.
+* Create a new stack frame for the submodule. Its nonlocals list is the
+  value list. Force all of the thunks in the value list while this frame is
+  still active.
+* Or, create a stack frame when executing a thunk. <= THIS
+
+Initial plan (simple design first):
+* All members of a Bindings are thunked.
+* add Thunk::nslots_
+* force_ref() creates a Frame for evaluating the thunk.
+* force() is no longer needed.
+* All definientia are analyzed in an environment where the values list is the
+  nonlocals register and frame_nslots_ is initially 0.
+
+Later, do a dependency analysis of a Bindings set, and use strict evaluation
+for bindings where it will work.
+
+## Feedback: command line syntax
+If we are switching to value scripts (a script is an expression),
+then what's the syntax of a command line (which can be more than just an
+expression)?
+
+A command line is an arbitrary phrase, which can be:
+* definition
+* expression
+* action
+  * empty -- Empty_Phrase -- Null_Action
+* generator
+* field generator
+* block: def1;def2;phrase
+
+How to compile a comma phrase:
+* In parens, a comma phrase contains generators, actions, exprs.
+* In brackets, ditto.
+* In braces, a comma phrase contains actions and either definitions or
+  field generators, but not both.
+* It's possible to compile a comma phrase independent of its context,
+  producing a compound action, a compound generator, a compound definition
+  with recursive scope, or a compound field generator.
+* We could allow top level comma phrases in a command line, with the above
+  interpretation. Not a requirement, though.
+
+## Feedback: use {x=1, y=2} (commas not semicolons)
 Comma has lower precedence than semicolon, because there is no longer a
 comma operator. Instead, comma is part of the syntax of (...), [...] and {...}.
 

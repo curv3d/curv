@@ -10,12 +10,26 @@ gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
 curv::Function represents a variadic function.
 
 ## Language Redesign
+Bindings (correctness problem):
+* All members of a Bindings are thunked.
+* add Thunk::nslots_
+* force_ref() creates a Frame for evaluating the thunk.
+* force() is no longer needed.
+* All definientia are analyzed in an environment where the values list is the
+  nonlocals register and frame_nslots_ is initially 0.
+
+Migrate to Value Scripts:
+* 'curv filename'
+
 Submodules:
 * Extend shape2d to take a module argument.
 
-Bindings:
+Patterns (Bindings and Lambda):
 * action thunks, instead of value thunks.
 * (x,y) = f(a);
+* {x,y}=... is pattern matching on a record. Extra fields on right -> error.
+* Record patterns can be used as function parameters.
+* Default values in record patterns, `{x=0,y=1} = ...`
 
 Blocks:
 * Add GL support. How?
@@ -52,22 +66,11 @@ Local Definitions and Scripts.
 * `def1;def2;phrase` is a block, with recursive scoping:
   * `(def1;def2;body)`: local definitions in a subphrase.
   * top level script: def1;def2;expr -- Value scripts.
-* `{def1;def2;}` -- module: recursive scoping, no elements
-  * `{}` is the empty record and the empty module.
 * Sequential assignment: var x := 0; x := x + 1; ...
-* `expr where definition`
-
-Pattern matching definitions.
-* (x,y) = (a,b);
-* {x,y} = {x:10,y:20};
 
 Generator is coerced to a list in expression context. For ease of use:
 * union (for (i=a) shape(i)) -- no need for trailing , or extra [ ]
 * 1..10 is a generator. [1..3, 5, 8] and for (i=1..10) both work.
-
-Records.
-* {a: 10, f x: x+1} is a record. No = because no scope.
-* f{x,y}=... is pattern matching on a record. Extra fields on right -> error.
 
 Polymorphic list/record/module operations:
 * `dom s` is list of indexes of s
