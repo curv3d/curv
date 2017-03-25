@@ -18,8 +18,11 @@ System_Impl::System_Impl(
     std_namespace_ = builtin_namespace();
     if (stdlib_path != nullptr) {
         auto file = make<File_Script>(std::move(stdlib_path), Context{});
-        Shared<Module> stdlib = eval_module_script(*file, builtin_namespace(), *this);
-        for (auto b : *stdlib)
+        Eval ev{*file, *this};
+        ev.compile();
+        auto stdlib = ev.eval();
+        auto m = stdlib.to<Module>(At_Phrase(*ev.phrase_, nullptr));
+        for (auto b : *m)
             std_namespace_[b.first] = make<Builtin_Value>(b.second);
     }
 }

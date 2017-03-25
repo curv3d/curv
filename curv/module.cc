@@ -7,6 +7,8 @@
 
 namespace curv {
 
+const char Module::name[] = "module";
+
 void
 Module::print(std::ostream& out) const
 {

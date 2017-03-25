@@ -75,7 +75,7 @@ Value
 Submodule_Ref::eval(Frame& f) const
 {
     List& list = (List&)f[slot_].get_ref_unsafe();
-    assert(list.type_ == Ref_Value::ty_list);
+    //assert(list.type_ == Ref_Value::ty_list);
     return force_ref(list[index_], *source_, f);
 }
 
@@ -128,9 +128,14 @@ Value
 Submodule_Function_Ref::eval(Frame& f) const
 {
     List& list = (List&)f[slot_].get_ref_unsafe();
-    assert(list.type_ == Ref_Value::ty_list);
-    for (int i = 0; i < nlazy_; ++i)
-        force(list[i], f);
+    if (list.type_ == Ref_Value::ty_list) {
+        // Set a flag on the values list so we don't re-enter this loop
+        // while it is still running.
+        list.type_ = (uint32_t)(-1);
+        for (int i = 0; i < nlazy_; ++i)
+            force(list[i], f);
+        list.type_ = Ref_Value::ty_list;
+    }
     Lambda& lambda = (Lambda&) list[index_].get_ref_unsafe();
     assert(lambda.type_ == Ref_Value::ty_lambda);
     return {make<Closure>(lambda, list)};

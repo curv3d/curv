@@ -119,6 +119,8 @@ struct Module : public Ref_Value
     virtual void print(std::ostream&) const override;
 
     virtual Value getfield(Atom) const override;
+
+    static const char name[];
 };
 
 } // namespace curv
