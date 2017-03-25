@@ -8,6 +8,7 @@
 #include <aux/tail_array.h>
 #include <curv/list.h>
 #include <curv/value.h>
+#include <curv/slot.h>
 
 namespace curv {
 
@@ -56,10 +57,10 @@ struct Frame_Base
     // Tail array, containing the slots used for local bindings:
     // function arguments, block bindings and other local, temporary values.
     using value_type = Value;
-    size_t size_;
+    slot_t size_;
     value_type array_[0];
 
-    Value& operator[](size_t i)
+    Value& operator[](slot_t i)
     {
         assert(i < size_);
         return array_[i];

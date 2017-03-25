@@ -17,8 +17,8 @@ struct Environ
     /// evaluation-time call to `file`. It's used as an Exception Context,
     /// to add a stack trace to compile time errors.
     Frame* eval_frame_;
-    size_t frame_nslots_;
-    size_t frame_maxslots_;
+    slot_t frame_nslots_;
+    slot_t frame_maxslots_;
 
     Environ(Environ* p)
     :
@@ -80,7 +80,7 @@ struct Definition : public aux::Shared_Base
 /// TODO: Deprecated, replaced by Bindings_Analyzer.
 struct Old_Bindings
 {
-    size_t cur_position_;
+    slot_t cur_position_;
     Shared<Module::Dictionary> dictionary_;
     std::vector<Shared<const Phrase>> slot_phrases_;
 
@@ -92,7 +92,7 @@ struct Old_Bindings
         slot_phrases_()
     {}
 
-    bool is_recursive_function(size_t);
+    bool is_recursive_function(slot_t);
 
     // Second, add some bindings:
     void add_definition(Shared<Definition> def, curv::Environ& env);
@@ -149,7 +149,7 @@ struct Bindings_Analyzer : public Environ
         frame_maxslots_ = std::max(frame_nslots_, frame_maxslots_);
     }
 
-    bool is_recursive_function(size_t);
+    bool is_recursive_function(slot_t);
     virtual Shared<Meaning> single_lookup(const Identifier&);
     virtual Shared<Meaning> lookup_function_nonlocal(const Identifier& id);
 

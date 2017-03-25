@@ -15,9 +15,9 @@ namespace curv {
 /// A function value.
 struct Function : public Ref_Value
 {
-    unsigned nslots_; // size of call frame
+    slot_t nslots_; // size of call frame
 
-    Function(unsigned nslots)
+    Function(slot_t nslots)
     :
         Ref_Value(ty_function),
         nslots_(nslots)
@@ -69,11 +69,11 @@ struct Lambda : public Ref_Value
 {
     Shared<const Operation> expr_;
     unsigned nargs_;
-    unsigned nslots_; // size of call frame
+    slot_t nslots_; // size of call frame
 
     Lambda(
         Shared<const Operation> expr,
-        unsigned nargs, unsigned nslots)
+        unsigned nargs, slot_t nslots)
     :
         Ref_Value(ty_lambda),
         expr_(std::move(expr)),
@@ -95,7 +95,7 @@ struct Closure : public Polyadic_Function
     Closure(
         Shared<const Operation> expr,
         Shared<List> nonlocal,
-        unsigned nargs, unsigned nslots)
+        unsigned nargs, slot_t nslots)
     :
         Polyadic_Function(nargs, nslots),
         expr_(std::move(expr)),

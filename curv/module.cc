@@ -24,7 +24,7 @@ Module::print(std::ostream& out) const
 }
 
 Value
-Module::get(size_t i) const
+Module::get(slot_t i) const
 {
     Value val = (*slots_)[i];
     if (val.is_ref()) {

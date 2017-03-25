@@ -9,6 +9,7 @@
 #include <curv/atom.h>
 #include <curv/shared.h>
 #include <curv/list.h>
+#include <curv/slot.h>
 
 namespace curv {
 
@@ -29,9 +30,9 @@ struct Module : public Ref_Value
     /// TODO: This might be more efficient as a sorted array of field names.
     /// The index of the field name would be interpreted as the slot index.
     /// (Reimplementing `Atom_Map` using hash trees is another proposal.)
-    struct Dictionary : public aux::Shared_Base, public Atom_Map<size_t>
+    struct Dictionary : public aux::Shared_Base, public Atom_Map<slot_t>
     {
-        Dictionary() : aux::Shared_Base(), Atom_Map<size_t>() {}
+        Dictionary() : aux::Shared_Base(), Atom_Map<slot_t>() {}
     };
 
     /// The `dictionary` maps field names onto slot indexes.
@@ -40,8 +41,7 @@ struct Module : public Ref_Value
     /// can be shared between multiple module values.
     Shared<Dictionary> dictionary_;
 
-    /// The `slots` array contains field values. In the future, for submodules,
-    /// it will also contain nonlocals.
+    /// The `slots` array contains field values and, for submodules, nonlocals.
     ///
     /// Field values that come from lambda expressions are represented in the
     /// slot array as Lambdas, not as Closures. (Otherwise, there would be a
@@ -77,7 +77,7 @@ struct Module : public Ref_Value
     friend class curv::Module_Expr;
 
     /// Fetch the value stored at slot index `i`.
-    Value get(size_t i) const;
+    Value get(slot_t i) const;
 
     // We provide a container interface for accessing the fields, like std::map.
     size_t size() const { return dictionary_->size(); }

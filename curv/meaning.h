@@ -156,9 +156,9 @@ struct Null_Action : public Just_Action
 /// reference to a lazy nonlocal slot.
 struct Module_Ref : public Just_Expression
 {
-    size_t slot_;
+    slot_t slot_;
 
-    Module_Ref(Shared<const Phrase> source, size_t slot)
+    Module_Ref(Shared<const Phrase> source, slot_t slot)
     : Just_Expression(std::move(source)), slot_(slot)
     {}
 
@@ -168,10 +168,10 @@ struct Module_Ref : public Just_Expression
 /// reference to a lazy nonlocal slot.
 struct Submodule_Ref : public Just_Expression
 {
-    size_t slot_;
-    size_t index_;
+    slot_t slot_;
+    slot_t index_;
 
-    Submodule_Ref(Shared<const Phrase> source, size_t slot, size_t index)
+    Submodule_Ref(Shared<const Phrase> source, slot_t slot, slot_t index)
     : Just_Expression(std::move(source)), slot_(slot), index_(index)
     {}
 
@@ -181,9 +181,9 @@ struct Submodule_Ref : public Just_Expression
 /// reference to a strict nonlocal slot (nonrecursive lambda nonlocal)
 struct Nonlocal_Ref : public Just_Expression
 {
-    size_t slot_;
+    slot_t slot_;
 
-    Nonlocal_Ref(Shared<const Phrase> source, size_t slot)
+    Nonlocal_Ref(Shared<const Phrase> source, slot_t slot)
     : Just_Expression(std::move(source)), slot_(slot)
     {}
 
@@ -193,9 +193,9 @@ struct Nonlocal_Ref : public Just_Expression
 
 struct Let_Ref : public Just_Expression
 {
-    int slot_;
+    slot_t slot_;
 
-    Let_Ref(Shared<const Phrase> source, int slot)
+    Let_Ref(Shared<const Phrase> source, slot_t slot)
     : Just_Expression(std::move(source)), slot_(slot)
     {}
 
@@ -205,9 +205,9 @@ struct Let_Ref : public Just_Expression
 
 struct Letrec_Ref : public Just_Expression
 {
-    int slot_;
+    slot_t slot_;
 
-    Letrec_Ref(Shared<const Phrase> source, int slot)
+    Letrec_Ref(Shared<const Phrase> source, slot_t slot)
     : Just_Expression(std::move(source)), slot_(slot)
     {}
 
@@ -216,9 +216,9 @@ struct Letrec_Ref : public Just_Expression
 
 struct Arg_Ref : public Just_Expression
 {
-    int slot_;
+    slot_t slot_;
 
-    Arg_Ref(Shared<const Phrase> source, int slot)
+    Arg_Ref(Shared<const Phrase> source, slot_t slot)
     : Just_Expression(std::move(source)), slot_(slot)
     {}
 
@@ -228,13 +228,13 @@ struct Arg_Ref : public Just_Expression
 
 struct Local_Function_Ref : public Just_Expression
 {
-    int lambda_slot_; ///! local slot containing Lambda value
-    int env_slot_;    ///! local slot containing List of nonlocal values
+    slot_t lambda_slot_; ///! local slot containing Lambda value
+    slot_t env_slot_;    ///! local slot containing List of nonlocal values
 
     Local_Function_Ref(
         Shared<const Phrase> source,
-        int lambda_slot,
-        int env_slot)
+        slot_t lambda_slot,
+        slot_t env_slot)
     :
         Just_Expression(std::move(source)),
         lambda_slot_(lambda_slot),
@@ -246,11 +246,11 @@ struct Local_Function_Ref : public Just_Expression
 
 struct Nonlocal_Function_Ref : public Just_Expression
 {
-    int lambda_slot_; ///! nonlocal slot containing Lambda value
+    slot_t lambda_slot_; ///! nonlocal slot containing Lambda value
 
     Nonlocal_Function_Ref(
         Shared<const Phrase> source,
-        int lambda_slot)
+        slot_t lambda_slot)
     :
         Just_Expression(std::move(source)),
         lambda_slot_(lambda_slot)
@@ -261,16 +261,16 @@ struct Nonlocal_Function_Ref : public Just_Expression
 
 struct Submodule_Function_Ref : public Just_Expression
 {
-    int slot_;
-    int index_;
+    slot_t slot_;
+    slot_t index_;
 
     /// A prefix of the value list, of length `nlazy_`, may contain thunks
     /// which can only be evaluated in the caller's frame.
-    int nlazy_;
+    slot_t nlazy_;
 
     Submodule_Function_Ref(
         Shared<const Phrase> source,
-        int slot, int index, int nlazy)
+        slot_t slot, slot_t index, slot_t nlazy)
     :
         Just_Expression(std::move(source)),
         slot_(slot),
@@ -544,7 +544,7 @@ struct Record_Expr : public Just_Expression
 struct Bindings
 {
     // location in the evaluation frame where the value list is stored.
-    size_t slot_;
+    slot_t slot_;
 
     // size and initial contents of the value list.
     Shared<const List> defn_values_;
@@ -554,7 +554,7 @@ struct Bindings
     std::vector<Shared<const Operation>> actions_;
 
     Bindings(
-        size_t slot,
+        slot_t slot,
         Shared<const List> defn_values,
         std::vector<Shared<const Operation>> nonlocal_exprs,
         std::vector<Shared<const Operation>> actions)
@@ -578,7 +578,7 @@ struct Module_Expr : public Just_Expression
     Shared<Module::Dictionary> dictionary_;
     Shared<List> slots_; // or, a Tail_Array
     Shared<const List_Expr> elements_;
-    size_t frame_nslots_;
+    slot_t frame_nslots_;
 
     Module_Expr(Shared<const Phrase> source) : Just_Expression(source) {}
 
@@ -613,13 +613,13 @@ struct Submodule_Expr : public Just_Expression
 
 struct Let_Op : public Operation
 {
-    size_t first_slot_;
+    slot_t first_slot_;
     std::vector<Shared<Operation>> exprs_; // or, a Tail_Array
     Shared<const Operation> body_;
 
     Let_Op(
         Shared<const Phrase> source,
-        size_t first_slot,
+        slot_t first_slot,
         std::vector<Shared<Operation>> exprs,
         Shared<const Operation> body)
     :
@@ -657,13 +657,13 @@ struct Block_Op : public Operation
 
 struct For_Op : public Operation
 {
-    size_t slot_;
+    slot_t slot_;
     Shared<const Operation> list_;
     Shared<const Operation> body_;
 
     For_Op(
         Shared<const Phrase> source,
-        size_t slot,
+        slot_t slot,
         Shared<const Operation> list,
         Shared<const Operation> body)
     :
@@ -725,15 +725,15 @@ struct Lambda_Expr : public Just_Expression
 {
     Shared<Operation> body_;
     Shared<List_Expr> nonlocals_;
-    size_t nargs_;
-    size_t nslots_;
+    slot_t nargs_;
+    slot_t nslots_;
 
     Lambda_Expr(
         Shared<const Phrase> source,
         Shared<Operation> body,
         Shared<List_Expr> nonlocals,
-        size_t nargs,
-        size_t nslots)
+        slot_t nargs,
+        slot_t nslots)
     :
         Just_Expression(source),
         body_(std::move(body)),

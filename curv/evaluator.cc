@@ -132,7 +132,7 @@ Submodule_Function_Ref::eval(Frame& f) const
         // Set a flag on the values list so we don't re-enter this loop
         // while it is still running.
         list.type_ = (uint32_t)(-1);
-        for (int i = 0; i < nlazy_; ++i)
+        for (slot_t i = 0; i < nlazy_; ++i)
             force(list[i], f);
         list.type_ = Ref_Value::ty_list;
     }
@@ -537,12 +537,12 @@ Module_Expr::eval(Frame& f) const
 void
 Bindings::exec(Frame& f) const
 {
-    size_t ndefns = defn_values_->size();
-    size_t nvalues = ndefns + nonlocal_exprs_.size();
+    slot_t ndefns = defn_values_->size();
+    slot_t nvalues = ndefns + nonlocal_exprs_.size();
     Shared<List> values = List::make(nvalues);
-    for (size_t i = 0; i < ndefns; ++i)
+    for (slot_t i = 0; i < ndefns; ++i)
         values->at(i) = defn_values_->at(i);
-    for (size_t i = ndefns; i < nvalues; ++i)
+    for (slot_t i = ndefns; i < nvalues; ++i)
         values->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
     f[slot_] = {values};
     for (auto action : actions_)
@@ -552,17 +552,17 @@ Bindings::exec(Frame& f) const
 Shared<List>
 Bindings::eval(Frame& f) const
 {
-    size_t ndefns = defn_values_->size();
-    size_t nvalues = ndefns + nonlocal_exprs_.size();
+    slot_t ndefns = defn_values_->size();
+    slot_t nvalues = ndefns + nonlocal_exprs_.size();
     Shared<List> values = List::make(nvalues);
-    for (size_t i = 0; i < ndefns; ++i)
+    for (slot_t i = 0; i < ndefns; ++i)
         values->at(i) = defn_values_->at(i);
-    for (size_t i = ndefns; i < nvalues; ++i)
+    for (slot_t i = ndefns; i < nvalues; ++i)
         values->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
     f[slot_] = {values};
     for (auto action : actions_)
         action->exec(f);
-    for (size_t i = 0; i < ndefns; ++i)
+    for (slot_t i = 0; i < ndefns; ++i)
         force(values->at(i), f);
     return values;
 }
@@ -598,7 +598,7 @@ Value
 Let_Op::eval(Frame& f) const
 {
     Value* slots = &f[first_slot_];
-    for (size_t i = 0; i < exprs_.size(); ++i)
+    for (slot_t i = 0; i < exprs_.size(); ++i)
         slots[i] = exprs_[i]->eval(f);
     return body_->eval(f);
 }
@@ -606,7 +606,7 @@ void
 Let_Op::generate(Frame& f, List_Builder& lb) const
 {
     Value* slots = &f[first_slot_];
-    for (size_t i = 0; i < exprs_.size(); ++i)
+    for (slot_t i = 0; i < exprs_.size(); ++i)
         slots[i] = exprs_[i]->eval(f);
     body_->generate(f, lb);
 }
@@ -614,7 +614,7 @@ void
 Let_Op::exec(Frame& f) const
 {
     Value* slots = &f[first_slot_];
-    for (size_t i = 0; i < exprs_.size(); ++i)
+    for (slot_t i = 0; i < exprs_.size(); ++i)
         slots[i] = exprs_[i]->eval(f);
     body_->exec(f);
 }

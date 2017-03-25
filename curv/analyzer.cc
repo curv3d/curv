@@ -86,7 +86,7 @@ Bindings_Analyzer::add_statement(Shared<const Phrase> stmt)
 }
 
 bool
-Bindings_Analyzer::is_recursive_function(size_t slot)
+Bindings_Analyzer::is_recursive_function(slot_t slot)
 {
     return isa<const Lambda_Phrase>(defn_phrases_[slot]);
 }
@@ -124,7 +124,7 @@ Bindings_Analyzer::lookup_function_nonlocal(const Identifier& id)
     if (isa<Constant>(m))
         return m;
     if (auto expr = cast<Operation>(m)) {
-        size_t slot = defn_dictionary_->size()
+        slot_t slot = defn_dictionary_->size()
             + bindings_.nonlocal_exprs_.size();
         nonlocal_dictionary_[id.atom_] = slot;
         bindings_.nonlocal_exprs_.push_back(expr);
@@ -172,7 +172,7 @@ Old_Bindings::add_definition(Shared<Definition> def, curv::Environ& env)
 }
 
 bool
-Old_Bindings::is_recursive_function(size_t slot)
+Old_Bindings::is_recursive_function(slot_t slot)
 {
     return isa<const Lambda_Phrase>(slot_phrases_[slot]);
 }
@@ -274,8 +274,8 @@ Lambda_Phrase::analyze(Environ& env) const
     // TODO: pattern matching: [a,b]->expr, {a,b}->expr
 
     // phase 1: Create a dictionary of parameters.
-    Atom_Map<int> params;
-    int slot = 0;
+    Atom_Map<slot_t> params;
+    slot_t slot = 0;
     each_argument(*left_, [&](const Phrase& p)->void {
         if (auto id = dynamic_cast<const Identifier*>(&p))
             params[id->atom_] = slot++;
@@ -286,12 +286,12 @@ Lambda_Phrase::analyze(Environ& env) const
     // Phase 2: make an Environ from the parameters and analyze the body.
     struct Arg_Environ : public Environ
     {
-        Atom_Map<int>& names_;
+        Atom_Map<slot_t>& names_;
         Module::Dictionary nonlocal_dictionary_;
         std::vector<Shared<const Operation>> nonlocal_exprs_;
         bool recursive_;
 
-        Arg_Environ(Environ* parent, Atom_Map<int>& names, bool recursive)
+        Arg_Environ(Environ* parent, Atom_Map<slot_t>& names, bool recursive)
         : Environ(parent), names_(names), recursive_(recursive)
         {
             frame_nslots_ = names.size();
@@ -311,7 +311,7 @@ Lambda_Phrase::analyze(Environ& env) const
             if (isa<Constant>(m))
                 return m;
             if (auto expr = cast<Operation>(m)) {
-                size_t slot = nonlocal_exprs_.size();
+                slot_t slot = nonlocal_exprs_.size();
                 nonlocal_dictionary_[id.atom_] = slot;
                 nonlocal_exprs_.push_back(expr);
                 return make<Nonlocal_Ref>(share(id), slot);
@@ -715,11 +715,11 @@ Let_Phrase::analyze(Environ& env) const
 {
     // `let` binds names in the parent scope, like `let` in Scheme.
 
-    int first_slot = env.frame_nslots_;
+    slot_t first_slot = env.frame_nslots_;
     std::vector<Shared<Operation>> exprs;
-    Atom_Map<int> names;
+    Atom_Map<slot_t> names;
 
-    int slot = first_slot;
+    slot_t slot = first_slot;
     each_argument(*args_, [&](const Phrase& p)->void {
         auto def = p.analyze_def(env);
         if (def == nullptr)
@@ -743,11 +743,11 @@ Let_Phrase::analyze(Environ& env) const
     struct Let_Environ : public Environ
     {
     protected:
-        const Atom_Map<int>& names;
+        const Atom_Map<slot_t>& names;
     public:
         Let_Environ(
             Environ* p,
-            const Atom_Map<int>& n)
+            const Atom_Map<slot_t>& n)
         : Environ(p), names(n)
         {
             if (p != nullptr) {
@@ -790,16 +790,16 @@ For_Phrase::analyze(Environ& env) const
 
     auto list = analyze_op(*def->right_, env);
 
-    int slot = env.frame_nslots_;
+    slot_t slot = env.frame_nslots_;
     struct For_Environ : public Environ
     {
         Atom name_;
-        int slot_;
+        slot_t slot_;
 
         For_Environ(
             Environ& p,
             Atom name,
-            int slot)
+            slot_t slot)
         : Environ(&p), name_(name), slot_(slot)
         {
             frame_nslots_ = p.frame_nslots_ + 1;
