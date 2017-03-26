@@ -6,9 +6,6 @@ depth = 1;
 // background disk
 //translate([0,0,-5])color("white") circle(size);
 
-// kisrhombille3_7 is drawn in a unit disk
-scale(size) << kisrhombille3_7(depth, 0.015);
-
 color(c) shape = shape;
 
 kisrhombille3_7(n,t) = (
@@ -214,3 +211,6 @@ polyline(p, t/*=1*/) = union ([
             << translate(-t/2,-t/2) << square(h+t,t)
     )
 ]);
+
+// kisrhombille3_7 is drawn in a unit disk
+scale(size) << kisrhombille3_7(depth, 0.015);

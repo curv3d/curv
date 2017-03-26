@@ -10,6 +10,8 @@
 
 namespace curv {
 
+const char Shape2D::name[] = "shape";
+
 struct Blackfield_Function : public Polyadic_Function
 {
     Blackfield_Function() : Polyadic_Function(1) {}

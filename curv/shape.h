@@ -56,6 +56,8 @@ struct Shape2D : public Ref_Value
 
     /// Invoke the Geometry Compiler on the shape's `colour` function.
     GL_Value gl_colour(GL_Value, GL_Frame&) const;
+
+    static const char name[];
 };
 
 } // namespace curv

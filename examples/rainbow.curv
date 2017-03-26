@@ -19,5 +19,5 @@ cis theta = [cos theta, sin theta];
 
 colourfield f shape = shape2d{dist:shape.dist,colour:f,bbox:shape.bbox};
 
-//colourfield(p->hsv2rgb(phase(p)/tau,1,1)) << everything;
-colourfield(p->hsv2rgb(p'X,1,1)) << everything;
+//colourfield(p->hsv2rgb(phase(p)/tau,1,1)) << everything
+colourfield(p->hsv2rgb(p'X,1,1)) << everything

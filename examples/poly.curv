@@ -123,7 +123,6 @@ rp n = (
     )
 );
 
-if(true) 
 union (
   rp 3,
   /*
@@ -139,5 +138,5 @@ union (
   translate(3,8) << rotate(-tau/8) << rp 4,
   translate(6,8) << rotate(-(tau/4 - tau/10)) << rp 5,
  */
-);
-//complement << half_plane << cis(tau/10);
+)
+//complement << half_plane << cis(tau/10)

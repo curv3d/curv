@@ -2,6 +2,7 @@ function(f) = shape2d {
     dist p : p'Y - f(p'X),
     bbox : everything.bbox
 };
+
 function (n->
 
 if (n >= 0)
@@ -9,4 +10,4 @@ if (n >= 0)
 else
     floor(n) - n
 
-);
+)

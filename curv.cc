@@ -116,20 +116,14 @@ interactive_mode(const char* argv0)
     }
 }
 
-void export_curv(curv::Module& module, std::ostream& out)
+void export_curv(curv::Value value, const curv::Context&, std::ostream& out)
 {
-    for (auto e : *module.elements())
-        out << e << "\n";
+    out << value << "\n";
 }
-void export_shadertoy(curv::Module& module, std::ostream& out)
+void export_shadertoy(curv::Value value, const curv::Context& cx, std::ostream& out)
 {
-    std::vector<curv::Shared<curv::Shape2D>> shapes;
-    for (auto e : *module.elements())
-        if (auto shape = e.dycast<curv::Shape2D>())
-            shapes.push_back(shape);
-    // TODO: construct a union of `shapes`
-    if (!shapes.empty())
-        curv::gl_compile(*shapes.front(), std::cout);
+    auto shape = value.to<curv::Shape2D>(cx);
+    curv::gl_compile(*shape, std::cout);
 }
 bool is_json_data(curv::Value val)
 {
@@ -211,10 +205,12 @@ bool export_json_value(curv::Value val, std::ostream& out)
         return false;
     }
 }
-void export_json(curv::Module& module, std::ostream& out)
+void export_json(curv::Value value, const curv::Context& cx, std::ostream& out)
 {
-    for (auto e : *module.elements())
-        if (export_json_value(e, out)) out << "\n";
+    if (export_json_value(value, out))
+        out << "\n";
+    else
+        throw curv::Exception(cx, "value can't be converted to JSON");
 }
 
 const char help[] =
@@ -254,7 +250,7 @@ main(int argc, char** argv)
 
     // Parse batch mode arguments.
     const char* argv0 = argv[0];
-    void (*exporter)(curv::Module&, std::ostream&) = export_curv;
+    void (*exporter)(curv::Value, const curv::Context&, std::ostream&) = export_curv;
     int opt;
     while ((opt = getopt(argc, argv, ":i:o:D:")) != -1) {
         switch (opt) {
@@ -304,8 +300,10 @@ main(int argc, char** argv)
     try {
         auto file = curv::make<curv::File_Script>(
             curv::make_string(filename), curv::Context{});
-        auto module = eval_module_script(*file, sys);
-        exporter(*module, std::cout);
+        curv::Eval ev{*file, sys};
+        ev.compile();
+        auto value = ev.eval();
+        exporter(value, curv::At_Phrase(ev.value_phrase(), nullptr), std::cout);
     } catch (curv::Exception& e) {
         std::cerr << "ERROR: " << e << "\n";
         return EXIT_FAILURE;

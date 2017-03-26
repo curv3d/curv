@@ -43,6 +43,32 @@ Eval::compile(const Namespace* names, Frame* parent_frame)
         system_, parent_frame, nullptr, nullptr)};
 }
 
+const Phrase&
+Eval::value_phrase()
+{
+    auto ph = phrase_;
+    for (;;) {
+        if (auto pr = cast<const Program_Phrase>(ph)) {
+            ph = pr->body_;
+            continue;
+        }
+        if (auto s = cast<const Semicolon_Phrase>(ph)) {
+            ph = s->args_.back().expr_;
+            continue;
+        }
+        if (auto p = cast<const Paren_Phrase>(ph)) {
+            if (isa<Empty_Phrase>(p->body_))
+                break;
+            if (isa<Comma_Phrase>(p->body_))
+                break;
+            ph = p->body_;
+            continue;
+        }
+        break;
+    }
+    return *ph;
+}
+
 Value
 Eval::eval()
 {

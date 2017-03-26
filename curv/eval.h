@@ -46,6 +46,8 @@ struct Eval
         const Namespace* names = nullptr,
         Frame *parent_frame = nullptr);
 
+    const Phrase& value_phrase();
+
     Value eval();
 };
 
