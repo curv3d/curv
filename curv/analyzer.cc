@@ -562,6 +562,7 @@ Brace_Phrase::analyze(Environ& env) const
     // definitions or assocs/field generators.
     // We do a pre-analysis scan looking for definitions. If we don't find any,
     // then we analyze as a record, otherwise we analyze as a module.
+    // TODO: actions in a record literal
 
 #if 0
     bool is_module = false;

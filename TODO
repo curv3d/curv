@@ -9,6 +9,8 @@ Define regular_polygon(n). See poly.curv.
 gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
 curv::Function represents a variadic function.
 
+GL supports iteration. Need for mandelbrot and convex_hull.
+
 ## Language Redesign
 Bindings (correctness problem):
 * All members of a Bindings are thunked.
@@ -27,6 +29,19 @@ Patterns (Bindings and Lambda):
 * {x,y}=... is pattern matching on a record. Extra fields on right -> error.
 * Record patterns can be used as function parameters.
 * Default values in record patterns, `{x=0,y=1} = ...`
+* functions with refutable parameter patterns lead to:
+  switch((x,y,z)->..., a->...) -- returns a function
+
+Records:
+* actions in a record literal
+* Add the concept of a "field generator". Operation::generate_fields().
+  * x:42 is a field generator.
+  * "${strexpr}":42
+  * An action is a field generator.
+  * Conditional field generators: if(c)field
+  * `...record`
+  * Can use `for` to generate fields.
+  * merge rs = { for (f=rs) ...f }
 
 Blocks:
 * Add GL support. How?
