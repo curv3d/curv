@@ -156,58 +156,6 @@ Bindings_Analyzer::analyze(Shared<const Phrase> source)
     parent_->frame_maxslots_ = frame_maxslots_;
 }
 
-void
-Old_Bindings::add_definition(Shared<Definition> def, curv::Environ& env)
-{
-    Atom name = def->name_->atom_;
-    if (dictionary_->find(name) != dictionary_->end())
-        throw Exception(At_Phrase(*def->name_, env),
-            stringify(name, ": multiply defined"));
-    (*dictionary_)[name] = cur_position_++;
-    slot_phrases_.push_back(def->definiens_);
-
-    auto lambda = dynamic_cast<Lambda_Phrase*>(def->definiens_.get());
-    if (lambda != nullptr)
-        lambda->recursive_ = true;
-}
-
-bool
-Old_Bindings::is_recursive_function(slot_t slot)
-{
-    return isa<const Lambda_Phrase>(slot_phrases_[slot]);
-}
-
-Shared<Meaning>
-Old_Bindings::Environ::single_lookup(const Identifier& id)
-{
-    auto b = bindings_.dictionary_->find(id.atom_);
-    if (b != bindings_.dictionary_->end()) {
-        if (bindings_.is_recursive_function(b->second))
-            return make<Nonlocal_Function_Ref>(
-                share(id), b->second);
-        else
-            return make<Module_Ref>(
-                share(id), b->second);
-    }
-    return nullptr;
-}
-
-Shared<List>
-Old_Bindings::analyze_values(Environ& env)
-{
-    size_t n = slot_phrases_.size();
-    auto slots = make_list(n);
-    for (size_t i = 0; i < n; ++i) {
-        auto expr = analyze_op(*slot_phrases_[i], env);
-        if (is_recursive_function(i)) {
-            auto& l = dynamic_cast<Lambda_Expr&>(*expr);
-            (*slots)[i] = {make<Lambda>(l.body_,l.nargs_,l.nslots_)};
-        } else
-            (*slots)[i] = {make<Thunk>(expr)};
-    }
-    return slots;
-}
-
 Shared<Meaning>
 Empty_Phrase::analyze(Environ& env) const
 {
@@ -583,35 +531,6 @@ each_statement(const Phrase& phrase, std::function<void(const Phrase&)> func)
     } else {
         func(phrase);
     }
-}
-
-Shared<Module_Expr>
-Program_Phrase::analyze_module(Environ& env) const
-{
-    // phase 1: Create a dictionary of field phrases, a list of element phrases
-    Old_Bindings fields;
-    std::vector<Shared<const Phrase>> elements;
-    each_statement(*body_, [&](const Phrase& stmt)->void {
-        auto def = stmt.analyze_def(env);
-        if (def != nullptr)
-            fields.add_definition(def, env);
-        else
-            elements.push_back(share(stmt));
-    });
-
-    // phase 2: Construct an environment from the field dictionary
-    // and use it to perform semantic analysis.
-    Old_Bindings::Environ env2(&env, fields);
-    auto self = share(*this);
-    auto module = make<Module_Expr>(self);
-    module->dictionary_ = fields.dictionary_;
-    module->slots_ = fields.analyze_values(env2);
-    Shared<List_Expr> xelements = {List_Expr::make(elements.size(), self)};
-    for (size_t i = 0; i < elements.size(); ++i)
-        (*xelements)[i] = analyze_op(*elements[i], env2);
-    module->elements_ = xelements;
-    module->frame_nslots_ = env2.frame_maxslots_;
-    return module;
 }
 
 /// In the grammar, a <commas> phrase is one or more constituent phrases

@@ -573,19 +573,6 @@ struct Bindings
     void exec(Frame&) const;
 };
 
-struct Module_Expr : public Just_Expression
-{
-    Shared<Module::Dictionary> dictionary_;
-    Shared<List> slots_; // or, a Tail_Array
-    Shared<const List_Expr> elements_;
-    slot_t frame_nslots_;
-
-    Module_Expr(Shared<const Phrase> source) : Just_Expression(source) {}
-
-    virtual Value eval(Frame&) const override;
-    Shared<Module> eval_module(System&, Frame*) const;
-};
-
 // A submodule expression is `{stmt; stmt; ...;}` where stmt is a definition
 // or action. The scope of each definition is the entire submodule. The order
 // of definitions doesn't matter. Recursive definitions are supported.

@@ -13,19 +13,6 @@
 
 namespace curv {
 
-Shared<Module>
-eval_module_script(
-    const Script& script, const Namespace& names,
-    System& sys, Frame* f)
-{
-    Scanner scanner{script, f};
-    auto phrase = parse_program(scanner);
-    Builtin_Environ env{names, f};
-    auto expr = phrase->analyze_module(env);
-    auto value = expr->eval_module(sys, f);
-    return value;
-}
-
 void
 Eval::compile(const Namespace* names, Frame* parent_frame)
 {

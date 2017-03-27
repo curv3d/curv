@@ -527,13 +527,6 @@ Record_Expr::eval(Frame& f) const
     return {record};
 }
 
-Value
-Module_Expr::eval(Frame& f) const
-{
-    auto module = eval_module(f.system, &f);
-    return {module};
-}
-
 void
 Bindings::exec(Frame& f) const
 {
@@ -565,20 +558,6 @@ Bindings::eval(Frame& f) const
     for (slot_t i = 0; i < ndefns; ++i)
         force(values->at(i), f);
     return values;
-}
-
-Shared<Module>
-Module_Expr::eval_module(System& sys, Frame* f) const
-{
-    auto module = make<Module>();
-    module->dictionary_ = dictionary_;
-    module->slots_ = List::make_copy(slots_->begin(), slots_->size());
-    std::unique_ptr<Frame> frame
-        {Frame::make(frame_nslots_, sys, f, nullptr, &*module->slots_)};
-    for (Value& s : *module->slots_)
-        force(s, *frame);
-    module->elements_ = elements_->eval_list(*frame);
-    return module;
 }
 
 Value

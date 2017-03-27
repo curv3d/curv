@@ -77,52 +77,6 @@ struct Definition : public aux::Shared_Base
     {}
 };
 
-/// TODO: Deprecated, replaced by Bindings_Analyzer.
-struct Old_Bindings
-{
-    slot_t cur_position_;
-    Shared<Module::Dictionary> dictionary_;
-    std::vector<Shared<const Phrase>> slot_phrases_;
-
-    // First, construct the Binding_Analyzer:
-    Old_Bindings()
-    :
-        cur_position_(0),
-        dictionary_(make<Module::Dictionary>()),
-        slot_phrases_()
-    {}
-
-    bool is_recursive_function(slot_t);
-
-    // Second, add some bindings:
-    void add_definition(Shared<Definition> def, curv::Environ& env);
-    //void add_parameter(Shared<Phrase> phrase);
-
-    // Third, construct an Environ from the bindings dictionary.
-    struct Environ : public curv::Environ
-    {
-    protected:
-        Old_Bindings& bindings_;
-    public:
-        Environ(
-            curv::Environ* p,
-            Old_Bindings& b)
-        :
-            curv::Environ(p),
-            bindings_(b)
-        {}
-        virtual Shared<Meaning> single_lookup(const Identifier&);
-    };
-
-    // Fourth, analyze the binding phrases, and construct a list of compile
-    // time Values (constants, lambdas or thunks),
-    // using the above Environ if they are mutually recursive:
-    Shared<List> analyze_values(Environ& env);
-
-    // Fifth, construct a Block_Op, Module_Expr, Record_Expr
-    // or function parameter list.
-};
-
 /// Analyze a set of recursive definitions and a sequence of actions,
 /// as found in a block or a module literal.
 struct Bindings_Analyzer : public Environ

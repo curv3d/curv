@@ -16,7 +16,6 @@ namespace curv {
 class Definition;
 class Meaning;
 class Operation;
-class Module_Expr;
 class Environ;
 
 /// Base class for a node in a syntax tree created by the parser.
@@ -245,7 +244,6 @@ struct Program_Phrase : public Phrase
 
     virtual Shared<Meaning> analyze(Environ&) const override;
     virtual Shared<Definition> analyze_def(Environ&) const override;
-    Shared<Module_Expr> analyze_module(Environ&) const;
 };
 
 /// A function call. Call_Phrase is ultimately an abstract interface

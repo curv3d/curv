@@ -16,15 +16,6 @@
 
 namespace curv {
 
-Shared<Module>
-eval_module_script(const Script&, const Namespace&, System&, Frame* f = nullptr);
-
-inline Shared<Module>
-eval_module_script(const Script& scr, System& sys, Frame* f = nullptr)
-{
-    return eval_module_script(scr, sys.std_namespace(), sys, f);
-}
-
 struct Eval
 {
     const Script& script_;

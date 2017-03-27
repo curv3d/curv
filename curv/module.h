@@ -13,8 +13,6 @@
 
 namespace curv {
 
-class Module_Expr;
-
 /// A module value contains a set of fields and a list of elements.
 ///
 /// TODO: Are module expressions strictly or lazily evaluated?
@@ -73,8 +71,6 @@ struct Module : public Ref_Value
         slots_(std::move(values)),
         elements_(List::make(0))
     {}
-
-    friend class curv::Module_Expr;
 
     /// Fetch the value stored at slot index `i`.
     Value get(slot_t i) const;
