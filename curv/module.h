@@ -13,7 +13,11 @@
 
 namespace curv {
 
-/// A module value contains a set of fields and a list of elements.
+/// A module value contains a set of name/value pairs, specified
+/// using a set of mutually recursive definitions.
+///
+/// Each module value constructed from the same module literal shares the
+/// same dictionary. Only the value list is different.
 ///
 /// TODO: Are module expressions strictly or lazily evaluated?
 /// I've wanted lazy evaluation as a performance optimization, especially for
@@ -39,7 +43,7 @@ struct Module : public Ref_Value
     /// can be shared between multiple module values.
     Shared<Dictionary> dictionary_;
 
-    /// The `slots` array contains field values and, for submodules, nonlocals.
+    /// The `slots` array contains field values and nonlocals.
     ///
     /// Field values that come from lambda expressions are represented in the
     /// slot array as Lambdas, not as Closures. (Otherwise, there would be a
@@ -55,21 +59,11 @@ struct Module : public Ref_Value
     /// (Well, unless we change Closure to contain a Module reference.)
     Shared<List> slots_;
 
-    /// The `elements` array contains module elements. The number of
-    /// elements is, in general, determined at run time.
-    Shared<List> elements_;
-
-    Module()
-    :
-        Ref_Value(ty_module)
-    {}
-
     Module(Shared<Dictionary> dictionary, Shared<List> values)
     :
         Ref_Value(ty_module),
         dictionary_(std::move(dictionary)),
-        slots_(std::move(values)),
-        elements_(List::make(0))
+        slots_(std::move(values))
     {}
 
     /// Fetch the value stored at slot index `i`.
@@ -108,8 +102,6 @@ struct Module : public Ref_Value
     };
     iterator begin() const { return iterator(*this, true); }
     iterator end() const { return iterator(*this, false); }
-
-    Shared<List> elements() const { return elements_; }
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const override;

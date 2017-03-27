@@ -18,9 +18,6 @@ Bindings (correctness problem):
 * All definientia are analyzed in an environment where the values list is the
   nonlocals register and frame_nslots_ is initially 0.
 
-Migrate to Value Scripts:
-* 'curv filename'
-
 Submodules:
 * Extend shape2d to take a module argument.
 
@@ -62,11 +59,7 @@ item ::= disjunction `where` item -- alternate block syntax
     binding, recursing at Letrec_Ref, detect recursive definitions. This will
     output GLSL declarations in dependency order.
 
-Local Definitions and Scripts.
-* `def1;def2;phrase` is a block, with recursive scoping:
-  * `(def1;def2;body)`: local definitions in a subphrase.
-  * top level script: def1;def2;expr -- Value scripts.
-* Sequential assignment: var x := 0; x := x + 1; ...
+Sequential assignment: var x := 0; x := x + 1; ...
 
 Generator is coerced to a list in expression context. For ease of use:
 * union (for (i=a) shape(i)) -- no need for trailing , or extra [ ]
@@ -74,7 +67,6 @@ Generator is coerced to a list in expression context. For ease of use:
 
 Polymorphic list/record/module operations:
 * `dom s` is list of indexes of s
-* abolish module elements (value scripts)
 * `len s` is # elements of s
 
 Use.
@@ -225,8 +217,7 @@ Live programming:
 kisrhombille-3-7: does the GL output actually work?
 
 refactor/extend:
-* generalized shapes: geom:[x,y,z,t]->[d,r,g,b]
-* add GL ?: conditional support
+* generalized shapes. 3D, time. geom:[x,y,z,t]->[d,r,g,b]
 
 Build up the standard library.
 * There are many GLSL functions that ought to be supported by Curv.
@@ -356,18 +347,6 @@ Colour:
   * Geometric transforms can be applied to colour fields.
 * Image import.
 
-square:
-* `Num v` is a predicate
-* Rename old `let` to `letrec` -- or to `where` with reversed arguments.
-* Implement `let` like Scheme let. It's easier to implement in WebGL,
-  and provides a nice idiom for normalizing sz in square.
-* square(sz) =
-    let (sz = if (Num sz) [sz,sz] else sz)
-    shape2d {
-      dist p = max(abs p - sz/2),
-      bbox = [-sz/2, sz/2]
-    };
-
 nary union:
 * union shapes =
     shape2d {
@@ -417,8 +396,7 @@ nary union:
   * echo_timing(string,expr_value_discarded)
   * echo_timing(string) expr_value_returned
   * enter_debugger, aka `break`, `debug`
-* len(module), module'i
-* recursive let. Or non-recursive let and recursive where.
+* len(module), module[i]
 * records: merge[r1,r2]
   I don't want `merge` to accept modules as arguments: overriding an existing
   module field doesn't work if the module also contains functions closed over
@@ -521,42 +499,15 @@ Generalized Phrases:
     the semantics (ordered vs unordered) and there's no utility.
 
 Value Scripts?
-* A syntax variant, in which:
-  * A source file (top level script) can return any value. It's no longer
-    interpreted as a module value.
-  * In a source file, the expression denoting the result value is at the end,
-    following the last `;`. (In a long OpenSCAD script, I have to examine every
-    line closely to find every statement that contributes to the geometry.
-    With this syntax, you only have to look at the end of the file.)
-  * If I've got 3 different syntaxes for 'let', 'letrec' and 'let*' (Scheme),
-    all of which have a body, then I can use any of these alternatives in a
-    top level script for my top level local bindings. I'm not restricted to
-    recursive bindings.
-  * A top level script is an expression; parenthesizing it preserves meaning.
-    Thus `,` and `;` have more consistent meanings.
-* `def;phrase` binds def locally within phrase, with recursive scoping
-  across the entire `;` chain. No need for `let`. *Not* sequential scoping.
-* `action;phrase` executes action first, then phrase.
-* `def1,def2` is a compound definition. Weird advanced feature, rarely used.
-* `gen1,gen2` is a sequence generator.
-* In the CLI, `id=expr` adds a new binding to the session environment, but the
-  semicolon operator converts definitions into local variables.
+* `(def1,def2)` is a compound definition. Weird advanced feature, rarely used.
+  Same as `use {def1,def2}`.
+  Can contain actions, too. (action) is ambiguous: is it an empty list or
+  an empty definition?
 * To define mutually recursive functions in the CLI session environment,
   can't use `f=...; g=...` any more. (Not an important use case, but for
   completeness it should be possible.)
-  * f=..., g=...
-  * {f,g} = module {f=...;g=...;}
-* module/library/record constructors.
-  * Maybe `{def}` is a library value. No elements, recursive scope.
-    By construction, {def1,def2} is a library with multiple bindings,
-    and {localdef;def} gives us private/local bindings that aren't exported.
-    Actions can be included. NOT SURE I LIKE THE SYNTAX.
-  * `module {def1; def2; def3;}`. Just like in a top level script, each
-    definition and action are terminated by a `;`, and scoping is the same.
-    But there is no result expression. Instead, the `module` keyword tells us
-    we are exporting the definitions as a module value. No elements.
-  * `{def1, def2, def3}` is a record constructor, no scope, like Curv 2016.
-    (Okay, that looks like a compound definition inside of braces. Whatever.)
+  * (f=..., g=...)
+  * use {f=..., g=...}
 * Sequential definitions: not part of MVP, consider later.
 * Customization of modules and shapes: not part of MVP, consider later.
   A script can export a parameterized module like this: `(x,y)->module{ ... }`.
