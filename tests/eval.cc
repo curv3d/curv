@@ -56,15 +56,25 @@ struct Evaluator
         try {
             console.str("");
             console.clear(); // Clear state flags.
-            Shared<Module> module{
-                eval_module_script(*script_, builtin_namespace(), make_system())};
+            curv::Eval ev{*script_, make_system()};
+            ev.compile();
+            auto den = ev.denotes();
 
             String_Builder buf;
             bool first = true;
-            for (auto e : *module->elements()) {
-                if (!first) buf << "\n";
-                buf << e;
-                first = false;
+            if (den.first) {
+                for (auto f : *den.first) {
+                    if (!first) buf << "\n";
+                    buf << f.first << "=" << f.second;
+                    first = false;
+                }
+            }
+            if (den.second) {
+                for (auto e : *den.second) {
+                    if (!first) buf << "\n";
+                    buf << e;
+                    first = false;
+                }
             }
 
             success_str_ = buf.get_string();
@@ -292,7 +302,7 @@ TEST(curv, eval)
         "          ^--");
     SUCCESS("(0..10)'(3..1 by -1)", "[3,2,1]");
     SUCCESS("[false,true]'[[0,1],[1,0]]", "[[false,true],[true,false]]");
-    SUCCESS("x+y;x=1;y=2", "3");
+    SUCCESS("x=1;y=2;x+y", "3");
     SUCCESS("a=c+1;b=1;c=b+1;a", "3");
     FAILMSG("x=x;x", "illegal recursive reference");
     SUCCESS("x=1;(y=2;(z=3;x+y+z))", "6");
