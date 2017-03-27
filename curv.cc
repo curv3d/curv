@@ -103,11 +103,17 @@ interactive_mode(const char* argv0)
         }
         auto script = curv::make<CString_Script>("", line);
         try {
-            curv::Shared<curv::Module> module{eval_module_script(*script, names, sys)};
-            for (auto f : *module)
-                names[f.first] = curv::make<curv::Builtin_Value>(f.second);
-            for (auto e : *module->elements())
-                std::cout << e << "\n";
+            curv::Eval ev{*script, sys};
+            ev.compile(&names, nullptr);
+            auto den = ev.denotes();
+            if (den.first) {
+                for (auto f : *den.first)
+                    names[f.first] = curv::make<curv::Builtin_Value>(f.second);
+            }
+            if (den.second) {
+                for (auto e : *den.second)
+                    std::cout << e << "\n";
+            }
         } catch (curv::Exception& e) {
             std::cout << "ERROR: " << e << "\n";
         } catch (std::exception& e) {

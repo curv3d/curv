@@ -244,6 +244,7 @@ struct Program_Phrase : public Phrase
     }
 
     virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Definition> analyze_def(Environ&) const override;
     Shared<Module_Expr> analyze_module(Environ&) const;
 };
 

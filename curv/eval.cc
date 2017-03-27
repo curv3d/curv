@@ -8,6 +8,8 @@
 #include <curv/parse.h>
 #include <curv/scanner.h>
 #include <curv/system.h>
+#include <curv/exception.h>
+#include <curv/context.h>
 
 namespace curv {
 
@@ -37,7 +39,16 @@ Eval::compile(const Namespace* names, Frame* parent_frame)
     phrase_ = parse_program(scanner);
 
     Builtin_Environ env{*names_, parent_frame};
-    meaning_ = phrase_->analyze(env);
+    if (auto def = phrase_->analyze_def(env)) {
+        Bindings_Analyzer fields{env};
+        fields.add_statement(phrase_);
+        fields.analyze(phrase_);
+        module_ = make<Submodule_Expr>(phrase_,
+            std::move(fields.defn_dictionary_),
+            std::move(fields.bindings_));
+    } else {
+        meaning_ = phrase_->analyze(env);
+    }
 
     frame_ = {Frame::make(env.frame_maxslots_,
         system_, parent_frame, nullptr, nullptr)};
@@ -72,8 +83,29 @@ Eval::value_phrase()
 Value
 Eval::eval()
 {
-    auto expr = meaning_->to_operation(parent_frame_);
-    return expr->eval(*frame_);
+    if (module_ != nullptr) {
+        throw Exception(At_Phrase(*phrase_, parent_frame_),
+            "definition found; expecting an expression");
+    } else {
+        auto expr = meaning_->to_operation(parent_frame_);
+        return expr->eval(*frame_);
+    }
+}
+
+std::pair<Shared<Module>, Shared<List>>
+Eval::denotes()
+{
+    Shared<Module> module = nullptr;
+    Shared<List> list = nullptr;
+    if (module_) {
+        module = module_->eval_submodule(*frame_);
+    } else {
+        List_Builder lb;
+        auto gen = meaning_->to_operation(parent_frame_);
+        gen->generate(*frame_, lb);
+        list = lb.get_list();
+    }
+    return {module, list};
 }
 
 } // namespace curv

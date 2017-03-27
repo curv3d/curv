@@ -561,7 +561,12 @@ analyze_field(
 Shared<Meaning>
 Program_Phrase::analyze(Environ& env) const
 {
-    return analyze_op(*body_, env);
+    return body_->analyze(env);
+}
+Shared<Definition>
+Program_Phrase::analyze_def(Environ& env) const
+{
+    return body_->analyze_def(env);
 }
 
 /// In the grammar, a <semicolons> phrase is one or more constituent phrases

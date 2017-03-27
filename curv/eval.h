@@ -12,6 +12,7 @@
 #include <curv/script.h>
 #include <curv/shared.h>
 #include <curv/system.h>
+#include <curv/list.h>
 
 namespace curv {
 
@@ -32,6 +33,7 @@ struct Eval
     Frame *parent_frame_ = nullptr;
     Shared<const Phrase> phrase_ = nullptr;
     Shared<Meaning> meaning_ = nullptr;
+    Shared<Submodule_Expr> module_ = nullptr;
     std::unique_ptr<Frame> frame_ = nullptr;
 
     Eval(
@@ -47,6 +49,8 @@ struct Eval
         Frame *parent_frame = nullptr);
 
     const Phrase& value_phrase();
+
+    std::pair<Shared<Module>, Shared<List>> denotes();
 
     Value eval();
 };
