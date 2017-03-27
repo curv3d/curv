@@ -573,18 +573,18 @@ struct Bindings
     void exec(Frame&) const;
 };
 
-// A submodule expression is `{stmt; stmt; ...;}` where stmt is a definition
-// or action. The scope of each definition is the entire submodule. The order
+// A module expression is `{stmt; stmt; ...;}` where stmt is a definition
+// or action. The scope of each definition is the entire module. The order
 // of definitions doesn't matter. Recursive definitions are supported.
 // Actions are executed in left-to-right order.
-struct Submodule_Expr : public Just_Expression
+struct Module_Expr : public Just_Expression
 {
     // maps public member names to slot #s in the value list.
     Shared<Module::Dictionary> dictionary_;
 
     Bindings bindings_;
 
-    Submodule_Expr(
+    Module_Expr(
         Shared<const Phrase> source,
         Shared<Module::Dictionary> dictionary,
         Bindings b)
@@ -595,7 +595,7 @@ struct Submodule_Expr : public Just_Expression
     {}
 
     virtual Value eval(Frame&) const override;
-    Shared<Module> eval_submodule(Frame&) const;
+    Shared<Module> eval_module(Frame&) const;
 };
 
 struct Let_Op : public Operation

@@ -601,7 +601,7 @@ Brace_Phrase::analyze(Environ& env) const
             fields.add_statement(share(stmt));
         });
         fields.analyze(source);
-        return make<Submodule_Expr>(source,
+        return make<Module_Expr>(source,
             std::move(fields.defn_dictionary_),
             std::move(fields.bindings_));
     } else {

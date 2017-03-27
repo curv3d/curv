@@ -30,7 +30,7 @@ Eval::compile(const Namespace* names, Frame* parent_frame)
         Bindings_Analyzer fields{env};
         fields.add_statement(phrase_);
         fields.analyze(phrase_);
-        module_ = make<Submodule_Expr>(phrase_,
+        module_ = make<Module_Expr>(phrase_,
             std::move(fields.defn_dictionary_),
             std::move(fields.bindings_));
     } else {
@@ -85,7 +85,7 @@ Eval::denotes()
     Shared<Module> module = nullptr;
     Shared<List> list = nullptr;
     if (module_) {
-        module = module_->eval_submodule(*frame_);
+        module = module_->eval_module(*frame_);
     } else {
         List_Builder lb;
         auto gen = meaning_->to_operation(parent_frame_);

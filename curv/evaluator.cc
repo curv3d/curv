@@ -561,14 +561,14 @@ Bindings::eval(Frame& f) const
 }
 
 Value
-Submodule_Expr::eval(Frame& f) const
+Module_Expr::eval(Frame& f) const
 {
-    auto module = eval_submodule(f);
+    auto module = eval_module(f);
     return {module};
 }
 
 Shared<Module>
-Submodule_Expr::eval_submodule(Frame& f) const
+Module_Expr::eval_module(Frame& f) const
 {
     return make<Module>(dictionary_, bindings_.eval(f));
 }
