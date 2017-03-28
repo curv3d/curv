@@ -107,27 +107,27 @@ Bindings_Analyzer::single_lookup(const Identifier& id)
 }
 
 Shared<Meaning>
-Bindings_Analyzer::lookup_function_nonlocal(const Identifier& id)
+Bindings_Analyzer::Thunk_Environ::single_lookup(const Identifier& id)
 {
-    auto b = defn_dictionary_->find(id.atom_);
-    if (b != defn_dictionary_->end()) {
-        if (is_recursive_function(b->second))
+    auto b = ba_.defn_dictionary_->find(id.atom_);
+    if (b != ba_.defn_dictionary_->end()) {
+        if (ba_.is_recursive_function(b->second))
             return make<Nonlocal_Function_Ref>(share(id), b->second);
         else
             return make<Module_Ref>(share(id), b->second);
     }
 
-    auto n = nonlocal_dictionary_.find(id.atom_);
-    if (n != nonlocal_dictionary_.end())
+    auto n = ba_.nonlocal_dictionary_.find(id.atom_);
+    if (n != ba_.nonlocal_dictionary_.end())
         return make<Nonlocal_Ref>(share(id), n->second);
     auto m = parent_->lookup(id);
     if (isa<Constant>(m))
         return m;
     if (auto expr = cast<Operation>(m)) {
-        slot_t slot = defn_dictionary_->size()
-            + bindings_.nonlocal_exprs_.size();
-        nonlocal_dictionary_[id.atom_] = slot;
-        bindings_.nonlocal_exprs_.push_back(expr);
+        slot_t slot = ba_.defn_dictionary_->size()
+            + ba_.bindings_.nonlocal_exprs_.size();
+        ba_.nonlocal_dictionary_[id.atom_] = slot;
+        ba_.bindings_.nonlocal_exprs_.push_back(expr);
         return make<Nonlocal_Ref>(share(id), slot);
     }
     return m;
@@ -140,12 +140,13 @@ Bindings_Analyzer::analyze(Shared<const Phrase> source)
     size_t n = defn_phrases_.size();
     auto defn_values = make_list(n);
     for (size_t i = 0; i < n; ++i) {
-        auto expr = analyze_op(*defn_phrases_[i], *this);
+        Thunk_Environ tenv(*this);
+        auto expr = analyze_op(*defn_phrases_[i], tenv);
         if (is_recursive_function(i)) {
             auto& l = dynamic_cast<Lambda_Expr&>(*expr);
             (*defn_values)[i] = {make<Lambda>(l.body_, l.nargs_, l.nslots_)};
         } else
-            (*defn_values)[i] = {make<Thunk>(expr)};
+            (*defn_values)[i] = {make<Thunk>(expr, tenv.frame_maxslots_)};
     }
     bindings_.defn_values_ = defn_values;
 
@@ -251,7 +252,7 @@ Lambda_Phrase::analyze(Environ& env) const
             if (p != names_.end())
                 return make<Arg_Ref>(share(id), p->second);
             if (recursive_)
-                return parent_->lookup_function_nonlocal(id);
+                return parent_->single_lookup(id);
             auto n = nonlocal_dictionary_.find(id.atom_);
             if (n != nonlocal_dictionary_.end())
                 return make<Nonlocal_Ref>(share(id), n->second);
@@ -733,7 +734,7 @@ For_Phrase::analyze(Environ& env) const
         virtual Shared<Meaning> single_lookup(const Identifier& id)
         {
             if (id.atom_ == name_)
-                return make<Letrec_Ref>(share(id), slot_);
+                return make<Let_Ref>(share(id), slot_);
             return nullptr;
         }
     };

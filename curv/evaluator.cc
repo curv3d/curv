@@ -68,32 +68,21 @@ Module_Ref::eval(Frame& f) const
     // 4. Store a reference to the Module_Expr in Frame.
     // Choice: #2.
 
-    return force_ref((*f.nonlocal)[slot_], *source_, f);
+    return force_ref(*f.nonlocal, slot_, *source_, f);
 }
 
 Value
 Submodule_Ref::eval(Frame& f) const
 {
     List& list = (List&)f[slot_].get_ref_unsafe();
-    //assert(list.type_ == Ref_Value::ty_list);
-    return force_ref(list[index_], *source_, f);
+    assert(list.type_ == Ref_Value::ty_list);
+    return force_ref(list, index_, *source_, f);
 }
 
 Value
 Nonlocal_Ref::eval(Frame& f) const
 {
     return (*f.nonlocal)[slot_];
-}
-
-Value
-Letrec_Ref::eval(Frame& f) const
-{
-    // Let bindings are represented as slots in the frame, and are lazily
-    // evaluated. The slots are initialized with thunks. On first reference,
-    // the thunk is evaluated and the slot is updated with the resulting value.
-    // Recursion is detected and causes an error.
-
-    return force_ref(f[slot_], *source_, f);
 }
 
 Value
@@ -128,14 +117,6 @@ Value
 Submodule_Function_Ref::eval(Frame& f) const
 {
     List& list = (List&)f[slot_].get_ref_unsafe();
-    if (list.type_ == Ref_Value::ty_list) {
-        // Set a flag on the values list so we don't re-enter this loop
-        // while it is still running.
-        list.type_ = (uint32_t)(-1);
-        for (slot_t i = 0; i < nlazy_; ++i)
-            force(list[i], f);
-        list.type_ = Ref_Value::ty_list;
-    }
     Lambda& lambda = (Lambda&) list[index_].get_ref_unsafe();
     assert(lambda.type_ == Ref_Value::ty_lambda);
     return {make<Closure>(lambda, list)};
@@ -555,8 +536,13 @@ Bindings::eval(Frame& f) const
     f[slot_] = {values};
     for (auto action : actions_)
         action->exec(f);
+#if 1
+    // Once a module field value escapes from the module, it can't be a thunk
+    // any longer, because we no longer have the context for forcing the thunk.
+    // This forcing could also happen when accessing a module field.
     for (slot_t i = 0; i < ndefns; ++i)
-        force(values->at(i), f);
+        force(*values, i, f);
+#endif
     return values;
 }
 

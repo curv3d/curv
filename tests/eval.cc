@@ -116,7 +116,7 @@ evaltest(const char* expr, const char* expected, Expectation expectation)
             return testing::AssertionFailure()
                 << "in expr '" << expr << "'\n"
                 << "expected value: '" << expected << "'\n"
-                << "  actual error: '" << result.failmsg_ << "'\n";
+                << "  actual error: '" << result.failall_ << "'\n";
         case x_failmsg:
             if (strcmp(expected, result.failmsg_) == 0) {
                 return testing::AssertionSuccess();
@@ -124,7 +124,7 @@ evaltest(const char* expr, const char* expected, Expectation expectation)
                 return testing::AssertionFailure()
                     << "in expr '" << expr << "'\n"
                     << "expected error: '" << expected << "'\n"
-                    << "  actual error: '" << result.failmsg_ << "'\n";
+                    << "  actual error: '" << result.failall_ << "'\n";
             }
         case x_failall:
             if (strcmp(expected, result.failall_) == 0) {

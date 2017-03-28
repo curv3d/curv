@@ -16,19 +16,22 @@ Thunk::print(std::ostream& out) const
 }
 
 Value
-force_ref(Value& slot, const Phrase& identifier, Frame& f)
+force_ref(List& nonlocal, slot_t i, const Phrase& identifier, Frame& f)
 {
+    Value& slot = nonlocal[i];
     if (slot.is_ref()) {
         auto& ref {slot.get_ref_unsafe()};
         switch (ref.type_) {
         case Ref_Value::ty_thunk:
           {
-            auto expr = static_cast<Thunk*>(&ref)->expr_;
+            auto thunk = static_cast<Thunk*>(&ref);
+            std::unique_ptr<Frame> f2 {Frame::make(
+                thunk->nslots_, f.system, &f, nullptr, &nonlocal)};
             slot = missing;
             // If there is recursion (eg, `x=x+1`), force_ref will be called
             // recursively. The second call will see the 'missing' value
             // and take the 'ty_missing' branch of the switch.
-            slot = expr->eval(f);
+            slot = thunk->expr_->eval(*f2);
             return slot;
           }
         case Ref_Value::ty_missing:
@@ -43,22 +46,20 @@ force_ref(Value& slot, const Phrase& identifier, Frame& f)
 }
 
 void
-force(Value& slot, Frame& f)
+force(List& nonlocal, slot_t i, Frame& f)
 {
+    Value& slot = nonlocal[i];
     if (slot.is_ref()) {
         auto& ref {slot.get_ref_unsafe()};
         switch (ref.type_) {
         case Ref_Value::ty_thunk:
           {
-            auto expr = static_cast<Thunk*>(&ref)->expr_;
+            auto thunk = static_cast<Thunk*>(&ref);
+            std::unique_ptr<Frame> f2 {Frame::make(
+                thunk->nslots_, f.system, &f, nullptr, &nonlocal)};
             // If there is recursion, force_ref will be called on `slot` during
             // evaluation, which will read and update slot and throw an error.
-        #if 1
-            slot = expr->eval(f);
-        #else
-            auto val = expr_->eval(f);
-            slot = val;
-        #endif
+            slot = thunk->expr_->eval(*f2);
             break;
           }
         case Ref_Value::ty_missing:

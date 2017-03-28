@@ -29,13 +29,6 @@ struct Environ
     {}
     Shared<Meaning> lookup(const Identifier& id);
     virtual Shared<Meaning> single_lookup(const Identifier&) = 0;
-
-    /// This is called when analyzing a Lambda_Phrase whose parent scope
-    /// is a module, to look up a binding at the module scope.
-    virtual Shared<Meaning> lookup_function_nonlocal(const Identifier& id)
-    {
-        return lookup(id);
-    }
 };
 
 struct Builtin_Environ : public Environ
@@ -103,9 +96,19 @@ struct Bindings_Analyzer : public Environ
         frame_maxslots_ = std::max(frame_nslots_, frame_maxslots_);
     }
 
+    struct Thunk_Environ : public Environ
+    {
+        Bindings_Analyzer& ba_;
+        Thunk_Environ(Bindings_Analyzer& ba)
+        :
+            Environ(ba.parent_),
+            ba_(ba)
+        {}
+        virtual Shared<Meaning> single_lookup(const Identifier&);
+    };
+
     bool is_recursive_function(slot_t);
     virtual Shared<Meaning> single_lookup(const Identifier&);
-    virtual Shared<Meaning> lookup_function_nonlocal(const Identifier& id);
 
     // Second, add some statements (definitions or actions):
     void add_statement(Shared<const Phrase> statement);

@@ -203,17 +203,6 @@ struct Let_Ref : public Just_Expression
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
-struct Letrec_Ref : public Just_Expression
-{
-    slot_t slot_;
-
-    Letrec_Ref(Shared<const Phrase> source, slot_t slot)
-    : Just_Expression(std::move(source)), slot_(slot)
-    {}
-
-    virtual Value eval(Frame&) const override;
-};
-
 struct Arg_Ref : public Just_Expression
 {
     slot_t slot_;
@@ -537,10 +526,7 @@ struct Record_Expr : public Just_Expression
 ///        thunk, which updates both slots.
 ///  3. The value list may contain "nonlocal values", which correspond to
 ///     bindings from the parent scope which are referenced by function
-///     definitions. These are proper values, not Thunks. During analysis,
-///     a lambda expression used in a named function definition calls
-///     env.lookup_function_nonlocal(id) to resolve nonlocal identifiers, and
-///     this adds new nonlocals to the value list as a side effect.
+///     definitions. These are proper values, not Thunks.
 struct Bindings
 {
     // location in the evaluation frame where the value list is stored.

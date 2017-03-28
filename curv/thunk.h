@@ -16,26 +16,28 @@ namespace curv {
 struct Thunk : public Ref_Value
 {
     Shared<const Operation> expr_;
+    slot_t nslots_;
 
-    Thunk(Shared<const Operation> expr)
+    Thunk(Shared<const Operation> expr, slot_t nslots)
     :
         Ref_Value(ty_thunk),
-        expr_(expr)
+        expr_(expr),
+        nslots_(nslots)
     {}
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const;
 };
 
-/// Lazy evaluation of an identifier reference to a module or letrec binding.
+/// Lazy evaluation of an identifier reference to a module or block binding.
 /// If the slot contains a thunk instead of a proper value, then the thunk
 /// is evaluated and the slot is updated.
-Value force_ref(Value& slot, const Phrase& identifier, Frame& f);
+Value force_ref(List& nonlocal, slot_t, const Phrase& identifier, Frame& f);
 
 /// Lazy evaluation of a definiens in a module or letrec construct.
 /// If the slot contains a thunk instead of a proper value, then the thunk
 /// is evaluated and the slot is updated.
-void force(Value& slot, Frame& f);
+void force(List&, slot_t, Frame& f);
 
 } // namespace curv
 #endif // header guard

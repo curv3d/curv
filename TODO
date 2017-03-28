@@ -12,14 +12,6 @@ curv::Function represents a variadic function.
 GL supports iteration. Need for mandelbrot and convex_hull.
 
 ## Language Redesign
-Bindings (correctness problem):
-* All members of a Bindings are thunked.
-* add Thunk::nslots_
-* force_ref() creates a Frame for evaluating the thunk.
-* force() is no longer needed.
-* All definientia are analyzed in an environment where the values list is the
-  nonlocals register and frame_nslots_ is initially 0.
-
 Submodules:
 * Extend shape2d to take a module argument.
 
@@ -203,6 +195,12 @@ ImplicitCAD:
   Create an interactive debugger, action to jump into the debugger,
   debug command to dump a specified frame, showing exact contents of local
   and non-local slots without evaluation.
+* Lazy Modules:
+  Need to force a module slot before the value leaves the module.
+  Currently, all fields values are forced during module creation.
+  For true lazy modules, need to pass a Frame* through Ref_Value::getfield
+  and Module::get.
+
 
 # Older Stuff
 
