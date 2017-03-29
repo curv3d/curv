@@ -21,9 +21,10 @@ class System;
 /// You can think of a Frame as containing all of the registers used
 /// by the Curv virtual machine.
 ///
-/// Each top-level module has a frame for evaluating subexpressions
-/// while constructing the module value.
-/// Builtin and user-defined functions have call frames.
+/// A program (script file) has a frame for evaluating the top level
+/// program expression.
+/// Calls to builtin and user-defined functions have call frames.
+/// Thunk invocations have frames.
 using Frame = aux::Tail_Array<Frame_Base>;
 
 struct Frame_Base
@@ -42,8 +43,8 @@ struct Frame_Base
 
     /// If this is a function call frame, then call_phrase is the source code
     /// for the function call, otherwise it's nullptr. This is debug metadata.
-    /// Module frames do not have a call_phrase. If the call_phrase is null,
-    /// then the frame does not appear in a stack trace.
+    /// Program and thunk frames do not have a call_phrase. If the call_phrase
+    /// is null, then the frame does not appear in a stack trace.
     const Call_Phrase* call_phrase;
 
     /// Slot array containing the values of nonlocal bindings.
