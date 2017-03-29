@@ -25,11 +25,11 @@ namespace curv {
 /// instances using make.
 struct Script : public aux::Shared_Base, public aux::Range<const char*>
 {
-    Shared<const String> name;
+    Shared<const String> name_;
 protected:
-    Script(Shared<const String> nm, const char*f, const char*l)
+    Script(Shared<const String> name, const char*f, const char*l)
     :
-        Range(f,l), name(std::move(nm))
+        Range(f,l), name_(std::move(name))
     {}
 public:
     virtual ~Script() {}
