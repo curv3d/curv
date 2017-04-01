@@ -1,8 +1,16 @@
 # Release 0.0: "2D subsystem"
-What remains for MVP?
 
-Meta: use https://opensource.guide/
+What remains for MVP? (What do I want to show in my first big demo?)
+* `curv -l filename` live programming. $CURV_EDITOR -- auto-open editor window 
+* curv CLI: open GL window for a shape
+* `iterate{val,cond,next,final}` -- for mandelbrot
+* 3D support
+* standard library
+* Documentation
+* Meta: use https://opensource.guide/
+* mac port or linux laptop
 
+-------------------------
 Define regular_polygon(n). See poly.curv.
 * live coding, please. curv -l pathname
 
@@ -10,6 +18,9 @@ gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
 curv::Function represents a variadic function.
 
 GL supports iteration. Need for mandelbrot and convex_hull.
+* `loop sum(i=0,total=0) if (i < len list) sum(i+1,total+list[i]) else total`
+  Constant space iteration for CPUs and GPUs, as long as tail recursion is
+  used.
 
 ## Language Redesign
 Submodules:
@@ -33,7 +44,7 @@ Records:
   * Conditional field generators: if(c)field
   * `...record`
   * Can use `for` to generate fields.
-  * merge rs = { for (f=rs) ...f }
+  * merge rs = { for (r=rs) ...r }
 
 Blocks:
 * Add GL support. How?

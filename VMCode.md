@@ -2,6 +2,18 @@
 The 2017 Curv executable format, to replace the 2016 Operation class
 and its eval/exec/generate protocol.
 
+## Mar 2017
+The main thing I need now is a more powerful GL language and compiler.
+* Blocks are supported. Currently, `let` is used instead.
+* Some kind of while-loop iteration is supported. Ideally, tail recursion is
+  supported. Or some kind of bespoke loop construct that is easier to compile.
+  `loop sum(i=0,total=0) if (i < len list) sum(i+1,total+list[i]) else total`
+
+I need to compile GL into an IR, optimize the IR, then finally convert the IR
+to GLSL. The IR can contain intermediate expressions that aren't GLSL
+compatible, which is okay if they are constant folded or transformed into
+something that is compatible.
+
 ## Feb 2017
 1. Phrase tree is compiled into an "executable IR", currently an Operation tree.
    Optimizations at this stage:
