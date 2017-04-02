@@ -117,8 +117,15 @@ Value
 Submodule_Function_Ref::eval(Frame& f) const
 {
     List& list = (List&)f[slot_].get_ref_unsafe();
+
+    // TODO: Kludge. We are seeing <thunk> values in the GL compiler.
+    assert(list.type_ == Ref_Value::ty_list);
+    for (size_t i = 0; i < list.size(); ++i)
+        force(list, i, f);
+
     Lambda& lambda = (Lambda&) list[index_].get_ref_unsafe();
     assert(lambda.type_ == Ref_Value::ty_lambda);
+
     return {make<Closure>(lambda, list)};
 }
 

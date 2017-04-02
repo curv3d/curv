@@ -22,6 +22,8 @@ GL supports iteration. Need for mandelbrot and convex_hull.
   Constant space iteration for CPUs and GPUs, as long as tail recursion is
   used.
 
+Fix kludge in Submodule_Function_Ref that forces thunks.
+
 ## Language Redesign
 Submodules:
 * Extend shape2d to take a module argument.
