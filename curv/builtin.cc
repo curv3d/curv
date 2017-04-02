@@ -337,6 +337,24 @@ struct Shape2d_Function : public Polyadic_Function
     }
 };
 
+struct Iterate_Function : public Polyadic_Function
+{
+    Iterate_Function() : Polyadic_Function(4) {}
+    Value call(Frame& f) override
+    {
+        auto val = f[0];
+        auto cond = f[1].to<Function>(At_Arg(1, f));
+        auto next = f[2].to<Function>(At_Arg(2, f));
+        auto final = f[3].to<Function>(At_Arg(3, f));
+        for (;;) {
+            bool b = cond->call(val, f).to_bool(At_Frame(&f));
+            if (!b) break;
+            val = next->call(val, f);
+        }
+        return final->call(val, f);
+    }
+};
+
 /// The meaning of a call to `echo`, such as `echo("foo")`.
 struct Echo_Action : public Just_Action
 {
@@ -469,6 +487,7 @@ builtin_namespace()
     {"len", make<Builtin_Value>(Value{make<Len_Function>()})},
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},
     {"shape2d", make<Builtin_Value>(Value{make<Shape2d_Function>()})},
+    {"iterate", make<Builtin_Value>(Value{make<Iterate_Function>()})},
     {"echo", make<Builtin_Meaning<Echo_Metafunction>>()},
     {"assert", make<Builtin_Meaning<Assert_Metafunction>>()},
     {"defined", make<Builtin_Meaning<Defined_Metafunction>>()},
