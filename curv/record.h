@@ -32,6 +32,8 @@ struct Record : public Ref_Value
     virtual void print(std::ostream&) const override;
     bool operator==(const Record&) const;
     virtual Value getfield(Atom) const override;
+
+    static const char name[];
 };
 
 } // namespace curv

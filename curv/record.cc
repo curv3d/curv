@@ -6,6 +6,8 @@
 
 namespace curv {
 
+const char Record::name[] = "record";
+
 void
 Record::print(std::ostream& out) const
 {
