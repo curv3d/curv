@@ -43,26 +43,18 @@ The GL compiler converts this to a `while` statement.
 `val` is a list of GL values, or it is a single GL value.
 Each GL value is given a GL variable.
 
-`break` is flaky in GLSL. Only affects really old hardware/drivers.
-(Try something simpler?)
+But Polyadic_Function::gl_call() doesn't permit me to reference function values
+as arguments. So, how to implement?
 
-`counted_loop`, which compiles to a `for` loop.
-```
-counted_loop(n, val, next, final)
-    I = val;
-    for (i = 0; i < n; ++i)
-        I = next i I;
-    result = final I;
-sum(list) = counted_loop(len list, 0, i->total->total+list[i], t->t);
-```
-
-What if we use `[0..<n]` to provide the range of numbers.
-Then it's a fold. So just make `reduce` a builtin. In GL, require the list
-argument to be an integer range.
+Could add `Function::gl_call_expr(Operation&, GL_Frame&)` as an alternative
+entry point (it in turn calls `Polyadic_Function::gl_call`). Then, arg must be
+a `List_Expr`, arguments must resolve as compile time values.
 
 ## Lazy Lists
 Try a more functional style of programming involving lazy lists
 and higher order functions. `[a, b, ...tail]` is probably a lazy list.
+
+Eg, use `[0..<n]>>...` to generate the numbers in `for(i=0;i<n;++i)...`.
 
 ## Tail Recursion Detection & Optimization
 Let's detect and optimize tail recursion in function definitions.

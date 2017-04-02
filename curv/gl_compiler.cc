@@ -279,25 +279,8 @@ Value gl_constify(Operation& op, GL_Frame& f)
 GL_Value Call_Expr::gl_eval(GL_Frame& f) const
 {
     auto val = gl_constify(*fun_, f);
-    if (auto fun = val.dycast<Polyadic_Function>()) {
-        auto list = cast<List_Expr>(arg_);
-        size_t nargs = (
-            fun->nargs_ == 1 ? 1
-            : list ? list->size()
-            : 1
-        );
-        if (nargs != fun->nargs_) {
-            throw Exception(At_GL_Phrase(*call_phrase()->arg_, &f),
-                "wrong number of arguments");
-        }
-        auto f2 = GL_Frame::make(fun->nslots_, f.gl, &f, call_phrase());
-        if (nargs == 1)
-            (*f2)[0] = arg_->gl_eval(f);
-        else {
-            for (size_t i = 0; i < list->size(); ++i)
-                (*f2)[i] = (*list)[i]->gl_eval(f);
-        }
-        return fun->gl_call(*f2);
+    if (auto fun = val.dycast<Function>()) {
+        return fun->gl_call_expr(*arg_, call_phrase(), f);
     }
     throw Exception(At_GL_Phrase(*fun_->source_, &f),
         stringify("Geometry Compiler: ",val," is not a function"));

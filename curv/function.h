@@ -26,6 +26,10 @@ struct Function : public Ref_Value
     // call the function during evaluation
     virtual Value call(Value, Frame&) = 0;
 
+    // Generate a call to the function during geometry compilation.
+    // The argument is represented as an expression.
+    virtual GL_Value gl_call_expr(Operation&, const Call_Phrase*, GL_Frame&) const;
+
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const;
 
@@ -55,6 +59,10 @@ struct Polyadic_Function : public Function
 
     // call the function during evaluation, with arguments stored in the frame.
     virtual Value call(Frame& args) = 0;
+
+    // Generate a call to the function during geometry compilation.
+    // The argument is represented as an expression.
+    virtual GL_Value gl_call_expr(Operation&, const Call_Phrase*, GL_Frame&) const override;
 
     // generate a call to the function during geometry compilation
     virtual GL_Value gl_call(GL_Frame&) const;
