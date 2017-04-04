@@ -2,8 +2,8 @@
 // Distributed under The MIT License.
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
-#ifndef CURV_EVAL_H
-#define CURV_EVAL_H
+#ifndef CURV_PROGRAM_H
+#define CURV_PROGRAM_H
 
 #include <curv/builtin.h>
 #include <curv/frame.h>
@@ -16,7 +16,7 @@
 
 namespace curv {
 
-struct Eval
+struct Program
 {
     const Script& script_;
     System& system_;
@@ -27,7 +27,7 @@ struct Eval
     Shared<Module_Expr> module_ = nullptr;
     std::unique_ptr<Frame> frame_ = nullptr;
 
-    Eval(
+    Program(
         const Script& script,
         System& system)
     :

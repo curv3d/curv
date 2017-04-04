@@ -11,7 +11,7 @@
 
 #include <curv/arg.h>
 #include <curv/builtin.h>
-#include <curv/eval.h>
+#include <curv/program.h>
 #include <curv/exception.h>
 #include <curv/file.h>
 #include <curv/function.h>
@@ -321,9 +321,9 @@ struct File_Function : public Polyadic_Function
         At_Arg ctx0(f);
         String& path {arg_to_string(f[0], ctx0)};
         auto file = make<File_Script>(share(path), ctx0);
-        Eval ev{*file, f.system};
-        ev.compile(nullptr, &f);
-        return ev.eval();
+        Program prog{*file, f.system};
+        prog.compile(nullptr, &f);
+        return prog.eval();
     }
 };
 

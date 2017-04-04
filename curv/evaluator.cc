@@ -4,7 +4,6 @@
 
 #include <curv/arg.h>
 #include <curv/meaning.h>
-#include <curv/eval.h>
 #include <curv/string.h>
 #include <curv/exception.h>
 #include <curv/function.h>

@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <curv/analyzer.h>
-#include <curv/eval.h>
+#include <curv/program.h>
 #include <curv/exception.h>
 #include <curv/parse.h>
 #include <curv/phrase.h>
@@ -56,9 +56,9 @@ struct Evaluator
         try {
             console.str("");
             console.clear(); // Clear state flags.
-            curv::Eval ev{*script_, make_system()};
-            ev.compile();
-            auto den = ev.denotes();
+            curv::Program prog{*script_, make_system()};
+            prog.compile();
+            auto den = prog.denotes();
 
             String_Builder buf;
             bool first = true;

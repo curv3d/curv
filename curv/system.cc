@@ -3,7 +3,7 @@
 // See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
 
 #include <curv/context.h>
-#include <curv/eval.h>
+#include <curv/program.h>
 #include <curv/file.h>
 #include <curv/system.h>
 
@@ -18,10 +18,10 @@ System_Impl::System_Impl(
     std_namespace_ = builtin_namespace();
     if (stdlib_path != nullptr) {
         auto file = make<File_Script>(std::move(stdlib_path), Context{});
-        Eval ev{*file, *this};
-        ev.compile();
-        auto stdlib = ev.eval();
-        auto m = stdlib.to<Module>(At_Phrase(*ev.phrase_, nullptr));
+        Program prog{*file, *this};
+        prog.compile();
+        auto stdlib = prog.eval();
+        auto m = stdlib.to<Module>(At_Phrase(*prog.phrase_, nullptr));
         for (auto b : *m)
             std_namespace_[b.first] = make<Builtin_Value>(b.second);
     }

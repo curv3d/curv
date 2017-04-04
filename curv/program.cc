@@ -4,7 +4,7 @@
 
 #include <curv/analyzer.h>
 #include <curv/builtin.h>
-#include <curv/eval.h>
+#include <curv/program.h>
 #include <curv/parse.h>
 #include <curv/scanner.h>
 #include <curv/system.h>
@@ -14,7 +14,7 @@
 namespace curv {
 
 void
-Eval::compile(const Namespace* names, Frame* parent_frame)
+Program::compile(const Namespace* names, Frame* parent_frame)
 {
     if (names == nullptr)
         names_ = &system_.std_namespace();
@@ -42,7 +42,7 @@ Eval::compile(const Namespace* names, Frame* parent_frame)
 }
 
 const Phrase&
-Eval::value_phrase()
+Program::value_phrase()
 {
     auto ph = phrase_;
     for (;;) {
@@ -68,7 +68,7 @@ Eval::value_phrase()
 }
 
 Value
-Eval::eval()
+Program::eval()
 {
     if (module_ != nullptr) {
         throw Exception(At_Phrase(*phrase_, parent_frame_),
@@ -80,7 +80,7 @@ Eval::eval()
 }
 
 std::pair<Shared<Module>, Shared<List>>
-Eval::denotes()
+Program::denotes()
 {
     Shared<Module> module = nullptr;
     Shared<List> list = nullptr;
