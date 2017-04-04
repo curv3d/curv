@@ -2,6 +2,86 @@
 The 2017 Curv executable format, to replace the 2016 Operation class
 and its eval/exec/generate protocol.
 
+## Apr 2017: New Compiler
+**Goals (short and long term):**
+* GL optimizations like constant folding, common subexpression elimination,
+  algebraic identities/strength reduction. Abstract interpretation of non-GL
+  sub-expressions into GL-compatible expressions (eg, break down compound
+  arguments, partial evaluation eliminates non-GL values).
+* GL: multiple top level data and function definitions.
+  Don't necessarily inline expand all function calls.
+* GL: convert tail recursion to iteration.
+* interpreter: constant space tail recursion
+* debugger: single stepping
+* uniqueness optimizations (in place update of unique objects, COW), based on
+  refcount checking and move optimizations.
+
+**Architecture:**
+```
+scanner -> parser -> analyzer -> optimizer -> codegen -> evaluator
+shape value -> gl_analyzer -> optimizer -> gl_codegen
+```
+
+**IR (Intermediate Representation):**
+* `curv::Operation` evolves into the IR used by the regular and the GL compiler.
+* Optimize phase does IR to IR transformations. `Operation::optimize()`
+* Slots are allocated by codegen(), not analyze().
+* Reference to non-recursive variable contains definiens, to support
+  constant folding and other optimizations.
+
+**EXE (Executable Representation):**
+* The interpreter is a state machine with a main loop and an IP (instruction
+  pointer) register, storing all temporary values in the Frame. Supports
+  constant space tail recursion, single stepping. Minimal use of C stack.
+* Instructions for strict operands are executed, and their results stored in
+  the frame, before the operator instruction is executed.
+* Instructions are Operation objects. An expression has a `slot_t result_`
+  field, indicating where the result is stored. It has zero or more shared
+  pointers to its operands. It uses `operand->result_` to fetch the value of a
+  strict operand, which was previously executed.
+
+```
+// Execute an instruction, using Frame slots for input and output values.
+// Update the IP and possibly the frame register to set up for next instruction.
+Operation* Operation::iexec(unique_ptr<Frame>&) const
+
+Operation* IP = program->body_;
+unique_ptr<Frame> frame = Frame::make(program->nslots_, ...);
+while (IP = IP->exec(frame))
+    ;
+```
+
+**Older Notes**<br>
+New GL IR, replaces `GL_Value`.
+It's an updated version of Meaning/Operation/Expression, in which a variable
+reference links to the definiens. We support IR to IR transformations, such as
+constant folding, abstract/partial evaluation, common subexpression elimination.
+
+Phrase::analyze() creates a Meaning/Operation, but frame slots aren't allocated
+yet. Then we optimize the IR. Then we generate code (which includes slot
+assignment). The GL compiler generates new IR, which is optimized and translated
+to GLSL.
+
+First step is to modify Operation so that a variable reference links to the
+definiens. BUT we can't have reference cycles in the Operation graph.
+* We handle recursive and non-recursive definitions differently.
+* A reference to a non-recursive variable is the definiens. Multiple
+  references to the same variable are shared pointers to the same Expression.
+  The use-count indicates how many references to the variable exist.
+  Common-subexpression optimization can result in the same situation.
+  In the end, it's the existence of common subexpressions, not variable
+  definitions, that controls frame slot allocations.
+* But, that conflicts with keeping a meaning tree (not DAG) with a source_
+  field in each tree node? It seems that for non-recursive variables, we won't
+  have operations with Identifiers as source. If such an identifier is an
+  argument to a function call, it won't be underlined in an error message?
+  Actually that's no problem, since that's done by walking the Call_Phrase.
+  Maybe this is okay.
+* But, how does this affect the interactive debugger, examining local variables?
+* Recursive definitions are different. A module value M is constructed,
+  a reference becomes an (M,slot) pair. Probably the slot isn't allocated until
+  codegen time.
+
 ## Mar 2017
 The main thing I need now is a more powerful GL language and compiler.
 * Blocks are supported. Currently, `let` is used instead.
