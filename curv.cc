@@ -15,7 +15,7 @@ extern "C" {
 #include <aux/progdir.h>
 #include <curv/analyzer.h>
 #include <curv/context.h>
-#include <curv/eval.h>
+#include <curv/program.h>
 #include <curv/exception.h>
 #include <curv/file.h>
 #include <curv/parse.h>
@@ -103,9 +103,9 @@ interactive_mode(const char* argv0)
         }
         auto script = curv::make<CString_Script>("", line);
         try {
-            curv::Eval ev{*script, sys};
-            ev.compile(&names, nullptr);
-            auto den = ev.denotes();
+            curv::Program prog{*script, sys};
+            prog.compile(&names, nullptr);
+            auto den = prog.denotes();
             if (den.first) {
                 for (auto f : *den.first)
                     names[f.first] = curv::make<curv::Builtin_Value>(f.second);
@@ -306,10 +306,10 @@ main(int argc, char** argv)
     try {
         auto file = curv::make<curv::File_Script>(
             curv::make_string(filename), curv::Context{});
-        curv::Eval ev{*file, sys};
-        ev.compile();
-        auto value = ev.eval();
-        exporter(value, curv::At_Phrase(ev.value_phrase(), nullptr), std::cout);
+        curv::Program prog{*file, sys};
+        prog.compile();
+        auto value = prog.eval();
+        exporter(value, curv::At_Phrase(prog.value_phrase(), nullptr), std::cout);
     } catch (curv::Exception& e) {
         std::cerr << "ERROR: " << e << "\n";
         return EXIT_FAILURE;
