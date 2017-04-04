@@ -16,6 +16,9 @@ class Shape2D;
 class Operation;
 class Call_Phrase;
 class Phrase;
+class List_Expr_Base;
+using List_Expr = aux::Tail_Array<List_Expr_Base>;
+class Lambda_Expr;
 
 /// The Geometry Compiler translates the CSG tree created by the evaluator
 /// into optimized GPU code for fast rendering on a graphics display.
@@ -188,6 +191,9 @@ GL_Value gl_eval_expr(GL_Frame&, const Operation& op, GL_Type);
 GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase&);
 GL_Value gl_call_unary_numeric(GL_Frame&, const char*);
 void gl_put_as(GL_Frame& f, GL_Value val, const Context&, GL_Type type);
+
+Shared<List_Expr> gl_expr_to_list(Operation& expr, int len, GL_Frame& f);
+Shared<Lambda_Expr> gl_expr_to_function(Operation& expr, GL_Frame& f);
 
 } // namespace
 #endif // header guard

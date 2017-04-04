@@ -75,12 +75,12 @@ struct Polyadic_Function : public Function
 /// It's not a proper value, but can be stored in a Value slot.
 struct Lambda : public Ref_Value
 {
-    Shared<const Operation> expr_;
+    Shared<Operation> expr_;
     unsigned nargs_;
     slot_t nslots_; // size of call frame
 
     Lambda(
-        Shared<const Operation> expr,
+        Shared<Operation> expr,
         unsigned nargs, slot_t nslots)
     :
         Ref_Value(ty_lambda),
@@ -97,11 +97,11 @@ struct Lambda : public Ref_Value
 /// represented by a closure over a lambda expression.
 struct Closure : public Polyadic_Function
 {
-    Shared<const Operation> expr_;
+    Shared<Operation> expr_;
     Shared<List> nonlocal_;
 
     Closure(
-        Shared<const Operation> expr,
+        Shared<Operation> expr,
         Shared<List> nonlocal,
         unsigned nargs, slot_t nslots)
     :

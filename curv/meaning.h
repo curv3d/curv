@@ -479,7 +479,7 @@ struct Range_Expr : public Just_Expression
 };
 
 struct List_Expr_Base : public Just_Expression,
-    public aux::Tail_Array_Data<Shared<const Operation>>
+    public aux::Tail_Array_Data<Shared<Operation>>
 {
     List_Expr_Base(Shared<const Phrase> source)
     : Just_Expression(std::move(source)) {}

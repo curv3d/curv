@@ -237,7 +237,7 @@ Lambda_Phrase::analyze(Environ& env) const
     {
         Atom_Map<slot_t>& names_;
         Module::Dictionary nonlocal_dictionary_;
-        std::vector<Shared<const Operation>> nonlocal_exprs_;
+        std::vector<Shared<Operation>> nonlocal_exprs_;
         bool recursive_;
 
         Arg_Environ(Environ* parent, Atom_Map<slot_t>& names, bool recursive)
