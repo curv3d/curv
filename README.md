@@ -1,3 +1,25 @@
+Curv is a programming language for creating art using mathematics.
+It's a 2D and 3D geometric modelling tool that supports full colour,
+animation and 3D printing.
+
+Curv is easy to use for beginning programmers and artists, but also has
+power and depth for expert users. Applications include:
+* procedurally generated art
+* mathematical visualization
+* processing and creating images, animations and 3D models for 3D printing
+
+[pretty pictures and animated gifs]
+
+[links to in depth topics]
+* How to install Curv
+* Live programming using the Curv tool
+* Introduction to the language
+* Introduction to the technology and the geometry engine
+* Project status and roadmap
+* How to contribute to the Curv project
+* Open source licence (MIT)
+
+---------------------------------------------
 Curv is a language, virtual machine and geometry engine for 2D and 3D solid
 modelling. It's inspired by OpenSCAD, as well as ImplicitCAD, Antimony, and
 other open source solid modellers. The end goal is to contribute some
