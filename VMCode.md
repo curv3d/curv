@@ -29,6 +29,25 @@ shape value -> gl_analyzer -> optimizer -> gl_codegen
 * Reference to non-recursive variable contains definiens, to support
   constant folding and other optimizations.
 
+Maybe, the distinction between expression, generator, action is determined
+during analysis and stored in the Operation?
+* earlier diagnosis of errors (not required for MVP)
+* The information might be needed to analyze certain (future) phrases?
+  Eg, generalized brace phrases. A list of actions & definitions is a module.
+  A list of actions and field generators is a record. This can be done without
+  analysis-time phrase typing (error messages might be better).
+
+Maybe, there is no runtime polymorphism for phrase types Operation no longer
+has eval, exec and generate methods, selected at runtime. Instead, phrase types
+are baked into object types.
+* This appears to be needed for the new EXE format. All operations have an
+  iexec() method, there aren't 3 methods selected at runtime.
+
+References to non-recursive definitions are represented by shared references
+to the definiens. The Operation graph is a DAG, a structure which also supports
+common-subexpression elimination. Pointer equality of Operation nodes means
+optimization-time equivalence.
+
 **EXE (Executable Representation):**
 * The interpreter is a state machine with a main loop and an IP (instruction
   pointer) register, storing all temporary values in the Frame. Supports
@@ -50,6 +69,66 @@ unique_ptr<Frame> frame = Frame::make(program->nslots_, ...);
 while (IP = IP->exec(frame))
     ;
 ```
+Most operations have a `Operation* next_` field which is initialized during
+codegen().
+
+**Changes**<br>
+Existing GL compiler is refactored:
+* Inline expand a call to a closure value, yielding IR (an Operation tree).
+* IR to IR optimizations (new)
+* Convert an IR tree to GLSL, similar to original GL compiler code.
+
+**First Step: GL iteration**<br>
+I want to call iterate() from GL. Iterate has anonymous lambda expressions
+as arguments, which may capture local variables. Want to inline expand calls
+to those lambdas. I want to perform inline expansion of function calls using
+an IR to IR transformation. The function could be a Closure value or it could
+be a Lambda expression.
+* Top level shape S compiled to GLSL. Create a Lambda expression for the
+  GLSL `main_dist` function. The body is a Call expression with S.dist (wrapped
+  in Constant) and the parent lambda argument (an `Arg_Ref`).
+  Then inline expand the body, IR to IR.
+* To inline expand a Call expr, several cases.
+  * Lambda expr. Just copy the body, replacing arg refs with the actual
+    argument.
+  * Closure value. Copy the body, replacing arg refs and nonlocal refs with
+    the corresponding expression.
+  * Non-closure Function value. Leave the call expr unchanged. Maybe call
+    `call_optimize()` on the function value so that it can perform constant
+    folding or partial evaluation.
+
+`AFrame` is an abstract or analysis/optimization time representation of
+a frame. It contains an Operation hash table. When creating a new Operation
+within a frame, check if it already exists in the table. This merges common
+subexpressions, creates a DAG of operations.
+
+-----
+Initially, `Shared<Operation> Operation::optimize(Optimizer&)`.
+* Needs to be implemented for every Operation class: At minimum, optimize the
+  children, then construct a new node with the optimized kids.
+* Initially, `struct Optimizer {}`.
+* `Call_Expr::optimize` does inline expansion as described above.
+
+Given this, what's the path to GL support for `iterate`?
+* `Iterate_Function::call_optimize` does what?
+  * The most important job for an optimize function is constant folding, and
+    in general providing additional information that can be used by the parent
+    Operation to perform their optimization.
+  * Optimize the argument, which could turn into a constant list or a List_Expr
+    containing constants.
+  * If the argument is constant, then I should do constant folding.
+    Probably by: calling codegen then eval. Or, mark the node as constant and
+    let the higher level decide at what level to eval? Why?
+  * The 3 function arguments *might* resolve into constants or lambda exprs.
+    In this case, do I attempt to "generate inline code"?
+    Treat this like the `for` generator: it has an opaque local variable, the
+    iteration variable, and a body, which is a generator that references the
+    iteration variable. In the same way, during analysis, allocate a local
+    variable and convert the function arguments into expressions that reference
+    the iteration variable. Finally we construct an Iterate_Expr.
+
+`Iterate_Function::call_codegen` assigns slots and threads together its
+constituent operations into executable code.
 
 **Older Notes**<br>
 New GL IR, replaces `GL_Value`.

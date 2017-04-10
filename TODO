@@ -3,12 +3,18 @@
 What remains for MVP? (What do I want to show in my first big demo?)
 * `curv -l filename` live programming. $CURV_EDITOR -- auto-open editor window 
 * curv CLI: open GL window for a shape
-* `iterate{val,cond,next,final}` -- for mandelbrot
+* GL iteration, for fractals
 * 3D support
 * standard library
 * Documentation
 * Meta: use https://opensource.guide/
 * mac port or linux laptop
+
+Iteration
+* (a:=1; b:=2; a+b) -- sequential definition block, replaces `let`
+* (i:=0; while(i<n) next i:=i+1; i) -- last action of a seq block may be `while`
+* GL support for the above
+* implement mandelbrot set
 
 -------------------------
 Define regular_polygon(n). See poly.curv.
@@ -419,8 +425,10 @@ nary union:
   * (x : predicate) -> body
   * error(string)
   * warning(string)
-  * echo_timing(string,expr_value_discarded)
-  * echo_timing(string) expr_value_returned
+  * echo_timing(string,expr), returns value of expr
+    * Might want to measure eval time while ignoring result.
+    * In OpenSCAD, `*` is a prefix operator that ignores the following shape.
+    * In Curv, maybe `ignore(arg)` is an action that evaluates and ignores arg.
   * enter_debugger, aka `break`, `debug`
 * len(module), module[i]
 * records: merge[r1,r2]

@@ -17,7 +17,60 @@ for (int i=0; i<maxiter; i++) {
 }
 ```
 
+## `iterate` operator
+Built-in iterate syntax should be easier to implement in GL
+than `iterate` the first class function.
+
+Ideally, the syntax has the following 5-part abstract structure:
+  1. {iteration variable definitions: names and initial values}
+  2. {local variables, recomputed each iteration}
+  3.   while (condition)
+  4.   next: update iteration variables
+  5. final: expression of iter vars that gives final result
+Part 2, the local variables, aren't supported by my earlier `iterate` function.
+
+Syntax #1:
+  sum list =
+    loop (i=0, total=0)
+    while (i < len list) (i = i+1, total = total + list[i])
+    total;
+  // local variables can be prefixed to the condition, and are in scope
+  // in the body, similar to C++.
+
+Syntax #2:
+  sum list = (
+    var i := 0;
+    var total := 0;
+    while (i < len list) (
+      i := i + 1;
+      total := total + list[i];
+    );
+    total
+  );
+I like this one. A first implementation can be very strict about the syntax.
+No mixing of definitions and assignments in the same block.
+Start with a new kind of block which only contains sequential definitions
+(and actions):
+  (var a:=1; var b:=2; expr)
+replacing `let`. Then extend it so that an initial set of sequential definitions
+can be followed by a while loop (then a body).
+
+Alt syntax:
+  sum list = (
+    i := 0;
+    total := 0;
+    while (i < len list) (
+      next i := i + 1;
+      next total := total + list[i];
+    );
+    total
+  );
+Use this syntax.
+
 ## `iterate` function
+NOTE: It's a bit of a pain to implement `iterate` as a pure higher order
+function in GL; it seems to require a redesigned compiler.
+
 Use a built-in higher order function whose call compiles to a GLSL `for`
 or `while` statement. No new syntax.
 

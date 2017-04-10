@@ -1,0 +1,94 @@
+# Fractals
+
+Curv requirements:
+* Iteration in the GL language.
+* Progressive rendering and supersampling.
+
+## 2D Fractals
+Fractal Flames. http://flam3.com/
+
+electricsheep.com : a large gallery of "sheep" (fractal flames)
+and their "genomes" (parameters)
+
+Original software from the inventor:
+https://github.com/scottdraves/flam3
+* C, no gui
+
+https://github.com/bitsed/qosmic
+C++/QT5 GUI on top of flam3 library (above), for Linux.
+
+http://oxidizer.sourceforge.net/Site/Oxidizer.html
+MacOS GUI for flam3.
+
+http://www.apophysis.org/ -- open source fractal flame editor
+GPL, Windows, Delphi, inactive (since 2013)
+
+## 3D Fractals
+The Mandelbulb
+https://en.wikipedia.org/wiki/Mandelbulb
+
+"Holy Box" 3D fractal
+https://www.youtube.com/watch?v=OW5RnrlTeowo
+http://bib993.deviantart.com/art/Underwater-amazing-object-208457489
+created with "MandelBulb 3D" software.
+
+http://mandelbulb.com/
+* high quality gallery of 3D fractals
+
+mandelbulb-3d software -- very popular and powerful
+* mac, windows binaries on mandelbulb.com
+* https://github.com/thargor6/mb3d
+* written in Delphi Pascal; Windows native; Mac and Linux via Wine
+
+mandelbulber
+* similar in power to mandelbulb-3d.
+* http://www.mandelbulber.com/
+* uses ray marching. Voxel and PLY (mesh) export.
+* C++/QT5/GPL3. Linux,Mac,Windows. Under active development.
+* https://github.com/buddhi1980/mandelbulber2/
+* raymarching step size needs manual control in some cases. There are tools
+for choosing a good step size: histograms etc.
+* Use it, make contributions. Export Mandelbulber to Curv.
+
+http://sub.blue/fractal-lab
+A fractal rendering program using WebGL and a web ui. Code not available.
+
+## Progressive Rendering (sub.blue)
+
+Rendering fractals is very a computationally expensive process. A 2D fractal
+requires tens or hundreds of iterations for each pixel, a 3D fractal then
+repeats this process tens or hundreds of times as it ray marches into the
+scene. The GPU helps by processing many pixels in parallel, but even a top-end
+system will struggle or even fail to render a scene at full resolution. To
+maintain responsive interaction Fractal Lab uses a progressive rendering
+process which can be thought of as a grid interlacing technique.
+
+A full resolution frame buffer acts as an accumulator but the rendering
+is done on a separate quarter size frame buffer. On the first pass this
+fills the accumulator giving a pixelated view. The subsequent passes only
+colour one pixel per block of four; second pass colours the top right, third
+pass the bottom left and the final pass the bottom right. This way you can
+immediately get a feel for the scene as everything has some level of coverage.
+
+Using this approach many scenes have 30fps interaction speeds at around a
+1280x720 accumulator size which continue to refine to a 4x super-sampled
+image in less than a second.
+
+Super-sampling is very important, even in the interactive editor mode, as
+often the interesting details only appear once the jaggy edges have resolved.
+
+## Ray Marching (mandelbulber)
+In Mandelbulber, there is a choice of algorithms for computing the distance
+field:
+* analytical (Analytical DE), faster.
+* numerical (Delta DE) calculations of gradients, slower.
+
+Each formula is assigned a DE mode and function (“preferred”).
+In most cases the preferred mode is Analytical DE (fastest).
+
+The distance field is only an approximation, and ray-marching can overshoot.
+So you can define a number between 0 and 1 ("ray-marching step multiplier")
+which the distance value is multiplied by.
+
+There is a statistics view, showing data accumulated during ray marching
+that can be used to tune the rendering parameters.
