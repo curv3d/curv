@@ -197,7 +197,11 @@ Scanner::get_token()
         tok.kind = Token::k_semicolon;
         goto success;
     case ':':
-        tok.kind = Token::k_colon;
+        if (p < last && *p == '=') {
+            tok.kind = Token::k_assign;
+            ++p;
+        } else
+            tok.kind = Token::k_colon;
         goto success;
     case '+':
         tok.kind = Token::k_plus;

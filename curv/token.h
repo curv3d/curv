@@ -79,6 +79,7 @@ struct Token
         k_greater_or_equal, ///! `>=` operator
         k_not,              ///! `!` operator
         k_equate,           ///! `=` operator
+        k_assign,           ///! `:=` operator
         k_and,              ///! `&&` operator
         k_or,               ///! `||` operator
         k_left_call,        ///! `<<` operator
