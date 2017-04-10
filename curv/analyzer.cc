@@ -389,20 +389,24 @@ Definition_Phrase::analyze(Environ& env) const
 }
 
 Shared<Definition>
-analyze_def_iter(Environ& env, Phrase& left, Shared<Phrase> right)
+analyze_def_iter(
+    Environ& env, Phrase& left, Shared<Phrase> right, Definition::Kind kind)
 {
     if (auto id = dynamic_cast<const Identifier*>(&left))
-        return make<Definition>(share(*id), right);
+        return make<Definition>(share(*id), right, kind);
     if (auto call = dynamic_cast<const Call_Phrase*>(&left))
         return analyze_def_iter(env, *call->function_,
-            make<Lambda_Phrase>(call->arg_, Token(), right));
+            make<Lambda_Phrase>(call->arg_, Token(), right), kind);
     throw Exception(At_Phrase(left,  env), "invalid definiendum");
 }
 
 Shared<Definition>
 Definition_Phrase::analyze_def(Environ& env) const
 {
-    return analyze_def_iter(env, *left_, right_);
+    return analyze_def_iter(env, *left_, right_,
+        equate_.kind == Token::k_assign
+            ? Definition::k_sequential
+            : Definition::k_recursive);
 }
 
 Shared<Meaning>

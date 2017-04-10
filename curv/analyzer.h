@@ -60,13 +60,16 @@ struct Definition : public aux::Shared_Base
 {
     Shared<const Identifier> name_;
     Shared<Phrase> definiens_;
+    enum Kind { k_recursive, k_sequential } kind_;
 
     Definition(
         Shared<const Identifier> name,
-        Shared<Phrase> definiens)
+        Shared<Phrase> definiens,
+        Kind k)
     :
         name_(std::move(name)),
-        definiens_(std::move(definiens))
+        definiens_(std::move(definiens)),
+        kind_(k)
     {}
 };
 

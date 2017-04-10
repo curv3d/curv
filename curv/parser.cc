@@ -214,6 +214,7 @@ parse_item(Scanner& scanner)
     tok = scanner.get_token();
     switch (tok.kind) {
     case Token::k_equate:
+    case Token::k_assign:
         return make<Definition_Phrase>(
             std::move(left), tok, parse_item(scanner));
     case Token::k_colon:
