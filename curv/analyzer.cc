@@ -194,7 +194,7 @@ String_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Unary_Phrase::analyze(Environ& env) const
 {
-    switch (op_.kind) {
+    switch (op_.kind_) {
     case Token::k_not:
         return make<Not_Expr>(
             share(*this),
@@ -296,7 +296,7 @@ analyze_assoc(Environ& env,
 Shared<Meaning>
 Binary_Phrase::analyze(Environ& env) const
 {
-    switch (op_.kind) {
+    switch (op_.kind_) {
     case Token::k_or:
         return make<Or_Expr>(
             share(*this),
@@ -404,7 +404,7 @@ Shared<Definition>
 Definition_Phrase::analyze_def(Environ& env) const
 {
     return analyze_def_iter(env, *left_, right_,
-        equate_.kind == Token::k_assign
+        equate_.kind_ == Token::k_assign
             ? Definition::k_sequential
             : Definition::k_recursive);
 }
@@ -557,7 +557,7 @@ bool
 is_colon_phrase(const Phrase& ph)
 {
     auto b = dynamic_cast<const Binary_Phrase*>(&ph);
-    return b != nullptr && b->op_.kind == Token::k_colon;
+    return b != nullptr && b->op_.kind_ == Token::k_colon;
 }
 
 Shared<Meaning>
@@ -757,7 +757,7 @@ Range_Phrase::analyze(Environ& env) const
         analyze_op(*first_, env),
         analyze_op(*last_, env),
         step_ ? analyze_op(*step_, env) : nullptr,
-        op1_.kind == Token::k_open_range);
+        op1_.kind_ == Token::k_open_range);
 }
 
 } // namespace curv

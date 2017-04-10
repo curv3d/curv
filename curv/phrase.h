@@ -171,7 +171,7 @@ struct Separator_Phrase : public Phrase
     {
         const Arg& last = args_.back();
         return args_.front().expr_->location().ending_at(
-            last.separator_.kind == Token::k_missing
+            last.separator_.kind_ == Token::k_missing
             ? last.expr_->location().token()
             : last.separator_);
     }
@@ -267,7 +267,7 @@ struct Call_Phrase : public Phrase
 
     virtual Location location() const override
     {
-        if (op_.kind == Token::k_right_call)
+        if (op_.kind_ == Token::k_right_call)
             return arg_->location().ending_at(function_->location().token());
         else
             return function_->location().ending_at(arg_->location().token());

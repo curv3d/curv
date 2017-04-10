@@ -43,7 +43,7 @@ Scanner::get_token()
     const char* last = script_.last;
 
     // collect whitespace and comments
-    tok.first_white = p - first;
+    tok.first_white_ = p - first;
     while (p < last) {
         if (isspace(*p)) {
             ++p;
@@ -73,9 +73,9 @@ Scanner::get_token()
                     }
                     if (p == last) {
                         ptr_ = p;
-                        tok.kind = Token::k_bad_token;
-                        tok.first = begin_comment - first;
-                        tok.last = last - first;
+                        tok.kind_ = Token::k_bad_token;
+                        tok.first_ = begin_comment - first;
+                        tok.last_ = last - first;
                         throw Exception(At_Token(tok, *this),
                             "unterminated comment");
                     }
@@ -88,11 +88,11 @@ Scanner::get_token()
         else
             break;
     }
-    tok.first = p - first;
+    tok.first_ = p - first;
 
     // recognize end of script
     if (p == last) {
-        tok.kind = Token::k_end;
+        tok.kind_ = Token::k_end;
         goto success;
     }
 
@@ -117,7 +117,7 @@ Scanner::get_token()
             if (p == last || !isdigit(*p)) {
                 while (p < last && (isalnum(*p) || *p == '_'))
                     ++p;
-                tok.last = p - first;
+                tok.last_ = p - first;
                 ptr_ = p;
                 throw Exception(At_Token(tok, *this), "bad numeral");
             }
@@ -127,11 +127,11 @@ Scanner::get_token()
         if (p < last && (isalpha(*p) || *p == '_')) {
             while (p < last && (isalnum(*p) || *p == '_'))
                 ++p;
-            tok.last = p - first;
+            tok.last_ = p - first;
             ptr_ = p;
             throw Exception(At_Token(tok, *this), "bad numeral");
         }
-        tok.kind = Token::k_num;
+        tok.kind_ = Token::k_num;
         goto success;
     }
 
@@ -139,139 +139,139 @@ Scanner::get_token()
     if (isalpha(*p) || *p == '_') {
         while (p < last && (isalnum(*p) || *p == '_'))
             ++p;
-        aux::Range<const char*> id(first+tok.first, p);
+        aux::Range<const char*> id(first+tok.first_, p);
         if (id == "if")
-            tok.kind = Token::k_if;
+            tok.kind_ = Token::k_if;
         else if (id == "else")
-            tok.kind = Token::k_else;
+            tok.kind_ = Token::k_else;
         else if (id == "let")
-            tok.kind = Token::k_let;
+            tok.kind_ = Token::k_let;
         else if (id == "for")
-            tok.kind = Token::k_for;
+            tok.kind_ = Token::k_for;
         else if (id == "by")
-            tok.kind = Token::k_by;
+            tok.kind_ = Token::k_by;
         else
-            tok.kind = Token::k_ident;
+            tok.kind_ = Token::k_ident;
         goto success;
     }
 
     // recognize remaining tokens
     switch (*p++) {
     case '(':
-        tok.kind = Token::k_lparen;
+        tok.kind_ = Token::k_lparen;
         goto success;
     case ')':
-        tok.kind = Token::k_rparen;
+        tok.kind_ = Token::k_rparen;
         goto success;
     case '[':
-        tok.kind = Token::k_lbracket;
+        tok.kind_ = Token::k_lbracket;
         goto success;
     case ']':
-        tok.kind = Token::k_rbracket;
+        tok.kind_ = Token::k_rbracket;
         goto success;
     case '{':
-        tok.kind = Token::k_lbrace;
+        tok.kind_ = Token::k_lbrace;
         goto success;
     case '}':
-        tok.kind = Token::k_rbrace;
+        tok.kind_ = Token::k_rbrace;
         goto success;
     case '.':
         if (p < last && *p == '.') {
             if (p+1 < last && p[1] == '<') {
-                tok.kind = Token::k_open_range;
+                tok.kind_ = Token::k_open_range;
                 p += 2;
             } else if (p+1 < last && p[1] == '.') {
-                tok.kind = Token::k_ellipsis;
+                tok.kind_ = Token::k_ellipsis;
                 p += 2;
             } else {
-                tok.kind = Token::k_range;
+                tok.kind_ = Token::k_range;
                 ++p;
             }
         } else
-            tok.kind = Token::k_dot;
+            tok.kind_ = Token::k_dot;
         goto success;
     case ',':
-        tok.kind = Token::k_comma;
+        tok.kind_ = Token::k_comma;
         goto success;
     case ';':
-        tok.kind = Token::k_semicolon;
+        tok.kind_ = Token::k_semicolon;
         goto success;
     case ':':
         if (p < last && *p == '=') {
-            tok.kind = Token::k_assign;
+            tok.kind_ = Token::k_assign;
             ++p;
         } else
-            tok.kind = Token::k_colon;
+            tok.kind_ = Token::k_colon;
         goto success;
     case '+':
-        tok.kind = Token::k_plus;
+        tok.kind_ = Token::k_plus;
         goto success;
     case '-':
         if (p < last && *p == '>') {
-            tok.kind = Token::k_right_arrow;
+            tok.kind_ = Token::k_right_arrow;
             ++p;
         } else
-            tok.kind = Token::k_minus;
+            tok.kind_ = Token::k_minus;
         goto success;
     case '*':
-        tok.kind = Token::k_times;
+        tok.kind_ = Token::k_times;
         goto success;
     case '/':
-        tok.kind = Token::k_over;
+        tok.kind_ = Token::k_over;
         goto success;
     case '^':
-        tok.kind = Token::k_power;
+        tok.kind_ = Token::k_power;
         goto success;
     case '\'':
-        tok.kind = Token::k_apostrophe;
+        tok.kind_ = Token::k_apostrophe;
         goto success;
     case '@':
-        tok.kind = Token::k_at;
+        tok.kind_ = Token::k_at;
         goto success;
     case '=':
         if (p < last && *p == '=') {
-            tok.kind = Token::k_equal;
+            tok.kind_ = Token::k_equal;
             ++p;
         } else
-            tok.kind = Token::k_equate;
+            tok.kind_ = Token::k_equate;
         goto success;
     case '!':
         if (p < last && *p == '=') {
-            tok.kind = Token::k_not_equal;
+            tok.kind_ = Token::k_not_equal;
             ++p;
         } else
-            tok.kind = Token::k_not;
+            tok.kind_ = Token::k_not;
         goto success;
     case '<':
         if (p < last && *p == '=') {
-            tok.kind = Token::k_less_or_equal;
+            tok.kind_ = Token::k_less_or_equal;
             ++p;
         } else if (p < last && *p == '<') {
-            tok.kind = Token::k_left_call;
+            tok.kind_ = Token::k_left_call;
             ++p;
         } else
-            tok.kind = Token::k_less;
+            tok.kind_ = Token::k_less;
         goto success;
     case '>':
         if (p < last && *p == '=') {
-            tok.kind = Token::k_greater_or_equal;
+            tok.kind_ = Token::k_greater_or_equal;
             ++p;
         } else if (p < last && *p == '>') {
-            tok.kind = Token::k_right_call;
+            tok.kind_ = Token::k_right_call;
             ++p;
         } else
-            tok.kind = Token::k_greater;
+            tok.kind_ = Token::k_greater;
         goto success;
     case '&':
         if (p < last && *p == '&') {
-            tok.kind = Token::k_and;
+            tok.kind_ = Token::k_and;
             ++p;
         } else
             goto error;
         goto success;
     case '|':
         if (p < last && *p == '|') {
-            tok.kind = Token::k_or;
+            tok.kind_ = Token::k_or;
             ++p;
         } else
             goto error;
@@ -279,15 +279,15 @@ Scanner::get_token()
     case '"':
         for (;;) {
             if (p == last) {
-                tok.last = p - first;
-                tok.kind = Token::k_bad_token;
+                tok.last_ = p - first;
+                tok.kind_ = Token::k_bad_token;
                 ptr_ = p;
                 throw Exception(At_Token(tok, *this),
                     "unterminated string literal");
             }
             if (*p == '"') {
                 ++p;
-                tok.kind = Token::k_string;
+                tok.kind_ = Token::k_string;
                 goto success;
             }
             ++p;
@@ -296,13 +296,13 @@ Scanner::get_token()
 
     // report an error
 error:
-    tok.last = p - first;
-    tok.kind = Token::k_bad_token;
+    tok.last_ = p - first;
+    tok.kind_ = Token::k_bad_token;
     ptr_ = p;
     throw Exception(At_Token(tok, *this), illegal_character_message(p[-1]));
 
 success:
-    tok.last = p - first;
+    tok.last_ = p - first;
     ptr_ = p;
     //cerr << "get_token fresh " << tok << "\n";
     return tok;

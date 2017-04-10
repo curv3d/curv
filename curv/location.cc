@@ -23,13 +23,13 @@ auto Location::line_info() const
     unsigned lineno = 0;
     unsigned colno = 0;
     unsigned linebegin = 0;
-    for (uint32_t i = 0; i <= token_.last; ++i) {
-        if (i == token_.first) {
+    for (uint32_t i = 0; i <= token_.last_; ++i) {
+        if (i == token_.first_) {
             info.start_line_num = lineno;
             info.start_column_num = colno;
             info.start_line_begin = linebegin;
         }
-        if (i == token_.last) {
+        if (i == token_.last_) {
             info.end_line_num = lineno;
             info.end_column_num = colno;
         }
@@ -38,8 +38,8 @@ auto Location::line_info() const
             ++lineno;
             linebegin = i;
             colno = 0;
-            if (i == token_.first) {
-                if (token_.first == token_.last) {
+            if (i == token_.first_) {
+                if (token_.first_ == token_.last_) {
                     // a zero-length EOF token, preceded by \n.
                     // Moving the token to precede the \n so that the
                     // caret is positioned in a more readable place for write().
@@ -82,7 +82,7 @@ Location::write(std::ostream& out) const
             << ")-"
             << info.end_line_num+1 << "(column " << info.end_column_num << ")";
     }
-    switch (token_.kind) {
+    switch (token_.kind_) {
     case Token::k_end:
         out << ", at end of script";
         break;
@@ -129,17 +129,17 @@ Range<const char*>
 Location::range() const
 {
     return Range<const char*>(
-        script_->first + token_.first, script_->first + token_.last);
+        script_->first + token_.first_, script_->first + token_.last_);
 }
 
 Location
 Location::starting_at(Token tok) const
 {
     Location loc = *this;
-    if (tok.kind != Token::k_missing) {
-        loc.token_.first_white = tok.first_white;
-        loc.token_.first = tok.first;
-        loc.token_.kind = Token::k_phrase;
+    if (tok.kind_ != Token::k_missing) {
+        loc.token_.first_white_ = tok.first_white_;
+        loc.token_.first_ = tok.first_;
+        loc.token_.kind_ = Token::k_phrase;
     }
     return loc;
 }
@@ -148,9 +148,9 @@ Location
 Location::ending_at(Token tok) const
 {
     Location loc = *this;
-    if (tok.kind != Token::k_missing) {
-        loc.token_.last = tok.last;
-        loc.token_.kind = Token::k_phrase;
+    if (tok.kind_ != Token::k_missing) {
+        loc.token_.last_ = tok.last_;
+        loc.token_.kind_ = Token::k_phrase;
     }
     return loc;
 }

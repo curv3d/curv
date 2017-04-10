@@ -9,8 +9,8 @@ TEST(curv, parse)
 {
     auto s1 = make<String_Script>(make_string(""), make_string("x+\n"));
     Token t1;
-    t1.first = 3;
-    t1.last = 3;
+    t1.first_ = 3;
+    t1.last_ = 3;
     Location l1(*s1, t1);
     Location::Line_Info li1 = l1.line_info();
 
@@ -23,8 +23,8 @@ TEST(curv, parse)
     auto s2 = make<String_Script>(make_string(""),
         make_string("abc\ndef\n"));
     Token t2;
-    t2.first = 5;
-    t2.last = 6;
+    t2.first_ = 5;
+    t2.last_ = 6;
     Location l2(*s2, t2);
     Location::Line_Info li2 = l2.line_info();
 

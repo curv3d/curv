@@ -48,7 +48,7 @@ parse_program(Scanner& scanner)
 {
     auto commas = parse_commas(scanner);
     Token tok = scanner.get_token();
-    if (tok.kind != Token::k_end)
+    if (tok.kind_ != Token::k_end)
         throw Exception(At_Token(tok, scanner), "syntax error in program");
     return make<Program_Phrase>(commas, tok);
 }
@@ -78,22 +78,22 @@ parse_commas(Scanner& scanner)
 {
     auto tok = scanner.get_token();
     scanner.push_token(tok);
-    if (is_list_end_token(tok.kind)) {
+    if (is_list_end_token(tok.kind_)) {
         Token begin = tok;
-        begin.last = begin.first;
+        begin.last_ = begin.first_;
         return make<Empty_Phrase>(Location{scanner.script_, begin});
     }
     auto commas = make<Comma_Phrase>();
     for (;;) {
         auto semis = parse_semicolons(scanner);
         tok = scanner.get_token();
-        if (tok.kind == Token::k_comma) {
+        if (tok.kind_ == Token::k_comma) {
             commas->args_.push_back({semis, tok});
             tok = scanner.get_token();
             scanner.push_token(tok);
-            if (is_list_end_token(tok.kind))
+            if (is_list_end_token(tok.kind_))
                 return commas;
-        } else if (is_list_end_token(tok.kind)) {
+        } else if (is_list_end_token(tok.kind_)) {
             scanner.push_token(tok);
             if (commas->args_.empty())
                 return semis;
@@ -133,13 +133,13 @@ parse_semicolons(Scanner& scanner)
     for (;;) {
         auto item = parse_item(scanner);
         auto tok = scanner.get_token();
-        if (tok.kind == Token::k_semicolon) {
+        if (tok.kind_ == Token::k_semicolon) {
             semis->args_.push_back({item, tok});
             tok = scanner.get_token();
             scanner.push_token(tok);
-            if (is_semicolon_end_token(tok.kind))
+            if (is_semicolon_end_token(tok.kind_))
                 return semis;
-        } else if (is_semicolon_end_token(tok.kind)) {
+        } else if (is_semicolon_end_token(tok.kind_)) {
             scanner.push_token(tok);
             if (semis->args_.empty())
                 return item;
@@ -168,7 +168,7 @@ Shared<Phrase>
 parse_item(Scanner& scanner)
 {
     auto tok = scanner.get_token();
-    switch (tok.kind) {
+    switch (tok.kind_) {
     case Token::k_ellipsis:
         return make<Unary_Phrase>(tok, parse_item(scanner));
     case Token::k_if:
@@ -176,7 +176,7 @@ parse_item(Scanner& scanner)
         auto condition = parse_primary(scanner, "condition following 'if'");
         auto then_expr = parse_item(scanner);
         Token tok2 = scanner.get_token();
-        if (tok2.kind != Token::k_else) {
+        if (tok2.kind_ != Token::k_else) {
             scanner.push_token(tok2);
             return make<If_Phrase>(
                 tok, condition, then_expr, Token{}, nullptr);
@@ -212,7 +212,7 @@ parse_item(Scanner& scanner)
     scanner.push_token(tok);
     auto left = parse_disjunction(scanner);
     tok = scanner.get_token();
-    switch (tok.kind) {
+    switch (tok.kind_) {
     case Token::k_equate:
     case Token::k_assign:
         return make<Definition_Phrase>(
@@ -241,7 +241,7 @@ parse_disjunction(Scanner& scanner)
     auto left = parse_conjunction(scanner);
     for (;;) {
         auto tok = scanner.get_token();
-        switch (tok.kind) {
+        switch (tok.kind_) {
         case Token::k_or:
             left = make<Binary_Phrase>(
                 std::move(left), tok, parse_conjunction(scanner));
@@ -266,7 +266,7 @@ parse_conjunction(Scanner& scanner)
     auto left = parse_relation(scanner);
     for (;;) {
         auto tok = scanner.get_token();
-        switch (tok.kind) {
+        switch (tok.kind_) {
         case Token::k_and:
             left = make<Binary_Phrase>(
                 std::move(left), tok, parse_relation(scanner));
@@ -287,7 +287,7 @@ parse_relation(Scanner& scanner)
 {
     auto left = parse_range(scanner);
     auto tok = scanner.get_token();
-    switch (tok.kind) {
+    switch (tok.kind_) {
     case Token::k_equal:
     case Token::k_not_equal:
     case Token::k_less:
@@ -312,14 +312,14 @@ parse_range(Scanner& scanner)
 {
     auto left = parse_sum(scanner);
     auto tok = scanner.get_token();
-    switch (tok.kind) {
+    switch (tok.kind_) {
     case Token::k_range:
     case Token::k_open_range:
       {
         auto right = parse_sum(scanner);
         auto tok2 = scanner.get_token();
         Shared<Phrase> step;
-        if (tok2.kind == Token::k_by) {
+        if (tok2.kind_ == Token::k_by) {
             step = parse_sum(scanner);
         } else {
             scanner.push_token(tok2);
@@ -342,7 +342,7 @@ parse_sum(Scanner& scanner)
     auto left = parse_product(scanner);
     for (;;) {
         auto tok = scanner.get_token();
-        switch (tok.kind) {
+        switch (tok.kind_) {
         case Token::k_plus:
         case Token::k_minus:
             left = make<Binary_Phrase>(
@@ -362,7 +362,7 @@ parse_product(Scanner& scanner)
     auto left = parse_unary(scanner);
     for (;;) {
         auto tok = scanner.get_token();
-        switch (tok.kind) {
+        switch (tok.kind_) {
         case Token::k_times:
         case Token::k_over:
             left = make<Binary_Phrase>(
@@ -380,7 +380,7 @@ Shared<Phrase>
 parse_unary(Scanner& scanner)
 {
     auto tok = scanner.get_token();
-    switch (tok.kind) {
+    switch (tok.kind_) {
     case Token::k_plus:
     case Token::k_minus:
     case Token::k_not:
@@ -403,14 +403,14 @@ parse_postfix(Scanner& scanner)
     Token tok;
     for (;;) {
         tok = scanner.get_token();
-        switch (tok.kind) {
+        switch (tok.kind_) {
         case Token::k_power:
             return make<Binary_Phrase>(
                 postfix, tok, parse_unary(scanner));
         case Token::k_dot:
         case Token::k_apostrophe:
             postfix = make<Binary_Phrase>(postfix, tok, parse_primary(scanner,
-                tok.kind == Token::k_dot
+                tok.kind_ == Token::k_dot
                 ? "expression following ."
                 : "expression following '"));
             continue;
@@ -430,9 +430,9 @@ parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
 {
     auto body = parse_commas(scanner);
     auto tok2 = scanner.get_token();
-    if (tok2.kind == Token::k_end)
+    if (tok2.kind_ == Token::k_end)
         throw Exception(At_Token(tok, scanner), "unmatched delimiter");
-    if (tok2.kind != close)
+    if (tok2.kind_ != close)
         throw Exception(At_Token(tok2, scanner), "syntax error in delimited phrase");
     return make<Ph>(tok, body, tok2);
 }
@@ -450,7 +450,7 @@ Shared<Phrase>
 parse_primary(Scanner& scanner, const char* what)
 {
     auto tok = scanner.get_token();
-    switch (tok.kind) {
+    switch (tok.kind_) {
     case Token::k_num:
         return make<Numeral>(scanner.script_, tok);
     case Token::k_ident:
