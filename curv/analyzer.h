@@ -73,8 +73,10 @@ struct Definition : public aux::Shared_Base
     {}
 };
 
-/// Analyze a set of recursive definitions and a sequence of actions,
+/// Analyze a set of definitions and a sequence of actions,
 /// as found in a block or a module literal.
+/// Currently, either all definitions are recursive or all are sequential:
+/// mixing the two types is not implemented yet.
 struct Bindings_Analyzer : public Environ
 {
     Shared<Module::Dictionary> defn_dictionary_;
@@ -82,6 +84,7 @@ struct Bindings_Analyzer : public Environ
     std::vector<Shared<const Phrase>> defn_phrases_;
     std::vector<Shared<const Phrase>> action_phrases_;
     Bindings bindings_;
+    Definition::Kind kind_;
 
     // First, construct the Bindings_Analyzer:
     Bindings_Analyzer(Environ& parent)
@@ -91,7 +94,8 @@ struct Bindings_Analyzer : public Environ
         nonlocal_dictionary_(),
         defn_phrases_(),
         action_phrases_(),
-        bindings_()
+        bindings_(),
+        kind_(Definition::k_sequential)
     {
         frame_nslots_ = parent.frame_nslots_;
         frame_maxslots_ = parent.frame_maxslots_;

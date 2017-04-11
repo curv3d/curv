@@ -72,6 +72,13 @@ Bindings_Analyzer::add_statement(Shared<const Phrase> stmt)
     if (def == nullptr)
         action_phrases_.push_back(stmt);
     else {
+        if (defn_dictionary_->empty())
+            kind_ = def->kind_;
+        else if (kind_ != def->kind_) {
+            throw Exception(At_Phrase(*def->name_, *parent_),
+                "can't mix recursive and sequential definitions in the same block");
+        }
+
         Atom name = def->name_->atom_;
         if (defn_dictionary_->find(name) != defn_dictionary_->end())
             throw Exception(At_Phrase(*def->name_, *parent_),

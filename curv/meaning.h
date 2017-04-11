@@ -499,13 +499,25 @@ struct Record_Expr : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
-/// 'Bindings' represents a set of recursive definitions, and an ordered
-/// sequence of actions, as found in a module literal or block.
+/// 'Bindings' represents the definitions and actions in a module literal
+/// or block.
+///
+/// There are two kinds:
+/// * recursive : a set of recursive definitions and an ordered sequence
+///   of actions.
+/// * sequential : a single ordered sequence of sequential definitions
+///   and actions, executed in order.
+/// TODO: Later, we can generalize, and permit a mix of recursive and sequential
+/// definitions. The semantics are tricky: a recursive function must abort if
+/// it attempts to reference a sequential binding that is not yet initialized.
 ///
 /// At runtime, a slot in the evaluation frame (slot_) contains the value list.
 /// The value list is used as the nonlocal list for the closures constructed
 /// from each top-level function definition. If this Bindings is used to
 /// construct a Module value, then the value list is stored in the Module.
+/// TODO: As an optimization, we could store the value list directly in the
+///       frame, if the definitions are sequential, and do not form a module,
+///       and there are no function definitions.
 ///
 /// The value list has a value for each binding, followed by "nonlocal values".
 ///  1. The value for a function definition is a Lambda. This is combined
@@ -513,18 +525,20 @@ struct Record_Expr : public Just_Expression
 ///     is referenced (see Submodule_Function_Ref). We can't store the Closure
 ///     directly in the value list because that would create a reference cycle,
 ///     which would cause a storage leak, since we use reference counting.
-///  2. The value for a non-function definition is a Thunk. The Thunk is
-///     evaluated and replaced by a Value on first reference, see Submodule_Ref.
-///     This allows definitions to be written in any order. The order of
-///     definition evaluation is determined at runtime by data dependencies, and
-///     can change from one evaluation to the next, affording flexibility which
-///     is also available in Haskell. Unlike Haskell, some recursive definitions
-///     will abort, reporting illegal recursion, instead of looping forever.
-///     For example, `{x=x;}`.
+///  2. The value for a non-function recursive definition is a Thunk.
+///     The Thunk is evaluated and replaced by a Value on first reference,
+///     see Submodule_Ref. This allows definitions to be written in any order.
+///     The order of definition evaluation is determined at runtime by data
+///     dependencies, and can change from one evaluation to the next, affording
+///     flexibility which is also available in Haskell. Unlike Haskell,
+///     some recursive definitions will abort, reporting illegal recursion,
+///     instead of looping forever. For example, `{x=x;}`.
 ///      * TODO: Once I support pattern matching definitions, like `(x,y)=f(a)`,
 ///        then the slots for x and y are initialized with the same action
 ///        thunk, which updates both slots.
-///  3. The value list may contain "nonlocal values", which correspond to
+///  3. The value for a non-function sequential definition is set to
+///     a proper value by an action in the action list.
+///  4. The value list may contain "nonlocal values", which correspond to
 ///     bindings from the parent scope which are referenced by function
 ///     definitions. These are proper values, not Thunks.
 struct Bindings
