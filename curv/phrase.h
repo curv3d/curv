@@ -105,11 +105,10 @@ struct Binary_Phrase : public Phrase
 
 struct Lambda_Phrase : public Binary_Phrase
 {
-    /// Normally false, this is set to true prior to analysis
-    /// if the lambda expression occurs in the definiens position
-    /// of a definition, and if it is being compiled to support
-    /// recursive definitions.
-    bool recursive_ = false;
+    /// Normally false, this is set to true prior to analysis if the lambda
+    /// occurs in the definiens position of a definition. All of the function
+    /// definitions in the same block or module share a single nonlocals list.
+    bool shared_nonlocals_ = false;
 
     using Binary_Phrase::Binary_Phrase;
 

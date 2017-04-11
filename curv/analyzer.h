@@ -114,7 +114,7 @@ struct Bindings_Analyzer : public Environ
         virtual Shared<Meaning> single_lookup(const Identifier&);
     };
 
-    bool is_recursive_function(slot_t);
+    bool is_function_definition(slot_t);
     virtual Shared<Meaning> single_lookup(const Identifier&);
 
     // Second, add some statements (definitions or actions):

@@ -88,12 +88,12 @@ Bindings_Analyzer::add_statement(Shared<const Phrase> stmt)
 
         auto lambda = dynamic_cast<Lambda_Phrase*>(def->definiens_.get());
         if (lambda != nullptr)
-            lambda->recursive_ = true;
+            lambda->shared_nonlocals_ = true;
     }
 }
 
 bool
-Bindings_Analyzer::is_recursive_function(slot_t slot)
+Bindings_Analyzer::is_function_definition(slot_t slot)
 {
     return isa<const Lambda_Phrase>(defn_phrases_[slot]);
 }
@@ -103,7 +103,7 @@ Bindings_Analyzer::single_lookup(const Identifier& id)
 {
     auto b = defn_dictionary_->find(id.atom_);
     if (b != defn_dictionary_->end()) {
-        if (is_recursive_function(b->second))
+        if (is_function_definition(b->second))
             return make<Submodule_Function_Ref>(share(id),
                 bindings_.slot_, b->second, defn_dictionary_->size());
         else
@@ -118,7 +118,7 @@ Bindings_Analyzer::Thunk_Environ::single_lookup(const Identifier& id)
 {
     auto b = ba_.defn_dictionary_->find(id.atom_);
     if (b != ba_.defn_dictionary_->end()) {
-        if (ba_.is_recursive_function(b->second))
+        if (ba_.is_function_definition(b->second))
             return make<Nonlocal_Function_Ref>(share(id), b->second);
         else
             return make<Module_Ref>(share(id), b->second);
@@ -149,7 +149,7 @@ Bindings_Analyzer::analyze(Shared<const Phrase> source)
     for (size_t i = 0; i < n; ++i) {
         Thunk_Environ tenv(*this);
         auto expr = analyze_op(*defn_phrases_[i], tenv);
-        if (is_recursive_function(i)) {
+        if (is_function_definition(i)) {
             auto& l = dynamic_cast<Lambda_Expr&>(*expr);
             (*defn_values)[i] = {make<Lambda>(l.body_, l.nargs_, l.nslots_)};
         } else
@@ -245,10 +245,12 @@ Lambda_Phrase::analyze(Environ& env) const
         Atom_Map<slot_t>& names_;
         Module::Dictionary nonlocal_dictionary_;
         std::vector<Shared<Operation>> nonlocal_exprs_;
-        bool recursive_;
+        bool shared_nonlocals_;
 
-        Arg_Environ(Environ* parent, Atom_Map<slot_t>& names, bool recursive)
-        : Environ(parent), names_(names), recursive_(recursive)
+        Arg_Environ(
+            Environ* parent, Atom_Map<slot_t>& names, bool shared_nonlocals)
+        :
+            Environ(parent), names_(names), shared_nonlocals_(shared_nonlocals)
         {
             frame_nslots_ = names.size();
             frame_maxslots_ = names.size();
@@ -258,7 +260,7 @@ Lambda_Phrase::analyze(Environ& env) const
             auto p = names_.find(id.atom_);
             if (p != names_.end())
                 return make<Arg_Ref>(share(id), p->second);
-            if (recursive_)
+            if (shared_nonlocals_)
                 return parent_->single_lookup(id);
             auto n = nonlocal_dictionary_.find(id.atom_);
             if (n != nonlocal_dictionary_.end())
@@ -275,7 +277,7 @@ Lambda_Phrase::analyze(Environ& env) const
             return m;
         }
     };
-    Arg_Environ env2(&env, params, recursive_);
+    Arg_Environ env2(&env, params, shared_nonlocals_);
     auto expr = analyze_op(*right_, env2);
     auto src = share(*this);
     Shared<List_Expr> nonlocals =
