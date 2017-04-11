@@ -502,14 +502,11 @@ struct Record_Expr : public Just_Expression
 /// 'Bindings' represents the definitions and actions in a module literal
 /// or block.
 ///
-/// There are two kinds:
-/// * recursive : a set of recursive definitions and an ordered sequence
-///   of actions.
-/// * sequential : a single ordered sequence of sequential definitions
-///   and actions, executed in order.
-/// TODO: Later, we can generalize, and permit a mix of recursive and sequential
-/// definitions. The semantics are tricky: a recursive function must abort if
-/// it attempts to reference a sequential binding that is not yet initialized.
+/// A mix of recursive and sequential definitions is supported, however, the
+/// recursive definitions must come first, and the sequential definitions are
+/// not visible within the recursive definitions. Removing this restriction
+/// would entail complex, arbitrary semantics, a complex implementation, and
+/// more complex documentation.
 ///
 /// At runtime, a slot in the evaluation frame (slot_) contains the value list.
 /// The value list is used as the nonlocal list for the closures constructed

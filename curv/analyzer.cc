@@ -65,21 +65,106 @@ Builtin_Environ::single_lookup(const Identifier& id)
     return nullptr;
 }
 
+/*
+For recursive bindings, we must delay analysis until all statements have
+been examined and the defn_dictionary is built.
+
+For sequential bindings, it would be more convenient to analyze each statement
+as it arrives, using an environment that is extended as each definition arrives.
+Actions that arrive before the first definition are analyzed using the parent
+environment.
+
+How to implement this?
+1. Make one pass through the statements, looking for the first definition.
+   Classify the bindings as sequential or recursive.
+   Make a second pass through the statements, using different algorithms for
+   sequential and recursive bindings.
+2. Before the first definition is seen, accumulate actions in action_phrases.
+   On the first definition, classify as recursive or sequential.
+   For sequential, analyze the cached action phrases, then switch to analyzing
+   each statement. For recursive, use the original algorithm.
+3. Next step, permit a mix of sequential and recursive definitions, but,
+   a recursive definition can't reference a sequential definition in the same
+   scope.
+
+   We have to accumulate all of the statement phrases before we do any analysis.
+   During the add_statement phase, we:
+   * Assign a sequence number to each action and sequential definition.
+     At the end we have a seq_count_.
+   * Make a list of action phrases, storing seq_no and Phrase in each entry.
+   * Make a dictionary mapping name to (slot, seq_no (if sequential), Definition)
+
+   With this implementation, we don't know the sequence# of a recursive
+   definition. If it is at the top of a block, we'd expect it to see only
+   the parent scope. If it is at the bottom of a block, we'd expect it to
+   see sequential definitions (but we want this to be an error). No way to
+   conditionally issue the error. I guess that's a limitation for now.
+   Recursive definitions are not in the scope of sequential definitions
+   within the same block. In that case, do we want to make it an error for
+   a recursive definition to follow a sequential definition? Okay, do it.
+
+   During analysis, we:
+   * Make a list of action- and seq.defn- actions from the action phrases
+     and the dictionary. We know the total # of actions from the previous phase.
+     We construct an array of actions of this size. Then we initialize it, out
+     of order, by scanning the action phrase list and the dictionary.
+
+   * an array of statements, each with a statement #, classified as action,
+     recursive defn or sequential defn.
+   * a dictionary mapping each name to a statement #, slot, definition kind
+   Or:
+   * A list of action phrases, storing stmt# and Phrase in each entry.
+   * A dictionary mapping name to (stmt#, slot, Definition)
+   During the analysis phase, we'll do this:
+   * Traverse the statement list, analyzing each action and definition.
+     We'll publish the current statement # and we'll hide sequential definitions
+     not yet processed.
+   * Order of statement processing doesn't matter.
+4. Suppose you mix recursive definitions with sequential *re*-definitions.
+   We associate a different slot with each rebinding (each slot is either
+   missing (not initialized yet) or initialized once to a value that doesn't
+   change. Iteration variables in a while statement have their own slots
+   which aren't accessible to recursive functions. The final value of an
+   iteration variable is copied to a new slot which doesn't change.
+   This is pretty complicated; it's easier to make it illegal to mix
+   recursive definitions with sequential re-definitions. Or, a recursive
+   definition can't reference a definition that is rebound.
+   Or, a recursive definition can't reference a sequential definition in the
+   same scope.
+5. `m = {a:=f(x), b:=y, ...}; f=...(m.b)...;`
+   The module fields are initialized sequentially during module construction.
+   When `f` is called during the initialization of `a`, `m` is uninitialized.
+   If we use recursive definitions in the module, this works fine.
+*/
+
 void
 Bindings_Analyzer::add_statement(Shared<const Phrase> stmt)
 {
     auto def = stmt->analyze_def(*parent_);
     if (def == nullptr)
-        action_phrases_.push_back(stmt);
+        action_phrases_.emplace_back(seq_count_++, std::move(stmt));
     else {
-        if (defn_dictionary_->empty())
-            kind_ = def->kind_;
-        else if (kind_ != def->kind_) {
-            throw Exception(At_Phrase(*def->name_, *parent_),
-                "can't mix recursive and sequential definitions in the same block");
+        switch (def->kind_) {
+        case Definition::k_sequential:
+            ++seq_def_count_;
+            break;
+        case Definition::k_recursive:
+            if (seq_def_count_ > 0) {
+                throw Exception(At_Phrase(*def->name_, *parent_),
+                    "a recursive definition can't follow a sequential"
+                    " definition");
+            }
+            break;
         }
 
         Atom name = def->name_->atom_;
+        if (def_dictionary_.find(name) != def_dictionary_.end())
+            throw Exception(At_Phrase(*def->name_, *parent_),
+                stringify(name, ": multiply defined"));
+        int id = (def->kind_ == Definition::k_sequential ? seq_count_++ : 0);
+        def_dictionary_.emplace(
+            std::make_pair(name, Definiens{slot_count_++, id, def}));
+
         if (defn_dictionary_->find(name) != defn_dictionary_->end())
             throw Exception(At_Phrase(*def->name_, *parent_),
                 stringify(name, ": multiply defined"));
@@ -159,7 +244,7 @@ Bindings_Analyzer::analyze(Shared<const Phrase> source)
 
     // analyze actions
     for (size_t i = 0; i < action_phrases_.size(); ++i)
-        bindings_.actions_.push_back(analyze_op(*action_phrases_[i], *this));
+        bindings_.actions_.push_back(analyze_op(*action_phrases_[i].phrase_, *this));
 
     parent_->frame_maxslots_ = frame_maxslots_;
 }

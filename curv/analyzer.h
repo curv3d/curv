@@ -79,12 +79,34 @@ struct Definition : public aux::Shared_Base
 /// mixing the two types is not implemented yet.
 struct Bindings_Analyzer : public Environ
 {
+    struct Action_Phrase
+    {
+        int seq_no_;
+        Shared<const Phrase> phrase_;
+
+        Action_Phrase(int seq_no, Shared<const Phrase> phrase)
+        : seq_no_(seq_no), phrase_(std::move(phrase))
+        {}
+    };
+    struct Definiens
+    {
+        slot_t slot_;
+        int seq_no_;
+        Shared<const Definition> def_;
+
+        Definiens(slot_t slot, int seq_no, Shared<const Definition> def)
+        : slot_(slot), seq_no_(seq_no), def_(std::move(def))
+        {}
+    };
+    int seq_count_ = 0;
+    int seq_def_count_ = 0;
+    slot_t slot_count_ = 0;
+    Atom_Map<Definiens> def_dictionary_ = {};
     Shared<Module::Dictionary> defn_dictionary_;
     Module::Dictionary nonlocal_dictionary_;
     std::vector<Shared<const Phrase>> defn_phrases_;
-    std::vector<Shared<const Phrase>> action_phrases_;
+    std::vector<Action_Phrase> action_phrases_;
     Bindings bindings_;
-    Definition::Kind kind_;
 
     // First, construct the Bindings_Analyzer:
     Bindings_Analyzer(Environ& parent)
@@ -94,8 +116,7 @@ struct Bindings_Analyzer : public Environ
         nonlocal_dictionary_(),
         defn_phrases_(),
         action_phrases_(),
-        bindings_(),
-        kind_(Definition::k_sequential)
+        bindings_()
     {
         frame_nslots_ = parent.frame_nslots_;
         frame_maxslots_ = parent.frame_maxslots_;
