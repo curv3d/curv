@@ -56,14 +56,17 @@ make_system(const char* argv0)
     try {
         const char* CURV_STDLIB = getenv("CURV_STDLIB");
         namespace fs = boost::filesystem;
-        fs::path stdlib_path;
-        if (CURV_STDLIB != nullptr)
-            stdlib_path = CURV_STDLIB;
-        else
-            stdlib_path = aux::progdir(argv0) / "../lib/std.curv";
-        static curv::System_Impl sys(
-            curv::make_string(stdlib_path.c_str()),
-            std::cerr);
+        curv::Shared<const curv::String> stdlib;
+        if (CURV_STDLIB != nullptr) {
+            if (CURV_STDLIB[0] != '\0')
+                stdlib = curv::make_string(CURV_STDLIB);
+            else
+                stdlib = nullptr;
+        } else {
+            fs::path stdlib_path = aux::progdir(argv0) / "../lib/std.curv";
+            stdlib = curv::make_string(stdlib_path.c_str());
+        }
+        static curv::System_Impl sys(stdlib, std::cerr);
         return sys;
     } catch (curv::Exception& e) {
         std::cerr << "ERROR: " << e << "\n";
