@@ -67,7 +67,7 @@ Builtin_Environ::single_lookup(const Identifier& id)
 
 /*
 For recursive bindings, we must delay analysis until all statements have
-been examined and the defn_dictionary is built.
+been examined and the def_dictionary is built.
 
 For sequential bindings, it would be more convenient to analyze each statement
 as it arrives, using an environment that is extended as each definition arrives.
@@ -161,15 +161,9 @@ Bindings_Analyzer::add_statement(Shared<const Phrase> stmt)
         if (def_dictionary_.find(name) != def_dictionary_.end())
             throw Exception(At_Phrase(*def->name_, *parent_),
                 stringify(name, ": multiply defined"));
-        int id = (def->kind_ == Definition::k_sequential ? seq_count_++ : 0);
+        int pos = (def->kind_ == Definition::k_sequential ? seq_count_++ : -1);
         def_dictionary_.emplace(
-            std::make_pair(name, Definiens{slot_count_++, id, def}));
-
-        if (defn_dictionary_->find(name) != defn_dictionary_->end())
-            throw Exception(At_Phrase(*def->name_, *parent_),
-                stringify(name, ": multiply defined"));
-        (*defn_dictionary_)[name] = defn_phrases_.size();
-        defn_phrases_.push_back(def->definiens_);
+            std::make_pair(name, Definiens{slot_count_++, pos, def}));
 
         auto lambda = dynamic_cast<Lambda_Phrase*>(def->definiens_.get());
         if (lambda != nullptr)
@@ -178,22 +172,36 @@ Bindings_Analyzer::add_statement(Shared<const Phrase> stmt)
 }
 
 bool
-Bindings_Analyzer::is_function_definition(slot_t slot)
+Bindings_Analyzer::Definiens::is_function_definition()
 {
-    return isa<const Lambda_Phrase>(defn_phrases_[slot]);
+    return isa<const Lambda_Phrase>(def_->definiens_);
+}
+
+bool
+Bindings_Analyzer::Definiens::defined_at_position(int pos)
+{
+    return pos > seq_no_;
+}
+
+bool
+Bindings_Analyzer::Definiens::is_recursive()
+{
+    return seq_no_ < 0;
 }
 
 Shared<Meaning>
 Bindings_Analyzer::single_lookup(const Identifier& id)
 {
-    auto b = defn_dictionary_->find(id.atom_);
-    if (b != defn_dictionary_->end()) {
-        if (is_function_definition(b->second))
-            return make<Submodule_Function_Ref>(share(id),
-                bindings_.slot_, b->second, defn_dictionary_->size());
-        else
-            return make<Submodule_Ref>(
-                share(id), bindings_.slot_, b->second);
+    auto b = def_dictionary_.find(id.atom_);
+    if (b != def_dictionary_.end()) {
+        if (b->second.defined_at_position(cur_pos_)) {
+            if (b->second.is_function_definition())
+                return make<Submodule_Function_Ref>(share(id),
+                    bindings_.slot_, b->second.slot_, slot_count_);
+            else
+                return make<Submodule_Ref>(
+                    share(id), bindings_.slot_, b->second.slot_);
+        }
     }
     return nullptr;
 }
@@ -201,12 +209,14 @@ Bindings_Analyzer::single_lookup(const Identifier& id)
 Shared<Meaning>
 Bindings_Analyzer::Thunk_Environ::single_lookup(const Identifier& id)
 {
-    auto b = ba_.defn_dictionary_->find(id.atom_);
-    if (b != ba_.defn_dictionary_->end()) {
-        if (ba_.is_function_definition(b->second))
-            return make<Nonlocal_Function_Ref>(share(id), b->second);
-        else
-            return make<Module_Ref>(share(id), b->second);
+    auto b = ba_.def_dictionary_.find(id.atom_);
+    if (b != ba_.def_dictionary_.end()) {
+        if (b->second.defined_at_position(ba_.cur_pos_)) {
+            if (b->second.is_function_definition())
+                return make<Nonlocal_Function_Ref>(share(id), b->second.slot_);
+            else
+                return make<Module_Ref>(share(id), b->second.slot_);
+        }
     }
 
     auto n = ba_.nonlocal_dictionary_.find(id.atom_);
@@ -216,7 +226,7 @@ Bindings_Analyzer::Thunk_Environ::single_lookup(const Identifier& id)
     if (isa<Constant>(m))
         return m;
     if (auto expr = cast<Operation>(m)) {
-        slot_t slot = ba_.defn_dictionary_->size()
+        slot_t slot = ba_.def_dictionary_.size()
             + ba_.bindings_.nonlocal_exprs_.size();
         ba_.nonlocal_dictionary_[id.atom_] = slot;
         ba_.bindings_.nonlocal_exprs_.push_back(expr);
@@ -228,25 +238,57 @@ Bindings_Analyzer::Thunk_Environ::single_lookup(const Identifier& id)
 void
 Bindings_Analyzer::analyze(Shared<const Phrase> source)
 {
+    bindings_.actions_.reserve(seq_count_);
+    bindings_.actions_.insert(bindings_.actions_.end(), seq_count_, nullptr);
+
+    // analyze action phrases
+    for (auto& ap : action_phrases_) {
+        cur_pos_ = ap.seq_no_;
+        bindings_.actions_[ap.seq_no_] = analyze_op(*ap.phrase_, *this);
+    }
+
     // analyze definitions
-    size_t n = defn_phrases_.size();
-    auto defn_values = make_list(n);
-    for (size_t i = 0; i < n; ++i) {
+    auto defn_values = make_list(def_dictionary_.size());
+    for (auto& b : def_dictionary_) {
+        // analyze definiens
+        Shared<Operation> expr;
+        cur_pos_ = std::max(0, b.second.seq_no_);
         Thunk_Environ tenv(*this);
-        auto expr = analyze_op(*defn_phrases_[i], tenv);
-        if (is_function_definition(i)) {
+        if (b.second.is_function_definition() || b.second.is_recursive()) {
+            expr = analyze_op(*b.second.def_->definiens_, tenv);
+        } else {
+            expr = analyze_op(*b.second.def_->definiens_, *this);
+        }
+
+        // construct initial slot value
+        if (b.second.is_function_definition()) {
             auto& l = dynamic_cast<Lambda_Expr&>(*expr);
-            (*defn_values)[i] = {make<Lambda>(l.body_, l.nargs_, l.nslots_)};
-        } else
-            (*defn_values)[i] = {make<Thunk>(expr, tenv.frame_maxslots_)};
+            defn_values->at(b.second.slot_) =
+                {make<Lambda>(l.body_, l.nargs_, l.nslots_)};
+        } else if (b.second.is_recursive()) {
+            defn_values->at(b.second.slot_) =
+                {make<Thunk>(expr, tenv.frame_maxslots_)};
+        } else {
+            defn_values->at(b.second.slot_) = missing;
+            bindings_.actions_[b.second.seq_no_] = make<Seq_Def_Action>(
+                b.second.def_->definiens_,
+                bindings_.slot_, b.second.slot_,
+                expr);
+        }
     }
     bindings_.defn_values_ = defn_values;
 
-    // analyze actions
-    for (size_t i = 0; i < action_phrases_.size(); ++i)
-        bindings_.actions_.push_back(analyze_op(*action_phrases_[i].phrase_, *this));
-
     parent_->frame_maxslots_ = frame_maxslots_;
+    cur_pos_ = seq_count_;
+}
+
+Shared<Module::Dictionary>
+Bindings_Analyzer::make_module_dictionary()
+{
+    auto dict = make<Module::Dictionary>();
+    for (auto& b : def_dictionary_)
+        (*dict)[b.first] = b.second.slot_;
+    return std::move(dict);
 }
 
 Shared<Meaning>
@@ -702,7 +744,7 @@ Brace_Phrase::analyze(Environ& env) const
         });
         fields.analyze(source);
         return make<Module_Expr>(source,
-            std::move(fields.defn_dictionary_),
+            fields.make_module_dictionary(),
             std::move(fields.bindings_));
     } else {
         auto record = make<Record_Expr>(source);

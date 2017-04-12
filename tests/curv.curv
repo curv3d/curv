@@ -68,4 +68,16 @@ assert(
         [0,0], (i,t)->i<len list, (i,t)->(i+1,t+list[i]), (i,t)->t);
     Sum(1,2,3) == 6
 ),
+
+assert(
+    a := 1;
+    f x := x + a;
+    f 2 == 3
+),
+
+assert(
+    m := {a:=1, f x := x + a};
+    m.f 2 == 3
+),
+
 }

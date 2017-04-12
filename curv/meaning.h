@@ -570,6 +570,29 @@ struct Bindings
     void exec(Frame&) const;
 };
 
+// An internal action for storing the value of a sequential definition
+// in the evaluation frame. Part of the actions_ list in a Bindings.
+struct Seq_Def_Action : public Just_Action
+{
+    slot_t slot_;
+    slot_t index_;
+    Shared<Operation> expr_;
+
+    Seq_Def_Action(
+        Shared<const Phrase> source,
+        slot_t slot,
+        slot_t index,
+        Shared<Operation> expr)
+    :
+        Just_Action(std::move(source)),
+        slot_(slot),
+        index_(index),
+        expr_(std::move(expr))
+    {}
+
+    void exec(Frame&) const;
+};
+
 // A module expression is `{stmt; stmt; ...;}` where stmt is a definition
 // or action. The scope of each definition is the entire module. The order
 // of definitions doesn't matter. Recursive definitions are supported.

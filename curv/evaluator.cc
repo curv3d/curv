@@ -525,8 +525,11 @@ Bindings::exec(Frame& f) const
     for (slot_t i = ndefns; i < nvalues; ++i)
         values->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
     f[slot_] = {values};
-    for (auto action : actions_)
-        action->exec(f);
+    for (auto action : actions_) {
+        // TODO: sequentially defined functions have a null action. fix?
+        if (action != nullptr)
+            action->exec(f);
+    }
 }
 
 Shared<List>
@@ -540,16 +543,27 @@ Bindings::eval(Frame& f) const
     for (slot_t i = ndefns; i < nvalues; ++i)
         values->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
     f[slot_] = {values};
-    for (auto action : actions_)
-        action->exec(f);
+    for (auto action : actions_) {
+        // TODO: sequentially defined functions have a null action. fix?
+        if (action != nullptr)
+            action->exec(f);
+    }
 #if 1
-    // Once a module field value escapes from the module, it can't be a thunk
-    // any longer, because we no longer have the context for forcing the thunk.
-    // This forcing could also happen when accessing a module field.
+    // TODO: Get rid of this and make modules fully lazy.
+    // Requires code to force module fields wherever they are accessed, eg
+    // using dot notation, and also in the GL compiler.
     for (slot_t i = 0; i < ndefns; ++i)
         force(*values, i, f);
 #endif
     return values;
+}
+
+void
+Seq_Def_Action::exec(Frame& f) const
+{
+    List& list = (List&)f[slot_].get_ref_unsafe();
+    assert(list.type_ == Ref_Value::ty_list);
+    list[index_] = expr_->eval(f);
 }
 
 Value

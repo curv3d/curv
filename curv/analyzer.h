@@ -73,10 +73,8 @@ struct Definition : public aux::Shared_Base
     {}
 };
 
-/// Analyze a set of definitions and a sequence of actions,
+/// Analyze a sequence of definitions and actions,
 /// as found in a block or a module literal.
-/// Currently, either all definitions are recursive or all are sequential:
-/// mixing the two types is not implemented yet.
 struct Bindings_Analyzer : public Environ
 {
     struct Action_Phrase
@@ -97,26 +95,24 @@ struct Bindings_Analyzer : public Environ
         Definiens(slot_t slot, int seq_no, Shared<const Definition> def)
         : slot_(slot), seq_no_(seq_no), def_(std::move(def))
         {}
+
+        bool is_function_definition();
+        bool defined_at_position(int pos);
+        bool is_recursive();
     };
-    int seq_count_ = 0;
-    int seq_def_count_ = 0;
+    int seq_count_ = 0; // total# of seq pts (actions & seq. defs.)
+    int cur_pos_; // set during analysis to seq# of stmt being analyzed
+    int seq_def_count_ = 0; // total# of sequential definitions
     slot_t slot_count_ = 0;
     Atom_Map<Definiens> def_dictionary_ = {};
-    Shared<Module::Dictionary> defn_dictionary_;
-    Module::Dictionary nonlocal_dictionary_;
-    std::vector<Shared<const Phrase>> defn_phrases_;
-    std::vector<Action_Phrase> action_phrases_;
-    Bindings bindings_;
+    Module::Dictionary nonlocal_dictionary_ = {};
+    std::vector<Action_Phrase> action_phrases_ = {};
+    Bindings bindings_ = {};
 
     // First, construct the Bindings_Analyzer:
     Bindings_Analyzer(Environ& parent)
     :
-        Environ(&parent),
-        defn_dictionary_(make<Module::Dictionary>()),
-        nonlocal_dictionary_(),
-        defn_phrases_(),
-        action_phrases_(),
-        bindings_()
+        Environ(&parent)
     {
         frame_nslots_ = parent.frame_nslots_;
         frame_maxslots_ = parent.frame_maxslots_;
@@ -135,7 +131,6 @@ struct Bindings_Analyzer : public Environ
         virtual Shared<Meaning> single_lookup(const Identifier&);
     };
 
-    bool is_function_definition(slot_t);
     virtual Shared<Meaning> single_lookup(const Identifier&);
 
     // Second, add some statements (definitions or actions):
@@ -145,6 +140,7 @@ struct Bindings_Analyzer : public Environ
     void analyze(Shared<const Phrase> source);
 
     // Finally, move or copy the desired data members to construct a Meaning.
+    Shared<Module::Dictionary> make_module_dictionary();
 };
 
 Shared<Operation> analyze_op(const Phrase& ph, Environ& env);

@@ -31,7 +31,7 @@ Program::compile(const Namespace* names, Frame* parent_frame)
         fields.add_statement(phrase_);
         fields.analyze(phrase_);
         module_ = make<Module_Expr>(phrase_,
-            std::move(fields.defn_dictionary_),
+            fields.make_module_dictionary(),
             std::move(fields.bindings_));
     } else {
         meaning_ = phrase_->analyze(env);
