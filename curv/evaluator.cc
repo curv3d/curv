@@ -152,14 +152,7 @@ Value
 Dot_Expr::eval(Frame& f) const
 {
     Value basev = base_->eval(f);
-    if (basev.is_ref()) {
-        Ref_Value& basep( basev.get_ref_unsafe() );
-        Value val = basep.getfield(id_);
-        if (val != missing)
-            return val;
-    }
-    throw Exception(At_Phrase(*base_->source_, &f),
-        stringify(".",id_,": not defined"));
+    return basev.at(id_, At_Phrase(*base_->source_, &f));
 }
 
 Value
@@ -463,7 +456,7 @@ record_at(const Ref_Value& ref, Value index, const Context& cx)
         return {result};
     }
     Atom a = index.to<const String>(cx);
-    return ref.field(a, cx);
+    return ref.getfield(a, cx);
 }
 Value
 At_Expr::eval(Frame& f) const

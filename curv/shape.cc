@@ -66,17 +66,21 @@ Shape2D::print(std::ostream& out) const
 }
 
 Value
-Shape2D::getfield(Atom name) const
+Shape2D::getfield(Atom name, const Context& cx) const
 {
-    return record_->getfield(name);
+    return record_->getfield(name, cx);
+}
+
+bool
+Shape2D::hasfield(Atom name) const
+{
+    return record_->hasfield(name);
 }
 
 Polyadic_Function&
 Shape2D::dist(const Context& cx) const
 {
-    auto val = getfield("dist");
-    if (val == missing)
-        throw Exception(cx, "Shape2D: dist function is missing");
+    auto val = getfield("dist", cx);
     auto fun = val.dycast<Polyadic_Function>();
     if (fun == nullptr)
         throw Exception(cx, "Shape2D: dist is not a function");
@@ -88,7 +92,7 @@ Shape2D::dist(const Context& cx) const
 BBox
 Shape2D::bbox(const Context& cx) const
 {
-    return BBox::from_value(field("bbox",cx), cx);
+    return BBox::from_value(getfield("bbox",cx), cx);
 }
 
 GL_Value
@@ -109,7 +113,7 @@ GL_Value
 Shape2D::gl_colour(GL_Value arg, GL_Frame& f) const
 {
     At_GL_Frame cx(&f);
-    auto fun = field("colour", cx).to<Polyadic_Function>(cx);
+    auto fun = getfield("colour", cx).to<Polyadic_Function>(cx);
     auto f2 = GL_Frame::make(fun->nslots_, f.gl, &f, nullptr);
     (*f2)[0] = arg;
     auto result = fun->gl_call(*f2);

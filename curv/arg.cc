@@ -32,6 +32,8 @@ At_Arg::rewrite_message(Shared<const String> msg) const
         return stringify("at argument[",arg_index_,"], ", msg);
 }
 
+// TODO: Most of the following functions are redundant with the Value API.
+
 bool arg_to_bool(Value val, const Context& ctx)
 {
     if (!val.is_bool())
@@ -39,7 +41,6 @@ bool arg_to_bool(Value val, const Context& ctx)
     return val.get_bool_unsafe();
 }
 
-// TODO: accept a module. Return the module's elements list.
 auto arg_to_list(Value val, const Context& ctx)
 -> List&
 {
@@ -52,12 +53,12 @@ auto arg_to_list(Value val, const Context& ctx)
 }
 
 // TODO: accept a module or a record. WARNING, potential land mine.
-// * No common field interface. Provide a virtual function interface,
-//   `Ref_Value::getfield(Atom)`.
-//   New function `arg_to_fields` returns `Ref_Value&`.
+// * What's the return value? `Ref_Value&`?
 // * It is potentially incorrect to `merge` a module, because modifying
 //   a field value won't update functions that are closed over those
 //   field values. Ditto for shapes. Keep `arg_to_record` for use with `merge`.
+//   Update: this refers to "customization" of modules, a feature that may
+//   never be implemented. For now, modules and records are the same type.
 auto arg_to_record(Value val, const Context& ctx)
 -> Record&
 {

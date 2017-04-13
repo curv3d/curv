@@ -40,13 +40,20 @@ auto Record::operator==(const Record& rec) const
     return true;
 }
 
-auto Record::getfield(Atom name) const
--> Value
+Value
+Record::getfield(Atom name, const Context& cx) const
 {
     auto fp = fields_.find(name);
     if (fp != fields_.end())
         return fp->second;
-    return missing;
+    return Ref_Value::getfield(name, cx);
+}
+
+bool
+Record::hasfield(Atom name) const
+{
+    auto fp = fields_.find(name);
+    return (fp != fields_.end());
 }
 
 } // namespace curv

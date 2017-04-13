@@ -476,7 +476,7 @@ struct Defined_Expression : public Just_Expression
         auto val = expr_->eval(f);
         if (val.is_ref()) {
             auto& ref = val.get_ref_unsafe();
-            return {ref.getfield(id_) != missing};
+            return {ref.hasfield(id_)};
         } else {
             return {false};
         }

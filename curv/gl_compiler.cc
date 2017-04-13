@@ -29,7 +29,7 @@ void gl_compile(const Shape2D& shape, std::ostream& out)
 
     GL_Value result = shape.gl_dist(dist_param, *frame);
 
-    if (shape.getfield("colour") != missing) {
+    if (shape.hasfield("colour")) {
         GL_Value colour = shape.gl_colour(dist_param, *frame);
         out << "  colour = vec4(" << colour << ", 1.0);\n";
     } else {
@@ -251,16 +251,15 @@ GL_Value Divide_Expr::gl_eval(GL_Frame& f) const
 }
 
 // Evaluate an expression to a constant at GL compile time,
-// or return missing if it isn't a constant.
+// or abort if it isn't a constant.
 Value gl_constify(Operation& op, GL_Frame& f)
 {
     if (auto c = dynamic_cast<Constant*>(&op))
         return c->value_;
     else if (auto dot = dynamic_cast<Dot_Expr*>(&op)) {
         if (auto ref = cast<Nonlocal_Ref>(dot->base_)) {
-            auto base = (*f.nonlocal)[ref->slot_];
-            if (base.is_ref())
-                return base.get_ref_unsafe().getfield(dot->id_);
+            Value base = (*f.nonlocal)[ref->slot_];
+            return base.at(dot->id_, At_GL_Phrase(*op.source_, &f));
         }
     }
     else if (auto ref = dynamic_cast<Nonlocal_Ref*>(&op))

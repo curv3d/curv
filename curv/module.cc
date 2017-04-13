@@ -35,13 +35,20 @@ Module::get(slot_t i) const
     return val;
 }
 
-auto Module::getfield(Atom name) const
--> Value
+Value
+Module::getfield(Atom name, const Context& cx) const
 {
     auto b = dictionary_->find(name);
     if (b != dictionary_->end())
         return get(b->second);
-    return missing;
+    return Ref_Value::getfield(name, cx);
+}
+
+bool
+Module::hasfield(Atom name) const
+{
+    auto b = dictionary_->find(name);
+    return (b != dictionary_->end());
 }
 
 } // namespace curv

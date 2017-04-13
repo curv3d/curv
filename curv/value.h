@@ -60,14 +60,12 @@ struct Ref_Value : public aux::Shared_Base
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const = 0;
-    
-    /// Get the value of a named field.
-    ///
-    /// Return missing if the field is not defined.
-    virtual Value getfield(Atom) const;
 
-    /// Wrapper for getfield, throw exception if field is not defined.
-    Value field(Atom, const Context&) const;
+    /// Get the value of a named field, throw exception if not defined.
+    virtual Value getfield(Atom, const Context&) const;
+
+    /// Test if the value contains the named field.
+    virtual bool hasfield(Atom) const;
 };
 
 /// A boxed, dynamically typed value in the Curv runtime.

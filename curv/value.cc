@@ -40,22 +40,9 @@ Value::to_abort [[noreturn]] (const Context& cx, const char* type)
 Value
 Value::at(Atom field, const Context& cx) const
 {
-    if (is_ref()) {
-        Ref_Value& r = get_ref_unsafe();
-        Value v = r.getfield(field);
-        if (v != missing)
-            return v;
-    }
+    if (is_ref())
+        return get_ref_unsafe().getfield(field, cx);
     throw Exception(cx, stringify(".",field,": not defined"));
-}
-
-Value
-Ref_Value::field(Atom name, const Context& cx) const
-{
-    Value v = getfield(name);
-    if (v != missing)
-        return v;
-    throw Exception(cx, stringify(".",name,": not defined"));
 }
 
 void
@@ -117,10 +104,16 @@ auto Value::operator==(Value v) const
     }
 }
 
-auto Ref_Value::getfield(Atom) const
--> Value
+Value
+Ref_Value::getfield(Atom field, const Context& cx) const
 {
-    return missing;
+    throw Exception(cx, stringify(".",field,": not defined"));
+}
+
+bool
+Ref_Value::hasfield(Atom field) const
+{
+    return false;
 }
 
 // special marker that denotes the absence of a value

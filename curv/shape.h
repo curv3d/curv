@@ -46,7 +46,8 @@ struct Shape2D : public Ref_Value
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const override;
 
-    virtual Value getfield(Atom) const override;
+    virtual Value getfield(Atom, const Context&) const override;
+    virtual bool hasfield(Atom) const override;
 
     Polyadic_Function& dist(const Context&) const;
     BBox bbox(const Context&) const;
