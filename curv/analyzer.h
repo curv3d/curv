@@ -75,7 +75,7 @@ struct Definition : public aux::Shared_Base
 
 /// Analyze a sequence of definitions and actions,
 /// as found in a block or a module literal.
-struct Bindings_Analyzer : public Environ
+struct Statement_Analyzer : public Environ
 {
     struct Action_Phrase
     {
@@ -86,13 +86,13 @@ struct Bindings_Analyzer : public Environ
         : seq_no_(seq_no), phrase_(std::move(phrase))
         {}
     };
-    struct Definiens
+    struct Binding
     {
         slot_t slot_;
         int seq_no_;
         Shared<const Definition> def_;
 
-        Definiens(slot_t slot, int seq_no, Shared<const Definition> def)
+        Binding(slot_t slot, int seq_no, Shared<const Definition> def)
         : slot_(slot), seq_no_(seq_no), def_(std::move(def))
         {}
 
@@ -104,29 +104,29 @@ struct Bindings_Analyzer : public Environ
     int cur_pos_; // set during analysis to seq# of stmt being analyzed
     int seq_def_count_ = 0; // total# of sequential definitions
     slot_t slot_count_ = 0;
-    Atom_Map<Definiens> def_dictionary_ = {};
+    Atom_Map<Binding> def_dictionary_ = {};
     Module::Dictionary nonlocal_dictionary_ = {};
     std::vector<Action_Phrase> action_phrases_ = {};
-    Bindings bindings_ = {};
+    Statements statements_ = {};
 
-    // First, construct the Bindings_Analyzer:
-    Bindings_Analyzer(Environ& parent)
+    // First, construct the Statement_Analyzer:
+    Statement_Analyzer(Environ& parent)
     :
         Environ(&parent)
     {
         frame_nslots_ = parent.frame_nslots_;
         frame_maxslots_ = parent.frame_maxslots_;
-        bindings_.slot_ = frame_nslots_++;
+        statements_.slot_ = frame_nslots_++;
         frame_maxslots_ = std::max(frame_nslots_, frame_maxslots_);
     }
 
     struct Thunk_Environ : public Environ
     {
-        Bindings_Analyzer& ba_;
-        Thunk_Environ(Bindings_Analyzer& ba)
+        Statement_Analyzer& analyzer_;
+        Thunk_Environ(Statement_Analyzer& analyzer)
         :
-            Environ(ba.parent_),
-            ba_(ba)
+            Environ(analyzer.parent_),
+            analyzer_(analyzer)
         {}
         virtual Shared<Meaning> single_lookup(const Identifier&);
     };

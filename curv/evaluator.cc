@@ -515,7 +515,7 @@ Record_Expr::eval(Frame& f) const
 }
 
 void
-Bindings::exec(Frame& f) const
+Statements::exec(Frame& f) const
 {
     slot_t ndefns = defn_values_->size();
     slot_t nvalues = ndefns + nonlocal_exprs_.size();
@@ -533,7 +533,7 @@ Bindings::exec(Frame& f) const
 }
 
 Shared<List>
-Bindings::eval(Frame& f) const
+Statements::eval(Frame& f) const
 {
     slot_t ndefns = defn_values_->size();
     slot_t nvalues = ndefns + nonlocal_exprs_.size();
@@ -576,7 +576,7 @@ Module_Expr::eval(Frame& f) const
 Shared<Module>
 Module_Expr::eval_module(Frame& f) const
 {
-    return make<Module>(dictionary_, bindings_.eval(f));
+    return make<Module>(dictionary_, statements_.eval(f));
 }
 
 Value
@@ -607,19 +607,19 @@ Let_Op::exec(Frame& f) const
 Value
 Block_Op::eval(Frame& f) const
 {
-    bindings_.exec(f);
+    statements_.exec(f);
     return body_->eval(f);
 }
 void
 Block_Op::generate(Frame& f, List_Builder& lb) const
 {
-    bindings_.exec(f);
+    statements_.exec(f);
     body_->generate(f, lb);
 }
 void
 Block_Op::exec(Frame& f) const
 {
-    bindings_.exec(f);
+    statements_.exec(f);
     body_->exec(f);
 }
 

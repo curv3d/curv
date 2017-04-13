@@ -499,7 +499,7 @@ struct Record_Expr : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
-/// 'Bindings' represents the definitions and actions in a module literal
+/// 'Statements' represents the definitions and actions in a module literal
 /// or block.
 ///
 /// A mix of recursive and sequential definitions is supported, however, the
@@ -510,7 +510,7 @@ struct Record_Expr : public Just_Expression
 ///
 /// At runtime, a slot in the evaluation frame (slot_) contains the value list.
 /// The value list is used as the nonlocal list for the closures constructed
-/// from each top-level function definition. If this Bindings is used to
+/// from each top-level function definition. If this Statements is used to
 /// construct a Module value, then the value list is stored in the Module.
 /// TODO: As an optimization, we could store the value list directly in the
 ///       frame, if the definitions are sequential, and do not form a module,
@@ -538,7 +538,7 @@ struct Record_Expr : public Just_Expression
 ///  4. The value list may contain "nonlocal values", which correspond to
 ///     bindings from the parent scope which are referenced by function
 ///     definitions. These are proper values, not Thunks.
-struct Bindings
+struct Statements
 {
     // location in the evaluation frame where the value list is stored.
     slot_t slot_;
@@ -550,7 +550,7 @@ struct Bindings
     // actions to execute, during construction
     std::vector<Shared<const Operation>> actions_;
 
-    Bindings(
+    Statements(
         slot_t slot,
         Shared<const List> defn_values,
         std::vector<Shared<const Operation>> nonlocal_exprs,
@@ -562,7 +562,7 @@ struct Bindings
         actions_(std::move(actions))
     {}
 
-    Bindings() {}
+    Statements() {}
 
     /// Initialize the Frame slot, execute the definitions and action list.
     /// Return the value list.
@@ -571,7 +571,7 @@ struct Bindings
 };
 
 // An internal action for storing the value of a sequential definition
-// in the evaluation frame. Part of the actions_ list in a Bindings.
+// in the evaluation frame. Part of the actions_ list in a Statements.
 struct Seq_Def_Action : public Just_Action
 {
     slot_t slot_;
@@ -602,16 +602,16 @@ struct Module_Expr : public Just_Expression
     // maps public member names to slot #s in the value list.
     Shared<Module::Dictionary> dictionary_;
 
-    Bindings bindings_;
+    Statements statements_;
 
     Module_Expr(
         Shared<const Phrase> source,
         Shared<Module::Dictionary> dictionary,
-        Bindings b)
+        Statements statements)
     :
         Just_Expression(source),
         dictionary_(std::move(dictionary)),
-        bindings_(std::move(b))
+        statements_(std::move(statements))
     {}
 
     virtual Value eval(Frame&) const override;
@@ -644,16 +644,16 @@ struct Let_Op : public Operation
 
 struct Block_Op : public Operation
 {
-    Bindings bindings_;
+    Statements statements_;
     Shared<const Operation> body_;
 
     Block_Op(
         Shared<const Phrase> source,
-        Bindings b,
+        Statements b,
         Shared<const Operation> body)
     :
         Operation(std::move(source)),
-        bindings_(std::move(b)),
+        statements_(std::move(b)),
         body_(std::move(body))
     {}
 

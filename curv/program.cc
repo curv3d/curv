@@ -27,12 +27,12 @@ Program::compile(const Namespace* names, Frame* parent_frame)
 
     Builtin_Environ env{*names_, parent_frame};
     if (auto def = phrase_->analyze_def(env)) {
-        Bindings_Analyzer fields{env};
+        Statement_Analyzer fields{env};
         fields.add_statement(phrase_);
         fields.analyze(phrase_);
         module_ = make<Module_Expr>(phrase_,
             fields.make_module_dictionary(),
-            std::move(fields.bindings_));
+            std::move(fields.statements_));
     } else {
         meaning_ = phrase_->analyze(env);
     }

@@ -138,7 +138,7 @@ How to implement this?
 */
 
 void
-Bindings_Analyzer::add_statement(Shared<const Phrase> stmt)
+Statement_Analyzer::add_statement(Shared<const Phrase> stmt)
 {
     auto def = stmt->analyze_def(*parent_);
     if (def == nullptr)
@@ -163,7 +163,7 @@ Bindings_Analyzer::add_statement(Shared<const Phrase> stmt)
                 stringify(name, ": multiply defined"));
         int pos = (def->kind_ == Definition::k_sequential ? seq_count_++ : -1);
         def_dictionary_.emplace(
-            std::make_pair(name, Definiens{slot_count_++, pos, def}));
+            std::make_pair(name, Binding{slot_count_++, pos, def}));
 
         auto lambda = dynamic_cast<Lambda_Phrase*>(def->definiens_.get());
         if (lambda != nullptr)
@@ -172,46 +172,46 @@ Bindings_Analyzer::add_statement(Shared<const Phrase> stmt)
 }
 
 bool
-Bindings_Analyzer::Definiens::is_function_definition()
+Statement_Analyzer::Binding::is_function_definition()
 {
     return isa<const Lambda_Phrase>(def_->definiens_);
 }
 
 bool
-Bindings_Analyzer::Definiens::defined_at_position(int pos)
+Statement_Analyzer::Binding::defined_at_position(int pos)
 {
     return pos > seq_no_;
 }
 
 bool
-Bindings_Analyzer::Definiens::is_recursive()
+Statement_Analyzer::Binding::is_recursive()
 {
     return seq_no_ < 0;
 }
 
 Shared<Meaning>
-Bindings_Analyzer::single_lookup(const Identifier& id)
+Statement_Analyzer::single_lookup(const Identifier& id)
 {
     auto b = def_dictionary_.find(id.atom_);
     if (b != def_dictionary_.end()) {
         if (b->second.defined_at_position(cur_pos_)) {
             if (b->second.is_function_definition())
                 return make<Submodule_Function_Ref>(share(id),
-                    bindings_.slot_, b->second.slot_, slot_count_);
+                    statements_.slot_, b->second.slot_, slot_count_);
             else
                 return make<Submodule_Ref>(
-                    share(id), bindings_.slot_, b->second.slot_);
+                    share(id), statements_.slot_, b->second.slot_);
         }
     }
     return nullptr;
 }
 
 Shared<Meaning>
-Bindings_Analyzer::Thunk_Environ::single_lookup(const Identifier& id)
+Statement_Analyzer::Thunk_Environ::single_lookup(const Identifier& id)
 {
-    auto b = ba_.def_dictionary_.find(id.atom_);
-    if (b != ba_.def_dictionary_.end()) {
-        if (b->second.defined_at_position(ba_.cur_pos_)) {
+    auto b = analyzer_.def_dictionary_.find(id.atom_);
+    if (b != analyzer_.def_dictionary_.end()) {
+        if (b->second.defined_at_position(analyzer_.cur_pos_)) {
             if (b->second.is_function_definition())
                 return make<Nonlocal_Function_Ref>(share(id), b->second.slot_);
             else
@@ -219,32 +219,32 @@ Bindings_Analyzer::Thunk_Environ::single_lookup(const Identifier& id)
         }
     }
 
-    auto n = ba_.nonlocal_dictionary_.find(id.atom_);
-    if (n != ba_.nonlocal_dictionary_.end())
+    auto n = analyzer_.nonlocal_dictionary_.find(id.atom_);
+    if (n != analyzer_.nonlocal_dictionary_.end())
         return make<Nonlocal_Ref>(share(id), n->second);
     auto m = parent_->lookup(id);
     if (isa<Constant>(m))
         return m;
     if (auto expr = cast<Operation>(m)) {
-        slot_t slot = ba_.def_dictionary_.size()
-            + ba_.bindings_.nonlocal_exprs_.size();
-        ba_.nonlocal_dictionary_[id.atom_] = slot;
-        ba_.bindings_.nonlocal_exprs_.push_back(expr);
+        slot_t slot = analyzer_.def_dictionary_.size()
+            + analyzer_.statements_.nonlocal_exprs_.size();
+        analyzer_.nonlocal_dictionary_[id.atom_] = slot;
+        analyzer_.statements_.nonlocal_exprs_.push_back(expr);
         return make<Nonlocal_Ref>(share(id), slot);
     }
     return m;
 }
 
 void
-Bindings_Analyzer::analyze(Shared<const Phrase> source)
+Statement_Analyzer::analyze(Shared<const Phrase> source)
 {
-    bindings_.actions_.reserve(seq_count_);
-    bindings_.actions_.insert(bindings_.actions_.end(), seq_count_, nullptr);
+    statements_.actions_.reserve(seq_count_);
+    statements_.actions_.insert(statements_.actions_.end(), seq_count_, nullptr);
 
     // analyze action phrases
     for (auto& ap : action_phrases_) {
         cur_pos_ = ap.seq_no_;
-        bindings_.actions_[ap.seq_no_] = analyze_op(*ap.phrase_, *this);
+        statements_.actions_[ap.seq_no_] = analyze_op(*ap.phrase_, *this);
     }
 
     // analyze definitions
@@ -270,20 +270,20 @@ Bindings_Analyzer::analyze(Shared<const Phrase> source)
                 {make<Thunk>(expr, tenv.frame_maxslots_)};
         } else {
             defn_values->at(b.second.slot_) = missing;
-            bindings_.actions_[b.second.seq_no_] = make<Seq_Def_Action>(
+            statements_.actions_[b.second.seq_no_] = make<Seq_Def_Action>(
                 b.second.def_->definiens_,
-                bindings_.slot_, b.second.slot_,
+                statements_.slot_, b.second.slot_,
                 expr);
         }
     }
-    bindings_.defn_values_ = defn_values;
+    statements_.defn_values_ = defn_values;
 
     parent_->frame_maxslots_ = frame_maxslots_;
     cur_pos_ = seq_count_;
 }
 
 Shared<Module::Dictionary>
-Bindings_Analyzer::make_module_dictionary()
+Statement_Analyzer::make_module_dictionary()
 {
     auto dict = make<Module::Dictionary>();
     for (auto& b : def_dictionary_)
@@ -549,13 +549,14 @@ Shared<Meaning>
 Semicolon_Phrase::analyze(Environ& env) const
 {
     // Blocks support mutually recursive bindings, like let-rec in Scheme.
-    Bindings_Analyzer bind{env};
+    Statement_Analyzer analyzer{env};
     for (size_t i = 0; i < args_.size() - 1; ++i)
-        bind.add_statement(args_[i].expr_);
-    bind.analyze(share(*this));
-    auto body = analyze_op(*args_.back().expr_, bind);
-    env.frame_maxslots_ = bind.frame_maxslots_;
-    return make<Block_Op>(share(*this), std::move(bind.bindings_), std::move(body));
+        analyzer.add_statement(args_[i].expr_);
+    analyzer.analyze(share(*this));
+    auto body = analyze_op(*args_.back().expr_, analyzer);
+    env.frame_maxslots_ = analyzer.frame_maxslots_;
+    return make<Block_Op>(share(*this),
+        std::move(analyzer.statements_), std::move(body));
 }
 
 Shared<Meaning>
@@ -738,14 +739,14 @@ Brace_Phrase::analyze(Environ& env) const
     auto source = share(*this);
 
     if (is_module) {
-        Bindings_Analyzer fields{env};
+        Statement_Analyzer fields{env};
         each_item(*body_, [&](const Phrase& stmt)->void {
             fields.add_statement(share(stmt));
         });
         fields.analyze(source);
         return make<Module_Expr>(source,
             fields.make_module_dictionary(),
-            std::move(fields.bindings_));
+            std::move(fields.statements_));
     } else {
         auto record = make<Record_Expr>(source);
         each_item(*body_, [&](const Phrase& item)->void {
