@@ -198,8 +198,11 @@ Statement_Analyzer::single_lookup(const Identifier& id)
             if (b->second.is_function_definition())
                 return make<Indirect_Function_Ref>(share(id),
                     statements_.slot_, b->second.slot_, slot_count_);
-            else
+            else if (b->second.is_recursive())
                 return make<Indirect_Lazy_Ref>(
+                    share(id), statements_.slot_, b->second.slot_);
+            else
+                return make<Indirect_Strict_Ref>(
                     share(id), statements_.slot_, b->second.slot_);
         }
     }
@@ -214,8 +217,10 @@ Statement_Analyzer::Thunk_Environ::single_lookup(const Identifier& id)
         if (b->second.defined_at_position(analyzer_.cur_pos_)) {
             if (b->second.is_function_definition())
                 return make<Nonlocal_Function_Ref>(share(id), b->second.slot_);
-            else
+            else if (b->second.is_recursive())
                 return make<Nonlocal_Lazy_Ref>(share(id), b->second.slot_);
+            else
+                return make<Nonlocal_Strict_Ref>(share(id), b->second.slot_);
         }
     }
 
