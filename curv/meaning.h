@@ -154,24 +154,35 @@ struct Null_Action : public Just_Action
 };
 
 /// reference to a lazy nonlocal slot.
-struct Module_Ref : public Just_Expression
+struct Nonlocal_Lazy_Ref : public Just_Expression
 {
     slot_t slot_;
 
-    Module_Ref(Shared<const Phrase> source, slot_t slot)
+    Nonlocal_Lazy_Ref(Shared<const Phrase> source, slot_t slot)
     : Just_Expression(std::move(source)), slot_(slot)
     {}
 
     virtual Value eval(Frame&) const override;
 };
 
-/// reference to a lazy nonlocal slot.
-struct Submodule_Ref : public Just_Expression
+struct Indirect_Lazy_Ref : public Just_Expression
 {
     slot_t slot_;
     slot_t index_;
 
-    Submodule_Ref(Shared<const Phrase> source, slot_t slot, slot_t index)
+    Indirect_Lazy_Ref(Shared<const Phrase> source, slot_t slot, slot_t index)
+    : Just_Expression(std::move(source)), slot_(slot), index_(index)
+    {}
+
+    virtual Value eval(Frame&) const override;
+};
+
+struct Indirect_Strict_Ref : public Just_Expression
+{
+    slot_t slot_;
+    slot_t index_;
+
+    Indirect_Strict_Ref(Shared<const Phrase> source, slot_t slot, slot_t index)
     : Just_Expression(std::move(source)), slot_(slot), index_(index)
     {}
 
@@ -179,11 +190,11 @@ struct Submodule_Ref : public Just_Expression
 };
 
 /// reference to a strict nonlocal slot (nonrecursive lambda nonlocal)
-struct Nonlocal_Ref : public Just_Expression
+struct Nonlocal_Strict_Ref : public Just_Expression
 {
     slot_t slot_;
 
-    Nonlocal_Ref(Shared<const Phrase> source, slot_t slot)
+    Nonlocal_Strict_Ref(Shared<const Phrase> source, slot_t slot)
     : Just_Expression(std::move(source)), slot_(slot)
     {}
 
@@ -248,7 +259,7 @@ struct Nonlocal_Function_Ref : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
-struct Submodule_Function_Ref : public Just_Expression
+struct Indirect_Function_Ref : public Just_Expression
 {
     slot_t slot_;
     slot_t index_;
@@ -257,7 +268,7 @@ struct Submodule_Function_Ref : public Just_Expression
     /// which can only be evaluated in the caller's frame.
     slot_t nlazy_;
 
-    Submodule_Function_Ref(
+    Indirect_Function_Ref(
         Shared<const Phrase> source,
         slot_t slot, slot_t index, slot_t nlazy)
     :
@@ -519,12 +530,12 @@ struct Record_Expr : public Just_Expression
 /// The value list has a value for each binding, followed by "nonlocal values".
 ///  1. The value for a function definition is a Lambda. This is combined
 ///     with the value list to construct a Closure value when the function
-///     is referenced (see Submodule_Function_Ref). We can't store the Closure
+///     is referenced (see Indirect_Function_Ref). We can't store the Closure
 ///     directly in the value list because that would create a reference cycle,
 ///     which would cause a storage leak, since we use reference counting.
 ///  2. The value for a non-function recursive definition is a Thunk.
 ///     The Thunk is evaluated and replaced by a Value on first reference,
-///     see Submodule_Ref. This allows definitions to be written in any order.
+///     see Indirect_Lazy_Ref. This allows definitions to be written in any order.
 ///     The order of definition evaluation is determined at runtime by data
 ///     dependencies, and can change from one evaluation to the next, affording
 ///     flexibility which is also available in Haskell. Unlike Haskell,

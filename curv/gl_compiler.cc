@@ -257,14 +257,14 @@ Value gl_constify(Operation& op, GL_Frame& f)
     if (auto c = dynamic_cast<Constant*>(&op))
         return c->value_;
     else if (auto dot = dynamic_cast<Dot_Expr*>(&op)) {
-        if (auto ref = cast<Nonlocal_Ref>(dot->base_)) {
+        if (auto ref = cast<Nonlocal_Strict_Ref>(dot->base_)) {
             Value base = (*f.nonlocal)[ref->slot_];
             return base.at(dot->id_, At_GL_Phrase(*op.source_, &f));
         }
     }
-    else if (auto ref = dynamic_cast<Nonlocal_Ref*>(&op))
+    else if (auto ref = dynamic_cast<Nonlocal_Strict_Ref*>(&op))
         return (*f.nonlocal)[ref->slot_];
-    else if (auto ref = dynamic_cast<Module_Ref*>(&op))
+    else if (auto ref = dynamic_cast<Nonlocal_Lazy_Ref*>(&op))
         return (*f.nonlocal)[ref->slot_];
     else if (auto fref = dynamic_cast<Nonlocal_Function_Ref*>(&op)) {
         return {make<Closure>(
@@ -329,7 +329,7 @@ GL_Value Let_Ref::gl_eval(GL_Frame& f) const
     return f[slot_];
 }
 
-GL_Value Nonlocal_Ref::gl_eval(GL_Frame& f) const
+GL_Value Nonlocal_Strict_Ref::gl_eval(GL_Frame& f) const
 {
     return gl_eval_const(f, (*f.nonlocal)[slot_], *source_);
 }

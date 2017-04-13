@@ -52,26 +52,13 @@ Constant::eval(Frame&) const
 }
 
 Value
-Module_Ref::eval(Frame& f) const
+Nonlocal_Lazy_Ref::eval(Frame& f) const
 {
-    // Modules are lazily evaluated. From here, I need access to both the module
-    // field Value (if computed), and the original field expression (otherwise).
-    // Implementation options:
-    // 1. Initialize f.module_.fields with the expression values, which are
-    //    effectively lazy evaluation thunks. Replace with Values on demand.
-    // 2. Instead of making Expression a subclass of Ref_Value, introduce
-    //    a Lazy_Thunk value class. It's a variation of Function. It contains
-    //    the # of local frame slots needed to evaluate local blocks in the
-    //    definiens, plus the Expression.
-    // 3. Store a reference to the Expression in Module_Ref.
-    // 4. Store a reference to the Module_Expr in Frame.
-    // Choice: #2.
-
     return force_ref(*f.nonlocal, slot_, *source_, f);
 }
 
 Value
-Submodule_Ref::eval(Frame& f) const
+Indirect_Lazy_Ref::eval(Frame& f) const
 {
     List& list = (List&)f[slot_].get_ref_unsafe();
     assert(list.type_ == Ref_Value::ty_list);
@@ -79,7 +66,15 @@ Submodule_Ref::eval(Frame& f) const
 }
 
 Value
-Nonlocal_Ref::eval(Frame& f) const
+Indirect_Strict_Ref::eval(Frame& f) const
+{
+    List& list = (List&)f[slot_].get_ref_unsafe();
+    assert(list.type_ == Ref_Value::ty_list);
+    return list[index_];
+}
+
+Value
+Nonlocal_Strict_Ref::eval(Frame& f) const
 {
     return (*f.nonlocal)[slot_];
 }
@@ -113,7 +108,7 @@ Nonlocal_Function_Ref::eval(Frame& f) const
 }
 
 Value
-Submodule_Function_Ref::eval(Frame& f) const
+Indirect_Function_Ref::eval(Frame& f) const
 {
     List& list = (List&)f[slot_].get_ref_unsafe();
 

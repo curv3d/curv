@@ -196,10 +196,10 @@ Statement_Analyzer::single_lookup(const Identifier& id)
     if (b != def_dictionary_.end()) {
         if (b->second.defined_at_position(cur_pos_)) {
             if (b->second.is_function_definition())
-                return make<Submodule_Function_Ref>(share(id),
+                return make<Indirect_Function_Ref>(share(id),
                     statements_.slot_, b->second.slot_, slot_count_);
             else
-                return make<Submodule_Ref>(
+                return make<Indirect_Lazy_Ref>(
                     share(id), statements_.slot_, b->second.slot_);
         }
     }
@@ -215,13 +215,13 @@ Statement_Analyzer::Thunk_Environ::single_lookup(const Identifier& id)
             if (b->second.is_function_definition())
                 return make<Nonlocal_Function_Ref>(share(id), b->second.slot_);
             else
-                return make<Module_Ref>(share(id), b->second.slot_);
+                return make<Nonlocal_Lazy_Ref>(share(id), b->second.slot_);
         }
     }
 
     auto n = analyzer_.nonlocal_dictionary_.find(id.atom_);
     if (n != analyzer_.nonlocal_dictionary_.end())
-        return make<Nonlocal_Ref>(share(id), n->second);
+        return make<Nonlocal_Strict_Ref>(share(id), n->second);
     auto m = parent_->lookup(id);
     if (isa<Constant>(m))
         return m;
@@ -230,7 +230,7 @@ Statement_Analyzer::Thunk_Environ::single_lookup(const Identifier& id)
             + analyzer_.statements_.nonlocal_exprs_.size();
         analyzer_.nonlocal_dictionary_[id.atom_] = slot;
         analyzer_.statements_.nonlocal_exprs_.push_back(expr);
-        return make<Nonlocal_Ref>(share(id), slot);
+        return make<Nonlocal_Strict_Ref>(share(id), slot);
     }
     return m;
 }
@@ -391,7 +391,7 @@ Lambda_Phrase::analyze(Environ& env) const
                 return parent_->single_lookup(id);
             auto n = nonlocal_dictionary_.find(id.atom_);
             if (n != nonlocal_dictionary_.end())
-                return make<Nonlocal_Ref>(share(id), n->second);
+                return make<Nonlocal_Strict_Ref>(share(id), n->second);
             auto m = parent_->lookup(id);
             if (isa<Constant>(m))
                 return m;
@@ -399,7 +399,7 @@ Lambda_Phrase::analyze(Environ& env) const
                 slot_t slot = nonlocal_exprs_.size();
                 nonlocal_dictionary_[id.atom_] = slot;
                 nonlocal_exprs_.push_back(expr);
-                return make<Nonlocal_Ref>(share(id), slot);
+                return make<Nonlocal_Strict_Ref>(share(id), slot);
             }
             return m;
         }
