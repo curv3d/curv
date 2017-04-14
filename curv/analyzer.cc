@@ -554,7 +554,7 @@ Shared<Meaning>
 Semicolon_Phrase::analyze(Environ& env) const
 {
     // Blocks support mutually recursive bindings, like let-rec in Scheme.
-    Statement_Analyzer analyzer{env};
+    Statement_Analyzer analyzer{env, false};
     for (size_t i = 0; i < args_.size() - 1; ++i)
         analyzer.add_statement(args_[i].expr_);
     analyzer.analyze(share(*this));
@@ -744,7 +744,7 @@ Brace_Phrase::analyze(Environ& env) const
     auto source = share(*this);
 
     if (is_module) {
-        Statement_Analyzer fields{env};
+        Statement_Analyzer fields{env, true};
         each_item(*body_, [&](const Phrase& stmt)->void {
             fields.add_statement(share(stmt));
         });

@@ -27,7 +27,7 @@ Program::compile(const Namespace* names, Frame* parent_frame)
 
     Builtin_Environ env{*names_, parent_frame};
     if (auto def = phrase_->analyze_def(env)) {
-        Statement_Analyzer fields{env};
+        Statement_Analyzer fields{env, true};
         fields.add_statement(phrase_);
         fields.analyze(phrase_);
         module_ = make<Module_Expr>(phrase_,

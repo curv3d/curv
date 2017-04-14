@@ -108,11 +108,13 @@ struct Statement_Analyzer : public Environ
     Module::Dictionary nonlocal_dictionary_ = {};
     std::vector<Action_Phrase> action_phrases_ = {};
     Statements statements_ = {};
+    bool target_is_module_;
 
     // First, construct the Statement_Analyzer:
-    Statement_Analyzer(Environ& parent)
+    Statement_Analyzer(Environ& parent, bool target_is_module)
     :
-        Environ(&parent)
+        Environ(&parent),
+        target_is_module_(target_is_module)
     {
         frame_nslots_ = parent.frame_nslots_;
         frame_maxslots_ = parent.frame_maxslots_;
