@@ -100,9 +100,9 @@ struct Statement_Analyzer : public Environ
         bool defined_at_position(int pos);
         bool is_recursive();
     };
+    Definition::Kind kind_ = Definition::k_sequential;
     int seq_count_ = 0; // total# of seq pts (actions & seq. defs.)
     int cur_pos_; // set during analysis to seq# of stmt being analyzed
-    int seq_def_count_ = 0; // total# of sequential definitions
     slot_t slot_count_ = 0;
     Atom_Map<Binding> def_dictionary_ = {};
     Module::Dictionary nonlocal_dictionary_ = {};

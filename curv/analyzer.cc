@@ -144,17 +144,11 @@ Statement_Analyzer::add_statement(Shared<const Phrase> stmt)
     if (def == nullptr)
         action_phrases_.emplace_back(seq_count_++, std::move(stmt));
     else {
-        switch (def->kind_) {
-        case Definition::k_sequential:
-            ++seq_def_count_;
-            break;
-        case Definition::k_recursive:
-            if (seq_def_count_ > 0) {
-                throw Exception(At_Phrase(*def->name_, *parent_),
-                    "a recursive definition can't follow a sequential"
-                    " definition");
-            }
-            break;
+        if (def_dictionary_.empty()) {
+            kind_ = def->kind_;
+        } else if (def->kind_ != kind_) {
+            throw Exception(At_Phrase(*stmt, *parent_),
+                "can't mix recursive and sequential definitions");
         }
 
         Atom name = def->name_->atom_;

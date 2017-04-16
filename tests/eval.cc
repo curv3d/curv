@@ -471,5 +471,7 @@ TEST(curv, eval)
     SUCCESS("a=2; f x={echo(g 2), g y=a*x*b*y, b=3}; f(5).g(7)", "210");
     EXPECT_EQ(console.str(),
         "ECHO: 60\n");
+
+    FAILMSG("a=1;b:=2;a+b", "can't mix recursive and sequential definitions");
   }
 }
