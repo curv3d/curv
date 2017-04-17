@@ -159,9 +159,11 @@ Statement_Analyzer::add_statement(Shared<const Phrase> stmt)
         def_dictionary_.emplace(
             std::make_pair(name, Binding{slot_count_++, pos, def}));
 
-        auto lambda = dynamic_cast<Lambda_Phrase*>(def->definiens_.get());
-        if (lambda != nullptr)
-            lambda->shared_nonlocals_ = true;
+        if (kind_ == Definition::k_recursive) {
+            auto lambda = dynamic_cast<Lambda_Phrase*>(def->definiens_.get());
+            if (lambda != nullptr)
+                lambda->shared_nonlocals_ = true;
+        }
     }
 }
 
@@ -189,15 +191,21 @@ Statement_Analyzer::single_lookup(const Identifier& id)
     auto b = def_dictionary_.find(id.atom_);
     if (b != def_dictionary_.end()) {
         if (b->second.defined_at_position(cur_pos_)) {
-            if (b->second.is_function_definition())
-                return make<Indirect_Function_Ref>(share(id),
-                    statements_.slot_, b->second.slot_, slot_count_);
-            else if (b->second.is_recursive())
-                return make<Indirect_Lazy_Ref>(
-                    share(id), statements_.slot_, b->second.slot_);
-            else
-                return make<Indirect_Strict_Ref>(
-                    share(id), statements_.slot_, b->second.slot_);
+            if (kind_ == Definition::k_recursive) {
+                if (b->second.is_function_definition())
+                    return make<Indirect_Function_Ref>(share(id),
+                        statements_.slot_, b->second.slot_, slot_count_);
+                else
+                    return make<Indirect_Lazy_Ref>(
+                        share(id), statements_.slot_, b->second.slot_);
+            } else { // sequential
+                //if (target_is_module_) {
+                    return make<Indirect_Strict_Ref>(
+                        share(id), statements_.slot_, b->second.slot_);
+                //} else {
+                //    return make<Let_Ref>(share(id), b->second.slot_);
+                //}
+            }
         }
     }
     return nullptr;
@@ -206,15 +214,14 @@ Statement_Analyzer::single_lookup(const Identifier& id)
 Shared<Meaning>
 Statement_Analyzer::Thunk_Environ::single_lookup(const Identifier& id)
 {
+    assert(analyzer_.kind_ == Definition::k_recursive);
     auto b = analyzer_.def_dictionary_.find(id.atom_);
     if (b != analyzer_.def_dictionary_.end()) {
         if (b->second.defined_at_position(analyzer_.cur_pos_)) {
             if (b->second.is_function_definition())
                 return make<Nonlocal_Function_Ref>(share(id), b->second.slot_);
-            else if (b->second.is_recursive())
-                return make<Nonlocal_Lazy_Ref>(share(id), b->second.slot_);
             else
-                return make<Nonlocal_Strict_Ref>(share(id), b->second.slot_);
+                return make<Nonlocal_Lazy_Ref>(share(id), b->second.slot_);
         }
     }
 
@@ -249,25 +256,25 @@ Statement_Analyzer::analyze(Shared<const Phrase> source)
     // analyze definitions
     auto defn_values = make_list(def_dictionary_.size());
     for (auto& b : def_dictionary_) {
-        // analyze definiens
-        Shared<Operation> expr;
         cur_pos_ = std::max(0, b.second.seq_no_);
-        Thunk_Environ tenv(*this);
-        if (b.second.is_function_definition() || b.second.is_recursive()) {
-            expr = analyze_op(*b.second.def_->definiens_, tenv);
-        } else {
-            expr = analyze_op(*b.second.def_->definiens_, *this);
-        }
+        if (kind_ == Definition::k_recursive) {
+            // analyze definiens
+            Thunk_Environ tenv(*this);
+            auto expr = analyze_op(*b.second.def_->definiens_, tenv);
 
-        // construct initial slot value
-        if (b.second.is_function_definition()) {
-            auto& l = dynamic_cast<Lambda_Expr&>(*expr);
-            defn_values->at(b.second.slot_) =
-                {make<Lambda>(l.body_, l.nargs_, l.nslots_)};
-        } else if (b.second.is_recursive()) {
-            defn_values->at(b.second.slot_) =
-                {make<Thunk>(expr, tenv.frame_maxslots_)};
+            // construct initial slot value
+            if (b.second.is_function_definition()) {
+                auto& l = dynamic_cast<Lambda_Expr&>(*expr);
+                defn_values->at(b.second.slot_) =
+                    {make<Lambda>(l.body_, l.nargs_, l.nslots_)};
+            } else
+                defn_values->at(b.second.slot_) =
+                    {make<Thunk>(expr, tenv.frame_maxslots_)};
         } else {
+            // analyze definiens
+            auto expr = analyze_op(*b.second.def_->definiens_, *this);
+
+            // construct initial slot value
             defn_values->at(b.second.slot_) = missing;
             statements_.actions_[b.second.seq_no_] = make<Seq_Def_Action>(
                 b.second.def_->definiens_,

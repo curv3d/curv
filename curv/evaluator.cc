@@ -514,9 +514,7 @@ Statements::exec(Frame& f) const
         values->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
     f[slot_] = {values};
     for (auto action : actions_) {
-        // TODO: sequentially defined functions have a null action. fix?
-        if (action != nullptr)
-            action->exec(f);
+        action->exec(f);
     }
 }
 
@@ -532,9 +530,7 @@ Statements::eval(Frame& f) const
         values->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
     f[slot_] = {values};
     for (auto action : actions_) {
-        // TODO: sequentially defined functions have a null action. fix?
-        if (action != nullptr)
-            action->exec(f);
+        action->exec(f);
     }
 #if 1
     // TODO: Get rid of this and make modules fully lazy.
