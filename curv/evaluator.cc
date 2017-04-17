@@ -92,14 +92,6 @@ Arg_Ref::eval(Frame& f) const
 }
 
 Value
-Local_Function_Ref::eval(Frame& f) const
-{
-    return {make<Closure>(
-        (Lambda&) f[lambda_slot_].get_ref_unsafe(),
-        (List&) f[env_slot_].get_ref_unsafe())};
-}
-
-Value
 Nonlocal_Function_Ref::eval(Frame& f) const
 {
     return {make<Closure>(

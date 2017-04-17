@@ -226,24 +226,6 @@ struct Arg_Ref : public Just_Expression
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
-struct Local_Function_Ref : public Just_Expression
-{
-    slot_t lambda_slot_; ///! local slot containing Lambda value
-    slot_t env_slot_;    ///! local slot containing List of nonlocal values
-
-    Local_Function_Ref(
-        Shared<const Phrase> source,
-        slot_t lambda_slot,
-        slot_t env_slot)
-    :
-        Just_Expression(std::move(source)),
-        lambda_slot_(lambda_slot),
-        env_slot_(env_slot)
-    {}
-
-    virtual Value eval(Frame&) const override;
-};
-
 struct Nonlocal_Function_Ref : public Just_Expression
 {
     slot_t lambda_slot_; ///! nonlocal slot containing Lambda value
