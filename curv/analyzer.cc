@@ -18,7 +18,21 @@ namespace curv
 Shared<Operation>
 analyze_op(const Phrase& ph, Environ& env)
 {
-    return ph.analyze(env)->to_operation(env.eval_frame_);
+    bool old = env.is_analyzing_action_;
+    env.is_analyzing_action_ = false;
+    auto result = ph.analyze(env)->to_operation(env.eval_frame_);
+    env.is_analyzing_action_ = old;
+    return result;
+}
+
+Shared<Operation>
+analyze_action(const Phrase& ph, Environ& env)
+{
+    bool old = env.is_analyzing_action_;
+    env.is_analyzing_action_ = true;
+    auto result = ph.analyze(env)->to_operation(env.eval_frame_);
+    env.is_analyzing_action_ = old;
+    return result;
 }
 
 Shared<Operation>
@@ -54,6 +68,21 @@ Environ::lookup(const Identifier& id)
             return m;
     }
     throw Exception(At_Phrase(id, *this), stringify(id.atom_,": not defined"));
+}
+
+Shared<Meaning>
+Environ::lookup_var(const Identifier& id)
+{
+    for (Environ* e = this; e != nullptr; e = e->parent_) {
+        if (is_sequential_statement_list_ && is_analyzing_action_) {
+            auto m = e->single_lookup(id);
+            if (m != nullptr)
+                return m;
+        } else
+            break;
+    }
+    throw Exception(At_Phrase(id, *this),
+        stringify("var ",id.atom_,": not defined"));
 }
 
 Shared<Meaning>
@@ -245,6 +274,9 @@ Statement_Analyzer::Thunk_Environ::single_lookup(const Identifier& id)
 void
 Statement_Analyzer::analyze(Shared<const Phrase> source)
 {
+    if (kind_ == Definition::k_sequential)
+        is_sequential_statement_list_ = true;
+
     statements_.actions_.reserve(seq_count_);
     statements_.actions_.insert(statements_.actions_.end(), seq_count_, nullptr);
 
@@ -262,7 +294,7 @@ Statement_Analyzer::analyze(Shared<const Phrase> source)
     // analyze action phrases
     for (auto& ap : action_phrases_) {
         cur_pos_ = ap.seq_no_;
-        statements_.actions_[ap.seq_no_] = analyze_op(*ap.phrase_, *this);
+        statements_.actions_[ap.seq_no_] = analyze_action(*ap.phrase_, *this);
     }
 
     // analyze definitions
@@ -557,7 +589,22 @@ Sequential_Definition_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Assignment_Phrase::analyze(Environ& env) const
 {
-    throw Exception(At_Phrase(*this, env), "not an operation");
+    auto id = cast<Identifier>(left_);
+    if (id == nullptr)
+        throw Exception(At_Phrase(*left_, env), "not a variable name");
+    auto m = env.lookup_var(*id);
+    auto expr = analyze_op(*right_, env);
+
+    auto let = cast<Let_Ref>(m);
+    if (let)
+        return make<Let_Assign>(share(*this), let->slot_, expr);
+    auto indir = cast<Indirect_Strict_Ref>(m);
+    if (indir)
+        return make<Indirect_Assign>(share(*this),
+            indir->slot_, indir->index_, expr);
+
+    // this should never happen
+    throw Exception(At_Phrase(*left_, env), "not a sequential variable name");
 }
 
 Shared<Definition>

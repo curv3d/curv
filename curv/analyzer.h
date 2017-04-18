@@ -20,6 +20,13 @@ struct Environ
     slot_t frame_nslots_;
     slot_t frame_maxslots_;
 
+    /// true if this Environ represents a sequential statement list.
+    bool is_sequential_statement_list_ = false;
+
+    /// true if we are currently analyzing an action statement within a
+    /// sequential statement list: set and restored by analyze_action().
+    bool is_analyzing_action_ = false;
+
     Environ(Environ* p)
     :
         parent_(p),
@@ -28,6 +35,7 @@ struct Environ
         frame_maxslots_(0)
     {}
     Shared<Meaning> lookup(const Identifier& id);
+    Shared<Meaning> lookup_var(const Identifier& id);
     virtual Shared<Meaning> single_lookup(const Identifier&) = 0;
 };
 
@@ -147,6 +155,7 @@ struct Statement_Analyzer : public Environ
 };
 
 Shared<Operation> analyze_op(const Phrase& ph, Environ& env);
+Shared<Operation> analyze_action(const Phrase& ph, Environ& env);
 
 } // namespace
 #endif // header guard

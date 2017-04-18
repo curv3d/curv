@@ -91,4 +91,8 @@ assert(
     m.f 2 == 3
 ),
 
+assert(
+    (var a:=1; a:=a+2; a) == 3
+),
+
 }

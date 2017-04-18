@@ -11,8 +11,6 @@ What remains for MVP? (What do I want to show in my first big demo?)
 * mac port or linux laptop
 
 Iteration
-* Sequential definition: `var i := 0`
-* Simple redefinition: `i := i + 1` (no `var`).
 * Conditional redefinition: `if (expr) redef`.
 * Compound redefinition:
   (redef1; redef2;) is a block with a null action as the body.
