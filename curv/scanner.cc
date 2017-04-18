@@ -148,6 +148,8 @@ Scanner::get_token()
             tok.kind_ = Token::k_for;
         else if (id == "by")
             tok.kind_ = Token::k_by;
+        else if (id == "var")
+            tok.kind_ = Token::k_var;
         else
             tok.kind_ = Token::k_ident;
         goto success;

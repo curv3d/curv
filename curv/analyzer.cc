@@ -369,6 +369,8 @@ Unary_Phrase::analyze(Environ& env) const
         return make<Spread_Gen>(
             share(*this),
             analyze_op(*arg_, env));
+    case Token::k_var:
+        throw Exception(At_Token(op_, *this, env), "syntax error");
     default:
         assert(0);
     }
@@ -564,6 +566,17 @@ analyze_def_iter(
 Shared<Definition>
 Definition_Phrase::analyze_def(Environ& env) const
 {
+    if (equate_.kind_ == Token::k_assign) {
+        if (auto unary = cast<Unary_Phrase>(left_))
+            if (unary->op_.kind_ == Token::k_var)
+                return analyze_def_iter(env, share(*this), *unary->arg_, right_,
+                    Definition::k_sequential);
+        return nullptr;
+    } else {
+        return analyze_def_iter(env, share(*this), *left_, right_,
+            Definition::k_recursive);
+    }
+
     return analyze_def_iter(env, share(*this), *left_, right_,
         equate_.kind_ == Token::k_assign
             ? Definition::k_sequential

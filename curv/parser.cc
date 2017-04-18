@@ -156,9 +156,10 @@ parse_semicolons(Scanner& scanner)
 //
 // item : disjunction
 //  | ... item
-//  | postfix = item
-//  | postfix : item
-//  | primary -> item
+//  | disjunction = item
+//  | disjunction := item
+//  | disjunction : item
+//  | disjunction -> item
 //  | disjunction << item
 //  | 'if' primary item
 //  | 'if' primary item 'else' item
@@ -373,6 +374,7 @@ parse_unary(Scanner& scanner)
     case Token::k_plus:
     case Token::k_minus:
     case Token::k_not:
+    case Token::k_var:
         return make<Unary_Phrase>(tok, parse_unary(scanner));
     default:
         scanner.push_token(tok);

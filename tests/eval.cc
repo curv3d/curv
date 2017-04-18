@@ -472,6 +472,6 @@ TEST(curv, eval)
     EXPECT_EQ(console.str(),
         "ECHO: 60\n");
 
-    FAILMSG("a=1;b:=2;a+b", "can't mix recursive and sequential definitions");
+    FAILMSG("a=1;var b:=2;a+b", "can't mix recursive and sequential definitions");
   }
 }

@@ -158,8 +158,8 @@ distance_field shape = shape2d {
     dist : everything.dist,
     bbox : everything.bbox,
     colour p : (
-        d := shape.dist p;
-        c := if (d >= 0) ceil(d)-d else floor(d)-d;
+        var d := shape.dist p;
+        var c := if (d >= 0) ceil(d)-d else floor(d)-d;
         [max(-c,0), 0, max(c,0)]
     ),
 },

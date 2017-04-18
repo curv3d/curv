@@ -42,10 +42,10 @@ plane_segment limits = (
 rep_rotate n shape = (
     na = tau/4 - tau/(n*2);
     rpr f p = (
-        pa := phase p;
-        mpa := mod(pa - na, tau/n) + na;
-        rota := -(pa - mpa);
-        rp := cmul(p, cis rota);
+        var pa := phase p;
+        var mpa := mod(pa - na, tau/n) + na;
+        var rota := -(pa - mpa);
+        var rp := cmul(p, cis rota);
         f rp
     );
     shape2d {
@@ -62,10 +62,10 @@ regular_polygon(n) = rotate(tau/2) << rep_rotate(n) << plane_segment{ymax:1};
 
 old_rep_rotate(n) shape = shape2d {
     dist p : (
-        ph := phase(p);
-        mph := mod(ph, tau/n);
-        rotangle := -(ph - mph);
-        rp := cmul(p, cis(rotangle));
+        var ph := phase(p);
+        var mph := mod(ph, tau/n);
+        var rotangle := -(ph - mph);
+        var rp := cmul(p, cis(rotangle));
         shape.dist rp
     ),
     bbox : everything.bbox,
