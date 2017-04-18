@@ -497,14 +497,16 @@ Record_Expr::eval(Frame& f) const
 void
 Statements::exec(Frame& f) const
 {
-    slot_t ndefns = defn_values_->size();
-    slot_t nvalues = ndefns + nonlocal_exprs_.size();
-    Shared<List> values = List::make(nvalues);
-    for (slot_t i = 0; i < ndefns; ++i)
-        values->at(i) = defn_values_->at(i);
-    for (slot_t i = ndefns; i < nvalues; ++i)
-        values->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
-    f[slot_] = {values};
+    if (slot_ != (slot_t)(-1)) {
+        slot_t ndefns = defn_values_->size();
+        slot_t nvalues = ndefns + nonlocal_exprs_.size();
+        Shared<List> values = List::make(nvalues);
+        for (slot_t i = 0; i < ndefns; ++i)
+            values->at(i) = defn_values_->at(i);
+        for (slot_t i = ndefns; i < nvalues; ++i)
+            values->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
+        f[slot_] = {values};
+    }
     for (auto action : actions_) {
         action->exec(f);
     }
@@ -513,6 +515,7 @@ Statements::exec(Frame& f) const
 Shared<List>
 Statements::eval(Frame& f) const
 {
+    assert(slot_ != (slot_t)(-1));
     slot_t ndefns = defn_values_->size();
     slot_t nvalues = ndefns + nonlocal_exprs_.size();
     Shared<List> values = List::make(nvalues);
@@ -535,7 +538,13 @@ Statements::eval(Frame& f) const
 }
 
 void
-Seq_Def_Action::exec(Frame& f) const
+Let_Assign::exec(Frame& f) const
+{
+    f[slot_] = expr_->eval(f);
+}
+
+void
+Indirect_Assign::exec(Frame& f) const
 {
     List& list = (List&)f[slot_].get_ref_unsafe();
     assert(list.type_ == Ref_Value::ty_list);

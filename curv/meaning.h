@@ -565,13 +565,33 @@ struct Statements
 
 // An internal action for storing the value of a sequential definition
 // in the evaluation frame. Part of the actions_ list in a Statements.
-struct Seq_Def_Action : public Just_Action
+struct Let_Assign : public Just_Action
+{
+    slot_t slot_;
+    Shared<Operation> expr_;
+
+    Let_Assign(
+        Shared<const Phrase> source,
+        slot_t slot,
+        Shared<Operation> expr)
+    :
+        Just_Action(std::move(source)),
+        slot_(slot),
+        expr_(std::move(expr))
+    {}
+
+    void exec(Frame&) const;
+};
+
+// An internal action for storing the value of a sequential definition
+// in the evaluation frame. Part of the actions_ list in a Statements.
+struct Indirect_Assign : public Just_Action
 {
     slot_t slot_;
     slot_t index_;
     Shared<Operation> expr_;
 
-    Seq_Def_Action(
+    Indirect_Assign(
         Shared<const Phrase> source,
         slot_t slot,
         slot_t index,

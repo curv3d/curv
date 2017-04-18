@@ -199,12 +199,13 @@ Statement_Analyzer::single_lookup(const Identifier& id)
                     return make<Indirect_Lazy_Ref>(
                         share(id), statements_.slot_, b->second.slot_);
             } else { // sequential
-                //if (target_is_module_) {
+                if (target_is_module_) {
                     return make<Indirect_Strict_Ref>(
                         share(id), statements_.slot_, b->second.slot_);
-                //} else {
-                //    return make<Let_Ref>(share(id), b->second.slot_);
-                //}
+                } else {
+                    return make<Let_Ref>(share(id),
+                        b->second.slot_ + parent_->frame_nslots_);
+                }
             }
         }
     }
@@ -247,7 +248,15 @@ Statement_Analyzer::analyze(Shared<const Phrase> source)
     statements_.actions_.reserve(seq_count_);
     statements_.actions_.insert(statements_.actions_.end(), seq_count_, nullptr);
 
-    statements_.slot_ = frame_nslots_++;
+    Shared<List> defn_values;
+    if (kind_ == Definition::k_sequential && !target_is_module_) {
+        statements_.slot_ = (slot_t)(-1);
+        frame_nslots_ += def_dictionary_.size();
+        defn_values = nullptr;
+    } else {
+        statements_.slot_ = frame_nslots_++;
+        defn_values = make_list(def_dictionary_.size());
+    }
     frame_maxslots_ = std::max(frame_nslots_, frame_maxslots_);
 
     // analyze action phrases
@@ -257,7 +266,6 @@ Statement_Analyzer::analyze(Shared<const Phrase> source)
     }
 
     // analyze definitions
-    auto defn_values = make_list(def_dictionary_.size());
     for (auto& b : def_dictionary_) {
         cur_pos_ = std::max(0, b.second.seq_no_);
         if (kind_ == Definition::k_recursive) {
@@ -273,16 +281,23 @@ Statement_Analyzer::analyze(Shared<const Phrase> source)
             } else
                 defn_values->at(b.second.slot_) =
                     {make<Thunk>(expr, tenv.frame_maxslots_)};
-        } else {
+        } else { // sequential
             // analyze definiens
             auto expr = analyze_op(*b.second.def_->definiens_, *this);
 
             // construct initial slot value
-            defn_values->at(b.second.slot_) = missing;
-            statements_.actions_[b.second.seq_no_] = make<Seq_Def_Action>(
-                b.second.def_->definiens_,
-                statements_.slot_, b.second.slot_,
-                expr);
+            if (target_is_module_) {
+                defn_values->at(b.second.slot_) = missing;
+                statements_.actions_[b.second.seq_no_] = make<Indirect_Assign>(
+                    b.second.def_->definiens_,
+                    statements_.slot_, b.second.slot_,
+                    expr);
+            } else {
+                statements_.actions_[b.second.seq_no_] = make<Let_Assign>(
+                    b.second.def_->definiens_,
+                    b.second.slot_ + parent_->frame_nslots_,
+                    expr);
+            }
         }
     }
     statements_.defn_values_ = defn_values;
