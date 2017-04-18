@@ -647,7 +647,8 @@ Semicolon_Phrase::analyze(Environ& env) const
     for (size_t i = 0; i < args_.size() - 1; ++i)
         analyzer.add_statement(args_[i].expr_);
     analyzer.analyze(share(*this));
-    auto body = analyze_op(*args_.back().expr_, analyzer);
+    analyzer.is_analyzing_action_ = env.is_analyzing_action_;
+    auto body = analyze_tail(*args_.back().expr_, analyzer);
     env.frame_maxslots_ = analyzer.frame_maxslots_;
     return make<Block_Op>(share(*this),
         std::move(analyzer.statements_), std::move(body));

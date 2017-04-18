@@ -11,14 +11,6 @@ What remains for MVP? (What do I want to show in my first big demo?)
 * mac port or linux laptop
 
 Iteration
-* Compound redefinition:
-  (redef1; redef2;) is a block with a null action as the body.
-  The meaning of a redef within a block depends on the environment:
-  are we redefining a definition in the same block or in a surrounding
-  stmtlist? If the latter, then the meaning of the block is a redef.
-* Qualified redefinition, with local bindings.
-  (stmts;) -- This is an action block. It may contain redefinitions of
-  variables in the surrounding scope, which must be a stmtlist.
 * Iterative redefinition: `while (expr) redef`.
 * GL support for the above
 * implement mandelbrot set
@@ -248,6 +240,10 @@ ImplicitCAD:
   Currently, all fields values are forced during module creation.
   For true lazy modules, need to pass a Frame* through Ref_Value::getfield
   and Module::get.
+* blocks: tighten up the syntax.
+  (stmt1;stmt2;expression) -- expression block has no final semicolon
+  (stmt1;stmt2;generator)
+  (stmt1;stmt2;action;)  -- action block has final semicolon.
 
 
 # Older Stuff
