@@ -671,7 +671,7 @@ Paren_Phrase::analyze(Environ& env) const
             (*list)[i] = analyze_op(*items[i].expr_, env);
         return list;
     } else
-        return analyze_op(*body_, env);
+        return analyze_tail(*body_, env);
 }
 
 Shared<Meaning>
