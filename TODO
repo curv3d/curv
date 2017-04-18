@@ -11,8 +11,18 @@ What remains for MVP? (What do I want to show in my first big demo?)
 * mac port or linux laptop
 
 Iteration
-* (a:=1; b:=2; a+b) -- sequential definition block, replaces `let`
-* (i:=0; while(i<n) next i:=i+1; i) -- last action of a seq block may be `while`
+* Sequential definition: `var i := 0`
+* Simple redefinition: `i := i + 1` (no `var`).
+* Conditional redefinition: `if (expr) redef`.
+* Compound redefinition:
+  (redef1; redef2;) is a block with a null action as the body.
+  The meaning of a redef within a block depends on the environment:
+  are we redefining a definition in the same block or in a surrounding
+  stmtlist? If the latter, then the meaning of the block is a redef.
+* Qualified redefinition, with local bindings.
+  (stmts;) -- This is an action block. It may contain redefinitions of
+  variables in the surrounding scope, which must be a stmtlist.
+* Iterative redefinition: `while (expr) redef`.
 * GL support for the above
 * implement mandelbrot set
 
@@ -215,6 +225,28 @@ ImplicitCAD:
   debug command to dump a specified frame, showing exact contents of local
   and non-local slots without evaluation.
 * Lazy Modules:
+  Why?
+  * Make the language more expressive. Programs that now fail due to illegal
+    recursive reference will now succeed.
+  * Efficiency through deferred evaluation? Not for MVP.
+  Change the Module API so that Thunks are forced before Values escape.
+  I'll need to add Frame* or Context& arguments to provide exception context
+  if thunk forcing fails:
+  * in Module::print()
+  * in Module::begin()
+  * in Module::getfield()
+  I need a Context& for proper error messages, but I need a parent frame to
+  force a thunk. Maybe add `Frame* Context::get_frame()`. Won't work in GL
+  due to GL_Frames. Maybe Frame and GL_Frame share a common ancestor for
+  use in Context.
+
+  * Stdlib contains thunks. When are they forced?
+    * When stdlib is loaded. (As early as possible. Even for names that are
+      never referenced.)
+    * During analysis, in Builtin_Environ. The value is forced in the Namespace
+      object, which happens at most once.
+    * At runtime, in Constant (or Lazy_Constant). Problem: we'll make multiple
+      copies of the thunk then later force multiple copies. Fix?
   Need to force a module slot before the value leaves the module.
   Currently, all fields values are forced during module creation.
   For true lazy modules, need to pass a Frame* through Ref_Value::getfield

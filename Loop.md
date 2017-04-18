@@ -17,6 +17,80 @@ for (int i=0; i<maxiter; i++) {
 }
 ```
 
+## Sequential Definitions and Redefinitions
+* (a:=1; b:=2; a+b) -- sequential definition block, replaces `let`
+* {a:=1, b:=2} -- sequential module
+* can't mix sequential and recursive definitions in the same stmt list.
+* sequential closure value has a unique (not shared) nonlocals list.
+* a sequential block uses direct slot storage. recursive or module statement
+  list uses indirect slot storage.
+
+Alt syntax:
+* (let a:=1; let b:=2; a+b) -- sequential definition block, replaces `let`
+* {let a:=1, let b:=2} -- sequential module
+* a := a + 1 for redefinition.
+
+Syntax use cases:
+* Imperative code with redefinitions.
+  This is the use case that is most likely to survive after the compiler is
+  completed.
+  For this case, `var a := 0; a := a + 1` is probably good. The `var` keyword
+  is widely used in popular imperative languages: javascript, swift, go.
+* In GL, just introduce local variables into a GL expression. No redefinitions.
+  Ideally, a recursive definition will work, pending more compiler work.
+  For this case, `var x := 42` is verbose and too imperative looking,
+  but this will help motivate fixing the compiler so that regular `=`
+  definitions can be used instead.
+
+A Redefinition is a kind of Action that redefines one or more sequential
+bindings in the surrounding scope, which must be a statement list.
+
+A Phrase is: Expression | Generator | Action | RecDef | SeqDef | ReDef.
+
+3 kinds of blocks:
+* (stmt-list; expression)
+* (stmt-list; generator)
+* (stmt-list;) -- action or redef, determined during analysis.
+
+At analyze-def time,
+* we recognize RecDef and SeqDef.
+* We classify a stmt-list as sequential or recursive. Recursive means at least
+  one recdef and no seqdef.
+At analyze time,
+* In a recursive stmt-list, each unclassified statement must be an action.
+* In a sequential stmt-list, each unclassified statement must be an action
+  or a ReDef.
+
+Redefinitions:
+* Simple redefinition: `next i := i + 1`.
+* Conditional redefinition: `if (expr) redef`.
+* Compound redefinition:
+  (redef1; redef2;) -- This is a block with a null action as the body.
+  The meaning of a redef within a block depends on the environment:
+  are we redefining a definition in the same block or in a surrounding
+  stmtlist? If the latter, then the meaning of the block is a redef.
+* Qualified redefinition, with local bindings.
+  (stmts;) -- This is an action block. It may contain redefinitions of
+  variables in the surrounding scope, which must be a stmtlist.
+* Iterative redefinition: `while (expr) redef`.
+
+How is a redefinition analyzed?
+* It's classified as an action with the side effect of modifying slots
+  in the current frame (possibly indirect slots).
+* The environment indicates which sequential variables are available
+  for redefinition. There's a new protocol for querying sequential variables
+  up to a 'barrier'.
+  * `bool Environ::is_sequential_` is true for a sequential statement list.
+  * `bool Environ::is_action_` is true if the phrase currently being analyzed
+    is in fact an Action or ReDef, false if it is an Expression or Generator.
+  * `analyze_op(phrase, env)` sets isaction to false on entry, restores it
+    on exit.
+  * `analyze_action(phrase, env)` sets isaction to true on entry, restores it
+    on exit.
+  * `Environ::lookup_seq(id)` looks up `id` in the context `next id := ...`.
+    Look up `id` in the current environment, fail if !(isaction&&issequential).
+    If isaction and id not defined, restart at the parent.
+
 ## `iterate` operator
 Built-in iterate syntax should be easier to implement in GL
 than `iterate` the first class function.
