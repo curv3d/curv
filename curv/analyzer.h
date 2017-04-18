@@ -118,8 +118,6 @@ struct Statement_Analyzer : public Environ
     {
         frame_nslots_ = parent.frame_nslots_;
         frame_maxslots_ = parent.frame_maxslots_;
-        statements_.slot_ = frame_nslots_++;
-        frame_maxslots_ = std::max(frame_nslots_, frame_maxslots_);
     }
 
     struct Thunk_Environ : public Environ

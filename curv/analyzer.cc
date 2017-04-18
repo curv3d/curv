@@ -247,6 +247,9 @@ Statement_Analyzer::analyze(Shared<const Phrase> source)
     statements_.actions_.reserve(seq_count_);
     statements_.actions_.insert(statements_.actions_.end(), seq_count_, nullptr);
 
+    statements_.slot_ = frame_nslots_++;
+    frame_maxslots_ = std::max(frame_nslots_, frame_maxslots_);
+
     // analyze action phrases
     for (auto& ap : action_phrases_) {
         cur_pos_ = ap.seq_no_;
