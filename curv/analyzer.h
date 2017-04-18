@@ -156,6 +156,7 @@ struct Statement_Analyzer : public Environ
 
 Shared<Operation> analyze_op(const Phrase& ph, Environ& env);
 Shared<Operation> analyze_action(const Phrase& ph, Environ& env);
+Shared<Operation> analyze_tail(const Phrase& ph, Environ& env);
 
 } // namespace
 #endif // header guard

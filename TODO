@@ -11,7 +11,6 @@ What remains for MVP? (What do I want to show in my first big demo?)
 * mac port or linux laptop
 
 Iteration
-* Conditional redefinition: `if (expr) redef`.
 * Compound redefinition:
   (redef1; redef2;) is a block with a null action as the body.
   The meaning of a redef within a block depends on the environment:

@@ -36,6 +36,12 @@ analyze_action(const Phrase& ph, Environ& env)
 }
 
 Shared<Operation>
+analyze_tail(const Phrase& ph, Environ& env)
+{
+    return ph.analyze(env)->to_operation(env.eval_frame_);
+}
+
+Shared<Operation>
 Meaning::to_operation(Frame* f)
 {
     throw Exception(At_Phrase(*source_, f), "not an operation");
@@ -855,13 +861,13 @@ If_Phrase::analyze(Environ& env) const
         return make<If_Op>(
             share(*this),
             analyze_op(*condition_, env),
-            analyze_op(*then_expr_, env));
+            analyze_tail(*then_expr_, env));
     } else {
         return make<If_Else_Op>(
             share(*this),
             analyze_op(*condition_, env),
-            analyze_op(*then_expr_, env),
-            analyze_op(*else_expr_, env));
+            analyze_tail(*then_expr_, env),
+            analyze_tail(*else_expr_, env));
     }
 }
 
