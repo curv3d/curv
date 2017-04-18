@@ -545,7 +545,17 @@ Binary_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-Definition_Phrase::analyze(Environ& env) const
+Recursive_Definition_Phrase::analyze(Environ& env) const
+{
+    throw Exception(At_Phrase(*this, env), "not an operation");
+}
+Shared<Meaning>
+Sequential_Definition_Phrase::analyze(Environ& env) const
+{
+    throw Exception(At_Phrase(*this, env), "not an operation");
+}
+Shared<Meaning>
+Assignment_Phrase::analyze(Environ& env) const
 {
     throw Exception(At_Phrase(*this, env), "not an operation");
 }
@@ -564,23 +574,16 @@ analyze_def_iter(
 }
 
 Shared<Definition>
-Definition_Phrase::analyze_def(Environ& env) const
+Recursive_Definition_Phrase::analyze_def(Environ& env) const
 {
-    if (equate_.kind_ == Token::k_assign) {
-        if (auto unary = cast<Unary_Phrase>(left_))
-            if (unary->op_.kind_ == Token::k_var)
-                return analyze_def_iter(env, share(*this), *unary->arg_, right_,
-                    Definition::k_sequential);
-        return nullptr;
-    } else {
-        return analyze_def_iter(env, share(*this), *left_, right_,
-            Definition::k_recursive);
-    }
-
     return analyze_def_iter(env, share(*this), *left_, right_,
-        equate_.kind_ == Token::k_assign
-            ? Definition::k_sequential
-            : Definition::k_recursive);
+        Definition::k_recursive);
+}
+Shared<Definition>
+Sequential_Definition_Phrase::analyze_def(Environ& env) const
+{
+    return analyze_def_iter(env, share(*this), *left_, right_,
+        Definition::k_sequential);
 }
 
 Shared<Meaning>
@@ -818,8 +821,7 @@ If_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 For_Phrase::analyze(Environ& env) const
 {
-    auto defexpr = args_->body_;
-    const Definition_Phrase* def = dynamic_cast<Definition_Phrase*>(&*defexpr);
+    auto def = cast<Recursive_Definition_Phrase>(args_->body_);
     if (def == nullptr)
         throw Exception(At_Phrase(*args_, env),
             "for: malformed argument");

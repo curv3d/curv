@@ -204,8 +204,17 @@ parse_item(Scanner& scanner)
     tok = scanner.get_token();
     switch (tok.kind_) {
     case Token::k_equate:
+        return make<Recursive_Definition_Phrase>(
+            std::move(left), tok, parse_item(scanner));
     case Token::k_assign:
-        return make<Definition_Phrase>(
+        if (auto unary = cast<Unary_Phrase>(left)) {
+            if (unary->op_.kind_ == Token::k_var) {
+                return make<Sequential_Definition_Phrase>(
+                    unary->op_, std::move(unary->arg_), tok,
+                    parse_item(scanner));
+            }
+        }
+        return make<Assignment_Phrase>(
             std::move(left), tok, parse_item(scanner));
     case Token::k_colon:
         return make<Binary_Phrase>(

@@ -115,23 +115,62 @@ struct Lambda_Phrase : public Binary_Phrase
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
-struct Definition_Phrase : public Phrase
+struct Recursive_Definition_Phrase : public Phrase
 {
-    Definition_Phrase(
+    Recursive_Definition_Phrase(
         Shared<Phrase> left,
-        Token equate,
+        Token op,
         Shared<Phrase> right)
     :
-        left_(left), equate_(equate), right_(right)
+        left_(left), op_(op), right_(right)
     {}
     Shared<Phrase> left_;
-    Token equate_;
+    Token op_;
     Shared<Phrase> right_;
     virtual Location location() const override
     {
         return left_->location().ending_at(right_->location().token());
     }
     virtual Shared<Definition> analyze_def(Environ&) const override;
+    virtual Shared<Meaning> analyze(Environ&) const override;
+};
+struct Sequential_Definition_Phrase : public Phrase
+{
+    Sequential_Definition_Phrase(
+        Token var,
+        Shared<Phrase> left,
+        Token op,
+        Shared<Phrase> right)
+    :
+        var_(var), left_(left), op_(op), right_(right)
+    {}
+    Token var_;
+    Shared<Phrase> left_;
+    Token op_;
+    Shared<Phrase> right_;
+    virtual Location location() const override
+    {
+        return right_->location().starting_at(var_);
+    }
+    virtual Shared<Definition> analyze_def(Environ&) const override;
+    virtual Shared<Meaning> analyze(Environ&) const override;
+};
+struct Assignment_Phrase : public Phrase
+{
+    Assignment_Phrase(
+        Shared<Phrase> left,
+        Token op,
+        Shared<Phrase> right)
+    :
+        left_(left), op_(op), right_(right)
+    {}
+    Shared<Phrase> left_;
+    Token op_;
+    Shared<Phrase> right_;
+    virtual Location location() const override
+    {
+        return left_->location().ending_at(right_->location().token());
+    }
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
