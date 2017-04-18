@@ -58,15 +58,18 @@ public:
 /// definientia.
 struct Definition : public aux::Shared_Base
 {
+    Shared<const Phrase> source_;
     Shared<const Identifier> name_;
     Shared<Phrase> definiens_;
     enum Kind { k_recursive, k_sequential } kind_;
 
     Definition(
+        Shared<const Phrase> source,
         Shared<const Identifier> name,
         Shared<Phrase> definiens,
         Kind k)
     :
+        source_(std::move(source)),
         name_(std::move(name)),
         definiens_(std::move(definiens)),
         kind_(k)

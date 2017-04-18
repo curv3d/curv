@@ -163,7 +163,13 @@ error:
 GL_Value Operation::gl_eval(GL_Frame& f) const
 {
     throw Exception(At_GL_Phrase(*source_, &f),
-        "this operation is not supported by the Geometry Compiler");
+        "this expression is not supported by the Geometry Compiler");
+}
+
+void Operation::gl_exec(GL_Frame& f) const
+{
+    throw Exception(At_GL_Phrase(*source_, &f),
+        "this action is not supported by the Geometry Compiler");
 }
 
 GL_Value Constant::gl_eval(GL_Frame& f) const
@@ -291,6 +297,24 @@ GL_Value Let_Op::gl_eval(GL_Frame& f) const
     for (size_t i = 0; i < exprs_.size(); ++i)
         slots[i] = exprs_[i]->gl_eval(f);
     return body_->gl_eval(f);
+}
+
+GL_Value Block_Op::gl_eval(GL_Frame& f) const
+{
+    statements_.gl_exec(f);
+    return body_->gl_eval(f);
+}
+
+void Statements::gl_exec(GL_Frame& f) const
+{
+    for (auto action : actions_)
+        action->gl_exec(f);
+}
+
+void
+Let_Assign::gl_exec(GL_Frame& f) const
+{
+    f[slot_] = expr_->gl_eval(f);
 }
 
 GL_Value At_Expr::gl_eval(GL_Frame& f) const

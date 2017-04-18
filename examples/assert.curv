@@ -7,4 +7,4 @@ gl_assert(f) = shape2d {
     colour p : [1-bit(f()), bit(f()), 0],
     bbox : everything.bbox
 };
-gl_assert(()->let(a=1)a==1)
+gl_assert(()->(a:=1; a==1))

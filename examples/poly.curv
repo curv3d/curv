@@ -42,10 +42,10 @@ plane_segment limits = (
 rep_rotate n shape = (
     na = tau/4 - tau/(n*2);
     rpr f p = (
-        let (pa = phase p)
-        let (mpa = mod(pa - na, tau/n) + na)
-        let (rota = -(pa - mpa))
-        let (rp = cmul(p, cis rota))
+        pa := phase p;
+        mpa := mod(pa - na, tau/n) + na;
+        rota := -(pa - mpa);
+        rp := cmul(p, cis rota);
         f rp
     );
     shape2d {
@@ -61,12 +61,13 @@ regular_polygon(n) = rotate(tau/2) << rep_rotate(n) << plane_segment{ymax:1};
 //regular_polygon(5);
 
 old_rep_rotate(n) shape = shape2d {
-    dist p :
-        let(ph = phase(p))
-        let(mph = mod(ph, tau/n))
-        let(rotangle = -(ph - mph))
-        let(rp = cmul(p, cis(rotangle)))
-        shape.dist rp,
+    dist p : (
+        ph := phase(p);
+        mph := mod(ph, tau/n);
+        rotangle := -(ph - mph);
+        rp := cmul(p, cis(rotangle));
+        shape.dist rp
+    ),
     bbox : everything.bbox,
 };
 // Partition 2-space into n pie slices, radiating from origin.

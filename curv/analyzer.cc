@@ -289,12 +289,12 @@ Statement_Analyzer::analyze(Shared<const Phrase> source)
             if (target_is_module_) {
                 defn_values->at(b.second.slot_) = missing;
                 statements_.actions_[b.second.seq_no_] = make<Indirect_Assign>(
-                    b.second.def_->definiens_,
+                    b.second.def_->source_,
                     statements_.slot_, b.second.slot_,
                     expr);
             } else {
                 statements_.actions_[b.second.seq_no_] = make<Let_Assign>(
-                    b.second.def_->definiens_,
+                    b.second.def_->source_,
                     b.second.slot_ + parent_->frame_nslots_,
                     expr);
             }
@@ -550,12 +550,13 @@ Definition_Phrase::analyze(Environ& env) const
 
 Shared<Definition>
 analyze_def_iter(
-    Environ& env, Phrase& left, Shared<Phrase> right, Definition::Kind kind)
+    Environ& env, Shared<const Phrase> source,
+    Phrase& left, Shared<Phrase> right, Definition::Kind kind)
 {
     if (auto id = dynamic_cast<const Identifier*>(&left))
-        return make<Definition>(share(*id), right, kind);
+        return make<Definition>(std::move(source), share(*id), right, kind);
     if (auto call = dynamic_cast<const Call_Phrase*>(&left))
-        return analyze_def_iter(env, *call->function_,
+        return analyze_def_iter(env, std::move(source), *call->function_,
             make<Lambda_Phrase>(call->arg_, Token(), right), kind);
     throw Exception(At_Phrase(left,  env), "invalid definiendum");
 }
@@ -563,7 +564,7 @@ analyze_def_iter(
 Shared<Definition>
 Definition_Phrase::analyze_def(Environ& env) const
 {
-    return analyze_def_iter(env, *left_, right_,
+    return analyze_def_iter(env, share(*this), *left_, right_,
         equate_.kind_ == Token::k_assign
             ? Definition::k_sequential
             : Definition::k_recursive);

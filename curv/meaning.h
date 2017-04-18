@@ -90,6 +90,7 @@ struct Operation : public Meaning
 
     // These functions are called by the Geometry Compiler.
     virtual GL_Value gl_eval(GL_Frame&) const;
+    virtual void gl_exec(GL_Frame&) const;
 };
 
 /// `Just_Expression` is an implementation class, inherited by Operation classes
@@ -561,6 +562,7 @@ struct Statements
     /// Return the value list.
     Shared<List> eval(Frame&) const;
     void exec(Frame&) const;
+    void gl_exec(GL_Frame&) const;
 };
 
 // An internal action for storing the value of a sequential definition
@@ -580,7 +582,8 @@ struct Let_Assign : public Just_Action
         expr_(std::move(expr))
     {}
 
-    void exec(Frame&) const;
+    void exec(Frame&) const override;
+    void gl_exec(GL_Frame&) const override;
 };
 
 // An internal action for storing the value of a sequential definition
@@ -603,7 +606,7 @@ struct Indirect_Assign : public Just_Action
         expr_(std::move(expr))
     {}
 
-    void exec(Frame&) const;
+    void exec(Frame&) const override;
 };
 
 // A module expression is `{stmt; stmt; ...;}` where stmt is a definition
@@ -673,6 +676,7 @@ struct Block_Op : public Operation
     virtual Value eval(Frame&) const override;
     virtual void generate(Frame&, List_Builder&) const override;
     virtual void exec(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
 struct For_Op : public Operation
