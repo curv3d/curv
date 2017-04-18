@@ -349,12 +349,6 @@ struct Control_Phrase : public Phrase
     }
 };
 
-struct Let_Phrase : public Control_Phrase
-{
-    using Control_Phrase::Control_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
-};
-
 struct For_Phrase : public Control_Phrase
 {
     using Control_Phrase::Control_Phrase;

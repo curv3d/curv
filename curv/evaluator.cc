@@ -565,31 +565,6 @@ Module_Expr::eval_module(Frame& f) const
 }
 
 Value
-Let_Op::eval(Frame& f) const
-{
-    Value* slots = &f[first_slot_];
-    for (slot_t i = 0; i < exprs_.size(); ++i)
-        slots[i] = exprs_[i]->eval(f);
-    return body_->eval(f);
-}
-void
-Let_Op::generate(Frame& f, List_Builder& lb) const
-{
-    Value* slots = &f[first_slot_];
-    for (slot_t i = 0; i < exprs_.size(); ++i)
-        slots[i] = exprs_[i]->eval(f);
-    body_->generate(f, lb);
-}
-void
-Let_Op::exec(Frame& f) const
-{
-    Value* slots = &f[first_slot_];
-    for (slot_t i = 0; i < exprs_.size(); ++i)
-        slots[i] = exprs_[i]->eval(f);
-    body_->exec(f);
-}
-
-Value
 Block_Op::eval(Frame& f) const
 {
     statements_.exec(f);

@@ -291,14 +291,6 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
         stringify("Geometry Compiler: ",val," is not a function"));
 }
 
-GL_Value Let_Op::gl_eval(GL_Frame& f) const
-{
-    GL_Value* slots = &f[first_slot_];
-    for (size_t i = 0; i < exprs_.size(); ++i)
-        slots[i] = exprs_[i]->gl_eval(f);
-    return body_->gl_eval(f);
-}
-
 GL_Value Block_Op::gl_eval(GL_Frame& f) const
 {
     statements_.gl_exec(f);

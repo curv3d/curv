@@ -634,30 +634,6 @@ struct Module_Expr : public Just_Expression
     Shared<Module> eval_module(Frame&) const;
 };
 
-struct Let_Op : public Operation
-{
-    slot_t first_slot_;
-    std::vector<Shared<Operation>> exprs_; // or, a Tail_Array
-    Shared<const Operation> body_;
-
-    Let_Op(
-        Shared<const Phrase> source,
-        slot_t first_slot,
-        std::vector<Shared<Operation>> exprs,
-        Shared<const Operation> body)
-    :
-        Operation(std::move(source)),
-        first_slot_(first_slot),
-        exprs_(std::move(exprs)),
-        body_(std::move(body))
-    {}
-
-    virtual Value eval(Frame&) const override;
-    virtual void generate(Frame&, List_Builder&) const override;
-    virtual void exec(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
-};
-
 struct Block_Op : public Operation
 {
     Statements statements_;
