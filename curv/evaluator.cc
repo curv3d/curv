@@ -584,6 +584,17 @@ Block_Op::exec(Frame& f) const
 }
 
 void
+While_Action::exec(Frame& f) const
+{
+    for (;;) {
+        Value c = cond_->eval(f);
+        bool b = c.to_bool(At_Phrase{*cond_->source_, &f});
+        if (!b) return;
+        body_->exec(f);
+    }
+}
+
+void
 For_Op::generate(Frame& f, List_Builder& lb) const
 {
     Value listval = list_->eval(f);

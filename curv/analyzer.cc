@@ -916,6 +916,14 @@ For_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
+While_Phrase::analyze(Environ& env) const
+{
+    auto cond = analyze_op(*args_, env);
+    auto body = analyze_tail(*body_, env);
+    return make<While_Action>(share(*this), cond, body);
+}
+
+Shared<Meaning>
 Range_Phrase::analyze(Environ& env) const
 {
     return make<Range_Expr>(

@@ -140,16 +140,18 @@ Scanner::get_token()
         while (p < last && (isalnum(*p) || *p == '_'))
             ++p;
         aux::Range<const char*> id(first+tok.first_, p);
-        if (id == "if")
-            tok.kind_ = Token::k_if;
+        if (id == "by")
+            tok.kind_ = Token::k_by;
         else if (id == "else")
             tok.kind_ = Token::k_else;
         else if (id == "for")
             tok.kind_ = Token::k_for;
-        else if (id == "by")
-            tok.kind_ = Token::k_by;
+        else if (id == "if")
+            tok.kind_ = Token::k_if;
         else if (id == "var")
             tok.kind_ = Token::k_var;
+        else if (id == "while")
+            tok.kind_ = Token::k_while;
         else
             tok.kind_ = Token::k_ident;
         goto success;

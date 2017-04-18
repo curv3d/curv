@@ -394,6 +394,12 @@ struct For_Phrase : public Control_Phrase
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
+struct While_Phrase : public Control_Phrase
+{
+    using Control_Phrase::Control_Phrase;
+    virtual Shared<Meaning> analyze(Environ&) const override;
+};
+
 struct Range_Phrase : public Phrase
 {
     Range_Phrase(

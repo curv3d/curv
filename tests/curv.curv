@@ -130,4 +130,17 @@ assert(
    a + b) == 8
 ),
 
+assert(
+    Sum list = (
+        var i := 0;
+        var total := 0;
+        while (i < len list) (
+            total := total + list[i];
+            i := i + 1;
+        );
+        total
+    );
+    Sum(1,2,3) == 6
+),
+
 }

@@ -164,6 +164,7 @@ parse_semicolons(Scanner& scanner)
 //  | 'if' primary item
 //  | 'if' primary item 'else' item
 //  | 'for' parens item
+//  | 'while' parens item
 Shared<Phrase>
 parse_item(Scanner& scanner)
 {
@@ -194,6 +195,16 @@ parse_item(Scanner& scanner)
                 "for: malformed argument");
         auto body = parse_item(scanner);
         return make<For_Phrase>(tok, args, body);
+      }
+    case Token::k_while:
+      {
+        auto p = parse_primary(scanner, "argument following 'while'");
+        auto args = cast<Paren_Phrase>(p);
+        if (args == nullptr)
+            throw Exception(At_Phrase(*p, scanner.eval_frame_),
+                "while: malformed argument");
+        auto body = parse_item(scanner);
+        return make<While_Phrase>(tok, args, body);
       }
     default:
         break;

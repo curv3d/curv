@@ -677,6 +677,24 @@ struct For_Op : public Operation
     virtual void exec(Frame&) const override;
 };
 
+struct While_Action : public Just_Action
+{
+    Shared<const Operation> cond_;
+    Shared<const Operation> body_;
+
+    While_Action(
+        Shared<const Phrase> source,
+        Shared<const Operation> cond,
+        Shared<const Operation> body)
+    :
+        Just_Action(std::move(source)),
+        cond_(std::move(cond)),
+        body_(std::move(body))
+    {}
+
+    virtual void exec(Frame&) const override;
+};
+
 struct If_Op : public Operation
 {
     Shared<Operation> arg1_;
