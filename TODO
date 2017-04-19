@@ -3,17 +3,11 @@
 What remains for MVP? (What do I want to show in my first big demo?)
 * `curv -l filename` live programming. $CURV_EDITOR -- auto-open editor window 
 * curv CLI: open GL window for a shape
-* GL iteration, for fractals
 * 3D support
 * standard library
 * Documentation
 * Meta: use https://opensource.guide/
 * mac port or linux laptop
-
-Iteration
-* Iterative redefinition: `while (expr) redef`.
-* GL support for the above
-* implement mandelbrot set
 
 -------------------------
 Define regular_polygon(n). See poly.curv.
@@ -22,12 +16,7 @@ Define regular_polygon(n). See poly.curv.
 gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
 curv::Function represents a variadic function.
 
-GL supports iteration. Need for mandelbrot and convex_hull.
-* `loop sum(i=0,total=0) if (i < len list) sum(i+1,total+list[i]) else total`
-  Constant space iteration for CPUs and GPUs, as long as tail recursion is
-  used.
-
-Fix kludge in Submodule_Function_Ref that forces thunks.
+Fix kludge in Indirect_Function_Ref that forces thunks.
 
 ## Language Redesign
 Submodules:
@@ -84,8 +73,6 @@ item ::= disjunction `where` item -- alternate block syntax
     binding, recursing at Letrec_Ref, detect recursive definitions. This will
     output GLSL declarations in dependency order.
 
-Sequential assignment: var x := 0; x := x + 1; ...
-
 Generator is coerced to a list in expression context. For ease of use:
 * union (for (i=a) shape(i)) -- no need for trailing , or extra [ ]
 * 1..10 is a generator. [1..3, 5, 8] and for (i=1..10) both work.
@@ -99,9 +86,6 @@ Use.
   file must evaluate to a module.
 
 ## Geometry
-A top level for loop just displays the first generated shape.
-Either do implicit union, or report an error.
-
 shape2d: if bbox missing, default is infinite.
 
 Rainbow Angel

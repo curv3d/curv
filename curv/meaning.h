@@ -571,15 +571,18 @@ struct Let_Assign : public Just_Action
 {
     slot_t slot_;
     Shared<Operation> expr_;
+    bool reassign_;
 
     Let_Assign(
         Shared<const Phrase> source,
         slot_t slot,
-        Shared<Operation> expr)
+        Shared<Operation> expr,
+        bool reassign)
     :
         Just_Action(std::move(source)),
         slot_(slot),
-        expr_(std::move(expr))
+        expr_(std::move(expr)),
+        reassign_(reassign)
     {}
 
     void exec(Frame&) const override;
@@ -653,6 +656,7 @@ struct Block_Op : public Operation
     virtual void generate(Frame&, List_Builder&) const override;
     virtual void exec(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual void gl_exec(GL_Frame&) const override;
 };
 
 struct For_Op : public Operation
@@ -693,6 +697,7 @@ struct While_Action : public Just_Action
     {}
 
     virtual void exec(Frame&) const override;
+    virtual void gl_exec(GL_Frame&) const override;
 };
 
 struct If_Op : public Operation
@@ -713,6 +718,7 @@ struct If_Op : public Operation
     virtual Value eval(Frame&) const override; // error message: missing else
     virtual void generate(Frame&, List_Builder&) const override;
     virtual void exec(Frame&) const override;
+    virtual void gl_exec(GL_Frame&) const override;
 };
 
 struct If_Else_Op : public Operation
@@ -737,6 +743,7 @@ struct If_Else_Op : public Operation
     virtual void generate(Frame&, List_Builder&) const override;
     virtual void exec(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual void gl_exec(GL_Frame&) const override;
 };
 
 struct Lambda_Expr : public Just_Expression

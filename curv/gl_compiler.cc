@@ -296,6 +296,11 @@ GL_Value Block_Op::gl_eval(GL_Frame& f) const
     statements_.gl_exec(f);
     return body_->gl_eval(f);
 }
+void Block_Op::gl_exec(GL_Frame& f) const
+{
+    statements_.gl_exec(f);
+    body_->gl_exec(f);
+}
 
 void Statements::gl_exec(GL_Frame& f) const
 {
@@ -306,7 +311,14 @@ void Statements::gl_exec(GL_Frame& f) const
 void
 Let_Assign::gl_exec(GL_Frame& f) const
 {
-    f[slot_] = expr_->gl_eval(f);
+    GL_Value val = expr_->gl_eval(f);
+    if (reassign_)
+        f.gl.out << "  "<<f[slot_]<<"="<<val<<";\n";
+    else {
+        GL_Value var = f.gl.newvalue(val.type);
+        f.gl.out << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
+        f[slot_] = var;
+    }
 }
 
 GL_Value At_Expr::gl_eval(GL_Frame& f) const
@@ -421,6 +433,30 @@ GL_Value If_Else_Op::gl_eval(GL_Frame& f) const
     f.gl.out <<"  "<<arg2.type<<" "<<result
              <<" =("<<arg1<<" ? "<<arg2<<" : "<<arg3<<");\n";
     return result;
+}
+void If_Else_Op::gl_exec(GL_Frame& f) const
+{
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Bool);
+    f.gl.out << "  if ("<<arg1<<") {\n";
+    arg2_->gl_exec(f);
+    f.gl.out << "  } else {\n";
+    arg3_->gl_exec(f);
+    f.gl.out << "  }\n";
+}
+void If_Op::gl_exec(GL_Frame& f) const
+{
+    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Bool);
+    f.gl.out << "  if ("<<arg1<<") {\n";
+    arg2_->gl_exec(f);
+    f.gl.out << "  }\n";
+}
+void While_Action::gl_exec(GL_Frame& f) const
+{
+    f.gl.out << "  for (;;) {\n";
+    auto cond = gl_eval_expr(f, *cond_, GL_Type::Bool);
+    f.gl.out << "  if (!"<<cond<<") break;\n";
+    body_->gl_exec(f);
+    f.gl.out << "  }\n";
 }
 GL_Value Equal_Expr::gl_eval(GL_Frame& f) const
 {

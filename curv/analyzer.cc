@@ -334,7 +334,7 @@ Statement_Analyzer::analyze(Shared<const Phrase> source)
                 statements_.actions_[b.second.seq_no_] = make<Let_Assign>(
                     b.second.def_->source_,
                     b.second.slot_ + parent_->frame_nslots_,
-                    expr);
+                    expr, false);
             }
         }
     }
@@ -603,7 +603,7 @@ Assignment_Phrase::analyze(Environ& env) const
 
     auto let = cast<Let_Ref>(m);
     if (let)
-        return make<Let_Assign>(share(*this), let->slot_, expr);
+        return make<Let_Assign>(share(*this), let->slot_, expr, true);
     auto indir = cast<Indirect_Strict_Ref>(m);
     if (indir)
         return make<Indirect_Assign>(share(*this),

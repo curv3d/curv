@@ -7,4 +7,15 @@ gl_assert(f) = shape2d {
     colour p : [1-bit(f()), bit(f()), 0],
     bbox : everything.bbox
 };
-gl_assert(()->(var a:=1; a==1))
+fact n = (
+    var i := 1;
+    var r := 1;
+    while (i <= n) (
+        r := r * i;
+        i := i + 1;
+    );
+    r
+);
+echo(fact 5);
+assert(fact 5 == 120);
+gl_assert(()->(fact 5 == 120))
