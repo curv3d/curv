@@ -46,7 +46,7 @@ class Lambda_Expr;
 
 /// Main entry point to the Geometry Compiler.
 /// Reads a 2D shape, writes a shadertoy.com GLSL script.
-void gl_compile(const Shape2D&, std::ostream&);
+void gl_compile(const Shape2D&, std::ostream&, const Context&);
 
 /// GL data types
 enum class GL_Type : unsigned

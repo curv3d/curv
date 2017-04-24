@@ -69,4 +69,20 @@ At_Phrase::get_locations(std::list<Location>& locs) const
     get_frame_locations(frame_, locs);
 }
 
+At_Field::At_Field(const char* fieldname, const Context& parent)
+: fieldname_(fieldname), parent_(parent)
+{}
+
+void
+At_Field::get_locations(std::list<Location>& locs) const
+{
+    parent_.get_locations(locs);
+}
+
+Shared<const String>
+At_Field::rewrite_message(Shared<const String> msg) const
+{
+    return stringify("at field .",fieldname_,": ",msg);
+}
+
 } // namespace curv

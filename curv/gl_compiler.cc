@@ -14,17 +14,30 @@
 using aux::dfmt;
 namespace curv {
 
-void gl_compile(const Shape2D& shape, std::ostream& out)
+void gl_compile_2d(const Shape2D&, std::ostream&, const Context&);
+void gl_compile_3d(const Shape2D&, std::ostream&, const Context& );
+
+void gl_compile(const Shape2D& shape, std::ostream& out, const Context& cx)
+{
+    if (shape.hasfield("is_3d")) {
+        bool is3d = shape.getfield("is_3d", cx).to_bool(At_Field("is_3d", cx));
+        if (is3d)
+            return gl_compile_3d(shape, out, cx);
+    }
+    return gl_compile_2d(shape, out, cx);
+}
+
+void gl_compile_2d(const Shape2D& shape, std::ostream& out, const Context&)
 {
     GL_Compiler gl(out);
-    GL_Value dist_param = gl.newvalue(GL_Type::Vec2);
+    GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
     auto frame = GL_Frame::make(0, gl, nullptr, nullptr);
 
     out <<
         "#ifdef GLSLVIEWER\n"
         "uniform mat3 u_view2d;\n"
         "#endif\n"
-        "float main_dist(vec2 " << dist_param << ", out vec4 colour)\n"
+        "float main_dist(vec4 " << dist_param << ", out vec4 colour)\n"
         "{\n";
 
     GL_Value result = shape.gl_dist(dist_param, *frame);
@@ -68,13 +81,19 @@ void gl_compile(const Shape2D& shape, std::ostream& out)
         "#ifdef GLSLVIEWER\n"
         "    fragCoord = (u_view2d * vec3(fragCoord,1)).xy;\n"
         "#endif\n"
-        "    float d = main_dist(fragCoord*scale+offset, fragColour);\n"
+        "    float d = main_dist(vec4(fragCoord*scale+offset,0,iGlobalTime), fragColour);\n"
         "    if (d > 0.0) {\n"
         "        vec2 uv = fragCoord.xy / iResolution.xy;\n"
         "        fragColour = vec4(uv,0.5+0.5*sin(iGlobalTime),1.0);\n"
         "    }\n"
         "}\n"
         ;
+}
+
+void gl_compile_3d(const Shape2D& shape, std::ostream& out, const Context& cx)
+{
+    // TODO:
+    gl_compile_2d(shape, out, cx);
 }
 
 GL_Type_Attr gl_types[] =

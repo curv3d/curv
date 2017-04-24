@@ -69,5 +69,16 @@ struct At_Phrase : public Context
     virtual void get_locations(std::list<Location>& locs) const override;
 };
 
+struct At_Field : public Context
+{
+    const char* fieldname_;
+    const Context& parent_;
+
+    At_Field(const char* fieldname, const Context& parent);
+
+    virtual void get_locations(std::list<Location>&) const override;
+    virtual Shared<const String> rewrite_message(Shared<const String>) const override;
+};
+
 } // namespace curv
 #endif // header guard

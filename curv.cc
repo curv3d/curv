@@ -132,7 +132,7 @@ void export_curv(curv::Value value, const curv::Context&, std::ostream& out)
 void export_shadertoy(curv::Value value, const curv::Context& cx, std::ostream& out)
 {
     auto shape = value.to<curv::Shape2D>(cx);
-    curv::gl_compile(*shape, std::cout);
+    curv::gl_compile(*shape, std::cout, cx);
 }
 bool is_json_data(curv::Value val)
 {
