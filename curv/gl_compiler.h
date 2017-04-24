@@ -76,6 +76,10 @@ inline const char* gl_type_name(GL_Type type)
 {
     return gl_types[(int)type].name;
 }
+inline GL_Type gl_vec_type(unsigned len /* range 2..4 */)
+{
+    return (GL_Type)len;
+}
 std::ostream& operator<<(std::ostream& out, GL_Type);
 
 /// An SSA variable used during GL code generation.

@@ -92,8 +92,208 @@ void gl_compile_2d(const Shape2D& shape, std::ostream& out, const Context&)
 
 void gl_compile_3d(const Shape2D& shape, std::ostream& out, const Context& cx)
 {
-    // TODO:
-    gl_compile_2d(shape, out, cx);
+    GL_Compiler gl(out);
+    GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
+    auto frame = GL_Frame::make(0, gl, nullptr, nullptr);
+
+    out <<
+        "#ifdef GLSLVIEWER\n"
+        "uniform mat3 u_view2d;\n"
+        "#endif\n"
+        "float main_dist(vec4 " << dist_param << ", out vec4 colour)\n"
+        "{\n";
+
+    GL_Value result = shape.gl_dist(dist_param, *frame);
+
+    if (shape.hasfield("colour")) {
+        GL_Value colour = shape.gl_colour(dist_param, *frame);
+        out << "  colour = vec4(" << colour << ", 1.0);\n";
+    } else {
+        out << "  colour = vec4(0.8, 0.8, 0.5, 1.0);\n";
+    }
+
+    out <<
+        "  return " << result << ";\n"
+        "}\n";
+
+#if 0
+    BBox bbox = shape.bbox(At_GL_Frame(&*frame));
+    if (bbox.empty() || bbox.infinite()) {
+        out <<
+        "const vec4 bbox = vec4(-10.0,-10.0,+10.0,+10.0);\n";
+    } else {
+        out << "const vec4 bbox = vec4("
+            << bbox.xmin << ","
+            << bbox.ymin << ","
+            << bbox.xmax << ","
+            << bbox.ymax
+            << ");\n";
+    }
+#endif
+
+    // Following code is based on code fragments written by Inigo Quilez,
+    // with The MIT Licence.
+    //    Copyright 2013 Inigo Quilez
+    out <<
+       "vec4 map(in vec3 pos)\n"
+       "{\n"
+       "    vec4 colour;\n"
+       "    float dist = main_dist(vec4(pos, iGlobalTime), colour);\n"
+       "    return vec4(dist, colour.rgb);\n"
+       "}\n"
+       "// ray marching. ro is ray origin, rd is ray direction (unit vector).\n"
+       "// result is (t,r,g,b), where\n"
+       "//  * t is the distance that we marched,\n"
+       "//  * r,g,b is the colour of the distance field at the point we ended up at.\n"
+       "//    (-1,-1,-1) means no object was hit.\n"
+       "vec4 castRay( in vec3 ro, in vec3 rd )\n"
+       "{\n"
+       "    float tmin = 1.0;\n"
+       "    float tmax = 20.0;\n"
+       "   \n"
+       "#if 1\n"
+       "    // bounding volume\n"
+       "    float tp1 = (0.0-ro.y)/rd.y; if( tp1>0.0 ) tmax = min( tmax, tp1 );\n"
+       "    float tp2 = (1.6-ro.y)/rd.y; if( tp2>0.0 ) { if( ro.y>1.6 ) tmin = max( tmin, tp2 );\n"
+       "                                                 else           tmax = min( tmax, tp2 ); }\n"
+       "#endif\n"
+       "    \n"
+       "    float t = tmin;\n"
+       "    vec3 c = vec3(-1.0,-1.0,-1.0);\n"
+       "    for( int i=0; i<64; i++ )\n"
+       "    {\n"
+       "        float precis = 0.0005*t;\n"
+       "        vec4 res = map( ro+rd*t );\n"
+       "        if( res.x<precis || t>tmax ) break;\n"
+       "        t += res.x;\n"
+       "        c = res.yzw;\n"
+       "    }\n"
+       "\n"
+       "    if( t>tmax ) c=vec3(-1.0,-1.0,-1.0);\n"
+       "    return vec4( t, c );\n"
+       "}\n"
+       "\n"
+       "vec3 calcNormal( in vec3 pos )\n"
+       "{\n"
+       "    vec2 e = vec2(1.0,-1.0)*0.5773*0.0005;\n"
+       "    return normalize( e.xyy*map( pos + e.xyy ).x + \n"
+       "                      e.yyx*map( pos + e.yyx ).x + \n"
+       "                      e.yxy*map( pos + e.yxy ).x + \n"
+       "                      e.xxx*map( pos + e.xxx ).x );\n"
+       "    /*\n"
+       "    vec3 eps = vec3( 0.0005, 0.0, 0.0 );\n"
+       "    vec3 nor = vec3(\n"
+       "        map(pos+eps.xyy).x - map(pos-eps.xyy).x,\n"
+       "        map(pos+eps.yxy).x - map(pos-eps.yxy).x,\n"
+       "        map(pos+eps.yyx).x - map(pos-eps.yyx).x );\n"
+       "    return normalize(nor);\n"
+       "    */\n"
+       "}\n"
+       "\n"
+       "float calcAO( in vec3 pos, in vec3 nor )\n"
+       "{\n"
+       "    float occ = 0.0;\n"
+       "    float sca = 1.0;\n"
+       "    for( int i=0; i<5; i++ )\n"
+       "    {\n"
+       "        float hr = 0.01 + 0.12*float(i)/4.0;\n"
+       "        vec3 aopos =  nor * hr + pos;\n"
+       "        float dd = map( aopos ).x;\n"
+       "        occ += -(dd-hr)*sca;\n"
+       "        sca *= 0.95;\n"
+       "    }\n"
+       "    return clamp( 1.0 - 3.0*occ, 0.0, 1.0 );    \n"
+       "}\n"
+       "\n"
+       "// in ro: ray origin\n"
+       "// in rd: ray direction\n"
+       "// out: rgb colour\n"
+       "vec3 render( in vec3 ro, in vec3 rd )\n"
+       "{ \n"
+       "    vec3 col = vec3(0.7, 0.9, 1.0) +rd.y*0.8;\n"
+       "    vec4 res = castRay(ro,rd);\n"
+       "    float t = res.x;\n"
+       "    vec3 c = res.yzw;\n"
+       "    if( c.x>=0.0 )\n"
+       "    {\n"
+       "        vec3 pos = ro + t*rd;\n"
+       "        vec3 nor = calcNormal( pos );\n"
+       "        vec3 ref = reflect( rd, nor );\n"
+       "        \n"
+       "        // material        \n"
+       "        col = c;\n"
+       "\n"
+       "        // lighting        \n"
+       "        float occ = calcAO( pos, nor );\n"
+       "        vec3  lig = normalize( vec3(-0.4, 0.7, -0.6) );\n"
+       "        float amb = clamp( 0.5+0.5*nor.y, 0.0, 1.0 );\n"
+       "        float dif = clamp( dot( nor, lig ), 0.0, 1.0 );\n"
+       "        float bac = clamp( dot( nor, normalize(vec3(-lig.x,0.0,-lig.z))), 0.0, 1.0 )*clamp( 1.0-pos.y,0.0,1.0);\n"
+       "        float dom = smoothstep( -0.1, 0.1, ref.y );\n"
+       "        float fre = pow( clamp(1.0+dot(nor,rd),0.0,1.0), 2.0 );\n"
+       "        float spe = pow(clamp( dot( ref, lig ), 0.0, 1.0 ),16.0);\n"
+       "        \n"
+       "        vec3 lin = vec3(0.0);\n"
+       "        lin += 1.30*dif*vec3(1.00,0.80,0.55);\n"
+       "        lin += 2.00*spe*vec3(1.00,0.90,0.70)*dif;\n"
+       "        lin += 0.40*amb*vec3(0.40,0.60,1.00)*occ;\n"
+       "        lin += 0.50*dom*vec3(0.40,0.60,1.00)*occ;\n"
+       "        lin += 0.50*bac*vec3(0.25,0.25,0.25)*occ;\n"
+       "        lin += 0.25*fre*vec3(1.00,1.00,1.00)*occ;\n"
+       "        col = col*lin;\n"
+       "\n"
+       "        col = mix( col, vec3(0.8,0.9,1.0), 1.0-exp( -0.0002*t*t*t ) );\n"
+       "    }\n"
+       "\n"
+       "    return vec3( clamp(col,0.0,1.0) );\n"
+       "}\n"
+       "\n"
+       "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n"
+       "{\n"
+       "    vec2 p = -1.0 + 2.0 * fragCoord.xy / iResolution.xy;\n"
+       "    p.x *= iResolution.x/iResolution.y;\n"
+       "\n"
+       "    float ctime = iGlobalTime;\n"
+       "    // camera\n"
+       "    vec3 ro = 1.1*vec3(2.5*sin(0.25*ctime),1.0+1.0*cos(ctime*.13),2.5*cos(0.25*ctime));\n"
+       "    vec3 ww = normalize(vec3(0.0) - ro);\n"
+       "    vec3 uu = normalize(cross( vec3(0.0,1.0,0.0), ww ));\n"
+       "    vec3 vv = normalize(cross(ww,uu));\n"
+       "    vec3 rd = normalize( p.x*uu + p.y*vv + 2.5*ww );\n"
+       "\n"
+       "    vec3 col = render( ro, rd );\n"
+       "    \n"
+       "    fragColor = vec4(col,1.0);\n"
+       "}\n"
+       ;
+
+#if 0
+    // This is the 2D version of the renderer. Try lifting the u_view2d code.
+    out <<
+        "void mainImage( out vec4 fragColour, in vec2 fragCoord )\n"
+        "{\n"
+        "    vec2 size = bbox.zw - bbox.xy;\n"
+        "    vec2 scale2 = size / iResolution.xy;\n"
+        "    vec2 offset = bbox.xy;\n"
+        "    float scale;\n"
+        "    if (scale2.x > scale2.y) {\n"
+        "        scale = scale2.x;\n"
+        "        offset.y -= (iResolution.y*scale - size.y)/2.0;\n"
+        "    } else {\n"
+        "        scale = scale2.y;\n"
+        "        offset.x -= (iResolution.x*scale - size.x)/2.0;\n"
+        "    }\n"
+        "#ifdef GLSLVIEWER\n"
+        "    fragCoord = (u_view2d * vec3(fragCoord,1)).xy;\n"
+        "#endif\n"
+        "    float d = main_dist(vec4(fragCoord*scale+offset,0,iGlobalTime), fragColour);\n"
+        "    if (d > 0.0) {\n"
+        "        vec2 uv = fragCoord.xy / iResolution.xy;\n"
+        "        fragColour = vec4(uv,0.5+0.5*sin(iGlobalTime),1.0);\n"
+        "    }\n"
+        "}\n"
+        ;
+#endif
 }
 
 GL_Type_Attr gl_types[] =
@@ -296,6 +496,13 @@ Value gl_constify(Operation& op, GL_Frame& f)
             (Lambda&) (*f.nonlocal)[fref->lambda_slot_].get_ref_unsafe(),
             *f.nonlocal)};
     }
+    else if (auto list = dynamic_cast<List_Expr*>(&op)) {
+        Shared<List> listval = List::make(list->size());
+        for (size_t i = 0; i < list->size(); ++i) {
+            (*listval)[i] = gl_constify(*(*list)[i], f);
+        }
+        return {listval};
+    }
     throw Exception(At_GL_Phrase(*op.source_, &f),
         "Geometry Compiler: not a constant");
 }
@@ -340,6 +547,21 @@ Let_Assign::gl_exec(GL_Frame& f) const
     }
 }
 
+char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
+{
+    auto num = k.get_num_or_nan();
+    if (num == 0.0)
+        return 'x';
+    if (num == 1.0)
+        return 'y';
+    if (num == 2.0 && vecsize > 2)
+        return 'z';
+    if (num == 3.0 && vecsize > 3)
+        return 'w';
+    throw Exception(cx,
+        stringify("Geometry Compiler: got ",k,", expected 0..",vecsize-1));
+}
+
 GL_Value At_Expr::gl_eval(GL_Frame& f) const
 {
     auto arg1 = arg1_->gl_eval(f);
@@ -348,6 +570,22 @@ GL_Value At_Expr::gl_eval(GL_Frame& f) const
 
     const char* arg2 = nullptr;
     auto k = gl_constify(*arg2_, f);
+    if (auto list = k.dycast<List>()) {
+        if (list->size() < 2 || list->size() > 4) {
+            throw Exception(At_GL_Phrase(*arg2_->source_, &f),
+                "list index vector must have between 2 and 4 elements");
+        }
+        char swizzle[5];
+        memset(swizzle, 0, 5);
+        for (size_t i = 0; i <list->size(); ++i) {
+            swizzle[i] = gl_index_letter((*list)[i], gl_type_count(arg1.type),
+                At_Index(i, At_GL_Phrase(*arg2_->source_, &f)));
+        }
+        GL_Value result = f.gl.newvalue(gl_vec_type(list->size()));
+        f.gl.out << "  " << result.type << " "
+            << result<<" = "<<arg1<<"."<<swizzle<<";\n";
+        return result;
+    }
     auto num = k.get_num_or_nan();
     if (num == 0.0)
         arg2 = ".x";

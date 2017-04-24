@@ -85,4 +85,20 @@ At_Field::rewrite_message(Shared<const String> msg) const
     return stringify("at field .",fieldname_,": ",msg);
 }
 
+At_Index::At_Index(size_t index, const Context& parent)
+: index_(index), parent_(parent)
+{}
+
+void
+At_Index::get_locations(std::list<Location>& locs) const
+{
+    parent_.get_locations(locs);
+}
+
+Shared<const String>
+At_Index::rewrite_message(Shared<const String> msg) const
+{
+    return stringify("at index [",index_,"]: ",msg);
+}
+
 } // namespace curv

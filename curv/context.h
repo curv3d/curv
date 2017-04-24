@@ -80,5 +80,16 @@ struct At_Field : public Context
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
 };
 
+struct At_Index : public Context
+{
+    size_t index_;
+    const Context& parent_;
+
+    At_Index(size_t index, const Context& parent);
+
+    virtual void get_locations(std::list<Location>&) const override;
+    virtual Shared<const String> rewrite_message(Shared<const String>) const override;
+};
+
 } // namespace curv
 #endif // header guard

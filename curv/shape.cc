@@ -23,7 +23,7 @@ struct Blackfield_Function : public Polyadic_Function
     GL_Value gl_call(GL_Frame& f) const override
     {
         auto result = f.gl.newvalue(GL_Type::Vec3);
-        f.gl.out << "  vec3 "<<result<<" = vec3(0.0,0.0,0.0);\n";
+        f.gl.out << "  vec3 "<<result<<" = vec3(0.8,0.8,0.5);\n";
         return result;
     }
 };

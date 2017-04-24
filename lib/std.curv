@@ -37,13 +37,18 @@ dot(a,b) =
 
 // primitive shapes
 circle r = shape2d {
-    dist p : mag p - r,
-    bbox : [[-r,-r],[r,r]]
+    dist p : mag(p[X,Y]) - r,
+    bbox : [[-r,-r],[r,r]],
+},
+sphere r = shape2d {
+    dist p : mag(p[X,Y,Z]) - r,
+    bbox : [[-r,-r,-r],[r,r,r]],
+    is_3d : true,
 },
 square sz = (
   s = if (is_list sz) sz else [sz,sz];
   shape2d {
-    dist p : max(abs p - s/2),
+    dist p : max(abs(p[X,Y]) - s/2),
     bbox : [-s/2, s/2],
   }
 ),

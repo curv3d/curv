@@ -294,9 +294,8 @@ struct Mag_Function : public Polyadic_Function
     GL_Value gl_call(GL_Frame& f) const override
     {
         auto arg = f[0];
-        if (arg.type != GL_Type::Vec2)
-            throw Exception(At_GL_Arg(0, f),
-                "mag: argument is not a vec2");
+        if (gl_type_count(arg.type) < 2)
+            throw Exception(At_GL_Arg(0, f), "mag: argument is not a vector");
         auto result = f.gl.newvalue(GL_Type::Num);
         f.gl.out << "  float "<<result<<" = length("<<arg<<");\n";
         return result;
