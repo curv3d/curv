@@ -63,3 +63,18 @@ Alternatively, try to recover the index path from your runtime state at the
 point where an exception occurs. A bit tricky if recursion is used.
 
 This isn't happening for release 0.0.
+
+## in `gl_compile(shape, ..., cx)`
+We have a shape argument, and a cx that points to the shape expression.
+We attempt to extract the `is_3d` field, and report an error in the field
+if it isn't boolean (using `value::to_bool(cx)`).
+
+So: I want to derive a new context from `cx`, indicating the `.is_3d` field
+of the referent of the context.
+
+First idea:
+`At_Field(const char* fieldname, const Context&)`
+
+Okay, try it:
+`val.to_bool(At_Field("is_3d", cx))`
+`ERROR: field is_3d: not a boolean`
