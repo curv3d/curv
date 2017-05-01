@@ -62,9 +62,9 @@ Shape Attributes:
 Defining a Shape Constructor:
 * `defshape` takes care of all of the above details.
 * `defshape name (parameters&default-values) = body`.
-* eg, `defshape everything = shape2d { dist=.., bbox=.. };`
-* eg, `defshape square(sz) = shape2d { ... };`
-* eg, `defshape translate(v)shape = shape2d { ... };`
+* eg, `defshape everything = make_shape { dist=.., bbox=.. };`
+* eg, `defshape square(sz) = make_shape { ... };`
+* eg, `defshape translate(v)shape = make_shape { ... };`
 * eg, `defshape box(sz) = cube(sz);` // exported as `box`, not as `cube`
 
 Partially Constructed Shape Representation:
@@ -130,10 +130,10 @@ Design alternative: shapes with `param` attribute.
     referencing shape attributes such as `param`.
   * we look up the type (in what namespace?) to get the constructor function,
     then we apply that function to the customization argument.
-  * the namespace is the namespace where shape2d is invoked?
+  * the namespace is the namespace where make_shape is invoked?
   * there is a separate ctor attribute, which is a function. Eg,
     ```
-    square(sz) = shape2d {
+    square(sz) = make_shape {
       type = "square";
       ctor = square;
       param = sz;
@@ -141,10 +141,10 @@ Design alternative: shapes with `param` attribute.
       bbox = ...;
     };
     ```
-  * `shape2d` takes an identifier argument, the ctor name in the current
+  * `make_shape` takes an identifier argument, the ctor name in the current
     environment. Eg,
     ```
-    square(sz) = shape2d (square) {
+    square(sz) = make_shape (square) {
       param = sz;
       geom(p,t) = ...;
       bbox = ...;
@@ -160,9 +160,9 @@ Design alternative: shapes with `param` attribute.
 * What about prototype-oriented programming? `square` is a standard shape
   that can be customized.
   ```
-  square = shape2d {
+  square = make_shape {
     type = "square";
-    ctor(sz) = shape2d {
+    ctor(sz) = make_shape {
       ... code duplication ...
     };
     param = [10,10];
@@ -285,7 +285,7 @@ Shape attribute queries.
 * Using function notation?
   Okay, but if I introduce new shape attributes in the library, what is the
   underlying code for defining and referencing these attributes?
-  Right now it's `shape2d <record>` and `shape.attribute`/`shape.param`.
+  Right now it's `make_shape <record>` and `shape.attribute`/`shape.param`.
 
 Here's a design:
 * Shapes are branded modules. A shape has fields and elements

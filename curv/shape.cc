@@ -68,7 +68,7 @@ BBox::from_value(Value val, const Context& cx)
 void
 Shape2D::print(std::ostream& out) const
 {
-    out << "shape2d";
+    out << "make_shape";
     record_->print(out);
 }
 

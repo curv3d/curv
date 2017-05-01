@@ -17,25 +17,25 @@ plane_segment limits = (
     ymin = if (defined(limits.ymin)) limits.ymin else -inf;
     ymax = if (defined(limits.ymax)) limits.ymax else inf;
     intersection (
-        if (xmin > -inf) shape2d {
+        if (xmin > -inf) make_shape {
             dist p : xmin - p'X,
             bbox : [[xmin, -inf, 0], [inf, inf, 0]],
             is_2d : true,
             is_3d : false,
         },
-        if (ymin > -inf) shape2d {
+        if (ymin > -inf) make_shape {
             dist p : ymin - p'Y,
             bbox : [[-inf, ymin, 0], [inf, inf, 0]],
             is_2d : true,
             is_3d : false,
         },
-        if (xmax < inf) shape2d {
+        if (xmax < inf) make_shape {
             dist p : p'X - xmax,
             bbox : [[-inf, -inf, 0], [xmax, inf, 0]],
             is_2d : true,
             is_3d : false,
         },
-        if (ymax < inf) shape2d {
+        if (ymax < inf) make_shape {
             dist p : p'Y - ymax,
             bbox : [[-inf, -inf, 0], [inf, ymax, 0]],
             is_2d : true,
@@ -57,7 +57,7 @@ rep_rotate n shape = (
         var rp := cmul(p, cis rota);
         f rp
     );
-    shape2d {
+    make_shape {
         dist : rpr(shape.dist),
         colour : rpr(shape.colour),
         bbox : everything.bbox,
@@ -71,7 +71,7 @@ regular_polygon(n) = rotate(tau/2) << rep_rotate(n) << plane_segment{ymax:1};
 //rep_rotate(5) << plane_segment{ymax:1};
 //regular_polygon(5);
 
-old_rep_rotate(n) shape = shape2d {
+old_rep_rotate(n) shape = make_shape {
     dist p : (
         var ph := phase(p);
         var mph := mod(ph, tau/n);
@@ -113,7 +113,7 @@ cmul(z,w) = [z'RE*w'RE - z'IM*w'IM, z'IM*w'RE + z'RE*w'IM];
 half_plane(v) = (
     m = mag v;
     ph = phase v;
-    rotate(ph) << shape2d {
+    rotate(ph) << make_shape {
         dist p : m - p'X,
         bbox : everything.bbox,
         is_2d : true,

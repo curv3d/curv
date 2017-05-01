@@ -42,12 +42,12 @@ That also feels like a simpler design (no new language features).
   positional arguments, and the model parameters need to be ordered.
 
 // for a primitive shape
-square(n) = shape2d {
+square(n) = make_shape {
     $type = "square",
     $size = n,
     dist p = ...,
     bbox = ...
 };
 
-// For a user defined composite shape, not using the shape2d protocol.
+// For a user defined composite shape, not using the make_shape protocol.
 popsicle(n) = emshapen {

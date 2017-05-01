@@ -35,13 +35,13 @@ dot(a,b) =
     sum(a*b),               // vector*...
 
 // primitive shapes
-circle r = shape2d {
+circle r = make_shape {
     dist p : mag(p[X,Y]) - r,
     bbox : [[-r,-r,0],[r,r,0]],
     is_2d : true,
     is_3d : false,
 },
-sphere r = shape2d {
+sphere r = make_shape {
     dist p : mag p - r,
     bbox : [[-r,-r,-r],[r,r,r]],
     is_2d : false,
@@ -49,7 +49,7 @@ sphere r = shape2d {
 },
 square sz = (
   s = if (is_list sz) sz else [sz,sz];
-  shape2d {
+  make_shape {
     dist p : max(abs(p[X,Y]) - s/2),
     //bbox : [-s/2, s/2],
     bbox : [[-s[X]/2,-s[Y]/2,0], [s[X]/2,s[Y]/2,0]],
@@ -59,7 +59,7 @@ square sz = (
 ),
 cube sz = (
   s = if (is_list sz) sz else [sz,sz,sz];
-  shape2d {
+  make_shape {
     dist p : max(abs p - s/2),
     bbox : [-s/2, s/2],
     is_2d : false,
@@ -72,25 +72,25 @@ rect bbox = (
   xmax = bbox'1'X;
   ymax = bbox'1'Y;
   intersection (
-    if (xmin > -inf) shape2d {
+    if (xmin > -inf) make_shape {
         dist p : xmin - p'X,
         bbox : [[xmin, -inf, 0], [inf, inf, 0]],
         is_2d : true,
         is_3d : false,
     },
-    if (ymin > -inf) shape2d {
+    if (ymin > -inf) make_shape {
         dist p : ymin - p'Y,
         bbox : [[-inf, ymin, 0], [inf, inf, 0]],
         is_2d : true,
         is_3d : false,
     },
-    if (xmax < inf) shape2d {
+    if (xmax < inf) make_shape {
         dist p : p'X - xmax,
         bbox : [[-inf, -inf, 0], [xmax, inf, 0]],
         is_2d : true,
         is_3d : false,
     },
-    if (ymax < inf) shape2d {
+    if (ymax < inf) make_shape {
         dist p : p'Y - ymax,
         bbox : [[-inf, -inf, 0], [inf, ymax, 0]],
         is_2d : true,
@@ -100,25 +100,25 @@ rect bbox = (
 ),
 
 // boolean shape operations
-nothing = shape2d {
+nothing = make_shape {
     dist p : inf,
     bbox : [[inf,inf,inf],[-inf,-inf,-inf]],
     is_2d : true,
     is_3d : true,
 },
-everything = shape2d {
+everything = make_shape {
     dist p : -inf,
     bbox : [[-inf,-inf,-inf],[inf,inf,inf]],
     is_2d : true,
     is_3d : true,
 },
-complement s = shape2d {
+complement s = make_shape {
     dist p : -s.dist p,
     bbox : [[-inf,-inf,-inf],[inf,inf,inf]],
     is_2d : s.is_2d,
     is_3d : s.is_3d,
 },
-_union2(s1,s2) = shape2d {
+_union2(s1,s2) = make_shape {
     dist p : min(s1.dist p, s2.dist p),
     colour p : if (s1.dist p <= 0) s1.colour p else s2.colour p,
     bbox : [min(s1.bbox'0, s2.bbox'0), max(s1.bbox'1, s2.bbox'1)],
@@ -126,7 +126,7 @@ _union2(s1,s2) = shape2d {
     is_3d : s1.is_3d && s2.is_3d,
 },
 union = reduce(nothing, _union2),
-_intersection2(s1,s2) = shape2d {
+_intersection2(s1,s2) = make_shape {
     dist p : max(s1.dist p, s2.dist p),
     colour : s1.colour,
     bbox : [max(s1.bbox'0, s2.bbox'0), min(s1.bbox'1, s2.bbox'1)],
@@ -141,7 +141,7 @@ symmetric_difference shapes = difference(union shapes, intersection shapes),
 translate _delta shape = (
     delta = if (len _delta == 2) [_delta[X],_delta[Y],0] else _delta;
     if (shape.is_2d) assert(delta[Z] == 0);
-    shape2d {
+    make_shape {
         dist p : shape.dist(p - delta),
         colour p : shape.colour(p - delta),
         bbox : [shape.bbox'0+delta, shape.bbox'1+delta],
@@ -149,14 +149,14 @@ translate _delta shape = (
         is_3d : shape.is_3d,
     }
 ),
-scale s shape = shape2d {
+scale s shape = make_shape {
     dist p : s * shape.dist(p / s),
     colour p : shape.colour(p / s),
     bbox : s * shape.bbox,
     is_2d : shape.is_2d,
     is_3d : shape.is_3d,
 },
-rotate a shape = shape2d { // 2D rotation around the Z axis
+rotate a shape = make_shape { // 2D rotation around the Z axis
     dist p : shape.dist(cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X, p'Z),
     //dist p : shape.dist(cmul(p, cis(-a))),
     colour p : shape.colour(cos(a)*p'X+sin(a)*p'Y, cos(a)*p'Y-sin(a)*p'X, p'Z),
@@ -187,7 +187,7 @@ getBox2 (Rotate2 θ symbObj) =
 */
 
 // Coloured Shapes
-colour rgb shape = shape2d {
+colour rgb shape = make_shape {
     dist : shape.dist,
     bbox : shape.bbox,
     colour(p) : rgb,
@@ -204,7 +204,7 @@ white = [1, 1, 1],
 black = [0, 0, 0],
 
 // GL Debugging
-distance_field shape = shape2d {
+distance_field shape = make_shape {
     dist : everything.dist,
     bbox : everything.bbox,
     colour p : (

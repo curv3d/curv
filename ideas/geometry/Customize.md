@@ -6,7 +6,7 @@ A new shape can be constructed in two ways:
  * Using the "high level api", by composing existing shapes using high level
    shape operators.
  * Using the "low level api", constructing a new shape using the "shape
-   protocol", currently by invoking the `shape2d` constructor.
+   protocol", currently by invoking the `make_shape` constructor.
 
 You can write a function that returns a shape with either of the above
 2 kinds of shape expression as the body.

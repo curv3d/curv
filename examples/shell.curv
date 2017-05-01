@@ -1,11 +1,11 @@
-shell n shape = shape2d {
+shell n shape = make_shape {
     dist p : abs(shape.dist p) - n,
     colour : shape.colour,
     bbox : [shape.bbox[0] - n, shape.bbox[1] + n],
     is_2d : true,
     is_3d : false,
 };
-rep_grid bbox shape = shape2d {
+rep_grid bbox shape = make_shape {
     //dist p : shape.dist (mod(p[X]-bbox[0][X],bbox[1][X]-bbox[0][X]),
     dist p : shape.dist (mod(p-bbox[0],bbox[1]-bbox[0])+bbox[0]),
     colour p : shape.colour (mod(p-bbox[0],bbox[1]-bbox[0])),

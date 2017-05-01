@@ -121,7 +121,7 @@ The Geometry Compiler is currently invoked after evaluation.
     use the CSG tree to provide a different kind of stack trace.
     * There is a stack trace now, and it's fine. It's not an *evaluation* trace,
       but you do see the current CSG stack, so it has similar utility.
-  * Better if type errors reported by shape2d constructor.
+  * Better if type errors reported by make_shape constructor.
     * But it's not that bad.
 
 The code bloat is significant. The "assembler" style output has a lot to do with
@@ -153,16 +153,16 @@ Maybe the type checking and optimization phase of GC should happen earlier.
 * Do as much work as possible during semantic analysis? Maybe we give up on
   JIT constant folding and fluent math transformations. During analysis, we
   recognize the GL subset of Curv, and record type annotations where possible.
-  During evaluation, `shape2d` tests if the dist function is GL compatible,
+  During evaluation, `make_shape` tests if the dist function is GL compatible,
   based on annotations recorded during analysis. This loses some polymorphism
   and probably requires user type annotations to make some code GL compatible.
 * Do type checking, at least, maybe some optimization, during evaluation
-  in `shape2d` constructor. This preserves polymorphism and eliminates need
+  in `make_shape` constructor. This preserves polymorphism and eliminates need
   for user type annotations.
 
 Thought experiment: should we compile curv Operations into an abstract GL
 operation tree, before generating GLSL code?
-* The `shape2d` function compiles the distance function value into GL IR.
+* The `make_shape` function compiles the distance function value into GL IR.
   Type errors are reported during evaluation, which is good.
 * The GL IR can be optimized, and there can be multiple backends
   for generating GLSL, SPIR-V and LLVM code.
@@ -183,7 +183,7 @@ operation tree, before generating GLSL code?
 How to generate GPU code for previewing.
 
 A 2D shape is
-    shape2d { dist[x,y]=..., bbox=..., ... }
+    make_shape { dist[x,y]=..., bbox=..., ... }
 The dist and bbox fields are used by the GPU previewer.
 
 We need to assemble a main_dist function, which is then called by the
@@ -267,11 +267,11 @@ representation, with no optimization. (Simplest code possible.)
 
 There is a function that outputs a Shape as GLSL (as the body of mainDist).
 ```
-circle(r) = shape2d {
+circle(r) = make_shape {
     dist(p) = norm(p) - r,
     bbox = [[-r,-r],[r,r]]
 };
-square(sz) = shape2d {
+square(sz) = make_shape {
   dist[x,y] = max[abs(x-sz.x/2), abs(y-sz.y/2)],
   dist(p) = max abs(p - sz/2),
   bbox=[ [0,0,0], sz ]
@@ -309,7 +309,7 @@ vs square[5,10], using the simplest definition of square (with broadcasting).
 We should not generate bad GLSL. We should report all type errors in the
 code generator. The Lambda contains context for reporting errors, but we
 won't have a stack trace. This could be mitigated later by moving error
-reporting into the `shape2d` constructor.
+reporting into the `make_shape` constructor.
 
 Only a small subset of operations is supported by the GLSL code generator.
 Maybe `virtual void Operation::glsl_code(GLSL_Coder&)`?
@@ -422,7 +422,7 @@ A general question about fields in Curv. Two approaches:
 Option 2 seems more Curv-like. Only Record, Module and Shape have fields.
 So should they have a more specific superclass than Ref_Value?
 
-Currently, `shape2d` maps a record value to a shape.
+Currently, `make_shape` maps a record value to a shape.
 From the discussion, it would be more useful to use a module value,
 and to support module customization on shapes.
 (TODO: Module-based shapes once submodules are implemented.)
@@ -430,7 +430,7 @@ and to support module customization on shapes.
 `curv::Shape2D` is the common superclass of all shape values
 (builtin and user defined).
 * There is a bbox data member (instead of looking up the bbox using getfield).
-  The `shape2d` function checks for the `bbox` field, validates it, and
+  The `make_shape` function checks for the `bbox` field, validates it, and
   stores the data here for rapid access by builtin shapes.
   * We'll see if this is worthwhile.
   * What is the type of bbox? Is it a native Curv value, or must it be

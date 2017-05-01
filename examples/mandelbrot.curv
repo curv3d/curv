@@ -9,7 +9,7 @@ clamp3(v,lo,hi) = [
     min(max(v'Z,lo),hi),
 ];
 dot p = p'X*p'X + p'Y*p'Y;
-shape2d {
+make_shape {
   dist : everything.dist,
   bbox : everything.bbox,
   colour pt : (

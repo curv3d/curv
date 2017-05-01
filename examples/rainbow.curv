@@ -17,7 +17,7 @@ phase v = atan2(v'Y,v'X);
 // convert phase angle to unit vector
 cis theta = [cos theta, sin theta];
 
-colourfield f shape = shape2d{dist:shape.dist,colour:f,bbox:shape.bbox};
+colourfield f shape = make_shape{dist:shape.dist,colour:f,bbox:shape.bbox};
 
 //colourfield(p->hsv2rgb(phase(p)/tau,1,1)) << everything
 colourfield(p->hsv2rgb(p'X,1,1)) << everything

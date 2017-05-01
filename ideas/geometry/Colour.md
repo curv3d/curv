@@ -62,18 +62,18 @@ Union2(s1,s2) = (
                     c2 = if (defined(s2.colour)) s2.colour else p->black)
                 p->if(s1.dist p <= 0) c1 p else c2 p)
     if (c == null)
-        shape2d {dist=d, bbox=b}
+        make_shape {dist=d, bbox=b}
     else
-        shape2d {dist=d, bbox=b, colour=c}
+        make_shape {dist=d, bbox=b, colour=c}
 );
 Union = reduce(nothing, Union2);
 ```
 Therefore, Union needs to conditionally add a 'colour' field to the shape it
 constructs. How?
    1. if (defined(s1.colour) && defined(s2.colour))
-        shape2d{dist=d,bbox=b,colour=c}
+        make_shape{dist=d,bbox=b,colour=c}
       else
-        shape2d{dist=d,bbox=b}
+        make_shape{dist=d,bbox=b}
    2. {dist=d,bbox=b,if(c!=null)colour=c}, by analogy with lists.
       Makes sense in the context of adding pairs to a dictionary, less sense
       for definitions within a scope.
@@ -89,7 +89,7 @@ constructs. How?
 
 Suppose we use the simplest approach, 4. Then union becomes much simpler.
 ```
-_union2(s1,s2) = shape2d {
+_union2(s1,s2) = make_shape {
     dist p = min[s1.dist p, s2.dist p],
     colour p = if (s1.dist p <= 0) s1.colour p else s2.colour p,
     bbox = [min[s1.bbox'0, s2.bbox'0], max[s1.bbox'1, s2.bbox'1]],

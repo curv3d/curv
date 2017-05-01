@@ -36,7 +36,7 @@ statements in a semicolon expression? Sequential scoping, same as [1].
 square(sz) =
   let(sz = if (is_list sz) sz else [sz,sz])
   do(echo("square(",sz,")"))
-  shape2d {
+  make_shape {
     dist p = max(abs p - s/2),
     bbox = [-s/2, s/2],
   };
@@ -46,7 +46,7 @@ vs
 square(sz) = (
   sz = if (is_list sz) sz else [sz,sz];
   echo("square($sz)");
-  shape2d {
+  make_shape {
     dist p = max(abs p - s/2),
     bbox = [-s/2, s/2],
   }

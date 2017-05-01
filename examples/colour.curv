@@ -1,4 +1,4 @@
-colour rgb shape = shape2d {
+colour rgb shape = make_shape {
     dist : shape.dist,
     bbox : shape.bbox,
     colour(p) : rgb

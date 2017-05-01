@@ -20,7 +20,7 @@ Fix kludge in Indirect_Function_Ref that forces thunks.
 
 ## Language Redesign
 Submodules:
-* Extend shape2d to take a module argument.
+* Extend make_shape to take a module argument.
 
 Patterns (Bindings and Lambda):
 * action thunks, instead of value thunks.
@@ -86,7 +86,7 @@ Use.
   file must evaluate to a module.
 
 ## Geometry
-shape2d: if bbox missing, default is infinite.
+make_shape: if bbox missing, default is infinite.
 
 Rainbow Angel
 * starburst_rainbow colour field
@@ -347,10 +347,10 @@ ongoing research:
   * crop(xmin=null,ymin=null,xmax=null,ymax=null)=...; // OpenSCAD style
   * crop{xmin=null,ymin=null,xmax=null,ymax=null} shape =
       intersection [shape,
-        if (xmin!=null) shape2d{dist p = xmin - p'0},
-        if (ymin!=null) shape2d{dist p = ymin - p'1},
-        if (xmax!=null) shape2d{dist p = p'0 - xmax},
-        if (ymax!=null) shape2d{dist p = p'1 - ymax},
+        if (xmin!=null) make_shape{dist p = xmin - p'0},
+        if (ymin!=null) make_shape{dist p = ymin - p'1},
+        if (xmax!=null) make_shape{dist p = p'0 - xmax},
+        if (ymax!=null) make_shape{dist p = p'1 - ymax},
       ];
 * visualize the distance field using a colour_map
 * shell(n), inflate(n)
@@ -390,7 +390,7 @@ Colour:
 
 nary union:
 * union shapes =
-    shape2d {
+    make_shape {
       dist p = min [for (s = shapes) s.dist p],
       bbox = [min[for (s=shapes) s.bbox'0], max[for(s=shapes)s.bbox'1]]
     };
@@ -404,11 +404,11 @@ nary union:
 * curv::Shape2D is abstract, with builtin and user subclasses
   * subclass User_Defined_Shape2D, UD_Shape2D, User_Shape2D (better name?)
     Scripted_Shape2D, Exo_Shape2D also ecto- ext-
-* shape2d accepts a record or module argument.
+* make_shape accepts a record or module argument.
 * make it zoom/rotate with mouse.
 * make same code run in an OpenGL window created using C++.
   http://www.opengl-tutorial.org/beginners-tutorials/tutorial-1-opening-a-window/
-* Should `shape2d` be polymorphic? Detects if shape is 2d or 3d based on bbox.
+* Should `make_shape` be polymorphic? Detects if shape is 2d or 3d based on bbox.
 * Should `everything` and `nothing` be polymorphic? Has 2 dist functions,
   2 bboxes, for 2d and 3d cases.
   * Are there any other use cases for this?

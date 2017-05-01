@@ -331,9 +331,9 @@ struct File_Function : public Polyadic_Function
     }
 };
 
-struct Shape2d_Function : public Polyadic_Function
+struct Make_Shape_Function : public Polyadic_Function
 {
-    Shape2d_Function() : Polyadic_Function(1) {}
+    Make_Shape_Function() : Polyadic_Function(1) {}
     Value call(Frame& f) override
     {
         auto& record {arg_to_record(f[0], At_Arg(f))};
@@ -524,7 +524,7 @@ builtin_namespace()
     {"mag", make<Builtin_Value>(Value{make<Mag_Function>()})},
     {"len", make<Builtin_Value>(Value{make<Len_Function>()})},
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},
-    {"shape2d", make<Builtin_Value>(Value{make<Shape2d_Function>()})},
+    {"make_shape", make<Builtin_Value>(Value{make<Make_Shape_Function>()})},
     {"iterate", make<Builtin_Value>(Value{make<Iterate_Function>()})},
     {"echo", make<Builtin_Meaning<Echo_Metafunction>>()},
     {"assert", make<Builtin_Meaning<Assert_Metafunction>>()},

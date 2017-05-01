@@ -1,4 +1,4 @@
-poly(n) = shape2d {
+poly(n) = make_shape {
     dist p : mag p - cos(rem(atan2(p'Y, p'X), tau / n)),
     bbox : [[-1,-1,0],[1,1,0]]
 };

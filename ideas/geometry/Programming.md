@@ -289,7 +289,7 @@ circle(r) = 2dshape(
 
 New style:
 ```
-circle(r:is_num) = shape2d{
+circle(r:is_num) = make_shape{
   dist(req)(p:is_vec3) = norm(p) - r,
   bbox=[[-r,-r],[r,r]]};
 ```

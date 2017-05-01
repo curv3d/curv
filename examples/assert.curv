@@ -2,7 +2,7 @@ IF(a,b,c) = bit(a)*b + (1-bit(a))*c;
 
 // f() returns true or false. Execute f() on the GPU, colour the world
 // green if it is true, red if it is false.
-gl_assert(f) = shape2d {
+gl_assert(f) = make_shape {
     dist : everything.dist,
     colour p : [1-bit(f()), bit(f()), 0],
     bbox : everything.bbox
