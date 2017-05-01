@@ -1,13 +1,13 @@
 function(f) = shape2d {
     dist p : p'Y - f(p'X),
-    bbox : everything.bbox
+    bbox : everything.bbox,
+    is_2d : true,
+    is_3d : false,
 };
 
 function (n->
-
-if (n >= 0)
-    ceil(n) - n
-else
-    floor(n) - n
-
+    if (n >= 0)
+        ceil(n) - n
+    else
+        floor(n) - n
 )

@@ -58,7 +58,7 @@ const
         throw Exception(At_GL_Phrase(*arg.source_, &f),
             "wrong number of arguments");
     }
-    auto f2 = GL_Frame::make(nslots_, f.gl, &f, call_phrase);
+    auto f2 = GL_Frame::make(nslots_, f.gl, nullptr, &f, call_phrase);
     if (nargs == 1)
         (*f2)[0] = arg.gl_eval(f);
     else {

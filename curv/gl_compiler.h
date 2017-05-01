@@ -19,6 +19,7 @@ class Phrase;
 class List_Expr_Base;
 using List_Expr = aux::Tail_Array<List_Expr_Base>;
 class Lambda_Expr;
+class Context;
 
 /// The Geometry Compiler translates the CSG tree created by the evaluator
 /// into optimized GPU code for fast rendering on a graphics display.
@@ -153,6 +154,11 @@ struct GL_Frame_Base
 {
     GL_Compiler& gl;
 
+
+    /// The root frame has a context pointer, which points to the shape
+    /// expression that is being compiled. Used for printing a stack trace.
+    const Context* root_context;
+
     /// Frames are linked into a stack. This is metadata used for printing
     /// a stack trace and by the debugger. It is not used during evaluation.
     GL_Frame* parent_frame;
@@ -182,9 +188,14 @@ struct GL_Frame_Base
         return array_[i];
     }
 
-    GL_Frame_Base(GL_Compiler& g, GL_Frame* parent, const Call_Phrase* src)
+    GL_Frame_Base(
+        GL_Compiler& g,
+        const Context* cx,
+        GL_Frame* parent,
+        const Call_Phrase* src)
     :
         gl(g),
+        root_context(cx),
         parent_frame(parent),
         call_phrase(src),
         nonlocal(nullptr)

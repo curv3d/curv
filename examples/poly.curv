@@ -19,19 +19,27 @@ plane_segment limits = (
     intersection (
         if (xmin > -inf) shape2d {
             dist p : xmin - p'X,
-            bbox : [[xmin, -inf], [inf, inf]]
+            bbox : [[xmin, -inf, 0], [inf, inf, 0]],
+            is_2d : true,
+            is_3d : false,
         },
         if (ymin > -inf) shape2d {
             dist p : ymin - p'Y,
-            bbox : [[-inf, ymin], [inf, inf]]
+            bbox : [[-inf, ymin, 0], [inf, inf, 0]],
+            is_2d : true,
+            is_3d : false,
         },
         if (xmax < inf) shape2d {
             dist p : p'X - xmax,
-            bbox : [[-inf, -inf], [xmax, inf]]
+            bbox : [[-inf, -inf, 0], [xmax, inf, 0]],
+            is_2d : true,
+            is_3d : false,
         },
         if (ymax < inf) shape2d {
             dist p : p'Y - ymax,
-            bbox : [[-inf, -inf], [inf, ymax]]
+            bbox : [[-inf, -inf, 0], [inf, ymax, 0]],
+            is_2d : true,
+            is_3d : false,
         },
     )
 );
@@ -40,6 +48,7 @@ plane_segment limits = (
 //distance_field plane_segment{xmin:-1,xmax:1,ymin:-2,ymax:2};
 
 rep_rotate n shape = (
+    assert(shape.is_2d);
     na = tau/4 - tau/(n*2);
     rpr f p = (
         var pa := phase p;
@@ -51,7 +60,9 @@ rep_rotate n shape = (
     shape2d {
         dist : rpr(shape.dist),
         colour : rpr(shape.colour),
-        bbox : everything.bbox
+        bbox : everything.bbox,
+        is_2d : true,
+        is_3d : false,
     }
 );
 
@@ -104,7 +115,9 @@ half_plane(v) = (
     ph = phase v;
     rotate(ph) << shape2d {
         dist p : m - p'X,
-        bbox : everything.bbox
+        bbox : everything.bbox,
+        is_2d : true,
+        is_3d : false,
     }
 );
 

@@ -6,7 +6,6 @@ e = 2.71828182845904523536028747135266249775724709369995,
 X = 0,
 Y = 1,
 Z = 2,
-T = 3,
 
 ceil n = -floor(-n),
 trunc n = if (n >= 0) floor(n) else ceil(n),
@@ -38,18 +37,33 @@ dot(a,b) =
 // primitive shapes
 circle r = shape2d {
     dist p : mag(p[X,Y]) - r,
-    bbox : [[-r,-r],[r,r]],
+    bbox : [[-r,-r,0],[r,r,0]],
+    is_2d : true,
+    is_3d : false,
 },
 sphere r = shape2d {
-    dist p : mag(p[X,Y,Z]) - r,
+    dist p : mag p - r,
     bbox : [[-r,-r,-r],[r,r,r]],
+    is_2d : false,
     is_3d : true,
 },
 square sz = (
   s = if (is_list sz) sz else [sz,sz];
   shape2d {
     dist p : max(abs(p[X,Y]) - s/2),
+    //bbox : [-s/2, s/2],
+    bbox : [[-s[X]/2,-s[Y]/2,0], [s[X]/2,s[Y]/2,0]],
+    is_2d : true,
+    is_3d : false,
+  }
+),
+cube sz = (
+  s = if (is_list sz) sz else [sz,sz,sz];
+  shape2d {
+    dist p : max(abs p - s/2),
     bbox : [-s/2, s/2],
+    is_2d : false,
+    is_3d : true,
   }
 ),
 rect bbox = (
@@ -60,19 +74,27 @@ rect bbox = (
   intersection (
     if (xmin > -inf) shape2d {
         dist p : xmin - p'X,
-        bbox : [[xmin, -inf], [inf, inf]]
+        bbox : [[xmin, -inf, 0], [inf, inf, 0]],
+        is_2d : true,
+        is_3d : false,
     },
     if (ymin > -inf) shape2d {
         dist p : ymin - p'Y,
-        bbox : [[-inf, ymin], [inf, inf]]
+        bbox : [[-inf, ymin, 0], [inf, inf, 0]],
+        is_2d : true,
+        is_3d : false,
     },
     if (xmax < inf) shape2d {
         dist p : p'X - xmax,
-        bbox : [[-inf, -inf], [xmax, inf]]
+        bbox : [[-inf, -inf, 0], [xmax, inf, 0]],
+        is_2d : true,
+        is_3d : false,
     },
     if (ymax < inf) shape2d {
         dist p : p'Y - ymax,
-        bbox : [[-inf, -inf], [inf, ymax]]
+        bbox : [[-inf, -inf, 0], [inf, ymax, 0]],
+        is_2d : true,
+        is_3d : false,
     },
   )
 ),
@@ -80,47 +102,67 @@ rect bbox = (
 // boolean shape operations
 nothing = shape2d {
     dist p : inf,
-    bbox : [[inf,inf],[-inf,-inf]]
+    bbox : [[inf,inf,inf],[-inf,-inf,-inf]],
+    is_2d : true,
+    is_3d : true,
 },
 everything = shape2d {
     dist p : -inf,
-    bbox : [[-inf,-inf],[inf,inf]]
+    bbox : [[-inf,-inf,-inf],[inf,inf,inf]],
+    is_2d : true,
+    is_3d : true,
 },
 complement s = shape2d {
     dist p : -s.dist p,
-    bbox : [[-inf,-inf],[inf,inf]]
+    bbox : [[-inf,-inf,-inf],[inf,inf,inf]],
+    is_2d : s.is_2d,
+    is_3d : s.is_3d,
 },
 _union2(s1,s2) = shape2d {
     dist p : min(s1.dist p, s2.dist p),
     colour p : if (s1.dist p <= 0) s1.colour p else s2.colour p,
-    bbox : [min(s1.bbox'0, s2.bbox'0), max(s1.bbox'1, s2.bbox'1)]
+    bbox : [min(s1.bbox'0, s2.bbox'0), max(s1.bbox'1, s2.bbox'1)],
+    is_2d : s1.is_2d && s2.is_2d,
+    is_3d : s1.is_3d && s2.is_3d,
 },
 union = reduce(nothing, _union2),
 _intersection2(s1,s2) = shape2d {
     dist p : max(s1.dist p, s2.dist p),
     colour : s1.colour,
-    bbox : [max(s1.bbox'0, s2.bbox'0), min(s1.bbox'1, s2.bbox'1)]
+    bbox : [max(s1.bbox'0, s2.bbox'0), min(s1.bbox'1, s2.bbox'1)],
+    is_2d : s1.is_2d && s2.is_2d,
+    is_3d : s1.is_3d && s2.is_3d,
 },
 intersection = reduce(everything, _intersection2),
 difference(s1,s2) = _intersection2(s1, complement s2),
 symmetric_difference shapes = difference(union shapes, intersection shapes),
 
 // affine transformations
-translate delta shape = shape2d {
-    dist p : shape.dist(p - delta),
-    colour p : shape.colour(p - delta),
-    bbox : [shape.bbox'0+delta, shape.bbox'1+delta]
-},
+translate _delta shape = (
+    delta = if (len _delta == 2) [_delta[X],_delta[Y],0] else _delta;
+    if (shape.is_2d) assert(delta[Z] == 0);
+    shape2d {
+        dist p : shape.dist(p - delta),
+        colour p : shape.colour(p - delta),
+        bbox : [shape.bbox'0+delta, shape.bbox'1+delta],
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    }
+),
 scale s shape = shape2d {
     dist p : s * shape.dist(p / s),
     colour p : shape.colour(p / s),
-    bbox : s * shape.bbox
+    bbox : s * shape.bbox,
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
 },
-rotate a shape = shape2d {
-    dist p : shape.dist(cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X),
-    //dist p : shape.dist cmul(p, cis(-a)),
-    colour p : shape.colour(cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X),
-    bbox : shape.bbox // TODO: fixme, see below
+rotate a shape = shape2d { // 2D rotation around the Z axis
+    dist p : shape.dist(cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X, p'Z),
+    //dist p : shape.dist(cmul(p, cis(-a))),
+    colour p : shape.colour(cos(a)*p'X+sin(a)*p'Y, cos(a)*p'Y-sin(a)*p'X, p'Z),
+    bbox : shape.bbox, // TODO: fixme, see below
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
 },
 /*
 points_box points = [min points, max points],
@@ -148,7 +190,9 @@ getBox2 (Rotate2 θ symbObj) =
 colour rgb shape = shape2d {
     dist : shape.dist,
     bbox : shape.bbox,
-    colour(p) : rgb
+    colour(p) : rgb,
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
 },
 red = [1, 0, 0],
 green = [0, 1, 0],
@@ -168,6 +212,8 @@ distance_field shape = shape2d {
         var c := if (d >= 0) ceil(d)-d else floor(d)-d;
         [max(-c,0), 0, max(c,0)]
     ),
+    is_2d : true,
+    is_3d : false,
 },
 
 }

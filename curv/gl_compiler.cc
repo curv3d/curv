@@ -27,17 +27,17 @@ void gl_compile(const Shape2D& shape, std::ostream& out, const Context& cx)
     return gl_compile_2d(shape, out, cx);
 }
 
-void gl_compile_2d(const Shape2D& shape, std::ostream& out, const Context&)
+void gl_compile_2d(const Shape2D& shape, std::ostream& out, const Context& cx)
 {
     GL_Compiler gl(out);
-    GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
-    auto frame = GL_Frame::make(0, gl, nullptr, nullptr);
+    GL_Value dist_param = gl.newvalue(GL_Type::Vec3);
+    auto frame = GL_Frame::make(0, gl, &cx, nullptr, nullptr);
 
     out <<
         "#ifdef GLSLVIEWER\n"
         "uniform mat3 u_view2d;\n"
         "#endif\n"
-        "float main_dist(vec4 " << dist_param << ", out vec4 colour)\n"
+        "float main_dist(vec3 " << dist_param << ", out vec4 colour)\n"
         "{\n";
 
     GL_Value result = shape.gl_dist(dist_param, *frame);
@@ -52,7 +52,7 @@ void gl_compile_2d(const Shape2D& shape, std::ostream& out, const Context&)
     out <<
         "  return " << result << ";\n"
         "}\n";
-    BBox bbox = shape.bbox(At_GL_Frame(&*frame));
+    BBox bbox = shape.bbox(cx);
     if (bbox.empty() || bbox.infinite()) {
         out <<
         "const vec4 bbox = vec4(-10.0,-10.0,+10.0,+10.0);\n";
@@ -81,7 +81,7 @@ void gl_compile_2d(const Shape2D& shape, std::ostream& out, const Context&)
         "#ifdef GLSLVIEWER\n"
         "    fragCoord = (u_view2d * vec3(fragCoord,1)).xy;\n"
         "#endif\n"
-        "    float d = main_dist(vec4(fragCoord*scale+offset,0,iGlobalTime), fragColour);\n"
+        "    float d = main_dist(vec3(fragCoord*scale+offset,0), fragColour);\n"
         "    if (d > 0.0) {\n"
         "        vec2 uv = fragCoord.xy / iResolution.xy;\n"
         "        fragColour = vec4(uv,0.5+0.5*sin(iGlobalTime),1.0);\n"
@@ -93,14 +93,14 @@ void gl_compile_2d(const Shape2D& shape, std::ostream& out, const Context&)
 void gl_compile_3d(const Shape2D& shape, std::ostream& out, const Context& cx)
 {
     GL_Compiler gl(out);
-    GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
-    auto frame = GL_Frame::make(0, gl, nullptr, nullptr);
+    GL_Value dist_param = gl.newvalue(GL_Type::Vec3);
+    auto frame = GL_Frame::make(0, gl, &cx, nullptr, nullptr);
 
     out <<
         "#ifdef GLSLVIEWER\n"
         "uniform mat3 u_view2d;\n"
         "#endif\n"
-        "float main_dist(vec4 " << dist_param << ", out vec4 colour)\n"
+        "float main_dist(vec3 " << dist_param << ", out vec4 colour)\n"
         "{\n";
 
     GL_Value result = shape.gl_dist(dist_param, *frame);
@@ -138,7 +138,7 @@ void gl_compile_3d(const Shape2D& shape, std::ostream& out, const Context& cx)
        "vec4 map(in vec3 pos)\n"
        "{\n"
        "    vec4 colour;\n"
-       "    float dist = main_dist(vec4(pos, iGlobalTime), colour);\n"
+       "    float dist = main_dist(pos, colour);\n"
        "    return vec4(dist, colour.rgb);\n"
        "}\n"
 
@@ -191,6 +191,11 @@ void gl_compile_3d(const Shape2D& shape, std::ostream& out, const Context& cx)
        "    */\n"
        "}\n"
 
+       // Compute an ambient occlusion factor.
+       // pos: point on surface
+       // nor: normal of the surface at pos
+       // Yields a value clamped to [0,1] where 0 means no other surfaces
+       // around the point, and 1 means the point is occluded by other surfaces.
        "float calcAO( in vec3 pos, in vec3 nor )\n"
        "{\n"
        "    float occ = 0.0;\n"
@@ -290,34 +295,6 @@ void gl_compile_3d(const Shape2D& shape, std::ostream& out, const Context& cx)
        "    fragColor = vec4(col,1.0);\n"
        "}\n"
        ;
-
-#if 0
-    // This is the 2D version of the renderer. Try lifting the u_view2d code.
-    out <<
-        "void mainImage( out vec4 fragColour, in vec2 fragCoord )\n"
-        "{\n"
-        "    vec2 size = bbox.zw - bbox.xy;\n"
-        "    vec2 scale2 = size / iResolution.xy;\n"
-        "    vec2 offset = bbox.xy;\n"
-        "    float scale;\n"
-        "    if (scale2.x > scale2.y) {\n"
-        "        scale = scale2.x;\n"
-        "        offset.y -= (iResolution.y*scale - size.y)/2.0;\n"
-        "    } else {\n"
-        "        scale = scale2.y;\n"
-        "        offset.x -= (iResolution.x*scale - size.x)/2.0;\n"
-        "    }\n"
-        "#ifdef GLSLVIEWER\n"
-        "    fragCoord = (u_view2d * vec3(fragCoord,1)).xy;\n"
-        "#endif\n"
-        "    float d = main_dist(vec4(fragCoord*scale+offset,0,iGlobalTime), fragColour);\n"
-        "    if (d > 0.0) {\n"
-        "        vec2 uv = fragCoord.xy / iResolution.xy;\n"
-        "        fragColour = vec4(uv,0.5+0.5*sin(iGlobalTime),1.0);\n"
-        "    }\n"
-        "}\n"
-        ;
-#endif
 }
 
 GL_Type_Attr gl_types[] =
@@ -468,7 +445,8 @@ gl_arith_expr(GL_Frame& f, const Phrase& source,
     else if (y.type == GL_Type::Num)
         rtype = x.type;
     if (rtype == GL_Type::Bool)
-        throw Exception(At_GL_Phrase(source, &f), "GL domain error");
+        throw Exception(At_GL_Phrase(source, &f),
+            stringify("GL domain error: ",x.type,op,y.type));
 
     GL_Value result = f.gl.newvalue(rtype);
     f.gl.out <<"  "<<rtype<<" "<<result<<" = ";

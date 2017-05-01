@@ -13,11 +13,11 @@ shape2d {
   dist : everything.dist,
   bbox : everything.bbox,
   colour pt : (
-    var p := pt;
+    var p := pt[X,Y];
     var color := [0,0,0];
     var i := 0;
     while (i < 100) (
-      p := [p'X*p'X - p'Y*p'Y, 2*p'X*p'Y]+pt;
+      p := [p'X*p'X - p'Y*p'Y, 2*p'X*p'Y]+pt[X,Y];
       if (dot p > 4) (
         var colorRegulator := (i-1)-log(log(dot p)/log 2)/log 2;
         color := [0.95 + .012*colorRegulator, 1, .2+.4*(1+sin(.3*colorRegulator))];
@@ -26,4 +26,6 @@ shape2d {
     );
     hsv2rgb color
   ),
+  is_2d : true,
+  is_3d : false,
 }

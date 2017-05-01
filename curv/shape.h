@@ -16,8 +16,8 @@ class Context;
 
 // axis aligned bounding box
 struct BBox {
-    double xmin, ymin;
-    double xmax, ymax;
+    double xmin, ymin, zmin;
+    double xmax, ymax, zmax;
     bool empty() {
         return (xmin >= xmax || ymin >= ymax);
     }

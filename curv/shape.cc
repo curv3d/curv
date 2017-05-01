@@ -46,15 +46,22 @@ BBox::from_value(Value val, const Context& cx)
 {
     auto list = val.to<List>(cx);
     list->assert_size(2, cx);
-    auto mins = list->at(0).to<List>(cx);
-    mins->assert_size(2, cx);
-    auto maxs = list->at(1).to<List>(cx);
-    maxs->assert_size(2, cx);
+
+    At_Index mincx(0, cx);
+    auto mins = list->at(0).to<List>(mincx);
+    mins->assert_size(3, mincx);
+
+    At_Index maxcx(0, cx);
+    auto maxs = list->at(1).to<List>(maxcx);
+    maxs->assert_size(3, maxcx);
+
     BBox b;
     b.xmin = mins->at(0).to_num(cx);
     b.ymin = mins->at(1).to_num(cx);
+    b.zmin = mins->at(2).to_num(cx);
     b.xmax = maxs->at(0).to_num(cx);
     b.ymax = maxs->at(1).to_num(cx);
+    b.zmax = maxs->at(2).to_num(cx);
     return b;
 }
 
@@ -92,14 +99,14 @@ Shape2D::dist(const Context& cx) const
 BBox
 Shape2D::bbox(const Context& cx) const
 {
-    return BBox::from_value(getfield("bbox",cx), cx);
+    return BBox::from_value(getfield("bbox",cx), At_Field("bbox", cx));
 }
 
 GL_Value
 Shape2D::gl_dist(GL_Value arg, GL_Frame& f) const
 {
     Polyadic_Function& fun = dist(At_GL_Frame(&f));
-    auto f2 = GL_Frame::make(fun.nslots_, f.gl, &f, nullptr);
+    auto f2 = GL_Frame::make(fun.nslots_, f.gl, nullptr, &f, nullptr);
     (*f2)[0] = arg;
     auto result = fun.gl_call(*f2);
     if (result.type != GL_Type::Num) {
@@ -114,7 +121,7 @@ Shape2D::gl_colour(GL_Value arg, GL_Frame& f) const
 {
     At_GL_Frame cx(&f);
     auto fun = getfield("colour", cx).to<Polyadic_Function>(cx);
-    auto f2 = GL_Frame::make(fun->nslots_, f.gl, &f, nullptr);
+    auto f2 = GL_Frame::make(fun->nslots_, f.gl, nullptr, &f, nullptr);
     (*f2)[0] = arg;
     auto result = fun->gl_call(*f2);
     if (result.type != GL_Type::Vec3) {
