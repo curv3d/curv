@@ -14,10 +14,10 @@
 using aux::dfmt;
 namespace curv {
 
-void gl_compile_2d(const Shape2D&, std::ostream&, const Context&);
-void gl_compile_3d(const Shape2D&, std::ostream&, const Context& );
+void gl_compile_2d(const Shape&, std::ostream&, const Context&);
+void gl_compile_3d(const Shape&, std::ostream&, const Context& );
 
-void gl_compile(const Shape2D& shape, std::ostream& out, const Context& cx)
+void gl_compile(const Shape& shape, std::ostream& out, const Context& cx)
 {
     if (shape.hasfield("is_3d")) {
         bool is3d = shape.getfield("is_3d", cx).to_bool(At_Field("is_3d", cx));
@@ -27,7 +27,7 @@ void gl_compile(const Shape2D& shape, std::ostream& out, const Context& cx)
     return gl_compile_2d(shape, out, cx);
 }
 
-void gl_compile_2d(const Shape2D& shape, std::ostream& out, const Context& cx)
+void gl_compile_2d(const Shape& shape, std::ostream& out, const Context& cx)
 {
     GL_Compiler gl(out);
     GL_Value dist_param = gl.newvalue(GL_Type::Vec3);
@@ -90,7 +90,7 @@ void gl_compile_2d(const Shape2D& shape, std::ostream& out, const Context& cx)
         ;
 }
 
-void gl_compile_3d(const Shape2D& shape, std::ostream& out, const Context& cx)
+void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
 {
     GL_Compiler gl(out);
     GL_Value dist_param = gl.newvalue(GL_Type::Vec3);

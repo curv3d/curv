@@ -10,7 +10,7 @@
 
 namespace curv {
 
-const char Shape2D::name[] = "shape";
+const char Shape::name[] = "shape";
 
 struct Blackfield_Function : public Polyadic_Function
 {
@@ -28,9 +28,9 @@ struct Blackfield_Function : public Polyadic_Function
     }
 };
 
-Shape2D::Shape2D(Shared<const Record> record)
+Shape::Shape(Shared<const Record> record)
 :
-    Ref_Value(ty_shape2d), record_(std::move(record))
+    Ref_Value(ty_shape), record_(std::move(record))
 {
     static Atom colour = "colour";
     static Value black = {make<Blackfield_Function>()};
@@ -66,44 +66,44 @@ BBox::from_value(Value val, const Context& cx)
 }
 
 void
-Shape2D::print(std::ostream& out) const
+Shape::print(std::ostream& out) const
 {
     out << "make_shape";
     record_->print(out);
 }
 
 Value
-Shape2D::getfield(Atom name, const Context& cx) const
+Shape::getfield(Atom name, const Context& cx) const
 {
     return record_->getfield(name, cx);
 }
 
 bool
-Shape2D::hasfield(Atom name) const
+Shape::hasfield(Atom name) const
 {
     return record_->hasfield(name);
 }
 
 Polyadic_Function&
-Shape2D::dist(const Context& cx) const
+Shape::dist(const Context& cx) const
 {
     auto val = getfield("dist", cx);
     auto fun = val.dycast<Polyadic_Function>();
     if (fun == nullptr)
-        throw Exception(cx, "Shape2D: dist is not a function");
+        throw Exception(cx, "Shape: dist is not a function");
     if (fun->nargs_ != 1)
-        throw Exception(cx, "Shape2D: dist function does not have 1 parameter");
+        throw Exception(cx, "Shape: dist function does not have 1 parameter");
     return *fun;
 }
 
 BBox
-Shape2D::bbox(const Context& cx) const
+Shape::bbox(const Context& cx) const
 {
     return BBox::from_value(getfield("bbox",cx), At_Field("bbox", cx));
 }
 
 GL_Value
-Shape2D::gl_dist(GL_Value arg, GL_Frame& f) const
+Shape::gl_dist(GL_Value arg, GL_Frame& f) const
 {
     Polyadic_Function& fun = dist(At_GL_Frame(&f));
     auto f2 = GL_Frame::make(fun.nslots_, f.gl, nullptr, &f, nullptr);
@@ -117,7 +117,7 @@ Shape2D::gl_dist(GL_Value arg, GL_Frame& f) const
 }
 
 GL_Value
-Shape2D::gl_colour(GL_Value arg, GL_Frame& f) const
+Shape::gl_colour(GL_Value arg, GL_Frame& f) const
 {
     At_GL_Frame cx(&f);
     auto fun = getfield("colour", cx).to<Polyadic_Function>(cx);

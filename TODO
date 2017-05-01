@@ -408,7 +408,7 @@ nary union:
   reduce(id,f) list = iter(id,list) where iter(first,rest) =
     if (rest==[]) first else iter(f(first,rest'0),rest'(1..));
 
-* curv::Shape2D is abstract, with builtin and user subclasses
+* curv::Shape is abstract, with builtin and user subclasses
   * subclass User_Defined_Shape2D, UD_Shape2D, User_Shape2D (better name?)
     Scripted_Shape2D, Exo_Shape2D also ecto- ext-
 * make_shape accepts a record or module argument.

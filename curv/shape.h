@@ -28,20 +28,20 @@ struct BBox {
     static BBox from_value(Value, const Context&);
 };
 
-// TODO: a more compact/efficient representation for Shape2D?
+// TODO: a more compact/efficient representation for Shape?
 // Maybe use the same internal representation as Record, with a different
 // type tag?
 // But, make_shape should also accept a module argument, and in that case,
 // it should support customization (of the underlying module)?
 // Actually I'm not sure if that will be supported.
-// TODO: Shape2D should be abstract, user defined Shape2D should be a subclass.
+// TODO: Shape should be abstract, user defined Shape should be a subclass.
 // I presume that built-in shape classes don't need the record_ field.
 
-struct Shape2D : public Ref_Value
+struct Shape : public Ref_Value
 {
     Shared<const Record> record_;
 
-    Shape2D(Shared<const Record> record);
+    Shape(Shared<const Record> record);
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const override;

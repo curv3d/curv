@@ -337,7 +337,7 @@ struct Make_Shape_Function : public Polyadic_Function
     Value call(Frame& f) override
     {
         auto& record {arg_to_record(f[0], At_Arg(f))};
-        return {make<Shape2D>(share(record))};
+        return {make<Shape>(share(record))};
     }
 };
 

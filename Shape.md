@@ -278,7 +278,7 @@ square(sz) = make_shape {
 };
 ```
 
-A Shape2D value is a wrapper around a record value.
+A Shape value is a wrapper around a record value.
 Supports the `.` operator, and any future record operations.
 
 A GLSL_Coder is a stateful object that converts the body of a dist function
@@ -427,7 +427,7 @@ From the discussion, it would be more useful to use a module value,
 and to support module customization on shapes.
 (TODO: Module-based shapes once submodules are implemented.)
 
-`curv::Shape2D` is the common superclass of all shape values
+`curv::Shape` is the common superclass of all shape values
 (builtin and user defined).
 * There is a bbox data member (instead of looking up the bbox using getfield).
   The `make_shape` function checks for the `bbox` field, validates it, and
@@ -441,7 +441,7 @@ and to support module customization on shapes.
 
 Builtin shape classes must export a dist function value to user space.
 ```
-class Square : public Shape2D
+class Square : public Shape
 {
     double size;
     Value getfield(Atom a)
