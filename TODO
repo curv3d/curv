@@ -9,6 +9,13 @@ What remains for MVP? (What do I want to show in my first big demo?)
 * Meta: use https://opensource.guide/
 * mac port or linux laptop
 
+* 3D support
+  * 3D viewer
+    * glslViewer support: u_eye3d, u_centre3d, etc
+    * initially, fixed bbox, zoom, rotate about Z axis
+    * better, simpler lighting model
+  * make_shape checks is_2d and is_3d fields, which default to false.
+
 -------------------------
 Define regular_polygon(n). See poly.curv.
 * live coding, please. curv -l pathname
