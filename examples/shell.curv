@@ -14,4 +14,4 @@ rep_grid bbox shape = make_shape {
     is_3d : false,
 };
 c = rep_grid(-1,1) << shell .1 << colour black << circle 1;
-union(c,translate(1,1,0)<<c)
+union(c,translate(1,1)<<c);
