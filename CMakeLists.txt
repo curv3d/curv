@@ -12,7 +12,7 @@ target_link_libraries(curv PUBLIC libcurv readline double-conversion boost_files
 
 FILE(GLOB TestSrc "tests/*.cc")
 add_executable(tester ${TestSrc})
-target_link_libraries(tester PUBLIC gtest pthread libcurv double-conversion)
+target_link_libraries(tester PUBLIC -fsanitize=leak gtest pthread libcurv double-conversion)
 
 #set_property(GLOBAL PROPERTY CXX_STANDARD 14)
 set_property(TARGET curv libcurv tester PROPERTY CXX_STANDARD 14)
