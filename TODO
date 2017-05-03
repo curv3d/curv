@@ -1,6 +1,7 @@
 # Release 0.0: "2D subsystem"
 
 What remains for MVP? (What do I want to show in my first big demo?)
+* fix memory leak: `sum = reduce(0,(x,y)->x+y)` leaks memory.
 * `curv -l filename` live programming. $CURV_EDITOR -- auto-open editor window 
 * curv CLI: open GL window for a shape
 * 3D support
