@@ -19,8 +19,8 @@ map f list = [for (x=list) f x],
 filter p list = [for (x=list) if (p x) x],
 reduce(first,f) rest =
     if (rest==[]) first else reduce(f(first,rest'0), f) << rest'(1..<len(rest)),
-sum = reduce(0, (x,y)->x+y),
-product = reduce(1, (x,y)->x*y),
+sum list = reduce(0, (x,y)->x+y) list,
+product list = reduce(1, (x,y)->x*y) list,
 
 // linear algebra
 cross(p,q) = [p'Y*q'Z - p'Z-q'Y, p'Z*q'X - p'X*q'Z, p'X*q'Y - p'Y*q'X],
@@ -131,7 +131,7 @@ _union2(s1,s2) = make_shape {
     is_2d : s1.is_2d && s2.is_2d,
     is_3d : s1.is_3d && s2.is_3d,
 },
-union = reduce(nothing, _union2),
+union list = reduce(nothing, _union2) list,
 _intersection2(s1,s2) = make_shape {
     dist p : max(s1.dist p, s2.dist p),
     colour : s1.colour,
@@ -139,7 +139,7 @@ _intersection2(s1,s2) = make_shape {
     is_2d : s1.is_2d && s2.is_2d,
     is_3d : s1.is_3d && s2.is_3d,
 },
-intersection = reduce(everything, _intersection2),
+intersection list = reduce(everything, _intersection2) list,
 difference(s1,s2) = _intersection2(s1, complement s2),
 symmetric_difference shapes = difference(union shapes, intersection shapes),
 
