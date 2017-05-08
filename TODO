@@ -1,7 +1,6 @@
 # Release 0.0: "2D subsystem"
 
 What remains for MVP? (What do I want to show in my first big demo?)
-* `curv -l filename` live programming. $CURV_EDITOR -- auto-open editor window 
 * curv CLI: open GL window for a shape
 * 3D support
 * standard library
@@ -18,6 +17,7 @@ What remains for MVP? (What do I want to show in my first big demo?)
 
 -------------------------
 * fix memory leak: `sum = reduce(0,(x,y)->x+y)` leaks memory.
+* `curv -l: $CURV_EDITOR -- auto-open editor window 
 
 Define regular_polygon(n). See poly.curv.
 * live coding, please. curv -l pathname

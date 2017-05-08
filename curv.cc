@@ -12,6 +12,7 @@ extern "C" {
 #include <unistd.h>
 }
 #include <iostream>
+#include <fstream>
 
 #include <aux/dtostr.h>
 #include <aux/progdir.h>
@@ -229,6 +230,7 @@ live_mode(const char* argv0, const char* filename)
 {
     curv::System& sys(make_system(argv0));
 
+    bool viewer = false;
     for (;;) {
         struct stat st;
         if (stat(filename, &st) != 0) {
@@ -243,6 +245,16 @@ live_mode(const char* argv0, const char* filename)
                 prog.compile();
                 auto value = prog.eval();
                 std::cout << value << "\n";
+                auto shape = value.dycast<curv::Shape>();
+                if (shape != nullptr) {
+                    std::ofstream f(",curv.frag");
+                    curv::gl_compile(*shape, f, {});
+                    if (!viewer) {
+                        auto cmd = curv::stringify("glslViewer ,curv.frag &");
+                        system(cmd->c_str());
+                        viewer = true;
+                    }
+                }
             } catch (curv::Exception& e) {
                 std::cout << "ERROR: " << e << "\n";
             } catch (std::exception& e) {
