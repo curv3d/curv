@@ -8,6 +8,8 @@ extern "C" {
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <unistd.h>
 }
 #include <iostream>
 
@@ -222,9 +224,49 @@ void export_json(curv::Value value, const curv::Context& cx, std::ostream& out)
         throw curv::Exception(cx, "value can't be converted to JSON");
 }
 
+int
+live_mode(const char* argv0, const char* filename)
+{
+    curv::System& sys(make_system(argv0));
+
+    for (;;) {
+        struct stat st;
+        if (stat(filename, &st) != 0) {
+            // file doesn't exist.
+            memset((void*)&st, 0, sizeof(st));
+        } else {
+            // evaluate file.
+            try {
+                auto file = curv::make<curv::File_Script>(
+                    curv::make_string(filename), curv::Context{});
+                curv::Program prog{*file, sys};
+                prog.compile();
+                auto value = prog.eval();
+                std::cout << value << "\n";
+            } catch (curv::Exception& e) {
+                std::cout << "ERROR: " << e << "\n";
+            } catch (std::exception& e) {
+                std::cout << "ERROR: " << e.what() << "\n";
+            }
+        }
+        // Wait for file to change.
+        for (;;) {
+            usleep(500'000);
+            struct stat st2;
+            if (stat(filename, &st2) != 0)
+                memset((void*)&st2, 0, sizeof(st));
+            if (st.st_mtime != st2.st_mtime)
+                break;
+        }
+    }
+}
+
 const char help[] =
 "Interactive CLI mode:\n"
 "  curv\n"
+"\n"
+"Live programming mode:\n"
+"  curv -l filename\n"
 "\n"
 "Batch mode (process a file, write results to stdout):\n"
 "  curv [options] filename\n"
@@ -257,13 +299,17 @@ main(int argc, char** argv)
         return EXIT_SUCCESS;
     }
 
-    // Parse batch mode arguments.
+    // Parse live or batch mode arguments.
     const char* argv0 = argv[0];
-    void (*exporter)(curv::Value, const curv::Context&, std::ostream&) = export_curv;
+    void (*exporter)(curv::Value, const curv::Context&, std::ostream&) =
+        export_curv;
+    bool oflag = false;
+    bool live = false;
     int opt;
-    while ((opt = getopt(argc, argv, ":i:o:D:")) != -1) {
+    while ((opt = getopt(argc, argv, ":i:o:D:l")) != -1) {
         switch (opt) {
         case 'o':
+            oflag = true;
             if (strcmp(optarg, "curv") == 0)
                 exporter = export_curv;
             else if (strcmp(optarg, "json") == 0)
@@ -275,6 +321,9 @@ main(int argc, char** argv)
                           << "Use " << argv0 << " --help for help.\n";
                 return EXIT_FAILURE;
             }
+            break;
+        case 'l':
+            live = true;
             break;
         case 'i':
         case 'D':
@@ -303,6 +352,15 @@ main(int argc, char** argv)
         return EXIT_FAILURE;
     }
     const char* filename = argv[optind];
+
+    if (live) {
+        if (oflag) {
+            std::cerr << "-l and -o flags are not compatible.\n"
+                      << "Use " << argv0 << " --help for help.\n";
+            return EXIT_FAILURE;
+        }
+        return live_mode(argv0, filename);
+    }
 
     // Execute batch mode.
     curv::System& sys(make_system(argv0));
