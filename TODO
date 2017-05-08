@@ -1,7 +1,6 @@
 # Release 0.0: "2D subsystem"
 
 What remains for MVP? (What do I want to show in my first big demo?)
-* curv CLI: open GL window for a shape
 * 3D support
 * standard library
 * Documentation
