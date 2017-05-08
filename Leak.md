@@ -61,6 +61,10 @@ to pairs of mutually recursive definitions.
 
 Perhaps all of the definitions in a mutual recursion partition are required
 to be function definitions, or a compile time error is issued. Good enough.
+* Extension: No restriction on the form of a recursive definition.
+  If a recursive definiens isn't a lambda expression, then it is made into
+  a call-by-name thunk that is evaluated on every reference from inside the
+  recursion group. From outside the group, it's a proper value in a slot.
 
 The shared nonlocals list contains the Lambda objects for each function.
 It also contains copies of each referenced nonlocal from outside
@@ -84,12 +88,120 @@ So I don't need thunks. Expressiveness is the same as now (May 2017), less
 than Haskell. It's good enough. This scheme might be easier to integrate
 with sequential definitions and GL than the thunk based design.
 
+Alternatively, it might be easier to use thunks than to do a topological sort.
+Each recursion group has an action thunk that constructs the shared nonlocals
+list (if applicable) and then updates all of the slots in the group.
+
+### Runtime Structures
+
+Module values:
+* have a `slots_` array which contains field values and nonlocals, same as now.
+* Field slots are initialized with action thunks (never lambdas), which are
+  replaced by proper values.
+* The `slots_` array is the nonlocals list for the Frame used to evaluate
+  the thunks, same as now.
+* Closures in the slots array cannot point to the slots array (unlike now).
+  Each field value that's a closure must have an alternate nonlocals list,
+  containing values copied from the `slots_` array.
+* The action thunk for a nonrecursive field initializes that field.
+  If it's a function, a private nonlocals list is constructed.
+* The action thunk for a recursion group initializes all of the fields in
+  that recursion group, first constructing the nonlocals list NL shared by
+  the functions in the recursion group. In NL, the recursion group member slots
+  are immutable and contain only lambdas, never values.
+
+Blocks:
+* Each binding has a direct slot. No more indirect slots.
+* A binding slot is initialized to an action thunk, which is replaced by
+  a proper value. No more lambdas.
+* These thunks use the current frame, we don't create a new frame.
+
+Closures:
+
+References:
+* Blocks:
+  * Outside of a definiens (ie, in an action or body),
+    block definitions are accessed with lazy local references.
+  * Inside a nonrecursive definiens (evaluated by a thunk), the same.
+  * Inside a recursive definiens,
+
+* Outside of a thunk, block definitions are accessed with lazy local references.in a block,
+  and lazy nonlocal references in a module. The reference contains a slot#.
+* Inside a thunk:
+  * non recursive definitions:
+  * recursive definitions:
+
 ### Implementing Dependency Analysis
 
-Given a set of recursive definitions, partition them into recursion groups,
-label each partition as recursive or nonrecursive, topologically sort the
-groups into a linear evaluation order.
+Can't "generate code" for a block-bound identifier during analysis: this can't
+be done until we know if the identifier refers to a recursive or nonrecursive
+defn. During analysis, we replace a such an identifier with a `Def_Ref`,
+which points to a Definition.
 
+Post analysis, `void Operation::encode(?)` modifies `Def_Ref` nodes to give
+them runtime semantics.
+
+Given a set of recursive definitions, partition them into recursion groups,
+label each partition as recursive or nonrecursive.
+
+Data structures:
+* Here's the additional state associated with each Definition in a
+  `Statement_Analyzer`. Each Definition is:
+  * not analyzed;
+  * analysis is in progress;
+  * analyzed and {recursive | not recursive}.
+* A `Recursion_Group` contains a list of `Shared<Definition>`.
+  Probably don't need the definition to also point to the recursion group,
+  that keeps the data structure hierarchical.
+* A `Statement_Analyzer` contains a list of `Recursion_Group`.
+* `Statement_Analyzer` contains temporary state used during definition analysis:
+  * The current recursion group, or null.
+  * A stack of definitions.
+
+Analysis:
+* Pick an unanalyzed definition D from a `Statement_Analyzer` SA.
+* Set the analysis state of D to "in progress".
+* Set the current recursion group to null, and the defstack to D.
+* Begin analyzing the definiens of D.
+* Within `Statement_Analyzer::single_lookup`, there is a match M.
+  * Prepare to analyze the definiens of M.
+  * If M is already under analysis, then we have discovered recursion:
+    * Mark M as recursive.
+      * If the SA doesn't have a current recursion group, create a new one.
+      * Add M to the current recursion group.
+      * Suppose we visit `a->b->c->a`, and discover that `a` is recursive.
+        Then `b` and `c` must be added to a's recursion group. How is that done?
+      * The SA contains an explicit representation of the DefRef analysis stack,
+        along with the current recursion group.
+      * When recursion is detected, we mark all of the stack elements as
+        recursive and add them to the current recursion group.
+  * Otherwise, analyze M:
+    * Push M onto the DefRef analysis stack.
+    * Mark M as under analysis.
+    * Call analyze() on M's definiens.
+    * After analyze() returns, if M is still marked as "under analysis",
+      then mark it as analyzed + nonrecursive.
+    * Pop the DefRef stack.
+  * Finally, return a `Def_Ref` containing M.
+
+* We are about to identify another recursion group.
+  Create a new recursion group identifier. From the `Statement_Analyzer`,
+  select a definiens that hasn't been analyzed yet and place it in the
+  new recursion group.
+* Analyze the definiens, first flagging the fact that it is under analysis.
+* When an identifier is found, if it is replaced by a `Def_Ref`, then
+  prepare to analyze its definiens.
+  * If that definiens is already under analysis, then we have discovered
+    recursion. Mark the Definition as recursive, add it to the current
+    recursion group.
+  * Otherwise, if it isn't under analysis, then analyze it.
+  * Suppose we visit `a->b->c->a`, and discover that `a` is recursive.
+    Then `b` and `c` must be added to a's recursion group.
+    How is that done?
+    * `analyze` returns a value indicating that we found recursion, and this
+      value must be explicitly propagated up the call stack until it is handled.
+    * There is an explicit representation of the DefRef analysis stack.
+      When recursion is detected, we modify the stack elements.
 
 ## Analysis 0
 reduce is a curried, recursive function.
