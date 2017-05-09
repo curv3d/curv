@@ -240,26 +240,17 @@ ImplicitCAD:
 
 # Older Stuff
 
-gcurv -- tool which reads a curv script and displays shapes in a window.
-
-Live programming:
- * lcurv filename -- watch curv src, update OpenGL window on change.
-   * initially, non-interactive. glslViewer inherits lcurv stdout/err.
-   * could initially be a shell script. tricky though, requires extra commands
-     like inotifywait or fswatch.
-   * eventually, I want to redraw if an included file changes. This requires
-     integration with libcurv.
-   * `fswatch` looks like a decent package on github.
-     https://github.com/emcrisostomo/fswatch/tree/master/libfswatch
-     Has both a CLI and a library with C and C++ bindings.
-     Supports all operating systems.
-   * Easier just to use a stat loop in curv.cc
- * use `curv -w filename` for live programming mode. Maybe this *also* has an
-   interactive CLI for querying variables and debugging. GNU readline has a
-   callback-based API suitable for this: rl_callback_handler_install etc.
- * curv CLI mode: when a Curv expression returns one or more shapes,
-   print them on the console in ASCII (more useful once we have `defshape`),
-   *and also* display the union of the shapes in an OpenGL window.
+Live programming (curv -l):
+ * When glslViewer window is closed, curv -l should exit.
+ * When curv -l is interrupted, the glslViewer window should be closed.
+ * redraw if an included file changes. requires integration with libcurv.
+ * `fswatch` looks like a decent package on github (better than stat loop?).
+   https://github.com/emcrisostomo/fswatch/tree/master/libfswatch
+   Has both a CLI and a library with C and C++ bindings.
+   Supports all operating systems.
+ * `curv -l filename` has an interactive CLI for querying variables and
+   debugging. GNU readline has a callback-based API suitable for this:
+   rl_callback_handler_install etc.
 
 2d subsystem: repetition operators, and others
 

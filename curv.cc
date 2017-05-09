@@ -81,15 +81,17 @@ make_system(const char* argv0)
 }
 
 void
-display_shape(curv::Value value)
+display_shape(curv::Value value, bool block = false)
 {
     static bool viewer = false;
     auto shape = value.dycast<curv::Shape>();
     if (shape != nullptr) {
         std::ofstream f(",curv.frag");
         curv::gl_compile(*shape, f, {});
+        f.close();
         if (!viewer) {
-            auto cmd = curv::stringify("glslViewer ,curv.frag &");
+            auto cmd = curv::stringify("glslViewer ,curv.frag",
+                block ? "" : "&");
             system(cmd->c_str());
             viewer = true;
         }
@@ -322,14 +324,12 @@ main(int argc, char** argv)
     // Parse live or batch mode arguments.
     const char* argv0 = argv[0];
     void (*exporter)(curv::Value, const curv::Context&, std::ostream&) =
-        export_curv;
-    bool oflag = false;
+        nullptr;
     bool live = false;
     int opt;
     while ((opt = getopt(argc, argv, ":i:o:D:l")) != -1) {
         switch (opt) {
         case 'o':
-            oflag = true;
             if (strcmp(optarg, "curv") == 0)
                 exporter = export_curv;
             else if (strcmp(optarg, "json") == 0)
@@ -374,7 +374,7 @@ main(int argc, char** argv)
     const char* filename = argv[optind];
 
     if (live) {
-        if (oflag) {
+        if (exporter) {
             std::cerr << "-l and -o flags are not compatible.\n"
                       << "Use " << argv0 << " --help for help.\n";
             return EXIT_FAILURE;
@@ -390,7 +390,13 @@ main(int argc, char** argv)
         curv::Program prog{*file, sys};
         prog.compile();
         auto value = prog.eval();
-        exporter(value, curv::At_Phrase(prog.value_phrase(), nullptr), std::cout);
+        if (exporter == nullptr) {
+            std::cout << value << "\n";
+            display_shape(value, true);
+        } else {
+            exporter(value,
+                curv::At_Phrase(prog.value_phrase(), nullptr), std::cout);
+        }
     } catch (curv::Exception& e) {
         std::cerr << "ERROR: " << e << "\n";
         return EXIT_FAILURE;
