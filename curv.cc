@@ -86,13 +86,15 @@ display_shape(curv::Value value, bool block = false)
     static bool viewer = false;
     auto shape = value.dycast<curv::Shape>();
     if (shape != nullptr) {
-        std::ofstream f(",curv.frag");
+        auto filename = curv::stringify(",curv",getpid(),".frag");
+        std::ofstream f(filename->c_str());
         curv::gl_compile(*shape, f, {});
         f.close();
         if (!viewer) {
-            auto cmd = curv::stringify("glslViewer ,curv.frag",
+            auto cmd = curv::stringify("glslViewer ",filename->c_str(),
                 block ? "" : "&");
             system(cmd->c_str());
+            if (block) unlink(filename->c_str());
             viewer = true;
         }
     }

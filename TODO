@@ -16,10 +16,8 @@ What remains for MVP? (What do I want to show in my first big demo?)
 
 -------------------------
 * fix memory leak: `sum = reduce(0,(x,y)->x+y)` leaks memory.
-* `curv -l: $CURV_EDITOR -- auto-open editor window 
 
 Define regular_polygon(n). See poly.curv.
-* live coding, please. curv -l pathname
 
 gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
 curv::Function represents a variadic function.
@@ -119,10 +117,6 @@ Math:
 Animation. Add an extra t argument to dist and colour functions.
 
 import, export PNG file.
-
-curv tool:
-* display shape from interactive CLI
-* live programming mode
 
 basic documentation.
 
@@ -241,6 +235,7 @@ ImplicitCAD:
 # Older Stuff
 
 Live programming (curv -l):
+ * $CURV_EDITOR -- if defined, auto-open editor window 
  * When glslViewer window is closed, curv -l should exit.
  * When curv -l is interrupted, the glslViewer window should be closed.
  * redraw if an included file changes. requires integration with libcurv.
