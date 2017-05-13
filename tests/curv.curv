@@ -143,4 +143,8 @@ assert(
     Sum(1,2,3) == 6
 ),
 
+assert(
+    is_null null && is_bool false && is_num 42 && is_str "" && is_list ()
+),
+
 }

@@ -32,6 +32,38 @@ Builtin_Value::to_meaning(const Identifier& id) const
     return make<Constant>(share(id), value_);
 }
 
+struct Is_Null_Function : public Polyadic_Function
+{
+    Is_Null_Function() : Polyadic_Function(1) {}
+    Value call(Frame& args) override
+    {
+        return {args[0].is_null()};
+    }
+};
+struct Is_Bool_Function : public Polyadic_Function
+{
+    Is_Bool_Function() : Polyadic_Function(1) {}
+    Value call(Frame& args) override
+    {
+        return {args[0].is_bool()};
+    }
+};
+struct Is_Num_Function : public Polyadic_Function
+{
+    Is_Num_Function() : Polyadic_Function(1) {}
+    Value call(Frame& args) override
+    {
+        return {args[0].is_num()};
+    }
+};
+struct Is_Str_Function : public Polyadic_Function
+{
+    Is_Str_Function() : Polyadic_Function(1) {}
+    Value call(Frame& args) override
+    {
+        return {args[0].dycast<String>() != nullptr};
+    }
+};
 struct Is_List_Function : public Polyadic_Function
 {
     Is_List_Function() : Polyadic_Function(1) {}
@@ -510,6 +542,10 @@ builtin_namespace()
     {"null", make<Builtin_Value>(Value())},
     {"false", make<Builtin_Value>(Value(false))},
     {"true", make<Builtin_Value>(Value(true))},
+    {"is_null", make<Builtin_Value>(Value{make<Is_Null_Function>()})},
+    {"is_bool", make<Builtin_Value>(Value{make<Is_Bool_Function>()})},
+    {"is_num", make<Builtin_Value>(Value{make<Is_Num_Function>()})},
+    {"is_str", make<Builtin_Value>(Value{make<Is_Str_Function>()})},
     {"is_list", make<Builtin_Value>(Value{make<Is_List_Function>()})},
     {"bit", make<Builtin_Value>(Value{make<Bit_Function>()})},
     {"sqrt", make<Builtin_Value>(Value{make<Sqrt_Function>()})},
