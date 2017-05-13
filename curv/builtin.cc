@@ -72,6 +72,22 @@ struct Is_List_Function : public Polyadic_Function
         return {args[0].dycast<List>() != nullptr};
     }
 };
+struct Is_Fun_Function : public Polyadic_Function
+{
+    Is_Fun_Function() : Polyadic_Function(1) {}
+    Value call(Frame& args) override
+    {
+        return {args[0].dycast<Function>() != nullptr};
+    }
+};
+struct Is_Shape_Function : public Polyadic_Function
+{
+    Is_Shape_Function() : Polyadic_Function(1) {}
+    Value call(Frame& args) override
+    {
+        return {args[0].dycast<Shape>() != nullptr};
+    }
+};
 
 struct Bit_Function : public Polyadic_Function
 {
@@ -547,6 +563,9 @@ builtin_namespace()
     {"is_num", make<Builtin_Value>(Value{make<Is_Num_Function>()})},
     {"is_str", make<Builtin_Value>(Value{make<Is_Str_Function>()})},
     {"is_list", make<Builtin_Value>(Value{make<Is_List_Function>()})},
+    // TODO: is_record/is_module: two predicates or one?
+    {"is_fun", make<Builtin_Value>(Value{make<Is_Fun_Function>()})},
+    {"is_shape", make<Builtin_Value>(Value{make<Is_Shape_Function>()})},
     {"bit", make<Builtin_Value>(Value{make<Bit_Function>()})},
     {"sqrt", make<Builtin_Value>(Value{make<Sqrt_Function>()})},
     {"log", make<Builtin_Value>(Value{make<Log_Function>()})},

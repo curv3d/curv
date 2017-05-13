@@ -145,6 +145,7 @@ assert(
 
 assert(
     is_null null && is_bool false && is_num 42 && is_str "" && is_list ()
+    && is_fun(x->x) && is_shape(cube 1)
 ),
 
 }
