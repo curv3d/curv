@@ -1,0 +1,33 @@
+// Construct a 3D rotation matrix.
+// The resulting matrix is compatible with:
+// * Mathematica, the output of RotationMatrix[angle,axis]
+// * OpenSCAD, the input to multmatrix(M)
+// To rotate a vector, the convention is:
+//   dot(mat_rotate(a,axis), vector)
+mat_rotate (angle, v) = (
+    c = cos angle;
+    s = sin angle;
+    axis = normalize v;
+    t = (1 - c) * axis;
+    [
+     [
+      t[X] * axis[X] + c,
+      t[Y] * axis[X] - s * axis[Z],
+      t[Z] * axis[X] + s * axis[Y],
+     ],
+     [
+      t[X] * axis[Y] + s * axis[Z],
+      t[Y] * axis[Y] + c,
+      t[Z] * axis[Y] - s * axis[X],
+     ],
+     [
+      t[X] * axis[Z] - s * axis[Y],
+      t[Y] * axis[Z] + s * axis[X],
+      t[Z] * axis[Z] + c,
+     ]
+    ]
+);
+r(angle, axis, v) = dot(mat_rotate(angle, axis), v);
+r(30*deg, Yaxis,
+  r(-30*deg, Xaxis, [0,1,0])
+)
