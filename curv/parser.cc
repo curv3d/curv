@@ -1,6 +1,6 @@
 // Copyright Doug Moen 2016-2017.
 // Distributed under The MIT License.
-// See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
+// See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
 // I'm currently using a hand coded recursive descent parser.
 // * More flexible for trying out experimental syntax.

@@ -1,6 +1,6 @@
 // Copyright Doug Moen 2016-2017.
 // Distributed under The MIT License.
-// See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
+// See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
 #ifndef CURV_GL_CONTEXT_H
 #define CURV_GL_CONTEXT_H

@@ -142,7 +142,7 @@ a global `request_interrupt` variable and throw an error if it is true.
   <https://skaark.wordpress.com/2010/08/26/pthread_cancel-considered-harmful/>
   (This sounds like a platform bug. Did it ever get fixed?)
 * Boost has an API for interruptible threads. That's the closest to a de-facto
-  standard I can fine. Doesn't solve the problem of interrupting blocking
+  standard I can find. Doesn't solve the problem of interrupting blocking
   system calls (eg, those that do I/O), which pthread_cancel addresses.
   I/O is an issue for importing a resource using a URL.
 * Cancellation takes effect at cancel points: just before a foreign function

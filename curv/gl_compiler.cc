@@ -1,6 +1,6 @@
 // Copyright Doug Moen 2016-2017.
 // Distributed under The MIT License.
-// See accompanying file LICENSE.md or https://opensource.org/licenses/MIT
+// See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
 #include <aux/dtostr.h>
 #include <curv/gl_compiler.h>
