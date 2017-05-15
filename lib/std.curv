@@ -6,6 +6,9 @@ e = 2.71828182845904523536028747135266249775724709369995,
 X = 0,
 Y = 1,
 Z = 2,
+Xaxis = [1,0,0],
+Yaxis = [0,1,0],
+Zaxis = [0,0,1],
 
 ceil n = -floor(-n),
 trunc n = if (n >= 0) floor(n) else ceil(n),
@@ -33,6 +36,7 @@ dot(a,b) =
     [for(row=a)dot(row,b)]  // matrix*...
   else
     sum(a*b),               // vector*...
+normalize v = v / mag v,
 
 // phase angle of a vector, range tau/2 to -tau/2
 phase v = atan2(v'Y,v'X),
@@ -166,14 +170,37 @@ scale s shape = make_shape {
     is_2d : shape.is_2d,
     is_3d : shape.is_3d,
 },
-rotate a shape = make_shape { // 2D rotation around the Z axis
+// rotate angle shape -- 2D rotation around the Z axis
+// rotate (angle,axis) shape -- 3D rotation around specified axis
+rotate a shape =
+  if (is_num a)
+    make_shape { // 2D rotation around the Z axis
     dist p : shape.dist(cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X, p'Z),
     //dist p : shape.dist(cmul(p, cis(-a))),
     colour p : shape.colour(cos(a)*p'X+sin(a)*p'Y, cos(a)*p'Y-sin(a)*p'X, p'Z),
     bbox : shape.bbox, // TODO: fixme, see below
     is_2d : shape.is_2d,
     is_3d : shape.is_3d,
-},
+    }
+  else (
+    assert(is_list a && len a == 2);
+    angle = a[0];
+    axis = normalize(a[1]);
+    assert(shape.is_3d);
+    make_shape {
+      dist p : shape.dist <<
+        p * cos(angle)
+        - cross(axis, p) * sin(angle)
+        + axis * dot(axis, p * (1 - cos angle)),
+      colour p : shape.colour <<
+        p * cos(angle)
+        - cross(axis, p) * sin(angle)
+        + axis * dot(axis, p * (1 - cos angle)),
+      bbox : shape.bbox, // TODO: fixme, see below
+      is_2d : false,
+      is_3d : true,
+    }
+  ),
 /*
 points_box points = [min points, max points],
 
