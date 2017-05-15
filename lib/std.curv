@@ -126,7 +126,11 @@ complement s = make_shape {
 },
 _union2(s1,s2) = make_shape {
     dist p : min(s1.dist p, s2.dist p),
-    colour p : if (s1.dist p <= 0) s1.colour p else s2.colour p,
+    colour p : (
+        var d1 := s1.dist p;
+        var d2 := s2.dist p;
+        if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p
+    ),
     bbox : [min(s1.bbox'0, s2.bbox'0), max(s1.bbox'1, s2.bbox'1)],
     is_2d : s1.is_2d && s2.is_2d,
     is_3d : s1.is_3d && s2.is_3d,
