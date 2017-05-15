@@ -98,25 +98,25 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
 
     out <<
         "#ifdef GLSLVIEWER\n"
-        "uniform mat3 u_view2d;\n"
         "uniform vec3 u_eye3d;\n"
         "uniform vec3 u_centre3d;\n"
         "uniform vec3 u_up3d;\n"
         "#endif\n"
-        "float main_dist(vec3 " << dist_param << ", out vec4 colour)\n"
+        "vec4 map(vec3 " << dist_param << ")\n"
         "{\n";
 
     GL_Value result = shape.gl_dist(dist_param, *frame);
 
     if (shape.hasfield("colour")) {
         GL_Value colour = shape.gl_colour(dist_param, *frame);
-        out << "  colour = vec4(" << colour << ", 1.0);\n";
+        out << "  return vec4(" << result << ",";
+        out << colour << ");\n";
     } else {
-        out << "  colour = vec4(0.8, 0.8, 0.5, 1.0);\n";
+        out << "  return vec4(" << result << ",";
+        out << "0.8, 0.8, 0.5, 1.0);\n";
     }
 
     out <<
-        "  return " << result << ";\n"
         "}\n";
 
 #if 0
@@ -138,13 +138,6 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
     // with The MIT Licence.
     //    Copyright 2013 Inigo Quilez
     out <<
-       "vec4 map(in vec3 pos)\n"
-       "{\n"
-       "    vec4 colour;\n"
-       "    float dist = main_dist(pos, colour);\n"
-       "    return vec4(dist, colour.rgb);\n"
-       "}\n"
-
        "// ray marching. ro is ray origin, rd is ray direction (unit vector).\n"
        "// result is (t,r,g,b), where\n"
        "//  * t is the distance that we marched,\n"
@@ -155,22 +148,22 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
        "    float tmin = 1.0;\n"
        "    float tmax = 20.0;\n"
        "   \n"
-       "#if 0\n"
-       "    // bounding volume\n"
-       "    float tp1 = (0.0-ro.y)/rd.y; if( tp1>0.0 ) tmax = min( tmax, tp1 );\n"
-       "    float tp2 = (1.6-ro.y)/rd.y; if( tp2>0.0 ) { if( ro.y>1.6 ) tmin = max( tmin, tp2 );\n"
-       "                                                 else           tmax = min( tmax, tp2 ); }\n"
-       "#endif\n"
-       "    \n"
+       //"#if 0\n"
+       //"    // bounding volume\n"
+       //"    float tp1 = (0.0-ro.y)/rd.y; if( tp1>0.0 ) tmax = min( tmax, tp1 );\n"
+       //"    float tp2 = (1.6-ro.y)/rd.y; if( tp2>0.0 ) { if( ro.y>1.6 ) tmin = max( tmin, tp2 );\n"
+       //"                                                 else           tmax = min( tmax, tp2 ); }\n"
+       //"#endif\n"
+       //"    \n"
        "    float t = tmin;\n"
        "    vec3 c = vec3(-1.0,-1.0,-1.0);\n"
        "    for( int i=0; i<64; i++ )\n"
        "    {\n"
        "        float precis = 0.0005*t;\n"
        "        vec4 res = map( ro+rd*t );\n"
+       "        c = res.yzw;\n"
        "        if( res.x<precis || t>tmax ) break;\n"
        "        t += res.x;\n"
-       "        c = res.yzw;\n"
        "    }\n"
        "\n"
        "    if( t>tmax ) c=vec3(-1.0,-1.0,-1.0);\n"
@@ -184,14 +177,14 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
        "                      e.yyx*map( pos + e.yyx ).x + \n"
        "                      e.yxy*map( pos + e.yxy ).x + \n"
        "                      e.xxx*map( pos + e.xxx ).x );\n"
-       "    /*\n"
-       "    vec3 eps = vec3( 0.0005, 0.0, 0.0 );\n"
-       "    vec3 nor = vec3(\n"
-       "        map(pos+eps.xyy).x - map(pos-eps.xyy).x,\n"
-       "        map(pos+eps.yxy).x - map(pos-eps.yxy).x,\n"
-       "        map(pos+eps.yyx).x - map(pos-eps.yyx).x );\n"
-       "    return normalize(nor);\n"
-       "    */\n"
+       //"    /*\n"
+       //"    vec3 eps = vec3( 0.0005, 0.0, 0.0 );\n"
+       //"    vec3 nor = vec3(\n"
+       //"        map(pos+eps.xyy).x - map(pos-eps.xyy).x,\n"
+       //"        map(pos+eps.yxy).x - map(pos-eps.yxy).x,\n"
+       //"        map(pos+eps.yyx).x - map(pos-eps.yyx).x );\n"
+       //"    return normalize(nor);\n"
+       //"    */\n"
        "}\n"
 
        // Compute an ambient occlusion factor.
@@ -219,7 +212,7 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
        "// out: rgb colour\n"
        "vec3 render( in vec3 ro, in vec3 rd )\n"
        "{ \n"
-       "    vec3 col = vec3(0.7, 0.9, 1.0) +rd.y*0.8;\n"
+       "    vec3 col = vec3(0.7, 0.9, 1.0) +rd.z*0.8;\n"
        "    vec4 res = castRay(ro,rd);\n"
        "    float t = res.x;\n"
        "    vec3 c = res.yzw;\n"
@@ -234,11 +227,11 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
        "\n"
        "        // lighting        \n"
        "        float occ = calcAO( pos, nor );\n"
-       "        vec3  lig = normalize( vec3(-0.4, 0.7, -0.6) );\n"
-       "        float amb = clamp( 0.5+0.5*nor.y, 0.0, 1.0 );\n"
+       "        vec3  lig = normalize( vec3(-0.4, 0.6, 0.7) );\n"
+       "        float amb = clamp( 0.5+0.5*nor.z, 0.0, 1.0 );\n"
        "        float dif = clamp( dot( nor, lig ), 0.0, 1.0 );\n"
-       "        float bac = clamp( dot( nor, normalize(vec3(-lig.x,0.0,-lig.z))), 0.0, 1.0 )*clamp( 1.0-pos.y,0.0,1.0);\n"
-       "        float dom = smoothstep( -0.1, 0.1, ref.y );\n"
+       "        float bac = clamp( dot( nor, normalize(vec3(-lig.x,lig.y,0.0))), 0.0, 1.0 )*clamp( 1.0-pos.z,0.0,1.0);\n"
+       "        float dom = smoothstep( -0.1, 0.1, ref.z );\n"
        "        float fre = pow( clamp(1.0+dot(nor,rd),0.0,1.0), 2.0 );\n"
        "        float spe = pow(clamp( dot( ref, lig ), 0.0, 1.0 ),16.0);\n"
        "        \n"
@@ -249,9 +242,10 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
        "        lin += 0.50*dom*vec3(0.40,0.60,1.00)*occ;\n"
        "        lin += 0.50*bac*vec3(0.25,0.25,0.25)*occ;\n"
        "        lin += 0.25*fre*vec3(1.00,1.00,1.00)*occ;\n"
-       "        col = col*lin;\n"
+       "        vec3 iqcol = col*lin;\n"
        "\n"
-       "        col = mix( col, vec3(0.8,0.9,1.0), 1.0-exp( -0.0002*t*t*t ) );\n"
+       "        //col = mix( col, vec3(0.8,0.9,1.0), 1.0-exp( -0.0002*t*t*t ) );\n"
+       "        col = mix(col,iqcol, 0.5);\n"
        "    }\n"
        "\n"
        "    return vec3( clamp(col,0.0,1.0) );\n"
@@ -284,16 +278,14 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
        "    vec2 p = -1.0 + 2.0 * fragCoord.xy / iResolution.xy;\n"
        "    p.x *= iResolution.x/iResolution.y;\n"
        "\n"
-       "    float ctime = iGlobalTime;\n"
-       "    // camera\n"
-       "    //vec3 ro = 1.1*vec3(2.5*sin(0.25*ctime),1.0+1.0*cos(ctime*.13),2.5*cos(0.25*ctime));\n"
-       "    //vec3 ro = 1.1*vec3(0.0, 2.0, 2.5); // as above at t=0\n"
-       "    //vec3 ro = 1.1*vec3(0.0, 2.0, 2.5*u_view2d[0][0]);\n"
-       "    vec3 ro = u_eye3d;\n"
-       "    mat3 camera = look_at(ro, u_centre3d, u_up3d);\n"
-       "    vec3 rd = ray_direction(camera, p, 2.5);\n"
+       // convert from the OpenGL coordinate system to the Curv coord system.
+       "    vec3 eye = vec3(u_eye3d.x, -u_eye3d.z, u_eye3d.y);\n"
+       "    vec3 centre = vec3(u_centre3d.x, -u_centre3d.z, u_centre3d.y);\n"
+       "    vec3 up = vec3(u_up3d.x, -u_up3d.z, u_up3d.y);\n"
+       "    mat3 camera = look_at(eye, centre, up);\n"
+       "    vec3 dir = ray_direction(camera, p, 2.5);\n"
        "\n"
-       "    vec3 col = render( ro, rd );\n"
+       "    vec3 col = render( eye, dir );\n"
        "    \n"
        "    fragColor = vec4(col,1.0);\n"
        "}\n"
