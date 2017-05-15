@@ -148,4 +148,8 @@ assert(
     && is_fun(x->x) && is_shape(cube 1)
 ),
 
+assert(
+    transpose([1,1],[2,2]) == [[1,2],[1,2]]
+),
+
 }

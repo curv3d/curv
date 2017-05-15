@@ -25,7 +25,7 @@ product list = reduce(1, (x,y)->x*y) list,
 // linear algebra
 cross(p,q) = [p'Y*q'Z - p'Z-q'Y, p'Z*q'X - p'X*q'Z, p'X*q'Y - p'Y*q'X],
 identity(n) = [for(i=1..n) [for(j=1..n) if(i==j) 1 else 0]],
-transpose(a) = [for(i=0..<len a'0) [for(j=0..<len a) a'j'i]],
+transpose(a) = [for(i=0..<len(a'0)) [for(j=0..<len a) a'j'i]],
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
 dot(a,b) =
