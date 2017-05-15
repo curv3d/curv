@@ -1,3 +1,19 @@
+# May 2017 Language Review
+
+## For Loop Syntax
+The use of `=` in for loop syntax is inconsistent with its meaning as
+establishing a recursive definition.
+In a survey of popular programming languages, `in` is the most popular symbol
+(used by Python, C#, Swift, Rust), followed by `:` (Java, Javascript, C++).
+But `:` also conflicts with the meaning of `:` in record literals.
+So I will use `in`, which is also consistent with the Algol design principle
+of preferring words to punctuation where there is no defacto standard.
+
+## Range Syntax
+I now prefer `[1..10]` for constructing a list from a range.
+I think that `1..10` ought to be a generator, not a list value.
+One use case is `[1..3,5,8]`.
+
 # Late Feb Review, while implementing stdlib.
 
 ## Indexing
