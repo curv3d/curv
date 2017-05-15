@@ -15,7 +15,7 @@ Play with nvidia's CUDA sample, marching cubes. export STL? Benchmark to
 evaluate speed of this approach.
 
 -------------------------
-* fix memory leak: `sum = reduce(0,(x,y)->x+y)` leaks memory.
+* fix memory leak: `sum = reduce(0,(x,y)->x+y)` leaks memory. ideas/Leak.md
 
 syntax changes:
 * `in` not `=` in `for`
