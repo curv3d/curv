@@ -11,9 +11,9 @@
 
 namespace curv {
 
-class Phrase;
-class Environ;
-class Scanner;
+struct Phrase;
+struct Environ;
+struct Scanner;
 
 /// A Context describes the source code Location and call stack
 /// of a compile-time or run time error.

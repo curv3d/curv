@@ -20,7 +20,7 @@ force_ref(List& nonlocal, slot_t i, const Phrase& identifier, Frame& f)
 {
     Value& slot = nonlocal[i];
     if (slot.is_ref()) {
-        auto& ref {slot.get_ref_unsafe()};
+        auto& ref = slot.get_ref_unsafe();
         switch (ref.type_) {
         case Ref_Value::ty_thunk:
           {
@@ -50,7 +50,7 @@ force(List& nonlocal, slot_t i, Frame& f)
 {
     Value& slot = nonlocal[i];
     if (slot.is_ref()) {
-        auto& ref {slot.get_ref_unsafe()};
+        auto& ref = slot.get_ref_unsafe();
         switch (ref.type_) {
         case Ref_Value::ty_thunk:
           {

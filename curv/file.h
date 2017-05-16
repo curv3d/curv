@@ -9,7 +9,7 @@
 
 namespace curv {
 
-class Context;
+struct Context;
 
 /// A concrete Script class that represents a file.
 struct File_Script : public String_Script

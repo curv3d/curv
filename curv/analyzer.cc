@@ -667,7 +667,7 @@ Paren_Phrase::analyze(Environ& env) const
         return List_Expr::make(0, share(*this));
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
         auto& items = commas->args_;
-        auto list = List_Expr::make(items.size(), share(*this));
+        Shared<List_Expr> list = List_Expr::make(items.size(), share(*this));
         for (size_t i = 0; i < items.size(); ++i)
             (*list)[i] = analyze_op(*items[i].expr_, env);
         return list;
@@ -682,12 +682,12 @@ Bracket_Phrase::analyze(Environ& env) const
         return List_Expr::make(0, share(*this));
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
         auto& items = commas->args_;
-        auto list = List_Expr::make(items.size(), share(*this));
+        Shared<List_Expr> list = List_Expr::make(items.size(), share(*this));
         for (size_t i = 0; i < items.size(); ++i)
             (*list)[i] = analyze_op(*items[i].expr_, env);
         return list;
     } else {
-        auto list = List_Expr::make(1, share(*this));
+        Shared<List_Expr> list = List_Expr::make(1, share(*this));
         (*list)[0] = analyze_op(*body_, env);
         return list;
     }
@@ -752,22 +752,6 @@ Shared<Definition>
 Program_Phrase::analyze_def(Environ& env) const
 {
     return body_->analyze_def(env);
-}
-
-/// In the grammar, a <semicolons> phrase is one or more constituent phrases
-/// separated by semicolons. This function iterates over each constituent
-/// phrase.
-static inline void
-each_statement(const Phrase& phrase, std::function<void(const Phrase&)> func)
-{
-    if (dynamic_cast<const Empty_Phrase*>(&phrase))
-        return;
-    if (auto semis = dynamic_cast<const Semicolon_Phrase*>(&phrase)) {
-        for (auto& i : semis->args_)
-            func(*i.expr_);
-    } else {
-        func(phrase);
-    }
 }
 
 /// In the grammar, a <commas> phrase is one or more constituent phrases

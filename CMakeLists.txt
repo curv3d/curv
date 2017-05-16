@@ -20,6 +20,10 @@ set_property(TARGET curv libcurv tester PROPERTY CXX_STANDARD 14)
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror" )
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror" )
 
+if (APPLE)
+  set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/local/opt/readline/include" )
+endif (APPLE)
+
 add_custom_target(tests tester WORKING_DIRECTORY ../tests)
 add_dependencies(tests tester)
 

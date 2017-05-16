@@ -43,10 +43,7 @@ void At_GL_Arg::get_locations(std::list<Location>& locs) const
 Shared<const String>
 At_GL_Arg::rewrite_message(Shared<const String> msg) const
 {
-    if (arg_index_ < 0)
-        return stringify("argument: ", msg);
-    else
-        return stringify("argument[",arg_index_,"]: ", msg);
+    return stringify("argument[",arg_index_,"]: ", msg);
 }
 
 } // namespace curv

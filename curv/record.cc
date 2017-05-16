@@ -25,8 +25,8 @@ Record::print(std::ostream& out) const
 auto Record::operator==(const Record& rec) const
 -> bool
 {
-    auto i1{fields_.begin()};
-    auto i2{rec.fields_.begin()};
+    auto i1 = fields_.begin();
+    auto i2 = rec.fields_.begin();
     while (i1 != fields_.end()) {
         if (i2 == rec.fields_.end())
             return false;

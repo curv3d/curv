@@ -12,7 +12,7 @@
 
 namespace curv {
 
-class Context;
+struct Context;
 
 struct List_Data : public aux::Tail_Array_Data<Value>
 {

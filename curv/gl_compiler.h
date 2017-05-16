@@ -12,14 +12,14 @@
 
 namespace curv {
 
-class Shape;
-class Operation;
-class Call_Phrase;
-class Phrase;
-class List_Expr_Base;
+struct Shape;
+struct Operation;
+struct Call_Phrase;
+struct Phrase;
+struct List_Expr_Base;
 using List_Expr = aux::Tail_Array<List_Expr_Base>;
-class Lambda_Expr;
-class Context;
+struct Lambda_Expr;
+struct Context;
 
 /// The Geometry Compiler translates the CSG tree created by the evaluator
 /// into optimized GPU code for fast rendering on a graphics display.
@@ -142,7 +142,7 @@ struct GL_Compiler
     // gl_call stack, once we support nested function calls in dist functions.
 };
 
-class GL_Frame_Base;
+struct GL_Frame_Base;
 using GL_Frame = aux::Tail_Array<GL_Frame_Base>;
 
 /// A function call frame used by the Geometry Compiler.

@@ -100,12 +100,6 @@ private:
     uint64_t bits_;
     int64_t signed_bits_;
 
-    // This asserts that the binary encodings for quiet and signaling NaNs
-    // are as specified in IEEE 754-2008. Will fail on PA-RISC and MIPS.
-    #if defined __GNUC__
-    static_assert(__GCC_IEC_559 == 2, "IEEE 754-2008 floating point is required");
-    #endif
-
     // A double whose upper 16 bits is 0x7FFF is a quiet NaN on both Intel
     // and ARM. The low order 48 bits can store arbitrary data which the FPU
     // will ignore. (On PA-RISC and MIPS we'd use 0x7FF7 for a quiet NaN, but

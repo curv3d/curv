@@ -7,6 +7,7 @@
 
 #include <boost/intrusive_ptr.hpp>
 #include <cstdint>
+#include <cstdlib>
 #include <memory>
 #include <new>
 

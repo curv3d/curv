@@ -13,10 +13,10 @@
 
 namespace curv {
 
-class Definition;
-class Meaning;
-class Operation;
-class Environ;
+struct Definition;
+struct Meaning;
+struct Operation;
+struct Environ;
 
 /// Base class for a node in a syntax tree created by the parser.
 ///

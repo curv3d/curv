@@ -360,7 +360,7 @@ struct Len_Function : public Polyadic_Function
     Len_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
-        auto& list {arg_to_list(args[0], At_Arg(args))};
+        auto& list = arg_to_list(args[0], At_Arg(args));
         return {double(list.size())};
     }
 };
@@ -384,7 +384,7 @@ struct Make_Shape_Function : public Polyadic_Function
     Make_Shape_Function() : Polyadic_Function(1) {}
     Value call(Frame& f) override
     {
-        auto& record {arg_to_record(f[0], At_Arg(f))};
+        auto& record = arg_to_record(f[0], At_Arg(f));
         return {make<Shape>(share(record))};
     }
 };
@@ -406,7 +406,7 @@ struct Iterate_Function : public Polyadic_Function
         return final->call(val, f);
     }
     GL_Value gl_call_expr(
-        Operation& arg, const Call_Phrase* cp, GL_Frame& f) const
+        Operation& arg, const Call_Phrase* cp, GL_Frame& f) const override
     {
         // What I want to do here: the argument list is either an unevaluated
         // List_Expr or an evaluated List constant. Destructure the list into

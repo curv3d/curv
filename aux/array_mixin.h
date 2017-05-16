@@ -68,13 +68,13 @@ struct Array_Mixin : public Base
         if (i < Base::size())
             return Base::data()[i];
         else
-            throw std::out_of_range();
+            throw std::out_of_range("Array_Mixin::at()");
     }
     const_reference at(size_type i) const {
         if (i < Base::size())
             return Base::data()[i];
         else
-            throw std::out_of_range();
+            throw std::out_of_range("Array_Mixin::at()");
     }
 
     reference front() { return (*this)[0]; }

@@ -12,9 +12,9 @@
 
 namespace curv {
 
-class Frame_Base;
-class Call_Phrase;
-class System;
+struct Frame_Base;
+struct Call_Phrase;
+struct System;
 
 /// A Frame is an evaluation context.
 ///

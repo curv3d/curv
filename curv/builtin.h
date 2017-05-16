@@ -12,8 +12,8 @@
 
 namespace curv {
 
-class Meaning;
-class Identifier;
+struct Meaning;
+struct Identifier;
 
 struct Builtin : public aux::Shared_Base
 {

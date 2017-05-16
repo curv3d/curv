@@ -12,7 +12,7 @@
 
 namespace curv {
 
-class Context;
+struct Context;
 
 /// Virtual base class for Curv compile time and run time errors.
 ///

@@ -11,8 +11,8 @@
 
 namespace curv {
 
-class Polyadic_Function;
-class Context;
+struct Polyadic_Function;
+struct Context;
 
 // axis aligned bounding box
 struct BBox {

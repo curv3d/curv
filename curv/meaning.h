@@ -18,7 +18,7 @@
 
 namespace curv {
 
-class Operation;
+struct Operation;
 
 /// An abstract base class representing a semantically analyzed Phrase.
 struct Meaning : public aux::Shared_Base
@@ -110,7 +110,7 @@ struct Just_Expression : public Operation
     using Operation::Operation;
 
     // These functions are called during evaluation.
-    virtual Value eval(Frame&) const = 0;
+    virtual Value eval(Frame&) const override = 0;
     virtual void generate(Frame&, List_Builder&) const override;
 };
 
@@ -132,7 +132,7 @@ struct Just_Action : public Operation
 
     // These functions are called during evaluation.
     virtual void generate(Frame&, List_Builder&) const override;
-    virtual void exec(Frame&) const = 0;
+    virtual void exec(Frame&) const override = 0;
 };
 
 /// A Constant is an Expression whose value is known at compile time.
