@@ -2,6 +2,10 @@ all:
 	mkdir -p build
 	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..
 	cd build; make tests curv
+install:
+	mkdir -p build
+	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..
+	cd build; make install
 valgrind:
 	mkdir -p build
 	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..
