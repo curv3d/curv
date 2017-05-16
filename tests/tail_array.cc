@@ -15,7 +15,7 @@ using TA = aux::Tail_Array<A>;
 TEST(aux, tail_array)
 {
     unique_ptr<TA> a{TA::make(3)};
-    ASSERT_EQ(a->size(), 3);
+    ASSERT_EQ(a->size(), 3u);
 
     std::vector<double> v;
     v.push_back(0);

@@ -22,12 +22,12 @@ TEST(curv, list)
     (*x)[0] = Value{42.0};
     (*x)[1] = Value{y};
 
-    ASSERT_EQ(x->size(), 2);
+    ASSERT_EQ(x->size(), 2u);
     ASSERT_EQ((*x)[0], Value{42.0});
-    ASSERT_EQ(x->use_count, 1);
-    ASSERT_EQ(y->use_count, 2);
+    ASSERT_EQ(x->use_count, 1u);
+    ASSERT_EQ(y->use_count, 2u);
     x = nullptr;
-    ASSERT_EQ(y->use_count, 1);
+    ASSERT_EQ(y->use_count, 1u);
 
 /*
     auto s0 = make_string("foo");

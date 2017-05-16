@@ -1,15 +1,10 @@
 # Release 0.0: "Minimum Viable Product"
 
 What remains for MVP? (What do I want to show in my first big demo?)
-* mac port (for laptop demos)
-  * clean up source tree a bit
-  * upload to github
-  * create mac dev env
-  * download from github
-  * try to make it compile
 * standard library
 * Documentation
 * Meta: use https://opensource.guide/
+* PNG export?
 
 Play with nvidia's CUDA sample, marching cubes. export STL? Benchmark to
 evaluate speed of this approach.

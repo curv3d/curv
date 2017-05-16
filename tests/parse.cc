@@ -14,11 +14,11 @@ TEST(curv, parse)
     Location l1(*s1, t1);
     Location::Line_Info li1 = l1.line_info();
 
-    ASSERT_EQ(li1.start_line_num, 0);
-    ASSERT_EQ(li1.start_column_num, 2); //not 3
-    ASSERT_EQ(li1.end_line_num, 0);
-    ASSERT_EQ(li1.end_column_num, 2); //not 3
-    ASSERT_EQ(li1.start_line_begin, 0);
+    ASSERT_EQ(li1.start_line_num, 0u);
+    ASSERT_EQ(li1.start_column_num, 2u); //not 3
+    ASSERT_EQ(li1.end_line_num, 0u);
+    ASSERT_EQ(li1.end_column_num, 2u); //not 3
+    ASSERT_EQ(li1.start_line_begin, 0u);
 
     auto s2 = make<String_Script>(make_string(""),
         make_string("abc\ndef\n"));
@@ -28,9 +28,9 @@ TEST(curv, parse)
     Location l2(*s2, t2);
     Location::Line_Info li2 = l2.line_info();
 
-    ASSERT_EQ(li2.start_line_num, 1);
-    ASSERT_EQ(li2.start_column_num, 1);
-    ASSERT_EQ(li2.end_line_num, 1);
-    ASSERT_EQ(li2.end_column_num, 2);
-    ASSERT_EQ(li2.start_line_begin, 4);
+    ASSERT_EQ(li2.start_line_num, 1u);
+    ASSERT_EQ(li2.start_column_num, 1u);
+    ASSERT_EQ(li2.end_line_num, 1u);
+    ASSERT_EQ(li2.end_column_num, 2u);
+    ASSERT_EQ(li2.start_line_begin, 4u);
 }
