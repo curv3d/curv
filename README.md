@@ -15,4 +15,6 @@ Curv was originally inspired by OpenSCAD, but isn't compatible.
 
 The Curv project is in the initial development phase right now.
 
-The current dev environment is Ubuntu 16.04. A Mac port is planned.
+The primary dev environment is Ubuntu 16.04 + gcc 5.4 + nvidia GTX 1050 GPU.
+(The code is intended to be portable, but in practice there are portability
+issues that are only found by testing.) A macOS port also exists.

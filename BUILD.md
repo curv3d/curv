@@ -4,3 +4,4 @@
 * brew install cmake
 * brew install readline
 * brew install double-conversion
+* brew install boost
