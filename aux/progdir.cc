@@ -41,7 +41,7 @@ aux::progdir(const char *argv0)
         fs::path file(p, q);
         file /= argv0;
         if (fs::exists(fs::status(file)))
-            return file;
+            return file.parent_path();
         p = (q < pend ? q + 1 : pend);
     }
 
