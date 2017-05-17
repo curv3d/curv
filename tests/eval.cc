@@ -20,9 +20,8 @@ curv::System&
 make_system()
 {
     try {
-        static curv::System_Impl sys(
-            curv::make_string("../lib/std.curv"),
-            console);
+        static curv::System_Impl sys(console);
+        sys.load_library(curv::make_string("../lib/std.curv"));
         return sys;
     } catch (curv::Exception& e) {
         std::cerr << "ERROR: " << e << "\n";
