@@ -154,7 +154,7 @@ void export_curv(curv::Value value, const curv::Context&, std::ostream& out)
 {
     out << value << "\n";
 }
-void export_shadertoy(curv::Value value, const curv::Context& cx, std::ostream& out)
+void export_frag(curv::Value value, const curv::Context& cx, std::ostream& out)
 {
     auto shape = value.to<curv::Shape>(cx);
     curv::gl_compile(*shape, std::cout, cx);
@@ -292,13 +292,13 @@ const char help[] =
 "Live programming mode:\n"
 "  curv -l filename\n"
 "\n"
-"Batch mode (process a file, write results to stdout):\n"
+"Batch mode (evaluate a file, write resulting value to stdout):\n"
 "  curv [options] filename\n"
 "  -i script -- read definitions from <filename>, evaluate <script> as input\n"
 "  -o format -- output format:\n"
-"     curv -- default format, print values as Curv expressions\n"
-"     json -- print values as JSON expressions\n"
-"     shadertoy -- render shapes as a shadertoy.com image shader\n"
+"     curv -- Curv expression\n"
+"     json -- JSON expression\n"
+"     frag -- GLSL fragment shader (shape only, shadertoy.com compatible)\n"
 "  -D definition -- override an existing definition in <filename>\n"
 "  filename -- input file, a Curv script, optional if -i specified\n"
 "\n"
@@ -336,8 +336,8 @@ main(int argc, char** argv)
                 exporter = export_curv;
             else if (strcmp(optarg, "json") == 0)
                 exporter = export_json;
-            else if (strcmp(optarg, "shadertoy") == 0)
-                exporter = export_shadertoy;
+            else if (strcmp(optarg, "frag") == 0)
+                exporter = export_frag;
             else {
                 std::cerr << "-o: format " << optarg << " not supported\n"
                           << "Use " << argv0 << " --help for help.\n";
