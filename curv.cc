@@ -57,20 +57,22 @@ curv::System&
 make_system(const char* argv0)
 {
     try {
-        const char* CURV_STDLIB = getenv("CURV_STDLIB");
-        namespace fs = boost::filesystem;
-        curv::Shared<const curv::String> stdlib;
-        if (CURV_STDLIB != nullptr) {
-            if (CURV_STDLIB[0] != '\0')
-                stdlib = curv::make_string(CURV_STDLIB);
-            else
-                stdlib = nullptr;
-        } else {
-            fs::path stdlib_path = aux::progdir(argv0) / "../lib/std.curv";
-            stdlib = curv::make_string(stdlib_path.c_str());
-        }
         static curv::System_Impl sys(std::cerr);
-        sys.load_library(stdlib);
+        if (argv0 != nullptr) {
+            const char* CURV_STDLIB = getenv("CURV_STDLIB");
+            namespace fs = boost::filesystem;
+            curv::Shared<const curv::String> stdlib;
+            if (CURV_STDLIB != nullptr) {
+                if (CURV_STDLIB[0] != '\0')
+                    stdlib = curv::make_string(CURV_STDLIB);
+                else
+                    stdlib = nullptr;
+            } else {
+                fs::path stdlib_path = aux::progdir(argv0) / "../lib/std.curv";
+                stdlib = curv::make_string(stdlib_path.c_str());
+            }
+            sys.load_library(stdlib);
+        }
         return sys;
     } catch (curv::Exception& e) {
         std::cerr << "ERROR: " << e << "\n";
@@ -283,25 +285,16 @@ live_mode(curv::System& sys, const char* filename)
 }
 
 const char help[] =
-"Interactive CLI mode:\n"
-"  curv\n"
-"\n"
-"Live programming mode:\n"
-"  curv -l filename\n"
-"\n"
-"Batch mode (evaluate a file, write resulting value to stdout):\n"
-"  curv [options] filename\n"
-"  -o format -- output format:\n"
-"     curv -- Curv expression\n"
-"     json -- JSON expression\n"
-"     frag -- GLSL fragment shader (shape only, shadertoy.com compatible)\n"
-"  filename -- input file, a Curv script, optional if -i specified\n"
-"\n"
-"Display version:\n"
-"  curv --version\n"
-"\n"
-"Display this help information:\n"
-"  curv --help\n"
+"curv [options] [filename]\n"
+"-n -- don't use standard library\n"
+"-l -- live programming mode\n"
+"-o format -- output format:\n"
+"   curv -- Curv expression\n"
+"   json -- JSON expression\n"
+"   frag -- GLSL fragment shader (shape only, shadertoy.com compatible)\n"
+"--version -- display version.\n"
+"--help -- display this help information.\n"
+"filename -- input file, a Curv script. Interactive CLI if missing.\n"
 ;
 
 int
@@ -322,7 +315,7 @@ main(int argc, char** argv)
         nullptr;
     bool live = false;
     int opt;
-    while ((opt = getopt(argc, argv, ":o:l")) != -1) {
+    while ((opt = getopt(argc, argv, ":o:ln")) != -1) {
         switch (opt) {
         case 'o':
             if (strcmp(optarg, "curv") == 0)
@@ -339,6 +332,9 @@ main(int argc, char** argv)
             break;
         case 'l':
             live = true;
+            break;
+        case 'n':
+            argv0 = nullptr;
             break;
         case '?':
             std::cerr << "-" << (char)optopt << ": unknown option\n"
