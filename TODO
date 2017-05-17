@@ -4,7 +4,6 @@ What remains for MVP? (What do I want to show in my first big demo?)
 * standard library
 * Documentation
 * Meta: use https://opensource.guide/
-* PNG export?
 
 Play with nvidia's CUDA sample, marching cubes. export STL? Benchmark to
 evaluate speed of this approach.

@@ -259,6 +259,22 @@ void export_json(curv::Value value, const curv::Context& cx, std::ostream& out)
     else
         throw curv::Exception(cx, "value can't be converted to JSON");
 }
+void export_png(curv::Value value, const curv::Context& cx, std::ostream& out)
+{
+    auto shape = value.to<curv::Shape>(cx);
+    auto fragname = curv::stringify(",curv",getpid(),".frag");
+    auto pngname = curv::stringify(",curv",getpid(),".png");
+    std::ofstream f(fragname->c_str());
+    curv::gl_compile(*shape, f, cx);
+    f.close();
+    auto cmd = curv::stringify(
+        "glslViewer -o ",pngname->c_str()," --headless ",fragname->c_str());
+    system(cmd->c_str());
+    auto cmd2 = curv::stringify("cat ",pngname->c_str());
+    system(cmd2->c_str());
+    unlink(fragname->c_str());
+    unlink(pngname->c_str());
+}
 
 int
 live_mode(curv::System& sys, const char* filename)
@@ -306,6 +322,7 @@ const char help[] =
 "   curv -- Curv expression\n"
 "   json -- JSON expression\n"
 "   frag -- GLSL fragment shader (shape only, shadertoy.com compatible)\n"
+"   png -- PNG image file (shape only)\n"
 "--version -- display version.\n"
 "--help -- display this help information.\n"
 "filename -- input file, a Curv script. Interactive CLI if missing.\n"
@@ -341,6 +358,8 @@ main(int argc, char** argv)
                 exporter = export_json;
             else if (strcmp(optarg, "frag") == 0)
                 exporter = export_frag;
+            else if (strcmp(optarg, "png") == 0)
+                exporter = export_png;
             else {
                 std::cerr << "-o: format " << optarg << " not supported\n"
                           << "Use " << argv0 << " --help for help.\n";
