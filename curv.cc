@@ -41,6 +41,15 @@ struct CString_Script : public curv::Script
 {
     char* buffer_;
 
+    // buffer argument is a static string.
+    CString_Script(const char* name, const char* buffer)
+    :
+        curv::Script(curv::make_string(name), buffer, buffer + strlen(buffer)),
+        buffer_(nullptr)
+    {
+    }
+
+    // buffer argument is a heap string, allocated using malloc.
     CString_Script(const char* name, char* buffer)
     :
         curv::Script(curv::make_string(name), buffer, buffer + strlen(buffer)),
@@ -49,7 +58,7 @@ struct CString_Script : public curv::Script
 
     ~CString_Script()
     {
-        free(buffer_);
+        if (buffer_) free(buffer_);
     }
 };
 
@@ -292,6 +301,7 @@ const char help[] =
 "-n -- don't use standard library\n"
 "-u file -- use specified library; may be repeated\n"
 "-l -- live programming mode\n"
+"-e -- interpret filename argument as expression\n"
 "-o format -- output format:\n"
 "   curv -- Curv expression\n"
 "   json -- JSON expression\n"
@@ -319,9 +329,10 @@ main(int argc, char** argv)
         nullptr;
     bool live = false;
     std::list<const char*> libs;
+    bool expr = false;
 
     int opt;
-    while ((opt = getopt(argc, argv, ":o:lnu:")) != -1) {
+    while ((opt = getopt(argc, argv, ":o:lnu:e")) != -1) {
         switch (opt) {
         case 'o':
             if (strcmp(optarg, "curv") == 0)
@@ -344,6 +355,9 @@ main(int argc, char** argv)
             break;
         case 'u':
             libs.push_back(optarg);
+            break;
+        case 'e':
+            expr = true;
             break;
         case '?':
             std::cerr << "-" << (char)optopt << ": unknown option\n"
@@ -376,6 +390,11 @@ main(int argc, char** argv)
         }
     }
     if (filename == nullptr) {
+        if (expr) {
+            std::cerr << "missing expression argument\n"
+                      << "Use " << argv0 << " --help for help.\n";
+            return EXIT_FAILURE;
+        }
         if (exporter != nullptr || live) {
             std::cerr << "missing filename argument\n"
                       << "Use " << argv0 << " --help for help.\n";
@@ -396,11 +415,18 @@ main(int argc, char** argv)
 
     // batch mode
     try {
-        auto file = curv::make<curv::File_Script>(
-            curv::make_string(filename), curv::Context{});
-        curv::Program prog{*file, sys};
+        curv::Shared<curv::Script> script;
+        if (expr) {
+            script = curv::make<CString_Script>("", filename);
+        } else {
+            script = curv::make<curv::File_Script>(
+                curv::make_string(filename), curv::Context{});
+        }
+
+        curv::Program prog{*script, sys};
         prog.compile();
         auto value = prog.eval();
+
         if (exporter == nullptr) {
             std::cout << value << "\n";
             display_shape(value, true);
