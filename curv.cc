@@ -294,12 +294,10 @@ const char help[] =
 "\n"
 "Batch mode (evaluate a file, write resulting value to stdout):\n"
 "  curv [options] filename\n"
-"  -i script -- read definitions from <filename>, evaluate <script> as input\n"
 "  -o format -- output format:\n"
 "     curv -- Curv expression\n"
 "     json -- JSON expression\n"
 "     frag -- GLSL fragment shader (shape only, shadertoy.com compatible)\n"
-"  -D definition -- override an existing definition in <filename>\n"
 "  filename -- input file, a Curv script, optional if -i specified\n"
 "\n"
 "Display version:\n"
@@ -329,7 +327,7 @@ main(int argc, char** argv)
         nullptr;
     bool live = false;
     int opt;
-    while ((opt = getopt(argc, argv, ":i:o:D:l")) != -1) {
+    while ((opt = getopt(argc, argv, ":o:l")) != -1) {
         switch (opt) {
         case 'o':
             if (strcmp(optarg, "curv") == 0)
@@ -347,10 +345,6 @@ main(int argc, char** argv)
         case 'l':
             live = true;
             break;
-        case 'i':
-        case 'D':
-            std::cerr << "-" << (char)opt << " option not implemented yet\n";
-            return EXIT_FAILURE;
         case '?':
             std::cerr << "-" << (char)optopt << ": unknown option\n"
                      << "Use " << argv0 << " --help for help.\n";
