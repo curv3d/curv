@@ -102,7 +102,7 @@ display_shape(curv::Value value, bool block = false)
 }
 
 int
-interactive_mode(const char* argv0)
+interactive_mode(curv::System& sys)
 {
     // Catch keyboard interrupts, and set was_interrupted = true.
     // This is/will be used to interrupt the evaluator.
@@ -110,8 +110,6 @@ interactive_mode(const char* argv0)
     memset((void*)&interrupt_action, 0, sizeof(interrupt_action));
     interrupt_action.sa_handler = interrupt_handler;
     sigaction(SIGINT, &interrupt_action, nullptr);
-
-    curv::System& sys(make_system(argv0));
 
     // top level definitions, extended by typing 'id = expr'
     curv::Namespace names = sys.std_namespace();
@@ -249,10 +247,8 @@ void export_json(curv::Value value, const curv::Context& cx, std::ostream& out)
 }
 
 int
-live_mode(const char* argv0, const char* filename)
+live_mode(curv::System& sys, const char* filename)
 {
-    curv::System& sys(make_system(argv0));
-
     for (;;) {
         struct stat st;
         if (stat(filename, &st) != 0) {
@@ -311,8 +307,6 @@ const char help[] =
 int
 main(int argc, char** argv)
 {
-    if (argc < 2)
-        return interactive_mode(argv[0]);
     if (argc == 2 && strcmp(argv[1], "--help") == 0) {
         std::cout << help;
         return EXIT_SUCCESS;
@@ -322,7 +316,7 @@ main(int argc, char** argv)
         return EXIT_SUCCESS;
     }
 
-    // Parse live or batch mode arguments.
+    // Parse arguments.
     const char* argv0 = argv[0];
     void (*exporter)(curv::Value, const curv::Context&, std::ostream&) =
         nullptr;
@@ -358,29 +352,44 @@ main(int argc, char** argv)
             assert(0);
         }
     }
+    const char* filename;
     if (optind >= argc) {
-        std::cerr << "missing filename argument\n"
-                  << "Use " << argv0 << " --help for help.\n";
-        return EXIT_FAILURE;
-    }
-    if (argc - optind > 1) {
+        filename = nullptr;
+    } else if (argc - optind > 1) {
         std::cerr << "too many filename arguments\n"
                   << "Use " << argv0 << " --help for help.\n";
         return EXIT_FAILURE;
-    }
-    const char* filename = argv[optind];
+    } else
+        filename = argv[optind];
 
+    // Validate arguments
     if (live) {
         if (exporter) {
             std::cerr << "-l and -o flags are not compatible.\n"
                       << "Use " << argv0 << " --help for help.\n";
             return EXIT_FAILURE;
         }
-        return live_mode(argv0, filename);
+    }
+    if (filename == nullptr) {
+        if (exporter != nullptr || live) {
+            std::cerr << "missing filename argument\n"
+                      << "Use " << argv0 << " --help for help.\n";
+            return EXIT_FAILURE;
+        }
     }
 
-    // Execute batch mode.
+    // Interpret arguments
     curv::System& sys(make_system(argv0));
+
+    if (filename == nullptr) {
+        return interactive_mode(sys);
+    }
+
+    if (live) {
+        return live_mode(sys, filename);
+    }
+
+    // batch mode
     try {
         auto file = curv::make<curv::File_Script>(
             curv::make_string(filename), curv::Context{});
