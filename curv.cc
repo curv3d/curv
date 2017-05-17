@@ -54,7 +54,7 @@ struct CString_Script : public curv::Script
 };
 
 curv::System&
-make_system(const char* argv0)
+make_system(const char* argv0, std::list<const char*>& libs)
 {
     try {
         static curv::System_Impl sys(std::cerr);
@@ -72,6 +72,9 @@ make_system(const char* argv0)
                 stdlib = curv::make_string(stdlib_path.c_str());
             }
             sys.load_library(stdlib);
+        }
+        for (const char* lib : libs) {
+            sys.load_library(curv::make_string(lib));
         }
         return sys;
     } catch (curv::Exception& e) {
@@ -287,6 +290,7 @@ live_mode(curv::System& sys, const char* filename)
 const char help[] =
 "curv [options] [filename]\n"
 "-n -- don't use standard library\n"
+"-u file -- use specified library; may be repeated\n"
 "-l -- live programming mode\n"
 "-o format -- output format:\n"
 "   curv -- Curv expression\n"
@@ -314,8 +318,10 @@ main(int argc, char** argv)
     void (*exporter)(curv::Value, const curv::Context&, std::ostream&) =
         nullptr;
     bool live = false;
+    std::list<const char*> libs;
+
     int opt;
-    while ((opt = getopt(argc, argv, ":o:ln")) != -1) {
+    while ((opt = getopt(argc, argv, ":o:lnu:")) != -1) {
         switch (opt) {
         case 'o':
             if (strcmp(optarg, "curv") == 0)
@@ -335,6 +341,9 @@ main(int argc, char** argv)
             break;
         case 'n':
             argv0 = nullptr;
+            break;
+        case 'u':
+            libs.push_back(optarg);
             break;
         case '?':
             std::cerr << "-" << (char)optopt << ": unknown option\n"
@@ -375,7 +384,7 @@ main(int argc, char** argv)
     }
 
     // Interpret arguments
-    curv::System& sys(make_system(argv0));
+    curv::System& sys(make_system(argv0, libs));
 
     if (filename == nullptr) {
         return interactive_mode(sys);
