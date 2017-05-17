@@ -2,6 +2,7 @@
 // Distributed under The MIT License.
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
+#include <cctype>
 #include <aux/dtostr.h>
 #include <curv/gl_compiler.h>
 #include <curv/exception.h>
@@ -445,9 +446,17 @@ gl_arith_expr(GL_Frame& f, const Phrase& source,
 
     GL_Value result = f.gl.newvalue(rtype);
     f.gl.out <<"  "<<rtype<<" "<<result<<" = ";
-    gl_put_as(f, x, At_GL_Phrase(*xexpr.source_, &f), rtype);
-    f.gl.out << op;
-    gl_put_as(f, y, At_GL_Phrase(*yexpr.source_, &f), rtype);
+    if (isalpha(*op)) {
+        f.gl.out << op << "(";
+        gl_put_as(f, x, At_GL_Phrase(*xexpr.source_, &f), rtype);
+        f.gl.out << ",";
+        gl_put_as(f, y, At_GL_Phrase(*yexpr.source_, &f), rtype);
+        f.gl.out << ")";
+    } else {
+        gl_put_as(f, x, At_GL_Phrase(*xexpr.source_, &f), rtype);
+        f.gl.out << op;
+        gl_put_as(f, y, At_GL_Phrase(*yexpr.source_, &f), rtype);
+    }
     f.gl.out << ";\n";
     return result;
 }
@@ -470,6 +479,11 @@ GL_Value Multiply_Expr::gl_eval(GL_Frame& f) const
 GL_Value Divide_Expr::gl_eval(GL_Frame& f) const
 {
     return gl_arith_expr(f, *source_, *arg1_, "/", *arg2_);
+}
+
+GL_Value Power_Expr::gl_eval(GL_Frame& f) const
+{
+    return gl_arith_expr(f, *source_, *arg1_, "pow", *arg2_);
 }
 
 // Evaluate an expression to a constant at GL compile time,
