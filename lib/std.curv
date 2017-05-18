@@ -223,6 +223,60 @@ getBox2 (Rotate2 θ symbObj) =
                   ]
 */
 
+// The slice operators convert a 3D shape to a 2D shape
+// by extracting a planar cross section.
+slice_xy shape = make_shape {
+    dist p : shape.dist(p[X],p[Y],0),
+    colour p : shape.colour(p[X],p[Y],0),
+    bbox : [[shape.bbox[0][X],shape.bbox[0][Y],0],
+            [shape.bbox[1][X],shape.bbox[1][Y],0]],
+    is_2d : true,
+    is_3d : false,
+},
+slice_xz shape = make_shape {
+    dist p : shape.dist(p[X],0,p[Y]),
+    colour p : shape.colour(p[X],0,p[Y]),
+    bbox : [[shape.bbox[0][X],shape.bbox[0][Z],0],
+            [shape.bbox[1][X],shape.bbox[1][Z],0]],
+    is_2d : true,
+    is_3d : false,
+},
+slice_yz shape = make_shape {
+    dist p : shape.dist(0,p[X],p[Y]),
+    colour p : shape.colour(0,p[X],p[Y]),
+    bbox : [[shape.bbox[0][Y],shape.bbox[0][Z],0],
+            [shape.bbox[1][Y],shape.bbox[1][Z],0]],
+    is_2d : true,
+    is_3d : false,
+},
+
+// 'extrude' converts a 2D shape to a 3D shape, linearly extruding it along the
+// positive and negative Z axis by a distance of 'h'. The result is centered
+// on the XY plane with a height of 2*h. Similar to Autocad extrude and
+// OpenSCAD linear_extrude.
+//
+// The standard variant is cheaper, and has a mitred distance field.
+// The _eu variant is the same shape with a Euclidean distance field.
+extrude h shape = make_shape {
+    dist p : max(abs(p[Z]) - h, shape.dist(p[X],p[Y],0)),
+    bbox : [ [shape.bbox[0][X],shape.bbox[0][Y],-h],
+             [shape.bbox[1][X],shape.bbox[1][Y],+h] ],
+    is_2d : false,
+    is_3d : true,
+},
+extrude_eu h shape = make_shape {
+    dist p : (
+        var dz := abs(p[Z]) - h;
+        var dxy := shape.dist(p[X],p[Y],0);
+        //mag(max([dz,dxy],0)) + min(max(dz,dxy), 0)
+        mag([max(dz,0),max(dxy,0)]) + min(max(dz,dxy), 0)
+    ),
+    bbox : [ [shape.bbox[0][X],shape.bbox[0][Y],-h],
+             [shape.bbox[1][X],shape.bbox[1][Y],+h] ],
+    is_2d : false,
+    is_3d : true,
+},
+
 // Coloured Shapes
 colour rgb shape = make_shape {
     dist : shape.dist,
