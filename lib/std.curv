@@ -108,6 +108,14 @@ rect bbox = (
     },
   )
 ),
+// r1: major radius, from origin to centre of tube.
+// r2: minor radius, of the tube.
+torus (r1,r2) = make_shape {
+    dist p : mag( mag(p[X,Y]) - r1, p[Z]) - r2,
+    bbox : [[-r1-r2,-r1-r2,-r2],[r1+r2,r1+r2,r2]],
+    is_2d : false,
+    is_3d : true,
+},
 
 // boolean shape operations
 nothing = make_shape {
