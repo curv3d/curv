@@ -270,10 +270,15 @@ struct Max_Function : public Polyadic_Function
     Max_Function() : Polyadic_Function(1) {}
 
     struct Scalar_Op {
-        static double f(double x, double y) { return x > y ? x : y; }
+        static double f(double x, double y) {
+            // return NaN if either argument is NaN.
+            if (x >= y) return x;
+            if (x < y) return y;
+            return 0.0/0.0;
+        }
         static const char* name() { return "max"; }
         static Shared<const String> callstr(Value x, Value y) {
-            return stringify("max[",x,",",y,"]");
+            return stringify("max(",x,",",y,")");
         }
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
@@ -294,7 +299,6 @@ struct Max_Function : public Polyadic_Function
             throw Exception(At_GL_Arg(0, f),
                 "max: argument is not vec2 or vec3");
         return result;
-
     }
 };
 
@@ -303,10 +307,15 @@ struct Min_Function : public Polyadic_Function
     Min_Function() : Polyadic_Function(1) {}
 
     struct Scalar_Op {
-        static double f(double x, double y) { return x < y ? x : y; }
+        static double f(double x, double y) {
+            // return NaN if either argument is NaN
+            if (x <= y) return x;
+            if (x > y) return y;
+            return 0.0/0.0;
+        }
         static const char* name() { return "min"; }
         static Shared<const String> callstr(Value x, Value y) {
-            return stringify("min[",x,",",y,"]");
+            return stringify("min(",x,",",y,")");
         }
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;

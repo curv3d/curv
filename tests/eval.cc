@@ -445,8 +445,8 @@ TEST(curv, eval)
     SUCCESS("min()", "inf");
     SUCCESS("min(1,)", "1");
     SUCCESS("min(1,2)", "1");
-    SUCCESS("(max([1,100],[10,20]), max(20,[5,17,30]))",
-        "[[10,100],[20,20,30]]");
+    SUCCESS("(max([1,100],[10,20]), max(20,[5,17,30]), max([1,2],1.5))",
+        "[[10,100],[20,20,30],[1.5,2]]");
 
     SUCCESS("abs(-inf)", "inf");
     SUCCESS("abs(-2)", "2");
