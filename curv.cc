@@ -317,7 +317,7 @@ const char help[] =
 "-n -- don't use standard library\n"
 "-u file -- use specified library; may be repeated\n"
 "-l -- live programming mode\n"
-"-e -- interpret filename argument as expression\n"
+"-x -- interpret filename argument as expression\n"
 "-o format -- output format:\n"
 "   curv -- Curv expression\n"
 "   json -- JSON expression\n"
@@ -349,7 +349,7 @@ main(int argc, char** argv)
     bool expr = false;
 
     int opt;
-    while ((opt = getopt(argc, argv, ":o:lnu:e")) != -1) {
+    while ((opt = getopt(argc, argv, ":o:lnu:x")) != -1) {
         switch (opt) {
         case 'o':
             if (strcmp(optarg, "curv") == 0)
@@ -375,7 +375,7 @@ main(int argc, char** argv)
         case 'u':
             libs.push_back(optarg);
             break;
-        case 'e':
+        case 'x':
             expr = true;
             break;
         case '?':
