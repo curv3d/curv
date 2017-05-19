@@ -277,8 +277,12 @@ void export_png(curv::Value value, const curv::Context& cx, std::ostream& out)
 }
 
 int
-live_mode(curv::System& sys, const char* filename)
+live_mode(curv::System& sys, const char* editor, const char* filename)
 {
+    if (editor != nullptr) {
+        auto cmd = curv::stringify(editor, " ", filename);
+        system(cmd->c_str());
+    }
     for (;;) {
         struct stat st;
         if (stat(filename, &st) != 0) {
@@ -317,6 +321,7 @@ const char help[] =
 "-n -- don't use standard library\n"
 "-u file -- use specified library; may be repeated\n"
 "-l -- live programming mode\n"
+"-e -- run <$CURV_EDITOR filename> in live mode\n"
 "-x -- interpret filename argument as expression\n"
 "-o format -- output format:\n"
 "   curv -- Curv expression\n"
@@ -347,9 +352,10 @@ main(int argc, char** argv)
     bool live = false;
     std::list<const char*> libs;
     bool expr = false;
+    const char* editor = nullptr;
 
     int opt;
-    while ((opt = getopt(argc, argv, ":o:lnu:x")) != -1) {
+    while ((opt = getopt(argc, argv, ":o:lnu:xe")) != -1) {
         switch (opt) {
         case 'o':
             if (strcmp(optarg, "curv") == 0)
@@ -377,6 +383,14 @@ main(int argc, char** argv)
             break;
         case 'x':
             expr = true;
+            break;
+        case 'e':
+            editor = getenv("CURV_EDITOR");
+            if (editor == nullptr) {
+                std::cerr << "-e specified but $CURV_EDITOR not defined\n"
+                         << "Use " << argv0 << " --help for help.\n";
+                return EXIT_FAILURE;
+            }
             break;
         case '?':
             std::cerr << "-" << (char)optopt << ": unknown option\n"
@@ -420,6 +434,11 @@ main(int argc, char** argv)
             return EXIT_FAILURE;
         }
     }
+    if (editor && !live) {
+        std::cerr << "-e flag specified without -l flag.\n"
+                  << "Use " << argv0 << " --help for help.\n";
+        return EXIT_FAILURE;
+    }
 
     // Interpret arguments
     curv::System& sys(make_system(argv0, libs));
@@ -429,7 +448,7 @@ main(int argc, char** argv)
     }
 
     if (live) {
-        return live_mode(sys, filename);
+        return live_mode(sys, editor, filename);
     }
 
     // batch mode
