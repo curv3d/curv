@@ -2,6 +2,7 @@
 
 What remains for MVP? (What do I want to show in my first big demo?)
 * standard library
+  * support `dot` in GL
 * Documentation
 * Meta: use https://opensource.guide/
 
@@ -9,18 +10,38 @@ Play with nvidia's CUDA sample, marching cubes. export STL? Benchmark to
 evaluate speed of this approach.
 
 -------------------------
+`make_shape`
+* check is_2d and is_3d fields, which default to false.
+* bbox defaults to everything
+
+GL:
+* max/min are variadic, accept vector arguments
+* dot
+* all math operations that are built-in SPIR-V operators
+* maybe: mandelbrot iteration that doesn't crash the MacBook Air.
+* `if_fast_case (C) E1 else E2`: E1 and E2 are equivalent, but E1 is faster
+  to compute if C is true. During GL compile, if C is a compile time constant,
+  pick E1 or E2, otherwise just emit E2.
+
+BUGS:
 * fix memory leak: `sum = reduce(0,(x,y)->x+y)` leaks memory. ideas/Leak.md
+* `f << [1,2,3]` is not a function call
+
+struct:
+* `is_struct` is true for records, modules, shapes
+* curv::Struct is a subclass of curv::Ref_Value
+* `make_shape` accepts a Struct as an argument
+* `dom` maps a struct to a list of keys; maps a list to a range of indexes.
 
 syntax changes:
 * `in` not `=` in `for`
 * a..b is a generator
+* remove a'b
+* permit a choice of `,` or `;` in `{...}` constructors.
 
-* 3D support
-  * 3D viewer
-    * use bbox to ensure entire scene is visible?
-  * make_shape checks is_2d and is_3d fields, which default to false.
-
-BUG: `f << [1,2,3]` is not a function call
+3D viewer
+* use bbox to ensure entire scene is visible
+* zoom in on `cube 0.25`. WTF?
 
 Define regular_polygon(n). See poly.curv.
 

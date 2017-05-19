@@ -14,8 +14,21 @@ Two questions:
   * If the function is a SPIR-V primitive math operation, indicating that
     it has special hardware support on GPUs. Eg, `dot`.
 * Some Curv primitive math operations are written as idioms that compile into
-  special internal operators. Eg, (a*b)+c compiles to FMA(a,b,c),
+  special internal operators. Eg, `(a*b)+c` compiles to FMA(a,b,c),
   e^x compiles to EXP(x).
+
+A parsimonious math API:
+Instead of providing a large number of 'special case' numeric functions
+like expm1(x) == e^x-1, you instead write 'natural' code and the compiler
+will detect common patterns and rewrite them into more efficient/accurate
+code. For example:
+* e^x -> exp(x)
+* e^x-1 -> expm1(x)
+* 1/sqrt(x) -> invertsqrt(x) // GLSL
+* log(x,10) -> log10(x)
+* log(x,2) -> log2(x)
+* log(1+x) -> log1p(x)
+* atan(x/y) -> atan2(x,y)
 
 ## Math Library API
 
@@ -58,7 +71,7 @@ Complex numbers.
   * sqrt(z) * conj(z) == mag(z)
   * To convert a real function to a positive value, you can square it.
     The analog for complex functions is to multiply by the conjugate.
-* from polar coordinates: r*cis(theta)
+* from polar coordinates: `r*cis(theta)`
 * z+w
 * z-w
 * cmul([a,b],[c,d]) = [a*c - b*d, b*c + a*d];
