@@ -3,6 +3,7 @@
 What remains for MVP? (What do I want to show in my first big demo?)
 * standard library
   * support `dot` in GL
+  * max/min are variadic, accept vector arguments
 * Documentation
 * Meta: use https://opensource.guide/
 
@@ -22,6 +23,14 @@ GL:
 * `if_fast_case (C) E1 else E2`: E1 and E2 are equivalent, but E1 is faster
   to compute if C is true. During GL compile, if C is a compile time constant,
   pick E1 or E2, otherwise just emit E2.
+
+glslViewer:
+* HOME key resets view
+
+curv:
+* in `curv -le`, if you quit the editor then curv exits (first, glslViewer is
+  terminated and the temp file is deleted).
+* if you close glslViewer, then compute another shape, the window reopens
 
 BUGS:
 * fix memory leak: `sum = reduce(0,(x,y)->x+y)` leaks memory. ideas/Leak.md
