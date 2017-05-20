@@ -1,1 +1,36 @@
-rotate(tau/8) << cube .25
+// cheap; mitred distance field
+box b = make_shape {
+    dist p : max(abs p - b),
+    bbox : [-b,b],
+    is_3d : true,
+    is_2d : false,
+};
+// more expensive; euclidean distance field
+box_eu b = make_shape {
+    dist p : (
+        var d := abs p - b;
+        //min(max d, 0) + mag(max(d,0))
+        min(max d, 0) + mag(max(d[X],0),max(d[Y],0),max(d[Z],0))
+    ),
+    bbox : [-b,b],
+    is_3d : true,
+    is_2d : false,
+};
+
+rect b = make_shape {
+    dist p : max(abs(p[X,Y]) - b),
+    bbox : [[-b[X],-b[Y],0],[b[X],b[Y],0]],
+    is_2d : true,
+    is_3d : false,
+};
+rect_eu b = make_shape {
+    dist p : (
+        var d := abs(p[X,Y]) - b;
+        //min(max d, 0) + mag(max(d,0))
+        min(max d, 0) + mag(max(d[X],0),max(d[Y],0))
+    ),
+    bbox : [[-b[X],-b[Y],0],[b[X],b[Y],0]],
+    is_2d : true,
+    is_3d : false,
+};
+rect_eu(2,1.5) >> distance_field

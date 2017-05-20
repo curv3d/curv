@@ -1,0 +1,36 @@
+/*
+http://www.fractalforums.com/new-theories-and-research/not-fractal-but-funny-trefoil-knot-routine/
+
+------------------------
+// we modify copies of the variables not the variables ;)
+x = Vec.x; y = Vec.y; z = Vec.z;
+// try any + or - integer for a & b. Neg values change the handedness
+// If you are greedy use only b and set a = 1. Less user friendly btw
+Mobius = (a + b/polyfoldOrder) * atan2(y,x)
+x := hypot(x,y)-R1 // from now on we will not use y anymore - act on z-rho section
+Rotate(x,z,Mobius)
+// now do the magic polyfold. But polyfoldOrder must be integer too! 
+// I stole this transform from PolygonalBarnsleym in sam.ufm ! It generates those kaleidoscope things with ease
+Angle = (pi/2 - atan2(x,z)) * polyfoldOrder / twopi
+Angle = roundInt(angle)
+Angle = Angle / polyfoldOrder * twopi
+Rotate(x,z,Angle)
+x = x - R3
+// final steps now ... dun dun dunnn ...
+Mag = hypot(x,z) - R2
+// Done :D
+return Mag;
+
+// Replace hypot() with max() or min() and see what happens ... ;)
+
+// My settings R1 = 2 , R2 = .4 , R3 = .5
+// trefoil is of order 2, then a = b = 1 (the simplest knot)
+*/
+
+knot = make_shape {
+    dist p : (
+    ),
+    bbox : everything.bbox,
+    is_3d : true,
+    is_2d : false,
+};

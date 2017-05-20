@@ -34,5 +34,21 @@ dpe = pellipse(1,2) >> distance_field;
 //
 // The Normal bisects the angle between the lines to the foci (wikipedia)
 
-ellipse(2,1) >> distance_field
+//ellipse(2,1) >> distance_field
 //circle 1 >> distance_field
+
+// IQ ellipsoid
+/*
+float sdEllipsoid( in vec3 p, in vec3 r )
+{
+    return (length( p/r ) - 1.0) * min(min(r.x,r.y),r.z);
+}
+*/
+// this is a unit sphere scaled by `r`. non-euclidean DF.
+ellipsoid r = make_shape {
+    dist p : (mag(p/r) - 1) * min r,
+    bbox : everything.bbox,
+    is_3d : true,
+    is_2d : false,
+};
+ellipsoid(1,2,3) >> slice_xz >> distance_field

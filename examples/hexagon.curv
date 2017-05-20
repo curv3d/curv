@@ -1,0 +1,70 @@
+/* from: mercury.sexy:
+// Hexagonal prism, circumcircle variant
+float fHexagonCircumcircle(vec3 p, vec2 h) {
+	vec3 q = abs(p);
+	return max(q.y - h.y, max(q.x*sqrt(3)*0.5 + q.z*0.5, q.z) - h.x);
+	//this is mathematically equivalent to this line, but less efficient:
+	//return max(q.y - h.y, max(dot(vec2(cos(PI/3), sin(PI/3)), q.zx), q.z) - h.x);
+}
+// Hexagonal prism, incircle variant
+float fHexagonIncircle(vec3 p, vec2 h) {
+	return fHexagonCircumcircle(p, vec2(h.x*sqrt(3)*0.5, h.y));
+}
+*/
+/* from: Inigo Quilez:
+float sdHexPrism( vec3 p, vec2 h )
+{
+    vec3 q = abs(p);
+#if 0
+    // Same as the optimized HG implementation. Cost: 2* 3+ 2max
+    return max(q.z-h.y,max((q.x*0.866025+q.y*0.5),q.y)-h.x);
+#else
+    // How is this different? Cost: 2* 4+ 4max length
+    float d1 = q.z-h.y;
+    float d2 = max((q.x*0.866025+q.y*0.5),q.y)-h.x;
+    return length(max(vec2(d1,d2),0.0)) + min(max(d1,d2), 0.);
+#endif
+}
+*/
+
+// Hexagonal prism, circumcircle HG variant
+hex_prism(r,h) = make_shape {
+    dist p : (
+        var q := abs p;
+        max(q[Z] - h, max(q[X]*sqrt(3)*0.5 + q[Y]*0.5, q[Y]) - r)
+    ),
+    bbox : everything.bbox,
+    is_2d : false,
+    is_3d : true,
+};
+//hex_prism(1,1)
+
+// Same shape as hex_prism, but a more euclidean external distance field.
+// xy plane distance field is mitred, as for hexagon, but xz plane distance
+// field is euclidean.
+iq_hex_prism(r,h) = make_shape {
+    dist p : (
+        var q := abs p;
+        var d1 := q[Z] - h;
+        var d2 := max(q[X]*sqrt(3)*0.5 + q[Y]*0.5, q[Y]) - r;
+        //mag(max([d1,d2],0)) + min(max(d1,d2), 0)
+        mag([max(d1,0),max(d2,0)]) + min(max(d1,d2), 0)
+    ),
+    bbox : everything.bbox,
+    is_2d : false,
+    is_3d : true,
+};
+
+// Hexagon, circumcircle variant, mitred distance field.
+hexagon(r) = make_shape {
+    dist p : (
+        var q := abs p;
+        max(q[X]*sqrt(3)*0.5 + q[Y]*0.5, q[Y]) - r
+    ),
+    bbox : everything.bbox,
+    is_2d : true,
+    is_3d : false,
+};
+//hexagon 1
+
+extrude_eu 1 (hexagon 1) >> slice_xz >> distance_field

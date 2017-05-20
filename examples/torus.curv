@@ -1,0 +1,38 @@
+// r1: major radius, from origin to centre of tube.
+// r2: minor radius, of the tube.
+torus (r1,r2) = make_shape {
+    dist p : mag( mag(p[X,Y]) - r1, p[Z]) - r2,
+    bbox : [[-r1-r2,-r1-r2,-r2],[r1+r2,r1+r2,r2]],
+    is_2d : false,
+    is_3d : true,
+};
+
+// Generalized torus, whose tubular cross section is given by 'shape',
+// and 'r' is the major radius.
+// Equivalent to rotate_extrude in OpenSCAD, with a different interface.
+gtorus r shape = make_shape {
+    dist p : shape.dist(mag(p[X,Y]) - r, p[Z], 0),
+    bbox : everything.bbox,
+    is_2d : false,
+    is_3d : true,
+};
+//gtorus 2 (circle 1)
+//gtorus 2 (square 1)
+
+ptorus shape1 shape2 = make_shape {
+    dist p : shape2.dist( shape1.dist(p[X],p[Y],0), p[Z], 0 ),
+    bbox : everything.bbox,
+    is_2d : false,
+    is_3d : true,
+};
+ptorus (square 3) (circle 1)
+
+/*
+wtf sh shx shy shz = make_shape {
+    dist p : sh.dist( shx.dist(p), shy.dist(p), shz.dist(p) ),
+    bbox : everything.bbox,
+    is_2d : false,
+    is_3d : true,
+};
+wtf (sphere 2) (cube 1) (cube 1) (cube 1) >> scale .5
+*/
