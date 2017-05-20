@@ -325,12 +325,16 @@ struct Min_Function : public Polyadic_Function
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
-        auto arg = f[0];
-        if (arg.type != GL_Type::Vec2)
-            throw Exception(At_GL_Arg(0, f),
-                "min: argument is not a vec2");
         auto result = f.gl.newvalue(GL_Type::Num);
-        f.gl.out << "  float "<<result<<" = min("<<arg<<".x,"<<arg<<".y);\n";
+        f.gl.out << "  float "<<result<<" = ";
+        auto arg = f[0];
+        if (arg.type == GL_Type::Vec2)
+            f.gl.out << "min("<<arg<<".x,"<<arg<<".y);\n";
+        else if (arg.type == GL_Type::Vec3)
+            f.gl.out << "min(min("<<arg<<".x,"<<arg<<".y),"<<arg<<".z);\n";
+        else
+            throw Exception(At_GL_Arg(0, f),
+                "min: argument is not vec2 or vec3");
         return result;
     }
 };
