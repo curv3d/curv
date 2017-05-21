@@ -11,6 +11,10 @@ Play with nvidia's CUDA sample, marching cubes. export STL? Benchmark to
 evaluate speed of this approach.
 
 -------------------------
+source reorganization:
+* Split curv.cc into multiple source files, in subdirectory cmd.
+* Get rid of aux, move stuff into cmd or curv.
+
 `make_shape`
 * check is_2d and is_3d fields, which default to false.
 * bbox defaults to everything
@@ -26,6 +30,16 @@ GL:
 
 glslViewer:
 * HOME key resets view
+
+library:
+* regular polytopes are specified using incircle radius.
+  `circumscale r RP` scales a regular polytope RP to specified circumcircle
+  or circumsphere radius r. RP stores its bounding circle/sphere radius.
+* Use HSV colour space? Impact on image import? Colours at least need to be
+  linear, not gamma-corrected, for colour model.
+* `lib` is a struct for accessing library files in /usr/local/lib/curv.
+  `lib.foo` loads /usr/local/lib/curv/foo.curv.
+* `use(lib.foo)`
 
 curv:
 * in `curv -le`, if you quit the editor then curv exits (first, glslViewer is
