@@ -29,13 +29,6 @@ product list = reduce(1, (x,y)->x*y) list,
 cross(p,q) = [p'Y*q'Z - p'Z-q'Y, p'Z*q'X - p'X*q'Z, p'X*q'Y - p'Y*q'X],
 identity(n) = [for(i=1..n) [for(j=1..n) if(i==j) 1 else 0]],
 transpose(a) = [for(i=0..<len(a'0)) [for(j=0..<len a) a'j'i]],
-// Generalized dot product that includes vector dot product and matrix product.
-// Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
-dot(a,b) =
-  if (len a > 0 && is_list(a'0))
-    [for(row=a)dot(row,b)]  // matrix*...
-  else
-    sum(a*b),               // vector*...
 normalize v = v / mag v,
 
 // phase angle of a vector, range tau/2 to -tau/2

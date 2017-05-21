@@ -20,6 +20,7 @@
 #include <curv/gl_context.h>
 #include <curv/array_op.h>
 #include <curv/analyzer.h>
+#include <curv/math.h>
 
 using namespace std;
 using namespace boost::math::double_constants;
@@ -339,6 +340,29 @@ struct Min_Function : public Polyadic_Function
     }
 };
 
+// Generalized dot product that includes vector dot product and matrix product.
+// Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
+struct Dot_Function : public Polyadic_Function
+{
+    Dot_Function() : Polyadic_Function(2) {}
+    Value call(Frame& args) override
+    {
+        return dot(args[0], args[1], At_Frame(&args));
+    }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        auto a = f[0];
+        auto b = f[1];
+        if (gl_type_count(a.type) < 2)
+            throw Exception(At_GL_Arg(0, f), "dot: argument is not a vector");
+        if (a.type != b.type)
+            throw Exception(At_GL_Arg(1, f), "dot: arguments have different types");
+        auto result = f.gl.newvalue(GL_Type::Num);
+        f.gl.out << "  float "<<result<<" = dot("<<a<<","<<b<<");\n";
+        return result;
+    }
+};
+
 struct Mag_Function : public Polyadic_Function
 {
     Mag_Function() : Polyadic_Function(1) {}
@@ -589,6 +613,7 @@ builtin_namespace()
     {"atan2", make<Builtin_Value>(Value{make<Atan2_Function>()})},
     {"max", make<Builtin_Value>(Value{make<Max_Function>()})},
     {"min", make<Builtin_Value>(Value{make<Min_Function>()})},
+    {"dot", make<Builtin_Value>(Value{make<Dot_Function>()})},
     {"mag", make<Builtin_Value>(Value{make<Mag_Function>()})},
     {"len", make<Builtin_Value>(Value{make<Len_Function>()})},
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},

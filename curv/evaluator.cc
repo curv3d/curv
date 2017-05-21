@@ -14,6 +14,7 @@
 #include <curv/context.h>
 #include <curv/array_op.h>
 #include <cmath>
+#include <curv/math.h>
 
 namespace curv {
 
@@ -189,18 +190,9 @@ Negative_Expr::eval(Frame& f) const
 Value
 Add_Expr::eval(Frame& f) const
 {
-    struct Scalar_Op {
-        static double f(double x, double y) { return x + y; }
-        static const char* name() { return "+"; }
-        static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x,"+",y);
-        }
-    };
-    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
-
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return array_op.op(a,b, At_Phrase(*source_, &f));
+    return add(a,b, At_Phrase(*source_, &f));
 }
 Value
 Subtract_Expr::eval(Frame& f) const
@@ -220,17 +212,9 @@ Subtract_Expr::eval(Frame& f) const
 Value
 Multiply_Expr::eval(Frame& f) const
 {
-    struct Scalar_Op {
-        static double f(double x, double y) { return x * y; }
-        static const char* name() { return "*"; }
-        static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x,"*",y);
-        }
-    };
-    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return array_op.op(a,b, At_Phrase(*source_, &f));
+    return multiply(a,b, At_Phrase(*source_, &f));
 }
 Value
 Divide_Expr::eval(Frame& f) const
