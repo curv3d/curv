@@ -1,4 +1,7 @@
+phi = sqrt 5 * .5 + .5;
+
 // 'r' is the radius of a sphere inscribed inside the octahedron.
+// Mitred distance field.
 octahedron r = (
     v0 = normalize(1,1,1);
     v1 = normalize(-1,1,1);
@@ -18,7 +21,66 @@ octahedron r = (
         bbox : everything.bbox,
     }
 );
-difference(
-    octahedron 1,
-    sphere 1.1,
+// 'r' is the radius of a sphere inscribed inside the dodecahedron.
+// Mitred distance field. Pointy side down.
+dodecahedron r = (
+    v0 = normalize(0, phi, 1);
+    v1 = normalize(0, -phi, 1);
+    v2 = normalize(1, 0, phi);
+    v3 = normalize(-1, 0, phi);
+    v4 = normalize(phi, 1, 0);
+    v5 = normalize(-phi, 1, 0);
+    make_shape {
+        dist p : (
+            max (
+                abs(dot(p, v0)),
+                abs(dot(p, v1)),
+                abs(dot(p, v2)),
+                abs(dot(p, v3)),
+                abs(dot(p, v4)),
+                abs(dot(p, v5)),
+            ) - r
+        ),
+        is_3d : true,
+        is_2d : false,
+        bbox : everything.bbox,
+    }
+);
+icosahedron r = (
+    v0 = normalize(1,1,1);
+    v1 = normalize(-1,1,1);
+    v2 = normalize(1,-1,1);
+    v3 = normalize(1,1,-1);
+    v4 = normalize(0, +1, phi+1);
+    v5 = normalize(0, -1, phi+1);
+    v6 = normalize(+phi+1, 0, 1);
+    v7 = normalize(-phi-1, 0, 1);
+    v8 = normalize(+1, phi+1, 0);
+    v9 = normalize(-1, phi+1, 0);
+    make_shape {
+        dist p : (
+            max (
+                abs(dot(p, v0)),
+                abs(dot(p, v1)),
+                abs(dot(p, v2)),
+                abs(dot(p, v3)),
+                abs(dot(p, v4)),
+                abs(dot(p, v5)),
+                abs(dot(p, v6)),
+                abs(dot(p, v7)),
+                abs(dot(p, v8)),
+                abs(dot(p, v9)),
+            ) - r
+        ),
+        is_3d : true,
+        is_2d : false,
+        bbox : everything.bbox,
+    }
+);
+union (
+    difference(
+        icosahedron 1,
+        sphere 1.05,
+    ),
+    colour red (cube .5),
 )

@@ -1,6 +1,6 @@
 // http://blog.hvidtfeldts.net/index.php/2011/08/distance-estimated-3d-fractals-iii-folding-space/
 
-Iterations = 3;
+Iterations = 2;
 Offset = 0;
 Scale = 2;
 tet = make_shape {
@@ -39,4 +39,64 @@ float DE(vec3 z)
 }
 */
 
-tet
+/*
+float DE(vec3 z)
+{
+    vec3 a1 = vec3(1,1,1);
+    vec3 a2 = vec3(-1,-1,1);
+    vec3 a3 = vec3(1,-1,-1);
+    vec3 a4 = vec3(-1,1,-1);
+    vec3 c;
+    int n = 0;
+    float dist, d;
+    while (n < Iterations) {
+         c = a1; dist = length(z-a1);
+            d = length(z-a2); if (d < dist) { c = a2; dist=d; }
+         d = length(z-a3); if (d < dist) { c = a3; dist=d; }
+         d = length(z-a4); if (d < dist) { c = a4; dist=d; }
+        z = Scale*z-c*(Scale-1.0);
+        n++;
+    }
+
+    return length(z) * pow(Scale, float(-n));
+}
+*/
+tet2 = make_shape {
+    dist p : (
+        // vertices of a tetrahedron
+        var a1 := [1,1,1];
+        var a2 := [-1,-1,1];
+        var a3 := [1,-1,-1];
+        var a4 := [-1,1,-1];
+
+        var z := p;
+        var n := 0;
+        while (n < Iterations) (
+            var c := a1;
+            var dist := mag(z-a1);
+            var d := mag(z-a2);
+            if (d < dist) (
+                c := a2;
+                dist := d;
+            );
+            d := mag(z-a3);
+            if (d < dist) (
+                c := a3;
+                dist := d;
+            );
+            d := mag(z-a4);
+            if (d < dist) (
+                c := a4;
+                dist := d;
+            );
+            z := Scale*z - c*(Scale-1);
+            n := n + 1;
+        );
+        mag(z) * Scale^(-n)
+    ),
+    bbox : everything.bbox,
+    is_2d : false,
+    is_3d : true,
+};
+
+tet2
