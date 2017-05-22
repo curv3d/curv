@@ -1,0 +1,9 @@
+inflate r shape = make_shape {
+    dist p : shape.dist p - r,
+    colour p : shape.colour p,
+    bbox : [shape.bbox[0]-r, shape.bbox[1]+r],
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
+};
+pancake r shape = inflate r << extrude_eu 0 << shape;
+pancake .1 (circle 1)
