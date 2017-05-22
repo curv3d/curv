@@ -1,33 +1,3 @@
-/*
-float sdPryamid4(vec3 p, vec3 h ) // h = { cos a, sin a, height }
-{
-    // Tetrahedron = Octahedron - Cube
-    float box = sdBox( p - vec3(0,-2.0*h.z,0), vec3(2.0*h.z) );
- 
-    float d = 0.0;
-    d = max( d, abs( dot(p, vec3( -h.x, h.y, 0 )) ));
-    d = max( d, abs( dot(p, vec3(  h.x, h.y, 0 )) ));
-    d = max( d, abs( dot(p, vec3(  0, h.y, h.x )) ));
-    d = max( d, abs( dot(p, vec3(  0, h.y,-h.x )) ));
-    float octa = d - h.z;
-    return max(-box,octa); // Subtraction
-}
-*/
-/*
-octahedron h = make_shape {
-    dist p : (
-        var d := abs(dot(p, [-h[X], h[Y], 0]));
-        d := max(d, abs(dot(p, [h[X],h[Y],0])));
-        d := max(d, abs(dot(p, [0,h[Y],h[X]])));
-        d := max(d, abs(dot(p, [0,h[Y],-h[X]])));
-        d - h[Z]
-    ),
-    is_3d : true,
-    is_2d : false,
-    bbox : everything.bbox,
-};
-octahedron (.8,.6,.5) //>> slice_xz >> distance_field
-*/
 // 'r' is the radius of a sphere inscribed inside the octahedron.
 octahedron r = (
     v0 = normalize(1,1,1);
@@ -36,11 +6,12 @@ octahedron r = (
     v3 = normalize(1,1,-1);
     make_shape {
         dist p : (
-            var d := abs(dot(p, v0));
-            d := max(d, abs(dot(p, v1)));
-            d := max(d, abs(dot(p, v2)));
-            d := max(d, abs(dot(p, v3)));
-            d - r
+            max (
+                abs(dot(p, v0)),
+                abs(dot(p, v1)),
+                abs(dot(p, v2)),
+                abs(dot(p, v3)),
+            ) - r
         ),
         is_3d : true,
         is_2d : false,

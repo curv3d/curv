@@ -269,8 +269,7 @@ extrude_eu h shape = make_shape {
     dist p : (
         var dz := abs(p[Z]) - h;
         var dxy := shape.dist(p[X],p[Y],0);
-        //mag(max([dz,dxy],0)) + min(max(dz,dxy), 0)
-        mag([max(dz,0),max(dxy,0)]) + min(max(dz,dxy), 0)
+        mag(max([dz,dxy],0)) + min(max(dz,dxy), 0)
     ),
     bbox : [ [shape.bbox[0][X],shape.bbox[0][Y],-h],
              [shape.bbox[1][X],shape.bbox[1][Y],+h] ],

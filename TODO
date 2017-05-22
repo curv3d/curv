@@ -2,8 +2,7 @@
 
 What remains for MVP? (What do I want to show in my first big demo?)
 * standard library
-  * support `dot` in GL
-  * max/min are variadic, accept vector arguments
+  * min is variadic, accepts vector arguments
 * Documentation
 * Meta: use https://opensource.guide/
 
@@ -50,17 +49,19 @@ BUGS:
 * fix memory leak: `sum = reduce(0,(x,y)->x+y)` leaks memory. ideas/Leak.md
 * `f << [1,2,3]` is not a function call
 
-struct:
-* `is_struct` is true for records, modules, shapes
-* curv::Struct is a subclass of curv::Ref_Value
-* `make_shape` accepts a Struct as an argument
-* `dom` maps a struct to a list of keys; maps a list to a range of indexes.
-
-syntax changes:
-* `in` not `=` in `for`
-* a..b is a generator
-* remove a'b
-* permit a choice of `,` or `;` in `{...}` constructors.
+core language:
+* Rename `len` to `size`. Rationale: in linear algebra, the 'length' of a
+  vector is its magnitude.
+* struct:
+  * `is_struct` is true for records, modules, shapes
+  * curv::Struct is a subclass of curv::Ref_Value
+  * `make_shape` accepts a Struct as an argument
+  * `dom` maps a struct to a list of keys; maps a list to a range of indexes.
+* syntax changes:
+  * `in` not `=` in `for`
+  * a..b is a generator
+  * remove a'b
+  * permit a choice of `,` or `;` in `{...}` constructors.
 
 3D viewer
 * use bbox to ensure entire scene is visible

@@ -287,19 +287,66 @@ struct Max_Function : public Polyadic_Function
     {
         return array_op.reduce(-INFINITY, args[0], At_Arg(args));
     }
-    GL_Value gl_call(GL_Frame& f) const override
+    GL_Value gl_call_expr(Operation& argx, const Call_Phrase*, GL_Frame& f)
+    const override
     {
-        auto result = f.gl.newvalue(GL_Type::Num);
-        f.gl.out << "  float "<<result<<" = ";
-        auto arg = f[0];
-        if (arg.type == GL_Type::Vec2)
-            f.gl.out << "max("<<arg<<".x,"<<arg<<".y);\n";
-        else if (arg.type == GL_Type::Vec3)
-            f.gl.out << "max(max("<<arg<<".x,"<<arg<<".y),"<<arg<<".z);\n";
-        else
-            throw Exception(At_GL_Arg(0, f),
-                "max: argument is not vec2 or vec3");
-        return result;
+        auto list = dynamic_cast<List_Expr*>(&argx);
+        if (list) {
+            std::list<GL_Value> args;
+            GL_Type type = GL_Type::Num;
+            for (auto op : *list) {
+                auto val = op->gl_eval(f);
+                args.push_back(val);
+                if (val.type == GL_Type::Num)
+                    ;
+                else if (gl_type_count(val.type) >= 2) {
+                    if (type == GL_Type::Num)
+                        type = val.type;
+                    else if (type != val.type)
+                        throw Exception(At_GL_Phrase(*op->source_, &f),
+                            "GL: max: vector arguments of different lengths");
+                } else {
+                    throw Exception(At_GL_Phrase(*op->source_, &f),
+                        "GL: max: argument has bad type");
+                }
+            }
+            auto result = f.gl.newvalue(type);
+            if (args.size() == 0)
+                f.gl.out << "  " << type << " " << result << " = -0.0/0.0;\n";
+            else if (args.size() == 1)
+                return args.front();
+            else {
+                f.gl.out << "  " << type << " " << result << " = ";
+                int rparens = 0;
+                while (args.size() > 2) {
+                    f.gl.out << "max(" << args.front() << ",";
+                    args.pop_front();
+                    ++rparens;
+                }
+                f.gl.out << "max(" << args.front() << "," << args.back() << ")";
+                while (rparens > 0) {
+                    f.gl.out << ")";
+                    --rparens;
+                }
+                f.gl.out << ";\n";
+            }
+            return result;
+        } else {
+            auto arg = argx.gl_eval(f);
+            auto result = f.gl.newvalue(GL_Type::Num);
+            f.gl.out << "  float "<<result<<" = ";
+            if (arg.type == GL_Type::Vec2)
+                f.gl.out << "max("<<arg<<".x,"<<arg<<".y);\n";
+            else if (arg.type == GL_Type::Vec3)
+                f.gl.out << "max(max("<<arg<<".x,"<<arg<<".y),"<<arg<<".z);\n";
+            else if (arg.type == GL_Type::Vec4)
+                f.gl.out << "max(max(max("<<arg<<".x,"<<arg<<".y),"
+                    <<arg<<".z),"<<arg<<".w);\n";
+            else
+                throw Exception(At_GL_Phrase(*argx.source_, &f),
+                    "max: argument is not a vector");
+            return result;
+        }
     }
 };
 
