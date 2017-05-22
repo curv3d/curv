@@ -18,8 +18,6 @@ source reorganization:
 * bbox defaults to everything
 
 GL:
-* max/min are variadic, accept vector arguments
-* dot
 * all math operations that are built-in SPIR-V operators
 * maybe: mandelbrot iteration that doesn't crash the MacBook Air.
 * `if_fast_case (C) E1 else E2`: E1 and E2 are equivalent, but E1 is faster
@@ -27,6 +25,7 @@ GL:
   pick E1 or E2, otherwise just emit E2.
 
 glslViewer:
+* PR for --headless -s0
 * HOME key resets view
 
 library:
