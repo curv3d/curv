@@ -2,7 +2,6 @@
 
 What remains for MVP? (What do I want to show in my first big demo?)
 * standard library
-  * min is variadic, accepts vector arguments
 * Documentation
 * Meta: use https://opensource.guide/
 
