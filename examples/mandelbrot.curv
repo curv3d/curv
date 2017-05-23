@@ -22,5 +22,4 @@ make_shape {
     hsv2rgb color
   ),
   is_2d : true,
-  is_3d : false,
 }

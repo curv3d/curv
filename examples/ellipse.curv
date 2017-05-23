@@ -3,7 +3,6 @@ ellipse(rx,ry) = make_shape {
     dist p : sqrt(p[X]^2/rx^2 + p[Y]^2/ry^2) - 1,
     bbox : [[-rx,-ry,0],[rx,ry,0]],
     is_2d : true,
-    is_3d : false,
 };
 // The distance field is non-isotropic, exactly like a scaled circle.
 de=ellipse(1,2) >> distance_field;
@@ -16,7 +15,6 @@ pellipse(rx,ry) = make_shape {
     ),
     bbox : [[-rx,-ry,0],[rx,ry,0]],
     is_2d : true,
-    is_3d : false,
 };
 // The distance field is mostly euclidean. It's correct for points on the X
 // and Y axes. Away from the axes, the distances are slightly too large,
@@ -49,6 +47,5 @@ ellipsoid r = make_shape {
     dist p : (mag(p/r) - 1) * min r,
     bbox : everything.bbox,
     is_3d : true,
-    is_2d : false,
 };
 ellipsoid(1,2,3) >> slice_xz >> distance_field

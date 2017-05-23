@@ -96,14 +96,14 @@ make_system(const char* argv0, std::list<const char*>& libs)
 }
 
 void
-display_shape(curv::Value value, bool block = false)
+display_shape(curv::Value value, const curv::Context &cx, bool block = false)
 {
     static bool viewer = false;
     auto shape = value.dycast<curv::Shape>();
     if (shape != nullptr) {
         auto filename = curv::stringify(",curv",getpid(),".frag");
         std::ofstream f(filename->c_str());
-        curv::gl_compile(*shape, f, {});
+        curv::gl_compile(*shape, f, cx);
         f.close();
         if (!viewer) {
             auto cmd = curv::stringify("glslViewer ",filename->c_str(),
@@ -153,7 +153,8 @@ interactive_mode(curv::System& sys)
                 for (auto e : *den.second)
                     std::cout << e << "\n";
                 if (den.second->size() == 1)
-                    display_shape(den.second->front());
+                    display_shape(den.second->front(),
+                        curv::At_Phrase(prog.value_phrase(), nullptr));
             }
         } catch (curv::Exception& e) {
             std::cout << "ERROR: " << e << "\n";
@@ -297,7 +298,8 @@ live_mode(curv::System& sys, const char* editor, const char* filename)
                 prog.compile();
                 auto value = prog.eval();
                 std::cout << value << "\n";
-                display_shape(value);
+                display_shape(value,
+                    curv::At_Phrase(prog.value_phrase(), nullptr));
             } catch (curv::Exception& e) {
                 std::cout << "ERROR: " << e << "\n";
             } catch (std::exception& e) {
@@ -467,10 +469,13 @@ main(int argc, char** argv)
 
         if (exporter == nullptr) {
             std::cout << value << "\n";
-            display_shape(value, true);
+            display_shape(value,
+                curv::At_Phrase(prog.value_phrase(), nullptr),
+                true);
         } else {
             exporter(value,
-                curv::At_Phrase(prog.value_phrase(), nullptr), std::cout);
+                curv::At_Phrase(prog.value_phrase(), nullptr),
+                std::cout);
         }
     } catch (curv::Exception& e) {
         std::cerr << "ERROR: " << e << "\n";

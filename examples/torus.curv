@@ -3,7 +3,6 @@
 torus (r1,r2) = make_shape {
     dist p : mag( mag(p[X,Y]) - r1, p[Z]) - r2,
     bbox : [[-r1-r2,-r1-r2,-r2],[r1+r2,r1+r2,r2]],
-    is_2d : false,
     is_3d : true,
 };
 
@@ -13,7 +12,6 @@ torus (r1,r2) = make_shape {
 gtorus r shape = make_shape {
     dist p : shape.dist(mag(p[X,Y]) - r, p[Z], 0),
     bbox : everything.bbox,
-    is_2d : false,
     is_3d : true,
 };
 //gtorus 2 (circle 1)
@@ -22,7 +20,6 @@ gtorus r shape = make_shape {
 ptorus shape1 shape2 = make_shape {
     dist p : shape2.dist( shape1.dist(p[X],p[Y],0), p[Z], 0 ),
     bbox : everything.bbox,
-    is_2d : false,
     is_3d : true,
 };
 ptorus (square 3) (circle 1)
@@ -31,7 +28,6 @@ ptorus (square 3) (circle 1)
 wtf sh shx shy shz = make_shape {
     dist p : sh.dist( shx.dist(p), shy.dist(p), shz.dist(p) ),
     bbox : everything.bbox,
-    is_2d : false,
     is_3d : true,
 };
 wtf (sphere 2) (cube 1) (cube 1) (cube 1) >> scale .5

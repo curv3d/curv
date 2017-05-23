@@ -21,25 +21,21 @@ plane_segment limits = (
             dist p : xmin - p'X,
             bbox : [[xmin, -inf, 0], [inf, inf, 0]],
             is_2d : true,
-            is_3d : false,
         },
         if (ymin > -inf) make_shape {
             dist p : ymin - p'Y,
             bbox : [[-inf, ymin, 0], [inf, inf, 0]],
             is_2d : true,
-            is_3d : false,
         },
         if (xmax < inf) make_shape {
             dist p : p'X - xmax,
             bbox : [[-inf, -inf, 0], [xmax, inf, 0]],
             is_2d : true,
-            is_3d : false,
         },
         if (ymax < inf) make_shape {
             dist p : p'Y - ymax,
             bbox : [[-inf, -inf, 0], [inf, ymax, 0]],
             is_2d : true,
-            is_3d : false,
         },
     )
 );
@@ -62,7 +58,6 @@ rep_rotate n shape = (
         colour : rpr(shape.colour),
         bbox : everything.bbox,
         is_2d : true,
-        is_3d : false,
     }
 );
 
@@ -117,7 +112,6 @@ half_plane(v) = (
         dist p : m - p'X,
         bbox : everything.bbox,
         is_2d : true,
-        is_3d : false,
     }
 );
 

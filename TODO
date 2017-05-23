@@ -9,12 +9,13 @@ Play with nvidia's CUDA sample, marching cubes. export STL? Benchmark to
 evaluate speed of this approach.
 
 -------------------------
+BUG: tests recently slowed down by 2 orders of magnitude.
+
 source reorganization:
 * Split curv.cc into multiple source files, in subdirectory cmd.
 * Get rid of aux, move stuff into cmd or curv.
 
 `make_shape`
-* check is_2d and is_3d fields, which default to false.
 * bbox defaults to everything
 
 GL:

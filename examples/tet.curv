@@ -20,7 +20,6 @@ tet = make_shape {
         mag(z) * Scale^-n
     ),
     bbox : everything.bbox,
-    is_2d : false,
     is_3d : true,
 };
 
@@ -95,7 +94,6 @@ tet2 = make_shape {
         mag(z) * Scale^(-n)
     ),
     bbox : everything.bbox,
-    is_2d : false,
     is_3d : true,
 };
 

@@ -17,7 +17,6 @@ octahedron r = (
             ) - r
         ),
         is_3d : true,
-        is_2d : false,
         bbox : everything.bbox,
     }
 );
@@ -42,7 +41,6 @@ dodecahedron r = (
             ) - r
         ),
         is_3d : true,
-        is_2d : false,
         bbox : everything.bbox,
     }
 );
@@ -73,7 +71,6 @@ icosahedron r = (
             ) - r
         ),
         is_3d : true,
-        is_2d : false,
         bbox : everything.bbox,
     }
 );

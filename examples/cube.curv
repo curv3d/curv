@@ -3,7 +3,6 @@ box b = make_shape {
     dist p : max(abs p - b),
     bbox : [-b,b],
     is_3d : true,
-    is_2d : false,
 };
 // more expensive; euclidean distance field
 box_eu b = make_shape {
@@ -13,14 +12,12 @@ box_eu b = make_shape {
     ),
     bbox : [-b,b],
     is_3d : true,
-    is_2d : false,
 };
 
 rect b = make_shape {
     dist p : max(abs(p[X,Y]) - b),
     bbox : [[-b[X],-b[Y],0],[b[X],b[Y],0]],
     is_2d : true,
-    is_3d : false,
 };
 rect_eu b = make_shape {
     dist p : (
@@ -29,6 +26,5 @@ rect_eu b = make_shape {
     ),
     bbox : [[-b[X],-b[Y],0],[b[X],b[Y],0]],
     is_2d : true,
-    is_3d : false,
 };
 box_eu(2,1.5,1) //>> slice_xy >> distance_field

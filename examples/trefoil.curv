@@ -32,5 +32,4 @@ knot = make_shape {
     ),
     bbox : everything.bbox,
     is_3d : true,
-    is_2d : false,
 };

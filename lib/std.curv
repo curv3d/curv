@@ -42,12 +42,10 @@ circle r = make_shape {
     dist p : mag(p[X,Y]) - r,
     bbox : [[-r,-r,0],[r,r,0]],
     is_2d : true,
-    is_3d : false,
 },
 sphere r = make_shape {
     dist p : mag p - r,
     bbox : [[-r,-r,-r],[r,r,r]],
-    is_2d : false,
     is_3d : true,
 },
 square sz = (
@@ -57,7 +55,6 @@ square sz = (
     //bbox : [-s/2, s/2],
     bbox : [[-s[X]/2,-s[Y]/2,0], [s[X]/2,s[Y]/2,0]],
     is_2d : true,
-    is_3d : false,
   }
 ),
 cube sz = (
@@ -65,7 +62,6 @@ cube sz = (
   make_shape {
     dist p : max(abs p - s/2),
     bbox : [-s/2, s/2],
-    is_2d : false,
     is_3d : true,
   }
 ),
@@ -79,25 +75,21 @@ rect bbox = (
         dist p : xmin - p'X,
         bbox : [[xmin, -inf, 0], [inf, inf, 0]],
         is_2d : true,
-        is_3d : false,
     },
     if (ymin > -inf) make_shape {
         dist p : ymin - p'Y,
         bbox : [[-inf, ymin, 0], [inf, inf, 0]],
         is_2d : true,
-        is_3d : false,
     },
     if (xmax < inf) make_shape {
         dist p : p'X - xmax,
         bbox : [[-inf, -inf, 0], [xmax, inf, 0]],
         is_2d : true,
-        is_3d : false,
     },
     if (ymax < inf) make_shape {
         dist p : p'Y - ymax,
         bbox : [[-inf, -inf, 0], [inf, ymax, 0]],
         is_2d : true,
-        is_3d : false,
     },
   )
 ),
@@ -106,7 +98,6 @@ rect bbox = (
 torus (r1,r2) = make_shape {
     dist p : mag( mag(p[X,Y]) - r1, p[Z]) - r2,
     bbox : [[-r1-r2,-r1-r2,-r2],[r1+r2,r1+r2,r2]],
-    is_2d : false,
     is_3d : true,
 },
 
@@ -198,7 +189,6 @@ rotate a shape =
         - cross(axis, p) * sin(angle)
         + axis * dot(axis, p * (1 - cos angle)),
       bbox : shape.bbox, // TODO: fixme, see below
-      is_2d : false,
       is_3d : true,
     }
   ),
@@ -232,7 +222,6 @@ slice_xy shape = make_shape {
     bbox : [[shape.bbox[0][X],shape.bbox[0][Y],0],
             [shape.bbox[1][X],shape.bbox[1][Y],0]],
     is_2d : true,
-    is_3d : false,
 },
 slice_xz shape = make_shape {
     dist p : shape.dist(p[X],0,p[Y]),
@@ -240,7 +229,6 @@ slice_xz shape = make_shape {
     bbox : [[shape.bbox[0][X],shape.bbox[0][Z],0],
             [shape.bbox[1][X],shape.bbox[1][Z],0]],
     is_2d : true,
-    is_3d : false,
 },
 slice_yz shape = make_shape {
     dist p : shape.dist(0,p[X],p[Y]),
@@ -248,7 +236,6 @@ slice_yz shape = make_shape {
     bbox : [[shape.bbox[0][Y],shape.bbox[0][Z],0],
             [shape.bbox[1][Y],shape.bbox[1][Z],0]],
     is_2d : true,
-    is_3d : false,
 },
 
 // 'extrude' converts a 2D shape to a 3D shape, linearly extruding it along the
@@ -262,7 +249,6 @@ extrude h shape = make_shape {
     dist p : max(abs(p[Z]) - h, shape.dist(p[X],p[Y],0)),
     bbox : [ [shape.bbox[0][X],shape.bbox[0][Y],-h],
              [shape.bbox[1][X],shape.bbox[1][Y],+h] ],
-    is_2d : false,
     is_3d : true,
 },
 extrude_eu h shape = make_shape {
@@ -273,7 +259,6 @@ extrude_eu h shape = make_shape {
     ),
     bbox : [ [shape.bbox[0][X],shape.bbox[0][Y],-h],
              [shape.bbox[1][X],shape.bbox[1][Y],+h] ],
-    is_2d : false,
     is_3d : true,
 },
 
@@ -304,7 +289,6 @@ distance_field shape = make_shape {
         [max(-c,0), 0, max(c,0)]
     ),
     is_2d : true,
-    is_3d : false,
 },
 
 }

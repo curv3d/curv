@@ -28,7 +28,7 @@ struct Blackfield_Function : public Polyadic_Function
     }
 };
 
-Shape::Shape(Shared<const Record> record)
+Shape::Shape(Shared<const Record> record, const Context& cx)
 :
     Ref_Value(ty_shape), record_(std::move(record))
 {
@@ -39,6 +39,32 @@ Shape::Shape(Shared<const Record> record)
         auto& u = update_shared(record_);
         u.fields_[colour] = black;
     }
+
+    static Atom is_2d_key = "is_2d";
+    bool is_2d;
+    auto is_2d_p = fields.find(is_2d_key);
+    if (is_2d_p == fields.end()) {
+        auto& u = update_shared(record_);
+        u.fields_[is_2d_key] = {false};
+        is_2d = false;
+    } else {
+        is_2d = is_2d_p->second.to_bool(At_Field("is_2d", cx));
+    }
+
+    static Atom is_3d_key = "is_3d";
+    bool is_3d;
+    auto is_3d_p = fields.find(is_3d_key);
+    if (is_3d_p == fields.end()) {
+        auto& u = update_shared(record_);
+        u.fields_[is_3d_key] = {false};
+        is_3d = false;
+    } else {
+        is_3d = is_3d_p->second.to_bool(At_Field("is_3d", cx));
+    }
+
+    if (!is_2d && !is_3d)
+        throw Exception(cx,
+            "make_shape: at least one of is_2d and is_3d must be true");
 }
 
 BBox
@@ -51,7 +77,7 @@ BBox::from_value(Value val, const Context& cx)
     auto mins = list->at(0).to<List>(mincx);
     mins->assert_size(3, mincx);
 
-    At_Index maxcx(0, cx);
+    At_Index maxcx(1, cx);
     auto maxs = list->at(1).to<List>(maxcx);
     maxs->assert_size(3, maxcx);
 

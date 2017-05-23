@@ -5,7 +5,6 @@ half_space(n,r) = make_shape {
     dist p : dot(p, n) + r,
     bbox : everything.bbox,
     is_3d : true,
-    is_2d : false,
 };
 //half_space (0,0,1) 1 >> slice_xz >> distance_field
 
@@ -16,7 +15,6 @@ half_plane n r = make_shape {
     dist p : dot(p[X,Y], n) + r,
     bbox : everything.bbox,
     is_2d : true,
-    is_3d : false,
 };
 //half_plane (0,1) 1 //>> slice_xz >> distance_field
 

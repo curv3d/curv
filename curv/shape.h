@@ -41,7 +41,7 @@ struct Shape : public Ref_Value
 {
     Shared<const Record> record_;
 
-    Shape(Shared<const Record> record);
+    Shape(Shared<const Record> record, const Context&);
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const override;

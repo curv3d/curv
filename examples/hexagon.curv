@@ -34,7 +34,6 @@ hex_prism(r,h) = make_shape {
         max(q[Z] - h, max(q[X]*sqrt(3)*0.5 + q[Y]*0.5, q[Y]) - r)
     ),
     bbox : everything.bbox,
-    is_2d : false,
     is_3d : true,
 };
 //hex_prism(1,1)
@@ -51,7 +50,6 @@ iq_hex_prism(r,h) = make_shape {
         mag([max(d1,0),max(d2,0)]) + min(max(d1,d2), 0)
     ),
     bbox : everything.bbox,
-    is_2d : false,
     is_3d : true,
 };
 
@@ -63,7 +61,6 @@ hexagon(r) = make_shape {
     ),
     bbox : everything.bbox,
     is_2d : true,
-    is_3d : false,
 };
 //hexagon 1
 
