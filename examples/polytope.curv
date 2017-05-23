@@ -1,0 +1,37 @@
+// Half-space with normal n, at distance r from the origin.
+//  n: must be unit vector.
+//  if r > 0, half-space does not contain the origin.
+half_space(n,r) = make_shape {
+    dist p : dot(p, n) + r,
+    bbox : everything.bbox,
+    is_3d : true,
+    is_2d : false,
+};
+//half_space (0,0,1) 1 >> slice_xz >> distance_field
+
+// Half-plane with normal n, at distance r from the origin.
+//  n: must be unit vector.
+//  if r > 0, half-space does not contain the origin.
+half_plane n r = make_shape {
+    dist p : dot(p[X,Y], n) + r,
+    bbox : everything.bbox,
+    is_2d : true,
+    is_3d : false,
+};
+//half_plane (0,1) 1 //>> slice_xz >> distance_field
+
+// Tetrahedron, expressed as a Nef polyhedron (intersection of 4 half-spaces).
+
+// First try a 4-sided pyramid.
+n0 = normalize(0,0,-1);
+n1 = normalize(1,0,1);
+n2 = normalize(0,1,1);
+n3 = normalize(-1,0,1);
+n4 = normalize(0,-1,1);
+intersection(
+    half_space(n0, -1),
+    half_space(n1, -1),
+    half_space(n2, -1),
+    half_space(n3, -1),
+    half_space(n4, -1),
+)
