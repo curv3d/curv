@@ -1,3 +1,7 @@
+// Copyright Doug Moen 2016-2017.
+// Distributed under The MIT Licence.
+// See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
+
 /* Curv standard library, automatically loaded at startup. */
 {
 
@@ -123,8 +127,51 @@ octahedron r = (
         ),
         is_3d : true,
         bbox : circumratio * [[-r,-r,-r], [r,r,r]],
+        circumratio : circumratio,
     }
 ),
+// 'r' is the radius of a sphere inscribed inside the icosahedron.
+// Mitred distance field.
+icosahedron r = (
+    v0 = normalize(1,1,1);
+    v1 = normalize(-1,1,1);
+    v2 = normalize(1,-1,1);
+    v3 = normalize(1,1,-1);
+    v4 = normalize(0, +1, phi+1);
+    v5 = normalize(0, -1, phi+1);
+    v6 = normalize(+phi+1, 0, 1);
+    v7 = normalize(-phi-1, 0, 1);
+    v8 = normalize(+1, phi+1, 0);
+    v9 = normalize(-1, phi+1, 0);
+    // radius of midsphere / radius of insphere
+    midratio = (phi/2) / (1/12*(3*sqrt(3)+sqrt(15)));
+    circumratio = (.25*sqrt(10+2*sqrt 5)) / (1/12*(3*sqrt(3)+sqrt(15)));
+    make_shape {
+        dist p : (
+            max (
+                abs(dot(p, v0)),
+                abs(dot(p, v1)),
+                abs(dot(p, v2)),
+                abs(dot(p, v3)),
+                abs(dot(p, v4)),
+                abs(dot(p, v5)),
+                abs(dot(p, v6)),
+                abs(dot(p, v7)),
+                abs(dot(p, v8)),
+                abs(dot(p, v9)),
+            ) - r
+        ),
+        is_3d : true,
+        bbox : midratio * [[-r,-r,-r], [r,r,r]],
+        circumratio : circumratio,
+    }
+),
+// The size of a regular polytope is specified using an inradius
+// (the radius of a sphere inscribed inside the polytope).
+// If you want to construct a polytope using a specified circumradius instead,
+// then construct it using the circumradius (it will be too big),
+// then shrink it to the correct size using `circumscale`.
+circumscale shape = scale(1/shape.circumratio) shape,
 
 // boolean shape operations
 nothing = make_shape {
