@@ -110,8 +110,8 @@ octahedron r = (
     v1 = normalize(-1,1,1);
     v2 = normalize(1,-1,1);
     v3 = normalize(1,1,-1);
-    // radius of circumscribed sphere / radius of inscribed sphere * inradius
-    circumradius = (1/2*sqrt 2) / (1/6*sqrt 6) * r;
+    // radius of circumscribed sphere / radius of inscribed sphere
+    circumratio = (1/2*sqrt 2) / (1/6*sqrt 6);
     make_shape {
         dist p : (
             max (
@@ -122,7 +122,7 @@ octahedron r = (
             ) - r
         ),
         is_3d : true,
-        bbox : [circumradius*[-r,-r,-r], circumradius*[r,r,r]],
+        bbox : circumratio * [[-r,-r,-r], [r,r,r]],
     }
 ),
 
