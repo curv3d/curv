@@ -1,25 +1,3 @@
-phi = sqrt 5 * .5 + .5;
-
-// 'r' is the radius of a sphere inscribed inside the octahedron.
-// Mitred distance field.
-octahedron r = (
-    v0 = normalize(1,1,1);
-    v1 = normalize(-1,1,1);
-    v2 = normalize(1,-1,1);
-    v3 = normalize(1,1,-1);
-    make_shape {
-        dist p : (
-            max (
-                abs(dot(p, v0)),
-                abs(dot(p, v1)),
-                abs(dot(p, v2)),
-                abs(dot(p, v3)),
-            ) - r
-        ),
-        is_3d : true,
-        bbox : everything.bbox,
-    }
-);
 // 'r' is the radius of a sphere inscribed inside the dodecahedron.
 // Mitred distance field. Pointy side down.
 dodecahedron r = (

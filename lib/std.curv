@@ -3,6 +3,7 @@
 
 deg = tau/360,
 e = 2.71828182845904523536028747135266249775724709369995,
+phi = sqrt 5 * .5 + .5,
 X = 0,
 Y = 1,
 Z = 2,
@@ -37,7 +38,7 @@ phase v = atan2(v'Y,v'X),
 // convert phase angle to unit vector
 cis theta = [cos theta, sin theta],
 
-// primitive shapes
+// circular shapes
 circle r = make_shape {
     dist p : mag(p[X,Y]) - r,
     bbox : [[-r,-r,0],[r,r,0]],
@@ -48,6 +49,15 @@ sphere r = make_shape {
     bbox : [[-r,-r,-r],[r,r,r]],
     is_3d : true,
 },
+// r1: major radius, from origin to centre of tube.
+// r2: minor radius, of the tube.
+torus (r1,r2) = make_shape {
+    dist p : mag( mag(p[X,Y]) - r1, p[Z]) - r2,
+    bbox : [[-r1-r2,-r1-r2,-r2],[r1+r2,r1+r2,r2]],
+    is_3d : true,
+},
+
+// polytopes
 square sz = (
   s = if (is_list sz) sz else [sz,sz];
   make_shape {
@@ -93,13 +103,28 @@ rect bbox = (
     },
   )
 ),
-// r1: major radius, from origin to centre of tube.
-// r2: minor radius, of the tube.
-torus (r1,r2) = make_shape {
-    dist p : mag( mag(p[X,Y]) - r1, p[Z]) - r2,
-    bbox : [[-r1-r2,-r1-r2,-r2],[r1+r2,r1+r2,r2]],
-    is_3d : true,
-},
+// 'r' is the radius of a sphere inscribed inside the octahedron.
+// Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
+octahedron r = (
+    v0 = normalize(1,1,1);
+    v1 = normalize(-1,1,1);
+    v2 = normalize(1,-1,1);
+    v3 = normalize(1,1,-1);
+    // radius of circumscribed sphere / radius of inscribed sphere * inradius
+    circumradius = (1/2*sqrt 2) / (1/6*sqrt 6) * r;
+    make_shape {
+        dist p : (
+            max (
+                abs(dot(p, v0)),
+                abs(dot(p, v1)),
+                abs(dot(p, v2)),
+                abs(dot(p, v3)),
+            ) - r
+        ),
+        is_3d : true,
+        bbox : [circumradius*[-r,-r,-r], circumradius*[r,r,r]],
+    }
+),
 
 // boolean shape operations
 nothing = make_shape {
