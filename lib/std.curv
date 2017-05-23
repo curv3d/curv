@@ -130,6 +130,33 @@ octahedron r = (
         circumratio : circumratio,
     }
 ),
+// 'r' is the radius of a sphere inscribed inside the dodecahedron.
+// Mitred distance field. Pointy side down.
+dodecahedron r = (
+    v0 = normalize(0, phi, 1);
+    v1 = normalize(0, -phi, 1);
+    v2 = normalize(1, 0, phi);
+    v3 = normalize(-1, 0, phi);
+    v4 = normalize(phi, 1, 0);
+    v5 = normalize(-phi, 1, 0);
+    midratio = (.25*(3+sqrt(5))) / (1/20*sqrt(250+110*sqrt(5)));
+    circumratio = (.25*(sqrt 3 + sqrt 15)) / (1/20*sqrt(250+110*sqrt(5)));
+    make_shape {
+        dist p : (
+            max (
+                abs(dot(p, v0)),
+                abs(dot(p, v1)),
+                abs(dot(p, v2)),
+                abs(dot(p, v3)),
+                abs(dot(p, v4)),
+                abs(dot(p, v5)),
+            ) - r
+        ),
+        is_3d : true,
+        bbox : midratio * [[-r,-r,-r],[r,r,r]],
+        circumratio : circumratio,
+    }
+),
 // 'r' is the radius of a sphere inscribed inside the icosahedron.
 // Mitred distance field.
 icosahedron r = (

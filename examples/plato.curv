@@ -1,39 +1,15 @@
-// 'r' is the radius of a sphere inscribed inside the dodecahedron.
-// Mitred distance field. Pointy side down.
-dodecahedron r = (
-    v0 = normalize(0, phi, 1);
-    v1 = normalize(0, -phi, 1);
-    v2 = normalize(1, 0, phi);
-    v3 = normalize(-1, 0, phi);
-    v4 = normalize(phi, 1, 0);
-    v5 = normalize(-phi, 1, 0);
-    make_shape {
-        dist p : (
-            max (
-                abs(dot(p, v0)),
-                abs(dot(p, v1)),
-                abs(dot(p, v2)),
-                abs(dot(p, v3)),
-                abs(dot(p, v4)),
-                abs(dot(p, v5)),
-            ) - r
-        ),
-        is_3d : true,
-        bbox : everything.bbox,
-    }
-);
-/*
 union (
     difference(
-        icosahedron 1,
+        dodecahedron 1,
         sphere 1.05,
     ),
     colour red (cube .5),
 )
-*/
-ico = icosahedron 2;
-h = ico.bbox[1][X] - ico.bbox[0][X];
+/*
+hedron = dodecahedron 2;
+h = hedron.bbox[1][X] - hedron.bbox[0][X];
 difference(
-    difference (cube h, ico),
+    difference (cube h, hedron),
     cube(10) >> translate(5,0,0),
 )
+*/
