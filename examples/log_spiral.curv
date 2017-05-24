@@ -1,0 +1,19 @@
+// https://swiftcoder.wordpress.com/2010/06/21/logarithmic-spiral-distance-field/
+
+log_spiral(a,b) = make_shape {
+    dist p : (
+        var r := mag p;
+        var t := phase p;
+        if (r == 0)
+            0
+        else (
+            var n := (log(r/a)/b - t) / tau;
+            var upper_r := a * e^(b*(t+tau*ceil n));
+            var lower_r := a * e^(b*(t+tau*floor n));
+            min(abs(upper_r-r), abs(r-lower_r)) - r*b
+        )
+    ),
+    bbox : everything.bbox,
+    is_2d : true,
+};
+log_spiral(1,.2)
