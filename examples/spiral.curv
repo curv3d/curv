@@ -1,0 +1,21 @@
+shell r shape = make_shape {
+    dist p : abs(shape.dist p) - r,
+    bbox : [shape.bbox[MIN]-r, shape.bbox[MAX]+r],
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
+};
+path = shell 0 (circle 1);
+path2 = difference(path, rect((-inf,0,-inf),(inf,inf,inf)));
+//perimeter_extrude path2 (circle .05)
+
+// Archimedes' Spiral.
+// r1 is distance between arm centres. r2 is half thickness of arm.
+// Distance field is broken at the centre. FIXME.
+spiral r1 r2 = make_shape {
+    dist p : abs(rem(mag p + (phase p)/tau*r1, r1) - r1/2) - r2,
+    bbox : everything.bbox,
+    is_2d : true,
+};
+//spiral 10 1 >> distance_field
+
+perimeter_extrude (spiral 1 0) (circle .1)

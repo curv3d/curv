@@ -11,6 +11,8 @@ phi = sqrt 5 * .5 + .5,
 X = 0,
 Y = 1,
 Z = 2,
+MIN = 0,
+MAX = 1,
 Xaxis = [1,0,0],
 Yaxis = [0,1,0],
 Zaxis = [0,0,1],
@@ -55,9 +57,21 @@ sphere r = make_shape {
 },
 // r1: major radius, from origin to centre of tube.
 // r2: minor radius, of the tube.
-torus (r1,r2) = make_shape {
-    dist p : mag( mag(p[X,Y]) - r1, p[Z]) - r2,
-    bbox : [[-r1-r2,-r1-r2,-r2],[r1+r2,r1+r2,r2]],
+torus (r1,r2) = perimeter_extrude (circle r1) (circle r2),
+// from OpenSCAD
+rotate_extrude shape = perimeter_extrude (circle 0) shape,
+// A generalized torus. Sweep a 2D shape around the perimeter of another
+// 2D shape.
+perimeter_extrude perimeter cross_section = make_shape {
+    dist p : cross_section.dist( perimeter.dist(p[X],p[Y],0), p[Z], 0 ),
+    bbox : [
+        [ perimeter.bbox[MIN][X] - cross_section.bbox[MAX][X],
+          perimeter.bbox[MIN][Y] - cross_section.bbox[MAX][X],
+          cross_section.bbox[MIN][Y] ],
+        [ perimeter.bbox[MAX][X] + cross_section.bbox[MAX][X],
+          perimeter.bbox[MAX][Y] + cross_section.bbox[MAX][X],
+          cross_section.bbox[MAX][Y] ],
+    ],
     is_3d : true,
 },
 
@@ -104,6 +118,46 @@ rect bbox = (
         dist p : p'Y - ymax,
         bbox : [[-inf, -inf, 0], [inf, ymax, 0]],
         is_2d : true,
+    },
+  )
+),
+box bbox = (
+  xmin = bbox'0'X;
+  ymin = bbox'0'Y;
+  zmin = bbox'0'Z;
+  xmax = bbox'1'X;
+  ymax = bbox'1'Y;
+  zmax = bbox'1'Z;
+  intersection (
+    if (xmin > -inf) make_shape {
+        dist p : xmin - p'X,
+        bbox : [[xmin, -inf, 0], [inf, inf, 0]],
+        is_3d : true,
+    },
+    if (ymin > -inf) make_shape {
+        dist p : ymin - p'Y,
+        bbox : [[-inf, ymin, 0], [inf, inf, 0]],
+        is_3d : true,
+    },
+    if (zmin > -inf) make_shape {
+        dist p : zmin - p'Z,
+        bbox : [[-inf, zmin, 0], [inf, inf, 0]],
+        is_3d : true,
+    },
+    if (xmax < inf) make_shape {
+        dist p : p'X - xmax,
+        bbox : [[-inf, -inf, 0], [xmax, inf, 0]],
+        is_3d : true,
+    },
+    if (ymax < inf) make_shape {
+        dist p : p'Y - ymax,
+        bbox : [[-inf, -inf, 0], [inf, ymax, 0]],
+        is_3d : true,
+    },
+    if (zmax < inf) make_shape {
+        dist p : p'Z - zmax,
+        bbox : [[-inf, -inf, 0], [inf, zmax, 0]],
+        is_3d : true,
     },
   )
 ),
