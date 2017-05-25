@@ -16,6 +16,9 @@ spiral r1 r2 = make_shape {
     bbox : everything.bbox,
     is_2d : true,
 };
-//spiral 10 1 >> distance_field
+//r2 = .1;
+r2 = 0;
+s = union ( spiral 1 r2, rect((-r2,0),(0,0)) );
 
-perimeter_extrude (spiral 1 0) (circle .1)
+perimeter_extrude (s) (circle .1)
+//s >> scale 10 >> distance_field

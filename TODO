@@ -10,6 +10,7 @@ evaluate speed of this approach.
 
 -------------------------
 BUG: tests recently slowed down by 2 orders of magnitude.
+BUG: white is rendered as grey in a 3D shape interior.
 
 source reorganization:
 * Split curv.cc into multiple source files, in subdirectory cmd.

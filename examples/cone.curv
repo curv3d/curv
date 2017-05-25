@@ -20,22 +20,61 @@ float fCone(vec3 p, float radius, float height) {
 	return d;
 }
 */
-/* IQ
-float sdCone( in vec3 p, in vec3 c )
-{
-    vec2 q = vec2( length(p.xz), p.y );
-    float d1 = -q.y-c.z;
-    float d2 = max( dot(q,c.xy), q.y);
-    return length(max(vec2(d1,d2),0.0)) + min(max(d1,d2), 0.);
-}
-*/
 
-// First, support 'dot' in GL.
-/*
-iq_cone(c) = make_shape {
-    dist p = (
+// Cone: Z is up, origin is in the middle of the base.
+// Euclidean distance field.
+// Credit: MERCURY (http://mercury.sexy/hg_sdf)
+hg_cone(radius, height) = make_shape {
+    dist p : (
         var q := [mag(p[X,Y]), p[Z]];
-        var d1 := -q[1] - c[Z];
-        var d2 := max( dot(q,c[X,Y]), ...
+        var tip := q - [0, height];
+        var mantleDir := normalize(height, radius);
+        var mantle := dot(tip, mantleDir);
+        var d := max(mantle, -q[Y]);
+        var projected := dot(tip, [mantleDir[Y], -mantleDir[X]]);
+
+        // distance to tip
+        if (q[Y] > height && projected < 0)
+            d := max(d, mag(tip));
+
+        // distance to base ring
+        if (q[X] > radius && projected > mag(height, radius))
+            d := max(d, mag(q - [radius, 0]));
+        d
     ),
+    bbox : [[-radius,-radius,0],[radius,radius,height]],
+    is_3d : true
+};
+
+// c: normal vector (must be unit vector).
+// h: z height
+// apex is at origin, shape is below XY plane.
+// non-Euclidean distance field, cheaper than the HG cone.
+iq_cone(c,h) = make_shape {
+    dist p : (
+        var q := [mag(p[X,Y]), p[Z]];
+        var d1 := -q[Y] - h;
+        var d2 := max( dot(q,c), q[Y] );
+        mag(max([d1,d2],0)) + min(max(d1,d2),0)
+    ),
+    bbox : everything.bbox,
+    is_3d : true
+};
+// magic numbers provided by IQ:
+/*
+echo(mag(.8,.6));
+echo(phase(.8,.6));
+union(
+    iq_cone([.8,.6],.6),
+    cylinder .3 .1 >> translate(0,0,-1),
+    cylinder .05 (.6/2) >> translate(.5,0,-(.6/2)),
+    sphere .01 >> colour red,
+)
 */
+//iq_cone(cis(60*deg), 1) >> slice_xz >> distance_field
+
+c = hg_cone(.5, 1);
+difference(
+    box(c.bbox),
+    c
+) >> slice_xz

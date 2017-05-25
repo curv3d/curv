@@ -1,7 +1,7 @@
 sq =
     union (
-      colour(red) << translate(1.5,-1.5) << circle(.5),
       colour(blue) << square(5),
+      colour(red) << translate(1.5,-1.5) << circle(.5),
     );
 
 //rotate(90*deg) << sq
