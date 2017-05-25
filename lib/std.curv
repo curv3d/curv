@@ -55,6 +55,31 @@ sphere r = make_shape {
     bbox : [[-r,-r,-r],[r,r,r]],
     is_3d : true,
 },
+cylinder(r,h) = extrude h (circle r),
+// Cone: Z is up, origin is in the middle of the base.
+// Euclidean distance field.
+// Credit: MERCURY (http://mercury.sexy/hg_sdf)
+cone(radius, height) = make_shape {
+    dist p : (
+        var q := [mag(p[X,Y]), p[Z]];
+        var tip := q - [0, height];
+        var mantleDir := normalize(height, radius);
+        var mantle := dot(tip, mantleDir);
+        var d := max(mantle, -q[Y]);
+        var projected := dot(tip, [mantleDir[Y], -mantleDir[X]]);
+
+        // distance to tip
+        if (q[Y] > height && projected < 0)
+            d := max(d, mag(tip));
+
+        // distance to base ring
+        if (q[X] > radius && projected > mag(height, radius))
+            d := max(d, mag(q - [radius, 0]));
+        d
+    ),
+    bbox : [[-radius,-radius,0],[radius,radius,height]],
+    is_3d : true
+},
 // r1: major radius, from origin to centre of tube.
 // r2: minor radius, of the tube.
 torus (r1,r2) = perimeter_extrude (circle r1) (circle r2),
