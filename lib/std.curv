@@ -457,7 +457,7 @@ magenta = [1, 0, 1],
 white = [1, 1, 1],
 black = [0, 0, 0],
 
-// GL Debugging
+// Low Level / Debugging
 distance_field shape = make_shape {
     dist : everything.dist,
     bbox : everything.bbox,
@@ -467,6 +467,28 @@ distance_field shape = make_shape {
         [max(-c,0), 0, max(c,0)]
     ),
     is_2d : true,
+},
+
+// Select an isosurface of the shape's distance field.
+// r > 0: inflate the shape, blow it up like a balloon.
+// r == 0: no effect.
+// r < 0: deflate the shape.
+//
+// If the distance field is Euclidean, then positive r yields
+// the Minkowski sum of a sphere of radius r, aka rounded offset (CAD),
+// aka dilation (Mathematical Morphology).
+//
+// If the distance field is mitred, the result is a mitred offset (CAD).
+//
+// WARNING: Two shapes can have identical boundaries, but different distance
+// fields, so this is sensitive to the implementation of the shape.
+// Useful for debugging, to visualize a distance field.
+isosurface r shape = make_shape {
+    dist p : shape.dist p - r,
+    colour p : shape.colour p,
+    bbox : [shape.bbox[0]-r, shape.bbox[1]+r],
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
 },
 
 }
