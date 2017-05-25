@@ -21,6 +21,8 @@ ceil n = -floor(-n),
 trunc n = if (n >= 0) floor(n) else ceil(n),
 mod(a,m) = a - m * floor(a/m),
 rem(a,m) = a - m * trunc(a/m),
+mix(a,b,t) = a*(1-t) + b*t,
+clamp(v,lo,hi) = min(max(v,lo),hi),
 
 // lists
 concat vv = [for (v=vv) for (i=v) i],
@@ -309,6 +311,8 @@ _union2(s1,s2) = make_shape {
     is_2d : s1.is_2d && s2.is_2d,
     is_3d : s1.is_3d && s2.is_3d,
 },
+// When unioning a list of coloured shapes, we paint the shapes from first to
+// last order: the last shape is painted on top of its predecessors.
 union list = reduce(nothing, _union2) list,
 _intersection2(s1,s2) = make_shape {
     dist p : max(s1.dist p, s2.dist p),
@@ -443,16 +447,29 @@ extrude_eu h shape = make_shape {
 // Coloured Shapes
 colour rgb shape = make_shape {
     dist : shape.dist,
+    colour p : rgb,
     bbox : shape.bbox,
-    colour(p) : rgb,
     is_2d : shape.is_2d,
     is_3d : shape.is_3d,
 },
+colourfield f shape = make_shape {
+    dist : shape.dist,
+    colour : f,
+    bbox : shape.bbox,
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
+},
+// Each component of an [h,s,v] triple has range 0...1.
+hsv2rgb(c) = (
+    var m := abs(mod(c'0 + [1,2/3,1/3], 1) * 6 - 3);
+    c'2 * mix(1, clamp(m - 1, 0, 1), c'1)
+),
 red = [1, 0, 0],
-green = [0, 1, 0],
-blue = [0, 0, 1],
+orange = [1, .5, 0],  // aka: mix(red,yellow,.5)
 yellow = [1, 1, 0],
+green = [0, 1, 0],
 cyan = [0, 1, 1],
+blue = [0, 0, 1],
 magenta = [1, 0, 1],
 white = [1, 1, 1],
 black = [0, 0, 0],
