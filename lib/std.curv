@@ -34,6 +34,11 @@ reduce(first,f) rest =
 sum list = reduce(0, (x,y)->x+y) list,
 product list = reduce(1, (x,y)->x*y) list,
 
+// complex numbers: [RE,IM]
+RE=0,
+IM=1,
+cmul(z,w) = [z'RE*w'RE - z'IM*w'IM, z'IM*w'RE + z'RE*w'IM],
+
 // linear algebra
 is_vec2 x = is_list x && len x == 2 && is_num(x[0]) && is_num(x[1]),
 is_vec3 x = is_list x && len x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]),
