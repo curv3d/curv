@@ -381,13 +381,24 @@ translate _delta shape = (
         is_3d : shape.is_3d,
     }
 ),
-scale s shape = make_shape {
-    dist p : s * shape.dist(p / s),
-    colour p : shape.colour(p / s),
-    bbox : s * shape.bbox,
-    is_2d : shape.is_2d,
-    is_3d : shape.is_3d,
-},
+// If s is a number, this is an isotropic scale operation which preserves the
+// properties of the distance field.
+// If s is a vec2, only the X and Y dimensions are scaled,
+// and if s is a vec3, the X, Y and Z dimensions are scaled differently.
+// For these latter cases, anisotropic scaling creates a non-Euclidean
+// distance field that doesn't play well with certain upstream shape operations.
+scale _s shape = (
+    s = if (is_num _s) [_s,_s,_s]
+        else if (is_vec2 _s) [..._s, 1]
+        else (assert(is_vec3(_s) && shape.is_3d); _s);
+    make_shape {
+        dist p : shape.dist(p / s) * min(s),
+        colour p : shape.colour(p / s),
+        bbox : [s*shape.bbox[MIN], s*shape.bbox[MAX]],
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    }
+),
 // rotate angle shape -- 2D rotation around the Z axis
 // rotate (angle,axis) shape -- 3D rotation around specified axis
 rotate a shape =
