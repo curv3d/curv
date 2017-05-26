@@ -10,7 +10,6 @@ evaluate speed of this approach.
 
 -------------------------
 BUG: tests recently slowed down by 2 orders of magnitude.
-BUG: white is rendered as grey in a 3D shape interior.
 
 source reorganization:
 * Split curv.cc into multiple source files, in subdirectory cmd.
@@ -66,6 +65,11 @@ core language:
 3D viewer
 * use bbox to ensure entire scene is visible
 * zoom in on `cube 0.25`. WTF?
+* bug: white is rendered as grey in a 3D shape interior. I prefer no lighting
+  transformation for interior points.
+* The current sphere-tracer stops at distance 20 (hard coded). Use the bounding
+  box to compute a tmin and tmax value for a given ray (by intersecting the
+  bbox), or don't march at all if the ray doesn't intersect the bbox.
 
 Define regular_polygon(n). See poly.curv.
 
