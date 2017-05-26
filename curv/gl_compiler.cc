@@ -147,7 +147,7 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
        "vec4 castRay( in vec3 ro, in vec3 rd )\n"
        "{\n"
        "    float tmin = 1.0;\n"
-       "    float tmax = 20.0;\n"
+       "    float tmax = 200.0;\n"
        "   \n"
        //"#if 0\n"
        //"    // bounding volume\n"
