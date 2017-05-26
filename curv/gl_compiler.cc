@@ -363,7 +363,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& source)
                 if (e.is_num()) {
                     if (!first) f.gl.out << ",";
                     first = false;
-                    f.gl.out << e.get_num_unsafe();
+                    f.gl.out << dfmt(e.get_num_unsafe(), dfmt::EXPR);
                 } else
                     goto error;
             }
