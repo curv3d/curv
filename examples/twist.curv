@@ -1,0 +1,46 @@
+// Twist a 3D shape into a helix.
+// Rotate the XY plane by an angle that depends on the Z coordinate.
+
+// The twist transformation messes up the distance field along the Z axis,
+// potentially making it non-Lipshitz-continuous, which messes up sphere
+// tracing.
+// (https://en.wikipedia.org/wiki/Lipschitz_continuity)
+//
+// It works best if the shape argument has a Euclidean distance function.
+//
+// The fudge factor of .5 in the code below compensates.
+//
+// RESEARCH: I need a theory of how to compute the fudge factor
+// so that I can parameterize the twist function and put it in the library.
+// * look at ImplicitCAD?
+// * IQ says: "Domain deformation functions do not preserve distances.
+//   You must decrease your marching step to properly sample these functions
+//   (proportional to the maximum derivative of the domain distortion function).
+//
+// I think this means: divide the distance value by T >= 1, where T is
+// the maximum derivative of the domain distortion function.
+
+twist shape = make_shape {
+    dist p : (
+        var a := 1*p[Z] + 0;
+        var xy := cmul(p[X,Y], cis a);
+        shape.dist(xy[X], xy[Y], p[Z]) * .5
+    ),
+    bbox : everything.bbox,
+    is_3d : true,
+};
+
+twist (box_eu (1,1,inf)) //>> slice_xz >> distance_field
+
+/*
+twist1 t shape = make_shape {
+    dist p : (
+        var xy := cmul(p[X,Y], cis(p[Z]*t));
+        shape.dist(xy[X], xy[Y], p[Z]) / (t*2)
+    ),
+    bbox : everything.bbox,
+    is_3d : true,
+};
+
+twist1 10 (box_eu (1,1,inf))
+*/

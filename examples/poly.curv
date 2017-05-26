@@ -90,19 +90,6 @@ old_rep_rotate(n) shape = make_shape {
 //   v = cis(rotate_by);
 //   new_p = cmul(p, v);
 
-// phase angle of a vector, range tau/2 to -tau/2
-phase v = atan2(v'Y,v'X);
-
-// convert phase angle to unit vector
-cis(theta) = [cos theta, sin theta];
-
-mag(v) = sum(v^2);
-
-// complex numbers: [RE,IM]
-RE=0;
-IM=1;
-cmul(z,w) = [z'RE*w'RE - z'IM*w'IM, z'IM*w'RE + z'RE*w'IM];
-
 //old_rep_rotate(5) translate(1,1) circle(1);
 
 half_plane(v) = (
