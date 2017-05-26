@@ -35,14 +35,14 @@ sum list = reduce(0, (x,y)->x+y) list,
 product list = reduce(1, (x,y)->x*y) list,
 
 // linear algebra
+is_vec2 x = is_list x && len x == 2 && is_num(x[0]) && is_num(x[1]),
+is_vec3 x = is_list x && len x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]),
 cross(p,q) = [p'Y*q'Z - p'Z-q'Y, p'Z*q'X - p'X*q'Z, p'X*q'Y - p'Y*q'X],
 identity(n) = [for(i=1..n) [for(j=1..n) if(i==j) 1 else 0]],
 transpose(a) = [for(i=0..<len(a'0)) [for(j=0..<len a) a'j'i]],
 normalize v = v / mag v,
-
 // phase angle of a vector, range tau/2 to -tau/2
 phase v = atan2(v'Y,v'X),
-
 // convert phase angle to unit vector
 cis theta = [cos theta, sin theta],
 
@@ -120,74 +120,118 @@ cube sz = (
     is_3d : true,
   }
 ),
-rect bbox = (
-  xmin = bbox'0'X;
-  ymin = bbox'0'Y;
-  xmax = bbox'1'X;
-  ymax = bbox'1'Y;
-  intersection (
-    if (xmin > -inf) make_shape {
+// rect: an axis aligned rectangle. Argument is a vec2 or a bbox2.
+// Mitred distance field.
+rect b =
+  if (is_vec2 b)
+    make_shape {
+      dist p : max(abs(p[X,Y]) - b),
+      bbox : [[-b[X],-b[Y],0],[b[X],b[Y],0]],
+      is_2d : true,
+    }
+  else (
+    xmin = b'0'X;
+    ymin = b'0'Y;
+    xmax = b'1'X;
+    ymax = b'1'Y;
+    intersection (
+      if (xmin > -inf) make_shape {
         dist p : xmin - p'X,
         bbox : [[xmin, -inf, 0], [inf, inf, 0]],
         is_2d : true,
-    },
-    if (ymin > -inf) make_shape {
+      },
+      if (ymin > -inf) make_shape {
         dist p : ymin - p'Y,
         bbox : [[-inf, ymin, 0], [inf, inf, 0]],
         is_2d : true,
-    },
-    if (xmax < inf) make_shape {
+      },
+      if (xmax < inf) make_shape {
         dist p : p'X - xmax,
         bbox : [[-inf, -inf, 0], [xmax, inf, 0]],
         is_2d : true,
-    },
-    if (ymax < inf) make_shape {
+      },
+      if (ymax < inf) make_shape {
         dist p : p'Y - ymax,
         bbox : [[-inf, -inf, 0], [inf, ymax, 0]],
         is_2d : true,
-    },
-  )
-),
-box bbox = (
-  xmin = bbox'0'X;
-  ymin = bbox'0'Y;
-  zmin = bbox'0'Z;
-  xmax = bbox'1'X;
-  ymax = bbox'1'Y;
-  zmax = bbox'1'Z;
-  intersection (
-    if (xmin > -inf) make_shape {
-        dist p : xmin - p'X,
-        bbox : [[xmin, -inf, 0], [inf, inf, 0]],
-        is_3d : true,
-    },
-    if (ymin > -inf) make_shape {
-        dist p : ymin - p'Y,
-        bbox : [[-inf, ymin, 0], [inf, inf, 0]],
-        is_3d : true,
-    },
-    if (zmin > -inf) make_shape {
-        dist p : zmin - p'Z,
-        bbox : [[-inf, zmin, 0], [inf, inf, 0]],
-        is_3d : true,
-    },
-    if (xmax < inf) make_shape {
-        dist p : p'X - xmax,
-        bbox : [[-inf, -inf, 0], [xmax, inf, 0]],
-        is_3d : true,
-    },
-    if (ymax < inf) make_shape {
-        dist p : p'Y - ymax,
-        bbox : [[-inf, -inf, 0], [inf, ymax, 0]],
-        is_3d : true,
-    },
-    if (zmax < inf) make_shape {
-        dist p : p'Z - zmax,
-        bbox : [[-inf, -inf, 0], [inf, zmax, 0]],
-        is_3d : true,
-    },
-  )
-),
+      },
+    )
+  ),
+// Axis aligned rectangle with a Euclidean distance field. Arg is vec2.
+rect_eu b = make_shape {
+    dist p : (
+        var d := abs(p[X,Y]) - b;
+        min(max d, 0) + mag(max(d,0))
+    ),
+    bbox : [[-b[X],-b[Y],0],[b[X],b[Y],0]],
+    is_2d : true,
+},
+// box: an axis aligned cuboid. Argument is a vec3 or a bbox.
+// Mitred distance field.
+box b =
+  if (is_vec3 b)
+    make_shape {
+      dist p : max(abs p - b),
+      bbox : [-b, b],
+      is_3d : true,
+    }
+  else (
+    /* Won't compile right now.
+    make_shape {
+      dist p : max(max(b[MIN]-p), max(p-b[MAX])),
+      bbox : b,
+      is_3d : true,
+    }
+    */
+    xmin = b'0'X;
+    ymin = b'0'Y;
+    zmin = b'0'Z;
+    xmax = b'1'X;
+    ymax = b'1'Y;
+    zmax = b'1'Z;
+    intersection (
+      if (xmin > -inf) make_shape {
+          dist p : xmin - p'X,
+          bbox : [[xmin, -inf, 0], [inf, inf, 0]],
+          is_3d : true,
+      },
+      if (ymin > -inf) make_shape {
+          dist p : ymin - p'Y,
+          bbox : [[-inf, ymin, 0], [inf, inf, 0]],
+          is_3d : true,
+      },
+      if (zmin > -inf) make_shape {
+          dist p : zmin - p'Z,
+          bbox : [[-inf, zmin, 0], [inf, inf, 0]],
+          is_3d : true,
+      },
+      if (xmax < inf) make_shape {
+          dist p : p'X - xmax,
+          bbox : [[-inf, -inf, 0], [xmax, inf, 0]],
+          is_3d : true,
+      },
+      if (ymax < inf) make_shape {
+          dist p : p'Y - ymax,
+          bbox : [[-inf, -inf, 0], [inf, ymax, 0]],
+          is_3d : true,
+      },
+      if (zmax < inf) make_shape {
+          dist p : p'Z - zmax,
+          bbox : [[-inf, -inf, 0], [inf, zmax, 0]],
+          is_3d : true,
+      },
+    )
+  ),
+// box_eu: an axis aligned cuboid, with Euclidean distance field.
+// Argument is a vec3.
+box_eu b = make_shape {
+    dist p : (
+        var d := abs p - b;
+        min(max d, 0) + mag(max(d,0))
+    ),
+    bbox : [-b, b],
+    is_3d : true,
+},
 // 'r' is the radius of a sphere inscribed inside the octahedron.
 // Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
 octahedron r = (
