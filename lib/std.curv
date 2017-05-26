@@ -562,5 +562,15 @@ isosurface r shape = make_shape {
     is_2d : shape.is_2d,
     is_3d : shape.is_3d,
 },
+// Construct the shell of a shape, whose boundaries are +/-r from the original
+// surface or perimeter.
+// WARNING: this is implemented using isosurfaces, so the results are dependent
+// on the distance field, not just on the boundary of the shape.
+shell r shape = make_shape {
+    dist p : abs(shape.dist p) - r,
+    colour : shape.colour,
+    bbox : [shape.bbox[0] - r, shape.bbox[1] + r],
+    is_2d : true,
+},
 
 }
