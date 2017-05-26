@@ -4,9 +4,4 @@ function(f) = make_shape {
     is_2d : true,
 };
 
-function (n->
-    if (n >= 0)
-        ceil(n) - n
-    else
-        floor(n) - n
-)
+function (n->sin n * sin(n*10))
