@@ -30,7 +30,10 @@ twist shape = make_shape {
     is_3d : true,
 };
 
-twist (box_eu (1,1,inf)) //>> slice_xz >> distance_field
+union (
+    twist (box_eu (1,1,5)) >> translate(3,0,0),
+    box_eu(1,1,5) >> translate(-3,0,0),
+)
 
 /*
 twist1 t shape = make_shape {
