@@ -1,0 +1,7 @@
+// 'b' is a num or vec3
+rounded_box(r, b) = isosurface r << box_eu(b - r);
+
+union (
+    rounded_box(.5, 1),
+    box(1) >> translate(3,0,0),
+)
