@@ -5,7 +5,7 @@
 #ifndef CURV_MODULE_H
 #define CURV_MODULE_H
 
-#include <curv/value.h>
+#include <curv/structure.h>
 #include <curv/atom.h>
 #include <curv/shared.h>
 #include <curv/list.h>
@@ -23,7 +23,7 @@ namespace curv {
 /// I've wanted lazy evaluation as a performance optimization, especially for
 /// large libraries where most components aren't used. However, for now,
 /// strict evaluation is simpler.
-struct Module : public Ref_Value 
+struct Module : public Structure
 {
     /// A Dictionary maps field names onto slot indexes.
     /// It has a reference count so that the same dictionary
@@ -61,7 +61,7 @@ struct Module : public Ref_Value
 
     Module(Shared<Dictionary> dictionary, Shared<List> values)
     :
-        Ref_Value(ty_module),
+        Structure(ty_module),
         dictionary_(std::move(dictionary)),
         slots_(std::move(values))
     {}

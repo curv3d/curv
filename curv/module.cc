@@ -41,7 +41,7 @@ Module::getfield(Atom name, const Context& cx) const
     auto b = dictionary_->find(name);
     if (b != dictionary_->end())
         return get(b->second);
-    return Ref_Value::getfield(name, cx);
+    return Structure::getfield(name, cx);
 }
 
 bool

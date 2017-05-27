@@ -46,7 +46,7 @@ Record::getfield(Atom name, const Context& cx) const
     auto fp = fields_.find(name);
     if (fp != fields_.end())
         return fp->second;
-    return Ref_Value::getfield(name, cx);
+    return Structure::getfield(name, cx);
 }
 
 bool

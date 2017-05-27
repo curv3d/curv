@@ -37,7 +37,7 @@ struct BBox {
 // TODO: Shape should be abstract, user defined Shape should be a subclass.
 // I presume that built-in shape classes don't need the record_ field.
 
-struct Shape : public Ref_Value
+struct Shape : public Structure
 {
     Shared<const Record> record_;
 

@@ -30,7 +30,7 @@ struct Blackfield_Function : public Polyadic_Function
 
 Shape::Shape(Shared<const Record> record, const Context& cx)
 :
-    Ref_Value(ty_shape), record_(std::move(record))
+    Structure(ty_shape), record_(std::move(record))
 {
     static Atom colour = "colour";
     static Value black = {make<Blackfield_Function>()};

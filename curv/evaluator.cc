@@ -417,13 +417,13 @@ list_at(const List& list, Value index, const Context& cx)
     return list[i];
 }
 Value
-record_at(const Ref_Value& ref, Value index, const Context& cx)
+struct_at(const Structure& ref, Value index, const Context& cx)
 {
     if (auto indices = index.dycast<List>()) {
         Shared<List> result = List::make(indices->size());
         int j = 0;
         for (auto i : *indices)
-            (*result)[j++] = record_at(ref, i, cx);
+            (*result)[j++] = struct_at(ref, i, cx);
         return {result};
     }
     Atom a = index.to<const String>(cx);
@@ -436,12 +436,10 @@ At_Expr::eval(Frame& f) const
     Value b = arg2_->eval(f);
     if (auto list = a.dycast<const List>())
         return list_at(*list, b, At_Phrase(*arg2_->source_, &f));
-    if (auto record = a.dycast<const Record>())
-        return record_at(*record, b, At_Phrase(*arg2_->source_, &f));
-    if (auto module = a.dycast<const Module>())
-        return record_at(*module, b, At_Phrase(*arg2_->source_, &f));
+    if (auto structure = a.dycast<const Structure>())
+        return struct_at(*structure, b, At_Phrase(*arg2_->source_, &f));
     throw Exception(At_Phrase(*arg1_->source_, &f),
-        "not a list, record or module");
+        "not a list or structure");
 }
 
 Shared<List>

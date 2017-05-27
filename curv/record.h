@@ -6,19 +6,19 @@
 #define CURV_RECORD_H
 
 #include <curv/atom.h>
-#include <curv/value.h>
+#include <curv/structure.h>
 
 namespace curv {
 
 /// A record value: {x=1,y=2}
-struct Record : public Ref_Value
+struct Record : public Structure
 {
     Atom_Map<Value> fields_;
 
-    Record() : Ref_Value(ty_record) {}
+    Record() : Structure(ty_record) {}
     Record(Atom_Map<Value> fields)
     :
-        Ref_Value(ty_record),
+        Structure(ty_record),
         fields_(std::move(fields))
     {
     }

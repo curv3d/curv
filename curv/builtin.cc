@@ -73,6 +73,14 @@ struct Is_List_Function : public Polyadic_Function
         return {args[0].dycast<List>() != nullptr};
     }
 };
+struct Is_Struct_Function : public Polyadic_Function
+{
+    Is_Struct_Function() : Polyadic_Function(1) {}
+    Value call(Frame& args) override
+    {
+        return {args[0].dycast<Structure>() != nullptr};
+    }
+};
 struct Is_Fun_Function : public Polyadic_Function
 {
     Is_Fun_Function() : Polyadic_Function(1) {}
@@ -609,9 +617,9 @@ struct Defined_Expression : public Just_Expression
     virtual Value eval(Frame& f) const override
     {
         auto val = expr_->eval(f);
-        if (val.is_ref()) {
-            auto& ref = val.get_ref_unsafe();
-            return {ref.hasfield(id_)};
+        auto s = val.dycast<Structure>();
+        if (s) {
+            return {s->hasfield(id_)};
         } else {
             return {false};
         }
@@ -646,7 +654,7 @@ builtin_namespace()
     {"is_num", make<Builtin_Value>(Value{make<Is_Num_Function>()})},
     {"is_str", make<Builtin_Value>(Value{make<Is_Str_Function>()})},
     {"is_list", make<Builtin_Value>(Value{make<Is_List_Function>()})},
-    // TODO: is_record/is_module: two predicates or one?
+    {"is_struct", make<Builtin_Value>(Value{make<Is_Struct_Function>()})},
     {"is_fun", make<Builtin_Value>(Value{make<Is_Fun_Function>()})},
     {"is_shape", make<Builtin_Value>(Value{make<Is_Shape_Function>()})},
     {"bit", make<Builtin_Value>(Value{make<Bit_Function>()})},
