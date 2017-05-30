@@ -2,13 +2,14 @@ make_shape {
   dist : everything.dist,
   bbox : everything.bbox,
   colour pt : (
-    var p := pt[X,Y];
+    var z := pt[X,Y];
+    var c := pt[X,Y];
     var color := [0,0,0];
     var i := 0;
     while (i < 100) (
-      p := [p'X*p'X - p'Y*p'Y, 2*p'X*p'Y]+pt[X,Y];
-      if (dot(p,p) > 4) (
-        var colorRegulator := (i-1)-log(log(dot(p,p))/log 2)/log 2;
+      z := csqr(z) + c;
+      if (dot(z,z) > 4) (
+        var colorRegulator := (i-1)-log(log(dot(z,z))/log 2)/log 2;
         color := [0.95 + .012*colorRegulator, 1, .2+.4*(1+sin(.3*colorRegulator))];
         i := 100;
       ) else i := i + 1;
