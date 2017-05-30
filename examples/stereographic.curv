@@ -1,0 +1,51 @@
+// Stereographic Projection
+// Mapping an infinite plane onto the surface of a unit sphere.
+// https://en.wikipedia.org/wiki/Stereographic_projection
+
+stereographic_projection plane = sphere 1 >> colourfield
+    (p->plane.colour(p[X]/(1-p[Z]), p[Y]/(1-p[Z]), 0));
+
+/* Doesn't compile. Some stupid GL bug.
+stereographic_projection plane = sphere 1 >> colourfield
+    ((x,y,z)->plane.colour(x/(1-z), y/(1-z), 0));
+*/
+
+// a planar colour field to use for the projection:
+rep_grid bbox shape = make_shape {
+    //dist p : shape.dist (mod(p[X]-bbox[0][X],bbox[1][X]-bbox[0][X]),
+    dist p : shape.dist (mod(p-bbox[0],bbox[1]-bbox[0])+bbox[0]),
+    colour p : shape.colour (mod(p-bbox[0],bbox[1]-bbox[0])),
+    bbox : everything.bbox,
+    is_2d : true,
+};
+
+allred = colour red everything;
+
+c = rep_grid(-1,1) << shell .1 << colour black << circle 1;
+shells = union(allred,c,translate(1,1)<<c) >> scale .25;
+
+blred = union (allred, colour black (rect ((-inf,0),(inf,inf))));
+
+brc = union (allred, colour black (circle 1));
+
+log_spiral(a,b) = make_shape {
+    dist p : (
+        var r := mag p;
+        var t := phase p;
+        if (r == 0)
+            0
+        else (
+            var n := (log(r/a)/b - t) / tau;
+            var upper_r := a * e^(b*(t+tau*ceil n));
+            var lower_r := a * e^(b*(t+tau*floor n));
+            min(abs(upper_r-r), abs(r-lower_r)) - r*b
+        )
+    ),
+    bbox : everything.bbox,
+    is_2d : true,
+};
+spiral = union(allred, log_spiral(1,.2));
+
+//difference(
+    stereographic_projection << spiral
+//    ,box((0,0,0),(1,1,1)))
