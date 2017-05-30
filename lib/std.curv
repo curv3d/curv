@@ -38,6 +38,7 @@ product list = reduce(1, (x,y)->x*y) list,
 RE=0,
 IM=1,
 cmul(z,w) = [z'RE*w'RE - z'IM*w'IM, z'IM*w'RE + z'RE*w'IM],
+csqr(z) = [ z[RE]*z[RE] - z[IM]*z[IM], 2*z[RE]*z[IM] ],
 
 // linear algebra
 is_vec2 x = is_list x && len x == 2 && is_num(x[0]) && is_num(x[1]),
