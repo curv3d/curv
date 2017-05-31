@@ -566,6 +566,32 @@ struct Echo_Metafunction : public Metafunction
     }
 };
 
+/// The meaning of a call to `error`, such as `error("foo")`.
+struct Error_Action : public Just_Action
+{
+    Shared<Operation> arg_;
+    Error_Action(
+        Shared<const Phrase> source,
+        Shared<Operation> arg)
+    :
+        Just_Action(std::move(source)),
+        arg_(std::move(arg))
+    {}
+    virtual void exec(Frame& f) const override
+    {
+        throw Exception(At_Frame(&f), stringify(arg_->eval(f)));
+    }
+};
+/// The meaning of the phrase `error` in isolation.
+struct Error_Metafunction : public Metafunction
+{
+    using Metafunction::Metafunction;
+    virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
+    {
+        return make<Error_Action>(share(ph), analyze_op(*ph.arg_, env));
+    }
+};
+
 struct Assert_Action : public Just_Action
 {
     Shared<Operation> arg_;
@@ -674,6 +700,7 @@ builtin_namespace()
     {"make_shape", make<Builtin_Value>(Value{make<Make_Shape_Function>()})},
     {"iterate", make<Builtin_Value>(Value{make<Iterate_Function>()})},
     {"echo", make<Builtin_Meaning<Echo_Metafunction>>()},
+    {"error", make<Builtin_Meaning<Error_Metafunction>>()},
     {"assert", make<Builtin_Meaning<Assert_Metafunction>>()},
     {"defined", make<Builtin_Meaning<Defined_Metafunction>>()},
     };
