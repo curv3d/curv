@@ -511,6 +511,14 @@ extrude_eu h shape = make_shape {
     is_3d : true,
 },
 
+morph(t, shape1, shape2) = make_shape {
+    dist p : mix(shape1.dist p, shape2.dist p, t),
+    colour p : mix(shape1.colour p, shape2.colour p, t),
+    bbox : mix(shape1.bbox, shape2.bbox, t),
+    is_2d : shape1.is_2d && shape2.is_2d,
+    is_3d : shape1.is_3d && shape2.is_3d,
+},
+
 // Coloured Shapes
 colour c shape =
     if (is_vec3 c) make_shape {
