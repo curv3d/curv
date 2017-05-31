@@ -16,16 +16,15 @@ using aux::dfmt;
 namespace curv {
 
 void gl_compile_2d(const Shape&, std::ostream&, const Context&);
-void gl_compile_3d(const Shape&, std::ostream&, const Context& );
+void gl_compile_3d(const Shape&, std::ostream&, const Context&);
 
 void gl_compile(const Shape& shape, std::ostream& out, const Context& cx)
 {
-    if (shape.hasfield("is_3d")) {
-        bool is3d = shape.getfield("is_3d", cx).to_bool(At_Field("is_3d", cx));
-        if (is3d)
-            return gl_compile_3d(shape, out, cx);
-    }
-    return gl_compile_2d(shape, out, cx);
+    if (shape.getfield("is_2d", cx).to_bool(At_Field("is_2d", cx)))
+        return gl_compile_2d(shape, out, cx);
+    if (shape.getfield("is_3d", cx).to_bool(At_Field("is_3d", cx)))
+        return gl_compile_3d(shape, out, cx);
+    assert(0);
 }
 
 void gl_compile_2d(const Shape& shape, std::ostream& out, const Context& cx)
