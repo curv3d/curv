@@ -25,6 +25,6 @@ twist shape = make_shape {
 };
 
 torus(2,1)
-    >> colourfield(p->hsv2rgb(phase(p[X,Y])/tau,1,1))
+    >> colour (radial_rainbow 1)
     >> xrotate(tau/4)
     >> twist
