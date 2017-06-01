@@ -16,16 +16,15 @@ using aux::dfmt;
 namespace curv {
 
 void gl_compile_2d(const Shape&, std::ostream&, const Context&);
-void gl_compile_3d(const Shape&, std::ostream&, const Context& );
+void gl_compile_3d(const Shape&, std::ostream&, const Context&);
 
 void gl_compile(const Shape& shape, std::ostream& out, const Context& cx)
 {
-    if (shape.hasfield("is_3d")) {
-        bool is3d = shape.getfield("is_3d", cx).to_bool(At_Field("is_3d", cx));
-        if (is3d)
-            return gl_compile_3d(shape, out, cx);
-    }
-    return gl_compile_2d(shape, out, cx);
+    if (shape.getfield("is_2d", cx).to_bool(At_Field("is_2d", cx)))
+        return gl_compile_2d(shape, out, cx);
+    if (shape.getfield("is_3d", cx).to_bool(At_Field("is_3d", cx)))
+        return gl_compile_3d(shape, out, cx);
+    assert(0);
 }
 
 void gl_compile_2d(const Shape& shape, std::ostream& out, const Context& cx)
@@ -213,7 +212,8 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
        "// out: rgb colour\n"
        "vec3 render( in vec3 ro, in vec3 rd )\n"
        "{ \n"
-       "    vec3 col = vec3(0.7, 0.9, 1.0) +rd.z*0.8;\n"
+       "    //vec3 col = vec3(0.7, 0.9, 1.0) +rd.z*0.8;\n"
+       "    vec3 col = vec3(0.8, 0.9, 1.0);\n"
        "    vec4 res = castRay(ro,rd);\n"
        "    float t = res.x;\n"
        "    vec3 c = res.yzw;\n"
@@ -241,12 +241,12 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
        "        lin += 2.00*spe*vec3(1.00,0.90,0.70)*dif;\n"
        "        lin += 0.40*amb*vec3(0.40,0.60,1.00)*occ;\n"
        "        lin += 0.50*dom*vec3(0.40,0.60,1.00)*occ;\n"
-       "        lin += 0.50*bac*vec3(0.25,0.25,0.25)*occ;\n"
+       "        lin += 0.50*bac*vec3(0.35,0.35,0.35)*occ;\n"
        "        lin += 0.25*fre*vec3(1.00,1.00,1.00)*occ;\n"
        "        vec3 iqcol = col*lin;\n"
        "\n"
        "        //col = mix( col, vec3(0.8,0.9,1.0), 1.0-exp( -0.0002*t*t*t ) );\n"
-       "        col = mix(col,iqcol, 0.5);\n"
+       "        col = mix(col,iqcol, 0.4);\n"
        "    }\n"
        "\n"
        "    return vec3( clamp(col,0.0,1.0) );\n"

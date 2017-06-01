@@ -417,7 +417,7 @@ rotate a shape =
   if (is_num a)
     make_shape { // 2D rotation around the Z axis
     dist p : shape.dist(cos(a)*p'X + sin(a)*p'Y, cos(a)*p'Y - sin(a)*p'X, p'Z),
-    //dist p : shape.dist(cmul(p, cis(-a))),
+    //dist p : shape.dist(...cmul(p[X,Y], cis(-a)), p[Z]),
     colour p : shape.colour(cos(a)*p'X+sin(a)*p'Y, cos(a)*p'Y-sin(a)*p'X, p'Z),
     bbox : shape.bbox, // TODO: fixme, see below
     is_2d : shape.is_2d,
@@ -511,28 +511,45 @@ extrude_eu h shape = make_shape {
     is_3d : true,
 },
 
+morph(t, shape1, shape2) = make_shape {
+    dist p : mix(shape1.dist p, shape2.dist p, t),
+    colour p : mix(shape1.colour p, shape2.colour p, t),
+    bbox : mix(shape1.bbox, shape2.bbox, t),
+    is_2d : shape1.is_2d && shape2.is_2d,
+    is_3d : shape1.is_3d && shape2.is_3d,
+},
+
 // Coloured Shapes
-colour rgb shape = make_shape {
-    dist : shape.dist,
-    colour p : rgb,
-    bbox : shape.bbox,
-    is_2d : shape.is_2d,
-    is_3d : shape.is_3d,
-},
-colourfield f shape = make_shape {
-    dist : shape.dist,
-    colour : f,
-    bbox : shape.bbox,
-    is_2d : shape.is_2d,
-    is_3d : shape.is_3d,
-},
+colour c shape =
+    if (is_vec3 c) make_shape {
+        dist : shape.dist,
+        colour p : c,
+        bbox : shape.bbox,
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    } else if (is_fun c) make_shape {
+        dist : shape.dist,
+        colour : c,
+        bbox : shape.bbox,
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    } else if (is_shape c) make_shape {
+        dist : shape.dist,
+        colour : c.colour,
+        bbox : shape.bbox,
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    } else (
+        error "first argument of 'colour' must be [r,g,b], function or shape";
+        null
+    ),
 // Each component of an [h,s,v] triple has range 0...1.
 hsv2rgb(c) = (
     var m := abs(mod(c'0 + [1,2/3,1/3], 1) * 6 - 3);
     c'2 * mix(1, clamp(m - 1, 0, 1), c'1)
 ),
 red = [1, 0, 0],
-orange = [1, .5, 0],  // aka: mix(red,yellow,.5)
+orange = [1, .5, 0],
 yellow = [1, 1, 0],
 green = [0, 1, 0],
 cyan = [0, 1, 1],
@@ -540,6 +557,7 @@ blue = [0, 0, 1],
 magenta = [1, 0, 1],
 white = [1, 1, 1],
 black = [0, 0, 0],
+radial_rainbow n = colour (p->hsv2rgb(mod(phase(p[X,Y])/tau*n,1),1,1)) everything,
 
 // Low Level / Debugging
 distance_field shape = make_shape {

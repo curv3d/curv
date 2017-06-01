@@ -3,4 +3,4 @@ poly(n) = make_shape {
     bbox : [[-1,-1,0],[1,1,0]],
     is_2d : true,
 };
-poly 5 >> rotate(tau/4) >> colourfield(p->hsv2rgb(mod(phase(p[X,Y]),1),1,1))
+poly 5 >> rotate(tau/4) >> colour (radial_rainbow 3)

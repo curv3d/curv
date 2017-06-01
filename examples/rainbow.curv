@@ -1,1 +1,1 @@
-colourfield(p->hsv2rgb(phase(p[X,Y])/tau,1,1)) << cylinder(1,1)
+cylinder(1,1) >> colour (radial_rainbow 1)
