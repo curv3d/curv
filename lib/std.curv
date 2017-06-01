@@ -109,11 +109,26 @@ perimeter_extrude perimeter cross_section = make_shape {
 },
 
 // polytopes
+// Half-space with normal n, at distance r from the origin.
+//  n: must be a 3D unit vector.
+//  if r > 0, half-space does not contain the origin.
+half_space(r,n) = make_shape {
+    dist p : dot(p, n) + r,
+    bbox : everything.bbox,
+    is_3d : true,
+},
+// Half-plane with normal n, at distance r from the origin.
+//  n: must be a 2D unit vector.
+//  if r > 0, half-plane does not contain the origin.
+half_plane(r,n) = make_shape {
+    dist p : dot(p[X,Y], n) + r,
+    bbox : everything.bbox,
+    is_2d : true,
+},
 square sz = (
   s = if (is_list sz) sz else [sz,sz];
   make_shape {
     dist p : max(abs(p[X,Y]) - s/2),
-    //bbox : [-s/2, s/2],
     bbox : [[-s[X]/2,-s[Y]/2,0], [s[X]/2,s[Y]/2,0]],
     is_2d : true,
   }
@@ -244,6 +259,41 @@ box_eu b = make_shape {
     bbox : [-b, b],
     is_3d : true,
 },
+// 'r' is the radius of a sphere inscribed inside the tetrahedron.
+// Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
+tetrahedron r = (
+    // vertices of a tetrahedron
+    v1 = [1,1,1];
+    v2 = [-1,-1,1];
+    v3 = [1,-1,-1];
+    v4 = [-1,1,-1];
+
+    // faces: (1,2,3) (1,4,2) (2,4,3) (1,3,4)
+    // vertices listed in CCW order viewed from outside (right hand rule)
+
+    // face normals
+    n1 = normalize(cross(v1-v3,v2-v3));
+    n2 = normalize(cross(v1-v2,v4-v2));
+    n3 = normalize(cross(v2-v3,v4-v3));
+    n4 = normalize(cross(v4-v3,v1-v3));
+
+    // radius of circumscribed sphere / radius of inscribed sphere
+    circumratio = (sqrt(3/2)/2) / (1/(2*sqrt 6));
+
+    make_shape {
+        dist p : (
+            max (
+                dot(p, n1),
+                dot(p, n2),
+                dot(p, n3),
+                dot(p, n4),
+            ) - r
+        ),
+        is_3d : true,
+        bbox : sqrt(3) * [[-r,-r,-r], [r,r,r]],
+        circumratio : circumratio,
+    }
+),
 // 'r' is the radius of a sphere inscribed inside the octahedron.
 // Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
 octahedron r = (
