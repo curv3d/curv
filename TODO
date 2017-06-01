@@ -52,9 +52,14 @@ core language:
 * Rename `len` to `size`. Rationale: in linear algebra, the 'length' of a
   vector is its magnitude.
 * struct:
-  * `is_struct` is true for records, modules, shapes
-  * curv::Struct is a subclass of curv::Ref_Value
-  * `make_shape` accepts a Struct as an argument
+  * `make_shape` accepts a Struct as an argument. Can use module syntax to
+    define a shape. But, I can't destructively add new fields to a module value
+    (as done by the current Shape constructor, to fill in default values). So:
+    * Shape uses same internal rep as Record. If constructor argument is a
+      unique Record ref, move its contents into the Shape. Ditto if arg is
+      a unique Shape ref. Otherwise, copy the contents. (Copying makes sense
+      since now every make_shape call is missing at least one of colour,
+      is_2d, is_3d.)
   * `dom` maps a struct to a list of keys; maps a list to a range of indexes.
 * syntax changes:
   * `in` not `=` in `for`
