@@ -2,8 +2,9 @@
 
 What remains for MVP? (What do I want to show in my first big demo?)
 * standard library
-  * rotate
+  * rotate bbox
   * repetition
+  * tetrahedron
 * Documentation
 * Meta: use https://opensource.guide/
 
@@ -11,9 +12,6 @@ Play with nvidia's CUDA sample, marching cubes. export STL? Benchmark to
 evaluate speed of this approach.
 
 -------------------------
-//BUG: this doesn't work, shape is warped and bad distance field.
-torus(2,1) >> rotate(tau/4, Yaxis)
-
 BUG: Doesn't GL compile.
 stereographic_projection plane = sphere 1 >> colourfield
     ((x,y,z)->plane.colour(x/(1-z), y/(1-z), 0));
