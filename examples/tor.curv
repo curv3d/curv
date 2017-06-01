@@ -9,22 +9,7 @@ xrotate a shape =
     is_3d : true,
   };
 
-twist shape = make_shape {
-    dist p : (
-        var a := 1*p[Z] + 0;
-        var xy := cmul(p[X,Y], cis a);
-        shape.dist(xy[X], xy[Y], p[Z]) * .5
-    ),
-    colour p : (
-        var a := 1*p[Z] + 0;
-        var xy := cmul(p[X,Y], cis a);
-        shape.colour(xy[X], xy[Y], p[Z]) * .5
-    ),
-    bbox : everything.bbox,
-    is_3d : true,
-};
-
 torus(2,1)
     >> colour (radial_rainbow 1)
     >> xrotate(tau/4)
-    >> twist
+    >> twist 1

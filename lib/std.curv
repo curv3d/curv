@@ -519,6 +519,31 @@ morph(t, shape1, shape2) = make_shape {
     is_3d : shape1.is_3d && shape2.is_3d,
 },
 
+// Twist 3D space into a helix around the Z axis:
+// t full rotations for each tau of Z displacement.
+// The fudge factor '2' is empirical.
+twist t shape = (
+    b = shape.bbox;
+    r = max(map mag (
+        [b[MIN][X], b[MIN][Y]],
+        [b[MAX][X], b[MIN][Y]],
+        [b[MIN][X], b[MAX][Y]],
+        [b[MAX][X], b[MAX][Y]],
+    ));
+    make_shape {
+        dist p : (
+            var xy := cmul(p[X,Y], cis(p[Z]*t));
+            shape.dist(xy[X], xy[Y], p[Z]) / (t*2)
+        ),
+        colour p : (
+            var xy := cmul(p[X,Y], cis(p[Z]*t));
+            shape.colour(xy[X], xy[Y], p[Z]) / (t*2)
+        ),
+        bbox : [[-r,-r,b[MIN][Z]],[r,r,b[MAX][Z]]],
+        is_3d : true,
+    }
+),
+
 // Coloured Shapes
 colour c shape =
     if (is_vec3 c) make_shape {
