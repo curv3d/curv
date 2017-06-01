@@ -43,7 +43,7 @@ csqr(z) = [ z[RE]*z[RE] - z[IM]*z[IM], 2*z[RE]*z[IM] ],
 // linear algebra
 is_vec2 x = is_list x && len x == 2 && is_num(x[0]) && is_num(x[1]),
 is_vec3 x = is_list x && len x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]),
-cross(p,q) = [p'Y*q'Z - p'Z-q'Y, p'Z*q'X - p'X*q'Z, p'X*q'Y - p'Y*q'X],
+cross(p,q) = [p[Y]*q[Z] - p[Z]*q[Y], p[Z]*q[X] - p[X]*q[Z], p[X]*q[Y] - p[Y]*q[X]],
 identity(n) = [for(i=1..n) [for(j=1..n) if(i==j) 1 else 0]],
 transpose(a) = [for(i=0..<len(a'0)) [for(j=0..<len a) a'j'i]],
 normalize v = v / mag v,
