@@ -2,6 +2,9 @@
 
 What remains for MVP? (What do I want to show in my first big demo?)
 * standard library
+  * twist
+  * rotate
+  * repetition
 * Documentation
 * Meta: use https://opensource.guide/
 
@@ -9,7 +12,16 @@ Play with nvidia's CUDA sample, marching cubes. export STL? Benchmark to
 evaluate speed of this approach.
 
 -------------------------
+//BUG: this doesn't work, shape is warped and bad distance field.
+torus(2,1) >> rotate(tau/4, Yaxis)
+
+BUG: Doesn't GL compile.
+stereographic_projection plane = sphere 1 >> colourfield
+    ((x,y,z)->plane.colour(x/(1-z), y/(1-z), 0));
+
 BUG: tests recently slowed down by 2 orders of magnitude.
+
+display axes in 3D view
 
 source reorganization:
 * Split curv.cc into multiple source files, in subdirectory cmd.
@@ -21,9 +33,12 @@ source reorganization:
 GL:
 * all math operations that are built-in SPIR-V operators
 * maybe: mandelbrot iteration that doesn't crash the MacBook Air.
+  * GL support for `for` loop
+  * add `break` action to `while` and `for` loops
 * `if_fast_case (C) E1 else E2`: E1 and E2 are equivalent, but E1 is faster
   to compute if C is true. During GL compile, if C is a compile time constant,
   pick E1 or E2, otherwise just emit E2.
+* mat2, mat3, mat4
 
 glslViewer:
 * PR for --headless -s0
