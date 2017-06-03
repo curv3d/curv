@@ -594,7 +594,56 @@ twist t shape = (
     }
 ),
 
-// Coloured Shapes
+////////////////
+// REPETITION //
+////////////////
+repeat_x r shape = make_shape {
+    dist p : shape.dist(mod(p[X] + r, 2*r) - r, p[Y], p[Z]),
+    colour p : shape.colour(mod(p[X] + r, 2*r) - r, p[Y], p[Z]),
+    bbox : [ [-inf, shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
+             [+inf, shape.bbox[MAX][Y], shape.bbox[MAX][Z]] ],
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
+},
+repeat_xy r shape = make_shape {
+    dist p : shape.dist(
+                mod(p[X] + r[X], 2*r[X]) - r[X],
+                mod(p[Y] + r[Y], 2*r[Y]) - r[Y],
+                p[Z]),
+    colour p : shape.colour(
+                mod(p[X] + r[X], 2*r[X]) - r[X],
+                mod(p[Y] + r[Y], 2*r[Y]) - r[Y],
+                p[Z]),
+    bbox : [ [-inf, -inf, shape.bbox[MIN][Z]],
+             [+inf, +inf, shape.bbox[MAX][Z]] ],
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
+},
+repeat_xyz r shape = make_shape {
+    dist p : shape.dist(
+                mod(p[X] + r[X], 2*r[X]) - r[X],
+                mod(p[Y] + r[Y], 2*r[Y]) - r[Y],
+                mod(p[Z] + r[Z], 2*r[Z]) - r[Z]),
+    colour p : shape.colour(
+                mod(p[X] + r[X], 2*r[X]) - r[X],
+                mod(p[Y] + r[Y], 2*r[Y]) - r[Y],
+                mod(p[Z] + r[Z], 2*r[Z]) - r[Z]),
+    bbox : [ [-inf, -inf, -inf],
+             [+inf, +inf, +inf] ],
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
+},
+repeat_mirror_x shape = make_shape {
+    dist p : shape.dist(abs(p[X]), p[Y], p[Z]),
+    bbox : [[-shape.bbox[MAX][X], shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
+            shape.bbox[MAX]],
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
+},
+
+////////////
+// COLOUR //
+////////////
 colour c shape =
     if (is_vec3 c) make_shape {
         dist : shape.dist,
@@ -634,7 +683,9 @@ white = [1, 1, 1],
 black = [0, 0, 0],
 radial_rainbow n = colour (p->hsv2rgb(mod(phase(p[X,Y])/tau*n,1),1,1)) everything,
 
-// Low Level / Debugging
+///////////////////////////
+// LOW LEVEL & DEBUGGING //
+///////////////////////////
 distance_field shape = make_shape {
     dist : everything.dist,
     bbox : everything.bbox,
