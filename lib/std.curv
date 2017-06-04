@@ -203,6 +203,8 @@ rect_eu b = make_shape {
     bbox : [[-b[X],-b[Y],0],[b[X],b[Y],0]],
     is_2d : true,
 },
+// regular_polygon: r is incircle radius, n is # of sides
+regular_polygon(r,n) = half_plane(r,[1,0]) >> repeat_radial n >> rotate(-tau/4),
 // box: an axis aligned cuboid. Argument is a num, vec3 or bbox.
 // Mitred distance field.
 box b =
