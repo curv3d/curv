@@ -3,7 +3,6 @@
 What remains for MVP? (What do I want to show in my first big demo?)
 * standard library
   * rotate 3D bbox
-  * linear_rainbow, concentric_rainbow
   * blend operators
   * positioning/alignment
 * Documentation

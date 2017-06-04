@@ -735,6 +735,8 @@ magenta = [1, 0, 1],
 white = [1, 1, 1],
 black = [0, 0, 0],
 radial_rainbow n = colour (p->hsv2rgb(mod(phase(p[X,Y])/tau*n,1),1,1)) everything,
+concentric_rainbow n = colour (p->hsv2rgb(mod(mag(p[X,Y])/n,1),1,1)) everything,
+linear_rainbow n = colour (p->hsv2rgb(mod(p[X]/n,1),1,1)) everything,
 
 ///////////////////////////
 // LOW LEVEL & DEBUGGING //
