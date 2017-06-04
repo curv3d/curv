@@ -1,15 +1,13 @@
-# Release 0.0: "Minimum Viable Product"
+# Release 0.0: "Proof of Concept/Minimum Viable Product"
 
-What remains for MVP? (What do I want to show in my first big demo?)
-* standard library
-  * rotate 3D bbox
-  * blend operators
-  * positioning/alignment
+What remains for MVP?
+* fork glslViewer
+* bug fixes & language syntax changes
 * Documentation
 * Meta: use https://opensource.guide/
-
-Play with nvidia's CUDA sample, marching cubes. export STL? Benchmark to
-evaluate speed of this approach.
+* STL export:
+  Play with nvidia's CUDA sample, marching cubes. export STL? Benchmark to
+  evaluate speed of this approach.
 
 -------------------------
 BUG: Doesn't GL compile.
@@ -42,6 +40,8 @@ glslViewer:
 * HOME key resets view
 
 library:
+* blend operators
+* positioning/alignment
 * regular polytopes are specified using incircle radius.
   `circumscale r RP` scales a regular polytope RP to specified circumcircle
   or circumsphere radius r. RP stores its bounding circle/sphere radius.
@@ -55,6 +55,8 @@ curv:
 * in `curv -le`, if you quit the editor then curv exits (first, glslViewer is
   terminated and the temp file is deleted).
 * if you close glslViewer, then compute another shape, the window reopens
+* send GL output to a *.tmp file. If GL compiler fails, delete temp, otherwise
+  move it to the *.frag file so glslViewer will reload it.
 
 BUGS:
 * fix memory leak: `sum = reduce(0,(x,y)->x+y)` leaks memory. ideas/Leak.md

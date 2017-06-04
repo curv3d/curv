@@ -509,16 +509,24 @@ rotate a shape =
         angle = a[0];
         axis = normalize(a[1]);
         assert(shape.is_3d);
+        rot3(a,axis,p) =
+                p * cos(a)
+                - cross(axis, p) * sin(a)
+                + axis * dot(axis, p * (1 - cos a));
+        bv = map (p->rot3(-angle,axis,p)) (
+            [shape.bbox[MIN][X], shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
+            [shape.bbox[MAX][X], shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
+            [shape.bbox[MAX][X], shape.bbox[MAX][Y], shape.bbox[MIN][Z]],
+            [shape.bbox[MIN][X], shape.bbox[MAX][Y], shape.bbox[MIN][Z]],
+            [shape.bbox[MIN][X], shape.bbox[MIN][Y], shape.bbox[MAX][Z]],
+            [shape.bbox[MAX][X], shape.bbox[MIN][Y], shape.bbox[MAX][Z]],
+            [shape.bbox[MAX][X], shape.bbox[MAX][Y], shape.bbox[MAX][Z]],
+            [shape.bbox[MIN][X], shape.bbox[MAX][Y], shape.bbox[MAX][Z]],
+        );
         make_shape {
-            dist p : shape.dist <<
-                p * cos(angle)
-                - cross(axis, p) * sin(angle)
-                + axis * dot(axis, p * (1 - cos angle)),
-            colour p : shape.colour <<
-                p * cos(angle)
-                - cross(axis, p) * sin(angle)
-                + axis * dot(axis, p * (1 - cos angle)),
-            bbox : shape.bbox, // TODO: fixme, see above
+            dist p : shape.dist(rot3(angle,axis,p)),
+            colour p : shape.colour(rot3(angle,axis,p)),
+            bbox : [ min bv, max bv ],
             is_3d : true,
         }
     ),
