@@ -203,8 +203,8 @@ rect_eu b = make_shape {
     bbox : [[-b[X],-b[Y],0],[b[X],b[Y],0]],
     is_2d : true,
 },
-// regular_polygon: r is incircle radius, n is # of sides
-regular_polygon(r,n) = half_plane(r,[1,0]) >> repeat_radial n >> rotate(-tau/4),
+// regular_polygon: n is # of sides, r is incircle radius
+regular_polygon(n,r) = half_plane(r,[1,0]) >> repeat_radial n >> rotate(-tau/4),
 // box: an axis aligned cuboid. Argument is a num, vec3 or bbox.
 // Mitred distance field.
 box b =
@@ -277,6 +277,7 @@ box_eu b = make_shape {
     bbox : [-b, b],
     is_3d : true,
 },
+prism(n,r,h) = regular_polygon(n,r) >> extrude h,
 // 'r' is the radius of a sphere inscribed inside the tetrahedron.
 // Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
 tetrahedron r = (
