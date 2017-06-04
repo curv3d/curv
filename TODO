@@ -2,8 +2,10 @@
 
 What remains for MVP? (What do I want to show in my first big demo?)
 * standard library
-  * rotate bbox
-  * repetition
+  * rotate 3D bbox
+  * linear_rainbow, concentric_rainbow
+  * blend operators
+  * positioning/alignment
 * Documentation
 * Meta: use https://opensource.guide/
 
@@ -86,11 +88,6 @@ core language:
 * The current sphere-tracer stops at distance 20 (hard coded). Use the bounding
   box to compute a tmin and tmax value for a given ray (by intersecting the
   bbox), or don't march at all if the ray doesn't intersect the bbox.
-
-Define regular_polygon(n). See poly.curv.
-
-gl_call supports variadic functions, eg max(a,b,c) where a b c are vectors.
-curv::Function represents a variadic function.
 
 Fix kludge in Indirect_Function_Ref that forces thunks.
 
@@ -190,36 +187,14 @@ import, export PNG file.
 
 basic documentation.
 
-A reasonable set of 2D primitives:
-* regular polygon, looks like Antimony. R is radius of circle inscribed
-  within polygon. Circle radius at origin. One of the sides faces down.
-  * Antimony uses intersection of half planes.
-
-Regular Polygon:
----
-def polygon_radius(x, y, r, N):
-    """ Makes a polygon with a centre-to-vertex distance r
-        The polygon is oriented so that the bottom is always flat.
-    """
-    # Find the centre-to-edge distance
-    r_ = -r * math.cos(math.pi / N)
-    # Make an offset half-region shape
-    half = Shape('-f%gY' % r_)
-    # Take the union of a bunch of rotated half-region shapes
-    p = functools.reduce(operator.and_,
-            [rotate(half, 360./N * i) for i in range(N)])
-    # Apply appropriate bounds and return
-    return Shape(p.math, -r, -r, r, r)
----
-
 Ideas for 2D primitives:
 OpenSCAD:
-* circle, square, polygon, text,
+* polygon, text,
 * hull, minkowski, mitred and rounded offset
   * mitred offset is well defined for polytopes
   * rounded offset is minkowski sum with sphere
   * not all polytopes can be offset: http://mathoverflow.net/questions/206644/when-is-it-possible-to-shrink-a-polyhedron
-* colour, positioning/alignment
+* positioning/alignment
 Antimony:
 * text, 1 font only
 * rounded rectangle(radius),
