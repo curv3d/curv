@@ -647,6 +647,49 @@ repeat_mirror_x shape = make_shape {
     is_2d : shape.is_2d,
     is_3d : shape.is_3d,
 },
+repeat_radial reps shape = (
+    angle = tau/reps;
+    inradius = shape.bbox[MAX][X];
+    circumradius = inradius / cos(angle/2);
+    max_y =
+        if (mod(reps,4)==0)
+            inradius
+        else if (mod(reps,2)==0)
+            circumradius
+        else
+            (circumradius * cis((floor(reps/4)+.5)*angle))[Y];
+    make_shape {
+        dist p : (
+            var a := phase(p[X,Y]) + angle/2;
+            var r := mag(p[X,Y]);
+            a := mod(a,angle) - angle/2;
+            var xy := cis(a) * r;
+            shape.dist(xy[X], xy[Y], p[Z])
+        ),
+        colour p : (
+            var a := phase(p[X,Y]) + angle/2;
+            var r := mag(p[X,Y]);
+            a := mod(a,angle) - angle/2;
+            var xy := cis(a) * r;
+            shape.colour(xy[X], xy[Y], p[Z])
+        ),
+        // bbox is exact for regular_polygon, approximate for general case.
+        bbox : [
+            [
+                if (mod(reps,2)==0) -inradius else -circumradius,
+                -max_y,
+                shape.bbox[MIN][Z],
+            ],
+            [
+                inradius,
+                max_y,
+                shape.bbox[MAX][Z],
+            ],
+        ],
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    }
+),
 
 ////////////
 // COLOUR //
