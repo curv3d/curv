@@ -19,6 +19,8 @@ Features:
   shadertoy as high level operations for use by beginners.
 * All rendering is GPU accelerated.
 
+![Twisted Torus](docs/images/torus.png)
+
 ## History and Rationale
 Curv builds on earlier work:
 * **Haskell** (1998) -- Shows that pure functional programming has awesome
