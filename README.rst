@@ -3,6 +3,7 @@ It's a 2D and 3D geometric modelling tool that supports full colour,
 animation and 3D printing.
 
 Features:
+
 * Curv is a simple, powerful, dynamically typed, pure functional
   programming language.
 * Curv is easy to use for beginners. It has a standard library of
@@ -24,6 +25,7 @@ Features:
 History and Rationale
 =====================
 Curv builds on earlier work:
+
 **Haskell** (1998)
   Shows that pure functional programming has awesome
   benefits, and is a viable alternative to imperative style programming.
@@ -48,6 +50,7 @@ Curv builds on earlier work:
   And, you can export shapes for 3D printing.
 
   *BUT*: It's slow, and lacks expressive power.
+  
   * The geometry engine is based on polyhedral meshes: it's slow and memory
     intensive. Complex models with many triangles are expensive.
     Boolean operations are expensive. Doesn't use the GPU for geometry
@@ -83,7 +86,8 @@ ShaderToy as high level operations with a simple API, so that beginners can
 create the kind of effects seen on ShaderToy using much shorter, simpler
 programs. And you can 3D print your models. All rendering is GPU accelerated.
 
-## Project Status
+Project Status
+==============
 The Curv project is in the initial development phase right now.
 
 Two platforms are currently supported: Ubuntu 16.04 and macOS.
