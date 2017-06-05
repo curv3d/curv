@@ -698,17 +698,19 @@ Bracket_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Call_Phrase::analyze(Environ& env) const
 {
-    if (auto brackets = cast<const Bracket_Phrase>(arg_)) {
-        auto index = (
-            isa<Empty_Phrase>(brackets->body_)
-            || isa<Comma_Phrase>(brackets->body_)
-            ? arg_
-            : brackets->body_
-        );
-        return make<At_Expr>(
-            share(*this),
-            analyze_op(*function_, env),
-            analyze_op(*index, env));
+    if (op_.kind_ == Token::k_missing) {
+        if (auto brackets = cast<const Bracket_Phrase>(arg_)) {
+            auto index = (
+                isa<Empty_Phrase>(brackets->body_)
+                || isa<Comma_Phrase>(brackets->body_)
+                ? arg_
+                : brackets->body_
+            );
+            return make<At_Expr>(
+                share(*this),
+                analyze_op(*function_, env),
+                analyze_op(*index, env));
+        }
     }
     return function_->analyze(env)->call(*this, env);
 }
@@ -912,7 +914,7 @@ While_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Range_Phrase::analyze(Environ& env) const
 {
-    return make<Range_Expr>(
+    return make<Range_Gen>(
         share(*this),
         analyze_op(*first_, env),
         analyze_op(*last_, env),

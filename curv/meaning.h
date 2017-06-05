@@ -450,27 +450,27 @@ struct At_Expr : public Infix_Expr_Base
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
-struct Range_Expr : public Just_Expression
+struct Range_Gen : public Operation
 {
     Shared<Operation> arg1_;
     Shared<Operation> arg2_;
     Shared<Operation> arg3_;
     bool half_open_;
 
-    Range_Expr(
+    Range_Gen(
         Shared<const Phrase> source,
         Shared<Operation> arg1,
         Shared<Operation> arg2,
         Shared<Operation> arg3,
         bool half_open)
     :
-        Just_Expression(source),
+        Operation(source),
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2)),
         arg3_(std::move(arg3)),
         half_open_(half_open)
     {}
-    virtual Value eval(Frame&) const override;
+    virtual void generate(Frame&, List_Builder&) const override;
 };
 
 struct List_Expr_Base : public Just_Expression,

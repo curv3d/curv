@@ -66,7 +66,6 @@ curv:
 
 BUGS:
 * fix memory leak: `sum = reduce(0,(x,y)->x+y)` leaks memory. ideas/Leak.md
-* `f << [1,2,3]` is not a function call
 
 core language:
 * Rename `len` to `size`. Rationale: in linear algebra, the 'length' of a
@@ -82,7 +81,6 @@ core language:
       is_2d, is_3d.)
   * `dom` maps a struct to a list of keys; maps a list to a range of indexes.
 * syntax changes:
-  * a..b is a generator
   * remove a'b
   * permit a choice of `,` or `;` in `{...}` constructors.
 
