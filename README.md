@@ -49,7 +49,7 @@ Curv builds on earlier work:
 * **ImplicitCAD** (2012) -- A clone of OpenSCAD that uses F-Rep (Function
   Representation) instead of meshes to represent shapes. It provides a glimpse
   of the greater expressive power of F-Rep. Functions are values, so you
-  can do pure functional programming.
+  can do functional programming.
   <p> <i>BUT</i>: Still a very limited language. You can't define new
   function representations within the language, so most of the potential
   of F-Rep geometry is inaccessible. And it doesn't use the GPU to speed up
