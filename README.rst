@@ -1,11 +1,8 @@
-|torus| Curv: a language for making art using mathematics
-=========================================================
+=================================================
+Curv: a language for making art using mathematics
+=================================================
 
-.. |torus| image:: docs/images/torus.png
-   :align: top
-
-
-
+.. image:: docs/images/torus.png
 
 Curv is a programming language for creating art using mathematics.
 It's a 2D and 3D geometric modelling tool that supports full colour,
@@ -28,8 +25,6 @@ Features:
   using shorter, simpler programs. Experts can package techniques used on
   shadertoy as high level operations for use by beginners.
 * All rendering is GPU accelerated.
-
-.. image:: docs/images/torus.png
 
 History and Rationale
 =====================
