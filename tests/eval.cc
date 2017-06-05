@@ -375,17 +375,18 @@ TEST(curv, eval)
 
     // for
     FAILMSG("for", "missing argument following 'for'");
-    FAILMSG("for (i=a)", "missing expression");
+    FAILMSG("for (i in a)", "missing expression");
+    FAILMSG("for (i = a) x", "for: malformed argument");
     FAILMSG("for x x", "for: malformed argument");
     FAILMSG("for () x", "for: malformed argument");
-    FAILMSG("for (i=a,j=b) x", "for: malformed argument");
+    FAILMSG("for (i in a,j in b) x", "for: malformed argument");
     FAILMSG("for (i) x", "for: malformed argument");
-    FAILMSG("for (42=i) x", "for: not an identifier");
-    SUCCESS("[for (i=[1,2,3]) i+1]", "[2,3,4]");
+    FAILMSG("for (42 in i) x", "for: not an identifier");
+    SUCCESS("[for (i in [1,2,3]) i+1]", "[2,3,4]");
 
     // generalized actions
-    SUCCESS("(a=-2;for(b=a..2)if(b>0)echo b);"
-            "for(x=-1..1)if(x<0) echo \"-\" else if(x>0) echo \"+\";"
+    SUCCESS("(a=-2;for(b in a..2)if(b>0)echo b);"
+            "for(x in -1..1)if(x<0) echo \"-\" else if(x>0) echo \"+\";"
             "0",
         "0");
     EXPECT_EQ(console.str(),
@@ -395,7 +396,7 @@ TEST(curv, eval)
         "ECHO: \"+\"\n");
 
     // The spread operator (a sequence generator)
-    SUCCESS("[for (i=[1,2,3]) if (i==2) ...(\"two\", \"2!\") else i]", 
+    SUCCESS("[for (i in [1,2,3]) if (i==2) ...(\"two\", \"2!\") else i]", 
         "[1,\"two\",\"2!\",3]");
     SUCCESS("...[1,2,3]", "1\n2\n3");
 

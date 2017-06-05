@@ -159,6 +159,7 @@ parse_semicolons(Scanner& scanner)
 //  | disjunction = item
 //  | disjunction := item
 //  | disjunction : item
+//  | disjunction in item
 //  | disjunction -> item
 //  | disjunction << item
 //  | 'if' primary item
@@ -228,6 +229,9 @@ parse_item(Scanner& scanner)
         return make<Assignment_Phrase>(
             std::move(left), tok, parse_item(scanner));
     case Token::k_colon:
+        return make<Binary_Phrase>(
+            std::move(left), tok, parse_item(scanner));
+    case Token::k_in:
         return make<Binary_Phrase>(
             std::move(left), tok, parse_item(scanner));
     case Token::k_right_arrow:

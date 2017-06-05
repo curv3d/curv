@@ -9,7 +9,7 @@ sq =
 //translate(5,0) << sq
 
 union (
-  for (i=0..9) (
+  for (i in 0..9) (
     var a := (tau/4)/(2^i);
     translate(i*6,0) <<
     rotate(a) <<

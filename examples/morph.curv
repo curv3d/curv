@@ -1,6 +1,6 @@
 // morph a white cube into a rainbow torus
 union (
-    for (i = 0..4)
+    for (i in 0..4)
         morph(i/4,
             cube 4 >> colour white,
             torus(2,1) >> colour (radial_rainbow 1))

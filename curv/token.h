@@ -44,6 +44,7 @@ struct Token
         k_bad_utf8,   ///! a malformed UTF-8 sequence or unsupported code point
         k_ident,
         k_if,
+        k_in,
         k_else,
         k_for,
         k_by,

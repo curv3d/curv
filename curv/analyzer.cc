@@ -570,6 +570,8 @@ Binary_Phrase::analyze(Environ& env) const
                 id->atom_);
         throw Exception(At_Phrase(*right_, env),
             "invalid expression after '.'");
+    case Token::k_in:
+        throw Exception(At_Token(op_, *this, env), "syntax error");
     case Token::k_apostrophe:
         return make<At_Expr>(
             share(*this),
@@ -859,8 +861,8 @@ If_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 For_Phrase::analyze(Environ& env) const
 {
-    auto def = cast<Recursive_Definition_Phrase>(args_->body_);
-    if (def == nullptr)
+    auto def = cast<Binary_Phrase>(args_->body_);
+    if (def == nullptr || def->op_.kind_ != Token::k_in)
         throw Exception(At_Phrase(*args_, env),
             "for: malformed argument");
     auto id = dynamic_cast<const Identifier*>(def->left_.get());

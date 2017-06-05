@@ -10,15 +10,15 @@ color(c) shape = shape;
 
 kisrhombille3_7(n,t) = (
     r = 0.497; // this is a magic number
-    q = [for(i=0..6) r*[cos(i*tau/7),sin(i*tau/7)] ];
+    q = [for(i in 0..6) r*[cos(i*tau/7),sin(i*tau/7)] ];
     union([
         //color("magenta")
-        for (i=0..6) ...(
+        for (i in 0..6) ...(
             hyperSegment([0,0], q'i, t),
             hyperSegment(q'i, q'(mod(i+1,7)), t),
             hyperSegment(q'i, q'(mod(i+2,7)), t),
         ),
-        for(i=0..6) 
+        for(i in 0..6) 
             recur_kisrhombille3_7(q'i, q'(mod(i+1,7)), n, t),
     ])
 );
@@ -70,7 +70,7 @@ hyperSegment(p,q, t /*=0.05*/) = (
         a2=max(a01,a02);
         a3 = if (a2-a1>tau/2) a1+tau else a1;
         a4 = a2;
-        polyline([for(a=a3..a4 by (a4-a3)/fn) R*[cos(a), sin(a)]+c ],t)
+        polyline([for(a in a3..a4 by (a4-a3)/fn) R*[cos(a), sin(a)]+c ],t)
     ) else
         polyline([p,q],t)
 );
@@ -202,7 +202,7 @@ unit(v) = v/mag(v);
 // Drawing module
 
 polyline(p, t/*=1*/) = union ([
-    for(i=0..len(p)-2) (
+    for(i in 0..len(p)-2) (
         v = p'(i+1)-p'i;
         h = mag(v);
         if( h > 1e-12)

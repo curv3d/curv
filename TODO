@@ -82,7 +82,6 @@ core language:
       is_2d, is_3d.)
   * `dom` maps a struct to a list of keys; maps a list to a range of indexes.
 * syntax changes:
-  * `in` not `=` in `for`
   * a..b is a generator
   * remove a'b
   * permit a choice of `,` or `;` in `{...}` constructors.
@@ -120,7 +119,7 @@ Records:
   * Conditional field generators: if(c)field
   * `...record`
   * Can use `for` to generate fields.
-  * merge rs = { for (r=rs) ...r }
+  * merge rs = { for (r in rs) ...r }
 
 Blocks:
 * Add GL support. How?
@@ -154,8 +153,8 @@ item ::= disjunction `where` item -- alternate block syntax
     output GLSL declarations in dependency order.
 
 Generator is coerced to a list in expression context. For ease of use:
-* union (for (i=a) shape(i)) -- no need for trailing , or extra [ ]
-* 1..10 is a generator. [1..3, 5, 8] and for (i=1..10) both work.
+* union (for (i in a) shape(i)) -- no need for trailing , or extra [ ]
+* 1..10 is a generator. [1..3, 5, 8] and for (i in 1..10) both work.
 
 Polymorphic list/record/module operations:
 * `dom s` is list of indexes of s
@@ -320,19 +319,10 @@ Build up the standard library.
   onto GLSL library functions.
 
 Linear algebra:
-  dot-product (vec*vec=scalar), matrix*vec, vec*matrix and matrix*matrix
-  identity(i), pow(square_matrix,i),
+  pow(square_matrix,i),
   determinant(square_matrix), inverse(square_matrix) -- difficult
 
-  cross(x,y) = [x'1*y'2 - x'2-y'1, x'2*y'0 - x'0*y'2, x'0*y'1 - x'1*y'0];
-  dot(x,y) = sum(x*y); // vector dot product
-  identity(n) = [for(i=[1..n])[for(j=[1..n])if(i==j) 1 else 0]]; // or eye
-  transpose(a) = [for(i=[0..len a'0 - 1]) [for(j=[0..len a - 1]) a'j'i]];
-
   dom(a) = [0..len(a)-1];
-  transpose(a) = [for(i=dom a'0) [for(j=dom a) a'j'i]];
-
-  identity(n) = [for(i=[1..n]) [for(j=[1..n]) bit(i==j)]]; // or eye(n)
 
 Vectorized boolean operations:
 * Vectorized relations are <' <=' >' >=' ==' !='. Or, <* <=* >* >=* ==* !=*.
@@ -437,38 +427,15 @@ Colour:
 nary union:
 * union shapes =
     make_shape {
-      dist p = min [for (s = shapes) s.dist p],
-      bbox = [min[for (s=shapes) s.bbox'0], max[for(s=shapes)s.bbox'1]]
+      dist p = min [for (s in shapes) s.dist p],
+      bbox = [min[for (s in shapes) s.bbox'0], max[for(s in shapes)s.bbox'1]]
     };
 * GL: since shapes is a constant during inline expansion, we can expand the
   for loop into a list of expressions.
-* Or implement nary union on top of binary union.
-* union = reduce(nothing, union2);
-  reduce(id,f) list = iter(id,list) where iter(first,rest) =
-    if (rest==[]) first else iter(f(first,rest'0),rest'(1..));
 
-* curv::Shape is abstract, with builtin and user subclasses
-  * subclass User_Defined_Shape2D, UD_Shape2D, User_Shape2D (better name?)
-    Scripted_Shape2D, Exo_Shape2D also ecto- ext-
 * make_shape accepts a record or module argument.
-* make it zoom/rotate with mouse.
-* make same code run in an OpenGL window created using C++.
-  http://www.opengl-tutorial.org/beginners-tutorials/tutorial-1-opening-a-window/
-* Should `make_shape` be polymorphic? Detects if shape is 2d or 3d based on bbox.
-* Should `everything` and `nothing` be polymorphic? Has 2 dist functions,
-  2 bboxes, for 2d and 3d cases.
-  * Are there any other use cases for this?
-    * How about volumetric textures like marble.
-      Maybe these are colours, not shapes.
-  * I could also use `everything2d` and `everything3d`.
-  * Don't do this until there is a strong use case for it.
-  * If `nothing` isn't polymorphic, what does `union[]` return?
-  * Why 2 dist functions? The code would be identical (since Curv isn't
-    strongly typed). Just use one dist function, and then:
-    * boolean attributes `is_2d` and `is_3d`, and one bbox. The Z components
-      of the bbox are infinite/ignored in 2D objects.
-    * Two bboxes, bbox2d and bbox3d, which also serve to tag the object as to
-      whether it is 2d or 3d or both.
+
+* volumetric textures, like marble.
 
 # 0.1: Minimum Viable Language
 * echo:
@@ -543,7 +510,7 @@ OpenSCADbis proposal
   1. `each` is a builtin metafunction. Use a subclass of `Builtin`.
   2. `each` is a builtin generator function, so `each` is a value.
      Extend `Function` with a generate callback and add Call_Expr::generate().
-  3. each(v) = for (i = v) i; Not hard: just add Call_Expr::generate().
+  3. each(v) = for (i in v) i; Not hard: just add Call_Expr::generate().
 * names: Phrase or Syntax?
 
 Generalized Definitions:
