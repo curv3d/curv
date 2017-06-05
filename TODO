@@ -1,7 +1,6 @@
 # Release 0.0: "Proof of Concept/Minimum Viable Product"
 
 What remains for MVP?
-* fork glslViewer
 * bug fixes & language syntax changes
 * Documentation
 * Meta: use https://opensource.guide/
@@ -36,8 +35,15 @@ GL:
 * mat2, mat3, mat4
 
 glslViewer:
-* PR for --headless -s0
 * HOME key resets view
+* other ideas:
+  * SHIFT key constrains rotate and pan to one axis.
+  * Camera roll? Use ALT key + button1, button2 or scroll.
+    * not scroll, too imprecise.
+    * ALT + rotate button
+  * Maybe use keyboard for flight.
+    * up/down arrow: move eye forward/backward
+    * left/right arrow: rotate left/right around eye
 
 library:
 * blend operators

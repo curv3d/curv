@@ -269,7 +269,8 @@ void export_png(curv::Value value, const curv::Context& cx, std::ostream& out)
     curv::gl_compile(*shape, f, cx);
     f.close();
     auto cmd = curv::stringify(
-        "glslViewer -o ",pngname->c_str()," --headless ",fragname->c_str());
+        "glslViewer -s 0 --headless -o ", pngname->c_str(),
+        " ", fragname->c_str(), " >/dev/null");
     system(cmd->c_str());
     auto cmd2 = curv::stringify("cat ",pngname->c_str());
     system(cmd2->c_str());
