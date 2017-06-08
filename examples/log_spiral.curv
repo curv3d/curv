@@ -1,3 +1,4 @@
+// Logarithmic spiral.
 // https://swiftcoder.wordpress.com/2010/06/21/logarithmic-spiral-distance-field/
 
 log_spiral(a,b) = make_shape {
@@ -10,10 +11,12 @@ log_spiral(a,b) = make_shape {
             var n := (log(r/a)/b - t) / tau;
             var upper_r := a * e^(b*(t+tau*ceil n));
             var lower_r := a * e^(b*(t+tau*floor n));
-            min(abs(upper_r-r), abs(r-lower_r)) - r*b
+            (min(abs(upper_r-r), abs(r-lower_r)) - r*b)
+                / 1.24 /* empirical Lipschitz compensation factor */
         )
     ),
     bbox : everything.bbox,
     is_2d : true,
 };
-log_spiral(1,.2)
+
+log_spiral(1,0.2)
