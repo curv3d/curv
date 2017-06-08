@@ -441,7 +441,7 @@ _union2(s1,s2) = make_shape {
 union list = reduce(nothing, _union2) list,
 _intersection2(s1,s2) = make_shape {
     dist p : max(s1.dist p, s2.dist p),
-    colour : s1.colour,
+    colour : s2.colour,
     bbox : [max(s1.bbox'0, s2.bbox'0), min(s1.bbox'1, s2.bbox'1)],
     is_2d : s1.is_2d && s2.is_2d,
     is_3d : s1.is_3d && s2.is_3d,
@@ -781,6 +781,7 @@ isosurface r shape = make_shape {
     is_2d : shape.is_2d,
     is_3d : shape.is_3d,
 },
+
 // Construct the shell of a shape, whose boundaries are +/-r from the original
 // surface or perimeter.
 // WARNING: this is implemented using isosurfaces, so the results are dependent
@@ -789,7 +790,20 @@ shell r shape = make_shape {
     dist p : abs(shape.dist p) - r,
     colour : shape.colour,
     bbox : [shape.bbox[0] - r, shape.bbox[1] + r],
-    is_2d : true,
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
+},
+
+// Super kludgy function to scale a shape's distance field,
+// to compensate for a Lipshitz constant that is > 1.
+// So 's' is the 'Lipshitz compensation factor', if this was a Star Trek script.
+// Try s=0.5 to fix a 3D shape that doesn't render properly.
+df_scale s shape = make_shape {
+    dist p : shape.dist p * s,
+    colour : shape.colour,
+    bbox : shape.bbox,
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
 },
 
 }
