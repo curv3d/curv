@@ -806,4 +806,21 @@ df_scale s shape = make_shape {
     is_3d : shape.is_3d,
 },
 
+// Colours the XY plane with black where the distance field gradient <= 1 (okay)// or with colour where it is > 1 (bad).
+gradients shape = make_shape {
+    dist : everything.dist,
+    colour p : (
+        var eps := 0.01;
+        var d := shape.dist(p[X],p[Y],0);
+        var up := shape.dist(p[X],p[Y]+eps,0);
+        var down := shape.dist(p[X],p[Y]-eps,0);
+        var left := shape.dist(p[X]-eps,p[Y],0);
+        var right := shape.dist(p[X]+eps,p[Y],0);
+        var m := max(abs(d-up),abs(d-down),abs(d-left),abs(d-right)) / eps;
+        if (m <= 1) [0,0,0] else hsv2rgb(min(m-1,4)/4,1,1)
+    ),
+    bbox : everything.bbox,
+    is_2d : true,
+},
+
 }
