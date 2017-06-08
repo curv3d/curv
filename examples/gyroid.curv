@@ -1,0 +1,24 @@
+// Lipschitz constant == 4/3. Apply 'df_scale 0.66' after extracting isosurfaces
+gyroid = make_shape {
+    dist p : cos(p[X])*sin(p[Y]) + cos(p[Y])*sin(p[Z]) + cos(p[Z])*sin(p[X]),
+    bbox: everything.bbox,
+    is_3d: true
+};
+
+gyroid_bones = isosurface (-1.2) gyroid >> df_scale 0.66;
+
+gyroid_surface = shell (.1) gyroid >> df_scale 0.66;
+
+gyroidize t shape = morph(t, shape, intersection(gyroid_surface, shape));
+
+c = 1.5;
+double_gyroid_bones = union(
+    colour blue gyroid_bones,
+    colour green gyroid_bones >> translate (c,c,c),
+);
+
+union(
+    intersection(cube 20, double_gyroid_bones) >> translate(-15,0,0),
+    intersection(cube 20, gyroid_surface >> colour red) >> translate(+15,0,0),
+    gyroidize(.1) (cube 20) >> translate(+45,0,0),
+)
