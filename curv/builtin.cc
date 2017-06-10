@@ -213,6 +213,25 @@ struct Sin_Function : public Polyadic_Function
         return gl_call_unary_numeric(f, "sin");
     }
 };
+struct Asin_Function : public Polyadic_Function
+{
+    Asin_Function() : Polyadic_Function(1) {}
+    struct Scalar_Op {
+        static double f(double x) { return asin(x); }
+        static Shared<const String> callstr(Value x) {
+            return stringify("asin(",x,")");
+        }
+    };
+    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(args[0], At_Frame(&args));
+    }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        return gl_call_unary_numeric(f, "asin");
+    }
+};
 struct Cos_Function : public Polyadic_Function
 {
     Cos_Function() : Polyadic_Function(1) {}
@@ -230,6 +249,25 @@ struct Cos_Function : public Polyadic_Function
     GL_Value gl_call(GL_Frame& f) const override
     {
         return gl_call_unary_numeric(f, "cos");
+    }
+};
+struct Acos_Function : public Polyadic_Function
+{
+    Acos_Function() : Polyadic_Function(1) {}
+    struct Scalar_Op {
+        static double f(double x) { return acos(x); }
+        static Shared<const String> callstr(Value x) {
+            return stringify("acos(",x,")");
+        }
+    };
+    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(args[0], At_Frame(&args));
+    }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        return gl_call_unary_numeric(f, "acos");
     }
 };
 struct Atan2_Function : public Polyadic_Function
@@ -689,7 +727,9 @@ builtin_namespace()
     {"abs", make<Builtin_Value>(Value{make<Abs_Function>()})},
     {"floor", make<Builtin_Value>(Value{make<Floor_Function>()})},
     {"sin", make<Builtin_Value>(Value{make<Sin_Function>()})},
+    {"asin", make<Builtin_Value>(Value{make<Asin_Function>()})},
     {"cos", make<Builtin_Value>(Value{make<Cos_Function>()})},
+    {"acos", make<Builtin_Value>(Value{make<Acos_Function>()})},
     {"atan2", make<Builtin_Value>(Value{make<Atan2_Function>()})},
     {"max", make<Builtin_Value>(Value{make<Max_Function>()})},
     {"min", make<Builtin_Value>(Value{make<Min_Function>()})},
