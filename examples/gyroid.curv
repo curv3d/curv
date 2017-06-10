@@ -18,7 +18,7 @@ double_gyroid_bones = union(
 );
 
 union(
-    intersection(cube 20, double_gyroid_bones) >> translate(-15,0,0),
-    intersection(cube 20, gyroid_surface >> colour red) >> translate(+15,0,0),
-    gyroidize(.1) (cube 20) >> translate(+45,0,0),
+    smooth_intersection .5 (sphere 10, double_gyroid_bones) >> translate(-20,0),
+    intersection (sphere 10, gyroid_surface),
+    gyroidize(.1) (cube 18) >> translate(+20,0,0),
 )
