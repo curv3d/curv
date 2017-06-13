@@ -1,0 +1,26 @@
+(* Visualization of a Calabi-Yau Manifold.
+ * Mathematica code.
+ * source: https://arxiv.org/pdf/1306.5599.pdf
+ * Illustrating Mathematics using 3D Printers
+ *
+ * Module: define scope for local variables used by an expression.
+ * Table[expr,{var,min,max,step}]: generate a list of values, like a list comprehension.
+ * Tube[pointlist]: tube surrounding the line passing through sequence of points
+ *)
+G[alpha_]:=Module[{},
+    n = 5;
+    R=10;
+    CalabiYau[z_, k1_, k2_] := Module[{
+            z1 = Exp[2Pi I k1/n]Cosh[z]^(2/n),
+            z2 = Exp[2Pi I k2/n]Sinh[z]^(2/n)},
+        N[{Re[z1],Re[z2],Cos[alpha]Im[z1]+Sin[alpha]Im[z2]}]
+    ];
+    F[k1_,k2_]:=Module[{},
+        XX=CalabiYau[u+I v,k1,k2];
+        S1=Graphics3D[Table[{Hue[Abs[v]/2],Tube[Table[XX,{u,-1,1,2/R}]]},{v,0,Pi/2,Pi/20}]];
+        S2=Graphics3D[Table[{Hue[Abs[u]/2],Tube[Table[XX,{v,0,Pi/2,(Pi/2)/R}]]},{u,-1,1,0.1}]];
+        Show[{S1,S2}]
+    ];
+    Show[Table[F[k1,k2],{k1, 0, n-1}, {k2,0,n-1}]]
+];
+G[0.2]

@@ -1,0 +1,95 @@
+smooth_union k list = reduce(nothing, _smooth_union2 k) list;
+_smooth_union2 k (s1,s2) = make_shape {
+    dist p : smooth_min(s1.dist p, s2.dist p, k),
+    colour p : (
+        var d1 := s1.dist p;
+        var d2 := s2.dist p;
+        if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p
+    ),
+    bbox : [min(s1.bbox'0, s2.bbox'0), max(s1.bbox'1, s2.bbox'1)],
+    is_2d : s1.is_2d && s2.is_2d,
+    is_3d : s1.is_3d && s2.is_3d,
+};
+
+smooth_intersection k list = reduce(everything, _smooth_intersection2 k) list;
+_smooth_intersection2 k (s1,s2) = make_shape {
+    dist p : smooth_max(s1.dist p, s2.dist p, k),
+    colour : s2.colour,
+    bbox : [max(s1.bbox'0, s2.bbox'0), min(s1.bbox'1, s2.bbox'1)],
+    is_2d : s1.is_2d && s2.is_2d,
+    is_3d : s1.is_3d && s2.is_3d,
+};
+
+// polynomial smooth min, from IQ
+// http://www.iquilezles.org/www/articles/smin/smin.htm
+smooth_min(a,b,k) =
+(
+    var h := clamp( 0.5+0.5*(b-a)/k, 0, 1 );
+    mix( b, a, h ) - k*h*(1.0-h)
+);
+smooth_max(a,b,k) = -smooth_min(-a,-b,k);
+
+// rounded min, ImplicitCAD
+rmax(r,x,y) = if (abs (x-y) < r)
+    y - r*sin(pi/4-asin((x-y)/r/sqrt 2)) + r
+    else max(x,y);
+
+rmin(r,x,y) = if (abs (x-y) < r)
+    y + r*sin(pi/4+asin((x-y)/r/sqrt 2)) - r
+    else min(x,y);
+
+ic_rounded r = {
+    bmax(x,y) : if (abs (x-y) < r)
+        y - r*sin(pi/4-asin((x-y)/r/sqrt 2)) + r
+        else max(x,y),
+    bmin(x,y) : if (abs (x-y) < r)
+        y + r*sin(pi/4+asin((x-y)/r/sqrt 2)) - r
+        else min(x,y),
+};
+
+rounded_union k list = reduce(nothing, _rounded_union2 k) list;
+_rounded_union2 k (s1,s2) = make_shape {
+    dist p : rmin(k, s1.dist p, s2.dist p),
+    colour p : (
+        var d1 := s1.dist p;
+        var d2 := s2.dist p;
+        if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p
+    ),
+    bbox : [min(s1.bbox'0, s2.bbox'0), max(s1.bbox'1, s2.bbox'1)],
+    is_2d : s1.is_2d && s2.is_2d,
+    is_3d : s1.is_3d && s2.is_3d,
+};
+
+blended_union op list = reduce(nothing, _blended_union2 op) list;
+_blended_union2 op (s1,s2) = make_shape {
+    dist p : op.bmin(s1.dist p, s2.dist p),
+    colour p : (
+        var d1 := s1.dist p;
+        var d2 := s2.dist p;
+        if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p
+    ),
+    bbox : [min(s1.bbox'0, s2.bbox'0), max(s1.bbox'1, s2.bbox'1)],
+    is_2d : s1.is_2d && s2.is_2d,
+    is_3d : s1.is_3d && s2.is_3d,
+};
+
+hg_rounded r = {
+    bmin(a,b): max(r, min(a,b)) - mag(max((r+a,r+b),0)),
+};
+
+/*
+smooth_union .1 (circle 1 >> colour red, square 2 >> translate(1,1) >> colour blue)
+*/
+
+s = blended_union (ic_rounded 1) (
+    rect(1,10),
+    rect(10,1),
+    rect(1,10) >> rotate(-45*deg) >> translate(5,-5),
+);
+r = rounded_union 1 (
+    rect(1,10),
+    rect(10,1),
+    rect(1,10) >> rotate(-45*deg) >> translate(5,-5),
+);
+//symmetric_difference(s,r)
+s

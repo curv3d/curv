@@ -1,0 +1,44 @@
+// quantize is the "minecraft transformation".
+
+// Partition space into "voxels", which are n x n x n cubes.
+// dist p:
+//   Determine which voxel p lies within.
+//   Sample shape.dist at the centre of this voxel, giving d.
+//   If d <= 0 then the voxel is inside the quantized shape,
+//   (all points in the voxel must have distance <= 0)
+//   otherwise it is outside (all points in the voxel must have distance > 0).
+//
+// It's easy to convert a distance field to voxels. But this is tricker.
+//
+// Creating a true euclidean distance field for a voxelized transform seems to
+// require global analysis of the scene, which is expensive inside a distance
+// function.
+//
+// Could this be done using a hacked ray marcher? That's probably easiest.
+//
+// Maybe don't try for a euclidean DF, find some cheap trick.
+// When the boundary is voxelized, the boundary can be pushed out by up
+// to n/2. So, far away from the object (the exterior), we subtract n/2 from
+// the distance. Closer in, if we detect boundary voxels as immediate
+// neighbours, then we modify the distance field so that it is Lipshitz
+// continuous and correct (but not Euclidean).
+//
+// Suppose I just voxelize the distance field, don't worry about colour.
+// 3 cases: the exterior, the boundary, the interior.
+//
+// The boundary is voxelized.
+// * the exterior
+// * the perimeter
+// * th
+//   ...
+
+// This isn't correct. Distance field is wrong.
+quantize n shape = make_shape {
+    dist p : shape.dist(p - mod(p,n)) + mod(p[X],n),
+    colour p : shape.colour(p - mod(p,n)),
+    bbox : shape.bbox,
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
+};
+
+sphere 1 >> quantize .1
