@@ -621,34 +621,10 @@ morph(t, shape1, shape2) = make_shape {
     is_3d : shape1.is_3d && shape2.is_3d,
 },
 
-// Twist 3D space into a helix around the Z axis:
-// t full rotations for each tau of Z displacement.
-// The fudge factor '2' is empirical.
-twist t shape = (
-    b = shape.bbox;
-    r = max(map mag (
-        [b[MIN][X], b[MIN][Y]],
-        [b[MAX][X], b[MIN][Y]],
-        [b[MIN][X], b[MAX][Y]],
-        [b[MAX][X], b[MAX][Y]],
-    ));
-    make_shape {
-        dist p : (
-            var xy := cmul(p[X,Y], cis(p[Z]*t));
-            shape.dist(xy[X], xy[Y], p[Z]) / (t*2)
-        ),
-        colour p : (
-            var xy := cmul(p[X,Y], cis(p[Z]*t));
-            shape.colour(xy[X], xy[Y], p[Z]) / (t*2)
-        ),
-        bbox : [[-r,-r,b[MIN][Z]],[r,r,b[MAX][Z]]],
-        is_3d : true,
-    }
-),
-
 ////////////////
 // REPETITION //
 ////////////////
+
 repeat_x r shape = make_shape {
     dist p : shape.dist(mod(p[X] + r, 2*r) - r, p[Y], p[Z]),
     colour p : shape.colour(mod(p[X] + r, 2*r) - r, p[Y], p[Z]),
@@ -779,6 +755,59 @@ black = [0, 0, 0],
 radial_rainbow n = colour (p->hsv2rgb(mod(phase(p[X,Y])/tau*n,1),1,1)) everything,
 concentric_rainbow n = colour (p->hsv2rgb(mod(mag(p[X,Y])/n,1),1,1)) everything,
 linear_rainbow n = colour (p->hsv2rgb(mod(p[X]/n,1),1,1)) everything,
+
+///////////////////////////////////////////////////////////////
+// RESEARCH -- shapes and operators with bad distance fields //
+///////////////////////////////////////////////////////////////
+
+// This is the infinite connected 3D volume enclosed by the gyroid surface.
+// Use `shell 0` to obtain the surface itself.
+// https://en.wikipedia.org/wiki/Gyroid
+// Lipschitz constant == 4/3. Apply 'df_scale 0.66' after extracting isosurfaces
+gyroid = make_shape {
+    dist p : cos(p[X])*sin(p[Y]) + cos(p[Y])*sin(p[Z]) + cos(p[Z])*sin(p[X]),
+    bbox: everything.bbox,
+    is_3d: true
+},
+
+// Twist 3D space into a helix around the Z axis:
+// t full rotations for each tau of Z displacement.
+// Bad distance field: The fudge factor 't*2' only works in simple cases.
+twist t shape = (
+    b = shape.bbox;
+    r = max(map mag (
+        [b[MIN][X], b[MIN][Y]],
+        [b[MAX][X], b[MIN][Y]],
+        [b[MIN][X], b[MAX][Y]],
+        [b[MAX][X], b[MAX][Y]],
+    ));
+    make_shape {
+        dist p : (
+            var xy := cmul(p[X,Y], cis(p[Z]*t));
+            shape.dist(xy[X], xy[Y], p[Z]) / (t*2)
+        ),
+        colour p : (
+            var xy := cmul(p[X,Y], cis(p[Z]*t));
+            shape.colour(xy[X], xy[Y], p[Z]) / (t*2)
+        ),
+        bbox : [[-r,-r,b[MIN][Z]],[r,r,b[MAX][Z]]],
+        is_3d : true,
+    }
+),
+
+// Take the upper half of the XY plane between X==-d and X==d,
+// and wrap that radially around the origin to cover the XY plane,
+// by mapping rectangular coordinates in the source region to polar coordinates
+// in the target region.
+// Beware of the distance field.
+rect_to_polar d shape = make_shape {
+    dist p : shape.dist(phase(p[X,Y])/pi*d, mag(p[X,Y]), p[Z]),
+    colour p : shape.colour(phase(p[X,Y])/pi*d, mag(p[X,Y]), p[Z]),
+    bbox : [ [-shape.bbox[MAX][Y], -shape.bbox[MAX][Y], shape.bbox[MIN][Z]],
+             [+shape.bbox[MAX][Y], +shape.bbox[MAX][Y], shape.bbox[MAX][Z]] ],
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
+},
 
 ///////////////////////////
 // LOW LEVEL & DEBUGGING //
