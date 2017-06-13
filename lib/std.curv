@@ -203,8 +203,10 @@ rect_eu b = make_shape {
     bbox : [[-b[X],-b[Y],0],[b[X],b[Y],0]],
     is_2d : true,
 },
+
 // regular_polygon: n is # of sides, r is incircle radius
 regular_polygon(n,r) = half_plane(r,[1,0]) >> repeat_radial n >> rotate(-tau/4),
+
 // box: an axis aligned cuboid. Argument is a num, vec3 or bbox.
 // Mitred distance field.
 box b =
@@ -406,7 +408,10 @@ icosahedron r = (
 // then shrink it to the correct size using `circumscale`.
 circumscale shape = scale(1/shape.circumratio) shape,
 
-// boolean shape operations
+/////////////////////////////////////////////
+// BOOLEAN / SET THEORETIC SHAPE OPERATORS //
+/////////////////////////////////////////////
+
 nothing = make_shape {
     dist p : inf,
     bbox : [[inf,inf,inf],[-inf,-inf,-inf]],
@@ -452,6 +457,8 @@ _intersection2(s1,s2) = make_shape {
 
 difference(s1,s2) = _intersection2(s1, complement s2),
 symmetric_difference shapes = difference(union shapes, intersection shapes),
+
+crop limits shape = intersection(limits, shape),
 
 smooth_union k list = reduce(nothing, _smooth_union2 k) list,
 _smooth_union2 k (s1,s2) = make_shape {
