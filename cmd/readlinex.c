@@ -2,7 +2,7 @@
 // Distributed under The MIT License.
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
-#include <aux/readlinex.h>
+#include "readlinex.h"
 #include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>

@@ -2,8 +2,8 @@
 // Distributed under The MIT License.
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
-#ifndef AUX_READLINEX_H
-#define AUX_READLINEX_H
+#ifndef READLINEX_H
+#define READLINEX_H
 
 #ifdef __cplusplus
 extern "C" {

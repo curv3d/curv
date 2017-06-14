@@ -3,7 +3,7 @@ extern "C" {
 #include <string.h>
 }
 #include <aux/exception.h>
-#include <aux/progdir.h>
+#include "progdir.h"
 namespace fs = boost::filesystem;
 
 /*
@@ -14,7 +14,7 @@ namespace fs = boost::filesystem;
  * ,,, Unix specific, right now.
  */
 fs::path
-aux::progdir(const char *argv0)
+progdir(const char *argv0)
 {
     fs::path cmd(argv0);
 
@@ -26,7 +26,7 @@ aux::progdir(const char *argv0)
 
     const char* PATH = getenv("PATH");
     if (PATH == NULL) {
-        throw Exception(curv::stringify(
+        throw aux::Exception(curv::stringify(
             "Can't determine directory of program ", argv0,
             ": PATH not defined"));
     }
@@ -45,7 +45,7 @@ aux::progdir(const char *argv0)
         p = (q < pend ? q + 1 : pend);
     }
 
-    throw Exception(curv::stringify(
+    throw aux::Exception(curv::stringify(
         "Can't determine directory of program ", argv0,
         ": can't find ", argv0, " in $PATH"));
 }
