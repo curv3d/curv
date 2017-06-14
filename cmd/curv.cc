@@ -3,7 +3,7 @@
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
 extern "C" {
-#include <aux/readlinex.h>
+#include "readlinex.h"
 #include <string.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -14,8 +14,8 @@ extern "C" {
 #include <iostream>
 #include <fstream>
 
+#include "progdir.h"
 #include <aux/dtostr.h>
-#include <aux/progdir.h>
 #include <curv/analyzer.h>
 #include <curv/context.h>
 #include <curv/program.h>
@@ -77,7 +77,7 @@ make_system(const char* argv0, std::list<const char*>& libs)
                 else
                     stdlib = nullptr;
             } else {
-                fs::path stdlib_path = aux::progdir(argv0) / "../lib/std.curv";
+                fs::path stdlib_path = progdir(argv0) / "../lib/std.curv";
                 stdlib = curv::make_string(stdlib_path.c_str());
             }
             sys.load_library(stdlib);

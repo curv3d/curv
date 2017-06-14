@@ -2,15 +2,12 @@
 // Distributed under The MIT License.
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
-#ifndef AUX_PROGDIR_H
-#define AUX_PROGDIR_H
+#ifndef PROGDIR_H
+#define PROGDIR_H
 
 #include <boost/filesystem.hpp>
 
-namespace aux {
-
 boost::filesystem::path progdir(const char* argv0);
 
-} // namespace aux
 #endif // header guard
 

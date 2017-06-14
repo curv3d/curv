@@ -13,11 +13,11 @@ else ()
   set( LibReadline readline)
 endif (APPLE)
 
-FILE(GLOB CurvSrc "aux/*.c" "aux/*.cc" "curv/*.cc")
+FILE(GLOB CurvSrc "aux/*.cc" "curv/*.cc")
 add_library(libcurv ${CurvSrc})
 set_property(TARGET libcurv PROPERTY OUTPUT_NAME curv)
 
-FILE(GLOB Src "cmd/*.cc")
+FILE(GLOB Src "cmd/*.c" "cmd/*.cc")
 add_executable(curv ${Src})
 target_link_libraries(curv PUBLIC libcurv ${LibReadline} double-conversion boost_filesystem boost_system)
 
