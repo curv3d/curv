@@ -13,7 +13,6 @@ path2 = difference(path, rect((-inf,0,-inf),(inf,inf,inf)));
 // Distance field is broken at the centre. FIXME.
 spiral r1 r2 = make_shape {
     dist p : abs(rem(mag p + (phase p)/tau*r1, r1) - r1/2) - r2,
-    bbox : everything.bbox,
     is_2d : true,
 };
 //r2 = .1;

@@ -1,6 +1,5 @@
 function(f) = make_shape {
     dist p : p'Y - f(p'X),
-    bbox : everything.bbox,
     is_2d : true,
 };
 

@@ -5,7 +5,6 @@ IF(a,b,c) = bit(a)*b + (1-bit(a))*c;
 gl_assert(f) = make_shape {
     dist : everything.dist,
     colour p : [1-bit(f()), bit(f()), 0],
-    bbox : everything.bbox,
     is_2d : true,
 };
 fact n = (

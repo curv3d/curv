@@ -1,6 +1,5 @@
 make_shape {
   dist : everything.dist,
-  bbox : everything.bbox,
   colour pt : (
     var z := pt[X,Y];
     var c := pt[X,Y];

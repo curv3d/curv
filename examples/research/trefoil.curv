@@ -30,6 +30,5 @@ return Mag;
 knot = make_shape {
     dist p : (
     ),
-    bbox : everything.bbox,
     is_3d : true,
 };

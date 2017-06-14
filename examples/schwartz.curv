@@ -2,7 +2,6 @@
 // https://en.wikipedia.org/wiki/Schwarz_minimal_surface#Schwarz_P_.28.22Primitive.22.29
 schwartz_p = make_shape {
     dist p: -(cos(p[X]) + cos(p[Y]) + cos(p[Z])),
-    bbox: everything.bbox,
     is_3d: true
 };
 

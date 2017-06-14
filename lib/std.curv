@@ -117,7 +117,6 @@ perimeter_extrude perimeter cross_section = make_shape {
 //  if r >= 0, half-space contains the origin.
 half_space(r,n) = make_shape {
     dist p : dot(p, n) - r,
-    bbox : everything.bbox,
     is_3d : true,
 },
 
@@ -773,7 +772,6 @@ linear_rainbow n = colour (p->hsv2rgb(mod(p[X]/n,1),1,1)) everything,
 // Lipschitz constant == 4/3. Apply 'df_scale 0.66' after extracting isosurfaces
 gyroid = make_shape {
     dist p : cos(p[X])*sin(p[Y]) + cos(p[Y])*sin(p[Z]) + cos(p[Z])*sin(p[X]),
-    bbox: everything.bbox,
     is_3d: true
 },
 
@@ -821,7 +819,6 @@ rect_to_polar d shape = make_shape {
 ///////////////////////////
 distance_field shape = make_shape {
     dist : everything.dist,
-    bbox : everything.bbox,
     colour p : (
         var d := shape.dist p;
         var c := if (d >= 0) ceil(d)-d else floor(d)-d;
@@ -895,7 +892,6 @@ gradient n shape = make_shape {
         else if (m > n) [1,1,1]
         else hsv2rgb(min(m-1,n-1)/(n-1),1,1)
     ),
-    bbox : everything.bbox,
     is_2d : true,
 },
 

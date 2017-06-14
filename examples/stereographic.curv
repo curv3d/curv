@@ -18,7 +18,6 @@ log_spiral(a,b) = make_shape {
             min(abs(upper_r-r), abs(r-lower_r)) - r*b
         )
     ),
-    bbox : everything.bbox,
     is_2d : true,
 };
 spiral = union(colour red everything, log_spiral(1,.2));

@@ -2,6 +2,8 @@
 // Distributed under The MIT License.
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
+#include <cmath>
+
 #include <curv/shape.h>
 #include <curv/exception.h>
 #include <curv/context.h>
@@ -38,6 +40,17 @@ Shape::Shape(Shared<const Record> record, const Context& cx)
     if (fields.find(colour) == fields.end()) {
         auto& u = update_shared(record_);
         u.fields_[colour] = black;
+    }
+
+    static Atom bbox_key = "bbox";
+    static Value infbbox = {List::make({
+        {List::make({ Value(-INFINITY), Value(-INFINITY), Value(-INFINITY) })},
+        {List::make({ Value(+INFINITY), Value(+INFINITY), Value(+INFINITY) })},
+    })};
+    auto bbox_p = fields.find(bbox_key);
+    if (bbox_p == fields.end()) {
+        auto& u = update_shared(record_);
+        u.fields_[bbox_key] = infbbox;
     }
 
     static Atom is_2d_key = "is_2d";

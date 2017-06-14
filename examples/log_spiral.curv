@@ -15,7 +15,6 @@ log_spiral(a,b) = make_shape {
                 / 1.24 /* empirical Lipschitz compensation factor */
         )
     ),
-    bbox : everything.bbox,
     is_2d : true,
 };
 

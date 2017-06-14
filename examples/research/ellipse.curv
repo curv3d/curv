@@ -45,7 +45,6 @@ float sdEllipsoid( in vec3 p, in vec3 r )
 // this is a unit sphere scaled by `r`. non-euclidean DF.
 ellipsoid r = make_shape {
     dist p : (mag(p/r) - 1) * min r,
-    bbox : everything.bbox,
     is_3d : true,
 };
 ellipsoid(1,2,3) >> slice_xz >> distance_field

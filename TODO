@@ -22,7 +22,6 @@ source reorganization:
 * Get rid of aux, move stuff into cmd or curv.
 
 `make_shape`
-* bbox defaults to everything
 
 GL:
 * all math operations that are built-in SPIR-V operators
@@ -163,8 +162,6 @@ Use.
   file must evaluate to a module.
 
 ## Geometry
-make_shape: if bbox missing, default is infinite.
-
 Rainbow Angel
 * starburst_rainbow colour field
   * hsv2rgb

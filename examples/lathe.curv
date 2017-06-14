@@ -8,7 +8,6 @@ lathe shape = make_shape {
 };
 function(f) = make_shape {
     dist p : p'Y - f(p'X),
-    bbox : everything.bbox,
     is_2d : true,
 };
 function(x->sin x + 2) >> lathe >> df_scale .5
