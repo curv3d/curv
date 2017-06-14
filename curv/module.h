@@ -32,9 +32,9 @@ struct Module : public Structure
     /// TODO: This might be more efficient as a sorted array of field names.
     /// The index of the field name would be interpreted as the slot index.
     /// (Reimplementing `Atom_Map` using hash trees is another proposal.)
-    struct Dictionary : public aux::Shared_Base, public Atom_Map<slot_t>
+    struct Dictionary : public Shared_Base, public Atom_Map<slot_t>
     {
-        Dictionary() : aux::Shared_Base(), Atom_Map<slot_t>() {}
+        Dictionary() : Shared_Base(), Atom_Map<slot_t>() {}
     };
 
     /// The `dictionary` maps field names onto slot indexes.

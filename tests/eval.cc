@@ -90,16 +90,16 @@ struct Evaluator
         }
     }
 
-    aux::Shared<CString_Script> script_;
+    Shared<CString_Script> script_;
 
     const char* failmsg_;
-    aux::Shared<const curv::String> failmsg_str_;
+    Shared<const curv::String> failmsg_str_;
 
     const char* failall_;
-    aux::Shared<const curv::String> failall_str_;
+    Shared<const curv::String> failall_str_;
 
     const char* success_;
-    aux::Shared<curv::String> success_str_;
+    Shared<curv::String> success_str_;
 };
 
 enum Expectation { x_success, x_failmsg, x_failall };

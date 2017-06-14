@@ -67,12 +67,12 @@ namespace aux {
 struct Exception : public std::exception
 {
     Exception(const char* msg);
-    Exception(Shared<const curv::String>);
+    Exception(curv::Shared<const curv::String>);
     virtual void write(std::ostream&) const;
     virtual const char* what() const noexcept;
-    Shared<const curv::String> const shared_what() { return message_; }
+    curv::Shared<const curv::String> const shared_what() { return message_; }
 private:
-    Shared<const curv::String> message_;
+    curv::Shared<const curv::String> message_;
 };
 
 inline

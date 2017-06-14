@@ -41,8 +41,8 @@ struct Context;
 /// * The type code in Ref_Value has lots of room for expansion,
 ///   we aren't restricted to 3 or 4 bits.
 ///
-/// All Ref_Values must be allocated on the heap: see aux::Shared_Base.
-struct Ref_Value : public aux::Shared_Base
+/// All Ref_Values must be allocated on the heap: see Shared_Base.
+struct Ref_Value : public Shared_Base
 {
     uint32_t type_;
     enum {
@@ -56,7 +56,7 @@ struct Ref_Value : public aux::Shared_Base
         ty_thunk,
         ty_lambda
     };
-    Ref_Value(int type) : aux::Shared_Base(), type_(type) {}
+    Ref_Value(int type) : Shared_Base(), type_(type) {}
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const = 0;
@@ -295,7 +295,7 @@ public:
     {
         bits_ = val.bits_;
         if (is_ref())
-            aux::intrusive_ptr_add_ref(&get_ref_unsafe());
+            intrusive_ptr_add_ref(&get_ref_unsafe());
     }
 
     /// The move constructor.
@@ -330,7 +330,7 @@ public:
     ~Value()
     {
         if (is_ref())
-            aux::intrusive_ptr_release(&get_ref_unsafe());
+            intrusive_ptr_release(&get_ref_unsafe());
     }
 
     /// Print a value like a Curv expression.
@@ -354,7 +354,7 @@ operator<<(std::ostream& out, Value val)
 template<typename T, class... Args> Value make_ref_value(Args&&... args)
 {
     T* ptr = new T(args...);
-    aux::intrusive_ptr_add_ref(ptr);
+    intrusive_ptr_add_ref(ptr);
     return Value(ptr);
 }
 

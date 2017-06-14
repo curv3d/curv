@@ -64,7 +64,7 @@ public:
 /// The definiens is not analyzed. In a recursive scope, we need to catalogue
 /// all of the names bound within the scope before we analyze any of the
 /// definientia.
-struct Definition : public aux::Shared_Base
+struct Definition : public Shared_Base
 {
     Shared<const Phrase> source_;
     Shared<const Identifier> name_;

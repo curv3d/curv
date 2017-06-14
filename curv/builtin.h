@@ -15,7 +15,7 @@ namespace curv {
 struct Meaning;
 struct Identifier;
 
-struct Builtin : public aux::Shared_Base
+struct Builtin : public Shared_Base
 {
     virtual Shared<Meaning> to_meaning(const Identifier&) const = 0;
 };

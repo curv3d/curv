@@ -23,7 +23,7 @@ namespace curv {
 ///
 /// To use this class, you must define a subclass, and heap-allocate
 /// instances using make.
-struct Script : public aux::Shared_Base, public aux::Range<const char*>
+struct Script : public Shared_Base, public aux::Range<const char*>
 {
     Shared<const String> name_;
 protected:

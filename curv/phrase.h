@@ -29,7 +29,7 @@ struct Environ;
 ///   the original tokens and white space. So a syntax tree can be used for any
 ///   purpose, including upgrading source code from an earlier version of the
 ///   language to a newer version.
-struct Phrase : public aux::Shared_Base
+struct Phrase : public Shared_Base
 {
     virtual ~Phrase() {}
     virtual Location location() const = 0;

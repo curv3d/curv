@@ -21,7 +21,7 @@ namespace curv {
 struct Operation;
 
 /// An abstract base class representing a semantically analyzed Phrase.
-struct Meaning : public aux::Shared_Base
+struct Meaning : public Shared_Base
 {
     /// The original source code for this meaning.
     ///
