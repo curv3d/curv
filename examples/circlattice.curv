@@ -1,9 +1,2 @@
-rep_grid bbox shape = make_shape {
-    //dist p : shape.dist (mod(p[X]-bbox[0][X],bbox[1][X]-bbox[0][X]),
-    dist p : shape.dist (mod(p-bbox[0],bbox[1]-bbox[0])+bbox[0]),
-    colour p : shape.colour (mod(p-bbox[0],bbox[1]-bbox[0])),
-    bbox : everything.bbox,
-    is_2d : true,
-};
-c = rep_grid(-1,1) << shell .1 << colour black << circle 1;
+c = repeat_xy (1,1) << shell .1 << colour black << circle 1;
 union(c,translate(1,1)<<c);
