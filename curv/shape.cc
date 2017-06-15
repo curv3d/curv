@@ -30,10 +30,15 @@ struct Blackfield_Function : public Polyadic_Function
     }
 };
 
-Shape::Shape(Shared<const Record> record, const Context& cx)
+Shape::Shape(Shared<const Structure> s, const Context& cx)
 :
-    Structure(ty_shape), fields_(record->fields_)
+    Structure(ty_shape), fields_()
 {
+    // TODO: future optimization.
+    // If `s` is a unique Record ref, move its contents into the Shape.
+    // Ditto if arg is a unique Shape ref. Otherwise, copy the fields.
+    s->putfields(fields_);
+
     static Atom colour = "colour";
     static Value black = {make<Blackfield_Function>()};
     if (fields_.find(colour) == fields_.end()) {
@@ -127,6 +132,13 @@ Shape::hasfield(Atom name) const
 {
     auto fp = fields_.find(name);
     return (fp != fields_.end());
+}
+
+void
+Shape::putfields(Atom_Map<Value>& out) const
+{
+    for (auto i : fields_)
+        out[i.first] = i.second;
 }
 
 Polyadic_Function&

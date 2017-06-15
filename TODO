@@ -21,8 +21,6 @@ source reorganization:
 * Split curv.cc into multiple source files, in subdirectory cmd.
 * Get rid of aux, move stuff into cmd or curv.
 
-`make_shape`
-
 GL:
 * all math operations that are built-in SPIR-V operators
 * maybe: mandelbrot iteration that doesn't crash the MacBook Air.
@@ -70,14 +68,6 @@ core language:
 * Rename `len` to `size`. Rationale: in linear algebra, the 'length' of a
   vector is its magnitude.
 * struct:
-  * `make_shape` accepts a Struct as an argument. Can use module syntax to
-    define a shape. But, I can't destructively add new fields to a module value
-    (as done by the current Shape constructor, to fill in default values). So:
-    * Shape uses same internal rep as Record. If constructor argument is a
-      unique Record ref, move its contents into the Shape. Ditto if arg is
-      a unique Shape ref. Otherwise, copy the contents. (Copying makes sense
-      since now every make_shape call is missing at least one of colour,
-      is_2d, is_3d.)
   * `dom` maps a struct to a list of keys; maps a list to a range of indexes.
 * syntax changes:
   * remove a'b
@@ -95,8 +85,6 @@ core language:
 Fix kludge in Indirect_Function_Ref that forces thunks.
 
 ## Language Redesign
-Submodules:
-* Extend make_shape to take a module argument.
 
 Patterns (Bindings and Lambda):
 * action thunks, instead of value thunks.
@@ -427,8 +415,6 @@ nary union:
     };
 * GL: since shapes is a constant during inline expansion, we can expand the
   for loop into a list of expressions.
-
-* make_shape accepts a record or module argument.
 
 * volumetric textures, like marble.
 

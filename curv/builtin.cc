@@ -513,8 +513,8 @@ struct Make_Shape_Function : public Polyadic_Function
     Value call(Frame& f) override
     {
         At_Arg cx{f};
-        auto& record = arg_to_record(f[0], cx);
-        return {make<Shape>(share(record), cx)};
+        auto fields = f[0].to<Structure>(cx);
+        return {make<Shape>(fields, cx)};
     }
 };
 

@@ -33,6 +33,7 @@ struct Record : public Structure
     bool operator==(const Record&) const;
     virtual Value getfield(Atom, const Context&) const override;
     virtual bool hasfield(Atom) const override;
+    virtual void putfields(Atom_Map<Value>&) const override;
 
     static const char name[];
 };

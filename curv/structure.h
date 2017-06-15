@@ -24,6 +24,9 @@ struct Structure : public Ref_Value
     /// Test if the value contains the named field.
     virtual bool hasfield(Atom) const = 0;
 
+    // Copy the fields into an Atom_Map.
+    virtual void putfields(Atom_Map<Value>&) const = 0;
+
     static const char name[];
 };
 

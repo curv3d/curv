@@ -23,6 +23,13 @@ Module::print(std::ostream& out) const
     out << "}";
 }
 
+void
+Module::putfields(Atom_Map<Value>& out) const
+{
+    for (auto i : *this)
+        out[i.first] = i.second;
+}
+
 Value
 Module::get(slot_t i) const
 {

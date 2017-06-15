@@ -32,13 +32,14 @@ struct Shape : public Structure
 {
     Atom_Map<Value> fields_;
 
-    Shape(Shared<const Record>, const Context&);
+    Shape(Shared<const Structure>, const Context&);
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const override;
 
     virtual Value getfield(Atom, const Context&) const override;
     virtual bool hasfield(Atom) const override;
+    virtual void putfields(Atom_Map<Value>&) const override;
 
     Polyadic_Function& dist(const Context&) const;
     BBox bbox(const Context&) const;

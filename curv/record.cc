@@ -22,8 +22,15 @@ Record::print(std::ostream& out) const
     out << "}";
 }
 
-auto Record::operator==(const Record& rec) const
--> bool
+void
+Record::putfields(Atom_Map<Value>& out) const
+{
+    for (auto i : fields_)
+        out[i.first] = i.second;
+}
+
+bool
+Record::operator==(const Record& rec) const
 {
     auto i1 = fields_.begin();
     auto i2 = rec.fields_.begin();
