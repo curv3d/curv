@@ -52,24 +52,6 @@ auto arg_to_list(Value val, const Context& ctx)
     return (List&)ref;
 }
 
-// TODO: accept a module or a record. WARNING, potential land mine.
-// * What's the return value? `Ref_Value&`?
-// * It is potentially incorrect to `merge` a module, because modifying
-//   a field value won't update functions that are closed over those
-//   field values. Ditto for shapes. Keep `arg_to_record` for use with `merge`.
-//   Update: this refers to "customization" of modules, a feature that may
-//   never be implemented. For now, modules and records are the same type.
-auto arg_to_record(Value val, const Context& ctx)
--> Record&
-{
-    if (!val.is_ref())
-        throw Exception(ctx, "not a record");
-    Ref_Value& ref( val.get_ref_unsafe() );
-    if (ref.type_ != Ref_Value::ty_record)
-        throw Exception(ctx, "not a record");
-    return (Record&)ref;
-}
-
 auto arg_to_string(Value val, const Context& ctx)
 -> String&
 {
