@@ -32,14 +32,12 @@ struct Blackfield_Function : public Polyadic_Function
 
 Shape::Shape(Shared<const Record> record, const Context& cx)
 :
-    Structure(ty_shape), record_(std::move(record))
+    Structure(ty_shape), fields_(record->fields_)
 {
     static Atom colour = "colour";
     static Value black = {make<Blackfield_Function>()};
-    auto& fields = record_->fields_;
-    if (fields.find(colour) == fields.end()) {
-        auto& u = update_shared(record_);
-        u.fields_[colour] = black;
+    if (fields_.find(colour) == fields_.end()) {
+        fields_[colour] = black;
     }
 
     static Atom bbox_key = "bbox";
@@ -47,18 +45,16 @@ Shape::Shape(Shared<const Record> record, const Context& cx)
         {List::make({ Value(-INFINITY), Value(-INFINITY), Value(-INFINITY) })},
         {List::make({ Value(+INFINITY), Value(+INFINITY), Value(+INFINITY) })},
     })};
-    auto bbox_p = fields.find(bbox_key);
-    if (bbox_p == fields.end()) {
-        auto& u = update_shared(record_);
-        u.fields_[bbox_key] = infbbox;
+    auto bbox_p = fields_.find(bbox_key);
+    if (bbox_p == fields_.end()) {
+        fields_[bbox_key] = infbbox;
     }
 
     static Atom is_2d_key = "is_2d";
     bool is_2d;
-    auto is_2d_p = fields.find(is_2d_key);
-    if (is_2d_p == fields.end()) {
-        auto& u = update_shared(record_);
-        u.fields_[is_2d_key] = {false};
+    auto is_2d_p = fields_.find(is_2d_key);
+    if (is_2d_p == fields_.end()) {
+        fields_[is_2d_key] = {false};
         is_2d = false;
     } else {
         is_2d = is_2d_p->second.to_bool(At_Field("is_2d", cx));
@@ -66,10 +62,9 @@ Shape::Shape(Shared<const Record> record, const Context& cx)
 
     static Atom is_3d_key = "is_3d";
     bool is_3d;
-    auto is_3d_p = fields.find(is_3d_key);
-    if (is_3d_p == fields.end()) {
-        auto& u = update_shared(record_);
-        u.fields_[is_3d_key] = {false};
+    auto is_3d_p = fields_.find(is_3d_key);
+    if (is_3d_p == fields_.end()) {
+        fields_[is_3d_key] = {false};
         is_3d = false;
     } else {
         is_3d = is_3d_p->second.to_bool(At_Field("is_3d", cx));
@@ -107,20 +102,31 @@ BBox::from_value(Value val, const Context& cx)
 void
 Shape::print(std::ostream& out) const
 {
-    out << "make_shape";
-    record_->print(out);
+    out << "make_shape{";
+    bool first = true;
+    for (auto i : fields_) {
+        if (!first) out << ",";
+        first = false;
+        out << i.first << ":";
+        i.second.print(out);
+    }
+    out << "}";
 }
 
 Value
 Shape::getfield(Atom name, const Context& cx) const
 {
-    return record_->getfield(name, cx);
+    auto fp = fields_.find(name);
+    if (fp != fields_.end())
+        return fp->second;
+    return Structure::getfield(name, cx);
 }
 
 bool
 Shape::hasfield(Atom name) const
 {
-    return record_->hasfield(name);
+    auto fp = fields_.find(name);
+    return (fp != fields_.end());
 }
 
 Polyadic_Function&
