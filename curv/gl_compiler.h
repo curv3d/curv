@@ -68,10 +68,14 @@ inline bool gl_type_numeric(GL_Type type)
 {
     return type > GL_Type::Bool;
 }
-// if numeric, how many numbers are stored.
-inline int gl_type_count(GL_Type type)
+inline bool gl_type_is_vec(GL_Type type)
 {
-    return (int)type;
+    return type > GL_Type::Num;
+}
+// if numeric, how many numbers are stored.
+inline unsigned gl_type_count(GL_Type type)
+{
+    return (unsigned)type;
 }
 inline const char* gl_type_name(GL_Type type)
 {
@@ -206,6 +210,7 @@ GL_Value gl_eval_expr(GL_Frame&, const Operation& op, GL_Type);
 GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase&);
 GL_Value gl_call_unary_numeric(GL_Frame&, const char*);
 void gl_put_as(GL_Frame& f, GL_Value val, const Context&, GL_Type type);
+GL_Value gl_vec_element(GL_Frame&, GL_Value, int);
 
 Shared<List_Expr> gl_expr_to_list(Operation& expr, int len, GL_Frame& f);
 Shared<Lambda_Expr> gl_expr_to_function(Operation& expr, GL_Frame& f);

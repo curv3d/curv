@@ -414,7 +414,7 @@ void gl_put_as(GL_Frame& f, GL_Value val, const Context& cx, GL_Type type)
         if (gl_type_count(type) > 1) {
             f.gl.out << type << "(";
             bool first = true;
-            for (int i = 0; i < gl_type_count(type); ++i) {
+            for (unsigned i = 0; i < gl_type_count(type); ++i) {
                 if (!first) f.gl.out << ",";
                 f.gl.out << val;
                 first = false;
@@ -818,6 +818,13 @@ gl_expr_to_function(Operation& expr, GL_Frame& f)
     }
     throw Exception(At_GL_Phrase(*expr.source_, &f),
         "GL: not a function");
+}
+
+GL_Value gl_vec_element(GL_Frame& f, GL_Value vec, int i)
+{
+    GL_Value r = f.gl.newvalue(GL_Type::Num);
+    f.gl.out << "  float " << r << " = " << vec << "[" << i << "];\n";
+    return r;
 }
 
 } // namespace curv

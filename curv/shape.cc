@@ -148,8 +148,8 @@ Shape::dist(const Context& cx) const
     auto fun = val.dycast<Polyadic_Function>();
     if (fun == nullptr)
         throw Exception(cx, "Shape: dist is not a function");
-    if (fun->nargs_ != 1)
-        throw Exception(cx, "Shape: dist function does not have 1 parameter");
+    if (fun->nargs_ != 1 && fun->nargs_ != 3)
+        throw Exception(cx, "Shape: dist function must have 1 or 3 parameters");
     return *fun;
 }
 
@@ -162,9 +162,18 @@ Shape::bbox(const Context& cx) const
 GL_Value
 Shape::gl_dist(GL_Value arg, GL_Frame& f) const
 {
+    if (arg.type != GL_Type::Vec3)
+        throw Exception(At_GL_Frame(&f), stringify(
+            "dist function argument must be vec3, is ", arg.type));
     Polyadic_Function& fun = dist(At_GL_Frame(&f));
     auto f2 = GL_Frame::make(fun.nslots_, f.gl, nullptr, &f, nullptr);
-    (*f2)[0] = arg;
+    if (fun.nargs_ == 1) {
+        (*f2)[0] = arg;
+    } else if (fun.nargs_ == 3) {
+        (*f2)[0] = gl_vec_element(f, arg, 0);
+        (*f2)[1] = gl_vec_element(f, arg, 1);
+        (*f2)[2] = gl_vec_element(f, arg, 2);
+    } else assert(0);
     auto result = fun.gl_call(*f2);
     if (result.type != GL_Type::Num) {
         throw Exception(At_GL_Frame(&f),
