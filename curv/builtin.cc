@@ -499,8 +499,8 @@ struct File_Function : public Polyadic_Function
     Value call(Frame& f) override
     {
         At_Arg ctx0(f);
-        String& path {arg_to_string(f[0], ctx0)};
-        auto file = make<File_Script>(share(path), ctx0);
+        auto path = f[0].to<String>(ctx0);
+        auto file = make<File_Script>(path, ctx0);
         Program prog{*file, f.system};
         prog.compile(nullptr, &f);
         return prog.eval();

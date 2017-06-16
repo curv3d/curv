@@ -52,17 +52,6 @@ auto arg_to_list(Value val, const Context& ctx)
     return (List&)ref;
 }
 
-auto arg_to_string(Value val, const Context& ctx)
--> String&
-{
-    if (!val.is_ref())
-        throw Exception(ctx, "not a string");
-    Ref_Value& ref( val.get_ref_unsafe() );
-    if (ref.type_ != Ref_Value::ty_string)
-        throw Exception(ctx, "not a string");
-    return (String&)ref;
-}
-
 int arg_to_int(Value val, int lo, int hi, const Context& ctx)
 {
     if (!val.is_num())

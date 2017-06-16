@@ -349,7 +349,7 @@ TEST(curv, eval)
         "  file(\"bad_token.curv\")\n"
         "  ^---------------------");
     FAILALL("file(\n1,2);",
-        "not a string\n"
+        "value is not a string\n"
         "lines 1(column 5)-2(column 4)\n"
         "  file(\n"
         "      ^");
