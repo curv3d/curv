@@ -794,10 +794,8 @@ colour c shape =
         bbox : shape.bbox,
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
-    } else (
-        error "first argument of 'colour' must be [r,g,b], function or shape";
-        null
-    ),
+    } else
+        error "first argument of 'colour' must be [r,g,b], function or shape",
 
 // Each component of an [h,s,v] triple has range 0...1.
 hsv2rgb(c) = (
