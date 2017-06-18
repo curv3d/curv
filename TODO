@@ -150,27 +150,9 @@ Use.
   file must evaluate to a module.
 
 ## Geometry
-Rainbow Angel
-* starburst_rainbow colour field
-  * hsv2rgb
-    * My code uses vectorized max and min, not available in GL.
-      1. Rewrite without this feature. (Code will be bigger, slower,
-         this needs to be fixed at some point.)
-      2. Max_Metafunction checks if arg is List_Expr, emits calls to a Max2
-         operation, which can have 2 vector arguments in GL.
-         (Okay for this case, doesn't help if arg is a runtime GL constant
-         list of vectors.)
-      3. Add Function::gl_metacall, gets args as Operation list.
-         Max_Function::gl_metacall checks for List_Expr arg, and for
-         a gl_constify const arg.
-  * colour() is polymorphic, accepts colour field as argument?
-    * need is_fun
-
 Math:
 * Native 'trunc'? Isn't in WebGL, but is in later versions.
   Use `#if __VERSION__` in GL code generator.
-
-Animation. Add an extra t argument to dist and colour functions.
 
 import, export PNG file.
 
@@ -282,11 +264,6 @@ Live programming (curv -l):
    rl_callback_handler_install etc.
 
 2d subsystem: repetition operators, and others
-
-kisrhombille-3-7: does the GL output actually work?
-
-refactor/extend:
-* generalized shapes. 3D, time. geom:[x,y,z,t]->[d,r,g,b]
 
 Build up the standard library.
 * There are many GLSL functions that ought to be supported by Curv.

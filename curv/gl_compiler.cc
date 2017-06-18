@@ -30,14 +30,14 @@ void gl_compile(const Shape& shape, std::ostream& out, const Context& cx)
 void gl_compile_2d(const Shape& shape, std::ostream& out, const Context& cx)
 {
     GL_Compiler gl(out);
-    GL_Value dist_param = gl.newvalue(GL_Type::Vec3);
+    GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
     auto frame = GL_Frame::make(0, gl, &cx, nullptr, nullptr);
 
     out <<
         "#ifdef GLSLVIEWER\n"
         "uniform mat3 u_view2d;\n"
         "#endif\n"
-        "float main_dist(vec3 " << dist_param << ", out vec4 colour)\n"
+        "float main_dist(vec4 " << dist_param << ", out vec4 colour)\n"
         "{\n";
 
     GL_Value result = shape.gl_dist(dist_param, *frame);
@@ -81,7 +81,7 @@ void gl_compile_2d(const Shape& shape, std::ostream& out, const Context& cx)
         "#ifdef GLSLVIEWER\n"
         "    fragCoord = (u_view2d * vec3(fragCoord,1)).xy;\n"
         "#endif\n"
-        "    float d = main_dist(vec3(fragCoord*scale+offset,0), fragColour);\n"
+        "    float d = main_dist(vec4(fragCoord*scale+offset,0,iGlobalTime), fragColour);\n"
         "    if (d > 0.0) {\n"
         "        vec2 uv = fragCoord.xy / iResolution.xy;\n"
         "        fragColour = vec4(uv,0.5+0.5*sin(iGlobalTime),1.0);\n"
@@ -93,7 +93,7 @@ void gl_compile_2d(const Shape& shape, std::ostream& out, const Context& cx)
 void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
 {
     GL_Compiler gl(out);
-    GL_Value dist_param = gl.newvalue(GL_Type::Vec3);
+    GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
     auto frame = GL_Frame::make(0, gl, &cx, nullptr, nullptr);
 
     out <<
@@ -102,7 +102,7 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
         "uniform vec3 u_centre3d;\n"
         "uniform vec3 u_up3d;\n"
         "#endif\n"
-        "vec4 map(vec3 " << dist_param << ")\n"
+        "vec4 map(vec4 " << dist_param << ")\n"
         "{\n";
 
     GL_Value result = shape.gl_dist(dist_param, *frame);
@@ -159,7 +159,7 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
        "    vec3 c = vec3(-1.0,-1.0,-1.0);\n"
        "    for (int i=0; i<200; i++) {\n"
        "        float precis = 0.0005*t;\n"
-       "        vec4 res = map( ro+rd*t );\n"
+       "        vec4 res = map( vec4(ro+rd*t,iGlobalTime) );\n"
        "        if (res.x < precis) {\n"
        "            c = res.yzw;\n"
        "            break;\n"
@@ -173,10 +173,10 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
        "vec3 calcNormal( in vec3 pos )\n"
        "{\n"
        "    vec2 e = vec2(1.0,-1.0)*0.5773*0.0005;\n"
-       "    return normalize( e.xyy*map( pos + e.xyy ).x + \n"
-       "                      e.yyx*map( pos + e.yyx ).x + \n"
-       "                      e.yxy*map( pos + e.yxy ).x + \n"
-       "                      e.xxx*map( pos + e.xxx ).x );\n"
+       "    return normalize( e.xyy*map( vec4(pos + e.xyy,iGlobalTime) ).x + \n"
+       "                      e.yyx*map( vec4(pos + e.yyx,iGlobalTime) ).x + \n"
+       "                      e.yxy*map( vec4(pos + e.yxy,iGlobalTime) ).x + \n"
+       "                      e.xxx*map( vec4(pos + e.xxx,iGlobalTime) ).x );\n"
        //"    /*\n"
        //"    vec3 eps = vec3( 0.0005, 0.0, 0.0 );\n"
        //"    vec3 nor = vec3(\n"
@@ -200,7 +200,7 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
        "    {\n"
        "        float hr = 0.01 + 0.12*float(i)/4.0;\n"
        "        vec3 aopos =  nor * hr + pos;\n"
-       "        float dd = map( aopos ).x;\n"
+       "        float dd = map( vec4(aopos,iGlobalTime) ).x;\n"
        "        occ += -(dd-hr)*sca;\n"
        "        sca *= 0.95;\n"
        "    }\n"
@@ -323,7 +323,7 @@ GL_Value gl_eval_expr(GL_Frame& f, const Operation& op, GL_Type type)
     GL_Value arg = op.gl_eval(f);
     if (arg.type != type) {
         throw Exception(At_GL_Phrase(*op.source_, &f),
-            stringify("argument is not a ",type));
+            stringify("wrong argument type: expected ",type,", got ",arg.type));
     }
     return arg;
 }
@@ -653,7 +653,7 @@ GL_Value List_Expr_Base::gl_eval(GL_Frame& f) const
         auto e2 = gl_eval_expr(f, *(*this)[1], GL_Type::Num);
         auto e3 = gl_eval_expr(f, *(*this)[2], GL_Type::Num);
         auto e4 = gl_eval_expr(f, *(*this)[3], GL_Type::Num);
-        GL_Value result = f.gl.newvalue(GL_Type::Vec3);
+        GL_Value result = f.gl.newvalue(GL_Type::Vec4);
         f.gl.out << "  vec4 "<<result<<" = vec4("
             <<e1<<","<<e2<<","<<e3<<","<<e4<<");\n";
         return result;

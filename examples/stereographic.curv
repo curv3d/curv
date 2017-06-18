@@ -3,12 +3,12 @@
 // https://en.wikipedia.org/wiki/Stereographic_projection
 
 stereographic_projection plane = sphere 1 >> colour
-    (p->plane.colour(p[X]/(1-p[Z]), p[Y]/(1-p[Z]), 0));
+    ((x,y,z,t)->plane.colour(x/(1-z), y/(1-z), 0, t));
 
 log_spiral(a,b) = make_shape {
     dist p : (
-        var r := mag p;
-        var t := phase p;
+        var r := mag(p[X,Y,Z]);
+        var t := phase(p[X,Y,Z]);
         if (r == 0)
             0
         else (
