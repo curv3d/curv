@@ -48,22 +48,27 @@ Polyadic_Function::gl_call_expr(
     Operation& arg, const Call_Phrase* call_phrase, GL_Frame& f)
 const
 {
-    auto list = dynamic_cast<List_Expr*>(&arg);
-    size_t nargs = (
-        nargs_ == 1 ? 1
-        : list ? list->size()
-        : 1
-    );
-    if (nargs != nargs_) {
-        throw Exception(At_GL_Phrase(*arg.source_, &f),
-            "wrong number of arguments");
-    }
     auto f2 = GL_Frame::make(nslots_, f.gl, nullptr, &f, call_phrase);
-    if (nargs == 1)
+    if (nargs_ == 1)
         (*f2)[0] = arg.gl_eval(f);
-    else {
+    else if (auto list = dynamic_cast<List_Expr*>(&arg)) {
+        if (list->size() != nargs_)
+            throw Exception(At_GL_Phrase(*arg.source_, &f), stringify(
+                "wrong number of arguments (got ",list->size(),
+                ", expected ",nargs_,")"));
         for (size_t i = 0; i < list->size(); ++i)
             (*f2)[i] = (*list)[i]->gl_eval(f);
+    } else {
+        auto glarg = arg.gl_eval(f);
+        if (!gl_type_is_vec(glarg.type))
+            throw Exception(At_GL_Phrase(*arg.source_, &f),
+                "function call argument is not a vector");
+        if (gl_type_count(glarg.type) != nargs_)
+            throw Exception(At_GL_Phrase(*arg.source_, &f), stringify(
+                "wrong number of arguments (got ",gl_type_count(glarg.type),
+                ", expected ",nargs_,")"));
+        for (unsigned i = 0; i < gl_type_count(glarg.type); ++i)
+            (*f2)[i] = gl_vec_element(f, glarg, i);
     }
     return gl_call(*f2);
 }

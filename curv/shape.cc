@@ -19,7 +19,7 @@ struct Blackfield_Function : public Polyadic_Function
     Blackfield_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
-        Shared<List> v = List::make({Value{0.0}, Value{0.0}, Value{0.0}});
+        Shared<List> v = List::make({Value{0.8}, Value{0.8}, Value{0.5}});
         return {v};
     }
     GL_Value gl_call(GL_Frame& f) const override
@@ -148,8 +148,8 @@ Shape::dist(const Context& cx) const
     auto fun = val.dycast<Polyadic_Function>();
     if (fun == nullptr)
         throw Exception(cx, "Shape: dist is not a function");
-    if (fun->nargs_ != 1)
-        throw Exception(cx, "Shape: dist function does not have 1 parameter");
+    if (fun->nargs_ != 1 && fun->nargs_ != 4)
+        throw Exception(cx, "Shape: dist function must have 1 or 4 parameters");
     return *fun;
 }
 
@@ -162,9 +162,19 @@ Shape::bbox(const Context& cx) const
 GL_Value
 Shape::gl_dist(GL_Value arg, GL_Frame& f) const
 {
+    if (arg.type != GL_Type::Vec4)
+        throw Exception(At_GL_Frame(&f), stringify(
+            "dist function argument must be vec4, is ", arg.type));
     Polyadic_Function& fun = dist(At_GL_Frame(&f));
     auto f2 = GL_Frame::make(fun.nslots_, f.gl, nullptr, &f, nullptr);
-    (*f2)[0] = arg;
+    if (fun.nargs_ == 1) {
+        (*f2)[0] = arg;
+    } else if (fun.nargs_ == 4) {
+        (*f2)[0] = gl_vec_element(f, arg, 0);
+        (*f2)[1] = gl_vec_element(f, arg, 1);
+        (*f2)[2] = gl_vec_element(f, arg, 2);
+        (*f2)[3] = gl_vec_element(f, arg, 3);
+    } else assert(0);
     auto result = fun.gl_call(*f2);
     if (result.type != GL_Type::Num) {
         throw Exception(At_GL_Frame(&f),
@@ -176,10 +186,20 @@ Shape::gl_dist(GL_Value arg, GL_Frame& f) const
 GL_Value
 Shape::gl_colour(GL_Value arg, GL_Frame& f) const
 {
+    if (arg.type != GL_Type::Vec4)
+        throw Exception(At_GL_Frame(&f), stringify(
+            "colour function argument must be vec4, is ", arg.type));
     At_GL_Frame cx(&f);
     auto fun = getfield("colour", cx).to<Polyadic_Function>(cx);
     auto f2 = GL_Frame::make(fun->nslots_, f.gl, nullptr, &f, nullptr);
-    (*f2)[0] = arg;
+    if (fun->nargs_ == 1) {
+        (*f2)[0] = arg;
+    } else if (fun->nargs_ == 4) {
+        (*f2)[0] = gl_vec_element(f, arg, 0);
+        (*f2)[1] = gl_vec_element(f, arg, 1);
+        (*f2)[2] = gl_vec_element(f, arg, 2);
+        (*f2)[3] = gl_vec_element(f, arg, 3);
+    } else assert(0);
     auto result = fun->gl_call(*f2);
     if (result.type != GL_Type::Vec3) {
         throw Exception(cx, stringify("colour function returns ",result.type));
