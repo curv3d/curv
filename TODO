@@ -9,6 +9,32 @@ What remains for MVP?
   evaluate speed of this approach.
 
 -------------------------
+BUG: bad Web GLSL (testing mandelbrot in shadertoy.com in Chrome on macOS):
+  float r1 = 1.0/0.0;
+  -- Divide by zero during constant folding
+  float r1 = 1e9999; // an alternative?
+  -- Float overflow
+GLSL 4.1 and later support 1.0/0.0 to create infinity.
+Before that is undefined behaviour.
+Ideas:
+* This works:
+    float zero = 0.0;
+    float r1 = 1.0/zero;
+* No way to initialize a global variable 'inf', however.
+* Compute infinity at run time, if it is an old version of GLSL.
+* Rewrite the standard library to avoid outputting infinity. If it is output,
+  then set the GLSL version to 4.1.
+
+BUG: bad Web GLSL (testing mandelbrot in shadertoy.com in Chrome on macOS):
+  for (;;) {
+  -- 'for': Missing init declaration
+Ideas:
+* Support 'for' loop with 'break' in Curv.
+  Note restrictions on for statements: http://www.atmind.nl/?p=623
+* 'while (true)' doesn't work: "This type of loop is not allowed"
+  (Apparently I don't have WebGL 2, although Firefox/Chrome support it.)
+* If 'while' is used, set the GLSL version to 4.1.
+
 BUG: Doesn't GL compile.
 stereographic_projection plane = sphere 1 >> colourfield
     ((x,y,z)->plane.colour(x/(1-z), y/(1-z), 0));
@@ -18,14 +44,15 @@ BUG: tests recently slowed down by 2 orders of magnitude.
 display axes in 3D view
 
 source reorganization:
-* Split curv.cc into multiple source files, in subdirectory cmd.
-* Get rid of aux, move stuff into cmd or curv.
+* Split cmd/curv.cc into multiple source files
+* Move aux/* into curv.
 
 GL:
 * all math operations that are built-in SPIR-V operators
 * maybe: mandelbrot iteration that doesn't crash the MacBook Air.
   * GL support for `for` loop
   * add `break` action to `while` and `for` loops
+  * use macOS Metal Shading Language? Driver might be less broken.
 * `if_fast_case (C) E1 else E2`: E1 and E2 are equivalent, but E1 is faster
   to compute if C is true. During GL compile, if C is a compile time constant,
   pick E1 or E2, otherwise just emit E2.
