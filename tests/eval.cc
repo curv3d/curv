@@ -135,7 +135,7 @@ evaltest(const char* expr, const char* expected, Expectation expectation)
                     << "  actual error: '" << result.failall_ << "'\n";
             }
         default:
-            assert(0);
+            throw std::logic_error("can't happen");
         }
     } else {
         // the test succeeded
@@ -156,7 +156,7 @@ evaltest(const char* expr, const char* expected, Expectation expectation)
                 << "expected error: '" << expected << "'\n"
                 << "  actual value: '" << result.success_ << "'\n";
         default:
-            assert(0);
+            throw std::logic_error("can't happen");
         }
     }
 }

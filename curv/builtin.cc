@@ -605,17 +605,25 @@ struct Echo_Metafunction : public Metafunction
 };
 
 /// The meaning of a call to `error`, such as `error("foo")`.
-struct Error_Action : public Just_Action
+struct Error_Operation : public Operation
 {
     Shared<Operation> arg_;
-    Error_Action(
+    Error_Operation(
         Shared<const Phrase> source,
         Shared<Operation> arg)
     :
-        Just_Action(std::move(source)),
+        Operation(std::move(source)),
         arg_(std::move(arg))
     {}
     virtual void exec(Frame& f) const override
+    {
+        throw Exception(At_Frame(&f), stringify(arg_->eval(f)));
+    }
+    virtual Value eval(Frame& f) const override
+    {
+        throw Exception(At_Frame(&f), stringify(arg_->eval(f)));
+    }
+    virtual void generate(Frame& f, List_Builder&) const override
     {
         throw Exception(At_Frame(&f), stringify(arg_->eval(f)));
     }
@@ -626,7 +634,7 @@ struct Error_Metafunction : public Metafunction
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        return make<Error_Action>(share(ph), analyze_op(*ph.arg_, env));
+        return make<Error_Operation>(share(ph), analyze_op(*ph.arg_, env));
     }
 };
 
