@@ -1,6 +1,6 @@
 ## Ubuntu Linux 16.04 build instructions
 * install glslViewer (https://github.com/doug-moen/glslViewer)
-* apt-get install cmake libboost-dev libdouble-conversion-dev libreadline-dev
+* apt-get install cmake libboost-all-dev libdouble-conversion-dev libreadline-dev
 * make
 * make install
 
