@@ -9,6 +9,8 @@ extern "C" {
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
 #include <unistd.h>
 }
 #include <iostream>
@@ -95,13 +97,25 @@ make_system(const char* argv0, std::list<const char*>& libs)
     }
 }
 
+curv::Shared<curv::String>
+make_tempfile()
+{
+    auto filename = curv::stringify(",curv",getpid(),".frag");
+    int fd = creat(filename->c_str(), 0666);
+    if (fd == -1)
+        throw curv::Exception({}, curv::stringify(
+            "Can't create ",filename->c_str(),": ",strerror(errno)));
+    close(fd);
+    return filename;
+}
+
 void
 display_shape(curv::Value value, const curv::Context &cx, bool block = false)
 {
     static bool viewer = false;
     auto shape = value.dycast<curv::Shape>();
     if (shape != nullptr) {
-        auto filename = curv::stringify(",curv",getpid(),".frag");
+        auto filename = make_tempfile();
         std::ofstream f(filename->c_str());
         curv::gl_compile(*shape, f, cx);
         f.close();
