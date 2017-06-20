@@ -99,4 +99,13 @@ The Curv project is in the initial development phase right now:
 * No prebuilt binaries: see `<BUILD.md>`_.
 * Limited documentation: see `<docs/README.rst>`_.
 
+Hardware Requirements
+=====================
 Two platforms are currently supported: Ubuntu 16.04 and macOS.
+
+Curv is sensitive to the GPU hardware capabilities and the graphics driver.
+Good hardware and good driver software are a requirement.
+If the website `<http://shadertoy.com>`_ doesn't work in your web browser,
+then Curv won't work well either.
+On Linux, if the open source driver isn't cutting it, try the proprietary driver.
+The best bet on Linux is a recent Nvidia card with the proprietary driver.
