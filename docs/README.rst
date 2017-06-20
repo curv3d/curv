@@ -7,5 +7,11 @@ There is no language documentation, but you can look at ``examples/*.curv`` and 
 
 Try this::
 
-  curv examples/shreks_donut.curv
+  $ curv examples/shreks_donut.curv
 
+Try this::
+
+  $ curv
+  curv> 2+2
+  4
+  curv> cube 1
