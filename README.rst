@@ -96,10 +96,8 @@ The Curv project is in the initial development phase right now:
 
 * The language and standard library APIs are not stable yet.
 * STL file export (for 3D printing) hasn't been started yet.
-* No prebuilt binaries: follow the Build instructions.
-
+* No prebuilt binaries: see `BUILD.md`_.
 
 Two platforms are currently supported: Ubuntu 16.04 and macOS.
-You must build your own binary: `BUILD.md`_.
 
-.. `BUILD.md`: BUILD.md
+.. _`BUILD.md`: BUILD.md
