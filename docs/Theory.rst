@@ -9,12 +9,20 @@ Curv is an open source 3D solid modelling language, oriented towards 3D printing
 
 It's easy to use for beginners. It's incredibly powerful for experts.
 
-What Problem am I Trying to Solve?
-==================================
-Why does the world need yet another solid modelling tool?
+Curv is fast: all rendering is performed by the GPU.
 
-How Am I Solving That Problem?
-==============================
+Pure Functional Programming
+===========================
+Curv is a pure functional language. Why?
 
-The Details.
-============
+* simple, terse, pleasant programming style
+* simple semantics
+* can easily be translated into highly parallel GPU code
+
+geometric shapes are first class values, and are constructed by transforming and combining simpler shapes.
+
+F-Rep, not B-Rep
+================
+Instead of polyhedral meshes or other boundary representations, Curv represents shapes as pure functions (Function Representation or F-Rep). This is a volumetric representation, where a function maps every point (x,y,z) in 3D space onto the properties of a shape. This representation is powerful, supporting a wide range of shape operators, and is a good match to the volumetric nature of 3D printing.
+
+F-Rep is well suited to being directly rendered by a GPU. To achieve this, Curv code is compiled into GPU shader programs or compute kernels.
