@@ -6,6 +6,7 @@ The user interface is the ``curv`` program. After building and installing ``curv
 Batch mode::
 
   $ curv examples/shreks_donut.curv
+  **a graphics window opens, displaying the shape**
   
 Interactive CLI mode::
 
@@ -13,10 +14,14 @@ Interactive CLI mode::
   curv> 2+2
   4
   curv> cube 1
+  **a graphics window opens, displaying the shape**
+  curv>
 
-Live Editing Mode::
+Live Programming Mode::
 
   $ curv -le myshape.curv
+  **an editor window opens, editing myshape.curv**
+  **a graphics window opens, displaying the shape**
 
 2. The Core Language
 ====================
