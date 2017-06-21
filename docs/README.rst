@@ -76,7 +76,7 @@ Within a block, all definitions are recursive, and the scope of each definition
 is the entire block. The order of definitions does not matter.
 
 Curv is an *expression language*: programs are expressions, blocks are expressions,
-``if (cond) a else b`` is an expression, etc. In other words, every syntactic construct
+``if (cond) a else b`` is an expression, etc. Consequently, every syntactic construct
 can be nested in every other construct.
 
 ..
