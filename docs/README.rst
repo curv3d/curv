@@ -3,18 +3,20 @@
 
 The user interface is the ``curv`` program. After building and installing ``curv``, use ``curv --help`` for command line options.
 
-There is no language documentation, but you can look at ``examples/*.curv`` and ``lib/std.curv`` to see working curv code.
-
-Try this::
+Batch mode::
 
   $ curv examples/shreks_donut.curv
-
-Try this::
+  
+Interactive CLI mode::
 
   $ curv
   curv> 2+2
   4
   curv> cube 1
+
+Live Editing Mode::
+
+  $ curv -le myshape.curv
 
 2. The Core Language
 ====================
