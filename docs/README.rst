@@ -30,7 +30,7 @@ and Curv is not "object oriented".
 
 Curv is an *array language*: scalar arithmetic operations are generalized
 to work on vectors, matrices, and higher dimensional arrays. A vector is
-represented as a list of numbers: the syntax is `(x,y,z)` or `[x,y,z]`.
+represented as a list of numbers: the syntax is ``(x,y,z)`` or ``[x,y,z]``.
 A matrix is a list of vectors.
 
 Curv is a *pure functional language*. This means that functions are values,
@@ -57,14 +57,28 @@ Curried functions:
 A nested function call like ``f(g(h x))``
 can be rewritten as ``x >> h >> g >> f``, which reads like a Unix pipeline,
 with data passing from left to right. When combined with curried functions,
-this syntax is used for chaining together geometry primitives without
+this syntax is used for chaining together geometry operations without
 nested parentheses. For example::
 
   sphere 1 >> colour red >> translate(10,0,0)
 
-..
-  A block is an expression comprising a set of local definitions
-  followed by a body expression that computes the value of the block.
+A *block* allows locally scoped definitions to be included in an expression::
+
+  ( definition1; definition2; ...; result_expression )
+  
+Here are examples of definition syntax::
+
+  pi = 3.141592653589793;
+  incr x = x + 1;
+  add(a,b) = a + b;
+
+Within a block, all definitions are recursive, and the scope of each definition
+is the entire block. The order of definitions does not matter.
+
+Curv is an *expression language*: programs are expressions, blocks are expressions,
+``if (cond) a else b`` is an expression, etc. In other words, every syntactic construct
+can be nested in every other construct.
+
 ..
   Curv programs are stored in ``*.curv`` files.
   A Curv program is an expression that computes a value.
@@ -77,6 +91,7 @@ and a set of operations for transforming and combining shapes to create
 new shapes.
 
 The goal is for this interface to be both powerful and easy to use.
+
 * It's powerful because there is a rich collection of powerful operations
   that can be combined in many different ways.
 * Building new shapes is as easy as plugging together existing shapes and
@@ -90,17 +105,21 @@ to see the interface. You can look in `<../examples>`_ to see examples.
 ===================================
 The "low level geometry interface" allows you to create new primitive
 shapes and operations by directly specifying the signed distance field
-of the resulting shape. The primary interface is ``make_shape``, but there
-are also low level library abstractions that work at the level of distance
-fields.
+of the resulting shape. The primary interface is the ``make_shape`` function,
+but there are also low level library functions that work on distance fields,
+and low level language features used to generate good GPU code.
 
-This interface needs a ton of work, and will be the last thing to be
+This interface needs a ton of work, and will be the last part of the language to be
 properly documented. You can see the low level interface at work in the
 implementation of the high level geometry interface: see `<../lib/std.curv>`_.
 
 To understand the theory behind the low level interface,
 here are some resources that I am using:
 
-* Seminal academic paper: `Sphere Tracing<http://graphics.cs.illinois.edu/sites/default/files/zeno.pdf>`_
-* Inigo Quilez helped make this popular: `Modelling with Distance Functions<http://iquilezles.org/www/articles/distfunctions/distfunctions.htm>`_
-* Video: `How to Create Content with Signed Distance Functions<https://www.youtube.com/watch?v=s8nFqwOho-s>`_
+* Seminal academic paper: `Sphere Tracing`_
+* Inigo Quilez helped make this popular: `Modelling with Distance Functions`_
+* Video: `How to Create Content with Signed Distance Functions`_
+
+.. _`Sphere Tracing`: http://graphics.cs.illinois.edu/sites/default/files/zeno.pdf
+.. _`Modelling with Distance Functions`: http://iquilezles.org/www/articles/distfunctions/distfunctions.htm
+.. _`How to Create Content with Signed Distance Functions`: https://www.youtube.com/watch?v=s8nFqwOho-s
