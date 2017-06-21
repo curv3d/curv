@@ -826,8 +826,8 @@ linear_rainbow n = colour (p->hsv2rgb(mod(p[X]/n,1),1,1)) everything,
 // https://en.wikipedia.org/wiki/Gyroid
 // Lipschitz constant == 4/3. Apply 'df_scale 0.66' after extracting isosurfaces
 gyroid = make_shape {
-    dist p : cos(p[X])*sin(p[Y]) + cos(p[Y])*sin(p[Z]) + cos(p[Z])*sin(p[X]),
-    is_3d: true
+    dist(x,y,z,t) = cos(x)*sin(y) + cos(y)*sin(z) + cos(z)*sin(x),
+    is_3d = true,
 },
 
 // Twist 3D space into a helix around the Z axis:
