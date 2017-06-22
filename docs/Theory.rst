@@ -19,7 +19,7 @@ Curv is a pure functional language. Why?
 * simple semantics
 * can easily be translated into highly parallel GPU code
 
-geometric shapes are first class values, and are constructed by transforming and combining simpler shapes.
+In Curv, geometric shapes are first class values, and are constructed by transforming and combining simpler shapes using a rich set of geometric operations. This style of specification is called CSG: Constructive Solid Geometry. It's easy and pleasant to use, very expressive, and is a good match with functional programming.
 
 F-Rep, not Meshes
 =================
