@@ -10,6 +10,22 @@ Curv is an open source 3D solid modelling language, oriented towards 3D printing
 It's easy to use for beginners. It's incredibly powerful for experts.
 And it's fast: all rendering is performed by the GPU.
 
+Constructive Solid Geometry
+===========================
+Curv supports Constructive Solid Geometry (CSG)
+as a high level, easy to use, and expressive API for specifying geometric shapes.
+Shapes are first class values,
+and are constructed by transforming and combining simpler shapes using a rich set of geometric operations.
+
+Primitive shapes include half_space, cube, sphere, cylinder, and torus.
+Unary operations, which transform one shape into another,
+include translate, rotate, scale, extrude, and twist.
+Binary operations, which combine two shapes to create a third shape,
+include union, intersection, difference, perimeter_extrude, and morph.
+
+Function Representation
+=======================
+
 Pure Functional Programming
 ===========================
 Curv is a pure functional language. Why?
