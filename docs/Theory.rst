@@ -8,8 +8,7 @@ What is Curv?
 Curv is an open source 3D solid modelling language, oriented towards 3D printing, procedurally generated art, and mathematical visualization.
 
 It's easy to use for beginners. It's incredibly powerful for experts.
-
-Curv is fast: all rendering is performed by the GPU.
+And it's fast: all rendering is performed by the GPU.
 
 Pure Functional Programming
 ===========================
