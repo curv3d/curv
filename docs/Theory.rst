@@ -33,7 +33,7 @@ Instead of triangular meshes (like OpenSCAD), Curv represents shapes as pure fun
    approximation errors can pile up.
 
 2. With a mesh, simulating a curved surface with high fidelity requires lots of triangles (and memory).
-   There is a tradeoff between representation accuracy and memory/processing costs.
+   There is a tradeoff between accuracy of representation and memory/processing costs.
    F-Rep can represent curved surfaces exactly, at low cost.
 
 3. The cost of mesh operations goes up, often non-linearly, with the number of triangles.
@@ -55,7 +55,7 @@ Instead of triangular meshes (like OpenSCAD), Curv represents shapes as pure fun
    an expert implementation like CGAL or Carve. There are many more geometric operations available
    in open source for F-Rep than there are for meshes, and these operations are surprisingly easy
    to program. Eg, union and intersection are trivial.
-   So it's practical for the entire Curv geometry interface to be written in Curv itself,
+   So it's practical for the entire Curv geometry library to be written in Curv itself,
    and it's much easier for users to define sophisticated new operations and distribute them
    as libraries.
 
