@@ -29,7 +29,7 @@ Instead of triangular meshes (like OpenSCAD), Curv represents shapes as pure fun
    Shapes can be infinitely detailed, infinitely large. Any shape that can be
    described using mathematics can be represented exactly.
 
-1. Meshs are approximations, F-Rep is exact. As you apply a chain of successive geometry operations to a mesh,
+1. Meshes are approximations, F-Rep is exact. As you apply a chain of successive geometry operations to a mesh,
    approximation errors can pile up.
 
 2. With a mesh, simulating a curved surface with high fidelity requires lots of triangles (and memory).
