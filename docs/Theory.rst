@@ -17,14 +17,32 @@ as a high level, easy to use, and expressive API for specifying geometric shapes
 Shapes are first class values,
 and are constructed by transforming and combining simpler shapes using a rich set of geometric operations.
 
-Primitive shapes include half_space, cube, sphere, cylinder, and torus.
-Unary operations, which transform one shape into another,
-include translate, rotate, scale, extrude, and twist.
-Binary operations, which combine two shapes to create a third shape,
-include union, intersection, difference, perimeter_extrude, and morph.
+Code for the twisted, coloured torus::
+
+  torus(2,1)
+    >> colour (radial_rainbow 1)
+    >> rotate(tau/4, Yaxis)
+    >> twist 1
+
+Code for the model "Shrek's Donut"::
+
+  smooth_intersection .1 (
+    torus(tau*2,tau),
+    gyroid >> shell .1 >> df_scale .33 >> rect_to_polar (tau*6),
+  ) >> colour (hsv2rgb(1/3,1,.5))
 
 Function Representation
 =======================
+Internally, Curv represents geometric shapes using Function Representation (F-Rep).
+
+In this representation, a shape contains functions that map every point (x,y,z) in 3D space onto the shape's properties, which may include spatial extent, colour, material.
+
+F-Rep is very expressive:
+shapes can be infinitely detailed, infinitely large. Any shape that can be
+described using mathematics can be represented exactly.
+
+Curv provides a low level API for defining CSG primitives using F-Rep.
+Using this API, the entire CSG geometry API is defined using Curv code.
 
 Pure Functional Programming
 ===========================
@@ -35,6 +53,12 @@ Curv is a pure functional language. Why?
 * can easily be translated into highly parallel GPU code
 
 In Curv, geometric shapes are first class values, and are constructed by transforming and combining simpler shapes using a rich set of geometric operations. This style of specification is called CSG: Constructive Solid Geometry. It's easy and pleasant to use, very expressive, and is a good match with functional programming.
+
+good for CSG, good for F-Rep
+
+file format
+
+unique contribution of Curv: pure functional + csg + f-rep in one language
 
 F-Rep, not Meshes
 =================
@@ -75,3 +99,27 @@ Instead of triangular meshes (like OpenSCAD), Curv represents shapes as pure fun
    as libraries.
 
 7. F-Rep is well suited to being directly rendered by a GPU.
+
+Signed Distance Fields
+======================
+Curv uses a specific type of F-Rep called a Signed Distance Field
+for representing the spatial extent of a shape.
+
+* definition
+* benefits
+  * collision detection
+  * controlling a 3D printer
+    * powder printer: XYZ raster scan, optionally with colour or material
+    * resin printer: plus support
+    * plastic printer: plus boundary/infill
+  * controlling a CNC mill
+  * ambient occlusion
+  * gradients and normals
+    * phong shading
+* derivation for simple CSG primitives
+
+Sphere Tracing
+==============
+
+Symmetry and Space Folding
+==========================
