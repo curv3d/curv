@@ -107,15 +107,20 @@ for representing the spatial extent of a shape.
 
 * definition
 * benefits
+
   * collision detection
   * controlling a 3D printer
+  
     * powder printer: XYZ raster scan, optionally with colour or material
     * resin printer: plus support
     * plastic printer: plus boundary/infill
+
   * controlling a CNC mill
   * ambient occlusion
   * gradients and normals
+  
     * phong shading
+
 * derivation for simple CSG primitives
 
 Sphere Tracing
