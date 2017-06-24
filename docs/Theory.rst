@@ -102,8 +102,13 @@ Instead of triangular meshes (like OpenSCAD), Curv represents shapes as pure fun
 
 Signed Distance Fields
 ======================
-Curv uses a specific type of F-Rep called a Signed Distance Field
+Curv uses a specific type of F-Rep called Signed Distance Fields
 for representing the spatial extent of a shape.
+
+A signed distance field is a function f(x,y,z) which maps each point in 3-space
+onto the minimum distance from that point to a boundary of the shape.
+An SDF is zero for points on the boundary of the shape, negative for points
+inside the shape, and positive for points outside of the shape.
 
 * definition
 * benefits
