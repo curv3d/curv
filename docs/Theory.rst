@@ -110,9 +110,9 @@ onto the minimum distance from that point to a boundary of the shape.
 An SDF is zero for points on the boundary of the shape, negative for points
 inside the shape, and positive for points outside of the shape.
 
-* definition
-* benefits
 
+SDF Applications
+================
   * collision detection
   * controlling a 3D printer
   
@@ -123,13 +123,18 @@ inside the shape, and positive for points outside of the shape.
   * controlling a CNC mill
   * ambient occlusion
   * gradients and normals
-  
-    * phong shading
+  * fonts
+  * video games: destructible terrain, in game modelling
 
-* derivation for simple CSG primitives
+Deriving an SDF
+===============
+derivation for simple CSG primitives
 
 Sphere Tracing
 ==============
 
 Symmetry and Space Folding
+==========================
+
+Compiling Curv to GPU Code
 ==========================
