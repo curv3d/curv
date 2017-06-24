@@ -113,18 +113,21 @@ inside the shape, and positive for points outside of the shape.
 
 SDF Applications
 ================
-  * collision detection
-  * controlling a 3D printer
+* collision detection: https://www.youtube.com/watch?v=x_Iq2yM4FcA
+* controlling a 3D printer
   
-    * powder printer: XYZ raster scan, optionally with colour or material
-    * resin printer: plus support
-    * plastic printer: plus boundary/infill
+  * powder printer: XYZ raster scan, optionally with colour or material
+  * plastic printer: boundary/infill
 
-  * controlling a CNC mill
-  * ambient occlusion
-  * gradients and normals
-  * fonts
-  * video games: destructible terrain, in game modelling
+* controlling a CNC mill
+* soft shadows (ambient occlusion)
+* gradients and normals
+* fast, scaleable font rendering
+* demoscene (shadertoy.com) https://www.shadertoy.com/view/MdX3Rr
+* video games
+
+  * destructible terrain: UpVoid Miner by UpVoid
+  * in game modelling: Dreams by Media Molecule https://www.youtube.com/watch?v=4j8Wp-sx5K0
 
 Deriving an SDF
 ===============
