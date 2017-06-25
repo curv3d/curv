@@ -124,6 +124,8 @@ A shape, plus 3 views of its SDF:
 
 An SDF is differentiable almost everywhere. At the differentiable points, the slope is 1, and the gradient points towards the closest boundary. (This is useful.) The non-differentiable points are equidistant between two boundaries. The singular points that occur inside a shape are called the Skeleton or Medial Axis. (There is a technique for modelling shapes by specifying their skeleton.)
 
+Isocurve and isosurface.
+
 SDF Applications
 ================
 * collision detection: https://www.youtube.com/watch?v=x_Iq2yM4FcA
@@ -145,12 +147,19 @@ SDF Applications
 Deriving an SDF
 ===============
 derivation for simple CSG primitives
+* circle
+* union and intersection (cheap vs expensive)
+* rigid body transforms: translate, rotate
+* isotropic and anisotropic scaling
 
 Sphere Tracing
 ==============
 
 Symmetry and Space Folding
 ==========================
+
+The 4th Dimension is Time
+=========================
 
 Compiling Curv to GPU Code
 ==========================
