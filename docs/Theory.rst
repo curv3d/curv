@@ -110,6 +110,8 @@ onto the minimum distance from that point to a boundary of the shape.
 An SDF is zero for points on the boundary of the shape, negative for points
 inside the shape, and positive for points outside of the shape.
 
+A shape, plus 3 views of its SDF:
+
 |sdf1| |sdf2|
 
 .. |sdf1| image:: images/sdf1a.png
@@ -119,6 +121,8 @@ inside the shape, and positive for points outside of the shape.
 
 .. |sdf3a| image:: images/sdf3a.png
 .. |sdf3b| image:: images/sdf3b.png
+
+An SDF is differentiable almost everywhere. At the differentiable points, the slope is 1, and the gradient points towards the closest boundary. (This is useful.) The non-differentiable points are equidistant between two boundaries. The singular points that occur inside a shape are called the Skeleton or Medial Axis. (There is a technique for modelling shapes by specifying their skeleton.)
 
 SDF Applications
 ================
