@@ -115,6 +115,11 @@ inside the shape, and positive for points outside of the shape.
 .. |sdf1| image:: images/sdf1a.png
 .. |sdf2| image:: images/sdf2a.png
 
+|sdf3a| |sdf3b|
+
+.. |sdf3a| image:: images/sdf3a.png
+.. |sdf3b| image:: images/sdf3b.png
+
 SDF Applications
 ================
 * collision detection: https://www.youtube.com/watch?v=x_Iq2yM4FcA
