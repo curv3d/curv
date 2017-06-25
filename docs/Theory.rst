@@ -112,10 +112,8 @@ inside the shape, and positive for points outside of the shape.
 
 |sdf1| |sdf2|
 
-.. |sdf1| image:: images/sdf1.png
-          :scale: 50
-.. |sdf2| image:: images/sdf2.png
-          :scale: 50
+.. |sdf1| image:: images/sdf1a.png
+.. |sdf2| image:: images/sdf2a.png
 
 SDF Applications
 ================
