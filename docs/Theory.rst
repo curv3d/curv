@@ -110,6 +110,12 @@ onto the minimum distance from that point to a boundary of the shape.
 An SDF is zero for points on the boundary of the shape, negative for points
 inside the shape, and positive for points outside of the shape.
 
+|sdf1| |sdf2|
+
+.. |sdf1| image:: images/sdf1.png
+          :scale: 50
+.. |sdf2| image:: images/sdf2.png
+          :scale: 50
 
 SDF Applications
 ================
