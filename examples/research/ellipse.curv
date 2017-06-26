@@ -48,3 +48,10 @@ ellipsoid r = make_shape {
     is_3d : true,
 };
 ellipsoid(1,2,3) >> slice_xz >> distance_field
+
+/*
+"Most of the public attempts at ‘closest point on an ellipsoid’ are either slow,
+unstable in corner cases, or both." (Alex Evans, Media Molecule, SIGGRAPH 2015)
+This is the best solution I've found yet:
+Anton's version: https://www.shadertoy.com/view/ldsGWX
+*/
