@@ -1,6 +1,7 @@
 /*
 http://www.fractalforums.com/new-theories-and-research/not-fractal-but-funny-trefoil-knot-routine/
 
+At present I have no idea what this means:
 ------------------------
 // we modify copies of the variables not the variables ;)
 x = Vec.x; y = Vec.y; z = Vec.z;
@@ -27,8 +28,28 @@ return Mag;
 // trefoil is of order 2, then a = b = 1 (the simplest knot)
 */
 
-knot = make_shape {
-    dist p : (
-    ),
-    is_3d : true,
-};
+/* Wikipedia, nice looking parametric trefoil knot.
+   There's another parameterization that wraps around a torus, doesn't look as nice
+x = sin(t) + 2*sin(2*t)
+y = cos(t) - 2*cos(2*t)
+z = -sin(3*t)
+*/
+
+/*
+"The Implicitization of a Trefoil Knot" by Michael Trott
+https://www.google.ca/url?sa=t&rct=j&q=&esrc=s&source=web&cd=13&ved=0ahUKEwj9o7-S9tvUAhWl24MKHYjLCwAQFghPMAw&url=http%3A%2F%2Fwww.mathematicaguidebooks.org%2Fscripts%2Fdownload_file.cgi%3Fsoftware_download%3DSample_Section_Symbolics.nb.pdf&usg=AFQjCNHYR408D7qpaYvJC7500ylz9iY0Mw
+
+Converts the Wikipedia parametric equation to implicit form, using Mathematica.
+"The result is a large polynomial.
+It is of total degree 24, has 1212 terms and coefficients with up to 23 digits."
+*/
+
+// This presently sucks in Curv. The cost of the union grows nonlinearly
+// with the number of shapes unioned.
+union ( for (t in [0..tau by tau/20])
+    sphere .1 >> translate(sin(t) + 2*sin(2*t), cos(t) - 2*cos(2*t), -sin(3*t)),
+)
+
+// TODO:
+// 1. optimize union, etc.
+// 2. Define an adaptively sampled parametric curve primitive.
