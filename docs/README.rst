@@ -126,6 +126,7 @@ here are some resources that I am using:
 * Seminal academic paper: `Sphere Tracing`_
 * Inigo Quilez helped make this popular: `Modelling with Distance Functions`_
 * Video: `How to Create Content with Signed Distance Functions`_
+* Video game that uses distance fields, no polygons: `<https://www.youtube.com/watch?v=u9KNtnCZDMI>`_
 
 .. _`Sphere Tracing`: http://graphics.cs.illinois.edu/sites/default/files/zeno.pdf
 .. _`Modelling with Distance Functions`: http://iquilezles.org/www/articles/distfunctions/distfunctions.htm
