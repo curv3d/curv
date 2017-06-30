@@ -10,6 +10,28 @@ Curv is an open source 3D solid modelling language, oriented towards 3D printing
 It's easy to use for beginners. It's incredibly powerful for experts.
 And it's fast: all rendering is performed by the GPU.
 
+Thesis
+======
+Ease of use:
+  For ease of use, the best choice is Constructive Solid Geometry (CSG)
+  embedded in a simple, pure functional language.
+
+Rendering Speed:
+  To quickly render a wide range of CSG primitives,
+  the best choice is to render on a GPU,
+  and to represent shapes using Function Representation (F-Rep).
+
+Expressive Power:
+  F-Rep is the best choice for CSG:
+  A wider range of CSG primitives are available in Open Source for F-Rep
+  than for competing representations.
+  
+  The Curv language should permit experts to define new CSG primitives using F-Rep.
+  (Therefore, Curv functions must be compilable into GPU code.)
+  
+  F-Rep is the most expressive representation for controlling a 3D printer.
+  It can describe 3D-printable objects that can't be modeled by competing representations.
+
 Constructive Solid Geometry
 ===========================
 Curv supports Constructive Solid Geometry (CSG)
