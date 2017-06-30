@@ -88,7 +88,7 @@ These two classes have different strengths and weaknesses.
 It's non-trivial to convert between representations of different classes.
 
 So an engineering tradeoff is involved.
-Curv uses F-Rep because of the breadth of fast CSG primitives, fast GPU rendering, and 3D printing.
+Curv uses F-Rep because of the variety of fast CSG primitives, fast GPU rendering, and 3D printing.
 But this choice makes it harder for Curv to deal with boundary representations.
 
 Function Representation
