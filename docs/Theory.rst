@@ -78,9 +78,10 @@ There are two important classes of representation for 2D and 3D shapes:
 ========================       ==========================
 Boundary Representations       Volumetric Representations
 ========================       ==========================
-parametric equation            implicit equation
-triangle mesh                  function representations
-parametric splines             pixels (2D), voxels (3D)
+parametric equation::          implicit equation::
+  (x,y) = (cos t, sin t)         x^2 + y^2 - 1 = 0
+parametric spline              function representations
+triangle mesh                  pixels (2D), voxels (3D)
 ========================       ==========================
 
 These two classes have different strengths and weaknesses.
