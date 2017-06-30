@@ -26,7 +26,8 @@ Expressive Power:
   A wider range of CSG primitives are available in Open Source for F-Rep
   than for competing representations.
   
-  The Curv language should permit experts to define new CSG primitives using F-Rep.
+  To boost expressiveness,
+  the Curv language permits experts to define new CSG primitives using F-Rep.
   (Therefore, Curv functions must be compilable into GPU code.)
   
   F-Rep is the most expressive representation for controlling a 3D printer.
@@ -34,10 +35,20 @@ Expressive Power:
 
 Constructive Solid Geometry
 ===========================
-Curv supports Constructive Solid Geometry (CSG)
-as a high level, easy to use, and expressive API for specifying geometric shapes.
-Shapes are first class values,
-and are constructed by transforming and combining simpler shapes using a rich set of geometric operations.
+In a Constructive Solid Geometry (CSG) system,
+there is a set of primitive shapes,
+and operations for constructing new shapes
+by transforming and combining simpler shapes.
+The operations normally include boolean operations like union, intersection and difference,
+and affine transformations like translate, scale and rotate.
+
+Curv uses CSG as its high level geometry interface,
+and provides a rich set of predefined shapes and operations.
+
+Curv is a pure functional language in which shapes are first class values,
+and CSG operations are functions that map shapes onto shapes.
+New CSG primitives can be defined using a low level geometry interface
+based on Function Representation.
 
 Code for the twisted, coloured torus::
 
@@ -52,6 +63,28 @@ Code for the model "Shrek's Donut"::
     torus(tau*2,tau),
     gyroid >> shell .1 >> df_scale .33 >> rect_to_polar (tau*6),
   ) >> colour (hsv2rgb(1/3,1,.5))
+
+Code for the `gyroid` primitive::
+
+  gyroid = make_shape {
+    dist(x,y,z,t) = cos(x)*sin(y) + cos(y)*sin(z) + cos(z)*sin(x),
+    is_3d = true,
+  }
+
+Competing Shape Representations
+===============================
+There are two important classes of representation for 2D and 3D shapes:
+
+========================       ==========================
+Boundary Representations       Volumetric Representations
+========================       ==========================
+parametric equation            implicit equation
+triangle mesh                  function representations
+parametric splines             pixels (2D), voxels (3D)
+========================       ==========================
+
+These two classes have different strengths and weaknesses.
+It's non-trivial to convert between representations of different classes.
 
 Function Representation
 =======================
