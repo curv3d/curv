@@ -493,10 +493,8 @@ Value gl_constify(Operation& op, GL_Frame& f)
     if (auto c = dynamic_cast<Constant*>(&op))
         return c->value_;
     else if (auto dot = dynamic_cast<Dot_Expr*>(&op)) {
-        if (auto ref = cast<Nonlocal_Strict_Ref>(dot->base_)) {
-            Value base = (*f.nonlocal)[ref->slot_];
-            return base.at(dot->id_, At_GL_Phrase(*op.source_, &f));
-        }
+        Value base = gl_constify(*dot->base_, f);
+        return base.at(dot->id_, At_GL_Phrase(*op.source_, &f));
     }
     else if (auto ref = dynamic_cast<Nonlocal_Strict_Ref*>(&op))
         return (*f.nonlocal)[ref->slot_];
@@ -720,9 +718,43 @@ void If_Op::gl_exec(GL_Frame& f) const
 }
 void While_Action::gl_exec(GL_Frame& f) const
 {
-    f.gl.out << "  for (;;) {\n";
+    f.gl.out << "  while (true) {\n";
     auto cond = gl_eval_expr(f, *cond_, GL_Type::Bool);
     f.gl.out << "  if (!"<<cond<<") break;\n";
+    body_->gl_exec(f);
+    f.gl.out << "  }\n";
+}
+void For_Op::gl_exec(GL_Frame& f) const
+{
+    auto list = cast<const List_Expr>(list_);
+    if (list == nullptr)
+        throw Exception(At_GL_Phrase(*list_->source_, &f),
+            "GL: not a list constructor");
+    if (list->size() != 1)
+        throw Exception(At_GL_Phrase(*list_->source_, &f),
+            "GL: list constructor must have 1 element");
+    auto range = cast<Range_Gen>(list->at(0));
+    if (range == nullptr)
+        throw Exception(At_GL_Phrase(*list->at(0)->source_, &f),
+            "GL: not a range");
+    /*
+    auto first = gl_eval_expr(f, *range->arg1_, GL_Type::Num);
+    auto last = gl_eval_expr(f, *range->arg2_, GL_Type::Num);
+    auto step = gl_eval_expr(f, *range->arg3_, GL_Type::Num);
+    */
+    double first = gl_constify(*range->arg1_, f)
+        .to_num(At_GL_Phrase(*range->arg1_->source_, &f));
+    double last = gl_constify(*range->arg2_, f)
+        .to_num(At_GL_Phrase(*range->arg2_->source_, &f));
+    double step = range->arg3_ != nullptr
+        ? gl_constify(*range->arg3_, f)
+          .to_num(At_GL_Phrase(*range->arg3_->source_, &f))
+        : 1.0;
+    auto i = f.gl.newvalue(GL_Type::Num);
+    f.gl.out << "  for (float " << i << "=" << dfmt(first, dfmt::EXPR) << ";"
+             << i << (range->half_open_ ? "<" : "<=") << dfmt(last, dfmt::EXPR) << ";"
+             << i << "+=" << dfmt(step, dfmt::EXPR) << ") {\n";
+    f[slot_] = i;
     body_->gl_exec(f);
     f.gl.out << "  }\n";
 }

@@ -80,12 +80,13 @@ Shared<Meaning>
 Environ::lookup_var(const Identifier& id)
 {
     for (Environ* e = this; e != nullptr; e = e->parent_) {
-        if (is_sequential_statement_list_ && is_analyzing_action_) {
+        if (!e->is_analyzing_action_)
+            break;
+        if (e->is_sequential_statement_list_) {
             auto m = e->single_lookup(id);
             if (m != nullptr)
                 return m;
-        } else
-            break;
+        }
     }
     throw Exception(At_Phrase(id, *this),
         stringify("var ",id.atom_,": not defined"));
@@ -888,6 +889,7 @@ For_Phrase::analyze(Environ& env) const
         {
             frame_nslots_ = p.frame_nslots_ + 1;
             frame_maxslots_ = std::max(p.frame_maxslots_, frame_nslots_);
+            is_analyzing_action_ = p.is_analyzing_action_;
         }
         virtual Shared<Meaning> single_lookup(const Identifier& id)
         {
@@ -897,7 +899,7 @@ For_Phrase::analyze(Environ& env) const
         }
     };
     For_Environ body_env(env, name, slot);
-    auto body = analyze_op(*body_, body_env);
+    auto body = analyze_tail(*body_, body_env);
     env.frame_maxslots_ = body_env.frame_maxslots_;
 
     return make<For_Op>(share(*this), slot, list, body);

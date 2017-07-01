@@ -680,6 +680,7 @@ struct For_Op : public Operation
 
     virtual void generate(Frame&, List_Builder&) const override;
     virtual void exec(Frame&) const override;
+    virtual void gl_exec(GL_Frame&) const override;
 };
 
 struct While_Action : public Just_Action

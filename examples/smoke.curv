@@ -28,17 +28,15 @@ fbm xy = (
     var shift := [100,100];
     // Rotate to reduce axial bias
     var rot := cis(0.5);
-    var i := 0;
-    while (i < 5) (
+    for (i in [1..5]) (
         v := v + a * noise st;
         st := cmul(rot, st) * 2 + shift;
         a := a * 0.5;
-        i := i + 1;
     );
     v
 );
 
-everything >> colour ((x,y,z,t) -> (
+smoke = (x,y,z,t) -> (
     var st := (x,y);
     var q := [ fbm(st), fbm(st + 1) ];
     var r := [ fbm(st + q + [1.7,9.2] + 0.150*t),
@@ -54,4 +52,6 @@ everything >> colour ((x,y,z,t) -> (
              [0.666667,1,1],
              clamp(r[X], 0, 1));
     (f*f*f+.6*f*f+.5*f)*c
-))
+);
+
+circle 1 >> colour smoke
