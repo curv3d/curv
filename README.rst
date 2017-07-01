@@ -74,6 +74,15 @@ ImplicitCAD (2012)
   of F-Rep geometry is inaccessible. And it doesn't use the GPU to speed up
   geometry processing.
 
+IceSL (2013)
+  An OpenSCAD / ImplicitCAD clone that uses F-Rep to represent shapes.
+  It is GPU accelerated.
+  
+  *BUT*: Not open source (so you can't see how the GPU acceleration works),
+  and you can't define new function representations in the language.
+  Also, it can't export STL files for 3D printing, so you can't use it with
+  a 3D printing service (although it can drive a 3D printer directly).
+
 ShaderToy.com (2013)
   A website with a Processing-like interface
   for doing F-Rep programming using WebGL and the GLSL language. Showcases the
@@ -105,7 +114,9 @@ Two platforms are currently supported: Ubuntu 16.04 and macOS.
 
 Curv is sensitive to the GPU hardware capabilities and the graphics driver.
 Good hardware and good driver software are a requirement.
-If the website `<http://shadertoy.com>`_ doesn't work in your web browser,
+If the website `<http://shadertoy.com>`_ doesn't work in the current version of FireFox,
 then Curv won't work well either.
 On Linux, if the open source driver isn't cutting it, try the proprietary driver.
 The best bet on Linux is a recent Nvidia card with the proprietary driver.
+
+Check for current GPU issues: `<https://github.com/doug-moen/curv/issues?q=is%3Aissue+is%3Aopen+label%3AGPU>`_

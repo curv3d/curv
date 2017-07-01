@@ -1,8 +1,11 @@
 ## Ubuntu Linux 16.04 build instructions
 * install glslViewer (https://github.com/doug-moen/glslViewer)
 * apt-get install cmake libboost-all-dev libdouble-conversion-dev libreadline-dev
+* cd ~
+* git clone https://github.com/doug-moen/curv
+* cd curv
 * make
-* make install
+* sudo make install
 
 ## macOS build instructions
 * install homebrew (http://brew.sh)

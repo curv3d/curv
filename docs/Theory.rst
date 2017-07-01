@@ -10,12 +10,45 @@ Curv is an open source 3D solid modelling language, oriented towards 3D printing
 It's easy to use for beginners. It's incredibly powerful for experts.
 And it's fast: all rendering is performed by the GPU.
 
+Thesis
+======
+Ease of use:
+  For ease of use, the best choice is Constructive Solid Geometry (CSG)
+  embedded in a simple, pure functional language.
+
+Rendering Speed:
+  To quickly render a wide range of CSG primitives,
+  the best choice is to render on a GPU,
+  and to represent shapes using Function Representation (F-Rep).
+
+Expressive Power:
+  F-Rep is the best choice for CSG:
+  A wider range of CSG primitives are available in Open Source for F-Rep
+  than for competing representations.
+  
+  To boost expressiveness,
+  the Curv language permits experts to define new CSG primitives using F-Rep.
+  (Therefore, Curv functions must be compilable into GPU code.)
+  
+  F-Rep is the most expressive representation for controlling a 3D printer.
+  It can describe 3D-printable objects that can't be modeled by competing representations.
+
 Constructive Solid Geometry
 ===========================
-Curv supports Constructive Solid Geometry (CSG)
-as a high level, easy to use, and expressive API for specifying geometric shapes.
-Shapes are first class values,
-and are constructed by transforming and combining simpler shapes using a rich set of geometric operations.
+In a Constructive Solid Geometry (CSG) system,
+there is a set of primitive shapes,
+and operations for constructing new shapes
+by transforming and combining simpler shapes.
+The operations normally include boolean operations like union, intersection and difference,
+and affine transformations like translate, scale and rotate.
+
+Curv uses CSG as its high level geometry interface,
+and provides a rich set of predefined shapes and operations.
+
+Curv is a pure functional language in which shapes are first class values,
+and CSG operations are functions that map shapes onto shapes.
+New CSG primitives can be defined using a low level geometry interface
+based on Function Representation.
 
 Code for the twisted, coloured torus::
 
@@ -30,6 +63,33 @@ Code for the model "Shrek's Donut"::
     torus(tau*2,tau),
     gyroid >> shell .1 >> df_scale .33 >> rect_to_polar (tau*6),
   ) >> colour (hsv2rgb(1/3,1,.5))
+
+Code for the `gyroid` primitive::
+
+  gyroid = make_shape {
+    dist(x,y,z,t) = cos(x)*sin(y) + cos(y)*sin(z) + cos(z)*sin(x),
+    is_3d = true,
+  }
+
+Competing Shape Representations
+===============================
+There are two important classes of representation for 2D and 3D shapes:
+
+========================       ==========================
+Boundary Representations       Volumetric Representations
+========================       ==========================
+parametric equation::          implicit equation::
+  (x,y) = (cos t, sin t)         x^2 + y^2 - 1 = 0
+parametric splines             function representation
+triangle mesh                  pixels (2D), voxels (3D)
+========================       ==========================
+
+These two classes have different strengths and weaknesses.
+It's non-trivial to convert between representations of different classes.
+
+So an engineering tradeoff is involved.
+Curv uses F-Rep because of the variety of fast CSG primitives, fast GPU rendering, and 3D printing.
+But this choice makes it harder for Curv to deal with boundary representations.
 
 Function Representation
 =======================
