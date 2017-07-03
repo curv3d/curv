@@ -219,8 +219,8 @@ Symmetry and Space Folding
 The 4th Dimension is Time
 =========================
 
-SDF Techniques
-==============
+Procedural Modelling Techniques
+===============================
 * sweeps
 
   * extrude and loft
@@ -244,7 +244,16 @@ SDF Techniques
   * noisy fractal solids: mountains, clouds, etc
   * perlin noise: smoke, solid textures (marble, wood)
   
-* engraving/perturbing the surface of a solid
+* Hypertexture: engraving/perturbing the surface of a solid. An implicit modelling technique.
+* Grammars, L-Systems
+
+  * Use a context free, generative grammar to generate a complex shape, like a tree, leaf or city.
+    Or fractals.
+  * during the 1990's: use L-System to generate a skeleton, then flesh it out
+    using F-Rep. Popular for modelling living things. See "algorithmic botany"
+    and "implicit seafood" web sites.
+  * idea: use a grammar to generate a tree of space folding operations: more complexity with fewer operations.
+
 
 Sphere Tracing
 ==============
@@ -256,6 +265,10 @@ Naive: cost (N-ary union) = sum of the costs of the N arguments. Too expensive f
 Smart: partition space into disjoint subspaces. Maybe use multiple levels or a tree structure.
 During SDF evaluation, first determine what subspace you are in (eg by walking the tree),
 then evaluate the SDF for that subspace.
+
+Can be done manually, using F-Rep API, but nicer to do it automatically. Eg,
+
+Dreams by Media Molecule https://www.youtube.com/watch?v=4j8Wp-sx5K0
 
 Compiling Curv to GPU Code
 ==========================
