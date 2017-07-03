@@ -75,21 +75,36 @@ Competing Shape Representations
 ===============================
 There are two important classes of representation for 2D and 3D shapes:
 
-========================       ==========================
-Boundary Representations       Volumetric Representations
-========================       ==========================
-parametric equation::          implicit equation::
-  (x,y) = (cos t, sin t)         x^2 + y^2 - 1 = 0
-parametric splines             function representation
-triangle mesh                  pixels (2D), voxels (3D)
-========================       ==========================
++------------------------------+--------------------------------+
+| **Explicit Modelling**       | **Implicit Modelling**         |
++------------------------------+--------------------------------+
+| Directly generate points     | Answer questions               |
+| that comprise the shape      | about particular points        |
++------------------------------+--------------------------------+
+| parametric equation::        | implicit equation::            |
+|                              |                                |
+|  (x,y) = (cos t, sin t)      |   x^2 + y^2 - 1 = 0            |
++------------------------------+--------------------------------+
+| **Boundary Representations** | **Volumetric Representations** |
++------------------------------+--------------------------------+
+| parametric splines           | function representation        |
++------------------------------+--------------------------------+
+| triangle mesh                | pixels (2D), voxels (3D)       |
++------------------------------+--------------------------------+
 
 These two classes have different strengths and weaknesses.
-It's non-trivial to convert between representations of different classes.
+Certain operations that are cheap for one class are expensive
+for the other class (and vice versa).
 
-So an engineering tradeoff is involved.
-Curv uses F-Rep because of the variety of fast CSG primitives, fast GPU rendering, and 3D printing.
-But this choice makes it harder for Curv to deal with boundary representations.
+Conversions between the two classes are non-trivial:
+
+* It's expensive to convert between parametric and implicit equations.
+* It's expensive to convert between B-Rep and F-Rep.
+
+So, in choosing F-Rep over B-Rep, an engineering tradeoff is involved.
+
+If you only know B-Rep modelling, then learning F-Rep requires you to
+think different if you want to write efficient programs.
 
 Function Representation
 =======================
