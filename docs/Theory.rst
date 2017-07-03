@@ -213,14 +213,49 @@ derivation for simple CSG primitives
 * rigid body transforms: translate, rotate
 * isotropic and anisotropic scaling
 
-Sphere Tracing
-==============
-
 Symmetry and Space Folding
 ==========================
 
 The 4th Dimension is Time
 =========================
+
+SDF Techniques
+==============
+* sweeps
+
+  * extrude and loft
+  * perimeter_extrude (sweep 2D shape along 2D implicit curve -> 3D shape)
+  * isosurface (sweep circle along 2D curve, sphere along 3D curve or surface)
+  * constructing implicit curves and surfaces
+  
+    * shell
+    * MERCURY: intersection->curve
+    
+  * sweeping a parametric curve or surface: more expensive
+  * space warp operators/fancy blending operators can be an alternative to sweeping
+
+* morphing, blending, convolution
+* deterministic fractals
+
+  * MandelBulb3D
+
+* fractal noise, perlin noise
+
+  * noisy fractal solids: mountains, clouds, etc
+  * perlin noise: smoke, solid textures (marble, wood)
+  
+* engraving/perturbing the surface of a solid
+
+Sphere Tracing
+==============
+
+Hierarchical SDFs
+=================
+Naive: cost (N-ary union) = sum of the costs of the N arguments. Too expensive for large N.
+
+Smart: partition space into disjoint subspaces. Maybe use multiple levels or a tree structure.
+During SDF evaluation, first determine what subspace you are in (eg by walking the tree),
+then evaluate the SDF for that subspace.
 
 Compiling Curv to GPU Code
 ==========================
