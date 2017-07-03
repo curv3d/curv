@@ -75,22 +75,22 @@ Competing Shape Representations
 ===============================
 There are two important classes of representation for 2D and 3D shapes:
 
-+------------------------------+--------------------------------+
-| **Explicit Modelling**       | **Implicit Modelling**         |
-+------------------------------+--------------------------------+
-| Directly generate points     | Answer questions               |
-| that comprise the shape      | about particular points        |
-+------------------------------+--------------------------------+
-| parametric equation::        | implicit equation::            |
-|                              |                                |
-|  (x,y) = (cos t, sin t)      |   x^2 + y^2 - 1 = 0            |
-+------------------------------+--------------------------------+
-| **Boundary Representations** | **Volumetric Representations** |
-+------------------------------+--------------------------------+
-| parametric splines           | function representation        |
-+------------------------------+--------------------------------+
-| triangle mesh                | pixels (2D), voxels (3D)       |
-+------------------------------+--------------------------------+
++-------------------------------------+-----------------------------------+
+| **Explicit Modelling**              | **Implicit Modelling**            |
++-------------------------------------+-----------------------------------+
+| Directly generate points            | Answer questions                  |
+| that comprise the shape             | about particular points           |
++-------------------------------------+-----------------------------------+
+| parametric equation (unit circle):: | implicit equation (unit circle):: |
+|                                     |                                   |
+|  (x,y) = (cos t, sin t)             |   x^2 + y^2 - 1 = 0               |
++-------------------------------------+-----------------------------------+
+| **Boundary Representations**        | **Volumetric Representations**    |
++-------------------------------------+-----------------------------------+
+| parametric splines                  | function representation           |
++-------------------------------------+-----------------------------------+
+| triangle mesh                       | pixels (2D), voxels (3D)          |
++-------------------------------------+-----------------------------------+
 
 These two classes have different strengths and weaknesses.
 Certain operations that are cheap for one class are expensive
