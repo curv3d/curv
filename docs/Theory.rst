@@ -101,10 +101,10 @@ Conversions between the two classes are non-trivial:
 * It's expensive to convert between parametric and implicit equations.
 * It's expensive to convert between B-Rep and F-Rep.
 
-So, in choosing F-Rep over B-Rep, an engineering tradeoff is involved.
+Curv chooses F-Rep over B-Rep, but an engineering tradeoff is involved.
 
-If you only know B-Rep modelling, then learning F-Rep requires you to
-think different if you want to write efficient programs.
+If you only know B-Rep procedural modelling, then learning F-Rep
+requires you to think different if you want to write efficient programs.
 
 Function Representation
 =======================
