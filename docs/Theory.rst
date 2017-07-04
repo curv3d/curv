@@ -276,7 +276,7 @@ Here's a 3D solid texture I hacked together in Curv using fractal noise:
 .. image:: images/smoke3.png
 
 * White noise: Each (x,y) or (x,y,z) coordinate
-  is mapped to a uniformly distributed pseudo-random number in range [0...1]
+  is mapped to a uniformly distributed pseudo-random number
   using a hash function.
   
   |white_noise|
@@ -285,7 +285,7 @@ Here's a 3D solid texture I hacked together in Curv using fractal noise:
   
   |value_noise|
 * Gradient noise: Random gradients are generated at lattice points. The gradient of a point
-  is interpolated from the nearby lattice points. The gradient is converted to a value in [0...1].
+  is interpolated from the nearby lattice points. The gradient is converted to a noise value.
   Smoother than value noise, with fewer grid artifacts.
   (Examples: Perlin noise, Simplex noise.)
   
@@ -318,5 +318,38 @@ Can be done manually, using F-Rep API, but nicer to do it automatically. Eg,
 
 Dreams by Media Molecule https://www.youtube.com/watch?v=4j8Wp-sx5K0
 
+Shape Values in Curv
+====================
+In Curv, a shape value is represented by a record, with fields:
+* ``dist`` is a function mapping ``(x,y,z,t)`` onto a signed distance value.
+* ``colour`` is a function mapping ``(x,y,z,t)`` onto a colour (an RGB triple).
+* ``bbox`` is an axis aligned bounding box, since this is expensive to compute from the distance function.
+
+In the future, I'd like to support multiple shape subclasses,
+with specialized CSG operations that work only on shape subtypes.
+For example, I'd like to implement the Conway polyhedron operators
+(which transform one polyhedron into another). Polyhedrons will contain
+vertex/edge/face information.
+
 Compiling Curv to GPU Code
 ==========================
+To render a shape using a GPU,
+I compile the shape's distance and colour functions into "GPU code",
+which currently means an OpenGL fragment shader (for rendering on a display),
+but in future will also include OpenCL or CUDA compute kernels
+(for converting a 3D shape to a triangle mesh).
+
+Whatever the format, GPU compute kernels are written in a primitive
+subset of C which lacks recursive functions and memory allocation,
+and has limited support for pointers and global variables.
+If I target WebGL, there is only limited support for iteration.
+
+Here's how GPU code generation works:
+* Evaluate a Curv program, producing a shape value.
+* Extract the ``dist`` and ``colour`` functions, which are closures.
+* Partially evaluate the body of the closure,
+  treating non-local variables captured by the closure as compile time constants,
+  folding constant subexpressions, and optimizing.
+* Function calls are inline expanded to eliminate recursion and polymorphism.
+* The resulting transformed code is restricted to a statically typed
+  subset of Curv called "GL", which can be compiled into GPU code.
