@@ -264,6 +264,26 @@ Procedural Modelling Techniques
     and "implicit seafood" web sites.
   * idea: use a grammar to generate a tree of space folding operations: more complexity with fewer operations.
 
+Fractals
+========
+Fractals can be constructed using either explicit or implicit techniques.
+
+The explicit techniques seem to only be popular for constructing 2D fractals.
+You create an array of pixels, then generate a series of pixel values, painting them
+onto your canvas, until you have iterated far enough, then you stop.
+
+For 3D fractals, the explicit approach is impractical, because
+it requires too much memory (for storing triangles or voxels)
+to iterate a big complex 3D fractal down to a fine level of detail.
+
+For the 3D fractal art community, the implicit approach (F-Rep) is the technology of choice,
+using tools like MandelBulb3D, which are phenomenally rich and powerful.
+In principle, the same models can be written in Curv.
+
+.. image:: images/holy_box_fractal.jpg
+
+https://www.youtube.com/watch?v=OW5RnrlTeow
+
 Fractal Noise
 =============
 A noise function maps each point in 2D or 3D space onto a pseudo-random noise value in the range [0...1].
