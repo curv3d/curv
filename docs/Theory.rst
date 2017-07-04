@@ -250,10 +250,6 @@ Procedural Modelling Techniques
   * space warp operators/fancy blending operators can be an alternative to sweeping
 
 * morphing, blending, convolution
-* deterministic fractals
-
-  * MandelBulb3D
-  
 * Hypertexture: engraving/perturbing the surface of a solid. An implicit modelling technique.
 * Grammars, L-Systems
 
@@ -266,17 +262,13 @@ Procedural Modelling Techniques
 
 Fractals
 ========
-Fractals can be constructed using either explicit or implicit techniques.
+For large or deeply iterated 3D fractals,
+F-Rep wins over other representations like triangle meshes or voxels:
+they require too much memory,
+and performing CSG operations like union or intersection on these
+bulky representations is too time consuming.
 
-The explicit techniques seem to only be popular for constructing 2D fractals.
-You create an array of pixels, then generate a series of pixel values, painting them
-onto your canvas, until you have iterated far enough, then you stop.
-
-For 3D fractals, the explicit approach is impractical, because
-it requires too much memory (for storing triangles or voxels)
-to iterate a big complex 3D fractal down to a fine level of detail.
-
-For the 3D fractal art community, the implicit approach (F-Rep) is the technology of choice,
+For the 3D fractal art community, F-Rep is the technology of choice,
 using tools like MandelBulb3D, which are phenomenally rich and powerful.
 In principle, the same models can be written in Curv.
 
