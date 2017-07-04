@@ -234,6 +234,18 @@ Symmetry and Space Folding
 The 4th Dimension is Time
 =========================
 
+Morphing, Blending and Convolution
+==================================
+Morphing from one shape to another is easy:
+linear interpolation between two distance fields.
+
+Convolution:
+In Photoshop, there are image processing filters that blur or sharpen an image.
+In the mathematics of image processing, this is called convolution.
+Convolutions can also be applied to 3D shapes. Blurring a shape removes high
+frequency components, causing sharp edges to melt, and T-junctions to be filled in.
+
+
 Procedural Modelling Techniques
 ===============================
 * sweeps
@@ -249,7 +261,6 @@ Procedural Modelling Techniques
   * sweeping a parametric curve or surface: more expensive
   * space warp operators/fancy blending operators can be an alternative to sweeping
 
-* morphing, blending, convolution
 * Hypertexture: engraving/perturbing the surface of a solid. An implicit modelling technique.
 * Grammars, L-Systems
 
@@ -364,6 +375,7 @@ Here's how GPU code generation works:
 * Partially evaluate the body of the closure,
   treating non-local variables captured by the closure as compile time constants,
   folding constant subexpressions, and optimizing.
-* Function calls are inline expanded to eliminate recursion and polymorphism.
+* Function calls are inline expanded to eliminate recursion and polymorphism,
+  and enable more partial evaluation.
 * The resulting transformed code is restricted to a statically typed
   subset of Curv called "GL", which can be compiled into GPU code.
