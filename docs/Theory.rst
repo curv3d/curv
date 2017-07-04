@@ -253,11 +253,6 @@ Procedural Modelling Techniques
 * deterministic fractals
 
   * MandelBulb3D
-
-* fractal noise, perlin noise
-
-  * noisy fractal solids: mountains, clouds, etc
-  * perlin noise: smoke, solid textures (marble, wood)
   
 * Hypertexture: engraving/perturbing the surface of a solid. An implicit modelling technique.
 * Grammars, L-Systems
@@ -269,6 +264,44 @@ Procedural Modelling Techniques
     and "implicit seafood" web sites.
   * idea: use a grammar to generate a tree of space folding operations: more complexity with fewer operations.
 
+Fractal Noise
+=============
+A noise function maps each point in 2D or 3D space onto a pseudo-random noise value in the range [0...1].
+
+Fractal noise is a popular noise function, good for simulating natural phenomena
+like smoke, flames, clouds, mountains, and solid textures like marble or wood.
+
+Here's a 3D solid texture I hacked together in Curv using fractal noise:
+
+.. image:: images/smoke3.png
+
+* White noise: Each (x,y) or (x,y,z) coordinate
+  is mapped to a uniformly distributed pseudo-random number
+  using a hash function.
+  
+  |white_noise|
+* Value Noise: Random values are generated at lattice points.
+  The noise value at a point is interpolated from nearby lattice points.
+  
+  |value_noise|
+* Gradient noise: Random gradients are generated at lattice points. The gradient of a point
+  is interpolated from the nearby lattice points. The gradient is converted to a noise value.
+  Smoother than value noise, with fewer grid artifacts.
+  (Examples: Perlin noise, Simplex noise.)
+  
+  |gradient_noise|
+* Fractal noise (Fractal Brownian Motion):
+  Gradient noise is generated at a series of higher frequencies (different lattice spacings),
+  and added together. Higher frequencies are attenuated.
+  
+  |fractal_noise|
+
+Many more noise functions have been invented.
+
+.. |white_noise| image:: images/white_noise.jpg
+.. |value_noise| image:: images/value_noise.jpg
+.. |gradient_noise| image:: images/gradient_noise.jpg
+.. |fractal_noise| image:: images/fractal_noise.jpg
 
 Sphere Tracing
 ==============
@@ -285,5 +318,40 @@ Can be done manually, using F-Rep API, but nicer to do it automatically. Eg,
 
 Dreams by Media Molecule https://www.youtube.com/watch?v=4j8Wp-sx5K0
 
+Shape Values in Curv
+====================
+In Curv, a shape value is represented by a record, with fields:
+
+* ``dist`` is a function mapping ``(x,y,z,t)`` onto a signed distance value.
+* ``colour`` is a function mapping ``(x,y,z,t)`` onto a colour (an RGB triple).
+* ``bbox`` is an axis aligned bounding box, since this is expensive to compute from the distance function.
+
+In the future, I'd like to support multiple shape subclasses,
+with specialized CSG operations that work only on shape subtypes.
+For example, I'd like to implement the Conway polyhedron operators
+(which transform one polyhedron into another). Polyhedrons will contain
+vertex/edge/face information.
+
 Compiling Curv to GPU Code
 ==========================
+To render a shape using a GPU,
+I compile the shape's distance and colour functions into "GPU code",
+which currently means an OpenGL fragment shader (for rendering on a display),
+but in future will also include OpenCL or CUDA compute kernels
+(for converting a 3D shape to a triangle mesh).
+
+Whatever the format, GPU compute kernels are written in a primitive
+subset of C which lacks recursive functions and memory allocation,
+and has limited support for pointers and global variables.
+If I target WebGL, there is only limited support for iteration.
+
+Here's how GPU code generation works:
+
+* Evaluate a Curv program, producing a shape value.
+* Extract the ``dist`` and ``colour`` functions, which are closures.
+* Partially evaluate the body of the closure,
+  treating non-local variables captured by the closure as compile time constants,
+  folding constant subexpressions, and optimizing.
+* Function calls are inline expanded to eliminate recursion and polymorphism.
+* The resulting transformed code is restricted to a statically typed
+  subset of Curv called "GL", which can be compiled into GPU code.
