@@ -253,11 +253,6 @@ Procedural Modelling Techniques
 * deterministic fractals
 
   * MandelBulb3D
-
-* fractal noise, perlin noise
-
-  * noisy fractal solids: mountains, clouds, etc
-  * perlin noise: smoke, solid textures (marble, wood)
   
 * Hypertexture: engraving/perturbing the surface of a solid. An implicit modelling technique.
 * Grammars, L-Systems
@@ -271,6 +266,13 @@ Procedural Modelling Techniques
 
 Fractal Noise
 =============
+A noise function maps each point in 2D or 3D space onto a pseudo-random noise value in the range [0...1].
+
+Fractal noise is a popular noise function, good for simulating natural phenomena
+like smoke, flames, clouds, mountains, and solid textures like marble or wood.
+
+Here's a 3D solid texture I hacked together in Curv using fractal noise:
+
 .. image:: images/smoke3.png
 
 * White noise: Each (x,y) or (x,y,z) coordinate
@@ -293,14 +295,13 @@ Fractal Noise
   and added together. Higher frequencies are attenuated.
   
   |fractal_noise|
-* Many more types and variations of noise have been invented.
+
+Many more noise functions have been invented.
 
 .. |white_noise| image:: images/white_noise.jpg
 .. |value_noise| image:: images/value_noise.jpg
 .. |gradient_noise| image:: images/gradient_noise.jpg
 .. |fractal_noise| image:: images/fractal_noise.jpg
-
-Applications: smoke, flames, clouds, mountains, solid textures like marble or wood, etc.
 
 Sphere Tracing
 ==============
