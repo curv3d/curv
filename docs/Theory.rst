@@ -269,6 +269,38 @@ Procedural Modelling Techniques
     and "implicit seafood" web sites.
   * idea: use a grammar to generate a tree of space folding operations: more complexity with fewer operations.
 
+Fractal Noise
+=============
+.. image:: images/smoke3.png
+
+* White noise: Each (x,y) or (x,y,z) coordinate
+  is mapped to a uniformly distributed pseudo-random number in range [0...1]
+  using a hash function.
+  
+  |white_noise|
+* Value Noise: Random values are generated at lattice points.
+  The noise value at a point is interpolated from nearby lattice points.
+  
+  |value_noise|
+* Gradient noise: Random gradients are generated at lattice points. The gradient of a point
+  is interpolated from the nearby lattice points. The gradient is converted to a value in [0...1].
+  Smoother than value noise, with fewer grid artifacts.
+  (Examples: Perlin noise, Simplex noise.)
+  
+  |gradient_noise|
+* Fractal noise (Fractal Brownian Motion):
+  Gradient noise is generated at a series of higher frequencies (different lattice spacings),
+  and added together. Higher frequencies are attenuated.
+  
+  |fractal_noise|
+* Many more types and variations of noise have been invented.
+
+.. |white_noise| image:: images/white_noise.jpg
+.. |value_noise| image:: images/value_noise.jpg
+.. |gradient_noise| image:: images/gradient_noise.jpg
+.. |fractal_noise| image:: images/fractal_noise.jpg
+
+Applications: smoke, flames, clouds, mountains, solid textures like marble or wood, etc.
 
 Sphere Tracing
 ==============
