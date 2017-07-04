@@ -321,6 +321,7 @@ Dreams by Media Molecule https://www.youtube.com/watch?v=4j8Wp-sx5K0
 Shape Values in Curv
 ====================
 In Curv, a shape value is represented by a record, with fields:
+
 * ``dist`` is a function mapping ``(x,y,z,t)`` onto a signed distance value.
 * ``colour`` is a function mapping ``(x,y,z,t)`` onto a colour (an RGB triple).
 * ``bbox`` is an axis aligned bounding box, since this is expensive to compute from the distance function.
@@ -345,6 +346,7 @@ and has limited support for pointers and global variables.
 If I target WebGL, there is only limited support for iteration.
 
 Here's how GPU code generation works:
+
 * Evaluate a Curv program, producing a shape value.
 * Extract the ``dist`` and ``colour`` functions, which are closures.
 * Partially evaluate the body of the closure,
