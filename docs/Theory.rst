@@ -273,8 +273,7 @@ A Curv circle implementation::
 
   circle r = make_shape {
     dist(x,y,z,t) = sqrt(x^2 - y^2) - r,
-    bbox = [[-r,-r,0],[r,r,0]],  // axis aligned bounding box
-    is_2d = true,
+    ...
   }
 
 Moral: Converting an implicit equation to an SDF requires thought and analysis.
@@ -282,9 +281,30 @@ Moral: Converting an implicit equation to an SDF requires thought and analysis.
 Union
 =====
 A cheap way to find the union of two shapes
-is to compute the "min" of their distance fields.
+is to compute the minimum of their distance fields::
 
+  union(s1,s2) = make_shape {
+    dist p = min(s1.dist p, s2.dist p),
+    ...
+  }
+
+Union of a square and circle:
 .. image:: images/union1.png
+
+The resulting SDF is correct for any points outside of the shape, or at the boundary.
+But the SDF is incorrect inside the shape, in this case within the region where the circle and square intersect.
+In this region, the SDF underestimates the distance from p to the boundary.
+
+This approximation is okay in most cases:
+* The ray tracer still works if the SDF underestimates the distance.
+* Usually we only care about the SDF on the outside of a shape.
+
+It's possible to compute an exact Euclidean union, but it's more expensive
+(meaning rendering becomes slower), and it's usually not worth the price.
+
+We amend our definition of a Curv-compatible SDF so that it is okay if the SDF
+underestimates the distance. In formal math language, an SDF must be Lipshitz Continuous,
+with a Lipschitz Constant of 1 (ie, don't have any distance gradient larger than 1).
 
 Deriving an SDF
 ===============
