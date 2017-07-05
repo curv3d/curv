@@ -357,11 +357,13 @@ vertex/edge/face information.
 
 Compiling Curv to GPU Code
 ==========================
-To render a shape using a GPU,
-I compile the shape's distance and colour functions into "GPU code",
-which currently means an OpenGL fragment shader (for rendering on a display),
-but in future will also include OpenCL or CUDA compute kernels
-(for converting a 3D shape to a triangle mesh).
+The Geometry Compiler translates a shape to GPU code for rendering that shape.
+
+For rendering on a display, the shape's distance and colour functions
+are compiled into an OpenGL fragment shader.
+In future, for converting a shape to a triangle mesh,
+the distance function will be compiled to an OpenCL or CUDA compute kernel.
+(I could also target the DirectX, Metal or Vulkan APIs.)
 
 Whatever the format, GPU compute kernels are written in a primitive
 subset of C which lacks recursive functions and memory allocation,
