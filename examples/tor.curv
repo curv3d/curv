@@ -1,4 +1,4 @@
 torus(2,1)
     >> colour (radial_rainbow 1)
     >> rotate(tau/4, Yaxis)
-    >> twist 1
+    >> twist (6/tau)
