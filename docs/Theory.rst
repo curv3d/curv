@@ -84,12 +84,14 @@ Code for the `gyroid` primitive::
 
 Pure Functional Programming
 ===========================
-Curv is a pure functional language. Why?
+Curv is a pure functional language, with both shapes and functions as first class values.
+Why?
 
 * simple, terse, pleasant programming style
 * simple semantics
 * can easily be translated into highly parallel GPU code
 * good match for CSG and F-Rep
+* security
 
 Curv can be considered a file format for representing arbitrary geometric shapes
 and distributing them across the internet. One requirement for such a file format
@@ -98,7 +100,7 @@ all of your files and display a ransom message. Curv is not a general purpose
 programming language. It doesn't have side effects, it can only compute values.
 So it meets this requirement.
 
-Unique contribution of Curv: pure functional + csg + f-rep in one language.
+Unique contribution of Curv: pure functional + CSG + F-Rep in one language.
 
 Competing Shape Representations
 ===============================
