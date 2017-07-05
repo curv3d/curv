@@ -236,7 +236,7 @@ SDF Applications
   * powder printer: XYZ raster scan, optionally with colour or material
   * plastic printer: boundary/infill
 
-* controlling a CNC mill
+* controlling a CNC mill (offsetting)
 * soft shadows (ambient occlusion)
 * gradients and normals
 * fast, scaleable font rendering
@@ -245,6 +245,46 @@ SDF Applications
 
   * destructible terrain: UpVoid Miner by UpVoid
   * in game modelling: Dreams by Media Molecule https://www.youtube.com/watch?v=4j8Wp-sx5K0
+
+The Circle
+==========
+Implicit equation for a circle of radius ``r``::
+
+  x^2 + y^2 = r^2
+
+If we rearrange this to::
+
+  x^2 + y^2 - r^2 = 0
+
+then we have an implicit function that is zero on the boundary of the circle,
+negative inside the circle, and positive outside the circle.
+Although this is a Function Representation for a circle, it's not a Curv-compatible SDF
+because the function value at p
+is the square of the distance from p to the origin, not the Euclidean distance.
+
+We fix this by further transforming the equation::
+
+  sqrt(x^2 + y^2) = r
+  sqrt(x^2 + y^2) - r = 0
+
+and now we have a proper Euclidean SDF.
+
+A Curv circle implementation::
+
+  circle r = make_shape {
+    dist(x,y,z,t) = sqrt(x^2 - y^2) - r,
+    bbox = [[-r,-r,0],[r,r,0]],  // axis aligned bounding box
+    is_2d = true,
+  }
+
+Moral: Converting an implicit equation to an SDF requires thought and analysis.
+
+Union
+=====
+A cheap way to find the union of two shapes
+is to compute the "min" of their distance fields.
+
+.. image:: images/union1.png
 
 Deriving an SDF
 ===============
