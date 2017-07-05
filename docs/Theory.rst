@@ -47,8 +47,6 @@ and provides a rich set of predefined shapes and operations.
 
 Curv is a pure functional language in which shapes are first class values,
 and CSG operations are functions that map shapes onto shapes.
-New CSG primitives can be defined using a low level geometry interface
-based on Function Representation.
 
 Code for the twisted, coloured torus::
 
@@ -64,12 +62,43 @@ Code for the model "Shrek's Donut"::
     gyroid >> shell .1 >> df_scale .33 >> rect_to_polar (tau*6),
   ) >> colour (hsv2rgb(1/3,1,.5))
 
+Function Representation
+=======================
+Internally, Curv represents geometric shapes using Function Representation (F-Rep).
+
+In this representation, a shape contains functions that map every point (x,y,z) in 3D space onto the shape's properties, which may include spatial extent, colour, material.
+
+F-Rep is very expressive:
+shapes can be infinitely detailed, infinitely large. Any shape that can be
+described using mathematics can be represented exactly.
+
+Curv provides a low level API for defining CSG primitives using F-Rep.
+Using this API, the entire CSG geometry API is defined using Curv code.
+
 Code for the `gyroid` primitive::
 
   gyroid = make_shape {
     dist(x,y,z,t) = cos(x)*sin(y) + cos(y)*sin(z) + cos(z)*sin(x),
     is_3d = true,
   }
+
+Pure Functional Programming
+===========================
+Curv is a pure functional language. Why?
+
+* simple, terse, pleasant programming style
+* simple semantics
+* can easily be translated into highly parallel GPU code
+* good match for CSG and F-Rep
+
+Curv can be considered a file format for representing arbitrary geometric shapes
+and distributing them across the internet. One requirement for such a file format
+is security: when you open a shape file, you don't want the shape file to encrypt
+all of your files and display a ransom message. Curv is not a general purpose
+programming language. It doesn't have side effects, it can only compute values.
+So it meets this requirement.
+
+Unique contribution of Curv: pure functional + csg + f-rep in one language.
 
 Competing Shape Representations
 ===============================
@@ -78,8 +107,8 @@ There are two important classes of representation for 2D and 3D shapes:
 +-------------------------------------+-----------------------------------+
 | **Explicit Modelling**              | **Implicit Modelling**            |
 +-------------------------------------+-----------------------------------+
-| Directly generate points            | Answer questions                  |
-| that comprise the shape             | about particular points           |
+| Directly generate boundary points   | Answer questions                  |
+|                                     | about particular points           |
 +-------------------------------------+-----------------------------------+
 | parametric equation (unit circle):: | implicit equation (unit circle):: |
 |                                     |                                   |
@@ -105,35 +134,6 @@ Curv chooses F-Rep over B-Rep, but an engineering tradeoff is involved.
 
 If you only know B-Rep procedural modelling, then learning F-Rep
 requires you to think different if you want to write efficient programs.
-
-Function Representation
-=======================
-Internally, Curv represents geometric shapes using Function Representation (F-Rep).
-
-In this representation, a shape contains functions that map every point (x,y,z) in 3D space onto the shape's properties, which may include spatial extent, colour, material.
-
-F-Rep is very expressive:
-shapes can be infinitely detailed, infinitely large. Any shape that can be
-described using mathematics can be represented exactly.
-
-Curv provides a low level API for defining CSG primitives using F-Rep.
-Using this API, the entire CSG geometry API is defined using Curv code.
-
-Pure Functional Programming
-===========================
-Curv is a pure functional language. Why?
-
-* simple, terse, pleasant programming style
-* simple semantics
-* can easily be translated into highly parallel GPU code
-
-In Curv, geometric shapes are first class values, and are constructed by transforming and combining simpler shapes using a rich set of geometric operations. This style of specification is called CSG: Constructive Solid Geometry. It's easy and pleasant to use, very expressive, and is a good match with functional programming.
-
-good for CSG, good for F-Rep
-
-file format
-
-unique contribution of Curv: pure functional + csg + f-rep in one language
 
 F-Rep, not Meshes
 =================
