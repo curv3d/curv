@@ -289,6 +289,7 @@ is to compute the minimum of their distance fields::
   }
 
 Union of a square and circle:
+
 .. image:: images/union1.png
 
 The resulting SDF is correct for any points outside of the shape, or at the boundary.
@@ -296,6 +297,7 @@ But the SDF is incorrect inside the shape, in this case within the region where 
 In this region, the SDF underestimates the distance from p to the boundary.
 
 This approximation is okay in most cases:
+
 * The ray tracer still works if the SDF underestimates the distance.
 * Usually we only care about the SDF on the outside of a shape.
 
