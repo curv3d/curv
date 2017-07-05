@@ -276,10 +276,14 @@ A Curv circle implementation::
     ...
   }
 
-Moral: Converting an implicit equation to an SDF requires thought and analysis.
+Moral: Converting an implicit equation to an SDF requires care.
+Typically, you will plot the candidate distance field, look for places where
+the gradient isn't 1, and construct an inverse transformation that maps 0 to 0
+(leaving the boundary alone), but modifies the field at other points so that the
+gradient becomes 1.
 
-Union
-=====
+Boolean Operations
+==================
 A cheap way to find the union of two shapes
 is to compute the minimum of their distance fields::
 
@@ -308,14 +312,43 @@ We amend our definition of a Curv-compatible SDF so that it is okay if the SDF
 underestimates the distance. In formal math language, an SDF must be Lipshitz Continuous,
 with a Lipschitz Constant of 1 (ie, don't have any distance gradient larger than 1).
 
-Deriving an SDF
-===============
-derivation for simple CSG primitives
+Intersection can be computed using ``max``.
 
-* circle
-* union and intersection (cheap vs expensive)
-* rigid body transforms: translate, rotate
-* isotropic and anisotropic scaling
+The complement operation negates the distance field (and converts finite shapes into infinite ones).
+
+Transformations
+===============
+A transformation warps or transforms a shape in some way, by warping or transforming the
+coordinate system in which it is embedded. The affine transformations are the most familiar
+(translate, rotate, scale, etc) but any coordinate transformation is possible.
+
+Translation::
+
+  translate (dx,dy,dz) S = make_shape {
+    dist(x,y,z,t) = S.dist(x-dx,y-dy,z-dz,t),
+    ...
+  }
+
+To apply an affine transformation to a shape S, the transformation's distance function ``dist(p)``
+performs the inverse of the transformation to the argument p before passing it to ``S.dist``.
+
+For distance-preserving or rigid transformations (translate, rotate and reflect), that's all you need.
+Otherwise, for non-rigid transformations (like scale, shear or twist),
+the resulting distance field will be messed up, and needs to be fixed.
+
+For isotropic scaling, fixing the distance field is easy::
+
+  isoscale k S = make_shape {
+    dist(x,y,z,t) = S.dist(x/k, y/k, z/k, t) * k,
+    ...
+  }
+
+For anisotropic scaling, fixing the distance field requires an approximation::
+
+  scale(kx, ky, kz) S = make_shape {
+    dist(x,y,z,t) = S.dist(x/kx, y/ky, z/kz, t) * min(kx, ky, kz),
+    ...
+  }
 
 Symmetry and Space Folding
 ==========================
