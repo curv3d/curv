@@ -47,8 +47,6 @@ and provides a rich set of predefined shapes and operations.
 
 Curv is a pure functional language in which shapes are first class values,
 and CSG operations are functions that map shapes onto shapes.
-New CSG primitives can be defined using a low level geometry interface
-based on Function Representation.
 
 Code for the twisted, coloured torus::
 
@@ -64,12 +62,45 @@ Code for the model "Shrek's Donut"::
     gyroid >> shell .1 >> df_scale .33 >> rect_to_polar (tau*6),
   ) >> colour (hsv2rgb(1/3,1,.5))
 
+Function Representation
+=======================
+Internally, Curv represents geometric shapes using Function Representation (F-Rep).
+
+In this representation, a shape contains functions that map every point (x,y,z) in 3D space onto the shape's properties, which may include spatial extent, colour, material.
+
+F-Rep is very expressive:
+shapes can be infinitely detailed, infinitely large. Any shape that can be
+described using mathematics can be represented exactly.
+
+Curv provides a low level API for defining CSG primitives using F-Rep.
+Using this API, the entire CSG geometry API is defined using Curv code.
+
 Code for the `gyroid` primitive::
 
   gyroid = make_shape {
     dist(x,y,z,t) = cos(x)*sin(y) + cos(y)*sin(z) + cos(z)*sin(x),
     is_3d = true,
   }
+
+Pure Functional Programming
+===========================
+Curv is a pure functional language, with both shapes and functions as first class values.
+Why?
+
+* simple, terse, pleasant programming style
+* simple semantics
+* can easily be translated into highly parallel GPU code
+* good match for CSG and F-Rep
+* security
+
+Curv can be considered a file format for representing arbitrary geometric shapes
+and distributing them across the internet. One requirement for such a file format
+is security: when you open a shape file, you don't want the shape file to encrypt
+all of your files and display a ransom message. Curv is not a general purpose
+programming language. It doesn't have side effects, it can only compute values.
+So it meets this requirement.
+
+Unique contribution of Curv: pure functional + CSG + F-Rep in one language.
 
 Competing Shape Representations
 ===============================
@@ -78,8 +109,8 @@ There are two important classes of representation for 2D and 3D shapes:
 +-------------------------------------+-----------------------------------+
 | **Explicit Modelling**              | **Implicit Modelling**            |
 +-------------------------------------+-----------------------------------+
-| Directly generate points            | Answer questions                  |
-| that comprise the shape             | about particular points           |
+| Directly generate boundary points   | Answer questions                  |
+|                                     | about particular points           |
 +-------------------------------------+-----------------------------------+
 | parametric equation (unit circle):: | implicit equation (unit circle):: |
 |                                     |                                   |
@@ -106,37 +137,8 @@ Curv chooses F-Rep over B-Rep, but an engineering tradeoff is involved.
 If you only know B-Rep procedural modelling, then learning F-Rep
 requires you to think different if you want to write efficient programs.
 
-Function Representation
-=======================
-Internally, Curv represents geometric shapes using Function Representation (F-Rep).
-
-In this representation, a shape contains functions that map every point (x,y,z) in 3D space onto the shape's properties, which may include spatial extent, colour, material.
-
-F-Rep is very expressive:
-shapes can be infinitely detailed, infinitely large. Any shape that can be
-described using mathematics can be represented exactly.
-
-Curv provides a low level API for defining CSG primitives using F-Rep.
-Using this API, the entire CSG geometry API is defined using Curv code.
-
-Pure Functional Programming
-===========================
-Curv is a pure functional language. Why?
-
-* simple, terse, pleasant programming style
-* simple semantics
-* can easily be translated into highly parallel GPU code
-
-In Curv, geometric shapes are first class values, and are constructed by transforming and combining simpler shapes using a rich set of geometric operations. This style of specification is called CSG: Constructive Solid Geometry. It's easy and pleasant to use, very expressive, and is a good match with functional programming.
-
-good for CSG, good for F-Rep
-
-file format
-
-unique contribution of Curv: pure functional + csg + f-rep in one language
-
-F-Rep, not Meshes
-=================
+F-Rep > Meshes
+==============
 Instead of triangular meshes (like OpenSCAD), Curv represents shapes as pure functions (Function Representation or F-Rep). Why?
 
 0. F-Rep is a more powerful and expressive representation than meshes.
@@ -174,6 +176,31 @@ Instead of triangular meshes (like OpenSCAD), Curv represents shapes as pure fun
    as libraries.
 
 7. F-Rep is well suited to being directly rendered by a GPU.
+
+So Why Do People Use Meshes?
+============================
+Historical reasons. The first consumer GPUs (1999) were designed to render meshes efficiently,
+and did not support F-Rep at all. F-Rep had been used
+by the movie industry since the 1980's, but was then far too expensive for real-time.
+
+The video game industry drove the consumer GPU industry, and of course they standardized
+on mesh representations. Today, all of the important games, game engines and dev tools use meshes
+as the primary shape representation,
+and that's why meshes are dominant. Modern games use F-Rep in a secondary role,
+eg, for adding special effects to meshes.
+
+For pure, meshless F-Rep to be practical for games, we need:
+
+* GPUs with programmable pixel shaders (2001)
+* Shader harder that is fast enough to support real time ray tracing of F-Rep (mid-2000's to present)
+* Shader programming techniques that are good enough
+  (mid-2000's to the present, driven by the demo scene)
+* A competitive F-Rep game engine is developed. (Still waiting. But see "Dreams", still unreleased.)
+* A "killer app" to justify switching technologies.
+  Destructible terrain and in-game modelling have been proposed as benefits,
+  both based on cheap boolean CSG operations.
+
+Trailer for "Dreams" by Media Molecule: https://www.youtube.com/watch?v=4j8Wp-sx5K0
 
 Signed Distance Fields
 ======================
@@ -234,6 +261,18 @@ Symmetry and Space Folding
 The 4th Dimension is Time
 =========================
 
+Morphing, Blending and Convolution
+==================================
+Morphing from one shape to another is easy:
+linear interpolation between two distance fields.
+
+Convolution:
+In Photoshop, there are image processing filters that blur or sharpen an image.
+In the mathematics of image processing, this is called convolution.
+Convolutions can also be applied to 3D shapes. Blurring a shape removes high
+frequency components, causing sharp edges to melt, and T-junctions to be filled in.
+
+
 Procedural Modelling Techniques
 ===============================
 * sweeps
@@ -249,11 +288,6 @@ Procedural Modelling Techniques
   * sweeping a parametric curve or surface: more expensive
   * space warp operators/fancy blending operators can be an alternative to sweeping
 
-* morphing, blending, convolution
-* deterministic fractals
-
-  * MandelBulb3D
-  
 * Hypertexture: engraving/perturbing the surface of a solid. An implicit modelling technique.
 * Grammars, L-Systems
 
@@ -263,6 +297,22 @@ Procedural Modelling Techniques
     using F-Rep. Popular for modelling living things. See "algorithmic botany"
     and "implicit seafood" web sites.
   * idea: use a grammar to generate a tree of space folding operations: more complexity with fewer operations.
+
+Fractals
+========
+For large or deeply iterated 3D fractals,
+F-Rep wins over other representations like triangle meshes or voxels:
+they require too much memory,
+and performing CSG operations like union or intersection on these
+bulky representations is too time consuming.
+
+For the 3D fractal art community, F-Rep is the technology of choice,
+using tools like MandelBulb3D, which are phenomenally rich and powerful.
+In principle, the same models can be written in Curv.
+
+.. image:: images/holy_box_fractal.jpg
+
+https://www.youtube.com/watch?v=OW5RnrlTeow
 
 Fractal Noise
 =============
@@ -334,11 +384,13 @@ vertex/edge/face information.
 
 Compiling Curv to GPU Code
 ==========================
-To render a shape using a GPU,
-I compile the shape's distance and colour functions into "GPU code",
-which currently means an OpenGL fragment shader (for rendering on a display),
-but in future will also include OpenCL or CUDA compute kernels
-(for converting a 3D shape to a triangle mesh).
+The Geometry Compiler translates a shape to GPU code for rendering that shape.
+
+For rendering on a display, the shape's distance and colour functions
+are compiled into an OpenGL fragment shader.
+In future, for converting a shape to a triangle mesh,
+the distance function will be compiled to an OpenCL or CUDA compute kernel.
+(I could also target the DirectX (Windows), Metal (macOS) and Vulkan APIs.)
 
 Whatever the format, GPU compute kernels are written in a primitive
 subset of C which lacks recursive functions and memory allocation,
@@ -352,6 +404,13 @@ Here's how GPU code generation works:
 * Partially evaluate the body of the closure,
   treating non-local variables captured by the closure as compile time constants,
   folding constant subexpressions, and optimizing.
-* Function calls are inline expanded to eliminate recursion and polymorphism.
+* Function calls are inline expanded to eliminate recursion and polymorphism,
+  and enable more partial evaluation.
 * The resulting transformed code is restricted to a statically typed
   subset of Curv called "GL", which can be compiled into GPU code.
+* A distance function can use operations and data types that are not part of GL,
+  as long as those subexpressions are partially evaluated into something that
+  is supported.
+
+As I extend the F-Rep API to make Curv faster and more powerful,
+the GL subset of Curv is growing to embed an increasingly larger subset of the GLSL shader language.
