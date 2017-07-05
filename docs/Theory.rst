@@ -363,7 +363,7 @@ For rendering on a display, the shape's distance and colour functions
 are compiled into an OpenGL fragment shader.
 In future, for converting a shape to a triangle mesh,
 the distance function will be compiled to an OpenCL or CUDA compute kernel.
-(I could also target the DirectX, Metal or Vulkan APIs.)
+(I could also target the DirectX (Windows), Metal (macOS) and Vulkan APIs.)
 
 Whatever the format, GPU compute kernels are written in a primitive
 subset of C which lacks recursive functions and memory allocation,
@@ -384,3 +384,6 @@ Here's how GPU code generation works:
 * A distance function can use operations and data types that are not part of GL,
   as long as those subexpressions are partially evaluated into something that
   is supported.
+
+As I extend the F-Rep API to make Curv faster and more powerful,
+the GL subset of Curv is growing to embed an increasingly larger subset of the GLSL shader language.
