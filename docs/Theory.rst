@@ -379,3 +379,6 @@ Here's how GPU code generation works:
   and enable more partial evaluation.
 * The resulting transformed code is restricted to a statically typed
   subset of Curv called "GL", which can be compiled into GPU code.
+* A distance function can use operations and data types that are not part of GL,
+  as long as those subexpressions are partially evaluated into something that
+  is supported.
