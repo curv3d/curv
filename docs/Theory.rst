@@ -193,10 +193,9 @@ For pure, meshless F-Rep to be practical for games, we need:
 
 * GPUs with programmable pixel shaders (2001)
 * Shader harder that is fast enough to support real time ray tracing of F-Rep (mid-2000's?)
-* Shader programming techniques that are good enough (mid-2000's to the present)
+* Shader programming techniques that are good enough
+  (mid-2000's to the present, driven by the demo scene)
 * A competitive F-Rep game engine is developed. (Still waiting. But see "Dreams", still unreleased.)
-
-Meshless F-Rep has largely been driven by the demo scene.
 
 Signed Distance Fields
 ======================
