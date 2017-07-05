@@ -350,6 +350,11 @@ For anisotropic scaling, fixing the distance field requires an approximation::
     ...
   }
 
+Fixing the distance field can sometimes be tricky.
+If you can put an upper bound D on the derivative of the broken distance field,
+then divide the distance field by D and that's probably good enough.
+If there's no upper bound, you need a more complicated fix.
+
 Symmetry and Space Folding
 ==========================
 
@@ -367,11 +372,8 @@ In the mathematics of image processing, this is called convolution.
 Convolutions can also be applied to 3D shapes. Blurring a shape removes high
 frequency components, causing sharp edges to melt, and T-junctions to be filled in.
 
-
-Procedural Modelling Techniques
-===============================
-* sweeps
-
+Sweep
+=====
   * extrude and loft
   * perimeter_extrude (sweep 2D shape along 2D implicit curve -> 3D shape)
   * isosurface (sweep circle along 2D curve, sphere along 3D curve or surface)
@@ -383,6 +385,8 @@ Procedural Modelling Techniques
   * sweeping a parametric curve or surface: more expensive
   * space warp operators/fancy blending operators can be an alternative to sweeping
 
+Procedural Modelling Techniques
+===============================
 * Hypertexture: engraving/perturbing the surface of a solid. An implicit modelling technique.
 * Grammars, L-Systems
 
