@@ -281,7 +281,7 @@ there is an army of people in the open source community who are designing new SD
 Curv benefits by using this popular F-Rep representation and sharing SDFs with the community,
 which includes:
 
-* the demoscene: shadertoy.com, pouet.net
+* the demoscene: iquilezles.org, shadertoy.com, pouet.net
 * the 3D fractal art community: fractalforums.com
 
 Applications that use SDF:
