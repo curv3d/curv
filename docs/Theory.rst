@@ -280,10 +280,12 @@ Although SDFs are sometimes tricky to write,
 there is an army of people in the open source community who are designing new SDFs.
 Curv benefits by using this popular F-Rep representation and sharing SDFs with the community,
 which includes:
+
 * the demoscene: shadertoy.com, pouet.net
 * the 3D fractal art community: fractalforums.com
 
 Applications that use SDF:
+
 * demoscene demos: shadertoy.com
 * 3D fractal art tools: mandelbulber.com, mandelbulb.com
 * CAD tools: ImplicitCAD.org, https://github.com/mkeeter/antimony, https://docs.racket-lang.org/ruckus/index.html
