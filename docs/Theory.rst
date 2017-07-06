@@ -75,11 +75,12 @@ described using mathematics can be represented exactly.
 Curv provides a low level API for defining CSG primitives using F-Rep.
 Using this API, the entire CSG geometry API is defined using Curv code.
 
-Code for the `gyroid` primitive::
+Possible implementation of a ``circle`` primitive::
 
-  gyroid = make_shape {
-    dist(x,y,z,t) = cos(x)*sin(y) + cos(y)*sin(z) + cos(z)*sin(x),
-    is_3d = true,
+  circle r = make_shape {
+    dist(x,y,z,t) = sqrt(x^2 + y^2) - r,
+    bbox = [[-r,-r,0], [r,r,0]],  // axis aligned bounding box
+    is_2d = true,
   }
 
 Pure Functional Programming
@@ -101,6 +102,9 @@ programming language. It doesn't have side effects, it can only compute values.
 So it meets this requirement.
 
 Unique contribution of Curv: pure functional + CSG + F-Rep in one language.
+
+Secret agenda: Pure functional programming for beginners,
+and for people who can't wrap their head around Haskell.
 
 Competing Shape Representations
 ===============================
@@ -232,32 +236,28 @@ Isocurves and Isosurfaces
 Exact, Approximate and Mitred SDFs
 ==================================
 
-The SDF Community
-=================
+SDF Techniques
+==============
 Early F-Rep systems used a simpler representation. A geometry function ``f(p)`` indicates whether
 the point ``p`` is inside, on the boundary, or outside of the shape, by returning 3 different values
 (eg, a negative, zero or positive number).
-This made it easier to write geometry functions. However, rendering was
-very expensive. The Signed Distance Field representation contains a lot more information
-than just inside/boundary/outside. This extra information is used for fast GPU
-rendering, and by a number of rendering and modelling techniques. And that's why
-the SDF representation is popular.
+This made it easy to write geometry functions. However, rendering was
+very expensive. It was done by blind sampling of points in a 3D grid (lots of function evaluations).
+It wasn't accurate: if a small detail fell between grid points, it was lost.
 
-Although SDFs are harder to write than classic geometry functions,
-there is an army of people in the open source community who are designing new SDFs.
-Curv benefits by using this popular F-Rep representation and sharing SDFs with the community,
-which includes:
-* the demoscene: shadertoy.com, pouet.net
-* the 3D fractal art community: fractalforums.com
+The Signed Distance Field representation contains a lot more information
+than just inside/boundary/outside. This extra information is used for fast, accurate GPU
+rendering, and by a number of rendering and modelling techniques.
 
-Applications:
-* demoscene demos: shadertoy.com
-* 3D fractal art tools: mandelbulber.com, mandelbulb.com
-* CAD tools: ImplicitCAD.org, https://github.com/mkeeter/antimony, https://docs.racket-lang.org/ruckus/index.html
-* Video games: "Dreams" by Media Molecule https://www.youtube.com/watch?v=4j8Wp-sx5K0
+The SDF representation was the result of a period of experimentation,
+where a number of new F-Rep representations were tried. However, SDF won
+because it is the simplest such representation that works.
+It's relatively simple to define, relatively cheap to compute,
+and doesn't require the distance field to have a derivative everywhere.
 
-SDF Techniques
-==============
+Techniques:
+
+* sphere tracing, aka ray marching
 * collision detection: https://www.youtube.com/watch?v=x_Iq2yM4FcA
 * controlling a 3D printer
   
@@ -267,9 +267,28 @@ SDF Techniques
 * controlling a CNC mill (offsetting)
 * soft shadows (ambient occlusion)
 * gradients and normals
+
   * for Phong shading
+  * for accurate polygonalization
   * for planting trees on the slopes of a fractal mountain
+
 * fast, scaleable font rendering
+
+The SDF Community
+=================
+Although SDFs are sometimes tricky to write,
+there is an army of people in the open source community who are designing new SDFs.
+Curv benefits by using this popular F-Rep representation and sharing SDFs with the community,
+which includes:
+* the demoscene: shadertoy.com, pouet.net
+* the 3D fractal art community: fractalforums.com
+
+Applications that use SDF:
+* demoscene demos: shadertoy.com
+* 3D fractal art tools: mandelbulber.com, mandelbulb.com
+* CAD tools: ImplicitCAD.org, https://github.com/mkeeter/antimony, https://docs.racket-lang.org/ruckus/index.html
+* Video games: "Dreams" by Media Molecule https://www.youtube.com/watch?v=4j8Wp-sx5K0
+  (the motivation for using pure SDF is cheap boolean CSG ops for in-game modelling)
 
 The Circle
 ==========
