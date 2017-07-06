@@ -177,30 +177,30 @@ Instead of triangular meshes (like OpenSCAD), Curv represents shapes as pure fun
 
 7. F-Rep is well suited to being directly rendered by a GPU.
 
-So Why Do People Use Meshes?
-============================
-Historical reasons. The first consumer GPUs (1999) were designed to render meshes efficiently,
-and did not support F-Rep at all. F-Rep had been used
-by the movie industry since the 1980's, but was then far too expensive for real-time.
-
-The video game industry drove the consumer GPU industry, and of course they standardized
-on mesh representations. Today, all of the important games, game engines and dev tools use meshes
-as the primary shape representation,
-and that's why meshes are dominant. Modern games use F-Rep in a secondary role,
-eg, for adding special effects to meshes.
-
-For pure, meshless F-Rep to be practical for games, we need:
-
-* GPUs with programmable pixel shaders (2001)
-* Shader harder that is fast enough to support real time ray tracing of F-Rep (mid-2000's to present)
-* Shader programming techniques that are good enough
-  (mid-2000's to the present, driven by the demo scene)
-* A competitive F-Rep game engine is developed. (Still waiting. But see "Dreams", still unreleased.)
-* A "killer app" to justify switching technologies.
-  Destructible terrain and in-game modelling have been proposed as benefits,
-  both based on cheap boolean CSG operations.
-
-Trailer for "Dreams" by Media Molecule: https://www.youtube.com/watch?v=4j8Wp-sx5K0
+.. So Why Do People Use Meshes?
+.. ============================
+.. Historical reasons. The first consumer GPUs (1999) were designed to render meshes efficiently,
+.. and did not support F-Rep at all. F-Rep had been used
+.. by the movie industry since the 1980's, but was then far too expensive for real-time.
+.. 
+.. The video game industry drove the consumer GPU industry, and of course they standardized
+.. on mesh representations. Today, all of the important games, game engines and dev tools use meshes
+.. as the primary shape representation,
+.. and that's why meshes are dominant. Modern games use F-Rep in a secondary role,
+.. eg, for adding special effects to meshes.
+.. 
+.. For pure, meshless F-Rep to be practical for games, we need:
+.. 
+.. * GPUs with programmable pixel shaders (2001)
+.. * Shader harder that is fast enough to support real time ray tracing of F-Rep (mid-2000's to present)
+.. * Shader programming techniques that are good enough
+..   (mid-2000's to the present, driven by the demo scene)
+.. * A competitive F-Rep game engine is developed. (Still waiting. But see "Dreams", still unreleased.)
+.. * A "killer app" to justify switching technologies.
+..   Destructible terrain and in-game modelling have been proposed as benefits,
+..   both based on cheap boolean CSG operations.
+.. 
+.. Trailer for "Dreams" by Media Molecule: https://www.youtube.com/watch?v=4j8Wp-sx5K0
 
 Signed Distance Fields
 ======================
