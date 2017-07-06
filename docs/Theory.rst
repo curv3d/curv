@@ -226,10 +226,38 @@ A 2D shape, plus 3 views of its SDF:
 
 An SDF is differentiable almost everywhere. At the differentiable points, the slope is 1, and the gradient points towards the closest boundary. (This is useful.) The non-differentiable points are equidistant between two boundary regions. The singular points that occur inside a shape are called the Skeleton or Medial Axis. (There is a technique for modelling shapes by specifying their skeleton.)
 
-Isocurve and isosurface.
+Isocurves and Isosurfaces
+=========================
 
-SDF Applications
-================
+Exact, Approximate and Mitred SDFs
+==================================
+
+The SDF Community
+=================
+Early F-Rep systems used a simpler representation. A geometry function ``f(p)`` indicates whether
+the point ``p`` is inside, on the boundary, or outside of the shape, by returning 3 different values
+(eg, a negative, zero or positive number).
+This made it easier to write geometry functions. However, rendering was
+very expensive. The Signed Distance Field representation contains a lot more information
+than just inside/boundary/outside. This extra information is used for fast GPU
+rendering, and by a number of rendering and modelling techniques. And that's why
+the SDF representation is popular.
+
+Although SDFs are harder to write than classic geometry functions,
+there is an army of people in the open source community who are designing new SDFs.
+Curv benefits by using this popular F-Rep representation and sharing SDFs with the community,
+which includes:
+* the demoscene: shadertoy.com, pouet.net
+* the 3D fractal art community: fractalforums.com
+
+Applications:
+* demoscene demos: shadertoy.com
+* 3D fractal art tools: mandelbulber.com, mandelbulb.com
+* CAD tools: ImplicitCAD.org, https://github.com/mkeeter/antimony, https://docs.racket-lang.org/ruckus/index.html
+* Video games: "Dreams" by Media Molecule https://www.youtube.com/watch?v=4j8Wp-sx5K0
+
+SDF Techniques
+==============
 * collision detection: https://www.youtube.com/watch?v=x_Iq2yM4FcA
 * controlling a 3D printer
   
@@ -239,12 +267,9 @@ SDF Applications
 * controlling a CNC mill (offsetting)
 * soft shadows (ambient occlusion)
 * gradients and normals
+  * for Phong shading
+  * for planting trees on the slopes of a fractal mountain
 * fast, scaleable font rendering
-* demoscene (shadertoy.com) https://www.shadertoy.com/view/MdX3Rr
-* video games
-
-  * destructible terrain: UpVoid Miner by UpVoid
-  * in game modelling: Dreams by Media Molecule https://www.youtube.com/watch?v=4j8Wp-sx5K0
 
 The Circle
 ==========
