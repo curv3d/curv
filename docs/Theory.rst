@@ -438,8 +438,39 @@ If there's no upper bound, you need a more complicated fix.
 Symmetry and Space Folding
 ==========================
 
-The 4th Dimension is Time
-=========================
+Time and Animation
+==================
+In Curv, time is the fourth dimension.
+Time is an extra parameter to distance functions and colour field functions.
+An animation is a shape or colour field that varies in time.
+
+Time is represented by a floating point number, measured in units of seconds,
+like in ShaderToy. The zero point is arbitrary, and is not tied to clock time.
+Eg, for a movie, the zero point is the beginning of the movie.
+
+Animation is always "turned on". Individual shapes and colour fields can be
+animated, in a modular way, without complicating their ability to be
+included in larger assemblies. Like putting an animated GIF into a web page.
+
+Time is relative. Since time is a coordinate, it can be transformed.
+You can apply temporal transformations to speed up or slow down the passage
+of time within a shape, loop over a specified time range, concatenate
+a sequence of fixed length animations, etc.
+
+You can define transformations that mix up time and space:
+
+* create motion trails from an animation.
+* motion blur: https://www.shadertoy.com/view/MdB3Dw
+* transform a 3D static object into a 2D animation, or vice versa
+
+Since time is a coordinate, animated 2D shapes are actually static objects
+in 3D space-time, and animated 3D shapes are static objects in 4D space-time.
+I intend to include time in the bounding box,
+so we can represent fixed duration animations with a start and end time.
+
+I considered making time a global variable, like in OpenSCAD or Newtonian physics, but this design is more awesome.
+
+A future goal is to import and export animated GIFs and video files.
 
 Morphing, Blending and Convolution
 ==================================
