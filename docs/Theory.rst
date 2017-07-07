@@ -503,16 +503,67 @@ I considered making time a global variable, like in OpenSCAD or Newtonian physic
 
 A future goal is to import and export animated GIFs and video files.
 
-Morphing, Blending and Convolution
-==================================
+Morphing
+========
 Morphing from one shape to another is easy:
 linear interpolation between two distance fields.
 
-Convolution:
-In Photoshop, there are image processing filters that blur or sharpen an image.
+Convolution
+===========
+In Photoshop, there are image processing filters that blur an image.
 In the mathematics of image processing, this is called convolution.
-Convolutions can also be applied to 3D shapes. Blurring a shape removes high
-frequency components, causing sharp edges to melt, and T-junctions to be filled in.
+(The inverse operation, sharpening an image, is deconvolution.)
+
+Convolving a 3D shape means rounding or bevelling exterior corners and edges,
+and filleting or chamfering interior corners.
+
+Convolution is a binary operator that takes two functions,
+the shape to be blurred, and a "convolution kernel".
+There are lots of convolution kernels, allowing for a variety of effects.
+
+I'd love to have a convolution operator.
+There are lots of academic papers on convolution as an F-Rep operation.
+
+However, if you use numerical methods then it is slow, so many people
+use symbolic algebra to convolve the F-Rep equation of a shape, which would
+have to be done using a tool like Mathematica, outside of Curv.
+The Curv geometry compiler already does a limited amount of symbolic algebra
+to compile Curv code into efficient GPU code, so this suggests a future direction.
+
+http://www.sciencedirect.com/science/article/pii/S0747717111002197
+
+Blending
+========
+Blending is an inexpensive SDF operation producing results that look a lot
+like convolution. A blended union takes two shapes, plus a "blending kernel",
+smoothing out the interior corners created by the union. A blended intersection takes
+two shapes plus a blending kernel, smoothing out exterior corners created by the intersection.
+There is also blended difference.
+
+A blending kernel is a pair of related functions that map two distance values onto a distance value,
+replacing ``min`` and ``max`` in the standard implementation of ``union`` and ``intersection``.
+Here are some blending kernels coded by ``MERCURY.sexy``, a demoscene group:
+
+Round:
+  |uRound| |iRound|
+
+Chamfer:
+  |uChamfer| |iChamfer|
+
+Stairs:
+  |uStairs| |iStairs|
+
+Columns:
+  |uColumns| |iColumns|
+
+.. |iChamfer| image:: images/fOpIntersectionChamfer.png
+.. |iColumns| image:: images/fOpIntersectionColumns.png
+.. |iRound| image:: images/fOpIntersectionRound.png
+.. |iStairs| image:: images/fOpIntersectionStairs.png
+.. |uChamfer| image:: images/fOpUnionChamfer.png
+.. |uColumns| image:: images/fOpUnionColumns.png
+.. |uRound| image:: images/fOpUnionRound.png
+.. |uStairs| image:: images/fOpUnionStairs.png
 
 Sweep
 =====
