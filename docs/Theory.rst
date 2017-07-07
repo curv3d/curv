@@ -228,7 +228,7 @@ A 2D shape, plus 3 views of its SDF:
 .. |sdf3a| image:: images/sdf3a.png
 .. |sdf3b| image:: images/sdf3b.png
 
-An SDF is differentiable almost everywhere. At the differentiable points, the slope is 1, and the gradient points towards the closest boundary. (This is useful.) The non-differentiable points are equidistant between two boundary regions. The singular points that occur inside a shape are called the Skeleton or Medial Axis. (There is a technique for modelling shapes by specifying their skeleton.)
+An SDF is continuous, and differentiable almost everywhere. At the differentiable points, the slope is 1, and the gradient points towards the closest boundary. (This is useful.) The non-differentiable points are equidistant between two boundary regions. The singular points that occur inside a shape are called the Skeleton or Medial Axis. (There is a technique for modelling shapes by specifying their skeleton.)
 
 Isocurves and Isosurfaces
 =========================
@@ -238,24 +238,21 @@ Exact, Approximate and Mitred SDFs
 
 SDF Techniques
 ==============
-Early F-Rep systems used a simpler representation. A geometry function ``f(p)`` indicates whether
+Early F-Rep systems used a simple representation. A geometry function ``f(p)`` indicates whether
 the point ``p`` is inside, on the boundary, or outside of the shape, by returning 3 different values
 (eg, a negative, zero or positive number).
 This made it easy to write geometry functions. However, rendering was
 very expensive. It was done by blind sampling of points in a 3D grid (lots of function evaluations).
 It wasn't accurate: if a small detail fell between grid points, it was lost.
 
-The Signed Distance Field representation contains a lot more information
-than just inside/boundary/outside. This extra information is used for fast, accurate GPU
-rendering, and by a number of rendering and modelling techniques.
-
-The SDF representation was the result of a period of experimentation,
-where a number of new F-Rep representations were tried. However, SDF won
-because it is the simplest such representation that works.
+This lead to a period of experimentation, searching for an F-Rep with fast, accurate rendering.
+A number of new F-Reps were tried. SDF won because it is the simplest such F-Rep that works.
 It's relatively simple to define, relatively cheap to compute,
 and doesn't require the distance field to have a derivative everywhere.
 
-Techniques:
+A Signed Distance Field contains a lot more information
+than just inside/boundary/outside. This extra information is used for fast, accurate GPU
+rendering, and by a number of rendering and modelling techniques:
 
 * sphere tracing, aka ray marching
 * collision detection: https://www.youtube.com/watch?v=x_Iq2yM4FcA
