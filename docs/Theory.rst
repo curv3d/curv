@@ -259,6 +259,20 @@ or erosion from Mathematical Morphology.
 Exact, Approximate and Mitred SDFs
 ==================================
 
+In an Exact SDF, the distance field stores the exact distance from each point to the closest boundary. (This is also called a Euclidean SDF, since we are using the Euclidean distance metric, and some researchers use alternative metric spaces to construct SDFs.) We've been discussing Exact SDFs up to this point.
+
+It turns out that it is sometimes difficult or expensive to construct Exact SDFs. So, a distance function is permitted to underestimate the distance to the closest boundary, and the result is an Approximate SDF (aka a Distance Estimator (DE), or sometimes a Signed Distance Bound).
+
+Instead of saying it's okay to underestimate the distance, you can instead say that all SDFs must be Lipshitz Continuous, with a Lipschitz constant of 1. (This will be useful later when we learn to derive SDFs.)
+
+The simplest and cheapest implementation of a rectangle has an Approximate SDF that looks like this:
+
+.. image:: images/rect_mitred_sdf.png
+
+The positive isocurves of this SDF are also rectangles: they correspond to the "Mitred Offset" operation from CAD.
+So I call this a Mitred SDF.
+The skeleton tendrils attached to each vertex of the rectangle shoot out past the boundary and extend forever.
+
 SDF Techniques
 ==============
 Early F-Rep systems used a simple representation. A geometry function ``f(p)`` indicates whether
