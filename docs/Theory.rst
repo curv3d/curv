@@ -228,7 +228,9 @@ A 2D shape, plus 3 views of its SDF:
 .. |sdf3a| image:: images/sdf3a.png
 .. |sdf3b| image:: images/sdf3b.png
 
-An SDF is continuous, and differentiable almost everywhere. At the differentiable points, the slope is 1, and the gradient points towards the closest boundary. (This is useful.) The non-differentiable points are equidistant between two boundary regions. The singular points that occur inside a shape are called the Skeleton or Medial Axis. (There is a technique for modelling shapes by specifying their skeleton.)
+An SDF is continuous, and differentiable almost everywhere. At the differentiable points, the slope is 1, and the gradient points towards the closest boundary. (This is useful.) The non-differentiable points are equidistant between two boundary regions.
+
+The singular points that occur inside a shape are called the (Topological) Skeleton or Medial Axis. A tendril of the skeleton connects to the boundary of the shape at each (non-differentiable) corner or vertex point (2D) or edge (3D).
 
 Isocurves and Isosurfaces
 =========================
