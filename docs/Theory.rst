@@ -75,11 +75,12 @@ described using mathematics can be represented exactly.
 Curv provides a low level API for defining CSG primitives using F-Rep.
 Using this API, the entire CSG geometry API is defined using Curv code.
 
-Code for the `gyroid` primitive::
+Possible implementation of a ``circle`` primitive::
 
-  gyroid = make_shape {
-    dist(x,y,z,t) = cos(x)*sin(y) + cos(y)*sin(z) + cos(z)*sin(x),
-    is_3d = true,
+  circle r = make_shape {
+    dist(x,y,z,t) = sqrt(x^2 + y^2) - r,
+    bbox = [[-r,-r,0], [r,r,0]],  // axis aligned bounding box
+    is_2d = true,
   }
 
 Pure Functional Programming
@@ -101,6 +102,9 @@ programming language. It doesn't have side effects, it can only compute values.
 So it meets this requirement.
 
 Unique contribution of Curv: pure functional + CSG + F-Rep in one language.
+
+Secret agenda: Pure functional programming for beginners,
+and for people who can't wrap their head around Haskell.
 
 Competing Shape Representations
 ===============================
@@ -177,30 +181,30 @@ Instead of triangular meshes (like OpenSCAD), Curv represents shapes as pure fun
 
 7. F-Rep is well suited to being directly rendered by a GPU.
 
-So Why Do People Use Meshes?
-============================
-Historical reasons. The first consumer GPUs (1999) were designed to render meshes efficiently,
-and did not support F-Rep at all. F-Rep had been used
-by the movie industry since the 1980's, but was then far too expensive for real-time.
-
-The video game industry drove the consumer GPU industry, and of course they standardized
-on mesh representations. Today, all of the important games, game engines and dev tools use meshes
-as the primary shape representation,
-and that's why meshes are dominant. Modern games use F-Rep in a secondary role,
-eg, for adding special effects to meshes.
-
-For pure, meshless F-Rep to be practical for games, we need:
-
-* GPUs with programmable pixel shaders (2001)
-* Shader harder that is fast enough to support real time ray tracing of F-Rep (mid-2000's to present)
-* Shader programming techniques that are good enough
-  (mid-2000's to the present, driven by the demo scene)
-* A competitive F-Rep game engine is developed. (Still waiting. But see "Dreams", still unreleased.)
-* A "killer app" to justify switching technologies.
-  Destructible terrain and in-game modelling have been proposed as benefits,
-  both based on cheap boolean CSG operations.
-
-Trailer for "Dreams" by Media Molecule: https://www.youtube.com/watch?v=4j8Wp-sx5K0
+.. So Why Do People Use Meshes?
+.. ============================
+.. Historical reasons. The first consumer GPUs (1999) were designed to render meshes efficiently,
+.. and did not support F-Rep at all. F-Rep had been used
+.. by the movie industry since the 1980's, but was then far too expensive for real-time.
+.. 
+.. The video game industry drove the consumer GPU industry, and of course they standardized
+.. on mesh representations. Today, all of the important games, game engines and dev tools use meshes
+.. as the primary shape representation,
+.. and that's why meshes are dominant. Modern games use F-Rep in a secondary role,
+.. eg, for adding special effects to meshes.
+.. 
+.. For pure, meshless F-Rep to be practical for games, we need:
+.. 
+.. * GPUs with programmable pixel shaders (2001)
+.. * Shader harder that is fast enough to support real time ray tracing of F-Rep (mid-2000's to present)
+.. * Shader programming techniques that are good enough
+..   (mid-2000's to the present, driven by the demo scene)
+.. * A competitive F-Rep game engine is developed. (Still waiting. But see "Dreams", still unreleased.)
+.. * A "killer app" to justify switching technologies.
+..   Destructible terrain and in-game modelling have been proposed as benefits,
+..   both based on cheap boolean CSG operations.
+.. 
+.. Trailer for "Dreams" by Media Molecule: https://www.youtube.com/watch?v=4j8Wp-sx5K0
 
 Signed Distance Fields
 ======================
@@ -224,12 +228,33 @@ A 2D shape, plus 3 views of its SDF:
 .. |sdf3a| image:: images/sdf3a.png
 .. |sdf3b| image:: images/sdf3b.png
 
-An SDF is differentiable almost everywhere. At the differentiable points, the slope is 1, and the gradient points towards the closest boundary. (This is useful.) The non-differentiable points are equidistant between two boundary regions. The singular points that occur inside a shape are called the Skeleton or Medial Axis. (There is a technique for modelling shapes by specifying their skeleton.)
+An SDF is continuous, and differentiable almost everywhere. At the differentiable points, the slope is 1, and the gradient points towards the closest boundary. (This is useful.) The non-differentiable points are equidistant between two boundary regions. The singular points that occur inside a shape are called the Skeleton or Medial Axis. (There is a technique for modelling shapes by specifying their skeleton.)
 
-Isocurve and isosurface.
+Isocurves and Isosurfaces
+=========================
 
-SDF Applications
-================
+Exact, Approximate and Mitred SDFs
+==================================
+
+SDF Techniques
+==============
+Early F-Rep systems used a simple representation. A geometry function ``f(p)`` indicates whether
+the point ``p`` is inside, on the boundary, or outside of the shape, by returning 3 different values
+(eg, a negative, zero or positive number).
+This made it easy to write geometry functions. However, rendering was
+very expensive. It was done by blind sampling of points in a 3D grid (lots of function evaluations).
+It wasn't accurate: if a small detail fell between grid points, it was lost.
+
+This lead to a period of experimentation, searching for an F-Rep with fast, accurate rendering.
+A number of new F-Reps were tried. SDF won because it is the simplest such F-Rep that works.
+It's relatively simple to define, relatively cheap to compute,
+and doesn't require the distance field to have a derivative everywhere.
+
+A Signed Distance Field contains a lot more information
+than just inside/boundary/outside. This extra information is used for fast, accurate GPU
+rendering, and by a number of rendering and modelling techniques:
+
+* sphere tracing, aka ray marching
 * collision detection: https://www.youtube.com/watch?v=x_Iq2yM4FcA
 * controlling a 3D printer
   
@@ -239,12 +264,30 @@ SDF Applications
 * controlling a CNC mill (offsetting)
 * soft shadows (ambient occlusion)
 * gradients and normals
-* fast, scaleable font rendering
-* demoscene (shadertoy.com) https://www.shadertoy.com/view/MdX3Rr
-* video games
 
-  * destructible terrain: UpVoid Miner by UpVoid
-  * in game modelling: Dreams by Media Molecule https://www.youtube.com/watch?v=4j8Wp-sx5K0
+  * for Phong shading
+  * for accurate polygonalization
+  * for planting trees on the slopes of a fractal mountain
+
+* fast, scaleable font rendering
+
+The SDF Community
+=================
+Although SDFs are sometimes tricky to write,
+there is an army of people in the open source community who are designing new SDFs.
+Curv benefits by using this popular F-Rep representation and sharing SDFs with the community,
+which includes:
+
+* the demoscene: iquilezles.org, shadertoy.com, pouet.net
+* the 3D fractal art community: fractalforums.com
+
+Applications that use SDF:
+
+* demoscene demos: shadertoy.com
+* 3D fractal art tools: mandelbulber.com, mandelbulb.com
+* CAD tools: ImplicitCAD.org, https://github.com/mkeeter/antimony, https://docs.racket-lang.org/ruckus/index.html
+* Video games: "Dreams" by Media Molecule https://www.youtube.com/watch?v=4j8Wp-sx5K0
+  (the motivation for using pure SDF is cheap boolean CSG ops for in-game modelling)
 
 The Circle
 ==========
