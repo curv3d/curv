@@ -241,8 +241,9 @@ For example, here's the SDF for a rectangle. Some isocurves are visible as conto
 
 The isocurve at 0 for this SDF is just the boundary of the rectangle.
 
-The isocurve at 1 bounds an "inflated" copy of the rectangle. This is actually an important operation
-that has different names in different fields. The inflated copy is:
+The isocurve at 1 bounds an "inflated" copy of the rectangle with rounded edges.
+This is an important operation that has different names in different fields. The inflated copy is:
+
 * The "rounded offset" of the rectangle, at offset 1. Offset is an operation in CAD modelling programs.
 * The Minkowski sum of the rectangle with a circle of radius 1.
 * The dilation of the rectangle by a disk of radius 1. Dilation is an operation of Mathematical Morphology.
