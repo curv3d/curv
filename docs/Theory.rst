@@ -244,11 +244,11 @@ The isocurve at 0 for this SDF is just the boundary of the rectangle.
 The isocurve at 1 bounds an "inflated" copy of the rectangle with rounded edges.
 This is an important operation that has different names in different fields. The inflated copy is:
 
-* The "rounded offset" of the rectangle, at offset 1. Offset is an operation in CAD modelling programs.
-* The Minkowski sum of the rectangle with a circle of radius 1.
-* The dilation of the rectangle by a disk of radius 1. Dilation is an operation of Mathematical Morphology.
+* The "rounded offset" of the rectangle, at offset 1 (CAD/Computer Aided Design).
+* The Minkowski sum of the rectangle with a circle of radius 1 (Geometry).
+* The dilation of the rectangle by a disk of radius 1 (Mathematical Morphology).
 
-Similarly, isocurves or isosurfaces at negative values correspond to Minkowski difference,
+Similarly, isocurves or isosurfaces at negative values correspond to negative offsets, Minkowski difference,
 or erosion from Mathematical Morphology.
 
 .. If f(p) is an SDF,
