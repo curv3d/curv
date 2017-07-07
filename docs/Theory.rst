@@ -232,6 +232,26 @@ An SDF is continuous, and differentiable almost everywhere. At the differentiabl
 
 Isocurves and Isosurfaces
 =========================
+For a 2D SDF, the isocurve at C is the curve that comprises all points with the distance value C.
+For a 3D SDF, the isosurface at C is the surface that comprises all points with the distance value C.
+
+For example, here's the SDF for a rectangle. Some isocurves are visible as contour lines:
+
+.. image:: images/rect_sdf.png
+
+The isocurve at 0 for this SDF is just the boundary of the rectangle.
+
+The isocurve at 1 bounds an "inflated" copy of the rectangle. This is actually an important operation
+that has different names in different fields. The inflated copy is:
+* The "rounded offset" of the rectangle, at offset 1. Offset is an operation in CAD modelling programs.
+* The Minkowski sum of the rectangle with a circle of radius 1.
+* The dilation of the rectangle by a disk of radius 1. Dilation is an operation of Mathematical Morphology.
+
+Similarly, isocurves or isosurfaces at negative values correspond to Minkowski difference,
+or erosion from Mathematical Morphology.
+
+.. If f(p) is an SDF,
+.. then f(p)-C is the SDF for the shape bounded by the isocurve/isosurface of f at C.
 
 Exact, Approximate and Mitred SDFs
 ==================================
@@ -245,7 +265,7 @@ This made it easy to write geometry functions. However, rendering was
 very expensive. It was done by blind sampling of points in a 3D grid (lots of function evaluations).
 It wasn't accurate: if a small detail fell between grid points, it was lost.
 
-This lead to a period of experimentation, searching for an F-Rep with fast, accurate rendering.
+This led to a period of experimentation, searching for an F-Rep with fast, accurate rendering.
 A number of new F-Reps were tried. SDF won because it is the simplest such F-Rep that works.
 It's relatively simple to define, relatively cheap to compute,
 and doesn't require the distance field to have a derivative everywhere.
