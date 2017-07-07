@@ -437,6 +437,37 @@ If there's no upper bound, you need a more complicated fix.
 
 Symmetry and Space Folding
 ==========================
+The ``union`` operator is slow. The cost of a union is equal to slightly more than the sum of the
+costs of the argument shapes. So if you have a shape that takes 1ms to render,
+and you union together 1000 copies of this shape, well now it takes 1s to render.
+
+Fortunately, Curv has repetition operators which union together an arbitrary
+number of copies of a shape together, or even an infinite number of copies,
+in constant time and space. ::
+
+  sphere 1 >> repeat_xy (1,1)
+
+.. image:: images/sphere_repeat.png
+
+A repetition operator is a coordinate transformation that uses the magic of the
+modulus operator to partition space into multiple cells, causing a copy of a shape
+to appear in each cell. This has been called "space folding". ::
+
+  repeat_xy r shape = make_shape {
+    dist(x,y,z,t) : shape.dist(
+                mod(x + r[X], 2*r[X]) - r[X],
+                mod(y + r[Y], 2*r[Y]) - r[Y],
+                z, t),
+    ...
+  }
+
+There are lots of repetition operators, which correspond to different mathematical symmetries.
+
+* ``repeat_x``, ``repeat_xy`` and ``repeat_xyz`` implement translational symmetry
+* ``repeat_radial`` implements rotational symmetry (around the z axis)
+* ``repeat_mirror_x`` implements mirror symmetry (through the yz plane) using the `abs` operator.
+
+and many more can be defined.
 
 Time and Animation
 ==================
