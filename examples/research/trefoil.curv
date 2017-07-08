@@ -1,6 +1,10 @@
 /*
 http://www.fractalforums.com/new-theories-and-research/not-fractal-but-funny-trefoil-knot-routine/
 
+This code is for generalized toroidal knots.
+It seems to be a distance function for Mandelbulb3D.
+- "polyfold order" -- "number of petals"?
+
 At present I have no idea what this means:
 ------------------------
 // we modify copies of the variables not the variables ;)
