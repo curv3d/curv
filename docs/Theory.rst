@@ -523,8 +523,9 @@ There are lots of convolution kernels, allowing for a variety of effects.
 
 I'd love to have a convolution operator.
 There are lots of academic papers on convolution as an F-Rep operation.
+But I have no code for an SDF system yet.
 
-However, if you use numerical methods then it is slow, so many people
+If you use numerical methods then it is (allegedly) slow, so many people
 use symbolic algebra to convolve the F-Rep equation of a shape, which would
 have to be done using a tool like Mathematica, outside of Curv.
 The Curv geometry compiler already does a limited amount of symbolic algebra
@@ -536,12 +537,11 @@ Blending
 ========
 Blending is an inexpensive SDF operation producing results that look a lot
 like convolution. A blended union takes two shapes, plus a "blending kernel",
-smoothing out the interior corners created by the union. A blended intersection takes
-two shapes plus a blending kernel, smoothing out exterior corners created by the intersection.
+adding a "fillet" to interior corners created by the union.
+A blended intersction takes two shapes plus a blending kernel,
+rounding away material from exterior corners created by the intersection.
 There is also blended difference.
 
-A blending kernel is a pair of related functions that map two distance values onto a distance value,
-replacing ``min`` and ``max`` in the standard implementation of ``union`` and ``intersection``.
 Here are some blending kernels coded by ``MERCURY.sexy``, a demoscene group:
 
 Round:
@@ -564,6 +564,25 @@ Columns:
 .. |uColumns| image:: images/fOpUnionColumns.png
 .. |uRound| image:: images/fOpUnionRound.png
 .. |uStairs| image:: images/fOpUnionStairs.png
+
+As you see, you can program a wide range of "decorative moulding" patterns.
+
+How do you code a blending kernel... ?
+
+.. A blending kernel is a pair of related functions, ``fillet`` and ``round``,
+.. that map two distance values ``d1`` and ``d2`` onto a distance value.
+
+.. ``fillet`` is used for blended union, replacing ``min`` in the standard implementation of ``union``.
+.. The ``fillet`` function adds additional material to the shape being constructed, in the region above the
+.. point or edge where two unioned shapes come together.
+.. If either ``d1`` or ``d2`` is greater than the fillet radius,
+.. then ``fillet`` defaults to the behaviour of ``min``.
+.. Otherwise, if ``d1>0 && d2>0``, then the current point is inside the fillet region.
+
+.. replacing ``min`` and ``max`` in the standard implementation of ``union`` and ``intersection``.
+
+Embossing and Engraving
+=======================
 
 Sweep
 =====
