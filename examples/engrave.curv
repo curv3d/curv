@@ -1,0 +1,11 @@
+engrave depth pattern target =
+    difference (target,
+        intersection (
+            target >> shell depth,
+            pattern)
+    );
+
+t = cube 18;
+p = gyroid >> shell .1;
+
+engrave .1 p t
