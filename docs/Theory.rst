@@ -508,30 +508,30 @@ Morphing
 Morphing from one shape to another is easy:
 linear interpolation between two distance fields.
 
-Convolution
-===========
-In Photoshop, there are image processing filters that blur an image.
-In the mathematics of image processing, this is called convolution.
-(The inverse operation, sharpening an image, is deconvolution.)
+.. Convolution
+.. ===========
+.. In Photoshop, there are image processing filters that blur an image.
+.. In the mathematics of image processing, this is called convolution.
+.. (The inverse operation, sharpening an image, is deconvolution.)
 
-Convolving a 3D shape means rounding or bevelling exterior corners and edges,
-and filleting or chamfering interior corners.
+.. Convolving a 3D shape means rounding or bevelling exterior corners and edges,
+.. and filleting or chamfering interior corners.
 
-Convolution is a binary operator that takes two functions,
-the shape to be blurred, and a "convolution kernel".
-There are lots of convolution kernels, allowing for a variety of effects.
+.. Convolution is a binary operator that takes two functions,
+.. the shape to be blurred, and a "convolution kernel".
+.. There are lots of convolution kernels, allowing for a variety of effects.
 
-I'd love to have a convolution operator.
-There are lots of academic papers on convolution as an F-Rep operation.
-But I have no code for an SDF system yet.
+.. I'd love to have a convolution operator.
+.. There are lots of academic papers on convolution as an F-Rep operation.
+.. But I have no code for an SDF system yet.
 
-If you use numerical methods then it is (allegedly) slow, so many people
-use symbolic algebra to convolve the F-Rep equation of a shape, which would
-have to be done using a tool like Mathematica, outside of Curv.
-The Curv geometry compiler already does a limited amount of symbolic algebra
-to compile Curv code into efficient GPU code, so this suggests a future direction.
+.. If you use numerical methods then it is (allegedly) slow, so many people
+.. use symbolic algebra to convolve the F-Rep equation of a shape, which would
+.. have to be done using a tool like Mathematica, outside of Curv.
+.. The Curv geometry compiler already does a limited amount of symbolic algebra
+.. to compile Curv code into efficient GPU code, so this suggests a future direction.
 
-http://www.sciencedirect.com/science/article/pii/S0747717111002197
+.. http://www.sciencedirect.com/science/article/pii/S0747717111002197
 
 Blending
 ========
@@ -581,33 +581,33 @@ How do you code a blending kernel... ?
 
 .. replacing ``min`` and ``max`` in the standard implementation of ``union`` and ``intersection``.
 
-Embossing and Engraving
-=======================
+.. Embossing and Engraving
+.. =======================
 
-Sweep
-=====
-  * extrude and loft
-  * perimeter_extrude (sweep 2D shape along 2D implicit curve -> 3D shape)
-  * isosurface (sweep circle along 2D curve, sphere along 3D curve or surface)
-  * constructing implicit curves and surfaces
+.. Sweep
+.. =====
+..   * extrude and loft
+..   * perimeter_extrude (sweep 2D shape along 2D implicit curve -> 3D shape)
+..   * isosurface (sweep circle along 2D curve, sphere along 3D curve or surface)
+..   * constructing implicit curves and surfaces
   
-    * shell
-    * MERCURY: intersection->curve
+..     * shell
+..     * MERCURY: intersection->curve
     
-  * sweeping a parametric curve or surface: more expensive
-  * space warp operators/fancy blending operators can be an alternative to sweeping
+..   * sweeping a parametric curve or surface: more expensive
+..   * space warp operators/fancy blending operators can be an alternative to sweeping
 
-Procedural Modelling Techniques
-===============================
-* Hypertexture: engraving/perturbing the surface of a solid. An implicit modelling technique.
-* Grammars, L-Systems
+.. Procedural Modelling Techniques
+.. ===============================
+.. * Hypertexture: engraving/perturbing the surface of a solid. An implicit modelling technique.
+.. * Grammars, L-Systems
 
-  * Use a context free, generative grammar to generate a complex shape, like a tree, leaf or city.
-    Or fractals.
-  * during the 1990's: use L-System to generate a skeleton, then flesh it out
-    using F-Rep. Popular for modelling living things. See "algorithmic botany"
-    and "implicit seafood" web sites.
-  * idea: use a grammar to generate a tree of space folding operations: more complexity with fewer operations.
+..   * Use a context free, generative grammar to generate a complex shape, like a tree, leaf or city.
+..     Or fractals.
+..   * during the 1990's: use L-System to generate a skeleton, then flesh it out
+..     using F-Rep. Popular for modelling living things. See "algorithmic botany"
+..     and "implicit seafood" web sites.
+..   * idea: use a grammar to generate a tree of space folding operations: more complexity with fewer operations.
 
 Fractals
 ========
