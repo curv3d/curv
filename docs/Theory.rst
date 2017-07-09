@@ -508,30 +508,30 @@ Morphing
 Morphing from one shape to another is easy:
 linear interpolation between two distance fields.
 
-Convolution
-===========
-In Photoshop, there are image processing filters that blur an image.
-In the mathematics of image processing, this is called convolution.
-(The inverse operation, sharpening an image, is deconvolution.)
+.. Convolution
+.. ===========
+.. In Photoshop, there are image processing filters that blur an image.
+.. In the mathematics of image processing, this is called convolution.
+.. (The inverse operation, sharpening an image, is deconvolution.)
 
-Convolving a 3D shape means rounding or bevelling exterior corners and edges,
-and filleting or chamfering interior corners.
+.. Convolving a 3D shape means rounding or bevelling exterior corners and edges,
+.. and filleting or chamfering interior corners.
 
-Convolution is a binary operator that takes two functions,
-the shape to be blurred, and a "convolution kernel".
-There are lots of convolution kernels, allowing for a variety of effects.
+.. Convolution is a binary operator that takes two functions,
+.. the shape to be blurred, and a "convolution kernel".
+.. There are lots of convolution kernels, allowing for a variety of effects.
 
-I'd love to have a convolution operator.
-There are lots of academic papers on convolution as an F-Rep operation.
-But I have no code for an SDF system yet.
+.. I'd love to have a convolution operator.
+.. There are lots of academic papers on convolution as an F-Rep operation.
+.. But I have no code for an SDF system yet.
 
-If you use numerical methods then it is (allegedly) slow, so many people
-use symbolic algebra to convolve the F-Rep equation of a shape, which would
-have to be done using a tool like Mathematica, outside of Curv.
-The Curv geometry compiler already does a limited amount of symbolic algebra
-to compile Curv code into efficient GPU code, so this suggests a future direction.
+.. If you use numerical methods then it is (allegedly) slow, so many people
+.. use symbolic algebra to convolve the F-Rep equation of a shape, which would
+.. have to be done using a tool like Mathematica, outside of Curv.
+.. The Curv geometry compiler already does a limited amount of symbolic algebra
+.. to compile Curv code into efficient GPU code, so this suggests a future direction.
 
-http://www.sciencedirect.com/science/article/pii/S0747717111002197
+.. http://www.sciencedirect.com/science/article/pii/S0747717111002197
 
 Blending
 ========
