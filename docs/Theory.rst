@@ -611,15 +611,22 @@ How do you code a blending kernel... ?
 
 Fractals
 ========
+SDFs and the Sphere Tracing algorithm were first described by inventor John C Hart in 1989
+as an efficient algorithm for ray tracing (and thus visualizing) 3D fractals.
+Today it is still the best technique.
+
 For large or deeply iterated 3D fractals,
-F-Rep wins over other representations like triangle meshes or voxels:
+SDFs still win over other representations like triangle meshes or voxels:
 they require too much memory,
 and performing CSG operations like union or intersection on these
 bulky representations is too time consuming.
 
-For the 3D fractal art community, F-Rep is the technology of choice,
-using tools like MandelBulb3D, which are phenomenally rich and powerful.
-In principle, the same models can be written in Curv.
+For the 3D fractal art community, SDFs are the technology of choice,
+because they are the basis for popular tools like MandelBulber and MandelBulb3D.
+
+The following image is a deep zoom into a MandelBox fractal using MandelBulb3D.
+Because Curv uses the same internal representation (SDFs),
+the same model should be portable to Curv.
 
 .. image:: images/holy_box_fractal.jpg
 
@@ -666,6 +673,35 @@ Many more noise functions have been invented.
 
 Sphere Tracing
 ==============
+Sphere Tracing (sometimes called "ray marching") is the variant of ray tracing used to render SDFs on a graphics display.
+It's efficient enough to support real time animation of an SDF using a GPU.
+Sphere Tracing and the SDF representation were invented together, by John C Hart,
+to solve the problem of fast, flexible, accurate ray tracing for Function Representation.
+
+To render a scene using Sphere Tracing,
+
+0. Construct a single SDF representing the entire scene,
+   eg by unioning together multiple components.
+1. For each pixel on the viewport, cast a ray of sight into the scene.
+   Using a GPU, multiple rays are cast in parallel.
+2. The Sphere Tracing algorithm is used to advance the ray through the SDF
+   until the ray hits a surface boundary.
+   The SDF is sampled at the initial point, giving a value D. This is a distance estimate:
+   the surface is at least D units away, maybe more. Advance the ray by D units,
+   then iterate. Once D is sufficiently close to zero, we have reached the surface.
+3. Once the ray reaches the surface, then we use a colour and lighting model to compute
+   the pixel colour at that point on the surface.
+
+.. image:: images/sphere_tracing.jpg
+
+Here's how we colour and light the pixel in Curv:
+
+* Each shape has a ``colour`` function that computes the colour at a given point.
+* By taking 3 extra samples of the SDF around the surface point, in the pattern of a right tetrahedron,
+  we compute the gradient of the distance field at that point, which gives us a surface normal,
+  which is used for Phong shading.
+* "Ambient Occlusion" is a cheap method for simulating shadows in real time without the expense of recursive ray-tracing,
+  by leveraging the information stored in the SDF.
 
 Hierarchical SDFs
 =================
