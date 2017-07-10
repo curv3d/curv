@@ -10,6 +10,9 @@ Curv is an open source 3D solid modelling language, oriented towards 3D printing
 It's easy to use for beginners. It's incredibly powerful for experts.
 And it's fast: all rendering is performed by the GPU.
 
+Curv is also a uniquely expressive file format for the exchange of 2D and 3D
+procedurally generated graphics.
+
 Thesis
 ======
 Ease of use:
@@ -44,6 +47,7 @@ and affine transformations like translate, scale and rotate.
 
 Curv uses CSG as its high level geometry interface,
 and provides a rich set of predefined shapes and operations.
+Both 2D and 3D shapes are supported.
 
 Curv is a pure functional language in which shapes are first class values,
 and CSG operations are functions that map shapes onto shapes.
@@ -68,14 +72,17 @@ Internally, Curv represents geometric shapes using Function Representation (F-Re
 
 In this representation, a shape contains functions that map every point (x,y,z) in 3D space onto the shape's properties, which may include spatial extent, colour, material.
 
-F-Rep is very expressive:
-shapes can be infinitely detailed, infinitely large. Any shape that can be
-described using mathematics can be represented exactly.
+F-Rep is the most expressive geometric representation.
+Instead of approximating a shape using many copies of a single geometric primitive (like polygons, spline curves, or pixels),
+or a fixed number of geometric primitives (vector representations),
+F-Rep represents shapes using mathematical equations.
+This means that exact representations of a vast number of geometric primitives are available.
+F-Rep is compact and resolution independent. Shapes can be infinitely detailed, or infinitely large.
 
 Curv provides a low level API for defining CSG primitives using F-Rep.
 Using this API, the entire CSG geometry API is defined using Curv code.
 
-Possible implementation of a ``circle`` primitive::
+A ``circle`` primitive can be defined like this::
 
   circle r = make_shape {
     dist(x,y,z,t) = sqrt(x^2 + y^2) - r,
@@ -90,7 +97,7 @@ Why?
 
 * simple, terse, pleasant programming style
 * simple semantics
-* can easily be translated into highly parallel GPU code
+* easy to translate into highly parallel GPU code
 * good match for CSG and F-Rep
 * security
 
