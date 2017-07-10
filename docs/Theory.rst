@@ -596,6 +596,8 @@ Morphing
 Morphing from one shape to another is easy:
 linear interpolation between two distance fields.
 
+.. image:: images/morph.png
+
 .. Convolution
 .. ===========
 .. In Photoshop, there are image processing filters that blur an image.
