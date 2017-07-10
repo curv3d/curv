@@ -644,14 +644,17 @@ as illustrated by this image from the "Implicit Seafood" web site:
 
 Generalized Blends
 ==================
-Blending is an inexpensive SDF operation producing results that look a lot
-like convolution. A blended union takes two shapes, plus a "blending kernel",
+Blending operators are like generalized unions,
+but the same code (which I call a "blending kernel")
+can also be used to define generalized intersections.
+
+A blended union takes two shapes, plus a "blending kernel",
 adding a "fillet" to interior corners created by the union.
 A blended intersction takes two shapes plus a blending kernel,
 rounding away material from exterior corners created by the intersection.
 There is also blended difference.
 
-Here are some blending kernels coded by ``MERCURY.sexy``, a demoscene group:
+Here are some blending kernels from ``MERCURY.sexy``, a demoscene group:
 
 Round:
   |uRound| |iRound|
@@ -676,7 +679,7 @@ Columns:
 
 As you see, you can program a wide range of "decorative moulding" patterns.
 
-How do you code a blending kernel... ?
+.. How do you code a blending kernel... ?
 
 .. A blending kernel is a pair of related functions, ``fillet`` and ``round``,
 .. that map two distance values ``d1`` and ``d2`` onto a distance value.
