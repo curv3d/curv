@@ -285,6 +285,7 @@ In math terms, an SDF must be Lipschitz Continuous, with a Lipshitz constant of 
 It's a continuous function which is limited in how fast it can change.
 For every pair of points in an SDF, the absolute value of the slope of the line connecting
 the points is not greater than 1.
+
 .. * According to me, an SDF cannot have a derivative of zero at any point.
 ..   For example, if an SDF is 0 for all points in the interior of the shape,
 ..   that will break operations that care about the interior of a shape,
