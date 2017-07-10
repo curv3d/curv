@@ -422,31 +422,48 @@ The Square
 ==========
 In Curv, infinitely large shapes commonly have a simpler and cheaper representation
 than finite shapes. A lot of finite shapes are constructed by intersecting two or more infinite shapes.
+Most any shape with vertexes or straight line edges is probably built by intersection.
 
 Let's construct a square of size ``2*r``.
 
 We begin with an infinite half-plane, parallel to the Y axis,
-which extends along the X axis from -infinity to +r::
+which extends along the X axis from -infinity to +r:
 
-  dist(x,y) = x - r
++-----------------------+-------------+
+| ``dist(x,y) = x - r`` |  |square1|  |
++-----------------------+-------------+
+
+.. |square1| image:: images/square1.png
   
 Now we will reflect the above half-plane through the Y axis,
 using the ``abs`` operator.
 The result is an infinite ribbon that runs along the Y axis,
-bounded on the X axis between -r and +r::
+bounded on the X axis between -r and +r:
 
-  dist(x,y) = abs(x) - r
++----------------------------+-------------+
+| ``dist(x,y) = abs(x) - r`` |  |square2|  |
++----------------------------+-------------+
 
-Now we will construct a similar ribbon that runs along the X axis::
+.. |square2| image:: images/square2.png
 
-  dist2(x,y) = abs(y) - r
+Now we will construct a similar ribbon that runs along the X axis:
 
-Now we intersect these two ribbons, using the ``max`` operator::
++-----------------------------+-------------+
+| ``dist2(x,y) = abs(y) - r`` |  |square3|  |
++-----------------------------+-------------+
 
-  dist(x,y) = max(abs(x) - r, abs(y) - r)
+.. |square3| image:: images/square3.png
+
+Now we intersect these two ribbons, using the ``max`` operator:
+
++---------------------------------------------+-------------+
+| ``dist(x,y) = max(abs(x) - r, abs(y) - r)`` |  |square4|  |
++---------------------------------------------+-------------+
+
+.. |square4| image:: images/square4.png
 
 Curv is an array language, in which all arithmetic operations are generalized
-to work on vectors. This is important for GPU compilation, since vectorized operations
+to work on arrays. This is important for GPU compilation, since vectorized operations
 run faster. So we will "vectorize" the above equation::
 
   dist(x,y) = max(abs(x,y) - r)
