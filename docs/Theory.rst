@@ -10,6 +10,9 @@ Curv is an open source 3D solid modelling language, oriented towards 3D printing
 It's easy to use for beginners. It's incredibly powerful for experts.
 And it's fast: all rendering is performed by the GPU.
 
+Curv is also a uniquely expressive file format for the exchange of 2D and 3D
+procedurally generated graphics.
+
 Thesis
 ======
 Ease of use:
@@ -44,6 +47,7 @@ and affine transformations like translate, scale and rotate.
 
 Curv uses CSG as its high level geometry interface,
 and provides a rich set of predefined shapes and operations.
+Both 2D and 3D shapes are supported.
 
 Curv is a pure functional language in which shapes are first class values,
 and CSG operations are functions that map shapes onto shapes.
@@ -68,14 +72,17 @@ Internally, Curv represents geometric shapes using Function Representation (F-Re
 
 In this representation, a shape contains functions that map every point (x,y,z) in 3D space onto the shape's properties, which may include spatial extent, colour, material.
 
-F-Rep is very expressive:
-shapes can be infinitely detailed, infinitely large. Any shape that can be
-described using mathematics can be represented exactly.
+F-Rep is the most expressive geometric representation.
+Instead of approximating a shape using many copies of a single geometric primitive (like polygons, spline curves, or pixels),
+or a fixed number of geometric primitives (vector representations),
+F-Rep represents shapes using mathematical equations.
+This means that exact representations of a vast number of geometric primitives are available.
+F-Rep is compact and resolution independent. Shapes can be infinitely detailed, or infinitely large.
 
 Curv provides a low level API for defining CSG primitives using F-Rep.
 Using this API, the entire CSG geometry API is defined using Curv code.
 
-Possible implementation of a ``circle`` primitive::
+A ``circle`` primitive can be defined like this::
 
   circle r = make_shape {
     dist(x,y,z,t) = sqrt(x^2 + y^2) - r,
@@ -90,7 +97,7 @@ Why?
 
 * simple, terse, pleasant programming style
 * simple semantics
-* can easily be translated into highly parallel GPU code
+* easy to translate into highly parallel GPU code
 * good match for CSG and F-Rep
 * security
 
@@ -230,7 +237,8 @@ A 2D shape, plus 3 views of its SDF:
 
 An SDF is continuous, and differentiable almost everywhere. At the differentiable points, the slope is 1, and the gradient points towards the closest boundary. (This is useful.) The non-differentiable points are equidistant between two boundary regions.
 
-The singular points that occur inside a shape are called the (Topological) Skeleton or Medial Axis. A tendril of the skeleton connects to the boundary of the shape at each (non-differentiable) corner or vertex point (2D) or edge (3D).
+The singular points that occur inside a shape are called the (Topological) Skeleton or Medial Axis.
+.. A tendril of the skeleton connects to the boundary of the shape at each (non-differentiable) convex corner or vertex point (2D) or edge (3D).
 
 Isocurves and Isosurfaces
 =========================
@@ -263,8 +271,6 @@ In an Exact SDF, the distance field stores the exact distance from each point to
 
 It turns out that it is sometimes difficult or expensive to construct Exact SDFs. So, a distance function is permitted to underestimate the distance to the closest boundary, and the result is an Approximate SDF (aka a Distance Estimator (DE), or sometimes a Signed Distance Bound).
 
-Instead of saying it's okay to underestimate the distance, you can instead say that all SDFs must be Lipshitz Continuous, with a Lipschitz constant of 1. (This will be useful later when we learn to derive SDFs.)
-
 The simplest and cheapest implementation of a rectangle has an Approximate SDF that looks like this:
 
 .. image:: images/rect_mitred_sdf.png
@@ -272,6 +278,27 @@ The simplest and cheapest implementation of a rectangle has an Approximate SDF t
 The positive isocurves of this SDF are also rectangles: they correspond to the "Mitred Offset" operation from CAD.
 So I call this a Mitred SDF.
 The skeleton tendrils attached to each vertex of the rectangle shoot out past the boundary and extend forever.
+
+According to John C. Hart, author of the original academic papers on SDFs,
+the only restriction is that an SDF cannot overestimate the distance from each point to the closest boundary.
+In math terms, an SDF must be Lipschitz Continuous, with a Lipshitz constant of 1.
+It's a continuous function which is limited in how fast it can change.
+For every pair of points in an SDF, the absolute value of the slope of the line connecting
+the points is not greater than 1.
+.. * According to me, an SDF cannot have a derivative of zero at any point.
+..   For example, if an SDF is 0 for all points in the interior of the shape,
+..   that will break operations that care about the interior of a shape,
+..   such as the ``complement`` operator.
+
+An approximate SDF does not have all of the nice properties of an exact SDF.
+
+* Away from the boundary, the gradient (if defined) is not guaranteed to point to
+  the closest boundary point.
+* A positive isosurface is not guaranteed to be the rounded offset of the shape.
+
+A possible future direction is that shapes contain metadata which describes
+the properties of their SDF. Shortcuts which rely on certain properties can
+be enabled if the property is present.
 
 SDF Techniques
 ==============
@@ -283,7 +310,7 @@ very expensive. It was done by blind sampling of points in a 3D grid (lots of fu
 It wasn't accurate: if a small detail fell between grid points, it was lost.
 
 This led to a period of experimentation, searching for an F-Rep with fast, accurate rendering.
-A number of new F-Reps were tried. SDF won because it is the simplest such F-Rep that works.
+SDF won over the competition because it is the simplest such F-Rep that works.
 It's relatively simple to define, relatively cheap to compute,
 and doesn't require the distance field to have a derivative everywhere.
 
@@ -328,6 +355,10 @@ Applications that use SDF:
 
 The Circle
 ==========
+One way to construct the SDF for a shape is to start with the
+shape's implicit equation, then algebraically transform it into a function
+with the same roots, but with a Lipschitz constant of 1.
+
 Implicit equation for a circle of radius ``r``::
 
   x^2 + y^2 = r^2
@@ -338,7 +369,7 @@ If we rearrange this to::
 
 then we have an implicit function that is zero on the boundary of the circle,
 negative inside the circle, and positive outside the circle.
-Although this is a Function Representation for a circle, it's not a Curv-compatible SDF
+Although this is a Function Representation for a circle, it's not an SDF
 because the function value at p
 is the square of the distance from p to the origin, not the Euclidean distance.
 
@@ -364,37 +395,85 @@ gradient becomes 1.
 
 Boolean Operations
 ==================
-A cheap way to find the union of two shapes
-is to compute the minimum of their distance fields::
+There are 3 primitive boolean operations on SDFs: union, intersection, and complement.
+(Others, like difference and symmetric_difference, can be defined in terms of the primitives.)
+These operations are closed over approximate SDFs. However, they map exact SDFs
+to approximate SDFs.
+
+The union of two shapes is the minimum of their distance fields::
 
   union(s1,s2) = make_shape {
     dist p = min(s1.dist p, s2.dist p),
     ...
   }
 
-Union of a square and circle:
+Union of a square and circle (both inputs are exact SDFs):
 
 .. image:: images/union1.png
 
-The resulting SDF is correct for any points outside of the shape, or at the boundary.
-But the SDF is incorrect inside the shape, in this case within the region where the circle and square intersect.
-In this region, the SDF underestimates the distance from p to the boundary.
+The resulting SDF is exact for any points outside of the shape, or at the boundary.
+But the SDF is approximate inside the shape, in this case within the region where the circle and square intersect.
 
-This approximation is okay in most cases:
-
-* The ray tracer still works if the SDF underestimates the distance.
-* Usually we only care about the SDF on the outside of a shape.
-
-It's possible to compute an exact Euclidean union, but it's more expensive
-(meaning rendering becomes slower), and it's usually not worth the price.
-
-We amend our definition of a Curv-compatible SDF so that it is okay if the SDF
-underestimates the distance. In formal math language, an SDF must be Lipshitz Continuous,
-with a Lipschitz Constant of 1 (ie, don't have any distance gradient larger than 1).
-
-Intersection can be computed using ``max``.
+Intersection is computed using ``max``.
 
 The complement operation negates the distance field (and converts finite shapes into infinite ones).
+
+The Square
+==========
+In Curv, infinitely large shapes commonly have a simpler and cheaper representation
+than finite shapes. A lot of finite shapes are constructed by intersecting two or more infinite shapes.
+Most any shape with vertexes or straight line edges is probably built by intersection.
+
+Let's construct a square of size ``2*r``.
+
+We begin with an infinite half-plane, parallel to the Y axis,
+which extends along the X axis from -infinity to +r:
+
++-----------------------+-------------+
+| ``dist(x,y) = x - r`` |  |square1|  |
++-----------------------+-------------+
+
+.. |square1| image:: images/square1.png
+  
+Now we will reflect the above half-plane through the Y axis,
+using the ``abs`` operator.
+The result is an infinite ribbon that runs along the Y axis,
+bounded on the X axis between -r and +r:
+
++----------------------------+-------------+
+| ``dist(x,y) = abs(x) - r`` |  |square2|  |
++----------------------------+-------------+
+
+.. |square2| image:: images/square2.png
+
+Now we will construct a similar ribbon that runs along the X axis:
+
++-----------------------------+-------------+
+| ``dist2(x,y) = abs(y) - r`` |  |square3|  |
++-----------------------------+-------------+
+
+.. |square3| image:: images/square3.png
+
+Now we intersect these two ribbons, using the ``max`` operator:
+
++---------------------------------------------+-------------+
+| ``dist(x,y) = max(abs(x) - r, abs(y) - r)`` |  |square4|  |
++---------------------------------------------+-------------+
+
+.. |square4| image:: images/square4.png
+
+Curv is an array language, in which all arithmetic operations are generalized
+to work on arrays. This is important for GPU compilation, since vectorized operations
+run faster. So we will "vectorize" the above equation::
+
+  dist(x,y) = max(abs(x,y) - r)
+
+Here's a ``square`` operator that constructs a square of size ``d``::
+
+  square d = make_shape {
+    dist(x,y,z,t) = max(abs(x,y) - d/2),
+    ...
+  }
 
 Transformations
 ===============
@@ -443,15 +522,29 @@ and you union together 1000 copies of this shape, well now it takes 1s to render
 
 Fortunately, Curv has repetition operators which union together an arbitrary
 number of copies of a shape together, or even an infinite number of copies,
-in constant time and space. ::
+in constant time and space.
+
+Each repetition operator corresponds to a different mathematical symmetry.
+The most basic ones are:
+
+* Mirror symmetry: Reflect a shape through a plane, giving two copies
+  (the original shape and the mirror image).
+* Translational symmetry: Partition space into multiple cells,
+  like a linear array or grid pattern, causing a copy of the shape
+  to appear in each cell.
+* Rotational symmetry: Partition space into radial pie slices,
+  causing a copy of the shape to appear in each slice.
+
+Here's an example of translational repetition::
 
   sphere 1 >> repeat_xy (1,1)
 
 .. image:: images/sphere_repeat.png
 
-A repetition operator is a coordinate transformation that uses the magic of the
-modulus operator to partition space into multiple cells, causing a copy of a shape
-to appear in each cell. This has been called "space folding". ::
+The ``repeat_xy`` operator is a coordinate transformation
+that uses the modulus operator
+to map coordinates in each cell onto the cell that is centered at the origin.
+This has been called "space folding"::
 
   repeat_xy r shape = make_shape {
     dist(x,y,z,t) : shape.dist(
@@ -461,13 +554,8 @@ to appear in each cell. This has been called "space folding". ::
     ...
   }
 
-There are lots of repetition operators, which correspond to different mathematical symmetries.
-
-* ``repeat_x``, ``repeat_xy`` and ``repeat_xyz`` implement translational symmetry
-* ``repeat_radial`` implements rotational symmetry (around the z axis)
-* ``repeat_mirror_x`` implements mirror symmetry (through the yz plane) using the `abs` operator.
-
-and many more can be defined.
+The use of symmetry to encode repetition is a key feature of Curv programming.
+This allows you to generate huge amounts of complexity very cheaply.
 
 Time and Animation
 ==================
@@ -503,53 +591,130 @@ I considered making time a global variable, like in OpenSCAD or Newtonian physic
 
 A future goal is to import and export animated GIFs and video files.
 
-Morphing, Blending and Convolution
-==================================
+Morphing
+========
 Morphing from one shape to another is easy:
 linear interpolation between two distance fields.
 
-Convolution:
-In Photoshop, there are image processing filters that blur or sharpen an image.
-In the mathematics of image processing, this is called convolution.
-Convolutions can also be applied to 3D shapes. Blurring a shape removes high
-frequency components, causing sharp edges to melt, and T-junctions to be filled in.
+.. Convolution
+.. ===========
+.. In Photoshop, there are image processing filters that blur an image.
+.. In the mathematics of image processing, this is called convolution.
+.. (The inverse operation, sharpening an image, is deconvolution.)
 
-Sweep
-=====
-  * extrude and loft
-  * perimeter_extrude (sweep 2D shape along 2D implicit curve -> 3D shape)
-  * isosurface (sweep circle along 2D curve, sphere along 3D curve or surface)
-  * constructing implicit curves and surfaces
+.. Convolving a 3D shape means rounding or bevelling exterior corners and edges,
+.. and filleting or chamfering interior corners.
+
+.. Convolution is a binary operator that takes two functions,
+.. the shape to be blurred, and a "convolution kernel".
+.. There are lots of convolution kernels, allowing for a variety of effects.
+
+.. I'd love to have a convolution operator.
+.. There are lots of academic papers on convolution as an F-Rep operation.
+.. But I have no code for an SDF system yet.
+
+.. If you use numerical methods then it is (allegedly) slow, so many people
+.. use symbolic algebra to convolve the F-Rep equation of a shape, which would
+.. have to be done using a tool like Mathematica, outside of Curv.
+.. The Curv geometry compiler already does a limited amount of symbolic algebra
+.. to compile Curv code into efficient GPU code, so this suggests a future direction.
+
+.. http://www.sciencedirect.com/science/article/pii/S0747717111002197
+
+Blending
+========
+Blending is an inexpensive SDF operation producing results that look a lot
+like convolution. A blended union takes two shapes, plus a "blending kernel",
+adding a "fillet" to interior corners created by the union.
+A blended intersction takes two shapes plus a blending kernel,
+rounding away material from exterior corners created by the intersection.
+There is also blended difference.
+
+Here are some blending kernels coded by ``MERCURY.sexy``, a demoscene group:
+
+Round:
+  |uRound| |iRound|
+
+Chamfer:
+  |uChamfer| |iChamfer|
+
+Stairs:
+  |uStairs| |iStairs|
+
+Columns:
+  |uColumns| |iColumns|
+
+.. |iChamfer| image:: images/fOpIntersectionChamfer.png
+.. |iColumns| image:: images/fOpIntersectionColumns.png
+.. |iRound| image:: images/fOpIntersectionRound.png
+.. |iStairs| image:: images/fOpIntersectionStairs.png
+.. |uChamfer| image:: images/fOpUnionChamfer.png
+.. |uColumns| image:: images/fOpUnionColumns.png
+.. |uRound| image:: images/fOpUnionRound.png
+.. |uStairs| image:: images/fOpUnionStairs.png
+
+As you see, you can program a wide range of "decorative moulding" patterns.
+
+How do you code a blending kernel... ?
+
+.. A blending kernel is a pair of related functions, ``fillet`` and ``round``,
+.. that map two distance values ``d1`` and ``d2`` onto a distance value.
+
+.. ``fillet`` is used for blended union, replacing ``min`` in the standard implementation of ``union``.
+.. The ``fillet`` function adds additional material to the shape being constructed, in the region above the
+.. point or edge where two unioned shapes come together.
+.. If either ``d1`` or ``d2`` is greater than the fillet radius,
+.. then ``fillet`` defaults to the behaviour of ``min``.
+.. Otherwise, if ``d1>0 && d2>0``, then the current point is inside the fillet region.
+
+.. replacing ``min`` and ``max`` in the standard implementation of ``union`` and ``intersection``.
+
+.. Embossing and Engraving
+.. =======================
+
+.. Sweep
+.. =====
+..   * extrude and loft
+..   * perimeter_extrude (sweep 2D shape along 2D implicit curve -> 3D shape)
+..   * isosurface (sweep circle along 2D curve, sphere along 3D curve or surface)
+..   * constructing implicit curves and surfaces
   
-    * shell
-    * MERCURY: intersection->curve
+..     * shell
+..     * MERCURY: intersection->curve
     
-  * sweeping a parametric curve or surface: more expensive
-  * space warp operators/fancy blending operators can be an alternative to sweeping
+..   * sweeping a parametric curve or surface: more expensive
+..   * space warp operators/fancy blending operators can be an alternative to sweeping
 
-Procedural Modelling Techniques
-===============================
-* Hypertexture: engraving/perturbing the surface of a solid. An implicit modelling technique.
-* Grammars, L-Systems
+.. Procedural Modelling Techniques
+.. ===============================
+.. * Hypertexture: engraving/perturbing the surface of a solid. An implicit modelling technique.
+.. * Grammars, L-Systems
 
-  * Use a context free, generative grammar to generate a complex shape, like a tree, leaf or city.
-    Or fractals.
-  * during the 1990's: use L-System to generate a skeleton, then flesh it out
-    using F-Rep. Popular for modelling living things. See "algorithmic botany"
-    and "implicit seafood" web sites.
-  * idea: use a grammar to generate a tree of space folding operations: more complexity with fewer operations.
+..   * Use a context free, generative grammar to generate a complex shape, like a tree, leaf or city.
+..     Or fractals.
+..   * during the 1990's: use L-System to generate a skeleton, then flesh it out
+..     using F-Rep. Popular for modelling living things. See "algorithmic botany"
+..     and "implicit seafood" web sites.
+..   * idea: use a grammar to generate a tree of space folding operations: more complexity with fewer operations.
 
 Fractals
 ========
+SDFs and the Sphere Tracing algorithm were first described by inventor John C Hart in 1989
+as an efficient algorithm for ray tracing (and thus visualizing) 3D fractals.
+Today it is still the best technique.
+
 For large or deeply iterated 3D fractals,
-F-Rep wins over other representations like triangle meshes or voxels:
+SDFs still win over other representations like triangle meshes or voxels:
 they require too much memory,
 and performing CSG operations like union or intersection on these
 bulky representations is too time consuming.
 
-For the 3D fractal art community, F-Rep is the technology of choice,
-using tools like MandelBulb3D, which are phenomenally rich and powerful.
-In principle, the same models can be written in Curv.
+For the 3D fractal art community, SDFs are the technology of choice,
+because they are the basis for popular tools like MandelBulber and MandelBulb3D.
+
+The following image is a deep zoom into a MandelBox fractal using MandelBulb3D.
+Because Curv uses the same internal representation (SDFs),
+the same model should be portable to Curv.
 
 .. image:: images/holy_box_fractal.jpg
 
@@ -582,7 +747,7 @@ Here's a 3D solid texture I hacked together in Curv using fractal noise:
   
   |gradient_noise|
 * Fractal noise (Fractal Brownian Motion):
-  Gradient noise is generated at a series of higher frequencies (different lattice spacings),
+  Gradient noise is generated at a series of higher frequencies (smaller lattice spacings),
   and added together. Higher frequencies are attenuated.
   
   |fractal_noise|
@@ -596,6 +761,35 @@ Many more noise functions have been invented.
 
 Sphere Tracing
 ==============
+Sphere Tracing (sometimes called "ray marching") is the variant of ray tracing used to render SDFs on a graphics display.
+It's efficient enough to support real time animation of an SDF using a GPU.
+Sphere Tracing and the SDF representation were invented together, by John C Hart,
+to solve the problem of fast, flexible, accurate ray tracing for Function Representation.
+
+To render a scene using Sphere Tracing,
+
+0. Construct a single SDF representing the entire scene,
+   eg by unioning together multiple components.
+1. For each pixel on the viewport, cast a ray of sight into the scene.
+   Using a GPU, multiple rays are cast in parallel.
+2. The Sphere Tracing algorithm is used to advance the ray through the SDF
+   until the ray hits a surface boundary.
+   The SDF is sampled at the initial point, giving a value D. This is a distance estimate:
+   the surface is at least D units away, maybe more. Advance the ray by D units,
+   then iterate. Once D is sufficiently close to zero, we have reached the surface.
+3. Once the ray reaches the surface, then we use a colour and lighting model to compute
+   the pixel colour at that point on the surface.
+
+.. image:: images/sphere_tracing.jpg
+
+Here's how we colour and light the pixel in Curv:
+
+* Each shape has a ``colour`` function that computes the colour at a given point.
+* By taking 3 extra samples of the SDF around the surface point, in the pattern of a right tetrahedron,
+  we compute the gradient of the distance field at that point, which gives us a surface normal,
+  which is used for Phong shading.
+* "Ambient Occlusion" is a cheap method for simulating shadows in real time without the expense of recursive ray-tracing,
+  by leveraging the information stored in the SDF.
 
 Hierarchical SDFs
 =================

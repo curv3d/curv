@@ -453,6 +453,7 @@ complement s = make_shape {
     is_3d : s.is_3d,
 },
 
+// Approximate union that produces a mitred SDF inside. Fast.
 // When unioning a list of coloured shapes, we paint the shapes from first to
 // last order: the last shape is painted on top of its predecessors.
 union list = reduce(nothing, _union2) list,
@@ -467,6 +468,14 @@ _union2(s1,s2) = make_shape {
     is_2d : s1.is_2d && s2.is_2d,
     is_3d : s1.is_3d && s2.is_3d,
 },
+
+// Exact union. (Warning: original research.)
+union_eu(s1,s2) = make_shape {
+    dist p = min_eu(s1.dist p, s2.dist p),
+    is_2d = s1.is_2d && s2.is_2d,
+    is_3d = s1.is_3d && s2.is_3d,
+},
+min_eu(x,y) = if (x<0 && y<0) -mag(x,y) else min(x,y),
 
 intersection list = reduce(everything, _intersection2) list,
 _intersection2(s1,s2) = make_shape {
