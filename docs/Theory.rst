@@ -237,7 +237,8 @@ A 2D shape, plus 3 views of its SDF:
 
 An SDF is continuous, and differentiable almost everywhere. At the differentiable points, the slope is 1, and the gradient points towards the closest boundary. (This is useful.) The non-differentiable points are equidistant between two boundary regions.
 
-The singular points that occur inside a shape are called the (Topological) Skeleton or Medial Axis. A tendril of the skeleton connects to the boundary of the shape at each (non-differentiable) corner or vertex point (2D) or edge (3D).
+The singular points that occur inside a shape are called the (Topological) Skeleton or Medial Axis.
+.. A tendril of the skeleton connects to the boundary of the shape at each (non-differentiable) convex corner or vertex point (2D) or edge (3D).
 
 Isocurves and Isosurfaces
 =========================
@@ -270,8 +271,6 @@ In an Exact SDF, the distance field stores the exact distance from each point to
 
 It turns out that it is sometimes difficult or expensive to construct Exact SDFs. So, a distance function is permitted to underestimate the distance to the closest boundary, and the result is an Approximate SDF (aka a Distance Estimator (DE), or sometimes a Signed Distance Bound).
 
-Instead of saying it's okay to underestimate the distance, you can instead say that all SDFs must be Lipshitz Continuous, with a Lipschitz constant of 1. (This will be useful later when we learn to derive SDFs.)
-
 The simplest and cheapest implementation of a rectangle has an Approximate SDF that looks like this:
 
 .. image:: images/rect_mitred_sdf.png
@@ -279,6 +278,27 @@ The simplest and cheapest implementation of a rectangle has an Approximate SDF t
 The positive isocurves of this SDF are also rectangles: they correspond to the "Mitred Offset" operation from CAD.
 So I call this a Mitred SDF.
 The skeleton tendrils attached to each vertex of the rectangle shoot out past the boundary and extend forever.
+
+According to John C. Hart, author of the original academic papers on SDFs,
+the only restriction is that an SDF cannot overestimate the distance from each point to the closest boundary.
+In math terms, an SDF must be Lipschitz Continuous, with a Lipshitz constant of 1.
+It's a continuous function which is limited in how fast it can change.
+For every pair of points in an SDF, the absolute value of the slope of the line connecting
+the points is not greater than 1.
+.. * According to me, an SDF cannot have a derivative of zero at any point.
+..   For example, if an SDF is 0 for all points in the interior of the shape,
+..   that will break operations that care about the interior of a shape,
+..   such as the ``complement`` operator.
+
+An approximate SDF does not have all of the nice properties of an exact SDF.
+
+* Away from the boundary, the gradient (if defined) is not guaranteed to point to
+  the closest boundary point.
+* A positive isosurface is not guaranteed to be the rounded offset of the shape.
+
+A possible future direction is that shapes contain metadata which describes
+the properties of their SDF. Shortcuts which rely on certain properties can
+be enabled if the property is present.
 
 SDF Techniques
 ==============
@@ -290,7 +310,7 @@ very expensive. It was done by blind sampling of points in a 3D grid (lots of fu
 It wasn't accurate: if a small detail fell between grid points, it was lost.
 
 This led to a period of experimentation, searching for an F-Rep with fast, accurate rendering.
-A number of new F-Reps were tried. SDF won because it is the simplest such F-Rep that works.
+SDF won over the competition because it is the simplest such F-Rep that works.
 It's relatively simple to define, relatively cheap to compute,
 and doesn't require the distance field to have a derivative everywhere.
 
