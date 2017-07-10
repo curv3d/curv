@@ -522,15 +522,29 @@ and you union together 1000 copies of this shape, well now it takes 1s to render
 
 Fortunately, Curv has repetition operators which union together an arbitrary
 number of copies of a shape together, or even an infinite number of copies,
-in constant time and space. ::
+in constant time and space.
+
+Each repetition operator corresponds to a different mathematical symmetry.
+The most basic ones are:
+
+* Mirror symmetry: Reflect a shape through a plane, giving two copies
+  (the original shape and the mirror image).
+* Translational symmetry: Partition space into multiple cells,
+  like a linear array or grid pattern, causing a copy of the shape
+  to appear in each cell.
+* Rotational symmetry: Partition space into radial pie slices,
+  causing a copy of the shape to appear in each slice.
+
+Here's an example of translational repetition::
 
   sphere 1 >> repeat_xy (1,1)
 
 .. image:: images/sphere_repeat.png
 
-A repetition operator is a coordinate transformation that uses the magic of the
-modulus operator to partition space into multiple cells, causing a copy of a shape
-to appear in each cell. This has been called "space folding". ::
+The ``repeat_xy`` operator is a coordinate transformation
+that uses the modulus operator
+to map coordinates in each cell onto the cell that is centered at the origin.
+This has been called "space folding"::
 
   repeat_xy r shape = make_shape {
     dist(x,y,z,t) : shape.dist(
@@ -540,13 +554,8 @@ to appear in each cell. This has been called "space folding". ::
     ...
   }
 
-There are lots of repetition operators, which correspond to different mathematical symmetries.
-
-* ``repeat_x``, ``repeat_xy`` and ``repeat_xyz`` implement translational symmetry
-* ``repeat_radial`` implements rotational symmetry (around the z axis)
-* ``repeat_mirror_x`` implements mirror symmetry (through the yz plane) using the `abs` operator.
-
-and many more can be defined.
+The use of symmetry to encode repetition is a key feature of Curv programming.
+This allows you to generate huge amounts of complexity very cheaply.
 
 Time and Animation
 ==================
