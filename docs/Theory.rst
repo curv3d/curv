@@ -395,35 +395,26 @@ gradient becomes 1.
 
 Boolean Operations
 ==================
-A cheap way to find the union of two shapes
-is to compute the minimum of their distance fields::
+There are 3 primitive boolean operations on SDFs: union, intersection, and complement.
+(Others, like difference and symmetric_difference, can be defined in terms of the primitives.)
+These operations are closed over approximate SDFs. However, they map exact SDFs
+to approximate SDFs.
+
+The union of two shapes is the minimum of their distance fields::
 
   union(s1,s2) = make_shape {
     dist p = min(s1.dist p, s2.dist p),
     ...
   }
 
-Union of a square and circle:
+Union of a square and circle (both inputs are exact SDFs):
 
 .. image:: images/union1.png
 
-The resulting SDF is correct for any points outside of the shape, or at the boundary.
-But the SDF is incorrect inside the shape, in this case within the region where the circle and square intersect.
-In this region, the SDF underestimates the distance from p to the boundary.
+The resulting SDF is exact for any points outside of the shape, or at the boundary.
+But the SDF is approximate inside the shape, in this case within the region where the circle and square intersect.
 
-This approximation is okay in most cases:
-
-* The ray tracer still works if the SDF underestimates the distance.
-* Usually we only care about the SDF on the outside of a shape.
-
-It's possible to compute an exact Euclidean union, but it's more expensive
-(meaning rendering becomes slower), and it's usually not worth the price.
-
-We amend our definition of a Curv-compatible SDF so that it is okay if the SDF
-underestimates the distance. In formal math language, an SDF must be Lipshitz Continuous,
-with a Lipschitz Constant of 1 (ie, don't have any distance gradient larger than 1).
-
-Intersection can be computed using ``max``.
+Intersection is computed using ``max``.
 
 The complement operation negates the distance field (and converts finite shapes into infinite ones).
 
