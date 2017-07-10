@@ -829,11 +829,18 @@ Dreams by Media Molecule https://www.youtube.com/watch?v=4j8Wp-sx5K0
 
 Shape Values in Curv
 ====================
-In Curv, a shape value is represented by a record, with fields:
+In Curv, a shape value may be 2D, 3D, or both.
+The dimensionality is used to choose whether the 2D or 3D viewer is used,
+and to determine if the shape is eligible for export to various graphic file formats.
+There is a single distance function used by both the 2D and 3D cases.
+
+A shape value is represented by a record, with fields:
 
 * ``dist`` is a function mapping ``(x,y,z,t)`` onto a signed distance value.
 * ``colour`` is a function mapping ``(x,y,z,t)`` onto a colour (an RGB triple).
 * ``bbox`` is an axis aligned bounding box, since this is expensive to compute from the distance function.
+* ``is_2d``: a boolean
+* ``is_3d``: a boolean
 
 In the future, I'd like to support multiple shape subclasses,
 with specialized CSG operations that work only on shape subtypes.
