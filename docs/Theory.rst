@@ -626,6 +626,24 @@ linear interpolation between two distance fields.
 
 Blending
 ========
+Blends smoothly join nearby objects.
+Here are two circles, combined using different blending factors:
+
+.. image:: images/blend.png
+
+One application is filleting::
+
+  smooth_union .3 (cube 1, cylinder(.5,2))
+
+.. image:: images/fillet.png
+
+Another application is "Skeleton Based Implicit Modelling",
+as illustrated by this image from the "Implicit Seafood" web site:
+
+.. image:: images/seahorse.gif
+
+Generalized Blends
+==================
 Blending is an inexpensive SDF operation producing results that look a lot
 like convolution. A blended union takes two shapes, plus a "blending kernel",
 adding a "fillet" to interior corners created by the union.
