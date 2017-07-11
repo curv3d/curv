@@ -1,0 +1,1406 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.12: http://docutils.sourceforge.net/" />
+<meta name="version" content="S5 1.1" />
+<title>Curv: A Language for making Art using Mathematics</title>
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 7614 2013-02-21 15:55:51Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+object[type="image/svg+xml"], object[type="application/x-shockwave-flash"] {
+  overflow: hidden;
+}
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title, .code .error {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left, object.align-left {
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right, object.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+img.align-center, .figure.align-center, object.align-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: inherit }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block, pre.math, pre.code {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+pre.code .ln { color: grey; } /* line numbers */
+pre.code, code { background-color: #eeeeee }
+pre.code .comment, code .comment { color: #5C6576 }
+pre.code .keyword, code .keyword { color: #3B0D06; font-weight: bold }
+pre.code .literal.string, code .literal.string { color: #0C5404 }
+pre.code .name.builtin, code .name.builtin { color: #352B84 }
+pre.code .deleted, code .deleted { background-color: #DEB0A1}
+pre.code .inserted, code .inserted { background-color: #A3D289}
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+/* "booktabs" style (no vertical lines) */
+table.docutils.booktabs {
+  border: 0px;
+  border-top: 2px solid;
+  border-bottom: 2px solid;
+  border-collapse: collapse;
+}
+table.docutils.booktabs * {
+  border: 0px;
+}
+table.docutils.booktabs th {
+  border-bottom: thin solid;
+  text-align: left;
+}
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+<!-- configuration parameters -->
+<meta name="defaultView" content="slideshow" />
+<meta name="controlVis" content="hidden" />
+<!-- style sheet links -->
+<script src="ui/default/slides.js" type="text/javascript"></script>
+<link rel="stylesheet" href="ui/default/slides.css"
+      type="text/css" media="projection" id="slideProj" />
+<link rel="stylesheet" href="ui/default/outline.css"
+      type="text/css" media="screen" id="outlineStyle" />
+<link rel="stylesheet" href="ui/default/print.css"
+      type="text/css" media="print" id="slidePrint" />
+<link rel="stylesheet" href="ui/default/opera.css"
+      type="text/css" media="projection" id="operaFix" />
+
+<style type="text/css">
+#currentSlide {display: none;}
+</style>
+</head>
+<body>
+<div class="layout">
+<div id="controls"></div>
+<div id="currentSlide"></div>
+<div id="header">
+
+</div>
+<div id="footer">
+<h1>Curv: A Language for making Art using Mathematics</h1>
+
+</div>
+</div>
+<div class="presentation">
+<div class="slide" id="slide0">
+<h1 class="title">Curv: A Language for making Art using Mathematics</h1>
+
+<p><img alt="twistor" src="images/torus.png" /> <img alt="shreks_donut" src="images/shreks_donut.png" /></p>
+
+</div>
+<div class="slide" id="what-is-curv">
+<h1>What is Curv?</h1>
+<p>Curv is an open source 3D <strong>solid modelling language</strong>,
+oriented towards <strong>3D printing</strong>, <strong>procedurally generated art</strong>,
+and <strong>mathematical visualization</strong>.</p>
+<p>It's <strong>easy to use</strong> for beginners. It's incredibly <strong>powerful</strong> for experts.
+And it's <strong>fast</strong>: all rendering is performed by the GPU.</p>
+<p>Curv is also a uniquely expressive <strong>file format</strong>
+for the exchange of 2D and 3D procedurally generated graphics.</p>
+</div>
+<div class="slide" id="thesis">
+<h1>Thesis</h1>
+<dl class="docutils">
+<dt>Ease of use:</dt>
+<dd>For ease of use, the best choice is Constructive Solid Geometry (CSG)
+embedded in a simple, pure functional language.</dd>
+<dt>Rendering Speed:</dt>
+<dd>To quickly render a wide range of CSG primitives,
+the best choice is to render on a GPU,
+and to represent shapes using Function Representation (F-Rep).</dd>
+<dt>Expressive Power:</dt>
+<dd>F-Rep is the best choice for CSG:
+A wider range of CSG primitives are available in Open Source for F-Rep
+than for competing representations.</dd>
+</dl>
+</div>
+<div class="slide" id="thesis-2">
+<h1>Thesis (2)</h1>
+<p>To boost expressiveness,
+the Curv language permits experts to define new CSG primitives using F-Rep.
+(Therefore, Curv functions must be compilable into GPU code.)</p>
+<p>F-Rep is the most expressive representation for controlling a 3D printer.
+It can describe 3D-printable objects that can't be modeled by competing representations.</p>
+</div>
+<div class="slide" id="constructive-solid-geometry">
+<h1>Constructive Solid Geometry</h1>
+<p>In a Constructive Solid Geometry (CSG) system,
+there is a set of primitive shapes,
+and operations for constructing new shapes
+by transforming and combining simpler shapes.</p>
+<p>The operations normally include boolean operations like union, intersection and difference,
+and affine transformations like translate, scale and rotate.</p>
+</div>
+<div class="slide" id="constructive-solid-geometry-2">
+<h1>Constructive Solid Geometry (2)</h1>
+<p>Curv uses CSG as its high level geometry interface,
+and provides a rich set of predefined shapes and operations.
+Both 2D and 3D shapes are supported.</p>
+<p>Curv is a pure functional language in which shapes are first class values,
+and CSG operations are functions that map shapes onto shapes.</p>
+</div>
+<div class="slide" id="constructive-solid-geometry-3">
+<h1>Constructive Solid Geometry (3)</h1>
+<p><img alt="twistor" src="images/torus.png" />:</p>
+<pre class="literal-block">
+torus(2,1)
+  &gt;&gt; colour (radial_rainbow 1)
+  &gt;&gt; rotate(tau/4, Yaxis)
+  &gt;&gt; twist 1
+</pre>
+</div>
+<div class="slide" id="constructive-solid-geometry-4">
+<h1>Constructive Solid Geometry (4)</h1>
+<p><img alt="shreks_donut" src="images/shreks_donut.png" />:</p>
+<pre class="literal-block">
+smooth_intersection .1 (
+  torus(tau*2,tau),
+  gyroid &gt;&gt; shell .1 &gt;&gt; df_scale .33 &gt;&gt; rect_to_polar (tau*6),
+) &gt;&gt; colour (hsv2rgb(1/3,1,.5))
+</pre>
+</div>
+<div class="slide" id="function-representation">
+<h1>Function Representation</h1>
+<p>In Curv, Geometric shapes use Function Representation (F-Rep).</p>
+<p>A shape contains functions that map every point (x,y,z) in 3D space onto the shape's properties, which may include spatial extent, colour, material.</p>
+</div>
+<div class="slide" id="function-representation-2">
+<h1>Function Representation (2)</h1>
+<p>F-Rep is the most expressive geometric representation.</p>
+<p>Instead of approximating a shape using many copies of a single geometric primitive (like polygons, spline curves, or pixels),
+or a fixed number of geometric primitives (vector representations),
+F-Rep represents shapes using mathematical equations.</p>
+<p>This means that exact representations of a vast number of geometric primitives are available.</p>
+<p>F-Rep is compact and resolution independent. Shapes can be infinitely detailed, or infinitely large.</p>
+</div>
+<div class="slide" id="function-representation-3">
+<h1>Function Representation (3)</h1>
+<p>Curv provides a low level API for defining CSG primitives using F-Rep.
+Using this API, the entire CSG geometry API is defined using Curv code.</p>
+<p>A <tt class="docutils literal">circle</tt> primitive can be defined like this:</p>
+<pre class="literal-block">
+circle r = make_shape {
+  dist(x,y,z,t) = sqrt(x^2 + y^2) - r,
+  bbox = [[-r,-r,0], [r,r,0]],  // axis aligned bounding box
+  is_2d = true,
+}
+</pre>
+</div>
+<div class="slide" id="pure-functional-programming">
+<h1>Pure Functional Programming</h1>
+<p>Curv is a pure functional language, with both shapes and functions as first class values.
+Why?</p>
+<ul class="simple">
+<li>simple, terse, pleasant programming style</li>
+<li>simple semantics</li>
+<li>easy to translate into highly parallel GPU code</li>
+<li>good match for CSG and F-Rep</li>
+<li>security</li>
+</ul>
+</div>
+<div class="slide" id="pure-functional-programming-2">
+<h1>Pure Functional Programming (2)</h1>
+<p>Curv can be considered a file format for representing arbitrary geometric shapes
+and distributing them across the internet.</p>
+<p>One requirement for such a file format
+is security: when you open a shape file, you don't want the shape file to encrypt
+all of your files and display a ransom message.</p>
+<p>Curv is not a general purpose
+programming language. It doesn't have side effects, it can only compute values.
+So it meets this requirement.</p>
+</div>
+<div class="slide" id="pure-functional-programming-3">
+<h1>Pure Functional Programming (3)</h1>
+<p>Unique contribution of Curv: pure functional + CSG + F-Rep in one language.</p>
+<p>Secret agenda: Pure functional programming for beginners,
+and for people who can't wrap their head around Haskell.</p>
+</div>
+<div class="slide" id="competing-shape-representations">
+<h1>Competing Shape Representations</h1>
+<table border="1" class="docutils">
+<colgroup>
+<col width="51%" />
+<col width="49%" />
+</colgroup>
+<tbody valign="top">
+<tr><td><strong>Explicit Modelling</strong></td>
+<td><strong>Implicit Modelling</strong></td>
+</tr>
+<tr><td>Directly generate boundary points</td>
+<td>Answer questions
+about particular points</td>
+</tr>
+<tr><td><p class="first">parametric equation (unit circle):</p>
+<pre class="last literal-block">
+(x,y) = (cos t, sin t)
+</pre>
+</td>
+<td><p class="first">implicit equation (unit circle):</p>
+<pre class="last literal-block">
+x^2 + y^2 - 1 = 0
+</pre>
+</td>
+</tr>
+<tr><td><strong>Boundary Representations</strong></td>
+<td><strong>Volumetric Representations</strong></td>
+</tr>
+<tr><td>parametric splines</td>
+<td>function representation</td>
+</tr>
+<tr><td>triangle mesh</td>
+<td>pixels (2D), voxels (3D)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="slide" id="competing-shape-representations-2">
+<h1>Competing Shape Representations (2)</h1>
+<p>These two classes have different strengths and weaknesses.
+Certain operations that are cheap for one class are expensive
+for the other class (and vice versa).</p>
+<p>Conversions between the two classes are non-trivial:</p>
+<ul class="simple">
+<li>It's expensive to convert between parametric and implicit equations.</li>
+<li>It's expensive to convert between B-Rep and F-Rep.</li>
+</ul>
+</div>
+<div class="slide" id="competing-shape-representations-3">
+<h1>Competing Shape Representations (3)</h1>
+<p>Curv chooses F-Rep over B-Rep, but an engineering tradeoff is involved.</p>
+<p>If you only know B-Rep procedural modelling, then learning F-Rep
+requires you to think different if you want to write efficient programs.</p>
+</div>
+<div class="slide" id="f-rep-meshes">
+<h1>F-Rep &gt; Meshes</h1>
+<p>Instead of triangular meshes (like OpenSCAD), Curv represents shapes as pure functions (Function Representation or F-Rep). Why?</p>
+</div>
+<div class="slide" id="f-rep-meshes-expressiveness">
+<h1>F-Rep &gt; Meshes (Expressiveness)</h1>
+<p>F-Rep is a more powerful and expressive representation than meshes.</p>
+<p>Shapes can be infinitely detailed, infinitely large.</p>
+<p>Any shape that can be
+described using mathematics can be represented exactly.</p>
+</div>
+<div class="slide" id="f-rep-meshes-exactness">
+<h1>F-Rep &gt; Meshes (Exactness)</h1>
+<p>Meshes are approximations, F-Rep is exact.</p>
+<p>As you apply a chain of successive geometry operations to a mesh,
+approximation errors can pile up.</p>
+</div>
+<div class="slide" id="f-rep-meshes-memory">
+<h1>F-Rep &gt; Meshes (Memory)</h1>
+<p>With a mesh, simulating a curved surface with high fidelity requires lots of triangles (and memory).
+There is a tradeoff between accuracy of representation and memory/processing costs.</p>
+<p>F-Rep can represent curved surfaces exactly, at low cost.</p>
+</div>
+<div class="slide" id="f-rep-meshes-speed">
+<h1>F-Rep &gt; Meshes (Speed)</h1>
+<p>The cost of mesh operations goes up, often non-linearly, with the number of triangles.</p>
+<p>For example, this is true for union and intersection.</p>
+<p>F-Rep can implement most common geometric operations, like union and intersection, in small constant time and space.</p>
+</div>
+<div class="slide" id="f-rep-meshes-fractals">
+<h1>F-Rep &gt; Meshes (Fractals)</h1>
+<p>With a mesh, complex shapes with a lot of fine detail require lots of triangles and are very expensive.</p>
+<p>Examples are fractals, digital fabrics, metamaterials. OpenSCAD encounters these limits quite early.
+Many complex models that are 3D printable are out of reach.</p>
+<p>F-Rep can represent infinite complexity for free.</p>
+</div>
+<div class="slide" id="f-rep-meshes-3d-printing">
+<h1>F-Rep &gt; Meshes (3D Printing)</h1>
+<p>Unlike subtractive manufacturing (eg, CNC milling), or moulding, where you only control the boundary of an object,</p>
+<p>3D printing is an inherently <em>volumetric</em> manufacturing technology. 3D printers directly control the material placed at
+each voxel in a 3D volume.</p>
+<p>There is a slogan for this: In 3D printing, complexity comes for free.</p>
+</div>
+<div class="slide" id="id1">
+<h1>F-Rep &gt; Meshes (3D Printing)</h1>
+<p>F-Rep is a volumetric representation, where functions map every point (x,y,z) in 3D space onto the properties of a shape. These properties include spatial extent, colour, material.</p>
+<p>F-Rep is a better way to program a 3D printer.</p>
+</div>
+<div class="slide" id="f-rep-meshes-more-csg-operations">
+<h1>F-Rep &gt; Meshes (More CSG Operations)</h1>
+<p>Meshes: union and intersection are very hard to program, require an expert implementation like CGAL or Carve.</p>
+<p>F-Rep: union and intersection are trivial.</p>
+<p>Many more geometric operations available in open source,
+much easier to program.</p>
+<p>The entire Curv geometry library can be written in Curv.
+Easier for users to define &amp; distribute new CSG ops.</p>
+</div>
+<div class="slide" id="f-rep-meshes-gpu">
+<h1>F-Rep &gt; Meshes (GPU)</h1>
+<p>F-Rep is well suited to being directly rendered by a GPU.</p>
+</div>
+<div class="slide" id="signed-distance-fields">
+<h1>Signed Distance Fields</h1>
+<p>Curv uses a specific type of F-Rep called Signed Distance Fields
+for representing the spatial extent of a shape.</p>
+<p>A signed distance field is a function which maps each point in space
+onto the minimum distance from that point to the boundary of the shape.</p>
+<p>An SDF is zero for points on the boundary of the shape, negative for points
+inside the shape, and positive for points outside of the shape.</p>
+</div>
+<div class="slide" id="signed-distance-fields-2">
+<h1>Signed Distance Fields (2)</h1>
+<p><img alt="sdf1" src="images/sdf1a.png" /> <img alt="sdf2" src="images/sdf2a.png" /></p>
+<p><img alt="sdf3a" src="images/sdf3a.png" /> <img alt="sdf3b" src="images/sdf3b.png" /></p>
+</div>
+<div class="slide" id="signed-distance-fields-3">
+<h1>Signed Distance Fields (3)</h1>
+<p>An SDF is continuous, and differentiable almost everywhere.</p>
+<ul class="simple">
+<li>At the differentiable points, the slope is 1, and the gradient points towards the closest boundary. (This is useful.)</li>
+<li>The non-differentiable points are equidistant between two boundary regions.</li>
+</ul>
+<p>The singular points that occur inside a shape are called the (Topological) Skeleton or Medial Axis.</p>
+</div>
+<div class="slide" id="isocurves-and-isosurfaces">
+<h1>Isocurves and Isosurfaces</h1>
+<p>For a 2D SDF, the isocurve at C is the curve that comprises all points with the distance value C.</p>
+<p>For a 3D SDF, the isosurface at C is the surface that comprises all points with the distance value C.</p>
+</div>
+<div class="slide" id="isocurves-and-isosurfaces-2">
+<h1>Isocurves and Isosurfaces (2)</h1>
+<p>For example, here's the SDF for a rectangle. Some isocurves are visible as contour lines:</p>
+<img alt="images/rect_sdf.png" src="images/rect_sdf.png" />
+<p>The isocurve at 0 for this SDF is just the boundary of the rectangle.</p>
+</div>
+<div class="slide" id="isocurves-and-isosurfaces-3">
+<h1>Isocurves and Isosurfaces (3)</h1>
+<img alt="images/rect_sdf.png" src="images/rect_sdf.png" />
+<p>The isocurve at 1 is:</p>
+<ul class="simple">
+<li>The &quot;rounded offset&quot; (CAD/Computer Aided Design)</li>
+<li>The Minkowski sum with a circle of radius 1 (Geometry).</li>
+<li>The dilation by a disk of radius 1 (Mathematical Morphology).</li>
+</ul>
+</div>
+<div class="slide" id="isocurves-and-isosurfaces-4">
+<h1>Isocurves and Isosurfaces (4)</h1>
+<img alt="images/rect_sdf.png" src="images/rect_sdf.png" />
+<p>Similarly, isocurves or isosurfaces at negative values correspond to negative offsets, Minkowski difference,
+or erosion from Mathematical Morphology.</p>
+</div>
+<div class="slide" id="exact-approximate-and-mitred-sdfs">
+<h1>Exact, Approximate and Mitred SDFs</h1>
+<p>In an Exact SDF, the distance field stores the exact distance from each point to the closest boundary.</p>
+<p>(This is also called a Euclidean SDF, since we are using the Euclidean distance metric, and some researchers use alternative metric spaces to construct SDFs.)</p>
+<p>We've been discussing Exact SDFs up to this point.</p>
+</div>
+<div class="slide" id="exact-approximate-and-mitred-sdfs-2">
+<h1>Exact, Approximate and Mitred SDFs (2)</h1>
+<p>It turns out that it is sometimes difficult or expensive to construct Exact SDFs.</p>
+<p>So, a distance function is permitted to underestimate the distance to the closest boundary, and the result is an Approximate SDF (aka a Distance Estimator (DE), or sometimes a Signed Distance Bound).</p>
+</div>
+<div class="slide" id="id2">
+<h1>Exact, Approximate and Mitred SDFs (2)</h1>
+<p>The simplest and cheapest implementation of a rectangle has an Approximate SDF that looks like this:</p>
+<img alt="images/rect_mitred_sdf.png" src="images/rect_mitred_sdf.png" />
+<p>The positive isocurves of this SDF are also rectangles: they correspond to the &quot;Mitred Offset&quot; operation from CAD.</p>
+<p>So I call this a Mitred SDF.</p>
+</div>
+<div class="slide" id="exact-approximate-and-mitred-sdfs-3">
+<h1>Exact, Approximate and Mitred SDFs (3)</h1>
+<p>According to John C. Hart, author of the original academic papers on SDFs,</p>
+<p>the only restriction is that an SDF cannot overestimate the distance from each point to the closest boundary.</p>
+<p>In math terms, an SDF must be Lipschitz Continuous, with a Lipshitz constant of 1.</p>
+<p>It's a continuous function which is limited in how fast it can change.</p>
+<p>For every pair of points in an SDF, the absolute value of the slope of the line connecting
+the points is not greater than 1.</p>
+<!-- * According to me, an SDF cannot have a derivative of zero at any point. -->
+<!-- For example, if an SDF is 0 for all points in the interior of the shape, -->
+<!-- that will break operations that care about the interior of a shape, -->
+<!-- such as the ``complement`` operator. -->
+</div>
+<div class="slide" id="exact-approximate-and-mitred-sdfs-4">
+<h1>Exact, Approximate and Mitred SDFs (4)</h1>
+<p>An approximate SDF does not have all of the nice properties of an exact SDF.</p>
+<ul class="simple">
+<li>Away from the boundary, the gradient (if defined) is not guaranteed to point to
+the closest boundary point.</li>
+<li>A positive isosurface is not guaranteed to be the rounded offset of the shape.</li>
+</ul>
+</div>
+<div class="slide" id="exact-approximate-and-mitred-sdfs-5">
+<h1>Exact, Approximate and Mitred SDFs (5)</h1>
+<p>A possible future direction is that shapes contain metadata which describes
+the properties of their SDF.</p>
+<p>Shortcuts which rely on certain properties can
+be enabled if the property is present.</p>
+</div>
+<div class="slide" id="sdf-history">
+<h1>SDF History</h1>
+<p>Early F-Rep systems used a simple representation:</p>
+<p>A geometry function <tt class="docutils literal">f(p)</tt> indicates whether
+the point <tt class="docutils literal">p</tt> is inside, on the boundary, or outside of the shape, by returning 3 different values
+(eg, a negative, zero or positive number).</p>
+<p>This made it easy to write geometry functions.</p>
+<p>Rendering was very expensive:
+It was done by blind sampling of points in a 3D grid (lots of function evaluations).</p>
+<p>It wasn't accurate: if a small detail fell between grid points, it was lost.</p>
+</div>
+<div class="slide" id="sdf-history-2">
+<h1>SDF History (2)</h1>
+<p>This led to a period of experimentation, searching for an F-Rep with fast, accurate rendering.</p>
+<p>SDF won over the competition because it is the simplest such F-Rep that works.</p>
+<p>It's relatively simple to define, relatively cheap to compute,
+and doesn't require the distance field to have a derivative everywhere.</p>
+</div>
+<div class="slide" id="sdf-techniques">
+<h1>SDF Techniques</h1>
+<p>SDFs contain more information than inside/boundary/outside.
+Used for rendering:</p>
+<ul class="simple">
+<li>sphere tracing (fast accurate GPU rendering)</li>
+<li>soft shadows (ambient occlusion)</li>
+<li>Phong shading (gradients &amp; normals)</li>
+<li>accurate polygonalization</li>
+<li>planting trees on the slopes of a fractal mountain</li>
+<li>fast, scaleable font rendering</li>
+</ul>
+</div>
+<div class="slide" id="sdf-techniques-2">
+<h1>SDF Techniques (2)</h1>
+<ul class="simple">
+<li>collision detection: <a class="reference external" href="https://www.youtube.com/watch?v=x_Iq2yM4FcA">https://www.youtube.com/watch?v=x_Iq2yM4FcA</a></li>
+<li>controlling a 3D printer<ul>
+<li>powder printer: XYZ raster scan, optionally with colour or material</li>
+<li>plastic printer: boundary/infill</li>
+</ul>
+</li>
+<li>controlling a CNC mill (offsetting)</li>
+</ul>
+</div>
+<div class="slide" id="the-sdf-community">
+<h1>The SDF Community</h1>
+<p>Although SDFs are sometimes tricky to write,
+there is an army of people in the open source community who are designing new SDFs.</p>
+<p>Curv benefits by using this popular F-Rep representation and sharing SDFs with the community,
+which includes:</p>
+<ul class="simple">
+<li>the demoscene: iquilezles.org, shadertoy.com, pouet.net</li>
+<li>the 3D fractal art community: fractalforums.com</li>
+</ul>
+</div>
+<div class="slide" id="sdf-applications">
+<h1>SDF Applications</h1>
+<ul class="simple">
+<li>demoscene demos: shadertoy.com</li>
+<li>3D fractal art tools: mandelbulber.com, mandelbulb.com</li>
+<li>CAD tools: ImplicitCAD.org, <a class="reference external" href="https://github.com/mkeeter/antimony">https://github.com/mkeeter/antimony</a>, <a class="reference external" href="https://docs.racket-lang.org/ruckus/index.html">https://docs.racket-lang.org/ruckus/index.html</a></li>
+<li>Video games: &quot;Dreams&quot; by Media Molecule <a class="reference external" href="https://www.youtube.com/watch?v=4j8Wp-sx5K0">https://www.youtube.com/watch?v=4j8Wp-sx5K0</a>
+(the motivation for using pure SDF is cheap boolean CSG ops for in-game modelling)</li>
+</ul>
+</div>
+<div class="slide" id="the-circle">
+<h1>The Circle</h1>
+<p>One way to construct the SDF for a shape is to start with the
+shape's implicit equation, then algebraically transform it into a function
+with the same roots, but with a Lipschitz constant of 1.</p>
+</div>
+<div class="slide" id="the-circle-2">
+<h1>The Circle (2)</h1>
+<p>Implicit equation for a circle of radius <tt class="docutils literal">r</tt>:</p>
+<pre class="literal-block">
+x^2 + y^2 = r^2
+</pre>
+</div>
+<div class="slide" id="id3">
+<h1>The Circle (2)</h1>
+<p>If we rearrange this to:</p>
+<pre class="literal-block">
+x^2 + y^2 - r^2 = 0
+</pre>
+<p>then we have an implicit function that is zero on the boundary of the circle,
+negative inside the circle, and positive outside the circle.</p>
+<p>Not an SDF:
+function value at p
+is the square of the distance from p to the origin, not the Euclidean distance.</p>
+</div>
+<div class="slide" id="the-circle-3">
+<h1>The Circle (3)</h1>
+<p>We fix this by further transforming the equation:</p>
+<pre class="literal-block">
+sqrt(x^2 + y^2) = r
+sqrt(x^2 + y^2) - r = 0
+</pre>
+<p>and now we have a proper Euclidean SDF.</p>
+</div>
+<div class="slide" id="the-circle-4">
+<h1>The Circle (4)</h1>
+<p>A Curv circle implementation:</p>
+<pre class="literal-block">
+circle r = make_shape {
+  dist(x,y,z,t) = sqrt(x^2 - y^2) - r,
+  ...
+}
+</pre>
+</div>
+<div class="slide" id="the-circle-5">
+<h1>The Circle (5)</h1>
+<p>Moral: Converting an implicit equation to an SDF requires care.</p>
+<p>Typically, you will plot the candidate distance field, look for places where
+the gradient isn't 1, and construct an inverse transformation that maps 0 to 0
+(leaving the boundary alone), but modifies the field at other points so that the
+gradient becomes 1.</p>
+</div>
+<div class="slide" id="boolean-operations">
+<h1>Boolean Operations</h1>
+<p>There are 3 primitive boolean operations on SDFs: union, intersection, and complement.</p>
+<p>(Others, like difference and symmetric_difference, can be defined in terms of the primitives.)</p>
+<p>These operations are closed over approximate SDFs. However, they map exact SDFs
+to approximate SDFs.</p>
+</div>
+<div class="slide" id="boolean-operations-union">
+<h1>Boolean Operations (Union)</h1>
+<p>The union of two shapes is the minimum of their distance fields:</p>
+<pre class="literal-block">
+union(s1,s2) = make_shape {
+  dist p = min(s1.dist p, s2.dist p),
+  ...
+}
+</pre>
+<img alt="images/union1.png" src="images/union1.png" />
+</div>
+<div class="slide" id="id4">
+<h1>Boolean Operations (Union)</h1>
+<img alt="images/union1.png" src="images/union1.png" />
+<p>This SDF is exact for any points outside of the shape, or at the boundary.</p>
+<p>But the SDF is approximate inside the shape, in this case within the region where the circle and square intersect.</p>
+</div>
+<div class="slide" id="boolean-operations-intersection">
+<h1>Boolean Operations (Intersection)</h1>
+<p>Intersection is computed using <tt class="docutils literal">max</tt>.</p>
+</div>
+<div class="slide" id="boolean-operations-complement">
+<h1>Boolean Operations (Complement)</h1>
+<p>The complement operation negates the distance field (and converts finite shapes into infinite ones).</p>
+</div>
+<div class="slide" id="the-square">
+<h1>The Square</h1>
+<p>In Curv, infinitely large shapes commonly have a simpler and cheaper representation
+than finite shapes.</p>
+<p>A lot of finite shapes are constructed by intersecting two or more infinite shapes.</p>
+<p>Most any shape with vertexes or straight line edges is probably built by intersection.</p>
+</div>
+<div class="slide" id="the-square-2">
+<h1>The Square (2)</h1>
+<p>Let's construct a square of size <tt class="docutils literal">2*r</tt>.</p>
+<p>We begin with an infinite half-plane, parallel to the Y axis,
+which extends along the X axis from -infinity to +r:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="64%" />
+<col width="36%" />
+</colgroup>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">dist(x,y) = x - r</tt></td>
+<td><img alt="square1" src="images/square1.png" /></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="slide" id="the-square-3">
+<h1>The Square (3)</h1>
+<p>Now we will reflect the above half-plane through the Y axis,
+using the <tt class="docutils literal">abs</tt> operator.</p>
+<p>The result is an infinite ribbon that runs along the Y axis,
+bounded on the X axis between -r and +r:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="68%" />
+<col width="32%" />
+</colgroup>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">dist(x,y) = abs(x) - r</tt></td>
+<td><img alt="square2" src="images/square2.png" /></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="slide" id="the-square-4">
+<h1>The Square (4)</h1>
+<p>Now we will construct a similar ribbon that runs along the X axis:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="69%" />
+<col width="31%" />
+</colgroup>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">dist2(x,y) = abs(y) - r</tt></td>
+<td><img alt="square3" src="images/square3.png" /></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="slide" id="the-square-5">
+<h1>The Square (5)</h1>
+<p>Now we intersect these two ribbons, using the <tt class="docutils literal">max</tt> operator:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="78%" />
+<col width="22%" />
+</colgroup>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">dist(x,y) = max(abs(x) - r, abs(y) - r)</tt></td>
+<td><img alt="square4" src="images/square4.png" /></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="slide" id="the-square-6">
+<h1>The Square (6)</h1>
+<p>Curv is an array language, in which all arithmetic operations are generalized
+to work on arrays.</p>
+<p>This is important for GPU compilation, since vectorized operations
+run faster.</p>
+<p>So we will &quot;vectorize&quot; the above equation:</p>
+<pre class="literal-block">
+dist(x,y) = max(abs(x,y) - r)
+</pre>
+</div>
+<div class="slide" id="the-square-7">
+<h1>The Square (7)</h1>
+<p>Here's a <tt class="docutils literal">square</tt> operator that constructs a square of size <tt class="docutils literal">d</tt>:</p>
+<pre class="literal-block">
+square d = make_shape {
+  dist(x,y,z,t) = max(abs(x,y) - d/2),
+  ...
+}
+</pre>
+</div>
+<div class="slide" id="transformations">
+<h1>Transformations</h1>
+<p>A transformation warps or transforms a shape in some way, by warping or transforming the
+coordinate system in which it is embedded.</p>
+<p>The affine transformations are the most familiar
+(translate, rotate, scale, etc)</p>
+<p>But any coordinate transformation is possible (twist, taper, bend).</p>
+</div>
+<div class="slide" id="transformations-2">
+<h1>Transformations (2)</h1>
+<p>Translation:</p>
+<pre class="literal-block">
+translate (dx,dy,dz) S = make_shape {
+  dist(x,y,z,t) = S.dist(x-dx,y-dy,z-dz,t),
+  ...
+}
+</pre>
+<p>To apply an affine transformation to a shape S, the transformation's distance function <tt class="docutils literal">dist(p)</tt>
+performs the inverse of the transformation to the argument p before passing it to <tt class="docutils literal">S.dist</tt>.</p>
+</div>
+<div class="slide" id="transformations-3">
+<h1>Transformations (3)</h1>
+<p>For distance-preserving or rigid transformations (translate, rotate and reflect), that's all you need.</p>
+<p>Otherwise, for non-rigid transformations (like scale, shear or twist),
+the resulting distance field will be messed up, and needs to be fixed.</p>
+</div>
+<div class="slide" id="transformations-4">
+<h1>Transformations (4)</h1>
+<p>For isotropic scaling, fixing the distance field is easy:</p>
+<pre class="literal-block">
+isoscale k S = make_shape {
+  dist(x,y,z,t) = S.dist(x/k, y/k, z/k, t) * k,
+  ...
+}
+</pre>
+</div>
+<div class="slide" id="transformations-5">
+<h1>Transformations (5)</h1>
+<p>For anisotropic scaling, fixing the distance field requires an approximation:</p>
+<pre class="literal-block">
+scale(kx, ky, kz) S = make_shape {
+  dist(x,y,z,t) = S.dist(x/kx, y/ky, z/kz, t) * min(kx, ky, kz),
+  ...
+}
+</pre>
+</div>
+<div class="slide" id="transformations-6">
+<h1>Transformations (6)</h1>
+<p>Fixing the distance field can sometimes be tricky.</p>
+<p>If you can put an upper bound D on the derivative of the broken distance field,
+then divide the distance field by D and that's probably good enough.</p>
+<p>If there's no upper bound, you need a more complicated fix.</p>
+</div>
+<div class="slide" id="symmetry-and-space-folding">
+<h1>Symmetry and Space Folding</h1>
+<p>The <tt class="docutils literal">union</tt> operator is slow.</p>
+<p>The cost of a union is equal to slightly more than the sum of the
+costs of the argument shapes. So if you have a shape that takes 1ms to render,
+and you union together 1000 copies of this shape, well now it takes 1s to render.</p>
+<p>Fortunately, Curv has repetition operators which union together an arbitrary
+number of copies of a shape together, or even an infinite number of copies,
+in constant time and space.</p>
+</div>
+<div class="slide" id="symmetry-and-space-folding-2">
+<h1>Symmetry and Space Folding (2)</h1>
+<p>Each repetition operator corresponds to a different mathematical symmetry.
+The most basic ones are:</p>
+<ul class="simple">
+<li>Mirror symmetry: Reflect a shape through a plane, giving two copies
+(the original shape and the mirror image).</li>
+<li>Translational symmetry: Partition space into multiple cells,
+like a linear array or grid pattern, causing a copy of the shape
+to appear in each cell.</li>
+<li>Rotational symmetry: Partition space into radial pie slices,
+causing a copy of the shape to appear in each slice.</li>
+</ul>
+</div>
+<div class="slide" id="symmetry-and-space-folding-3">
+<h1>Symmetry and Space Folding (3)</h1>
+<p>Here's an example of translational repetition:</p>
+<pre class="literal-block">
+sphere 1 &gt;&gt; repeat_xy (1,1)
+</pre>
+<img alt="images/sphere_repeat.png" src="images/sphere_repeat.png" />
+</div>
+<div class="slide" id="symmetry-and-space-folding-4">
+<h1>Symmetry and Space Folding (4)</h1>
+<p>The <tt class="docutils literal">repeat_xy</tt> operator is a coordinate transformation
+that uses the modulus operator
+to map coordinates in each cell onto the cell that is centered at the origin.</p>
+<p>This has been called &quot;space folding&quot;:</p>
+<pre class="literal-block">
+repeat_xy r shape = make_shape {
+  dist(x,y,z,t) : shape.dist(
+              mod(x + r[X], 2*r[X]) - r[X],
+              mod(y + r[Y], 2*r[Y]) - r[Y],
+              z, t),
+  ...
+}
+</pre>
+</div>
+<div class="slide" id="symmetry-and-space-folding-5">
+<h1>Symmetry and Space Folding (5)</h1>
+<p>The use of symmetry to encode repetition is a key feature of Curv programming.
+This allows you to generate huge amounts of complexity very cheaply.</p>
+</div>
+<div class="slide" id="time-and-animation">
+<h1>Time and Animation</h1>
+<p>In Curv, time is the fourth dimension.
+Time is an extra parameter to distance functions and colour field functions.
+An animation is a shape or colour field that varies in time.</p>
+<p>Time is represented by a floating point number, measured in units of seconds,
+like in ShaderToy. The zero point is arbitrary, and is not tied to clock time.
+Eg, for a movie, the zero point is the beginning of the movie.</p>
+<p>Animation is always &quot;turned on&quot;. Individual shapes and colour fields can be
+animated, in a modular way, without complicating their ability to be
+included in larger assemblies. Like putting an animated GIF into a web page.</p>
+</div>
+<div class="slide" id="time-and-animation-2">
+<h1>Time and Animation (2)</h1>
+<p>Time is relative. Since time is a coordinate, it can be transformed.
+You can apply temporal transformations to speed up or slow down the passage
+of time within a shape, loop over a specified time range, concatenate
+a sequence of fixed length animations, etc.</p>
+<p>You can define transformations that mix up time and space:</p>
+<ul class="simple">
+<li>create motion trails from an animation.</li>
+<li>motion blur: <a class="reference external" href="https://www.shadertoy.com/view/MdB3Dw">https://www.shadertoy.com/view/MdB3Dw</a></li>
+<li>transform a 3D static object into a 2D animation, or vice versa</li>
+</ul>
+</div>
+<div class="slide" id="time-and-animation-3">
+<h1>Time and Animation (3)</h1>
+<p>Since time is a coordinate, animated 2D shapes are actually static objects
+in 3D space-time, and animated 3D shapes are static objects in 4D space-time.</p>
+<p>I intend to include time in the bounding box,
+so we can represent fixed duration animations with a start and end time.</p>
+<p>I considered making time a global variable, like in OpenSCAD or Newtonian physics, but this design is more awesome.</p>
+</div>
+<div class="slide" id="time-and-animation-4">
+<h1>Time and Animation (4)</h1>
+<p>A future goal is to import and export animated GIFs and video files.</p>
+</div>
+<div class="slide" id="morphing">
+<h1>Morphing</h1>
+<p>Morphing from one shape to another is easy:
+linear interpolation between two distance fields.</p>
+<img alt="images/morph.png" src="images/morph.png" />
+<!-- Convolution -->
+<!-- =========== -->
+<!-- In Photoshop, there are image processing filters that blur an image. -->
+<!-- In the mathematics of image processing, this is called convolution. -->
+<!-- (The inverse operation, sharpening an image, is deconvolution.) -->
+<!-- Convolving a 3D shape means rounding or bevelling exterior corners and edges, -->
+<!-- and filleting or chamfering interior corners. -->
+<!-- Convolution is a binary operator that takes two functions, -->
+<!-- the shape to be blurred, and a "convolution kernel". -->
+<!-- There are lots of convolution kernels, allowing for a variety of effects. -->
+<!-- I'd love to have a convolution operator. -->
+<!-- There are lots of academic papers on convolution as an F-Rep operation. -->
+<!-- But I have no code for an SDF system yet. -->
+<!-- If you use numerical methods then it is (allegedly) slow, so many people -->
+<!-- use symbolic algebra to convolve the F-Rep equation of a shape, which would -->
+<!-- have to be done using a tool like Mathematica, outside of Curv. -->
+<!-- The Curv geometry compiler already does a limited amount of symbolic algebra -->
+<!-- to compile Curv code into efficient GPU code, so this suggests a future direction. -->
+<!-- http://www.sciencedirect.com/science/article/pii/S0747717111002197 -->
+</div>
+<div class="slide" id="blending">
+<h1>Blending</h1>
+<p>Blends smoothly join nearby objects.
+Here are two circles, combined using different blending factors:</p>
+<img alt="images/blend.png" src="images/blend.png" />
+</div>
+<div class="slide" id="blending-2">
+<h1>Blending (2)</h1>
+<p>One application is filleting:</p>
+<pre class="literal-block">
+smooth_union .3 (cube 1, cylinder(.5,2))
+</pre>
+<img alt="images/fillet.png" src="images/fillet.png" />
+</div>
+<div class="slide" id="blending-3">
+<h1>Blending (3)</h1>
+<p>Another application is &quot;Skeleton Based Implicit Modelling&quot;,
+as illustrated by this image from the &quot;Implicit Seafood&quot; web site:</p>
+<img alt="images/seahorse.gif" src="images/seahorse.gif" />
+</div>
+<div class="slide" id="generalized-blends">
+<h1>Generalized Blends</h1>
+<p>Blending operators are like generalized unions,
+but the same code (which I call a &quot;blending kernel&quot;)
+can also be used to define generalized intersections.</p>
+<p>A blended union takes two shapes, plus a &quot;blending kernel&quot;,
+adding a &quot;fillet&quot; to interior corners created by the union.</p>
+<p>A blended intersction takes two shapes plus a blending kernel,
+rounding away material from exterior corners created by the intersection.</p>
+<p>There is also blended difference.</p>
+</div>
+<div class="slide" id="generalized-blends-2">
+<h1>Generalized Blends (2)</h1>
+<p>Here are some blending kernels from <tt class="docutils literal">MERCURY.sexy</tt>, a demoscene group:</p>
+<dl class="docutils">
+<dt>Round:</dt>
+<dd><img alt="uRound" src="images/fOpUnionRound.png" /> <img alt="iRound" src="images/fOpIntersectionRound.png" /></dd>
+</dl>
+</div>
+<div class="slide" id="generalized-blends-3">
+<h1>Generalized Blends (3)</h1>
+<dl class="docutils">
+<dt>Chamfer:</dt>
+<dd><img alt="uChamfer" src="images/fOpUnionChamfer.png" /> <img alt="iChamfer" src="images/fOpIntersectionChamfer.png" /></dd>
+</dl>
+</div>
+<div class="slide" id="generalized-blends-4">
+<h1>Generalized Blends (4)</h1>
+<dl class="docutils">
+<dt>Stairs:</dt>
+<dd><img alt="uStairs" src="images/fOpUnionStairs.png" /> <img alt="iStairs" src="images/fOpIntersectionStairs.png" /></dd>
+</dl>
+</div>
+<div class="slide" id="generalized-blends-5">
+<h1>Generalized Blends (5)</h1>
+<dl class="docutils">
+<dt>Columns:</dt>
+<dd><img alt="uColumns" src="images/fOpUnionColumns.png" /> <img alt="iColumns" src="images/fOpIntersectionColumns.png" /></dd>
+</dl>
+<p>As you see, you can program a wide range of &quot;decorative moulding&quot; patterns.</p>
+<!-- How do you code a blending kernel... ? -->
+<!-- A blending kernel is a pair of related functions, ``fillet`` and ``round``, -->
+<!-- that map two distance values ``d1`` and ``d2`` onto a distance value. -->
+<!-- ``fillet`` is used for blended union, replacing ``min`` in the standard implementation of ``union``. -->
+<!-- The ``fillet`` function adds additional material to the shape being constructed, in the region above the -->
+<!-- point or edge where two unioned shapes come together. -->
+<!-- If either ``d1`` or ``d2`` is greater than the fillet radius, -->
+<!-- then ``fillet`` defaults to the behaviour of ``min``. -->
+<!-- Otherwise, if ``d1>0 && d2>0``, then the current point is inside the fillet region. -->
+<!-- replacing ``min`` and ``max`` in the standard implementation of ``union`` and ``intersection``. -->
+<!-- Embossing and Engraving -->
+<!-- ======================= -->
+<!-- Sweep -->
+<!-- ===== -->
+<!-- * extrude and loft -->
+<!-- * perimeter_extrude (sweep 2D shape along 2D implicit curve -> 3D shape) -->
+<!-- * isosurface (sweep circle along 2D curve, sphere along 3D curve or surface) -->
+<!-- * constructing implicit curves and surfaces -->
+<!-- * shell -->
+<!-- * MERCURY: intersection->curve -->
+<!-- * sweeping a parametric curve or surface: more expensive -->
+<!-- * space warp operators/fancy blending operators can be an alternative to sweeping -->
+<!-- Procedural Modelling Techniques -->
+<!-- =============================== -->
+<!-- * Hypertexture: engraving/perturbing the surface of a solid. An implicit modelling technique. -->
+<!-- * Grammars, L-Systems -->
+<!-- * Use a context free, generative grammar to generate a complex shape, like a tree, leaf or city. -->
+<!-- Or fractals. -->
+<!-- * during the 1990's: use L-System to generate a skeleton, then flesh it out -->
+<!-- using F-Rep. Popular for modelling living things. See "algorithmic botany" -->
+<!-- and "implicit seafood" web sites. -->
+<!-- * idea: use a grammar to generate a tree of space folding operations: more complexity with fewer operations. -->
+</div>
+<div class="slide" id="fractals">
+<h1>Fractals</h1>
+<p>SDFs and the Sphere Tracing algorithm were first described by inventor John C Hart in 1989
+as an efficient algorithm for ray tracing (and thus visualizing) 3D fractals.
+Today it is still the best technique.</p>
+<p>For large or deeply iterated 3D fractals,
+SDFs still win over other representations like triangle meshes or voxels:
+they require too much memory,
+and performing CSG operations like union or intersection on these
+bulky representations is too time consuming.</p>
+<p>For the 3D fractal art community, SDFs are the technology of choice,
+being the basis for popular tools like MandelBulber and MandelBulb3D.</p>
+</div>
+<div class="slide" id="deep-zoom-into-a-mandelbox-fractal-mandelbulb3d">
+<h1>deep zoom into a MandelBox fractal (MandelBulb3D)</h1>
+<img alt="images/holy_box_fractal.jpg" src="images/holy_box_fractal.jpg" />
+</div>
+<div class="slide" id="fractals-3">
+<h1>Fractals (3)</h1>
+<p>Because Curv uses the same internal representation (SDFs),
+the same model should be portable to Curv.</p>
+<p><a class="reference external" href="https://www.youtube.com/watch?v=OW5RnrlTeow">https://www.youtube.com/watch?v=OW5RnrlTeow</a></p>
+</div>
+<div class="slide" id="fractal-noise">
+<h1>Fractal Noise</h1>
+<p>A noise function maps each point in 2D or 3D space onto a pseudo-random noise value in the range [0...1].</p>
+<p>Fractal noise is a popular noise function, good for simulating natural phenomena
+like smoke, flames, clouds, mountains, and solid textures like marble or wood.</p>
+</div>
+<div class="slide" id="fractal-noise-2">
+<h1>Fractal Noise (2)</h1>
+<p>Here's a 3D solid texture I hacked together in Curv using fractal noise:</p>
+<img alt="images/smoke3.png" src="images/smoke3.png" />
+</div>
+<div class="slide" id="fractal-noise-3">
+<h1>Fractal Noise (3)</h1>
+<ul>
+<li><p class="first">White noise: Each (x,y) or (x,y,z) coordinate
+is mapped to a uniformly distributed pseudo-random number
+using a hash function.</p>
+<p><img alt="white_noise" src="images/white_noise.jpg" /></p>
+</li>
+</ul>
+</div>
+<div class="slide" id="fractal-noise-4">
+<h1>Fractal Noise (4)</h1>
+<ul>
+<li><p class="first">Value Noise: Random values are generated at lattice points.
+The noise value at a point is interpolated from nearby lattice points.</p>
+<p><img alt="value_noise" src="images/value_noise.jpg" /></p>
+</li>
+</ul>
+</div>
+<div class="slide" id="fractal-noise-5">
+<h1>Fractal Noise (5)</h1>
+<ul>
+<li><p class="first">Gradient noise: Random gradients are generated at lattice points. The gradient of a point
+is interpolated from the nearby lattice points. The gradient is converted to a noise value.
+Smoother than value noise, with fewer grid artifacts.
+(Examples: Perlin noise, Simplex noise.)</p>
+<p><img alt="gradient_noise" src="images/gradient_noise.jpg" /></p>
+</li>
+</ul>
+</div>
+<div class="slide" id="fractal-noise-6">
+<h1>Fractal Noise (6)</h1>
+<ul>
+<li><p class="first">Fractal noise (Fractal Brownian Motion):
+Gradient noise is generated at a series of higher frequencies (smaller lattice spacings),
+and added together. Higher frequencies are attenuated.</p>
+<p><img alt="fractal_noise" src="images/fractal_noise.jpg" /></p>
+</li>
+</ul>
+<p>Many more noise functions have been invented.</p>
+</div>
+<div class="slide" id="sphere-tracing">
+<h1>Sphere Tracing</h1>
+<p>Sphere Tracing (sometimes called &quot;ray marching&quot;) is the variant of ray tracing used to render SDFs on a graphics display.</p>
+<p>It's efficient enough to support real time animation of an SDF using a GPU.</p>
+<p>Sphere Tracing and the SDF representation were invented together, by John C Hart,
+to solve the problem of fast, flexible, accurate ray tracing for Function Representation.</p>
+</div>
+<div class="slide" id="sphere-tracing-2">
+<h1>Sphere Tracing (2)</h1>
+<ol class="arabic simple" start="0">
+<li>Construct a single SDF representing the entire scene,
+eg by unioning together multiple components.</li>
+<li>For each pixel on the viewport, cast a ray of sight into the scene.
+Using a GPU, multiple rays are cast in parallel.</li>
+<li>The Sphere Tracing algorithm is used to advance the ray through the SDF
+until the ray hits a surface boundary.
+The SDF is sampled at the initial point, giving a value D. This is a distance estimate:
+the surface is at least D units away, maybe more. Advance the ray by D units,
+then iterate. Once D is sufficiently close to zero, we have reached the surface.</li>
+</ol>
+</div>
+<div class="slide" id="sphere-tracing-3">
+<h1>Sphere Tracing (3)</h1>
+<img alt="images/sphere_tracing.jpg" src="images/sphere_tracing.jpg" />
+</div>
+<div class="slide" id="sphere-tracing-4">
+<h1>Sphere Tracing (4)</h1>
+<p>Once the ray reaches the surface, we colour &amp; light the pixel.</p>
+<ul class="simple">
+<li>Each shape has a <tt class="docutils literal">colour</tt> function that computes the colour at a given point.</li>
+<li>By taking 3 extra samples of the SDF around the surface point, in the pattern of a right tetrahedron,
+we compute the gradient of the distance field at that point, which gives us a surface normal,
+which is used for Phong shading.</li>
+<li>&quot;Ambient Occlusion&quot; is a cheap method for simulating shadows in real time without the expense of recursive ray-tracing,
+by leveraging the information stored in the SDF.</li>
+</ul>
+</div>
+<div class="slide" id="hierarchical-sdfs">
+<h1>Hierarchical SDFs</h1>
+<p>Naive: cost (N-ary union) = sum of the costs of the N arguments. Too expensive for large N.</p>
+<p>Smart: partition space into disjoint subspaces. Maybe use multiple levels or a tree structure.
+During SDF evaluation, first determine what subspace you are in (eg by walking the tree),
+then evaluate the SDF for that subspace.</p>
+<p>Can be done manually, using F-Rep API, but nicer to do it automatically. Eg,</p>
+<p>Dreams by Media Molecule <a class="reference external" href="https://www.youtube.com/watch?v=4j8Wp-sx5K0">https://www.youtube.com/watch?v=4j8Wp-sx5K0</a></p>
+</div>
+<div class="slide" id="shape-values-in-curv">
+<h1>Shape Values in Curv</h1>
+<p>In Curv, a shape value may be 2D, 3D, or both.</p>
+<p>The dimensionality is used to choose whether the 2D or 3D viewer is used,
+and to determine if the shape is eligible for export to various graphic file formats.</p>
+<p>There is a single distance function used by both the 2D and 3D cases.</p>
+</div>
+<div class="slide" id="shape-values-in-curv-2">
+<h1>Shape Values in Curv (2)</h1>
+<p>A shape value is represented by a record, with fields:</p>
+<ul class="simple">
+<li><tt class="docutils literal">dist</tt> is a function mapping <tt class="docutils literal">(x,y,z,t)</tt> onto a signed distance value.</li>
+<li><tt class="docutils literal">colour</tt> is a function mapping <tt class="docutils literal">(x,y,z,t)</tt> onto a colour (an RGB triple).</li>
+<li><tt class="docutils literal">bbox</tt> is an axis aligned bounding box, since this is expensive to compute from the distance function.</li>
+<li><tt class="docutils literal">is_2d</tt>: a boolean</li>
+<li><tt class="docutils literal">is_3d</tt>: a boolean</li>
+</ul>
+</div>
+<div class="slide" id="shape-values-in-curv-3">
+<h1>Shape Values in Curv (3)</h1>
+<p>In the future, I'd like to support multiple shape subclasses,
+with specialized CSG operations that work only on shape subtypes.</p>
+<p>For example, I'd like to implement the Conway polyhedron operators
+(which transform one polyhedron into another). Polyhedrons will contain
+vertex/edge/face information.</p>
+</div>
+<div class="slide" id="compiling-curv-to-gpu-code">
+<h1>Compiling Curv to GPU Code</h1>
+<p>The Geometry Compiler translates a shape to GPU code for rendering that shape.</p>
+<p>The shape's distance and colour functions
+are compiled into a fragment shader or compute kernel.</p>
+<p>GPU compute kernels are written in a primitive
+subset of C which lacks recursive functions and memory allocation,
+and has limited support for pointers and global variables.
+If I target WebGL, there is only limited support for iteration.</p>
+</div>
+<div class="slide" id="compiling-curv-to-gpu-code-2">
+<h1>Compiling Curv to GPU Code (2)</h1>
+<p>Here's how GPU code generation works:</p>
+<ul class="simple">
+<li>Evaluate a Curv program, producing a shape value.</li>
+<li>Extract the <tt class="docutils literal">dist</tt> and <tt class="docutils literal">colour</tt> functions, which are closures.</li>
+<li>Partially evaluate the body of the closure,
+treating non-local variables captured by the closure as compile time constants,
+folding constant subexpressions, and optimizing.</li>
+<li>Function calls are inline expanded to eliminate recursion and polymorphism,
+and enable more partial evaluation.</li>
+</ul>
+</div>
+<div class="slide" id="compiling-curv-to-gpu-code-3">
+<h1>Compiling Curv to GPU Code (3)</h1>
+<ul class="simple">
+<li>The resulting transformed code is restricted to a statically typed
+subset of Curv called &quot;GL&quot;, which can be compiled into GPU code.</li>
+<li>A distance function can use operations and data types that are not part of GL,
+as long as those subexpressions are partially evaluated into something that
+is supported.</li>
+</ul>
+</div>
+<div class="slide" id="compiling-curv-to-gpu-code-4">
+<h1>Compiling Curv to GPU Code (4)</h1>
+<p>As I extend the F-Rep API to make Curv faster and more powerful,
+the GL subset of Curv is growing to embed an increasingly larger subset of the GLSL shader language.</p>
+</div>
+</div>
+</body>
+</html>
