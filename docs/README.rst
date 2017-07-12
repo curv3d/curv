@@ -116,8 +116,9 @@ of the resulting shape. The primary interface is the ``make_shape`` function,
 but there are also low level library functions that work on distance fields,
 and low level language features used to generate good GPU code.
 
-This interface needs a ton of work, and will be the last part of the language to be
-properly documented. You can see the low level interface at work in the
+See `<Theory.rst>`_ for a good introduction.
+
+This interface is unstable and incompletely documented. You can see the low level interface at work in the
 implementation of the high level geometry interface: see `<../lib/std.curv>`_.
 
 To understand the theory behind the low level interface,
