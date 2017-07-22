@@ -151,12 +151,31 @@ I'm updating the design and updating this document in parallel.
 
 ``extrude h shape``
 
-``rotate_extrude shape``
-
-``perimeter_extrude perimeter cross_section``
-
-``cylinder_extrude d d2``
-  TODO
+``pancake d shape``
 
 ``loft h shape1 shape2``
   TODO
+
+``rotate_extrude shape``
+  The half-plane defined by ``x >= 0`` is rotated 90°, mapping the +Y axis to the +Z axis.
+  Then this half-plane is rotated around the Z axis, creating a solid of revolution.
+
+``cylinder_extrude (d, d2) shape``
+  An infinite strip of 2D space running along the Y axis
+  and bounded by ``-d/2 <= x <= d/2``
+  is wrapped into an infinite cylinder of diameter ``d2``, running along the Z axis
+  and extruded towards the Z axis.
+  TODO
+
+``stereographic_extrude shape``
+  The entire 2D plane is mapped onto the surface of the unit sphere
+  using a stereographic projection,
+  and extruded down to the origin.
+  TODO
+
+Advanced CSG Operations
+=======================
+These are expert level CSG operations that break the abstraction of a simple world of geometric shapes,
+and expose the underlying representation of shapes as Signed Distance Fields.
+
+``perimeter_extrude perimeter cross_section``
