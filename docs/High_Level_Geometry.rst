@@ -7,11 +7,12 @@ There is a set of standard shape constructors,
 plus functions for transforming and combining shapes to make new shapes.
 
 Every shape is marked as being 2-dimensional, 3-dimensional, or both.
+2D shapes are embedded in the XY plane.
 (The only standard shapes that are both are ``everything`` and ``nothing``.)
 
 A shape can be infinite. Many shape constructors accept ``inf`` as a dimension argument.
 
-A 2D shape with no area, or a 2D shape with no volume, is called degenerate.
+A 2D shape with no area, or a 3D shape with no volume, is called degenerate.
 Examples are geometric points, line segments or curves, and in 3D, surfaces with 0 thickness.
 
 Points and curves are invisible in the preview window.
@@ -106,7 +107,8 @@ I'm updating the design and updating this document in parallel.
 
 ``prism (n, d, h)``
   Construct a regular right prism, centred on the origin, of height ``h``.
-  The base is a regular polyhedron with ``n`` sides, whose inscribed circle has diameter ``d``.
+  The base is a regular polyhedron with ``n`` sides, whose inscribed circle has diameter ``d``,
+  parallel to the XY plane.
 
 ``pyramid (n, d, h)``
   Construct a regular right pyramid.
@@ -140,5 +142,21 @@ I'm updating the design and updating this document in parallel.
   whose face is distance ``d`` from the origin.
   
 ``half_space (p1, p2, p3)``
-  A half-space whose face passes through points p1, p2, p3.
+  A half-space whose face passes through points p1, p2, p3, which are not colinear.
+  The normal vector is obtained from the points via the right-hand rule.
+  TODO
+
+2D -> 3D Transformations
+========================
+
+``extrude h shape``
+
+``rotate_extrude shape``
+
+``perimeter_extrude perimeter cross_section``
+
+``cylinder_extrude d d2``
+  TODO
+
+``loft h shape1 shape2``
   TODO
