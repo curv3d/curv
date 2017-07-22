@@ -26,9 +26,23 @@ which you change using the ``colour`` function.
 TODO: This API is *under construction*.
 I'm updating the design and updating this document in parallel.
 
-Polygons
-========
-``regular_polygon(n, d)``
+2D Shapes
+=========
+``circle d``
+  Construct a circle of diameter ``d``, centred on the origin.
+
+``ellipse (dx, dy)``
+  Construct an axis-aligned ellipse, centred on the origin,
+  with X-diameter ``dx`` and Y-diameter ``dy``.
+
+``square d``
+  Construct an axis-aligned square of width ``d``, centred on the origin.
+
+``rect (dx, dy)``
+  Construct an axis-aligned rectangle of width ``dx`` and height ``dy``,
+  centred on the origin.
+
+``regular_polygon (n, d)``
   Construct a regular polygon, centred on the origin,
   with ``n`` sides, whose inscribed circle has diameter ``d``.
   Cost: constant time and space, regardless of ``n``.
@@ -39,7 +53,16 @@ Polygons
 
 .. |pentagon| image:: images/pentagon.png
 
-TODO: Define a general ``polygon`` primitive.
+``convex_polygon vertices``
+  The vertex list is in counter-clockwise order.
 
-``rect(dx, dy)``
-  Construct a rectangle.
+``polygon vertices``
+  TODO
+
+``half_plane (d, n)``
+  A half plane with normal vector ``n``,
+  whose edge is distance ``d`` from the origin.
+  
+``half_plane (p1, p2)``
+  A half-plane whose edge passes through points p1 and p2.
+  TODO
