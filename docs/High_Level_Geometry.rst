@@ -70,3 +70,75 @@ I'm updating the design and updating this document in parallel.
 ``half_plane (p1, p2)``
   A half-plane whose edge passes through points p1 and p2.
   TODO
+
+``text ???``
+  Draw text. TODO
+
+3D Shapes
+=========
+``sphere d``
+  Construct a circle of diameter ``d``, centred on the origin.
+
+``ellipsoid (dx, dy, dz)``
+  Construct an axis-aligned ellipsoid, centred on the origin,
+  with width ``dx``, depth ``dy`` and height ``dz``.
+  TODO
+
+``cylinder (d, h)``
+  Construct a cylinder, centered on the origin, whose axis of rotation is the Z axis.
+  Diameter is ``d`` and height is ``h``.
+
+``cone (d, h)``
+  Construct a cone.
+  The base (of diameter ``d``) is centered on the origin.
+  The apex points up, is above the origin at height ``h``.
+  Axis of rotation is the Z axis.
+
+``torus (d1, d2)``
+  Construct a torus, centred on the origin, axis of rotation is Z axis.
+  Major diameter is ``d1`` (center of tube to centre of tube, crossing the origin).
+  Minor diameter is ``d2`` (diameter of the tube).
+  Total width of shape is ``d1+d2``.
+
+``box (dx, dy, dz)``
+  Construct an axis-aligned cuboid of width ``dx``, depth ``dy`` and height ``dz``,
+  centred on the origin.
+
+``prism (n, d, h)``
+  Construct a regular right prism, centred on the origin, of height ``h``.
+  The base is a regular polyhedron with ``n`` sides, whose inscribed circle has diameter ``d``.
+
+``pyramid (n, d, h)``
+  Construct a regular right pyramid.
+  The base is a regular polyhedron with ``n`` sides, whose inscribed circle has diameter ``d``.
+  The base is embedded in the XY plane and centred on the origin.
+  The apex is above the origin at height ``h``.
+  TODO
+
+``tetrahedron d``
+  Construct a regular tetrahedron, centred on the origin.
+  Diameter of inscribed sphere is ``d``.
+
+``cube d``
+  Construct an axis aligned cube (regular hexahedron), centred on the origin.
+  Diameter of inscribed sphere (aka height of cube) is ``d``.
+
+``octahedron d``
+  Construct a regular octahedron, centred on the origin.
+  Diameter of inscribed sphere is ``d``.
+
+``dodecahedron d``
+  Construct a regular dodecahedron, centred on the origin.
+  Diameter of inscribed sphere is ``d``.
+
+``icosahedron d``
+  Construct a regular icosahedron, centred on the origin.
+  Diameter of inscribed sphere is ``d``.
+
+``half_space (d, n)``
+  A half-space with normal vector ``n``,
+  whose face is distance ``d`` from the origin.
+  
+``half_space (p1, p2, p3)``
+  A half-space whose face passes through points p1, p2, p3.
+  TODO
