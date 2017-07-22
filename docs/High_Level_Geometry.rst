@@ -33,7 +33,8 @@ I'm updating the design and updating this document in parallel.
 
 ``ellipse (dx, dy)``
   Construct an axis-aligned ellipse, centred on the origin,
-  with X-diameter ``dx`` and Y-diameter ``dy``.
+  with width ``dx`` and height ``dy``.
+  TODO
 
 ``square d``
   Construct an axis-aligned square of width ``d``, centred on the origin.
@@ -46,15 +47,18 @@ I'm updating the design and updating this document in parallel.
   Construct a regular polygon, centred on the origin,
   with ``n`` sides, whose inscribed circle has diameter ``d``.
   Cost: constant time and space, regardless of ``n``.
-  
+
+..
   Example: ``regular_polygon(5,1)``
-  
+
+..
   |pentagon|
 
 .. |pentagon| image:: images/pentagon.png
 
 ``convex_polygon vertices``
   The vertex list is in counter-clockwise order.
+  TODO
 
 ``polygon vertices``
   TODO
