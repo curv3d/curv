@@ -38,7 +38,7 @@ So be it.
 
 The debate over Ubuntu bundling ZFS demonstrates that the real situation of
 licence incompatibility is less dire than Richard Stallman would have us
-believe. In practice, Ubuntu ZFS suggests that it's probably safe for TeaCAD
+believe. In practice, Ubuntu ZFS suggests that it's probably safe for Curv
 to mix any collection of open source geometry libraries together, even though
 they are theoretically incompatible with each other. Using Boost reduces this
 risk for any code I write, and for the rest, we'll see how the licencing

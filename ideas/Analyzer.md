@@ -81,7 +81,7 @@ as in 'x+y'?
  1. I could create a distinct subclass of Expression for each built-in operator.
     Eg, Binary_Plus_Expression.
     * So how is sin(x) represented, and do I use different representations
-      based on syntax? One difference is that 'sin' is a builtin in TeaCAD,
+      based on syntax? One difference is that 'sin' is a builtin in Curv,
       so I need a 'sin' Value and 'sin' Bindable anyway, whereas I've made no
       commitment that there is a '+' function in the builtin namespace.
  2. General purpose function application node, with a function and a

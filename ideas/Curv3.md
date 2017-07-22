@@ -29,7 +29,7 @@ sphere(5);  // a customized sphere
 A distance function is translated into high performance code,
 as an unboxed, strongly typed function that takes a Vec3 argument
 and returns a Num. For user-defined distance functions, only a subset
-of TeaCAD is supported, and all subexpressions have a compile time
+of Curv is supported, and all subexpressions have a compile time
 determined type chosed from a small set: Num, Vec3, Bool, maybe others?
 
 There's an API for translating distance functions into GLSL.
@@ -44,7 +44,7 @@ There's an API for translating distance functions into GLSL.
 * Build a C++ API for building CSG trees that render as GLSL shaders
   in the GL view window.
 * Define a Curv Shape3D builtin type, define some builtins that return shapes,
-  alter TeaCAD to display shapes in a GL window.
+  alter Curv to display shapes in a GL window.
 
 ## Compiling Curv into GLSL
 To start with, 'dist' will take a vec3 parameter, and the body will compute

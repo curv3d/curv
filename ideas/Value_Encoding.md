@@ -72,7 +72,7 @@ subtypes of Sequence, or of String being just a List of Char.
 Eg, `[for(c=str)c]` should return `str`, but doesn't.
 How important is it to support the writing of generic algorithms over lists
 and strings that don't depend on performing a type check and using conditional
-logic? Not too important. String processing is not important in TeaCAD.
+logic? Not too important. String processing is not important in Curv.
 
 `str@i` is O(N) unfortunately.
 So is `len(str)` unless the # of characters is stored.
@@ -217,7 +217,7 @@ How do these thunks work with the ref-counting/no-cycles restriction?
   we won't create a thunk if we can't.
 * Does `ones = cons(1, ones)` work? Yes.
   In Haskell, that would evaluate to a cyclic list, the most efficient result.
-  In TeaCAD, with reference counting, the best we can do is the following
+  In Curv, with reference counting, the best we can do is the following
   sequence of evaluations: cons(1,thunk) -> cons(1,cons(1,thunk)) -> ...
   The thunk is a closure C which returns cons(1,C) when evaluated.
   The thunk C doesn't contain cyclic references.
@@ -442,7 +442,7 @@ A closure is represented by a (environment,rfunction) pair.
 * An rfunction is a static function with an extra argument,
   the environment pointer.
 
-I expect TeaCAD will have 3 function-like value types.
+I expect Curv will have 3 function-like value types.
 * static function
 * closure
 * parameterized object

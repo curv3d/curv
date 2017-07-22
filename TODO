@@ -9,6 +9,9 @@ What remains for MVP?
   evaluate speed of this approach.
 
 -------------------------
+BUG: Can't rotate an infinite object. I get a numeric exception for inf-inf
+when computing the bounding box.
+
 BUG: bad Web GLSL (testing mandelbrot in shadertoy.com in Chrome on macOS):
   float r1 = 1.0/0.0;
   -- Divide by zero during constant folding
@@ -312,7 +315,10 @@ Linear algebra:
   dom(a) = [0..len(a)-1];
 
 Vectorized boolean operations:
-* Vectorized relations are <' <=' >' >=' ==' !='. Or, <* <=* >* >=* ==* !=*.
+* Vectorized relations are:
+  * <' <=' >' >=' ==' !='
+  * less, less_or_equal, greater, greater_or_equal, equal, not_equal
+  * less, greater, equal, not_less, not_greater, not_equal
 * `not` is vectorized version of `!`.
 * `all` and `any` are vectorized boolean monoids for && and ||.
   * Name is consistent with R,Julia,Python,Matlab.

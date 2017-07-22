@@ -91,7 +91,7 @@ A statement is:
   definitions, then processing the first include statement and concatenating
   those fields (they will override definitions from the first phase),
   then processing the second include, and so on.
-* In the initial TeaCAD implementation, we may restrict `x` to be only
+* In the initial Curv implementation, we may restrict `x` to be only
   a list, or to be only a simple object (no dependencies or parameters).
 
 The representation is a slot vector and a dictionary.
@@ -151,7 +151,7 @@ semantics of object concatenation. `concat[base,ext]`:
   is concat[elements(base), elements(ext)].
 * `{}` is an identity element for object concatenation.
 
-In the initial TeaCAD implementation, object concatenation will
+In the initial Curv implementation, object concatenation will
 always produce a simple object. Possibly we abort if argument object has
 dependencies and/or parameters? (This would be independent of the syntax
 of the original constructor.) This implies a predicate to test if an object
@@ -240,7 +240,7 @@ optional: `only(id1,id2,...)obj` and `except(id1,id2,...)obj`
 ## Inheritance
 Object concatenation for scoped objects is kind of like OOP inheritance.
 It's the most complex and heavy weight part of the OpenSCAD2 object design.
-It's a low priority; I can demo TeaCAD without it.
+It's a low priority; I can demo Curv without it.
 
 I see no strong need for OpenSCAD mixins.
 I think you can implement them like this:
