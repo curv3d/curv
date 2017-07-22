@@ -2,7 +2,7 @@
 union (
     for (i in [0..4])
         morph(i/4,
-            cube 4 >> colour white,
+            cube 4 >> colour (.9,.9,.9),
             torus(2,1) >> colour (radial_rainbow 1))
         >> translate(i*6-12,0),
 )

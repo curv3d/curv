@@ -5,11 +5,3 @@ union (
     ),
     colour red (cube .5),
 )
-/*
-hedron = dodecahedron 2;
-h = hedron.bbox[1][X] - hedron.bbox[0][X];
-difference(
-    difference (cube h, hedron),
-    cube(10) >> translate(5,0,0),
-)
-*/
