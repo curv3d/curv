@@ -70,6 +70,7 @@ sphere r = make_shape {
 },
 
 cylinder(r,h) = extrude h (circle r),
+cylinder_eu(r,h) = extrude_eu h (circle r),
 
 // Cone: Z is up, origin is in the middle of the base.
 // Euclidean distance field.
@@ -468,14 +469,6 @@ _union2(s1,s2) = make_shape {
     is_2d : s1.is_2d && s2.is_2d,
     is_3d : s1.is_3d && s2.is_3d,
 },
-
-// Exact union. (Warning: original research.)
-union_eu(s1,s2) = make_shape {
-    dist p = min_eu(s1.dist p, s2.dist p),
-    is_2d = s1.is_2d && s2.is_2d,
-    is_3d = s1.is_3d && s2.is_3d,
-},
-min_eu(x,y) = if (x<0 && y<0) -mag(x,y) else min(x,y),
 
 intersection list = reduce(everything, _intersection2) list,
 _intersection2(s1,s2) = make_shape {
