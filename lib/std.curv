@@ -486,7 +486,7 @@ _intersection2(s1,s2) = make_shape {
     is_3d : s1.is_3d && s2.is_3d,
 },
 
-difference(s1,s2) = _intersection2(s1, complement s2),
+difference(s1,s2) = _intersection2(complement s2, s1),
 symmetric_difference shapes = difference(union shapes, intersection shapes),
 
 crop limits shape = intersection(limits, shape),
