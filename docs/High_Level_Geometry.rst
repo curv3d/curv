@@ -201,6 +201,13 @@ Non-distance-preserving transformations of 2D and 3D shapes.
   Twist a 3D shape around the Z axis. One full revolution for each ``d`` units along the Z axis.
   Lines parallel to the Z axis will be twisted into a helix.
 
+``shell d shape``
+  Hollow out the shape, replace it by a shell of thickness ``d`` that is centred on the shape boundary.
+
+``rect_to_polar ...``
+
+``isosurface ...``
+
 2D -> 3D Transformations
 ========================
 
@@ -242,10 +249,12 @@ Boolean (Set Theoretic) Operations
 ``nothing``
   A special shape, classified as both 2D and 3D,
   that contains no geometric points.
+  It's the identity element for the ``union`` operation.
 
 ``everything``
   A special infinite shape, classified as both 2D and 3D,
   that contains all geometric points.
+  It's the identity element for the ``intersection`` operation.
 
 ``complement shape``
   Reverses inside and outside, so that all points inside the argument
@@ -305,8 +314,9 @@ Repetition
 
 ``repeat_radial reps shape``
 
-Others
-======
+Morph and Blend
+===============
+Operations for combining two shapes.
 
 ``morph k shape1 shape2``
 
@@ -314,13 +324,10 @@ Others
 
 ``smooth_intersection ...``
 
+Others
+======
+
 ``gyroid``
-
-``shell d shape``
-
-``rect_to_polar ...``
-
-``isosurface``
 
 Advanced CSG Operations
 =======================
