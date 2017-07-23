@@ -156,6 +156,8 @@ I'm updating the design and updating this document in parallel.
   The normal vector is obtained from the points via the right-hand rule.
   TODO
 
+``gyroid``
+
 Rigid Transformations
 =====================
 Distance-preserving transformations of 2D and 3D shapes.
@@ -244,6 +246,8 @@ Non-distance-preserving transformations of 2D and 3D shapes.
   using a stereographic projection,
   and extruded down to the origin.
   TODO
+
+``perimeter_extrude perimeter cross_section``
 
 3D -> 2D Transformations
 ========================
@@ -334,14 +338,8 @@ Operations for combining two shapes.
 
 ``smooth_intersection ...``
 
-Infinite Shapes
-===============
-
-``gyroid``
-
 ..
   Advanced CSG Operations
   =======================
   These are expert level CSG operations that break the abstraction of a simple world of geometric shapes,
   and expose the underlying representation of shapes as Signed Distance Fields.
-  ``perimeter_extrude perimeter cross_section``
