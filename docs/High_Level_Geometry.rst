@@ -256,17 +256,16 @@ Boolean (Set Theoretic) Operations
 ``union (shape1, shape2, ...)``
   Construct the set union of a list of zero or more shapes.
   
-  ``union`` is an associative operation with ``nothing``
-  as the identity element, meaning it is a monoid.
-  The empty list is mapped to ``nothing``.
-
-  If all of the shapes have the same colour, then
-  ``union`` is commutative.
-  Otherwise, if shapes of different colours are combined,
-  then the colours of shapes later in the list
+  The colours of shapes later in the list
   take precedence over shapes earlier in the list.
   This follows the metaphor of ``union`` as an additive operation
   where later shapes are "painted on top of" earlier shapes.
+
+  ``union`` is an associative operation with ``nothing``
+  as the identity element, meaning it is a monoid.
+  The empty list is mapped to ``nothing``.
+  If all of the shapes have the same colour, then
+  ``union`` is commutative.
 
 ``intersection (shape1, shape2, ...)``
   Construct the set intersection of zero or more shapes.
@@ -274,11 +273,17 @@ Boolean (Set Theoretic) Operations
   The colour of the first shape takes precedence.
   This is the opposite of the ``union`` convention.
   It follows the metaphor of ``intersection`` as a subtractive operation
-  where the first shape is primary, and subsequent shapes indicate parts of
-  the primary shape to subtract.
+  where the first shape is primary, and subsequent shapes indicate which parts of
+  the primary shape not to remove.
   It is consistent with the traditional definition
   of ``difference(s1,s2)`` as ``intersection(s1,complement(s2))``.
 
+  ``intersection`` is an associative operation.
+  The empty list is mapped to ``everything``.
+  If all of the shapes have the default colour,
+  then ``everything`` is the identity element,
+  and ``intersection`` is commutative and a monoid.
+  
 ``difference (shape1, shape2)``
   A binary operation that subtracts shape2 from shape1,
   preserving the colour of shape1.
@@ -300,10 +305,22 @@ Repetition
 
 ``repeat_radial reps shape``
 
-Other?
+Others
 ======
 
 ``morph k shape1 shape2``
+
+``smooth_union ...``
+
+``smooth_intersection ...``
+
+``gyroid``
+
+``shell d shape``
+
+``rect_to_polar ...``
+
+``isosurface``
 
 Advanced CSG Operations
 =======================
