@@ -487,16 +487,16 @@ _union2(s1,s2) = make_shape {
 intersection list = reduce(everything, _intersection2) list,
 _intersection2(s1,s2) = make_shape {
     dist p : max(s1.dist p, s2.dist p),
-    colour : s2.colour,
+    colour : s1.colour,
     bbox : [max(s1.bbox'0, s2.bbox'0), min(s1.bbox'1, s2.bbox'1)],
     is_2d : s1.is_2d && s2.is_2d,
     is_3d : s1.is_3d && s2.is_3d,
 },
 
-difference(s1,s2) = _intersection2(complement s2, s1),
+difference(s1,s2) = _intersection2(s1, complement s2),
 symmetric_difference shapes = difference(union shapes, intersection shapes),
 
-crop limits shape = intersection(limits, shape),
+crop limits shape = intersection(shape, limits),
 
 smooth_union k list = reduce(nothing, _smooth_union2 k) list,
 _smooth_union2 k (s1,s2) = make_shape {
@@ -514,7 +514,7 @@ _smooth_union2 k (s1,s2) = make_shape {
 smooth_intersection k list = reduce(everything, _smooth_intersection2 k) list,
 _smooth_intersection2 k (s1,s2) = make_shape {
     dist p : smooth_max(s1.dist p, s2.dist p, k),
-    colour : s2.colour,
+    colour : s1.colour,
     bbox : [max(s1.bbox'0, s2.bbox'0), min(s1.bbox'1, s2.bbox'1)],
     is_2d : s1.is_2d && s2.is_2d,
     is_3d : s1.is_3d && s2.is_3d,

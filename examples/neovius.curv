@@ -9,7 +9,7 @@ gyroid_bones = isosurface (-1.2) gyroid >> df_scale 0.66;
 
 gyroid_surface = shell (.1) gyroid >> df_scale 0.66;
 
-gyroidize t shape = morph(t, shape, intersection(gyroid_surface, shape));
+gyroidize t shape = morph(t, shape, intersection(shape, gyroid_surface));
 
 c = 1.5;
 double_gyroid_bones = union(
@@ -20,8 +20,8 @@ double_gyroid_bones = union(
 
 /*
 union(
-    intersection(cube 20, double_gyroid_bones) >> translate(-15,0,0),
-    intersection(cube 20, gyroid_surface >> colour red) >> translate(+15,0,0),
+    intersection(double_gyroid_bones, cube 20) >> translate(-15,0,0),
+    intersection(gyroid_surface >> colour red, cube 20) >> translate(+15,0,0),
     gyroidize(.1) (cube 20) >> translate(+45,0,0),
 )
 */
