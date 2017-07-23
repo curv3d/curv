@@ -339,9 +339,9 @@ Infinite Shapes
 
 ``gyroid``
 
-Advanced CSG Operations
-=======================
-These are expert level CSG operations that break the abstraction of a simple world of geometric shapes,
-and expose the underlying representation of shapes as Signed Distance Fields.
-
-``perimeter_extrude perimeter cross_section``
+..
+  Advanced CSG Operations
+  =======================
+  These are expert level CSG operations that break the abstraction of a simple world of geometric shapes,
+  and expose the underlying representation of shapes as Signed Distance Fields.
+  ``perimeter_extrude perimeter cross_section``
