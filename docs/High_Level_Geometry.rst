@@ -146,6 +146,61 @@ I'm updating the design and updating this document in parallel.
   The normal vector is obtained from the points via the right-hand rule.
   TODO
 
+Rigid Transformations
+=====================
+Distance-preserving transformations of 2D and 3D shapes.
+
+``move (dx,dy) shape``
+  Translate a 2D or 3D shape across the XY plane.
+
+``move (dx,dy,dz) shape``
+  Translate a 3D shape.
+
+``rotate angle shape``
+  Rotate a 2D or 3D shape around the Z axis, counterclockwise,
+  by an angle measured in radians.
+
+``rotate (angle, axis) shape``
+  Rotate a 3D shape around the specified axis, counterclockwise,
+  by an angle measured in radians.
+
+``reflect_x shape``
+  Reflect a 2D/3D shape across the Y axis/YZ plane,
+  mapping each point (x,y)/(x,y,z) to (-x,y)/(-x,y,z).
+
+``at p t shape``
+  Apply a transformation ``t`` to a shape,
+  treating the point ``p`` as the origin point of the transformation.
+  
+  Example: ``square 2 >> at (1,1) (rotate(45*deg))``
+  rotates the square around the point (1,1).
+
+Non-Rigid Transformations
+=========================
+Non-distance-preserving transformations of 2D and 3D shapes.
+
+``scale k shape``
+  Isotropic scaling by a scale factor of ``k`` of a 2D or 3D shape.
+
+``scale (kx, ky) shape``
+  Anisotropic scaling of a 2D or 3D shape across the XY plane.
+
+``scale (kx, ky, kz) shape``
+  Anisotropic scaling of a 3D shape.
+
+``shear ...``
+  TODO
+
+``taper ...``
+  TODO
+
+``bend ...``
+  TODO
+
+``twist d shape``
+  Twist a 3D shape around the Z axis. One full revolution for each ``d`` units along the Z axis.
+  Lines parallel to the Z axis will be twisted into a helix.
+
 2D -> 3D Transformations
 ========================
 
@@ -163,8 +218,8 @@ I'm updating the design and updating this document in parallel.
 ``cylinder_extrude (d, d2) shape``
   An infinite strip of 2D space running along the Y axis
   and bounded by ``-d/2 <= x <= d/2``
-  is wrapped into an infinite cylinder of diameter ``d2``, running along the Z axis
-  and extruded towards the Z axis.
+  is wrapped into an infinite cylinder of diameter ``d2``,
+  running along the Z axis and extruded towards the Z axis.
   TODO
 
 ``stereographic_extrude shape``
@@ -172,6 +227,83 @@ I'm updating the design and updating this document in parallel.
   using a stereographic projection,
   and extruded down to the origin.
   TODO
+
+3D -> 2D Transformations
+========================
+
+``slice_xy shape``
+
+``slice_xz shape``
+
+``slice_yz shape``
+
+Boolean (Set Theoretic) Operations
+==================================
+``nothing``
+  A special shape, classified as both 2D and 3D,
+  that contains no geometric points.
+
+``everything``
+  A special infinite shape, classified as both 2D and 3D,
+  that contains all geometric points.
+
+``complement shape``
+  Reverses inside and outside, so that all points inside the argument
+  shape are outside the result shape, and vice versa.
+  But the boundary doesn't change.
+  If the input is a finite shape, the output will be infinite.
+
+``union (shape1, shape2, ...)``
+  Construct the set union of a list of zero or more shapes.
+  
+  ``union`` is an associative operation with ``nothing``
+  as the identity element, meaning it is a monoid.
+  The empty list is mapped to ``nothing``.
+
+  If all of the shapes have the same colour, then
+  ``union`` is commutative.
+  Otherwise, if shapes of different colours are combined,
+  then the colours of shapes later in the list
+  take precedence over shapes earlier in the list.
+  This follows the metaphor of ``union`` as an additive operation
+  where later shapes are "painted on top of" earlier shapes.
+
+``intersection (shape1, shape2, ...)``
+  Construct the set intersection of zero or more shapes.
+  
+  The colour of the first shape takes precedence.
+  This is the opposite of the ``union`` convention.
+  It follows the metaphor of ``intersection`` as a subtractive operation
+  where the first shape is primary, and subsequent shapes indicate parts of
+  the primary shape to subtract.
+  It is consistent with the traditional definition
+  of ``difference(s1,s2)`` as ``intersection(s1,complement(s2))``.
+
+``difference (shape1, shape2)``
+  A binary operation that subtracts shape2 from shape1,
+  preserving the colour of shape1.
+
+``symmetric_difference (shape1, shape2, ...)``
+  The result contains all of the points that belong to exactly one shape in the list.
+  
+  This is an associative, commutative operation with ``nothing`` as its identity element.
+
+Repetition
+==========
+``repeat_x d shape``
+
+``repeat_xy d shape``
+
+``repeat_xyz d shape``
+
+``repeat_mirror_x shape``
+
+``repeat_radial reps shape``
+
+Other?
+======
+
+``morph k shape1 shape2``
 
 Advanced CSG Operations
 =======================
