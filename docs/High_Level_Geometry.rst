@@ -330,7 +330,7 @@ Repetition
 
 Morph and Blend
 ===============
-Operations for combining two shapes.
+Non-rigid operations for combining two shapes.
 
 ``morph k shape1 shape2``
 
