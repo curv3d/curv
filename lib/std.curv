@@ -30,8 +30,12 @@ concat vv = [for (v in vv) for (i in v) i],
 reverse v = v'[len(v)-1..0 by -1],
 map f list = [for (x in list) f x],
 filter p list = [for (x in list) if (p x) x],
-reduce(first,f) rest =
-    if (rest==[]) first else reduce(f(first,rest'0), f) << rest'[1..<len(rest)],
+reduce (zero, f) list = if (list == []) zero else (
+    var r := list[0];
+    for (i in [1..<len list])
+        r := f(r, list[i]);
+    r
+),
 sum list = reduce(0, (x,y)->x+y) list,
 product list = reduce(1, (x,y)->x*y) list,
 
