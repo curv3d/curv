@@ -41,17 +41,27 @@ IM=1,
 cmul(z,w) = [z'RE*w'RE - z'IM*w'IM, z'IM*w'RE + z'RE*w'IM],
 csqr(z) = [ z[RE]*z[RE] - z[IM]*z[IM], 2*z[RE]*z[IM] ],
 
-// linear algebra
+////////////////////
+// Linear Algebra //
+////////////////////
 is_vec2 x = is_list x && len x == 2 && is_num(x[0]) && is_num(x[1]),
 is_vec3 x = is_list x && len x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]),
 cross(p,q) = [p[Y]*q[Z] - p[Z]*q[Y], p[Z]*q[X] - p[X]*q[Z], p[X]*q[Y] - p[Y]*q[X]],
 identity(n) = [for(i in [1..n]) [for(j in [1..n]) if(i==j) 1 else 0]],
 transpose(a) = [for(i in [0..<len(a'0)]) [for(j in [0..<len a]) a'j'i]],
 normalize v = v / mag v,
+
 // phase angle of a vector, range tau/2 to -tau/2
 phase v = atan2(v'Y,v'X),
+
 // convert phase angle to unit vector
 cis theta = [cos theta, sin theta],
+
+// perp: Rotate a 2D point by 90 degrees CCW. Multiply a complex number by i.
+// It's the 2D analog of the 3D vector cross product (Cross in Mathematica).
+// dot(perp a, b) is the "perp-dot" product:
+// see: 'The Pleasures of "Perp-Dot" Products', Graphics Gems IV.
+perp(x,y) = (y, -x),
 
 /////////////////////
 // CIRCULAR SHAPES //
