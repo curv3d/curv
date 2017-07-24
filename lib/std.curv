@@ -579,20 +579,24 @@ rotate a shape =
     if (is_num a) (
         // 2D rotation around the Z axis
         rot2(a,p) = cmul(p, cis a);
-        bv = map (p->rot2(a,p)) (
-            [shape.bbox[MIN][X], shape.bbox[MIN][Y]],
-            [shape.bbox[MAX][X], shape.bbox[MIN][Y]],
-            [shape.bbox[MAX][X], shape.bbox[MAX][Y]],
-            [shape.bbox[MIN][X], shape.bbox[MAX][Y]],
+        b = if (shape.bbox[MIN][X] == -inf || shape.bbox[MIN][Y] == -inf
+                || shape.bbox[MAX][X] == inf || shape.bbox[MAX][Y] == inf)
+            [[-inf,-inf], [inf,inf]]
+        else (
+            bv = map (p->rot2(a,p)) (
+                [shape.bbox[MIN][X], shape.bbox[MIN][Y]],
+                [shape.bbox[MAX][X], shape.bbox[MIN][Y]],
+                [shape.bbox[MAX][X], shape.bbox[MAX][Y]],
+                [shape.bbox[MIN][X], shape.bbox[MAX][Y]],
+            );
+            [min bv, max bv]
         );
-        bvmin = min bv;
-        bvmax = max bv;
         make_shape {
             dist p : (var xy := rot2(-a,p); shape.dist(xy'X,xy'Y,p'Z,p'T)),
             colour p : (var xy := rot2(-a,p); shape.colour(xy'X,xy'Y,p'Z,p'T)),
             bbox : [
-                [ bvmin[X], bvmin[Y], shape.bbox[MIN][Z] ],
-                [ bvmax[X], bvmax[Y], shape.bbox[MAX][Z] ],
+                [ b[MIN][X], b[MIN][Y], shape.bbox[MIN][Z] ],
+                [ b[MAX][X], b[MAX][Y], shape.bbox[MAX][Z] ],
             ],
             is_2d : shape.is_2d,
             is_3d : shape.is_3d,
@@ -606,15 +610,23 @@ rotate a shape =
                 p * cos(a)
                 - cross(axis, p) * sin(a)
                 + axis * dot(axis, p * (1 - cos a));
-        bv = map (p->rot3(-angle,axis,p)) (
-            [shape.bbox[MIN][X], shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
-            [shape.bbox[MAX][X], shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
-            [shape.bbox[MAX][X], shape.bbox[MAX][Y], shape.bbox[MIN][Z]],
-            [shape.bbox[MIN][X], shape.bbox[MAX][Y], shape.bbox[MIN][Z]],
-            [shape.bbox[MIN][X], shape.bbox[MIN][Y], shape.bbox[MAX][Z]],
-            [shape.bbox[MAX][X], shape.bbox[MIN][Y], shape.bbox[MAX][Z]],
-            [shape.bbox[MAX][X], shape.bbox[MAX][Y], shape.bbox[MAX][Z]],
-            [shape.bbox[MIN][X], shape.bbox[MAX][Y], shape.bbox[MAX][Z]],
+        b = if (shape.bbox[MIN][X] == -inf || shape.bbox[MIN][Y] == -inf
+                || shape.bbox[MIN][Z] == -inf
+                || shape.bbox[MAX][X] == inf || shape.bbox[MAX][Y] == inf
+                || shape.bbox[MAX][Z] == inf)
+            shape.bbox
+        else (
+            bv = map (p->rot3(-angle,axis,p)) (
+                [shape.bbox[MIN][X], shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
+                [shape.bbox[MAX][X], shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
+                [shape.bbox[MAX][X], shape.bbox[MAX][Y], shape.bbox[MIN][Z]],
+                [shape.bbox[MIN][X], shape.bbox[MAX][Y], shape.bbox[MIN][Z]],
+                [shape.bbox[MIN][X], shape.bbox[MIN][Y], shape.bbox[MAX][Z]],
+                [shape.bbox[MAX][X], shape.bbox[MIN][Y], shape.bbox[MAX][Z]],
+                [shape.bbox[MAX][X], shape.bbox[MAX][Y], shape.bbox[MAX][Z]],
+                [shape.bbox[MIN][X], shape.bbox[MAX][Y], shape.bbox[MAX][Z]],
+            );
+            [ min bv, max bv ]
         );
         make_shape {
             //TODO: dist p : shape.dist(...rot3(angle,axis,p[X,Y,Z]),p[T]),
@@ -626,7 +638,7 @@ rotate a shape =
                 var q := rot3(angle, axis, p[X,Y,Z]);
                 shape.colour(q[X],q[Y],q[Z],p[T])
             ),
-            bbox : [ min bv, max bv ],
+            bbox : b,
             is_3d : true,
         }
     ),
