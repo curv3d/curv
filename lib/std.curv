@@ -120,6 +120,20 @@ cone(d, height) = (
     }
 ),
 
+// credit: Inigo Quilez
+capsule(d,a,b) = (
+    ba = b - a;
+    r = d / 2;
+    make_shape {
+        dist p = (
+            var pa := p[X,Y,Z] - a;
+            var h := clamp(dot(pa,ba) / dot(ba,ba), 0, 1);
+            mag(pa - ba*h) - r
+        ),
+        is_3d = true,
+    }
+),
+
 // d1: major diameter, from center of tube, through origin, to centre of tube.
 // d2: minor diameter, of the tube.
 torus (d1,d2) = perimeter_extrude (circle d1) (circle d2),
