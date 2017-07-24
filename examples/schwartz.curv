@@ -5,14 +5,14 @@ schwartz_p = make_shape {
     is_3d: true
 };
 
-schwartz_bones = schwartz_p >> isosurface (-1) >> df_scale 0.66;
-schwartz_bones2 = complement schwartz_p >> isosurface (-1) >> df_scale 0.66;
+schwartz_bones = schwartz_p >> isosurface (-1) >> lipschitz 2;
+schwartz_bones2 = complement schwartz_p >> isosurface (-1) >> lipschitz 2;
 double_schwartz_bones = union(
     colour blue schwartz_bones,
     colour green schwartz_bones2,
 );
 
-schwartz_surface = shell (.2) schwartz_p >> df_scale 0.66;
+schwartz_surface = shell (.2) schwartz_p >> lipschitz 2;
 
 schwartzize t shape = morph(t, shape, intersection(shape, schwartz_surface));
 
@@ -22,6 +22,6 @@ union(
     schwartzize(.1) (cube 20) >> translate(+45,0,0),
 )
 
-//schwartz_p >> df_scale 0.5 >> crop (cube 20)
+//schwartz_p >> lipschitz 2 >> crop (cube 20)
 
 //schwartz_p >> translate(0,0,1) >> slice_xy >> gradient 2

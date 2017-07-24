@@ -1,11 +1,11 @@
-gyroid_bones = gyroid >> isosurface (-1.2) >> df_scale 0.66;
-gyroid_bones2 = complement gyroid >> isosurface (-1.2) >> df_scale 0.66;
+gyroid_bones = gyroid >> isosurface (-1.2) >> lipschitz 1.5;
+gyroid_bones2 = complement gyroid >> isosurface (-1.2) >> lipschitz 1.5;
 double_gyroid_bones = union(
     colour blue gyroid_bones,
     colour green gyroid_bones2,
 );
 
-gyroid_surface = shell (.2) gyroid >> df_scale 0.66;
+gyroid_surface = shell (.2) gyroid >> lipschitz 1.5;
 
 gyroidize t shape = morph(t, shape, intersection(shape, gyroid_surface));
 

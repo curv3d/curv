@@ -66,19 +66,19 @@ Constructive Solid Geometry (3)
 ===============================
 |twistor|::
 
-  torus(2,1)
+  torus (2,1)
     >> colour (radial_rainbow 1)
-    >> rotate(tau/4, Yaxis)
-    >> twist 1
+    >> rotate (tau/4, Yaxis)
+    >> twist 3 >> lipschitz 2.2
 
 Constructive Solid Geometry (4)
 ===============================
 |shreks_donut|::
 
   smooth_intersection .1 (
-    torus(tau*2,tau),
-    gyroid >> shell .1 >> df_scale .33 >> rect_to_polar (tau*6),
-  ) >> colour (hsv2rgb(1/3,1,.5))
+    torus (tau*4, tau*2),
+    gyroid >> shell .2 >> lipschitz 2 >> rect_to_polar (tau*12),
+  ) >> colour (hsv2rgb (1/3, 1, .5))
 
 Function Representation
 =======================

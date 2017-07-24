@@ -885,7 +885,7 @@ linear_rainbow n = colour (p->hsv2rgb(mod(p[X]/n,1),1,1)) everything,
 // This is the infinite connected 3D volume enclosed by the gyroid surface.
 // Use `shell 0` to obtain the surface itself.
 // https://en.wikipedia.org/wiki/Gyroid
-// Lipschitz constant == 4/3. Apply 'df_scale 0.66' after extracting isosurfaces
+// Lipschitz constant == 4/3. Apply 'lipschitz 1.33' after extracting isosurfaces
 gyroid = make_shape {
     dist(x,y,z,t) = cos(x)*sin(y) + cos(y)*sin(z) + cos(z)*sin(x),
     is_3d = true,
@@ -987,17 +987,10 @@ shell d shape = (
 
 // Super kludgy function to scale a shape's distance field,
 // to compensate for a Lipshitz constant that is > 1.
-// So 's' is the 'Lipshitz compensation factor', if this was a Star Trek script.
-// Try s=0.5 to fix a 3D shape that doesn't render properly.
-df_scale s shape = make_shape {
-    dist p : shape.dist p * s,
-    colour : shape.colour,
-    bbox : shape.bbox,
-    is_2d : shape.is_2d,
-    is_3d : shape.is_3d,
-},
-lipschitz s shape = make_shape {
-    dist p : shape.dist p / s,
+// So 'k' is the Lipshitz constant.
+// Try k=2 to fix a 3D shape that doesn't render properly.
+lipschitz k shape = make_shape {
+    dist p : shape.dist p / k,
     colour : shape.colour,
     bbox : shape.bbox,
     is_2d : shape.is_2d,

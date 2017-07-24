@@ -10,9 +10,9 @@ function(f) = make_shape {
     dist p : p'Y - f(p'X),
     is_2d : true,
 };
-//function(x->sin x + 2) >> lathe >> df_scale .5
+//function(x->sin x + 2) >> lathe >> lipschitz 2
 function(x->sin x - 2)
     >> rotate(90*deg)
     >> complement
-    >> rotate_extrude >> df_scale .5
+    >> rotate_extrude >> lipschitz 2
 
