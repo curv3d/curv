@@ -130,7 +130,21 @@ capsule(d,a,b) = (
             var h := clamp(dot(pa,ba) / dot(ba,ba), 0, 1);
             mag(pa - ba*h) - r
         ),
+        bbox = [min(a-r,b-r), max(a+r,b+r)],
         is_3d = true,
+    }
+),
+stroke(d,a,b) = (
+    r = d / 2;
+    ba = b - a;
+    make_shape {
+        dist p = (
+            var pa := p[X,Y] - a;
+            var h := clamp(dot(pa,ba) / dot(ba,ba), 0, 1);
+            mag(pa - ba*h) - r
+        ),
+        bbox = [[...min(a-r,b-r),0], [...max(a+r,b+r),0]],
+        is_2d = true,
     }
 ),
 
