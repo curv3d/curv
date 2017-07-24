@@ -1,1 +1,1 @@
-cylinder(1,1) >> colour (radial_rainbow 1)
+cylinder(2,2) >> colour (radial_rainbow 1)

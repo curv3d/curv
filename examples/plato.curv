@@ -1,7 +1,7 @@
 union (
     difference(
-        dodecahedron 1,
-        sphere 1.05,
+        dodecahedron 2,
+        sphere 2.1,
     ),
     colour red (cube .5),
 )

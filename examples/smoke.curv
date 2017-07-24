@@ -54,4 +54,4 @@ smoke = (x,y,z,t) -> (
     (f*f*f+.6*f*f+.5*f)*c
 );
 
-circle 1 >> colour smoke
+circle 2 >> colour smoke

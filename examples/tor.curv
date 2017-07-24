@@ -1,4 +1,5 @@
 torus(2,1)
     >> colour (radial_rainbow 1)
     >> rotate(tau/4, Yaxis)
-    >> twist (6/tau)
+    >> twist (3)
+    >> lipschitz 2.2

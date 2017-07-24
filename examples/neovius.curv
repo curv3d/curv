@@ -7,7 +7,7 @@ neovius = make_shape {
 /*
 gyroid_bones = isosurface (-1.2) gyroid >> df_scale 0.66;
 
-gyroid_surface = shell (.1) gyroid >> df_scale 0.66;
+gyroid_surface = shell (.2) gyroid >> df_scale 0.66;
 
 gyroidize t shape = morph(t, shape, intersection(shape, gyroid_surface));
 
@@ -26,6 +26,6 @@ union(
 )
 */
 
-neovius >> shell .1 >> df_scale 0.1 >> crop (cube 20)
+neovius >> shell .2 >> df_scale 0.1 >> crop (cube 20)
 
 //neovius >> translate(0,0,1) >> slice_xy >> gradient 2

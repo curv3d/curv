@@ -1,2 +1,2 @@
-c = repeat_xy (1,1) << shell .1 << colour black << circle 1;
+c = repeat_xy (2,2) << shell .2 << colour black << circle 2;
 union(c,translate(1,1)<<c);

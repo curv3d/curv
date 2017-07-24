@@ -12,12 +12,12 @@ double_schwartz_bones = union(
     colour green schwartz_bones2,
 );
 
-schwartz_surface = shell (.1) schwartz_p >> df_scale 0.66;
+schwartz_surface = shell (.2) schwartz_p >> df_scale 0.66;
 
 schwartzize t shape = morph(t, shape, intersection(shape, schwartz_surface));
 
 union(
-    schwartz_surface >> crop (sphere(tau*3/2)) >> translate(-15,0,0),
+    schwartz_surface >> crop (sphere(tau*3)) >> translate(-15,0,0),
     schwartz_surface >> colour red >> crop(cube(tau*3)) >> translate(+15,0,0),
     schwartzize(.1) (cube 20) >> translate(+45,0,0),
 )

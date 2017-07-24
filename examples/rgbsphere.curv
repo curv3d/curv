@@ -1,1 +1,1 @@
-colour (p->abs(normalize(p[X,Y,Z]))) (sphere 1)
+colour (p->abs(normalize(p[X,Y,Z]))) (sphere 2)

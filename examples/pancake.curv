@@ -1,3 +1,3 @@
-// pancake converts a 2D shape into a 3D "pancake" of thickness 2*r
-pancake r shape = shape >> extrude_eu 0 >> isosurface r;
-pancake .1 (circle 1)
+// pancake converts a 2D shape into a 3D "pancake" of thickness d.
+pancake d shape = shape >> extrude_eu 0 >> isosurface (d/2);
+pancake .2 (circle 2)

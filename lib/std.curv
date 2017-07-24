@@ -71,49 +71,58 @@ perp(x,y) = (y, -x),
 // CIRCULAR SHAPES //
 /////////////////////
 
-circle r = make_shape {
-    dist(x,y,z,t) = mag(x,y) - r,
-    bbox = [[-r,-r,0],[r,r,0]],
-    is_2d = true,
-},
+circle d = (
+    r = d / 2;
+    make_shape {
+        dist(x,y,z,t) = mag(x,y) - r,
+        bbox = [[-r,-r,0],[r,r,0]],
+        is_2d = true,
+    }
+),
 
-sphere r = make_shape {
-    dist(x,y,z,t) = mag(x,y,z) - r,
-    bbox = [[-r,-r,-r],[r,r,r]],
-    is_3d = true,
-},
+sphere d = (
+    r = d / 2;
+    make_shape {
+        dist(x,y,z,t) = mag(x,y,z) - r,
+        bbox = [[-r,-r,-r],[r,r,r]],
+        is_3d = true,
+    }
+),
 
-cylinder(r,h) = extrude h (circle r),
-cylinder_eu(r,h) = extrude_eu h (circle r),
+cylinder(d,h) = extrude h (circle d),
+cylinder_eu(d,h) = extrude_eu h (circle d),
 
 // Cone: Z is up, origin is in the middle of the base.
 // Euclidean distance field.
 // Credit: MERCURY (http://mercury.sexy/hg_sdf)
-cone(radius, height) = make_shape {
-    dist(x,y,z,t) = (
-        var q := [mag(x,y), z];
-        var tip := q - [0, height];
-        var mantleDir := normalize(height, radius);
-        var mantle := dot(tip, mantleDir);
-        var d := max(mantle, -q[Y]);
-        var projected := dot(tip, [mantleDir[Y], -mantleDir[X]]);
+cone(d, height) = (
+    radius = d / 2;
+    make_shape {
+        dist(x,y,z,t) = (
+            var q := [mag(x,y), z];
+            var tip := q - [0, height];
+            var mantleDir := normalize(height, radius);
+            var mantle := dot(tip, mantleDir);
+            var d := max(mantle, -q[Y]);
+            var projected := dot(tip, [mantleDir[Y], -mantleDir[X]]);
 
-        // distance to tip
-        if (q[Y] > height && projected < 0)
-            d := max(d, mag(tip));
+            // distance to tip
+            if (q[Y] > height && projected < 0)
+                d := max(d, mag(tip));
 
-        // distance to base ring
-        if (q[X] > radius && projected > mag(height, radius))
-            d := max(d, mag(q - [radius, 0]));
-        d
-    ),
-    bbox = [[-radius,-radius,0],[radius,radius,height]],
-    is_3d = true
-},
+            // distance to base ring
+            if (q[X] > radius && projected > mag(height, radius))
+                d := max(d, mag(q - [radius, 0]));
+            d
+        ),
+        bbox = [[-radius,-radius,0],[radius,radius,height]],
+        is_3d = true
+    }
+),
 
-// r1: major radius, from origin to centre of tube.
-// r2: minor radius, of the tube.
-torus (r1,r2) = perimeter_extrude (circle r1) (circle r2),
+// d1: major diameter, from center of tube, through origin, to centre of tube.
+// d2: minor diameter, of the tube.
+torus (d1,d2) = perimeter_extrude (circle d1) (circle d2),
 
 // from OpenSCAD
 rotate_extrude shape = perimeter_extrude (circle 0) shape,
@@ -137,39 +146,39 @@ perimeter_extrude perimeter cross_section = make_shape {
 // POLYTOPES //
 ///////////////
 
-// Half-space with normal n, at distance r from the origin.
+// Half-space with normal n, at distance d from the origin.
 //  n: must be a 3D unit vector.
-//  if r >= 0, half-space contains the origin.
-half_space(r,n) = make_shape {
-    dist(x,y,z,t) = dot([x,y,z], n) - r,
+//  if d >= 0, half-space contains the origin.
+half_space(d,n) = make_shape {
+    dist(x,y,z,t) = dot([x,y,z], n) - d,
     is_3d = true,
 },
 
-// Half-plane with normal n, at distance r from the origin.
+// Half-plane with normal n, at distance d from the origin.
 //  n: must be a 2D unit vector.
-//  if r >= 0, half-plane contains the origin.
-half_plane(r,n) = make_shape {
-    dist(x,y,z,t) = dot([x,y], n) - r,
+//  if d >= 0, half-plane contains the origin.
+half_plane(d,n) = make_shape {
+    dist(x,y,z,t) = dot([x,y], n) - d,
     bbox = [
         [
-            if (n[Y]==0 && n[X]<0) -r else -inf,
-            if (n[X]==0 && n[Y]<0) -r else -inf,
+            if (n[Y]==0 && n[X]<0) -d else -inf,
+            if (n[X]==0 && n[Y]<0) -d else -inf,
             0,
         ],
         [
-            if (n[Y]==0 && n[X]>0) r else inf,
-            if (n[X]==0 && n[Y]>0) r else inf,
+            if (n[Y]==0 && n[X]>0) d else inf,
+            if (n[X]==0 && n[Y]>0) d else inf,
             0,
         ],
     ],
     is_2d = true,
 },
 
-square sz = (
-  s = if (is_list sz) sz else [sz,sz];
+square d = (
+  r = d / 2;
   make_shape {
-    dist(x,y,z,t) = max(abs(x,y) - s/2),
-    bbox = [[-s[X]/2,-s[Y]/2,0], [s[X]/2,s[Y]/2,0]],
+    dist(x,y,z,t) = max(abs(x,y) - r),
+    bbox = [[-r,-r,0], [r,r,0]],
     is_2d = true,
   }
 ),
@@ -177,13 +186,14 @@ square sz = (
 // rect: an axis aligned rectangle. Argument is a vec2 or a bbox2.
 // Mitred distance field.
 rect b =
-  if (is_vec2 b)
+  if (is_vec2 b) (
+    r = b / 2;
     make_shape {
-      dist(x,y,z,t) = max(abs(x,y) - b),
-      bbox = [[-b[X],-b[Y],0],[b[X],b[Y],0]],
+      dist(x,y,z,t) = max(abs(x,y) - r),
+      bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]],
       is_2d = true,
     }
-  else (
+  ) else (
     xmin = b'MIN'X;
     ymin = b'MIN'Y;
     xmax = b'MAX'X;
@@ -213,34 +223,33 @@ rect b =
   ),
 
 // Axis aligned rectangle with a Euclidean distance field. Arg is vec2.
-rect_eu b = make_shape {
-    dist(x,y,z,t) = (
-        var d := abs(x,y) - b;
-        min(max d, 0) + mag(max(d,0))
-    ),
-    bbox = [[-b[X],-b[Y],0],[b[X],b[Y],0]],
-    is_2d = true,
-},
+rect_eu b = (
+    assert(is_vec2 b);
+    r = b / 2;
+    make_shape {
+        dist(x,y,z,t) = (
+            var d := abs(x,y) - r;
+            min(max d, 0) + mag(max(d,0))
+        ),
+        bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]],
+        is_2d = true,
+    }
+),
 
-// regular_polygon: n is # of sides, r is incircle radius
-regular_polygon(n,r) = half_plane(r,[1,0]) >> repeat_radial n >> rotate(-tau/4),
+// regular_polygon: n is # of sides, d is incircle diameter
+regular_polygon(n,d) = half_plane(d/2,[1,0]) >> repeat_radial n >> rotate(-tau/4),
 
-// box: an axis aligned cuboid. Argument is a num, vec3 or bbox.
+// box: an axis aligned cuboid. Argument is a vec3 or bbox.
 // Mitred distance field.
 box b =
-  if (is_num b)
+  if (is_vec3 b) (
+    r = b / 2;
     make_shape {
-      dist(x,y,z,t) = max(abs(x,y,z) - b),
-      bbox = [[-b,-b,-b], [b,b,b]],
+      dist(x,y,z,t) = max(abs(x,y,z) - r),
+      bbox = [-r, r],
       is_3d = true,
     }
-  else if (is_vec3 b)
-    make_shape {
-      dist(x,y,z,t) = max(abs(x,y,z) - b),
-      bbox = [-b, b],
-      is_3d = true,
-    }
-  else (
+  ) else (
     /* TODO: Won't compile right now.
     make_shape {
       dist(x,y,z,t) = max(max(b[MIN]-[x,y,z]), max([x,y,z]-b[MAX])),
@@ -290,22 +299,26 @@ box b =
 
 // box_eu: an axis aligned cuboid, with Euclidean distance field.
 // Argument is a vec3.
-box_eu b = make_shape {
-    dist(x,y,z,t) = (
-        var d := abs(x,y,z) - b;
-        min(max d, 0) + mag(max(d,0))
-    ),
-    bbox = [-b, b],
-    is_3d = true,
-},
+box_eu b = (
+    r = b / 2;
+    make_shape {
+        dist(x,y,z,t) = (
+            var d := abs(x,y,z) - r;
+            min(max d, 0) + mag(max(d,0))
+        ),
+        bbox = [-r, r],
+        is_3d = true,
+    }
+),
 
-prism(n,r,h) = regular_polygon(n,r) >> extrude h,
+prism(n,d,h) = regular_polygon(n,d) >> extrude h,
 
-// TODO: pyramid(n,r,h)
+// TODO: pyramid(n,d,h)
 
-// 'r' is the radius of a sphere inscribed inside the tetrahedron.
+// 'd' is the diameter of a sphere inscribed inside the tetrahedron.
 // Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
-tetrahedron r = (
+tetrahedron d = (
+    r = d / 2;
     // vertices of a tetrahedron
     v1 = [1,1,1];
     v2 = [-1,-1,1];
@@ -339,19 +352,20 @@ tetrahedron r = (
     }
 ),
 
-cube sz = (
-  s = if (is_list sz) sz else [sz,sz,sz];
+cube d = (
+  r = d / 2;
   make_shape {
-    dist(x,y,z,t) = max(abs(x,y,z) - s/2),
-    bbox = [-s/2, s/2],
+    dist(x,y,z,t) = max(abs(x,y,z) - r),
+    bbox = [[-r, -r, -r], [r,r,r]],
     is_3d = true,
     circumratio = sqrt 3,
   }
 ),
 
-// 'r' is the radius of a sphere inscribed inside the octahedron.
+// 'd' is the diameter of a sphere inscribed inside the octahedron.
 // Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
-octahedron r = (
+octahedron d = (
+    r = d / 2;
     v0 = normalize(1,1,1);
     v1 = normalize(-1,1,1);
     v2 = normalize(1,-1,1);
@@ -373,9 +387,10 @@ octahedron r = (
     }
 ),
 
-// 'r' is the radius of a sphere inscribed inside the dodecahedron.
+// 'd' is the diameter of a sphere inscribed inside the dodecahedron.
 // Mitred distance field. Pointy side down.
-dodecahedron r = (
+dodecahedron d = (
+    r = d / 2;
     v0 = normalize(0, phi, 1);
     v1 = normalize(0, -phi, 1);
     v2 = normalize(1, 0, phi);
@@ -401,9 +416,10 @@ dodecahedron r = (
     }
 ),
 
-// 'r' is the radius of a sphere inscribed inside the icosahedron.
+// 'd' is the diameter of a sphere inscribed inside the icosahedron.
 // Mitred distance field.
-icosahedron r = (
+icosahedron d = (
+    r = d / 2;
     v0 = normalize(1,1,1);
     v1 = normalize(-1,1,1);
     v2 = normalize(1,-1,1);
@@ -674,24 +690,30 @@ slice_yz shape = make_shape {
 //
 // The standard variant is cheaper, and has a mitred distance field.
 // The _eu variant is the same shape with a Euclidean distance field.
-extrude h shape = make_shape {
-    dist p : max(abs(p[Z]) - h, shape.dist(p[X],p[Y],0,p[T])),
-    colour p : shape.colour(p[X],p[Y],0,p[T]),
-    bbox : [ [shape.bbox[0][X],shape.bbox[0][Y],-h],
-             [shape.bbox[1][X],shape.bbox[1][Y],+h] ],
-    is_3d : true,
-},
-extrude_eu h shape = make_shape {
-    dist p : (
-        var dz := abs(p[Z]) - h;
-        var dxy := shape.dist(p[X],p[Y],0,p[T]);
-        mag(max([dz,dxy],0)) + min(max(dz,dxy), 0)
-    ),
-    colour p : shape.colour(p[X],p[Y],0,p[T]),
-    bbox : [ [shape.bbox[0][X],shape.bbox[0][Y],-h],
-             [shape.bbox[1][X],shape.bbox[1][Y],+h] ],
-    is_3d : true,
-},
+extrude d shape = (
+    h = d / 2;
+    make_shape {
+        dist p : max(abs(p[Z]) - h, shape.dist(p[X],p[Y],0,p[T])),
+        colour p : shape.colour(p[X],p[Y],0,p[T]),
+        bbox : [ [shape.bbox[0][X],shape.bbox[0][Y],-h],
+                 [shape.bbox[1][X],shape.bbox[1][Y],+h] ],
+        is_3d : true,
+    }
+),
+extrude_eu d shape = (
+    h = d / 2;
+    make_shape {
+        dist p : (
+            var dz := abs(p[Z]) - h;
+            var dxy := shape.dist(p[X],p[Y],0,p[T]);
+            mag(max([dz,dxy],0)) + min(max(dz,dxy), 0)
+        ),
+        colour p : shape.colour(p[X],p[Y],0,p[T]),
+        bbox : [ [shape.bbox[0][X],shape.bbox[0][Y],-h],
+                 [shape.bbox[1][X],shape.bbox[1][Y],+h] ],
+        is_3d : true,
+    }
+),
 
 morph(t, shape1, shape2) = make_shape {
     dist p : mix(shape1.dist p, shape2.dist p, t),
@@ -705,55 +727,66 @@ morph(t, shape1, shape2) = make_shape {
 // REPETITION //
 ////////////////
 
-repeat_x r shape = make_shape {
-    dist(x,y,z,t) : shape.dist(mod(x + r, 2*r) - r, y, z, t),
-    colour(x,y,z,t) : shape.colour(mod(x + r, 2*r) - r, y, z, t),
-    bbox : [ [-inf, shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
-             [+inf, shape.bbox[MAX][Y], shape.bbox[MAX][Z]] ],
-    is_2d : shape.is_2d,
-    is_3d : shape.is_3d,
-},
+repeat_x d shape = (
+    r = d / 2;
+    make_shape {
+        dist(x,y,z,t) : shape.dist(mod(x + r, d) - r, y, z, t),
+        colour(x,y,z,t) : shape.colour(mod(x + r, d) - r, y, z, t),
+        bbox : [ [-inf, shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
+                 [+inf, shape.bbox[MAX][Y], shape.bbox[MAX][Z]] ],
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    }
+),
 
-repeat_xy r shape = make_shape {
-    dist(x,y,z,t) : shape.dist(
-                mod(x + r[X], 2*r[X]) - r[X],
-                mod(y + r[Y], 2*r[Y]) - r[Y],
-                z, t),
-    colour(x,y,z,t) : shape.colour(
-                mod(x + r[X], 2*r[X]) - r[X],
-                mod(y + r[Y], 2*r[Y]) - r[Y],
-                z, t),
-    bbox : [ [-inf, -inf, shape.bbox[MIN][Z]],
-             [+inf, +inf, shape.bbox[MAX][Z]] ],
-    is_2d : shape.is_2d,
-    is_3d : shape.is_3d,
-},
+repeat_xy d shape = (
+    r = d / 2;
+    make_shape {
+        dist(x,y,z,t) : shape.dist(
+                    mod(x + r[X], 2*r[X]) - r[X],
+                    mod(y + r[Y], 2*r[Y]) - r[Y],
+                    z, t),
+        colour(x,y,z,t) : shape.colour(
+                    mod(x + r[X], 2*r[X]) - r[X],
+                    mod(y + r[Y], 2*r[Y]) - r[Y],
+                    z, t),
+        bbox : [ [-inf, -inf, shape.bbox[MIN][Z]],
+                 [+inf, +inf, shape.bbox[MAX][Z]] ],
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    }
+),
 
-repeat_xyz r shape = make_shape {
-    dist(x,y,z,t) : shape.dist(
-                mod(x + r[X], 2*r[X]) - r[X],
-                mod(y + r[Y], 2*r[Y]) - r[Y],
-                mod(z + r[Z], 2*r[Z]) - r[Z],
-                t),
-    colour(x,y,z,t) : shape.colour(
-                mod(x + r[X], 2*r[X]) - r[X],
-                mod(y + r[Y], 2*r[Y]) - r[Y],
-                mod(z + r[Z], 2*r[Z]) - r[Z],
-                t),
-    bbox : [ [-inf, -inf, -inf],
-             [+inf, +inf, +inf] ],
-    is_2d : shape.is_2d,
-    is_3d : shape.is_3d,
-},
+repeat_xyz d shape = (
+    r = d / 2;
+    make_shape {
+        dist(x,y,z,t) : shape.dist(
+                    mod(x + r[X], 2*r[X]) - r[X],
+                    mod(y + r[Y], 2*r[Y]) - r[Y],
+                    mod(z + r[Z], 2*r[Z]) - r[Z],
+                    t),
+        colour(x,y,z,t) : shape.colour(
+                    mod(x + r[X], 2*r[X]) - r[X],
+                    mod(y + r[Y], 2*r[Y]) - r[Y],
+                    mod(z + r[Z], 2*r[Z]) - r[Z],
+                    t),
+        bbox : [ [-inf, -inf, -inf],
+                 [+inf, +inf, +inf] ],
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    }
+),
 
-repeat_mirror_x shape = make_shape {
-    dist(x,y,z,t) : shape.dist(abs x, y, z, t),
-    colour(x,y,z,t) : shape.colour(abs x, y, z, t),
-    bbox : [[-shape.bbox[MAX][X], shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
-            shape.bbox[MAX]],
-    is_2d : shape.is_2d,
-    is_3d : shape.is_3d,
-},
+repeat_mirror_x shape = (
+    make_shape {
+        dist(x,y,z,t) : shape.dist(abs x, y, z, t),
+        colour(x,y,z,t) : shape.colour(abs x, y, z, t),
+        bbox : [[-shape.bbox[MAX][X], shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
+                shape.bbox[MAX]],
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    }
+),
 
 repeat_radial reps shape = (
     angle = tau/reps;
@@ -859,9 +892,11 @@ gyroid = make_shape {
 },
 
 // Twist 3D space into a helix around the Z axis:
-// t full rotations for each tau of Z displacement.
+// 1 full rotation for each `d` of Z displacement.
 // Bad distance field: The fudge factor 't*2' only works in simple cases.
-twist t shape = (
+twist d shape = (
+    // t full rotations for each tau of Z displacement:
+    t = tau / d;
     b = shape.bbox;
     r = max(map mag (
         [b[MIN][X], b[MIN][Y]],
@@ -872,30 +907,33 @@ twist t shape = (
     make_shape {
         dist p : (
             var xy := cmul(p[X,Y], cis(p[Z]*t));
-            shape.dist(xy[X], xy[Y], p[Z], p[T]) / (t*2)
+            shape.dist(xy[X], xy[Y], p[Z], p[T]) /* / (t*2) */
         ),
         colour p : (
             var xy := cmul(p[X,Y], cis(p[Z]*t));
-            shape.colour(xy[X], xy[Y], p[Z], p[T]) / (t*2)
+            shape.colour(xy[X], xy[Y], p[Z], p[T]) /* / (t*2) */
         ),
         bbox : [[-r,-r,b[MIN][Z]],[r,r,b[MAX][Z]]],
         is_3d : true,
     }
 ),
 
-// Take the upper half of the XY plane between X==-d and X==d,
+// Take the upper half of the XY plane between X==-d/2 and X==d/2,
 // and wrap that radially around the origin to cover the XY plane,
 // by mapping rectangular coordinates in the source region to polar coordinates
 // in the target region.
 // Beware of the distance field.
-rect_to_polar d shape = make_shape {
-    dist p : shape.dist(phase(p[X,Y])/pi*d, mag(p[X,Y]), p[Z], p[T]),
-    colour p : shape.colour(phase(p[X,Y])/pi*d, mag(p[X,Y]), p[Z], p[T]),
-    bbox : [ [-shape.bbox[MAX][Y], -shape.bbox[MAX][Y], shape.bbox[MIN][Z]],
-             [+shape.bbox[MAX][Y], +shape.bbox[MAX][Y], shape.bbox[MAX][Z]] ],
-    is_2d : shape.is_2d,
-    is_3d : shape.is_3d,
-},
+rect_to_polar d shape = (
+    r = d / 2;
+    make_shape {
+        dist p : shape.dist(phase(p[X,Y])/pi*r, mag(p[X,Y]), p[Z], p[T]),
+        colour p : shape.colour(phase(p[X,Y])/pi*r, mag(p[X,Y]), p[Z], p[T]),
+        bbox : [[-shape.bbox[MAX][Y], -shape.bbox[MAX][Y], shape.bbox[MIN][Z]],
+                [+shape.bbox[MAX][Y], +shape.bbox[MAX][Y], shape.bbox[MAX][Z]]],
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    }
+),
 
 ///////////////////////////
 // LOW LEVEL & DEBUGGING //
@@ -936,13 +974,16 @@ isosurface r shape = make_shape {
 // surface or perimeter.
 // WARNING: this is implemented using isosurfaces, so the results are dependent
 // on the distance field, not just on the boundary of the shape.
-shell r shape = make_shape {
-    dist p : abs(shape.dist p) - r,
-    colour : shape.colour,
-    bbox : [shape.bbox[0] - r, shape.bbox[1] + r],
-    is_2d : shape.is_2d,
-    is_3d : shape.is_3d,
-},
+shell d shape = (
+    r = d / 2;
+    make_shape {
+        dist p : abs(shape.dist p) - r,
+        colour : shape.colour,
+        bbox : [shape.bbox[0] - r, shape.bbox[1] + r],
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    }
+),
 
 // Super kludgy function to scale a shape's distance field,
 // to compensate for a Lipshitz constant that is > 1.
@@ -950,6 +991,13 @@ shell r shape = make_shape {
 // Try s=0.5 to fix a 3D shape that doesn't render properly.
 df_scale s shape = make_shape {
     dist p : shape.dist p * s,
+    colour : shape.colour,
+    bbox : shape.bbox,
+    is_2d : shape.is_2d,
+    is_3d : shape.is_3d,
+},
+lipschitz s shape = make_shape {
+    dist p : shape.dist p / s,
     colour : shape.colour,
     bbox : shape.bbox,
     is_2d : shape.is_2d,
