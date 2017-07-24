@@ -67,7 +67,6 @@ I'm updating the design and updating this document in parallel.
 ``stroke (d, p1, p2)``
   A line of thickness ``d`` drawn from ``p1`` to ``p2``,
   with semicircle end caps of radius ``d/2``.
-  TODO
 
 ``half_plane (d, n)``
   A half plane with normal vector ``n``,
@@ -145,7 +144,6 @@ I'm updating the design and updating this document in parallel.
 ``capsule (d, p1, p2)``
   A cylinder of diameter ``d`` whose central axis extends from ``p1`` to ``p2``,
   with the addition of hemispherical end caps of radius ``d/2``.
-  TODO
 
 ``half_space (d, n)``
   A half-space with normal vector ``n``,
@@ -330,7 +328,7 @@ Repetition
 
 Morph and Blend
 ===============
-Non-rigid operations for combining two shapes.
+Non-rigid operations for combining two shapes by "melting them together".
 
 ``morph k shape1 shape2``
 
