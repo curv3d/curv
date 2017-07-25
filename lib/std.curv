@@ -79,6 +79,7 @@ circle d = (
         is_2d = true,
     }
 ),
+ellipse(dx,dy) = circle 1 >> scale(dx,dy),
 
 sphere d = (
     r = d / 2;
@@ -88,6 +89,7 @@ sphere d = (
         is_3d = true,
     }
 ),
+ellipsoid(dx,dy,dz) = sphere 1 >> scale(dx,dy,dz),
 
 cylinder(d,h) = extrude h (circle d),
 cylinder_eu(d,h) = extrude_eu h (circle d),
