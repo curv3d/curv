@@ -35,7 +35,6 @@ I'm updating the design and updating this document in parallel.
 ``ellipse (dx, dy)``
   Construct an axis-aligned ellipse, centred on the origin,
   with width ``dx`` and height ``dy``.
-  TODO
 
 ``square d``
   Construct an axis-aligned square of width ``d``, centred on the origin.
@@ -87,7 +86,6 @@ I'm updating the design and updating this document in parallel.
 ``ellipsoid (dx, dy, dz)``
   Construct an axis-aligned ellipsoid, centred on the origin,
   with width ``dx``, depth ``dy`` and height ``dz``.
-  TODO
 
 ``cylinder (d, h)``
   Construct a cylinder, centered on the origin, whose axis of rotation is the Z axis.
