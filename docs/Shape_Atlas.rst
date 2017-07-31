@@ -13,7 +13,7 @@ implementations with different tradeoffs.
 
 The ultimate goal is to boil all of this research down into a well
 designed, consistent and powerful geometry API for Curv, which will be
-included in the Curv standard library.
+included in a future Curv standard library.
 
 2D and 3D Shapes:
   Every shape is marked as being 2-dimensional, 3-dimensional, or both.
@@ -37,8 +37,25 @@ Colour:
   which you change using the ``colour`` function.
   Shape operations must specify how the colour of the result shape derives from the
   colour of the argument shapes.
-  (Colour assignment operators will be researched elsewhere, in a Colour Atlas document.)
+  (Colour assignment and colour transformation operators will be researched elsewhere,
+  in a Colour Atlas document.)
 
+Signed Distance Fields:
+  Shapes are represented internally as Signed Distance Fields (SDFs), see `<Theory.rst>`_.
+  The issue here is that a given shape can be represented by many different SDFs, and it's not
+  technically feasible to choose a single normalized SDF representation for all shapes.
+  
+  For each operation, we specify not just the shape that is constructed, but also the
+  quality and structure of the resulting Signed Distance Field.
+  In many cases, we specify multiple implementations of an operation with different SDF
+  structures for the result. This usually represents an engineering tradeoff, where a
+  better quality SDF costs more to compute.
+  
+  Some of the operations here operate not just on the shape of an argument,
+  but also on its distance field, so that the shape of the result
+  depends on the distance field of one or more arguments. These are "low level" operations,
+  since they break the shape abstraction and expose the underlying implementation.
+  
 2D Shapes
 =========
 ``circle d``
