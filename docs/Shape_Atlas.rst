@@ -1,6 +1,21 @@
-=============================
-High Level Geometry Interface
-=============================
+===============
+The Shape Atlas
+===============
+The Shape Atlas is a catalog of operations for constructing,
+transforming and combining 2D and 3D geometric shapes.
+
+This is a research project to identify, classify and implement
+all of the artistically useful operations on signed distance fields
+(the representation Curv uses for geometric shapes).
+
+Each operation will be given an API, and sometimes we'll explore multiple
+implementations with different tradeoffs.
+
+The ultimate goal is to boil all of this research down into a well
+designed, consistent and powerful geometry API for Curv, which will be
+included in the Curv standard library.
+
+---------------------------------------------
 
 Curv has a high level, easy to use interface for constructing shapes.
 There is a set of standard shape constructors,
