@@ -194,6 +194,28 @@ struct Floor_Function : public Polyadic_Function
         return gl_call_unary_numeric(f, "floor");
     }
 };
+// round(x) -- round x to nearest integer.
+// CPU: in case of tie, round to even.
+// GPU: in case of tie, it's GPU/driver dependent.
+struct Round_Function : public Polyadic_Function
+{
+    Round_Function() : Polyadic_Function(1) {}
+    struct Scalar_Op {
+        static double f(double x) { return rint(x); }
+        static Shared<const String> callstr(Value x) {
+            return stringify("round(",x,")");
+        }
+    };
+    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(args[0], At_Frame(&args));
+    }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        return gl_call_unary_numeric(f, "round");
+    }
+};
 struct Sin_Function : public Polyadic_Function
 {
     Sin_Function() : Polyadic_Function(1) {}
@@ -734,6 +756,7 @@ builtin_namespace()
     {"log", make<Builtin_Value>(Value{make<Log_Function>()})},
     {"abs", make<Builtin_Value>(Value{make<Abs_Function>()})},
     {"floor", make<Builtin_Value>(Value{make<Floor_Function>()})},
+    {"round", make<Builtin_Value>(Value{make<Round_Function>()})},
     {"sin", make<Builtin_Value>(Value{make<Sin_Function>()})},
     {"asin", make<Builtin_Value>(Value{make<Asin_Function>()})},
     {"cos", make<Builtin_Value>(Value{make<Cos_Function>()})},
