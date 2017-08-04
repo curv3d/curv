@@ -187,7 +187,7 @@ half_space(d,n) = make_shape {
 // Half-plane with normal n, at distance d from the origin.
 //  n: must be a 2D unit vector.
 //  if d >= 0, half-plane contains the origin.
-half_plane(d,n) = make_shape {
+half_plane_dn(d,n) = make_shape {
     dist(x,y,z,t) = dot([x,y], n) - d,
     bbox = [
         [
@@ -201,6 +201,23 @@ half_plane(d,n) = make_shape {
             0,
         ],
     ],
+    is_2d = true,
+},
+
+// Half-plane whose boundary passes through two points.
+// Right hand rule: palm on p1, fingertips on p2, thumb points to the interior
+// of the half-plane.
+half_plane_p2(p1, p2) = (
+    v = p2 - p1;
+    make_shape {
+        dist p = (dot(p[X,Y], perp v) + dot(perp p1, p2)) / mag v,
+        is_2d = true,
+    }
+),
+
+// Half-plane whose boundary intersects point a, with normal n (a unit vector).
+half_plane_pn(a, n) = make_shape {
+    dist p = dot(n, a-p[X,Y]),
     is_2d = true,
 },
 
@@ -267,7 +284,13 @@ rect_eu b = (
 ),
 
 // regular_polygon: n is # of sides, d is incircle diameter
-regular_polygon(n,d) = half_plane(d/2,[1,0]) >> repeat_radial n >> rotate(-tau/4),
+regular_polygon(n,d) = half_plane_dn(d/2,[1,0]) >> repeat_radial n >> rotate(-tau/4),
+
+// convex polygon: vertices are in counterclockwise order.
+convex_polygon pts = intersection(
+    for (i in [0..<len pts]) half_plane_p2(pts[i], pts[mod(i+1,len pts)]),
+    rect(min pts, max pts) // bounding box
+),
 
 // box: an axis aligned cuboid. Argument is a vec3 or bbox.
 // Mitred distance field.
