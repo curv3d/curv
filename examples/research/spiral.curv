@@ -5,19 +5,19 @@ shell r shape = make_shape {
     is_3d : shape.is_3d,
 };
 path = shell 0 (circle 1);
-path2 = difference(path, rect((-inf,0,-inf),(inf,inf,inf)));
+path2 = difference(path, rect_at((-inf,0,-inf),(inf,inf,inf)));
 //perimeter_extrude path2 (circle .05)
 
 // Archimedes' Spiral.
 // r1 is distance between arm centres. r2 is half thickness of arm.
 // Distance field is broken at the centre. FIXME.
 spiral r1 r2 = make_shape {
-    dist p : abs(rem(mag p + (phase p)/tau*r1, r1) - r1/2) - r2,
-    is_2d : true,
+    dist(x,y,z,t) = abs(rem(mag(x,y) + (phase(x,y))/tau*r1, r1) - r1/2) - r2,
+    is_2d = true,
 };
 //r2 = .1;
 r2 = 0;
-s = union ( spiral 1 r2, rect((-r2,0),(0,0)) );
+s = union ( spiral 1 r2, rect_at((-r2,0),(0,0)) );
 
 perimeter_extrude (s) (circle .1)
 //s >> scale 10 >> distance_field

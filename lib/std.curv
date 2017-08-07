@@ -291,6 +291,36 @@ rect_e b = (
     }
 ),
 
+rect_at = rect_at_m,
+rect_at_m(lo, hi) = (
+  xmin = lo'X;
+  ymin = lo'Y;
+  xmax = hi'X;
+  ymax = hi'Y;
+  intersection (
+    if (xmin > -inf) make_shape {
+      dist(x,y,z,t) = xmin - x,
+      bbox = [[xmin, -inf, 0], [inf, inf, 0]],
+      is_2d = true,
+    },
+    if (ymin > -inf) make_shape {
+      dist(x,y,z,t) = ymin - y,
+      bbox = [[-inf, ymin, 0], [inf, inf, 0]],
+      is_2d = true,
+    },
+    if (xmax < inf) make_shape {
+      dist(x,y,z,t) = x - xmax,
+      bbox = [[-inf, -inf, 0], [xmax, inf, 0]],
+      is_2d = true,
+    },
+    if (ymax < inf) make_shape {
+      dist(x,y,z,t) = y - ymax,
+      bbox = [[-inf, -inf, 0], [inf, ymax, 0]],
+      is_2d = true,
+    },
+  )
+),
+
 // regular_polygon: n is # of sides, d is incircle diameter
 regular_polygon = regular_polygon_m,
 regular_polygon_m(n,d) =
