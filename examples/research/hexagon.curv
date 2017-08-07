@@ -61,4 +61,4 @@ hexagon(r) = make_shape {
 };
 //hexagon 1
 
-extrude_eu 1 (hexagon 1) >> slice_xz >> distance_field
+extrude_e 1 (hexagon 1) >> slice_xy >> distance_field

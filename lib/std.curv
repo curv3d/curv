@@ -79,7 +79,9 @@ circle d = (
         is_2d = true,
     }
 ),
-ellipse(dx,dy) = circle 1 >> scale(dx,dy),
+
+ellipse = ellipse_s,
+ellipse_s(dx,dy) = circle 1 >> scale(dx,dy),
 
 sphere d = (
     r = d / 2;
@@ -89,15 +91,19 @@ sphere d = (
         is_3d = true,
     }
 ),
-ellipsoid(dx,dy,dz) = sphere 1 >> scale(dx,dy,dz),
 
-cylinder(d,h) = extrude h (circle d),
-cylinder_eu(d,h) = extrude_eu h (circle d),
+ellipsoid = ellipsoid_s,
+ellipsoid_s(dx,dy,dz) = sphere 1 >> scale(dx,dy,dz),
 
-// Cone: Z is up, origin is in the middle of the base.
+cylinder = cylinder_e,
+cylinder_m(d,h) = extrude_m h (circle d),
+cylinder_e(d,h) = extrude_e h (circle d),
+
+// Cone: +Z is up, origin is in the middle of the base.
+cone = cone_e,
 // Euclidean distance field.
 // Credit: MERCURY (http://mercury.sexy/hg_sdf)
-cone(d, height) = (
+cone_e(d, height) = (
     radius = d / 2;
     make_shape {
         dist(x,y,z,t) = (
@@ -221,7 +227,8 @@ half_plane_pn(a, n) = make_shape {
     is_2d = true,
 },
 
-square d = (
+square = square_e,
+square_m d = (
   r = d / 2;
   make_shape {
     dist(x,y,z,t) = max(abs(x,y) - r),
@@ -229,10 +236,12 @@ square d = (
     is_2d = true,
   }
 ),
+square_e d = rect_e(d,d),
 
 // rect: an axis aligned rectangle. Argument is a vec2 or a bbox2.
+rect = rect_m,
 // Mitred distance field.
-rect b =
+rect_m b =
   if (is_vec2 b) (
     r = b / 2;
     make_shape {
@@ -268,9 +277,8 @@ rect b =
       },
     )
   ),
-
 // Axis aligned rectangle with a Euclidean distance field. Arg is vec2.
-rect_eu b = (
+rect_e b = (
     assert(is_vec2 b);
     r = b / 2;
     make_shape {
@@ -284,17 +292,21 @@ rect_eu b = (
 ),
 
 // regular_polygon: n is # of sides, d is incircle diameter
-regular_polygon(n,d) = half_plane_dn(d/2,[1,0]) >> repeat_radial n >> rotate(-tau/4),
+regular_polygon = regular_polygon_m,
+regular_polygon_m(n,d) =
+    half_plane_dn(d/2,[1,0]) >> repeat_radial n >> rotate(-tau/4),
 
 // convex polygon: vertices are in counterclockwise order.
-convex_polygon pts = intersection(
+convex_polygon = convex_polygon_m,
+convex_polygon_m pts = intersection(
     for (i in [0..<len pts]) half_plane_p2(pts[i], pts[mod(i+1,len pts)]),
     rect(min pts, max pts) // bounding box
 ),
 
 // box: an axis aligned cuboid. Argument is a vec3 or bbox.
+box = box_m,
 // Mitred distance field.
-box b =
+box_m b =
   if (is_vec3 b) (
     r = b / 2;
     make_shape {
@@ -350,9 +362,9 @@ box b =
     )
   ),
 
-// box_eu: an axis aligned cuboid, with Euclidean distance field.
+// box_e: an axis aligned cuboid, with Euclidean distance field.
 // Argument is a vec3.
-box_eu b = (
+box_e b = (
     r = b / 2;
     make_shape {
         dist(x,y,z,t) = (
@@ -364,13 +376,15 @@ box_eu b = (
     }
 ),
 
-prism(n,d,h) = regular_polygon(n,d) >> extrude h,
+prism = prism_m,
+prism_m(n,d,h) = regular_polygon_m(n,d) >> extrude_m h,
 
 // TODO: pyramid(n,d,h)
 
 // 'd' is the diameter of a sphere inscribed inside the tetrahedron.
 // Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
-tetrahedron d = (
+tetrahedron = tetrahedron_m,
+tetrahedron_m d = (
     r = d / 2;
     // vertices of a tetrahedron
     v1 = [1,1,1];
@@ -405,7 +419,8 @@ tetrahedron d = (
     }
 ),
 
-cube d = (
+cube = cube_m,
+cube_m d = (
   r = d / 2;
   make_shape {
     dist(x,y,z,t) = max(abs(x,y,z) - r),
@@ -417,7 +432,8 @@ cube d = (
 
 // 'd' is the diameter of a sphere inscribed inside the octahedron.
 // Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
-octahedron d = (
+octahedron = octahedron_m,
+octahedron_m d = (
     r = d / 2;
     v0 = normalize(1,1,1);
     v1 = normalize(-1,1,1);
@@ -442,7 +458,8 @@ octahedron d = (
 
 // 'd' is the diameter of a sphere inscribed inside the dodecahedron.
 // Mitred distance field. Pointy side down.
-dodecahedron d = (
+dodecahedron = dodecahedron_m,
+dodecahedron_m d = (
     r = d / 2;
     v0 = normalize(0, phi, 1);
     v1 = normalize(0, -phi, 1);
@@ -471,7 +488,8 @@ dodecahedron d = (
 
 // 'd' is the diameter of a sphere inscribed inside the icosahedron.
 // Mitred distance field.
-icosahedron d = (
+icosahedron = icosahedron_m,
+icosahedron_m d = (
     r = d / 2;
     v0 = normalize(1,1,1);
     v1 = normalize(-1,1,1);
@@ -608,6 +626,7 @@ smooth_max(a,b,k) = -smooth_min(-a,-b,k),
 // AFFINE TRANSFORMATIONS //
 ////////////////////////////
 
+move = translate,
 translate _delta shape = (
     delta = if (len _delta == 2) [_delta[X],_delta[Y],0] else _delta;
     if (shape.is_2d) assert(delta[Z] == 0);
@@ -741,9 +760,10 @@ slice_yz shape = make_shape {
 // on the XY plane with a height of 2*h. Similar to Autocad extrude and
 // OpenSCAD linear_extrude.
 //
-// The standard variant is cheaper, and has a mitred distance field.
-// The _eu variant is the same shape with a Euclidean distance field.
-extrude d shape = (
+// The _m variant is cheaper, and has a mitred distance field.
+// The _e variant is the same shape with a Euclidean distance field.
+extrude = extrude_e,
+extrude_m d shape = (
     h = d / 2;
     make_shape {
         dist p : max(abs(p[Z]) - h, shape.dist(p[X],p[Y],0,p[T])),
@@ -753,7 +773,7 @@ extrude d shape = (
         is_3d : true,
     }
 ),
-extrude_eu d shape = (
+extrude_e d shape = (
     h = d / 2;
     make_shape {
         dist p : (
