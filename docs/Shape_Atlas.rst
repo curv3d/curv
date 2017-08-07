@@ -60,6 +60,7 @@ Signed Distance Fields:
 =========
 ``circle d``
   Construct a circle of diameter ``d``, centred on the origin.
+  Exact distance field.
 
 ``ellipse (dx, dy)``
   Construct an axis-aligned ellipse, centred on the origin,
@@ -81,9 +82,18 @@ Signed Distance Fields:
   * ``rect_m``: mitred distance field, simple code, cheap to compute.
   * ``rect_e``: exact distance field, more expensive.
 
+``rect_at (lo, hi)``
+  Construct an axis-aligned rectangle
+  whose lower-left corner is ``lo``
+  and whose upper-right corner is ``hi``.
+  Unlike ``rect``, this function lets you construct
+  half-infinite rectangles where, eg, the lower X coordinate is
+  finite but the upper Y coordinate is ``inf``.
+
 ``regular_polygon (n, d)``
   Construct a regular polygon, centred on the origin,
   with ``n`` sides, whose inscribed circle has diameter ``d``.
+  Bottom edge is parallel to X axis.
   Cost: constant time and space, regardless of ``n``.
  
   * ``regular_polygon_m``: mitred distance field.
@@ -98,7 +108,8 @@ Signed Distance Fields:
 .. |pentagon| image:: images/pentagon.png
 
 ``convex_polygon vertices``
-  The vertex list is in counter-clockwise order.
+  Construct a convex polygon from a list of vertices in counter-clockwise order.
+  The result is undefined if the vertex list doesn't specify a convex polygon.
   Cost: linear in ``len(vertices)``.
  
   * ``convex_polygon_m``: mitred distance field.
@@ -110,17 +121,24 @@ Signed Distance Fields:
 ``stroke (d, p1, p2)``
   A line of thickness ``d`` drawn from ``p1`` to ``p2``,
   with semicircle end caps of radius ``d/2``.
+  Exact distance field.
 
 ``half_plane_dn (d, n)``
   A half plane with normal vector ``n``,
   whose edge is distance ``d`` from the origin.
-  
+  ``n`` must be a unit vector.
+  If d >= 0, the half-plane contains the origin.
+  Exact distance field.
+
 ``half_plane_pn (p, n)``
   A half plane with normal vector ``n``,
   whose edge passes through point ``p``.
+  ``n`` must be a unit vector.
+  Exact distance field.
 
 ``half_plane_p2 (p1, p2)``
   A half-plane whose edge passes through points p1 and p2.
+  Exact distance field.
 
 ``spline ???``
   TODO.
