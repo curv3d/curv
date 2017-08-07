@@ -8,7 +8,7 @@ This is a research project to identify, classify and implement
 all of the artistically useful operations on signed distance fields
 (the representation Curv uses for geometric shapes).
 
-Each operation will be given an API, and sometimes we'll explore multiple
+Each operation will be given a provisional API, and sometimes we'll explore multiple
 implementations with different tradeoffs.
 
 The ultimate goal is to boil all of this research down into a well
@@ -143,7 +143,7 @@ Signed Distance Fields:
 ``spline ???``
   TODO.
   
-  * draw an open spline curve, by sweeping a circle along the curv.
+  * draw an open spline curve, by sweeping a circle along the curve.
   * draw a closed spline curve by filling the area it encloses.
 
 ``text font string ???``
