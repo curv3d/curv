@@ -64,6 +64,9 @@ Signed Distance Fields:
 ``ellipse (dx, dy)``
   Construct an axis-aligned ellipse, centred on the origin,
   with width ``dx`` and height ``dy``.
+  
+  * ``ellipse_s``: scaled distance field, cheap to compute.
+  * ``ellipse_e``: exact distance field, more expensive to compute.
 
 ``square d``
   Construct an axis-aligned square of width ``d``, centred on the origin.
