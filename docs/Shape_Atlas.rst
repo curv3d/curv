@@ -87,8 +87,11 @@ Signed Distance Fields:
   whose lower-left corner is ``lo``
   and whose upper-right corner is ``hi``.
   Unlike ``rect``, this function lets you construct
-  half-infinite rectangles where, eg, the lower X coordinate is
+  half-infinite rectangles where, eg, the lower Y coordinate is
   finite but the upper Y coordinate is ``inf``.
+  
+  * ``rect_at_m``: mitred distance field
+  * ``rect_at_e``: exact distance field (TODO)
 
 ``regular_polygon (n, d)``
   Construct a regular polygon, centred on the origin,
