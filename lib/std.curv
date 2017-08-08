@@ -755,6 +755,15 @@ rotate a shape =
         }
     ),
 
+reflect_x shape = make_shape {
+    dist(x,y,z,t) = shape.dist(-x,y,z,t),
+    colour(x,y,z,t) = shape.colour(-x,y,z,t),
+    bbox = [ [-shape.bbox[MAX][X], shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
+             [-shape.bbox[MIN][X], shape.bbox[MAX][Y], shape.bbox[MAX][Z]], ],
+    is_2d = shape.is_2d,
+    is_3d = shape.is_3d,
+},
+
 // The slice operators convert a 3D shape to a 2D shape
 // by extracting a planar cross section.
 slice_xy shape = make_shape {
