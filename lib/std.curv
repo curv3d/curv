@@ -333,68 +333,19 @@ convex_polygon_m pts = intersection(
     rect(min pts, max pts) // bounding box
 ),
 
-// box: an axis aligned cuboid. Argument is a vec3 or bbox.
-box = box_m,
-// Mitred distance field.
-box_m b =
-  if (is_vec3 b) (
+// box: an axis aligned cuboid. Argument is a vec3.
+box = box_e,
+box_m b = (
+    assert(is_vec3 b);
     r = b / 2;
     make_shape {
-      dist(x,y,z,t) = max(abs(x,y,z) - r),
-      bbox = [-r, r],
-      is_3d = true,
+        dist(x,y,z,t) = max(abs(x,y,z) - r),
+        bbox = [-r, r],
+        is_3d = true,
     }
-  ) else (
-    /* TODO: Won't compile right now.
-    make_shape {
-      dist(x,y,z,t) = max(max(b[MIN]-[x,y,z]), max([x,y,z]-b[MAX])),
-      bbox = b,
-      is_3d = true,
-    }
-    */
-    xmin = b'0'X;
-    ymin = b'0'Y;
-    zmin = b'0'Z;
-    xmax = b'1'X;
-    ymax = b'1'Y;
-    zmax = b'1'Z;
-    intersection (
-      if (xmin > -inf) make_shape {
-          dist(x,y,z,t) = xmin - x,
-          bbox = [[xmin, -inf, 0], [inf, inf, 0]],
-          is_3d = true,
-      },
-      if (ymin > -inf) make_shape {
-          dist(x,y,z,t) = ymin - y,
-          bbox = [[-inf, ymin, 0], [inf, inf, 0]],
-          is_3d = true,
-      },
-      if (zmin > -inf) make_shape {
-          dist(x,y,z,t) = zmin - z,
-          bbox = [[-inf, zmin, 0], [inf, inf, 0]],
-          is_3d = true,
-      },
-      if (xmax < inf) make_shape {
-          dist(x,y,z,t) = x - xmax,
-          bbox = [[-inf, -inf, 0], [xmax, inf, 0]],
-          is_3d = true,
-      },
-      if (ymax < inf) make_shape {
-          dist(x,y,z,t) = y - ymax,
-          bbox = [[-inf, -inf, 0], [inf, ymax, 0]],
-          is_3d = true,
-      },
-      if (zmax < inf) make_shape {
-          dist(x,y,z,t) = z - zmax,
-          bbox = [[-inf, -inf, 0], [inf, zmax, 0]],
-          is_3d = true,
-      },
-    )
-  ),
-
-// box_e: an axis aligned cuboid, with Euclidean distance field.
-// Argument is a vec3.
+),
 box_e b = (
+    assert(is_vec3 b);
     r = b / 2;
     make_shape {
         dist(x,y,z,t) = (
@@ -404,6 +355,49 @@ box_e b = (
         bbox = [-r, r],
         is_3d = true,
     }
+),
+
+box_at = box_at_m,
+box_at_m (lo,hi) = (
+    /* TODO: Won't compile right now. Also, max(inf,x) broken on some GPUs.
+    make_shape {
+      dist(x,y,z,t) = max(max(b[MIN]-[x,y,z]), max([x,y,z]-b[MAX])),
+      bbox = b,
+      is_3d = true,
+    }
+    */
+    intersection (
+        if (lo'X > -inf) make_shape {
+            dist(x,y,z,t) = lo'X - x,
+            bbox = [[lo'X, -inf, -inf], [inf, inf, inf]],
+            is_3d = true,
+        },
+        if (lo'Y > -inf) make_shape {
+            dist(x,y,z,t) = lo'Y - y,
+            bbox = [[-inf, lo'Y, -inf], [inf, inf, inf]],
+            is_3d = true,
+        },
+        if (lo'Z > -inf) make_shape {
+            dist(x,y,z,t) = lo'Z - z,
+            bbox = [[-inf, -inf, lo'Z], [inf, inf, inf]],
+            is_3d = true,
+        },
+        if (hi'X < inf) make_shape {
+            dist(x,y,z,t) = x - hi'X,
+            bbox = [[-inf, -inf, -inf], [hi'X, inf, inf]],
+            is_3d = true,
+        },
+        if (hi'Y < inf) make_shape {
+            dist(x,y,z,t) = y - hi'Y,
+            bbox = [[-inf, -inf, -inf], [inf, hi'Y, inf]],
+            is_3d = true,
+        },
+        if (hi'Z < inf) make_shape {
+            dist(x,y,z,t) = z - hi'Z,
+            bbox = [[-inf, -inf, -inf], [inf, inf, hi'Z]],
+            is_3d = true,
+        },
+    )
 ),
 
 prism = prism_m,

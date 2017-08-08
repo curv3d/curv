@@ -74,6 +74,6 @@ union(
 
 c = hg_cone(.5, 1);
 difference(
-    box(c.bbox),
+    box_at(c.bbox),
     c
 ) >> slice_xz
