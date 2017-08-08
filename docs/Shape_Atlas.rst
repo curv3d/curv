@@ -82,13 +82,13 @@ Signed Distance Fields:
   * ``rect_m``: mitred distance field, simple code, cheap to compute.
   * ``rect_e``: exact distance field, more expensive.
 
-``rect_at (lo, hi)``
+``rect_at ((xmin,ymin), (xmax,ymax))``
   Construct an axis-aligned rectangle
-  whose lower-left corner is ``lo``
-  and whose upper-right corner is ``hi``.
+  whose lower-left corner is ``(xmin,ymin)``
+  and whose upper-right corner is ``(xmax,ymax)``.
   Unlike ``rect``, this function lets you construct
-  half-infinite rectangles where, eg, the lower Y coordinate is
-  finite but the upper Y coordinate is ``inf``.
+  half-infinite rectangles where, eg, ``ymin`` is
+  finite but ``ymax`` is ``inf``.
   
   * ``rect_at_m``: mitred distance field
   * ``rect_at_e``: exact distance field (TODO)
@@ -156,35 +156,57 @@ Signed Distance Fields:
 =========
 ``sphere d``
   Construct a circle of diameter ``d``, centred on the origin.
+  Exact distance field.
 
 ``ellipsoid (dx, dy, dz)``
   Construct an axis-aligned ellipsoid, centred on the origin,
   with width ``dx``, depth ``dy`` and height ``dz``.
+  
+  * ``ellipsoid_s``: scaled distance field, simple code, cheap to compute.
+  * ``ellipsoid_e``: exact distance field, much more expensive to compute (TODO).
 
 ``cylinder (d, h)``
   Construct a cylinder, centered on the origin, whose axis of rotation is the Z axis.
   Diameter is ``d`` and height is ``h``.
+ 
+  * ``cylinder_m``: mitred distance field.
+  * ``cylinder_e``: exact distance field, more expensive.
 
 ``cone (d, h)``
   Construct a cone.
-  The base (of diameter ``d``) is centered on the origin.
-  The apex points up, is above the origin at height ``h``.
-  Axis of rotation is the Z axis.
+  The base (of diameter ``d``) is embedded in the XY plane and centred on the origin.
+  The apex is above the origin at height ``h``.
+ 
+  * ``cone_m``: mitred distance field. (TODO)
+  * ``cone_e``: exact distance field, more expensive.
 
 ``torus (d1, d2)``
   Construct a torus, centred on the origin, axis of rotation is Z axis.
   Major diameter is ``d1`` (center of tube to centre of tube, crossing the origin).
   Minor diameter is ``d2`` (diameter of the tube).
   Total width of shape is ``d1+d2``.
+  Exact distance field.
 
 ``box (dx, dy, dz)``
   Construct an axis-aligned cuboid of width ``dx``, depth ``dy`` and height ``dz``,
   centred on the origin.
+ 
+  * ``box_m``: mitred distance field.
+  * ``box_e``: exact distance field, more expensive.
+
+``box_at ((xmin,ymin,zmin), (xmax,ymax,zmax))``
+  Construct an axis-aligned cuboid.
+ 
+  * ``box_at_m``: mitred distance field.
+  * ``box_at_e``: exact distance field, more expensive. (TODO)
 
 ``prism (n, d, h)``
   Construct a regular right prism, centred on the origin, of height ``h``.
   The base is a regular polyhedron with ``n`` sides, whose inscribed circle has diameter ``d``,
   parallel to the XY plane.
+ 
+  * ``prism_m``: mitred distance field.
+  * ``prism_e``: exact distance field, more expensive. (TODO)
 
 ``pyramid (n, d, h)``
   Construct a regular right pyramid.
@@ -196,41 +218,68 @@ Signed Distance Fields:
 ``tetrahedron d``
   Construct a regular tetrahedron, centred on the origin.
   Diameter of inscribed sphere is ``d``.
+ 
+  * ``tetrahedron_m``: mitred distance field.
+  * ``tetrahedron_e``: exact distance field, more expensive. (TODO)
 
 ``cube d``
   Construct an axis aligned cube (regular hexahedron), centred on the origin.
   Diameter of inscribed sphere (aka height of cube) is ``d``.
+ 
+  * ``cube_m``: mitred distance field.
+  * ``cube_e``: exact distance field, more expensive.
 
 ``octahedron d``
   Construct a regular octahedron, centred on the origin.
   Diameter of inscribed sphere is ``d``.
+ 
+  * ``octahedron_m``: mitred distance field.
+  * ``octahedron_e``: exact distance field, more expensive. (TODO)
 
 ``dodecahedron d``
   Construct a regular dodecahedron, centred on the origin.
   Diameter of inscribed sphere is ``d``.
+ 
+  * ``dodecahedron_m``: mitred distance field.
+  * ``dodecahedron_e``: exact distance field, more expensive. (TODO)
 
 ``icosahedron d``
   Construct a regular icosahedron, centred on the origin.
   Diameter of inscribed sphere is ``d``.
+ 
+  * ``icosahedron_m``: mitred distance field.
+  * ``icosahedron_e``: exact distance field, more expensive. (TODO)
 
 ``capsule (d, p1, p2)``
   A cylinder of diameter ``d`` whose central axis extends from ``p1`` to ``p2``,
   with the addition of hemispherical end caps of radius ``d/2``.
+  Exact distance field.
 
 ``half_space (d, n)``
   A half-space with normal vector ``n``,
   whose face is distance ``d`` from the origin.
+  Exact distance field.
   
 ``half_space (p1, p2, p3)``
   A half-space whose face passes through points p1, p2, p3, which are not colinear.
   The normal vector is obtained from the points via the right-hand rule.
+  Exact distance field.
   TODO
 
 ``gyroid``
+  The gyroid surface (`<https://en.wikipedia.org/wiki/Gyroid>`_)
+  is an infinite, labyrinthine, curved surface that is popular in 3D printed art.
+  
+  The gyroid surface partitions 3D space into two mirror image but congruent subspaces.
+  The Curv ``gyroid`` constructor is one of these subspaces.
+  You can get the other subspace using ``complement gyroid``,
+  and you can get the gyroid surface using ``shell 0 gyroid``.
+  Approximate distance field.
 
 Rigid Transformations
 =====================
 Distance-preserving transformations of 2D and 3D shapes.
+If the input has an exact distance field, the output is also exact.
 
 ``move (dx,dy) shape``
   Translate a 2D or 3D shape across the XY plane.
