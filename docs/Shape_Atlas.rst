@@ -295,9 +295,15 @@ If the input has an exact distance field, the output is also exact.
   Rotate a 3D shape around the specified axis, counterclockwise,
   by an angle measured in radians.
 
+``rotate quaternion shape``
+  TODO
+
 ``reflect_x shape``
   Reflect a 2D/3D shape across the Y axis/YZ plane,
   mapping each point (x,y)/(x,y,z) to (-x,y)/(-x,y,z).
+
+``reflect normal shape``
+  TODO
 
 ``at p t shape``
   Apply a transformation ``t`` to a shape,
@@ -305,6 +311,12 @@ If the input has an exact distance field, the output is also exact.
   
   Example: ``square 2 >> at (1,1) (rotate(45*deg))``
   rotates the square around the point (1,1).
+
+``align alignspec shape``
+  Using the shape's bounding box,
+  translate the shape to align it relative to the origin,
+  as specified by ``alignspec``.
+  TODO
 
 Non-Rigid Transformations
 =========================
