@@ -82,13 +82,13 @@ Signed Distance Fields:
   * ``rect_m``: mitred distance field, simple code, cheap to compute.
   * ``rect_e``: exact distance field, more expensive.
 
-``rect_at (lo, hi)``
+``rect_at ((xmin,ymin), (xmax,ymax))``
   Construct an axis-aligned rectangle
-  whose lower-left corner is ``lo``
-  and whose upper-right corner is ``hi``.
+  whose lower-left corner is ``(xmin,ymin)``
+  and whose upper-right corner is ``(xmax,ymax)``.
   Unlike ``rect``, this function lets you construct
-  half-infinite rectangles where, eg, the lower Y coordinate is
-  finite but the upper Y coordinate is ``inf``.
+  half-infinite rectangles where, eg, ``ymin`` is
+  finite but ``ymax`` is ``inf``.
   
   * ``rect_at_m``: mitred distance field
   * ``rect_at_e``: exact distance field (TODO)
@@ -174,9 +174,8 @@ Signed Distance Fields:
 
 ``cone (d, h)``
   Construct a cone.
-  The base (of diameter ``d``) is centered on the origin.
-  The apex points up, is above the origin at height ``h``.
-  Axis of rotation is the Z axis.
+  The base (of diameter ``d``) is embedded in the XY plane and centred on the origin.
+  The apex is above the origin at height ``h``.
  
   * ``cone_m``: mitred distance field. (TODO)
   * ``cone_e``: exact distance field, more expensive.
@@ -269,8 +268,10 @@ Signed Distance Fields:
 
 ``gyroid``
   The gyroid surface (`<https://en.wikipedia.org/wiki/Gyroid>`_)
-  is an infinite, labyrinthine, curved surface that partitions 3D space into two mirror image but congruent subspaces.
-  The Curv ``gyroid`` is one of these subspaces.
+  is an infinite, labyrinthine, curved surface that is popular in 3D printed art.
+  
+  The gyroid surface partitions 3D space into two mirror image but congruent subspaces.
+  The Curv ``gyroid`` constructor is one of these subspaces.
   You can get the other subspace using ``complement gyroid``,
   and you can get the gyroid surface using ``shell 0 gyroid``.
   Approximate distance field.
