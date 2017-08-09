@@ -331,7 +331,14 @@ Non-distance-preserving transformations of 2D and 3D shapes.
 ``scale (kx, ky, kz) shape``
   Anisotropic scaling of a 3D shape.
 
-``shear ...``
+``shear_x kx shape``
+  2D horizontal shear, defined on 2D and 3D shapes, mapping ``(x,y,z)`` to ``(x + kx*y, y, z)``.
+  
+  Or maybe the argument should be an angle (like SVG)?
+  TODO
+
+``shear_xy (kx,ky) shape``
+  3D horizontal shear, defined on 3D shapes, mapping ``(x,y,z)`` to ``(x + kx*z, y + ky*z, z)``.
   TODO
 
 ``taper ...``
