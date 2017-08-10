@@ -24,6 +24,7 @@ mod(a,m) = a - m * floor(a/m),
 rem(a,m) = a - m * trunc(a/m),
 mix(a,b,t) = a*(1-t) + b*t,
 clamp(v,lo,hi) = min(max(v,lo),hi),
+isinf x = x == inf || x == -inf,
 
 tan a = sin a / cos a,
 
