@@ -333,13 +333,13 @@ Non-distance-preserving transformations of 2D and 3D shapes.
 
 ``shear_x kx shape``
   2D horizontal shear, defined on 2D and 3D shapes, mapping ``(x,y,z)`` to ``(x + kx*y, y, z)``.
-  Maps a unit square to a parallelogram of height 1 and width ``1+kx``.
-  So ``shear 1`` will double the width of a shape, and ``shear 2`` will triple the width.
+  If ``kx>0``, this maps a unit square to a right-tilting parallelogram of height 1 and width ``1+kx``.
+  So ``shear 1`` will double the width of a square, and ``shear 2`` will triple the width.
   
-  Or maybe the argument should be an angle (like SVG skewX)? ``skewX(a) = shear_x(tan a)``
+  Want to specify the shear factor as a tilt angle, like SVG skewX(a) or CSS skew(a)?
+  Use ``shear_x(tan a)``.
+  The tilt angle is measured clockwise from the +Y axis, ``a==0`` means no tilt.
   
-  TODO
-
 ``shear_xy (kx,ky) shape``
   3D horizontal shear, defined on 3D shapes, mapping ``(x,y,z)`` to ``(x + kx*z, y + ky*z, z)``.
   
