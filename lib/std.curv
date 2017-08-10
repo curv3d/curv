@@ -798,6 +798,12 @@ shear_x kx shape = warp_domain_xy {
     fix_distance(x,y,d) = d, // TODO
 } shape,
 
+taper_x k shape = warp_domain_xy {
+    function(x,y) = (x * (1 - y*k), y),
+    inverse(x,y) = (x / (1 - y*k), y),
+    fix_distance(x,y,d) = d, // TODO
+} shape,
+
 at p t shape = shape >> move(-p) >> t >> move p,
 
 // The slice operators convert a 3D shape to a 2D shape
