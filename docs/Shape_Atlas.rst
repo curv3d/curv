@@ -348,6 +348,17 @@ Non-distance-preserving transformations of 2D and 3D shapes.
   
   TODO
 
+``taper_x k shape``
+  2D dimensional taper along the Y axis.
+  The x coordinate of each point in the shape is scaled based on the y height, and is mapped to ``x * (1 - y*k)``.
+  At ``y==0`` there is no x scaling.
+  
+  Taper factor ``k==0`` means no tapering.
+  For positive k, the width of the shape decreases with increasing Y height,
+  reducing to zero (the vanishing point) at height ``y==1/k``.
+
+  TODO: the distance field is bad.
+
 ``taper ...``
   TODO
 
