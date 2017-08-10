@@ -25,6 +25,8 @@ rem(a,m) = a - m * trunc(a/m),
 mix(a,b,t) = a*(1-t) + b*t,
 clamp(v,lo,hi) = min(max(v,lo),hi),
 
+tan a = sin a / cos a,
+
 // lists
 concat vv = [for (v in vv) for (i in v) i],
 reverse v = v'[len(v)-1..0 by -1],
@@ -685,6 +687,31 @@ scale _s shape = (
     }
 ),
 
+warp_domain_xy warp shape = (
+    bv = map (warp.function) (
+        [shape.bbox[MIN][X], shape.bbox[MIN][Y]],
+        [shape.bbox[MAX][X], shape.bbox[MIN][Y]],
+        [shape.bbox[MAX][X], shape.bbox[MAX][Y]],
+        [shape.bbox[MIN][X], shape.bbox[MAX][Y]],
+    );
+    make_shape {
+        dist(x,y,z,t) = (
+            var p := warp.inverse(x,y);
+            warp.fix_distance(x,y,shape.dist(p[X], p[Y], z, t))
+        ),
+        colour(x,y,z,t) = (
+            var p := warp.inverse(x,y);
+            warp.fix_distance(x,y,shape.colour(p[X], p[Y], z, t))
+        ),
+        bbox = [
+            [ ...min bv, shape.bbox[MIN][Z] ],
+            [ ...max bv, shape.bbox[MAX][Z] ],
+        ],
+        is_2d = shape.is_2d,
+        is_3d = shape.is_3d,
+    }
+),
+
 // rotate angle shape -- 2D rotation around the Z axis
 // rotate (angle,axis) shape -- 3D rotation around specified axis
 rotate a shape =
@@ -763,6 +790,12 @@ reflect_x shape = make_shape {
     is_2d = shape.is_2d,
     is_3d = shape.is_3d,
 },
+
+shear_x kx shape = warp_domain_xy {
+    function(x,y) = (x + kx*y, y),
+    inverse(x,y) = (x - kx*y, y),
+    fix_distance(x,y,d) = d, // TODO
+} shape,
 
 at p t shape = shape >> move(-p) >> t >> move p,
 
