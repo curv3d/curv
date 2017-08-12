@@ -55,9 +55,24 @@ Signed Distance Fields:
   but also on its distance field, so that the shape of the result
   depends on the distance field of one or more arguments. These are "low level" operations,
   since they break the shape abstraction and expose the underlying implementation.
+
+Bounding Box:
+  Each shape has an axis aligned bounding box, which may be either exact or approximate.
+  An approximate bounding box is larger than necessary to contain the shape.
   
+  All of the shape constructors create exact bounding boxes.
+  Some of the shape combinators produce exact bounding boxes if their input is exact,
+  (as documented), but many create approximate bounding boxes.
+  
+  You need to worry about whether a bounding box is approximate or exact
+  if you use a shape combinator that uses the bounding box of its input
+  to determine the shape of its output.
+
+1. Shape Constructors
+=====================
+
 2D Shapes
-=========
+---------
 ``circle d``
   Construct a circle of diameter ``d``, centred on the origin.
   Exact distance field.
@@ -153,7 +168,7 @@ Signed Distance Fields:
   Draw text. TODO
 
 3D Shapes
-=========
+---------
 ``sphere d``
   Construct a circle of diameter ``d``, centred on the origin.
   Exact distance field.
@@ -277,8 +292,23 @@ Signed Distance Fields:
   
   TODO: distance field is bad.
 
+Polydimensional Shapes
+----------------------
+``nothing``
+  A special shape, classified as both 2D and 3D,
+  that contains no geometric points.
+  It's the identity element for the ``union`` operation.
+
+``everything``
+  A special infinite shape, classified as both 2D and 3D,
+  that contains all geometric points.
+  It's the identity element for the ``intersection`` operation.
+
+2. Shape Combinators
+====================
+
 Rigid Transformations
-=====================
+---------------------
 Distance-preserving transformations of 2D and 3D shapes.
 If the input has an exact distance field, the output is also exact.
 
@@ -320,7 +350,7 @@ If the input has an exact distance field, the output is also exact.
   TODO
 
 Non-Rigid Transformations
-=========================
+-------------------------
 Non-distance-preserving transformations of 2D and 3D shapes.
 
 ``scale k shape``
@@ -386,7 +416,7 @@ generalized taper ...
   TODO: bad distance field.
 
 2D -> 3D Transformations
-========================
+------------------------
 
 ``extrude h shape``
 
@@ -411,7 +441,7 @@ generalized taper ...
   TODO
 
 3D -> 2D Transformations
-========================
+------------------------
 
 ``slice_xy shape``
 
@@ -420,17 +450,7 @@ generalized taper ...
 ``slice_yz shape``
 
 Boolean (Set Theoretic) Operations
-==================================
-``nothing``
-  A special shape, classified as both 2D and 3D,
-  that contains no geometric points.
-  It's the identity element for the ``union`` operation.
-
-``everything``
-  A special infinite shape, classified as both 2D and 3D,
-  that contains all geometric points.
-  It's the identity element for the ``intersection`` operation.
-
+----------------------------------
 ``complement shape``
   Reverses inside and outside, so that all points inside the argument
   shape are outside the result shape, and vice versa.
@@ -478,7 +498,7 @@ Boolean (Set Theoretic) Operations
   This is an associative, commutative operation with ``nothing`` as its identity element.
 
 Repetition
-==========
+----------
 ``repeat_x d shape``
 
 ``repeat_xy d shape``
@@ -490,11 +510,11 @@ Repetition
 ``repeat_radial reps shape``
 
 Morph
-=====
+-----
 ``morph k shape1 shape2``
 
-Distance Field Shape Operations
-===============================
+3. Distance Field Shape Operations
+==================================
 These operations construct a shape from one or more distance fields.
 In one or more of the shape arguments, it's the structure of the distance field
 that matters, and not just the shape represented by that distance field.
@@ -516,5 +536,5 @@ Blends
 
 ``smooth_intersection ...``
 
-Distance Field Debugging
-========================
+4. Distance Field Debugging
+===========================
