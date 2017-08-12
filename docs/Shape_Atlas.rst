@@ -358,8 +358,14 @@ Non-distance-preserving transformations of 2D and 3D shapes.
   reducing to zero (the vanishing point) at height ``y==1/k``.
 
   TODO: the distance field is bad.
+  At present, the DF becomes infinitely bad in a region radiating out of the vanishing point,
+  and sphere tracing fails if a ray goes through this region of chaos.
+  
+  The taper transformation maps an infinite number of points onto the vanishing point,
+  which is a singularity. Fixing the distance field will be easier if we don't support shapes
+  that contain the vanishing point within their bounding box.
 
-``taper ...``
+generalized taper ...
   TODO
 
 ``bend ...``
@@ -371,19 +377,18 @@ Non-distance-preserving transformations of 2D and 3D shapes.
   
   TODO: distance field is bad.
 
-``shell d shape``
-  Hollow out the shape, replace it by a shell of thickness ``d`` that is centred on the shape boundary.
-
-``rect_to_polar ...``
-
-``isosurface ...``
+``rect_to_polar d shape``
+  Take the upper half of the XY plane between X==-d/2 and X==d/2,
+  and wrap that radially around the origin to cover the XY plane,
+  by mapping rectangular coordinates in the source region to polar coordinates
+  in the target region.
+  
+  TODO: bad distance field.
 
 2D -> 3D Transformations
 ========================
 
 ``extrude h shape``
-
-``pancake d shape``
 
 ``loft h shape1 shape2``
   TODO
@@ -404,8 +409,6 @@ Non-distance-preserving transformations of 2D and 3D shapes.
   using a stereographic projection,
   and extruded down to the origin.
   TODO
-
-``perimeter_extrude perimeter cross_section``
 
 3D -> 2D Transformations
 ========================
@@ -486,18 +489,32 @@ Repetition
 
 ``repeat_radial reps shape``
 
-Morph and Blend
-===============
-Non-rigid operations for combining two shapes by "melting them together".
-
+Morph
+=====
 ``morph k shape1 shape2``
 
+Distance Field Shape Operations
+===============================
+These operations construct a shape from one or more distance fields.
+In one or more of the shape arguments, it's the structure of the distance field
+that matters, and not just the shape represented by that distance field.
+
+``isosurface ...``
+
+``shell d shape``
+  Hollow out the shape, replace it by a shell of thickness ``d`` that is centred on the shape boundary.
+
+2D -> 3D Transformations
+------------------------
+``pancake d shape``
+
+``perimeter_extrude perimeter cross_section``
+
+Blends
+------
 ``smooth_union ...``
 
 ``smooth_intersection ...``
 
-..
-  Advanced CSG Operations
-  =======================
-  These are expert level CSG operations that break the abstraction of a simple world of geometric shapes,
-  and expose the underlying representation of shapes as Signed Distance Fields.
+Distance Field Debugging
+========================
