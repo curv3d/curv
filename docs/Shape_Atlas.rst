@@ -42,19 +42,26 @@ Colour:
 
 Signed Distance Fields:
   Shapes are represented internally as Signed Distance Fields (SDFs), see `<Theory.rst>`_.
-  The issue here is that a given shape can be represented by many different SDFs, and it's not
-  technically feasible to choose a single normalized SDF representation for all shapes.
+  This is not a unique representation: a given shape can be represented by many different SDFs.
+  In most cases, the user just wants to let the implementation choose an SDF that is fast
+  to compute and fast to render.
   
-  For each operation, we specify not just the shape that is constructed, but also the
-  quality and structure of the resulting Signed Distance Field.
-  In many cases, we specify multiple implementations of an operation with different SDF
-  structures for the result. This usually represents an engineering tradeoff, where a
-  better quality SDF costs more to compute.
+  However, there are some Distance Field Shape Operations (see section 3)
+  that construct a shape based on the SDF of an input shape.
+  These operations are too useful to leave out.
+  For this reason, we document the class of SDF created by each shape operation.
   
-  Some of the operations here operate not just on the shape of an argument,
-  but also on its distance field, so that the shape of the result
-  depends on the distance field of one or more arguments. These are "low level" operations,
-  since they break the shape abstraction and expose the underlying implementation.
+  There are 3 SDF classes:
+  
+  exact:
+    The distance field contains the exact Euclidean distance to the nearest boundary.
+    The ``isosurface`` operation will create a rounded offset.
+  mitred:
+    Vertex and edge information is preserved in all isosurfaces.
+    The ``isosurface`` operation will create a mitred offset.
+  approximate:
+    The SDF is implementation dependent, and may change between releases
+    as the code is optimized.
 
 Bounding Box:
   Each shape has an axis aligned bounding box, which may be either exact or approximate.
