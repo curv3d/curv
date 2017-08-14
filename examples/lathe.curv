@@ -1,18 +1,8 @@
-// Spin the upper half (+Y half) of the XY plane around the X axis,
-// to create a 3D shape.
-lathe shape = make_shape {
-    dist p : shape.dist(p[X],mag(p[Y,Z]),0),
-    bbox : [ [shape.bbox[MIN][X],-shape.bbox[MAX][Y],-shape.bbox[MAX][Y]],
-             [shape.bbox[MAX][X],+shape.bbox[MAX][Y],+shape.bbox[MAX][Y]] ],
-    is_3d : true,
-};
 function(f) = make_shape {
     dist p : p'Y - f(p'X),
     is_2d : true,
 };
-//function(x->sin x + 2) >> lathe >> lipschitz 2
 function(x->sin x - 2)
     >> rotate(90*deg)
     >> complement
-    >> rotate_extrude >> lipschitz 2
-
+    >> revolve >> lipschitz 2

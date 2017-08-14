@@ -164,7 +164,7 @@ stroke(d,a,b) = (
 torus (d1,d2) = perimeter_extrude (circle d1) (circle d2),
 
 // from OpenSCAD
-rotate_extrude shape = perimeter_extrude (circle 0) shape,
+revolve shape = perimeter_extrude (circle 0) shape,
 
 // A generalized torus. Sweep a 2D shape around the perimeter of another
 // 2D shape.

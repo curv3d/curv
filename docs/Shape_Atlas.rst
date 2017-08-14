@@ -478,7 +478,7 @@ generalized taper ...
 ``loft h shape1 shape2``
   TODO
 
-``rotate_extrude shape``
+``revolve shape``
   The half-plane defined by ``x >= 0`` is rotated 90°, mapping the +Y axis to the +Z axis.
   Then this half-plane is rotated around the Z axis, creating a solid of revolution.
 
