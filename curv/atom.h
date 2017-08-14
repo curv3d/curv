@@ -60,6 +60,7 @@ public:
     }
 
     inline size_t size() const { return (*this)->size(); }
+    inline const char* data() const { return (*this)->data(); }
     inline char operator[](size_t i) const { return (**this)[i]; }
 
     friend void swap(Atom& a1, Atom& a2) noexcept
@@ -71,6 +72,13 @@ public:
         //out << "`" << *a << "`";
         out << *a;
         return out;
+    }
+
+    Value to_value() const
+    {
+        // Currently, we copy the string data, because an Atom is immutable,
+        // but a Value can only be constructed from a mutable String reference.
+        return {String::make(data(), size())};
     }
 };
 

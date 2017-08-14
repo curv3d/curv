@@ -58,4 +58,16 @@ Module::hasfield(Atom name) const
     return (b != dictionary_->end());
 }
 
+Shared<List>
+Module::dom() const
+{
+    auto list = List::make(dictionary_->size());
+    int i = 0;
+    for (auto f : *dictionary_) {
+        list->at(i) = f.first.to_value();
+        ++i;
+    }
+    return list;
+}
+
 } // namespace curv

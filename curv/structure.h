@@ -6,7 +6,7 @@
 #define CURV_STRUCTURE_H
 
 #include <curv/atom.h>
-#include <curv/value.h>
+#include <curv/list.h>
 
 namespace curv {
 
@@ -28,6 +28,8 @@ struct Structure : public Ref_Value
     virtual void putfields(Atom_Map<Value>&) const = 0;
 
     virtual size_t size() const = 0;
+
+    virtual Shared<List> dom() const = 0;
 
     static const char name[];
 };

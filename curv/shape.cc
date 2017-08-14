@@ -147,6 +147,18 @@ Shape::size() const
     return fields_.size();
 }
 
+Shared<List>
+Shape::dom() const
+{
+    auto list = List::make(fields_.size());
+    int i = 0;
+    for (auto f : fields_) {
+        list->at(i) = f.first.to_value();
+        ++i;
+    }
+    return list;
+}
+
 Polyadic_Function&
 Shape::dist(const Context& cx) const
 {

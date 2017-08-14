@@ -108,6 +108,7 @@ struct Module final : public Structure
     virtual bool hasfield(Atom) const override;
     virtual void putfields(Atom_Map<Value>&) const override;
     virtual size_t size() const override { return dictionary_->size(); }
+    virtual Shared<List> dom() const override;
 
     static const char name[];
 };

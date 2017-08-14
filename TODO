@@ -95,8 +95,6 @@ BUGS:
 * fix memory leak: `sum = reduce(0,(x,y)->x+y)` leaks memory. ideas/Leak.md
 
 core language:
-* struct:
-  * `dom` maps a struct to a list of keys; maps a list to a range of indexes.
 * syntax changes:
   * remove a'b
   * permit a choice of `,` or `;` in `{...}` constructors.
@@ -168,9 +166,6 @@ item ::= disjunction `where` item -- alternate block syntax
 Generator is coerced to a list in expression context. For ease of use:
 * union (for (i in a) shape(i)) -- no need for trailing , or extra [ ]
 * 1..10 is a generator. [1..3, 5, 8] and for (i in 1..10) both work.
-
-Polymorphic list/record/module operations:
-* `dom s` is list of indexes of s
 
 Use.
 * use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace,
@@ -308,8 +303,6 @@ Build up the standard library.
 Linear algebra:
   pow(square_matrix,i),
   determinant(square_matrix), inverse(square_matrix) -- difficult
-
-  dom(a) = [0..count(a)-1];
 
 Vectorized boolean operations:
 * Vectorized relations are:

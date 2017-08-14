@@ -517,6 +517,22 @@ struct Count_Function : public Polyadic_Function
         throw Exception(At_Arg(args), "not a list or structure");
     }
 };
+struct Dom_Function : public Polyadic_Function
+{
+    Dom_Function() : Polyadic_Function(1) {}
+    Value call(Frame& args) override
+    {
+        if (auto list = args[0].dycast<const List>()) {
+            Shared<List> dom = List::make(list->size());
+            for (unsigned i = 0; i < list->size(); ++i)
+                dom->at(i) = {double(i)};
+            return {dom};
+        }
+        if (auto structure = args[0].dycast<const Structure>())
+            return {structure->dom()};
+        throw Exception(At_Arg(args), "not a list or structure");
+    }
+};
 
 struct File_Function : public Polyadic_Function
 {
@@ -770,6 +786,7 @@ builtin_namespace()
     {"dot", make<Builtin_Value>(Value{make<Dot_Function>()})},
     {"mag", make<Builtin_Value>(Value{make<Mag_Function>()})},
     {"count", make<Builtin_Value>(Value{make<Count_Function>()})},
+    {"dom", make<Builtin_Value>(Value{make<Dom_Function>()})},
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},
     {"make_shape", make<Builtin_Value>(Value{make<Make_Shape_Function>()})},
     {"iterate", make<Builtin_Value>(Value{make<Iterate_Function>()})},
