@@ -1070,7 +1070,7 @@ twist d shape = (
 // by mapping rectangular coordinates in the source region to polar coordinates
 // in the target region.
 // Beware of the distance field.
-rect_to_polar d shape = (
+bend d shape = (
     r = d / 2;
     make_shape {
         dist p : shape.dist(phase(p[X,Y])/pi*r, mag(p[X,Y]), p[Z], p[T]),

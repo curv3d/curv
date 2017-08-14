@@ -441,7 +441,7 @@ torus(2,1)
 <pre class="literal-block">
 smooth_intersection .1 (
   torus(tau*2,tau),
-  gyroid &gt;&gt; shell .1 &gt;&gt; lipschitz 2 &gt;&gt; rect_to_polar (tau*6),
+  gyroid &gt;&gt; shell .1 &gt;&gt; lipschitz 2 &gt;&gt; bend (tau*6),
 ) &gt;&gt; colour (hsv2rgb(1/3,1,.5))
 </pre>
 </div>

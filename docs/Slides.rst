@@ -77,7 +77,7 @@ Constructive Solid Geometry (4)
 
   smooth_intersection .1 (
     torus (tau*4, tau*2),
-    gyroid >> shell .2 >> lipschitz 2 >> rect_to_polar (tau*12),
+    gyroid >> shell .2 >> lipschitz 2 >> bend (tau*12),
   ) >> colour (hsv2rgb (1/3, 1, .5))
 
 Function Representation

@@ -461,16 +461,13 @@ Non-distance-preserving transformations of 2D and 3D shapes.
 generalized taper ...
   TODO
 
-``bend ...``
-  TODO
-
 ``twist d shape``
   Twist a 3D shape around the Z axis. One full revolution for each ``d`` units along the Z axis.
   Lines parallel to the Z axis will be twisted into a helix.
   
   TODO: distance field is bad.
 
-``rect_to_polar d shape``
+``bend d shape``
   Take the upper half of the XY plane between X==-d/2 and X==d/2,
   and wrap that radially around the origin to cover the XY plane,
   by mapping rectangular coordinates in the source region to polar coordinates
