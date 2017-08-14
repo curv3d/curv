@@ -39,7 +39,7 @@ Value multiply(Value a, Value b, const Context& cx)
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
 //  dot(a,b) =
-//    if (len a > 0 && is_list(a[0]))
+//    if (count a > 0 && is_list(a[0]))
 //      [for(row=a)dot(row,b)]  // matrix*...
 //    else
 //      sum(a*b),               // vector*...

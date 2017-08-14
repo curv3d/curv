@@ -246,12 +246,12 @@ TEST(curv, eval)
         "line 2(columns 1-3)\n"
         "  f()\n"
         "  ^--");
-    SUCCESS("len()", "0");
-    FAILALL("len 0",
+    SUCCESS("count()", "0");
+    FAILALL("count 0",
         "not a list\n"
-        "line 1(column 5)\n"
-        "  len 0\n"
-        "      ^");
+        "line 1(column 7)\n"
+        "  count 0\n"
+        "        ^");
     SUCCESS("true||false", "true");
     SUCCESS("false||true", "true");
     SUCCESS("false||false", "false");
@@ -264,7 +264,7 @@ TEST(curv, eval)
     FAILMSG("true&&null", "not a boolean value");
     SUCCESS("true&&true", "true");
 
-    FAILMSG("len(if (true) [])",
+    FAILMSG("count(if (true) [])",
         "if: not an expression (missing else clause)");
 
     SUCCESS("null==null", "true");
@@ -317,12 +317,12 @@ TEST(curv, eval)
     SUCCESS("add=x->y->x+y;add(1)(2)", "3");
     SUCCESS("add(x)(y) = x+y;add(1)(2)", "3");
     SUCCESS(
-        "sum = (list,i,f)->if (i < len list) list'i+f(list,i+1,f) else 0;"
+        "sum = (list,i,f)->if (i < count list) list'i+f(list,i+1,f) else 0;"
         "sum([1,2,3],0,sum)",
         "6");
     SUCCESS(
         "/* tail-recursive function */"
-        "sum = (list,i)->if (i < len list) list'i+sum(list,i+1) else 0;"
+        "sum = (list,i)->if (i < count list) list'i+sum(list,i+1) else 0;"
         "sum([1,2,3],0)",
         "6");
     SUCCESS(

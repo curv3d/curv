@@ -135,7 +135,7 @@ Bounding Box:
 ``convex_polygon vertices``
   Construct a convex polygon from a list of vertices in counter-clockwise order.
   The result is undefined if the vertex list doesn't specify a convex polygon.
-  Cost: linear in ``len(vertices)``.
+  Cost: linear in ``count(vertices)``.
  
   * ``convex_polygon_m``: mitred distance field.
   * ``convex_polygon_e``: exact distance field (TODO).

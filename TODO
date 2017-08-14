@@ -95,8 +95,6 @@ BUGS:
 * fix memory leak: `sum = reduce(0,(x,y)->x+y)` leaks memory. ideas/Leak.md
 
 core language:
-* Rename `len` to `size`. Rationale: in linear algebra, the 'length' of a
-  vector is its magnitude.
 * struct:
   * `dom` maps a struct to a list of keys; maps a list to a range of indexes.
 * syntax changes:
@@ -173,7 +171,7 @@ Generator is coerced to a list in expression context. For ease of use:
 
 Polymorphic list/record/module operations:
 * `dom s` is list of indexes of s
-* `len s` is # elements of s
+* `count s` is # elements of s
 
 Use.
 * use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace,
@@ -312,7 +310,7 @@ Linear algebra:
   pow(square_matrix,i),
   determinant(square_matrix), inverse(square_matrix) -- difficult
 
-  dom(a) = [0..len(a)-1];
+  dom(a) = [0..count(a)-1];
 
 Vectorized boolean operations:
 * Vectorized relations are:
@@ -443,7 +441,7 @@ nary union:
     * In OpenSCAD, `*` is a prefix operator that ignores the following shape.
     * In Curv, maybe `ignore(arg)` is an action that evaluates and ignores arg.
   * enter_debugger, aka `break`, `debug`
-* len(module), module[i]
+* count(module), module[i]
 * records: merge[r1,r2]
   I don't want `merge` to accept modules as arguments: overriding an existing
   module field doesn't work if the module also contains functions closed over
@@ -656,7 +654,6 @@ Other:
 * smart pointers, see docs/Shared_Ptr.md
 
 # CURV1 (scripts, LLVM)
-* pattern matching: hypot[x,y] = sqrt(x^2+y^2).
 * LLVM based evaluator. Compile Meaning to LLVM IR.
   Embed raw function pointers and Values in IR as bit patterns.
 * Benchmarks
@@ -664,16 +661,10 @@ Other:
 # CURV2 (nested scopes)
 * printing a function? currently, <function>, even for builtins
 
-# CURV3 (simple geometry)
-* F-Rep: cube, sphere, affine transforms, boolean CSG
-* implement 3d primitives in Curv using shape3d. (also is_shape)
-  * this means: I'm implementing language features I need for defining geometry
-* preview using ray marching--convert CSG tree to GLSL
-
 # CURV4 (geometry export)
 * use dual contouring instead of marching cubes for STL export
 * does OpenCL speed this up?
-* SVX export?
+* SVX export? Does Shapeways still support this?
 
 # Ongoing:
 * more unit tests

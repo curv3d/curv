@@ -505,9 +505,9 @@ struct Mag_Function : public Polyadic_Function
     }
 };
 
-struct Len_Function : public Polyadic_Function
+struct Count_Function : public Polyadic_Function
 {
-    Len_Function() : Polyadic_Function(1) {}
+    Count_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
         auto& list = arg_to_list(args[0], At_Arg(args));
@@ -565,7 +565,7 @@ struct Iterate_Function : public Polyadic_Function
         // * The first argument can be a constant or unevaluated expression.
         // * The final 3 arguments are constant functions or Lambda_Exprs
         //   of the same arity A.
-        // * If A > 1, then first argument is a list or List_Expr of len A.
+        // * If A > 1, then first argument is a list or List_Expr of count A.
 
         // To simplify the code, gl_to_list(Operation&,GL_Frame&) converts an
         // argument expression to a List_Expr. A Constant(list) is converted.
@@ -766,7 +766,7 @@ builtin_namespace()
     {"min", make<Builtin_Value>(Value{make<Min_Function>()})},
     {"dot", make<Builtin_Value>(Value{make<Dot_Function>()})},
     {"mag", make<Builtin_Value>(Value{make<Mag_Function>()})},
-    {"len", make<Builtin_Value>(Value{make<Len_Function>()})},
+    {"count", make<Builtin_Value>(Value{make<Count_Function>()})},
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},
     {"make_shape", make<Builtin_Value>(Value{make<Make_Shape_Function>()})},
     {"iterate", make<Builtin_Value>(Value{make<Iterate_Function>()})},

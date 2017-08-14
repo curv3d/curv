@@ -78,7 +78,7 @@ assert(
 
 assert(
     Sum list = iterate(
-        [0,0], (i,t)->i<len list, (i,t)->(i+1,t+list[i]), (i,t)->t);
+        [0,0], (i,t)->i<count list, (i,t)->(i+1,t+list[i]), (i,t)->t);
     Sum(1,2,3) == 6
 ),
 
@@ -136,7 +136,7 @@ assert(
     Sum list = (
         var i := 0;
         var total := 0;
-        while (i < len list) (
+        while (i < count list) (
             total := total + list[i];
             i := i + 1;
         );

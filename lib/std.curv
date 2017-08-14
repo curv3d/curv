@@ -30,12 +30,12 @@ tan a = sin a / cos a,
 
 // lists
 concat vv = [for (v in vv) for (i in v) i],
-reverse v = v'[len(v)-1..0 by -1],
+reverse v = v'[count(v)-1..0 by -1],
 map f list = [for (x in list) f x],
 filter p list = [for (x in list) if (p x) x],
 reduce (zero, f) list = if (list == []) zero else (
     var r := list[0];
-    for (i in [1..<len list])
+    for (i in [1..<count list])
         r := f(r, list[i]);
     r
 ),
@@ -51,11 +51,11 @@ csqr(z) = [ z[RE]*z[RE] - z[IM]*z[IM], 2*z[RE]*z[IM] ],
 ////////////////////
 // Linear Algebra //
 ////////////////////
-is_vec2 x = is_list x && len x == 2 && is_num(x[0]) && is_num(x[1]),
-is_vec3 x = is_list x && len x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]),
+is_vec2 x = is_list x && count x == 2 && is_num(x[0]) && is_num(x[1]),
+is_vec3 x = is_list x && count x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]),
 cross(p,q) = [p[Y]*q[Z] - p[Z]*q[Y], p[Z]*q[X] - p[X]*q[Z], p[X]*q[Y] - p[Y]*q[X]],
 identity(n) = [for(i in [1..n]) [for(j in [1..n]) if(i==j) 1 else 0]],
-transpose(a) = [for(i in [0..<len(a'0)]) [for(j in [0..<len a]) a'j'i]],
+transpose(a) = [for(i in [0..<count(a'0)]) [for(j in [0..<count a]) a'j'i]],
 normalize v = v / mag v,
 
 // phase angle of a vector, range tau/2 to -tau/2
@@ -332,7 +332,7 @@ regular_polygon_m(n,d) =
 // convex polygon: vertices are in counterclockwise order.
 convex_polygon = convex_polygon_m,
 convex_polygon_m pts = intersection(
-    for (i in [0..<len pts]) half_plane_p2(pts[i], pts[mod(i+1,len pts)]),
+    for (i in [0..<count pts]) half_plane_p2(pts[i], pts[mod(i+1,count pts)]),
     rect(min pts, max pts) // bounding box
 ),
 
@@ -655,7 +655,7 @@ smooth_max(a,b,k) = -smooth_min(-a,-b,k),
 
 move = translate,
 translate _delta shape = (
-    delta = if (len _delta == 2) [_delta[X],_delta[Y],0] else _delta;
+    delta = if (count _delta == 2) [_delta[X],_delta[Y],0] else _delta;
     if (shape.is_2d) assert(delta[Z] == 0);
     make_shape {
         // TODO: dist(x,y,z,t) : shape.dist(...[x,y,z]-delta, t),
@@ -742,7 +742,7 @@ rotate a shape =
             is_3d : shape.is_3d,
         }
     ) else (
-        assert(is_list a && len a == 2);
+        assert(is_list a && count a == 2);
         angle = a[0];
         axis = normalize(a[1]);
         assert(shape.is_3d);
