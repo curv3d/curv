@@ -27,6 +27,7 @@ clamp(v,lo,hi) = min(max(v,lo),hi),
 isinf x = x == inf || x == -inf,
 
 tan a = sin a / cos a,
+atan x = atan2(x,1),
 
 // lists
 concat vv = [for (v in vv) for (i in v) i],
