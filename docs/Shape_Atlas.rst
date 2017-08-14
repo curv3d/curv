@@ -95,8 +95,8 @@ to determine the shape of its output.
 ``ellipse (dx, dy)``
   Construct an axis-aligned ellipse, centred on the origin,
   with width ``dx`` and height ``dy``.
+  Approximate distance field.
   
-  * ``ellipse_s``: scaled distance field, simple code, cheap to compute.
   * ``ellipse_e``: exact distance field, much more expensive to compute (TODO).
 
 ``square d``
@@ -191,8 +191,8 @@ to determine the shape of its output.
 ``ellipsoid (dx, dy, dz)``
   Construct an axis-aligned ellipsoid, centred on the origin,
   with width ``dx``, depth ``dy`` and height ``dz``.
+  Approximate distance field.
   
-  * ``ellipsoid_s``: scaled distance field, simple code, cheap to compute.
   * ``ellipsoid_e``: exact distance field, much more expensive to compute (TODO).
 
 ``cylinder (d, h)``
