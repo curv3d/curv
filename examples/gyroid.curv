@@ -1,5 +1,5 @@
-gyroid_bones = gyroid >> isosurface (-1.2) >> lipschitz 1.5;
-gyroid_bones2 = complement gyroid >> isosurface (-1.2) >> lipschitz 1.5;
+gyroid_bones = gyroid >> inflate (-1.2) >> lipschitz 1.5;
+gyroid_bones2 = complement gyroid >> inflate (-1.2) >> lipschitz 1.5;
 double_gyroid_bones = union(
     colour blue gyroid_bones,
     colour green gyroid_bones2,

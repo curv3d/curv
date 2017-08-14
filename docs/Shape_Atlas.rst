@@ -55,10 +55,10 @@ Signed Distance Fields:
   
   exact:
     The distance field contains the exact Euclidean distance to the nearest boundary.
-    The ``isosurface`` operation will create a rounded offset.
+    The ``inflate`` operation will create a rounded offset.
   mitred:
     Vertex and edge information is preserved in all isosurfaces.
-    The ``isosurface`` operation will create a mitred offset.
+    The ``inflate`` operation will create a mitred offset.
   approximate:
     The SDF is implementation dependent, and may change between releases
     as the code is optimized.
@@ -526,7 +526,7 @@ These operations construct a shape from one or more distance fields.
 In one or more of the shape arguments, it's the structure of the distance field
 that matters, and not just the shape represented by that distance field.
 
-``isosurface ...``
+``inflate ...``
 
 ``shell d shape``
   Hollow out the shape, replace it by a shell of thickness ``d`` that is centred on the shape boundary.

@@ -5,7 +5,7 @@ neovius = make_shape {
 };
 
 /*
-gyroid_bones = isosurface (-1.2) gyroid >> lipschitz 1.5;
+gyroid_bones = inflate (-1.2) gyroid >> lipschitz 1.5;
 
 gyroid_surface = shell (.2) gyroid >> lipschitz 1.5;
 

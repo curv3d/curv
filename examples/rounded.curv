@@ -1,5 +1,5 @@
 // 'b' is a vec3
-rounded_box(r, b) = isosurface r << box_e(b - 2*r);
+rounded_box(r, b) = inflate r << box_e(b - 2*r);
 
 union (
     rounded_box(.5, [2,2,2]),
