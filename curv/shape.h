@@ -40,6 +40,7 @@ struct Shape : public Structure
     virtual Value getfield(Atom, const Context&) const override;
     virtual bool hasfield(Atom) const override;
     virtual void putfields(Atom_Map<Value>&) const override;
+    virtual size_t size() const override;
 
     Polyadic_Function& dist(const Context&) const;
     BBox bbox(const Context&) const;

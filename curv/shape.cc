@@ -141,6 +141,12 @@ Shape::putfields(Atom_Map<Value>& out) const
         out[i.first] = i.second;
 }
 
+size_t
+Shape::size() const
+{
+    return fields_.size();
+}
+
 Polyadic_Function&
 Shape::dist(const Context& cx) const
 {

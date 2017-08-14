@@ -23,7 +23,7 @@ namespace curv {
 /// I've wanted lazy evaluation as a performance optimization, especially for
 /// large libraries where most components aren't used. However, for now,
 /// strict evaluation is simpler.
-struct Module : public Structure
+struct Module final : public Structure
 {
     /// A Dictionary maps field names onto slot indexes.
     /// It has a reference count so that the same dictionary
@@ -70,8 +70,6 @@ struct Module : public Structure
     Value get(slot_t i) const;
 
     // We provide a container interface for accessing the fields, like std::map.
-    size_t size() const { return dictionary_->size(); }
-
     struct iterator
     {
         const Module& m_;
@@ -109,6 +107,7 @@ struct Module : public Structure
     virtual Value getfield(Atom, const Context&) const override;
     virtual bool hasfield(Atom) const override;
     virtual void putfields(Atom_Map<Value>&) const override;
+    virtual size_t size() const override { return dictionary_->size(); }
 
     static const char name[];
 };

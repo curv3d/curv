@@ -171,7 +171,6 @@ Generator is coerced to a list in expression context. For ease of use:
 
 Polymorphic list/record/module operations:
 * `dom s` is list of indexes of s
-* `count s` is # elements of s
 
 Use.
 * use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace,
@@ -441,7 +440,6 @@ nary union:
     * In OpenSCAD, `*` is a prefix operator that ignores the following shape.
     * In Curv, maybe `ignore(arg)` is an action that evaluates and ignores arg.
   * enter_debugger, aka `break`, `debug`
-* count(module), module[i]
 * records: merge[r1,r2]
   I don't want `merge` to accept modules as arguments: overriding an existing
   module field doesn't work if the module also contains functions closed over

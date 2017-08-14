@@ -510,8 +510,11 @@ struct Count_Function : public Polyadic_Function
     Count_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
-        auto& list = arg_to_list(args[0], At_Arg(args));
-        return {double(list.size())};
+        if (auto list = args[0].dycast<const List>())
+            return {double(list->size())};
+        if (auto structure = args[0].dycast<const Structure>())
+            return {double(structure->size())};
+        throw Exception(At_Arg(args), "not a list or structure");
     }
 };
 

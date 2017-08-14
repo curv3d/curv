@@ -63,4 +63,10 @@ Record::hasfield(Atom name) const
     return (fp != fields_.end());
 }
 
+size_t
+Record::size() const
+{
+    return fields_.size();
+}
+
 } // namespace curv
