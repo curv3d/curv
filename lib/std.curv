@@ -84,8 +84,7 @@ circle d = (
     }
 ),
 
-ellipse = ellipse_s,
-ellipse_s(dx,dy) = circle 1 >> scale(dx,dy),
+ellipse(dx,dy) = circle 1 >> scale(dx,dy),
 
 sphere d = (
     r = d / 2;
@@ -96,8 +95,7 @@ sphere d = (
     }
 ),
 
-ellipsoid = ellipsoid_s,
-ellipsoid_s(dx,dy,dz) = sphere 1 >> scale(dx,dy,dz),
+ellipsoid(dx,dy,dz) = sphere 1 >> scale(dx,dy,dz),
 
 cylinder = cylinder_e,
 cylinder_m(d,h) = extrude_m h (circle d),
