@@ -1,0 +1,24 @@
+eps = .1;
+with_axes shape = union (
+    shape,
+    box(inf, eps, eps) >> colour red,
+    box(eps, inf, eps) >> colour green,
+    box(eps, eps, inf) >> colour blue,
+);
+
+w = 5;
+c = 99.2;
+
+rect(1,inf)
+>> repeat_x 2
+>> rotate(60*deg)
+>> repeat_mirror_x
+>> crop (rect(w,c))
+>> extrude .5
+>> rotate(90*deg, Xaxis)
+>> move (0, w)
+>> bend 40
+>> rotate (90*deg)
+>> rotate (90*deg, Yaxis)
+>> bend c >> lipschitz 3
+//>> with_axes
