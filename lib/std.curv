@@ -1133,8 +1133,8 @@ shell d shape = (
 ),
 
 // Super kludgy function to scale a shape's distance field,
-// to compensate for a Lipshitz constant that is > 1.
-// So 'k' is the Lipshitz constant.
+// to compensate for a Lipschitz constant that is > 1.
+// So 'k' is the Lipschitz constant.
 // Try k=2 to fix a 3D shape that doesn't render properly.
 lipschitz k shape = make_shape {
     dist p : shape.dist p / k,
@@ -1148,7 +1148,7 @@ lipschitz k shape = make_shape {
 // or with rainbow colour where it is > 1 and <= n (bad)
 // or with white where it is > n (worst).
 // Debug strategy: find the smallest value of n that doesn't produce white,
-// and that's your Lipshitz constant. Try n=2 as an initial value.
+// and that's your Lipschitz constant. Try n=2 as an initial value.
 gradient n shape = make_shape {
     dist : everything.dist,
     colour p : (
