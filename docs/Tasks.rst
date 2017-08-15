@@ -102,7 +102,7 @@ Geometry Engine
   * Eg, recursive subdivision and interval arithmetic in a compute shader?
   * Eg, cache expensive subshapes, eg in a 2D/3D texture distance field.
 
-* Support for non-Lipshitz distance functions.
+* Support for non-Lipschitz distance functions.
 
   * Eg, recursive subdivision and interval arithmetic in a compute shader.
 

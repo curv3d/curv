@@ -20,7 +20,7 @@
 // When the boundary is voxelized, the boundary can be pushed out by up
 // to n/2. So, far away from the object (the exterior), we subtract n/2 from
 // the distance. Closer in, if we detect boundary voxels as immediate
-// neighbours, then we modify the distance field so that it is Lipshitz
+// neighbours, then we modify the distance field so that it is Lipschitz
 // continuous and correct (but not Euclidean).
 //
 // Suppose I just voxelize the distance field, don't worry about colour.

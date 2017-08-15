@@ -281,7 +281,7 @@ The skeleton tendrils attached to each vertex of the rectangle shoot out past th
 
 According to John C. Hart, author of the original academic papers on SDFs,
 the only restriction is that an SDF cannot overestimate the distance from each point to the closest boundary.
-In math terms, an SDF must be Lipschitz Continuous, with a Lipshitz constant of 1.
+In math terms, an SDF must be Lipschitz Continuous, with a Lipschitz constant of 1.
 It's a continuous function which is limited in how fast it can change.
 For every pair of points in an SDF, the absolute value of the slope of the line connecting
 the points is not greater than 1.
