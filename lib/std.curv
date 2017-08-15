@@ -1166,4 +1166,14 @@ gradient n shape = make_shape {
     is_2d : true,
 },
 
+with_axes shape = (
+    eps = .1;
+    union (
+        shape,
+        box(inf, eps, eps) >> colour red,
+        box(eps, inf, eps) >> colour green,
+        box(eps, eps, inf) >> colour blue,
+    )
+),
+
 }
