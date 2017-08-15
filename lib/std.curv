@@ -1167,13 +1167,20 @@ gradient n shape = make_shape {
 },
 
 with_axes shape = (
-    eps = .1;
-    union (
-        shape,
-        box(inf, eps, eps) >> colour red,
-        box(eps, inf, eps) >> colour green,
-        box(eps, eps, inf) >> colour blue,
-    )
+    eps = .05;
+    if (shape.is_2d)
+        union (
+            shape,
+            rect(eps, inf) >> colour green,
+            rect(inf, eps) >> colour red,
+        )
+    else
+        union (
+            shape,
+            box(inf, eps, eps) >> colour red,
+            box(eps, inf, eps) >> colour green,
+            box(eps, eps, inf) >> colour blue,
+        )
 ),
 
 }
