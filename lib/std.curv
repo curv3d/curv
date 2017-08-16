@@ -458,6 +458,7 @@ cube_m d = (
     circumratio = sqrt 3,
   }
 ),
+cube_e d = box_e(d,d,d),
 
 // 'd' is the diameter of a sphere inscribed inside the octahedron.
 // Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
