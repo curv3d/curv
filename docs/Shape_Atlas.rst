@@ -561,6 +561,8 @@ Blends
 
 ``smooth_intersection k (shape1, shape2)``
 
+``smooth_difference k (shape1, shape2)``
+
 4. Distance Field Debugging
 ===========================
 

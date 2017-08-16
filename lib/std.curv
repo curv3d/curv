@@ -611,8 +611,7 @@ symmetric_difference shapes = difference(union shapes, intersection shapes),
 
 crop limits shape = intersection(shape, limits),
 
-smooth_union k list = reduce(nothing, _smooth_union2 k) list,
-_smooth_union2 k (s1,s2) = make_shape {
+smooth_union k (s1,s2) = make_shape {
     dist p : smooth_min(s1.dist p, s2.dist p, k),
     colour p : (
         var d1 := s1.dist p;
@@ -624,14 +623,15 @@ _smooth_union2 k (s1,s2) = make_shape {
     is_3d : s1.is_3d && s2.is_3d,
 },
 
-smooth_intersection k list = reduce(everything, _smooth_intersection2 k) list,
-_smooth_intersection2 k (s1,s2) = make_shape {
+smooth_intersection k (s1,s2) = make_shape {
     dist p : smooth_max(s1.dist p, s2.dist p, k),
     colour : s1.colour,
     bbox : [max(s1.bbox'0, s2.bbox'0), min(s1.bbox'1, s2.bbox'1)],
     is_2d : s1.is_2d && s2.is_2d,
     is_3d : s1.is_3d && s2.is_3d,
 },
+
+smooth_difference k (s1,s2) = smooth_intersection k (s1, complement s2),
 
 // polynomial smooth min, from IQ
 // http://www.iquilezles.org/www/articles/smin/smin.htm
