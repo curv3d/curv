@@ -488,8 +488,12 @@ generalized taper ...
   * ``extrude_e``: exact distance field.
 
 ``loft d shape1 shape2``
+  Like ``extrude``, except that you specify a lower cross section (``shape1``)
+  and a upper cross section (``shape2``)
+  and we linearly interpolate (morph) between the two shapes while extruding.
   Similar to Autocad ``loft``.
-  TODO
+
+  TODO: bad distance field.
 
 ``revolve shape``
   The half-plane defined by ``x >= 0`` is rotated 90°, mapping the +Y axis to the +Z axis.

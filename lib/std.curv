@@ -873,6 +873,17 @@ morph(t, shape1, shape2) = make_shape {
     is_3d : shape1.is_3d && shape2.is_3d,
 },
 
+loft d (shape1, shape2) = (
+    r = d / 2;
+    make_shape {
+        dist(x,y,z,t) = max(
+            abs z - r,
+            mix(shape1.dist(x,y,0,t), shape2.dist(x,y,0,t),
+                (clamp(z, -r, r) + r) / d)),
+        is_3d = true,
+   }
+),
+
 ////////////////
 // REPETITION //
 ////////////////
