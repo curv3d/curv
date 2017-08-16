@@ -71,6 +71,9 @@ cis theta = [cos theta, sin theta],
 // see: 'The Pleasures of "Perp-Dot" Products', Graphics Gems IV.
 perp(x,y) = (y, -x),
 
+// angle between two vectors
+angle(a,b) = acos(dot(a,b) / (mag a * mag b)),
+
 /////////////////////
 // CIRCULAR SHAPES //
 /////////////////////
