@@ -97,7 +97,7 @@ BUGS:
 core language:
 * syntax changes:
   * remove a'b
-  * permit a choice of `,` or `;` in `{...}` constructors.
+  * permit a choice of `,` or `;` in `{...}` constructors?
 
 3D viewer
 * use bbox to ensure entire scene is visible
@@ -162,6 +162,20 @@ item ::= disjunction `where` item -- alternate block syntax
   * Block_Op::gl_eval() -- initialize each slot to GL_MISSING, eval each
     binding, recursing at Letrec_Ref, detect recursive definitions. This will
     output GLSL declarations in dependency order.
+
+Slice notation:
+* Extend vector swizzling, like v[X,Y,Z], with assignment, like v[X,Y,Z] = v2,
+  for GLSL compatibility. Source and destination lists have the same count.
+* a[i..j]. a[i..j] := list. In a range slice assignment,
+  source and destination lists can have different counts.
+* Generalized list slice notation, supporting full list constructor notation,
+  with assignment?
+* Maybe a[..j] and a[i..] as special shortcuts, in this context?
+* Can't support Python negative indexes (-1 indexes the last element)
+  because [0..count a - 1] is a list of the indexes of a, even if a is empty,
+  meaning that [0..-1] denotes []. Maybe I'd need to use separate syntax
+  for slices and ranges, as Python does.
+* Generalized multidimensional array slicing?
 
 Generator is coerced to a list in expression context. For ease of use:
 * union (for (i in a) shape(i)) -- no need for trailing , or extra [ ]
