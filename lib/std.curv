@@ -1135,6 +1135,8 @@ shell d shape = (
     }
 ),
 
+pancake d shape = shape >> extrude_e 0 >> inflate (d/2),
+
 // Super kludgy function to scale a shape's distance field,
 // to compensate for a Lipschitz constant that is > 1.
 // So 'k' is the Lipschitz constant.

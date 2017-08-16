@@ -552,6 +552,9 @@ that matters, and not just the shape represented by that distance field.
 2D -> 3D Transformations
 ------------------------
 ``pancake d shape``
+  ``pancake`` converts a 2D shape into a 3D "pancake" of thickness d.
+  The edges are rounded. The corners are rounded, if ``shape`` has an exact
+  distance field, or sharp, if ``shape`` has a mitred distance field.
 
 ``perimeter_extrude perimeter cross_section``
 
