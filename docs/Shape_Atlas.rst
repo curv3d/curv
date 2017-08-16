@@ -557,9 +557,9 @@ that matters, and not just the shape represented by that distance field.
 
 Blends
 ------
-``smooth_union ...``
+``smooth_union k (shape1, shape2)``
 
-``smooth_intersection ...``
+``smooth_intersection k (shape1, shape2)``
 
 4. Distance Field Debugging
 ===========================
