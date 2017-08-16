@@ -570,6 +570,26 @@ that matters, and not just the shape represented by that distance field.
   distance field, or sharp, if ``shape`` has a mitred distance field.
 
 ``perimeter_extrude perimeter cross_section``
+  A generalized torus.
+  Sweep the origin point of a 2D shape (called ``cross_section``) 
+  around the perimeter (distance field zero points) of another 2D shape
+  (called ``perimeter``).
+  The ``cross_section`` shape is offset from the perimeter based its distance
+  from the origin.
+
+  If ``perimeter`` has an exact distance field, then it's like
+  a Minkowski Sum of ``cross_section`` with the zero points
+  of ``perimeter``, with ``cross_section`` held orthogonal to the XY plane.
+
+  Example: ``torus (d1,d2) = perimeter_extrude (circle d1) (circle d2)``
+
+  Example: ``revolve shape = perimeter_extrude (circle 0) shape``
+
+  The behaviour when sweeping around a ``perimeter`` vertex
+  depends on whether the ``perimeter`` shape has an exact or mitred distance
+  field: the result is a rounded or sharp transition.
+  If ``perimeter`` has an approximate distance field, then any
+  deformations in that distance field will deform the ``cross_section``.
 
 Blends
 ------
