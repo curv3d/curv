@@ -31,7 +31,7 @@ A shape can be infinite. Many shape constructors accept ``inf`` as a dimension a
 A 2D shape with no area, or a 3D shape with no volume, is called degenerate.
 Examples are geometric points, line segments or curves, and in 3D, surfaces with 0 thickness.
 
-Points and curves are invisible in the preview window.
+Points and curves are invisible in the preview window, while surfaces are visible.
 Infinite and degenerate shapes are useful as intermediates for constructing
 shapes, even though you can't 3D print them or export them to some file formats.
 
@@ -523,7 +523,9 @@ Repetition
 
 Morph
 -----
-``morph k shape1 shape2``
+``morph (k, shape1, shape2)``
+  Linearly interpolate between shape1 and shape2.
+  ``k=0`` yields shape1, ``k=1`` yields shape2.
 
 3. Distance Field Shape Operations
 ==================================
@@ -531,7 +533,18 @@ These operations construct a shape from one or more distance fields.
 In one or more of the shape arguments, it's the structure of the distance field
 that matters, and not just the shape represented by that distance field.
 
-``inflate ...``
+``inflate d shape``
+  Construct the shape bounded by the isosurface at ``d`` of the shape argument's distance field.
+  
+  * d > 0: inflate the shape, blow it up like a balloon.
+  * d == 0: no effect.
+  * d < 0: deflate the shape.
+ 
+  If the distance field is exact, then positive d yields
+  the Minkowski sum of a sphere of radius d, aka rounded offset (CAD),
+  aka dilation (Mathematical Morphology).
+ 
+  If the distance field is mitred, the result is a mitred offset (CAD).
 
 ``shell d shape``
   Hollow out the shape, replace it by a shell of thickness ``d`` that is centred on the shape boundary.
@@ -550,3 +563,6 @@ Blends
 
 4. Distance Field Debugging
 ===========================
+
+5. Bibliography
+===============
