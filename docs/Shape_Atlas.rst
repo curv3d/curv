@@ -478,14 +478,23 @@ generalized taper ...
 2D -> 3D Transformations
 ------------------------
 
-``extrude h shape``
+``extrude d shape``
+  ``extrude`` converts a 2D shape to a 3D shape,
+  linearly extruding it equal distances along the positive and negative Z axis,
+  with total height ``d``.
+  Similar to Autocad ``extrude`` and OpenSCAD ``linear_extrude``.
+ 
+  * ``extrude_m``: mitred distance field.
+  * ``extrude_e``: exact distance field.
 
-``loft h shape1 shape2``
+``loft d shape1 shape2``
+  Similar to Autocad ``loft``.
   TODO
 
 ``revolve shape``
   The half-plane defined by ``x >= 0`` is rotated 90°, mapping the +Y axis to the +Z axis.
   Then this half-plane is rotated around the Z axis, creating a solid of revolution.
+  Similar to Autocad ``revolve`` and OpenSCAD ``rotate_extrude``.
 
 ``cylinder_extrude (d, d2) shape``
   An infinite strip of 2D space running along the Y axis
