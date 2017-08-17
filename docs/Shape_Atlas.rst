@@ -595,7 +595,7 @@ Blended Union, Intersection and Difference
 ------------------------------------------
 A blended union is a generalized union that smoothly joins nearby objects.
 The same code (which I call a "blending kernel") can also define
-a blended intersection and blended difference, which smooth away
+a blended intersection and a blended difference, which smooth away
 new edges created by the intersection or difference. There are many blending
 kernels.
 
@@ -609,13 +609,18 @@ by Inigo Quilez (`<http://www.iquilezles.org/www/articles/smin/smin.htm>`_):
 The parameter ``k`` controls the size/radius of the blending band.
 Quilez claims this blending kernel is fast, easy to control, and good enough
 for most artistic purposes.
-Note that ``smooth_union`` and ``smooth_intersection`` are binary operators,
+Note that ``smooth_union`` and ``smooth_intersection`` are binary operators:
 they aren't associative and don't generalize to an arbitrary number of shapes.
 
-Here are two circles, combined using ``smooth_union`` with different ``k``
-values:
+Here are circles of diameter 2, combined using ``smooth_union`` with ``k`` values
+1.2, 1.8, 2.4, 3.0, 3.6, 4.2, 5.0:
 
 .. image:: images/blend.png
+
+Here are ``smooth_union``, ``smooth_intersection`` and ``smooth_difference``
+applied to a unit cube and a cylinder with ``k=.3``:
+
+.. image:: images/smooth_blends.png
 
 4. Distance Field Debugging
 ===========================
