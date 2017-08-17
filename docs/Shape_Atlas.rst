@@ -591,13 +591,31 @@ that matters, and not just the shape represented by that distance field.
   If ``perimeter`` has an approximate distance field, then any
   deformations in that distance field will deform the ``cross_section``.
 
-Blends
-------
-``smooth_union k (shape1, shape2)``
+Blended Union, Intersection and Difference
+------------------------------------------
+A blended union is a generalized union that smoothly joins nearby objects.
+The same code (which I call a "blending kernel") can also define
+a blended intersection and blended difference, which smooth away
+new edges created by the intersection or difference. There are many blending
+kernels.
 
-``smooth_intersection k (shape1, shape2)``
+The ``smooth`` blending kernel is based on the polynomial smooth min function
+by Inigo Quilez (`<http://www.iquilezles.org/www/articles/smin/smin.htm>`_):
 
-``smooth_difference k (shape1, shape2)``
+* ``smooth_union k (shape1, shape2)``
+* ``smooth_intersection k (shape1, shape2)``
+* ``smooth_difference k (shape1, shape2)``
+
+The parameter ``k`` controls the size/radius of the blending band.
+Quilez claims this blending kernel is fast, easy to control, and good enough
+for most artistic purposes.
+Note that ``smooth_union`` and ``smooth_intersection`` are binary operators,
+they aren't associative and don't generalize to an arbitrary number of shapes.
+
+Here are two circles, combined using ``smooth_union`` with different ``k``
+values:
+
+.. image:: images/blend.png
 
 4. Distance Field Debugging
 ===========================
