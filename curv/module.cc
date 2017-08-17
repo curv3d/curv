@@ -67,7 +67,7 @@ Module::dom() const
         list->at(i) = f.first.to_value();
         ++i;
     }
-    return list;
+    return {std::move(list)};
 }
 
 } // namespace curv
