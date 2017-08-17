@@ -599,6 +599,12 @@ a blended intersection and a blended difference, which smooth away
 new edges created by the intersection or difference. There are many blending
 kernels.
 
+Blending operations are sensitive to the
+structure of the distance fields of their arguments.
+A blended union uses the positive distance fields near the surfaces of the
+shapes being blended to construct additional material to bridge the gaps
+between the two shapes.
+
 The ``smooth`` blending kernel is based on the polynomial smooth min function
 by Inigo Quilez (`<http://www.iquilezles.org/www/articles/smin/smin.htm>`_):
 
@@ -621,6 +627,19 @@ Here are ``smooth_union``, ``smooth_intersection`` and ``smooth_difference``
 applied to a unit cube and a cylinder with ``k=.3``:
 
 .. image:: images/smooth_blends.png
+
+Distance field: allegedly bad. TODO: characterize.
+
+Bounding box: bad.
+The bounding box of a ``smooth_union`` can be larger than the bounding box of a ``union``:
+it gets worse as ``k`` increases and as the minimum local Lipschitz constants of the
+input SDFs decrease. How to compensate for this?
+
+* Add metadata to all shape objects estimating the minimum possible local Lipschitz constant.
+  This creates a lot of extra work, and may be intractable for some SDFs.
+* Download this problem onto the user: provide an operator for fixing a bad bounding box,
+  and a visualizer for detecting bad bounding boxes.
+* Use some kind of automatic bounding box estimator that uses distance field evaluation.
 
 4. Distance Field Debugging
 ===========================
