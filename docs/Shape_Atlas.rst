@@ -655,4 +655,3 @@ input SDFs decrease. How to compensate for this?
 .. _`Modelling with Distance Functions`: http://iquilezles.org/www/articles/distfunctions/distfunctions.htm
 .. _`hg_sdf`: http://mercury.sexy/hg_sdf/
 .. _`Manipulation of Implicit Functions With an Eye on CAD`: https://christopherolah.wordpress.com/2011/11/06/manipulation-of-implicit-functions-with-an-eye-on-cad/
-                                                              127,1         Bot
