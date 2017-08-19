@@ -643,6 +643,7 @@ input SDFs decrease. How to compensate for this?
 
 4. Distance Field Debugging
 ===========================
+``lipschitz k shape``
 
 5. Bibliography
 ===============
