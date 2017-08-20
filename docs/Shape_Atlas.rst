@@ -659,7 +659,7 @@ Mesh Import
 -----------
 I want the ability to import an STL file.
 
-The two most obvious approaches are:
+The two approaches I know are:
 
 1. Implement a hybrid geometry engine, where some shapes are represented
    as meshes, some are represented as SDFs, and some are hybrid unions of
@@ -671,7 +671,15 @@ The two most obvious approaches are:
    
 2. Compile a mesh to an efficient SDF representation.
    AFAIK this is an expensive offline operation.
-   Need to choose a compiled mesh representation and a compilation algorithm.
+   Need to choose a compiled mesh representation, a compilation algorithm,
+   and an evaluation algorithm.
+   
+   Consider a complex STL file, like the Yoda bust on Thingiverse,
+   which has 614278 triangles. It seems likely that Yoda will have to compile
+   into a large representation, over a megabyte. If every byte of that representation
+   needs to be read every time the Yoda SDF is queried, then then evaluation will be
+   too slow. So, we'd ideally like a compiled representation where only a small fraction
+   of the data needs to be queried when evaluating the SDF at a given point.
 
 Convex Hull
 -----------
