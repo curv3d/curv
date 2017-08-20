@@ -645,7 +645,47 @@ input SDFs decrease. How to compensate for this?
 ===========================
 ``lipschitz k shape``
 
-5. Bibliography
+5. Wanted: Missing Shape Operations
+===================================
+The SDF representation has many useful shape operations that are easy to define / cheap to implement.
+But, there is a tradeoff. There are some popular operations on meshes that do not
+have obvious implementations / are not cheap to implement for SDFs.
+
+Here, I'm mentioning some of those difficult operations.
+Maybe there's a way to implement them efficiently for SDFs.
+Or maybe there are alternative ways of achieving the same effects.
+
+Mesh Import
+-----------
+I want the ability to import an STL file.
+
+The two most obvious approaches are:
+
+1. Implement a hybrid geometry engine, where some shapes are represented
+   as meshes, some are represented as SDFs, and some are hybrid unions of
+   meshes and SDFs. Some operations work on all 3 representations (eg,
+   affine transformations). Some operations work only on meshes, or only on SDFs.
+   You can convert an SDF to a mesh (but not vice versa, that requires approach #2).
+   A top level scene is a union of meshes and SDFs, rendered using some hybrid
+   Z-buffer algorithm.
+   
+2. Compile a mesh to an efficient SDF representation.
+   AFAIK this is an expensive offline operation.
+   Need to choose a compiled mesh representation and a compilation algorithm.
+
+Convex Hull
+-----------
+
+Minkowski Sum
+-------------
+
+Circle/Sphere Sweep of a Parametric Curve
+-----------------------------------------
+
+General Sweep
+-------------
+
+6. Bibliography
 ===============
 * John C. Hart, `Sphere Tracing`_
 * Inigo Quilez, `Modelling with Distance Functions`_
