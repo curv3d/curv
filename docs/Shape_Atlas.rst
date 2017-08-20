@@ -370,6 +370,11 @@ Boolean (Set Theoretic) Operations
   
   This is an associative, commutative operation with ``nothing`` as its identity element.
 
+Transformations
+---------------
+A transformation is an operation that maps a shape S1 onto another shape S2,
+by mapping each point (x,y,z) within S1 onto the point f(x,y,z) within S2.
+
 Rigid Transformations
 ---------------------
 Distance-preserving transformations of 2D and 3D shapes.
@@ -487,14 +492,6 @@ generalized taper ...
   * ``extrude_m``: mitred distance field.
   * ``extrude_e``: exact distance field.
 
-``loft d shape1 shape2``
-  Like ``extrude``, except that you specify a lower cross section (``shape1``)
-  and a upper cross section (``shape2``)
-  and we linearly interpolate (morph) between the two shapes while extruding.
-  Similar to Autocad ``loft``.
-
-  TODO: bad distance field.
-
 ``revolve shape``
   The half-plane defined by ``x >= 0`` is rotated 90°, mapping the +Y axis to the +Z axis.
   Then this half-plane is rotated around the Z axis, creating a solid of revolution.
@@ -534,12 +531,6 @@ Repetition
 
 ``repeat_radial reps shape``
 
-Morph
------
-``morph (k, shape1, shape2)``
-  Linearly interpolate between shape1 and shape2.
-  ``k=0`` yields shape1, ``k=1`` yields shape2.
-
 3. Distance Field Shape Operations
 ==================================
 These operations construct a shape from one or more distance fields.
@@ -562,12 +553,24 @@ that matters, and not just the shape represented by that distance field.
 ``shell d shape``
   Hollow out the shape, replace it by a shell of thickness ``d`` that is centred on the shape boundary.
 
+``morph (k, shape1, shape2)``
+  Linearly interpolate between shape1 and shape2.
+  ``k=0`` yields shape1, ``k=1`` yields shape2.
+
 2D -> 3D Transformations
 ------------------------
 ``pancake d shape``
   ``pancake`` converts a 2D shape into a 3D "pancake" of thickness d.
   The edges are rounded. The corners are rounded, if ``shape`` has an exact
   distance field, or sharp, if ``shape`` has a mitred distance field.
+
+``loft d shape1 shape2``
+  Like ``extrude``, except that you specify a lower cross section (``shape1``)
+  and a upper cross section (``shape2``)
+  and we linearly interpolate (morph) between the two shapes while extruding.
+  Similar to Autocad ``loft``.
+
+  TODO: bad distance field.
 
 ``perimeter_extrude perimeter cross_section``
   A generalized torus.
@@ -692,6 +695,9 @@ Circle/Sphere Sweep of a Parametric Curve
 
 General Sweep
 -------------
+
+Pixelate
+--------
 
 6. Bibliography
 ===============
