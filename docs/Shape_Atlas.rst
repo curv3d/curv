@@ -662,6 +662,10 @@ This might be bad for engineering, if you need a constant radius fillet,
 but it's good if you are animating an organic form (like a leg attached to a torso),
 and you want a constant-area fillet that looks realistic as the joint is animated.
 
+Here's a fillet of a butt joint, same parameters as above:
+
+.. image:: images/butt_fillet.png
+
 Distance field: approximate. Haven't seen a bad distance field during testing.
 
 Bounding box: bad.
