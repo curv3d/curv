@@ -639,7 +639,9 @@ Here are circles of diameter 2, combined using ``smooth_union`` with ``k`` value
 
 .. image:: images/blend.png
 
-Artistically, this is equivalent to the older `Metaballs`_ technique. The math is similar.
+Artistically, this is equivalent to the older `Metaballs`_ technique,
+except that the ``smooth`` blending kernel doesn't blend 3 or more shapes together
+in an order-independent way.
 
 .. _`metaballs`: https://en.wikipedia.org/wiki/Metaballs
 
@@ -648,6 +650,10 @@ Here are ``smooth_union``, ``smooth_intersection`` and ``smooth_difference``
 applied to a unit cube and a cylinder with ``k=.3``:
 
 .. image:: images/smooth_blends.png
+
+TODO: Antimony ``attract`` and ``repel`` operators.
+
+TODO: fillet appearance at different angles
 
 Distance field: allegedly bad. TODO: characterize.
 
@@ -662,6 +668,12 @@ input SDFs decrease. How to compensate for this?
   and a visualizer for detecting bad bounding boxes.
 * Use some kind of automatic bounding box estimator that uses distance field evaluation.
 * Restrict the use of ``smooth_union`` to shapes with an exact distance field.
+
+TODO: ``metaball`` blending kernel, which supports N-ary blends.
+
+TODO: ``arc`` blending kernel, from ImplicitCAD. Does it have better engineering properties?
+
+TODO: various blending kernels from MERCURY.
 
 5. Distance Field Debugging
 ===========================
