@@ -53,7 +53,7 @@ This is not a unique representation: a given shape can be represented by many di
 In most cases, the user just wants to let the implementation choose an SDF that is fast
 to compute and fast to render.
 
-However, there are some Distance Field Shape Operations (see section 3)
+However, there are Distance Field Operations (see section 4)
 that construct a shape based on the SDF of an input shape.
 These operations are too useful to leave out.
 For this reason, we document the class of SDF created by each shape operation.
@@ -319,11 +319,9 @@ Polydimensional Shapes
   that contains all geometric points.
   It's the identity element for the ``intersection`` operation.
 
-2. Shape Combinators
-====================
+2. Boolean (Set Theoretic) Operations
+=====================================
 
-Boolean (Set Theoretic) Operations
-----------------------------------
 ``complement shape``
   Reverses inside and outside, so that all points inside the argument
   shape are outside the result shape, and vice versa.
@@ -370,8 +368,8 @@ Boolean (Set Theoretic) Operations
   
   This is an associative, commutative operation with ``nothing`` as its identity element.
 
-Transformations
----------------
+3. Transformations
+==================
 A transformation is an operation that maps a shape S1 onto another shape S2,
 by mapping each point (x,y,z) within S1 onto the point f(x,y,z) within S2.
 
@@ -531,46 +529,61 @@ Repetition
 
 ``repeat_radial reps shape``
 
-3. Distance Field Shape Operations
-==================================
+4. Distance Field Operations
+============================
 These operations construct a shape from one or more distance fields.
 In one or more of the shape arguments, it's the structure of the distance field
 that matters, and not just the shape represented by that distance field.
 
+Level Set Operations
+--------------------
+The level set at ``d`` of a distance field is the set of all points whose distance value is ``d``.
+This is also called an isocurve (in 2D) or isosurface (in 3D).
+
 ``inflate d shape``
-  Construct the shape bounded by the isosurface at ``d`` of the shape argument's distance field.
+  Construct the shape bounded by the level set at ``d`` of the shape argument's distance field.
   
   * d > 0: inflate the shape, blow it up like a balloon.
   * d == 0: no effect.
   * d < 0: deflate the shape.
  
-  If the distance field is exact, then positive d yields
-  the Minkowski sum of a sphere of radius d, aka rounded offset (CAD),
-  aka dilation (Mathematical Morphology).
- 
-  If the distance field is mitred, the result is a mitred offset (CAD).
+  If the distance field is exact, then you get the "rounded offset" of the shape.
+  For positive (negative) ``d``,
+  convex (concave) vertices and edges are rounded off
+  as if by a circle or sphere of radius ``d``.
+  [Also known as Minkowski sum (difference) of a circle or sphere of radius ``d``,
+  or dilation (erosion) with a disk of radius ``d`` (Mathematical Morphology).]
+
+  If the distance field is mitred, the result is a "mitred offset".
+  Vertices and edges are preserved.
 
 ``shell d shape``
   Hollow out the shape, replace it by a shell of thickness ``d`` that is centred on the shape boundary.
 
-``morph (k, shape1, shape2)``
-  Linearly interpolate between shape1 and shape2.
-  ``k=0`` yields shape1, ``k=1`` yields shape2.
-
-2D -> 3D Transformations
-------------------------
 ``pancake d shape``
   ``pancake`` converts a 2D shape into a 3D "pancake" of thickness d.
   The edges are rounded. The corners are rounded, if ``shape`` has an exact
   distance field, or sharp, if ``shape`` has a mitred distance field.
 
+Morph Operations
+----------------
+In which we linearly interpolate between two distance fields.
+
+``morph (k, shape1, shape2)``
+  Linearly interpolate between the SDFs of shape1 and shape2.
+  ``k=0`` yields shape1, ``k=1`` yields shape2.
+
 ``loft d shape1 shape2``
   Like ``extrude``, except that you specify a lower cross section (``shape1``)
   and a upper cross section (``shape2``)
-  and we linearly interpolate (morph) between the two shapes while extruding.
+  and we linearly interpolate between the two SDFs while extruding.
   Similar to Autocad ``loft``.
 
   TODO: bad distance field.
+
+Nested Distance Fields
+----------------------
+In which the output of one distance field is fed as input to another distance field.
 
 ``perimeter_extrude perimeter cross_section``
   A generalized torus.
@@ -626,6 +639,11 @@ Here are circles of diameter 2, combined using ``smooth_union`` with ``k`` value
 
 .. image:: images/blend.png
 
+Artistically, this is equivalent to the older `Metaballs`_ technique. The math is similar.
+
+.. _`metaballs`: https://en.wikipedia.org/wiki/Metaballs
+
+Smooth blends can produce the artistic effect of "fillets" and "rounds".
 Here are ``smooth_union``, ``smooth_intersection`` and ``smooth_difference``
 applied to a unit cube and a cylinder with ``k=.3``:
 
@@ -644,11 +662,11 @@ input SDFs decrease. How to compensate for this?
   and a visualizer for detecting bad bounding boxes.
 * Use some kind of automatic bounding box estimator that uses distance field evaluation.
 
-4. Distance Field Debugging
+5. Distance Field Debugging
 ===========================
 ``lipschitz k shape``
 
-5. Wanted: Missing Shape Operations
+6. Wanted: Missing Shape Operations
 ===================================
 The SDF representation has many useful shape operations that are easy to define / cheap to implement.
 But, there is a tradeoff. There are some popular operations on meshes that do not
@@ -699,7 +717,7 @@ General Sweep
 Pixelate
 --------
 
-6. Bibliography
+7. Bibliography
 ===============
 * John C. Hart, `Sphere Tracing`_
 * Inigo Quilez, `Modelling with Distance Functions`_
