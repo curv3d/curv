@@ -643,7 +643,7 @@ Artistically, this is equivalent to the older `Metaballs`_ technique. The math i
 
 .. _`metaballs`: https://en.wikipedia.org/wiki/Metaballs
 
-Smooth blends can produce the artistic effect of "fillets" and "rounds".
+Smooth blends can produce the artistic effect of "fillets" and "rounds" from mechanical engineering.
 Here are ``smooth_union``, ``smooth_intersection`` and ``smooth_difference``
 applied to a unit cube and a cylinder with ``k=.3``:
 
@@ -661,6 +661,7 @@ input SDFs decrease. How to compensate for this?
 * Download this problem onto the user: provide an operator for fixing a bad bounding box,
   and a visualizer for detecting bad bounding boxes.
 * Use some kind of automatic bounding box estimator that uses distance field evaluation.
+* Restrict the use of ``smooth_union`` to shapes with an exact distance field.
 
 5. Distance Field Debugging
 ===========================
