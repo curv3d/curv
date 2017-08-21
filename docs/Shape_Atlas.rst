@@ -651,11 +651,18 @@ applied to a unit cube and a cylinder with ``k=.3``:
 
 .. image:: images/smooth_blends.png
 
-TODO: Antimony ``attract`` and ``repel`` operators.
+Here's the appearance of a fillet (with the same ``k``) for different
+angles: 90°, 45°, 135°:
 
-TODO: fillet appearance at different angles
+.. image:: images/fillet_angles.png
 
-Distance field: allegedly bad. TODO: characterize.
+At 90°, the fillet is an approximate quarter-circle with radius ``k``.
+At other angles, the fillet is a deformed quarter-circle.
+This might be bad for engineering, if you need a constant radius fillet,
+but it's good if you are animating an organic form (like a leg attached to a torso),
+and you want a constant-area fillet that looks realistic as the joint is animated.
+
+Distance field: approximate. Haven't seen a bad distance field during testing.
 
 Bounding box: bad.
 The bounding box of a ``smooth_union`` can be larger than the bounding box of a ``union``:
@@ -674,6 +681,8 @@ TODO: ``metaball`` blending kernel, which supports N-ary blends.
 TODO: ``arc`` blending kernel, from ImplicitCAD. Does it have better engineering properties?
 
 TODO: various blending kernels from MERCURY.
+
+TODO: Antimony ``attract`` and ``repel`` operators.
 
 5. Distance Field Debugging
 ===========================
