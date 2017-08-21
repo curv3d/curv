@@ -556,6 +556,11 @@ This is also called an isocurve (in 2D) or isosurface (in 3D).
 
   If the distance field is mitred, the result is a "mitred offset".
   Vertices and edges are preserved.
+  
+  Bounding box: If ``shape`` has an exact distance field, then we can compute a
+  good bounding box, which is exact if ``shape`` has an exact bounding box.
+  Otherwise, we may compute a bad bounding box (too small to contain the shape),
+  and it's the user's job to manually fix the bounding box using ``set_bbox``.
 
 ``shell d shape``
   Hollow out the shape, replace it by a shell of thickness ``d`` that is centred on the shape boundary.
@@ -663,9 +668,16 @@ This might be bad for engineering, if you need a constant radius fillet,
 but it's good if you are animating an organic form (like a leg attached to a torso),
 and you want a constant-area fillet that looks realistic as the joint is animated.
 
-Here's a fillet of a butt joint, same parameters as above:
+Here's a fillet of a butt joint, same parameters as above.
+To get a rounded fillet in this example, the rectangles must have exact distance fields,
+so I used ``rect_e``. This shows that the bounding box of ``smooth_union`` can be
+bigger than the bounding box of ``union``.
 
 .. image:: images/butt_fillet.png
+
+As a special case, ``smooth_union k (s, s)`` is the same as ``inflate(k/4) s``.
+This seems to be peculiar to Quilez's code. This seems to be the worst case
+for bounding box inflation, so we can use this to compute bounding boxes.
 
 Distance field: approximate. Haven't seen a bad distance field during testing.
 
@@ -689,9 +701,22 @@ TODO: various blending kernels from MERCURY.
 
 TODO: Antimony ``attract`` and ``repel`` operators.
 
-5. Distance Field Debugging
-===========================
+5. Shape Debugging
+==================
 ``lipschitz k shape``
+  Repair a distance field whose Lipschitz constant k is != 1.
+  If k < 1 then rendering via sphere tracing is slower than necessary.
+  If k > 1 then rendering will fail.
+  The argument ``k`` is the actual Lipschitz constant of ``shape``.
+  
+  If an experimental shape isn't rendering correctly,
+  then ``shape >> lipschitz 2`` is often a quick way to fix the problem.
+
+``show_bbox shape``
+  Visualize the bounding box, so you can check if it is bad (too small to contain the shape).
+
+``set_bbox bbox shape``
+  Manually fix a bad bounding box.
 
 6. Wanted: Missing Shape Operations
 ===================================
