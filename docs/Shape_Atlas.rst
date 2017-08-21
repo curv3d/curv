@@ -639,7 +639,8 @@ Here are circles of diameter 2, combined using ``smooth_union`` with ``k`` value
 
 .. image:: images/blend.png
 
-Artistically, this is equivalent to the older `Metaballs`_ technique,
+This is a generalization of the older `Metaballs`_ technique
+(works with all geometric shapes, not just circles and spheres),
 except that the ``smooth`` blending kernel doesn't blend 3 or more shapes together
 in an order-independent way.
 
