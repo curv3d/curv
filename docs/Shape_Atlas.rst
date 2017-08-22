@@ -705,17 +705,6 @@ TODO: ``arc`` blending kernel, from ImplicitCAD. Does it have better engineering
 
 TODO: various blending kernels from MERCURY.
 
-Attract and Repel
------------------
-Antimony (by Matt Keeter) has ``attract`` and ``repel`` operators.
-You place control points which attract or repel the shape.
-It seems analogous to using control points to define a spline curve or surface.
-
-This feature may be novel, and unique to Antimony.
-Grasshopper, a part of Rhino, has a similarly named feature,
-but I don't know if there is overlap (http://grasshopperprimer.com/en/1-foundations/1-3/2_working-with-attractors.html).
-CorelDraw has Smear, Twirl, Repel and Attract: again, how much overlap?
-
 5. Shape Debugging
 ==================
 ``lipschitz k shape``
@@ -747,27 +736,46 @@ Mesh Import
 -----------
 I want the ability to import an STL file.
 
-The two approaches I know are:
+The approaches I know are:
 
-1. Implement a hybrid geometry engine, where some shapes are represented
+0. Import an STL file as a Nef polyhedron, naively constructed from half-spaces
+   using intersection and complement. Evaluation time for the SDF is proportional
+   to the number of faces. Likely to be infeasible for more than a thousand
+   triangles.
+
+1. Try to optimize the above approach using standard hacking techniques,
+   without paying close attention to the literature. Maybe build a balanced
+   space partitioning tree at compile time, walk the tree during SDF evaluation.
+   Maybe try to optimize the representation by looking for symmetries, etc.
+   We still assume that we have to exactly reproduce the polyhedron described
+   by the STL file. This will work much better, but we still won't be able to import
+   the Yoda bust on Thingiverse (614278 triangles).
+
+2. Give up and claim that Yoda can't be represented as an SDF.
+   Implement a hybrid geometry engine, where some shapes are represented
    as meshes, some are represented as SDFs, and some are hybrid unions of
    meshes and SDFs. Some operations work on all 3 representations (eg,
    affine transformations). Some operations work only on meshes, or only on SDFs.
-   You can convert an SDF to a mesh (but not vice versa, that requires approach #2).
+   You can convert an SDF to a mesh (but not vice versa).
    A top level scene is a union of meshes and SDFs, rendered using some hybrid
-   Z-buffer algorithm.
+   Z-buffer algorithm. But, there are a lot of Curv operations that won't work
+   on Yoda, and the whole implementation is twice as complex.
+
+3. Read the literature. Realize that Yoda is not a polyhedron, but a polyhedral
+   approximation to an original model that has lots of curved surfaces.
+   What we really want is a more compact and efficient SDF that is an approximation
+   to the polyhedron and reconstructs the curved surfaces.
    
-2. Compile a mesh to an efficient SDF representation.
+   Compile a mesh to an efficient SDF representation that approximates the
+   original STL, with knobs for tuning the approximation.
    AFAIK this is an expensive offline operation.
    Need to choose a compiled mesh representation, a compilation algorithm,
    and an evaluation algorithm.
    
-   Consider a complex STL file, like the Yoda bust on Thingiverse,
-   which has 614278 triangles. It seems likely that Yoda will have to compile
-   into a large representation, over a megabyte. If every byte of that representation
-   needs to be read every time the Yoda SDF is queried, then then evaluation will be
-   too slow. So, we'd ideally like a compiled representation where only a small fraction
-   of the data needs to be queried when evaluating the SDF at a given point.
+   It's likely that Yoda will compile into a large representation.
+   If all of the data is accessed each time the Yoda SDF is evaluated,
+   then evaluation will be too slow. We'd prefer a compiled representation where only a small fraction
+   of the data needs to be accessed when evaluating the SDF at a given point.
 
 Convex Hull
 -----------
@@ -783,6 +791,25 @@ General Sweep
 
 Pixelate
 --------
+
+Convolution
+-----------
+
+Local Deformations
+------------------
+These operations treat a shape as a lump of clay,
+in which local regions can be arbitrarily deformed
+while leaving the rest of the shape unmodified.
+They are found in "sculptural" 3D modeling programs.
+
+CorelDraw has Smear, Twirl, Attract and Repel operators,
+which perform smooth local translations, rotations and +/- scaling.
+This seems like a good starting point.
+Antimony also has Attract and Repel.
+
+More Operations to Investigate
+------------------------------
+* http://grasshopperprimer.com/en/1-foundations/1-3/2_working-with-attractors.html
 
 7. Bibliography
 ===============
