@@ -535,6 +535,24 @@ These operations construct a shape from one or more distance fields.
 In one or more of the shape arguments, it's the structure of the distance field
 that matters, and not just the shape represented by that distance field.
 
+Thus, if you want predictable and repeatable behaviour, you should restrict
+distance field arguments to shape expressions that are documented to produce
+either an exact or a mitred distance field. In other cases, where the SDF is
+only documented as "approximate", the implementation is subject to change.
+
+For all of the distance field operations, we only guarantee to compute a "good"
+bounding box estimate if the distance field arguments are exact. Otherwise, the
+bounding box may be "bad" (too small to contain the resulting shape),
+and the user may need to fix this by calling ``set_bbox``.
+
+* The reason is, for distance field operations, we need a lower bound on the
+  ratio by which the distance field underestimates the distance to the boundary
+  in order to compute a good bounding box estimate.
+  For mitred distance fields in general, there is no lower bound. It's possible
+  to determine lower bounds for some shape operations, but not in general.
+* Other approaches: Compute this lower bound (if available), and store it in the shape,
+  which is added complexity. Or, use an automatic bounding box estimator that uses distance field evaluation.
+  
 Level Set Operations
 --------------------
 The level set at ``d`` of a distance field is the set of all points whose distance value is ``d``.
@@ -559,8 +577,6 @@ This is also called an isocurve (in 2D) or isosurface (in 3D).
   
   Bounding box: If ``shape`` has an exact distance field, then we can compute a
   good bounding box, which is exact if ``shape`` has an exact bounding box.
-  Otherwise, we may compute a bad bounding box (too small to contain the shape),
-  and it's the user's job to manually fix the bounding box using ``set_bbox``.
 
 ``shell d shape``
   Hollow out the shape, replace it by a shell of thickness ``d`` that is centred on the shape boundary.
@@ -676,22 +692,12 @@ bigger than the bounding box of ``union``.
 .. image:: images/butt_fillet.png
 
 As a special case, ``smooth_union k (s, s)`` is the same as ``inflate(k/4) s``.
-This seems to be peculiar to Quilez's code. This seems to be the worst case
+This is specific to Quilez's code. This seems to be the worst case
 for bounding box inflation, so we can use this to compute bounding boxes.
 
 Distance field: approximate. Haven't seen a bad distance field during testing.
 
-Bounding box: bad.
-The bounding box of a ``smooth_union`` can be larger than the bounding box of a ``union``:
-it gets worse as ``k`` increases and as the minimum local Lipschitz constants of the
-input SDFs decrease. How to compensate for this?
-
-* Add metadata to all shape objects estimating the minimum possible local Lipschitz constant.
-  This creates a lot of extra work, and may be intractable for some SDFs.
-* Download this problem onto the user: provide an operator for fixing a bad bounding box,
-  and a visualizer for detecting bad bounding boxes.
-* Use some kind of automatic bounding box estimator that uses distance field evaluation.
-* Restrict the use of ``smooth_union`` to shapes with an exact distance field.
+Bounding box: approximate.
 
 TODO: ``metaball`` blending kernel, which supports N-ary blends.
 
@@ -699,7 +705,16 @@ TODO: ``arc`` blending kernel, from ImplicitCAD. Does it have better engineering
 
 TODO: various blending kernels from MERCURY.
 
-TODO: Antimony ``attract`` and ``repel`` operators.
+Attract and Repel
+-----------------
+Antimony (by Matt Keeter) has ``attract`` and ``repel`` operators.
+You place control points which attract or repel the shape.
+It seems analogous to using control points to define a spline curve or surface.
+
+This feature may be novel, and unique to Antimony.
+Grasshopper, a part of Rhino, has a similarly named feature,
+but I don't know if there is overlap (http://grasshopperprimer.com/en/1-foundations/1-3/2_working-with-attractors.html).
+CorelDraw has Smear, Twirl, Repel and Attract: again, how much overlap?
 
 5. Shape Debugging
 ==================
