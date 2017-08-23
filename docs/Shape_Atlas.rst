@@ -790,6 +790,7 @@ I personally like Minkowski sum, but there is a learning curve in understanding
 how it works. It's not intuitive to people who first encounter it.
 
 The most common Minkowski sum idioms have cheaper direct implementations in F-Rep.
+
 * Rounded offset at distance d: Minkowski sum with a sphere of radius d, or ``inflate d``
   of a shape with an exact distance field.
 * Shell: in Curv, ``shell``.
@@ -804,7 +805,7 @@ But it's not quite as simple as that, and an actual implementation is likely to 
 Circle/Sphere Sweep of a Parametric Curve
 -----------------------------------------
 Eg, I'd like to sweep out a `trefoil knot`_ with a sphere,
-using the parametric equations
+using the parametric equations::
 
   x = sin t + 2*sin(2*t)
   y = cos t - 2*cos(2*t)
