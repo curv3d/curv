@@ -698,6 +698,9 @@ TODO: various blending kernels from MERCURY.
 
 5. Shape Debugging
 ==================
+``with_axes shape``
+  Add an X/Y or X/Y/Z axis display to the shape.
+
 ``show_bbox shape``
   Visualize the bounding box, so you can check if it is bad (too small to contain the shape).
 
