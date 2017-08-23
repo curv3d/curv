@@ -724,53 +724,47 @@ TODO: various blending kernels from MERCURY.
 
 6. Wanted: Missing Shape Operations
 ===================================
-The SDF representation has many useful shape operations that are easy to define / cheap to implement.
-But, there is a tradeoff. There are some popular operations on meshes that do not
-have obvious implementations / are not cheap to implement for SDFs.
-
-Here, I'm mentioning some of those difficult operations.
-Maybe there's a way to implement them efficiently for SDFs.
-Or maybe there are alternative ways of achieving the same effects.
 
 Mesh Import
 -----------
 I want the ability to import an STL file.
 
-The approaches I know are:
-
 0. Import an STL file as a Nef polyhedron, naively constructed from half-spaces
    using intersection and complement. Evaluation time for the SDF is proportional
-   to the number of faces. Likely to be infeasible for more than a thousand
+   to the number of triangles. Likely to be unusable for more than a thousand
    triangles.
 
-1. Try to optimize the above approach using standard hacking techniques,
-   without paying close attention to the literature. Maybe build a balanced
+1. Try to optimize the above approach. Maybe build a balanced
    space partitioning tree at compile time, walk the tree during SDF evaluation.
-   Maybe try to optimize the representation by looking for symmetries, etc.
-   We still assume that we have to exactly reproduce the polyhedron described
+   Maybe try to optimize the representation by combining coplanar triangles into polygons,
+   looking for symmetries, etc.
+   Our goal is to exactly reproduce the polyhedron described
    by the STL file. This will work much better, but we still won't be able to import
    the Yoda bust on Thingiverse (614278 triangles).
+   This operation will only be useful for STL files that represent actual polyhedrons,
+   with a relatively small number of faces. It won't be good for high triangle count
+   approximations to curved surfaces.
 
 2. Give up and claim that Yoda can't be represented as an SDF.
    Implement a hybrid geometry engine, where some shapes are represented
    as meshes, some are represented as SDFs, and some are hybrid unions of
    meshes and SDFs. Some operations work on all 3 representations (eg,
    affine transformations). Some operations work only on meshes, or only on SDFs.
-   You can convert an SDF to a mesh (but not vice versa).
+   You can convert an SDF to a mesh (but not vice versa, maybe).
    A top level scene is a union of meshes and SDFs, rendered using some hybrid
    Z-buffer algorithm. But, there are a lot of Curv operations that won't work
    on Yoda, and the whole implementation is twice as complex.
 
 3. Read the literature. Realize that Yoda is not a polyhedron, but a polyhedral
    approximation to an original model that has lots of curved surfaces.
-   What we really want is a more compact and efficient SDF that is an approximation
+   What we really want (for Yoda) is a more compact and efficient SDF that is an approximation
    to the polyhedron and reconstructs the curved surfaces.
    
    Compile a mesh to an efficient SDF representation that approximates the
    original STL, with knobs for tuning the approximation.
    AFAIK this is an expensive offline operation.
-   Need to choose a compiled mesh representation, a compilation algorithm,
-   and an evaluation algorithm.
+   Need to choose a compiled mesh representation (and file format),
+   an (offline) compilation algorithm, and an evaluation algorithm.
    
    It's likely that Yoda will compile into a large representation.
    If all of the data is accessed each time the Yoda SDF is evaluated,
@@ -779,33 +773,81 @@ The approaches I know are:
 
 Convex Hull
 -----------
+An OpenSCAD operation that is difficult/expensive to implement in F-Rep.
+It's a powerful and intuitive operation, so it would be nice to have for that reason alone.
+
+Convex Hull is used to create a skin over elements that form the skeleton of the desired shape.
+There are probably better and cheaper ways to accomplish this in F-Rep,
+so this operation is not a must-have.
+
+Convex hull of two copies of the same shape is equivalent to sweeping that shape
+over a line segment: there is a separate "wanted" entry for Sweep.
 
 Minkowski Sum
 -------------
+An OpenSCAD operation that is difficult/expensive to implement in F-Rep.
+I personally like Minkowski sum, but there is a learning curve in understanding
+how it works. It's not intuitive to people who first encounter it.
+
+The most common Minkowski sum idioms have cheaper direct implementations in F-Rep.
+* Rounded offset at distance d: Minkowski sum with a sphere of radius d, or ``inflate d``
+  of a shape with an exact distance field.
+* Shell: in Curv, ``shell``.
+* Morph between two shapes: in Curv, ``morph``.
+* Sweep a 3D solid along a 3D curve: This has its own entry in the wanted list,
+  and might be easier than a general Minkowski sum implementation.
+
+My intuition says that Minkowski sum ought to be implementable as a Nested Distance Field
+operation on shapes with exact distance fields, analogous to ``perimeter_extrude``.
+But it's not quite as simple as that, and an actual implementation is likely to be expensive.
 
 Circle/Sphere Sweep of a Parametric Curve
 -----------------------------------------
+Eg, I'd like to sweep out a `trefoil knot`_ with a sphere,
+using the parametric equations
+
+  x = sin t + 2*sin(2*t)
+  y = cos t - 2*cos(2*t)
+  z = -sin(3*t)
+
+.. _`trefoil knot`: https://en.wikipedia.org/wiki/Trefoil_knot
 
 General Sweep
 -------------
+Sweep a 3D shape along an arbitrary 3D curve.
+
+Subproblem: sweep a 3D shape along a 3D line segment.
+
+..
+  Sub-Subproblem: sweep a 3D shape down along a line segment normal to the XY plane,
+  but stop dead when you reach the XY plane. Kind of like projecting a 3D object
+  onto the XY plane.
 
 Pixelate
 --------
+Convert a 2D shape to uniformly sized and coloured pixels,
+or convert a 3D shape to voxels. The goal is to create a common
+artistic effect: eg, make a shape look like it was modeled in Minecraft.
 
 Convolution
 -----------
+A low pass filter would remove high frequency components from a shape,
+rounding off sharp vertices and edges, and in effect "blurring" the shape.
+Mathematical convolution is a way to implement this.
 
 Local Deformations
 ------------------
 These operations treat a shape as a lump of clay,
 in which local regions can be arbitrarily deformed
 while leaving the rest of the shape unmodified.
-They are found in "sculptural" 3D modeling programs.
+They are found in `digital sculpting`_ programs like ZBrush.
+
+.. _`digital sculpting`: https://en.wikipedia.org/wiki/Digital_sculpting
 
 CorelDraw has Smear, Twirl, Attract and Repel operators,
 which perform smooth local translations, rotations and +/- scaling.
 This seems like a good starting point.
-Antimony also has Attract and Repel.
+Antimony has Attract and Repel in open source.
 
 More Operations to Investigate
 ------------------------------
