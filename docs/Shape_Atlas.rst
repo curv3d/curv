@@ -173,15 +173,6 @@ to determine the shape of its output.
   A half-plane whose edge passes through points p1 and p2.
   Exact distance field.
 
-``spline ???``
-  TODO.
-  
-  * draw an open spline curve, by sweeping a circle along the curve.
-  * draw a closed spline curve by filling the area it encloses.
-
-``text font string ???``
-  Draw text. TODO
-
 3D Shapes
 ---------
 ``sphere d``
@@ -749,7 +740,7 @@ I want the ability to import an STL file.
    Maybe try to optimize the representation by combining coplanar triangles into polygons,
    looking for symmetries, etc.
    Our goal is to exactly reproduce the polyhedron described
-   by the STL file. This will work much better, but we still won't be able to import
+   by the STL file. This will work much better, but we likely still won't be able to import
    the Yoda bust on Thingiverse (614278 triangles).
    This operation will only be useful for STL files that represent actual polyhedrons,
    with a relatively small number of faces. It won't be good for high triangle count
@@ -832,10 +823,23 @@ General Sweep
 -------------
 Sweep an arbitrary 2D/3D shape along an arbitrary 2D/3D curve.
 
+General Extrude
+---------------
+Sweep an arbitrary 2D shape along an arbitrary 3D curve.
+The shape is normal to the curve at all points.
+A generalization of ``extrude``.
+
+Splines
+-------
+* Sweep a spline curve using a circle/sphere in 2D/3D. Open or closed curve.
+  This is a solved problem, see `Sphere Tracing`_.
+* Construct a shape by filling the space bounded by a closed spline curve (2D)
+  or surface (3D).
+
 Pixelate
 --------
-Convert a 2D shape to uniformly sized and coloured pixels,
-or convert a 3D shape to voxels. The goal is to create a common
+Transform a 2D shape so that it appears to be made of uniformly sized and coloured pixels,
+or transform a 3D shape to voxels. The goal is to create a common
 artistic effect: eg, make a shape look like it was modeled in Minecraft.
 
 Convolution
@@ -857,6 +861,16 @@ CorelDraw has Smear, Twirl, Attract and Repel operators,
 which perform smooth local translations, rotations and +/- scaling.
 This seems like a good starting point.
 Antimony has Attract and Repel in open source.
+
+Drawing Text using a Font
+-------------------------
+Signed distance fields are now considered the best way to render text using a GPU.
+For example, the Qt graphics toolkit uses SDFs for text rendering.
+This fits into Curv really well.
+
+The trick is to convert each character into a discretely sampled SDF, stored in a texture.
+This happens before SDF evaluation time (rendering).
+During rendering, we do interpolated texture lookups to get the value of a character SDF at a point.
 
 7. Bibliography
 ===============
