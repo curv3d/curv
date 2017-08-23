@@ -781,7 +781,7 @@ There are probably better and cheaper ways to accomplish this in F-Rep,
 so this operation is not a must-have.
 
 Convex hull of two copies of the same shape is equivalent to sweeping that shape
-over a line segment: there is a separate "wanted" entry for Sweep.
+over a line segment: there is a separate "wanted" entry for Linear Sweep.
 
 Minkowski Sum
 -------------
@@ -789,7 +789,8 @@ An OpenSCAD operation that is difficult/expensive to implement in F-Rep.
 I personally like Minkowski sum, but there is a learning curve in understanding
 how it works. It's not intuitive to people who first encounter it.
 
-The most common Minkowski sum idioms have cheaper direct implementations in F-Rep.
+The most common Minkowski sum idioms have cheaper direct implementations in F-Rep
+which are also easier to understand.
 
 * Rounded offset at distance d: Minkowski sum with a sphere of radius d, or ``inflate d``
   of a shape with an exact distance field.
@@ -813,16 +814,13 @@ using the parametric equations::
 
 .. _`trefoil knot`: https://en.wikipedia.org/wiki/Trefoil_knot
 
+Linear Sweep
+------------
+Sweep a 2D/3D shape along a 2D/3D line segment.
+
 General Sweep
 -------------
 Sweep a 3D shape along an arbitrary 3D curve.
-
-Subproblem: sweep a 3D shape along a 3D line segment.
-
-..
-  Sub-Subproblem: sweep a 3D shape down along a line segment normal to the XY plane,
-  but stop dead when you reach the XY plane. Kind of like projecting a 3D object
-  onto the XY plane.
 
 Pixelate
 --------
@@ -849,10 +847,6 @@ CorelDraw has Smear, Twirl, Attract and Repel operators,
 which perform smooth local translations, rotations and +/- scaling.
 This seems like a good starting point.
 Antimony has Attract and Repel in open source.
-
-More Operations to Investigate
-------------------------------
-* http://grasshopperprimer.com/en/1-foundations/1-3/2_working-with-attractors.html
 
 7. Bibliography
 ===============
