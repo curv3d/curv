@@ -710,11 +710,15 @@ TODO: various blending kernels from MERCURY.
 ``show_contours shape``
   Visualize a signed distance field by displaying contour lines.
 
-``show_gradient k shape``
+``show_gradient (j,k) shape``
   Visualize a signed distance field by displaying gradient values.
-  Gradient values < 1 are displayed in black.
+  Gradient values < j are displayed in black.
   Gradient values > k are displayed in white.
-  Gradient values between 1 and k are displayed using a spectrum.
+  Gradient values between j and k are displayed using a spectrum,
+  where j is red and k is violet.
+  
+  You can start with (1,2) then use binary search to find the
+  Lipschitz constant of a distance field, by visual inspection.
 
 ``lipschitz k shape``
   Repair a distance field whose Lipschitz constant k is != 1.
@@ -874,6 +878,17 @@ This fits into Curv really well.
 The trick is to convert each character into a discretely sampled SDF, stored in a texture.
 This happens before SDF evaluation time (rendering).
 During rendering, we do interpolated texture lookups to get the value of a character SDF at a point.
+
+Conway Polyhedron Operators
+---------------------------
+Implement the `Conway polyhedron operators`_.
+Existing polyhedron operators like ``cube``, ``icosahedron``, etc, are modified so that they
+can be used as input values.
+
+* In OpenSCAD, by Kit Wallace: https://github.com/KitWallace/openscad/blob/master/conway.scad
+* In JavaScript, by George Hart: http://www.georgehart.com/virtual-polyhedra/conway_notation.html
+
+.. _`Conway polyhedron operators`: https://en.wikipedia.org/wiki/Conway_polyhedron_notation
 
 7. Bibliography
 ===============
