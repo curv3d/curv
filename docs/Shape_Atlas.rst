@@ -707,6 +707,21 @@ TODO: various blending kernels from MERCURY.
 
 5. Shape Debugging
 ==================
+``show_bbox shape``
+  Visualize the bounding box, so you can check if it is bad (too small to contain the shape).
+
+``set_bbox bbox shape``
+  Manually fix a bad bounding box.
+
+``show_contours shape``
+  Visualize a signed distance field by displaying contour lines.
+
+``show_gradient k shape``
+  Visualize a signed distance field by displaying gradient values.
+  Gradient values < 1 are displayed in black.
+  Gradient values > k are displayed in white.
+  Gradient values between 1 and k are displayed using a spectrum.
+
 ``lipschitz k shape``
   Repair a distance field whose Lipschitz constant k is != 1.
   If k < 1 then rendering via sphere tracing is slower than necessary.
@@ -715,12 +730,7 @@ TODO: various blending kernels from MERCURY.
   
   If an experimental shape isn't rendering correctly,
   then ``shape >> lipschitz 2`` is often a quick way to fix the problem.
-
-``show_bbox shape``
-  Visualize the bounding box, so you can check if it is bad (too small to contain the shape).
-
-``set_bbox bbox shape``
-  Manually fix a bad bounding box.
+  If the distance field is not Lipschitz continuous, then ``lipschitz`` can't help you.
 
 6. Wanted: Missing Shape Operations
 ===================================
@@ -816,11 +826,11 @@ using the parametric equations::
 
 Linear Sweep
 ------------
-Sweep a 2D/3D shape along a 2D/3D line segment.
+Sweep an arbitrary 2D/3D shape along a 2D/3D line segment.
 
 General Sweep
 -------------
-Sweep a 3D shape along an arbitrary 3D curve.
+Sweep an arbitrary 2D/3D shape along an arbitrary 2D/3D curve.
 
 Pixelate
 --------
