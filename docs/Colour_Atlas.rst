@@ -99,19 +99,13 @@ See also "heat map".
 
 Image Import
 ============
-You can import an image file (*.png or *.jpeg).
+You can import an image file (*.png or *.jpeg) as a 2D shape.
 Geometrically, it's a rectangle, with a colour function that uses bicubic interpolation
 to map the pixel RGB values onto a continous function.
 
 No support for alpha values, because I don't know what that means in Curv.
+What is the signed distance field for an RGBA image?
 
 By default, image files are assumed to contain sRGB encoding.
 The colour values are automatically converted to linear RGB.
 So when you query an image file's colour function, you get linear RGB.
-Alpha
-=====
-RGBA encoding and Duff/Porter compositing?
-I dunno about this in Curv 1.0.
-How does this map onto the idea of solid modelling and geometric shapes?
-What is the signed distance field for an RGBA image?
-Maybe later, if I come up with a theory to make sense of this stuff.
