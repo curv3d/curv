@@ -59,8 +59,12 @@ are in the range 0..1.
   and compiled into a list literal, ``(0xAB/255, 0xCD/255, 0xEF/255)``.
   So you would write ``sRGB #ABCDEF``.
   Maybe I should support hexadecimal integer literals.
-* Support for sHSV, sHSL, sHWB colour constructors (which are linear transformations of sRGB coordinates).
-  HWB is the new coolness (in CSS Colour Module Level 4), is supposedly more intuitive than HSV or HSL.
+* Support ``sHWB(hue,whiteness,blackness)``, because it's the most intuitive way to pick colours
+  (better than HSV or HSL), as popularized by CSS Color Module Level 4.
+  The ``s`` prefix means it is a transformation of sRGB coordinates.
+  http://alvyray.com/Papers/CG/HWB_JGTv208.pdf
+* Support ``sHSV(hue,saturation,value)`` for compatibility with other programming languages (for porting code).
+* CSS has HSL, but it's slightly harder to use than HWB or HSV. Do I need it?
 * CSS colour modification operators. Look at CSS Color Module Level 4. Looks like a nice alternative to hexadecimal
   or databases containing thousands of obscure colour names for naming/constructing colours.
 * Perceptually uniform colour spaces like HCL are cool, but are not supported in the Curv 1.0 standard library,
@@ -69,7 +73,8 @@ are in the range 0..1.
 
 Names for standard colours.
 Currently I've got white, black, red, green, blue, cyan, magenta, yellow, and orange.
-The values I've chosen don't align with other colour naming standards.
+The values I've chosen don't align with other colour naming standards like X11.
+But, they are intended to work with colour modification operators (see above).
 
 Standard colour names are a giant tar pit. Look at what CSS and SVG are doing,
 and adopt a simplified subset.
