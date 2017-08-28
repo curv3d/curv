@@ -820,6 +820,19 @@ using the parametric equations::
 
 .. _`trefoil knot`: https://en.wikipedia.org/wiki/Trefoil_knot
 
+This would be trivial if we could convert these parametric equations to implicit form,
+but that is often difficult to obtain analytically, and accurate numerical solutions
+can often be quite expensive (quoting "Image Swept Volumes", Winter and Chen).
+
+So we are looking for some way to remove the heavy lifting from the trefoil knot SDF distance function.
+
+For example, compile the parametric equations into a data structure that can be efficiently queried
+by the distance function to produce a reasonable approximation of the curve.
+Sample the parametric curve, either at regular intervals, or adaptively (higher sampling
+rate where the curvature is higher). Put the sample values into a balanced space partitioning
+tree structure. The distance function looks up the nearest sampled points in the tree
+and uses interpolation to estimate the nearest point on the curve.
+
 Linear Sweep
 ------------
 Sweep an arbitrary 2D/3D shape along a 2D/3D line segment.
