@@ -919,7 +919,7 @@ During rendering, we do interpolated texture lookups to get the value of a chara
 Conway Polyhedron Operators
 ---------------------------
 Implement the `Conway polyhedron operators`_.
-Existing polyhedron operators like ``cube``, ``icosahedron``, etc, are modified so that they
+Existing polyhedron constructors like ``cube``, ``icosahedron``, etc, are modified so that they
 can be used as input values.
 
 * In OpenSCAD, by Kit Wallace: https://github.com/KitWallace/openscad/blob/master/conway.scad
