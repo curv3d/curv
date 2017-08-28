@@ -1,0 +1,15 @@
+// credit: MERCURY
+// http://mercury.sexy/hg_sdf/
+/*
+float fOpUnionRound(float a, float b, float r) {
+    vec2 u = max(vec2(r - a,r - b), vec2(0));
+    return max(r, min (a, b)) - length(u);
+}
+*/
+
+round_min(k,a,b) = max(k, min(a,b)) - mag(max([k-a,k-b], 0));
+
+make_shape {
+    dist p = round_min(1, p[X],p[Y]),
+    is_2d = true,
+} >> distance_field

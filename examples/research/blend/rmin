@@ -1,0 +1,27 @@
+// credit: Christopher Olah
+// https://christopherolah.wordpress.com/2011/11/06/manipulation-of-implicit-functions-with-an-eye-on-cad/
+/*
+rmin r x y = if abs (x-y) < r
+    then y + r*sin(pi/4+asin((x-y)/r/sqrt 2)) - r
+    else min x y
+
+Olah says:
+(NB. This particular formation of rounded unions is a little bit naive. If you
+union and the sides aren’t orthogonal, this version will make a bump, which is
+not the expected behavior. This can be corrected for quite easily by looking at
+the dot product of the discrete gradients.)
+
+But ImplicitCAD doesn't implement this idea.
+*/
+
+rmin (r, x, y) = (
+    if (abs (x-y) < r)
+        y + r*sin(pi/4+asin((x-y)/r/sqrt 2)) - r
+    else
+        min(x,y)
+);
+
+make_shape {
+    dist(x,y,z,t) = rmin(1, x, y),
+    is_2d = true,
+} >> distance_field

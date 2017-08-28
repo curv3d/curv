@@ -1,0 +1,11 @@
+// credit: Dave Smith @ Media Molecule
+// http://media.lolrus.mediamolecule.com/AlexEvans_SIGGRAPH-2015.pdf
+// Same distance field as IQ's smooth polynomial min.
+soft_min(a, b, r) = (
+    var e := max(r - abs(a - b), 0);
+    min(a, b) - e*e*0.25/r
+);
+make_shape {
+    dist(x,y,z,t) = soft_min(x, y, 1),
+    is_2d = true,
+} >> distance_field
