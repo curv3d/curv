@@ -181,6 +181,12 @@ to determine the shape of its output.
   A half-plane whose edge passes through points p1 and p2.
   Exact distance field.
 
+``log_spiral ...``
+  TODO: logarithmic spiral
+
+``linear_spiral ...``
+  TODO: linear (aka Archimedean) spiral
+
 3D Shapes
 ---------
 ``sphere d``
@@ -575,7 +581,7 @@ This is also called an isocurve (in 2D) or isosurface (in 3D).
   convex (concave) vertices and edges are rounded off
   as if by a circle or sphere of radius ``d``.
   [Also known as Minkowski sum (difference) of a circle or sphere of radius ``d``,
-  or dilation (erosion) with a disk of radius ``d`` (Mathematical Morphology).]
+  or dilation (erosion) with a disk of radius ``d`` in Mathematical Morphology.]
 
   If the distance field is mitred, the result is a "mitred offset".
   Vertices and edges are preserved.
