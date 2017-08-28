@@ -501,6 +501,12 @@ generalized taper ...
   running along the Z axis and extruded towards the Z axis.
   TODO
 
+``helix_extrude (...) shape``
+  TODO: a 2D shape is swept along a helix. Similar to AutoCAD ``helix`` command.
+  Note that if you ``twist`` a cylinder around the Z axis, the cross section is egg-shaped,
+  not circular. By contrast, applying ``helix_extrude`` to a circle gives you a helix with
+  a circular cross section.
+
 ``stereographic_extrude shape``
   The entire 2D plane is mapped onto the surface of the unit sphere
   using a stereographic projection,
