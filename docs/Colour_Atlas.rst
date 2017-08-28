@@ -126,3 +126,18 @@ So you can represent translucent shapes.
 http://www.cs.swan.ac.uk/~csjvt/JVTPublications/CVG-Forum(published).pdf
 
 Not for Curv 1.0.
+
+Materials
+=========
+You can associate a material with a shape, which controls how lighting works
+for the surface of the shape. Eg, matte vs glossy. Not a requirement for Curv 1.0.
+
+Lighting Model
+==============
+You can control the lighting model parameters from inside Curv.
+The main challenge is designing the API.
+
+Recursive Rendering
+===================
+Invoke the 3D renderer as an operation in Curv for converting
+a 3D shape to a 2D coloured rectangle.
