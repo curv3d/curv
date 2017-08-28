@@ -12,6 +12,8 @@ Curv will initially just support the sRGB colour gamut,
 like the majority of 3D graphics programs out there.
 Full support for multiple colour spaces is too complicated
 for release 1.0.
+HDR (high dynamic range) and WCG (wide colour gamut) displays
+are available, but full support will need to wait.
 
 Colours are represented internally as linear RGB.
 This is necessary for colour blending and lighting calculations
@@ -57,7 +59,10 @@ are in the range 0..1.
   and compiled into a list literal, ``(0xAB/255, 0xCD/255, 0xEF/255)``.
   So you would write ``sRGB #ABCDEF``.
   Maybe I should support hexadecimal integer literals.
-* Support for sHSV and sHSL colour constructors (which are linear transformations of sRGB coordinates).
+* Support for sHSV, sHSL, sHWB colour constructors (which are linear transformations of sRGB coordinates).
+  HWB is the new coolness (in CSS Colour Module Level 4), is supposedly more intuitive than HSV or HSL.
+* CSS colour modification operators. Look at CSS Color Module Level 4. Looks like a nice alternative to hexadecimal
+  or databases containing thousands of obscure colour names for naming/constructing colours.
 * Perceptually uniform colour spaces like HCL are cool, but are not supported in the Curv 1.0 standard library,
   because it's a tar pit. (Somebody else can write a 3rd party library.)
 * Look at CSS and SVG for some ideas.
