@@ -44,7 +44,7 @@ which you change using the ``colour`` function.
 Shape operations must specify how the colour of the result shape derives from the
 colour of the argument shapes.
 (Colour assignment and colour transformation operators will be researched elsewhere,
-in a Colour Atlas document.)
+in `<Colour_Atlas.rst>`_.)
 
 Signed Distance Fields
 ----------------------
@@ -58,17 +58,25 @@ that construct a shape based on the SDF of an input shape.
 These operations are too useful to leave out.
 For this reason, we document the class of SDF created by each shape operation.
 
-There are 3 SDF classes:
+These are the SDF classes:
 
 exact:
   The distance field contains the exact Euclidean distance to the nearest boundary.
   The ``inflate`` operation will create a rounded offset.
 mitred:
-  Vertex and edge information is preserved in all isosurfaces.
+  Like exact, except vertex and edge information is preserved in all isosurfaces.
+  This can be useful in conjunction with distance field operations.
   The ``inflate`` operation will create a mitred offset.
 approximate:
   The SDF is implementation dependent, and may change between releases
-  as the code is optimized.
+  as the library is optimized.
+bad:
+  Worse than approximate: the SDF is Lipschitz continuous with a Lipschitz constant > 1.
+  Sphere tracing won't work unless you correct the SDF using the ``lipschitz`` operator.
+  The correction factor needs to be determined experimentally by the user.
+discontinuous:
+  Worse than bad: the SDF is not Lipschitz continuous, and can't be corrected by the ``lipschitz`` operator.
+  This situation can occur when experimenting with ``make_shape``.
 
 Bounding Box
 ------------
