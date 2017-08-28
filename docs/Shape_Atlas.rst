@@ -728,8 +728,8 @@ TODO: various blending kernels from MERCURY, like ``chamfer``.
   then ``shape >> lipschitz 2`` is often a quick way to fix the problem.
   If the distance field is not Lipschitz continuous, then ``lipschitz`` can't help you.
 
-6. Wanted: Missing Shape Operations
-===================================
+6. Missing/Future Shape Operations
+==================================
 
 Mesh Import
 -----------
@@ -742,8 +742,8 @@ I want the ability to import an STL file.
 
 1. Try to optimize the above approach. Maybe build a balanced
    space partitioning tree at compile time, walk the tree during SDF evaluation.
-   Maybe try to optimize the representation by combining coplanar triangles into polygons,
-   looking for symmetries, etc.
+   Maybe try to optimize the representation by combining adjacent coplanar triangles into polygons,
+   detecting symmetries, etc.
    Our goal is to exactly reproduce the polyhedron described
    by the STL file. This will work much better, but we likely still won't be able to import
    the Yoda bust on Thingiverse (614278 triangles).
@@ -764,7 +764,7 @@ I want the ability to import an STL file.
 3. Read the literature. Realize that Yoda is not a polyhedron, but a polyhedral
    approximation to an original model that has lots of curved surfaces.
    What we really want (for Yoda) is a more compact and efficient SDF that is an approximation
-   to the polyhedron and reconstructs the curved surfaces.
+   to the polyhedron and reconstructs the curved surfaces while preserving edges.
    
    Compile a mesh to an efficient SDF representation that approximates the
    original STL, with knobs for tuning the approximation.
@@ -776,6 +776,20 @@ I want the ability to import an STL file.
    If all of the data is accessed each time the Yoda SDF is evaluated,
    then evaluation will be too slow. We'd prefer a compiled representation where only a small fraction
    of the data needs to be accessed when evaluating the SDF at a given point.
+   
+   The Universal Approximation Theorum states that a neural network can approximate
+   a continuous function on a compact subset of R^3. So we can represent a mesh as a
+   neural network, and use Deep Learning to train the network from a mesh.
+   This is just a wild idea right now; I don't know how fast this would be or how good
+   the results would be.
+   
+   Radial Basis Functions (RBFs) are often cited as an efficient representation.
+   The hard part is efficiently converting the mesh to an RBF representation.
+   (Also note that RBFs are one representation used for neural networks.)
+   
+   * FastRBF (http://fastrbf.com) is a commercial implementation of this.
+   * "Implicit Surface Modeling Suitable for Inside/Outside Tests with Radial Basis Functions"
+     (2007) http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.602.4653&rep=rep1&type=pdf
 
 Convex Hull
 -----------
@@ -848,6 +862,7 @@ The shape is normal to the curve at all points.
 A generalization of ``extrude``.
 
 research:
+
 * "Image Swept Volumes", Winter and Chen, http://vg.swan.ac.uk/vlib/DOWNLOADS/ISV.pdf
 
 Splines
