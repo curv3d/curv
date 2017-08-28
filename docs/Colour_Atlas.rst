@@ -87,15 +87,29 @@ Call this ``blended_union``?
 Maybe there's a whole family of blending operators that can be used
 with ``blended_union``??
 
-Gradients and Stuff
-===================
-CSS and SVG have "gradients". Look for APIs I can borrow and adapt.
+Colour Gradients
+================
+CSS and SVG support `colour gradients`_. Look for APIs I can borrow and adapt.
 
-A "colour map" is a mapping from the range 0..1 to a colour.
-They are much used in scientific/data visualization.
-Come up with a library of popular/useful colour maps.
-Which would include continuous gradients between two end-point colours.
-See also "heat map".
+.. _`colour gradients`: https://en.wikipedia.org/wiki/Color_gradient
+
+Separate the shape of a colour gradient from the sequence of colours used.
+
+* A "scalar field" is a function mapping points in space onto a number in the range [0...1].
+* A "colour map" is a mapping from the range 0..1 to a colour.
+  They are much used in scientific/data visualization.
+  Come up with a library of popular/useful colour maps.
+  Which would include continuous gradients between two end-point colours.
+  See "Good Colour Maps: How to Design Them", https://arxiv.org/pdf/1509.03700.pdf
+* A "colour field" is the product of a scalar field with a colour map:
+  it's a function mapping points in space onto colours.
+
+Colour Field Transformations
+============================
+A colour field can be transformed freely, without the limitations of shape transformations,
+since you don't need to ensure that the result is Lipschitz continuous, as you do with distance fields.
+
+Provide a library of useful colour field transformations (and maybe scalar field transformations).
 
 Image Import
 ============
@@ -116,6 +130,9 @@ It could mean several things, all of which are research projects:
 By default, image files are assumed to contain sRGB encoding.
 The colour values are automatically converted to linear RGB.
 So when you query an image file's colour function, you get linear RGB.
+
+You can import a grayscale image that is to be interpreted as a scalar field
+in the range [0...1]. (See "colour gradients".) No gamma correction is applied.
 
 Translucent Shapes
 ==================
