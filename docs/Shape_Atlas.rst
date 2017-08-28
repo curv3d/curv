@@ -799,7 +799,16 @@ I want the ability to import an STL file.
    * "Implicit Surface Modeling Suitable for Inside/Outside Tests with Radial Basis Functions"
      (2007) http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.602.4653&rep=rep1&type=pdf
    
-   `Signed Distance Fields for Polygon Soup Meshes`_ (2014): The output is a voxel/octree representation.
+   GPU-Accelerated Adaptively Sampled Distance Fields (2008):
+   http://hyperfun.org/FHF_Log/Bastos_GPU_ADF_SMI08.pdf
+   Input is a 2-manifold mesh, output is an ASDF (adaptively sampled distance field)
+   which is then rendered on a GPU using sphere tracing. The ASDF should be more
+   compact than a voxel array/octree.
+   
+   `Signed Distance Fields for Polygon Soup Meshes`_ (2014):
+   Input is polygon soup. Triangles don't need to be correctly oriented,
+   mesh doesn't need to be 2-manifold.
+   The output is a voxel/octree representation of a SDF.
 
 .. _`Signed Distance Fields for Polygon Soup Meshes`: http://run.usc.edu/signedDistanceField/XuBarbicSignedDistanceField2014.pdf
 
