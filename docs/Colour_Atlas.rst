@@ -103,9 +103,26 @@ You can import an image file (*.png or *.jpeg) as a 2D shape.
 Geometrically, it's a rectangle, with a colour function that uses bicubic interpolation
 to map the pixel RGB values onto a continous function.
 
-No support for alpha values, because I don't know what that means in Curv.
-What is the signed distance field for an RGBA image?
+No support for alpha values in Curv 1.0, because I don't know what that means.
+It could mean several things, all of which are research projects:
+
+* Alpha values encode translucency in shapes using an opacity field, see Translucent Shapes.
+* A zero alpha value means that the pixel is not part of the shape, so it
+  modifies the distance field, instead of modifying the opacity field.
+* 0 < alpha < 1 on the edge of an opaque shape encodes antialiasing, we use that
+  to interpolate where the actual edge of the shape is. So the distance
+  field is affected.
 
 By default, image files are assumed to contain sRGB encoding.
 The colour values are automatically converted to linear RGB.
 So when you query an image file's colour function, you get linear RGB.
+
+Translucent Shapes
+==================
+In "Constructive Volume Geometry", Chen proposes to extend volumetric
+shape representations (like what Curv uses) with an opacity field, a function
+mapping each point in space onto an opacity value from 0 to 1.
+So you can represent translucent shapes.
+http://www.cs.swan.ac.uk/~csjvt/JVTPublications/CVG-Forum(published).pdf
+
+Not for Curv 1.0.
