@@ -140,6 +140,8 @@ to determine the shape of its output.
   * ``regular_polygon_m``: mitred distance field.
   * ``regular_polygon_e``: exact distance field (TODO).
 
+  TODO: Calls to regular_polygon should compile into optimized code, like http://thndl.com/square-shaped-shaders.html
+
 ..
   Example: ``regular_polygon(5,1)``
 
@@ -710,9 +712,11 @@ Distance field: approximate. Haven't seen a bad distance field during testing.
 
 Bounding box: approximate.
 
-TODO: fix ``smooth`` blending kernel to support N-ary blends.
+TODO: enhance ``smooth`` blending kernel to support N-ary blends.
 
 TODO: various blending kernels from MERCURY, like ``chamfer``.
+
+TODO: investigate advanced blending primitives from "A Gradient-Based Implicit Blend", http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.592.5451&rep=rep1&type=pdf
 
 5. Shape Debugging
 ==================
