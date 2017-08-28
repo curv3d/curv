@@ -76,7 +76,10 @@ Currently I've got white, black, red, green, blue, cyan, magenta, yellow, and or
 The values I've chosen don't align with other colour naming standards like X11.
 But, they are intended to work with colour modification operators (see above).
 
-Standard colour names are a giant tar pit. Look at what CSS and SVG are doing,
+Standard colour names are a giant tar pit.
+http://people.csail.mit.edu/jaffer/Color/Dictionaries
+
+Look at what CSS and SVG are doing,
 and adopt a simplified subset.
 
 Colour Blending
