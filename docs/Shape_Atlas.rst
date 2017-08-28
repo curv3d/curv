@@ -375,6 +375,15 @@ Polydimensional Shapes
   
   This is an associative, commutative operation with ``nothing`` as its identity element.
 
+``shape1 >> add shape2``
+  TODO: Same as ``union(shape1,shape2)``, but convenient for use in geometry pipelines.
+
+``shape1 >> remove shape2``
+  TODO: Same as ``difference(shape1, shape2)``, but convenient for use in geometry pipelines.
+  
+``shape1 >> crop shape2``
+  TODO: Same as ``intersection(shape1, shape2)``, but convenient for use in geometry pipelines.
+
 3. Transformations
 ==================
 A transformation is an operation that maps a shape S1 onto another shape S2,
