@@ -847,6 +847,9 @@ Sweep an arbitrary 2D shape along an arbitrary 3D curve.
 The shape is normal to the curve at all points.
 A generalization of ``extrude``.
 
+research:
+* "Image Swept Volumes", Winter and Chen, http://vg.swan.ac.uk/vlib/DOWNLOADS/ISV.pdf
+
 Splines
 -------
 * Sweep a spline curve using a circle/sphere in 2D/3D. Open or closed curve.
