@@ -798,6 +798,10 @@ I want the ability to import an STL file.
    * FastRBF (http://fastrbf.com) is a commercial implementation of this.
    * "Implicit Surface Modeling Suitable for Inside/Outside Tests with Radial Basis Functions"
      (2007) http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.602.4653&rep=rep1&type=pdf
+   
+   `Signed Distance Fields for Polygon Soup Meshes`_ (2014): The output is a voxel/octree representation.
+
+.. _`Signed Distance Fields for Polygon Soup Meshes`: http://run.usc.edu/signedDistanceField/XuBarbicSignedDistanceField2014.pdf
 
 Convex Hull
 -----------
