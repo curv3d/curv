@@ -690,11 +690,9 @@ Distance field: approximate. Haven't seen a bad distance field during testing.
 
 Bounding box: approximate.
 
-TODO: ``metaball`` blending kernel, which supports N-ary blends.
+TODO: fix ``smooth`` blending kernel to support N-ary blends.
 
-TODO: ``arc`` blending kernel, from ImplicitCAD. Does it have better engineering properties?
-
-TODO: various blending kernels from MERCURY.
+TODO: various blending kernels from MERCURY, like ``chamfer``.
 
 5. Shape Debugging
 ==================
