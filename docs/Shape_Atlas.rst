@@ -994,6 +994,17 @@ can be used as input values.
 
 .. _`Conway polyhedron operators`: https://en.wikipedia.org/wiki/Conway_polyhedron_notation
 
+Superquadrics
+-------------
+Popularized by Alan Barr as solid modelling primitive.
+Includes superellipsoids, superhyperboloids, supertoroids.
+See `Sphere Tracing`_.
+
+Hypertextures
+-------------
+Using Perlin noise (fractal noise) to deform a shape.
+See `Sphere Tracing`_.
+
 7. Bibliography
 ===============
 * John C. Hart, `Sphere Tracing`_
