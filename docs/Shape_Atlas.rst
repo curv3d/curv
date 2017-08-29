@@ -739,7 +739,7 @@ and there are more sophisticated blends available that avoid it.
 The bulge can also be used artistically: Quilez has used it to create knee and knuckle joints
 in cartoonish creatures.
 
-As a special case, ``smooth_union k (s, s)`` is the same as ``inflate(r/4) s``.
+As a special case, ``smooth_union r (s, s)`` is the same as ``inflate (r/4) s``.
 This is specific to my current code. This seems to be the worst case
 for bounding box inflation, so we can use this to compute bounding boxes.
 
