@@ -551,6 +551,10 @@ Repetition
 
 ``repeat_radial reps shape``
 
+``repeat_spiral ... shape``
+
+``repeat_helix ... shape``
+
 4. Distance Field Operations
 ============================
 These operations construct a shape from one or more distance fields.
@@ -801,6 +805,8 @@ I want the ability to import an STL file.
    using intersection and complement. Evaluation time for the SDF is proportional
    to the number of triangles. Likely to be unusable for more than a thousand
    triangles.
+   
+   [Starting point: a Curv function that reads an STL file, returns a list of triangles.]
 
 1. Try to optimize the above approach. Maybe build a balanced
    space partitioning tree at compile time, walk the tree during SDF evaluation.
@@ -994,16 +1000,29 @@ can be used as input values.
 
 .. _`Conway polyhedron operators`: https://en.wikipedia.org/wiki/Conway_polyhedron_notation
 
-Superquadrics
--------------
-Popularized by Alan Barr as solid modelling primitive.
+Supershapes
+-----------
+Superquadrics were popularized by Alan Barr as a solid modelling primitive.
 Includes superellipsoids, superhyperboloids, supertoroids.
-See `Sphere Tracing`_.
+See `Sphere Tracing`_ for distance functions.
+
+Supershapes, constructed using the Superformula, are a generalization of Superquadrics.
+Implicit function representation for supershapes: http://le2i.cnrs.fr/IMG/publications/PG05.pdf
 
 Hypertextures
 -------------
 Using Perlin noise (fractal noise) to deform a shape.
 See `Sphere Tracing`_.
+
+Fractals
+--------
+Mandelbulber uses SDFs and sphere tracing to render fractals using a variety of different algorithms.
+These algorithms could be packaged as Curv functions.
+
+http://mandelbulber.com/
+
+Voronoi Diagrams
+----------------
 
 7. Bibliography
 ===============
