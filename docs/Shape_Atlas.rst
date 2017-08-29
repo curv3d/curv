@@ -840,10 +840,22 @@ I want the ability to import an STL file.
    Need to choose a compiled mesh representation (and file format),
    an (offline) compilation algorithm, and an evaluation algorithm.
    
-   It's likely that Yoda will compile into a large representation.
-   If all of the data is accessed each time the Yoda SDF is evaluated,
-   then evaluation will be too slow. We'd prefer a compiled representation where only a small fraction
-   of the data needs to be accessed when evaluating the SDF at a given point.
+   Possible requirements:
+   
+   * Handles low quality input.
+     Triangle meshes are often of poor quality:
+     not 2-manifold (not watertight, self intersections);
+     zero area triangles; not orientable (some normals point in the wrong direction);
+     excessive detail.
+   * Compact representation, since it has to fit in GPU memory.
+     3D voxel arrays are simple but not compact.
+   * Fast SDF evaluation.
+     It's likely that Yoda will compile into a large representation.
+     If all of the data is accessed each time the Yoda SDF is evaluated,
+     then evaluation will be too slow. We'd prefer a compiled representation where only a small fraction
+     of the data needs to be accessed when evaluating the SDF at a given point.
+     Trees and arrays indexed by geometric location have the right kind of access properties.
+   * GPU acceleration.
    
    The Universal Approximation Theorum states that a neural network can approximate
    a continuous function on a compact subset of R^3. So we can represent a mesh as a
@@ -872,11 +884,10 @@ I want the ability to import an STL file.
 
 .. _`Signed Distance Fields for Polygon Soup Meshes`: http://run.usc.edu/signedDistanceField/XuBarbicSignedDistanceField2014.pdf
 
-   Found this on the web, without much context:
+   Notes from the web, lacking context:
    
-     POLYGONAL DATA SETS OFTEN CONTAIN HOLES, GAPS, EXCESSIVE DETAIL, AND FACES WITH BAD ASPECT RATIOS, WHICH COULD INHIBIT MANY OF THE GRAPHICAL CALCULATIONS NEEDED TO EFFECTIVELY RENDER THEM (E.G., COLLISION DETECTION).
-     
-     BY INTERPOLATING OVER THE POLYGONAL DATA SET AND CONSTRAINING NORMAL VECTORS TO INHIBIT EXCESSIVE OSCILLATION, AN IMPLICIT SURFACE CAN BE DEVELOPED TO TIGHTLY ENCLOSE THE ORIGINAL POLYGONAL DATA SET AND FACILITATE PERFORMING NEEDED CALCULATIONS.
+   * signed distance transform
+   * BY INTERPOLATING OVER THE POLYGONAL DATA SET AND CONSTRAINING NORMAL VECTORS TO INHIBIT EXCESSIVE OSCILLATION, AN IMPLICIT SURFACE CAN BE DEVELOPED TO TIGHTLY ENCLOSE THE ORIGINAL POLYGONAL DATA SET.
 
 Convex Hull
 -----------
@@ -1022,8 +1033,9 @@ See `Sphere Tracing`_.
 
 Fractals
 --------
-Mandelbulber uses SDFs and sphere tracing to render fractals using a variety of different algorithms.
-These algorithms could be packaged as Curv functions.
+Mandelbulber uses SDFs and sphere tracing to render fractals
+constructed using a variety of algorithms.
+These algorithms could be packaged as Curv shape constructors.
 
 http://mandelbulber.com/
 
