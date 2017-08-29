@@ -664,44 +664,64 @@ A blended union uses the positive distance fields near the surfaces of the
 shapes being blended to construct additional material to bridge the gaps
 between the two shapes.
 
-The ``smooth`` blending kernel is based on the polynomial smooth min function
-by Inigo Quilez (`<http://www.iquilezles.org/www/articles/smin/smin.htm>`_):
+---------
 
-* ``smooth_union k (shape1, shape2)``
-* ``smooth_intersection k (shape1, shape2)``
-* ``smooth_difference k (shape1, shape2)``
+The ``smooth`` blending kernel comprises:
 
-The parameter ``k`` controls the size/radius of the blending band.
-Quilez claims this blending kernel is fast, easy to control, and good enough
-for most artistic purposes.
+* ``smooth_union r (shape1, shape2)``
+* ``smooth_intersection r (shape1, shape2)``
+* ``smooth_difference r (shape1, shape2)``
+
+The parameter ``r`` controls the size/radius of the blending band.
+
+``smooth_union`` is an implementation of what I call The Elliptic Blend,
+since it creates a fillet with an elliptical shape. This blend is fast,
+easy to understand and control, and good enough for most purposes.
+
+The Elliptic Blend is a popular blending operation that has been rediscovered or reinvented
+many times; every author comes up with a different name and a different algorithm,
+but the behaviour is the same:
+
+* "The Potential Method for Blending Surfaces and Corners" by Hoffman and Hopcroft (1987).
+  Their blend is controlled by 3 parameters, ``a``, ``b`` and ``λ``.
+  These allow you to control the shape of the fillet. If you set ``a=b=r`` and ``λ=0``
+  then you get The Elliptic Blend.
+* A special case of the "superelliptic blend" by Rockwood & Owen (1987).
+  The ellipse is generalized to a superellipse by passing an exponent as argument,
+  and there are two ``r`` parameters, one for each shape being blended.
+* Independently discovered by Christopher Olah (2011), called "rounded union" in ImplicitCAD.
+* Faster implementation by Inigo Quilez as "opBlend", using his "polynomial smooth min" function.
+* Even faster implementation by Dave Smith @ Media Molecule (2015), called "soft blend".
+* Alternate implementation by MERCURY (same shape but different distance field), called "opUnionRound".
+
 Note that ``smooth_union`` and ``smooth_intersection`` are binary operators:
-they aren't associative and don't generalize to an arbitrary number of shapes.
+they aren't associative and don't easily generalize to an arbitrary number of shapes.
 
-Here are circles of diameter 2, combined using ``smooth_union`` with ``k`` values
+Here are circles of diameter 2, combined using ``smooth_union`` with ``r`` values
 1.2, 1.8, 2.4, 3.0, 3.6, 4.2, 5.0:
 
 .. image:: images/blend.png
 
-This is a generalization of the older `Metaballs`_ technique
-(works with all geometric shapes, not just circles and spheres),
-except that the ``smooth`` blending kernel doesn't blend 3 or more shapes together
+This looks very similar to the older "blobby objects" / "soft objects" / "`Metaballs`_" technique.
+The Elliptic Blend is more general, since it works with all geometric shapes, not just circles and spheres.
+But it's also less general, since it doesn't blend 3 or more shapes together
 in an order-independent way.
 
 .. _`metaballs`: https://en.wikipedia.org/wiki/Metaballs
 
 Smooth blends can produce the artistic effect of "fillets" and "rounds" from mechanical engineering.
 Here are ``smooth_union``, ``smooth_intersection`` and ``smooth_difference``
-applied to a unit cube and a cylinder with ``k=.3``:
+applied to a unit cube and a cylinder with ``r=.3``:
 
 .. image:: images/smooth_blends.png
 
-Here's the appearance of a fillet (with the same ``k``) for different
-angles: 90°, 45°, 135°:
+Here's the appearance of a fillet (with the same ``r``) for different
+angles: 90°, 45°, 135°.
 
 .. image:: images/fillet_angles.png
 
-At 90°, the fillet is an approximate quarter-circle with radius ``k``.
-At other angles, the fillet is a deformed quarter-circle.
+At 90°, the fillet is a quarter-circle with radius ``r``.
+At other angles, the fillet deforms to an ellipse.
 This might be bad for engineering, if you need a constant radius fillet,
 but it's good if you are animating an organic form (like a leg attached to a torso),
 and you want a constant-area fillet that looks realistic as the joint is animated.
@@ -709,12 +729,17 @@ and you want a constant-area fillet that looks realistic as the joint is animate
 Here's a fillet of a butt joint, same parameters as above.
 To get a rounded fillet in this example, the rectangles must have exact distance fields,
 so I used ``rect_e``. This shows that the bounding box of ``smooth_union`` can be
-bigger than the bounding box of ``union``.
+bigger than the bounding box of ``union``. It also shows an example of a "bulge".
 
 .. image:: images/butt_fillet.png
 
-As a special case, ``smooth_union k (s, s)`` is the same as ``inflate(k/4) s``.
-This is specific to Quilez's code. This seems to be the worst case
+The "bulge" behaviour of the Elliptic Blend is considered undesirable by many people,
+and there are more sophisticated blends available that avoid it.
+The bulge can also be used artistically: Quilez has used it to create knee and knuckle joints
+in cartoonish creatures.
+
+As a special case, ``smooth_union k (s, s)`` is the same as ``inflate(r/4) s``.
+This is specific to my current code. This seems to be the worst case
 for bounding box inflation, so we can use this to compute bounding boxes.
 
 Distance field: approximate. Haven't seen a bad distance field during testing.
@@ -722,6 +747,8 @@ Distance field: approximate. Haven't seen a bad distance field during testing.
 Bounding box: approximate.
 
 TODO: enhance ``smooth`` blending kernel to support N-ary blends.
+
+------
 
 TODO: various blending kernels from MERCURY, like ``chamfer``.
 
