@@ -676,17 +676,18 @@ The parameter ``r`` controls the size/radius of the blending band.
 
 ``smooth_union`` is an implementation of what I call The Elliptic Blend,
 since it creates a fillet with an elliptical shape. This blend is fast,
-easy to understand and control, and good enough for most purposes.
+easy to use, and good enough for most purposes.
 
 The Elliptic Blend is a popular blending operation that has been rediscovered or reinvented
 many times; every author comes up with a different name and a different algorithm,
 but the behaviour is the same:
 
 * "The Potential Method for Blending Surfaces and Corners" by Hoffman and Hopcroft (1987).
-  Their blend is controlled by 3 parameters, ``a``, ``b`` and ``λ``.
-  These allow you to control the shape of the fillet. If you set ``a=b=r`` and ``λ=0``
+  Their blend is controlled by 3 parameters: ``a`` and ``b`` control the blending radius,
+  and ``λ`` controls the shape of the fillet. If you set ``a=b=r`` and ``λ=0``
   then you get The Elliptic Blend.
-* A special case of the "superelliptic blend" by Rockwood & Owen (1987).
+* A special case of the "superelliptic blend" by Rockwood & Owen (1987),
+  "Blending Surfaces in Solid Modeling".
   The ellipse is generalized to a superellipse by passing an exponent as argument,
   and there are two ``r`` parameters, one for each shape being blended.
 * Independently discovered by Christopher Olah (2011), called "rounded union" in ImplicitCAD.
@@ -752,7 +753,8 @@ TODO: enhance ``smooth`` blending kernel to support N-ary blends.
 
 TODO: various blending kernels from MERCURY, like ``chamfer``.
 
-TODO: investigate advanced blending primitives from "A Gradient-Based Implicit Blend", http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.592.5451&rep=rep1&type=pdf
+TODO: investigate advanced blending primitives from "A Gradient-Based Implicit Blend",
+http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.592.5451&rep=rep1&type=pdf
 
 5. Shape Debugging
 ==================
