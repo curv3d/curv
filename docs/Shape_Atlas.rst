@@ -936,9 +936,8 @@ This would be trivial if we could analytically convert these parametric equation
 I'm not sure there is a general solution to this problem.
 According to `Geometric and Solid Modeling`_, chapter 5:
 
-  We restrict attention to algebraic surfaces and curves. ...
-  General techniques
-  exist for converting from parametric to implicit form, at least in principle,
+  General techniques exist for converting [algebraic surfaces and curves]
+  from parametric to implicit form, at least in principle,
   and we review here a simple version based on the Sylvester resultant. In
   Chapter 7, we show how to use Grobner bases techniques for this purpose.
 
@@ -1077,6 +1076,7 @@ http://mandelbulber.com/
 
 Voronoi Diagrams
 ----------------
+In 2 and 3 dimensions, are a popular modeling technique in 3D printed geometric art.
 
 7. Bibliography
 ===============
