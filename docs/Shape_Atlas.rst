@@ -882,12 +882,12 @@ I want the ability to import an STL file.
    mesh doesn't need to be 2-manifold.
    The output is a voxel/octree representation of a SDF.
 
-.. _`Signed Distance Fields for Polygon Soup Meshes`: http://run.usc.edu/signedDistanceField/XuBarbicSignedDistanceField2014.pdf
-
    Notes from the web, lacking context:
    
    * signed distance transform
    * BY INTERPOLATING OVER THE POLYGONAL DATA SET AND CONSTRAINING NORMAL VECTORS TO INHIBIT EXCESSIVE OSCILLATION, AN IMPLICIT SURFACE CAN BE DEVELOPED TO TIGHTLY ENCLOSE THE ORIGINAL POLYGONAL DATA SET.
+
+.. _`Signed Distance Fields for Polygon Soup Meshes`: http://run.usc.edu/signedDistanceField/XuBarbicSignedDistanceField2014.pdf
 
 Convex Hull
 -----------
@@ -932,9 +932,32 @@ using the parametric equations::
 
 .. _`trefoil knot`: https://en.wikipedia.org/wiki/Trefoil_knot
 
-This would be trivial if we could convert these parametric equations to implicit form,
-but that is often difficult to obtain analytically, and accurate numerical solutions
-can often be quite expensive (quoting "Image Swept Volumes", Winter and Chen).
+This would be trivial if we could analytically convert these parametric equations to implicit form.
+I'm not sure there is a general solution to this problem.
+According to `Geometric and Solid Modeling`_, chapter 5:
+
+  We restrict attention to algebraic surfaces and curves. ...
+  General techniques
+  exist for converting from parametric to implicit form, at least in principle,
+  and we review here a simple version based on the Sylvester resultant. In
+  Chapter 7, we show how to use Grobner bases techniques for this purpose.
+
+Lots of useful curves aren't algebraic (ie, polynomial), like the helix,
+the sine wave, and the trefoil knot. (Is there a more general solution for
+analytic conversion?)
+
+I also know that an analytic solution can be too expensive to use.
+In `The Implicitization of a Trefoil Knot`_, Michael Trott
+converts the trefoil knot parametric equation to implicit form, using Mathematica.
+"The result is a large polynomial.
+It is of total degree 24, has 1212 terms and coefficients with up to 23 digits."
+
+.. _`The Implicitization of a Trefoil Knot`: https://www.google.ca/url?sa=t&rct=j&q=&esrc=s&source=web&cd=13&ved=0ahUKEwj9o7-S9tvUAhWl24MKHYjLCwAQFghPMAw&url=http%3A%2F%2Fwww.mathematicaguidebooks.org%2Fscripts%2Fdownload_file.cgi%3Fsoftware_download%3DSample_Section_Symbolics.nb.pdf&usg=AFQjCNHYR408D7qpaYvJC7500ylz9iY0Mw
+
+What about a numerical solution?
+According to "Image Swept Volumes" (Winter and Chen),
+accurate numerical solutions can often be quite expensive.
+(Fine, but let's try it anyway. How do I do that?)
 
 So we are looking for some way to remove the heavy lifting from the trefoil knot SDF distance function.
 
@@ -943,7 +966,20 @@ by the distance function to produce a reasonable approximation of the curve.
 Sample the parametric curve, either at regular intervals, or adaptively (higher sampling
 rate where the curvature is higher). Put the sample values into a balanced space partitioning
 tree structure. The distance function looks up the nearest sampled points in the tree
-and uses interpolation to estimate the nearest point on the curve.
+and then:
+
+ 1. uses polynomial interpolation to estimate the nearest point on the curve.
+ 2. uses root finding to find the value of t for the closest point on the curve.
+
+Either way, we are creating an approximation to the curve, within some error tolerance.
+If a non-linear transformation is applied, and part of the curve is scaled to a larger size,
+then a smaller error tolerance may be required. So let's think about how to dynamically
+determine the appropriate error tolerance during SDF evaluation time.
+
+Precompiling the parametric equations to a data structure won't work if the equations
+contain coefficients derived from SDF evaluation time data (x,y,z,t coordinates).
+
+.. _`Geometric and Solid Modeling`: https://www.cs.purdue.edu/homes/cmh/distribution/books/geo.html
 
 Linear Sweep
 ------------
