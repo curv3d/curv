@@ -794,7 +794,7 @@ http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.592.5451&rep=rep1&type=
   then ``shape >> lipschitz 2`` is often a quick way to fix the problem.
   If the distance field is not Lipschitz continuous, then ``lipschitz`` can't help you.
 
-6. Missing/Future Shape Operations
+6. TODO: Missing/Future Shape Operations
 ==================================
 
 Mesh Import
@@ -899,7 +899,7 @@ There are probably better and cheaper ways to accomplish this in F-Rep,
 so this operation is not a must-have.
 
 Convex hull of two copies of the same shape is equivalent to sweeping that shape
-over a line segment: there is a separate "wanted" entry for Linear Sweep.
+over a line segment: there is a separate "TODO" entry for Linear Sweep.
 
 Minkowski Sum
 -------------
@@ -914,7 +914,7 @@ which are also easier to understand.
   of a shape with an exact distance field.
 * Shell: in Curv, ``shell``.
 * Morph between two shapes: in Curv, ``morph``.
-* Sweep a 3D solid along a 3D curve: This has its own entry in the wanted list,
+* Sweep a 3D solid along a 3D curve: This has its own entry in the TODO list,
   and might be easier than a general Minkowski sum implementation.
 
 My intuition says that Minkowski sum ought to be implementable as a Nested Distance Field
