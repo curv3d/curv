@@ -968,8 +968,8 @@ rate where the curvature is higher). Put the sample values into a balanced space
 tree structure. The distance function looks up the nearest sampled points in the tree
 and then:
 
- 1. uses polynomial interpolation to estimate the nearest point on the curve.
- 2. uses root finding to find the value of t for the closest point on the curve.
+1. uses polynomial interpolation to estimate the nearest point on the curve.
+2. uses root finding to find the value of t for the closest point on the curve.
 
 Either way, we are creating an approximation to the curve, within some error tolerance.
 If a non-linear transformation is applied, and part of the curve is scaled to a larger size,
