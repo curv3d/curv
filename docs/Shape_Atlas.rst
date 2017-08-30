@@ -972,7 +972,8 @@ and then:
 
 Either way, we are creating an approximation to the curve, within some error tolerance.
 If a non-linear transformation is applied, and part of the curve is scaled to a larger size,
-then a smaller error tolerance may be required. So let's think about how to dynamically
+then a smaller error tolerance may be required in the scaled region of the curve.
+So let's think about how to dynamically
 determine the appropriate error tolerance during SDF evaluation time.
 
 Precompiling the parametric equations to a data structure won't work if the equations
