@@ -110,6 +110,20 @@ cylinder_e(d,h) = extrude_e h (circle d),
 
 // Cone: +Z is up, origin is in the middle of the base.
 cone = cone_e,
+cone_m(d, height) = (
+    radius = d / 2;
+    make_shape {
+        dist(x,y,z,t) = (
+            var q := [mag(x,y), z];
+            var tip := q - [0, height];
+            var mantleDir := normalize(height, radius);
+            var mantle := dot(tip, mantleDir);
+            max(mantle, -q[Y])
+        ),
+        bbox = [[-radius,-radius,0],[radius,radius,height]],
+        is_3d = true
+    }
+),
 // Euclidean distance field.
 // Credit: MERCURY (http://mercury.sexy/hg_sdf)
 cone_e(d, height) = (
@@ -823,6 +837,30 @@ reflect_x shape = (
         bbox = [
             [-shape.bbox[MAX][X], shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
             [-shape.bbox[MIN][X], shape.bbox[MAX][Y], shape.bbox[MAX][Z]],
+        ],
+        is_2d = shape.is_2d,
+        is_3d = shape.is_3d,
+    }
+),
+reflect_y shape = (
+    make_shape {
+        dist(x,y,z,t) = shape.dist(x,-y,z,t),
+        colour(x,y,z,t) = shape.colour(x,-y,z,t),
+        bbox = [
+            [-shape.bbox[MIN][X], shape.bbox[MAX][Y], shape.bbox[MIN][Z]],
+            [-shape.bbox[MAX][X], shape.bbox[MIN][Y], shape.bbox[MAX][Z]],
+        ],
+        is_2d = shape.is_2d,
+        is_3d = shape.is_3d,
+    }
+),
+reflect_z shape = (
+    make_shape {
+        dist(x,y,z,t) = shape.dist(x,y,-z,t),
+        colour(x,y,z,t) = shape.colour(x,y,-z,t),
+        bbox = [
+            [-shape.bbox[MIN][X], shape.bbox[MIN][Y], shape.bbox[MAX][Z]],
+            [-shape.bbox[MAX][X], shape.bbox[MAX][Y], shape.bbox[MIN][Z]],
         ],
         is_2d = shape.is_2d,
         is_3d = shape.is_3d,

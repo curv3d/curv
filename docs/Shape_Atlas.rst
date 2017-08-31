@@ -214,7 +214,7 @@ to determine the shape of its output.
   The base (of diameter ``d``) is embedded in the XY plane and centred on the origin.
   The apex is above the origin at height ``h``.
  
-  * ``cone_m``: mitred distance field. (TODO)
+  * ``cone_m``: mitred distance field.
   * ``cone_e``: exact distance field, more expensive.
 
 ``torus (d1, d2)``
@@ -414,6 +414,12 @@ If the input has an exact distance field, the output is also exact.
 ``reflect_x shape``
   Reflect a 2D/3D shape across the Y axis/YZ plane,
   mapping each point (x,y)/(x,y,z) to (-x,y)/(-x,y,z).
+
+``reflect_y shape``
+  ditto
+
+``reflect_z shape``
+  ditto
 
 ``reflect normal shape``
   TODO
