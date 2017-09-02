@@ -15,6 +15,33 @@ The ultimate goal is to boil all of this research down into a well
 designed, consistent and powerful geometry API for Curv, which will be
 included in a future Curv standard library.
 
+The Curv Standard Library
+=========================
+At this point, the Shape Atlas is well enough developed for me to speculate
+on the structure of the Curv standard shape library.
+
+The goal is to be easy to use for beginners, but powerful enough for experts.
+Some shape operations require a lot more knowledge and expertise to use than others,
+so we'll divide the shape library into levels.
+
+Level 0: Basic Shape API
+  Includes the shape constructors and the transformations (sections 1 and 2).
+  You don't need to know about signed distance fields to use this level.
+
+Level 1: Advanced Shape API
+  Includes the Distance Field Operations (section 3).
+  You need to understand the different SDF classes, and what which operations
+  produce which classes of SDF.
+
+Level 2: Expert Shape API
+  Includes the ``make_shape`` function.
+  You need to understand how define a new SDF from scratch.
+
+I want to mess with the APIs to make them more composeable.
+
+I want to try using keyword parameters where it makes sense.
+OpenSCAD does this, and the Swift standard library is a particularly nice example.
+
 0. Shape Properties
 ===================
 
