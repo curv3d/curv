@@ -1109,15 +1109,15 @@ Polytopes contain additional shape attributes representing the vertices and face
 Polytope operators are operations that only make sense on polytopes, not on general curved shapes.
 They operate directly on the vertices and faces.
 
-* The Conway polyhedron operators are an example, although at least some of these operators
-  probably don't work on general polyhedra.
+* The Conway polyhedron operators are an example, although some of these operators
+  may not work on general polyhedra (to be investigated).
 * Convex hull is possibly another example. It's a standard operation on polyhedral meshes,
   but I don't have an implementation for SDFs.
 * The boolean operators and affine transformations take arbitrary shapes as arguments (including polytopes)
   but do not return polytopes as results. We could generalize these operators to return polytopes, when given
   polytopes as input. Note that ``union`` is very cheap, and ``polytope_union`` is very expensive, and also
   numerically unstable (fails for some valid inputs).
-* An operator that takes an arbitrary shape as input, and returns a polytope that approximates the shape as output.
+* ``polygonize`` maps an arbitrary shape to a polytope that approximates the shape.
 
 Supershapes
 -----------
