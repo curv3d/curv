@@ -30,7 +30,7 @@ Level 0: Basic Shape API
 
 Level 1: Advanced Shape API
   Includes the Distance Field Operations (section 3).
-  You need to understand the different SDF classes, and what which operations
+  You need to understand the different SDF classes, and which operations
   produce which classes of SDF.
 
 Level 2: Expert Shape API
