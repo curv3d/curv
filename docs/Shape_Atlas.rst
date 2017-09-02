@@ -15,8 +15,8 @@ The ultimate goal is to boil all of this research down into a well
 designed, consistent and powerful geometry API for Curv, which will be
 included in a future Curv standard library.
 
-The Curv Standard Library
-=========================
+The Standard Shape Library
+==========================
 At this point, the Shape Atlas is well enough developed for me to speculate
 on the structure of the Curv standard shape library.
 
@@ -25,11 +25,11 @@ Some shape operations require a lot more knowledge and expertise to use than oth
 so we'll divide the shape library into levels.
 
 Level 0: Basic Shape API
-  Includes the shape constructors and the transformations (sections 1 and 2).
+  Includes the shape constructors, the boolean operations, and the transformations (sections 1, 2 and 3).
   You don't need to know about signed distance fields to use this level.
 
 Level 1: Advanced Shape API
-  Includes the Distance Field Operations (section 3).
+  Includes the Distance Field Operations (section 4).
   You need to understand the different SDF classes, and which operations
   produce which classes of SDF.
 
@@ -834,6 +834,19 @@ Mesh Import
 -----------
 I want the ability to import an STL file.
 
+``exact_mesh_file filename``
+  Read a mesh file (STL, OBJ, AMF, 3MF) and interpret it as a polyhedron.
+  Maybe the vertices and faces are available as shape attributes,
+  and maybe it can be used as input to polytope operators.
+  
+  There is a limit to how many faces can be efficiently supported.
+  Not suitable for high triangle count approximations to curved surfaces.
+
+``approximate_mesh_file filename``
+  A mesh file that approximates a curved surface is compiled offline into an SDF.
+  Curved surfaces are reconstructed, while preserving edges. The result is placed
+  in a file, which this operator reads.
+
 0. Import an STL file as a Nef polyhedron, naively constructed from half-spaces
    using intersection and complement. Evaluation time for the SDF is proportional
    to the number of triangles. Likely to be unusable for more than a thousand
@@ -930,6 +943,9 @@ It's a powerful and intuitive operation, so it would be nice to have for that re
 Convex Hull is used to create a skin over elements that form the skeleton of the desired shape.
 There are probably better and cheaper ways to accomplish this in F-Rep,
 so this operation is not a must-have.
+
+Convex Hull could be implemented in restricted form as a Polytope Operator (see below).
+This means it's not supported on curved surfaces.
 
 Convex hull of two copies of the same shape is equivalent to sweeping that shape
 over a line segment: there is a separate "TODO" entry for Linear Sweep.
@@ -1085,6 +1101,23 @@ can be used as input values.
 * In JavaScript, by George Hart: http://www.georgehart.com/virtual-polyhedra/conway_notation.html
 
 .. _`Conway polyhedron operators`: https://en.wikipedia.org/wiki/Conway_polyhedron_notation
+
+Polytope Operators
+------------------
+A polytope is either a polygon or a polyhedron.
+Polytopes contain additional shape attributes representing the vertices and faces.
+Polytope operators are operations that only make sense on polytopes, not on general curved shapes.
+They operate directly on the vertices and faces.
+
+* The Conway polyhedron operators are an example, although at least some of these operators
+  probably don't work on general polyhedra.
+* Convex hull is possibly another example. It's a standard operation on polyhedral meshes,
+  but I don't have an implementation for SDFs.
+* The boolean operators and affine transformations take arbitrary shapes as arguments (including polytopes)
+  but do not return polytopes as results. We could generalize these operators to return polytopes, when given
+  polytopes as input. Note that ``union`` is very cheap, and ``polytope_union`` is very expensive, and also
+  numerically unstable (fails for some valid inputs).
+* An operator that takes an arbitrary shape as input, and returns a polytope that approximates the shape as output.
 
 Supershapes
 -----------
