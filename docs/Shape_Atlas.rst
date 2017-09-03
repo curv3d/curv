@@ -459,10 +459,17 @@ If the input has an exact distance field, the output is also exact.
   rotates the square around the point (1,1).
 
 ``align alignspec shape``
-  Using the shape's bounding box,
+  TODO: Using the shape's bounding box,
   translate the shape to align it relative to the origin,
   as specified by ``alignspec``.
-  TODO
+  
+  Design 1: alignspec ::= {x: aspec, y: aspec, z: aspec}
+    where aspec is ``above d``, ``centre`` or ``below d``,
+    and each field of alignspec is optional.
+    Eg, ``align{z:above 0}`` aligns the bottom of the shape with ``z==0``.
+  
+  Design 2: General Library of Relativity
+    https://github.com/davidson16807/relativity.scad/wiki
 
 Non-Rigid Transformations
 -------------------------
