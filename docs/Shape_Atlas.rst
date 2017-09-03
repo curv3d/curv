@@ -463,13 +463,20 @@ If the input has an exact distance field, the output is also exact.
   translate the shape to align it relative to the origin,
   as specified by ``alignspec``.
   
-  Design 1: alignspec ::= {x: aspec, y: aspec, z: aspec}
-    where aspec is ``above d``, ``centre`` or ``below d``,
-    and each field of alignspec is optional.
-    Eg, ``align{z:above 0}`` aligns the bottom of the shape with ``z==0``.
+  ``alignspec ::= {x: aspec, y: aspec, z: aspec}``
   
-  Design 2: General Library of Relativity
-    https://github.com/davidson16807/relativity.scad/wiki
+  Each field of alignspec is optional, and aspec is one of:
+    
+  * ``above d`` -- a point that is ``d`` above the top of the shape's bounding box.
+  * ``below d`` -- a point that is ``d`` below the bottom of the shape's bounding box.
+  * ``within k`` -- ``k`` is between -1 (the bottom of the bounding box)
+    and +1 (the top of the bounding box). 0 is the centre.
+  * ``centre`` -- centre of the shape's bounding box, same as ``within 0``.
+    
+  Eg, ``align {z: above 0}`` aligns the bottom of the shape with ``z==0``.
+  
+  See also: General Library of Relativity
+  https://github.com/davidson16807/relativity.scad/wiki
 
 Non-Rigid Transformations
 -------------------------
