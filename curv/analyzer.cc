@@ -735,19 +735,6 @@ Call_Phrase::analyze_args(Environ& env) const
     return std::move(argv);
 }
 
-void
-analyze_field(
-    const Assoc& def,
-    Atom_Map<Shared<const Operation>>& dict,
-    Environ& env)
-{
-    Atom name = def.name_->atom_;
-    if (dict.find(name) != dict.end())
-        throw Exception(At_Phrase(*def.name_, env),
-            stringify(name, ": multiply defined"));
-    dict[name] = def.definiens_;
-}
-
 Shared<Meaning>
 Program_Phrase::analyze(Environ& env) const
 {
@@ -836,7 +823,7 @@ Brace_Phrase::analyze(Environ& env) const
         each_item(*body_, [&](const Phrase& item)->void {
             auto meaning = item.analyze(env);
             if (auto def = cast<Assoc>(meaning))
-                analyze_field(*def, record->fields_, env);
+                record->fields_.push_back(def);
             else
                 throw Exception(At_Phrase(item, env), "not an association");
         });

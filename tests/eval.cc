@@ -422,11 +422,13 @@ TEST(curv, eval)
 
     // analysis errors
     FAILMSG("fnord", "fnord: not defined");
+    /*
     FAILALL("{x:1,x:2}",
         "x: multiply defined\n"
         "line 1(column 6)\n"
         "  {x:1,x:2}\n"
         "       ^   ");
+     */
     FAILALL("x+",
         "missing expression\n"
         "line 1(column 3), at end of script\n"

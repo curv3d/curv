@@ -70,7 +70,7 @@ struct Metafunction : public Meaning
 ///     Every expression is also a generator that produces 1 value.
 ///     For example, `2+2`.
 ///  2. A Generator is executed to produce a sequence of zero or more values
-///     using `generate`. (Every Operation is also a generator.)
+///     using `generate`. (Expressions and Actions are also generators.)
 ///     For example, `for(i=1..10)i^2`.
 ///  3. A Binder is executed to bind zero or more names to values
 ///     in a record value that is under construction, using ``bind``.
@@ -90,7 +90,7 @@ struct Operation : public Meaning
 
     // These functions are called during evaluation.
     virtual Value eval(Frame&) const;
-    virtual void generate(Frame&, List_Builder&) const = 0;
+    virtual void generate(Frame&, List_Builder&) const;
     virtual void bind(Frame&, Record&) const;
     virtual void exec(Frame&) const;
 
@@ -494,7 +494,8 @@ using List_Expr = aux::Tail_Array<List_Expr_Base>;
 
 struct Record_Expr : public Just_Expression
 {
-    Atom_Map<Shared<const Operation>> fields_;
+    // `fields_` contains actions and binders.
+    std::vector<Shared<const Operation>> fields_;
 
     Record_Expr(Shared<const Phrase> source) : Just_Expression(source) {}
 
@@ -778,7 +779,7 @@ struct Lambda_Expr : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
-struct Assoc : public Meaning
+struct Assoc : public Operation
 {
     Shared<const Identifier> name_;
     Shared<const Operation> definiens_;
@@ -788,10 +789,12 @@ struct Assoc : public Meaning
         Shared<const Identifier> name,
         Shared<const Operation> definiens)
     :
-        Meaning(std::move(source)),
+        Operation(std::move(source)),
         name_(std::move(name)),
         definiens_(std::move(definiens))
     {}
+
+    virtual void bind(Frame&, Record&) const override;
 };
 
 } // namespace curv

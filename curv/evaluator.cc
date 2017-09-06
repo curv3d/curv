@@ -33,6 +33,11 @@ Operation::bind(Frame& f, Record&) const
 {
     throw Exception(At_Phrase(*source_, &f), "not a binder");
 }
+void
+Operation::generate(Frame& f, List_Builder&) const
+{
+    throw Exception(At_Phrase(*source_, &f), "not a generator");
+}
 
 void
 Just_Expression::generate(Frame& f, List_Builder& lb) const
@@ -477,12 +482,18 @@ Spread_Gen::generate(Frame& f, List_Builder& lb) const
         lb.push_back(list->at(i));
 }
 
+void
+Assoc::bind(Frame& f, Record& r) const
+{
+    r.fields_[name_->atom_] = definiens_->eval(f);
+}
+
 Value
 Record_Expr::eval(Frame& f) const
 {
     auto record = make<Record>();
-    for (auto i : fields_)
-        record->fields_[i.first] = i.second->eval(f);
+    for (auto op : fields_)
+        op->bind(f, *record);
     return {record};
 }
 
