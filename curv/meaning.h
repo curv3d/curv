@@ -688,6 +688,7 @@ struct For_Op : public Operation
     {}
 
     virtual void generate(Frame&, List_Builder&) const override;
+    virtual void bind(Frame&, Record&) const override;
     virtual void exec(Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 };
@@ -728,6 +729,7 @@ struct If_Op : public Operation
 
     virtual Value eval(Frame&) const override; // error message: missing else
     virtual void generate(Frame&, List_Builder&) const override;
+    virtual void bind(Frame&, Record&) const override;
     virtual void exec(Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 };
@@ -752,6 +754,7 @@ struct If_Else_Op : public Operation
 
     virtual Value eval(Frame&) const override;
     virtual void generate(Frame&, List_Builder&) const override;
+    virtual void bind(Frame&, Record&) const override;
     virtual void exec(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;

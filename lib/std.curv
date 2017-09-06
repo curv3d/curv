@@ -55,6 +55,8 @@ reduce (zero, f) list = (
 sum list = reduce(0, (x,y)->x+y) list,
 product list = reduce(1, (x,y)->x*y) list,
 
+merge rs = {for (r in rs) ...r},
+
 // complex numbers: [RE,IM]
 RE=0,
 IM=1,

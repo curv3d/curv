@@ -294,6 +294,17 @@ If_Op::generate(Frame& f, List_Builder& lb) const
         throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
 }
 void
+If_Op::bind(Frame& f, Record& r) const
+{
+    Value a = arg1_->eval(f);
+    if (a == Value{true})
+        arg2_->bind(f, r);
+    else if (a == Value{false})
+        return;
+    else
+        throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
+}
+void
 If_Op::exec(Frame& f) const
 {
     Value a = arg1_->eval(f);
@@ -323,6 +334,17 @@ If_Else_Op::generate(Frame& f, List_Builder& lb) const
         arg2_->generate(f, lb);
     else if (a == Value{false})
         arg3_->generate(f, lb);
+    else
+        throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
+}
+void
+If_Else_Op::bind(Frame& f, Record& r) const
+{
+    Value a = arg1_->eval(f);
+    if (a == Value{true})
+        arg2_->bind(f, r);
+    else if (a == Value{false})
+        arg3_->bind(f, r);
     else
         throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
 }
@@ -617,6 +639,16 @@ For_Op::generate(Frame& f, List_Builder& lb) const
     for (size_t i = 0; i < list.size(); ++i) {
         f[slot_] = list[i];
         body_->generate(f, lb);
+    }
+}
+void
+For_Op::bind(Frame& f, Record& r) const
+{
+    Value listval = list_->eval(f);
+    List& list = arg_to_list(listval, At_Phrase{*list_->source_, &f});
+    for (size_t i = 0; i < list.size(); ++i) {
+        f[slot_] = list[i];
+        body_->bind(f, r);
     }
 }
 void

@@ -13,7 +13,6 @@ Shape Atlas: look at:
 
 Circumratio project:
 * If S is a structure, then S x means S.map x
-* `... S` is a field generator.
 * platonic solid definitions are: prototypical shapes, with a `map` field,
   with a `circumratio` field.
 * ditto for `regular_polygon n`
@@ -128,15 +127,7 @@ Patterns (Bindings and Lambda):
   switch((x,y,z)->..., a->...) -- returns a function
 
 Records:
-* actions in a record literal
-* Add the concept of a "field generator". Operation::generate_fields().
-  * x:42 is a field generator.
-  * "${strexpr}":42
-  * An action is a field generator.
-  * Conditional field generators: if(c)field
-  * `...record`
-  * Can use `for` to generate fields.
-  * merge rs = { for (r in rs) ...r }
+* "${strexpr}":42
 
 Blocks:
 * Add GL support. How?
@@ -453,10 +444,6 @@ nary union:
     * In OpenSCAD, `*` is a prefix operator that ignores the following shape.
     * In Curv, maybe `ignore(arg)` is an action that evaluates and ignores arg.
   * enter_debugger, aka `break`, `debug`
-* records: merge[r1,r2]
-  I don't want `merge` to accept modules as arguments: overriding an existing
-  module field doesn't work if the module also contains functions closed over
-  those fields.
 * modules: _foo is not exported, is omitted from the public dictionary.
   curv::Module has a public dictionary and a debug dictionary.
   _foo is private in std.curv, and in all other *.curv files.
@@ -660,7 +647,6 @@ Other:
 * string: $$ $" $id ${id} $(id) $+EE interpolation, strcat[s1,s2]
   scanner has in-string flag, parser resets/sets flag during $(expr).
 * string: str@i, len(str) -- either ASCII-only, or proper Unicode
-* records: merge[r1,r2]
 * broader unit testing
 * smart pointers, see docs/Shared_Ptr.md
 
