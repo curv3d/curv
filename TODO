@@ -11,6 +11,13 @@ What remains for MVP?
 Shape Atlas: look at:
 * http://grasshopperprimer.com/en/1-foundations/1-3/2_working-with-attractors.html
 
+Circumratio project:
+* If S is a structure, then S x means S.map x
+* `... S` is a field generator.
+* platonic solid definitions are: prototypical shapes, with a `map` field,
+  with a `circumratio` field.
+* ditto for `regular_polygon n`
+
 -------------------------
 BUG: Can't rotate an infinite object. I get a numeric exception for inf-inf
 when computing the bounding box.

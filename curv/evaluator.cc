@@ -28,6 +28,11 @@ Operation::exec(Frame& f) const
 {
     throw Exception(At_Phrase(*source_, &f), "not an action");
 }
+void
+Operation::bind(Frame& f, Record&) const
+{
+    throw Exception(At_Phrase(*source_, &f), "not a binder");
+}
 
 void
 Just_Expression::generate(Frame& f, List_Builder& lb) const
@@ -37,6 +42,11 @@ Just_Expression::generate(Frame& f, List_Builder& lb) const
 
 void
 Just_Action::generate(Frame& f, List_Builder&) const
+{
+    exec(f);
+}
+void
+Just_Action::bind(Frame& f, Record&) const
 {
     exec(f);
 }
