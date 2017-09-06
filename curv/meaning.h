@@ -662,6 +662,7 @@ struct Block_Op : public Operation
 
     virtual Value eval(Frame&) const override;
     virtual void generate(Frame&, List_Builder&) const override;
+    virtual void bind(Frame&, Record&) const override;
     virtual void exec(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;

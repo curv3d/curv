@@ -31,12 +31,12 @@ Operation::exec(Frame& f) const
 void
 Operation::bind(Frame& f, Record&) const
 {
-    throw Exception(At_Phrase(*source_, &f), "not a binder");
+    throw Exception(At_Phrase(*source_, &f), "not a binder or action");
 }
 void
 Operation::generate(Frame& f, List_Builder&) const
 {
-    throw Exception(At_Phrase(*source_, &f), "not a generator");
+    throw Exception(At_Phrase(*source_, &f), "not a generator, expression or action");
 }
 
 void
@@ -578,6 +578,12 @@ Block_Op::generate(Frame& f, List_Builder& lb) const
 {
     statements_.exec(f);
     body_->generate(f, lb);
+}
+void
+Block_Op::bind(Frame& f, Record& r) const
+{
+    statements_.exec(f);
+    body_->bind(f, r);
 }
 void
 Block_Op::exec(Frame& f) const
