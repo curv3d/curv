@@ -405,7 +405,7 @@ Unary_Phrase::analyze(Environ& env) const
             share(*this),
             analyze_op(*arg_, env));
     case Token::k_ellipsis:
-        return make<Spread_Gen>(
+        return make<Spread_Op>(
             share(*this),
             analyze_op(*arg_, env));
     case Token::k_var:

@@ -342,11 +342,11 @@ struct Negative_Expr : public Prefix_Expr_Base
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
-struct Spread_Gen : public Operation
+struct Spread_Op : public Operation
 {
     Shared<Operation> arg_;
 
-    Spread_Gen(
+    Spread_Op(
         Shared<const Phrase> source,
         Shared<Operation> arg)
     :
@@ -355,6 +355,7 @@ struct Spread_Gen : public Operation
     {}
 
     virtual void generate(Frame&, List_Builder&) const override;
+    virtual void bind(Frame&, Record&) const override;
 };
 
 struct Infix_Expr_Base : public Just_Expression
