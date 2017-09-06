@@ -613,10 +613,9 @@ struct Indirect_Assign : public Just_Action
     void exec(Frame&) const override;
 };
 
-// A module expression is `{stmt; stmt; ...;}` where stmt is a definition
-// or action. The scope of each definition is the entire module. The order
-// of definitions doesn't matter. Recursive definitions are supported.
-// Actions are executed in left-to-right order.
+// A module expression is `{stmt, stmt, ...}` where stmt is a definition
+// or action. The statements are evaluated as a statement list, then the
+// definitions become fields in the resulting Module value.
 struct Module_Expr : public Just_Expression
 {
     // maps public member names to slot #s in the value list.
