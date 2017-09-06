@@ -170,4 +170,6 @@ assert( dom(1,2) == [0,1] && dom{a:1} == ["a"] ),
 
 assert( merge({a:1,z:26},{b:17,a:42}) == {a:42,b:17,z:26} ),
 
+assert( {map x = x + 1} 3 == 4 ),
+
 }

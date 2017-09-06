@@ -134,21 +134,31 @@ Indirect_Function_Ref::eval(Frame& f) const
 Value
 Call_Expr::eval(Frame& f) const
 {
-    Value funv = fun_->eval(f);
-    if (!funv.is_ref())
-        throw Exception(At_Phrase(*fun_->source_, &f),
-            stringify(funv,": not a function"));
-    Ref_Value& funp( funv.get_ref_unsafe() );
-    if (funp.type_ == Ref_Value::ty_function) {
-        Function* fun = (Function*)&funp;
-        std::unique_ptr<Frame> f2 {
-            Frame::make(fun->nslots_, f.system, &f, call_phrase(), nullptr)
-        };
-        return fun->call(arg_->eval(f), *f2);
-    } else {
-        throw Exception(At_Phrase(*fun_->source_, &f),
-            stringify(funv,": not a function"));
+    static Atom mapkey = "map";
+    Value val = fun_->eval(f);
+    Value funv = val;
+    for (;;) {
+        if (!funv.is_ref())
+            throw Exception(At_Phrase(*fun_->source_, &f),
+                stringify(funv,": not a function"));
+        Ref_Value& funp( funv.get_ref_unsafe() );
+        if (funp.type_ == Ref_Value::ty_function) {
+            Function* fun = (Function*)&funp;
+            std::unique_ptr<Frame> f2 {
+                Frame::make(fun->nslots_, f.system, &f, call_phrase(), nullptr)
+            };
+            return fun->call(arg_->eval(f), *f2);
+        }
+        if (auto s = dynamic_cast<Structure*>(&funp)) {
+            if (s->hasfield(mapkey)) {
+                funv = s->getfield(mapkey, {});
+                continue;
+            }
+        }
+        break;
     }
+    throw Exception(At_Phrase(*fun_->source_, &f),
+        stringify(val,": not a function"));
 }
 
 Value
