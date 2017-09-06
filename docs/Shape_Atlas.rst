@@ -279,40 +279,39 @@ to determine the shape of its output.
   The apex is above the origin at height ``h``.
   TODO
 
-``tetrahedron d``
-  Construct a regular tetrahedron, centred on the origin.
-  Diameter of inscribed sphere is ``d``.
- 
-  * ``tetrahedron_m``: mitred distance field.
-  * ``tetrahedron_e``: exact distance field, more expensive. (TODO)
+Platonic Solids
+  There are five definitions:
 
-``cube d``
-  Construct an axis aligned cube (regular hexahedron), centred on the origin.
-  Diameter of inscribed sphere (aka height of cube) is ``d``.
- 
-  * ``cube_m``: mitred distance field.
-  * ``cube_e``: exact distance field, more expensive.
+  * ``tetrahedron``
+  * ``cube``
+  * ``octahedron``
+  * ``dodecahedron``
+  * ``icosahedron``
 
-``octahedron d``
-  Construct a regular octahedron, centred on the origin.
-  Diameter of inscribed sphere is ``d``.
- 
-  * ``octahedron_m``: mitred distance field.
-  * ``octahedron_e``: exact distance field, more expensive. (TODO)
+  Each Platonic solid ``S`` has the following API:
 
-``dodecahedron d``
-  Construct a regular dodecahedron, centred on the origin.
-  Diameter of inscribed sphere is ``d``.
- 
-  * ``dodecahedron_m``: mitred distance field.
-  * ``dodecahedron_e``: exact distance field, more expensive. (TODO)
+  * ``S d`` constructs the solid centred on the origin whose
+    inscribed sphere has diameter ``d``.
+  * ``S`` is a prototypical instance of the solid, equivalent to ``S 2``
+    (i.e., the inscribed sphere is the unit sphere with radius 1).
+  * ``S.circumratio`` is the ratio of the circumradius over the inradius
+    (a value > 1).
+    For example,
 
-``icosahedron d``
-  Construct a regular icosahedron, centred on the origin.
-  Diameter of inscribed sphere is ``d``.
- 
-  * ``icosahedron_m``: mitred distance field.
-  * ``icosahedron_e``: exact distance field, more expensive. (TODO)
+    * ``S(d/S.circumratio)`` constructs an instance of S
+      whose circumscribed sphere has diameter ``d``.
+    * ``sphere(d*cube.circumratio)`` constructs a sphere that circumscribes
+      a cube of height d.
+
+  * ``S_m d`` constructs an instance of S with a mitred distance field.
+  * ``S_e d`` constructs an instance of S with an exact distance field.
+
+  TODO:
+
+  * ``tetrahedron_e``
+  * ``octahedron_e``
+  * ``dodecahedron_e``
+  * ``icosahedron_e``
 
 ``capsule (d, p1, p2)``
   A cylinder of diameter ``d`` whose central axis extends from ``p1`` to ``p2``,
