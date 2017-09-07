@@ -289,6 +289,26 @@ Scanner::get_token()
                 throw Exception(At_Token(tok, *this),
                     "unterminated string literal");
             }
+            if (*p == '$') {
+                ++p;
+                if (p == last) {
+                    tok.last_ = p - first;
+                    tok.kind_ = Token::k_bad_token;
+                    ptr_ = p;
+                    throw Exception(At_Token(tok, *this),
+                        "unterminated string literal");
+                }
+                if (*p == '$' || *p == '"') {
+                    ++p;
+                    continue;
+                }
+                ++p;
+                tok.first_ = p - 2 - first;
+                tok.last_ = p - first;
+                tok.kind_ = Token::k_bad_token;
+                ptr_ = p;
+                throw Exception(At_Token(tok, *this), "illegal string escape");
+            }
             if (*p == '"') {
                 ++p;
                 tok.kind_ = Token::k_string;

@@ -384,8 +384,14 @@ String_Phrase::analyze(Environ& env) const
     assert(*(str.begin()+str.size()-1) == '"');
     ++str.first;
     --str.last;
+    String_Builder sb;
+    for (size_t i = 0; i < str.size(); ++i) {
+        if (str[i] == '$')
+            ++i;
+        sb << str[i];
+    }
     return make<Constant>(share(*this),
-        Value{String::make(str.begin(),str.size())});
+        Value{sb.get_string()});
 }
 
 Shared<Meaning>

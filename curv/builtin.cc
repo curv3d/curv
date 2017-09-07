@@ -534,6 +534,25 @@ struct Dom_Function : public Polyadic_Function
     }
 };
 
+struct Strcat_Function : public Polyadic_Function
+{
+    Strcat_Function() : Polyadic_Function(1) {}
+    Value call(Frame& args) override
+    {
+        if (auto list = args[0].dycast<const List>()) {
+            String_Builder sb;
+            for (auto val : *list) {
+                if (auto str = val.dycast<const String>())
+                    sb << str;
+                else
+                    sb << val;
+            }
+            return {sb.get_string()};
+        }
+        throw Exception(At_Arg(args), "not a list");
+    }
+};
+
 struct File_Function : public Polyadic_Function
 {
     File_Function() : Polyadic_Function(1) {}
@@ -735,6 +754,7 @@ builtin_namespace()
     {"mag", make<Builtin_Value>(Value{make<Mag_Function>()})},
     {"count", make<Builtin_Value>(Value{make<Count_Function>()})},
     {"dom", make<Builtin_Value>(Value{make<Dom_Function>()})},
+    {"strcat", make<Builtin_Value>(Value{make<Strcat_Function>()})},
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},
     {"make_shape", make<Builtin_Value>(Value{make<Make_Shape_Function>()})},
     {"echo", make<Builtin_Meaning<Echo_Metafunction>>()},
