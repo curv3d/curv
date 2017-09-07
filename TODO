@@ -644,7 +644,7 @@ Other:
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
   numeral while building a buffer for strtod.
-* string: $$ $" $id ${id} $(id) $+EE interpolation, strcat[s1,s2]
+* string: $id ${id} $(id) $+EE interpolation
   scanner has in-string flag, parser resets/sets flag during $(expr).
 * string: str@i, len(str) -- either ASCII-only, or proper Unicode
 * broader unit testing
