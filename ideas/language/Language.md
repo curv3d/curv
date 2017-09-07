@@ -413,6 +413,12 @@ echo "first line\n"
      "second line\n"
      "third line";
 ```
+There is also "explicit string concatenation":
+```
+strcat("first line$nl",
+       "second line$nl",
+       "third line")
+```
 
 ### Printing a String
 How are strings printed, using `$(str)` interpolation? As a quoted string,
