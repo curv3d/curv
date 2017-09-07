@@ -1,4 +1,43 @@
-# Statements
+# New Syntax 3 (Sept 2017)
+
+## generalized scripts
+Right now, `tests/curv.curv` is a sequence of assert statements (each
+terminated by `;`), followed by `{}`, which is an arbitrary return value.
+Right now, all Curv scripts are expressions that yield a value.
+
+The `{}` trick is ugly. Maybe a script should be interpreted as either
+an expression or a statement, depending on its syntax. This means `file`
+is no longer a function, but a metafunction. A call to `file` can yield
+an arbitrary Meaning type.
+
+What are the implications? How useful is this? There's not much point in
+a script exporting a definition or binder or generator:
+export a module/record/list instead.
+
+In an earlier revision of Curv, `a;b;c;` was a block that yields an empty list.
+That design would also address my issue.
+
+## `while` loops in list/record comprehensions
+
+Right now, `for` loops are legal in list and record comprehensions,
+but not `while` loops.
+
+To fix this, I would need to at least support `a := b` redefinition phrases
+(assignment actions) in list/record comprehensions.
+
+To assign a variable, it must first be defined using `var a := b`.
+And the definition must be part of the same linear action sequence:
+it can't be embedded in a subexpression, because sequential evaluation
+isn't defined in the expression world. List and record constructors are
+subexpressions.
+
+So, it seems that I will also need to support `var a := b` definitions
+in list/record comprehensions. This creates ambiguity in a record constructor:
+is a sequential variable definition local (to support while loops) or does
+it define a field?
+
+I could make record and module syntax more distinct. Eg, use `;` in modules
+and `,` in records.
 
 ## Semicolons
 I hate that definitions end with ',' in std.curv but end in ';' in a top level

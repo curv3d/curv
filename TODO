@@ -12,9 +12,10 @@ Shape Atlas: look at:
 * http://grasshopperprimer.com/en/1-foundations/1-3/2_working-with-attractors.html
 
 Circumratio project:
-* platonic solid definitions are: prototypical shapes, with a `map` field,
-  with a `circumratio` field.
-* ditto for `regular_polygon n`
+Regular polytopes are prototypical shapes, with `map` and `circumratio` fields.
+* `regular_polygon n`
+* `square`
+* maybe also `prism n` -- prototypical version has inscribed unit sphere
 
 -------------------------
 BUG: Can't rotate an infinite object. I get a numeric exception for inf-inf
@@ -646,7 +647,7 @@ Other:
   numeral while building a buffer for strtod.
 * string: $id ${id} $(id) $+EE interpolation
   scanner has in-string flag, parser resets/sets flag during $(expr).
-* string: str@i, len(str) -- either ASCII-only, or proper Unicode
+* Unicode strings: decide what str[i] means (code points or grapheme clusters)
 * broader unit testing
 * smart pointers, see docs/Shared_Ptr.md
 
