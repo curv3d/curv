@@ -514,7 +514,9 @@ struct Count_Function : public Polyadic_Function
             return {double(list->size())};
         if (auto structure = args[0].dycast<const Structure>())
             return {double(structure->size())};
-        throw Exception(At_Arg(args), "not a list or structure");
+        if (auto string = args[0].dycast<const String>())
+            return {double(string->size())};
+        throw Exception(At_Arg(args), "not a list, structure or string");
     }
 };
 struct Dom_Function : public Polyadic_Function
