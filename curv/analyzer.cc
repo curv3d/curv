@@ -405,7 +405,7 @@ Unary_Phrase::analyze(Environ& env) const
             share(*this),
             analyze_op(*arg_, env));
     case Token::k_ellipsis:
-        return make<Spread_Gen>(
+        return make<Spread_Op>(
             share(*this),
             analyze_op(*arg_, env));
     case Token::k_var:
@@ -735,19 +735,6 @@ Call_Phrase::analyze_args(Environ& env) const
     return std::move(argv);
 }
 
-void
-analyze_field(
-    const Assoc& def,
-    Atom_Map<Shared<const Operation>>& dict,
-    Environ& env)
-{
-    Atom name = def.name_->atom_;
-    if (dict.find(name) != dict.end())
-        throw Exception(At_Phrase(*def.name_, env),
-            stringify(name, ": multiply defined"));
-    dict[name] = def.definiens_;
-}
-
 Shared<Meaning>
 Program_Phrase::analyze(Environ& env) const
 {
@@ -785,12 +772,10 @@ Shared<Meaning>
 Brace_Phrase::analyze(Environ& env) const
 {
     // A brace phrase is a comma separated list of actions and either
-    // definitions or assocs/field generators.
+    // definitions or binders.
     // We do a pre-analysis scan looking for definitions. If we don't find any,
     // then we analyze as a record, otherwise we analyze as a module.
-    // TODO: actions in a record literal
 
-#if 0
     bool is_module = false;
     if (isa<Empty_Phrase>(body_)) {
         ;
@@ -803,22 +788,6 @@ Brace_Phrase::analyze(Environ& env) const
     } else {
         is_module = (body_->analyze_def(env) != nullptr);
     }
-#else
-    bool is_module;
-    if (isa<Empty_Phrase>(body_)) {
-        is_module = false;
-    } else if (auto commas = cast<Comma_Phrase>(body_)) {
-        is_module = true;
-        for (auto& item : commas->args_) {
-            if (is_colon_phrase(*item.expr_)) {
-                is_module = false;
-                break;
-            }
-        }
-    } else {
-        is_module = !is_colon_phrase(*body_);
-    }
-#endif
 
     auto source = share(*this);
 
@@ -834,11 +803,7 @@ Brace_Phrase::analyze(Environ& env) const
     } else {
         auto record = make<Record_Expr>(source);
         each_item(*body_, [&](const Phrase& item)->void {
-            auto meaning = item.analyze(env);
-            if (auto def = cast<Assoc>(meaning))
-                analyze_field(*def, record->fields_, env);
-            else
-                throw Exception(At_Phrase(item, env), "not an association");
+            record->fields_.push_back(analyze_op(item, env));
         });
         return record;
     }

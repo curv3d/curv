@@ -6,6 +6,19 @@ This is a brainstorming/research document
 that catalogues colour-related operations and technology
 that I am considering for inclusion in Curv 1.0.
 
+Data Types
+==========
+An Intensity is a number between 0 and 1 inclusive.
+
+A Colour comprises red, green and blue Intensities.
+
+A Colour Map is a function mapping an Intensity onto a Colour.
+
+A 2D or 3D Intensity Field maps a point (x,y) or (x,y,z) to an Intensity.
+
+A 2D or 3D Colour Field maps a point (x,y) or (x,y,z) to a Colour.
+If you compose a Colour Map with an Intensity Field you get a Colour Field.
+
 Colour Spaces and Gamuts
 ========================
 Curv will initially just support the sRGB colour gamut,
@@ -108,13 +121,13 @@ CSS and SVG support `colour gradients`_. Look for APIs I can borrow and adapt.
 
 Separate the shape of a colour gradient from the sequence of colours used.
 
-* A "scalar field" is a function mapping points in space onto a number in the range [0...1].
-* A "colour map" is a mapping from the range 0..1 to a colour.
+* An "intensity field" is a function mapping points in space onto an intensity (a number in the range [0...1]).
+* A "colour map" is a mapping from an intensity to a colour.
   They are much used in scientific/data visualization.
   Come up with a library of popular/useful colour maps.
   Which would include continuous gradients between two end-point colours.
   See "Good Colour Maps: How to Design Them", https://arxiv.org/pdf/1509.03700.pdf
-* A "colour field" is the product of a scalar field with a colour map:
+* A "colour field" is the composition of an intensity field with a colour map:
   it's a function mapping points in space onto colours.
 
 Colour Field Transformations
@@ -122,7 +135,7 @@ Colour Field Transformations
 A colour field can be transformed freely, without the limitations of shape transformations,
 since you don't need to ensure that the result is Lipschitz continuous, as you do with distance fields.
 
-Provide a library of useful colour field transformations (and maybe scalar field transformations).
+Provide a library of useful colour field/intensity field transformations.
 
 Image Import
 ============
@@ -144,8 +157,8 @@ By default, image files are assumed to contain sRGB encoding.
 The colour values are automatically converted to linear RGB.
 So when you query an image file's colour function, you get linear RGB.
 
-You can import a grayscale image that is to be interpreted as a scalar field
-in the range [0...1]. (See "colour gradients".) No gamma correction is applied.
+You can import a grayscale image that is to be interpreted as an intensity field.
+No gamma correction is applied.
 
 Translucent Shapes
 ==================

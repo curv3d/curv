@@ -15,6 +15,33 @@ The ultimate goal is to boil all of this research down into a well
 designed, consistent and powerful geometry API for Curv, which will be
 included in a future Curv standard library.
 
+The Standard Shape Library
+==========================
+At this point, the Shape Atlas is well enough developed for me to speculate
+on the structure of the Curv standard shape library.
+
+The goal is to be easy to use for beginners, but powerful enough for experts.
+Some shape operations require a lot more knowledge and expertise to use than others,
+so we'll divide the shape library into levels.
+
+Level 0: Basic Shape API
+  Includes the shape constructors, the boolean operations, and the transformations (sections 1, 2 and 3).
+  You don't need to know about signed distance fields to use this level.
+
+Level 1: Advanced Shape API
+  Includes the Distance Field Operations (section 4).
+  You need to understand the different SDF classes, and which operations
+  produce which classes of SDF.
+
+Level 2: Expert Shape API
+  Includes the ``make_shape`` function.
+  You need to understand how define a new SDF from scratch.
+
+I want to mess with the APIs to make them more composeable.
+
+I want to try using keyword parameters where it makes sense.
+OpenSCAD does this, and the Swift standard library is a particularly nice example.
+
 0. Shape Properties
 ===================
 
@@ -252,40 +279,39 @@ to determine the shape of its output.
   The apex is above the origin at height ``h``.
   TODO
 
-``tetrahedron d``
-  Construct a regular tetrahedron, centred on the origin.
-  Diameter of inscribed sphere is ``d``.
- 
-  * ``tetrahedron_m``: mitred distance field.
-  * ``tetrahedron_e``: exact distance field, more expensive. (TODO)
+Platonic Solids
+  There are five definitions:
 
-``cube d``
-  Construct an axis aligned cube (regular hexahedron), centred on the origin.
-  Diameter of inscribed sphere (aka height of cube) is ``d``.
- 
-  * ``cube_m``: mitred distance field.
-  * ``cube_e``: exact distance field, more expensive.
+  * ``tetrahedron``
+  * ``cube``
+  * ``octahedron``
+  * ``dodecahedron``
+  * ``icosahedron``
 
-``octahedron d``
-  Construct a regular octahedron, centred on the origin.
-  Diameter of inscribed sphere is ``d``.
- 
-  * ``octahedron_m``: mitred distance field.
-  * ``octahedron_e``: exact distance field, more expensive. (TODO)
+  Each Platonic solid ``S`` has the following API:
 
-``dodecahedron d``
-  Construct a regular dodecahedron, centred on the origin.
-  Diameter of inscribed sphere is ``d``.
- 
-  * ``dodecahedron_m``: mitred distance field.
-  * ``dodecahedron_e``: exact distance field, more expensive. (TODO)
+  * ``S d`` constructs the solid centred on the origin whose
+    inscribed sphere has diameter ``d``.
+  * ``S`` is a prototypical instance of the solid, equivalent to ``S 2``
+    (i.e., the inscribed sphere is the unit sphere with radius 1).
+  * ``S.circumratio`` is the ratio of the circumradius over the inradius
+    (a value > 1).
+    For example,
 
-``icosahedron d``
-  Construct a regular icosahedron, centred on the origin.
-  Diameter of inscribed sphere is ``d``.
- 
-  * ``icosahedron_m``: mitred distance field.
-  * ``icosahedron_e``: exact distance field, more expensive. (TODO)
+    * ``S(d/S.circumratio)`` constructs an instance of S
+      whose circumscribed sphere has diameter ``d``.
+    * ``sphere(d*cube.circumratio)`` constructs a sphere that circumscribes
+      a cube of height d.
+
+  * ``S_m d`` constructs an instance of S with a mitred distance field.
+  * ``S_e d`` constructs an instance of S with an exact distance field.
+
+  TODO:
+
+  * ``tetrahedron_e``
+  * ``octahedron_e``
+  * ``dodecahedron_e``
+  * ``icosahedron_e``
 
 ``capsule (d, p1, p2)``
   A cylinder of diameter ``d`` whose central axis extends from ``p1`` to ``p2``,
@@ -432,10 +458,24 @@ If the input has an exact distance field, the output is also exact.
   rotates the square around the point (1,1).
 
 ``align alignspec shape``
-  Using the shape's bounding box,
+  TODO: Using the shape's bounding box,
   translate the shape to align it relative to the origin,
   as specified by ``alignspec``.
-  TODO
+  
+  ``alignspec ::= {x: aspec, y: aspec, z: aspec}``
+  
+  Each field of alignspec is optional, and aspec is one of:
+    
+  * ``above d`` -- a point that is ``d`` above the top of the shape's bounding box.
+  * ``below d`` -- a point that is ``d`` below the bottom of the shape's bounding box.
+  * ``within k`` -- ``k`` is between -1 (the bottom of the bounding box)
+    and +1 (the top of the bounding box). 0 is the centre.
+  * ``centre`` -- centre of the shape's bounding box, same as ``within 0``.
+    
+  Eg, ``align {z: above 0}`` aligns the bottom of the shape with ``z==0``.
+  
+  See also: General Library of Relativity
+  https://github.com/davidson16807/relativity.scad/wiki
 
 Non-Rigid Transformations
 -------------------------
@@ -807,6 +847,19 @@ Mesh Import
 -----------
 I want the ability to import an STL file.
 
+``exact_mesh_file filename``
+  Read a mesh file (STL, OBJ, AMF, 3MF) and interpret it as a polyhedron.
+  Maybe the vertices and faces are available as shape attributes,
+  and maybe it can be used as input to polytope operators.
+  
+  There is a limit to how many faces can be efficiently supported.
+  Not suitable for high triangle count approximations to curved surfaces.
+
+``approximate_mesh_file filename``
+  A mesh file that approximates a curved surface is compiled offline into an SDF.
+  Curved surfaces are reconstructed, while preserving edges. The result is placed
+  in a file, which this operator reads.
+
 0. Import an STL file as a Nef polyhedron, naively constructed from half-spaces
    using intersection and complement. Evaluation time for the SDF is proportional
    to the number of triangles. Likely to be unusable for more than a thousand
@@ -903,6 +956,9 @@ It's a powerful and intuitive operation, so it would be nice to have for that re
 Convex Hull is used to create a skin over elements that form the skeleton of the desired shape.
 There are probably better and cheaper ways to accomplish this in F-Rep,
 so this operation is not a must-have.
+
+Convex Hull could be implemented in restricted form as a Polytope Operator (see below).
+This means it's not supported on curved surfaces.
 
 Convex hull of two copies of the same shape is equivalent to sweeping that shape
 over a line segment: there is a separate "TODO" entry for Linear Sweep.
@@ -1058,6 +1114,23 @@ can be used as input values.
 * In JavaScript, by George Hart: http://www.georgehart.com/virtual-polyhedra/conway_notation.html
 
 .. _`Conway polyhedron operators`: https://en.wikipedia.org/wiki/Conway_polyhedron_notation
+
+Polytope Operators
+------------------
+A polytope is either a polygon or a polyhedron.
+Polytopes contain additional shape attributes representing the vertices and faces.
+Polytope operators are operations that only make sense on polytopes, not on general curved shapes.
+They operate directly on the vertices and faces.
+
+* The Conway polyhedron operators are an example, although some of these operators
+  may not work on general polyhedra (to be investigated).
+* Convex hull is possibly another example. It's a standard operation on polyhedral meshes,
+  but I don't have an implementation for SDFs.
+* The boolean operators and affine transformations take arbitrary shapes as arguments (including polytopes)
+  but do not return polytopes as results. We could generalize these operators to return polytopes, when given
+  polytopes as input. Note that ``union`` is very cheap, and ``polytope_union`` is very expensive, and also
+  numerically unstable (fails for some valid inputs).
+* ``polygonize`` maps an arbitrary shape to a polytope that approximates the shape.
 
 Supershapes
 -----------

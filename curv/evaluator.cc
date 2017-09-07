@@ -28,6 +28,16 @@ Operation::exec(Frame& f) const
 {
     throw Exception(At_Phrase(*source_, &f), "not an action");
 }
+void
+Operation::bind(Frame& f, Record&) const
+{
+    throw Exception(At_Phrase(*source_, &f), "not a binder or action");
+}
+void
+Operation::generate(Frame& f, List_Builder&) const
+{
+    throw Exception(At_Phrase(*source_, &f), "not a generator, expression or action");
+}
 
 void
 Just_Expression::generate(Frame& f, List_Builder& lb) const
@@ -37,6 +47,11 @@ Just_Expression::generate(Frame& f, List_Builder& lb) const
 
 void
 Just_Action::generate(Frame& f, List_Builder&) const
+{
+    exec(f);
+}
+void
+Just_Action::bind(Frame& f, Record&) const
 {
     exec(f);
 }
@@ -119,21 +134,31 @@ Indirect_Function_Ref::eval(Frame& f) const
 Value
 Call_Expr::eval(Frame& f) const
 {
-    Value funv = fun_->eval(f);
-    if (!funv.is_ref())
-        throw Exception(At_Phrase(*fun_->source_, &f),
-            stringify(funv,": not a function"));
-    Ref_Value& funp( funv.get_ref_unsafe() );
-    if (funp.type_ == Ref_Value::ty_function) {
-        Function* fun = (Function*)&funp;
-        std::unique_ptr<Frame> f2 {
-            Frame::make(fun->nslots_, f.system, &f, call_phrase(), nullptr)
-        };
-        return fun->call(arg_->eval(f), *f2);
-    } else {
-        throw Exception(At_Phrase(*fun_->source_, &f),
-            stringify(funv,": not a function"));
+    static Atom mapkey = "map";
+    Value val = fun_->eval(f);
+    Value funv = val;
+    for (;;) {
+        if (!funv.is_ref())
+            throw Exception(At_Phrase(*fun_->source_, &f),
+                stringify(funv,": not a function"));
+        Ref_Value& funp( funv.get_ref_unsafe() );
+        if (funp.type_ == Ref_Value::ty_function) {
+            Function* fun = (Function*)&funp;
+            std::unique_ptr<Frame> f2 {
+                Frame::make(fun->nslots_, f.system, &f, call_phrase(), nullptr)
+            };
+            return fun->call(arg_->eval(f), *f2);
+        }
+        if (auto s = dynamic_cast<Structure*>(&funp)) {
+            if (s->hasfield(mapkey)) {
+                funv = s->getfield(mapkey, {});
+                continue;
+            }
+        }
+        break;
     }
+    throw Exception(At_Phrase(*fun_->source_, &f),
+        stringify(val,": not a function"));
 }
 
 Value
@@ -279,6 +304,17 @@ If_Op::generate(Frame& f, List_Builder& lb) const
         throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
 }
 void
+If_Op::bind(Frame& f, Record& r) const
+{
+    Value a = arg1_->eval(f);
+    if (a == Value{true})
+        arg2_->bind(f, r);
+    else if (a == Value{false})
+        return;
+    else
+        throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
+}
+void
 If_Op::exec(Frame& f) const
 {
     Value a = arg1_->eval(f);
@@ -308,6 +344,17 @@ If_Else_Op::generate(Frame& f, List_Builder& lb) const
         arg2_->generate(f, lb);
     else if (a == Value{false})
         arg3_->generate(f, lb);
+    else
+        throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
+}
+void
+If_Else_Op::bind(Frame& f, Record& r) const
+{
+    Value a = arg1_->eval(f);
+    if (a == Value{true})
+        arg2_->bind(f, r);
+    else if (a == Value{false})
+        arg3_->bind(f, r);
     else
         throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
 }
@@ -460,19 +507,31 @@ List_Expr_Base::eval(Frame& f) const
 }
 
 void
-Spread_Gen::generate(Frame& f, List_Builder& lb) const
+Spread_Op::generate(Frame& f, List_Builder& lb) const
 {
     auto list = arg_->eval(f).to<const List>(At_Phrase(*source_, &f));
     for (size_t i = 0; i < list->size(); ++i)
         lb.push_back(list->at(i));
+}
+void
+Spread_Op::bind(Frame& f, Record& r) const
+{
+    auto s = arg_->eval(f).to<const Structure>(At_Phrase(*source_, &f));
+    s->putfields(r.fields_);
+}
+
+void
+Assoc::bind(Frame& f, Record& r) const
+{
+    r.fields_[name_->atom_] = definiens_->eval(f);
 }
 
 Value
 Record_Expr::eval(Frame& f) const
 {
     auto record = make<Record>();
-    for (auto i : fields_)
-        record->fields_[i.first] = i.second->eval(f);
+    for (auto op : fields_)
+        op->bind(f, *record);
     return {record};
 }
 
@@ -559,6 +618,12 @@ Block_Op::generate(Frame& f, List_Builder& lb) const
     body_->generate(f, lb);
 }
 void
+Block_Op::bind(Frame& f, Record& r) const
+{
+    statements_.exec(f);
+    body_->bind(f, r);
+}
+void
 Block_Op::exec(Frame& f) const
 {
     statements_.exec(f);
@@ -584,6 +649,16 @@ For_Op::generate(Frame& f, List_Builder& lb) const
     for (size_t i = 0; i < list.size(); ++i) {
         f[slot_] = list[i];
         body_->generate(f, lb);
+    }
+}
+void
+For_Op::bind(Frame& f, Record& r) const
+{
+    Value listval = list_->eval(f);
+    List& list = arg_to_list(listval, At_Phrase{*list_->source_, &f});
+    for (size_t i = 0; i < list.size(); ++i) {
+        f[slot_] = list[i];
+        body_->bind(f, r);
     }
 }
 void

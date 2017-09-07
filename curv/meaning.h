@@ -15,6 +15,7 @@
 #include <curv/list.h>
 #include <curv/module.h>
 #include <curv/frame.h>
+#include <curv/record.h>
 
 namespace curv {
 
@@ -64,16 +65,20 @@ struct Metafunction : public Meaning
 /// separate code generation phase, and use a more efficient executable code
 /// representaton.
 ///
-/// There are 3 kinds of Operation:
+/// There are 4 kinds of Operation:
 ///  1. An Expression is evaluated to produce a single value using `eval`.
 ///     Every expression is also a generator that produces 1 value.
 ///     For example, `2+2`.
 ///  2. A Generator is executed to produce a sequence of zero or more values
-///     using `generate`. (Every Operation is also a generator.)
+///     using `generate`. (Expressions and Actions are also generators.)
 ///     For example, `for(i=1..10)i^2`.
-///  3. An Action is executed to cause a side effect using `exec`,
+///  3. A Binder is executed to bind zero or more names to values
+///     in a record value that is under construction, using ``bind``.
+///     For example, `x : 42`.
+///  4. An Action is executed to cause a side effect using `exec`,
 ///     and no value is produced.
 ///     Every action is also a generator that produces 0 values.
+///     Every action is also a binder that binds no names.
 ///     For example, `assert(x>0)`.
 struct Operation : public Meaning
 {
@@ -85,7 +90,8 @@ struct Operation : public Meaning
 
     // These functions are called during evaluation.
     virtual Value eval(Frame&) const;
-    virtual void generate(Frame&, List_Builder&) const = 0;
+    virtual void generate(Frame&, List_Builder&) const;
+    virtual void bind(Frame&, Record&) const;
     virtual void exec(Frame&) const;
 
     // These functions are called by the Geometry Compiler.
@@ -132,6 +138,7 @@ struct Just_Action : public Operation
 
     // These functions are called during evaluation.
     virtual void generate(Frame&, List_Builder&) const override;
+    virtual void bind(Frame&, Record&) const override;
     virtual void exec(Frame&) const override = 0;
 };
 
@@ -335,11 +342,11 @@ struct Negative_Expr : public Prefix_Expr_Base
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
-struct Spread_Gen : public Operation
+struct Spread_Op : public Operation
 {
     Shared<Operation> arg_;
 
-    Spread_Gen(
+    Spread_Op(
         Shared<const Phrase> source,
         Shared<Operation> arg)
     :
@@ -348,6 +355,7 @@ struct Spread_Gen : public Operation
     {}
 
     virtual void generate(Frame&, List_Builder&) const override;
+    virtual void bind(Frame&, Record&) const override;
 };
 
 struct Infix_Expr_Base : public Just_Expression
@@ -487,7 +495,8 @@ using List_Expr = aux::Tail_Array<List_Expr_Base>;
 
 struct Record_Expr : public Just_Expression
 {
-    Atom_Map<Shared<const Operation>> fields_;
+    // `fields_` contains actions and binders.
+    std::vector<Shared<const Operation>> fields_;
 
     Record_Expr(Shared<const Phrase> source) : Just_Expression(source) {}
 
@@ -613,10 +622,9 @@ struct Indirect_Assign : public Just_Action
     void exec(Frame&) const override;
 };
 
-// A module expression is `{stmt; stmt; ...;}` where stmt is a definition
-// or action. The scope of each definition is the entire module. The order
-// of definitions doesn't matter. Recursive definitions are supported.
-// Actions are executed in left-to-right order.
+// A module expression is `{stmt, stmt, ...}` where stmt is a definition
+// or action. The statements are evaluated as a statement list, then the
+// definitions become fields in the resulting Module value.
 struct Module_Expr : public Just_Expression
 {
     // maps public member names to slot #s in the value list.
@@ -655,6 +663,7 @@ struct Block_Op : public Operation
 
     virtual Value eval(Frame&) const override;
     virtual void generate(Frame&, List_Builder&) const override;
+    virtual void bind(Frame&, Record&) const override;
     virtual void exec(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
@@ -679,6 +688,7 @@ struct For_Op : public Operation
     {}
 
     virtual void generate(Frame&, List_Builder&) const override;
+    virtual void bind(Frame&, Record&) const override;
     virtual void exec(Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 };
@@ -719,6 +729,7 @@ struct If_Op : public Operation
 
     virtual Value eval(Frame&) const override; // error message: missing else
     virtual void generate(Frame&, List_Builder&) const override;
+    virtual void bind(Frame&, Record&) const override;
     virtual void exec(Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 };
@@ -743,6 +754,7 @@ struct If_Else_Op : public Operation
 
     virtual Value eval(Frame&) const override;
     virtual void generate(Frame&, List_Builder&) const override;
+    virtual void bind(Frame&, Record&) const override;
     virtual void exec(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
@@ -772,7 +784,7 @@ struct Lambda_Expr : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
-struct Assoc : public Meaning
+struct Assoc : public Operation
 {
     Shared<const Identifier> name_;
     Shared<const Operation> definiens_;
@@ -782,10 +794,12 @@ struct Assoc : public Meaning
         Shared<const Identifier> name,
         Shared<const Operation> definiens)
     :
-        Meaning(std::move(source)),
+        Operation(std::move(source)),
         name_(std::move(name)),
         definiens_(std::move(definiens))
     {}
+
+    virtual void bind(Frame&, Record&) const override;
 };
 
 } // namespace curv

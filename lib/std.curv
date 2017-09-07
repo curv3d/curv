@@ -58,6 +58,8 @@ reduce (zero, f) list = (
 sum list = reduce(0, (x,y)->x+y) list,
 product list = reduce(1, (x,y)->x*y) list,
 
+merge rs = {for (r in rs) ...r},
+
 // complex numbers: [RE,IM]
 RE=0,
 IM=1,
@@ -453,7 +455,12 @@ prism_m(n,d,h) = regular_polygon_m(n,d) >> extrude_m h,
 
 // 'd' is the diameter of a sphere inscribed inside the tetrahedron.
 // Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
-tetrahedron = tetrahedron_m,
+tetrahedron = make_shape {
+    ... tetrahedron_m 2,
+    map : tetrahedron_m,
+    // radius of circumscribed sphere / radius of inscribed sphere
+    circumratio : (sqrt(3/2)/2) / (1/(2*sqrt 6)),
+},
 tetrahedron_m d = (
     r = d / 2;
     // vertices of a tetrahedron
@@ -471,9 +478,6 @@ tetrahedron_m d = (
     n3 = normalize(cross(v2-v3,v4-v3));
     n4 = normalize(cross(v4-v3,v1-v3));
 
-    // radius of circumscribed sphere / radius of inscribed sphere
-    circumratio = (sqrt(3/2)/2) / (1/(2*sqrt 6));
-
     make_shape {
         dist p : (
             max (
@@ -485,25 +489,31 @@ tetrahedron_m d = (
         ),
         is_3d : true,
         bbox : sqrt(3) * [[-r,-r,-r], [r,r,r]],
-        circumratio : circumratio,
     }
 ),
 
-cube = cube_m,
+cube = make_shape {
+    ... cube_m 2,
+    map : cube_m,
+    circumratio : sqrt 3,
+},
 cube_m d = (
     r = d / 2;
     make_shape {
         dist(x,y,z,t) = max(abs(x,y,z) - r),
         bbox = [[-r, -r, -r], [r,r,r]],
         is_3d = true,
-        circumratio = sqrt 3,
     }
 ),
 cube_e d = box_e(d,d,d),
 
 // 'd' is the diameter of a sphere inscribed inside the octahedron.
 // Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
-octahedron = octahedron_m,
+octahedron = make_shape {
+    ... octahedron_m 2,
+    map : octahedron_m,
+    circumratio : (1/2*sqrt 2) / (1/6*sqrt 6),
+},
 octahedron_m d = (
     r = d / 2;
     v0 = normalize(1,1,1);
@@ -523,13 +533,16 @@ octahedron_m d = (
         ),
         is_3d : true,
         bbox : circumratio * [[-r,-r,-r], [r,r,r]],
-        circumratio : circumratio,
     }
 ),
 
 // 'd' is the diameter of a sphere inscribed inside the dodecahedron.
 // Mitred distance field. Pointy side down.
-dodecahedron = dodecahedron_m,
+dodecahedron = make_shape {
+    ... dodecahedron_m 2,
+    map : dodecahedron_m,
+    circumratio : (.25*(sqrt 3 + sqrt 15)) / (1/20*sqrt(250+110*sqrt(5))),
+},
 dodecahedron_m d = (
     r = d / 2;
     v0 = normalize(0, phi, 1);
@@ -553,13 +566,16 @@ dodecahedron_m d = (
         ),
         is_3d : true,
         bbox : midratio * [[-r,-r,-r],[r,r,r]],
-        circumratio : circumratio,
     }
 ),
 
 // 'd' is the diameter of a sphere inscribed inside the icosahedron.
 // Mitred distance field.
-icosahedron = icosahedron_m,
+icosahedron = make_shape {
+    ... icosahedron_m 2,
+    map : icosahedron_m,
+    circumratio : (.25*sqrt(10+2*sqrt 5)) / (1/12*(3*sqrt(3)+sqrt(15))),
+},
 icosahedron_m d = (
     r = d / 2;
     v0 = normalize(1,1,1);
@@ -592,16 +608,8 @@ icosahedron_m d = (
         ),
         is_3d : true,
         bbox : midratio * [[-r,-r,-r], [r,r,r]],
-        circumratio : circumratio,
     }
 ),
-
-// The size of a regular polytope is specified using an inradius
-// (the radius of a sphere inscribed inside the polytope).
-// If you want to construct a polytope using a specified circumradius instead,
-// then construct it using the circumradius (it will be too big),
-// then shrink it to the correct size using `circumscale`.
-circumscale shape = scale(1/shape.circumratio) shape,
 
 /////////////////////////////////////////////
 // BOOLEAN / SET THEORETIC SHAPE OPERATORS //
