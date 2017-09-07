@@ -36,6 +36,9 @@ isinf x = x == inf || x == -inf,
 
 tan a = sin a / cos a,
 atan x = atan2(x,1),
+sec a = 1 / sin a,
+csc a = 1 / cos a,
+cot a = cos a / sin a,
 
 // lists
 concat vv = [for (v in vv) for (i in v) i],
