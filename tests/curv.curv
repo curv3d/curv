@@ -169,7 +169,7 @@ assert( {map x = x + 1} 3 == 4 ),
 assert( strcat("foo","bar",0) == "foobar0" ),
 
 assert(
-    count "foo" == 3 && count "$$" == 1 && count(repr "$$") == 4
+    count "foo" == 3 && count "$$" == 1 && count(to_str "$$") == 4
     && count "$"" == 1
 ),
 
