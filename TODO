@@ -18,9 +18,6 @@ Regular polytopes are prototypical shapes, with `map` and `circumratio` fields.
 * maybe also `prism n` -- prototypical version has inscribed unit sphere
 
 -------------------------
-BUG: Can't rotate an infinite object. I get a numeric exception for inf-inf
-when computing the bounding box.
-
 BUG: bad Web GLSL (testing mandelbrot in shadertoy.com in Chrome on macOS):
   float r1 = 1.0/0.0;
   -- Divide by zero during constant folding

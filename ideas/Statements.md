@@ -1,5 +1,22 @@
 # New Syntax 3 (Sept 2017)
 
+## array indexing a[i]
+
+The ' syntax makes more sense. a'i is regular indexing (i is an integer),
+while a'[i,j] is the vectorized form.
+
+a[i] is regular indexing.
+a[i,j] is a shortcut for vectorized indexing, equivalent to a[[i,j]].
+I find the latter confusing (the inner and outer brackets have different
+meanings, and the shortcut equivalence is not obvious).
+
+a[i..j] would be a nice shortcut for slice notation, currently unimplemented.
+Although you can use a[[i..j]] or a'[i..j].
+
+a[i,j] would also be a reasonable shortcut for a[i][j] / a'i'j.
+It could be generalized to support multi-dimensional array slicing.
+Which I might need in the future.
+
 ## generalized scripts
 Right now, `tests/curv.curv` is a sequence of assert statements (each
 terminated by `;`), followed by `{}`, which is an arbitrary return value.
