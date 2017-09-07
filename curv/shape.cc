@@ -217,7 +217,10 @@ Shape::gl_colour(GL_Value arg, GL_Frame& f) const
         (*f2)[1] = gl_vec_element(f, arg, 1);
         (*f2)[2] = gl_vec_element(f, arg, 2);
         (*f2)[3] = gl_vec_element(f, arg, 3);
-    } else assert(0);
+    } else {
+        throw Exception(cx, stringify(
+            "colour function has ",fun->nargs_," arguments, should be 4"));
+    }
     auto result = fun->gl_call(*f2);
     if (result.type != GL_Type::Vec3) {
         throw Exception(cx, stringify("colour function returns ",result.type));
