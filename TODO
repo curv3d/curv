@@ -324,16 +324,17 @@ Linear algebra:
 Vectorized boolean operations:
 * Vectorized relations are:
   * <' <=' >' >=' ==' !='
+  * .< .<= .> .>= .== .!= (Julia)
   * less, less_or_equal, greater, greater_or_equal, equal, not_equal
   * less, greater, equal, not_less, not_greater, not_equal
 * `not` is vectorized version of `!`.
 * `all` and `any` are vectorized boolean monoids for && and ||.
-  * Name is consistent with R,Julia,Python,Matlab.
+  * Name is consistent with GLSL,R,Julia,Python,Matlab.
   * Use some(pred)list, every(pred)list, name consistent with Javascript.
 * ifelse(cond,thenval,elseval)
 * Rationale: vectorized boolean ops have different names than unvectorized ones.
   * x==y compares vectors and returns bool, unlike xs=='ys.
-  * a&&b short circuits if a==false, but all[a,b] must evaluate b if a==false
+  * a&&b short circuits if a==false, but all(a,b) must evaluate b if a==false
     to implement broadcasting.
   * ifelse(b,c,a) must evaluate all 3 arguments if b is an array.
   * The unvectorized relations are guaranteed to return Bool, or fail,
