@@ -647,6 +647,10 @@ struct Error_Operation : public Operation
     {
         throw Exception(At_Frame(&f), stringify(arg_->eval(f)));
     }
+    virtual void bind(Frame& f, Record&) const override
+    {
+        throw Exception(At_Frame(&f), stringify(arg_->eval(f)));
+    }
 };
 /// The meaning of the phrase `error` in isolation.
 struct Error_Metafunction : public Metafunction
