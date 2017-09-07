@@ -173,4 +173,6 @@ assert(
     && count "$"" == 1
 ),
 
+assert( "foo"[0] == "f" && "foobar"[3,2,4] == "boa" ),
+
 }

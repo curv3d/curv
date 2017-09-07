@@ -477,6 +477,21 @@ struct_at(const Structure& ref, Value index, const Context& cx)
     return ref.getfield(a, cx);
 }
 Value
+string_at(const String& string, Value index, const Context& cx)
+{
+    // TODO: this code only works for ASCII strings.
+    if (auto indices = index.dycast<List>()) {
+        String_Builder sb;
+        for (auto ival : *indices) {
+            int i = arg_to_int(ival, 0, (int)(string.size()-1), cx);
+            sb << string[i];
+        }
+        return {sb.get_string()};
+    }
+    int i = arg_to_int(index, 0, (int)(string.size()-1), cx);
+    return {String::make(string.data()+i, 1)};
+}
+Value
 At_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
@@ -485,8 +500,10 @@ At_Expr::eval(Frame& f) const
         return list_at(*list, b, At_Phrase(*arg2_->source_, &f));
     if (auto structure = a.dycast<const Structure>())
         return struct_at(*structure, b, At_Phrase(*arg2_->source_, &f));
+    if (auto string = a.dycast<const String>())
+        return string_at(*string, b, At_Phrase(*arg2_->source_, &f));
     throw Exception(At_Phrase(*arg1_->source_, &f),
-        "not a list or structure");
+        "not a list, structure or string");
 }
 
 Shared<List>
