@@ -559,58 +559,6 @@ struct Make_Shape_Function : public Polyadic_Function
     }
 };
 
-struct Iterate_Function : public Polyadic_Function
-{
-    Iterate_Function() : Polyadic_Function(4) {}
-    Value call(Frame& f) override
-    {
-        auto val = f[0];
-        auto cond = f[1].to<Function>(At_Arg(1, f));
-        auto next = f[2].to<Function>(At_Arg(2, f));
-        auto final = f[3].to<Function>(At_Arg(3, f));
-        for (;;) {
-            bool b = cond->call(val, f).to_bool(At_Frame(&f));
-            if (!b) break;
-            val = next->call(val, f);
-        }
-        return final->call(val, f);
-    }
-    GL_Value gl_call_expr(
-        Operation& arg, const Call_Phrase* cp, GL_Frame& f) const override
-    {
-        // What I want to do here: the argument list is either an unevaluated
-        // List_Expr or an evaluated List constant. Destructure the list into
-        // 4 arguments.
-        // * The first argument can be a constant or unevaluated expression.
-        // * The final 3 arguments are constant functions or Lambda_Exprs
-        //   of the same arity A.
-        // * If A > 1, then first argument is a list or List_Expr of count A.
-
-        // To simplify the code, gl_to_list(Operation&,GL_Frame&) converts an
-        // argument expression to a List_Expr. A Constant(list) is converted.
-
-        auto list = gl_expr_to_list(arg, 4, f);
-        auto val = list->at(0);
-        auto cond = gl_expr_to_function(*list->at(1), f);
-        auto next = gl_expr_to_function(*list->at(2), f);
-        auto final = gl_expr_to_function(*list->at(3), f);
-
-        // Define & initialize iteration variable I. Initially, it must fit into
-        // a single GL value.
-        f.gl.out << "/* begin iterate */\n";
-        GL_Value gval = val->gl_eval(f);
-        f.gl.out << "/* end iterate */\n";
-        return gval;
-
-        // for (;;) {
-        // generate condition C
-        // if (!C) break;
-        // generate next value, assign to I
-        // }
-        // generate final value
-    }
-};
-
 /// The meaning of a call to `echo`, such as `echo("foo")`.
 struct Echo_Action : public Just_Action
 {
@@ -789,7 +737,6 @@ builtin_namespace()
     {"dom", make<Builtin_Value>(Value{make<Dom_Function>()})},
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},
     {"make_shape", make<Builtin_Value>(Value{make<Make_Shape_Function>()})},
-    {"iterate", make<Builtin_Value>(Value{make<Iterate_Function>()})},
     {"echo", make<Builtin_Meaning<Echo_Metafunction>>()},
     {"error", make<Builtin_Meaning<Error_Metafunction>>()},
     {"assert", make<Builtin_Meaning<Assert_Metafunction>>()},
