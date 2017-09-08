@@ -841,110 +841,177 @@ http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.592.5451&rep=rep1&type=
   If the distance field is not Lipschitz continuous, then ``lipschitz`` can't help you.
 
 6. TODO: Missing/Future Shape Operations
-==================================
+========================================
 
 Mesh Import
 -----------
-I want the ability to import an STL file.
+I want the ability to import an STL file (and other mesh file types like OBJ, AMF, 3MF).
+Unfortunately, meshes are probably the worst possible representation for getting geometric data into Curv.
+So it won't be easy.
+This is a research project, it won't be in the 1.0 release.
 
-``exact_mesh_file filename``
-  Read a mesh file (STL, OBJ, AMF, 3MF) and interpret it as a polyhedron.
-  Maybe the vertices and faces are available as shape attributes,
-  and maybe it can be used as input to polytope operators.
+There are two use cases: the mesh is an exact representation of the desired shape,
+or it is an approximation.
+
+Exact Meshes
+  The mesh is an exact representation of a polyhedron; it isn't an
+  approximation of a curved shape.
   
-  There is a limit to how many faces can be efficiently supported.
-  Not suitable for high triangle count approximations to curved surfaces.
+  If the polyhedron has only a small number of faces, then you can
+  represent it as an intersection and union of half-spaces.
+  But the rendering time would be proportional to the number of half-spaces,
+  so this approach doesn't scale.
+  [Starting point: a Curv function that reads an STL file, returns a list of triangles.]
+  
+  The polyhedra that appear in math-inspired art tend to be highly symmetrical.
+  The best representation of these polyhedra in Curv is as a compact CSG tree
+  that explictly encodes all of the symmetries. Automatically converting a mesh to this
+  representation is tricky: it would be better to get the original "source code"
+  used to generate the mesh file, and port that to Curv.
+  
+  Alternatively, maybe we can design an efficient data structure for representing
+  the distance field of a complex polyhedron?
 
-``approximate_mesh_file filename``
-  A mesh file that approximates a curved surface is compiled offline into an SDF.
-  Curved surfaces are reconstructed, while preserving edges. The result is placed
-  in a file, which this operator reads.
+Approximate Meshes
+  The mesh is an approximation to a curved surface.
+  
+  Sometimes, the mesh is generated as an approximation of
+  a more exact digital representation, like an OpenSCAD program, or a parametric
+  spline created by a CAD program. In these cases, it would be better
+  to convert the original exact representation directly to Curv, bypassing
+  the intermediate mesh, since constructing a mesh throws away information
+  and adds noise.
+  
+  In other cases, the mesh is produced by scanning a physical object,
+  in which case the mesh is created from a point cloud representation (from a 3D scanner),
+  or from a voxel array from a CT scanner or MRI scanner.
+  [In the RBF paper cited below, it is stated that it's better to start with the original
+  point cloud or CT scan data, since the constructed mesh has added noise (extraneous
+  vertices).]
 
-0. Import an STL file as a Nef polyhedron, naively constructed from half-spaces
-   using intersection and complement. Evaluation time for the SDF is proportional
-   to the number of triangles. Likely to be unusable for more than a thousand
-   triangles.
+  Suppose we have a high-triangle-count approximation to a curved surface,
+  like the Yoda bust on Thingiverse (614278 triangles).
+  Our best strategy is to convert this into a more compact and efficient representation
+  that is an approximation to the polyhedral mesh and reconstructs the curved surfaces
+  while preserving edges.
+  
+  Possible requirements:
+  
+  * Good quality SDF, suitable for sphere tracing.
+  * Handles low quality input.
+    Triangle meshes are often of poor quality:
+    not 2-manifold (not watertight, self intersections);
+    zero area triangles; not orientable (some normals point in the wrong direction);
+    excessive detail.
+  * Compact representation, since it has to fit in GPU memory.
+    3D voxel arrays are simple but not compact.
+  * Fast SDF evaluation.
+    It's likely that Yoda will compile into a large representation.
+    If all of the data is accessed each time the Yoda SDF is evaluated,
+    then evaluation will be too slow. We'd prefer a compiled representation where only a small fraction
+    of the data needs to be accessed when evaluating the SDF at a given point.
+    Trees and arrays indexed by geometric location have the right kind of access properties.
+  * GPU acceleration.
+  
+  This has been an active area of research for decades. There are lots of possibilities.
+  
+  * 3D voxel arrays are simple and popular. They are efficient to use on a GPU.
+    Each grid element contains a distance value, and the distance value at a point
+    is reconstructed by interpolation from several neighbouring grid values.
+    Call this a RSDF (Regularly sampled Signed Distance Field).
+    
+    They can take up a lot of memory, though. A 128x128x128 grid, with 16 bits per sample,
+    is 4MBytes, which is tractable. Doubling the linear resolution grows the memory
+    requirements by 8 times.
+  
+  * Use GPU hardware to quickly convert a mesh to a voxel array.
+    "Interactive 3D Distance Field Computation using Linear Factorization" [2006]
+    http://gamma.cs.unc.edu/GVD/LINFAC/
+
+  * `Signed Distance Fields for Polygon Soup Meshes`_ (2014):
+    Input is polygon soup. Triangles don't need to be correctly oriented,
+    mesh doesn't need to be 2-manifold.
+    The output is a voxel array.
+
+  * An ASDF (Adaptively sampled Signed Distance Field) is essentially a voxel array
+    that is compressed using an octree.
+    "Adaptively sampled distance fields: A general representation
+    of shape for computer graphics" [Susan Frisken, 2000]
+    Antimony uses this representation.
+    Evaluating an ASDF on a GPU (a requirement for Curv) requires novel data structures,
+    which are not in the original research.
    
-   [Starting point: a Curv function that reads an STL file, returns a list of triangles.]
+  * GPU-Accelerated Adaptively Sampled Distance Fields (2008):
+    http://hyperfun.org/FHF_Log/Bastos_GPU_ADF_SMI08.pdf
+    Input is a 2-manifold mesh, output is an ASDF (adaptively sampled distance field)
+    which is then rendered on a GPU using sphere tracing.
+  
+  * Use a GPU to create and then evaluate an ASDF.
+    "Exact and Adaptive Signed Distance Fields Computation
+    for Rigid and Deformable Models on GPUs" [2014]
+    http://graphics.ewha.ac.kr/gADF/gADF.pdf
+  
+  * An hp-ASDF is a more sophisticated ASDF.
+    "Hierarchical hp-Adaptive Signed Distance Fields" (2016)
+    https://animation.rwth-aachen.de/media/papers/2016-SCA-HPSDF.pdf
 
-1. Try to optimize the above approach. Maybe build a balanced
-   space partitioning tree at compile time, walk the tree during SDF evaluation.
-   Maybe try to optimize the representation by combining adjacent coplanar triangles into polygons,
-   detecting symmetries, etc.
-   Our goal is to exactly reproduce the polyhedron described
-   by the STL file. This will work much better, but we likely still won't be able to import
-   the Yoda bust on Thingiverse (614278 triangles).
-   This operation will only be useful for STL files that represent actual polyhedrons,
-   with a relatively small number of faces. It won't be good for high triangle count
-   approximations to curved surfaces.
+  * First, convert the mesh to a T-Spline.
+    (A number of commercial programs do this.)
+    "Converting an unstructured quadrilateral mesh to a standard T-spline surface"
+    https://link.springer.com/article/10.1007/s00466-011-0598-1
+    
+    Then, I suppose the spline could be converted to an SDF
+    using a variant of the method cited by John C. Hart.
 
-2. Give up and claim that Yoda can't be represented as an SDF.
-   Implement a hybrid geometry engine, where some shapes are represented
+  * The scanline method.
+    Radically compressed voxel arrays: storage complexity is n^2 rather than n^3.
+    And it seems simple?
+    "Constructing Signed Distance Fields for 3D Polyhedra"
+    https://www.youtube.com/watch?v=IYrjQcjN5KU
+  
+  * Radial Basis Functions.
+    Convert the mesh to an RBF, which is a kind of spline representation
+    with an associated distance field.
+    
+    * Any SDF can be converted to RBF form. This suggests that an expensive SDF described
+      using Curv could be converted to an approximate RBF that is cheaper to evaluate.
+    * If you convert the resulting RBF back to a mesh, applications include mesh simplification
+      and mesh repair.
+    * "Gradients and higher derivatives are determined analytically and are continuous and smooth",
+       avoiding a problem with discretely sampled SDFs, which tend to be discontinuous across cell boundaries.
+    
+    "Reconstruction and Representation of 3D Objects with Radial Basis Functions" (2001)
+    http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.58.1770&rep=rep1&type=pdf
+    
+    This is the FastRBF method. It is "difficult to implement".
+    It has the limitation that the RBF is "global" [non compactly supported],
+    meaning you have to evaluate the entire RBF
+    (potentially containing a large number of "centres" or spline points) to query the SDF at any point.
+    So SDF evaluation would be slow.
+    
+    "Implicit Surface Modeling Suitable for Inside/Outside Tests with Radial Basis Functions" (2007)
+    http://vr.sdu.edu.cn/~prj/papers/p20071019.pdf
+    
+    Easier to implement. Uses compactly supported basis functions.
+    Produces a more distance field (than other methods).
+    
+    "Modelling and Rendering Large Volume Data with Gaussian Radial Basis Functions" (2007)
+    https://www.derek.juba.name/papers/RBFVolume_Tech.pdf
+    
+    This paper puts the RBF centres into an octree to speed up rendering (on a GPU).
+    You can dynamically trade off accuracy for rendering speed by controlling how deep
+    you descend the octree.
+  
+A Hybrid Geometry Engine
+   We could abandon the idea of converting a mesh to an SDF.
+   Instead, implement a hybrid geometry engine, where some shapes are represented
    as meshes, some are represented as SDFs, and some are hybrid unions of
    meshes and SDFs. Some operations work on all 3 representations (eg,
    affine transformations). Some operations work only on meshes, or only on SDFs.
-   You can convert an SDF to a mesh (but not vice versa, maybe).
+   You can convert an SDF to a mesh (but not vice versa).
    A top level scene is a union of meshes and SDFs, rendered using some hybrid
    Z-buffer algorithm. But, there are a lot of Curv operations that won't work
    on Yoda, and the whole implementation is twice as complex.
-
-3. Read the literature. Realize that Yoda is not a polyhedron, but a polyhedral
-   approximation to an original model that has lots of curved surfaces.
-   What we really want (for Yoda) is a more compact and efficient SDF that is an approximation
-   to the polyhedron and reconstructs the curved surfaces while preserving edges.
-   
-   Compile a mesh to an efficient SDF representation that approximates the
-   original STL, with knobs for tuning the approximation.
-   AFAIK this is an expensive offline operation.
-   Need to choose a compiled mesh representation (and file format),
-   an (offline) compilation algorithm, and an evaluation algorithm.
-   
-   Possible requirements:
-   
-   * Handles low quality input.
-     Triangle meshes are often of poor quality:
-     not 2-manifold (not watertight, self intersections);
-     zero area triangles; not orientable (some normals point in the wrong direction);
-     excessive detail.
-   * Compact representation, since it has to fit in GPU memory.
-     3D voxel arrays are simple but not compact.
-   * Fast SDF evaluation.
-     It's likely that Yoda will compile into a large representation.
-     If all of the data is accessed each time the Yoda SDF is evaluated,
-     then evaluation will be too slow. We'd prefer a compiled representation where only a small fraction
-     of the data needs to be accessed when evaluating the SDF at a given point.
-     Trees and arrays indexed by geometric location have the right kind of access properties.
-   * GPU acceleration.
-   
-   The Universal Approximation Theorum states that a neural network can approximate
-   a continuous function on a compact subset of R^3. So we can represent a mesh as a
-   neural network, and use Deep Learning to train the network from a mesh.
-   This is just a wild idea right now; I don't know how fast this would be or how good
-   the results would be.
-   
-   Radial Basis Functions (RBFs) are often cited as an efficient representation.
-   The hard part is efficiently converting the mesh to an RBF representation.
-   (Also note that RBFs are one representation used for neural networks.)
-   
-   * FastRBF (http://fastrbf.com) is a commercial implementation of this.
-   * "Implicit Surface Modeling Suitable for Inside/Outside Tests with Radial Basis Functions"
-     (2007) http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.602.4653&rep=rep1&type=pdf
-   
-   GPU-Accelerated Adaptively Sampled Distance Fields (2008):
-   http://hyperfun.org/FHF_Log/Bastos_GPU_ADF_SMI08.pdf
-   Input is a 2-manifold mesh, output is an ASDF (adaptively sampled distance field)
-   which is then rendered on a GPU using sphere tracing. The ASDF should be more
-   compact than a voxel array/octree.
-   
-   `Signed Distance Fields for Polygon Soup Meshes`_ (2014):
-   Input is polygon soup. Triangles don't need to be correctly oriented,
-   mesh doesn't need to be 2-manifold.
-   The output is a voxel/octree representation of a SDF.
-
-   Notes from the web, lacking context:
-   
-   * signed distance transform
-   * BY INTERPOLATING OVER THE POLYGONAL DATA SET AND CONSTRAINING NORMAL VECTORS TO INHIBIT EXCESSIVE OSCILLATION, AN IMPLICIT SURFACE CAN BE DEVELOPED TO TIGHTLY ENCLOSE THE ORIGINAL POLYGONAL DATA SET.
 
 .. _`Signed Distance Fields for Polygon Soup Meshes`: http://run.usc.edu/signedDistanceField/XuBarbicSignedDistanceField2014.pdf
 
