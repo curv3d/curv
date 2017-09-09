@@ -915,7 +915,7 @@ Approximate Meshes
   
   This has been an active area of research for decades. There are lots of possibilities.
   
-  * 3D voxel arrays are simple and popular. Nothing is faster on a GPU.
+  * **3D voxel arrays** are simple and popular. Nothing is faster on a GPU.
     Each grid element contains a distance value, and the distance value at a point
     is reconstructed by interpolation using GPU texture hardware.
     
@@ -932,10 +932,10 @@ Approximate Meshes
     mesh doesn't need to be 2-manifold.
     The output is a voxel array.
 
-  * An ASDF (Adaptively sampled Signed Distance Field) is essentially a voxel array
+  * An **ASDF** (Adaptively sampled Signed Distance Field) is essentially a voxel array
     that is compressed using an octree.
     "Adaptively sampled distance fields: A general representation
-    of shape for computer graphics" [Susan Frisken, 2000]
+    of shape for computer graphics" [Susan Frisken, 2000].
     Antimony uses this representation.
     Evaluating an ASDF on a GPU (a requirement for Curv) requires novel data structures,
     which are not in the original research.
@@ -954,9 +954,8 @@ Approximate Meshes
     "Hierarchical hp-Adaptive Signed Distance Fields" (2016)
     https://animation.rwth-aachen.de/media/papers/2016-SCA-HPSDF.pdf
   
-  * Radial Basis Functions.
-    Convert the mesh to an RBF, which is a kind of spline representation
-    with an associated distance field.
+  * **Radial Basis Functions**
+    are a kind of spline representation with an associated distance field.
     
     * Any SDF can be converted to RBF form. This suggests that an expensive SDF described
       using Curv could be converted to an approximate RBF that is cheaper to evaluate.
