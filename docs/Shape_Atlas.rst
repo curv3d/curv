@@ -1003,8 +1003,8 @@ A Hybrid Geometry Engine
 .. _`Signed Distance Fields for Polygon Soup Meshes`: http://run.usc.edu/signedDistanceField/XuBarbicSignedDistanceField2014.pdf
 
 I'll begin by using voxel arrays, since they are the industry standard.
-I'll use a separate tool (which I hope is already available) to convert a mesh
-to a 3D texture SDF, stored in a KTX file. I'll extend Curv to import these KTX files.
+I'll use a separate tool (eg, https://github.com/matejd/DistanceFieldGen) to convert a mesh
+to a (compressed) 3D texture SDF, stored in a KTX file. I'll extend Curv to import these KTX files.
 
 Voxel Arrays
 ------------
