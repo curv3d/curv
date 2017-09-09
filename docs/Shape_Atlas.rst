@@ -915,17 +915,16 @@ Approximate Meshes
   
   This has been an active area of research for decades. There are lots of possibilities.
   
-  * 3D voxel arrays are simple and popular. They are efficient to use on a GPU.
+  * 3D voxel arrays are simple and popular. Nothing is faster on a GPU.
     Each grid element contains a distance value, and the distance value at a point
-    is reconstructed by interpolation from several neighbouring grid values.
-    Call this a RSDF (Regularly sampled Signed Distance Field).
+    is reconstructed by interpolation using GPU texture hardware.
     
     They can take up a lot of memory, though. A 128x128x128 grid, with 16 bits per sample,
     is 4MBytes, which is tractable. Doubling the linear resolution grows the memory
     requirements by 8 times.
   
     Use GPU hardware to quickly convert a mesh to a voxel array.
-    "Interactive 3D Distance Field Computation using Linear Factorization" [2006]
+    "Interactive 3D Distance Field Computation using Linear Factorization" [2006].
     http://gamma.cs.unc.edu/GVD/LINFAC/
 
     `Signed Distance Fields for Polygon Soup Meshes`_ (2014):
@@ -954,12 +953,6 @@ Approximate Meshes
     An hp-ASDF is a more sophisticated ASDF.
     "Hierarchical hp-Adaptive Signed Distance Fields" (2016)
     https://animation.rwth-aachen.de/media/papers/2016-SCA-HPSDF.pdf
-
-  * The scanline method.
-    Radically compressed voxel arrays: storage complexity is n^2 rather than n^3.
-    It seems simple? Might not work for general non-convex polyhedra.
-    "Constructing Signed Distance Fields for 3D Polyhedra"
-    https://www.youtube.com/watch?v=IYrjQcjN5KU
   
   * Radial Basis Functions.
     Convert the mesh to an RBF, which is a kind of spline representation
@@ -1009,17 +1002,15 @@ A Hybrid Geometry Engine
 
 Voxel Arrays
 ------------
-A "regularly sampled signed distance field" (RSDF)
-is a voxel array containing signed distance values.
-Interpolation (using GPU hardware) is used to compute the distance value at a point.
-It's just a different representation of a signed distance field.
+A voxel array containing signed distance values is an alternate representation of an SDF.
+Interpolation (using GPU texture hardware) is used to compute the distance value at a point.
 All of the Curv shape operations will work on this representation.
 
 Benefits:
 
 * Uniformly fast evaluation on a GPU.
 * An F-Rep SDF that is too expensive to evaluate during interactive previewing
-  can be converted to a voxel array.
+  can be sped up by conversion to a voxel array.
 * Easy and fast to convert a mesh file to a voxel array.
 * There are useful shape operators that require a voxel array, not an F-Rep SDF.
   Eg, "Level Set Surface Editing Operators", http://www.museth.org/Ken/Publications_files/Museth-etal_SIG02.pdf
