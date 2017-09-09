@@ -895,6 +895,9 @@ Approximate Meshes
   that is an approximation to the polyhedral mesh and reconstructs the curved surfaces
   while preserving edges.
   
+  Converting a large mesh to a volumetric format is slow (minutes),
+  so I'll use a separate conversion tool and a file format.
+  
   Possible requirements:
   
   * Good quality SDF, suitable for sphere tracing.
@@ -998,6 +1001,10 @@ A Hybrid Geometry Engine
    on Yoda, and the whole implementation is twice as complex.
 
 .. _`Signed Distance Fields for Polygon Soup Meshes`: http://run.usc.edu/signedDistanceField/XuBarbicSignedDistanceField2014.pdf
+
+I'll begin by using voxel arrays, since they are the industry standard.
+I'll use a separate tool (which I hope is already available) to convert a mesh
+to a 3D texture SDF, stored in a KTX file. I'll extend Curv to import these KTX files.
 
 Voxel Arrays
 ------------
