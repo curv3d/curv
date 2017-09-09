@@ -970,7 +970,7 @@ Approximate Meshes
     * If you convert the resulting RBF back to a mesh, applications include mesh simplification
       and mesh repair.
     * "Gradients and higher derivatives are determined analytically and are continuous and smooth",
-       avoiding a problem with discretely sampled SDFs, which tend to be discontinuous across cell boundaries.
+      avoiding a problem with discretely sampled SDFs, which tend to be discontinuous across cell boundaries.
     
     "Reconstruction and Representation of 3D Objects with Radial Basis Functions" (2001)
     http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.58.1770&rep=rep1&type=pdf
