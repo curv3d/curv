@@ -885,7 +885,7 @@ Approximate Meshes
   In other cases, the mesh is produced by scanning a physical object,
   in which case the mesh is created from a point cloud representation (from a 3D scanner),
   or from a voxel array from a CT scanner or MRI scanner.
-  [In the RBF paper cited below, it is stated that it's better to start with the original
+  [In the FastRBF paper cited below, it is stated that it's better to start with the original
   point cloud or CT scan data, since the constructed mesh has added noise (extraneous
   vertices).]
 
@@ -924,11 +924,11 @@ Approximate Meshes
     is 4MBytes, which is tractable. Doubling the linear resolution grows the memory
     requirements by 8 times.
   
-  * Use GPU hardware to quickly convert a mesh to a voxel array.
+    Use GPU hardware to quickly convert a mesh to a voxel array.
     "Interactive 3D Distance Field Computation using Linear Factorization" [2006]
     http://gamma.cs.unc.edu/GVD/LINFAC/
 
-  * `Signed Distance Fields for Polygon Soup Meshes`_ (2014):
+    `Signed Distance Fields for Polygon Soup Meshes`_ (2014):
     Input is polygon soup. Triangles don't need to be correctly oriented,
     mesh doesn't need to be 2-manifold.
     The output is a voxel array.
@@ -941,31 +941,23 @@ Approximate Meshes
     Evaluating an ASDF on a GPU (a requirement for Curv) requires novel data structures,
     which are not in the original research.
    
-  * GPU-Accelerated Adaptively Sampled Distance Fields (2008):
+    GPU-Accelerated Adaptively Sampled Distance Fields (2008):
     http://hyperfun.org/FHF_Log/Bastos_GPU_ADF_SMI08.pdf
     Input is a 2-manifold mesh, output is an ASDF (adaptively sampled distance field)
     which is then rendered on a GPU using sphere tracing.
   
-  * Use a GPU to create and then evaluate an ASDF.
+    Use a GPU to create and then evaluate an ASDF.
     "Exact and Adaptive Signed Distance Fields Computation
     for Rigid and Deformable Models on GPUs" [2014]
     http://graphics.ewha.ac.kr/gADF/gADF.pdf
   
-  * An hp-ASDF is a more sophisticated ASDF.
+    An hp-ASDF is a more sophisticated ASDF.
     "Hierarchical hp-Adaptive Signed Distance Fields" (2016)
     https://animation.rwth-aachen.de/media/papers/2016-SCA-HPSDF.pdf
 
-  * First, convert the mesh to a T-Spline.
-    (A number of commercial programs do this.)
-    "Converting an unstructured quadrilateral mesh to a standard T-spline surface"
-    https://link.springer.com/article/10.1007/s00466-011-0598-1
-    
-    Then, I suppose the spline could be converted to an SDF
-    using a variant of the method cited by John C. Hart.
-
   * The scanline method.
     Radically compressed voxel arrays: storage complexity is n^2 rather than n^3.
-    And it seems simple?
+    It seems simple? Might not work for general non-convex polyhedra.
     "Constructing Signed Distance Fields for 3D Polyhedra"
     https://www.youtube.com/watch?v=IYrjQcjN5KU
   
@@ -993,7 +985,7 @@ Approximate Meshes
     http://vr.sdu.edu.cn/~prj/papers/p20071019.pdf
     
     Easier to implement. Uses compactly supported basis functions.
-    Produces a more distance field (than other methods).
+    Produces a more exact distance field (than other methods).
     
     "Modelling and Rendering Large Volume Data with Gaussian Radial Basis Functions" (2007)
     https://www.derek.juba.name/papers/RBFVolume_Tech.pdf
@@ -1014,6 +1006,27 @@ A Hybrid Geometry Engine
    on Yoda, and the whole implementation is twice as complex.
 
 .. _`Signed Distance Fields for Polygon Soup Meshes`: http://run.usc.edu/signedDistanceField/XuBarbicSignedDistanceField2014.pdf
+
+Voxel Arrays
+------------
+A "regularly sampled signed distance field" (RSDF)
+is a voxel array containing signed distance values.
+Interpolation (using GPU hardware) is used to compute the distance value at a point.
+It's just a different representation of a signed distance field.
+All of the Curv shape operations will work on this representation.
+
+Benefits:
+
+* Uniformly fast evaluation on a GPU.
+* An F-Rep SDF that is too expensive to evaluate during interactive previewing
+  can be converted to a voxel array.
+* Easy and fast to convert a mesh file to a voxel array.
+* There are useful shape operators that require a voxel array, not an F-Rep SDF.
+  Eg, "Level Set Surface Editing Operators", http://www.museth.org/Ken/Publications_files/Museth-etal_SIG02.pdf
+  Or, possibly, some of the ShapeJS operations: http://shapejs.shapeways.com/
+
+The disadvantage is that it is an approximate sampled representation, not an
+exact representation. And storage requirements increase with the cube of the resolution.
 
 Convex Hull
 -----------
