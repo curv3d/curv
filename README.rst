@@ -2,7 +2,10 @@
 Curv: a language for making art using mathematics
 =================================================
 
-.. image:: docs/images/torus.png
+|twistor| |shreks_donut|
+
+.. |twistor| image:: docs/images/torus.png
+.. |shreks_donut| image:: docs/images/shreks_donut.png
 
 Curv is a programming language for creating art using mathematics.
 It's a 2D and 3D geometric modelling tool that supports full colour,
@@ -73,15 +76,6 @@ ImplicitCAD (2012)
   function representations within the language, so most of the potential
   of F-Rep geometry is inaccessible. And it doesn't use the GPU to speed up
   geometry processing.
-
-IceSL (2013)
-  An OpenSCAD / ImplicitCAD clone that uses F-Rep to represent shapes.
-  It is GPU accelerated.
-  
-  *BUT*: Not open source (so you can't see how the GPU acceleration works),
-  and you can't define new function representations in the language.
-  Also, it can't export STL files for 3D printing, so you can't use it with
-  a 3D printing service (although it can drive a 3D printer directly).
 
 ShaderToy.com (2013)
   A website with a Processing-like interface
