@@ -1060,6 +1060,23 @@ My intuition says that Minkowski sum ought to be implementable as a Nested Dista
 operation on shapes with exact distance fields, analogous to ``perimeter_extrude``.
 But it's not quite as simple as that, and an actual implementation is likely to be expensive.
 
+Splines
+-------
+* Sweep a spline curve using a circle/sphere in 2D/3D. Open or closed curve.
+  A solution for Bezier curves is outlined in `Sphere Tracing`_, based on code from Graphics Gems:
+  https://github.com/erich666/GraphicsGems/blob/master/gems/NearestPoint.c.
+  
+  * Given a point ``p`` and 4 Bezier control points, construct a 5th order Bezier equation
+    whose solution finds the point on the curve closest to ``p``.
+  * Find the roots of the 5th degree equation using iterative root finding.
+    The roots are parameter values ``t`` for the Bezier curve.
+  * Evaluate the Bezier at each root ``t`` to produce a set of candidate points.
+    Extend the set of candidate points with the first and last control point, which are
+    the endpoints of the curve. Select the candidate point that is closest to ``p``.
+
+* Construct a shape by filling the space bounded by a closed spline curve (2D)
+  or surface (3D).
+
 Circle/Sphere Sweep of a Parametric Curve
 -----------------------------------------
 Eg, I'd like to sweep out a `trefoil knot`_ with a sphere,
@@ -1137,13 +1154,6 @@ A generalization of ``extrude``.
 research:
 
 * "Image Swept Volumes", Winter and Chen, http://vg.swan.ac.uk/vlib/DOWNLOADS/ISV.pdf
-
-Splines
--------
-* Sweep a spline curve using a circle/sphere in 2D/3D. Open or closed curve.
-  This is a solved problem, see `Sphere Tracing`_.
-* Construct a shape by filling the space bounded by a closed spline curve (2D)
-  or surface (3D).
 
 Pixelate
 --------
