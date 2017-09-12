@@ -1076,7 +1076,7 @@ Splines
 Spline support is important for compatibility with external tools that create spline curves and surfaces.
 Adobe Illustrator supports cubic Bezier curves only. The SVG file format supports quadradic and cubic Beziers.
 Inkscape can read quadratic Beziers, but it elevates them to cubic for editing.
-3D CAD programs (FreeCAD, Rhino, etc) additionally support B-Splines and NURBS.
+3D CAD programs (FreeCAD, Rhino, etc) additionally support B-Splines and NURBS (and sometimes T-Splines).
 
 * Sweep a spline curve using a circle/sphere in 2D/3D. Open or closed curve.
   A solution for cubic Bezier curves is outlined in `Sphere Tracing`_, based on code from Graphics Gems:
@@ -1095,8 +1095,12 @@ Inkscape can read quadratic Beziers, but it elevates them to cubic for editing.
 * Construct a shape by filling the space bounded by a closed spline curve (2D)
   or surface (3D).
 
+Mathematica has BezierCurve, BSplineCurve, and BSplineSurface (for NURBS).
+
 Circle/Sphere Sweep of a Parametric Curve
 -----------------------------------------
+Spline curves are a special case of parametric curves.
+There are lots of interesting mathematical art objects defined by parametric equations.
 Eg, I'd like to sweep out a `trefoil knot`_ with a sphere,
 using the parametric equations::
 
