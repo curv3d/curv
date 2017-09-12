@@ -674,6 +674,20 @@ symmetric_difference shapes = difference(union shapes, intersection shapes),
 
 crop limits shape = intersection(shape, limits),
 
+size shape = shape.bbox[MAX] - shape.bbox[MIN],
+row_x d shapes = (
+    var width := sum([for (s in shapes) size(s)[X]]) + (count shapes - 1)*d;
+    var x := -width / 2;
+    var xdelta := [];
+    var i := 0;
+    while (i < count shapes) (
+        xdelta := concat(xdelta, [x - shapes[i].bbox[MIN][X]]);
+        x := x + d + size(shapes[i])[X];
+        i := i + 1;
+    );
+    union([for (i in [0..<count shapes]) shapes[i] >> move(xdelta[i],0,0)])
+),
+
 smooth_union k (s1,s2) = (
     make_shape {
         dist p : smooth_min(s1.dist p, s2.dist p, k),
@@ -1272,14 +1286,14 @@ offset r shape = (
     make_shape {
         dist p : shape.dist p - r,
         colour p : shape.colour p,
-        bbox : [shape.bbox[0]-r, shape.bbox[1]+r],
+        bbox : [shape.bbox[MIN]-r, shape.bbox[MAX]+r],
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     }
 ),
 
-// Construct the shell of a shape, whose boundaries are +/-r from the original
-// surface or perimeter.
+// Construct a shell of thickness d,
+// whose boundaries are +/- d/2 from the original surface or perimeter.
 // WARNING: this is implemented using isosurfaces, so the results are dependent
 // on the distance field, not just on the boundary of the shape.
 shell d shape = (
@@ -1287,7 +1301,7 @@ shell d shape = (
     make_shape {
         dist p : abs(shape.dist p) - r,
         colour : shape.colour,
-        bbox : [shape.bbox[0] - r, shape.bbox[1] + r],
+        bbox : [shape.bbox[MIN] - r, shape.bbox[MAX] + r],
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     }

@@ -477,6 +477,11 @@ If the input has an exact distance field, the output is also exact.
   See also: General Library of Relativity
   https://github.com/davidson16807/relativity.scad/wiki
 
+``row_x d shapes``
+  Move each shape in ``shapes`` along the X axis
+  so they are lined up in a row, separated by gaps of distance ``d``.
+  The group is centred on the origin along the X axis.
+
 Non-Rigid Transformations
 -------------------------
 Non-distance-preserving transformations of 2D and 3D shapes.
@@ -642,16 +647,22 @@ This is also called an isocurve (in 2D) or isosurface (in 3D).
   convex (concave) vertices and edges are rounded off
   as if by a circle or sphere of radius ``d``.
   [Also known as Minkowski sum (difference) of a circle or sphere of radius ``d``,
-  or dilation (erosion) with a disk of radius ``d`` in Mathematical Morphology.]
+  or dilation (erosion) with a ball of radius ``d`` in Mathematical Morphology.]
 
   If the distance field is mitred, the result is a "mitred offset".
   Vertices and edges are preserved.
+
+  ``offset`` can be used for debugging, to help visualize the distance field.
   
   Bounding box: If ``shape`` has an exact distance field, then we can compute a
-  good bounding box, which is exact if ``shape`` has an exact bounding box.
+  good bounding box, which is exact if ``shape`` has an exact bounding box
+  and if ``d>=0``. If ``shape`` has a mitred or approximate distance field,
+  we can only guarantee a good bounding box if ``d<=0``.
 
 ``shell d shape``
-  Hollow out the shape, replace it by a shell of thickness ``d`` that is centred on the shape boundary.
+  Construct a shell of thickness ``d``,
+  whose boundaries are plus or minus ``d/2``
+  from the original surface or perimeter of ``shape``.
 
 ``pancake d shape``
   ``pancake`` converts a 2D shape into a 3D "pancake" of thickness d.
