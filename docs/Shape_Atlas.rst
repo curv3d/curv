@@ -1062,8 +1062,13 @@ But it's not quite as simple as that, and an actual implementation is likely to 
 
 Splines
 -------
+Spline support is important for compatibility with external tools that create spline curves and surfaces.
+Adobe Illustrator supports cubic Bezier curves only. The SVG file format supports quadradic and cubic Beziers.
+Inkscape can read quadratic Beziers, but it elevates them to cubic for editing.
+3D CAD programs (FreeCAD, Rhino, etc) additionally support B-Splines and NURBS.
+
 * Sweep a spline curve using a circle/sphere in 2D/3D. Open or closed curve.
-  A solution for Bezier curves is outlined in `Sphere Tracing`_, based on code from Graphics Gems:
+  A solution for cubic Bezier curves is outlined in `Sphere Tracing`_, based on code from Graphics Gems:
   https://github.com/erich666/GraphicsGems/blob/master/gems/NearestPoint.c.
   
   * Given a point ``p`` and 4 Bezier control points, construct a 5th order Bezier equation
@@ -1073,6 +1078,8 @@ Splines
   * Evaluate the Bezier at each root ``t`` to produce a set of candidate points.
     Extend the set of candidate points with the first and last control point, which are
     the endpoints of the curve. Select the candidate point that is closest to ``p``.
+  * The distance from ``p`` to the candidate point gives an exact SDF for a zero-width Bezier curve.
+    Subtract ``d`` from the SDF to sweep the curve with a ball of radius ``d``.
 
 * Construct a shape by filling the space bounded by a closed spline curve (2D)
   or surface (3D).
