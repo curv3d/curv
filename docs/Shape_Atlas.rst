@@ -89,11 +89,11 @@ These are the SDF classes:
 
 exact:
   The distance field contains the exact Euclidean distance to the nearest boundary.
-  The ``inflate`` operation will create a rounded offset.
+  The ``offset`` operation will create a rounded offset.
 mitred:
   Like exact, except vertex and edge information is preserved in all isosurfaces.
   This can be useful in conjunction with distance field operations.
-  The ``inflate`` operation will create a mitred offset.
+  The ``offset`` operation will create a mitred offset.
 approximate:
   The SDF is implementation dependent, and may change between releases
   as the library is optimized.
@@ -630,7 +630,7 @@ Level Set Operations
 The level set at ``d`` of a distance field is the set of all points whose distance value is ``d``.
 This is also called an isocurve (in 2D) or isosurface (in 3D).
 
-``inflate d shape``
+``offset d shape``
   Construct the shape bounded by the level set at ``d`` of the shape argument's distance field.
   
   * d > 0: inflate the shape, blow it up like a balloon.
@@ -789,7 +789,7 @@ and there are more sophisticated blends available that avoid it.
 The bulge can also be used artistically: Quilez has used it to create knee and knuckle joints
 in cartoonish creatures.
 
-As a special case, ``smooth_union r (s, s)`` is the same as ``inflate (r/4) s``.
+As a special case, ``smooth_union r (s, s)`` is the same as ``offset (r/4) s``.
 This is specific to my current code. This seems to be the worst case
 for bounding box inflation, so we can use this to compute bounding boxes.
 
@@ -1049,7 +1049,7 @@ how it works. It's not intuitive to people who first encounter it.
 The most common Minkowski sum idioms have cheaper direct implementations in F-Rep
 which are also easier to understand.
 
-* Rounded offset at distance d: Minkowski sum with a sphere of radius d, or ``inflate d``
+* Rounded offset at distance d: Minkowski sum with a sphere of radius d, or ``offset d``
   of a shape with an exact distance field.
 * Shell: in Curv, ``shell``.
 * Morph between two shapes: in Curv, ``morph``.

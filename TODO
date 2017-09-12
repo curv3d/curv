@@ -381,7 +381,6 @@ ongoing research:
         if (ymax!=null) make_shape{dist p = p'1 - ymax},
       ];
 * visualize the distance field using a colour_map
-* shell(n), inflate(n)
 * text (steal from openjscad or antimony to begin with)
 * rsquare, runion (rounded corners and fillets)
 * infinite patterns
@@ -390,7 +389,6 @@ ongoing research:
   * fbm cloud colourmap (as seen in IQ's Elevated on shadertoy)
   * fractal mountain: port IQ's Elevated
   * Mandelbrot set
-* morph(r,s1,s2)
 * Escher circle limit
 * minkowski sum
 * Sweep. Extends a 2D object along a path.

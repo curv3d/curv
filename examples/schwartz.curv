@@ -5,8 +5,8 @@ schwartz_p = make_shape {
     is_3d: true
 };
 
-schwartz_bones = schwartz_p >> inflate (-1) >> lipschitz 2;
-schwartz_bones2 = complement schwartz_p >> inflate (-1) >> lipschitz 2;
+schwartz_bones = schwartz_p >> offset (-1) >> lipschitz 2;
+schwartz_bones2 = complement schwartz_p >> offset (-1) >> lipschitz 2;
 double_schwartz_bones = union(
     colour blue schwartz_bones,
     colour green schwartz_bones2,

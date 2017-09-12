@@ -1268,7 +1268,7 @@ distance_field shape = (
 // WARNING: Two shapes can have identical boundaries, but different distance
 // fields, so this is sensitive to the implementation of the shape.
 // Useful for debugging, to visualize a distance field.
-inflate r shape = (
+offset r shape = (
     make_shape {
         dist p : shape.dist p - r,
         colour p : shape.colour p,
@@ -1293,7 +1293,7 @@ shell d shape = (
     }
 ),
 
-pancake d shape = shape >> extrude_e 0 >> inflate (d/2),
+pancake d shape = shape >> extrude_e 0 >> offset (d/2),
 
 // Super kludgy function to scale a shape's distance field,
 // to compensate for a Lipschitz constant that is > 1.
