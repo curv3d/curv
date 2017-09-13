@@ -908,12 +908,70 @@ shear_x kx shape = (
     } shape
 ),
 
-taper_x k shape = (
-    warp_domain_xy {
-        function(x,y) = (x * (1 - y*k), y),
-        inverse(x,y) = (x / (1 - y*k), y),
-        fix_distance(x,y,d) = d, // TODO
-    } shape
+// TODO: In `taper`, the Lipschitz compensation code seems like overkill.
+taper_x (kx0, y0, kx1, y1) shape = (
+    assert(kx0 > 0 && kx1 > 0);
+    assert(y0 < y1);
+    make_shape {
+        dist(x,y,z,t) = (
+            (if (y <= y0)
+                shape.dist(x/kx0,y,z,t) * kx0
+            else if (y >= y1)
+                shape.dist(x/kx1,y,z,t) * kx1
+            else (
+                var kx := mix(kx0,kx1,(y-y0)/(y1-y0));
+                shape.dist(x/kx,y,z,t) * kx
+            )) * min(kx0,kx1)
+        ),
+        colour(x,y,z,t) = (
+            if (y <= y0)
+                shape.colour(x/kx0,y,z,t)
+            else if (y >= y1)
+                shape.colour(x/kx1,y,z,t)
+            else (
+                var kx := mix(kx0,kx1,(y-y0)/(y1-y0));
+                shape.colour(x/kx,y,z,t)
+            )
+        ),
+        bbox = shape.bbox * [[max(kx0,kx1),1,1],[max(kx0,kx1),1,1]],
+        is_2d = shape.is_2d,
+        is_3d = shape.is_3d,
+    }
+),
+taper_xy (kx0, ky0, z0, kx1, ky1, z1) shape = (
+    assert(kx0 > 0 && ky0 > 0 && kx1 > 0 && ky1 > 0);
+    assert(z0 < z1);
+    make_shape {
+        dist(x,y,z,t) = (
+            (if (z <= z0)
+                shape.dist(x/kx0,y/ky0,z,t) * min(kx0,ky0)
+            else if (z >= z1)
+                shape.dist(x/kx1,y/ky1,z,t) * min(kx1,ky1)
+            else (
+                var kx := mix(kx0,kx1,(z-z0)/(z1-z0));
+                var ky := mix(ky0,ky1,(z-z0)/(z1-z0));
+                shape.dist(x/kx,y/ky,z,t) * min(kx,ky)
+            )) * min(kx0,kx1,ky0,ky1)
+        ),
+        colour(x,y,z,t) = (
+            if (z <= z0)
+                shape.colour(x/kx0,y/ky0,z,t)
+            else if (z >= z1)
+                shape.colour(x/kx1,y/ky1,z,t)
+            else (
+                var kx := mix(kx0,kx1,(z-z0)/(z1-z0));
+                var ky := mix(ky0,ky1,(z-z0)/(z1-z0));
+                shape.colour(x/kx,y/ky,z,t)
+            )
+        ),
+        bbox = (
+            kx = max(kx0,kx1);
+            ky = max(ky0,ky1);
+            shape.bbox * [[kx,ky,1],[kx,ky,1]]
+        ),
+        is_2d = shape.is_2d,
+        is_3d = shape.is_3d,
+    }
 ),
 
 at p t shape = shape >> move(-p) >> t >> move p,

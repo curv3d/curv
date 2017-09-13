@@ -511,25 +511,19 @@ Non-distance-preserving transformations of 2D and 3D shapes.
   
   TODO
 
-``taper_x k shape``
-  2D dimensional taper along the Y axis.
-  The x coordinate of each point in the shape is scaled based on the y height, and is mapped to ``x * (1 - y*k)``.
-  At ``y==0`` there is no x scaling.
-  
-  Taper factor ``k==0`` means no tapering.
-  For positive k, the width of the shape decreases with increasing Y height,
-  reducing to zero (the vanishing point) at height ``y==1/k``.
+``taper_x (kx0, y0, kx1, y1) shape``
+  Local 2 dimensional taper along the Y axis, between y==y0 and y==y1.
+  When y<=y0, x values are scaled by the factor kx0.
+  When y1<=y, x values are scaled by the factor kx1.
+  When y0<y<y1, x values are scaled by a factor that is a linear ramp
+  between kx0 and kx1.
 
-  TODO: the distance field is bad.
-  At present, the DF becomes infinitely bad in a region radiating out of the vanishing point,
-  and sphere tracing fails if a ray goes through this region of chaos.
-  
-  The taper transformation maps an infinite number of points onto the vanishing point,
-  which is a singularity. Fixing the distance field will be easier if we don't support shapes
-  that contain the vanishing point within their bounding box.
-
-generalized taper ...
-  TODO
+``taper_xy (kx0, ky0, z0, kx1, ky1, z1) shape``
+  Local 3 dimensional taper along the Z axis, between z==z0 and z==z1.
+  When z<=z0, x and y values are scaled by the factors kx0 and ky0.
+  When z1<=z, x and y values are scaled by the factors kx1 and ky1.
+  When z0<z<z1, x/y values are scaled by factors that are a linear ramp
+  between kx0-kx1/ky0-ky1.
 
 ``twist d shape``
   Twist a 3D shape around the Z axis. One full revolution for each ``d`` units along the Z axis.
