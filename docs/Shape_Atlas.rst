@@ -823,21 +823,30 @@ http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.592.5451&rep=rep1&type=
   Add an X/Y or X/Y/Z axis display to the shape.
 
 ``show_bbox shape``
-  Visualize the bounding box, so you can check if it is bad (too small to contain the shape).
+  TODO: Visualize the bounding box, so you can check if it is bad (too small to contain the shape).
 
 ``set_bbox bbox shape``
-  Manually fix a bad bounding box.
+  TODO: Manually fix a bad bounding box.
 
-``show_contours shape``
-  Visualize a signed distance field by displaying contour lines.
+``show_dist shape``
+  Visualize the signed distance field on the XY plane.
+  Green channel: contour lines inside the shape (distance <= 0).
+  Blue channel: contour lines outside the shape (distance > 0).
+  Red channel: > 0 at points where the gradient > 1, ramping to full
+  intensity where gradient >= 2.
+  If distance is NaN (something that can only happen on the GPU),
+  the colour is white.
+  If distance is infinity, the colour is vivid cyan.
+  If distance is -infinity, the colour is dark cyan.
 
-``show_gradient (j,k) shape``
-  Visualize a signed distance field by displaying gradient values.
+..
+  ``show_gradient (j,k) shape``
+  TODO: Visualize a signed distance field by displaying gradient values.
   Gradient values < j are displayed in black.
   Gradient values > k are displayed in white.
   Gradient values between j and k are displayed using a spectrum,
   where j is red and k is violet.
-  
+..  
   You can start with (1,2) then use binary search to find the
   Lipschitz constant of a distance field, by visual inspection.
 
