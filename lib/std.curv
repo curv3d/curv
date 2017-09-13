@@ -1437,7 +1437,7 @@ show_dist shape = (
     if (shape.is_2d) xy else union(shape, xy)
 ),
 
-with_axes shape = (
+show_axes shape = (
     eps = .05;
     if (shape.is_2d)
         union (

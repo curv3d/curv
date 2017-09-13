@@ -813,7 +813,7 @@ http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.592.5451&rep=rep1&type=
 
 5. Shape Debugging
 ==================
-``with_axes shape``
+``show_axes shape``
   Add an X/Y or X/Y/Z axis display to the shape.
 
 ``show_bbox shape``
