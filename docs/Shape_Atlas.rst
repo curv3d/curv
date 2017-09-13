@@ -825,8 +825,11 @@ TODO: enhance ``smooth`` blending kernel to support N-ary blends.
 
 TODO: various blending kernels from MERCURY, like ``chamfer``.
 
-TODO: investigate advanced blending primitives from "A Gradient-Based Implicit Blend",
+TODO: investigate advanced blending primitives from
+
+* "A Gradient-Based Implicit Blend",
 http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.592.5451&rep=rep1&type=pdf
+* "Extrusion of 1D implicit profiles: Theory and first application" (2001) https://www.irit.fr/recherches/VORTEX/publications/rendu-geometrie/IJSM2001_Barthe_et_al.pdf
 
 5. Shape Debugging
 ==================
