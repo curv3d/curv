@@ -15,9 +15,6 @@ Circumratio project:
 Regular polytopes are prototypical shapes, with `map` and `circumratio` fields.
 * `regular_polygon n`
 * maybe also `prism n` -- prototypical version has inscribed unit sphere
-Other prototypical shapes:
-* circle
-* sphere
 
 -------------------------
 BUG: bad Web GLSL (testing mandelbrot in shadertoy.com in Chrome on macOS):

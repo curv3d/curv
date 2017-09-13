@@ -123,9 +123,11 @@ to determine the shape of its output.
 
 2D Shapes
 ---------
-``circle d``
-  Construct a circle of diameter ``d``, centred on the origin.
-  Exact distance field.
+``circle``
+  Construct a circle centred on the origin. Exact distance field.
+
+  * ``circle``: A prototypical circle of diameter 2 (ie, the unit circle).
+  * ``circle d``: Construct a circle of diameter ``d``.
 
 ``ellipse (dx, dy)``
   Construct an axis-aligned ellipse, centred on the origin,
@@ -134,11 +136,15 @@ to determine the shape of its output.
   
   * ``ellipse_e``: exact distance field, much more expensive to compute (TODO).
 
-``square d``
-  Construct an axis-aligned square of width ``d``, centred on the origin.
-  
-  * ``square_m``: mitred distance field, simple code, cheap to compute.
-  * ``square_e``: exact distance field, more expensive.
+``square``
+  Construct an axis-aligned square, centred on the origin.
+
+  * ``square``: A prototypical square of width 2.
+    I.e., it is inscribed by the unit circle.
+  * ``square d``: Construct a square of width ``d``.
+  * ``square.circumratio``: ratio of circumradius over inradius.
+  * ``square_m d``: mitred distance field, simple code, cheap to compute.
+  * ``square_e d``: exact distance field, more expensive.
 
 ``rect (dx, dy)``
   Construct an axis-aligned rectangle of width ``dx`` and height ``dy``,
@@ -218,9 +224,11 @@ to determine the shape of its output.
 
 3D Shapes
 ---------
-``sphere d``
-  Construct a circle of diameter ``d``, centred on the origin.
-  Exact distance field.
+``sphere``
+  Construct a sphere centred on the origin. Exact distance field.
+
+  * ``sphere``: A prototypical sphere of diameter 2 (ie, the unit sphere).
+  * ``sphere d``: Construct a sphere of diameter ``d``.
 
 ``ellipsoid (dx, dy, dz)``
   Construct an axis-aligned ellipsoid, centred on the origin,

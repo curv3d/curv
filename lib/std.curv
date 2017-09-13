@@ -95,23 +95,35 @@ angle(a,b) = acos(dot(a,b) / (mag a * mag b)),
 // CIRCULAR SHAPES //
 /////////////////////
 
-circle d = (
-    r = d / 2;
+circle = (
+    circle_e d = (
+        r = d / 2;
+        make_shape {
+            dist(x,y,z,t) = mag(x,y) - r,
+            bbox = [[-r,-r,0],[r,r,0]],
+            is_2d = true,
+        }
+    );
     make_shape {
-        dist(x,y,z,t) = mag(x,y) - r,
-        bbox = [[-r,-r,0],[r,r,0]],
-        is_2d = true,
+        ... circle_e 2,
+        map : circle_e,
     }
 ),
 
 ellipse(dx,dy) = circle 1 >> scale(dx,dy),
 
-sphere d = (
-    r = d / 2;
+sphere = (
+    sphere_e d = (
+        r = d / 2;
+        make_shape {
+            dist(x,y,z,t) = mag(x,y,z) - r,
+            bbox = [[-r,-r,-r],[r,r,r]],
+            is_3d = true,
+        }
+    );
     make_shape {
-        dist(x,y,z,t) = mag(x,y,z) - r,
-        bbox = [[-r,-r,-r],[r,r,r]],
-        is_3d = true,
+        ... sphere_e 2,
+        map : sphere_e,
     }
 ),
 
@@ -122,6 +134,7 @@ cylinder_m(d,h) = extrude_m h (circle d),
 cylinder_e(d,h) = extrude_e h (circle d),
 
 // Cone: +Z is up, origin is in the middle of the base.
+// TODO: Provide an interface capable of constructing an infinite sphere.
 cone = cone_e,
 cone_m(d, height) = (
     radius = d / 2;
@@ -144,15 +157,15 @@ cone_e(d, height) = (
     make_shape {
         dist(x,y,z,t) = (
             var q := [mag(x,y), z];
-            var tip := q - [0, height];
+            var apex := q - [0, height];
             var mantleDir := normalize(height, radius);
-            var mantle := dot(tip, mantleDir);
+            var mantle := dot(apex, mantleDir);
             var d := max(mantle, -q[Y]);
-            var projected := dot(tip, [mantleDir[Y], -mantleDir[X]]);
+            var projected := dot(apex, [mantleDir[Y], -mantleDir[X]]);
 
-            // distance to tip
+            // distance to apex
             if (q[Y] > height && projected < 0)
-                d := max(d, mag(tip));
+                d := max(d, mag(apex));
 
             // distance to base ring
             if (q[X] > radius && projected > mag(height, radius))
@@ -271,11 +284,13 @@ half_plane_pn(a, n) = (
     }
 ),
 
-square = make_shape {
-    ... square_e 2,
-    map : square_e,
-    circumratio : sqrt 2,
-},
+square = (
+    make_shape {
+        ... square_e 2,
+        map : square_e,
+        circumratio : sqrt 2,
+    }
+),
 square_m d = (
     r = d / 2;
     make_shape {
