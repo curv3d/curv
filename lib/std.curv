@@ -271,7 +271,11 @@ half_plane_pn(a, n) = (
     }
 ),
 
-square = square_e,
+square = make_shape {
+    ... square_e 2,
+    map : square_e,
+    circumratio : sqrt 2,
+},
 square_m d = (
     r = d / 2;
     make_shape {
