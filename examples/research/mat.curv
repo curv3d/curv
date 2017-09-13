@@ -28,6 +28,6 @@ mat_rotate (angle, v) = (
     ]
 );
 r(angle, axis, v) = dot(mat_rotate(angle, axis), v);
-r(30*deg, Yaxis,
-  r(-30*deg, Xaxis, [0,1,0])
+r(30*deg, Y_axis,
+  r(-30*deg, X_axis, [0,1,0])
 )

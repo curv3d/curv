@@ -68,7 +68,7 @@ Constructive Solid Geometry (3)
 
   torus (2,1)
     >> colour (radial_rainbow 1)
-    >> rotate (tau/4, Yaxis)
+    >> rotate (tau/4, Y_axis)
     >> twist 3 >> lipschitz 2.2
 
 Constructive Solid Geometry (4)

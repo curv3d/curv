@@ -15,10 +15,10 @@ rect(1,inf)
 >> repeat_mirror_x
 >> crop (rect(w,c))
 >> extrude .5
->> rotate(90*deg, Xaxis)
+>> rotate(90*deg, X_axis)
 >> move (0, w)
 >> bend 40
 >> rotate (90*deg)
->> rotate (90*deg, Yaxis)
+>> rotate (90*deg, Y_axis)
 >> bend c >> lipschitz 3
 //>> with_axes
