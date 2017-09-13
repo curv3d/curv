@@ -13,8 +13,11 @@ Shape Atlas: look at:
 
 Circumratio project:
 Regular polytopes are prototypical shapes, with `map` and `circumratio` fields.
-* `regular_polygon n`
-* maybe also `prism n` -- prototypical version has inscribed unit sphere
+Primitive shapes from Conway notation:
+* `prism n` -- prototypical version has inscribed unit sphere
+* `antiprism n` -- prototypical version has inscribed unit sphere
+* `pyramid n` -- prototypical version has inscribed unit sphere
+* maybe `cylinder`
 
 -------------------------
 BUG: bad Web GLSL (testing mandelbrot in shadertoy.com in Chrome on macOS):
@@ -350,7 +353,6 @@ ongoing research:
 * polygon -- convex_polygon as Nef polygon, intersection of half planes
   convex_polygon(vertices) -- vertices are in counterclockwise order, as this
   seems to be the standard convention.
-  regular_polygon(nsides) -- efficient representation using symmetry
 * align
 * Repetition operators, which repeat a shape multiple or infinite times,
   in constant time and memory, in accordance with some symmetry pattern.

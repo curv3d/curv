@@ -386,8 +386,15 @@ rect_at_m(lo, hi) = (
 ),
 
 // regular_polygon: n is # of sides, d is incircle diameter
-regular_polygon = regular_polygon_m,
-regular_polygon_m(n,d) = (
+regular_polygon n = (
+    angle = tau / n;
+    make_shape {
+        ... regular_polygon_m n 2,
+        map d : regular_polygon_m n d,
+        circumratio : 1 / cos(angle/2),
+    }
+),
+regular_polygon_m n d = (
     half_plane_dn(d/2,[1,0]) >> repeat_radial n >> rotate(-tau/4)
 ),
 
@@ -468,7 +475,7 @@ box_at_m (lo,hi) = (
 ),
 
 prism = prism_m,
-prism_m(n,d,h) = regular_polygon_m(n,d) >> extrude_m h,
+prism_m(n,d,h) = regular_polygon_m n d >> extrude_m h,
 
 // TODO: pyramid(n,d,h)
 
