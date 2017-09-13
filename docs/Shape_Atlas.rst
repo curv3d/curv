@@ -285,11 +285,15 @@ to determine the shape of its output.
   * ``prism_m``: mitred distance field.
   * ``prism_e``: exact distance field, more expensive. (TODO)
 
-``pyramid (n, d, h)``
+``antiprism n``
+  TODO
+
+``pyramid n``
   Construct a regular right pyramid.
   The base is a regular polyhedron with ``n`` sides, whose inscribed circle has diameter ``d``.
   The base is embedded in the XY plane and centred on the origin.
   The apex is above the origin at height ``h``.
+  Maybe provide an API for constructing an infinite pyramid with apex at origin?
   TODO
 
 Platonic Solids
@@ -1282,6 +1286,10 @@ http://mandelbulber.com/
 Voronoi Diagrams
 ----------------
 In 2 and 3 dimensions, are a popular modeling technique in 3D printed geometric art.
+
+Hyperbolic Geometry
+-------------------
+The math behind Escher's Circle Limit prints.
 
 7. Bibliography
 ===============
