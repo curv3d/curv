@@ -877,6 +877,18 @@ http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.592.5451&rep=rep1&type=
 6. TODO: Missing/Future Shape Operations
 ========================================
 
+SDF Data Structures and Rendering Algorithms
+--------------------------------------------
+In Curv, shapes are represented by signed distance fields.
+In Curv 1.0, SDFs are represented using Function Representation (F-Rep),
+and rendered on a display using Sphere Tracing.
+
+However, I want to support a wide range of shape operations:
+primitive shapes, shape operators, operations that import and export shapes
+from files. In order to support the full range of shape operations,
+I'll need to use some of the alternate data structure representations of SDFs,
+not just F-Rep.
+
 Mesh Import
 -----------
 I want the ability to import an STL file (and other mesh file types like OBJ, AMF, 3MF).
