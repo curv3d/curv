@@ -14,10 +14,17 @@ Shape Atlas: look at:
 Circumratio project:
 Regular polytopes are prototypical shapes, with `map` and `circumratio` fields.
 Primitive shapes from Conway notation:
-* `prism n` -- prototypical version has inscribed unit sphere
+* `prism n` -- prototypical version has inscribed unit sphere.
+  Note `prism 4` == `cube`.
 * `antiprism n` -- prototypical version has inscribed unit sphere
-* `pyramid n` -- prototypical version has inscribed unit sphere
-* maybe `cylinder`
+* `pyramid n` -- prototypical version has inscribed unit sphere.
+  `pyramid 3` == `tetrahedron`. What is the base diameter/height ratio for
+  values of n > 3? As n approaches infinity, the pyramid approaches a cone.
+  * Ratio of pyramid height to diameter of inscribed circle of base is
+    1+1/3 to sqrt(8/9): 1.333333 to 0.942809. This gives a tall skinny cone.
+  * Ratio of pyramid height to diameter of circumscribed circle of base
+    is 1+1/3 to 2*sqrt(8/9). This gives a squatter cone that I like better.
+* Maybe `cylinder`, `cone`.
 
 -------------------------
 BUG: bad Web GLSL (testing mandelbrot in shadertoy.com in Chrome on macOS):
