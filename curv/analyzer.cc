@@ -752,8 +752,9 @@ Program_Phrase::analyze_def(Environ& env) const
     return body_->analyze_def(env);
 }
 
-/// In the grammar, a <commas> phrase is one or more constituent phrases
-/// separated by commas. This function iterates over each constituent phrase.
+/// In the grammar, a <list> phrase is zero or more constituent phrases
+/// separated by commas or semicolons.
+/// This function iterates over each constituent phrase.
 static inline void
 each_item(const Phrase& phrase, std::function<void(const Phrase&)> func)
 {
@@ -762,35 +763,33 @@ each_item(const Phrase& phrase, std::function<void(const Phrase&)> func)
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&phrase)) {
         for (auto& i : commas->args_)
             func(*i.expr_);
-    } else {
-        func(phrase);
+        return;
     }
-}
-
-bool
-is_colon_phrase(const Phrase& ph)
-{
-    auto b = dynamic_cast<const Binary_Phrase*>(&ph);
-    return b != nullptr && b->op_.kind_ == Token::k_colon;
+    if (auto semis = dynamic_cast<const Semicolon_Phrase*>(&phrase)) {
+        for (auto& i : semis->args_)
+            func(*i.expr_);
+        return;
+    }
+    func(phrase);
 }
 
 Shared<Meaning>
 Brace_Phrase::analyze(Environ& env) const
 {
-    // A brace phrase is a comma separated list of actions and either
-    // definitions or binders.
-    // We do a pre-analysis scan looking for definitions. If we don't find any,
-    // then we analyze as a record, otherwise we analyze as a module.
+    // A brace phrase is:
+    //  * empty
+    //  * a binder
+    //  * a definition
+    //  * a comma-separated list of actions and binders
+    //  * a semicolon-separated list of actions and definitions
 
-    bool is_module = false;
+    bool is_module;
     if (isa<Empty_Phrase>(body_)) {
-        ;
-    } else if (auto commas = cast<Comma_Phrase>(body_)) {
-        for (auto& item : commas->args_)
-            if (item.expr_->analyze_def(env)) {
-                is_module = true;
-                break;
-            }
+        is_module = false;
+    } else if (isa<Comma_Phrase>(body_)) {
+        is_module = false;
+    } else if (isa<Semicolon_Phrase>(body_)) {
+        is_module = true;
     } else {
         is_module = (body_->analyze_def(env) != nullptr);
     }

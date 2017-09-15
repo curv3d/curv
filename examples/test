@@ -1,0 +1,4 @@
+for f in `ls *.curv`; do
+  echo $f
+  curv -ofrag $f > $f.frag
+done

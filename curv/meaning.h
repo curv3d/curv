@@ -159,6 +159,7 @@ struct Null_Action : public Just_Action
 {
     using Just_Action::Just_Action;
     virtual void exec(Frame&) const override;
+    virtual void gl_exec(GL_Frame&) const override;
 };
 
 /// reference to a lazy nonlocal slot.

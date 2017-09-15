@@ -1,4 +1,4 @@
 // proposed standard library
 {
-concat(vv) = [for (v in vv) for (i in v) i],
+concat(vv) = [for (v in vv) for (i in v) i];
 }

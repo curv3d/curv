@@ -549,6 +549,9 @@ void Statements::gl_exec(GL_Frame& f) const
     for (auto action : actions_)
         action->gl_exec(f);
 }
+void Null_Action::gl_exec(GL_Frame&) const
+{
+}
 
 void
 Let_Assign::gl_exec(GL_Frame& f) const

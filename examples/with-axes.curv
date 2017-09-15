@@ -1,7 +1,7 @@
 r = 2;
 S = make_shape {
-    dist(x,y,z,t) = max(abs(x,y) - r),
-    is_2d = true,
+    dist(x,y,z,t) = max(abs(x,y) - r);
+    is_2d = true;
 };
 x_axis = rect(inf,.05);
 y_axis = rect(.05,inf);

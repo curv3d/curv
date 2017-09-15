@@ -468,7 +468,7 @@ TEST(curv, eval)
         "  1,2\n"
         "   ^ ");
 
-    SUCCESS("a=2; f x={echo(g 2), g y=a*x*b*y, b=3}; f(5).g(7)", "210");
+    SUCCESS("a=2; f x={echo(g 2); g y=a*x*b*y; b=3}; f(5).g(7)", "210");
     EXPECT_EQ(console.str(),
         "ECHO: 60\n");
 

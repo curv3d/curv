@@ -5,24 +5,24 @@
 /* Curv standard library, automatically loaded at startup. */
 {
 
-deg = tau/360,
-e = 2.71828182845904523536028747135266249775724709369995,
-phi = sqrt 5 * .5 + .5,
-X = 0,
-Y = 1,
-Z = 2,
-T = 3,
-MIN = 0,
-MAX = 1,
-X_axis = [1,0,0],
-Y_axis = [0,1,0],
-Z_axis = [0,0,1],
+deg = tau/360;
+e = 2.71828182845904523536028747135266249775724709369995;
+phi = sqrt 5 * .5 + .5;
+X = 0;
+Y = 1;
+Z = 2;
+T = 3;
+MIN = 0;
+MAX = 1;
+X_axis = [1,0,0];
+Y_axis = [0,1,0];
+Z_axis = [0,0,1];
 
-ceil n = -floor(-n),
-trunc n = if (n >= 0) floor(n) else ceil(n),
-mod(a,m) = a - m * floor(a/m),
-rem(a,m) = a - m * trunc(a/m),
-mix(a,b,t) = a*(1-t) + b*t,
+ceil n = -floor(-n);
+trunc n = if (n >= 0) floor(n) else ceil(n);
+mod(a,m) = a - m * floor(a/m);
+rem(a,m) = a - m * trunc(a/m);
+mix(a,b,t) = a*(1-t) + b*t;
 // Smooth Hermite interpolation between 0 and 1 when lo < x < hi.
 // Used to construct a threshold function with a smooth transition.
 // Results are undefined if lo >= hi.
@@ -30,21 +30,21 @@ mix(a,b,t) = a*(1-t) + b*t,
 smoothstep(lo,hi,x) = (
     var t := clamp((x - lo)/(hi - lo), 0, 1);
     t*t*(3 - 2*t)
-),
-clamp(v,lo,hi) = min(max(v,lo),hi),
-isinf x = x == inf || x == -inf,
+);
+clamp(v,lo,hi) = min(max(v,lo),hi);
+isinf x = x == inf || x == -inf;
 
-tan a = sin a / cos a,
-atan x = atan2(x,1),
-sec a = 1 / sin a,
-csc a = 1 / cos a,
-cot a = cos a / sin a,
+tan a = sin a / cos a;
+atan x = atan2(x,1);
+sec a = 1 / sin a;
+csc a = 1 / cos a;
+cot a = cos a / sin a;
 
 // lists
-concat vv = [for (v in vv) for (i in v) i],
-reverse v = v'[count(v)-1..0 by -1],
-map f list = [for (x in list) f x],
-filter p list = [for (x in list) if (p x) x],
+concat vv = [for (v in vv) for (i in v) i];
+reverse v = v'[count(v)-1..0 by -1];
+map f list = [for (x in list) f x];
+filter p list = [for (x in list) if (p x) x];
 reduce (zero, f) list = (
     if (list == [])
         zero
@@ -54,42 +54,42 @@ reduce (zero, f) list = (
             r := f(r, list[i]);
         r
     )
-),
-sum list = reduce(0, (x,y)->x+y) list,
-product list = reduce(1, (x,y)->x*y) list,
+);
+sum list = reduce(0, (x,y)->x+y) list;
+product list = reduce(1, (x,y)->x*y) list;
 
-merge rs = {for (r in rs) ...r},
+merge rs = {for (r in rs) ...r};
 
 // complex numbers: [RE,IM]
-RE=0,
-IM=1,
-cmul(z,w) = [z'RE*w'RE - z'IM*w'IM, z'IM*w'RE + z'RE*w'IM],
-csqr(z) = [ z[RE]*z[RE] - z[IM]*z[IM], 2*z[RE]*z[IM] ],
+RE=0;
+IM=1;
+cmul(z,w) = [z'RE*w'RE - z'IM*w'IM, z'IM*w'RE + z'RE*w'IM];
+csqr(z) = [ z[RE]*z[RE] - z[IM]*z[IM], 2*z[RE]*z[IM] ];
 
 ////////////////////
 // Linear Algebra //
 ////////////////////
-is_vec2 x = is_list x && count x == 2 && is_num(x[0]) && is_num(x[1]),
-is_vec3 x = is_list x && count x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]),
-cross(p,q) = [p[Y]*q[Z] - p[Z]*q[Y], p[Z]*q[X] - p[X]*q[Z], p[X]*q[Y] - p[Y]*q[X]],
-identity(n) = [for(i in [1..n]) [for(j in [1..n]) if(i==j) 1 else 0]],
-transpose(a) = [for (i in dom(a'0)) [for (j in dom a) a'j'i]],
-normalize v = v / mag v,
+is_vec2 x = is_list x && count x == 2 && is_num(x[0]) && is_num(x[1]);
+is_vec3 x = is_list x && count x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]);
+cross(p,q) = [p[Y]*q[Z] - p[Z]*q[Y], p[Z]*q[X] - p[X]*q[Z], p[X]*q[Y] - p[Y]*q[X]];
+identity(n) = [for(i in [1..n]) [for(j in [1..n]) if(i==j) 1 else 0]];
+transpose(a) = [for (i in dom(a'0)) [for (j in dom a) a'j'i]];
+normalize v = v / mag v;
 
 // phase angle of a vector, range tau/2 to -tau/2
-phase v = atan2(v'Y,v'X),
+phase v = atan2(v'Y,v'X);
 
 // convert phase angle to unit vector
-cis theta = [cos theta, sin theta],
+cis theta = [cos theta, sin theta];
 
 // perp: Rotate a 2D point by 90 degrees CCW. Multiply a complex number by i.
 // It's the 2D analog of the 3D vector cross product (Cross in Mathematica).
 // dot(perp a, b) is the "perp-dot" product:
 // see: 'The Pleasures of "Perp-Dot" Products', Graphics Gems IV.
-perp(x,y) = (y, -x),
+perp(x,y) = (y, -x);
 
 // angle between two vectors
-angle(a,b) = acos(dot(a,b) / (mag a * mag b)),
+angle(a,b) = acos(dot(a,b) / (mag a * mag b));
 
 /////////////////////
 // CIRCULAR SHAPES //
@@ -99,43 +99,43 @@ circle = (
     circle_e d = (
         r = d / 2;
         make_shape {
-            dist(x,y,z,t) = mag(x,y) - r,
-            bbox = [[-r,-r,0],[r,r,0]],
-            is_2d = true,
+            dist(x,y,z,t) = mag(x,y) - r;
+            bbox = [[-r,-r,0],[r,r,0]];
+            is_2d = true;
         }
     );
     make_shape {
         ... circle_e 2,
         map : circle_e,
     }
-),
+);
 
-ellipse(dx,dy) = circle 1 >> scale(dx,dy),
+ellipse(dx,dy) = circle 1 >> scale(dx,dy);
 
 sphere = (
     sphere_e d = (
         r = d / 2;
         make_shape {
-            dist(x,y,z,t) = mag(x,y,z) - r,
-            bbox = [[-r,-r,-r],[r,r,r]],
-            is_3d = true,
+            dist(x,y,z,t) = mag(x,y,z) - r;
+            bbox = [[-r,-r,-r],[r,r,r]];
+            is_3d = true;
         }
     );
     make_shape {
         ... sphere_e 2,
         map : sphere_e,
     }
-),
+);
 
-ellipsoid(dx,dy,dz) = sphere 1 >> scale(dx,dy,dz),
+ellipsoid(dx,dy,dz) = sphere 1 >> scale(dx,dy,dz);
 
-cylinder = cylinder_e,
-cylinder_m(d,h) = extrude_m h (circle d),
-cylinder_e(d,h) = extrude_e h (circle d),
+cylinder = cylinder_e;
+cylinder_m(d,h) = extrude_m h (circle d);
+cylinder_e(d,h) = extrude_e h (circle d);
 
 // Cone: +Z is up, origin is in the middle of the base.
 // TODO: Provide an interface capable of constructing an infinite sphere.
-cone = cone_e,
+cone = cone_e;
 cone_m(d, height) = (
     radius = d / 2;
     make_shape {
@@ -145,11 +145,11 @@ cone_m(d, height) = (
             var mantleDir := normalize(height, radius);
             var mantle := dot(tip, mantleDir);
             max(mantle, -q[Y])
-        ),
-        bbox = [[-radius,-radius,0],[radius,radius,height]],
+        );
+        bbox = [[-radius,-radius,0],[radius,radius,height]];
         is_3d = true
     }
-),
+);
 // Euclidean distance field.
 // Credit: MERCURY (http://mercury.sexy/hg_sdf)
 cone_e(d, height) = (
@@ -171,11 +171,11 @@ cone_e(d, height) = (
             if (q[X] > radius && projected > mag(height, radius))
                 d := max(d, mag(q - [radius, 0]));
             d
-        ),
-        bbox = [[-radius,-radius,0],[radius,radius,height]],
+        );
+        bbox = [[-radius,-radius,0],[radius,radius,height]];
         is_3d = true
     }
-),
+);
 
 // credit: Inigo Quilez
 capsule(d,a,b) = (
@@ -186,11 +186,11 @@ capsule(d,a,b) = (
             var pa := p[X,Y,Z] - a;
             var h := clamp(dot(pa,ba) / dot(ba,ba), 0, 1);
             mag(pa - ba*h) - r
-        ),
-        bbox = [min(a-r,b-r), max(a+r,b+r)],
-        is_3d = true,
+        );
+        bbox = [min(a-r,b-r), max(a+r,b+r)];
+        is_3d = true;
     }
-),
+);
 stroke(d,a,b) = (
     r = d / 2;
     ba = b - a;
@@ -199,24 +199,24 @@ stroke(d,a,b) = (
             var pa := p[X,Y] - a;
             var h := clamp(dot(pa,ba) / dot(ba,ba), 0, 1);
             mag(pa - ba*h) - r
-        ),
-        bbox = [[...min(a-r,b-r),0], [...max(a+r,b+r),0]],
-        is_2d = true,
+        );
+        bbox = [[...min(a-r,b-r),0], [...max(a+r,b+r),0]];
+        is_2d = true;
     }
-),
+);
 
 // d1: major diameter, from center of tube, through origin, to centre of tube.
 // d2: minor diameter, of the tube.
-torus (d1,d2) = perimeter_extrude (circle d1) (circle d2),
+torus (d1,d2) = perimeter_extrude (circle d1) (circle d2);
 
 // from OpenSCAD
-revolve shape = perimeter_extrude (circle 0) shape,
+revolve shape = perimeter_extrude (circle 0) shape;
 
 // A generalized torus. Sweep a 2D shape around the perimeter of another
 // 2D shape.
 perimeter_extrude perimeter cross_section = (
     make_shape {
-        dist(x,y,z,t) = cross_section.dist( perimeter.dist(x,y,0,t), z, 0, t ),
+        dist(x,y,z,t) = cross_section.dist( perimeter.dist(x,y,0,t), z, 0, t );
         bbox = [
             [ perimeter.bbox[MIN][X] - cross_section.bbox[MAX][X],
               perimeter.bbox[MIN][Y] - cross_section.bbox[MAX][X],
@@ -224,10 +224,10 @@ perimeter_extrude perimeter cross_section = (
             [ perimeter.bbox[MAX][X] + cross_section.bbox[MAX][X],
               perimeter.bbox[MAX][Y] + cross_section.bbox[MAX][X],
               cross_section.bbox[MAX][Y] ],
-        ],
-        is_3d = true,
+        ];
+        is_3d = true;
     }
-),
+);
 
 ///////////////
 // POLYTOPES //
@@ -238,17 +238,17 @@ perimeter_extrude perimeter cross_section = (
 //  if d >= 0, half-space contains the origin.
 half_space(d,n) = (
     make_shape {
-        dist(x,y,z,t) = dot([x,y,z], n) - d,
-        is_3d = true,
+        dist(x,y,z,t) = dot([x,y,z], n) - d;
+        is_3d = true;
     }
-),
+);
 
 // Half-plane with normal n, at distance d from the origin.
 //  n: must be a 2D unit vector.
 //  if d >= 0, half-plane contains the origin.
 half_plane_dn(d,n) = (
     make_shape {
-        dist(x,y,z,t) = dot([x,y], n) - d,
+        dist(x,y,z,t) = dot([x,y], n) - d;
         bbox = [
             [
                 if (n[Y]==0 && n[X]<0) -d else -inf,
@@ -260,10 +260,10 @@ half_plane_dn(d,n) = (
                 if (n[X]==0 && n[Y]>0) d else inf,
                 0,
             ],
-        ],
-        is_2d = true,
+        ];
+        is_2d = true;
     }
-),
+);
 
 // Half-plane whose boundary passes through two points.
 // Right hand rule: palm on p1, fingertips on p2, thumb points to the interior
@@ -271,18 +271,18 @@ half_plane_dn(d,n) = (
 half_plane_p2(p1, p2) = (
     v = p2 - p1;
     make_shape {
-        dist p = (dot(p[X,Y], perp v) + dot(perp p1, p2)) / mag v,
-        is_2d = true,
+        dist p = (dot(p[X,Y], perp v) + dot(perp p1, p2)) / mag v;
+        is_2d = true;
     }
-),
+);
 
 // Half-plane whose boundary intersects point a, with normal n (a unit vector).
 half_plane_pn(a, n) = (
     make_shape {
-        dist p = dot(n, a-p[X,Y]),
-        is_2d = true,
+        dist p = dot(n, a-p[X,Y]);
+        is_2d = true;
     }
-),
+);
 
 square = (
     make_shape {
@@ -290,27 +290,27 @@ square = (
         map : square_e,
         circumratio : sqrt 2,
     }
-),
+);
 square_m d = (
     r = d / 2;
     make_shape {
-        dist(x,y,z,t) = max(abs(x,y) - r),
-        bbox = [[-r,-r,0], [r,r,0]],
-        is_2d = true,
+        dist(x,y,z,t) = max(abs(x,y) - r);
+        bbox = [[-r,-r,0], [r,r,0]];
+        is_2d = true;
     }
-),
-square_e d = rect_e(d,d),
+);
+square_e d = rect_e(d,d);
 
 // rect: an axis aligned rectangle. Argument is a vec2 or a bbox2.
-rect = rect_m,
+rect = rect_m;
 // Mitred distance field.
 rect_m b = (
     if (is_vec2 b) (
         r = b / 2;
         make_shape {
-            dist(x,y,z,t) = max(abs(x,y) - r),
-            bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]],
-            is_2d = true,
+            dist(x,y,z,t) = max(abs(x,y) - r);
+            bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]];
+            is_2d = true;
         }
     ) else (
         xmin = b'MIN'X;
@@ -319,28 +319,28 @@ rect_m b = (
         ymax = b'MAX'Y;
         intersection (
             if (xmin > -inf) make_shape {
-                dist(x,y,z,t) = xmin - x,
-                bbox = [[xmin, -inf, 0], [inf, inf, 0]],
-                is_2d = true,
+                dist(x,y,z,t) = xmin - x;
+                bbox = [[xmin, -inf, 0], [inf, inf, 0]];
+                is_2d = true;
             },
             if (ymin > -inf) make_shape {
-                dist(x,y,z,t) = ymin - y,
-                bbox = [[-inf, ymin, 0], [inf, inf, 0]],
-                is_2d = true,
+                dist(x,y,z,t) = ymin - y;
+                bbox = [[-inf, ymin, 0], [inf, inf, 0]];
+                is_2d = true;
             },
             if (xmax < inf) make_shape {
-                dist(x,y,z,t) = x - xmax,
-                bbox = [[-inf, -inf, 0], [xmax, inf, 0]],
-                is_2d = true,
+                dist(x,y,z,t) = x - xmax;
+                bbox = [[-inf, -inf, 0], [xmax, inf, 0]];
+                is_2d = true;
             },
             if (ymax < inf) make_shape {
-                dist(x,y,z,t) = y - ymax,
-                bbox = [[-inf, -inf, 0], [inf, ymax, 0]],
-                is_2d = true,
+                dist(x,y,z,t) = y - ymax;
+                bbox = [[-inf, -inf, 0], [inf, ymax, 0]];
+                is_2d = true;
             },
         )
     )
-),
+);
 // Axis aligned rectangle with a Euclidean distance field. Arg is vec2.
 rect_e b = (
     assert(is_vec2 b);
@@ -349,13 +349,13 @@ rect_e b = (
         dist(x,y,z,t) = (
             var d := abs(x,y) - r;
             min(max d, 0) + mag(max(d,0))
-        ),
-        bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]],
-        is_2d = true,
+        );
+        bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]];
+        is_2d = true;
     }
-),
+);
 
-rect_at = rect_at_m,
+rect_at = rect_at_m;
 rect_at_m(lo, hi) = (
     xmin = lo'X;
     ymin = lo'Y;
@@ -363,27 +363,27 @@ rect_at_m(lo, hi) = (
     ymax = hi'Y;
     intersection (
         if (xmin > -inf) make_shape {
-            dist(x,y,z,t) = xmin - x,
-            bbox = [[xmin, -inf, 0], [inf, inf, 0]],
-            is_2d = true,
+            dist(x,y,z,t) = xmin - x;
+            bbox = [[xmin, -inf, 0], [inf, inf, 0]];
+            is_2d = true;
         },
         if (ymin > -inf) make_shape {
-            dist(x,y,z,t) = ymin - y,
-            bbox = [[-inf, ymin, 0], [inf, inf, 0]],
-            is_2d = true,
+            dist(x,y,z,t) = ymin - y;
+            bbox = [[-inf, ymin, 0], [inf, inf, 0]];
+            is_2d = true;
         },
         if (xmax < inf) make_shape {
-            dist(x,y,z,t) = x - xmax,
-            bbox = [[-inf, -inf, 0], [xmax, inf, 0]],
-            is_2d = true,
+            dist(x,y,z,t) = x - xmax;
+            bbox = [[-inf, -inf, 0], [xmax, inf, 0]];
+            is_2d = true;
         },
         if (ymax < inf) make_shape {
-            dist(x,y,z,t) = y - ymax,
-            bbox = [[-inf, -inf, 0], [inf, ymax, 0]],
-            is_2d = true,
+            dist(x,y,z,t) = y - ymax;
+            bbox = [[-inf, -inf, 0], [inf, ymax, 0]];
+            is_2d = true;
         },
     )
-),
+);
 
 // regular_polygon: n is # of sides, d is incircle diameter
 regular_polygon n = (
@@ -393,31 +393,31 @@ regular_polygon n = (
         map d : regular_polygon_m n d,
         circumratio : 1 / cos(angle/2),
     }
-),
+);
 regular_polygon_m n d = (
     half_plane_dn(d/2,[1,0]) >> repeat_radial n >> rotate(-tau/4)
-),
+);
 
 // convex polygon: vertices are in counterclockwise order.
-convex_polygon = convex_polygon_m,
+convex_polygon = convex_polygon_m;
 convex_polygon_m pts = (
     intersection(
         for (i in dom pts) half_plane_p2(pts[i], pts[mod(i+1,count pts)]),
         rect(min pts, max pts) // bounding box
     )
-),
+);
 
 // box: an axis aligned cuboid. Argument is a vec3.
-box = box_e,
+box = box_e;
 box_m b = (
     assert(is_vec3 b);
     r = b / 2;
     make_shape {
-        dist(x,y,z,t) = max(abs(x,y,z) - r),
-        bbox = [-r, r],
-        is_3d = true,
+        dist(x,y,z,t) = max(abs(x,y,z) - r);
+        bbox = [-r, r];
+        is_3d = true;
     }
-),
+);
 box_e b = (
     assert(is_vec3 b);
     r = b / 2;
@@ -425,57 +425,57 @@ box_e b = (
         dist(x,y,z,t) = (
             var d := abs(x,y,z) - r;
             min(max d, 0) + mag(max(d,0))
-        ),
-        bbox = [-r, r],
-        is_3d = true,
+        );
+        bbox = [-r, r];
+        is_3d = true;
     }
-),
+);
 
-box_at = box_at_m,
+box_at = box_at_m;
 box_at_m (lo,hi) = (
     /* TODO: Won't compile right now. Also, max(inf,x) broken on some GPUs.
     make_shape {
-      dist(x,y,z,t) = max(max(b[MIN]-[x,y,z]), max([x,y,z]-b[MAX])),
-      bbox = b,
-      is_3d = true,
+      dist(x,y,z,t) = max(max(b[MIN]-[x,y,z]), max([x,y,z]-b[MAX]));
+      bbox = b;
+      is_3d = true;
     }
     */
     intersection (
         if (lo'X > -inf) make_shape {
-            dist(x,y,z,t) = lo'X - x,
-            bbox = [[lo'X, -inf, -inf], [inf, inf, inf]],
-            is_3d = true,
+            dist(x,y,z,t) = lo'X - x;
+            bbox = [[lo'X, -inf, -inf], [inf, inf, inf]];
+            is_3d = true;
         },
         if (lo'Y > -inf) make_shape {
-            dist(x,y,z,t) = lo'Y - y,
-            bbox = [[-inf, lo'Y, -inf], [inf, inf, inf]],
-            is_3d = true,
+            dist(x,y,z,t) = lo'Y - y;
+            bbox = [[-inf, lo'Y, -inf], [inf, inf, inf]];
+            is_3d = true;
         },
         if (lo'Z > -inf) make_shape {
-            dist(x,y,z,t) = lo'Z - z,
-            bbox = [[-inf, -inf, lo'Z], [inf, inf, inf]],
-            is_3d = true,
+            dist(x,y,z,t) = lo'Z - z;
+            bbox = [[-inf, -inf, lo'Z], [inf, inf, inf]];
+            is_3d = true;
         },
         if (hi'X < inf) make_shape {
-            dist(x,y,z,t) = x - hi'X,
-            bbox = [[-inf, -inf, -inf], [hi'X, inf, inf]],
-            is_3d = true,
+            dist(x,y,z,t) = x - hi'X;
+            bbox = [[-inf, -inf, -inf], [hi'X, inf, inf]];
+            is_3d = true;
         },
         if (hi'Y < inf) make_shape {
-            dist(x,y,z,t) = y - hi'Y,
-            bbox = [[-inf, -inf, -inf], [inf, hi'Y, inf]],
-            is_3d = true,
+            dist(x,y,z,t) = y - hi'Y;
+            bbox = [[-inf, -inf, -inf], [inf, hi'Y, inf]];
+            is_3d = true;
         },
         if (hi'Z < inf) make_shape {
-            dist(x,y,z,t) = z - hi'Z,
-            bbox = [[-inf, -inf, -inf], [inf, inf, hi'Z]],
-            is_3d = true,
+            dist(x,y,z,t) = z - hi'Z;
+            bbox = [[-inf, -inf, -inf], [inf, inf, hi'Z]];
+            is_3d = true;
         },
     )
-),
+);
 
-prism = prism_m,
-prism_m(n,d,h) = regular_polygon_m n d >> extrude_m h,
+prism = prism_m;
+prism_m(n,d,h) = regular_polygon_m n d >> extrude_m h;
 
 // TODO: pyramid(n,d,h)
 
@@ -486,7 +486,7 @@ tetrahedron = make_shape {
     map : tetrahedron_m,
     // radius of circumscribed sphere / radius of inscribed sphere
     circumratio : (sqrt(3/2)/2) / (1/(2*sqrt 6)),
-},
+};
 tetrahedron_m d = (
     r = d / 2;
     // vertices of a tetrahedron
@@ -516,22 +516,22 @@ tetrahedron_m d = (
         is_3d : true,
         bbox : sqrt(3) * [[-r,-r,-r], [r,r,r]],
     }
-),
+);
 
 cube = make_shape {
     ... cube_m 2,
     map : cube_m,
     circumratio : sqrt 3,
-},
+};
 cube_m d = (
     r = d / 2;
     make_shape {
-        dist(x,y,z,t) = max(abs(x,y,z) - r),
-        bbox = [[-r, -r, -r], [r,r,r]],
-        is_3d = true,
+        dist(x,y,z,t) = max(abs(x,y,z) - r);
+        bbox = [[-r, -r, -r], [r,r,r]];
+        is_3d = true;
     }
-),
-cube_e d = box_e(d,d,d),
+);
+cube_e d = box_e(d,d,d);
 
 // 'd' is the diameter of a sphere inscribed inside the octahedron.
 // Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
@@ -539,7 +539,7 @@ octahedron = make_shape {
     ... octahedron_m 2,
     map : octahedron_m,
     circumratio : (1/2*sqrt 2) / (1/6*sqrt 6),
-},
+};
 octahedron_m d = (
     r = d / 2;
     v0 = normalize(1,1,1);
@@ -560,7 +560,7 @@ octahedron_m d = (
         is_3d : true,
         bbox : circumratio * [[-r,-r,-r], [r,r,r]],
     }
-),
+);
 
 // 'd' is the diameter of a sphere inscribed inside the dodecahedron.
 // Mitred distance field. Pointy side down.
@@ -568,7 +568,7 @@ dodecahedron = make_shape {
     ... dodecahedron_m 2,
     map : dodecahedron_m,
     circumratio : (.25*(sqrt 3 + sqrt 15)) / (1/20*sqrt(250+110*sqrt(5))),
-},
+};
 dodecahedron_m d = (
     r = d / 2;
     v0 = normalize(0, phi, 1);
@@ -593,7 +593,7 @@ dodecahedron_m d = (
         is_3d : true,
         bbox : midratio * [[-r,-r,-r],[r,r,r]],
     }
-),
+);
 
 // 'd' is the diameter of a sphere inscribed inside the icosahedron.
 // Mitred distance field.
@@ -601,7 +601,7 @@ icosahedron = make_shape {
     ... icosahedron_m 2,
     map : icosahedron_m,
     circumratio : (.25*sqrt(10+2*sqrt 5)) / (1/12*(3*sqrt(3)+sqrt(15))),
-},
+};
 icosahedron_m d = (
     r = d / 2;
     v0 = normalize(1,1,1);
@@ -635,7 +635,7 @@ icosahedron_m d = (
         is_3d : true,
         bbox : midratio * [[-r,-r,-r], [r,r,r]],
     }
-),
+);
 
 /////////////////////////////////////////////
 // BOOLEAN / SET THEORETIC SHAPE OPERATORS //
@@ -648,7 +648,7 @@ nothing = (
         is_2d : true,
         is_3d : true,
     }
-),
+);
 everything = (
     make_shape {
         dist p : -inf,
@@ -656,7 +656,7 @@ everything = (
         is_2d : true,
         is_3d : true,
     }
-),
+);
 complement s = (
     make_shape {
         dist p : -s.dist p,
@@ -664,12 +664,12 @@ complement s = (
         is_2d : s.is_2d,
         is_3d : s.is_3d,
     }
-),
+);
 
 // Approximate union that produces a mitred SDF inside. Fast.
 // When unioning a list of coloured shapes, we paint the shapes from first to
 // last order: the last shape is painted on top of its predecessors.
-union list = reduce(nothing, _union2) list,
+union list = reduce(nothing, _union2) list;
 _union2 (s1,s2) = (
     make_shape {
         dist p : min(s1.dist p, s2.dist p),
@@ -682,9 +682,9 @@ _union2 (s1,s2) = (
         is_2d : s1.is_2d && s2.is_2d,
         is_3d : s1.is_3d && s2.is_3d,
     }
-),
+);
 
-intersection list = reduce(everything, _intersection2) list,
+intersection list = reduce(everything, _intersection2) list;
 _intersection2 (s1,s2) = (
     make_shape {
         dist p : max(s1.dist p, s2.dist p),
@@ -693,14 +693,14 @@ _intersection2 (s1,s2) = (
         is_2d : s1.is_2d && s2.is_2d,
         is_3d : s1.is_3d && s2.is_3d,
     }
-),
+);
 
-difference(s1,s2) = _intersection2(s1, complement s2),
-symmetric_difference shapes = difference(union shapes, intersection shapes),
+difference(s1,s2) = _intersection2(s1, complement s2);
+symmetric_difference shapes = difference(union shapes, intersection shapes);
 
-crop limits shape = intersection(shape, limits),
+crop limits shape = intersection(shape, limits);
 
-size shape = shape.bbox[MAX] - shape.bbox[MIN],
+size shape = shape.bbox[MAX] - shape.bbox[MIN];
 row_x d shapes = (
     var width := sum([for (s in shapes) size(s)[X]]) + (count shapes - 1)*d;
     var x := -width / 2;
@@ -712,7 +712,7 @@ row_x d shapes = (
         i := i + 1;
     );
     union([for (i in [0..<count shapes]) shapes[i] >> move(xdelta[i],0,0)])
-),
+);
 
 smooth_union k (s1,s2) = (
     make_shape {
@@ -726,7 +726,7 @@ smooth_union k (s1,s2) = (
         is_2d : s1.is_2d && s2.is_2d,
         is_3d : s1.is_3d && s2.is_3d,
     }
-),
+);
 
 smooth_intersection k (s1,s2) = (
     make_shape {
@@ -736,9 +736,9 @@ smooth_intersection k (s1,s2) = (
         is_2d : s1.is_2d && s2.is_2d,
         is_3d : s1.is_3d && s2.is_3d,
     }
-),
+);
 
-smooth_difference k (s1,s2) = smooth_intersection k (s1, complement s2),
+smooth_difference k (s1,s2) = smooth_intersection k (s1, complement s2);
 
 // polynomial smooth min, from IQ
 // http://www.iquilezles.org/www/articles/smin/smin.htm
@@ -751,14 +751,14 @@ smooth_min(a,b,k) = (
         var h := clamp( 0.5+0.5*(b-a)/k, 0, 1 );
         mix( b, a, h ) - k*h*(1.0-h)
     )
-),
-smooth_max(a,b,k) = -smooth_min(-a,-b,k),
+);
+smooth_max(a,b,k) = -smooth_min(-a,-b,k);
 
 ////////////////////////////
 // AFFINE TRANSFORMATIONS //
 ////////////////////////////
 
-move = translate,
+move = translate;
 translate _delta shape = (
     delta = if (count _delta == 2) [_delta[X],_delta[Y],0] else _delta;
     if (shape.is_2d) assert(delta[Z] == 0);
@@ -771,7 +771,7 @@ translate _delta shape = (
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     }
-),
+);
 
 // If s is a number, this is an isotropic scale operation which preserves the
 // properties of the distance field.
@@ -791,7 +791,7 @@ scale _s shape = (
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     }
-),
+);
 
 warp_domain_xy warp shape = (
     bv = map (warp.function) (
@@ -804,19 +804,19 @@ warp_domain_xy warp shape = (
         dist(x,y,z,t) = (
             var p := warp.inverse(x,y);
             warp.fix_distance(x,y,shape.dist(p[X], p[Y], z, t))
-        ),
+        );
         colour(x,y,z,t) = (
             var p := warp.inverse(x,y);
             warp.fix_distance(x,y,shape.colour(p[X], p[Y], z, t))
-        ),
+        );
         bbox = [
             [ ...min bv, shape.bbox[MIN][Z] ],
             [ ...max bv, shape.bbox[MAX][Z] ],
-        ],
-        is_2d = shape.is_2d,
-        is_3d = shape.is_3d,
+        ];
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
     }
-),
+);
 
 // rotate angle shape -- 2D rotation around the Z axis
 // rotate (angle,axis) shape -- 3D rotation around specified axis
@@ -887,52 +887,52 @@ rotate a shape = (
             is_3d : true,
         }
     )
-),
+);
 
 reflect_x shape = (
     make_shape {
-        dist(x,y,z,t) = shape.dist(-x,y,z,t),
-        colour(x,y,z,t) = shape.colour(-x,y,z,t),
+        dist(x,y,z,t) = shape.dist(-x,y,z,t);
+        colour(x,y,z,t) = shape.colour(-x,y,z,t);
         bbox = [
             [-shape.bbox[MAX][X], shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
             [-shape.bbox[MIN][X], shape.bbox[MAX][Y], shape.bbox[MAX][Z]],
-        ],
-        is_2d = shape.is_2d,
-        is_3d = shape.is_3d,
+        ];
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
     }
-),
+);
 reflect_y shape = (
     make_shape {
-        dist(x,y,z,t) = shape.dist(x,-y,z,t),
-        colour(x,y,z,t) = shape.colour(x,-y,z,t),
+        dist(x,y,z,t) = shape.dist(x,-y,z,t);
+        colour(x,y,z,t) = shape.colour(x,-y,z,t);
         bbox = [
             [-shape.bbox[MIN][X], shape.bbox[MAX][Y], shape.bbox[MIN][Z]],
             [-shape.bbox[MAX][X], shape.bbox[MIN][Y], shape.bbox[MAX][Z]],
-        ],
-        is_2d = shape.is_2d,
-        is_3d = shape.is_3d,
+        ];
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
     }
-),
+);
 reflect_z shape = (
     make_shape {
-        dist(x,y,z,t) = shape.dist(x,y,-z,t),
-        colour(x,y,z,t) = shape.colour(x,y,-z,t),
+        dist(x,y,z,t) = shape.dist(x,y,-z,t);
+        colour(x,y,z,t) = shape.colour(x,y,-z,t);
         bbox = [
             [-shape.bbox[MIN][X], shape.bbox[MIN][Y], shape.bbox[MAX][Z]],
             [-shape.bbox[MAX][X], shape.bbox[MAX][Y], shape.bbox[MIN][Z]],
-        ],
-        is_2d = shape.is_2d,
-        is_3d = shape.is_3d,
+        ];
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
     }
-),
+);
 
 shear_x kx shape = (
     warp_domain_xy {
-        function(x,y) = (x + kx*y, y),
-        inverse(x,y) = (x - kx*y, y),
-        fix_distance(x,y,d) = d, // TODO
+        function(x,y) = (x + kx*y, y);
+        inverse(x,y) = (x - kx*y, y);
+        fix_distance(x,y,d) = d; // TODO
     } shape
-),
+);
 
 // TODO: In `taper`, the Lipschitz compensation code seems like overkill.
 taper_x (kx0, y0, kx1, y1) shape = (
@@ -948,7 +948,7 @@ taper_x (kx0, y0, kx1, y1) shape = (
                 var kx := mix(kx0,kx1,(y-y0)/(y1-y0));
                 shape.dist(x/kx,y,z,t) * kx
             )) * min(kx0,kx1)
-        ),
+        );
         colour(x,y,z,t) = (
             if (y <= y0)
                 shape.colour(x/kx0,y,z,t)
@@ -958,12 +958,12 @@ taper_x (kx0, y0, kx1, y1) shape = (
                 var kx := mix(kx0,kx1,(y-y0)/(y1-y0));
                 shape.colour(x/kx,y,z,t)
             )
-        ),
-        bbox = shape.bbox * [[max(kx0,kx1),1,1],[max(kx0,kx1),1,1]],
-        is_2d = shape.is_2d,
-        is_3d = shape.is_3d,
+        );
+        bbox = shape.bbox * [[max(kx0,kx1),1,1],[max(kx0,kx1),1,1]];
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
     }
-),
+);
 taper_xy (kx0, ky0, z0, kx1, ky1, z1) shape = (
     assert(kx0 > 0 && ky0 > 0 && kx1 > 0 && ky1 > 0);
     assert(z0 < z1);
@@ -978,7 +978,7 @@ taper_xy (kx0, ky0, z0, kx1, ky1, z1) shape = (
                 var ky := mix(ky0,ky1,(z-z0)/(z1-z0));
                 shape.dist(x/kx,y/ky,z,t) * min(kx,ky)
             )) * min(kx0,kx1,ky0,ky1)
-        ),
+        );
         colour(x,y,z,t) = (
             if (z <= z0)
                 shape.colour(x/kx0,y/ky0,z,t)
@@ -989,18 +989,18 @@ taper_xy (kx0, ky0, z0, kx1, ky1, z1) shape = (
                 var ky := mix(ky0,ky1,(z-z0)/(z1-z0));
                 shape.colour(x/kx,y/ky,z,t)
             )
-        ),
+        );
         bbox = (
             kx = max(kx0,kx1);
             ky = max(ky0,ky1);
             shape.bbox * [[kx,ky,1],[kx,ky,1]]
-        ),
-        is_2d = shape.is_2d,
-        is_3d = shape.is_3d,
+        );
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
     }
-),
+);
 
-at p t shape = shape >> move(-p) >> t >> move p,
+at p t shape = shape >> move(-p) >> t >> move p;
 
 // The slice operators convert a 3D shape to a 2D shape
 // by extracting a planar cross section.
@@ -1014,7 +1014,7 @@ slice_xy shape = (
         ],
         is_2d : true,
     }
-),
+);
 slice_xz shape = (
     make_shape {
         dist p : shape.dist(p[X],0,p[Y],p[T]),
@@ -1025,7 +1025,7 @@ slice_xz shape = (
         ],
         is_2d : true,
     }
-),
+);
 slice_yz shape = (
     make_shape {
         dist p : shape.dist(0,p[X],p[Y],p[T]),
@@ -1036,7 +1036,7 @@ slice_yz shape = (
         ],
         is_2d : true,
     }
-),
+);
 
 // 'extrude' converts a 2D shape to a 3D shape, linearly extruding it along the
 // positive and negative Z axis by a distance of 'h'. The result is centered
@@ -1045,7 +1045,7 @@ slice_yz shape = (
 //
 // The _m variant is cheaper, and has a mitred distance field.
 // The _e variant is the same shape with a Euclidean distance field.
-extrude = extrude_e,
+extrude = extrude_e;
 extrude_m d shape = (
     h = d / 2;
     make_shape {
@@ -1057,7 +1057,7 @@ extrude_m d shape = (
         ],
         is_3d : true,
     }
-),
+);
 extrude_e d shape = (
     h = d / 2;
     make_shape {
@@ -1073,7 +1073,7 @@ extrude_e d shape = (
         ],
         is_3d : true,
     }
-),
+);
 
 morph(t, shape1, shape2) = (
     make_shape {
@@ -1083,7 +1083,7 @@ morph(t, shape1, shape2) = (
         is_2d : shape1.is_2d && shape2.is_2d,
         is_3d : shape1.is_3d && shape2.is_3d,
     }
-),
+);
 
 loft d (shape1, shape2) = (
     r = d / 2;
@@ -1092,10 +1092,10 @@ loft d (shape1, shape2) = (
             max(abs z - r,
                 mix(shape1.dist(x,y,0,t), shape2.dist(x,y,0,t),
                     (clamp(z, -r, r) + r) / d))
-        ),
-        is_3d = true,
+        );
+        is_3d = true;
     }
-),
+);
 
 ////////////////
 // REPETITION //
@@ -1113,7 +1113,7 @@ repeat_x d shape = (
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     }
-),
+);
 
 repeat_xy d shape = (
     r = d / 2;
@@ -1123,21 +1123,21 @@ repeat_xy d shape = (
                 mod(x + r[X], 2*r[X]) - r[X],
                 mod(y + r[Y], 2*r[Y]) - r[Y],
                 z, t)
-        ),
+        );
         colour(x,y,z,t) = (
             shape.colour(
                 mod(x + r[X], 2*r[X]) - r[X],
                 mod(y + r[Y], 2*r[Y]) - r[Y],
                 z, t)
-        ),
+        );
         bbox = [
             [-inf, -inf, shape.bbox[MIN][Z]],
             [+inf, +inf, shape.bbox[MAX][Z]],
-        ],
-        is_2d = shape.is_2d,
-        is_3d = shape.is_3d,
+        ];
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
     }
-),
+);
 
 repeat_xyz d shape = (
     r = d / 2;
@@ -1148,22 +1148,22 @@ repeat_xyz d shape = (
                 mod(y + r[Y], 2*r[Y]) - r[Y],
                 mod(z + r[Z], 2*r[Z]) - r[Z],
                 t)
-        ),
+        );
         colour (x,y,z,t) = (
             shape.colour(
                 mod(x + r[X], 2*r[X]) - r[X],
                 mod(y + r[Y], 2*r[Y]) - r[Y],
                 mod(z + r[Z], 2*r[Z]) - r[Z],
                 t)
-        ),
+        );
         bbox = [
             [-inf, -inf, -inf],
             [+inf, +inf, +inf],
-        ],
-        is_2d = shape.is_2d,
-        is_3d = shape.is_3d,
+        ];
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
     }
-),
+);
 
 repeat_mirror_x shape = (
     make_shape {
@@ -1176,7 +1176,7 @@ repeat_mirror_x shape = (
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     }
-),
+);
 
 repeat_radial reps shape = (
     angle = tau/reps;
@@ -1220,7 +1220,7 @@ repeat_radial reps shape = (
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     }
-),
+);
 
 ////////////
 // COLOUR //
@@ -1253,27 +1253,27 @@ colour c shape = (
         }
     else
         error "first argument of 'colour' must be [r,g,b], function or shape"
-),
+);
 
 // Each component of an [h,s,v] triple has range 0...1.
 hsv2rgb(c) = (
     var m := abs(mod(c'0 + [1,2/3,1/3], 1) * 6 - 3);
     c'2 * mix(1, clamp(m - 1, 0, 1), c'1)
-),
+);
 
-red = [1, 0, 0],
-orange = [1, .5, 0],
-yellow = [1, 1, 0],
-green = [0, 1, 0],
-cyan = [0, 1, 1],
-blue = [0, 0, 1],
-magenta = [1, 0, 1],
-white = [1, 1, 1],
-black = [0, 0, 0],
+red = [1, 0, 0];
+orange = [1, .5, 0];
+yellow = [1, 1, 0];
+green = [0, 1, 0];
+cyan = [0, 1, 1];
+blue = [0, 0, 1];
+magenta = [1, 0, 1];
+white = [1, 1, 1];
+black = [0, 0, 0];
 
-radial_rainbow n = colour (p->hsv2rgb(mod(phase(p[X,Y])/tau*n,1),1,1)) everything,
-concentric_rainbow n = colour (p->hsv2rgb(mod(mag(p[X,Y])/n,1),1,1)) everything,
-linear_rainbow n = colour (p->hsv2rgb(mod(p[X]/n,1),1,1)) everything,
+radial_rainbow n = colour (p->hsv2rgb(mod(phase(p[X,Y])/tau*n,1),1,1)) everything;
+concentric_rainbow n = colour (p->hsv2rgb(mod(mag(p[X,Y])/n,1),1,1)) everything;
+linear_rainbow n = colour (p->hsv2rgb(mod(p[X]/n,1),1,1)) everything;
 
 ///////////////////////////////////////////////////////////////
 // RESEARCH -- shapes and operators with bad distance fields //
@@ -1285,10 +1285,10 @@ linear_rainbow n = colour (p->hsv2rgb(mod(p[X]/n,1),1,1)) everything,
 // Lipschitz constant == 4/3. Apply 'lipschitz 1.33' after extracting isosurfaces
 gyroid = (
     make_shape {
-        dist(x,y,z,t) = cos(x)*sin(y) + cos(y)*sin(z) + cos(z)*sin(x),
-        is_3d = true,
+        dist(x,y,z,t) = cos(x)*sin(y) + cos(y)*sin(z) + cos(z)*sin(x);
+        is_3d = true;
     }
-),
+);
 
 // Twist 3D space into a helix around the Z axis:
 // 1 full rotation for each `d` of Z displacement.
@@ -1316,7 +1316,7 @@ twist d shape = (
         bbox : [[-r,-r,b[MIN][Z]],[r,r,b[MAX][Z]]],
         is_3d : true,
     }
-),
+);
 
 // Take the upper half of the XY plane between X==-d/2 and X==d/2,
 // and wrap that radially around the origin to cover the XY plane,
@@ -1335,7 +1335,7 @@ bend d shape = (
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     }
-),
+);
 
 ///////////////////////////
 // LOW LEVEL & DEBUGGING //
@@ -1350,7 +1350,7 @@ distance_field shape = (
         ),
         is_2d : true,
     }
-),
+);
 
 // Select an isosurface of the shape's distance field.
 // r > 0: inflate the shape, blow it up like a balloon.
@@ -1374,7 +1374,7 @@ offset r shape = (
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     }
-),
+);
 
 // Construct a shell of thickness d,
 // whose boundaries are +/- d/2 from the original surface or perimeter.
@@ -1389,9 +1389,9 @@ shell d shape = (
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     }
-),
+);
 
-pancake d shape = shape >> extrude_e 0 >> offset (d/2),
+pancake d shape = shape >> extrude_e 0 >> offset (d/2);
 
 // Super kludgy function to scale a shape's distance field,
 // to compensate for a Lipschitz constant that is > 1.
@@ -1405,7 +1405,7 @@ lipschitz k shape = (
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     }
-),
+);
 
 // Colour the XY plane with black where the distance field gradient <= 1 (okay)
 // or with rainbow colour where it is > 1 and <= n (bad)
@@ -1432,7 +1432,7 @@ gradient n shape = (
         ),
         is_2d : true,
     }
-),
+);
 
 show_dist shape = (
     xy = make_shape {
@@ -1461,7 +1461,7 @@ show_dist shape = (
         is_3d : true,
     };
     if (shape.is_2d) xy else union(shape, xy)
-),
+);
 
 show_axes shape = (
     eps = .05;
@@ -1478,6 +1478,6 @@ show_axes shape = (
             box(eps, inf, eps) >> colour green,
             box(eps, eps, inf) >> colour blue,
         )
-),
+);
 
 }
