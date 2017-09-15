@@ -1255,7 +1255,8 @@ Existing polyhedron constructors like ``cube``, ``icosahedron``, etc, are modifi
 can be used as input values.
 
 * In OpenSCAD, by Kit Wallace: https://github.com/KitWallace/openscad/blob/master/conway.scad
-* In JavaScript, by George Hart: http://www.georgehart.com/virtual-polyhedra/conway_notation.html
+* In JavaScript/VRML, by George Hart: http://www.georgehart.com/virtual-polyhedra/conway_notation.html
+* HTML5: http://levskaya.github.io/polyhedronisme/
 
 .. _`Conway polyhedron operators`: https://en.wikipedia.org/wiki/Conway_polyhedron_notation
 
