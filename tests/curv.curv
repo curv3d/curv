@@ -174,5 +174,7 @@ assert(
 
 assert( "foo"[0] == "f" && "foobar"[3,2,4] == "boa" );
 
+assert( [if (true) (;)] == [] );
+
 // script return value:
 {}

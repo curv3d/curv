@@ -26,9 +26,10 @@ using namespace aux;
 
 namespace curv {
 
-Shared<Phrase> parse_commas(Scanner& scanner);
-Shared<Phrase> parse_semicolons(Scanner& scanner);
-Shared<Phrase> parse_item(Scanner& scanner);
+Shared<Phrase> parse_list(Scanner&);
+Shared<Phrase> parse_semicolons(Scanner&, Shared<Phrase> firstitem);
+Shared<Phrase> parse_commas(Scanner&, Shared<Phrase> firstitem);
+Shared<Phrase> parse_item(Scanner&);
 Shared<Phrase> parse_disjunction(Scanner&);
 Shared<Phrase> parse_conjunction(Scanner&);
 Shared<Phrase> parse_relation(Scanner&);
@@ -37,20 +38,20 @@ Shared<Phrase> parse_sum(Scanner&);
 Shared<Phrase> parse_product(Scanner&);
 Shared<Phrase> parse_unary(Scanner&);
 Shared<Phrase> parse_postfix(Scanner&);
-Shared<Phrase> parse_primary(Scanner&,const char* what);
+Shared<Phrase> parse_primary(Scanner&, const char* what);
 
 // Parse a script, return a syntax tree.
 // It's a recursive descent parser.
 //
-// program : commas EOF
+// program : list EOF
 Shared<Program_Phrase>
 parse_program(Scanner& scanner)
 {
-    auto commas = parse_commas(scanner);
+    auto list = parse_list(scanner);
     Token tok = scanner.get_token();
     if (tok.kind_ != Token::k_end)
         throw Exception(At_Token(tok, scanner), "syntax error in program");
-    return make<Program_Phrase>(commas, tok);
+    return make<Program_Phrase>(list, tok);
 }
 
 bool
@@ -67,14 +68,9 @@ is_list_end_token(Token::Kind k)
     }
 }
 
-// commas : empty | list | list `,`
-// list : semicolons | list `,` semicolons
-//
-// How do I detect an empty commas phrase?
-// * Peek at the first token, and if it is an end token from one of the
-//   contexts where parse_commas is called, then report empty.
+// list : empty | item | commas | semicolons
 Shared<Phrase>
-parse_commas(Scanner& scanner)
+parse_list(Scanner& scanner)
 {
     auto tok = scanner.get_token();
     scanner.push_token(tok);
@@ -83,72 +79,124 @@ parse_commas(Scanner& scanner)
         begin.last_ = begin.first_;
         return make<Empty_Phrase>(Location{scanner.script_, begin});
     }
-    auto commas = make<Comma_Phrase>();
-    for (;;) {
-        auto semis = parse_semicolons(scanner);
-        tok = scanner.get_token();
-        if (tok.kind_ == Token::k_comma) {
-            commas->args_.push_back({semis, tok});
-            tok = scanner.get_token();
-            scanner.push_token(tok);
-            if (is_list_end_token(tok.kind_))
-                return commas;
-        } else if (is_list_end_token(tok.kind_)) {
-            scanner.push_token(tok);
-            if (commas->args_.empty())
-                return semis;
-            else {
-                commas->args_.push_back({semis, {}});
-                return commas;
-            }
-        } else
-            throw Exception(At_Token(tok, scanner), "syntax error in comma phrase");
-    }
+    if (tok.kind_ == Token::k_semicolon)
+        return parse_semicolons(scanner, nullptr);
+
+    auto item = parse_item(scanner);
+    tok = scanner.get_token();
+    scanner.push_token(tok);
+    if (is_list_end_token(tok.kind_))
+        return item;
+    if (tok.kind_ == Token::k_comma)
+        return parse_commas(scanner, item);
+    if (tok.kind_ == Token::k_semicolon)
+        return parse_semicolons(scanner, item);
+    throw Exception(At_Token(tok, scanner), "syntax error in list");
 }
 
-bool
-is_semicolon_end_token(Token::Kind k)
-{
-    switch (k) {
-    case Token::k_end:
-    case Token::k_comma:
-    case Token::k_rparen:
-    case Token::k_rbracket:
-    case Token::k_rbrace:
-        return true;
-    default:
-        return false;
-    }
-}
-
-// A semicolon phrase is one or more items, separated by ';', with an
-// optional trailing ';' that is ignored.
+// commas : item `,` | item `,` item | item `,` commas
 //
-// semicolons : semis | semis ';'
-// semis : item | semis ';' item
+// When called, first item has been parsed, next token in scanner is comma.
 Shared<Phrase>
-parse_semicolons(Scanner& scanner)
+parse_commas(Scanner& scanner, Shared<Phrase> firstitem)
 {
-    auto semis = make<Semicolon_Phrase>();
+    auto tok = scanner.get_token();
+    assert(tok.kind_ == Token::k_comma);
+    auto commas = make<Comma_Phrase>();
+    commas->args_.push_back({firstitem, tok});
+
     for (;;) {
+        // We previously saw: item `,`
+        tok = scanner.get_token();
+        if (is_list_end_token(tok.kind_)) {
+            scanner.push_token(tok);
+            return commas;
+        }
+        if (tok.kind_ == Token::k_comma) {
+            throw Exception(At_Token(tok, scanner),
+                "syntax error: two consecutive commas");
+        }
+        if (tok.kind_ == Token::k_semicolon) {
+            throw Exception(At_Token(tok, scanner),
+                "syntax error: can't mix commas and semicolons in same list");
+        }
+        scanner.push_token(tok);
         auto item = parse_item(scanner);
-        auto tok = scanner.get_token();
+        tok = scanner.get_token();
+        if (is_list_end_token(tok.kind_)) {
+            commas->args_.push_back({item, {}});
+            scanner.push_token(tok);
+            return commas;
+        }
+        if (tok.kind_ == Token::k_comma) {
+            commas->args_.push_back({item, tok});
+            continue;
+        }
+        if (tok.kind_ == Token::k_semicolon) {
+            throw Exception(At_Token(tok, scanner),
+                "syntax error: can't mix commas and semicolons in same list");
+        }
+        throw Exception(At_Token(tok, scanner),
+            "syntax error in comma-separated list");
+    }
+}
+
+// semicolons : optitem | semicolons `;` optitem
+// optitem : empty | item
+//
+// When called, first item has been parsed, next token in scanner is semicolon.
+// If first item is empty, then firstitem==nullptr.
+Shared<Phrase>
+parse_semicolons(Scanner& scanner, Shared<Phrase> firstitem)
+{
+    auto tok = scanner.get_token();
+    assert(tok.kind_ == Token::k_semicolon);
+    if (firstitem == nullptr) {
+        Token empty = tok;
+        empty.last_ = empty.first_;
+        firstitem = make<Empty_Phrase>(Location{scanner.script_, empty});
+    }
+    auto semis = make<Semicolon_Phrase>();
+    semis->args_.push_back({firstitem, tok});
+    for (;;) {
+        tok = scanner.get_token();
+        if (is_list_end_token(tok.kind_)) {
+            scanner.push_token(tok);
+            Token etok = tok;
+            etok.last_ = etok.first_;
+            auto empty = make<Empty_Phrase>(Location{scanner.script_, etok});
+            semis->args_.push_back({empty, etok});
+            return semis;
+        }
+        if (tok.kind_ == Token::k_semicolon) {
+            Token etok = tok;
+            etok.last_ = etok.first_;
+            auto empty = make<Empty_Phrase>(Location{scanner.script_, etok});
+            semis->args_.push_back({empty, tok});
+            continue;
+        }
+        if (tok.kind_ == Token::k_comma) {
+            throw Exception(At_Token(tok, scanner),
+                "syntax error: can't mix commas and semicolons in same list");
+        }
+        scanner.push_token(tok);
+        auto item = parse_item(scanner);
+        tok = scanner.get_token();
+        if (is_list_end_token(tok.kind_)) {
+            scanner.push_token(tok);
+            semis->args_.push_back({item, {}});
+            return semis;
+        }
         if (tok.kind_ == Token::k_semicolon) {
             semis->args_.push_back({item, tok});
-            tok = scanner.get_token();
-            scanner.push_token(tok);
-            if (is_semicolon_end_token(tok.kind_))
-                return semis;
-        } else if (is_semicolon_end_token(tok.kind_)) {
-            scanner.push_token(tok);
-            if (semis->args_.empty())
-                return item;
-            else {
-                semis->args_.push_back({item, {}});
-                return semis;
-            }
-        } else
-            throw Exception(At_Token(tok, scanner), "syntax error in semicolon phrase");
+            continue;
+        }
+        if (tok.kind_ == Token::k_comma) {
+            throw Exception(At_Token(tok, scanner),
+                "syntax error: can't mix commas and semicolons in same list");
+        }
+        throw Exception(At_Token(tok, scanner),
+            "syntax error in semicolon-separated list");
     }
 }
 
@@ -443,7 +491,7 @@ template<class Ph>
 Shared<Phrase>
 parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
 {
-    auto body = parse_commas(scanner);
+    auto body = parse_list(scanner);
     auto tok2 = scanner.get_token();
     if (tok2.kind_ == Token::k_end)
         throw Exception(At_Token(tok, scanner), "unmatched delimiter");
@@ -453,9 +501,9 @@ parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
 }
 
 // primary : numeral | identifier | string | parens | brackets | braces
-// parens : ( commas )
-// brackets : [ commas ]
-// braces : { commas }
+// parens : ( list )
+// brackets : [ list ]
+// braces : { list }
 //
 // If `what` is nullptr, then we are parsing an optional primary,
 // and we return nullptr if no primary is found.

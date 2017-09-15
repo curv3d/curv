@@ -348,7 +348,7 @@ TEST(curv, eval)
         "line 1(columns 1-22)\n"
         "  file(\"bad_token.curv\")\n"
         "  ^---------------------");
-    FAILALL("file(\n1,2);",
+    FAILALL("file(\n1,2)",
         "value is not a string\n"
         "lines 1(column 5)-2(column 4)\n"
         "  file(\n"
@@ -403,8 +403,6 @@ TEST(curv, eval)
     // semicolon operator
     SUCCESS("(a=1;echo a;a)+1", "2");
     EXPECT_EQ(console.str(), "ECHO: 1\n");
-    SUCCESS("[echo 0;1,2]", "[1,2]");
-    EXPECT_EQ(console.str(), "ECHO: 0\n");
 
     // echo action
     SUCCESS("echo(17,42)", "");
