@@ -16,8 +16,8 @@
 
 log_spiral(s,g) = make_shape {
     dist p : (
-        var r := mag(p[X,Y,Z]);
-        var t := phase(p[X,Y,Z]);
+        var r := mag(p'[X,Y,Z]);
+        var t := phase(p'[X,Y,Z]);
         if (r == 0)
             0
         else (
