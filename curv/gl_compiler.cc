@@ -581,7 +581,7 @@ char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
         stringify("Geometry Compiler: got ",k,", expected 0..",vecsize-1));
 }
 
-GL_Value At_Expr::gl_eval(GL_Frame& f) const
+GL_Value Index_Expr::gl_eval(GL_Frame& f) const
 {
     auto arg1 = arg1_->gl_eval(f);
     if (gl_type_count(arg1.type) < 2)

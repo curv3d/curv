@@ -452,7 +452,7 @@ struct Power_Expr : public Infix_Expr_Base
     virtual Value eval(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
-struct At_Expr : public Infix_Expr_Base
+struct Index_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;

@@ -580,7 +580,7 @@ Binary_Phrase::analyze(Environ& env) const
     case Token::k_in:
         throw Exception(At_Token(op_, *this, env), "syntax error");
     case Token::k_apostrophe:
-        return make<At_Expr>(
+        return make<Index_Expr>(
             share(*this),
             analyze_op(*left_, env),
             analyze_op(*right_, env));
@@ -707,16 +707,10 @@ Call_Phrase::analyze(Environ& env) const
 {
     if (op_.kind_ == Token::k_missing) {
         if (auto brackets = cast<const Bracket_Phrase>(arg_)) {
-            auto index = (
-                isa<Empty_Phrase>(brackets->body_)
-                || isa<Comma_Phrase>(brackets->body_)
-                ? arg_
-                : brackets->body_
-            );
-            return make<At_Expr>(
+            return make<Index_Expr>(
                 share(*this),
                 analyze_op(*function_, env),
-                analyze_op(*index, env));
+                analyze_op(*brackets->body_, env));
         }
     }
     return function_->analyze(env)->call(*this, env);

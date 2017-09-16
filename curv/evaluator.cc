@@ -492,7 +492,7 @@ string_at(const String& string, Value index, const Context& cx)
     return {String::make(string.data()+i, 1)};
 }
 Value
-At_Expr::eval(Frame& f) const
+Index_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);

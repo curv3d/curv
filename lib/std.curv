@@ -183,7 +183,7 @@ capsule(d,a,b) = (
     r = d / 2;
     make_shape {
         dist p = (
-            var pa := p[X,Y,Z] - a;
+            var pa := p'[X,Y,Z] - a;
             var h := clamp(dot(pa,ba) / dot(ba,ba), 0, 1);
             mag(pa - ba*h) - r
         );
@@ -196,7 +196,7 @@ stroke(d,a,b) = (
     ba = b - a;
     make_shape {
         dist p = (
-            var pa := p[X,Y] - a;
+            var pa := p'[X,Y] - a;
             var h := clamp(dot(pa,ba) / dot(ba,ba), 0, 1);
             mag(pa - ba*h) - r
         );
@@ -271,7 +271,7 @@ half_plane_dn(d,n) = (
 half_plane_p2(p1, p2) = (
     v = p2 - p1;
     make_shape {
-        dist p = (dot(p[X,Y], perp v) + dot(perp p1, p2)) / mag v;
+        dist p = (dot(p'[X,Y], perp v) + dot(perp p1, p2)) / mag v;
         is_2d = true;
     }
 );
@@ -279,7 +279,7 @@ half_plane_p2(p1, p2) = (
 // Half-plane whose boundary intersects point a, with normal n (a unit vector).
 half_plane_pn(a, n) = (
     make_shape {
-        dist p = dot(n, a-p[X,Y]);
+        dist p = dot(n, a-p'[X,Y]);
         is_2d = true;
     }
 );
@@ -507,10 +507,10 @@ tetrahedron_m d = (
     make_shape {
         dist p : (
             max (
-                dot(p[X,Y,Z], n1),
-                dot(p[X,Y,Z], n2),
-                dot(p[X,Y,Z], n3),
-                dot(p[X,Y,Z], n4),
+                dot(p'[X,Y,Z], n1),
+                dot(p'[X,Y,Z], n2),
+                dot(p'[X,Y,Z], n3),
+                dot(p'[X,Y,Z], n4),
             ) - r
         ),
         is_3d : true,
@@ -551,10 +551,10 @@ octahedron_m d = (
     make_shape {
         dist p : (
             max (
-                abs(dot(p[X,Y,Z], v0)),
-                abs(dot(p[X,Y,Z], v1)),
-                abs(dot(p[X,Y,Z], v2)),
-                abs(dot(p[X,Y,Z], v3)),
+                abs(dot(p'[X,Y,Z], v0)),
+                abs(dot(p'[X,Y,Z], v1)),
+                abs(dot(p'[X,Y,Z], v2)),
+                abs(dot(p'[X,Y,Z], v3)),
             ) - r
         ),
         is_3d : true,
@@ -582,12 +582,12 @@ dodecahedron_m d = (
     make_shape {
         dist p : (
             max (
-                abs(dot(p[X,Y,Z], v0)),
-                abs(dot(p[X,Y,Z], v1)),
-                abs(dot(p[X,Y,Z], v2)),
-                abs(dot(p[X,Y,Z], v3)),
-                abs(dot(p[X,Y,Z], v4)),
-                abs(dot(p[X,Y,Z], v5)),
+                abs(dot(p'[X,Y,Z], v0)),
+                abs(dot(p'[X,Y,Z], v1)),
+                abs(dot(p'[X,Y,Z], v2)),
+                abs(dot(p'[X,Y,Z], v3)),
+                abs(dot(p'[X,Y,Z], v4)),
+                abs(dot(p'[X,Y,Z], v5)),
             ) - r
         ),
         is_3d : true,
@@ -620,16 +620,16 @@ icosahedron_m d = (
     make_shape {
         dist p : (
             max (
-                abs(dot(p[X,Y,Z], v0)),
-                abs(dot(p[X,Y,Z], v1)),
-                abs(dot(p[X,Y,Z], v2)),
-                abs(dot(p[X,Y,Z], v3)),
-                abs(dot(p[X,Y,Z], v4)),
-                abs(dot(p[X,Y,Z], v5)),
-                abs(dot(p[X,Y,Z], v6)),
-                abs(dot(p[X,Y,Z], v7)),
-                abs(dot(p[X,Y,Z], v8)),
-                abs(dot(p[X,Y,Z], v9)),
+                abs(dot(p'[X,Y,Z], v0)),
+                abs(dot(p'[X,Y,Z], v1)),
+                abs(dot(p'[X,Y,Z], v2)),
+                abs(dot(p'[X,Y,Z], v3)),
+                abs(dot(p'[X,Y,Z], v4)),
+                abs(dot(p'[X,Y,Z], v5)),
+                abs(dot(p'[X,Y,Z], v6)),
+                abs(dot(p'[X,Y,Z], v7)),
+                abs(dot(p'[X,Y,Z], v8)),
+                abs(dot(p'[X,Y,Z], v9)),
             ) - r
         ),
         is_3d : true,
@@ -764,7 +764,7 @@ translate _delta shape = (
     if (shape.is_2d) assert(delta[Z] == 0);
     make_shape {
         // TODO: dist(x,y,z,t) : shape.dist(...[x,y,z]-delta, t),
-        // TODO: dist p : shape.dist(...p[X,Y,Z]-delta, p[T]),
+        // TODO: dist p : shape.dist(...p'[X,Y,Z]-delta, p[T]),
         dist p : shape.dist(p[X]-delta[X], p[Y]-delta[Y], p[Z]-delta[Z], p[T]),
         colour p : shape.colour(p[X]-delta[X],p[Y]-delta[Y],p[Z]-delta[Z],p[T]),
         bbox : [shape.bbox'MIN+delta, shape.bbox'MAX+delta],
@@ -784,7 +784,7 @@ scale _s shape = (
         else if (is_vec2 _s) [..._s, 1]
         else (assert(is_vec3(_s) && shape.is_3d); _s);
     make_shape {
-        // TODO: dist p : shape.dist(...p[X,Y,Z] / s, p[T]) * min(s),
+        // TODO: dist p : shape.dist(...p'[X,Y,Z] / s, p[T]) * min(s),
         dist p : shape.dist(p'X/s'X, p'Y/s'Y, p'Z/s'Z, p'T) * min(s),
         colour p : shape.colour(p'X/s'X, p'Y/s'Y, p'Z/s'Z, p'T) * min(s),
         bbox : [s*shape.bbox[MIN], s*shape.bbox[MAX]],
@@ -874,13 +874,13 @@ rotate a shape = (
             [ min bv, max bv ]
         );
         make_shape {
-            //TODO: dist p : shape.dist(...rot3(angle,axis,p[X,Y,Z]),p[T]),
+            //TODO: dist p : shape.dist(...rot3(angle,axis,p'[X,Y,Z]),p[T]),
             dist p : (
-                var q := rot3(angle, axis, p[X,Y,Z]);
+                var q := rot3(angle, axis, p'[X,Y,Z]);
                 shape.dist(q[X],q[Y],q[Z],p[T])
             ),
             colour p : (
-                var q := rot3(angle, axis, p[X,Y,Z]);
+                var q := rot3(angle, axis, p'[X,Y,Z]);
                 shape.colour(q[X],q[Y],q[Z],p[T])
             ),
             bbox : b,
@@ -1191,15 +1191,15 @@ repeat_radial reps shape = (
             (circumradius * cis((floor(reps/4)+.5)*angle))[Y];
     make_shape {
         dist p : (
-            var a := phase(p[X,Y]) + angle/2;
-            var r := mag(p[X,Y]);
+            var a := phase(p'[X,Y]) + angle/2;
+            var r := mag(p'[X,Y]);
             a := mod(a,angle) - angle/2;
             var xy := cis(a) * r;
             shape.dist(xy[X], xy[Y], p[Z], p[T])
         ),
         colour p : (
-            var a := phase(p[X,Y]) + angle/2;
-            var r := mag(p[X,Y]);
+            var a := phase(p'[X,Y]) + angle/2;
+            var r := mag(p'[X,Y]);
             a := mod(a,angle) - angle/2;
             var xy := cis(a) * r;
             shape.colour(xy[X], xy[Y], p[Z], p[T])
@@ -1271,8 +1271,8 @@ magenta = [1, 0, 1];
 white = [1, 1, 1];
 black = [0, 0, 0];
 
-radial_rainbow n = colour (p->hsv2rgb(mod(phase(p[X,Y])/tau*n,1),1,1)) everything;
-concentric_rainbow n = colour (p->hsv2rgb(mod(mag(p[X,Y])/n,1),1,1)) everything;
+radial_rainbow n = colour (p->hsv2rgb(mod(phase(p'[X,Y])/tau*n,1),1,1)) everything;
+concentric_rainbow n = colour (p->hsv2rgb(mod(mag(p'[X,Y])/n,1),1,1)) everything;
 linear_rainbow n = colour (p->hsv2rgb(mod(p[X]/n,1),1,1)) everything;
 
 ///////////////////////////////////////////////////////////////
@@ -1306,11 +1306,11 @@ twist d shape = (
         ));
     make_shape {
         dist p : (
-            var xy := cmul(p[X,Y], cis(p[Z]*t));
+            var xy := cmul(p'[X,Y], cis(p[Z]*t));
             shape.dist(xy[X], xy[Y], p[Z], p[T]) /* / (t*2) */
         ),
         colour p : (
-            var xy := cmul(p[X,Y], cis(p[Z]*t));
+            var xy := cmul(p'[X,Y], cis(p[Z]*t));
             shape.colour(xy[X], xy[Y], p[Z], p[T]) /* / (t*2) */
         ),
         bbox : [[-r,-r,b[MIN][Z]],[r,r,b[MAX][Z]]],
@@ -1326,8 +1326,8 @@ twist d shape = (
 bend d shape = (
     r = d / 2;
     make_shape {
-        dist p : shape.dist(phase(p[X,Y])/pi*r, mag(p[X,Y]), p[Z], p[T]),
-        colour p : shape.colour(phase(p[X,Y])/pi*r, mag(p[X,Y]), p[Z], p[T]),
+        dist(x,y,z,t) : shape.dist(phase(x,y)/pi*r, mag(x,y), z, t),
+        colour(x,y,z,t) : shape.colour(phase(x,y)/pi*r, mag(x,y), z, t),
         bbox : [
             [-shape.bbox[MAX][Y], -shape.bbox[MAX][Y], shape.bbox[MIN][Z]],
             [+shape.bbox[MAX][Y], +shape.bbox[MAX][Y], shape.bbox[MAX][Z]],
