@@ -42,7 +42,7 @@ cot a = cos a / sin a;
 
 // lists
 concat vv = [for (v in vv) for (i in v) i];
-reverse v = v'[count(v)-1..0 by -1];
+reverse v = v[count(v)-1..0 by -1];
 map f list = [for (x in list) f x];
 filter p list = [for (x in list) if (p x) x];
 reduce (zero, f) list = (
@@ -50,7 +50,7 @@ reduce (zero, f) list = (
         zero
     else (
         var r := list[0];
-        for (i in [1..<count list])
+        for (i in 1..<count list)
             r := f(r, list[i]);
         r
     )
@@ -72,7 +72,7 @@ csqr(z) = [ z[RE]*z[RE] - z[IM]*z[IM], 2*z[RE]*z[IM] ];
 is_vec2 x = is_list x && count x == 2 && is_num(x[0]) && is_num(x[1]);
 is_vec3 x = is_list x && count x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]);
 cross(p,q) = [p[Y]*q[Z] - p[Z]*q[Y], p[Z]*q[X] - p[X]*q[Z], p[X]*q[Y] - p[Y]*q[X]];
-identity(n) = [for(i in [1..n]) [for(j in [1..n]) if(i==j) 1 else 0]];
+identity(n) = [for(i in 1..n) [for(j in 1..n) if(i==j) 1 else 0]];
 transpose(a) = [for (i in dom(a'0)) [for (j in dom a) a'j'i]];
 normalize v = v / mag v;
 
@@ -711,7 +711,7 @@ row_x d shapes = (
         x := x + d + size(shapes[i])[X];
         i := i + 1;
     );
-    union([for (i in [0..<count shapes]) shapes[i] >> move(xdelta[i],0,0)])
+    union([for (i in 0..<count shapes) shapes[i] >> move(xdelta[i],0,0)])
 );
 
 smooth_union k (s1,s2) = (

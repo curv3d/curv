@@ -28,7 +28,7 @@ fbm xy = (
     var shift := [100,100];
     // Rotate to reduce axial bias
     var rot := cis(0.5);
-    for (i in [1..5]) (
+    for (i in 1..5) (
         v := v + a * noise st;
         st := cmul(rot, st) * 2 + shift;
         a := a * 0.5;

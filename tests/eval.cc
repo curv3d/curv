@@ -299,7 +299,7 @@ TEST(curv, eval)
         "line 1(columns 9-11)\n"
         "  [1,2,3]'1.1\n"
         "          ^--");
-    SUCCESS("[0..10]'[3..1 by -1]", "[3,2,1]");
+    SUCCESS("(0..10)'(3..1 by -1)", "[3,2,1]");
     SUCCESS("[false,true]'[[0,1],[1,0]]", "[[false,true],[true,false]]");
     SUCCESS("x=1;y=2;x+y", "3");
     SUCCESS("a=c+1;b=1;c=b+1;a", "3");
@@ -363,15 +363,15 @@ TEST(curv, eval)
     SUCCESS("file \"curv.curv\"", "{}");
 
     // range generator
-    SUCCESS("[1..4]", "[1,2,3,4]");
-    SUCCESS("[1..3 by 0.5]", "[1,1.5,2,2.5,3]");
-    SUCCESS("[1..1]", "[1]");
-    SUCCESS("[1..0]", "[]");
-    SUCCESS("[1..-1]", "[]");
-    SUCCESS("[1..3 by -1]", "[]");
-    SUCCESS("[3..1 by -1]", "[3,2,1]");
-    FAILMSG("[1..inf]", "1..inf: too many elements in range");
-    FAILMSG("[1..true]", "1..true: domain error");
+    SUCCESS("1..4", "[1,2,3,4]");
+    SUCCESS("1..3 by 0.5", "[1,1.5,2,2.5,3]");
+    SUCCESS("1..1", "[1]");
+    SUCCESS("1..0", "[]");
+    SUCCESS("1..-1", "[]");
+    SUCCESS("1..3 by -1", "[]");
+    SUCCESS("3..1 by -1", "[3,2,1]");
+    FAILMSG("1..inf", "1..inf: too many elements in range");
+    FAILMSG("1..true", "1..true: domain error");
 
     // for
     FAILMSG("for", "missing argument following 'for'");
@@ -385,8 +385,8 @@ TEST(curv, eval)
     SUCCESS("[for (i in [1,2,3]) i+1]", "[2,3,4]");
 
     // generalized actions
-    SUCCESS("(a=-2;for(b in [a..2])if(b>0)echo b);"
-            "for(x in [-1..1])if(x<0) echo \"-\" else if(x>0) echo \"+\";"
+    SUCCESS("(a=-2;for(b in a..2)if(b>0)echo b);"
+            "for(x in -1..1)if(x<0) echo \"-\" else if(x>0) echo \"+\";"
             "0",
         "0");
     EXPECT_EQ(console.str(),

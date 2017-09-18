@@ -736,16 +736,9 @@ void While_Action::gl_exec(GL_Frame& f) const
 }
 void For_Op::gl_exec(GL_Frame& f) const
 {
-    auto list = cast<const List_Expr>(list_);
-    if (list == nullptr)
-        throw Exception(At_GL_Phrase(*list_->source_, &f),
-            "GL: not a list constructor");
-    if (list->size() != 1)
-        throw Exception(At_GL_Phrase(*list_->source_, &f),
-            "GL: list constructor must have 1 element");
-    auto range = cast<Range_Gen>(list->at(0));
+    auto range = cast<const Range_Expr>(list_);
     if (range == nullptr)
-        throw Exception(At_GL_Phrase(*list->at(0)->source_, &f),
+        throw Exception(At_GL_Phrase(*list_->source_, &f),
             "GL: not a range");
     /*
     auto first = gl_eval_expr(f, *range->arg1_, GL_Type::Num);

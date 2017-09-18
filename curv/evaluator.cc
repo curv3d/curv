@@ -689,9 +689,10 @@ For_Op::exec(Frame& f) const
     }
 }
 
-void
-Range_Gen::generate(Frame& f, List_Builder& lb) const
+Value
+Range_Expr::eval(Frame& f) const
 {
+    List_Builder lb;
     Value firstv = arg1_->eval(f);
     double first = firstv.get_num_or_nan();
 
@@ -723,6 +724,7 @@ Range_Gen::generate(Frame& f, List_Builder& lb) const
                 ? stringify(firstv,dots,lastv," by ",stepv,": ", err)
                 : stringify(firstv,dots,lastv,": ", err));
     }
+    return {lb.get_list()};
 }
 
 Value
