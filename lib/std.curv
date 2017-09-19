@@ -702,7 +702,7 @@ crop limits shape = intersection(shape, limits);
 
 size shape = shape.bbox[MAX] - shape.bbox[MIN];
 row_x d shapes = (
-    var width := sum([for (s in shapes) size(s)[X]]) + (count shapes - 1)*d;
+    var width := sum[for (s in shapes) size(s)[X]] + (count shapes - 1)*d;
     var x := -width / 2;
     var xdelta := [];
     var i := 0;
@@ -711,7 +711,7 @@ row_x d shapes = (
         x := x + d + size(shapes[i])[X];
         i := i + 1;
     );
-    union([for (i in 0..<count shapes) shapes[i] >> move(xdelta[i],0,0)])
+    union[for (i in 0..<count shapes) shapes[i] >> move(xdelta[i],0,0)]
 );
 
 smooth_union k (s1,s2) = (

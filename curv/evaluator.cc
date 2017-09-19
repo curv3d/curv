@@ -132,36 +132,6 @@ Indirect_Function_Ref::eval(Frame& f) const
 }
 
 Value
-Call_Expr::eval(Frame& f) const
-{
-    static Atom mapkey = "map";
-    Value val = fun_->eval(f);
-    Value funv = val;
-    for (;;) {
-        if (!funv.is_ref())
-            throw Exception(At_Phrase(*fun_->source_, &f),
-                stringify(funv,": not a function"));
-        Ref_Value& funp( funv.get_ref_unsafe() );
-        if (funp.type_ == Ref_Value::ty_function) {
-            Function* fun = (Function*)&funp;
-            std::unique_ptr<Frame> f2 {
-                Frame::make(fun->nslots_, f.system, &f, call_phrase(), nullptr)
-            };
-            return fun->call(arg_->eval(f), *f2);
-        }
-        if (auto s = dynamic_cast<Structure*>(&funp)) {
-            if (s->hasfield(mapkey)) {
-                funv = s->getfield(mapkey, {});
-                continue;
-            }
-        }
-        break;
-    }
-    throw Exception(At_Phrase(*fun_->source_, &f),
-        stringify(val,": not a function"));
-}
-
-Value
 Dot_Expr::eval(Frame& f) const
 {
     Value basev = base_->eval(f);
@@ -504,6 +474,45 @@ Index_Expr::eval(Frame& f) const
         return string_at(*string, b, At_Phrase(*arg2_->source_, &f));
     throw Exception(At_Phrase(*arg1_->source_, &f),
         "not a list, structure or string");
+}
+Value
+Call_Expr::eval(Frame& f) const
+{
+    static Atom mapkey = "map";
+    Value val = fun_->eval(f);
+    Value funv = val;
+    for (;;) {
+        if (!funv.is_ref())
+            throw Exception(At_Phrase(*fun_->source_, &f),
+                stringify(funv,": not a function"));
+        Ref_Value& funp( funv.get_ref_unsafe() );
+        if (funp.type_ == Ref_Value::ty_function) {
+            Function* fun = (Function*)&funp;
+            std::unique_ptr<Frame> f2 {
+                Frame::make(fun->nslots_, f.system, &f, call_phrase(), nullptr)
+            };
+            return fun->call(arg_->eval(f), *f2);
+        }
+        if (auto s = dynamic_cast<Structure*>(&funp)) {
+            if (s->hasfield(mapkey)) {
+                funv = s->getfield(mapkey, {});
+                continue;
+            }
+            break;
+        }
+        At_Phrase cx(*arg_->source_, &f);
+        auto path = arg_->eval(f).to<List>(cx);
+        // TODO: support path with count > 1.
+        path->assert_size(1, cx);
+        At_Index cx0(0, cx);
+        if (auto list = dynamic_cast<const List*>(&funp))
+            return list_at(*list, path->at(0), cx0);
+        if (auto string = dynamic_cast<const String*>(&funp))
+            return string_at(*string, path->at(0), cx0);
+        break;
+    }
+    throw Exception(At_Phrase(*fun_->source_, &f),
+        stringify(val,": not a function"));
 }
 
 Shared<List>

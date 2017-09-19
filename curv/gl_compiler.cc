@@ -523,14 +523,14 @@ Value gl_constify(Operation& op, GL_Frame& f)
         "Geometry Compiler: not a constant");
 }
 
-GL_Value Call_Expr::gl_eval(GL_Frame& f) const
+bool gl_try_eval(Operation& op, GL_Frame& f, GL_Value& val)
 {
-    auto val = gl_constify(*fun_, f);
-    if (auto fun = val.dycast<Function>()) {
-        return fun->gl_call_expr(*arg_, call_phrase(), f);
+    try {
+        val = op.gl_eval(f);
+        return true;
+    } catch (Exception&) {
+        return false;
     }
-    throw Exception(At_GL_Phrase(*fun_->source_, &f),
-        stringify("Geometry Compiler: ",val," is not a function"));
 }
 
 GL_Value Block_Op::gl_eval(GL_Frame& f) const
@@ -581,30 +581,30 @@ char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
         stringify("Geometry Compiler: got ",k,", expected 0..",vecsize-1));
 }
 
-GL_Value Index_Expr::gl_eval(GL_Frame& f) const
+GL_Value gl_eval_index_expr(
+    GL_Value arg1, const Phrase& src1, Operation& index, GL_Frame& f)
 {
-    auto arg1 = arg1_->gl_eval(f);
     if (gl_type_count(arg1.type) < 2)
-        throw Exception(At_GL_Phrase(*arg1_->source_, &f), "not a vector");
+        throw Exception(At_GL_Phrase(src1, &f), "not a vector");
 
-    const char* arg2 = nullptr;
-    auto k = gl_constify(*arg2_, f);
+    auto k = gl_constify(index, f);
     if (auto list = k.dycast<List>()) {
         if (list->size() < 2 || list->size() > 4) {
-            throw Exception(At_GL_Phrase(*arg2_->source_, &f),
+            throw Exception(At_GL_Phrase(*index.source_, &f),
                 "list index vector must have between 2 and 4 elements");
         }
         char swizzle[5];
         memset(swizzle, 0, 5);
         for (size_t i = 0; i <list->size(); ++i) {
             swizzle[i] = gl_index_letter((*list)[i], gl_type_count(arg1.type),
-                At_Index(i, At_GL_Phrase(*arg2_->source_, &f)));
+                At_Index(i, At_GL_Phrase(*index.source_, &f)));
         }
         GL_Value result = f.gl.newvalue(gl_vec_type(list->size()));
         f.gl.out << "  " << result.type << " "
             << result<<" = "<<arg1<<"."<<swizzle<<";\n";
         return result;
     }
+    const char* arg2 = nullptr;
     auto num = k.get_num_or_nan();
     if (num == 0.0)
         arg2 = ".x";
@@ -615,13 +615,37 @@ GL_Value Index_Expr::gl_eval(GL_Frame& f) const
     else if (num == 3.0 && gl_type_count(arg1.type) > 3)
         arg2 = ".w";
     if (arg2 == nullptr)
-        throw Exception(At_GL_Phrase(*arg2_->source_, &f),
+        throw Exception(At_GL_Phrase(*index.source_, &f),
             stringify("Geometry Compiler: got ",k,", expected 0..",
                 gl_type_count(arg1.type)-1));
 
     GL_Value result = f.gl.newvalue(GL_Type::Num);
     f.gl.out << "  float "<<result<<" = "<<arg1<<arg2<<";\n";
     return result;
+}
+
+GL_Value Index_Expr::gl_eval(GL_Frame& f) const
+{
+    auto arg1 = arg1_->gl_eval(f);
+    return gl_eval_index_expr(arg1, *arg1_->source_, *arg2_, f);
+}
+
+GL_Value Call_Expr::gl_eval(GL_Frame& f) const
+{
+    GL_Value glval;
+    if (gl_try_eval(*fun_, f, glval)) {
+        auto list = cast<List_Expr>(arg_);
+        if (list == nullptr || list->size() != 1)
+            throw Exception(At_GL_Phrase(*arg_->source_, &f),
+                "Geometry Compiler: expected '[index]' expression");
+        return gl_eval_index_expr(glval, *fun_->source_, *list->at(0), f);
+    }
+    Value val = gl_constify(*fun_, f);
+    if (auto fun = val.dycast<Function>()) {
+        return fun->gl_call_expr(*arg_, call_phrase(), f);
+    }
+    throw Exception(At_GL_Phrase(*fun_->source_, &f),
+        stringify("Geometry Compiler: ",val," is not a function"));
 }
 
 GL_Value Arg_Ref::gl_eval(GL_Frame& f) const

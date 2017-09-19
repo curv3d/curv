@@ -705,14 +705,6 @@ Bracket_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Call_Phrase::analyze(Environ& env) const
 {
-    if (op_.kind_ == Token::k_missing) {
-        if (auto brackets = cast<const Bracket_Phrase>(arg_)) {
-            return make<Index_Expr>(
-                share(*this),
-                analyze_op(*function_, env),
-                analyze_op(*brackets->body_, env));
-        }
-    }
     return function_->analyze(env)->call(*this, env);
 }
 
