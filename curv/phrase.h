@@ -17,6 +17,7 @@ namespace curv {
 struct Definition;
 struct Meaning;
 struct Operation;
+struct Segment;
 struct Environ;
 
 /// Base class for a node in a syntax tree created by the parser.
@@ -64,15 +65,42 @@ struct Numeral final : public Token_Phrase
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
-struct String_Segment_Phrase : public Token_Phrase
+struct Segment_Phrase : public Shared_Base
 {
-    using Token_Phrase::Token_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Location location() const = 0;
+    virtual Shared<Segment> analyze(Environ&) const = 0;
 };
-struct Char_Escape_Phrase : public Token_Phrase
+struct String_Segment_Phrase : public Segment_Phrase
 {
-    using Token_Phrase::Token_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    Location loc_;
+    String_Segment_Phrase(const Script& s, Token tok)
+    : loc_(s, std::move(tok)) {}
+    virtual Location location() const override { return loc_; }
+    virtual Shared<Segment> analyze(Environ&) const override;
+};
+struct Char_Escape_Phrase : public Segment_Phrase
+{
+    Location loc_;
+    Char_Escape_Phrase(const Script& s, Token tok)
+    : loc_(s, std::move(tok)) {}
+    virtual Location location() const override { return loc_; }
+    virtual Shared<Segment> analyze(Environ&) const override;
+};
+struct Paren_Segment_Phrase : public Segment_Phrase
+{
+    Shared<const Phrase> expr_;
+    Paren_Segment_Phrase(Shared<const Phrase> expr)
+    : expr_(std::move(expr)) {}
+    virtual Location location() const override { return expr_->location(); }
+    virtual Shared<Segment> analyze(Environ&) const override;
+};
+struct Brace_Segment_Phrase : public Segment_Phrase
+{
+    Shared<const Phrase> expr_;
+    Brace_Segment_Phrase(Shared<const Phrase> expr)
+    : expr_(std::move(expr)) {}
+    virtual Location location() const override { return expr_->location(); }
+    virtual Shared<Segment> analyze(Environ&) const override;
 };
 struct String_Phrase_Base : public Phrase
 {
@@ -91,7 +119,7 @@ struct String_Phrase_Base : public Phrase
     }
     virtual Shared<Meaning> analyze(Environ&) const override;
 
-    TAIL_ARRAY_MEMBERS(Shared<const Phrase>)
+    TAIL_ARRAY_MEMBERS(Shared<const Segment_Phrase>)
 };
 using String_Phrase = aux::Tail_Array<String_Phrase_Base>;
 

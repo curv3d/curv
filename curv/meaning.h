@@ -805,21 +805,28 @@ struct Assoc : public Operation
 
 struct Segment : public Shared_Base
 {
-    Shared<const Phrase> source_;
-    Segment(Shared<const Phrase> source) : source_(std::move(source)) {}
+    Shared<const Segment_Phrase> source_;
+    Segment(Shared<const Segment_Phrase> source) : source_(std::move(source)) {}
     virtual void generate(Frame&, String_Builder&) const = 0;
 };
 struct Literal_Segment : public Segment
 {
     Shared<const String> data_;
-    Literal_Segment(Shared<const Phrase> source, Shared<const String> data)
+    Literal_Segment(Shared<const Segment_Phrase> source, Shared<const String> data)
     : Segment(std::move(source)), data_(std::move(data)) {}
     virtual void generate(Frame&, String_Builder&) const;
 };
 struct Paren_Segment : public Segment
 {
     Shared<Operation> expr_;
-    Paren_Segment(Shared<const Phrase> source, Shared<Operation> expr)
+    Paren_Segment(Shared<const Segment_Phrase> source, Shared<Operation> expr)
+    : Segment(std::move(source)), expr_(std::move(expr)) {}
+    virtual void generate(Frame&, String_Builder&) const;
+};
+struct Brace_Segment : public Segment
+{
+    Shared<Operation> expr_;
+    Brace_Segment(Shared<const Segment_Phrase> source, Shared<Operation> expr)
     : Segment(std::move(source)), expr_(std::move(expr)) {}
     virtual void generate(Frame&, String_Builder&) const;
 };

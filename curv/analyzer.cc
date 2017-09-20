@@ -375,23 +375,35 @@ Numeral::analyze(Environ& env) const
     assert(endptr == str.c_str() + str.size());
     return make<Constant>(share(*this), n);
 }
+
+Shared<Segment>
+String_Segment_Phrase::analyze(Environ& env) const
+{
+    return make<Literal_Segment>(share(*this),
+        String::make(location().range()));
+}
+Shared<Segment>
+Char_Escape_Phrase::analyze(Environ& env) const
+{
+    return make<Literal_Segment>(share(*this),
+        String::make(location().range().first+1, 1));
+}
+Shared<Segment>
+Paren_Segment_Phrase::analyze(Environ& env) const
+{
+    return make<Paren_Segment>(share(*this), analyze_op(*expr_, env));
+}
+Shared<Segment>
+Brace_Segment_Phrase::analyze(Environ& env) const
+{
+    return make<Brace_Segment>(share(*this), analyze_op(*expr_, env));
+}
 Shared<Meaning>
 String_Phrase_Base::analyze(Environ& env) const
 {
     std::vector<Shared<Segment>> ops;
-    for (Shared<const Phrase> seg : *this) {
-        if (auto str = cast<const String_Segment_Phrase>(seg))
-            ops.push_back(make<Literal_Segment>(seg,
-                String::make(seg->location().range())));
-        else if (auto esc = cast<const Char_Escape_Phrase>(seg))
-            ops.push_back(make<Literal_Segment>(seg,
-                String::make(seg->location().range().first+1,1)));
-        else if (auto parens = cast<const Paren_Phrase>(seg))
-            ops.push_back(make<Paren_Segment>(seg,
-                analyze_op(*seg, env)));
-        else
-            assert(0);
-    }
+    for (Shared<const Segment_Phrase> seg : *this)
+        ops.push_back(seg->analyze(env));
     return String_Expr::make_elements(ops, this);
 }
 
@@ -879,19 +891,6 @@ Range_Phrase::analyze(Environ& env) const
         analyze_op(*last_, env),
         step_ ? analyze_op(*step_, env) : nullptr,
         op1_.kind_ == Token::k_open_range);
-}
-
-Shared<Meaning>
-String_Segment_Phrase::analyze(Environ&) const
-{
-    assert(0);
-    return nullptr;
-}
-Shared<Meaning>
-Char_Escape_Phrase::analyze(Environ&) const
-{
-    assert(0);
-    return nullptr;
 }
 
 } // namespace curv

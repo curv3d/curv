@@ -503,7 +503,7 @@ parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
 Shared<Phrase>
 parse_string(Scanner& scanner, Token begin)
 {
-    std::vector<Shared<const Phrase>> segments;
+    std::vector<Shared<const Segment_Phrase>> segments;
     for (;;) {
         auto tok = scanner.get_token();
         switch (tok.kind_) {
@@ -523,7 +523,17 @@ parse_string(Scanner& scanner, Token begin)
             auto parens =
                 parse_delimited<Paren_Phrase>(tok, Token::k_rparen, scanner);
             scanner.string_begin_ = state;
-            segments.push_back(parens);
+            segments.push_back(make<Paren_Segment_Phrase>(parens));
+            continue;
+          }
+        case Token::k_dollar_brace:
+          {
+            auto state = scanner.string_begin_;
+            scanner.string_begin_.kind_ = Token::k_missing;
+            auto braces =
+                parse_delimited<Paren_Phrase>(tok, Token::k_rbrace, scanner);
+            scanner.string_begin_ = state;
+            segments.push_back(make<Brace_Segment_Phrase>(braces));
             continue;
           }
         default:
