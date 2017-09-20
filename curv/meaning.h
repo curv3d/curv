@@ -803,5 +803,35 @@ struct Assoc : public Operation
     virtual void bind(Frame&, Record&) const override;
 };
 
+struct Segment : public Shared_Base
+{
+    Shared<const Phrase> source_;
+    Segment(Shared<const Phrase> source) : source_(std::move(source)) {}
+    virtual void generate(Frame&, String_Builder&) const = 0;
+};
+struct Literal_Segment : public Segment
+{
+    Shared<const String> data_;
+    Literal_Segment(Shared<const Phrase> source, Shared<const String> data)
+    : Segment(std::move(source)), data_(std::move(data)) {}
+    virtual void generate(Frame&, String_Builder&) const;
+};
+struct Paren_Segment : public Segment
+{
+    Shared<Operation> expr_;
+    Paren_Segment(Shared<const Phrase> source, Shared<Operation> expr)
+    : Segment(std::move(source)), expr_(std::move(expr)) {}
+    virtual void generate(Frame&, String_Builder&) const;
+};
+struct String_Expr_Base : public Just_Expression
+{
+    String_Expr_Base(Shared<const Phrase> source)
+    : Just_Expression(std::move(source)) {}
+
+    virtual Value eval(Frame&) const override;
+    TAIL_ARRAY_MEMBERS(Shared<Segment>)
+};
+using String_Expr = aux::Tail_Array<String_Expr_Base>;
+
 } // namespace curv
 #endif // header guard

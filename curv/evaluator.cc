@@ -746,4 +746,23 @@ Lambda_Expr::eval(Frame& f) const
         nslots_)};
 }
 
+void
+Literal_Segment::generate(Frame&, String_Builder& sb) const
+{
+    sb << *data_;
+}
+void
+Paren_Segment::generate(Frame& f, String_Builder& sb) const
+{
+    sb << expr_->eval(f);
+}
+Value
+String_Expr_Base::eval(Frame& f) const
+{
+    String_Builder sb;
+    for (auto seg : *this)
+        seg->generate(f, sb);
+    return {sb.get_string()};
+}
+
 } // namespace curv

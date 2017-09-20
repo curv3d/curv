@@ -378,16 +378,21 @@ Numeral::analyze(Environ& env) const
 Shared<Meaning>
 String_Phrase_Base::analyze(Environ& env) const
 {
-    String_Builder sb;
+    std::vector<Shared<Segment>> ops;
     for (Shared<const Phrase> seg : *this) {
         if (auto str = cast<const String_Segment_Phrase>(seg))
-            sb << seg->location().range();
+            ops.push_back(make<Literal_Segment>(seg,
+                String::make(seg->location().range())));
         else if (auto esc = cast<const Char_Escape_Phrase>(seg))
-            sb << seg->location().range()[1];
+            ops.push_back(make<Literal_Segment>(seg,
+                String::make(seg->location().range().first+1,1)));
+        else if (auto parens = cast<const Paren_Phrase>(seg))
+            ops.push_back(make<Paren_Segment>(seg,
+                analyze_op(*seg, env)));
         else
             assert(0);
     }
-    return make<Constant>(share(*this), Value{sb.get_string()});
+    return String_Expr::make_elements(ops, this);
 }
 
 Shared<Meaning>

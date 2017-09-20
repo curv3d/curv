@@ -54,6 +54,7 @@ struct Token
         k_quote,            ///! `"`
         k_string_segment,   ///! sequence of unescaped chars in a string literal
         k_char_escape,      ///! escaped character sequence in a string literal
+        k_dollar_paren,     ///! $( in a string literal
         k_lparen,
         k_rparen,
         k_lbracket,

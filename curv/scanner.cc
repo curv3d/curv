@@ -67,6 +67,11 @@ Scanner::get_token()
                 tok.kind_ = Token::k_char_escape;
                 goto success;
             }
+            if (*p == '(') {
+                ++p;
+                tok.kind_ = Token::k_dollar_paren;
+                goto success;
+            }
             ++p;
             tok.first_ = p - 2 - first;
             tok.last_ = p - first;

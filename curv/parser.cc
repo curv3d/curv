@@ -516,6 +516,16 @@ parse_string(Scanner& scanner, Token begin)
         case Token::k_char_escape:
             segments.push_back(make<Char_Escape_Phrase>(scanner.script_, tok));
             continue;
+        case Token::k_dollar_paren:
+          {
+            auto state = scanner.string_begin_;
+            scanner.string_begin_.kind_ = Token::k_missing;
+            auto parens =
+                parse_delimited<Paren_Phrase>(tok, Token::k_rparen, scanner);
+            scanner.string_begin_ = state;
+            segments.push_back(parens);
+            continue;
+          }
         default:
             assert(0);
         }
