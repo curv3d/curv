@@ -10,7 +10,7 @@ namespace curv {
 const char List_Base::name[] = "list";
 
 void
-List_Data::assert_size(size_t sz, const Context& cx)
+List_Base::assert_size(size_t sz, const Context& cx)
 const
 {
     if (size() != sz)

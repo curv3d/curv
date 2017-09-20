@@ -376,22 +376,18 @@ Numeral::analyze(Environ& env) const
     return make<Constant>(share(*this), n);
 }
 Shared<Meaning>
-String_Phrase::analyze(Environ& env) const
+String_Phrase_Base::analyze(Environ& env) const
 {
-    auto str = location().range();
-    assert(str.size() >= 2); // includes start and end " characters
-    assert(*str.begin() == '"');
-    assert(*(str.begin()+str.size()-1) == '"');
-    ++str.first;
-    --str.last;
     String_Builder sb;
-    for (size_t i = 0; i < str.size(); ++i) {
-        if (str[i] == '$')
-            ++i;
-        sb << str[i];
+    for (Shared<const Phrase> seg : *this) {
+        if (auto str = cast<const String_Segment_Phrase>(seg))
+            sb << seg->location().range();
+        else if (auto esc = cast<const Char_Escape_Phrase>(seg))
+            sb << seg->location().range()[1];
+        else
+            assert(0);
     }
-    return make<Constant>(share(*this),
-        Value{sb.get_string()});
+    return make<Constant>(share(*this), Value{sb.get_string()});
 }
 
 Shared<Meaning>
@@ -878,6 +874,19 @@ Range_Phrase::analyze(Environ& env) const
         analyze_op(*last_, env),
         step_ ? analyze_op(*step_, env) : nullptr,
         op1_.kind_ == Token::k_open_range);
+}
+
+Shared<Meaning>
+String_Segment_Phrase::analyze(Environ&) const
+{
+    assert(0);
+    return nullptr;
+}
+Shared<Meaning>
+Char_Escape_Phrase::analyze(Environ&) const
+{
+    assert(0);
+    return nullptr;
 }
 
 } // namespace curv

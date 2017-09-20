@@ -14,33 +14,32 @@
 
 namespace aux {
 
-template<typename T>
-class Tail_Array_Data
-{
-protected:
-    size_t size_;
-    T array_[0];
-public:
-    using value_type = T;
-
-    size_t size() const noexcept { return size_; }
-    bool empty() const noexcept { return size_ == 0; }
-
-    value_type* begin() noexcept { return array_; }
-    value_type* end() noexcept { return array_ + size_; }
-    const value_type* begin() const noexcept { return array_; }
-    const value_type* end() const noexcept { return array_ + size_; }
-
-    value_type& operator[](size_t i) { return array_[i]; }
-    const value_type& operator[](size_t i) const { return array_[i]; }
-    value_type& at(size_t i) { return array_[i]; }
-    const value_type& at(size_t i) const { return array_[i]; }
-
-    value_type& front() { return array_[0]; }
-    const value_type& front() const { return array_[0]; }
-    value_type& back() { return array_[size_-1]; }
-    const value_type& back() const { return array_[size_-1]; }
-};
+// A call to this macro must be the very last statement in the tail array
+// class definition, because array_ must be the last data member.
+#define TAIL_ARRAY_MEMBERS(T) \
+protected: \
+    size_t size_; \
+    T array_[0]; \
+public: \
+    using value_type = T; \
+ \
+    size_t size() const noexcept { return size_; } \
+    bool empty() const noexcept { return size_ == 0; } \
+ \
+    value_type* begin() noexcept { return array_; } \
+    value_type* end() noexcept { return array_ + size_; } \
+    const value_type* begin() const noexcept { return array_; } \
+    const value_type* end() const noexcept { return array_ + size_; } \
+ \
+    value_type& operator[](size_t i) { return array_[i]; } \
+    const value_type& operator[](size_t i) const { return array_[i]; } \
+    value_type& at(size_t i) { return array_[i]; } \
+    const value_type& at(size_t i) const { return array_[i]; } \
+ \
+    value_type& front() { return array_[0]; } \
+    const value_type& front() const { return array_[0]; } \
+    value_type& back() { return array_[size_-1]; } \
+    const value_type& back() const { return array_[size_-1]; } \
 
 /// Construct a class whose last data member is an inline variable sized array.
 ///
@@ -143,7 +142,7 @@ public:
 
     /// Allocate an instance. Move elements from another collection.
     template<class C, typename... Rest>
-    static std::unique_ptr<Tail_Array> make_elements(C&& c, Rest... rest)
+    static std::unique_ptr<Tail_Array> make_elements(C&& c, Rest&&... rest)
     {
         // allocate the object
         auto size = c.size();
@@ -157,7 +156,8 @@ public:
         auto ptr = c.begin();
         try {
             while (i < size) {
-                new((void*)&r->Base::array_[i]) _value_type(std::move(*ptr));
+                new((void*)&r->Base::array_[i]) _value_type();
+                std::swap(r->Base::array_[i], *ptr);
                 ++ptr;
                 ++i;
             }
@@ -169,7 +169,7 @@ public:
 
         // then construct the rest of the object
         try {
-            new(mem) Tail_Array(rest...);
+            new(mem) Tail_Array(std::forward<Rest>(rest)...);
             r->Base::size_ = size;
         } catch(...) {
             r->destroy_array(size);
@@ -181,7 +181,7 @@ public:
 
     /// Allocate an instance. Copy array elements from another array.
     template<typename... Rest>
-    static std::unique_ptr<Tail_Array> make_copy(_value_type* a, size_t size, Rest... rest)
+    static std::unique_ptr<Tail_Array> make_copy(_value_type* a, size_t size, Rest&&... rest)
     {
         // allocate the object
         void* mem = malloc(sizeof(Tail_Array) + size*sizeof(_value_type));
@@ -213,7 +213,7 @@ public:
 
         // then construct the rest of the object
         try {
-            new(mem) Tail_Array(rest...);
+            new(mem) Tail_Array(std::forward<Rest>(rest)...);
             r->Base::size_ = size;
         } catch(...) {
             r->destroy_array(size);
@@ -226,7 +226,7 @@ public:
     /// Allocate an instance from an initializer list.
     template<typename... Rest>
     static std::unique_ptr<Tail_Array>
-    make(std::initializer_list<_value_type> il, Rest... rest)
+    make(std::initializer_list<_value_type> il, Rest&&... rest)
     {
         // TODO: much code duplication here.
         // allocate the object
@@ -258,7 +258,7 @@ public:
 
         // then construct the rest of the object
         try {
-            new(mem) Tail_Array(rest...);
+            new(mem) Tail_Array(std::forward<Rest>(rest)...);
             r->Base::size_ = il.size();
         } catch(...) {
             r->destroy_array(il.size());

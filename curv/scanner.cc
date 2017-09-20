@@ -15,6 +15,7 @@ Scanner::Scanner(const Script& s, Frame* f)
 :
     script_(s),
     eval_frame_(f),
+    string_begin_(),
     ptr_(s.begin()),
     lookahead_()
 {
@@ -41,6 +42,43 @@ Scanner::get_token()
     const char* p = ptr_;
     const char* first = script_.first;
     const char* last = script_.last;
+
+    if (string_begin_.kind_ != Token::k_missing) {
+        // We are inside a string literal.
+        if (p >= last) {
+            throw Exception(At_Token(string_begin_, *this),
+                "unterminated string literal");
+        }
+        tok.first_white_ = tok.first_ = p - first;
+        if (*p == '"') {
+            tok.kind_ = Token::k_quote;
+            ++p;
+            string_begin_.kind_ = Token::k_missing;
+            goto success;
+        }
+        if (*p == '$') {
+            ++p;
+            if (p == last) {
+                throw Exception(At_Token(string_begin_, *this),
+                    "unterminated string literal");
+            }
+            if (*p == '$' || *p == '"') {
+                ++p;
+                tok.kind_ = Token::k_char_escape;
+                goto success;
+            }
+            ++p;
+            tok.first_ = p - 2 - first;
+            tok.last_ = p - first;
+            tok.kind_ = Token::k_bad_token;
+            ptr_ = p;
+            throw Exception(At_Token(tok, *this), "illegal string escape");
+        }
+        while (p < last && *p != '$' && *p != '"')
+            ++p;
+        tok.kind_ = Token::k_string_segment;
+        goto success;
+    }
 
     // collect whitespace and comments
     tok.first_white_ = p - first;
@@ -281,41 +319,10 @@ Scanner::get_token()
             goto error;
         goto success;
     case '"':
-        for (;;) {
-            if (p == last) {
-                tok.last_ = p - first;
-                tok.kind_ = Token::k_bad_token;
-                ptr_ = p;
-                throw Exception(At_Token(tok, *this),
-                    "unterminated string literal");
-            }
-            if (*p == '$') {
-                ++p;
-                if (p == last) {
-                    tok.last_ = p - first;
-                    tok.kind_ = Token::k_bad_token;
-                    ptr_ = p;
-                    throw Exception(At_Token(tok, *this),
-                        "unterminated string literal");
-                }
-                if (*p == '$' || *p == '"') {
-                    ++p;
-                    continue;
-                }
-                ++p;
-                tok.first_ = p - 2 - first;
-                tok.last_ = p - first;
-                tok.kind_ = Token::k_bad_token;
-                ptr_ = p;
-                throw Exception(At_Token(tok, *this), "illegal string escape");
-            }
-            if (*p == '"') {
-                ++p;
-                tok.kind_ = Token::k_string;
-                goto success;
-            }
-            ++p;
-        }
+        tok.kind_ = Token::k_quote;
+        tok.last_ = p - first;
+        string_begin_ = tok;
+        goto success;
     }
 
     // report an error

@@ -22,6 +22,7 @@ struct Scanner
 {
     const Script& script_;
     Frame* eval_frame_;
+    Token string_begin_;
 private:
     const char* ptr_;
     std::vector<Token> lookahead_;

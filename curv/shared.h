@@ -54,7 +54,7 @@ template<typename T, class... Args> Shared<T> make(Args&&... args)
         throw std::bad_alloc();
     T* ptr;
     try {
-        ptr = new(raw) T(args...);
+        ptr = new(raw) T(std::forward<Args>(args)...);
     } catch (...) {
         std::free(raw);
         throw;

@@ -10,6 +10,7 @@
 #include <curv/shared.h>
 #include <curv/location.h>
 #include <curv/atom.h>
+#include <aux/tail_array.h>
 
 namespace curv {
 
@@ -62,11 +63,37 @@ struct Numeral final : public Token_Phrase
     using Token_Phrase::Token_Phrase;
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
-struct String_Phrase final : public Token_Phrase
+
+struct String_Segment_Phrase : public Token_Phrase
 {
     using Token_Phrase::Token_Phrase;
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
+struct Char_Escape_Phrase : public Token_Phrase
+{
+    using Token_Phrase::Token_Phrase;
+    virtual Shared<Meaning> analyze(Environ&) const override;
+};
+struct String_Phrase_Base : public Phrase
+{
+    Location begin_;
+    Token end_;
+
+    String_Phrase_Base(const Script& s, Token begin, Token end)
+    :
+        begin_{s, std::move(begin)},
+        end_(std::move(end))
+    {}
+
+    virtual Location location() const override
+    {
+        return begin_.ending_at(end_);
+    }
+    virtual Shared<Meaning> analyze(Environ&) const override;
+
+    TAIL_ARRAY_MEMBERS(Shared<const Phrase>)
+};
+using String_Phrase = aux::Tail_Array<String_Phrase_Base>;
 
 struct Unary_Phrase : public Phrase
 {

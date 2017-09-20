@@ -50,8 +50,10 @@ struct Token
         k_by,
         k_var,
         k_while,
-        k_num,        ///! floating point numeral
-        k_string,
+        k_num,              ///! floating point numeral
+        k_quote,            ///! `"`
+        k_string_segment,   ///! sequence of unescaped chars in a string literal
+        k_char_escape,      ///! escaped character sequence in a string literal
         k_lparen,
         k_rparen,
         k_lbracket,

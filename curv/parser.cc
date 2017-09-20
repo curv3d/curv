@@ -500,6 +500,28 @@ parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
     return make<Ph>(tok, body, tok2);
 }
 
+Shared<Phrase>
+parse_string(Scanner& scanner, Token begin)
+{
+    std::vector<Shared<const Phrase>> segments;
+    for (;;) {
+        auto tok = scanner.get_token();
+        switch (tok.kind_) {
+        case Token::k_quote:
+            return String_Phrase::make_elements(
+                segments, scanner.script_, begin, tok);
+        case Token::k_string_segment:
+            segments.push_back(make<String_Segment_Phrase>(scanner.script_, tok));
+            continue;
+        case Token::k_char_escape:
+            segments.push_back(make<Char_Escape_Phrase>(scanner.script_, tok));
+            continue;
+        default:
+            assert(0);
+        }
+    }
+}
+
 // primary : numeral | identifier | string | parens | brackets | braces
 // parens : ( list )
 // brackets : [ list ]
@@ -518,8 +540,8 @@ parse_primary(Scanner& scanner, const char* what)
         return make<Numeral>(scanner.script_, tok);
     case Token::k_ident:
         return make<Identifier>(scanner.script_, tok);
-    case Token::k_string:
-        return make<String_Phrase>(scanner.script_, tok);
+    case Token::k_quote:
+        return parse_string(scanner, tok);
     case Token::k_lparen:
         return parse_delimited<Paren_Phrase>(tok, Token::k_rparen, scanner);
     case Token::k_lbracket:

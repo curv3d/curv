@@ -7,8 +7,9 @@
 using namespace std;
 using namespace aux;
 
-struct A : public Tail_Array_Data<double>
+struct A
 {
+    TAIL_ARRAY_MEMBERS(double)
 };
 using TA = aux::Tail_Array<A>;
 

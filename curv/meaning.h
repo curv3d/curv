@@ -482,8 +482,7 @@ struct Range_Expr : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
-struct List_Expr_Base : public Just_Expression,
-    public aux::Tail_Array_Data<Shared<Operation>>
+struct List_Expr_Base : public Just_Expression
 {
     List_Expr_Base(Shared<const Phrase> source)
     : Just_Expression(std::move(source)) {}
@@ -491,6 +490,7 @@ struct List_Expr_Base : public Just_Expression,
     virtual Value eval(Frame&) const override;
     Shared<List> eval_list(Frame&) const;
     virtual GL_Value gl_eval(GL_Frame&) const override;
+    TAIL_ARRAY_MEMBERS(Shared<Operation>)
 };
 using List_Expr = aux::Tail_Array<List_Expr_Base>;
 
