@@ -465,7 +465,7 @@ The standard library will define `nl="$+A";`,
 so you can use `"$nl"` or "${nl}"` to interpolate a newline.
 But these special cases are worth having:
 * `$$` --  literal `$`
-* `$"` --  literal `"`
+* `""` --  literal `"`
 
 Note that a special variable like `$t` must be interpolated
 as `"${$t}"` or `"$($t)"`.

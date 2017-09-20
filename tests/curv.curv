@@ -169,14 +169,14 @@ assert( strcat("foo","bar",0) == "foobar0" );
 
 assert(
     count "foo" == 3 && count "$$" == 1 && count(to_str "$$") == 4
-    && count "$"" == 1
+    && count """" == 1
 );
 
 assert( "foo"[0] == "f" && "foobar"'[3,2,4] == "boa" );
 
 assert( [if (true) (;)] == [] );
 
-assert( "$(2+2)" == "4" );
+assert( "$(2+2)" == "4" && "$("foo")" == """foo""" );
 
 // script return value:
 {}

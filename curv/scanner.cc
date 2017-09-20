@@ -51,8 +51,13 @@ Scanner::get_token()
         }
         tok.first_white_ = tok.first_ = p - first;
         if (*p == '"') {
-            tok.kind_ = Token::k_quote;
             ++p;
+            if (p < last && *p == '"') {
+                ++p;
+                tok.kind_ = Token::k_char_escape;
+                goto success;
+            }
+            tok.kind_ = Token::k_quote;
             string_begin_.kind_ = Token::k_missing;
             goto success;
         }
@@ -62,7 +67,7 @@ Scanner::get_token()
                 throw Exception(At_Token(string_begin_, *this),
                     "unterminated string literal");
             }
-            if (*p == '$' || *p == '"') {
+            if (*p == '$') {
                 ++p;
                 tok.kind_ = Token::k_char_escape;
                 goto success;
