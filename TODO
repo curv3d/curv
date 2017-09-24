@@ -24,7 +24,13 @@ Primitive shapes from Conway notation:
     1+1/3 to sqrt(8/9): 1.333333 to 0.942809. This gives a tall skinny cone.
   * Ratio of pyramid height to diameter of circumscribed circle of base
     is 1+1/3 to 2*sqrt(8/9). This gives a squatter cone that I like better.
+  * Smallest volume that circumscribes a unit sphere. Needs calculus.
 * Maybe `cylinder`, `cone`.
+
+String:
+* $id interpolation
+* $+EE or $[0xEE] interpolation
+* echo argument is a single string
 
 -------------------------
 BUG: bad Web GLSL (testing mandelbrot in shadertoy.com in Chrome on macOS):
@@ -434,9 +440,6 @@ nary union:
 * volumetric textures, like marble.
 
 # 0.1: Minimum Viable Language
-* echo:
-  * $ substitutions in string literals
-  * echo argument is a single string
 * more debug actions:
   * assert(condition) <=> if (!condition) error("assertion failed")
   * require(predicate) expr <=> let(tmp=expr)(assert(p tmp);tmp)
@@ -447,7 +450,7 @@ nary union:
     * Might want to measure eval time while ignoring result.
     * In OpenSCAD, `*` is a prefix operator that ignores the following shape.
     * In Curv, maybe `ignore(arg)` is an action that evaluates and ignores arg.
-  * enter_debugger, aka `break`, `debug`
+  * `enter_debugger`, aka `debug`
 * modules: _foo is not exported, is omitted from the public dictionary.
   curv::Module has a public dictionary and a debug dictionary.
   _foo is private in std.curv, and in all other *.curv files.
@@ -648,8 +651,6 @@ Other:
 * double-conversion based strtod
 * lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
   numeral while building a buffer for strtod.
-* string: $id ${id} $(id) $+EE interpolation
-  scanner has in-string flag, parser resets/sets flag during $(expr).
 * Unicode strings: decide what str[i] means (code points or grapheme clusters)
 * broader unit testing
 * smart pointers, see docs/Shared_Ptr.md
