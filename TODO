@@ -30,7 +30,6 @@ Primitive shapes from Conway notation:
 String:
 * $id interpolation
 * $+EE or $[0xEE] interpolation
-* echo argument is a single string
 
 -------------------------
 BUG: bad Web GLSL (testing mandelbrot in shadertoy.com in Chrome on macOS):
@@ -441,11 +440,8 @@ nary union:
 
 # 0.1: Minimum Viable Language
 * more debug actions:
-  * assert(condition) <=> if (!condition) error("assertion failed")
   * require(predicate) expr <=> let(tmp=expr)(assert(p tmp);tmp)
   * (x : predicate) -> body
-  * error(string)
-  * warning(string)
   * echo_timing(string,expr), returns value of expr
     * Might want to measure eval time while ignoring result.
     * In OpenSCAD, `*` is a prefix operator that ignores the following shape.

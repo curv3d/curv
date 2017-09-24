@@ -593,19 +593,22 @@ struct Make_Shape_Function : public Polyadic_Function
 /// The meaning of a call to `echo`, such as `echo "foo"`.
 struct Echo_Action : public Just_Action
 {
+    const char* prefix_;
     Shared<Operation> arg_;
     Echo_Action(
         Shared<const Phrase> source,
+        const char* prefix,
         Shared<Operation> arg)
     :
         Just_Action(std::move(source)),
+        prefix_(prefix),
         arg_(std::move(arg))
     {}
     virtual void exec(Frame& f) const override
     {
         Value arg = arg_->eval(f);
         auto msg = arg.to<String>(At_Phrase(*arg_->source_, &f));
-        f.system.console() << "ECHO: " << *msg << std::endl;
+        f.system.console() << prefix_ << *msg << std::endl;
     }
 };
 /// The meaning of the phrase `echo` in isolation.
@@ -614,7 +617,18 @@ struct Echo_Metafunction : public Metafunction
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        return make<Echo_Action>(share(ph), analyze_op(*ph.arg_, env));
+        return make<Echo_Action>(share(ph),
+            "ECHO: ", analyze_op(*ph.arg_, env));
+    }
+};
+/// The meaning of the phrase `warning` in isolation.
+struct Warning_Metafunction : public Metafunction
+{
+    using Metafunction::Metafunction;
+    virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
+    {
+        return make<Echo_Action>(share(ph),
+            "WARNING: ", analyze_op(*ph.arg_, env));
     }
 };
 
@@ -776,6 +790,7 @@ builtin_namespace()
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},
     {"make_shape", make<Builtin_Value>(Value{make<Make_Shape_Function>()})},
     {"echo", make<Builtin_Meaning<Echo_Metafunction>>()},
+    {"warning", make<Builtin_Meaning<Warning_Metafunction>>()},
     {"error", make<Builtin_Meaning<Error_Metafunction>>()},
     {"assert", make<Builtin_Meaning<Assert_Metafunction>>()},
     {"defined", make<Builtin_Meaning<Defined_Metafunction>>()},
