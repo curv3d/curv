@@ -629,21 +629,26 @@ struct Error_Operation : public Operation
         Operation(std::move(source)),
         arg_(std::move(arg))
     {}
+    [[noreturn]] void run(Frame& f) const
+    {
+        throw Exception(At_Frame(&f),
+            arg_->eval(f).to<String>(At_Phrase(*arg_->source_, &f)));
+    }
     virtual void exec(Frame& f) const override
     {
-        throw Exception(At_Frame(&f), stringify(arg_->eval(f)));
+        run(f);
     }
     virtual Value eval(Frame& f) const override
     {
-        throw Exception(At_Frame(&f), stringify(arg_->eval(f)));
+        run(f);
     }
     virtual void generate(Frame& f, List_Builder&) const override
     {
-        throw Exception(At_Frame(&f), stringify(arg_->eval(f)));
+        run(f);
     }
     virtual void bind(Frame& f, Record&) const override
     {
-        throw Exception(At_Frame(&f), stringify(arg_->eval(f)));
+        run(f);
     }
 };
 /// The meaning of the phrase `error` in isolation.
