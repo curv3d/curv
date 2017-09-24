@@ -501,7 +501,12 @@ Value gl_constify(Operation& op, GL_Frame& f)
         return c->value_;
     else if (auto dot = dynamic_cast<Dot_Expr*>(&op)) {
         Value base = gl_constify(*dot->base_, f);
-        return base.at(dot->id_, At_GL_Phrase(*op.source_, &f));
+        if (dot->selector_.id_ != nullptr)
+            return base.at(dot->selector_.id_->atom_,
+                At_GL_Phrase(*op.source_, &f));
+        else
+            throw Exception(At_GL_Phrase(*dot->selector_.string_->source_, &f),
+                "Geometry Compiler: not an identifier");
     }
     else if (auto ref = dynamic_cast<Nonlocal_Strict_Ref*>(&op))
         return (*f.nonlocal)[ref->slot_];

@@ -18,6 +18,8 @@ struct Definition;
 struct Meaning;
 struct Operation;
 struct Segment;
+struct String_Expr_Base;
+using String_Expr = aux::Tail_Array<String_Expr_Base>;
 struct Environ;
 
 /// Base class for a node in a syntax tree created by the parser.
@@ -118,6 +120,7 @@ struct String_Phrase_Base : public Phrase
         return begin_.ending_at(end_);
     }
     virtual Shared<Meaning> analyze(Environ&) const override;
+    Shared<String_Expr> analyze_string(Environ&) const;
 
     TAIL_ARRAY_MEMBERS(Shared<const Segment_Phrase>)
 };

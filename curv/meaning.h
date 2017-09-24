@@ -272,21 +272,6 @@ struct Indirect_Function_Ref : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
-struct Dot_Expr : public Just_Expression
-{
-    Shared<Operation> base_;
-    Atom id_;
-
-    Dot_Expr(Shared<const Phrase> source, Shared<Operation> base, Atom id)
-    :
-        Just_Expression(std::move(source)),
-        base_(std::move(base)),
-        id_(std::move(id))
-    {}
-
-    virtual Value eval(Frame&) const override;
-};
-
 struct Call_Expr : public Just_Expression
 {
     Shared<Operation> fun_;
@@ -836,9 +821,44 @@ struct String_Expr_Base : public Just_Expression
     : Just_Expression(std::move(source)) {}
 
     virtual Value eval(Frame&) const override;
+    Atom eval_atom(Frame&) const;
     TAIL_ARRAY_MEMBERS(Shared<Segment>)
 };
 using String_Expr = aux::Tail_Array<String_Expr_Base>;
+
+struct Atom_Expr
+{
+    Shared<const Identifier> id_;
+    Shared<String_Expr> string_;
+
+    Atom_Expr(Shared<const Identifier> id) : id_(id), string_(nullptr) {}
+    Atom_Expr(Shared<String_Expr> string) : id_(nullptr), string_(string) {}
+
+    Shared<const Phrase> source() {
+        if (id_) return id_; else return string_->source_;
+    }
+    Atom eval(Frame& f) const {
+        return id_ ? id_->atom_ : string_->eval_atom(f);
+    } 
+};
+
+struct Dot_Expr : public Just_Expression
+{
+    Shared<Operation> base_;
+    Atom_Expr selector_;
+
+    Dot_Expr(
+        Shared<const Phrase> source,
+        Shared<Operation> base,
+        Atom_Expr selector)
+    :
+        Just_Expression(std::move(source)),
+        base_(std::move(base)),
+        selector_(std::move(selector))
+    {}
+
+    virtual Value eval(Frame&) const override;
+};
 
 } // namespace curv
 #endif // header guard

@@ -30,8 +30,13 @@ assert(
 );
 
 assert(
+    r = {x:1,y:2};
+    r.x==1 && r."y"==2
+);
+
+assert(
   var r := {a:1};
-  defined(r.a) && !defined(r.b)
+  defined(r.a) && defined(r."a") && !defined(r.b)
 );
 
 assert(0..<5 == [0,1,2,3,4]);

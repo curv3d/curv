@@ -697,16 +697,16 @@ struct Assert_Metafunction : public Metafunction
 struct Defined_Expression : public Just_Expression
 {
     Shared<const Operation> expr_;
-    Atom id_;
+    Atom_Expr selector_;
 
     Defined_Expression(
         Shared<const Phrase> source,
         Shared<const Operation> expr,
-        Atom id)
+        Atom_Expr selector)
     :
         Just_Expression(std::move(source)),
         expr_(std::move(expr)),
-        id_(std::move(id))
+        selector_(std::move(selector))
     {
     }
 
@@ -715,7 +715,8 @@ struct Defined_Expression : public Just_Expression
         auto val = expr_->eval(f);
         auto s = val.dycast<Structure>();
         if (s) {
-            return {s->hasfield(id_)};
+            auto id = selector_.eval(f);
+            return {s->hasfield(id)};
         } else {
             return {false};
         }
@@ -729,7 +730,8 @@ struct Defined_Metafunction : public Metafunction
         auto arg = analyze_op(*ph.arg_, env);
         auto dot = cast<Dot_Expr>(arg);
         if (dot != nullptr)
-            return make<Defined_Expression>(share(ph), dot->base_, dot->id_);
+            return make<Defined_Expression>(
+                share(ph), dot->base_, dot->selector_);
         throw Exception(At_Phrase(*ph.arg_, env),
             "defined: argument must be `expression.identifier`");
     }

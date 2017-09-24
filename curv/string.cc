@@ -25,7 +25,8 @@ String::make(const char* str, size_t len)
 Shared<String>
 String_Builder::get_string()
 {
-    return String::make(str().data(), str().size());
+    auto s = str(); // copies the data
+    return String::make(s.data(), s.size()); // copies the data again
 }
 
 void

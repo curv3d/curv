@@ -135,7 +135,8 @@ Value
 Dot_Expr::eval(Frame& f) const
 {
     Value basev = base_->eval(f);
-    return basev.at(id_, At_Phrase(*base_->source_, &f));
+    Atom id = selector_.eval(f);
+    return basev.at(id, At_Phrase(*base_->source_, &f));
 }
 
 Value
@@ -772,6 +773,15 @@ String_Expr_Base::eval(Frame& f) const
     for (auto seg : *this)
         seg->generate(f, sb);
     return {sb.get_string()};
+}
+Atom
+String_Expr_Base::eval_atom(Frame& f) const
+{
+    String_Builder sb;
+    for (auto seg : *this)
+        seg->generate(f, sb);
+    auto s = sb.str();
+    return {s.data(), s.size()};
 }
 
 } // namespace curv

@@ -401,6 +401,11 @@ Brace_Segment_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 String_Phrase_Base::analyze(Environ& env) const
 {
+    return analyze_string(env);
+}
+Shared<String_Expr>
+String_Phrase_Base::analyze_string(Environ& env) const
+{
     std::vector<Shared<Segment>> ops;
     for (Shared<const Segment_Phrase> seg : *this)
         ops.push_back(seg->analyze(env));
@@ -583,11 +588,19 @@ Binary_Phrase::analyze(Environ& env) const
             analyze_op(*left_, env),
             analyze_op(*right_, env));
     case Token::k_dot:
-        if (auto id = cast<Identifier>(right_))
+        if (auto id = cast<const Identifier>(right_)) {
             return make<Dot_Expr>(
                 share(*this),
                 analyze_op(*left_, env),
-                id->atom_);
+                Atom_Expr{id});
+        }
+        if (auto string = cast<const String_Phrase>(right_)) {
+            auto str_expr = string->analyze_string(env);
+            return make<Dot_Expr>(
+                share(*this),
+                analyze_op(*left_, env),
+                Atom_Expr{str_expr});
+        }
         throw Exception(At_Phrase(*right_, env),
             "invalid expression after '.'");
     case Token::k_in:
