@@ -1,0 +1,24 @@
+=============
+Project Goals
+=============
+
+Short Term
+----------
+* first release of high level CSG API
+  * new geometry compiler: emit optimized GLSL, larger GL subset
+  * core language extensions. record patterns for keyword arguments
+* STL export: initial prototype
+
+Long Term
+---------
+* import/export
+  * STL export: high quality (Dual Contouring or equiv.), GPU accelerated
+  * export SVG
+  * export as JSON CSG tree, for compatibility with other CSG systems
+  * import images, animated GIFs, videos
+  * offline conversion of triangle mesh to F-Rep, for import
+  * import resource via URL
+* GUI
+  * an integrated IDE, like OpenSCAD, with Book-of-Shaders style editor
+  * node based visual programming?
+* programming language integration via libcurv: JavaScript, Python, Scheme
