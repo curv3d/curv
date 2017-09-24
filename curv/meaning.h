@@ -770,24 +770,6 @@ struct Lambda_Expr : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
-struct Assoc : public Operation
-{
-    Shared<const Identifier> name_;
-    Shared<const Operation> definiens_;
-
-    Assoc(
-        Shared<const Phrase> source,
-        Shared<const Identifier> name,
-        Shared<const Operation> definiens)
-    :
-        Operation(std::move(source)),
-        name_(std::move(name)),
-        definiens_(std::move(definiens))
-    {}
-
-    virtual void bind(Frame&, Record&) const override;
-};
-
 struct Segment : public Shared_Base
 {
     Shared<const Segment_Phrase> source_;
@@ -858,6 +840,24 @@ struct Dot_Expr : public Just_Expression
     {}
 
     virtual Value eval(Frame&) const override;
+};
+
+struct Assoc : public Operation
+{
+    Atom_Expr name_;
+    Shared<const Operation> definiens_;
+
+    Assoc(
+        Shared<const Phrase> source,
+        Atom_Expr name,
+        Shared<const Operation> definiens)
+    :
+        Operation(std::move(source)),
+        name_(std::move(name)),
+        definiens_(std::move(definiens))
+    {}
+
+    virtual void bind(Frame&, Record&) const override;
 };
 
 } // namespace curv

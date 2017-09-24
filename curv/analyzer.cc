@@ -511,7 +511,13 @@ analyze_assoc(Environ& env,
     const Phrase& src, const Phrase& left, Shared<Phrase> right)
 {
     if (auto id = dynamic_cast<const Identifier*>(&left))
-        return make<Assoc>(share(src), share(*id), analyze_op(*right, env));
+        return make<Assoc>(share(src),
+            Atom_Expr{share(*id)}, analyze_op(*right, env));
+    if (auto string = dynamic_cast<const String_Phrase*>(&left)) {
+        auto string_expr = string->analyze_string(env);
+        return make<Assoc>(share(src),
+            Atom_Expr{string_expr}, analyze_op(*right, env));
+    }
     if (auto call = dynamic_cast<const Call_Phrase*>(&left))
         return analyze_assoc(env, src, *call->function_,
             make<Lambda_Phrase>(call->arg_, Token(), right));

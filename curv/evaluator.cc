@@ -550,7 +550,8 @@ Spread_Op::bind(Frame& f, Record& r) const
 void
 Assoc::bind(Frame& f, Record& r) const
 {
-    r.fields_[name_->atom_] = definiens_->eval(f);
+    Atom atom = name_.eval(f);
+    r.fields_[atom] = definiens_->eval(f);
 }
 
 Value
