@@ -1,0 +1,16 @@
+/*
+int N=7;
+float a=atan(c.x,c.y)+.2;
+float b=6.28319/float(N);
+f=vec4(vec3(smoothstep(.5,.51, cos(floor(.5+a/b)*b-a)*length(c.xy))),1.);
+*/
+
+make_shape {
+    dist(x,y,z,t) = (
+        var N := 7;
+        var a := phase(x,y) + tau/4;
+        var b := tau/N;
+        cos(floor(.5+a/b)*b-a)*mag(x,y) - 1
+    ),
+    is_2d = true,
+} >> distance_field

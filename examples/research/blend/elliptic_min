@@ -1,0 +1,90 @@
+/*
+The Superelliptic Blend
+(as named by John C Hart)
+
+-----------
+Following is from "Implicit Representations of Rough Surfaces"
+http://graphics.cs.illinois.edu/sites/default/files/roughcgf.pdf
+
+It produces a Lipschitz-1 result, given Lipschitz-1 inputs.
+Visually, it looks like smooth_union.
+
+Given two SDFs, A.dist and B.dist,
+
+define gA(p) = max(1 - A.dist p / rA, 0)
+and define gB likewise.
+
+The radii rA and rB control the extent of blend (radius of influence).
+
+The blend surface is implicitly defined by
+
+fAB p = (rA*gA(p)^e + rB*gB(p)^e)
+        / ((gA p)^e + (gB p)^e))
+        * (1 - gA(p)^e - gB(p)^e)^(1/e)
+
+The resulting blended union is defined by
+
+f p = min(fA p, fB p, fAB p)
+
+The exponent e controls the degree of the resulting blend surface.
+Increasing e causes the blend to adhere more closely to the surfaces
+of the components.
+
+The domain of the blend is the locus of points such that
+f p <= rA and fB p <= rB.
+-----------
+
+Original paper, which I can't find:
+A. P. Rockwood and J. C. Owen,
+"Blending surfaces in solid modeling",
+in Geometric Modelling (G. Farin, ed.),
+pp. 367 - 383, SIAM, (1987)
+
+The Elliptic Blend
+------------------
+Let's simplify: replace the exponent with 1, and only one blending radius `r`.
+
+gA(p) = max(1 - A.dist p / r, 0)
+gB(p) = max(1 - B.dist p / r, 0)
+fAB p = (
+    d = gA p + gB p;
+    r * (1 - gA(p) - gB(p))
+)
+f p = min(fA p, fB p, fAB p)
+
+dist p = (
+    a = A.shape p;
+    b = B.shape p;
+    ga = max(1 - a/r, 0);
+    gb = max(1 - b/r, 0);
+    ab = r * (1 - ga - gb);
+    min(a, b, ab)
+)
+*/
+
+// based on John C Hart
+superelliptic_min(r,n,a,b) = (
+    var ga := max(1 - a/r, 0);
+    var gb := max(1 - b/r, 0);
+    var ab := r * (1 - ga^n - gb^n)^(1/n);
+    min(a, b, ab)
+);
+elliptic_min(r,a,b) = (
+    var ga := max(1 - a/r, 0);
+    var gb := max(1 - b/r, 0);
+    var ab := r * (1 - ga - gb);
+    min(a, b, ab)
+);
+// based on "A Gradient-Based Implicit Blend". Seems to be garbage.
+// Found a thesis that confirms this code is garbage.
+se_min(r,n,a,b) = (
+    1 - max(0, ((1-a)/r)^n) - max(0, ((1-b)/r)^n)
+);
+// According to said thesis, correct code is:
+cse_min(r,n,a,b) = (
+    (1 - max(0, (1 - a/r))^n - max(0, (1 - b/r))^n)//^(1/n)
+);
+make_shape {
+    dist(x,y,z,t) = cse_min(1, 2, x, y),
+    is_2d = true,
+} >> distance_field
