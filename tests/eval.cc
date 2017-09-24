@@ -385,15 +385,15 @@ TEST(curv, eval)
     SUCCESS("[for (i in [1,2,3]) i+1]", "[2,3,4]");
 
     // generalized actions
-    SUCCESS("(a=-2;for(b in a..2)if(b>0)echo b);"
+    SUCCESS("(a=-2;for(b in a..2)if(b>0)echo \"$(b)\");"
             "for(x in -1..1)if(x<0) echo \"-\" else if(x>0) echo \"+\";"
             "0",
         "0");
     EXPECT_EQ(console.str(),
         "ECHO: 1\n"
         "ECHO: 2\n"
-        "ECHO: \"-\"\n"
-        "ECHO: \"+\"\n");
+        "ECHO: -\n"
+        "ECHO: +\n");
 
     // The spread operator (a sequence generator)
     SUCCESS("[for (i in [1,2,3]) if (i==2) ...(\"two\", \"2!\") else i]", 
@@ -401,12 +401,12 @@ TEST(curv, eval)
     SUCCESS("...[1,2,3]", "1\n2\n3");
 
     // semicolon operator
-    SUCCESS("(a=1;echo a;a)+1", "2");
+    SUCCESS("(a=1;echo \"$(a)\";a)+1", "2");
     EXPECT_EQ(console.str(), "ECHO: 1\n");
 
     // echo action
-    SUCCESS("echo(17,42)", "");
-    EXPECT_EQ(console.str(), "ECHO: 17,42\n");
+    SUCCESS("echo \"$(17,42)\"", "");
+    EXPECT_EQ(console.str(), "ECHO: [17,42]\n");
 
     // lexical errors
     FAILMSG("\\foo", "illegal character '\\'");
@@ -468,7 +468,7 @@ TEST(curv, eval)
         "  1,2\n"
         "   ^ ");
 
-    SUCCESS("a=2; f x={echo(g 2); g y=a*x*b*y; b=3}; f(5).g(7)", "210");
+    SUCCESS("a=2; f x={echo \"$(g 2)\"; g y=a*x*b*y; b=3}; f(5).g(7)", "210");
     EXPECT_EQ(console.str(),
         "ECHO: 60\n");
 

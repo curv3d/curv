@@ -590,28 +590,22 @@ struct Make_Shape_Function : public Polyadic_Function
     }
 };
 
-/// The meaning of a call to `echo`, such as `echo("foo")`.
+/// The meaning of a call to `echo`, such as `echo "foo"`.
 struct Echo_Action : public Just_Action
 {
-    std::vector<Shared<Operation>> argv_;
+    Shared<Operation> arg_;
     Echo_Action(
         Shared<const Phrase> source,
-        std::vector<Shared<Operation>> argv)
+        Shared<Operation> arg)
     :
         Just_Action(std::move(source)),
-        argv_(std::move(argv))
+        arg_(std::move(arg))
     {}
     virtual void exec(Frame& f) const override
     {
-        std::ostream& out = f.system.console();
-        out << "ECHO: ";
-        bool first = true;
-        for (auto a : argv_) {
-            if (!first) out << ",";
-            out << a->eval(f);
-            first = false;
-        }
-        out << std::endl;
+        Value arg = arg_->eval(f);
+        auto msg = arg.to<String>(At_Phrase(*arg_->source_, &f));
+        f.system.console() << "ECHO: " << *msg << std::endl;
     }
 };
 /// The meaning of the phrase `echo` in isolation.
@@ -620,7 +614,7 @@ struct Echo_Metafunction : public Metafunction
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        return make<Echo_Action>(share(ph), ph.analyze_args(env));
+        return make<Echo_Action>(share(ph), analyze_op(*ph.arg_, env));
     }
 };
 

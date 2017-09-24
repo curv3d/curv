@@ -16,6 +16,6 @@ fact n = (
     );
     r
 );
-echo(fact 5);
+echo "$(fact 5)";
 assert(fact 5 == 120);
 gl_assert(()->(fact 5 == 120))
