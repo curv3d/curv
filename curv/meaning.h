@@ -530,7 +530,8 @@ struct Record_Expr : public Just_Expression
 ///     definitions. These are proper values, not Thunks.
 struct Statements
 {
-    // location in the evaluation frame where the value list is stored.
+    // For a module constructor, location in the evaluation frame where the
+    // module's value list is stored. For a block, (slot_t)(-1).
     slot_t slot_;
 
     // size and initial contents of the value list.
@@ -540,6 +541,7 @@ struct Statements
     // actions to execute, during construction
     std::vector<Shared<const Operation>> actions_;
 
+#if 0
     Statements(
         slot_t slot,
         Shared<const List> defn_values,
@@ -551,6 +553,7 @@ struct Statements
         nonlocal_exprs_(std::move(nonlocal_exprs)),
         actions_(std::move(actions))
     {}
+#endif
 
     Statements() {}
 
