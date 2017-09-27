@@ -606,9 +606,13 @@ struct Echo_Action : public Just_Action
     {}
     virtual void exec(Frame& f) const override
     {
+        f.system.console() << prefix_;
         Value arg = arg_->eval(f);
-        auto msg = arg.to<String>(At_Phrase(*arg_->source_, &f));
-        f.system.console() << prefix_ << *msg << std::endl;
+        if (auto str = arg.dycast<String>())
+            f.system.console() << *str;
+        else
+            f.system.console() << arg;
+        f.system.console() << std::endl;
     }
 };
 /// The meaning of the phrase `echo` in isolation.
@@ -645,8 +649,13 @@ struct Error_Operation : public Operation
     {}
     [[noreturn]] void run(Frame& f) const
     {
-        throw Exception(At_Frame(&f),
-            arg_->eval(f).to<String>(At_Phrase(*arg_->source_, &f)));
+        Value val = arg_->eval(f);
+        Shared<const String> msg;
+        if (auto s = val.dycast<String>())
+            msg = s;
+        else
+            msg = stringify(val);
+        throw Exception(At_Frame(&f), msg);
     }
     virtual void exec(Frame& f) const override
     {
