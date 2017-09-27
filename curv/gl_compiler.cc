@@ -83,8 +83,9 @@ void gl_compile_2d(const Shape& shape, std::ostream& out, const Context& cx)
         "#endif\n"
         "    float d = main_dist(vec4(fragCoord*scale+offset,0,iGlobalTime), fragColour);\n"
         "    if (d > 0.0) {\n"
-        "        vec2 uv = fragCoord.xy / iResolution.xy;\n"
-        "        fragColour = vec4(uv,0.5+0.5*sin(iGlobalTime),1.0);\n"
+        //"        vec2 uv = fragCoord.xy / iResolution.xy;\n"
+        //"        fragColour = vec4(uv,0.5+0.5*sin(iGlobalTime),1.0);\n"
+        "        fragColour = vec4(1.0);\n" // white background
         "    }\n"
         "}\n"
         ;
