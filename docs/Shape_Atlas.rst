@@ -827,9 +827,10 @@ TODO: various blending kernels from MERCURY, like ``chamfer``.
 
 TODO: investigate advanced blending primitives from
 
-* "A Gradient-Based Implicit Blend",
-http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.592.5451&rep=rep1&type=pdf
-* "Extrusion of 1D implicit profiles: Theory and first application" (2001) https://www.irit.fr/recherches/VORTEX/publications/rendu-geometrie/IJSM2001_Barthe_et_al.pdf
+* "A Gradient-Based Implicit Blend" (2013),
+  http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.592.5451&rep=rep1&type=pdf
+* "Extrusion of 1D implicit profiles: Theory and first application" (2001)
+  https://www.irit.fr/recherches/VORTEX/publications/rendu-geometrie/IJSM2001_Barthe_et_al.pdf
 
 5. Shape Debugging
 ==================
