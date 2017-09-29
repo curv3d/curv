@@ -8,9 +8,6 @@ What remains for MVP?
   Play with nvidia's CUDA sample, marching cubes. export STL? Benchmark to
   evaluate speed of this approach.
 
-Shape Atlas: look at:
-* http://grasshopperprimer.com/en/1-foundations/1-3/2_working-with-attractors.html
-
 Circumratio project:
 Regular polytopes are prototypical shapes, with `map` and `circumratio` fields.
 Primitive shapes from Conway notation:
@@ -30,6 +27,22 @@ Primitive shapes from Conway notation:
 String:
 * $id interpolation
 * $+EE or $[0xEE] interpolation
+
+-------------------------
+Shape Atlas: look at:
+* http://grasshopperprimer.com/en/1-foundations/1-3/2_working-with-attractors.html
+
+FXAA: cheap, simple anti-aliasing.
+https://www.kotaku.com.au/2011/12/what-is-fxaa/
+SMAA also good, may be faster, may be higher quality (due to temporal sampling).
+Both work by post-processing the display buffer.
+
+Weld, a Stanford research project, enables efficient composition of parallel
+libraries on a single CPU or GPU. The usual way of composing libraries, through
+function calls that exchange data through memory, can create order-of-magnitude
+slowdowns. In contrast, Weld can transparently speed up applications using
+NumPy, Pandas and TensorFlow by up to 30x through a novel API that lets it
+optimize across the library calls used in each program.
 
 -------------------------
 BUG: bad Web GLSL (testing mandelbrot in shadertoy.com in Chrome on macOS):
