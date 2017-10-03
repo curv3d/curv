@@ -680,6 +680,42 @@ Sequential_Definition_Phrase::analyze_def(Environ& env) const
         Definition::k_sequential);
 }
 
+/// In the grammar, a <list> phrase is zero or more constituent phrases
+/// separated by commas or semicolons.
+/// This function iterates over each constituent phrase.
+static inline void
+each_item(const Phrase& phrase, std::function<void(const Phrase&)> func)
+{
+    if (dynamic_cast<const Empty_Phrase*>(&phrase))
+        return;
+    if (auto commas = dynamic_cast<const Comma_Phrase*>(&phrase)) {
+        for (auto& i : commas->args_)
+            func(*i.expr_);
+        return;
+    }
+    if (auto semis = dynamic_cast<const Semicolon_Phrase*>(&phrase)) {
+        for (auto& i : semis->args_)
+            func(*i.expr_);
+        return;
+    }
+    func(phrase);
+}
+
+Shared<Meaning>
+Let_Phrase::analyze(Environ& env) const
+{
+    Statement_Analyzer analyzer{env, false};
+    each_item(*bindings_, [&](const Phrase& stmt)->void {
+        analyzer.add_statement(share(stmt));
+    });
+    analyzer.analyze(share(*this));
+    analyzer.is_analyzing_action_ = env.is_analyzing_action_;
+    auto body = analyze_tail(*body_, analyzer);
+    env.frame_maxslots_ = analyzer.frame_maxslots_;
+    return make<Block_Op>(share(*this),
+        std::move(analyzer.statements_), std::move(body));
+}
+
 Shared<Meaning>
 Semicolon_Phrase::analyze(Environ& env) const
 {
@@ -768,27 +804,6 @@ Shared<Definition>
 Program_Phrase::analyze_def(Environ& env) const
 {
     return body_->analyze_def(env);
-}
-
-/// In the grammar, a <list> phrase is zero or more constituent phrases
-/// separated by commas or semicolons.
-/// This function iterates over each constituent phrase.
-static inline void
-each_item(const Phrase& phrase, std::function<void(const Phrase&)> func)
-{
-    if (dynamic_cast<const Empty_Phrase*>(&phrase))
-        return;
-    if (auto commas = dynamic_cast<const Comma_Phrase*>(&phrase)) {
-        for (auto& i : commas->args_)
-            func(*i.expr_);
-        return;
-    }
-    if (auto semis = dynamic_cast<const Semicolon_Phrase*>(&phrase)) {
-        for (auto& i : semis->args_)
-            func(*i.expr_);
-        return;
-    }
-    func(phrase);
 }
 
 Shared<Meaning>

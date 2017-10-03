@@ -236,6 +236,16 @@ parse_item(Scanner& scanner)
         return make<If_Phrase>(
             tok, condition, then_expr, tok2, else_expr);
       }
+    case Token::k_let:
+      {
+        auto bindings = parse_list(scanner);
+        Token tok2 = scanner.get_token();
+        if (tok2.kind_ != Token::k_in)
+            throw Exception(At_Token(tok2, scanner),
+                "syntax error: expecting 'in'");
+        auto body = parse_item(scanner);
+        return make<Let_Phrase>(tok, bindings, tok2, body);
+      }
     case Token::k_for:
       {
         Token tok2 = scanner.get_token();
@@ -301,9 +311,6 @@ parse_item(Scanner& scanner)
         return make<Assignment_Phrase>(
             std::move(left), tok, parse_item(scanner));
     case Token::k_colon:
-        return make<Binary_Phrase>(
-            std::move(left), tok, parse_item(scanner));
-    case Token::k_in:
         return make<Binary_Phrase>(
             std::move(left), tok, parse_item(scanner));
     case Token::k_right_arrow:

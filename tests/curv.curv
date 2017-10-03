@@ -183,5 +183,9 @@ assert( [if (true) (;)] == [] );
 
 assert( "$(2+2)" == "4" && "$("foo")" == """foo""" && "${"foo"}" == "foo" );
 
+assert( (let x=1 in x+2) == 3
+    && (let x=2; y=3; in x+y) == 5
+);
+
 // script return value:
 {}

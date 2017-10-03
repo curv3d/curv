@@ -518,5 +518,31 @@ struct Range_Phrase : public Phrase
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
+struct Let_Phrase : public Phrase
+{
+    Token let_;
+    Shared<const Phrase> bindings_;
+    Token in_;
+    Shared<const Phrase> body_;
+
+    Let_Phrase(
+        Token let,
+        Shared<const Phrase> bindings,
+        Token in,
+        Shared<const Phrase> body)
+    :
+        let_(let),
+        bindings_(bindings),
+        in_(in),
+        body_(body)
+    {}
+
+    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Location location() const override
+    {
+        return body_->location().starting_at(let_);
+    }
+};
+
 } // namespace curv
 #endif // header guard
