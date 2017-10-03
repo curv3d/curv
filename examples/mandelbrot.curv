@@ -1,19 +1,21 @@
 make_shape {
   dist : everything.dist,
-  colour pt : (
+  colour pt : let
     var z := pt'[X,Y];
     var c := pt'[X,Y];
     var color := [0,0,0];
     var i := 0;
     while (i < 100) (
       z := csqr(z) + c;
-      if (dot(z,z) > 4) (
+      if (dot(z,z) > 4) let
         var colorRegulator := (i-1)-log(log(dot(z,z))/log 2)/log 2;
+      in (
         color := [0.95 + .012*colorRegulator, 1, .2+.4*(1+sin(.3*colorRegulator))];
         i := 100;
-      ) else i := i + 1;
+      ) else
+        i := i + 1;
     );
-    hsv2rgb color
-  ),
+  in
+    hsv2rgb color,
   is_2d : true,
 }

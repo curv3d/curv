@@ -1,5 +1,4 @@
-IF(a,b,c) = bit(a)*b + (1-bit(a))*c;
-
+let
 // f() returns true or false. Execute f() on the GPU, colour the world
 // green if it is true, red if it is false.
 gl_assert(f) = make_shape {
@@ -16,6 +15,8 @@ fact n = (
     );
     r
 );
-echo "$(fact 5)";
+echo (fact 5);
 assert(fact 5 == 120);
+
+in
 gl_assert(()->(fact 5 == 120))

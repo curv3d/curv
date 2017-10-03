@@ -1,31 +1,9 @@
 // the Neovius surface: https://en.wikipedia.org/wiki/Neovius_surface
+let
 neovius = make_shape {
     dist p: -(3*(cos(p[X])+cos(p[Y])+cos(p[Z])) + 4*cos(p[X])*cos(p[Y])*cos(p[Z])),
     is_3d: true
 };
 
-/*
-gyroid_bones = offset (-1.2) gyroid >> lipschitz 1.5;
-
-gyroid_surface = shell (.2) gyroid >> lipschitz 1.5;
-
-gyroidize t shape = morph(t, shape, intersection(shape, gyroid_surface));
-
-c = 1.5;
-double_gyroid_bones = union(
-    colour blue gyroid_bones,
-    colour green gyroid_bones >> translate (c,c,c),
-);
-*/
-
-/*
-union(
-    intersection(double_gyroid_bones, cube 20) >> translate(-15,0,0),
-    intersection(gyroid_surface >> colour red, cube 20) >> translate(+15,0,0),
-    gyroidize(.1) (cube 20) >> translate(+45,0,0),
-)
-*/
-
+in
 neovius >> shell .2 >> lipschitz 10 >> crop (cube 20)
-
-//neovius >> translate(0,0,1) >> slice_xy >> gradient 2

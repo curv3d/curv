@@ -2,6 +2,7 @@
 // Mapping an infinite plane onto the surface of a unit sphere.
 // https://en.wikipedia.org/wiki/Stereographic_projection
 
+let
 stereographic_projection plane = sphere 2 >> colour
     ((x,y,z,t)->plane.colour(x/(1-z), y/(1-z), 0, t));
 
@@ -22,4 +23,5 @@ log_spiral(a,b) = make_shape {
 };
 spiral = union(colour red everything, log_spiral(1,.2));
 
+in
 spiral >> stereographic_projection

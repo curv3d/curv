@@ -1,7 +1,10 @@
+let
 function(f) = make_shape {
     dist p : p'Y - f(p'X),
     is_2d : true,
 };
+
+in
 function(x->sin x - 2)
     >> rotate(90*deg)
     >> complement

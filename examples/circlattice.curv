@@ -1,2 +1,5 @@
+let
 c = repeat_xy (2,2) << shell .2 << colour black << circle 2;
+
+in
 union(c,translate(1,1)<<c)

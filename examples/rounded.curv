@@ -1,7 +1,9 @@
 // 'b' is a vec3
+let
 rounded_box(r, b) = offset r << box_e(b - 2*r);
 
-union (
+in
+union [
     rounded_box(.5, [2,2,2]),
     cube(2) >> translate(3,0,0),
-)
+]

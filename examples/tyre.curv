@@ -1,3 +1,4 @@
+let
 eps = .1;
 with_axes shape = union (
     shape,
@@ -9,6 +10,7 @@ with_axes shape = union (
 w = 5;
 c = 99.2;
 
+in
 rect(1,inf)
 >> repeat_x 2
 >> rotate(60*deg)

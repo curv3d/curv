@@ -1,5 +1,7 @@
 // Schwartz "P" surface:
 // https://en.wikipedia.org/wiki/Schwarz_minimal_surface#Schwarz_P_.28.22Primitive.22.29
+
+let
 schwartz_p = make_shape {
     dist p: -(cos(p[X]) + cos(p[Y]) + cos(p[Z])),
     is_3d: true
@@ -16,12 +18,9 @@ schwartz_surface = shell (.2) schwartz_p >> lipschitz 2;
 
 schwartzize t shape = morph(t, shape, intersection(shape, schwartz_surface));
 
+in
 union(
     schwartz_surface >> crop (sphere(tau*3)) >> translate(-15,0,0),
     schwartz_surface >> colour red >> crop(cube(tau*3)) >> translate(+15,0,0),
     schwartzize(.1) (cube 20) >> translate(+45,0,0),
 )
-
-//schwartz_p >> lipschitz 2 >> crop (cube 20)
-
-//schwartz_p >> translate(0,0,1) >> slice_xy >> gradient 2

@@ -1,5 +1,6 @@
 // Credit: Patricio Gonzalez 2015 https://thebookofshaders.com/13/
 
+let
 random xy = mod(sin(dot(xy, (12.9898,78.233)))*43758.5453123, 1);
 
 // Based on Morgan McGuire @morgan3d
@@ -54,4 +55,5 @@ smoke3(x,y,z,t) = (
     (f*f*f+.6*f*f+.5*f)*c
 );
 
+in
 cube 2 >> colour smoke3

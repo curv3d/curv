@@ -1,3 +1,4 @@
+let
 gyroid_bones = gyroid >> offset (-1.2) >> lipschitz 1.5;
 gyroid_bones2 = complement gyroid >> offset (-1.2) >> lipschitz 1.5;
 double_gyroid_bones = union(
@@ -9,8 +10,9 @@ gyroid_surface = shell (.2) gyroid >> lipschitz 1.5;
 
 gyroidize t shape = morph(t, shape, intersection(shape, gyroid_surface));
 
-union(
+in
+union[
     smooth_intersection .5 (double_gyroid_bones, sphere 20) >> translate(-20,0),
     intersection (gyroid_surface, sphere 20),
     gyroidize(.1) (cube 18) >> translate(+20,0,0),
-)
+]
