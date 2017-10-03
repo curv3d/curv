@@ -203,6 +203,8 @@ Scanner::get_token()
             tok.kind_ = Token::k_if;
         else if (id == "in")
             tok.kind_ = Token::k_in;
+        else if (id == "let")
+            tok.kind_ = Token::k_let;
         else if (id == "var")
             tok.kind_ = Token::k_var;
         else if (id == "while")

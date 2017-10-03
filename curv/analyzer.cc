@@ -852,16 +852,9 @@ If_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 For_Phrase::analyze(Environ& env) const
 {
-    auto def = cast<Binary_Phrase>(args_->body_);
-    if (def == nullptr || def->op_.kind_ != Token::k_in)
-        throw Exception(At_Phrase(*args_, env),
-            "for: malformed argument");
-    auto id = dynamic_cast<const Identifier*>(def->left_.get());
-    if (id == nullptr)
-        throw Exception(At_Phrase(*def->left_, env), "for: not an identifier");
-    Atom name = id->atom_;
+    Atom name = id_->atom_;
 
-    auto list = analyze_op(*def->right_, env);
+    auto list = analyze_op(*listexpr_, env);
 
     slot_t slot = env.frame_nslots_;
     struct For_Environ : public Environ

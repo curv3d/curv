@@ -374,14 +374,14 @@ TEST(curv, eval)
     FAILMSG("1..true", "1..true: domain error");
 
     // for
-    FAILMSG("for", "missing argument following 'for'");
+    FAILMSG("for", "syntax error: expecting '(' after 'for'");
     FAILMSG("for (i in a)", "missing expression");
-    FAILMSG("for (i = a) x", "for: malformed argument");
-    FAILMSG("for x x", "for: malformed argument");
-    FAILMSG("for () x", "for: malformed argument");
-    FAILMSG("for (i in a,j in b) x", "for: malformed argument");
-    FAILMSG("for (i) x", "for: malformed argument");
-    FAILMSG("for (42 in i) x", "for: not an identifier");
+    FAILMSG("for (i = a) x", "syntax error: expecting 'in'");
+    FAILMSG("for x x", "syntax error: expecting '(' after 'for'");
+    FAILMSG("for () x", "unexpected token when expecting 'for' iteration variable");
+    FAILMSG("for (i in a,j in b) x", "syntax error: expecting ')'");
+    FAILMSG("for (i) x", "syntax error: expecting 'in'");
+    FAILMSG("for (42 in i) x", "syntax error: expecting identifier after 'for('");
     SUCCESS("[for (i in [1,2,3]) i+1]", "[2,3,4]");
 
     // generalized actions

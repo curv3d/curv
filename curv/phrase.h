@@ -446,10 +446,39 @@ struct Control_Phrase : public Phrase
     }
 };
 
-struct For_Phrase : public Control_Phrase
+struct For_Phrase : public Phrase
 {
-    using Control_Phrase::Control_Phrase;
+    Token keyword_;
+    Token lparen_;
+    Shared<const Identifier> id_;
+    Token in_;
+    Shared<const Phrase> listexpr_;
+    Token rparen_;
+    Shared<const Phrase> body_;
+
+    For_Phrase(
+        Token keyword,
+        Token lparen,
+        Shared<const Identifier> id,
+        Token in,
+        Shared<const Phrase> listexpr,
+        Token rparen,
+        Shared<const Phrase> body)
+    :
+        keyword_(keyword),
+        lparen_(lparen),
+        id_(id),
+        in_(in),
+        listexpr_(listexpr),
+        rparen_(rparen),
+        body_(body)
+    {}
+
     virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Location location() const override
+    {
+        return body_->location().starting_at(keyword_);
+    }
 };
 
 struct While_Phrase : public Control_Phrase
