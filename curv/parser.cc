@@ -62,6 +62,7 @@ is_list_end_token(Token::Kind k)
     case Token::k_rparen:
     case Token::k_rbracket:
     case Token::k_rbrace:
+    case Token::k_in:
         return true;
     default:
         return false;
@@ -207,13 +208,13 @@ parse_semicolons(Scanner& scanner, Shared<Phrase> firstitem)
 //  | disjunction = item
 //  | disjunction := item
 //  | disjunction : item
-//  | disjunction in item
 //  | disjunction -> item
 //  | disjunction << item
 //  | 'if' primary item
 //  | 'if' primary item 'else' item
-//  | 'for' parens item
+//  | 'for' '(' item 'in' item ')' item
 //  | 'while' parens item
+//  | 'let' list 'in' item
 Shared<Phrase>
 parse_item(Scanner& scanner)
 {
@@ -235,15 +236,48 @@ parse_item(Scanner& scanner)
         return make<If_Phrase>(
             tok, condition, then_expr, tok2, else_expr);
       }
+    case Token::k_let:
+      {
+        auto bindings = parse_list(scanner);
+        Token tok2 = scanner.get_token();
+        if (tok2.kind_ != Token::k_in)
+            throw Exception(At_Token(tok2, scanner),
+                "syntax error: expecting 'in'");
+        auto body = parse_item(scanner);
+        return make<Let_Phrase>(tok, bindings, tok2, body);
+      }
     case Token::k_for:
       {
-        auto p = parse_primary(scanner, "argument following 'for'");
-        auto args = cast<Paren_Phrase>(p);
-        if (args == nullptr)
+        Token tok2 = scanner.get_token();
+        if (tok2.kind_ != Token::k_lparen) {
+            throw Exception(At_Token(tok2, scanner),
+                "syntax error: expecting '(' after 'for'");
+        }
+
+        auto p = parse_primary(scanner, "'for' iteration variable");
+        auto id = cast<Identifier>(p);
+        if (id == nullptr) {
             throw Exception(At_Phrase(*p, scanner.eval_frame_),
-                "for: malformed argument");
+                "syntax error: expecting identifier after 'for('");
+        }
+
+        Token tok3 = scanner.get_token();
+        if (tok3.kind_ != Token::k_in) {
+            throw Exception(At_Token(tok3, scanner),
+                "syntax error: expecting 'in'");
+        }
+
+        auto listexpr = parse_item(scanner);
+
+        Token tok4 = scanner.get_token();
+        if (tok4.kind_ != Token::k_rparen) {
+            throw Exception(At_Token(tok4, scanner),
+                "syntax error: expecting ')'");
+        }
+
         auto body = parse_item(scanner);
-        return make<For_Phrase>(tok, args, body);
+
+        return make<For_Phrase>(tok, tok2, id, tok3, listexpr, tok4, body);
       }
     case Token::k_while:
       {
@@ -277,9 +311,6 @@ parse_item(Scanner& scanner)
         return make<Assignment_Phrase>(
             std::move(left), tok, parse_item(scanner));
     case Token::k_colon:
-        return make<Binary_Phrase>(
-            std::move(left), tok, parse_item(scanner));
-    case Token::k_in:
         return make<Binary_Phrase>(
             std::move(left), tok, parse_item(scanner));
     case Token::k_right_arrow:

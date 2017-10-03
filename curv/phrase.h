@@ -446,10 +446,39 @@ struct Control_Phrase : public Phrase
     }
 };
 
-struct For_Phrase : public Control_Phrase
+struct For_Phrase : public Phrase
 {
-    using Control_Phrase::Control_Phrase;
+    Token keyword_;
+    Token lparen_;
+    Shared<const Identifier> id_;
+    Token in_;
+    Shared<const Phrase> listexpr_;
+    Token rparen_;
+    Shared<const Phrase> body_;
+
+    For_Phrase(
+        Token keyword,
+        Token lparen,
+        Shared<const Identifier> id,
+        Token in,
+        Shared<const Phrase> listexpr,
+        Token rparen,
+        Shared<const Phrase> body)
+    :
+        keyword_(keyword),
+        lparen_(lparen),
+        id_(id),
+        in_(in),
+        listexpr_(listexpr),
+        rparen_(rparen),
+        body_(body)
+    {}
+
     virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Location location() const override
+    {
+        return body_->location().starting_at(keyword_);
+    }
 };
 
 struct While_Phrase : public Control_Phrase
@@ -487,6 +516,32 @@ struct Range_Phrase : public Phrase
         }
     }
     virtual Shared<Meaning> analyze(Environ&) const override;
+};
+
+struct Let_Phrase : public Phrase
+{
+    Token let_;
+    Shared<const Phrase> bindings_;
+    Token in_;
+    Shared<const Phrase> body_;
+
+    Let_Phrase(
+        Token let,
+        Shared<const Phrase> bindings,
+        Token in,
+        Shared<const Phrase> body)
+    :
+        let_(let),
+        bindings_(bindings),
+        in_(in),
+        body_(body)
+    {}
+
+    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Location location() const override
+    {
+        return body_->location().starting_at(let_);
+    }
 };
 
 } // namespace curv
