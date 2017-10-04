@@ -29,7 +29,7 @@ mix(a,b,t) = a*(1-t) + b*t;
 // https://en.wikipedia.org/wiki/Smoothstep
 smoothstep(lo,hi,x) = let
     var t := clamp((x - lo)/(hi - lo), 0, 1);
-in
+ in
     t*t*(3 - 2*t);
 clamp(v,lo,hi) = min(max(v,lo),hi);
 isinf x = x == inf || x == -inf;
@@ -52,7 +52,7 @@ reduce (zero, f) list =
         var r := list[0];
         for (i in 1..<count list)
             r := f(r, list[i]);
-    in
+     in
         r;
 sum list = reduce(0, (x,y)->x+y) list;
 product list = reduce(1, (x,y)->x*y) list;
@@ -97,13 +97,13 @@ angle(a,b) = acos(dot(a,b) / (mag a * mag b));
 circle = let
     circle_e d = let
         r = d / 2;
-    in
+     in
         make_shape {
             dist(x,y,z,t) = mag(x,y) - r;
             bbox = [[-r,-r,0],[r,r,0]];
             is_2d = true;
         };
-in
+ in
     make_shape {
         ... circle_e 2,
         map : circle_e,
@@ -114,13 +114,13 @@ ellipse(dx,dy) = circle 1 >> scale(dx,dy);
 sphere = let
     sphere_e d = let
         r = d / 2;
-    in
+     in
         make_shape {
             dist(x,y,z,t) = mag(x,y,z) - r;
             bbox = [[-r,-r,-r],[r,r,r]];
             is_3d = true;
         };
-in
+ in
     make_shape {
         ... sphere_e 2,
         map : sphere_e,
@@ -137,7 +137,7 @@ cylinder_e(d,h) = extrude_e h (circle d);
 cone = cone_e;
 cone_m(d, height) = let
     radius = d / 2;
-in
+ in
     make_shape {
         dist(x,y,z,t) = let
             var q := [mag(x,y), z];
@@ -153,7 +153,7 @@ in
 // Credit: MERCURY (http://mercury.sexy/hg_sdf)
 cone_e(d, height) = let
     radius = d / 2;
-in
+ in
     make_shape {
         dist(x,y,z,t) = let
             var q := [mag(x,y), z];
@@ -180,7 +180,7 @@ in
 capsule(d,a,b) = let
     ba = b - a;
     r = d / 2;
-in
+ in
     make_shape {
         dist p = let
             var pa := p'[X,Y,Z] - a;
@@ -193,7 +193,7 @@ in
 stroke(d,a,b) = let
     r = d / 2;
     ba = b - a;
-in
+ in
     make_shape {
         dist p = let
             var pa := p'[X,Y] - a;
