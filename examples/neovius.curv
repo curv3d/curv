@@ -1,7 +1,8 @@
 // the Neovius surface: https://en.wikipedia.org/wiki/Neovius_surface
+
 let
 neovius = make_shape {
-    dist p: -(3*(cos(p[X])+cos(p[Y])+cos(p[Z])) + 4*cos(p[X])*cos(p[Y])*cos(p[Z])),
+    dist(x,y,z,t): -(3*(cos x+cos y+cos z) + 4*cos x*cos y*cos z),
     is_3d: true
 };
 
