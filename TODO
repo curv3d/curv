@@ -4,10 +4,18 @@ What remains for MVP?
 * bug fixes & language syntax changes
 * Documentation
 * Meta: use https://opensource.guide/
-* STL export:
-  Play with nvidia's CUDA sample, marching cubes. export STL? Benchmark to
-  evaluate speed of this approach.
+* STL export: Get open source marching cubes in OpenCL. Benchmark.
 
+Statements project:
+* A nonlocals list is now a Module value.
+* Modules are now tail arrays.
+* struct Statements:
+  * rename actions_ to operations_
+  * rename slot_ to indirect_slot_
+  * add nslots_
+  * use only operations_ to initialize the value list.
+
+-------------------------
 Circumratio project:
 Regular polytopes are prototypical shapes, with `map` and `circumratio` fields.
 Primitive shapes from Conway notation:
@@ -28,7 +36,6 @@ String:
 * $id interpolation
 * $+EE or $[0xEE] interpolation
 
--------------------------
 Shape Atlas: look at:
 * http://grasshopperprimer.com/en/1-foundations/1-3/2_working-with-attractors.html
 
@@ -126,7 +133,6 @@ BUGS:
 core language:
 * syntax changes:
   * remove a'b
-  * permit a choice of `,` or `;` in `{...}` constructors?
 
 3D viewer
 * use bbox to ensure entire scene is visible
@@ -149,9 +155,6 @@ Patterns (Bindings and Lambda):
 * Default values in record patterns, `{x=0,y=1} = ...`
 * functions with refutable parameter patterns lead to:
   switch((x,y,z)->..., a->...) -- returns a function
-
-Records:
-* "${strexpr}":42
 
 Blocks:
 * Add GL support. How?
@@ -197,10 +200,6 @@ Slice notation:
   meaning that [0..-1] denotes []. Maybe I'd need to use separate syntax
   for slices and ranges, as Python does.
 * Generalized multidimensional array slicing?
-
-Generator is coerced to a list in expression context. For ease of use:
-* union (for (i in a) shape(i)) -- no need for trailing , or extra [ ]
-* 1..10 is a generator. [1..3, 5, 8] and for (i in 1..10) both work.
 
 Use.
 * use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace,
@@ -303,7 +302,6 @@ ImplicitCAD:
   (stmt1;stmt2;expression) -- expression block has no final semicolon
   (stmt1;stmt2;generator)
   (stmt1;stmt2;action;)  -- action block has final semicolon.
-
 
 # Older Stuff
 
@@ -457,6 +455,9 @@ nary union:
   * (x : predicate) -> body
   * echo_timing(string,expr), returns value of expr
     * Might want to measure eval time while ignoring result.
+    * Assign value to a variable, don't use variable.
+    * `echo_timing` is a metafunction: a call to it is either an expression
+      or an action, depending on context. That's no good in a list context.
     * In OpenSCAD, `*` is a prefix operator that ignores the following shape.
     * In Curv, maybe `ignore(arg)` is an action that evaluates and ignores arg.
   * `enter_debugger`, aka `debug`

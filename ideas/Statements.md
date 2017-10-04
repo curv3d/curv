@@ -1,5 +1,48 @@
 # Statement Syntax
 
+## Semicolon is a Generalized Sequence Operator
+In order to support a while loop in a list constructor, we need to
+reinterpret the meaning of a semicolon phrase.
+
+`a;b;c` now executes phrases a, b and c in sequence.
+A semicolon phrase can be an action, a generator or a binder.
+Note that `a := 0` is an action, not a definition, so sequential reassignments
+are legal in a semicolon phrase.
+
+Parenthesizing a semicolon phrase doesn't change its meaning.
+
+We need this for the body of a while loop, or for conditionally reassigning
+a sequential variable. What's new (from the previous block interpretation)
+is that non-final items can now be expressions, generators or binders.
+Also, the trailing semicolon can be omitted from a reassignment phrase.
+
+So `1;2;3` is a generator like `...[1,2,3]`.
+So `[1;2;3]` is a legal list constructor? That seems to follow.
+
+How are sequential variables defined in a list or record constructor?
+* In a record constructor, the currently available syntax
+  is `{var x:=0, ...}`. Must use commas at the top level, not semicolons.
+  (Unless I change the syntax of module constructors.)
+* If the body of a `let` is a sequential phrase (ie, an action, generator,
+  binder, or a semicolon phrase of this type, then a sequential scope
+  established by the `let` is extended into the body.
+  So, `{let var x:=0 in (...;...)}`.
+* If the body of a `let` is a record or list constructor, then a
+  sequential scope is continued into the body of the constructor.
+  So, `let var x:=0 in {...}`.
+* The body of a `let` can be a comma phrase--comma binds more tightly
+  than semicolon. You can use already use actions as items in a
+  list/record constructor.
+  So, `[let var x:= 0 in while (x < 10) (x; x:=x+1)]`
+* A semicolon phrase can contain definitions, which then creates a
+  local scope. So, `[var x:=0; ...]` or `{(var x:= 0;...)}`.
+
+Are definitions legal in a semicolon phrase?
+* We support generalized definitions. (def1;def2) is a compound definition.
+  There are also conditional definitions, eg `if (c) x=1 else x=2`.
+  You must use `let` to create a local scope.
+* Definitions in a semicolon phrase create a local scope.
+
 ## `let` syntax
 
 Proposal:
