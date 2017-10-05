@@ -549,6 +549,11 @@ void Block_Op::gl_exec(GL_Frame& f) const
     statements_.gl_exec(f);
     body_->gl_exec(f);
 }
+void Compound_Op_Base::gl_exec(GL_Frame& f) const
+{
+    for (auto s : *this)
+        s->gl_exec(f);
+}
 
 void Statements::gl_exec(GL_Frame& f) const
 {

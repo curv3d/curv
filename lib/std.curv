@@ -768,15 +768,14 @@ rotate a shape = (
             b = if (shape.bbox[MIN][X] == -inf || shape.bbox[MIN][Y] == -inf
                     || shape.bbox[MAX][X] == inf || shape.bbox[MAX][Y] == inf)
                 [[-inf,-inf], [inf,inf]]
-            else (
-                bv = map (p->rot2(a,p)) (
-                    [shape.bbox[MIN][X], shape.bbox[MIN][Y]],
-                    [shape.bbox[MAX][X], shape.bbox[MIN][Y]],
-                    [shape.bbox[MAX][X], shape.bbox[MAX][Y]],
-                    [shape.bbox[MIN][X], shape.bbox[MAX][Y]],
-                );
-                [min bv, max bv]
-            );
+            else
+                let bv = map (p->rot2(a,p)) [
+                        [shape.bbox[MIN][X], shape.bbox[MIN][Y]],
+                        [shape.bbox[MAX][X], shape.bbox[MIN][Y]],
+                        [shape.bbox[MAX][X], shape.bbox[MAX][Y]],
+                        [shape.bbox[MIN][X], shape.bbox[MAX][Y]],
+                    ];
+                in [min bv, max bv];
         in make_shape {
             dist p :
                 do var xy := rot2(-a,p);

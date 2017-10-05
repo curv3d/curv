@@ -659,6 +659,25 @@ Block_Op::exec(Frame& f) const
 }
 
 void
+Compound_Op_Base::generate(Frame& f, List_Builder& lb) const
+{
+    for (auto s : *this)
+        s->generate(f, lb);
+}
+void
+Compound_Op_Base::bind(Frame& f, Record& r) const
+{
+    for (auto s : *this)
+        s->bind(f, r);
+}
+void
+Compound_Op_Base::exec(Frame& f) const
+{
+    for (auto s : *this)
+        s->exec(f);
+}
+
+void
 While_Action::exec(Frame& f) const
 {
     for (;;) {

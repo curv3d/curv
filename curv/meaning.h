@@ -635,6 +635,20 @@ struct Module_Expr : public Just_Expression
     Shared<Module> eval_module(Frame&) const;
 };
 
+struct Compound_Op_Base : public Operation
+{
+    Compound_Op_Base(Shared<const Phrase> source)
+    : Operation(std::move(source)) {}
+
+    virtual void generate(Frame&, List_Builder&) const override;
+    virtual void bind(Frame&, Record&) const override;
+    virtual void exec(Frame&) const override;
+    virtual void gl_exec(GL_Frame&) const override;
+
+    TAIL_ARRAY_MEMBERS(Shared<Operation>)
+};
+using Compound_Op = aux::Tail_Array<Compound_Op_Base>;
+
 struct Block_Op : public Operation
 {
     Statements statements_;

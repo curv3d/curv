@@ -7,7 +7,6 @@ What remains for MVP?
 * STL export: Get open source marching cubes in OpenCL. Benchmark.
 
 Statements project:
-* Semicolon phrase is now a generalized compound phrase.
 * split Statement_Analyzer into two classes?
 * A nonlocals list is now a Module value.
 * Modules are now tail arrays.

@@ -357,7 +357,7 @@ TEST(curv, eval)
         "line 1(columns 6-18)\n"
         "  file \"nonexistent\"\n"
         "       ^------------");
-    SUCCESS("std = file \"std.curv\"; std.concat([1], [2,3], [4])",
+    SUCCESS("let std = file \"std.curv\" in std.concat([1], [2,3], [4])",
         "[1,2,3,4]");
     SUCCESS("file \"curv.curv\"", "{}");
 
@@ -471,7 +471,7 @@ TEST(curv, eval)
     EXPECT_EQ(console.str(),
         "ECHO: 60\n");
 
-    FAILMSG("a=1;var b:=2;a+b", "expecting = style definition");
+    //FAILMSG("a=1;var b:=2;a+b", "expecting = style definition");
     FAILMSG("let var a:=2 in a", "expecting = style definition");
     FAILMSG("do a=2 in a", "expecting := style definition");
   }

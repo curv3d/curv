@@ -1,3 +1,4 @@
+let
 assert(is_list 0 == false);
 assert(is_list());
 
@@ -70,19 +71,18 @@ assert(
 );
 
 assert( 
-    f = (
-        zero = 0;
-        m = { f g x = if (x > zero) f g (g x) else x };
-        m.f(a->a-1)
-    );
-    f 3.25 == -.75
+    let f =
+            let zero = 0;
+                m = { f g x = if (x > zero) f g (g x) else x };
+            in m.f(a->a-1);
+    in f 3.25 == -.75
 );
 assert(
-    n=4; s=sqrt; (
-        na = (n+5);
-        rpr f = f na;
-        rpr s
-    ) == 3
+    let n=4;
+        s=sqrt;
+    in (let na = (n+5);
+            rpr f = f na;
+        in rpr s) == 3
 );
 
 assert(
@@ -186,4 +186,4 @@ assert( (let x=1 in x+2) == 3
 );
 
 // script return value:
-{}
+in {}

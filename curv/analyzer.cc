@@ -723,16 +723,10 @@ Let_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Semicolon_Phrase::analyze(Environ& env) const
 {
-    // Blocks support mutually recursive bindings, like let-rec in Scheme.
-    Statement_Analyzer analyzer{env, Definition::k_recursive, false};
-    for (size_t i = 0; i < args_.size() - 1; ++i)
-        analyzer.add_statement(args_[i].expr_);
-    analyzer.analyze(share(*this));
-    analyzer.is_analyzing_action_ = env.is_analyzing_action_;
-    auto body = analyze_tail(*args_.back().expr_, analyzer);
-    env.frame_maxslots_ = analyzer.frame_maxslots_;
-    return make<Block_Op>(share(*this),
-        std::move(analyzer.statements_), std::move(body));
+    auto compound = Compound_Op::make(args_.size(), share(*this));
+    for (size_t i = 0; i < args_.size(); ++i)
+        compound->at(i) = analyze_action(*args_[i].expr_, env);
+    return compound;
 }
 
 Shared<Meaning>
