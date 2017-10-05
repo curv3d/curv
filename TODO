@@ -17,8 +17,6 @@ Statements project:
   * use only operations_ to initialize the value list.
 
 -------------------------
-echo, assert, warning, error are ignored in GL.
-
 Circumratio project:
 Regular polytopes are prototypical shapes, with `map` and `circumratio` fields.
 Primitive shapes from Conway notation:
@@ -34,10 +32,6 @@ Primitive shapes from Conway notation:
     is 1+1/3 to 2*sqrt(8/9). This gives a squatter cone that I like better.
   * Smallest volume that circumscribes a unit sphere. Needs calculus.
 * Maybe `cylinder`, `cone`.
-
-String:
-* $id interpolation
-* $+EE or $[0xEE] interpolation
 
 Shape Atlas: look at:
 * http://grasshopperprimer.com/en/1-foundations/1-3/2_working-with-attractors.html
@@ -119,9 +113,6 @@ library:
   or circumsphere radius r. RP stores its bounding circle/sphere radius.
 * Use HSV colour space? Impact on image import? Colours at least need to be
   linear, not gamma-corrected, for colour model.
-* `lib` is a struct for accessing library files in /usr/local/lib/curv.
-  `lib.foo` loads /usr/local/lib/curv/foo.curv.
-* `use(lib.foo)`
 
 curv:
 * in `curv -le`, if you quit the editor then curv exits (first, glslViewer is
@@ -133,10 +124,6 @@ curv:
 BUGS:
 * fix memory leak: `sum = reduce(0,(x,y)->x+y)` leaks memory. ideas/Leak.md
 
-core language:
-* syntax changes:
-  * remove a'b
-
 3D viewer
 * use bbox to ensure entire scene is visible
 * zoom in on `cube 0.25`. WTF?
@@ -147,66 +134,6 @@ core language:
   bbox), or don't march at all if the ray doesn't intersect the bbox.
 
 Fix kludge in Indirect_Function_Ref that forces thunks.
-
-## Language Redesign
-
-Patterns (Bindings and Lambda):
-* action thunks, instead of value thunks.
-* (x,y) = f(a);
-* {x,y}=... is pattern matching on a record. Extra fields on right -> error.
-* Record patterns can be used as function parameters.
-* Default values in record patterns, `{x=0,y=1} = ...`
-* functions with refutable parameter patterns lead to:
-  switch((x,y,z)->..., a->...) -- returns a function
-
-Blocks:
-* Add GL support. How?
-   1. Detect if the block has recursive definitions.
-      If true, compile as a recursive block.
-      Otherwise, compile as a GL-compatible non-recursive block.
-   2. Or move this analysis into the GL compiler.
-      Use a simple recursion detector that aborts on recursion.
-
-item ::= disjunction `where` item -- alternate block syntax
-`expr where (def1,def2,...)` -- uses commas, not semicolons.
-
-* recursive function definitions
-  * We could classify each binding as recursive or non-recursive.
-    * Non-recursive bindings are sorted in dependency order. Analyze the
-      definiens and recursively analyze dependencies before assigning a slot#.
-      If a loop is detected, mark the binding as recursive.
-  * Start with a list of statements (action and definition phrases).
-    * Analyze the statements in order. When a block reference is analyzed,
-      recursively analyze it. If a loop is detected, mark the binding
-      recursive and allocate a slot. Otherwise, once a definiens is
-      fully analyzed, allocate a slot.
-  * Slot initialization: first, we initialize each non-recursive slot to
-    missing, and each recursive slot to a thunk. Then, we execute the
-    action list, which runs action statements, and initializes non-recursive
-    binding slots in dependency order. Accessing a missing slot is a runtime
-    error.
-* GL support
-  * Block_Op::gl_eval() -- initialize each slot to GL_MISSING, eval each
-    binding, recursing at Letrec_Ref, detect recursive definitions. This will
-    output GLSL declarations in dependency order.
-
-Slice notation:
-* Extend vector swizzling, like v[X,Y,Z], with assignment, like v[X,Y,Z] = v2,
-  for GLSL compatibility. Source and destination lists have the same count.
-* a[i..j]. a[i..j] := list. In a range slice assignment,
-  source and destination lists can have different counts.
-* Generalized list slice notation, supporting full list constructor notation,
-  with assignment?
-* Maybe a[..j] and a[i..] as special shortcuts, in this context?
-* Can't support Python negative indexes (-1 indexes the last element)
-  because [0..count a - 1] is a list of the indexes of a, even if a is empty,
-  meaning that [0..-1] denotes []. Maybe I'd need to use separate syntax
-  for slices and ranges, as Python does.
-* Generalized multidimensional array slicing?
-
-Use.
-* use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace,
-  file must evaluate to a module.
 
 ## Geometry
 Math:
@@ -256,12 +183,9 @@ ImplicitCAD:
 * union, intersection, difference, square have a radius of rounding
 
 # Nice To Have
-* vectorize `bit`
-* GL: && || if use lazy evaluation
 * text (for debugging).
 * a better gl_assert: multiple assertions, display text for each assertion.
   gl_assert[["== works",()->t1==t2], ...]
-* unicode operators (needs re2c)
 * GL optimizer: hand-optimizing sample output reduced # of ops in main_dist
   from 29 to 13 (16 fewer); exe size from 9928 to 9741 (187 fewer).
   7574 in 'empty' shader, so 2354->2167, 12.6% fewer.
@@ -301,10 +225,6 @@ ImplicitCAD:
   Currently, all fields values are forced during module creation.
   For true lazy modules, need to pass a Frame* through Ref_Value::getfield
   and Module::get.
-* blocks: tighten up the syntax.
-  (stmt1;stmt2;expression) -- expression block has no final semicolon
-  (stmt1;stmt2;generator)
-  (stmt1;stmt2;action;)  -- action block has final semicolon.
 
 # Older Stuff
 
@@ -339,38 +259,6 @@ Build up the standard library.
 Linear algebra:
   pow(square_matrix,i),
   determinant(square_matrix), inverse(square_matrix) -- difficult
-
-Vectorized boolean operations:
-* Vectorized relations are:
-  * <' <=' >' >=' ==' !='
-  * .< .<= .> .>= .== .!= (Julia)
-  * less, less_or_equal, greater, greater_or_equal, equal, not_equal
-  * less, greater, equal, not_less, not_greater, not_equal
-* `not` is vectorized version of `!`.
-* `all` and `any` are vectorized boolean monoids for && and ||.
-  * Name is consistent with GLSL,R,Julia,Python,Matlab.
-  * Use some(pred)list, every(pred)list, name consistent with Javascript.
-* ifelse(cond,thenval,elseval)
-* Rationale: vectorized boolean ops have different names than unvectorized ones.
-  * x==y compares vectors and returns bool, unlike xs=='ys.
-  * a&&b short circuits if a==false, but all(a,b) must evaluate b if a==false
-    to implement broadcasting.
-  * ifelse(b,c,a) must evaluate all 3 arguments if b is an array.
-  * The unvectorized relations are guaranteed to return Bool, or fail,
-    which is appropriate for the most common use case, which is to construct
-    an argument for if, &&, ||, which require a Bool argument.
-* Many languages represent boolean values as the numbers 0 and 1.
-  In an array language, an array of booleans represented as 0 and 1
-  is a useful representation, you can do arithmetic on it.
-  In Curv, booleans are not numbers, but you can convert between the two
-  representations using vectorized operations. Eg,
-  * enbool(i) = [false,true]'i;
-  * debool(b) = ifelse(b, 1, 0);
-  Or:
-  * tobool(i), frombool(b)
-  Or:
-  * idiom: i != 0, or i !=' 0
-  * bit(b) = ifelse(b, 1, 0);
 
 ongoing research:
 * list library
@@ -452,22 +340,6 @@ nary union:
 
 * volumetric textures, like marble.
 
-# 0.1: Minimum Viable Language
-* more debug actions:
-  * require(predicate) expr <=> let(tmp=expr)(assert(p tmp);tmp)
-  * (x : predicate) -> body
-  * echo_timing(string,expr), returns value of expr
-    * Might want to measure eval time while ignoring result.
-    * Assign value to a variable, don't use variable.
-    * `echo_timing` is a metafunction: a call to it is either an expression
-      or an action, depending on context. That's no good in a list context.
-    * In OpenSCAD, `*` is a prefix operator that ignores the following shape.
-    * In Curv, maybe `ignore(arg)` is an action that evaluates and ignores arg.
-  * `enter_debugger`, aka `debug`
-* modules: _foo is not exported, is omitted from the public dictionary.
-  curv::Module has a public dictionary and a debug dictionary.
-  _foo is private in std.curv, and in all other *.curv files.
-
 # refactoring
 * use new Value access API throughout code
 * value1==value2 performs a bitwise comparison (for performance),
@@ -492,7 +364,6 @@ nary union:
   * curv --help
   * curv --version
 
-
 VM:
 * debugger entry on exception
   * System::error(const Exception&) -- throw an exception, but first, enter
@@ -510,77 +381,8 @@ OpenSCADbis proposal
 # Simpler, More General Grammar
 * refactor/cleanup
   * get rid of List_Sequence_Expr
-* Convert `let` and `for` into metafunctions.
-  If this causes pain, change/regularize the grammar.
 * Simple, yaccable grammar with no conflicts or precedence declarations.
-* each <list> generator
-  1. `each` is a builtin metafunction. Use a subclass of `Builtin`.
-  2. `each` is a builtin generator function, so `each` is a value.
-     Extend `Function` with a generate callback and add Call_Expr::generate().
-  3. each(v) = for (i in v) i; Not hard: just add Call_Expr::generate().
 * names: Phrase or Syntax?
-
-Generalized Definitions:
-* A definition may bind multiple names.
-* A Definition is compiled into an initialization Action that stores a value
-  in a run-time data structure for each name that it binds (modulo constants?).
-  * module (recursive scope): A definition may bind multiple names. Each such
-    name has a slot containing the same Action thunk, which when evaluated
-    updates all of the slots with their values.
-  * qualified expr (sequential scope): each definition is compiled into an
-    action that evaluates definientia and stores values in binding slots.
-    At run time, execute the actions in order, then evaluate the expr.
-  * record (no scope): compile definitions into actions, execute actions to
-    initialize the record value. Records don't use slots, so we need a variant
-    action type for updating record fields?
-  * Definition::analyze(env) returns an action.
-* `[x,y]=...` using above framework
-* Extend `let` to support recursive functions.
-* `expr where (defs)`, higher precedence than `let`, same semantics.
-* (def1; def2; phrase) qualified expressions, sequentially scoped, see Loop.md
-  * Each def compiles into an action which stores values in slots.
-    Actions are executed in sequence, then expr is evaluated.
-
-Generalized Phrases:
-* ( definition )
-* ( action; definition )
-* ( definition; phrase )
-* (def1, def2) is a compound definition that is order independent:
-  (def2,def1) has the same meaning. The scoping rules depend on context.
-  This meaning arises in let(def)phrase, {def}.
-* In a comma phrase, definitions and operations cannot be mixed.
-  (def1,def2) is unordered, (op1,op2) is ordered.
-  * It's better if we have a clear distinction between `,` and `;`.
-    It's confusing if they overlap. Which they certainly do in module scope.
-  * In a comma phrase, can a definition be mixed with an operation?
-    Maybe no? (def1,def2) is unordered, (op1,op2) is ordered.
-  * (action1 , action2) is an action, not a generator --
-    semantically consistent, but not important, and potentially confusing:
-    stylistically you should use `;` if a compound action
-    (as opposed to a compound generator) is required.
-  * If Action <: Definition then (act,def) makes sense. But this complicates
-    the semantics (ordered vs unordered) and there's no utility.
-
-Value Scripts?
-* `(def1,def2)` is a compound definition. Weird advanced feature, rarely used.
-  Same as `use {def1,def2}`.
-  Can contain actions, too. (action) is ambiguous: is it an empty list or
-  an empty definition?
-* To define mutually recursive functions in the CLI session environment,
-  can't use `f=...; g=...` any more. (Not an important use case, but for
-  completeness it should be possible.)
-  * (f=..., g=...)
-  * use {f=..., g=...}
-* Sequential definitions: not part of MVP, consider later.
-* Customization of modules and shapes: not part of MVP, consider later.
-  A script can export a parameterized module like this: `(x,y)->module{ ... }`.
-* Modules as shape values: I'd like a way to attach metadata to a high level
-  shape expression, for BOM. That's not in this design yet.
-  * `S = metadata{x=1,y=2}shape`. No customization possible.
-    * Prints as `metadata{x=1,y=2}shape`.
-    * Should be easy to implement using `defshape`.
-    * S.x and S.y accesses metadata, attr(S) are shape attributes.
-    * S.param.x and S.param.y, shape attributes are accessed directly.
 
 Package Manager.
 * How are packages named?
@@ -687,11 +489,6 @@ Other:
 
 ---------------------------------------------------------------------------
 # Later:
-* Digit separator ' in numerals (like C++14).
-* Support ' in identifiers (like Haskell).
-* Support `foo` quoted identifiers.
-  Compatibility with OpenSCAD identifiers, GUI interfaces that display
-  parameter names as GUI labels, JSON object keys.
 * Rewrite scanner in re2c. Then add UTF-8 support.
 * Parser: consider Boost::Spirit (recursive descent) or Lemon (similar to
   Bison, thread safe, LALR(1)), or Bison with %pure-parser (thread safe).
