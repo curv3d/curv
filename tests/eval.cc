@@ -238,14 +238,14 @@ TEST(curv, eval)
     SUCCESS("sqrt(2)", "1.4142135623730951");
     SUCCESS("max(1,2,)", "2"); // test syntax: trailing , after last argument
     SUCCESS("sqrt << sqrt 16", "2");
-    FAILALL("f=()->sqrt(true);\nf()",
+    FAILALL("let f=()->sqrt(true);\nin f()",
         "sqrt(true): domain error\n"
-        "line 1(columns 7-16)\n"
-        "  f=()->sqrt(true);\n"
-        "        ^--------- \n"
-        "line 2(columns 1-3)\n"
-        "  f()\n"
-        "  ^--");
+        "line 1(columns 11-20)\n"
+        "  let f=()->sqrt(true);\n"
+        "            ^--------- \n"
+        "line 2(columns 4-6)\n"
+        "  in f()\n"
+        "     ^--");
     SUCCESS("count()", "0");
     FAILALL("count 0",
         "not a list, structure or string\n"
@@ -301,43 +301,42 @@ TEST(curv, eval)
         "          ^--");
     SUCCESS("(0..10)'(3..1 by -1)", "[3,2,1]");
     SUCCESS("[false,true]'[[0,1],[1,0]]", "[[false,true],[true,false]]");
-    SUCCESS("x=1;y=2;x+y", "3");
-    SUCCESS("a=c+1;b=1;c=b+1;a", "3");
-    FAILMSG("x=x;x", "illegal recursive reference");
-    SUCCESS("x=1;(y=2;(z=3;x+y+z))", "6");
-    FAILALL("(x=x;x)",
+    SUCCESS("let x=1;y=2; in x+y", "3");
+    SUCCESS("let a=c+1;b=1;c=b+1; in a", "3");
+    SUCCESS("let x=1 in let y=2 in let z=3 in x+y+z", "6");
+    FAILALL("let x=x in x",
         "illegal recursive reference\n"
-        "line 1(column 4)\n"
-        "  (x=x;x)\n"
-        "     ^   ");
-    SUCCESS("f=x->(a=x+1;a); f 2", "3");
-    FAILMSG("f(x,y)=x; f()",
+        "line 1(column 7)\n"
+        "  let x=x in x\n"
+        "        ^     ");
+    SUCCESS("let f=x->(let a=x+1 in a) in f 2", "3");
+    FAILMSG("let f(x,y)=x in f()",
         "function call argument is not a list of length 2");
-    SUCCESS("add=(x,y)->x+y;add(1,2)", "3");
-    SUCCESS("add=x->y->x+y;add(1)(2)", "3");
-    SUCCESS("add(x)(y) = x+y;add(1)(2)", "3");
+    SUCCESS("let add=(x,y)->x+y in add(1,2)", "3");
+    SUCCESS("let add=x->y->x+y in add 1 2", "3");
+    SUCCESS("let add x y = x+y in add 1 2", "3");
     SUCCESS(
-        "sum = (list,i,f)->if (i < count list) list'i+f(list,i+1,f) else 0;"
-        "sum([1,2,3],0,sum)",
+        "let sum = (list,i,f)->if (i < count list) list'i+f(list,i+1,f) else 0;"
+        "in sum([1,2,3],0,sum)",
         "6");
     SUCCESS(
         "/* tail-recursive function */"
-        "sum = (list,i)->if (i < count list) list'i+sum(list,i+1) else 0;"
-        "sum([1,2,3],0)",
+        "let sum = (list,i)->if (i < count list) list'i+sum(list,i+1) else 0;"
+        "in sum([1,2,3],0)",
         "6");
     SUCCESS(
         "// factorial (non-tail-recursive function)\n"
-        "f = x->if (x <= 1) 1 else x * f(x-1);\n"
-        "f(3)",
+        "let f = x->if (x <= 1) 1 else x * f(x-1);\n"
+        "in f(3)",
         "6");
-    FAILALL("f=x->x x; f 0",
+    FAILALL("let f=x->x x in f 0",
         "0: not a function\n"
-        "line 1(column 6)\n"
-        "  f=x->x x; f 0\n"
-        "       ^       \n"
-        "line 1(columns 11-13)\n"
-        "  f=x->x x; f 0\n"
-        "            ^--");
+        "line 1(column 10)\n"
+        "  let f=x->x x in f 0\n"
+        "           ^         \n"
+        "line 1(columns 17-19)\n"
+        "  let f=x->x x in f 0\n"
+        "                  ^--");
 
     // file
     FAILALL("file(\"bad_token.curv\")",
@@ -385,9 +384,9 @@ TEST(curv, eval)
     SUCCESS("[for (i in [1,2,3]) i+1]", "[2,3,4]");
 
     // generalized actions
-    SUCCESS("(a=-2;for(b in a..2)if(b>0)echo \"$(b)\");"
-            "for(x in -1..1)if(x<0) echo \"-\" else if(x>0) echo \"+\";"
-            "0",
+    SUCCESS("do (let a=-2 in for(b in a..2) if(b>0) echo b);"
+            "   for(x in -1..1) if(x<0) echo \"-\" else if(x>0) echo \"+\";"
+            "in 0",
         "0");
     EXPECT_EQ(console.str(),
         "ECHO: 1\n"
@@ -400,8 +399,8 @@ TEST(curv, eval)
         "[1,\"two\",\"2!\",3]");
     SUCCESS("...[1,2,3]", "1\n2\n3");
 
-    // semicolon operator
-    SUCCESS("(a=1;echo \"$(a)\";a)+1", "2");
+    // let operator
+    SUCCESS("(let a=1; echo \"$(a)\" in a)+1", "2");
     EXPECT_EQ(console.str(), "ECHO: 1\n");
 
     // echo action
@@ -468,7 +467,7 @@ TEST(curv, eval)
         "  1,2\n"
         "   ^ ");
 
-    SUCCESS("a=2; f x={echo \"$(g 2)\"; g y=a*x*b*y; b=3}; f(5).g(7)", "210");
+    SUCCESS("let a=2; f x={echo(g 2); g y=a*x*b*y; b=3} in f(5).g(7)", "210");
     EXPECT_EQ(console.str(),
         "ECHO: 60\n");
 

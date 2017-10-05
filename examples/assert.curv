@@ -6,15 +6,14 @@ gl_assert(f) = make_shape {
     colour p : [1-bit(f()), bit(f()), 0],
     is_2d : true,
 };
-fact n = (
-    var i := 1;
-    var r := 1;
-    while (i <= n) (
-        r := r * i;
-        i := i + 1;
-    );
-    r
-);
+fact n =
+    do  var i := 1;
+        var r := 1;
+        while (i <= n) (
+            r := r * i;
+            i := i + 1;
+        );
+    in r;
 echo (fact 5);
 assert(fact 5 == 120);
 

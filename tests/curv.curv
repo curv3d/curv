@@ -15,28 +15,29 @@ assert(
 
 assert(cross([2,3,4],[5,6,7]) == (-3,6,-3));
 
-assert(identity 3 ==
+assert(
+  identity 3 ==
   [[1,0,0],
    [0,1,0],
-   [0,0,1]] );
+   [0,0,1]]
+);
 
 assert(
-    (var a:=1;
-     var b:=2;
-     var c:=(var x:=10; var y:=20; [x,y]);
-     [a,b,c]
-    )
+    (do var a:=1;
+        var b:=2;
+        var c:= do var x:=10; var y:=20; in [x,y];
+     in [a,b,c])
     == [1,2,[10,20]]
 );
 
 assert(
-    r = {"x":1,y:2};
-    r.x==1 && r."y"==2
+    let r = {"x":1,y:2};
+    in r.x==1 && r."y"==2
 );
 
 assert(
-  var r := {a:1};
-  defined(r.a) && defined(r."a") && !defined(r.b)
+  do var r := {a:1};
+  in defined(r.a) && defined(r."a") && !defined(r.b)
 );
 
 assert(0..<5 == [0,1,2,3,4]);
@@ -46,22 +47,26 @@ assert(reverse(1,2,3) == [3,2,1] && reverse() == []);
 assert(sum(1,2,3)==6 && sum()==0);
 
 assert(
-  (var f(x,y) := x+y; var a := (2,3); f a)
-  == 5);
+  (do var f(x,y) := x+y; var a := (2,3); in f a)
+  == 5
+);
 
 assert((1,2,3)[0] == 1);
 assert((1,2,3)'[0,2] == [1,3]);
 
-assert(var r := {a:1,b:2}; r'"a"==1 && r'["a","b"]==[1,2]);
+assert(
+    do var r := {a:1,b:2};
+    in r'"a"==1 && r'["a","b"]==[1,2]
+);
 
 assert((sqrt << 4) == 2);
 assert((1..10 >> map(x->x^2) >> reverse) == [100,81,64,49,36,25,16,9,4,1]);
 
-assert((q=1; m={a=q;f x = x + a}; m.f 3) == 4);
+assert((let q=1; m={a=q;f x = x + a}; in m.f 3) == 4);
 
 assert(
-    f x = if (x <= 0) 1 else x * f(x-1);
-    f 3 == 6
+    let f x = if (x <= 0) 1 else x * f(x-1);
+    in f 3 == 6
 );
 
 assert( 
@@ -81,66 +86,57 @@ assert(
 );
 
 assert(
-    var a := 1;
-    var f x := x + a;
-    f 2 == 3
+    do var a := 1;
+       var f x := x + a;
+    in f 2 == 3
 );
 
 assert(
-    var m := {var a:=1; var f x := x + a};
-    m.f 2 == 3
+    do var m := {var a:=1; var f x := x + a};
+    in m.f 2 == 3
 );
 
 assert(
-    (var a:=1; a:=a+2; a) == 3
+    (do var a:=1; a:=a+2; in a) == 3
 );
 
 assert(
-  (var a := 1;
-  if (a > 0)
-    a := a + 2
-  else
-    a := a - 2;
-  a) == 3
+  (do var a := 1;
+      if (a > 0)
+          a := a + 2
+      else
+          a := a - 2;
+   in a) == 3
 );
 
 assert(
-  (var a := 1;
-   if (a > 0) (
-     a := a + 2
-   );
-   a) == 3
+  (do var a := 1;
+      if (a > 0) (
+          a := a + 2
+      );
+   in a) == 3
 );
 
 assert(
-  (var a := 1;
-   if (a > 0) (
-     a := a + 2;
-   );
-   a) == 3
+  (do var a := 1;
+      var b := 2;
+      if (a > 0) (
+          a := a + 2;
+          b := b + 3;
+      );
+   in a + b) == 8
 );
 
 assert(
-  (var a := 1;
-   var b := 2;
-   if (a > 0) (
-     a := a + 2;
-     b := b + 3;
-   );
-   a + b) == 8
-);
-
-assert(
-    Sum list = (
-        var i := 0;
-        var total := 0;
-        while (i < count list) (
-            total := total + list[i];
-            i := i + 1;
-        );
-        total
-    );
-    Sum(1,2,3) == 6
+    let Sum list =
+            do  var i := 0;
+                var total := 0;
+                while (i < count list) (
+                    total := total + list[i];
+                    i := i + 1;
+                );
+            in total;
+    in Sum(1,2,3) == 6
 );
 
 assert(
@@ -162,8 +158,8 @@ assert( count {x:1, y:2} == 2 );
 assert( dom(1,2) == [0,1] && dom{a:1} == ["a"] );
 
 assert(
-    a = {x:1, y:2};
-    {...a, x:3} == {x:3, y:2}
+    let a = {x:1, y:2};
+    in {...a, x:3} == {x:3, y:2}
 );
 
 assert( merge({a:1,z:26},{b:17,a:42}) == {a:42,b:17,z:26} );

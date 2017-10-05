@@ -28,7 +28,7 @@ mix(a,b,t) = a*(1-t) + b*t;
 // Results are undefined if lo >= hi.
 // https://en.wikipedia.org/wiki/Smoothstep
 smoothstep(lo,hi,x) =
-    let var t := clamp((x - lo)/(hi - lo), 0, 1);
+    do var t := clamp((x - lo)/(hi - lo), 0, 1);
     in t*t*(3 - 2*t);
 clamp(v,lo,hi) = min(max(v,lo),hi);
 isinf x = x == inf || x == -inf;
@@ -48,7 +48,7 @@ reduce (zero, f) list =
     if (list == [])
         zero
     else
-        let var r := list[0];
+        do  var r := list[0];
             for (i in 1..<count list)
                 r := f(r, list[i]);
         in r;
@@ -133,7 +133,7 @@ cone_m(d, height) =
     let radius = d / 2;
     in make_shape {
         dist(x,y,z,t) =
-            let var q := [mag(x,y), z];
+            do  var q := [mag(x,y), z];
                 var tip := q - [0, height];
                 var mantleDir := normalize(height, radius);
                 var mantle := dot(tip, mantleDir);
@@ -147,7 +147,7 @@ cone_e(d, height) =
     let radius = d / 2;
     in make_shape {
         dist(x,y,z,t) =
-            let var q := [mag(x,y), z];
+            do  var q := [mag(x,y), z];
                 var apex := q - [0, height];
                 var mantleDir := normalize(height, radius);
                 var mantle := dot(apex, mantleDir);
@@ -172,7 +172,7 @@ capsule(d,a,b) =
         r = d / 2;
     in make_shape {
         dist p =
-            let var pa := p'[X,Y,Z] - a;
+            do  var pa := p'[X,Y,Z] - a;
                 var h := clamp(dot(pa,ba) / dot(ba,ba), 0, 1);
             in mag(pa - ba*h) - r;
         bbox = [min(a-r,b-r), max(a+r,b+r)];
@@ -184,7 +184,7 @@ stroke(d,a,b) =
         ba = b - a;
     in make_shape {
         dist p =
-            let var pa := p'[X,Y] - a;
+            do  var pa := p'[X,Y] - a;
                 var h := clamp(dot(pa,ba) / dot(ba,ba), 0, 1);
             in mag(pa - ba*h) - r;
         bbox = [[...min(a-r,b-r),0], [...max(a+r,b+r),0]];
@@ -324,7 +324,7 @@ rect_e b =
         r = b / 2;
     in make_shape {
         dist(x,y,z,t) =
-            let var d := abs(x,y) - r;
+            do var d := abs(x,y) - r;
             in min(max d, 0) + mag(max(d,0));
         bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]];
         is_2d = true;
@@ -393,7 +393,7 @@ box_e b =
         r = b / 2;
     in make_shape {
         dist(x,y,z,t) =
-            let var d := abs(x,y,z) - r;
+            do var d := abs(x,y,z) - r;
             in min(max d, 0) + mag(max(d,0));
         bbox = [-r, r];
         is_3d = true;
@@ -628,7 +628,7 @@ _union2 (s1,s2) =
     make_shape {
         dist p : min(s1.dist p, s2.dist p),
         colour p :
-            let var d1 := s1.dist p;
+            do  var d1 := s1.dist p;
                 var d2 := s2.dist p;
             in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p,
         bbox : [min(s1.bbox'0, s2.bbox'0), max(s1.bbox'1, s2.bbox'1)],
@@ -654,7 +654,7 @@ crop limits shape = intersection(shape, limits);
 size shape = shape.bbox[MAX] - shape.bbox[MIN];
 row_x d shapes =
     let width = sum[for (s in shapes) size(s)[X]] + (count shapes - 1)*d;
-    in let
+    in do 
         var xdelta := [];
         var x := -width / 2;
         var i := 0;
@@ -669,7 +669,7 @@ smooth_union k (s1,s2) =
     make_shape {
         dist p : smooth_min(s1.dist p, s2.dist p, k),
         colour p :
-            let var d1 := s1.dist p;
+            do  var d1 := s1.dist p;
                 var d2 := s2.dist p;
             in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p,
         bbox : [min(s1.bbox'0, s2.bbox'0), max(s1.bbox'1, s2.bbox'1)],
@@ -696,7 +696,7 @@ smooth_min(a,b,k) =
         // Bug is: max(-inf,x) returns NaN.
         b
     else
-        let var h := clamp( 0.5+0.5*(b-a)/k, 0, 1 );
+        do var h := clamp( 0.5+0.5*(b-a)/k, 0, 1 );
         in mix( b, a, h ) - k*h*(1.0-h);
 smooth_max(a,b,k) = -smooth_min(-a,-b,k);
 
@@ -746,10 +746,10 @@ warp_domain_xy warp shape =
         ];
     in make_shape {
         dist(x,y,z,t) =
-            let var p := warp.inverse(x,y);
+            do var p := warp.inverse(x,y);
             in warp.fix_distance(x,y,shape.dist(p[X], p[Y], z, t));
         colour(x,y,z,t) =
-            let var p := warp.inverse(x,y);
+            do var p := warp.inverse(x,y);
             in warp.fix_distance(x,y,shape.colour(p[X], p[Y], z, t));
         bbox = [
             [ ...min bv, shape.bbox[MIN][Z] ],
@@ -778,8 +778,12 @@ rotate a shape = (
                 [min bv, max bv]
             );
         in make_shape {
-            dist p : (var xy := rot2(-a,p); shape.dist(xy'X,xy'Y,p'Z,p'T)),
-            colour p : (var xy := rot2(-a,p); shape.colour(xy'X,xy'Y,p'Z,p'T)),
+            dist p :
+                do var xy := rot2(-a,p);
+                in shape.dist(xy'X,xy'Y,p'Z,p'T),
+            colour p :
+                do var xy := rot2(-a,p);
+                in shape.colour(xy'X,xy'Y,p'Z,p'T),
             bbox : [
                 [ b[MIN][X], b[MIN][Y], shape.bbox[MIN][Z] ],
                 [ b[MAX][X], b[MAX][Y], shape.bbox[MAX][Z] ],
@@ -817,14 +821,12 @@ rotate a shape = (
                     in [ min bv, max bv ];
         in make_shape {
             //TODO: dist p : shape.dist(...rot3(angle,axis,p'[X,Y,Z]),p[T]),
-            dist p : (
-                var q := rot3(angle, axis, p'[X,Y,Z]);
-                shape.dist(q[X],q[Y],q[Z],p[T])
-            ),
-            colour p : (
-                var q := rot3(angle, axis, p'[X,Y,Z]);
-                shape.colour(q[X],q[Y],q[Z],p[T])
-            ),
+            dist p :
+                do var q := rot3(angle, axis, p'[X,Y,Z]);
+                in shape.dist(q[X],q[Y],q[Z],p[T]),
+            colour p :
+                do var q := rot3(angle, axis, p'[X,Y,Z]);
+                in shape.colour(q[X],q[Y],q[Z],p[T]),
             bbox : b,
             is_3d : true,
         }
@@ -881,19 +883,18 @@ taper_x (kx0, y0, kx1, y1) shape =
                 shape.dist(x/kx0,y,z,t) * kx0
             else if (y >= y1)
                 shape.dist(x/kx1,y,z,t) * kx1
-            else (
-                var kx := mix(kx0,kx1,(y-y0)/(y1-y0));
-                shape.dist(x/kx,y,z,t) * kx
-            )) * min(kx0,kx1);
+            else
+                do var kx := mix(kx0,kx1,(y-y0)/(y1-y0));
+                in shape.dist(x/kx,y,z,t) * kx
+            ) * min(kx0,kx1);
         colour(x,y,z,t) =
             if (y <= y0)
                 shape.colour(x/kx0,y,z,t)
             else if (y >= y1)
                 shape.colour(x/kx1,y,z,t)
-            else (
-                var kx := mix(kx0,kx1,(y-y0)/(y1-y0));
-                shape.colour(x/kx,y,z,t)
-            );
+            else
+                do var kx := mix(kx0,kx1,(y-y0)/(y1-y0));
+                in shape.colour(x/kx,y,z,t);
         bbox = shape.bbox * [[max(kx0,kx1),1,1],[max(kx0,kx1),1,1]];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
@@ -908,7 +909,7 @@ taper_xy (kx0, ky0, z0, kx1, ky1, z1) shape =
             else if (z >= z1)
                 shape.dist(x/kx1,y/ky1,z,t) * min(kx1,ky1)
             else
-                let var kx := mix(kx0,kx1,(z-z0)/(z1-z0));
+                do  var kx := mix(kx0,kx1,(z-z0)/(z1-z0));
                     var ky := mix(ky0,ky1,(z-z0)/(z1-z0));
                 in shape.dist(x/kx,y/ky,z,t) * min(kx,ky)
             ) * min(kx0,kx1,ky0,ky1);
@@ -918,7 +919,7 @@ taper_xy (kx0, ky0, z0, kx1, ky1, z1) shape =
             else if (z >= z1)
                 shape.colour(x/kx1,y/ky1,z,t)
             else
-                let var kx := mix(kx0,kx1,(z-z0)/(z1-z0));
+                do  var kx := mix(kx0,kx1,(z-z0)/(z1-z0));
                     var ky := mix(ky0,ky1,(z-z0)/(z1-z0));
                 in shape.colour(x/kx,y/ky,z,t);
         bbox =
@@ -987,7 +988,7 @@ extrude_e d shape =
     let h = d / 2;
     in make_shape {
         dist p :
-            let var dz := abs(p[Z]) - h;
+            do  var dz := abs(p[Z]) - h;
                 var dxy := shape.dist(p[X],p[Y],0,p[T]);
             in mag(max([dz,dxy],0)) + min(max(dz,dxy), 0),
         colour p : shape.colour(p[X],p[Y],0,p[T]),
@@ -1103,13 +1104,13 @@ repeat_radial reps shape =
                 (circumradius * cis((floor(reps/4)+.5)*angle))[Y];
     in make_shape {
         dist p :
-            let var a := phase(p'[X,Y]) + angle/2;
+            do  var a := phase(p'[X,Y]) + angle/2;
                 var r := mag(p'[X,Y]);
                 a := mod(a,angle) - angle/2;
                 var xy := cis(a) * r;
             in shape.dist(xy[X], xy[Y], p[Z], p[T]),
         colour p :
-            let var a := phase(p'[X,Y]) + angle/2;
+            do  var a := phase(p'[X,Y]) + angle/2;
                 var r := mag(p'[X,Y]);
                 a := mod(a,angle) - angle/2;
                 var xy := cis(a) * r;
@@ -1161,7 +1162,7 @@ colour c shape =
 
 // Each component of an [h,s,v] triple has range 0...1.
 hsv2rgb c =
-    let var m := abs(mod(c'0 + [1,2/3,1/3], 1) * 6 - 3);
+    do var m := abs(mod(c'0 + [1,2/3,1/3], 1) * 6 - 3);
     in c'2 * mix(1, clamp(m - 1, 0, 1), c'1);
 
 red = [1, 0, 0];
@@ -1210,10 +1211,10 @@ twist d shape =
             )];
     in make_shape {
         dist p :
-            let var xy := cmul(p'[X,Y], cis(p[Z]*t));
+            do var xy := cmul(p'[X,Y], cis(p[Z]*t));
             in shape.dist(xy[X], xy[Y], p[Z], p[T]) /* / (t*2) */,
         colour p :
-            let var xy := cmul(p'[X,Y], cis(p[Z]*t));
+            do var xy := cmul(p'[X,Y], cis(p[Z]*t));
             in shape.colour(xy[X], xy[Y], p[Z], p[T]) /* / (t*2) */,
         bbox : [[-r,-r,b[MIN][Z]],[r,r,b[MAX][Z]]],
         is_3d : true,
@@ -1244,7 +1245,7 @@ distance_field shape =
     make_shape {
         dist : everything.dist,
         colour p :
-            let var d := shape.dist p;
+            do  var d := shape.dist p;
                 var c := if (d >= 0) ceil(d)-d else floor(d)-d;
             in [max(-c,0), bit(abs(d)==inf), max(c,0)],
         is_2d : true,
@@ -1311,7 +1312,7 @@ gradient n shape =
     make_shape {
         dist : everything.dist,
         colour p :
-            let var eps := 0.01;
+            do  var eps := 0.01;
                 var d := shape.dist(p[X],p[Y],0,p[T]);
                 var up := shape.dist(p[X],p[Y]+eps,0,p[T]);
                 var down := shape.dist(p[X],p[Y]-eps,0,p[T]);
@@ -1331,7 +1332,7 @@ show_dist shape =
     let xy = make_shape {
             dist(x,y,z,t) : abs(z),
             colour p :
-                let var eps := 0.01;
+                do  var eps := 0.01;
                     var d := shape.dist p;
                     var up := shape.dist(p[X],p[Y]+eps,0,p[T]);
                     var down := shape.dist(p[X],p[Y]-eps,0,p[T]);

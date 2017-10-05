@@ -195,6 +195,8 @@ Scanner::get_token()
         aux::Range<const char*> id(first+tok.first_, p);
         if (id == "by")
             tok.kind_ = Token::k_by;
+        else if (id == "do")
+            tok.kind_ = Token::k_do;
         else if (id == "else")
             tok.kind_ = Token::k_else;
         else if (id == "for")

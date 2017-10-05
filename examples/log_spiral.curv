@@ -16,19 +16,17 @@
 
 let
 log_spiral(s,g) = make_shape {
-    dist p = let
-        var r := mag(p'[X,Y,Z]);
-        var t := phase(p'[X,Y,Z]);
-     in
-        if (r == 0)
+    dist p =
+        do  var r := mag(p'[X,Y,Z]);
+            var t := phase(p'[X,Y,Z]);
+        in if (r == 0)
             0
-        else (
-            var n := (log(r/s)/g - t) / tau;
-            var upper_r := s * e^(g*(t+tau*ceil n));
-            var lower_r := s * e^(g*(t+tau*floor n));
-            (min(abs(upper_r-r), abs(r-lower_r)) - r*abs g)
-                / 1.24 /* empirical Lipschitz compensation factor for g=.2 */
-        );
+        else
+            do  var n := (log(r/s)/g - t) / tau;
+                var upper_r := s * e^(g*(t+tau*ceil n));
+                var lower_r := s * e^(g*(t+tau*floor n));
+            in (min(abs(upper_r-r), abs(r-lower_r)) - r*abs g)
+                / 1.24; /* empirical Lipschitz compensation factor for g=.2 */
     is_2d = true;
 };
 

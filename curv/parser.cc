@@ -237,6 +237,7 @@ parse_item(Scanner& scanner)
             tok, condition, then_expr, tok2, else_expr);
       }
     case Token::k_let:
+    case Token::k_do:
       {
         auto bindings = parse_list(scanner);
         Token tok2 = scanner.get_token();
