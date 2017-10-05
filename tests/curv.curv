@@ -91,10 +91,12 @@ assert(
     in f 2 == 3
 );
 
+/*
 assert(
     do var m := {var a:=1; var f x := x + a};
     in m.f 2 == 3
 );
+*/
 
 assert(
     (do var a:=1; a:=a+2; in a) == 3

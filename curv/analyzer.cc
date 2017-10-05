@@ -180,11 +180,11 @@ Statement_Analyzer::add_statement(Shared<const Phrase> stmt)
     if (def == nullptr)
         action_phrases_.emplace_back(seq_count_++, std::move(stmt));
     else {
-        if (def_dictionary_.empty()) {
-            kind_ = def->kind_;
-        } else if (def->kind_ != kind_) {
+        if (def->kind_ != kind_) {
             throw Exception(At_Phrase(*stmt, *parent_),
-                "can't mix recursive and sequential definitions");
+                stringify("expecting ",
+                kind_ == Definition::k_recursive ? "=" : ":=",
+                " style definition"));
         }
 
         Atom name = def->name_->atom_;
@@ -704,7 +704,11 @@ each_item(const Phrase& phrase, std::function<void(const Phrase&)> func)
 Shared<Meaning>
 Let_Phrase::analyze(Environ& env) const
 {
-    Statement_Analyzer analyzer{env, false};
+    Definition::Kind kind =
+        let_.kind_ == Token::k_let
+        ? Definition::k_recursive
+        : Definition::k_sequential;
+    Statement_Analyzer analyzer{env, kind, false};
     each_item(*bindings_, [&](const Phrase& stmt)->void {
         analyzer.add_statement(share(stmt));
     });
@@ -720,7 +724,7 @@ Shared<Meaning>
 Semicolon_Phrase::analyze(Environ& env) const
 {
     // Blocks support mutually recursive bindings, like let-rec in Scheme.
-    Statement_Analyzer analyzer{env, false};
+    Statement_Analyzer analyzer{env, Definition::k_recursive, false};
     for (size_t i = 0; i < args_.size() - 1; ++i)
         analyzer.add_statement(args_[i].expr_);
     analyzer.analyze(share(*this));
@@ -830,7 +834,7 @@ Brace_Phrase::analyze(Environ& env) const
     auto source = share(*this);
 
     if (is_module) {
-        Statement_Analyzer fields{env, true};
+        Statement_Analyzer fields{env, Definition::k_recursive, true};
         each_item(*body_, [&](const Phrase& stmt)->void {
             fields.add_statement(share(stmt));
         });

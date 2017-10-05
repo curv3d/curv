@@ -111,7 +111,7 @@ struct Statement_Analyzer : public Environ
         bool defined_at_position(int pos);
         bool is_recursive();
     };
-    Definition::Kind kind_ = Definition::k_sequential;
+    Definition::Kind kind_;
     int seq_count_ = 0; // total# of seq pts (actions & seq. defs.)
     int cur_pos_; // set during analysis to seq# of stmt being analyzed
     slot_t slot_count_ = 0;
@@ -122,9 +122,13 @@ struct Statement_Analyzer : public Environ
     bool target_is_module_;
 
     // First, construct the Statement_Analyzer:
-    Statement_Analyzer(Environ& parent, bool target_is_module)
+    Statement_Analyzer(
+        Environ& parent,
+        Definition::Kind kind,
+        bool target_is_module)
     :
         Environ(&parent),
+        kind_(kind),
         target_is_module_(target_is_module)
     {
         frame_nslots_ = parent.frame_nslots_;
