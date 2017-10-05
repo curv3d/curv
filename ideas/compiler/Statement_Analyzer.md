@@ -108,7 +108,7 @@ Data structures:
   * not analyzed;
   * analysis is in progress;
   * analyzed and {recursive | not recursive}.
-* A `Recursion_Group` contains a list of `Shared<Definition>`.
+* An `MR_Partition` contains a list of `Shared<Definition>`.
   Probably don't need the definition to also point to the MR partition,
   that keeps the data structure hierarchical.
 * A `Statement_Analyzer` contains a list of `MR_Partition`.
@@ -141,3 +141,165 @@ Analysis:
       then mark it as analyzed + nonrecursive.
     * Pop the DefRef stack.
   * Finally, return a `Def_Ref` containing M.
+
+## `Statement_Analyzer` Analysis Phases
+
+**phase 1, collect statements:** `Statement_Analyzer::add_statement`
+
+* right now, we collect actions and definitions into a data structure:
+  * `action_phrases_`, a list of {seq_no, phrase}.
+  * `def_dictionary_`, maps identifiers to {seq_no, definition}.
+  * actions and sequential definitions have a sequence number, recursive
+    definitions all have seqno -1.
+* This is good enough for now.
+
+For a recursively defined lambda, we also set `shared_nonlocals_` to true.
+That still makes sense.
+
+**phase 2:** `analyze` and `Thunk_Environ::single_lookup`
+
+This will be rewritten.
+Use different algorithms for sequential and recursive statement lists,
+so the sequential code doesn't change.
+
+**data structures**
+* `actions_` vector of struct Analyzed_Action {
+      int seq_no_;
+      Shared<const Phrase> phrase_;
+      Shared<Operation> op_;
+      int op_index_;
+  }
+* `bindings_` maps Atom to struct Binding {
+      int definition_index;
+      int binding_index;
+  }
+  * a definition may bind N names, each has an index in `0..<N`.
+* `definitions_` vector of struct Analyzed_Definition {
+      Shared<const Definition> def;
+      Shared<Operation> definiens_;
+      Module::Dictionary nonlocals_;
+      int partition_index; // -1 until partition assigned
+      int seq_no;
+      slot_t first_slot;
+      enum class State {not_analyzed, analysis_in_progress, analyzed} state;
+  }
+* `partitions_` vector of struct MR_Partition {
+      std::set<int> definitions;
+      int op_index_;
+  }
+  initially empty, grows as definitions are analyzed.
+* `defn_stack_`: Stack of definitions currently being analyzed.
+
+**`analyze`**
+
+Currently, for recursive statements lists, we:
+* allocate the actions array, set all elements to null.
+* analyze the action phrases, plugging results into the actions array.
+* analyze each definition using a `Thunk_Environ`, then construct a
+  Thunk or Lambda pseudo-value and store it in defn_values.
+
+In the new design,
+* Initialize the actions array to empty.
+* For each action phrase, analyze it to an action op A.
+  As a side effect, some more MR partitions will be created.
+  Convert those MR partitions to action ops, and append them to the action list.
+  Then append A to the action list.
+* Analyze each definiens which hasn't already been analyzed.
+  Convert remaining MR partitions to action ops, append them to the action list.
+
+**`single_lookup`**
+
+Recursive statement lists currently use an indirect value list stored in
+the frame, and thunks. `Thunk_Environ::single_lookup` is used to analyze
+actions and definientia: this returns `Nonlocal_Function_Ref` or
+`Nonlocal_Lazy_Ref`.
+
+In the new design, we use `Lambda_Environ` to analyze a `Lambda_Phrase`
+definiens. In other cases, `Statement_Analyzer` is the environ class.
+
+* The symbol lookup fails, or resolves to binding B.
+* Before constructing a Ref, we recursively analyze the definiens of B.
+  `analyze_definiens(B->definition_index_)`
+* Outside of a function definition,
+  a reference is `Indirect_Strict_Ref` in a module, `Let_Ref` in a block.
+  We can assign a slot number when the Ref is created.
+* Inside of a function definition, a reference is a `Nonlocal_Symbolic_Ref`.
+
+  For efficiency, we'd prefer to use a `Nonlocal_Function_Ref` or a
+  `Nonlocal_Strict_Ref`. But at Ref creation time, we can't assign a slot
+  number, because we might later merge two function definitions into the
+  same MR partition.
+  * Initially, the evaluator uses an Atom to look up nonlocals.
+    We'll change the representation of a nonlocals list from List to Module.
+  * Later, an optimization pass will convert symbolic refs to slot refs.
+
+  The Environ also builds a nonlocals dictionary for each function definition.
+
+Symbolic nonlocal refs are the most disruptive issue.
+
+**`void analyze_definiens(int defindex)`**
+
+```
+  if (D->state == analyzed) return;
+  if (D->state == analysis_in_progress) {
+    // We have discovered recursion.
+    // Currently, only function definitions can be recursive.
+    // The GL compiler needs to distinguish
+    // recursive vs nonrecursive functions, so record this.
+    ..
+    return;
+  }
+  assert(D->state == not_analyzed);
+  D->state = analysis_in_progress;
+  push D onto the defn_stack_;
+  create a partition for D;
+  auto lambda = cast<const Lambda_Phrase>(D->definition->definiens);
+  Shared<Operation> op;
+  if (lambda) {
+    Lambda_Environ env(...);
+    op = analyze_op(env);
+    merge nonlocals dictionary into the partition;
+  } else {
+    op = analyze_op(*this);
+  }
+  // This algorithm doesn't tell us when an MR partition is complete.
+  // So we don't create MR partition actions right now; that happens at a
+  // higher level. Instead, we store the op in the definition stmt.
+  D->op = op;
+  if (D->state == analysis_in_progress) {
+    // non-recursive case
+    D->state = analyzed;
+  }
+  pop the definition stack;
+```
+
+* Set the analysis state of D to "in progress".
+* Set the current `MR_Partition` to null, and the defstack to D.
+* Begin analyzing the definiens of D.
+* Within `Statement_Analyzer::single_lookup`, there is a match M.
+  * Prepare to analyze the definiens of M.
+  * If M is already under analysis, then we have discovered recursion:
+    * Mark M as recursive.
+      * If the SA doesn't have a current `MR_Partition`, create a new one.
+      * Add M to the current `MR_Partition`.
+      * Suppose we visit `z->a->b->c->a`, and discover that `a` is recursive.
+        Then `b` and `c` must be added to a's `MR_Partition`. How is that done?
+      * The SA contains an explicit representation of the DefRef analysis stack,
+        along with the current `MR_Partition`.
+      * When recursion is detected, we mark all of the stack elements back to
+        the recursion point as recursive, and add them to the current partition.
+  * Otherwise, analyze M:
+    * Push M onto the DefRef analysis stack.
+    * Mark M as under analysis.
+    * Call analyze() on M's definiens.
+    * After analyze() returns, if M is still marked as "under analysis",
+      then mark it as analyzed + nonrecursive.
+    * Pop the DefRef stack.
+  * Finally, return a `Def_Ref` containing M.
+
+**phase 3: Generate Action List**
+
+During the analysis phase, we analyzed all of the definition and action
+statements, and accumulated all of the data needed for phase 3. We know how many
+action ops there are (sum of action statement count and MR partition count).
+We've assigned an action index to each action statement and MR partition.

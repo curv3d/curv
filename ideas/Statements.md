@@ -1,47 +1,82 @@
 # Statement Syntax
 
-## Semicolon is a Generalized Sequence Operator
-In order to support a while loop in a list constructor, we need to
-reinterpret the meaning of a semicolon phrase.
+## `do` syntax
 
-`a;b;c` now executes phrases a, b and c in sequence.
-A semicolon phrase can be an action, a generator or a binder.
-Note that `a := 0` is an action, not a definition, so sequential reassignments
-are legal in a semicolon phrase.
+Proposal:
+* `let <recursive-definitions&actions> in <body>`
+* `do <sequential-definitions&actions> in <body>`
+* `{ <recursive-definitions&actions> }` -- module syntax
 
-Parenthesizing a semicolon phrase doesn't change its meaning.
+Maybe?
+* `<body> where (recursive-definitions&actions)`
+* `<body> do_where (sequential-definitions&actions)`
+These are chainable, just as `let` and `do` are chainable.
 
-We need this for the body of a while loop, or for conditionally reassigning
-a sequential variable. What's new (from the previous block interpretation)
-is that non-final items can now be expressions, generators or binders.
-Also, the trailing semicolon can be omitted from a reassignment phrase.
+Benefits:
+* `do echo msg in ...` reads better than `let echo msg in ...`.
+* Sequential definitions and `while` actions can only occur within `do`,
+  so we can refer to the sequential sublanguage as the `do` feature.
+* Ideally, I'd like to not mix recursive definitions and actions.
+  I'd like to cleanly separate functional and imperative code.
+  With this syntax, I can at least avoid actions in `let`.
+  But, I think I need to support asserts and debug actions in modules.
+* The `Statement_Analyzer` might be easier to write if there are
+  separate recursive and sequential versions.
 
-So `1;2;3` is a generator like `...[1,2,3]`.
-So `[1;2;3]` is a legal list constructor? That seems to follow.
+Sequential definitions can't be used directly in a module.
+That's okay; you typically need local iteration variables to build
+something using a `while` that you wouldn't want to export.
+So it's not that great a feature anyway.
 
-How are sequential variables defined in a list or record constructor?
-* In a record constructor, the currently available syntax
-  is `{var x:=0, ...}`. Must use commas at the top level, not semicolons.
-  (Unless I change the syntax of module constructors.)
-* If the body of a `let` is a sequential phrase (ie, an action, generator,
-  binder, or a semicolon phrase of this type, then a sequential scope
-  established by the `let` is extended into the body.
-  So, `{let var x:=0 in (...;...)}`.
-* If the body of a `let` is a record or list constructor, then a
-  sequential scope is continued into the body of the constructor.
-  So, `let var x:=0 in {...}`.
-* The body of a `let` can be a comma phrase--comma binds more tightly
-  than semicolon. You can use already use actions as items in a
-  list/record constructor.
-  So, `[let var x:= 0 in while (x < 10) (x; x:=x+1)]`
-* A semicolon phrase can contain definitions, which then creates a
-  local scope. So, `[var x:=0; ...]` or `{(var x:= 0;...)}`.
+## Semicolon Phrases are Generalized Compound Phrases
 
-Are definitions legal in a semicolon phrase?
-* We support generalized definitions. (def1;def2) is a compound definition.
-  There are also conditional definitions, eg `if (c) x=1 else x=2`.
-  You must use `let` to create a local scope.
-* Definitions in a semicolon phrase create a local scope.
+Proposal:
+A semicolon phrase isn't a block; it is a generalized compound phrase.
+A semicolon phrase may contain actions, plus at most one of
+definitions, generators, or binders. This creates a compound action,
+definition, generator, or binder.
+* Definitions in a semicolon phrase *do not* create a local scope.
+  You must use `let` or `do` to create a local scope.
+* The meaning of a semicolon phrase can be determined bottom up.
+  Parenthesizing a semicolon phrase doesn't change its meaning.
+
+This supports our current need for compound actions, compound generators
+and compound binders. It is compatible with proposed future syntax:
+while loops in list/record constructors, and conditional compound definitions.
+
+`1;2;3` is a compound generator, equivalent to `...[1,2,3]`.
+`[1;2;3]` is now a list constructor.
+`if (c) (a;b;c)` is a conditional compound phrase.
+
+## `while` loops in list/record constructors
+
+This is low priority.
+
+Right now, `for` loops are legal in list and record constructors, but not
+`while` loops.  To fix this, we need to extend list/record constructors with:
+* `while` loops containing generators/binders
+* `a := b` reassignment actions, with a matching sequential definition in scope.
+
+Proposal:
+
+ 1. The `while` action is generalized so that the body can contain generators
+    or binders, same as how the `for` operation is already generalized.
+
+ 2. If the body of a `do` is a record or list constructor, then the `do`'s
+    sequential scope is continued into the body of the constructor.
+    Reassignments and `while` phrases may be used in the constructor body.
+
+    `do <sequential definitions> in [ <generators, actions, reassignments> ]`
+    `do <sequential definitions> in { <binders, actions, reassignments> }`
+
+    This syntax segregates the definitions (which are outside the constructor)
+    from the generators/binders (which are inside the constructor).
+    It avoids the ambiguity of putting local definitions (which don't define
+    a field) inside a record constructor.
+
+`while (c) (a;b;c)` is an iterative compound phrase.
+
+`do var i:= 0 in [while (i < 10) (i; i:=i+1)]`
 
 ## `let` syntax
 
@@ -180,10 +215,6 @@ around the function body, so
     );
     ```
 
-## Top level comma phrases
-
-Might as well mean a list, same as if the phrase is parenthesized.
-
 ## Top level semicolon phrases
 
 With the `let` proposal, a top level semicolon phrase is a compound action,
@@ -215,35 +246,3 @@ export a module/record/list instead.
 
 In an earlier revision of Curv, `a;b;c;` was a block that yields an empty list.
 That design would also address my issue.
-
-## `while` loops in list/record comprehensions
-
-Right now, `for` loops are legal in list and record comprehensions,
-but not `while` loops.
-
-To fix this, I would need to at least support `a := b` redefinition phrases
-(assignment actions) in list/record comprehensions.
-
-To assign a variable, it must first be defined using `var a := b`.
-And the definition must be part of the same linear action sequence:
-it can't be embedded in a subexpression, because sequential evaluation
-isn't defined in the expression world. List and record constructors are
-subexpressions.
-
-So, it seems that I will also need to support `var a := b` definitions
-in list/record comprehensions. This creates ambiguity in a record constructor:
-is a sequential variable definition local (to support while loops) or does
-it define a field?
-
-Currently, I use `;` in modules and `,` in records to deal with this ambiguity.
-But how about this:
-* A module is `module {def1; def2; ...}`.
-* A record is `{binder, binder, ...}`
-  or `{statement; statement; ...}`.
-* A list is `[generator, generator, ...]`
-  or `[statement; statement; ...]`.
-
-It seems reasonable for `std.curv` to begin with `module {`.
-
-This would mean `make_shape module {` would show up frequently in `std.curv`,
-or I switch to using records.

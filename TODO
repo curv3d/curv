@@ -7,6 +7,9 @@ What remains for MVP?
 * STL export: Get open source marching cubes in OpenCL. Benchmark.
 
 Statements project:
+* `do` syntax?
+ * split Statement_Analyzer into two classes.
+* Semicolon phrase is generalized compound phrase.
 * A nonlocals list is now a Module value.
 * Modules are now tail arrays.
 * struct Statements:
@@ -16,6 +19,8 @@ Statements project:
   * use only operations_ to initialize the value list.
 
 -------------------------
+echo, assert, warning, error are ignored in GL.
+
 Circumratio project:
 Regular polytopes are prototypical shapes, with `map` and `circumratio` fields.
 Primitive shapes from Conway notation:
