@@ -1,5 +1,45 @@
 # Statement Syntax
 
+## Bottom-Up Semicolon Phrases
+
+Semicolon phrases are analyzed bottom up.
+
+When you type an unadorned semicolon phrase into the CLI:
+* g1;g2 is a generator, we print each value on a separate line.
+* a1;a2 is a compound action, we execute the actions.
+* b1;b2 is a binder, we print each binding id:val on a separate line.
+* rd1;rd2 is a compound recursive definition, we define all the things,
+  and this is how you define mutually recursive functions in the CLI.
+* sd1;sd2 is a compound sequential definition.
+
+Semicolon phrases work everywhere that it makes sense:
+* (a;b) -- simple grouping
+* [g1;g2] -- list
+* {b1;b2} -- record
+* {rd1;rd2} -- recursive module
+* {sd1;sd2} -- sequential module
+
+How does this analysis work?
+* Definitions are recognized during "pre-analysis": `analyze_def()`.
+  class Definition is extended to support compound definitions.
+  `Semicolon_Phrase` implements `analyze_def()`.
+* Can't analyze recursive definitions bottom up. There must be a global
+  data structure containing the dependency graph, constructed at the point in
+  the parse tree encompassing a scope, corresponding to `Statement_Analyzer`.
+* The other phrase types are recognized during regular analysis, due to
+  metafunctions. class Operation is extended to record a set of phrase types.
+  [Compile time phrase type recognition is also a requirement for compiling
+  Curv code into Instructions.]
+
+`Semicolon_Phrase::analyze_def()` will implement a subset of the statement
+analyzer, will return a `Semicolon_Definition`. Actions and definientia are
+not analyzed. The result is similar to a `Statement_Analyzer` after
+the first phase of collecting statements.
+
+`Definition::analyze()` will be similar to `Statement_Analyzer::analyze()`.
+Actions and definientia are analyzed. The analysis results can be used by
+a surrounding compound definition, or by the let and module operators.
+
 ## `do` syntax
 
 Proposal:
