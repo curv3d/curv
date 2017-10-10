@@ -4,11 +4,19 @@ String:
 * $id interpolation
 * $+EE or $[0xEE] interpolation
 
+Libraries.
+* use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace,
+  file must evaluate to a module.
 * `lib` is a struct for accessing library files in /usr/local/lib/curv.
   `lib.foo` loads /usr/local/lib/curv/foo.curv.
 * `use(lib.foo)`
+* modules: _foo is not exported, is omitted from the public dictionary.
+  curv::Module has a public dictionary and a debug dictionary.
+  _foo is private in std.curv, and in all other *.curv files.
 
-* remove a'b
+Misc.
+* remove a'b ?
+* GL: && || if use lazy evaluation
 
 Patterns (Bindings and Lambda):
 * action thunks, instead of value thunks.
@@ -18,9 +26,6 @@ Patterns (Bindings and Lambda):
 * Default values in record patterns, `{x=0,y=1} = ...`
 * functions with refutable parameter patterns lead to:
   switch((x,y,z)->..., a->...) -- returns a function
-
-item ::= disjunction `where` item -- alternate block syntax
-`expr where (def1,def2,...)` -- uses commas, not semicolons.
 
 Slice notation:
 * Extend vector swizzling, like v[X,Y,Z], with assignment, like v[X,Y,Z] = v2,
@@ -36,19 +41,12 @@ Slice notation:
   for slices and ranges, as Python does.
 * Generalized multidimensional array slicing?
 
-Use.
-* use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace,
-  file must evaluate to a module.
-
-* vectorize `bit`
-* GL: && || if use lazy evaluation
-* unicode operators (needs re2c)
-
 Vectorized boolean operations:
+* vectorize `bit`
 * Vectorized relations are:
   * <' <=' >' >=' ==' !='
   * .< .<= .> .>= .== .!= (Julia)
-  * less, less_or_equal, greater, greater_or_equal, equal, not_equal
+  * less, greater, equal, less_or_equal, greater_or_equal, not_equal
   * less, greater, equal, not_less, not_greater, not_equal
 * `not` is vectorized version of `!`.
 * `all` and `any` are vectorized boolean monoids for && and ||.
@@ -76,86 +74,41 @@ Vectorized boolean operations:
   * idiom: i != 0, or i !=' 0
   * bit(b) = ifelse(b, 1, 0);
 
-# 0.1: Minimum Viable Language
-* more debug actions:
-  * require(predicate) expr <=> let(tmp=expr)(assert(p tmp);tmp)
-  * (x : predicate) -> body
-  * echo_timing(string,expr), returns value of expr
-    * Might want to measure eval time while ignoring result.
-    * Assign value to a variable, don't use variable.
-    * `echo_timing` is a metafunction: a call to it is either an expression
-      or an action, depending on context. That's no good in a list context.
-    * In OpenSCAD, `*` is a prefix operator that ignores the following shape.
-    * In Curv, maybe `ignore(arg)` is an action that evaluates and ignores arg.
-  * `enter_debugger`, aka `debug`
-* modules: _foo is not exported, is omitted from the public dictionary.
-  curv::Module has a public dictionary and a debug dictionary.
-  _foo is private in std.curv, and in all other *.curv files.
+Debug actions:
+* require(predicate) expr <=> let tmp=expr; assert(p tmp) in tmp
+* (x : predicate) -> body
+* echo_timing(string,expr), returns value of expr
+  * Might want to measure eval time while ignoring result.
+  * Assign value to a variable, don't use variable.
+  * `echo_timing` is a metafunction: a call to it is either an expression
+    or an action, depending on context. That's no good in a list context.
+  * In OpenSCAD, `*` is a prefix operator that ignores the following shape.
+  * In Curv, maybe `ignore(arg)` is an action that evaluates and ignores arg.
+* `enter_debugger`, aka `debug`
 
 Generalized Definitions:
-* A definition may bind multiple names.
-* A Definition is compiled into an initialization Action that stores a value
-  in a run-time data structure for each name that it binds (modulo constants?).
-  * module (recursive scope): A definition may bind multiple names. Each such
-    name has a slot containing the same Action thunk, which when evaluated
-    updates all of the slots with their values.
-  * qualified expr (sequential scope): each definition is compiled into an
-    action that evaluates definientia and stores values in binding slots.
-    At run time, execute the actions in order, then evaluate the expr.
-  * record (no scope): compile definitions into actions, execute actions to
-    initialize the record value. Records don't use slots, so we need a variant
-    action type for updating record fields?
-  * Definition::analyze(env) returns an action.
-* `[x,y]=...` using above framework
-* Extend `let` to support recursive functions.
-* `expr where (defs)`, higher precedence than `let`, same semantics.
-* (def1; def2; phrase) qualified expressions, sequentially scoped, see Loop.md
-  * Each def compiles into an action which stores values in slots.
-    Actions are executed in sequence, then expr is evaluated.
-
-Generalized Phrases:
+* id = expr
 * ( definition )
-* ( action; definition )
-* ( definition; phrase )
-* (def1, def2) is a compound definition that is order independent:
-  (def2,def1) has the same meaning. The scoping rules depend on context.
-  This meaning arises in let(def)phrase, {def}.
-* In a comma phrase, definitions and operations cannot be mixed.
-  (def1,def2) is unordered, (op1,op2) is ordered.
-  * It's better if we have a clear distinction between `,` and `;`.
-    It's confusing if they overlap. Which they certainly do in module scope.
-  * In a comma phrase, can a definition be mixed with an operation?
-    Maybe no? (def1,def2) is unordered, (op1,op2) is ordered.
-  * (action1 , action2) is an action, not a generator --
-    semantically consistent, but not important, and potentially confusing:
-    stylistically you should use `;` if a compound action
-    (as opposed to a compound generator) is required.
-  * If Action <: Definition then (act,def) makes sense. But this complicates
-    the semantics (ordered vs unordered) and there's no utility.
+* def1; def2; def3
+* `[x,y,z] = expr` and other patterns
+* `if (cond) (a=foo;b=bar) else (a=bar;b=foo)`
+* expr where (defs)
 
-Value Scripts?
-* `(def1,def2)` is a compound definition. Weird advanced feature, rarely used.
-  Same as `use {def1,def2}`.
-  Can contain actions, too. (action) is ambiguous: is it an empty list or
-  an empty definition?
-* To define mutually recursive functions in the CLI session environment,
-  can't use `f=...; g=...` any more. (Not an important use case, but for
-  completeness it should be possible.)
-  * (f=..., g=...)
-  * use {f=..., g=...}
-* Sequential definitions: not part of MVP, consider later.
-* Customization of modules and shapes: not part of MVP, consider later.
-  A script can export a parameterized module like this: `(x,y)->module{ ... }`.
-* Modules as shape values: I'd like a way to attach metadata to a high level
-  shape expression, for BOM. That's not in this design yet.
-  * `S = metadata{x=1,y=2}shape`. No customization possible.
-    * Prints as `metadata{x=1,y=2}shape`.
-    * Should be easy to implement using `defshape`.
-    * S.x and S.y accesses metadata, attr(S) are shape attributes.
-    * S.param.x and S.param.y, shape attributes are accessed directly.
-
-* Digit separator ' in numerals (like C++14).
+Lexical:
+* unicode operators (needs re2c)
+* Digit separator in numerals: ' like C++14, or _
 * Support ' in identifiers (like Haskell).
 * Support `foo` quoted identifiers.
-  Compatibility with OpenSCAD identifiers, GUI interfaces that display
+  Compatibility with GUI interfaces that display
   parameter names as GUI labels, JSON object keys.
+
+OpenSCAD2 prototype oriented programming?
+* Model parameters and shape are bundled into one value.
+* Simple syntax for customizing a subset of model parameters, generating
+  a new shape.
+* The BOM feature: can extract model parameters from a model script,
+  generate JSON output.
+* Language support for using a GUI to tweak model parameters?
+* CSG trees: output a CSG tree as JSON, read a CSG tree to reconstruct model.
+  Shapes contain the name of their constructor, and their constructor
+  arguments. (Implemented using a proposed 'constructor' feature.)

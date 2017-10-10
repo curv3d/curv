@@ -1,3 +1,68 @@
+## Generalized Definitions
+* id = expr
+* ( definition )
+* def1; def2; def3 -- can also contain actions
+* `[x,y,z] = expr` and other patterns
+* `if (cond) (a=foo;b=bar) else (a=bar;b=foo)` -- not in MVP
+
+We attempt to recognize a generalized definition in these contexts,
+which create scopes:
+* bindings argument of `let` and `do`.
+* top level phrase in a CLI command. If not a definition, analyze as an
+  operation.
+* argument of `{}`. If not a definition, analyze as an action/binder sequence.
+
+How are generalized definitions analyzed?
+* Definitions are recognized during "pre-analysis": `analyze_def()`.
+  (The other phrase types are recognized during regular analysis, due to
+  metafunctions.)
+* The pre-analyzer converts a generalized definition into a tree.
+  Each tree node lists the bindings defined by that node.
+  This is needed to implement conditional definitions (check that the then
+  and else branches both define the same set of bindings).
+* Can't analyze recursive definitions bottom up. There must be a global
+  `Scope` data structure containing the dependency graph.
+
+Data Structures:
+* class Definition
+  * From the generalized definition parse tree is constructed a Definition tree.
+    There are subclasses of Definition for each defn-bearing phrase type.
+  * For each binding there is a smallest Definition object (in the tree)
+    that defines the binding and contains its definientia.
+* Scope
+  * A single Scope object contains the dependency graph for the Definition tree.
+
+Algorithm:
+
+### Phase 1: collect statements
+* Construct the Definition tree.
+
+### Phase 2: analyze definiens, create dependency graph
+
+### Phase 3: generate instruction sequence
+
+
+* class Definition represents a tree node, and contains
+  * a map from Atom to a slot_t.
+  * data for constructing a sequence of slot initialization instructions.
+  * an analyze() virtual function for creating the instructions.
+  * A compound definition contains intermixed definitions and actions.
+    Therefore class Compound_Definition also records the actions,
+    its analyze() outputs the action instructions. Sort of. In the recursive
+    case, the order of action instructions depends on the global dependency
+    graph.
+
+Can't analyze recursive definitions bottom up. There must be a global
+`Scope` data structure containing the dependency graph. Its analyze() function
+walks all of the definiens in dependency order.
+* So how would that work for conditional definitions? The dependencies of
+  an 'if' definition are the union of the 'then' and 'else' dependencies.
+  In effect, a single binding can have multiple definiens phrases.
+* For each binding, there is a smallest Definition object (in the definition
+  tree) that defines the binding and contains its definientia.
+
+## New `Statement_Analyzer`
+
 This is a new `Statement_Analyzer` to fix the storage leak (see Leak.md).
 
 * During analysis, partition a set of `=` definitions so that a set of 1 or
