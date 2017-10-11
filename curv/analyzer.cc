@@ -723,7 +723,7 @@ Let_Phrase::analyze(Environ& env) const
 Shared<Meaning>
 Semicolon_Phrase::analyze(Environ& env) const
 {
-    auto compound = Compound_Op::make(args_.size(), share(*this));
+    Shared<Compound_Op> compound = Compound_Op::make(args_.size(), share(*this));
     for (size_t i = 0; i < args_.size(); ++i)
         compound->at(i) = analyze_action(*args_[i].expr_, env);
     return compound;
