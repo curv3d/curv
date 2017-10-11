@@ -67,24 +67,25 @@ with data passing from left to right. When combined with curried functions,
 this syntax is used for chaining together geometry operations without
 nested parentheses. For example::
 
-  sphere 1 >> colour red >> translate(10,0,0)
+  sphere 1 >> colour red >> move(10,0,0)
 
-A *block* allows locally scoped definitions to be included in an expression::
+A *let block* allows locally scoped definitions to be included in an expression::
 
-  ( definition1; definition2; ...; result_expression )
+  let definition1; definition2; ... in result_expression
   
 Here are examples of definition syntax::
 
-  pi = 3.141592653589793;
-  incr x = x + 1;
-  add(a,b) = a + b;
+  pi = 3.141592653589793
+  incr x = x + 1
+  add(a,b) = a + b
 
-Within a block, all definitions are recursive, and the scope of each definition
-is the entire block. The order of definitions does not matter.
+Within a let block, the scope of each definition is the entire block,
+and function definitions may be recursive or mutually recursive.
+The order of definitions does not matter.
 
 Curv is an *expression language*: programs are expressions, blocks are expressions,
-``if (cond) a else b`` is an expression, etc. Consequently, every syntactic construct
-can be nested in every other construct.
+``if (cond) a else b`` is an expression, etc.
+Consequently, every syntactic construct can be nested in every other construct.
 
 ..
   Curv programs are stored in ``*.curv`` files.
