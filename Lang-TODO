@@ -74,16 +74,21 @@ Vectorized boolean operations:
   * idiom: i != 0, or i !=' 0
   * bit(b) = ifelse(b, 1, 0);
 
+Design by contract:
+* postconditions:
+  require pred val = do assert(pred val) in val;
+  sort x =
+    require sorted <<
+    <body of sort function>;
+* parameter preconditions:
+  * (x : predicate) -> body
+  * (predicate x) -> body
+
 Debug actions:
-* require(predicate) expr <=> let tmp=expr; assert(p tmp) in tmp
-* (x : predicate) -> body
 * echo_timing(string,expr), returns value of expr
-  * Might want to measure eval time while ignoring result.
-  * Assign value to a variable, don't use variable.
-  * `echo_timing` is a metafunction: a call to it is either an expression
-    or an action, depending on context. That's no good in a list context.
-  * In OpenSCAD, `*` is a prefix operator that ignores the following shape.
-  * In Curv, maybe `ignore(arg)` is an action that evaluates and ignores arg.
+  * Might want to measure eval time while ignoring result:
+    * Assign value to a variable, don't use variable.
+    * `ignore(arg)` is an action that evaluates and ignores arg.
 * `enter_debugger`, aka `debug`
 
 Generalized Definitions:

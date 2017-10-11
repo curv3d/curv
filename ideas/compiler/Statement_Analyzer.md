@@ -26,20 +26,33 @@ How are generalized definitions analyzed?
 Data Structures:
 * class Definition
   * From the generalized definition parse tree is constructed a Definition tree.
-    There are subclasses of Definition for each defn-bearing phrase type.
+    Definition <: Phrase. Each definition-bearing phrase type either is
+    <:Definition, or its analyze_def() function constructs a Definition object.
   * For each binding there is a smallest Definition object (in the tree)
     that defines the binding and contains its definientia.
-* Scope
-  * A single Scope object contains the dependency graph for the Definition tree.
+* Sequential_Scope
+* Recursive_Scope
+  * A single Recursive_Scope object contains the dependency graph
+    for the Definition tree.
 
 Algorithm:
 
 ### Phase 1: collect statements
-* Construct the Definition tree.
+* Construct the Definition tree. `def = phrase->analyze_def(env);`.
 
 ### Phase 2: analyze definiens, create dependency graph
+```
+if (def->kind_ == Definition::k_recursive) {
+    Recursive_Scope scope(def);
+    scope.analyze(env);
+} else {
+    Sequential_Scope scope(def);
+    scope.analyze(env);
+}
+```
 
 ### Phase 3: generate instruction sequence
+* `scope.emit();`
 
 
 * class Definition represents a tree node, and contains

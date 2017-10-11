@@ -7,6 +7,7 @@ What remains for MVP?
 * STL export: Get open source marching cubes in OpenCL. Benchmark.
 
 Statements project:
+* class Definition <: Phrase. analyze_def() may return self.
 * semicolon phrases (docs/Statements.md).
   * class Definition supports compound definitions.
   * CLI supports compound definitions. Unit tests.

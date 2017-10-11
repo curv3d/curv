@@ -245,6 +245,13 @@ around the function body, so
     );
     ```
 
+Another syntax:
+  ```
+  let (bindings) (body)
+  let (bindings) << body
+  body >> let (bindings)
+  ```
+
 ## Top level semicolon phrases
 
 With the `let` proposal, a top level semicolon phrase is a compound action,
@@ -253,11 +260,7 @@ which isn't actually a legal program (programs are expressions).
 Do I want to reclaim this syntax?
 * In "Generalized Scripts", I want action programs, so that `tests/curv.curv`
   has a more convenient syntax.
-* In the nodejs REPL, a;b;c means evaluate a and b for their side effects
-  and print the value of c.
-* In OpenSCAD, a;b;c; will construct a group of shapes and implicitly union
-  them. It is "as if" each shape statement has the side effect of drawing
-  the shape, which gives a procedural feel.
+* OpenSCAD2 geometric objects.
 
 ## Generalized Scripts
 
