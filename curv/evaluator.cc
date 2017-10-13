@@ -580,18 +580,20 @@ Statements::eval_module(Frame& f) const
 {
     assert(module_slot_ != (slot_t)(-1));
     assert(module_dictionary_ != nullptr);
+
     slot_t ndefns = defn_values_->size();
     slot_t nvalues = ndefns + nonlocal_exprs_.size();
-    Shared<List> values = List::make(nvalues);
+
+    Shared<Module> module = Module::make(nvalues, module_dictionary_);
     for (slot_t i = 0; i < ndefns; ++i)
-        values->at(i) = defn_values_->at(i);
+        module->at(i) = defn_values_->at(i);
     for (slot_t i = ndefns; i < nvalues; ++i)
-        values->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
-    Shared<Module> module = make<Module>(module_dictionary_, values);
+        module->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
     f[module_slot_] = {module};
     for (auto action : actions_) {
         action->exec(f);
     }
+
 #if 1
     // TODO: Get rid of this and make modules fully lazy.
     // Requires code to force module fields wherever they are accessed, eg
@@ -626,10 +628,10 @@ Abstract_Module_Expr::eval(Frame& f) const
 Shared<Module>
 Enum_Module_Expr::eval_module(Frame& f) const
 {
-    Shared<List> slots = List::make(exprs_.size());
+    Shared<Module> module = Module::make(exprs_.size(), dictionary_);
     for (size_t i = 0; i < exprs_.size(); ++i)
-        slots->at(i) = exprs_[i]->eval(f);
-    return make<Module>(dictionary_, slots);
+        module->at(i) = exprs_[i]->eval(f);
+    return module;
 }
 
 Shared<Module>

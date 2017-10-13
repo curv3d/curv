@@ -7,10 +7,10 @@
 
 namespace curv {
 
-const char Module::name[] = "module";
+const char Module_Base::name[] = "module";
 
 void
-Module::print(std::ostream& out) const
+Module_Base::print(std::ostream& out) const
 {
     out << "{";
     bool first = true;
@@ -24,26 +24,26 @@ Module::print(std::ostream& out) const
 }
 
 void
-Module::putfields(Atom_Map<Value>& out) const
+Module_Base::putfields(Atom_Map<Value>& out) const
 {
     for (auto i : *this)
         out[i.first] = i.second;
 }
 
 Value
-Module::get(slot_t i) const
+Module_Base::get(slot_t i) const
 {
-    Value val = (*slots_)[i];
+    Value val = array_[i];
     if (val.is_ref()) {
         auto& ref = val.get_ref_unsafe();
         if (ref.type_ == Ref_Value::ty_lambda)
-            return {make<Closure>((Lambda&)ref, *this)};
+            return {make<Closure>((Lambda&)ref, *(Module*)this)};
     }
     return val;
 }
 
 Value
-Module::getfield(Atom name, const Context& cx) const
+Module_Base::getfield(Atom name, const Context& cx) const
 {
     auto b = dictionary_->find(name);
     if (b != dictionary_->end())
@@ -52,14 +52,14 @@ Module::getfield(Atom name, const Context& cx) const
 }
 
 bool
-Module::hasfield(Atom name) const
+Module_Base::hasfield(Atom name) const
 {
     auto b = dictionary_->find(name);
     return (b != dictionary_->end());
 }
 
 Shared<List>
-Module::dom() const
+Module_Base::dom() const
 {
     auto list = List::make(dictionary_->size());
     int i = 0;

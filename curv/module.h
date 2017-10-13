@@ -18,12 +18,7 @@ namespace curv {
 ///
 /// Each module value constructed from the same module literal shares the
 /// same dictionary. Only the value list is different.
-///
-/// TODO: Are module expressions strictly or lazily evaluated?
-/// I've wanted lazy evaluation as a performance optimization, especially for
-/// large libraries where most components aren't used. However, for now,
-/// strict evaluation is simpler.
-struct Module final : public Structure
+struct Module_Base : public Structure
 {
     /// A Dictionary maps field names onto slot indexes.
     /// It has a reference count so that the same dictionary
@@ -43,7 +38,8 @@ struct Module final : public Structure
     /// can be shared between multiple module values.
     Shared<Dictionary> dictionary_;
 
-    /// The `slots` array contains field values and nonlocals.
+    /// `array_` (declared at end) is the slots array,
+    // containing field values and nonlocals.
     ///
     /// Field values that come from lambda expressions are represented in the
     /// slot array as Lambdas, not as Closures. (Otherwise, there would be a
@@ -54,30 +50,25 @@ struct Module final : public Structure
     /// The number of slots is determined at compile time, and slot indexes are
     /// determined at compile time. Which slots contain Lambdas is also known
     /// at compile time.
-    ///
-    /// This is not tail array because it may also be referenced by a Closure.
-    /// (Well, unless we change Closure to contain a Module reference.)
-    Shared<List> slots_;
 
-    Module(Shared<Dictionary> dictionary, Shared<List> values)
+    Module_Base(Shared<Dictionary> dictionary)
     :
         Structure(ty_module),
-        dictionary_(std::move(dictionary)),
-        slots_(std::move(values))
+        dictionary_(std::move(dictionary))
     {}
 
     /// Fetch the contents of slot index `i`, normalize to a proper Value.
     Value get(slot_t i) const;
 
-    Value& at(slot_t i) { return slots_->at(i); }
+    Value& at(slot_t i) { return array_[i]; }
 
     // We provide a container interface for accessing the fields, like std::map.
     struct iterator
     {
-        const Module& m_;
+        const Module_Base& m_;
         Dictionary::iterator iter_;
 
-        iterator(const Module& m, bool first)
+        iterator(const Module_Base& m, bool first)
         :
             m_(m),
             iter_(first ? m.dictionary_->begin() : m.dictionary_->end())
@@ -109,11 +100,19 @@ struct Module final : public Structure
     virtual Value getfield(Atom, const Context&) const override;
     virtual bool hasfield(Atom) const override;
     virtual void putfields(Atom_Map<Value>&) const override;
-    virtual size_t size() const override { return dictionary_->size(); }
+    virtual size_t size() const override { return size_; }
     virtual Shared<List> dom() const override;
 
     static const char name[];
+
+protected:
+    // interface used by Tail_Array. Must be declared last.
+    using value_type = Value;
+    size_t size_;
+    Value array_[0];
 };
+
+using Module = aux::Tail_Array<Module_Base>;
 
 } // namespace curv
 #endif // header guard
