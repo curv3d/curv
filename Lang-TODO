@@ -26,6 +26,7 @@ Patterns (Bindings and Lambda):
 * Default values in record patterns, `{x=0,y=1} = ...`
 * functions with refutable parameter patterns lead to:
   switch((x,y,z)->..., a->...) -- returns a function
+* see also Parameter Preconditions
 
 Slice notation:
 * Extend vector swizzling, like v[X,Y,Z], with assignment, like v[X,Y,Z] = v2,
@@ -76,13 +77,14 @@ Vectorized boolean operations:
 
 Design by contract:
 * postconditions:
-  require pred val = do assert(pred val) in val;
+  ensure pred val = do assert(pred val) in val;
   sort x =
-    require sorted <<
+    ensure sorted <<
     <body of sort function>;
 * parameter preconditions:
-  * (x : predicate) -> body
   * (predicate x) -> body
+  * (x isa Constructor) -> body
+  * (x >= 0) -> body
 
 Debug actions:
 * echo_timing(string,expr), returns value of expr
