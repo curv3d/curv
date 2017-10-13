@@ -212,8 +212,5 @@ GL_Value gl_call_unary_numeric(GL_Frame&, const char*);
 void gl_put_as(GL_Frame& f, GL_Value val, const Context&, GL_Type type);
 GL_Value gl_vec_element(GL_Frame&, GL_Value, int);
 
-Shared<List_Expr> gl_expr_to_list(Operation& expr, int len, GL_Frame& f);
-Shared<Lambda_Expr> gl_expr_to_function(Operation& expr, GL_Frame& f);
-
 } // namespace
 #endif // header guard

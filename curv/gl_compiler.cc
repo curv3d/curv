@@ -845,51 +845,6 @@ GL_Value Greater_Or_Equal_Expr::gl_eval(GL_Frame& f) const
     return result;
 }
 
-Shared<List_Expr>
-list_to_list_expr(const Phrase& source, const List& list)
-{
-    Shared<List_Expr> listx = List_Expr::make(list.size(), share(source));
-    for (size_t i = 0; i < list.size(); ++i)
-        listx->at(i) = make<Constant>(share(source), list.at(i));
-    return listx;
-}
-
-Shared<List_Expr>
-gl_expr_to_list(Operation& expr, int len, GL_Frame& f)
-{
-    if (auto list = cast<List_Expr>(share(expr))) {
-        if (len < 0 || list->size() == (size_t)len)
-            return list;
-    }
-    if (auto k = cast<Constant>(share(expr))) {
-        if (auto list = k->value_.dycast<List>()) {
-            if (len < 0 || list->size() == (size_t)len)
-                return list_to_list_expr(*expr.source_, *list);
-        }
-    }
-    throw Exception(At_GL_Phrase(*expr.source_, &f),
-        stringify("GL: not a list of size ", len));
-}
-
-Shared<Lambda_Expr>
-gl_expr_to_function(Operation& expr, GL_Frame& f)
-{
-    if (auto lambda = cast<Lambda_Expr>(share(expr))) {
-        return lambda;
-    }
-    if (auto k = cast<Constant>(share(expr))) {
-        if (auto lambda = k->value_.dycast<Closure>()) {
-            return make<Lambda_Expr>(expr.source_,
-                lambda->expr_,
-                make<Const_Module_Expr>(expr.source_, lambda->nonlocal_),
-                lambda->nargs_,
-                lambda->nslots_);
-        }
-    }
-    throw Exception(At_GL_Phrase(*expr.source_, &f),
-        "GL: not a function");
-}
-
 GL_Value gl_vec_element(GL_Frame& f, GL_Value vec, int i)
 {
     GL_Value r = f.gl.newvalue(GL_Type::Num);
