@@ -8,12 +8,12 @@ What remains for MVP?
 
 Statements project:
 * class Definition <: Phrase. analyze_def() may return self.
+* Definition virtual interface, for single definitions and def lists.
 * semicolon phrases (docs/Statements.md).
   * class Definition supports compound definitions.
   * CLI supports compound definitions. Unit tests.
   * {a:1;b:2} works (unit test).
-* A nonlocals list is now a Module value.
-* Modules are now tail arrays.
+  * split Statement_Analyzer into Recursive_Scope and Sequential_Scope
 * struct Statements:
   * rename actions_ to operations_
   * rename slot_ to indirect_slot_
