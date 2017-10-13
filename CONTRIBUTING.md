@@ -35,5 +35,5 @@ because I can't guarantee that I will accept it.
 Contact Doug Moen for more information about contributing to Curv.
 The author's email address is this Curv expression:
 ```
-(name="doug"; domain="moens.org"; "${name}@${domain}")
+let name="doug"; domain="moens.org" in "${name}@${domain}"
 ```
