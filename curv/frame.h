@@ -9,6 +9,7 @@
 #include <curv/list.h>
 #include <curv/value.h>
 #include <curv/slot.h>
+#include <curv/module.h>
 
 namespace curv {
 
@@ -50,10 +51,10 @@ struct Frame_Base
     /// Slot array containing the values of nonlocal bindings.
     ///
     /// This is:
-    /// * the slot array of Module value, for a top level module frame
-    /// * the slot array of a Closure value, for a function call frame
-    /// * nullptr, for a call to a builtin function.
-    List* nonlocal;
+    /// * the slot array of a Closure value, for a function call frame.
+    /// * a module value, for a module thunk.
+    /// * nullptr, for a builtin function call, or a program frame.
+    Module* nonlocal;
 
     // Tail array, containing the slots used for local bindings:
     // function arguments, block bindings and other local, temporary values.
@@ -67,7 +68,7 @@ struct Frame_Base
         return array_[i];
     }
 
-    Frame_Base(System& sys, Frame* parent, const Call_Phrase* src, List* nl)
+    Frame_Base(System& sys, Frame* parent, const Call_Phrase* src, Module* nl)
     :
         system(sys),
         parent_frame(parent),

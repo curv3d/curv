@@ -30,9 +30,7 @@ Program::compile(const Namespace* names, Frame* parent_frame)
         Statement_Analyzer fields{env, def->kind_, true};
         fields.add_statement(phrase_);
         fields.analyze(phrase_);
-        module_ = make<Module_Expr>(phrase_,
-            fields.make_module_dictionary(),
-            std::move(fields.statements_));
+        module_ = make<Module_Expr>(phrase_, std::move(fields.statements_));
     } else {
         meaning_ = phrase_->analyze(env);
     }

@@ -76,23 +76,23 @@ Nonlocal_Lazy_Ref::eval(Frame& f) const
 Value
 Indirect_Lazy_Ref::eval(Frame& f) const
 {
-    List& list = (List&)f[slot_].get_ref_unsafe();
-    assert(list.type_ == Ref_Value::ty_list);
-    return force_ref(list, index_, *source_, f);
+    Module& m = (Module&)f[slot_].get_ref_unsafe();
+    assert(m.type_ == Ref_Value::ty_module);
+    return force_ref(m, index_, *source_, f);
 }
 
 Value
 Indirect_Strict_Ref::eval(Frame& f) const
 {
-    List& list = (List&)f[slot_].get_ref_unsafe();
-    assert(list.type_ == Ref_Value::ty_list);
-    return list[index_];
+    Module& m = (Module&)f[slot_].get_ref_unsafe();
+    assert(m.type_ == Ref_Value::ty_module);
+    return m.at(index_);
 }
 
 Value
 Nonlocal_Strict_Ref::eval(Frame& f) const
 {
-    return (*f.nonlocal)[slot_];
+    return f.nonlocal->at(slot_);
 }
 
 Value
@@ -111,24 +111,24 @@ Value
 Nonlocal_Function_Ref::eval(Frame& f) const
 {
     return {make<Closure>(
-        (Lambda&) (*f.nonlocal)[lambda_slot_].get_ref_unsafe(),
+        (Lambda&) f.nonlocal->at(lambda_slot_).get_ref_unsafe(),
         *f.nonlocal)};
 }
 
 Value
 Indirect_Function_Ref::eval(Frame& f) const
 {
-    List& list = (List&)f[slot_].get_ref_unsafe();
+    Module& nonlocal = (Module&)f[slot_].get_ref_unsafe();
+    assert(nonlocal.type_ == Ref_Value::ty_module);
 
     // TODO: Kludge. We are seeing <thunk> values in the GL compiler.
-    assert(list.type_ == Ref_Value::ty_list);
-    for (size_t i = 0; i < list.size(); ++i)
-        force(list, i, f);
+    for (size_t i = 0; i < nonlocal.size(); ++i)
+        force(nonlocal, i, f);
 
-    Lambda& lambda = (Lambda&) list[index_].get_ref_unsafe();
+    Lambda& lambda = (Lambda&) nonlocal.at(index_).get_ref_unsafe();
     assert(lambda.type_ == Ref_Value::ty_lambda);
 
-    return {make<Closure>(lambda, list)};
+    return {make<Closure>(lambda, nonlocal)};
 }
 
 Value
@@ -566,25 +566,20 @@ Record_Expr::eval(Frame& f) const
 void
 Statements::exec(Frame& f) const
 {
-    if (slot_ != (slot_t)(-1)) {
-        slot_t ndefns = defn_values_->size();
-        slot_t nvalues = ndefns + nonlocal_exprs_.size();
-        Shared<List> values = List::make(nvalues);
-        for (slot_t i = 0; i < ndefns; ++i)
-            values->at(i) = defn_values_->at(i);
-        for (slot_t i = ndefns; i < nvalues; ++i)
-            values->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
-        f[slot_] = {values};
-    }
-    for (auto action : actions_) {
-        action->exec(f);
+    if (module_slot_ != (slot_t)(-1)) {
+        (void) eval_module(f);
+    } else {
+        for (auto action : actions_) {
+            action->exec(f);
+        }
     }
 }
 
-Shared<List>
-Statements::eval(Frame& f) const
+Shared<Module>
+Statements::eval_module(Frame& f) const
 {
-    assert(slot_ != (slot_t)(-1));
+    assert(module_slot_ != (slot_t)(-1));
+    assert(module_dictionary_ != nullptr);
     slot_t ndefns = defn_values_->size();
     slot_t nvalues = ndefns + nonlocal_exprs_.size();
     Shared<List> values = List::make(nvalues);
@@ -592,7 +587,8 @@ Statements::eval(Frame& f) const
         values->at(i) = defn_values_->at(i);
     for (slot_t i = ndefns; i < nvalues; ++i)
         values->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
-    f[slot_] = {values};
+    Shared<Module> module = make<Module>(module_dictionary_, values);
+    f[module_slot_] = {module};
     for (auto action : actions_) {
         action->exec(f);
     }
@@ -601,9 +597,9 @@ Statements::eval(Frame& f) const
     // Requires code to force module fields wherever they are accessed, eg
     // using dot notation, and also in the GL compiler.
     for (slot_t i = 0; i < ndefns; ++i)
-        force(*values, i, f);
+        force(*module, i, f);
 #endif
-    return values;
+    return module;
 }
 
 void
@@ -621,16 +617,25 @@ Indirect_Assign::exec(Frame& f) const
 }
 
 Value
-Module_Expr::eval(Frame& f) const
+Abstract_Module_Expr::eval(Frame& f) const
 {
     auto module = eval_module(f);
     return {module};
 }
 
 Shared<Module>
+Enum_Module_Expr::eval_module(Frame& f) const
+{
+    Shared<List> slots = List::make(exprs_.size());
+    for (size_t i = 0; i < exprs_.size(); ++i)
+        slots->at(i) = exprs_[i]->eval(f);
+    return make<Module>(dictionary_, slots);
+}
+
+Shared<Module>
 Module_Expr::eval_module(Frame& f) const
 {
-    return make<Module>(dictionary_, statements_.eval(f));
+    return statements_.eval_module(f);
 }
 
 Value
@@ -762,7 +767,7 @@ Lambda_Expr::eval(Frame& f) const
 {
     return Value{make<Closure>(
         body_,
-        nonlocals_->eval_list(f),
+        nonlocals_->eval_module(f),
         nargs_,
         nslots_)};
 }

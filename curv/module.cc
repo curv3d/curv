@@ -37,7 +37,7 @@ Module::get(slot_t i) const
     if (val.is_ref()) {
         auto& ref = val.get_ref_unsafe();
         if (ref.type_ == Ref_Value::ty_lambda)
-            return {make<Closure>((Lambda&)ref, *slots_)};
+            return {make<Closure>((Lambda&)ref, *this)};
     }
     return val;
 }

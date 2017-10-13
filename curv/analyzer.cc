@@ -230,14 +230,14 @@ Statement_Analyzer::single_lookup(const Identifier& id)
             if (kind_ == Definition::k_recursive) {
                 if (b->second.is_function_definition())
                     return make<Indirect_Function_Ref>(share(id),
-                        statements_.slot_, b->second.slot_, slot_count_);
+                        statements_.module_slot_, b->second.slot_, slot_count_);
                 else
                     return make<Indirect_Lazy_Ref>(
-                        share(id), statements_.slot_, b->second.slot_);
+                        share(id), statements_.module_slot_, b->second.slot_);
             } else { // sequential
                 if (target_is_module_) {
                     return make<Indirect_Strict_Ref>(
-                        share(id), statements_.slot_, b->second.slot_);
+                        share(id), statements_.module_slot_, b->second.slot_);
                 } else {
                     return make<Let_Ref>(share(id),
                         b->second.slot_ + parent_->frame_nslots_);
@@ -289,11 +289,12 @@ Statement_Analyzer::analyze(Shared<const Phrase> source)
 
     Shared<List> defn_values;
     if (kind_ == Definition::k_sequential && !target_is_module_) {
-        statements_.slot_ = (slot_t)(-1);
+        statements_.module_slot_ = (slot_t)(-1);
         frame_nslots_ += def_dictionary_.size();
         defn_values = nullptr;
     } else {
-        statements_.slot_ = frame_nslots_++;
+        statements_.module_slot_ = frame_nslots_++;
+        statements_.module_dictionary_ = make_module_dictionary();
         defn_values = make_list(def_dictionary_.size());
     }
     frame_maxslots_ = std::max(frame_nslots_, frame_maxslots_);
@@ -329,7 +330,7 @@ Statement_Analyzer::analyze(Shared<const Phrase> source)
                 defn_values->at(b.second.slot_) = missing;
                 statements_.actions_[b.second.seq_no_] = make<Indirect_Assign>(
                     b.second.def_->source_,
-                    statements_.slot_, b.second.slot_,
+                    statements_.module_slot_, b.second.slot_,
                     expr);
             } else {
                 statements_.actions_[b.second.seq_no_] = make<Let_Assign>(
@@ -459,7 +460,8 @@ Lambda_Phrase::analyze(Environ& env) const
     struct Arg_Environ : public Environ
     {
         Atom_Map<slot_t>& names_;
-        Module::Dictionary nonlocal_dictionary_;
+        Shared<Module::Dictionary> nonlocal_dictionary_ =
+            make<Module::Dictionary>();
         std::vector<Shared<Operation>> nonlocal_exprs_;
         bool shared_nonlocals_;
 
@@ -478,15 +480,15 @@ Lambda_Phrase::analyze(Environ& env) const
                 return make<Arg_Ref>(share(id), p->second);
             if (shared_nonlocals_)
                 return parent_->single_lookup(id);
-            auto n = nonlocal_dictionary_.find(id.atom_);
-            if (n != nonlocal_dictionary_.end())
+            auto n = nonlocal_dictionary_->find(id.atom_);
+            if (n != nonlocal_dictionary_->end())
                 return make<Nonlocal_Strict_Ref>(share(id), n->second);
             auto m = parent_->lookup(id);
             if (isa<Constant>(m))
                 return m;
             if (auto expr = cast<Operation>(m)) {
                 slot_t slot = nonlocal_exprs_.size();
-                nonlocal_dictionary_[id.atom_] = slot;
+                (*nonlocal_dictionary_)[id.atom_] = slot;
                 nonlocal_exprs_.push_back(expr);
                 return make<Nonlocal_Strict_Ref>(share(id), slot);
             }
@@ -496,11 +498,10 @@ Lambda_Phrase::analyze(Environ& env) const
     Arg_Environ env2(&env, params, shared_nonlocals_);
     auto expr = analyze_op(*right_, env2);
     auto src = share(*this);
-    Shared<List_Expr> nonlocals =
-        List_Expr::make(env2.nonlocal_exprs_.size(), src);
-    // TODO: use some kind of Tail_Array move constructor
-    for (size_t i = 0; i < env2.nonlocal_exprs_.size(); ++i)
-        (*nonlocals)[i] = env2.nonlocal_exprs_[i];
+
+    auto nonlocals = make<Enum_Module_Expr>(src,
+        std::move(env2.nonlocal_dictionary_),
+        std::move(env2.nonlocal_exprs_));
 
     return make<Lambda_Expr>(
         src, expr, nonlocals, params.size(), env2.frame_maxslots_);
@@ -833,9 +834,7 @@ Brace_Phrase::analyze(Environ& env) const
             fields.add_statement(share(stmt));
         });
         fields.analyze(source);
-        return make<Module_Expr>(source,
-            fields.make_module_dictionary(),
-            std::move(fields.statements_));
+        return make<Module_Expr>(source, std::move(fields.statements_));
     } else {
         auto record = make<Record_Expr>(source);
         each_item(*body_, [&](const Phrase& item)->void {

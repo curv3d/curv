@@ -98,11 +98,11 @@ struct Lambda : public Ref_Value
 struct Closure : public Polyadic_Function
 {
     Shared<Operation> expr_;
-    Shared<List> nonlocal_;
+    Shared<Module> nonlocal_;
 
     Closure(
         Shared<Operation> expr,
-        Shared<List> nonlocal,
+        Shared<Module> nonlocal,
         unsigned nargs, slot_t nslots)
     :
         Polyadic_Function(nargs, nslots),
@@ -112,11 +112,11 @@ struct Closure : public Polyadic_Function
 
     Closure(
         Lambda& lambda,
-        List& nonlocal)
+        const Module& nonlocal)
     :
         Polyadic_Function(lambda.nargs_, lambda.nslots_),
         expr_(lambda.expr_),
-        nonlocal_(share(nonlocal))
+        nonlocal_(share(const_cast<Module&>(nonlocal)))
     {}
 
     virtual Value call(Frame& args) override;

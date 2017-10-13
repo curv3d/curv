@@ -531,8 +531,12 @@ struct Record_Expr : public Just_Expression
 struct Statements
 {
     // For a module constructor, location in the evaluation frame where the
-    // module's value list is stored. For a block, (slot_t)(-1).
-    slot_t slot_;
+    // module is stored. For a block, (slot_t)(-1).
+    slot_t module_slot_ = -1;
+
+    // For a module constructor, the field dictionary.
+    // For a block, nullptr.
+    Shared<Module::Dictionary> module_dictionary_ = nullptr;
 
     // size and initial contents of the value list.
     Shared<const List> defn_values_;
@@ -541,25 +545,11 @@ struct Statements
     // actions to execute, during construction
     std::vector<Shared<const Operation>> actions_;
 
-#if 0
-    Statements(
-        slot_t slot,
-        Shared<const List> defn_values,
-        std::vector<Shared<const Operation>> nonlocal_exprs,
-        std::vector<Shared<const Operation>> actions)
-    :
-        slot_(slot),
-        defn_values_(std::move(defn_values)),
-        nonlocal_exprs_(std::move(nonlocal_exprs)),
-        actions_(std::move(actions))
-    {}
-#endif
-
     Statements() {}
 
-    /// Initialize the Frame slot, execute the definitions and action list.
-    /// Return the value list.
-    Shared<List> eval(Frame&) const;
+    /// Initialize the module slot, execute the definitions and action list.
+    /// Return the module.
+    Shared<Module> eval_module(Frame&) const;
     void exec(Frame&) const;
     void gl_exec(GL_Frame&) const;
 };
@@ -611,28 +601,65 @@ struct Indirect_Assign : public Just_Action
     void exec(Frame&) const override;
 };
 
-// A module expression is `{stmt, stmt, ...}` where stmt is a definition
+struct Abstract_Module_Expr : public Just_Expression
+{
+    using Just_Expression::Just_Expression;
+    virtual Value eval(Frame&) const override;
+    virtual Shared<Module> eval_module(Frame&) const = 0;
+};
+
+struct Const_Module_Expr final : public Abstract_Module_Expr
+{
+    Shared<Module> value_;
+
+    Const_Module_Expr(
+        Shared<const Phrase> source,
+        Shared<Module> value)
+    :
+        Abstract_Module_Expr(source),
+        value_(value)
+    {}
+
+    virtual Shared<Module> eval_module(Frame&) const override
+    {
+        return value_;
+    }
+};
+
+struct Enum_Module_Expr final : public Abstract_Module_Expr
+{
+    Shared<Module::Dictionary> dictionary_;
+    std::vector<Shared<Operation>> exprs_;
+
+    Enum_Module_Expr(
+        Shared<const Phrase> source,
+        Shared<Module::Dictionary> dictionary,
+        std::vector<Shared<Operation>> exprs)
+    :
+        Abstract_Module_Expr(source),
+        dictionary_(dictionary),
+        exprs_(exprs)
+    {}
+
+    virtual Shared<Module> eval_module(Frame&) const override;
+};
+
+// A module expression is `{stmt; stmt; ...}` where stmt is a definition
 // or action. The statements are evaluated as a statement list, then the
 // definitions become fields in the resulting Module value.
-struct Module_Expr : public Just_Expression
+struct Module_Expr : public Abstract_Module_Expr
 {
-    // maps public member names to slot #s in the value list.
-    Shared<Module::Dictionary> dictionary_;
-
     Statements statements_;
 
     Module_Expr(
         Shared<const Phrase> source,
-        Shared<Module::Dictionary> dictionary,
         Statements statements)
     :
-        Just_Expression(source),
-        dictionary_(std::move(dictionary)),
+        Abstract_Module_Expr(source),
         statements_(std::move(statements))
     {}
 
-    virtual Value eval(Frame&) const override;
-    Shared<Module> eval_module(Frame&) const;
+    virtual Shared<Module> eval_module(Frame&) const override;
 };
 
 struct Compound_Op_Base : public Operation
@@ -766,14 +793,14 @@ struct If_Else_Op : public Operation
 struct Lambda_Expr : public Just_Expression
 {
     Shared<Operation> body_;
-    Shared<List_Expr> nonlocals_;
+    Shared<Abstract_Module_Expr> nonlocals_;
     slot_t nargs_;
     slot_t nslots_;
 
     Lambda_Expr(
         Shared<const Phrase> source,
         Shared<Operation> body,
-        Shared<List_Expr> nonlocals,
+        Shared<Abstract_Module_Expr> nonlocals,
         slot_t nargs,
         slot_t nslots)
     :

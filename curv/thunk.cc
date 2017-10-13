@@ -16,9 +16,9 @@ Thunk::print(std::ostream& out) const
 }
 
 Value
-force_ref(List& nonlocal, slot_t i, const Phrase& identifier, Frame& f)
+force_ref(Module& nonlocal, slot_t i, const Phrase& identifier, Frame& f)
 {
-    Value& slot = nonlocal[i];
+    Value& slot = nonlocal.at(i);
     if (slot.is_ref()) {
         auto& ref = slot.get_ref_unsafe();
         switch (ref.type_) {
@@ -46,9 +46,9 @@ force_ref(List& nonlocal, slot_t i, const Phrase& identifier, Frame& f)
 }
 
 void
-force(List& nonlocal, slot_t i, Frame& f)
+force(Module& nonlocal, slot_t i, Frame& f)
 {
-    Value& slot = nonlocal[i];
+    Value& slot = nonlocal.at(i);
     if (slot.is_ref()) {
         auto& ref = slot.get_ref_unsafe();
         switch (ref.type_) {

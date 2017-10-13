@@ -510,12 +510,12 @@ Value gl_constify(Operation& op, GL_Frame& f)
                 "Geometry Compiler: not an identifier");
     }
     else if (auto ref = dynamic_cast<Nonlocal_Strict_Ref*>(&op))
-        return (*f.nonlocal)[ref->slot_];
+        return f.nonlocal->at(ref->slot_);
     else if (auto ref = dynamic_cast<Nonlocal_Lazy_Ref*>(&op))
-        return (*f.nonlocal)[ref->slot_];
+        return f.nonlocal->at(ref->slot_);
     else if (auto fref = dynamic_cast<Nonlocal_Function_Ref*>(&op)) {
         return {make<Closure>(
-            (Lambda&) (*f.nonlocal)[fref->lambda_slot_].get_ref_unsafe(),
+            (Lambda&) f.nonlocal->at(fref->lambda_slot_).get_ref_unsafe(),
             *f.nonlocal)};
     }
     else if (auto list = dynamic_cast<List_Expr*>(&op)) {
@@ -670,7 +670,7 @@ GL_Value Let_Ref::gl_eval(GL_Frame& f) const
 
 GL_Value Nonlocal_Strict_Ref::gl_eval(GL_Frame& f) const
 {
-    return gl_eval_const(f, (*f.nonlocal)[slot_], *source_);
+    return gl_eval_const(f, f.nonlocal->at(slot_), *source_);
 }
 
 GL_Value List_Expr_Base::gl_eval(GL_Frame& f) const
@@ -881,7 +881,7 @@ gl_expr_to_function(Operation& expr, GL_Frame& f)
         if (auto lambda = k->value_.dycast<Closure>()) {
             return make<Lambda_Expr>(expr.source_,
                 lambda->expr_,
-                list_to_list_expr(*expr.source_, *lambda->nonlocal_),
+                make<Const_Module_Expr>(expr.source_, lambda->nonlocal_),
                 lambda->nargs_,
                 lambda->nslots_);
         }

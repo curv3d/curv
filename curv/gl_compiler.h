@@ -8,7 +8,7 @@
 #include <ostream>
 #include <vector>
 #include <aux/tail_array.h>
-#include <curv/list.h>
+#include <curv/module.h>
 
 namespace curv {
 
@@ -178,7 +178,7 @@ struct GL_Frame_Base
     /// This is:
     /// * the slot array of a Closure value, for a function call frame
     /// * nullptr, for a call to a builtin function.
-    List* nonlocal;
+    Module* nonlocal;
 
     // Tail array, containing the slots used for local bindings:
     // function arguments, block bindings and other local, temporary values.

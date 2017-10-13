@@ -66,8 +66,10 @@ struct Module final : public Structure
         slots_(std::move(values))
     {}
 
-    /// Fetch the value stored at slot index `i`.
+    /// Fetch the contents of slot index `i`, normalize to a proper Value.
     Value get(slot_t i) const;
+
+    Value& at(slot_t i) { return slots_->at(i); }
 
     // We provide a container interface for accessing the fields, like std::map.
     struct iterator
