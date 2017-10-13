@@ -613,9 +613,9 @@ Let_Assign::exec(Frame& f) const
 void
 Indirect_Assign::exec(Frame& f) const
 {
-    List& list = (List&)f[slot_].get_ref_unsafe();
-    assert(list.type_ == Ref_Value::ty_list);
-    list[index_] = expr_->eval(f);
+    Module& m = (Module&)f[slot_].get_ref_unsafe();
+    assert(m.type_ == Ref_Value::ty_module);
+    m.at(index_) = expr_->eval(f);
 }
 
 Value
