@@ -22,6 +22,7 @@ But we don't support naked generators or binders in the CLI.
 * def1; def2; def3 -- can also contain actions
 * `[x,y,z] = expr` and other patterns
 * `if (cond) (a=foo;b=bar) else (a=bar;b=foo)`
+* `use {...}`, `use (constant in std namespace)`
 
 We attempt to recognize a generalized definition in these contexts,
 which create scopes:
@@ -57,6 +58,48 @@ Sequential definitions can't be used directly in a module.
 That's okay; you typically need local iteration variables to build
 something using a `while` that you wouldn't want to export.
 So it's not that great a feature anyway.
+
+## Separate Actions from Recursive Definitions
+
+In a recursive definition list, separate the actions from the definitions.
+Move the actions after the definitions, don't intermix them.
+* Contexts are: let defs in body, body where defs, {defs}
+* But note:
+  * `let defs in do actions in body` is already available for `let`.
+  * `do actions in body where defs` is available for `where`.
+  * For a module, {defs; use {actions}} is possible, assuming sequential
+    modules work. This lets you put actions anywhere a definition is valid.
+* Potential useability benefits.
+  * The relative order of actions and recursive definitions in an intermixed
+    sequence doesn't matter. Maybe we confuse the user by requiring them to
+    choose a relative ordering, as if it affects order of evaluation, the
+    way it does in a `do` block.
+  * Simpler documentation: the order of definitions doesn't matter/the order
+    of statements doesn't matter.
+  * In a polymorphic context (recursive/sequential definition list),
+    it's easier to recognize a recursive definition list (first statement
+    is an `=` definition.
+  * In a large multipage module, it's easier to find the actions
+    and review the ordering of side effects.
+* simpler implementation.
+  * In a semicolon phrase, easier to distinguish recursive/sequential stmt list.
+  * ...and simpler data structure.
+* possible syntaxes:
+  1. In a recursive definition list, definitions precede actions, and first
+     statement is a recursive definition.
+  2. Introduce a keyword separating recursive definitions from actions.
+     Eg, 'actions'.
+     {
+       a=1;
+       b=2;
+     actions
+       echo "my module"
+       assert(a+b<10);
+     }
+* drawbacks
+  * In a large multipage module, assertions should be written adjacent to the
+    definitions that they guard, for locality of code.
+  * More syntax to learn; doesn't make the language more powerful.
 
 ## Semicolon Phrases are Generalized Compound Phrases
 

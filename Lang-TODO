@@ -1,8 +1,22 @@
-echo, assert, warning, error are ignored in GL.
+GL:
+* echo, assert, warning, error are ignored in GL.
+* GL: && || if use lazy evaluation
 
 String:
-* $id interpolation
-* $+EE or $[0xEE] interpolation
+* Conversion between strings and lists of (integer) code points:
+  str_to_code and code_to_str.
+* Unicode strings. str[i] is the i'th grapheme cluster. `count str` is the
+  number of grapheme clusters. To operate on code points instead, first use
+  str_to_code.
+* $id shortcut. Same as ${id} or $(id)?
+  * $(id) interpretation is useful for composing debug messages with echo.
+    Eg, echo "x=$x, y=$y".
+  * ${id} interpretation is useful for interpolating named characters and
+    named substrings. Eg, nl=code_to_str 10; "hello world$nl".
+* $+EE or $[0xEE], short for ${code_to_str[0xEE]}.
+
+Numbers:
+* hexadecimal numerals. Useful for Unicode code points and web colours.
 
 Libraries.
 * use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace,
@@ -14,10 +28,6 @@ Libraries.
   curv::Module has a public dictionary and a debug dictionary.
   _foo is private in std.curv, and in all other *.curv files.
 
-Misc.
-* remove a'b ?
-* GL: && || if use lazy evaluation
-
 Patterns (Bindings and Lambda):
 * action thunks, instead of value thunks.
 * (x,y) = f(a);
@@ -28,19 +38,34 @@ Patterns (Bindings and Lambda):
   switch((x,y,z)->..., a->...) -- returns a function
 * see also Parameter Preconditions
 
-Slice notation:
-* Extend vector swizzling, like v[X,Y,Z], with assignment, like v[X,Y,Z] = v2,
-  for GLSL compatibility. Source and destination lists have the same count.
-* a[i..j]. a[i..j] := list. In a range slice assignment,
-  source and destination lists can have different counts.
-* Generalized list slice notation, supporting full list constructor notation,
-  with assignment?
-* Maybe a[..j] and a[i..] as special shortcuts, in this context?
-* Can't support Python negative indexes (-1 indexes the last element)
-  because [0..count a - 1] is a list of the indexes of a, even if a is empty,
-  meaning that [0..-1] denotes []. Maybe I'd need to use separate syntax
-  for slices and ranges, as Python does.
+Indexing:
+* a[i] := item, i is an integer
+* s.key := item
+* remove a'b ?
+
+Slices:
+* `a[i..<count a]` is inconvenient, repeats `a`. Fix?
+  * Maybe a[...] is a special syntactic context, in which:
+    * a[..j] and a[i..] are special abbreviations.
+    * `end` is bound to index of final element, like MatLab.
+      So a[i..end]
+  * Maybe `i..` is an infinite range value, can be used to slice a list.
+    Short for `i..inf`. `count(i..)==inf`.
+  * `take n list` and `drop n list`.
+  * Can't support Python negative indexes (-1 indexes the last element)
+    because [0..count a - 1] is a list of the indexes of a, even if a is empty,
+    meaning that [0..-1] denotes [].
 * Generalized multidimensional array slicing?
+
+Slice assignment:
+* `v[X,Z] := v2`, similar to GLSL vector swizzle assignment.
+  Source and destination lists have the same count.
+* a[i..j] := list. In a range slice assignment,
+  source and destination lists can have different counts.
+* Generalized `a[list1] := list2`. list1 and list2 can have different counts.
+  If list1 is shorter, extra elements at end of list2 are appended to final
+  element indexed by list1.
+  If list1 is longer, extra elements indexed by list1 are deleted.
 
 Vectorized boolean operations:
 * vectorize `bit`
@@ -99,7 +124,7 @@ Generalized Definitions:
 * def1; def2; def3
 * `[x,y,z] = expr` and other patterns
 * `if (cond) (a=foo;b=bar) else (a=bar;b=foo)`
-* expr where (defs)
+* `use {...}`, `use (constant in std namespace)`
 
 Lexical:
 * unicode operators (needs re2c)

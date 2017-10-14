@@ -7,7 +7,13 @@ What remains for MVP?
 * STL export: Get open source marching cubes in OpenCL. Benchmark.
 
 Statements project:
-* class Definition <: Phrase. analyze_def() may return self.
+* class Definition <: Phrase. analyze_def() returns self or null.
+  Needs extra fields in the combined Phrase/Definition objects to hold
+  definition data; these fields are filled in by analyze_def().
+  A crufty imperative trick, using 1 actual data structure to represent 2
+  logical data structures (phrase and definition). But less allocation,
+  probably less memory use and copying.
+  Need to deconstify some interfaces.
 * Definition virtual interface, for single definitions and def lists.
 * semicolon phrases (docs/Statements.md).
   * class Definition supports compound definitions.
