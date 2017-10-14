@@ -1,12 +1,4 @@
 let
-eps = .1;
-with_axes shape = union (
-    shape,
-    box(inf, eps, eps) >> colour red,
-    box(eps, inf, eps) >> colour green,
-    box(eps, eps, inf) >> colour blue,
-);
-
 w = 5;
 c = 99.2;
 
@@ -23,4 +15,3 @@ rect(1,inf)
 >> rotate (90*deg)
 >> rotate (90*deg, Y_axis)
 >> bend c >> lipschitz 3
-//>> with_axes

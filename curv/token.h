@@ -51,6 +51,7 @@ struct Token
         k_in,
         k_let,
         k_var,
+        k_where,
         k_while,
         k_num,              ///! floating point numeral
         k_quote,            ///! `"`

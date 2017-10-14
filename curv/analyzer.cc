@@ -525,6 +525,57 @@ analyze_assoc(Environ& env,
     throw Exception(At_Phrase(left,  env), "invalid definiendum");
 }
 
+/// In the grammar, a <list> phrase is zero or more constituent phrases
+/// separated by commas or semicolons.
+/// This function iterates over each constituent phrase.
+static inline void
+each_item(const Phrase& phrase, std::function<void(const Phrase&)> func)
+{
+    if (dynamic_cast<const Empty_Phrase*>(&phrase))
+        return;
+    if (auto commas = dynamic_cast<const Comma_Phrase*>(&phrase)) {
+        for (auto& i : commas->args_)
+            func(*i.expr_);
+        return;
+    }
+    if (auto semis = dynamic_cast<const Semicolon_Phrase*>(&phrase)) {
+        for (auto& i : semis->args_)
+            func(*i.expr_);
+        return;
+    }
+    func(phrase);
+}
+
+Shared<Meaning>
+analyze_block(
+    Environ& env,
+    Shared<const Phrase> source,
+    Definition::Kind kind,
+    Shared<const Phrase> bindings,
+    Shared<const Phrase> bodysrc)
+{
+    Statement_Analyzer analyzer{env, kind, false};
+    each_item(*bindings, [&](const Phrase& stmt)->void {
+        analyzer.add_statement(share(stmt));
+    });
+    analyzer.analyze(source);
+    analyzer.is_analyzing_action_ = env.is_analyzing_action_;
+    auto body = analyze_tail(*bodysrc, analyzer);
+    env.frame_maxslots_ = analyzer.frame_maxslots_;
+    return make<Block_Op>(source,
+        std::move(analyzer.statements_), std::move(body));
+}
+
+Shared<Meaning>
+Let_Phrase::analyze(Environ& env) const
+{
+    Definition::Kind kind =
+        let_.kind_ == Token::k_let
+        ? Definition::k_recursive
+        : Definition::k_sequential;
+    return analyze_block(env, share(*this), kind, bindings_, body_);
+}
+
 Shared<Meaning>
 Binary_Phrase::analyze(Environ& env) const
 {
@@ -619,6 +670,9 @@ Binary_Phrase::analyze(Environ& env) const
             analyze_op(*right_, env));
     case Token::k_colon:
         return analyze_assoc(env, *this, *left_, right_);
+    case Token::k_where:
+        return analyze_block(env, share(*this),
+            Definition::k_recursive, right_, left_);
     default:
         assert(0);
     }
@@ -679,46 +733,6 @@ Sequential_Definition_Phrase::analyze_def(Environ& env) const
 {
     return analyze_def_iter(env, share(*this), *left_, right_,
         Definition::k_sequential);
-}
-
-/// In the grammar, a <list> phrase is zero or more constituent phrases
-/// separated by commas or semicolons.
-/// This function iterates over each constituent phrase.
-static inline void
-each_item(const Phrase& phrase, std::function<void(const Phrase&)> func)
-{
-    if (dynamic_cast<const Empty_Phrase*>(&phrase))
-        return;
-    if (auto commas = dynamic_cast<const Comma_Phrase*>(&phrase)) {
-        for (auto& i : commas->args_)
-            func(*i.expr_);
-        return;
-    }
-    if (auto semis = dynamic_cast<const Semicolon_Phrase*>(&phrase)) {
-        for (auto& i : semis->args_)
-            func(*i.expr_);
-        return;
-    }
-    func(phrase);
-}
-
-Shared<Meaning>
-Let_Phrase::analyze(Environ& env) const
-{
-    Definition::Kind kind =
-        let_.kind_ == Token::k_let
-        ? Definition::k_recursive
-        : Definition::k_sequential;
-    Statement_Analyzer analyzer{env, kind, false};
-    each_item(*bindings_, [&](const Phrase& stmt)->void {
-        analyzer.add_statement(share(stmt));
-    });
-    analyzer.analyze(share(*this));
-    analyzer.is_analyzing_action_ = env.is_analyzing_action_;
-    auto body = analyze_tail(*body_, analyzer);
-    env.frame_maxslots_ = analyzer.frame_maxslots_;
-    return make<Block_Op>(share(*this),
-        std::move(analyzer.statements_), std::move(body));
 }
 
 Shared<Meaning>

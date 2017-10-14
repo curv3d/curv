@@ -1,13 +1,14 @@
 let
+t = cube 18;
+p = gyroid >> shell .2;
+
+in
+engrave .2 p t
+
+where
 engrave depth pattern target =
     difference (target,
         intersection (
             target >> shell depth,
             pattern)
     );
-
-t = cube 18;
-p = gyroid >> shell .2;
-
-in
-engrave .2 p t

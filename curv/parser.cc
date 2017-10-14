@@ -70,6 +70,7 @@ is_list_end_token(Token::Kind k)
 }
 
 // list : empty | item | commas | semicolons
+//      | item `where` list
 Shared<Phrase>
 parse_list(Scanner& scanner)
 {
@@ -92,6 +93,11 @@ parse_list(Scanner& scanner)
         return parse_commas(scanner, item);
     if (tok.kind_ == Token::k_semicolon)
         return parse_semicolons(scanner, item);
+    if (tok.kind_ == Token::k_where) {
+        tok = scanner.get_token();
+        return make<Binary_Phrase>(
+            std::move(item), tok, parse_list(scanner));
+    }
     throw Exception(At_Token(tok, scanner), "syntax error in list");
 }
 

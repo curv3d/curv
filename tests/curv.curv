@@ -187,5 +187,7 @@ assert( (let x=1 in x+2) == 3
 assert( [if (true) (1;2)] == [1,2] );
 assert( {if (true) (a:1;b:2)} == {a:1,b:2} );
 
+assert( (x+y where x=1;y=2) == 3 );
+
 // script return value:
 in {}
