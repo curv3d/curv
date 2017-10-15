@@ -2,8 +2,8 @@
 // Distributed under The MIT License.
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
-#ifndef CURV_PARSE_H
-#define CURV_PARSE_H
+#ifndef CURV_PARSER_H
+#define CURV_PARSER_H
 
 #include <curv/phrase.h>
 #include <curv/scanner.h>

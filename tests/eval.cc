@@ -5,7 +5,7 @@
 #include <curv/analyzer.h>
 #include <curv/program.h>
 #include <curv/exception.h>
-#include <curv/parse.h>
+#include <curv/parser.h>
 #include <curv/phrase.h>
 #include <curv/string.h>
 #include <curv/system.h>

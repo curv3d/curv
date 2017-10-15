@@ -23,7 +23,7 @@ extern "C" {
 #include <curv/program.h>
 #include <curv/exception.h>
 #include <curv/file.h>
-#include <curv/parse.h>
+#include <curv/parser.h>
 #include <curv/phrase.h>
 #include <curv/shared.h>
 #include <curv/system.h>

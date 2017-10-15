@@ -15,7 +15,7 @@
 // TODO: $(expression) substitutions in string literals.
 // TODO: infix `where` operator. Binds tighter than `->`.
 
-#include <curv/parse.h>
+#include <curv/parser.h>
 #include <curv/scanner.h>
 #include <curv/exception.h>
 #include <curv/context.h>
