@@ -1,0 +1,31 @@
+/*
+smooth_union .5 (
+    smooth_union .5 (
+        box_e(1,5,5),
+        box_e(5,1,5),
+    ),
+    box_e(5,5,1)
+)
+*/
+smooth_min(a,b,k) =
+(
+    var h := clamp( 0.5+0.5*(b-a)/k, 0, 1 );
+    mix( b, a, h ) - k*h*(1.0-h)
+),
+Goal: generalize this to an associate N-ary operator.
+Simplification: fix k at 1, then reintroduce it later by scaling the result.
+
+smooth_min(a,b) =
+(
+    var h := clamp( 0.5+0.5*(b-a), 0, 1 );
+    mix( b, a, h ) - h*(1-h)
+),
+
+h is in range [0..1].
+The function has 3 "bands":
+* the 'a' band, where it is equal to a. h==1
+* the 'b' band, where it is equal to b. h==0
+* the rounded band, a narrow diagonal going through the origin
+  where it is shaped like a quarter circle. h>0 && h<1.
+
+round_min2(k,a,b) = max(k, min(a,b)) - mag(max([k-a,k-b], 0));

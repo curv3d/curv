@@ -1,0 +1,44 @@
+/*
+float smin( float a, float b, float k )
+{
+    a = pow( a, k ); b = pow( b, k );
+    return pow( (a*b)/(a+b), 1.0/k );
+}
+
+The expression a*b/(a+b) generalizes with the same formula as when computing
+the global resistance of N parallel resistors: 1/ ( 1/a + 1/b + 1/c + ... ).
+For example, for three distances, you get a*b*c / (b*c + a*c + a*b).
+
+1/(1/a + 1/b + 1/c)
+(a*b*c) / ((a*b*c)/a + (a*b*c)/b + (a*b*c)/c)
+(a*b*c) / (b*c + a*c + a*b)
+*/
+
+emin (k, i,j) = (
+    var h := e^(-k * i) + e^(-k * j);
+    -log(h) / k
+);
+
+metaball_union2 k (s1, s2) = make_shape {
+    //dist p : (1/(1/((s1.dist p)^k) + 1/((s2.dist p)^k))) ^ (1/k),
+    /*
+    dist p : (
+        var a := (s1.dist p) ^ k;
+        var b := (s2.dist p) ^ k;
+        ((a*b)/(a+b)) ^ (1.0/k)
+    ),
+    */
+    dist p : emin(k, s1.dist p, s2.dist p),
+/*
+    colour p : (
+        var d1 := s1.dist p;
+        var d2 := s2.dist p;
+        if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p
+    ),
+*/
+    bbox : [min(s1.bbox'0, s2.bbox'0), max(s1.bbox'1, s2.bbox'1)],
+    is_2d : s1.is_2d && s2.is_2d,
+    is_3d : s1.is_3d && s2.is_3d,
+};
+
+metaball_union2 8 (sphere 1, sphere 1 >> move (.8,0)) //>> distance_field

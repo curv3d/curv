@@ -1,0 +1,52 @@
+polygon:
+* Classify each vertex as convex or concave, based on the angle it makes with
+  its two neighbours (<180 or >180).
+* For each vertex, create an infinite "pie slice" by intersecting two planes.
+* Make a convex polyhedron from just the convex vertices.
+* Then, for each run of consecutive concave vertices, intersect the slices, then
+  subtract this from the result.
+
+polygon (bis):
+* construct a half plane for each edge, as in convex_polygon.
+* Classify each vertex as convex or concave, based on the angle it makes with
+  its two neighbours (<180 or >180).
+* If a vertex is concave, union together the two half-planes for the adjoining
+  edges. For a consecutive run of N concave vertices, N+1 consecutive
+  half-planes will be unioned. At one extreme (all vertices are concave),
+  all of the half-planes will be unioned, producing the complement of a
+  convex polyhedron.
+* Intersect the remaining list of shapes.
+
+polygon vertices =
+    n = count vertices
+    edges = for (i in [0..<n]) half_plane_p2(vertices[i], vertices[mod(i+1,n)])
+    convex = n bools, true if vertex is convex, false if concave
+    if not(any convex) then
+        union edges
+    else if all convex then
+        intersection edges
+    else
+
+polygon vertices = (
+    n = count vertices;
+    assert(n >= 3);
+    var edges := [half_plane_p2(vertices[0], vertices[1])];
+    for (i in [1..<n]) (
+        edge = half_plane_p2(vertices[i], vertices[mod(i+1,len vertices)]);
+        if (is_concave(vertices[i-1],vertices[i],vertices[mod(i+1,n)]))
+            edges[count edges - 1] := union(edges[count edges - 1], edge)
+        else
+            edges := [...edges, edge];
+    );
+    if (count edges > 1 && is_concave(vertices[n-1],vertices[0],vertices[1]))
+        edges := [union(edges[0],edges[n-1]), ...edges[1..n-2]];
+    intersection edges
+)
+
+var edges := [];
+for (i in [0..<len vertices]) (
+    edge = half_plane_p2(vertices[i], vertices[mod(i+1,len vertices)]);
+    edges := [...edges, edge];
+);
+
+    for (i in [0..<len pts]) half_plane_p2(pts[i], pts[mod(i+1,len pts)]),

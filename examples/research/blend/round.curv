@@ -1,0 +1,63 @@
+/*
+float fOpUnionRound(float a, float b, float r) {
+    vec2 u = max(vec2(r - a,r - b), vec2(0));
+    return max(r, min (a, b)) - length(u);
+}
+
+float fOpIntersectionRound(float a, float b, float r) {
+    vec2 u = max(vec2(r + a,r + b), vec2(0));
+    return min(-r, max (a, b)) + length(u);
+}
+*/
+
+round_min2(k,a,b) = max(k, min(a,b)) - mag(max([k-a,k-b], 0));
+round_union2 k (s1, s2) = make_shape {
+    dist p : round_min2(k, s1.dist p, s2.dist p),
+    colour p : (
+        var d1 := s1.dist p;
+        var d2 := s2.dist p;
+        if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p
+    ),
+    bbox : [min(s1.bbox'0, s2.bbox'0), max(s1.bbox'1, s2.bbox'1)],
+    is_2d : s1.is_2d && s2.is_2d,
+    is_3d : s1.is_3d && s2.is_3d,
+};
+
+round_min3(k,a,b,c) = max(k, min(a,b,c)) - mag(max([k-a,k-b,k-c], 0));
+round_union3 k (s1, s2, s3) = make_shape {
+    dist p : round_min3(k, s1.dist p, s2.dist p, s3.dist p),
+/*
+    colour p : (
+        var d1 := s1.dist p;
+        var d2 := s2.dist p;
+        if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p
+    ),
+*/
+    bbox : [min(s1.bbox'0, s2.bbox'0), max(s1.bbox'1, s2.bbox'1)],
+    is_2d : s1.is_2d && s2.is_2d,
+    is_3d : s1.is_3d && s2.is_3d,
+};
+
+/* bad gradient
+round_union2 .5 (
+    rect_e(.1,3),
+    rect_e(3,.1) >> rotate(45*deg),
+)
+*/
+
+/* it works
+round_union3 1.184 (
+    circle 1 >> move(cis(90*deg)),
+    circle 1 >> move(cis(-30*deg)),
+    circle 1 >> move(cis(-150*deg)),
+)
+*/
+
+union (
+    round_union2 1 (
+        square 1,
+        square 1,
+    ),
+    square 1 >> colour black,
+    square .25 >> colour red >> move(.625,0),
+)

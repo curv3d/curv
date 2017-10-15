@@ -1,0 +1,7 @@
+r = 1;
+union(
+everything >> colour white,
+make_shape {
+    dist(a,b,z,t) = max(max(a, b), (a + r + b)*sqrt(0.5)),
+    is_2d = true,
+} >> colour black)

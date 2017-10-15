@@ -1,0 +1,20 @@
+{
+smin k (i,j) = (
+    var a := i ^ k;
+    var b := j ^ k;
+    ((a*b)/(a+b)) ^ (1.0/k)
+),
+
+emin k (i,j) = (
+    var h := e^(-k * i) + e^(-k * j);
+    -log(h) / k
+),
+
+/*
+smin k (a,b) = let
+    var a := (s1.dist p) ^ k;
+    var b := (s2.dist p) ^ k;
+in
+    ((a*b)/(a+b)) ^ (1.0/k);
+*/
+}
