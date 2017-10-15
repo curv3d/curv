@@ -22,7 +22,7 @@ struct Program
     System& system_;
     const Namespace* names_ = nullptr;
     Frame *parent_frame_ = nullptr;
-    Shared<const Phrase> phrase_ = nullptr;
+    Shared<Phrase> phrase_ = nullptr;
     Shared<Meaning> meaning_ = nullptr;
     Shared<Module_Expr> module_ = nullptr;
     std::unique_ptr<Frame> frame_ = nullptr;

@@ -37,7 +37,7 @@ struct Phrase : public Shared_Base
 {
     virtual ~Phrase() {}
     virtual Location location() const = 0;
-    virtual Shared<Definition> analyze_def(Environ&) const;
+    virtual Shared<Definition> analyze_def(Environ&);
     virtual Shared<Meaning> analyze(Environ&) const = 0;
 };
 
@@ -189,7 +189,7 @@ struct Recursive_Definition_Phrase : public Phrase
     {
         return left_->location().ending_at(right_->location().token());
     }
-    virtual Shared<Definition> analyze_def(Environ&) const override;
+    virtual Shared<Definition> analyze_def(Environ&) override;
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 struct Sequential_Definition_Phrase : public Phrase
@@ -210,7 +210,7 @@ struct Sequential_Definition_Phrase : public Phrase
     {
         return right_->location().starting_at(var_);
     }
-    virtual Shared<Definition> analyze_def(Environ&) const override;
+    virtual Shared<Definition> analyze_def(Environ&) override;
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 struct Assignment_Phrase : public Phrase
@@ -339,7 +339,7 @@ struct Program_Phrase : public Phrase
     }
 
     virtual Shared<Meaning> analyze(Environ&) const override;
-    virtual Shared<Definition> analyze_def(Environ&) const override;
+    virtual Shared<Definition> analyze_def(Environ&) override;
 };
 
 /// A function call. Call_Phrase is ultimately an abstract interface
@@ -521,13 +521,13 @@ struct Range_Phrase : public Phrase
 struct Let_Phrase : public Phrase
 {
     Token let_;
-    Shared<const Phrase> bindings_;
+    Shared<Phrase> bindings_;
     Token in_;
     Shared<const Phrase> body_;
 
     Let_Phrase(
         Token let,
-        Shared<const Phrase> bindings,
+        Shared<Phrase> bindings,
         Token in,
         Shared<const Phrase> body)
     :

@@ -60,7 +60,7 @@ Operation::to_operation(Frame*)
 }
 
 Shared<Definition>
-Phrase::analyze_def(Environ&) const
+Phrase::analyze_def(Environ&)
 {
     return nullptr;
 }
@@ -174,7 +174,7 @@ How to implement this?
 */
 
 void
-Statement_Analyzer::add_statement(Shared<const Phrase> stmt)
+Statement_Analyzer::add_statement(Shared<Phrase> stmt)
 {
     auto def = stmt->analyze_def(*parent_);
     if (def == nullptr)
@@ -529,16 +529,16 @@ analyze_assoc(Environ& env,
 /// separated by commas or semicolons.
 /// This function iterates over each constituent phrase.
 static inline void
-each_item(const Phrase& phrase, std::function<void(const Phrase&)> func)
+each_item(Phrase& phrase, std::function<void(Phrase&)> func)
 {
-    if (dynamic_cast<const Empty_Phrase*>(&phrase))
+    if (dynamic_cast<Empty_Phrase*>(&phrase))
         return;
-    if (auto commas = dynamic_cast<const Comma_Phrase*>(&phrase)) {
+    if (auto commas = dynamic_cast<Comma_Phrase*>(&phrase)) {
         for (auto& i : commas->args_)
             func(*i.expr_);
         return;
     }
-    if (auto semis = dynamic_cast<const Semicolon_Phrase*>(&phrase)) {
+    if (auto semis = dynamic_cast<Semicolon_Phrase*>(&phrase)) {
         for (auto& i : semis->args_)
             func(*i.expr_);
         return;
@@ -551,11 +551,11 @@ analyze_block(
     Environ& env,
     Shared<const Phrase> source,
     Definition::Kind kind,
-    Shared<const Phrase> bindings,
+    Shared<Phrase> bindings,
     Shared<const Phrase> bodysrc)
 {
     Statement_Analyzer analyzer{env, kind, false};
-    each_item(*bindings, [&](const Phrase& stmt)->void {
+    each_item(*bindings, [&](Phrase& stmt)->void {
         analyzer.add_statement(share(stmt));
     });
     analyzer.analyze(source);
@@ -723,13 +723,13 @@ analyze_def_iter(
 }
 
 Shared<Definition>
-Recursive_Definition_Phrase::analyze_def(Environ& env) const
+Recursive_Definition_Phrase::analyze_def(Environ& env)
 {
     return analyze_def_iter(env, share(*this), *left_, right_,
         Definition::k_recursive);
 }
 Shared<Definition>
-Sequential_Definition_Phrase::analyze_def(Environ& env) const
+Sequential_Definition_Phrase::analyze_def(Environ& env)
 {
     return analyze_def_iter(env, share(*this), *left_, right_,
         Definition::k_sequential);
@@ -814,7 +814,7 @@ Program_Phrase::analyze(Environ& env) const
     return body_->analyze(env);
 }
 Shared<Definition>
-Program_Phrase::analyze_def(Environ& env) const
+Program_Phrase::analyze_def(Environ& env)
 {
     return body_->analyze_def(env);
 }
@@ -844,14 +844,14 @@ Brace_Phrase::analyze(Environ& env) const
 
     if (is_module) {
         Statement_Analyzer fields{env, Definition::k_recursive, true};
-        each_item(*body_, [&](const Phrase& stmt)->void {
+        each_item(*body_, [&](Phrase& stmt)->void {
             fields.add_statement(share(stmt));
         });
         fields.analyze(source);
         return make<Module_Expr>(source, std::move(fields.statements_));
     } else {
         auto record = make<Record_Expr>(source);
-        each_item(*body_, [&](const Phrase& item)->void {
+        each_item(*body_, [&](Phrase& item)->void {
             record->fields_.push_back(analyze_op(item, env));
         });
         return record;

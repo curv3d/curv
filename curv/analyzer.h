@@ -149,7 +149,7 @@ struct Statement_Analyzer : public Environ
     virtual Shared<Meaning> single_lookup(const Identifier&);
 
     // Second, add some statements (definitions or actions):
-    void add_statement(Shared<const Phrase> statement);
+    void add_statement(Shared<Phrase> statement);
 
     // Third, analyze the statements and finalize the data members.
     void analyze(Shared<const Phrase> source);
