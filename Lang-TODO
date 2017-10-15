@@ -8,6 +8,8 @@ String:
 * Unicode strings. str[i] is the i'th grapheme cluster. `count str` is the
   number of grapheme clusters. To operate on code points instead, first use
   str_to_code.
+* If two grapheme clusters are guaranteed (by the Unicode standard)
+  to have the same printed representation, then they compare equal.
 * $id shortcut. Same as ${id} or $(id)?
   * $(id) interpretation is useful for composing debug messages with echo.
     Eg, echo "x=$x, y=$y".
@@ -108,7 +110,7 @@ Design by contract:
     <body of sort function>;
 * parameter preconditions:
   * (predicate x) -> body
-  * (x isa Constructor) -> body
+  * (x isa Constructor) -> body -- likely not needed; see Data Abstraction
   * (x >= 0) -> body
 
 Debug actions:
@@ -133,6 +135,7 @@ Lexical:
 * Support `foo` quoted identifiers.
   Compatibility with GUI interfaces that display
   parameter names as GUI labels, JSON object keys.
+* 'foo' quoted identifiers and x `f` y infix notation.
 
 OpenSCAD2 prototype oriented programming?
 * Model parameters and shape are bundled into one value.
@@ -141,6 +144,40 @@ OpenSCAD2 prototype oriented programming?
 * The BOM feature: can extract model parameters from a model script,
   generate JSON output.
 * Language support for using a GUI to tweak model parameters?
+  `param bindings in shape`. But what does this construct? Are the parameters
+  represented in the value that is constructed, or does the GUI interpret
+  the syntax?
 * CSG trees: output a CSG tree as JSON, read a CSG tree to reconstruct model.
   Shapes contain the name of their constructor, and their constructor
   arguments. (Implemented using a proposed 'constructor' feature.)
+
+Data Abstraction:
+* Wm. Cook distinguishes two kinds of data abstraction: CLU style "ADT"s,
+  and Smalltalk style "objects". The untyped lambda calculus is enough to
+  do object oriented data abstraction. Add Curv-like record literals and you
+  have a more convenient syntax. By his definition, Curv is object-oriented,
+  I can't avoid it, because you can easily use that programming style in Curv.
+  http://www.cs.utexas.edu/~wcook/Drafts/2009/essay.pdf
+* I don't need extra features to support CLU-style information hiding.
+  It's not that important.
+* I do need the ability to define shape "subclasses" that obey specialized
+  protocols. Eg, symmetrical polyhedra that support the Conway operators.
+  I can already do this: a shape protocol is defined informally as a set of
+  shape fields and axioms. I don't need explicit classes or inheritance
+  or other explicit language mechanisms.
+* This approach uses "duck typing". A shape just has to obey the protocol,
+  it doesn't have to explicitly declare that it obeys the protocol.
+* Do I need a language mechanism that allows a shape or record to declare what
+  protocols it supports, in support of a cheap protocol testing predicate?
+  (Like `val isa protocol`.)
+  * I like the idea. I want it for type declarations, Design By Contract, etc.
+    And for overloading positional arguments based on type, rather than relying
+    on parameter labels as in Smalltalk & Swift.
+  * But it's complicated to design, implement, document.
+  * Cook observes that Smalltalk programmers generally don't need or use such
+    a feature. So it's likely I don't need this in Curv.
+  * Cook observes a tradeoff between flexibility (duck typing) and type
+    correctness (explicit typing). Academics prefer type correctness.
+    Some dynamic language communities (eg Smalltalk) prefer flexibility.
+  * In 1.0, support labelled parameters, de-emphasize explicit typing
+    and type predicates.
