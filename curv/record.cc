@@ -70,7 +70,7 @@ Record::size() const
 }
 
 Shared<List>
-Record::dom() const
+Record::fields() const
 {
     auto list = List::make(fields_.size());
     int i = 0;

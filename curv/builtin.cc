@@ -73,9 +73,9 @@ struct Is_List_Function : public Polyadic_Function
         return {args[0].dycast<List>() != nullptr};
     }
 };
-struct Is_Struct_Function : public Polyadic_Function
+struct Is_Record_Function : public Polyadic_Function
 {
-    Is_Struct_Function() : Polyadic_Function(1) {}
+    Is_Record_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
         return {args[0].dycast<Structure>() != nullptr};
@@ -516,23 +516,17 @@ struct Count_Function : public Polyadic_Function
             return {double(structure->size())};
         if (auto string = args[0].dycast<const String>())
             return {double(string->size())};
-        throw Exception(At_Arg(args), "not a list, structure or string");
+        throw Exception(At_Arg(args), "not a list, record or string");
     }
 };
-struct Dom_Function : public Polyadic_Function
+struct Fields_Function : public Polyadic_Function
 {
-    Dom_Function() : Polyadic_Function(1) {}
+    Fields_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
-        if (auto list = args[0].dycast<const List>()) {
-            Shared<List> dom = List::make(list->size());
-            for (unsigned i = 0; i < list->size(); ++i)
-                dom->at(i) = {double(i)};
-            return {dom};
-        }
         if (auto structure = args[0].dycast<const Structure>())
-            return {structure->dom()};
-        throw Exception(At_Arg(args), "not a list or structure");
+            return {structure->fields()};
+        throw Exception(At_Arg(args), "not a record");
     }
 };
 
@@ -774,7 +768,7 @@ builtin_namespace()
     {"is_num", make<Builtin_Value>(Value{make<Is_Num_Function>()})},
     {"is_str", make<Builtin_Value>(Value{make<Is_Str_Function>()})},
     {"is_list", make<Builtin_Value>(Value{make<Is_List_Function>()})},
-    {"is_struct", make<Builtin_Value>(Value{make<Is_Struct_Function>()})},
+    {"is_record", make<Builtin_Value>(Value{make<Is_Record_Function>()})},
     {"is_fun", make<Builtin_Value>(Value{make<Is_Fun_Function>()})},
     {"is_shape", make<Builtin_Value>(Value{make<Is_Shape_Function>()})},
     {"bit", make<Builtin_Value>(Value{make<Bit_Function>()})},
@@ -793,7 +787,7 @@ builtin_namespace()
     {"dot", make<Builtin_Value>(Value{make<Dot_Function>()})},
     {"mag", make<Builtin_Value>(Value{make<Mag_Function>()})},
     {"count", make<Builtin_Value>(Value{make<Count_Function>()})},
-    {"dom", make<Builtin_Value>(Value{make<Dom_Function>()})},
+    {"fields", make<Builtin_Value>(Value{make<Fields_Function>()})},
     {"strcat", make<Builtin_Value>(Value{make<Strcat_Function>()})},
     {"to_str", make<Builtin_Value>(Value{make<To_Str_Function>()})},
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},

@@ -7,7 +7,7 @@
 
 namespace curv {
 
-const char Structure::name[] = "structure";
+const char Structure::name[] = "record";
 
 Value
 Structure::getfield(Atom field, const Context& cx) const

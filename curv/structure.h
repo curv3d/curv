@@ -29,7 +29,7 @@ struct Structure : public Ref_Value
 
     virtual size_t size() const = 0;
 
-    virtual Shared<List> dom() const = 0;
+    virtual Shared<List> fields() const = 0;
 
     static const char name[];
 };

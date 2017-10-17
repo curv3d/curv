@@ -68,9 +68,10 @@ csqr(z) = [ z[RE]*z[RE] - z[IM]*z[IM], 2*z[RE]*z[IM] ];
 ////////////////////
 is_vec2 x = is_list x && count x == 2 && is_num(x[0]) && is_num(x[1]);
 is_vec3 x = is_list x && count x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]);
+indices a = 0..<count a;
 cross(p,q) = [p[Y]*q[Z] - p[Z]*q[Y], p[Z]*q[X] - p[X]*q[Z], p[X]*q[Y] - p[Y]*q[X]];
 identity(n) = [for(i in 1..n) [for(j in 1..n) if(i==j) 1 else 0]];
-transpose(a) = [for (i in dom(a'0)) [for (j in dom a) a'j'i]];
+transpose(a) = [for (i in indices(a'0)) [for (j in indices a) a'j'i]];
 normalize v = v / mag v;
 
 // phase angle of a vector, range tau/2 to -tau/2
@@ -374,7 +375,7 @@ regular_polygon_m n d =
 convex_polygon = convex_polygon_m;
 convex_polygon_m pts =
     intersection(
-        for (i in dom pts) half_plane_p2(pts[i], pts[mod(i+1,count pts)]),
+        for (i in indices pts) half_plane_p2(pts[i], pts[mod(i+1,count pts)]),
         rect(min pts, max pts) // bounding box
     );
 

@@ -148,7 +148,7 @@ Shape::size() const
 }
 
 Shared<List>
-Shape::dom() const
+Shape::fields() const
 {
     auto list = List::make(fields_.size());
     int i = 0;

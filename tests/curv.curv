@@ -143,7 +143,7 @@ assert(
 
 assert(
     is_null null && is_bool false && is_num 42 && is_str "" && is_list ()
-    && is_struct{a:1} && is_struct{a=1} && is_struct(cube 1) && !is_struct()
+    && is_record{a:1} && is_record{a=1} && is_record(cube 1) && !is_record()
     && is_fun(x->x) && is_shape(cube 1)
 );
 
@@ -157,7 +157,7 @@ assert( round 0.5 == 0 && round 1.5 == 2 );
 
 assert( count {x:1, y:2} == 2 );
 
-assert( dom(1,2) == [0,1] && dom{a:1} == ["a"] );
+assert( indices(1,2) == [0,1] && fields{a:1} == ["a"] );
 
 assert(
     let a = {x:1, y:2};

@@ -474,7 +474,7 @@ Index_Expr::eval(Frame& f) const
     if (auto string = a.dycast<const String>())
         return string_at(*string, b, At_Phrase(*arg2_->source_, &f));
     throw Exception(At_Phrase(*arg1_->source_, &f),
-        "not a list, structure or string");
+        "not a list, record or string");
 }
 Value
 Call_Expr::eval(Frame& f) const

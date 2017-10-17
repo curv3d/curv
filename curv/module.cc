@@ -59,7 +59,7 @@ Module_Base::hasfield(Atom name) const
 }
 
 Shared<List>
-Module_Base::dom() const
+Module_Base::fields() const
 {
     auto list = List::make(dictionary_->size());
     int i = 0;
