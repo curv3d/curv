@@ -6,6 +6,10 @@ install:
 	mkdir -p build
 	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..
 	cd build; make install
+curv:
+	mkdir -p build
+	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..
+	cd build; make curv
 clean:
 	rm -rf build
 valgrind:
