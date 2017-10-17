@@ -154,9 +154,7 @@ OpenSCAD2 prototype oriented programming?
 Data Abstraction:
 * Wm. Cook distinguishes two kinds of data abstraction: CLU style "ADT"s,
   and Smalltalk style "objects". The untyped lambda calculus is enough to
-  do object oriented data abstraction. Add Curv-like record literals and you
-  have a more convenient syntax. By his definition, Curv is object-oriented,
-  I can't avoid it, because you can easily use that programming style in Curv.
+  do object oriented data abstraction. Record literals make it easier.
   http://www.cs.utexas.edu/~wcook/Drafts/2009/essay.pdf
 * I don't need extra features to support CLU-style information hiding.
   It's not that important.
@@ -179,5 +177,37 @@ Data Abstraction:
   * Cook observes a tradeoff between flexibility (duck typing) and type
     correctness (explicit typing). Academics prefer type correctness.
     Some dynamic language communities (eg Smalltalk) prefer flexibility.
-  * In 1.0, support labelled parameters, de-emphasize explicit typing
-    and type predicates.
+* Thus: In 1.0, support labelled parameters, de-emphasize explicit typing
+  and type predicates.
+* By this logic, I can get rid of the built-in Shape type.
+  There are now 7 types: the 6 JSON types, plus functions.
+  A shape is a struct that implements `is_2d`,`is_3d`,`dist`,`bbox`,`colour`.
+  This is the "shape protocol". `make_shape` is implemented in Curv, defines
+  missing fields using default values, aborts if a bad field is detected.
+* Do I need "inheritance"? Ability to override data or function fields
+  while maintaining self-reference in function fields. That's needed for OOP.
+
+Function/Structure Equivalence.
+* Using {map x = f x}, a structure can behave like a function.
+* For symmetry, a function behaves like a structure with a single `map` field.
+* What about `is_fun`?
+  * Get rid of `is_fun`. `is_struct` is true for primitive functions.
+    Test for `map` field in a structure to identify a function.
+* We no longer use `dom` to get a list of field names from a record/member
+  names from a structure. Bad name. Instead use `keys`, `fields`, `members`.
+
+Record/Module Terminology.
+* Record is one of the 6 data types. A record has named fields.
+* `is_record s` is true for a record value.
+* `fields s` returns a list of field names.
+* A record comprehension {a:b,c:d} is syntax for making a record value.
+  `id : expr` is syntax: a field generator.
+  "comprehension": the act or process of comprising.
+* A module constructor {a=b} is syntax for making a record value.
+  `id = expr` is syntax: a definition.
+
+List Terminology.
+* List is one of the 6 data types. A list has ordered elements.
+* `is_list a` is true for a list value.
+* `indices a=[0..<count a]` returns a range of valid indices.
+* A list comprehension {a,b,...} is syntax for making a list value.
