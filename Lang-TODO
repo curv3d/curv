@@ -45,22 +45,26 @@ Indexing:
 * s.key := item
 * remove a'b ?
 
-Slices:
-* `a[i..<count a]` is inconvenient, repeats `a`. Fix?
-  * Maybe a[...] is a special syntactic context, in which:
-    * a[..j] and a[i..] are special abbreviations.
-    * `end` is bound to index of final element, like MatLab.
-      So a[i..end]
-  * Maybe `i..` is an infinite range value, can be used to slice a list.
-    Short for `i..inf`. `count(i..)==inf`.
-  * `take n list` and `drop n list`.
-  * Can't support Python negative indexes (-1 indexes the last element)
-    because [0..count a - 1] is a list of the indexes of a, even if a is empty,
-    meaning that [0..-1] denotes [].
-* Generalized multidimensional array slicing?
+List Slices:
+`a[i..<count a]` is inconvenient, repeats `a`. Fix?
+* Maybe a[...] is a special syntactic context, in which:
+  * a[..j] and a[i..] are special abbreviations.
+  * `end` is bound to index of final element, like MatLab.
+    So a[i..end]
+* Maybe `i..` is an infinite range value, can be used to slice a list.
+  Short for `i..inf`. `count(i..)==inf`.
+* `take n list` and `drop n list` for +ve and -ve n.
+* Can't support Python negative indexes (-1 indexes the last element)
+  because [0..count a - 1] is a list of the indexes of a, even if a is empty,
+  meaning that [0..-1] denotes [].
 
-Slice assignment:
-* `v[X,Z] := v2`, similar to GLSL vector swizzle assignment.
+Multidimensional array indexing a[i,j,k].
+`a` is rectangular array of dimension `d`, or tree of max depth `d`.
+* All indices are integers: Easy, works for trees.
+* Non-final indexes must be integers. Final index can be a tree. Easy.
+
+List Slice Assignment:
+* `v[[X,Z]] := v2`, similar to GLSL vector swizzle assignment.
   Source and destination lists have the same count.
 * a[i..j] := list. In a range slice assignment,
   source and destination lists can have different counts.
@@ -68,6 +72,12 @@ Slice assignment:
   If list1 is shorter, extra elements at end of list2 are appended to final
   element indexed by list1.
   If list1 is longer, extra elements indexed by list1 are deleted.
+
+Multidimensional Array Slice Assignment `a[i,j,k] := x`.
+`a` is rectangular array of dimension `d`, or tree of max depth `d`.
+* All indices are integers. Easy, works for trees.
+* `a` is an array, all indices are arrays. As in APL.
+  What happens if the same element is indexed twice? What's the new value?
 
 Vectorized boolean operations:
 * vectorize `bit`
@@ -126,7 +136,7 @@ Generalized Definitions:
 * def1; def2; def3
 * `[x,y,z] = expr` and other patterns
 * `if (cond) (a=foo;b=bar) else (a=bar;b=foo)`
-* `use {...}`, `use (constant in std namespace)`
+* `use {module}`, `use (constant in std namespace)`
 
 Lexical:
 * unicode operators (needs re2c)
