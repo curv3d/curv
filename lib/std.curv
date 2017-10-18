@@ -103,7 +103,7 @@ circle =
             };
     in make_shape {
         ... circle_e 2,
-        map : circle_e,
+        call : circle_e,
     };
 
 ellipse(dx,dy) = circle 1 >> scale(dx,dy);
@@ -118,7 +118,7 @@ sphere =
             };
     in make_shape {
         ... sphere_e 2,
-        map : sphere_e,
+        call : sphere_e,
     };
 
 ellipsoid(dx,dy,dz) = sphere 1 >> scale(dx,dy,dz);
@@ -269,7 +269,7 @@ half_plane_pn(a, n) =
 square =
     make_shape {
         ... square_e 2,
-        map : square_e,
+        call : square_e,
         circumratio : sqrt 2,
     };
 square_m d =
@@ -365,7 +365,7 @@ regular_polygon n =
     let angle = tau / n;
     in make_shape {
         ... regular_polygon_m n 2,
-        map d : regular_polygon_m n d,
+        call d : regular_polygon_m n d,
         circumratio : 1 / cos(angle/2),
     };
 regular_polygon_m n d =
@@ -451,7 +451,7 @@ prism_m(n,d,h) = regular_polygon_m n d >> extrude_m h;
 // Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
 tetrahedron = make_shape {
     ... tetrahedron_m 2,
-    map : tetrahedron_m,
+    call : tetrahedron_m,
     // radius of circumscribed sphere / radius of inscribed sphere
     circumratio : (sqrt(3/2)/2) / (1/(2*sqrt 6)),
 };
@@ -485,7 +485,7 @@ tetrahedron_m d =
 
 cube = make_shape {
     ... cube_m 2,
-    map : cube_m,
+    call : cube_m,
     circumratio : sqrt 3,
 };
 cube_m d =
@@ -501,7 +501,7 @@ cube_e d = box_e(d,d,d);
 // Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
 octahedron = make_shape {
     ... octahedron_m 2,
-    map : octahedron_m,
+    call : octahedron_m,
     circumratio : (1/2*sqrt 2) / (1/6*sqrt 6),
 };
 octahedron_m d =
@@ -528,7 +528,7 @@ octahedron_m d =
 // Mitred distance field. Pointy side down.
 dodecahedron = make_shape {
     ... dodecahedron_m 2,
-    map : dodecahedron_m,
+    call : dodecahedron_m,
     circumratio : (.25*(sqrt 3 + sqrt 15)) / (1/20*sqrt(250+110*sqrt(5))),
 };
 dodecahedron_m d =
@@ -559,7 +559,7 @@ dodecahedron_m d =
 // Mitred distance field.
 icosahedron = make_shape {
     ... icosahedron_m 2,
-    map : icosahedron_m,
+    call : icosahedron_m,
     circumratio : (.25*sqrt(10+2*sqrt 5)) / (1/12*(3*sqrt(3)+sqrt(15))),
 };
 icosahedron_m d =

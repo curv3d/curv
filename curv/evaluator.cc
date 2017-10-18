@@ -479,7 +479,7 @@ Index_Expr::eval(Frame& f) const
 Value
 Call_Expr::eval(Frame& f) const
 {
-    static Atom mapkey = "map";
+    static Atom callkey = "call";
     Value val = fun_->eval(f);
     Value funv = val;
     for (;;) {
@@ -495,8 +495,8 @@ Call_Expr::eval(Frame& f) const
             return fun->call(arg_->eval(f), *f2);
         }
         if (auto s = dynamic_cast<Structure*>(&funp)) {
-            if (s->hasfield(mapkey)) {
-                funv = s->getfield(mapkey, {});
+            if (s->hasfield(callkey)) {
+                funv = s->getfield(callkey, {});
                 continue;
             }
             break;
