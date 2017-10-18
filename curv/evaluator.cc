@@ -463,6 +463,31 @@ string_at(const String& string, Value index, const Context& cx)
     return {String::make(string.data()+i, 1)};
 }
 Value
+value_at_path(Value a, const List& path, const Context& cx)
+{
+    At_Index icx(0, cx);
+    for (size_t i = 0; i < path.size(); ++i) {
+        icx.index_ = i;
+        if (auto string = a.dycast<String>()) {
+            if (i < path.size()-1) {
+                throw Exception(icx,
+                    "string used with multidimensional indexing (like string[i,j])");
+            }
+            return string_at(*string, path[i], icx);
+        }
+        if (auto list = a.dycast<List>()) {
+            if (i < path.size()-1) {
+                int j = arg_to_int(path[i], 0, (int)(list->size()-1), icx);
+                a = list->at(j);
+            } else
+                a = list_at(*list, path[i], icx);
+            continue;
+        }
+        throw Exception(icx, "not list or string");
+    }
+    return a;
+}
+Value
 Index_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
@@ -503,14 +528,7 @@ Call_Expr::eval(Frame& f) const
         }
         At_Phrase cx(*arg_->source_, &f);
         auto path = arg_->eval(f).to<List>(cx);
-        // TODO: support path with count > 1.
-        path->assert_size(1, cx);
-        At_Index cx0(0, cx);
-        if (auto list = dynamic_cast<const List*>(&funp))
-            return list_at(*list, path->at(0), cx0);
-        if (auto string = dynamic_cast<const String*>(&funp))
-            return string_at(*string, path->at(0), cx0);
-        break;
+        return value_at_path(funv, *path, cx);
     }
     throw Exception(At_Phrase(*fun_->source_, &f),
         stringify(val,": not a function"));
