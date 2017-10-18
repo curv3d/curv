@@ -22,7 +22,7 @@ But we don't support naked generators or binders in the CLI.
 * def1; def2; def3 -- can also contain actions
 * `[x,y,z] = expr` and other patterns
 * `if (cond) (a=foo;b=bar) else (a=bar;b=foo)`
-* `use {...}`, `use (constant in std namespace)`
+* `use {a=b;...}`, `use (constant in std namespace)`
 
 We attempt to recognize a generalized definition in these contexts,
 which create scopes:
@@ -30,6 +30,28 @@ which create scopes:
 * top level phrase in a CLI command. If not a definition, analyze as an
   operation.
 * argument of `{}`. If not a definition, analyze as an action/binder sequence.
+
+## Generalized Actions
+* A script can denote an action. Eg, `echo "hello world";`.
+  `tests/curv.curv` is simplified. Makes Curv feel more like a procedural
+  language, since they all have "action scripts".
+* A procedure is a function whose body is an action.
+  Procedures are values, but can only be invoked in an action context.
+  `greetings name = echo "hello $name";`
+  echo, error, warning, assert become values.
+* `file(filename)` is now either an action or expression, depending on filename.
+  In a weak context, we don't know (at compile time) if `file n` is action or
+  expression. We'd need Operation::eval_or_exec() which yields zero or one
+  values. This weakens Static Phrase Kinds, since we now have an action|expr
+  static phrase kind, not resolved till run time, and function calls generally
+  have this phrase kind.
+* Is `file` still a function value? Yes, with above caveats.
+* A procedure cannot reassign a nonlocal sequential variable.
+  Use a function instead: `(V1, V2) := F(V1,V2,0);`
+* Thus, procedures and action scripts have limited utility.
+  Side effects are limited to echo, error, warning, assert.
+* Eg, `ignore x = (;);` -- evaluate x then discard its result.
+* Not for MVP. Can of worms with limited utility.
 
 ## `do` syntax
 
@@ -40,6 +62,7 @@ Proposal:
 
 Maybe?
 * `<body> where (recursive-definitions&actions)`
+* `<body> where recursive-definitions&actions` -- better for scripts
 * `<body> do_where (sequential-definitions&actions)`
 These are chainable, just as `let` and `do` are chainable.
 
@@ -300,28 +323,10 @@ Another syntax:
 With the `let` proposal, a top level semicolon phrase is a compound action,
 which isn't actually a legal program (programs are expressions).
 
-Do I want to reclaim this syntax?
-* In "Generalized Scripts", I want action programs, so that `tests/curv.curv`
+Do I want to reclaim/legalize this syntax?
+* In "Generalized Actions", I want action programs, so that `tests/curv.curv`
   has a more convenient syntax.
 * OpenSCAD2 geometric objects.
-
-## Generalized Scripts
-
-Right now, `tests/curv.curv` is a sequence of assert statements (each
-terminated by `;`), followed by `{}`, which is an arbitrary return value.
-Right now, all Curv scripts are expressions that yield a value.
-
-The `{}` trick is ugly. Maybe a script should be interpreted as either
-an expression or a statement, depending on its syntax. This means `file`
-is no longer a function, but a metafunction. A call to `file` can yield
-an arbitrary Meaning type.
-
-What are the implications? How useful is this? There's not much point in
-a script exporting a definition or binder or generator:
-export a module/record/list instead.
-
-In an earlier revision of Curv, `a;b;c;` was a block that yields an empty list.
-That design would also address my issue.
 
 ## Static Phrase Kinds
 

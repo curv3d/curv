@@ -186,6 +186,18 @@ Data Abstraction:
   missing fields using default values, aborts if a bad field is detected.
 * Do I need "inheritance"? Ability to override data or function fields
   while maintaining self-reference in function fields. That's needed for OOP.
+  Right now, I'll say no.
+
+  Note if you build an object-like data abstraction using records, with
+  fields representing instance variables, and fields representing methods
+  that reference the instance variables (function closures that contain
+  separate copies of said instance variables), then reassigning an instance
+  variable will leave the methods out of sync with the instance variables.
+
+  So use a programming idiom that avoids this. To update an instance variable,
+  you actually transform a value into another related value, using a function
+  that invokes the constructor with a transformed copy of the instance variables
+  as arguments.
 
 Function/Structure Equivalence.
 * Using {call x = f x}, a record can behave like a function.
