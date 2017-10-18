@@ -619,14 +619,36 @@ struct Echo_Metafunction : public Metafunction
             "ECHO: ", analyze_op(*ph.arg_, env));
     }
 };
+
+struct Warning_Action : public Just_Action
+{
+    Shared<Operation> arg_;
+    Warning_Action(
+        Shared<const Phrase> source,
+        Shared<Operation> arg)
+    :
+        Just_Action(std::move(source)),
+        arg_(std::move(arg))
+    {}
+    virtual void exec(Frame& f) const override
+    {
+        Value arg = arg_->eval(f);
+        Shared<String> msg;
+        if (auto str = arg.dycast<String>())
+            msg = str;
+        else
+            msg = stringify(arg);
+        Exception exc{At_Phrase(*source_, &f), msg};
+        f.system.console() << "WARNING: " << exc << std::endl;
+    }
+};
 /// The meaning of the phrase `warning` in isolation.
 struct Warning_Metafunction : public Metafunction
 {
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        return make<Echo_Action>(share(ph),
-            "WARNING: ", analyze_op(*ph.arg_, env));
+        return make<Warning_Action>(share(ph), analyze_op(*ph.arg_, env));
     }
 };
 
