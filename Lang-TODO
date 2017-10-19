@@ -1,5 +1,5 @@
 GL:
-* echo, assert, warning, error are ignored in GL.
+* print, assert, warning, error are ignored in GL.
 * GL: && || if use lazy evaluation
 
 String:
@@ -11,11 +11,15 @@ String:
 * If two grapheme clusters are guaranteed (by the Unicode standard)
   to have the same printed representation, then they compare equal.
 * $id shortcut. Same as ${id} or $(id)?
-  * $(id) interpretation is useful for composing debug messages with echo.
-    Eg, echo "x=$x, y=$y".
+  * $(id) interpretation is useful for printing the values of variables
+    in debug messages. Eg, print "x=$x, y=$y".
   * ${id} interpretation is useful for interpolating named characters and
     named substrings. Eg, nl=code_to_str 10; "hello world$nl".
+  * Decision: $id == ${id}. The shorter form is equivalent to the less heavy
+    weight operation. Also, more consistent with `sh` semantics.
+    Also, $(expr) is short for ${repr(expr)}.
 * $+EE or $[0xEE], short for ${code_to_str[0xEE]}.
+  $[0xEE] is less weird looking, easier to figure out.
 
 Numbers:
 * hexadecimal numerals. Useful for Unicode code points and web colours.
@@ -124,7 +128,7 @@ Design by contract:
   * (x >= 0) -> body
 
 Debug actions:
-* echo_timing(string,expr), returns value of expr
+* print_timing(string,expr), returns value of expr
   * Might want to measure eval time while ignoring result:
     * Assign value to a variable, don't use variable.
     * `ignore(arg)` is an action that evaluates and ignores arg.
@@ -215,6 +219,3 @@ Function/Structure Equivalence.
 * What about `is_fun`?
   * Get rid of `is_fun`. `is_record` is true for primitive functions.
     Test for `call` field in a record to identify a function.
-
-Rename `echo` to `print`. (It's a more common name.)
-* Then the "ECHO:" prefix is weird--just get rid of it?
