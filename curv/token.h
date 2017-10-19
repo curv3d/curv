@@ -59,6 +59,7 @@ struct Token
         k_char_escape,      ///! escaped character sequence in a string literal
         k_dollar_paren,     ///! $( in a string literal
         k_dollar_brace,     ///! ${ in a string literal
+        k_dollar_ident,     ///! $identifier in a string literal
         k_lparen,
         k_rparen,
         k_lbracket,

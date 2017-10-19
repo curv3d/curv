@@ -574,6 +574,14 @@ parse_string(Scanner& scanner, Token begin)
             segments.push_back(make<Brace_Segment_Phrase>(braces));
             continue;
           }
+        case Token::k_dollar_ident:
+          {
+            Token id = tok;
+            ++id.first_;
+            auto ident = make<Identifier>(scanner.script_, id);
+            segments.push_back(make<Brace_Segment_Phrase>(ident));
+            continue;
+          }
         default:
             assert(0);
         }
