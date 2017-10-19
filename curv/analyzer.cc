@@ -370,11 +370,35 @@ Identifier::analyze(Environ& env) const
 Shared<Meaning>
 Numeral::analyze(Environ& env) const
 {
-    std::string str(location().range());
-    char* endptr;
-    double n = strtod(str.c_str(), &endptr);
-    assert(endptr == str.c_str() + str.size());
-    return make<Constant>(share(*this), n);
+    switch (loc_.token().kind_) {
+    case Token::k_num:
+      {
+        std::string str(location().range());
+        char* endptr;
+        double n = strtod(str.c_str(), &endptr);
+        assert(endptr == str.c_str() + str.size());
+        return make<Constant>(share(*this), n);
+      }
+    case Token::k_hexnum:
+      {
+        double n = 0.0;
+        auto numeral = location().range();
+        for (const char* p = numeral.first+2; p < numeral.last; ++p) {
+            char d = *p;
+            if (d >= '0' && d <= '9')
+                n = 16.0*n + (d-'0');
+            else if (d >= 'a' && d <= 'f')
+                n = 16.0*n + (d-'a'+10);
+            else if (d >= 'A' && d <= 'F')
+                n = 16.0*n + (d-'A'+10);
+            else
+                assert(0);
+        }
+        return make<Constant>(share(*this), n);
+      }
+    default:
+        assert(0);
+    }
 }
 
 Shared<Segment>

@@ -54,6 +54,7 @@ struct Token
         k_where,
         k_while,
         k_num,              ///! floating point numeral
+        k_hexnum,           ///! hexadecimal numeral
         k_quote,            ///! `"`
         k_string_segment,   ///! sequence of unescaped chars in a string literal
         k_char_escape,      ///! escaped character sequence in a string literal

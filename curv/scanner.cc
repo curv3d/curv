@@ -156,12 +156,21 @@ Scanner::get_token()
     }
 
     // Recognize a numeral. Compatible with C and strtod().
-    //   numeral ::= significand exponent?
+    //   numeral ::= significand exponent? | hex
     //   significand ::= digits | digits "." | "." digits | digits "." digits
-    //   exponent ::= "e" sign? digits
+    //   exponent ::= /[eE]/ sign? digits
     //   sign ::= "+" | "-"
     //   digits ::= /[0-9]+/
+    //   hex ::= /0[xX][0-9a-fA-F]+/
     if (isdigit(*p) || (*p == '.' && p+1 < last && isdigit(p[1]))) {
+        if (*p=='0' && p+2<last && (p[1]=='x' || p[1]=='X') && isxdigit(p[2]))
+        {
+            p += 2;
+            while (p < last && isxdigit(*p))
+                ++p;
+            tok.kind_ = Token::k_hexnum;
+            goto success;
+        }
         while (p < last && isdigit(*p))
             ++p;
         if (p < last && *p == '.' && !(p+1 < last && p[1]=='.')) {

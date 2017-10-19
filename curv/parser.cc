@@ -603,6 +603,7 @@ parse_primary(Scanner& scanner, const char* what)
     auto tok = scanner.get_token();
     switch (tok.kind_) {
     case Token::k_num:
+    case Token::k_hexnum:
         return make<Numeral>(scanner.script_, tok);
     case Token::k_ident:
         return make<Identifier>(scanner.script_, tok);

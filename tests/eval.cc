@@ -211,6 +211,8 @@ TEST(curv, eval)
     SUCCESS(".1e-1", "0.01");
     SUCCESS("1.e+1", "10");
     SUCCESS("1e1", "10");
+    FAILMSG("0x", "bad numeral");
+    SUCCESS("0xFF", "255");
     SUCCESS("\"abc\"", "\"abc\"");
     SUCCESS("[1,2,3]", "[1,2,3]");
     SUCCESS("{x:1}", "{x:1}");
