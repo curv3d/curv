@@ -89,6 +89,30 @@ perp(x,y) = (y, -x);
 // angle between two vectors
 angle(a,b) = acos(dot(a,b) / (mag a * mag b));
 
+////////////
+// SHAPES //
+////////////
+make_shape r =
+    let shape = {
+            is_2d : false,
+            is_3d : false,
+            bbox : [[-inf,-inf,-inf],[inf,inf,inf]],
+            colour p : [.8, .8, .5],
+            ... r,
+        };
+        assert (shape.is_2d || shape.is_3d);
+        assert (count(shape.bbox) == 2
+                && is_vec3(shape.bbox[0]) && is_vec3(shape.bbox[1]));
+        assert (is_fun(shape.colour));
+        assert (defined(shape.dist) && is_fun(shape.dist));
+    in shape;
+
+is_shape x =
+    defined(x.is_2d) && defined(x.is_3d) && defined(x.bbox)
+    && defined(x.dist) && defined(x.colour);
+
+size shape = shape.bbox[MAX] - shape.bbox[MIN];
+
 /////////////////////
 // CIRCULAR SHAPES //
 /////////////////////
@@ -652,7 +676,6 @@ symmetric_difference shapes = difference(union shapes, intersection shapes);
 
 crop limits shape = intersection(shape, limits);
 
-size shape = shape.bbox[MAX] - shape.bbox[MIN];
 row_x d shapes =
     let width = sum[for (s in shapes) size(s)[X]] + (count shapes - 1)*d;
     in do 

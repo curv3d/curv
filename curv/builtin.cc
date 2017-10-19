@@ -89,14 +89,6 @@ struct Is_Fun_Function : public Polyadic_Function
         return {args[0].dycast<Function>() != nullptr};
     }
 };
-struct Is_Shape_Function : public Polyadic_Function
-{
-    Is_Shape_Function() : Polyadic_Function(1) {}
-    Value call(Frame& args) override
-    {
-        return {args[0].dycast<Shape>() != nullptr};
-    }
-};
 
 struct Bit_Function : public Polyadic_Function
 {
@@ -573,17 +565,6 @@ struct File_Function : public Polyadic_Function
     }
 };
 
-struct Make_Shape_Function : public Polyadic_Function
-{
-    Make_Shape_Function() : Polyadic_Function(1) {}
-    Value call(Frame& f) override
-    {
-        At_Arg cx{f};
-        auto fields = f[0].to<Structure>(cx);
-        return {make<Shape>(fields, cx)};
-    }
-};
-
 /// The meaning of a call to `print`, such as `print "foo"`.
 struct Print_Action : public Just_Action
 {
@@ -787,7 +768,6 @@ builtin_namespace()
     {"is_list", make<Builtin_Value>(Value{make<Is_List_Function>()})},
     {"is_record", make<Builtin_Value>(Value{make<Is_Record_Function>()})},
     {"is_fun", make<Builtin_Value>(Value{make<Is_Fun_Function>()})},
-    {"is_shape", make<Builtin_Value>(Value{make<Is_Shape_Function>()})},
     {"bit", make<Builtin_Value>(Value{make<Bit_Function>()})},
     {"sqrt", make<Builtin_Value>(Value{make<Sqrt_Function>()})},
     {"log", make<Builtin_Value>(Value{make<Log_Function>()})},
@@ -808,7 +788,6 @@ builtin_namespace()
     {"strcat", make<Builtin_Value>(Value{make<Strcat_Function>()})},
     {"repr", make<Builtin_Value>(Value{make<Repr_Function>()})},
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},
-    {"make_shape", make<Builtin_Value>(Value{make<Make_Shape_Function>()})},
     {"print", make<Builtin_Meaning<Print_Metafunction>>()},
     {"warning", make<Builtin_Meaning<Warning_Metafunction>>()},
     {"error", make<Builtin_Meaning<Error_Metafunction>>()},
