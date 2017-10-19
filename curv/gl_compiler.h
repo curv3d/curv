@@ -12,7 +12,7 @@
 
 namespace curv {
 
-struct Shape;
+struct Shape_Recognizer;
 struct Operation;
 struct Call_Phrase;
 struct Phrase;
@@ -47,7 +47,7 @@ struct Context;
 
 /// Main entry point to the Geometry Compiler.
 /// Reads a 2D shape, writes a shadertoy.com GLSL script.
-void gl_compile(const Shape&, std::ostream&, const Context&);
+void gl_compile(const Shape_Recognizer&, std::ostream&, const Context&);
 
 /// GL data types
 enum class GL_Type : unsigned

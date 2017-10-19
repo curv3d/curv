@@ -15,7 +15,8 @@ struct Polyadic_Function;
 struct Context;
 
 // axis aligned bounding box
-struct BBox {
+struct BBox
+{
     double xmin, ymin, zmin;
     double xmax, ymax, zmax;
     bool empty() {
@@ -26,6 +27,25 @@ struct BBox {
                 xmax == +INFINITY || ymax == +INFINITY);
     }
     static BBox from_value(Value, const Context&);
+};
+
+struct Shape_Recognizer
+{
+    // shape fields, filled in by recognize()
+    bool is_2d_;
+    bool is_3d_;
+    BBox bbox_;
+    Shared<Polyadic_Function> dist_;
+    Shared<Polyadic_Function> colour_;
+
+    // If the value is a shape, fill in the shape fields and return true.
+    bool recognize(Value, const Context&);
+
+    /// Invoke the Geometry Compiler on the shape's `dist` function.
+    GL_Value gl_dist(GL_Value, GL_Frame&) const;
+
+    /// Invoke the Geometry Compiler on the shape's `colour` function.
+    GL_Value gl_colour(GL_Value, GL_Frame&) const;
 };
 
 struct Shape : public Structure

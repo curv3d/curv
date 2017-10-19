@@ -15,19 +15,19 @@
 using aux::dfmt;
 namespace curv {
 
-void gl_compile_2d(const Shape&, std::ostream&, const Context&);
-void gl_compile_3d(const Shape&, std::ostream&, const Context&);
+void gl_compile_2d(const Shape_Recognizer&, std::ostream&, const Context&);
+void gl_compile_3d(const Shape_Recognizer&, std::ostream&, const Context&);
 
-void gl_compile(const Shape& shape, std::ostream& out, const Context& cx)
+void gl_compile(const Shape_Recognizer& shape, std::ostream& out, const Context& cx)
 {
-    if (shape.getfield("is_2d", cx).to_bool(At_Field("is_2d", cx)))
+    if (shape.is_2d_)
         return gl_compile_2d(shape, out, cx);
-    if (shape.getfield("is_3d", cx).to_bool(At_Field("is_3d", cx)))
+    if (shape.is_3d_)
         return gl_compile_3d(shape, out, cx);
     assert(0);
 }
 
-void gl_compile_2d(const Shape& shape, std::ostream& out, const Context& cx)
+void gl_compile_2d(const Shape_Recognizer& shape, std::ostream& out, const Context& cx)
 {
     GL_Compiler gl(out);
     GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
@@ -42,17 +42,13 @@ void gl_compile_2d(const Shape& shape, std::ostream& out, const Context& cx)
 
     GL_Value result = shape.gl_dist(dist_param, *frame);
 
-    if (shape.hasfield("colour")) {
-        GL_Value colour = shape.gl_colour(dist_param, *frame);
-        out << "  colour = vec4(" << colour << ", 1.0);\n";
-    } else {
-        out << "  colour = vec4(0.4, 0.0, 0.0, 1.0);\n";
-    }
+    GL_Value colour = shape.gl_colour(dist_param, *frame);
+    out << "  colour = vec4(" << colour << ", 1.0);\n";
 
     out <<
         "  return " << result << ";\n"
         "}\n";
-    BBox bbox = shape.bbox(cx);
+    BBox bbox = shape.bbox_;
     if (bbox.empty() || bbox.infinite()) {
         out <<
         "const vec4 bbox = vec4(-10.0,-10.0,+10.0,+10.0);\n";
@@ -91,7 +87,7 @@ void gl_compile_2d(const Shape& shape, std::ostream& out, const Context& cx)
         ;
 }
 
-void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
+void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Context& cx)
 {
     GL_Compiler gl(out);
     GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
@@ -108,20 +104,15 @@ void gl_compile_3d(const Shape& shape, std::ostream& out, const Context& cx)
 
     GL_Value result = shape.gl_dist(dist_param, *frame);
 
-    if (shape.hasfield("colour")) {
-        GL_Value colour = shape.gl_colour(dist_param, *frame);
-        out << "  return vec4(" << result << ",";
-        out << colour << ");\n";
-    } else {
-        out << "  return vec4(" << result << ",";
-        out << "0.8, 0.8, 0.5, 1.0);\n";
-    }
+    GL_Value colour = shape.gl_colour(dist_param, *frame);
+    out << "  return vec4(" << result << ",";
+    out << colour << ");\n";
 
     out <<
         "}\n";
 
 #if 0
-    BBox bbox = shape.bbox(At_GL_Frame(&*frame));
+    BBox bbox = shape.bbox_;
     if (bbox.empty() || bbox.infinite()) {
         out <<
         "const vec4 bbox = vec4(-10.0,-10.0,+10.0,+10.0);\n";

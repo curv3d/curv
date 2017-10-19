@@ -113,11 +113,11 @@ void
 display_shape(curv::Value value, const curv::Context &cx, bool block = false)
 {
     static bool viewer = false;
-    auto shape = value.dycast<curv::Shape>();
-    if (shape != nullptr) {
+    curv::Shape_Recognizer shape;
+    if (shape.recognize(value, cx)) {
         auto filename = make_tempfile();
         std::ofstream f(filename->c_str());
-        curv::gl_compile(*shape, f, cx);
+        curv::gl_compile(shape, f, cx);
         f.close();
         if (!viewer) {
             auto cmd = curv::stringify("glslViewer ",filename->c_str(),
@@ -184,8 +184,11 @@ void export_curv(curv::Value value, const curv::Context&, std::ostream& out)
 }
 void export_frag(curv::Value value, const curv::Context& cx, std::ostream& out)
 {
-    auto shape = value.to<curv::Shape>(cx);
-    curv::gl_compile(*shape, std::cout, cx);
+    curv::Shape_Recognizer shape;
+    if (shape.recognize(value, cx))
+        curv::gl_compile(shape, std::cout, cx);
+    else
+        throw curv::Exception(cx, "not a shape");
 }
 bool is_json_data(curv::Value val)
 {
@@ -276,20 +279,23 @@ void export_json(curv::Value value, const curv::Context& cx, std::ostream& out)
 }
 void export_png(curv::Value value, const curv::Context& cx, std::ostream& out)
 {
-    auto shape = value.to<curv::Shape>(cx);
-    auto fragname = curv::stringify(",curv",getpid(),".frag");
-    auto pngname = curv::stringify(",curv",getpid(),".png");
-    std::ofstream f(fragname->c_str());
-    curv::gl_compile(*shape, f, cx);
-    f.close();
-    auto cmd = curv::stringify(
-        "glslViewer -s 0 --headless -o ", pngname->c_str(),
-        " ", fragname->c_str(), " >/dev/null");
-    system(cmd->c_str());
-    auto cmd2 = curv::stringify("cat ",pngname->c_str());
-    system(cmd2->c_str());
-    unlink(fragname->c_str());
-    unlink(pngname->c_str());
+    curv::Shape_Recognizer shape;
+    if (shape.recognize(value, cx)) {
+        auto fragname = curv::stringify(",curv",getpid(),".frag");
+        auto pngname = curv::stringify(",curv",getpid(),".png");
+        std::ofstream f(fragname->c_str());
+        curv::gl_compile(shape, f, cx);
+        f.close();
+        auto cmd = curv::stringify(
+            "glslViewer -s 0 --headless -o ", pngname->c_str(),
+            " ", fragname->c_str(), " >/dev/null");
+        system(cmd->c_str());
+        auto cmd2 = curv::stringify("cat ",pngname->c_str());
+        system(cmd2->c_str());
+        unlink(fragname->c_str());
+        unlink(pngname->c_str());
+    } else
+        throw curv::Exception(cx, "not a shape");
 }
 
 int
