@@ -113,7 +113,6 @@ Design by contract:
     <body of sort function>;
 * parameter preconditions:
   * (predicate x) -> body
-  * (x isa Constructor) -> body -- likely not needed; see Data Abstraction
   * (x >= 0) -> body
 
 Debug actions:
