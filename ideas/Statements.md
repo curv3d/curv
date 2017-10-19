@@ -32,13 +32,13 @@ which create scopes:
 * argument of `{}`. If not a definition, analyze as an action/binder sequence.
 
 ## Generalized Actions
-* A script can denote an action. Eg, `echo "hello world";`.
+* A script can denote an action. Eg, `print "hello world";`.
   `tests/curv.curv` is simplified. Makes Curv feel more like a procedural
   language, since they all have "action scripts".
 * A procedure is a function whose body is an action.
   Procedures are values, but can only be invoked in an action context.
-  `greetings name = echo "hello $name";`
-  echo, error, warning, assert become values.
+  `greetings name = print "hello $name";`
+  print, error, warning, assert become values.
 * `file(filename)` is now either an action or expression, depending on filename.
   In a weak context, we don't know (at compile time) if `file n` is action or
   expression. We'd need Operation::eval_or_exec() which yields zero or one
@@ -49,7 +49,9 @@ which create scopes:
 * A procedure cannot reassign a nonlocal sequential variable.
   Use a function instead: `(V1, V2) := F(V1,V2,0);`
 * Thus, procedures and action scripts have limited utility.
-  Side effects are limited to echo, error, warning, assert.
+  Side effects are limited to print, error, warning, assert.
+  This becomes more interesting once I have an interactive debugger, and a rich
+  set of actions for controlling the debugger. Procedures are debugger scripts.
 * Eg, `ignore x = (;);` -- evaluate x then discard its result.
 * Not for MVP. Can of worms with limited utility.
 
@@ -67,7 +69,7 @@ Maybe?
 These are chainable, just as `let` and `do` are chainable.
 
 Benefits:
-* `do echo msg in ...` reads better than `let echo msg in ...`.
+* `do print msg in ...` reads better than `let print msg in ...`.
 * Sequential definitions and `while` actions can only occur within `do`,
   so we can refer to the sequential sublanguage as the `do` feature.
 * Ideally, I'd like to not mix recursive definitions and actions.
@@ -116,7 +118,7 @@ Move the actions after the definitions, don't intermix them.
        a=1;
        b=2;
      actions
-       echo "my module"
+       print "my module"
        assert(a+b<10);
      }
 * drawbacks
@@ -270,7 +272,7 @@ you just use chaining.
 This also implies using `let` to introduce debug actions. Eg,
 ```
     f x = let
-        echo "f $(x)";
+        print "f $(x)";
     in
         ...;
 ```

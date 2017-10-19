@@ -13,9 +13,6 @@ String:
 * $+EE or $[0xEE], short for ${code_to_str[0xEE]}.
   $[0xEE] is less weird looking, easier to figure out.
 
-Numbers:
-* hexadecimal numerals. Useful for Unicode code points and web colours.
-
 Libraries.
 * use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace,
   file must evaluate to a module.
