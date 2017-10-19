@@ -61,8 +61,8 @@ iq_cone(c,h) = make_shape {
 };
 // magic numbers provided by IQ:
 /*
-echo "$(mag(.8,.6))";
-echo "$(phase(.8,.6))";
+print "$(mag(.8,.6))";
+print "$(phase(.8,.6))";
 union(
     iq_cone([.8,.6],.6),
     cylinder .3 .1 >> translate(0,0,-1),

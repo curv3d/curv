@@ -14,7 +14,7 @@ fact n =
             i := i + 1;
         );
     in r;
-echo (fact 5);
+print(fact 5);
 assert(fact 5 == 120);
 
 in

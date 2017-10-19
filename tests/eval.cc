@@ -384,15 +384,15 @@ TEST(curv, eval)
     SUCCESS("[for (i in [1,2,3]) i+1]", "[2,3,4]");
 
     // generalized actions
-    SUCCESS("do (let a=-2 in for(b in a..2) if(b>0) echo b);"
-            "   for(x in -1..1) if(x<0) echo \"-\" else if(x>0) echo \"+\";"
+    SUCCESS("do (let a=-2 in for(b in a..2) if(b>0) print b);"
+            "   for(x in -1..1) if(x<0) print \"-\" else if(x>0) print \"+\";"
             "in 0",
         "0");
     EXPECT_EQ(console.str(),
-        "ECHO: 1\n"
-        "ECHO: 2\n"
-        "ECHO: -\n"
-        "ECHO: +\n");
+        "1\n"
+        "2\n"
+        "-\n"
+        "+\n");
 
     // The spread operator (a sequence generator)
     SUCCESS("[for (i in [1,2,3]) if (i==2) ...(\"two\", \"2!\") else i]", 
@@ -400,12 +400,12 @@ TEST(curv, eval)
     SUCCESS("...[1,2,3]", "1\n2\n3");
 
     // let operator
-    SUCCESS("(let a=1; echo \"$(a)\" in a)+1", "2");
-    EXPECT_EQ(console.str(), "ECHO: 1\n");
+    SUCCESS("(let a=1; print \"$(a)\" in a)+1", "2");
+    EXPECT_EQ(console.str(), "1\n");
 
-    // echo action
-    SUCCESS("echo \"$(17,42)\"", "");
-    EXPECT_EQ(console.str(), "ECHO: [17,42]\n");
+    // print action
+    SUCCESS("print \"$(17,42)\"", "");
+    EXPECT_EQ(console.str(), "[17,42]\n");
 
     // lexical errors
     FAILMSG("\\foo", "illegal character '\\'");
@@ -467,9 +467,9 @@ TEST(curv, eval)
         "  1,2\n"
         "   ^ ");
 
-    SUCCESS("let a=2; f x={echo(g 2); g y=a*x*b*y; b=3} in f(5).g(7)", "210");
+    SUCCESS("let a=2; f x={print(g 2); g y=a*x*b*y; b=3} in f(5).g(7)", "210");
     EXPECT_EQ(console.str(),
-        "ECHO: 60\n");
+        "60\n");
 
     //FAILMSG("a=1;var b:=2;a+b", "expecting = style definition");
     FAILMSG("let var a:=2 in a", "expecting = style definition");
