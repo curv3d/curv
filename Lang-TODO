@@ -10,7 +10,6 @@ String:
   str_to_code.
 * If two grapheme clusters are guaranteed (by the Unicode standard)
   to have the same printed representation, then they compare equal.
-* $(expr) is short for ${repr(expr)}.
 * $+EE or $[0xEE], short for ${code_to_str[0xEE]}.
   $[0xEE] is less weird looking, easier to figure out.
 

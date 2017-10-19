@@ -548,9 +548,9 @@ struct Strcat_Function : public Polyadic_Function
         throw Exception(At_Arg(args), "not a list");
     }
 };
-struct To_Str_Function : public Polyadic_Function
+struct Repr_Function : public Polyadic_Function
 {
-    To_Str_Function() : Polyadic_Function(1) {}
+    Repr_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
         String_Builder sb;
@@ -806,7 +806,7 @@ builtin_namespace()
     {"count", make<Builtin_Value>(Value{make<Count_Function>()})},
     {"fields", make<Builtin_Value>(Value{make<Fields_Function>()})},
     {"strcat", make<Builtin_Value>(Value{make<Strcat_Function>()})},
-    {"to_str", make<Builtin_Value>(Value{make<To_Str_Function>()})},
+    {"repr", make<Builtin_Value>(Value{make<Repr_Function>()})},
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},
     {"make_shape", make<Builtin_Value>(Value{make<Make_Shape_Function>()})},
     {"print", make<Builtin_Meaning<Print_Metafunction>>()},
