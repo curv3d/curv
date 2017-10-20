@@ -16,9 +16,9 @@
 
 let
 log_spiral(s,g) = make_shape {
-    dist p =
-        do  var r := mag(p'[X,Y,Z]);
-            var t := phase(p'[X,Y,Z]);
+    dist(x,y,z,t) =
+        do  var r := mag[x,y,z];
+            var t := phase[x,y,z];
         in if (r == 0)
             0
         else

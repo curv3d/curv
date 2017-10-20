@@ -1,8 +1,8 @@
 make_shape {
     dist : everything.dist,
     colour pt :
-        do  var z := pt'[X,Y];
-            var c := pt'[X,Y];
+        do  var z := pt[[X,Y]];
+            var c := pt[[X,Y]];
             var color := [0,0,0];
             var i := 0;
             while (i < 100) (

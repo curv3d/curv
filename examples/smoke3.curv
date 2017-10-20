@@ -17,9 +17,9 @@ noise xy =
 
         var u := f * f * (3 - 2 * f);
 
-    in mix(a, b, u'X) + 
-        (c - a)* u'Y * (1 - u'X) + 
-        (d - b) * u'X * u'Y;
+    in mix(a, b, u[X]) + 
+        (c - a)* u[Y] * (1 - u[X]) + 
+        (d - b) * u[X] * u[Y];
 
 fbm xy =
     do  var st := xy;

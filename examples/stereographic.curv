@@ -7,9 +7,9 @@ stereographic_projection plane = sphere 2 >> colour
     ((x,y,z,t)->plane.colour(x/(1-z), y/(1-z), 0, t));
 
 log_spiral(a,b) = make_shape {
-    dist p =
-        do  var r := mag(p'[X,Y,Z]);
-            var t := phase(p'[X,Y,Z]);
+    dist(x,y,z,t) =
+        do  var r := mag[x,y,z];
+            var t := phase[x,y,z];
         in if (r == 0)
             0
         else
