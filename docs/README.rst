@@ -30,10 +30,13 @@ geometric shapes. It's not a general purpose programming language.
 There is no concept of I/O. A Curv program is simply an expression that
 computes a shape, without causing side effects.
 
-Curv is *dynamically typed*, with 8 types. The first 6 data types are
+Curv is *dynamically typed*, with 7 types. The first 6 data types are
 borrowed from JSON: null, boolean, number, string, list and record.
-In addition, we have functions and shapes. There are no user defined types,
-and Curv is not "object oriented".
+In addition, we have functions.
+All application level data is built from these 7 types.
+For example, a geometric shape is simply a record value
+with a standard set of fields.
+There are no mechanisms for naming or defining types.
 
 Curv is an *array language*: scalar arithmetic operations are generalized
 to work on vectors, matrices, and higher dimensional arrays. A vector is
