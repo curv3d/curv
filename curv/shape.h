@@ -48,32 +48,5 @@ struct Shape_Recognizer
     GL_Value gl_colour(GL_Value, GL_Frame&) const;
 };
 
-struct Shape : public Structure
-{
-    Atom_Map<Value> fields_;
-
-    Shape(Shared<const Structure>, const Context&);
-
-    /// Print a value like a Curv expression.
-    virtual void print(std::ostream&) const override;
-
-    virtual Value getfield(Atom, const Context&) const override;
-    virtual bool hasfield(Atom) const override;
-    virtual void putfields(Atom_Map<Value>&) const override;
-    virtual size_t size() const override;
-    virtual Shared<List> fields() const override;
-
-    Polyadic_Function& dist(const Context&) const;
-    BBox bbox(const Context&) const;
-
-    /// Invoke the Geometry Compiler on the shape's `dist` function.
-    GL_Value gl_dist(GL_Value, GL_Frame&) const;
-
-    /// Invoke the Geometry Compiler on the shape's `colour` function.
-    GL_Value gl_colour(GL_Value, GL_Frame&) const;
-
-    static const char name[];
-};
-
 } // namespace curv
 #endif // header guard
