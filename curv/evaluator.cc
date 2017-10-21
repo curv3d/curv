@@ -444,7 +444,7 @@ struct_at(const Structure& ref, Value index, const Context& cx)
             (*result)[j++] = struct_at(ref, i, cx);
         return {result};
     }
-    Atom a = index.to<const String>(cx);
+    Atom a = index.to<const String>(cx).get();
     return ref.getfield(a, cx);
 }
 Value
