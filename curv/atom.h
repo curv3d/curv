@@ -28,6 +28,10 @@ private:
     using Base = Shared<const String>;
 public:
     using Shared<const String>::Shared;
+    inline Atom(Shared<const String> str)
+    :
+        Base(str)
+    {}
     inline Atom(const char* str)
     :
         Base(String::make(str, strlen(str)))
