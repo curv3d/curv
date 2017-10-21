@@ -17,7 +17,7 @@ Module_Base::print(std::ostream& out) const
     for (auto i : *this) {
         if (!first) out << ",";
         first = false;
-        out << i.first << "=";
+        out << i.first << ":";
         i.second.print(out);
     }
     out << "}";
