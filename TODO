@@ -10,12 +10,25 @@ Statements project:
 
 Phases:
 1: Find definitions, determine kind. Construct Definition tree.
-   deftree = phrase->analyze_def(env)
+   deftree = phrase->as_definition(env)
 2: Find names, add to scope. Assign slot numbers, construct Pattern objects.
-   Scope calls deftree->add_to_scope(*this)
-3: Analyze definientia, construct binding dependency graph.
-   Scope calls defunit->analyze for each defunit.
-4: Generate code.
+   Scope calls deftree->add_to_scope(*this).
+   Deftree calls add_action, add_unit, add_binding on scope.
+   We need to traverse pattern trees to find the names, but we can't analyze
+   default value expressions yet.
+3: Analyze definientia and pattern default value expressions.
+   Construct binding dependency graph.
+   Scope calls unit->analyze() for each unitary definition. Two cases:
+   * Function definition (one name). A recursion partition can have several
+     of these, the initialization action is constructed by combining multiple
+     lambda expressions. So, can't create the initialization action during
+     unit->analyze(). Store lambda expression in the definition.
+   * Data definition: zero or more names bound, may have default value
+     expressions. The analyzed expressions must be stored together,
+     e.g. in the definition. Maybe we construct the initialization action
+     during unit->analyze() and store it in the definition for later.
+4: Generate code. Two cases for function definition and data definition.
+   unit->make_action().
 
 * Abstract Pattern
   Take a Value, potentially type check it and/or destructure it into its
@@ -526,9 +539,6 @@ Other:
   ^^: D
   ^: Eiffel, Icon, Mathematica, Maple, Matlab, Basic, Awk, Bc, Lua, Julia, R
 * double-conversion based strtod
-* lexer parses C++14 preprocessor numerals, Numeral::analyse parses legal
-  numeral while building a buffer for strtod.
-* Unicode strings: decide what str[i] means (code points or grapheme clusters)
 * broader unit testing
 * smart pointers, see docs/Shared_Ptr.md
 

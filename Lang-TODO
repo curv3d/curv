@@ -4,14 +4,20 @@ GL:
 
 String:
 * Conversion between strings and lists of (integer) code points:
-  str_to_code and code_to_str.
+  * `encode string`: convert string to a list of Unicode code points (integers).
+  * `decode codelist`: converts list of Unicode code points to a string.
+  * Initially only ASCII is supported, codes 1..127. The NUL character is
+    disallowed.
 * Unicode strings. str[i] is the i'th grapheme cluster. `count str` is the
   number of grapheme clusters. To operate on code points instead, first use
-  str_to_code.
+  encode.
 * If two grapheme clusters are guaranteed (by the Unicode standard)
   to have the same printed representation, then they compare equal.
-* $+EE or $[0xEE], short for ${code_to_str[0xEE]}.
-  $[0xEE] is less weird looking, easier to figure out.
+* String comprehensions:
+  ${...} interpolates the string strcat[...]
+  $[...] interpolates the string decode[...]
+  $(...) interpolates the string repr(...)
+  $id is short for ${id}
 
 Libraries.
 * use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace,
@@ -23,12 +29,14 @@ Libraries.
   curv::Module has a public dictionary and a debug dictionary.
   _foo is private in std.curv, and in all other *.curv files.
 
-Patterns (Bindings and Lambda):
-* action thunks, instead of value thunks.
-* (x,y) = f(a);
-* {x,y}=... is pattern matching on a record. Extra fields on right -> error.
-* Record patterns can be used as function parameters.
-* Default values in record patterns, `{x=0,y=1} = ...`
+Patterns (Definitions, Binders, Lambda parameters, `for` parameter):
+* list patterns: `(x,y)` and `[x,y]`
+* record patterns:
+  * `{x,y}=expr` -- extra fields on right -> error.
+  * `{x,y,...}=expr` -- ignores extra fields on right.
+  * Default values: `{x=0,y=1}`
+  * field name and variable name are different: `{"field":var}`
+* `var@pattern` matches pattern and binds `var` to the whole value matched.
 * functions with refutable parameter patterns lead to:
   switch((x,y,z)->..., a->...) -- returns a function
 * see also Parameter Preconditions
@@ -51,10 +59,10 @@ List Slices:
   because [0..count a - 1] is a list of the indexes of a, even if a is empty,
   meaning that [0..-1] denotes [].
 
-Multidimensional array indexing a[i,j,k].
+Multidimensional array slicing a[i,j,k].
 `a` is rectangular array of dimension `d`, or tree of max depth `d`.
-* All indices are integers: Easy, works for trees.
-* Non-final indexes must be integers. Final index can be a tree. Easy.
+Currently: Non-final indexes must be integers. Final index can be a tree.
+Works on trees.
 
 List Slice Assignment:
 * `v[[X,Z]] := v2`, similar to GLSL vector swizzle assignment.
@@ -79,6 +87,7 @@ Vectorized boolean operations:
   * .< .<= .> .>= .== .!= (Julia)
   * less, greater, equal, less_or_equal, greater_or_equal, not_equal
   * less, greater, equal, not_less, not_greater, not_equal
+  * lt, gt, eq, le, ge, ne (Matlab)
 * `not` is vectorized version of `!`.
 * `all` and `any` are vectorized boolean monoids for && and ||.
   * Name is consistent with GLSL,R,Julia,Python,Matlab.
@@ -126,12 +135,27 @@ Generalized Definitions:
 * id = expr
 * ( definition )
 * def1; def2; def3
-* `[x,y,z] = expr` and other patterns
-* `if (cond) (a=foo;b=bar) else (a=bar;b=foo)`
+* simple patterns: `[x,y,z] = expr` etc.
+* patterns with default values: `{x=42,y,z} = expr` etc.
+  * How are the default value expressions analyzed in a recursive scope?
+    Recursion is outlawed. No references to other bindings in the same
+    recursive binding partition.
 * `use {module}`, `use (constant in std namespace)`
+* `if (cond) (a=foo;b=bar) else (a=bar;b=foo)`
 
 Lexical:
 * unicode operators (needs re2c)
+    90° == 90*deg
+    ≤ ≥ ≠
+    ¬a == !a
+    a·b == dot(a,b)
+    a×b == a*b or maybe cross(a,b)
+    a÷b
+    √a
+    a∧b == a&&b
+    a∨b == a||b
+    x→x+1   ==   x->x+1
+    for (i ∈ 1..10)
 * Digit separator in numerals: ' like C++14, or _
 * Support ' in identifiers (like Haskell).
 * Support `foo` quoted identifiers.

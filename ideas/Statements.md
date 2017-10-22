@@ -18,11 +18,11 @@ But we don't support naked generators or binders in the CLI.
 
 ## Generalized Definitions
 * id = expr
-* ( definition )
 * def1; def2; def3 -- can also contain actions
+* ( definition )
 * `[x,y,z] = expr` and other patterns
-* `if (cond) (a=foo;b=bar) else (a=bar;b=foo)`
 * `use {a=b;...}`, `use (constant in std namespace)`
+* `if (cond) (a=foo;b=bar) else (a=bar;b=foo)` -- low priority
 
 We attempt to recognize a generalized definition in these contexts,
 which create scopes:
@@ -113,17 +113,24 @@ Move the actions after the definitions, don't intermix them.
   1. In a recursive definition list, definitions precede actions, and first
      statement is a recursive definition.
   2. Introduce a keyword separating recursive definitions from actions.
-     Eg, 'actions'.
+     Eg, 'actions' or 'perform'.
      {
        a=1;
        b=2;
      actions
-       print "my module"
+       print "my module";
        assert(a+b<10);
      }
 * drawbacks
   * In a large multipage module, assertions should be written adjacent to the
     definitions that they guard, for locality of code.
+    Although you could use a nested compound definition,
+      (
+        def1 = whatever;
+        def2 = something else;
+      perform
+        assert(def1 0 == def2 1);
+      );
   * More syntax to learn; doesn't make the language more powerful.
 
 ## Semicolon Phrases are Generalized Compound Phrases

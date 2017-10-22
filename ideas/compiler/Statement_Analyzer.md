@@ -1,7 +1,7 @@
 ## Generalized Definitions
 * id = expr
-* ( definition )
 * def1; def2; def3 -- can also contain actions
+* ( definition )
 * `[x,y,z] = expr` and other patterns
 * `if (cond) (a=foo;b=bar) else (a=bar;b=foo)` -- not in MVP
 
