@@ -50,6 +50,10 @@ Scanner::get_token()
                 "unterminated string literal");
         }
         tok.first_white_ = tok.first_ = p - first;
+        if (*p == 0) {
+            ++p;
+            goto error;
+        }
         if (*p == '"') {
             ++p;
             if (p < last && *p == '"') {
@@ -95,7 +99,7 @@ Scanner::get_token()
             ptr_ = p;
             throw Exception(At_Token(tok, *this), "illegal string escape");
         }
-        while (p < last && *p != '$' && *p != '"')
+        while (p < last && *p != '$' && *p != '"' && *p != 0)
             ++p;
         tok.kind_ = Token::k_string_segment;
         goto success;
