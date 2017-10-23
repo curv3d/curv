@@ -22,7 +22,7 @@ boolean            ``true, false``
 number             ``-1, 0xFFEF, 3.1416``
 string             ``"hello, world"``
 list               ``[0,1,2]``
-record             ``{name: "Launcelot", quest: "To seek the holy grail", favourite_colour: "blue"}``
+record             ``{name: "Lancelot", quest: "To seek the holy grail", favourite_colour: "blue"}``
 function           ``x -> x+1``
 ==============     ============================================
 
@@ -40,6 +40,42 @@ All data structures are hierarchical and finite, and therefore printable.
 Curv data structures cannot contain cycles, and thus cannot be infinite,
 with the exception that functions can be recursive.
 These restrictions make Curv programs easier to understand and debug.
+
+Null
+----
+``null`` is a special value that, by convention, indicates the
+absence of a value. Its distinguishing characteristic
+is that it is different from any other value. The only available
+operation is testing a value to see if it is null: ``value==null``
+is true if the value is null, otherwise false.
+
+Boolean
+-------
+The two Boolean values are ``true`` and ``false``.
+
+The relational operators compare two values and return a boolean:
+
+==========  ===================
+``a == b``  ``a`` is equal to ``b``
+``a != b``  ``a`` is not equal to ``b``
+``m < n``   ``m`` is less than ``n``
+``m <= n``  ``m`` is less than or equal to ``n``
+``m > n``   ``m`` is greater than ``n``
+``m >= n``  ``m`` is greater than or equal to ``n``
+==========  ========================
+
+(Note: ``a`` and ``b`` are arbitrary values, ``m`` and ``n`` are numbers.)
+
+Number
+------
+String
+------
+List
+----
+Record
+------
+Function
+--------
 
 Program Structure
 =================
