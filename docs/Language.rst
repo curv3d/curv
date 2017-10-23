@@ -2,6 +2,11 @@
 The Curv Language
 =================
 
+Curv is a domain specific language for specifying geometric objects.
+It's a language for artists, and it prioritizes simplicity and exploratory
+programming over the complex features provided by general purpose programming languages
+to support large scale software engineering.
+
 Curv is a dynamically typed pure functional language.
 It has simpler semantics than any general purpose programming language.
 It's powerful enough that the entire geometry API is written in Curv, not C++.
@@ -17,8 +22,8 @@ boolean            ``true, false``
 number             ``-1, 0xFFEF, 3.1416``
 string             ``"hello, world"``
 list               ``[0,1,2]``
-record             ``{name: "Doug", favourite_colour: "blue"}``
-function           ``x->x+1``
+record             ``{name: "Launcelot", quest: "To seek the holy grail", favourite_colour: "blue"}``
+function           ``x -> x+1``
 ==============     ============================================
 
 The first 6 data types are taken from JSON,
@@ -27,10 +32,29 @@ and Curv can be considered a superset of JSON.
 There are no named types or user-defined types.
 All application data is represented using the 7 data types.
 For example, a geometric point or vector is a list of numbers.
-A matrix is a list of list of numbers. A geometric shape is a record
+A matrix is a list of lists of numbers. A geometric shape is a record
 containing 5 fields (two booleans, two functions and a matrix).
 
 All values are immutable (there are no mutable objects).
-All data structures are hierarchical, and therefore printable:
-it is impossible to form cycles in Curv data,
+All data structures are hierarchical and finite, and therefore printable.
+Curv data structures cannot contain cycles, and thus cannot be infinite,
 with the exception that functions can be recursive.
+These restrictions make Curv programs easier to understand and debug.
+
+Program Structure
+=================
+Curv programs do not have side effects. The only goal of a Curv program is
+to compute a value: usually this is a geometric shape, but it can also be a
+library. (Shapes and libraries are both represented by record values.)
+
+Conventional programming languages are "statement languages". A statement
+is a syntactic form that either defines a named object (a definition)
+or causes a side effect (an action). In such a language, a program is a sequence
+of statements, the body of a function is a sequence of statements (one of which
+is a "return statement"), and expressions occur only as elements of statements.
+
+Curv is an "expression language". An expression is a syntactic form that
+computes a value, eg like ``2+2``. A program is an expression. The body of a function
+is an expression. Statements only occur embedded in certain expression forms.
+(Note that JSON is also an expression language, and that most JSON programs are
+also legal Curv programs.)
