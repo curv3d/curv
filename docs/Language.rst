@@ -43,26 +43,29 @@ These restrictions make Curv programs easier to understand and debug.
 
 Null
 ----
-``null`` is a special value that, by convention, indicates the
-absence of a value. Its distinguishing characteristic
+``null`` is a placeholder value that, by convention, indicates that
+some situation does not hold, and that the corresponding value is not available.
+Its distinguishing characteristic
 is that it is different from any other value. The only available
 operation is testing a value to see if it is null: ``value==null``
 is true if the value is null, otherwise false.
 
 Boolean
 -------
-The two Boolean values are ``true`` and ``false``.
+The Boolean values are ``true`` and ``false``.
+They are used for making decisions:
+if some condition holds, do this, otherwise do that.
 
 The relational operators compare two values and return a boolean:
 
-==========  ===================
-``a == b``  ``a`` is equal to ``b``
-``a != b``  ``a`` is not equal to ``b``
-``m < n``   ``m`` is less than ``n``
-``m <= n``  ``m`` is less than or equal to ``n``
-``m > n``   ``m`` is greater than ``n``
-``m >= n``  ``m`` is greater than or equal to ``n``
-==========  ========================
+==============     ============================================
+``a == b``         ``a`` is equal to ``b``
+``a != b``         ``a`` is not equal to ``b``
+``m < n``          ``m`` is less than ``n``
+``m <= n``         ``m`` is less than or equal to ``n``
+``m > n``          ``m`` is greater than ``n``
+``m >= n``         ``m`` is greater than or equal to ``n``
+==============     ============================================
 
 (Note: ``a`` and ``b`` are arbitrary values, ``m`` and ``n`` are numbers.)
 
