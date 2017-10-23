@@ -69,6 +69,25 @@ The relational operators compare two values and return a boolean:
 
 (Note: ``a`` and ``b`` are arbitrary values, ``m`` and ``n`` are numbers.)
 
+The ``==`` operator is an equivalence relation:
+
+* For every value ``a``, ``a == a``.
+* For any pair of values ``a`` and ``b``, if ``a==b`` then ``b==a``.
+* For any three values ``a``, ``b`` and ``c``, if ``a==b`` and ``b==c`` then ``a==c``.
+
+The logical operators take boolean values as arguments, and return a boolean:
+
+==========   =============================================================
+``a && b``   Logical and: True if ``a`` and ``b`` are both true.
+``a || b``   Logical or: True if at least one of ``a`` and ``b`` are true.
+``!a``       Logical not: ``!true==false`` and ``!false==true``.
+==========   =============================================================
+
+The conditional operator selects between two alternatives based on a boolean condition::
+
+  if (condition) result_if_true else result_if_false
+
+
 Number
 ------
 String
