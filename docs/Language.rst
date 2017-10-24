@@ -12,8 +12,10 @@ It has simpler semantics than any general purpose programming language.
 It's powerful enough that the entire geometry API is written in Curv, not C++.
 The core language is small enough to learn in a day.
 
+1. Overview
+===========
 Data Types
-==========
+----------
 Curv has 7 data types:
 
 ==============     ============================================
@@ -40,6 +42,30 @@ All data structures are hierarchical and finite, and therefore printable.
 Curv data structures cannot contain cycles, and thus cannot be infinite,
 with the exception that functions can be recursive.
 These restrictions make Curv programs easier to understand and debug.
+
+Program Structure
+-----------------
+Curv programs do not have side effects. The only goal of a Curv program is
+to compute a value: usually this is a geometric shape, but it can also be a
+library. (Shapes and libraries are both represented by record values.)
+
+Conventional programming languages are "statement languages". A statement
+is a syntactic form that either defines a named object (a definition)
+or causes a side effect (an action). In such a language, a program is a sequence
+of statements, the body of a function is a sequence of statements (one of which
+is a "return statement"), and expressions occur only as elements of statements.
+
+Curv is an "expression language". An expression is a syntactic form that
+computes a value, eg like ``2+2``. A program is an expression. The body of a function
+is an expression. Statements only occur embedded in certain expression forms.
+(Note that JSON is also an expression language, and that most JSON programs are
+also legal Curv programs.)
+
+Definitions
+-----------
+
+2. Operations on Values
+=======================
 
 Null
 ----
@@ -90,6 +116,20 @@ The conditional operator selects between two alternatives based on a boolean con
 
 Number
 ------
+Numbers are represented internally by 64 bit IEEE floating point numbers.
+
+* ``0`` and ``-0`` are different numbers, but they compare equal.
+* ``inf`` is infinity; it is greater than any finite number.
+* ``-inf`` is negative infinity.
+* We don't support the IEEE NaN (not a number) value.
+  Instead, all arithmetic operations with an undefined result report an error.
+  For example, ``0/0`` is an error.
+
+An integer is just a number with no fractional part.
+Some programming languages make a low-level distinction between integers and numbers
+with no fractional part, so that `1` is an integer and `1.0` is not an integer,
+but not Curv.
+
 String
 ------
 List
@@ -98,21 +138,3 @@ Record
 ------
 Function
 --------
-
-Program Structure
-=================
-Curv programs do not have side effects. The only goal of a Curv program is
-to compute a value: usually this is a geometric shape, but it can also be a
-library. (Shapes and libraries are both represented by record values.)
-
-Conventional programming languages are "statement languages". A statement
-is a syntactic form that either defines a named object (a definition)
-or causes a side effect (an action). In such a language, a program is a sequence
-of statements, the body of a function is a sequence of statements (one of which
-is a "return statement"), and expressions occur only as elements of statements.
-
-Curv is an "expression language". An expression is a syntactic form that
-computes a value, eg like ``2+2``. A program is an expression. The body of a function
-is an expression. Statements only occur embedded in certain expression forms.
-(Note that JSON is also an expression language, and that most JSON programs are
-also legal Curv programs.)
