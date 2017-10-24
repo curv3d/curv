@@ -34,6 +34,15 @@ struct Environ
         frame_nslots_(0),
         frame_maxslots_(0)
     {}
+
+    slot_t make_slot()
+    {
+        slot_t slot = frame_nslots_++;
+        if (frame_maxslots_ < frame_nslots_)
+            frame_maxslots_ = frame_nslots_;
+        return slot;
+    }
+
     Shared<Meaning> lookup(const Identifier& id);
     Shared<Meaning> lookup_var(const Identifier& id);
     virtual Shared<Meaning> single_lookup(const Identifier&) = 0;

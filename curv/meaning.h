@@ -489,6 +489,29 @@ struct Record_Expr : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
+/// The definitions and actions in a module or block compile into this.
+struct Scope_Executable
+{
+    // For a module constructor, location in the evaluation frame where the
+    // module is stored. For a block, (slot_t)(-1).
+    slot_t module_slot_ = -1;
+
+    // For a module constructor, the field dictionary.
+    // For a block, nullptr.
+    Shared<Module::Dictionary> module_dictionary_ = nullptr;
+
+    // actions to execute at runtime: action statements and slot initialization
+    std::vector<Shared<const Operation>> actions_ = {};
+
+    Scope_Executable() {}
+
+    /// Initialize the module slot, execute the definitions and action list.
+    /// Return the module.
+    Shared<Module> eval_module(Frame&) const;
+    void exec(Frame&) const;
+    void gl_exec(GL_Frame&) const;
+};
+
 /// 'Statements' represents the definitions and actions in a module literal
 /// or block.
 ///
@@ -639,6 +662,21 @@ struct Enum_Module_Expr final : public Abstract_Module_Expr
         Abstract_Module_Expr(source),
         dictionary_(dictionary),
         exprs_(exprs)
+    {}
+
+    virtual Shared<Module> eval_module(Frame&) const override;
+};
+
+struct Scoped_Module_Expr : public Abstract_Module_Expr
+{
+    Scope_Executable executable_;
+
+    Scoped_Module_Expr(
+        Shared<const Phrase> source,
+        Scope_Executable executable)
+    :
+        Abstract_Module_Expr(source),
+        executable_(std::move(executable))
     {}
 
     virtual Shared<Module> eval_module(Frame&) const override;

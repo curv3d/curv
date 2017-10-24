@@ -622,6 +622,20 @@ Statements::eval_module(Frame& f) const
     return module;
 }
 
+Shared<Module>
+Scope_Executable::eval_module(Frame& f) const
+{
+    assert(module_slot_ != (slot_t)(-1));
+    assert(module_dictionary_ != nullptr);
+
+    Shared<Module> module =
+        Module::make(module_dictionary_->size(), module_dictionary_);
+    f[module_slot_] = {module};
+    for (auto action : actions_)
+        action->exec(f);
+    return module;
+}
+
 void
 Let_Assign::exec(Frame& f) const
 {
@@ -650,6 +664,12 @@ Enum_Module_Expr::eval_module(Frame& f) const
     for (size_t i = 0; i < exprs_.size(); ++i)
         module->at(i) = exprs_[i]->eval(f);
     return module;
+}
+
+Shared<Module>
+Scoped_Module_Expr::eval_module(Frame& f) const
+{
+    return executable_.eval_module(f);
 }
 
 Shared<Module>

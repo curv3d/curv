@@ -6,6 +6,7 @@
 
 #include <curv/phrase.h>
 #include <curv/analyzer.h>
+#include <curv/definition.h>
 #include <curv/shared.h>
 #include <curv/exception.h>
 #include <curv/thunk.h>
@@ -61,6 +62,12 @@ Operation::to_operation(Frame*)
 
 Shared<Definition>
 Phrase::analyze_def(Environ&)
+{
+    return nullptr;
+}
+
+Shared<Abstract_Definition>
+Phrase::as_definition(Environ&)
 {
     return nullptr;
 }
@@ -745,7 +752,6 @@ analyze_def_iter(
             make<Lambda_Phrase>(call->arg_, Token(), right), kind);
     throw Exception(At_Phrase(left,  env), "invalid definiendum");
 }
-
 Shared<Definition>
 Recursive_Definition_Phrase::analyze_def(Environ& env)
 {
@@ -759,6 +765,38 @@ Sequential_Definition_Phrase::analyze_def(Environ& env)
         Definition::k_sequential);
 }
 
+Shared<Abstract_Definition>
+as_definition_iter(
+    Environ& env, Shared<const Phrase> source,
+    Phrase& left, Shared<Phrase> right, Abstract_Definition::Kind kind)
+{
+    if (auto id = dynamic_cast<const Identifier*>(&left)) {
+        auto lambda = cast<Lambda_Phrase>(right);
+        if (lambda && kind == Abstract_Definition::k_recursive)
+            return make<Function_Definition>(std::move(source),
+                share(*id), std::move(lambda));
+        else
+            return make<Data_Definition>(std::move(source), kind,
+                share(*id), std::move(right));
+    }
+    if (auto call = dynamic_cast<const Call_Phrase*>(&left))
+        return as_definition_iter(env, std::move(source), *call->function_,
+            make<Lambda_Phrase>(call->arg_, Token(), right), kind);
+    throw Exception(At_Phrase(left,  env), "invalid definiendum");
+}
+Shared<Abstract_Definition>
+Recursive_Definition_Phrase::as_definition(Environ& env)
+{
+    return as_definition_iter(env, share(*this), *left_, right_,
+        Abstract_Definition::k_recursive);
+}
+Shared<Abstract_Definition>
+Sequential_Definition_Phrase::as_definition(Environ& env)
+{
+    return as_definition_iter(env, share(*this), *left_, right_,
+        Abstract_Definition::k_sequential);
+}
+
 Shared<Meaning>
 Semicolon_Phrase::analyze(Environ& env) const
 {
@@ -766,6 +804,33 @@ Semicolon_Phrase::analyze(Environ& env) const
     for (size_t i = 0; i < args_.size(); ++i)
         compound->at(i) = analyze_action(*args_[i].expr_, env);
     return compound;
+}
+
+Shared<Abstract_Definition>
+Semicolon_Phrase::as_definition(Environ& env)
+{
+    Shared<Compound_Definition> compound =
+        Compound_Definition::make(args_.size(), share(*this));
+    bool have_kind = false;
+    for (size_t i = 0; i < args_.size(); ++i) {
+        auto phrase = args_[i].expr_;
+        compound->at(i).phrase_ = phrase;
+        auto def = args_[i].expr_->as_definition(env);
+        if (def) {
+            if (!have_kind) {
+                compound->kind_ = def->kind_;
+                have_kind = true;
+            } else if (compound->kind_ != def->kind_) {
+                throw Exception(At_Phrase(*phrase, env),
+                "conflicting definition types in the same compound definition");
+            }
+        }
+        compound->at(i).definition_ = def;
+    }
+    if (have_kind)
+        return compound;
+    else
+        return nullptr;
 }
 
 Shared<Meaning>
@@ -787,6 +852,11 @@ Paren_Phrase::analyze(Environ& env) const
         return list;
     } else
         return analyze_tail(*body_, env);
+}
+Shared<Abstract_Definition>
+Paren_Phrase::as_definition(Environ& env)
+{
+    return body_->as_definition(env);
 }
 
 Shared<Meaning>
@@ -842,10 +912,26 @@ Program_Phrase::analyze_def(Environ& env)
 {
     return body_->analyze_def(env);
 }
+Shared<Abstract_Definition>
+Program_Phrase::as_definition(Environ& env)
+{
+    return body_->as_definition(env);
+}
 
 Shared<Meaning>
 Brace_Phrase::analyze(Environ& env) const
 {
+    auto source = share(*this);
+
+    Shared<Abstract_Definition> adef = body_->as_definition(env);
+    if (adef != nullptr) {
+        if (adef->kind_ == Abstract_Definition::k_sequential) {
+            Sequential_Scope sscope(env, true);
+            sscope.analyze(*adef);
+            return make<Scoped_Module_Expr>(source, std::move(sscope.executable_));
+        }
+    }
+
     // A brace phrase is:
     //  * empty
     //  * a binder
@@ -863,8 +949,6 @@ Brace_Phrase::analyze(Environ& env) const
     } else {
         is_module = (body_->analyze_def(env) != nullptr);
     }
-
-    auto source = share(*this);
 
     if (is_module) {
         Statement_Analyzer fields{env, Definition::k_recursive, true};

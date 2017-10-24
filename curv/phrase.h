@@ -15,6 +15,7 @@
 namespace curv {
 
 struct Definition;
+struct Abstract_Definition;
 struct Meaning;
 struct Operation;
 struct Segment;
@@ -38,6 +39,7 @@ struct Phrase : public Shared_Base
     virtual ~Phrase() {}
     virtual Location location() const = 0;
     virtual Shared<Definition> analyze_def(Environ&);
+    virtual Shared<Abstract_Definition> as_definition(Environ&);
     virtual Shared<Meaning> analyze(Environ&) const = 0;
 };
 
@@ -190,6 +192,7 @@ struct Recursive_Definition_Phrase : public Phrase
         return left_->location().ending_at(right_->location().token());
     }
     virtual Shared<Definition> analyze_def(Environ&) override;
+    virtual Shared<Abstract_Definition> as_definition(Environ&) override;
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 struct Sequential_Definition_Phrase : public Phrase
@@ -211,6 +214,7 @@ struct Sequential_Definition_Phrase : public Phrase
         return right_->location().starting_at(var_);
     }
     virtual Shared<Definition> analyze_def(Environ&) override;
+    virtual Shared<Abstract_Definition> as_definition(Environ&) override;
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 struct Assignment_Phrase : public Phrase
@@ -287,6 +291,7 @@ struct Semicolon_Phrase : public Separator_Phrase
 {
     using Separator_Phrase::Separator_Phrase;
     virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Abstract_Definition> as_definition(Environ&) override;
 };
 
 /// common implementation for `(...)`, `[...]` and `{...}` phrases.
@@ -310,6 +315,7 @@ struct Paren_Phrase : public Delimited_Phrase
 {
     using Delimited_Phrase::Delimited_Phrase;
     virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Abstract_Definition> as_definition(Environ&) override;
 };
 
 struct Bracket_Phrase : public Delimited_Phrase
@@ -340,6 +346,7 @@ struct Program_Phrase : public Phrase
 
     virtual Shared<Meaning> analyze(Environ&) const override;
     virtual Shared<Definition> analyze_def(Environ&) override;
+    virtual Shared<Abstract_Definition> as_definition(Environ&) override;
 };
 
 /// A function call. Call_Phrase is ultimately an abstract interface
