@@ -530,6 +530,17 @@ bool gl_try_eval(Operation& op, GL_Frame& f, GL_Value& val)
     }
 }
 
+GL_Value SBlock_Op::gl_eval(GL_Frame& f) const
+{
+    statements_.gl_exec(f);
+    return body_->gl_eval(f);
+}
+void SBlock_Op::gl_exec(GL_Frame& f) const
+{
+    statements_.gl_exec(f);
+    body_->gl_exec(f);
+}
+
 GL_Value Block_Op::gl_eval(GL_Frame& f) const
 {
     statements_.gl_exec(f);
@@ -546,6 +557,11 @@ void Compound_Op_Base::gl_exec(GL_Frame& f) const
         s->gl_exec(f);
 }
 
+void Scope_Executable::gl_exec(GL_Frame& f) const
+{
+    for (auto action : actions_)
+        action->gl_exec(f);
+}
 void Statements::gl_exec(GL_Frame& f) const
 {
     for (auto action : actions_)

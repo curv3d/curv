@@ -585,6 +585,21 @@ analyze_block(
     Shared<Phrase> bindings,
     Shared<const Phrase> bodysrc)
 {
+    Shared<Abstract_Definition> adef = bindings->as_definition(env);
+    if (adef != nullptr) {
+        if (adef->kind_ == Abstract_Definition::k_sequential
+            && kind == Definition::k_sequential)
+        {
+            Sequential_Scope sscope(env, false);
+            sscope.analyze(*adef);
+            sscope.is_analyzing_action_ = env.is_analyzing_action_;
+            auto body = analyze_tail(*bodysrc, sscope);
+            env.frame_maxslots_ = sscope.frame_maxslots_;
+            return make<SBlock_Op>(source,
+                std::move(sscope.executable_), std::move(body));
+        }
+    }
+
     Statement_Analyzer analyzer{env, kind, false};
     each_item(*bindings, [&](Phrase& stmt)->void {
         analyzer.add_statement(share(stmt));

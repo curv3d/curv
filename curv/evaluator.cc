@@ -635,6 +635,17 @@ Scope_Executable::eval_module(Frame& f) const
         action->exec(f);
     return module;
 }
+void
+Scope_Executable::exec(Frame& f) const
+{
+    if (module_slot_ != (slot_t)(-1)) {
+        (void) eval_module(f);
+    } else {
+        for (auto action : actions_) {
+            action->exec(f);
+        }
+    }
+}
 
 void
 Let_Assign::exec(Frame& f) const
@@ -676,6 +687,31 @@ Shared<Module>
 Module_Expr::eval_module(Frame& f) const
 {
     return statements_.eval_module(f);
+}
+
+Value
+SBlock_Op::eval(Frame& f) const
+{
+    statements_.exec(f);
+    return body_->eval(f);
+}
+void
+SBlock_Op::generate(Frame& f, List_Builder& lb) const
+{
+    statements_.exec(f);
+    body_->generate(f, lb);
+}
+void
+SBlock_Op::bind(Frame& f, Record& r) const
+{
+    statements_.exec(f);
+    body_->bind(f, r);
+}
+void
+SBlock_Op::exec(Frame& f) const
+{
+    statements_.exec(f);
+    body_->exec(f);
 }
 
 Value
