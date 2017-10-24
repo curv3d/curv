@@ -22,3 +22,4 @@ valgrind-full:
 	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..
 	cd build; make tester
 	cd tests; valgrind --leak-check=full ../build/tester
+.PHONY: curv
