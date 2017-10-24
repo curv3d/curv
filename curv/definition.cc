@@ -3,6 +3,7 @@
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
 #include <functional>
+#include <iostream>
 
 #include <curv/definition.h>
 #include <curv/exception.h>
@@ -98,8 +99,6 @@ unsigned
 Sequential_Scope::begin_unit(Shared<Unitary_Definition> unit)
 {
     unit->analyze(*this);
-    executable_.actions_.push_back(
-        unit->make_action(executable_.module_slot_));
     return 0;
 }
 slot_t
@@ -117,7 +116,8 @@ void
 Sequential_Scope::end_unit(unsigned unitno, Shared<Unitary_Definition> unit)
 {
     (void)unitno;
-    (void)unit;
+    executable_.actions_.push_back(
+        unit->make_action(executable_.module_slot_));
 }
 
 } // namespace curv

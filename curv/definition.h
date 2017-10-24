@@ -125,7 +125,7 @@ struct Sequential_Scope : public Scope, public Environ
 
     Sequential_Scope(Environ& parent, bool target_is_module)
     :
-        Environ(parent),
+        Environ(&parent),
         target_is_module_(target_is_module)
     {
         frame_nslots_ = parent.frame_nslots_;
