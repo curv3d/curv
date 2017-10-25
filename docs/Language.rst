@@ -14,6 +14,7 @@ The core language is small enough to learn in a day.
 
 1. Overview
 ===========
+
 Data Types
 ----------
 Curv has 7 data types:
@@ -63,6 +64,21 @@ also legal Curv programs.)
 
 Definitions
 -----------
+
+Modules
+-------
+
+Functions
+---------
+
+List, Record and String Comprehensions
+--------------------------------------
+
+Design by Contract
+------------------
+
+Arrays and Vectorized Operations
+--------------------------------
 
 2. Operations on Values
 =======================
