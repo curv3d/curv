@@ -5,6 +5,7 @@
 #include <curv/thunk.h>
 #include <curv/exception.h>
 #include <curv/context.h>
+#include <curv/function.h>
 
 namespace curv
 {
@@ -34,6 +35,8 @@ force_ref(Module& nonlocal, slot_t i, const Phrase& identifier, Frame& f)
             slot = thunk->expr_->eval(*f2);
             return slot;
           }
+        case Ref_Value::ty_lambda:
+            return {make<Closure>((Lambda&)ref, nonlocal)};
         case Ref_Value::ty_missing:
             throw Exception(At_Phrase(identifier, &f),
                 "illegal recursive reference");

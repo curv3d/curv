@@ -20,6 +20,7 @@
 namespace curv {
 
 struct Operation;
+struct Lambda;
 
 /// An abstract base class representing a semantically analyzed Phrase.
 struct Meaning : public Shared_Base
@@ -160,6 +161,19 @@ struct Null_Action : public Just_Action
     using Just_Action::Just_Action;
     virtual void exec(Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
+};
+
+struct Symbolic_Ref : public Just_Expression
+{
+    Atom name_;
+
+    Symbolic_Ref(Shared<const Identifier> id)
+    :
+        Just_Expression(id),
+        name_(id->atom_)
+    {}
+
+    virtual Value eval(Frame&) const override;
 };
 
 /// reference to a lazy nonlocal slot.
@@ -699,6 +713,41 @@ struct Module_Expr : public Abstract_Module_Expr
 
     virtual Shared<Module> eval_module(Frame&) const override;
 };
+
+// An internal action for initializing the slots in the evaluation frame
+// for a group of mutually recursive closures.
+// The closures share a single `nonlocal` object.
+// Part of the actions_ list in a Scope_Executable for a Recursive_Scope.
+struct Function_Setter_Base : public Just_Action
+{
+    // a copy of module_slot_ from the enclosing Scope_Executable.
+    slot_t module_slot_;
+
+    // construct the shared nonlocal object at runtime.
+    Shared<Enum_Module_Expr> nonlocal_;
+
+    Function_Setter_Base(
+        Shared<const Phrase> source,
+        slot_t module_slot,
+        Shared<Enum_Module_Expr> nonlocal)
+    :
+        Just_Action(std::move(source)),
+        module_slot_(module_slot),
+        nonlocal_(std::move(nonlocal))
+    {}
+
+    void exec(Frame&) const override;
+
+    struct Element {
+        slot_t slot_;
+        Shared<Lambda> lambda_;
+        Element(slot_t s, Shared<Lambda> l) : slot_(s), lambda_(l) {}
+        Element() noexcept {}
+    };
+    TAIL_ARRAY_MEMBERS(Element)
+};
+using Function_Setter =
+    aux::Tail_Array<Function_Setter_Base>;
 
 struct Compound_Op_Base : public Operation
 {

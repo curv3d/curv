@@ -50,7 +50,6 @@ struct Ref_Value : public Shared_Base
         ty_list,
         ty_function,
         ty_record,
-        ty_shape,
         ty_module,
         ty_missing,
         ty_thunk,

@@ -68,6 +68,19 @@ Constant::eval(Frame&) const
 }
 
 Value
+Symbolic_Ref::eval(Frame& f) const
+{
+    auto& m = *f.nonlocal;
+    auto b = m.dictionary_->find(name_);
+    assert(b != m.dictionary_->end());
+#if 0 // final version of code
+    return m.get(b->second);
+#else // TODO: temporary scaffolding
+    return force_ref(*f.nonlocal, b->second, *source_, f);
+#endif
+}
+
+Value
 Nonlocal_Lazy_Ref::eval(Frame& f) const
 {
     return force_ref(*f.nonlocal, slot_, *source_, f);
@@ -512,26 +525,36 @@ Call_Expr::eval(Frame& f) const
             throw Exception(At_Phrase(*fun_->source_, &f),
                 stringify(funv,": not a function"));
         Ref_Value& funp( funv.get_ref_unsafe() );
-        if (funp.type_ == Ref_Value::ty_function) {
+        switch (funp.type_) {
+        case Ref_Value::ty_function:
+          {
             Function* fun = (Function*)&funp;
             std::unique_ptr<Frame> f2 {
                 Frame::make(fun->nslots_, f.system, &f, call_phrase(), nullptr)
             };
             return fun->call(arg_->eval(f), *f2);
-        }
-        if (auto s = dynamic_cast<Structure*>(&funp)) {
+          }
+        case Ref_Value::ty_record:
+        case Ref_Value::ty_module:
+          {
+            Structure* s = (Structure*)&funp;
             if (s->hasfield(callkey)) {
                 funv = s->getfield(callkey, {});
                 continue;
             }
             break;
+          }
+        case Ref_Value::ty_string:
+        case Ref_Value::ty_list:
+          {
+            At_Phrase cx(*arg_->source_, &f);
+            auto path = arg_->eval(f).to<List>(cx);
+            return value_at_path(funv, *path, cx);
+          }
         }
-        At_Phrase cx(*arg_->source_, &f);
-        auto path = arg_->eval(f).to<List>(cx);
-        return value_at_path(funv, *path, cx);
+        throw Exception(At_Phrase(*fun_->source_, &f),
+            stringify(val,": not a function"));
     }
-    throw Exception(At_Phrase(*fun_->source_, &f),
-        stringify(val,": not a function"));
 }
 
 Shared<List>
@@ -883,6 +906,23 @@ String_Expr_Base::eval_atom(Frame& f) const
         seg->generate(f, sb);
     auto s = sb.str();
     return {s.data(), s.size()};
+}
+
+void
+Function_Setter_Base::exec(Frame& f) const
+{
+    Value* slots;
+    if (module_slot_ == (slot_t)(-1))
+        slots = &f[0];
+    else {
+        auto mval = f[module_slot_];
+        auto m = (Module*)&mval.get_ref_unsafe();
+        assert(m->type_ == Ref_Value::ty_module);
+        slots = &m->at(0);
+    }
+    Shared<Module> nonlocal = nonlocal_->eval_module(f);
+    for (auto& e : *this)
+        slots[e.slot_] = {make<Closure>(*e.lambda_, *nonlocal)};
 }
 
 } // namespace curv

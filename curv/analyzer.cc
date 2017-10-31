@@ -258,15 +258,20 @@ Statement_Analyzer::single_lookup(const Identifier& id)
 Shared<Meaning>
 Statement_Analyzer::Thunk_Environ::single_lookup(const Identifier& id)
 {
+#if 1
     assert(analyzer_.kind_ == Definition::k_recursive);
     auto b = analyzer_.def_dictionary_.find(id.atom_);
     if (b != analyzer_.def_dictionary_.end()) {
+      #if 0 // original code
         if (b->second.defined_at_position(analyzer_.cur_pos_)) {
             if (b->second.is_function_definition())
                 return make<Nonlocal_Function_Ref>(share(id), b->second.slot_);
             else
                 return make<Nonlocal_Lazy_Ref>(share(id), b->second.slot_);
         }
+      #else // experimental, testing Symbolic_Ref
+        return make<Symbolic_Ref>(share(id));
+      #endif
     }
 
     auto n = analyzer_.nonlocal_dictionary_.find(id.atom_);
@@ -283,6 +288,17 @@ Statement_Analyzer::Thunk_Environ::single_lookup(const Identifier& id)
         return make<Nonlocal_Strict_Ref>(share(id), slot);
     }
     return m;
+#else
+    // testing code from Recursive_Scope
+    Shared<Meaning> m = analyzer_.lookup(id);
+    if (isa<Constant>(m))
+        return m;
+    if (auto expr = cast<Operation>(m)) {
+        unit_.nonlocals_[id.atom_] = expr;
+        return make<Symbolic_Ref>(share(id));
+    }
+    return m;
+#endif
 }
 
 void
@@ -597,6 +613,17 @@ analyze_block(
             env.frame_maxslots_ = sscope.frame_maxslots_;
             return make<SBlock_Op>(source,
                 std::move(sscope.executable_), std::move(body));
+        }
+        if (adef->kind_ == Abstract_Definition::k_recursive
+            && kind == Definition::k_sequential)
+        {
+            // TODO: remove me (testing purposes only)
+            Recursive_Scope rscope(env, false);
+            rscope.analyze(*adef);
+            auto body = analyze_tail(*bodysrc, rscope);
+            env.frame_maxslots_ = rscope.frame_maxslots_;
+            return make<SBlock_Op>(source,
+                std::move(rscope.executable_), std::move(body));
         }
     }
 

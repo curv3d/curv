@@ -1,0 +1,12 @@
+do
+assert((do a=2 in a) == 2);
+assert((do a=1;b=a+1 in b) == 2);
+assert((do b=a+1;a=1 in b) == 2);
+print "expected output: a then b";
+assert((do b=(do print "b" in a+1);a=(do print "a" in 1) in b) == 2);
+//do x=x in print "illegal recursive reference";
+do f x = x+1 in assert(f 2 == 3);
+do fact n = if (n==0) 1 else n*fact(n-1) in assert(fact 3 == 6);
+
+in
+null

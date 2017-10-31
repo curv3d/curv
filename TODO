@@ -6,31 +6,28 @@ What remains for MVP?
 * Meta: use https://opensource.guide/
 * STL export: Get open source marching cubes in OpenCL. Benchmark.
 
-Statements project:
+Recursive_Scope project:
+* test Recursive_Scope in `do`. Comprehensive unit tests.
+  * assert_error(message, expr)
+  * test that storage leak is fixed.
+* convert let and module to use Recursive_Scope
+* revert `do` to sequential only
+* cleanup:
+  * remove old code: Statement_Analyzer, Statements, Thunk, Module_Expr,
+    Block_Op, Definition
+  * rename Abstract_Definition to Definition
+  * rename *_Assign meaning classes to *_Setter, Definition::make_setter
+    eg, Data_Setter, Module_Data_Setter, Function_Setter
+  * remove unused Ref classes, rename the rest using consistent name convention
+    eg, Nonlocal_Data_Ref, Module_Data_Ref, Data_Ref,
+        Nonlocal_Function_Ref, Module_Function_Ref.
+  * standardize spelling of `nonlocal` and `nonlocals`.
+    * eg, use `nonlocal` in adjective position, `nonlocals` in noun position.
+  * use `foo_` convention for Frame data members.
+  * use `foo_` convention for GL_Frame data members.
+  * clean up Recursive_Scope::analyze_unit
 
-Phases:
-1: Find definitions, determine kind. Construct Definition tree.
-   deftree = phrase->as_definition(env)
-2: Find names, add to scope. Assign slot numbers, construct Pattern objects.
-   Scope calls deftree->add_to_scope(*this).
-   Deftree calls add_action, add_unit, add_binding on scope.
-   We need to traverse pattern trees to find the names, but we can't analyze
-   default value expressions yet.
-3: Analyze definientia and pattern default value expressions.
-   Construct binding dependency graph.
-   Scope calls unit->analyze() for each unitary definition. Two cases:
-   * Function definition (one name). A recursion partition can have several
-     of these, the initialization action is constructed by combining multiple
-     lambda expressions. So, can't create the initialization action during
-     unit->analyze(). Store lambda expression in the definition.
-   * Data definition: zero or more names bound, may have default value
-     expressions. The analyzed expressions must be stored together,
-     e.g. in the definition. Maybe we construct the initialization action
-     during unit->analyze() and store it in the definition for later.
-4: Generate code. Two cases for function definition and data definition.
-   unit->make_action().
-
-* Abstract Pattern
+Abstract Pattern
   Take a Value, potentially type check it and/or destructure it into its
   components, store each component in a slot.
   * Store the slot #s internally? Note the slot #s aren't available during
@@ -38,58 +35,9 @@ Phases:
   Virtual:
   * void match(Value* slots, Value)
 
-* Abstract Definition
-  * Currently, Definition is a single concrete class with source_, name_,
-    definiens_, kind_, constructed out of Recursive_Definition_Phrase and
-    Sequential_Definition_Phrase.
-  * We want to view semicolon phrases as definitions.
-  * Two concrete definition classes: Simple_Definition and Definition_Sequence.
-    These are subtypes of Abstract_Definition, with a virtual interface.
-  * Abstract_Definition has kind_ and some virtuals:
-    * add_to_scope(Scope&)
-  * Unit_Definition virtuals:
-    * analyze() -- analyze definiens, store expression.
-    * emit() -- output operation (a Definition_Unit_Action) to evaluate a
-      given definiens and initialize its slot(s). A D.U.A. contains a pattern
-      and an expression.
-  * Simple_Definition has definiens_
-  * Definition_Sequence has an array of <action phrase|definition>, probably as
-    {Shared<Phrase>,Shared<Definition>}. This is now our container of a
-    sequence of pre-analysis actions and definitions. The definition tree.
-
-* Abstract Scope
-  * Initially, superclass of Statement_Analyzer.
-  * Later, superclass of Recursive_Scope and Sequential_Scope.
-  * definition API, called during add_to_scope:
-    * int add_unit(unitdef) -- result is passed to add_binding
-    * int add_binding(Atom, int unit) -- the returned slot number
-        is added to a Pattern
-    * add_action(Phrase)
-    * actions and definientia are added in source code order.
-
-  * contains Definition (a definition tree)
-  * client API:
-    * analyze(env) -- analyze actions and definientia
-    * emit() -- generate instruction sequence
-
-* class Definition <: Phrase. analyze_def() returns self or null.
-  Needs extra fields in the combined Phrase/Definition objects to hold
-  definition data; these fields are filled in by analyze_def().
-  A crufty imperative trick, using 1 actual data structure to represent 2
-  logical data structures (phrase and definition). But less allocation,
-  probably less memory use and copying.
-  Need to deconstify some interfaces.
-* Definition virtual interface, for single definitions and def lists.
-* semicolon phrases (docs/Statements.md).
-  * class Definition supports compound definitions.
+Semicolon phrases (docs/Statements.md).
   * CLI supports compound definitions. Unit tests.
   * {a:1;b:2} works (unit test).
-  * split Statement_Analyzer into Recursive_Scope and Sequential_Scope
-* struct Statements:
-  * rename actions_ to operations_
-  * rename slot_ to indirect_slot_
-  * add nslots_
-  * use only operations_ to initialize the value list.
 
 -------------------------
 Circumratio project:
