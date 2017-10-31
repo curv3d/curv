@@ -41,7 +41,7 @@ struct Unitary_Definition : public Abstract_Definition
     {}
 
     virtual void analyze(Environ&) = 0;
-    virtual Shared<Operation> make_action(slot_t module_slot) = 0;
+    virtual Shared<Operation> make_setter(slot_t module_slot) = 0;
 };
 
 // A function definition is `f=<lambda>` or `f x=<expr>`.
@@ -67,7 +67,7 @@ struct Function_Definition : public Unitary_Definition
 
     virtual void add_to_scope(Scope&) override;
     virtual void analyze(Environ&) override;
-    virtual Shared<Operation> make_action(slot_t module_slot) override;
+    virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
 
 // A data definition is `pattern = expression` or `var pattern := expression`
@@ -94,7 +94,7 @@ struct Data_Definition : public Unitary_Definition
 
     virtual void add_to_scope(Scope&) override;
     virtual void analyze(Environ&) override;
-    virtual Shared<Operation> make_action(slot_t module_slot) override;
+    virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
 
 // A compound definition is `statement1;statement2;...` where each statement

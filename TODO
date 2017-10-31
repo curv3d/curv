@@ -26,6 +26,7 @@ Recursive_Scope project:
   * use `foo_` convention for Frame data members.
   * use `foo_` convention for GL_Frame data members.
   * clean up Recursive_Scope::analyze_unit
+  * integrate examples/test into automatic unit tests
 
 Abstract Pattern
   Take a Value, potentially type check it and/or destructure it into its

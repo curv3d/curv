@@ -593,13 +593,13 @@ struct Statements
 
 // An internal action for storing the value of a sequential definition
 // in the evaluation frame. Part of the actions_ list in a Statements.
-struct Let_Assign : public Just_Action
+struct Data_Setter : public Just_Action
 {
     slot_t slot_;
     Shared<Operation> expr_;
     bool reassign_;
 
-    Let_Assign(
+    Data_Setter(
         Shared<const Phrase> source,
         slot_t slot,
         Shared<Operation> expr,
@@ -617,13 +617,13 @@ struct Let_Assign : public Just_Action
 
 // An internal action for storing the value of a sequential definition
 // in the evaluation frame. Part of the actions_ list in a Statements.
-struct Indirect_Assign : public Just_Action
+struct Module_Data_Setter : public Just_Action
 {
     slot_t slot_;
     slot_t index_;
     Shared<Operation> expr_;
 
-    Indirect_Assign(
+    Module_Data_Setter(
         Shared<const Phrase> source,
         slot_t slot,
         slot_t index,

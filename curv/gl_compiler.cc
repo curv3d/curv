@@ -504,7 +504,11 @@ Value gl_constify(Operation& op, GL_Frame& f)
         return f.nonlocal->at(ref->slot_);
     else if (auto ref = dynamic_cast<Nonlocal_Lazy_Ref*>(&op))
         return f.nonlocal->at(ref->slot_);
-    else if (auto fref = dynamic_cast<Nonlocal_Function_Ref*>(&op)) {
+    else if (auto ref = dynamic_cast<Symbolic_Ref*>(&op)) {
+        auto b = f.nonlocal->dictionary_->find(ref->name_);
+        assert(b != f.nonlocal->dictionary_->end());
+        return f.nonlocal->get(b->second);
+    } else if (auto fref = dynamic_cast<Nonlocal_Function_Ref*>(&op)) {
         return {make<Closure>(
             (Lambda&) f.nonlocal->at(fref->lambda_slot_).get_ref_unsafe(),
             *f.nonlocal)};
@@ -572,7 +576,7 @@ void Null_Action::gl_exec(GL_Frame&) const
 }
 
 void
-Let_Assign::gl_exec(GL_Frame& f) const
+Data_Setter::gl_exec(GL_Frame& f) const
 {
     GL_Value val = expr_->gl_eval(f);
     if (reassign_)

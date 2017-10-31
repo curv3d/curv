@@ -42,16 +42,16 @@ Function_Definition::analyze(Environ& env)
     lambda_ = make<Lambda>(lambda->body_, lambda->nargs_, lambda->nslots_);
 }
 Shared<Operation>
-Data_Definition::make_action(slot_t indirect_slot)
+Data_Definition::make_setter(slot_t module_slot)
 {
-    if (indirect_slot != (slot_t)(-1)) {
-        return make<Indirect_Assign>(source_, indirect_slot, slot_, definiens_expr_);
+    if (module_slot != (slot_t)(-1)) {
+        return make<Module_Data_Setter>(source_, module_slot, slot_, definiens_expr_);
     } else {
-        return make<Let_Assign>(source_, slot_, definiens_expr_, false);
+        return make<Data_Setter>(source_, slot_, definiens_expr_, false);
     }
 }
 Shared<Operation>
-Function_Definition::make_action(slot_t indirect_slot)
+Function_Definition::make_setter(slot_t module_slot)
 {
     assert(0);
     return nullptr;
@@ -117,7 +117,7 @@ Sequential_Scope::end_unit(unsigned unitno, Shared<Unitary_Definition> unit)
 {
     (void)unitno;
     executable_.actions_.push_back(
-        unit->make_action(executable_.module_slot_));
+        unit->make_setter(executable_.module_slot_));
 }
 
 void
@@ -210,7 +210,7 @@ Recursive_Scope::analyze_unit(Unit& unit, const Identifier* id)
             scc_stack_.pop_back();
             unit.state_ = Unit::k_analyzed;
             executable_.actions_.push_back(
-                unit.def_->make_action(executable_.module_slot_));
+                unit.def_->make_setter(executable_.module_slot_));
         } else {
             // Output a Function_Setter to initialize the slots for a group of
             // mutually recursive functions, or a single nonrecursive function.

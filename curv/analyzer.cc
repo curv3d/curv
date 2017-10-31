@@ -351,12 +351,12 @@ Statement_Analyzer::analyze(Shared<const Phrase> source)
             // construct initial slot value
             if (target_is_module_) {
                 defn_values->at(b.second.slot_) = missing;
-                statements_.actions_[b.second.seq_no_] = make<Indirect_Assign>(
+                statements_.actions_[b.second.seq_no_] = make<Module_Data_Setter>(
                     b.second.def_->source_,
                     statements_.module_slot_, b.second.slot_,
                     expr);
             } else {
-                statements_.actions_[b.second.seq_no_] = make<Let_Assign>(
+                statements_.actions_[b.second.seq_no_] = make<Data_Setter>(
                     b.second.def_->source_,
                     b.second.slot_ + parent_->frame_nslots_,
                     expr, false);
@@ -772,10 +772,10 @@ Assignment_Phrase::analyze(Environ& env) const
 
     auto let = cast<Let_Ref>(m);
     if (let)
-        return make<Let_Assign>(share(*this), let->slot_, expr, true);
+        return make<Data_Setter>(share(*this), let->slot_, expr, true);
     auto indir = cast<Indirect_Strict_Ref>(m);
     if (indir)
-        return make<Indirect_Assign>(share(*this),
+        return make<Module_Data_Setter>(share(*this),
             indir->slot_, indir->index_, expr);
 
     // this should never happen

@@ -671,13 +671,13 @@ Scope_Executable::exec(Frame& f) const
 }
 
 void
-Let_Assign::exec(Frame& f) const
+Data_Setter::exec(Frame& f) const
 {
     f[slot_] = expr_->eval(f);
 }
 
 void
-Indirect_Assign::exec(Frame& f) const
+Module_Data_Setter::exec(Frame& f) const
 {
     Module& m = (Module&)f[slot_].get_ref_unsafe();
     assert(m.type_ == Ref_Value::ty_module);
