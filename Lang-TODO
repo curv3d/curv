@@ -1,15 +1,39 @@
+## TODO: Language Changes
+
+assert_error(error_message_string,expression)
+Good for unit testing libraries.
+
 Fix bug: {x=1} == {x:1} should be true.
 
+Design flaw: The domain of `count` is lists and strings (not records).
+Use `count(fields record)` to count the fields in a record.
+Otherwise, there's a conflict if List is considered a subtype of
+Function (due to a[i]) which is a subtype of Record (due to {call:f}).
+
+rename `is_str` to the more pronounceable `is_string`.
+
 GL:
+* call nonconstant functions
 * print, assert, warning, error are ignored in GL.
 * GL: && || if use lazy evaluation
 
+String: encode, decode, $[...], ASCII only.
+
+use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace.
+
+Patterns (list & record).
+
+{foo} is an abbreviation for {foo: true}.
+
+Backtick infix operators.
+
+## Ideas Under Development
 String:
 * Conversion between strings and lists of (integer) code points:
   * `encode string`: convert string to a list of Unicode code points (integers).
   * `decode codelist`: converts list of Unicode code points to a string.
   * Initially only ASCII is supported, codes 1..127. The NUL character is
-    disallowed.
+    disallowed. Later, surrogate and noncharacter code points are disallowed.
 * Unicode strings. str[i] is the i'th grapheme cluster. `count str` is the
   number of grapheme clusters. To operate on code points instead, first use
   encode.
@@ -30,18 +54,27 @@ Libraries.
 * modules: _foo is not exported, is omitted from the public dictionary.
   curv::Module has a public dictionary and a debug dictionary.
   _foo is private in std.curv, and in all other *.curv files.
+  Nope: information hiding is dropped from Curv.
 
 Patterns (Definitions, Binders, Lambda parameters, `for` parameter):
 * list patterns: `(x,y)` and `[x,y]`
+  * [first,...rest] is a useful pattern for recursive list functions.
 * record patterns:
   * `{x,y}=expr` -- extra fields on right -> error.
   * `{x,y,...}=expr` -- ignores extra fields on right.
   * Default values: `{x=0,y=1}`
-  * field name and variable name are different: `{"field":var}`
+  * field name and variable name are different: `{"field":var}`.
+    {fieldName: generalPattern}, eg: [size: (x,y,z)]
 * `var@pattern` matches pattern and binds `var` to the whole value matched.
-* functions with refutable parameter patterns lead to:
-  switch((x,y,z)->..., a->...) -- returns a function
+* `_` can be used in place of a parameter name, it means don't bind a name.
 * see also Parameter Preconditions
+* see also Literal Patterns
+
+Switches (depends on refutable patterns)
+* switch[(x,y,z)->..., a->...] -- returns a function
+* f = switch[(x,y,z)->..., a->...]; can be written as
+    f(x,y,z)=...;
+    f a = ...;
 
 Indexing:
 * a[i] := item, i is an integer
@@ -82,21 +115,36 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
 * `a` is an array, all indices are arrays. As in APL.
   What happens if the same element is indexed twice? What's the new value?
 
-Vectorized boolean operations:
+### Vectorized boolean operations:
 * vectorize `bit`
 * Vectorized relations are:
-  * <' <=' >' >=' ==' !='
-  * .< .<= .> .>= .== .!= (Julia)
-  * less, greater, equal, less_or_equal, greater_or_equal, not_equal
-  * less, greater, equal, not_less, not_greater, not_equal
-  * lt, gt, eq, le, ge, ne (Matlab)
+  * infix operators:
+    * <' <=' >' >=' ==' !='
+    * .< .<= .> .>= .== .!= (Julia)
+  * or n-ary functions, infixed using backtick:
+    * less, greater, equal, less_or_equal, greater_or_equal, not_equal (BEST)
+    * less, greater, equal, not_less, not_greater, not_equal
+    * Hamcrest: greater_than, greater_than_or_equal_to,
+                less_than, less_than_or_equal_to
+                equal_to
+    * Mathematica: equal, unequal, greater, greater_equal, less, less_equal
+    * lt, gt, eq, le, ge, ne (Matlab)
+    * eg, a `greater` b, a `gt` b, a `greater_than` b
+          a `less_equal` b, a `less_or_equal` b, a `not_greater` b, a `le` b
+          a `less_than_or_equal_to` b
+    * unified table of alternative spellings:
+      * eq, equal, equal_to
+      * ne, not_equal, unequal, not_equal_to
+      * lt, less, less_than
+      * le, less_equal, less_or_equal, less_than_or_equal_to
 * `not` is vectorized version of `!`.
 * `all` and `any` are vectorized boolean monoids for && and ||.
   * Name is consistent with GLSL,R,Julia,Python,Matlab.
   * Use some(pred)list, every(pred)list, name consistent with Javascript.
+  * Haskell uses "and". Eg, a `any` b  vs  a `and` b
 * ifelse(cond,thenval,elseval)
 * Rationale: vectorized boolean ops have different names than unvectorized ones.
-  * x==y compares vectors and returns bool, unlike xs=='ys.
+  * x==y compares vectors and returns bool, unlike xs=='ys/xs `equal` ys.
   * a&&b short circuits if a==false, but all(a,b) must evaluate b if a==false
     to implement broadcasting.
   * ifelse(b,c,a) must evaluate all 3 arguments if b is an array.
@@ -116,7 +164,7 @@ Vectorized boolean operations:
   * idiom: i != 0, or i !=' 0
   * bit(b) = ifelse(b, 1, 0);
 
-Design by contract:
+### Design by contract:
 * postconditions:
   ensure pred val = do assert(pred val) in val;
   sort x =
@@ -125,15 +173,17 @@ Design by contract:
 * parameter preconditions:
   * (predicate x) -> body
   * (x >= 0) -> body
+  * (x >= 0 && x <= 1) -> body
 
-Debug actions:
+### Debug actions:
 * print_timing(string,expr), returns value of expr
   * Might want to measure eval time while ignoring result:
     * Assign value to a variable, don't use variable.
     * `ignore(arg)` is an action that evaluates and ignores arg.
 * `enter_debugger`, aka `debug`
+* assert_error(errorMessageString, expression)
 
-Generalized Definitions:
+### Generalized Definitions:
 * id = expr
 * ( definition )
 * def1; def2; def3
@@ -142,10 +192,19 @@ Generalized Definitions:
   * How are the default value expressions analyzed in a recursive scope?
     Recursion is outlawed. No references to other bindings in the same
     recursive binding partition.
-* `use {module}`, `use (constant in std namespace)`
+* `use (constant in std namespace)`. Eg, use(file "foo.curv").
+* `use {module}`
+  Could be used to embed sequential bindings in a recursive scope, or v.v.?
+  Could be useful in abstract evaluation where the {module} argument is
+  unwrapped during abstract evaluation? Dunno.
+  `use {module} where (localDefinitions)`? Information hiding, in lieu of
+  private module members.
 * `if (cond) (a=foo;b=bar) else (a=bar;b=foo)`
+* `def where bindings`, let bindings in def`.
+  Could be used to embed sequential bindings in a recursive scope, or v.v.
+  Information hiding, in lieu of private module members.
 
-Lexical:
+### Lexical:
 * unicode operators (needs re2c)
     90° == 90*deg
     ≤ ≥ ≠
@@ -158,14 +217,19 @@ Lexical:
     a∨b == a||b
     x→x+1   ==   x->x+1
     for (i ∈ 1..10)
+    π == pi
+    τ == tau
+    x↑y = x^y
+    “foo” == "foo"  -- note, resistant to systems that autocorrect "" to “”
+    g∘f == compose[g,f]
 * Digit separator in numerals: ' like C++14, or _
-* Support ' in identifiers (like Haskell).
+* Support ' (primes) in identifiers (like Haskell).
 * Support `foo` quoted identifiers.
   Compatibility with GUI interfaces that display
   parameter names as GUI labels, JSON object keys.
 * 'foo' quoted identifiers and x `f` y infix notation.
 
-OpenSCAD2 prototype oriented programming?
+### OpenSCAD2 prototype oriented programming?
 * Model parameters and shape are bundled into one value.
 * Simple syntax for customizing a subset of model parameters, generating
   a new shape.
@@ -179,7 +243,7 @@ OpenSCAD2 prototype oriented programming?
   Shapes contain the name of their constructor, and their constructor
   arguments. (Implemented using a proposed 'constructor' feature.)
 
-Data Abstraction:
+### Data Abstraction:
 * Wm. Cook distinguishes two kinds of data abstraction: CLU style "ADT"s,
   and Smalltalk style "objects". The untyped lambda calculus is enough to
   do object oriented data abstraction. Record literals make it easier.
@@ -227,9 +291,87 @@ Data Abstraction:
   that invokes the constructor with a transformed copy of the instance variables
   as arguments.
 
-Function/Structure Equivalence.
+### Function/Structure Equivalence.
 * Using {call x = f x}, a record can behave like a function.
 * For symmetry, a function behaves like a record with a single `call` field.
 * What about `is_fun`?
   * Get rid of `is_fun`. `is_record` is true for primitive functions.
     Test for `call` field in a record to identify a function.
+  * Or, `is_fun` is true for records that contain a `call` field,
+    and `is_record` is true for primitive functions. So Fun is a subtype of
+    Record.
+    * Then, what about lists and strings, which also support function call
+      syntax? Are List and String subtypes of Fun? If so, then `count` cannot
+      be polymorphic across Record and List. We maybe need to use
+      `count(fields record)` to count the fields in a record.
+
+### Haskell algebraic type constructors
+  data Maybe a = Nothing | Just a
+Constructors for this type, in Curv:
+  {Nothing}     -- or `null`, to be idiomatic. Or `"Nothing"`.
+  {Just: 42}
+Eg,
+  align{x:{centre}, z:{above:0}}
+New feature:
+  {foo} is an abbreviation for {foo: true}
+  eg, make_shape{is_3d, ...}
+
+### Literal patterns:
+  fact 0 = 1;
+  fact (is_int n && n > 0) = n * fact(n - 1);
+New feature:
+  * numerals, string literals, `null`, `true` and `false` are now patterns.
+  * Now, any JSON expression is a literal pattern.
+  * `null`, `true` and `false` are now reserved words.
+Low priority:
+  * You can use `(x == literal)` instead of `literal`.
+
+### User defined infix operators.
+* a `postfixExpr` b  ===>  postfixExpr(a,b)
+* examples:
+    a `mod` m  ===>  mod(a,m)
+    v1 `dot` v2  ===>  dot(v1,v2)
+    v1 `cross` v2  ===>  cross(v1,v2)
+    a `union` b ===> union(a,b)
+    a `smooth_union .5` b  ==> smooth_union .5 (a,b)
+* `...` is right associative, same precedence as >>
+* So you can use "`fun` arg" as an element in a geometry pipeline
+
+smooth_intersection .1 (
+    gyroid >> shell .2 >> lipschitz 2 >> bend (tau*12),
+    torus (tau*4, tau*2),
+) >> colour (hsv2rgb (1/3, 1, .5))
+
+gyroid
+  >> shell .2
+  >> lipshitz 2
+  >> bend (tau*12)
+  `smooth_intersection .1` torus(tau*4, tau*2)
+  >> colour (hsv2rgb (1/3, 1, .5))
+
+Maybe `foo` also works as a low precedence prefix operator.
+(`foo` b) a <==> (a `foo` b) <==> foo(a,b).
+So you can also write:
+
+gyroid
+  >> shell .2
+  >> lipshitz 2
+  >> bend (tau*12)
+  >> `smooth_intersection .1` torus(tau*4, tau*2)
+  >> colour (hsv2rgb (1/3, 1, .5))
+
+map (`sum` 1) list
+
+### Indentation As Syntax
+let:
+  x=1
+  y=2
+in x+y
+
+Also, `do:`, `[:` and `{:`.
+
+### Versioned External Packages
+Like Rust Cargo. An external library has a GIT url and a version.
+Eg, file{repo:"https://github.com/doug-moen/laser-curv.git", version:"1.0"}
+
+Directory syntax for `file`.
