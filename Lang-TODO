@@ -10,8 +10,6 @@ Use `count(fields record)` to count the fields in a record.
 Otherwise, there's a conflict if List is considered a subtype of
 Function (due to a[i]) which is a subtype of Record (due to {call:f}).
 
-rename `is_str` to the more pronounceable `is_string`.
-
 GL:
 * call nonconstant functions
 * print, assert, warning, error are ignored in GL.

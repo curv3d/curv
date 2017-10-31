@@ -57,9 +57,9 @@ struct Is_Num_Function : public Polyadic_Function
         return {args[0].is_num()};
     }
 };
-struct Is_Str_Function : public Polyadic_Function
+struct Is_String_Function : public Polyadic_Function
 {
-    Is_Str_Function() : Polyadic_Function(1) {}
+    Is_String_Function() : Polyadic_Function(1) {}
     Value call(Frame& args) override
     {
         return {args[0].dycast<String>() != nullptr};
@@ -764,7 +764,7 @@ builtin_namespace()
     {"is_null", make<Builtin_Value>(Value{make<Is_Null_Function>()})},
     {"is_bool", make<Builtin_Value>(Value{make<Is_Bool_Function>()})},
     {"is_num", make<Builtin_Value>(Value{make<Is_Num_Function>()})},
-    {"is_str", make<Builtin_Value>(Value{make<Is_Str_Function>()})},
+    {"is_string", make<Builtin_Value>(Value{make<Is_String_Function>()})},
     {"is_list", make<Builtin_Value>(Value{make<Is_List_Function>()})},
     {"is_record", make<Builtin_Value>(Value{make<Is_Record_Function>()})},
     {"is_fun", make<Builtin_Value>(Value{make<Is_Fun_Function>()})},
