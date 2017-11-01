@@ -708,6 +708,86 @@ struct Assert_Metafunction : public Metafunction
     }
 };
 
+struct Assert_Error_Action : public Just_Action
+{
+    Shared<Operation> expected_message_;
+    Shared<const String> actual_message_;
+    Shared<Operation> expr_;
+
+    Assert_Error_Action(
+        Shared<const Phrase> source,
+        Shared<Operation> expected_message,
+        Shared<const String> actual_message,
+        Shared<Operation> expr)
+    :
+        Just_Action(std::move(source)),
+        expected_message_(std::move(expected_message)),
+        actual_message_(std::move(actual_message)),
+        expr_(std::move(expr))
+    {}
+
+    virtual void exec(Frame& f) const override
+    {
+        Value expected_msg_val = expected_message_->eval(f);
+        auto expected_msg_str = expected_msg_val.to<const String>(
+            At_Phrase(*expected_message_->source_, &f));
+
+        if (actual_message_ != nullptr) {
+            if (*actual_message_ != *expected_msg_str)
+                throw Exception(At_Phrase(*source_, &f),
+                    stringify("assertion failed: expected error \"",
+                        expected_msg_str,
+                        "\", actual error \"",
+                        actual_message_,
+                        "\""));
+            return;
+        }
+
+        Value result;
+        try {
+            result = expr_->eval(f);
+        } catch (Exception& e) {
+            if (*e.shared_what() != *expected_msg_str) {
+                throw Exception(At_Phrase(*source_, &f),
+                    stringify("assertion failed: expected error \"",
+                        expected_msg_str,
+                        "\", actual error \"",
+                        e.shared_what(),
+                        "\""));
+            }
+            return;
+        }
+        throw Exception(At_Phrase(*source_, &f),
+            stringify("assertion failed: expected error \"",
+                expected_msg_str,
+                "\", got value ", result));
+    }
+};
+struct Assert_Error_Metafunction : public Metafunction
+{
+    using Metafunction::Metafunction;
+    virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
+    {
+        auto parens = cast<Paren_Phrase>(ph.arg_);
+        Shared<Comma_Phrase> commas = nullptr;
+        if (parens) commas = cast<Comma_Phrase>(parens->body_);
+        if (parens && commas && commas->args_.size() == 2) {
+            auto msg = analyze_op(*commas->args_[0].expr_, env);
+            Shared<Operation> expr = nullptr;
+            Shared<const String> actual_msg = nullptr;
+            try {
+                expr = analyze_op(*commas->args_[1].expr_, env);
+            } catch (Exception& e) {
+                actual_msg = e.shared_what();
+            }
+            return make<Assert_Error_Action>(share(ph), msg, actual_msg, expr);
+        } else {
+            throw Exception(At_Phrase(ph, env),
+                "assert_error: expecting 2 arguments");
+        }
+    }
+};
+
 struct Defined_Expression : public Just_Expression
 {
     Shared<const Operation> expr_;
@@ -792,6 +872,7 @@ builtin_namespace()
     {"warning", make<Builtin_Meaning<Warning_Metafunction>>()},
     {"error", make<Builtin_Meaning<Error_Metafunction>>()},
     {"assert", make<Builtin_Meaning<Assert_Metafunction>>()},
+    {"assert_error", make<Builtin_Meaning<Assert_Error_Metafunction>>()},
     {"defined", make<Builtin_Meaning<Defined_Metafunction>>()},
     };
     return names;

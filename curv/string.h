@@ -48,6 +48,7 @@ public:
     const char* end() const { return data_ + size_; }
     bool operator==(const char* s) const { return strcmp(data_, s) == 0; }
     bool operator==(const String& s) const { return strcmp(data_,s.data_)==0; }
+    bool operator!=(const String& s) const { return strcmp(data_,s.data_)!=0; }
     bool operator<(const String& s) const { return strcmp(data_,s.data_)<0; }
 
     /// Print a value like a Curv expression.

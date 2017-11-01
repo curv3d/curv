@@ -194,5 +194,13 @@ assert(
     in count m == 1 && m.x == 4
 );
 
+assert_error("foo",error "foo");
+assert_error(
+    "assertion failed: expected error ""foo"", actual error ""bar""",
+    do assert_error("foo",error "bar") in null);
+assert_error(
+    "assertion failed: expected error ""foo"", got value ""bar""",
+    do assert_error("foo","bar") in null);
+
 // script return value:
 in {}
