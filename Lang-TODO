@@ -1,8 +1,5 @@
 ## TODO: Language Changes
 
-assert_error(error_message_string,expression)
-Good for unit testing libraries.
-
 Fix bug: {x=1} == {x:1} should be true.
 
 Design flaw: The domain of `count` is lists and strings (not records).
