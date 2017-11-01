@@ -155,8 +155,6 @@ assert( asin 1 == 1.5707963267948966 && acos 1 == 0 );
 
 assert( round 0.5 == 0 && round 1.5 == 2 );
 
-assert( count {x:1, y:2} == 2 );
-
 assert( indices(1,2) == [0,1] && fields{a:1} == ["a"] );
 
 assert(
@@ -191,7 +189,7 @@ assert( (x+y where x=1;y=2) == 3 );
 
 assert(
     let m = {var x:=1;x:=x+3};
-    in count m == 1 && m.x == 4
+    in count(fields m) == 1 && m.x == 4
 );
 
 assert_error("foo",error "foo");

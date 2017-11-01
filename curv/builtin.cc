@@ -504,11 +504,9 @@ struct Count_Function : public Polyadic_Function
     {
         if (auto list = args[0].dycast<const List>())
             return {double(list->size())};
-        if (auto structure = args[0].dycast<const Structure>())
-            return {double(structure->size())};
         if (auto string = args[0].dycast<const String>())
             return {double(string->size())};
-        throw Exception(At_Arg(args), "not a list, record or string");
+        throw Exception(At_Arg(args), "not a list or string");
     }
 };
 struct Fields_Function : public Polyadic_Function

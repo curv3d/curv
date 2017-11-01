@@ -250,7 +250,7 @@ TEST(curv, eval)
         "     ^--");
     SUCCESS("count()", "0");
     FAILALL("count 0",
-        "not a list, record or string\n"
+        "not a list or string\n"
         "line 1(column 7)\n"
         "  count 0\n"
         "        ^");
