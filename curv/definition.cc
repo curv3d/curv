@@ -227,7 +227,7 @@ Recursive_Scope::analyze_unit(Unit& unit, const Identifier* id)
                 assert(scc_stack_.size() > 0);
                 u = scc_stack_.back();
                 scc_stack_.pop_back();
-                assert(u->scc_ord_ == unit.scc_ord_);
+                assert(u->scc_lowlink_ == unit.scc_ord_);
                 u->state_ = Unit::k_analyzed;
             } while (u != &unit);
         }

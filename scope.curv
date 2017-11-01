@@ -8,5 +8,10 @@ assert_error("illegal recursive reference", do x=x in null);
 do f x = x+1 in assert(f 2 == 3);
 do fact n = if (n==0) 1 else n*fact(n-1) in assert(fact 3 == 6);
 
+do
+   f n = if (n==0) 1 else n*g(n-1);
+   g n = if (n==0) 1 else n*f(n-1);
+in assert(f 3 == 6);
+
 in
 null
