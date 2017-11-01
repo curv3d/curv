@@ -27,8 +27,6 @@ struct Structure : public Ref_Value
     // Copy the fields into an Atom_Map.
     virtual void putfields(Atom_Map<Value>&) const = 0;
 
-    virtual size_t size() const = 0;
-
     virtual Shared<List> fields() const = 0;
 
     static const char name[];

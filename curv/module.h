@@ -100,7 +100,7 @@ struct Module_Base : public Structure
     virtual Value getfield(Atom, const Context&) const override;
     virtual bool hasfield(Atom) const override;
     virtual void putfields(Atom_Map<Value>&) const override;
-    virtual size_t size() const override { return size_; }
+    size_t size() const { return size_; }
     virtual Shared<List> fields() const override;
 
     static const char name[];
