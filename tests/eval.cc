@@ -361,7 +361,7 @@ TEST(curv, eval)
         "       ^------------");
     SUCCESS("let std = file \"std.curv\" in std.concat([1], [2,3], [4])",
         "[1,2,3,4]");
-    SUCCESS("file \"curv.curv\"", "{}");
+    SUCCESS("file \"curv.curv\"", "null");
 
     // range generator
     SUCCESS("1..4", "[1,2,3,4]");

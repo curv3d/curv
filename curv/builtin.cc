@@ -674,6 +674,32 @@ struct Error_Metafunction : public Metafunction
     }
 };
 
+// exec(expr) -- a debug action that evaluates expr, then discards the result.
+// It is used to call functions or scripts for their side effects.
+struct Exec_Action : public Just_Action
+{
+    Shared<Operation> arg_;
+    Exec_Action(
+        Shared<const Phrase> source,
+        Shared<Operation> arg)
+    :
+        Just_Action(std::move(source)),
+        arg_(std::move(arg))
+    {}
+    virtual void exec(Frame& f) const override
+    {
+        arg_->eval(f);
+    }
+};
+struct Exec_Metafunction : public Metafunction
+{
+    using Metafunction::Metafunction;
+    virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
+    {
+        return make<Exec_Action>(share(ph), analyze_op(*ph.arg_, env));
+    }
+};
+
 struct Assert_Action : public Just_Action
 {
     Shared<Operation> arg_;
@@ -871,6 +897,7 @@ builtin_namespace()
     {"error", make<Builtin_Meaning<Error_Metafunction>>()},
     {"assert", make<Builtin_Meaning<Assert_Metafunction>>()},
     {"assert_error", make<Builtin_Meaning<Assert_Error_Metafunction>>()},
+    {"exec", make<Builtin_Meaning<Exec_Metafunction>>()},
     {"defined", make<Builtin_Meaning<Defined_Metafunction>>()},
     };
     return names;
