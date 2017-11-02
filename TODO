@@ -7,6 +7,8 @@ What remains for MVP?
 * STL export: Get open source marching cubes in OpenCL. Benchmark.
 
 Recursive_Scope project:
+* exec(expr) -- use for referencing unit test scripts
+* nonrecursive let works in GL
 * cleanup:
   * standardize spelling of `nonlocal` and `nonlocals`.
     * eg, use `nonlocal` in adjective position, `nonlocals` in noun position.
