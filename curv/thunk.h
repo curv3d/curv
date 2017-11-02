@@ -29,11 +29,6 @@ struct Thunk : public Ref_Value
     virtual void print(std::ostream&) const;
 };
 
-/// Lazy evaluation of an identifier reference to a module or block binding.
-/// If the slot contains a thunk instead of a proper value, then the thunk
-/// is evaluated and the slot is updated.
-Value force_ref(Module& nonlocal, slot_t, const Phrase& identifier, Frame& f);
-
 /// Lazy evaluation of a definiens in a module or letrec construct.
 /// If the slot contains a thunk instead of a proper value, then the thunk
 /// is evaluated and the slot is updated.

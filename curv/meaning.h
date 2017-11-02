@@ -177,30 +177,6 @@ struct Symbolic_Ref : public Just_Expression
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
-/// reference to a lazy nonlocal slot.
-struct Nonlocal_Lazy_Ref : public Just_Expression
-{
-    slot_t slot_;
-
-    Nonlocal_Lazy_Ref(Shared<const Phrase> source, slot_t slot)
-    : Just_Expression(std::move(source)), slot_(slot)
-    {}
-
-    virtual Value eval(Frame&) const override;
-};
-
-struct Indirect_Lazy_Ref : public Just_Expression
-{
-    slot_t slot_;
-    slot_t index_;
-
-    Indirect_Lazy_Ref(Shared<const Phrase> source, slot_t slot, slot_t index)
-    : Just_Expression(std::move(source)), slot_(slot), index_(index)
-    {}
-
-    virtual Value eval(Frame&) const override;
-};
-
 struct Indirect_Strict_Ref : public Just_Expression
 {
     slot_t slot_;

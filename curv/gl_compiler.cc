@@ -502,8 +502,6 @@ Value gl_constify(Operation& op, GL_Frame& f)
     }
     else if (auto ref = dynamic_cast<Nonlocal_Strict_Ref*>(&op))
         return f.nonlocal->at(ref->slot_);
-    else if (auto ref = dynamic_cast<Nonlocal_Lazy_Ref*>(&op))
-        return f.nonlocal->at(ref->slot_);
     else if (auto ref = dynamic_cast<Symbolic_Ref*>(&op)) {
         auto b = f.nonlocal->dictionary_->find(ref->name_);
         assert(b != f.nonlocal->dictionary_->end());

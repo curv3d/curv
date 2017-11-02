@@ -73,25 +73,7 @@ Symbolic_Ref::eval(Frame& f) const
     auto& m = *f.nonlocal;
     auto b = m.dictionary_->find(name_);
     assert(b != m.dictionary_->end());
-#if 0 // final version of code
     return m.get(b->second);
-#else // TODO: temporary scaffolding
-    return force_ref(*f.nonlocal, b->second, *source_, f);
-#endif
-}
-
-Value
-Nonlocal_Lazy_Ref::eval(Frame& f) const
-{
-    return force_ref(*f.nonlocal, slot_, *source_, f);
-}
-
-Value
-Indirect_Lazy_Ref::eval(Frame& f) const
-{
-    Module& m = (Module&)f[slot_].get_ref_unsafe();
-    assert(m.type_ == Ref_Value::ty_module);
-    return force_ref(m, index_, *source_, f);
 }
 
 Value

@@ -16,38 +16,6 @@ Thunk::print(std::ostream& out) const
     out << "<thunk>";
 }
 
-Value
-force_ref(Module& nonlocal, slot_t i, const Phrase& identifier, Frame& f)
-{
-    Value& slot = nonlocal.at(i);
-    if (slot.is_ref()) {
-        auto& ref = slot.get_ref_unsafe();
-        switch (ref.type_) {
-        case Ref_Value::ty_thunk:
-          {
-            auto thunk = static_cast<Thunk*>(&ref);
-            std::unique_ptr<Frame> f2 {Frame::make(
-                thunk->nslots_, f.system, &f, nullptr, &nonlocal)};
-            slot = missing;
-            // If there is recursion (eg, `x=x+1`), force_ref will be called
-            // recursively. The second call will see the 'missing' value
-            // and take the 'ty_missing' branch of the switch.
-            slot = thunk->expr_->eval(*f2);
-            return slot;
-          }
-        case Ref_Value::ty_lambda:
-            return {make<Closure>((Lambda&)ref, nonlocal)};
-        case Ref_Value::ty_missing:
-            throw Exception(At_Phrase(identifier, &f),
-                "illegal recursive reference");
-        default:
-            return slot;
-        }
-    } else {
-        return slot;
-    }
-}
-
 void
 force(Module& nonlocal, slot_t i, Frame& f)
 {
