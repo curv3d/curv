@@ -660,10 +660,6 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
         stringify("Geometry Compiler: ",val," is not a function"));
 }
 
-GL_Value Arg_Ref::gl_eval(GL_Frame& f) const
-{
-    return f[slot_];
-}
 GL_Value Data_Ref::gl_eval(GL_Frame& f) const
 {
     return f[slot_];

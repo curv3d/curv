@@ -96,12 +96,6 @@ Data_Ref::eval(Frame& f) const
 }
 
 Value
-Arg_Ref::eval(Frame& f) const
-{
-    return f[slot_];
-}
-
-Value
 Dot_Expr::eval(Frame& f) const
 {
     Value basev = base_->eval(f);

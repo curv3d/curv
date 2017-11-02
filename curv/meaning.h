@@ -214,18 +214,6 @@ struct Data_Ref : public Just_Expression
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
-struct Arg_Ref : public Just_Expression
-{
-    slot_t slot_;
-
-    Arg_Ref(Shared<const Phrase> source, slot_t slot)
-    : Just_Expression(std::move(source)), slot_(slot)
-    {}
-
-    virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
-};
-
 struct Call_Expr : public Just_Expression
 {
     Shared<Operation> fun_;

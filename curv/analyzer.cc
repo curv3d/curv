@@ -247,7 +247,7 @@ Lambda_Phrase::analyze(Environ& env) const
         {
             auto p = names_.find(id.atom_);
             if (p != names_.end())
-                return make<Arg_Ref>(share(id), p->second);
+                return make<Data_Ref>(share(id), p->second);
             if (shared_nonlocals_)
                 return parent_->single_lookup(id);
             auto n = nonlocal_dictionary_->find(id.atom_);
