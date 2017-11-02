@@ -9,8 +9,12 @@ if (APPLE)
   # has a different API than the Apple version of readline.
   set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/local/opt/readline/include" )
   set( LibReadline /usr/local/opt/readline/lib/libreadline.dylib )
+  set( sanitize "" )
 else ()
   set( LibReadline readline)
+  # The leak sanitizer is only available for 64 bit Linux (gcc and clang).
+  # It adds minimal overhead, so we add it to all executables in debug builds.
+  set( sanitize "-fsanitize=leak" )
 endif (APPLE)
 
 FILE(GLOB CurvSrc "aux/*.cc" "curv/*.cc")
@@ -23,17 +27,13 @@ target_link_libraries(curv PUBLIC libcurv ${LibReadline} double-conversion boost
 
 FILE(GLOB TestSrc "tests/*.cc")
 add_executable(tester ${TestSrc})
-if (!APPLE)
-  # This is only supported on x86_64 Linux (gcc and clang).
-  set( sanitize "-fsanitize=leak" )
-endif ()
-target_link_libraries(tester PUBLIC ${sanitize} gtest pthread libcurv double-conversion)
+target_link_libraries(tester PUBLIC gtest pthread libcurv double-conversion)
 
-#set_property(GLOBAL PROPERTY CXX_STANDARD 14)
 set_property(TARGET curv libcurv tester PROPERTY CXX_STANDARD 14)
 
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror" )
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror" )
+set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${sanitize}" )
 
 add_custom_target(tests tester WORKING_DIRECTORY ../tests)
 add_dependencies(tests tester)
