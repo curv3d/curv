@@ -625,12 +625,13 @@ analyze_block(
                 std::move(rscope.executable_), std::move(body));
         }
     }
-    #if 0
     if (adef == nullptr) {
         // no definitions, just actions.
         return make<Preaction_Op>(
+            source,
+            analyze_op(*bindings, env),
+            analyze_op(*bodysrc, env));
     }
-    #endif
 
     Statement_Analyzer analyzer{env, kind, false};
     each_item(*bindings, [&](Phrase& stmt)->void {

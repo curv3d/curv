@@ -764,6 +764,31 @@ struct Compound_Op_Base : public Operation
 };
 using Compound_Op = aux::Tail_Array<Compound_Op_Base>;
 
+// Execute some actions, then execute the body.
+// This is a restricted form of block with no definitions.
+struct Preaction_Op : public Operation
+{
+    Shared<const Operation> actions_;
+    Shared<const Operation> body_;
+
+    Preaction_Op(
+        Shared<const Phrase> source,
+        Shared<const Operation> a,
+        Shared<const Operation> body)
+    :
+        Operation(std::move(source)),
+        actions_(std::move(a)),
+        body_(std::move(body))
+    {}
+
+    virtual Value eval(Frame&) const override;
+    virtual void generate(Frame&, List_Builder&) const override;
+    virtual void bind(Frame&, Record&) const override;
+    virtual void exec(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual void gl_exec(GL_Frame&) const override;
+};
+
 struct Block_Op : public Operation
 {
     Statements statements_;

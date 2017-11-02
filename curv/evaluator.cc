@@ -762,6 +762,31 @@ Block_Op::exec(Frame& f) const
     body_->exec(f);
 }
 
+Value
+Preaction_Op::eval(Frame& f) const
+{
+    actions_->exec(f);
+    return body_->eval(f);
+}
+void
+Preaction_Op::generate(Frame& f, List_Builder& lb) const
+{
+    actions_->exec(f);
+    body_->generate(f, lb);
+}
+void
+Preaction_Op::bind(Frame& f, Record& r) const
+{
+    actions_->exec(f);
+    body_->bind(f, r);
+}
+void
+Preaction_Op::exec(Frame& f) const
+{
+    actions_->exec(f);
+    body_->exec(f);
+}
+
 void
 Compound_Op_Base::generate(Frame& f, List_Builder& lb) const
 {
