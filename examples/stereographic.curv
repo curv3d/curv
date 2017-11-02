@@ -8,14 +8,14 @@ stereographic_projection plane = sphere 2 >> colour
 
 log_spiral(a,b) = make_shape {
     dist(x,y,z,t) =
-        do  var r := mag[x,y,z];
-            var t := phase[x,y,z];
+        let r = mag[x,y,z];
+            t = phase[x,y,z];
         in if (r == 0)
             0
         else
-            do  var n := (log(r/a)/b - t) / tau;
-                var upper_r := a * e^(b*(t+tau*ceil n));
-                var lower_r := a * e^(b*(t+tau*floor n));
+            let n = (log(r/a)/b - t) / tau;
+                upper_r = a * e^(b*(t+tau*ceil n));
+                lower_r = a * e^(b*(t+tau*floor n));
             in min(abs(upper_r-r), abs(r-lower_r)) - r*b;
     is_2d = true;
 };
