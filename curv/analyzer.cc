@@ -60,7 +60,7 @@ Operation::to_operation(Frame*)
     return share(*this);
 }
 
-Shared<Abstract_Definition>
+Shared<Definition>
 Phrase::as_definition(Environ&)
 {
     return nullptr;
@@ -321,11 +321,11 @@ Shared<Meaning>
 analyze_block(
     Environ& env,
     Shared<const Phrase> source,
-    Abstract_Definition::Kind kind,
+    Definition::Kind kind,
     Shared<Phrase> bindings,
     Shared<const Phrase> bodysrc)
 {
-    Shared<Abstract_Definition> adef = bindings->as_definition(env);
+    Shared<Definition> adef = bindings->as_definition(env);
     if (adef == nullptr) {
         // no definitions, just actions.
         return make<Preaction_Op>(
@@ -333,8 +333,8 @@ analyze_block(
             analyze_op(*bindings, env),
             analyze_op(*bodysrc, env));
     }
-    if (adef->kind_ == Abstract_Definition::k_sequential
-        && kind == Abstract_Definition::k_sequential)
+    if (adef->kind_ == Definition::k_sequential
+        && kind == Definition::k_sequential)
     {
         Sequential_Scope sscope(env, false);
         sscope.analyze(*adef);
@@ -344,8 +344,8 @@ analyze_block(
         return make<SBlock_Op>(source,
             std::move(sscope.executable_), std::move(body));
     }
-    if (adef->kind_ == Abstract_Definition::k_recursive
-        && kind == Abstract_Definition::k_recursive)
+    if (adef->kind_ == Definition::k_recursive
+        && kind == Definition::k_recursive)
     {
         Recursive_Scope rscope(env, false);
         rscope.analyze(*adef);
@@ -360,7 +360,7 @@ analyze_block(
 
         Bad_Scope(Environ& env) : env_(env) {}
 
-        virtual void analyze(Abstract_Definition&) override {}
+        virtual void analyze(Definition&) override {}
         virtual void add_action(Shared<const Phrase>) override {}
         virtual unsigned begin_unit(Shared<Unitary_Definition> unit) override
         {
@@ -380,10 +380,10 @@ analyze_block(
 Shared<Meaning>
 Let_Phrase::analyze(Environ& env) const
 {
-    Abstract_Definition::Kind kind =
+    Definition::Kind kind =
         let_.kind_ == Token::k_let
-        ? Abstract_Definition::k_recursive
-        : Abstract_Definition::k_sequential;
+        ? Definition::k_recursive
+        : Definition::k_sequential;
     return analyze_block(env, share(*this), kind, bindings_, body_);
 }
 
@@ -483,7 +483,7 @@ Binary_Phrase::analyze(Environ& env) const
         return analyze_assoc(env, *this, *left_, right_);
     case Token::k_where:
         return analyze_block(env, share(*this),
-            Abstract_Definition::k_recursive, right_, left_);
+            Definition::k_recursive, right_, left_);
     default:
         assert(0);
     }
@@ -520,14 +520,14 @@ Assignment_Phrase::analyze(Environ& env) const
     throw Exception(At_Phrase(*left_, env), "not a sequential variable name");
 }
 
-Shared<Abstract_Definition>
+Shared<Definition>
 as_definition_iter(
     Environ& env, Shared<const Phrase> source,
-    Phrase& left, Shared<Phrase> right, Abstract_Definition::Kind kind)
+    Phrase& left, Shared<Phrase> right, Definition::Kind kind)
 {
     if (auto id = dynamic_cast<const Identifier*>(&left)) {
         auto lambda = cast<Lambda_Phrase>(right);
-        if (lambda && kind == Abstract_Definition::k_recursive)
+        if (lambda && kind == Definition::k_recursive)
             return make<Function_Definition>(std::move(source),
                 share(*id), std::move(lambda));
         else
@@ -539,17 +539,17 @@ as_definition_iter(
             make<Lambda_Phrase>(call->arg_, Token(), right), kind);
     throw Exception(At_Phrase(left,  env), "invalid definiendum");
 }
-Shared<Abstract_Definition>
+Shared<Definition>
 Recursive_Definition_Phrase::as_definition(Environ& env)
 {
     return as_definition_iter(env, share(*this), *left_, right_,
-        Abstract_Definition::k_recursive);
+        Definition::k_recursive);
 }
-Shared<Abstract_Definition>
+Shared<Definition>
 Sequential_Definition_Phrase::as_definition(Environ& env)
 {
     return as_definition_iter(env, share(*this), *left_, right_,
-        Abstract_Definition::k_sequential);
+        Definition::k_sequential);
 }
 
 Shared<Meaning>
@@ -561,7 +561,7 @@ Semicolon_Phrase::analyze(Environ& env) const
     return compound;
 }
 
-Shared<Abstract_Definition>
+Shared<Definition>
 Semicolon_Phrase::as_definition(Environ& env)
 {
     Shared<Compound_Definition> compound =
@@ -608,7 +608,7 @@ Paren_Phrase::analyze(Environ& env) const
     } else
         return analyze_tail(*body_, env);
 }
-Shared<Abstract_Definition>
+Shared<Definition>
 Paren_Phrase::as_definition(Environ& env)
 {
     return body_->as_definition(env);
@@ -662,7 +662,7 @@ Program_Phrase::analyze(Environ& env) const
 {
     return body_->analyze(env);
 }
-Shared<Abstract_Definition>
+Shared<Definition>
 Program_Phrase::as_definition(Environ& env)
 {
     return body_->as_definition(env);
@@ -671,7 +671,7 @@ Program_Phrase::as_definition(Environ& env)
 Shared<Meaning>
 Brace_Phrase::analyze(Environ& env) const
 {
-    Shared<Abstract_Definition> adef = body_->as_definition(env);
+    Shared<Definition> adef = body_->as_definition(env);
     if (adef == nullptr) {
         auto record = make<Record_Expr>(share(*this));
         each_item(*body_, [&](Phrase& item)->void {

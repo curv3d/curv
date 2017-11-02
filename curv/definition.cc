@@ -68,9 +68,9 @@ Compound_Definition_Base::add_to_scope(Scope& scope)
 }
 
 void
-Sequential_Scope::analyze(Abstract_Definition& def)
+Sequential_Scope::analyze(Definition& def)
 {
-    assert(def.kind_ == Abstract_Definition::k_sequential);
+    assert(def.kind_ == Definition::k_sequential);
     def.add_to_scope(*this);
     parent_->frame_maxslots_ = frame_maxslots_;
     if (target_is_module_)
@@ -121,9 +121,9 @@ Sequential_Scope::end_unit(unsigned unitno, Shared<Unitary_Definition> unit)
 }
 
 void
-Recursive_Scope::analyze(Abstract_Definition& def)
+Recursive_Scope::analyze(Definition& def)
 {
-    assert(def.kind_ == Abstract_Definition::k_recursive);
+    assert(def.kind_ == Definition::k_recursive);
     source_ = def.source_;
     def.add_to_scope(*this);
     for (auto a : action_phrases_) {
@@ -338,15 +338,15 @@ Recursive_Scope::end_unit(unsigned unitno, Shared<Unitary_Definition> unit)
 }
 
 Shared<Abstract_Module_Expr>
-analyze_module(Abstract_Definition& def, Environ& env)
+analyze_module(Definition& def, Environ& env)
 {
-    if (def.kind_ == Abstract_Definition::k_sequential) {
+    if (def.kind_ == Definition::k_sequential) {
         Sequential_Scope scope(env, true);
         scope.analyze(def);
         return make<Scoped_Module_Expr>(def.source_,
             std::move(scope.executable_));
     }
-    if (def.kind_ == Abstract_Definition::k_recursive) {
+    if (def.kind_ == Definition::k_recursive) {
         Recursive_Scope scope(env, true);
         scope.analyze(def);
         return make<Scoped_Module_Expr>(def.source_,

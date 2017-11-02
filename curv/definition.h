@@ -11,12 +11,12 @@ namespace curv {
 
 struct Scope;
 
-struct Abstract_Definition : public Shared_Base
+struct Definition : public Shared_Base
 {
     Shared<const Phrase> source_;
     enum Kind { k_recursive, k_sequential } kind_;
 
-    Abstract_Definition(
+    Definition(
         Shared<const Phrase> source,
         Kind k)
     :
@@ -30,13 +30,13 @@ struct Abstract_Definition : public Shared_Base
 // A unitary definition is one that occupies a single node in the dependency
 // graph that is constructed while analyzing a recursive scope. It can define
 // multiple names.
-struct Unitary_Definition : public Abstract_Definition
+struct Unitary_Definition : public Definition
 {
     Unitary_Definition(
         Shared<const Phrase> source,
         Kind k)
     :
-        Abstract_Definition(source, k)
+        Definition(source, k)
     {}
 
     virtual void analyze(Environ&) = 0;
@@ -98,16 +98,16 @@ struct Data_Definition : public Unitary_Definition
 
 // A compound definition is `statement1;statement2;...` where each statement
 // is an action or definition, and there is at least one definition.
-struct Compound_Definition_Base : public Abstract_Definition
+struct Compound_Definition_Base : public Definition
 {
     struct Element
     {
         Shared<const Phrase> phrase_;
-        Shared<Abstract_Definition> definition_;
+        Shared<Definition> definition_;
     };
 
     Compound_Definition_Base(Shared<const Phrase> source)
-    : Abstract_Definition(std::move(source), k_recursive) {}
+    : Definition(std::move(source), k_recursive) {}
 
     virtual void add_to_scope(Scope&) override;
 
@@ -117,7 +117,7 @@ using Compound_Definition = aux::Tail_Array<Compound_Definition_Base>;
 
 struct Scope
 {
-    virtual void analyze(Abstract_Definition&) = 0;
+    virtual void analyze(Definition&) = 0;
     virtual void add_action(Shared<const Phrase>) = 0;
     virtual unsigned begin_unit(Shared<Unitary_Definition>) = 0;
     virtual slot_t add_binding(Shared<const Identifier>, unsigned unit) = 0;
@@ -143,7 +143,7 @@ struct Sequential_Scope : public Scope, public Environ
     }
 
     virtual Shared<Meaning> single_lookup(const Identifier&) override;
-    virtual void analyze(Abstract_Definition&) override;
+    virtual void analyze(Definition&) override;
     virtual void add_action(Shared<const Phrase>) override;
     virtual unsigned begin_unit(Shared<Unitary_Definition>) override;
     virtual slot_t add_binding(Shared<const Identifier>, unsigned unit) override;
@@ -219,7 +219,7 @@ struct Recursive_Scope : public Scope, public Environ
     Shared<Operation> make_function_setter(size_t nunits, Unit** units);
 
     virtual Shared<Meaning> single_lookup(const Identifier&) override;
-    virtual void analyze(Abstract_Definition&) override;
+    virtual void analyze(Definition&) override;
     virtual void add_action(Shared<const Phrase>) override;
     virtual unsigned begin_unit(Shared<Unitary_Definition>) override;
     virtual slot_t add_binding(Shared<const Identifier>, unsigned unit) override;
@@ -227,7 +227,7 @@ struct Recursive_Scope : public Scope, public Environ
 };
 
 Shared<Abstract_Module_Expr>
-analyze_module(Abstract_Definition&, Environ&);
+analyze_module(Definition&, Environ&);
 
 } // namespace
 #endif // header guard
