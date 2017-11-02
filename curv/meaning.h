@@ -697,24 +697,6 @@ struct Scoped_Module_Expr : public Abstract_Module_Expr
     virtual Shared<Module> eval_module(Frame&) const override;
 };
 
-// A module expression is `{stmt; stmt; ...}` where stmt is a definition
-// or action. The statements are evaluated as a statement list, then the
-// definitions become fields in the resulting Module value.
-struct Module_Expr : public Abstract_Module_Expr
-{
-    Statements statements_;
-
-    Module_Expr(
-        Shared<const Phrase> source,
-        Statements statements)
-    :
-        Abstract_Module_Expr(source),
-        statements_(std::move(statements))
-    {}
-
-    virtual Shared<Module> eval_module(Frame&) const override;
-};
-
 // An internal action for initializing the slots in the evaluation frame
 // for a group of mutually recursive closures.
 // The closures share a single `nonlocal` object.

@@ -706,12 +706,6 @@ Scoped_Module_Expr::eval_module(Frame& f) const
     return executable_.eval_module(f);
 }
 
-Shared<Module>
-Module_Expr::eval_module(Frame& f) const
-{
-    return statements_.eval_module(f);
-}
-
 Value
 Block_Op::eval(Frame& f) const
 {
