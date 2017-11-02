@@ -508,7 +508,7 @@ Assignment_Phrase::analyze(Environ& env) const
     auto m = env.lookup_var(*id);
     auto expr = analyze_op(*right_, env);
 
-    auto let = cast<Let_Ref>(m);
+    auto let = cast<Data_Ref>(m);
     if (let)
         return make<Data_Setter>(share(*this), let->slot_, expr, true);
     auto indir = cast<Module_Data_Ref>(m);
@@ -725,7 +725,7 @@ For_Phrase::analyze(Environ& env) const
         virtual Shared<Meaning> single_lookup(const Identifier& id)
         {
             if (id.atom_ == name_)
-                return make<Let_Ref>(share(id), slot_);
+                return make<Data_Ref>(share(id), slot_);
             return nullptr;
         }
     };

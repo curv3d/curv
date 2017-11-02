@@ -202,11 +202,11 @@ struct Nonlocal_Strict_Ref : public Just_Expression
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
-struct Let_Ref : public Just_Expression
+struct Data_Ref : public Just_Expression
 {
     slot_t slot_;
 
-    Let_Ref(Shared<const Phrase> source, slot_t slot)
+    Data_Ref(Shared<const Phrase> source, slot_t slot)
     : Just_Expression(std::move(source)), slot_(slot)
     {}
 

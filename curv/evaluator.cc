@@ -91,7 +91,7 @@ Nonlocal_Strict_Ref::eval(Frame& f) const
 }
 
 Value
-Let_Ref::eval(Frame& f) const
+Data_Ref::eval(Frame& f) const
 {
     return f[slot_];
 }

@@ -668,7 +668,7 @@ GL_Value Arg_Ref::gl_eval(GL_Frame& f) const
 {
     return f[slot_];
 }
-GL_Value Let_Ref::gl_eval(GL_Frame& f) const
+GL_Value Data_Ref::gl_eval(GL_Frame& f) const
 {
     return f[slot_];
 }
