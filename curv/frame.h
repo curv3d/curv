@@ -25,7 +25,6 @@ struct System;
 /// A program (script file) has a frame for evaluating the top level
 /// program expression.
 /// Calls to builtin and user-defined functions have call frames.
-/// Thunk invocations have frames.
 using Frame = aux::Tail_Array<Frame_Base>;
 
 struct Frame_Base

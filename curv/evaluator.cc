@@ -10,7 +10,6 @@
 #include <curv/list.h>
 #include <curv/record.h>
 #include <curv/module.h>
-#include <curv/thunk.h>
 #include <curv/context.h>
 #include <curv/array_op.h>
 #include <cmath>

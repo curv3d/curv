@@ -9,7 +9,6 @@
 #include <curv/definition.h>
 #include <curv/shared.h>
 #include <curv/exception.h>
-#include <curv/thunk.h>
 #include <curv/function.h>
 #include <curv/context.h>
 
