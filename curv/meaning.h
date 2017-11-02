@@ -226,28 +226,6 @@ struct Arg_Ref : public Just_Expression
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
-struct Indirect_Function_Ref : public Just_Expression
-{
-    slot_t slot_;
-    slot_t index_;
-
-    /// A prefix of the value list, of length `nlazy_`, may contain thunks
-    /// which can only be evaluated in the caller's frame.
-    slot_t nlazy_;
-
-    Indirect_Function_Ref(
-        Shared<const Phrase> source,
-        slot_t slot, slot_t index, slot_t nlazy)
-    :
-        Just_Expression(std::move(source)),
-        slot_(slot),
-        index_(index),
-        nlazy_(nlazy)
-    {}
-
-    virtual Value eval(Frame&) const override;
-};
-
 struct Call_Expr : public Just_Expression
 {
     Shared<Operation> fun_;

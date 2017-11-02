@@ -103,22 +103,6 @@ Arg_Ref::eval(Frame& f) const
 }
 
 Value
-Indirect_Function_Ref::eval(Frame& f) const
-{
-    Module& nonlocal = (Module&)f[slot_].get_ref_unsafe();
-    assert(nonlocal.type_ == Ref_Value::ty_module);
-
-    // TODO: Kludge. We are seeing <thunk> values in the GL compiler.
-    for (size_t i = 0; i < nonlocal.size(); ++i)
-        force(nonlocal, i, f);
-
-    Lambda& lambda = (Lambda&) nonlocal.at(index_).get_ref_unsafe();
-    assert(lambda.type_ == Ref_Value::ty_lambda);
-
-    return {make<Closure>(lambda, nonlocal)};
-}
-
-Value
 Dot_Expr::eval(Frame& f) const
 {
     Value basev = base_->eval(f);
