@@ -8,7 +8,7 @@ What remains for MVP?
 
 Recursive_Scope project:
 * test Recursive_Scope in `do`. Comprehensive unit tests.
-  * assert_error(message, expr)
+  * Maybe, assert_console_log(message, expr)
   * test that storage leak is fixed.
 * convert let and module to use Recursive_Scope
 * revert `do` to sequential only
@@ -16,8 +16,6 @@ Recursive_Scope project:
   * remove old code: Statement_Analyzer, Statements, Thunk, Module_Expr,
     Block_Op, Definition
   * rename Abstract_Definition to Definition
-  * rename *_Assign meaning classes to *_Setter, Definition::make_setter
-    eg, Data_Setter, Module_Data_Setter, Function_Setter
   * remove unused Ref classes, rename the rest using consistent name convention
     eg, Nonlocal_Data_Ref, Module_Data_Ref, Data_Ref,
         Nonlocal_Function_Ref, Module_Function_Ref.
