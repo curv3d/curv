@@ -473,10 +473,7 @@ TEST(curv, eval)
     EXPECT_EQ(console.str(),
         "60\n");
 
-    //FAILMSG("a=1;var b:=2;a+b", "expecting = style definition");
-    FAILMSG("let var a:=2 in a", "expecting = style definition");
-  #if 0 // TODO: restore test later
-    FAILMSG("do a=2 in a", "expecting := style definition");
-  #endif
+    FAILMSG("let var a:=2 in a", "wrong style of definition for this block");
+    FAILMSG("do a=2 in a", "wrong style of definition for this block");
   }
 }

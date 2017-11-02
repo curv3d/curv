@@ -602,29 +602,6 @@ analyze_block(
     Shared<const Phrase> bodysrc)
 {
     Shared<Abstract_Definition> adef = bindings->as_definition(env);
-    if (adef != nullptr) {
-        if (adef->kind_ == Abstract_Definition::k_sequential
-            && kind == Definition::k_sequential)
-        {
-            Sequential_Scope sscope(env, false);
-            sscope.analyze(*adef);
-            sscope.is_analyzing_action_ = env.is_analyzing_action_;
-            auto body = analyze_tail(*bodysrc, sscope);
-            env.frame_maxslots_ = sscope.frame_maxslots_;
-            return make<SBlock_Op>(source,
-                std::move(sscope.executable_), std::move(body));
-        }
-        if (adef->kind_ == Abstract_Definition::k_recursive
-            && kind == Definition::k_recursive)
-        {
-            Recursive_Scope rscope(env, false);
-            rscope.analyze(*adef);
-            auto body = analyze_tail(*bodysrc, rscope);
-            env.frame_maxslots_ = rscope.frame_maxslots_;
-            return make<SBlock_Op>(source,
-                std::move(rscope.executable_), std::move(body));
-        }
-    }
     if (adef == nullptr) {
         // no definitions, just actions.
         return make<Preaction_Op>(
@@ -632,17 +609,48 @@ analyze_block(
             analyze_op(*bindings, env),
             analyze_op(*bodysrc, env));
     }
+    if (adef->kind_ == Abstract_Definition::k_sequential
+        && kind == Definition::k_sequential)
+    {
+        Sequential_Scope sscope(env, false);
+        sscope.analyze(*adef);
+        sscope.is_analyzing_action_ = env.is_analyzing_action_;
+        auto body = analyze_tail(*bodysrc, sscope);
+        env.frame_maxslots_ = sscope.frame_maxslots_;
+        return make<SBlock_Op>(source,
+            std::move(sscope.executable_), std::move(body));
+    }
+    if (adef->kind_ == Abstract_Definition::k_recursive
+        && kind == Definition::k_recursive)
+    {
+        Recursive_Scope rscope(env, false);
+        rscope.analyze(*adef);
+        auto body = analyze_tail(*bodysrc, rscope);
+        env.frame_maxslots_ = rscope.frame_maxslots_;
+        return make<SBlock_Op>(source,
+            std::move(rscope.executable_), std::move(body));
+    }
+    struct Bad_Scope : public Scope
+    {
+        Environ& env_;
 
-    Statement_Analyzer analyzer{env, kind, false};
-    each_item(*bindings, [&](Phrase& stmt)->void {
-        analyzer.add_statement(share(stmt));
-    });
-    analyzer.analyze(source);
-    analyzer.is_analyzing_action_ = env.is_analyzing_action_;
-    auto body = analyze_tail(*bodysrc, analyzer);
-    env.frame_maxslots_ = analyzer.frame_maxslots_;
-    return make<Block_Op>(source,
-        std::move(analyzer.statements_), std::move(body));
+        Bad_Scope(Environ& env) : env_(env) {}
+
+        virtual void analyze(Abstract_Definition&) override {}
+        virtual void add_action(Shared<const Phrase>) override {}
+        virtual unsigned begin_unit(Shared<Unitary_Definition> unit) override
+        {
+            throw Exception(At_Phrase(*unit->source_, env_),
+                "wrong style of definition for this block");
+        }
+        virtual slot_t add_binding(Shared<const Identifier>, unsigned) override
+        {
+            return 0;
+        }
+        virtual void end_unit(unsigned, Shared<Unitary_Definition>) override {}
+    } bscope(env);
+    adef->add_to_scope(bscope); // throws an exception
+    assert(0);
 }
 
 Shared<Meaning>
