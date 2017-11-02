@@ -713,25 +713,25 @@ Module_Expr::eval_module(Frame& f) const
 }
 
 Value
-SBlock_Op::eval(Frame& f) const
+Block_Op::eval(Frame& f) const
 {
     statements_.exec(f);
     return body_->eval(f);
 }
 void
-SBlock_Op::generate(Frame& f, List_Builder& lb) const
+Block_Op::generate(Frame& f, List_Builder& lb) const
 {
     statements_.exec(f);
     body_->generate(f, lb);
 }
 void
-SBlock_Op::bind(Frame& f, Record& r) const
+Block_Op::bind(Frame& f, Record& r) const
 {
     statements_.exec(f);
     body_->bind(f, r);
 }
 void
-SBlock_Op::exec(Frame& f) const
+Block_Op::exec(Frame& f) const
 {
     statements_.exec(f);
     body_->exec(f);

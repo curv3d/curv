@@ -341,7 +341,7 @@ analyze_block(
         sscope.is_analyzing_action_ = env.is_analyzing_action_;
         auto body = analyze_tail(*bodysrc, sscope);
         env.frame_maxslots_ = sscope.frame_maxslots_;
-        return make<SBlock_Op>(source,
+        return make<Block_Op>(source,
             std::move(sscope.executable_), std::move(body));
     }
     if (adef->kind_ == Definition::k_recursive
@@ -351,7 +351,7 @@ analyze_block(
         rscope.analyze(*adef);
         auto body = analyze_tail(*bodysrc, rscope);
         env.frame_maxslots_ = rscope.frame_maxslots_;
-        return make<SBlock_Op>(source,
+        return make<Block_Op>(source,
             std::move(rscope.executable_), std::move(body));
     }
     struct Bad_Scope : public Scope

@@ -789,12 +789,12 @@ struct Preaction_Op : public Operation
     virtual void gl_exec(GL_Frame&) const override;
 };
 
-struct SBlock_Op : public Operation
+struct Block_Op : public Operation
 {
     Scope_Executable statements_;
     Shared<const Operation> body_;
 
-    SBlock_Op(
+    Block_Op(
         Shared<const Phrase> source,
         Scope_Executable b,
         Shared<const Operation> body)
