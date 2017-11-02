@@ -7,24 +7,12 @@ What remains for MVP?
 * STL export: Get open source marching cubes in OpenCL. Benchmark.
 
 Recursive_Scope project:
-* test Recursive_Scope in `do`. Comprehensive unit tests.
-  * Maybe, assert_console_log(message, expr)
-  * test that storage leak is fixed.
-* convert let and module to use Recursive_Scope
-* revert `do` to sequential only
 * cleanup:
-  * remove old code: Statement_Analyzer, Statements, Thunk, Module_Expr,
-    Block_Op, Definition
-  * rename Abstract_Definition to Definition
-  * remove unused Ref classes, rename the rest using consistent name convention
-    eg, Nonlocal_Data_Ref, Module_Data_Ref, Data_Ref,
-        Nonlocal_Function_Ref, Module_Function_Ref.
   * standardize spelling of `nonlocal` and `nonlocals`.
     * eg, use `nonlocal` in adjective position, `nonlocals` in noun position.
   * use `foo_` convention for Frame data members.
   * use `foo_` convention for GL_Frame data members.
   * clean up Recursive_Scope::analyze_unit
-  * integrate examples/test into automatic unit tests
 
 Abstract Pattern
   Take a Value, potentially type check it and/or destructure it into its
