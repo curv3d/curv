@@ -337,4 +337,22 @@ Recursive_Scope::end_unit(unsigned unitno, Shared<Unitary_Definition> unit)
     (void)unit;
 }
 
+Shared<Abstract_Module_Expr>
+analyze_module(Abstract_Definition& def, Environ& env)
+{
+    if (def.kind_ == Abstract_Definition::k_sequential) {
+        Sequential_Scope scope(env, true);
+        scope.analyze(def);
+        return make<Scoped_Module_Expr>(def.source_,
+            std::move(scope.executable_));
+    }
+    if (def.kind_ == Abstract_Definition::k_recursive) {
+        Recursive_Scope scope(env, true);
+        scope.analyze(def);
+        return make<Scoped_Module_Expr>(def.source_,
+            std::move(scope.executable_));
+    }
+    assert(0);
+}
+
 } // namespace curv

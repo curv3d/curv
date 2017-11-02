@@ -5,7 +5,6 @@
 #ifndef CURV_DEFINITION_H
 #define CURV_DEFINITION_H
 
-#include <set>
 #include <curv/analyzer.h>
 
 namespace curv {
@@ -226,6 +225,9 @@ struct Recursive_Scope : public Scope, public Environ
     virtual slot_t add_binding(Shared<const Identifier>, unsigned unit) override;
     virtual void end_unit(unsigned, Shared<Unitary_Definition>) override;
 };
+
+Shared<Abstract_Module_Expr>
+analyze_module(Abstract_Definition&, Environ&);
 
 } // namespace
 #endif // header guard

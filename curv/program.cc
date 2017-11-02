@@ -3,6 +3,7 @@
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
 #include <curv/analyzer.h>
+#include <curv/definition.h>
 #include <curv/builtin.h>
 #include <curv/program.h>
 #include <curv/parser.h>
@@ -26,11 +27,8 @@ Program::compile(const Namespace* names, Frame* parent_frame)
     phrase_ = parse_program(scanner);
 
     Builtin_Environ env{*names_, parent_frame};
-    if (auto def = phrase_->analyze_def(env)) {
-        Statement_Analyzer fields{env, def->kind_, true};
-        fields.add_statement(phrase_);
-        fields.analyze(phrase_);
-        module_ = make<Module_Expr>(phrase_, std::move(fields.statements_));
+    if (auto def = phrase_->as_definition(env)) {
+        module_ = analyze_module(*def, env);
     } else {
         meaning_ = phrase_->analyze(env);
     }
@@ -48,10 +46,12 @@ Program::value_phrase()
             ph = pr->body_;
             continue;
         }
+      #if 0 // TODO: this was supposed to return the body of a block
         if (auto s = cast<const Semicolon_Phrase>(ph)) {
             ph = s->args_.back().expr_;
             continue;
         }
+      #endif
         if (auto p = cast<const Paren_Phrase>(ph)) {
             if (isa<Empty_Phrase>(p->body_))
                 break;
