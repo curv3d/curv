@@ -190,11 +190,11 @@ struct Module_Data_Ref : public Just_Expression
 };
 
 /// reference to a strict nonlocal slot (nonrecursive lambda nonlocal)
-struct Nonlocal_Strict_Ref : public Just_Expression
+struct Nonlocal_Data_Ref : public Just_Expression
 {
     slot_t slot_;
 
-    Nonlocal_Strict_Ref(Shared<const Phrase> source, slot_t slot)
+    Nonlocal_Data_Ref(Shared<const Phrase> source, slot_t slot)
     : Just_Expression(std::move(source)), slot_(slot)
     {}
 

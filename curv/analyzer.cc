@@ -253,7 +253,7 @@ Lambda_Phrase::analyze(Environ& env) const
                 return parent_->single_lookup(id);
             auto n = nonlocal_dictionary_->find(id.atom_);
             if (n != nonlocal_dictionary_->end())
-                return make<Nonlocal_Strict_Ref>(share(id), n->second);
+                return make<Nonlocal_Data_Ref>(share(id), n->second);
             auto m = parent_->lookup(id);
             if (isa<Constant>(m))
                 return m;
@@ -261,7 +261,7 @@ Lambda_Phrase::analyze(Environ& env) const
                 slot_t slot = nonlocal_exprs_.size();
                 (*nonlocal_dictionary_)[id.atom_] = slot;
                 nonlocal_exprs_.push_back(expr);
-                return make<Nonlocal_Strict_Ref>(share(id), slot);
+                return make<Nonlocal_Data_Ref>(share(id), slot);
             }
             return m;
         }

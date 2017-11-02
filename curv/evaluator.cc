@@ -85,7 +85,7 @@ Module_Data_Ref::eval(Frame& f) const
 }
 
 Value
-Nonlocal_Strict_Ref::eval(Frame& f) const
+Nonlocal_Data_Ref::eval(Frame& f) const
 {
     return f.nonlocal->at(slot_);
 }

@@ -500,7 +500,7 @@ Value gl_constify(Operation& op, GL_Frame& f)
             throw Exception(At_GL_Phrase(*dot->selector_.string_->source_, &f),
                 "Geometry Compiler: not an identifier");
     }
-    else if (auto ref = dynamic_cast<Nonlocal_Strict_Ref*>(&op))
+    else if (auto ref = dynamic_cast<Nonlocal_Data_Ref*>(&op))
         return f.nonlocal->at(ref->slot_);
     else if (auto ref = dynamic_cast<Symbolic_Ref*>(&op)) {
         auto b = f.nonlocal->dictionary_->find(ref->name_);
@@ -673,7 +673,7 @@ GL_Value Data_Ref::gl_eval(GL_Frame& f) const
     return f[slot_];
 }
 
-GL_Value Nonlocal_Strict_Ref::gl_eval(GL_Frame& f) const
+GL_Value Nonlocal_Data_Ref::gl_eval(GL_Frame& f) const
 {
     return gl_eval_const(f, f.nonlocal->at(slot_), *source_);
 }
