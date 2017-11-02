@@ -174,6 +174,7 @@ struct Symbolic_Ref : public Just_Expression
     {}
 
     virtual Value eval(Frame&) const override;
+    virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
 /// reference to a lazy nonlocal slot.

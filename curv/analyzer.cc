@@ -614,12 +614,9 @@ analyze_block(
             return make<SBlock_Op>(source,
                 std::move(sscope.executable_), std::move(body));
         }
-      #if 0
         if (adef->kind_ == Abstract_Definition::k_recursive
-            //&& kind == Definition::k_sequential
-            )
+            && kind == Definition::k_recursive)
         {
-            // TODO: fix me (testing purposes only)
             Recursive_Scope rscope(env, false);
             rscope.analyze(*adef);
             auto body = analyze_tail(*bodysrc, rscope);
@@ -627,8 +624,13 @@ analyze_block(
             return make<SBlock_Op>(source,
                 std::move(rscope.executable_), std::move(body));
         }
-      #endif
     }
+    #if 0
+    if (adef == nullptr) {
+        // no definitions, just actions.
+        return make<Preaction_Op>(
+    }
+    #endif
 
     Statement_Analyzer analyzer{env, kind, false};
     each_item(*bindings, [&](Phrase& stmt)->void {

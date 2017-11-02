@@ -683,6 +683,13 @@ GL_Value Nonlocal_Strict_Ref::gl_eval(GL_Frame& f) const
 {
     return gl_eval_const(f, f.nonlocal->at(slot_), *source_);
 }
+GL_Value Symbolic_Ref::gl_eval(GL_Frame& f) const
+{
+    auto b = f.nonlocal->dictionary_->find(name_);
+    assert(b != f.nonlocal->dictionary_->end());
+    Value val = f.nonlocal->get(b->second);
+    return gl_eval_const(f, val, *source_);
+}
 
 GL_Value List_Expr_Base::gl_eval(GL_Frame& f) const
 {

@@ -200,5 +200,7 @@ assert_error(
     "assertion failed: expected error ""foo"", got value ""bar""",
     do assert_error("foo","bar") in null);
 
+let _=file "scope.curv" in (;);
+
 // script return value:
 in {}
