@@ -202,5 +202,7 @@ assert_error(
 
 let _=file "scope.curv" in (;);
 
+assert({a:1;b:2} == {a:1,b:2});
+
 // script return value:
 in {}

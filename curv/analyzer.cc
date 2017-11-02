@@ -980,51 +980,24 @@ Brace_Phrase::analyze(Environ& env) const
     auto source = share(*this);
 
     Shared<Abstract_Definition> adef = body_->as_definition(env);
-    if (adef != nullptr) {
-        if (adef->kind_ == Abstract_Definition::k_sequential) {
-            Sequential_Scope scope(env, true);
-            scope.analyze(*adef);
-            return make<Scoped_Module_Expr>(source, std::move(scope.executable_));
-        }
-        if (adef->kind_ == Abstract_Definition::k_recursive) {
-            Recursive_Scope scope(env, true);
-            scope.analyze(*adef);
-            return make<Scoped_Module_Expr>(source, std::move(scope.executable_));
-        }
-    }
-
-    // A brace phrase is:
-    //  * empty
-    //  * a binder
-    //  * a definition
-    //  * a comma-separated list of actions and binders
-    //  * a semicolon-separated list of actions and definitions
-
-    bool is_module;
-    if (isa<Empty_Phrase>(body_)) {
-        is_module = false;
-    } else if (isa<Comma_Phrase>(body_)) {
-        is_module = false;
-    } else if (isa<Semicolon_Phrase>(body_)) {
-        is_module = true;
-    } else {
-        is_module = (body_->analyze_def(env) != nullptr);
-    }
-
-    if (is_module) {
-        Statement_Analyzer fields{env, Definition::k_recursive, true};
-        each_item(*body_, [&](Phrase& stmt)->void {
-            fields.add_statement(share(stmt));
-        });
-        fields.analyze(source);
-        return make<Module_Expr>(source, std::move(fields.statements_));
-    } else {
+    if (adef == nullptr) {
         auto record = make<Record_Expr>(source);
         each_item(*body_, [&](Phrase& item)->void {
             record->fields_.push_back(analyze_op(item, env));
         });
         return record;
     }
+    if (adef->kind_ == Abstract_Definition::k_sequential) {
+        Sequential_Scope scope(env, true);
+        scope.analyze(*adef);
+        return make<Scoped_Module_Expr>(source, std::move(scope.executable_));
+    }
+    if (adef->kind_ == Abstract_Definition::k_recursive) {
+        Recursive_Scope scope(env, true);
+        scope.analyze(*adef);
+        return make<Scoped_Module_Expr>(source, std::move(scope.executable_));
+    }
+    assert(0);
 }
 
 Shared<Meaning>
