@@ -685,7 +685,7 @@ Module_Data_Setter::exec(Frame& f) const
 }
 
 Value
-Abstract_Module_Expr::eval(Frame& f) const
+Module_Expr::eval(Frame& f) const
 {
     auto module = eval_module(f);
     return {module};

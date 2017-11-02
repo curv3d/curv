@@ -337,7 +337,7 @@ Recursive_Scope::end_unit(unsigned unitno, Shared<Unitary_Definition> unit)
     (void)unit;
 }
 
-Shared<Abstract_Module_Expr>
+Shared<Module_Expr>
 analyze_module(Definition& def, Environ& env)
 {
     if (def.kind_ == Definition::k_sequential) {

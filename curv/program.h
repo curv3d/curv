@@ -24,7 +24,7 @@ struct Program
     Frame *parent_frame_ = nullptr;
     Shared<Phrase> phrase_ = nullptr;
     Shared<Meaning> meaning_ = nullptr;
-    Shared<Abstract_Module_Expr> module_ = nullptr;
+    Shared<Module_Expr> module_ = nullptr;
     std::unique_ptr<Frame> frame_ = nullptr;
 
     Program(

@@ -639,14 +639,14 @@ struct Module_Data_Setter : public Just_Action
     void exec(Frame&) const override;
 };
 
-struct Abstract_Module_Expr : public Just_Expression
+struct Module_Expr : public Just_Expression
 {
     using Just_Expression::Just_Expression;
     virtual Value eval(Frame&) const override;
     virtual Shared<Module> eval_module(Frame&) const = 0;
 };
 
-struct Const_Module_Expr final : public Abstract_Module_Expr
+struct Const_Module_Expr final : public Module_Expr
 {
     Shared<Module> value_;
 
@@ -654,7 +654,7 @@ struct Const_Module_Expr final : public Abstract_Module_Expr
         Shared<const Phrase> source,
         Shared<Module> value)
     :
-        Abstract_Module_Expr(source),
+        Module_Expr(source),
         value_(value)
     {}
 
@@ -664,7 +664,7 @@ struct Const_Module_Expr final : public Abstract_Module_Expr
     }
 };
 
-struct Enum_Module_Expr final : public Abstract_Module_Expr
+struct Enum_Module_Expr final : public Module_Expr
 {
     Shared<Module::Dictionary> dictionary_;
     std::vector<Shared<Operation>> exprs_;
@@ -674,7 +674,7 @@ struct Enum_Module_Expr final : public Abstract_Module_Expr
         Shared<Module::Dictionary> dictionary,
         std::vector<Shared<Operation>> exprs)
     :
-        Abstract_Module_Expr(source),
+        Module_Expr(source),
         dictionary_(dictionary),
         exprs_(exprs)
     {}
@@ -682,7 +682,7 @@ struct Enum_Module_Expr final : public Abstract_Module_Expr
     virtual Shared<Module> eval_module(Frame&) const override;
 };
 
-struct Scoped_Module_Expr : public Abstract_Module_Expr
+struct Scoped_Module_Expr : public Module_Expr
 {
     Scope_Executable executable_;
 
@@ -690,7 +690,7 @@ struct Scoped_Module_Expr : public Abstract_Module_Expr
         Shared<const Phrase> source,
         Scope_Executable executable)
     :
-        Abstract_Module_Expr(source),
+        Module_Expr(source),
         executable_(std::move(executable))
     {}
 
@@ -888,14 +888,14 @@ struct If_Else_Op : public Operation
 struct Lambda_Expr : public Just_Expression
 {
     Shared<Operation> body_;
-    Shared<Abstract_Module_Expr> nonlocals_;
+    Shared<Module_Expr> nonlocals_;
     slot_t nargs_;
     slot_t nslots_;
 
     Lambda_Expr(
         Shared<const Phrase> source,
         Shared<Operation> body,
-        Shared<Abstract_Module_Expr> nonlocals,
+        Shared<Module_Expr> nonlocals,
         slot_t nargs,
         slot_t nslots)
     :

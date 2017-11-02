@@ -226,7 +226,7 @@ struct Recursive_Scope : public Scope, public Environ
     virtual void end_unit(unsigned, Shared<Unitary_Definition>) override;
 };
 
-Shared<Abstract_Module_Expr>
+Shared<Module_Expr>
 analyze_module(Definition&, Environ&);
 
 } // namespace
