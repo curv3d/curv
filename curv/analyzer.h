@@ -63,36 +63,6 @@ public:
     virtual Shared<Meaning> single_lookup(const Identifier&);
 };
 
-/// A Definition is a partially analyzed phrase that binds a name to a value.
-/// (In the future, a Definition can bind multiple names.)
-///
-/// There are multiple syntactic forms for definitions, and they are all
-/// converted to Definition objects by Phrase::analyze_def(), which provides
-/// a common interface for further analysis.
-///
-/// The definiens is not analyzed. In a recursive scope, we need to catalogue
-/// all of the names bound within the scope before we analyze any of the
-/// definientia.
-struct Definition : public Shared_Base
-{
-    Shared<const Phrase> source_;
-    Shared<const Identifier> name_;
-    Shared<Phrase> definiens_;
-    enum Kind { k_recursive, k_sequential } kind_;
-
-    Definition(
-        Shared<const Phrase> source,
-        Shared<const Identifier> name,
-        Shared<Phrase> definiens,
-        Kind k)
-    :
-        source_(std::move(source)),
-        name_(std::move(name)),
-        definiens_(std::move(definiens)),
-        kind_(k)
-    {}
-};
-
 Shared<Operation> analyze_op(const Phrase& ph, Environ& env);
 Shared<Operation> analyze_action(const Phrase& ph, Environ& env);
 Shared<Operation> analyze_tail(const Phrase& ph, Environ& env);

@@ -60,12 +60,6 @@ Operation::to_operation(Frame*)
     return share(*this);
 }
 
-Shared<Definition>
-Phrase::analyze_def(Environ&)
-{
-    return nullptr;
-}
-
 Shared<Abstract_Definition>
 Phrase::as_definition(Environ&)
 {
@@ -327,7 +321,7 @@ Shared<Meaning>
 analyze_block(
     Environ& env,
     Shared<const Phrase> source,
-    Definition::Kind kind,
+    Abstract_Definition::Kind kind,
     Shared<Phrase> bindings,
     Shared<const Phrase> bodysrc)
 {
@@ -340,7 +334,7 @@ analyze_block(
             analyze_op(*bodysrc, env));
     }
     if (adef->kind_ == Abstract_Definition::k_sequential
-        && kind == Definition::k_sequential)
+        && kind == Abstract_Definition::k_sequential)
     {
         Sequential_Scope sscope(env, false);
         sscope.analyze(*adef);
@@ -351,7 +345,7 @@ analyze_block(
             std::move(sscope.executable_), std::move(body));
     }
     if (adef->kind_ == Abstract_Definition::k_recursive
-        && kind == Definition::k_recursive)
+        && kind == Abstract_Definition::k_recursive)
     {
         Recursive_Scope rscope(env, false);
         rscope.analyze(*adef);
@@ -386,10 +380,10 @@ analyze_block(
 Shared<Meaning>
 Let_Phrase::analyze(Environ& env) const
 {
-    Definition::Kind kind =
+    Abstract_Definition::Kind kind =
         let_.kind_ == Token::k_let
-        ? Definition::k_recursive
-        : Definition::k_sequential;
+        ? Abstract_Definition::k_recursive
+        : Abstract_Definition::k_sequential;
     return analyze_block(env, share(*this), kind, bindings_, body_);
 }
 
@@ -489,7 +483,7 @@ Binary_Phrase::analyze(Environ& env) const
         return analyze_assoc(env, *this, *left_, right_);
     case Token::k_where:
         return analyze_block(env, share(*this),
-            Definition::k_recursive, right_, left_);
+            Abstract_Definition::k_recursive, right_, left_);
     default:
         assert(0);
     }
@@ -524,31 +518,6 @@ Assignment_Phrase::analyze(Environ& env) const
 
     // this should never happen
     throw Exception(At_Phrase(*left_, env), "not a sequential variable name");
-}
-
-Shared<Definition>
-analyze_def_iter(
-    Environ& env, Shared<const Phrase> source,
-    Phrase& left, Shared<Phrase> right, Definition::Kind kind)
-{
-    if (auto id = dynamic_cast<const Identifier*>(&left))
-        return make<Definition>(std::move(source), share(*id), right, kind);
-    if (auto call = dynamic_cast<const Call_Phrase*>(&left))
-        return analyze_def_iter(env, std::move(source), *call->function_,
-            make<Lambda_Phrase>(call->arg_, Token(), right), kind);
-    throw Exception(At_Phrase(left,  env), "invalid definiendum");
-}
-Shared<Definition>
-Recursive_Definition_Phrase::analyze_def(Environ& env)
-{
-    return analyze_def_iter(env, share(*this), *left_, right_,
-        Definition::k_recursive);
-}
-Shared<Definition>
-Sequential_Definition_Phrase::analyze_def(Environ& env)
-{
-    return analyze_def_iter(env, share(*this), *left_, right_,
-        Definition::k_sequential);
 }
 
 Shared<Abstract_Definition>
@@ -692,11 +661,6 @@ Shared<Meaning>
 Program_Phrase::analyze(Environ& env) const
 {
     return body_->analyze(env);
-}
-Shared<Definition>
-Program_Phrase::analyze_def(Environ& env)
-{
-    return body_->analyze_def(env);
 }
 Shared<Abstract_Definition>
 Program_Phrase::as_definition(Environ& env)
