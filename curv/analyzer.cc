@@ -614,10 +614,12 @@ analyze_block(
             return make<SBlock_Op>(source,
                 std::move(sscope.executable_), std::move(body));
         }
+      #if 0
         if (adef->kind_ == Abstract_Definition::k_recursive
-            && kind == Definition::k_sequential)
+            //&& kind == Definition::k_sequential
+            )
         {
-            // TODO: remove me (testing purposes only)
+            // TODO: fix me (testing purposes only)
             Recursive_Scope rscope(env, false);
             rscope.analyze(*adef);
             auto body = analyze_tail(*bodysrc, rscope);
@@ -625,6 +627,7 @@ analyze_block(
             return make<SBlock_Op>(source,
                 std::move(rscope.executable_), std::move(body));
         }
+      #endif
     }
 
     Statement_Analyzer analyzer{env, kind, false};
@@ -968,9 +971,14 @@ Brace_Phrase::analyze(Environ& env) const
     Shared<Abstract_Definition> adef = body_->as_definition(env);
     if (adef != nullptr) {
         if (adef->kind_ == Abstract_Definition::k_sequential) {
-            Sequential_Scope sscope(env, true);
-            sscope.analyze(*adef);
-            return make<Scoped_Module_Expr>(source, std::move(sscope.executable_));
+            Sequential_Scope scope(env, true);
+            scope.analyze(*adef);
+            return make<Scoped_Module_Expr>(source, std::move(scope.executable_));
+        }
+        if (adef->kind_ == Abstract_Definition::k_recursive) {
+            Recursive_Scope scope(env, true);
+            scope.analyze(*adef);
+            return make<Scoped_Module_Expr>(source, std::move(scope.executable_));
         }
     }
 
