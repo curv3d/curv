@@ -177,12 +177,12 @@ struct Symbolic_Ref : public Just_Expression
     virtual GL_Value gl_eval(GL_Frame&) const override;
 };
 
-struct Indirect_Strict_Ref : public Just_Expression
+struct Module_Data_Ref : public Just_Expression
 {
     slot_t slot_;
     slot_t index_;
 
-    Indirect_Strict_Ref(Shared<const Phrase> source, slot_t slot, slot_t index)
+    Module_Data_Ref(Shared<const Phrase> source, slot_t slot, slot_t index)
     : Just_Expression(std::move(source)), slot_(slot), index_(index)
     {}
 

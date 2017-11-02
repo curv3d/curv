@@ -511,7 +511,7 @@ Assignment_Phrase::analyze(Environ& env) const
     auto let = cast<Let_Ref>(m);
     if (let)
         return make<Data_Setter>(share(*this), let->slot_, expr, true);
-    auto indir = cast<Indirect_Strict_Ref>(m);
+    auto indir = cast<Module_Data_Ref>(m);
     if (indir)
         return make<Module_Data_Setter>(share(*this),
             indir->slot_, indir->index_, expr);

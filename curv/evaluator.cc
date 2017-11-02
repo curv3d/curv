@@ -77,7 +77,7 @@ Symbolic_Ref::eval(Frame& f) const
 }
 
 Value
-Indirect_Strict_Ref::eval(Frame& f) const
+Module_Data_Ref::eval(Frame& f) const
 {
     Module& m = (Module&)f[slot_].get_ref_unsafe();
     assert(m.type_ == Ref_Value::ty_module);

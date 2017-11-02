@@ -82,7 +82,7 @@ Sequential_Scope::single_lookup(const Identifier& id)
     auto b = dictionary_->find(id.atom_);
     if (b != dictionary_->end()) {
         if (target_is_module_) {
-            return make<Indirect_Strict_Ref>(
+            return make<Module_Data_Ref>(
                 share(id), executable_.module_slot_, b->second);
         } else {
             return make<Let_Ref>(share(id), b->second);
@@ -288,7 +288,7 @@ Recursive_Scope::single_lookup(const Identifier& id)
     if (b != dictionary_.end()) {
         analyze_unit(units_[b->second.unit_index_], &id);
         if (target_is_module_) {
-            return make<Indirect_Strict_Ref>(
+            return make<Module_Data_Ref>(
                 share(id), executable_.module_slot_, b->second.slot_index_);
         } else {
             return make<Let_Ref>(share(id), b->second.slot_index_);
