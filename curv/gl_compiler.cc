@@ -506,10 +506,6 @@ Value gl_constify(Operation& op, GL_Frame& f)
         auto b = f.nonlocal->dictionary_->find(ref->name_);
         assert(b != f.nonlocal->dictionary_->end());
         return f.nonlocal->get(b->second);
-    } else if (auto fref = dynamic_cast<Nonlocal_Function_Ref*>(&op)) {
-        return {make<Closure>(
-            (Lambda&) f.nonlocal->at(fref->lambda_slot_).get_ref_unsafe(),
-            *f.nonlocal)};
     }
     else if (auto list = dynamic_cast<List_Expr*>(&op)) {
         Shared<List> listval = List::make(list->size());

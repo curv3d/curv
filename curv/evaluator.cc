@@ -103,14 +103,6 @@ Arg_Ref::eval(Frame& f) const
 }
 
 Value
-Nonlocal_Function_Ref::eval(Frame& f) const
-{
-    return {make<Closure>(
-        (Lambda&) f.nonlocal->at(lambda_slot_).get_ref_unsafe(),
-        *f.nonlocal)};
-}
-
-Value
 Indirect_Function_Ref::eval(Frame& f) const
 {
     Module& nonlocal = (Module&)f[slot_].get_ref_unsafe();
