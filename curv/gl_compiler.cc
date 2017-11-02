@@ -567,11 +567,6 @@ void Scope_Executable::gl_exec(GL_Frame& f) const
     for (auto action : actions_)
         action->gl_exec(f);
 }
-void Statements::gl_exec(GL_Frame& f) const
-{
-    for (auto action : actions_)
-        action->gl_exec(f);
-}
 void Null_Action::gl_exec(GL_Frame&) const
 {
 }

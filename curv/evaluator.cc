@@ -604,47 +604,6 @@ Record_Expr::eval(Frame& f) const
     return {record};
 }
 
-void
-Statements::exec(Frame& f) const
-{
-    if (module_slot_ != (slot_t)(-1)) {
-        (void) eval_module(f);
-    } else {
-        for (auto action : actions_) {
-            action->exec(f);
-        }
-    }
-}
-
-Shared<Module>
-Statements::eval_module(Frame& f) const
-{
-    assert(module_slot_ != (slot_t)(-1));
-    assert(module_dictionary_ != nullptr);
-
-    slot_t ndefns = defn_values_->size();
-    slot_t nvalues = ndefns + nonlocal_exprs_.size();
-
-    Shared<Module> module = Module::make(nvalues, module_dictionary_);
-    for (slot_t i = 0; i < ndefns; ++i)
-        module->at(i) = defn_values_->at(i);
-    for (slot_t i = ndefns; i < nvalues; ++i)
-        module->at(i) = nonlocal_exprs_[i - ndefns]->eval(f);
-    f[module_slot_] = {module};
-    for (auto action : actions_) {
-        action->exec(f);
-    }
-
-#if 1
-    // TODO: Get rid of this and make modules fully lazy.
-    // Requires code to force module fields wherever they are accessed, eg
-    // using dot notation, and also in the GL compiler.
-    for (slot_t i = 0; i < ndefns; ++i)
-        force(*module, i, f);
-#endif
-    return module;
-}
-
 Shared<Module>
 Scope_Executable::eval_module(Frame& f) const
 {

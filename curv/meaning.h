@@ -527,73 +527,8 @@ struct Scope_Executable
     void gl_exec(GL_Frame&) const;
 };
 
-/// 'Statements' represents the definitions and actions in a module literal
-/// or block.
-///
-/// A mix of recursive and sequential definitions is supported, however, the
-/// recursive definitions must come first, and the sequential definitions are
-/// not visible within the recursive definitions. Removing this restriction
-/// would entail complex, arbitrary semantics, a complex implementation, and
-/// more complex documentation.
-///
-/// At runtime, a slot in the evaluation frame (slot_) contains the value list.
-/// The value list is used as the nonlocal list for the closures constructed
-/// from each top-level function definition. If this Statements is used to
-/// construct a Module value, then the value list is stored in the Module.
-/// TODO: As an optimization, we could store the value list directly in the
-///       frame, if the definitions are sequential, and do not form a module,
-///       and there are no function definitions.
-///
-/// The value list has a value for each binding, followed by "nonlocal values".
-///  1. The value for a function definition is a Lambda. This is combined
-///     with the value list to construct a Closure value when the function
-///     is referenced (see Indirect_Function_Ref). We can't store the Closure
-///     directly in the value list because that would create a reference cycle,
-///     which would cause a storage leak, since we use reference counting.
-///  2. The value for a non-function recursive definition is a Thunk.
-///     The Thunk is evaluated and replaced by a Value on first reference,
-///     see Indirect_Lazy_Ref. This allows definitions to be written in any order.
-///     The order of definition evaluation is determined at runtime by data
-///     dependencies, and can change from one evaluation to the next, affording
-///     flexibility which is also available in Haskell. Unlike Haskell,
-///     some recursive definitions will abort, reporting illegal recursion,
-///     instead of looping forever. For example, `{x=x;}`.
-///      * TODO: Once I support pattern matching definitions, like `(x,y)=f(a)`,
-///        then the slots for x and y are initialized with the same action
-///        thunk, which updates both slots.
-///  3. The value for a non-function sequential definition is set to
-///     a proper value by an action in the action list.
-///  4. The value list may contain "nonlocal values", which correspond to
-///     bindings from the parent scope which are referenced by function
-///     definitions. These are proper values, not Thunks.
-struct Statements
-{
-    // For a module constructor, location in the evaluation frame where the
-    // module is stored. For a block, (slot_t)(-1).
-    slot_t module_slot_ = -1;
-
-    // For a module constructor, the field dictionary.
-    // For a block, nullptr.
-    Shared<Module::Dictionary> module_dictionary_ = nullptr;
-
-    // size and initial contents of the value list.
-    Shared<const List> defn_values_;
-    std::vector<Shared<const Operation>> nonlocal_exprs_;
-
-    // actions to execute, during construction
-    std::vector<Shared<const Operation>> actions_;
-
-    Statements() {}
-
-    /// Initialize the module slot, execute the definitions and action list.
-    /// Return the module.
-    Shared<Module> eval_module(Frame&) const;
-    void exec(Frame&) const;
-    void gl_exec(GL_Frame&) const;
-};
-
-// An internal action for storing the value of a sequential definition
-// in the evaluation frame. Part of the actions_ list in a Statements.
+// An internal action for storing the value of a data definition
+// in the evaluation frame. Part of the actions_ list in a Scope_Executable.
 struct Data_Setter : public Just_Action
 {
     slot_t slot_;
@@ -616,8 +551,8 @@ struct Data_Setter : public Just_Action
     void gl_exec(GL_Frame&) const override;
 };
 
-// An internal action for storing the value of a sequential definition
-// in the evaluation frame. Part of the actions_ list in a Statements.
+// An internal action for storing the value of a data definition
+// in the evaluation frame. Part of the actions_ list in a Scope_Executable.
 struct Module_Data_Setter : public Just_Action
 {
     slot_t slot_;
