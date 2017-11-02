@@ -1,5 +1,7 @@
 ## TODO: Language Changes
 
+exec(expr) debug action.
+
 Fix bug: {x=1} == {x:1} should be true.
 
 GL:
@@ -167,9 +169,10 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
 
 ### Debug actions:
 * print_timing(string,expr), returns value of expr
-  * Might want to measure eval time while ignoring result:
-    * Assign value to a variable, don't use variable.
-    * `ignore(arg)` is an action that evaluates and ignores arg.
+* `exec(expr)`: evaluate an expression for its side effects, discard results.
+  `_=expr` could be an alternative (see _ pattern), but might be optimized away.
+  * exec(file "unit_test.curv");
+  * exec(print_timing("msg",expr));
 * `enter_debugger`, aka `debug`
 * assert_error(errorMessageString, expression)
 
