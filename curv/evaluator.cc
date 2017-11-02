@@ -738,31 +738,6 @@ SBlock_Op::exec(Frame& f) const
 }
 
 Value
-Block_Op::eval(Frame& f) const
-{
-    statements_.exec(f);
-    return body_->eval(f);
-}
-void
-Block_Op::generate(Frame& f, List_Builder& lb) const
-{
-    statements_.exec(f);
-    body_->generate(f, lb);
-}
-void
-Block_Op::bind(Frame& f, Record& r) const
-{
-    statements_.exec(f);
-    body_->bind(f, r);
-}
-void
-Block_Op::exec(Frame& f) const
-{
-    statements_.exec(f);
-    body_->exec(f);
-}
-
-Value
 Preaction_Op::eval(Frame& f) const
 {
     actions_->exec(f);

@@ -545,17 +545,6 @@ void SBlock_Op::gl_exec(GL_Frame& f) const
     body_->gl_exec(f);
 }
 
-GL_Value Block_Op::gl_eval(GL_Frame& f) const
-{
-    statements_.gl_exec(f);
-    return body_->gl_eval(f);
-}
-void Block_Op::gl_exec(GL_Frame& f) const
-{
-    statements_.gl_exec(f);
-    body_->gl_exec(f);
-}
-
 GL_Value Preaction_Op::gl_eval(GL_Frame& f) const
 {
     actions_->gl_exec(f);

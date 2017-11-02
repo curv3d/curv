@@ -789,29 +789,6 @@ struct Preaction_Op : public Operation
     virtual void gl_exec(GL_Frame&) const override;
 };
 
-struct Block_Op : public Operation
-{
-    Statements statements_;
-    Shared<const Operation> body_;
-
-    Block_Op(
-        Shared<const Phrase> source,
-        Statements b,
-        Shared<const Operation> body)
-    :
-        Operation(std::move(source)),
-        statements_(std::move(b)),
-        body_(std::move(body))
-    {}
-
-    virtual Value eval(Frame&) const override;
-    virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, Record&) const override;
-    virtual void exec(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
-    virtual void gl_exec(GL_Frame&) const override;
-};
-
 struct SBlock_Op : public Operation
 {
     Scope_Executable statements_;
