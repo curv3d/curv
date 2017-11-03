@@ -69,7 +69,7 @@ Constant::eval(Frame&) const
 Value
 Symbolic_Ref::eval(Frame& f) const
 {
-    auto& m = *f.nonlocal;
+    auto& m = *f.nonlocals_;
     auto b = m.dictionary_->find(name_);
     assert(b != m.dictionary_->end());
     return m.get(b->second);
@@ -86,7 +86,7 @@ Module_Data_Ref::eval(Frame& f) const
 Value
 Nonlocal_Data_Ref::eval(Frame& f) const
 {
-    return f.nonlocal->at(slot_);
+    return f.nonlocals_->at(slot_);
 }
 
 Value
@@ -824,9 +824,9 @@ Function_Setter_Base::exec(Frame& f) const
         assert(m->type_ == Ref_Value::ty_module);
         slots = &m->at(0);
     }
-    Shared<Module> nonlocal = nonlocal_->eval_module(f);
+    Shared<Module> nonlocals = nonlocals_->eval_module(f);
     for (auto& e : *this)
-        slots[e.slot_] = {make<Closure>(*e.lambda_, *nonlocal)};
+        slots[e.slot_] = {make<Closure>(*e.lambda_, *nonlocals)};
 }
 
 } // namespace curv

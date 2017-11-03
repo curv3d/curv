@@ -83,14 +83,14 @@ Polyadic_Function::gl_call(GL_Frame& f) const
 Value
 Closure::call(Frame& f)
 {
-    f.nonlocal = &*nonlocal_;
+    f.nonlocals_ = &*nonlocals_;
     return expr_->eval(f);
 }
 
 GL_Value
 Closure::gl_call(GL_Frame& f) const
 {
-    f.nonlocal = &*nonlocal_;
+    f.nonlocals_ = &*nonlocals_;
     return expr_->gl_eval(f);
 }
 

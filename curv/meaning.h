@@ -561,24 +561,24 @@ struct Scoped_Module_Expr : public Module_Expr
 
 // An internal action for initializing the slots in the evaluation frame
 // for a group of mutually recursive closures.
-// The closures share a single `nonlocal` object.
+// The closures share a single `nonlocals` object.
 // Part of the actions_ list in a Scope_Executable for a Recursive_Scope.
 struct Function_Setter_Base : public Just_Action
 {
     // a copy of module_slot_ from the enclosing Scope_Executable.
     slot_t module_slot_;
 
-    // construct the shared nonlocal object at runtime.
-    Shared<Enum_Module_Expr> nonlocal_;
+    // construct the shared nonlocals object at runtime.
+    Shared<Enum_Module_Expr> nonlocals_;
 
     Function_Setter_Base(
         Shared<const Phrase> source,
         slot_t module_slot,
-        Shared<Enum_Module_Expr> nonlocal)
+        Shared<Enum_Module_Expr> nonlocals)
     :
         Just_Action(std::move(source)),
         module_slot_(module_slot),
-        nonlocal_(std::move(nonlocal))
+        nonlocals_(std::move(nonlocals))
     {}
 
     void exec(Frame&) const override;

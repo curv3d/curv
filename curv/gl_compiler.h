@@ -178,7 +178,7 @@ struct GL_Frame_Base
     /// This is:
     /// * the slot array of a Closure value, for a function call frame
     /// * nullptr, for a call to a builtin function.
-    Module* nonlocal;
+    Module* nonlocals_;
 
     // Tail array, containing the slots used for local bindings:
     // function arguments, block bindings and other local, temporary values.
@@ -202,7 +202,7 @@ struct GL_Frame_Base
         root_context(cx),
         parent_frame(parent),
         call_phrase(src),
-        nonlocal(nullptr)
+        nonlocals_(nullptr)
     {}
 };
 

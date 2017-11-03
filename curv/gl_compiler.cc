@@ -501,11 +501,11 @@ Value gl_constify(Operation& op, GL_Frame& f)
                 "Geometry Compiler: not an identifier");
     }
     else if (auto ref = dynamic_cast<Nonlocal_Data_Ref*>(&op))
-        return f.nonlocal->at(ref->slot_);
+        return f.nonlocals_->at(ref->slot_);
     else if (auto ref = dynamic_cast<Symbolic_Ref*>(&op)) {
-        auto b = f.nonlocal->dictionary_->find(ref->name_);
-        assert(b != f.nonlocal->dictionary_->end());
-        return f.nonlocal->get(b->second);
+        auto b = f.nonlocals_->dictionary_->find(ref->name_);
+        assert(b != f.nonlocals_->dictionary_->end());
+        return f.nonlocals_->get(b->second);
     }
     else if (auto list = dynamic_cast<List_Expr*>(&op)) {
         Shared<List> listval = List::make(list->size());
@@ -667,13 +667,13 @@ GL_Value Data_Ref::gl_eval(GL_Frame& f) const
 
 GL_Value Nonlocal_Data_Ref::gl_eval(GL_Frame& f) const
 {
-    return gl_eval_const(f, f.nonlocal->at(slot_), *source_);
+    return gl_eval_const(f, f.nonlocals_->at(slot_), *source_);
 }
 GL_Value Symbolic_Ref::gl_eval(GL_Frame& f) const
 {
-    auto b = f.nonlocal->dictionary_->find(name_);
-    assert(b != f.nonlocal->dictionary_->end());
-    Value val = f.nonlocal->get(b->second);
+    auto b = f.nonlocals_->dictionary_->find(name_);
+    assert(b != f.nonlocals_->dictionary_->end());
+    Value val = f.nonlocals_->get(b->second);
     return gl_eval_const(f, val, *source_);
 }
 

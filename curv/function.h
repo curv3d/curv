@@ -98,25 +98,25 @@ struct Lambda : public Ref_Value
 struct Closure : public Polyadic_Function
 {
     Shared<Operation> expr_;
-    Shared<Module> nonlocal_;
+    Shared<Module> nonlocals_;
 
     Closure(
         Shared<Operation> expr,
-        Shared<Module> nonlocal,
+        Shared<Module> nonlocals,
         unsigned nargs, slot_t nslots)
     :
         Polyadic_Function(nargs, nslots),
         expr_(std::move(expr)),
-        nonlocal_(std::move(nonlocal))
+        nonlocals_(std::move(nonlocals))
     {}
 
     Closure(
         Lambda& lambda,
-        const Module& nonlocal)
+        const Module& nonlocals)
     :
         Polyadic_Function(lambda.nargs_, lambda.nslots_),
         expr_(lambda.expr_),
-        nonlocal_(share(const_cast<Module&>(nonlocal)))
+        nonlocals_(share(const_cast<Module&>(nonlocals)))
     {}
 
     virtual Value call(Frame& args) override;

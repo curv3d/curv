@@ -51,9 +51,8 @@ struct Frame_Base
     ///
     /// This is:
     /// * the slot array of a Closure value, for a function call frame.
-    /// * a module value, for a module thunk.
     /// * nullptr, for a builtin function call, or a program frame.
-    Module* nonlocal;
+    Module* nonlocals_;
 
     // Tail array, containing the slots used for local bindings:
     // function arguments, block bindings and other local, temporary values.
@@ -72,7 +71,7 @@ struct Frame_Base
         system(sys),
         parent_frame(parent),
         call_phrase(src),
-        nonlocal(nl)
+        nonlocals_(nl)
     {}
 };
 
