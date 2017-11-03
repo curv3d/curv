@@ -203,6 +203,7 @@ Unary_Phrase::analyze(Environ& env) const
         return make<Spread_Op>(
             share(*this),
             analyze_op(*arg_, env));
+    case Token::k_use:
     case Token::k_var:
         throw Exception(At_Token(op_, *this, env), "syntax error");
     default:

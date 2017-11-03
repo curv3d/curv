@@ -50,6 +50,7 @@ struct Token
         k_if,
         k_in,
         k_let,
+        k_use,
         k_var,
         k_where,
         k_while,

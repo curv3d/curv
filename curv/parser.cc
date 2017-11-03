@@ -12,8 +12,6 @@
 //
 // TODO: simple yaccable grammar, no conflicts or precedence declarations.
 // TODO: remove dangling `else` ambiguity.
-// TODO: $(expression) substitutions in string literals.
-// TODO: infix `where` operator. Binds tighter than `->`.
 
 #include <curv/parser.h>
 #include <curv/scanner.h>
@@ -40,7 +38,7 @@ Shared<Phrase> parse_unary(Scanner&);
 Shared<Phrase> parse_postfix(Scanner&);
 Shared<Phrase> parse_primary(Scanner&, const char* what);
 
-// Parse a script, return a syntax tree.
+// Parse a program (source file or CLI command), return a syntax tree.
 // It's a recursive descent parser.
 //
 // program : list EOF
@@ -227,6 +225,7 @@ parse_item(Scanner& scanner)
     auto tok = scanner.get_token();
     switch (tok.kind_) {
     case Token::k_ellipsis:
+    case Token::k_use:
         return make<Unary_Phrase>(tok, parse_item(scanner));
     case Token::k_if:
       {
