@@ -43,8 +43,8 @@ struct Frame_Base
 
     /// If this is a function call frame, then call_phrase_ is the source code
     /// for the function call, otherwise it's nullptr. This is debug metadata.
-    /// Program and thunk frames do not have a call_phrase_. If the call_phrase_
-    /// is null, then the frame does not appear in a stack trace.
+    /// Program frames do not have a call_phrase_. If the call_phrase_ is null,
+    /// then the frame does not appear in a stack trace.
     const Call_Phrase* call_phrase_;
 
     /// Slot array containing the values of nonlocal bindings.
