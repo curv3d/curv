@@ -6,14 +6,6 @@ What remains for MVP?
 * Meta: use https://opensource.guide/
 * STL export: Get open source marching cubes in OpenCL. Benchmark.
 
-Recursive_Scope project:
-* cleanup:
-  * standardize spelling of `nonlocal` and `nonlocals`.
-    * eg, use `nonlocal` in adjective position, `nonlocals` in noun position.
-  * use `foo_` convention for Frame data members.
-  * use `foo_` convention for GL_Frame data members.
-  * clean up Recursive_Scope::analyze_unit
-
 Abstract Pattern
   Take a Value, potentially type check it and/or destructure it into its
   components, store each component in a slot.
@@ -22,9 +14,10 @@ Abstract Pattern
   Virtual:
   * void match(Value* slots, Value)
 
-Semicolon phrases (docs/Statements.md).
-  * CLI supports compound definitions. Unit tests.
-  * {a:1;b:2} works (unit test).
+Code cleanup:
+* unit tests for: CLI supports compound definitions
+* GL_Frame::gl renamed to gl_
+* clean up Recursive_Scope::analyze_unit
 
 -------------------------
 Circumratio project:
