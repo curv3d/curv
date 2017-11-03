@@ -35,7 +35,7 @@ struct Frame_Base
     /// because that seems more efficient (less copying) than passing it as
     /// a parameter to every `eval` call, and it seems cleaner than a thread
     /// local variable. Think of the System reference as a VM register.
-    System& system;
+    System& system_;
 
     /// Frames are linked into a stack. This is metadata used for printing
     /// a stack trace and by the debugger. It is not used during evaluation.
@@ -68,7 +68,7 @@ struct Frame_Base
 
     Frame_Base(System& sys, Frame* parent, const Call_Phrase* src, Module* nl)
     :
-        system(sys),
+        system_(sys),
         parent_frame(parent),
         call_phrase(src),
         nonlocals_(nl)

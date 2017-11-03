@@ -557,7 +557,7 @@ struct File_Function : public Polyadic_Function
         At_Arg ctx0(f);
         auto path = f[0].to<String>(ctx0);
         auto file = make<File_Script>(path, ctx0);
-        Program prog{*file, f.system};
+        Program prog{*file, f.system_};
         prog.compile(nullptr, &f);
         return prog.eval();
     }
@@ -578,10 +578,10 @@ struct Print_Action : public Just_Action
     {
         Value arg = arg_->eval(f);
         if (auto str = arg.dycast<String>())
-            f.system.console() << *str;
+            f.system_.console() << *str;
         else
-            f.system.console() << arg;
-        f.system.console() << std::endl;
+            f.system_.console() << arg;
+        f.system_.console() << std::endl;
     }
 };
 /// The meaning of the phrase `print` in isolation.
@@ -613,7 +613,7 @@ struct Warning_Action : public Just_Action
         else
             msg = stringify(arg);
         Exception exc{At_Phrase(*source_, &f), msg};
-        f.system.console() << "WARNING: " << exc << std::endl;
+        f.system_.console() << "WARNING: " << exc << std::endl;
     }
 };
 /// The meaning of the phrase `warning` in isolation.

@@ -481,7 +481,7 @@ Call_Expr::eval(Frame& f) const
           {
             Function* fun = (Function*)&funp;
             std::unique_ptr<Frame> f2 {
-                Frame::make(fun->nslots_, f.system, &f, call_phrase(), nullptr)
+                Frame::make(fun->nslots_, f.system_, &f, call_phrase(), nullptr)
             };
             return fun->call(arg_->eval(f), *f2);
           }
