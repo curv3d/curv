@@ -29,8 +29,8 @@ void
 get_frame_locations(const Frame* f, std::list<Location>& locs)
 {
     for (; f != nullptr; f = f->parent_frame_)
-        if (f->call_phrase != nullptr)
-            locs.push_back(f->call_phrase->location());
+        if (f->call_phrase_ != nullptr)
+            locs.push_back(f->call_phrase_->location());
 }
 
 At_Token::At_Token(Token tok, const Scanner& scanner)

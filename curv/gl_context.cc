@@ -17,8 +17,8 @@ void
 get_gl_frame_locations(const GL_Frame* f, std::list<Location>& locs)
 {
     for (; f != nullptr; f = f->parent_frame_) {
-        if (f->call_phrase != nullptr)
-            locs.push_back(f->call_phrase->location());
+        if (f->call_phrase_ != nullptr)
+            locs.push_back(f->call_phrase_->location());
         if (f->root_context != nullptr)
             f->root_context->get_locations(locs);
     }

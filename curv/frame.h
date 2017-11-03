@@ -41,11 +41,11 @@ struct Frame_Base
     /// a stack trace and by the debugger. It is not used during evaluation.
     Frame* parent_frame_;
 
-    /// If this is a function call frame, then call_phrase is the source code
+    /// If this is a function call frame, then call_phrase_ is the source code
     /// for the function call, otherwise it's nullptr. This is debug metadata.
-    /// Program and thunk frames do not have a call_phrase. If the call_phrase
+    /// Program and thunk frames do not have a call_phrase_. If the call_phrase_
     /// is null, then the frame does not appear in a stack trace.
-    const Call_Phrase* call_phrase;
+    const Call_Phrase* call_phrase_;
 
     /// Slot array containing the values of nonlocal bindings.
     ///
@@ -70,7 +70,7 @@ struct Frame_Base
     :
         system_(sys),
         parent_frame_(parent),
-        call_phrase(src),
+        call_phrase_(src),
         nonlocals_(nl)
     {}
 };

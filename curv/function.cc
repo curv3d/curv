@@ -38,7 +38,7 @@ Polyadic_Function::call(Value arg, Frame& f)
             f[i] = (*list)[i];
         return call(f);
     } else {
-        throw Exception(At_Phrase(*f.call_phrase->arg_, &f),
+        throw Exception(At_Phrase(*f.call_phrase_->arg_, &f),
             stringify("function call argument is not a list of length ",nargs_));
     }
 }

@@ -313,7 +313,7 @@ struct Atan2_Function : public Polyadic_Function
         else if (y.type == GL_Type::Num)
             rtype = x.type;
         if (rtype == GL_Type::Bool)
-            throw Exception(At_GL_Phrase(*f.call_phrase, &f),
+            throw Exception(At_GL_Phrase(*f.call_phrase_, &f),
                 "GL domain error");
 
         GL_Value result = f.gl.newvalue(rtype);

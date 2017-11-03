@@ -11,8 +11,8 @@ namespace curv {
 
 void At_Arg::get_locations(std::list<Location>& locs) const
 {
-    assert(eval_frame_.call_phrase != nullptr);
-    auto arg = eval_frame_.call_phrase->arg_;
+    assert(eval_frame_.call_phrase_ != nullptr);
+    auto arg = eval_frame_.call_phrase_->arg_;
     locs.push_back(arg->location());
 
     // We only dump the stack starting at the parent call frame,
