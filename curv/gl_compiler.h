@@ -161,7 +161,7 @@ struct GL_Frame_Base
 
     /// The root frame has a context pointer, which points to the shape
     /// expression that is being compiled. Used for printing a stack trace.
-    const Context* root_context;
+    const Context* root_context_;
 
     /// Frames are linked into a stack. This is metadata used for printing
     /// a stack trace and by the debugger. It is not used during evaluation.
@@ -199,7 +199,7 @@ struct GL_Frame_Base
         const Call_Phrase* src)
     :
         gl(g),
-        root_context(cx),
+        root_context_(cx),
         parent_frame_(parent),
         call_phrase_(src),
         nonlocals_(nullptr)
