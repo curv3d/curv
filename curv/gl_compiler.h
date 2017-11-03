@@ -165,7 +165,7 @@ struct GL_Frame_Base
 
     /// Frames are linked into a stack. This is metadata used for printing
     /// a stack trace and by the debugger. It is not used during evaluation.
-    GL_Frame* parent_frame;
+    GL_Frame* parent_frame_;
 
     /// If this is a function call frame, then call_phrase is the source code
     /// for the function call, otherwise it's nullptr. This is debug metadata.
@@ -200,7 +200,7 @@ struct GL_Frame_Base
     :
         gl(g),
         root_context(cx),
-        parent_frame(parent),
+        parent_frame_(parent),
         call_phrase(src),
         nonlocals_(nullptr)
     {}

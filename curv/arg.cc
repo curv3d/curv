@@ -19,7 +19,7 @@ void At_Arg::get_locations(std::list<Location>& locs) const
     // for cosmetic reasons. It looks stupid to underline one of the
     // arguments in a function call, and on the next line,
     // underline the same entire function call.
-    get_frame_locations(eval_frame_.parent_frame, locs);
+    get_frame_locations(eval_frame_.parent_frame_, locs);
 
 }
 

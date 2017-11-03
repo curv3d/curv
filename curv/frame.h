@@ -39,7 +39,7 @@ struct Frame_Base
 
     /// Frames are linked into a stack. This is metadata used for printing
     /// a stack trace and by the debugger. It is not used during evaluation.
-    Frame* parent_frame;
+    Frame* parent_frame_;
 
     /// If this is a function call frame, then call_phrase is the source code
     /// for the function call, otherwise it's nullptr. This is debug metadata.
@@ -69,7 +69,7 @@ struct Frame_Base
     Frame_Base(System& sys, Frame* parent, const Call_Phrase* src, Module* nl)
     :
         system_(sys),
-        parent_frame(parent),
+        parent_frame_(parent),
         call_phrase(src),
         nonlocals_(nl)
     {}

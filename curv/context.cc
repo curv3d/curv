@@ -28,7 +28,7 @@ At_Frame::get_locations(std::list<Location>& locs) const
 void
 get_frame_locations(const Frame* f, std::list<Location>& locs)
 {
-    for (; f != nullptr; f = f->parent_frame)
+    for (; f != nullptr; f = f->parent_frame_)
         if (f->call_phrase != nullptr)
             locs.push_back(f->call_phrase->location());
 }
