@@ -9,8 +9,6 @@ GL:
 
 String: encode, decode, $[...], ASCII only.
 
-use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace.
-
 Patterns (list & record).
 
 {foo} is an abbreviation for {foo: true}.

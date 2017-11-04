@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include <curv/definition.h>
+#include <curv/system.h>
 #include <curv/exception.h>
 #include <curv/context.h>
 
@@ -17,14 +18,14 @@ void
 Data_Definition::add_to_scope(Scope& scope)
 {
     unsigned unitnum = scope.begin_unit(share(*this));
-    slot_ = scope.add_binding(name_, unitnum);
+    slot_ = scope.add_binding(name_->atom_, *source_, unitnum);
     scope.end_unit(unitnum, share(*this));
 }
 void
 Function_Definition::add_to_scope(Scope& scope)
 {
     unsigned unitnum = scope.begin_unit(share(*this));
-    slot_ = scope.add_binding(name_, unitnum);
+    slot_ = scope.add_binding(name_->atom_, *source_, unitnum);
     scope.end_unit(unitnum, share(*this));
 }
 void
@@ -56,6 +57,40 @@ Function_Definition::make_setter(slot_t module_slot)
     assert(0);
     return nullptr;
 }
+
+void
+Use_Definition::add_to_scope(Scope& scope)
+{
+    // Evaluate the argument to `use` in the builtin environment.
+    Builtin_Environ env(
+        scope.system_.std_namespace(), scope.system_, scope.eval_frame_);
+    auto op = analyze_op(*arg_, env);
+    auto frame = Frame::make(env.frame_maxslots_,
+        scope.system_, scope.eval_frame_, nullptr, nullptr);
+    auto val = op->eval(*frame);
+    auto record = val.to<Structure>(At_Phrase(*arg_, env));
+
+    // construct a Use_Setter from the record argument.
+    unsigned unit = scope.begin_unit(share(*this));
+    setter_ = {Use_Setter::make(record->size(), source_)};
+    size_t i = 0;
+    record->each_field([&](Atom name, Value value)->void {
+        slot_t slot = scope.add_binding(name, *source_, unit);
+        (*setter_)[i++] = {slot, value};
+    });
+    scope.end_unit(unit, share(*this));
+}
+void
+Use_Definition::analyze(Environ&)
+{
+}
+Shared<Operation>
+Use_Definition::make_setter(slot_t module_slot)
+{
+    setter_->module_slot_ = module_slot;
+    return setter_;
+}
+
 void
 Compound_Definition_Base::add_to_scope(Scope& scope)
 {
@@ -102,14 +137,14 @@ Sequential_Scope::begin_unit(Shared<Unitary_Definition> unit)
     return 0;
 }
 slot_t
-Sequential_Scope::add_binding(Shared<const Identifier> name, unsigned unitno)
+Sequential_Scope::add_binding(Atom name, const Phrase& unitsrc, unsigned unitno)
 {
     (void)unitno;
-    if (dictionary_->find(name->atom_) != dictionary_->end())
-        throw Exception(At_Phrase(*name, *parent_),
-            stringify(name->atom_, ": multiply defined"));
+    if (dictionary_->find(name) != dictionary_->end())
+        throw Exception(At_Phrase(unitsrc, *parent_),
+            stringify(name, ": multiply defined"));
     slot_t slot = (target_is_module_ ? dictionary_->size() : make_slot());
-    (*dictionary_)[name->atom_] = slot;
+    (*dictionary_)[name] = slot;
     return slot;
 }
 void
@@ -162,12 +197,12 @@ Recursive_Scope::analyze_unit(Unit& unit, const Identifier* id)
         scc_stack_.push_back(&unit);
 
         analysis_stack_.push_back(&unit);
-        if (unit.is_data()) {
-            unit.def_->analyze(*this);
-        } else {
+        if (unit.is_function()) {
             Function_Environ fenv(*this, unit);
             unit.def_->analyze(fenv);
             frame_maxslots_ = std::max(frame_maxslots_, fenv.frame_maxslots_);
+        } else {
+            unit.def_->analyze(*this);
         }
         analysis_stack_.pop_back();
 
@@ -175,7 +210,7 @@ Recursive_Scope::analyze_unit(Unit& unit, const Identifier* id)
             Unit* parent = analysis_stack_.back();
             if (unit.scc_lowlink_ < parent->scc_lowlink_) {
                 parent->scc_lowlink_ = unit.scc_lowlink_;
-                if (unit.is_data()) {
+                if (!unit.is_function()) {
                     throw Exception(At_Phrase(*id, *this),
                         "illegal recursive reference");
                 }
@@ -185,7 +220,7 @@ Recursive_Scope::analyze_unit(Unit& unit, const Identifier* id)
     case Unit::k_analysis_in_progress:
       {
         // Recursion detected. Unit is already on the SCC and analysis stacks.
-        if (unit.is_data()) {
+        if (!unit.is_function()) {
             throw Exception(At_Phrase(*id, *this),
                 "illegal recursive reference");
         }
@@ -205,7 +240,7 @@ Recursive_Scope::analyze_unit(Unit& unit, const Identifier* id)
     if (unit.scc_lowlink_ == unit.scc_ord_ /*&& unit.state_ != Unit::k_analyzed*/) {
         // `unit` is the lowest unit in its SCC. All members of this SCC
         // are on the SCC stack. Output an initialization action for unit's SCC.
-        if (unit.is_data()) {
+        if (!unit.is_function()) {
             assert(scc_stack_.back() == &unit);
             scc_stack_.pop_back();
             unit.state_ = Unit::k_analyzed;
@@ -320,14 +355,13 @@ Recursive_Scope::begin_unit(Shared<Unitary_Definition> def)
     return units_.size() - 1;
 }
 slot_t
-Recursive_Scope::add_binding(Shared<const Identifier> name, unsigned unitno)
+Recursive_Scope::add_binding(Atom name, const Phrase& unitsrc, unsigned unitno)
 {
-    if (dictionary_.find(name->atom_) != dictionary_.end())
-        throw Exception(At_Phrase(*name, *parent_),
-            stringify(name->atom_, ": multiply defined"));
+    if (dictionary_.find(name) != dictionary_.end())
+        throw Exception(At_Phrase(unitsrc, *parent_),
+            stringify(name, ": multiply defined"));
     slot_t slot = (target_is_module_ ? dictionary_.size() : make_slot());
-    dictionary_.emplace(
-        std::make_pair(name->atom_, Binding{slot, unitno}));
+    dictionary_.emplace(std::make_pair(name, Binding{slot, unitno}));
     return slot;
 }
 void

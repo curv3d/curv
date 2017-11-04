@@ -210,6 +210,16 @@ Unary_Phrase::analyze(Environ& env) const
         assert(0);
     }
 }
+Shared<Definition>
+Unary_Phrase::as_definition(Environ& env)
+{
+    switch (op_.kind_) {
+    case Token::k_use:
+        return make<Use_Definition>(share(*this), arg_);
+    default:
+        return nullptr;
+    }
+}
 
 Shared<Meaning>
 Lambda_Phrase::analyze(Environ& env) const
@@ -237,9 +247,9 @@ Lambda_Phrase::analyze(Environ& env) const
         bool shared_nonlocals_;
 
         Arg_Environ(
-            Environ* parent, Atom_Map<slot_t>& names, bool shared_nonlocals)
+            Environ& parent, Atom_Map<slot_t>& names, bool shared_nonlocals)
         :
-            Environ(parent), names_(names), shared_nonlocals_(shared_nonlocals)
+            Environ(&parent), names_(names), shared_nonlocals_(shared_nonlocals)
         {
             frame_nslots_ = names.size();
             frame_maxslots_ = names.size();
@@ -266,7 +276,7 @@ Lambda_Phrase::analyze(Environ& env) const
             return m;
         }
     };
-    Arg_Environ env2(&env, params, shared_nonlocals_);
+    Arg_Environ env2(env, params, shared_nonlocals_);
     auto expr = analyze_op(*right_, env2);
     auto src = share(*this);
 
@@ -356,18 +366,20 @@ analyze_block(
     }
     struct Bad_Scope : public Scope
     {
-        Environ& env_;
+        Bad_Scope(Environ& env) : Scope(&env) {}
 
-        Bad_Scope(Environ& env) : env_(env) {}
-
+        virtual Shared<Meaning> single_lookup(const Identifier&) override
+        {
+            return nullptr;
+        }
         virtual void analyze(Definition&) override {}
         virtual void add_action(Shared<const Phrase>) override {}
         virtual unsigned begin_unit(Shared<Unitary_Definition> unit) override
         {
-            throw Exception(At_Phrase(*unit->source_, env_),
+            throw Exception(At_Phrase(*unit->source_, *parent_),
                 "wrong style of definition for this block");
         }
-        virtual slot_t add_binding(Shared<const Identifier>, unsigned) override
+        virtual slot_t add_binding(Atom, const Phrase&, unsigned) override
         {
             return 0;
         }

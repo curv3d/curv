@@ -26,7 +26,7 @@ Program::compile(const Namespace* names, Frame* parent_frame)
     Scanner scanner{script_, parent_frame};
     phrase_ = parse_program(scanner);
 
-    Builtin_Environ env{*names_, parent_frame};
+    Builtin_Environ env{*names_, system_, parent_frame};
     if (auto def = phrase_->as_definition(env)) {
         module_ = analyze_module(*def, env);
     } else {

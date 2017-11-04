@@ -75,4 +75,11 @@ Record::fields() const
     return {std::move(list)};
 }
 
+void
+Record::each_field(std::function<void(Atom,Value)> visitor) const
+{
+    for (auto f : fields_)
+        visitor(f.first, f.second);
+}
+
 } // namespace curv

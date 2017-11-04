@@ -35,6 +35,8 @@ struct Record : public Structure
     virtual bool hasfield(Atom) const override;
     virtual void putfields(Atom_Map<Value>&) const override;
     virtual Shared<List> fields() const override;
+    virtual size_t size() const override { return fields_.size(); }
+    virtual void each_field(std::function<void(Atom,Value)>) const override;
 
     static const char name[];
 };

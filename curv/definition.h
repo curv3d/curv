@@ -95,6 +95,23 @@ struct Data_Definition : public Unitary_Definition
     virtual void analyze(Environ&) override;
     virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
+struct Use_Definition : public Unitary_Definition
+{
+    Shared<Phrase> arg_;
+    Shared<Use_Setter> setter_; // initialized by add_to_scope()
+
+    Use_Definition(
+        Shared<const Phrase> source,
+        Shared<Phrase> arg)
+    :
+        Unitary_Definition(source, k_recursive),
+        arg_(std::move(arg))
+    {}
+
+    virtual void add_to_scope(Scope&) override;
+    virtual void analyze(Environ&) override;
+    virtual Shared<Operation> make_setter(slot_t module_slot) override;
+};
 
 // A compound definition is `statement1;statement2;...` where each statement
 // is an action or definition, and there is at least one definition.
@@ -115,16 +132,18 @@ struct Compound_Definition_Base : public Definition
 };
 using Compound_Definition = aux::Tail_Array<Compound_Definition_Base>;
 
-struct Scope
+struct Scope : public Environ
 {
+    using Environ::Environ;
+
     virtual void analyze(Definition&) = 0;
     virtual void add_action(Shared<const Phrase>) = 0;
     virtual unsigned begin_unit(Shared<Unitary_Definition>) = 0;
-    virtual slot_t add_binding(Shared<const Identifier>, unsigned unit) = 0;
+    virtual slot_t add_binding(Atom, const Phrase&, unsigned unit) = 0;
     virtual void end_unit(unsigned, Shared<Unitary_Definition>) = 0;
 };
 
-struct Sequential_Scope : public Scope, public Environ
+struct Sequential_Scope : public Scope
 {
     bool target_is_module_;
     Shared<Module::Dictionary> dictionary_ = make<Module::Dictionary>();
@@ -132,7 +151,7 @@ struct Sequential_Scope : public Scope, public Environ
 
     Sequential_Scope(Environ& parent, bool target_is_module)
     :
-        Environ(&parent),
+        Scope(&parent),
         target_is_module_(target_is_module)
     {
         frame_nslots_ = parent.frame_nslots_;
@@ -146,11 +165,11 @@ struct Sequential_Scope : public Scope, public Environ
     virtual void analyze(Definition&) override;
     virtual void add_action(Shared<const Phrase>) override;
     virtual unsigned begin_unit(Shared<Unitary_Definition>) override;
-    virtual slot_t add_binding(Shared<const Identifier>, unsigned unit) override;
+    virtual slot_t add_binding(Atom, const Phrase&, unsigned unit) override;
     virtual void end_unit(unsigned, Shared<Unitary_Definition>) override;
 };
 
-struct Recursive_Scope : public Scope, public Environ
+struct Recursive_Scope : public Scope
 {
     struct Binding {
         slot_t slot_index_;
@@ -174,8 +193,8 @@ struct Recursive_Scope : public Scope, public Environ
 
         Unit(Shared<Unitary_Definition> def) : def_(def) {}
 
-        bool is_data() {
-            return cast<Data_Definition>(def_) != nullptr;
+        bool is_function() {
+            return cast<Function_Definition>(def_) != nullptr;
         }
     };
     struct Function_Environ : public Environ {
@@ -189,7 +208,7 @@ struct Recursive_Scope : public Scope, public Environ
         {
             frame_nslots_ = scope.frame_nslots_;
             frame_maxslots_ = scope.frame_maxslots_;
-            assert(!unit.is_data());
+            assert(unit.is_function());
         }
         virtual Shared<Meaning> single_lookup(const Identifier&) override;
     };
@@ -206,7 +225,7 @@ struct Recursive_Scope : public Scope, public Environ
 
     Recursive_Scope(Environ& parent, bool target_is_module)
     :
-        Environ(&parent),
+        Scope(&parent),
         target_is_module_(target_is_module)
     {
         frame_nslots_ = parent.frame_nslots_;
@@ -222,7 +241,7 @@ struct Recursive_Scope : public Scope, public Environ
     virtual void analyze(Definition&) override;
     virtual void add_action(Shared<const Phrase>) override;
     virtual unsigned begin_unit(Shared<Unitary_Definition>) override;
-    virtual slot_t add_binding(Shared<const Identifier>, unsigned unit) override;
+    virtual slot_t add_binding(Atom, const Phrase&, unsigned unit) override;
     virtual void end_unit(unsigned, Shared<Unitary_Definition>) override;
 };
 

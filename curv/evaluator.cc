@@ -829,4 +829,20 @@ Function_Setter_Base::exec(Frame& f) const
         slots[e.slot_] = {make<Closure>(*e.lambda_, *nonlocals)};
 }
 
+void
+Use_Setter_Base::exec(Frame& f) const
+{
+    Value* slots;
+    if (module_slot_ == (slot_t)(-1))
+        slots = &f[0];
+    else {
+        auto mval = f[module_slot_];
+        auto m = (Module*)&mval.get_ref_unsafe();
+        assert(m->type_ == Ref_Value::ty_module);
+        slots = &m->at(0);
+    }
+    for (auto& e : *this)
+        slots[e.first] = e.second;
+}
+
 } // namespace curv

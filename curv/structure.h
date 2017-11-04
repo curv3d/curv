@@ -11,7 +11,7 @@
 namespace curv {
 
 // A curv 'structure' is a value containing a set of fields (name/value pairs).
-// Examples are records, modules and shapes.
+// Subtypes are Record and Module.
 // All structures have the same protocol for field access, which is encapsulated
 // in this pure virtual class.
 struct Structure : public Ref_Value
@@ -28,6 +28,11 @@ struct Structure : public Ref_Value
     virtual void putfields(Atom_Map<Value>&) const = 0;
 
     virtual Shared<List> fields() const = 0;
+
+    virtual size_t size() const = 0;
+
+    // visit each field
+    virtual void each_field(std::function<void(Atom,Value)>) const = 0;
 
     static const char name[];
 };

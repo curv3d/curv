@@ -591,8 +591,20 @@ struct Function_Setter_Base : public Just_Action
     };
     TAIL_ARRAY_MEMBERS(Element)
 };
-using Function_Setter =
-    aux::Tail_Array<Function_Setter_Base>;
+using Function_Setter = aux::Tail_Array<Function_Setter_Base>;
+
+struct Use_Setter_Base : public Just_Action
+{
+    slot_t module_slot_ = (slot_t)(-1);
+
+    using Just_Action::Just_Action;
+
+    void exec(Frame&) const override;
+
+    using Element = std::pair<slot_t, Value>;
+    TAIL_ARRAY_MEMBERS(Element)
+};
+using Use_Setter = aux::Tail_Array<Use_Setter_Base>;
 
 struct Compound_Op_Base : public Operation
 {

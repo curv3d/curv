@@ -137,6 +137,7 @@ struct Unary_Phrase : public Phrase
     {
         return arg_->location().starting_at(op_);
     }
+    virtual Shared<Definition> as_definition(Environ&) override;
     virtual Shared<Meaning> analyze(Environ&) const override;
 };
 
