@@ -62,10 +62,18 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
         });
         return make<List_Pattern>(items);
     }
-/*
-    if (auto parens = dynamic_cast<Paren_Phrase*>(&ph)) {
+    if (auto parens = dynamic_cast<const Paren_Phrase*>(&ph)) {
+        std::vector<Shared<Pattern>> items;
+        if (dynamic_cast<const Empty_Phrase*>(parens) != nullptr)
+            return make<List_Pattern>(items);
+        if (dynamic_cast<const Comma_Phrase*>(&*parens->body_) == nullptr
+         && dynamic_cast<const Semicolon_Phrase*>(&*parens->body_) == nullptr)
+            return make_pattern(*parens->body_, scope, unitno);
+        each_item(*parens->body_, [&](Phrase& item)->void {
+            items.push_back(make_pattern(item, scope, unitno));
+        });
+        return make<List_Pattern>(items);
     }
- */
     throw Exception(At_Phrase(ph, scope), "not a pattern");
 }
 
