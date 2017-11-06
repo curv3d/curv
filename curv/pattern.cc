@@ -48,6 +48,37 @@ struct List_Pattern : public Pattern
     }
 };
 
+struct Record_Pattern : public Pattern
+{
+    Atom_Map<Shared<Pattern>> fields_;
+
+    Record_Pattern(Atom_Map<Shared<Pattern>> fields)
+    :
+        fields_(std::move(fields))
+    {}
+
+    virtual void analyze(Environ&) override
+    {
+    }
+    virtual void exec(
+        Value* slots, Value val, const Context& valcx, Frame& f) override
+    {
+        auto record = val.to<Structure>(valcx);
+        for (auto p : fields_) {
+            if (record->hasfield(p.first)) {
+                auto fval = record->getfield(p.first,{});
+                p.second->exec(slots, fval, At_Field(p.first.data(), valcx), f);
+            } else {
+                throw Exception(valcx, stringify(
+                    "record does not have a field named ",p.first));
+            }
+        }
+        if (record->size() != fields_.size())
+            throw Exception(valcx,
+                "record has extra fields not matched by pattern");
+    }
+};
+
 Shared<Pattern>
 make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
 {
@@ -73,6 +104,21 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
             items.push_back(make_pattern(item, scope, unitno));
         });
         return make<List_Pattern>(items);
+    }
+    if (auto braces = dynamic_cast<const Brace_Phrase*>(&ph)) {
+        Atom_Map<Shared<Pattern>> fields;
+        each_item(*braces->body_, [&](Phrase& item)->void {
+            if (auto id = dynamic_cast<const Identifier*>(&item)) {
+                fields[id->atom_] = make_pattern(*id, scope, unitno);
+                return;
+            }
+            if (auto bin = dynamic_cast<const Binary_Phrase*>(&item)) {
+                if (bin->op_.kind_ == Token::k_colon) {
+                }
+            }
+            throw Exception(At_Phrase(item, scope), "not a field pattern");
+        });
+        return make<Record_Pattern>(fields);
     }
     throw Exception(At_Phrase(ph, scope), "not a pattern");
 }
