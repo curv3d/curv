@@ -547,5 +547,10 @@ struct Let_Phrase : public Phrase
     }
 };
 
+/// In the grammar, a <list> phrase is zero or more constituent phrases
+/// separated by commas or semicolons.
+/// This function iterates over each constituent phrase.
+void each_item(Phrase& phrase, std::function<void(Phrase&)> func);
+
 } // namespace curv
 #endif // header guard

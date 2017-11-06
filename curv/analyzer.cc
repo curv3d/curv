@@ -309,7 +309,7 @@ analyze_assoc(Environ& env,
 /// In the grammar, a <list> phrase is zero or more constituent phrases
 /// separated by commas or semicolons.
 /// This function iterates over each constituent phrase.
-static inline void
+void
 each_item(Phrase& phrase, std::function<void(Phrase&)> func)
 {
     if (dynamic_cast<Empty_Phrase*>(&phrase))
@@ -549,7 +549,8 @@ as_definition_iter(
     if (auto call = dynamic_cast<const Call_Phrase*>(&left))
         return as_definition_iter(env, std::move(source), *call->function_,
             make<Lambda_Phrase>(call->arg_, Token(), right), kind);
-    throw Exception(At_Phrase(left,  env), "invalid definiendum");
+    return make<Data_Definition>(std::move(source), kind,
+        share(left), std::move(right));
 }
 Shared<Definition>
 Recursive_Definition_Phrase::as_definition(Environ& env)

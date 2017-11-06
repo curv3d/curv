@@ -10,6 +10,7 @@
 namespace curv {
 
 struct Scope;
+struct Pattern;
 
 struct Definition : public Shared_Base
 {
@@ -75,19 +76,19 @@ struct Function_Definition : public Unitary_Definition
 // to bind multiple names.
 struct Data_Definition : public Unitary_Definition
 {
-    Shared<const Identifier> name_;
+    Shared<const Phrase> definiendum_;
     Shared<Phrase> definiens_phrase_;
-    slot_t slot_; // initialized by add_to_scope()
+    Shared<Pattern> pattern_; // initialized by add_to_scope()
     Shared<Operation> definiens_expr_; // initialized by analyze()
 
     Data_Definition(
         Shared<const Phrase> source,
         Kind k,
-        Shared<const Identifier> name,
+        Shared<const Phrase> definiendum,
         Shared<Phrase> definiens)
     :
         Unitary_Definition(source, k),
-        name_(std::move(name)),
+        definiendum_(std::move(definiendum)),
         definiens_phrase_(std::move(definiens))
     {}
 

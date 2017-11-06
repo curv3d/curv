@@ -16,6 +16,7 @@
 #include <curv/module.h>
 #include <curv/frame.h>
 #include <curv/record.h>
+#include <curv/pattern.h>
 
 namespace curv {
 
@@ -557,6 +558,27 @@ struct Scoped_Module_Expr : public Module_Expr
     {}
 
     virtual Shared<Module> eval_module(Frame&) const override;
+};
+
+struct Pattern_Setter : public Just_Action
+{
+    slot_t module_slot_; // copied from enclosing Scope_Executable
+    Shared<Pattern> pattern_;
+    Shared<Operation> definiens_;
+
+    Pattern_Setter(
+        Shared<const Phrase> source,
+        slot_t module_slot,
+        Shared<Pattern> pattern,
+        Shared<Operation> definiens)
+    :
+        Just_Action(std::move(source)),
+        module_slot_(module_slot),
+        pattern_(std::move(pattern)),
+        definiens_(std::move(definiens))
+    {}
+
+    void exec(Frame&) const override;
 };
 
 // An internal action for initializing the slots in the evaluation frame

@@ -813,6 +813,22 @@ String_Expr_Base::eval_atom(Frame& f) const
 }
 
 void
+Pattern_Setter::exec(Frame& f) const
+{
+    Value* slots;
+    if (module_slot_ == (slot_t)(-1))
+        slots = &f[0];
+    else {
+        auto mval = f[module_slot_];
+        auto m = (Module*)&mval.get_ref_unsafe();
+        assert(m->type_ == Ref_Value::ty_module);
+        slots = &m->at(0);
+    }
+    Value value = definiens_->eval(f);
+    pattern_->exec(slots, value, At_Phrase(*definiens_->source_, &f), f);
+}
+
+void
 Function_Setter_Base::exec(Frame& f) const
 {
     Value* slots;

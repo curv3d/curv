@@ -18,7 +18,7 @@ void
 Data_Definition::add_to_scope(Scope& scope)
 {
     unsigned unitnum = scope.begin_unit(share(*this));
-    slot_ = scope.add_binding(name_->atom_, *source_, unitnum);
+    pattern_ = make_pattern(*definiendum_, scope, unitnum);
     scope.end_unit(unitnum, share(*this));
 }
 void
@@ -45,11 +45,8 @@ Function_Definition::analyze(Environ& env)
 Shared<Operation>
 Data_Definition::make_setter(slot_t module_slot)
 {
-    if (module_slot != (slot_t)(-1)) {
-        return make<Module_Data_Setter>(source_, module_slot, slot_, definiens_expr_);
-    } else {
-        return make<Data_Setter>(source_, slot_, definiens_expr_, false);
-    }
+    return make<Pattern_Setter>(
+        source_, module_slot, pattern_, definiens_expr_);
 }
 Shared<Operation>
 Function_Definition::make_setter(slot_t module_slot)

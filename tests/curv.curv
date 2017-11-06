@@ -207,5 +207,7 @@ assert({a:1;b:2} == {a:1,b:2});
 let use{a:1,b:2} in assert(a+b==3);
 let use{a=1;b=2} in assert(a+b==3);
 
+let [a,[b,c]] = [1,[2,3]] in assert(a+b+c==6);
+
 // script return value:
 in null
