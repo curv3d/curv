@@ -1,5 +1,7 @@
 ## TODO: Language Changes
 
+Patterns (list & record).
+
 Fix bug: {x=1} == {x:1} should be true.
 
 GL:
@@ -9,9 +11,7 @@ GL:
 
 String: encode, decode, $[...], ASCII only.
 
-Patterns (list & record).
-
-{foo} is an abbreviation for {foo: true}.
+{foo} or {foo:} is an abbreviation for {foo: true}.
 
 Backtick infix operators.
 
@@ -304,6 +304,9 @@ Eg,
 New feature:
   {foo} is an abbreviation for {foo: true}
   eg, make_shape{is_3d, ...}
+This syntax is a bit disturbing, since `foo` looks like a variable reference,
+but isn't. Maybe use `{foo:}`. Eg,
+  align{x:{centre:}, z:{above:0}}
 
 ### Literal patterns:
   fact 0 = 1;

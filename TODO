@@ -6,6 +6,17 @@ What remains for MVP?
 * Meta: use https://opensource.guide/
 * STL export: Get open source marching cubes in OpenCL. Benchmark.
 
+Patterns:
+* Initial syntax: id | [pattern,pattern,...]
+* Contexts: definiendum, for, lambda, binder. Initially, Recursive_Definition.
+* Pre-analysis: as_pattern(phrase,scope,unitno) constructs a Pattern.
+  Slot indices are obtained from scope.add_binding and stored,
+  but default value expressions are not analyzed.
+  * Maybe break up Scope into Abstract Scope and Block Scope.
+* pattern->analyze(env). Analyze default value expressions, store results in
+  Pattern.
+* void pattern->exec(Value* slots, Value, Frame&)
+* bool pattern->match(Value* slots, Value, Frame&)
 Abstract Pattern
   Take a Value, potentially type check it and/or destructure it into its
   components, store each component in a slot.
@@ -15,6 +26,7 @@ Abstract Pattern
   * void match(Value* slots, Value)
 
 Code cleanup:
+* rename Structure to Record or Abstract_Record
 * unit tests for: CLI supports compound definitions
 * GL_Frame::gl renamed to gl_
 * clean up Recursive_Scope::analyze_unit
