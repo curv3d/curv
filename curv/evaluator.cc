@@ -858,7 +858,7 @@ Use_Setter_Base::exec(Frame& f) const
         slots = &m->at(0);
     }
     for (auto& e : *this)
-        slots[e.first] = e.second;
+        slots[e.slot_] = e.value_;
 }
 
 } // namespace curv

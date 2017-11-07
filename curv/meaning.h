@@ -623,7 +623,12 @@ struct Use_Setter_Base : public Just_Action
 
     void exec(Frame&) const override;
 
-    using Element = std::pair<slot_t, Value>;
+    struct Element {
+        slot_t slot_;
+        Value value_;
+        Element(slot_t s, Value v) : slot_(s), value_(v) {}
+        Element() noexcept {}
+    };
     TAIL_ARRAY_MEMBERS(Element)
 };
 using Use_Setter = aux::Tail_Array<Use_Setter_Base>;
