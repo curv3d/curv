@@ -3,6 +3,8 @@
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
 #include <cctype>
+#include <typeinfo>
+#include <boost/core/demangle.hpp>
 #include <aux/dtostr.h>
 #include <curv/gl_compiler.h>
 #include <curv/exception.h>
@@ -377,14 +379,16 @@ error:
 
 GL_Value Operation::gl_eval(GL_Frame& f) const
 {
-    throw Exception(At_GL_Phrase(*source_, &f),
-        "this expression is not supported by the Geometry Compiler");
+    throw Exception(At_GL_Phrase(*source_, &f), stringify(
+        "this expression is not supported by the Geometry Compiler: ",
+        boost::core::demangle(typeid(*this).name())));
 }
 
 void Operation::gl_exec(GL_Frame& f) const
 {
-    throw Exception(At_GL_Phrase(*source_, &f),
-        "this action is not supported by the Geometry Compiler");
+    throw Exception(At_GL_Phrase(*source_, &f), stringify(
+        "this action is not supported by the Geometry Compiler: ",
+        boost::core::demangle(typeid(*this).name())));
 }
 
 GL_Value Constant::gl_eval(GL_Frame& f) const
