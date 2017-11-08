@@ -2,6 +2,8 @@
 
 Patterns (list & record).
 
+switch, 'overloaded function definition' syntax for a switch.
+
 Fix bug: {x=1} == {x:1} should be true.
 
 GL:
@@ -11,7 +13,7 @@ GL:
 
 String: encode, decode, $[...], ASCII only.
 
-{foo} or {foo:} is an abbreviation for {foo: true}.
+{foo} (or {foo:}, or {+foo}) is an abbreviation for {foo: true}.
 
 Backtick infix operators.
 
@@ -304,9 +306,19 @@ Eg,
 New feature:
   {foo} is an abbreviation for {foo: true}
   eg, make_shape{is_3d, ...}
-This syntax is a bit disturbing, since `foo` looks like a variable reference,
-but isn't. Maybe use `{foo:}`. Eg,
+Note that {id} is a valid record pattern, which matches {id} the
+proposed record value.
+
+In {foo}, `foo` looks like a variable reference, but isn't.
+Maybe use `{foo:}` instead. Eg,
   align{x:{centre:}, z:{above:0}}
+Is '{foo:}' a pattern? What does it match?
+
+Another idea:
+  {+foo}  <==>  {foo: true}
+  {-foo}  <==>  {foo: false}
+for both values and patterns.
+  align{x:{+centre}, z:{above:0}}
 
 ### Literal patterns:
   fact 0 = 1;
