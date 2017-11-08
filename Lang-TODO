@@ -379,3 +379,14 @@ Like Rust Cargo. An external library has a GIT url and a version.
 Eg, file{repo:"https://github.com/doug-moen/laser-curv.git", version:"1.0"}
 
 Directory syntax for `file`.
+
+### Guard Expressions
+Loosely inspired by guards in Haskell 2010 and in APL Direct Functions.
+ 1) First version. A sequence of statements: either a sequential definition,
+    or a guarded expression (condition=>expr) -- if the condition is true,
+    return the expression, or an unguarded expression (return its value).
+ 2) Second version, based on Haskell 2010, incorporating pattern matching.
+    A guarded expression is generalized, so you have a list of guards.
+    Each guard is either a condition, or pat<-expr. The latter evaluates expr
+    and succeeds if the pattern matches the result (binding names as a side
+    effect of successful pattern match).
