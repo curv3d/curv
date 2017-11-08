@@ -578,7 +578,8 @@ struct Pattern_Setter : public Just_Action
         definiens_(std::move(definiens))
     {}
 
-    void exec(Frame&) const override;
+    virtual void exec(Frame&) const override;
+    virtual void gl_exec(GL_Frame&) const override;
 };
 
 // An internal action for initializing the slots in the evaluation frame

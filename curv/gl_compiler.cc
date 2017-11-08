@@ -581,6 +581,13 @@ Data_Setter::gl_exec(GL_Frame& f) const
         f[slot_] = var;
     }
 }
+void
+Pattern_Setter::gl_exec(GL_Frame& f) const
+{
+    assert(module_slot_ == (slot_t)(-1));
+    GL_Value val = definiens_->gl_eval(f);
+    pattern_->gl_exec(val, At_GL_Phrase(*definiens_->source_, &f), f);
+}
 
 char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
 {
