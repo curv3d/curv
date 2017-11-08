@@ -3,5 +3,5 @@
 
 TEST(curv, geom)
 {
-    EXPECT_EQ(std::system("cd ../examples; sh test"), 0);
+    EXPECT_EQ(std::system("sh geom.sh"), 0);
 }

@@ -1,4 +1,0 @@
-for f in `ls *.curv`; do
-  echo $f
-  curv -ofrag $f > /dev/null
-done

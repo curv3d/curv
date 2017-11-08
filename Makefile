@@ -1,7 +1,7 @@
-all:
+tests:
 	mkdir -p build
 	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..
-	cd build; make tests curv
+	cd build; make tests
 install:
 	mkdir -p build
 	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..
@@ -22,4 +22,4 @@ valgrind-full:
 	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..
 	cd build; make tester
 	cd tests; valgrind --leak-check=full ../build/tester
-.PHONY: curv
+.PHONY: tests install curv clean valgrind valgrind-full
