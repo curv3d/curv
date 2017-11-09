@@ -215,5 +215,7 @@ assert_error(
     "record does not have a field named x",
     do var {x}:={a:1} in x);
 
+let {a,b=2} = {a:1} in assert(a+b==3);
+
 // script return value:
 in null

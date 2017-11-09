@@ -41,8 +41,10 @@ struct List_Pattern : public Pattern
         items_(std::move(items))
     {}
 
-    virtual void analyze(Environ&) override
+    virtual void analyze(Environ& env) override
     {
+        for (auto& p : items_)
+            p->analyze(env);
     }
     virtual void exec(
         Value* slots, Value val, const Context& valcx, Frame& f) override
@@ -62,30 +64,50 @@ struct List_Pattern : public Pattern
 
 struct Record_Pattern : public Pattern
 {
-    Atom_Map<Shared<Pattern>> fields_;
+    struct Field
+    {
+        Shared<Pattern> pat_; Shared<Phrase> dsrc_; Shared<Operation> dexpr_;
+        Field(Shared<Pattern> p, Shared<Phrase> d) : pat_(p), dsrc_(d) {}
+        Field() {}
+    };
+    Atom_Map<Field> fields_;
 
-    Record_Pattern(Shared<const Phrase> s, Atom_Map<Shared<Pattern>> fields)
+    Record_Pattern(Shared<const Phrase> s, Atom_Map<Field> fields)
     :
         Pattern(s),
         fields_(std::move(fields))
     {}
 
-    virtual void analyze(Environ&) override
+    virtual void analyze(Environ& env) override
     {
+        for (auto& p : fields_) {
+            p.second.pat_->analyze(env);
+            if (p.second.dsrc_)
+                p.second.dexpr_ = analyze_op(*p.second.dsrc_, env);
+        }
     }
     virtual void exec(
         Value* slots, Value val, const Context& valcx, Frame& f) override
     {
         auto record = val.to<Structure>(valcx);
+        bool missing_fields = false;
         for (auto p : fields_) {
             if (record->hasfield(p.first)) {
                 auto fval = record->getfield(p.first,{});
-                p.second->exec(slots, fval, At_Field(p.first.data(), valcx), f);
+                p.second.pat_->exec(
+                    slots, fval, At_Field(p.first.data(), valcx), f);
+            } else if (p.second.dexpr_) {
+                auto fval = p.second.dexpr_->eval(f);
+                p.second.pat_->exec(
+                    slots, fval, At_Field(p.first.data(), valcx), f);
+                missing_fields = true;
             } else {
                 throw Exception(valcx, stringify(
                     "record does not have a field named ",p.first));
             }
         }
+        // TODO: better error reporting
+        if (!missing_fields)
         if (record->size() != fields_.size())
             throw Exception(valcx,
                 "record has extra fields not matched by pattern");
@@ -119,19 +141,32 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
         return make<List_Pattern>(share(ph), items);
     }
     if (auto braces = dynamic_cast<const Brace_Phrase*>(&ph)) {
-        Atom_Map<Shared<Pattern>> fields;
+        Atom_Map<Record_Pattern::Field> fields;
         each_item(*braces->body_, [&](Phrase& item)->void {
             if (auto id = dynamic_cast<const Identifier*>(&item)) {
-                fields[id->atom_] = make_pattern(*id, scope, unitno);
+                auto pat = make_pattern(*id, scope, unitno);
+                fields[id->atom_] = {pat, nullptr};
                 return;
             }
             if (auto bin = dynamic_cast<const Binary_Phrase*>(&item)) {
                 if (bin->op_.kind_ == Token::k_colon) {
+                    // TODO
                 }
+            }
+            if (auto def =
+                dynamic_cast<const Recursive_Definition_Phrase*>(&item))
+            {
+                auto id = cast<const Identifier>(def->left_);
+                if (id == nullptr)
+                    throw Exception(At_Phrase(*def->left_, scope),
+                        "not an identifier");
+                auto pat = make_pattern(*id, scope, unitno);
+                fields[id->atom_] = {pat, def->right_};
+                return;
             }
             throw Exception(At_Phrase(item, scope), "not a field pattern");
         });
-        return make<Record_Pattern>(share(ph), fields);
+        return make<Record_Pattern>(share(ph), std::move(fields));
     }
     throw Exception(At_Phrase(ph, scope), "not a pattern");
 }

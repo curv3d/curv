@@ -31,6 +31,7 @@ Function_Definition::add_to_scope(Block_Scope& scope)
 void
 Data_Definition::analyze(Environ& env)
 {
+    pattern_->analyze(env);
     definiens_expr_ = analyze_op(*definiens_phrase_, env);
 }
 void
@@ -166,13 +167,13 @@ Sequential_Scope::add_action(Shared<const Phrase> phrase)
 unsigned
 Sequential_Scope::begin_unit(Shared<Unitary_Definition> unit)
 {
-    unit->analyze(*this);
     return nunits_+1;
 }
 void
 Sequential_Scope::end_unit(unsigned unitno, Shared<Unitary_Definition> unit)
 {
     (void)unitno;
+    unit->analyze(*this);
     executable_.actions_.push_back(
         unit->make_setter(executable_.module_slot_));
     ++nunits_;
