@@ -364,9 +364,9 @@ analyze_block(
         return make<Block_Op>(source,
             std::move(rscope.executable_), std::move(body));
     }
-    struct Bad_Scope : public Scope
+    struct Bad_Scope : public Block_Scope
     {
-        Bad_Scope(Environ& env) : Scope(&env) {}
+        Bad_Scope(Environ& env) : Block_Scope(env, false) {}
 
         virtual Shared<Meaning> single_lookup(const Identifier&) override
         {

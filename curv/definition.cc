@@ -15,14 +15,14 @@ namespace curv
 {
 
 void
-Data_Definition::add_to_scope(Scope& scope)
+Data_Definition::add_to_scope(Block_Scope& scope)
 {
     unsigned unitnum = scope.begin_unit(share(*this));
     pattern_ = make_pattern(*definiendum_, scope, unitnum);
     scope.end_unit(unitnum, share(*this));
 }
 void
-Function_Definition::add_to_scope(Scope& scope)
+Function_Definition::add_to_scope(Block_Scope& scope)
 {
     unsigned unitnum = scope.begin_unit(share(*this));
     slot_ = scope.add_binding(name_->atom_, *source_, unitnum);
@@ -56,7 +56,7 @@ Function_Definition::make_setter(slot_t module_slot)
 }
 
 void
-Use_Definition::add_to_scope(Scope& scope)
+Use_Definition::add_to_scope(Block_Scope& scope)
 {
     // Evaluate the argument to `use` in the builtin environment.
     Builtin_Environ env(
@@ -89,7 +89,7 @@ Use_Definition::make_setter(slot_t module_slot)
 }
 
 void
-Compound_Definition_Base::add_to_scope(Scope& scope)
+Compound_Definition_Base::add_to_scope(Block_Scope& scope)
 {
     for (auto &e : *this) {
         if (e.definition_ == nullptr)
@@ -99,25 +99,61 @@ Compound_Definition_Base::add_to_scope(Scope& scope)
     }
 }
 
+slot_t
+Scope::add_binding(Atom name, const Phrase& unitsrc, unsigned unitno)
+{
+    if (dictionary_.find(name) != dictionary_.end())
+        throw Exception(At_Phrase(unitsrc, *parent_),
+            stringify(name, ": multiply defined"));
+    slot_t slot = make_slot();
+    dictionary_.emplace(std::make_pair(name, Binding{slot, unitno}));
+    return slot;
+}
+Shared<Meaning>
+Scope::single_lookup(const Identifier& id)
+{
+    auto b = dictionary_.find(id.atom_);
+    if (b != dictionary_.end())
+        return make<Data_Ref>(share(id), b->second.slot_index_);
+    return nullptr;
+}
+
+slot_t
+Block_Scope::add_binding(Atom name, const Phrase& unitsrc, unsigned unitno)
+{
+    if (dictionary_.find(name) != dictionary_.end())
+        throw Exception(At_Phrase(unitsrc, *parent_),
+            stringify(name, ": multiply defined"));
+    slot_t slot = (target_is_module_ ? dictionary_.size() : make_slot());
+    dictionary_.emplace(std::make_pair(name, Binding{slot, unitno}));
+    return slot;
+}
+
 void
 Sequential_Scope::analyze(Definition& def)
 {
     assert(def.kind_ == Definition::k_sequential);
     def.add_to_scope(*this);
     parent_->frame_maxslots_ = frame_maxslots_;
-    if (target_is_module_)
-        executable_.module_dictionary_ = dictionary_;
+    if (target_is_module_) {
+        auto d = make<Module::Dictionary>();
+        for (auto b : dictionary_)
+            (*d)[b.first] = b.second.slot_index_;
+        executable_.module_dictionary_ = d;
+    }
 }
 Shared<Meaning>
 Sequential_Scope::single_lookup(const Identifier& id)
 {
-    auto b = dictionary_->find(id.atom_);
-    if (b != dictionary_->end()) {
-        if (target_is_module_) {
-            return make<Module_Data_Ref>(
-                share(id), executable_.module_slot_, b->second);
-        } else {
-            return make<Data_Ref>(share(id), b->second);
+    auto b = dictionary_.find(id.atom_);
+    if (b != dictionary_.end()) {
+        if (b->second.unit_index_ <= nunits_) {
+            if (target_is_module_) {
+                return make<Module_Data_Ref>(
+                    share(id), executable_.module_slot_, b->second.slot_index_);
+            } else {
+                return make<Data_Ref>(share(id), b->second.slot_index_);
+            }
         }
     }
     return nullptr;
@@ -131,18 +167,7 @@ unsigned
 Sequential_Scope::begin_unit(Shared<Unitary_Definition> unit)
 {
     unit->analyze(*this);
-    return 0;
-}
-slot_t
-Sequential_Scope::add_binding(Atom name, const Phrase& unitsrc, unsigned unitno)
-{
-    (void)unitno;
-    if (dictionary_->find(name) != dictionary_->end())
-        throw Exception(At_Phrase(unitsrc, *parent_),
-            stringify(name, ": multiply defined"));
-    slot_t slot = (target_is_module_ ? dictionary_->size() : make_slot());
-    (*dictionary_)[name] = slot;
-    return slot;
+    return nunits_+1;
 }
 void
 Sequential_Scope::end_unit(unsigned unitno, Shared<Unitary_Definition> unit)
@@ -150,6 +175,7 @@ Sequential_Scope::end_unit(unsigned unitno, Shared<Unitary_Definition> unit)
     (void)unitno;
     executable_.actions_.push_back(
         unit->make_setter(executable_.module_slot_));
+    ++nunits_;
 }
 
 void
@@ -350,16 +376,6 @@ Recursive_Scope::begin_unit(Shared<Unitary_Definition> def)
 {
     units_.emplace_back(def);
     return units_.size() - 1;
-}
-slot_t
-Recursive_Scope::add_binding(Atom name, const Phrase& unitsrc, unsigned unitno)
-{
-    if (dictionary_.find(name) != dictionary_.end())
-        throw Exception(At_Phrase(unitsrc, *parent_),
-            stringify(name, ": multiply defined"));
-    slot_t slot = (target_is_module_ ? dictionary_.size() : make_slot());
-    dictionary_.emplace(std::make_pair(name, Binding{slot, unitno}));
-    return slot;
 }
 void
 Recursive_Scope::end_unit(unsigned unitno, Shared<Unitary_Definition> unit)
