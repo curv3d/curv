@@ -14,7 +14,7 @@ else ()
   set( LibReadline readline)
   # The leak sanitizer is only available for 64 bit Linux (gcc and clang).
   # It adds minimal overhead, so we add it to all executables in debug builds.
-  set( sanitize "-fsanitize=leak" )
+  set( sanitize "-fsanitize=address" )
 endif (APPLE)
 
 FILE(GLOB CurvSrc "aux/*.cc" "curv/*.cc")
@@ -31,8 +31,9 @@ target_link_libraries(tester PUBLIC gtest pthread libcurv double-conversion)
 
 set_property(TARGET curv libcurv tester PROPERTY CXX_STANDARD 14)
 
-set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror" )
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror" )
+set( gccflags "-Wall -Werror -O1 -Wno-unused-result" )
+set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${gccflags}" )
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${gccflags}" )
 set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${sanitize}" )
 
 add_custom_target(tests tester WORKING_DIRECTORY ../tests)
