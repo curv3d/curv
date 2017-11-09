@@ -6,6 +6,17 @@ What remains for MVP?
 * Meta: use https://opensource.guide/
 * STL export: Get open source marching cubes in OpenCL. Benchmark.
 
+Record Patterns:
+* default values for fields in record patterns:
+  * How does analysis (of default value exprs) work in a sequential scope?
+  * Currently, Data_Definition::analyze is called from Scope::begin_unit,
+    before the call to make_pattern. This ensures that no bindings from the
+    current Def are registered when the definiens is analyzed.
+  * Now, we need Def::analyze to be called *after* Def::add_to_scope.
+    Def::add_to_scope makes the pattern, Def::analyze analyzes the pattern.
+  * So Sequential_Scope associates a unitnum with each binding,
+    and single_lookup ignores bindings with a la
+
 Patterns:
 * Initial syntax: id | [pattern,pattern,...]
 * Contexts: definiendum, for, lambda, binder. Initially, Recursive_Definition.
