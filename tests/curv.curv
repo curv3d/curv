@@ -220,7 +220,13 @@ assert_error(
 
 let {a,b=2} = {a:1} in assert(a+b==3);
 
-let {a=10,b=20,c} = {c:30} in (print [a,b,c]; assert([a,b,c]==[10,20,30]));
+let {a=10,b=20,c} = {c:30} in assert([a,b,c]==[10,20,30]);
+let {a=11,b=22,c=33} = {} in assert([a,b,c]==[11,22,33]);
+assert_error(
+    "record has an unmatched field named d",
+    let {a=12,b=23,c=34} = {d:true} in [a,b,c]
+);
+let {} = {} in (;);
 
 // script return value:
 in null

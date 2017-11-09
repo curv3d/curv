@@ -89,10 +89,11 @@ struct Record_Pattern : public Pattern
     virtual void exec(
         Value* slots, Value value, const Context& valcx, Frame& f) override
     {
+        // TODO: clean this up OMG
         auto record = value.to<Structure>(valcx);
         auto p = fields_.begin();
         record->each_field([&](Atom name, Value val)->void {
-            for (;;) {
+            while (p != fields_.end()) {
                 int cmp = p->first.cmp(name);
                 if (cmp < 0) {
                     // record is missing a field in the pattern
@@ -112,14 +113,25 @@ struct Record_Pattern : public Pattern
                     p->second.pat_->exec(
                         slots, fval, At_Field(p->first.data(), valcx), f);
                     ++p;
+                    return;
+                } else
                     break;
-                } else {
-                    // record has surplus field
-                    throw Exception(valcx, stringify(
-                        "record has an unmatched field named ",name));
-                }
             }
+            // record has surplus field
+            throw Exception(valcx, stringify(
+                "record has an unmatched field named ",name));
         });
+        while (p != fields_.end()) {
+            if (p->second.dexpr_) {
+                auto fval = p->second.dexpr_->eval(f);
+                p->second.pat_->exec(
+                    slots, fval, At_Field(p->first.data(), valcx), f);
+            } else {
+                throw Exception(valcx, stringify(
+                    "record is missing a field named ",p->first));
+            }
+            ++p;
+        }
     }
 };
 
