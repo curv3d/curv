@@ -87,30 +87,34 @@ struct Record_Pattern : public Pattern
         }
     }
     virtual void exec(
-        Value* slots, Value val, const Context& valcx, Frame& f) override
+        Value* slots, Value value, const Context& valcx, Frame& f) override
     {
-        auto record = val.to<Structure>(valcx);
-        bool missing_fields = false;
-        for (auto p : fields_) {
-            if (record->hasfield(p.first)) {
-                auto fval = record->getfield(p.first,{});
-                p.second.pat_->exec(
-                    slots, fval, At_Field(p.first.data(), valcx), f);
-            } else if (p.second.dexpr_) {
-                auto fval = p.second.dexpr_->eval(f);
-                p.second.pat_->exec(
-                    slots, fval, At_Field(p.first.data(), valcx), f);
-                missing_fields = true;
+        auto record = value.to<Structure>(valcx);
+        auto p = fields_.begin();
+        record->each_field([&](Atom name, Value val)->void {
+            int cmp = p->first.cmp(name);
+            if (cmp < 0) {
+                // record is missing a field in the pattern
+                if (p->second.dexpr_) {
+                    auto fval = p->second.dexpr_->eval(f);
+                    p->second.pat_->exec(
+                        slots, fval, At_Field(p->first.data(), valcx), f);
+                } else {
+                    throw Exception(valcx, stringify(
+                        "record is missing a field named ",p->first));
+                }
+            } else if (cmp == 0) {
+                // matching field in record and pattern
+                auto fval = record->getfield(p->first,{});
+                p->second.pat_->exec(
+                    slots, fval, At_Field(p->first.data(), valcx), f);
             } else {
+                // record has surplus field
                 throw Exception(valcx, stringify(
-                    "record does not have a field named ",p.first));
+                    "record has an unmatched field named ",name));
             }
-        }
-        // TODO: better error reporting
-        if (!missing_fields)
-        if (record->size() != fields_.size())
-            throw Exception(valcx,
-                "record has extra fields not matched by pattern");
+            ++p;
+        });
     }
 };
 

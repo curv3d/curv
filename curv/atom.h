@@ -50,6 +50,10 @@ public:
         return *this;
     }
 
+    int cmp(Atom a) const noexcept
+    {
+        return strcmp((*this)->c_str(), a->c_str());
+    }
     friend bool operator==(Atom a1, Atom a2) noexcept
     {
         return *a1 == *a2;
@@ -65,6 +69,7 @@ public:
 
     inline size_t size() const { return (*this)->size(); }
     inline const char* data() const { return (*this)->data(); }
+    inline const char* c_str() const { return (*this)->c_str(); }
     inline char operator[](size_t i) const { return (**this)[i]; }
 
     friend void swap(Atom& a1, Atom& a2) noexcept

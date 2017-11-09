@@ -212,8 +212,11 @@ let [a,(b,(c))] = [1,[2,3]] in assert(a+b+c==6);
 let {a,b}={a:1,b:2} in assert(a+b==3);
 
 assert_error(
-    "record does not have a field named x",
-    do var {x}:={a:1} in x);
+    "record has an unmatched field named a",
+    do var {x}:={x:1,a:2} in x);
+assert_error(
+    "record is missing a field named a",
+    do var {a}:={x:1} in a);
 
 let {a,b=2} = {a:1} in assert(a+b==3);
 
