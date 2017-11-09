@@ -220,5 +220,7 @@ assert_error(
 
 let {a,b=2} = {a:1} in assert(a+b==3);
 
+let {a=10,b=20,c} = {c:30} in (print [a,b,c]; assert([a,b,c]==[10,20,30]));
+
 // script return value:
 in null

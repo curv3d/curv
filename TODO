@@ -6,35 +6,11 @@ What remains for MVP?
 * Meta: use https://opensource.guide/
 * STL export: Get open source marching cubes in OpenCL. Benchmark.
 
-Record Patterns:
-* default values for fields in record patterns:
-  * How does analysis (of default value exprs) work in a sequential scope?
-  * Currently, Data_Definition::analyze is called from Scope::begin_unit,
-    before the call to make_pattern. This ensures that no bindings from the
-    current Def are registered when the definiens is analyzed.
-  * Now, we need Def::analyze to be called *after* Def::add_to_scope.
-    Def::add_to_scope makes the pattern, Def::analyze analyzes the pattern.
-  * So Sequential_Scope associates a unitnum with each binding,
-    and single_lookup ignores bindings with a la
-
-Patterns:
-* Initial syntax: id | [pattern,pattern,...]
-* Contexts: definiendum, for, lambda, binder. Initially, Recursive_Definition.
-* Pre-analysis: as_pattern(phrase,scope,unitno) constructs a Pattern.
-  Slot indices are obtained from scope.add_binding and stored,
-  but default value expressions are not analyzed.
-  * Maybe break up Scope into Abstract Scope and Block Scope.
-* pattern->analyze(env). Analyze default value expressions, store results in
-  Pattern.
-* void pattern->exec(Value* slots, Value, Frame&)
-* bool pattern->match(Value* slots, Value, Frame&)
-Abstract Pattern
-  Take a Value, potentially type check it and/or destructure it into its
-  components, store each component in a slot.
-  * Store the slot #s internally? Note the slot #s aren't available during
-    analyze_def(), not til add_to_scope(). So when are the Patterns constructed?
-  Virtual:
-  * void match(Value* slots, Value)
+Pattern project:
+* nested record patterns.
+* Contexts: assignment, for, lambda, binder.
+* bool pattern->match(Value* slots, Value, vsrc, Frame&)
+* switch[f1,f2]
 
 Code cleanup:
 * rename Structure to Record or Abstract_Record

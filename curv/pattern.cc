@@ -92,28 +92,33 @@ struct Record_Pattern : public Pattern
         auto record = value.to<Structure>(valcx);
         auto p = fields_.begin();
         record->each_field([&](Atom name, Value val)->void {
-            int cmp = p->first.cmp(name);
-            if (cmp < 0) {
-                // record is missing a field in the pattern
-                if (p->second.dexpr_) {
-                    auto fval = p->second.dexpr_->eval(f);
+            for (;;) {
+                int cmp = p->first.cmp(name);
+                if (cmp < 0) {
+                    // record is missing a field in the pattern
+                    if (p->second.dexpr_) {
+                        auto fval = p->second.dexpr_->eval(f);
+                        p->second.pat_->exec(
+                            slots, fval, At_Field(p->first.data(), valcx), f);
+                    } else {
+                        throw Exception(valcx, stringify(
+                            "record is missing a field named ",p->first));
+                    }
+                    ++p;
+                    continue;
+                } else if (cmp == 0) {
+                    // matching field in record and pattern
+                    auto fval = record->getfield(p->first,{});
                     p->second.pat_->exec(
                         slots, fval, At_Field(p->first.data(), valcx), f);
+                    ++p;
+                    break;
                 } else {
+                    // record has surplus field
                     throw Exception(valcx, stringify(
-                        "record is missing a field named ",p->first));
+                        "record has an unmatched field named ",name));
                 }
-            } else if (cmp == 0) {
-                // matching field in record and pattern
-                auto fval = record->getfield(p->first,{});
-                p->second.pat_->exec(
-                    slots, fval, At_Field(p->first.data(), valcx), f);
-            } else {
-                // record has surplus field
-                throw Exception(valcx, stringify(
-                    "record has an unmatched field named ",name));
             }
-            ++p;
         });
     }
 };
