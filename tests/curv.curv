@@ -229,6 +229,7 @@ assert_error(
 let {} = {} in (;);
 
 let {a:[x,y]} = {a:[1,2]} in assert([x,y]==[1,2]);
+let {"foo bar": fb} = {"foo bar":42} in assert(fb == 42);
 
 assert(decode[65,66,67] == "ABC");
 assert_error(

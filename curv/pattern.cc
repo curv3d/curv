@@ -138,11 +138,15 @@ struct Record_Pattern : public Pattern
 Atom
 atomize(const Phrase& ph, Scope& scope)
 {
-    auto id = dynamic_cast<const Identifier*>(&ph);
-    if (id == nullptr)
-        throw Exception(At_Phrase(ph, scope), "not an identifier");
-    return id->atom_;
-    // TODO: support string literal as field name in record pattern
+    if (auto id = dynamic_cast<const Identifier*>(&ph))
+        return id->atom_;
+    if (auto strph = dynamic_cast<const String_Phrase*>(&ph)) {
+        auto val = std_eval(*strph, scope);
+        auto str = val.to<const String>(At_Phrase(ph, scope));
+        return Atom{str};
+    }
+    throw Exception(At_Phrase(ph, scope),
+        "not an identifier or string literal");
 }
 
 Shared<Pattern>

@@ -7,18 +7,18 @@ What remains for MVP?
 * STL export: Get open source marching cubes in OpenCL. Benchmark.
 
 Pattern project:
-* nested record patterns.
 * Contexts: assignment, for, lambda, binder.
 * bool pattern->match(Value, vsrc, Frame&)
 * bool function->match(Value, Frame&)
 * switch[f1,f2]
 
 Code cleanup:
-* rename Structure to Record or Abstract_Record
+* rename Structure/Record/Module to Record/Dict/Module.
 * unit tests for: CLI supports compound definitions
 * GL_Frame::gl renamed to gl_
 * clean up Recursive_Scope::analyze_unit
 * remove curv/arg.{h,cc}, move features into value.h and context.h
+* add move to curv namespace
 
 -------------------------
 Circumratio project:
