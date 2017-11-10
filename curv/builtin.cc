@@ -561,6 +561,19 @@ struct Decode_Function : public Polyadic_Function
         return {sb.get_string()};
     }
 };
+struct Encode_Function : public Polyadic_Function
+{
+    Encode_Function() : Polyadic_Function(1) {}
+    Value call(Frame& f) override
+    {
+        List_Builder lb;
+        At_Arg cx(f);
+        auto str = f[0].to<String>(cx);
+        for (size_t i = 0; i < str->size(); ++i)
+            lb.push_back({(double)(int)str->at(i)});
+        return {lb.get_list()};
+    }
+};
 
 struct File_Function : public Polyadic_Function
 {
@@ -905,6 +918,7 @@ builtin_namespace()
     {"strcat", make<Builtin_Value>(Value{make<Strcat_Function>()})},
     {"repr", make<Builtin_Value>(Value{make<Repr_Function>()})},
     {"decode", make<Builtin_Value>(Value{make<Decode_Function>()})},
+    {"encode", make<Builtin_Value>(Value{make<Encode_Function>()})},
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},
     {"print", make<Builtin_Meaning<Print_Metafunction>>()},
     {"warning", make<Builtin_Meaning<Warning_Metafunction>>()},

@@ -42,6 +42,7 @@ public:
     size_t size() const { return size_; }
     bool empty() const { return size_ == 0; }
     char operator[](size_t i) const { return data_[i]; }
+    char at(size_t i) const { return data_[i]; }
     const char* data() const { return data_; }
     const char* c_str() const { return data_; }
     const char* begin() const { return data_; }

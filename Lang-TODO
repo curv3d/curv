@@ -4,7 +4,7 @@ Patterns (list & record).
 
 switch
 
-String: encode, $[...], ASCII only.
+String: $[...]
 
 Backtick infix operators.
 
