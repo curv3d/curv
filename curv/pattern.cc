@@ -20,12 +20,13 @@ struct Id_Pattern : public Pattern
     virtual void analyze(Environ&) override
     {
     }
-    virtual void exec(
-        Value* slots, Value value, const Context&, Frame&) override
+    virtual void exec(Value* slots, Value value, const Context&, Frame&)
+    const override
     {
         slots[slot_] = value;
     }
-    virtual void gl_exec(GL_Value value, const Context&, GL_Frame& f) override
+    virtual void gl_exec(GL_Value value, const Context&, GL_Frame& f)
+    const override
     {
         f[slot_] = value;
     }
@@ -46,8 +47,8 @@ struct List_Pattern : public Pattern
         for (auto& p : items_)
             p->analyze(env);
     }
-    virtual void exec(
-        Value* slots, Value val, const Context& valcx, Frame& f) override
+    virtual void exec(Value* slots, Value val, const Context& valcx, Frame& f)
+    const override
     {
         auto list = val.to<List>(valcx);
         list->assert_size(items_.size(), valcx);
@@ -55,8 +56,8 @@ struct List_Pattern : public Pattern
             items_[i]->exec(slots, list->at(i), At_Index(i, valcx), f);
     }
 #if 0
-    virtual void gl_exec(
-        GL_Value val, const Context& valcx, GL_Frame& f) override
+    virtual void gl_exec(GL_Value val, const Context& valcx, GL_Frame& f)
+    const override
     {
     }
 #endif
@@ -86,8 +87,8 @@ struct Record_Pattern : public Pattern
                 p.second.dexpr_ = analyze_op(*p.second.dsrc_, env);
         }
     }
-    virtual void exec(
-        Value* slots, Value value, const Context& valcx, Frame& f) override
+    virtual void exec(Value* slots, Value value, const Context& valcx, Frame& f)
+    const override
     {
         // TODO: clean this up OMG. Need a general Record iterator.
         auto record = value.to<Structure>(valcx);
@@ -220,7 +221,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
 }
 
 void
-Pattern::gl_exec(GL_Value val, const Context& valcx, GL_Frame& f)
+Pattern::gl_exec(GL_Value val, const Context& valcx, GL_Frame& f) const
 {
     throw Exception(At_GL_Phrase(*source_, &f),
         "pattern not supported by Geometry Compiler");
