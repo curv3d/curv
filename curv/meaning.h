@@ -831,6 +831,13 @@ struct Paren_Segment : public Segment
     : Segment(std::move(source)), expr_(std::move(expr)) {}
     virtual void generate(Frame&, String_Builder&) const;
 };
+struct Bracket_Segment : public Segment
+{
+    Shared<Operation> expr_;
+    Bracket_Segment(Shared<const Segment_Phrase> source, Shared<Operation> expr)
+    : Segment(std::move(source)), expr_(std::move(expr)) {}
+    virtual void generate(Frame&, String_Builder&) const;
+};
 struct Brace_Segment : public Segment
 {
     Shared<Operation> expr_;

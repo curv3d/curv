@@ -4,8 +4,6 @@ Patterns (list & record).
 
 switch
 
-String: $[...]
-
 Backtick infix operators.
 
 Fix bug: {x=1} == {x:1} should be true.

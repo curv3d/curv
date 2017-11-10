@@ -165,6 +165,11 @@ Paren_Segment_Phrase::analyze(Environ& env) const
     return make<Paren_Segment>(share(*this), analyze_op(*expr_, env));
 }
 Shared<Segment>
+Bracket_Segment_Phrase::analyze(Environ& env) const
+{
+    return make<Bracket_Segment>(share(*this), analyze_op(*expr_, env));
+}
+Shared<Segment>
 Brace_Segment_Phrase::analyze(Environ& env) const
 {
     return make<Brace_Segment>(share(*this), analyze_op(*expr_, env));

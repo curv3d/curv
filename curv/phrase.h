@@ -96,6 +96,14 @@ struct Paren_Segment_Phrase : public Segment_Phrase
     virtual Location location() const override { return expr_->location(); }
     virtual Shared<Segment> analyze(Environ&) const override;
 };
+struct Bracket_Segment_Phrase : public Segment_Phrase
+{
+    Shared<const Phrase> expr_;
+    Bracket_Segment_Phrase(Shared<const Phrase> expr)
+    : expr_(std::move(expr)) {}
+    virtual Location location() const override { return expr_->location(); }
+    virtual Shared<Segment> analyze(Environ&) const override;
+};
 struct Brace_Segment_Phrase : public Segment_Phrase
 {
     Shared<const Phrase> expr_;

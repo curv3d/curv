@@ -86,6 +86,11 @@ Scanner::get_token()
                 tok.kind_ = Token::k_dollar_brace;
                 goto success;
             }
+            if (*p == '[') {
+                ++p;
+                tok.kind_ = Token::k_dollar_bracket;
+                goto success;
+            }
             if (isalpha(*p) || *p == '_') {
                 while (p < last && (isalnum(*p) || *p == '_'))
                     ++p;

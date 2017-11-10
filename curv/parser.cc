@@ -563,6 +563,16 @@ parse_string(Scanner& scanner, Token begin)
             segments.push_back(make<Paren_Segment_Phrase>(parens));
             continue;
           }
+        case Token::k_dollar_bracket:
+          {
+            auto state = scanner.string_begin_;
+            scanner.string_begin_.kind_ = Token::k_missing;
+            auto brackets =
+                parse_delimited<Bracket_Phrase>(tok, Token::k_rbracket, scanner);
+            scanner.string_begin_ = state;
+            segments.push_back(make<Bracket_Segment_Phrase>(brackets));
+            continue;
+          }
         case Token::k_dollar_brace:
           {
             auto state = scanner.string_begin_;

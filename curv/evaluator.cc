@@ -786,6 +786,14 @@ Paren_Segment::generate(Frame& f, String_Builder& sb) const
     sb << expr_->eval(f);
 }
 void
+Bracket_Segment::generate(Frame& f, String_Builder& sb) const
+{
+    At_Phrase cx(*expr_->source_,&f);
+    auto list = expr_->eval(f).to<List>(cx);
+    for (size_t i = 0; i < list->size(); ++i)
+        sb << (char)arg_to_int((*list)[i], 1, 127, At_Index(i,cx));
+}
+void
 Brace_Segment::generate(Frame& f, String_Builder& sb) const
 {
     Value val = expr_->eval(f);
