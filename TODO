@@ -9,7 +9,8 @@ What remains for MVP?
 Pattern project:
 * nested record patterns.
 * Contexts: assignment, for, lambda, binder.
-* bool pattern->match(Value* slots, Value, vsrc, Frame&)
+* bool pattern->match(Value, vsrc, Frame&)
+* bool function->match(Value, Frame&)
 * switch[f1,f2]
 
 Code cleanup:
@@ -17,6 +18,7 @@ Code cleanup:
 * unit tests for: CLI supports compound definitions
 * GL_Frame::gl renamed to gl_
 * clean up Recursive_Scope::analyze_unit
+* remove curv/arg.{h,cc}, move features into value.h and context.h
 
 -------------------------
 Circumratio project:
@@ -381,8 +383,6 @@ VM:
 OpenSCADbis proposal
 
 # Simpler, More General Grammar
-* refactor/cleanup
-  * get rid of List_Sequence_Expr
 * Simple, yaccable grammar with no conflicts or precedence declarations.
 * names: Phrase or Syntax?
 

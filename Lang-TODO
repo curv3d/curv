@@ -2,7 +2,11 @@
 
 Patterns (list & record).
 
-switch, 'overloaded function definition' syntax for a switch.
+switch
+
+String: encode, $[...], ASCII only.
+
+Backtick infix operators.
 
 Fix bug: {x=1} == {x:1} should be true.
 
@@ -11,11 +15,7 @@ GL:
 * print, assert, warning, error are ignored in GL.
 * GL: && || if use lazy evaluation
 
-String: encode, decode, $[...], ASCII only.
-
 {foo} (or {foo:}, or {+foo}) is an abbreviation for {foo: true}.
-
-Backtick infix operators.
 
 ## Ideas Under Development
 String:
