@@ -297,7 +297,7 @@ TEST(curv, eval)
     SUCCESS("-2^2", "-4");
     SUCCESS("[1,2,3]'1","2");
     FAILALL("[1,2,3]'1.1",
-        "not an integer\n"
+        "1.1 is not an integer\n"
         "line 1(columns 9-11)\n"
         "  [1,2,3]'1.1\n"
         "          ^--");
