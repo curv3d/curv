@@ -78,5 +78,8 @@ Shared<Operation> analyze_op(const Phrase& ph, Environ& env);
 Shared<Operation> analyze_action(const Phrase& ph, Environ& env);
 Shared<Operation> analyze_tail(const Phrase& ph, Environ& env);
 
+// Evaluate the phrase as a constant expression in the builtin environment.
+Value std_eval(const Phrase& ph, Environ& env);
+
 } // namespace
 #endif // header guard

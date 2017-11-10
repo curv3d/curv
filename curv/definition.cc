@@ -60,13 +60,8 @@ void
 Use_Definition::add_to_scope(Block_Scope& scope)
 {
     // Evaluate the argument to `use` in the builtin environment.
-    Builtin_Environ env(
-        scope.system_.std_namespace(), scope.system_, scope.eval_frame_);
-    auto op = analyze_op(*arg_, env);
-    auto frame = Frame::make(env.frame_maxslots_,
-        scope.system_, scope.eval_frame_, nullptr, nullptr);
-    auto val = op->eval(*frame);
-    auto record = val.to<Structure>(At_Phrase(*arg_, env));
+    auto val = std_eval(*arg_, scope);
+    auto record = val.to<Structure>(At_Phrase(*arg_, scope));
 
     // construct a Use_Setter from the record argument.
     unsigned unit = scope.begin_unit(share(*this));
