@@ -89,7 +89,7 @@ struct Record_Pattern : public Pattern
     virtual void exec(
         Value* slots, Value value, const Context& valcx, Frame& f) override
     {
-        // TODO: clean this up OMG
+        // TODO: clean this up OMG. Need a general Record iterator.
         auto record = value.to<Structure>(valcx);
         auto p = fields_.begin();
         record->each_field([&](Atom name, Value val)->void {
@@ -135,6 +135,16 @@ struct Record_Pattern : public Pattern
     }
 };
 
+Atom
+atomize(const Phrase& ph, Scope& scope)
+{
+    auto id = dynamic_cast<const Identifier*>(&ph);
+    if (id == nullptr)
+        throw Exception(At_Phrase(ph, scope), "not an identifier");
+    return id->atom_;
+    // TODO: support string literal as field name in record pattern
+}
+
 Shared<Pattern>
 make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
 {
@@ -171,7 +181,20 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
             }
             if (auto bin = dynamic_cast<const Binary_Phrase*>(&item)) {
                 if (bin->op_.kind_ == Token::k_colon) {
-                    // TODO
+                    auto name_src = bin->left_;
+                    Shared<Phrase> pat_src;
+                    Shared<Phrase> dfl_src;
+                    if (auto def = dynamic_cast
+                        <const Recursive_Definition_Phrase*>(&*bin->right_))
+                    {
+                        pat_src = def->left_;
+                        dfl_src = def->right_;
+                    } else
+                        pat_src = bin->right_;
+                    Atom name = atomize(*name_src, scope);
+                    auto pat = make_pattern(*pat_src, scope, unitno);
+                    fields[name] = {pat, dfl_src};
+                    return;
                 }
             }
             if (auto def =
