@@ -227,6 +227,8 @@ assert_error(
     let {a=12,b=23,c=34} = {d:true} in [a,b,c]
 );
 let {} = {} in (;);
+let () = () in (;);
+let [] = [] in (;);
 
 let {a:[x,y]} = {a:[1,2]} in assert([x,y]==[1,2]);
 let {"foo bar": fb} = {"foo bar":42} in assert(fb == 42);

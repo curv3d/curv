@@ -166,7 +166,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
     }
     if (auto parens = dynamic_cast<const Paren_Phrase*>(&ph)) {
         std::vector<Shared<Pattern>> items;
-        if (dynamic_cast<const Empty_Phrase*>(parens) != nullptr)
+        if (dynamic_cast<const Empty_Phrase*>(&*parens->body_) != nullptr)
             return make<List_Pattern>(share(ph), items);
         if (dynamic_cast<const Comma_Phrase*>(&*parens->body_) == nullptr
          && dynamic_cast<const Semicolon_Phrase*>(&*parens->body_) == nullptr)
