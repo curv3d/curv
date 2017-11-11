@@ -109,7 +109,6 @@ struct GL_Compiler
 {
     std::ostream& out;
     unsigned valcount;
-    GL_Value arg0;
 
     GL_Compiler(std::ostream& s) : out(s), valcount(0) {}
 
