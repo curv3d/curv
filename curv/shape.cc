@@ -80,19 +80,24 @@ Shape_Recognizer::recognize(Value val, const Context& cx)
     if (!is_2d_ && !is_3d_)
         throw Exception(cx, "at least one of is_2d and is_3d must be true");
     bbox_ = BBox::from_value(bbox_val, At_Field("bbox", cx));
-    dist_ = dist_val.dycast<Polyadic_Function>();
+    dist_ = dist_val.dycast<Function>();
     if (dist_ == nullptr)
         throw Exception(At_Field("dist", cx), "dist is not a function");
-    if (dist_->nargs_ != 1 && dist_->nargs_ != 4)
-        throw Exception(At_Field("dist", cx), "dist function must have 1 or 4 parameters");
-    colour_ = colour_val.dycast<Polyadic_Function>();
+    colour_ = colour_val.dycast<Function>();
     if (colour_ == nullptr)
         throw Exception(At_Field("colour", cx), "colour is not a function");
-    if (colour_->nargs_ != 1 && colour_->nargs_ != 4)
-        throw Exception(At_Field("colour", cx), "colour function must have 1 or 4 parameters");
 
     return true;
 }
+
+struct GL_Data_Ref : public Operation
+{
+    GL_Value val_;
+    GL_Data_Ref(Shared<const Phrase> src, GL_Value v)
+    : Operation(std::move(src)), val_(v)
+    {}
+    GL_Value gl_eval(GL_Frame&) const override { return val_; }
+};
 
 GL_Value
 Shape_Recognizer::gl_dist(GL_Value arg, GL_Frame& f) const
@@ -101,20 +106,11 @@ Shape_Recognizer::gl_dist(GL_Value arg, GL_Frame& f) const
         throw Exception(At_GL_Frame(&f), stringify(
             "dist function argument must be vec4, is ", arg.type));
     auto f2 = GL_Frame::make(dist_->nslots_, f.gl, nullptr, &f, nullptr);
-    if (dist_->nargs_ == 1) {
-        (*f2)[0] = arg;
-    } else if (dist_->nargs_ == 4) {
-        (*f2)[0] = gl_vec_element(f, arg, 0);
-        (*f2)[1] = gl_vec_element(f, arg, 1);
-        (*f2)[2] = gl_vec_element(f, arg, 2);
-        (*f2)[3] = gl_vec_element(f, arg, 3);
-    } else
-        assert(0);
-    auto result = dist_->gl_call(*f2);
-    if (result.type != GL_Type::Num) {
+    auto aref = make<GL_Data_Ref>(nullptr, arg);
+    auto result = dist_->gl_call_expr(*aref, nullptr, *f2);
+    if (result.type != GL_Type::Num)
         throw Exception(At_GL_Frame(&f),
             stringify("dist function returns ",result.type));
-    }
     return result;
 }
 
@@ -126,19 +122,10 @@ Shape_Recognizer::gl_colour(GL_Value arg, GL_Frame& f) const
             "colour function argument must be vec4, is ", arg.type));
     At_GL_Frame cx(&f);
     auto f2 = GL_Frame::make(colour_->nslots_, f.gl, nullptr, &f, nullptr);
-    if (colour_->nargs_ == 1) {
-        (*f2)[0] = arg;
-    } else if (colour_->nargs_ == 4) {
-        (*f2)[0] = gl_vec_element(f, arg, 0);
-        (*f2)[1] = gl_vec_element(f, arg, 1);
-        (*f2)[2] = gl_vec_element(f, arg, 2);
-        (*f2)[3] = gl_vec_element(f, arg, 3);
-    } else
-        assert(0);
-    auto result = colour_->gl_call(*f2);
-    if (result.type != GL_Type::Vec3) {
+    auto aref = make<GL_Data_Ref>(nullptr, arg);
+    auto result = colour_->gl_call_expr(*aref, nullptr, *f2);
+    if (result.type != GL_Type::Vec3)
         throw Exception(cx, stringify("colour function returns ",result.type));
-    }
     return result;
 }
 

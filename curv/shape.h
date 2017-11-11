@@ -11,7 +11,7 @@
 
 namespace curv {
 
-struct Polyadic_Function;
+struct Function;
 struct Context;
 
 // axis aligned bounding box
@@ -35,8 +35,8 @@ struct Shape_Recognizer
     bool is_2d_;
     bool is_3d_;
     BBox bbox_;
-    Shared<Polyadic_Function> dist_;
-    Shared<Polyadic_Function> colour_;
+    Shared<Function> dist_;
+    Shared<Function> colour_;
 
     // If the value is a shape, fill in the shape fields and return true.
     bool recognize(Value, const Context&);
