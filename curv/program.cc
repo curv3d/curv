@@ -40,18 +40,23 @@ Program::compile(const Namespace* names, Frame* parent_frame)
 const Phrase&
 Program::value_phrase()
 {
-    auto ph = phrase_;
+    Shared<const Phrase> ph = phrase_;
     for (;;) {
         if (auto pr = cast<const Program_Phrase>(ph)) {
             ph = pr->body_;
             continue;
         }
-      #if 0 // TODO: this was supposed to return the body of a block
-        if (auto s = cast<const Semicolon_Phrase>(ph)) {
-            ph = s->args_.back().expr_;
+        if (auto let = cast<const Let_Phrase>(ph)) {
+            ph = let->body_;
             continue;
         }
-      #endif
+        if (auto bin = cast<const Binary_Phrase>(ph)) {
+            if (bin->op_.kind_ == Token::k_where) {
+                ph = bin->right_;
+                continue;
+            }
+            break;
+        }
         if (auto p = cast<const Paren_Phrase>(ph)) {
             if (isa<Empty_Phrase>(p->body_))
                 break;
