@@ -4,14 +4,7 @@ switch
 
 Backtick infix operators.
 
-Fix bug: {x=1} == {x:1} should be true.
-
-GL:
-* call nonconstant functions
-* print, assert, warning, error are ignored in GL.
-* GL: && || if use lazy evaluation
-
-{foo} (or {foo:}, or {+foo}) is an abbreviation for {foo: true}.
+{foo:} is an abbreviation for {foo: true}.
 
 ## Ideas Under Development
 String:
@@ -32,15 +25,9 @@ String:
   $id is short for ${id}
 
 Libraries.
-* use(file "pathname.curv") -- arg evaluated as const expr in builtin namespace,
-  file must evaluate to a module.
 * `lib` is a record for accessing library files in /usr/local/lib/curv.
   `lib.foo` loads /usr/local/lib/curv/foo.curv.
-  * `use(lib.foo)`
-* modules: _foo is not exported, is omitted from the public dictionary.
-  curv::Module has a public dictionary and a debug dictionary.
-  _foo is private in std.curv, and in all other *.curv files.
-  Nope: information hiding is dropped from Curv.
+  * `use lib.foo`
 
 Patterns (Definitions, Binders, Lambda parameters, `for` parameter):
 * list patterns: `(x,y)` and `[x,y]`
@@ -295,26 +282,16 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
 ### Haskell algebraic type constructors
   data Maybe a = Nothing | Just a
 Constructors for this type, in Curv:
-  {Nothing}     -- or `null`, to be idiomatic. Or `"Nothing"`.
+  {Nothing:}     -- or `null`, to be idiomatic.
   {Just: 42}
-Eg,
-  align{x:{centre}, z:{above:0}}
 New feature:
-  {foo} is an abbreviation for {foo: true}
-  eg, make_shape{is_3d, ...}
-Note that {id} is a valid record pattern, which matches {id} the
-proposed record value.
-
-In {foo}, `foo` looks like a variable reference, but isn't.
-Maybe use `{foo:}` instead. Eg,
+  The expression {foo:} is an abbreviation for {foo: true}.
+  The pattern {foo:} matches the record {foo:true}, binds no parameters.
+  Can't specify a default value for a field pattern like `foo:`.
+Eg,
   align{x:{centre:}, z:{above:0}}
-Is '{foo:}' a pattern? What does it match?
-
-Another idea:
-  {+foo}  <==>  {foo: true}
-  {-foo}  <==>  {foo: false}
-for both values and patterns.
-  align{x:{+centre}, z:{above:0}}
+Eg,
+  make_shape{is_3d:, ...}
 
 ### Literal patterns:
   fact 0 = 1;
@@ -386,3 +363,10 @@ Loosely inspired by guards in Haskell 2010 and in APL Direct Functions.
     Each guard is either a condition, or pat<-expr. The latter evaluates expr
     and succeeds if the pattern matches the result (binding names as a side
     effect of successful pattern match).
+
+### Action/Generator Abstraction
+Support tail recursion as a form of iteration in list/record generators.
+This could mean:
+* New syntax: a recursive loop construct whose body can be an action or
+  generator. Previously designed as `loop` (aka Scheme named let).
+* Lambda abstraction for actions, list/record generators.

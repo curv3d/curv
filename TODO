@@ -15,10 +15,28 @@ Pattern project:
 Code cleanup:
 * rename Structure/Record/Module to Record/Dict/Module.
 * unit tests for: CLI supports compound definitions
+* unit tests for: GL error messages
 * GL_Frame::gl renamed to gl_
 * clean up Recursive_Scope::analyze_unit
 * remove curv/arg.{h,cc}, move features into value.h and context.h
-* add move to curv namespace
+* add std::move to curv namespace
+
+weird error message:
+curv> {a: [x,y] = []} = {}
+ERROR: at field .a: list has wrong size: expected 2, got 0
+line 1(columns 19-20)
+  {a: [x,y] = []} = {}
+                    ^-
+
+weird error message: The "at field .colour" qualifier really applies to the
+final item in the stack trace.
+ERROR: at field .colour: this list constructor does not support the Geometry Compiler
+file "../examples/assert.curv", line 6(columns 24-25)
+      colour p : [1-bit(f()), bit(f()), 0],
+                         ^-                
+file "../examples/assert.curv", line 21(columns 1-30)
+  gl_assert(()->(fact 5 == 120))
+  ^-----------------------------
 
 -------------------------
 Circumratio project:
@@ -36,6 +54,13 @@ Primitive shapes from Conway notation:
     is 1+1/3 to 2*sqrt(8/9). This gives a squatter cone that I like better.
   * Smallest volume that circumscribes a unit sphere. Needs calculus.
 * Maybe `cylinder`, `cone`.
+
+Fix bug: {x=1} == {x:1} should be true.
+
+GL:
+* call nonconstant functions
+* print, assert, warning, error are ignored in GL.
+* GL: && || if use lazy evaluation
 
 Shape Atlas: look at:
 * http://grasshopperprimer.com/en/1-foundations/1-3/2_working-with-attractors.html
