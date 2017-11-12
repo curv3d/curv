@@ -30,6 +30,11 @@ struct Id_Pattern : public Pattern
     {
         f[slot_] = value;
     }
+    virtual void gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee)
+    const override
+    {
+        callee[slot_] = expr.gl_eval(caller);
+    }
 };
 
 struct List_Pattern : public Pattern
@@ -55,12 +60,37 @@ struct List_Pattern : public Pattern
         for (size_t i = 0; i < items_.size(); ++i)
             items_[i]->exec(slots, list->at(i), At_Index(i, valcx), f);
     }
-#if 0
-    virtual void gl_exec(GL_Value val, const Context& valcx, GL_Frame& f)
+    virtual void gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee)
     const override
     {
+        if (auto list = dynamic_cast<List_Expr*>(&expr)) {
+            if (list->size() != items_.size()) {
+                throw Exception(At_GL_Phrase(expr.source_, &caller),
+                    stringify("list pattern: expected ",items_.size(),
+                        " items, got ",list->size()));
+            }
+            for (size_t i = 0; i < items_.size(); ++i)
+                items_[i]->gl_exec(*list->at(i), caller, callee);
+        } else {
+            this->gl_exec(
+                expr.gl_eval(caller),
+                At_GL_Phrase(expr.source_, &caller),
+                caller);
+        }
     }
-#endif
+    virtual void
+    gl_exec(GL_Value val, const Context& valcx, GL_Frame& f)
+    const override
+    {
+        if (!gl_type_is_vec(val.type))
+            throw Exception(valcx, "list pattern: argument is not a vector");
+        if (gl_type_count(val.type) != items_.size())
+            throw Exception(valcx,
+                stringify("list pattern: expected ",items_.size(),
+                    " items, got ",gl_type_count(val.type)));
+        for (size_t i = 0; i < items_.size(); ++i)
+            items_[i]->gl_exec(gl_vec_element(f, val, i), valcx, f);
+    }
 };
 
 struct Record_Pattern : public Pattern
@@ -133,6 +163,13 @@ struct Record_Pattern : public Pattern
             }
             ++p;
         }
+    }
+    virtual void gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee)
+    const override
+    {
+        // TODO: implement this
+        throw Exception(At_GL_Phrase(source_, &caller),
+            "record patterns not supported by Geometry Compiler");
     }
 };
 

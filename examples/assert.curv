@@ -3,7 +3,10 @@ let
 // green if it is true, red if it is false.
 gl_assert(f) = make_shape {
     dist : everything.dist,
-    colour p : [1-bit(f()), bit(f()), 0],
+    colour p :
+        let (x,y,z,t) = p;
+            b = bit(f());
+        in [1-b, b, 0],
     is_2d : true,
 };
 fact n =
