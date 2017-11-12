@@ -313,7 +313,7 @@ struct Atan2_Function : public Polyadic_Function
         else if (y.type == GL_Type::Num)
             rtype = x.type;
         if (rtype == GL_Type::Bool)
-            throw Exception(At_GL_Phrase(*f.call_phrase_, &f),
+            throw Exception(At_GL_Phrase(f.call_phrase_, &f),
                 "GL domain error");
 
         GL_Value result = f.gl.newvalue(rtype);
@@ -341,11 +341,11 @@ GL_Value gl_minmax(const char* name, Operation& argx, GL_Frame& f)
                 if (type == GL_Type::Num)
                     type = val.type;
                 else if (type != val.type)
-                    throw Exception(At_GL_Phrase(*op->source_, &f), stringify(
+                    throw Exception(At_GL_Phrase(op->source_, &f), stringify(
                         "GL: ",name,
                         ": vector arguments of different lengths"));
             } else {
-                throw Exception(At_GL_Phrase(*op->source_, &f), stringify(
+                throw Exception(At_GL_Phrase(op->source_, &f), stringify(
                     "GL: ",name,": argument has bad type"));
             }
         }
@@ -383,7 +383,7 @@ GL_Value gl_minmax(const char* name, Operation& argx, GL_Frame& f)
             f.gl.out << name<<"("<<name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
                 <<arg<<".z),"<<arg<<".w);\n";
         else
-            throw Exception(At_GL_Phrase(*argx.source_, &f), stringify(
+            throw Exception(At_GL_Phrase(argx.source_, &f), stringify(
                 name,": argument is not a vector"));
         return result;
     }

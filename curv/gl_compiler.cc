@@ -321,7 +321,7 @@ GL_Value gl_eval_expr(GL_Frame& f, const Operation& op, GL_Type type)
 {
     GL_Value arg = op.gl_eval(f);
     if (arg.type != type) {
-        throw Exception(At_GL_Phrase(*op.source_, &f),
+        throw Exception(At_GL_Phrase(op.source_, &f),
             stringify("wrong argument type: expected ",type,", got ",arg.type));
     }
     return arg;
@@ -371,20 +371,20 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& source)
         }
     }
 error:
-    throw Exception(At_GL_Phrase(source, &f),
+    throw Exception(At_GL_Phrase(share(source), &f),
         stringify("value ",val," is not supported by the Geometry Compiler"));
 }
 
 GL_Value Operation::gl_eval(GL_Frame& f) const
 {
-    throw Exception(At_GL_Phrase(*source_, &f), stringify(
+    throw Exception(At_GL_Phrase(source_, &f), stringify(
         "this expression is not supported by the Geometry Compiler: ",
         boost::core::demangle(typeid(*this).name())));
 }
 
 void Operation::gl_exec(GL_Frame& f) const
 {
-    throw Exception(At_GL_Phrase(*source_, &f), stringify(
+    throw Exception(At_GL_Phrase(source_, &f), stringify(
         "this action is not supported by the Geometry Compiler: ",
         boost::core::demangle(typeid(*this).name())));
 }
@@ -398,7 +398,7 @@ GL_Value Negative_Expr::gl_eval(GL_Frame& f) const
 {
     auto x = arg_->gl_eval(f);
     if (!gl_type_numeric(x.type))
-        throw Exception(At_GL_Phrase(*arg_->source_, &f),
+        throw Exception(At_GL_Phrase(arg_->source_, &f),
             "argument not numeric");
     GL_Value result = f.gl.newvalue(x.type);
     f.gl.out<<"  "<<x.type<<" "<<result<<" = -"<<x<< ";\n";
@@ -442,21 +442,21 @@ gl_arith_expr(GL_Frame& f, const Phrase& source,
     else if (y.type == GL_Type::Num)
         rtype = x.type;
     if (rtype == GL_Type::Bool)
-        throw Exception(At_GL_Phrase(source, &f),
+        throw Exception(At_GL_Phrase(share(source), &f),
             stringify("GL domain error: ",x.type,op,y.type));
 
     GL_Value result = f.gl.newvalue(rtype);
     f.gl.out <<"  "<<rtype<<" "<<result<<" = ";
     if (isalpha(*op)) {
         f.gl.out << op << "(";
-        gl_put_as(f, x, At_GL_Phrase(*xexpr.source_, &f), rtype);
+        gl_put_as(f, x, At_GL_Phrase(xexpr.source_, &f), rtype);
         f.gl.out << ",";
-        gl_put_as(f, y, At_GL_Phrase(*yexpr.source_, &f), rtype);
+        gl_put_as(f, y, At_GL_Phrase(yexpr.source_, &f), rtype);
         f.gl.out << ")";
     } else {
-        gl_put_as(f, x, At_GL_Phrase(*xexpr.source_, &f), rtype);
+        gl_put_as(f, x, At_GL_Phrase(xexpr.source_, &f), rtype);
         f.gl.out << op;
-        gl_put_as(f, y, At_GL_Phrase(*yexpr.source_, &f), rtype);
+        gl_put_as(f, y, At_GL_Phrase(yexpr.source_, &f), rtype);
     }
     f.gl.out << ";\n";
     return result;
@@ -497,9 +497,9 @@ Value gl_constify(Operation& op, GL_Frame& f)
         Value base = gl_constify(*dot->base_, f);
         if (dot->selector_.id_ != nullptr)
             return base.at(dot->selector_.id_->atom_,
-                At_GL_Phrase(*op.source_, &f));
+                At_GL_Phrase(op.source_, &f));
         else
-            throw Exception(At_GL_Phrase(*dot->selector_.string_->source_, &f),
+            throw Exception(At_GL_Phrase(dot->selector_.string_->source_, &f),
                 "Geometry Compiler: not an identifier");
     }
     else if (auto ref = dynamic_cast<Nonlocal_Data_Ref*>(&op))
@@ -516,7 +516,7 @@ Value gl_constify(Operation& op, GL_Frame& f)
         }
         return {listval};
     }
-    throw Exception(At_GL_Phrase(*op.source_, &f),
+    throw Exception(At_GL_Phrase(op.source_, &f),
         "Geometry Compiler: not a constant");
 }
 
@@ -584,7 +584,7 @@ Pattern_Setter::gl_exec(GL_Frame& f) const
 {
     assert(module_slot_ == (slot_t)(-1));
     GL_Value val = definiens_->gl_eval(f);
-    pattern_->gl_exec(val, At_GL_Phrase(*definiens_->source_, &f), f);
+    pattern_->gl_exec(val, At_GL_Phrase(definiens_->source_, &f), f);
 }
 
 char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
@@ -606,19 +606,19 @@ GL_Value gl_eval_index_expr(
     GL_Value arg1, const Phrase& src1, Operation& index, GL_Frame& f)
 {
     if (gl_type_count(arg1.type) < 2)
-        throw Exception(At_GL_Phrase(src1, &f), "not a vector");
+        throw Exception(At_GL_Phrase(share(src1), &f), "not a vector");
 
     auto k = gl_constify(index, f);
     if (auto list = k.dycast<List>()) {
         if (list->size() < 2 || list->size() > 4) {
-            throw Exception(At_GL_Phrase(*index.source_, &f),
+            throw Exception(At_GL_Phrase(index.source_, &f),
                 "list index vector must have between 2 and 4 elements");
         }
         char swizzle[5];
         memset(swizzle, 0, 5);
         for (size_t i = 0; i <list->size(); ++i) {
             swizzle[i] = gl_index_letter((*list)[i], gl_type_count(arg1.type),
-                At_Index(i, At_GL_Phrase(*index.source_, &f)));
+                At_Index(i, At_GL_Phrase(index.source_, &f)));
         }
         GL_Value result = f.gl.newvalue(gl_vec_type(list->size()));
         f.gl.out << "  " << result.type << " "
@@ -636,7 +636,7 @@ GL_Value gl_eval_index_expr(
     else if (num == 3.0 && gl_type_count(arg1.type) > 3)
         arg2 = ".w";
     if (arg2 == nullptr)
-        throw Exception(At_GL_Phrase(*index.source_, &f),
+        throw Exception(At_GL_Phrase(index.source_, &f),
             stringify("Geometry Compiler: got ",k,", expected 0..",
                 gl_type_count(arg1.type)-1));
 
@@ -657,7 +657,7 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
     if (gl_try_eval(*fun_, f, glval)) {
         auto list = cast<List_Expr>(arg_);
         if (list == nullptr || list->size() != 1)
-            throw Exception(At_GL_Phrase(*arg_->source_, &f),
+            throw Exception(At_GL_Phrase(arg_->source_, &f),
                 "Geometry Compiler: expected '[index]' expression");
         return gl_eval_index_expr(glval, *fun_->source_, *list->at(0), f);
     }
@@ -665,7 +665,7 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
     if (auto fun = val.dycast<Function>()) {
         return fun->gl_call_expr(*arg_, call_phrase(), f);
     }
-    throw Exception(At_GL_Phrase(*fun_->source_, &f),
+    throw Exception(At_GL_Phrase(fun_->source_, &f),
         stringify("Geometry Compiler: ",val," is not a function"));
 }
 
@@ -714,7 +714,7 @@ GL_Value List_Expr_Base::gl_eval(GL_Frame& f) const
             <<e1<<","<<e2<<","<<e3<<","<<e4<<");\n";
         return result;
     }
-    throw Exception(At_GL_Phrase(*source_, &f),
+    throw Exception(At_GL_Phrase(source_, &f),
         "this list constructor does not support the Geometry Compiler");
 }
 
@@ -750,7 +750,7 @@ GL_Value If_Else_Op::gl_eval(GL_Frame& f) const
     auto arg2 = arg2_->gl_eval(f);
     auto arg3 = arg3_->gl_eval(f);
     if (arg2.type != arg3.type) {
-        throw Exception(At_GL_Phrase(*source_, &f),
+        throw Exception(At_GL_Phrase(source_, &f),
             "Geometry Compiler: if: type mismatch in 'then' and 'else' arms");
     }
     GL_Value result = f.gl.newvalue(arg2.type);
@@ -786,7 +786,7 @@ void For_Op::gl_exec(GL_Frame& f) const
 {
     auto range = cast<const Range_Expr>(list_);
     if (range == nullptr)
-        throw Exception(At_GL_Phrase(*list_->source_, &f),
+        throw Exception(At_GL_Phrase(list_->source_, &f),
             "GL: not a range");
     /*
     auto first = gl_eval_expr(f, *range->arg1_, GL_Type::Num);
@@ -794,12 +794,12 @@ void For_Op::gl_exec(GL_Frame& f) const
     auto step = gl_eval_expr(f, *range->arg3_, GL_Type::Num);
     */
     double first = gl_constify(*range->arg1_, f)
-        .to_num(At_GL_Phrase(*range->arg1_->source_, &f));
+        .to_num(At_GL_Phrase(range->arg1_->source_, &f));
     double last = gl_constify(*range->arg2_, f)
-        .to_num(At_GL_Phrase(*range->arg2_->source_, &f));
+        .to_num(At_GL_Phrase(range->arg2_->source_, &f));
     double step = range->arg3_ != nullptr
         ? gl_constify(*range->arg3_, f)
-          .to_num(At_GL_Phrase(*range->arg3_->source_, &f))
+          .to_num(At_GL_Phrase(range->arg3_->source_, &f))
         : 1.0;
     auto i = f.gl.newvalue(GL_Type::Num);
     f.gl.out << "  for (float " << i << "=" << dfmt(first, dfmt::EXPR) << ";"

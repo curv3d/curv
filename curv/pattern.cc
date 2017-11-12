@@ -223,7 +223,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
 void
 Pattern::gl_exec(GL_Value val, const Context& valcx, GL_Frame& f) const
 {
-    throw Exception(At_GL_Phrase(*source_, &f),
+    throw Exception(At_GL_Phrase(source_, &f),
         "pattern not supported by Geometry Compiler");
 }
 

@@ -23,10 +23,10 @@ struct At_GL_Frame : public Context
 /// Exception Context where we know the Phrase that contains the error.
 struct At_GL_Phrase : public Context
 {
-    const Phrase& phrase_;
+    Shared<const Phrase> phrase_;
     GL_Frame* frame_;
 
-    At_GL_Phrase(const Phrase& phrase, GL_Frame* frame);
+    At_GL_Phrase(Shared<const Phrase> phrase, GL_Frame* frame);
 
     virtual void get_locations(std::list<Location>& locs) const override;
     Shared<const String> rewrite_message(Shared<const String>) const override;
