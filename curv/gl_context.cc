@@ -13,6 +13,12 @@ At_GL_Frame::get_locations(std::list<Location>& locs) const
     get_gl_frame_locations(frame_, locs);
 }
 
+Shared<const String>
+At_GL_Frame::rewrite_message(Shared<const String> msg) const
+{
+    return gl_frame_rewrite_message(frame_, msg);
+}
+
 void
 get_gl_frame_locations(const GL_Frame* f, std::list<Location>& locs)
 {
@@ -22,6 +28,16 @@ get_gl_frame_locations(const GL_Frame* f, std::list<Location>& locs)
         if (f->root_context_ != nullptr)
             f->root_context_->get_locations(locs);
     }
+}
+
+Shared<const String>
+gl_frame_rewrite_message(const GL_Frame* f, Shared<const String> msg)
+{
+    for (; f != nullptr; f = f->parent_frame_) {
+        if (f->root_context_ != nullptr)
+            msg = f->root_context_->rewrite_message(msg);
+    }
+    return msg;
 }
 
 At_GL_Phrase::At_GL_Phrase(const Phrase& phrase, GL_Frame* frame)
@@ -35,6 +51,12 @@ At_GL_Phrase::get_locations(std::list<Location>& locs) const
     get_gl_frame_locations(frame_, locs);
 }
 
+Shared<const String>
+At_GL_Phrase::rewrite_message(Shared<const String> msg) const
+{
+    return gl_frame_rewrite_message(frame_, msg);
+}
+
 void At_GL_Arg::get_locations(std::list<Location>& locs) const
 {
     get_gl_frame_locations(&eval_frame_, locs);
@@ -43,7 +65,8 @@ void At_GL_Arg::get_locations(std::list<Location>& locs) const
 Shared<const String>
 At_GL_Arg::rewrite_message(Shared<const String> msg) const
 {
-    return stringify("argument[",arg_index_,"]: ", msg);
+    return gl_frame_rewrite_message(&eval_frame_,
+        stringify("argument[",arg_index_,"]: ", msg));
 }
 
 } // namespace curv

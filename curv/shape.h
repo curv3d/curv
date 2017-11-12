@@ -31,6 +31,9 @@ struct BBox
 
 struct Shape_Recognizer
 {
+    // describes the source code for the shape expression
+    const Context& context_;
+
     // shape fields, filled in by recognize()
     bool is_2d_;
     bool is_3d_;
@@ -38,14 +41,16 @@ struct Shape_Recognizer
     Shared<Function> dist_;
     Shared<Function> colour_;
 
+    Shape_Recognizer(const Context& cx) : context_(cx) {}
+
     // If the value is a shape, fill in the shape fields and return true.
-    bool recognize(Value, const Context&);
+    bool recognize(Value);
 
     /// Invoke the Geometry Compiler on the shape's `dist` function.
-    GL_Value gl_dist(GL_Value, GL_Frame&) const;
+    GL_Value gl_dist(GL_Value, GL_Compiler&) const;
 
     /// Invoke the Geometry Compiler on the shape's `colour` function.
-    GL_Value gl_colour(GL_Value, GL_Frame&) const;
+    GL_Value gl_colour(GL_Value, GL_Compiler&) const;
 };
 
 } // namespace curv

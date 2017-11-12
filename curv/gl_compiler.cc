@@ -33,7 +33,6 @@ void gl_compile_2d(const Shape_Recognizer& shape, std::ostream& out, const Conte
 {
     GL_Compiler gl(out);
     GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
-    auto frame = GL_Frame::make(0, gl, &cx, nullptr, nullptr);
 
     out <<
         "#ifdef GLSLVIEWER\n"
@@ -42,9 +41,9 @@ void gl_compile_2d(const Shape_Recognizer& shape, std::ostream& out, const Conte
         "float main_dist(vec4 " << dist_param << ", out vec4 colour)\n"
         "{\n";
 
-    GL_Value result = shape.gl_dist(dist_param, *frame);
+    GL_Value result = shape.gl_dist(dist_param, gl);
 
-    GL_Value colour = shape.gl_colour(dist_param, *frame);
+    GL_Value colour = shape.gl_colour(dist_param, gl);
     out << "  colour = vec4(" << colour << ", 1.0);\n";
 
     out <<
@@ -93,7 +92,6 @@ void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Conte
 {
     GL_Compiler gl(out);
     GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
-    auto frame = GL_Frame::make(0, gl, &cx, nullptr, nullptr);
 
     out <<
         "#ifdef GLSLVIEWER\n"
@@ -104,9 +102,9 @@ void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Conte
         "vec4 map(vec4 " << dist_param << ")\n"
         "{\n";
 
-    GL_Value result = shape.gl_dist(dist_param, *frame);
+    GL_Value result = shape.gl_dist(dist_param, gl);
 
-    GL_Value colour = shape.gl_colour(dist_param, *frame);
+    GL_Value colour = shape.gl_colour(dist_param, gl);
     out << "  return vec4(" << result << ",";
     out << colour << ");\n";
 

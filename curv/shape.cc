@@ -37,7 +37,7 @@ BBox::from_value(Value val, const Context& cx)
 }
 
 bool
-Shape_Recognizer::recognize(Value val, const Context& cx)
+Shape_Recognizer::recognize(Value val)
 {
     static Atom is_2d_key = "is_2d";
     static Atom is_3d_key = "is_3d";
@@ -55,37 +55,39 @@ Shape_Recognizer::recognize(Value val, const Context& cx)
     if (s == nullptr)
         return false;
     if (s->hasfield(is_2d_key))
-        is_2d_val = s->getfield(is_2d_key, cx);
+        is_2d_val = s->getfield(is_2d_key, context_);
     else
         return false;
     if (s->hasfield(is_3d_key))
-        is_3d_val = s->getfield(is_3d_key, cx);
+        is_3d_val = s->getfield(is_3d_key, context_);
     else
         return false;
     if (s->hasfield(bbox_key))
-        bbox_val = s->getfield(bbox_key, cx);
+        bbox_val = s->getfield(bbox_key, context_);
     else
         return false;
     if (s->hasfield(dist_key))
-        dist_val = s->getfield(dist_key, cx);
+        dist_val = s->getfield(dist_key, context_);
     else
         return false;
     if (s->hasfield(colour_key))
-        colour_val = s->getfield(colour_key, cx);
+        colour_val = s->getfield(colour_key, context_);
     else
         return false;
 
-    is_2d_ = is_2d_val.to_bool(At_Field("is_2d", cx));
-    is_3d_ = is_3d_val.to_bool(At_Field("is_3d", cx));
+    is_2d_ = is_2d_val.to_bool(At_Field("is_2d", context_));
+    is_3d_ = is_3d_val.to_bool(At_Field("is_3d", context_));
     if (!is_2d_ && !is_3d_)
-        throw Exception(cx, "at least one of is_2d and is_3d must be true");
-    bbox_ = BBox::from_value(bbox_val, At_Field("bbox", cx));
+        throw Exception(context_,
+            "at least one of is_2d and is_3d must be true");
+    bbox_ = BBox::from_value(bbox_val, At_Field("bbox", context_));
     dist_ = dist_val.dycast<Function>();
     if (dist_ == nullptr)
-        throw Exception(At_Field("dist", cx), "dist is not a function");
+        throw Exception(At_Field("dist", context_), "dist is not a function");
     colour_ = colour_val.dycast<Function>();
     if (colour_ == nullptr)
-        throw Exception(At_Field("colour", cx), "colour is not a function");
+        throw Exception(At_Field("colour", context_),
+            "colour is not a function");
 
     return true;
 }
@@ -100,30 +102,26 @@ struct GL_Data_Ref : public Operation
 };
 
 GL_Value
-Shape_Recognizer::gl_dist(GL_Value arg, GL_Frame& f) const
+Shape_Recognizer::gl_dist(GL_Value arg, GL_Compiler& gl) const
 {
-    if (arg.type != GL_Type::Vec4)
-        throw Exception(At_GL_Frame(&f), stringify(
-            "dist function argument must be vec4, is ", arg.type));
-    auto f2 = GL_Frame::make(dist_->nslots_, f.gl, nullptr, &f, nullptr);
+    assert(arg.type == GL_Type::Vec4);
+    const At_Field cx("dist", context_);
+    auto f = GL_Frame::make(0, gl, &cx, nullptr, nullptr);
     auto aref = make<GL_Data_Ref>(nullptr, arg);
-    auto result = dist_->gl_call_expr(*aref, nullptr, *f2);
+    auto result = dist_->gl_call_expr(*aref, nullptr, *f);
     if (result.type != GL_Type::Num)
-        throw Exception(At_GL_Frame(&f),
-            stringify("dist function returns ",result.type));
+        throw Exception(cx, stringify("dist function returns ",result.type));
     return result;
 }
 
 GL_Value
-Shape_Recognizer::gl_colour(GL_Value arg, GL_Frame& f) const
+Shape_Recognizer::gl_colour(GL_Value arg, GL_Compiler& gl) const
 {
-    if (arg.type != GL_Type::Vec4)
-        throw Exception(At_GL_Frame(&f), stringify(
-            "colour function argument must be vec4, is ", arg.type));
-    At_GL_Frame cx(&f);
-    auto f2 = GL_Frame::make(colour_->nslots_, f.gl, nullptr, &f, nullptr);
+    assert(arg.type == GL_Type::Vec4);
+    const At_Field cx("colour", context_);
+    auto f = GL_Frame::make(0, gl, &cx, nullptr, nullptr);
     auto aref = make<GL_Data_Ref>(nullptr, arg);
-    auto result = colour_->gl_call_expr(*aref, nullptr, *f2);
+    auto result = colour_->gl_call_expr(*aref, nullptr, *f);
     if (result.type != GL_Type::Vec3)
         throw Exception(cx, stringify("colour function returns ",result.type));
     return result;

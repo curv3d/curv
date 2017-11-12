@@ -113,8 +113,8 @@ void
 display_shape(curv::Value value, const curv::Context &cx, bool block = false)
 {
     static bool viewer = false;
-    curv::Shape_Recognizer shape;
-    if (shape.recognize(value, cx)) {
+    curv::Shape_Recognizer shape(cx);
+    if (shape.recognize(value)) {
         auto filename = make_tempfile();
         std::ofstream f(filename->c_str());
         curv::gl_compile(shape, f, cx);
@@ -184,8 +184,8 @@ void export_curv(curv::Value value, const curv::Context&, std::ostream& out)
 }
 void export_frag(curv::Value value, const curv::Context& cx, std::ostream& out)
 {
-    curv::Shape_Recognizer shape;
-    if (shape.recognize(value, cx))
+    curv::Shape_Recognizer shape(cx);
+    if (shape.recognize(value))
         curv::gl_compile(shape, std::cout, cx);
     else
         throw curv::Exception(cx, "not a shape");
@@ -279,8 +279,8 @@ void export_json(curv::Value value, const curv::Context& cx, std::ostream& out)
 }
 void export_png(curv::Value value, const curv::Context& cx, std::ostream& out)
 {
-    curv::Shape_Recognizer shape;
-    if (shape.recognize(value, cx)) {
+    curv::Shape_Recognizer shape(cx);
+    if (shape.recognize(value)) {
         auto fragname = curv::stringify(",curv",getpid(),".frag");
         auto pngname = curv::stringify(",curv",getpid(),".png");
         std::ofstream f(fragname->c_str());
