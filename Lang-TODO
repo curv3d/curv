@@ -6,6 +6,8 @@ Backtick infix operators.
 
 {foo:} is an abbreviation for {foo: true}.
 
+lib
+
 ## Ideas Under Development
 String:
 * Conversion between strings and lists of (integer) code points:
@@ -40,7 +42,7 @@ Patterns (Definitions, Binders, Lambda parameters, `for` parameter):
     {fieldName: generalPattern}, eg: [size: (x,y,z)]
 * `var@pattern` matches pattern and binds `var` to the whole value matched.
 * `_` can be used in place of a parameter name, it means don't bind a name.
-* see also Parameter Preconditions
+* see also Casts and Parameter Preconditions
 * see also Literal Patterns
 
 Switches (depends on refutable patterns)
@@ -48,6 +50,28 @@ Switches (depends on refutable patterns)
 * f = switch[(x,y,z)->..., a->...]; can be written as
     f(x,y,z)=...;
     f a = ...;
+
+Casts:
+* A *cast* is an idempotent function that maps a member of a type onto itself,
+  optionally converts non-member values to members (a type conversion),
+  throws an exception for argument values that aren't members of the type or
+  convertible to the type. Every function has a parameter pattern. For a cast,
+  the parameter pattern match fails for values that are clearly not a member of
+  the type. For values that are considered corrupted instances of the type,
+  the pattern match succeeds but an assertion fails.
+* Curv has built-in cast functions for primitive types. Null, Bool, Num, String,
+  List, Record, Function.
+* `cast pat` is a pattern that matches `pat`. The `cast` function is first
+  applied to the value to be matched, then the resulting value is matched
+  by `pat`.
+* Example:
+    fact = switch [
+        0 -> 1;
+        Nat n -> n * fact(n - 1);
+    ];
+* "is(val,cast)" or "val `is` cast" returns true if the cast pattern succeeds,
+  returns false if the cast pattern fails, and aborts with an error if the
+  cast body aborts.
 
 Indexing:
 * a[i] := item, i is an integer
@@ -144,9 +168,12 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
     ensure sorted <<
     <body of sort function>;
 * parameter preconditions:
-  * (predicate x) -> body
+  * (predicate x) -> body -- this conflicts with Cast syntax
   * (x >= 0) -> body
   * (x >= 0 && x <= 1) -> body
+* We want the ability to add arbitrary predicates to a pattern match.
+  See 'switch', 'cast' and 'guard expressions' for use cases.
+  `pat && condition` seems like a promising syntax.
 
 ### Debug actions:
 * print_timing(string,expr), returns value of expr

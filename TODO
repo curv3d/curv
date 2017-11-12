@@ -7,7 +7,11 @@ What remains for MVP?
 * STL export: Get open source marching cubes in OpenCL. Benchmark.
 
 Pattern project:
-* Contexts: assignment, for, lambda, binder.
+* GL pattern matching.
+  * extend Pattern_Setter::gl_exec. Match patterns in definiens_, don't just
+    gl_eval it. pattern->gl_exec(expr, caller_frame, callee_frame).
+* lambda parameter patterns.
+* other contexts: assignment, for, binder.
 * bool pattern->match(Value, vsrc, Frame&)
 * bool function->match(Value, Frame&)
 * switch[f1,f2]
