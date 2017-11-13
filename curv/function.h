@@ -124,10 +124,10 @@ struct Closure : public Function
         nonlocals_(share(const_cast<Module&>(nonlocals)))
     {}
 
-    virtual Value call(Value, Frame& args) override;
+    virtual Value call(Value, Frame&) override;
 
     // generate a call to the function during geometry compilation
-    virtual GL_Value gl_call_expr(Operation&, const Call_Phrase*, GL_Frame&) const;
+    virtual GL_Value gl_call_expr(Operation&, const Call_Phrase*, GL_Frame&) const override;
 };
 
 } // namespace curv
