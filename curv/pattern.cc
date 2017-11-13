@@ -33,7 +33,13 @@ struct Id_Pattern : public Pattern
     virtual void gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee)
     const override
     {
-        callee[slot_] = expr.gl_eval(caller);
+        GL_Value val = expr.gl_eval(caller);
+        // Why am I creating a new var and initializing it with val?
+        // This is useless for an immutable binding (the common case), but
+        // necessary for a sequential variable that might be reassigned later.
+        GL_Value var = caller.gl.newvalue(val.type);
+        caller.gl.out << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
+        callee[slot_] = var;
     }
 };
 

@@ -583,13 +583,7 @@ void
 Pattern_Setter::gl_exec(GL_Frame& f) const
 {
     assert(module_slot_ == (slot_t)(-1));
-    GL_Value val = definiens_->gl_eval(f);
-    // Why am I creating a new var and initializing it with val?
-    // This is useless for a recursive (immutable) variable, but it is
-    // necessary for a sequential variable that might be reassigned later.
-    GL_Value var = f.gl.newvalue(val.type);
-    f.gl.out << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
-    pattern_->gl_exec(var, At_GL_Phrase(definiens_->source_, &f), f);
+    pattern_->gl_exec(*definiens_, f, f);
 }
 
 char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
