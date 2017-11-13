@@ -7,14 +7,18 @@ What remains for MVP?
 * STL export: Get open source marching cubes in OpenCL. Benchmark.
 
 Pattern project:
-* GL pattern matching.
-  * extend Pattern_Setter::gl_exec. Match patterns in definiens_, don't just
-    gl_eval it. pattern->gl_exec(expr, caller_frame, callee_frame).
-* lambda parameter patterns.
-* other contexts: assignment, for, binder.
+* GL: records
+* contexts: assignment, for, binder.
+* features: _, [a,...b], {a,...}, x@pat, cast pat, null true 0 "x", pat&&cond
 * bool pattern->match(Value, vsrc, Frame&)
 * bool function->match(Value, Frame&)
 * switch[f1,f2]
+
+Language extensions:
+* backtick infix operators
+* {foo:} abbreviates {foo: true}
+* lib
+* casts
 
 Code cleanup:
 * rename Structure/Record/Module to Record/Dict/Module.
@@ -25,7 +29,7 @@ Code cleanup:
 * remove curv/arg.{h,cc}, move features into value.h and context.h
 * add std::move to curv namespace
 
-weird error message:
+weird error message: Should underline the default value expression.
 curv> {a: [x,y] = []} = {}
 ERROR: at field .a: list has wrong size: expected 2, got 0
 line 1(columns 19-20)

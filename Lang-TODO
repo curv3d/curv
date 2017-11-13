@@ -372,7 +372,7 @@ let:
   y=2
 in x+y
 
-Also, `do:`, `[:` and `{:`.
+Also, `do:`, `where:`, `[:` and `{:`.
 
 ### Versioned External Packages
 Like Rust Cargo. An external library has a GIT url and a version.
