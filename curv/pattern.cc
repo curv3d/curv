@@ -25,10 +25,10 @@ struct Id_Pattern : public Pattern
     {
         slots[slot_] = value;
     }
-    virtual void gl_exec(GL_Value value, const Context&, GL_Frame& f)
+    virtual void gl_exec(GL_Value value, const Context&, GL_Frame& callee)
     const override
     {
-        f[slot_] = value;
+        callee[slot_] = value;
     }
     virtual void gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee)
     const override
@@ -74,12 +74,12 @@ struct List_Pattern : public Pattern
         } else {
             this->gl_exec(
                 expr.gl_eval(caller),
-                At_GL_Phrase(expr.source_, &caller),
-                caller);
+                At_GL_Phrase(expr.source_, &callee),
+                callee);
         }
     }
     virtual void
-    gl_exec(GL_Value val, const Context& valcx, GL_Frame& f)
+    gl_exec(GL_Value val, const Context& valcx, GL_Frame& callee)
     const override
     {
         if (!gl_type_is_vec(val.type))
@@ -89,7 +89,7 @@ struct List_Pattern : public Pattern
                 stringify("list pattern: expected ",items_.size(),
                     " items, got ",gl_type_count(val.type)));
         for (size_t i = 0; i < items_.size(); ++i)
-            items_[i]->gl_exec(gl_vec_element(f, val, i), valcx, f);
+            items_[i]->gl_exec(gl_vec_element(callee, val, i), valcx, callee);
     }
 };
 
@@ -258,9 +258,9 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
 }
 
 void
-Pattern::gl_exec(GL_Value val, const Context& valcx, GL_Frame& f) const
+Pattern::gl_exec(GL_Value val, const Context& valcx, GL_Frame& callee) const
 {
-    throw Exception(At_GL_Phrase(source_, &f),
+    throw Exception(At_GL_Phrase(source_, &callee),
         "pattern not supported by Geometry Compiler");
 }
 

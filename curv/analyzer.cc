@@ -242,41 +242,27 @@ Unary_Phrase::as_definition(Environ& env)
 Shared<Meaning>
 Lambda_Phrase::analyze(Environ& env) const
 {
-    // Syntax: id->expr or (a,b,...)->expr
-    // TODO: pattern matching: [a,b]->expr, {a,b}->expr
-
-    // phase 1: Create a dictionary of parameters.
-    Atom_Map<slot_t> params;
-    slot_t slot = 0;
-    each_argument(*left_, [&](const Phrase& p)->void {
-        if (auto id = dynamic_cast<const Identifier*>(&p))
-            params[id->atom_] = slot++;
-        else
-            throw Exception(At_Phrase(p, env), "not a parameter");
-    });
-
-    // Phase 2: make an Environ from the parameters and analyze the body.
-    struct Arg_Environ : public Environ
+    struct Arg_Scope : public Scope
     {
-        Atom_Map<slot_t>& names_;
+        bool shared_nonlocals_;
         Shared<Module::Dictionary> nonlocal_dictionary_ =
             make<Module::Dictionary>();
         std::vector<Shared<Operation>> nonlocal_exprs_;
-        bool shared_nonlocals_;
 
-        Arg_Environ(
-            Environ& parent, Atom_Map<slot_t>& names, bool shared_nonlocals)
+        Arg_Scope(Environ& parent, bool shared_nonlocals)
         :
-            Environ(&parent), names_(names), shared_nonlocals_(shared_nonlocals)
+            Scope(parent),
+            shared_nonlocals_(shared_nonlocals)
         {
-            frame_nslots_ = names.size();
-            frame_maxslots_ = names.size();
+            frame_nslots_ = 0;
+            frame_maxslots_ = 0;
         }
+
         virtual Shared<Meaning> single_lookup(const Identifier& id)
         {
-            auto p = names_.find(id.atom_);
-            if (p != names_.end())
-                return make<Data_Ref>(share(id), p->second);
+            auto b = dictionary_.find(id.atom_);
+            if (b != dictionary_.end())
+                return make<Data_Ref>(share(id), b->second.slot_index_);
             if (shared_nonlocals_)
                 return parent_->single_lookup(id);
             auto n = nonlocal_dictionary_->find(id.atom_);
@@ -293,17 +279,17 @@ Lambda_Phrase::analyze(Environ& env) const
             }
             return m;
         }
-    };
-    Arg_Environ env2(env, params, shared_nonlocals_);
-    auto expr = analyze_op(*right_, env2);
-    auto src = share(*this);
+    } scope(env, shared_nonlocals_);
 
+    auto src = share(*this);
+    auto pattern = make_pattern(*left_, scope, 0);
+    auto expr = analyze_op(*right_, scope);
     auto nonlocals = make<Enum_Module_Expr>(src,
-        std::move(env2.nonlocal_dictionary_),
-        std::move(env2.nonlocal_exprs_));
+        std::move(scope.nonlocal_dictionary_),
+        std::move(scope.nonlocal_exprs_));
 
     return make<Lambda_Expr>(
-        src, expr, nonlocals, params.size(), env2.frame_maxslots_);
+        src, pattern, expr, nonlocals, scope.frame_maxslots_);
 }
 
 Shared<Meaning>

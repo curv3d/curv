@@ -769,9 +769,9 @@ Value
 Lambda_Expr::eval(Frame& f) const
 {
     return Value{make<Closure>(
+        pattern_,
         body_,
         nonlocals_->eval_module(f),
-        nargs_,
         nslots_)};
 }
 

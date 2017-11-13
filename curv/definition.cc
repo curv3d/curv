@@ -41,7 +41,7 @@ Function_Definition::analyze(Environ& env)
     auto expr = analyze_op(*lambda_phrase_, env);
     auto lambda = cast<Lambda_Expr>(expr);
     assert(lambda != nullptr);
-    lambda_ = make<Lambda>(lambda->body_, lambda->nargs_, lambda->nslots_);
+    lambda_ = make<Lambda>(lambda->pattern_, lambda->body_, lambda->nslots_);
 }
 Shared<Operation>
 Data_Definition::make_setter(slot_t module_slot)

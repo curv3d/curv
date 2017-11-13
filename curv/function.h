@@ -75,17 +75,18 @@ struct Polyadic_Function : public Function
 /// It's not a proper value, but can be stored in a Value slot.
 struct Lambda : public Ref_Value
 {
+    Shared<const Pattern> pattern_;
     Shared<Operation> expr_;
-    unsigned nargs_;
     slot_t nslots_; // size of call frame
 
     Lambda(
+        Shared<const Pattern> pattern,
         Shared<Operation> expr,
-        unsigned nargs, slot_t nslots)
+        slot_t nslots)
     :
         Ref_Value(ty_lambda),
+        pattern_(std::move(pattern)),
         expr_(std::move(expr)),
-        nargs_(nargs),
         nslots_(nslots)
     {}
 
@@ -95,17 +96,20 @@ struct Lambda : public Ref_Value
 
 /// A user-defined function value,
 /// represented by a closure over a lambda expression.
-struct Closure : public Polyadic_Function
+struct Closure : public Function
 {
+    Shared<const Pattern> pattern_;
     Shared<Operation> expr_;
     Shared<Module> nonlocals_;
 
     Closure(
+        Shared<const Pattern> pattern,
         Shared<Operation> expr,
         Shared<Module> nonlocals,
-        unsigned nargs, slot_t nslots)
+        slot_t nslots)
     :
-        Polyadic_Function(nargs, nslots),
+        Function(nslots),
+        pattern_(std::move(pattern)),
         expr_(std::move(expr)),
         nonlocals_(std::move(nonlocals))
     {}
@@ -114,15 +118,16 @@ struct Closure : public Polyadic_Function
         Lambda& lambda,
         const Module& nonlocals)
     :
-        Polyadic_Function(lambda.nargs_, lambda.nslots_),
+        Function(lambda.nslots_),
+        pattern_(lambda.pattern_),
         expr_(lambda.expr_),
         nonlocals_(share(const_cast<Module&>(nonlocals)))
     {}
 
-    virtual Value call(Frame& args) override;
+    virtual Value call(Value, Frame& args) override;
 
     // generate a call to the function during geometry compilation
-     virtual GL_Value gl_call(GL_Frame&) const override;
+    virtual GL_Value gl_call_expr(Operation&, const Call_Phrase*, GL_Frame&) const;
 };
 
 } // namespace curv

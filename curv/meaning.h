@@ -789,22 +789,22 @@ struct If_Else_Op : public Operation
 
 struct Lambda_Expr : public Just_Expression
 {
+    Shared<const Pattern> pattern_;
     Shared<Operation> body_;
     Shared<Module_Expr> nonlocals_;
-    slot_t nargs_;
     slot_t nslots_;
 
     Lambda_Expr(
         Shared<const Phrase> source,
+        Shared<const Pattern> pattern,
         Shared<Operation> body,
         Shared<Module_Expr> nonlocals,
-        slot_t nargs,
         slot_t nslots)
     :
         Just_Expression(source),
+        pattern_(std::move(pattern)),
         body_(std::move(body)),
         nonlocals_(std::move(nonlocals)),
-        nargs_(nargs),
         nslots_(nslots)
     {}
 

@@ -81,17 +81,23 @@ Polyadic_Function::gl_call(GL_Frame& f) const
 }
 
 Value
-Closure::call(Frame& f)
+Closure::call(Value arg, Frame& f)
 {
     f.nonlocals_ = &*nonlocals_;
+    pattern_->exec(f.array_, arg, At_Phrase(*f.call_phrase_->arg_,&f), f);
     return expr_->eval(f);
 }
 
 GL_Value
-Closure::gl_call(GL_Frame& f) const
+Closure::gl_call_expr(Operation& arg, const Call_Phrase* cp, GL_Frame& f) const
 {
-    f.nonlocals_ = &*nonlocals_;
-    return expr_->gl_eval(f);
+    // create a frame to call this closure
+    auto f2 = GL_Frame::make(nslots_, f.gl, nullptr, &f, cp);
+    f2->nonlocals_ = &*nonlocals_;
+    // match pattern against argument, store formal parameters in frame
+    pattern_->gl_exec(arg, f, *f2);
+    // evaluation function body, return result.
+    return expr_->gl_eval(*f2);
 }
 
 void
