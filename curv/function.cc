@@ -43,6 +43,23 @@ Polyadic_Function::call(Value arg, Frame& f)
     }
 }
 
+Value
+Polyadic_Function::try_call(Value arg, Frame& f)
+{
+    if (nargs_ == 1) {
+        f[0] = arg;
+        return call(f);
+    }
+    auto list = arg.dycast<const List>();
+    if (list && list->size() == nargs_) {
+        for (size_t i = 0; i < list->size(); ++i)
+            f[i] = (*list)[i];
+        return call(f);
+    } else {
+        return missing;
+    }
+}
+
 GL_Value
 Polyadic_Function::gl_call_expr(
     Operation& arg, const Call_Phrase* call_phrase, GL_Frame& f)
@@ -88,6 +105,15 @@ Closure::call(Value arg, Frame& f)
     return expr_->eval(f);
 }
 
+Value
+Closure::try_call(Value arg, Frame& f)
+{
+    f.nonlocals_ = &*nonlocals_;
+    if (!pattern_->try_exec(f.array_, arg, f))
+        return missing;
+    return expr_->eval(f);
+}
+
 GL_Value
 Closure::gl_call_expr(Operation& arg, const Call_Phrase* cp, GL_Frame& f) const
 {
@@ -104,6 +130,36 @@ void
 Lambda::print(std::ostream& out) const
 {
     out << "<lambda>";
+}
+
+slot_t
+Switch::maxslots(std::vector<Shared<Function>>& cases)
+{
+    slot_t result = 0;
+    for (auto c : cases)
+        result = std::max(result, c->nslots_);
+    return result;
+}
+
+Value
+Switch::call(Value val, Frame& f)
+{
+    for (auto c : cases_) {
+        Value result = c->try_call(val, f);
+        if (result != missing)
+            return result;
+    }
+    throw Exception(At_Phrase(*f.call_phrase_, &f), "pattern match failure");
+}
+Value
+Switch::try_call(Value val, Frame& f)
+{
+    for (auto c : cases_) {
+        Value result = c->try_call(val, f);
+        if (result != missing)
+            return result;
+    }
+    return missing;
 }
 
 } // namespace curv

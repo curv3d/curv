@@ -589,6 +589,20 @@ struct File_Function : public Polyadic_Function
     }
 };
 
+struct Switch_Function : public Polyadic_Function
+{
+    Switch_Function() : Polyadic_Function(1) {}
+    Value call(Frame& f) override
+    {
+        At_Arg ctx0(f);
+        auto list = f[0].to<List>(ctx0);
+        std::vector<Shared<Function>> cases;
+        for (size_t i = 0; i < list->size(); ++i)
+            cases.push_back(list->at(i).to<Function>(At_Index(i,ctx0)));
+        return {make<Switch>(cases)};
+    }
+};
+
 /// The meaning of a call to `print`, such as `print "foo"`.
 struct Print_Action : public Just_Action
 {
@@ -920,6 +934,7 @@ builtin_namespace()
     {"decode", make<Builtin_Value>(Value{make<Decode_Function>()})},
     {"encode", make<Builtin_Value>(Value{make<Encode_Function>()})},
     {"file", make<Builtin_Value>(Value{make<File_Function>()})},
+    {"switch", make<Builtin_Value>(Value{make<Switch_Function>()})},
     {"print", make<Builtin_Meaning<Print_Metafunction>>()},
     {"warning", make<Builtin_Meaning<Warning_Metafunction>>()},
     {"error", make<Builtin_Meaning<Error_Metafunction>>()},

@@ -243,5 +243,11 @@ assert_error(
 assert(encode "ABC" == [65,66,67]);
 assert("$[65,66,67]" == "ABC");
 
+let f = switch [
+        [a,b,c] -> a+b+c;
+        x -> null;
+    ];
+in assert( [f(1,2,3), f 17] == [6,null] );
+
 // script return value:
 in null

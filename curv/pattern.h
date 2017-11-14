@@ -24,6 +24,7 @@ struct Pattern : public Shared_Base
 
     virtual void analyze(Environ&) = 0;
     virtual void exec(Value* slots, Value, const Context&, Frame&) const = 0;
+    virtual bool try_exec(Value* slots, Value, Frame&) const = 0;
     virtual void gl_exec(GL_Value, const Context&, GL_Frame&) const;
     virtual void gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee) const = 0;
 };

@@ -25,6 +25,12 @@ struct Id_Pattern : public Pattern
     {
         slots[slot_] = value;
     }
+    virtual bool try_exec(Value* slots, Value value, Frame&)
+    const override
+    {
+        slots[slot_] = value;
+        return true;
+    }
     virtual void gl_exec(GL_Value value, const Context&, GL_Frame& callee)
     const override
     {
@@ -65,6 +71,19 @@ struct List_Pattern : public Pattern
         list->assert_size(items_.size(), valcx);
         for (size_t i = 0; i < items_.size(); ++i)
             items_[i]->exec(slots, list->at(i), At_Index(i, valcx), f);
+    }
+    virtual bool try_exec(Value* slots, Value val, Frame& f)
+    const override
+    {
+        auto list = val.dycast<List>();
+        if (list == nullptr)
+            return false;
+        if (list->size() != items_.size())
+            return false;
+        for (size_t i = 0; i < items_.size(); ++i)
+            if (!items_[i]->try_exec(slots, list->at(i), f))
+                return false;
+        return true;
     }
     virtual void gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee)
     const override
@@ -169,6 +188,50 @@ struct Record_Pattern : public Pattern
             }
             ++p;
         }
+    }
+    virtual bool try_exec(Value* slots, Value value, Frame& f)
+    const override
+    {
+        // TODO: clean this up OMG. Need a general Record iterator.
+        auto record = value.dycast<Structure>();
+        if (record == nullptr)
+            return false;
+        auto p = fields_.begin();
+        bool success = true;
+        record->each_field([&](Atom name, Value val)->void {
+            while (p != fields_.end()) {
+                int cmp = p->first.cmp(name);
+                if (cmp < 0) {
+                    // record is missing a field in the pattern
+                    if (p->second.dexpr_) {
+                        auto fval = p->second.dexpr_->eval(f);
+                        p->second.pat_->try_exec(slots, fval, f);
+                    } else {
+                        success = false;
+                    }
+                    ++p;
+                    continue;
+                } else if (cmp == 0) {
+                    // matching field in record and pattern
+                    auto fval = record->getfield(p->first,{});
+                    p->second.pat_->try_exec(slots, fval, f);
+                    ++p;
+                    return;
+                } else
+                    break;
+            }
+            success = false;
+        });
+        while (p != fields_.end()) {
+            if (p->second.dexpr_) {
+                auto fval = p->second.dexpr_->eval(f);
+                p->second.pat_->try_exec(slots, fval, f);
+            } else {
+                return false;
+            }
+            ++p;
+        }
+        return success;
     }
     virtual void gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee)
     const override

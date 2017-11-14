@@ -26,6 +26,10 @@ struct Function : public Ref_Value
     // call the function during evaluation
     virtual Value call(Value, Frame&) = 0;
 
+    // Attempt a function call: return `missing` if the parameter pattern
+    // doesn't match the value; otherwise call the function and return result.
+    virtual Value try_call(Value, Frame&) = 0;
+
     // Generate a call to the function during geometry compilation.
     // The argument is represented as an expression.
     virtual GL_Value gl_call_expr(Operation&, const Call_Phrase*, GL_Frame&) const;
@@ -56,6 +60,7 @@ struct Polyadic_Function : public Function
 
     // call the function during evaluation, with specified argument value.
     virtual Value call(Value, Frame&) override;
+    virtual Value try_call(Value, Frame&) override;
 
     // call the function during evaluation, with arguments stored in the frame.
     virtual Value call(Frame& args) = 0;
@@ -125,9 +130,27 @@ struct Closure : public Function
     {}
 
     virtual Value call(Value, Frame&) override;
+    virtual Value try_call(Value, Frame&) override;
 
     // generate a call to the function during geometry compilation
     virtual GL_Value gl_call_expr(Operation&, const Call_Phrase*, GL_Frame&) const override;
+};
+
+struct Switch : public Function
+{
+    std::vector<Shared<Function>> cases_;
+
+    static slot_t maxslots(std::vector<Shared<Function>>&);
+
+    Switch(std::vector<Shared<Function>> cases)
+    :
+        Function(maxslots(cases)),
+        cases_(std::move(cases))
+    {}
+
+    // call the function during evaluation, with specified argument value.
+    virtual Value call(Value, Frame&) override;
+    virtual Value try_call(Value, Frame&) override;
 };
 
 } // namespace curv
