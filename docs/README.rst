@@ -19,12 +19,12 @@ Interactive CLI mode::
 
 Live Programming Mode:
 
-  * Open a text editor window, editing ``myshape.curv``.
-  * Open a terminal window and run ``curv -l myshape.curv`` from ``bash``.
-  * Each time you save changes to ``myshape.curv``, the file will be re-evaluated
-    and the new shape will be displayed in a graphics window.
-  * Keep the terminal window visible: if there are errors in your Curv program,
-    they will be displayed here.
+* Open a text editor window, editing ``myshape.curv``.
+* Open a terminal window and run ``curv -l myshape.curv`` from ``bash``.
+* Each time you save changes to ``myshape.curv``, the file will be re-evaluated
+  and the new shape will be displayed in a graphics window.
+* Keep the terminal window visible: if there are errors in your Curv program,
+  they will be displayed here.
 
 2. The Core Language
 ====================
