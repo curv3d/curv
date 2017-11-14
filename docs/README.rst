@@ -13,7 +13,7 @@ Interactive CLI mode::
   $ curv
   curv> 2+2
   4
-  curv> cube 1
+  curv> cube
   **a graphics window opens, displaying the shape**
   curv>
 
