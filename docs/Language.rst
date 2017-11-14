@@ -15,14 +15,19 @@ The core language is small enough to learn in a day.
 1. Overview
 ===========
 
-Data Types
-----------
-Curv has 7 data types:
+Values
+------
+In Curv, everything is a value.
+All values are immutable (there are no mutable objects).
+All data structures are hierarchical and finite, and therefore printable.
+This design make Curv programs easier to understand and debug.
+
+Curv has 7 primitive value types:
 
 ==============     ============================================
 null               ``null``                
 boolean            ``true, false``
-number             ``-1, 0xFFEF, 3.1416``
+number             ``-1, 3.1416, 0xFF``
 string             ``"hello, world"``
 list               ``[0,1,2]``
 record             ``{name: "Lancelot", quest: "To seek the holy grail", favourite_colour: "blue"}``
@@ -32,23 +37,18 @@ function           ``x -> x+1``
 The first 6 data types are taken from JSON,
 and Curv can be considered a superset of JSON.
 
-There are no named types or user-defined types.
-All application data is represented using the 7 data types.
+There are no type declarations or class declarations.
+All application data is represented using the 7 value types.
 For example, a geometric point or vector is a list of numbers.
 A matrix is a list of lists of numbers. A geometric shape is a record
 containing 5 fields (two booleans, two functions and a matrix).
 
-All values are immutable (there are no mutable objects).
-All data structures are hierarchical and finite, and therefore printable.
-Curv data structures cannot contain cycles, and thus cannot be infinite,
-with the exception that functions can be recursive.
-These restrictions make Curv programs easier to understand and debug.
-
 Program Structure
 -----------------
-Curv programs do not have side effects. The only goal of a Curv program is
-to compute a value: usually this is a geometric shape, but it can also be a
-library. (Shapes and libraries are both represented by record values.)
+Curv has no I/O: it is not a scripting language.
+The only goal of a Curv program is to compute a value:
+usually this is a geometric shape, but it can also be a library.
+(Shapes and libraries are both represented by record values.)
 
 Conventional programming languages are "statement languages". A statement
 is a syntactic form that either defines a named object (a definition)
@@ -62,8 +62,8 @@ is an expression. Statements only occur embedded in certain expression forms.
 (Note that JSON is also an expression language, and that most JSON programs are
 also legal Curv programs.)
 
-Definitions
------------
+Blocks
+------
 
 Modules
 -------
