@@ -81,9 +81,9 @@ A *let block* allows locally scoped definitions to be included in an expression:
   
 Here are examples of definition syntax::
 
-  pi = 3.141592653589793
-  incr x = x + 1
-  add(a,b) = a + b
+  pi = 3.141592653589793;
+  shape = cube >> colour red;
+  factorial n = product(1..n);
 
 Within a let block, the scope of each definition is the entire block,
 and function definitions may be recursive or mutually recursive.
