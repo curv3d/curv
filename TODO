@@ -10,9 +10,6 @@ Pattern project:
 * GL: records
 * contexts: assignment, for, binder.
 * features: _, [a,...b], {a,...}, x@pat, cast pat, null true 0 "x", pat&&cond
-* bool pattern->match(Value, vsrc, Frame&)
-* bool function->match(Value, Frame&)
-* switch[f1,f2]
 
 Language extensions:
 * backtick infix operators
