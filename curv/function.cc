@@ -149,7 +149,8 @@ Switch::call(Value val, Frame& f)
         if (result != missing)
             return result;
     }
-    throw Exception(At_Phrase(*f.call_phrase_, &f), "pattern match failure");
+    throw Exception(At_Phrase(*f.call_phrase_->arg_, &f), stringify(
+        "argument ",val," has no matching pattern in switch"));
 }
 Value
 Switch::try_call(Value val, Frame& f)
