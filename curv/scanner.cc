@@ -314,6 +314,9 @@ Scanner::get_token()
     case '\'':
         tok.kind_ = Token::k_apostrophe;
         goto success;
+    case '`':
+        tok.kind_ = Token::k_backtick;
+        goto success;
     case '@':
         tok.kind_ = Token::k_at;
         goto success;

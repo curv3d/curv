@@ -12,7 +12,6 @@ Pattern project:
 * features: _, [a,...b], {a,...}, x@pat, cast pat, null true 0 "x", pat&&cond
 
 Language extensions:
-* backtick infix operators
 * {foo:} abbreviates {foo: true}
 * lib
 * casts

@@ -35,6 +35,7 @@ Shared<Phrase> parse_range(Scanner&);
 Shared<Phrase> parse_sum(Scanner&);
 Shared<Phrase> parse_product(Scanner&);
 Shared<Phrase> parse_unary(Scanner&);
+Shared<Phrase> parse_power(Scanner&);
 Shared<Phrase> parse_postfix(Scanner&);
 Shared<Phrase> parse_primary(Scanner&, const char* what);
 
@@ -219,6 +220,7 @@ parse_semicolons(Scanner& scanner, Shared<Phrase> firstitem)
 //  | 'for' '(' item 'in' item ')' item
 //  | 'while' parens item
 //  | 'let' list 'in' item
+//  | 'do' list 'in' item
 Shared<Phrase>
 parse_item(Scanner& scanner)
 {
@@ -334,6 +336,7 @@ parse_item(Scanner& scanner)
 // disjunction : conjunction
 //  | disjunction || conjunction
 //  | disjunction >> conjunction
+//  | disjunction ` postfix ` conjunction
 Shared<Phrase>
 parse_disjunction(Scanner& scanner)
 {
@@ -351,6 +354,22 @@ parse_disjunction(Scanner& scanner)
                 std::move(left),
                 tok);
             continue;
+        case Token::k_backtick:
+          {
+            auto postfix = parse_postfix(scanner);
+            Token tok2 = scanner.get_token();
+            if (tok2.kind_ != Token::k_backtick) {
+                throw Exception(At_Token(tok2, scanner),
+                    "syntax error: expecting closing backtick (`)");
+            }
+            auto right = parse_conjunction(scanner);
+            auto pair = make<Comma_Phrase>();
+            pair->args_.push_back({left, {}});
+            pair->args_.push_back({right, {}});
+            auto arg = make<Paren_Phrase>(Token{}, pair, Token{});
+            left = make<Call_Phrase>(postfix, arg, tok, tok2);
+            continue;
+          }
         default:
             scanner.push_token(tok);
             return left;
@@ -474,7 +493,7 @@ parse_product(Scanner& scanner)
     }
 }
 
-// unary : postfix | - unary | + unary | ! unary
+// unary : power | - unary | + unary | ! unary
 Shared<Phrase>
 parse_unary(Scanner& scanner)
 {
@@ -487,7 +506,23 @@ parse_unary(Scanner& scanner)
         return make<Unary_Phrase>(tok, parse_unary(scanner));
     default:
         scanner.push_token(tok);
-        return parse_postfix(scanner);
+        return parse_power(scanner);
+    }
+}
+
+// power : postfix | postfix ^ unary
+Shared<Phrase>
+parse_power(Scanner& scanner)
+{
+    auto postfix = parse_postfix(scanner);
+    auto tok = scanner.get_token();
+    switch (tok.kind_) {
+    case Token::k_power:
+        return make<Binary_Phrase>(
+            postfix, tok, parse_unary(scanner));
+    default:
+        scanner.push_token(tok);
+        return postfix;
     }
 }
 
@@ -495,7 +530,6 @@ parse_unary(Scanner& scanner)
 //  | postfix primary
 //  | postfix . primary
 //  | postfix ' primary
-//  | postfix ^ unary
 Shared<Phrase>
 parse_postfix(Scanner& scanner)
 {
@@ -504,9 +538,6 @@ parse_postfix(Scanner& scanner)
     for (;;) {
         tok = scanner.get_token();
         switch (tok.kind_) {
-        case Token::k_power:
-            return make<Binary_Phrase>(
-                postfix, tok, parse_unary(scanner));
         case Token::k_dot:
         case Token::k_apostrophe:
             postfix = make<Binary_Phrase>(postfix, tok, parse_primary(scanner,

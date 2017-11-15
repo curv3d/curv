@@ -353,19 +353,20 @@ struct Program_Phrase : public Phrase
     virtual Shared<Definition> as_definition(Environ&) override;
 };
 
-/// A function call. Call_Phrase is ultimately an abstract interface
-/// that represents all function calls. If there are variant function
-/// call syntaxes, then we might need virtual functions and subclasses.
+/// A function call. Call_Phrase is the union of all syntaxes that denote
+/// function calls. op_.kind_ specifies which syntax was used.
 struct Call_Phrase : public Phrase
 {
     Shared<Phrase> function_;
-    Token op_; ///! k_missing or k_left_call or k_right_call
+    Token op_;  ///! k_missing or k_left_call or k_right_call or k_backtick
+    Token op2_; ///! k_missing or k_backtick
     Shared<Phrase> arg_;
 
     Call_Phrase(
         Shared<Phrase> function,
         Shared<Phrase> arg,
-        Token op = {})
+        Token op = {},
+        Token op2 = {})
     :
         function_(std::move(function)),
         op_(op),
@@ -374,7 +375,9 @@ struct Call_Phrase : public Phrase
 
     virtual Location location() const override
     {
-        if (op_.kind_ == Token::k_right_call)
+        if (op_.kind_ == Token::k_backtick)
+            return arg_->location();
+        else if (op_.kind_ == Token::k_right_call)
             return arg_->location().ending_at(function_->location().token());
         else
             return function_->location().ending_at(arg_->location().token());

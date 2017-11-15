@@ -249,5 +249,7 @@ let f = switch [
     ];
 in assert( [f(1,2,3), f 17] == [6,null] );
 
+assert( (3 `max` 5) == 5 );
+
 // script return value:
 in null

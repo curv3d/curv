@@ -1,7 +1,5 @@
 ## TODO: Language Changes
 
-Backtick infix operators.
-
 {foo:} is an abbreviation for {foo: true}.
 
 lib
