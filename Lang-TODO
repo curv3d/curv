@@ -70,6 +70,10 @@ Casts:
 * "is(val,cast)" or "val `is` cast" returns true if the cast pattern succeeds,
   returns false if the cast pattern fails, and aborts with an error if the
   cast body aborts.
+* So can we replace is_shape and make_shape with Shape?
+  That's a semantic change: is_shape requires all 5 fields, while make_shape
+  only requires `dist` and one of `is_2d` or `is_3d`.
+    Shape r@{dist:_,is_2d=false,is_3d=false,...} && (is_2d||is_3d) =
 
 Indexing:
 * a[i] := item, i is an integer
