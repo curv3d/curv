@@ -1021,7 +1021,7 @@ extrude_e d shape =
         is_3d : true,
     };
 
-morph(t, shape1, shape2) =
+morph t (shape1, shape2) =
     make_shape {
         dist p : mix(shape1.dist p, shape2.dist p, t),
         colour p : mix(shape1.colour p, shape2.colour p, t),

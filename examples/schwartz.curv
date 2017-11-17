@@ -16,7 +16,7 @@ double_schwartz_bones = union(
 
 schwartz_surface = shell (.2) schwartz_p >> lipschitz 2;
 
-schwartzize t shape = morph(t, shape, intersection(shape, schwartz_surface));
+schwartzize t shape = morph t (shape, intersection(shape, schwartz_surface));
 
 in
 row_x 5 (

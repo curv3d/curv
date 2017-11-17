@@ -675,11 +675,11 @@ Morph Operations
 ----------------
 In which we linearly interpolate between two distance fields.
 
-``morph (k, shape1, shape2)``
+``morph k (shape1, shape2)``
   Linearly interpolate between the SDFs of shape1 and shape2.
   ``k=0`` yields shape1, ``k=1`` yields shape2.
 
-``loft d shape1 shape2``
+``loft d (shape1 shape2)``
   Like ``extrude``, except that you specify a lower cross section (``shape1``)
   and a upper cross section (``shape2``)
   and we linearly interpolate between the two SDFs while extruding.
