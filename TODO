@@ -14,7 +14,12 @@ Pattern project:
 Language extensions:
 * {foo:} abbreviates {foo: true}
 * lib
-* casts
+* coercions
+  * Null,Bool,Num,String,List,Record,Fun
+  * Typ pat
+  * pat&&cond
+    * {selector : pattern && condition = default}
+  * isa(x,Typ)
 
 Code cleanup:
 * rename Structure/Record/Module to Record/Dict/Module.

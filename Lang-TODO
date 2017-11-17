@@ -68,10 +68,40 @@ Casts:
 * "is(val,cast)" or "val `is` cast" returns true if the cast pattern succeeds,
   returns false if the cast pattern fails, and aborts with an error if the
   cast body aborts.
-* So can we replace is_shape and make_shape with Shape?
-  That's a semantic change: is_shape requires all 5 fields, while make_shape
+
+Name of this concept:
+* cast, coercion, classifier, type function
+* `is`, `isa`, x `matches` f
+  (belongs to a type, is in the domain of a function)
+
+Can we replace is_shape and make_shape with Shape?
+* That's a semantic change: is_shape requires all 5 fields, while make_shape
   only requires `dist` and one of `is_2d` or `is_3d`.
-    Shape r@{dist:_,is_2d=false,is_3d=false,...} && (is_2d||is_3d) =
+* The constructors for a type should not always be coercions.
+* Use `Shape` for is_shape and `Shape.make` for make_shape.
+    Shape = {
+        call (r && defined(r.dist) && defined(r.colour) && defined(r.bbox)
+                && defined(r.is_2d) && defined(r.is_3d))
+        =
+            do  assert(r.dist `isa` Fun);
+                assert(r.colour `isa` Fun);
+                assert(r.bbox `isa` BBox);
+                assert(r.is_2d || r.is_3d);
+            in r;
+        make r = 
+    };
+
+Classes:
+We can define a 'class' as a record containing a 'call' function (a cast),
+and operations on type instances. Eg,
+    BBox = {
+        call = ...;
+        union = ...;
+        intersection = ...;
+    };
+If multiple classes implement the same protocol, then we have the effect of
+Haskell type classes. A class needs to be passed as an explicit argument.
+    f T (T x) = ...
 
 Indexing:
 * a[i] := item, i is an integer
