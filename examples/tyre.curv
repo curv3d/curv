@@ -7,7 +7,7 @@ rect(1,inf)
 >> repeat_x 2
 >> rotate(60*deg)
 >> repeat_mirror_x
->> crop (rect(w,c))
+`intersection` rect(w,c)
 >> extrude .5
 >> rotate(90*deg, X_axis)
 >> move (0, w)
