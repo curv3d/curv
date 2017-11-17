@@ -405,7 +405,7 @@ Polydimensional Shapes
 
   ``intersection`` is an associative operation.
   The empty list is mapped to ``everything``.
-  If all of the shapes have the default colour,
+  If all of the shape arguments have the default colour,
   then ``everything`` is the identity element,
   and ``intersection`` is commutative and a monoid.
   
@@ -417,15 +417,6 @@ Polydimensional Shapes
   The result contains all of the points that belong to exactly one shape in the list.
   
   This is an associative, commutative operation with ``nothing`` as its identity element.
-
-``shape1 >> add shape2``
-  TODO: Same as ``union(shape1,shape2)``, but convenient for use in geometry pipelines.
-
-``shape1 >> remove shape2``
-  TODO: Same as ``difference(shape1, shape2)``, but convenient for use in geometry pipelines.
-  
-``shape1 >> crop shape2``
-  TODO: Same as ``intersection(shape1, shape2)``, but convenient for use in geometry pipelines.
 
 3. Transformations
 ==================

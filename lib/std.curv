@@ -675,8 +675,6 @@ _intersection2 (s1,s2) =
 difference(s1,s2) = _intersection2(s1, complement s2);
 symmetric_difference shapes = difference(union shapes, intersection shapes);
 
-crop limits shape = intersection(shape, limits);
-
 row_x d shapes =
     let width = sum[for (s in shapes) size(s)[X]] + (count shapes - 1)*d;
     in do 
