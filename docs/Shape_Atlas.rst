@@ -152,7 +152,7 @@ to determine the shape of its output.
 
   * ``rect (dx, dy)``: a rectangle of width ``dx`` and height ``dy``,
     centred on the origin. Either argument may be ``inf``.
-  * `rect ((xmin,ymin),(xmax,ymax))``: a rectangle
+  * ``rect ((xmin,ymin),(xmax,ymax))``: a rectangle
     whose lower-left corner is ``(xmin,ymin)``
     and whose upper-right corner is ``(xmax,ymax)``.
     Note that ``xmin`` or ``ymin`` may be ``-inf``,
