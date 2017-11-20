@@ -427,3 +427,26 @@ This could mean:
 * New syntax: a recursive loop construct whose body can be an action or
   generator. Previously designed as `loop` (aka Scheme named let).
 * Lambda abstraction for actions, list/record generators.
+
+### Function Composition
+Long-form function composition is `compose[f,g]`.
+Maybe I want an abbreviated infix form?
+    f'g
+This looks nice if each function in the composition is an identifier.
+The syntax makes sense if I create a library of standard function names
+that are intended to be composed in this way.
+
+Eg, maybe colours are functions
+    red cube
+And there are colour modifier combinators:
+    light'red cube
+This story would be better if `red` and `light'red` both carry metadata that
+permit them to be displayed as graphic objects.
+
+Transformations can be composed.
+
+Compose a colour map with an intensity field.
+There are a bunch of standard named colour maps and intensity fields.
+eg, rainbow'linear_gradient
+    rainbow'radial_gradient
+    greyscale'cosine_gradient

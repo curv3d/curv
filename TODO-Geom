@@ -1,0 +1,47 @@
+Redesign Shape Atlas API
+========================
+
+rect(dx,dy)
+rect_at((xmin,ymin),(xmax,ymax))
+
+Merge these into a single overloaded function.
+
+A bounding rectangle is represented as a matrix, ((xmin,ymin),(xmax,ymax)).
+The top level elements are referenced using bb[MIN] and bb[MAX].
+Maybe use a record instead?
+  {min:(xmin,ymin), max:(xmax,ymax)}
+Then use bb.min and bb.max.
+
+Maybe support a variant,
+  rect{xmin=-inf,ymin=-inf,zmin=-inf,xmax=inf,ymax=inf,zmax=inf} = ...
+which is useful for cropping along specified boundaries using `intersection`.
+
+The final result is 3 overloadings of rect:
+  rect(dx,dy)
+  rect{min:(xmin,ymin), max:(xmax,ymax)}
+  rect{xmin=-inf,ymin=-inf,zmin=-inf,xmax=inf,ymax=inf,zmax=inf}
+
+First implement the rect_at_e variant.
+
+Colour Atlas Data Structures
+============================
+An Intensity is a number between 0 and 1 inclusive.
+
+A Colour comprises red, green and blue Intensities.
+* just an RGB triple; that's what colour functions return.
+
+A Colour Map is a function mapping an Intensity onto a Colour.
+* just a function value
+* {colour_map: f}
+* eg, rainbow i = sHSV(i,1,1);
+
+A 2D or 3D Intensity Field maps a point (x,y) or (x,y,z) to an Intensity.
+* Could be a function.
+* Could be a variant of Shape: {is_2d,is_3d,intensity}
+  This type is viewable as graphics.
+
+A 2D or 3D Colour Field maps a point (x,y) or (x,y,z) to a Colour.
+If you compose a Colour Map with an Intensity Field you get a Colour Field.
+* Could be a function.
+* Could be a subtype of Shape: {is_2d,is_3d,colour}
+  This type is viewable as graphics.

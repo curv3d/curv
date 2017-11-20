@@ -11,7 +11,7 @@ Pattern project:
 * contexts: assignment, for, binder.
 * features: _, [a,...b], {a,...}, x@pat, cast pat, null true 0 "x", pat&&cond
 
-Language extensions:
+Language changes:
 * {foo:} abbreviates {foo: true}
 * lib
 * coercions
@@ -20,6 +20,18 @@ Language extensions:
   * pat&&cond
     * {selector : pattern && condition = default}
   * isa(x,Typ)
+* 'file' loads relative to parent directory of current source file.
+  * How does this work if `file` is a first class function? When is the
+    "parent directory" captured?
+    * When 'file' is referenced, the parent directory is captured and stored
+      in the resulting function value.
+    * When 'file' is called, the parent directory is captured from the Location
+      of the function call. But, we have a function value that is not behaving
+      functionally, it has a hidden dynamic parameter.
+    * 'file' is a metafunction. Probably the best design. I may also restrict
+      the argument to be a compile time constant. Important if the target is a
+      remote file on an internet server--I want to limit the ability of malware
+      to "phone home" and exfiltrate data.
 
 Code cleanup:
 * rename Structure/Record/Module to Record/Dict/Module.
