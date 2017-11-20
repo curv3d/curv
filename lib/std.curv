@@ -344,17 +344,35 @@ rect_m b =
                 is_2d = true;
             },
         ];
-// Axis aligned rectangle with a Euclidean distance field. Arg is vec2.
+// Axis aligned rectangle with a Euclidean distance field.
 rect_e b =
-    let assert(is_vec2 b);
-        r = b / 2;
-    in make_shape {
-        dist(x,y,z,t) =
-            let d = abs(x,y) - r;
-            in min(max d, 0) + mag(max(d,0));
-        bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]];
-        is_2d = true;
-    };
+    if (is_vec2 b)
+        let assert(is_vec2 b);
+            r = b / 2;
+        in make_shape {
+            dist(x,y,z,t) =
+                let d = abs(x,y) - r;
+                in min(max d, 0) + mag(max(d,0));
+            bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]];
+            is_2d = true;
+        }
+    else
+        let assert(is_vec2(b[MIN]) && is_vec2(b[MAX]));
+            lo = b[MIN];
+            hi = b[MAX];
+            outsideness(a,amin,amax) =
+                if (a < amin) amin - a
+                else if (a > amax) a - amax
+                else 0;
+        in make_shape {
+            dist(x,y,z,t) =
+                let ind = max[max(lo-[x,y]), max([x,y]-hi)];
+                    outd = mag(outsideness(x,lo[X],hi[X]),
+                               outsideness(y,lo[Y],hi[Y]));
+                in if (ind <= 0) ind else outd;
+            bbox = [[...lo,0], [...hi,0]];
+            is_2d = true;
+        };
 
 rect_at = rect_at_m;
 rect_at_m(lo, hi) =
