@@ -5,7 +5,7 @@ shell r shape = make_shape {
     is_3d : shape.is_3d,
 };
 path = shell 0 (circle 1);
-path2 = difference(path, rect_at((-inf,0,-inf),(inf,inf,inf)));
+path2 = difference(path, rect((-inf,0),(inf,inf)));
 //perimeter_extrude path2 (circle .05)
 
 // Archimedes' Spiral.
@@ -17,7 +17,7 @@ spiral r1 r2 = make_shape {
 };
 //r2 = .1;
 r2 = 0;
-s = union ( spiral 1 r2, rect_at((-r2,0),(0,0)) );
+s = union ( spiral 1 r2, rect((-r2,0),(0,0)) );
 
 perimeter_extrude (s) (circle .1)
 //s >> scale 10 >> distance_field

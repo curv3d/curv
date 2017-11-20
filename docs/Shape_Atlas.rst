@@ -146,23 +146,22 @@ to determine the shape of its output.
   * ``square_m d``: mitred distance field, simple code, cheap to compute.
   * ``square_e d``: exact distance field, more expensive.
 
-``rect (dx, dy)``
-  Construct an axis-aligned rectangle of width ``dx`` and height ``dy``,
-  centred on the origin.
+``rect ...``
+  Construct an axis-aligned rectangle.
+  Arguments:
+
+  * ``rect (dx, dy)``: a rectangle of width ``dx`` and height ``dy``,
+    centred on the origin. Either argument may be ``inf``.
+  * `rect ((xmin,ymin),(xmax,ymax))``: a rectangle
+    whose lower-left corner is ``(xmin,ymin)``
+    and whose upper-right corner is ``(xmax,ymax)``.
+    Note that ``xmin`` or ``ymin`` may be ``-inf``,
+    and ``xmax`` or ``ymax`` may be ``inf``.
   
+  SDF classes:
+
   * ``rect_m``: mitred distance field, simple code, cheap to compute.
   * ``rect_e``: exact distance field, more expensive.
-
-``rect_at ((xmin,ymin), (xmax,ymax))``
-  Construct an axis-aligned rectangle
-  whose lower-left corner is ``(xmin,ymin)``
-  and whose upper-right corner is ``(xmax,ymax)``.
-  Unlike ``rect``, this function lets you construct
-  half-infinite rectangles where, eg, ``ymin`` is
-  finite but ``ymax`` is ``inf``.
-  
-  * ``rect_at_m``: mitred distance field
-  * ``rect_at_e``: exact distance field (TODO)
 
 ``regular_polygon n``
   Construct a regular polygon, centred on the origin,
