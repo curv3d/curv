@@ -75,6 +75,81 @@ struct Id_Pattern : public Pattern
     }
 };
 
+struct Predicate_Pattern : public Pattern
+{
+    Shared<Pattern> pattern_;
+    Shared<Phrase> predicate_phrase_;
+    Shared<Operation> predicate_expr_ = nullptr;
+
+    Predicate_Pattern(Shared<const Call_Phrase> s, Shared<Pattern> p)
+    :
+        Pattern(s),
+        pattern_(p),
+        predicate_phrase_(s->function_)
+    {}
+
+    inline const Call_Phrase* call_phrase() const
+    {
+        // This is safe because, by construction, the source_ field
+        // is initialized from a Call_Phrase. See constructor, above.
+        return (Call_Phrase*) &*source_;
+    }
+
+    bool match(Value arg, Frame& f) const
+    {
+        static Atom callkey = "call";
+        Value val = predicate_expr_->eval(f);
+        Value funv = val;
+        for (;;) {
+            if (!funv.is_ref())
+                throw Exception(At_Phrase(*predicate_phrase_, &f),
+                    stringify(funv,": not a function"));
+            Ref_Value& funp( funv.get_ref_unsafe() );
+            switch (funp.type_) {
+            case Ref_Value::ty_function:
+              {
+                Function* fun = (Function*)&funp;
+                std::unique_ptr<Frame> f2 {
+                    Frame::make(fun->nslots_, f.system_, &f, call_phrase(), nullptr)
+                };
+                auto result = fun->call(arg, *f2);
+                return result.to_bool(At_Phrase(*call_phrase(), &f));
+              }
+            case Ref_Value::ty_record:
+            case Ref_Value::ty_module:
+              {
+                Structure* s = (Structure*)&funp;
+                if (s->hasfield(callkey)) {
+                    funv = s->getfield(callkey, {});
+                    continue;
+                }
+                break;
+              }
+            }
+            throw Exception(At_Phrase(*predicate_phrase_, &f),
+                stringify(val,": not a function"));
+        }
+    }
+
+    virtual void analyze(Environ& env) override
+    {
+        predicate_expr_ = analyze_op(*predicate_phrase_, env);
+    }
+    virtual void exec(Value* slots, Value value, const Context& cx, Frame& f)
+    const override
+    {
+        if (!match(value, f))
+            throw Exception(cx, stringify("argument ",value, " does not match ",
+                predicate_phrase_->location().range()));
+        pattern_->exec(slots, value, cx, f);
+    }
+    virtual bool try_exec(Value* slots, Value value, Frame& f)
+    const override
+    {
+        return match(value, f) && try_exec(slots, value, f);
+    }
+};
+
 struct List_Pattern : public Pattern
 {
     std::vector<Shared<Pattern>> items_;
@@ -293,6 +368,11 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
             return make<Id_Pattern>(share(ph), slot);
         }
     }
+    if (auto call = dynamic_cast<const Call_Phrase*>(&ph)) {
+        if (call->op_.kind_ != Token::k_backtick)
+            return make<Predicate_Pattern>(share(*call),
+                make_pattern(*call->arg_, scope, unitno));
+    }
     if (auto brackets = dynamic_cast<const Bracket_Phrase*>(&ph)) {
         std::vector<Shared<Pattern>> items;
         each_item(*brackets->body_, [&](Phrase& item)->void {
@@ -358,6 +438,12 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
 
 void
 Pattern::gl_exec(GL_Value val, const Context& valcx, GL_Frame& callee) const
+{
+    throw Exception(At_GL_Phrase(source_, &callee),
+        "pattern not supported by Geometry Compiler");
+}
+void
+Pattern::gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee) const
 {
     throw Exception(At_GL_Phrase(source_, &callee),
         "pattern not supported by Geometry Compiler");
