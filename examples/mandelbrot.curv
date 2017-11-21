@@ -1,20 +1,15 @@
 make_shape {
     dist : everything.dist,
-    colour pt :
-        do  var z := pt[[X,Y]];
-            var c := pt[[X,Y]];
+    colour (x,y,_,_) :
+        do  var z := [x,y];
             var color := [0,0,0];
             var i := 0;
             while (i < 100) (
-                z := csqr(z) + c;
+                z := csqr(z) + [x,y];
                 if (dot(z,z) > 4)
-                    let colorRegulator =
-                        (i-1)-log(log(dot(z,z))/log 2)/log 2;
+                    let cr = (i-1)-log(log(dot(z,z))/log 2)/log 2;
                     in (
-                        color := [
-                            0.95 + .012*colorRegulator,
-                            1,
-                            .2+.4*(1+sin(.3*colorRegulator))];
+                        color := [0.95+.012*cr, 1, .2+.4*(1+sin(.3*cr))];
                         i := 100;
                     )
                 else

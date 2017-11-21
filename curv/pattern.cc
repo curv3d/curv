@@ -11,6 +11,32 @@
 
 namespace curv {
 
+struct Skip_Pattern : public Pattern
+{
+    Skip_Pattern(Shared<const Phrase> s) : Pattern(s) {}
+
+    virtual void analyze(Environ&) override
+    {
+    }
+    virtual void exec(Value*, Value, const Context&, Frame&)
+    const override
+    {
+    }
+    virtual bool try_exec(Value*, Value, Frame&)
+    const override
+    {
+        return true;
+    }
+    virtual void gl_exec(GL_Value, const Context&, GL_Frame&)
+    const override
+    {
+    }
+    virtual void gl_exec(Operation&, GL_Frame&, GL_Frame&)
+    const override
+    {
+    }
+};
+
 struct Id_Pattern : public Pattern
 {
     slot_t slot_;
@@ -260,8 +286,12 @@ Shared<Pattern>
 make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
 {
     if (auto id = dynamic_cast<const Identifier*>(&ph)) {
-        slot_t slot = scope.add_binding(id->atom_, ph, unitno);
-        return make<Id_Pattern>(share(ph), slot);
+        if (id->atom_ == Atom{"_"})
+            return make<Skip_Pattern>(share(ph));
+        else {
+            slot_t slot = scope.add_binding(id->atom_, ph, unitno);
+            return make<Id_Pattern>(share(ph), slot);
+        }
     }
     if (auto brackets = dynamic_cast<const Bracket_Phrase*>(&ph)) {
         std::vector<Shared<Pattern>> items;

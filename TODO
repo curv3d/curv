@@ -15,7 +15,7 @@ Roadmap:
 Pattern project:
 * GL: records
 * contexts: assignment, for, binder.
-* features: _, [a,...b], {a,...}, x@pat, cast pat, null true 0 "x", pat&&cond
+* features: [a,...b], {a,...}, x@pat, predicate pat, null true 0 "x", pat&&cond
 
 Language changes:
 * {foo:} abbreviates {foo: true}
