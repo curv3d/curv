@@ -24,6 +24,25 @@ Or BBox2 if I implement coercions.
         (Vec2 b) -> ...;
         (BBox2 b) -> ...;
     ];
+    BBox2 = switch [
+        b@(Vec2 _, Vec2 _) -> b;
+        {xmin=-inf, ymin=-inf, xmax=inf, ymax=inf} -> ((xmin,ymin),(xmax,ymax));
+    ];
+    Vec2 = switch [
+        (Num n) -> (n,n);
+        (v@(Num _, Num _)) -> v;
+    ];
+With these definitions,
+    BBox2{} == BBox2(-inf,inf) == BBox2((-inf,-inf),(inf,inf))
+and it's necessary for the definition of `rect` to list the Vec2 case first,
+otherwise it's matched by BBox2. It's easy to get carried away by too many
+default conversions. Let's use the "predicate pattern" design instead.
+    rect = switch [
+        (Vec2 b) -> ...;
+        (BBox2 b) -> ...;
+        {Num xmin=-inf, Num ymin=-inf, Num xmax=inf, Num ymax=inf} ->
+            rect((xmin,ymin),(xmax,ymax));
+    ];
 
 ## rect
 

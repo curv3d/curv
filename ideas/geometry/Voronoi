@@ -1,0 +1,46 @@
+I'm looking for a compact and efficient "data structure representation"
+of a distance field (DFD).
+* Efficient distance function evaluation (on a GPU).
+  You can get Euclidean distance and gradient at any point in space.
+* Convert mesh to a DFD. High triangle count approximations are mapped to
+  more compact DFDs that preserve the essential features of the mesh.
+  It's a good intermediate representation for remeshing; see:
+  http://graphics.stanford.edu/courses/cs468-12-spring/LectureSlides/13_Remeshing1.pdf
+* Convert DFD to a mesh. Produces high quality mesh, as in remeshing paper above
+* Convert distance function to a DFD.
+* Use DFD as a file format.
+
+A DFD can somehow describe vertices, edges, curved and flat surfaces. These are
+features we need to recognize for high quality mesh generation. (Now it sounds
+like a boundary representation, but boundary recovery is a requirement.)
+
+What primitives are DFDs built from?
+
+What kinds of curves can be directly represented?
+(In the remeshing paper, what kinds of curves are recovered from a mesh?)
+- The conventional answer is: algebraic/polynomial curves,
+  if we are representing curves as data instead of as code.
+
+Voronoi
+-------
+http://gamma.cs.unc.edu/GVD/
+
+"Distance fields and Voronoi diagrams are closely related and one can be
+efficiently computed from the other."
+- really? That sounds true for polytopes. Is there enough information in a
+  Voronoi diagram to recover a curved surface? What's the Voronoi diagram
+  for an ellipse?
+- I think the Voronoi diagram/skeleton of a SDF captures
+  vertex and edge information, not curvature.
+
+Base DFD on Voronoi diagram of a distance field?
+Voronoi diagrams are also used in remeshing; see above link.
+
+Maybe I want a GVD, Generalized Voronoi Diagram (of some variety).
+
+https://www.sthu.org/research/voronoidiagrams/index.html
+
+"One can define Voronoi diagrams as the interference pattern of a propagating
+wavefront*. The wavefront is an offset curve that is based on Minkowski sums
+with disks of a fixed radius. The wavefront grows everywhere at unit speed.
+* Sometimes called Grassfire model.

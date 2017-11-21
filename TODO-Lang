@@ -38,7 +38,7 @@ Patterns (Definitions, Binders, Lambda parameters, `for` parameter):
     {fieldName: generalPattern}, eg: [size: (x,y,z)]
 * `var@pattern` matches pattern and binds `var` to the whole value matched.
 * `_` can be used in place of a parameter name, it means don't bind a name.
-* see also Casts and Parameter Preconditions
+* see also Coercions and Parameter Preconditions
 * see also Literal Patterns
 
 Switches (depends on refutable patterns)
@@ -47,27 +47,29 @@ Switches (depends on refutable patterns)
     f(x,y,z)=...;
     f a = ...;
 
-Casts:
-* A *cast* is an idempotent function that maps a member of a type onto itself,
-  optionally converts non-member values to members (a type conversion),
-  throws an exception for argument values that aren't members of the type or
-  convertible to the type. Every function has a parameter pattern. For a cast,
-  the parameter pattern match fails for values that are clearly not a member of
-  the type. For values that are considered corrupted instances of the type,
-  the pattern match succeeds but an assertion fails.
-* Curv has built-in cast functions for primitive types. Null, Bool, Num, String,
-  List, Record, Function.
-* `cast pat` is a pattern that matches `pat`. The `cast` function is first
-  applied to the value to be matched, then the resulting value is matched
-  by `pat`.
+Coercions:
+* A *coercion* is an idempotent function that:
+  * maps a member of a type onto itself,
+  * optionally converts non-member values to members (a type conversion),
+  * throws an exception for argument values that aren't members of the type or
+    convertible to the type.
+  Every function has a parameter pattern.
+  For a coercion, the parameter pattern match fails for values that are clearly
+  not a member of the type. For values that are considered corrupted instances
+  of the type, the pattern match succeeds but an assertion fails.
+* Curv has built-in coercion functions for primitive types.
+  Null, Bool, Num, String, List, Record, Function.
+* `coercion pat` is a pattern that matches `pat`. The `coercion` function
+  is first applied to the value to be matched, then the resulting value
+  is matched by `pat`.
 * Example:
     fact = switch [
         0 -> 1;
         Nat n -> n * fact(n - 1);
     ];
-* "is(val,cast)" or "val `is` cast" returns true if the cast pattern succeeds,
-  returns false if the cast pattern fails, and aborts with an error if the
-  cast body aborts.
+* "is(val,coercion)" or "val `is` coercion" returns true if the coercion's
+  pattern matches, returns false if the pattern match fails,
+  and aborts with an error if the coercion body aborts.
 
 Name of this concept:
 * cast, coercion, classifier, type function
@@ -91,8 +93,26 @@ Can we replace is_shape and make_shape with Shape?
         make r = 
     };
 
-Classes:
-We can define a 'class' as a record containing a 'call' function (a cast),
+The best parts of the coercion proposal are:
+* You can declare the type of a parameter.
+* A parameter match aborts with a meaningful message if the argument value
+  structurally matches the type, but is corrupted. This is better than falling
+  off the end of the switch.
+
+However, I am suspicious of the value of implicit conversions. I did some
+experiments. Liberal type conversions (like converting '2' to '(2,2)' in Vec2)
+can make the Shape library API confusing and accident-prone. The same problem
+has been reported for other programming languages, from Javascript back to PL/I.
+Coercion functions are more complicated to write, and the concept is a bit more
+difficult to understand than predicate functions.
+
+Let's instead use predicate patterns. A type predicate aborts if the argument
+value structurally matches the type, but is corrupted (data structure
+invariants fail).
+
+Type Classes:
+We can define a 'type class' as a record containing a 'call' function
+(a type predicate), plus constructors (eg 'make')
 and operations on type instances. Eg,
     BBox = {
         call = ...;
@@ -198,11 +218,11 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
     ensure sorted <<
     <body of sort function>;
 * parameter preconditions:
-  * (predicate x) -> body -- this conflicts with Cast syntax
+  * (predicate x) -> body -- this conflicts with Coercion syntax
   * (x >= 0) -> body
   * (x >= 0 && x <= 1) -> body
 * We want the ability to add arbitrary predicates to a pattern match.
-  See 'switch', 'cast' and 'guard expressions' for use cases.
+  See 'switch', 'coercion' and 'guard expressions' for use cases.
   `pat && condition` seems like a promising syntax.
 
 ### Debug actions:

@@ -1,10 +1,16 @@
 # Release 0.0: "Proof of Concept/Minimum Viable Product"
 
-What remains for MVP?
-* bug fixes & language syntax changes
-* Documentation
+Roadmap:
+* New version of shape library, based on Shape_Atlas and Colour_Atlas.
+  Don't need new features, just refine the API, make it more useable.
+* Tweak the core language, based on experience of writing and using the
+  new shape library.
+* Documentation for core language and shape library.
+* Export to STL, using marching cubes and OpenCL.
+* High priority bug fixes.
 * Meta: use https://opensource.guide/
-* STL export: Get open source marching cubes in OpenCL. Benchmark.
+* => First public release with a stable API.
+
 
 Pattern project:
 * GL: records
@@ -14,12 +20,10 @@ Pattern project:
 Language changes:
 * {foo:} abbreviates {foo: true}
 * lib
-* coercions
-  * Null,Bool,Num,String,List,Record,Fun
-  * Typ pat
-  * pat&&cond
-    * {selector : pattern && condition = default}
-  * isa(x,Typ)
+* predicate patterns
+  * pattern ::= predicate pattern
+  * maybe, a new naming convention for type predicates:
+    Null,Bool,Num,String,List,Record,Fun
 * 'file' loads relative to parent directory of current source file.
   * How does this work if `file` is a first class function? When is the
     "parent directory" captured?

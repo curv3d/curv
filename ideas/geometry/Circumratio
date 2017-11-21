@@ -1,0 +1,28 @@
+cube = (
+    make_shape {
+        ... cube_e 2,
+        map : cube_e,
+        circumratio : ...,
+    }
+);
+
+morph (-1) cube (sphere (2*cube.circumratio))
+
+cube = (
+    circumratio = ...;
+    mitred_sdf d = ...;
+    exact_sdf d = ...;
+    make_shape {
+        call d = xdf d;
+        apply d = xdf d;
+
+cube.call 2
+cube.apply 2
+
+cube.fmitred 3
+
+let R = `regular_polygon n`. R has the API:
+    * ``R d``
+    * R is a prototypical instance with circumscribed
+    * R.circumradius
+
