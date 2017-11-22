@@ -101,8 +101,7 @@ make_shape r =
             ... r,
         };
         assert (shape.is_2d || shape.is_3d);
-        assert (count(shape.bbox) == 2
-                && is_vec3(shape.bbox[0]) && is_vec3(shape.bbox[1]));
+        assert (is_bbox3(shape.bbox));
         assert (is_fun(shape.colour));
         assert (defined(shape.dist) && is_fun(shape.dist));
     in shape;
@@ -112,6 +111,15 @@ is_shape x =
     && defined(x.dist) && defined(x.colour);
 
 size shape = shape.bbox[MAX] - shape.bbox[MIN];
+
+is_bbox2 = switch [
+    (is_vec2 _, is_vec2 _) -> true;
+    _ -> false;
+];
+is_bbox3 = switch [
+    (is_vec3 _, is_vec3 _) -> true;
+    _ -> false;
+];
 
 /////////////////////
 // CIRCULAR SHAPES //
@@ -309,15 +317,16 @@ square_e d = rect_e(d,d);
 // rect: an axis aligned rectangle. Argument is a vec2 or a bbox2.
 rect = rect_m;
 // Mitred distance field.
-rect_m b =
-    if (is_vec2 b)
+rect_m x =
+    x >> switch [
+    (is_vec2 b) ->
         let r = b / 2;
         in make_shape {
             dist(x,y,z,t) = max(abs(x,y) - r);
             bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]];
             is_2d = true;
-        }
-    else
+        };
+    (is_bbox2 b) ->
         let xmin = b[MIN,X];
             ymin = b[MIN,Y];
             xmax = b[MAX,X];
@@ -344,6 +353,9 @@ rect_m b =
                 is_2d = true;
             },
         ];
+    {xmin=-inf, ymin=-inf, xmax=inf, ymax=inf} ->
+        rect_m((xmin,ymin),(xmax,ymax));
+    ];
 // Axis aligned rectangle with a Euclidean distance field.
 rect_e b =
     if (is_vec2 b)
