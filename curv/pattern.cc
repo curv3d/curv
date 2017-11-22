@@ -134,6 +134,7 @@ struct Predicate_Pattern : public Pattern
     virtual void analyze(Environ& env) override
     {
         predicate_expr_ = analyze_op(*predicate_phrase_, env);
+        pattern_->analyze(env);
     }
     virtual void exec(Value* slots, Value value, const Context& cx, Frame& f)
     const override
@@ -146,7 +147,7 @@ struct Predicate_Pattern : public Pattern
     virtual bool try_exec(Value* slots, Value value, Frame& f)
     const override
     {
-        return match(value, f) && try_exec(slots, value, f);
+        return match(value, f) && pattern_->try_exec(slots, value, f);
     }
 };
 

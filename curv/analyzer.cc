@@ -283,6 +283,7 @@ Lambda_Phrase::analyze(Environ& env) const
 
     auto src = share(*this);
     auto pattern = make_pattern(*left_, scope, 0);
+    pattern->analyze(env);
     auto expr = analyze_op(*right_, scope);
     auto nonlocals = make<Enum_Module_Expr>(src,
         std::move(scope.nonlocal_dictionary_),
