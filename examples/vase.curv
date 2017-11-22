@@ -2,7 +2,7 @@ cone(2,3)
 >> reflect_z
 >> move(0,0,3)
 `smooth_union 1` ellipsoid(3,3,2.5)
-`intersection` box_at((-inf,-inf,-1.1),(inf,inf,inf))
+`intersection` box{zmin: -1.1}
 >> shell .05
-`intersection` box_at((-inf,-inf,-inf),(inf,inf,2.9))
+`intersection` box{zmax: 2.9}
 >> colour (hsv2rgb(.5,.5,.9))

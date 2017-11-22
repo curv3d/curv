@@ -314,9 +314,8 @@ square_m d =
     };
 square_e d = rect_e(d,d);
 
-// rect: an axis aligned rectangle. Argument is a vec2 or a bbox2.
+// rect: an axis aligned rectangle.
 rect = rect_m;
-// Mitred distance field.
 rect_m x =
     x >> switch [
     (is_vec2 b) ->
@@ -356,21 +355,19 @@ rect_m x =
     {xmin=-inf, ymin=-inf, xmax=inf, ymax=inf} ->
         rect_m((xmin,ymin),(xmax,ymax));
     ];
-// Axis aligned rectangle with a Euclidean distance field.
-rect_e b =
-    if (is_vec2 b)
-        let assert(is_vec2 b);
-            r = b / 2;
+rect_e x =
+    x >> switch [
+    (is_vec2 b) ->
+        let r = b / 2;
         in make_shape {
             dist(x,y,z,t) =
                 let d = abs(x,y) - r;
                 in min(max d, 0) + mag(max(d,0));
             bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]];
             is_2d = true;
-        }
-    else
-        let assert(is_vec2(b[MIN]) && is_vec2(b[MAX]));
-            lo = b[MIN];
+        };
+    (is_bbox2 b) ->
+        let lo = b[MIN];
             hi = b[MAX];
             outsideness(a,amin,amax) =
                 if (a < amin) amin - a
@@ -385,6 +382,9 @@ rect_e b =
             bbox = [[...lo,0], [...hi,0]];
             is_2d = true;
         };
+    {xmin=-inf, ymin=-inf, xmax=inf, ymax=inf} ->
+        rect_e((xmin,ymin),(xmax,ymax));
+    ];
 
 // regular_polygon: n is # of sides, d is incircle diameter
 regular_polygon n =
@@ -405,16 +405,28 @@ convex_polygon_m pts =
         rect(min pts, max pts) // bounding box
     );
 
-// box: an axis aligned cuboid. Argument is a vec3.
-box = box_e;
-box_m b =
-    let assert(is_vec3 b);
-        r = b / 2;
-    in make_shape {
-        dist(x,y,z,t) = max(abs(x,y,z) - r);
-        bbox = [-r, r];
-        is_3d = true;
-    };
+// box: an axis aligned cuboid.
+box = box_m;
+box_m a =
+    a >> switch [
+    (is_vec3 b) ->
+        let r = b / 2;
+        in make_shape {
+            dist(x,y,z,t) = max(abs(x,y,z) - r);
+            bbox = [-r, r];
+            is_3d = true;
+        };
+    (is_bbox3 b) ->
+        let lo = b[MIN];
+            hi = b[MAX];
+        in make_shape {
+            dist(x,y,z,t) = max(max(lo-[x,y,z]), max([x,y,z]-hi));
+            bbox = b;
+            is_3d = true;
+        };
+    {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf} ->
+        box_m((xmin,ymin,zmin),(xmax,ymax,zmax));
+    ];
 box_e b =
     let assert(is_vec3 b);
         r = b / 2;
