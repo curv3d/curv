@@ -15,15 +15,11 @@ Roadmap:
 Pattern project:
 * GL: records
 * contexts: assignment, for, binder.
-* features: [a,...b], {a,...}, x@pat, predicate pat, null true 0 "x", pat&&cond
+* features: [a,...b], {a,...}, x@pat, null true 0 "x", pat&&cond
 
 Language changes:
 * {foo:} abbreviates {foo: true}
 * lib
-* predicate patterns
-  * pattern ::= predicate pattern
-  * maybe, a new naming convention for type predicates:
-    Null,Bool,Num,String,List,Record,Fun
 * 'file' loads relative to parent directory of current source file.
   * How does this work if `file` is a first class function? When is the
     "parent directory" captured?

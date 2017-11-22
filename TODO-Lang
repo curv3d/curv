@@ -38,7 +38,7 @@ Patterns (Definitions, Binders, Lambda parameters, `for` parameter):
     {fieldName: generalPattern}, eg: [size: (x,y,z)]
 * `var@pattern` matches pattern and binds `var` to the whole value matched.
 * `_` can be used in place of a parameter name, it means don't bind a name.
-* see also Coercions and Parameter Preconditions
+* see also Coercions(deprecated) and Parameter Preconditions
 * see also Literal Patterns
 
 Switches (depends on refutable patterns)
@@ -47,7 +47,7 @@ Switches (depends on refutable patterns)
     f(x,y,z)=...;
     f a = ...;
 
-Coercions:
+Coercions(deprecated):
 * A *coercion* is an idempotent function that:
   * maps a member of a type onto itself,
   * optionally converts non-member values to members (a type conversion),
@@ -169,13 +169,15 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
     * <' <=' >' >=' ==' !='
     * .< .<= .> .>= .== .!= (Julia)
   * or n-ary functions, infixed using backtick:
-    * less, greater, equal, less_or_equal, greater_or_equal, not_equal (BEST)
+    * less, greater, equal, less_or_equal, greater_or_equal, not_equal (FLUENT)
+    * lt, gt, eq, le, ge, ne (TERSE, Matlab)
     * less, greater, equal, not_less, not_greater, not_equal
+    * If f'g is function composition,
+      then we can write not'less, not'greater, not'equal.
     * Hamcrest: greater_than, greater_than_or_equal_to,
                 less_than, less_than_or_equal_to
                 equal_to
     * Mathematica: equal, unequal, greater, greater_equal, less, less_equal
-    * lt, gt, eq, le, ge, ne (Matlab)
     * eg, a `greater` b, a `gt` b, a `greater_than` b
           a `less_equal` b, a `less_or_equal` b, a `not_greater` b, a `le` b
           a `less_than_or_equal_to` b
@@ -218,7 +220,7 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
     ensure sorted <<
     <body of sort function>;
 * parameter preconditions:
-  * (predicate x) -> body -- this conflicts with Coercion syntax
+  * (predicate x) -> body -- implemented
   * (x >= 0) -> body
   * (x >= 0 && x <= 1) -> body
 * We want the ability to add arbitrary predicates to a pattern match.
@@ -273,8 +275,8 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
     x↑y = x^y
     “foo” == "foo"  -- note, resistant to systems that autocorrect "" to “”
     g∘f == compose[g,f]
-* Digit separator in numerals: ' like C++14, or _
-* Support ' (primes) in identifiers (like Haskell).
+* Digit separator in numerals: ' like C++14, or _. Use _.
+* Support ' (primes) in identifiers (like Haskell). Nope, ' is needed elsewhere.
 * Support `foo` quoted identifiers.
   Compatibility with GUI interfaces that display
   parameter names as GUI labels, JSON object keys.
