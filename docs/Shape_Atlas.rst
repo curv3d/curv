@@ -201,22 +201,26 @@ to determine the shape of its output.
   with semicircle end caps of radius ``d/2``.
   Exact distance field.
 
-``half_plane_dn (d, n)``
-  A half plane with normal vector ``n``,
-  whose edge is distance ``d`` from the origin.
-  ``n`` must be a unit vector.
-  If d >= 0, the half-plane contains the origin.
-  Exact distance field.
+``half_plane ...``
 
-``half_plane_pn (p, n)``
-  A half plane with normal vector ``n``,
-  whose edge passes through point ``p``.
-  ``n`` must be a unit vector.
-  Exact distance field.
+  ``half_plane {d, normal: n}``
+    A half plane with normal vector ``n``,
+    whose edge is distance ``d`` from the origin.
+    ``n`` must be a unit vector.
+    If d >= 0, the half-plane contains the origin.
+    Exact distance field.
 
-``half_plane_p2 (p1, p2)``
-  A half-plane whose edge passes through points p1 and p2.
-  Exact distance field.
+  ``half_plane {at: p, normal: n}``
+    A half plane with normal vector ``n``,
+    whose edge passes through point ``p``.
+    ``n`` must be a unit vector.
+    Exact distance field.
+
+  ``half_plane {from: p1, to: p2}``
+    A half-plane whose edge passes through points p1 and p2.
+    Right hand rule: palm on p1, fingertips on p2, thumb points to the interior
+    of the half-plane.
+    Exact distance field.
 
 ``log_spiral ...``
   TODO: logarithmic spiral

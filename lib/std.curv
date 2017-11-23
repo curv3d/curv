@@ -261,6 +261,32 @@ half_space(d,n) =
         is_3d = true;
     };
 
+half_plane =
+    switch [
+    {d, normal: n} ->
+        make_shape {
+            dist(x,y,z,t) = dot([x,y], n) - d;
+            bbox = [ [ if (n[Y]==0 && n[X]<0) -d else -inf,
+                       if (n[X]==0 && n[Y]<0) -d else -inf,
+                       0, ],
+                     [ if (n[Y]==0 && n[X]>0) d else inf,
+                       if (n[X]==0 && n[Y]>0) d else inf,
+                       0, ], ];
+            is_2d = true;
+        };
+    {from: p1, to: p2} ->
+        let v = p2 - p1;
+        in make_shape {
+            dist p = (dot(p[[X,Y]], perp v) + dot(perp p1, p2)) / mag v;
+            is_2d = true;
+        };
+    {at: a, normal: n} ->
+        make_shape {
+            dist p = dot(n, a-p[[X,Y]]);
+            is_2d = true;
+        };
+    ];
+
 // Half-plane with normal n, at distance d from the origin.
 //  n: must be a 2D unit vector.
 //  if d >= 0, half-plane contains the origin.
