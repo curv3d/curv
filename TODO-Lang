@@ -38,8 +38,12 @@ Patterns (Definitions, Binders, Lambda parameters, `for` parameter):
     {fieldName: generalPattern}, eg: [size: (x,y,z)]
 * `var@pattern` matches pattern and binds `var` to the whole value matched.
 * `_` can be used in place of a parameter name, it means don't bind a name.
-* see also Coercions(deprecated) and Parameter Preconditions
-* see also Literal Patterns
+* parameter preconditions, from Design by Contract:
+  * (predicate x) -> body -- implemented
+  * (x >= 0) -> body
+  * (x >= 0 && x <= 1) -> body
+* see also Coercions(deprecated)
+* see also Literal Patterns(deprecated)
 
 Switches (depends on refutable patterns)
 * switch[(x,y,z)->..., a->...] -- returns a function
@@ -372,7 +376,7 @@ Eg,
 Eg,
   make_shape{is_3d:, ...}
 
-### Literal patterns:
+### Literal Patterns (deprecated)
   fact 0 = 1;
   fact (is_int n && n > 0) = n * fact(n - 1);
 New feature:
@@ -381,6 +385,9 @@ New feature:
   * `null`, `true` and `false` are now reserved words.
 Low priority:
   * You can use `(x == literal)` instead of `literal`.
+Deprecated:
+  * The syntax of a binder phrase is `string|pattern : expr`.
+    Literal string patterns are incompatible.
 
 ### User defined infix operators.
 * a `postfixExpr` b  ===>  postfixExpr(a,b)

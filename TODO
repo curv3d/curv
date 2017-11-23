@@ -13,9 +13,9 @@ Roadmap:
 
 
 Pattern project:
-* GL: records
+* GL: record patterns, predicate patterns
 * contexts: assignment, for, binder.
-* features: [a,...b], {a,...}, x@pat, null true 0 "x", pat&&cond
+* features: [a,...b], {a,...}, id@pat, id==expr, pat&&cond
 
 Language changes:
 * {foo:} abbreviates {foo: true}
@@ -39,6 +39,7 @@ Code cleanup:
 * unit tests for: GL error messages
 * GL_Frame::gl renamed to gl_
 * clean up Recursive_Scope::analyze_unit
+* clean up Record_Pattern::exec
 * remove curv/arg.{h,cc}, move features into value.h and context.h
 * add std::move to curv namespace
 
