@@ -427,58 +427,37 @@ box_m a =
     {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf} ->
         box_m((xmin,ymin,zmin),(xmax,ymax,zmax));
     ];
-box_e b =
-    let assert(is_vec3 b);
-        r = b / 2;
-    in make_shape {
-        dist(x,y,z,t) =
-            let d = abs(x,y,z) - r;
-            in min(max d, 0) + mag(max(d,0));
-        bbox = [-r, r];
-        is_3d = true;
-    };
-
-box_at = box_at_m;
-box_at_m (lo,hi) =
-    /* TODO: Won't compile right now. Also, max(inf,x) broken on some GPUs.
-    make_shape {
-      dist(x,y,z,t) = max(max(b[MIN]-[x,y,z]), max([x,y,z]-b[MAX]));
-      bbox = b;
-      is_3d = true;
-    }
-    */
-    intersection (
-        if (lo[X] > -inf) make_shape {
-            dist(x,y,z,t) = lo[X] - x;
-            bbox = [[lo[X], -inf, -inf], [inf, inf, inf]];
+box_e a =
+    a >> switch [
+    (is_vec3 b) ->
+        let r = b / 2;
+        in make_shape {
+            dist(x,y,z,t) =
+                let d = abs(x,y,z) - r;
+                in min(max d, 0) + mag(max(d,0));
+            bbox = [-r, r];
             is_3d = true;
-        },
-        if (lo[Y] > -inf) make_shape {
-            dist(x,y,z,t) = lo[Y] - y;
-            bbox = [[-inf, lo[Y], -inf], [inf, inf, inf]];
-            is_3d = true;
-        },
-        if (lo[Z] > -inf) make_shape {
-            dist(x,y,z,t) = lo[Z] - z;
-            bbox = [[-inf, -inf, lo[Z]], [inf, inf, inf]];
-            is_3d = true;
-        },
-        if (hi[X] < inf) make_shape {
-            dist(x,y,z,t) = x - hi[X];
-            bbox = [[-inf, -inf, -inf], [hi[X], inf, inf]];
-            is_3d = true;
-        },
-        if (hi[Y] < inf) make_shape {
-            dist(x,y,z,t) = y - hi[Y];
-            bbox = [[-inf, -inf, -inf], [inf, hi[Y], inf]];
-            is_3d = true;
-        },
-        if (hi[Z] < inf) make_shape {
-            dist(x,y,z,t) = z - hi[Z];
-            bbox = [[-inf, -inf, -inf], [inf, inf, hi[Z]]];
-            is_3d = true;
-        },
-    );
+        };
+    (is_bbox3 b) ->
+        let lo = b[MIN];
+            hi = b[MAX];
+            outsideness(a,amin,amax) =
+                if (a < amin) amin - a
+                else if (a > amax) a - amax
+                else 0;
+        in make_shape {
+            dist(x,y,z,t) =
+                let ind = max[max(lo-[x,y,z]), max([x,y,z]-hi)];
+                    outd = mag(outsideness(x,lo[X],hi[X]),
+                               outsideness(y,lo[Y],hi[Y]),
+                               outsideness(z,lo[Z],hi[Z]));
+                in if (ind <= 0) ind else outd;
+            bbox = [[...lo,0], [...hi,0]];
+            is_2d = true;
+        };
+    {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf} ->
+        box_e((xmin,ymin,zmin),(xmax,ymax,zmax));
+    ];
 
 prism = prism_m;
 prism_m(n,d,h) = regular_polygon_m n d >> extrude_m h;

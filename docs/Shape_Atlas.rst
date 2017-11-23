@@ -148,20 +148,18 @@ to determine the shape of its output.
 
 ``rect ...``
   Construct an axis-aligned rectangle.
-  Arguments:
 
   * ``rect (dx, dy)``: a rectangle of width ``dx`` and height ``dy``,
     centred on the origin. Either argument may be ``inf``.
-  * ``rect ((xmin,ymin),(xmax,ymax))``: a rectangle
-    whose lower-left corner is ``(xmin,ymin)``
-    and whose upper-right corner is ``(xmax,ymax)``.
-    Note that ``xmin`` or ``ymin`` may be ``-inf``,
+  * ``rect ((xmin,ymin),(xmax,ymax))``: a rectangle with vertices
+    at ``(xmin,ymin)`` and ``(xmax,ymax)``.
+    ``xmin`` or ``ymin`` may be ``-inf``,
     and ``xmax`` or ``ymax`` may be ``inf``.
-  
-  SDF classes:
-
-  * ``rect_m``: mitred distance field, simple code, cheap to compute.
-  * ``rect_e``: exact distance field, more expensive.
+  * ``rect {xmin=-inf, ymin=-inf, xmax=inf, ymax=inf}``:
+    Each argument specifies one of the sides, and defaults to ``-inf``
+    or ``inf``. Used for specifying a clipping rectangle, with ``intersection``.
+  * ``rect_m ...``: mitred distance field, cheaper to compute.
+  * ``rect_e ...``: exact distance field, more expensive.
 
 ``regular_polygon n``
   Construct a regular polygon, centred on the origin,
@@ -263,18 +261,20 @@ to determine the shape of its output.
   Total width of shape is ``d1+d2``.
   Exact distance field.
 
-``box (dx, dy, dz)``
-  Construct an axis-aligned cuboid of width ``dx``, depth ``dy`` and height ``dz``,
-  centred on the origin.
- 
-  * ``box_m``: mitred distance field.
-  * ``box_e``: exact distance field, more expensive.
-
-``box_at ((xmin,ymin,zmin), (xmax,ymax,zmax))``
+``box ...``
   Construct an axis-aligned cuboid.
- 
-  * ``box_at_m``: mitred distance field.
-  * ``box_at_e``: exact distance field, more expensive. (TODO)
+
+  * ``box (dx, dy, dz)``: a cuboid of width ``dx``, depth ``dy``,
+    and height ``dz``, centred on the origin. Any argument may be ``inf``.
+  * ``box ((xmin,ymin,zmin),(xmax,ymax,zmax))``: a cuboid with vertices
+    at ``(xmin,ymin,zmin)`` and ``(xmax,ymax,zmax)``.
+    ``xmin``, ``ymin`` and ``zmin`` may be ``-inf``,
+    ``xmax``, ``ymax`` and ``zmax``  may be ``inf``.
+  * ``box {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf}``:
+    Each argument specifies one of the faces, and defaults to ``-inf``
+    or ``inf``. Used for specifying a clipping region, with ``intersection``.
+  * ``box_m ...``: mitred distance field, cheaper to compute.
+  * ``box_e ...``: exact distance field, more expensive.
 
 ``prism (n, d, h)``
   Construct a regular right prism, centred on the origin, of height ``h``.
