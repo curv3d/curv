@@ -1,0 +1,6 @@
+union [
+    for (i in 0..5)
+        regular_polygon (i+3) >> move(3,0) >> rotate(tau/6*i)
+          >> colour (hsv2rgb(i/6,1,1));
+    convex_polygon[ (0,0), (1,0), (0,1) ];
+]

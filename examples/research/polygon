@@ -27,21 +27,21 @@ polygon vertices =
         intersection edges
     else
 
-polygon vertices = (
-    n = count vertices;
-    assert(n >= 3);
-    var edges := [half_plane_p2(vertices[0], vertices[1])];
-    for (i in [1..<n]) (
-        edge = half_plane_p2(vertices[i], vertices[mod(i+1,len vertices)]);
-        if (is_concave(vertices[i-1],vertices[i],vertices[mod(i+1,n)]))
-            edges[count edges - 1] := union(edges[count edges - 1], edge)
-        else
-            edges := [...edges, edge];
-    );
-    if (count edges > 1 && is_concave(vertices[n-1],vertices[0],vertices[1]))
-        edges := [union(edges[0],edges[n-1]), ...edges[1..n-2]];
-    intersection edges
-)
+polygon vertices =
+    let n = count vertices;
+        assert(n >= 3);
+    in do
+        var edges := [half_plane{from: vertices[0], to: vertices[1]}];
+        for (i in [1..<n]) (
+            edge = half_plane_p2(vertices[i], vertices[mod(i+1,len vertices)]);
+            if (is_concave(vertices[i-1],vertices[i],vertices[mod(i+1,n)]))
+                edges[count edges - 1] := union(edges[count edges - 1], edge)
+            else
+                edges := [...edges, edge];
+        );
+        if (count edges > 1 && is_concave(vertices[n-1],vertices[0],vertices[1]))
+            edges := [union(edges[0],edges[n-1]), ...edges[1..n-2]];
+    in intersection edges;
 
 var edges := [];
 for (i in [0..<len vertices]) (
