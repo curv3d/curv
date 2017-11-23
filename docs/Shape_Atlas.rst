@@ -202,7 +202,6 @@ to determine the shape of its output.
   Exact distance field.
 
 ``half_plane ...``
-
   ``half_plane {d, normal: n}``
     A half plane with normal vector ``n``,
     whose edge is distance ``d`` from the origin.
