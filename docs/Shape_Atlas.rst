@@ -196,8 +196,8 @@ to determine the shape of its output.
 ``polygon vertices``
   TODO. (Use the Nef Polygon construction, by combining a set of half-planes using intersection and complement.)
 
-``stroke (d, p1, p2)``
-  A line of thickness ``d`` drawn from ``p1`` to ``p2``,
+``stroke {d: diameter, from: point1, to: point2}``
+  A line of thickness ``d`` drawn from ``point1`` to ``point2``,
   with semicircle end caps of radius ``d/2``.
   Exact distance field.
 
@@ -329,7 +329,7 @@ Platonic Solids
   * ``dodecahedron_e``
   * ``icosahedron_e``
 
-``capsule (d, p1, p2)``
+``capsule {d: diameter, from: p1, to: p2}``
   A cylinder of diameter ``d`` whose central axis extends from ``p1`` to ``p2``,
   with the addition of hemispherical end caps of radius ``d/2``.
   Exact distance field.

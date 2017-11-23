@@ -201,7 +201,7 @@ cone_e(d, height) =
     };
 
 // credit: Inigo Quilez
-capsule(d,a,b) =
+capsule{d, from: a, to: b} =
     let ba = b - a;
         r = d / 2;
     in make_shape {
@@ -213,7 +213,7 @@ capsule(d,a,b) =
         is_3d = true;
     };
 
-stroke(d,a,b) =
+stroke{d, from: a, to: b} =
     let r = d / 2;
         ba = b - a;
     in make_shape {
