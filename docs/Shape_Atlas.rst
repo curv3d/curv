@@ -257,7 +257,7 @@ to determine the shape of its output.
   * ``cone_m``: mitred distance field.
   * ``cone_e``: exact distance field, more expensive.
 
-``torus (d1, d2)``
+``torus {major: d1, minor: d2}``
   Construct a torus, centred on the origin, axis of rotation is Z axis.
   Major diameter is ``d1`` (center of tube to centre of tube, crossing the origin).
   Minor diameter is ``d2`` (diameter of the tube).
@@ -705,7 +705,7 @@ In which the output of one distance field is fed as input to another distance fi
   a Minkowski Sum of ``cross_section`` with the zero points
   of ``perimeter``, with ``cross_section`` held orthogonal to the XY plane.
 
-  Example: ``torus (d1,d2) = perimeter_extrude (circle d1) (circle d2)``
+  Example: ``torus {major: d1, minor: d2} = perimeter_extrude (circle d1) (circle d2)``
 
   Example: ``revolve shape = perimeter_extrude (circle 0) shape``
 

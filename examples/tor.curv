@@ -1,4 +1,4 @@
-torus(2,1)
+torus{major: 2, minor: 1}
     >> colour (radial_rainbow 1)
     >> rotate(tau/4, Y_axis)
     >> twist (3)
