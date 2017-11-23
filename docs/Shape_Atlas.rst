@@ -242,14 +242,14 @@ to determine the shape of its output.
   
   * ``ellipsoid_e``: exact distance field, much more expensive to compute (TODO).
 
-``cylinder (d, h)``
+``cylinder {d, h}``
   Construct a cylinder, centered on the origin, whose axis of rotation is the Z axis.
   Diameter is ``d`` and height is ``h``.
  
   * ``cylinder_m``: mitred distance field.
   * ``cylinder_e``: exact distance field, more expensive.
 
-``cone (d, h)``
+``cone {d, h}``
   Construct a cone.
   The base (of diameter ``d``) is embedded in the XY plane and centred on the origin.
   The apex is above the origin at height ``h``.
@@ -567,11 +567,11 @@ Non-distance-preserving transformations of 2D and 3D shapes.
   Similar to Autocad ``revolve`` and OpenSCAD ``rotate_extrude``.
 
 ``cylinder_extrude (d, d2) shape``
+  TODO:
   An infinite strip of 2D space running along the Y axis
   and bounded by ``-d/2 <= x <= d/2``
   is wrapped into an infinite cylinder of diameter ``d2``,
   running along the Z axis and extruded towards the Z axis.
-  TODO
 
 ``helix_extrude (...) shape``
   TODO: a 2D shape is swept along a helix. Similar to AutoCAD ``helix`` command.

@@ -1,4 +1,4 @@
-cone(2,3)
+cone{d:2, h:3}
 >> reflect_z
 >> move(0,0,3)
 `smooth_union 1` ellipsoid(3,3,2.5)

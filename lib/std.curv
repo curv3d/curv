@@ -156,13 +156,13 @@ sphere =
 ellipsoid(dx,dy,dz) = sphere 1 >> scale(dx,dy,dz);
 
 cylinder = cylinder_e;
-cylinder_m(d,h) = extrude_m h (circle d);
-cylinder_e(d,h) = extrude_e h (circle d);
+cylinder_m{d,h} = extrude_m h (circle d);
+cylinder_e{d,h} = extrude_e h (circle d);
 
 // Cone: +Z is up, origin is in the middle of the base.
 // TODO: Provide an interface capable of constructing an infinite sphere.
 cone = cone_e;
-cone_m(d, height) =
+cone_m{d, h: height} =
     let radius = d / 2;
     in make_shape {
         dist(x,y,z,t) =
@@ -176,7 +176,7 @@ cone_m(d, height) =
     };
 // Euclidean distance field.
 // Credit: MERCURY (http://mercury.sexy/hg_sdf)
-cone_e(d, height) =
+cone_e{d, h: height} =
     let radius = d / 2;
     in make_shape {
         dist(x,y,z,t) =
