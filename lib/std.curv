@@ -274,7 +274,7 @@ half_plane =
                        0, ], ];
             is_2d = true;
         };
-    {from: p1, to: p2} ->
+    [p1, p2] ->
         let v = p2 - p1;
         in make_shape {
             dist p = (dot(p[[X,Y]], perp v) + dot(perp p1, p2)) / mag v;
@@ -383,14 +383,14 @@ regular_polygon n =
         circumratio : 1 / cos(angle/2),
     };
 regular_polygon_m n d =
-    half_plane{d:d/2,normal:[1,0]} >> repeat_radial n >> rotate(-tau/4);
+    half_plane{d: d/2, normal: [1,0]} >> repeat_radial n >> rotate(-tau/4);
 
 // convex polygon: vertices are in counterclockwise order.
 convex_polygon = convex_polygon_m;
 convex_polygon_m pts =
     intersection[
         for (i in indices pts)
-            half_plane{from: pts[i], to: pts[mod(i+1, count pts)]},
+            half_plane(pts[i], pts[mod(i+1, count pts)]),
         rect(min pts, max pts) // bounding box
     ];
 

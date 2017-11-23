@@ -215,7 +215,7 @@ to determine the shape of its output.
     ``n`` must be a unit vector.
     Exact distance field.
 
-  ``half_plane {from: p1, to: p2}``
+  ``half_plane [p1, p2]``
     A half-plane whose edge passes through points p1 and p2.
     Right hand rule: palm on p1, fingertips on p2, thumb points to the interior
     of the half-plane.
