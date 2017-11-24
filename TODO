@@ -11,14 +11,12 @@ Roadmap:
 * Meta: use https://opensource.guide/
 * => First public release with a stable API.
 
-
 Pattern project:
 * GL: record patterns, predicate patterns
 * contexts: assignment, for, binder.
 * features: [a,...b], {a,...}, id@pat, id==expr, pat&&cond
 
 Language changes:
-* {foo:} abbreviates {foo: true}
 * lib
 * 'file' loads relative to parent directory of current source file.
   * How does this work if `file` is a first class function? When is the
