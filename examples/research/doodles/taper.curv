@@ -1,0 +1,4 @@
+cylinder(1,1) >> rotate(45*deg,X_axis)
+//cylinder(1,5)
+>> taper_xy(2,2,-1, .5,.5,1)
+//>> show_dist

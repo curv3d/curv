@@ -1,0 +1,10 @@
+//perimeter_extrude (rect_eu (2,2)) (circle 1) >> df_scale .5
+//perimeter_extrude (circle 2 >> scale (2,1)) (circle 1)
+//difference (circle 1 >> colour red, square 1 >> translate(.5,.5))
+domain_warp_x f shape = make_shape {
+    dist(x,y,z,t) = shape.dist(f x, y, z, t),
+    colour(x,y,z,t) = shape.colour(f x, y, z, t),
+    is_3d = shape.is_3d,
+    is_2d = shape.is_2d,
+};
+domain_warp_x sin (linear_rainbow 1.8)

@@ -1,0 +1,4 @@
+smooth_union .3 (
+    cube 1,
+    cylinder(.5,2)
+)

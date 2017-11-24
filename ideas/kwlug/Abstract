@@ -1,0 +1,70 @@
+Curv is an open source 3D solid modelling language, oriented towards 3D printing,
+procedurally generated art, and mathematical visualization.
+
+It's a pure functional language where geometric shapes are first class values,
+and are constructed by transforming and combining simpler shapes using an
+unusually rich collection of operators.
+
+Instead of polyhedral meshes or other boundary representations, Curv represents
+shapes as pure functions (Function Representation or F-Rep). This is a volumetric
+representation, where a function maps every point (x,y,z) in 3D space onto the
+properties of a shape. This representation is powerful, supporting a wide range
+of shape operators, and is a good match to the volumetric nature of 3D printing.
+
+F-Rep is well suited to being directly rendered by a GPU. To achieve this,
+Curv code is compiled into GPU shader programs or compute kernels.
+
+----------------
+What the audience can expect to learn from your talk. - Why you think the topic of the talk is interesting, important, cool etc.
+
+The goals of Curv, and my Curv talk, for StarCon:
+
+* make programming accessible to everyone
+* create a culture that fosters learning and community building through knowledge sharing
+* share my interest and passion, inspire others to do the same
+* share my curiosity, failures, and excitement
+* encourage others to make connections, share ideas, form friendships
+
+-----------------
+What is Curv?
+What are the goals?
+How are those goals achieved?
+How am I doing so far in achieving these goals?
+---
+Curv is an open source 3D solid modelling language, oriented towards 3D printing, procedurally generated art, and mathematical visualization.
+
+It's easy to use for beginners. It's incredibly powerful for experts.
+And it's fast: all rendering is performed by the GPU.
+
+Curv is also a uniquely expressive file format for the exchange of 2D and 3D
+procedurally generated graphics.
+
+Thesis
+======
+Ease of use:
+  For ease of use, the best choice is Constructive Solid Geometry (CSG)
+  embedded in a simple, pure functional language.
+
+Rendering Speed:
+  To quickly render a wide range of CSG primitives,
+  the best choice is to render on a GPU,
+  and to represent shapes using Function Representation (F-Rep).
+
+Expressive Power:
+  F-Rep is the best choice for CSG:
+  A wider range of CSG primitives are available in Open Source for F-Rep
+  than for competing representations.
+  
+  To boost expressiveness,
+  the Curv language permits experts to define new CSG primitives using F-Rep.
+  (Therefore, Curv functions must be compilable into GPU code.)
+  
+  F-Rep is the most expressive representation for controlling a 3D printer.
+  It can describe 3D-printable objects that can't be modeled by competing representations.
+----------------------------------------------------------------------------
+
+Curv: A Language for Making Art using Mathematics
+
+Curv is an open source software project that I'm developing on github.
+It's a programming language for creating mathematics-based art.
+It can create images, animations, and 3D printable solid models.

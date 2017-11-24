@@ -1,0 +1,15 @@
+/*
+reflect_x shape = make_shape {
+    dist(x,y,z,t) = shape.dist(-x,y,z,t),
+    colour(x,y,z,t) = shape.colour(-x,y,z,t),
+    bbox = [ [-shape.bbox[MAX][X], shape.bbox[MIN][Y], shape.bbox[MIN][Z]],
+             [-shape.bbox[MIN][X], shape.bbox[MAX][Y], shape.bbox[MAX][Z]], ],
+    is_2d = shape.is_2d,
+    is_3d = shape.is_3d,
+};
+*/
+
+union (
+    circle 2 >> colour green >> translate(1,0),
+    rect((-.1,-1),(.1,1)) >> colour red,
+) >> reflect_x

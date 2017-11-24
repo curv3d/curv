@@ -1,0 +1,4 @@
+make_shape {
+    dist(x,y,z,t) = 3*x + 5*y,
+    is_2d = true,
+}

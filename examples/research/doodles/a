@@ -1,0 +1,4 @@
+make_shape {
+    dist(x,y,z,t) = sin x - cos y,
+    is_2d = true,
+}

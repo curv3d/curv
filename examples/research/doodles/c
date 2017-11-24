@@ -1,0 +1,4 @@
+make_shape {
+    dist(x,y,z,t) = (sin x - cos z) * (3*x + 5*z),
+    is_3d = true,
+} >> crop (box (10,10,10))

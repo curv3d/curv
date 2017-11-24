@@ -1,0 +1,2 @@
+c = box_m(1,1,10) >> twist 10;
+smooth_union 1 (c, reflect_z c)

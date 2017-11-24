@@ -1,0 +1,24 @@
+a1 = (1,1,1);
+a2 = (-1,-1,1);
+a3 = (1,-1,-1);
+a4 = (-1,1,-1);
+
+Iterations = 10;
+Scale = 4;
+
+make_shape {
+    dist(x,y,z,t) = (
+        var p := (x,y,z);
+        for (n in [0..<Iterations]) (
+            var c := a1;
+            var dist := mag(p - a1);
+            var d := mag(p - a2);
+            if (d < dist) ( c := a2; dist := d; );
+            d := mag(p - a3); if (d < dist) ( c := a3; dist := d; );
+            d := mag(p - a4); if (d < dist) ( c := a4; dist := d; );
+            p := Scale*p - c*(Scale - 1);
+        );
+        mag(p) * Scale^-Iterations
+    ),
+    is_3d = true,
+}

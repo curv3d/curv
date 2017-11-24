@@ -1,0 +1,16 @@
+triangle_wave x = abs(mod(x,1) - .5);
+
+function f = make_shape {
+    dist p : p'Y - f(p'X),
+    is_2d : true,
+};
+
+s = sphere 1;
+make_shape {
+    dist p = triangle_wave(s.dist p),
+    colour p = hsv2rgb(s.dist p,1,1),
+    is_3d = true,
+}
+//>> crop (cylinder(4,20))
+>> crop (cone(4,20) >> translate(0,0,-20))
+//function triangle_wave

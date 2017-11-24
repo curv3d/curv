@@ -1,0 +1,41 @@
+/*
+// Signed distance from half-plane defined by oriented line segment (a, b)
+    float halfPlaneDistance(vec2 pos, vec2 a, vec2 b) {
+        return dot(normalize(vec2(b.y-a.y, a.x-b.x)), a-pos);
+    }
+*/
+let
+hp(a, b) = make_shape {
+    dist (x,y,_,_) = dot(normalize(perp(b-a)), a-[x,y]);
+    is_2d = true;
+};
+
+in
+hp([0,0],[1,1]) >> show_axes
+
+/*
+half_plane_p2(a, b) = make_shape {
+    dist p = dot(normalize(b-a), a-p[X,Y]),
+    is_2d = true,
+};
+hp(p1,p2) = (
+    v = p2 - p1;
+    make_shape {
+        dist p = (dot(p[X,Y], perp v) + dot(perp p1, p2)) / mag v,
+        is_2d = true,
+    }
+);
+poly pts =
+    intersection(for (i in [0..<len pts]) hp(pts[i], pts[mod(i+1,len pts)]),);
+a = (0,0);
+b = (1,1);
+c = (0,1);
+union (
+    //half_plane_p2(a, b),
+    //hp(a,b),
+    poly(a,b,c),
+    circle .1 >> translate a >> colour red,
+    circle .1 >> translate b >> colour green,
+    circle .1 >> translate c >> colour blue,
+)
+*/

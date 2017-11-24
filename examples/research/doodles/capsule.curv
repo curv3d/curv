@@ -1,0 +1,54 @@
+/*
+// credit: Inigo Quilez
+capsule(d,a,b) = (
+    r = d / 2;
+    ba = b - a;
+    make_shape {
+        dist p = (
+            var pa := p[X,Y,Z] - a;
+            var h := clamp(dot(pa,ba) / dot(ba,ba), 0, 1);
+            mag(pa - ba*h) - r
+        ),
+        is_3d = true,
+    }
+);
+*/
+/*
+float sdCapsule( vec3 p, vec3 a, vec3 b, float r )
+{
+    vec3 pa = p - a, ba = b - a;
+    float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
+    return length( pa - ba*h ) - r; 
+} 
+*/
+
+sweep3(a,b) shape = (
+    ba = b - a;
+    make_shape {
+        dist p = (
+            var pa := p[X,Y,Z] - a;
+            var h := clamp(dot(pa,ba) / dot(ba,ba), 0, 1);
+            var p2 := pa - ba*h;
+            shape.dist(p2[X],p2[Y],p2[Z],p[T])
+        ),
+        is_3d = true,
+    }
+);
+stroke(d,a,b) = (
+    r = d / 2;
+    ba = b - a;
+    make_shape {
+        dist p = (
+            var pa := p[X,Y] - a;
+            var h := clamp(dot(pa,ba) / dot(ba,ba), 0, 1);
+            mag(pa - ba*h) - r
+        ),
+        bbox = [[...min(a-r,b-r),0], [...max(a+r,b+r),0]],
+        is_2d = true,
+    }
+);
+
+//sweep3((0,0,0), (3,3,3)) (sphere 1)
+//sweep3((0,0,0), (3,3,3)) (cube 1)
+capsule(1, (0,0,0), (3,3,3))
+//stroke(1, (0,0), (3,3))

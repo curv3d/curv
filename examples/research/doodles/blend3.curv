@@ -1,0 +1,8 @@
+// smooth_union is not a true N-ary blend.
+// Also, colours aren't blended.
+move = translate;
+smooth_union 2.7 (
+    circle 2 >> move(2,0) >> rotate(0) >> colour red,
+    circle 2 >> move(2,0) >> rotate(tau/3) >> colour green,
+    circle 2 >> move(2,0) >> rotate(2*tau/3) >> colour blue,
+)

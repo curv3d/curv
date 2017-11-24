@@ -1,0 +1,14 @@
+/*
+animate f = make_shape {
+    dist(x,y,z,t) = f(t).dist(x,y,z,t),
+    colour(x,y,z,t) = f(t).colour(x,y,z,t),
+};
+
+animate (t -> sphere(sin(t)+2))
+*/
+
+make_shape {
+    dist(x,y,z,t) = sphere(sin(t)+2).dist(x,y,z,t),
+    bbox = sphere(3).bbox,
+    is_3d = true,
+}
