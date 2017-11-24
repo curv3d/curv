@@ -87,7 +87,7 @@ cis theta = [cos theta, sin theta];
 // It's the 2D analog of the 3D vector cross product (Cross in Mathematica).
 // dot(perp a, b) is the "perp-dot" product:
 // see: 'The Pleasures of "Perp-Dot" Products', Graphics Gems IV.
-perp(x,y) = (y, -x);
+perp(x,y) = (-y, x);
 
 // angle between two vectors
 angle(a,b) = acos(dot(a,b) / (mag a * mag b));
@@ -266,25 +266,14 @@ half_space(d,n) =
 
 half_plane = (
     switch [
-    {d, normal: n} -> impl(d,n);
-    [a, b] -> impl2(a, normalize(perp(b-a)));
-    {at: a, normal: n} -> impl2(a,n);
+    {d, normal: n} -> impl(d*n,n);
+    [a, b] -> impl(a, normalize(perp(b-a)));
+    {at: a, normal: n} -> impl(a,n);
     ]
 where
-    impl(d,n) =
+    impl(a,n) = // a is point on boundary, n is unit normal
         make_shape {
-            dist(x,y,z,t) = dot([x,y], n) - d;
-            bbox = [ [ if (n[Y]==0 && n[X]<0) -d else -inf,
-                       if (n[X]==0 && n[Y]<0) -d else -inf,
-                       0, ],
-                     [ if (n[Y]==0 && n[X]>0) d else inf,
-                       if (n[X]==0 && n[Y]>0) d else inf,
-                       0, ], ];
-            is_2d = true;
-        };
-    impl2(a,n) = // a is point on boundary, n is unit normal
-        make_shape {
-            dist(x,y,_,_) = dot(n, a-[x,y]);
+            dist(x,y,_,_) = dot(-n, a-[x,y]);
             bbox = [ [ if (n[Y]==0 && n[X]<0) a[X] else -inf,
                        if (n[X]==0 && n[Y]<0) a[Y] else -inf,
                        0, ],
