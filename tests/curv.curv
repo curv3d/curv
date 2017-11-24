@@ -259,5 +259,7 @@ assert(
         (is_num n) -> n+1 ])
     == 43);
 
+assert( {a:} == {a:true} );
+
 // script return value:
 in null

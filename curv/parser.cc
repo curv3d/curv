@@ -206,12 +206,29 @@ parse_semicolons(Scanner& scanner, Shared<Phrase> firstitem)
     }
 }
 
+bool
+is_item_end_token(Token::Kind k)
+{
+    if (is_list_end_token(k))
+        return true;
+    switch (k) {
+    case Token::k_comma:
+    case Token::k_semicolon:
+    case Token::k_where:
+    case Token::k_else:
+        return true;
+    default:
+        return false;
+    }
+}
+
 // Low precedence right associative operators.
 //
 // item : disjunction
 //  | ... item
 //  | disjunction = item
 //  | disjunction := item
+//  | disjunction :
 //  | disjunction : item
 //  | disjunction -> item
 //  | disjunction << item
@@ -319,8 +336,19 @@ parse_item(Scanner& scanner)
         return make<Assignment_Phrase>(
             std::move(left), tok, parse_item(scanner));
     case Token::k_colon:
-        return make<Binary_Phrase>(
-            std::move(left), tok, parse_item(scanner));
+      {
+        auto tok2 = scanner.get_token();
+        scanner.push_token(tok2);
+        Shared<Phrase> right;
+        if (is_item_end_token(tok2.kind_)) {
+            tok2.kind_ = Token::k_missing;
+            tok2.last_ = tok2.first_;
+            right = make<Empty_Phrase>(Location{scanner.script_, tok2});
+        } else {
+            right = parse_item(scanner);
+        }
+        return make<Binary_Phrase>(std::move(left), tok, std::move(right));
+      }
     case Token::k_right_arrow:
         return make<Lambda_Phrase>(
             std::move(left), tok, parse_item(scanner));
