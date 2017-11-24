@@ -17,6 +17,7 @@ MAX = 1;
 X_axis = [1,0,0];
 Y_axis = [0,1,0];
 Z_axis = [0,0,1];
+nl = decode[0xA]; // ASCII newline
 
 ceil n = -floor(-n);
 trunc n = if (n >= 0) floor(n) else ceil(n);
@@ -56,6 +57,8 @@ sum list = reduce(0, (x,y)->x+y) list;
 product list = reduce(1, (x,y)->x*y) list;
 
 merge rs = {for (r in rs) ...r};
+
+ensure pred expr = do assert(pred expr) in expr;
 
 // complex numbers: [RE,IM]
 RE=0;
