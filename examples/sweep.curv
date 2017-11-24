@@ -1,0 +1,65 @@
+// Problem: Construct a Trefoil Knot by sweeping its parametric equation.
+// How do you sweep an arbitrary parametric equation?
+
+// Problem: Sweep a Bezier curve. There's a specific analytic solution to this
+// in Graphics Gems 1: Schneider PJ (1990),
+// "Solving the nearest-point-on-curve problem",
+// https://github.com/erich666/GraphicsGems/blob/master/gems/NearestPoint.c
+
+// TODO:
+// * Sweep out a curved tube of constant diameter,
+//   not a collection of discrete spheres.
+// * Faster implementation.
+// * Bounding box.
+
+// Proposal: sample n points of the parametric equation.
+// Put them in a data structure. At runtime, find the closest sample point to p:
+// * Simple data structure: linear search.
+// * Faster data structure: some kind of tree search. BSP tree, octree, etc.
+//   Best if the number of tree probes is constant, no conditionals.
+// * Adaptive sampling (vs regular sampling)
+// Then interpolate between neighbouring points:
+// * simple: piecewise linear approximation of the parametric curve.
+// * more accurate: use Newton's method to find the minimum distance to the
+//   tube, after using the data structure to make an initial guess.
+
+// Research:
+// * http://cis.k.hosei.ac.jp/~F-rep/Sweep.ps -- describes general case of
+//   sweeping a solid that itself varies based on parameter t.
+// * "generalized cylinder" is a name for the tube primitive that I want.
+//   http://www.unchainedgeometry.com/jbloom/pdf/dis-chptr5-veins.pdf
+//   Section 5.5.2. (piecewise linear approximation to a parametric curve).
+// * "Implicit Sweep Objects" 1996
+
+let
+sweep (f, maxt, n) = make_shape {
+    dist(x,y,z,t) =
+        let p = (x,y,z);
+            radius = 0.1;
+            ratio = 0.2;
+        in do
+            var d := mag(p);
+            for (i in 0 ..< n)
+                let a = i*maxt/n;
+                    b = ratio*f(a)-p;
+                in
+                    d := min(d, dot(b, b));
+            d := sqrt(d);
+        in
+            d-radius;
+
+        /*
+        var range := [3.0, 3.0, 1.0];
+        var eps := 0.001;
+        // boundingBox
+        var bb := ratio*range+radius;
+        //if (any(greaterThan(abs(p), bb))) return length(max(abs(p)-bb,0.0)) + eps;
+        if (p[X]>bb[X] || p[Y]>bb[Y] || p[Z]>bb[Z])
+            mag(max(abs p - bb, 0)) + eps
+        else
+        */
+    is_3d = true;
+};
+
+in
+sweep(t->[sin(t) + 2*sin(2*t), cos(t) - 2*cos(2*t), -sin(3*t)], tau, 50)
