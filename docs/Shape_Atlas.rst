@@ -281,24 +281,33 @@ to determine the shape of its output.
   * ``box_m ...``: mitred distance field, cheaper to compute.
   * ``box_e ...``: exact distance field, more expensive.
 
-``prism (n, d, h)``
-  Construct a regular right prism, centred on the origin, of height ``h``.
-  The base is a regular polyhedron with ``n`` sides, whose inscribed circle has diameter ``d``,
+``prism n ...``
+  Construct a regular right prism, centred on the origin.
+  The base is a regular polygon with ``n`` sides,
   parallel to the XY plane.
- 
-  * ``prism_m``: mitred distance field.
-  * ``prism_e``: exact distance field, more expensive. (TODO)
+
+  ``prism n``
+    The prism is, by default, sized so as to be inscribed by the unit sphere.
+    Equivalent to ``prism n {d: 2, h: 2}``.
+    Also, ``prism 4`` is equivalent to ``cube``.
+  ``prism n {d, h}``
+    The prism has height ``h``, and the base is inscribed by a circle of
+    diameter ``d``.
+  ``prism_m n {d, h}``
+    With a mitred distance field.
+  ``prism_e n {d, h}``
+    With an exact distance field. (TODO)
 
 ``antiprism n``
   TODO
 
-``pyramid n``
+``pyramid n {h, d}``
+  TODO:
   Construct a regular right pyramid.
   The base is a regular polyhedron with ``n`` sides, whose inscribed circle has diameter ``d``.
   The base is embedded in the XY plane and centred on the origin.
   The apex is above the origin at height ``h``.
   Maybe provide an API for constructing an infinite pyramid with apex at origin?
-  TODO
 
 Platonic Solids
   There are five definitions:

@@ -445,8 +445,11 @@ box_e a =
         box_e((xmin,ymin,zmin),(xmax,ymax,zmax));
     ];
 
-prism = prism_m;
-prism_m(n,d,h) = regular_polygon_m n d >> extrude_m h;
+prism n = {
+    ... prism_m n {d: 2, h: 2},
+    call : prism_m n,
+};
+prism_m n {d,h} = regular_polygon_m n d >> extrude_m h;
 
 // TODO: pyramid(n,d,h)
 
