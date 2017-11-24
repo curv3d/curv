@@ -261,19 +261,9 @@ half_space(d,n) =
         is_3d = true;
     };
 
-half_plane =
+half_plane = (
     switch [
-    {d, normal: n} ->
-        make_shape {
-            dist(x,y,z,t) = dot([x,y], n) - d;
-            bbox = [ [ if (n[Y]==0 && n[X]<0) -d else -inf,
-                       if (n[X]==0 && n[Y]<0) -d else -inf,
-                       0, ],
-                     [ if (n[Y]==0 && n[X]>0) d else inf,
-                       if (n[X]==0 && n[Y]>0) d else inf,
-                       0, ], ];
-            is_2d = true;
-        };
+    {d, normal: n} -> impl(d,n);
     [p1, p2] ->
         let v = p2 - p1;
         in make_shape {
@@ -285,7 +275,20 @@ half_plane =
             dist p = dot(n, a-p[[X,Y]]);
             is_2d = true;
         };
-    ];
+    ]
+where
+    impl(d,n) =
+        make_shape {
+            dist(x,y,z,t) = dot([x,y], n) - d;
+            bbox = [ [ if (n[Y]==0 && n[X]<0) -d else -inf,
+                       if (n[X]==0 && n[Y]<0) -d else -inf,
+                       0, ],
+                     [ if (n[Y]==0 && n[X]>0) d else inf,
+                       if (n[X]==0 && n[Y]>0) d else inf,
+                       0, ], ];
+            is_2d = true;
+        };
+);
 
 square =
     make_shape {
