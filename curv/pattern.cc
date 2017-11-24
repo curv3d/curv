@@ -75,6 +75,33 @@ struct Id_Pattern : public Pattern
     }
 };
 
+struct Const_Pattern : public Pattern
+{
+    Value value_;
+
+    Const_Pattern(Shared<const Phrase> src, Value val)
+    :
+        Pattern(src),
+        value_(val)
+    {}
+
+    virtual void analyze(Environ& env) override
+    {
+    }
+    virtual void exec(Value* slots, Value value, const Context& cx, Frame& f)
+    const override
+    {
+        if (value != value_)
+            throw Exception(cx,
+                stringify("argument ",value, " does not equal ", value_));
+    }
+    virtual bool try_exec(Value* slots, Value value, Frame& f)
+    const override
+    {
+        return value == value_;
+    }
+};
+
 struct Predicate_Pattern : public Pattern
 {
     Shared<Pattern> pattern_;
@@ -403,18 +430,19 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
             }
             if (auto bin = dynamic_cast<const Binary_Phrase*>(&item)) {
                 if (bin->op_.kind_ == Token::k_colon) {
-                    auto name_src = bin->left_;
-                    Shared<Phrase> pat_src;
-                    Shared<Phrase> dfl_src;
+                    Atom name = atomize(*bin->left_, scope);
+                    Shared<Pattern> pat;
+                    Shared<Phrase> dfl_src = nullptr;
                     if (auto def = dynamic_cast
                         <const Recursive_Definition_Phrase*>(&*bin->right_))
                     {
-                        pat_src = def->left_;
+                        pat = make_pattern(*def->left_, scope, unitno);
                         dfl_src = def->right_;
-                    } else
-                        pat_src = bin->right_;
-                    Atom name = atomize(*name_src, scope);
-                    auto pat = make_pattern(*pat_src, scope, unitno);
+                    } else if (isa<Empty_Phrase>(bin->right_)) {
+                        pat = make<Const_Pattern>(bin->right_, Value{true});
+                    } else {
+                        pat = make_pattern(*bin->right_, scope, unitno);
+                    }
                     fields[name] = {pat, dfl_src};
                     return;
                 }

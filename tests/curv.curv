@@ -261,5 +261,14 @@ assert(
 
 assert( {a:} == {a:true} );
 
+let f = switch [
+    {nothing:} -> "nothing";
+    {just: a} -> "just $a";
+    ];
+in (
+    assert(f{nothing:} == "nothing");
+    assert(f{just:42} == "just 42");
+);
+
 // script return value:
 in null
