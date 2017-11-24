@@ -352,7 +352,7 @@ analyze_block(
         return make<Preaction_Op>(
             source,
             analyze_op(*bindings, env),
-            analyze_op(*bodysrc, env));
+            analyze_tail(*bodysrc, env));
     }
     if (adef->kind_ == Definition::k_sequential
         && kind == Definition::k_sequential)
@@ -370,6 +370,7 @@ analyze_block(
     {
         Recursive_Scope rscope(env, false);
         rscope.analyze(*adef);
+        rscope.is_analyzing_action_ = env.is_analyzing_action_;
         auto body = analyze_tail(*bodysrc, rscope);
         env.frame_maxslots_ = rscope.frame_maxslots_;
         return make<Block_Op>(source,

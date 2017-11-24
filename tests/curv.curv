@@ -270,5 +270,12 @@ in (
     assert(f{just:42} == "just 42");
 );
 
+do
+    var a := 42;
+    for (i in 1..3)
+        let n = i;
+        in a := a + n;
+in assert(a == 48);
+
 // script return value:
 in null
