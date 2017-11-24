@@ -202,24 +202,26 @@ to determine the shape of its output.
   Exact distance field.
 
 ``half_plane ...``
+  A half-plane is an infinite 2D shape consisting of all points on one side
+  of an infinite straight line, and no points on the other side.
+  The points on the line are included. Exact distance field.
+
   ``half_plane {d, normal: n}``
     A half plane with normal vector ``n``,
     whose edge is distance ``d`` from the origin.
     ``n`` must be a unit vector.
     If d >= 0, the half-plane contains the origin.
-    Exact distance field.
 
   ``half_plane {at: p, normal: n}``
     A half plane with normal vector ``n``,
     whose edge passes through point ``p``.
     ``n`` must be a unit vector.
-    Exact distance field.
 
   ``half_plane [p1, p2]``
     A half-plane whose edge passes through points p1 and p2.
-    Right hand rule: palm on p1, fingertips on p2, thumb points to the interior
-    of the half-plane.
-    Exact distance field.
+    The normal vector is ``perp(p2-p1)``.
+    Right hand palm on p1, fingertips on p2, thumb is the normal vector
+    (points away from the half-plane).
 
 ``log_spiral ...``
   TODO: logarithmic spiral

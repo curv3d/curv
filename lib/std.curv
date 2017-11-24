@@ -267,17 +267,8 @@ half_space(d,n) =
 half_plane = (
     switch [
     {d, normal: n} -> impl(d,n);
-    [p1, p2] ->
-        let v = p2 - p1;
-        in make_shape {
-            dist p = (dot(p[[X,Y]], perp v) + dot(perp p1, p2)) / mag v;
-            is_2d = true;
-        };
-    {at: a, normal: n} ->
-        make_shape {
-            dist p = dot(n, a-p[[X,Y]]);
-            is_2d = true;
-        };
+    [a, b] -> impl2(a, normalize(perp(b-a)));
+    {at: a, normal: n} -> impl2(a,n);
     ]
 where
     impl(d,n) =
@@ -288,6 +279,17 @@ where
                        0, ],
                      [ if (n[Y]==0 && n[X]>0) d else inf,
                        if (n[X]==0 && n[Y]>0) d else inf,
+                       0, ], ];
+            is_2d = true;
+        };
+    impl2(a,n) = // a is point on boundary, n is unit normal
+        make_shape {
+            dist(x,y,_,_) = dot(n, a-[x,y]);
+            bbox = [ [ if (n[Y]==0 && n[X]<0) a[X] else -inf,
+                       if (n[X]==0 && n[Y]<0) a[Y] else -inf,
+                       0, ],
+                     [ if (n[Y]==0 && n[X]>0) a[X] else inf,
+                       if (n[X]==0 && n[Y]>0) a[Y] else inf,
                        0, ], ];
             is_2d = true;
         };
@@ -396,7 +398,7 @@ convex_polygon = convex_polygon_m;
 convex_polygon_m pts =
     intersection[
         for (i in indices pts)
-            half_plane(pts[i], pts[mod(i+1, count pts)]),
+            half_plane (pts[mod(i+1, count pts)], pts[i]),
         rect(min pts, max pts) // bounding box
     ];
 
