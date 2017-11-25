@@ -207,13 +207,13 @@ to determine the shape of its output.
   The points on the line are included. Exact distance field.
 
   ``half_plane {d, normal: n}``
-    A half plane with normal vector ``n``,
+    A half-plane with normal vector ``n``,
     whose edge is distance ``d`` from the origin.
     ``n`` must be a unit vector.
     If d >= 0, the half-plane contains the origin.
 
   ``half_plane {at: p, normal: n}``
-    A half plane with normal vector ``n``,
+    A half-plane with normal vector ``n``,
     whose edge passes through point ``p``.
     ``n`` must be a unit vector.
 
@@ -348,16 +348,26 @@ Platonic Solids
   with the addition of hemispherical end caps of radius ``d/2``.
   Exact distance field.
 
-``half_space (d, n)``
-  A half-space with normal vector ``n``,
-  whose face is distance ``d`` from the origin.
-  Exact distance field.
-  
-``half_space (p1, p2, p3)``
-  A half-space whose face passes through points p1, p2, p3, which are not colinear.
-  The normal vector is obtained from the points via the right-hand rule.
-  Exact distance field.
-  TODO
+``half_space ...``
+  A half-space is an infinite 3D shape consisting of all points on one side
+  of an infinite plane that subdivides 3-space. The points in the plane
+  are included. Exact distance field.
+
+  ``half_space {d, normal: n}``
+    A half-space with normal vector ``n``,
+    whose boundary plane is distance ``d`` from the origin.
+    ``n`` must be a unit vector.
+    If d >= 0, the half-space contains the origin.
+
+  ``half_space {at: p, normal: n}``
+    A half-space with normal vector ``n``,
+    whose boundary plane passes through point ``p``.
+    ``n`` must be a unit vector.
+
+  ``half_space [p1, p2, p3]``
+    A half-space whose boundary plane passes through points p1, p2 and p3.
+    The points p1, p2 and p3 are in counter-clockwise order when viewed
+    from above and outside of the half-space.
 
 ``gyroid``
   The gyroid surface (`<https://en.wikipedia.org/wiki/Gyroid>`_)

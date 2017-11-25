@@ -255,14 +255,25 @@ perimeter_extrude perimeter cross_section =
 // POLYTOPES //
 ///////////////
 
-// Half-space with normal n, at distance d from the origin.
-//  n: must be a 3D unit vector.
-//  if d >= 0, half-space contains the origin.
-half_space(d,n) =
-    make_shape {
-        dist(x,y,z,t) = dot([x,y,z], n) - d;
-        is_3d = true;
-    };
+half_space = (
+    switch [
+    {d, normal: n} -> impl(d*n,n);
+    [a, b, c] -> impl(a, normalize(cross(b-a,c-b)));
+    {at: a, normal: n} -> impl(a,n);
+    ]
+where
+    impl(a,n) = // a is point on boundary, n is unit normal
+        make_shape {
+            dist(x,y,z,_) = dot(-n, a-[x,y,z]);
+            bbox = [ [ if (n[Y]==0 && n[Z]==0 && n[X]<0) a[X] else -inf,
+                       if (n[X]==0 && n[Z]==0 && n[Y]<0) a[Y] else -inf,
+                       if (n[X]==0 && n[Y]==0 && n[Z]<0) a[Z] else -inf, ],
+                     [ if (n[Y]==0 && n[Z]==0 && n[X]>0) a[X] else inf,
+                       if (n[X]==0 && n[Z]==0 && n[Y]>0) a[Y] else inf,
+                       if (n[X]==0 && n[Y]==0 && n[Z]>0) a[Z] else inf, ] ];
+            is_3d = true;
+        };
+);
 
 half_plane = (
     switch [
