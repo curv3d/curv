@@ -776,8 +776,9 @@ warp_domain_xy warp shape =
 
 // rotate angle shape -- 2D rotation around the Z axis
 // rotate (angle,axis) shape -- 3D rotation around specified axis
-rotate a shape = (
-    if (is_num a)
+rotate arg shape =
+    arg >> switch [
+    (is_num a) ->
         let // 2D rotation around the Z axis
             rot2(a,p) = cmul(p, cis a);
             b = if (shape.bbox[MIN,X] == -inf || shape.bbox[MIN,Y] == -inf
@@ -804,11 +805,9 @@ rotate a shape = (
             ],
             is_2d : shape.is_2d,
             is_3d : shape.is_3d,
-        }
-    else
-        let assert(is_list a && count a == 2);
-            angle = a[0];
-            axis = normalize(a[1]);
+        };
+    {angle, axis: a} ->
+        let axis = normalize a;
             assert(shape.is_3d);
             rot3(a,axis,p) =
                     p * cos(a)
@@ -843,8 +842,8 @@ rotate a shape = (
                 in shape.colour(q[X],q[Y],q[Z],t),
             bbox : b,
             is_3d : true,
-        }
-);
+        };
+    ];
 
 reflect_x shape =
     make_shape {

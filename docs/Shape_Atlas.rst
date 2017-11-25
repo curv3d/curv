@@ -461,7 +461,7 @@ If the input has an exact distance field, the output is also exact.
   Rotate a 2D or 3D shape around the Z axis, counterclockwise,
   by an angle measured in radians.
 
-``rotate (angle, axis) shape``
+``rotate {angle, axis} shape``
   Rotate a 3D shape around the specified axis, counterclockwise,
   by an angle measured in radians.
 
