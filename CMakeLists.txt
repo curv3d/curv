@@ -27,7 +27,7 @@ target_link_libraries(curv PUBLIC libcurv ${LibReadline} double-conversion boost
 
 FILE(GLOB TestSrc "tests/*.cc")
 add_executable(tester ${TestSrc})
-target_link_libraries(tester PUBLIC gtest pthread libcurv double-conversion)
+target_link_libraries(tester PUBLIC gtest pthread libcurv double-conversion boost_filesystem boost_system)
 
 set_property(TARGET curv libcurv tester PROPERTY CXX_STANDARD 14)
 

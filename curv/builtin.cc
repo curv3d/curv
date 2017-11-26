@@ -8,6 +8,7 @@
 #include <string>
 
 #include <boost/math/constants/constants.hpp>
+#include <boost/filesystem.hpp>
 
 #include <curv/arg.h>
 #include <curv/builtin.h>
@@ -575,20 +576,6 @@ struct Encode_Function : public Polyadic_Function
     }
 };
 
-struct File_Function : public Polyadic_Function
-{
-    File_Function() : Polyadic_Function(1) {}
-    Value call(Frame& f) override
-    {
-        At_Arg ctx0(f);
-        auto path = f[0].to<String>(ctx0);
-        auto file = make<File_Script>(path, ctx0);
-        Program prog{*file, f.system_};
-        prog.compile(nullptr, &f);
-        return prog.eval();
-    }
-};
-
 struct Switch_Function : public Polyadic_Function
 {
     Switch_Function() : Polyadic_Function(1) {}
@@ -600,6 +587,53 @@ struct Switch_Function : public Polyadic_Function
         for (size_t i = 0; i < list->size(); ++i)
             cases.push_back(list->at(i).to<Function>(At_Index(i,ctx0)));
         return {make<Switch>(cases)};
+    }
+};
+
+// The filename argument to "file", if it is a relative filename,
+// is interpreted relative to the parent directory of the script file from
+// which "file" is called.
+//
+// Because "file" has this hidden parameter (the name of the script file from
+// which it is called), it is not a pure function. For this reason, it isn't
+// a function value at all, it's a metafunction.
+struct File_Expr : public Just_Expression
+{
+    Shared<Operation> arg_;
+    File_Expr(Shared<const Call_Phrase> src, Shared<Operation> arg)
+    :
+        Just_Expression(std::move(src)),
+        arg_(std::move(arg))
+    {}
+    virtual Value eval(Frame& f) const override
+    {
+        auto& callphrase = dynamic_cast<const Call_Phrase&>(*source_);
+        At_Phrase cx(*callphrase.arg_, &f);
+        Value arg = arg_->eval(f);
+        auto argstr = arg.to<String>(cx);
+        namespace fs = boost::filesystem;
+        fs::path filepath;
+        auto caller_script_name = source_->location().script().name_;
+        if (caller_script_name->empty()) {
+            filepath = fs::path(argstr->c_str());
+        } else {
+            filepath = fs::path(caller_script_name->c_str()).parent_path()
+                / fs::path(argstr->c_str());
+        }
+        auto file = make<File_Script>(make_string(filepath.c_str()), cx);
+        Program prog{*file, f.system_};
+        std::unique_ptr<Frame> f2 =
+            Frame::make(0, f.system_, &f, &callphrase, nullptr);
+        prog.compile(nullptr, &*f2);
+        return prog.eval();
+    }
+};
+struct File_Metafunction : public Metafunction
+{
+    using Metafunction::Metafunction;
+    virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
+    {
+        return make<File_Expr>(share(ph), analyze_op(*ph.arg_, env));
     }
 };
 
@@ -933,8 +967,8 @@ builtin_namespace()
     {"repr", make<Builtin_Value>(Value{make<Repr_Function>()})},
     {"decode", make<Builtin_Value>(Value{make<Decode_Function>()})},
     {"encode", make<Builtin_Value>(Value{make<Encode_Function>()})},
-    {"file", make<Builtin_Value>(Value{make<File_Function>()})},
     {"switch", make<Builtin_Value>(Value{make<Switch_Function>()})},
+    {"file", make<Builtin_Meaning<File_Metafunction>>()},
     {"print", make<Builtin_Meaning<Print_Metafunction>>()},
     {"warning", make<Builtin_Meaning<Warning_Metafunction>>()},
     {"error", make<Builtin_Meaning<Error_Metafunction>>()},
