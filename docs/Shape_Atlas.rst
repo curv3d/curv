@@ -1322,6 +1322,13 @@ Hyperbolic Geometry
 -------------------
 The math behind Escher's Circle Limit prints.
 
+Carole Blanc
+------------
+* http://dept-info.labri.fr/~blanc/abst.html
+
+A number of these papers are directed towards the creation of a Curv-like
+geometry system.
+
 7. Bibliography
 ===============
 * John C. Hart, `Sphere Tracing`_

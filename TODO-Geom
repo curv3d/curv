@@ -1,5 +1,45 @@
 # Redesign Shape Atlas API
 
+## Taper
+taper_xy (kx0, ky0, z0, kx1, ky1, z1) shape
+Local 3 dimensional taper along the Z axis, between z==z0 and z==z1. When z<=z0, x and y values are scaled by the factors kx0 and ky0. When z1<=z, x and y values are scaled by the factors kx1 and ky1. When z0<z<z1, x/y values are scaled by factors that are a linear ramp between kx0-kx1/ky0-ky1.
+
+taper_xy ((kx0, ky0, z0), (kx1, ky1, z1))
+
+taper_xy ({xy:(kx0, ky0), z:z0}, {xy:(kx1, ky1), z:z1})
+
+taper[{z: z0, scale_xy: (kx0,ky0)}, {z: z1, scale_xy: (kx1, ky1)}]
+
+taper_xy{from: {z: z0, scale_xy: (kx0,ky0)}, to: {z: z1, scale_xy: (kx1, ky1)}}
+
+taper_xy{range:[z0,z1], scale:[[kx0,ky0],[kx1,ky1]]}
+    and maybe add an optional axis:[x,y,z] argument.
+
+taper_x ((kx0, y0), (kx1, y1))
+taper_x {range:[y0,y1], scale:[kx0,kx1]}
+
+## Bend
+`bend d shape` -- seems like it should have more arguments?
+
+I think this is a good operation, it just needs a more specific name.
+It bends a cylinder into a torus, and a rectangular sheet into a cylinder.
+
+circle_bend d shape
+cylindrical_map d shape
+  -- since it maps cartesian to cylindrical coordinates,
+     and may be related to cylindrical_extrude.
+
+## Linear Repeat
+
+repeat_x (dx) shape
+repeat_xy (dx,dy) shape
+repeat_xyz (dx,dy,dz) shape
+
+Need a finite version. In repeat_x, the cell centred at the origin has
+ordinal 0, and the general sequence is ...,-3,-2,-1,-,1,2,3,...
+
+repeat_x {size:dx, range:(first,last)} shape
+
 ## axis-aligned rectangle (bbox2)
 
 A bbox2 is represented as a matrix, ((xmin,ymin),(xmax,ymax)).
