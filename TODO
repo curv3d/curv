@@ -158,12 +158,8 @@ library:
 curv:
 * in `curv -le`, if you quit the editor then curv exits (first, glslViewer is
   terminated and the temp file is deleted).
-* if you close glslViewer, then compute another shape, the window reopens
 * send GL output to a *.tmp file. If GL compiler fails, delete temp, otherwise
   move it to the *.frag file so glslViewer will reload it.
-
-BUGS:
-* fix memory leak: `sum = reduce(0,(x,y)->x+y)` leaks memory. ideas/Leak.md
 
 3D viewer
 * use bbox to ensure entire scene is visible
@@ -173,8 +169,6 @@ BUGS:
 * The current sphere-tracer stops at distance 20 (hard coded). Use the bounding
   box to compute a tmin and tmax value for a given ray (by intersecting the
   bbox), or don't march at all if the ray doesn't intersect the bbox.
-
-Fix kludge in Indirect_Function_Ref that forces thunks.
 
 ## Geometry
 Math:
