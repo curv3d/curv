@@ -8,10 +8,12 @@ extern "C" {
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
 }
 #include <iostream>
 #include <fstream>
@@ -109,22 +111,58 @@ make_tempfile()
     return filename;
 }
 
+pid_t viewer_pid = pid_t(-1);
+
+void
+poll_viewer()
+{
+    if (viewer_pid != pid_t(-1)) {
+        int status;
+        pid_t pid = waitpid(viewer_pid, &status, WNOHANG);
+        if (pid == viewer_pid) {
+            // TODO: print abnormal exit status
+            viewer_pid = pid_t(-1);
+        }
+    }
+}
+
+void
+launch_viewer(curv::Shared<curv::String> filename)
+{
+    poll_viewer();
+    if (viewer_pid == pid_t(-1)) {
+        pid_t pid = fork();
+        if (pid == 0) {
+            // in child process
+            int r =
+                execlp("glslViewer", "glslViewer", filename->c_str(), (char*)0);
+            std::cerr << "can't exec glslViewer\n"; // TODO: why?
+            (void) r; // TODO
+            exit(1);
+        } else if (pid == pid_t(-1)) {
+            std::cerr << "can't fork glslViewer\n"; // TODO: why?
+        } else {
+            viewer_pid = pid;
+        }
+    }
+}
+
 void
 display_shape(curv::Value value, const curv::Context &cx, bool block = false)
 {
-    static bool viewer = false;
     curv::Shape_Recognizer shape(cx);
     if (shape.recognize(value)) {
         auto filename = make_tempfile();
         std::ofstream f(filename->c_str());
         curv::gl_compile(shape, f, cx);
         f.close();
-        if (!viewer) {
+        if (block) {
             auto cmd = curv::stringify("glslViewer ",filename->c_str(),
                 block ? "" : "&");
             system(cmd->c_str());
-            if (block) unlink(filename->c_str());
-            viewer = true;
+            unlink(filename->c_str());
+        } else {
+            launch_viewer(filename);
         }
     }
 }
