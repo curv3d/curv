@@ -1,0 +1,11 @@
+// experimental transform library
+{
+orbit f shape =
+    make_shape {
+        dist(x,y,z,t) =
+            let offset = f t;
+            in shape.dist(x-offset[X],y-offset[Y],z-offset[Z],t);
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
+    };
+}

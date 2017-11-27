@@ -1,0 +1,10 @@
+let
+use file "lib/experimental.curv";
+
+in
+smooth_union 1 (
+  cube_e 1
+   >> orbit(t -> (cos t, sin t, 0)),
+  sphere 1
+   >> orbit(t -> (cos t, -sin t, 0)),
+)
