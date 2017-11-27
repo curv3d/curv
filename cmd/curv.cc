@@ -99,6 +99,8 @@ make_system(const char* argv0, std::list<const char*>& libs)
     }
 }
 
+curv::Shared<curv::String> tempfile = nullptr;
+
 curv::Shared<curv::String>
 make_tempfile()
 {
@@ -108,7 +110,15 @@ make_tempfile()
         throw curv::Exception({}, curv::stringify(
             "Can't create ",filename->c_str(),": ",strerror(errno)));
     close(fd);
+    tempfile = filename;
     return filename;
+}
+
+void
+remove_tempfile()
+{
+    if (tempfile != nullptr)
+        remove(tempfile->c_str());
 }
 
 pid_t viewer_pid = pid_t(-1);
@@ -503,6 +513,7 @@ main(int argc, char** argv)
 
     // Interpret arguments
     curv::System& sys(make_system(argv0, libs));
+    atexit(remove_tempfile);
 
     if (filename == nullptr) {
         return interactive_mode(sys);
