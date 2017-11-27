@@ -53,8 +53,8 @@ reduce (zero, f) list =
             for (i in 1..<count list)
                 r := f(r, list[i]);
         in r;
-sum list = reduce(0, (x,y)->x+y) list;
-product list = reduce(1, (x,y)->x*y) list;
+sum = reduce(0, (x,y)->x+y);
+product = reduce(1, (x,y)->x*y);
 
 merge rs = {for (r in rs) ...r};
 
