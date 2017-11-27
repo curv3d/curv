@@ -1,5 +1,11 @@
 # Redesign Shape Atlas API
 
+## Rotate_repeat
+Better if the cell to repeat is above the origin.
+Consistent with cylinder_transform.
+Also, this constructs a shape that is mirror-symmetric about the Y axis,
+which is the best axis to choose for human psychology reasons.
+
 ## Taper
 taper_xy (kx0, ky0, z0, kx1, ky1, z1) shape
 Local 3 dimensional taper along the Z axis, between z==z0 and z==z1. When z<=z0, x and y values are scaled by the factors kx0 and ky0. When z1<=z, x and y values are scaled by the factors kx1 and ky1. When z0<z<z1, x/y values are scaled by factors that are a linear ramp between kx0-kx1/ky0-ky1.
@@ -23,11 +29,14 @@ taper_x {range:[y0,y1], scale:[kx0,kx1]}
 
 I think this is a good operation, it just needs a more specific name.
 It bends a cylinder into a torus, and a rectangular sheet into a cylinder.
+It transforms from Cartesian to cylindrical coordinates.
 
 circle_bend d shape
 cylindrical_map d shape
   -- since it maps cartesian to cylindrical coordinates,
      and may be related to cylindrical_extrude.
+cylinder_transform d shape
+cylinder_bend d shape
 
 ## Linear Repeat
 
@@ -39,6 +48,12 @@ Need a finite version. In repeat_x, the cell centred at the origin has
 ordinal 0, and the general sequence is ...,-3,-2,-1,-,1,2,3,...
 
 repeat_x {size:dx, range:(first,last)} shape
+repeat_x {d:dx, range:(first,last)} shape
+
+repeat_xy {d:(dx,dy), range:[(firstx,lastx), (firsty,lasty)]}
+repeat_xy {d:(dx,dy), xrange:(firstx,lastx), yrange:(firsty,lasty)}
+  -- if you omit xrange or yrange, they default to infinite
+repeat_xy {d:(dx,dy), from:(firstx,firsty), to:(lastx,lasty)}
 
 ## axis-aligned rectangle (bbox2)
 

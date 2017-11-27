@@ -1,6 +1,15 @@
 ## TODO: Language Changes
 
-lib
+* lib
+* std
+* a[i] := item, i is an integer
+* remove a'b
+* function/record equivalence
+  * primitive functions have a 'call' field, support 'fields' and 'defined'
+    and 'f.call'.
+  * 'is_record f' is true
+  * 'is_fun r' is true if r is a record with a call field.
+    is_fun x = defined(x.call);
 
 ## Ideas Under Development
 String:
@@ -274,15 +283,17 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
     for (i ∈ 1..10)
     π == pi
     τ == tau
+    ∞ == inf
     x↑y = x^y
     “foo” == "foo"  -- note, resistant to systems that autocorrect "" to “”
     g∘f == compose[g,f]
-* Digit separator in numerals: ' like C++14, or _. Use _.
-* Support ' (primes) in identifiers (like Haskell). Nope, ' is needed elsewhere.
-* Support `foo` quoted identifiers.
+    1.0₁₀3 == 1.0e3
+* Use _ as digit separator in numerals.
+* Support ' (primes) in identifiers (like Haskell)? Nope, ' is needed elsewhere.
+* Support `foo` quoted identifiers? Nope, ` already used for infix operators.
   Compatibility with GUI interfaces that display
   parameter names as GUI labels, JSON object keys.
-* 'foo' quoted identifiers and x `f` y infix notation.
+* 'foo' quoted identifiers and x `f` y infix notation?
 
 ### OpenSCAD2 prototype oriented programming?
 * Model parameters and shape are bundled into one value.
@@ -346,7 +357,7 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
   that invokes the constructor with a transformed copy of the instance variables
   as arguments.
 
-### Function/Structure Equivalence.
+### Function/Record Equivalence.
 * Using {call x = f x}, a record can behave like a function.
 * For symmetry, a function behaves like a record with a single `call` field.
 * What about `is_fun`?
@@ -462,13 +473,6 @@ Maybe I want an abbreviated infix form?
 This looks nice if each function in the composition is an identifier.
 The syntax makes sense if I create a library of standard function names
 that are intended to be composed in this way.
-
-Eg, maybe colours are functions
-    red cube
-And there are colour modifier combinators:
-    light'red cube
-This story would be better if `red` and `light'red` both carry metadata that
-permit them to be displayed as graphic objects.
 
 Transformations can be composed.
 

@@ -11,6 +11,10 @@ Roadmap:
 * Meta: use https://opensource.guide/
 * => First public release with a stable API.
 
+MVP Bug fixes:
+* glslViewer is automatically reopened if closed, during interactive use.
+* initial 3D view shows entire model, based on bounding box
+
 Pattern project:
 * GL: record patterns, predicate patterns
 * contexts: assignment, for, binder.
