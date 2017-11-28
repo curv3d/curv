@@ -1,10 +1,9 @@
 let
 use file "lib/experimental.curv";
+bb = [[-1,-1,0], [1,1,0]];
 
 in
 smooth_union 1 (
-  cube_e 1
-   >> orbit(t -> (cos t, sin t, 0)),
-  sphere 1
-   >> orbit(t -> (cos t, -sin t, 0)),
+  cube_e 1 >> orbit {f t: (cos t, sin t, 0), bbox: bb},
+  sphere 1 >> orbit {f t: (cos t, -sin t, 0), bbox: bb},
 )

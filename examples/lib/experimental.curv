@@ -1,10 +1,21 @@
-// experimental transform library
 {
-orbit f shape =
+// Animate a shape by moving it around.
+//  f maps time onto a translation offset (x,y,z)
+//  bbox is the minimum and maximum offset values
+orbit {f,bbox} shape =
     make_shape {
-        dist(x,y,z,t) =
+        dist(x,y,z,t) :
             let offset = f t;
-            in shape.dist(x-offset[X],y-offset[Y],z-offset[Z],t);
+            in shape.dist(x-offset[X],y-offset[Y],z-offset[Z],t),
+        bbox : shape.bbox + bbox,
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    };
+
+// displace the boundaries of a shape using a 3D cosine wave
+cosine_warp shape =
+    make_shape {
+        dist(x,y,z,t) = shape.dist(x,y,z,t) + cos x * cos y * cos z;
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
     };
