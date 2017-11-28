@@ -12,7 +12,6 @@ Roadmap:
 * => First public release with a stable API.
 
 MVP Bug fixes:
-* initial 3D view shows entire model, based on bounding box
 * upgrade to latest glslViewer
 
 Pattern project:

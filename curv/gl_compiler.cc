@@ -111,20 +111,24 @@ void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Conte
     out <<
         "}\n";
 
-#if 0
     BBox bbox = shape.bbox_;
     if (bbox.empty() || bbox.infinite()) {
         out <<
-        "const vec4 bbox = vec4(-10.0,-10.0,+10.0,+10.0);\n";
+        "const vec3 bbox_min = vec3(-10.0,-10.0,-10.0);\n"
+        "const vec3 bbox_max = vec3(+10.0,+10.0,+10.0);\n";
     } else {
-        out << "const vec4 bbox = vec4("
+        out
+        << "const vec3 bbox_min = vec3("
             << bbox.xmin << ","
             << bbox.ymin << ","
+            << bbox.zmin
+            << ");\n"
+        << "const vec3 bbox_max = vec3("
             << bbox.xmax << ","
-            << bbox.ymax
+            << bbox.ymax << ","
+            << bbox.zmax
             << ");\n";
     }
-#endif
 
     // Following code is based on code fragments written by Inigo Quilez,
     // with The MIT Licence.
@@ -269,13 +273,16 @@ void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Conte
 
        "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n"
        "{\n"
+       "    const vec3 origin = (bbox_min + bbox_max) / 2.0;\n"
+       "    const vec3 radius = (bbox_max - bbox_min) / 2.0;\n"
+       "    float r = max(radius.x, max(radius.y, radius.z)) / 1.3;\n"
        "    vec2 p = -1.0 + 2.0 * fragCoord.xy / iResolution.xy;\n"
        "    p.x *= iResolution.x/iResolution.y;\n"
        "\n"
        // convert from the OpenGL coordinate system to the Curv coord system.
        "#ifdef GLSLVIEWER\n"
-       "    vec3 eye = vec3(u_eye3d.x, -u_eye3d.z, u_eye3d.y);\n"
-       "    vec3 centre = vec3(u_centre3d.x, -u_centre3d.z, u_centre3d.y);\n"
+       "    vec3 eye = vec3(u_eye3d.x, -u_eye3d.z, u_eye3d.y)*r + origin;\n"
+       "    vec3 centre = vec3(u_centre3d.x, -u_centre3d.z, u_centre3d.y)*r + origin;\n"
        "    vec3 up = vec3(u_up3d.x, -u_up3d.z, u_up3d.y);\n"
        "#else\n"
        "    vec3 eye = vec3(2.6, -4.5, 3.0);\n"
