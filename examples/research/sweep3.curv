@@ -1,0 +1,36 @@
+let
+convex_linear_sweep(a,b) shape =
+    let ba = b - a;
+    in make_shape {
+        dist p =
+            let pa = p[[X,Y,Z]] - a;
+                h = clamp(dot(pa,ba) / dot(ba,ba), 0, 1);
+                p2 = pa - ba*h;
+            in shape.dist(p2[X],p2[Y],p2[Z],p[T]);
+        is_3d = true;
+    };
+find_minimum(f, lower, upper) =
+    // Use bisection, it's easier than Newton's method.
+    do  var n := 16;
+        var li := lower;
+        var lo := f li;
+        var ui := upper;
+        var uo := f ui;
+        while (n > 0)
+            let mi = (li + ui) / 2;
+                mo = f mi;
+            in (
+                if (lo < uo) (
+                    ui := mi;
+                    uo := mo;
+                ) else (
+                    li := mi;
+                    lo := mo;
+                );
+                n := n - 1;
+            );
+    in min(lo, uo);
+
+in
+//sweep3((0,0,0), (3,3,3)) (cube 1)
+find_minimum(sin, pi, tau)
