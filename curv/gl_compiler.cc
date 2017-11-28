@@ -119,14 +119,14 @@ void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Conte
     } else {
         out
         << "const vec3 bbox_min = vec3("
-            << bbox.xmin << ","
-            << bbox.ymin << ","
-            << bbox.zmin
+            << dfmt(bbox.xmin, dfmt::EXPR) << ","
+            << dfmt(bbox.ymin, dfmt::EXPR) << ","
+            << dfmt(bbox.zmin, dfmt::EXPR)
             << ");\n"
         << "const vec3 bbox_max = vec3("
-            << bbox.xmax << ","
-            << bbox.ymax << ","
-            << bbox.zmax
+            << dfmt(bbox.xmax, dfmt::EXPR) << ","
+            << dfmt(bbox.ymax, dfmt::EXPR) << ","
+            << dfmt(bbox.zmax, dfmt::EXPR)
             << ");\n";
     }
 

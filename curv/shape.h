@@ -23,8 +23,8 @@ struct BBox
         return (xmin >= xmax || ymin >= ymax);
     }
     bool infinite() {
-        return (xmin == -INFINITY || ymin == -INFINITY ||
-                xmax == +INFINITY || ymax == +INFINITY);
+        return (xmin == -INFINITY || ymin == -INFINITY || zmin == -INFINITY ||
+                xmax == +INFINITY || ymax == +INFINITY || zmax == +INFINITY);
     }
     static BBox from_value(Value, const Context&);
 };
