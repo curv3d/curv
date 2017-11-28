@@ -161,7 +161,7 @@ void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Conte
        "            break;\n"
        "        }\n"
        "        t += res.x;\n"
-       "        if (t > tmax) break;\n"
+       "        //if (t > tmax) break;\n"
        "    }\n"
        "    return vec4( t, c );\n"
        "}\n"
