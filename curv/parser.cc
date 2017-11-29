@@ -227,6 +227,7 @@ is_item_end_token(Token::Kind k)
 //
 // item : pipeline
 //  | ... item
+//  | 'use' item
 //  | pipeline = item
 //  | pipeline := item
 //  | pipeline :
@@ -536,7 +537,7 @@ parse_product(Scanner& scanner)
     }
 }
 
-// unary : power | - unary | + unary | ! unary
+// unary : power | - unary | + unary | ! unary | 'var' unary
 Shared<Phrase>
 parse_unary(Scanner& scanner)
 {

@@ -333,6 +333,7 @@ and ``postfix`` being the highest precedence::
 
   item ::= pipeline
     | '...' item
+    | 'use' item
     | pipeline '=' item
     | pipeline ':=' item
     | pipeline ':'
@@ -369,7 +370,7 @@ and ``postfix`` being the highest precedence::
 
   product ::= unary | product '*' unary | product '/' unary
 
-  unary ::= power | '-' unary | '+' unary | '!' unary
+  unary ::= power | '-' unary | '+' unary | '!' unary | 'var' unary
 
   power ::= postfix | postfix '^' unary
 
