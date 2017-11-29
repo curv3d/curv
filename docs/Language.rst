@@ -454,9 +454,10 @@ Parenthesized phrase: ``(phrase)``
   Any phrase can be wrapped in parentheses without changing its meaning.
 
 Compound phrase: ``phrase1; phrase2``
-  If both phrases are definitions, then this is a compound definition.
-  If both phrases are actions, element generators, or field generators,
-  then the phrases are executed in sequence.
+  * If both phrases are definitions, then this is a compound definition.
+    The order doesn't matter, and the definitions may be mutually recursive.
+  * If both phrases are actions, element generators, or field generators,
+    then the phrases are executed in sequence.
 
 Single-arm conditional: ``if (condition) phrase``
   If the phrase is an action, element generator, or field generator,
@@ -473,7 +474,7 @@ Bounded iteration: ``for (pattern in list_expression) phrase``
 Local variables: ``let definition in phrase``
   The phrase can be an expression, action, element generator or field generator.
 
-``phrase where definition``
+Local variables: ``phrase where definition``
   An alternate syntax for defining local variables.
 
 Local actions: ``do action in phrase``
@@ -491,8 +492,8 @@ impure functions. Curv retains its pure functional semantics.
 This feature exists for 3 reasons:
 
 * Makes it easier to port code from an imperative language.
-* It's an aid to users whose only programming experience
-  is in an imperative language, and who have not yet learned how to program
+* It's an aid to users whose primary programming experience
+  is with imperative languages, and who have not yet learned how to program
   in the functional style.
 * In the 0.0 release, this is the only way to iterate within a shape's distance
   function. The GPU compiler is not yet smart enough to convert tail recursion
