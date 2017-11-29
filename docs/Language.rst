@@ -473,6 +473,9 @@ Bounded iteration: ``for (pattern in list_expression) phrase``
 Local variables: ``let definition in phrase``
   The phrase can be an expression, action, element generator or field generator.
 
+``phrase where definition``
+  An alternate syntax for defining local variables.
+
 Local actions: ``do action in phrase``
   The phrase can be an expression, action, element generator or field generator.
   The action is executed first, then the phrase is evaluated.
