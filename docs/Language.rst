@@ -319,6 +319,9 @@ Design by Contract
 
 3. Grammar
 ==========
+
+The Parse Tree
+--------------
 The following abstract grammar has just enough structure to parse
 a source file into an abstract parse tree. It shows that there are 
 12 operator precedence levels, with ``list`` being the lowest precedence
@@ -403,8 +406,12 @@ and ``postfix`` being the highest precedence::
 
   C style comments, either '//' to end of line, or '/*'...'*/'
 
+Phrases
+-------
 There is a deeper phrase-structure grammar that assigns syntactic meanings
-to parse tree nodes, which are now called phrases. There are 6 phrase types:
+to most parse tree nodes, which are now called phrases.
+(Some parse tree nodes do not have an independent meaning, and are not phrases.)
+There are 6 phrase types:
 
 definition
   A phrase that binds zero or more names to values, within a scope.
@@ -431,15 +438,44 @@ field generator
   A phrase that computes a sequence of zero or more fields,
   which are name/value or string/value pairs.
 
-So, a phrase is a parse tree node with a syntactic meaning.
-Any phrase ``P`` can be wrapped in parentheses as ``(P)``
-without changing its meaning.
-
 There are two kinds of programs.
 A source file is always interpreted as an expression,
 and the other phrase types only occur when embedded in expressions.
 A command line (in the ``curv`` command line interpreter)
 can be an expression, an action, or a definition.
+
+Phrase Abstraction
+------------------
+Curv has a set of generic operations for constructing more complex phrases
+out of simpler phrases. These operations work on multiple phrase types,
+and support sequencing, conditional evaluation, iteration, and local variables.
+
+Parenthesized phrase: ``(phrase)``
+  Any phrase can be wrapped in parentheses without changing its meaning.
+
+Compound phrase: ``phrase1; phrase2``
+  If both phrases are definitions, then this is a compound definition.
+  If both phrases are actions, element generators, or field generators,
+  then the phrases are executed in sequence.
+
+Single-arm conditional: ``if (condition) phrase``
+  If the phrase is an action, element generator, or field generator,
+  then the phrase is only executed if the condition is true.
+
+Double-arm conditional: ``if (condition) phrase1 else phrase2``
+  The phrases may be expressions, actions, element generators, or field generators.
+
+Bounded iteration: ``for (pattern in list_expression) phrase``
+  The phrase may be an action, element generator, or field generator.
+  The phrase is executed once for each element in the list.
+  The element is bound to zero or more local variables, as specified in the pattern.
+
+Local variables: ``let definition in phrase``
+  The phrase can be an expression, action, element generator or field generator.
+
+Local actions: ``do action in phrase``
+  The phrase can be an expression, action, element generator or field generator.
+  The action is executed first, then the phrase is evaluated.
 
 4. The Imperative Sublanguage
 =============================
