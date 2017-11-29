@@ -11,8 +11,8 @@ Roadmap:
 * Meta: use https://opensource.guide/
 * => First public release with a stable API.
 
-MVP Bug fixes:
-* upgrade to latest glslViewer
+Next changes:
+* documentation
 
 Pattern project:
 * GL: record patterns, predicate patterns
