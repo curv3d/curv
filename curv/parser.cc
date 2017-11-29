@@ -28,6 +28,7 @@ Shared<Phrase> parse_list(Scanner&);
 Shared<Phrase> parse_semicolons(Scanner&, Shared<Phrase> firstitem);
 Shared<Phrase> parse_commas(Scanner&, Shared<Phrase> firstitem);
 Shared<Phrase> parse_item(Scanner&);
+Shared<Phrase> parse_pipeline(Scanner&);
 Shared<Phrase> parse_disjunction(Scanner&);
 Shared<Phrase> parse_conjunction(Scanner&);
 Shared<Phrase> parse_relation(Scanner&);
@@ -224,14 +225,14 @@ is_item_end_token(Token::Kind k)
 
 // Low precedence right associative operators.
 //
-// item : disjunction
+// item : pipeline
 //  | ... item
-//  | disjunction = item
-//  | disjunction := item
-//  | disjunction :
-//  | disjunction : item
-//  | disjunction -> item
-//  | disjunction << item
+//  | pipeline = item
+//  | pipeline := item
+//  | pipeline :
+//  | pipeline : item
+//  | pipeline -> item
+//  | pipeline << item
 //  | 'if' primary item
 //  | 'if' primary item 'else' item
 //  | 'for' '(' item 'in' item ')' item
@@ -319,7 +320,7 @@ parse_item(Scanner& scanner)
     }
 
     scanner.push_token(tok);
-    auto left = parse_disjunction(scanner);
+    auto left = parse_pipeline(scanner);
     tok = scanner.get_token();
     switch (tok.kind_) {
     case Token::k_equate:
@@ -361,24 +362,19 @@ parse_item(Scanner& scanner)
     }
 }
 
-// disjunction : conjunction
-//  | disjunction || conjunction
-//  | disjunction >> conjunction
-//  | disjunction ` postfix ` conjunction
+// pipeline : disjunction
+//  | pipeline >> disjunction
+//  | pipeline ` postfix ` disjunction
 Shared<Phrase>
-parse_disjunction(Scanner& scanner)
+parse_pipeline(Scanner& scanner)
 {
-    auto left = parse_conjunction(scanner);
+    auto left = parse_disjunction(scanner);
     for (;;) {
         auto tok = scanner.get_token();
         switch (tok.kind_) {
-        case Token::k_or:
-            left = make<Binary_Phrase>(
-                std::move(left), tok, parse_conjunction(scanner));
-            continue;
         case Token::k_right_call:
             left = make<Call_Phrase>(
-                parse_conjunction(scanner),
+                parse_disjunction(scanner),
                 std::move(left),
                 tok);
             continue;
@@ -390,7 +386,7 @@ parse_disjunction(Scanner& scanner)
                 throw Exception(At_Token(tok2, scanner),
                     "syntax error: expecting closing backtick (`)");
             }
-            auto right = parse_conjunction(scanner);
+            auto right = parse_disjunction(scanner);
             auto pair = make<Comma_Phrase>();
             pair->args_.push_back({left, {}});
             pair->args_.push_back({right, {}});
@@ -398,6 +394,25 @@ parse_disjunction(Scanner& scanner)
             left = make<Call_Phrase>(postfix, arg, tok, tok2);
             continue;
           }
+        default:
+            scanner.push_token(tok);
+            return left;
+        }
+    }
+}
+
+// disjunction : conjunction | disjunction || conjunction
+Shared<Phrase>
+parse_disjunction(Scanner& scanner)
+{
+    auto left = parse_conjunction(scanner);
+    for (;;) {
+        auto tok = scanner.get_token();
+        switch (tok.kind_) {
+        case Token::k_or:
+            left = make<Binary_Phrase>(
+                std::move(left), tok, parse_conjunction(scanner));
+            continue;
         default:
             scanner.push_token(tok);
             return left;

@@ -319,9 +319,9 @@ Design by Contract
 
 3. Grammar
 ==========
-The following is an abstract grammar, with just enough structure to parse
+The following abstract grammar has just enough structure to parse
 a source file into an abstract parse tree. It shows that there are 
-11 operator precedence levels, with ``list`` being the lowest precedence
+12 operator precedence levels, with ``list`` being the lowest precedence
 and ``postfix`` being the highest precedence::
 
   program ::= list
@@ -331,14 +331,14 @@ and ``postfix`` being the highest precedence::
     semicolons ::= optitem | semicolons `;` optitem
     optitem ::= empty | item
 
-  item ::= disjunction
+  item ::= pipeline
     | '...' item
-    | disjunction '=' item
-    | disjunction ':=' item
-    | disjunction ':'
-    | disjunction ':' item
-    | disjunction '->' item
-    | disjunction '<<' item
+    | pipeline '=' item
+    | pipeline ':=' item
+    | pipeline ':'
+    | pipeline ':' item
+    | pipeline '->' item
+    | pipeline '<<' item
     | 'if' parens item
     | 'if' parens item 'else' item
     | 'for' '(' item 'in' item ')' item
@@ -346,10 +346,11 @@ and ``postfix`` being the highest precedence::
     | 'let' list 'in' item
     | 'do' list 'in' item
 
-  disjunction ::= conjunction
-    | disjunction '||' conjunction
-    | disjunction '>>' conjunction
-    | disjunction '`' postfix '`' conjunction
+  pipeline ::= disjunction
+    | pipeline '||' disjunction
+    | pipeline '>>' disjunction
+
+  disjunction ::= conjunction | disjunction '||' conjunction
 
   conjunction ::= relation | conjunction && relation
 
