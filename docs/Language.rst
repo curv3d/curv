@@ -411,8 +411,8 @@ definition
 
 pattern
   A pattern can occur as a function formal parameter,
-  or as the left side of a definition, and contains usually one,
-  but generally zero or more parameter names.
+  or as the left side of a definition, and contains usually one
+  (but generally zero or more) parameter names.
   During pattern matching,
   we attempt to match an argument value against a pattern.
   If the match is successful, we bind (each) parameter name
