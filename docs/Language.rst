@@ -430,3 +430,13 @@ element generator
 field generator
   A phrase that computes a sequence of zero or more fields,
   which are name/value or string/value pairs.
+
+So, a phrase is a parse tree node with a syntactic meaning.
+Any phrase ``P`` can be wrapped in parentheses as ``(P)``
+without changing its meaning.
+
+There are two kinds of programs.
+A source file is always interpreted as an expression,
+and the other phrase types only occur when embedded in expressions.
+A command line (in the ``curv`` command line interpreter)
+can be an expression, an action, or a definition.
