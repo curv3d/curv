@@ -440,3 +440,21 @@ A source file is always interpreted as an expression,
 and the other phrase types only occur when embedded in expressions.
 A command line (in the ``curv`` command line interpreter)
 can be an expression, an action, or a definition.
+
+4. The Imperative Sublanguage
+=============================
+Curv contains an "imperative sublanguage", implemented by the ``do`` operator,
+which allows you to define mutable variables, and iterate using
+a ``while`` action. This allows you to write code in an imperative style.
+The semantics of this feature are restricted, so that it is impossible to define
+impure functions. Curv retains its pure functional semantics.
+
+This feature exists for 3 reasons:
+
+* Makes it easier to port code from an imperative language.
+* It's an aid to users whose only programming experience
+  is in an imperative language, and who have not yet learned how to program
+  in the functional style.
+* In the 0.0 release, this is the only way to iterate within a shape's distance
+  function. The GPU compiler is not yet smart enough to convert tail recursion
+  into iteration.
