@@ -402,3 +402,28 @@ and ``postfix`` being the highest precedence::
     braces ::= '{' list '}'
 
   C style comments, either '//' to end of line, or '/*'...'*/'
+
+There is a deeper phrase-structure grammar that assigns syntactic meanings
+to parse tree nodes, which are now called phrases. There are 6 phrase types:
+
+definition
+  A phrase that binds zero or more names to values, within a scope.
+
+pattern
+  A phrase that matches a particular subset of values,
+  and optionally destructures it, binding either the entire
+  value to a name, or binding individual components of the
+  value to different names.
+
+expression
+  A phrase that computes a value.
+
+action
+  A phrase that causes a side effect, and doesn't compute a value.
+
+element generator
+  A phrase that computes a sequence of zero or more values.
+
+field generator
+  A phrase that computes a sequence of zero or more fields,
+  which are name/value or string/value pairs.
