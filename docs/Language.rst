@@ -230,8 +230,6 @@ Array
   Y = 1;
   Z = 2;
   T = 3;
-  MIN = 0;
-  MAX = 1;
   X_axis = [1,0,0];
   Y_axis = [0,1,0];
   Z_axis = [0,0,1];

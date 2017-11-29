@@ -12,8 +12,6 @@ X = 0;
 Y = 1;
 Z = 2;
 T = 3;
-MIN = 0;
-MAX = 1;
 X_axis = [1,0,0];
 Y_axis = [0,1,0];
 Z_axis = [0,0,1];
@@ -114,6 +112,9 @@ is_shape x =
     && defined(x.dist) && defined(x.colour);
 
 size shape = shape.bbox[MAX] - shape.bbox[MIN];
+
+MIN = 0;
+MAX = 1;
 
 is_bbox2 = switch [
     (is_vec2 _, is_vec2 _) -> true;
