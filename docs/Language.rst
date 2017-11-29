@@ -348,8 +348,8 @@ and ``postfix`` being the highest precedence::
     | 'do' list 'in' item
 
   pipeline ::= disjunction
-    | pipeline '||' disjunction
     | pipeline '>>' disjunction
+    | pipeline '`' postfix '`' disjunction
 
   disjunction ::= conjunction | disjunction '||' conjunction
 
