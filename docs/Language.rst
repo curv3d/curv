@@ -156,25 +156,10 @@ Some programming languages make a low-level distinction between integers and num
 with no fractional part, so that `1` is an integer and `1.0` is not an integer,
 but not Curv.
 
-::
+Arithmetic::
 
-  pi
-  tau
   inf
-
-  deg = tau/360;
-  e = 2.71828182845904523536028747135266249775724709369995;
   phi = sqrt 5 * .5 + .5;
-  X = 0;
-  Y = 1;
-  Z = 2;
-  T = 3;
-  MIN = 0;
-  MAX = 1;
-  X_axis = [1,0,0];
-  Y_axis = [0,1,0];
-  Z_axis = [0,0,1];
-
   ceil n = -floor(-n);
   trunc n = if (n >= 0) floor(n) else ceil(n);
   mod(a,m) = a - m * floor(a/m);
@@ -189,14 +174,67 @@ but not Curv.
       in t*t*(3 - 2*t);
   clamp(v,lo,hi) = min(max(v,lo),hi);
   isinf x = x == inf || x == -inf;
+  abs
+  floor
+  round
+  max
+  min
 
+Exponentials::
+
+  e = 2.71828182845904523536028747135266249775724709369995;
+  sqrt
+  log
+
+Trigonometry::
+
+  pi
+  tau
+  deg = tau/360;
   tan a = sin a / cos a;
   atan x = atan2(x,1);
   sec a = 1 / sin a;
   csc a = 1 / cos a;
   cot a = cos a / sin a;
+  sin
+  asin
+  cos
+  acos
+  atan2
 
-  ensure pred expr = do assert(pred expr) in expr;
+List
+----
+::
+
+  count
+  concat vv = [for (v in vv) for (i in v) i];
+  reverse v = v[count(v)-1..0 by -1];
+  map f list = [for (x in list) f x];
+  filter p list = [for (x in list) if (p x) x];
+  reduce (zero, f) list =
+      if (list == [])
+          zero
+      else
+          do  var r := list[0];
+              for (i in 1..<count list)
+                  r := f(r, list[i]);
+          in r;
+  sum = reduce(0, (x,y)->x+y);
+  product = reduce(1, (x,y)->x*y);
+
+Array
+-----
+::
+
+  X = 0;
+  Y = 1;
+  Z = 2;
+  T = 3;
+  MIN = 0;
+  MAX = 1;
+  X_axis = [1,0,0];
+  Y_axis = [0,1,0];
+  Z_axis = [0,0,1];
 
   // complex numbers: [RE,IM]
   RE=0;
@@ -230,18 +268,6 @@ but not Curv.
   // angle between two vectors
   angle(a,b) = acos(dot(a,b) / (mag a * mag b));
 
-  sqrt
-  log
-  abs
-  floor
-  round
-  sin
-  asin
-  cos
-  acos
-  atan2
-  max
-  min
   dot
   mag
 
@@ -255,26 +281,6 @@ String
   decode
   encode
   count
-
-List
-----
-::
-
-  count
-  concat vv = [for (v in vv) for (i in v) i];
-  reverse v = v[count(v)-1..0 by -1];
-  map f list = [for (x in list) f x];
-  filter p list = [for (x in list) if (p x) x];
-  reduce (zero, f) list =
-      if (list == [])
-          zero
-      else
-          do  var r := list[0];
-              for (i in 1..<count list)
-                  r := f(r, list[i]);
-          in r;
-  sum = reduce(0, (x,y)->x+y);
-  product = reduce(1, (x,y)->x*y);
 
 Record
 ------
@@ -303,7 +309,10 @@ Actions
 
 Source Files and External Libraries
 -----------------------------------
-file
+::
+
+  file
+  use record_expr
 
 Design by Contract
 ------------------
@@ -316,6 +325,9 @@ Design by Contract
   is_list
   is_record
   is_fun
+
+  ensure pred expr = do assert(pred expr) in expr;
+  assert
 
 3. Grammar
 ==========
