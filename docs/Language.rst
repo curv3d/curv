@@ -226,14 +226,6 @@ Array
 -----
 ::
 
-  X = 0;
-  Y = 1;
-  Z = 2;
-  T = 3;
-  X_axis = [1,0,0];
-  Y_axis = [0,1,0];
-  Z_axis = [0,0,1];
-
   // complex numbers: [RE,IM]
   RE=0;
   IM=1;
@@ -243,9 +235,11 @@ Array
   ////////////////////
   // Linear Algebra //
   ////////////////////
+  X = 0;
+  Y = 1;
+  Z = 2;
   is_vec2 x = is_list x && count x == 2 && is_num(x[0]) && is_num(x[1]);
   is_vec3 x = is_list x && count x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]);
-  indices a = 0..<count a;
   cross(p,q) = [p[Y]*q[Z] - p[Z]*q[Y], p[Z]*q[X] - p[X]*q[Z], p[X]*q[Y] - p[Y]*q[X]];
   identity(n) = [for(i in 1..n) [for(j in 1..n) if(i==j) 1 else 0]];
   transpose(a) = [for (i in indices(a[0])) [for (j in indices a) a[j,i]]];
