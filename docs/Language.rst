@@ -410,10 +410,13 @@ definition
   A phrase that binds zero or more names to values, within a scope.
 
 pattern
-  A phrase that matches a particular subset of values,
-  and optionally destructures it, binding either the entire
-  value to a name, or binding individual components of the
-  value to different names.
+  A pattern can occur as a function formal parameter,
+  or as the left side of a definition, and contains usually one,
+  but generally zero or more parameter names.
+  During pattern matching,
+  we attempt to match an argument value against a pattern.
+  If the match is successful, we bind each parameter name
+  to (elements of) the value that was matched.
 
 expression
   A phrase that computes a value.
