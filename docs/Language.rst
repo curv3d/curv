@@ -415,8 +415,8 @@ pattern
   but generally zero or more parameter names.
   During pattern matching,
   we attempt to match an argument value against a pattern.
-  If the match is successful, we bind each parameter name
-  to (elements of) the value that was matched.
+  If the match is successful, we bind (each) parameter name
+  to (elements of) the argument value.
 
 expression
   A phrase that computes a value.
