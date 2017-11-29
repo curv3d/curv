@@ -93,11 +93,13 @@ operation is testing a value to see if it is null: ``value==null``
 is true if the value is null, otherwise false.
 
 ::
+
   null
 
 Boolean
 -------
 ::
+
   false
   true
   bit
@@ -155,6 +157,7 @@ with no fractional part, so that `1` is an integer and `1.0` is not an integer,
 but not Curv.
 
 ::
+
   pi
   tau
   inf
@@ -245,6 +248,7 @@ but not Curv.
 String
 ------
 ::
+
   nl = decode[0xA]; // ASCII newline
   strcat
   repr
@@ -255,6 +259,7 @@ String
 List
 ----
 ::
+
   count
   concat vv = [for (v in vv) for (i in v) i];
   reverse v = v[count(v)-1..0 by -1];
@@ -274,6 +279,7 @@ List
 Record
 ------
 ::
+
   merge rs = {for (r in rs) ...r};
   fields
   defined
@@ -281,11 +287,13 @@ Record
 Function
 --------
 ::
+
   switch
 
 Actions
 -------
 ::
+
   print
   warning
   error
@@ -299,13 +307,15 @@ file
 
 Design by Contract
 ------------------
-is_null
-is_bool
-is_num
-is_string
-is_list
-is_record
-is_fun
+::
+
+  is_null
+  is_bool
+  is_num
+  is_string
+  is_list
+  is_record
+  is_fun
 
 3. Grammar
 ==========
@@ -388,4 +398,3 @@ and ``postfix`` being the highest precedence::
         | /'$' identifier/
 
   C style comments, either '//' to end of line, or '/*'...'*/'
-
