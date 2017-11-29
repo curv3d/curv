@@ -92,8 +92,16 @@ is that it is different from any other value. The only available
 operation is testing a value to see if it is null: ``value==null``
 is true if the value is null, otherwise false.
 
+::
+  null
+
 Boolean
 -------
+::
+  false
+  true
+  bit
+
 The Boolean values are ``true`` and ``false``.
 They are used for making decisions:
 if some condition holds, do this, otherwise do that.
@@ -146,11 +154,238 @@ Some programming languages make a low-level distinction between integers and num
 with no fractional part, so that `1` is an integer and `1.0` is not an integer,
 but not Curv.
 
+::
+  pi
+  tau
+  inf
+
+  deg = tau/360;
+  e = 2.71828182845904523536028747135266249775724709369995;
+  phi = sqrt 5 * .5 + .5;
+  X = 0;
+  Y = 1;
+  Z = 2;
+  T = 3;
+  MIN = 0;
+  MAX = 1;
+  X_axis = [1,0,0];
+  Y_axis = [0,1,0];
+  Z_axis = [0,0,1];
+
+  ceil n = -floor(-n);
+  trunc n = if (n >= 0) floor(n) else ceil(n);
+  mod(a,m) = a - m * floor(a/m);
+  rem(a,m) = a - m * trunc(a/m);
+  mix(a,b,t) = a*(1-t) + b*t;
+  // Smooth Hermite interpolation between 0 and 1 when lo < x < hi.
+  // Used to construct a threshold function with a smooth transition.
+  // Results are undefined if lo >= hi.
+  // https://en.wikipedia.org/wiki/Smoothstep
+  smoothstep(lo,hi,x) =
+      let t = clamp((x - lo)/(hi - lo), 0, 1);
+      in t*t*(3 - 2*t);
+  clamp(v,lo,hi) = min(max(v,lo),hi);
+  isinf x = x == inf || x == -inf;
+
+  tan a = sin a / cos a;
+  atan x = atan2(x,1);
+  sec a = 1 / sin a;
+  csc a = 1 / cos a;
+  cot a = cos a / sin a;
+
+  ensure pred expr = do assert(pred expr) in expr;
+
+  // complex numbers: [RE,IM]
+  RE=0;
+  IM=1;
+  cmul(z,w) = [z[RE]*w[RE] - z[IM]*w[IM], z[IM]*w[RE] + z[RE]*w[IM]];
+  csqr(z) = [ z[RE]*z[RE] - z[IM]*z[IM], 2*z[RE]*z[IM] ];
+
+  ////////////////////
+  // Linear Algebra //
+  ////////////////////
+  is_vec2 x = is_list x && count x == 2 && is_num(x[0]) && is_num(x[1]);
+  is_vec3 x = is_list x && count x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]);
+  indices a = 0..<count a;
+  cross(p,q) = [p[Y]*q[Z] - p[Z]*q[Y], p[Z]*q[X] - p[X]*q[Z], p[X]*q[Y] - p[Y]*q[X]];
+  identity(n) = [for(i in 1..n) [for(j in 1..n) if(i==j) 1 else 0]];
+  transpose(a) = [for (i in indices(a[0])) [for (j in indices a) a[j,i]]];
+  normalize v = v / mag v;
+
+  // phase angle of a vector, range tau/2 to -tau/2
+  phase v = atan2(v[Y],v[X]);
+
+  // convert phase angle to unit vector
+  cis theta = [cos theta, sin theta];
+
+  // perp: Rotate a 2D point by 90 degrees CCW. Multiply a complex number by i.
+  // It's the 2D analog of the 3D vector cross product (Cross in Mathematica).
+  // dot(perp a, b) is the "perp-dot" product:
+  // see: 'The Pleasures of "Perp-Dot" Products', Graphics Gems IV.
+  perp(x,y) = (-y, x);
+
+  // angle between two vectors
+  angle(a,b) = acos(dot(a,b) / (mag a * mag b));
+
+  sqrt
+  log
+  abs
+  floor
+  round
+  sin
+  asin
+  cos
+  acos
+  atan2
+  max
+  min
+  dot
+  mag
+
 String
 ------
+::
+  nl = decode[0xA]; // ASCII newline
+  strcat
+  repr
+  decode
+  encode
+  count
+
 List
 ----
+::
+  count
+  concat vv = [for (v in vv) for (i in v) i];
+  reverse v = v[count(v)-1..0 by -1];
+  map f list = [for (x in list) f x];
+  filter p list = [for (x in list) if (p x) x];
+  reduce (zero, f) list =
+      if (list == [])
+          zero
+      else
+          do  var r := list[0];
+              for (i in 1..<count list)
+                  r := f(r, list[i]);
+          in r;
+  sum = reduce(0, (x,y)->x+y);
+  product = reduce(1, (x,y)->x*y);
+
 Record
 ------
+::
+  merge rs = {for (r in rs) ...r};
+  fields
+  defined
+
 Function
 --------
+::
+  switch
+
+Actions
+-------
+::
+  print
+  warning
+  error
+  assert
+  assert_error
+  exec
+
+Source Files and External Libraries
+-----------------------------------
+file
+
+Design by Contract
+------------------
+is_null
+is_bool
+is_num
+is_string
+is_list
+is_record
+is_fun
+
+3. Grammar
+==========
+The following is an abstract grammar, with just enough structure to parse
+a source file into an abstract parse tree. It shows that there are 
+11 operator precedence levels, with ``list`` being the lowest precedence
+and ``postfix`` being the highest precedence::
+
+  program ::= list
+
+  list ::= empty | item | commas | semicolons | item 'where' list
+    commas ::= item ',' | item ',' item | item ',' commas
+    semicolons ::= optitem | semicolons `;` optitem
+    optitem ::= empty | item
+
+  item ::= disjunction
+    | '...' item
+    | disjunction '=' item
+    | disjunction ':=' item
+    | disjunction ':'
+    | disjunction ':' item
+    | disjunction '->' item
+    | disjunction '<<' item
+    | 'if' parens item
+    | 'if' parens item 'else' item
+    | 'for' '(' item 'in' item ')' item
+    | 'while' parens item
+    | 'let' list 'in' item
+    | 'do' list 'in' item
+
+  disjunction ::= conjunction
+    | disjunction '||' conjunction
+    | disjunction '>>' conjunction
+    | disjunction '`' postfix '`' conjunction
+
+  conjunction ::= relation | conjunction && relation
+
+  relation ::= range
+    | range '==' range | range '!=' range
+    | range '<' range  | range '>' range
+    | range '<=' range | range '>=' range
+
+  range ::= sum
+    | sum '..' sum
+    | sum '..' sum 'by' sum
+    | sum '..<' sum
+    | sum '..<' sum 'by' sum
+
+  sum ::= product | sum '+' product | sum '-' product
+
+  product ::= unary | product '*' unary | product '/' unary
+
+  unary ::= power | '-' unary | '+' unary | '!' unary
+
+  power ::= postfix | postfix '^' unary
+
+  postfix ::= primary
+    | postfix primary
+    | postfix '.' primary
+
+  primary ::= numeral | identifier | string | parens | brackets | braces
+    parens ::= '(' list ')'
+    brackets ::= '[' list ']'
+    braces ::= '{' list '}'
+
+    identifier ::= /[a-zA-Z_] [a-zA-Z_0-9]*/
+
+    numeral ::= hexnum | mantissa | /mantissa [eE] [+-]? digits/
+      mantissa ::= /digits/ | /'.' digits/ | /digits '.'/ | /digits '.' digits/
+      digits ::= /[0-9]+/
+      hexnum ::= /'0x' [0-9a-fA-F]+/
+
+    string ::= /'"' segment* '"'/
+      segment ::= /[white space or printable ASCII character, except for " or $]*/
+        | /'""'/
+        | /'$$'/
+        | /'${' list '}'/
+        | /'$[' list ']'/
+        | /'$(' list ')'/
+        | /'$' identifier/
+
+  C style comments, either '//' to end of line, or '/*'...'*/'
+
