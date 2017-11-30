@@ -433,10 +433,12 @@ action
 
 element generator
   A phrase that computes a sequence of zero or more values.
+  ``[``\ *element_generator*\ ``]`` is a list comprehension.
 
 field generator
   A phrase that computes a sequence of zero or more fields,
   which are name/value or string/value pairs.
+  ``{``\ *field_generator*\ ``}`` is a record comprehension.
 
 There are two kinds of programs.
 A source file is always interpreted as an expression,
@@ -469,9 +471,11 @@ Double-arm conditional: ``if (condition) phrase1 else phrase2``
 Bounded iteration: ``for (pattern in list_expression) phrase``
   The phrase may be an action, element generator, or field generator.
   The phrase is executed once for each element in the list.
-  The element is bound to zero or more local variables, as specified in the pattern.
+  At each iteration,
+  the element is bound to zero or more local variables by the pattern.
 
 Local variables: ``let definition in phrase``
+  Define local variables over the phrase.
   The phrase can be an expression, action, element generator or field generator.
 
 Local variables: ``phrase where definition``
