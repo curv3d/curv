@@ -630,8 +630,11 @@ Paren_Phrase::analyze(Environ& env) const
         for (size_t i = 0; i < items.size(); ++i)
             (*list)[i] = analyze_op(*items[i].expr_, env);
         return list;
-    } else
-        return analyze_tail(*body_, env);
+    } else {
+        // One of the few places we directly call Phrase::analyze().
+        // The result can be an operation or a metafunction.
+        return body_->analyze(env);
+    }
 }
 Shared<Definition>
 Paren_Phrase::as_definition(Environ& env)
