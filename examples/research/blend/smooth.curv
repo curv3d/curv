@@ -25,7 +25,7 @@ _smooth_intersection2 k (s1,s2) = make_shape {
 smooth_min(a,b,k) =
 (
     var h := clamp( 0.5+0.5*(b-a)/k, 0, 1 );
-    mix( b, a, h ) - k*h*(1.0-h)
+    lerp( b, a, h ) - k*h*(1.0-h)
 );
 smooth_max(a,b,k) = -smooth_min(-a,-b,k);
 

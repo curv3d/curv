@@ -3,7 +3,7 @@
 smooth_min(a,b,k) =
 (
     var h := clamp( 0.5+0.5*(b-a)/k, 0, 1 );
-    mix( b, a, h ) - k*h*(1.0-h)
+    lerp( b, a, h ) - k*h*(1.0-h)
 );
 
 // Note: smooth_min is the same function as Media Molecule's soft_min,

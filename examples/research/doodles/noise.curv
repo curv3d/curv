@@ -16,7 +16,7 @@ noise xy = (
 
     var u := f * f * (3 - 2 * f);
 
-    mix(a, b, u'X) + 
+    lerp(a, b, u'X) + 
         (c - a)* u'Y * (1 - u'X) + 
         (d - b) * u'X * u'Y
 );
@@ -42,13 +42,13 @@ smoke = (x,y,z,t) -> (
     var r := [ fbm(st + q + [1.7,9.2] + 0.150*t),
                fbm(st + q + [8.3,2.8] + 0.126*t) ];
     var f := fbm(st + r);
-    var c := mix([0.101961,0.619608,0.666667],
+    var c := lerp([0.101961,0.619608,0.666667],
                  [0.666667,0.666667,0.498039],
                  clamp((f*f)*4.0,0.0,1.0));
-    c := mix(c,
+    c := lerp(c,
              [0,0,0.164706],
              clamp(mag q, 0, 1));
-    c := mix(c,
+    c := lerp(c,
              [0.666667,1,1],
              clamp(r[X], 0, 1));
     (f*f*f+.6*f*f+.5*f)*c

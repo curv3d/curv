@@ -211,7 +211,7 @@ The arithmetic operators:
 
 Arithmetic::
 
-  mix(a,b,t) = a*(1-t) + b*t;
+  lerp(a,b,t) = a*(1-t) + b*t;
   // Smooth Hermite interpolation between 0 and 1 when lo < x < hi.
   // Used to construct a threshold function with a smooth transition.
   // Results are undefined if lo >= hi.
