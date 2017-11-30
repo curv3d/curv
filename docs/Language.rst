@@ -440,6 +440,10 @@ field generator
   which are name/value or string/value pairs.
   ``{``\ *field_generator*\ ``}`` is a record comprehension.
 
+An action can be used in any context requiring a definition,
+element generator, or field generator. An expression can be used
+in any context requiring a field generator.
+
 There are two kinds of programs.
 A source file is always interpreted as an expression,
 and the other phrase types only occur when embedded in expressions.
