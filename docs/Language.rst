@@ -283,6 +283,23 @@ Curv uses `radians`_ (not degrees) to specify angles.
 
 Lists
 -----
+A list is a finite, ordered sequence of values.
+
+Simple list constructor
+  * A sequence of *n* comma separated expressions, enclosed in square brackets,
+    constructs a list with *n* values. The final expression may have an optional
+    trailing comma.
+    Eg: ``[]``, ``[a]``, ``[a,b]``, ``[a,b,]``...
+  * As an alternate syntax, you can also use parentheses to enclose the list,
+    with the caveat that the list constructor must either be empty, or must contain
+    commas. ``(expression)`` is just a parenthesized expression, it's not a 1-element list.
+
+List comprehension
+
+Range constructor
+
+List indexing
+
 ::
 
   count
