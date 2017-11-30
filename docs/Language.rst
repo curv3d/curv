@@ -80,8 +80,8 @@ Design by Contract
 Arrays and Vectorized Operations
 --------------------------------
 
-2. Operations
-=============
+2. Values and Operations
+========================
 
 Null
 ----
@@ -136,8 +136,8 @@ between boolean and integer:
 * ``bit b`` -- convert boolean value ``b`` to an integer
 * ``i != 0`` -- convert an integer bit value ``i`` to a boolean
 
-Number
-------
+Numbers
+-------
 Numbers are represented internally by 64 bit IEEE floating point numbers.
 
 * ``0`` and ``-0`` are different numbers, but they compare equal.
@@ -146,20 +146,71 @@ Numbers are represented internally by 64 bit IEEE floating point numbers.
 * We don't support the IEEE NaN (not a number) value.
   Instead, all arithmetic operations with an undefined result report an error.
   For example, ``0/0`` is an error.
+* An integer is just a number whose fractional part is ``0``.
+  ``1`` and ``1.0`` evaluate to the same integer.
 
-An integer is just a number with no fractional part.
-Some programming languages make a low-level distinction between integers and numbers
-with no fractional part, so that `1` is an integer and `1.0` is not an integer,
-but not Curv.
+The arithmetic operators:
+
+=========  ==============
+``-m``     negation
+``+m``     identity
+``m + n``  addition
+``m - n``  subtraction
+``m * n``  multiplication
+``m / n``  division
+``m ^ n``  exponentiation
+=========  ==============
+
+``abs n``
+  The absolute value of *n*.
+
+``max list``
+  The maximum value in a list of numbers.
+  ``max[]`` is ``-inf``, which is the identity element for the maximum operation.
+
+``min list``
+  The minimum value in a list of numbers.
+  ``min[]`` is ``inf``, which is the identity element for the minimum operation.
+
+``floor n``
+  The largest integer less than or equal to *n*.
+
+``ceil n``
+  The smallest integer greater than or equal to *n* (ceiling).
+
+``trunc n``
+  The integer nearest to but no larger in magnitude than *n* (truncate).
+
+``round n``
+  The integer nearest to *n*. In case of a tie (the fractional part of *n* is 0.5),
+  then the result is the nearest even integer.
+
+``mod(a,m)``
+  The remainder after dividing ``a`` by ``m``,
+  where the result has the same sign as ``m``.
+  Equivalent to ``a - m * floor(a/m)``.
+  Aborts if ``m==0``.
+
+``rem(a,m)``
+  The remainder after dividing ``a`` by ``m``,
+  where the result has the same sign as ``a``.
+  Equivalent to ``a - m * trunc(a/m)``.
+  Aborts if ``m==0``.
+
+``phi``
+  The golden ratio: ``(sqrt 5 + 1) / 2 == 1.618033988749895``.
+
+``e``
+  Euler's number: ``2.718281828459045``.
+
+``sqrt n``
+  Square root of *n*.
+
+``log n``
+  Natural logarithm (to the base *e*) of *n*.
 
 Arithmetic::
 
-  inf
-  phi = sqrt 5 * .5 + .5;
-  ceil n = -floor(-n);
-  trunc n = if (n >= 0) floor(n) else ceil(n);
-  mod(a,m) = a - m * floor(a/m);
-  rem(a,m) = a - m * trunc(a/m);
   mix(a,b,t) = a*(1-t) + b*t;
   // Smooth Hermite interpolation between 0 and 1 when lo < x < hi.
   // Used to construct a threshold function with a smooth transition.
@@ -170,17 +221,7 @@ Arithmetic::
       in t*t*(3 - 2*t);
   clamp(v,lo,hi) = min(max(v,lo),hi);
   isinf x = x == inf || x == -inf;
-  abs
-  floor
-  round
-  max
-  min
 
-Exponentials::
-
-  e = 2.71828182845904523536028747135266249775724709369995;
-  sqrt
-  log
 
 Trigonometry::
 
