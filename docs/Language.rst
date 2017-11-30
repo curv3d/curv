@@ -209,17 +209,24 @@ The arithmetic operators:
 ``log n``
   Natural logarithm (to the base *e*) of *n*.
 
+``clamp(n,lo,hi)``
+  Constrain ``n`` to lie between ``lo`` and ``hi``.
+  Equivalent to ``min(max(n,lo),hi)``.
+
+``lerp(lo,hi,t)``
+  Linear interpolation between ``lo`` and ``hi``
+  using parameter ``t`` as a weight: ``t==0`` returns ``lo``
+  and ``t==1`` returns ``hi``.
+  Equivalent to ``lo*(1-t)+hi*t``.
+
+``smoothstep(lo,hi,x)``
+  Returns 0 if x <= lo; 1 if x >= hi;
+  otherwise smoothly interpolates between 0 and 1 using a Hermite polynomial.
+  Results are undefined if lo >= hi.
+  https://en.wikipedia.org/wiki/Smoothstep
+
 Arithmetic::
 
-  lerp(a,b,t) = a*(1-t) + b*t;
-  // Smooth Hermite interpolation between 0 and 1 when lo < x < hi.
-  // Used to construct a threshold function with a smooth transition.
-  // Results are undefined if lo >= hi.
-  // https://en.wikipedia.org/wiki/Smoothstep
-  smoothstep(lo,hi,x) =
-      let t = clamp((x - lo)/(hi - lo), 0, 1);
-      in t*t*(3 - 2*t);
-  clamp(v,lo,hi) = min(max(v,lo),hi);
   isinf x = x == inf || x == -inf;
 
 
