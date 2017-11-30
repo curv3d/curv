@@ -80,8 +80,8 @@ Design by Contract
 Arrays and Vectorized Operations
 --------------------------------
 
-2. Operations on Values
-=======================
+2. Operations
+=============
 
 Null
 ----
@@ -444,9 +444,10 @@ An action can be used in any context requiring a definition,
 element generator, or field generator. An expression can be used
 in any context requiring a field generator.
 
+Programs
+--------
 There are two kinds of programs.
-A source file is always interpreted as an expression,
-and the other phrase types only occur when embedded in expressions.
+A source file is always interpreted as an expression.
 A command line (in the ``curv`` command line interpreter)
 can be an expression, an action, or a definition.
 
