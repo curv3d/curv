@@ -92,18 +92,8 @@ is that it is different from any other value. The only available
 operation is testing a value to see if it is null: ``value==null``
 is true if the value is null, otherwise false.
 
-::
-
-  null
-
 Boolean
 -------
-::
-
-  false
-  true
-  bit
-
 The Boolean values are ``true`` and ``false``.
 They are used for making decisions:
 if some condition holds, do this, otherwise do that.
@@ -139,6 +129,12 @@ The conditional operator selects between two alternatives based on a boolean con
 
   if (condition) result_if_true else result_if_false
 
+For some algorithms, it is convenient to represent booleans as integers:
+``true`` is ``1`` and ``false`` is ``0``. We support this via conversions
+between boolean and integer:
+
+* ``bit b`` -- convert boolean value ``b`` to an integer
+* ``i != 0`` -- convert an integer bit value ``i`` to a boolean
 
 Number
 ------
