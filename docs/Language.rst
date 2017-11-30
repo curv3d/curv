@@ -225,12 +225,13 @@ The arithmetic operators:
   Results are undefined if lo >= hi.
   https://en.wikipedia.org/wiki/Smoothstep
 
-Arithmetic::
+Trigonometry
+------------
+Curv uses `radians`_ (not degrees) to specify angles.
 
-  isinf x = x == inf || x == -inf;
+.. _`radians`: https://en.wikipedia.org/wiki/Radian
 
-
-Trigonometry::
+::
 
   pi
   tau
