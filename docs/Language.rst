@@ -220,9 +220,9 @@ The arithmetic operators:
   Equivalent to ``lo*(1-t)+hi*t``.
 
 ``smoothstep(lo,hi,x)``
-  Returns 0 if x <= lo; 1 if x >= hi;
-  otherwise smoothly interpolates between 0 and 1 using a Hermite polynomial.
-  Results are undefined if lo >= hi.
+  Return 0 if x <= lo; 1 if x >= hi;
+  otherwise smoothly interpolate between 0 and 1 using a Hermite polynomial.
+  Result is undefined if lo >= hi.
   https://en.wikipedia.org/wiki/Smoothstep
 
 Trigonometry
@@ -399,6 +399,7 @@ Design by Contract
 
   ensure pred expr = do assert(pred expr) in expr;
   assert
+  error
 
 3. Grammar
 ==========
