@@ -481,3 +481,5 @@ There are a bunch of standard named colour maps and intensity fields.
 eg, rainbow'linear_gradient
     rainbow'radial_gradient
     greyscale'cosine_gradient
+
+### Add shebang comments, `#!` to end of line
