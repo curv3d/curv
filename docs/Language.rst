@@ -92,8 +92,8 @@ is that it is different from any other value. The only available
 operation is testing a value to see if it is null: ``value==null``
 is true if the value is null, otherwise false.
 
-Boolean
--------
+Boolean Values
+--------------
 The Boolean values are ``true`` and ``false``.
 They are used for making decisions:
 if some condition holds, do this, otherwise do that.
@@ -281,8 +281,8 @@ Curv uses `radians`_ (not degrees) to specify angles.
 ``cot a``
   The cotangent (reciprocal tangent) of x.
 
-List
-----
+Lists
+-----
 ::
 
   count
