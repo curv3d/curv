@@ -285,18 +285,67 @@ Lists
 -----
 A list is a finite, ordered sequence of values.
 
-Simple list constructor
-  * A sequence of *n* comma separated expressions, enclosed in square brackets,
-    constructs a list with *n* values. The final expression may have an optional
-    trailing comma.
-    Eg: ``[]``, ``[a]``, ``[a,b]``, ``[a,b,]``...
-  * As an alternate syntax, you can also use parentheses to enclose the list,
+Simple list constructors
+  ``[]``, ``[a]``, ``[a,b]``, ``[a,b,c]``, ...
+    A sequence of *n* comma separated expressions, enclosed in square brackets,
+    constructs a list with *n* values.
+  
+  ``[a,]``, ``[a,b,]``, ``[a,b,c,]``, ...
+    The final expression in a list constructor may have an optional trailing comma.
+  
+  ``()``, ``(a,b)``, ``(a,b,c)``, ...
+    As an alternate syntax, you can also use parentheses to enclose the list,
     with the caveat that the list constructor must either be empty, or must contain
     commas. ``(expression)`` is just a parenthesized expression, it's not a 1-element list.
 
-List comprehension
+Range constructors
+  ``i .. j``
+    Returns the ascending list of numbers: ``i``, ``i+1``, ``i+2``, ... up to ``j`` inclusive.
+    For example, ``1..10`` is ``[1,2,3,4,5,6,7,8,9,10]``.
 
-Range constructor
+  ``i .. j by k``
+    Similar to ``i..j``, except that the step value is ``k`` instead of ``1``.
+    The step value may be positive or negative, and need not be an integer.
+    For example, ``1..0 by -0.25`` is ``[1, 0.75, 0.5, 0.25, 0]``.
+
+  ``i ..< j``
+    Same as ``i..j`` except that the final element in the sequence is omitted.
+  
+  ``i ..< j by k``
+    Same as ``i..j by k`` except that the final element in the sequence is omitted.
+
+List comprehensions
+  The expressions in a simple list constructor are a special case of *element generators*.
+  An element generator is a phrase that specifies a sequence of zero or more values.
+  You can use iteration, conditionals, and local variables.
+  A list constructor that uses the more general syntax is called a list comprehension.
+  
+  *expression*
+    An expression is an element generator that generates a single value.
+    
+  ``if (condition) element_generator``
+    The element generator is executed if the condition is true.
+    
+  ``if (condition) element_generator1 else element_generator2``
+    A two armed conditional.
+    
+  ``for (pattern in list_expression) element_generator``
+    The element_generator is executed once for each element in the list.
+    At each iteration, the pattern is matched against a list element,
+    and local variables specified by the pattern are bound.
+    
+  ``let definitions in element_generator``
+    Introduce local variable bindings in an element generator.
+    
+  ``(eg1; eg2; eg3; ...)``
+    A sequence of element generators separated by semicolons is a compound
+    element generator. Each generator is executed in sequence.
+    
+  ``... list_expression``
+    The spread operator (``...``) evaluates its argument expression, which must be a list,
+    and outputs each element of the list in sequence.
+
+  For example, ``[for (i in 1..10) i^2]`` yields ``[1,4,9,16,25,36,49,64,81,100]``.
 
 List indexing
 
