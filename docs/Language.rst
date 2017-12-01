@@ -295,8 +295,11 @@ Simple list constructors
   
   ``()``, ``(a,b)``, ``(a,b,c)``, ...
     As an alternate syntax, you can also use parentheses to enclose the list,
-    with the caveat that the list constructor must either be empty, or must contain
+    with the limitation that the list constructor must either be empty, or must contain
     commas. ``(expression)`` is just a parenthesized expression, it's not a 1-element list.
+
+  ``(a,)``, ``(a,b,)``, ``(a,b,c,)``, ...
+    Ditto.
 
 Range constructors
   ``i .. j``
@@ -347,7 +350,21 @@ List comprehensions
 
   For example, ``[for (i in 1..10) i^2]`` yields ``[1,4,9,16,25,36,49,64,81,100]``.
 
-List indexing
+Indexing
+  ``a[i]``
+    The i'th element of list ``a``, if ``i`` is an integer.
+    Zero based indexing: ``a[0]`` is the first element.
+  
+  ``a[i,j]``
+    Matrices are represented as lists of lists of numbers.
+    This syntax returns the matrix element at the i'th row
+    and the j'th column, and is equivalent to ``a[i][j]``,
+    assuming ``i`` and ``j`` are integers.
+
+  ``a[indices]``
+    Returns ``[a[indices[0]], a[indices[1]], ...]``,
+    where ``indices`` is a list of integers.
+    For example, ``a[0..2]`` returns a list of the first 3 elements of ``a``.
 
 ::
 
