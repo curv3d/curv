@@ -403,6 +403,43 @@ Indexing
 ``product a``
   The product of a list of numbers.
 
+Tensors
+-------
+A *tensor* is a generalized numeric array.
+For example,
+
+* A number is a tensor of rank 0.
+* A vector is a tensor of rank 1.
+  A vector is represented by a list of numbers.
+* A matrix is a tensor of rank 2.
+  A matrix is represented by a list of vectors of the same count.
+  For example, here is the Curv representation of a 3x3 identity matrix::
+  
+    [[1,0,0],
+     [0,1,0],
+     [0,0,1]]
+
+Every tensor has a rank ``R`` and a shape.
+The shape is a vector of count ``R``.
+For example,
+
+* The shape of a number is ``[]``.
+* The shape of a vector is ``[n]``,
+  where ``n`` is the number of elements in the vector.
+* The shape of an *m* × *n* matrix (with *m* rows and *n* columns)
+  is ``[m,n]``.
+
+In general, a tensor of rank ``n`` is represented by a list
+of tensors of rank ``n-1``, all with the same shape.
+
+TODO: Add ``rank`` and ``shape`` operations.
+
+Indexing a Tensor
+~~~~~~~~~~~~~~~~~
+A tensor is indexed using a generalization of list indexing notation.
+
+
+
 Array
 -----
 ::
