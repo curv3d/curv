@@ -296,7 +296,7 @@ Simple list constructors
   ``()``, ``(a,b)``, ``(a,b,c)``, ...
     As an alternate syntax, you can also use parentheses to enclose the list,
     with the limitation that the list constructor must either be empty, or must contain
-    commas. ``(expression)`` is just a parenthesized expression, it's not a 1-element list.
+    commas.
 
   ``(a,)``, ``(a,b,)``, ``(a,b,c,)``, ...
     Ditto.
