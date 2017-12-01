@@ -364,25 +364,44 @@ Indexing
   ``a[indices]``
     Returns ``[a[indices[0]], a[indices[1]], ...]``,
     where ``indices`` is a list of integers.
-    For example, ``a[0..2]`` returns a list of the first 3 elements of ``a``.
+    For example, ``a[0..<3]`` returns a list of the first 3 elements of ``a``.
 
-::
+``count a``
+  The number of elements in list ``a``.
 
-  count
-  concat vv = [for (v in vv) for (i in v) i];
-  reverse v = v[count(v)-1..0 by -1];
-  map f list = [for (x in list) f x];
-  filter p list = [for (x in list) if (p x) x];
-  reduce (zero, f) list =
-      if (list == [])
-          zero
-      else
-          do  var r := list[0];
-              for (i in 1..<count list)
-                  r := f(r, list[i]);
-          in r;
-  sum = reduce(0, (x,y)->x+y);
-  product = reduce(1, (x,y)->x*y);
+``concat aa``
+  This is the list concatenation operator.
+  ``aa`` is a list of lists. The component lists are catenated.
+  For example, ``concat([1,2],[3,4])`` is ``[1,2,3,4]``.
+  If ``aa`` is ``[]`` then the result is ``[]``, because ``[]`` is the
+  identity element for the concatenation operation.
+
+``reverse a``
+  A list containing the elements of ``a`` in reverse order.
+
+``map f a``
+  The list obtained by applying ``f`` to each element of list ``a``.
+  Equivalent to ``[for (x in a) f x]``.
+
+``filter p a``
+  The list of those elements of ``a`` that satisfy the predicate ``p``.
+  Equivalent to ``[for (x in a) if (p x) x]``.
+
+``reduce (zero, f) a``
+  Using binary function ``f``,
+  iteratively combine all of the elements of list ``a`` into a single value,
+  recursing on the left.
+  For a 5 element list ``[a,b,c,d,e]``, this will compute::
+
+    f(f(f(f(a,b),c),d),e)
+
+  If the list has zero length, the result is ``zero``.
+
+``sum a``
+  The sum of a list of numbers.
+
+``product a``
+  The product of a list of numbers.
 
 Array
 -----
