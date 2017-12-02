@@ -456,11 +456,11 @@ element of a tensor.  For example::
 
 Binary operations (like binary ``+``) are extended in two ways:
 
- * Elementwise: If the arguments are two lists of the same count, eg ``[a,b]+[c,d]``,
-   then the result is another list of the same count, eg ``[a+c,b+d]``.
- * Broadcasting: If one argument is a scalar, and the other argument is a list,
-   eg ``x+[a,b]`` or ``[a,b]+x``,
-   then you get ``[x+a,x+b]`` or ``[a+x,a+b]``.
+* Elementwise: If the arguments are two lists of the same count, eg ``[a,b]+[c,d]``,
+  then the result is another list of the same count, eg ``[a+c,b+d]``.
+* Broadcasting: If one argument is a scalar, and the other argument is a list,
+  eg ``x+[a,b]`` or ``[a,b]+x``,
+  then you get ``[x+a,x+b]`` or ``[a+x,a+b]``.
 
 These two rules are applied recursively in the case of nested lists.
 
@@ -474,6 +474,36 @@ commutative, associative, and has an identity element of ``1``::
 
   [a,b]*[c,d] == [a*c,b*d] == [c*a,d*b] == [c,d]*[a,b]   // commutative
   1*[a,b] == [1*a,1*b] == [a,b]                          // identity element
+
+Other Tensor Operations
+~~~~~~~~~~~~~~~~~~~~~~~
+
+``dot(a,b)``
+  The tensor dot product ``a⋅b`` is a generalization of vector dot product and matrix multiplication.
+  If V is a vector and M is a matrix, then:
+  
+  * ``dot(V1, V2)`` is the dot product of two vectors.
+    Same as ``sum(V1 * V2)``.
+  * ``dot(V, M)`` is the product of a vector and a matrix.
+    It's like matrix multiply, treating V as a column vector,
+    but the result is a vector.
+    Same as ``sum(V * M)``.
+  * ``dot(M, V)`` is the product of a vector and a matrix.
+    It's like matrix multiply, treating V as a row vector, but the result is a vector.
+    Same as ``sum(transpose M * V)``.
+  * ``dot(M1, M2)`` is standard matrix multiplication.
+
+  ``dot(a,b)`` works on any two tensors of at least rank 1,
+  as long as the final dimension of ``a`` equals the first dimension of ``b``.
+  The resulting tensor has rank equal to ``rank(a)+rank(b)-2``.
+  This operation is equivalent to the ``Dot`` function in Mathematica,
+  or to the following Curv definition::
+  
+    dot(a,b) =
+      if (count a > 0 && is_list(a[0]))
+        [for (row in a) dot(row,b)]  // matrix*...
+      else
+        sum(a*b)                     // vector*...
 
 Array
 -----
