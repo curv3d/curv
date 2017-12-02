@@ -672,11 +672,13 @@ Design by Contract
 3. Grammar
 ==========
 
-The Parse Tree
---------------
-The following abstract grammar has just enough structure to parse
-a source file into an abstract parse tree. It shows that there are 
-12 operator precedence levels, with ``list`` being the lowest precedence
+The Surface Grammar
+-------------------
+The surface grammar is a simplified grammar that describes the hierarchical
+structure of Curv programs, but doesn't ascribe meaning to parse tree nodes.
+Not all programs that have a parse tree are syntactically correct.
+
+There are 12 operator precedence levels, with ``list`` being the lowest precedence
 and ``postfix`` being the highest precedence::
 
   program ::= list
@@ -758,8 +760,8 @@ and ``postfix`` being the highest precedence::
 
   C style comments, either '//' to end of line, or '/*'...'*/'
 
-Phrases
--------
+The Deep Grammar: Phrases
+-------------------------
 There is a deeper phrase-structure grammar that assigns syntactic meanings
 to most parse tree nodes, which are now called phrases.
 (Some parse tree nodes do not have an independent meaning, and are not phrases.)
