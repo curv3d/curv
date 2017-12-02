@@ -355,16 +355,11 @@ Indexing
     The i'th element of list ``a``, if ``i`` is an integer.
     Zero based indexing: ``a[0]`` is the first element.
   
-  ``a[i,j]``
-    Matrices are represented as lists of lists of numbers.
-    This syntax returns the matrix element at the i'th row
-    and the j'th column, and is equivalent to ``a[i][j]``,
-    assuming ``i`` and ``j`` are integers.
-
   ``a[indices]``
     Returns ``[a[indices[0]], a[indices[1]], ...]``,
     where ``indices`` is a list of integers.
     For example, ``a[0..<3]`` returns a list of the first 3 elements of ``a``.
+    This is called "slicing a list".
 
 ``count a``
   The number of elements in list ``a``.
@@ -420,8 +415,8 @@ the number of elements along each dimension.
   A vector is represented by a list of numbers.
 * An *m* × *n* matrix is a tensor of rank 2 and shape ``[m,n]``.
   A matrix is represented by a list of *m* vectors of shape ``[n]``.
-* In general, a tensor of rank ``n`` is represented by a list
-  of tensors of rank ``n-1``, all with the same shape.
+* In general, a tensor of rank ``n+1`` is represented by a list
+  of tensors of rank ``n``, all with the same shape.
 
 For example, here is the Curv representation of a 3x3 identity matrix::
   
@@ -433,9 +428,18 @@ TODO: Add ``rank`` and ``shape`` operations.
 
 Indexing a Tensor
 ~~~~~~~~~~~~~~~~~
-A tensor is indexed using a generalization of list indexing notation.
+Tensors are indexed using a generalization of list indexing notation.
+A tensor of rank *k* is indexed by a vector of count *k*.
 
+For example, if ``a`` is a matrix, then ``a[i,j]`` retrieves
+the element at row ``i`` and column ``j``, assuming ``i`` and ``j`` are integers.
+This is just function call notation, where ``a`` plays the role of a function,
+and the vector ``[i,j]`` plays the role of an argument.
+``a[i,j]`` is equivalent to ``a[i][j]``, due to the representation of matrices
+as nested lists.
 
+Scalar Numeric Operations are Generalized for Tensors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Array
 -----
