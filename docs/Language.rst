@@ -242,12 +242,22 @@ Curv uses `radians`_ (not degrees) to specify angles.
 ``pi``
   The ratio of a circle's circumference to its diameter: ``3.141592653589793``.
 
-``tau``
-  The number of radians in a full turn, aka ``2*pi`` or ``360*deg``.
-
 ``deg``
   The number of radians in an angle of 1 degree.
   To specify the angle "45 degrees", use ``45*deg``.
+
+``tau``
+  The number of radians in a full turn, aka ``2*pi`` or ``360*deg``.
+  
+  ====== =======
+  tau    360*deg
+  tau/2  180*deg
+  tau/3  120*deg
+  tau/4   90*deg
+  tau/6   60*deg
+  tau/8   45*deg
+  tau/12  30*deg
+  ====== =======
 
 ``sin x``
   The sine of ``x``, measured in radians.
@@ -376,7 +386,7 @@ List Slicing
   This is the list concatenation operator.
   ``aa`` is a list of lists. The component lists are catenated.
   For example, ``concat([1,2],[3,4])`` is ``[1,2,3,4]``.
-  If ``aa`` is ``[]`` then the result is ``[]``, because ``[]`` is the
+  ``concat[]`` is ``[]``, because ``[]`` is the
   identity element for the concatenation operation.
 
 ``reverse a``
@@ -510,36 +520,55 @@ Other Tensor Operations
       else
         sum(a*b)                     // vector*...
 
-Vectors
--------
-::
-  X = 0;
-  Y = 1;
-  Z = 2;
-  is_vec2 x = is_list x && count x == 2 && is_num(x[0]) && is_num(x[1]);
-  is_vec3 x = is_list x && count x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]);
-  mag
-  cross(p,q) = [p[Y]*q[Z] - p[Z]*q[Y], p[Z]*q[X] - p[X]*q[Z], p[X]*q[Y] - p[Y]*q[X]];
-  normalize v = v / mag v;
+Points and Vectors
+------------------
+Geometric points and vectors are represented by a list of numbers.
 
-  // phase angle of a vector, range tau/2 to -tau/2
-  phase v = atan2(v[Y],v[X]);
+Vec2 and Vec3
+  ``(x,y)`` and ``(x,y,z)`` represent 2 and 3 dimensional points,
+  and also 2 and 3 dimensional vectors. These data types are so important in Curv,
+  they have special support.
+  
+  is_vec2 x
+    True if ``x`` is a 2 dimensional vector or point.
+  
+  is_vec3 x
+    True if ``x`` is a 3 dimensional vector or point.
+  
+  X=0; Y=1; Z=2
+    These constants are used for selecting the X, Y and Z elements
+    from a Vec2 or a Vec3. Use ``p[X]``, ``p[Y]`` and ``p[Z]``.
 
-  // convert phase angle to unit vector
-  cis theta = [cos theta, sin theta];
+``mag v``
+  The magnitude of a vector ``v`` (sometimes called the length or the Euclidean norm).
+  Equivalent to ``sqrt(sum(v^2))``.
 
-  // perp: Rotate a 2D point by 90 degrees CCW. Multiply a complex number by i.
-  // It's the 2D analog of the 3D vector cross product (Cross in Mathematica).
-  // dot(perp a, b) is the "perp-dot" product:
-  // see: 'The Pleasures of "Perp-Dot" Products', Graphics Gems IV.
-  perp(x,y) = (-y, x);
+``normalize v``
+  Normalize a vector: convert it to a unit vector with the same direction.
+  Equivalent to ``v / mag v``.
 
-  // angle between two vectors
-  angle(a,b) = acos(dot(a,b) / (mag a * mag b));
+``phase v``
+  The phase angle of a 2D vector, in the range ``tau/2`` to ``-tau/2``.
+  This is the angle that the vector makes with the positive X axis,
+  measured counter-clockwise.
+
+``cis theta``
+  Convert a phase angle to a unit 2D vector.
+
+``perp v``
+  Rotate a 2D vector by 90 degrees (tau/4) counterclockwise.
+  Multiply a complex number by ``i``.
+  ``dot(perp a, b)`` is the "perp-dot product":
+  see 'The Pleasures of "Perp-Dot" Products', Graphics Gems IV.
+  ``perp(x,y)`` is equivalent to ``(-y,x)``.
+
+``cross(p,q)``
+  Cross product of 3D vectors.
 
 Complex Numbers
 ---------------
 ::
+
   // complex numbers: [RE,IM]
   RE=0;
   IM=1;
@@ -549,6 +578,7 @@ Complex Numbers
 Matrices
 --------
 ::
+
   identity(n) = [for(i in 1..n) [for(j in 1..n) if(i==j) 1 else 0]];
   transpose(a) = [for (i in indices(a[0])) [for (j in indices a) a[j,i]]];
 
