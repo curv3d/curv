@@ -438,8 +438,35 @@ and the vector ``[i,j]`` plays the role of an argument.
 ``a[i,j]`` is equivalent to ``a[i][j]``, due to the representation of matrices
 as nested lists.
 
-Scalar Numeric Operations are Generalized for Tensors
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Tensorized Numeric Operations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+All of the built-in scalar numeric operations are generalized to operate on tensors.
+
+Unary operations (like unary ``-``) are extended to operate "elementwise" on each
+element of a tensor.  For example::
+
+  -[[1,2],[3,4]] == [[-1,-2],[-3,-4]]
+
+Binary operations (like binary ``+``) are extended in two ways:
+
+ * Elementwise: If the arguments are two lists of the same count, eg ``[a,b]+[c,d]``,
+   then the result is another list of the same count, eg ``[a+c,b+d]``.
+ * Broadcasting: If one argument is a scalar, and the other argument is a list,
+   eg ``x+[a,b]`` or ``[a,b]+x``,
+   then you get ``[x+a,x+b]`` or ``[a+x,a+b]``.
+
+These two rules are applied recursively in the case of nested lists.
+
+N-ary operations like ``max``, which operate on a uniform list of arguments,
+are treated as nested applications of a binary operator.
+For example, ``max[a,b,c,d]`` is treated as ``max(max(max(a,b),c),d)``.
+
+Tensorized numeric operations obey almost all of the same algebraic laws
+as their scalar versions. For example, tensorized multiplication is
+commutative, associative, and has an identity element of ``1``::
+
+  [a,b]*[c,d] == [a*c,b*d] == [c*a,d*b] == [c,d]*[a,b]   // commutative
+  1*[a,b] == [1*a,1*b] == [a,b]                          // identity element
 
 Array
 -----
