@@ -270,21 +270,21 @@ Curv uses `radians`_ (not degrees) to specify angles.
 
 ``asin x``
   The principal value of the arc sine (inverse sine) of x.
-  The result is in the range [-pi/2, +pi/2].
+  The result is in the range [-tau/4, +tau/4].
 
 ``acos x``
   The principle value of the arc cosine (inverse cosine) of x.
-  The result is in the range [0, pi].
+  The result is in the range [0, tau/2].
 
 ``atan x``
   The principal value of the arc tangent (inverse tangent) of x.
-  The result is in the range [-pi/2, +pi/2].
+  The result is in the range [-tau/4, +tau/4].
   The ``atan2`` function is generally more useful.
 
 ``atan2(y,x)``
   The principal value of the arc tangent of y/x,
   using the signs of both arguments to determine the quadrant of the return value.
-  The result is in the range [-pi, +pi].
+  The result is in the range [-tau/2, +tau/2].
   
   Used mostly to convert from rectangular to polar coordinates,
   but for that, you should consider using ``phase(x,y)`` instead,
