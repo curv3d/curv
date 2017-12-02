@@ -30,7 +30,7 @@ smoothstep(lo,hi,x) =
     let t = clamp((x - lo)/(hi - lo), 0, 1);
     in t*t*(3 - 2*t);
 clamp(v,lo,hi) = min(max(v,lo),hi);
-isinf x = x == inf || x == -inf;
+//isinf x = x == inf || x == -inf; // deprecated
 
 tan a = sin a / cos a;
 atan x = atan2(x,1);
@@ -87,8 +87,8 @@ cis theta = [cos theta, sin theta];
 // see: 'The Pleasures of "Perp-Dot" Products', Graphics Gems IV.
 perp(x,y) = (-y, x);
 
-// angle between two vectors
-angle(a,b) = acos(dot(a,b) / (mag a * mag b));
+// angle between two vectors. Deprecated.
+//angle(a,b) = acos(dot(a,b) / (mag a * mag b));
 
 ////////////
 // SHAPES //
