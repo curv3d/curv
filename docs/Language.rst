@@ -526,8 +526,7 @@ Geometric points and vectors are represented by a list of numbers.
 
 Vec2 and Vec3
   ``(x,y)`` and ``(x,y,z)`` represent 2 and 3 dimensional points,
-  and also 2 and 3 dimensional vectors. These data types are so important in Curv,
-  they have special support.
+  and also 2 and 3 dimensional vectors. These data types are important in Curv.
   
   is_vec2 x
     True if ``x`` is a 2 dimensional vector or point.
@@ -547,6 +546,20 @@ Vec2 and Vec3
   Normalize a vector: convert it to a unit vector with the same direction.
   Equivalent to ``v / mag v``.
 
+``dot(v1,v2)``
+  Vector dot product (a special case of the tensor dot product).
+  The result is a number. Same as ``sum(v1*v2)``.
+  
+  * Equivalent to ``mag v1`` × ``mag v2`` × *cosine of the angle between v1 and v2*.
+    The angle is >= 0° and <= 180°.
+  * If v1 and v2 are at right angles, dot(v1,v2) == 0.
+    If the angle is < 90°, the result is positive.
+    If the angle is > 90°, the result is negative.
+  * If v1 and v2 are unit vectors, then acos(dot(v1,v2)) is the angle
+    between the vectors, in the range [0,tau/2].
+  * The scalar projection (or scalar component) of vector a in the direction of unit vector b
+    is ``dot(a,b)``.
+  
 ``phase v``
   The phase angle of a 2D vector, in the range ``tau/2`` to ``-tau/2``.
   This is the angle that the vector makes with the positive X axis,
@@ -562,7 +575,7 @@ Vec2 and Vec3
   see 'The Pleasures of "Perp-Dot" Products', Graphics Gems IV.
   ``perp(x,y)`` is equivalent to ``(-y,x)``.
 
-``cross(p,q)``
+``cross(v1,v2)``
   Cross product of 3D vectors.
 
 Complex Numbers
