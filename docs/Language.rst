@@ -358,16 +358,16 @@ List comprehensions
 
   For example, ``[for (i in 1..10) i^2]`` yields ``[1,4,9,16,25,36,49,64,81,100]``.
 
-Indexing
+List Indexing
   ``a[i]``
     The i'th element of list ``a``, if ``i`` is an integer.
     Zero based indexing: ``a[0]`` is the first element.
-  
+
+List Slicing
   ``a[indices]``
     Returns ``[a[indices[0]], a[indices[1]], ...]``,
     where ``indices`` is a list of integers.
     For example, ``a[0..<3]`` returns a list of the first 3 elements of ``a``.
-    This is called "slicing a list".
 
 ``count a``
   The number of elements in list ``a``.
@@ -426,7 +426,7 @@ For example, here is the Curv representation of a 3x3 identity matrix::
      [0,1,0],
      [0,0,1]]
 
-TODO: Add ``rank`` and ``shape`` operations.
+Note: The ``rank`` and ``shape`` operations are not implemented.
 
 Indexing a Tensor
 ~~~~~~~~~~~~~~~~~
@@ -475,6 +475,11 @@ commutative, associative, and has an identity element of ``1``::
   [a,b]*[c,d] == [a*c,b*d] == [c*a,d*b] == [c,d]*[a,b]   // commutative
   1*[a,b] == [1*a,1*b] == [a,b]                          // identity element
 
+Note: For matrix arguments, ``a*b`` performs elementwise (Hadamard) multiplication,
+and not matrix multiplication. This is because it would be bad design to overload the same
+symbol with two operations that obey different algebraic laws.
+For standard matrix multiplication, use ``dot``, the tensor dot product.
+
 Other Tensor Operations
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -483,15 +488,15 @@ Other Tensor Operations
   If V is a vector and M is a matrix, then:
   
   * ``dot(V1, V2)`` is the dot product of two vectors.
-    Same as ``sum(V1 * V2)``.
+    Same as ``sum(V1 * V2)``, or ``V1*V2`` in OpenSCAD.
   * ``dot(V, M)`` is the product of a vector and a matrix.
     It's like matrix multiply, treating V as a column vector,
     but the result is a vector.
-    Same as ``sum(V * M)``.
+    Same as ``sum(V * M)``, or ``V*M`` in OpenSCAD.
   * ``dot(M, V)`` is the product of a vector and a matrix.
     It's like matrix multiply, treating V as a row vector, but the result is a vector.
-    Same as ``sum(transpose M * V)``.
-  * ``dot(M1, M2)`` is standard matrix multiplication.
+    Same as ``sum(transpose M * V)``, or ``M*V`` in OpenSCAD.
+  * ``dot(M1, M2)`` is standard matrix multiplication (``M1*M2`` in OpenSCAD).
 
   ``dot(a,b)`` works on any two tensors of at least rank 1,
   as long as the final dimension of ``a`` equals the first dimension of ``b``.
@@ -505,27 +510,16 @@ Other Tensor Operations
       else
         sum(a*b)                     // vector*...
 
-Array
------
+Vectors
+-------
 ::
-
-  // complex numbers: [RE,IM]
-  RE=0;
-  IM=1;
-  cmul(z,w) = [z[RE]*w[RE] - z[IM]*w[IM], z[IM]*w[RE] + z[RE]*w[IM]];
-  csqr(z) = [ z[RE]*z[RE] - z[IM]*z[IM], 2*z[RE]*z[IM] ];
-
-  ////////////////////
-  // Linear Algebra //
-  ////////////////////
   X = 0;
   Y = 1;
   Z = 2;
   is_vec2 x = is_list x && count x == 2 && is_num(x[0]) && is_num(x[1]);
   is_vec3 x = is_list x && count x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]);
+  mag
   cross(p,q) = [p[Y]*q[Z] - p[Z]*q[Y], p[Z]*q[X] - p[X]*q[Z], p[X]*q[Y] - p[Y]*q[X]];
-  identity(n) = [for(i in 1..n) [for(j in 1..n) if(i==j) 1 else 0]];
-  transpose(a) = [for (i in indices(a[0])) [for (j in indices a) a[j,i]]];
   normalize v = v / mag v;
 
   // phase angle of a vector, range tau/2 to -tau/2
@@ -543,11 +537,23 @@ Array
   // angle between two vectors
   angle(a,b) = acos(dot(a,b) / (mag a * mag b));
 
-  dot
-  mag
+Complex Numbers
+---------------
+::
+  // complex numbers: [RE,IM]
+  RE=0;
+  IM=1;
+  cmul(z,w) = [z[RE]*w[RE] - z[IM]*w[IM], z[IM]*w[RE] + z[RE]*w[IM]];
+  csqr(z) = [ z[RE]*z[RE] - z[IM]*z[IM], 2*z[RE]*z[IM] ];
 
-String
-------
+Matrices
+--------
+::
+  identity(n) = [for(i in 1..n) [for(j in 1..n) if(i==j) 1 else 0]];
+  transpose(a) = [for (i in indices(a[0])) [for (j in indices a) a[j,i]]];
+
+Strings
+-------
 ::
 
   nl = decode[0xA]; // ASCII newline
@@ -557,16 +563,16 @@ String
   encode
   count
 
-Record
-------
+Records
+-------
 ::
 
   merge rs = {for (r in rs) ...r};
   fields
   defined
 
-Function
---------
+Functions
+---------
 ::
 
   switch
