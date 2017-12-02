@@ -164,14 +164,6 @@ The arithmetic operators:
 ``abs n``
   The absolute value of *n*.
 
-``max list``
-  The maximum value in a list of numbers.
-  ``max[]`` is ``-inf``, which is the identity element for the maximum operation.
-
-``min list``
-  The minimum value in a list of numbers.
-  ``min[]`` is ``inf``, which is the identity element for the minimum operation.
-
 ``floor n``
   The largest integer less than or equal to *n*.
 
@@ -184,6 +176,22 @@ The arithmetic operators:
 ``round n``
   The integer nearest to *n*. In case of a tie (the fractional part of *n* is 0.5),
   then the result is the nearest even integer.
+
+``max list``
+  The maximum value in a list of numbers.
+  ``max[]`` is ``-inf``, which is the identity element for the maximum operation.
+
+``min list``
+  The minimum value in a list of numbers.
+  ``min[]`` is ``inf``, which is the identity element for the minimum operation.
+
+``sum list``
+  The sum of a list of numbers.
+  ``sum[]`` is ``0``, which is the identity element for the sum operation.
+
+``product list``
+  The product of a list of numbers.
+  ``product[]`` is ``1``, which is the identity element for the product operation.
 
 ``mod(a,m)``
   The remainder after dividing ``a`` by ``m``,
@@ -386,17 +394,11 @@ Indexing
   Using binary function ``f``,
   iteratively combine all of the elements of list ``a`` into a single value,
   recursing on the left.
-  For a 5 element list ``[a,b,c,d,e]``, this will compute::
+  For a 4 element list ``[a,b,c,d]``, this will compute::
 
-    f(f(f(f(a,b),c),d),e)
+    f(f(f(a,b),c),d)
 
   If the list has zero length, the result is ``zero``.
-
-``sum a``
-  The sum of a list of numbers.
-
-``product a``
-  The product of a list of numbers.
 
 Tensors
 -------
