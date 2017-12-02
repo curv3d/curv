@@ -433,12 +433,17 @@ Indexing a Tensor
 Tensors are indexed using a generalization of list indexing notation.
 A tensor of rank *k* is indexed by a vector of count *k*.
 
-For example, if ``a`` is a matrix, then ``a[i,j]`` retrieves
+For example, if ``M`` is a matrix, then ``M[i,j]`` retrieves
 the element at row ``i`` and column ``j``, assuming ``i`` and ``j`` are integers.
-This is just function call notation, where ``a`` plays the role of a function,
+This is just function call notation, where ``M`` plays the role of a function,
 and the vector ``[i,j]`` plays the role of an argument.
-``a[i,j]`` is equivalent to ``a[i][j]``, due to the representation of matrices
+``M[i,j]`` is equivalent to ``M[i][j]``, due to the representation of matrices
 as nested lists.
+
+Note: In theory, since ``42`` is a tensor of rank 0, it should be the case that
+``42[] == 42``. However, this is not implemented.
+
+Note: Tensor slicing is not implemented (yet).
 
 Tensorized Numeric Operations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
