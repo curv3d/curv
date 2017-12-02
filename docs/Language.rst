@@ -597,8 +597,7 @@ Complex Numbers
 ---------------
 A complex number is represented by the ordered pair ``(re,im)``.
 Complex numbers are interpreted geometrically: they are indistinguishable
-from 2D points/vectors using Cartesian coordinates,
-and they share the same set of operations.
+from 2D points/vectors, and they share the same set of operations.
 
 ``(re, im)``
   Construct a complex number with real part ``re``
@@ -626,7 +625,7 @@ and they share the same set of operations.
   Multiply two complex numbers.
   Geometrically, the result is obtained by multiplying the magnitudes and adding the phase angles
   of ``z`` and ``w``. If ``z`` is a 2D point and ``w`` is a unit vector with phase angle ``theta``,
-  then ``cmul(z,w)`` rotates the point ``z` around the origin by angle ``theta``.
+  then ``cmul(z,w)`` rotates the point ``z`` around the origin by angle ``theta``.
   An appropriate value ``w`` may be obtained using ``cis theta``.
   So ``cmul`` is a 2D rotation operator.
 
