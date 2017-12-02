@@ -575,7 +575,7 @@ Vec2 and Vec3
   Multiply a complex number by ``i``.
   ``perp(x,y)`` is equivalent to ``(-y,x)``.
 
-  ``dot(perp a, b)`` is the "perp-dot product" of 2D vectors:
+  ``dot(perp v1, v2)`` is the "perp-dot product" of 2D vectors:
 
   * Equivalent to ``mag v1`` × ``mag v2`` × *sine of the angle between v1 and v2*.
     The angle is >= -90° and <= 90°.
