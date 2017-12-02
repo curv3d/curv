@@ -557,6 +557,8 @@ Vec2 and Vec3
     If the angle is > 90°, the result is negative.
   * If v1 and v2 are unit vectors, then acos(dot(v1,v2)) is the angle
     between the vectors, in the range [0,tau/2].
+    Note that this is expensive, and inaccurate for small angles.
+    See ``perp`` for an alternative.
   * The scalar projection (or scalar component) of vector a in the direction of unit vector b
     is ``dot(a,b)``.
   
@@ -571,9 +573,22 @@ Vec2 and Vec3
 ``perp v``
   Rotate a 2D vector by 90 degrees (tau/4) counterclockwise.
   Multiply a complex number by ``i``.
-  ``dot(perp a, b)`` is the "perp-dot product":
-  see 'The Pleasures of "Perp-Dot" Products', Graphics Gems IV.
   ``perp(x,y)`` is equivalent to ``(-y,x)``.
+
+  ``dot(perp a, b)`` is the "perp-dot product" of 2D vectors:
+
+  * Equivalent to ``mag v1`` × ``mag v2`` × *sine of the angle between v1 and v2*.
+    The angle is >= -90° and <= 90°.
+    A positive angle indicates a counterclockwise rotation from v1 to v2.
+  * Result is 0 if the vectors are colinear, >0 if the smaller angle from v1 to v2
+    is a counterclockwise rotation, or <0 for a clockwise rotation.
+  * Is the area of the parallelogram with the vectors as two sides,
+    and so twice the area of the triangle formed by the two vectors.
+  * ``z=(dot(a,b),dot(perp a,b))`` is a complex number that represents the signed angle
+    between the vectors. ``phase z`` is the signed angle.
+    ``cmul(pt, normalize z)`` rotates a point around the origin through that angle.
+  * See 'The Pleasures of "Perp-Dot" Products', Graphics Gems IV.
+  
 
 ``cross(v1,v2)``
   Cross product of 3D vectors.
