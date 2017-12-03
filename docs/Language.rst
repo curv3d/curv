@@ -635,10 +635,24 @@ from 2D points/vectors, and they share the same set of operations.
 
 Matrices
 --------
-::
+``identity n``
+  An ``n`` × ``n`` identity matrix.
 
-  identity(n) = [for(i in 1..n) [for(j in 1..n) if(i==j) 1 else 0]];
-  transpose(a) = [for (i in indices(a[0])) [for (j in indices a) a[j,i]]];
+``transpose a``
+  The transpose of a matrix: a new matrix whose rows are the columns of the original.
+
+``dot(a,b)``
+  Matrix multiplication, a special case of the tensor dot product.
+  If V is a vector and M is a matrix, then:
+  
+  * ``dot(V, M)`` is the product of a vector and a matrix.
+    It's like matrix multiply, treating V as a column vector,
+    but the result is a vector.
+    Same as ``sum(V * M)``, or ``V*M`` in OpenSCAD.
+  * ``dot(M, V)`` is the product of a vector and a matrix.
+    It's like matrix multiply, treating V as a row vector, but the result is a vector.
+    Same as ``sum(transpose M * V)``, or ``M*V`` in OpenSCAD.
+  * ``dot(M1, M2)`` is standard matrix multiplication (``M1*M2`` in OpenSCAD).
 
 Strings
 -------
