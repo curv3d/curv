@@ -526,17 +526,18 @@ Geometric points and vectors are represented by a list of numbers.
 
 Vec2 and Vec3
   ``(x,y)`` and ``(x,y,z)`` represent 2 and 3 dimensional points,
-  and also 2 and 3 dimensional vectors. These data types are important in Curv.
+  and also 2 and 3 dimensional vectors.
   
-  is_vec2 x
+  ``is_vec2 x``
     True if ``x`` is a 2 dimensional vector or point.
   
-  is_vec3 x
+  ``is_vec3 x``
     True if ``x`` is a 3 dimensional vector or point.
   
-  X=0; Y=1; Z=2
-    These constants are used for selecting the X, Y and Z elements
-    from a Vec2 or a Vec3. Use ``p[X]``, ``p[Y]`` and ``p[Z]``.
+  ``p[X]``, ``p[Y]``, ``p[Z]``
+    The X and Y components of a Vec2 or Vec3.
+    The Z component of a Vec3.
+    Note: ``X=0``, ``Y=1`` and ``Z=2``.
 
 ``mag v``
   The magnitude of a vector ``v`` (sometimes called the length or the Euclidean norm).
@@ -605,7 +606,7 @@ from 2D points/vectors, and they share the same set of operations.
 
 ``z[RE]``, ``z[IM]``
   The real and imaginary components of a complex number.
-  ``RE=0`` and ``IM=1``.
+  Note: ``RE=0`` and ``IM=1``.
 
 ``mag z``
   The *absolute value* (or *modulus* or *magnitude*) of a complex number.
