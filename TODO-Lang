@@ -12,22 +12,45 @@
     is_fun x = defined(x.call);
 
 ## Ideas Under Development
-String:
-* Conversion between strings and lists of (integer) code points:
-  * `encode string`: convert string to a list of Unicode code points (integers).
-  * `decode codelist`: converts list of Unicode code points to a string.
-  * Initially only ASCII is supported, codes 1..127. The NUL character is
-    disallowed. Later, surrogate and noncharacter code points are disallowed.
-* Unicode strings. str[i] is the i'th grapheme cluster. `count str` is the
-  number of grapheme clusters. To operate on code points instead, first use
-  encode.
-* If two grapheme clusters are guaranteed (by the Unicode standard)
-  to have the same printed representation, then they compare equal.
-* String comprehensions:
-  ${...} interpolates the string strcat[...]
-  $[...] interpolates the string decode[...]
-  $(...) interpolates the string repr(...)
-  $id is short for ${id}
+Unicode Strings:
+A string is a sequence of characters, but what is a character in Unicode?
+ 0. Legal code points.
+    The NUL character is disallowed. Surrogate and noncharacter code points
+    are disallowed.
+ 1. Character boundaries.
+    Maybe a character is a code point. It's simple.
+    In Swift, a character is an "extended grapheme cluster". Eg, an emoji
+    flag character consists of two code points, but counts as one character.
+    The 'string.count' method iterates over the string.
+    The Unicode standard says that a "user perceived character"
+    is most closely approximated by an "extended grapheme cluster".
+    (Any closer approximation is locale-dependent.)
+    http://unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries
+    Regular expressions should ideally use EGCs as character boundaries.
+    If I can find an open source library that implements these semantics,
+    may I should use it.
+     * https://github.com/michaelnmmeyer/grapheme
+       It uses Ragel, which is similar to re2c.
+       Ragel is in the Ubuntu Universe.
+ 2. When are two characters equal? If they have the same sequence of code
+    points, or if they normalize to the same sequence? (How does Swift do it?)
+    If two grapheme clusters are guaranteed (by the Unicode standard)
+    to have the same printed representation, then they compare equal?
+    * If two code point sequences are canonically equivalent, then they should
+      test equal, independent of locale.
+      https://en.wikipedia.org/wiki/Unicode_equivalence
+    * Is there open source for comparing two unicode strings and determining
+      canonical equivalence?
+    * Is it easier or harder to pre-normalize all Curv strings and then
+      test byte-level equality? If I support Unicode in symbols, then those
+      should probably be normalized, for efficiency reasons.
+ 3. String Concatenation, Legal EGCs.
+    Suppose S1 and S2 are strings.
+    Is it guaranteed that count(strcat(S1,S2)) == count S1 + count S2?
+    What if S1 is a latin base character, and S2 is a latin accent
+    combining character? Should S2 even be treated as a legal character string?
+    Suppose S1 and S2 are normalized. Is strcat(S1,S2) guaranteed to be
+    normalized?
 
 Libraries.
 * `lib` is a record for accessing library files in /usr/local/lib/curv.
@@ -269,7 +292,7 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
   Information hiding, in lieu of private module members.
 
 ### Lexical:
-* unicode operators (needs re2c)
+* unicode operators (needs re2c or Ragel)
     90° == 90*deg
     ≤ ≥ ≠
     ¬a == !a
@@ -287,7 +310,7 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
     x↑y = x^y
     “foo” == "foo"  -- note, resistant to systems that autocorrect "" to “”
     g∘f == compose[g,f]
-    1.0₁₀3 == 1.0e3
+    1.0₁₀3 == 1.0e3 -- not seriously, though.
 * Use _ as digit separator in numerals.
 * Support ' (primes) in identifiers (like Haskell)? Nope, ' is needed elsewhere.
 * Support `foo` quoted identifiers? Nope, ` already used for infix operators.
