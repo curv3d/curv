@@ -214,9 +214,13 @@ interactive_mode(curv::System& sys)
             if (den.second) {
                 for (auto e : *den.second)
                     std::cout << e << "\n";
-                if (den.second->size() == 1)
+                if (den.second->size() == 1) {
+                    static curv::Atom lastval_key = "_";
+                    names[lastval_key] =
+                        curv::make<curv::Builtin_Value>(den.second->front());
                     display_shape(den.second->front(),
                         curv::At_Phrase(prog.value_phrase(), nullptr));
+                }
             }
         } catch (curv::Exception& e) {
             std::cout << "ERROR: " << e << "\n";
