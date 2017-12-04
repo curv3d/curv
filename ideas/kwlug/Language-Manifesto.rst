@@ -8,7 +8,7 @@ Scheme demonstrates that a very small number of rules for forming expressions,
 with no restrictions on how they are composed,
 suffice to form a practical and efficient programming language
 that is flexible enough to support most of the major programming paradigms in use today."
--- Scheme R5RS
+-- Scheme R3RS, 1986
 
 "Most programming languages are partly a way of
 expressing things in terms of other things and partly a
@@ -59,6 +59,10 @@ Only One Kind of List
 In Curv, a "list" is an ordered sequence of values. There is only one such data type.
 
 Most languages have multiple data types which fill this role.
+
+In Curv, the function call operator is orthogonal from the list forming syntax.
+Function call applies a function to a single argument. f(x,y) applies f to a single argument,
+(x,y), which happens to be a list. This, in turn, simplifies "monoid" functions such as "max"...
 
 Only One Kind of Record
 -----------------------
