@@ -551,8 +551,8 @@ Vec2 and Vec3
   Vector dot product (a special case of the tensor dot product).
   The result is a number. Same as ``sum(v1*v2)``.
   
-  * Equivalent to ``mag v1`` × ``mag v2`` × *cosine of the angle between v1 and v2*.
-    The angle is >= 0° and <= 180°.
+  * Equivalent to ``mag v1`` × ``mag v2`` × *cos* θ,
+    where θ is the angle between v1 and v2 and 0° ≤ θ ≤ 180°.
   * If v1 and v2 are at right angles, dot(v1,v2) == 0.
     If the angle is < 90°, the result is positive.
     If the angle is > 90°, the result is negative.
@@ -578,8 +578,8 @@ Vec2 and Vec3
 
   ``dot(perp v1, v2)`` is the "perp-dot product" of 2D vectors:
 
-  * Equivalent to ``mag v1`` × ``mag v2`` × *sine of the angle between v1 and v2*.
-    The angle is >= -90° and <= 90°.
+  * Equivalent to ``mag v1`` × ``mag v2`` × *sin* θ,
+    where θ is the angle between v1 and v2, and -90° ≤ θ ≤ 90°.
     A positive angle indicates a counterclockwise rotation from v1 to v2.
   * Result is 0 if the vectors are colinear, >0 if the smaller angle from v1 to v2
     is a counterclockwise rotation, or <0 for a clockwise rotation.
@@ -624,8 +624,8 @@ from 2D points/vectors, and they share the same set of operations.
 
 ``cmul(z, w)``
   Multiply two complex numbers.
-  Geometrically, the result is obtained by multiplying the magnitudes and adding the phase angles
-  of ``z`` and ``w``. If ``z`` is a 2D point and ``w`` is a unit vector with phase angle ``theta``,
+  This multiplies the magnitudes and adds the phase angles of ``z`` and ``w``.
+  If ``z`` is a 2D point and ``w`` is a unit vector with phase angle ``theta``,
   then ``cmul(z,w)`` rotates the point ``z`` around the origin by angle ``theta``.
   An appropriate value ``w`` may be obtained using ``cis theta``.
   So ``cmul`` is a 2D rotation operator.
@@ -705,9 +705,8 @@ String Constructor
     which are added to the string under construction with no interpretation.
   * ``""`` is interpreted as a single ``"`` character.
   * ``$$`` is interpreted as a single ``$`` character.
-  * ``${expr}`` evaluates the expression ``expr``. If it is not a string,
+  * ``${expr}`` interpolates the value of ``expr``. If the value is not a string,
     then it is converted to a string by ``repr``.
-    The result is added to the string under construction.
   * ``$(expr)`` is equivalent to ``${repr(expr)}``.
   * ``$[...]`` is equivalent to ``${decode[...]}``.
   * ``$identifier`` is equivalent to ``${identifier}``.
@@ -737,12 +736,15 @@ Actions
   assert_error
   exec
 
-Source Files and External Libraries
------------------------------------
-::
+Blocks
+------
+any phrase can be prefixed with local definitions.
 
-  file
-  use record_expr
+Sequence, Conditional and Iteration Operators
+---------------------------------------------
+
+Patterns
+--------
 
 Design by Contract
 ------------------
@@ -759,6 +761,13 @@ Design by Contract
   ensure pred expr = do assert(pred expr) in expr;
   assert
   error
+
+Source Files and External Libraries
+-----------------------------------
+::
+
+  file
+  use record_expr
 
 3. Grammar
 ==========
