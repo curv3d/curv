@@ -1,3 +1,21 @@
+Basic Concepts
+==============
+The Curv language design begins with some basic concepts, then generalizes each concept and applies it
+as widely as possible.
+
+Pure functional programming.
+
+Data model. 7 types: null, bool, num, list, string, record, function.
+
+Lexically scoped block structure. A local block can be attached to any phrase.
+
+Debug actions.
+
+Structured programming: sequencing, conditionals, iteration
+ as applied to actions, list and record constructors.
+
+Patterns
+
 Orthogonality
 =============
 "Entities must not be multiplied beyond necessity" -- Occam's Razor
