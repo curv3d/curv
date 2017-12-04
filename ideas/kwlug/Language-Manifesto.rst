@@ -3,19 +3,8 @@ Orthogonality
 "Entities must not be multiplied beyond necessity" -- Occam's Razor
 
 "Programming languages should be designed not by piling feature on top of feature,
-but by removing the weaknesses and restrictions that make additional features appear necessary.
-Scheme demonstrates that a very small number of rules for forming expressions,
-with no restrictions on how they are composed,
-suffice to form a practical and efficient programming language
-that is flexible enough to support most of the major programming paradigms in use today."
--- Scheme R3RS, 1986
-
-"Most programming languages are partly a way of
-expressing things in terms of other things and partly a
-basic set of given things. The ISWIM (If you See What I
-Mean) system is a byproduct of an attempt to disentangle
-these two aspects in some current languages."
--- The Next 700 Programming Languages, P.J. Landin, 1966
+but by removing the weaknesses and restrictions that make additional features appear necessary."
+-- Revised³ Report on the Algorithmic Language Scheme, 1986
 
 So the idea here is...
 
