@@ -583,7 +583,7 @@ Vec2 and Vec3
     A positive angle indicates a counterclockwise rotation from v1 to v2.
   * Result is 0 if the vectors are colinear, >0 if the smaller angle from v1 to v2
     is a counterclockwise rotation, or <0 for a clockwise rotation.
-  * Is the area of the parallelogram with the vectors as two sides,
+  * The absolute value is the area of the parallelogram with the vectors as two sides,
     and so twice the area of the triangle formed by the two vectors.
   * ``z=(dot(a,b),dot(perp a,b))`` is a complex number that represents the signed angle
     between the vectors. ``phase z`` is the signed angle.
@@ -592,7 +592,15 @@ Vec2 and Vec3
   
 
 ``cross(v1,v2)``
-  Cross product of 3D vectors.
+  `Cross product`_ of 3D vectors, which is a 3D vector.
+  
+  * If v1 and v2 are colinear, or if either is (0,0,0), then the result is (0,0,0).
+  * Otherwise, the result is a vector that is perpendicular to both v1 and v2
+    and thus normal to the plane containing them.
+  * The magnitude of the cross product equals the area of a parallelogram
+    with the vectors for sides. For two perpendicular vectors, this is the product of their lengths.
+  
+.. _`Cross product`: https://en.wikipedia.org/wiki/Cross_product
 
 Complex Numbers
 ---------------
