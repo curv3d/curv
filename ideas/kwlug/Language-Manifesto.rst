@@ -17,6 +17,16 @@ Mean) system is a byproduct of an attempt to disentangle
 these two aspects in some current languages."
 -- The Next 700 Programming Languages, P.J. Landin, 1966
 
+So the idea here is...
+
+* Orthogonality
+* The opposite of orthogonality is having multiple competing features that do the same job,
+  but with different restrictions. You choose one of the competing features for a particular
+  task, then you live with those particular restrictions. As opposed to removing the restrictions
+  and unifying the competing features into a single feature.
+* And then these orthogonal features, stripped of their restrictions, can be composed together
+  in a larger number of ways, which makes the language richer and more expressive.
+
 Only One Kind of Null
 ---------------------
 Javascript has ``undefined``, ``null`` and ``NaN``.
@@ -59,3 +69,11 @@ Only One Kind of Function
 OpenSCAD has functions and modules.
 
 C++ has functions, template classes, template functions.
+
+Only One Kind of Name
+---------------------
+In Curv, there is only a single namespace, for naming all the things.
+
+* Python has one namespace for variables, functions and classes, and a separate module namespace.
+* Haskell has separate namespaces for types and variables.
+* OpenSCAD has 3 separate namespaces for variables, functions and modules.
