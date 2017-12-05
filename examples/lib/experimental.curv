@@ -19,4 +19,38 @@ cosine_warp shape =
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
     };
-}
+
+ripple shape =
+    do assert(is_shape shape && shape.is_3d);
+    in make_shape {
+        dist(x,y,z,t) =
+            let dz = cos(mag(x,y));
+            in shape.dist(x,y,z-dz,t);
+        bbox = [[shape.bbox[MIN,X], shape.bbox[MIN,Y], shape.bbox[MIN,Z]-1],
+                [shape.bbox[MAX,X], shape.bbox[MAX,Y], shape.bbox[MAX,Z]+1]];
+        is_3d = true;
+    };
+
+undulate shape =
+    make_shape {
+        dist(x,y,z,t) =
+            let dx = cos y;
+            in shape.dist(x-dx,y,z,t);
+        bbox = [[shape.bbox[MIN,X]-1, shape.bbox[MIN,Y], shape.bbox[MIN,Z]],
+                [shape.bbox[MAX,X]+1, shape.bbox[MAX,Y], shape.bbox[MAX,Z]]];
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
+    };
+
+pagoda shape =
+    do assert(is_shape shape && shape.is_3d);
+    in make_shape {
+        dist(x,y,z,t) =
+            let kz = cos z / 20 + 1;
+            in shape.dist(x/kz,y/kz,z,t)*kz;
+        bbox = [[shape.bbox[MIN,X]-1, shape.bbox[MIN,Y]-1, shape.bbox[MIN,Z]],
+                [shape.bbox[MAX,X]+1, shape.bbox[MAX,Y]+1, shape.bbox[MAX,Z]]];
+        is_3d = true;
+    };
+
+} // EOF
