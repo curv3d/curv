@@ -854,7 +854,7 @@ Function_Setter_Base::exec(Frame& f) const
 }
 
 void
-Use_Setter_Base::exec(Frame& f) const
+Include_Setter_Base::exec(Frame& f) const
 {
     Value* slots;
     if (module_slot_ == (slot_t)(-1))

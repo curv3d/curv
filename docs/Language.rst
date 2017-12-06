@@ -775,7 +775,7 @@ Source Files and External Libraries
 ::
 
   file
-  use record_expr
+  include record_expr
 
 3. Grammar
 ==========
@@ -798,7 +798,7 @@ and ``postfix`` being the highest precedence::
 
   item ::= pipeline
     | '...' item
-    | 'use' item
+    | 'include' item
     | pipeline '=' item
     | pipeline ':=' item
     | pipeline ':'
@@ -846,7 +846,7 @@ and ``postfix`` being the highest precedence::
   primary ::= identifier | numeral | string | parens | brackets | braces
     identifier ::= /[a-zA-Z_] [a-zA-Z_0-9]*/, except for reserved words
       reserved_word ::= '_' | 'by' | 'do' | 'else' | 'for' | 'if'
-        | 'in' | 'let' | 'use' | 'var' | 'where' | 'while'
+        | 'in' | 'include' | 'let' | 'var' | 'where' | 'while'
 
     numeral ::= hexnum | mantissa | /mantissa [eE] [+-]? digits/
       mantissa ::= /digits/ | /'.' digits/ | /digits '.'/ | /digits '.' digits/

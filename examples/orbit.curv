@@ -1,5 +1,5 @@
 let
-use file "lib/experimental.curv";
+include file "lib/experimental.curv";
 bb = [[-1,-1,0], [1,1,0]];
 
 in

@@ -57,15 +57,15 @@ Function_Definition::make_setter(slot_t module_slot)
 }
 
 void
-Use_Definition::add_to_scope(Block_Scope& scope)
+Include_Definition::add_to_scope(Block_Scope& scope)
 {
     // Evaluate the argument to `use` in the builtin environment.
     auto val = std_eval(*arg_, scope);
     auto record = val.to<Structure>(At_Phrase(*arg_, scope));
 
-    // construct a Use_Setter from the record argument.
+    // construct a Include_Setter from the record argument.
     unsigned unit = scope.begin_unit(share(*this));
-    setter_ = {Use_Setter::make(record->size(), source_)};
+    setter_ = {Include_Setter::make(record->size(), source_)};
     size_t i = 0;
     record->each_field([&](Atom name, Value value)->void {
         slot_t slot = scope.add_binding(name, *source_, unit);
@@ -74,11 +74,11 @@ Use_Definition::add_to_scope(Block_Scope& scope)
     scope.end_unit(unit, share(*this));
 }
 void
-Use_Definition::analyze(Environ&)
+Include_Definition::analyze(Environ&)
 {
 }
 Shared<Operation>
-Use_Definition::make_setter(slot_t module_slot)
+Include_Definition::make_setter(slot_t module_slot)
 {
     setter_->module_slot_ = module_slot;
     return setter_;

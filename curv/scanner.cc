@@ -229,10 +229,10 @@ Scanner::get_token()
             tok.kind_ = Token::k_if;
         else if (id == "in")
             tok.kind_ = Token::k_in;
+        else if (id == "include")
+            tok.kind_ = Token::k_include;
         else if (id == "let")
             tok.kind_ = Token::k_let;
-        else if (id == "use")
-            tok.kind_ = Token::k_use;
         else if (id == "var")
             tok.kind_ = Token::k_var;
         else if (id == "where")

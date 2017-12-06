@@ -97,12 +97,12 @@ struct Data_Definition : public Unitary_Definition
     virtual void analyze(Environ&) override;
     virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
-struct Use_Definition : public Unitary_Definition
+struct Include_Definition : public Unitary_Definition
 {
     Shared<Phrase> arg_;
-    Shared<Use_Setter> setter_; // initialized by add_to_scope()
+    Shared<Include_Setter> setter_; // initialized by add_to_scope()
 
-    Use_Definition(
+    Include_Definition(
         Shared<const Phrase> source,
         Shared<Phrase> arg)
     :

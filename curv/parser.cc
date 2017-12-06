@@ -227,7 +227,7 @@ is_item_end_token(Token::Kind k)
 //
 // item : pipeline
 //  | ... item
-//  | 'use' item
+//  | 'include' item
 //  | pipeline = item
 //  | pipeline := item
 //  | pipeline :
@@ -246,7 +246,7 @@ parse_item(Scanner& scanner)
     auto tok = scanner.get_token();
     switch (tok.kind_) {
     case Token::k_ellipsis:
-    case Token::k_use:
+    case Token::k_include:
         return make<Unary_Phrase>(tok, parse_item(scanner));
     case Token::k_if:
       {

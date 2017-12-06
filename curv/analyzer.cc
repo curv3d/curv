@@ -221,7 +221,7 @@ Unary_Phrase::analyze(Environ& env) const
         return make<Spread_Op>(
             share(*this),
             analyze_op(*arg_, env));
-    case Token::k_use:
+    case Token::k_include:
     case Token::k_var:
         throw Exception(At_Token(op_, *this, env), "syntax error");
     default:
@@ -232,8 +232,8 @@ Shared<Definition>
 Unary_Phrase::as_definition(Environ& env)
 {
     switch (op_.kind_) {
-    case Token::k_use:
-        return make<Use_Definition>(share(*this), arg_);
+    case Token::k_include:
+        return make<Include_Definition>(share(*this), arg_);
     default:
         return nullptr;
     }
