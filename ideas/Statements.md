@@ -1,5 +1,82 @@
 # Statement Syntax
 
+## Generalized Actions and Generators
+Functions returning actions or generators:
+* It should be possible to replace any use of `for` with tail recursion.
+  This requires functions whose bodies are actions, element generators,
+  field generators.
+* You can abstract an action or generator with a let block.
+  According to the principle of equivalence, this means you should also be
+  able to abstract these phrases using functions.
+* Suppose that I used the Haskell 'monad' trick to implement phrase abstraction.
+  Then an action or generator would be a function value (with a weird argument
+  type, of a special type of value that can't be counterfeited, like the IO
+  type in Haskell). A function returning an action or generator would then also
+  be a value. This demonstrates that functions whose bodies are actions or
+  generators can be made theoretically sound.
+* A procedure is a function whose body is an action.
+  Procedures are values, but can only be invoked in an action context.
+  `greetings name = print "hello $name";`
+  print, error, warning, assert become values.
+* Maybe I get rid of metafunctions, and all of the bindings in the standard
+  prelude become values. `file` and `defined` become keywords.
+* Procedures become more interesting once I have an interactive debugger,
+  and a rich set of actions for controlling the debugger.
+  Procedures are debugger scripts.
+
+Scripts that denote actions:
+* Let's say a script can denote an action. Eg, `print "hello world";`.
+  `tests/curv.curv` is simplified. Makes Curv feel more like a procedural
+  language, since they all have "action scripts".
+* This is parseable. The grammar can already distinguish expressions from
+  actions in a weak context. The analyzer could be changed to make this
+  distinction statically.
+* `file(filename)` is now either an action or expression, depending on filename.
+  Is this implementable?
+  * `file` is already a metafunction, it can't be a function value since that
+    wouldn't be pure.
+  * If I change the implementation of `file` so that `filename` must be a
+    compile time constant, then the phrase type of `file(filename)` can be
+    determined statically and bottom up. There's a security rationale for this
+    change: once URLs are supported, we don't want scripts dynamically accessing
+    internet servers whose names are chosen at runtime, to prevent exfiltration.
+  * If `filename` can be dynamic, then the phrase type of `file(filename)`
+    can't be determined statically and bottom up. Which leads to another large
+    design decision tree. Which I'll avoid by ruling this out for now.
+
+Scripts that denote generators:
+* This is trickier, due to the `...` spread operator being ambiguous in
+  a weak context.
+* What is the utility? I think it would be terrible style to actually use
+  this feature. Just use a list or record expression instead.
+
+What is `x := x + 1`? Can this be the body of a function?
+* Ugh. Sometimes the drive towards full expressive power creates monsters.
+  Eg, `call/cc`: generalized goto labels as first class values. Leads to code
+  that is nigh impossible to understand.
+* Don't be misled. From a monad perspective, `x:=x+1` is a pure function that
+  transforms a state value to a state value. This state value is some
+  abstraction of the scope that variable `x` is defined in.
+  * The state value could be a totally locked down, non-counterfeitable
+    abstraction of the frame containing the slot for `x`.
+    Maybe each frame has a signature, and `x:=x+1` checks that its state
+    value is a frame with the correct signature.
+  * The state value could be a record containing the field `x`.
+    And there's a bunch of research needed to flesh this out and make it
+    efficiently compilable.
+* The OpenSCAD `do` proposal had procedures with reference (var) parameters.
+  This is more actually useful than the ability to mutate non-local variables.
+* Maybe mutable variables are deliberately limited and deprecated.
+  Use functional style if you want unconstrained abstraction.
+* A procedure cannot reassign a nonlocal sequential variable.
+  Use a function instead: `(V1, V2) := F(V1,V2,0);`
+
+I think this is technically achievable.
+But it's a can of worms with limited utility.
+Consider defining a subset of this that provides the greatest benefit,
+to limit the implementation and design cost.
+Not for MVP.
+
 ## Semicolon Phrases
 
 Semicolon phrases work everywhere that it makes sense:
@@ -30,30 +107,6 @@ which create scopes:
 * top level phrase in a CLI command. If not a definition, analyze as an
   operation.
 * argument of `{}`. If not a definition, analyze as an action/binder sequence.
-
-## Generalized Actions
-* A script can denote an action. Eg, `print "hello world";`.
-  `tests/curv.curv` is simplified. Makes Curv feel more like a procedural
-  language, since they all have "action scripts".
-* A procedure is a function whose body is an action.
-  Procedures are values, but can only be invoked in an action context.
-  `greetings name = print "hello $name";`
-  print, error, warning, assert become values.
-* `file(filename)` is now either an action or expression, depending on filename.
-  In a weak context, we don't know (at compile time) if `file n` is action or
-  expression. We'd need Operation::eval_or_exec() which yields zero or one
-  values. This weakens Static Phrase Kinds, since we now have an action|expr
-  static phrase kind, not resolved till run time, and function calls generally
-  have this phrase kind.
-* Is `file` still a function value? Yes, with above caveats.
-* A procedure cannot reassign a nonlocal sequential variable.
-  Use a function instead: `(V1, V2) := F(V1,V2,0);`
-* Thus, procedures and action scripts have limited utility.
-  Side effects are limited to print, error, warning, assert.
-  This becomes more interesting once I have an interactive debugger, and a rich
-  set of actions for controlling the debugger. Procedures are debugger scripts.
-* Eg, `ignore x = (;);` -- evaluate x then discard its result.
-* Not for MVP. Can of worms with limited utility.
 
 ## `do` syntax
 

@@ -1,0 +1,43 @@
+> 2+2
+4
+
+> 1..10
+[1,2,3,4,5,6,7,8,9,10]
+
+> _^2
+[1,4,9,16,25,36,49,64,81,100]
+
+> use lib.shape
+
+> cube
+
+> cube >> colour red
+
+> torus{major: 2, minor: 1}
+
+> _ >> colour (radial_rainbow 1)
+
+> _ >> rotate {angle: 90*deg, axis: X_axis}
+
+> t = _
+
+> size t
+
+> t >> twist 6
+
+> t >> twist 6 >> lipschitz 2
+
+> tt n = t >> twist n >> lipschitz 2
+
+> tt 2
+> tt 3
+> tt 4
+
+switch to live editor mode
+
+show how to make curved, organic looking shapes
+* primitives
+* rounded offsets
+* smooth_union
+* shell
+* morph
