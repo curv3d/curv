@@ -1,0 +1,89 @@
+// Example of a generalized kaleidoscope. The idea is similar to a traditional
+// kaleidoscope, which consists of 3 flat mirrors with dihedral angles of 60
+// degrees. One can place an arbitrary object inside such a kaleidoscope and
+// reflections in the mirrors create an infinite repeating pattern. Here we use
+// both flat and spherical mirrors. "Reflection" in a spherical mirror is
+// inversion in the sphere. If the dihedral angles between the spheres and
+// planes are integer submultiples of the half turn (tau/2 or 180 degrees) the
+// reflections in such mirrors form a regular pattern. The type of pattern
+// created by such a kaleidoscope can be wildly complex. In this case we have 4
+// mirrors: 2 flat mirrors and 2 spherical mirrors. The mirrors are placed such
+// that the pattern scales down near the boundary of a disk. It resembles a
+// tiling of the 2D hyperbolic plane in the Poincare disk model, with the
+// important difference that our pattern is three dimensional.
+// 
+// Credit: the ShapeJS project
+
+
+var voxelSize = 0.2*MM;
+
+function getQuad_1( r, r1, alpha){
+  var r2 = r*r/(r1*Math.cos(alpha));
+  var x1 = Math.sqrt(r1*r1 + r*r);
+  var y2 = Math.sqrt(r2*r2 + r*r);
+
+  var splanes = new Array();
+  var count = 0;
+  splanes[count++] = new ReflectionSymmetry.getPlane(new Vector3d(0,-1,0), 0.0);
+  splanes[count++] = new ReflectionSymmetry.getPlane(new Vector3d(-1,0,0), 0.0);
+  splanes[count++] = new ReflectionSymmetry.getSphere(new Vector3d(x1,0,0), -r1);
+  splanes[count++] = new ReflectionSymmetry.getSphere(new Vector3d(0,y2,0), -r2);
+
+  return splanes;
+}
+
+function makePart_g(size, thickness){
+  var t = (thickness/2) * 1.5;
+  var s = size/2;
+  //var g = createGrid(-t, t, -t, t, -s, s,voxelSize);
+  var b = 20*MM;
+  var g = createGrid(-b,b,-b,b,-b,b,0.5*MM);
+
+  var boxZ = new Box(0,0,0,thickness, thickness, size);
+
+  var mm = new GridMaker();
+  mm.setSource(boxZ);
+  mm.setMaxAttributeValue(255);
+  mm.makeGrid(g);
+
+  var gmm = new GridMipMap(g);
+
+  gmm.setScalingType(GridMipMap.SCALING_AVERAGE); 
+  //gmm.setScalingType(GridMipMap.SCALING_MAX);  
+
+  return gmm;
+}
+
+function makePart(size, thickeness){
+  var union = new Union();
+  var boxX = new Box(0,0,0,thickeness, thickeness, size);
+  union.add(boxX);  
+  return union;
+}
+
+function main(){
+  var a = 25*MM;
+  var voxelSize = 0.1*MM;
+  var cz = 20.0*MM;
+  var cx = 5.0*MM;
+  var cy = 5.0*MM;
+
+  var part = makePart_g(30*MM, 5*MM);
+  part.setTransform(new Rotation(new Vector3d(-1,1,0), 3*Math.PI/8));
+
+  var dt = new DataTransformer();
+  dt.setSource(part);   
+
+  var sym = new ReflectionSymmetry(getQuad_1(25*MM, 30*MM, Math.PI/3));
+  sym.setMaxCount(50);
+
+  dt.setTransform(sym);
+
+  var maker = new GridMaker();
+  maker.setSource(dt);
+  var dest = createGrid(-a,a,-a,a,-a,a,voxelSize);
+  maker.makeGrid(dest);
+
+  return dest;
+}
+
