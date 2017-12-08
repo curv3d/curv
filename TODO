@@ -14,14 +14,38 @@ Roadmap:
 Next changes:
 * documentation
 
+Proposed change: `include lib.shape` required to access shape library.
+* Pros: as a temporary measure, it protects users against future redesigns
+  of the shape library, as I'll create a new library and maintain the old API.
+* Cons: adds complexity to Curv scripts. Instead of
+    cube
+  you need
+    cube
+    where include lib.shape;
+  or
+    let include lib.shape;
+    in cube
+
 Pattern project:
+* `for` patterns
+* binder patterns
+* features: [a,...b], {a,...}, id@pat
+  * eg, {a,b,c,...} = file "foo.curv" is like from foo import a,b,c in Python.
+  * eg, f[a,...b]= is like f(a:b)= in Haskell.
 * GL: record patterns, predicate patterns
-* contexts: assignment, for, binder.
-* features: [a,...b], {a,...}, id@pat, id==expr, pat&&cond
+* `var` definitions and sequential assignments:
+  * `var pattern := expr` and `pattern := expr` *is* supported.
+  * `f x := expr` function definition syntax is *not* supported.
+  * `a[i] := expr` *is* supported for assignments only.
+  * `var (is_num x) := expr` means `is_num` is enforced on assignments to `x`.
+* optional features: id==expr, pat&&cond
 
 Language changes:
 * lib
 
+Tensors:
+* rank? Like ArrayDepth[t] in Mathematica?
+* shape? Like Dimensions[t] in Mathematica?
 Code cleanup:
 * rename Structure/Record/Module to Record/Dict/Module.
 * unit tests for: CLI supports compound definitions
