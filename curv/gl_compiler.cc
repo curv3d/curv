@@ -144,6 +144,9 @@ void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Conte
        "    float tmin = 1.0;\n"
        "    float tmax = 200.0;\n"
        "   \n"
+       // TODO: implement bounding volume. If I remove the 'if(t>tmax)break'
+       // check, then `tetrahedron` breaks. The hard coded tmax=200 fails for
+       // some models.
        //"#if 0\n"
        //"    // bounding volume\n"
        //"    float tp1 = (0.0-ro.y)/rd.y; if( tp1>0.0 ) tmax = min( tmax, tp1 );\n"
@@ -161,7 +164,7 @@ void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Conte
        "            break;\n"
        "        }\n"
        "        t += res.x;\n"
-       "        //if (t > tmax) break;\n"
+       "        if (t > tmax) break;\n"
        "    }\n"
        "    return vec4( t, c );\n"
        "}\n"
