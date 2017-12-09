@@ -1,0 +1,60 @@
+// expensive Barr bend operator by las from Mercury.
+// ref: http://www.pouet.net/topic.php?which=7931&page=5
+/*
+void bend(inout vec2 p,
+    float k,  // bending rate, in radians per unit length
+    float s0, // X coordinate, centre of bend
+    float sb, // X coordinate, start of bend
+    float se) // X coordinate, end of bend
+{
+    float r = 1./k, // radius of curvature of the bend
+          ak = abs(k),
+          sk = sign(k);
+    vec2 d = vec2(p.x - s0, (r - p.y) * sk);
+    float a = -atan(d.x, d.y); // angle of d. +Y_axis is 0, +X <0, -X >0
+    float b = clamp(a, ak*(sb-s0), ak*(se-s0)); // bend angle at p
+    float s = b*r+s0;
+    vec2 c = vec2(sin(b), cos(b)); // reverse cis: angle->pt
+    p.xy = mix(
+        vec2(s, length(d) - abs(r)),  // if a==b
+        sk*(c.yx*d.xx*vec2(-1.,1) - c.xy*d.yy) + vec2(s, r),  // if a!=b
+        abs(sign(a-b))
+    );
+}
+
+So what are k, s0, sb, se?
+An isotropic bend along a centerline parallel to the y-axis:
+the length of the centerline does not change during the bending process.
+The bending angle theta, is constant at the extremities, but changes linearly
+in the central region. In the bent region, the bending rate k, measured in
+radians per unit length, is constant, and the differential basis vectors
+are simultaneously rotated and translated around the third local basis vector.
+Outside the bent region, the deformation consists of a rigid body rotation
+and translation. The range of the bending deformation is controlled by
+[<two y values>, maybe sb and se?]. y0 is the centre of the bend.
+*/
+
+let
+bend (k,s0,sb,se) shape =
+    let r = 1/k;
+        ak = abs k;
+        sk = if (k<0) -1 else if(k>0) 1 else 0;
+    in make_shape {
+        dist(x,y,z,t) =
+            let d = [x - s0, (r - y) * sk];
+                a = -atan2(d[X], d[Y]);
+                b = clamp(a, ak*(sb-s0), ak*(se-s0));
+                s = b*r + s0;
+                c = [sin b, cos b];
+                mapped =
+                    if (a==b)
+                        [s, mag d - abs r]
+                    else
+                        sk*(c[[Y,X]]*d[[X,X]]*[-1,1] - c*d[[Y,Y]]) + [s,r];
+            in shape.dist(mapped[X], mapped[Y], z, t);
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
+    };
+
+in
+bend(tau/16,0,-1,1) (rect(5,1)) >> show_dist
