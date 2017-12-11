@@ -1,0 +1,10 @@
+torus {major: 2, minor: 1}
+    >> animacolour (radial_rainbow 1)
+    >> rotate {angle: tau/4, axis: Y_axis}
+    >> twist (3)
+    >> lipschitz 2.2
+
+where
+include file "lib/experimental.curv";
+radial_rainbow n =
+    (x,y,z,t)->hsv2rgb(phase(x,y)/tau*n+t/8 `mod` 1, 1, 1);

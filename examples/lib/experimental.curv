@@ -12,6 +12,9 @@ orbit {f,bbox} shape =
         is_3d : shape.is_3d,
     };
 
+animove = orbit;
+animacolour f shape = { ... shape, colour : f };
+
 // displace the boundaries of a shape using a 3D cosine wave
 cosine_warp shape =
     make_shape {

@@ -1,0 +1,15 @@
+let
+include file "lib/experimental.curv";
+bb = [[-1,-1,-1], [1,1,1]];
+
+in
+
+sphere .5 >> orbit {f t: (cos t, sin t, 0), bbox: bb} >> colour red
+ `smooth_union 1`
+    (sphere .5
+       >> orbit {f t: (cos t, 0, sin t), bbox: bb}
+       >> colour green)
+ `smooth_union 1`
+    (sphere .5
+       >> orbit {f t: (0, cos t, sin t), bbox: bb}
+       >> colour blue)
