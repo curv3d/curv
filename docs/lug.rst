@@ -127,8 +127,8 @@ The 7 Data Types
 * Records: ``{angle: 90*deg, axis: Z_axis}``
 * Functions: ``x -> x + 1``
 
-Functions
-=========
+Function Call Syntax
+====================
 * Function call is a binary operation: ``f x``
 * Argument lists: ``f (x,y)``
 * Argument records: ``rotate {angle: a, axis: v}``
@@ -137,6 +137,18 @@ Functions
   becomes ``cube 10 >> rotate (45*deg) >> colour red``
 * Infixes: ``union(cube, cylinder {h: 5, d: .5})``
   becomes ``cube `union` cylinder {h: 5, d: .5}``
+
+Pipeline Example
+================
+::
+
+    dodecahedron
+     >> colour red
+     `union` icosahedron
+
+|dodeca-icosa|
+
+.. |dodeca-icosa| image:: images/dodeca-icosa.png
 
 Definitions and Blocks
 ======================
