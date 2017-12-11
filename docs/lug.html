@@ -505,36 +505,58 @@ Curv is a data interchange format for pure functional data.</li>
 <li>Functions: <tt class="docutils literal">x <span class="pre">-&gt;</span> x + 1</tt></li>
 </ul>
 </div>
-<div class="slide" id="functions">
-<h1>Functions</h1>
+<div class="slide" id="function-call-syntax">
+<h1>Function Call Syntax</h1>
+<p>Function call is a binary operation: <tt class="docutils literal">f x</tt></p>
 <ul class="simple">
-<li>Function call is a binary operation: <tt class="docutils literal">f x</tt></li>
 <li>Argument lists: <tt class="docutils literal">f (x,y)</tt></li>
 <li>Argument records: <tt class="docutils literal">rotate {angle: a, axis: v}</tt></li>
 <li>Curried functions: <tt class="docutils literal">f x y</tt></li>
+</ul>
+</div>
+<div class="slide" id="pipeline-syntax">
+<h1>Pipeline Syntax</h1>
+<ul class="simple">
 <li>Pipelines: <tt class="docutils literal">colour red (rotate (45*deg) (cube 10))</tt>
 becomes <tt class="docutils literal">cube 10 &gt;&gt; rotate (45*deg) &gt;&gt; colour red</tt></li>
 <li>Infixes: <tt class="docutils literal">union(cube, cylinder {h: 5, d: .5})</tt>
 becomes <tt class="docutils literal">cube `union` cylinder {h: 5, d: .5}</tt></li>
 </ul>
-</div>
-<div class="slide" id="definitions-and-blocks">
-<h1>Definitions and Blocks</h1>
-<p>Definitions:</p>
-<pre class="literal-block">
-pi = 3.1416
-incr x = x + 1
+<table border="1" class="docutils">
+<colgroup>
+<col width="60%" />
+<col width="40%" />
+</colgroup>
+<tbody valign="top">
+<tr><td><pre class="first last literal-block">
+dodecahedron
+ &gt;&gt; colour red
+ `union` icosahedron
 </pre>
-<p>Blocks:</p>
+</td>
+<td><img alt="dodeca-icosa" src="images/dodeca-icosa.png" /></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="slide" id="blocks">
+<h1>Blocks</h1>
+<p>An expression is a block with local variables:</p>
+<ul class="simple">
+<li><tt class="docutils literal">let</tt> <em>definitions</em> <tt class="docutils literal">in</tt> <em>expression</em></li>
+<li><em>expression</em> <tt class="docutils literal">where</tt> <em>definitions</em></li>
+</ul>
 <pre class="literal-block">
-let diameter = 1;
-    sticklen = 4;
-in union (
-    sphere(diameter) &gt;&gt; colour red,
-    cylinder{h:sticklen, d:diameter/8} &gt;&gt; move(0,0,-sticklen/2)
-)
+let
+diam = 1;
+len = 4;
 
-fact 6 where fact n = if (n==0) 1 else n*fact(n-1)
+in
+union(candy, stick)
+
+where
+candy = sphere diam &gt;&gt; colour red;
+stick = cylinder {h: len, d: diam/8} &gt;&gt; move(0,0,-len/2);
 </pre>
 </div>
 <div class="slide" id="libraries">
@@ -542,10 +564,10 @@ fact 6 where fact n = if (n==0) 1 else n*fact(n-1)
 <p>Contents of &quot;lollipop.curv&quot;:</p>
 <pre class="literal-block">
 {
-lollipop(diameter, sticklen) =
+lollipop(diam, len) =
     union (
-        sphere(diameter) &gt;&gt; colour red,
-        cylinder{h:sticklen, d:diameter/8} &gt;&gt; move(0,0,-sticklen/2)
+        sphere(diam) &gt;&gt; colour red,
+        cylinder{h:len, d:diam/8} &gt;&gt; move(0,0,-len/2)
     );
 }
 </pre>

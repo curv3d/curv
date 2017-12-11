@@ -129,54 +129,58 @@ The 7 Data Types
 
 Function Call Syntax
 ====================
-* Function call is a binary operation: ``f x``
+Function call is a binary operation: ``f x``
+
 * Argument lists: ``f (x,y)``
 * Argument records: ``rotate {angle: a, axis: v}``
 * Curried functions: ``f x y``
+
+Pipeline Syntax
+===============
 * Pipelines: ``colour red (rotate (45*deg) (cube 10))``
   becomes ``cube 10 >> rotate (45*deg) >> colour red``
 * Infixes: ``union(cube, cylinder {h: 5, d: .5})``
   becomes ``cube `union` cylinder {h: 5, d: .5}``
 
-Pipeline Example
-================
-::
-
-    dodecahedron
-     >> colour red
-     `union` icosahedron
-
-|dodeca-icosa|
++------------------------+----------------+
+| ::                     | |dodeca-icosa| |
+|                        |                |
+|   dodecahedron         |                |
+|    >> colour red       |                |
+|    `union` icosahedron |                |
++------------------------+----------------+
 
 .. |dodeca-icosa| image:: images/dodeca-icosa.png
 
-Definitions and Blocks
-======================
-Definitions::
+Blocks
+======
+An expression is a block with local variables:
 
-  pi = 3.1416
-  incr x = x + 1
+* ``let`` *definitions* ``in`` *expression*
+* *expression* ``where`` *definitions*
 
-Blocks::
+::
 
-  let diameter = 1;
-      sticklen = 4;
-  in union (
-      sphere(diameter) >> colour red,
-      cylinder{h:sticklen, d:diameter/8} >> move(0,0,-sticklen/2)
-  )
+  let
+  diam = 1;
+  len = 4;
 
-  fact 6 where fact n = if (n==0) 1 else n*fact(n-1)
+  in
+  union(candy, stick)
+
+  where
+  candy = sphere diam >> colour red;
+  stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
 
 Libraries
 =========
 Contents of "lollipop.curv"::
 
   {
-  lollipop(diameter, sticklen) =
+  lollipop(diam, len) =
       union (
-          sphere(diameter) >> colour red,
-          cylinder{h:sticklen, d:diameter/8} >> move(0,0,-sticklen/2)
+          sphere(diam) >> colour red,
+          cylinder{h:len, d:diam/8} >> move(0,0,-len/2)
       );
   }
 
@@ -191,8 +195,8 @@ The Shape Library
 * written entirely in Curv
 * shapes are records
 * 2D and 3D primitive shapes
-* boolean (set theoretic) operations
 * transformations: affine, non-affine, 2D->3D, repetition
+* boolean ops: union, intersection, ...
 * distance field ops: offset, shell, morph, blend
 * colour
 
