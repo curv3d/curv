@@ -1,0 +1,698 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.12: http://docutils.sourceforge.net/" />
+<meta name="version" content="S5 1.1" />
+<title>Curv: A Language for making Art using Mathematics</title>
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 7614 2013-02-21 15:55:51Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+object[type="image/svg+xml"], object[type="application/x-shockwave-flash"] {
+  overflow: hidden;
+}
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title, .code .error {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left, object.align-left {
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right, object.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+img.align-center, .figure.align-center, object.align-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: inherit }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block, pre.math, pre.code {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+pre.code .ln { color: grey; } /* line numbers */
+pre.code, code { background-color: #eeeeee }
+pre.code .comment, code .comment { color: #5C6576 }
+pre.code .keyword, code .keyword { color: #3B0D06; font-weight: bold }
+pre.code .literal.string, code .literal.string { color: #0C5404 }
+pre.code .name.builtin, code .name.builtin { color: #352B84 }
+pre.code .deleted, code .deleted { background-color: #DEB0A1}
+pre.code .inserted, code .inserted { background-color: #A3D289}
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+/* "booktabs" style (no vertical lines) */
+table.docutils.booktabs {
+  border: 0px;
+  border-top: 2px solid;
+  border-bottom: 2px solid;
+  border-collapse: collapse;
+}
+table.docutils.booktabs * {
+  border: 0px;
+}
+table.docutils.booktabs th {
+  border-bottom: thin solid;
+  text-align: left;
+}
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+<!-- configuration parameters -->
+<meta name="defaultView" content="slideshow" />
+<meta name="controlVis" content="hidden" />
+<!-- style sheet links -->
+<script src="ui/default/slides.js" type="text/javascript"></script>
+<link rel="stylesheet" href="ui/default/slides.css"
+      type="text/css" media="projection" id="slideProj" />
+<link rel="stylesheet" href="ui/default/outline.css"
+      type="text/css" media="screen" id="outlineStyle" />
+<link rel="stylesheet" href="ui/default/print.css"
+      type="text/css" media="print" id="slidePrint" />
+<link rel="stylesheet" href="ui/default/opera.css"
+      type="text/css" media="projection" id="operaFix" />
+
+<style type="text/css">
+#currentSlide {display: none;}
+</style>
+</head>
+<body>
+<div class="layout">
+<div id="controls"></div>
+<div id="currentSlide"></div>
+<div id="header">
+
+</div>
+<div id="footer">
+<h1>Curv: A Language for making Art using Mathematics</h1>
+
+</div>
+</div>
+<div class="presentation">
+<div class="slide" id="slide0">
+<h1 class="title">Curv: A Language for making Art using Mathematics</h1>
+
+<p><img alt="twistor" src="images/torus.png" /> <img alt="shreks_donut" src="images/shreks_donut.png" /></p>
+
+</div>
+<div class="slide" id="what-is-curv">
+<h1>What is Curv?</h1>
+<p>Curv is an open source† 3D <strong>solid modelling language</strong>,
+for&nbsp;<strong>3D&nbsp;printing</strong> and <strong>procedurally generated art</strong>.</p>
+<p>It's <strong>easy to use</strong> for beginners. It's incredibly <strong>powerful</strong> for experts.
+And it's <strong>fast</strong>: all rendering is performed by the GPU.</p>
+<p>Curv is also an expressive <strong>file format</strong>
+for the exchange of 2D and 3D procedurally generated graphics.</p>
+<p>† github.com/doug-moen/curv -- BSD licence</p>
+</div>
+<div class="slide" id="how-curv-achieves-these-design-goals">
+<h1>How Curv Achieves these Design Goals</h1>
+<dl class="docutils">
+<dt>Ease of use:</dt>
+<dd>For ease of use, the best choice is Constructive Solid Geometry (CSG)
+embedded in a simple, pure functional language.</dd>
+<dt>Rendering Speed:</dt>
+<dd>To quickly render a wide range of CSG primitives,
+the best choice is to render on a GPU,
+and to represent shapes using Signed Distance Fields (SDF)
+and Function Representation (F-Rep).</dd>
+<dt>Expressive Power:</dt>
+<dd>SDF/F-Rep is the best choice for CSG:
+A wide range of CSG primitives are available in Open Source.
+New CSG primitives can be defined directly in Curv.</dd>
+</dl>
+</div>
+<div class="slide" id="openscad-is-amazing">
+<h1>OpenSCAD is Amazing</h1>
+<ul class="simple">
+<li>Marius Kintel's April 2014 KWLUG presentation on OpenSCAD</li>
+<li>Procedurally generated, parametric 3D models.
+Named model parameters, conditionals, loops, user defined functions.</li>
+<li>Pure functional CSG: primitive shapes, operations for constructing new
+shapes from existing shapes.</li>
+<li>Minimal boilerplate,
+compared to 3D modelling in JavaScript, Python, etc.</li>
+<li>Nice GUI.</li>
+</ul>
+</div>
+<div class="slide" id="the-openscad-language-is-weak">
+<h1>The OpenSCAD Language is Weak</h1>
+<p>The language is weak and complicated:</p>
+<ul class="simple">
+<li>4 universes of things: values, functions, modules, shapes</li>
+<li>3 namespaces</li>
+<li>can't use functions as arguments, return as results</li>
+<li>Can't store shapes in variables</li>
+<li>Can't query a shape, eg can't ask for bounding box.</li>
+<li>no record values</li>
+</ul>
+</div>
+<div class="slide" id="openscad-vs-curved-and-coloured-shapes">
+<h1>OpenSCAD vs Curved and Coloured Shapes</h1>
+<p>Curved surfaces &amp; organic shapes are hard to achieve:</p>
+<ul class="simple">
+<li>Lots of triangles are needed to make curved surfaces look good,
+but this makes boolean operations (union etc) unusably slow.</li>
+<li>Few CSG operations for creating curved surfaces.</li>
+</ul>
+<p>Very limited support for colour.</p>
+</div>
+<div class="slide" id="i-get-involved-with-the-openscad-project">
+<h1>I Get Involved with the OpenSCAD Project</h1>
+<ul class="simple">
+<li>2014: series of proposals to strengthen the language.<ul>
+<li>Function, shape &amp; record values. Module system.</li>
+<li>Marius is supportive. The community is divided.</li>
+</ul>
+</li>
+<li>OpenSCAD2 project: first commit May 2015<ul>
+<li>A proposal to improve the language, 100% backward compatibility.</li>
+</ul>
+</li>
+<li>Problems:<ul>
+<li>Clean design means 1 namespace, 90% backward compatibility.</li>
+<li>Which means a fork, dividing the community.</li>
+<li>100% backward compatibility is difficult to design,
+time consuming to implement, creates a lot of language complexity.</li>
+<li>No time to create a better geometry kernel.</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="slide" id="the-curv-project">
+<h1>The Curv Project</h1>
+<p>Curv project on github: first commit May 2016</p>
+<ul class="simple">
+<li>New language: simple, orthogonal, powerful</li>
+<li>New geometry kernel: signed distance fields and F-Rep</li>
+<li>Volumetric colour (F-Rep)</li>
+<li>Curv programs compile into GPU code (fast rendering)</li>
+</ul>
+</div>
+<div class="slide" id="language-goals">
+<h1>Language Goals</h1>
+<ul class="simple">
+<li>Easy to use for novices and artists. Focus is artistic exploration,
+not software engineering.</li>
+<li>Powerful enough for experts. Libraries of new CSG operations can
+be written in Curv and distributed over the internet.</li>
+<li>Safe and secure. A Curv program downloaded over the internet can't
+encrypt all your files or exfiltrate personal information to a server.</li>
+</ul>
+</div>
+<div class="slide" id="language-characteristics">
+<h1>Language Characteristics</h1>
+<ul class="simple">
+<li>Simple, elegant, powerful: One universe, one namespace.</li>
+<li>Dynamically typed.</li>
+<li>Pure functional language. No I/O. Programs are expressions.</li>
+<li>Curried functions, patterns, list/record/string comprehensions.</li>
+<li>Array language: scalar arithmetic operations work on
+vectors, matrices and higher dimensional arrays.</li>
+<li>7 data types: the 6 JSON types, plus function values.</li>
+<li>Superset of JSON.
+Curv is a data interchange format for pure functional data.</li>
+</ul>
+</div>
+<div class="slide" id="the-7-data-types">
+<h1>The 7 Data Types</h1>
+<ul class="simple">
+<li><tt class="docutils literal">null</tt></li>
+<li>Boolean values: <tt class="docutils literal">true</tt> and <tt class="docutils literal">false</tt></li>
+<li>Numbers: <tt class="docutils literal">42</tt>, <tt class="docutils literal">3.1416</tt></li>
+<li>Lists: <tt class="docutils literal">[1,2,3]</tt> or <tt class="docutils literal">(1,2,3)</tt>, <tt class="docutils literal"><span class="pre">1..10</span></tt></li>
+<li>Strings: <tt class="docutils literal">&quot;hello, world&quot;</tt></li>
+<li>Records: <tt class="docutils literal">{angle: 90*deg, axis: Z_axis}</tt></li>
+<li>Functions: <tt class="docutils literal">x <span class="pre">-&gt;</span> x + 1</tt></li>
+</ul>
+</div>
+<div class="slide" id="functions">
+<h1>Functions</h1>
+<ul class="simple">
+<li>Function call is a binary operation: <tt class="docutils literal">f x</tt></li>
+<li>Argument lists: <tt class="docutils literal">f (x,y)</tt></li>
+<li>Argument records: <tt class="docutils literal">rotate {angle: a, axis: v}</tt></li>
+<li>Curried functions: <tt class="docutils literal">f x y</tt></li>
+<li>Pipelines: <tt class="docutils literal">colour red (rotate (45*deg) (cube 10))</tt>
+becomes <tt class="docutils literal">cube 10 &gt;&gt; rotate (45*deg) &gt;&gt; colour red</tt></li>
+<li>Infixes: <tt class="docutils literal">union(cube, cylinder {h: 5, d: .5})</tt>
+becomes <tt class="docutils literal">cube `union` cylinder {h: 5, d: .5}</tt></li>
+</ul>
+</div>
+<div class="slide" id="definitions-and-blocks">
+<h1>Definitions and Blocks</h1>
+<p>Definitions:</p>
+<pre class="literal-block">
+pi = 3.1416
+incr x = x + 1
+</pre>
+<p>Blocks:</p>
+<pre class="literal-block">
+let diameter = 1;
+    sticklen = 4;
+in union (
+    sphere(diameter) &gt;&gt; colour red,
+    cylinder{h:sticklen, d:diameter/8} &gt;&gt; move(0,0,-sticklen/2)
+)
+
+fact 6 where fact n = if (n==0) 1 else n*fact(n-1)
+</pre>
+</div>
+<div class="slide" id="libraries">
+<h1>Libraries</h1>
+<p>Contents of &quot;lollipop.curv&quot;:</p>
+<pre class="literal-block">
+{
+lollipop(diameter, sticklen) =
+    union (
+        sphere(diameter) &gt;&gt; colour red,
+        cylinder{h:sticklen, d:diameter/8} &gt;&gt; move(0,0,-sticklen/2)
+    );
+}
+</pre>
+<p>To use the library elsewhere:</p>
+<pre class="literal-block">
+lollipop(1,4)
+where
+include file &quot;lollipop.curv&quot;;
+</pre>
+</div>
+<div class="slide" id="the-shape-library">
+<h1>The Shape Library</h1>
+<ul class="simple">
+<li>written entirely in Curv</li>
+<li>shapes are records</li>
+<li>2D and 3D primitive shapes</li>
+<li>boolean (set theoretic) operations</li>
+<li>transformations: affine, non-affine, 2D-&gt;3D, repetition</li>
+<li>distance field ops: offset, shell, morph, blend</li>
+<li>colour</li>
+</ul>
+</div>
+<div class="slide" id="primitive-shapes">
+<h1>Primitive Shapes</h1>
+<p>2D:</p>
+<ul class="simple">
+<li>circle, ellipse, stroke</li>
+<li>square, rect, regular_polygon, convex_polygon, half_plane</li>
+</ul>
+<p>3D:</p>
+<ul class="simple">
+<li>sphere, ellipsoid, cylinder, cone, torus, capsule</li>
+<li>tetrahedron, cube, octahedron, dodecahedron, icosahedron</li>
+<li>box, prism, pyramid, half_space</li>
+</ul>
+</div>
+<div class="slide" id="transformations">
+<h1>Transformations</h1>
+<ul class="simple">
+<li>Affine: move, rotate, reflect, scale, shear</li>
+<li>Non-affine: taper, twist, bend</li>
+<li>2D-&gt;3D: extrude, revolve</li>
+<li>3D-&gt;2D: slice</li>
+<li>Repetition: repeat_x, repeat_xy, repeat_xyz, repeat_mirror, repeat_radial</li>
+</ul>
+</div>
+<div class="slide" id="additive-subtractive-operations">
+<h1>Additive/Subtractive Operations</h1>
+<ul class="simple">
+<li>Boolean: complement, union, intersection, difference</li>
+<li>offset, shell, morph, blend</li>
+</ul>
+</div>
+<div class="slide" id="colour">
+<h1>Colour</h1>
+<ul class="simple">
+<li>A <strong>colour field</strong> maps every point in space onto a colour.</li>
+<li>Every shape has a colour field.</li>
+<li>Standard support for constructing colour gradients.</li>
+<li>Colour field transformations.</li>
+<li>Colour blending (in morph, blend, union)</li>
+</ul>
+</div>
+<div class="slide" id="shape-representations">
+<h1>Shape Representations</h1>
+<table border="1" class="docutils">
+<colgroup>
+<col width="48%" />
+<col width="52%" />
+</colgroup>
+<tbody valign="top">
+<tr><td><strong>Explicit Modelling</strong></td>
+<td><strong>Implicit Modelling</strong></td>
+</tr>
+<tr><td>Directly generate boundary points</td>
+<td>Answer questions
+about particular points</td>
+</tr>
+<tr><td><p class="first">parametric equation (unit circle):</p>
+<pre class="last literal-block">
+(x,y) = (cos t, sin t)
+</pre>
+</td>
+<td><p class="first">implicit equation (unit circle):</p>
+<pre class="last literal-block">
+x^2 + y^2 - 1 = 0
+</pre>
+</td>
+</tr>
+<tr><td><strong>Boundary Representations</strong></td>
+<td><strong>Volumetric Representations</strong></td>
+</tr>
+<tr><td>parametric splines</td>
+<td>simple vs Signed Distance Fields</td>
+</tr>
+<tr><td>triangle mesh</td>
+<td>discrete (voxels) vs continuous
+(Function Representation)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="slide" id="benefits-of-sdf-f-rep">
+<h1>Benefits of SDF/F-Rep</h1>
+<p>Curv 0.0 uses Signed Distance Fields with Function Representation.</p>
+<ul class="simple">
+<li>Exact representation of many shapes (curves, fractals)</li>
+<li>Infinitely large &amp; infinitely detailed objects</li>
+<li>Large # of operations available (bend, twist, blend, etc)</li>
+<li>Fast boolean operations</li>
+<li>F-Rep for colour: gradients, quasi-photographic imagery</li>
+<li>Can describe 3D-printable objects not describable using STL or OpenSCAD.
+More efficient 3D printing.</li>
+</ul>
+</div>
+<div class="slide" id="how-sdf-f-rep-works">
+<h1>How SDF/F-Rep Works</h1>
+<p>A signed distance field maps each point in space
+onto the minimum distance from that point to the boundary of the shape.</p>
+<p>An SDF is zero for points on the boundary of the shape, negative for points
+inside the shape, and positive for points outside of the shape.</p>
+<p>The <tt class="docutils literal">circle</tt> primitive is defined like this:</p>
+<pre class="literal-block">
+circle r = make_shape {
+  dist(x,y,z,t) = sqrt(x^2 + y^2) - r;
+  bbox = [[-r,-r,0], [r,r,0]];  // axis aligned bounding box
+  is_2d = true;
+};
+</pre>
+<!-- Sphere Tracing
+============== -->
+</div>
+<div class="slide" id="future-work">
+<h1>Future Work</h1>
+<ul class="simple">
+<li>Release 0.0 is coming soon: documentation, STL export</li>
+<li>text, animation, fractals, noise, splines, sweep, Voronoi, Conway polyhedron operators, ...</li>
+<li>Reference external libraries via URL</li>
+<li>Import images, STL</li>
+<li>Geometry engine: compiler, discrete SDFs, ...</li>
+<li>Export colour models for 3D printing</li>
+<li>GUI, tweak model parameters using slider</li>
+</ul>
+</div>
+<div class="slide" id="live-demo">
+<h1>Live Demo</h1>
+</div>
+</div>
+</body>
+</html>

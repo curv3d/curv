@@ -27,11 +27,12 @@ Ease of use:
 Rendering Speed:
   To quickly render a wide range of CSG primitives,
   the best choice is to render on a GPU,
-  and to represent shapes using Function Representation (F-Rep).
+  and to represent shapes using Signed Distance Fields (SDF)
+  and Function Representation (F-Rep).
 
 Expressive Power:
-  F-Rep is the best choice for CSG:
-  A wider range of CSG primitives are available in Open Source for F-Rep
+  SDF/F-Rep is the best choice for CSG:
+  A wider range of CSG primitives are available in Open Source
   than for competing representations.
   
 Thesis (2)
