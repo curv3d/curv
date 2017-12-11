@@ -7,6 +7,9 @@ orbit {f,bbox} shape =
         dist(x,y,z,t) :
             let offset = f t;
             in shape.dist(x-offset[X],y-offset[Y],z-offset[Z],t),
+        colour(x,y,z,t) :
+            let offset = f t;
+            in shape.colour(x-offset[X],y-offset[Y],z-offset[Z],t),
         bbox : shape.bbox + bbox,
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
