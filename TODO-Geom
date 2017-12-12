@@ -24,6 +24,11 @@ taper_xy{range:[z0,z1], scale:[[kx0,ky0],[kx1,ky1]]}
 taper_x ((kx0, y0), (kx1, y1))
 taper_x {range:[y0,y1], scale:[kx0,kx1]}
 
+local_taper {range, scale}
+
+## Barr's Bend (local bend)
+local_bend{range:[xs,xe], centre|fixed_point: x0, angle}
+
 ## Bend
 `bend d shape` -- seems like it should have more arguments?
 
@@ -37,6 +42,26 @@ cylindrical_map d shape
      and may be related to cylindrical_extrude.
 cylinder_transform d shape
 cylinder_bend d shape
+
+ShapeJS uses RingWrap(r): Wrap band around a cylinder of given radius r.
+The `d` argument of Curv `bend` is implicitly `tau*r` in this API.
+(This API avoids a singularity at the origin, since there is a cylinder-shaped
+dead space surrounding the origin, and r cannot be 0.)
+
+cylinder_wrap{r, d}
+
+## Convention: bend/wrap/radial-repeat parameters
+
+Here's a consistent convention:
+* repeat_radial takes a shape centred on the Y axis, below the X axis,
+  and duplicates it N times around a circle. This is the convention needed
+  by regular_polygon.
+* cylinder_wrap takes a strip centred on the Y axis, below the X axis,
+  and wraps it around a cylinder. The two ends meet at the top.
+  Same bending direction as local_bend. Same convention as RingWrap.
+* local_bend takes a strip parallel to the X axis, and bends it.
+  Positive angle means bend upwards (same direction as cylinder_wrap).
+  Same convention as las/Mercury's Barr bend.
 
 ## Linear Repeat
 
@@ -54,6 +79,41 @@ repeat_xy {d:(dx,dy), range:[(firstx,lastx), (firsty,lasty)]}
 repeat_xy {d:(dx,dy), xrange:(firstx,lastx), yrange:(firsty,lasty)}
   -- if you omit xrange or yrange, they default to infinite
 repeat_xy {d:(dx,dy), from:(firstx,firsty), to:(lastx,lasty)}
+
+## Axis Parameters.
+
+Should I add optional 'axis' parameters to transformations where it is
+appropriate?
+* 'rotate' already has an axis parameter. This is due to existing industry
+  convention where a 3D rotation may be represented by a quaternion,
+  by {axis,angle}, or other ways.
+* reflect_x, reflect_y and reflect_z? Or reflect axis shape?
+* Replace row_x with row, add optional axis argument. 'row {d,axis} shape'.
+* I considered 'along axis transform shape', similar to 'at'.
+  Different transformations have different default axes, for good reason,
+  so this does not end up being simpler in any way.
+* 'with_rotation{from: v1, to: v2} transform shape'
+* X_axis, Y_axis, Z_axis are all vec3. This creates a type error when a 2D
+  axis is needed. So maybe I accept a vec3 with a 0 Z component as a vec2
+  as an axis argument. How?
+  * is_axis2 a = is_vec2 a || (is_vec3 a && a[Z]==0);
+    Then ignore the Z component of 'a', or use a[[X,Y]], or:
+    let axis = make_axis2 a;
+  * Bring back coercion patterns?
+
+reflect axis shape =
+   //Huge case analysis to optimize axis values that are aligned with the X, Y
+   //or Z axes. Or, rotate the axis onto the X axis, then implement one case,
+   //then rotate back. Put the optimizations into rotate or with_rotation.
+   with_rotation{from:axis, to:X_axis} reflect_x
+where
+   reflect_x = ...;
+   with_rotation{from: v1, to: v2} transform shape =
+     if (v1 == v2)
+       transform shape
+     else
+       shape >> rotate{from:v1, to:v2} >> transform >> rotate{from:v2, to:v1};
+
 
 ## axis-aligned rectangle (bbox2)
 
