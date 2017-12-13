@@ -412,23 +412,23 @@ List Slicing
 
 Tensors
 -------
-A *tensor* of rank *k* is a *k*-dimensional array of numbers.
+A **tensor** of rank *k* is a *k*-dimensional array of numbers.
 
-The rank of a tensor is the number of integer indices that are required
+The **rank** of a tensor is the number of integer indices that are required
 to retrieve an element. If ``a`` is a tensor of rank 3, then ``a[i,j,k]``
 is an element of ``a``.
 
 Tensors are rectangular arrays.
-The shape of a tensor of rank *k* is a *k*-element vector containing
+The **dimensions** of a tensor of rank *k* is a *k*-element vector containing
 the number of elements along each dimension.
 
-* A number is a tensor of rank ``0`` and shape ``[]``.
-* A vector with ``n`` elements is a tensor of rank 1 and shape ``[n]``.
+* A number is a tensor of rank ``0`` and dimensions ``[]``.
+* A vector with ``n`` elements is a tensor of rank 1 and dimensions ``[n]``.
   A vector is represented by a list of numbers.
-* An *m* × *n* matrix is a tensor of rank 2 and shape ``[m,n]``.
-  A matrix is represented by a list of *m* vectors of shape ``[n]``.
+* An *m* × *n* matrix is a tensor of rank 2 and dimensions ``[m,n]``.
+  A matrix is represented by a list of *m* vectors of dimensions ``[n]``.
 * In general, a tensor of rank ``n+1`` is represented by a list
-  of tensors of rank ``n``, all with the same shape.
+  of tensors of rank ``n``, all with the same dimensions.
 
 For example, here is the Curv representation of a 3x3 identity matrix::
   
@@ -436,7 +436,7 @@ For example, here is the Curv representation of a 3x3 identity matrix::
      [0,1,0],
      [0,0,1]]
 
-Note: The ``rank`` and ``shape`` operations are not implemented.
+Note: The ``rank`` and ``dimensions`` operations are not implemented.
 
 Indexing a Tensor
 ~~~~~~~~~~~~~~~~~
@@ -721,6 +721,16 @@ String Constructor
 
 Records
 -------
+A record is a set of fields (name/value pairs).
+If ``R`` is the record value ``{a:1,b:2}``,
+then ``R.a`` is ``1``, the value of field ``a``.
+
+Records are used to represent:
+
+* sets of labeled arguments in a function call;
+* geometric shapes (each field is a shape attribute);
+* modules or libraries.
+
 ::
 
   merge rs = {for (r in rs) ...r};

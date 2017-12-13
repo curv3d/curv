@@ -45,7 +45,8 @@ Language changes:
 
 Tensors:
 * rank? Like ArrayDepth[t] in Mathematica?
-* shape? Like Dimensions[t] in Mathematica?
+* dimensions? Like Dimensions[t] in Mathematica?
+
 Code cleanup:
 * rename Structure/Record/Module to Record/Dict/Module.
 * unit tests for: CLI supports compound definitions
