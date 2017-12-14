@@ -41,6 +41,8 @@ Procedures (Functions returning actions or generators):
     statement worlds. The Haskell Monad argument justifies this as meaningful.
   * Right now, [f(x)] compiles into code that evaluates f(x) as an expression.
     A user can tell by inspection that this is a 1-element list. But no more.
+    We need to compile into less efficient code (in the general case), and do
+    more work to identify the efficient case.
 
 Scripts that denote actions:
 * Let's say a script can denote an action. Eg, `print "hello world";`.
