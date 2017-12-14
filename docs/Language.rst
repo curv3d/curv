@@ -799,13 +799,15 @@ Debug Actions
 -------------
 Curv programs are debugged by inserting ``print`` statements and other actions.
 
+An action is a phrase that has a debug-related side effect, but which
+does not compute a value.
+
 ``do action in phrase``
   Execute the ``action``, then evaluate the ``phrase``.
 
   The ``action`` argument can be a simple action, as described below,
-  or it can be a compound action which is sequenced using control structures
-  (``if``, ``for`` and ``;``) or which introduces local variables using a block
-  (``let`` and ``where``).
+  or it can be a compound action which is sequenced using ``if``, ``for`` and ``;``
+  or which defines local variables using ``let`` and ``where``.
   For example, you can write a sequence of actions separated by ``;``,
   and they will be executed in sequence.
 
@@ -814,29 +816,46 @@ Curv programs are debugged by inserting ``print`` statements and other actions.
   A ``do`` phrase can be used in any context where its ``phrase`` argument
   would also be legal.
 
-For example::
+  For example::
 
-  f x =
-    do print "calling function f with argument x=$x";
-    in x+1;
+    f x =
+      do print "calling function f with argument x=$x";
+      in x+1;
 
-Then ``f 2`` returns ``3``, and as a side effect, prints a message
-to the debug console.
+  Then ``f 2`` returns ``3``, and as a side effect, prints a message
+  to the debug console.
 
-An action is a phrase that has a debug-related side effect, but which
-does not compute a value.
+``print message``
+  Print a message string on the debug console, followed by newline.
+  If ``message`` is not a string, it is converted to a string using ``repr``.
 
-``print value``
-  Print a mes
+``warning message``
+  Print a message string on the debug console, preceded by "WARNING: ",
+  followed by newline and then a stack trace.
+  If ``message`` is not a string, it is converted to a string using ``repr``.
 
-::
+``error message``
+  On the debug console, print "ERROR: ", then the message string,
+  then newline and a stack trace. Then terminate the program.
+  If ``message`` is not a string, it is converted to a string using ``repr``.
+  An error phrase is legal in either an action context, or in an expression context.
 
-  print
-  warning
-  error
-  assert
-  assert_error
-  exec
+``assert condition``
+  Evaluate the condition, which must be true or false.
+  If it is true, then nothing happens.
+  If it is false, then an assertion failure error message is produced,
+  followed by a stack trace, and the program is terminated.
+
+``assert_error(error_message_string, expression)``
+  Evaluate the expression argument.
+  Assert that the expression evaluation terminates with an error,
+  and that the resulting error message is equal to ``error_message_string``.
+  Used for unit testing.
+
+``exec expression``
+  Evaluate the expression and then ignore the result.
+  This is used for calling a function whose only purpose is to have a side effect
+  (by executing debug actions) and you don't care about the result.
 
 Blocks
 ------
