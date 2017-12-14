@@ -552,7 +552,7 @@ Vec2 and Vec3
   The result is a number. Same as ``sum(v1*v2)``.
   
   * Equivalent to ``mag v1`` × ``mag v2`` × *cos* θ,
-    where θ is the angle between v1 and v2 and 0° ≤ θ ≤ 180°.
+    where θ is the angle between v1 and v2 and 0° ≤ θ ≤ 180°.
   * If v1 and v2 are at right angles, dot(v1,v2) == 0.
     If the angle is < 90°, the result is positive.
     If the angle is > 90°, the result is negative.
@@ -579,7 +579,7 @@ Vec2 and Vec3
   ``dot(perp v1, v2)`` is the "perp-dot product" of 2D vectors:
 
   * Equivalent to ``mag v1`` × ``mag v2`` × *sin* θ,
-    where θ is the angle between v1 and v2, and -90° ≤ θ ≤ 90°.
+    where θ is the angle between v1 and v2, and -90° ≤ θ ≤ 90°.
     A positive angle indicates a counterclockwise rotation from v1 to v2.
   * Result is 0 if the vectors are colinear, >0 if the smaller angle from v1 to v2
     is a counterclockwise rotation, or <0 for a clockwise rotation.
@@ -732,7 +732,7 @@ Records are used to represent:
 * modules or libraries.
 
 Record Constructors
-...................
+~~~~~~~~~~~~~~~~~~~
 
 A record constructor consists of a comma-separated list of field specifiers
 inside of brace brackets. A field specifier has one of these forms:
@@ -750,6 +750,7 @@ Field specifiers are processed left to right. If the same field name is
 used more than once, then the last field specifier wins.
 
 Examples:
+
 * ``{a: 1, b: 2}``
 * ``{"a": 1, "b": 2}`` -- Same as above.
 * ``{x: 0, ... r}`` -- The same as record ``r``, except that if field ``x`` is
@@ -761,21 +762,21 @@ Compound field specifiers may be constructed using blocks, and using the
 ``if``, ``for`` and ``;`` control structures, as described later.
 
 Record Operations
-.................
+~~~~~~~~~~~~~~~~~
 ``record . identifier``
   The value of the field named by ``identifier``.
   Eg, ``r.foo``.
 
-``record . string``
-  The value of the field named by ``string``.
+``record . quotedString``
+  The value of the field named by ``quotedString``.
   Eg, ``r."foo"``.
   The field name need not be a constant. Eg, ``r."$x"``.
 
 ``defined (record . identifier)``
-  True if a field named ``identifier`` is defined by ``record``.
+  True if a field named ``identifier`` is defined by ``record``, otherwise false.
 
-``defined (record . string)``
-  True if a field named ``string`` is defined by ``record``.
+``defined (record . quotedString)``
+  True if a field named ``quotedString`` is defined by ``record``, otherwise false.
 
 ``fields record``
   The field names defined by ``record`` (as a list of strings).
@@ -824,6 +825,9 @@ to the debug console.
 
 An action is a phrase that has a debug-related side effect, but which
 does not compute a value.
+
+``print value``
+  Print a mes
 
 ::
 
