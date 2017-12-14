@@ -903,8 +903,8 @@ Debug Actions
 -------------
 Curv programs are debugged by inserting ``print`` statements and other actions.
 
-An action is a phrase that has a debug-related side effect, but which
-does not compute a value.
+An action is a phrase that has a debug-related side effect.
+Unlike an expression, an action does not compute a value.
 
 ``do action in phrase``
   Execute the ``action``, then evaluate the ``phrase``.
@@ -947,6 +947,9 @@ Simple Actions
   then newline and a stack trace. Then terminate the program.
   If ``message`` is not a string, it is converted to a string using ``repr``.
   An error phrase is legal in either an action context, or in an expression context.
+  Example of ``error`` in an expression context::
+  
+    if (x > 0) f(x) else error "bad x=$x"
 
 ``assert condition``
   Evaluate the condition, which must be true or false.
