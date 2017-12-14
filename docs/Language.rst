@@ -731,11 +731,62 @@ Records are used to represent:
 * geometric shapes (each field is a shape attribute);
 * modules or libraries.
 
-::
+Record Constructors
+...................
 
-  merge rs = {for (r in rs) ...r};
-  fields
-  defined
+A record constructor consists of a comma-separated list of field specifiers
+inside of brace brackets. A field specifier has one of these forms:
+
+* *identifier* ``:`` *expression*
+* *quotedString* ``:`` *expression*
+* ``...`` *recordExpression*
+
+Field names can be arbitrary strings, but as an abbreviation, they can be
+specified as just bare identifiers.
+The spread operator (``...``) interpolates all of the fields from another
+record into the record being constructed.
+
+Field specifiers are processed left to right. If the same field name is
+used more than once, then the last field specifier wins.
+
+Examples:
+* ``{a: 1, b: 2}``
+* ``{"a": 1, "b": 2}`` -- Same as above.
+* ``{x: 0, ... r}`` -- The same as record ``r``, except that if field ``x`` is
+  not defined, then it defaults to ``0``.
+* ``{... r, x: 0}`` -- The same as record ``r``, extended with field ``x``,
+  with ``x:0`` overriding any previous binding.
+
+Compound field specifiers may be constructed using blocks, and using the
+``if``, ``for`` and ``;`` control structures, as described later.
+
+Record Operations
+.................
+``record . identifier``
+  The value of the field named by ``identifier``.
+  Eg, ``r.foo``.
+
+``record . string``
+  The value of the field named by ``string``.
+  Eg, ``r."foo"``.
+  The field name need not be a constant. Eg, ``r."$x"``.
+
+``defined (record . identifier)``
+  True if a field named ``identifier`` is defined by ``record``.
+
+``defined (record . string)``
+  True if a field named ``string`` is defined by ``record``.
+
+``fields record``
+  The field names defined by ``record`` (as a list of strings).
+
+``merge listOfRecords``
+  Merge all of the fields defined by the records in ``listOfRecords``
+  into a single record. If the same field is defined more than once,
+  the last occurrence of the field wins.
+  Same as::
+
+    {for (r in listOfRecords) ...r}
 
 Functions
 ---------
@@ -743,8 +794,37 @@ Functions
 
   switch
 
-Actions
--------
+Debug Actions
+-------------
+Curv programs are debugged by inserting ``print`` statements and other actions.
+
+``do action in phrase``
+  Execute the ``action``, then evaluate the ``phrase``.
+
+  The ``action`` argument can be a simple action, as described below,
+  or it can be a compound action which is sequenced using control structures
+  (``if``, ``for`` and ``;``) or which introduces local variables using a block
+  (``let`` and ``where``).
+  For example, you can write a sequence of actions separated by ``;``,
+  and they will be executed in sequence.
+
+  The ``phrase`` argument can be an expression, an element specifier in a list
+  constructor, a field specifier in a record constructor, or an action.
+  A ``do`` phrase can be used in any context where its ``phrase`` argument
+  would also be legal.
+
+For example::
+
+  f x =
+    do print "calling function f with argument x=$x";
+    in x+1;
+
+Then ``f 2`` returns ``3``, and as a side effect, prints a message
+to the debug console.
+
+An action is a phrase that has a debug-related side effect, but which
+does not compute a value.
+
 ::
 
   print
@@ -756,9 +836,12 @@ Actions
 
 Blocks
 ------
-any phrase can be prefixed with local definitions.
+Any expression or phrase may have local variables.
 
-Sequence, Conditional and Iteration Operators
+* ``let definitions in phrase``
+* ``phrase where definitions``
+
+Control Structures: ``if``, ``for`` and ``;``
 ---------------------------------------------
 
 Patterns
