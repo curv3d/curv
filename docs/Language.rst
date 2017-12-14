@@ -789,17 +789,57 @@ Record Operations
 
     {for (r in listOfRecords) ...r}
 
-Functions and Patterns
-----------------------
-function constructor
+Functions
+---------
+A function ``f`` maps an argument value ``x`` into a result value ``f x``.
 
-function definition
+Function call is a binary operator with two operands, the function and its argument,
+which are juxtaposed or separated by a space. You can write ``f(x)``, but the parentheses
+are not a required part of function call syntax.
 
-pattern
+``identifier -> expression``
+  This is a function literal.
+  For example, ``x->x+1`` is a function that maps its argument ``x``
+  onto the value of ``x+1``.
 
-function call
+There are 3 ways to simulate a function call with more than one argument.
+Let's consider a function called ``plus`` which takes 2 arguments
+and returns their sum. Here are 3 variants:
 
-switch
+* ``plusl (2,2)`` -- The argument is a list.
+  This simulates a conventional function call with positional arguments.
+* ``plusr {x:2, y:2}`` -- The argument is a record.
+  This gives us function calls with labelled arguments.
+* ``plusc 2 2`` -- This is called a Curried function.
+  How it works: ``plusc 2`` returns a function that maps its argument ``y`` onto ``2+y``.
+
+Let's define the 3 variants of ``plus``::
+
+  plusl = (x,y) -> x + y;
+  plusr = {x,y} -> x + y;
+  plusc = x -> y -> x + y;
+
+The definitions of ``plusl`` and ``plusr`` use the patterns ``(x,y)`` and ``{x,y}``
+as the parameter specification, instead of an identifier.
+The pattern ``(x,y)`` requires the argument to be a two element list (otherwise, the pattern match fails).
+It binds the list elements to the parameters ``x`` and ``y``.
+Similarly, the pattern ``{x,y}`` requires the argument to be a record with exactly two
+fields named ``x`` and ``y``. It binds those field values to the parameters ``x`` and ``y``.
+Patterns are described in more detail later.
+
+There is a shortcut syntax for function definitions::
+
+  plusl (x,y) = x + y;
+  plusr {x,y} = x + y;
+  plusc x y = x + y;
+
+Definitions are described in more detail later.
+
+Pipelines
+
+``switch function_list``
+  ``switch`` is an ordinary function whose argument is a list of functions.
+  ``switch`` returns a function .......
 
 Debug Actions
 -------------
