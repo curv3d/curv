@@ -789,11 +789,17 @@ Record Operations
 
     {for (r in listOfRecords) ...r}
 
-Functions
----------
-::
+Functions and Patterns
+----------------------
+function constructor
 
-  switch
+function definition
+
+pattern
+
+function call
+
+switch
 
 Debug Actions
 -------------
@@ -805,14 +811,15 @@ does not compute a value.
 ``do action in phrase``
   Execute the ``action``, then evaluate the ``phrase``.
 
-  The ``action`` argument can be a simple action, as described below,
+  The ``action`` argument can be a simple action, as enumerated below,
   or it can be a compound action which is sequenced using ``if``, ``for`` and ``;``
   or which defines local variables using ``let`` and ``where``.
   For example, you can write a sequence of actions separated by ``;``,
   and they will be executed in sequence.
 
-  The ``phrase`` argument can be an expression, an element specifier in a list
-  constructor, a field specifier in a record constructor, or an action.
+  The ``phrase`` argument can be an expression or statement.
+  (A statement is an element specifier in a list constructor,
+  a field specifier in a record constructor, or an action.)
   A ``do`` phrase can be used in any context where its ``phrase`` argument
   would also be legal.
 
@@ -824,6 +831,9 @@ does not compute a value.
 
   Then ``f 2`` returns ``3``, and as a side effect, prints a message
   to the debug console.
+
+Simple Actions
+~~~~~~~~~~~~~~
 
 ``print message``
   Print a message string on the debug console, followed by newline.
