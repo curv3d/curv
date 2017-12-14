@@ -1,28 +1,46 @@
 # Statement Syntax
 
 ## Generalized Actions and Generators
-Functions returning actions or generators:
-* It should be possible to replace any use of `for` with tail recursion.
-  This requires functions whose bodies are actions, element generators,
-  field generators.
-* You can abstract an action or generator with a let block.
-  According to the principle of equivalence, this means you should also be
-  able to abstract these phrases using functions.
-* Suppose that I used the Haskell 'monad' trick to implement phrase abstraction.
-  Then an action or generator would be a function value (with a weird argument
-  type, of a special type of value that can't be counterfeited, like the IO
-  type in Haskell). A function returning an action or generator would then also
-  be a value. This demonstrates that functions whose bodies are actions or
-  generators can be made theoretically sound.
-* A procedure is a function whose body is an action.
-  Procedures are values, but can only be invoked in an action context.
-  `greetings name = print "hello $name";`
-  print, error, warning, assert become values.
-* Maybe I get rid of metafunctions, and all of the bindings in the standard
-  prelude become values. `file` and `defined` become keywords.
-* Procedures become more interesting once I have an interactive debugger,
-  and a rich set of actions for controlling the debugger.
-  Procedures are debugger scripts.
+Procedures (Functions returning actions or generators):
+* A statement is an action, element generator, or field generator.
+  A procedure is a function that abstracts over a statement.
+  Procedures are values, but can only be invoked in a statement context.
+* Pragmatic justification:
+  * It should be possible to replace any use of `for` with tail recursion.
+    This requires procedures.
+  * It should be possible to use `switch` in any context where `if` is legal.
+    Eg, in a list comprehension. This requires procedures.
+  * Once I have an interactive debugger, and a rich set of actions for
+    controlling the debugger, then procedures are used as debugger scripts.
+  * print, error, warning, assert become values.
+  * Maybe I get rid of metafunctions, and all of the metafunction bindings
+    in the standard prelude become values or keywords. Now the standard
+    prelude can be represented as a record value.
+* Theoretical justification:
+  * You can abstract a statement with a let block.
+    According to the principle of equivalence, this means you should also be
+    able to abstract these phrases using functions.
+  * Suppose I use the Haskell 'monad' trick to implement phrase abstraction.
+    Then a statement is a function value (with a weird argument type, of a
+    special type of value that can't be counterfeited, like the IO type in
+    Haskell). A procedure would then also be a value. This
+    demonstrates that procedures can be made theoretically sound.
+* Challenges:
+  * Can I invoke an arbitrary procedure from the command line?
+  * `...` is ambiguous in a weak context. So I can't mark a procedure as being
+    an action, element gen or field gen abstraction at value construction time:
+    it could be argument dependent, as in `spread x = ... x`.
+    So procedure calls are ambiguous in a weak context.
+    Does it help if I split `...` into 2 operators?
+  * `seq(p1,p2) = (p1();p2())`. Another polymorphic procedure. Since `if`, `for`
+    and `;` are polymorphic operations on statements, this naturally leads to
+    user defined polymorphic procedures.
+  * By creating a set of higher order procedures (combinators), you could write
+    procedures whose bodies look like expressions: no syntactic clue that they
+    are procedures. A function can be polymorphic across the expression and
+    statement worlds. The Haskell Monad argument justifies this as meaningful.
+  * Right now, [f(x)] compiles into code that evaluates f(x) as an expression.
+    A user can tell by inspection that this is a 1-element list. But no more.
 
 Scripts that denote actions:
 * Let's say a script can denote an action. Eg, `print "hello world";`.
