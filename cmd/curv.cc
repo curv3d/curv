@@ -157,7 +157,7 @@ launch_viewer(curv::Shared<curv::String> filename)
     }
 }
 
-void
+bool
 display_shape(curv::Value value, const curv::Context &cx, bool block = false)
 {
     curv::Shape_Recognizer shape(cx);
@@ -174,7 +174,9 @@ display_shape(curv::Value value, const curv::Context &cx, bool block = false)
         } else {
             launch_viewer(filename);
         }
-    }
+        return true;
+    } else
+        return false;
 }
 
 int
@@ -212,14 +214,17 @@ interactive_mode(curv::System& sys)
                     names[f.first] = curv::make<curv::Builtin_Value>(f.second);
             }
             if (den.second) {
-                for (auto e : *den.second)
-                    std::cout << e << "\n";
+                bool is_shape = false;
                 if (den.second->size() == 1) {
                     static curv::Atom lastval_key = "_";
                     names[lastval_key] =
                         curv::make<curv::Builtin_Value>(den.second->front());
-                    display_shape(den.second->front(),
+                    is_shape = display_shape(den.second->front(),
                         curv::At_Phrase(prog.value_phrase(), nullptr));
+                }
+                if (!is_shape) {
+                    for (auto e : *den.second)
+                        std::cout << e << "\n";
                 }
             }
         } catch (curv::Exception& e) {
