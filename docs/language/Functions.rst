@@ -1,7 +1,13 @@
 Functions
 ---------
-A function ``f`` maps an argument ``x`` onto a result ``f x``.
+A function ``f`` is a value that maps an argument ``x`` onto a result ``f x``.
 
+Functions are pure. The result of a function call depends only on its argument value.
+(In other words, a function cannot consult shared mutable state to compute its result.
+This is a feature of imperative programming languages, and Curv is a pure functional language.)
+
+Functions with One Argument
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Function call is a binary operator with two operands, the function and its argument,
 which are juxtaposed or separated by a space. You can write ``f(x)``, but the parentheses
 are not a required part of function call syntax.
@@ -12,6 +18,8 @@ are not a required part of function call syntax.
   onto the value of ``x+1``.
   If ``incr=x->x+1`` then ``incr 2`` is ``3``.
 
+Functions with Multiple Arguments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 There are 3 ways to simulate a function call with more than one argument.
 Let's consider a function called ``plus`` which takes 2 arguments
 and returns their sum. Here are 3 variants:
@@ -103,6 +111,7 @@ and so can be used as a pipeline element:
 
 Switch
 ~~~~~~
+``switch`` is named after the C switch statement, since they both implement multi-branch conditionals.
 
 ``switch function_list``
   ``switch`` is an ordinary function whose argument is a list of functions.
