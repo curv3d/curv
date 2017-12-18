@@ -43,10 +43,10 @@ Bounded iteration: ``for (pattern in list_expression) statement``
   the element is bound to zero or more local variables by the pattern.
   See: `Patterns`_.
 
-Local variables: ``let definition in statement``
+Local variables: ``let definitions in statement``
   Define local variables over the statement. See: `Blocks`_.
 
-Local variables: ``statement where definition``
+Local variables: ``statement where definitions``
   An alternate syntax for defining local variables. See: `Blocks`_.
 
 Local actions: ``do action in statement``
