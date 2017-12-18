@@ -49,7 +49,7 @@ Scripts that denote actions:
   `tests/curv.curv` is simplified. Makes Curv feel more like a procedural
   language, since they all have "action scripts".
 * This is parseable. The grammar can already distinguish expressions from
-  actions in a weak context. The analyzer could be changed to make this
+  actions in a weak context. The analyser could be changed to make this
   distinction statically.
 * `file(filename)` is now either an action or expression, depending on filename.
   Is this implementable?
@@ -124,9 +124,9 @@ But we don't support naked generators or binders in the CLI.
 We attempt to recognize a generalized definition in these contexts,
 which create scopes:
 * bindings argument of `let` and `do`.
-* top level phrase in a CLI command. If not a definition, analyze as an
+* top level phrase in a CLI command. If not a definition, analyse as an
   operation.
-* argument of `{}`. If not a definition, analyze as an action/binder sequence.
+* argument of `{}`. If not a definition, analyse as an action/binder sequence.
 
 ## `do` syntax
 
@@ -149,7 +149,7 @@ Benefits:
   I'd like to cleanly separate functional and imperative code.
   With this syntax, I can at least avoid actions in `let`.
   But, I think I need to support asserts and debug actions in modules.
-* The `Statement_Analyzer` might be easier to write if there are
+* The `Statement_Analyser` might be easier to write if there are
   separate recursive and sequential versions.
 
 Sequential definitions can't be used directly in a module.

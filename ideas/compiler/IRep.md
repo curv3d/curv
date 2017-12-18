@@ -53,7 +53,7 @@ Longer term goals:
       references to the definiens. The IR graph is a DAG, a structure
       which also supports common-subexpression elimination. Pointer equality
       of IR nodes means optimization-time equivalence.
-  * A block whose body is a list constructor is analyzed into something
+  * A block whose body is a list constructor is analysed into something
     that looks like an abstract List to the IR abstract evaluator.
     * Maybe it's an IR_List_Expr, and all of the statements/actions associated
       with the block get shoved into the IR_Frame somehow.
@@ -129,7 +129,7 @@ It's an updated version of Meaning/Operation/Expression, in which a variable
 reference links to the definiens. We support IR to IR transformations, such as
 constant folding, abstract/partial evaluation, common subexpression elimination.
 
-Phrase::analyze() creates a Meaning/Operation, but frame slots aren't allocated
+Phrase::analyse() creates a Meaning/Operation, but frame slots aren't allocated
 yet. Then we optimize the IR. Then we generate code (which includes slot
 assignment). The GL compiler generates new IR, which is optimized and translated
 to GLSL.

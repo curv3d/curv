@@ -633,7 +633,7 @@ struct File_Metafunction : public Metafunction
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        return make<File_Expr>(share(ph), analyze_op(*ph.arg_, env));
+        return make<File_Expr>(share(ph), analyse_op(*ph.arg_, env));
     }
 };
 
@@ -664,7 +664,7 @@ struct Print_Metafunction : public Metafunction
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        return make<Print_Action>(share(ph), analyze_op(*ph.arg_, env));
+        return make<Print_Action>(share(ph), analyse_op(*ph.arg_, env));
     }
 };
 
@@ -696,7 +696,7 @@ struct Warning_Metafunction : public Metafunction
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        return make<Warning_Action>(share(ph), analyze_op(*ph.arg_, env));
+        return make<Warning_Action>(share(ph), analyse_op(*ph.arg_, env));
     }
 };
 
@@ -744,7 +744,7 @@ struct Error_Metafunction : public Metafunction
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        return make<Error_Operation>(share(ph), analyze_op(*ph.arg_, env));
+        return make<Error_Operation>(share(ph), analyse_op(*ph.arg_, env));
     }
 };
 
@@ -770,7 +770,7 @@ struct Exec_Metafunction : public Metafunction
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        return make<Exec_Action>(share(ph), analyze_op(*ph.arg_, env));
+        return make<Exec_Action>(share(ph), analyse_op(*ph.arg_, env));
     }
 };
 
@@ -799,7 +799,7 @@ struct Assert_Metafunction : public Metafunction
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        auto args = ph.analyze_args(env);
+        auto args = ph.analyse_args(env);
         if (args.size() != 1)
             throw Exception(At_Phrase(ph, env), "assert: expecting 1 argument");
         return make<Assert_Action>(share(ph), args.front());
@@ -870,11 +870,11 @@ struct Assert_Error_Metafunction : public Metafunction
         Shared<Comma_Phrase> commas = nullptr;
         if (parens) commas = cast<Comma_Phrase>(parens->body_);
         if (parens && commas && commas->args_.size() == 2) {
-            auto msg = analyze_op(*commas->args_[0].expr_, env);
+            auto msg = analyse_op(*commas->args_[0].expr_, env);
             Shared<Operation> expr = nullptr;
             Shared<const String> actual_msg = nullptr;
             try {
-                expr = analyze_op(*commas->args_[1].expr_, env);
+                expr = analyse_op(*commas->args_[1].expr_, env);
             } catch (Exception& e) {
                 actual_msg = e.shared_what();
             }
@@ -919,7 +919,7 @@ struct Defined_Metafunction : public Metafunction
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        auto arg = analyze_op(*ph.arg_, env);
+        auto arg = analyse_op(*ph.arg_, env);
         auto dot = cast<Dot_Expr>(arg);
         if (dot != nullptr)
             return make<Defined_Expression>(

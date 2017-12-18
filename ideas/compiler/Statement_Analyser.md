@@ -8,26 +8,26 @@
 We attempt to recognize a generalized definition in these contexts,
 which create scopes:
 * bindings argument of `let` and `do`.
-* top level phrase in a CLI command. If not a definition, analyze as an
+* top level phrase in a CLI command. If not a definition, analyse as an
   operation.
-* argument of `{}`. If not a definition, analyze as an action/binder sequence.
+* argument of `{}`. If not a definition, analyse as an action/binder sequence.
 
-How are generalized definitions analyzed?
-* Definitions are recognized during "pre-analysis": `analyze_def()`.
+How are generalized definitions analysed?
+* Definitions are recognized during "pre-analysis": `analyse_def()`.
   (The other phrase types are recognized during regular analysis, due to
   metafunctions.)
-* The pre-analyzer converts a generalized definition into a tree.
+* The pre-analyser converts a generalized definition into a tree.
   Each tree node lists the bindings defined by that node.
   This is needed to implement conditional definitions (check that the then
   and else branches both define the same set of bindings).
-* Can't analyze recursive definitions bottom up. There must be a global
+* Can't analyse recursive definitions bottom up. There must be a global
   `Scope` data structure containing the dependency graph.
 
 Data Structures:
 * class Definition
   * From the generalized definition parse tree is constructed a Definition tree.
     Definition <: Phrase. Each definition-bearing phrase type either is
-    <:Definition, or its analyze_def() function constructs a Definition object.
+    <:Definition, or its analyse_def() function constructs a Definition object.
   * For each binding there is a smallest Definition object (in the tree)
     that defines the binding and contains its definientia.
 * Sequential_Scope
@@ -38,16 +38,16 @@ Data Structures:
 Algorithm:
 
 ### Phase 1: collect statements
-* Construct the Definition tree. `def = phrase->analyze_def(env);`.
+* Construct the Definition tree. `def = phrase->analyse_def(env);`.
 
-### Phase 2: analyze definiens, create dependency graph
+### Phase 2: analyse definiens, create dependency graph
 ```
 if (def->kind_ == Definition::k_recursive) {
     Recursive_Scope scope(def);
-    scope.analyze(env);
+    scope.analyse(env);
 } else {
     Sequential_Scope scope(def);
-    scope.analyze(env);
+    scope.analyse(env);
 }
 ```
 
@@ -58,15 +58,15 @@ if (def->kind_ == Definition::k_recursive) {
 * class Definition represents a tree node, and contains
   * a map from Atom to a slot_t.
   * data for constructing a sequence of slot initialization instructions.
-  * an analyze() virtual function for creating the instructions.
+  * an analyse() virtual function for creating the instructions.
   * A compound definition contains intermixed definitions and actions.
     Therefore class Compound_Definition also records the actions,
-    its analyze() outputs the action instructions. Sort of. In the recursive
+    its analyse() outputs the action instructions. Sort of. In the recursive
     case, the order of action instructions depends on the global dependency
     graph.
 
-Can't analyze recursive definitions bottom up. There must be a global
-`Scope` data structure containing the dependency graph. Its analyze() function
+Can't analyse recursive definitions bottom up. There must be a global
+`Scope` data structure containing the dependency graph. Its analyse() function
 walks all of the definiens in dependency order.
 * So how would that work for conditional definitions? The dependencies of
   an 'if' definition are the union of the 'then' and 'else' dependencies.
@@ -74,9 +74,9 @@ walks all of the definiens in dependency order.
 * For each binding, there is a smallest Definition object (in the definition
   tree) that defines the binding and contains its definientia.
 
-## New `Statement_Analyzer`
+## New `Statement_Analyser`
 
-This is a new `Statement_Analyzer` to fix the storage leak (see Leak.md).
+This is a new `Statement_Analyser` to fix the storage leak (see Leak.md).
 
 * During analysis, partition a set of `=` definitions so that a set of 1 or
   more mutually recursive definitions are placed in the same "recursive"
@@ -138,11 +138,11 @@ Currently, we assign a slot# to definition-bound identifiers
 during environment lookup. This will continue to be possible.
 
 When we look up an identifier in an environment, if it is definition-bound,
-then we analyze the definiens, and we recursively analyze its references.
+then we analyse the definiens, and we recursively analyse its references.
 Once this analysis is done, the rank and type of the definition's mutual
 recursion partition is established, and we can assign a slot #.
 
-Currently, `Statement_Analyzer` uses these reference types:
+Currently, `Statement_Analyser` uses these reference types:
     if (kind_ == Definition::k_recursive) {
         if (b->second.is_function_definition())
             make<Indirect_Function_Ref>
@@ -171,10 +171,10 @@ in source-code order, and are executed as early as possible (as soon as their
 dependency definitions are executed), so that assertions can guard later
 definitions.
 
-In a recursive statement list, we will analyze the action statements first.
+In a recursive statement list, we will analyse the action statements first.
 The output is a mixed sequence of statement action ops and (as a side effect)
-MR Partition action ops. Then we analyze the definientia of the remaining
-unanalyzed definitions, which will output the remaining MR Partition action ops.
+MR Partition action ops. Then we analyse the definientia of the remaining
+unanalysed definitions, which will output the remaining MR Partition action ops.
 
 A set of recursive definitions is a directed graph, and a mutual recursion
 partition is a "strongly connected component" of that graph.
@@ -182,25 +182,25 @@ https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
 
 Data structures:
 * Here's the additional state associated with each Definition in a
-  `Statement_Analyzer`. Each Definition is:
-  * not analyzed;
+  `Statement_Analyser`. Each Definition is:
+  * not analysed;
   * analysis is in progress;
-  * analyzed and {recursive | not recursive}.
+  * analysed and {recursive | not recursive}.
 * An `MR_Partition` contains a list of `Shared<Definition>`.
   Probably don't need the definition to also point to the MR partition,
   that keeps the data structure hierarchical.
-* A `Statement_Analyzer` contains a list of `MR_Partition`.
-* `Statement_Analyzer` contains temporary state used during definition analysis:
+* A `Statement_Analyser` contains a list of `MR_Partition`.
+* `Statement_Analyser` contains temporary state used during definition analysis:
   * The current `MR_Partition`, or null.
   * A stack of definitions.
 
 Analysis:
-* Pick an unanalyzed definition D from a `Statement_Analyzer` SA.
+* Pick an unanalysed definition D from a `Statement_Analyser` SA.
 * Set the analysis state of D to "in progress".
 * Set the current `MR_Partition` to null, and the defstack to D.
-* Begin analyzing the definiens of D.
-* Within `Statement_Analyzer::single_lookup`, there is a match M.
-  * Prepare to analyze the definiens of M.
+* Begin analysing the definiens of D.
+* Within `Statement_Analyser::single_lookup`, there is a match M.
+  * Prepare to analyse the definiens of M.
   * If M is already under analysis, then we have discovered recursion:
     * Mark M as recursive.
       * If the SA doesn't have a current `MR_Partition`, create a new one.
@@ -211,18 +211,18 @@ Analysis:
         along with the current `MR_Partition`.
       * When recursion is detected, we mark all of the stack elements back to
         the recursion point as recursive, and add them to the current partition.
-  * Otherwise, analyze M:
+  * Otherwise, analyse M:
     * Push M onto the DefRef analysis stack.
     * Mark M as under analysis.
-    * Call analyze() on M's definiens.
-    * After analyze() returns, if M is still marked as "under analysis",
-      then mark it as analyzed + nonrecursive.
+    * Call analyse() on M's definiens.
+    * After analyse() returns, if M is still marked as "under analysis",
+      then mark it as analysed + nonrecursive.
     * Pop the DefRef stack.
   * Finally, return a `Def_Ref` containing M.
 
-## `Statement_Analyzer` Analysis Phases
+## `Statement_Analyser` Analysis Phases
 
-**phase 1, collect statements:** `Statement_Analyzer::add_statement`
+**phase 1, collect statements:** `Statement_Analyser::add_statement`
 
 * right now, we collect actions and definitions into a data structure:
   * `action_phrases_`, a list of {seq_no, phrase}.
@@ -234,14 +234,14 @@ Analysis:
 For a recursively defined lambda, we also set `shared_nonlocals_` to true.
 That still makes sense.
 
-**phase 2:** `analyze` and `Thunk_Environ::single_lookup`
+**phase 2:** `analyse` and `Thunk_Environ::single_lookup`
 
 This will be rewritten.
 Use different algorithms for sequential and recursive statement lists,
 so the sequential code doesn't change.
 
 **data structures**
-* `actions_` vector of struct Analyzed_Action {
+* `actions_` vector of struct Analysed_Action {
       int seq_no_;
       Shared<const Phrase> phrase_;
       Shared<Operation> op_;
@@ -252,52 +252,52 @@ so the sequential code doesn't change.
       int binding_index;
   }
   * a definition may bind N names, each has an index in `0..<N`.
-* `definitions_` vector of struct Analyzed_Definition {
+* `definitions_` vector of struct Analysed_Definition {
       Shared<const Definition> def;
       Shared<Operation> definiens_;
       Module::Dictionary nonlocals_;
       int partition_index; // -1 until partition assigned
       int seq_no;
       slot_t first_slot;
-      enum class State {not_analyzed, analysis_in_progress, analyzed} state;
+      enum class State {not_analysed, analysis_in_progress, analysed} state;
   }
 * `partitions_` vector of struct MR_Partition {
       std::set<int> definitions;
       int op_index_;
   }
-  initially empty, grows as definitions are analyzed.
-* `defn_stack_`: Stack of definitions currently being analyzed.
+  initially empty, grows as definitions are analysed.
+* `defn_stack_`: Stack of definitions currently being analysed.
 
-**`analyze`**
+**`analyse`**
 
 Currently, for recursive statements lists, we:
 * allocate the actions array, set all elements to null.
-* analyze the action phrases, plugging results into the actions array.
-* analyze each definition using a `Thunk_Environ`, then construct a
+* analyse the action phrases, plugging results into the actions array.
+* analyse each definition using a `Thunk_Environ`, then construct a
   Thunk or Lambda pseudo-value and store it in defn_values.
 
 In the new design,
 * Initialize the actions array to empty.
-* For each action phrase, analyze it to an action op A.
+* For each action phrase, analyse it to an action op A.
   As a side effect, some more MR partitions will be created.
   Convert those MR partitions to action ops, and append them to the action list.
   Then append A to the action list.
-* Analyze each definiens which hasn't already been analyzed.
+* Analyse each definiens which hasn't already been analysed.
   Convert remaining MR partitions to action ops, append them to the action list.
 
 **`single_lookup`**
 
 Recursive statement lists currently use an indirect value list stored in
-the frame, and thunks. `Thunk_Environ::single_lookup` is used to analyze
+the frame, and thunks. `Thunk_Environ::single_lookup` is used to analyse
 actions and definientia: this returns `Nonlocal_Function_Ref` or
 `Nonlocal_Lazy_Ref`.
 
-In the new design, we use `Lambda_Environ` to analyze a `Lambda_Phrase`
-definiens. In other cases, `Statement_Analyzer` is the environ class.
+In the new design, we use `Lambda_Environ` to analyse a `Lambda_Phrase`
+definiens. In other cases, `Statement_Analyser` is the environ class.
 
 * The symbol lookup fails, or resolves to binding B.
-* Before constructing a Ref, we recursively analyze the definiens of B.
-  `analyze_definiens(B->definition_index_)`
+* Before constructing a Ref, we recursively analyse the definiens of B.
+  `analyse_definiens(B->definition_index_)`
 * Outside of a function definition,
   a reference is `Indirect_Strict_Ref` in a module, `Let_Ref` in a block.
   We can assign a slot number when the Ref is created.
@@ -315,10 +315,10 @@ definiens. In other cases, `Statement_Analyzer` is the environ class.
 
 Symbolic nonlocal refs are the most disruptive issue.
 
-**`void analyze_definiens(int defindex)`**
+**`void analyse_definiens(int defindex)`**
 
 ```
-  if (D->state == analyzed) return;
+  if (D->state == analysed) return;
   if (D->state == analysis_in_progress) {
     // We have discovered recursion.
     // Currently, only function definitions can be recursive.
@@ -327,7 +327,7 @@ Symbolic nonlocal refs are the most disruptive issue.
     ..
     return;
   }
-  assert(D->state == not_analyzed);
+  assert(D->state == not_analysed);
   D->state = analysis_in_progress;
   push D onto the defn_stack_;
   create a partition for D;
@@ -335,10 +335,10 @@ Symbolic nonlocal refs are the most disruptive issue.
   Shared<Operation> op;
   if (lambda) {
     Lambda_Environ env(...);
-    op = analyze_op(env);
+    op = analyse_op(env);
     merge nonlocals dictionary into the partition;
   } else {
-    op = analyze_op(*this);
+    op = analyse_op(*this);
   }
   // This algorithm doesn't tell us when an MR partition is complete.
   // So we don't create MR partition actions right now; that happens at a
@@ -346,16 +346,16 @@ Symbolic nonlocal refs are the most disruptive issue.
   D->op = op;
   if (D->state == analysis_in_progress) {
     // non-recursive case
-    D->state = analyzed;
+    D->state = analysed;
   }
   pop the definition stack;
 ```
 
 * Set the analysis state of D to "in progress".
 * Set the current `MR_Partition` to null, and the defstack to D.
-* Begin analyzing the definiens of D.
-* Within `Statement_Analyzer::single_lookup`, there is a match M.
-  * Prepare to analyze the definiens of M.
+* Begin analysing the definiens of D.
+* Within `Statement_Analyser::single_lookup`, there is a match M.
+  * Prepare to analyse the definiens of M.
   * If M is already under analysis, then we have discovered recursion:
     * Mark M as recursive.
       * If the SA doesn't have a current `MR_Partition`, create a new one.
@@ -366,18 +366,18 @@ Symbolic nonlocal refs are the most disruptive issue.
         along with the current `MR_Partition`.
       * When recursion is detected, we mark all of the stack elements back to
         the recursion point as recursive, and add them to the current partition.
-  * Otherwise, analyze M:
+  * Otherwise, analyse M:
     * Push M onto the DefRef analysis stack.
     * Mark M as under analysis.
-    * Call analyze() on M's definiens.
-    * After analyze() returns, if M is still marked as "under analysis",
-      then mark it as analyzed + nonrecursive.
+    * Call analyse() on M's definiens.
+    * After analyse() returns, if M is still marked as "under analysis",
+      then mark it as analysed + nonrecursive.
     * Pop the DefRef stack.
   * Finally, return a `Def_Ref` containing M.
 
 **phase 3: Generate Action List**
 
-During the analysis phase, we analyzed all of the definition and action
+During the analysis phase, we analysed all of the definition and action
 statements, and accumulated all of the data needed for phase 3. We know how many
 action ops there are (sum of action statement count and MR partition count).
 We've assigned an action index to each action statement and MR partition.

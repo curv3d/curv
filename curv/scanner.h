@@ -12,9 +12,9 @@
 
 namespace curv {
 
-/// \brief A lexical analyzer.
+/// \brief A lexical analyser.
 ///
-/// The state of a lexical analyzer is stored in this class.
+/// The state of a lexical analyser is stored in this class.
 /// get_token() gets the next token.
 /// push_token() pushes back a previously got token,
 /// supporting infinite lookahead.

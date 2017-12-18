@@ -117,7 +117,7 @@ If two values have a recursive reference loop, then refcounting fails.
 Unless we join them into a single object with a single refcount.
 Or use refcount indirection so that two value objects share a single
 refcount object. This would have to be set up at compile time, after
-analyzing the reference graph within a script.
+analysing the reference graph within a script.
 
 This sounds hard. I don't have a good plan to support recursion between
 functions, lists and objects. Let's impose restrictions:

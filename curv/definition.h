@@ -30,7 +30,7 @@ struct Definition : public Shared_Base
 };
 
 // A unitary definition is one that occupies a single node in the dependency
-// graph that is constructed while analyzing a recursive scope. It can define
+// graph that is constructed while analysing a recursive scope. It can define
 // multiple names.
 struct Unitary_Definition : public Definition
 {
@@ -41,7 +41,7 @@ struct Unitary_Definition : public Definition
         Definition(source, k)
     {}
 
-    virtual void analyze(Environ&) = 0;
+    virtual void analyse(Environ&) = 0;
     virtual Shared<Operation> make_setter(slot_t module_slot) = 0;
 };
 
@@ -54,7 +54,7 @@ struct Function_Definition : public Unitary_Definition
     Shared<const Identifier> name_;
     Shared<Lambda_Phrase> lambda_phrase_;
     slot_t slot_; // initialized by add_to_scope()
-    Shared<Lambda> lambda_; // initialized by analyze()
+    Shared<Lambda> lambda_; // initialized by analyse()
 
     Function_Definition(
         Shared<const Phrase> source,
@@ -67,7 +67,7 @@ struct Function_Definition : public Unitary_Definition
     {}
 
     virtual void add_to_scope(Block_Scope&) override;
-    virtual void analyze(Environ&) override;
+    virtual void analyse(Environ&) override;
     virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
 
@@ -80,7 +80,7 @@ struct Data_Definition : public Unitary_Definition
     Shared<const Phrase> definiendum_;
     Shared<Phrase> definiens_phrase_;
     Shared<Pattern> pattern_; // initialized by add_to_scope()
-    Shared<Operation> definiens_expr_; // initialized by analyze()
+    Shared<Operation> definiens_expr_; // initialized by analyse()
 
     Data_Definition(
         Shared<const Phrase> source,
@@ -94,7 +94,7 @@ struct Data_Definition : public Unitary_Definition
     {}
 
     virtual void add_to_scope(Block_Scope&) override;
-    virtual void analyze(Environ&) override;
+    virtual void analyse(Environ&) override;
     virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
 struct Include_Definition : public Unitary_Definition
@@ -111,7 +111,7 @@ struct Include_Definition : public Unitary_Definition
     {}
 
     virtual void add_to_scope(Block_Scope&) override;
-    virtual void analyze(Environ&) override;
+    virtual void analyse(Environ&) override;
     virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
 
@@ -177,7 +177,7 @@ struct Block_Scope : public Scope
 
     virtual slot_t add_binding(Atom, const Phrase&, unsigned unit) override;
 
-    virtual void analyze(Definition&) = 0;
+    virtual void analyse(Definition&) = 0;
     virtual void add_action(Shared<const Phrase>) = 0;
     virtual unsigned begin_unit(Shared<Unitary_Definition>) = 0;
     virtual void end_unit(unsigned, Shared<Unitary_Definition>) = 0;
@@ -195,7 +195,7 @@ struct Sequential_Scope : public Block_Scope
     }
 
     virtual Shared<Meaning> single_lookup(const Identifier&) override;
-    virtual void analyze(Definition&) override;
+    virtual void analyse(Definition&) override;
     virtual void add_action(Shared<const Phrase>) override;
     virtual unsigned begin_unit(Shared<Unitary_Definition>) override;
     virtual void end_unit(unsigned, Shared<Unitary_Definition>) override;
@@ -205,10 +205,10 @@ struct Recursive_Scope : public Block_Scope
 {
     struct Unit {
         enum State {
-            k_not_analyzed, k_analysis_in_progress, k_analyzed
+            k_not_analysed, k_analysis_in_progress, k_analysed
         };
         Shared<Unitary_Definition> def_;
-        State state_ = k_not_analyzed;
+        State state_ = k_not_analysed;
         int scc_ord_ = -1; // -1 until SCC assigned
         int scc_lowlink_ = -1;
         Atom_Map<Shared<Operation>> nonlocals_ = {};
@@ -248,18 +248,18 @@ struct Recursive_Scope : public Block_Scope
     {
     }
 
-    void analyze_unit(Unit&, const Identifier*);
+    void analyse_unit(Unit&, const Identifier*);
     Shared<Operation> make_function_setter(size_t nunits, Unit** units);
 
     virtual Shared<Meaning> single_lookup(const Identifier&) override;
-    virtual void analyze(Definition&) override;
+    virtual void analyse(Definition&) override;
     virtual void add_action(Shared<const Phrase>) override;
     virtual unsigned begin_unit(Shared<Unitary_Definition>) override;
     virtual void end_unit(unsigned, Shared<Unitary_Definition>) override;
 };
 
 Shared<Module_Expr>
-analyze_module(Definition&, Environ&);
+analyse_module(Definition&, Environ&);
 
 } // namespace
 #endif // header guard

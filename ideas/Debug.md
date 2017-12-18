@@ -39,7 +39,7 @@ In particular, single stepping? Even if I use the tree representation,
 I still need a virtual state machine with a PC and registers.
 The tree node 'eval' function needs to advance the state.
 Worry about this later, once I've worked through the requirements for the
-analyzer, which works on the meaning tree.
+analyser, which works on the meaning tree.
 
 ## Implementation
 You can register a debug callback functor with the interpreter (eval_script).
@@ -79,7 +79,7 @@ Choices:
     * This is more functional and explicit, so maybe I have a better idea what
       the code is doing, and what the dependencies are?
     * Need to add `Frame*` arguments to:
-      * Phrase::analyze (maybe put Frame* into curv::Environ)
+      * Phrase::analyse (maybe put Frame* into curv::Environ)
       * `arg_to_*`
       * parser & scanner. Maybe put `Frame*` into curv::Scanner.
 

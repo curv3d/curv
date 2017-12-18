@@ -28,9 +28,9 @@ Program::compile(const Namespace* names, Frame* parent_frame)
 
     Builtin_Environ env{*names_, system_, parent_frame};
     if (auto def = phrase_->as_definition(env)) {
-        module_ = analyze_module(*def, env);
+        module_ = analyse_module(*def, env);
     } else {
-        meaning_ = phrase_->analyze(env);
+        meaning_ = phrase_->analyse(env);
     }
 
     frame_ = {Frame::make(env.frame_maxslots_,

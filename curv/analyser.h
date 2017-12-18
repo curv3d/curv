@@ -2,8 +2,8 @@
 // Distributed under The MIT License.
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
-#ifndef CURV_ANALYZER_H
-#define CURV_ANALYZER_H
+#ifndef CURV_ANALYSER_H
+#define CURV_ANALYSER_H
 
 #include <curv/meaning.h>
 #include <curv/builtin.h>
@@ -14,7 +14,7 @@ struct Environ
 {
     Environ* parent_;
     System& system_;
-    /// eval_frame_ is nullptr, unless we are analyzing a script due to an
+    /// eval_frame_ is nullptr, unless we are analysing a script due to an
     /// evaluation-time call to `file`. It's used as an Exception Context,
     /// to add a stack trace to compile time errors.
     Frame* eval_frame_;
@@ -24,9 +24,9 @@ struct Environ
     /// true if this Environ represents a sequential statement list.
     bool is_sequential_statement_list_ = false;
 
-    /// true if we are currently analyzing an action statement within a
-    /// sequential statement list: set and restored by analyze_action().
-    bool is_analyzing_action_ = false;
+    /// true if we are currently analysing an action statement within a
+    /// sequential statement list: set and restored by analyse_action().
+    bool is_analysing_action_ = false;
 
     // constructor for root environment
     Environ(System& system, Frame* eval_frame)
@@ -74,9 +74,9 @@ public:
     virtual Shared<Meaning> single_lookup(const Identifier&);
 };
 
-Shared<Operation> analyze_op(const Phrase& ph, Environ& env);
-Shared<Operation> analyze_action(const Phrase& ph, Environ& env);
-Shared<Operation> analyze_tail(const Phrase& ph, Environ& env);
+Shared<Operation> analyse_op(const Phrase& ph, Environ& env);
+Shared<Operation> analyse_action(const Phrase& ph, Environ& env);
+Shared<Operation> analyse_tail(const Phrase& ph, Environ& env);
 
 // Evaluate the phrase as a constant expression in the builtin environment.
 Value std_eval(const Phrase& ph, Environ& env);

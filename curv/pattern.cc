@@ -15,7 +15,7 @@ struct Skip_Pattern : public Pattern
 {
     Skip_Pattern(Shared<const Phrase> s) : Pattern(s) {}
 
-    virtual void analyze(Environ&) override
+    virtual void analyse(Environ&) override
     {
     }
     virtual void exec(Value*, Value, const Context&, Frame&)
@@ -43,7 +43,7 @@ struct Id_Pattern : public Pattern
 
     Id_Pattern(Shared<const Phrase> s, slot_t i) : Pattern(s), slot_(i) {}
 
-    virtual void analyze(Environ&) override
+    virtual void analyse(Environ&) override
     {
     }
     virtual void exec(Value* slots, Value value, const Context&, Frame&)
@@ -85,7 +85,7 @@ struct Const_Pattern : public Pattern
         value_(val)
     {}
 
-    virtual void analyze(Environ& env) override
+    virtual void analyse(Environ& env) override
     {
     }
     virtual void exec(Value* slots, Value value, const Context& cx, Frame& f)
@@ -158,10 +158,10 @@ struct Predicate_Pattern : public Pattern
         }
     }
 
-    virtual void analyze(Environ& env) override
+    virtual void analyse(Environ& env) override
     {
-        predicate_expr_ = analyze_op(*predicate_phrase_, env);
-        pattern_->analyze(env);
+        predicate_expr_ = analyse_op(*predicate_phrase_, env);
+        pattern_->analyse(env);
     }
     virtual void exec(Value* slots, Value value, const Context& cx, Frame& f)
     const override
@@ -188,10 +188,10 @@ struct List_Pattern : public Pattern
         items_(std::move(items))
     {}
 
-    virtual void analyze(Environ& env) override
+    virtual void analyse(Environ& env) override
     {
         for (auto& p : items_)
-            p->analyze(env);
+            p->analyse(env);
     }
     virtual void exec(Value* slots, Value val, const Context& valcx, Frame& f)
     const override
@@ -263,12 +263,12 @@ struct Record_Pattern : public Pattern
         fields_(std::move(fields))
     {}
 
-    virtual void analyze(Environ& env) override
+    virtual void analyse(Environ& env) override
     {
         for (auto& p : fields_) {
-            p.second.pat_->analyze(env);
+            p.second.pat_->analyse(env);
             if (p.second.dsrc_)
-                p.second.dexpr_ = analyze_op(*p.second.dsrc_, env);
+                p.second.dexpr_ = analyse_op(*p.second.dsrc_, env);
         }
     }
     virtual void exec(Value* slots, Value value, const Context& valcx, Frame& f)

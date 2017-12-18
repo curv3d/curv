@@ -1,6 +1,6 @@
 The SCode implementation pipeline is:
 
-lexer -> parser -> analyzer -> code generator
+lexer -> parser -> analyser -> code generator
 
 which means I have a parse tree, a meaning tree (could be AST),
 and VM code.

@@ -29,16 +29,16 @@ Function_Definition::add_to_scope(Block_Scope& scope)
     scope.end_unit(unitnum, share(*this));
 }
 void
-Data_Definition::analyze(Environ& env)
+Data_Definition::analyse(Environ& env)
 {
-    pattern_->analyze(env);
-    definiens_expr_ = analyze_op(*definiens_phrase_, env);
+    pattern_->analyse(env);
+    definiens_expr_ = analyse_op(*definiens_phrase_, env);
 }
 void
-Function_Definition::analyze(Environ& env)
+Function_Definition::analyse(Environ& env)
 {
     lambda_phrase_->shared_nonlocals_ = true;
-    auto expr = analyze_op(*lambda_phrase_, env);
+    auto expr = analyse_op(*lambda_phrase_, env);
     auto lambda = cast<Lambda_Expr>(expr);
     assert(lambda != nullptr);
     lambda_ = make<Lambda>(lambda->pattern_, lambda->body_, lambda->nslots_);
@@ -74,7 +74,7 @@ Include_Definition::add_to_scope(Block_Scope& scope)
     scope.end_unit(unit, share(*this));
 }
 void
-Include_Definition::analyze(Environ&)
+Include_Definition::analyse(Environ&)
 {
 }
 Shared<Operation>
@@ -126,7 +126,7 @@ Block_Scope::add_binding(Atom name, const Phrase& unitsrc, unsigned unitno)
 }
 
 void
-Sequential_Scope::analyze(Definition& def)
+Sequential_Scope::analyse(Definition& def)
 {
     assert(def.kind_ == Definition::k_sequential);
     def.add_to_scope(*this);
@@ -157,7 +157,7 @@ Sequential_Scope::single_lookup(const Identifier& id)
 void
 Sequential_Scope::add_action(Shared<const Phrase> phrase)
 {
-    executable_.actions_.push_back(analyze_action(*phrase, *this));
+    executable_.actions_.push_back(analyse_action(*phrase, *this));
 }
 unsigned
 Sequential_Scope::begin_unit(Shared<Unitary_Definition> unit)
@@ -168,25 +168,25 @@ void
 Sequential_Scope::end_unit(unsigned unitno, Shared<Unitary_Definition> unit)
 {
     (void)unitno;
-    unit->analyze(*this);
+    unit->analyse(*this);
     executable_.actions_.push_back(
         unit->make_setter(executable_.module_slot_));
     ++nunits_;
 }
 
 void
-Recursive_Scope::analyze(Definition& def)
+Recursive_Scope::analyse(Definition& def)
 {
     assert(def.kind_ == Definition::k_recursive);
     source_ = def.source_;
     def.add_to_scope(*this);
     for (auto a : action_phrases_) {
-        auto op = analyze_op(*a, *this);
+        auto op = analyse_op(*a, *this);
         executable_.actions_.push_back(op);
     }
     for (auto& unit : units_) {
-        if (unit.state_ == Unit::k_not_analyzed)
-            analyze_unit(unit, nullptr);
+        if (unit.state_ == Unit::k_not_analysed)
+            analyse_unit(unit, nullptr);
     }
     parent_->frame_maxslots_ = frame_maxslots_;
     if (target_is_module_) {
@@ -197,20 +197,20 @@ Recursive_Scope::analyze(Definition& def)
     }
 }
 
-// Analyze the unitary definition `unit` that belongs to the scope,
+// Analyse the unitary definition `unit` that belongs to the scope,
 // then output an action that initializes its bindings to `executable_`.
-// As a side effect of analyzing `unit`, all of the units it depends on will
-// first be analyzed, and their initialization actions will first be output.
+// As a side effect of analysing `unit`, all of the units it depends on will
+// first be analysed, and their initialization actions will first be output.
 // This ordering means that slots are initialized in dependency order.
 //
 // Use Tarjan's algorithm for Strongly Connected Components (SCC)
 // to group mutually recursive function definitions together into a single
 // initialization action.
 void
-Recursive_Scope::analyze_unit(Unit& unit, const Identifier* id)
+Recursive_Scope::analyse_unit(Unit& unit, const Identifier* id)
 {
     switch (unit.state_) {
-    case Unit::k_not_analyzed:
+    case Unit::k_not_analysed:
         unit.state_ = Unit::k_analysis_in_progress;
         unit.scc_ord_ = unit.scc_lowlink_ = scc_count_++;
         scc_stack_.push_back(&unit);
@@ -218,10 +218,10 @@ Recursive_Scope::analyze_unit(Unit& unit, const Identifier* id)
         analysis_stack_.push_back(&unit);
         if (unit.is_function()) {
             Function_Environ fenv(*this, unit);
-            unit.def_->analyze(fenv);
+            unit.def_->analyse(fenv);
             frame_maxslots_ = std::max(frame_maxslots_, fenv.frame_maxslots_);
         } else {
-            unit.def_->analyze(*this);
+            unit.def_->analyse(*this);
         }
         analysis_stack_.pop_back();
 
@@ -249,20 +249,20 @@ Recursive_Scope::analyze_unit(Unit& unit, const Identifier* id)
         // For example, the analysis stack might contain 0->1->2, and now we
         // are back to 0, ie unit.scc_ord_==0 (recursion detected).
         // In the above statement, we are propagating lowlink=0 to unit 2.
-        // In the k_not_analyzed case above, once we pop the analysis stack,
+        // In the k_not_analysed case above, once we pop the analysis stack,
         // we'll further propagate 2's lowlink of 0 to unit 1.
         return;
       }
-    case Unit::k_analyzed:
+    case Unit::k_analysed:
         return;
     }
-    if (unit.scc_lowlink_ == unit.scc_ord_ /*&& unit.state_ != Unit::k_analyzed*/) {
+    if (unit.scc_lowlink_ == unit.scc_ord_ /*&& unit.state_ != Unit::k_analysed*/) {
         // `unit` is the lowest unit in its SCC. All members of this SCC
         // are on the SCC stack. Output an initialization action for unit's SCC.
         if (!unit.is_function()) {
             assert(scc_stack_.back() == &unit);
             scc_stack_.pop_back();
-            unit.state_ = Unit::k_analyzed;
+            unit.state_ = Unit::k_analysed;
             executable_.actions_.push_back(
                 unit.def_->make_setter(executable_.module_slot_));
         } else {
@@ -282,7 +282,7 @@ Recursive_Scope::analyze_unit(Unit& unit, const Identifier* id)
                 u = scc_stack_.back();
                 scc_stack_.pop_back();
                 assert(u->scc_lowlink_ == unit.scc_ord_);
-                u->state_ = Unit::k_analyzed;
+                u->state_ = Unit::k_analysed;
             } while (u != &unit);
         }
     }
@@ -340,7 +340,7 @@ Recursive_Scope::single_lookup(const Identifier& id)
 {
     auto b = dictionary_.find(id.atom_);
     if (b != dictionary_.end()) {
-        analyze_unit(units_[b->second.unit_index_], &id);
+        analyse_unit(units_[b->second.unit_index_], &id);
         if (target_is_module_) {
             return make<Module_Data_Ref>(
                 share(id), executable_.module_slot_, b->second.slot_index_);
@@ -381,17 +381,17 @@ Recursive_Scope::end_unit(unsigned unitno, Shared<Unitary_Definition> unit)
 }
 
 Shared<Module_Expr>
-analyze_module(Definition& def, Environ& env)
+analyse_module(Definition& def, Environ& env)
 {
     if (def.kind_ == Definition::k_sequential) {
         Sequential_Scope scope(env, true);
-        scope.analyze(def);
+        scope.analyse(def);
         return make<Scoped_Module_Expr>(def.source_,
             std::move(scope.executable_));
     }
     if (def.kind_ == Definition::k_recursive) {
         Recursive_Scope scope(env, true);
-        scope.analyze(def);
+        scope.analyse(def);
         return make<Scoped_Module_Expr>(def.source_,
             std::move(scope.executable_));
     }

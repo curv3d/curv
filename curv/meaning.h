@@ -23,13 +23,13 @@ namespace curv {
 struct Operation;
 struct Lambda;
 
-/// An abstract base class representing a semantically analyzed Phrase.
+/// An abstract base class representing a semantically analysed Phrase.
 struct Meaning : public Shared_Base
 {
     /// The original source code for this meaning.
     ///
     /// The syntax of the source code need not have any relation to the meaning
-    /// class. Eg, an Identifier phrase can be analyzed into a variety of
+    /// class. Eg, an Identifier phrase can be analysed into a variety of
     /// different meanings. That's why we separate the Phrase tree from the
     /// Meaning tree.
     Shared<const Phrase> source_;

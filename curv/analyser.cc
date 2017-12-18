@@ -17,29 +17,29 @@ namespace curv
 {
 
 Shared<Operation>
-analyze_op(const Phrase& ph, Environ& env)
+analyse_op(const Phrase& ph, Environ& env)
 {
-    bool old = env.is_analyzing_action_;
-    env.is_analyzing_action_ = false;
-    auto result = ph.analyze(env)->to_operation(env.eval_frame_);
-    env.is_analyzing_action_ = old;
+    bool old = env.is_analysing_action_;
+    env.is_analysing_action_ = false;
+    auto result = ph.analyse(env)->to_operation(env.eval_frame_);
+    env.is_analysing_action_ = old;
     return result;
 }
 
 Shared<Operation>
-analyze_action(const Phrase& ph, Environ& env)
+analyse_action(const Phrase& ph, Environ& env)
 {
-    bool old = env.is_analyzing_action_;
-    env.is_analyzing_action_ = true;
-    auto result = ph.analyze(env)->to_operation(env.eval_frame_);
-    env.is_analyzing_action_ = old;
+    bool old = env.is_analysing_action_;
+    env.is_analysing_action_ = true;
+    auto result = ph.analyse(env)->to_operation(env.eval_frame_);
+    env.is_analysing_action_ = old;
     return result;
 }
 
 Shared<Operation>
-analyze_tail(const Phrase& ph, Environ& env)
+analyse_tail(const Phrase& ph, Environ& env)
 {
-    return ph.analyze(env)->to_operation(env.eval_frame_);
+    return ph.analyse(env)->to_operation(env.eval_frame_);
 }
 
 // Evaluate the phrase as a constant expression in the builtin environment.
@@ -48,7 +48,7 @@ std_eval(const Phrase& ph, Environ& env)
 {
     Builtin_Environ benv(
         env.system_.std_namespace(), env.system_, env.eval_frame_);
-    auto op = analyze_op(ph, benv);
+    auto op = analyse_op(ph, benv);
     auto frame = Frame::make(benv.frame_maxslots_,
         env.system_, env.eval_frame_, nullptr, nullptr);
     return op->eval(*frame);
@@ -93,7 +93,7 @@ Shared<Meaning>
 Environ::lookup_var(const Identifier& id)
 {
     for (Environ* e = this; e != nullptr; e = e->parent_) {
-        if (!e->is_analyzing_action_)
+        if (!e->is_analysing_action_)
             break;
         if (e->is_sequential_statement_list_) {
             auto m = e->single_lookup(id);
@@ -115,19 +115,19 @@ Builtin_Environ::single_lookup(const Identifier& id)
 }
 
 Shared<Meaning>
-Empty_Phrase::analyze(Environ& env) const
+Empty_Phrase::analyse(Environ& env) const
 {
     return make<Null_Action>(share(*this));
 }
 
 Shared<Meaning>
-Identifier::analyze(Environ& env) const
+Identifier::analyse(Environ& env) const
 {
     return env.lookup(*this);
 }
 
 Shared<Meaning>
-Numeral::analyze(Environ& env) const
+Numeral::analyse(Environ& env) const
 {
     switch (loc_.token().kind_) {
     case Token::k_num:
@@ -161,66 +161,66 @@ Numeral::analyze(Environ& env) const
 }
 
 Shared<Segment>
-String_Segment_Phrase::analyze(Environ& env) const
+String_Segment_Phrase::analyse(Environ& env) const
 {
     return make<Literal_Segment>(share(*this),
         String::make(location().range()));
 }
 Shared<Segment>
-Char_Escape_Phrase::analyze(Environ& env) const
+Char_Escape_Phrase::analyse(Environ& env) const
 {
     return make<Literal_Segment>(share(*this),
         String::make(location().range().first+1, 1));
 }
 Shared<Segment>
-Paren_Segment_Phrase::analyze(Environ& env) const
+Paren_Segment_Phrase::analyse(Environ& env) const
 {
-    return make<Paren_Segment>(share(*this), analyze_op(*expr_, env));
+    return make<Paren_Segment>(share(*this), analyse_op(*expr_, env));
 }
 Shared<Segment>
-Bracket_Segment_Phrase::analyze(Environ& env) const
+Bracket_Segment_Phrase::analyse(Environ& env) const
 {
-    return make<Bracket_Segment>(share(*this), analyze_op(*expr_, env));
+    return make<Bracket_Segment>(share(*this), analyse_op(*expr_, env));
 }
 Shared<Segment>
-Brace_Segment_Phrase::analyze(Environ& env) const
+Brace_Segment_Phrase::analyse(Environ& env) const
 {
-    return make<Brace_Segment>(share(*this), analyze_op(*expr_, env));
+    return make<Brace_Segment>(share(*this), analyse_op(*expr_, env));
 }
 Shared<Meaning>
-String_Phrase_Base::analyze(Environ& env) const
+String_Phrase_Base::analyse(Environ& env) const
 {
-    return analyze_string(env);
+    return analyse_string(env);
 }
 Shared<String_Expr>
-String_Phrase_Base::analyze_string(Environ& env) const
+String_Phrase_Base::analyse_string(Environ& env) const
 {
     std::vector<Shared<Segment>> ops;
     for (Shared<const Segment_Phrase> seg : *this)
-        ops.push_back(seg->analyze(env));
+        ops.push_back(seg->analyse(env));
     return String_Expr::make_elements(ops, this);
 }
 
 Shared<Meaning>
-Unary_Phrase::analyze(Environ& env) const
+Unary_Phrase::analyse(Environ& env) const
 {
     switch (op_.kind_) {
     case Token::k_not:
         return make<Not_Expr>(
             share(*this),
-            analyze_op(*arg_, env));
+            analyse_op(*arg_, env));
     case Token::k_plus:
         return make<Positive_Expr>(
             share(*this),
-            analyze_op(*arg_, env));
+            analyse_op(*arg_, env));
     case Token::k_minus:
         return make<Negative_Expr>(
             share(*this),
-            analyze_op(*arg_, env));
+            analyse_op(*arg_, env));
     case Token::k_ellipsis:
         return make<Spread_Op>(
             share(*this),
-            analyze_op(*arg_, env));
+            analyse_op(*arg_, env));
     case Token::k_include:
     case Token::k_var:
         throw Exception(At_Token(op_, *this, env), "syntax error");
@@ -240,7 +240,7 @@ Unary_Phrase::as_definition(Environ& env)
 }
 
 Shared<Meaning>
-Lambda_Phrase::analyze(Environ& env) const
+Lambda_Phrase::analyse(Environ& env) const
 {
     struct Arg_Scope : public Scope
     {
@@ -283,8 +283,8 @@ Lambda_Phrase::analyze(Environ& env) const
 
     auto src = share(*this);
     auto pattern = make_pattern(*left_, scope, 0);
-    pattern->analyze(scope);
-    auto expr = analyze_op(*right_, scope);
+    pattern->analyse(scope);
+    auto expr = analyse_op(*right_, scope);
     auto nonlocals = make<Enum_Module_Expr>(src,
         std::move(scope.nonlocal_dictionary_),
         std::move(scope.nonlocal_exprs_));
@@ -294,23 +294,23 @@ Lambda_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-analyze_assoc(Environ& env,
+analyse_assoc(Environ& env,
     const Phrase& src, const Phrase& left, Shared<Phrase> right)
 {
     if (auto call = dynamic_cast<const Call_Phrase*>(&left))
-        return analyze_assoc(env, src, *call->function_,
+        return analyse_assoc(env, src, *call->function_,
             make<Lambda_Phrase>(call->arg_, Token(), right));
 
     Shared<Operation> right_expr;
     if (isa<Empty_Phrase>(right))
         right_expr = make<Constant>(right, Value{true});
     else
-        right_expr = analyze_op(*right, env);
+        right_expr = analyse_op(*right, env);
 
     if (auto id = dynamic_cast<const Identifier*>(&left))
         return make<Assoc>(share(src), Atom_Expr{share(*id)}, right_expr);
     if (auto string = dynamic_cast<const String_Phrase*>(&left)) {
-        auto string_expr = string->analyze_string(env);
+        auto string_expr = string->analyse_string(env);
         return make<Assoc>(share(src), Atom_Expr{string_expr}, right_expr);
     }
 
@@ -339,7 +339,7 @@ each_item(Phrase& phrase, std::function<void(Phrase&)> func)
 }
 
 Shared<Meaning>
-analyze_block(
+analyse_block(
     Environ& env,
     Shared<const Phrase> source,
     Definition::Kind kind,
@@ -351,16 +351,16 @@ analyze_block(
         // no definitions, just actions.
         return make<Preaction_Op>(
             source,
-            analyze_op(*bindings, env),
-            analyze_tail(*bodysrc, env));
+            analyse_op(*bindings, env),
+            analyse_tail(*bodysrc, env));
     }
     if (adef->kind_ == Definition::k_sequential
         && kind == Definition::k_sequential)
     {
         Sequential_Scope sscope(env, false);
-        sscope.analyze(*adef);
-        sscope.is_analyzing_action_ = env.is_analyzing_action_;
-        auto body = analyze_tail(*bodysrc, sscope);
+        sscope.analyse(*adef);
+        sscope.is_analysing_action_ = env.is_analysing_action_;
+        auto body = analyse_tail(*bodysrc, sscope);
         env.frame_maxslots_ = sscope.frame_maxslots_;
         return make<Block_Op>(source,
             std::move(sscope.executable_), std::move(body));
@@ -369,9 +369,9 @@ analyze_block(
         && kind == Definition::k_recursive)
     {
         Recursive_Scope rscope(env, false);
-        rscope.analyze(*adef);
-        rscope.is_analyzing_action_ = env.is_analyzing_action_;
-        auto body = analyze_tail(*bodysrc, rscope);
+        rscope.analyse(*adef);
+        rscope.is_analysing_action_ = env.is_analysing_action_;
+        auto body = analyse_tail(*bodysrc, rscope);
         env.frame_maxslots_ = rscope.frame_maxslots_;
         return make<Block_Op>(source,
             std::move(rscope.executable_), std::move(body));
@@ -384,7 +384,7 @@ analyze_block(
         {
             return nullptr;
         }
-        virtual void analyze(Definition&) override {}
+        virtual void analyse(Definition&) override {}
         virtual void add_action(Shared<const Phrase>) override {}
         virtual unsigned begin_unit(Shared<Unitary_Definition> unit) override
         {
@@ -402,96 +402,96 @@ analyze_block(
 }
 
 Shared<Meaning>
-Let_Phrase::analyze(Environ& env) const
+Let_Phrase::analyse(Environ& env) const
 {
     Definition::Kind kind =
         let_.kind_ == Token::k_let
         ? Definition::k_recursive
         : Definition::k_sequential;
-    return analyze_block(env, share(*this), kind, bindings_, body_);
+    return analyse_block(env, share(*this), kind, bindings_, body_);
 }
 
 Shared<Meaning>
-Binary_Phrase::analyze(Environ& env) const
+Binary_Phrase::analyse(Environ& env) const
 {
     switch (op_.kind_) {
     case Token::k_or:
         return make<Or_Expr>(
             share(*this),
-            analyze_op(*left_, env),
-            analyze_op(*right_, env));
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_and:
         return make<And_Expr>(
             share(*this),
-            analyze_op(*left_, env),
-            analyze_op(*right_, env));
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_equal:
         return make<Equal_Expr>(
             share(*this),
-            analyze_op(*left_, env),
-            analyze_op(*right_, env));
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_not_equal:
         return make<Not_Equal_Expr>(
             share(*this),
-            analyze_op(*left_, env),
-            analyze_op(*right_, env));
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_less:
         return make<Less_Expr>(
             share(*this),
-            analyze_op(*left_, env),
-            analyze_op(*right_, env));
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_greater:
         return make<Greater_Expr>(
             share(*this),
-            analyze_op(*left_, env),
-            analyze_op(*right_, env));
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_less_or_equal:
         return make<Less_Or_Equal_Expr>(
             share(*this),
-            analyze_op(*left_, env),
-            analyze_op(*right_, env));
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_greater_or_equal:
         return make<Greater_Or_Equal_Expr>(
             share(*this),
-            analyze_op(*left_, env),
-            analyze_op(*right_, env));
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_plus:
         return make<Add_Expr>(
             share(*this),
-            analyze_op(*left_, env),
-            analyze_op(*right_, env));
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_minus:
         return make<Subtract_Expr>(
             share(*this),
-            analyze_op(*left_, env),
-            analyze_op(*right_, env));
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_times:
         return make<Multiply_Expr>(
             share(*this),
-            analyze_op(*left_, env),
-            analyze_op(*right_, env));
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_over:
         return make<Divide_Expr>(
             share(*this),
-            analyze_op(*left_, env),
-            analyze_op(*right_, env));
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_power:
         return make<Power_Expr>(
             share(*this),
-            analyze_op(*left_, env),
-            analyze_op(*right_, env));
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_dot:
         if (auto id = cast<const Identifier>(right_)) {
             return make<Dot_Expr>(
                 share(*this),
-                analyze_op(*left_, env),
+                analyse_op(*left_, env),
                 Atom_Expr{id});
         }
         if (auto string = cast<const String_Phrase>(right_)) {
-            auto str_expr = string->analyze_string(env);
+            auto str_expr = string->analyse_string(env);
             return make<Dot_Expr>(
                 share(*this),
-                analyze_op(*left_, env),
+                analyse_op(*left_, env),
                 Atom_Expr{str_expr});
         }
         throw Exception(At_Phrase(*right_, env),
@@ -501,12 +501,12 @@ Binary_Phrase::analyze(Environ& env) const
     case Token::k_apostrophe:
         return make<Index_Expr>(
             share(*this),
-            analyze_op(*left_, env),
-            analyze_op(*right_, env));
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_colon:
-        return analyze_assoc(env, *this, *left_, right_);
+        return analyse_assoc(env, *this, *left_, right_);
     case Token::k_where:
-        return analyze_block(env, share(*this),
+        return analyse_block(env, share(*this),
             Definition::k_recursive, right_, left_);
     default:
         assert(0);
@@ -514,23 +514,23 @@ Binary_Phrase::analyze(Environ& env) const
 }
 
 Shared<Meaning>
-Recursive_Definition_Phrase::analyze(Environ& env) const
+Recursive_Definition_Phrase::analyse(Environ& env) const
 {
     throw Exception(At_Phrase(*this, env), "not an operation");
 }
 Shared<Meaning>
-Sequential_Definition_Phrase::analyze(Environ& env) const
+Sequential_Definition_Phrase::analyse(Environ& env) const
 {
     throw Exception(At_Phrase(*this, env), "not an operation");
 }
 Shared<Meaning>
-Assignment_Phrase::analyze(Environ& env) const
+Assignment_Phrase::analyse(Environ& env) const
 {
     auto id = cast<Identifier>(left_);
     if (id == nullptr)
         throw Exception(At_Phrase(*left_, env), "not a variable name");
     auto m = env.lookup_var(*id);
-    auto expr = analyze_op(*right_, env);
+    auto expr = analyse_op(*right_, env);
 
     auto let = cast<Data_Ref>(m);
     if (let)
@@ -578,11 +578,11 @@ Sequential_Definition_Phrase::as_definition(Environ& env)
 }
 
 Shared<Meaning>
-Semicolon_Phrase::analyze(Environ& env) const
+Semicolon_Phrase::analyse(Environ& env) const
 {
     Shared<Compound_Op> compound = Compound_Op::make(args_.size(), share(*this));
     for (size_t i = 0; i < args_.size(); ++i)
-        compound->at(i) = analyze_action(*args_[i].expr_, env);
+        compound->at(i) = analyse_action(*args_[i].expr_, env);
     return compound;
 }
 
@@ -614,13 +614,13 @@ Semicolon_Phrase::as_definition(Environ& env)
 }
 
 Shared<Meaning>
-Comma_Phrase::analyze(Environ& env) const
+Comma_Phrase::analyse(Environ& env) const
 {
     throw Exception(At_Token(args_[0].separator_, *this, env), "syntax error");
 }
 
 Shared<Meaning>
-Paren_Phrase::analyze(Environ& env) const
+Paren_Phrase::analyse(Environ& env) const
 {
     if (cast<const Empty_Phrase>(body_))
         return List_Expr::make(0, share(*this));
@@ -628,12 +628,12 @@ Paren_Phrase::analyze(Environ& env) const
         auto& items = commas->args_;
         Shared<List_Expr> list = List_Expr::make(items.size(), share(*this));
         for (size_t i = 0; i < items.size(); ++i)
-            (*list)[i] = analyze_op(*items[i].expr_, env);
+            (*list)[i] = analyse_op(*items[i].expr_, env);
         return list;
     } else {
-        // One of the few places we directly call Phrase::analyze().
+        // One of the few places we directly call Phrase::analyse().
         // The result can be an operation or a metafunction.
-        return body_->analyze(env);
+        return body_->analyse(env);
     }
 }
 Shared<Definition>
@@ -643,7 +643,7 @@ Paren_Phrase::as_definition(Environ& env)
 }
 
 Shared<Meaning>
-Bracket_Phrase::analyze(Environ& env) const
+Bracket_Phrase::analyse(Environ& env) const
 {
     if (cast<const Empty_Phrase>(body_))
         return List_Expr::make(0, share(*this));
@@ -651,19 +651,19 @@ Bracket_Phrase::analyze(Environ& env) const
         auto& items = commas->args_;
         Shared<List_Expr> list = List_Expr::make(items.size(), share(*this));
         for (size_t i = 0; i < items.size(); ++i)
-            (*list)[i] = analyze_op(*items[i].expr_, env);
+            (*list)[i] = analyse_op(*items[i].expr_, env);
         return list;
     } else {
         Shared<List_Expr> list = List_Expr::make(1, share(*this));
-        (*list)[0] = analyze_op(*body_, env);
+        (*list)[0] = analyse_op(*body_, env);
         return list;
     }
 }
 
 Shared<Meaning>
-Call_Phrase::analyze(Environ& env) const
+Call_Phrase::analyse(Environ& env) const
 {
-    return function_->analyze(env)->call(*this, env);
+    return function_->analyse(env)->call(*this, env);
 }
 
 Shared<Meaning>
@@ -672,23 +672,23 @@ Operation::call(const Call_Phrase& src, Environ& env)
     return make<Call_Expr>(
         share(src),
         share(*this),
-        analyze_op(*src.arg_, env));
+        analyse_op(*src.arg_, env));
 }
 
 std::vector<Shared<Operation>>
-Call_Phrase::analyze_args(Environ& env) const
+Call_Phrase::analyse_args(Environ& env) const
 {
     std::vector<Shared<Operation>> argv;
     each_argument(*arg_, [&](const Phrase& p)->void {
-        argv.push_back(analyze_op(p, env));
+        argv.push_back(analyse_op(p, env));
     });
     return std::move(argv);
 }
 
 Shared<Meaning>
-Program_Phrase::analyze(Environ& env) const
+Program_Phrase::analyse(Environ& env) const
 {
-    return body_->analyze(env);
+    return body_->analyse(env);
 }
 Shared<Definition>
 Program_Phrase::as_definition(Environ& env)
@@ -697,42 +697,42 @@ Program_Phrase::as_definition(Environ& env)
 }
 
 Shared<Meaning>
-Brace_Phrase::analyze(Environ& env) const
+Brace_Phrase::analyse(Environ& env) const
 {
     Shared<Definition> adef = body_->as_definition(env);
     if (adef == nullptr) {
         auto record = make<Record_Expr>(share(*this));
         each_item(*body_, [&](Phrase& item)->void {
-            record->fields_.push_back(analyze_op(item, env));
+            record->fields_.push_back(analyse_op(item, env));
         });
         return record;
     }
-    return analyze_module(*adef, env);
+    return analyse_module(*adef, env);
 }
 
 Shared<Meaning>
-If_Phrase::analyze(Environ& env) const
+If_Phrase::analyse(Environ& env) const
 {
     if (else_expr_ == nullptr) {
         return make<If_Op>(
             share(*this),
-            analyze_op(*condition_, env),
-            analyze_tail(*then_expr_, env));
+            analyse_op(*condition_, env),
+            analyse_tail(*then_expr_, env));
     } else {
         return make<If_Else_Op>(
             share(*this),
-            analyze_op(*condition_, env),
-            analyze_tail(*then_expr_, env),
-            analyze_tail(*else_expr_, env));
+            analyse_op(*condition_, env),
+            analyse_tail(*then_expr_, env),
+            analyse_tail(*else_expr_, env));
     }
 }
 
 Shared<Meaning>
-For_Phrase::analyze(Environ& env) const
+For_Phrase::analyse(Environ& env) const
 {
     Atom name = id_->atom_;
 
-    auto list = analyze_op(*listexpr_, env);
+    auto list = analyse_op(*listexpr_, env);
 
     slot_t slot = env.frame_nslots_;
     struct For_Environ : public Environ
@@ -748,7 +748,7 @@ For_Phrase::analyze(Environ& env) const
         {
             frame_nslots_ = p.frame_nslots_ + 1;
             frame_maxslots_ = std::max(p.frame_maxslots_, frame_nslots_);
-            is_analyzing_action_ = p.is_analyzing_action_;
+            is_analysing_action_ = p.is_analysing_action_;
         }
         virtual Shared<Meaning> single_lookup(const Identifier& id)
         {
@@ -758,28 +758,28 @@ For_Phrase::analyze(Environ& env) const
         }
     };
     For_Environ body_env(env, name, slot);
-    auto body = analyze_tail(*body_, body_env);
+    auto body = analyse_tail(*body_, body_env);
     env.frame_maxslots_ = body_env.frame_maxslots_;
 
     return make<For_Op>(share(*this), slot, list, body);
 }
 
 Shared<Meaning>
-While_Phrase::analyze(Environ& env) const
+While_Phrase::analyse(Environ& env) const
 {
-    auto cond = analyze_op(*args_, env);
-    auto body = analyze_tail(*body_, env);
+    auto cond = analyse_op(*args_, env);
+    auto body = analyse_tail(*body_, env);
     return make<While_Action>(share(*this), cond, body);
 }
 
 Shared<Meaning>
-Range_Phrase::analyze(Environ& env) const
+Range_Phrase::analyse(Environ& env) const
 {
     return make<Range_Expr>(
         share(*this),
-        analyze_op(*first_, env),
-        analyze_op(*last_, env),
-        step_ ? analyze_op(*step_, env) : nullptr,
+        analyse_op(*first_, env),
+        analyse_op(*last_, env),
+        step_ ? analyse_op(*step_, env) : nullptr,
         op1_.kind_ == Token::k_open_range);
 }
 

@@ -146,25 +146,25 @@ label each partition as recursive or nonrecursive.
 
 Data structures:
 * Here's the additional state associated with each Definition in a
-  `Statement_Analyzer`. Each Definition is:
-  * not analyzed;
+  `Statement_Analyser`. Each Definition is:
+  * not analysed;
   * analysis is in progress;
-  * analyzed and {recursive | not recursive}.
+  * analysed and {recursive | not recursive}.
 * A `Recursion_Group` contains a list of `Shared<Definition>`.
   Probably don't need the definition to also point to the recursion group,
   that keeps the data structure hierarchical.
-* A `Statement_Analyzer` contains a list of `Recursion_Group`.
-* `Statement_Analyzer` contains temporary state used during definition analysis:
+* A `Statement_Analyser` contains a list of `Recursion_Group`.
+* `Statement_Analyser` contains temporary state used during definition analysis:
   * The current recursion group, or null.
   * A stack of definitions.
 
 Analysis:
-* Pick an unanalyzed definition D from a `Statement_Analyzer` SA.
+* Pick an unanalysed definition D from a `Statement_Analyser` SA.
 * Set the analysis state of D to "in progress".
 * Set the current recursion group to null, and the defstack to D.
-* Begin analyzing the definiens of D.
-* Within `Statement_Analyzer::single_lookup`, there is a match M.
-  * Prepare to analyze the definiens of M.
+* Begin analysing the definiens of D.
+* Within `Statement_Analyser::single_lookup`, there is a match M.
+  * Prepare to analyse the definiens of M.
   * If M is already under analysis, then we have discovered recursion:
     * Mark M as recursive.
       * If the SA doesn't have a current recursion group, create a new one.
@@ -175,30 +175,30 @@ Analysis:
         along with the current recursion group.
       * When recursion is detected, we mark all of the stack elements as
         recursive and add them to the current recursion group.
-  * Otherwise, analyze M:
+  * Otherwise, analyse M:
     * Push M onto the DefRef analysis stack.
     * Mark M as under analysis.
-    * Call analyze() on M's definiens.
-    * After analyze() returns, if M is still marked as "under analysis",
-      then mark it as analyzed + nonrecursive.
+    * Call analyse() on M's definiens.
+    * After analyse() returns, if M is still marked as "under analysis",
+      then mark it as analysed + nonrecursive.
     * Pop the DefRef stack.
   * Finally, return a `Def_Ref` containing M.
 
 * We are about to identify another recursion group.
-  Create a new recursion group identifier. From the `Statement_Analyzer`,
-  select a definiens that hasn't been analyzed yet and place it in the
+  Create a new recursion group identifier. From the `Statement_Analyser`,
+  select a definiens that hasn't been analysed yet and place it in the
   new recursion group.
-* Analyze the definiens, first flagging the fact that it is under analysis.
+* Analyse the definiens, first flagging the fact that it is under analysis.
 * When an identifier is found, if it is replaced by a `Def_Ref`, then
-  prepare to analyze its definiens.
+  prepare to analyse its definiens.
   * If that definiens is already under analysis, then we have discovered
     recursion. Mark the Definition as recursive, add it to the current
     recursion group.
-  * Otherwise, if it isn't under analysis, then analyze it.
+  * Otherwise, if it isn't under analysis, then analyse it.
   * Suppose we visit `a->b->c->a`, and discover that `a` is recursive.
     Then `b` and `c` must be added to a's recursion group.
     How is that done?
-    * `analyze` returns a value indicating that we found recursion, and this
+    * `analyse` returns a value indicating that we found recursion, and this
       value must be explicitly propagated up the call stack until it is handled.
     * There is an explicit representation of the DefRef analysis stack.
       When recursion is detected, we modify the stack elements.

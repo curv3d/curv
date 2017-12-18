@@ -52,7 +52,7 @@ Code cleanup:
 * unit tests for: CLI supports compound definitions
 * unit tests for: GL error messages
 * GL_Frame::gl renamed to gl_
-* clean up Recursive_Scope::analyze_unit
+* clean up Recursive_Scope::analyse_unit
 * clean up Record_Pattern::exec
 * remove curv/arg.{h,cc}, move features into value.h and context.h
 * add std::move to curv namespace

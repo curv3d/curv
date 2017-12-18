@@ -1,15 +1,15 @@
 My idea:
-To implement the analyzer,
-rather than virtual Phrase::analyze() -> Meaning,
+To implement the analyser,
+rather than virtual Phrase::analyse() -> Meaning,
 instead use Phrase_Visitor.
-This modularizes the analyzer code.
+This modularizes the analyser code.
 -Speed: 2 vtable lookups per phrase, an extra copy for the context argument
 and meaning result
 -Maint: lots of tiny functions, decl and def in .h/.cc
 +Maint: using pure virtuals means every case is guaranteed to be covered.
 
 Alternative: using a Phrase_Type enum, store a type code in each Phrase,
-then analyze() is a switch on the Phrase_Type.
+then analyse() is a switch on the Phrase_Type.
 +Speed: faster
 Maint:
 * compile time guarantee that each Phrase class gets a unique type?
@@ -79,7 +79,7 @@ auto id = AUX_MAKE_SHARED_VARIANT(Phrase,Identifier,tok);
  -> aux::_make_shared_variant<Phrase,Identifier>(Phrase::k_identifier,tok)
 auto id = Phrase::make_Identifier(tok);
 
-Shared<Meaning> analyze(Phrase& ph, const Environ& env)
+Shared<Meaning> analyse(Phrase& ph, const Environ& env)
 {
     struct V {
       static Shared<Meaning> visit(Identifier& id) {
@@ -105,7 +105,7 @@ Eg, <paramlist> -> <expr>, I only accept a subset of <atom> phrases as a
   * Fast, no virtual funcalls or polymorphic downcasts (they say).
     Internally, it's a discriminated union with an 'int' discriminant.
 
-void Phrase::accept(Phrase_Analyzer&) const
+void Phrase::accept(Phrase_Analyser&) const
 
 struct Phrase_Visitor
 {
@@ -113,14 +113,14 @@ struct Phrase_Visitor
     ... one for each Phrase type ...
 };
 
-Shared<Meaning> analyze(Phrase& ph, const Environ& env)
+Shared<Meaning> analyse(Phrase& ph, const Environ& env)
 {
     Phrase_Visitor v(env);
     ph.accept(v);
     return v.meaning;
 }
 
-struct Analyzer : public Phrase_Visitor
+struct Analyser : public Phrase_Visitor
 {
     Namespace& builtins_;
 

@@ -74,7 +74,7 @@ An expression is static if all of its free variables are static:
   then the binding is considered static.
 
 Staticness is a property of expressions which is computed by the
-semantic analyzer. Its only role in the language is within the `use` operator:
+semantic analyser. Its only role in the language is within the `use` operator:
 the argument must be a static expression.
 
 Within the compiler, staticness is relevant to optimization and performance.

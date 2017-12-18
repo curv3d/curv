@@ -1,4 +1,4 @@
-# the Semantic Analyzer
+# the Semantic Analyser
 It converts a parse tree to a semantics tree.
 
 If I am targetting LLVM (currently, yes), then the semantics tree is
@@ -18,8 +18,8 @@ Hm, maybe my treatment of tail recursion will allow semantics trees to be
 directly interpreted, with tail call optimization. I didn't previously think
 this would be feasible.
 
-Phrase::analyze(builtin_namespace) -> Meaning
-* start at root_phrase->analyze(builtin_namespace)
+Phrase::analyse(builtin_namespace) -> Meaning
+* start at root_phrase->analyse(builtin_namespace)
 * move down the tree, creating meaning nodes and symbol tables. Symbols are
   decorated with types (eg from type assertions) on the way down.
 * at the leaves, identifiers and looked up and types become known.
@@ -96,9 +96,9 @@ I think that a reasonable and non-surprising approach is to use special
 meaning nodes for magic syntax, and function call nodes for function
 call syntax.
 
-Does the semantic analyzer use multiple passes? Is different information stored
+Does the semantic analyser use multiple passes? Is different information stored
 in the meaning tree depending on the pass? AMI had a single bottom up semantic
-analyzer (including type checking). That will currently work here, for now.
+analyser (including type checking). That will currently work here, for now.
 But Curv may evolve to be more complicated.
  1. bottom up type checking is fine for now.
  2. identifier resolution: we support unrestricted forward references in
@@ -142,7 +142,7 @@ How to evaluate a command line:
        that hasn't been entered yet. Or maybe that's not supported?
        In #2, maybe undefined reference is just a warning? Too hard for now.)
 
-Maybe a Script exists in all 3 phases: parse, analyze and run time?
+Maybe a Script exists in all 3 phases: parse, analyse and run time?
 It has a value list, which may be just parsed (only a list of action phrases)
 or evaluated (list of values available). It has a namespace, which may contain
 parsed definiens and compiled definiens.
@@ -150,7 +150,7 @@ parsed definiens and compiled definiens.
 But, a Script may have non-local references to parameters. So there are
 multiple distinct values generated from a single script phrase.
 So, a Script_Value (aka Object) contains a list of Values, and a reference
-to a namespace, which may include unanalyzed phrases?
+to a namespace, which may include unanalysed phrases?
 
 But, it's more complicated. A definiens may be simple: not a function literal,
 not a thunk. In that case, it makes sense to fully evalute it to a value,
@@ -161,15 +161,15 @@ taking into account external parameters, and storing the result in the Object.
    compiled, we determine the number of value slots it needs for its
    instances.
 
-A Top_Level_Script exists across all 3 phases: parse, analyze and run.
+A Top_Level_Script exists across all 3 phases: parse, analyse and run.
  * It's a Ref_Value. It's a Meaning (or encapsulated as a Constant).
    It's a phrase (but maybe not a curv::Phrase, as it doesn't appear as an
    interior node of a parse tree).
-It has a value list, which may be unanalyzed (only a list of action phrases)
+It has a value list, which may be unanalysed (only a list of action phrases)
 or evaluated (list of values available). It has a namespace, which may contain
-both unanalyzed and compiled definiens.
+both unanalysed and compiled definiens.
 
-An internal script is either unanalyzed or fully compiled, all or nothing,
-existing in either the parse or the analyze phases.
+An internal script is either unanalysed or fully compiled, all or nothing,
+existing in either the parse or the analyse phases.
 It may have multiple instances at runtime with different contents, depending
 on (eg) the values of external function parameters.

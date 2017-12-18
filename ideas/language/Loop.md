@@ -631,7 +631,7 @@ However, my current code base is more dynamic than this. I wait until
 evaluation time to distinguish expressions, actions and generators, and I
 report run-time errors instead of compile time errors if a phrase is used in
 the wrong context.
-* The semantic analyzer creates a tree of Expression objects (should be
+* The semantic analyser creates a tree of Expression objects (should be
   renamed Operation). The Operation class has 3 run-time virtual functions:
   * eval(frame) -- evaluate an expression, return a Value. Report an error
     if the Operation is not an expression.

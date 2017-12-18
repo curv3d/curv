@@ -472,7 +472,7 @@ as `"${$t}"` or `"$($t)"`.
 
 Note that, because arbitrary expressions (not just variable names)
 can be interpolated into string literals, that could mean there's a
-recursive dependency between the lexical analyzer and the parser.
+recursive dependency between the lexical analyser and the parser.
 Or, the lexer keeps track of nesting levels for ()[]{}"" while
 tokenizing the subexpression.
 

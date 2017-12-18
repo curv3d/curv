@@ -7,20 +7,20 @@
     dictionary is constructed by module, so don't use own nonlocals dictionary
     and slot mappings when resolving nonlocals, delegate to parent module.
   * Lambda_Expr::eval won't be called. 
-  * Bindings_Analyzer contains the shared nonlocals dictionary. Right now,
+  * Bindings_Analyser contains the shared nonlocals dictionary. Right now,
     there are no private bindings, and for script modules, all nonlocals are
     builtin constants, so the current dictionary doesn't need any more entries.
-  * Bindings_Analyzer::add_definition() should set lambda->recursive = true.
+  * Bindings_Analyser::add_definition() should set lambda->recursive = true.
     Do we need to perform additional book keeping to keep track of the
     lambda entries, like a flag in the dictionary entry?
   * Module_Environ::single_lookup must now return a Module_Ref or a
     Nonlocal_Function_Ref, based on the dictionary lookup. Either store a
     lambda flag in dictionary (need an analysis-time Dictionary type), or use
     an isa test on the slot_phrases vector
-    (Module_Environ must reference the Bindings_Analyzer).
-  * Bindings_Analyzer::analyze_values() must store a constant, lambda or
+    (Module_Environ must reference the Bindings_Analyser).
+  * Bindings_Analyser::analyse_values() must store a constant, lambda or
     thunk. I can determine this using current data structure.
-* `Bindings_Analyzer` (or just `Bindings`). This seems like the key abstraction.
+* `Bindings_Analyser` (or just `Bindings`). This seems like the key abstraction.
   Will evolve the data structure and API to support additional planned features.
   * supported language features:
     * scriptmodule. each slot <=> a module binding. dictionary contains
@@ -32,7 +32,7 @@
       and nonlocal bindings. The same let binding can be in two places (to
       avoid this, we need an extra compile pass).
       * How to determine which slot to use for a given lookup? Easy, change the
-        env passed to analyze() based on whether we are analyzing a function
+        env passed to analyse() based on whether we are analysing a function
         definiens.
       * Could have 2 dictionaries, local and nonlocal. Or, a unified dictionary
         plus a bool in the env used during lookup.
@@ -66,18 +66,18 @@
       Used for Module value, and for Environ lookups in phase 2.
   * Eh:
     We add a sequence of definitions (name/phrase pairs).
-    Then we begin analyzing phrases, we discover nonlocals, and add them to
+    Then we begin analysing phrases, we discover nonlocals, and add them to
     the dictionary and slot map as name/expr pairs.
     In the end, we'll produce a map from slots to exprs, which we convert
     to a List of compile time values.
 
 * Recursive functions
-  * How do I hook analyze_lambda() so that it uses a shared nonlocals dictionary
+  * How do I hook analyse_lambda() so that it uses a shared nonlocals dictionary
     for module function members?
     * Modify the Lambda_Phrase so that it knows it's a module member.
       Add a new data member (bool or pointer).
-    * The shared nonlocals dictionary is in the env passed to analyze_lambda.
-      * So analyze_lambda checks the bool, downcasts the env to access the
+    * The shared nonlocals dictionary is in the env passed to analyse_lambda.
+      * So analyse_lambda checks the bool, downcasts the env to access the
         dictionary?
       * Or the new Lambda_Phrase data member is a pointer that provides access
         to the dictionary? (Does the referenced object have the same lifetime
@@ -90,7 +90,7 @@
     * When a nonlocal is looked up, a function in the same scope as the
       recursive lambda is treated specially (a Function_Ref rather than a Ref).
       How is that triggered?
-      * Normally analyze_lambda() calls lookup() on its env argument. But now,
+      * Normally analyse_lambda() calls lookup() on its env argument. But now,
         we need to know the lookup is coming from a recursive function.
         So, an extra flag argument to lookup() that defaults to false and is not
         propagated to parent lookups. If true, then:
@@ -139,23 +139,23 @@
     * Future optimization: use a special operation to call a function via an
       RFun ref without constructing the closure as a temporary Value.
       (Peephole optimization: super-operator.)
-  * How to analyze a recursive function.
+  * How to analyse a recursive function.
     * Analysis of a phrase tree is a depth-first recursive process.
       Previously, I map a let/module bound identifier to a slot reference
-      with no further analysis. Now, I recursively analyze the definiens phrase,
+      with no further analysis. Now, I recursively analyse the definiens phrase,
       and store the resulting Expression.
-      * If it is already analyzed, then it's a thunk or rfun.
+      * If it is already analysed, then it's a thunk or rfun.
         Return the corresponding ref type.
         Future optimization: add a third category, proper value.
-      * If is an unanalyzed phrase, then mark the symbol table entry as pending,
-        then analyze the phrase.
+      * If is an unanalysed phrase, then mark the symbol table entry as pending,
+        then analyse the phrase.
       * If it is a pending phrase, then if a lambda phrase, mark it as an RFun,
-        otherwise mark it as a Thunk. analyze() returns a slot reference.
+        otherwise mark it as a Thunk. analyse() returns a slot reference.
       * Future optimization: add a fourth category, Constant.
     * RFuns in the same mutual recursion group must share a nonlocals list,
       otherwise, if they have separate lists, then there will be reference
       cycles between these lists.
-    * Therefore, after analyzing all of the definitions in a let/module scope,
+    * Therefore, after analysing all of the definitions in a let/module scope,
       visit all of the RFun bindings, amalgamate all of the nonlocal arrays
       into a single shared nonlocal array for the scope. A new compile phase,
       post analysis, is needed to assign nonlocal slot ids.
@@ -164,7 +164,7 @@
       bitfield containing a stack depth and slot index. Or an Atom.
     * As a special case, the nonlocal array for a module will use the same slot
       array as the field values.
-  * Simplified Design: All let/module function definitions are analyzed as
+  * Simplified Design: All let/module function definitions are analysed as
     RFunctions. Nonlocal slot indexes are assigned during analysis, no need for
     a new compiler pass. If a let has function definitions, then an extra slot
     is added for the function nonlocals list. The slot contains a thunk for
@@ -292,7 +292,7 @@ Temporary implementation:
   an "illegal recursive reference". Eg, you'll get that for the second `x`
   in `x=x+1`.
 
-Analyzer:
+Analyser:
 * the Environment contains the builtin namespace and the module namespace
 * An Identifier is looked up in the environment. The result is a `Module_Ref`
   (containing an Atom) or a Constant (in the case of a builtin).
@@ -405,7 +405,7 @@ In particular, single stepping? Even if I use the tree representation,
 I still need a virtual state machine with a PC and registers.
 The tree node 'eval' function needs to advance the state.
 Worry about this later, once I've worked through the requirements for the
-analyzer, which works on the meaning tree.
+analyser, which works on the meaning tree.
 
 ### Representation of Function Values
 

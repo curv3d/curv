@@ -40,7 +40,7 @@ An expression is static if all of its free variables are static:
   then the binding is considered static.
 
 Staticness is a property of expressions which is computed by the
-semantic analyzer. It's required by the `use` operator.
+semantic analyser. It's required by the `use` operator.
 So curv::Expression has an `is_static_` member, which we can compute
 in a mostly bottom up manner.
 

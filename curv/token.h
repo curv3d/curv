@@ -9,7 +9,7 @@
 
 namespace curv {
 
-/// A lexeme identified by the lexical analyzer,
+/// A lexeme identified by the lexical analyser,
 /// or the text spanned by a parse tree node.
 ///
 /// A token is a contiguous substring of a script,
@@ -24,14 +24,14 @@ namespace curv {
 /// length k_end token identified at the end of script.
 ///
 /// We don't copy string data out of the script:
-/// this is a zero copy lexical analyzer.
+/// this is a zero copy lexical analyser.
 ///
 /// We don't store line numbers or column numbers. Those can be reconstructed
 /// by scanning the script. This scanning is expensive, but the cost is only
 /// paid when there is an error to report, and if there is no error, we save
 /// time and memory.
 ///
-/// The lexical analyzer doesn't convert tokens into their semantic
+/// The lexical analyser doesn't convert tokens into their semantic
 /// representation. Eg, we don't convert numerals into floating point values.
 /// That's done at a higher level. This simplifies the representation of tokens.
 struct Token

@@ -22,7 +22,7 @@ struct Pattern : public Shared_Base
 
     Pattern(Shared<const Phrase> s) : Shared_Base(), source_(std::move(s)) {}
 
-    virtual void analyze(Environ&) = 0;
+    virtual void analyse(Environ&) = 0;
     virtual void exec(Value* slots, Value, const Context&, Frame&) const = 0;
     virtual bool try_exec(Value* slots, Value, Frame&) const = 0;
     virtual void gl_exec(GL_Value, const Context&, GL_Frame&) const;

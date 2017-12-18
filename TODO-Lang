@@ -276,7 +276,7 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
 * def1; def2; def3
 * simple patterns: `[x,y,z] = expr` etc.
 * patterns with default values: `{x=42,y,z} = expr` etc.
-  * How are the default value expressions analyzed in a recursive scope?
+  * How are the default value expressions analysed in a recursive scope?
     Recursion is outlawed. No references to other bindings in the same
     recursive binding partition.
 * `use (constant in std namespace)`. Eg, use(file "foo.curv").

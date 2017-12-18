@@ -45,5 +45,5 @@ GLSL or to optimized machine code using LLVM.
 We'll actually just do a simplified subset of the ambitious implementation.
 
 ```
-  lexer -tokens-> parser -AST-> analyzer -AST-> generator -VMcode-> evaluator
+  lexer -tokens-> parser -AST-> analyser -AST-> generator -VMcode-> evaluator
 ```

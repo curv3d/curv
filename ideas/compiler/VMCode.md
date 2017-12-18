@@ -18,21 +18,21 @@ and its eval/exec/generate protocol.
 
 **Architecture:**
 ```
-scanner -> parser -> analyzer -> optimizer -> codegen -> evaluator
-shape value -> gl_analyzer -> optimizer -> gl_codegen
+scanner -> parser -> analyser -> optimizer -> codegen -> evaluator
+shape value -> gl_analyser -> optimizer -> gl_codegen
 ```
 
 **IR (Intermediate Representation):**
 * `curv::Operation` evolves into the IR used by the regular and the GL compiler.
 * Optimize phase does IR to IR transformations. `Operation::optimize()`
-* Slots are allocated by codegen(), not analyze().
+* Slots are allocated by codegen(), not analyse().
 * Reference to non-recursive variable contains definiens, to support
   constant folding and other optimizations.
 
 Maybe, the distinction between expression, generator, action is determined
 during analysis and stored in the Operation?
 * earlier diagnosis of errors (not required for MVP)
-* The information might be needed to analyze certain (future) phrases?
+* The information might be needed to analyse certain (future) phrases?
   Eg, generalized brace phrases. A list of actions & definitions is a module.
   A list of actions and field generators is a record. This can be done without
   analysis-time phrase typing (error messages might be better).
@@ -136,7 +136,7 @@ It's an updated version of Meaning/Operation/Expression, in which a variable
 reference links to the definiens. We support IR to IR transformations, such as
 constant folding, abstract/partial evaluation, common subexpression elimination.
 
-Phrase::analyze() creates a Meaning/Operation, but frame slots aren't allocated
+Phrase::analyse() creates a Meaning/Operation, but frame slots aren't allocated
 yet. Then we optimize the IR. Then we generate code (which includes slot
 assignment). The GL compiler generates new IR, which is optimized and translated
 to GLSL.

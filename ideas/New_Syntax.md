@@ -31,7 +31,7 @@ Initial plan (simple design first):
 * add Thunk::nslots_
 * force_ref() creates a Frame for evaluating the thunk.
 * force() is no longer needed.
-* All definientia are analyzed in an environment where the values list is the
+* All definientia are analysed in an environment where the values list is the
   nonlocals register and frame_nslots_ is initially 0.
 
 Later, do a dependency analysis of a Bindings set, and use strict evaluation

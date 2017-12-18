@@ -38,7 +38,7 @@ struct Phrase : public Shared_Base
     virtual ~Phrase() {}
     virtual Location location() const = 0;
     virtual Shared<Definition> as_definition(Environ&);
-    virtual Shared<Meaning> analyze(Environ&) const = 0;
+    virtual Shared<Meaning> analyse(Environ&) const = 0;
 };
 
 /// Abstract implementation base class for Phrase classes
@@ -59,18 +59,18 @@ struct Identifier final : public Token_Phrase
         atom_{loc_.range()}
     {}
 
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
 };
 struct Numeral final : public Token_Phrase
 {
     using Token_Phrase::Token_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
 };
 
 struct Segment_Phrase : public Shared_Base
 {
     virtual Location location() const = 0;
-    virtual Shared<Segment> analyze(Environ&) const = 0;
+    virtual Shared<Segment> analyse(Environ&) const = 0;
 };
 struct String_Segment_Phrase : public Segment_Phrase
 {
@@ -78,7 +78,7 @@ struct String_Segment_Phrase : public Segment_Phrase
     String_Segment_Phrase(const Script& s, Token tok)
     : loc_(s, std::move(tok)) {}
     virtual Location location() const override { return loc_; }
-    virtual Shared<Segment> analyze(Environ&) const override;
+    virtual Shared<Segment> analyse(Environ&) const override;
 };
 struct Char_Escape_Phrase : public Segment_Phrase
 {
@@ -86,7 +86,7 @@ struct Char_Escape_Phrase : public Segment_Phrase
     Char_Escape_Phrase(const Script& s, Token tok)
     : loc_(s, std::move(tok)) {}
     virtual Location location() const override { return loc_; }
-    virtual Shared<Segment> analyze(Environ&) const override;
+    virtual Shared<Segment> analyse(Environ&) const override;
 };
 struct Paren_Segment_Phrase : public Segment_Phrase
 {
@@ -94,7 +94,7 @@ struct Paren_Segment_Phrase : public Segment_Phrase
     Paren_Segment_Phrase(Shared<const Phrase> expr)
     : expr_(std::move(expr)) {}
     virtual Location location() const override { return expr_->location(); }
-    virtual Shared<Segment> analyze(Environ&) const override;
+    virtual Shared<Segment> analyse(Environ&) const override;
 };
 struct Bracket_Segment_Phrase : public Segment_Phrase
 {
@@ -102,7 +102,7 @@ struct Bracket_Segment_Phrase : public Segment_Phrase
     Bracket_Segment_Phrase(Shared<const Phrase> expr)
     : expr_(std::move(expr)) {}
     virtual Location location() const override { return expr_->location(); }
-    virtual Shared<Segment> analyze(Environ&) const override;
+    virtual Shared<Segment> analyse(Environ&) const override;
 };
 struct Brace_Segment_Phrase : public Segment_Phrase
 {
@@ -110,7 +110,7 @@ struct Brace_Segment_Phrase : public Segment_Phrase
     Brace_Segment_Phrase(Shared<const Phrase> expr)
     : expr_(std::move(expr)) {}
     virtual Location location() const override { return expr_->location(); }
-    virtual Shared<Segment> analyze(Environ&) const override;
+    virtual Shared<Segment> analyse(Environ&) const override;
 };
 struct String_Phrase_Base : public Phrase
 {
@@ -127,8 +127,8 @@ struct String_Phrase_Base : public Phrase
     {
         return begin_.ending_at(end_);
     }
-    virtual Shared<Meaning> analyze(Environ&) const override;
-    Shared<String_Expr> analyze_string(Environ&) const;
+    virtual Shared<Meaning> analyse(Environ&) const override;
+    Shared<String_Expr> analyse_string(Environ&) const;
 
     TAIL_ARRAY_MEMBERS(Shared<const Segment_Phrase>)
 };
@@ -146,7 +146,7 @@ struct Unary_Phrase : public Phrase
         return arg_->location().starting_at(op_);
     }
     virtual Shared<Definition> as_definition(Environ&) override;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
 };
 
 struct Binary_Phrase : public Phrase
@@ -167,7 +167,7 @@ struct Binary_Phrase : public Phrase
     {
         return left_->location().ending_at(right_->location().token());
     }
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
 };
 
 struct Lambda_Phrase : public Binary_Phrase
@@ -179,7 +179,7 @@ struct Lambda_Phrase : public Binary_Phrase
 
     using Binary_Phrase::Binary_Phrase;
 
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
 };
 
 struct Recursive_Definition_Phrase : public Phrase
@@ -199,7 +199,7 @@ struct Recursive_Definition_Phrase : public Phrase
         return left_->location().ending_at(right_->location().token());
     }
     virtual Shared<Definition> as_definition(Environ&) override;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
 };
 struct Sequential_Definition_Phrase : public Phrase
 {
@@ -220,7 +220,7 @@ struct Sequential_Definition_Phrase : public Phrase
         return right_->location().starting_at(var_);
     }
     virtual Shared<Definition> as_definition(Environ&) override;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
 };
 struct Assignment_Phrase : public Phrase
 {
@@ -238,7 +238,7 @@ struct Assignment_Phrase : public Phrase
     {
         return left_->location().ending_at(right_->location().token());
     }
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
 };
 
 struct Empty_Phrase : public Phrase
@@ -251,7 +251,7 @@ struct Empty_Phrase : public Phrase
     {
         return begin_;
     }
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
 };
 
 // common implementation for Comma_Phrase and Semicolon_Phrase
@@ -287,7 +287,7 @@ struct Separator_Phrase : public Phrase
 struct Comma_Phrase : public Separator_Phrase
 {
     using Separator_Phrase::Separator_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
 };
 
 /// `a;b;c` -- One or more items, separated by semicolons, with optional
@@ -295,7 +295,7 @@ struct Comma_Phrase : public Separator_Phrase
 struct Semicolon_Phrase : public Separator_Phrase
 {
     using Separator_Phrase::Separator_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
     virtual Shared<Definition> as_definition(Environ&) override;
 };
 
@@ -319,20 +319,20 @@ struct Delimited_Phrase : public Phrase
 struct Paren_Phrase : public Delimited_Phrase
 {
     using Delimited_Phrase::Delimited_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
     virtual Shared<Definition> as_definition(Environ&) override;
 };
 
 struct Bracket_Phrase : public Delimited_Phrase
 {
     using Delimited_Phrase::Delimited_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
 };
 
 struct Brace_Phrase : public Delimited_Phrase
 {
     using Delimited_Phrase::Delimited_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
 };
 
 struct Program_Phrase : public Phrase
@@ -349,7 +349,7 @@ struct Program_Phrase : public Phrase
         return body_->location().ending_at(end_);
     }
 
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
     virtual Shared<Definition> as_definition(Environ&) override;
 };
 
@@ -382,8 +382,8 @@ struct Call_Phrase : public Phrase
         else
             return function_->location().ending_at(arg_->location().token());
     }
-    virtual Shared<Meaning> analyze(Environ&) const override;
-    std::vector<Shared<Operation>> analyze_args(Environ& env) const;
+    virtual Shared<Meaning> analyse(Environ&) const override;
+    std::vector<Shared<Operation>> analyse_args(Environ& env) const;
 };
 
 /// Iterate over each argument in a function call argument list (Call_Phrase)
@@ -433,7 +433,7 @@ struct If_Phrase : public Phrase
         else
             return else_expr_->location().starting_at(if_);
     }
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
 };
 
 /// This is a generic syntax scheme: keyword (args) body,
@@ -488,7 +488,7 @@ struct For_Phrase : public Phrase
         body_(body)
     {}
 
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
     virtual Location location() const override
     {
         return body_->location().starting_at(keyword_);
@@ -498,7 +498,7 @@ struct For_Phrase : public Phrase
 struct While_Phrase : public Control_Phrase
 {
     using Control_Phrase::Control_Phrase;
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
 };
 
 struct Range_Phrase : public Phrase
@@ -529,7 +529,7 @@ struct Range_Phrase : public Phrase
             return first_->location().ending_at(last_->location().token());
         }
     }
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
 };
 
 struct Let_Phrase : public Phrase
@@ -551,7 +551,7 @@ struct Let_Phrase : public Phrase
         body_(body)
     {}
 
-    virtual Shared<Meaning> analyze(Environ&) const override;
+    virtual Shared<Meaning> analyse(Environ&) const override;
     virtual Location location() const override
     {
         return body_->location().starting_at(let_);
