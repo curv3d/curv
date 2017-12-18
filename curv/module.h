@@ -113,7 +113,7 @@ protected:
     Value array_[0];
 };
 
-using Module = aux::Tail_Array<Module_Base>;
+using Module = Tail_Array<Module_Base>;
 
 } // namespace curv
 #endif // header guard

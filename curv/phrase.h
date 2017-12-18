@@ -10,7 +10,7 @@
 #include <curv/shared.h>
 #include <curv/location.h>
 #include <curv/atom.h>
-#include <aux/tail_array.h>
+#include <curv/tail_array.h>
 
 namespace curv {
 
@@ -19,7 +19,7 @@ struct Meaning;
 struct Operation;
 struct Segment;
 struct String_Expr_Base;
-using String_Expr = aux::Tail_Array<String_Expr_Base>;
+using String_Expr = Tail_Array<String_Expr_Base>;
 struct Environ;
 
 /// Base class for a node in a syntax tree created by the parser.
@@ -132,7 +132,7 @@ struct String_Phrase_Base : public Phrase
 
     TAIL_ARRAY_MEMBERS(Shared<const Segment_Phrase>)
 };
-using String_Phrase = aux::Tail_Array<String_Phrase_Base>;
+using String_Phrase = Tail_Array<String_Phrase_Base>;
 
 struct Unary_Phrase : public Phrase
 {

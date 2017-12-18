@@ -11,7 +11,6 @@
 #include <curv/system.h>
 
 using namespace std;
-using namespace aux;
 using namespace curv;
 
 std::stringstream console;

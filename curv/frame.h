@@ -5,7 +5,7 @@
 #ifndef CURV_FRAME_H
 #define CURV_FRAME_H
 
-#include <aux/tail_array.h>
+#include <curv/tail_array.h>
 #include <curv/list.h>
 #include <curv/value.h>
 #include <curv/slot.h>
@@ -25,7 +25,7 @@ struct System;
 /// A program (script file) has a frame for evaluating the top level
 /// program expression.
 /// Calls to builtin and user-defined functions have call frames.
-using Frame = aux::Tail_Array<Frame_Base>;
+using Frame = Tail_Array<Frame_Base>;
 
 struct Frame_Base
 {

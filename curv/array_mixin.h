@@ -2,13 +2,13 @@
 // Distributed under The MIT License.
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
-#ifndef AUX_ARRAY_MIXIN_H
-#define AUX_ARRAY_MIXIN_H
+#ifndef CURV_ARRAY_MIXIN_H
+#define CURV_ARRAY_MIXIN_H
 
 #include <iterator>
 #include <stdexcept>
 
-namespace aux {
+namespace curv {
 
 /// This is used for defining a class that encapsulates an array.
 ///
@@ -85,5 +85,5 @@ struct Array_Mixin : public Base
     const typename Base::value_type* data() const noexcept { return data(); }
 };
 
-} // namespace aux
+} // namespace curv
 #endif // header guard

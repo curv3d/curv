@@ -3,7 +3,7 @@
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
 #include <curv/value.h>
-#include <aux/dtostr.h>
+#include <curv/dtostr.h>
 #include <curv/string.h>
 #include <curv/list.h>
 #include <curv/record.h>
@@ -57,7 +57,7 @@ const
     } else if (is_bool()) {
         out << (get_bool_unsafe() ? "true" : "false");
     } else if (is_num()) {
-        out << aux::dfmt(get_num_unsafe());
+        out << dfmt(get_num_unsafe());
     } else if (is_ref()) {
         get_ref_unsafe().print(out);
     } else {

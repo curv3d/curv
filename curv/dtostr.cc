@@ -2,7 +2,7 @@
 // Distributed under The MIT License.
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
-#include <aux/dtostr.h>
+#include <curv/dtostr.h>
 #include <double-conversion/double-conversion.h>
 #include <cstring>
 #include <cmath>
@@ -10,7 +10,7 @@ using namespace double_conversion;
 
 using Converter = DoubleToStringConverter;
 
-namespace aux {
+namespace curv {
 
 // I don't like how the choice is made between exponential and normal format
 #if 0
@@ -146,4 +146,4 @@ operator<<(std::ostream& out, dfmt n)
     return out;
 }
 
-} // namespace aux
+} // namespace curv

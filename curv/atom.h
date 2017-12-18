@@ -40,7 +40,7 @@ public:
     :
         Base(String::make(str, len))
     {}
-    inline Atom(aux::Range<const char*> str)
+    inline Atom(Range<const char*> str)
     :
         Base(String::make(str.begin(), str.size()))
     {}

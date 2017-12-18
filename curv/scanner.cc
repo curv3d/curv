@@ -216,7 +216,7 @@ Scanner::get_token()
     if (isalpha(*p) || *p == '_') {
         while (p < last && (isalnum(*p) || *p == '_'))
             ++p;
-        aux::Range<const char*> id(first+tok.first_, p);
+        Range<const char*> id(first+tok.first_, p);
         if (id == "by")
             tok.kind_ = Token::k_by;
         else if (id == "do")

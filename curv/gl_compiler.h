@@ -7,7 +7,7 @@
 
 #include <ostream>
 #include <vector>
-#include <aux/tail_array.h>
+#include <curv/tail_array.h>
 #include <curv/module.h>
 
 namespace curv {
@@ -17,7 +17,7 @@ struct Operation;
 struct Call_Phrase;
 struct Phrase;
 struct List_Expr_Base;
-using List_Expr = aux::Tail_Array<List_Expr_Base>;
+using List_Expr = Tail_Array<List_Expr_Base>;
 struct Lambda_Expr;
 struct Context;
 
@@ -146,7 +146,7 @@ struct GL_Compiler
 };
 
 struct GL_Frame_Base;
-using GL_Frame = aux::Tail_Array<GL_Frame_Base>;
+using GL_Frame = Tail_Array<GL_Frame_Base>;
 
 /// A function call frame used by the Geometry Compiler.
 ///

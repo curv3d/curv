@@ -2,8 +2,8 @@
 // Distributed under The MIT License.
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
-#ifndef AUX_TAIL_ARRAY_H
-#define AUX_TAIL_ARRAY_H
+#ifndef CURV_TAIL_ARRAY_H
+#define CURV_TAIL_ARRAY_H
 
 #include <type_traits>
 #include <cstdlib>
@@ -12,7 +12,7 @@
 #include <utility>
 #include <memory>
 
-namespace aux {
+namespace curv {
 
 // A call to this macro must be the very last statement in the tail array
 // class definition, because array_ must be the last data member.

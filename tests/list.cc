@@ -8,7 +8,6 @@
 //#include <cmath>
 
 using namespace std;
-using namespace aux;
 using namespace curv;
 
 TEST(curv, list)

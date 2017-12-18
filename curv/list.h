@@ -6,8 +6,8 @@
 #define CURV_LIST_H
 
 #include <curv/value.h>
-#include <aux/tail_array.h>
-#include <aux/array_mixin.h>
+#include <curv/tail_array.h>
+#include <curv/array_mixin.h>
 #include <vector>
 
 namespace curv {
@@ -30,7 +30,7 @@ struct List_Base : public Ref_Value
 /// This is a variable length object: the size and the value array
 /// are in the same object. This is very efficient for small lists:
 /// only a single cache hit is required to access both the size and the data.
-using List = aux::Tail_Array<List_Base>;
+using List = Tail_Array<List_Base>;
 
 inline Shared<List> make_list(size_t size)
 {

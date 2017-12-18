@@ -8,8 +8,8 @@
 #include <curv/value.h>
 #include <sstream>
 #include <cstring>
-#include <aux/dtostr.h>
-#include <aux/range.h>
+#include <curv/dtostr.h>
+#include <curv/range.h>
 
 namespace curv {
 
@@ -33,7 +33,7 @@ private:
 public:
     /// Make a curv::String from an array of characters
     static Shared<String> make(const char*, size_t);
-    inline static Shared<String> make(aux::Range<const char*> r)
+    inline static Shared<String> make(Range<const char*> r)
     {
         return make(r.begin(), r.size());
     }
@@ -108,7 +108,7 @@ struct String_Builder : public std::stringstream
 inline String_Builder&
 operator<<(String_Builder& b, double n)
 {
-    b << aux::dfmt(n);
+    b << dfmt(n);
     return b;
 }
 

@@ -5,7 +5,7 @@
 #include <cctype>
 #include <typeinfo>
 #include <boost/core/demangle.hpp>
-#include <aux/dtostr.h>
+#include <curv/dtostr.h>
 #include <curv/gl_compiler.h>
 #include <curv/exception.h>
 #include <curv/context.h>
@@ -14,7 +14,6 @@
 #include <curv/meaning.h>
 #include <curv/function.h>
 
-using aux::dfmt;
 namespace curv {
 
 void gl_compile_2d(const Shape_Recognizer&, std::ostream&, const Context&);

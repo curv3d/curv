@@ -2,7 +2,6 @@
 #include <curv/location.h>
 
 using namespace std;
-using namespace aux;
 using namespace curv;
 
 TEST(curv, parse)

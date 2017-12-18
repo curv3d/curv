@@ -19,8 +19,6 @@
 #include <curv/context.h>
 
 using namespace std;
-using namespace curv;
-using namespace aux;
 
 namespace curv {
 

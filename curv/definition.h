@@ -132,7 +132,7 @@ struct Compound_Definition_Base : public Definition
 
     TAIL_ARRAY_MEMBERS(Element)
 };
-using Compound_Definition = aux::Tail_Array<Compound_Definition_Base>;
+using Compound_Definition = Tail_Array<Compound_Definition_Base>;
 
 struct Scope : public Environ
 {

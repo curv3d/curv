@@ -7,7 +7,7 @@
 
 #include <curv/gl_compiler.h>
 #include <vector>
-#include <aux/tail_array.h>
+#include <curv/tail_array.h>
 #include <curv/shared.h>
 #include <curv/phrase.h>
 #include <curv/value.h>
@@ -420,7 +420,7 @@ struct List_Expr_Base : public Just_Expression
     virtual GL_Value gl_eval(GL_Frame&) const override;
     TAIL_ARRAY_MEMBERS(Shared<Operation>)
 };
-using List_Expr = aux::Tail_Array<List_Expr_Base>;
+using List_Expr = Tail_Array<List_Expr_Base>;
 
 struct Record_Expr : public Just_Expression
 {
@@ -614,7 +614,7 @@ struct Function_Setter_Base : public Just_Action
     };
     TAIL_ARRAY_MEMBERS(Element)
 };
-using Function_Setter = aux::Tail_Array<Function_Setter_Base>;
+using Function_Setter = Tail_Array<Function_Setter_Base>;
 
 struct Include_Setter_Base : public Just_Action
 {
@@ -632,7 +632,7 @@ struct Include_Setter_Base : public Just_Action
     };
     TAIL_ARRAY_MEMBERS(Element)
 };
-using Include_Setter = aux::Tail_Array<Include_Setter_Base>;
+using Include_Setter = Tail_Array<Include_Setter_Base>;
 
 struct Compound_Op_Base : public Operation
 {
@@ -646,7 +646,7 @@ struct Compound_Op_Base : public Operation
 
     TAIL_ARRAY_MEMBERS(Shared<Operation>)
 };
-using Compound_Op = aux::Tail_Array<Compound_Op_Base>;
+using Compound_Op = Tail_Array<Compound_Op_Base>;
 
 // Execute some actions, then execute the body.
 // This is a restricted form of block with no definitions.
@@ -854,7 +854,7 @@ struct String_Expr_Base : public Just_Expression
     Atom eval_atom(Frame&) const;
     TAIL_ARRAY_MEMBERS(Shared<Segment>)
 };
-using String_Expr = aux::Tail_Array<String_Expr_Base>;
+using String_Expr = Tail_Array<String_Expr_Base>;
 
 struct Atom_Expr
 {

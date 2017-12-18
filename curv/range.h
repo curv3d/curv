@@ -2,15 +2,15 @@
 // Distributed under The MIT License.
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
-#ifndef AUX_RANGE_H
-#define AUX_RANGE_H
+#ifndef CURV_RANGE_H
+#define CURV_RANGE_H
 
 #include <cstddef>
 #include <string>
 #include <cstring>
 #include <ostream>
 
-namespace aux {
+namespace curv {
 
 /// A Range references a contiguous subsequence of a collection
 /// using a pair of iterators.
@@ -47,5 +47,5 @@ inline bool operator==(Range<const char*> r, const char* s)
     return memcmp(r.begin(), s, size) == 0;
 }
 
-} // namespace aux
+} // namespace curv
 #endif // header guard

@@ -1,19 +1,19 @@
 #include <gtest/gtest.h>
-#include <aux/tail_array.h>
-#include <aux/array_mixin.h>
+#include <curv/tail_array.h>
+#include <curv/array_mixin.h>
 #include <vector>
 #include <memory>
 
 using namespace std;
-using namespace aux;
+using namespace curv;
 
 struct A
 {
     TAIL_ARRAY_MEMBERS(double)
 };
-using TA = aux::Tail_Array<A>;
+using TA = Tail_Array<A>;
 
-TEST(aux, tail_array)
+TEST(curv, tail_array)
 {
     unique_ptr<TA> a{TA::make(3)};
     ASSERT_EQ(a->size(), 3u);

@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
-#include <aux/dtostr.h>
+#include <curv/dtostr.h>
 #include <sstream>
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
 
 using namespace std;
-using namespace aux;
+using namespace curv;
 
 bool eq(double x, double y)
 {
@@ -20,7 +20,7 @@ void
 test(const char*file, int line, double n, const char*str, dfmt::style style)
 {
     char buf[DTOSTR_BUFSIZE];
-    aux::dtostr(n, buf, style);
+    dtostr(n, buf, style);
     if (strcmp(buf,str) != 0) {
         cout << file << ":" << line << ":"
              << " expected " << str << " got " << buf << "\n";
@@ -41,7 +41,7 @@ test(const char*file, int line, double n, const char*str, dfmt::style style)
 #define DTEST(n,s) test(__FILE__,__LINE__,n,s,dfmt::C)
 #define DTEST_STYLE(n,str,style) test(__FILE__,__LINE__,n,str,style)
 
-TEST(aux, dtostr)
+TEST(curv, dtostr)
 {
     DTEST(0.,"0");
     DTEST(0.00001, "1e-5");

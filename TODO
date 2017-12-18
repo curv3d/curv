@@ -146,7 +146,6 @@ display axes in 3D view
 
 source reorganization:
 * Split cmd/curv.cc into multiple source files
-* Move aux/* into curv.
 
 GL:
 * all math operations that are built-in SPIR-V operators

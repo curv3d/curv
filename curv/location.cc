@@ -4,8 +4,6 @@
 
 #include <curv/location.h>
 
-using namespace aux;
-
 namespace curv {
 
 auto Location::line_info() const

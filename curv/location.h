@@ -7,7 +7,7 @@
 
 #include <curv/script.h>
 #include <curv/token.h>
-#include <aux/range.h>
+#include <curv/range.h>
 #include <curv/shared.h>
 #include <ostream>
 
@@ -50,7 +50,7 @@ public:
     const String& scriptname() const { return *script_->name_; }
 
     /// Range of characters within script where error occurred.
-    aux::Range<const char*> range() const;
+    Range<const char*> range() const;
 
     /// output the location part of an exception message (no final newline)
     void write(std::ostream&) const;

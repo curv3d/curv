@@ -19,7 +19,7 @@ extern "C" {
 #include <fstream>
 
 #include "progdir.h"
-#include <aux/dtostr.h>
+#include <curv/dtostr.h>
 #include <curv/analyser.h>
 #include <curv/context.h>
 #include <curv/program.h>
@@ -274,7 +274,7 @@ bool export_json_value(curv::Value val, std::ostream& out)
         return true;
     }
     if (val.is_num()) {
-        out << aux::dfmt(val.get_num_unsafe(), aux::dfmt::JSON);
+        out << curv::dfmt(val.get_num_unsafe(), curv::dfmt::JSON);
         return true;
     }
     assert(val.is_ref());

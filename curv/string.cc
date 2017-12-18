@@ -4,7 +4,6 @@
 
 #include <curv/string.h>
 
-using namespace aux;
 namespace curv {
 
 const char String::name[] = "string";

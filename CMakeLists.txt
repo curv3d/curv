@@ -17,7 +17,7 @@ else ()
   set( sanitize "-fsanitize=address" )
 endif (APPLE)
 
-FILE(GLOB CurvSrc "aux/*.cc" "curv/*.cc")
+FILE(GLOB CurvSrc "curv/*.cc")
 add_library(libcurv ${CurvSrc})
 set_property(TARGET libcurv PROPERTY OUTPUT_NAME curv)
 

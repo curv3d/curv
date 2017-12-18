@@ -2,12 +2,12 @@
 // Distributed under The MIT License.
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
-#ifndef AUX_DTOSTR_H
-#define AUX_DTOSTR_H
+#ifndef CURV_DTOSTR_H
+#define CURV_DTOSTR_H
 
 #include <ostream>
 
-namespace aux {
+namespace curv {
 
 /// A class for printing floating point numbers accurately.
 ///
@@ -51,5 +51,5 @@ constexpr int DTOSTR_BUFSIZE = 32;
 /// when read using strtod, reconstructs the original number exactly.
 void dtostr(double, char[DTOSTR_BUFSIZE], dfmt::style = dfmt::C);
 
-} // namespace aux
+} // namespace curv
 #endif // header guard

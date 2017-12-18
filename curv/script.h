@@ -5,7 +5,7 @@
 #ifndef CURV_SCRIPT_H
 #define CURV_SCRIPT_H
 
-#include <aux/range.h>
+#include <curv/range.h>
 #include <curv/shared.h>
 #include <curv/string.h>
 
@@ -23,7 +23,7 @@ namespace curv {
 ///
 /// To use this class, you must define a subclass, and heap-allocate
 /// instances using make.
-struct Script : public Shared_Base, public aux::Range<const char*>
+struct Script : public Shared_Base, public Range<const char*>
 {
     Shared<const String> name_;
 protected:
