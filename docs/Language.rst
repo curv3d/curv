@@ -789,7 +789,7 @@ Record Operations
 
     {for (r in listOfRecords) ...r}
 
-.. include: language/Functions.rst
+.. include:: language/Functions.rst
 
 Debug Actions
 -------------
