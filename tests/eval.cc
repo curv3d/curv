@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include <curv/analyzer.h>
+#include <curv/analyser.h>
 #include <curv/program.h>
 #include <curv/exception.h>
 #include <curv/parser.h>

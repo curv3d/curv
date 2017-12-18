@@ -2,7 +2,7 @@
 // Distributed under The MIT License.
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
-#include <curv/analyzer.h>
+#include <curv/analyser.h>
 #include <curv/context.h>
 #include <curv/scanner.h>
 

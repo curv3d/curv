@@ -5,7 +5,7 @@
 #include <functional>
 
 #include <curv/phrase.h>
-#include <curv/analyzer.h>
+#include <curv/analyser.h>
 #include <curv/definition.h>
 #include <curv/shared.h>
 #include <curv/exception.h>

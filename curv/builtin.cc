@@ -20,7 +20,7 @@
 #include <curv/system.h>
 #include <curv/gl_context.h>
 #include <curv/array_op.h>
-#include <curv/analyzer.h>
+#include <curv/analyser.h>
 #include <curv/math.h>
 
 using namespace std;

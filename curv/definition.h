@@ -5,7 +5,7 @@
 #ifndef CURV_DEFINITION_H
 #define CURV_DEFINITION_H
 
-#include <curv/analyzer.h>
+#include <curv/analyser.h>
 
 namespace curv {
 

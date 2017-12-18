@@ -20,7 +20,7 @@ extern "C" {
 
 #include "progdir.h"
 #include <aux/dtostr.h>
-#include <curv/analyzer.h>
+#include <curv/analyser.h>
 #include <curv/context.h>
 #include <curv/program.h>
 #include <curv/exception.h>
