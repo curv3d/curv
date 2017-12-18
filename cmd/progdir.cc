@@ -2,7 +2,7 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 }
-#include <aux/exception.h>
+#include <curv/exception.h>
 #include "progdir.h"
 namespace fs = boost::filesystem;
 
@@ -26,7 +26,7 @@ progdir(const char *argv0)
 
     const char* PATH = getenv("PATH");
     if (PATH == NULL) {
-        throw aux::Exception(curv::stringify(
+        throw curv::Exception_Base(curv::stringify(
             "Can't determine directory of program ", argv0,
             ": PATH not defined"));
     }
@@ -45,7 +45,7 @@ progdir(const char *argv0)
         p = (q < pend ? q + 1 : pend);
     }
 
-    throw aux::Exception(curv::stringify(
+    throw curv::Exception_Base(curv::stringify(
         "Can't determine directory of program ", argv0,
         ": can't find ", argv0, " in $PATH"));
 }

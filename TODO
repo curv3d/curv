@@ -563,8 +563,6 @@ Other:
     and without two copies of the string literal data.
 * dtostr() refactor
   * put all 4 parameters into a DStyle struct.
-* aux::Exception/curv::String refactor. Aux shouldn't depend on Curv.
-  Original plan: to put String in Aux. But we'll see how Curv runtime evolves.
 
 build system?
 * Fast. Correct: auto track dependencies, rebuild on recipe change,
