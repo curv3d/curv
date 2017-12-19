@@ -3,6 +3,18 @@ Blocks
 
 A block is a statement or expression with local variables.
 
+For example,
+
+::
+
+  let a = 1;
+      b = 2;
+  in a + b
+
+is an expression with two local variables ``a`` and ``b``. The result is ``5``.
+
+Block Syntax
+------------
 Blocks are created using the ``let`` and ``where`` operators:
 
   | ``let`` *definitions* ``in`` *phrase*
@@ -16,3 +28,6 @@ In the 3rd syntax, *definitions* and *more_definitions* are combined into a sing
 
 These syntaxes are equivalent: they give you a stylistic choice
 whether to put the phrase before, after, or in the middle of the definitions.
+
+Definition Syntax
+-----------------
