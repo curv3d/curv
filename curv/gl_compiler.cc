@@ -813,7 +813,7 @@ void For_Op::gl_exec(GL_Frame& f) const
     f.gl.out << "  for (float " << i << "=" << dfmt(first, dfmt::EXPR) << ";"
              << i << (range->half_open_ ? "<" : "<=") << dfmt(last, dfmt::EXPR) << ";"
              << i << "+=" << dfmt(step, dfmt::EXPR) << ") {\n";
-    f[slot_] = i;
+    pattern_->gl_exec(i, At_GL_Phrase(list_->source_,&f), f);
     body_->gl_exec(f);
     f.gl.out << "  }\n";
 }

@@ -464,7 +464,7 @@ struct For_Phrase : public Phrase
 {
     Token keyword_;
     Token lparen_;
-    Shared<const Identifier> id_;
+    Shared<const Phrase> pattern_;
     Token in_;
     Shared<const Phrase> listexpr_;
     Token rparen_;
@@ -473,7 +473,7 @@ struct For_Phrase : public Phrase
     For_Phrase(
         Token keyword,
         Token lparen,
-        Shared<const Identifier> id,
+        Shared<const Phrase> pattern,
         Token in,
         Shared<const Phrase> listexpr,
         Token rparen,
@@ -481,7 +481,7 @@ struct For_Phrase : public Phrase
     :
         keyword_(keyword),
         lparen_(lparen),
-        id_(id),
+        pattern_(pattern),
         in_(in),
         listexpr_(listexpr),
         rparen_(rparen),

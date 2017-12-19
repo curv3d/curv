@@ -698,18 +698,18 @@ struct Block_Op : public Operation
 
 struct For_Op : public Operation
 {
-    slot_t slot_;
+    Shared<const Pattern> pattern_;
     Shared<const Operation> list_;
     Shared<const Operation> body_;
 
     For_Op(
         Shared<const Phrase> source,
-        slot_t slot,
+        Shared<const Pattern> pattern,
         Shared<const Operation> list,
         Shared<const Operation> body)
     :
         Operation(std::move(source)),
-        slot_(slot),
+        pattern_(std::move(pattern)),
         list_(std::move(list)),
         body_(std::move(body))
     {}

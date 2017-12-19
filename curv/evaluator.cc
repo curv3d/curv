@@ -699,30 +699,39 @@ While_Action::exec(Frame& f) const
 void
 For_Op::generate(Frame& f, List_Builder& lb) const
 {
+    At_Phrase cx{*list_->source_, &f};
+    At_Index icx{0, cx};
     Value listval = list_->eval(f);
-    List& list = arg_to_list(listval, At_Phrase{*list_->source_, &f});
+    List& list = arg_to_list(listval, cx);
     for (size_t i = 0; i < list.size(); ++i) {
-        f[slot_] = list[i];
+        icx.index_ = i;
+        pattern_->exec(f.array_, list[i], icx, f);
         body_->generate(f, lb);
     }
 }
 void
 For_Op::bind(Frame& f, Record& r) const
 {
+    At_Phrase cx{*list_->source_, &f};
+    At_Index icx{0, cx};
     Value listval = list_->eval(f);
-    List& list = arg_to_list(listval, At_Phrase{*list_->source_, &f});
+    List& list = arg_to_list(listval, cx);
     for (size_t i = 0; i < list.size(); ++i) {
-        f[slot_] = list[i];
+        icx.index_ = i;
+        pattern_->exec(f.array_, list[i], icx, f);
         body_->bind(f, r);
     }
 }
 void
 For_Op::exec(Frame& f) const
 {
+    At_Phrase cx{*list_->source_, &f};
+    At_Index icx{0, cx};
     Value listval = list_->eval(f);
-    List& list = arg_to_list(listval, At_Phrase{*list_->source_, &f});
+    List& list = arg_to_list(listval, cx);
     for (size_t i = 0; i < list.size(); ++i) {
-        f[slot_] = list[i];
+        icx.index_ = i;
+        pattern_->exec(f.array_, list[i], icx, f);
         body_->exec(f);
     }
 }

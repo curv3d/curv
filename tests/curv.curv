@@ -277,5 +277,10 @@ do
         in a := a + n;
 in assert(a == 48);
 
+assert(
+    {for ((i,j) in 1..3>>map(x->(x,x^2))) "$i":j}
+    == {"1":1, "2":4, "3":9}
+);
+
 // script return value:
 in null

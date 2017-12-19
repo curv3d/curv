@@ -279,12 +279,7 @@ parse_item(Scanner& scanner)
                 "syntax error: expecting '(' after 'for'");
         }
 
-        auto p = parse_primary(scanner, "'for' iteration variable");
-        auto id = cast<Identifier>(p);
-        if (id == nullptr) {
-            throw Exception(At_Phrase(*p, scanner.eval_frame_),
-                "syntax error: expecting identifier after 'for('");
-        }
+        auto pat = parse_primary(scanner, "'for' pattern");
 
         Token tok3 = scanner.get_token();
         if (tok3.kind_ != Token::k_in) {
@@ -302,7 +297,7 @@ parse_item(Scanner& scanner)
 
         auto body = parse_item(scanner);
 
-        return make<For_Phrase>(tok, tok2, id, tok3, listexpr, tok4, body);
+        return make<For_Phrase>(tok, tok2, pat, tok3, listexpr, tok4, body);
       }
     case Token::k_while:
       {

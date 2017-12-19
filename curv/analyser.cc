@@ -730,38 +730,16 @@ If_Phrase::analyse(Environ& env) const
 Shared<Meaning>
 For_Phrase::analyse(Environ& env) const
 {
-    Atom name = id_->atom_;
+    Scope scope(env);
+    scope.is_analysing_action_ = env.is_analysing_action_;
 
+    auto pat = make_pattern(*pattern_, scope, 0);
+    pat->analyse(scope);
     auto list = analyse_op(*listexpr_, env);
+    auto body = analyse_tail(*body_, scope);
 
-    slot_t slot = env.frame_nslots_;
-    struct For_Environ : public Environ
-    {
-        Atom name_;
-        slot_t slot_;
-
-        For_Environ(
-            Environ& p,
-            Atom name,
-            slot_t slot)
-        : Environ(&p), name_(name), slot_(slot)
-        {
-            frame_nslots_ = p.frame_nslots_ + 1;
-            frame_maxslots_ = std::max(p.frame_maxslots_, frame_nslots_);
-            is_analysing_action_ = p.is_analysing_action_;
-        }
-        virtual Shared<Meaning> single_lookup(const Identifier& id)
-        {
-            if (id.atom_ == name_)
-                return make<Data_Ref>(share(id), slot_);
-            return nullptr;
-        }
-    };
-    For_Environ body_env(env, name, slot);
-    auto body = analyse_tail(*body_, body_env);
-    env.frame_maxslots_ = body_env.frame_maxslots_;
-
-    return make<For_Op>(share(*this), slot, list, body);
+    env.frame_maxslots_ = scope.frame_maxslots_;
+    return make<For_Op>(share(*this), pat, list, body);
 }
 
 Shared<Meaning>
