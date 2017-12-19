@@ -12,6 +12,8 @@ Roadmap:
 * => First public release with a stable API.
 
 Next changes:
+* `for` patterns
+* let defs1 in phrase where defs2 -- single scope
 * documentation
 
 Proposed change: `include lib.shape` required to access shape library.
@@ -56,6 +58,7 @@ Code cleanup:
 * clean up Record_Pattern::exec
 * remove curv/arg.{h,cc}, move features into value.h and context.h
 * add std::move to curv namespace
+* rename Atom to Symbol
 
 weird error message: Should underline the default value expression.
 curv> {a: [x,y] = []} = {}
