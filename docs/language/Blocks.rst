@@ -3,6 +3,8 @@ Blocks
 
 A block is a statement or expression with local variables.
 
+A block contains a set of definitions,
+plus a body, which is a statement or expression.
 For example,
 
 ::
