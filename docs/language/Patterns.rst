@@ -47,3 +47,6 @@ Pattern Use Cases
 
 *pattern* ``:`` *expression*
   Field spec.
+
+``switch [`` *pattern1* ``->`` *expression1* ``,`` ... ``]``
+  A multi-branch conditional that uses pattern matching.
