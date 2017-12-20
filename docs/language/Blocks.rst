@@ -43,9 +43,6 @@ Definition Syntax
 *identifier* ``=`` *expression*
   Fundamental definition syntax.
   The value of *expression* is bound to *identifier*.
-  Any reference to *identifier* within the block
-  can be replaced by this value, without changing the meaning of the block
-  (substitution semantics).
 
 *pattern* ``=`` *expression*
   The *pattern* is matched against the value of *expression*.
