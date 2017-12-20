@@ -26,7 +26,7 @@ The order in which variables are defined within a block doesn't matter.
 
 Block Syntax
 ------------
-Blocks are created using the ``let`` and ``where`` operators:
+Blocks are created by attaching ``let``\ ...\ ``in`` and ``where``\ ... clauses to a phrase:
 
   | ``let`` *definitions* ``in`` *phrase*
   | *phrase* ``where`` *definitions*
