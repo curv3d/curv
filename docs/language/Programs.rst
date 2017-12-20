@@ -26,5 +26,6 @@ that constructs a shape using some common idioms::
   candy = sphere diam >> colour red;
   stick = cylinder{h: len, d: diam/8} >> move(0,0,-len/2);
 
-The idiom here is to put the model parameters at the top (using ``let...in``),
-and place auxiliary definitions at the bottom (using ``where...``).
+The idiom here is to put the model parameters at the top (using a ``let...in`` clause),
+and place auxiliary definitions at the bottom (using a ``where...`` clause).
+Both clauses are optional.
