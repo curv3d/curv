@@ -42,3 +42,11 @@ Definition Syntax
 Basic definition syntax:
 
  | *identifier* ``=`` *expression*
+
+Pattern definition:
+
+ | *pattern* ``=`` *expression*
+
+Function definition:
+
+ | *identifier* *pattern1* *pattern2*... ``=`` *expression*
