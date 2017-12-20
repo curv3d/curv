@@ -13,6 +13,8 @@ Roadmap:
 
 Next changes:
 * let defs1 in phrase where defs2 -- single scope
+* for loop with pattern: support a variant where list elements that don't
+  match are ignored? Eg, Haskell.
 * documentation
 
 Proposed change: `include lib.shape` required to access shape library.
