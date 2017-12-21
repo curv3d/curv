@@ -67,8 +67,13 @@ The only boolean values are ``true`` and ``false``.
 If a non-boolean value is passed to a boolean operation, the contract is violated,
 and the program is aborted with an error message.
 
-Implementing Contracts for User-Defined Functions
--------------------------------------------------
+Enforcing Contracts in User-Defined Functions
+---------------------------------------------
+Curv provides a set of operations for enforcing contracts.
+
+The most fundamental requirements are: predicates for classifying values,
+and a way to report an error if a contract violation is detected.
+
 
 Operations
 ----------
