@@ -12,6 +12,27 @@
     is_fun x = defined(x.call);
 
 ## Ideas Under Development
+
+Pattern matching in other languages:
+* C#: 'if (value is pattern) statement using variables bound by pattern'
+* C#: 'pattern when condition', like 'pattern && condition' proposed elsewhere.
+* Scala,Rust: 'pattern if condition' -- pattern guard
+* 'match' instead of 'switch': Scala,Racket,Rust,ECMAscript,F#
+* Racket: (and pat1 pat2 ...): pattern matches if all subpatterns match.
+    Use case: (and id pat) is like id@pat in Haskell.
+* Racket: (or pat1 pat2 ...)
+* F#: pat1&pat2, pat1|pat2
+* Rust: pat1|pat2
+* Racket: (not pat ...) — matches when none of the pats match, and binds no identifiers.
+* Racket: (app expr pats ...) — applies expr to the value to be matched;
+  the result of the application is matched against pats. Similar to my
+  coercion pattern.
+* Swift: 'pat as type' coerce value to type, then match pat--a coercion pattern
+* Racket: (? expr pats ...) -- like my predicate pattern
+* Haskell: for (pattern in list) ..., list elements not matching pattern
+  are skipped.
+* Rust,Swift: range syntax matches a range of numbers
+
 Unicode Strings:
 A string is a sequence of characters, but what is a character in Unicode?
  0. Legal code points.
