@@ -32,8 +32,8 @@ This makes function contracts simpler than in imperative languages.
 In mathematics, functions obey algebraic laws.
 For example, addition of two numbers is commutative (a+b==b+a),
 associative (a+(b+c) == (a+b)+c), and so on.
-Algebraic laws are an important tool for understanding the meaning
-of a program, and they are a way of expressing the contract of a function.
+Algebraic laws are an important tool for understanding and modifying programs,
+and they are a way of expressing the contract of a function.
 Curv functions obey the same algebraic laws as their mathematical counterparts,
 to the greatest extent possible.
 
