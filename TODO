@@ -31,16 +31,18 @@ Proposed change: `include lib.shape` required to access shape library.
 
 Pattern project:
 * binder patterns
-* features: [a,...b], {a,...}, id@pat
+* features: [a,...b], {a,...}
   * eg, {a,b,c,...} = file "foo.curv" is like from foo import a,b,c in Python.
   * eg, f[a,...b]= is like f(a:b)= in Haskell.
+* id@pat or id && pat
+* pat1 || pat2 -- eg, [x,y] || [x,y,0]
 * GL: record patterns, predicate patterns
 * `var` definitions and sequential assignments:
   * `var pattern := expr` and `pattern := expr` *is* supported.
   * `f x := expr` function definition syntax is *not* supported.
   * `a[i] := expr` *is* supported for assignments only.
   * `var (is_num x) := expr` means `is_num` is enforced on assignments to `x`.
-* optional features: id==expr, pat&&cond
+* optional features: id==expr, pat if cond
 
 Language changes:
 * lib

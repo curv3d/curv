@@ -17,7 +17,6 @@ Pattern matching in other languages:
 * C#: 'if (value is pattern) statement using variables bound by pattern'
 * C#: 'pattern when condition', like 'pattern && condition' proposed elsewhere.
 * Scala,Rust: 'pattern if condition' -- pattern guard
-* 'match' instead of 'switch': Scala,Racket,Rust,ECMAscript,F#
 * Racket: (and pat1 pat2 ...): pattern matches if all subpatterns match.
     Use case: (and id pat) is like id@pat in Haskell.
 * Racket: (or pat1 pat2 ...)
@@ -32,6 +31,20 @@ Pattern matching in other languages:
 * Haskell: for (pattern in list) ..., list elements not matching pattern
   are skipped.
 * Rust,Swift: range syntax matches a range of numbers
+
+Pattern matching extensions:
+* 'if (<value> matches <pattern>) <statement using variables bound by pattern>'
+* '<pattern> if <condition>' -- pattern guard
+* 'pat1 && pat2' -- the same value matches both patterns.
+  * bound variables are disjoint between pat1 and pat2.
+  * Idiom: 'id && pat' is like 'id@pat' in Haskell.
+* 'pat1 || pat2' -- the value matches either pat1 or pat2.
+  * pat1 and pat2 define identical sets of bound variables.
+  * Useful when simulating a switch statement.
+  * [x,y] || [x,y,0]
+* 'coercion >> pat'
+* 'pat == expr', 'pat != expr', 'pat < expr', ... -- relational op predicates
+* 'pat `elem` listexpr' -- range patterns, like 'x `elem` 1..10'.
 
 Unicode Strings:
 A string is a sequence of characters, but what is a character in Unicode?
@@ -96,12 +109,6 @@ Patterns (Definitions, Binders, Lambda parameters, `for` parameter):
 * see also Coercions(deprecated)
 * see also Literal Patterns(deprecated)
 
-Switches (depends on refutable patterns)
-* switch[(x,y,z)->..., a->...] -- returns a function
-* f = switch[(x,y,z)->..., a->...]; can be written as
-    f(x,y,z)=...;
-    f a = ...;
-
 Coercions(deprecated):
 * A *coercion* is an idempotent function that:
   * maps a member of a type onto itself,
@@ -118,7 +125,7 @@ Coercions(deprecated):
   is first applied to the value to be matched, then the resulting value
   is matched by `pat`.
 * Example:
-    fact = switch [
+    fact = match [
         0 -> 1;
         Nat n -> n * fact(n - 1);
     ];
@@ -152,7 +159,7 @@ The best parts of the coercion proposal are:
 * You can declare the type of a parameter.
 * A parameter match aborts with a meaningful message if the argument value
   structurally matches the type, but is corrupted. This is better than falling
-  off the end of the switch.
+  off the end of the match.
 
 However, I am suspicious of the value of implicit conversions. I did some
 experiments. Liberal type conversions (like converting '2' to '(2,2)' in Vec2)
@@ -279,7 +286,7 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
   * (x >= 0) -> body
   * (x >= 0 && x <= 1) -> body
 * We want the ability to add arbitrary predicates to a pattern match.
-  See 'switch', 'coercion' and 'guard expressions' for use cases.
+  See 'match', 'coercion' and 'guard expressions' for use cases.
   `pat && condition` seems like a promising syntax.
 
 ### Debug actions:
