@@ -52,8 +52,8 @@ so it's evident that something fishy is going on.
 
 In these languages, the boolean AND operation (a && b) works like this:
 
- 1. If ``a`` is falsey, return ``a``.
- 2. If ``a`` is truthy, return ``b``.
+1. If ``a`` is falsey, return ``a``.
+2. If ``a`` is truthy, return ``b``.
 
 In mathematics, the boolean AND operation is commutative: ``a && b``
 is equal to ``b && a``. But AND is not commutative in these languages.
