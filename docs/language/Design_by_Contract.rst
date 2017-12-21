@@ -37,10 +37,8 @@ and they are a way of expressing the contract of a function.
 Curv functions obey the same algebraic laws as their mathematical counterparts,
 to the greatest extent possible.
 
-Examples
---------
-Boolean Operations
-~~~~~~~~~~~~~~~~~~
+Example (Boolean Operations)
+----------------------------
 In mathematics, the boolean operations obey the laws of boolean algebra.
 
 In most dynamically typed languages, values are classified as truthy (they count
@@ -69,8 +67,8 @@ The only boolean values are ``true`` and ``false``.
 If a non-boolean value is passed to a boolean operation, the contract is violated,
 and the program is aborted with an error message.
 
-Numeric Operations
-~~~~~~~~~~~~~~~~~~
+Implementing Contracts for User-Defined Functions
+-------------------------------------------------
 
 Operations
 ----------
