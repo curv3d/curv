@@ -1,7 +1,10 @@
 Patterns
 ========
 
-introduction and example
+Patterns are a concise syntax for testing that a value has a certain structure,
+and then extracting information from values that match the pattern.
+
+example
 
 Pattern Syntax
 --------------
@@ -32,6 +35,9 @@ Pattern Syntax
   Call the predicate function with the to-be-matched value as an argument.
   If the predicate is false, the match fails. If the predicate is true,
   then match the value against *pattern*.
+
+``(`` *pattern* ``)``
+  Patterns can be parenthesized, without changing their meaning.
 
 Pattern Use Cases
 -----------------
