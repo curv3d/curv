@@ -116,11 +116,11 @@ size shape = shape.bbox[MAX] - shape.bbox[MIN];
 MIN = 0;
 MAX = 1;
 
-is_bbox2 = switch [
+is_bbox2 = match [
     (is_vec2 _, is_vec2 _) -> true;
     _ -> false;
 ];
-is_bbox3 = switch [
+is_bbox3 = match [
     (is_vec3 _, is_vec3 _) -> true;
     _ -> false;
 ];
@@ -257,7 +257,7 @@ perimeter_extrude perimeter cross_section =
 ///////////////
 
 half_space = (
-    switch [
+    match [
     {d, normal: n} -> impl(d*n,n);
     [a, b, c] -> impl(a, normalize(cross(b-a,c-b)));
     {at: a, normal: n} -> impl(a,n);
@@ -277,7 +277,7 @@ where
 );
 
 half_plane = (
-    switch [
+    match [
     {d, normal: n} -> impl(d*n,n);
     [a, b] -> impl(a, normalize(perp(b-a)));
     {at: a, normal: n} -> impl(a,n);
@@ -314,7 +314,7 @@ square_e d = rect_e(d,d);
 // rect: an axis aligned rectangle.
 rect = rect_m;
 rect_m x =
-    x >> switch [
+    x >> match [
     (is_vec2 b) ->
         let r = b / 2;
         in make_shape {
@@ -353,7 +353,7 @@ rect_m x =
         rect_m((xmin,ymin),(xmax,ymax));
     ];
 rect_e x =
-    x >> switch [
+    x >> match [
     (is_vec2 b) ->
         let r = b / 2;
         in make_shape {
@@ -406,7 +406,7 @@ convex_polygon_m pts =
 // box: an axis aligned cuboid.
 box = box_m;
 box_m a =
-    a >> switch [
+    a >> match [
     (is_vec3 b) ->
         let r = b / 2;
         in make_shape {
@@ -426,7 +426,7 @@ box_m a =
         box_m((xmin,ymin,zmin),(xmax,ymax,zmax));
     ];
 box_e a =
-    a >> switch [
+    a >> match [
     (is_vec3 b) ->
         let r = b / 2;
         in make_shape {
@@ -778,7 +778,7 @@ warp_domain_xy warp shape =
 // rotate angle shape -- 2D rotation around the Z axis
 // rotate (angle,axis) shape -- 3D rotation around specified axis
 rotate arg shape =
-    arg >> switch [
+    arg >> match [
     (is_num a) ->
         let // 2D rotation around the Z axis
             rot2(a,p) = cmul(p, cis a);

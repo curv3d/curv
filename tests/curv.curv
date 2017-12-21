@@ -243,7 +243,7 @@ assert_error(
 assert(encode "ABC" == [65,66,67]);
 assert("$[65,66,67]" == "ABC");
 
-let f = switch [
+let f = match [
         [a,b,c] -> a+b+c;
         x -> null;
     ];
@@ -254,14 +254,14 @@ assert( (3 `max` 5) == 5 );
 let (is_bool b, is_num n) = (false,0) in assert(!b && n==0);
 
 assert(
-    (42 >> switch [
+    (42 >> match [
         (is_bool b) -> error "can't happen";
         (is_num n) -> n+1 ])
     == 43);
 
 assert( {a:} == {a:true} );
 
-let f = switch [
+let f = match [
     {nothing:} -> "nothing";
     {just: a} -> "just $a";
     ];

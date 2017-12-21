@@ -576,9 +576,9 @@ struct Encode_Function : public Polyadic_Function
     }
 };
 
-struct Switch_Function : public Polyadic_Function
+struct Match_Function : public Polyadic_Function
 {
-    Switch_Function() : Polyadic_Function(1) {}
+    Match_Function() : Polyadic_Function(1) {}
     Value call(Frame& f) override
     {
         At_Arg ctx0(f);
@@ -967,7 +967,7 @@ builtin_namespace()
     {"repr", make<Builtin_Value>(Value{make<Repr_Function>()})},
     {"decode", make<Builtin_Value>(Value{make<Decode_Function>()})},
     {"encode", make<Builtin_Value>(Value{make<Encode_Function>()})},
-    {"switch", make<Builtin_Value>(Value{make<Switch_Function>()})},
+    {"match", make<Builtin_Value>(Value{make<Match_Function>()})},
     {"file", make<Builtin_Meaning<File_Metafunction>>()},
     {"print", make<Builtin_Meaning<Print_Metafunction>>()},
     {"warning", make<Builtin_Meaning<Warning_Metafunction>>()},
