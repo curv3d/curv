@@ -23,13 +23,22 @@ Pattern Syntax
   A parenthesized list pattern is either empty ``()``
   or it contains at least one comma.
 
-``{`` *field1* ``,`` ... ``}``
-  A record pattern::
+``{`` *field_pattern1* ``,`` ... ``}``
+  A record pattern contains a list of field patterns::
   
-    field ::= field_pattern | field_pattern '=' default_value | field_name ':'
-    field_pattern ::= identifier | field_name ':' pattern
+    field_pattern ::= field | field '=' default_value | field_name ':'
+    field ::= identifier | field_name ':' pattern
     field_name ::= identifier | quoted_string
 
+  Each field pattern matches one field.
+  
+  * The simplest field pattern is an identifier. For example, ``foo``
+    matches a field named ``foo``, and binds its value to ``foo``.
+  * The field name can be different from the variable name that you bind its value to.
+    For example, ``{angle: a, axis: v}`` is a record pattern that requires two fields
+    named ``angle`` and ``axis``, but the values of those fields are bound to the
+    variables ``a`` and ``v``.
+  
 ``_``
   Wildcard pattern. Matches any value, but the value is ignored, and no names are bound.
 
