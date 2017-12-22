@@ -45,6 +45,20 @@ Both clauses are optional.
 
 Source Files
 ------------
+If the previous example is in the file ``lollipop.curv``,
+then you can reference it from another program like this::
+
+  let
+  lolly = file "lollipop.curv";
+  
+  in
+  row .4 [lolly, lolly, lolly]
+
+``file filename``
+  Evaluate the program stored in the file named ``filename``,
+  and return the resulting value. ``filename`` is a string.
+
+--------------------
 Each source file is a *.curv file containing a Curv expression.
 This expression is evaluated to yield a value.
 
