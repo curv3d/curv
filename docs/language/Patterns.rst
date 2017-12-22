@@ -26,9 +26,8 @@ Pattern Syntax
 ``{`` *field1* ``,`` ... ``}``
   A record pattern::
   
-    field_name ::= identifier | quoted_string
-    field_pattern ::= field_name | field_name ':' pattern
     field ::= field_pattern | field_pattern '=' default_value
+    field_pattern ::= identifier | identifier ':' pattern | quoted_string ':' pattern
 
 ``_``
   Wildcard pattern. Matches any value, but the value is ignored, and no names are bound.
