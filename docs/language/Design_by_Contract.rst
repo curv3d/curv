@@ -37,10 +37,8 @@ and they are a way of expressing the contract of a function.
 Curv functions obey the same algebraic laws as their mathematical counterparts,
 to the greatest extent possible.
 
-Examples
---------
-Boolean Operations
-~~~~~~~~~~~~~~~~~~
+Example (Boolean Operations)
+----------------------------
 In mathematics, the boolean operations obey the laws of boolean algebra.
 
 In most dynamically typed languages, values are classified as truthy (they count
@@ -54,8 +52,8 @@ so it's evident that something fishy is going on.
 
 In these languages, the boolean AND operation (a && b) works like this:
 
- 1. If ``a`` is falsey, return ``a``.
- 2. If ``a`` is truthy, return ``b``.
+1. If ``a`` is falsey, return ``a``.
+2. If ``a`` is truthy, return ``b``.
 
 In mathematics, the boolean AND operation is commutative: ``a && b``
 is equal to ``b && a``. But AND is not commutative in these languages.
@@ -69,8 +67,13 @@ The only boolean values are ``true`` and ``false``.
 If a non-boolean value is passed to a boolean operation, the contract is violated,
 and the program is aborted with an error message.
 
-Numeric Operations
-~~~~~~~~~~~~~~~~~~
+Enforcing Contracts in User-Defined Functions
+---------------------------------------------
+Curv provides a set of operations for enforcing contracts.
+
+The most fundamental requirements are: predicates for classifying values,
+and a way to report an error if a contract violation is detected.
+
 
 Operations
 ----------

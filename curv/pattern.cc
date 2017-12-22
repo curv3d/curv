@@ -397,7 +397,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
         }
     }
     if (auto call = dynamic_cast<const Call_Phrase*>(&ph)) {
-        if (call->op_.kind_ != Token::k_backtick)
+        if (call->op_.kind_ == Token::k_missing)
             return make<Predicate_Pattern>(share(*call),
                 make_pattern(*call->arg_, scope, unitno));
     }
