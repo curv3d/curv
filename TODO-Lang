@@ -33,16 +33,30 @@ Pattern matching in other languages:
 * Rust,Swift: range syntax matches a range of numbers
 
 Pattern matching extensions:
-* 'if (<value> matches <pattern>) <statement using variables bound by pattern>'
-* '<pattern> if <condition>' -- pattern guard
+* '<pattern> if <condition>' -- pattern guard. The pattern is matched,
+  variables are bound, then the condition is evaluated over the bound variables,
+  and the match fails if the condition is false.
+  * The 'phrase abstraction' design pattern asks if the syntax for this should
+    actually be 'if (condition) pattern'? But the C if syntax is
+    counterintuitive because the pattern binds variables in the condition.
+  * Also, should we have 'statement if condition'?
 * 'pat1 && pat2' -- the same value matches both patterns.
   * bound variables are disjoint between pat1 and pat2.
   * Idiom: 'id && pat' is like 'id@pat' in Haskell.
 * 'pat1 || pat2' -- the value matches either pat1 or pat2.
   * pat1 and pat2 define identical sets of bound variables.
   * Useful when simulating a switch statement.
-  * [x,y] || [x,y,0]
-* 'coercion >> pat'
+  * [x,y] || [x,y,_==0]
+* 'cast >> pat'
+  * If V is the value being matched, then we evaluate `cast V`: if cast's
+    parameter pattern fails, the match fails. Otherwise, the result of `cast V`
+    becomes the new value that is matched against `pat`.
+  * A cast is a function that maps values onto a particular type, and is
+    idempotent for members of that type. This feature implements implicit
+    conversions to a type.
+  * This is also a hook for defining your own pattern operators.
+    Eg, instead of 'pat==x', use 'eq x>>pat' and define eq x (V if V==x) = V.
+  * This wants to be a right-associative operator, but >> is left-associative.
 * 'pat == expr', 'pat != expr', 'pat < expr', ... -- relational op predicates
 * 'pat `elem` listexpr' -- range patterns, like 'x `elem` 1..10'.
 
@@ -499,16 +513,25 @@ Eg, file{repo:"https://github.com/doug-moen/laser-curv.git", version:"1.0"}
 
 Directory syntax for `file`.
 
-### Guard Expressions
+### Guarded Expression Sequence
 Loosely inspired by guards in Haskell 2010 and in APL Direct Functions.
- 1) First version. A sequence of statements: either a sequential definition,
-    or a guarded expression (condition=>expr) -- if the condition is true,
-    return the expression, or an unguarded expression (return its value).
+ 1) First version. A sequence of statements of these kinds:
+    * a sequential definition,
+    * an action,
+    * a guarded expression (condition=>expr) -- if the condition is true,
+      return the expression,
+    * an unguarded expression (return its value).
  2) Second version, based on Haskell 2010, incorporating pattern matching.
     A guarded expression is generalized, so you have a list of guards.
     Each guard is either a condition, or pat<-expr. The latter evaluates expr
     and succeeds if the pattern matches the result (binding names as a side
     effect of successful pattern match).
+ 3) A syntax for generalized guarded expressions:
+      if (guard1 && guard2 && ...) expr
+    or
+      expr if guard1 && guard2 && ...
+    where guard is an expression or 'expr matches pattern'.
+    Maybe 'pattern = expr' is a guard, but it's error prone (x==a vs x=a).
 
 ### Action/Generator Abstraction
 Support tail recursion as a form of iteration in list/record generators.
