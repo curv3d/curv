@@ -88,6 +88,8 @@ Definition Syntax
 
 ``include`` *record_value*
   Add all of the fields in *record_value* to the current scope.
+  *record_value* is an expression that is evaluated at compile time,
+  and may reference only built-in operations.
 
 .. _`Functions`: Functions.rst
 .. _`Patterns`: Patterns.rst
