@@ -10,6 +10,9 @@
   * 'is_record f' is true
   * 'is_fun r' is true if r is a record with a call field.
     is_fun x = defined(x.call);
+* compose -- function composition
+  Short form is 'co'?
+  x >> compose[f,g,h] means x>>f>>g>>h ?
 
 ## Ideas Under Development
 
