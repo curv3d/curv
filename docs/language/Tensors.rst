@@ -31,8 +31,8 @@ Indexing a Tensor
 Tensors are indexed using a generalization of list indexing notation.
 A tensor of rank *k* is indexed by a vector of count *k*.
 
-For example, if ``M`` is a matrix, then ``M[i,j]`` retrieves
-the element at row ``i`` and column ``j``, assuming ``i`` and ``j`` are integers.
+For example, if ``M`` is a matrix, then ``M[i,j]`` retrieves the element
+at row ``i`` and column ``j``, assuming ``i`` and ``j`` are integers.
 This is just function call notation, where ``M`` plays the role of a function,
 and the vector ``[i,j]`` plays the role of an argument.
 ``M[i,j]`` is equivalent to ``M[i][j]``, due to the representation of matrices
@@ -45,16 +45,18 @@ Note: Tensor slicing is not implemented (yet).
 
 Tensorized Numeric Operations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-All of the built-in scalar numeric operations are generalized to operate on tensors.
+All of the built-in scalar numeric operations
+are generalized to operate on tensors.
 
-Unary operations (like unary ``-``) are extended to operate "elementwise" on each
-element of a tensor.  For example::
+Unary operations (like unary ``-``) are extended to operate "elementwise"
+on each element of a tensor.  For example::
 
   -[[1,2],[3,4]] == [[-1,-2],[-3,-4]]
 
 Binary operations (like binary ``+``) are extended in two ways:
 
-* Elementwise: If the arguments are two lists of the same count, eg ``[a,b]+[c,d]``,
+* Elementwise: If the arguments are two lists of the same count,
+  eg ``[a,b]+[c,d]``,
   then the result is another list of the same count, eg ``[a+c,b+d]``.
 * Broadcasting: If one argument is a scalar, and the other argument is a list,
   eg ``x+[a,b]`` or ``[a,b]+x``,
@@ -81,8 +83,18 @@ For standard matrix multiplication, use ``dot``, the tensor dot product.
 Other Tensor Operations
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-``dot(a,b)``
-  The tensor dot product ``a⋅b`` is a generalization of vector dot product and matrix multiplication.
+``dot(A,B)``
+  The tensor dot product ``A⋅B`` is a generalization of vector dot product
+  and matrix multiplication.
+
+  In the general case, A and B are tensors of at least rank 1.
+  The final dimension of A equals the first dimension of B.
+  Cut A into slices along its last axis,
+  do the same with B along its first axis, 
+  then combine each slice from A with each slice from B using *, 
+  and finally perform a reduction using +. 
+  The resulting tensor has rank equal to ``rank(A)+rank(B)-2``.
+
   If V is a vector and M is a matrix, then:
   
   * ``dot(V1, V2)`` is the dot product of two vectors.
@@ -92,13 +104,11 @@ Other Tensor Operations
     but the result is a vector.
     Same as ``sum(V * M)``, or ``V*M`` in OpenSCAD.
   * ``dot(M, V)`` is the product of a vector and a matrix.
-    It's like matrix multiply, treating V as a row vector, but the result is a vector.
+    It's like matrix multiply, treating V as a row vector,
+    but the result is a vector.
     Same as ``sum(transpose M * V)``, or ``M*V`` in OpenSCAD.
   * ``dot(M1, M2)`` is standard matrix multiplication (``M1*M2`` in OpenSCAD).
 
-  ``dot(a,b)`` works on any two tensors of at least rank 1,
-  as long as the final dimension of ``a`` equals the first dimension of ``b``.
-  The resulting tensor has rank equal to ``rank(a)+rank(b)-2``.
   This operation is equivalent to the ``Dot`` function in Mathematica,
   or to the following Curv definition::
   
