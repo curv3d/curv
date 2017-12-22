@@ -23,8 +23,12 @@ Pattern Syntax
   A parenthesized list pattern is either empty ``()``
   or it contains at least one comma.
 
-``{`` *field_pattern1* ``,`` ... ``}``
-  A record pattern.
+``{`` *field1* ``,`` ... ``}``
+  A record pattern::
+  
+    field_name ::= identifier | quoted_string
+    field_pattern ::= field_name | field_name ':' pattern
+    field ::= field_pattern | field_pattern '=' default_value
 
 ``_``
   Wildcard pattern. Matches any value, but the value is ignored, and no names are bound.
