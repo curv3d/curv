@@ -86,5 +86,8 @@ Definition Syntax
   
   See: `Functions`_.
 
+``include`` *record_value*
+  Add all of the fields in *record_value* to the current scope.
+
 .. _`Functions`: Functions.rst
 .. _`Patterns`: Patterns.rst
