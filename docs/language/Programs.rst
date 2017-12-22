@@ -17,7 +17,7 @@ This is an expression which evaluates to the string ``"Hello, World!"``.
 .. _`"Hello, World!"`: https://en.wikipedia.org/wiki/%22Hello,_World!%22_program
 
 But Curv is a language for making geometric shapes. A more realistic example
-of your first program is::
+of a first program is::
 
   cube
 
@@ -42,6 +42,9 @@ where you place model parameters at the top of the program
 and auxiliary definitions at the bottom
 (using a ``where...`` clause).
 Both clauses are optional.
+See: `Blocks`_.
+
+.. _`Blocks`: Blocks.rst
 
 Source Files
 ------------
@@ -58,24 +61,41 @@ then you can reference it from another program like this::
   Evaluate the program stored in the file named ``filename``,
   and return the resulting value. ``filename`` is a string.
 
---------------------
-Each source file is a *.curv file containing a Curv expression.
-This expression is evaluated to yield a value.
+Libraries
+---------
+If your program is so large that you need to split it up into
+multiple source files, then you'll probably have a main source file
+that computes the shape, and some auxiliary source files that contain
+model parameters and auxiliary definitions.
 
-A Curv program is typically stored in a source file
-with the extension ``*.curv``.
+A set of definitions is represented by a record value.
+When we store a set of definitions in a source file, we call this a library.
 
-Programs are expressions, which are evaluated to yield a result.
+Here is how the lollipop example could be split into 3 source files:
 
-* In the common case, the result is a shape value.
-* Another common pattern is to construct a record value,
-  representing a set of definitions: either a library of
-  reusable components, or a set of model parameters for a
-  large, multi-source-file model.
+``lollipop.curv``::
 
-Source Files and External Libraries
------------------------------------
-::
+  union(candy, stick)
+  where
+  include file "lolli-lib.curv";
 
-  file
-  include record_expr
+``lolli-parameters.curv``::
+
+  {
+  diam = 1;
+  len = 4;
+  }
+
+``lolli-lib.curv``::
+
+  {
+  include file "lolli-parameters.curv";
+  candy = sphere diam >> colour red;
+  stick = cylinder{h: len, d: diam/8} >> move(0,0,-len/2);
+  }
+
+You'll note that:
+
+* A set of definitions, surrounded by brace brackets, is a record value.
+* ``include record_value`` is a special kind of definition that adds all
+  of the fields in a record to the current scope.
