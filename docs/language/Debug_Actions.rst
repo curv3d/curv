@@ -15,8 +15,8 @@ Unlike an expression, an action does not compute a value.
   and they will be executed in sequence.
 
   The ``phrase`` argument can be an expression or statement.
-  (A statement is an element specifier in a list constructor,
-  a field specifier in a record constructor, or an action.)
+  (A statement is an element generator in a list constructor,
+  a field generator in a record constructor, or an action.)
   A ``do`` phrase can be used in any context where its ``phrase`` argument
   would also be legal.
 

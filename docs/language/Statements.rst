@@ -1,7 +1,8 @@
 Statements
 ==========
 
-A statement is a syntactic element (a phrase), distinct from an expression.
+A statement is a syntactic unit (a phrase), distinct from an expression,
+which expresses some action to carry out.
 There are 3 kinds of statements:
 
 * Element generators (found in list constructors).
@@ -14,7 +15,7 @@ There are 3 kinds of statements:
   See: `Records`_.
 * Debug actions.
   A debug action has side effects which aid in debugging:
-  printing a message on the debug console, terminating the
+  printing a message on the debug console, or terminating the
   program in case of error.
   See: `Debug Actions`_.
 

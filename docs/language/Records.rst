@@ -13,8 +13,8 @@ Records are used to represent:
 Record Constructors
 ~~~~~~~~~~~~~~~~~~~
 
-A record constructor consists of a comma-separated list of field specifiers
-inside of brace brackets. A field specifier has one of these forms:
+A record constructor consists of a comma-separated list of field generators
+inside of brace brackets. A simple field generator has one of these forms:
 
 * *identifier* ``:`` *expression*
 * *quotedString* ``:`` *expression*
@@ -25,8 +25,8 @@ specified as just bare identifiers.
 The spread operator (``...``) interpolates all of the fields from another
 record into the record being constructed.
 
-Field specifiers are processed left to right. If the same field name is
-used more than once, then the last field specifier wins.
+Field generators are processed left to right. If the same field name is
+specified more than once, then the last occurrence wins.
 
 Examples:
 
@@ -37,8 +37,10 @@ Examples:
 * ``{... r, x: 0}`` -- The same as record ``r``, extended with field ``x``,
   with ``x:0`` overriding any previous binding.
 
-Compound field specifiers may be constructed using blocks, and using the
-``if``, ``for`` and ``;`` control structures, as described later.
+Complex field generators may be constructed from simple field generators
+using blocks and control structures, as described in `Statements`_.
+
+.. _`Statements`: Statements.rst
 
 Record Operations
 ~~~~~~~~~~~~~~~~~

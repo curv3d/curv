@@ -116,12 +116,12 @@ action
 
 element generator
   A phrase that computes a sequence of zero or more values.
-  ``[``\ *element_generator*\ ``]`` is a list comprehension.
+  ``[``\ *element_generator*\ ``]`` is a list constructor.
 
 field generator
   A phrase that computes a sequence of zero or more fields,
   which are name/value or string/value pairs.
-  ``{``\ *field_generator*\ ``}`` is a record comprehension.
+  ``{``\ *field_generator*\ ``}`` is a record constructor.
 
 An action can be used in any context requiring a definition,
 element generator, or field generator. An expression can be used
