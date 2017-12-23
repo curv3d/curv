@@ -51,10 +51,10 @@ For example,
 .. _`statement`: Statements.rst
 .. _`Statements`: Statements.rst
 
-Module Constructors
-~~~~~~~~~~~~~~~~~~~
+Modules
+~~~~~~~
 
-A module constructor consists of a semicolon-separated list of definitions
+A module is a semicolon-separated or semicolon-terminated list of definitions
 inside of brace brackets. The definitions form a single, mutually recursive scope.
 The order of the definitions doesn't matter. Duplicate definitions are an error.
 For definition syntax, see: `Blocks`_.
