@@ -51,6 +51,19 @@ For example,
 .. _`statement`: Statements.rst
 .. _`Statements`: Statements.rst
 
+Module Constructors
+~~~~~~~~~~~~~~~~~~~
+
+A module constructor consists of a semicolon-separated list of definitions
+inside of brace brackets. The definitions form a single, mutually recursive scope.
+The order of the definitions doesn't matter. Duplicate definitions are an error.
+For definition syntax, see: `Blocks`_.
+
+.. _`Blocks`: Blocks.rst
+
+Modules are an alternate syntax for constructing record values, and are useful when
+one field definition must reference another.
+
 Record Operations
 ~~~~~~~~~~~~~~~~~
 ``record . identifier``
