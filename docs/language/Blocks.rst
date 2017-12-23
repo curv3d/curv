@@ -43,7 +43,7 @@ whether to put the phrase before, after, or in the middle of the definitions.
 Definition Syntax
 -----------------
 *identifier* ``=`` *expression*
-  Fundamental definition syntax.
+  The fundamental definition syntax.
   The value of *expression* is bound to *identifier*.
 
 *pattern* ``=`` *expression*
@@ -79,7 +79,7 @@ Definition Syntax
   
   See: `Functions`_.
 
-*identifier* *pattern1* *pattern2* ... ``=`` *expression
+*identifier* *pattern1* *pattern2* ... ``=`` *expression*
   A curried function definition, which is an abbreviation of
   
    | *identifier* ``=`` *pattern1* ``->`` *pattern2* ``->`` ... ``->`` *expression*
