@@ -41,10 +41,10 @@ Example (Boolean Operations)
 ----------------------------
 In mathematics, the boolean operations obey the laws of boolean algebra.
 
-In most dynamically typed languages, values are classified as truthy (they count
+In many dynamically typed languages, all values are classified either as truthy (they count
 as true in a boolean context), or falsey (they count as false in a boolean context).
 In Javascript, for example, there are exactly 6 falsey values:
-undefined, null, NaN, 0, "", and false.
+undefined, null, NaN, 0, "", and false. The rest are truthy.
 In particular, [] counts as true, and new Boolean(false) also counts as true.
 In Python, by contrast, [] counts as false.
 It's hard to find two such languages that agree on the definitions of truthy and falsey,
@@ -59,10 +59,10 @@ In mathematics, the boolean AND operation is commutative: ``a && b``
 is equal to ``b && a``. But AND is not commutative in these languages.
 For example, 1 && 42 == 42, but 42 && 1 == 1.
 
-In short, most dynamically typed languages have a complex and arbitrary contract
-for boolean operations that breaks the rules of boolean algebra.
+In short, many dynamically typed languages have a complex and arbitrary contract
+for boolean operations that breaks the laws of boolean algebra.
 
-Curv has a simple contract for boolean operations that obey the rules of boolean algebra.
+Curv has a simple contract for boolean operations, which obey the laws of boolean algebra.
 The only boolean values are ``true`` and ``false``.
 If a non-boolean value is passed to a boolean operation, the contract is violated,
 and the program is aborted with an error message.
