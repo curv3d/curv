@@ -14,32 +14,41 @@ Record Constructors
 ~~~~~~~~~~~~~~~~~~~
 
 A record constructor consists of a comma-separated list of field generators
-inside of brace brackets. A simple field generator has one of these forms:
+inside of brace brackets. A field generator is a kind of `statement`_ that adds 0 or more
+fields to the record being constructed.
+
+A simple field generator constructs exactly one field:
 
 * *identifier* ``:`` *expression*
-* *quotedString* ``:`` *expression*
-* ``...`` *recordExpression*
+* *quoted_string* ``:`` *expression*
 
-Field names can be arbitrary strings, but as an abbreviation, they can be
-specified as just bare identifiers.
-The spread operator (``...``) interpolates all of the fields from another
-record into the record being constructed.
-
-Field generators are processed left to right. If the same field name is
-specified more than once, then the last occurrence wins.
-
-Examples:
+For example,
 
 * ``{a: 1, b: 2}``
 * ``{"a": 1, "b": 2}`` -- Same as above.
+
+The spread operator (``...``) interpolates all of the fields
+from one record into the record being constructed.
+
+* ``...`` *record_expression*
+
+Field generators are processed left to right. If the same field name is
+specified more than once, then the last occurrence wins.
+This can be used to specify defaults and overrides:
+
 * ``{x: 0, ... r}`` -- The same as record ``r``, except that if field ``x`` is
   not defined, then it defaults to ``0``.
 * ``{... r, x: 0}`` -- The same as record ``r``, extended with field ``x``,
   with ``x:0`` overriding any previous binding.
 
-Complex field generators may be constructed from simple field generators
+Complex field generators may be composed from simpler ones
 using blocks and control structures, as described in `Statements`_.
+For example,
 
+* ``{for (i in 1..3) "f$i" : i}``
+  evaluates to ``{f1: 1, f2: 2, f3: 3}``.
+
+.. _`statement`: Statements.rst
 .. _`Statements`: Statements.rst
 
 Record Operations
