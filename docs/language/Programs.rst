@@ -94,8 +94,13 @@ Here is how the lollipop example could be split into 3 source files:
   stick = cylinder{h: len, d: diam/8} >> move(0,0,-len/2);
   }
 
-You'll note that:
+Note that:
 
-* A set of definitions, surrounded by brace brackets, is a record value.
+* A set of definitions, surrounded by brace brackets, is called a module,
+  and evaluates to a record value. See: `Records`_.
 * ``include record_value`` is a special kind of definition that adds all
   of the fields in a record to the current scope.
+  See: `Blocks`_.
+
+.. _`Records`: Records.rst
+.. _`Blocks`: Blocks.rst
