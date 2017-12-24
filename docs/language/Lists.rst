@@ -28,6 +28,7 @@ List Constructors
   
   Complex element generators may be composed from simpler ones using blocks and control structures,
   as described in `Statements`_.
+  This syntax is a generalization of the *list comprehensions* found in other languages.
   For example, this yields ``[1,4,9,16,25]``::
   
     [for (i in 1..5) i^2]
