@@ -89,7 +89,7 @@ of the primitive types, otherwise ``false``::
   program. A call to ``error`` can be used either in an expression context,
   or in a statement context.
 
-  For example, lets consider a function `incr` which returns the successor
+  For example, let's consider a function ``incr`` which returns the successor
   of a number. The contract requires the argument to be a number::
 
     incr n =
