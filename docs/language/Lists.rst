@@ -1,6 +1,7 @@
 Lists
 -----
 A list is a finite, ordered sequence of values.
+For example, ``[1,2,3]`` is a list of 3 numbers.
 
 List Constructors
   A list constructor is a comma-separated list of expressions or element generators,
