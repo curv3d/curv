@@ -110,7 +110,9 @@ of the primitive types, otherwise ``false``::
 
 *predicate* *pat*
   This is a compound pattern which can be used as the formal parameter
-  of a function. The *predicate* is a function that returns true or false.
+  of a function. It is a terse way to enforce a contract on a function argument.
+  
+  The *predicate* is a function that returns true or false.
   If the predicate is false for the value being matched by the pattern,
   then the pattern match fails.
   Otherwise, if the predicate is true, then the value is matched against
