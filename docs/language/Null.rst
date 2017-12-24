@@ -9,4 +9,4 @@ The only available operation is testing a value to see if it is null.
   true if the value is null, otherwise false.
 
 ``is_null value``
-  true`` if the value is null, otherwise false.
+  true if the value is null, otherwise false.
