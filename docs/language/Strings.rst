@@ -18,6 +18,9 @@ Later, Unicode will be supported.
 ``count str``
   The number of characters in the string ``str``.
 
+``is_string value``
+  True if the value is a string, false otherwise.
+
 ``repr x``
   Convert an arbitrary value ``x`` to a string.
   This is done by constructing an expression that, when evaluated, reproduces the

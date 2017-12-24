@@ -84,6 +84,9 @@ Record Operations
 ``fields record``
   The field names defined by ``record`` (as a list of strings).
 
+``is_record value``
+  True if the value is a record, false otherwise.
+
 ``merge listOfRecords``
   Merge all of the fields defined by the records in ``listOfRecords``
   into a single record. If the same field is defined more than once,

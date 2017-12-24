@@ -41,3 +41,6 @@ between boolean and integer:
 
 * ``bit b`` -- convert boolean value ``b`` to an integer
 * ``i != 0`` -- convert an integer bit value ``i`` to a boolean
+
+``is_bool value``
+  True if the value is boolean, false otherwise.

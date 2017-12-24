@@ -109,20 +109,21 @@ and so can be used as a pipeline element:
 .. |dodeca-icosa| image:: ../images/dodeca-icosa.png
 
 
-Switch
-~~~~~~
+Match
+~~~~~
 ``match`` implements a multi-branch conditional using pattern matching.
 
 ``match function_list``
-  ``match[f1,f2,...]`` constructs a new function ``f`` whose argument can match any of the parameter patterns
-  in ``[f1,f2,...]``. To evaluate ``f x``, first check if ``x`` matches the parameter pattern of ``f1``.
-  If so, return ``f1 x``. If not, continue with the remaining functions in the list. If no function accepts the
-  argument ``x``, then the pattern match for ``f x`` fails.
+  ``match[f1,f2,...]`` constructs a new function ``f`` whose argument can match
+  any of the parameter patterns in ``[f1,f2,...]``. To evaluate ``f x``, check
+  if ``x`` matches the parameter pattern of ``f1``. If so, return ``f1 x``.
+  If not, continue with the remaining functions in the list. If no function
+  accepts the argument ``x``, then the pattern match for ``f x`` fails.
 
-This is kind of like an overloaded function definition in other programming languages.
+This is like an overloaded function definition in other programming languages.
 
-For example, let's define an "overloaded" version of ``plus`` that accepts any of the 3 argument
-patterns from the previous example::
+For example, let's define an "overloaded" version of ``plus`` that accepts any
+of the 3 argument patterns from the previous example::
 
   plus = match [
     (x,y) -> x + y,
@@ -135,3 +136,8 @@ Then, ``plus(2,2)``, ``plus{x:2,y:2}`` and ``plus 2 2`` all yield ``4``.
 In the definition of ``plus``, ``x->y->x+y`` must be the final list element,
 because the parameter pattern ``x`` matches any value,
 and any following list elements would be ignored.
+
+Other Operations
+~~~~~~~~~~~~~~~~
+``is_fun value``
+  True if the value is a function, false otherwise.

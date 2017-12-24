@@ -70,15 +70,11 @@ and the program is aborted with an error message.
 Enforcing Contracts in User-Defined Functions
 ---------------------------------------------
 Curv provides a set of operations for enforcing contracts.
+There are predicates for classifying values, and there are ways to report
+an error if a contract violation is detected.
 
-The most fundamental requirements are: predicates for classifying values,
-and a way to report an error if a contract violation is detected.
-
-
-Operations
-----------
-
-::
+The following predicates return ``true`` if the argument belongs to one
+of the primitive types, otherwise ``false``::
 
   is_null
   is_bool
@@ -88,7 +84,46 @@ Operations
   is_record
   is_fun
 
-  ensure pred expr = do assert(pred expr) in expr;
-  assert
-  error
+``error`` *message_string*
+  This is the primitive operation for reporting an error and aborting the
+  program. A call to ``error`` can be used either in an expression context,
+  or in a statement context.
 
+  For example, lets consider a function `incr` which returns the successor
+  of a number. The contract requires the argument to be a number::
+
+    incr n =
+      if (!is_num n)
+        error "incr: argument is not a number"
+      else
+        n + 1;
+
+``assert`` *condition*
+  An assert statement aborts the program if the condition is false,
+  and does nothing if the condition is true.
+
+  For example::
+
+    incr n =
+      do assert(is_num n)
+      in n + 1;
+
+*predicate* *pat*
+  This is a compound pattern which can be used as the formal parameter
+  of a function. The *predicate* is a function that returns true or false.
+  If the predicate is false for the value being matched by the pattern,
+  then the pattern match fails.
+  Otherwise, if the predicate is true, then the value is matched against
+  the subordinate pattern *pat*.
+
+  For example::
+
+    incr (is_num n) = n + 1;
+
+``ensure`` *pred* *val*
+  This is an expression asserting that ``pred val`` is true,
+  and then returning ``val`` if the assertion succeeds.
+  It can be used to enforce a post-condition on the return value of a function::
+
+    incr (is_num n) =
+        ensure is_num << n + 1;

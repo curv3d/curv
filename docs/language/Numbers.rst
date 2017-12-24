@@ -11,6 +11,9 @@ Numbers are represented internally by 64 bit IEEE floating point numbers.
 * An integer is just a number whose fractional part is ``0``.
   ``1`` and ``1.0`` evaluate to the same integer.
 
+``is_num value``
+  True if the value is a number, false otherwise.
+
 The arithmetic operators:
 
 =========  ==============

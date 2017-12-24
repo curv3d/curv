@@ -81,6 +81,9 @@ List Slicing
 ``count a``
   The number of elements in list ``a``.
 
+``is_list value``
+  True if the value is a list, false otherwise.
+
 ``concat aa``
   This is the list concatenation operator.
   ``aa`` is a list of lists. The component lists are catenated.
