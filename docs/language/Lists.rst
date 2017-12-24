@@ -2,21 +2,38 @@ Lists
 -----
 A list is a finite, ordered sequence of values.
 
-Simple list constructors
-  ``[]``, ``[a]``, ``[a,b]``, ``[a,b,c]``, ...
-    A sequence of *n* comma separated expressions, enclosed in square brackets,
-    constructs a list with *n* values.
+List Constructors
+  A list constructor is a comma-separated list of expressions or element generators,
+  inside square brackets or parentheses.
+  If parentheses are used, either the list is empty ``()`` or contains
+  at least one comma. The final expression or element generator may be followed
+  by an optional comma.
   
-  ``[a,]``, ``[a,b,]``, ``[a,b,c,]``, ...
-    The final expression in a list constructor may have an optional trailing comma.
+  For example::
   
-  ``()``, ``(a,b)``, ``(a,b,c)``, ...
-    As an alternate syntax, you can also use parentheses to enclose the list,
-    with the limitation that the list constructor must either be empty, or must contain
-    commas.
+    [] or ()
+    [1] or [1,] or (1,)
+    [1,2] or (1,2)
 
-  ``(a,)``, ``(a,b,)``, ``(a,b,c,)``, ...
-    Ditto.
+  An element generator is a kind of `statement`_
+  that adds zero or more elements to the list being constructed.
+  The simplest element generator is just an expression,
+  which adds one element to the list.
+  
+  The spread operator (``...list_expression``) interpolates all of the elements
+  from some list into the list being constructed.
+  For example, this concatenates two lists::
+  
+    [...a, ...b]
+  
+  Complex element generators may be composed from simpler ones using blocks and control structures,
+  as described in `Statements`_.
+  For example, this yields ``[1,4,9,16,25]``::
+  
+    [for (i in 1..5) i^2]
+
+.. _`statement`: Statements.rst
+.. _`Statements`: Statements.rst
 
 Range constructors
   ``i .. j``
@@ -33,39 +50,6 @@ Range constructors
   
   ``i ..< j by k``
     Same as ``i..j by k`` except that the final element in the sequence is omitted.
-
-List comprehensions
-  The expressions in a simple list constructor are a special case of *element generators*.
-  An element generator is a phrase that specifies a sequence of zero or more values.
-  You can use iteration, conditionals, and local variables.
-  A list constructor that uses the more general syntax is called a list comprehension.
-  
-  *expression*
-    An expression is an element generator that generates a single value.
-    
-  ``if (condition) element_generator``
-    The element generator is executed if the condition is true.
-    
-  ``if (condition) element_generator1 else element_generator2``
-    A two armed conditional.
-    
-  ``for (pattern in list_expression) element_generator``
-    The element_generator is executed once for each element in the list.
-    At each iteration, the pattern is matched against a list element,
-    and local variables specified by the pattern are bound.
-    
-  ``let definitions in element_generator``
-    Introduce local variable bindings in an element generator.
-    
-  ``(eg1; eg2; eg3; ...)``
-    A sequence of element generators separated by semicolons is a compound
-    element generator. Each generator is executed in sequence.
-    
-  ``... list_expression``
-    The spread operator (``...``) evaluates its argument expression, which must be a list,
-    and outputs each element of the list in sequence.
-
-  For example, ``[for (i in 1..10) i^2]`` yields ``[1,4,9,16,25,36,49,64,81,100]``.
 
 List Indexing
   ``a[i]``
