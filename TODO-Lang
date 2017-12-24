@@ -6,36 +6,22 @@
 * remove a'b
 * function/record equivalence
   * primitive functions have a 'call' field, support 'fields' and 'defined'
-    and 'f.call'.
+    and 'f.call' and 'include' and '...'.
   * 'is_record f' is true
   * 'is_fun r' is true if r is a record with a call field.
     is_fun x = defined(x.call);
 * compose -- function composition. Short form is 'co'?
   x >> compose[f,g,h] means x>>f>>g>>h ?
+  The function returned by compose reports a pattern match failure if any
+  of the constituent functions reports a pattern match failure. This is
+  important for match and for cast patterns.
 * any, all
 
 ## Ideas Under Development
 
-Pattern matching in other languages:
-* C#: 'if (value is pattern) statement using variables bound by pattern'
-* C#: 'pattern when condition', like 'pattern && condition' proposed elsewhere.
-* Scala,Rust: 'pattern if condition' -- pattern guard
-* Racket: (and pat1 pat2 ...): pattern matches if all subpatterns match.
-    Use case: (and id pat) is like id@pat in Haskell.
-* Racket: (or pat1 pat2 ...)
-* F#: pat1&pat2, pat1|pat2
-* Rust: pat1|pat2
-* Racket: (not pat ...) — matches when none of the pats match, and binds no identifiers.
-* Racket: (app expr pats ...) — applies expr to the value to be matched;
-  the result of the application is matched against pats. Similar to my
-  coercion pattern.
-* Swift: 'pat as type' coerce value to type, then match pat--a coercion pattern
-* Racket: (? expr pats ...) -- like my predicate pattern
-* Haskell: for (pattern in list) ..., list elements not matching pattern
-  are skipped.
-* Rust,Swift: range syntax matches a range of numbers
+### Patterns
 
-Pattern matching extensions:
+New Pattern Types:
 * '<pattern> if <condition>' -- pattern guard. The pattern is matched,
   variables are bound, then the condition is evaluated over the bound variables,
   and the match fails if the condition is false.
@@ -48,8 +34,9 @@ Pattern matching extensions:
   * Idiom: 'id && pat' is like 'id@pat' in Haskell.
 * 'pat1 || pat2' -- the value matches either pat1 or pat2.
   * pat1 and pat2 define identical sets of bound variables.
-  * Useful when simulating a switch statement.
+  * Useful when simulating a switch statement (one case matching 2 values).
   * [x,y] || [x,y,_==0]
+  * Rust, F# use 'pat1|pat2' -- looks nice in switch.
 * 'cast >> pat'
   * If V is the value being matched, then we evaluate `cast V`: if cast's
     parameter pattern fails, the match fails. Otherwise, the result of `cast V`
@@ -57,13 +44,84 @@ Pattern matching extensions:
   * A cast is a function that maps values onto a particular type, and is
     idempotent for members of that type. This feature implements implicit
     conversions to a type.
-  * This is also a hook for defining your own pattern operators.
-    Eg, instead of 'pat==x', use 'eq x>>pat' and define eq x (V if V==x) = V.
+  * S.P.Jones uses the term 'transformational pattern' (pat!fun), and shows
+    that this is a way to reconcile pattern matching with data abstraction.
+    The cast fun transforms an ADT to a pattern matchable value.
   * This wants to be a right-associative operator, but >> is left-associative.
-* 'pat == expr', 'pat != expr', 'pat < expr', ... -- relational op predicates
-* 'pat `elem` listexpr' -- range patterns, like 'x `elem` 1..10'.
+  * Is 'cast1 >> (cast2 >> pat)' the same as 'compose[cast1,cast2] >> pat'?
+    Only if the result of compose reports a pattern match failure if any
+    of the constituent functions have a pattern match failure.
+* Variations of predicate patterns:
+  * 'pat == expr', 'pat != expr', 'pat < expr', ... -- relational op predicates
+  * 'pat `elem` listexpr' -- range patterns, like 'x `elem` 1..10'.
+  * Many languages have constant and range patterns, eg 42 and 1..10 are
+    patterns, which works well in the 'switch statement' use case. But:
+    * Conflicts with name abstraction, creates ambiguity.
+      Is 'true' a constant pattern or an identifier pattern?
+    * Conflicts with field_generator ::= "string":expr|pattern:expr
 
-Unicode Strings:
+"Pattern Guards and Transformational Patterns", Simon Peyton Jones
+
+Filtered For Loop:
+Haskell: for (pattern in list) ..., list elements not matching pattern
+are skipped. Convenient in some cases, hides coding errors in others.
+Suppose we don't have 'for' patterns, then you need to simulate them,
+and there are 2 cases (fail or skip on pattern match failure):
+  for (x in list) let (a,b) = x in ...  -- fail on pattern match fail
+  for (x in list) ...x>>match[(a,b)->[...], _->[]] -- skip on pattern fail
+So, if both cases are equally useful, then skip on fail is the one that's
+harder to simulate--so should it be the default?
+Or maybe pattern guarded statements should be easier to write.
+
+Pattern Guarded Statements:
+  try (a,b) = x in stmt -- execute stmt if match succeeds, bind x in stmt.
+  if (x matches (a,b)) stmt
+We want the ability to AND together a chain of pattern and condition guards.
+
+Guarded Expressions.
+Haskell guarded equations:
+filter p []                 = []
+filter p (y:ys) | p y       = y : filter p ys
+                | otherwise = filter p ys
+A function parameter pattern can be guarded by a multi-branch conditional
+whose failure counts as a failure of pattern matching in the original function.
+* In Haskell 2010, each branch can have a comma-separated list of qualifiers;
+  each qualifier is a pattern match or a boolean expression.
+* A 'guarded expression' is an expression that either yields a value or fails
+  due to pattern match failure. There's syntax for using a guarded expression
+  as the body of a function, such that failure of the guarded expression
+  consistutes a pattern match failure in the function call.
+* In APL Direct Functions, a function body is a sequentially executed list
+  of statements. Each statement is: a definition, a one-arm conditional
+  expression (if condition, return this value), or an expression (return this
+  value).
+
+Guarded Expression Proposal:
+* A 'guarded expression' is an expression that either yields a value or fails
+  due to pattern match failure.
+* If the body of a function is a guarded expression GE, then pattern
+  match failure of the GE is pattern match failure of the function.
+* A guarded expression comprises sequentially executed statements:
+  * A one-arm conditional expression. If the condition succeeds, the expression
+    is the result, otherwise proceed to next statement.
+    * The 'condition' is a series of qualifiers: pattern matches expression,
+      boolean expression. The former binds names in subsequent qualifiers
+      and in the result.
+    * This feature can be expressed using two statements that are nestable,
+      and which in turn can be nested with `let` and `do`:
+      * if (condition) statement
+      * try (pattern = expression) statement
+  * An unconditional expression, which yields the result.
+  * Falling off the end of the statement list is a pattern match failure.
+  * Optionally, we add the imperative sublanguage: sequential variable
+    definitions, assignments, while loop, the action language.
+  * Without the imperative sublanguage, this closely resembles `match`.
+  * S.P.Jones gives an example of a nested guarded expression.
+    Eg, if(c)guarded_expr or try(p=e)guarded_expr.
+    A conditional GE fails if the GE fails.
+* Possible GE syntax: list ::= 'case' list
+
+### Unicode Strings
 A string is a sequence of characters, but what is a character in Unicode?
  0. Legal code points.
     The NUL character is disallowed. Surrogate and noncharacter code points
@@ -103,30 +161,12 @@ A string is a sequence of characters, but what is a character in Unicode?
     Suppose S1 and S2 are normalized. Is strcat(S1,S2) guaranteed to be
     normalized?
 
-Libraries.
+### Libraries.
 * `lib` is a record for accessing library files in /usr/local/lib/curv.
   `lib.foo` loads /usr/local/lib/curv/foo.curv.
   * `use lib.foo`
 
-Patterns (Definitions, Binders, Lambda parameters, `for` parameter):
-* list patterns: `(x,y)` and `[x,y]`
-  * [first,...rest] is a useful pattern for recursive list functions.
-* record patterns:
-  * `{x,y}=expr` -- extra fields on right -> error.
-  * `{x,y,...}=expr` -- ignores extra fields on right.
-  * Default values: `{x=0,y=1}`
-  * field name and variable name are different: `{"field":var}`.
-    {fieldName: generalPattern}, eg: [size: (x,y,z)]
-* `var@pattern` matches pattern and binds `var` to the whole value matched.
-* `_` can be used in place of a parameter name, it means don't bind a name.
-* parameter preconditions, from Design by Contract:
-  * (predicate x) -> body -- implemented
-  * (x >= 0) -> body
-  * (x >= 0 && x <= 1) -> body
-* see also Coercions(deprecated)
-* see also Literal Patterns(deprecated)
-
-Coercions(deprecated):
+### Casts/Coercions (advanced feature)
 * A *coercion* is an idempotent function that:
   * maps a member of a type onto itself,
   * optionally converts non-member values to members (a type conversion),
@@ -140,7 +180,7 @@ Coercions(deprecated):
   Null, Bool, Num, String, List, Record, Function.
 * `coercion pat` is a pattern that matches `pat`. The `coercion` function
   is first applied to the value to be matched, then the resulting value
-  is matched by `pat`.
+  is matched by `pat`. Now changed to `cast >> pat`.
 * Example:
     fact = match [
         0 -> 1;
@@ -149,6 +189,8 @@ Coercions(deprecated):
 * "is(val,coercion)" or "val `is` coercion" returns true if the coercion's
   pattern matches, returns false if the pattern match fails,
   and aborts with an error if the coercion body aborts.
+  Not necessary, we have type predicates for this.
+  Cast functions are not a replacement for predicates.
 
 Name of this concept:
 * cast, coercion, classifier, type function
@@ -189,7 +231,7 @@ Let's instead use predicate patterns. A type predicate aborts if the argument
 value structurally matches the type, but is corrupted (data structure
 invariants fail).
 
-Type Classes:
+### Type Classes:
 We can define a 'type class' as a record containing a 'call' function
 (a type predicate), plus constructors (eg 'make')
 and operations on type instances. Eg,
@@ -202,6 +244,7 @@ If multiple classes implement the same protocol, then we have the effect of
 Haskell type classes. A class needs to be passed as an explicit argument.
     f T (T x) = ...
 
+### Tensors
 Indexing:
 * a[i] := item, i is an integer
 * s.key := item
