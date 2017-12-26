@@ -111,21 +111,23 @@ pattern
 expression
   A phrase that computes a value.
 
-action
-  A phrase that causes a side effect, and doesn't compute a value.
+statement
+  A statement is an action, element generator, or field generator.
 
-element generator
-  A phrase that computes a sequence of zero or more values.
-  ``[``\ *element_generator*\ ``]`` is a list constructor.
+  action
+    A phrase that causes a side effect, and doesn't compute a value.
 
-field generator
-  A phrase that computes a sequence of zero or more fields,
-  which are name/value or string/value pairs.
-  ``{``\ *field_generator*\ ``}`` is a record constructor.
+  element generator
+    A phrase that computes a sequence of zero or more values.
+    ``[``\ *element_generator*\ ``]`` is a list constructor.
 
-An action can be used in any context requiring a definition,
-element generator, or field generator. An expression can be used
-in any context requiring a field generator.
+  field generator
+    A phrase that computes a sequence of zero or more fields,
+    which are name/value or string/value pairs.
+    ``{``\ *field_generator*\ ``}`` is a record constructor.
+
+An action can be used in any context requiring a statement.
+An expression can be used in any context requiring an element generator.
 
 Programs
 --------
