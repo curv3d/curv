@@ -126,7 +126,7 @@ statement
     which are name/value or string/value pairs.
     ``{``\ *field_generator*\ ``}`` is a record constructor.
 
-An action can be used in any context requiring a statement.
+An action can be used in a statement or definition context.
 An expression can be used in any context requiring an element generator.
 
 Programs
