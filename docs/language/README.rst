@@ -2,7 +2,7 @@ The Core Language
 =================
 
 This document is the reference manual and design rationale
-for the Curv core language, which unlies the shape library.
+for the Curv core language, which underlies the shape library.
 
 Design Goals
 ------------
