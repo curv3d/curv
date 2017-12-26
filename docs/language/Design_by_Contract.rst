@@ -128,4 +128,5 @@ of the primitive types, otherwise ``false``::
   It can be used to enforce a post-condition on the return value of a function::
 
     incr (is_num n) =
-        ensure is_num << n + 1;
+        ensure is_num <<
+        n + 1;
