@@ -6,18 +6,22 @@ for the Curv core language, which unlies the shape library.
 
 Design Goals
 ------------
-The Curv language is designed for two groups of users:
-artists, who use Curv to create geometric shapes,
-and library developers, who extend the shape library
-with new geometric primitives.
-
-The language design goals encompass both groups of users:
-
-* Ease of use.
-* Expressive power.
+* Ease of use for artists and novice programmers.
+  The focus is artistic exploration, not software engineering.
+  No `boilerplate`_: the simple program ``cube`` is sufficient to construct a cube.
+* Expressive power for expert programmers.
+  The shape library is written entirely in Curv.
+  Libraries of new shape operations can be written in Curv and distributed over the internet.
 * Rendering speed.
+  Curv programs are compiled into efficient GPU code for fast rendering.
 * Interoperability with other programming languages.
+  Two way data interchange with external programs. The shape library can be embedded
+  in other programming languages (like Javascript and Python).
 * Safety and security.
+  A Curv program downloaded from the internet can't encrypt all your files
+  or exfiltrate personal information to a server.
+
+.. _`boilerplate`: https://en.wikipedia.org/wiki/Boilerplate_code
 
 Language Characteristics
 ------------------------
