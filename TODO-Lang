@@ -351,6 +351,12 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
 
 ### Debug actions:
 * print_timing(string,expr), returns value of expr
+* `debug identifier action` -- locally bind identifier in the scope of action
+  to a debug object, used to query and modify the state of the debugger.
+  This is a generalized debugger interface, which doesn't let debugger data
+  or shared mutable state escape into the model. The debug object is a record,
+  the individual named objects are perhaps top level bindings in the CLI when
+  interacting with the debugger.
 * `exec(expr)`: evaluate an expression for its side effects, discard results.
   `_=expr` could be an alternative (see _ pattern), but might be optimized away.
   * exec(file "unit_test.curv");
