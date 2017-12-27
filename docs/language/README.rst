@@ -47,6 +47,7 @@ Interoperability
 
 Pure Functional Language
   Curv is a pure functional language.
+  
   * Functions_ are first class values, meaning that they can bound to variables,
     passed as function arguments and returned as function results.
   * Functions are pure, meaning that the result returned by a function depends
@@ -76,13 +77,13 @@ Array Language
 Table of Contents
 -----------------
 * `Blocks`_
-* `Boolean_Values`_
-* `Complex_Numbers`_
-* `Debug_Actions`_
-* `Design_by_Contract`_
+* `Boolean Values`_
+* `Complex Numbers`_
+* `Debug Actions`_
+* `Design by Contract`_
 * `Functions`_
 * `Grammar`_
-* `Imperative_Sublanguage`_
+* `Imperative Sublanguage`_
 * `Lists`_
 * `Matrices`_
 * `Null`_
