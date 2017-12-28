@@ -1,0 +1,20 @@
+// This doesn't work because the let definitions are not visible within
+// the where definitions. (However, the where definitions are visible in
+// the let definitions.)
+//
+// Can I change the grammar so that this example works?
+//
+// If the first argument of `where` is a Let_Phrase, then the analyser
+// puts the let and where definitions in a single scope. Use parentheses
+// if nested scopes are desired.
+
+let
+diam = 1;
+len = 4;
+
+in
+union(candy, stick)
+
+where
+candy = sphere diam >> colour red;
+stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);

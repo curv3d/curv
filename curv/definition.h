@@ -235,21 +235,24 @@ struct Recursive_Scope : public Block_Scope
         virtual Shared<Meaning> single_lookup(const Identifier&) override;
     };
 
-    Shared<const Phrase> source_ = nullptr;
+    Shared<const Phrase> source_;
     std::vector<Shared<const Phrase>> action_phrases_ = {};
     std::vector<Unit> units_ = {};
     int scc_count_ = 0;
     std::vector<Unit*> scc_stack_ = {};
     std::vector<Unit*> analysis_stack_ = {};
 
-    Recursive_Scope(Environ& parent, bool target_is_module)
+    Recursive_Scope(
+        Environ& parent, bool target_is_module, Shared<const Phrase> source)
     :
-        Block_Scope(parent, target_is_module)
+        Block_Scope(parent, target_is_module),
+        source_(std::move(source))
     {
     }
 
     void analyse_unit(Unit&, const Identifier*);
     Shared<Operation> make_function_setter(size_t nunits, Unit** units);
+    void analyse();
 
     virtual Shared<Meaning> single_lookup(const Identifier&) override;
     virtual void analyse(Definition&) override;

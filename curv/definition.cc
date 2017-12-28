@@ -178,8 +178,12 @@ void
 Recursive_Scope::analyse(Definition& def)
 {
     assert(def.kind_ == Definition::k_recursive);
-    source_ = def.source_;
     def.add_to_scope(*this);
+    analyse();
+}
+void
+Recursive_Scope::analyse()
+{
     for (auto a : action_phrases_) {
         auto op = analyse_op(*a, *this);
         executable_.actions_.push_back(op);
@@ -390,7 +394,7 @@ analyse_module(Definition& def, Environ& env)
             std::move(scope.executable_));
     }
     if (def.kind_ == Definition::k_recursive) {
-        Recursive_Scope scope(env, true);
+        Recursive_Scope scope(env, true, def.source_);
         scope.analyse(def);
         return make<Scoped_Module_Expr>(def.source_,
             std::move(scope.executable_));

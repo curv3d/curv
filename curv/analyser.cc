@@ -368,7 +368,7 @@ analyse_block(
     if (adef->kind_ == Definition::k_recursive
         && kind == Definition::k_recursive)
     {
-        Recursive_Scope rscope(env, false);
+        Recursive_Scope rscope(env, false, adef->source_);
         rscope.analyse(*adef);
         rscope.is_analysing_action_ = env.is_analysing_action_;
         auto body = analyse_tail(*bodysrc, rscope);
@@ -399,6 +399,37 @@ analyse_block(
     } bscope(env);
     adef->add_to_scope(bscope); // throws an exception
     assert(0);
+}
+
+Shared<Meaning>
+analyse_where_block(
+    Environ& env,
+    Shared<const Phrase> source,
+    Shared<Phrase> bindings,
+    Shared<const Phrase> bodysrc)
+{
+    auto let = cast<const Let_Phrase>(bodysrc);
+    if (let && let->let_.kind_ == Token::k_let)
+    {
+        // let bindings1 in body where bindings2
+        Shared<Definition> adef1 = let->bindings_->as_definition(env);
+        Shared<Definition> adef2 = bindings->as_definition(env);
+        if (adef1 && adef1->kind_ == Definition::k_recursive
+            && adef2 && adef2->kind_ == Definition::k_recursive)
+        {
+            Recursive_Scope rscope(env, false, source);
+            adef1->add_to_scope(rscope);
+            adef2->add_to_scope(rscope);
+            rscope.analyse();
+            rscope.is_analysing_action_ = env.is_analysing_action_;
+            auto body = analyse_tail(*let->body_, rscope);
+            env.frame_maxslots_ = rscope.frame_maxslots_;
+            return make<Block_Op>(source,
+                std::move(rscope.executable_), std::move(body));
+        }
+    }
+    return analyse_block(env, source,
+        Definition::k_recursive, bindings, bodysrc);
 }
 
 Shared<Meaning>
@@ -506,8 +537,7 @@ Binary_Phrase::analyse(Environ& env) const
     case Token::k_colon:
         return analyse_assoc(env, *this, *left_, right_);
     case Token::k_where:
-        return analyse_block(env, share(*this),
-            Definition::k_recursive, right_, left_);
+        return analyse_where_block(env, share(*this), right_, left_);
     default:
         assert(0);
     }
