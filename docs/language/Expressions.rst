@@ -36,7 +36,7 @@ which are statement-oriented.
   yield the result of a function call. Functions do not have side effects.
   This contrasts with imperative languages,
   where the body of a function is a list of statements,
-  and a ``return`` statement is executed to specify a return value.
+  and a ``return`` statement is executed to specify a result.
 * Most importantly, geometric shapes are values, and are constructed
   by evaluating expressions. Shape values can be arbitrarily combined
   or transformed by applying shape operations, which yield new shape values.
