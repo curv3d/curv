@@ -16,3 +16,5 @@ This feature exists for 3 reasons:
 * In the 0.0 release, this is the only way to iterate within a shape's distance
   function. The GPU compiler is not yet smart enough to convert tail recursion
   into iteration.
+
+This feature is experimental, and may change in future.

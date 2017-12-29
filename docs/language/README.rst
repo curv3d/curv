@@ -81,6 +81,7 @@ Table of Contents
 * `Complex Numbers`_
 * `Debug Actions`_
 * `Design by Contract`_
+* `Expressions`_
 * `Functions`_
 * `Grammar`_
 * `Imperative Sublanguage`_
@@ -94,7 +95,7 @@ Table of Contents
 * `Statements`_
 * `Strings`_
 * `Tensors`_
-* `Trignometry`_
+* `Trigonometry`_
 * `Values`_
 * `Vectors`_
 
@@ -103,6 +104,7 @@ Table of Contents
 .. _`Complex Numbers`: Complex_Numbers.rst
 .. _`Debug Actions`: Debug_Actions.rst
 .. _`Design by Contract`: Design_by_Contract.rst
+.. _`Expressions`: Expressions.rst
 .. _`Functions`: Functions.rst
 .. _`Grammar`: Grammar.rst
 .. _`Imperative Sublanguage`: Imperative_Sublanguage.rst
@@ -116,6 +118,6 @@ Table of Contents
 .. _`Statements`: Statements.rst
 .. _`Strings`: Strings.rst
 .. _`Tensors`: Tensors.rst
-.. _`Trignometry`: Trignometry.rst
+.. _`Trigonometry`: Trigonometry.rst
 .. _`Values`: Values.rst
 .. _`Vectors`: Vectors.rst
