@@ -231,6 +231,19 @@ Haskell type classes. A class needs to be passed as an explicit argument.
     f T (T x) = ...
 
 ### Tensors
+Tensor version of `map` or `for`, for tensorizing an operation.
+Works on scalar (rank 0) operations, but also works on operations
+with a well defined rank > 0. Eg, `phase` is a rank 1 operation.
+* Something like:
+    phase = tensor_map ((is_vec2 p)->atan2(p[Y],p[X]))
+  to define a tensorized `phase` operation.
+* Possible definition:
+    tensor_map f =
+      match[
+        f,
+        (is_list x)->[for (e in x) tensor_map f e],
+      ];
+
 Indexing:
 * a[i] := item, i is an integer
 * s.key := item
