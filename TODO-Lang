@@ -22,22 +22,22 @@
 ### Patterns
 
 New Pattern Types:
-* '<pattern> if <condition>' -- pattern guard. The pattern is matched,
+* '<pattern> if <condition>' -- conditional pattern. The pattern is matched,
   variables are bound, then the condition is evaluated over the bound variables,
   and the match fails if the condition is false.
   * The 'phrase abstraction' design pattern asks if the syntax for this should
     actually be 'if (condition) pattern'? But the C if syntax is
     counterintuitive because the pattern binds variables in the condition.
   * Also, should we have 'statement if condition'?
-* 'pat1 && pat2' -- the same value matches both patterns.
+* 'pat1 && pat2' -- and pattern. The same value matches both patterns.
   * bound variables are disjoint between pat1 and pat2.
   * Idiom: 'id && pat' is like 'id@pat' in Haskell.
-* 'pat1 || pat2' -- the value matches either pat1 or pat2.
+* 'pat1 || pat2' -- or pattern. The value matches either pat1 or pat2.
   * pat1 and pat2 define identical sets of bound variables.
   * Useful when simulating a switch statement (one case matching 2 values).
   * [x,y] || [x,y,_==0]
   * Rust, F# use 'pat1|pat2' -- looks nice in switch.
-* 'cast >> pat'
+* 'cast >> pat' -- cast pattern.
   * If V is the value being matched, then we evaluate `cast V`: if cast's
     parameter pattern fails, the match fails. Otherwise, the result of `cast V`
     becomes the new value that is matched against `pat`.
@@ -62,64 +62,50 @@ New Pattern Types:
 
 "Pattern Guards and Transformational Patterns", Simon Peyton Jones
 
-Filtered For Loop:
-Haskell: for (pattern in list) ..., list elements not matching pattern
-are skipped. Convenient in some cases, hides coding errors in others.
-Suppose we don't have 'for' patterns, then you need to simulate them,
-and there are 2 cases (fail or skip on pattern match failure):
-  for (x in list) let (a,b) = x in ...  -- fail on pattern match fail
-  for (x in list) ...x>>match[(a,b)->[...], _->[]] -- skip on pattern fail
-So, if both cases are equally useful, then skip on fail is the one that's
-harder to simulate--so should it be the default?
-Or maybe pattern guarded statements should be easier to write.
+If Pattern Matches Expression Then ...:
+(1) when (pat = expr) stmt
+    Simple.
+(2) if (pat <- expr) stmt1
+    if (pat <- expr) stmt1 else stmt2
+    Fancy. `<-` is pronounced "matches". `pat<-expr` is a pattern matching
+    phrase, which either succeeds (and binds some identifiers) or fails.
+    The bindings from pat are visible in stmt1.
+    There are compound PM phrases:
+      PM ::= pat <- expr
+      PM ::= PM1 && PM2 | PM1 && expr | expr && PM2
+             // PM1 and PM2 must define disjoint bindings.
+             // PM1 bindings are visible in PM2 and in expr.
+             // 'expr' is equivalent to the PM '_ if expr <- null'.
+      PM ::= PM1 || PM2
+             // PM1 and PM2 must define coincident bindings.
+             // PM || expr isn't legal because bindings from PM aren't
+             // initialized if PM fails.
 
-Pattern Guarded Statements:
-  try (a,b) = x in stmt -- execute stmt if match succeeds, bind x in stmt.
-  if (x matches (a,b)) stmt
-We want the ability to AND together a chain of pattern and condition guards.
-
-Guarded Expressions.
-Haskell guarded equations:
-filter p []                 = []
-filter p (y:ys) | p y       = y : filter p ys
-                | otherwise = filter p ys
-A function parameter pattern can be guarded by a multi-branch conditional
-whose failure counts as a failure of pattern matching in the original function.
-* In Haskell 2010, each branch can have a comma-separated list of qualifiers;
-  each qualifier is a pattern match or a boolean expression.
-* A 'guarded expression' is an expression that either yields a value or fails
-  due to pattern match failure. There's syntax for using a guarded expression
-  as the body of a function, such that failure of the guarded expression
-  consistutes a pattern match failure in the function call.
-* In APL Direct Functions, a function body is a sequentially executed list
-  of statements. Each statement is: a definition, a one-arm conditional
-  expression (if condition, return this value), or an expression (return this
-  value).
-
-Guarded Expression Proposal:
+Guarded Expressions:
+* Inspired by Haskell 2010 guarded equations, but more general.
 * A 'guarded expression' is an expression that either yields a value or fails
   due to pattern match failure.
 * If the body of a function is a guarded expression GE, then pattern
   match failure of the GE is pattern match failure of the function.
-* A guarded expression comprises sequentially executed statements:
-  * A one-arm conditional expression. If the condition succeeds, the expression
-    is the result, otherwise proceed to next statement.
-    * The 'condition' is a series of qualifiers: pattern matches expression,
-      boolean expression. The former binds names in subsequent qualifiers
-      and in the result.
-    * This feature can be expressed using two statements that are nestable,
-      and which in turn can be nested with `let` and `do`:
-      * if (condition) statement
-      * try (pattern = expression) statement
-  * An unconditional expression, which yields the result.
-  * Falling off the end of the statement list is a pattern match failure.
-  * Optionally, we add the imperative sublanguage: sequential variable
-    definitions, assignments, while loop, the action language.
-  * Without the imperative sublanguage, this closely resembles `match`.
-  * S.P.Jones gives an example of a nested guarded expression.
-    Eg, if(c)guarded_expr or try(p=e)guarded_expr.
-    A conditional GE fails if the GE fails.
-* Possible GE syntax: list ::= 'case' list
+* Syntax:
+  GE ::= if (...) expr
+       | if (...) GE
+       | if (...) GE else GE
+       | expr
+* Used with if(pat<-expr)...
+
+Filtered For Loop:
+* Haskell: for (pattern in list) ..., list elements not matching pattern
+  are skipped. Convenient in some cases, hides coding errors in others.
+  Swift also has a syntax for this.
+* In Curv, we could use
+    for (x in list) if (pattern <- x) ...
+  This is simple, and makes it obvious that filtering is happening.
+* We could also incorporate the filtering into the for loop.
+  I don't think it should happen by default, but maybe an alternate syntax:
+    for (pattern <- list) ...
+  Low priority, not clear we require such an abbreviation if the previous
+  syntax is available.
 
 ### Unicode Strings
 A string is a sequence of characters, but what is a character in Unicode?
