@@ -13,8 +13,6 @@ Roadmap:
 
 Next changes:
 * remove atan2. phase is a rank 1 tensorized operation.
-* for loop with pattern: support a variant where list elements that don't
-  match are ignored? Eg, Haskell.
 * documentation
 
 Proposed change: `include lib.shape` required to access shape library.
