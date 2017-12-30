@@ -58,7 +58,7 @@ High level operations for constructing arbitrary colour values.
 ``sHSV (hue,saturation,brightness)``
   HSV (also known as HSB) is a popular colour model supported by many
   graphics languages.
-  ``sHSV`` is more user-friendly way to specify sRGB colours.
+  ``sHSV`` is a more user-friendly way to specify sRGB colours.
   The three arguments are:
 
   ``hue``
@@ -96,3 +96,11 @@ High level operations for constructing arbitrary colour values.
     * A ``brightness`` of 1 constructs a "tint" (a mixture of a pure colour
       and white), where ``hue`` is the pure colour,
       and ``saturation`` is the distance from white.
+
+Applying Colours to Shapes
+--------------------------
+``show_colour`` *colour*
+  Display *colour* in the graphics window.
+
+``colour`` *colour* *shape*
+  Apply a colour to a shape.
