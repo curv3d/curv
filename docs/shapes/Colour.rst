@@ -21,7 +21,7 @@ A colour value is an (R,G,B) triple, where:
 This representation (called linear RGB) is a low-level representation
 that is useful internally, for mixing colours and performing computations
 within the 3D lighting model, but it is not user friendly.
-You don't want to construct linear R,G,B values by hand, you want to use
+You don't want to construct linear R,G,B triples by hand, you want to use
 high level interfaces to construct colour values for you.
 
 Colour Names
