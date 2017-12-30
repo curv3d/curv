@@ -76,28 +76,31 @@ Array Language
 
 Table of Contents
 -----------------
-* `Blocks`_
+The seven types of `Values`_:
+
+* `Null`_
 * `Boolean Values`_
-* `Complex Numbers`_
-* `Debug Actions`_
-* `Design by Contract`_
-* `Expressions`_
+* `Numbers`_ -- and `Trigonometry`_
+* `Lists`_ -- which include `Vectors`_, `Complex Numbers`_,
+  `Matrices`_, `Tensors`_
+* `Strings`_
+* `Records`_
 * `Functions`_
+
+Syntax:
+
+* `Programs`_
+* `Expressions`_
+* `Blocks`_
+* `Statements`_
+* `Debug Actions`_
+* `Patterns`_
 * `Grammar`_
 * `Imperative Sublanguage`_
-* `Lists`_
-* `Matrices`_
-* `Null`_
-* `Numbers`_
-* `Patterns`_
-* `Programs`_
-* `Records`_
-* `Statements`_
-* `Strings`_
-* `Tensors`_
-* `Trigonometry`_
-* `Values`_
-* `Vectors`_
+
+Design principles and patterns:
+
+* `Design by Contract`_
 
 .. _`Blocks`: Blocks.rst
 .. _`Boolean Values`: Boolean_Values.rst
