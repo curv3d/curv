@@ -157,7 +157,7 @@ By default, image files are assumed to contain sRGB encoding.
 The colour values are automatically converted to linear RGB.
 So when you query an image file's colour function, you get linear RGB.
 
-You can import a grayscale image that is to be interpreted as an intensity field.
+You can import a greyscale image that is to be interpreted as an intensity field.
 No gamma correction is applied.
 
 Translucent Shapes
