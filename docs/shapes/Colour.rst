@@ -56,8 +56,10 @@ High level operations for constructing arbitrary colour values.
   or ``webRGB(255,218,185)``.
 
 ``sHSV (hue,saturation,brightness)``
-  HSV (also known as HSB) is a popular colour space supported by many
-  graphics languages. It is more user-friendly way to specify sRGB colours.
+  HSV (also known as HSB) is a popular colour model supported by many
+  graphics languages.
+  ``sHSV`` is more user-friendly way to specify sRGB colours.
+  The three arguments are:
 
   ``hue``
     This represents a pure colour,
