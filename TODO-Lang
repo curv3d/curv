@@ -14,7 +14,7 @@
   x >> compose[f,g,h] means x>>f>>g>>h ?
   The function returned by compose reports a pattern match failure if any
   of the constituent functions reports a pattern match failure. This is
-  important for match and for cast patterns.
+  important for `match` and *cast* patterns.
 * any, all
 
 ## Ideas Under Development
@@ -44,6 +44,8 @@ New Pattern Types:
   * A cast is a function that maps values onto a particular type, and is
     idempotent for members of that type. This feature implements implicit
     conversions to a type.
+  * The parameter pattern match fails for values that are clearly not a member
+    of the type. For values that are considered corrupted instances of the type,    the pattern match succeeds but an assertion fails.
   * S.P.Jones uses the term 'transformational pattern' (pat!fun), and shows
     that this is a way to reconcile pattern matching with data abstraction.
     The cast fun transforms an ADT to a pattern matchable value.
@@ -150,72 +152,7 @@ A string is a sequence of characters, but what is a character in Unicode?
 ### Libraries.
 * `lib` is a record for accessing library files in /usr/local/lib/curv.
   `lib.foo` loads /usr/local/lib/curv/foo.curv.
-  * `use lib.foo`
-
-### Casts/Coercions (advanced feature)
-* A *coercion* is an idempotent function that:
-  * maps a member of a type onto itself,
-  * optionally converts non-member values to members (a type conversion),
-  * throws an exception for argument values that aren't members of the type or
-    convertible to the type.
-  Every function has a parameter pattern.
-  For a coercion, the parameter pattern match fails for values that are clearly
-  not a member of the type. For values that are considered corrupted instances
-  of the type, the pattern match succeeds but an assertion fails.
-* Curv has built-in coercion functions for primitive types.
-  Null, Bool, Num, String, List, Record, Function.
-* `coercion pat` is a pattern that matches `pat`. The `coercion` function
-  is first applied to the value to be matched, then the resulting value
-  is matched by `pat`. Now changed to `cast >> pat`.
-* Example:
-    fact = match [
-        0 -> 1;
-        Nat n -> n * fact(n - 1);
-    ];
-* "is(val,coercion)" or "val `is` coercion" returns true if the coercion's
-  pattern matches, returns false if the pattern match fails,
-  and aborts with an error if the coercion body aborts.
-  Not necessary, we have type predicates for this.
-  Cast functions are not a replacement for predicates.
-
-Name of this concept:
-* cast, coercion, classifier, type function
-* `is`, `isa`, x `matches` f
-  (belongs to a type, is in the domain of a function)
-
-Can we replace is_shape and make_shape with Shape?
-* That's a semantic change: is_shape requires all 5 fields, while make_shape
-  only requires `dist` and one of `is_2d` or `is_3d`.
-* The constructors for a type should not always be coercions.
-* Use `Shape` for is_shape and `Shape.make` for make_shape.
-    Shape = {
-        call (r && defined(r.dist) && defined(r.colour) && defined(r.bbox)
-                && defined(r.is_2d) && defined(r.is_3d))
-        =
-            do  assert(r.dist `isa` Fun);
-                assert(r.colour `isa` Fun);
-                assert(r.bbox `isa` BBox);
-                assert(r.is_2d || r.is_3d);
-            in r;
-        make r = 
-    };
-
-The best parts of the coercion proposal are:
-* You can declare the type of a parameter.
-* A parameter match aborts with a meaningful message if the argument value
-  structurally matches the type, but is corrupted. This is better than falling
-  off the end of the match.
-
-However, I am suspicious of the value of implicit conversions. I did some
-experiments. Liberal type conversions (like converting '2' to '(2,2)' in Vec2)
-can make the Shape library API confusing and accident-prone. The same problem
-has been reported for other programming languages, from Javascript back to PL/I.
-Coercion functions are more complicated to write, and the concept is a bit more
-difficult to understand than predicate functions.
-
-Let's instead use predicate patterns. A type predicate aborts if the argument
-value structurally matches the type, but is corrupted (data structure
-invariants fail).
+  * `include lib.foo`
 
 ### Type Classes:
 We can define a 'type class' as a record containing a 'call' function
@@ -231,6 +168,9 @@ Haskell type classes. A class needs to be passed as an explicit argument.
     f T (T x) = ...
 
 ### Tensors
+* rank t
+* dimension t -- vector of dimensions of tensor t.
+
 Tensor version of `map` or `for`, for tensorizing an operation.
 Works on scalar (rank 0) operations, but also works on operations
 with a well defined rank > 0. Eg, `phase` is a rank 1 operation.
@@ -293,12 +233,13 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
     * less, greater, equal, less_or_equal, greater_or_equal, not_equal (FLUENT)
     * lt, gt, eq, le, ge, ne (TERSE, Matlab)
     * less, greater, equal, not_less, not_greater, not_equal
-    * If f'g is function composition,
-      then we can write not'less, not'greater, not'equal.
+    * If f'g is function composition, then we can write not'less, not'greater,
+      not'equal? For binary, not ternary.
     * Hamcrest: greater_than, greater_than_or_equal_to,
                 less_than, less_than_or_equal_to
                 equal_to
     * Mathematica: equal, unequal, greater, greater_equal, less, less_equal
+    * TensorFlow: equal, not_equal, greater, greater_equal, less, less_equal
     * eg, a `greater` b, a `gt` b, a `greater_than` b
           a `less_equal` b, a `less_or_equal` b, a `not_greater` b, a `le` b
           a `less_than_or_equal_to` b
@@ -334,20 +275,6 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
   * idiom: i != 0, or i !=' 0
   * bit(b) = ifelse(b, 1, 0);
 
-### Design by contract:
-* postconditions:
-  ensure pred val = do assert(pred val) in val;
-  sort x =
-    ensure sorted <<
-    <body of sort function>;
-* parameter preconditions:
-  * (predicate x) -> body -- implemented
-  * (x >= 0) -> body
-  * (x >= 0 && x <= 1) -> body
-* We want the ability to add arbitrary predicates to a pattern match.
-  See 'match', 'coercion' and 'guard expressions' for use cases.
-  `pat && condition` seems like a promising syntax.
-
 ### Debug actions:
 * print_timing(string,expr), returns value of expr
 * `debug identifier action` -- locally bind identifier in the scope of action
@@ -364,20 +291,11 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
 * assert_error(errorMessageString, expression)
 
 ### Generalized Definitions:
-* id = expr
-* ( definition )
-* def1; def2; def3
-* simple patterns: `[x,y,z] = expr` etc.
-* patterns with default values: `{x=42,y,z} = expr` etc.
-  * How are the default value expressions analysed in a recursive scope?
-    Recursion is outlawed. No references to other bindings in the same
-    recursive binding partition.
-* `use (constant in std namespace)`. Eg, use(file "foo.curv").
-* `use {module}`
+* `include {module}`
   Could be used to embed sequential bindings in a recursive scope, or v.v.?
   Could be useful in abstract evaluation where the {module} argument is
   unwrapped during abstract evaluation? Dunno.
-  `use {module} where (localDefinitions)`? Information hiding, in lieu of
+  `include {module} where (localDefinitions)`? Information hiding, in lieu of
   private module members.
 * `if (cond) (a=foo;b=bar) else (a=bar;b=foo)`
 * `def where bindings`, let bindings in def`.
@@ -501,42 +419,7 @@ Eg,
 Eg,
   make_shape{is_3d:, ...}
 
-### Literal Patterns (deprecated)
-  fact 0 = 1;
-  fact (is_int n && n > 0) = n * fact(n - 1);
-New feature:
-  * numerals, string literals, `null`, `true` and `false` are now patterns.
-  * Now, any JSON expression is a literal pattern.
-  * `null`, `true` and `false` are now reserved words.
-Low priority:
-  * You can use `(x == literal)` instead of `literal`.
-Deprecated:
-  * The syntax of a binder phrase is `string|pattern : expr`.
-    Literal string patterns are incompatible.
-
 ### User defined infix operators.
-* a `postfixExpr` b  ===>  postfixExpr(a,b)
-* examples:
-    a `mod` m  ===>  mod(a,m)
-    v1 `dot` v2  ===>  dot(v1,v2)
-    v1 `cross` v2  ===>  cross(v1,v2)
-    a `union` b ===> union(a,b)
-    a `smooth_union .5` b  ==> smooth_union .5 (a,b)
-* `...` is right associative, same precedence as >>
-* So you can use "`fun` arg" as an element in a geometry pipeline
-
-smooth_intersection .1 (
-    gyroid >> shell .2 >> lipschitz 2 >> bend (tau*12),
-    torus (tau*4, tau*2),
-) >> colour (hsv2rgb (1/3, 1, .5))
-
-gyroid
-  >> shell .2
-  >> lipshitz 2
-  >> bend (tau*12)
-  `smooth_intersection .1` torus(tau*4, tau*2)
-  >> colour (hsv2rgb (1/3, 1, .5))
-
 Maybe `foo` also works as a low precedence prefix operator.
 (`foo` b) a <==> (a `foo` b) <==> foo(a,b).
 So you can also write:
@@ -563,26 +446,6 @@ Like Rust Cargo. An external library has a GIT url and a version.
 Eg, file{repo:"https://github.com/doug-moen/laser-curv.git", version:"1.0"}
 
 Directory syntax for `file`.
-
-### Guarded Expression Sequence
-Loosely inspired by guards in Haskell 2010 and in APL Direct Functions.
- 1) First version. A sequence of statements of these kinds:
-    * a sequential definition,
-    * an action,
-    * a guarded expression (condition=>expr) -- if the condition is true,
-      return the expression,
-    * an unguarded expression (return its value).
- 2) Second version, based on Haskell 2010, incorporating pattern matching.
-    A guarded expression is generalized, so you have a list of guards.
-    Each guard is either a condition, or pat<-expr. The latter evaluates expr
-    and succeeds if the pattern matches the result (binding names as a side
-    effect of successful pattern match).
- 3) A syntax for generalized guarded expressions:
-      if (guard1 && guard2 && ...) expr
-    or
-      expr if guard1 && guard2 && ...
-    where guard is an expression or 'expr matches pattern'.
-    Maybe 'pattern = expr' is a guard, but it's error prone (x==a vs x=a).
 
 ### Action/Generator Abstraction
 Support tail recursion as a form of iteration in list/record generators.
