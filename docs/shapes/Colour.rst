@@ -29,7 +29,6 @@ Colour Names
 Curv 0.0 has a limited set of predefined colour names.
 
 * ``red``
-* ``orange``
 * ``yellow``
 * ``green``
 * ``cyan``
@@ -51,14 +50,17 @@ High level operations for constructing arbitrary colour values.
 
 ``webRGB (r,g,b)``
   Another way to specify sRGB colours, where the colour components are
-  in the range 0 to 255. A web colour like "#FFDAB9" (PeachPuff)
-  can be transcribed in Curv like this: ``webRGB(0xFF,0xDA,0xB9)``.
+  in the range 0 to 255.
+  A web colour like PeachPuff (#FFDAB9 or rgb(255,218,185))
+  can be transcribed in Curv like this: ``webRGB(0xFF,0xDA,0xB9)``
+  or ``webRGB(255,218,185)``.
 
-``sHSV (hue,saturation,value)``
-  A more user-friendly way to specify sRGB colours.
+``sHSV (hue,saturation,brightness)``
+  HSV (also known as HSB) is a popular colour space supported by many
+  graphics languages. It is more user-friendly way to specify sRGB colours.
 
   ``hue``
-    This represents a pure, fully saturated colour,
+    This represents a pure colour,
     including all of the (representable) colours in the rainbow.
 
     === =======
@@ -72,20 +74,23 @@ High level operations for constructing arbitrary colour values.
     === =======
 
   ``saturation``
-    Distance from white/grey/black, from 0 to 1.
+    Saturation is the distance from white/grey/black, from 0 to 1.
+    Turning down the saturation leaches out the hue and brings the colour
+    closer to a monochrome white, grey or black.
 
     * A ``saturation`` of 0 constructs a monochrome greyscale colour
-      based on the ``value``, ignoring the ``hue``. So ``sHSV(h,0,v)``
-      is white if v==1, medium grey if v==0.5, and black if v==0.
+      based on the ``brightness``, ignoring the ``hue``. So ``sHSV(h,0,b)``
+      is white if b==1, medium grey if b==0.5, and black if b==0.
     * A ``saturation`` of 1 constructs a "shade" (a mixture of a pure
       colour and black), where ``hue`` is the pure colour,
-      and ``value`` is the distance from black.
+      and ``brightness`` is the distance from black.
 
-  ``value``
-    The brightness, from 0 to 1.
+  ``brightness``
+    Brightness (aka "value") is the distance from black, from 0 to 1.
+    Turning down the brightness makes the colour dimmer and closer to black.
 
-    * If the ``value`` is 0, then the resulting colour is black,
+    * If the ``brightness`` is 0, then the resulting colour is black,
       ignoring the hue and saturation.
-    * A ``value`` of 1 constructs a "tint" (a mixture of a pure colour
+    * A ``brightness`` of 1 constructs a "tint" (a mixture of a pure colour
       and white), where ``hue`` is the pure colour,
       and ``saturation`` is the distance from white.
