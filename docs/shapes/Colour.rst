@@ -8,7 +8,7 @@ For example:
 
 * ``red`` is a colour value.
 * ``show_colour red`` displays the colour red in the graphics window.
-* ``colour red cube`` is a red cube.
+* ``cube >> colour red`` is a red cube.
 
 Internal Representation (Linear RGB)
 ------------------------------------
@@ -80,11 +80,11 @@ High level operations for constructing arbitrary colour values.
     A number between 0 and 1, specifying a hue (a pure colour). See ``sHue``.
 
   ``saturation``
-    Saturation is the distance from white/grey/black, from 0 to 1.
+    Saturation is the distance from a neutral colour (white/grey/black), in the range 0 to 1.
     Turning down the saturation leaches out the hue and brings the colour
-    closer to a monochrome white, grey or black.
+    closer to neutral.
 
-    * A ``saturation`` of 0 constructs a monochrome greyscale colour
+    * A ``saturation`` of 0 constructs a neutral greyscale colour
       based on the ``brightness``, ignoring the ``hue``. So ``sHSV(h,0,b)``
       is white if b==1, medium grey if b==0.5, and black if b==0.
     * A ``saturation`` of 1 constructs a "shade" (a mixture of a pure
