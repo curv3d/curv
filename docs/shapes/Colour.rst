@@ -21,7 +21,7 @@ A colour value is an (R,G,B) triple, where:
 This representation (called linear RGB) is a low-level representation
 that is useful internally, for mixing colours and performing computations
 within the 3D lighting model, but it is not user friendly.
-You don't want to construct linear R,G,B values by hand, you want to use
+You don't want to construct linear R,G,B triples by hand, you want to use
 high level interfaces to construct colour values for you.
 
 Colour Names
@@ -73,7 +73,7 @@ High level operations for constructing arbitrary colour values.
 ``sHSV (hue,saturation,brightness)``
   HSV (also known as HSB) is a popular colour model supported by many
   graphics languages.
-  ``sHSV`` is more user-friendly way to specify sRGB colours.
+  ``sHSV`` is a more user-friendly way to specify sRGB colours.
   The three arguments are:
 
   ``hue``
@@ -100,3 +100,11 @@ High level operations for constructing arbitrary colour values.
     * A ``brightness`` of 1 constructs a "tint" (a mixture of a pure colour
       and white), where ``hue`` is the pure colour,
       and ``saturation`` is the distance from white.
+
+Applying Colours to Shapes
+--------------------------
+``show_colour`` *colour*
+  Display *colour* in the graphics window.
+
+``colour`` *colour* *shape*
+  Apply a colour to a shape.
