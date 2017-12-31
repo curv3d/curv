@@ -62,15 +62,21 @@ High level operations for constructing arbitrary colour values.
   ``sHue`` can construct any of the hues in the sRGB colour space.
   ``h`` is a number between 0 and 1 inclusive:
 
-  === =======
-  0   red
-  1/6 yellow
-  1/3 green
-  1/2 cyan
-  2/3 blue
-  5/6 magenta
-  1   red
-  === =======
+  ===== ============
+  0     red
+  1/12  orange
+  1/6   yellow
+  1/4   chartreuse
+  1/3   green
+  5/12  spring_green
+  1/2   cyan
+  7/12  azure
+  2/3   blue
+  3/4   violet
+  5/6   magenta
+  11/12 rose
+  1     red
+  ===== ============
 
 ``sHSV (hue,saturation,brightness)``
   HSV (also known as HSB) is a popular colour model supported by many
