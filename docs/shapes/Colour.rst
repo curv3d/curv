@@ -68,7 +68,7 @@ High level operations for constructing arbitrary colour values.
   1/6   yellow
   1/4   chartreuse
   1/3   green
-  5/12  spring_green
+  5/12  spring green
   1/2   cyan
   7/12  azure
   2/3   blue
