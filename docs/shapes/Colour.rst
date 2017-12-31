@@ -51,9 +51,11 @@ High level operations for constructing arbitrary colour values.
 ``webRGB (r,g,b)``
   Another way to specify sRGB colours, where the colour components are
   in the range 0 to 255.
-  A web colour like PeachPuff (#FFDAB9 or rgb(255,218,185))
+  A `web colour`_ like PeachPuff (#FFDAB9 or rgb(255,218,185))
   can be transcribed in Curv like this: ``webRGB(0xFF,0xDA,0xB9)``
   or ``webRGB(255,218,185)``.
+
+.. _`web colour`: http://encycolorpedia.com/
 
 ``sHue h``
   A hue is a pure colour with no white or black mixed in.
