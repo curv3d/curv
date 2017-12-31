@@ -55,6 +55,21 @@ High level operations for constructing arbitrary colour values.
   can be transcribed in Curv like this: ``webRGB(0xFF,0xDA,0xB9)``
   or ``webRGB(255,218,185)``.
 
+``sHue h``
+  A hue is a pure colour with no white or black mixed in.
+  ``sHue`` can construct any of the hues in the sRGB colour space.
+  ``h`` is a number between 0 and 1 inclusive:
+
+  === =======
+  0   red
+  1/6 yellow
+  1/3 green
+  1/2 cyan
+  2/3 blue
+  5/6 magenta
+  1   red
+  === =======
+
 ``sHSV (hue,saturation,brightness)``
   HSV (also known as HSB) is a popular colour model supported by many
   graphics languages.
@@ -62,18 +77,7 @@ High level operations for constructing arbitrary colour values.
   The three arguments are:
 
   ``hue``
-    This represents a pure colour,
-    including all of the (representable) colours in the rainbow.
-
-    === =======
-    0   red
-    1/6 yellow
-    1/3 green
-    1/2 cyan
-    2/3 blue
-    5/6 magenta
-    1   red
-    === =======
+    A number between 0 and 1, specifying a hue (a pure colour). See ``sHue``.
 
   ``saturation``
     Saturation is the distance from white/grey/black, from 0 to 1.
