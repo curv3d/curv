@@ -44,7 +44,21 @@ and auxiliary definitions at the bottom
 Both clauses are optional.
 See: `Blocks`_.
 
+Note that:
+
+* ``sphere diam`` is a function call.
+  It calls the ``sphere`` function with the argument ``diam``,
+  and the result is a sphere.
+* ``cylinder{h: len, d: diam/8}`` is another function call.
+  It calls the ``cylinder`` function with labelled arguments.
+* ``>>`` is the pipeline operator.
+  It is often used to send a shape through a series of geometric
+  transformations, with data flowing left to right, similar
+  to a Unix shell pipeline.
+* See: `Functions`_.
+
 .. _`Blocks`: Blocks.rst
+.. _`Functions`: Functions.rst
 
 Source Files
 ------------
