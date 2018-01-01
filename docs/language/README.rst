@@ -81,6 +81,8 @@ Array Language
 
 Table of Contents
 -----------------
+Introduction: `Programs`_
+
 The seven types of `Values`_:
 
 * `Null`_
