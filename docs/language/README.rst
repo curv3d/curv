@@ -39,11 +39,16 @@ Simple Type System
 
 Interoperability
   Curv is a superset of JSON. The type system comprises the 6 JSON data types,
-  plus functions. These types exist in every programming language.
-  Most JSON programs are also valid Curv programs.
+  plus functions. Most JSON programs are also valid Curv programs.
+  Since JSON is a standard data interchange format supported by all popular
+  programming languages, this design provides two benefits:
   
-  JSON is already widely supported as a data interchange format.
-  Curv can be used as a data interchange format for pure functional data.
+  * Because the type system is so simple, it's trivial to embed
+    the Curv type system in another programming language.
+    And that makes it feasible to import Curv functions and libraries
+    into other programming languages, or to export Curv code from
+    other languages.
+  * Curv can be used as a data interchange format for pure functional data.
 
 Pure Functional Language
   Curv is a pure functional language.
