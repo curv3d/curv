@@ -19,7 +19,7 @@ animove = orbit;
 animacolour f shape = { ... shape, colour : f };
 
 animated_radial_rainbow =
-    (x,y,z,t)->hsv2rgb(phase(x,y)/tau+t/8 `mod` 1, 1, 1);
+    (x,y,z,t)->sHue(phase(x,y)/tau+t/8 `mod` 1);
 
 // displace the boundaries of a shape using a 3D cosine wave
 cosine_warp shape =

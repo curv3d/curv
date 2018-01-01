@@ -64,7 +64,7 @@ Code for the model "Shrek's Donut"::
   smooth_intersection .1 (
     torus (tau*4, tau*2),
     gyroid >> shell .2 >> lipschitz 2 >> bend (tau*12),
-  ) >> colour (hsv2rgb (1/3, 1, .5))
+  ) >> colour (sHSV (1/3, 1, .5))
 
 Function Representation
 =======================
