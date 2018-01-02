@@ -57,7 +57,7 @@ High level operations for constructing colour values.
 ``sRGB.hue h``
   A hue is a pure colour with no white or black mixed in.
   ``sRGB.hue`` can construct any of the hues in the sRGB colour space.
-  ``h`` is a number between 0 and 1 inclusive:
+  ``h`` is a number between 0 and 1:
 
   ===== ============
   0     red -- the red primary of the sRGB colour space
