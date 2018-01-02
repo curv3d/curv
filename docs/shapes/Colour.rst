@@ -20,33 +20,47 @@ A colour value is an (R,G,B) triple, where:
 
 This representation (called linear RGB) is a low-level representation
 that is useful internally, for mixing colours and performing computations
-within the 3D lighting model, but it is not user friendly.
-You don't want to construct linear R,G,B triples by hand, you want to use
-high level interfaces to construct colour values for you.
+within the 3D lighting model.
 
-Colour Names
-------------
-Curv 0.0 has a limited set of predefined colour names.
-
-* ``red``
-* ``yellow``
-* ``green``
-* ``cyan``
-* ``blue``
-* ``magenta``
-* ``white``
-* ``black``
+The actual colour space that gives meaning to these coordinates
+is defined by the rendering environment.
+You should use high level operations to construct colour values,
+and not try to create linear R,G,B triples by hand.
 
 Colour Spaces
 -------------
-High level operations for constructing arbitrary colour values.
+A *colour space* maps a set of coordinates (usually called R, G and B)
+onto a set of absolute, colorimetrically quantified colours.
+The *gamut* of a colour space is the set of absolute colours it contains.
+The gamut of most popular colour spaces is smaller than the set of colours
+that can be perceived by the human visual system.
 
-``sRGB (r,g,b)``
-  Construct a colour value using red, green and blue values in the
-  standard `sRGB colour space`_, which is the default colour space
-  of the world wide web. Each colour component is in the range 0 to 1.
+The `sRGB colour space`_ has been the industry standard for the
+computer graphics industry for many years. It's the colour space of
+most older monitors. It's the default colour space for images and
+for the world wide web.
 
 .. _`sRGB colour space`: https://en.wikipedia.org/wiki/SRGB
+
+Newer displays support larger colour spaces with wider gamuts than sRGB.
+Newer Apple products support the *DCI-P3* colour space,
+and the *Rec.2020* colour space in the UHDTV standard is even larger.
+
+For now, Curv only supports sRGB. However, support for other colour spaces
+is planned, both to fully support modern display hardware, and to accurately
+describe and display coloured shapes intended for 3D printing, since colour
+3D printers have very different gamuts and colour spaces than display hardware.
+
+Colour spaces are represented by Curv values.
+For now, we just have one such value, called ``sRGB``.
+
+Constructors
+------------
+High level operations for constructing colour values.
+
+``sRGB (r,g,b)``
+  Construct a colour value using red, green and blue coordinates in the
+  sRGB colour space. Each colour component is in the range 0 to 1.
 
 ``webRGB (r,g,b)``
   Another way to specify sRGB colours, where the colour components are
@@ -57,35 +71,35 @@ High level operations for constructing arbitrary colour values.
 
 .. _`web colour`: http://encycolorpedia.com/
 
-``sHue h``
+``sRGB.hue h``
   A hue is a pure colour with no white or black mixed in.
-  ``sHue`` can construct any of the hues in the sRGB colour space.
+  ``sRGB.hue`` can construct any of the hues in the sRGB colour space.
   ``h`` is a number between 0 and 1 inclusive:
 
   ===== ============
-  0     red
+  0     red -- the red primary of the sRGB colour space
   1/12  orange
   1/6   yellow
   1/4   chartreuse
-  1/3   green
+  1/3   green -- the green primary of the sRGB colour space
   5/12  spring green
   1/2   cyan
   7/12  azure
-  2/3   blue
+  2/3   blue -- the blue primary of the sRGB colour space
   3/4   violet
   5/6   magenta
   11/12 rose
   1     red
   ===== ============
 
-``sHSV (hue,saturation,brightness)``
+``sRGB.HSV (hue,saturation,brightness)``
   HSV (also known as HSB) is a popular colour model supported by many
   graphics languages.
-  ``sHSV`` is a more user-friendly way to specify sRGB colours.
+  ``sRGB.HSV`` is a more user-friendly way to specify sRGB colours.
   The three arguments are:
 
   ``hue``
-    A number between 0 and 1, specifying a hue (a pure colour). See ``sHue``.
+    A number between 0 and 1, specifying a hue (a pure colour). See ``sRGB.hue``.
 
   ``saturation``
     Saturation is the distance from a neutral colour (white/grey/black), in the range 0 to 1.
@@ -93,7 +107,7 @@ High level operations for constructing arbitrary colour values.
     closer to neutral.
 
     * A ``saturation`` of 0 constructs a neutral greyscale colour
-      based on the ``brightness``, ignoring the ``hue``. So ``sHSV(h,0,b)``
+      based on the ``brightness``, ignoring the ``hue``. So ``sRGB.HSV(h,0,b)``
       is white if b==1, medium grey if b==0.5, and black if b==0.
     * A ``saturation`` of 1 constructs a "shade" (a mixture of a pure
       colour and black), where ``hue`` is the pure colour,
@@ -108,6 +122,17 @@ High level operations for constructing arbitrary colour values.
     * A ``brightness`` of 1 constructs a "tint" (a mixture of a pure colour
       and white), where ``hue`` is the pure colour,
       and ``saturation`` is the distance from white.
+
+Curv 0.0 has a limited set of predefined colour names.
+
+* ``sRGB.red``
+* ``sRGB.yellow``
+* ``sRGB.green``
+* ``sRGB.cyan``
+* ``sRGB.blue``
+* ``sRGB.magenta``
+* ``sRGB.white``
+* ``sRGB.black``
 
 Applying Colours to Shapes
 --------------------------
