@@ -131,6 +131,7 @@ A colour value is an (R,G,B) triple, where:
 
 * The R, G and B components represent the linear intensity
   of red, green and blue light in the colour.
+  This is different from sRGB, which uses a non-linear encoding.
 * Each component is a number between 0 and 1 inclusive.
 
 This representation (called linear RGB) is a low-level representation
