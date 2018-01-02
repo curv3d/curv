@@ -6,9 +6,9 @@ displaying colours on the screen, and applying colours to geometric shapes.
 
 For example:
 
-* ``red`` is a colour value.
-* ``show_colour red`` displays the colour red in the graphics window.
-* ``cube >> colour red`` is a red cube.
+* ``sRGB.red`` is a colour value.
+* ``show_colour(sRGB.red)`` displays the colour red in the graphics window.
+* ``cube >> colour(sRGB.red)`` is a red cube.
 
 Internal Representation (Linear RGB)
 ------------------------------------
