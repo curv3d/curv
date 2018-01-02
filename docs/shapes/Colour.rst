@@ -6,26 +6,9 @@ displaying colours on the screen, and applying colours to geometric shapes.
 
 For example:
 
-* ``sRGB.red`` is a colour value.
-* ``show_colour(sRGB.red)`` displays the colour red in the graphics window.
-* ``cube >> colour(sRGB.red)`` is a red cube.
-
-Internal Representation (Linear RGB)
-------------------------------------
-A colour value is an (R,G,B) triple, where:
-
-* The R, G and B components represent the linear intensity
-  of red, green and blue light in the colour.
-* Each component is a number between 0 and 1 inclusive.
-
-This representation (called linear RGB) is a low-level representation
-that is useful internally, for mixing colours and performing computations
-within the 3D lighting model.
-
-The actual colour space that gives meaning to these coordinates
-is defined by the rendering environment.
-You should use high level operations to construct colour values,
-and not try to create linear R,G,B triples by hand.
+* ``red`` is a colour value.
+* ``show_colour red`` displays the colour red in the graphics window.
+* ``cube >> colour red`` is a red cube.
 
 Colour Spaces
 -------------
@@ -123,16 +106,16 @@ High level operations for constructing colour values.
       and white), where ``hue`` is the pure colour,
       and ``saturation`` is the distance from white.
 
-Curv 0.0 has a limited set of predefined colour names.
+For convenience, there is a limited set of predefined sRGB colour names:
 
-* ``sRGB.red``
-* ``sRGB.yellow``
-* ``sRGB.green``
-* ``sRGB.cyan``
-* ``sRGB.blue``
-* ``sRGB.magenta``
-* ``sRGB.white``
-* ``sRGB.black``
+* ``red``
+* ``yellow``
+* ``green``
+* ``cyan``
+* ``blue``
+* ``magenta``
+* ``white``
+* ``black``
 
 Applying Colours to Shapes
 --------------------------
@@ -141,3 +124,20 @@ Applying Colours to Shapes
 
 ``colour`` *colour* *shape*
   Apply a colour to a shape.
+
+Internal Representation (Linear RGB)
+------------------------------------
+A colour value is an (R,G,B) triple, where:
+
+* The R, G and B components represent the linear intensity
+  of red, green and blue light in the colour.
+* Each component is a number between 0 and 1 inclusive.
+
+This representation (called linear RGB) is a low-level representation
+that is useful internally, for mixing colours and performing computations
+within the 3D lighting model.
+
+The actual colour space that gives meaning to these coordinates
+is defined by the rendering environment.
+You should use high level operations to construct colour values,
+and not try to create linear R,G,B triples by hand.
