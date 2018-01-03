@@ -1176,40 +1176,37 @@ colour c shape =
 
 show_colour c = colour c everything;
 
-// convert an sRGB triple to internal form (linear RGB)
-sRGB c = c^2.2;
-
-sHue h = sHSV(h,1,1);
-
-// Convert an sHSV triple to internal form (linear RGB).
-// Each component of an [h,s,v] triple has range 0...1.
-sHSV c =
-    let m = abs(mod(c[0] + [1,2/3,1/3], 1) * 6 - 3);
-    in sRGB(c[2] * lerp(1, clamp(m - 1, 0, 1), c[1]));
+sRGB = {
+    call c = c^2.2;
+    hue h = HSV(h,1,1);
+    HSV c =
+        let m = abs(mod(c[0] + [1,2/3,1/3], 1) * 6 - 3);
+        in call(c[2] * lerp(1, clamp(m - 1, 0, 1), c[1]));
+};
 
 red = [1, 0, 0];
 orange = sRGB[1, .5, 0];
 yellow = [1, 1, 0];
-chartreuse = sHue(1/4);
+chartreuse = sRGB.hue(1/4);
 green = [0, 1, 0];
-spring_green = sHue(5/12);
+spring_green = sRGB.hue(5/12);
 cyan = [0, 1, 1];
-azure = sHue(7/12);
+azure = sRGB.hue(7/12);
 blue = [0, 0, 1];
-indigo = sHue(3/4);
+indigo = sRGB.hue(3/4);
 magenta = [1, 0, 1];
-rose = sHue(11/12);
+rose = sRGB.hue(11/12);
 
 white = [1, 1, 1];
 grey = sRGB[.5,.5,.5];
 black = [0, 0, 0];
 
 radial_rainbow n =
-    colour (p->sHSV(mod(phase(p[[X,Y]])/tau*n,1),1,1)) everything;
+    colour (p->sRGB.HSV(mod(phase(p[[X,Y]])/tau*n,1),1,1)) everything;
 concentric_rainbow n =
-    colour (p->sHSV(mod(mag(p[[X,Y]])/n,1),1,1)) everything;
+    colour (p->sRGB.HSV(mod(mag(p[[X,Y]])/n,1),1,1)) everything;
 linear_rainbow n =
-    colour (p->sHSV(mod(p[X]/n,1),1,1)) everything;
+    colour (p->sRGB.HSV(mod(p[X]/n,1),1,1)) everything;
 
 ///////////////////////////////////////////////////////////////
 // RESEARCH -- shapes and operators with bad distance fields //
@@ -1353,7 +1350,7 @@ gradient n shape =
             else if (m > n)
                 [1,1,1]
             else
-                sHSV(min(m-1,n-1)/(n-1),1,1),
+                sRGB.HSV(min(m-1,n-1)/(n-1),1,1),
         is_2d : true,
     };
 

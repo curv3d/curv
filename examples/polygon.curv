@@ -5,6 +5,6 @@ in
 union [
     for (i in 0..<n)
         regular_polygon (i+3) >> move(0,3) >> rotate(tau/n*i)
-          >> colour (sHue(i/n));
+          >> colour (sRGB.hue(i/n));
     convex_polygon[ (0,0), (1,0), (0,1) ];
 ]

@@ -5,4 +5,4 @@ cone{d:2, h:3}
 `intersection` box{zmin: -1.1}
 >> shell .05
 `intersection` box{zmax: 2.9}
->> colour (sHSV(.5,.5,.9))
+>> colour (sRGB.HSV(.5,.5,.9))

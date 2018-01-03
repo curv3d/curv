@@ -1,4 +1,13 @@
-# Redesign Shape Atlas API
+# Redesign Shape API
+
+## Colour
+* sRGB.HWB(hue,whiteness,blackness)
+* 3 functions that take 'hue' arguments: sRGB.hue,sRGB.HSV,sRGB.HWB.
+  Maybe, provide named hue indexes: red,orange,yellow,...
+  These names overlap with the named colours, which exist for ease of use,
+  and must not be made complicated. Alternatives:
+  * Two naming conventions: red,yellow,... vs h_red,h_yellow,...
+    or hues.red, hues.yellow, ...
 
 ## Rotate_repeat
 Better if the cell to repeat is above the origin.
@@ -176,7 +185,7 @@ A Colour comprises red, green and blue Intensities.
 A Colour Map is a function mapping an Intensity onto a Colour.
 * just a function value
 * {colour_map: f}
-* eg, rainbow i = sHSV(i,1,1);
+* eg, rainbow i = sRGB.HSV(i,1,1);
 
 A 2D or 3D Intensity Field maps a point (x,y) or (x,y,z) to an Intensity.
 * Could be a function.

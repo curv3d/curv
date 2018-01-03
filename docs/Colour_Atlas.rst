@@ -1,4 +1,4 @@
-================
+===============
 The Colour Atlas
 ================
 
@@ -76,7 +76,7 @@ are in the range 0..1.
   (better than HSV or HSL), as popularized by CSS Color Module Level 4.
   The ``s`` prefix means it is a transformation of sRGB coordinates.
   http://alvyray.com/Papers/CG/HWB_JGTv208.pdf
-* Support ``sHSV(hue,saturation,value)`` for compatibility with other programming languages (for porting code).
+* Support ``sRGB.HSV(hue,saturation,value)`` for compatibility with other programming languages (for porting code).
 * CSS has HSL, but it's slightly harder to use than HWB or HSV. Do I need it?
 * CSS colour modification operators. Look at CSS Color Module Level 4. Looks like a nice alternative to hexadecimal
   or databases containing thousands of obscure colour names for naming/constructing colours.

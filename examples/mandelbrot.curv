@@ -15,6 +15,6 @@ make_shape {
                 else
                     i := i + 1;
             );
-        in sHSV color,
+        in sRGB.HSV color,
     is_2d : true,
 }

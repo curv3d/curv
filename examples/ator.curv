@@ -7,4 +7,4 @@ torus {major: 2, minor: 1}
 where
 include file "lib/experimental.curv";
 radial_rainbow n =
-    (x,y,z,t)->sHue(phase(x,y)/tau*n+t/8 `mod` 1);
+    (x,y,z,t)->sRGB.hue(phase(x,y)/tau*n+t/8 `mod` 1);

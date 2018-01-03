@@ -8,7 +8,7 @@ function f = make_shape {
 s = sphere 1;
 make_shape {
     dist p = triangle_wave(s.dist p),
-    colour p = sHue(s.dist p),
+    colour p = sRGB.hue(s.dist p),
     is_3d = true,
 }
 //>> crop (cylinder(4,20))

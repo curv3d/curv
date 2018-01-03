@@ -2,4 +2,4 @@ gyroid
 >> shell .2 >> lipschitz 2
 >> bend (tau*12)
 `smooth_intersection .1` torus {major: tau*4, minor: tau*2}
->> colour (sHSV (1/3, 1, .5))
+>> colour (sRGB.HSV (1/3, 1, .5))

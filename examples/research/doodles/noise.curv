@@ -55,8 +55,8 @@ smoke = (x,y,z,t) -> (
 );
 
 cnoise = (x,y,z,t) -> (var n := clamp(noise(x,y),0,1); (n,n,n));
-rnoise = (x,y,z,t) -> (var n := clamp(noise(x,y),0,1); sHue n);
-rfbm = (x,y,z,t) -> (var n := clamp(fbm(x,y),0,1); sHue n);
+rnoise = (x,y,z,t) -> (var n := clamp(noise(x,y),0,1); sRGB.hue n);
+rfbm = (x,y,z,t) -> (var n := clamp(fbm(x,y),0,1); sRGB.hue n);
 
 //circle 1 >> colour smoke
 //everything >> colour rnoise
