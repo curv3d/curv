@@ -375,9 +375,11 @@ live_mode(curv::System& sys, const char* editor, const char* filename)
                 curv::Program prog{*file, sys};
                 prog.compile();
                 auto value = prog.eval();
-                std::cout << value << "\n";
-                display_shape(value,
-                    curv::At_Phrase(prog.value_phrase(), nullptr));
+                if (!display_shape(value,
+                    curv::At_Phrase(prog.value_phrase(), nullptr)))
+                {
+                    std::cout << value << "\n";
+                }
             } catch (curv::Exception& e) {
                 std::cout << "ERROR: " << e << "\n";
             } catch (std::exception& e) {
@@ -547,10 +549,12 @@ main(int argc, char** argv)
         auto value = prog.eval();
 
         if (exporter == nullptr) {
-            std::cout << value << "\n";
-            display_shape(value,
+            if (!display_shape(value,
                 curv::At_Phrase(prog.value_phrase(), nullptr),
-                true);
+                true))
+            {
+                std::cout << value << "\n";
+            }
         } else {
             exporter(value,
                 curv::At_Phrase(prog.value_phrase(), nullptr),
