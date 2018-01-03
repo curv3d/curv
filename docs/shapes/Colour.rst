@@ -14,6 +14,9 @@ Colour Spaces
 -------------
 A *colour space* maps a set of coordinates (usually called R, G and B)
 onto a set of absolute, colorimetrically quantified colours.
+Each Curv colour value is constructed using a specific colour space,
+and denotes an absolute colour.
+
 The *gamut* of a colour space is the set of absolute colours it contains.
 The gamut of most popular colour spaces is smaller than the set of colours
 that can be perceived by the human visual system.
