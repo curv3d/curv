@@ -65,23 +65,21 @@ New Pattern Types:
 "Pattern Guards and Transformational Patterns", Simon Peyton Jones
 
 If Pattern Matches Expression Then ...:
-(1) when (pat = expr) stmt
-    Simple.
-(2) if (pat <- expr) stmt1
-    if (pat <- expr) stmt1 else stmt2
-    Fancy. `<-` is pronounced "matches". `pat<-expr` is a pattern matching
-    phrase, which either succeeds (and binds some identifiers) or fails.
-    The bindings from pat are visible in stmt1.
-    There are compound PM phrases:
-      PM ::= pat <- expr
-      PM ::= PM1 && PM2 | PM1 && expr | expr && PM2
-             // PM1 and PM2 must define disjoint bindings.
-             // PM1 bindings are visible in PM2 and in expr.
-             // 'expr' is equivalent to the PM '_ if expr <- null'.
-      PM ::= PM1 || PM2
-             // PM1 and PM2 must define coincident bindings.
-             // PM || expr isn't legal because bindings from PM aren't
-             // initialized if PM fails.
+`if (pat <- expr) stmt1`
+`if (pat <- expr) stmt1 else stmt2`
+`<-` is pronounced "matches". `pat<-expr` is a pattern matching phrase,
+which either succeeds (and binds some identifiers) or fails.
+The bindings from pat are visible in stmt1.
+There are compound PM phrases:
+  PM ::= pat <- expr
+  PM ::= PM1 && PM2 | PM1 && expr | expr && PM2
+         // PM1 and PM2 must define disjoint bindings.
+         // PM1 bindings are visible in PM2 and in expr.
+         // 'expr' is equivalent to the PM '_ if expr <- null'.
+  PM ::= PM1 || PM2
+         // PM1 and PM2 must define coincident bindings.
+         // PM || expr isn't legal because bindings from PM aren't
+         // initialized if PM fails.
 
 Guarded Expressions:
 * Inspired by Haskell 2010 guarded equations, but more general.
@@ -89,18 +87,28 @@ Guarded Expressions:
   due to pattern match failure.
 * If the body of a function is a guarded expression GE, then pattern
   match failure of the GE is pattern match failure of the function.
+* `try function_call`
+  `try function_call else expression`
+  Eg, `try arg >> pat->result` is like: `if (pat <- arg) result`.
+  `try` can be used to classify function arguments based on their parameter
+  patterns.
 * Syntax:
   GE ::= if (...) expr
        | if (...) GE
        | if (...) GE else GE
+       | try expr
+       | try expr else GE
        | expr
 * Used with if(pat<-expr)...
+* PM ::= pat <- GE
+  PM fails if GE fails.
+  Eg, if (r <- try f x) <do something with r if f x succeeds>
 
 Filtered For Loop:
 * Haskell: for (pattern in list) ..., list elements not matching pattern
   are skipped. Convenient in some cases, hides coding errors in others.
   Swift also has a syntax for this.
-* In Curv, we could use
+* In Curv, we can use
     for (x in list) if (pattern <- x) ...
   This is simple, and makes it obvious that filtering is happening.
 * We could also incorporate the filtering into the for loop.
@@ -108,6 +116,18 @@ Filtered For Loop:
     for (pattern <- list) ...
   Low priority, not clear we require such an abbreviation if the previous
   syntax is available.
+
+I now have a general notion of a function call failing due to a domain
+error, and the ability to direct evaluation based on this failure.
+It reminds me of:
+* "Goal directed evaluation" in Icon, with 'PM' expressions that
+  behave like boolean conditions that can be combined with && and ||.
+  Although that is supposed to also cover the generation of a stream of results,
+  and backtracking on failure.
+* Exception handling, although this particular variety is restricted so that
+  it does not break referential transparency.
+  
+This is now very general. "pattern direc
 
 ### Unicode Strings
 A string is a sequence of characters, but what is a character in Unicode?
