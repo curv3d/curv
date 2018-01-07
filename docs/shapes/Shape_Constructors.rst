@@ -23,8 +23,8 @@ Shape Constructors
     I.e., it is inscribed by the unit circle.
   * ``square d``: Construct a square of width ``d``.
   * ``square.circumratio``: ratio of circumradius over inradius.
-  * ``square_m d``: mitred distance field, simple code, cheap to compute.
-  * ``square_e d``: exact distance field, more expensive.
+  * ``square.mitred d``: mitred distance field, simple code, cheap to compute.
+  * ``square.exact d``: exact distance field, more expensive.
 
 ``rect ...``
   Construct an axis-aligned rectangle.
@@ -116,22 +116,22 @@ Shape Constructors
   with width ``dx``, depth ``dy`` and height ``dz``.
   Approximate distance field.
   
-  * ``ellipsoid_e``: exact distance field, much more expensive to compute (TODO).
+  * ``ellipsoid.exact``: exact distance field, more expensive to compute (TODO).
 
 ``cylinder {d, h}``
   Construct a cylinder, centered on the origin, whose axis of rotation is the Z axis.
   Diameter is ``d`` and height is ``h``.
  
-  * ``cylinder_m``: mitred distance field.
-  * ``cylinder_e``: exact distance field, more expensive.
+  * ``cylinder.mitred``: mitred distance field.
+  * ``cylinder.exact``: exact distance field, more expensive.
 
 ``cone {d, h}``
   Construct a cone.
   The base (of diameter ``d``) is embedded in the XY plane and centred on the origin.
   The apex is above the origin at height ``h``.
  
-  * ``cone_m``: mitred distance field.
-  * ``cone_e``: exact distance field, more expensive.
+  * ``cone.mitred``: mitred distance field.
+  * ``cone.exact``: exact distance field, more expensive.
 
 ``torus {major: d1, minor: d2}``
   Construct a torus, centred on the origin, axis of rotation is Z axis.

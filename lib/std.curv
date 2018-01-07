@@ -159,49 +159,55 @@ sphere =
 
 ellipsoid(dx,dy,dz) = sphere 1 >> scale(dx,dy,dz);
 
-cylinder = cylinder_e;
-cylinder_m{d,h} = extrude_m h (circle d);
-cylinder_e{d,h} = extrude_e h (circle d);
+cylinder =
+    {
+        call = exact;
+        mitred{d,h} = extrude_m h (circle d);
+        exact{d,h} = extrude_e h (circle d);
+    };
 
 // Cone: +Z is up, origin is in the middle of the base.
-// TODO: Provide an interface capable of constructing an infinite sphere.
-cone = cone_e;
-cone_m{d, h: height} =
-    let radius = d / 2;
-    in make_shape {
-        dist(x,y,z,t) =
-            let q = [mag(x,y), z];
-                tip = q - [0, height];
-                mantleDir = normalize(height, radius);
-                mantle = dot(tip, mantleDir);
-            in max(mantle, -q[Y]);
-        bbox = [[-radius,-radius,0],[radius,radius,height]];
-        is_3d = true
-    };
-// Euclidean distance field.
-// Credit: MERCURY (http://mercury.sexy/hg_sdf)
-cone_e{d, h: height} =
-    let radius = d / 2;
-    in make_shape {
-        dist(x,y,z,t) =
-            let q = [mag(x,y), z];
-                apex = q - [0, height];
-                mantleDir = normalize(height, radius);
-                mantle = dot(apex, mantleDir);
-                projected = dot(apex, [mantleDir[Y], -mantleDir[X]]);
-            in do
-                var d := max(mantle, -q[Y]);
+// TODO: Provide an interface capable of constructing an infinite cone.
+cone =
+    {
+        call = exact;
+        mitred{d, h: height} =
+            let radius = d / 2;
+            in make_shape {
+                dist(x,y,z,t) =
+                    let q = [mag(x,y), z];
+                        tip = q - [0, height];
+                        mantleDir = normalize(height, radius);
+                        mantle = dot(tip, mantleDir);
+                    in max(mantle, -q[Y]);
+                bbox = [[-radius,-radius,0],[radius,radius,height]];
+                is_3d = true
+            };
+        // Euclidean distance field.
+        // Credit: MERCURY (http://mercury.sexy/hg_sdf)
+        exact{d, h: height} =
+            let radius = d / 2;
+            in make_shape {
+                dist(x,y,z,t) =
+                    let q = [mag(x,y), z];
+                        apex = q - [0, height];
+                        mantleDir = normalize(height, radius);
+                        mantle = dot(apex, mantleDir);
+                        projected = dot(apex, [mantleDir[Y], -mantleDir[X]]);
+                    in do
+                        var d := max(mantle, -q[Y]);
 
-                // distance to apex
-                if (q[Y] > height && projected < 0)
-                    d := max(d, mag(apex));
+                        // distance to apex
+                        if (q[Y] > height && projected < 0)
+                            d := max(d, mag(apex));
 
-                // distance to base ring
-                if (q[X] > radius && projected > mag(height, radius))
-                    d := max(d, mag(q - [radius, 0]));
-            in d;
-        bbox = [[-radius,-radius,0],[radius,radius,height]];
-        is_3d = true
+                        // distance to base ring
+                        if (q[X] > radius && projected > mag(height, radius))
+                            d := max(d, mag(q - [radius, 0]));
+                    in d;
+                bbox = [[-radius,-radius,0],[radius,radius,height]];
+                is_3d = true
+            };
     };
 
 // credit: Inigo Quilez
@@ -296,20 +302,29 @@ where
         };
 );
 
-square =
-    make_shape {
+square = (
+    {
         ... square_e 2,
         call : square_e,
         circumratio : sqrt 2,
-    };
-square_m d =
-    let r = d / 2;
-    in make_shape {
-        dist(x,y,z,t) = max(abs(x,y) - r);
-        bbox = [[-r,-r,0], [r,r,0]];
-        is_2d = true;
-    };
-square_e d = rect_e(d,d);
+        exact : {
+            ... square_e 2,
+            call : square_e,
+        },
+        mitred : {
+            ... square_m 2,
+            call : square_m,
+        },
+    } where
+        square_m d =
+            let r = d / 2;
+            in make_shape {
+                dist(x,y,z,t) = max(abs(x,y) - r);
+                bbox = [[-r,-r,0], [r,r,0]];
+                is_2d = true;
+            };
+        square_e d = rect_e(d,d);
+);
 
 // rect: an axis aligned rectangle.
 rect = rect_m;

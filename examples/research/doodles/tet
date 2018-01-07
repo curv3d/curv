@@ -1,6 +1,6 @@
 //tri = regular_polygon(3,2);
 tri = cone(1,1)>>slice_xz;
-//tri = square_e 1;
+//tri = square.exact 1;
 off = tri >> offset (.2);
 union(
     off.bbox >> rect_at >> shell .1 >> colour red,
