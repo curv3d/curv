@@ -28,6 +28,8 @@ Live Programming Mode:
 
 2. The Core Language
 ====================
+Full language documentation: `<language/README.rst>`_.
+
 Curv is a *domain specific language* for constructing 2D and 3D
 geometric shapes. It's not a general purpose programming language.
 There is no concept of I/O. A Curv program is simply an expression that
