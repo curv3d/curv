@@ -168,11 +168,11 @@ to determine the shape of its output.
  
   * ``regular_polygon n``: A prototypical instance,
     inscribed by the unit circle.
-  * ``regular_polygon(n).circumratio``: Ratio of circumradius over inradius.
   * ``regular_polygon n d``: Construct a regular polygon
     whose inscribed circle has diameter ``d``.
-  * ``regular_polygon_m n d``: mitred distance field.
-  * ``regular_polygon_e n d``: exact distance field (TODO).
+  * ``regular_polygon n .circumratio``: Ratio of circumradius over inradius.
+  * ``regular_polygon n .mitred d``: mitred distance field.
+  * ``regular_polygon n .exact d``: exact distance field (TODO).
 
   TODO: Calls to regular_polygon should compile into optimized code,
   like http://thndl.com/square-shaped-shaders.html

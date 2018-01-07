@@ -401,15 +401,17 @@ rect = {
 };
 
 // regular_polygon: n is # of sides, d is incircle diameter
-regular_polygon n =
-    let angle = tau / n;
-    in make_shape {
-        ... regular_polygon_m n 2,
-        call d : regular_polygon_m n d,
+regular_polygon n = (
+    {
+        ... mitred 2,
+        call: mitred,
+        mitred: mitred,
         circumratio : 1 / cos(angle/2),
-    };
-regular_polygon_m n d =
-    half_plane{d: d/2, normal: [1,0]} >> repeat_radial n >> rotate(-tau/4);
+    } where
+        angle = tau / n;
+        mitred d = half_plane{d: d/2, normal: [1,0]}
+                   >> repeat_radial n >> rotate(-tau/4);
+);
 
 // convex polygon: vertices are in counterclockwise order.
 convex_polygon = convex_polygon_m;
@@ -478,7 +480,7 @@ prism n = {
     ... prism_m n {d: 2, h: 2},
     call : prism_m n,
 };
-prism_m n {d,h} = regular_polygon_m n d >> extrude_m h;
+prism_m n {d,h} = regular_polygon n .mitred d >> extrude_m h;
 
 // TODO: pyramid(n,d,h)
 
