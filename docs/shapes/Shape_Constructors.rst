@@ -204,15 +204,15 @@ Platonic Solids
     * ``sphere(d*cube.circumratio)`` constructs a sphere that circumscribes
       a cube of height d.
 
-  * ``S_m d`` constructs an instance of S with a mitred distance field.
-  * ``S_e d`` constructs an instance of S with an exact distance field.
+  * ``S.mitred d`` constructs an instance of S with a mitred distance field.
+  * ``S.exact d`` constructs an instance of S with an exact distance field.
 
   TODO:
 
-  * ``tetrahedron_e``
-  * ``octahedron_e``
-  * ``dodecahedron_e``
-  * ``icosahedron_e``
+  * ``tetrahedron.exact``
+  * ``octahedron.exact``
+  * ``dodecahedron.exact``
+  * ``icosahedron.exact``
 
 ``capsule {d: diameter, from: p1, to: p2}``
   A cylinder of diameter ``d`` whose central axis extends from ``p1`` to ``p2``,

@@ -465,153 +465,180 @@ prism_m n {d,h} = regular_polygon_m n d >> extrude_m h;
 
 // TODO: pyramid(n,d,h)
 
-// 'd' is the diameter of a sphere inscribed inside the tetrahedron.
-// Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
-tetrahedron = make_shape {
-    ... tetrahedron_m 2,
-    call : tetrahedron_m,
-    // radius of circumscribed sphere / radius of inscribed sphere
-    circumratio : (sqrt(3/2)/2) / (1/(2*sqrt 6)),
-};
-tetrahedron_m d =
-    let r = d / 2;
-        // vertices of a tetrahedron
-        v1 = [1,1,1];
-        v2 = [-1,-1,1];
-        v3 = [1,-1,-1];
-        v4 = [-1,1,-1];
-
-        // faces: (1,2,3) (1,4,2) (2,4,3) (1,3,4)
-        // vertices listed in CCW order viewed from outside (right hand rule)
-
-        // face normals
-        n1 = normalize(cross(v1-v3,v2-v3));
-        n2 = normalize(cross(v1-v2,v4-v2));
-        n3 = normalize(cross(v2-v3,v4-v3));
-        n4 = normalize(cross(v4-v3,v1-v3));
-    in make_shape {
-        dist p :
-            max [
-                dot(p[[X,Y,Z]], n1),
-                dot(p[[X,Y,Z]], n2),
-                dot(p[[X,Y,Z]], n3),
-                dot(p[[X,Y,Z]], n4),
-            ] - r,
-        is_3d : true,
-        bbox : sqrt(3) * [[-r,-r,-r], [r,r,r]],
-    };
-
-cube = make_shape {
-    ... cube_m 2,
-    call : cube_m,
-    circumratio : sqrt 3,
-};
-cube_m d =
-    let r = d / 2;
-    in make_shape {
-        dist(x,y,z,t) = max(abs(x,y,z) - r);
-        bbox = [[-r, -r, -r], [r,r,r]];
-        is_3d = true;
-    };
-cube_e d = box_e(d,d,d);
-
-// 'd' is the diameter of a sphere inscribed inside the octahedron.
-// Vertexes are aligned with the X,Y,Z axes. Mitred distance field.
-octahedron = make_shape {
-    ... octahedron_m 2,
-    call : octahedron_m,
-    circumratio : (1/2*sqrt 2) / (1/6*sqrt 6),
-};
-octahedron_m d =
-    let r = d / 2;
-        v0 = normalize(1,1,1);
-        v1 = normalize(-1,1,1);
-        v2 = normalize(1,-1,1);
-        v3 = normalize(1,1,-1);
+tetrahedron = (
+    {
+        ... tetrahedron_m 2,
+        call : tetrahedron_m,
+        mitred : {
+            ... tetrahedron_m 2,
+            call : tetrahedron_m,
+        },
         // radius of circumscribed sphere / radius of inscribed sphere
-        circumratio = (1/2*sqrt 2) / (1/6*sqrt 6);
-    in make_shape {
-        dist p :
-            max [
-                abs(dot(p[[X,Y,Z]], v0)),
-                abs(dot(p[[X,Y,Z]], v1)),
-                abs(dot(p[[X,Y,Z]], v2)),
-                abs(dot(p[[X,Y,Z]], v3)),
-            ] - r,
-        is_3d : true,
-        bbox : circumratio * [[-r,-r,-r], [r,r,r]],
-    };
+        circumratio : (sqrt(3/2)/2) / (1/(2*sqrt 6)),
+    } where
+        tetrahedron_m d =
+            let r = d / 2;
+                // vertices of a tetrahedron
+                v1 = [1,1,1];
+                v2 = [-1,-1,1];
+                v3 = [1,-1,-1];
+                v4 = [-1,1,-1];
 
-// 'd' is the diameter of a sphere inscribed inside the dodecahedron.
-// Mitred distance field. Pointy side down.
-dodecahedron = make_shape {
-    ... dodecahedron_m 2,
-    call : dodecahedron_m,
-    circumratio : (.25*(sqrt 3 + sqrt 15)) / (1/20*sqrt(250+110*sqrt(5))),
-};
-dodecahedron_m d =
-    let r = d / 2;
-        v0 = normalize(0, phi, 1);
-        v1 = normalize(0, -phi, 1);
-        v2 = normalize(1, 0, phi);
-        v3 = normalize(-1, 0, phi);
-        v4 = normalize(phi, 1, 0);
-        v5 = normalize(-phi, 1, 0);
-        midratio = (.25*(3+sqrt(5))) / (1/20*sqrt(250+110*sqrt(5)));
-        circumratio = (.25*(sqrt 3 + sqrt 15)) / (1/20*sqrt(250+110*sqrt(5)));
-    in make_shape {
-        dist p :
-            max [
-                abs(dot(p[[X,Y,Z]], v0)),
-                abs(dot(p[[X,Y,Z]], v1)),
-                abs(dot(p[[X,Y,Z]], v2)),
-                abs(dot(p[[X,Y,Z]], v3)),
-                abs(dot(p[[X,Y,Z]], v4)),
-                abs(dot(p[[X,Y,Z]], v5)),
-            ] - r,
-        is_3d : true,
-        bbox : midratio * [[-r,-r,-r],[r,r,r]],
-    };
+                // faces: (1,2,3) (1,4,2) (2,4,3) (1,3,4)
+                // vertices listed in CCW order viewed from outside (right hand rule)
 
-// 'd' is the diameter of a sphere inscribed inside the icosahedron.
-// Mitred distance field.
-icosahedron = make_shape {
-    ... icosahedron_m 2,
-    call : icosahedron_m,
-    circumratio : (.25*sqrt(10+2*sqrt 5)) / (1/12*(3*sqrt(3)+sqrt(15))),
-};
-icosahedron_m d =
-    let r = d / 2;
-        v0 = normalize(1,1,1);
-        v1 = normalize(-1,1,1);
-        v2 = normalize(1,-1,1);
-        v3 = normalize(1,1,-1);
-        v4 = normalize(0, +1, phi+1);
-        v5 = normalize(0, -1, phi+1);
-        v6 = normalize(+phi+1, 0, 1);
-        v7 = normalize(-phi-1, 0, 1);
-        v8 = normalize(+1, phi+1, 0);
-        v9 = normalize(-1, phi+1, 0);
-        // radius of midsphere / radius of insphere
-        midratio = (phi/2) / (1/12*(3*sqrt(3)+sqrt(15)));
-        circumratio = (.25*sqrt(10+2*sqrt 5)) / (1/12*(3*sqrt(3)+sqrt(15)));
-    in make_shape {
-        dist p :
-            max [
-                abs(dot(p[[X,Y,Z]], v0)),
-                abs(dot(p[[X,Y,Z]], v1)),
-                abs(dot(p[[X,Y,Z]], v2)),
-                abs(dot(p[[X,Y,Z]], v3)),
-                abs(dot(p[[X,Y,Z]], v4)),
-                abs(dot(p[[X,Y,Z]], v5)),
-                abs(dot(p[[X,Y,Z]], v6)),
-                abs(dot(p[[X,Y,Z]], v7)),
-                abs(dot(p[[X,Y,Z]], v8)),
-                abs(dot(p[[X,Y,Z]], v9)),
-            ] - r,
-        is_3d : true,
-        bbox : midratio * [[-r,-r,-r], [r,r,r]],
-    };
+                // face normals
+                n1 = normalize(cross(v1-v3,v2-v3));
+                n2 = normalize(cross(v1-v2,v4-v2));
+                n3 = normalize(cross(v2-v3,v4-v3));
+                n4 = normalize(cross(v4-v3,v1-v3));
+            in make_shape {
+                dist p :
+                    max [
+                        dot(p[[X,Y,Z]], n1),
+                        dot(p[[X,Y,Z]], n2),
+                        dot(p[[X,Y,Z]], n3),
+                        dot(p[[X,Y,Z]], n4),
+                    ] - r,
+                is_3d : true,
+                bbox : sqrt(3) * [[-r,-r,-r], [r,r,r]],
+            };
+);
+
+cube = (
+    {
+        ... cube_e 2,
+        call: cube_e,
+        circumratio: sqrt 3,
+        exact: {
+            ... cube_e 2,
+            call: cube_e
+        },
+        mitred: {
+            ... cube_m 2,
+            call: cube_m
+        },
+    }
+    where
+        cube_e d =
+            let r = d / 2;
+            in make_shape {
+                dist(x,y,z,t) = max(abs(x,y,z) - r);
+                bbox = [[-r, -r, -r], [r,r,r]];
+                is_3d = true;
+            };
+        cube_m d = box_e(d,d,d);
+);
+
+octahedron = (
+    {
+        ... octahedron_m 2,
+        call : octahedron_m,
+        circumratio : (1/2*sqrt 2) / (1/6*sqrt 6),
+        mitred: {
+            ... octahedron_m 2,
+            call: octahedron_m
+        },
+    } where
+        octahedron_m d =
+            let r = d / 2;
+                v0 = normalize(1,1,1);
+                v1 = normalize(-1,1,1);
+                v2 = normalize(1,-1,1);
+                v3 = normalize(1,1,-1);
+                // radius of circumscribed sphere / radius of inscribed sphere
+                circumratio = (1/2*sqrt 2) / (1/6*sqrt 6);
+            in make_shape {
+                dist p :
+                    max [
+                        abs(dot(p[[X,Y,Z]], v0)),
+                        abs(dot(p[[X,Y,Z]], v1)),
+                        abs(dot(p[[X,Y,Z]], v2)),
+                        abs(dot(p[[X,Y,Z]], v3)),
+                    ] - r,
+                is_3d : true,
+                bbox : circumratio * [[-r,-r,-r], [r,r,r]],
+            };
+);
+
+dodecahedron = (
+    {
+        ... dodecahedron_m 2,
+        call : dodecahedron_m,
+        circumratio : (.25*(sqrt 3 + sqrt 15)) / (1/20*sqrt(250+110*sqrt(5))),
+        mitred: {
+            ... dodecahedron_m 2,
+            call: dodecahedron_m
+        },
+    } where
+        dodecahedron_m d =
+            let r = d / 2;
+                v0 = normalize(0, phi, 1);
+                v1 = normalize(0, -phi, 1);
+                v2 = normalize(1, 0, phi);
+                v3 = normalize(-1, 0, phi);
+                v4 = normalize(phi, 1, 0);
+                v5 = normalize(-phi, 1, 0);
+                midratio = (.25*(3+sqrt(5))) / (1/20*sqrt(250+110*sqrt(5)));
+                circumratio = (.25*(sqrt 3 + sqrt 15)) / (1/20*sqrt(250+110*sqrt(5)));
+            in make_shape {
+                dist p :
+                    max [
+                        abs(dot(p[[X,Y,Z]], v0)),
+                        abs(dot(p[[X,Y,Z]], v1)),
+                        abs(dot(p[[X,Y,Z]], v2)),
+                        abs(dot(p[[X,Y,Z]], v3)),
+                        abs(dot(p[[X,Y,Z]], v4)),
+                        abs(dot(p[[X,Y,Z]], v5)),
+                    ] - r,
+                is_3d : true,
+                bbox : midratio * [[-r,-r,-r],[r,r,r]],
+            };
+);
+
+icosahedron = (
+    {
+        ... icosahedron_m 2,
+        call : icosahedron_m,
+        circumratio : (.25*sqrt(10+2*sqrt 5)) / (1/12*(3*sqrt(3)+sqrt(15))),
+        mitred: {
+            ... icosahedron_m 2,
+            call: icosahedron_m
+        },
+    } where
+        icosahedron_m d =
+            let r = d / 2;
+                v0 = normalize(1,1,1);
+                v1 = normalize(-1,1,1);
+                v2 = normalize(1,-1,1);
+                v3 = normalize(1,1,-1);
+                v4 = normalize(0, +1, phi+1);
+                v5 = normalize(0, -1, phi+1);
+                v6 = normalize(+phi+1, 0, 1);
+                v7 = normalize(-phi-1, 0, 1);
+                v8 = normalize(+1, phi+1, 0);
+                v9 = normalize(-1, phi+1, 0);
+                // radius of midsphere / radius of insphere
+                midratio = (phi/2) / (1/12*(3*sqrt(3)+sqrt(15)));
+                circumratio = (.25*sqrt(10+2*sqrt 5)) / (1/12*(3*sqrt(3)+sqrt(15)));
+            in make_shape {
+                dist p :
+                    max [
+                        abs(dot(p[[X,Y,Z]], v0)),
+                        abs(dot(p[[X,Y,Z]], v1)),
+                        abs(dot(p[[X,Y,Z]], v2)),
+                        abs(dot(p[[X,Y,Z]], v3)),
+                        abs(dot(p[[X,Y,Z]], v4)),
+                        abs(dot(p[[X,Y,Z]], v5)),
+                        abs(dot(p[[X,Y,Z]], v6)),
+                        abs(dot(p[[X,Y,Z]], v7)),
+                        abs(dot(p[[X,Y,Z]], v8)),
+                        abs(dot(p[[X,Y,Z]], v9)),
+                    ] - r,
+                is_3d : true,
+                bbox : midratio * [[-r,-r,-r], [r,r,r]],
+            };
+);
 
 /////////////////////////////////////////////
 // BOOLEAN / SET THEORETIC SHAPE OPERATORS //
