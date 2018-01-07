@@ -223,12 +223,6 @@ to determine the shape of its output.
     Right hand palm on p1, fingertips on p2, thumb is the normal vector
     (points away from the half-plane).
 
-``log_spiral ...``
-  TODO: logarithmic spiral
-
-``linear_spiral ...``
-  TODO: linear (aka Archimedean) spiral
-
 3D Shapes
 ---------
 ``sphere``
@@ -297,9 +291,6 @@ to determine the shape of its output.
     With a mitred distance field.
   ``prism_e n {d, h}``
     With an exact distance field. (TODO)
-
-``antiprism n``
-  TODO
 
 ``pyramid n {h, d}``
   TODO:
@@ -626,8 +617,6 @@ Repetition
 ``repeat_mirror_x shape``
 
 ``repeat_radial reps shape``
-
-``repeat_spiral ... shape``
 
 ``repeat_helix ... shape``
 
@@ -1269,6 +1258,9 @@ Implement the `Conway polyhedron operators`_.
 Existing polyhedron constructors like ``cube``, ``icosahedron``, etc, are modified so that they
 can be used as input values.
 
+``antiprism n``
+  3d shape constructor, one of the Conway primitives.
+
 * In OpenSCAD, by Kit Wallace: https://github.com/KitWallace/openscad/blob/master/conway.scad
 * In JavaScript/VRML, by George Hart: http://www.georgehart.com/virtual-polyhedra/conway_notation.html
 * HTML5: http://levskaya.github.io/polyhedronisme/
@@ -1328,6 +1320,16 @@ Carole Blanc
 
 A number of these papers are directed towards the creation of a Curv-like
 geometry system.
+
+Spirals
+-------
+``log_spiral ...``
+  TODO: logarithmic spiral
+
+``linear_spiral ...``
+  TODO: linear (aka Archimedean) spiral
+
+``repeat_spiral ... shape``
 
 7. Bibliography
 ===============

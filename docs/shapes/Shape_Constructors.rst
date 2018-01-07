@@ -103,12 +103,6 @@ Shape Constructors
     Right hand palm on p1, fingertips on p2, thumb is the normal vector
     (points away from the half-plane).
 
-``log_spiral ...``
-  TODO: logarithmic spiral
-
-``linear_spiral ...``
-  TODO: linear (aka Archimedean) spiral
-
 3D Shapes
 ---------
 ``sphere``
@@ -177,9 +171,6 @@ Shape Constructors
     With a mitred distance field.
   ``prism_e n {d, h}``
     With an exact distance field. (TODO)
-
-``antiprism n``
-  TODO
 
 ``pyramid n {h, d}``
   TODO:
