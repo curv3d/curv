@@ -190,8 +190,8 @@ to determine the shape of its output.
   The result is undefined if the vertex list doesn't specify a convex polygon.
   Cost: linear in ``count(vertices)``.
  
-  * ``convex_polygon_m``: mitred distance field.
-  * ``convex_polygon_e``: exact distance field (TODO).
+  * ``convex_polygon.mitred``: mitred distance field.
+  * ``convex_polygon.exact``: exact distance field (TODO).
 
 ``polygon vertices``
   TODO. (Use the Nef Polygon construction, by combining a set of half-planes using intersection and complement.)

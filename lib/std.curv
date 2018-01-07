@@ -414,13 +414,15 @@ regular_polygon n = (
 );
 
 // convex polygon: vertices are in counterclockwise order.
-convex_polygon = convex_polygon_m;
-convex_polygon_m pts =
-    intersection[
-        for (i in indices pts)
-            half_plane (pts[mod(i+1, count pts)], pts[i]),
-        rect(min pts, max pts) // bounding box
-    ];
+convex_polygon = {
+    call = mitred;
+    mitred pts =
+        intersection[
+            for (i in indices pts)
+                half_plane (pts[mod(i+1, count pts)], pts[i]),
+            rect(min pts, max pts) // bounding box
+        ];
+};
 
 // box: an axis aligned cuboid.
 box = box_m;
