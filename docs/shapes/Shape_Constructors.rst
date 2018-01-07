@@ -152,8 +152,8 @@ Shape Constructors
   * ``box {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf}``:
     Each argument specifies one of the faces, and defaults to ``-inf``
     or ``inf``. Used for specifying a clipping region, with ``intersection``.
-  * ``box_m ...``: mitred distance field, cheaper to compute.
-  * ``box_e ...``: exact distance field, more expensive.
+  * ``box.mitred ...``: mitred distance field, cheaper to compute.
+  * ``box.exact ...``: exact distance field, more expensive.
 
 ``prism n ...``
   Construct a regular right prism, centred on the origin.

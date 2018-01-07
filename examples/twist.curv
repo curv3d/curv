@@ -1,4 +1,4 @@
 union (
-    box_e(1,1,5) >> twist 5 >> lipschitz 1.5 >> translate(1,0,0),
-    box_e(1,1,5) >> translate(-1,0,0),
+    box.exact(1,1,5) >> twist 5 >> lipschitz 1.5 >> translate(1,0,0),
+    box.exact(1,1,5) >> translate(-1,0,0),
 )

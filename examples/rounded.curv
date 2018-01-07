@@ -1,6 +1,6 @@
 // 'b' is a vec3
 let
-rounded_box(r, b) = offset r << box_e(b - 2*r);
+rounded_box(r, b) = offset r << box.exact(b - 2*r);
 
 in
 union [

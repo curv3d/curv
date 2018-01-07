@@ -1,10 +1,10 @@
 /*
 smooth_union .5 (
     smooth_union .5 (
-        box_e(1,5,5),
-        box_e(5,1,5),
+        box.exact(1,5,5),
+        box.exact(5,1,5),
     ),
-    box_e(5,5,1)
+    box.exact(5,5,1)
 )
 */
 smooth_min(a,b,k) =

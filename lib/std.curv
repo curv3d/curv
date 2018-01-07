@@ -425,58 +425,60 @@ convex_polygon = {
 };
 
 // box: an axis aligned cuboid.
-box = box_m;
-box_m a =
-    a >> match [
-    (is_vec3 b) ->
-        let r = b / 2;
-        in make_shape {
-            dist(x,y,z,t) = max(abs(x,y,z) - r);
-            bbox = [-r, r];
-            is_3d = true;
-        };
-    (is_bbox3 b) ->
-        let lo = b[MIN];
-            hi = b[MAX];
-        in make_shape {
-            dist(x,y,z,t) = max(max(lo-[x,y,z]), max([x,y,z]-hi));
-            bbox = b;
-            is_3d = true;
-        };
-    {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf} ->
-        box_m((xmin,ymin,zmin),(xmax,ymax,zmax));
-    ];
-box_e a =
-    a >> match [
-    (is_vec3 b) ->
-        let r = b / 2;
-        in make_shape {
-            dist(x,y,z,t) =
-                let d = abs(x,y,z) - r;
-                in min(max d, 0) + mag(max(d,0));
-            bbox = [-r, r];
-            is_3d = true;
-        };
-    (is_bbox3 b) ->
-        let lo = b[MIN];
-            hi = b[MAX];
-            outsideness(a,amin,amax) =
-                if (a < amin) amin - a
-                else if (a > amax) a - amax
-                else 0;
-        in make_shape {
-            dist(x,y,z,t) =
-                let ind = max[max(lo-[x,y,z]), max([x,y,z]-hi)];
-                    outd = mag(outsideness(x,lo[X],hi[X]),
-                               outsideness(y,lo[Y],hi[Y]),
-                               outsideness(z,lo[Z],hi[Z]));
-                in if (ind <= 0) ind else outd;
-            bbox = [[...lo,0], [...hi,0]];
-            is_2d = true;
-        };
-    {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf} ->
-        box_e((xmin,ymin,zmin),(xmax,ymax,zmax));
-    ];
+box = {
+    call = exact;
+    mitred a =
+        a >> match [
+        (is_vec3 b) ->
+            let r = b / 2;
+            in make_shape {
+                dist(x,y,z,t) = max(abs(x,y,z) - r);
+                bbox = [-r, r];
+                is_3d = true;
+            };
+        (is_bbox3 b) ->
+            let lo = b[MIN];
+                hi = b[MAX];
+            in make_shape {
+                dist(x,y,z,t) = max(max(lo-[x,y,z]), max([x,y,z]-hi));
+                bbox = b;
+                is_3d = true;
+            };
+        {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf} ->
+            mitred((xmin,ymin,zmin),(xmax,ymax,zmax));
+        ];
+    exact a =
+        a >> match [
+        (is_vec3 b) ->
+            let r = b / 2;
+            in make_shape {
+                dist(x,y,z,t) =
+                    let d = abs(x,y,z) - r;
+                    in min(max d, 0) + mag(max(d,0));
+                bbox = [-r, r];
+                is_3d = true;
+            };
+        (is_bbox3 b) ->
+            let lo = b[MIN];
+                hi = b[MAX];
+                outsideness(a,amin,amax) =
+                    if (a < amin) amin - a
+                    else if (a > amax) a - amax
+                    else 0;
+            in make_shape {
+                dist(x,y,z,t) =
+                    let ind = max[max(lo-[x,y,z]), max([x,y,z]-hi)];
+                        outd = mag(outsideness(x,lo[X],hi[X]),
+                                   outsideness(y,lo[Y],hi[Y]),
+                                   outsideness(z,lo[Z],hi[Z]));
+                    in if (ind <= 0) ind else outd;
+                bbox = [[...lo,0], [...hi,0]];
+                is_2d = true;
+            };
+        {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf} ->
+            exact((xmin,ymin,zmin),(xmax,ymax,zmax));
+        ];
+};
 
 prism n = {
     ... prism_m n {d: 2, h: 2},
@@ -548,7 +550,7 @@ cube = (
                 bbox = [[-r, -r, -r], [r,r,r]];
                 is_3d = true;
             };
-        cube_m d = box_e(d,d,d);
+        cube_m d = box.exact(d,d,d);
 );
 
 octahedron = (
