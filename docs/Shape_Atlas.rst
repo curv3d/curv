@@ -158,8 +158,8 @@ to determine the shape of its output.
   * ``rect {xmin=-inf, ymin=-inf, xmax=inf, ymax=inf}``:
     Each argument specifies one of the sides, and defaults to ``-inf``
     or ``inf``. Used for specifying a clipping rectangle, with ``intersection``.
-  * ``rect_m ...``: mitred distance field, cheaper to compute.
-  * ``rect_e ...``: exact distance field, more expensive.
+  * ``rect.mitred ...``: mitred distance field, cheaper to compute.
+  * ``rect.exact ...``: exact distance field, more expensive.
 
 ``regular_polygon n``
   Construct a regular polygon, centred on the origin,
@@ -804,7 +804,7 @@ and you want a constant-area fillet that looks realistic as the joint is animate
 
 Here's a fillet of a butt joint, same parameters as above.
 To get a rounded fillet in this example, the rectangles must have exact distance fields,
-so I used ``rect_e``. This shows that the bounding box of ``smooth_union`` can be
+so I used ``rect.exact``. This shows that the bounding box of ``smooth_union`` can be
 bigger than the bounding box of ``union``. It also shows an example of a "bulge".
 
 .. image:: images/butt_fillet.png

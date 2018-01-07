@@ -323,80 +323,82 @@ square = (
                 bbox = [[-r,-r,0], [r,r,0]];
                 is_2d = true;
             };
-        square_e d = rect_e(d,d);
+        square_e d = rect.exact(d,d);
 );
 
 // rect: an axis aligned rectangle.
-rect = rect_m;
-rect_m x =
-    x >> match [
-    (is_vec2 b) ->
-        let r = b / 2;
-        in make_shape {
-            dist(x,y,z,t) = max(abs(x,y) - r);
-            bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]];
-            is_2d = true;
-        };
-    (is_bbox2 b) ->
-        let xmin = b[MIN,X];
-            ymin = b[MIN,Y];
-            xmax = b[MAX,X];
-            ymax = b[MAX,Y];
-        in intersection [
-            if (xmin > -inf) make_shape {
-                dist(x,y,z,t) = xmin - x;
-                bbox = [[xmin, -inf, 0], [inf, inf, 0]];
+rect = {
+    call = exact;
+    mitred x =
+        x >> match [
+        (is_vec2 b) ->
+            let r = b / 2;
+            in make_shape {
+                dist(x,y,z,t) = max(abs(x,y) - r);
+                bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]];
                 is_2d = true;
-            },
-            if (ymin > -inf) make_shape {
-                dist(x,y,z,t) = ymin - y;
-                bbox = [[-inf, ymin, 0], [inf, inf, 0]];
-                is_2d = true;
-            },
-            if (xmax < inf) make_shape {
-                dist(x,y,z,t) = x - xmax;
-                bbox = [[-inf, -inf, 0], [xmax, inf, 0]];
-                is_2d = true;
-            },
-            if (ymax < inf) make_shape {
-                dist(x,y,z,t) = y - ymax;
-                bbox = [[-inf, -inf, 0], [inf, ymax, 0]];
-                is_2d = true;
-            },
+            };
+        (is_bbox2 b) ->
+            let xmin = b[MIN,X];
+                ymin = b[MIN,Y];
+                xmax = b[MAX,X];
+                ymax = b[MAX,Y];
+            in intersection [
+                if (xmin > -inf) make_shape {
+                    dist(x,y,z,t) = xmin - x;
+                    bbox = [[xmin, -inf, 0], [inf, inf, 0]];
+                    is_2d = true;
+                },
+                if (ymin > -inf) make_shape {
+                    dist(x,y,z,t) = ymin - y;
+                    bbox = [[-inf, ymin, 0], [inf, inf, 0]];
+                    is_2d = true;
+                },
+                if (xmax < inf) make_shape {
+                    dist(x,y,z,t) = x - xmax;
+                    bbox = [[-inf, -inf, 0], [xmax, inf, 0]];
+                    is_2d = true;
+                },
+                if (ymax < inf) make_shape {
+                    dist(x,y,z,t) = y - ymax;
+                    bbox = [[-inf, -inf, 0], [inf, ymax, 0]];
+                    is_2d = true;
+                },
+            ];
+        {xmin=-inf, ymin=-inf, xmax=inf, ymax=inf} ->
+            mitred((xmin,ymin),(xmax,ymax));
         ];
-    {xmin=-inf, ymin=-inf, xmax=inf, ymax=inf} ->
-        rect_m((xmin,ymin),(xmax,ymax));
-    ];
-rect_e x =
-    x >> match [
-    (is_vec2 b) ->
-        let r = b / 2;
-        in make_shape {
-            dist(x,y,z,t) =
-                let d = abs(x,y) - r;
-                in min(max d, 0) + mag(max(d,0));
-            bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]];
-            is_2d = true;
-        };
-    (is_bbox2 b) ->
-        let lo = b[MIN];
-            hi = b[MAX];
-            outsideness(a,amin,amax) =
-                if (a < amin) amin - a
-                else if (a > amax) a - amax
-                else 0;
-        in make_shape {
-            dist(x,y,z,t) =
-                let ind = max[max(lo-[x,y]), max([x,y]-hi)];
-                    outd = mag(outsideness(x,lo[X],hi[X]),
-                               outsideness(y,lo[Y],hi[Y]));
-                in if (ind <= 0) ind else outd;
-            bbox = [[...lo,0], [...hi,0]];
-            is_2d = true;
-        };
-    {xmin=-inf, ymin=-inf, xmax=inf, ymax=inf} ->
-        rect_e((xmin,ymin),(xmax,ymax));
-    ];
+    exact x =
+        x >> match [
+        (is_vec2 b) ->
+            let r = b / 2;
+            in make_shape {
+                dist(x,y,z,t) =
+                    let d = abs(x,y) - r;
+                    in min(max d, 0) + mag(max(d,0));
+                bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]];
+                is_2d = true;
+            };
+        (is_bbox2 b) ->
+            let lo = b[MIN];
+                hi = b[MAX];
+                outsideness(a,amin,amax) =
+                    if (a < amin) amin - a
+                    else if (a > amax) a - amax
+                    else 0;
+            in make_shape {
+                dist(x,y,z,t) =
+                    let ind = max[max(lo-[x,y]), max([x,y]-hi)];
+                        outd = mag(outsideness(x,lo[X],hi[X]),
+                                   outsideness(y,lo[Y],hi[Y]));
+                    in if (ind <= 0) ind else outd;
+                bbox = [[...lo,0], [...hi,0]];
+                is_2d = true;
+            };
+        {xmin=-inf, ymin=-inf, xmax=inf, ymax=inf} ->
+            exact((xmin,ymin),(xmax,ymax));
+        ];
+};
 
 // regular_polygon: n is # of sides, d is incircle diameter
 regular_polygon n =

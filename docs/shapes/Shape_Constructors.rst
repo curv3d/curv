@@ -38,8 +38,8 @@ Shape Constructors
   * ``rect {xmin=-inf, ymin=-inf, xmax=inf, ymax=inf}``:
     Each argument specifies one of the sides, and defaults to ``-inf``
     or ``inf``. Used for specifying a clipping rectangle, with ``intersection``.
-  * ``rect_m ...``: mitred distance field, cheaper to compute.
-  * ``rect_e ...``: exact distance field, more expensive.
+  * ``rect.mitred ...``: mitred distance field, cheaper to compute.
+  * ``rect.exact ...``: exact distance field, more expensive.
 
 ``regular_polygon n``
   Construct a regular polygon, centred on the origin,

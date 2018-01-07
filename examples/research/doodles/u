@@ -11,5 +11,5 @@ runion(s1,s2) = make_shape {
 
 smooth_union .5 (
   circle 2,
-  rect_eu(2,2) >> translate(2,2),
+  rect.exact(2,2) >> translate(2,2),
 ) >> distance_field

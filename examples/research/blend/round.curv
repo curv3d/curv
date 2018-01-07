@@ -40,8 +40,8 @@ round_union3 k (s1, s2, s3) = make_shape {
 
 /* bad gradient
 round_union2 .5 (
-    rect_e(.1,3),
-    rect_e(3,.1) >> rotate(45*deg),
+    rect.exact(.1,3),
+    rect.exact(3,.1) >> rotate(45*deg),
 )
 */
 
