@@ -14,7 +14,7 @@ Shape Constructors
   with width ``dx`` and height ``dy``.
   Approximate distance field.
   
-  * ``ellipse_e``: exact distance field, much more expensive to compute (TODO).
+  * ``ellipse.exact``: exact distance field, more expensive to compute (TODO).
 
 ``square``
   Construct an axis-aligned square, centred on the origin.
