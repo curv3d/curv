@@ -1,7 +1,10 @@
 Transformations
 ===============
-A transformation is an operation that maps a shape S1 onto another shape S2,
-by mapping each point (x,y,z) within S1 onto the point f(x,y,z) within S2.
+A *geometric transformation* transforms one shape into another by mapping each point onto another point in space.
+
+A *rigid transformation* is one in which lengths and angles are preserved. The shape behaves like a rigid object, and the transformation moves the shape around in space via translations, rotations and reflections.
+
+A *non-rigid transformation* is more general. You can shrink, expand, squeeze, twist or bend the shape, as if it were made of clay, except that the volume of the shape can change as well.
 
 Rigid Transformations
 ---------------------
