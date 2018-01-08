@@ -167,9 +167,9 @@ Shape Constructors
   ``prism n {d, h}``
     The prism has height ``h``, and the base is inscribed by a circle of
     diameter ``d``.
-  ``prism_m n {d, h}``
+  ``prism n .mitred {d, h}``
     With a mitred distance field.
-  ``prism_e n {d, h}``
+  ``prism n .exact {d, h}``
     With an exact distance field. (TODO)
 
 ``pyramid n {h, d}``
@@ -178,7 +178,7 @@ Shape Constructors
   The base is a regular polyhedron with ``n`` sides, whose inscribed circle has diameter ``d``.
   The base is embedded in the XY plane and centred on the origin.
   The apex is above the origin at height ``h``.
-  Maybe provide an API for constructing an infinite pyramid with apex at origin?
+  TODO: provide an API for constructing an infinite pyramid with apex at origin?
 
 Platonic Solids
   There are five definitions:

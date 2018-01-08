@@ -287,9 +287,9 @@ to determine the shape of its output.
   ``prism n {d, h}``
     The prism has height ``h``, and the base is inscribed by a circle of
     diameter ``d``.
-  ``prism_m n {d, h}``
+  ``prism n .mitred {d, h}``
     With a mitred distance field.
-  ``prism_e n {d, h}``
+  ``prism n .exact {d, h}``
     With an exact distance field. (TODO)
 
 ``pyramid n {h, d}``

@@ -472,19 +472,24 @@ box = {
                                    outsideness(y,lo[Y],hi[Y]),
                                    outsideness(z,lo[Z],hi[Z]));
                     in if (ind <= 0) ind else outd;
-                bbox = [[...lo,0], [...hi,0]];
-                is_2d = true;
+                bbox = b;
+                is_3d = true;
             };
         {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf} ->
             exact((xmin,ymin,zmin),(xmax,ymax,zmax));
         ];
 };
 
-prism n = {
-    ... prism_m n {d: 2, h: 2},
-    call : prism_m n,
-};
-prism_m n {d,h} = regular_polygon n .mitred d >> extrude_m h;
+prism n = ({
+    ... prism_m {d: 2, h: 2},
+    call : prism_m,
+    mitred : {
+        ... prism_m {d: 2, h: 2},
+        call : prism_m,
+    },
+} where
+    prism_m {d,h} = regular_polygon n .mitred d >> extrude_m h;
+);
 
 // TODO: pyramid(n,d,h)
 
