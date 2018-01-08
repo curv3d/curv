@@ -16,6 +16,8 @@
   of the constituent functions reports a pattern match failure. This is
   important for `match` and *cast* patterns.
 * any, all
+* Record constructors may combine definitions and field generators.
+  Shorter definitions for shape constructors with .mitred/.exact members.
 
 ## Ideas Under Development
 
