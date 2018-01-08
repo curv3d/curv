@@ -19,7 +19,7 @@ schwartz_surface = shell (.2) schwartz_p >> lipschitz 2;
 schwartzize t shape = morph t (shape, intersection(shape, schwartz_surface));
 
 in
-row_x 5 (
+row 5 (
     schwartz_surface `intersection` sphere(tau*3),
     schwartz_surface >> colour red `intersection` cube(tau*3),
     schwartzize(.1) (cube 20),

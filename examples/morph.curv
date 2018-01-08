@@ -1,5 +1,5 @@
 // morph a white cube into a rainbow torus
-row_x 1 [
+row 1 [
     for (i in 0..4)
         morph (i/4)
             (cube 4 >> colour (.8,.8,.8),
