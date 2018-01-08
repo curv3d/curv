@@ -6,6 +6,10 @@ A *rigid transformation* is one in which lengths and angles are preserved. The s
 
 A *non-rigid transformation* is more general. You can shrink, expand, squeeze, twist or bend the shape, as if it were made of clay, except that the volume of the shape can change as well.
 
+Underlying each geometric transformation is a transformation function that maps each point in space onto another point.
+This transformation function is required to have an inverse which is also a transformation.
+(A transformation cannot map two different points onto the same point.)
+
 Rigid Transformations
 ---------------------
 Distance-preserving transformations of 2D and 3D shapes.
