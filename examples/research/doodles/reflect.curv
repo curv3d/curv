@@ -12,4 +12,4 @@ reflect_x shape = make_shape {
 union (
     circle 2 >> colour green >> translate(1,0),
     rect((-.1,-1),(.1,1)) >> colour red,
-) >> reflect_x
+) >> reflect X_axis

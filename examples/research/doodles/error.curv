@@ -1,6 +1,6 @@
 // I'd like to improve the error message given by this script.
 stella_octangula = union (tetrahedron,
-    tetrahedron >> reflect_x);
+    tetrahedron >> reflect X_axis);
 row d list = (
     union(list[0], list[1] >> move(list[0].bbox[MAX][X]-list[0].bbox[MIN][X]+d))
 );

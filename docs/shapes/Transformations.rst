@@ -25,18 +25,15 @@ If the input has an exact distance field, the output is also exact.
 ``rotate quaternion shape``
   TODO
 
-``reflect_x shape``
-  Reflect a 2D/3D shape across the Y axis/YZ plane,
-  mapping each point (x,y)/(x,y,z) to (-x,y)/(-x,y,z).
+``reflect v shape``
+  Reflect the shape through a line or plane passing through the origin,
+  whose normal vector is ``v``. If ``v`` is embedded in the X-Y plane (v[Z]==0)
+  then this operation applies to either 2D or 3D shapes, otherwise the shape
+  must be 3D.
 
-``reflect_y shape``
-  ditto
-
-``reflect_z shape``
-  ditto
-
-``reflect normal shape``
-  TODO
+  For example, ``reflect X_axis shape`` reflects ``shape`` across the Y axis
+  (in 2D) or the Y-Z plane (in 3D).
+  Each point ``[x,y,z]`` in ``shape`` is mapped to ``[-x,y,z]``.
 
 ``at p t shape``
   Apply a transformation ``t`` to a shape,
