@@ -950,7 +950,7 @@ shear_x kx shape =
     } shape;
 
 // TODO: In `taper`, the Lipschitz compensation code seems like overkill.
-taper_x (kx0, y0, kx1, y1) shape =
+local_taper_x {range:(y0,y1), scale:(kx0, kx1)} shape =
     let assert(kx0 > 0 && kx1 > 0);
         assert(y0 < y1);
     in make_shape {
@@ -975,7 +975,7 @@ taper_x (kx0, y0, kx1, y1) shape =
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
     };
-taper_xy (kx0, ky0, z0, kx1, ky1, z1) shape =
+local_taper_xy {range:(z0,z1), scale:([kx0, ky0], [kx1, ky1])} shape =
     let assert(kx0 > 0 && ky0 > 0 && kx1 > 0 && ky1 > 0);
         assert(z0 < z1);
     in make_shape {

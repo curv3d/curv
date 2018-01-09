@@ -1,4 +1,6 @@
-cylinder(1,1) >> rotate(45*deg,X_axis)
-//cylinder(1,5)
->> taper_xy(2,2,-1, .5,.5,1)
+//cylinder(1,1) >> rotate(45*deg,X_axis)
+//cylinder{d:1,h:5}
+//box(1,1,5)
+ellipsoid(1,1,5)
+>> local_taper_xy{range:(-1,1), scale:([2,2], [.5,.5])}
 //>> show_dist

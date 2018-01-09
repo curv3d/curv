@@ -103,14 +103,14 @@ Non-distance-preserving transformations of 2D and 3D shapes.
   
   TODO
 
-``taper_x (kx0, y0, kx1, y1) shape``
+``local_taper_x {range:(y0,y1), scale:(kx0, kx1)} shape``
   Local 2 dimensional taper along the Y axis, between y==y0 and y==y1.
   When y<=y0, x values are scaled by the factor kx0.
   When y1<=y, x values are scaled by the factor kx1.
   When y0<y<y1, x values are scaled by a factor that is a linear ramp
   between kx0 and kx1.
 
-``taper_xy (kx0, ky0, z0, kx1, ky1, z1) shape``
+``local_taper_xy {range:(z0,z1), scale:([kx0, ky0], [kx1, ky1])} shape``
   Local 3 dimensional taper along the Z axis, between z==z0 and z==z1.
   When z<=z0, x and y values are scaled by the factors kx0 and ky0.
   When z1<=z, x and y values are scaled by the factors kx1 and ky1.
