@@ -78,6 +78,15 @@ Non-Rigid Transformations
 -------------------------
 Non-distance-preserving transformations of 2D and 3D shapes.
 
+Isotropic scaling preserves the structure of the distance field:
+if the input is an exact SDF, then the output is also exact.
+All other non-rigid transformations scramble the distance field.
+The anistropic scale operator produces an approximate distance field.
+The remaining operations produce "bad" distance fields, which must be
+corrected using the ``lipschitz`` operator in order for the sphere-tracing
+algorithm in the previewer to work. This is inconvenient, and is a subject
+for future research and improvement.
+
 ``scale k shape``
   Isotropic scaling by a scale factor of ``k`` of a 2D or 3D shape.
 
