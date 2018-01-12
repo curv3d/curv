@@ -1,19 +1,24 @@
 Transformations
 ===============
-A *geometric transformation* transforms one shape into another by mapping each point onto another point in space.
+A *geometric transformation* transforms one shape into another by mapping each point in the shape onto another point in space.
 
-A *rigid transformation* is one in which lengths and angles are preserved. The shape behaves like a rigid object, and the transformation moves the shape around in space via translations, rotations and reflections.
+A `similarity transformation`_ preserves angles and distance ratios. This class of transformation comprises translations, rotations, reflections, and uniform scaling. The structure of the distance field is preserved, so there are no limitations on where similarity transformations can be used.
 
-A *non-rigid transformation* is more general. You can shrink, expand, squeeze, twist or bend the shape, as if it were made of clay, except that the volume of the shape can change as well.
+.. _`similarity transformation`: https://en.wikipedia.org/wiki/Similarity%20%28geometry%29
+
+A *deformation* is a more general transformation. You can stretch, twist or bend the shape, eg stretching a sphere into an ellipsoid, or bending a cylinder into a torus. In Curv 0.0, deformations deform the distance field, which complicates and limits their use.
 
 Underlying each geometric transformation is a transformation function that maps each point in space onto another point.
 This transformation function is required to have an inverse which is also a transformation.
 (A transformation cannot map two different points onto the same point.)
 
-Rigid Transformations
----------------------
-Distance-preserving transformations of 2D and 3D shapes.
-If the input has an exact distance field, the output is also exact.
+Similarity Transformations
+--------------------------
+Transformations of 2D and 3D shapes which preserve angles and distance ratios.
+
+These transformations preserve the structure of the distance field.
+If the input has an exact or mitred distance field, the output is also exact or mitred.
+As a result, there are no limitations on where similarity transformations can be used.
 
 ``move (dx,dy) shape``
   Translate a 2D or 3D shape across the XY plane.
@@ -41,6 +46,9 @@ If the input has an exact distance field, the output is also exact.
   For example, ``reflect X_axis shape`` reflects ``shape`` across the Y axis
   (in 2D) or the Y-Z plane (in 3D).
   Each point ``[x,y,z]`` in ``shape`` is mapped to ``[-x,y,z]``.
+
+``scale k shape``
+  Isotropic scaling by a scale factor of ``k`` of a 2D or 3D shape.
 
 ``at p t shape``
   Apply a transformation ``t`` to a shape,
@@ -74,21 +82,19 @@ If the input has an exact distance field, the output is also exact.
   so they are lined up in a row, separated by gaps of distance ``d``.
   The group is centred on the origin along the X axis.
 
-Non-Rigid Transformations
--------------------------
-Non-distance-preserving transformations of 2D and 3D shapes.
+Deformations
+------------
+General transformations of 2D and 3D shapes which don't preserve angles and distance ratios.
+These are powerful operations which allow you to deform a shape, as if it were made of clay.
 
-Isotropic scaling preserves the structure of the distance field:
-if the input is an exact SDF, then the output is also exact.
-All other non-rigid transformations scramble the distance field.
-The anistropic scale operator produces an approximate distance field.
-The remaining operations produce "bad" distance fields, which must be
-corrected using the ``lipschitz`` operator in order for the sphere-tracing
-algorithm in the previewer to work. This is inconvenient, and is a subject
-for future research and improvement.
+In Curv 0.0, deformations deform the distance field, which limits and complicates their use.
+(This is an area for future research and improvement.)
 
-``scale k shape``
-  Isotropic scaling by a scale factor of ``k`` of a 2D or 3D shape.
+* The output may not be appropriate as input to distance field operations.
+* The anistropic scale operator produces an approximate distance field.
+  The remaining operations produce "bad" distance fields, which must be
+  corrected using the ``lipschitz`` operator in order for the sphere-tracing
+  algorithm in the previewer to work.
 
 ``scale (kx, ky) shape``
   Anisotropic scaling of a 2D or 3D shape across the XY plane.
