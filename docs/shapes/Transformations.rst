@@ -77,11 +77,6 @@ As a result, there are no limitations on where similarity transformations can be
   See also: General Library of Relativity
   https://github.com/davidson16807/relativity.scad/wiki
 
-``row d shapes``
-  Move each shape in ``shapes`` along the X axis
-  so they are lined up in a row, separated by gaps of distance ``d``.
-  The group is centred on the origin along the X axis.
-
 Deformations
 ------------
 General transformations of 2D and 3D shapes which don't preserve angles and distance ratios.
