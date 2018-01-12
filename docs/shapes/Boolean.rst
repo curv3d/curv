@@ -46,3 +46,8 @@ Boolean (Set Theoretic) Operations
   The result contains all of the points that belong to exactly one shape in the list.
   
   This is an associative, commutative operation with ``nothing`` as its identity element.
+
+``row d shapes``
+  Move each shape in ``shapes`` along the X axis
+  so they are lined up in a row, separated by gaps of distance ``d``.
+  The group is centred on the origin along the X axis.
