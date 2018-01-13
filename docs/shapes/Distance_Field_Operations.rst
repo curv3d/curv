@@ -108,8 +108,11 @@ Blended Union, Intersection and Difference
 A blended union is a generalized union that smoothly joins nearby objects.
 The same code (which I call a "blending kernel") can also define
 a blended intersection and a blended difference, which smooth away
-new edges created by the intersection or difference. There are many blending
-kernels.
+new edges created by the intersection or difference.
+
+There are many blending kernels.
+In Curv, a blending kernel is a record value with 3 function fields
+named ``union``, ``intersection`` and ``difference``.
 
 Blending operations are sensitive to the
 structure of the distance fields of their arguments.
