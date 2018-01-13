@@ -775,6 +775,44 @@ smooth_min(a,b,k) =
         in lerp( b, a, h ) - k*h*(1.0-h);
 smooth_max(a,b,k) = -smooth_min(-a,-b,k);
 
+chamfer r = {
+    union (s1,s2) =
+        make_shape {
+            dist p =
+                let a = s1.dist p;
+                    b = s2.dist p;
+                in chamfer_min(a,b,r);
+            colour p =
+                let d1 = s1.dist p;
+                    d2 = s2.dist p;
+                in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p;
+            bbox = [ min(s1.bbox[MIN], s2.bbox[MIN]),
+                     max(s1.bbox[MAX], s2.bbox[MAX]) ];
+            is_2d = s1.is_2d && s2.is_2d;
+            is_3d = s1.is_3d && s2.is_3d;
+        };
+
+    intersection (s1,s2) =
+        make_shape {
+            dist p =
+                let a = s1.dist p;
+                    b = s2.dist p;
+                in chamfer_max(a,b,r);
+            colour = s1.colour;
+            bbox = [ max(s1.bbox[MIN], s2.bbox[MIN]),
+                     min(s1.bbox[MAX], s2.bbox[MAX]) ];
+            is_2d = s1.is_2d && s2.is_2d;
+            is_3d = s1.is_3d && s2.is_3d;
+        };
+
+    difference (s1,s2) = intersection (s1, complement s2);
+
+    chamfer_min(a, b, r) =
+        let e = max(r - abs(a - b), 0);
+        in min(a, b) - e*.5;
+    chamfer_max(a,b,k) = -chamfer_min(-a,-b,k);
+};
+
 ////////////////////////////
 // AFFINE TRANSFORMATIONS //
 ////////////////////////////
