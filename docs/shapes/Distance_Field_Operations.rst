@@ -224,5 +224,11 @@ TODO: investigate advanced blending primitives from
 
 * "A Gradient-Based Implicit Blend" (2013),
   http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.592.5451&rep=rep1&type=pdf
+  "Suppressing bulges when
+  two shapes merge, avoiding unwanted blending at a distance, ensuring that
+  the resulting shape keeps the topology of the union, and enabling sharp
+  details to be added without being blown up. The key idea is that field functions
+  should not only be combined based on their values, but also on their
+  gradients."
 * "Extrusion of 1D implicit profiles: Theory and first application" (2001)
   https://www.irit.fr/recherches/VORTEX/publications/rendu-geometrie/IJSM2001_Barthe_et_al.pdf
