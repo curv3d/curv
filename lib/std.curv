@@ -1439,8 +1439,8 @@ lipschitz k shape =
 // Debug strategy: find the smallest value of n that doesn't produce white,
 // and that's your Lipschitz constant. Try n=2 as an initial value.
 show_gradient (j,k) shape =
-    make_shape {
-        dist : everything.dist,
+    let xy = make_shape {
+        dist(x,y,z,t) : abs(z),
         colour p :
             let eps = 0.01;
                 d = shape.dist(p[X],p[Y],0,p[T]);
@@ -1456,33 +1456,34 @@ show_gradient (j,k) shape =
             else
                 sRGB.hue((g-j)/(k-j)),
         is_2d : true,
-    };
+        is_3d : true,
+    } in if (shape.is_2d) xy else union(shape, xy);
 
 show_dist shape =
     let xy = make_shape {
-            dist(x,y,z,t) : abs(z),
-            colour p :
-                let eps = 0.01;
-                    d = shape.dist p;
-                    up = shape.dist(p[X],p[Y]+eps,0,p[T]);
-                    down = shape.dist(p[X],p[Y]-eps,0,p[T]);
-                    left = shape.dist(p[X]-eps,p[Y],0,p[T]);
-                    right = shape.dist(p[X]+eps,p[Y],0,p[T]);
-                    g = max(abs(d-up),abs(d-down),abs(d-left),abs(d-right)) / eps;
-                    c = if (d >= 0) ceil(d)-d else floor(d)-d;
-                in if (d == d)
-                    if (d == inf)
-                        [0,1,1]
-                    else if (d == -inf)
-                        [0,.5,.5]^2.2
-                    else
-                        [clamp(g-1,0,1), max(-c,0), max(c,0)]^2.2
+        dist(x,y,z,t) : abs(z),
+        colour p :
+            let eps = 0.01;
+                d = shape.dist p;
+                up = shape.dist(p[X],p[Y]+eps,0,p[T]);
+                down = shape.dist(p[X],p[Y]-eps,0,p[T]);
+                left = shape.dist(p[X]-eps,p[Y],0,p[T]);
+                right = shape.dist(p[X]+eps,p[Y],0,p[T]);
+                g = max(abs(d-up),abs(d-down),abs(d-left),abs(d-right)) / eps;
+                c = if (d >= 0) ceil(d)-d else floor(d)-d;
+            in if (d == d)
+                if (d == inf)
+                    [0,1,1]
+                else if (d == -inf)
+                    [0,.5,.5]^2.2
                 else
-                    [1,1,1],
-            bbox : [[-inf,-inf,0],[inf,inf,0]],
-            is_2d : true,
-            is_3d : true,
-        };
+                    [clamp(g-1,0,1), max(-c,0), max(c,0)]^2.2
+            else
+                [1,1,1],
+        bbox : [[-inf,-inf,0],[inf,inf,0]],
+        is_2d : true,
+        is_3d : true,
+    };
     in if (shape.is_2d) xy else union(shape, xy);
 
 show_axes shape =
