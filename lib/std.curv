@@ -98,7 +98,7 @@ make_shape r =
             is_2d : false,
             is_3d : false,
             bbox : [[-inf,-inf,-inf],[inf,inf,inf]],
-            colour p : [.8, .8, .5],
+            colour p : [.8, .8, .5]^2.2,
             ... r,
         };
         assert (shape.is_2d || shape.is_3d);
