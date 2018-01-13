@@ -203,8 +203,17 @@ Bounding box: approximate.
 TODO: enhance ``smooth`` blending kernel to support N-ary blends.
 
 ------
+``chamfer r`` is a blending kernel that makes a 45-degree chamfered edge (the diagonal of a square of size ``r``).
 
-TODO: various blending kernels from MERCURY, like ``chamfer``.
+Distance field: approximate.
+
+Bounding box: approximate.
+
+TODO: support N-ary blends.
+
+------
+TODO: fancy blending kernels from MERCURY, like ``columns`` and ``stairs``.
+See: http://mercury.sexy/hg_sdf/
 
 TODO: investigate advanced blending primitives from
 
