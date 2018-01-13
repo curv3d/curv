@@ -1,2 +1,2 @@
 c = box.mitred(1,1,10) >> twist 10;
-smooth_union 1 (c, reflect Z_axis c)
+smooth 1 .union (c, reflect Z_axis c)

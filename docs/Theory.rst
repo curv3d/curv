@@ -61,7 +61,7 @@ Code for the twisted, coloured torus::
 
 Code for the model "Shrek's Donut"::
 
-  smooth_intersection .1 (
+  smooth .1 .intersection (
     torus (tau*4, tau*2),
     gyroid >> shell .2 >> lipschitz 2 >> bend (tau*12),
   ) >> colour (sRGB.HSV (1/3, 1, .5))
@@ -633,7 +633,7 @@ Here are two circles, combined using different blending factors:
 
 One application is filleting::
 
-  smooth_union .3 (cube 1, cylinder(.5,2))
+  smooth .3 .union (cube 1, cylinder(.5,2))
 
 .. image:: images/fillet.png
 

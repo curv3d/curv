@@ -119,15 +119,15 @@ between the two shapes.
 
 ---------
 
-The ``smooth`` blending kernel comprises:
+The ``smooth r`` blending kernel comprises:
 
-* ``smooth_union r (shape1, shape2)``
-* ``smooth_intersection r (shape1, shape2)``
-* ``smooth_difference r (shape1, shape2)``
+* ``smooth r .union (shape1, shape2)``
+* ``smooth r .intersection (shape1, shape2)``
+* ``smooth r .difference (shape1, shape2)``
 
 The parameter ``r`` controls the size/radius of the blending band.
 
-``smooth_union`` is an implementation of what I call The Elliptic Blend,
+*Smooth union* is an implementation of what I call The Elliptic Blend,
 since it creates a fillet with an elliptical shape. This blend is fast,
 easy to use, and good enough for most purposes.
 
@@ -148,10 +148,10 @@ but the behaviour is the same:
 * Even faster implementation by Dave Smith @ Media Molecule (2015), called "soft blend".
 * Alternate implementation by MERCURY (same shape but different distance field), called "opUnionRound".
 
-Note that ``smooth_union`` and ``smooth_intersection`` are binary operators:
+Note that *smooth union* and *smooth intersection* are binary operators:
 they aren't associative and don't easily generalize to an arbitrary number of shapes.
 
-Here are circles of diameter 2, combined using ``smooth_union`` with ``r`` values
+Here are circles of diameter 2, combined using *smooth union* with ``r`` values
 1.2, 1.8, 2.4, 3.0, 3.6, 4.2, 5.0:
 
 .. image:: ../images/blend.png
@@ -164,7 +164,7 @@ in an order-independent way.
 .. _`metaballs`: https://en.wikipedia.org/wiki/Metaballs
 
 Smooth blends can produce the artistic effect of "fillets" and "rounds" from mechanical engineering.
-Here are ``smooth_union``, ``smooth_intersection`` and ``smooth_difference``
+Here are *smooth union*, *smooth intersection* and *smooth difference*
 applied to a unit cube and a cylinder with ``r=.3``:
 
 .. image:: ../images/smooth_blends.png
@@ -182,7 +182,7 @@ and you want a constant-area fillet that looks realistic as the joint is animate
 
 Here's a fillet of a butt joint, same parameters as above.
 To get a rounded fillet in this example, the rectangles must have exact distance fields,
-so I used ``rect.exact``. This shows that the bounding box of ``smooth_union`` can be
+so I used ``rect.exact``. This shows that the bounding box of *smooth union* can be
 bigger than the bounding box of ``union``. It also shows an example of a "bulge".
 
 .. image:: ../images/butt_fillet.png
@@ -192,7 +192,7 @@ and there are more sophisticated blends available that avoid it.
 The bulge can also be used artistically: Quilez has used it to create knee and knuckle joints
 in cartoonish creatures.
 
-As a special case, ``smooth_union r (s, s)`` is the same as ``offset (r/4) s``.
+As a special case, ``smooth r .union (s, s)`` is the same as ``offset (r/4) s``.
 This is specific to my current code. This seems to be the worst case
 for bounding box inflation, so we can use this to compute bounding boxes.
 

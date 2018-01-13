@@ -1,4 +1,4 @@
-smooth_union .3 (
+smooth .3 .union (
     cube 1,
     cylinder(.5,2)
 )

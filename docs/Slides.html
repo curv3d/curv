@@ -440,7 +440,7 @@ torus (2,1)
 <h1>Constructive Solid Geometry (4)</h1>
 <p><img alt="shreks_donut" src="images/shreks_donut.png" />:</p>
 <pre class="literal-block">
-smooth_intersection .1 (
+smooth .1 .intersection (
   torus (tau*4, tau*2),
   gyroid &gt;&gt; shell .2 &gt;&gt; lipschitz 2 &gt;&gt; bend (tau*12),
 ) &gt;&gt; colour (sRGB.HSV (1/3, 1, .5))
@@ -1134,7 +1134,7 @@ Here are two circles, combined using different blending factors:</p>
 <h1>Blending (2)</h1>
 <p>One application is filleting:</p>
 <pre class="literal-block">
-smooth_union .3 (cube 1, cylinder(.5,2))
+smooth .3 .union (cube 1, cylinder(.5,2))
 </pre>
 <img alt="images/fillet.png" src="images/fillet.png" />
 </div>

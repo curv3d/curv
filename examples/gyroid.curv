@@ -1,5 +1,5 @@
 row 2 [
-    smooth_intersection .5 (double_gyroid_bones, sphere 20),
+    smooth .5 .intersection (double_gyroid_bones, sphere 20),
     intersection (gyroid_surface, sphere 20),
     gyroidize(.1) (cube 18),
 ]

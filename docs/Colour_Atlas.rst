@@ -105,7 +105,7 @@ I will have to think about how colour blending works for exporting to file forma
 for 3D printing and traditional dye/pigment printing on flat media.
 Probably that's another tar pit that I don't enter for release 1.0?
 
-``smooth_union r`` will perform colour blending within the blending radius ``r``.
+``smooth r .union`` will perform colour blending within the blending radius ``r``.
 
 There should be a colour blending variant of ordinary "sharp" ``union``.
 Call this ``blended_union``?

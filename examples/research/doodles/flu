@@ -5,7 +5,7 @@ row 1 [
     dodecahedron,
     icosahedron
 ]
-`smooth_union 5` (sphere 0
+`smooth 5 .union` (sphere 0
          >> animove {f:t -> [(t `mod` 20)-10,0,0], bbox:[[-10,0,0],[10,0,0]]})
 
 where

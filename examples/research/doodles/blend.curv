@@ -2,7 +2,7 @@ union (
     everything >> colour white,
     union (
       for (i in [1.2 .. 5 by .6])
-        smooth_union i (circle 2, circle 2 >> translate(0,3))
+        smooth i .union (circle 2, circle 2 >> translate(0,3))
         >> translate(i*8,0),
     ) >> colour black
 )

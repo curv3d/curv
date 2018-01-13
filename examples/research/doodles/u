@@ -9,7 +9,7 @@ runion(s1,s2) = make_shape {
     is_3d = s1.is_3d && s2.is_3d,
 };
 
-smooth_union .5 (
+smooth .5 .union (
   circle 2,
   rect.exact(2,2) >> translate(2,2),
 ) >> distance_field

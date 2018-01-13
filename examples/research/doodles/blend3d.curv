@@ -1,5 +1,5 @@
 union (
-    smooth_union .3 (cube 1, cylinder (.5, 2)) >> move(-2,0),
-    smooth_intersection .3 (cube 1, cylinder (.5, 2)),
-    smooth_difference .3 (cube 1, cylinder (.5, 2)) >> move(2,0),
+    smooth .3 .union (cube 1, cylinder (.5, 2)) >> move(-2,0),
+    smooth .3 .intersection (cube 1, cylinder (.5, 2)),
+    smooth .3 .difference (cube 1, cylinder (.5, 2)) >> move(2,0),
 ) >> colour (0.6, 0.7, 1.0)
