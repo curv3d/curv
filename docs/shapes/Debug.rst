@@ -7,7 +7,7 @@ Shape Debugging
   TODO: Visualize the bounding box, so you can check if it is bad (too small to contain the shape).
 
 ``set_bbox bbox shape``
-  TODO: Manually fix a bad bounding box.
+  Manually fix a bad bounding box.
 
 ``show_dist shape``
   Visualize the signed distance field on the XY plane.
