@@ -12,8 +12,10 @@ Roadmap:
 * => First public release with a stable API.
 
 Next changes:
+* new `bend{d,angle}` operator
+* fix 3D lighting model
 * remove atan2. phase is a rank 1 tensorized operation.
-* documentation
+* documentation: shape library
 
 Proposed change: `include lib.shape` required to access shape library.
 * Pros: as a temporary measure, it protects users against future redesigns
@@ -28,18 +30,21 @@ Proposed change: `include lib.shape` required to access shape library.
     in cube
 
 Pattern project:
+* cast patterns
 * binder patterns
 * features: [a,...b], {a,...}
   * eg, {a,b,c,...} = file "foo.curv" is like from foo import a,b,c in Python.
   * eg, f[a,...b]= is like f(a:b)= in Haskell.
-* id@pat or id && pat
+* id && pat
 * pat1 || pat2 -- eg, [x,y] || [x,y,0]
 * GL: record patterns, predicate patterns
 * `var` definitions and sequential assignments:
   * `var pattern := expr` and `pattern := expr` *is* supported.
+    After `var (is_num x) := foo`, do subsequent assignments to `x`
+    enforce the is_num predicate? I'd say no, but then this is potentially
+    confusing.
   * `f x := expr` function definition syntax is *not* supported.
   * `a[i] := expr` *is* supported for assignments only.
-  * `var (is_num x) := expr` means `is_num` is enforced on assignments to `x`.
 * optional features: id==expr, pat if cond
 
 Language changes:
