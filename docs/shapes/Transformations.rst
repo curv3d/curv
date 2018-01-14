@@ -8,6 +8,8 @@ A `similarity transformation`_ preserves angles and distance ratios. This class 
 
 A *deformation* is a more general transformation. You can stretch, twist or bend the shape, eg stretching a sphere into an ellipsoid, or bending a cylinder into a torus. In Curv 0.0, deformations deform the distance field, which complicates and limits their use.
 
+Deformations also work on textures (infinite 2D and 3D shapes whose role is to carry a colour pattern), without limitations. Deformations are a powerful tool for procedural texture generation.
+
 Underlying each geometric transformation is a transformation function that maps each point in space onto another point.
 This transformation function is required to have an inverse which is also a transformation.
 (A transformation cannot map two different points onto the same point.)
