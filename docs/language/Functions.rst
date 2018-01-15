@@ -141,3 +141,9 @@ Other Operations
 ~~~~~~~~~~~~~~~~
 ``is_fun value``
   True if the value is a function, false otherwise.
+
+``compose function_list``
+  Function composition.
+  ``x>>compose[f,g,h]``
+  is equivalent to
+  ``x>>f>>g>>h``.

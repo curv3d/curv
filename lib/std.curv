@@ -53,6 +53,7 @@ reduce (zero, f) list =
         in r;
 sum = reduce(0, (x,y)->x+y);
 product = reduce(1, (x,y)->x*y);
+compose = reduce(x->x, (f,g)->x->g(f x));
 
 merge rs = {for (r in rs) ...r};
 
