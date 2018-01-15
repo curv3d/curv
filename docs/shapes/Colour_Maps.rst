@@ -19,7 +19,7 @@ Linear Colour Maps
 ------------------
 Linear colour maps have colour lightness values that increase or decrease linearly.
 
-``grey_cmap``
+``sRGB.grey``
   A greyscale colour map, a continuous gradient from 0 (black) to 1 (white).
 
 Utilities
