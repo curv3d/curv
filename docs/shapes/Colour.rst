@@ -59,7 +59,7 @@ High level operations for constructing colour values.
 
 ``sRGB.hue h``
   A hue is a pure colour with no white or black mixed in.
-  ``sRGB.hue`` can construct any of the hues in the sRGB colour space.
+  ``sRGB.hue`` is a colour map that can construct any of the hues in the sRGB colour space.
   ``h`` is a number between 0 and 1:
 
   ===== ============
@@ -77,6 +77,10 @@ High level operations for constructing colour values.
   11/12 rose
   1     red
   ===== ============
+
+``sRGB.grey i``
+  A greyscale colour map containing all of the neutral colours in the sRGB colour space.
+  ``i`` is between 0 and 1, where 0 is black and 1 is white.
 
 ``sRGB.HSV (hue,saturation,brightness)``
   HSV (also known as HSB) is a popular colour model supported by many
