@@ -1303,6 +1303,7 @@ show_colour c = colour c everything;
 sRGB = {
     call c = c^2.2;
     hue h = HSV(h,1,1);
+    grey i = call(i,i,i);
     HSV c =
         let m = abs(mod(c[0] + [1,2/3,1/3], 1) * 6 - 3);
         in call(c[2] * lerp(1, clamp(m - 1, 0, 1), c[1]));
@@ -1331,6 +1332,10 @@ concentric_rainbow n =
     colour (p->sRGB.HSV(mod(mag(p[[X,Y]])/n,1),1,1)) everything;
 linear_rainbow n =
     colour (p->sRGB.HSV(mod(p[X]/n,1),1,1)) everything;
+
+show_cmap f = union(
+    rect(4.05,1.05) >> colour grey,
+    rect(4,1) >> colour ((x,_,_,_)->f((x+2)/4)));
 
 ///////////////////////////////////////////////////////////////
 // RESEARCH -- shapes and operators with bad distance fields //

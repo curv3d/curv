@@ -675,8 +675,19 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
         return gl_eval_index_expr(glval, *fun_->source_, *list->at(0), f);
     }
     Value val = gl_constify(*fun_, f);
-    if (auto fun = val.dycast<Function>()) {
-        return fun->gl_call_expr(*arg_, call_phrase(), f);
+    Value v = val;
+    for (;;) {
+        if (auto fun = v.dycast<Function>()) {
+            return fun->gl_call_expr(*arg_, call_phrase(), f);
+        }
+        if (auto r = v.dycast<Structure>()) {
+            static Atom call_key = "call";
+            if (r->hasfield(call_key)) {
+                v = r->getfield(call_key,{});
+                continue;
+            }
+        }
+        break;
     }
     throw Exception(At_GL_Phrase(fun_->source_, &f),
         stringify("Geometry Compiler: ",val," is not a function"));
