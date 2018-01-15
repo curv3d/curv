@@ -1,0 +1,7 @@
+// demo of 'swirl' transformation
+
+union(rect{ymin:0} >> colour red, rect{ymax:0} >> colour(sRGB(1,1,.8)))
+  >> repeat_radial 8
+  >> swirl{strength:4, radius:8}
+  `intersection` circle 8
+  >> pancake 2

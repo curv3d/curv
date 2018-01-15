@@ -1048,6 +1048,25 @@ local_taper_xy {range:(z0,z1), scale:([kx0, ky0], [kx1, ky1])} shape =
         is_3d = shape.is_3d;
     };
 
+// Classic 'swirl' image transformation.
+// From: Python skimage.transform.swirl
+// http://scikit-image.org/docs/dev/auto_examples/transform/plot_swirl.html
+swirl{strength, radius} shape =
+    let r = log 2 * radius/5;
+        f(x,y,z,t) =
+            let m = mag(x,y);
+                phi = strength * e^(-m/r) + phase(x,y);
+                //phi = phase(x,y);
+                xy = m * cis phi;
+            in [xy[X],xy[Y],z,t];
+    in make_shape {
+        dist p = shape.dist(f p);
+        colour p = shape.colour(f p);
+        bbox = shape.bbox;
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
+    };
+
 at p t shape = shape >> move(-p) >> t >> move p;
 
 // The slice operators convert a 3D shape to a 2D shape

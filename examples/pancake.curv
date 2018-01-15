@@ -1,7 +1,0 @@
-// pancake converts a 2D shape into a 3D "pancake" of thickness d.
-
-let
-pancake d shape = shape >> extrude_e 0 >> offset (d/2);
-
-in
-pancake .2 (circle 2)
