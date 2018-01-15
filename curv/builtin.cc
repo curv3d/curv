@@ -586,7 +586,7 @@ struct Match_Function : public Polyadic_Function
         std::vector<Shared<Function>> cases;
         for (size_t i = 0; i < list->size(); ++i)
             cases.push_back(list->at(i).to<Function>(At_Index(i,ctx0)));
-        return {make<Switch>(cases)};
+        return {make<Piecewise_Function>(cases)};
     }
 };
 

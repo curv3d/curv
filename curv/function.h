@@ -136,13 +136,13 @@ struct Closure : public Function
     virtual GL_Value gl_call_expr(Operation&, const Call_Phrase*, GL_Frame&) const override;
 };
 
-struct Switch : public Function
+struct Piecewise_Function : public Function
 {
     std::vector<Shared<Function>> cases_;
 
     static slot_t maxslots(std::vector<Shared<Function>>&);
 
-    Switch(std::vector<Shared<Function>> cases)
+    Piecewise_Function(std::vector<Shared<Function>> cases)
     :
         Function(maxslots(cases)),
         cases_(std::move(cases))

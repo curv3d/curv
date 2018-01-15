@@ -133,7 +133,7 @@ Lambda::print(std::ostream& out) const
 }
 
 slot_t
-Switch::maxslots(std::vector<Shared<Function>>& cases)
+Piecewise_Function::maxslots(std::vector<Shared<Function>>& cases)
 {
     slot_t result = 0;
     for (auto c : cases)
@@ -142,7 +142,7 @@ Switch::maxslots(std::vector<Shared<Function>>& cases)
 }
 
 Value
-Switch::call(Value val, Frame& f)
+Piecewise_Function::call(Value val, Frame& f)
 {
     for (auto c : cases_) {
         Value result = c->try_call(val, f);
@@ -153,7 +153,7 @@ Switch::call(Value val, Frame& f)
         "argument ",val," has no matching pattern in switch"));
 }
 Value
-Switch::try_call(Value val, Frame& f)
+Piecewise_Function::try_call(Value val, Frame& f)
 {
     for (auto c : cases_) {
         Value result = c->try_call(val, f);
