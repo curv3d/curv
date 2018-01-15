@@ -79,8 +79,8 @@ As a result, there are no limitations on where similarity transformations can be
   See also: General Library of Relativity
   https://github.com/davidson16807/relativity.scad/wiki
 
-Deformations
-------------
+Shape Deformations
+------------------
 General transformations of 2D and 3D shapes which don't preserve angles and distance ratios.
 These are powerful operations which allow you to deform a shape, as if it were made of clay.
 
@@ -142,3 +142,17 @@ In Curv 0.0, deformations deform the distance field, which limits and complicate
   in the target region.
   
   TODO: bad distance field.
+
+Texture Deformations
+--------------------
+A texture is a 2D or 3D colour pattern, represented by an infinite, space filling shape
+whose colour field represents the texture.
+
+Any transformation can be applied to a texture: that's a tool for creating procedural textures.
+Some deformations distort the distance field too badly to be applied to 3D shapes, but these
+deformations can still be applied to textures:
+
+``swirl {radius, strength} shape``
+  This is a classic 2D image transformation, based on an API in the Python scikit-image library,
+  where ``strength`` is the amount of swirl, and ``radius`` indicates the swirl extent.
+  
