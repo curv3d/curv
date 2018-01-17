@@ -12,9 +12,11 @@
     is_fun x = defined(x.call);
 * compose -- function composition. Short form is 'co'?
   x >> compose[f,g,h] means x>>f>>g>>h ?
-  The function returned by compose reports a pattern match failure if any
-  of the constituent functions reports a pattern match failure. This is
-  important for `match` and *cast* patterns.
+  * The function returned by compose reports a pattern match failure if any
+    of the constituent functions reports a pattern match failure. This is
+    important for `match` and *cast* patterns.
+  * This means that several of the constituent functions are called before a
+    pattern match failure is detected. Is that okay?
 * any, all
 * Record constructors may combine definitions and field generators.
   Shorter definitions for shape constructors with .mitred/.exact members.
