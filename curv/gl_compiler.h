@@ -56,26 +56,36 @@ enum class GL_Type : unsigned
     Num = 1,
     Vec2 = 2,
     Vec3 = 3,
-    Vec4 = 4
+    Vec4 = 4,
+    Mat2 = 5,
+    Mat3 = 6,
+    Mat4 = 7
 };
 extern struct GL_Type_Attr
 {
     const char* name;
-    int count;
+    int rank;
+    int dim1;
+    int dim2;
 } gl_types[];
-// is a number or a vector
+// is a number, a vector, or a matrix
 inline bool gl_type_numeric(GL_Type type)
 {
-    return type > GL_Type::Bool;
+    return type >= GL_Type::Num;
 }
 inline bool gl_type_is_vec(GL_Type type)
 {
-    return type > GL_Type::Num;
+    return gl_types[unsigned(type)].rank == 1;
+}
+inline bool gl_type_is_mat(GL_Type type)
+{
+    return gl_types[unsigned(type)].rank == 2;
 }
 // if numeric, how many numbers are stored.
 inline unsigned gl_type_count(GL_Type type)
 {
-    return (unsigned)type;
+    GL_Type_Attr &ta = gl_types[unsigned(type)];
+    return ta.dim1 * ta.dim2;
 }
 inline const char* gl_type_name(GL_Type type)
 {

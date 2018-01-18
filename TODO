@@ -15,6 +15,7 @@ Next changes:
 * new `bend{d,angle}` operator
 * fix 3D lighting model
 * remove atan2. phase is a rank 1 tensorized operation.
+* mat2, mat3 and mat4 types in GL.
 * documentation: shape library
 
 Proposed change: `include lib.shape` required to access shape library.

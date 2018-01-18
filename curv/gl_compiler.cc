@@ -308,11 +308,14 @@ void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Conte
 
 GL_Type_Attr gl_types[] =
 {
-    {"bool", 1},
-    {"float", 1},
-    {"vec2", 2},
-    {"vec3", 3},
-    {"vec4", 4},
+    {"bool",  0, 1, 1},
+    {"float", 0, 1, 1},
+    {"vec2",  1, 2, 1},
+    {"vec3",  1, 3, 1},
+    {"vec4",  1, 4, 1},
+    {"mat2",  2, 2, 2},
+    {"mat3",  2, 3, 3},
+    {"mat4",  2, 4, 4},
 };
 
 std::ostream& operator<<(std::ostream& out, GL_Type type)
@@ -618,7 +621,7 @@ char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
 GL_Value gl_eval_index_expr(
     GL_Value arg1, const Phrase& src1, Operation& index, GL_Frame& f)
 {
-    if (gl_type_count(arg1.type) < 2)
+    if (!gl_type_is_vec(arg1.type))
         throw Exception(At_GL_Phrase(share(src1), &f), "not a vector");
 
     auto k = gl_constify(index, f);
