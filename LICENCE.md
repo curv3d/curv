@@ -3,7 +3,7 @@ MIT Licence
 The following copyright notice and licence text must be distributed with
 all copies of the Curv software, whether in source or binary form:
 
->Copyright Doug Moen 2016-2017.
+>Copyright Doug Moen 2016-2018.
 >
 >Permission is hereby granted, free of charge, to any person obtaining a
 >copy of this software and associated documentation files (the "Software"),
