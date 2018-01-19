@@ -9,3 +9,6 @@ The colour field function also has a time parameter, so colour fields can option
 Every `shape`_ has a colour field, which defines the shape's colour pattern when it is rendered.
 
 .. _`shape`: Shapes.rst
+
+``colour`` *cfield* *shape*
+  Apply a colour field to a shape.
