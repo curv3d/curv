@@ -1,4 +1,4 @@
-===============
+================
 The Colour Atlas
 ================
 
@@ -36,7 +36,7 @@ Colours will normally be input using sRGB encoding,
 then converted to linear RGB. For example, web colours
 are represented as 8 bit sRGB.
 
-Most image files (*.png, *.jpeg) use sRGB encoding.
+Most image files (`*.png`, `*.jpeg`) use sRGB encoding.
 On import, image files will by default be converted to linear RGB.
 There will be a way for the user to override this, and declare that
 an image file contains linear RGB or linear greyscale.
@@ -139,7 +139,7 @@ Provide a library of useful colour field/intensity field transformations.
 
 Image Import
 ============
-You can import an image file (*.png or *.jpeg) as a 2D shape.
+You can import an image file (`*.png` or `*.jpeg`) as a 2D shape.
 Geometrically, it's a rectangle, with a colour function that uses bicubic interpolation
 to map the pixel RGB values onto a continous function.
 
