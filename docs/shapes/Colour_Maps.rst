@@ -4,7 +4,7 @@ Colour Maps
 A *colour map* is a function that maps an intensity (a number between 0 and 1)
 onto a colour.
 
-Colour maps are used for constructing procedural textures.
+Colour maps are used for constructing textures.
 
 Cyclic Colour Maps
 ------------------
@@ -26,3 +26,10 @@ Utilities
 ---------
 ``show_cmap f``
   Construct a visualization of the colour map f (returns a shape).
+
+Future Work
+-----------
+* A larger set of predefined colour maps.
+* Parameterized constructors, that build families of colour maps.
+* Transformations, that map one cmap onto another.
+* Combinators, that combine two or more cmaps, creating a new cmap.
