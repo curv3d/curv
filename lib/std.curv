@@ -163,8 +163,8 @@ ellipsoid(dx,dy,dz) = sphere 1 >> scale(dx,dy,dz);
 cylinder =
     {
         call = exact;
-        mitred{d,h} = extrude_m h (circle d);
-        exact{d,h} = extrude_e h (circle d);
+        mitred{d,h} = extrude.mitred h (circle d);
+        exact{d,h} = extrude.exact h (circle d);
     };
 
 // Cone: +Z is up, origin is in the middle of the base.
@@ -489,7 +489,7 @@ prism n = ({
         call : prism_m,
     },
 } where
-    prism_m {d,h} = regular_polygon n .mitred d >> extrude_m h;
+    prism_m {d,h} = regular_polygon n .mitred d >> extrude.mitred h;
 );
 
 // TODO: pyramid(n,d,h)
@@ -1108,34 +1108,36 @@ slice_yz shape =
 // on the XY plane with a height of 2*h. Similar to Autocad extrude and
 // OpenSCAD linear_extrude.
 //
-// The _m variant is cheaper, and has a mitred distance field.
-// The _e variant is the same shape with a Euclidean distance field.
-extrude = extrude_e;
-extrude_m d shape =
-    let h = d / 2;
-    in make_shape {
-        dist p : max(abs(p[Z]) - h, shape.dist(p[X],p[Y],0,p[T])),
-        colour p : shape.colour(p[X],p[Y],0,p[T]),
-        bbox : [
-            [shape.bbox[MIN,X],shape.bbox[MIN,Y],-h],
-            [shape.bbox[MAX,X],shape.bbox[MAX,Y],+h],
-        ],
-        is_3d : true,
-    };
-extrude_e d shape =
-    let h = d / 2;
-    in make_shape {
-        dist p :
-            let dz = abs(p[Z]) - h;
-                dxy = shape.dist(p[X],p[Y],0,p[T]);
-            in mag(max([dz,dxy],0)) + min(max(dz,dxy), 0),
-        colour p : shape.colour(p[X],p[Y],0,p[T]),
-        bbox : [
-            [shape.bbox[MIN,X],shape.bbox[MIN,Y],-h],
-            [shape.bbox[MAX,X],shape.bbox[MAX,Y],+h],
-        ],
-        is_3d : true,
-    };
+// The .mitred variant is cheaper, and has a mitred distance field.
+// The .exact variant is the same shape with a Euclidean distance field.
+extrude = {
+    call = exact;
+    mitred d shape =
+        let h = d / 2;
+        in make_shape {
+            dist p : max(abs(p[Z]) - h, shape.dist(p[X],p[Y],0,p[T])),
+            colour p : shape.colour(p[X],p[Y],0,p[T]),
+            bbox : [
+                [shape.bbox[MIN,X],shape.bbox[MIN,Y],-h],
+                [shape.bbox[MAX,X],shape.bbox[MAX,Y],+h],
+            ],
+            is_3d : true,
+        };
+    exact d shape =
+        let h = d / 2;
+        in make_shape {
+            dist p :
+                let dz = abs(p[Z]) - h;
+                    dxy = shape.dist(p[X],p[Y],0,p[T]);
+                in mag(max([dz,dxy],0)) + min(max(dz,dxy), 0),
+            colour p : shape.colour(p[X],p[Y],0,p[T]),
+            bbox : [
+                [shape.bbox[MIN,X],shape.bbox[MIN,Y],-h],
+                [shape.bbox[MAX,X],shape.bbox[MAX,Y],+h],
+            ],
+            is_3d : true,
+        };
+};
 
 morph t (shape1, shape2) =
     make_shape {
@@ -1443,7 +1445,7 @@ shell d shape =
         is_3d : shape.is_3d,
     };
 
-pancake d shape = shape >> extrude_e 0 >> offset (d/2);
+pancake d shape = shape >> extrude.exact 0 >> offset (d/2);
 
 // Super kludgy function to scale a shape's distance field,
 // to compensate for a Lipschitz constant that is > 1.

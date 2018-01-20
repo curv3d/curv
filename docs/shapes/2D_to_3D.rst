@@ -8,8 +8,8 @@ Operations that convert a 2D shape into a 3D shape.
   with total height ``d``.
   Similar to Autocad ``extrude`` and OpenSCAD ``linear_extrude``.
  
-  * ``extrude_m``: mitred distance field.
-  * ``extrude_e``: exact distance field.
+  * ``extrude.mitred d shape``: mitred distance field.
+  * ``extrude.exact d shape``: exact distance field.
 
 ``revolve shape``
   The half-plane defined by ``x >= 0`` is rotated 90°, mapping the +Y axis to the +Z axis.
