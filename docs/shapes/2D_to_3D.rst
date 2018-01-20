@@ -1,5 +1,6 @@
 2D -> 3D Transformations
 ========================
+Operations that convert a 2D shape into a 3D shape.
 
 ``extrude d shape``
   ``extrude`` converts a 2D shape to a 3D shape,
