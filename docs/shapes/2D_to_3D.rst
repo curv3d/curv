@@ -1,5 +1,5 @@
 2D -> 3D Transformations
-------------------------
+========================
 
 ``extrude d shape``
   ``extrude`` converts a 2D shape to a 3D shape,
@@ -15,6 +15,8 @@
   Then this half-plane is rotated around the Z axis, creating a solid of revolution.
   Similar to Autocad ``revolve`` and OpenSCAD ``rotate_extrude``.
 
+Future Work
+-----------
 ``cylinder_extrude (d, d2) shape``
   TODO:
   An infinite strip of 2D space running along the Y axis
