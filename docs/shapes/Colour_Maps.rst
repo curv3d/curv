@@ -12,7 +12,7 @@ Cyclic colour maps have colours that are matched at each end.
 
 ``sRGB.hue``
   A "rainbow" colour map, containing all of the pure hues in the sRGB colour space.
-  0 is red, 1/3 is green, 2/3 is blue, and so on.
+  0 is red, 1/3 is green, 2/3 is blue, and 1 is red.
   Not perceptually uniform: there are bright bands at yellow, cyan and magenta.
 
 Linear Colour Maps
