@@ -1072,6 +1072,7 @@ at p t shape = shape >> move(-p) >> t >> move p;
 
 // The slice operators convert a 3D shape to a 2D shape
 // by extracting a planar cross section.
+slice = slice_xy;
 slice_xy shape =
     make_shape {
         dist p : shape.dist(p[X],p[Y],0,p[T]),
