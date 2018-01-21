@@ -1,5 +1,55 @@
 # Redesign Shape API
 
+## Tilt
+* `tilt axis transform shape`
+  Modify 'transform' so that the local +Z axis is 'axis'.
+  Same as: `tilt{from: Z_axis, to: axis} ...`.
+  Eg, torus{minor:1, major:2} >> tilt X_axis (twist 4)
+* `tilt{from: v1, to: v2} transform shape`
+
+    tilt{from: v1, to: v2} transform shape =
+     if (v1 == v2)
+       transform shape
+     else
+       shape >> rotate{from:v1, to:v2} >> transform >> rotate{from:v2, to:v1};
+
+Transforms that benefit from tilt (or, add an axis argument to each one):
+    repeat_x, repeat_xy, repeat_xyz, repeat_mirror_x, repeat_radial
+    align
+    shear_x, shear_xy
+    local_taper_x, local_taper_xy
+    twist
+    bend
+    swirl
+2D->3D transforms: can't use tilt, need to post-rotate
+    pancake
+    perimeter_extrude
+    extrude
+    revolve
+3D->2D transforms: can't use tilt, need to pre-rotate the 3D shape.
+    slice
+
+## 3D->2D
+existing: slice_xy, slice_xz, slice_yz
+Can these be combined into a single, more general primitive?
+
+Ideas:
+
+ 1. `slice shape`
+    Intersect shape with the XY plane, don't move result out of XY plane.
+    This is the most natural case for `slice`. To intersect a 3D shape with
+    other planes and leave result in the XY plane, pre-rotate the shape.
+    Eg, shape>>rotate{from:Z_axis,to:X_axis}>>slice is like slice_yz shape.
+
+ 2. `slice axis shape`.
+    'axis' is normal to the plane used to slice 'shape'. Plane intersects
+    origin. Similar to `reflect` API. Eg, `slice Z_axis shape` is like slice_xy.
+    `slice X_axis` is like slice_yz.
+
+ 3. `slice shape`
+    `slice axis shape`
+    Overloaded function.
+
 ## Interpolators
 
 (An interpolator is a function that maps an intensity value between 0 and 1
