@@ -1,5 +1,5 @@
 Repetition
-----------
+==========
 ``repeat_x d shape``
 
 ``repeat_xy d shape``
@@ -10,4 +10,6 @@ Repetition
 
 ``repeat_radial reps shape``
 
-``repeat_helix ... shape``
+Future Work
+-----------
+* ``repeat_helix ... shape``
