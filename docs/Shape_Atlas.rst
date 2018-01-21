@@ -1214,7 +1214,8 @@ A generalization of ``extrude``.
 
 research:
 
-* "Image Swept Volumes", Winter and Chen, http://vg.swan.ac.uk/vlib/DOWNLOADS/ISV.pdf
+* "Image Swept Volumes", Winter and Chen, 2002, http://vg.swan.ac.uk/vlib/DOWNLOADS/ISV.pdf
+* "Implicit Sweep Surfaces", Schmidt and Wyvill, 2005, http://unknownroad.com/publications/SweepsTRApril2005.pdf
 
 Pixelate
 --------
