@@ -149,3 +149,10 @@ The actual colour space that gives meaning to these coordinates
 is defined by the rendering environment.
 You should use high level operations to construct colour values,
 and not try to create linear R,G,B triples by hand.
+
+Future Work
+-----------
+* Add the LAB and HCL colour spaces.
+  These are perceptually uniform colour spaces, useful for interpolation
+  and generating colour sequences.
+* Add sRGB.HWB colour space. It's the best RGB based colour space for colour picking by artists.
