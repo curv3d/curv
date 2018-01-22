@@ -152,10 +152,12 @@ Any transformation can be applied to a texture: that's a tool for creating proce
 Some deformations distort the distance field too badly to be applied to 3D shapes, but these
 deformations can still be applied to textures:
 
-``swirl {radius, strength} shape``
-  This is a classic 2D image transformation, based on an API in the Python scikit-image library,
-  where ``strength`` is the amount of swirl, and ``radius`` indicates the swirl extent.
+``swirl {d, strength} shape``
+  Locally "swirl" the shape/colour field into a spiral shape in the XY plane.
+  This is a classic 2D image transform.
   
-  * ``strength``: 0 means no effect, positive means a clockwise swirl, negative means
-    a counterclockwise swirl.
+  * ``d``: the approximate diameter of the swirl effect. (It's a global effect
+    with an exponential decay, not a sharp cutoff.)
+  * ``strength``: the amount of swirl. 0 means no effect,
+    positive means a clockwise swirl, negative means a counterclockwise swirl.
   

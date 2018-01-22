@@ -1065,12 +1065,11 @@ local_taper_xy {range:(z0,z1), scale:([kx0, ky0], [kx1, ky1])} shape =
 // Classic 'swirl' image transformation.
 // From: Python skimage.transform.swirl
 // http://scikit-image.org/docs/dev/auto_examples/transform/plot_swirl.html
-swirl{strength, radius} shape =
-    let r = log 2 * radius/5;
+swirl{strength, d} shape =
+    let r = log 2 * d/10;
         f(x,y,z,t) =
             let m = mag(x,y);
                 phi = strength * e^(-m/r) + phase(x,y);
-                //phi = phase(x,y);
                 xy = m * cis phi;
             in [xy[X],xy[Y],z,t];
     in make_shape {
