@@ -26,8 +26,9 @@
     rect{min:(xmin,ymin), max:(xmax,ymax)}
     rect{xmin=-inf,ymin=-inf,xmax=inf,ymax=inf}
 
-## intensity fields vs texture constructors
+## Intensity Fields vs Texture Constructors
 
+Intensity fields are complicated (see next section).
 I should test out two alternative APIs for constructing textures.
  1. A rich set of intensity field constructors & manipulators.
     ifields are composed with cmaps to construct textures.
@@ -39,6 +40,24 @@ ifields aren't going away; I need them for fractal noise.
 `tx_radial n cmap`
 `tx_concentric d cmap`
 `tx_log_spiral opts cmap`
+
+See also gradients in Gimp and procedural textures in Blender.
+
+## Intensity Fields and Transformations
+An ifield is represented by (a) a function, (b) a record containing an
+`intensity` field, which is a function. And other optional metadata?
+Like, the gradient of the ifield at a given point?
+
+Transformations of ifields. There should be a way to apply a stock
+transformation to an ifield.
+ 1. transform.f is a function mapping [x,y,z,t] to [x,y,z,t].
+    compose[transform.f, ifield]t
+ 2. ifields are records. A transform maps a shape-or-ifield record to another
+    shape-or-ifield record.u
+
+If we gonna generalize transformations, then how about:
+ * Apply a transformation to a point, or a list of points.
+ * Compose transformations.
 
 ## Tilt
 * `tilt axis transform shape`

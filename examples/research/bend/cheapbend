@@ -1,0 +1,19 @@
+/* IQ
+float opCheapBend( vec3 p )
+{
+    float c = cos(20.0*p.y);
+    float s = sin(20.0*p.y);
+    mat2  m = mat2(c,-s,s,c);
+    vec3  q = vec3(m*p.xy,p.z);
+    return primitive(q);
+}
+
+Transforms the XY coordinates, leaves Z alone.
+*/
+
+cheapbend shape = make_shape {
+    dist(x,y,z,t) =
+        let c = cos(20*y);
+            s = sin(20*y);
+            q = 
+
