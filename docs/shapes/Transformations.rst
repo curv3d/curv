@@ -156,3 +156,6 @@ deformations can still be applied to textures:
   This is a classic 2D image transformation, based on an API in the Python scikit-image library,
   where ``strength`` is the amount of swirl, and ``radius`` indicates the swirl extent.
   
+  * ``strength``: 0 means no effect, positive means a clockwise swirl, negative means
+    a counterclockwise swirl.
+  
