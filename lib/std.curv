@@ -724,18 +724,25 @@ _intersection2 (s1,s2) =
 difference(s1,s2) = _intersection2(s1, complement s2);
 symmetric_difference shapes = difference(union shapes, intersection shapes);
 
-row d shapes =
-    let width = sum[for (s in shapes) size(s)[X]] + (count shapes - 1)*d;
-    in do 
-        var xdelta := [];
-        var x := -width / 2;
-        var i := 0;
-        while (i < count shapes) (
-            xdelta := concat(xdelta, [x - shapes[i].bbox[MIN,X]]);
-            x := x + d + size(shapes[i])[X];
-            i := i + 1;
-        );
-    in union[for (i in 0..<count shapes) shapes[i] >> move(xdelta[i],0,0)];
+row = (match [
+    (is_num d) -> shapes -> row_impl(d,shapes);
+    shapes -> row_impl(null, shapes);
+] where
+    row_impl(d,shapes) =
+        let widths = [for (s in shapes) size s [X]];
+            gap = if (d==null) max widths / 4 else d;
+            width = sum widths + (count shapes - 1)*gap;
+        in do 
+            var xdelta := [];
+            var x := -width / 2;
+            var i := 0;
+            while (i < count shapes) (
+                xdelta := concat(xdelta, [x - shapes[i].bbox[MIN,X]]);
+                x := x + gap + size(shapes[i])[X];
+                i := i + 1;
+            );
+        in union[for (i in 0..<count shapes) shapes[i] >> move(xdelta[i],0,0)];
+);
 
 smooth k = {
     union (s1,s2) =
