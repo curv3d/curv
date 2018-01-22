@@ -1,5 +1,5 @@
 //perimeter_extrude (rect.exact (2,2)) (circle 1) >> df_scale .5
-//perimeter_extrude (circle 2 >> scale (2,1)) (circle 1)
+//perimeter_extrude (circle 2 >> stretch (2,1)) (circle 1)
 //difference (circle 1 >> colour red, square 1 >> translate(.5,.5))
 domain_warp_x f shape = make_shape {
     dist(x,y,z,t) = shape.dist(f x, y, z, t),

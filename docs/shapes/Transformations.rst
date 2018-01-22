@@ -88,15 +88,15 @@ In Curv 0.0, deformations deform the distance field, which limits and complicate
 (This is an area for future research and improvement.)
 
 * The output may not be appropriate as input to distance field operations.
-* The anistropic scale operator produces an approximate distance field.
+* The ``stretch`` operator produces an approximate distance field.
   The remaining operations produce "bad" distance fields, which must be
   corrected using the ``lipschitz`` operator in order for the sphere-tracing
   algorithm in the previewer to work.
 
-``scale (kx, ky) shape``
+``stretch (kx, ky) shape``
   Anisotropic scaling of a 2D or 3D shape across the XY plane.
 
-``scale (kx, ky, kz) shape``
+``stretch (kx, ky, kz) shape``
   Anisotropic scaling of a 3D shape.
 
 ``shear_x kx shape``
