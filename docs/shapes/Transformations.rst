@@ -135,13 +135,24 @@ In Curv 0.0, deformations deform the distance field, which limits and complicate
   
   TODO: distance field is bad.
 
-``bend d shape``
-  Take the upper half of the XY plane between X==-d/2 and X==d/2,
-  and wrap that radially around the origin to cover the XY plane,
-  by mapping rectangular coordinates in the source region to polar coordinates
-  in the target region.
-  
-  TODO: bad distance field.
+``bend {d, angle: a = tau} shape``
+  Globally bend a 2D/3D shape upward/towards +Y, through the angle ``a``,
+  around a circle/cylinder of diameter ``d`` centred on the origin/Z axis.
+  The angle defaults to ``tau``/``360*deg``.
+
+  For example, you can bend a cylinder that's oriented along the X axis
+  into a torus, or bend a box into a hollow cylinder.
+
+  The bounding box of the shape is used to compute the geometry.
+  The xmin, xmax and ymax edges of the bounding box must be finite.
+  The ymax edge forms the inner surface of the circle or cylinder that the
+  shape is bent around.
+  If the angle is a full turn (tau), then the xmin and xmax edges will meet
+  at the +Y axis.
+  If the ymin edge is at negative infinity, then the result will be infinite,
+  and cover the entire XY plane.
+
+  Bounding box: approximate. Distance field: bad.
 
 Texture Deformations
 --------------------

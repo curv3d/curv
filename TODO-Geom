@@ -18,8 +18,6 @@
     Maybe cone{h,normal} or cone{h,slope} or cone{h,angle},
     with apex at origin, and h can be inf.
   * Maybe finite cone should be centred vertically.
-* `bend{d,angle}shape`: new design uses bbox/xmin,xmax,ymax of shape,
-   shape is bent upwards.
 * Change bbox to {min:vec,max:vec}? Use bbox.min instead of bbox[MIN].
   3 overloadings of rect:
     rect(dx,dy)

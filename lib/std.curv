@@ -1390,22 +1390,31 @@ twist d shape =
         is_3d : true,
     };
 
-// Take the upper half of the XY plane between X==-d/2 and X==d/2,
-// and wrap that radially around the origin to cover the XY plane,
-// by mapping rectangular coordinates in the source region to polar coordinates
-// in the target region.
-// Beware of the distance field.
-bend d shape =
-    let r = d / 2;
+// Bend a 2D/3D shape upward/towards +Y, through the angle `a`,
+// around a circle/cylinder of diameter `d` centred on the origin/Z axis.
+// The angle defaults to `tau`/`360*deg`.
+// TODO: bbox is larger than necessary.
+bend {d, angle: a = tau} shape =
+    let rx = (shape.bbox[MAX,X] - shape.bbox[MIN,X]) / 2 / (a/tau);
+        ry = d/2;
+        offset = [
+            (shape.bbox[MAX,X] + shape.bbox[MIN,X]) / 2,
+            shape.bbox[MAX,Y] + ry,
+        ];
+        f(x,y,z,t) =
+            let nx = (mod(phase(x,y)/pi+1.5,2)-1)*rx+offset[X];
+                ny = offset[Y] - mag(x,y);
+            in (nx,ny,z,t);
+        ymax = shape.bbox[MAX,Y] - shape.bbox[MIN,Y] + ry;
     in make_shape {
-        dist(x,y,z,t) : shape.dist(phase(x,y)/pi*r, mag(x,y), z, t),
-        colour(x,y,z,t) : shape.colour(phase(x,y)/pi*r, mag(x,y), z, t),
-        bbox : [
-            [-shape.bbox[MAX,Y], -shape.bbox[MAX,Y], shape.bbox[MIN,Z]],
-            [+shape.bbox[MAX,Y], +shape.bbox[MAX,Y], shape.bbox[MAX,Z]],
-        ],
-        is_2d : shape.is_2d,
-        is_3d : shape.is_3d,
+        dist p = shape.dist(f p);
+        colour p = shape.colour(f p);
+        bbox = [
+            [-ymax, -ymax, shape.bbox[MIN,Z]],
+            [+ymax, +ymax, shape.bbox[MAX,Z]],
+        ];
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
     };
 
 ///////////////////////////

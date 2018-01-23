@@ -8,10 +8,9 @@ rect(1,inf)
 >> rotate(60*deg)
 >> repeat_mirror_x
 `intersection` rect(w,c)
->> extrude .5
+>> extrude 1
 >> rotate {angle: 90*deg, axis: X_axis}
->> move (0, w)
->> bend 40
->> rotate (90*deg)
+>> bend{d:20,angle:tau/4}
 >> rotate {angle: 90*deg, axis: Y_axis}
->> bend c >> lipschitz 3
+>> bend{d:20}
+>> lipschitz 3
