@@ -135,13 +135,23 @@ In Curv 0.0, deformations deform the distance field, which limits and complicate
   
   TODO: distance field is bad.
 
-``bend {d, angle: a = tau} shape``
-  Globally bend a 2D/3D shape upward/towards +Y, through the angle ``a``,
-  around a circle/cylinder of diameter ``d`` centred on the origin/Z axis.
-  The angle defaults to ``tau``/``360*deg``.
+``bend {d = null, angle: a = tau} shape``
+  Bend a 2D/3D shape into a ring around the Z axis.
 
-  For example, you can bend a cylinder that's oriented along the X axis
-  into a torus, or bend a box into a hollow cylinder.
+  If no labeled arguments are specified, ``bend {} shape`` defaults
+  to bending the shape into a ring through a full circle.
+  For example, a rectangle is bent into an annulus,
+  a cylinder that's oriented along the X axis is bent into a torus,
+  and a box is bent into a hollow cylinder.
+  The inner circumference of the ring is the length of the shape along
+  the X axis.
+
+  If the diameter ``d`` is specified, then the inner diameter of the ring
+  is ``d``. The length of the shape along the X axis is ignored, as the
+  shape is stretched along X as necessary.
+
+  If the angle ``a`` is specified (a > 0 && a <= tau),
+  then the shape is bent upwards/towards +Y through that angle.
 
   The bounding box of the shape is used to compute the geometry.
   The xmin, xmax and ymax edges of the bounding box must be finite.
