@@ -1255,30 +1255,26 @@ repeat_radial reps shape =
                 circumradius
             else
                 (circumradius * cis((floor(reps/4)+.5)*angle))[Y];
+        f(x,y,z,t) =
+            do  var a := phase[x,y] + angle/2;
+                var r := mag[x,y];
+                a := mod(a,angle) - angle/2;
+                var xy := cis(a) * r;
+            in (xy[X], xy[Y], z, t);
     in make_shape {
-        dist(x,y,z,t) :
-            do  var a := phase[x,y] + angle/2;
-                var r := mag[x,y];
-                a := mod(a,angle) - angle/2;
-                var xy := cis(a) * r;
-            in shape.dist(xy[X], xy[Y], z, t),
-        colour(x,y,z,t) :
-            do  var a := phase[x,y] + angle/2;
-                var r := mag[x,y];
-                a := mod(a,angle) - angle/2;
-                var xy := cis(a) * r;
-            in shape.colour(xy[X], xy[Y], z, t),
+        dist p = shape.dist(f p);
+        colour p = shape.colour(f p);
         // bbox is exact for regular_polygon, approximate for general case.
-        bbox : [
+        bbox = [
             [ if (mod(reps,2)==0) -inradius else -circumradius,
               -max_y,
               shape.bbox[MIN,Z] ],
             [ inradius,
               max_y,
               shape.bbox[MAX,Z] ]
-        ],
-        is_2d : shape.is_2d,
-        is_3d : shape.is_3d,
+        ];
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
     };
 
 ////////////
