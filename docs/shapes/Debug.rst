@@ -4,7 +4,16 @@ Shape Debugging
   Add an X/Y or X/Y/Z axis display to the shape.
 
 ``show_bbox shape``
-  TODO: Visualize the bounding box, so you can check if it is bad (too small to contain the shape).
+  Visualize the bounding box, so you can check if it is bad
+  (too small to contain the shape).
+
+  * The bounding box is rendered in charcoal grey.
+  * The parts of the shape inside the bounding box are rendered in green.
+  * The parts of the shape outside the bounding box are rendered in red.
+  * For a 3D bounding box, shape boundary points on the surface
+    of the bounding box appear as shimmering green and red dots
+    as you interactively rotate the shape in the viewer.
+  * Use ``slice`` to investigate the interior of a 3D bounding box.
 
 ``set_bbox bbox shape``
   Manually fix a bad bounding box.

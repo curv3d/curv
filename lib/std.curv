@@ -1544,4 +1544,16 @@ show_axes shape =
 
 set_bbox (is_bbox3 bbox) shape = {...shape; bbox: bbox};
 
+show_bbox shape =
+    let bb =
+        if (shape.is_2d)
+            rect(shape.bbox[MIN,[X,Y]],shape.bbox[MAX,[X,Y]])
+        else
+            box(shape.bbox[MIN],shape.bbox[MAX]);
+    in union(
+        bb >> colour (sRGB.grey .2),
+        shape `difference` bb >> colour red,
+        shape >> colour green `intersection` bb,
+    );
+
 }
