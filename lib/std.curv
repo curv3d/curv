@@ -1394,9 +1394,10 @@ twist d shape =
 // around a circle/cylinder of diameter `d` centred on the origin/Z axis.
 // The angle defaults to `tau`/`360*deg`.
 // TODO: bbox is larger than necessary.
-bend {d, angle: a = tau} shape =
-    let rx = (shape.bbox[MAX,X] - shape.bbox[MIN,X]) / 2 / (a/tau);
-        ry = d/2;
+bend {d = null, angle: a = tau} shape =
+    let width = shape.bbox[MAX,X] - shape.bbox[MIN,X];
+        rx = width / 2 / (a/tau);
+        ry = if (d==null) width/tau else d/2;
         offset = [
             (shape.bbox[MAX,X] + shape.bbox[MIN,X]) / 2,
             shape.bbox[MAX,Y] + ry,

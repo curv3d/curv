@@ -235,9 +235,6 @@ the distance field.
 Deformations (including `stretch`) do not preserve distance field structure.
 * distinguish `scale` from `stretch`
 
-### Bend
-bend {d,angle:a} shape
-
 ### Shear
 Is there a generalization of `shear_x` and `shear_xy`? Yes.
 Should they be combined into a single generic operation `shear`? Not sure.
@@ -315,38 +312,17 @@ which is the best axis to choose for human psychology reasons.
 ## Barr's Bend (local bend)
 local_bend{range:[xs,xe], centre|fixed_point: x0, angle}
 
-## Bend
-`bend d shape` -- seems like it should have more arguments?
-
-I think this is a good operation, it just needs a more specific name.
-It bends a cylinder into a torus, and a rectangular sheet into a cylinder.
-It transforms from Cartesian to cylindrical coordinates.
-
-circle_bend d shape
-cylindrical_map d shape
-  -- since it maps cartesian to cylindrical coordinates,
-     and may be related to cylindrical_extrude.
-cylinder_transform d shape
-cylinder_bend d shape
-
-ShapeJS uses RingWrap(r): Wrap band around a cylinder of given radius r.
-The `d` argument of Curv `bend` is implicitly `tau*r` in this API.
-(This API avoids a singularity at the origin, since there is a cylinder-shaped
-dead space surrounding the origin, and r cannot be 0.)
-
-cylinder_wrap{r, d}
-
-## Convention: bend/wrap/radial-repeat parameters
+## Convention: bend/radial-repeat parameters
 
 Here's a consistent convention:
 * repeat_radial takes a shape centred on the Y axis, below the X axis,
   and duplicates it N times around a circle. This is the convention needed
   by regular_polygon.
-* cylinder_wrap takes a strip centred on the Y axis, below the X axis,
+* bend takes a strip centred on the Y axis, below the X axis,
   and wraps it around a cylinder. The two ends meet at the top.
   Same bending direction as local_bend. Same convention as RingWrap.
 * local_bend takes a strip parallel to the X axis, and bends it.
-  Positive angle means bend upwards (same direction as cylinder_wrap).
+  Positive angle means bend upwards (same direction as bend).
   Same convention as las/Mercury's Barr bend.
 
 ## Linear Repeat
