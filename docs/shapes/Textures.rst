@@ -36,9 +36,18 @@ Basic Operations
 
 High Level Constructors
 -----------------------
+``t_linear(d,cmap)``
+  The texture is a series of vertical stripes of width ``d``.
+  Each stripe is coloured using the colour map ``cmap``.
+
+``t_radial(cmap)``
+
+
+``t_concentric(d,cmap)``
 
 Future Work
 -----------
 * Create more high level constructors.
 * Support natural looking textures, like wood and stone, using fractal noise.
 * Look in places like Gimp and Blender for new textures and texture operators.
+* Colour transformations, which transform the colours in a texture.
