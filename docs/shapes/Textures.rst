@@ -7,15 +7,7 @@ interior point of the shape, as well as the surface points.
 
 Textures are graphical values, which can be displayed in the graphics window.
 
-A texture contains a colour field,
-which is a function mapping the parameters (x,y,z,t) onto a `colour value`_.
-2D colour fields ignore the ``z`` parameter.
-The ``t`` parameter is time, so colour fields can optionally be animated.
-
 .. _`colour value`: Colour.rst
-
-Every `shape`_ has a colour field, which defines the shape's colour pattern when it is rendered.
-
 .. _`shape`: Shapes.rst
 
 Basic Operations
