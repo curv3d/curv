@@ -33,3 +33,12 @@ Basic Operations
 
 ``texture`` *cfield* *shape*
   Apply the colour field function *cfield* to *shape*.
+
+High Level Constructors
+-----------------------
+
+Future Work
+-----------
+* Create more high level constructors.
+* Support natural looking textures, like wood and stone, using fractal noise.
+* Look in places like Gimp and Blender for new textures and texture operators.
