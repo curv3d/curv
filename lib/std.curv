@@ -411,7 +411,7 @@ regular_polygon n = (
     } where
         angle = tau / n;
         mitred d = half_plane{d: d/2, normal: [1,0]}
-                   >> repeat_radial n >> rotate(-tau/4);
+                   >> repeat_radial n;
 );
 
 // convex polygon: vertices are in counterclockwise order.
@@ -1246,19 +1246,20 @@ repeat_mirror_x shape =
 
 repeat_radial reps shape =
     let angle = tau/reps;
-        inradius = shape.bbox[MAX,X];
+        inradius = -shape.bbox[MIN,Y];
         circumradius = inradius / cos(angle/2);
-        max_y =
+        max_x =
             if (mod(reps,4)==0)
                 inradius
             else if (mod(reps,2)==0)
                 circumradius
             else
-                (circumradius * cis((floor(reps/4)+.5)*angle))[Y];
+                circumradius * sin((floor(reps/4)+.5)*angle);
+        ashift = tau/4 + angle/2;
         f(x,y,z,t) =
-            do  var a := phase[x,y] + angle/2;
+            do  var a := phase[x,y] + ashift;
                 var r := mag[x,y];
-                a := mod(a,angle) - angle/2;
+                a := mod(a,angle) - ashift;
                 var xy := cis(a) * r;
             in (xy[X], xy[Y], z, t);
     in make_shape {
@@ -1266,11 +1267,11 @@ repeat_radial reps shape =
         colour p = shape.colour(f p);
         // bbox is exact for regular_polygon, approximate for general case.
         bbox = [
-            [ if (mod(reps,2)==0) -inradius else -circumradius,
-              -max_y,
+            [ -max_x,
+              -inradius,
               shape.bbox[MIN,Z] ],
-            [ inradius,
-              max_y,
+            [ max_x,
+              if (mod(reps,2)==0) inradius else circumradius,
               shape.bbox[MAX,Z] ]
         ];
         is_2d = shape.is_2d;
