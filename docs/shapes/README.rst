@@ -1,7 +1,7 @@
-The Curv Graphics Library
-=========================
+The Curv Shape Library
+======================
 
-The Curv graphics library has the following data types:
+The Curv shape library has the following data types:
 
 shape
   A 2D or 3D geometric shape.
