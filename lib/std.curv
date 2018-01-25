@@ -1291,18 +1291,18 @@ colour c shape =
             is_2d : shape.is_2d,
             is_3d : shape.is_3d,
         }
-    else if (is_fun c)
-        make_shape {
-            dist : shape.dist,
-            colour : c,
-            bbox : shape.bbox,
-            is_2d : shape.is_2d,
-            is_3d : shape.is_3d,
-        }
     else if (is_shape c)
         make_shape {
             dist : shape.dist,
             colour : c.colour,
+            bbox : shape.bbox,
+            is_2d : shape.is_2d,
+            is_3d : shape.is_3d,
+        }
+    else if (is_fun c)
+        make_shape {
+            dist : shape.dist,
+            colour : c,
             bbox : shape.bbox,
             is_2d : shape.is_2d,
             is_3d : shape.is_3d,
@@ -1337,6 +1337,12 @@ rose = sRGB.hue(11/12);
 white = [1, 1, 1];
 grey = sRGB[.5,.5,.5];
 black = [0, 0, 0];
+
+texture = colour;
+make_texture x = colour x everything;
+t_linear(d,cmap) = make_texture((x,_,_,_)->cmap(x/d `mod` 1));
+t_radial cmap = make_texture((x,y,_,_)->cmap(phase(x,y)/tau `mod` 1));
+t_concentric(d,cmap) = make_texture((x,y,_,_)->cmap(mag(x,y)/d `mod` 1));
 
 radial_rainbow n =
     colour (p->sRGB.HSV(mod(phase(p[[X,Y]])/tau*n,1),1,1)) everything;
