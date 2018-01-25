@@ -1341,7 +1341,8 @@ black = [0, 0, 0];
 texture = colour;
 make_texture x = colour x everything;
 t_linear(d,cmap) = make_texture((x,_,_,_)->cmap(x/d `mod` 1));
-t_radial cmap = make_texture((x,y,_,_)->cmap(phase(x,y)/tau - .25 `mod` 1));
+t_radial(n,cmap) =
+    make_texture((x,y,_,_)->cmap((phase(x,y)/tau-.25)*n `mod` 1));
 t_concentric(d,cmap) = make_texture((x,y,_,_)->cmap(mag(x,y)/d `mod` 1));
 
 radial_rainbow n =

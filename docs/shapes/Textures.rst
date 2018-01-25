@@ -40,8 +40,8 @@ High Level Constructors
   The texture is a series of vertical stripes of width ``d``.
   Each stripe is coloured using the colour map ``cmap``.
 
-``t_radial(cmap)``
-  A radial starburst pattern using cmap.
+``t_radial(n,cmap)``
+  A radial starburst pattern using ``n`` copies of cmap.
 
 ``t_concentric(d,cmap)``
   Concentric rings of colour taken from cmap; the cycle repeats in each circular band
