@@ -1,7 +1,7 @@
 // morph a white cube into a rainbow torus
-row 1 [
+row [
     for (i in 0..4)
         morph (i/4)
             (cube 4 >> colour (.8,.8,.8),
-            torus{major:4, minor:2} >> colour (radial_rainbow 1))
+            torus{major:4, minor:2} >> texture (t_radial(1,sRGB.hue)))
 ]

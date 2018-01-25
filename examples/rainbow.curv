@@ -1,1 +1,1 @@
-cylinder{d:2, h:2} >> colour (radial_rainbow 1)
+cylinder{d:2, h:2} >> texture (t_radial(1,sRGB.hue))

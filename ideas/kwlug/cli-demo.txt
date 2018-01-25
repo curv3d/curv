@@ -15,7 +15,7 @@
 
 > torus{major: 2, minor: 1}
 
-> _ >> colour (radial_rainbow 1)
+> _ >> texture (t_radial(1,sRGB.hue))
 
 > _ >> rotate {angle: 90*deg, axis: X_axis}
 

@@ -1345,13 +1345,6 @@ t_radial(n,cmap) =
     make_texture((x,y,_,_)->cmap((phase(x,y)/tau-.25)*n `mod` 1));
 t_concentric(d,cmap) = make_texture((x,y,_,_)->cmap(mag(x,y)/d `mod` 1));
 
-radial_rainbow n =
-    colour (p->sRGB.HSV(mod(phase(p[[X,Y]])/tau*n,1),1,1)) everything;
-concentric_rainbow n =
-    colour (p->sRGB.HSV(mod(mag(p[[X,Y]])/n,1),1,1)) everything;
-linear_rainbow n =
-    colour (p->sRGB.HSV(mod(p[X]/n,1),1,1)) everything;
-
 show_cmap f = union(
     rect(4.05,1.05) >> colour grey,
     rect(4,1) >> colour ((x,_,_,_)->f((x+2)/4)));
