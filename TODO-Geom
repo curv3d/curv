@@ -1,7 +1,7 @@
 # Redesign Shape API
 
 ## TODO:
-* `show_colour colour` -- maybe this is `texture colour`?
+* `show_colour colour` -- maybe this is: `make_texture colour|cfield`
 * repeat_x repeat_xy repeat_xyz
   * Fix distance field. Evaluate cell field *2 for _x, *4 for _xy, *8 for _xyz.
     Maybe a 'fast:' option to disable this.
@@ -11,8 +11,6 @@
     rep_strip, rep_rect, rep_box.
 * repeat_mirror_x
   Maybe use `repeat_mirror normal`, after `reflect` API.
-* repeat_radial
-  Redesign to use "loop at bottom, seam at top". cell is below origin.
 * `cone {d, h}`:
   * What is API for infinite cone?
     Maybe cone{h,normal} or cone{h,slope} or cone{h,angle},
@@ -34,10 +32,10 @@ I should test out two alternative APIs for constructing textures.
 
 ifields aren't going away; I need them for fractal noise.
 
-`tx_linear d cmap`
-`tx_radial n cmap`
-`tx_concentric d cmap`
-`tx_log_spiral opts cmap`
+`t_linear d cmap`
+`t_radial n cmap`
+`t_concentric d cmap`
+`t_log_spiral opts cmap`
 
 See also gradients in Gimp and procedural textures in Blender.
 
