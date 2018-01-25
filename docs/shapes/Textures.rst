@@ -47,6 +47,9 @@ High Level Constructors
   Concentric rings of colour taken from cmap; the cycle repeats in each circular band
   of thickness ``d``.
 
+``t_gyroid cmap``
+  A colour map is applied to the distance field of the gyroid.
+
 Texture Transformations
 -----------------------
 Textures may be transformed using `Transformations`_ and `Repetition Operators`_.
