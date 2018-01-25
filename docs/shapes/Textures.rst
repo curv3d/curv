@@ -47,9 +47,16 @@ High Level Constructors
   Concentric rings of colour taken from cmap; the cycle repeats in each circular band
   of thickness ``d``.
 
+Texture Transformations
+-----------------------
+Textures may be transformed using `Transformations`_ and `Repetition Operators`_.
+
+.. _`Transformations`: Transformations.rst
+.. _`Repetition Operators`: Repetition.rst
+
 Future Work
 -----------
 * Create more high level constructors.
 * Support natural looking textures, like wood and stone, using fractal noise.
-* Look in places like Gimp and Blender for new textures and texture operators.
 * Colour transformations, which transform the colours in a texture.
+* Look in places like Gimp and Blender for new textures and texture operators.
