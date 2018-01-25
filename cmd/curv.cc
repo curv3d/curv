@@ -375,9 +375,11 @@ live_mode(curv::System& sys, const char* editor, const char* filename)
                 curv::Program prog{*file, sys};
                 prog.compile();
                 auto value = prog.eval();
-                if (!display_shape(value,
+                if (display_shape(value,
                     curv::At_Phrase(prog.value_phrase(), nullptr)))
                 {
+                    std::cout << "ok.\n";
+                } else {
                     std::cout << value << "\n";
                 }
             } catch (curv::Exception& e) {
