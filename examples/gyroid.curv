@@ -2,7 +2,7 @@ row 2 [
     smooth .5 .intersection (double_gyroid_bones, sphere 20),
     intersection (gyroid_surface, sphere 20),
     gyroidize(.1) (cube 18),
-    sphere 20 >> texture (t_gyroid(sRGB.grey))
+    sphere 20 >> texture (i_gyroid, sRGB.grey)
 ]
 
 where

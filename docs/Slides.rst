@@ -68,7 +68,7 @@ Constructive Solid Geometry (3)
 |twistor|::
 
   torus (2,1)
-    >> texture (t_radial(1,sRGB.hue))
+    >> texture (i_radial 1, sRGB.hue)
     >> rotate (tau/4, Y_axis)
     >> twist 3 >> lipschitz 2.2
 

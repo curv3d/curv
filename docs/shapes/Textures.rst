@@ -28,27 +28,44 @@ Basic Operations
   
     make_texture((x,y,z,t)->sRGB.hue(cos x * cos y * cos z + t/8 `mod` 1))
 
+``make_texture (ifield, cmap)``
+  Construct a texture by composing an intensity field with a colour map.
+
 ``texture`` *tx* *shape*
   Apply the texture *tx* to *shape*.
 
 ``texture`` *cfield* *shape*
   Apply the colour field function *cfield* to *shape*.
 
-High Level Constructors
------------------------
-``t_linear(d,cmap)``
-  The texture is a series of vertical stripes of width ``d``.
-  Each stripe is coloured using the colour map ``cmap``.
+``texture (ifield, cmap) shape``
+  Construct a texture by composing an intensity field with a colour map,
+  then apply that texture to the shape.
 
-``t_radial(n,cmap)``
-  A radial starburst pattern using ``n`` copies of cmap.
+Intensity Field Operations
+--------------------------
+``show_ifield ifield``
+  Display an intensity field in the graphics window.
 
-``t_concentric(d,cmap)``
-  Concentric rings of colour taken from cmap; the cycle repeats in each circular band
-  of thickness ``d``.
+``i_linear d``
+  This 2D ifield is a series of vertical stripes of width ``d``;
+  each stripe is a gradient going from 0 to 1 along the X axis.
 
-``t_gyroid cmap``
-  A colour map is applied to the distance field of the gyroid.
+``i_radial n``
+  This 2D ifield is a radial starburst pattern containing ``n`` pie-slice
+  shaped gradients that go from 0 to 1 along arcs that are a constant distant
+  from the origin.
+
+``i_concentric d``
+  This 2D ifield contains concentric rings of thickness ``d``.
+  Each ring is a gradient from 0 to 1 as the distance increases from the origin.
+
+``i_gyroid``
+  This 3D ifield is constructed from the distance field of the gyroid.
+  The value is 0.5 on the gyroid surface, and reaches 0 or 1 at the extrema,
+  which are points at maximum distance from the gyroid surface.
+
+``i_animate t ifield``
+  Animate an ifield by cycling the values with a period of ``t`` seconds.
 
 Texture Transformations
 -----------------------

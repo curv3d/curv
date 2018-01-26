@@ -877,7 +877,7 @@ warp_domain_xy warp shape =
             in warp.fix_distance(x,y,shape.dist(p[X], p[Y], z, t));
         colour(x,y,z,t) =
             let p = warp.inverse(x,y);
-            in warp.fix_distance(x,y,shape.colour(p[X], p[Y], z, t));
+            in shape.colour(p[X], p[Y], z, t);
         bbox = [
             [ ...min bv, shape.bbox[MIN,Z] ],
             [ ...max bv, shape.bbox[MAX,Z] ],
@@ -1282,33 +1282,28 @@ repeat_radial reps shape =
 // COLOUR //
 ////////////
 
-colour c shape =
-    if (is_vec3 c)
+colour c shape = c >> match [
+    (is_vec3 c) ->
         make_shape {
-            dist : shape.dist,
+            ... shape,
             colour p : c,
-            bbox : shape.bbox,
-            is_2d : shape.is_2d,
-            is_3d : shape.is_3d,
-        }
-    else if (is_shape c)
+        };
+    (ifield, cmap) ->
         make_shape {
-            dist : shape.dist,
+            ... shape,
+            colour : compose(ifield, cmap),
+        };
+    (is_shape c) ->
+        make_shape {
+            ... shape,
             colour : c.colour,
-            bbox : shape.bbox,
-            is_2d : shape.is_2d,
-            is_3d : shape.is_3d,
-        }
-    else if (is_fun c)
+        };
+    (is_fun c) ->
         make_shape {
-            dist : shape.dist,
+            ... shape,
             colour : c,
-            bbox : shape.bbox,
-            is_2d : shape.is_2d,
-            is_3d : shape.is_3d,
-        }
-    else
-        error "first argument of 'colour' must be [r,g,b], function or shape";
+        };
+];
 
 show_colour c = colour c everything;
 
@@ -1340,12 +1335,13 @@ black = [0, 0, 0];
 
 texture = colour;
 make_texture x = colour x everything;
-t_linear(d,cmap) = make_texture((x,_,_,_)->cmap(x/d `mod` 1));
-t_radial(n,cmap) =
-    make_texture((x,y,_,_)->cmap((phase(x,y)/tau-.25)*n `mod` 1));
-t_concentric(d,cmap) = make_texture((x,y,_,_)->cmap(mag(x,y)/d `mod` 1));
-t_gyroid cmap = make_texture ((x,y,z,t)->
-    (cos(x)*sin(y) + cos(y)*sin(z) + cos(z)*sin(x) + 1.5)/3 >> cmap);
+
+i_linear d (x,_,_,_) = x/d `mod` 1;
+i_radial n (x,y,_,_) = (phase(x,y)/tau-.25)*n `mod` 1;
+i_concentric d (x,y,_,_) = mag(x,y)/d `mod` 1;
+i_gyroid (x,y,z,t) = (cos(x)*sin(y) + cos(y)*sin(z) + cos(z)*sin(x) + 1.5)/3;
+i_animate period ifield (x,y,z,t) = ifield(x,y,z,t) + t/period `mod` 1;
+show_ifield ifield = make_texture(ifield, sRGB.grey);
 
 show_cmap f = union(
     rect(4.05,1.05) >> colour grey,

@@ -1,1 +1,1 @@
-cylinder{d:2, h:2} >> texture (t_radial(1,sRGB.hue))
+cylinder{d:2, h:2} >> texture (i_radial 1, sRGB.hue)

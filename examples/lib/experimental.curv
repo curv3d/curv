@@ -17,9 +17,6 @@ orbit {f,bbox} shape =
 
 animove = orbit;
 
-animated_radial_rainbow =
-    (x,y,z,t)->sRGB.hue(phase(x,y)/tau+t/8 `mod` 1);
-
 // displace the boundaries of a shape using a 3D cosine wave
 cosine_warp shape =
     make_shape {

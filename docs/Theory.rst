@@ -55,7 +55,7 @@ and CSG operations are functions that map shapes onto shapes.
 Code for the twisted, coloured torus::
 
   torus (2,1)
-    >> texture (t_radial(1,sRGB.hue))
+    >> texture (i_radial 1, sRGB.hue)
     >> rotate (tau/4, Y_axis)
     >> twist 3 >> lipschitz 2.2
 
