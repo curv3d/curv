@@ -22,22 +22,13 @@
     rect{min:(xmin,ymin), max:(xmax,ymax)}
     rect{xmin=-inf,ymin=-inf,xmax=inf,ymax=inf}
 
-## Intensity Fields vs Texture Constructors
-
-Intensity fields are complicated (see next section).
+## Intensity Fields, Texture Constructors
 I should test out two alternative APIs for constructing textures.
  1. A rich set of intensity field constructors & manipulators.
     ifields are composed with cmaps to construct textures.
  2. Texture constructors that directly construct textures from cmaps.
 
-ifields aren't going away; I need them for fractal noise.
-
-`t_linear d cmap`
-`t_radial n cmap`
-`t_concentric d cmap`
-`t_log_spiral opts cmap`
-
-See also gradients in Gimp and procedural textures in Blender.
+`i_log_spiral opts`
 
 ## Intensity Fields and Transformations
 An ifield is represented by (a) a function, (b) a record containing an
@@ -47,9 +38,18 @@ Like, the gradient of the ifield at a given point?
 Transformations of ifields. There should be a way to apply a stock
 transformation to an ifield.
  1. transform.f is a function mapping [x,y,z,t] to [x,y,z,t].
-    compose[transform.f, ifield]t
- 2. ifields are records. A transform maps a shape-or-ifield record to another
-    shape-or-ifield record.u
+    compose[transform.f, ifield]
+ 2. ifields are records.
+    A transform maps a shape-or-ifield to another shape-or-ifield.
+    This complicates the implementation of transforms, but maybe we introduce
+    a helper function to reduce the code.
+        make_transform {
+           f(x,y,z,t)=...;   // forward coordinate transform
+           inv(x,y,z,t)=...; // inverse coordinate transform
+           make_dist shape = ...; // optional; map shape to dist function
+           make_bbox shape = ...; // optional; map shape to bbox
+        }
+        make_transform warp shape =
 
 If we gonna generalize transformations, then how about:
  * Apply a transformation to a point, or a list of points.
