@@ -8,8 +8,9 @@ The shape library provides a set of graphical "building blocks",
 which can be plugged together in many different ways to construct shapes.
 These building blocks comprise: constructors, for making new graphical values;
 transformations, for transforming one graphical value into another; and
-operations for combining several graphical values to make a new graphical value.
-Each building block has an intuitive, visual interpretation. At a deeper level,
+operators for combining several graphical values to make a new graphical value.
+Each building block has an intuitive, visual interpretation which can be explored
+in the graphics window. At a deeper level,
 there is also a mathematical interpretation, and by understanding the math
 you can learn to create new building blocks.
 
@@ -17,8 +18,8 @@ The shape library is built in to Curv; you don't need to explicitly include
 an external library. The library is written entirely in Curv; you can read
 the source code to learn how to create new blocks.
 
-Data Types
-----------
+Graphical Data Types
+--------------------
 The Curv shape library has the following graphical data types:
 
 shape
@@ -27,7 +28,8 @@ shape
 texture
   A texture is an infinite, possibly animated colour pattern
   that can be applied to a shape, giving it colour.
-  Textures can be constructed by composing intensity fields and colour maps.
+  Textures can be 2D or 3D.
+  They can be constructed by composing intensity fields and colour maps.
 
 intensity field
   An intensity field is a colour pattern with the colours abstracted away,
@@ -44,6 +46,3 @@ colour map
 
 colour
   A colour value.
-
-colour space
-  Used to construct colour values.
