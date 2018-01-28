@@ -100,9 +100,11 @@ Consequently, every syntactic construct can be nested in every other construct.
   A Curv program is an expression that computes a value.
   A typical Curv program computes a shape
 
-3. The High Level Geometry Interface
-====================================
-The "high level geometry interface" is a set of primitive shapes,
+3. The Shape Library
+====================
+Full shape library documentation: `<shapes/README.rst>`_.
+
+The "shape library" is a set of primitive shapes,
 and a set of operations for transforming and combining shapes to create
 new shapes.
 
@@ -113,31 +115,9 @@ The goal is for this interface to be both powerful and easy to use.
 * Building new shapes is as easy as plugging together existing shapes and
   operators like Lego.
 
-This interface is under development. There's no documentation,
-but you can read the code in `<../lib/std.curv>`_ and read the comments
-to see the interface. You can look in `<../examples>`_ to see examples.
+You can look in `<../examples>`_ to see examples.
 
-4. The Low Level Geometry Interface
-===================================
-The "low level geometry interface" allows you to create new primitive
-shapes and operations by directly specifying the signed distance field
-of the resulting shape. The primary interface is the ``make_shape`` function,
-but there are also low level library functions that work on distance fields,
-and low level language features used to generate good GPU code.
-
-See `<Theory.rst>`_ for a good introduction.
-
-This interface is unstable and incompletely documented. You can see the low level interface at work in the
-implementation of the high level geometry interface: see `<../lib/std.curv>`_.
-
-To understand the theory behind the low level interface,
-here are some resources that I am using:
-
-* Seminal academic paper: `Sphere Tracing`_
-* Inigo Quilez helped make this popular: `Modelling with Distance Functions`_
-* Video: `How to Create Content with Signed Distance Functions`_
-* Video game that uses distance fields, no polygons: `<https://www.youtube.com/watch?v=u9KNtnCZDMI>`_
-
-.. _`Sphere Tracing`: http://graphics.cs.illinois.edu/sites/default/files/zeno.pdf
-.. _`Modelling with Distance Functions`: http://iquilezles.org/www/articles/distfunctions/distfunctions.htm
-.. _`How to Create Content with Signed Distance Functions`: https://www.youtube.com/watch?v=s8nFqwOho-s
+The low level interface used to implement the shape library is
+poorly documented right now.
+You can read the source code in `<../lib/std.curv>`_.
+See `<Theory.rst>`_ more more information about how the shape library works.
