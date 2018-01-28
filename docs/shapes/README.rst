@@ -51,7 +51,7 @@ intensity field
   Mathematically, a function that maps (x,y,z,t) onto an intensity,
   where (x,y,z) is a point in space, and t is time.
 
-  * `Textures`_
+  * `Intensity Fields`_
 
 colour map
   A continuous range of colours, which can be applied to an intensity field to
@@ -81,6 +81,7 @@ Other Topics
 .. _`Debug`: Debug.rst
 .. _`Distance Field Operations`: Distance_Field_Operations.rst
 .. _`Future Work`: Future_Work.rst
+.. _`Intensity Fields`: Intensity_Fields.rst
 .. _`Repetition`: Repetition.rst
 .. _`Shape Constructors`: Shape_Constructors.rst
 .. _`Shapes`: Shapes.rst

@@ -10,6 +10,10 @@ Each repetition operator corresponds to a different mathematical symmetry. The m
 * Translational symmetry: Partition space into multiple cells, like a linear array or grid pattern, causing a copy of the shape to appear in each cell.
 * Rotational symmetry: Partition space into radial pie slices, causing a copy of the shape to appear in each slice.
 
+Operations
+----------
+This interface is still experimental.
+
 ``repeat_x d shape``
   The original cell to be copied is an infinite strip of width ``d`` along the X axis,
   centred on the origin. This cell is repeated endlessly along the X axis in both directions.
