@@ -63,3 +63,4 @@ sweep (f, maxt, n) = make_shape {
 
 in
 sweep(t->[sin(t) + 2*sin(2*t), cos(t) - 2*cos(2*t), -sin(3*t)], tau, 50)
+>> set_bbox [[-1,-1,-1],[1,1,1]]

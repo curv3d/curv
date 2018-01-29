@@ -410,7 +410,7 @@ regular_polygon n = (
         circumratio : 1 / cos(angle/2),
     } where
         angle = tau / n;
-        mitred d = half_plane{d: d/2, normal: [1,0]}
+        mitred d = half_plane{d: d/2, normal: [0,-1]}
                    >> repeat_radial n;
 );
 

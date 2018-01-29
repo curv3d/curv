@@ -1,7 +1,6 @@
-row 2 [
+row [
     smooth .5 .intersection (double_gyroid_bones, sphere 20),
     intersection (gyroid_surface, sphere 20),
-    gyroidize(.1) (cube 18),
     sphere 20 >> texture (i_gyroid, sRGB.grey)
 ]
 
@@ -14,5 +13,3 @@ double_gyroid_bones = union(
 );
 
 gyroid_surface = shell (.2) gyroid >> lipschitz 1.5;
-
-gyroidize t shape = morph t (shape, intersection(shape, gyroid_surface));

@@ -1,9 +1,12 @@
 let
-t = cube 18;
-p = gyroid >> shell .2;
+target = cube 18;
+pattern = gyroid >> shell .3 >> lipschitz 1.5;
 
 in
-engrave .2 p t
+row [
+    engrave .2 pattern target,
+    emboss .2 pattern target
+]
 
 where
 engrave depth pattern target =
@@ -12,3 +15,5 @@ engrave depth pattern target =
             target >> shell depth,
             pattern)
     );
+
+emboss i pat shape = morph i (shape, intersection(shape, pat));
