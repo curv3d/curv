@@ -1,10 +1,12 @@
-At this stage, the project is in the Alpha test stage.
-The code is incomplete, the language and APIs are not stable.
+Curv is documented, the language is mostly stable (with exceptions noted in
+the documentation). It is ready for people to play with.
 
-But you can still contribute if you like. Download curv, build it,
-play with the examples. Then, you can report bugs, submit bug fixes
-or documentation fixes, or contribute to/help run the project in other ways,
-depending on your interests.
+You can contribute, by:
+* Reporting bugs.
+* Requesting new features.
+* Fixing bugs.
+* Improving the documentation. Eg, a good tutorial.
+* Implementing new features.
 
 ## Bug Reports
 Just create a new issue, if you can't find an existing issue that describes your problem.
@@ -14,7 +16,8 @@ with your GPU driver or your GPU hardware. Please report:
 * What you see in the graphics window. If it's totally black, that may mean that
   the generated GPU code (a GLSL script) did not compile, in which case there should
   be error messages in the shell window from which you invoked `curv`.
-  If it's sky blue with no other content, that might be a 3D model that failed to render.
+  If it's white with no other content, or it looks glitchy and weird,
+  that could be a problem with your model, or a problem with the sphere tracer.
 * Any error messages in the shell window from which you invoked `curv`.
 * The make and model of your graphics card (GPU).
 * The name and version of the graphics driver that you are using (especially important on Linux).
