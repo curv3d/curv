@@ -4,6 +4,5 @@ union (
 )
 
 where
-//ftwist t = sin(t/2) * 1/5;
-ftwist t = -1/5;
+ftwist t = sin(t/2) * 1/5;
 include file "lib/animate.curv";
