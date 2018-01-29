@@ -1,4 +1,9 @@
 union (
-    box.exact(1,1,5) >> twist 5 >> lipschitz 1.5 >> translate(1,0,0),
+    box.exact(1,1,5) >> a_twist ftwist >> lipschitz 1.5 >> translate(1,0,0),
     box.exact(1,1,5) >> translate(-1,0,0),
 )
+
+where
+//ftwist t = sin(t/2) * 1/5;
+ftwist t = -1/5;
+include file "lib/animate.curv";

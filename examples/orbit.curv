@@ -1,9 +1,9 @@
 let
-include file "lib/experimental.curv";
+include file "lib/animate.curv";
 bb = [[-1,-1,0], [1,1,0]];
 
 in
 smooth 1 .union (
-  cube.exact 1 >> orbit {f t: (cos t, sin t, 0), bbox: bb},
-  sphere 1 >> orbit {f t: (cos t, -sin t, 0), bbox: bb},
+  cube.exact 1 >> a_move {f t: (cos t, sin t, 0), bbox: bb},
+  sphere 1 >> a_move {f t: (cos t, -sin t, 0), bbox: bb},
 )
