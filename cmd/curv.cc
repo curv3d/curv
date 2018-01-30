@@ -404,7 +404,7 @@ live_mode(curv::System& sys, const char* editor, const char* filename)
 const char help[] =
 "curv [options] [filename]\n"
 "-n -- don't use standard library\n"
-"-u file -- use specified library; may be repeated\n"
+"-i file -- include specified library; may be repeated\n"
 "-l -- live programming mode\n"
 "-e -- run <$CURV_EDITOR filename> in live mode\n"
 "-x -- interpret filename argument as expression\n"
@@ -440,7 +440,7 @@ main(int argc, char** argv)
     const char* editor = nullptr;
 
     int opt;
-    while ((opt = getopt(argc, argv, ":o:lnu:xe")) != -1) {
+    while ((opt = getopt(argc, argv, ":o:lni:xe")) != -1) {
         switch (opt) {
         case 'o':
             if (strcmp(optarg, "curv") == 0)
@@ -463,7 +463,7 @@ main(int argc, char** argv)
         case 'n':
             argv0 = nullptr;
             break;
-        case 'u':
+        case 'i':
             libs.push_back(optarg);
             break;
         case 'x':
