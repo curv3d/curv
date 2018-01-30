@@ -35,8 +35,5 @@ Don't surprise me with a huge PR containing weeks of work,
 because I can't guarantee that I will accept it.
 
 ## For More Information
-Contact Doug Moen for more information about contributing to Curv.
-The author's email address is this Curv expression:
-```
-let name="doug"; domain="moens.org" in "${name}@${domain}"
-```
+Contact Doug Moen <doug@moens.org>
+for more information about contributing to Curv.

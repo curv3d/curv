@@ -2,6 +2,8 @@
 Curv: a language for making art using mathematics
 =================================================
 
+By Doug Moen <doug@moens.org>
+
 |twistor| |shreks_donut|
 
 .. |twistor| image:: docs/images/torus.png
@@ -95,12 +97,13 @@ programs. And you can 3D print your models. All rendering is GPU accelerated.
 
 Project Status
 ==============
-The Curv project is in the initial development phase right now:
+The current release is 0.0: "proof of concept":
 
-* The language and standard library APIs are not stable yet.
-* STL file export (for 3D printing) hasn't been started yet.
-* No prebuilt binaries: see `<BUILD.md>`_.
-* Limited documentation: see `<docs/README.rst>`_.
+* The language and shape library are stable, except where documented otherwise.
+* STL file export (for 3D printing) is not implemented yet.
+* To install the software, see `<BUILD.md>`_.
+* The documentation is here: `<docs/README.rst>`_.
+* To contribute, see `<CONTRIBUTING.md>`_.
 
 Hardware Requirements
 =====================
@@ -108,9 +111,8 @@ Two platforms are currently supported: Ubuntu 16.04 and macOS.
 
 Curv is sensitive to the GPU hardware capabilities and the graphics driver.
 Good hardware and good driver software are a requirement.
-If the website `<http://shadertoy.com>`_ doesn't work in the current version of FireFox,
-then Curv won't work well either.
+If the website `<http://shadertoy.com>`_ doesn't work in the current version
+of FireFox, then Curv won't work well either.
 On Linux, if the open source driver isn't cutting it, try the proprietary driver.
-The best bet on Linux is a recent Nvidia card with the proprietary driver.
 
 Check for current GPU issues: `<https://github.com/doug-moen/curv/issues?q=is%3Aissue+is%3Aopen+label%3AGPU>`_

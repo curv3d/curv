@@ -33,6 +33,7 @@ extern "C" {
 #include <curv/record.h>
 #include <curv/gl_compiler.h>
 #include <curv/shape.h>
+#include <curv/version.h>
 
 bool was_interrupted = false;
 
@@ -425,7 +426,7 @@ main(int argc, char** argv)
         return EXIT_SUCCESS;
     }
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
-        std::cout << "Curv: initial development phase (no version yet)\n";
+        std::cout << "Curv " << curv::version << "\n";
         return EXIT_SUCCESS;
     }
 
