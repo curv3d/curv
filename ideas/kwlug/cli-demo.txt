@@ -23,11 +23,11 @@
 
 > size t
 
-> t >> twist 6
+> t >> twist (tau/6)
 
-> t >> twist 6 >> lipschitz 2
+> t >> twist (tau/6) >> lipschitz 2
 
-> tt n = t >> twist n >> lipschitz 2
+> tt n = t >> twist (tau/n) >> lipschitz 2
 
 > tt 2
 > tt 3

@@ -1,5 +1,5 @@
 torus {major: 2, minor: 1}
     >> texture (i_radial 1 >> i_animate 8, sRGB.hue)
     >> rotate {angle: tau/4, axis: Y_axis}
-    >> twist 3
+    >> twist (tau/3)
     >> lipschitz 2.2

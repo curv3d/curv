@@ -59,7 +59,7 @@ If we gonna generalize transformations, then how about:
 * `tilt axis transform shape`
   Modify 'transform' so that the local +Z axis is 'axis'.
   Same as: `tilt{from: Z_axis, to: axis} ...`.
-  Eg, torus{minor:1, major:2} >> tilt X_axis (twist 4)
+  Eg, torus{minor:1, major:2} >> tilt X_axis (twist (tau/4))
 * `tilt{from: v1, to: v2} transform shape`
 
     tilt{from: v1, to: v2} transform shape =

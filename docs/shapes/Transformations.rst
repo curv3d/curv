@@ -81,10 +81,12 @@ As a result, there are no limitations on where similarity transformations can be
 
 Shape Deformations
 ------------------
-General transformations of 2D and 3D shapes which don't preserve angles and distance ratios.
-These are powerful operations which allow you to deform a shape, as if it were made of clay.
+General transformations of 2D and 3D shapes and textures,
+which don't preserve angles and distance ratios.
+These are powerful operations which allow you to deform a shape,
+as if it were made of clay.
 
-In Curv 0.0, deformations deform the distance field, which limits and complicates their use.
+In Curv 0.0, deformations deform the distance field, which limits and complicates their use on shapes. However, textures can be deformed with no limitations.
 (This is an area for future research and improvement.)
 
 * The output may not be appropriate as input to distance field operations.
@@ -129,11 +131,24 @@ In Curv 0.0, deformations deform the distance field, which limits and complicate
   When z0<z<z1, x/y values are scaled by factors that are a linear ramp
   between kx0-kx1/ky0-ky1.
 
-``twist d shape``
-  Twist a 3D shape around the Z axis. One full revolution for each ``d`` units along the Z axis.
+``twist tr shape``
+  Twist 3D space around the Z axis.
   Lines parallel to the Z axis will be twisted into a helix.
-  
-  TODO: distance field is bad.
+  Points within the XY plane do not move.
+
+  ``tr`` is the twist rate: the angle of twist (counterclockwise)
+  per unit increase along the Z axis.
+  A negative twist rate produces a clockwise twist.
+  For example, if your shape is 10 units high, and you want a total twist
+  from top to bottom of 90°, that's a twist rate of 90° per 10 units,
+  or ``90*deg/10``. We use a twist rate, not a total twist angle, so that
+  you can twist infinitely tall shapes.
+
+  Bad distance field.
+  As the twist rate increases, the distance field becomes more distorted,
+  and you'll need a higher Lipschitz compensation factor.
+  The distortion also increases without bounds with increasing distance
+  from the Z axis, so you can only twist shapes with a finite diameter.
 
 ``bend {d = null, angle: a = tau} shape``
   Bend a 2D/3D shape into a ring around the Z axis.

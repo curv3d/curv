@@ -1361,13 +1361,12 @@ gyroid =
         is_3d = true;
     };
 
-// Twist 3D space into a helix around the Z axis:
-// 1 full rotation for each `d` of Z displacement.
-// Bad distance field: The fudge factor 't*2' only works in simple cases.
-twist d shape =
-    let // t full rotations for each tau of Z displacement:
-        t = tau / d;
-        b = shape.bbox;
+// Twist 3D space into a helix around the Z axis.
+// ``tr`` is the twist rate: angle of twist (counterclockwise)
+// per unit increase along the Z axis.
+// Bad distance field.
+twist tr shape =
+    let b = shape.bbox;
         r = max(map mag (
                 [b[MIN,X], b[MIN,Y]],
                 [b[MAX,X], b[MIN,Y]],
@@ -1376,11 +1375,11 @@ twist d shape =
             ));
     in make_shape {
         dist p :
-            let xy = cmul(p[[X,Y]], cis(p[Z]*t));
-            in shape.dist(xy[X], xy[Y], p[Z], p[T]) /* / (t*2) */,
+            let xy = cmul(p[[X,Y]], cis(p[Z]*-tr));
+            in shape.dist(xy[X], xy[Y], p[Z], p[T]),
         colour p :
-            let xy = cmul(p[[X,Y]], cis(p[Z]*t));
-            in shape.colour(xy[X], xy[Y], p[Z], p[T]) /* / (t*2) */,
+            let xy = cmul(p[[X,Y]], cis(p[Z]*-tr));
+            in shape.colour(xy[X], xy[Y], p[Z], p[T]),
         bbox : [[-r,-r,b[MIN,Z]],[r,r,b[MAX,Z]]],
         is_3d : true,
     };
