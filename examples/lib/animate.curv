@@ -1,10 +1,9 @@
 {
 
 // Animate a shape by twisting along the Z axis.
-// f maps time onto the twist factor, which is:
-//  * 0: no twist
-//  * positive: # of full turns per unit height (clockwise)
-//  * negative: # of full turns per unit height (counterclockwise)
+// f maps time onto the twist rate,
+// which is the angle of twist (counterclockwise)
+// per unit increase along the Z axis.
 a_twist f shape =
     let b = shape.bbox;
         r = max(map mag (
@@ -15,12 +14,10 @@ a_twist f shape =
             ));
     in make_shape {
         dist(x,y,z,t) :
-            let a = f t * tau;
-                xy = cmul([x,y], cis(z*a));
+            let xy = cmul([x,y], cis(z*-f t));
             in shape.dist(xy[X], xy[Y], z, t),
         colour(x,y,z,t) :
-            let a = f t * tau;
-                xy = cmul([x,y], cis(z*a));
+            let xy = cmul([x,y], cis(z*-f t));
             in shape.colour(xy[X], xy[Y], z, t),
         bbox : [[-r,-r,b[MIN,Z]],[r,r,b[MAX,Z]]],
         is_3d : true,

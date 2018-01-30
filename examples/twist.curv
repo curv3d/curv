@@ -1,8 +1,10 @@
 union (
-    box.exact(1,1,5) >> a_twist ftwist >> lipschitz 1.5 >> translate(1,0,0),
-    box.exact(1,1,5) >> translate(-1,0,0),
+    box.exact(1,1,h) >> a_twist ftwist >> lipschitz 1.5 >> move(1,0,0),
+    box.exact(1,1,h) >> move(-1,0,0),
 )
+//>> show_dist
 
 where
-ftwist t = sin(t/2) * 1/5;
+h = 5;
+ftwist t = sin(t/2) * (tau/h);
 include file "lib/animate.curv";
