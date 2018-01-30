@@ -6,7 +6,7 @@ You can contribute, by:
 * Requesting new features.
 * Fixing bugs.
 * Improving the documentation. Eg, a good tutorial.
-* Implementing new features.
+* Implementing new features. See `<docs/Future_Work.rst>`_ for a list of ideas.
 
 ## Bug Reports
 Just create a new issue, if you can't find an existing issue that describes your problem.
