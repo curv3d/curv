@@ -4,7 +4,7 @@ These are possible ideas for future work and new features.
 
 Documentation
 -------------
-* A tutorial.
+* Tutorial and cookbook.
 * The reference manual uses images to illustrate each graphics primitive.
 * Interactive documentation.
 
