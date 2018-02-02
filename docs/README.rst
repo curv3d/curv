@@ -1,7 +1,7 @@
 1. The User Interface
 =====================
 
-The user interface is the ``curv`` command. After building and installing ``curv``, use ``curv --help`` for command line options.
+The user interface is the ``curv`` command, which you run from a command line shell like ``bash``. After building and installing ``curv``, use ``curv --help`` for command line options.
 
 **Batch mode**::
 
@@ -17,7 +17,7 @@ The user interface is the ``curv`` command. After building and installing ``curv
   **a graphics window opens, displaying the shape**
   curv>
 
-**Live Programming Mode (``curv -l``)**:
+**Live Programming Mode (**\ ``curv -l``\ **)**:
 
 This is a mode where you have a 3 window GUI, similar to live programming
 in the OpenSCAD GUI. The 3 windows are: the editing window, the graphics window,
@@ -30,7 +30,7 @@ and the console window (which displays error messages).
 * Keep the terminal window visible: if there are errors in your Curv program,
   they will be displayed here.
 
-**Live Editing Mode (``curv -le``)**:
+**Live Editing Mode (**\ ``curv -le``\ **)**:
 
 This is a more convenient way to start up a 3 window GUI.
 You just type ``curv -le myshape.curv``. A text editor window pops up.
