@@ -353,6 +353,30 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
   parameter names as GUI labels, JSON object keys.
 * 'foo' quoted identifiers and x `f` y infix notation?
 
+### Parametric records
+For example, a parametric shape in file `lollipop.curv`:
+  param
+    diam = 1;
+    len = 4;
+  in
+    union(candy, stick)
+  where
+    candy = sphere diam >> colour red;
+    stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
+This returns a record (union(candy,stick)) augmented with a `call` field,
+a function with parameter {diam=1,len=4} that returns a customized
+version of the record.
+
+The command
+  curv -Dlen=6 lollipop.curv
+modifies one of the shape parameters. Actually it treats the result
+value V as a function, and calls V{len:6}.
+
+This design does not put the parameters into the record. They might conflict
+with field names in the (extended) shape protocol. It might make sense to
+add a single field which is a parameter record. What to name it?
+Not `param`, that's a reserved word. Maybe `p`.
+
 ### OpenSCAD2 prototype oriented programming?
 * Model parameters and shape are bundled into one value.
 * Simple syntax for customizing a subset of model parameters, generating
