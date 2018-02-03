@@ -122,6 +122,44 @@ remove_tempfile()
         remove(tempfile->c_str());
 }
 
+pid_t editor_pid = pid_t(-1);
+
+void
+launch_editor(const char* editor, const char* filename)
+{
+    pid_t pid = fork();
+    if (pid == 0) {
+        // in child process
+        auto cmd = curv::stringify(editor, " ", filename);
+        int r =
+            execl("/bin/sh", "sh", "-c", cmd->c_str(), (char*)0);
+        std::cerr << "can't exec $CURV_EDITOR\n"; // TODO: why?
+        (void) r; // TODO
+        exit(1);
+    } else if (pid == pid_t(-1)) {
+        std::cerr << "can't fork $CURV_EDITOR\n"; // TODO: why?
+    } else {
+        editor_pid = pid;
+    }
+}
+
+bool
+poll_editor()
+{
+    if (editor_pid == pid_t(-1))
+        return false;
+    else {
+        int status;
+        pid_t pid = waitpid(editor_pid, &status, WNOHANG);
+        if (pid == editor_pid) {
+            // TODO: print abnormal exit status
+            editor_pid = pid_t(-1);
+            return false;
+        } else
+            return true;
+    }
+}
+
 pid_t viewer_pid = pid_t(-1);
 
 void
@@ -359,9 +397,10 @@ void export_png(curv::Value value, const curv::Context& cx, std::ostream& out)
 int
 live_mode(curv::System& sys, const char* editor, const char* filename)
 {
-    if (editor != nullptr) {
-        auto cmd = curv::stringify(editor, " ", filename);
-        system(cmd->c_str());
+    if (editor) {
+        launch_editor(editor, filename);
+        if (!poll_editor())
+            return 1;
     }
     for (;;) {
         struct stat st;
@@ -389,9 +428,14 @@ live_mode(curv::System& sys, const char* editor, const char* filename)
                 std::cout << "ERROR: " << e.what() << "\n";
             }
         }
-        // Wait for file to change.
+        // Wait for file to change or editor to quit.
         for (;;) {
             usleep(500'000);
+            if (editor && !poll_editor()) {
+                if (viewer_pid != (pid_t)(-1))
+                    kill(viewer_pid, SIGTERM);
+                return 0;
+            }
             struct stat st2;
             if (stat(filename, &st2) != 0)
                 memset((void*)&st2, 0, sizeof(st));

@@ -1,14 +1,14 @@
 1. The User Interface
 =====================
 
-The user interface is the ``curv`` program. After building and installing ``curv``, use ``curv --help`` for command line options.
+The user interface is the ``curv`` command, which you run from a command line shell like ``bash``. After building and installing ``curv``, use ``curv --help`` for command line options.
 
-Batch mode::
+**Batch mode**::
 
   $ curv examples/shreks_donut.curv
   **a graphics window opens, displaying the shape**
   
-Interactive CLI mode::
+**Interactive CLI mode**::
 
   $ curv
   curv> 2+2
@@ -17,7 +17,11 @@ Interactive CLI mode::
   **a graphics window opens, displaying the shape**
   curv>
 
-Live Programming Mode:
+**Live Programming Mode (**\ ``curv -l``\ **)**:
+
+This is a mode where you have a 3 window GUI, similar to live programming
+in the OpenSCAD GUI. The 3 windows are: the editing window, the graphics window,
+and the console window (which displays error messages).
 
 * Open a text editor window, editing ``myshape.curv``.
 * Open a terminal window and run ``curv -l myshape.curv`` from ``bash``.
@@ -25,6 +29,32 @@ Live Programming Mode:
   and the new shape will be displayed in a graphics window.
 * Keep the terminal window visible: if there are errors in your Curv program,
   they will be displayed here.
+
+**Live Editing Mode (**\ ``curv -le``\ **)**:
+
+This is a more convenient way to start up a 3 window GUI.
+You just type ``curv -le myshape.curv``. A text editor window pops up.
+A graphics window pops up either immediately, or once ``myshape.curv`` exists
+and contains a valid Curv program.
+The original terminal window that you invoked ``curv -le`` from now serves as
+the console window. When you close the text editor window, the graphics window
+disappears and the ``curv`` command terminates.
+
+In order to make this work, you need to set the environment variable ``CURV_EDITOR``
+to a command that takes a filename argument and opens a text editing window.
+This command must run in the foreground, and not exit until you close the text editing window.
+Not all text editors can be run this way. For example,
+
+* ``export CURV_EDITOR=vim`` will not work, because ``vim`` will run in the terminal
+  window, and will not open a separate text editing window.
+* ``export CURV_EDITOR=gvim`` will not work, because by default, the ``gvim`` command
+  forks a new process to run the text editor window in, then exits almost immediately.
+* ``export CURV_EDITOR="gvim -f"`` works. The ``-f`` flag forces ``gvim``
+  to run in the foreground.
+
+So, you can add ``export CURV_EDITOR="gvim -f"`` (substituting your favourite text editor)
+to your bash ``.profile`` file in your home directory, and then ``curv -le filename``
+will just work.
 
 2. The Core Language
 ====================
