@@ -1,0 +1,29 @@
+Should I use Vulkan?
+
+macOS support is missing.
+
+The Vulkan Portability Initiative
+https://www.khronos.org/blog/khronos-announces-the-vulkan-portability-initiative
+will deliver a subset of Vulkan that runs on all modern platforms,
+including macOS/Metal and Windows/Direct X 12.
+https://github.com/gfx-rs/portability
+Wait for this.
+* Might eventually work better on Mac than OpenGL, which is not being updated.
+* Written in Rust, exports C API.
+
+Wait until most people have Vulkan capable GPUs.
+The Steam hardware survey is one way to gauge this.
+http://store.steampowered.com/hwsurvey/videocard/
+
+Vulkan has a higher level of functionality.
+So I can rely on a larger set of capabilities, without writing
+platform dependent code.
+
+If I compile Curv into SPIR-V, does this speed up shader/compute
+kernel compilation?
+* with Vulkan Portability, that might be platform dependent.
+
+Vulkan seems to unify graphics and general purpose compute.
+So I'm not targetting both OpenGL and OpenCL, just Vulkan.
+
+The Vulkan API is super complex, so I may need to use middleware.
