@@ -24,42 +24,44 @@ Curv uses `radians`_ (not degrees) to specify angles.
   tau/12  30*deg
   ====== =======
 
-``sin x``
-  The sine of ``x``, measured in radians.
+``sin a``
+  The sine of ``a``, measured in radians.
 
-``cos x``
-  The cosine of ``x``, measured in radians.
+``cos a``
+  The cosine of ``a``, measured in radians.
 
-``tan x``
-  The tangent of ``x``, measured in radians.
+``tan a``
+  The tangent of ``a``, measured in radians.
+
+``cis a``
+  Convert a phase angle to a unit 2D vector (see ``phase``).
+  This is ``(cos a, sin a)``.
 
 ``asin x``
   The principal value of the arc sine (inverse sine) of x.
-  The result is in the range [-tau/4, +tau/4].
+  The result is an angle in the range [-tau/4, +tau/4].
 
 ``acos x``
   The principle value of the arc cosine (inverse cosine) of x.
-  The result is in the range [0, tau/2].
+  The result is an angle in the range [0, tau/2].
 
 ``atan x``
   The principal value of the arc tangent (inverse tangent) of x.
-  The result is in the range [-tau/4, +tau/4].
-  The ``atan2`` function is generally more useful.
+  The result is an angle in the range [-tau/4, +tau/4].
+  The ``phase`` function is generally more useful.
 
-``atan2(y,x)``
-  The principal value of the arc tangent of y/x,
-  using the signs of both arguments to determine the quadrant of the return value.
+``phase(x,y)``
+  The phase angle of a 2D vector,
+  which is the angle that the vector makes with the positive X axis, measured counter-clockwise.
+  This is the principal value of the arc tangent of ``y/x``,
+  using the signs of ``x`` and ``y`` to determine the quadrant of the return value.
   The result is in the range [-tau/2, +tau/2].
-  
-  Used mostly to convert from rectangular to polar coordinates,
-  but for that, you should consider using ``phase(x,y)`` instead,
-  so that you don't have to flip the x,y coordinates.
 
-``sec x``
-  The secant (reciprocal sine) of x.
+``sec a``
+  The secant (reciprocal sine) of angle ``a``.
 
-``csc x``
-  The cosecant (reciprocal cosine) of x.
+``csc a``
+  The cosecant (reciprocal cosine) of angle ``a``.
 
 ``cot a``
-  The cotangent (reciprocal tangent) of x.
+  The cotangent (reciprocal tangent) of angle ``a``.
