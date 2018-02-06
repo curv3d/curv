@@ -13,6 +13,8 @@ Curv uses `radians`_ (not degrees) to specify angles.
 
 ``tau``
   The number of radians in a full turn, aka ``2*pi`` or ``360*deg``.
+  `Tau is the fundamental circle constant`_.
+  You can use it to specify angles:
   
   ====== =======
   tau    360*deg
@@ -24,14 +26,16 @@ Curv uses `radians`_ (not degrees) to specify angles.
   tau/12  30*deg
   ====== =======
 
+.. _`Tau is the fundamental circle constant`: https://tauday.com/tau-manifesto
+
 ``sin a``
-  The sine of ``a``, measured in radians.
+  The sine of angle ``a``.
 
 ``cos a``
-  The cosine of ``a``, measured in radians.
+  The cosine of angle ``a``.
 
 ``tan a``
-  The tangent of ``a``, measured in radians.
+  The tangent of angle ``a``.
 
 ``cis a``
   Convert a phase angle to a unit 2D vector (see ``phase``).
