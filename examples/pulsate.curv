@@ -1,0 +1,17 @@
+make_shape {
+    dist(x,y,z,t) =
+        let r = mag(x,y,z);
+            incl = acos(z/r);  // range 0...tau/2
+            a = ((incl - tau/4  // range -tau/4...tau/4, 0 at equator
+                  >> abs)       // range 0...tau/4, symmetrical around Z axis
+                 - tau/8)       // range -tau/8...tau/8
+                * 2
+                >> sin;         // range -1...1
+            b = a * sin t;
+        in r - (2 + b);
+    colour(x,y,z,t) =
+        let ph = mod(phase(x,y),tau/16)/(tau/16);
+        in sRGB.HSV(.1,.8,ph/2+.5);
+    bbox = [[-1,-1,-1],[1,1,1]];
+    is_3d = true;
+} >> lipschitz 2
