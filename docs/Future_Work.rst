@@ -2,6 +2,36 @@ Future Work
 ===========
 These are possible ideas for future work and new features.
 
+Current Priorities
+------------------
+Downloadable binaries for Linux, macOS, Windows.
+  So you don't need to build the program from source.
+  Add a Windows port, because lots of potential users are there.
+
+``gcurv`` GUI
+  A 3 pane GUI program similar to OpenSCAD or libfive Studio.
+  So you don't need the CLI to launch Curv.
+
+STL file export
+  So you can 3D print your models. Look at: libfive mesh generation.
+  Ideally, generate the mesh on the GPU using OpenCL: should be much faster.
+
+STL file import
+  A two step process: Use a separate program to convert the mesh to a
+  discrete SDF file. Then import the SDF file from a Curv program.
+  Look at: mTec.
+
+Optimizing geometry compiler
+  Generates optimized GLSL code for faster rendering.
+
+Optimized geometry pipeline
+  Instead of generating a monolithic fragment shader,
+  generate a pipeline of shaders and compute kernels,
+  and use optimizations from mTec. Faster, more scaleable rendering.
+  But note: mTec requires OpenGL 4.3, macOS is stuck at OpenGL 4.1.
+  If feasible, geometry engine should support "basic" and "advanced"
+  modes so that macOS is still supported.
+
 Documentation
 -------------
 * Tutorial and cookbook.
@@ -55,3 +85,7 @@ Geometry Kernel
   
   * Investigate recursive subdivision and interval arithmetic as an alternative
     (or adjunct?) to sphere tracing. Like Matt Keeter's libfive, except in a compute shader.
+
+Language Integration
+--------------------
+* Create a Python API for using Curv.
