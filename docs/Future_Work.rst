@@ -23,6 +23,7 @@ STL file import
 
 Optimizing geometry compiler
   Generates optimized GLSL code for faster rendering.
+  Extends the subset of Curv that can be used to write distance functions.
 
 Optimized geometry pipeline
   Instead of generating a monolithic fragment shader,
