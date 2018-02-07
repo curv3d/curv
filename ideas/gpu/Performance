@@ -1,0 +1,107 @@
+Geometry Engine Performance
+===========================
+In future, the Curv geometry engine will use a combination of F-Rep and Discrete
+SDF representations. It will use a pipeline of multiple kernels, rather than
+a single monolithic kernel.
+
+My first attempt at optimization will throw out the fancy lighting model
+and just use Blinn-Phong shading.
+
+GPU compute is very fast. Memory bandwidth is more limited, so access to
+global data (like textures) is relatively slow.
+
+F-Rep can be extremely fast. But it can also be very slow: it depends on the
+size and complexity of the distance function:
+* A union of many shapes (using min) is slow: the performance is somewhat
+  worse than O(N), where N is the number of shapes in the union.
+* Chaining together a lot of geometry operations can slow things down
+  (although an optimizing compiler can mitigate this somewhat).
+* `if` statements can cause divergence, which can significantly slows down
+  computation.
+* A large monolithic kernel will spill registers, which is slower than a
+  small kernel that doesn't spill registers.
+* Some geometric shapes and operations are just inherently expensive to
+  implement. Particularly when the distance function has to find a root
+  of another distance function.
+
+Splitting a large monolithic kernel into a pipeline of smaller kernels
+is a well known way to improve performance.
+
+There are ways to optimize root finding on a GPU using interval arithmetic.
+
+Discrete SDFs (implemented as 3D textures) have benefits:
+* Once they are computed, the distance function has a fixed cost, regardless
+  of the cost and complexity of the distance function used to compute it.
+* Can be guaranteed to be Euclidean, regardless of the shape being represented.
+* Some geometry operations are faster/easier to implement/only practical
+  if implemented on a discrete SDF, rather than using F-Rep.
+* E.g., Best way to import a large mesh is to convert it to a discrete SDF.
+
+The drawbacks are:
+* Only finite shapes.
+* Only finite resolution, with a memory/resolution tradeoff.
+* Texture lookups are slow compared to compute.
+  There is a texture cache, and you can thrash it.
+  When discrete SDFs are used, it pays to optimize the render pipeline to
+  minimize the number of texture lookups (see mTec project).
+
+Fast Union
+----------
+The slowness of union is a big scaling issue for Curv (Feb 2018).
+
+github.com/xx3000/mTec
+----------------------
+Let's try some ideas from mTec. For simplicity, use the simplest and fastest
+lighting model, just Blinn/Phong shading.
+
+Sphere Tracing and Shading/Lighting go in separate kernels.
+The distance function is in the Sphere Tracing kernel.
+The colour function is in the Shading/Lighting kernel.
+
+There is a top-level union of shapes.
+Each shape (leaf node) in the top-level union has a AABB.
+Each shape is assigned to a node in a BVH (bounding volume hierarchy).
+* In mTec, all of the shapes in this structure are textures, which are
+  expensive.
+* In Curv, my idea is to assign F-Rep shapes to different BVH nodes if they are
+  too expensive to be computed together. This requires an optimizing compiler
+  that measures the cost of a distance function. The stupid version of this
+  provides an explicit operator for wrapping a shape in a BVH node.
+  Eg, `isolate shape`.
+
+Culling.
+* The culling step is run in 1/8 of the screen size in both dimensions,
+  resulting in 8x8 pixel tiles.
+* For each of these tiles a ray is intersected with each shape and a list
+  is created containing intersecting fields.
+* When the spheretracing algorithm checks the distance field, only the actual
+  shapes in the culling list for this pixel need to be checked.
+  Big win if the shape happens to be a texture (these are expensive).
+* A BVH (bounding volume hierarchy) or similar structure can speed this up?
+* Culling speeds up sphere tracing by a much greater factor than any other
+  mTec optimization.
+  ======= ======= =======
+  #shapes no opt. culling
+  ======= ======= =======
+       20   44.54    5.92
+       40  449.01    7.46
+       60 1477.26    8.81
+       80 2513.91   13.73
+  ======= ======= =======
+* mTec has this massively nonlinear performance hit for large unions of
+  discrete SDFs, probably due to thrashing the texture cache.
+  I'm adding discrete SDFs to Curv, so culling will help.
+  How much does culling help for large unions of continuous SDFs? Measure.
+
+World Distance Field
+mTec precomputes a low resolution discrete World Distance Field for the entire
+scene. It is "updated in small portions during run time"--does this work for
+Curv?
+
+Single triangle covering the viewport, instead of a 2-triangle quad.
+Good for 5% performance increase.
+
+Rasterized Sphere Tracing.
+Each isolated shape in the top level union is rendered separately into the
+depth buffer. Speed up for very large unions, can also be slower. Maybe an
+optimizing GL compiler can pick a rendering strategy.
