@@ -549,14 +549,14 @@ cube = (
         },
     }
     where
-        cube_e d =
+        cube_m d =
             let r = d / 2;
             in make_shape {
                 dist(x,y,z,t) = max(abs(x,y,z) - r);
                 bbox = [[-r, -r, -r], [r,r,r]];
                 is_3d = true;
             };
-        cube_m d = box.exact(d,d,d);
+        cube_e d = box.exact(d,d,d);
 );
 
 octahedron = (
