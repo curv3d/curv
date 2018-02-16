@@ -1,0 +1,15 @@
+// Menger Sponge: https://en.wikipedia.org/wiki/Menger_sponge
+
+menger 4
+
+where
+menger n =
+    let cutout =
+        union[
+            for (i in 0..<n)
+                square(2/(3^(i+1))) >> extrude inf >> repeat_xy(2/(3^i),2/(3^i))
+        ];
+    in cube
+       `difference` cutout
+       `difference` reflect_yz cutout
+       `difference` reflect_xz cutout;

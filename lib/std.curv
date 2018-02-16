@@ -991,6 +991,41 @@ reflect_z shape =
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
     };
+reflect_xy shape = // reflect shape across plane X=Y
+    make_shape {
+        dist(x,y,z,t) = shape.dist(y,x,z,t);
+        colour(x,y,z,t) = shape.colour(y,x,z,t);
+        bbox = [
+            [shape.bbox[MIN,Y], shape.bbox[MIN,X], shape.bbox[MIN,Z]],
+            [shape.bbox[MAX,Y], shape.bbox[MAX,X], shape.bbox[MAX,Z]],
+        ];
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
+    };
+reflect_xz shape = // reflect shape across plane X=Z
+    do assert(is_shape shape && shape.is_3d)
+    in make_shape {
+        dist(x,y,z,t) = shape.dist(z,y,x,t);
+        colour(x,y,z,t) = shape.colour(z,y,x,t);
+        bbox = [
+            [shape.bbox[MIN,Z], shape.bbox[MIN,Y], shape.bbox[MIN,X]],
+            [shape.bbox[MAX,Z], shape.bbox[MAX,Y], shape.bbox[MAX,X]],
+        ];
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
+    };
+reflect_yz shape = // reflect shape across plane Y=Z
+    do assert(is_shape shape && shape.is_3d)
+    in make_shape {
+        dist(x,y,z,t) = shape.dist(x,z,y,t);
+        colour(x,y,z,t) = shape.colour(x,z,y,t);
+        bbox = [
+            [shape.bbox[MIN,X], shape.bbox[MIN,Z], shape.bbox[MIN,Y]],
+            [shape.bbox[MAX,X], shape.bbox[MAX,Z], shape.bbox[MAX,Y]],
+        ];
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
+    };
 
 reflect normal shape =
     if (normal == X_axis) reflect_x shape
