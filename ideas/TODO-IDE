@@ -1,0 +1,74 @@
+A Graphical IDE for Curv
+========================
+gcurv: A 3 pane integrated OpenSCAD style GUI.
+A clickable program icon in macOS or Windows that brings up this GUI.
+No need to use a CLI shell to run Curv.
+
+Graphics Window. Controls, such as:
+* time slider for animations
+* antialiasing control
+* sliders for model parameters?
+
+Integrating the Curv CLI tool with the Graphics Window. Why?
+* Capabilities of GPU control output of the GL compiler.
+* Reduced latency from changing the code to updating the graphics window.
+* Geometry cache.
+
+Graphical value pickers:
+* enum: a fixed set of values
+* slider: for a bounded numeric range
+* normalized 2D vector picker: a direction
+* 2D point picker for a bounded range
+* colour picker
+* hue picker
+
+Modifying Model Parameters using Direct Manipulation:
+More than one way to do it.
+* OpenSCAD: model parameters and their value ranges are extracted from
+  the source code, and a set of graphical value pickers is displayed
+  in a pane. You can only use a picker if the parameter has been placed
+  into a variable definition and properly annotated.
+* libfive studio: Direct manipulation of the shape, in the graphics window,
+  causes the shape to change and back propagates the changes into the
+  source code. Looks cool. But there are limitations on what parameters
+  can be changed in this way. Only works for certain kinds of geometry
+  parameters, not for colour or for more abstract & indirect parameters.
+* Book of Shaders: Click on any literal constant in the source code,
+  and you get a picker for modifying that constant. No restriction on what
+  parameters can be tweaked. You can restructure your source code to make
+  it more convenient to tweak parameters (eg in a live performance setting)
+  but you aren't forced to. This is the winner.
+  * This affects language design and library API design. How to provide
+    hints about the type of a literal constant, without imposing undue burden
+    on the user.
+  * Eg, keyword arguments to functions. In `rotate{angle: 90*deg, ...}`,
+    the `angle` keyword is recognized, and an angle picker is displayed.
+  * Minimizing latency: When you click on a parameter to tweak it, then in
+    the background, the model is recompiled to expose that parameter as a
+    uniform variable. The picker is displayed, you can immediately start
+    frobbing the picker, and the model updates start animating as soon as
+    the compiled model is loaded into the GPU.
+* Graphical syntax. Eg, Node based visual programming languages.
+  Or, think about the syntax of the language: whether source code is presented
+  as pure text, or incorporates graphical elements that can be hooks for
+  direct manipulation. "Syntax colouring" is a small step to recognizing
+  syntactic elements in the code and presenting them in a more graphical way.
+  If I can recognize a colour constant in the code, such that a colour picker
+  can be invoked when the constant is tweaked, then why not show the colour
+  at all times?
+
+When you modify a parameter using direct manipulation, the source code changes.
+
+Workflow: Create a pipeline or graph of building blocks.
+Be able to quickly tweak parameters in any of the blocks.
+* How do you create an instance of a building block?
+  * BBs have names.
+  * Maybe there are thousands of these names. Support tags, and a way
+    to browse names that match specified tags. Use search to find names.
+    * A definition can have a description string, and tags.
+      Eg, box #shape #polyhedron #"axis aligned right parallelepiped" = ...;
+  * Once a name is selected, there is a command (keystroke) to create
+    an argument template that you can fill in.
+* Later, encapsulate your work in a new building block with its own
+  parameters. (Don't need to do this first, before you can graphically
+  tweak parameters, which is what happens with OpenSCAD.)

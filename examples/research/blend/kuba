@@ -1,0 +1,74 @@
+// Kuba Marek's gradient blend.
+// See rounded_union in:
+// https://github.com/bluecube/codecad/blob/master/codecad/shapes/common.cl
+/*
+float4 rounded_union(float r, float4 obj1, float4 obj2) {
+
+    if (r >= 0)
+    {
+        float cos_alpha = dot(as_float3(obj1), as_float3(obj2));
+        float x1 = r - obj1.w;
+        float x2 = r - obj2.w;
+
+        if (cos_alpha * x1 < x2 && cos_alpha * x2 < x1)
+        {
+            float d = r - sqrt((x1 * x1 + x2 * x2 - 2 * cos_alpha * x1 * x2) / (1 - cos_alpha * cos_alpha));
+            return (float4)(0, 0, 0, d); // TODO: Gradient
+        }
+    }
+
+    if (obj1.w < obj2.w)
+        return obj1;
+    else
+        return obj2;
+}
+*/
+
+let
+gradient (p, d, shape) =
+    let eps = 0.01;
+        xd = shape.dist(p[X]+eps,p[Y],p[Z],p[T]);
+        yd = shape.dist(p[X],p[Y]+eps,p[Z],p[T]);
+        zd = shape.dist(p[X],p[Y],p[Z]+eps,p[T]);
+    in (abs(d-xd),abs(d-yd),abs(d-zd)) / eps;
+
+rounded_union r (s1,s2) =
+    make_shape {
+        dist p =
+            let d1 = s1.dist p;
+                d2 = s2.dist p;
+
+                /*
+                g1 = gradient (p, d1, s1);
+                g2 = gradient (p, d2, s2);
+                */
+                eps = 0.01;
+                xd1 = s1.dist(p[X]+eps,p[Y],p[Z],p[T]);
+                yd1 = s1.dist(p[X],p[Y]+eps,p[Z],p[T]);
+                zd1 = s1.dist(p[X],p[Y],p[Z]+eps,p[T]);
+                g1 = (abs(d1-xd1),abs(d1-yd1),abs(d1-zd1)) / eps;
+                xd2 = s2.dist(p[X]+eps,p[Y],p[Z],p[T]);
+                yd2 = s2.dist(p[X],p[Y]+eps,p[Z],p[T]);
+                zd2 = s2.dist(p[X],p[Y],p[Z]+eps,p[T]);
+                g2 = (abs(d2-xd2),abs(d2-yd2),abs(d2-zd2)) / eps;
+
+                cos_alpha = dot(g1, g2);
+                x1 = r - d1;
+                x2 = r - d2;
+            in if (cos_alpha*x1 < x2 && cos_alpha*x2 < x1)
+                r - sqrt((x1 * x1 + x2 * x2 - 2 * cos_alpha * x1 * x2)
+                         / (1 - cos_alpha * cos_alpha))
+            else
+                min(d1,d2);
+        is_2d = s1.is_2d && s2.is_2d;
+        is_3d = s1.is_3d && s2.is_3d;
+    };
+
+in
+//rounded_union 1 (sphere 4, cube 4 >> move(2,2,2))
+rounded_union 1 (
+    //rect(2,10),
+    //rect(2,10) >> rotate(45*deg),
+    rect(1,10) >> move(0,5.1),
+    rect(1,10) >> move(0,-5.1),
+)
