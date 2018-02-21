@@ -52,14 +52,10 @@ See `<shapes/Future_Work.rst>`_, and also the "Future Work" sections in individu
 
 GUI
 ---
-* An OpenSCAD-like GUI. http://www.openscad.org/
-* The ability to tweak model parameters using sliders in the GUI,
-  like the OpenSCAD customizer.
-* Jupyter integration, for an interface like an iPython Notebook. https://jupyter.org/
-* A "Book of Shaders" style editor, which uses the glslEditor (you can tweak model parameters
-  graphically, directly in the source code view). https://thebookofshaders.com/
+* A 3 panel OpenSCAD-like GUI. http://www.openscad.org/
+* With a "Book of Shaders" style editor: you can tweak model parameters
+  graphically, directly in the source code view. https://thebookofshaders.com/
   and https://github.com/patriciogonzalezvivo/glslEditor
-* Node based visual programming language, like Antimony or Max.
 
 CLI
 ---
