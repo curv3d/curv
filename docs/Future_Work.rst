@@ -48,7 +48,10 @@ Documentation
 
 The Shape Library
 -----------------
-See `<shapes/Future_Work.rst>`_, and also the "Future Work" sections in individual shape library topics.
+* Tools for visualizing models for 3D printing.
+  * Eg, colouring the surface, based on Z component of the
+    surface normal, to show areas of the model with too much overhang.
+* See `<shapes/Future_Work.rst>`_, and also the "Future Work" sections in individual shape library topics.
 
 GUI
 ---
