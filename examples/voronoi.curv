@@ -1,0 +1,20 @@
+let
+random2f(x,y) =
+    let t = sin(x+y*1e3);
+    in (mod(t*1e4,1), mod(t*1e6,1));
+
+voronoi(x,y) =
+    let p = floor(x,y);
+        f = mod((x,y),1);
+    in do
+        var res := 8;
+        for (i in -1 .. 1)
+            for (j in -1 .. 1)
+                let b = (i,j);
+                    r = b - f + random2f(p+b);
+                    d = dot(r,r);
+                in  res := min(res, d);
+    in sqrt res;
+
+in
+make_texture ((x,y,_,_) -> sRGB.grey(voronoi(x,y)))
