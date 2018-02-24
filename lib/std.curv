@@ -1351,6 +1351,8 @@ sRGB = {
         in call(c[2] * lerp(1, clamp(m - 1, 0, 1), c[1]));
 };
 
+webRGB(r,g,b) = sRGB(r/255, g/255, b/255);
+
 red = [1, 0, 0];
 orange = sRGB[1, .5, 0];
 yellow = [1, 1, 0];
