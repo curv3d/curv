@@ -344,6 +344,21 @@ GL_Value gl_eval_expr(GL_Frame& f, const Operation& op, GL_Type type)
     return arg;
 }
 
+bool
+get_mat(List& list, int i, int j, double& elem)
+{
+    if (auto row = list[i].dycast<List>()) {
+        if (row->size() == list.size()) {
+            Value e = row->at(j);
+            if (e.is_num()) {
+                elem = e.get_num_unsafe();
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& source)
 {
     if (val.is_num()) {
@@ -362,29 +377,60 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& source)
     }
     if (auto list = val.dycast<List>()) {
         if (list->size() >= 2 && list->size() <= 4) {
-            static GL_Type types[5] = {
-                {}, {}, GL_Type::Vec2, GL_Type::Vec3, GL_Type::Vec4
-            };
-            GL_Value result = f.gl.newvalue(types[list->size()]);
-            f.gl.out
-                << "  "
-                << result.type
-                << " "
-                << result
-                << " = "
-                << result.type
-                << "(";
-            bool first = true;
-            for (auto e : *list) {
-                if (e.is_num()) {
-                    if (!first) f.gl.out << ",";
-                    first = false;
-                    f.gl.out << dfmt(e.get_num_unsafe(), dfmt::EXPR);
-                } else
-                    goto error;
+            if (list->front().is_num()) {
+                // vector
+                static GL_Type types[5] = {
+                    {}, {}, GL_Type::Vec2, GL_Type::Vec3, GL_Type::Vec4
+                };
+                GL_Value result = f.gl.newvalue(types[list->size()]);
+                f.gl.out
+                    << "  "
+                    << result.type
+                    << " "
+                    << result
+                    << " = "
+                    << result.type
+                    << "(";
+                bool first = true;
+                for (auto e : *list) {
+                    if (e.is_num()) {
+                        if (!first) f.gl.out << ",";
+                        first = false;
+                        f.gl.out << dfmt(e.get_num_unsafe(), dfmt::EXPR);
+                    } else
+                        goto error;
+                }
+                f.gl.out << ");\n";
+                return result;
+            } else {
+                // matrix
+                static GL_Type types[5] = {
+                    {}, {}, GL_Type::Mat2, GL_Type::Mat3, GL_Type::Mat4
+                };
+                GL_Value result = f.gl.newvalue(types[list->size()]);
+                f.gl.out
+                    << "  "
+                    << result.type
+                    << " "
+                    << result
+                    << " = "
+                    << result.type
+                    << "(";
+                bool first = true;
+                for (int i = 0; i < list->size(); ++i) {
+                    for (int j = 0; j < list->size(); ++j) {
+                        double elem;
+                        if (get_mat(*list, j, i, elem)) {
+                            if (!first) f.gl.out << ",";
+                            first = false;
+                            f.gl.out << dfmt(elem, dfmt::EXPR);
+                        } else
+                            goto error;
+                    }
+                }
+                f.gl.out << ");\n";
+                return result;
             }
-            f.gl.out << ");\n";
-            return result;
         }
     }
 error:
