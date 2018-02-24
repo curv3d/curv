@@ -578,6 +578,10 @@ Value gl_constify(Operation& op, GL_Frame& f)
             (*listval)[i] = gl_constify(*(*list)[i], f);
         }
         return {listval};
+    } else if (auto neg = dynamic_cast<Negative_Expr*>(&op)) {
+        Value arg = gl_constify(*neg->arg_, f);
+        if (arg.is_num())
+            return Value(-arg.get_num_unsafe());
     }
     throw Exception(At_GL_Phrase(op.source_, &f),
         "Geometry Compiler: not a constant");
