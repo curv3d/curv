@@ -5,14 +5,15 @@
 #include <cctype>
 #include <typeinfo>
 #include <boost/core/demangle.hpp>
-#include <curv/dtostr.h>
-#include <curv/gl_compiler.h>
-#include <curv/exception.h>
 #include <curv/context.h>
-#include <curv/gl_context.h>
-#include <curv/shape.h>
-#include <curv/meaning.h>
+#include <curv/die.h>
+#include <curv/dtostr.h>
+#include <curv/exception.h>
 #include <curv/function.h>
+#include <curv/gl_compiler.h>
+#include <curv/gl_context.h>
+#include <curv/meaning.h>
+#include <curv/shape.h>
 
 namespace curv {
 
@@ -25,7 +26,7 @@ void gl_compile(const Shape_Recognizer& shape, std::ostream& out, const Context&
         return gl_compile_2d(shape, out, cx);
     if (shape.is_3d_)
         return gl_compile_3d(shape, out, cx);
-    assert(0);
+    die("gl_compile: shape is not 2d or 3d");
 }
 
 void gl_compile_2d(const Shape_Recognizer& shape, std::ostream& out, const Context& cx)
@@ -417,8 +418,8 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& source)
                     << result.type
                     << "(";
                 bool first = true;
-                for (int i = 0; i < list->size(); ++i) {
-                    for (int j = 0; j < list->size(); ++j) {
+                for (size_t i = 0; i < list->size(); ++i) {
+                    for (size_t j = 0; j < list->size(); ++j) {
                         double elem;
                         if (get_mat(*list, j, i, elem)) {
                             if (!first) f.gl.out << ",";

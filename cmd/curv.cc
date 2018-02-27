@@ -34,6 +34,7 @@ extern "C" {
 #include <curv/gl_compiler.h>
 #include <curv/shape.h>
 #include <curv/version.h>
+#include <curv/die.h>
 
 bool was_interrupted = false;
 
@@ -530,7 +531,7 @@ main(int argc, char** argv)
                      << "Use " << argv0 << " --help for help.\n";
             return EXIT_FAILURE;
         default:
-            assert(0);
+            curv::die("main: bad result from getopt()");
         }
     }
     const char* filename;

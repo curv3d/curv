@@ -13,10 +13,11 @@
 // TODO: simple yaccable grammar, no conflicts or precedence declarations.
 // TODO: remove dangling `else` ambiguity.
 
+#include <curv/context.h>
+#include <curv/exception.h>
+#include <curv/die.h>
 #include <curv/parser.h>
 #include <curv/scanner.h>
-#include <curv/exception.h>
-#include <curv/context.h>
 
 using namespace std;
 
@@ -660,7 +661,7 @@ parse_string(Scanner& scanner, Token begin)
             continue;
           }
         default:
-            assert(0);
+            die("parse_string: bad string segment token type");
         }
     }
 }

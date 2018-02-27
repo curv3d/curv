@@ -2,14 +2,15 @@
 // Distributed under The MIT License.
 // See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
 
+#include <algorithm>
 #include <functional>
 #include <iostream>
-#include <algorithm>
 
-#include <curv/definition.h>
-#include <curv/system.h>
-#include <curv/exception.h>
 #include <curv/context.h>
+#include <curv/definition.h>
+#include <curv/die.h>
+#include <curv/exception.h>
+#include <curv/system.h>
 
 namespace curv
 {
@@ -52,8 +53,7 @@ Data_Definition::make_setter(slot_t module_slot)
 Shared<Operation>
 Function_Definition::make_setter(slot_t module_slot)
 {
-    assert(0);
-    return nullptr;
+    die("Function_Definition::make_setter: must not be called");
 }
 
 void
@@ -399,7 +399,7 @@ analyse_module(Definition& def, Environ& env)
         return make<Scoped_Module_Expr>(def.source_,
             std::move(scope.executable_));
     }
-    assert(0);
+    die("analyse_module: bad definition type");
 }
 
 } // namespace curv

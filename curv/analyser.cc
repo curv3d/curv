@@ -7,6 +7,7 @@
 #include <curv/phrase.h>
 #include <curv/analyser.h>
 #include <curv/definition.h>
+#include <curv/die.h>
 #include <curv/shared.h>
 #include <curv/exception.h>
 #include <curv/function.h>
@@ -151,12 +152,12 @@ Numeral::analyse(Environ& env) const
             else if (d >= 'A' && d <= 'F')
                 n = 16.0*n + (d-'A'+10);
             else
-                assert(0);
+                die("Numeral::analyse: bad hex numeral");
         }
         return make<Constant>(share(*this), n);
       }
     default:
-        assert(0);
+        die("Numeral::analyse: bad token type");
     }
 }
 
@@ -225,7 +226,7 @@ Unary_Phrase::analyse(Environ& env) const
     case Token::k_var:
         throw Exception(At_Token(op_, *this, env), "syntax error");
     default:
-        assert(0);
+        die("Unary_Phrase::analyse: bad operator token type");
     }
 }
 Shared<Definition>
@@ -398,7 +399,7 @@ analyse_block(
         virtual void end_unit(unsigned, Shared<Unitary_Definition>) override {}
     } bscope(env);
     adef->add_to_scope(bscope); // throws an exception
-    assert(0);
+    die("analyse_block: add_to_scope failed to throw an exception");
 }
 
 Shared<Meaning>
@@ -539,7 +540,7 @@ Binary_Phrase::analyse(Environ& env) const
     case Token::k_where:
         return analyse_where_block(env, share(*this), right_, left_);
     default:
-        assert(0);
+        die("Binary_Phrase::analyse: bad operator token type");
     }
 }
 
