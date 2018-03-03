@@ -72,3 +72,13 @@ Be able to quickly tweak parameters in any of the blocks.
 * Later, encapsulate your work in a new building block with its own
   parameters. (Don't need to do this first, before you can graphically
   tweak parameters, which is what happens with OpenSCAD.)
+
+Discoverability of Building Blocks.
+* Browser pane, for finding building blocks.
+* cheat sheet.
+* search, based on names, tags, or phrases in description text.
+* BBs have icons.
+* Integration with package manager. Use google to find packages on the
+  internet. Then install the package and its contents become locally
+  discoverable in the IDE. When a package is installed, its dependencies
+  are also installed and become discoverable.
