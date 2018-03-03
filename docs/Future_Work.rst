@@ -49,13 +49,16 @@ Documentation
 The Shape Library
 -----------------
 * Tools for visualizing models for 3D printing.
+
   * Eg, colouring the surface, based on Z component of the
     surface normal, to show areas of the model with too much overhang.
+
 * See `<shapes/Future_Work.rst>`_, and also the "Future Work" sections in individual shape library topics.
 
 GUI
 ---
-* A 3 panel OpenSCAD-like GUI. http://www.openscad.org/
+* A 3 panel OpenSCAD-like GUI (editor, console, graphics pane). http://www.openscad.org/
+* 4th panel is a browser, for discovering shape operations, using search or by navigating a classification tree.
 * With a "Book of Shaders" style editor: you can tweak model parameters
   graphically, directly in the source code view. https://thebookofshaders.com/
   and https://github.com/patriciogonzalezvivo/glslEditor
