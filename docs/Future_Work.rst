@@ -59,9 +59,19 @@ GUI
 ---
 * A 3 panel OpenSCAD-like GUI (editor, console, graphics pane). http://www.openscad.org/
 * 4th panel is a browser, for discovering shape operations, using search or by navigating a classification tree.
-* With a "Book of Shaders" style editor: you can tweak model parameters
+* A "Book of Shaders" style editor: you can tweak model parameters
   graphically, directly in the source code view. https://thebookofshaders.com/
   and https://github.com/patriciogonzalezvivo/glslEditor
+* IDE-style auto completion in editor.
+
+Package Manager
+---------------
+* A program may import Curv values from the internet by specifying a package URL,
+  package version, relative pathname. Similar to Rust Cargo.
+* Use google to find new Curv packages on the internet.
+  Packages may be manually installed, or implicitly installed by being dependencies
+  of another package.
+* The GUI browser lets you browse installed packages.
 
 CLI
 ---
