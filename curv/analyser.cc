@@ -713,7 +713,7 @@ Call_Phrase::analyse_args(Environ& env) const
     each_argument(*arg_, [&](const Phrase& p)->void {
         argv.push_back(analyse_op(p, env));
     });
-    return std::move(argv);
+    return argv;
 }
 
 Shared<Meaning>
