@@ -1,6 +1,6 @@
-// Copyright Doug Moen 2016-2018.
-// Distributed under The MIT License.
-// See accompanying file LICENCE.md or https://opensource.org/licenses/MIT
+// Copyright 2016-2018 Doug Moen
+// Licensed under the Apache License, version 2.0
+// See https://www.apache.org/licenses/LICENSE-2.0
 
 #ifndef CURV_PARSER_H
 #define CURV_PARSER_H
