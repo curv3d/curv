@@ -1,13 +1,40 @@
 1. The User Interface
 =====================
 
-The user interface is the ``curv`` command, which you run from a command line shell like ``bash``. After building and installing ``curv``, use ``curv --help`` for command line options.
+The user interface is the ``curv`` command, which you run from a Terminal
+window using a command line shell like ``bash``. After building and installing
+``curv``, use ``curv --help`` for command line options.
 
-**Batch mode**::
+**Batch mode**
+
+To view a shape defined by a Curv program without editing the file,
+just type ``curv myshape.curv``. For example::
 
   $ curv examples/shreks_donut.curv
   **a graphics window opens, displaying the shape**
-  
+
+**Live Editing Mode (**\ ``curv -le``\ **)**
+
+Type ``curv -le myshape.curv`` to create a 3 window GUI for live editing
+a Curv script.
+* A text editor window pops up, for editing ``myshape.curv``.
+  (The file doesn't need to exist yet.)
+* A graphics window pops up either immediately, or once ``myshape.curv``
+  exists and contains a valid Curv program.
+* The original Terminal window that you invoked ``curv -le`` from
+  now serves as the console window. This is where error messages are
+  displayed.
+
+After repositioning the text editor, graphics window and Terminal window
+so that they are all visible, you can now start editing your Curv script.
+Each time you save the file, the graphics window updates to display the
+new shape.
+
+(Type Ctrl-S in Linux or Command-S in macOS to save the file.)
+
+When you close the text editor window, the graphics window
+disappears and the ``curv`` command exits, giving you a new shell prompt.
+
 **Interactive CLI mode**::
 
   $ curv
@@ -17,44 +44,45 @@ The user interface is the ``curv`` command, which you run from a command line sh
   **a graphics window opens, displaying the shape**
   curv>
 
-**Live Programming Mode (**\ ``curv -l``\ **)**:
+..
+  **Live Programming Mode (**\ ``curv -l``\ **)**:
 
-This is a mode where you have a 3 window GUI, similar to live programming
-in the OpenSCAD GUI. The 3 windows are: the editing window, the graphics window,
-and the console window (which displays error messages).
+  This is a mode where you have a 3 window GUI, similar to live programming
+  in the OpenSCAD GUI. The 3 windows are: the editing window, the graphics window,
+  and the console window (which displays error messages).
 
-* Open a text editor window, editing ``myshape.curv``.
-* Open a terminal window and run ``curv -l myshape.curv`` from ``bash``.
-* Each time you save changes to ``myshape.curv``, the file will be re-evaluated
-  and the new shape will be displayed in a graphics window.
-* Keep the terminal window visible: if there are errors in your Curv program,
-  they will be displayed here.
+  * Open a text editor window, editing ``myshape.curv``.
+  * Open a terminal window and run ``curv -l myshape.curv`` from ``bash``.
+  * Each time you save changes to ``myshape.curv``, the file will be re-evaluated
+    and the new shape will be displayed in a graphics window.
+  * Keep the terminal window visible: if there are errors in your Curv program,
+    they will be displayed here.
 
-**Live Editing Mode (**\ ``curv -le``\ **)**:
+  **Live Editing Mode (**\ ``curv -le``\ **)**:
 
-This is a more convenient way to start up a 3 window GUI.
-You just type ``curv -le myshape.curv``. A text editor window pops up.
-A graphics window pops up either immediately, or once ``myshape.curv`` exists
-and contains a valid Curv program.
-The original terminal window that you invoked ``curv -le`` from now serves as
-the console window. When you close the text editor window, the graphics window
-disappears and the ``curv`` command terminates.
+  This is a more convenient way to start up a 3 window GUI.
+  You just type ``curv -le myshape.curv``. A text editor window pops up.
+  A graphics window pops up either immediately, or once ``myshape.curv`` exists
+  and contains a valid Curv program.
+  The original terminal window that you invoked ``curv -le`` from now serves as
+  the console window. When you close the text editor window, the graphics window
+  disappears and the ``curv`` command terminates.
 
-In order to make this work, you need to set the environment variable ``CURV_EDITOR``
-to a command that takes a filename argument and opens a text editing window.
-This command must run in the foreground, and not exit until you close the text editing window.
-Not all text editors can be run this way. For example,
+  In order to make this work, you need to set the environment variable ``CURV_EDITOR``
+  to a command that takes a filename argument and opens a text editing window.
+  This command must run in the foreground, and not exit until you close the text editing window.
+  Not all text editors can be run this way. For example,
 
-* ``export CURV_EDITOR=vim`` will not work, because ``vim`` will run in the terminal
-  window, and will not open a separate text editing window.
-* ``export CURV_EDITOR=gvim`` will not work, because by default, the ``gvim`` command
-  forks a new process to run the text editor window in, then exits almost immediately.
-* ``export CURV_EDITOR="gvim -f"`` works. The ``-f`` flag forces ``gvim``
-  to run in the foreground.
+  * ``export CURV_EDITOR=vim`` will not work, because ``vim`` will run in the terminal
+    window, and will not open a separate text editing window.
+  * ``export CURV_EDITOR=gvim`` will not work, because by default, the ``gvim`` command
+    forks a new process to run the text editor window in, then exits almost immediately.
+  * ``export CURV_EDITOR="gvim -f"`` works. The ``-f`` flag forces ``gvim``
+    to run in the foreground.
 
-So, you can add ``export CURV_EDITOR="gvim -f"`` (substituting your favourite text editor)
-to your bash ``.profile`` file in your home directory, and then ``curv -le filename``
-will just work.
+  So, you can add ``export CURV_EDITOR="gvim -f"`` (substituting your favourite text editor)
+  to your bash ``.profile`` file in your home directory, and then ``curv -le filename``
+  will just work.
 
 2. The Core Language
 ====================
