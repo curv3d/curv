@@ -17,6 +17,7 @@ just type ``curv myshape.curv``. For example::
 
 Type ``curv -le myshape.curv`` to create a 3 window GUI for live editing
 a Curv script.
+
 * A text editor window pops up, for editing ``myshape.curv``.
   (The file doesn't need to exist yet.)
 * A graphics window pops up either immediately, or once ``myshape.curv``
