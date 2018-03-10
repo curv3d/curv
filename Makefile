@@ -1,29 +1,29 @@
-tests:
-	mkdir -p build
-	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..
-	cd build; make tests
+release:
+	mkdir -p release
+	cd release; cmake -DCMAKE_BUILD_TYPE=Release ..
+	cd release; make
 install:
 	mkdir -p release
 	cd release; cmake -DCMAKE_BUILD_TYPE=Release ..
 	cd release; make install
-release:
-	mkdir -p release
-	cd release; cmake -DCMAKE_BUILD_TYPE=Release ..
-	cd release; make curv
+test:
+	mkdir -p debug
+	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
+	cd debug; make tests
 curv:
-	mkdir -p build
-	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..
-	cd build; make curv
+	mkdir -p debug
+	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
+	cd debug; make curv
 clean:
-	rm -rf build
+	rm -rf debug release
 valgrind:
-	mkdir -p build
-	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..
-	cd build; make tester
-	cd tests; valgrind ../build/tester
+	mkdir -p debug
+	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
+	cd debug; make tester
+	cd tests; valgrind ../debug/tester
 valgrind-full:
-	mkdir -p build
-	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..
-	cd build; make tester
-	cd tests; valgrind --leak-check=full ../build/tester
-.PHONY: tests install curv clean valgrind valgrind-full release
+	mkdir -p debug
+	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
+	cd debug; make tester
+	cd tests; valgrind --leak-check=full ../debug/tester
+.PHONY: release install test curv clean valgrind valgrind-full

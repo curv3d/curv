@@ -4,5 +4,5 @@
 .swp
 .swo
 /doxygen
-/build
+/debug
 /release
