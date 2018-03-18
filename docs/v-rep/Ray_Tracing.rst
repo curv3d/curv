@@ -26,20 +26,11 @@ with Lipschitz(1) continuity, abbreviated as L1-SDF.
 
 It can be difficult or expensive to find L1-SDF versions
 of some notable implicit functions:
+
 * Many algebraic functions.
-* The result of applying an arbitrary coordinate transformation, in the
-  general case.
+* The result of applying a deformation (non-similarity transformation).
 
-Note: you can convert an arbitrary implicit function to an exact Euclidean
-distance function, but in general it will require iterative root finding,
-which is expensive to evaluate.
-
-* http://persson.berkeley.edu/thesis/persson-thesis-color.pdf
-  "Mesh Generation for Implicit Geometries" by Per-Olof Persson
-  Section 2.4, pages 31-32.
-
-  This method converts any implicit function to an exact Euclidean distance
-  function.
+See also: `<Deriving_Distance_Functions.rst>`_.
 
 Newton's method is a root finding method that can be incorporated into
 ray tracing algorithms. It requires the implicit function to be C1 continuous.
@@ -75,7 +66,12 @@ performance on a GPU in 2008, and is probably the easiest of the interval
 arithmetic methods. It works for any computable function. To get best results,
 each shape is tuned by specifying an epsilon parameter, which is not ideal,
 but is at least a lot easier than creating an implicit function with a
-lipschitz bound.
+Lipschitz bound.
+
+References:
+
+* "CSG Operations of Arbitrary Primitives with Interval Arithmetic and Real-Time Ray Tracing"
+  https://www.cs.utah.edu/~aek/research/csgimplicits.pdf
 
 Bisection is a simple but slow root finding algorithm, similar to binary search:
 it has linear convergence. Newton's method is faster (quadratic convergence),
