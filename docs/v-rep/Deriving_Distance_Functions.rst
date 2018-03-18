@@ -84,4 +84,4 @@ Some people on the web have used interval arithmetic to ray trace arbitrary
 implicit functions using a GPU, and they were getting real time frame rates
 using 2008 GPU hardware. This avoids the need for advanced users to deal with
 the math referenced above, so I'm interested in pursuing this.
-See: `Ray_Tracing.rst`_.
+See: `<Ray_Tracing.rst>`_.
