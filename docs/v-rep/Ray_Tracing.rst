@@ -34,9 +34,13 @@ See also: `<Deriving_Distance_Functions.rst>`_.
 
 Newton's method is a root finding method that can be incorporated into
 ray tracing algorithms. It requires the implicit function to be C1 continuous.
-This is an inconvenient requirement, since geometric primitives that create
+
+C1 continuity is an inconvenient requirement, since geometric primitives that create
 sharp edges and corners, like cube and union, are not C1 continuous. We would
 need to substitute continuous approximations.
+Fractals, represented by iterated function systems, are not generally C1 continuous.
+In fact, Sphere Tracing was originally invented to solve the problem of ray tracing
+fractals.
 
 In addition to Lipschitz(1) continuity and C1 continuity, a third form of
 additional structure is interval arithmetic. The implicit function is
