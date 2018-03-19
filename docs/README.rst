@@ -35,6 +35,8 @@ new shape.
 
 When you close the text editor window, the graphics window
 disappears and the ``curv`` command exits, giving you a new shell prompt.
+[On macOS, you must quit the ``gedit`` text editing application (eg, Command-Q)
+before the ``curv`` command will exit.]
 
 **Interactive CLI mode**::
 
