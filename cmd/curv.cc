@@ -275,11 +275,17 @@ interactive_mode(curv::System& sys)
     }
 }
 
-void export_curv(curv::Value value, const curv::Context&, std::ostream& out)
+void export_curv(curv::Value value,
+    curv::System&, const curv::Context&, std::ostream& out)
 {
     out << value << "\n";
 }
-void export_frag(curv::Value value, const curv::Context& cx, std::ostream& out)
+
+extern void export_stl(curv::Value,
+    curv::System&, const curv::Context&, std::ostream&);
+
+void export_frag(curv::Value value,
+    curv::System&, const curv::Context& cx, std::ostream& out)
 {
     curv::Shape_Recognizer shape(cx);
     if (shape.recognize(value))
@@ -287,6 +293,7 @@ void export_frag(curv::Value value, const curv::Context& cx, std::ostream& out)
     else
         throw curv::Exception(cx, "not a shape");
 }
+
 bool is_json_data(curv::Value val)
 {
     if (val.is_ref()) {
@@ -367,14 +374,17 @@ bool export_json_value(curv::Value val, std::ostream& out)
         return false;
     }
 }
-void export_json(curv::Value value, const curv::Context& cx, std::ostream& out)
+void export_json(curv::Value value,
+    curv::System&, const curv::Context& cx, std::ostream& out)
 {
     if (export_json_value(value, out))
         out << "\n";
     else
         throw curv::Exception(cx, "value can't be converted to JSON");
 }
-void export_png(curv::Value value, const curv::Context& cx, std::ostream& out)
+
+void export_png(curv::Value value,
+    curv::System&, const curv::Context& cx, std::ostream& out)
 {
     curv::Shape_Recognizer shape(cx);
     if (shape.recognize(value)) {
@@ -457,6 +467,7 @@ const char help[] =
 "   curv -- Curv expression\n"
 "   json -- JSON expression\n"
 "   frag -- GLSL fragment shader (shape only, shadertoy.com compatible)\n"
+"   stl -- binary STL file (shape only)\n"
 "   png -- PNG image file (shape only)\n"
 "--version -- display version.\n"
 "--help -- display this help information.\n"
@@ -477,7 +488,7 @@ main(int argc, char** argv)
 
     // Parse arguments.
     const char* argv0 = argv[0];
-    void (*exporter)(curv::Value, const curv::Context&, std::ostream&) =
+    void (*exporter)(curv::Value, curv::System&, const curv::Context&, std::ostream&) =
         nullptr;
     bool live = false;
     std::list<const char*> libs;
@@ -494,6 +505,8 @@ main(int argc, char** argv)
                 exporter = export_json;
             else if (strcmp(optarg, "frag") == 0)
                 exporter = export_frag;
+            else if (strcmp(optarg, "stl") == 0)
+                exporter = export_stl;
             else if (strcmp(optarg, "png") == 0)
                 exporter = export_png;
             else {
@@ -516,8 +529,11 @@ main(int argc, char** argv)
             break;
         case 'e':
             editor = getenv("CURV_EDITOR");
-            if (editor == nullptr)
-                editor = "gedit --new-window --wait";
+            if (editor == nullptr) {
+                std::cerr << "-e specified but $CURV_EDITOR not defined\n"
+                         << "Use " << argv0 << " --help for help.\n";
+                return EXIT_FAILURE;
+            }
             break;
         case '?':
             std::cerr << "-" << (char)optopt << ": unknown option\n"
@@ -602,6 +618,7 @@ main(int argc, char** argv)
             }
         } else {
             exporter(value,
+                sys,
                 curv::At_Phrase(prog.value_phrase(), nullptr),
                 std::cout);
         }
