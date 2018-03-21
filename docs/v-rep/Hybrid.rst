@@ -45,16 +45,35 @@ kernel ray-traces each beam (using sphere tracing or interval arithmetic).
 The acceleration structures used by high end ray tracers speed up ray tracing
 by constraining the set of top level shapes that each ray needs to be
 intersected against. A bounding volume hierarchy (BVH) is a common choice.
+This is a tree of axis aligned bounding boxes, with usually either 2 or 4
+children under each interior node.
 
-The design of the acceleration structure is considered critical for high end
-ray tracers, and a ton of research has been done on optimizing these structures
-for the GPU. General purpose ray-tracing frameworks are now available from
-Intel (Embree), Nvidia (OptiX and now RTX), AMD (ProRender),
+The design of the acceleration structure and the ray traversal algorithm
+is considered critical for high end ray tracers, since you can have up to a
+million nodes in the tree, and you want real-time performance.
+A ton of research has been done on optimizing these structures
+for the GPU. General purpose GPU ray-tracing frameworks are available from
+Nvidia (OptiX and now RTX), AMD (ProRender),
 and Microsoft (DXR, part of DirectX 12, with support from Nvidia and AMD).
+Intel is missing: they are betting on CPU-based ray tracing instead, with
+their Embree framework. DXR has a fallback for GPUs with no hardware raytracing
+support, but Microsoft doesn't promise good performance. Vulkan will
+need to respond with its own portable cross-platform ray-tracing API.
 
 * "Understanding the Efficiency of Ray Traversal on GPUs"
   https://users.aalto.fi/~ailat1/publications/aila2009hpg_paper.pdf
   https://github.com/matt77hias/GPURayTraversal
+* "OptiX: A General Purpose Ray Tracing Engine"
+  http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.677.323&rep=rep1&type=pdf
+* https://blogs.msdn.microsoft.com/directx/2018/03/19/announcing-microsoft-directx-raytracing/
+
+Animation complicates things: in these frameworks, you somehow need to update
+the acceleration structure when objects move. ???
+
+In OptiX and DXR, the leaf nodes of the acceleration structure are 'primitives'
+that can be represented and rendered any way you want. They can be sphere
+traced F-Rep. DXR lets you assign a different shader to each primitive,
+so apparently a megakernel isn't needed.
 
 These acceleration structures are optimized for representing a union of a
 large number of convex objects. While that is an important use case for Curv,
@@ -84,9 +103,9 @@ The Leaves
 ----------
 At the leaves, I plan to support:
 
-* Sphere traced implicit functions.
-* Ray traced implicit functions using interval arithmetic: slower than
-  sphere tracing, but supports a larger set of implicit functions.
+* Sphere-traced implicit functions.
+* Bisection-traced implicit functions: slower than sphere tracing,
+  but supports a larger set of implicit functions.
 * Volume data structures, various kinds of discrete signed distance fields.
   Eg, voxel arrays are the most popular on the GPU.
   Eg, efficient and/or accurate volume data structures for representing meshes.

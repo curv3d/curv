@@ -16,6 +16,8 @@ along the ray at regular intervals and look for a sign change, which would
 indicate a shape boundary within the interval. But you might have skipped over
 a small feature enclosed by an earlier interval.
 
+Sphere Tracing
+--------------
 Sphere tracing is the most popular method for ray-tracing implicit functions.
 It supports a wide range of shapes and operations; it is fast
 (especially on the GPU), easy to implement, and it is robust.
@@ -32,16 +34,19 @@ of some notable implicit functions:
 
 See also: `<Deriving_Distance_Functions.rst>`_.
 
+Newton Tracing
+--------------
 Newton's method is a root finding method that can be incorporated into
 ray tracing algorithms. It requires the implicit function to be C1 continuous.
 
-C1 continuity is an inconvenient requirement, since geometric primitives that create
-sharp edges and corners, like cube and union, are not C1 continuous. We would
-need to substitute continuous approximations.
-Fractals, represented by iterated function systems, are not generally C1 continuous.
-In fact, Sphere Tracing was originally invented to solve the problem of ray tracing
-fractals.
+C1 continuity is an inconvenient requirement, since geometric primitives that
+create sharp edges and corners, like cube and union, are not C1 continuous. We
+would need to substitute continuous approximations. Fractals, represented by
+iterated function systems, are not generally C1 continuous. In fact, Sphere
+Tracing was originally invented to solve the problem of ray tracing fractals.
 
+Bisection Tracing
+-----------------
 In addition to Lipschitz(1) continuity and C1 continuity, a third form of
 additional structure is interval arithmetic. The implicit function is
 supplemented by a related function that maps domain intervals over X, Y and Z
@@ -81,11 +86,13 @@ Bisection is a simple but slow root finding algorithm, similar to binary search:
 it has linear convergence. Newton's method is faster (quadratic convergence),
 but as mentioned above, now we need the implicit function to be C1 continuous.
 
+Hybrid V-Rep
+------------
 Since interval arithmetic is usually slower than sphere tracing, I intend to
 gain performance by using a hybrid representation. There is a bounding volume
-hierarchy, with sphere-traced or IA-traced objects at the leaves. Each tree node
-is labeled as to whether it can be sphere traced or must be IA-traced.
-If you restrict your model to only Lipschitz(1) primitives (the only choice
-available in Curv 0.0) then only the faster sphere-tracing algorithm
-will be used, and there is gradual performance degradation as IA objects are
-introduced. See `<Hybrid.rst>`_.
+hierarchy, with sphere-traced or bisection-traced objects at the leaves. Each
+tree node is labeled as to whether it can be sphere-traced or must be
+bisection-traced. If you restrict your model to only Lipschitz(1) primitives
+(the only choice available in Curv 0.0) then only the faster sphere-tracing
+algorithm will be used, and there is gradual performance degradation as
+bisection-traced objects are introduced. See `<Hybrid.rst>`_.
