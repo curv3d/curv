@@ -49,11 +49,16 @@ intersected against. A bounding volume hierarchy (BVH) is a common choice.
 The design of the acceleration structure is considered critical for high end
 ray tracers, and a ton of research has been done on optimizing these structures
 for the GPU. General purpose ray-tracing frameworks are now available from
-Intel (Embree), NVidia, Microsoft.
+Intel (Embree), Nvidia (OptiX and now RTX), AMD (ProRender),
+and Microsoft (DXR, part of DirectX 12, with support from Nvidia and AMD).
+
+* "Understanding the Efficiency of Ray Traversal on GPUs"
+  https://users.aalto.fi/~ailat1/publications/aila2009hpg_paper.pdf
+  https://github.com/matt77hias/GPURayTraversal
 
 These acceleration structures are optimized for representing a union of a
-large number of convex objects. While that is an important use case for Curv
-as well, I may wish to explore a more general kind of acceleration structure.
+large number of convex objects. While that is an important use case for Curv,
+I may wish to explore a more general kind of acceleration structure.
 
 In "Interval Arithmetic and Recursive Subdivision for
 Implicit Functions and Constructive Solid Geometry", Tom Duff describes a

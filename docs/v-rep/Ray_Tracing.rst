@@ -88,4 +88,4 @@ is labeled as to whether it can be sphere traced or must be IA-traced.
 If you restrict your model to only Lipschitz(1) primitives (the only choice
 available in Curv 0.0) then only the faster sphere-tracing algorithm
 will be used, and there is gradual performance degradation as IA objects are
-introduced.
+introduced. See `<Hybrid.rst>`_.
