@@ -441,6 +441,10 @@ http://mandelbulber.com/
 Voronoi Diagrams
 ----------------
 In 2 and 3 dimensions, are a popular modeling technique in 3D printed geometric art.
+Closely related to Worley Noise (aka cellular noise), which is used to generate random Voronoi diagrams.
+Many GLSL "voronoi" functions are actually Worley Noise generators.
+
+`<https://www.google.com/search?q=site%3Aiquilezles.org+voronoi>`_
 
 Hyperbolic Geometry
 -------------------
