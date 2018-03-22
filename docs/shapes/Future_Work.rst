@@ -436,6 +436,8 @@ These algorithms could be packaged as Curv shape constructors.
 
 http://mandelbulber.com/
 
+"At the Heart of the Holy Box" -- I'd like to be able to do this in Curv, in real time on the GPU. Should eventually be possible. (It's just sphere tracing!) https://www.youtube.com/watch?v=OW5RnrlTeow
+
 Voronoi Diagrams
 ----------------
 In 2 and 3 dimensions, are a popular modeling technique in 3D printed geometric art.
