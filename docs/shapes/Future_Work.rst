@@ -446,6 +446,11 @@ Hyperbolic Geometry
 -------------------
 The math behind Escher's Circle Limit prints.
 
+Check out the animations in this slide show. I'd like to program these in Curv:
+
+* "Conformal Models of the Hyperbolic Geometry", Vladimir Bulatov.
+  http://bulatov.org/math/1001/
+
 Carole Blanc
 ------------
 * http://dept-info.labri.fr/~blanc/abst.html
