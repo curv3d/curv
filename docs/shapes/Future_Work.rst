@@ -327,6 +327,14 @@ General Sweep
 -------------
 Sweep an arbitrary 2D/3D shape along an arbitrary 2D/3D curve.
 
+Libigl (open source) implements this for 3D triangle meshes. It converts the mesh to V-Rep, performs the sweep, then converts V-Rep back to a mesh. Since Curv is already a V-Rep system, we can cut out the conversion between B-Rep and V-Rep. The actual V-Rep used is a discrete signed distance field, represented as a voxel array. See http://libigl.github.io/libigl/tutorial/tutorial.html#sweptvolume
+
+References:
+
+* William J. Schroeder, William E. Lorensen, and Steve Linthicum. "Implicit Modeling of Swept Surfaces and Volumes", 1994.
+* Akash Garg, Alec Jacobson, Eitan Grinspun. "Computational Design of Reconfigurables", 2016.
+  http://www.cs.columbia.edu/cg/reconfigurables/
+
 General Extrude
 ---------------
 Sweep an arbitrary 2D shape along an arbitrary 3D curve.
