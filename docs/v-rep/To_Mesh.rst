@@ -11,7 +11,7 @@ so far are:
 
 Ideally, the meshing algorithm will create a mesh that looks good (is a good
 approximation of the original model), can be successfully used in OpenSCAD (no
-CGAL errors), and can be successfully 3D printed. And is fast.
+CGAL errors), and can be successfully 3D printed. And the algorithm is fast.
 
 Marching Cubes
 ==============
@@ -39,38 +39,38 @@ The algorithm is well understood, and even has its own subreddit.
 
 Does Dual Contouring meet my goals?
 
- 1. The results look good.
- 2. It produces self intersections, which cause OpenSCAD booleans to fail.
- 3. It can create non-manifold meshes, but of a specific type that are
-    compatible with OpenSCAD CGAL. The mesh is watertight, but two separate
-    objects can share a vertex or edge, or two projections of the same object
-    can meet at a vertex or edge. As far as I know, these objects are 3D
-    printable. So, no problem.
- 4. It potentially creates lots of triangles, which could cause you to run out
-    of time or memory while performing CGAL operations in OpenSCAD. Ideally,
-    there are exactly enough triangles to approximate the surface, up to a
-    specified error tolerance. This means: more and smaller triangles in regions
-    of high curvature, and fewer and larger triangles in regions of low
-    curvature.
- 5. It can produce needle shaped triangles, which might be an issue?
- 6. Multiple GPU implementations (and research papers), which will help
-    to speed things up later.
+1. The results look good.
+2. It produces self intersections, which cause OpenSCAD booleans to fail.
+3. It can create non-manifold meshes, but of a specific type that are
+   compatible with OpenSCAD CGAL. The mesh is watertight, but two separate
+   objects can share a vertex or edge, or two projections of the same object
+   can meet at a vertex or edge. As far as I know, these objects are 3D
+   printable. So, no problem.
+4. It potentially creates lots of triangles, which could cause you to run out
+   of time or memory while performing CGAL operations in OpenSCAD. Ideally,
+   there are exactly enough triangles to approximate the surface, up to a
+   specified error tolerance. This means: more and smaller triangles in regions
+   of high curvature, and fewer and larger triangles in regions of low
+   curvature.
+5. It can produce needle shaped triangles, which might be an issue?
+6. Multiple GPU implementations (and research papers), which will help
+   to speed things up later.
 
 Issues #2 and #4 above are the main issues that need to be addressed.
 
 Self intersection
 -----------------
- * @emilk on github implemented a simple "clamping" method to eliminate self
-   intersections, but this produces artifacts that look bad. Clamping also
-   helps with needle shaped triangles.
- * “Intersection-free contouring on an octree grid” (2006) eliminates the
-   self-intersections by devising a set of simple geometric tests to identify
-   potentially intersecting polygons, which are then tessellated into smaller,
-   non-intersecting triangles. Have not found an available open source
-   implementation. (Have emailed author.)
- * LibIGL has an algorithm (GPL3) to repair meshes with self intersection.
-   ``include/igl/copyleft/cgal/remesh_self_intersections.h``
- * "Direct repair of self-intersecting meshes"
+* @emilk on github implemented a simple "clamping" method to eliminate self
+  intersections, but this produces artifacts that look bad. Clamping also
+  helps with needle shaped triangles.
+* “Intersection-free contouring on an octree grid” (2006) eliminates the
+  self-intersections by devising a set of simple geometric tests to identify
+  potentially intersecting polygons, which are then tessellated into smaller,
+  non-intersecting triangles. Have not found an available open source
+  implementation. (Have emailed author.)
+* LibIGL has an algorithm (GPL3) to repair meshes with self intersection.
+  ``include/igl/copyleft/cgal/remesh_self_intersections.h``
+* "Direct repair of self-intersecting meshes"
 
 Simplification
 --------------
