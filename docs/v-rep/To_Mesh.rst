@@ -6,12 +6,12 @@ Ideally, there would be a standard, popular library, prepackaged by Ubuntu,
 that I could just link to and use. In this category, the closest I've found
 so far are:
 
- * libigl -- has a GPL'ed marching cubes
- * vcglib (the library underlying meshlab) also has a GPL'ed marching cubes
+* libigl -- has a GPL'ed marching cubes
+* vcglib (the library underlying meshlab) also has a GPL'ed marching cubes
 
 Ideally, the meshing algorithm will create a mesh that looks good (is a good
 approximation of the original model), can be successfully used in OpenSCAD (no
-CGAL errors), and can be successfully 3D printed.
+CGAL errors), and can be successfully 3D printed. And is fast.
 
 Marching Cubes
 ==============
@@ -34,7 +34,8 @@ Dual Contouring (2002) is another popular grid-based method. It detects features
 implemented, I think the mesh is watertight, but it produces self-intersections,
 and the mesh may not be manifold. The code is reasonably simple. There are
 multiple implementations on github, although they all appear to be one-person
-hobby-grade implementations.
+hobby-grade implementations. There are multiple GPU implementations.
+The algorithm is well understood, and even has its own subreddit.
 
 Does Dual Contouring meet my goals?
 
@@ -52,6 +53,8 @@ Does Dual Contouring meet my goals?
     of high curvature, and fewer and larger triangles in regions of low
     curvature.
  5. It can produce needle shaped triangles, which might be an issue?
+ 6. Multiple GPU implementations (and research papers), which will help
+    to speed things up later.
 
 Issues #2 and #4 above are the main issues that need to be addressed.
 
