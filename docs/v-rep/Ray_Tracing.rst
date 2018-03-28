@@ -79,12 +79,20 @@ Lipschitz bound.
 
 References:
 
-* "CSG Operations of Arbitrary Primitives with Interval Arithmetic and Real-Time Ray Tracing"
+* "CSG Operations of Arbitrary Primitives with Interval Arithmetic and Real-Time Ray Tracing" (2008)
   https://www.cs.utah.edu/~aek/research/csgimplicits.pdf
+* "RealSurf – A GPU-based Realtime Ray Caster for Algebraic Surfaces" (2009)
+  They use bisection without interval arithmetic to raytrace algebraic surfaces,
+  and they get very high frame rates.
+  Unlike sphere tracing, it's not guaranteed to work:
+  "Rendering errors typically occur for surfaces of high degree or near
+  certain types of singularities".
 
 Bisection is a simple but slow root finding algorithm, similar to binary search:
 it has linear convergence. Newton's method is faster (quadratic convergence),
 but as mentioned above, now we need the implicit function to be C1 continuous.
+The "Realsurf" paper claims that bisection is more numerically stable than
+faster rootfinding methods when using 32 bit floats.
 
 Hybrid V-Rep
 ------------
