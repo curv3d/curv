@@ -66,8 +66,8 @@ Self intersection
 * “Intersection-free contouring on an octree grid” (2006) eliminates the
   self-intersections by devising a set of simple geometric tests to identify
   potentially intersecting polygons, which are then tessellated into smaller,
-  non-intersecting triangles. Have not found an available open source
-  implementation. (Have emailed author.)
+  non-intersecting triangles.
+  Source (LGPL2.1+) https://sourceforge.net/projects/dualcontouring/
 * LibIGL has an algorithm (GPL3) to repair meshes with self intersection.
   ``include/igl/copyleft/cgal/remesh_self_intersections.h``
 * "Direct repair of self-intersecting meshes"
