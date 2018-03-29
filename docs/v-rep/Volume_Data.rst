@@ -27,3 +27,13 @@ GVDB is an nVidia CUDA implementation of VDB.
 
 Converting Meshes to Signed Distance Fields
 -------------------------------------------
+There are two kinds of representations to consider:
+
+* An *exact* representation of a mesh preserves all of the faces and edges.
+  This is appropriate for smaller triangle meshes that are intended to
+  represent polyhedra.
+
+* An *approximate* representation will smooth over regions that represent
+  curved surfaces, while preserving sharp features. In theory, this would be
+  a more memory efficient way to represent large triangle meshes that are approximations
+  of curved surfaces.
