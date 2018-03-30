@@ -34,20 +34,40 @@ There are two kinds of representations to consider:
   represent polyhedra.
 
 * An *approximate* representation will smooth over regions that represent
-  curved surfaces, while preserving sharp features. In theory, this would be
+  curved surfaces (ideally while preserving sharp features). In theory, this would be
   a more memory efficient way to represent large triangle meshes that are approximations
-  of curved surfaces.
+  of curved surfaces, where you can trade off memory for precision.
+
+For each conversion method, we should consider:
+
+* What is the representation?
+* Does the method require a valid mesh (manifold or watertight, and non-self-intersecting)?
+  Or does it work on triangle soup?
+* Has the method been successfully used by people other than the researchers?
+  Is it available as open source?
+
+Signed Distance Fields for Polygon Soup Meshes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+"Signed Distance Fields for Polygon Soup Meshes" (2014) http://run.usc.edu/signedDistanceField/
+
+* Works for polygon soup.
+* Easy to control, with a single parameter that determines the size of the holes that will be filled in.
+* Doesn't support internal voids -- these will be filled in.
+* Output is a discrete SDF, a grid of distance values. The distance values may be exact.
 
 Exact Mesh Representation
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-The most promising exact representation is the bounding volume hierarchy used
-to ray trace large triangle meshes.
+The bounding volume hierarchy (BVH) used to accelerate ray tracing of a mesh
+is a promising starting point for an exact mesh representation.
+This structure is pretty much optimal for ray-tracing a mesh based shape.
+It won't give you an exact distance to the nearest triangle in constant time,
+however.
 
 https://www.researchgate.net/publication/262215434_Efficient_evaluation_of_continuous_signed_distance_to_a_polygonal_mesh
 
-This looks like a great paper. Lots of performance testing, including CPU vs GPU implementations. They use bounding volume hierarchies, it sounds similar to what's used for ray tracing.
+This looks like a great paper. Lots of performance testing, including CPU vs GPU implementations. They use bounding volume hierarchies, similar to what's used for ray tracing. Requires a valid mesh.
 
-The GPU performance is roughly comparable to CPU performance (with 12 cores)* for the biggest models with the most triangles, Armadillo and Buste. In those models, large numbers of triangles are used to approximate curved surfaces: for these particular models, an exact distance field is not valuable. The GPU is 37 times faster than the CPU for the smallest model, "signbreaker", a polyhedron that needs to be represented exactly.
+The GPU performance is roughly comparable to CPU performance (with 12 cores) for the biggest models with the most triangles, Armadillo and Buste. In those models, large numbers of triangles are used to approximate curved surfaces: for these particular models, an exact distance field is not valuable. The GPU is 37 times faster than the CPU for the smallest model, "signbreaker", a polyhedron that needs to be represented exactly.
 
 It would be nice to compare performance of this algorithm to voxel arrays (which give approximate distance fields) for different size meshes.
 
