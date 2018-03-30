@@ -38,13 +38,29 @@ There are two kinds of representations to consider:
   a more memory efficient way to represent large triangle meshes that are approximations
   of curved surfaces.
 
+Exact Mesh Representation
+~~~~~~~~~~~~~~~~~~~~~~~~~
 The most promising exact representation is the bounding volume hierarchy used
 to ray trace large triangle meshes.
 
+https://www.researchgate.net/publication/262215434_Efficient_evaluation_of_continuous_signed_distance_to_a_polygonal_mesh
+
+This looks like a great paper. Lots of performance testing, including CPU vs GPU implementations. They use bounding volume hierarchies, it sounds similar to what's used for ray tracing.
+
+The GPU performance is roughly comparable to CPU performance (with 12 cores)* for the biggest models with the most triangles, Armadillo and Buste. In those models, large numbers of triangles are used to approximate curved surfaces: for these particular models, an exact distance field is not valuable. The GPU is 37 times faster than the CPU for the smallest model, "signbreaker", a polyhedron that needs to be represented exactly.
+
+It would be nice to compare performance of this algorithm to voxel arrays (which give approximate distance fields) for different size meshes.
+
+There is a follow-up by the same authors, where they run into problems with the exact distance fields created by this technique. They discuss the use of convolution to modify the distance field and fix the problems they encountered:
+
+http://eprints.bournemouth.ac.uk/22532/1/SFFP15_FilteringSDF_CGF.pdf
+
+Approximate Mesh Representation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 A voxel array or VDB is a popular approximate representation.
 However, there is no sharp feature detection.
 
 "Efficient Sparse Voxel Octrees"
 http://research.nvidia.com/sites/default/files/pubs/2010-02_Efficient-Sparse-Voxel/laine2010i3d_paper.pdf
 
-It's from nVidia, and is intended for use in video games. Each node of the octree has both voxel data, and a "contour" which provides boundary information. The contours allow it to "approximate sharp corners". They converted meshes to this data structure in order to test it. (Similar to the concept of VDB. But, note, the "contour" mechanism was not absorbed by the newer "GDB Voxels" product.)
+It's from nVidia, and is intended for use in video games. Each node of the octree has both voxel data, and a "contour" which provides boundary information. The contours allow it to "approximate sharp corners". They converted meshes to this data structure in order to test it. (Similar to the concept of VDB. But, note, the "contour" mechanism was not absorbed by the newer "GVDB Voxels" product.)
