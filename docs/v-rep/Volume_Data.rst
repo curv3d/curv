@@ -23,7 +23,7 @@ popular choice for representing a discrete signed distance field.
 VDB is a popular hierarchical data structure built from a tree of voxel arrays.
 The OpenVDB project is well supported and widely used (for CPUs, with an OpenGL renderer).
 
-GVDB is an nVidia CUDA implementation of VDB.
+GVDB Voxels (2017, BSD licence) is an nVidia CUDA implementation of VDB.
 
 Converting Meshes to Signed Distance Fields
 -------------------------------------------
@@ -37,3 +37,14 @@ There are two kinds of representations to consider:
   curved surfaces, while preserving sharp features. In theory, this would be
   a more memory efficient way to represent large triangle meshes that are approximations
   of curved surfaces.
+
+The most promising exact representation is the bounding volume hierarchy used
+to ray trace large triangle meshes.
+
+A voxel array or VDB is a popular approximate representation.
+However, there is no sharp feature detection.
+
+"Efficient Sparse Voxel Octrees"
+http://research.nvidia.com/sites/default/files/pubs/2010-02_Efficient-Sparse-Voxel/laine2010i3d_paper.pdf
+
+It's from nVidia, and is intended for use in video games. Each node of the octree has both voxel data, and a "contour" which provides boundary information. The contours allow it to "approximate sharp corners". They converted meshes to this data structure in order to test it. (Similar to the concept of VDB. But, note, the "contour" mechanism was not absorbed by the newer "GDB Voxels" product.)
