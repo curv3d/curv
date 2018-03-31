@@ -1,7 +1,7 @@
 Volume Data Structures
 ======================
-A "Volume Data Structure" is a volumetric representation of a geometric shape,
-as distinct from a volumetric function representation.
+A "Volume Data Structure" is a volume representation of a geometric shape,
+as distinct from a volume function representation.
 
 Volume data structures expected to be more efficient than functions
 in a number of cases:
@@ -17,13 +17,47 @@ in a number of cases:
 How many distinct volume data structures do we need to cover the important
 use cases?
 
-On the GPU, voxel arrays hardware accelerated, and are therefore an efficient and
-popular choice for representing a discrete signed distance field.
+It would be nice to find a universal volume data structure:
 
-VDB is a popular hierarchical data structure built from a tree of voxel arrays.
+* Can a mesh be converted to the VDS?
+* Can you raytrace the VDS in real time on a GPU?
+* Can the VDS be converted to a mesh?
+* In the above 3 cases, are sharp features preserved?
+
+Since I'm reading a lot of research papers:
+Has the method been successfully used by people other than the researchers?
+Is it available as open source?
+
+Varieties of Volume Data Structures
+-----------------------------------
+On the GPU, **voxel arrays** are hardware accelerated, and are therefore an efficient and
+popular choice for representing a discrete signed distance field. Two problems:
+
+* They can consume a lot of memory.
+* They don't reproduce details finer than the grid resolution.
+  Sharp features are rounded off (due to trilinear interpolation).
+
+Most alternatives to voxel arrays are tree structured.
+
+**VDB** is a popular hierarchical data structure built from a tree of voxel arrays
+(they are called sparse voxel arrays).
 The OpenVDB project is well supported and widely used (for CPUs, with an OpenGL renderer).
+GVDB Voxels (2017, BSD licence) is the 2nd generation nVidia CUDA implementation of VDB.
+Reproducing sharp features is a problem.
 
-GVDB Voxels (2017, BSD licence) is an nVidia CUDA implementation of VDB.
+Marching Cubes works directly on a grid of distance values. Sharp features are not preserved.
+
+Dual Contouring (2002) uses an octree that tracks where the surface intersects grid cell edges,
+and stores "hermite data" (exact intersection points and their normals), the latter used to reproduce
+sharp features. This is not a representation of a signed distance field.
+
+Extended Marching Cubes (2001, "Feature Sensitive Surface Extraction from Volume Data")
+uses an "enhanced SDF representation" that preserves information about sharp features.
+It's an octree representation of a directed distance field. Interesting.
+
+Dual Marching Cubes (2004) uses an octree of distance values, where the recursive subdivision
+of the octree is guided by Quadratic Error Functions. Compared to Dual Contouring and Extended
+Marching Cubes, a "much sparser" octree is required. From the octree, a "dual grid" is constructed,
 
 Converting Meshes to Signed Distance Fields
 -------------------------------------------
@@ -43,8 +77,6 @@ For each conversion method, we should consider:
 * What is the representation?
 * Does the method require a valid mesh (manifold or watertight, and non-self-intersecting)?
   Or does it work on triangle soup?
-* Has the method been successfully used by people other than the researchers?
-  Is it available as open source?
 
 Signed Distance Fields for Polygon Soup Meshes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
