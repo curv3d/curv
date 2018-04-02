@@ -14,15 +14,18 @@ in a number of cases:
   define the shape (with no obvious implicit function representation),
   we can accumulate data in a volume data structure.
 
-How many distinct volume data structures do we need to cover the important
-use cases?
-
 It would be nice to find a universal volume data structure:
 
-* Can a mesh be converted to the VDS?
-* Can you raytrace the VDS in real time on a GPU?
-* Can the VDS be converted to a mesh?
-* In the above 3 cases, are sharp features preserved?
+* Can be raycast in real time on a GPU.
+* A mesh can be converted to the VDS.
+* The VDS can be converted to a mesh.
+* Supports boolean operations (union, intersection, difference)
+  and sweeping a 3D shape along a 3D path. Basically, digital sculpting ops.
+* Sharp features are preserved.
+
+Practically, there are tradeoffs between memory, performance and generality.
+So how many distinct volume data structures do we need to cover the important
+use cases?
 
 Since I'm reading a lot of research papers:
 Has the method been successfully used by people other than the researchers?
@@ -30,7 +33,8 @@ Is it available as open source?
 
 Varieties of Volume Data Structures
 -----------------------------------
-On the GPU, **voxel arrays** are hardware accelerated, and are therefore an efficient and
+3D arrays of distance values (**voxel arrays**) are a universal volume data structure.
+On the GPU, voxel arrays are hardware accelerated. This all makes them a
 popular choice for representing a discrete signed distance field. Two problems:
 
 * They can consume a lot of memory.
