@@ -446,6 +446,13 @@ Many GLSL "voronoi" functions are actually Worley Noise generators.
 
 `<https://www.google.com/search?q=site%3Aiquilezles.org+voronoi>`_
 
+Reaction-Diffusion Textures
+---------------------------
+Zebra stripes, leopard spots, much more.
+
+* "Generating Textures on Arbitrary Surfaces Using Reaction-Diffusion"
+  https://www.cc.gatech.edu/~turk/my_papers/reaction_diffusion.pdf
+
 Hyperbolic Geometry
 -------------------
 The math behind Escher's Circle Limit prints.
