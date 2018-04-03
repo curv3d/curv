@@ -31,6 +31,62 @@ Since I'm reading a lot of research papers:
 Has the method been successfully used by people other than the researchers?
 Is it available as open source?
 
+Requirements and Criteria
+-------------------------
+Some criteria for evaluating potential Volume Data Structures (VDSs).
+
+Efficient Raycasting
+  If the VDS is the top level shape in a scene, there is an efficient
+  algorithm for raycasting the shape in real time on a GPU.
+
+Global SDF
+  The VDS has a Signed Distance Field (SDF) that is defined at all points in 3D space.
+
+Continuous SDF
+  The SDF is C0 continuous.
+  This might be an issue if the VDS is a hierarchical assembly of "patches"
+  which specify different regions of the SDF -- we don't want discontinuities where
+  patches are joined together.
+
+Lipschitz(1) SDF
+  Ideally, the SDF is Lipschitz(1), so that if L(1)-preserving shape operations are applied
+  to the VDS field, the resulting SDF can be sphere traced.
+  (This is stronger than C0 continuity.)
+
+Euclidean SDF
+  Ideally, you can construct an SDF that approximates a desired Euclidean SDF
+  to within an error tolerance.
+  Applications include offsets and blending.
+  (I intend this to be stronger than L(1) continuity -- approximation errors in the
+  approximate Euclidean SDF don't violate the L(1) condition.)
+
+Conversion from Implicit Function
+  It should be possible to convert an arbitrary implicit function into a VDS that
+  approximates it, within a specified error tolerance.
+  One application is offline conversion of an implicit function that is too expensive
+  for interactive raycasting to a cheaper VDS that can be raycast.
+  Also of interest is repairing
+  an implicit function to make its SDF Lipschitz(1) or Euclidean.
+
+Conversion from Triangle Mesh
+  Two interesting cases for conversion from a triangle mesh.
+  First is exact conversion, where the result is a polyhedron.
+  Second is to create an approximation to within an error tolerance.
+
+Conversion to Triangle Mesh
+  ...
+
+Efficient representation of flat surfaces, curved surfaces, sharp features
+  ...
+
+Efficient representation of thin features
+  ...
+
+Animation
+  Can animation be efficiently supported?
+  For example, we could extend the data structure to describe a 4D distance field
+  that maps (x,y,z,t) to a distance.
+
 Varieties of Volume Data Structures
 -----------------------------------
 3D arrays of distance values (**voxel arrays**) are a universal volume data structure.
