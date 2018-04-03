@@ -450,8 +450,10 @@ Reaction-Diffusion Textures
 ---------------------------
 Zebra stripes, leopard spots, much more.
 
-* "Generating Textures on Arbitrary Surfaces Using Reaction-Diffusion"
+* Greg Turk, "Generating Textures on Arbitrary Surfaces Using Reaction-Diffusion"
   https://www.cc.gatech.edu/~turk/my_papers/reaction_diffusion.pdf
+* Greg Turk, "Texturing Surfaces Using Reaction-Diffusion", Ph.D. Thesis
+  https://www.cc.gatech.edu/~turk/pubs.html
 
 Hyperbolic Geometry
 -------------------
