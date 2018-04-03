@@ -103,6 +103,11 @@ In which the output of one distance field is fed as input to another distance fi
   If ``perimeter`` has an approximate distance field, then any
   deformations in that distance field will deform the ``cross_section``.
 
+Future Work: high quality morph operations
+
+* "Shape Transformation Using Variational Implicit Functions"
+  https://www.cc.gatech.edu/~turk/my_papers/schange.pdf
+
 Blended Union, Intersection and Difference
 ------------------------------------------
 A blended union is a generalized union that smoothly joins nearby objects.
