@@ -82,6 +82,14 @@ Efficient representation of flat surfaces, curved surfaces, sharp features
 Efficient representation of thin features
   ...
 
+CSG Operations
+  Can two instances of the VDS be efficiently unioned, intersected or differenced,
+  to create another VDS?
+  What about sweeping a 3D shape through 3-space?
+  
+Infinite Shapes
+  Can the VDS support infinite shapes?
+
 Animation
   Can animation be efficiently supported?
   For example, we could extend the data structure to describe a 4D distance field
