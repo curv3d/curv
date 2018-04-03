@@ -77,6 +77,13 @@ In which we linearly interpolate between two distance fields.
 
   TODO: bad distance field.
 
+Future Work: high quality morph operations
+
+* "Shape Transformation Using Variational Implicit Functions"
+  https://www.cc.gatech.edu/~turk/my_papers/schange.pdf
+* "Space Time Blending"
+  https://cis.k.hosei.ac.jp/~F-rep/SpaceTimeBlend.pdf  
+
 Nested Distance Fields
 ----------------------
 In which the output of one distance field is fed as input to another distance field.
@@ -102,11 +109,6 @@ In which the output of one distance field is fed as input to another distance fi
   field: the result is a rounded or sharp transition.
   If ``perimeter`` has an approximate distance field, then any
   deformations in that distance field will deform the ``cross_section``.
-
-Future Work: high quality morph operations
-
-* "Shape Transformation Using Variational Implicit Functions"
-  https://www.cc.gatech.edu/~turk/my_papers/schange.pdf
 
 Blended Union, Intersection and Difference
 ------------------------------------------
