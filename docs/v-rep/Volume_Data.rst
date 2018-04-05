@@ -29,7 +29,7 @@ Some criteria for evaluating potential Volume Data Structures (VDSs).
 
 Efficient Raycasting
   If the VDS is the top level shape in a scene, there is an efficient
-  shortcut for raycasting the shape in real time on a GPU.
+  method for raycasting the shape in real time on a GPU.
 
 Global SDF
   The VDS has a Signed Distance Field (SDF) that is defined at all points in 3D space.
@@ -74,8 +74,18 @@ Conversion from Triangle Mesh
 Conversion to Triangle Mesh
   ...
 
-Efficient representation of flat surfaces, curved surfaces, sharp features
+Efficient representation of flat surfaces, curved surfaces
   ...
+
+Efficient representation of sharp features
+  Using a pure voxel grid representation, you can only approximate sharp features
+  like sharp edges and corners. The cost increases with the cube of the resolution,
+  and you can still easily zoom in enough for the sharpness to go away.
+  
+  I'm looking for efficient and exact representations of sharp features.
+  This might mean explicitly encoding sharp features in the representation.
+  It might mean providing high quality surface normals in the neighbourhood
+  of sharp features.
 
 Efficient representation of thin features
   ...
@@ -114,6 +124,13 @@ popular choice for representing signed distance fields in video games. Two probl
 * They can consume a lot of memory.
 * They don't reproduce details finer than the grid resolution.
   Sharp features are rounded off (due to trilinear interpolation).
+
+There is a neat trick for encoding sharp features using 2D distance grids.
+You analyze a finite shape and extract usually 2-4 2D shapes that,
+when intersected together, reproduce the original
+shape and preserve sharp vertices. This is a fast, high quality technique
+for rendering fonts on a GPU. But it's probably a lot more difficult
+to implement this technique in 3D.
 
 Most alternatives to voxel grids are tree structured.
 
