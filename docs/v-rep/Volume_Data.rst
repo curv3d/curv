@@ -106,15 +106,16 @@ Animation
 
 Voxels
 ------
-Voxel grids (3D rectangular arrays of voxels)
-where each voxel is a density value (**density grids**).
+**Density Grids**:
+voxel grids (3D rectangular arrays of voxels)
+where each voxel is a density value.
 The density is 0 outside the shape, 1 inside the shape, and a partially occupied
 voxel on the shape boundary may have an intermediate value.
 Density grids are efficient for CSG operations, but expensive to raycast directly,
 so you convert them to a mesh or build an acceleration structure.
 
-Voxel grids where each voxel is a signed distance (**distance grids**,
-or, discrete signed distance fields).
+**Distance Grids**:
+voxel grids where each voxel is a signed distance (aka discrete signed distance fields).
 This is a near candidate for a universal VDS in Curv.
 
 On the GPU, distance grids are hardware accelerated. Built in trilinear
@@ -125,19 +126,21 @@ popular choice for representing signed distance fields in video games. Two probl
 * They don't reproduce details finer than the grid resolution.
   Sharp features are rounded off (due to trilinear interpolation).
 
-There is a neat trick for encoding sharp features using 2D distance grids.
-You analyze a finite shape and extract usually 2-4 2D shapes that,
+**Multi-channel Distance Grids**:
+This is a neat trick for encoding sharp features using 2D distance grids.
+You analyze a finite 2D shape and extract usually 2-4 shapes that,
 when intersected together, reproduce the original
 shape and preserve sharp vertices. This is a fast, high quality technique
 for rendering fonts on a GPU. But it's probably a lot more difficult
 to implement this technique in 3D.
+https://github.com/Chlumsky/msdfgen
 
 Most alternatives to voxel grids are tree structured.
 
 Many researchers have experimented with voxel octrees, to save space.
 
-**VDB** is a popular hierarchical data structure built from a tree of voxel arrays
-(they are called sparse voxel arrays).
+**VDB** is a popular hierarchical data structure built from a tree of voxel grids
+(they are called sparse voxel databases).
 The OpenVDB project is well supported and widely used (for CPUs, with an OpenGL renderer).
 GVDB Voxels (2017, BSD licence) is the 2nd generation nVidia CUDA implementation of VDB.
 Reproducing sharp features is a problem.
