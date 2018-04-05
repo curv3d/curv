@@ -94,17 +94,30 @@ Animation
   For example, we could extend the data structure to describe a 4D distance field
   that maps (x,y,z,t) to a distance.
 
-Varieties of Volume Data Structures
------------------------------------
-3D arrays of distance values (**voxel arrays**) are a universal volume data structure.
-On the GPU, voxel arrays are hardware accelerated. This all makes them a
-popular choice for representing a discrete signed distance field. Two problems:
+Voxels
+------
+Voxel grids (3D rectangular arrays of voxels)
+where each voxel is a density value (**density grids**).
+The density is 0 outside the shape, 1 inside the shape, and a partially occupied
+voxel on the shape boundary may have an intermediate value.
+Density grids are efficient for CSG operations, but expensive to raycast directly,
+so you convert them to a mesh or build an acceleration structure.
+
+Voxel grids where each voxel is a signed distance (**distance grids**,
+or, discrete signed distance fields).
+This is a near candidate for a universal VDS in Curv.
+
+On the GPU, distance grids are hardware accelerated. Built in trilinear
+interpolation makes distance grids into continuous functions. This makes them a
+popular choice for representing signed distance fields in video games. Two problems:
 
 * They can consume a lot of memory.
 * They don't reproduce details finer than the grid resolution.
   Sharp features are rounded off (due to trilinear interpolation).
 
-Most alternatives to voxel arrays are tree structured.
+Most alternatives to voxel grids are tree structured.
+
+Many researchers have experimented with voxel octrees, to save space.
 
 **VDB** is a popular hierarchical data structure built from a tree of voxel arrays
 (they are called sparse voxel arrays).
@@ -112,6 +125,8 @@ The OpenVDB project is well supported and widely used (for CPUs, with an OpenGL 
 GVDB Voxels (2017, BSD licence) is the 2nd generation nVidia CUDA implementation of VDB.
 Reproducing sharp features is a problem.
 
+Converting an SDF to a Mesh
+---------------------------
 Marching Cubes works directly on a grid of distance values. Sharp features are not preserved.
 
 Dual Contouring (2002) uses an octree that tracks where the surface intersects grid cell edges,
