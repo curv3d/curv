@@ -191,6 +191,7 @@ Signed Distance Fields for Polygon Soup Meshes
 
 Exact Mesh Representation
 ~~~~~~~~~~~~~~~~~~~~~~~~~
+**BVH+Triangles**:
 The bounding volume hierarchy (BVH) used to accelerate ray tracing of a mesh
 is a promising starting point for an exact mesh representation.
 This structure is pretty much optimal for ray-tracing a mesh based shape.
@@ -208,6 +209,13 @@ It would be nice to compare performance of this algorithm to voxel arrays (which
 There is a follow-up by the same authors, where they run into problems with the exact distance fields created by this technique. They discuss the use of convolution to modify the distance field and fix the problems they encountered:
 
 http://eprints.bournemouth.ac.uk/22532/1/SFFP15_FilteringSDF_CGF.pdf
+
+..
+  **Voronoi Diagrams**
+  Consider a mitred distance field for a polygon or polyhedron.
+  It has a particular structure (looks like a Voronoi diagram).
+  Maybe we can create a specialized data structure just for this case.
+  http://gamma.cs.unc.edu/GVD/
 
 Approximate Mesh Representation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
