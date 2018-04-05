@@ -14,18 +14,10 @@ in a number of cases:
   define the shape (with no obvious implicit function representation),
   we can accumulate data in a volume data structure.
 
-It would be nice to find a universal volume data structure:
-
-* Can be raycast in real time on a GPU.
-* A mesh can be converted to the VDS.
-* The VDS can be converted to a mesh.
-* Supports boolean operations (union, intersection, difference)
-  and sweeping a 3D shape along a 3D path. Basically, digital sculpting ops.
-* Sharp features are preserved.
-
+It would be nice to find a universal volume data structure.
 Practically, there are tradeoffs between memory, performance and generality.
 So how many distinct volume data structures do we need to cover the important
-use cases?
+use cases? And can we union them together as node types in a hybrid VDS?
 
 Since I'm reading a lot of research papers:
 Has the method been successfully used by people other than the researchers?
@@ -37,7 +29,7 @@ Some criteria for evaluating potential Volume Data Structures (VDSs).
 
 Efficient Raycasting
   If the VDS is the top level shape in a scene, there is an efficient
-  algorithm for raycasting the shape in real time on a GPU.
+  shortcut for raycasting the shape in real time on a GPU.
 
 Global SDF
   The VDS has a Signed Distance Field (SDF) that is defined at all points in 3D space.
@@ -66,12 +58,18 @@ Conversion from Implicit Function
   One application is offline conversion of an implicit function that is too expensive
   for interactive raycasting to a cheaper VDS that can be raycast.
   Also of interest is repairing
-  an implicit function to make its SDF Lipschitz(1) or Euclidean.
+  an implicit function to make it Lipschitz(1) or Euclidean.
+
+Conversion from a CAD Model
+  Conversion from a B-Rep spline model of a 3D solid.
 
 Conversion from Triangle Mesh
   Two interesting cases for conversion from a triangle mesh.
-  First is exact conversion, where the result is a polyhedron.
-  Second is to create an approximation to within an error tolerance.
+  First is an exact conversion, where the result is a polyhedron.
+  Second is an approximation to within an error tolerance,
+  smoothing out curves while preserving sharp features:
+  the result should be smaller and faster than an exact polyhedron
+  representation, for large meshes.
 
 Conversion to Triangle Mesh
   ...
@@ -86,6 +84,7 @@ CSG Operations
   Can two instances of the VDS be efficiently unioned, intersected or differenced,
   to create another VDS?
   What about sweeping a 3D shape through 3-space?
+  Basically, digital sculpting ops, for building up a VDS incrementally.
   
 Infinite Shapes
   Can the VDS support infinite shapes?
