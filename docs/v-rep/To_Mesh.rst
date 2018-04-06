@@ -92,6 +92,29 @@ signficant added complexity to fix this problem.  @Lin20 has implemented
 manifold dual contouring on github (in C#); he claims it's the only public
 implementation.
 
+Dual Marching Cubes
+===================
+
+Dual/Primal Mesh Optimization
+=============================
+This algorithm begins with a "primal mesh" created by one of the grid-based
+meshing algorithms. Then, it iteratively improves it using an "energy minimization"
+strategy, with high quality results, better looking than grid-based output.
+
+"Dual/Primal Mesh Optimization for Polygonized Implicit Surfaces" (2002)
+Yutaka Ohtake and Alexander G. Belyaev
+http://www.hyperfun.org/SM02ob.pdf
+
+Open source implementations:
+
+* http://home.eps.hw.ac.uk/~ab226/software/mpu_implicits/webpage.html
+  C++, by original authors. Warning: no copyright notice or copyright licence.
+* https://github.com/sohale/implisolid
+  C++ and Python, LGPL 3.
+* https://github.com/Lin20/BinaryMeshFitting
+  C++, MIT Licence. Looks worth investigating.
+  Still under active development.
+
 Survey of Algorithms
 ====================
 A survey of meshing algorithms:
