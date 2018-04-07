@@ -95,13 +95,14 @@ implementation.
 Dual Marching Cubes
 ===================
 
-Dual/Primal Mesh Optimization
-=============================
-This algorithm begins with a "primal mesh" created by one of the grid-based
-meshing algorithms. Then, it iteratively improves it using an "energy minimization"
+Primal Mesh Optimization
+========================
+These algorithms begin with a "primal mesh" created by one of the grid-based
+meshing algorithms. Then, they iteratively improve it using an "energy minimization"
 strategy, with high quality results, better looking than grid-based output.
+They are slow, but there is recent research on making them performant.
 
-"Dual/Primal Mesh Optimization for Polygonized Implicit Surfaces" (2002)
+"**Dual/Primal Mesh Optimization for Polygonized Implicit Surfaces**" (2002)
 Yutaka Ohtake and Alexander G. Belyaev
 http://www.hyperfun.org/SM02ob.pdf
 
@@ -113,7 +114,12 @@ Open source implementations:
   C++ and Python, LGPL 3.
 * https://github.com/Lin20/BinaryMeshFitting
   C++, MIT Licence. Looks worth investigating.
+  It's a high performance implementation embedded in a game engine.
   Still under active development.
+
+"**Locally-optimal Delaunay-refinement and optimisation-based mesh generation**".
+https://github.com/dengwirda/jigsaw
+Looks interesting, but has a look-but-don't-touch source licence (not open source).
 
 Survey of Algorithms
 ====================
