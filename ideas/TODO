@@ -1,6 +1,9 @@
-# Release 0.0: "Proof of Concept/Minimum Viable Product"
+# Release 0.1: "STL Export"
 
-Roadmap:
+curv -o stl -O name=value file.curv
+
+## 0.0 TODO List
+0.0 Roadmap:
 * New version of shape library, based on Shape_Atlas and Colour_Atlas.
   Don't need new features, just refine the API, make it more useable.
 * Tweak the core language, based on experience of writing and using the
