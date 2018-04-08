@@ -1,8 +1,8 @@
 project(curv)
 cmake_minimum_required(VERSION 3.5)
-include_directories(. googletest/googletest/include)
+include_directories(. extern/googletest/googletest/include)
 
-add_subdirectory(googletest/googletest)
+add_subdirectory(extern/googletest/googletest)
 
 if (APPLE)
   # Homebrew installs a private copy of GNU readline, which we use, which
