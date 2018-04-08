@@ -29,6 +29,9 @@ Proposed change: `include lib.shape` required to access shape library.
     let include lib.shape;
     in cube
 
+3D Viewer (in glslViewer): "arcball rotation" to replace my ad-hoc
+mouse rotation code.
+
 Pattern project:
 * cast patterns
 * binder patterns
