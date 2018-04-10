@@ -13,6 +13,7 @@ namespace curv {
 
 struct Function;
 struct Context;
+struct System;
 
 // axis aligned bounding box
 struct BBox
@@ -34,6 +35,8 @@ struct Shape_Recognizer
     // describes the source code for the shape expression
     const Context& context_;
 
+    System& system_;
+
     // shape fields, filled in by recognize()
     bool is_2d_;
     bool is_3d_;
@@ -41,7 +44,11 @@ struct Shape_Recognizer
     Shared<Function> dist_;
     Shared<Function> colour_;
 
-    Shape_Recognizer(const Context& cx) : context_(cx) {}
+    Shape_Recognizer(const Context& cx, System& sys)
+    :
+        context_(cx),
+        system_(sys)
+    {}
 
     // If the value is a shape, fill in the shape fields and return true.
     bool recognize(Value);
@@ -51,6 +58,9 @@ struct Shape_Recognizer
 
     /// Invoke the Geometry Compiler on the shape's `colour` function.
     GL_Value gl_colour(GL_Value, GL_Compiler&) const;
+
+    // Invoke the shape's `dist` function.
+    double dist(double x, double y, double z, double t);
 };
 
 } // namespace curv

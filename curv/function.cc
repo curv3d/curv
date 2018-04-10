@@ -101,7 +101,10 @@ Value
 Closure::call(Value arg, Frame& f)
 {
     f.nonlocals_ = &*nonlocals_;
-    pattern_->exec(f.array_, arg, At_Phrase(*f.call_phrase_->arg_,&f), f);
+    if (f.call_phrase_ != nullptr)
+        pattern_->exec(f.array_, arg, At_Phrase(*f.call_phrase_->arg_,&f), f);
+    else
+        pattern_->exec(f.array_, arg, {}, f);
     return expr_->eval(f);
 }
 

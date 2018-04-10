@@ -15,10 +15,10 @@ void export_curv(curv::Value value,
 }
 
 void export_frag(curv::Value value,
-    curv::System&, const curv::Context& cx, const Export_Params&,
+    curv::System& sys, const curv::Context& cx, const Export_Params&,
     std::ostream& out)
 {
-    curv::Shape_Recognizer shape(cx);
+    curv::Shape_Recognizer shape(cx, sys);
     if (shape.recognize(value))
         curv::gl_compile(shape, std::cout, cx);
     else
@@ -116,10 +116,10 @@ void export_json(curv::Value value,
 }
 
 void export_png(curv::Value value,
-    curv::System&, const curv::Context& cx, const Export_Params&,
+    curv::System& sys, const curv::Context& cx, const Export_Params&,
     std::ostream& out)
 {
-    curv::Shape_Recognizer shape(cx);
+    curv::Shape_Recognizer shape(cx, sys);
     if (shape.recognize(value)) {
         auto fragname = curv::stringify(",curv",getpid(),".frag");
         auto pngname = curv::stringify(",curv",getpid(),".png");

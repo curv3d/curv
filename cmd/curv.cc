@@ -199,9 +199,10 @@ launch_viewer(curv::Shared<curv::String> filename)
 }
 
 bool
-display_shape(curv::Value value, const curv::Context &cx, bool block = false)
+display_shape(curv::Value value,
+    curv::System& sys, const curv::Context &cx, bool block = false)
 {
-    curv::Shape_Recognizer shape(cx);
+    curv::Shape_Recognizer shape(cx, sys);
     if (shape.recognize(value)) {
         auto filename = make_tempfile();
         std::ofstream f(filename->c_str());
@@ -261,7 +262,7 @@ interactive_mode(curv::System& sys)
                     names[lastval_key] =
                         curv::make<curv::Builtin_Value>(den.second->front());
                     is_shape = display_shape(den.second->front(),
-                        curv::At_Phrase(prog.value_phrase(), nullptr));
+                        sys, curv::At_Phrase(prog.value_phrase(), nullptr));
                 }
                 if (!is_shape) {
                     for (auto e : *den.second)
@@ -298,7 +299,7 @@ live_mode(curv::System& sys, const char* editor, const char* filename)
                 prog.compile();
                 auto value = prog.eval();
                 if (display_shape(value,
-                    curv::At_Phrase(prog.value_phrase(), nullptr)))
+                    sys, curv::At_Phrase(prog.value_phrase(), nullptr)))
                 {
                     std::cout << "ok.\n";
                 } else {
@@ -499,6 +500,7 @@ main(int argc, char** argv)
 
         if (exporter == nullptr) {
             if (!display_shape(value,
+                sys,
                 curv::At_Phrase(prog.value_phrase(), nullptr),
                 true))
             {

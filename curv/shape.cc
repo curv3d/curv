@@ -9,6 +9,7 @@
 #include <curv/context.h>
 #include <curv/gl_context.h>
 #include <curv/function.h>
+#include <curv/frame.h>
 
 namespace curv {
 
@@ -125,6 +126,16 @@ Shape_Recognizer::gl_colour(GL_Value arg, GL_Compiler& gl) const
     if (result.type != GL_Type::Vec3)
         throw Exception(cx, stringify("colour function returns ",result.type));
     return result;
+}
+
+double
+Shape_Recognizer::dist(double x, double y, double z, double t)
+{
+    Shared<List> point = List::make({Value{x}, Value{y}, Value{z}, Value{t}});
+    auto frame = Frame::make(
+        dist_->nslots_, system_, nullptr, nullptr, nullptr);
+    Value result = dist_->call({point}, *frame);
+    return result.to_num(context_);
 }
 
 } // namespace curv

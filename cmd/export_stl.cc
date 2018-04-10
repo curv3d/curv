@@ -13,7 +13,7 @@ void export_stl(curv::Value value,
     std::ostream& out)
 {
     (void)out;
-    curv::Shape_Recognizer shape(cx);
+    curv::Shape_Recognizer shape(cx, sys);
     if (!shape.recognize(value))
         throw curv::Exception(cx, "not a shape");
 
