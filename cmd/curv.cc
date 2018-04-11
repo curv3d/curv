@@ -204,6 +204,16 @@ display_shape(curv::Value value,
 {
     curv::Shape_Recognizer shape(cx, sys);
     if (shape.recognize(value)) {
+        if (shape.is_2d_) std::cerr << "2D";
+        if (shape.is_2d_ && shape.is_3d_) std::cerr << "/";
+        if (shape.is_3d_) std::cerr << "3D";
+        std::cerr << " shape "
+            << (shape.bbox_.xmax - shape.bbox_.xmin) << "×"
+            << (shape.bbox_.ymax - shape.bbox_.ymin);
+        if (shape.is_3d_)
+            std::cerr << "×" << (shape.bbox_.zmax - shape.bbox_.zmin);
+        std::cerr << "\n";
+
         auto filename = make_tempfile();
         std::ofstream f(filename->c_str());
         curv::gl_compile(shape, f, cx);
@@ -301,7 +311,6 @@ live_mode(curv::System& sys, const char* editor, const char* filename)
                 if (display_shape(value,
                     sys, curv::At_Phrase(prog.value_phrase(), nullptr)))
                 {
-                    std::cout << "ok.\n";
                 } else {
                     std::cout << value << "\n";
                 }

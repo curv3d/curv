@@ -31,12 +31,14 @@ void export_stl(curv::Value value,
     std::ostream& out)
 {
     curv::Shape_Recognizer shape(cx, sys);
-    if (!shape.recognize(value))
-        throw curv::Exception(cx, "not a shape");
+    if (!shape.recognize(value) && !shape.is_3d_)
+        throw curv::Exception(cx, "not a 3D shape");
 
+#if 0
     for (auto p : params) {
         std::cerr << p.first << "=" << p.second << "\n";
     }
+#endif
 
     Vec3d size(
         shape.bbox_.xmax - shape.bbox_.xmin,
@@ -44,6 +46,16 @@ void export_stl(curv::Value value,
         shape.bbox_.zmax - shape.bbox_.zmin);
     double maxspan = fmax(size.x(), fmax(size.y(), size.z()));
     double voxelsize = maxspan / 20.0;
+
+    auto res_p = params.find("res");
+    if (res_p != params.end()) {
+        double res = strtod(res_p->second.c_str(), (char**)nullptr);
+        if (res <= 0.0 || res != res) {
+            throw curv::Exception(cx, curv::stringify(
+                "STL export: invalid parameter res=",res_p->second));
+        }
+        voxelsize = res;
+    }
 
     // This is the range of voxel coordinates.
     // For meshing to work, we need to specify at least a thin band of voxels
@@ -58,6 +70,12 @@ void export_stl(curv::Value value,
         int(ceil(shape.bbox_.xmax/voxelsize)) + 2,
         int(ceil(shape.bbox_.ymax/voxelsize)) + 2,
         int(ceil(shape.bbox_.zmax/voxelsize)) + 2);
+
+    std::cerr
+        << (voxelrange_max.x() - voxelrange_min.x() + 1) << "×"
+        << (voxelrange_max.y() - voxelrange_min.y() + 1) << "×"
+        << (voxelrange_max.z() - voxelrange_min.z() + 1) << " ";
+    std::cerr.flush();
 
     openvdb::initialize();
 
@@ -85,11 +103,15 @@ void export_stl(curv::Value value,
             }
         }
     }
+    std::cerr << "voxels, ";
+    std::cerr.flush();
 
     // convert grid to a mesh
     openvdb::tools::VolumeToMesh mesher;
     mesher(*grid);
+
     std::cerr << mesher.pointListSize() << " vertices\n";
+    std::cerr.flush();
 
     // output an STL file
     out << "solid curv\n";
