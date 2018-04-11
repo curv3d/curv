@@ -22,6 +22,7 @@
   * `brew install double-conversion`
   * `brew install readline`
   * `brew install gedit`
+  * `brew install openvdb`
   * `cd ~`
   * `git clone https://github.com/doug-moen/curv`
   * `cd curv`
