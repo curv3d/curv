@@ -1,7 +1,10 @@
 ## Ubuntu Linux 16.04 build instructions
 * Install glslViewer (https://github.com/doug-moen/glslViewer)
 * Open the Terminal application and run the following commands:
-  * `sudo apt-get install cmake libboost-all-dev libdouble-conversion-dev libreadline-dev`
+  * `sudo apt-get install cmake`
+  * `sudo apt-get install libboost-all-dev libdouble-conversion-dev`
+  * `sudo apt-get install libreadline-dev`
+  * `sudo apt-get install libopenvdb-dev libopenexr-dev libtbb-dev`
   * `cd ~`
   * `git clone https://github.com/doug-moen/curv`
   * `cd curv`
