@@ -11,10 +11,34 @@
 #include "export.h"
 #include <curv/shape.h>
 #include <curv/exception.h>
+#include <curv/die.h>
 
 using openvdb::Vec3s;
 using openvdb::Vec3d;
 using openvdb::Vec3i;
+
+enum Mesh_Format {
+    stl_format,
+    obj_format
+};
+
+void export_mesh(Mesh_Format, curv::Value value,
+    curv::System& sys, const curv::Context& cx, const Export_Params& params,
+    std::ostream& out);
+
+void export_stl(curv::Value value,
+    curv::System& sys, const curv::Context& cx, const Export_Params& params,
+    std::ostream& out)
+{
+    export_mesh(stl_format, value, sys, cx, params, out);
+}
+
+void export_obj(curv::Value value,
+    curv::System& sys, const curv::Context& cx, const Export_Params& params,
+    std::ostream& out)
+{
+    export_mesh(obj_format, value, sys, cx, params, out);
+}
 
 void put_triangle(std::ostream& out, Vec3s v0, Vec3s v1, Vec3s v2)
 {
@@ -40,7 +64,7 @@ double param_to_double(Export_Params::const_iterator i)
     return result;
 }
 
-void export_stl(curv::Value value,
+void export_mesh(Mesh_Format format, curv::Value value,
     curv::System& sys, const curv::Context& cx, const Export_Params& params,
     std::ostream& out)
 {
@@ -136,28 +160,58 @@ void export_stl(curv::Value value,
     std::cerr << mesher.pointListSize() << " vertices\n";
     std::cerr.flush();
 
-    // output an STL file
-    out << "solid curv\n";
-    for (int i=0; i<mesher.polygonPoolListSize(); ++i) {
-        openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
-        for (int j=0; j<pool.numTriangles(); ++j) {
-            // swap ordering of nodes to get outside-normals
-            put_triangle(out,
-                mesher.pointList()[ pool.triangle(j)[0] ],
-                mesher.pointList()[ pool.triangle(j)[2] ],
-                mesher.pointList()[ pool.triangle(j)[1] ]);
+    // output a mesh file
+    switch (format) {
+    case stl_format:
+        out << "solid curv\n";
+        for (int i=0; i<mesher.polygonPoolListSize(); ++i) {
+            openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
+            for (int j=0; j<pool.numTriangles(); ++j) {
+                // swap ordering of nodes to get outside-normals
+                put_triangle(out,
+                    mesher.pointList()[ pool.triangle(j)[0] ],
+                    mesher.pointList()[ pool.triangle(j)[2] ],
+                    mesher.pointList()[ pool.triangle(j)[1] ]);
+            }
+            for (int j=0; j<pool.numQuads(); ++j) {
+                // swap ordering of nodes to get outside-normals
+                put_triangle(out,
+                    mesher.pointList()[ pool.quad(j)[0] ],
+                    mesher.pointList()[ pool.quad(j)[2] ],
+                    mesher.pointList()[ pool.quad(j)[1] ]);
+                put_triangle(out,
+                    mesher.pointList()[ pool.quad(j)[0] ],
+                    mesher.pointList()[ pool.quad(j)[3] ],
+                    mesher.pointList()[ pool.quad(j)[2] ]);
+            }
         }
-        for (int j=0; j<pool.numQuads(); ++j) {
-            // swap ordering of nodes to get outside-normals
-            put_triangle(out,
-                mesher.pointList()[ pool.quad(j)[0] ],
-                mesher.pointList()[ pool.quad(j)[2] ],
-                mesher.pointList()[ pool.quad(j)[1] ]);
-            put_triangle(out,
-                mesher.pointList()[ pool.quad(j)[0] ],
-                mesher.pointList()[ pool.quad(j)[3] ],
-                mesher.pointList()[ pool.quad(j)[2] ]);
+        out << "endsolid curv\n";
+        break;
+    case obj_format:
+        for (int i = 0; i < mesher.pointListSize(); ++i) {
+            auto& pt = mesher.pointList()[i];
+            out << "v " << pt.x() << " " << pt.y() << " " << pt.z() << "\n";
         }
+        for (int i=0; i<mesher.polygonPoolListSize(); ++i) {
+            openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
+            for (int j=0; j<pool.numTriangles(); ++j) {
+                // swap ordering of nodes to get outside-normals
+                auto& tri = pool.triangle(j);
+                out << "f " << tri[0]+1 << " "
+                            << tri[2]+1 << " "
+                            << tri[1]+1 << "\n";
+            }
+            for (int j=0; j<pool.numQuads(); ++j) {
+                // swap ordering of nodes to get outside-normals
+                auto& q = pool.quad(j);
+                out << "f " << q[0]+1 << " "
+                            << q[3]+1 << " "
+                            << q[2]+1 << " "
+                            << q[1]+1 << "\n";
+            }
+        }
+        break;
+    default:
+        curv::die("bad mesh format");
     }
-    out << "endsolid curv\n";
 }

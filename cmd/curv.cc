@@ -348,7 +348,8 @@ const char help[] =
 "   curv -- Curv expression\n"
 "   json -- JSON expression\n"
 "   frag -- GLSL fragment shader (shape only, shadertoy.com compatible)\n"
-"   stl -- binary STL file (shape only)\n"
+"   stl -- STL file (3D shape only)\n"
+"   obj -- OBJ file (3D shape only)\n"
 "   png -- PNG image file (shape only)\n"
 "-O name=value -- parameter for one of the output formats\n"
 "--version -- display version.\n"
@@ -392,6 +393,8 @@ main(int argc, char** argv)
                 exporter = export_frag;
             else if (strcmp(optarg, "stl") == 0)
                 exporter = export_stl;
+            else if (strcmp(optarg, "obj") == 0)
+                exporter = export_obj;
             else if (strcmp(optarg, "png") == 0)
                 exporter = export_png;
             else {
