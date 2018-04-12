@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
 #include <openvdb/openvdb.h>
 #include <openvdb/tools/VolumeToMesh.h>
 
@@ -24,6 +25,19 @@ void put_triangle(std::ostream& out, Vec3s v0, Vec3s v1, Vec3s v2)
         << "  vertex " << v2.x() << " " << v2.y() << " " << v2.z() << "\n"
         << " endloop\n"
         << "endfacet\n";
+}
+
+double param_to_double(Export_Params::const_iterator i)
+{
+    char *endptr;
+    double result = strtod(i->second.c_str(), &endptr);
+    if (endptr == i->second.c_str() || result != result) {
+        // error
+        std::cerr << "invalid number in: -O "<< i->first.c_str() << "='"
+            << i->second.c_str() << "'\n";
+        exit(EXIT_FAILURE);
+    }
+    return result;
 }
 
 void export_stl(curv::Value value,
@@ -49,8 +63,8 @@ void export_stl(curv::Value value,
 
     auto res_p = params.find("res");
     if (res_p != params.end()) {
-        double res = strtod(res_p->second.c_str(), (char**)nullptr);
-        if (res <= 0.0 || res != res) {
+        double res = param_to_double(res_p);
+        if (res <= 0.0) {
             throw curv::Exception(cx, curv::stringify(
                 "STL export: invalid parameter res=",res_p->second));
         }
@@ -107,7 +121,16 @@ void export_stl(curv::Value value,
     std::cerr.flush();
 
     // convert grid to a mesh
-    openvdb::tools::VolumeToMesh mesher;
+    double adaptivity = 0.0;
+    auto adaptivity_p = params.find("adaptivity");
+    if (adaptivity_p != params.end()) {
+        adaptivity = param_to_double(adaptivity_p);
+        if (adaptivity < 0.0 || adaptivity > 1.0) {
+            throw curv::Exception(cx,
+                "output parameter 'adaptivity' must be in range 0...1");
+        }
+    }
+    openvdb::tools::VolumeToMesh mesher(0.0, adaptivity);
     mesher(*grid);
 
     std::cerr << mesher.pointListSize() << " vertices\n";
