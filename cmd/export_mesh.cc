@@ -90,14 +90,14 @@ void export_mesh(Mesh_Format format, curv::Value value,
     }
 
     double voxelsize;
-    auto res_p = params.find("res");
-    if (res_p != params.end()) {
-        double res = param_to_double(res_p);
-        if (res <= 0.0) {
+    auto vsize_p = params.find("vsize");
+    if (vsize_p != params.end()) {
+        double vsize = param_to_double(vsize_p);
+        if (vsize <= 0.0) {
             throw curv::Exception(cx, curv::stringify(
-                "mesh export: invalid parameter res=",res_p->second));
+                "mesh export: invalid parameter vsize=",vsize_p->second));
         }
-        voxelsize = res;
+        voxelsize = vsize;
     } else {
         voxelsize = cbrt(volume / 100'000);
         if (voxelsize < 0.1) voxelsize = 0.1;
@@ -118,11 +118,11 @@ void export_mesh(Mesh_Format format, curv::Value value,
         int(ceil(shape.bbox_.zmax/voxelsize)) + 2);
 
     std::cerr
-        << "resolution="<<voxelsize<<": "
+        << "vsize="<<voxelsize<<": "
         << (voxelrange_max.x() - voxelrange_min.x() + 1) << "×"
         << (voxelrange_max.y() - voxelrange_min.y() + 1) << "×"
         << (voxelrange_max.z() - voxelrange_min.z() + 1)
-        << " voxels. Use '-O res=N' to change resolution.\n";
+        << " voxels. Use '-O vsize=N' to change voxel size.\n";
     std::cerr.flush();
 
     openvdb::initialize();
@@ -245,7 +245,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
 
     if (ntri == 0 && nquad == 0) {
         std::cerr << "WARNING: no mesh was created (no volumes were found).\n"
-          << "Maybe you should try a smaller resolution.\n";
+          << "Maybe you should try a smaller voxel size.\n";
     } else {
         if (ntri > 0)
             std::cerr << ntri << " triangles";
