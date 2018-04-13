@@ -243,14 +243,19 @@ void export_mesh(Mesh_Format format, curv::Value value,
         curv::die("bad mesh format");
     }
 
-    if (ntri > 0)
-        std::cerr << ntri << " triangles";
-    if (ntri > 0 && nquad > 0)
-        std::cerr << ", ";
-    if (nquad > 0)
-        std::cerr << nquad << " quads";
-    std::cerr << ".";
-    if (adaptivity < 1.0)
-        std::cerr << " Use '-O adaptive' to reduce triangle count.";
-    std::cerr << "\n";
+    if (ntri == 0 && nquad == 0) {
+        std::cerr << "WARNING: no mesh was created (no volumes were found).\n"
+          << "Maybe you should try a smaller resolution.\n";
+    } else {
+        if (ntri > 0)
+            std::cerr << ntri << " triangles";
+        if (ntri > 0 && nquad > 0)
+            std::cerr << ", ";
+        if (nquad > 0)
+            std::cerr << nquad << " quads";
+        std::cerr << ".";
+        if (adaptivity < 1.0)
+            std::cerr << " Use '-O adaptive' to reduce triangle count.";
+        std::cerr << "\n";
+    }
 }
