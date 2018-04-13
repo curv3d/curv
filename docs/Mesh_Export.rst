@@ -13,6 +13,10 @@ If you choose to create an OBJ file, you will get a significantly smaller file.
 OBJ files are accepted by most popular 3D printer software and mesh processing
 programs. (The only exception I've found so far is ``openscad``.)
 
+Mesh export provides a way to visualize models whose distance function
+is not Lipschitz-continuous. These are typically algebraic implicit
+functions. There are examples in `<../examples/mesh_only>`_.
+
 Tweaking parameters to get a better mesh
 ----------------------------------------
 When you convert a Curv shape to a mesh, you are creating an approximation
@@ -100,3 +104,7 @@ More ideas for future work:
 * Provide an integrated, interactive GUI for tweaking the mesh generation
   parameters until you get a good result.
 * Provide a way to store machine-readable meshing parameters in a shape.
+* Provide a way to mark a shape as mesh-only (it can't be visualized using
+  the standard sphere-tracing viewer, because the distance function is
+  not Lipschitz-continuous). The curv command will automatically preview
+  these shapes by constructing a mesh.

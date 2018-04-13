@@ -1,0 +1,6 @@
+// curv -o obj -O vsize=0.2
+make_shape {
+    dist(x,y,z,t) = (x^2 + y^2 + 2*z^2 - 1)^3 - y^3 * (x^2 + 0.1*z^2);
+    is_3d = true;
+    bbox = [[-1.2,-1.2,-1.2],[1.2,1.2,1.2]];
+}
