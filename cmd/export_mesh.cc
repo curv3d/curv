@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
+#include <chrono>
 #include <openvdb/openvdb.h>
 #include <openvdb/tools/VolumeToMesh.h>
 
@@ -70,7 +71,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
 {
     curv::Shape_Recognizer shape(cx, sys);
     if (!shape.recognize(value) && !shape.is_3d_)
-        throw curv::Exception(cx, "not a 3D shape");
+        throw curv::Exception(cx, "mesh export: not a 3D shape");
 
 #if 0
     for (auto p : params) {
@@ -82,17 +83,24 @@ void export_mesh(Mesh_Format format, curv::Value value,
         shape.bbox_.xmax - shape.bbox_.xmin,
         shape.bbox_.ymax - shape.bbox_.ymin,
         shape.bbox_.zmax - shape.bbox_.zmin);
-    double maxspan = fmax(size.x(), fmax(size.y(), size.z()));
-    double voxelsize = maxspan / 20.0;
+    double volume = size.x() * size.y() * size.z();
+    double infinity = 1.0/0.0;
+    if (volume == infinity || volume == -infinity) {
+        throw curv::Exception(cx, "mesh export: shape is infinite");
+    }
 
+    double voxelsize;
     auto res_p = params.find("res");
     if (res_p != params.end()) {
         double res = param_to_double(res_p);
         if (res <= 0.0) {
             throw curv::Exception(cx, curv::stringify(
-                "STL export: invalid parameter res=",res_p->second));
+                "mesh export: invalid parameter res=",res_p->second));
         }
         voxelsize = res;
+    } else {
+        voxelsize = cbrt(volume / 100'000);
+        if (voxelsize < 0.1) voxelsize = 0.1;
     }
 
     // This is the range of voxel coordinates.
@@ -110,14 +118,18 @@ void export_mesh(Mesh_Format format, curv::Value value,
         int(ceil(shape.bbox_.zmax/voxelsize)) + 2);
 
     std::cerr
+        << "resolution="<<voxelsize<<": "
         << (voxelrange_max.x() - voxelrange_min.x() + 1) << "×"
         << (voxelrange_max.y() - voxelrange_min.y() + 1) << "×"
-        << (voxelrange_max.z() - voxelrange_min.z() + 1) << " ";
+        << (voxelrange_max.z() - voxelrange_min.z() + 1)
+        << " voxels. Use '-O res=N' to change resolution.\n";
     std::cerr.flush();
 
     openvdb::initialize();
 
     // Create a FloatGrid and populate it with a signed distance field.
+    std::chrono::time_point<std::chrono::steady_clock> start_time, end_time;
+    start_time = std::chrono::steady_clock::now();
 
     // 2.0 is the background (or default) distance value for this
     // sparse array of voxels. Each voxel is a `float`.
@@ -141,26 +153,38 @@ void export_mesh(Mesh_Format format, curv::Value value,
             }
         }
     }
-    std::cerr << "voxels, ";
+    end_time = std::chrono::steady_clock::now();
+    std::chrono::duration<double> render_time = end_time - start_time;
+    int nvoxels =
+        (voxelrange_max.x() - voxelrange_min.x() + 1) *
+        (voxelrange_max.y() - voxelrange_min.y() + 1) *
+        (voxelrange_max.z() - voxelrange_min.z() + 1);
+    std::cerr
+        << "Rendered " << nvoxels
+        << " voxels in " << render_time.count() << "s ("
+        << int(nvoxels/render_time.count()) << " voxels/s).\n";
     std::cerr.flush();
 
     // convert grid to a mesh
     double adaptivity = 0.0;
-    auto adaptivity_p = params.find("adaptivity");
-    if (adaptivity_p != params.end()) {
-        adaptivity = param_to_double(adaptivity_p);
-        if (adaptivity < 0.0 || adaptivity > 1.0) {
-            throw curv::Exception(cx,
-                "output parameter 'adaptivity' must be in range 0...1");
+    auto adaptive_p = params.find("adaptive");
+    if (adaptive_p != params.end()) {
+        if (adaptive_p->second.empty())
+            adaptivity = 1.0;
+        else {
+            adaptivity = param_to_double(adaptive_p);
+            if (adaptivity < 0.0 || adaptivity > 1.0) {
+                throw curv::Exception(cx,
+                    "mesh export: parameter 'adaptive' must be in range 0...1");
+            }
         }
     }
     openvdb::tools::VolumeToMesh mesher(0.0, adaptivity);
     mesher(*grid);
 
-    std::cerr << mesher.pointListSize() << " vertices\n";
-    std::cerr.flush();
-
     // output a mesh file
+    int ntri = 0;
+    int nquad = 0;
     switch (format) {
     case stl_format:
         out << "solid curv\n";
@@ -172,6 +196,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
                     mesher.pointList()[ pool.triangle(j)[0] ],
                     mesher.pointList()[ pool.triangle(j)[2] ],
                     mesher.pointList()[ pool.triangle(j)[1] ]);
+                ++ntri;
             }
             for (int j=0; j<pool.numQuads(); ++j) {
                 // swap ordering of nodes to get outside-normals
@@ -183,6 +208,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
                     mesher.pointList()[ pool.quad(j)[0] ],
                     mesher.pointList()[ pool.quad(j)[3] ],
                     mesher.pointList()[ pool.quad(j)[2] ]);
+                ntri += 2;
             }
         }
         out << "endsolid curv\n";
@@ -200,6 +226,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
                 out << "f " << tri[0]+1 << " "
                             << tri[2]+1 << " "
                             << tri[1]+1 << "\n";
+                ++ntri;
             }
             for (int j=0; j<pool.numQuads(); ++j) {
                 // swap ordering of nodes to get outside-normals
@@ -208,10 +235,22 @@ void export_mesh(Mesh_Format format, curv::Value value,
                             << q[3]+1 << " "
                             << q[2]+1 << " "
                             << q[1]+1 << "\n";
+                ++nquad;
             }
         }
         break;
     default:
         curv::die("bad mesh format");
     }
+
+    if (ntri > 0)
+        std::cerr << ntri << " triangles";
+    if (ntri > 0 && nquad > 0)
+        std::cerr << ", ";
+    if (nquad > 0)
+        std::cerr << nquad << " quads";
+    std::cerr << ".";
+    if (adaptivity < 1.0)
+        std::cerr << " Use '-O adaptive' to reduce triangle count.";
+    std::cerr << "\n";
 }

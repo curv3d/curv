@@ -407,13 +407,12 @@ main(int argc, char** argv)
           {
             char* eq = strchr(optarg, '=');
             if (eq == nullptr) {
-                std::cerr << "-O argument must have form 'name=value'\n"
-                          << "Use " << argv0 << " --help for help.\n";
-                return EXIT_FAILURE;
+                eparams[std::string(optarg)] = std::string("");
+            } else {
+                *eq = '\0';
+                eparams[std::string(optarg)] = std::string(eq+1);
+                *eq = '=';
             }
-            *eq = '\0';
-            eparams[std::string(optarg)] = std::string(eq+1);
-            *eq = '=';
             break;
           }
         case 'l':
