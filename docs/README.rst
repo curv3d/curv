@@ -47,6 +47,14 @@ before the ``curv`` command will exit.]
   **a graphics window opens, displaying the shape**
   curv>
 
+**Exporting a mesh (STL or OBJ file)**
+
+To convert a shape into an STL file for 3D printing, use::
+
+  $ curv -o stl foo.curv >foo.stl
+
+For more details, see `<Mesh_Export.rst>`_.
+
 ..
   **Live Programming Mode (**\ ``curv -l``\ **)**:
 

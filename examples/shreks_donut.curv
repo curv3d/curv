@@ -1,5 +1,6 @@
+// Mesh export: curv -o obj -O vsize=.1
 gyroid
->> shell .2 >> lipschitz 2
+>> shell .25 >> lipschitz 2
 `intersection` box{xmin:-tau*6,xmax:tau*6,ymax:0}
 >> bend {d:0}
 `smooth .1 .intersection` torus {major: tau*4, minor: tau*2}
