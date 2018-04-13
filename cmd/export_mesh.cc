@@ -253,9 +253,6 @@ void export_mesh(Mesh_Format format, curv::Value value,
             std::cerr << ", ";
         if (nquad > 0)
             std::cerr << nquad << " quads";
-        std::cerr << ".";
-        if (adaptivity < 1.0)
-            std::cerr << " Use '-O adaptive' to reduce triangle count.";
-        std::cerr << "\n";
+        std::cerr << ".\n";
     }
 }
