@@ -149,9 +149,9 @@ before optimization).
 
 Source code?
 
-Primal Mesh Optimization
-========================
-These algorithms begin with a "primal mesh" created by one of the grid-based
+Mesh Optimization
+=================
+These algorithms begin with an initial mesh created by one of the grid-based
 meshing algorithms. Then, they iteratively improve it using an "energy minimization"
 strategy, with high quality results, better looking than grid-based output.
 They are slow, but there is recent research on making them performant.
@@ -173,7 +173,7 @@ Open source implementations:
 
 "**Locally-optimal Delaunay-refinement and optimisation-based mesh generation**".
 https://github.com/dengwirda/jigsaw
-Looks interesting, but has a look-but-don't-touch source licence (not open source).
+Looks interesting, but has a non-commercial, non-open source licence (not open source).
 
 Survey of Algorithms
 ====================
