@@ -99,6 +99,7 @@ Dual Marching Cubes
 https://www.cs.rice.edu/~jwarren/papers/dmc.pdf
 
 Claimed benefits:
+
 * Crackfree, adaptive, reproduces sharp features.
 * Reproduce thin features without excessive subdivision
   required by Marching Cubes or Dual Contouring.
@@ -112,6 +113,7 @@ Claimed benefits:
   a given function over a cubical domain".
 
 Questions:
+
 * watertight?
 * self-intersecting?
   Yes, fixed by "Isosurfaces Over Simplicial Partitions of Multiresolution Grids"
@@ -124,6 +126,7 @@ SPMG: Simplicial Partitions of Multiresolution Grids
 http://faculty.cs.tamu.edu/schaefer/research/iso_simplicial.pdf
 
 benefits:
+
 * manifold
 * intersection-free
 * reconstructs sharp and thin features
@@ -136,6 +139,7 @@ benefits:
   we maintain the topology of the surface. 
 
 drawbacks:
+
 * skinny triangles.
 * slower than DC and DMC.
   DMC is approximately 10-20% slower than DC, and our method takes an additional 50% longer than DMC.
