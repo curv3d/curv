@@ -98,7 +98,7 @@ Dual Marching Cubes
 (2004) Scott Schaefer and Joe Warren
 https://www.cs.rice.edu/~jwarren/papers/dmc.pdf
 
-Claimed benefits:
+Benefits:
 
 * Crackfree, adaptive, reproduces sharp features.
 * Reproduce thin features without excessive subdivision
@@ -111,13 +111,33 @@ Claimed benefits:
 * The intermediate data structure might be generally useful:
   it is "a piecewise linear approximation to
   a given function over a cubical domain".
+* Needle shaped triangles: has a parameter to avoid generating
+  triangles that match a skinnyness threshhold.
+
+Drawbacks:
+
+* Intersecting triangles.
 
 Questions:
 
 * watertight?
-* self-intersecting?
-  Yes, fixed by "Isosurfaces Over Simplicial Partitions of Multiresolution Grids"
-* needle shaped triangles?
+
+"Manifold Contouring of an Adaptively Sampled Distance Field"
+(2010) ELIAS HOLMLID
+http://publications.lib.chalmers.se/records/fulltext/123811.pdf
+
+A variant implementation of Dual Marching Cubes.
+
+* well explained. provides a good explanation of DMC.
+* simplicity of code was a goal
+* The goal was to contour an ASDF (adaptively sampled distance field, stored in an octree).
+  Dual marching cubes is (claimed to be) a good match to this distance field representation,
+  since you don't need to compute and store Hermite data, you don't need direct access to
+  the original implicit function.
+* avoids self intersection by restricting generated vertexes to lie inside voxels,
+  actually, in the centre of the voxel. This has a negative effect on sharp feature detection,
+  and eliminates the "thin feature reproduction" feature of DMC.
+* ...lost interest
 
 SPMG: Simplicial Partitions of Multiresolution Grids
 ====================================================
@@ -125,20 +145,25 @@ SPMG: Simplicial Partitions of Multiresolution Grids
 (2010) Josiah Manson and Scott Schaefer
 http://faculty.cs.tamu.edu/schaefer/research/iso_simplicial.pdf
 
-benefits:
+Benefits:
 
+* A function is known for all points in a bounded region.
+  We only assume that the function is piecewise smooth and does not
+  have to be a distance function.
+* Efficient: adaptive sampling of the function, doesn't require evaluating
+  the function at every voxel in a uniform grid.
 * manifold
 * intersection-free
-* reconstructs sharp and thin features
+* reconstructs sharp features
+* reconstructs thin features beyond the sampling resolution of the octree
 * adaptive: an error metric designed to guide octree expansion
   such that flat regions of the function are tiled with fewer polygons than
   curved regions to create an adaptive polygonalization of the isosurface.
-  (Doesn't require evaluating the F-Rep on every cell of a uniform grid.)
 * mesh optimization:  We then show how to improve the quality
   of the triangulation by moving dual vertices to the isosurface and provide a topological test that guarantees
   we maintain the topology of the surface. 
 
-drawbacks:
+Drawbacks:
 
 * skinny triangles.
 * slower than DC and DMC.
@@ -170,6 +195,7 @@ Open source implementations:
 * https://github.com/Lin20/BinaryMeshFitting
   C++, MIT Licence. Looks worth investigating.
   It's a high performance implementation embedded in a game engine.
+  Uses DMC to create the initial mesh (DC didn't work as well).
   Still under active development.
 
 "**Locally-optimal Delaunay-refinement and optimisation-based mesh generation**".
