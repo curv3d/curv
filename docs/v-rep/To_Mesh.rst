@@ -94,6 +94,56 @@ implementation.
 
 Dual Marching Cubes
 ===================
+"Dual Marching Cubes: Primal Contouring of Dual Grids"
+(2004) Scott Schaefer and Joe Warren
+https://www.cs.rice.edu/~jwarren/papers/dmc.pdf
+
+Claimed benefits:
+* Crackfree, adaptive, reproduces sharp features.
+* Reproduce thin features without excessive subdivision
+  required by Marching Cubes or Dual Contouring.
+  (Fewer voxels than MC to reproduce thin walls!)
+* Able to conform to the relevant features of the
+  implicit function yielding much sparser polygonalizations
+  than (other grid methods). (Fewer triangles!)
+* Topologically manifold!
+* The intermediate data structure might be generally useful:
+  it is "a piecewise linear approximation to
+  a given function over a cubical domain".
+
+Questions:
+* watertight?
+* self-intersecting?
+  Yes, fixed by "Isosurfaces Over Simplicial Partitions of Multiresolution Grids"
+* needle shaped triangles?
+
+SPMG: Simplicial Partitions of Multiresolution Grids
+====================================================
+"Isosurfaces Over Simplicial Partitions of Multiresolution Grids"
+(2010) Josiah Manson and Scott Schaefer
+http://faculty.cs.tamu.edu/schaefer/research/iso_simplicial.pdf
+
+benefits:
+* manifold
+* intersection-free
+* reconstructs sharp and thin features
+* adaptive: an error metric designed to guide octree expansion
+  such that flat regions of the function are tiled with fewer polygons than
+  curved regions to create an adaptive polygonalization of the isosurface.
+  (Doesn't require evaluating the F-Rep on every cell of a uniform grid.)
+* mesh optimization:  We then show how to improve the quality
+  of the triangulation by moving dual vertices to the isosurface and provide a topological test that guarantees
+  we maintain the topology of the surface. 
+
+drawbacks:
+* skinny triangles.
+* slower than DC and DMC.
+  DMC is approximately 10-20% slower than DC, and our method takes an additional 50% longer than DMC.
+
+This is the highest quality grid method I've seen so far (to create the initial mesh,
+before optimization).
+
+Source code?
 
 Primal Mesh Optimization
 ========================
