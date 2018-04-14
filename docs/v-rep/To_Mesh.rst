@@ -147,7 +147,8 @@ drawbacks:
 This is the highest quality grid method I've seen so far (to create the initial mesh,
 before optimization).
 
-Source code?
+Source code? Manson was the student, Schaefer was the faculty advisor.
+Here's Manson's code, with a non-commercial licence: http://josiahmanson.com/research/iso_simplicial/
 
 Mesh Optimization
 =================
