@@ -46,8 +46,7 @@ Simplifying the Mesh
 Suppose you have too many triangles (maybe, it won't 3D print), and you
 can't increase the voxel size any further. Then what do you do?
 
-One good option is to use an external tool, ``meshlab``, to simplify
-the mesh:
+I recommend an external tool, ``meshlab``, to simplify the mesh:
 
 * Use ``File`` >> ``Import Mesh...`` to load the mesh file.
 * Use ``Filters`` >> ``Remeshing, Simplification and Reconstruction``
@@ -55,8 +54,10 @@ the mesh:
 * A dialog box pops up. What works for me is to type a number into the
   ``Percentage reduction (0..1)`` box, such as ``0.5`` or ``0.25``,
   leave the other parameters alone, then click ``Apply``.
+  (The ``Planar Simplification`` option can help if you have large flat regions.)
 * Use ``File`` >> ``Export Mesh As...`` to save the simplified mesh
   in another file.
+  When the ``Choose Saving Options`` appears, you can just select ``None``.
 
 ..
   Currently, Curv provides an experimental parameter called ``adaptive``.
