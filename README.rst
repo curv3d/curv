@@ -26,10 +26,14 @@ Features:
   pattern that can be described using mathematics can be represented exactly.
 * Curv exposes the full power of F-Rep programming to experts.
   The standard geometry library is written entirely in Curv.
-  Most of the demos seen on shadertoy.com can be reproduced in Curv,
+  Many of the demos seen on shadertoy.com can be reproduced in Curv,
   using shorter, simpler programs. Experts can package techniques used on
   shadertoy as high level operations for use by beginners.
-* All rendering is GPU accelerated.
+* Rendering is GPU accelerated. Curv programs are compiled into fragment
+  shaders which are executed on the GPU.
+* Curv can export meshes to STL and OBJ files for 3D printing.
+  These meshes are defect free: watertight, manifold, with no self
+  intersections or degenerate triangles.
 
 History and Rationale
 =====================
@@ -97,10 +101,11 @@ programs. And you can 3D print your models. All rendering is GPU accelerated.
 
 Project Status
 ==============
-The current release is 0.0: "proof of concept":
+The current release is 0.1: "mesh export":
 
 * The language and shape library are stable, except where documented otherwise.
-* STL file export (for 3D printing) is not implemented yet.
+* STL and OBJ file export (for 3D printing) is now implemented.
+* STL file import and a Windows port are still in the future.
 * To install the software, see `<BUILD.md>`_.
 * The documentation is here: `<docs/README.rst>`_.
 * To contribute, see `<CONTRIBUTING.md>`_.
