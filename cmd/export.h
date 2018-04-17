@@ -26,6 +26,10 @@ extern void export_obj(curv::Value,
     curv::System&, const curv::Context&, const Export_Params& params,
     std::ostream&);
 
+extern void export_x3d(curv::Value,
+    curv::System&, const curv::Context&, const Export_Params& params,
+    std::ostream&);
+
 extern void export_frag(curv::Value value,
     curv::System&, const curv::Context& cx, const Export_Params& params,
     std::ostream& out);

@@ -31,7 +31,8 @@ Features:
   shadertoy as high level operations for use by beginners.
 * Rendering is GPU accelerated. Curv programs are compiled into fragment
   shaders which are executed on the GPU.
-* Curv can export meshes to STL and OBJ files for 3D printing.
+* Curv can export meshes to STL, OBJ and X3D files for 3D printing.
+  The X3D format supports full colour 3D printing (on Shapeways.com, at least).
   These meshes are defect free: watertight, manifold, with no self
   intersections or degenerate triangles.
 
@@ -104,7 +105,7 @@ Project Status
 The current release is 0.1: "mesh export":
 
 * The language and shape library are stable, except where documented otherwise.
-* STL and OBJ file export (for 3D printing) is now implemented.
+* STL, OBJ and X3D file export (for 3D printing) is now implemented.
 * STL file import and a Windows port are still in the future.
 * To install the software, see `<BUILD.md>`_.
 * The documentation is here: `<docs/README.rst>`_.
@@ -114,10 +115,8 @@ Hardware Requirements
 =====================
 Two platforms are currently supported: Ubuntu 16.04 and macOS.
 
-Curv is sensitive to the GPU hardware capabilities and the graphics driver.
-Good hardware and good driver software are a requirement.
-If the website `<http://shadertoy.com>`_ doesn't work in the current version
-of FireFox, then Curv won't work well either.
-On Linux, if the open source driver isn't cutting it, try the proprietary driver.
-
-Check for current GPU issues: `<https://github.com/doug-moen/curv/issues?q=is%3Aissue+is%3Aopen+label%3AGPU>`_
+4GB RAM and a GPU that supports OpenGL 4.3 or macOS Metal is recommended,
+to fully support features that are planned for 2018 and later.
+For laptops, the cutoff is somewhere between 2012 and 2013 as the year of
+manufacture. Right now, older hardware mostly works, but not all of the models
+in the 'examples' directory are guaranteed to work.

@@ -138,4 +138,18 @@ Shape_Recognizer::dist(double x, double y, double z, double t)
     return result.to_num(context_);
 }
 
+Vec3
+Shape_Recognizer::colour(double x, double y, double z, double t)
+{
+    Shared<List> point = List::make({Value{x}, Value{y}, Value{z}, Value{t}});
+    auto frame = Frame::make(
+        colour_->nslots_, system_, nullptr, nullptr, nullptr);
+    Value result = colour_->call({point}, *frame);
+    Shared<List> cval = result.to<List>(context_);
+    cval->assert_size(3, context_);
+    return Vec3{ cval->at(0).to_num(context_),
+                 cval->at(1).to_num(context_),
+                 cval->at(2).to_num(context_) };
+}
+
 } // namespace curv

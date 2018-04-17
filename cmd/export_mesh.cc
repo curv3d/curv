@@ -20,7 +20,8 @@ using openvdb::Vec3i;
 
 enum Mesh_Format {
     stl_format,
-    obj_format
+    obj_format,
+    x3d_format
 };
 
 void export_mesh(Mesh_Format, curv::Value value,
@@ -41,6 +42,13 @@ void export_obj(curv::Value value,
     export_mesh(obj_format, value, sys, cx, params, out);
 }
 
+void export_x3d(curv::Value value,
+    curv::System& sys, const curv::Context& cx, const Export_Params& params,
+    std::ostream& out)
+{
+    export_mesh(x3d_format, value, sys, cx, params, out);
+}
+
 void put_triangle(std::ostream& out, Vec3s v0, Vec3s v1, Vec3s v2)
 {
     out << "facet normal 0 0 0\n"
@@ -50,6 +58,14 @@ void put_triangle(std::ostream& out, Vec3s v0, Vec3s v1, Vec3s v2)
         << "  vertex " << v2.x() << " " << v2.y() << " " << v2.z() << "\n"
         << " endloop\n"
         << "endfacet\n";
+}
+
+void put_colour(std::ostream& out, curv::Shape_Recognizer& shape,
+    Vec3s v0, Vec3s v1, Vec3s v2)
+{
+    Vec3s centroid = (v0 + v1 + v2) / 3.0;
+    curv::Vec3 c = shape.colour(centroid.x(), centroid.y(), centroid.z(), 0.0);
+    out << " " << c.x << " " << c.y << " " << c.z;
 }
 
 double param_to_double(Export_Params::const_iterator i)
@@ -239,6 +255,74 @@ void export_mesh(Mesh_Format format, curv::Value value,
             }
         }
         break;
+    case x3d_format:
+      {
+        out <<
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<!DOCTYPE X3D PUBLIC \"ISO//Web3D//DTD X3D 3.1//EN\" \"http://www.web3d.org/specifications/x3d-3.1.dtd\">\n"
+        "<X3D profile=\"Interchange\" version=\"3.1\" xsd:noNamespaceSchemaLocation=\"http://www.web3d.org/specifications/x3d-3.1.xsd\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema-instance\">\n"
+        " <head>\n"
+        "  <meta content=\"Curv, https://github.com/doug-moen/curv\" name=\"generator\"/>\n"
+        " </head>\n"
+        " <Scene>\n"
+        "  <Shape>\n"
+        "   <IndexedFaceSet colorPerVertex=\"false\" coordIndex=\"";
+        bool first = true;
+        for (int i=0; i<mesher.polygonPoolListSize(); ++i) {
+            openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
+            for (int j=0; j<pool.numTriangles(); ++j) {
+                if (!first) out << " "; first = false;
+                auto& tri = pool.triangle(j);
+                out << tri[0] << " " << tri[2] << " " << tri[1] << " -1";
+                ++ntri;
+            }
+            for (int j=0; j<pool.numQuads(); ++j) {
+                if (!first) out << " "; first = false;
+                auto& q = pool.quad(j);
+                out << q[0] << " " << q[2] << " " << q[1] << " -1 "
+                    << q[0] << " " << q[3] << " " << q[2] << " -1";
+                ntri += 2;
+            }
+        }
+        out <<
+        "\">\n"
+        "    <Coordinate point=\"";
+        first = true;
+        for (int i = 0; i < mesher.pointListSize(); ++i) {
+            if (!first) out << " "; first = false;
+            auto& pt = mesher.pointList()[i];
+            out << pt.x() << " " << pt.y() << " " << pt.z();
+        }
+        out <<
+        "\"/>\n"
+        "    <Color color=\"";
+        for (int i=0; i<mesher.polygonPoolListSize(); ++i) {
+            openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
+            for (int j=0; j<pool.numTriangles(); ++j) {
+                put_colour(out, shape,
+                    mesher.pointList()[ pool.triangle(j)[0] ],
+                    mesher.pointList()[ pool.triangle(j)[2] ],
+                    mesher.pointList()[ pool.triangle(j)[1] ]);
+            }
+            for (int j=0; j<pool.numQuads(); ++j) {
+                put_colour(out, shape,
+                    mesher.pointList()[ pool.quad(j)[0] ],
+                    mesher.pointList()[ pool.quad(j)[2] ],
+                    mesher.pointList()[ pool.quad(j)[1] ]);
+                put_colour(out, shape,
+                    mesher.pointList()[ pool.quad(j)[0] ],
+                    mesher.pointList()[ pool.quad(j)[3] ],
+                    mesher.pointList()[ pool.quad(j)[2] ]);
+            }
+        }
+        out <<
+        "\"/>\n"
+        "   </IndexedFaceSet>\n"
+        "  </Shape>\n"
+        " </Scene>\n"
+        "</X3D>\n";
+        break;
+      }
     default:
         curv::die("bad mesh format");
     }

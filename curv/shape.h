@@ -15,6 +15,11 @@ struct Function;
 struct Context;
 struct System;
 
+struct Vec3
+{
+    double x, y, z;
+};
+
 // axis aligned bounding box
 struct BBox
 {
@@ -61,6 +66,9 @@ struct Shape_Recognizer
 
     // Invoke the shape's `dist` function.
     double dist(double x, double y, double z, double t);
+
+    // Invoke the shape's `colour` function.
+    Vec3 colour(double x, double y, double z, double t);
 };
 
 } // namespace curv
