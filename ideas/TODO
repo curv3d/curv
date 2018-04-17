@@ -1,6 +1,53 @@
-# Release 0.1: "STL Export"
+# Release 0.1: "Mesh Export"
 
-curv -o stl -O name=value file.curv
+curv -o stl -O name=value file.curv >file.stl
+We'll use a 2 pass algorithm: a grid based mesher, followed by a mesh
+simplifier/optimizer.
+
+Maybe use 'curv -o file.stl file.curv' instead? Output file only created
+if no errors.
+
+Mesher:
+* Currently, a marching cubes variant from openvdb. No sharp feature detection.
+* Later, add 'dual marching tetrahedrons' (Simplicial Partition of Multimaterial
+  Grids).
+
+Simplifier:
+* Currently, using meshlab "quadric edge collapse".
+* Try: github.com/sp4cerat/Fast-Quadric-Mesh-Simplification (speed over quality)
+  MIT licence, all code in a single header, used by other projects.
+* A better algorithm would query the distance field to ensure that new vertices
+  are on the isosurface.
+
+Full Colour mesh export:
+* Goal: print full colour on shapeways. "full colour sandstone".
+  Two ways to apply colour:
+  * As a 'per face' material (easier, less detail). Export as VRML97.
+    Sample colour function at each face vertex, blend samples to get face color.
+    Or sample colour function at face centroid.
+  * As one or more separate UV texture map files (JPG or PNG, total resolution
+    < 2048^2). Geometry stored in VRML97 or X3D file. All files zipped together.
+    * "Least Squares Conformal Maps for Automatic Texture Atlas Generation"
+      https://www.cs.jhu.edu/~misha/Fall09/Levy02.pdf
+
+Multi-Material models:
+For multi-head FDM printers.
+* Introduce a 'material' function. Or map colour to a material id.
+* While generating mesh, partition model at material boundaries.
+  Some meshing algorithms (like DC) directly support this.
+* Output to 3mf file format.
+
+More future work:
+* Speed up mesh generation.
+* Provide an integrated, interactive GUI for tweaking the mesh generation
+  parameters until you get a good result.
+* Provide a way to store machine-readable meshing parameters in a shape.
+* Provide a way to mark a shape as mesh-only (it can't be visualized using
+  the standard sphere-tracing viewer, because the distance function is
+  not Lipschitz-continuous). The curv command will automatically preview
+  these shapes by constructing a mesh.
+  * In live mode, the Viewer window needs to dynamically switch between showing
+    a mesh and showing a fragment shader. So, no more glslViewer I guess.
 
 ## 0.0 TODO List
 0.0 Roadmap:
