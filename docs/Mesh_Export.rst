@@ -1,17 +1,20 @@
 Mesh Export
 ===========
 
-To export a 3D shape to an STL file, use::
+To export a 3D shape to an STL, OBJ or X3D file, use::
 
    curv -o stl foo.curv >foo.stl
-
-To export a 3D shape to an OBJ file, use::
-
    curv -o obj foo.curv >foo.obj
+   curv -o x3d foo.curv >foo.x3d
 
-If you choose to create an OBJ file, you will get a significantly smaller file.
-OBJ files are accepted by most popular 3D printer software and mesh processing
-programs. (The only exception I've found so far is ``openscad``.)
+Which format should you use?
+
+* STL is the most popular format for 3D printed objects.
+* OBJ is the #2 format, supported by all of the 3D printer slicers
+  that I've surveyed. The files are significantly smaller
+  (they can be 20% of the size of an STL file).
+* X3D contains colour information. Use it for full colour 3D printing on shapeways.com,
+  i.materialise.com, etc.
 
 Mesh export provides a way to visualize models whose distance function
 is not Lipschitz-continuous. These are typically algebraic implicit
