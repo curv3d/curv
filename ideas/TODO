@@ -7,28 +7,49 @@ simplifier/optimizer.
 Maybe use 'curv -o file.stl file.curv' instead? Output file only created
 if no errors.
 
+An ideal meshing algorithm has these features:
+* It produces a defect free mesh.
+* It performs sharp feature detection, so that the edges and corners
+  of a cube are sharp.
+* It is adaptive. It uses lots of small triangles in regions of high
+  curvature. It uses fewer larger triangles in areas of low curvature.
+  Flat surfaces are rendered with a minimum number of triangles (eg,
+  a cube is rendered as 6 quads or 12 triangles,
+  regardless of the voxel size).
+* It avoids generating needle shaped triangles, which can become degenerate
+  in the limiting case.
+* There is only one parameter, an error tolerance.
+
+I intend to implement this ideal meshing algorithm using two passes:
+* First, a grid based mesher creates an initial mesh, which is defect free
+  and preserves sharp features.
+* Second, a mesh optimizer simplifies the mesh and improves triangle quality,
+  controlled by an error tolerance and by querying the distance function,
+  without introducing defects, preserving sharp features.
+
 Mesher:
 * Currently, a marching cubes variant from openvdb. No sharp feature detection.
-* Later, add 'dual marching tetrahedrons' (Simplicial Partition of Multimaterial
+* Later, add 'Dual Marching Tetrahedra' (Simplicial Partition of Multiresolution
   Grids).
 
 Simplifier:
-* Currently, using meshlab "quadric edge collapse".
-* Try: github.com/sp4cerat/Fast-Quadric-Mesh-Simplification (speed over quality)
+* Currently, using MeshLab "quadric edge collapse".
+* Try: github.com/sp4cerat/Fast-Quadric-Mesh-Simplification
   MIT licence, all code in a single header, used by other projects.
+  Limitations: speed over quality, controlled by target # of triangles.
 * A better algorithm would query the distance field to ensure that new vertices
-  are on the isosurface.
+  are on the isosurface, and would be controlled by an error tolerance.
 
 Full Colour mesh export:
-* Goal: print full colour on shapeways. "full colour sandstone".
-  Two ways to apply colour:
-  * As a 'per face' material (easier, less detail). Export as VRML97.
-    Sample colour function at each face vertex, blend samples to get face color.
-    Or sample colour function at face centroid.
-  * As one or more separate UV texture map files (JPG or PNG, total resolution
-    < 2048^2). Geometry stored in VRML97 or X3D file. All files zipped together.
-    * "Least Squares Conformal Maps for Automatic Texture Atlas Generation"
-      https://www.cs.jhu.edu/~misha/Fall09/Levy02.pdf
+We export X3D files, accepted by Shapeways for "full colour sandstone",
+which supports 3 ways to specify colour.
+* Currently, we support 'per face' colours. Easy, less detail.
+* There is also 'per vertex' colour. Probably rendered using interpolation,
+  better for gradients. Not mentioned by Shapeways documentation.
+* As one or more separate UV texture map files (JPG or PNG, total resolution
+  < 2048^2). Geometry stored in X3D file. All files zipped together.
+  * "Least Squares Conformal Maps for Automatic Texture Atlas Generation"
+    https://www.cs.jhu.edu/~misha/Fall09/Levy02.pdf
 
 Multi-Material models:
 For multi-head FDM printers.
