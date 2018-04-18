@@ -49,7 +49,7 @@ Simplifying the Mesh
 Suppose you have too many triangles (maybe, it won't 3D print), and you
 can't increase the voxel size any further. Then what do you do?
 
-I recommend an external tool, ``meshlab``, to simplify the mesh:
+I recommend an external tool, `MeshLab`_, to simplify the mesh:
 
 * Use ``File`` >> ``Import Mesh...`` to load the mesh file.
 * Use ``Filters`` >> ``Remeshing, Simplification and Reconstruction``
@@ -57,10 +57,12 @@ I recommend an external tool, ``meshlab``, to simplify the mesh:
 * A dialog box pops up. What works for me is to type a number into the
   ``Percentage reduction (0..1)`` box, such as ``0.5`` or ``0.25``,
   leave the other parameters alone, then click ``Apply``.
-  (The ``Planar Simplification`` option can help if you have large flat regions.)
+  (The ``Planar Simplification`` option helps if you have large flat regions.)
 * Use ``File`` >> ``Export Mesh As...`` to save the simplified mesh
   in another file.
   When the ``Choose Saving Options`` appears, you can just select ``None``.
+
+.. _`MeshLab`: http://www.meshlab.net/
 
 ..
   Currently, Curv provides an experimental parameter called ``adaptive``.
@@ -71,44 +73,11 @@ I recommend an external tool, ``meshlab``, to simplify the mesh:
 
 Mesh Quality
 ------------
-By default, Curv generates watertight, manifold meshes with no self
+Curv generates watertight, manifold meshes with no self
 intersections. These are high quality, defect free meshes that can be
 processed by any software.
 
-Unfortunately, Curv does not currently support sharp feature detection,
-so the edges of cubes are rounded off. What you do instead is decrease the
+Unfortunately, Curv does not yet support sharp feature detection,
+so the edges of cubes are rounded off. To fix this, decrease the
 ``vsize`` parameter until the rounding effect is no longer objectionable,
-then use ``meshlab`` to simplify the mesh.
-
-Future Work
------------
-The most popular meshing algorithm with sharp feature detection
-is Dual Contouring. Unfortunately, it creates defective meshes
-(self intersections, not watertight, not manifold).
-Still, I might add support for Dual Contouring as an option,
-until I find The One True Meshing Algorithm.
-
-An ideal meshing algorithm has these features:
-
-* It produces a defect free mesh.
-* It performs sharp feature detection, so that the edges and corners
-  of a cube are sharp.
-* It is adaptive. It uses lots of small triangles in regions of high
-  curvature. It uses fewer larger triangles in areas of low curvature.
-  Flat surfaces are rendered with a minimum number of triangles (eg,
-  a cube is rendered as 6 quads or 12 triangles,
-  regardless of the voxel size).
-* It avoids generating needle shaped triangles, which can become degenerate
-  in the limiting case.
-* There is only one parameter, an error tolerance.
-
-More ideas for future work:
-
-* Speed up mesh generation.
-* Provide an integrated, interactive GUI for tweaking the mesh generation
-  parameters until you get a good result.
-* Provide a way to store machine-readable meshing parameters in a shape.
-* Provide a way to mark a shape as mesh-only (it can't be visualized using
-  the standard sphere-tracing viewer, because the distance function is
-  not Lipschitz-continuous). The curv command will automatically preview
-  these shapes by constructing a mesh.
+then use MeshLab to simplify the mesh.
