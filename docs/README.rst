@@ -47,7 +47,7 @@ before the ``curv`` command will exit.]
   **a graphics window opens, displaying the shape**
   curv>
 
-**Exporting a mesh (STL or OBJ file)**
+**Exporting a mesh (STL, OBJ or X3D file)**
 
 To convert a shape into an STL file for 3D printing, use::
 
