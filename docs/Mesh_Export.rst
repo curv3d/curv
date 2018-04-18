@@ -26,6 +26,7 @@ When you convert a Curv shape to a mesh, you are creating an approximation
 of the original shape. Meshes cannot exactly represent curved surfaces.
 To get a more exact approximation, you can increase the number of triangles,
 but at some point the mesh gets too large to be processed.
+1,000,000 triangles is a practical upper limit for 3D printing.
 
 As a result, mesh export is an iterative, interactive process
 where you try different values of the mesh export parameters until you
