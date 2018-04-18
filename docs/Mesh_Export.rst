@@ -16,9 +16,9 @@ Which format should you use?
 * X3D contains colour information. Use it for full colour 3D printing on shapeways.com,
   i.materialise.com, etc.
 
-Mesh export provides a way to visualize models whose distance function
-is not Lipschitz-continuous. These are typically algebraic implicit
-functions. There are examples in `<../examples/mesh_only>`_.
+Mesh export provides a way to visualize models that are not compatible
+with the viewer (because their distance function is too slow or not Lipschitz-continuous).
+There are examples in `<../examples/mesh_only>`_.
 
 Tweaking parameters to get a better mesh
 ----------------------------------------
