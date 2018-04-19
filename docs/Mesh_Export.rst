@@ -75,7 +75,7 @@ I recommend an external tool, `MeshLab`_, to simplify the mesh:
 Mesh Quality
 ------------
 Curv generates watertight, manifold meshes with no self
-intersections. These are high quality, defect free meshes that can be
+intersections or degenerate triangles. These are high quality, defect free meshes that can be
 processed by any software.
 
 The mesh simplification performed by MeshLab may introduce self-intersections.
