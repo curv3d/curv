@@ -70,7 +70,7 @@ I recommend an external tool, `MeshLab`_, to simplify the mesh:
   If you use ``-O adaptive``, then it reduces the triangle count, at the
   expense of introducing defects in the mesh (self intersection).
   Depending on which software is reading the mesh, self intersections might
-  be okay.
+  be okay. (The output is worse than MeshLab simplification and less controllable.)
 
 Mesh Quality
 ------------
@@ -78,7 +78,15 @@ Curv generates watertight, manifold meshes with no self
 intersections. These are high quality, defect free meshes that can be
 processed by any software.
 
-Unfortunately, Curv does not yet support sharp feature detection,
+The mesh simplification performed by MeshLab may introduce self-intersections.
+This doesn't cause a problem for 3D printing, but you can't process defective
+meshes in `OpenSCAD`_.
+
+.. _`OpenSCAD`: http://www.openscad.org/
+
+Curv does not yet support sharp feature detection,
 so the edges of cubes are rounded off. To fix this, decrease the
 ``vsize`` parameter until the rounding effect is no longer objectionable,
 then use MeshLab to simplify the mesh.
+It's not a perfect solution: you still don't get sharp edges and corners,
+and you'll have more triangles than necessary.
