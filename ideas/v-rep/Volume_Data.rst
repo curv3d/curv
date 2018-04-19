@@ -143,7 +143,15 @@ Many researchers have experimented with voxel octrees, to save space.
 (they are called sparse voxel databases).
 The OpenVDB project is well supported and widely used (for CPUs, with an OpenGL renderer).
 GVDB Voxels (2017, BSD licence) is the 2nd generation nVidia CUDA implementation of VDB.
-Reproducing sharp features is a problem.
+Features:
+
+* Can be efficiently modified. Supports efficient CSG operations, dilation and erosion.
+* Efficient construction from a mesh.
+* Doesn't support proper distance fields (that conflicts with efficient modification).
+  Instead, proper distance values are only stored in a narrow band of voxels around the
+  boundary. Farther away, voxel values are -1 inside and +1 outside.
+* Efficient ray casting on a GPU is possible (but not using sphere tracing).
+* Reproducing sharp features is a problem.
 
 Converting an SDF to a Mesh
 ---------------------------
