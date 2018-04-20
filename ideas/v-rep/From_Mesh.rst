@@ -10,9 +10,11 @@ Here's a fast path to implementing this.
 * On the CPU, represent a distance grid using OpenVDB.
 * In Curv language, ``file "foo.stl"`` and ``file "foo.obj"``
   imports a mesh, converts it internally to a distance grid.
+  
   * Test the performance. If the conversion is too painfully slow,
     then optimize. Write a tool, mesh-to-sdf, that converts a mesh
     to a distance grid file. Call the file format "cvox" for now.
+
 * Use openvdb::MeshToVolume to construct the distance grid.
 * To get the grid into the GPU, I need to convert it to a 3D texture.
   See mTec, ``µTec::AssetManager::ReadSDFFromFile``.
