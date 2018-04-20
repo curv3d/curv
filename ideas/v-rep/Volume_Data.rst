@@ -72,7 +72,12 @@ Conversion from Triangle Mesh
   representation, for large meshes.
 
 Conversion to Triangle Mesh
-  ...
+  It's okay for mesh export to be expensive, which means it's okay to
+  convert a shape to a new data structure optimized for mesh construction.
+  The main requirement is that it's possible to reconstruct sharp features
+  from information stored in a shape. Can sharp features be reconstructed
+  from a voxel grid, if you can use an expensive algorithm? Probably: if so,
+  there's no requirement here.
 
 Efficient representation of flat surfaces, curved surfaces
   ...
@@ -81,6 +86,8 @@ Efficient representation of sharp features
   Using a pure voxel grid representation, you can only approximate sharp features
   like sharp edges and corners. The cost increases with the cube of the resolution,
   and you can still easily zoom in enough for the sharpness to go away.
+  I'm referring to what happens when you reconstruct the distance field for a voxel
+  grid on a GPU using trilinear interpolation (which has hardware support).
   
   I'm looking for efficient and exact representations of sharp features.
   This might mean explicitly encoding sharp features in the representation.
@@ -135,9 +142,21 @@ for rendering fonts on a GPU. But it's probably a lot more difficult
 to implement this technique in 3D.
 https://github.com/Chlumsky/msdfgen
 
-Most alternatives to voxel grids are tree structured.
+**Trees**: Most alternatives to voxel grids are tree structured.
 
-Many researchers have experimented with voxel octrees, to save space.
+* Trees are normally implemented using pointers.
+  On the GPU, neither OpenGL nor Vulkan shaders support pointers
+  (not even compute shaders). In Metal, compute shaders are "kernels",
+  and support pointers.
+  However, OpenCL and CUDA do support pointers.
+  Academic papers that use trees on the GPU often use CUDA.
+  Eg, Gigavoxels, and raytracing GVDB.
+
+**Octrees** seem to be the most popular hierarchical distance field data
+structure in academic papers I've read. Octrees are simple.
+
+* A tall, skinny octree is great for adaptive meshing (q.v.),
+  but expensive to traverse from top to bottom (eg, ray casting).
 
 **VDB** is a popular hierarchical data structure built from a tree of voxel grids
 (they are called sparse voxel databases).
@@ -145,6 +164,7 @@ The OpenVDB project is well supported and widely used (for CPUs, with an OpenGL 
 GVDB Voxels (2017, BSD licence) is the 2nd generation nVidia CUDA implementation of VDB.
 Features:
 
+* Short, constant height tree (height fixed at compile time for efficient traversal).
 * Can be efficiently modified. Supports efficient CSG operations, dilation and erosion.
 * Efficient construction from a mesh.
 * Doesn't support proper distance fields (that conflicts with efficient modification).
@@ -152,10 +172,17 @@ Features:
   boundary. Farther away, voxel values are -1 inside and +1 outside.
 * Efficient ray casting on a GPU is possible (but not using sphere tracing).
 * Reproducing sharp features is a problem.
+* VDB is designed and optimized for the case where you have a single VDB that represents your
+  entire world.
 
 Converting an SDF to a Mesh
 ---------------------------
 Marching Cubes works directly on a grid of distance values. Sharp features are not preserved.
+
+All of the "SDF to Mesh" academic papers I've read use an octree to store distance values,
+if they are performing adaptive meshing (different triangle sizes for different rates of curvature).
+The octree is typically decorated with additional information that allows sharp features
+to be reconstructed.
 
 Dual Contouring (2002) uses an octree that tracks where the surface intersects grid cell edges,
 and stores "hermite data" (exact intersection points and their normals), the latter used to reproduce
