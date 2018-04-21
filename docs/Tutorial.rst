@@ -7,7 +7,7 @@ See `<../BUILD.md>`_.
 
 1. User Interface
 -----------------
-See `<docs/README.rst>`_.
+See `<README.rst>`_.
 
 2. Shapes
 ---------
