@@ -3,7 +3,7 @@
 * lib
 * std
 * a[i] := item, i is an integer
-* remove a'b
+* remove a'b syntax
 * function/record equivalence
   * primitive functions have a 'call' field, support 'fields' and 'defined'
     and 'f.call' and 'include' and '...'.
@@ -519,3 +519,90 @@ eg, rainbow'linear_gradient
     greyscale'cosine_gradient
 
 ### Add shebang comments, `#!` to end of line
+
+### Files, Trees and Packages
+
+Files, Trees and Packages are 3 proposed mechanisms for Curv source files to
+reference external resources.
+
+#### Files
+
+Using the File mechanism, you can directly reference a file by name.
+The filename is either a pathname in the local file system, or a URL.
+```
+  file "pathname_or_url"
+```
+
+The `file` function converts a file to a Curv value based solely on the filename
+extension, or maybe on the MIME type in the case of a URL.
+
+If additional parameters must be supplied in order to interpret the contents of
+a file, then a new function must be defined that is specific to that file type.
+Eg, `svg_file` or `dxf_file`. This is the case where the File mechanism can
+provide functionality not duplicated by the other 2 reference mechanisms.
+
+Some file types that might be supported:
+* `*.curv` -- a Curv expression, which evaluates to an arbitrary value.
+* `*.json`
+* `*.rsdf` -- a Regularly Sampled Distance Field -- a voxel grid of distance
+  values, in binary.
+* *directory* -- if a local filename names a directory, then Tree syntax is
+  used to interpret the directory as a Curv value. Not supported for URLs.
+* `*.cpkg` -- a ZIP file containing a Tree. The
+  primary use case is to represent a Curv shape as a single file, in the case
+  where we want to package Curv source code together with some binary files.
+
+The shell command `curv filename` interprets `filename` the same way as the
+`file` function does, reading and evaluating the file and then displaying the
+resulting Curv value. URLs are supported here.
+
+URL support in the File mechanism might be a security hole. It may provide a
+backchannel for malware to "phone home". Packages are more secure.
+
+#### Trees
+
+#### Packages
+
+A Package is a versioned collection of Curv source files that are distributed
+over the internet as a unit. Packages explicitly declare their dependencies on
+other packages. Inspired by package management in Debian and many other systems.
+
+A Curv program can reference an external package using a URL and a version #.
+Eg, `package{repo:"https://github.com/doug-moen/laser-curv",version:"1.0"}`.
+Inspired by Rust and crates, it's distributed and decentralized.
+
+The package mechanism is heavy weight. Extend `file` to accept a URL
+argument, so that there is a simple way to reference remote resources.
+
+A package is represented within a Curv program as a record value.
+
+Most package systems support package metadata. In Curv, metadata can be stored
+in record members. No extra mechanism is needed, only a naming convention.
+
+Curv has a 'directory syntax', wherein a directory is interpreted as a record
+value. Individual files within the directory, if their names have the syntax
+'identifier.extension', are interpreted as record members: the member name is
+'identifier', and 'extension' specifies how the file is interpreted as a value
+(eg, .curv, .json, .rsdf). As a special case, subdirectories whose names are
+just 'identifier' (no extension) are interpreted as record values.
+
+Within a directory, how does a Curv source file refer to other files in the
+same directory or package?
+* Could use `file "relative_pathname"`. In a subdirectory, use `file "../foo"`
+  to refer to items in parent directory. For security reasons, can't use '..'
+  or symlinks to escape a package.
+* Could use lexical scoping. A directory containing files 'foo', 'bar', etc
+  is semantically equivalent to a record '{foo=..., bar=..., ...}'.
+  The parent scope of a package directory is 'std', the standard namespace.
+* Could support both methods. Lexical scoping works if there is a `.curvroot`
+  file in the root directory of a package.
+
+Questions:
+* How do I nest one package inside another? It's one way to satisfy a package
+  dependency.
+* Can a package be a shape? Or are they only meant to be libraries?
+  How do I distribute a shape that consists of multiple files (eg, a Curv
+  file and some 'assets' such as texture files)? A zip file is the
+  best approach: you want shapes to be single files, and zip is the standard
+  mechanism, eg OpenDocument *.odf or 3MF.
+* How do I develop, test, run a package on my local file system?
