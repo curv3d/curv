@@ -548,7 +548,7 @@ Some file types that might be supported:
   values, in binary.
 * *directory* -- if a local filename names a directory, then Tree syntax is
   used to interpret the directory as a Curv value. Not supported for URLs.
-* `*.cpkg` -- a ZIP file containing a Tree. The
+* `*.cpkg` -- a ZIP file containing a Tree (similar to *.ODT or *.3MF). The
   primary use case is to represent a Curv shape as a single file, in the case
   where we want to package Curv source code together with some binary files.
 
@@ -559,7 +559,47 @@ resulting Curv value. URLs are supported here.
 URL support in the File mechanism might be a security hole. It may provide a
 backchannel for malware to "phone home". Packages are more secure.
 
+Mime types:
+* `*.curv` == text/curv
+* `*.rsdf` == application/curv.rsdf
+* `*.cpkg` == application/curv.cpkg
+
 #### Trees
+
+Curv has a 'directory syntax', which interprets a directory tree as a nested
+record value. Individual files within a directory, if their names have the
+syntax 'identifier.extension', are interpreted as record members: the member
+name is 'identifier', and 'extension' specifies how the file is interpreted as
+a value, as if by the `file` function. As a special case, subdirectories whose
+names are just 'identifier' (no extension) are interpreted as record values.
+
+The root of the directory tree is marked, possibly by an empty file `.curvroot`.
+
+Trees are encapsulated. You must use the Package mechanism to reference
+resources outside of the Tree. If `file` is used by a `*.curv` file in a Tree,
+you can only use relative pathnames, and you can't use `..` to reference files
+outside the Tree.
+
+The purpose of Tree syntax is to provide a local file system representation
+of `*.cpkg` files and Packages. That's why Trees are encapsulated.
+
+Within *.curv files in the Tree, other members of the tree can be referenced
+using lexical scoped identifiers. A directory containing files 'foo', 'bar', etc
+is semantically equivalent to a record '{foo=..., bar=..., ...}'. The parent
+scope of the root directory is 'std', the standard namespace. This reference
+mechanism doesn't provide any additional expressive power over `file`, it's just
+nicer and more convenient.
+
+Trees may be nested. A directory tree with a `.curvroot` may be nested inside
+another directory tree.
+
+A Tree can evaluate to a Shape. That's a requirement for `*.cpkg` files.
+We will extend the directory syntax with an optional file that contains a Curv
+expression that is evaluated to the directory's value. This can occur in any
+directory, not just the Tree root. Call it `.main.curv`.
+
+A possible extension: `.include.curv` evaluates to a record whose members are
+added to the record denoted by the directory.
 
 #### Packages
 
@@ -572,30 +612,14 @@ Eg, `package{repo:"https://github.com/doug-moen/laser-curv",version:"1.0"}`.
 Inspired by Rust and crates, it's distributed and decentralized.
 
 The package mechanism is heavy weight. Extend `file` to accept a URL
-argument, so that there is a simple way to reference remote resources.
+argument, so that there is a simple way to reference remote resources?
+(But I have a security concern: when and how often are these URLs fetched?)
 
-A package is represented within a Curv program as a record value.
-
-Most package systems support package metadata. In Curv, metadata can be stored
-in record members. No extra mechanism is needed, only a naming convention.
-
-Curv has a 'directory syntax', wherein a directory is interpreted as a record
-value. Individual files within the directory, if their names have the syntax
-'identifier.extension', are interpreted as record members: the member name is
-'identifier', and 'extension' specifies how the file is interpreted as a value
-(eg, .curv, .json, .rsdf). As a special case, subdirectories whose names are
-just 'identifier' (no extension) are interpreted as record values.
-
-Within a directory, how does a Curv source file refer to other files in the
-same directory or package?
-* Could use `file "relative_pathname"`. In a subdirectory, use `file "../foo"`
-  to refer to items in parent directory. For security reasons, can't use '..'
-  or symlinks to escape a package.
-* Could use lexical scoping. A directory containing files 'foo', 'bar', etc
-  is semantically equivalent to a record '{foo=..., bar=..., ...}'.
-  The parent scope of a package directory is 'std', the standard namespace.
-* Could support both methods. Lexical scoping works if there is a `.curvroot`
-  file in the root directory of a package.
+When you evaluate a Curv program containing Package references, the UI
+notifies you if you have unsatisfied dependencies, and asks you if they can
+be downloaded. There is an 'upgrade' command for updating local copies of
+packages. No internet access without an explicit user action is a security
+feature of Curv.
 
 Questions:
 * How do I nest one package inside another? It's one way to satisfy a package
@@ -606,3 +630,13 @@ Questions:
   best approach: you want shapes to be single files, and zip is the standard
   mechanism, eg OpenDocument *.odf or 3MF.
 * How do I develop, test, run a package on my local file system?
+
+Package metadata:
+* **In-value metadata**. If the value of a Tree is a record, then metadata
+  can be incorporated into the record value, using a naming convention.
+  * When is this useful?
+* **Out-of-value metadata**. The most obvious consumer of metadata is the
+  package manager, which doesn't need in-value metadata. A full description
+  of the package, with author, licence, description text, keywords, an image,
+  could be used to populate entries in a Curv package website (curvhub.org).
+  Use a file `.metadata.json`.
