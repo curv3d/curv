@@ -1,3 +1,6 @@
+# Release 0.2: "Mesh Import"
+* Refactor: glslViewer is repackaged as a library used by `curv`.
+
 # Release 0.1: "Mesh Export"
 
 curv -o stl -O name=value file.curv >file.stl
@@ -6,6 +9,12 @@ simplifier/optimizer.
 
 Maybe use 'curv -o file.stl file.curv' instead? Output file only created
 if no errors.
+
+Report an error if an unrecognized -O option is used.
+parse_params(params, {
+    {"adaptive", adaptive_str, ""},
+    {"vsize", vsize_str, ""},
+});
 
 An ideal meshing algorithm has these features:
 * It produces a defect free mesh.
