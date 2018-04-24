@@ -1,0 +1,8 @@
+GLSL doesn't support recursive functions, but I could allow tail recursion
+and compile it into a loop.
+
+For performance reasons, I may want to support vectorized code that can
+be compiled into SIMD instructions. A researchy idea is to provide array
+language constructs, and compile those into efficient vectorized code.
+* "Expressive array constructs in an embedded GPU kernel programming language"
+

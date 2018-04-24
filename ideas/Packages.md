@@ -3,9 +3,9 @@
 Files, Trees, Packages and Lib are 4 proposed mechanisms for Curv source files
 to reference external resources.
 
-Curv needs a package manager. We can define the concept of a package as an
-encapsulated module composed of a number of files, and then focus on mechanisms
-for referencing external packages.
+Curv needs a package manager. We can define a package as an encapsulated module
+composed of a number of files, and then focus on mechanisms for referencing
+external packages.
 
 These features support modular programming in Curv, wherein a large system is
 partitioned into encapsulated modules. One conventional property of a module is
@@ -149,7 +149,7 @@ Questions:
   How do I distribute a shape that consists of multiple files (eg, a Curv
   file and some 'assets' such as texture files)? A zip file is the
   best approach: you want shapes to be single files, and zip is the standard
-  mechanism, eg OpenDocument *.odf or 3MF.
+  mechanism, eg OpenDocument `*.odf` or 3MF.
 * How do I develop, test, run a package on my local file system?
 
 Package metadata:
