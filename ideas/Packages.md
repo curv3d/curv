@@ -88,12 +88,12 @@ outside the Tree.
 The purpose of Tree syntax is to provide a local file system representation
 of `*.cpkg` files and Packages. That's why Trees are encapsulated.
 
-Within *.curv files in the Tree, other members of the tree can be referenced
-using lexical scoped identifiers. A directory containing files 'foo', 'bar', etc
-is semantically equivalent to a record '{foo=..., bar=..., ...}'. The parent
-scope of the root directory is 'std', the standard namespace. This reference
-mechanism doesn't provide any additional expressive power over `file`, it's just
-nicer and more convenient.
+Within `*.curv` files in the Tree, other members of the tree can be referenced
+using lexical scoped identifiers. A directory containing files 'foo', 'bar',
+etc, is semantically equivalent to a record '{foo=..., bar=..., ...}'. The
+parent scope of the root directory is 'std', the standard namespace. This
+reference mechanism doesn't provide any additional expressive power over
+`file`, it's just nicer and more convenient.
 
 Trees may be nested. A directory tree with a `.curvroot` may be nested inside
 another directory tree.
@@ -115,18 +115,49 @@ We will extend the directory syntax with an optional file that contains a Curv
 expression that is evaluated to the directory's value. This can occur in any
 directory, not just the Tree root. Call it `.main.curv`.
 
+To export only 'public' members of a directory, use a `main.curv` file
+that contains
+```
+{
+   foo : foo,
+   bar : bar,
+}
+```
+
 A possible extension: `.include.curv` evaluates to a record whose members are
 added to the record denoted by the directory.
-
-Do we support private vs public members of a Tree?
-* An easy solution: use a naming convention. Identifiers beginning with `_`
-  are private.
+Can get the same effect using `main.curv`, as shown above.
 
 Many modern languages now have a standard tree/package/project manager
 that will create a project tree for you, then perform operations on that
 project tree. Often with git integration. Examples:
 * Rust, `cargo`
 * Clojure, `lein`
+
+## Trees (version 2)
+
+Maybe it's too weird that an identifier `foo` not defined anywhere in a
+`*.curv` file is implicitly defined by a sibling file `foo.curv`. So, files
+aren't converted into Curv bindings unless they are explicitly declared in
+a `*.curv` source file. Extraneous files and directories that aren't
+explicitly referenced are ignored.
+* The value of a directory `foo` is specified by `foo/main.curv`.
+* An explicit file reference or declaration for a file `foo.*` is:
+   1. `use foo;`. Can also write `use foo.bar.baz;`.
+   2. That makes it cumbersome to include a file into a scope (need two
+      definitions). `file.foo` is an expression.
+      `use a.b.c` is equivalent to `c=a.b.c`.
+      So now we have `use file.foo` or `include file.foo`. (Orthogonality.)
+
+The benefit of an explicit gesture like `file.foo` is that you get an
+explicit error message "File not found".
+
+Can relax the requirement that directories contain a `main.curv` file.
+If not, construct a record from every suitable directory entry.
+
+Can relax the requirement for a `.curvroot` file. `file.foo` means: search
+for `foo.*` in the current directory, then in the parent, recursively until
+either a `.curvroot` file is found, or until the filesystem root is found.
 
 ## Packages
 
@@ -206,8 +237,34 @@ In the long term, standard packages should be referenced by URLs, because
 if they are part of the default install, then it becomes hard to abandon them
 or remove them from the default install (backward compatibility reasons).
 (Eg, the Python standard library is notoriously full of abandonware.)
-But then, in the long term, we would want a stable home for these packages.
+But then, in the long term, we would want a stable URL for these packages.
 
-## Conclusion
+I want standard packages now. What do I do?
+* Put standard packages on github.
+* `noise = package "https://github.com/doug-moen/noise.curv"`
+* The `package` function will initially use a simple package manager that
+  caches packages in `~/.cache/curv/`
+* `curvpkg` subcommands: list, install, remove, upgrade
 
-Trees and Packages suffice. Don't actually need `file` or `lib`.
+## Synthesis
+
+Implement this combination of features:
+* `file.foo` references a file `foo.*` or a directory `foo`,
+  relative to the current directory, using "lexical scoping" lookup.
+* File syntax: rules for converting files into Curv values, based on file
+  extension.
+* Directory syntax: rules for converting a directory into a Curv value.
+  Optional `main.curv` entry. Optional `.curvroot` entry.
+* `package{repo,version}`: Versioned, encapsulated packages, referenced using
+  absolute https: or file: URLs, represented as git repositories.
+* `file pathstring`: The `pathstring` can be an absolute pathname or a URL.
+
+How do you use these features, as a user?
+* Create a single hierarchical workspace for all Curv projects: `~/curv`.
+  Use file.name to reference external files.
+* Lollipop tutorial.
+  $ mkdir lollipop; cd lollipop
+  $ create main.curv
+  $ create param.curv
+  $ create lib.curv
+  Use `include file.param` and `include file.lib`.

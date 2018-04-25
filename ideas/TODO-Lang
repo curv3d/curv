@@ -1,6 +1,6 @@
 ## TODO: Language Changes
 
-* lib
+* file.foo and package
 * std
 * a[i] := item, i is an integer
 * remove a'b syntax
@@ -22,6 +22,52 @@
   Shorter definitions for shape constructors with .mitred/.exact members.
 
 ## Ideas Under Development
+
+### `where` syntax
+
+I would like a `where` expression to be an item, not a list.
+Currently, adding a `where` clause to the end of a definition requires
+wrapping the entire definition body in parens.
+
+New syntax:
+  body where a=1
+  body where (a=1; b=2;)
+
+Grammar:
+  item ::= item where item
+
+This is ambiguous, and that needs to be resolved.
+
+This adds extra parens when a `where` clause is used at the top level,
+and that's what I was trying to avoid with the original syntax.
+Old syntax:
+```
+  let
+  diam = 1;
+  len = 4;
+
+  in
+  union(candy, stick)
+
+  where
+  candy = sphere diam >> colour red;
+  stick = cylinder{h: len, d: diam/8} >> move(0,0,-len/2);
+```
+New syntax:
+```
+  let
+  diam = 1;
+  len = 4;
+
+  in
+  union(candy, stick)
+
+  where (
+  candy = sphere diam >> colour red;
+  stick = cylinder{h: len, d: diam/8} >> move(0,0,-len/2);
+  )
+```
+This is acceptable.
 
 ### Patterns
 
@@ -172,11 +218,6 @@ A string is a sequence of characters, but what is a character in Unicode?
     combining character? Should S2 even be treated as a legal character string?
     Suppose S1 and S2 are normalized. Is strcat(S1,S2) guaranteed to be
     normalized?
-
-### Libraries.
-* `lib` is a record for accessing library files in /usr/local/lib/curv.
-  `lib.foo` loads /usr/local/lib/curv/foo.curv.
-  * `include lib.foo`
 
 ### Type Classes:
 We can define a 'type class' as a record containing a 'call' function
@@ -518,12 +559,6 @@ SSH'ed to a machine you are setting up, or one that is customer owned, you use
 whatever editor is around to make a quick edit, not realising that the file
 labeled .conf is actually a YAML file, you hit tab because it makes logical
 sense and then shit breaks."
-
-### Versioned External Packages
-Like Rust Cargo. An external library has a GIT url and a version.
-Eg, file{repo:"https://github.com/doug-moen/laser-curv.git", version:"1.0"}
-
-Directory syntax for `file`.
 
 ### Action/Generator Abstraction
 Support tail recursion as a form of iteration in list/record generators.
