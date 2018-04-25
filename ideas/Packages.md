@@ -122,7 +122,13 @@ Do we support private vs public members of a Tree?
 * An easy solution: use a naming convention. Identifiers beginning with `_`
   are private.
 
-## Network Packages
+Many modern languages now have a standard tree/package/project manager
+that will create a project tree for you, then perform operations on that
+project tree. Often with git integration. Examples:
+* Rust, `cargo`
+* Clojure, `lein`
+
+## Packages
 
 A Package is a versioned collection of Curv source files that are distributed
 over the internet as a unit. Packages explicitly declare their dependencies on
@@ -165,13 +171,15 @@ Package metadata:
 
 ## Local Packages
 
-The Network Package mechanism uses URLs to name external packages.
+The Package mechanism uses URLs to name external packages.
 What if you are disconnected from the internet and want to maintain a collection
 of packages on a file system, old school.
 
-You could use `file "/usr/local/curv/foo"` to access local packages.
+You could use `package "file:/usr/local/curv/foo"`.
+Or, use `file "/usr/local/curv/foo"`.
 But those pathnames are not portable across systems maintained by different
-administrators.
+administrators. An important consideration for portability across heterogenous
+systems with no internet access.
 
 Alternatively, `CURVPATH` is an environment variable containing a list of
 absolute pathnames of directories. Eg, `CURVPATH=/usr/local/curv`.
@@ -179,3 +187,27 @@ absolute pathnames of directories. Eg, `CURVPATH=/usr/local/curv`.
 `lib.foo` searches for a file with basename `foo` in `CURVPATH`, as specified
 by the `file` function. If found, the file is loaded and evaluated and the
 resulting value is returned.
+
+## Standard Packages
+
+What makes sense is to have a small standard library (std), then put
+the remaining library abstractions into a collection of standard packages.
+The standard library forms the outer scope of all source files, while
+standard packages must be referenced explicitly. The standard library is
+harder to evolve than the standard packages, since a package can be deprecated
+as a whole and replaced by a new package with a different name. So it makes
+sense to keep the standard library small.
+
+How are standard packages referenced? Should we use `lib` (they are installed
+on the local file system, as part of the Curv installation process),
+or should we use `package` (they are referenced using URLs)?
+
+In the long term, standard packages should be referenced by URLs, because
+if they are part of the default install, then it becomes hard to abandon them
+or remove them from the default install (backward compatibility reasons).
+(Eg, the Python standard library is notoriously full of abandonware.)
+But then, in the long term, we would want a stable home for these packages.
+
+## Conclusion
+
+Trees and Packages suffice. Don't actually need `file` or `lib`.
