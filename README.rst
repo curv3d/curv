@@ -40,7 +40,7 @@ Getting Started
 ===============
 * To install the software, see `<BUILD.md>`_.
 * The documentation is here: `<docs/README.rst>`_.
-* Mailing list: `<https://groups.google.com/forum/#!forum/curv>`_.
+* Mailing list: `<https://groups.google.com/d/forum/curv>`_.
 * To contribute, see `<CONTRIBUTING.md>`_.
 
 Hardware Requirements
