@@ -162,6 +162,12 @@ explicit error message "File not found".
 like an identifier. `file` is not a record, despite the use of dot notation,
 it is a mechanism for doing lexically scoped identifier-like lookups
 in a Directory Syntax document.
+* Mutually recursive references between two `*.curv` scripts is illegal,
+  because of implementation restrictions (ref counting not garbage collection).
+  This is enforced at compile time.
+* Using a fancier compiler, we could permit mutual recursion between files,
+  with an implementation that still requires `file.foo` to be resolved at
+  compile time.
 * No immediate plan to implement `file."${foo}"`, `defined(file.foo)`,
   or `fields file`.
 
