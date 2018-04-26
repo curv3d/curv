@@ -36,87 +36,21 @@ Features:
   These meshes are defect free: watertight, manifold, with no self
   intersections or degenerate triangles.
 
-History and Rationale
-=====================
-Curv builds on earlier work:
-
-Haskell (1998)
-  Shows that pure functional programming has awesome
-  benefits, and is a viable alternative to imperative style programming.
-
-  *BUT*: Haskell has a very high learning curve, and maybe that's why
-  pure functional programming hasn't become more mainstream.
-  Someone should build an easy to use pure functional language
-  for beginners, with a simple dynamic type system.
-
-Processing (2001)
-  A compelling programming language for beginners:
-  learn how to program by writing code that makes art.
-  A simple GUI with code on the left, the picture it generates on the right.
-
-  *BUT*: Processing is an old fashioned, low level, imperative language.
-  It's a 1990's vision of how to write graphical code.
-
-OpenSCAD (2010)
-  Similar to Processing, but with a nicer language:
-  it's a high level declarative language that manipulates 2D and 3D shapes
-  as objects, using powerful operations to transform and combine shapes.
-  And, you can export shapes for 3D printing.
-
-  *BUT*: It's slow, and lacks expressive power.
-  
-  * The geometry engine is based on polyhedral meshes: it's slow and memory
-    intensive. Complex models with many triangles are expensive.
-    Boolean operations are expensive. Doesn't use the GPU for geometry
-    computations.
-  * The language lacks expressive power. Functions and shapes are not first
-    class values. You can't query the properties of a shape. Very little
-    support for colour.
-
-ImplicitCAD (2012)
-  A clone of OpenSCAD that uses F-Rep (Function
-  Representation) instead of meshes to represent shapes. It provides a glimpse
-  of the greater expressive power of F-Rep. Functions are values, so you
-  can do functional programming.
-
-  *BUT*: Still a very limited language. You can't define new
-  function representations within the language, so most of the potential
-  of F-Rep geometry is inaccessible. And it doesn't use the GPU to speed up
-  geometry processing.
-
-ShaderToy.com (2013)
-  A website with a Processing-like interface
-  for doing F-Rep programming using WebGL and the GLSL language. Showcases the
-  full power of F-Rep programming on a GPU.
-
-  *BUT*: GLSL is a very low level and limited language. The programming
-  model is very difficult. You can't 3D print the models you see on ShaderToy.
-
-Curv combines the best features of its predecessors. It's a high level,
-pure functional language for geometric art and 3D printing.
-It is easy for beginners to get started with, but it also exposes the full
-power of F-Rep programming to experts. Experts can package techniques seen on
-ShaderToy as high level operations with a simple API, so that beginners can
-create the kind of effects seen on ShaderToy using much shorter, simpler
-programs. And you can 3D print your models. All rendering is GPU accelerated.
-
-Project Status
-==============
-The current release is 0.1: "mesh export":
-
-* The language and shape library are stable, except where documented otherwise.
-* STL, OBJ and X3D file export (for 3D printing) is now implemented.
-* STL file import and a Windows port are still in the future.
+Getting Started
+===============
 * To install the software, see `<BUILD.md>`_.
 * The documentation is here: `<docs/README.rst>`_.
+* Mailing list: `<https://groups.google.com/forum/#!forum/curv>`_.
 * To contribute, see `<CONTRIBUTING.md>`_.
 
 Hardware Requirements
 =====================
 Two platforms are currently supported: Ubuntu 16.04 and macOS.
 
-4GB RAM and a GPU that supports OpenGL 4.3 or macOS Metal is recommended,
-to fully support features that are planned for 2018 and later.
-For laptops, the cutoff is somewhere between 2012 and 2013 as the year of
-manufacture. Right now, older hardware mostly works, but not all of the models
-in the 'examples' directory are guaranteed to work.
+Currently, Curv runs on just about any GPU.
+
+In the future, the geometry engine will be rewritten for scaleability
+and performance. I anticipate you will then need a GPU that supports one of
+the following standards: OpenGL 4.3, macOS Metal, DX12 or Vulkan.
+For laptops, the cutoff will be somewhere between 2012 and 2013 as the year of
+manufacture.
