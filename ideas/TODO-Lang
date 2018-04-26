@@ -1,9 +1,16 @@
 ## TODO: Language Changes
 
-* file.foo and package
+Breaking changes:
+* file.foo and package. Remove 'file pathname'.
+* Remove `a'b` syntax.
+* Maybe? `x where y` is an item, not a list.
+* Maybe? 'quoted identifier', foo.'qid', {'qid':expr}, defined(x.'qid').
+  Remove {"qid":expr} and support {pattern:expr}.
+  But note that `x."${foo}"` and `defined(x."${foo}")` are still needed.
+
+Extensions:
 * std
 * a[i] := item, i is an integer
-* remove a'b syntax
 * function/record equivalence
   * primitive functions have a 'call' field, support 'fields' and 'defined'
     and 'f.call' and 'include' and '...'.
@@ -26,12 +33,12 @@
 ### `where` syntax
 
 I would like a `where` expression to be an item, not a list.
-Currently, adding a `where` clause to the end of a definition requires
-wrapping the entire definition body in parens.
+Currently, adding a `where` clause to the end of a definiens requires
+a nonlocal change: wrapping the entire definition body in parens.
 
 New syntax:
   body where a=1
-  body where (a=1; b=2;)
+  body where (a=1; b=2;)   // consistent with 'compound definition' syntax
 
 Grammar:
   item ::= item where item

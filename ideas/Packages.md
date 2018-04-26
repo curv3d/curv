@@ -13,16 +13,46 @@ that its dependencies on external modules are all defined in one place. Within
 the body of the module, simple names are used to refer to these dependencies.
 This style should be *possible* in Curv, even if it isn't enforced.
 
-## Files
+## File Syntax
 
-Using the File mechanism, you can directly reference a file by name.
-The filename is either a pathname in the local file system, or a URL.
-```
-  file "pathname_or_url"
-```
+File Syntax is a set of rules for interpreting a regular file as a Curv value
+(based on its extension), and for interpreting a directory as a Curv value.
 
-The `file` function converts a file to a Curv value based solely on the filename
-extension, or maybe on the MIME type in the case of a URL.
+Some file types that might be supported:
+* `*.curv` -- a Curv expression, which evaluates to an arbitrary value.
+* `*.json`
+* `*.toml`
+* `*.rsdf` -- a Regularly Sampled Distance Field -- a voxel grid of distance
+  values, in binary.
+* *directory* -- if a local filename names a directory, then Tree syntax is
+  used to interpret the directory as a Curv value.
+* `*.cpkg` -- a ZIP file containing a Tree (similar to *.ODT or *.3MF). The
+  primary use case is to represent a Curv shape as a single file, in the case
+  where we want to package Curv source code together with some binary files.
+
+The shell command `curv filename` interprets `filename` using File Syntax,
+reading and evaluating the file and then displaying the resulting Curv value.
+
+Mime types:
+* `*.curv` == text/curv
+* `*.rsdf` == application/curv.rsdf
+* `*.cpkg` == application/curv.cpkg
+
+## The `file` Function
+
+This will not be part of Curv. Case analysis:
+* `file relative_pathname`: Replaced by `file.name`.
+  Avoids tricky code that restricts the use of `..` to escape from a
+  package boundary.
+* `file absolute_pathname`: This is potentially useful in a local workspace.
+  But you could also use a symlink, and reference the symlink with `file.name`.
+  This feature is a security hole if used in a package or `*.curv` file
+  downloaded from the internet.
+* `file URL`: How important is this, when we have `package URL`?
+  Potentially more susceptible to being used as a backchannel for malware
+  to "phone home", than `package`.
+
+This also means I won't have 'parameterized file readers'.
 
 **Parameterized File Readers**
 * If additional parameters must be supplied in order to interpret the contents
@@ -45,38 +75,14 @@ extension, or maybe on the MIME type in the case of a URL.
     * If we banish parameterized file readers, then the File mechanism can
       be deprecated, and perhaps not supported in a Tree.
 
-Some file types that might be supported:
-* `*.curv` -- a Curv expression, which evaluates to an arbitrary value.
-* `*.json`
-* `*.toml`
-* `*.rsdf` -- a Regularly Sampled Distance Field -- a voxel grid of distance
-  values, in binary.
-* *directory* -- if a local filename names a directory, then Tree syntax is
-  used to interpret the directory as a Curv value. Not supported for URLs.
-* `*.cpkg` -- a ZIP file containing a Tree (similar to *.ODT or *.3MF). The
-  primary use case is to represent a Curv shape as a single file, in the case
-  where we want to package Curv source code together with some binary files.
-
-The shell command `curv filename` interprets `filename` the same way as the
-`file` function does, reading and evaluating the file and then displaying the
-resulting Curv value. URLs are supported here.
-
-URL support in the File mechanism might be a security hole. It may provide a
-backchannel for malware to "phone home". Packages are more secure.
-
-Mime types:
-* `*.curv` == text/curv
-* `*.rsdf` == application/curv.rsdf
-* `*.cpkg` == application/curv.cpkg
-
 ## Trees
 
-Curv has a 'directory syntax', which interprets a directory tree as a nested
-record value. Individual files within a directory, if their names have the
-syntax 'identifier.extension', are interpreted as record members: the member
-name is 'identifier', and 'extension' specifies how the file is interpreted as
-a value, as if by the `file` function. As a special case, subdirectories whose
-names are just 'identifier' (no extension) are interpreted as record values.
+Curv has a 'directory syntax', which interprets a directory tree as a Curv
+value: by default as a nested record value. Directory entries are interpreted
+as record members. Regular files named 'identifier.extension' are interpreted
+using File Syntax. Subdirectories named 'identifier' (no extension) are
+interpreted using Directory Syntax. Entries that don't match these patterns
+are ignored.
 
 The root of the directory tree is marked, possibly by an empty file `.curvroot`.
 
@@ -151,6 +157,13 @@ explicitly referenced are ignored.
 
 The benefit of an explicit gesture like `file.foo` is that you get an
 explicit error message "File not found".
+
+`file.foo` is interpreted at compile time, because it is intended to behave
+like an identifier. `file` is not a record, despite the use of dot notation,
+it is a mechanism for doing lexically scoped identifier-like lookups
+in a Directory Syntax document.
+* No immediate plan to implement `file."${foo}"`, `defined(file.foo)`,
+  or `fields file`.
 
 Can relax the requirement that directories contain a `main.curv` file.
 If not, construct a record from every suitable directory entry.
@@ -257,7 +270,6 @@ Implement this combination of features:
   Optional `main.curv` entry. Optional `.curvroot` entry.
 * `package{repo,version}`: Versioned, encapsulated packages, referenced using
   absolute https: or file: URLs, represented as git repositories.
-* `file pathstring`: The `pathstring` can be an absolute pathname or a URL.
 
 How do you use these features, as a user?
 * Create a single hierarchical workspace for all Curv projects: `~/curv`.
@@ -268,3 +280,5 @@ How do you use these features, as a user?
   $ create param.curv
   $ create lib.curv
   Use `include file.param` and `include file.lib`.
+* The curv/examples directory will change: it gains a `.curvroot` file,
+  and uses `file.lib.experimental` to reference the library.
