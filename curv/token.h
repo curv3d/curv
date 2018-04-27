@@ -36,7 +36,7 @@ namespace curv {
 /// That's done at a higher level. This simplifies the representation of tokens.
 struct Token
 {
-    uint32_t first_white_, first_, last_;
+    uint32_t first_white_ = 0, first_ = 0, last_ = 0;
     enum Kind {
         k_missing,    ///! not a token; marks an uninitialized token variable.
         k_phrase,     ///! text spanned by a parse tree node: 2 or more tokens
@@ -99,9 +99,7 @@ struct Token
         k_left_call,        ///! `<<` operator
         k_right_call,       ///! `>>` operator
         k_end               ///! end of script
-    } kind_;
-
-    Token() : kind_(k_missing) {}
+    } kind_ = k_missing;
 };
 
 } // namespace curv
