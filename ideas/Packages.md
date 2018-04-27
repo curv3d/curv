@@ -26,8 +26,9 @@ Some file types that might be supported:
   values, in binary.
 * *directory* -- if a local filename names a directory, then Tree syntax is
   used to interpret the directory as a Curv value.
-* `*.cpkg` -- a ZIP file containing a Tree (similar to *.ODT or *.3MF). The
-  primary use case is to represent a Curv shape as a single file, in the case
+* `*.vstor` -- Value Store: A compressed binary file representing an arbitrary
+  Curv value. A ZIP file containing a Tree (similar to `*.ODT` or `*.3MF`).
+  The primary use case is to represent a Curv shape as a single file,
   where we want to package Curv source code together with some binary files.
 
 The shell command `curv filename` interprets `filename` using File Syntax,
@@ -36,7 +37,7 @@ reading and evaluating the file and then displaying the resulting Curv value.
 Mime types:
 * `*.curv` == text/curv
 * `*.rsdf` == application/curv.rsdf
-* `*.cpkg` == application/curv.cpkg
+* `*.vstor` == application/curv.vstor
 
 ## The `file` Function
 

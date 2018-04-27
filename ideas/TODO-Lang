@@ -3,7 +3,7 @@
 Breaking changes:
 * file.foo and package. Remove 'file pathname'.
 * Remove `a'b` syntax.
-* Maybe? `x where y` is an item, not a list.
+* `x where y` is an item, not a list.
 * Maybe? 'quoted identifier', foo.'qid', {'qid':expr}, defined(x.'qid').
   Remove {"qid":expr} and support {pattern:expr}.
   But note that `x."${foo}"` and `defined(x."${foo}")` are still needed.
@@ -41,9 +41,26 @@ New syntax:
   body where (a=1; b=2;)   // consistent with 'compound definition' syntax
 
 Grammar:
-  item ::= item where item
+  item ::= ritem | ritem `where` ritem
+  ritem ::= <what used to be called 'item'>
 
-This is ambiguous, and that needs to be resolved.
+My intention is to write code like this:
+```
+regular_polygon n =
+    {
+        ... mitred 2,
+        call: mitred,
+        mitred: mitred,
+        circumratio : 1 / cos(angle/2),
+    }
+where (
+    angle = tau / n;
+    mitred d = half_plane{d: d/2, normal: [0,-1]} >> repeat_radial n;
+);
+```
+Note that a definition can be qualified by a `where` clause. This allows
+the `where` bindings to be visible in patterns on the left side of the `=`
+in the definition.
 
 This adds extra parens when a `where` clause is used at the top level,
 and that's what I was trying to avoid with the original syntax.

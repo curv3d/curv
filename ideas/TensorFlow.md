@@ -9,9 +9,17 @@ Intelligence research organization for the purposes of conducting machine
 learning and deep neural networks research, but the system is general enough
 to be applicable in a wide variety of other domains as well.
 
+TensorFlow and Curv are both tensor-based functional programming languages
+that execute code on the GPU. Beyond that surface similarity, they are totally
+different, but an integration into Curv would be possible, if it made sense.
+
 https://www.tensorflow.org/
 
 Magenta is a project use to use TensorFlow for procedurally generated
 art and music, which seems to align with the goals of Curv.
+But they now seem to focus solely on music.
 
 https://magenta.tensorflow.org/
+
+Lots of people doing 2D image manipulation using TensorFlow.
+What about 3D solid modelling, where solids are represented by tensor fields?
