@@ -271,13 +271,19 @@ void export_mesh(Mesh_Format format, curv::Value value,
         for (unsigned int i=0; i<mesher.polygonPoolListSize(); ++i) {
             openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
             for (unsigned int j=0; j<pool.numTriangles(); ++j) {
-                if (!first) out << " "; first = false;
+                if (!first) {
+                    out << " ";
+                    first = false;
+                }
                 auto& tri = pool.triangle(j);
                 out << tri[0] << " " << tri[2] << " " << tri[1] << " -1";
                 ++ntri;
             }
             for (unsigned int j=0; j<pool.numQuads(); ++j) {
-                if (!first) out << " "; first = false;
+                if (!first) {
+                    out << " ";
+                    first = false;
+                }
                 auto& q = pool.quad(j);
                 out << q[0] << " " << q[2] << " " << q[1] << " -1 "
                     << q[0] << " " << q[3] << " " << q[2] << " -1";
@@ -289,7 +295,10 @@ void export_mesh(Mesh_Format format, curv::Value value,
         "    <Coordinate point=\"";
         first = true;
         for (unsigned int i = 0; i < mesher.pointListSize(); ++i) {
-            if (!first) out << " "; first = false;
+            if (!first) {
+                out << " ";
+                first = false;
+            }
             auto& pt = mesher.pointList()[i];
             out << pt.x() << " " << pt.y() << " " << pt.z();
         }
