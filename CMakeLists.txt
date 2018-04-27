@@ -31,10 +31,10 @@ target_link_libraries(tester PUBLIC gtest pthread libcurv double-conversion boos
 
 set_property(TARGET curv libcurv tester PROPERTY CXX_STANDARD 14)
 
-set( gccflags "-Wall -Werror -O1 -Wno-unused-result" )
+set( gccflags "-Wall -Werror -Wno-unused-result" )
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${gccflags}" )
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${gccflags}" )
-set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${sanitize}" )
+set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${sanitize} -O1" )
 
 add_custom_target(tests tester WORKING_DIRECTORY ../tests)
 add_dependencies(tests tester curv)
