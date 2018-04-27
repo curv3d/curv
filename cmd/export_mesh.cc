@@ -204,9 +204,9 @@ void export_mesh(Mesh_Format format, curv::Value value,
     switch (format) {
     case stl_format:
         out << "solid curv\n";
-        for (int i=0; i<mesher.polygonPoolListSize(); ++i) {
+        for (unsigned int i=0; i<mesher.polygonPoolListSize(); ++i) {
             openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
-            for (int j=0; j<pool.numTriangles(); ++j) {
+            for (unsigned int j=0; j<pool.numTriangles(); ++j) {
                 // swap ordering of nodes to get outside-normals
                 put_triangle(out,
                     mesher.pointList()[ pool.triangle(j)[0] ],
@@ -214,7 +214,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
                     mesher.pointList()[ pool.triangle(j)[1] ]);
                 ++ntri;
             }
-            for (int j=0; j<pool.numQuads(); ++j) {
+            for (unsigned int j=0; j<pool.numQuads(); ++j) {
                 // swap ordering of nodes to get outside-normals
                 put_triangle(out,
                     mesher.pointList()[ pool.quad(j)[0] ],
@@ -230,13 +230,13 @@ void export_mesh(Mesh_Format format, curv::Value value,
         out << "endsolid curv\n";
         break;
     case obj_format:
-        for (int i = 0; i < mesher.pointListSize(); ++i) {
+        for (unsigned int i = 0; i < mesher.pointListSize(); ++i) {
             auto& pt = mesher.pointList()[i];
             out << "v " << pt.x() << " " << pt.y() << " " << pt.z() << "\n";
         }
-        for (int i=0; i<mesher.polygonPoolListSize(); ++i) {
+        for (unsigned int i=0; i<mesher.polygonPoolListSize(); ++i) {
             openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
-            for (int j=0; j<pool.numTriangles(); ++j) {
+            for (unsigned int j=0; j<pool.numTriangles(); ++j) {
                 // swap ordering of nodes to get outside-normals
                 auto& tri = pool.triangle(j);
                 out << "f " << tri[0]+1 << " "
@@ -244,7 +244,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
                             << tri[1]+1 << "\n";
                 ++ntri;
             }
-            for (int j=0; j<pool.numQuads(); ++j) {
+            for (unsigned int j=0; j<pool.numQuads(); ++j) {
                 // swap ordering of nodes to get outside-normals
                 auto& q = pool.quad(j);
                 out << "f " << q[0]+1 << " "
@@ -268,15 +268,15 @@ void export_mesh(Mesh_Format format, curv::Value value,
         "  <Shape>\n"
         "   <IndexedFaceSet colorPerVertex=\"false\" coordIndex=\"";
         bool first = true;
-        for (int i=0; i<mesher.polygonPoolListSize(); ++i) {
+        for (unsigned int i=0; i<mesher.polygonPoolListSize(); ++i) {
             openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
-            for (int j=0; j<pool.numTriangles(); ++j) {
+            for (unsigned int j=0; j<pool.numTriangles(); ++j) {
                 if (!first) out << " "; first = false;
                 auto& tri = pool.triangle(j);
                 out << tri[0] << " " << tri[2] << " " << tri[1] << " -1";
                 ++ntri;
             }
-            for (int j=0; j<pool.numQuads(); ++j) {
+            for (unsigned int j=0; j<pool.numQuads(); ++j) {
                 if (!first) out << " "; first = false;
                 auto& q = pool.quad(j);
                 out << q[0] << " " << q[2] << " " << q[1] << " -1 "
@@ -288,7 +288,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
         "\">\n"
         "    <Coordinate point=\"";
         first = true;
-        for (int i = 0; i < mesher.pointListSize(); ++i) {
+        for (unsigned int i = 0; i < mesher.pointListSize(); ++i) {
             if (!first) out << " "; first = false;
             auto& pt = mesher.pointList()[i];
             out << pt.x() << " " << pt.y() << " " << pt.z();
@@ -296,15 +296,15 @@ void export_mesh(Mesh_Format format, curv::Value value,
         out <<
         "\"/>\n"
         "    <Color color=\"";
-        for (int i=0; i<mesher.polygonPoolListSize(); ++i) {
+        for (unsigned int i=0; i<mesher.polygonPoolListSize(); ++i) {
             openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
-            for (int j=0; j<pool.numTriangles(); ++j) {
+            for (unsigned int j=0; j<pool.numTriangles(); ++j) {
                 put_colour(out, shape,
                     mesher.pointList()[ pool.triangle(j)[0] ],
                     mesher.pointList()[ pool.triangle(j)[2] ],
                     mesher.pointList()[ pool.triangle(j)[1] ]);
             }
-            for (int j=0; j<pool.numQuads(); ++j) {
+            for (unsigned int j=0; j<pool.numQuads(); ++j) {
                 put_colour(out, shape,
                     mesher.pointList()[ pool.quad(j)[0] ],
                     mesher.pointList()[ pool.quad(j)[2] ],
