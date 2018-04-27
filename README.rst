@@ -46,6 +46,7 @@ Getting Started
 Hardware Requirements
 =====================
 Two platforms are currently supported: Ubuntu 16.04 and macOS.
+Windows support is planned.
 
 Currently, Curv runs on just about any GPU.
 
