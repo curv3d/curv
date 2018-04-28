@@ -182,6 +182,12 @@ struct Lambda_Phrase : public Binary_Phrase
     virtual Shared<Meaning> analyse(Environ&) const override;
 };
 
+struct Where_Phrase : public Binary_Phrase
+{
+    using Binary_Phrase::Binary_Phrase;
+    virtual Shared<Meaning> analyse(Environ&) const override;
+};
+
 struct Recursive_Definition_Phrase : public Phrase
 {
     Recursive_Definition_Phrase(

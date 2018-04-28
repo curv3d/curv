@@ -403,12 +403,21 @@ analyse_block(
 }
 
 Shared<Meaning>
-analyse_where_block(
-    Environ& env,
-    Shared<const Phrase> source,
-    Shared<Phrase> bindings,
-    Shared<const Phrase> bodysrc)
+Let_Phrase::analyse(Environ& env) const
 {
+    Definition::Kind kind =
+        let_.kind_ == Token::k_let
+        ? Definition::k_recursive
+        : Definition::k_sequential;
+    return analyse_block(env, share(*this), kind, bindings_, body_);
+}
+
+Shared<Meaning>
+Where_Phrase::analyse(Environ& env) const
+{
+    Shared<const Phrase> source = share(*this);
+    Shared<Phrase> bindings = right_;
+    Shared<const Phrase> bodysrc = left_;
     auto let = cast<const Let_Phrase>(bodysrc);
     if (let && let->let_.kind_ == Token::k_let)
     {
@@ -431,16 +440,6 @@ analyse_where_block(
     }
     return analyse_block(env, source,
         Definition::k_recursive, bindings, bodysrc);
-}
-
-Shared<Meaning>
-Let_Phrase::analyse(Environ& env) const
-{
-    Definition::Kind kind =
-        let_.kind_ == Token::k_let
-        ? Definition::k_recursive
-        : Definition::k_sequential;
-    return analyse_block(env, share(*this), kind, bindings_, body_);
 }
 
 Shared<Meaning>
@@ -537,8 +536,6 @@ Binary_Phrase::analyse(Environ& env) const
             analyse_op(*right_, env));
     case Token::k_colon:
         return analyse_assoc(env, *this, *left_, right_);
-    case Token::k_where:
-        return analyse_where_block(env, share(*this), right_, left_);
     default:
         die("Binary_Phrase::analyse: bad operator token type");
     }

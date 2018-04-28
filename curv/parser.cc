@@ -94,8 +94,7 @@ parse_list(Scanner& scanner)
         return parse_semicolons(scanner, item);
     if (tok.kind_ == Token::k_where) {
         tok = scanner.get_token();
-        return make<Binary_Phrase>(
-            std::move(item), tok, parse_list(scanner));
+        return make<Where_Phrase>(std::move(item), tok, parse_list(scanner));
     }
     throw Exception(At_Token(tok, scanner), "syntax error in list");
 }
