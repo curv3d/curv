@@ -282,7 +282,7 @@ struct Separator_Phrase : public Phrase
     }
 };
 
-/// `a,b,c` -- One or more blocks, separated by commas, with optional trailing
+/// `a,b,c` -- One or more items, separated by commas, with optional trailing
 /// comma. Guaranteed to contain at least one comma token.
 struct Comma_Phrase : public Separator_Phrase
 {
