@@ -17,7 +17,7 @@ Two questions:
   special internal operators. Eg, `(a*b)+c` compiles to FMA(a,b,c),
   e^x compiles to EXP(x).
 
-A parsimonious math API:
+A fluent and parsimonious math API:
 Instead of providing a large number of 'special case' numeric functions
 like expm1(x) == e^x-1, you instead write 'natural' code and the compiler
 will detect common patterns and rewrite them into more efficient/accurate
@@ -28,7 +28,7 @@ code. For example:
 * log(x,10) -> log10(x)
 * log(x,2) -> log2(x)
 * log(1+x) -> log1p(x)
-* atan(x/y) -> atan2(x,y)
+* BUT NOT atan(x/y) -> atan2(x,y) -- this is a semantic change
 
 ## Math Library API
 
