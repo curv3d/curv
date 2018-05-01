@@ -34,7 +34,7 @@ Features:
 * Curv can export meshes to STL, OBJ and X3D files for 3D printing.
   The X3D format supports full colour 3D printing (on Shapeways.com, at least).
   These meshes are defect free: watertight, manifold, with no self
-  intersections or degenerate triangles.
+  intersections, degenerate triangles, or flipped triangles.
 
 Getting Started
 ===============
