@@ -78,14 +78,18 @@ Curv generates watertight, manifold meshes with no self intersections,
 degenerate triangles, or flipped triangles. These are high quality, defect free
 meshes that can be processed by any software.
 
-* OpenSCAD requires defect free meshes (otherwise boolean operations fail).
-* Shapeways.com requires defect free meshes (except, they don't prohibit self intersection).
+* `OpenSCAD`_ requires defect free meshes (otherwise boolean operations fail).
+* Meshs submitted to `Shapeways.com`_ for 3D printing *should* be defect free.
+  They can automatically repair self intersection (and perhaps other defects),
+  but the repair is not guaranteed to succeed, and becomes more likely to
+  fail with very large meshes (the upper limit is 2M triangles as of April 2018).
 
 The mesh simplification performed by MeshLab may introduce self-intersections.
-This doesn't cause a problem for 3D printing, but you can't process defective
-meshes in `OpenSCAD`_.
+This doesn't usually cause a problem for 3D printing, because slicing software
+attempts to repair bad meshes.
 
 .. _`OpenSCAD`: http://www.openscad.org/
+.. _`ShapeWays.com`: https://shapeways.com/
 
 Curv does not yet support sharp feature detection,
 so the edges of cubes are rounded off. To fix this, decrease the
