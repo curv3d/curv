@@ -74,9 +74,12 @@ I recommend an external tool, `MeshLab`_, to simplify the mesh:
 
 Mesh Quality
 ------------
-Curv generates watertight, manifold meshes with no self
-intersections or degenerate triangles. These are high quality, defect free meshes that can be
-processed by any software.
+Curv generates watertight, manifold meshes with no self intersections,
+degenerate triangles, or flipped triangles. These are high quality, defect free
+meshes that can be processed by any software.
+
+* OpenSCAD requires defect free meshes (otherwise boolean operations fail).
+* Shapeways.com requires defect free meshes (except, they don't prohibit self intersection).
 
 The mesh simplification performed by MeshLab may introduce self-intersections.
 This doesn't cause a problem for 3D printing, but you can't process defective
