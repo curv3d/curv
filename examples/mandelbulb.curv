@@ -1,0 +1,65 @@
+// The Mandelbulb fractal.
+// Based on an implementation from the Fragmentarium project,
+// written by Mikael Hvidtfeldt Christensen,
+// based on discussions at fractalforums.com.
+
+let
+// Bailout radius
+Bailout = 5;
+// Number of fractal iterations.
+Iterations = 9;
+// mermelada's tweak Derivative bias
+DerivativeBias = 1;
+// Mandelbulb exponent (8 is standard)
+Power = 8;
+
+// This is my power function, based on the standard spherical coordinates as defined here:
+// http://en.wikipedia.org/wiki/Spherical_coordinate_system
+//
+// It seems to be similar to the one Quilez uses:
+// http://www.iquilezles.org/www/articles/mandelbulb/mandelbulb.htm
+//
+// Notice the north and south poles are different here.
+powN1(z, r, dr) =
+    let
+        // extract polar coordinates
+        theta = if (r==0) 0 else acos(z[Z]/r);
+        phi = phase(z[[X,Y]]);
+        //	dr2 =  pow( r, Power-1.0)*Power*dr + 1.0;
+        // mermelada's tweak
+        // http://www.fractalforums.com/new-theories-and-research/error-estimation-of-distance-estimators/msg102670/?topicseen#msg102670
+	    dr2 = max(dr*DerivativeBias, r^(Power-1)*Power*dr + 1);
+
+        // scale and rotate the point
+        zr = r^Power;
+        theta2 = theta*Power;
+        phi2 = phi*Power;
+
+        // convert back to cartesian coordinates
+        z2 = zr*[sin(theta2)*cos(phi2), sin(phi2)*sin(theta2), cos(theta2)];
+    in (z2[X], z2[Y], z2[Z], dr2);
+
+in
+make_shape {
+    dist p =
+        let pos = p[[X,Y,Z]];
+            rot = 1;
+        in do
+            var dr := 1;
+            var z := pos;
+            var i := 0;
+            var r := mag z;
+            while (r<Bailout && i<Iterations)
+                let zdr = powN1(z,r,dr);
+                in (
+                    z := zdr[[X,Y,Z]];
+                    dr := zdr[3];
+                    z := z + pos;
+                    r := mag z;
+                    z := z * rot;
+                    i := i + 1;
+                );
+        in if (r==0) 0 else 0.5*log(r)*r/dr;
+    bbox = [[-1.1,-1.1,-1.1],[1.1,1.1,1.1]];
+    is_3d = true;
+}
