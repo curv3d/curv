@@ -1,5 +1,24 @@
 # Release 0.2: "Mesh Import"
+
+Mesh Import:
 * Refactor: glslViewer is repackaged as a library used by `curv`.
+* RSDF import and export.
+* mesh to RSDF tool
+
+Mesh Export:
+* smooth export: the current default.
+* sharp export:
+  * refactor: abstract STL/OBJ file writing code as class Mesh_Export
+  * quick&dirty DC, with documented limitations. Test with Menger.
+* fractal export: convolution & super sampling, test with MandelBulb.
+  * density grid export.
+  * density grid tools: import, view, convolve, export. inviwo.org I guess.
+    Experiment with different convolution methods.
+
+Language:
+* new `where`
+* Packages
+* >> `intersection` foo
 
 # Release 0.1: "Mesh Export"
 

@@ -23,3 +23,14 @@ https://magenta.tensorflow.org/
 
 Lots of people doing 2D image manipulation using TensorFlow.
 What about 3D solid modelling, where solids are represented by tensor fields?
+
+Deep Dreaming: generating art using a neural network. You train a neural network
+on images of trees, then run it backwards to generate tree images.
+This is easy and accessible today.
+
+Deep Curv: generating signed distance fields using a neural network.
+You train a neural network on signed distance fields, then run it backwards.
+Which SDF representations? Voxels. Curv programs.
+
+Maybe we can use AI to search for optimized code for generating a Euclidean
+SDF for a desired shape.
