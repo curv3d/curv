@@ -1,5 +1,10 @@
 project(curv)
 cmake_minimum_required(VERSION 3.5)
+
+if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
+  message(FATAL_ERROR "Do not use 'cmake .'; instead, just type 'make'")
+endif ()
+
 include_directories(. extern/googletest/googletest/include)
 
 add_subdirectory(extern/googletest/googletest)

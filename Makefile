@@ -1,4 +1,5 @@
 release:
+	rm -rf CMakeCache.txt CMakeFiles
 	mkdir -p release
 	cd release; cmake -DCMAKE_BUILD_TYPE=Release ..
 	cd release; make
