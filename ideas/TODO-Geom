@@ -84,6 +84,12 @@ Transforms that benefit from tilt (or, add an axis argument to each one):
 3D->2D transforms: can't use tilt, need to pre-rotate the 3D shape.
     slice
 
+One downside is that some transformations have a default axis of Z_axis
+(eg, rotate), while others have a default axis of X_axis.
+
+Tilt, as specified here, doesn't work for local_bend because it doesn't
+specify an 'up' vector.
+
 ## 3D->2D
 existing: slice_xy, slice_xz, slice_yz
 Can these be combined into a single, more general primitive?
@@ -309,6 +315,19 @@ which is the best axis to choose for human psychology reasons.
 
 ## Barr's Bend (local bend)
 local_bend{range:[xs,xe], centre|fixed_point: x0, angle}
+
+A more general interface would let you specify the bend axis.
+Let's specify the bending line as {origin, axis}, where origin is also the
+fixed point. Then {range:[xs,xe]} are interpreted as coordinates on the
+bending line. But then, you also need an 'up' vector.
+
+local_bend{range:[xs,xe], angle, origin=[0,0,0], axis=X_axis, up=Y_axis}
+
+As long as the Z components of origin, axis and up are 0, then this works on
+2D and 3D shapes. Otherwise, it is 3D only.
+
+Finally, can I simplify this by eliminating the origin and axis arguments,
+and using `at` and `tilt` instead? But `tilt` doesn't specify an `up` vector.
 
 ## Convention: bend/radial-repeat parameters
 

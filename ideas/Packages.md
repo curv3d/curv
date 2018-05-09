@@ -172,6 +172,12 @@ in a Directory Syntax document.
 * No immediate plan to implement `file."${foo}"`, `defined(file.foo)`,
   or `fields file`.
 
+Under this interface, a record field could be represented by two files with
+the same basename and different extensions. Eg, one contains raw data in some
+standard non-Curv format, the other contains Curv metadata. (This is an
+alternative to "parameterized file readers".) Or, one contains geometry
+and the other contains colour.
+
 Can relax the requirement that directories contain a `main.curv` file.
 If not, construct a record from every suitable directory entry.
 

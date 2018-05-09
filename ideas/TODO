@@ -11,9 +11,35 @@ Mesh Export:
   * refactor: abstract STL/OBJ file writing code as class Mesh_Export
   * quick&dirty DC, with documented limitations. Test with Menger.
 * fractal export: convolution & super sampling, test with MandelBulb.
+  * How Mandelbulb https://www.thingiverse.com/thing:26324 was constructed:
+    * export as 2048^3 density grid, 1 bit per voxel
+    * resample down to 512^3 density grid, 8 bits per voxel
+      * 2D median filter (each slice)
+      * resample bilinearly to 1024^2 (each slice)
+        and every 2 frames were averaged together -> 1024^3
+      * 3D median filter
+      * trilinear resampling to 512^3
+    * My version of the resampling:
+      * export as 2048^3 density grid, 1 bit per voxel.
+      * 3D median filter, 3x3x3 neighbourhood, zero padding at grid boundaries.
+        This means: find median of the 9 values: sort and take middle value.
+      * trilinear resampling down to 1024^3.
+        This means: take average of each 2*2*2 partition.
+      * another 3D median filter.
+      * trilinear resampling down to 512^3.
+    * marching cubes
   * density grid export.
   * density grid tools: import, view, convolve, export. inviwo.org I guess.
     Experiment with different convolution methods.
+
+Intensity Fields:
+* 3D medical images use voxel density grids (which are just sampled "intensity
+  fields"). Isosurfaces are extracted to identity features (eg, bone is denser
+  than other tissues).
+* In Curv, intensity fields are first class values. I could add new operations:
+  * Import and export of intensity fields as voxel grids.
+  * Convert density grid to SDF by extracting a level set.
+  * Convert SDF to density grid by sampling and antialiasing.
 
 Language:
 * new `where`
