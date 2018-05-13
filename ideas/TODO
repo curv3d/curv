@@ -11,15 +11,9 @@ Mesh Export:
   * refactor: abstract STL/OBJ file writing code as class Mesh_Export
   * quick&dirty DC, with documented limitations. Test with Menger.
 * fractal export: convolution & super sampling, test with MandelBulb.
-  * How Mandelbulb https://www.thingiverse.com/thing:26324 was constructed:
+  * Mandelbulb export algorithm:
     * export as 2048^3 density grid, 1 bit per voxel
     * resample down to 512^3 density grid, 8 bits per voxel
-      * 2D median filter (each slice)
-      * resample bilinearly to 1024^2 (each slice)
-        and every 2 frames were averaged together -> 1024^3
-      * 3D median filter
-      * trilinear resampling to 512^3
-    * My version of the resampling:
       * export as 2048^3 density grid, 1 bit per voxel.
       * 3D median filter, 3x3x3 neighbourhood, zero padding at grid boundaries.
         This means: find median of the 9 values: sort and take middle value.
@@ -28,9 +22,9 @@ Mesh Export:
       * another 3D median filter.
       * trilinear resampling down to 512^3.
     * marching cubes
-  * density grid export.
-  * density grid tools: import, view, convolve, export. inviwo.org I guess.
-    Experiment with different convolution methods.
+  * JIT compiler to speed up distance function during export?
+    * curv -o c++
+  * density grid export to RAW. Compare to Trocola Mandelbulb voxels w. Inviwo.
 
 Intensity Fields:
 * 3D medical images use voxel density grids (which are just sampled "intensity
