@@ -7,6 +7,7 @@
 
 #include <curv/record.h>
 #include <curv/gl_compiler.h>
+#include <curv/frame.h>
 #include <cmath>
 
 namespace curv {
@@ -53,8 +54,10 @@ struct Shape_Recognizer
     bool is_2d_;
     bool is_3d_;
     BBox bbox_;
-    Shared<Function> dist_;
-    Shared<Function> colour_;
+    Shared<Function> dist_fun_;
+    Shared<Function> colour_fun_;
+    std::unique_ptr<Frame> dist_frame_;
+    std::unique_ptr<Frame> colour_frame_;
 
     Shape_Recognizer(const Context& cx, System& sys)
     :

@@ -82,13 +82,19 @@ Shape_Recognizer::recognize(Value val)
         throw Exception(context_,
             "at least one of is_2d and is_3d must be true");
     bbox_ = BBox::from_value(bbox_val, At_Field("bbox", context_));
-    dist_ = dist_val.dycast<Function>();
-    if (dist_ == nullptr)
+
+    dist_fun_ = dist_val.dycast<Function>();
+    if (dist_fun_ == nullptr)
         throw Exception(At_Field("dist", context_), "dist is not a function");
-    colour_ = colour_val.dycast<Function>();
-    if (colour_ == nullptr)
+    dist_frame_ = Frame::make(
+        dist_fun_->nslots_, system_, nullptr, nullptr, nullptr);
+
+    colour_fun_ = colour_val.dycast<Function>();
+    if (colour_fun_ == nullptr)
         throw Exception(At_Field("colour", context_),
             "colour is not a function");
+    colour_frame_ = Frame::make(
+        colour_fun_->nslots_, system_, nullptr, nullptr, nullptr);
 
     return true;
 }
@@ -109,7 +115,7 @@ Shape_Recognizer::gl_dist(GL_Value arg, GL_Compiler& gl) const
     const At_Field cx("dist", context_);
     auto f = GL_Frame::make(0, gl, &cx, nullptr, nullptr);
     auto aref = make<GL_Data_Ref>(nullptr, arg);
-    auto result = dist_->gl_call_expr(*aref, nullptr, *f);
+    auto result = dist_fun_->gl_call_expr(*aref, nullptr, *f);
     if (result.type != GL_Type::Num)
         throw Exception(cx, stringify("dist function returns ",result.type));
     return result;
@@ -122,7 +128,7 @@ Shape_Recognizer::gl_colour(GL_Value arg, GL_Compiler& gl) const
     const At_Field cx("colour", context_);
     auto f = GL_Frame::make(0, gl, &cx, nullptr, nullptr);
     auto aref = make<GL_Data_Ref>(nullptr, arg);
-    auto result = colour_->gl_call_expr(*aref, nullptr, *f);
+    auto result = colour_fun_->gl_call_expr(*aref, nullptr, *f);
     if (result.type != GL_Type::Vec3)
         throw Exception(cx, stringify("colour function returns ",result.type));
     return result;
@@ -132,9 +138,7 @@ double
 Shape_Recognizer::dist(double x, double y, double z, double t)
 {
     Shared<List> point = List::make({Value{x}, Value{y}, Value{z}, Value{t}});
-    auto frame = Frame::make(
-        dist_->nslots_, system_, nullptr, nullptr, nullptr);
-    Value result = dist_->call({point}, *frame);
+    Value result = dist_fun_->call({point}, *dist_frame_);
     return result.to_num(context_);
 }
 
@@ -142,9 +146,7 @@ Vec3
 Shape_Recognizer::colour(double x, double y, double z, double t)
 {
     Shared<List> point = List::make({Value{x}, Value{y}, Value{z}, Value{t}});
-    auto frame = Frame::make(
-        colour_->nslots_, system_, nullptr, nullptr, nullptr);
-    Value result = colour_->call({point}, *frame);
+    Value result = colour_fun_->call({point}, *colour_frame_);
     Shared<List> cval = result.to<List>(context_);
     cval->assert_size(3, context_);
     return Vec3{ cval->at(0).to_num(context_),
