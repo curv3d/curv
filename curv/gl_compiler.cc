@@ -31,7 +31,7 @@ void gl_compile(const Shape_Recognizer& shape, std::ostream& out, const Context&
 
 void gl_compile_2d(const Shape_Recognizer& shape, std::ostream& out, const Context& cx)
 {
-    GL_Compiler gl(out);
+    GL_Compiler gl(out, GL_Target::glsl);
     GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
 
     out <<
@@ -92,7 +92,7 @@ void gl_compile_2d(const Shape_Recognizer& shape, std::ostream& out, const Conte
 
 void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Context& cx)
 {
-    GL_Compiler gl(out);
+    GL_Compiler gl(out, GL_Target::glsl);
     GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
 
     out <<
@@ -684,12 +684,28 @@ GL_Value gl_eval_index_expr(
         char swizzle[5];
         memset(swizzle, 0, 5);
         for (size_t i = 0; i <list->size(); ++i) {
-            swizzle[i] = gl_index_letter((*list)[i], gl_type_count(arg1.type),
+            swizzle[i] = gl_index_letter((*list)[i],
+                gl_type_count(arg1.type),
                 At_Index(i, At_GL_Phrase(index.source_, &f)));
         }
         GL_Value result = f.gl.newvalue(gl_vec_type(list->size()));
-        f.gl.out << "  " << result.type << " "
-            << result<<" = "<<arg1<<"."<<swizzle<<";\n";
+        f.gl.out << "  " << result.type << " "<< result<<" = ";
+        if (f.gl.target == GL_Target::glsl) {
+            // use GLSL swizzle syntax: v.xyz
+            f.gl.out <<arg1<<"."<<swizzle;
+        } else {
+            // fall back to a vector constructor: vec3(v.x,v.y,v.z)
+            f.gl.out << result.type << "(";
+            bool first = true;
+            for (size_t i = 0; i < list->size(); ++i) {
+                if (!first)
+                    f.gl.out << ",";
+                first = false;
+                f.gl.out << arg1 << "." << swizzle[i];
+            }
+            f.gl.out << ")";
+        }
+        f.gl.out <<";\n";
         return result;
     }
     const char* arg2 = nullptr;

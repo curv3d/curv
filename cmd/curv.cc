@@ -352,6 +352,7 @@ const char help[] =
 "   obj -- OBJ mesh file (3D shape only)\n"
 "   x3d -- X3D colour mesh file (3D shape only)\n"
 "   png -- PNG image file (shape only)\n"
+"   cpp -- C++ source file (shape only)\n"
 "-O name=value -- parameter for one of the output formats\n"
 "--version -- display version.\n"
 "--help -- display this help information.\n"
@@ -400,6 +401,8 @@ main(int argc, char** argv)
                 exporter = export_x3d;
             else if (strcmp(optarg, "png") == 0)
                 exporter = export_png;
+            else if (strcmp(optarg, "cpp") == 0)
+                exporter = export_cpp;
             else {
                 std::cerr << "-o: format " << optarg << " not supported\n"
                           << "Use " << argv0 << " --help for help.\n";

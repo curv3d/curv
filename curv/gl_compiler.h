@@ -114,13 +114,23 @@ inline std::ostream& operator<<(std::ostream& out, GL_Value v)
     return out;
 }
 
+enum class GL_Target
+{
+    glsl,   // output GLSL code
+    cpp     // output C++ code using GLM library
+};
+
 /// Global state for the GLSL code generator.
 struct GL_Compiler
 {
     std::ostream& out;
+    GL_Target target;
     unsigned valcount;
 
-    GL_Compiler(std::ostream& s) : out(s), valcount(0) {}
+    GL_Compiler(std::ostream& s, GL_Target t)
+    :
+        out(s), target(t), valcount(0)
+    {}
 
     inline GL_Value newvalue(GL_Type type)
     {
