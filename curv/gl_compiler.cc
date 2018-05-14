@@ -50,7 +50,7 @@ void gl_compile_2d(const Shape_Recognizer& shape, std::ostream& out, const Conte
         "  return " << result << ";\n"
         "}\n";
     BBox bbox = shape.bbox_;
-    if (bbox.empty() || bbox.infinite()) {
+    if (bbox.empty2() || bbox.infinite2()) {
         out <<
         "const vec4 bbox = vec4(-10.0,-10.0,+10.0,+10.0);\n";
     } else {
@@ -114,7 +114,7 @@ void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Conte
         "}\n";
 
     BBox bbox = shape.bbox_;
-    if (bbox.empty() || bbox.infinite()) {
+    if (bbox.empty3() || bbox.infinite3()) {
         out <<
         "const vec3 bbox_min = vec3(-10.0,-10.0,-10.0);\n"
         "const vec3 bbox_max = vec3(+10.0,+10.0,+10.0);\n";

@@ -25,10 +25,17 @@ struct BBox
 {
     double xmin, ymin, zmin;
     double xmax, ymax, zmax;
-    bool empty() {
+    bool empty2() {
         return (xmin >= xmax || ymin >= ymax);
     }
-    bool infinite() {
+    bool empty3() {
+        return (xmin >= xmax || ymin >= ymax || zmin >= zmax);
+    }
+    bool infinite2() {
+        return (xmin == -INFINITY || ymin == -INFINITY ||
+                xmax == +INFINITY || ymax == +INFINITY);
+    }
+    bool infinite3() {
         return (xmin == -INFINITY || ymin == -INFINITY || zmin == -INFINITY ||
                 xmax == +INFINITY || ymax == +INFINITY || zmax == +INFINITY);
     }
