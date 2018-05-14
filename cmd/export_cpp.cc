@@ -16,8 +16,6 @@ void export_cpp(curv::Value value,
         throw curv::Exception(cx, "not a shape");
 
     curv::GL_Compiler gl(out, curv::GL_Target::cpp);
-    curv::GL_Value dist_param = gl.newvalue(curv::GL_Type::Vec4);
-
     out <<
         "#include <glm/vec2.hpp>\n"
         "#include <glm/vec3.hpp>\n"
@@ -27,12 +25,24 @@ void export_cpp(curv::Value value,
         "#include <glm/detail/func_trigonometric.hpp>\n"
         "\n"
         "using namespace glm;\n"
-        "\n"
+        "\n";
 
+    curv::GL_Value dist_param = gl.newvalue(curv::GL_Type::Vec4);
+    out <<
         "float dist(vec4 " << dist_param << ")\n"
         "{\n";
-    curv::GL_Value result = shape.gl_dist(dist_param, gl);
+    curv::GL_Value dist_result = shape.gl_dist(dist_param, gl);
     out <<
-        "  return " << result << ";\n"
+        "  return " << dist_result << ";\n"
+        "}\n";
+
+    curv::GL_Value colour_param = gl.newvalue(curv::GL_Type::Vec4);
+    out <<
+        "\n"
+        "vec3 colour(vec4 " << colour_param << ")\n"
+        "{\n";
+    curv::GL_Value colour_result = shape.gl_colour(colour_param, gl);
+    out <<
+        "  return " << colour_result << ";\n"
         "}\n";
 }
