@@ -1,0 +1,108 @@
+Goal: 'definition where bindings' works.
+To simplify implementation, the definition must be unitary.
+* Optional next step: if subject definition is compound, then allow recursion
+  /order independence on the inside, but make it look unitary from the outside.
+* Final step: all unitary definitions on left & right side of `where` are
+  placed in a single dependency graph.
+
+Shared<Definition> Where_Phrase::as_definition(Environ& env)
+{
+    Shared<Definition> body = left_->as_definition(env);
+    if (body == nullptr)
+        return nullptr;
+    auto ubody = cast<Unitary_Definition>(body);
+    if (ubody == nullptr)
+        throw Exception(At_Phrase(*left_, env),
+            "compound definition cannot be subject of a 'where' clause");
+    return make<Where_Definition>(share(*this), ubody);
+}
+
+struct Where_Definition : public Unitary_Definition
+{
+    Shared<Unitary_Definition> subject_;
+    Where_Definition(
+        Shared<const Phrase> source,
+        Shared<Unitary_Definition> subject)
+    :
+        Unitary_Definition(source, subject->kind_),
+        subject_(subject)
+    {}
+    virtual void add_to_scope(Block_Scope&);
+    virtual void analyse(Environ&);
+    virtual Shared<Operation> make_setter(slot_t module_slot);
+};
+
+void Where_Definition::add_to_scope(Block_Scope& scope)
+{
+    Where_Scope wscope(*this);
+    subject_->add_to_scope(wscope);
+}
+void Where_Definition::analyse(Environ&)
+{
+}
+Shared<Operation> Where_Definition::make_setter(slot_t module_slot)
+{
+}
+
+struct Where_Scope : public Block_Scope
+{
+    Block_Scope& parent_scope_;
+    Shared<Where_Definition> where_def_;
+    Where_Scope(
+        Block_Scope& parent_scope,
+        Shared<Where_Definition> where_def)
+    :
+        Block_Scope(---),
+        parent_scope_(parent_scope),
+        where_def_(where_def)
+    {}
+};
+
+//What's a Definition?
+struct Definition : public Shared_Base
+{
+    Shared<const Phrase> source_;
+    enum Kind { k_recursive, k_sequential } kind_;
+
+    Definition(
+        Shared<const Phrase> source,
+        Kind k)
+    :
+        source_(std::move(source)),
+        kind_(k)
+    {}
+
+    virtual void add_to_scope(Block_Scope&) = 0;
+};
+
+// How about this:
+
+void Where_Definition::add_to_scope(Block_Scope& scope)
+{
+    Need to call body_->add_to_scope(s), 's' is a scope.
+    Maybe we synthesize a scope 's' as a wrapper around 'scope'?
+    So we need a Where_Scope?
+
+    The original 'scope' is Recursive_Scope, Sequential_Scope or Bad_Scope.
+    body_->add_to_scope(s) will call scope virtuals in a particular pattern:
+      for each Unitary_Definition def in body:
+        unitnum = s.begin_unit(def)
+        s.add_binding(atom, src, unitnum) // repeated for each binding
+        s.end_unit(unitnum, def)
+
+    As a simplifying assumption, suppose we restrict the where body to
+    a unitary definition. Then, Where_Definition is a Unitary_Definition,
+    and must define:
+      virtual void analyse(Environ&)
+      virtual Shared<Operation> make_setter(slot_t module_slot)
+
+    body_->add_to_scope(s) will call:
+        unitnum = s.begin_unit(def)
+        s.add_binding(atom, src, unitnum) // repeated for each binding
+        s.end_unit(unitnum, def)
+    We intercept these calls, substitute the wheredef for the bodydef.
+}
+
+class Where_Scope : public Block_Scope
+
+//What's a Block_Scope?
