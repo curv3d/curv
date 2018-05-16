@@ -60,7 +60,7 @@ void put_triangle(std::ostream& out, Vec3s v0, Vec3s v1, Vec3s v2)
         << "endfacet\n";
 }
 
-void put_colour(std::ostream& out, curv::Shape_Recognizer& shape,
+void put_colour(std::ostream& out, curv::Shape& shape,
     Vec3s v0, Vec3s v1, Vec3s v2)
 {
     Vec3s centroid = (v0 + v1 + v2) / 3.0;

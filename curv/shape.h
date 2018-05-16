@@ -43,7 +43,16 @@ struct BBox
     static BBox from_value(Value, const Context&);
 };
 
-struct Shape_Recognizer
+struct Shape
+{
+    bool is_2d_;
+    bool is_3d_;
+    BBox bbox_;
+    virtual double dist(double x, double y, double z, double t) = 0;
+    virtual Vec3 colour(double x, double y, double z, double t) = 0;
+};
+
+struct Shape_Recognizer : public Shape
 {
     // describes the source code for the shape expression
     const Context& context_;
@@ -51,9 +60,6 @@ struct Shape_Recognizer
     System& system_;
 
     // shape fields, filled in by recognize()
-    bool is_2d_;
-    bool is_3d_;
-    BBox bbox_;
     Shared<Function> dist_fun_;
     Shared<Function> colour_fun_;
     std::unique_ptr<Frame> dist_frame_;
