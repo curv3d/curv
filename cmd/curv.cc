@@ -20,6 +20,7 @@ extern "C" {
 
 #include "export.h"
 #include "progdir.h"
+#include "tempfile.h"
 #include <curv/dtostr.h>
 #include <curv/analyser.h>
 #include <curv/context.h>
@@ -100,28 +101,6 @@ make_system(const char* argv0, std::list<const char*>& libs)
         std::cerr << "ERROR: " << e.what() << "\n";
         exit(EXIT_FAILURE);
     }
-}
-
-curv::Shared<curv::String> tempfile = nullptr;
-
-curv::Shared<curv::String>
-make_tempfile()
-{
-    auto filename = curv::stringify(",curv",getpid(),".frag");
-    int fd = creat(filename->c_str(), 0666);
-    if (fd == -1)
-        throw curv::Exception({}, curv::stringify(
-            "Can't create ",filename->c_str(),": ",strerror(errno)));
-    close(fd);
-    tempfile = filename;
-    return filename;
-}
-
-void
-remove_tempfile()
-{
-    if (tempfile != nullptr)
-        remove(tempfile->c_str());
 }
 
 pid_t editor_pid = pid_t(-1);
@@ -214,7 +193,7 @@ display_shape(curv::Value value,
             std::cerr << "×" << (shape.bbox_.zmax - shape.bbox_.zmin);
         std::cerr << "\n";
 
-        auto filename = make_tempfile();
+        auto filename = make_tempfile(".frag");
         std::ofstream f(filename->c_str());
         curv::gl_compile(shape, f, cx);
         f.close();
@@ -491,7 +470,7 @@ main(int argc, char** argv)
 
     // Interpret arguments
     curv::System& sys(make_system(argv0, libs));
-    atexit(remove_tempfile);
+    atexit(remove_all_tempfiles);
 
     if (filename == nullptr) {
         return interactive_mode(sys);
