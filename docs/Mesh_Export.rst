@@ -10,15 +10,22 @@ To export a 3D shape to an STL, OBJ or X3D file, use::
 Which format should you use?
 
 * STL is the most popular format for 3D printed objects.
-* OBJ is the #2 format, supported by all of the 3D printer slicers
-  that I've surveyed. The files are significantly smaller
-  (they can be 20% of the size of an STL file).
-* X3D contains colour information. Use it for full colour 3D printing on shapeways.com,
-  i.materialise.com, etc.
+  It's the only format in this list understood by OpenSCAD.
+* OBJ is the recommended format for export from Curv (unless you need colour
+  or OpenSCAD import).
+  * It is supported by all 3D printing slicer software and service providers.
+  * The files are significantly smaller (they can be 20% of the size of an STL
+    file).
+  * OBJ files record "topology" information, which is needed by some
+    applications. Meshlab imports OBJ files with no issues, whereas it needs to
+    repair an STL file when it imports it, and I've seen Meshlab hang up while
+    attempting to do this (for a large file).
+* X3D contains colour information. Use it for full colour 3D printing on
+  shapeways.com, i.materialise.com, etc.
 
 Mesh export provides a way to visualize models that are not compatible
-with the viewer (because their distance function is too slow or not Lipschitz-continuous).
-There are examples in `<../examples/mesh_only>`_.
+with the viewer (because their distance function is too slow or not
+Lipschitz-continuous). There are examples in `<../examples/mesh_only>`_.
 
 Tweaking parameters to get a better mesh
 ----------------------------------------
@@ -26,7 +33,8 @@ When you convert a Curv shape to a mesh, you are creating an approximation
 of the original shape. Meshes cannot exactly represent curved surfaces.
 To get a more exact approximation, you can increase the number of triangles,
 but at some point the mesh gets too large to be processed.
-1,000,000 triangles is a practical upper limit for 3D printing.
+1-2 million triangles is a practical upper limit for 3D printing,
+and home computers may have a smaller upper limit than this.
 
 As a result, mesh export is an iterative, interactive process
 where you try different values of the mesh export parameters until you
