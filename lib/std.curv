@@ -54,6 +54,15 @@ reduce (zero, f) list =
 sum = reduce(0, (x,y)->x+y);
 product = reduce(1, (x,y)->x*y);
 compose = reduce(x->x, (f,g)->x->g(f x));
+sort a =
+    if (a == [])
+        []
+    else
+        let first = a[0];
+            rest = a[1..<count a];
+        in [...sort[for (e in rest) if (e < first) e],
+            first,
+            ...sort[for (e in rest) if (e >= first) e]];
 
 merge rs = {for (r in rs) ...r};
 

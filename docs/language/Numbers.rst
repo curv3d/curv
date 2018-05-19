@@ -58,6 +58,9 @@ The arithmetic operators:
   The product of a list of numbers.
   ``product[]`` is ``1``, which is the identity element for the product operation.
 
+``sort list``
+  Sort a list of numbers into ascending order.
+
 ``mod(a,m)``
   The remainder after dividing ``a`` by ``m``,
   where the result has the same sign as ``m``.
