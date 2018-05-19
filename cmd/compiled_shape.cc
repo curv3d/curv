@@ -63,7 +63,7 @@ Compiled_Shape::Compiled_Shape(curv::Shape_Recognizer& rshape)
         throw curv::Exception({},
             curv::stringify("can't load colour function: ",colour_err));
     assert(colour_p != nullptr);
-    colour_ = reinterpret_cast<glm::vec3 (*)(glm::vec4)>(colour_p);
+    colour_ = (void (*)(double,double,double,double,glm::vec3*))colour_p;
 }
 
 void
@@ -94,10 +94,11 @@ shape_to_cpp(curv::Shape_Recognizer& shape, std::ostream& out)
     curv::GL_Value colour_param = gl.newvalue(curv::GL_Type::Vec4);
     out <<
         "\n"
-        "extern \"C\" vec3 colour(vec4 " << colour_param << ")\n"
-        "{\n";
+        "extern \"C\" void colour(double x,double y,double z,double t,vec3* result)\n"
+        "{\n"
+        "  vec4 "<<colour_param<<" = vec4(x,y,z,t);\n";
     curv::GL_Value colour_result = shape.gl_colour(colour_param, gl);
     out <<
-        "  return " << colour_result << ";\n"
+        "  *result = "<<colour_result<<";\n"
         "}\n";
 }

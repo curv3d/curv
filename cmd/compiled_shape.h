@@ -9,12 +9,11 @@
 #include <curv/shape.h>
 #include <ostream>
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 
 struct Compiled_Shape final : public curv::Shape
 {
     double (*dist_)(double,double,double,double);
-    glm::vec3 (*colour_)(glm::vec4);
+    void (*colour_)(double,double,double,double,glm::vec3*);
 
     Compiled_Shape(curv::Shape_Recognizer&);
 
@@ -24,8 +23,9 @@ struct Compiled_Shape final : public curv::Shape
     }
     virtual curv::Vec3 colour(double x, double y, double z, double t) override
     {
-        glm::vec3 c = colour_(glm::vec4(x,y,z,t));
-        return curv::Vec3{c.x, c.y, c.z};
+        glm::vec3 c;
+        colour_(x,y,z,t, &c);
+        return curv::Vec3{c.x,c.y,c.z};
     }
 };
 
