@@ -28,7 +28,7 @@ set_property(TARGET libcurv PROPERTY OUTPUT_NAME curv)
 
 FILE(GLOB Src "cmd/*.c" "cmd/*.cc")
 add_executable(curv ${Src})
-target_link_libraries(curv PUBLIC libcurv ${LibReadline} double-conversion boost_filesystem boost_system openvdb Half tbb)
+target_link_libraries(curv PUBLIC libcurv ${LibReadline} double-conversion boost_filesystem boost_system openvdb Half tbb dl)
 
 FILE(GLOB TestSrc "tests/*.cc")
 add_executable(tester ${TestSrc})

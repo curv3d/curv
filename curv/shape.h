@@ -52,7 +52,7 @@ struct Shape
     virtual Vec3 colour(double x, double y, double z, double t) = 0;
 };
 
-struct Shape_Recognizer : public Shape
+struct Shape_Recognizer final : public Shape
 {
     // describes the source code for the shape expression
     const Context& context_;

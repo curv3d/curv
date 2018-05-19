@@ -5,6 +5,7 @@
   * `sudo apt-get install libboost-all-dev libdouble-conversion-dev`
   * `sudo apt-get install libreadline-dev`
   * `sudo apt-get install libopenvdb-dev libopenexr-dev libtbb-dev`
+  * `sudo apt-get install libglm-dev`
   * `cd ~`
   * `git clone https://github.com/doug-moen/curv`
   * `cd curv`
@@ -23,6 +24,7 @@
   * `brew install readline`
   * `brew install gedit`
   * `brew install openvdb`
+  * `brew install glm`
   * `cd ~`
   * `git clone https://github.com/doug-moen/curv`
   * `cd curv`

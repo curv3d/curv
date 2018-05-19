@@ -157,7 +157,7 @@ poll_viewer()
 }
 
 void
-launch_viewer(curv::Shared<curv::String> filename)
+launch_viewer(boost::filesystem::path filename)
 {
     poll_viewer();
     if (viewer_pid == pid_t(-1)) {
@@ -165,7 +165,7 @@ launch_viewer(curv::Shared<curv::String> filename)
         if (pid == 0) {
             // in child process
             int r =
-                execlp("glslViewer", "glslViewer", filename->c_str(), (char*)0);
+                execlp("glslViewer", "glslViewer", filename.c_str(), (char*)0);
             std::cerr << "can't exec glslViewer\n"; // TODO: why?
             (void) r; // TODO
             exit(1);
@@ -194,14 +194,14 @@ display_shape(curv::Value value,
         std::cerr << "\n";
 
         auto filename = make_tempfile(".frag");
-        std::ofstream f(filename->c_str());
+        std::ofstream f(filename.c_str());
         curv::gl_compile(shape, f, cx);
         f.close();
         if (block) {
-            auto cmd = curv::stringify("glslViewer ",filename->c_str(),
+            auto cmd = curv::stringify("glslViewer ",filename.c_str(),
                 block ? "" : "&");
             system(cmd->c_str());
-            unlink(filename->c_str());
+            unlink(filename.c_str());
         } else {
             launch_viewer(filename);
         }

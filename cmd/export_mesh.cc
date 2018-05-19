@@ -10,6 +10,7 @@
 #include <openvdb/tools/VolumeToMesh.h>
 
 #include "export.h"
+#include "compiled_shape.h"
 #include <curv/shape.h>
 #include <curv/exception.h>
 #include <curv/die.h>
@@ -95,6 +96,18 @@ void export_mesh(Mesh_Format format, curv::Value value,
     }
 #endif
 
+    std::unique_ptr<Compiled_Shape> cshape = nullptr;
+    if (params.find("jit") != params.end()) {
+        //std::chrono::time_point<std::chrono::steady_clock> cstart_time, cend_time;
+        auto cstart_time = std::chrono::steady_clock::now();
+        cshape = std::make_unique<Compiled_Shape>(shape);
+        auto cend_time = std::chrono::steady_clock::now();
+        std::chrono::duration<double> compile_time = cend_time - cstart_time;
+        std::cerr
+            << "Compiled shape in " << compile_time.count() << "s\n";
+        std::cerr.flush();
+    }
+
     Vec3d size(
         shape.bbox_.xmax - shape.bbox_.xmin,
         shape.bbox_.ymax - shape.bbox_.ymin,
@@ -161,11 +174,23 @@ void export_mesh(Mesh_Format format, curv::Value value,
     // Populate the grid.
     // I assume each distance value is in the centre of a voxel.
     auto accessor = grid->getAccessor();
-    for (int x = voxelrange_min.x(); x <= voxelrange_max.x(); ++x) {
-        for (int y = voxelrange_min.y(); y <= voxelrange_max.y(); ++y) {
-            for (int z = voxelrange_min.z(); z <= voxelrange_max.z(); ++z) {
-                accessor.setValue(openvdb::Coord{x,y,z},
-                    shape.dist(x*voxelsize, y*voxelsize, z*voxelsize, 0.0));
+    if (cshape != nullptr) {
+        // TODO: use multiple threads, since cshape->dist is thread safe.
+        for (int x = voxelrange_min.x(); x <= voxelrange_max.x(); ++x) {
+            for (int y = voxelrange_min.y(); y <= voxelrange_max.y(); ++y) {
+                for (int z = voxelrange_min.z(); z <= voxelrange_max.z(); ++z) {
+                    accessor.setValue(openvdb::Coord{x,y,z},
+                        cshape->dist(x*voxelsize, y*voxelsize, z*voxelsize, 0.0));
+                }
+            }
+        }
+    } else {
+        for (int x = voxelrange_min.x(); x <= voxelrange_max.x(); ++x) {
+            for (int y = voxelrange_min.y(); y <= voxelrange_max.y(); ++y) {
+                for (int z = voxelrange_min.z(); z <= voxelrange_max.z(); ++z) {
+                    accessor.setValue(openvdb::Coord{x,y,z},
+                        shape.dist(x*voxelsize, y*voxelsize, z*voxelsize, 0.0));
+                }
             }
         }
     }

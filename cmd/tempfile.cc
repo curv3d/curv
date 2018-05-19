@@ -5,6 +5,7 @@
 #include "tempfile.h"
 #include <curv/exception.h>
 #include <curv/context.h>
+#include <vector>
 
 extern "C" {
 #include <sys/types.h>
@@ -15,24 +16,40 @@ extern "C" {
 #include <stdio.h>
 }
 
-curv::Shared<curv::String> tempfile = nullptr;
+namespace fs = boost::filesystem;
 
-curv::Shared<curv::String>
+std::vector<fs::path> tempfiles;
+
+fs::path
+tempfile_name(const char* suffix)
+{
+    auto name = curv::stringify(",curv",getpid(),suffix);
+    return fs::current_path() / fs::path(name->c_str());
+}
+
+fs::path
 make_tempfile(const char* suffix)
 {
-    auto filename = curv::stringify(",curv",getpid(),suffix);
-    int fd = creat(filename->c_str(), 0666);
+    auto filename = tempfile_name(suffix);
+    int fd = creat(filename.c_str(), 0666);
     if (fd == -1)
         throw curv::Exception({}, curv::stringify(
-            "Can't create ",filename->c_str(),": ",strerror(errno)));
+            "Can't create ",filename.c_str(),": ",strerror(errno)));
     close(fd);
-    tempfile = filename;
+    tempfiles.push_back(filename);
     return filename;
+}
+
+void
+register_tempfile(const char* suffix)
+{
+    auto filename = tempfile_name(suffix);
+    tempfiles.push_back(filename);
 }
 
 void
 remove_all_tempfiles()
 {
-    if (tempfile != nullptr)
-        remove(tempfile->c_str());
+    for (auto& file : tempfiles)
+        remove(file.c_str());
 }
