@@ -93,25 +93,31 @@ void gl_compile_2d(const Shape_Recognizer& shape, std::ostream& out, const Conte
 void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Context& cx)
 {
     GL_Compiler gl(out, GL_Target::glsl);
-    GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
 
+    GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
     out <<
         "#ifdef GLSLVIEWER\n"
         "uniform vec3 u_eye3d;\n"
         "uniform vec3 u_centre3d;\n"
         "uniform vec3 u_up3d;\n"
         "#endif\n"
-        "vec4 map(vec4 " << dist_param << ")\n"
+        "float dist(vec4 " << dist_param << ")\n"
         "{\n";
-
-    GL_Value result = shape.gl_dist(dist_param, gl);
-
-    GL_Value colour = shape.gl_colour(dist_param, gl);
-    out << "  return vec4(" << result << ",";
-    out << colour << ");\n";
-
+    GL_Value dist_result = shape.gl_dist(dist_param, gl);
     out <<
-        "}\n";
+        "  return " << dist_result << ";\n"
+        "}\n"
+        "\n";
+
+    GL_Value colour_param = gl.newvalue(GL_Type::Vec4);
+    out <<
+        "vec3 colour(vec4 " << colour_param << ")\n"
+        "{\n";
+    GL_Value colour_result = shape.gl_colour(colour_param, gl);
+    out <<
+        "  return " << colour_result << ";\n"
+        "}\n"
+        "\n";
 
     BBox bbox = shape.bbox_;
     if (bbox.empty3() || bbox.infinite3()) {
@@ -160,12 +166,13 @@ void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Conte
        "    vec3 c = vec3(-1.0,-1.0,-1.0);\n"
        "    for (int i=0; i<200; i++) {\n"
        "        float precis = 0.0005*t;\n"
-       "        vec4 res = map( vec4(ro+rd*t,iGlobalTime) );\n"
-       "        if (res.x < precis) {\n"
-       "            c = res.yzw;\n"
+       "        vec4 p = vec4(ro+rd*t,iGlobalTime);\n"
+       "        float d = dist(p);\n"
+       "        if (d < precis) {\n"
+       "            c = colour(p);\n"
        "            break;\n"
        "        }\n"
-       "        t += res.x;\n"
+       "        t += d;\n"
        "        if (t > tmax) break;\n"
        "    }\n"
        "    return vec4( t, c );\n"
@@ -174,16 +181,16 @@ void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Conte
        "vec3 calcNormal( in vec3 pos )\n"
        "{\n"
        "    vec2 e = vec2(1.0,-1.0)*0.5773*0.0005;\n"
-       "    return normalize( e.xyy*map( vec4(pos + e.xyy,iGlobalTime) ).x + \n"
-       "                      e.yyx*map( vec4(pos + e.yyx,iGlobalTime) ).x + \n"
-       "                      e.yxy*map( vec4(pos + e.yxy,iGlobalTime) ).x + \n"
-       "                      e.xxx*map( vec4(pos + e.xxx,iGlobalTime) ).x );\n"
+       "    return normalize( e.xyy*dist( vec4(pos + e.xyy,iGlobalTime) ) + \n"
+       "                      e.yyx*dist( vec4(pos + e.yyx,iGlobalTime) ) + \n"
+       "                      e.yxy*dist( vec4(pos + e.yxy,iGlobalTime) ) + \n"
+       "                      e.xxx*dist( vec4(pos + e.xxx,iGlobalTime) ) );\n"
        //"    /*\n"
        //"    vec3 eps = vec3( 0.0005, 0.0, 0.0 );\n"
        //"    vec3 nor = vec3(\n"
-       //"        map(pos+eps.xyy).x - map(pos-eps.xyy).x,\n"
-       //"        map(pos+eps.yxy).x - map(pos-eps.yxy).x,\n"
-       //"        map(pos+eps.yyx).x - map(pos-eps.yyx).x );\n"
+       //"        dist(pos+eps.xyy) - dist(pos-eps.xyy),\n"
+       //"        dist(pos+eps.yxy) - dist(pos-eps.yxy),\n"
+       //"        dist(pos+eps.yyx) - dist(pos-eps.yyx) );\n"
        //"    return normalize(nor);\n"
        //"    */\n"
        "}\n"
@@ -201,7 +208,7 @@ void gl_compile_3d(const Shape_Recognizer& shape, std::ostream& out, const Conte
        "    {\n"
        "        float hr = 0.01 + 0.12*float(i)/4.0;\n"
        "        vec3 aopos =  nor * hr + pos;\n"
-       "        float dd = map( vec4(aopos,iGlobalTime) ).x;\n"
+       "        float dd = dist( vec4(aopos,iGlobalTime) );\n"
        "        occ += -(dd-hr)*sca;\n"
        "        sca *= 0.95;\n"
        "    }\n"
