@@ -3,6 +3,11 @@ cone{d:2, h:3}
 >> move(0,0,3)
 `smooth 1 .union` ellipsoid(3,3,2.5)
 `intersection` box{zmin: -1.1}
->> shell .05
+>> shell .1
 `intersection` box{zmax: 2.9}
->> colour (sRGB.HSV(.5,.5,.9))
+//>> colour (sRGB.HSV(.5,.5,.9))
+>> colour marble
+
+where
+include file "lib/experimental.curv";
+marble(x,y,z,t) = smoke(x,y,z,z*5);
