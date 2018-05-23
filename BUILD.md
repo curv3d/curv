@@ -31,3 +31,10 @@
   * `make`
   * `make install`
 * Install glslViewer (https://github.com/doug-moen/glslViewer)
+
+## Upgrade to a new version of Curv
+* Open the Terminal application and run the following commands:
+  * `cd ~/curv`
+  * `git pull origin master`
+  * `make`
+  * `make install`
