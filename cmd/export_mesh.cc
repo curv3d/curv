@@ -61,11 +61,25 @@ void put_triangle(std::ostream& out, Vec3s v0, Vec3s v1, Vec3s v2)
         << "endfacet\n";
 }
 
-void put_colour(std::ostream& out, curv::Shape& shape,
+curv::Vec3 linear_RGB_to_sRGB(curv::Vec3 c)
+{
+    constexpr double k = 0.4545;
+    return curv::Vec3{pow(c.x, k), pow(c.y, k), pow(c.z, k)};
+}
+
+void put_face_colour(std::ostream& out, curv::Shape& shape,
     Vec3s v0, Vec3s v1, Vec3s v2)
 {
     Vec3s centroid = (v0 + v1 + v2) / 3.0;
     curv::Vec3 c = shape.colour(centroid.x(), centroid.y(), centroid.z(), 0.0);
+    c = linear_RGB_to_sRGB(c);
+    out << " " << c.x << " " << c.y << " " << c.z;
+}
+
+void put_vertex_colour(std::ostream& out, curv::Shape& shape, Vec3s v)
+{
+    curv::Vec3 c = shape.colour(v.x(), v.y(), v.z(), 0.0);
+    c = linear_RGB_to_sRGB(c);
     out << " " << c.x << " " << c.y << " " << c.z;
 }
 
@@ -223,6 +237,19 @@ void export_mesh(Mesh_Format format, curv::Value value,
     openvdb::tools::VolumeToMesh mesher(0.0, adaptivity);
     mesher(*grid);
 
+    enum {face_colour, vertex_colour} colourtype = face_colour;
+    auto colourtype_p = params.find("colour");
+    if (colourtype_p != params.end()) {
+        if (colourtype_p->second == "face")
+            colourtype = face_colour;
+        else if (colourtype_p->second == "vertex")
+            colourtype = vertex_colour;
+        else {
+            throw curv::Exception(cx,
+                "mesh export: parameter 'colour' must equal 'face' or 'vertex'");
+        }
+    }
+
     // output a mesh file
     int ntri = 0;
     int nquad = 0;
@@ -291,24 +318,22 @@ void export_mesh(Mesh_Format format, curv::Value value,
         " </head>\n"
         " <Scene>\n"
         "  <Shape>\n"
-        "   <IndexedFaceSet colorPerVertex=\"false\" coordIndex=\"";
+        "   <IndexedFaceSet colorPerVertex=\"";
+        out << (colourtype == vertex_colour ? "true" : "false");
+        out << "\" coordIndex=\"";
         bool first = true;
         for (unsigned int i=0; i<mesher.polygonPoolListSize(); ++i) {
             openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
             for (unsigned int j=0; j<pool.numTriangles(); ++j) {
-                if (!first) {
-                    out << " ";
-                    first = false;
-                }
+                if (!first) out << " ";
+                first = false;
                 auto& tri = pool.triangle(j);
                 out << tri[0] << " " << tri[2] << " " << tri[1] << " -1";
                 ++ntri;
             }
             for (unsigned int j=0; j<pool.numQuads(); ++j) {
-                if (!first) {
-                    out << " ";
-                    first = false;
-                }
+                if (!first) out << " ";
+                first = false;
                 auto& q = pool.quad(j);
                 out << q[0] << " " << q[2] << " " << q[1] << " -1 "
                     << q[0] << " " << q[3] << " " << q[2] << " -1";
@@ -320,34 +345,41 @@ void export_mesh(Mesh_Format format, curv::Value value,
         "    <Coordinate point=\"";
         first = true;
         for (unsigned int i = 0; i < mesher.pointListSize(); ++i) {
-            if (!first) {
-                out << " ";
-                first = false;
-            }
+            if (!first) out << " ";
+            first = false;
             auto& pt = mesher.pointList()[i];
             out << pt.x() << " " << pt.y() << " " << pt.z();
         }
         out <<
         "\"/>\n"
         "    <Color color=\"";
-        for (unsigned int i=0; i<mesher.polygonPoolListSize(); ++i) {
-            openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
-            for (unsigned int j=0; j<pool.numTriangles(); ++j) {
-                put_colour(out, shape,
-                    mesher.pointList()[ pool.triangle(j)[0] ],
-                    mesher.pointList()[ pool.triangle(j)[2] ],
-                    mesher.pointList()[ pool.triangle(j)[1] ]);
+        switch (colourtype) {
+        case face_colour:
+            for (unsigned int i=0; i<mesher.polygonPoolListSize(); ++i) {
+                openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
+                for (unsigned int j=0; j<pool.numTriangles(); ++j) {
+                    put_face_colour(out, shape,
+                        mesher.pointList()[ pool.triangle(j)[0] ],
+                        mesher.pointList()[ pool.triangle(j)[2] ],
+                        mesher.pointList()[ pool.triangle(j)[1] ]);
+                }
+                for (unsigned int j=0; j<pool.numQuads(); ++j) {
+                    put_face_colour(out, shape,
+                        mesher.pointList()[ pool.quad(j)[0] ],
+                        mesher.pointList()[ pool.quad(j)[2] ],
+                        mesher.pointList()[ pool.quad(j)[1] ]);
+                    put_face_colour(out, shape,
+                        mesher.pointList()[ pool.quad(j)[0] ],
+                        mesher.pointList()[ pool.quad(j)[3] ],
+                        mesher.pointList()[ pool.quad(j)[2] ]);
+                }
             }
-            for (unsigned int j=0; j<pool.numQuads(); ++j) {
-                put_colour(out, shape,
-                    mesher.pointList()[ pool.quad(j)[0] ],
-                    mesher.pointList()[ pool.quad(j)[2] ],
-                    mesher.pointList()[ pool.quad(j)[1] ]);
-                put_colour(out, shape,
-                    mesher.pointList()[ pool.quad(j)[0] ],
-                    mesher.pointList()[ pool.quad(j)[3] ],
-                    mesher.pointList()[ pool.quad(j)[2] ]);
+            break;
+        case vertex_colour:
+            for (unsigned int i = 0; i < mesher.pointListSize(); ++i) {
+                put_vertex_colour(out, shape, mesher.pointList()[i]);
             }
+            break;
         }
         out <<
         "\"/>\n"
