@@ -8,7 +8,7 @@ This project uses `make` as a wrapper around `cmake`.
 Do not use `cmake .`: it won't work, and it will clobber the `Makefile`.
 Instead, build and install `curv` using:
 * `make`
-* `sudo make install`
+* `make install`
 
 ## Ubuntu Linux 16.04 build instructions
 * Install glslViewer (https://github.com/doug-moen/glslViewer)
@@ -16,7 +16,7 @@ Instead, build and install `curv` using:
   * `sudo apt-get install cmake`
   * `sudo apt-get install libboost-all-dev libdouble-conversion-dev`
   * `sudo apt-get install libreadline-dev`
-  * `sudo apt-get install libblosc-dev libopenexr-dev libtbb-dev`
+  * `sudo apt-get install libopenexr-dev libtbb-dev`
   * `sudo apt-get install libglm-dev`
   * `cd ~`
   * `git clone --recursive https://github.com/doug-moen/curv`
@@ -36,7 +36,7 @@ Instead, build and install `curv` using:
   * `brew install double-conversion`
   * `brew install readline`
   * `brew install gedit`
-  * `brew install openvdb`
+  * `brew install ilmbase openexr tbb`
   * `brew install glm`
   * `cd ~`
   * `git clone --recursive https://github.com/doug-moen/curv`

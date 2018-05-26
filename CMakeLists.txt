@@ -7,7 +7,10 @@ endif ()
 
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-include_directories(. extern/googletest/googletest/include extern/openvdb)
+include_directories(.
+    extern/googletest/googletest/include
+    extern/openvdb
+    extern/blosc)
 
 add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
 add_subdirectory(extern/openvdb/openvdb EXCLUDE_FROM_ALL)
@@ -31,7 +34,7 @@ set_property(TARGET libcurv PROPERTY OUTPUT_NAME curv)
 
 FILE(GLOB Src "cmd/*.c" "cmd/*.cc")
 add_executable(curv ${Src})
-target_link_libraries(curv PUBLIC libcurv ${LibReadline} double-conversion boost_filesystem boost_system openvdb_static blosc Half tbb dl)
+target_link_libraries(curv PUBLIC libcurv ${LibReadline} double-conversion boost_filesystem boost_system openvdb_static Half tbb dl)
 
 FILE(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})
