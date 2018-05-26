@@ -41,6 +41,9 @@ Getting Started
 * To install the software, see `<BUILD.md>`_.
 * The documentation is here: `<docs/README.rst>`_.
 * Mailing list: `<https://groups.google.com/d/forum/curv>`_.
+  You can join the mailing list using your Google account (or you'll be prompted to create an account).
+  If you don't want to have a Google account, then send email to `doug@moens.org`
+  and I will send you an invitation to join the list.
 * To contribute, see `<CONTRIBUTING.md>`_.
 
 Hardware Requirements
