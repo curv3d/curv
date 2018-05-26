@@ -1,0 +1,3 @@
+[submodule "extern/openvdb"]
+	path = extern/openvdb
+	url = https://github.com/dreamworksanimation/openvdb
