@@ -5,9 +5,12 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
   message(FATAL_ERROR "Do not use 'cmake .'; instead, just type 'make'")
 endif ()
 
-include_directories(. extern/googletest/googletest/include)
+LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-add_subdirectory(extern/googletest/googletest)
+include_directories(. extern/googletest/googletest/include extern/openvdb)
+
+add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
+add_subdirectory(extern/openvdb/openvdb EXCLUDE_FROM_ALL)
 
 if (APPLE)
   # Homebrew installs a private copy of GNU readline, which we use, which
@@ -28,10 +31,10 @@ set_property(TARGET libcurv PROPERTY OUTPUT_NAME curv)
 
 FILE(GLOB Src "cmd/*.c" "cmd/*.cc")
 add_executable(curv ${Src})
-target_link_libraries(curv PUBLIC libcurv ${LibReadline} double-conversion boost_filesystem boost_system openvdb Half tbb dl)
+target_link_libraries(curv PUBLIC libcurv ${LibReadline} double-conversion boost_filesystem boost_system openvdb_static blosc Half tbb dl)
 
 FILE(GLOB TestSrc "tests/*.cc")
-add_executable(tester ${TestSrc})
+add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})
 target_link_libraries(tester PUBLIC gtest pthread libcurv double-conversion boost_filesystem boost_system)
 
 set_property(TARGET curv libcurv tester PROPERTY CXX_STANDARD 14)
