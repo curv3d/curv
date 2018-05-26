@@ -48,6 +48,6 @@ Instead, build and install `curv` using:
 * Open the Terminal application and run the following commands:
   * `cd ~/curv`
   * `git pull origin master`
-  * `git submodule update --init` after pulling updates.
+  * `git submodule update --init`
   * `make`
   * `make install` (or `sudo make install` on Linux)
