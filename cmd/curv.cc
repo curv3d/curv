@@ -352,6 +352,7 @@ main(int argc, char** argv)
 
     // Parse arguments.
     const char* argv0 = argv[0];
+    const char* usestdlib = argv0;
     void (*exporter)(curv::Value,
         curv::System&, const curv::Context&, const Export_Params&,
         std::ostream&)
@@ -404,7 +405,7 @@ main(int argc, char** argv)
             live = true;
             break;
         case 'n':
-            argv0 = nullptr;
+            usestdlib = nullptr;
             break;
         case 'i':
             libs.push_back(optarg);
@@ -469,7 +470,7 @@ main(int argc, char** argv)
     }
 
     // Interpret arguments
-    curv::System& sys(make_system(argv0, libs));
+    curv::System& sys(make_system(usestdlib, libs));
     atexit(remove_all_tempfiles);
 
     if (filename == nullptr) {
