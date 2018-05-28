@@ -6,6 +6,6 @@
 
 namespace curv {
 
-const char version[] = "0.0";
+const char version[] = "0.1";
 
 } // namespace curv
