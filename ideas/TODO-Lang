@@ -4,19 +4,16 @@ Breaking changes:
 * file.foo and package. Remove 'file pathname'.
 * Remove `a'b` syntax.
 * `x where y` is an item, not a list.
-* Maybe? 'quoted identifier', foo.'qid', {'qid':expr}, defined(x.'qid').
-  Remove {"qid":expr} and support {pattern:expr}.
-  But note that `x."${foo}"` and `defined(x."${foo}")` are still needed.
-
-Extensions:
-* std
-* a[i] := item, i is an integer
 * function/record equivalence
   * primitive functions have a 'call' field, support 'fields' and 'defined'
     and 'f.call' and 'include' and '...'.
   * 'is_record f' is true
   * 'is_fun r' is true if r is a record with a call field.
     is_fun x = defined(x.call);
+
+Extensions:
+* std
+* a[i] := item, i is an integer
 * compose -- function composition. Short form is 'co'?
   x >> compose[f,g,h] means x>>f>>g>>h ?
   * The function returned by compose reports a pattern match failure if any
@@ -135,6 +132,7 @@ New Pattern Types:
     * Conflicts with name abstraction, creates ambiguity.
       Is 'true' a constant pattern or an identifier pattern?
     * Conflicts with field_generator ::= "string":expr|pattern:expr
+      and that's needed to support {"${foo}":expr}
 
 "Pattern Guards and Transformational Patterns", Simon Peyton Jones
 
@@ -201,7 +199,7 @@ It reminds me of:
 * Exception handling, although this particular variety is restricted so that
   it does not break referential transparency.
   
-This is now very general. "pattern direc
+This is now very general. "pattern directed evaluation"
 
 ### Unicode Strings
 A string is a sequence of characters, but what is a character in Unicode?
@@ -412,11 +410,8 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
     g∘f == compose[g,f]
     1.0₁₀3 == 1.0e3 -- not seriously, though.
 * Use _ as digit separator in numerals.
-* Support ' (primes) in identifiers (like Haskell)? Nope, ' is needed elsewhere.
-* Support `foo` quoted identifiers? Nope, ` already used for infix operators.
-  Compatibility with GUI interfaces that display
-  parameter names as GUI labels, JSON object keys.
-* 'foo' quoted identifiers and x `f` y infix notation?
+* 'foo' quoted identifiers. Compatibility with GUI interfaces that display
+  parameter names as GUI labels.
 
 ### Parametric records
 For example, a parametric shape in file `lollipop.curv`:

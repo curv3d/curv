@@ -96,6 +96,10 @@ Compression:
   advantage over meshes), and least efficient for lattices with large amounts of
   surface area per unit volume (the case where voxels are most compelling).
   How well does ZIP compression work on VDB?
+* The Blosc library supports compression/decompression of large data sets
+  "faster than memcpy". The trick is to stream data in/out of CPU cache without
+  uncompressed data ever touching RAM. It is block oriented, and gains speed at
+  the expensive of more disk space--the overhead of containers and blocks.
 
 Existing file formats:
 

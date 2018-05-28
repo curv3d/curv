@@ -159,9 +159,9 @@ Benefits:
 * adaptive: an error metric designed to guide octree expansion
   such that flat regions of the function are tiled with fewer polygons than
   curved regions to create an adaptive polygonalization of the isosurface.
-* mesh optimization:  We then show how to improve the quality
-  of the triangulation by moving dual vertices to the isosurface and provide a topological test that guarantees
-  we maintain the topology of the surface. 
+* mesh optimization: We then show how to improve the quality of the
+  triangulation by moving dual vertices to the isosurface and provide a
+  topological test that guarantees we maintain the topology of the surface. 
 
 Drawbacks:
 
@@ -169,8 +169,8 @@ Drawbacks:
 * slower than DC and DMC.
   DMC is approximately 10-20% slower than DC, and our method takes an additional 50% longer than DMC.
 
-This is the highest quality grid method I've seen so far (to create the initial mesh,
-before optimization).
+This is the highest quality grid method I've seen so far (to create the initial
+mesh, before optimization).
 
 Source code? Manson was the student, Schaefer was the faculty advisor.
 Here's Manson's code, with a non-commercial licence: http://josiahmanson.com/research/iso_simplicial/

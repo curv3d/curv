@@ -1,4 +1,30 @@
-# Release 0.2: "Mesh Import"
+# Release 0.2
+
+Big Ideas:
+* Ease of Use: funcall errors, function help, tutorial
+* Language: new `where`, packages
+* RSDF and RSIF (voxel) import and export
+* Mesh Import via RSDF
+* sharp and fractal Mesh Export
+
+Ease of Use:
+* Better error messages for bad function calls.
+  'f a b c' is a function call with 3 arguments.
+  Error message mentions name of function and ordinal number of bad argument,
+  and gives required type of argument if a parameter pattern is available.
+  * Too few arguments: currying returns a function, later function is used in
+    non-function context. At this point, we can report a missing argument.
+  * Too many arguments: a non-function is used in the function position of a
+    function call. If the non-function expression is a function call, then
+    report too many arguments.
+  * Function value contains extra information. Name of function and # of
+    arguments already applied to the function of that name (for a partial
+    application).
+* in CLI, function value prints as usage info.
+* Tutorial.
+  * Give beginning users a useful mental model.
+  * Explain advantages of Curv over competing systems.
+* Pre-built executables.
 
 Mesh Import:
 * Refactor: glslViewer is repackaged as a library used by `curv`.
@@ -22,9 +48,7 @@ Mesh Export:
       * another 3D median filter.
       * trilinear resampling down to 512^3.
     * marching cubes
-  * JIT compiler to speed up distance function during export?
-    * curv -o c++
-  * density grid export to RAW. Compare to Trocola Mandelbulb voxels w. Inviwo.
+  * density grid export to RSIF. Compare to Trocola Mandelbulb voxels w. Inviwo.
 
 Intensity Fields:
 * 3D medical images use voxel density grids (which are just sampled "intensity
