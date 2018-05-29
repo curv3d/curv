@@ -31,6 +31,10 @@ TEST(curv, string)
     Symbol a3("barf", 3);
     ASSERT_TRUE(a2 == a3);
 
+    Symbol anull;
+    ASSERT_TRUE(anull.empty());
+    ASSERT_FALSE(a0.empty());
+
     Symbol_Map<int> m;
     //m["0"] = 0;
     m["1"] = 1;

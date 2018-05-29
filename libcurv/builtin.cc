@@ -36,7 +36,8 @@ Builtin_Value::to_meaning(const Identifier& id) const
 
 struct Is_Null_Function : public Polyadic_Function
 {
-    Is_Null_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "is_null"; }
+    Is_Null_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {args[0].is_null()};
@@ -44,7 +45,8 @@ struct Is_Null_Function : public Polyadic_Function
 };
 struct Is_Bool_Function : public Polyadic_Function
 {
-    Is_Bool_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "is_bool"; }
+    Is_Bool_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {args[0].is_bool()};
@@ -52,7 +54,8 @@ struct Is_Bool_Function : public Polyadic_Function
 };
 struct Is_Num_Function : public Polyadic_Function
 {
-    Is_Num_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "is_num"; }
+    Is_Num_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {args[0].is_num()};
@@ -60,7 +63,8 @@ struct Is_Num_Function : public Polyadic_Function
 };
 struct Is_String_Function : public Polyadic_Function
 {
-    Is_String_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "is_string"; }
+    Is_String_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {args[0].dycast<String>() != nullptr};
@@ -68,7 +72,8 @@ struct Is_String_Function : public Polyadic_Function
 };
 struct Is_List_Function : public Polyadic_Function
 {
-    Is_List_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "is_list"; }
+    Is_List_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {args[0].dycast<List>() != nullptr};
@@ -76,7 +81,8 @@ struct Is_List_Function : public Polyadic_Function
 };
 struct Is_Record_Function : public Polyadic_Function
 {
-    Is_Record_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "is_record"; }
+    Is_Record_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {args[0].dycast<Structure>() != nullptr};
@@ -84,7 +90,8 @@ struct Is_Record_Function : public Polyadic_Function
 };
 struct Is_Fun_Function : public Polyadic_Function
 {
-    Is_Fun_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "is_fun"; }
+    Is_Fun_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {args[0].dycast<Function>() != nullptr};
@@ -93,7 +100,8 @@ struct Is_Fun_Function : public Polyadic_Function
 
 struct Bit_Function : public Polyadic_Function
 {
-    Bit_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "bit"; }
+    Bit_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {double(args[0].to_bool(At_Arg(args)))};
@@ -103,7 +111,7 @@ struct Bit_Function : public Polyadic_Function
         auto arg = f[0];
         if (arg.type != GL_Type::Bool)
             throw Exception(At_GL_Arg(0, f),
-                "bit: argument is not a bool");
+                stringify(name(),": argument is not a bool"));
         auto result = f.gl.newvalue(GL_Type::Num);
         f.gl.out << "  float "<<result<<" = float("<<arg<<");\n";
         return result;
@@ -112,11 +120,12 @@ struct Bit_Function : public Polyadic_Function
 
 struct Sqrt_Function : public Polyadic_Function
 {
-    Sqrt_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "sqrt"; }
+    Sqrt_Function() : Polyadic_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return sqrt(x); }
         static Shared<const String> callstr(Value x) {
-            return stringify("sqrt(",x,")");
+            return stringify(name(),"(",x,")");
         }
     };
     static Unary_Numeric_Array_Op<Scalar_Op> array_op;
@@ -132,7 +141,8 @@ struct Sqrt_Function : public Polyadic_Function
 // log(x) is the natural logarithm of x
 struct Log_Function : public Polyadic_Function
 {
-    Log_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "log"; }
+    Log_Function() : Polyadic_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return log(x); }
         static Shared<const String> callstr(Value x) {
@@ -151,7 +161,8 @@ struct Log_Function : public Polyadic_Function
 };
 struct Abs_Function : public Polyadic_Function
 {
-    Abs_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "abs"; }
+    Abs_Function() : Polyadic_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return abs(x); }
         static Shared<const String> callstr(Value x) {
@@ -170,7 +181,8 @@ struct Abs_Function : public Polyadic_Function
 };
 struct Floor_Function : public Polyadic_Function
 {
-    Floor_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "floor"; }
+    Floor_Function() : Polyadic_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return floor(x); }
         static Shared<const String> callstr(Value x) {
@@ -192,7 +204,8 @@ struct Floor_Function : public Polyadic_Function
 // GPU: in case of tie, it's GPU/driver dependent.
 struct Round_Function : public Polyadic_Function
 {
-    Round_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "round"; }
+    Round_Function() : Polyadic_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return rint(x); }
         static Shared<const String> callstr(Value x) {
@@ -211,7 +224,8 @@ struct Round_Function : public Polyadic_Function
 };
 struct Sin_Function : public Polyadic_Function
 {
-    Sin_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "sin"; }
+    Sin_Function() : Polyadic_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return sin(x); }
         static Shared<const String> callstr(Value x) {
@@ -230,7 +244,8 @@ struct Sin_Function : public Polyadic_Function
 };
 struct Asin_Function : public Polyadic_Function
 {
-    Asin_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "asin"; }
+    Asin_Function() : Polyadic_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return asin(x); }
         static Shared<const String> callstr(Value x) {
@@ -249,7 +264,8 @@ struct Asin_Function : public Polyadic_Function
 };
 struct Cos_Function : public Polyadic_Function
 {
-    Cos_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "cos"; }
+    Cos_Function() : Polyadic_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return cos(x); }
         static Shared<const String> callstr(Value x) {
@@ -268,7 +284,8 @@ struct Cos_Function : public Polyadic_Function
 };
 struct Acos_Function : public Polyadic_Function
 {
-    Acos_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "acos"; }
+    Acos_Function() : Polyadic_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return acos(x); }
         static Shared<const String> callstr(Value x) {
@@ -287,7 +304,8 @@ struct Acos_Function : public Polyadic_Function
 };
 struct Atan2_Function : public Polyadic_Function
 {
-    Atan2_Function() : Polyadic_Function(2) {}
+    static const char* name() { return "atan2"; }
+    Atan2_Function() : Polyadic_Function(2,name()) {}
 
     struct Scalar_Op {
         static double f(double x, double y) { return atan2(x, y); }
@@ -392,7 +410,8 @@ GL_Value gl_minmax(const char* name, Operation& argx, GL_Frame& f)
 
 struct Max_Function : public Polyadic_Function
 {
-    Max_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "max"; }
+    Max_Function() : Polyadic_Function(1,name()) {}
 
     struct Scalar_Op {
         static double f(double x, double y) {
@@ -414,13 +433,14 @@ struct Max_Function : public Polyadic_Function
     GL_Value gl_call_expr(Operation& argx, const Call_Phrase*, GL_Frame& f)
     const override
     {
-        return gl_minmax("max",argx,f);
+        return gl_minmax(name(),argx,f);
     }
 };
 
 struct Min_Function : public Polyadic_Function
 {
-    Min_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "min"; }
+    Min_Function() : Polyadic_Function(1,name()) {}
 
     struct Scalar_Op {
         static double f(double x, double y) {
@@ -450,7 +470,8 @@ struct Min_Function : public Polyadic_Function
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
 struct Dot_Function : public Polyadic_Function
 {
-    Dot_Function() : Polyadic_Function(2) {}
+    static const char* name() { return "dot"; }
+    Dot_Function() : Polyadic_Function(2,name()) {}
     Value call(Frame& args) override
     {
         return dot(args[0], args[1], At_Frame(&args));
@@ -471,7 +492,8 @@ struct Dot_Function : public Polyadic_Function
 
 struct Mag_Function : public Polyadic_Function
 {
-    Mag_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "mag"; }
+    Mag_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& args) override
     {
         // TODO: use hypot() or BLAS DNRM2 or Eigen stableNorm/blueNorm?
@@ -500,7 +522,8 @@ struct Mag_Function : public Polyadic_Function
 
 struct Count_Function : public Polyadic_Function
 {
-    Count_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "count"; }
+    Count_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& args) override
     {
         if (auto list = args[0].dycast<const List>())
@@ -512,7 +535,8 @@ struct Count_Function : public Polyadic_Function
 };
 struct Fields_Function : public Polyadic_Function
 {
-    Fields_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "fields"; }
+    Fields_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& args) override
     {
         if (auto structure = args[0].dycast<const Structure>())
@@ -523,7 +547,8 @@ struct Fields_Function : public Polyadic_Function
 
 struct Strcat_Function : public Polyadic_Function
 {
-    Strcat_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "strcat"; }
+    Strcat_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& args) override
     {
         if (auto list = args[0].dycast<const List>()) {
@@ -541,7 +566,8 @@ struct Strcat_Function : public Polyadic_Function
 };
 struct Repr_Function : public Polyadic_Function
 {
-    Repr_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "repr"; }
+    Repr_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& args) override
     {
         String_Builder sb;
@@ -551,7 +577,8 @@ struct Repr_Function : public Polyadic_Function
 };
 struct Decode_Function : public Polyadic_Function
 {
-    Decode_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "decode"; }
+    Decode_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& f) override
     {
         String_Builder sb;
@@ -564,7 +591,8 @@ struct Decode_Function : public Polyadic_Function
 };
 struct Encode_Function : public Polyadic_Function
 {
-    Encode_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "encode"; }
+    Encode_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& f) override
     {
         List_Builder lb;
@@ -578,7 +606,8 @@ struct Encode_Function : public Polyadic_Function
 
 struct Match_Function : public Polyadic_Function
 {
-    Match_Function() : Polyadic_Function(1) {}
+    static const char* name() { return "match"; }
+    Match_Function() : Polyadic_Function(1,name()) {}
     Value call(Frame& f) override
     {
         At_Arg ctx0(f);
@@ -932,6 +961,8 @@ struct Defined_Metafunction : public Metafunction
 const Namespace&
 builtin_namespace()
 {
+    #define FUNCTION(f) {f::name(), make<Builtin_Value>(Value{make<f>()})}
+
     static const Namespace names = {
     {"pi", make<Builtin_Value>(pi)},
     {"tau", make<Builtin_Value>(two_pi)},
@@ -939,35 +970,37 @@ builtin_namespace()
     {"null", make<Builtin_Value>(Value())},
     {"false", make<Builtin_Value>(Value(false))},
     {"true", make<Builtin_Value>(Value(true))},
-    {"is_null", make<Builtin_Value>(Value{make<Is_Null_Function>()})},
-    {"is_bool", make<Builtin_Value>(Value{make<Is_Bool_Function>()})},
-    {"is_num", make<Builtin_Value>(Value{make<Is_Num_Function>()})},
-    {"is_string", make<Builtin_Value>(Value{make<Is_String_Function>()})},
-    {"is_list", make<Builtin_Value>(Value{make<Is_List_Function>()})},
-    {"is_record", make<Builtin_Value>(Value{make<Is_Record_Function>()})},
-    {"is_fun", make<Builtin_Value>(Value{make<Is_Fun_Function>()})},
-    {"bit", make<Builtin_Value>(Value{make<Bit_Function>()})},
-    {"sqrt", make<Builtin_Value>(Value{make<Sqrt_Function>()})},
-    {"log", make<Builtin_Value>(Value{make<Log_Function>()})},
-    {"abs", make<Builtin_Value>(Value{make<Abs_Function>()})},
-    {"floor", make<Builtin_Value>(Value{make<Floor_Function>()})},
-    {"round", make<Builtin_Value>(Value{make<Round_Function>()})},
-    {"sin", make<Builtin_Value>(Value{make<Sin_Function>()})},
-    {"asin", make<Builtin_Value>(Value{make<Asin_Function>()})},
-    {"cos", make<Builtin_Value>(Value{make<Cos_Function>()})},
-    {"acos", make<Builtin_Value>(Value{make<Acos_Function>()})},
-    {"atan2", make<Builtin_Value>(Value{make<Atan2_Function>()})},
-    {"max", make<Builtin_Value>(Value{make<Max_Function>()})},
-    {"min", make<Builtin_Value>(Value{make<Min_Function>()})},
-    {"dot", make<Builtin_Value>(Value{make<Dot_Function>()})},
-    {"mag", make<Builtin_Value>(Value{make<Mag_Function>()})},
-    {"count", make<Builtin_Value>(Value{make<Count_Function>()})},
-    {"fields", make<Builtin_Value>(Value{make<Fields_Function>()})},
-    {"strcat", make<Builtin_Value>(Value{make<Strcat_Function>()})},
-    {"repr", make<Builtin_Value>(Value{make<Repr_Function>()})},
-    {"decode", make<Builtin_Value>(Value{make<Decode_Function>()})},
-    {"encode", make<Builtin_Value>(Value{make<Encode_Function>()})},
-    {"match", make<Builtin_Value>(Value{make<Match_Function>()})},
+
+    FUNCTION(Is_Null_Function),
+    FUNCTION(Is_Bool_Function),
+    FUNCTION(Is_Num_Function),
+    FUNCTION(Is_String_Function),
+    FUNCTION(Is_List_Function),
+    FUNCTION(Is_Record_Function),
+    FUNCTION(Is_Fun_Function),
+    FUNCTION(Bit_Function),
+    FUNCTION(Sqrt_Function),
+    FUNCTION(Log_Function),
+    FUNCTION(Abs_Function),
+    FUNCTION(Floor_Function),
+    FUNCTION(Round_Function),
+    FUNCTION(Sin_Function),
+    FUNCTION(Asin_Function),
+    FUNCTION(Cos_Function),
+    FUNCTION(Acos_Function),
+    FUNCTION(Atan2_Function),
+    FUNCTION(Max_Function),
+    FUNCTION(Min_Function),
+    FUNCTION(Dot_Function),
+    FUNCTION(Mag_Function),
+    FUNCTION(Count_Function),
+    FUNCTION(Fields_Function),
+    FUNCTION(Strcat_Function),
+    FUNCTION(Repr_Function),
+    FUNCTION(Decode_Function),
+    FUNCTION(Encode_Function),
+    FUNCTION(Match_Function),
+
     {"file", make<Builtin_Meaning<File_Metafunction>>()},
     {"print", make<Builtin_Meaning<Print_Metafunction>>()},
     {"warning", make<Builtin_Meaning<Warning_Metafunction>>()},

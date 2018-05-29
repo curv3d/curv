@@ -52,6 +52,16 @@ public:
         return *this;
     }
 
+    inline Symbol()
+    :
+        Base()
+    {
+    }
+    bool empty() const noexcept
+    {
+        return this->get() == nullptr;
+    }
+
     int cmp(Symbol a) const noexcept
     {
         return strcmp((*this)->c_str(), a->c_str());
@@ -80,7 +90,6 @@ public:
     }
     friend std::ostream& operator<<(std::ostream& out, Symbol a)
     {
-        //out << "`" << *a << "`";
         out << *a;
         return out;
     }

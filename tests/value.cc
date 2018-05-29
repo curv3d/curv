@@ -21,7 +21,7 @@ bool prints_as(Value val, const char* expect)
 
 struct Id_Function : public Polyadic_Function
 {
-    Id_Function() : Polyadic_Function(1) {}
+    Id_Function() : Polyadic_Function(1,"id") {}
     Value call(Frame& args) override
     {
         return args[0];

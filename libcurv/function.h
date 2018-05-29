@@ -15,13 +15,29 @@ namespace curv {
 /// A function value.
 struct Function : public Ref_Value
 {
-    slot_t nslots_; // size of call frame
+    // size of call frame
+    slot_t nslots_;
+
+    // optional name of function
+    Symbol name_{};
+
+    // Suppose this function is the result of partial application of a named
+    // function. Then this is the # of arguments that were applied to get here,
+    // and `name_` is the name of the base function.
+    int num_prior_arguments_ = 0;
 
     Function(slot_t nslots)
     :
         Ref_Value(ty_function),
         nslots_(nslots)
     {}
+
+    Function(slot_t nslots, const char* name)
+    :
+        Function(nslots)
+    {
+        name_ = name;
+    }
 
     // call the function during evaluation
     virtual Value call(Value, Frame&) = 0;
@@ -40,16 +56,17 @@ struct Function : public Ref_Value
     static const char name[];
 };
 
-/// A polyadic function value.
-/// It has a fixed number of arguments (nargs), the same number on every call.
+/// A polyadic function value. Only used for builtin functions.
+/// It has a single argument, which is a fixed size list of count `nargs`
+/// if `nargs` != 1.
 /// Within `call(Frame& args)`, use `args[i]` to fetch the i'th argument.
 struct Polyadic_Function : public Function
 {
     unsigned nargs_;
 
-    Polyadic_Function(unsigned nargs)
+    Polyadic_Function(unsigned nargs, const char* name)
     :
-        Function(nargs),
+        Function(nargs, name),
         nargs_(nargs)
     {}
     Polyadic_Function(unsigned nargs, unsigned nslots)

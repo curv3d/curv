@@ -223,7 +223,7 @@ TEST(curv, eval)
     SUCCESS("null", "null");
     SUCCESS("false", "false");
     SUCCESS("true", "true");
-    SUCCESS("sqrt", "<function>");
+    SUCCESS("sqrt", "sqrt");
 
     // runtime operations
     SUCCESS("-0", "-0");

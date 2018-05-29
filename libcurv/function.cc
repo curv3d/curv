@@ -14,7 +14,10 @@ const char Function::name[] = "function";
 void
 Function::print(std::ostream& out) const
 {
-    out << "<function>";
+    if (!name_.empty() && num_prior_arguments_ == 0)
+        out << name_;
+    else
+        out << "<function>";
 }
 
 GL_Value
