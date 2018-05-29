@@ -8,9 +8,9 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include <curv/value.h>
-#include <curv/system.h>
-#include <curv/context.h>
+#include <libcurv/value.h>
+#include <libcurv/system.h>
+#include <libcurv/context.h>
 
 typedef std::map<std::string, std::string> Export_Params;
 

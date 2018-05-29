@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include <curv/tail_array.h>
-#include <curv/array_mixin.h>
+#include <libcurv/tail_array.h>
+#include <libcurv/array_mixin.h>
 #include <vector>
 #include <memory>
 

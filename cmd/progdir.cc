@@ -2,7 +2,7 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 }
-#include <curv/exception.h>
+#include <libcurv/exception.h>
 #include "progdir.h"
 namespace fs = boost::filesystem;
 

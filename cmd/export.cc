@@ -4,8 +4,8 @@
 
 #include "export.h"
 #include <fstream>
-#include <curv/exception.h>
-#include <curv/shape.h>
+#include <libcurv/exception.h>
+#include <libcurv/shape.h>
 
 void export_curv(curv::Value value,
     curv::System&, const curv::Context&, const Export_Params&,

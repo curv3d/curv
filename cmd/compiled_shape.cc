@@ -6,9 +6,9 @@
 #include "tempfile.h"
 #include <cstdlib>
 #include <fstream>
-#include <curv/exception.h>
-#include <curv/context.h>
-#include <curv/function.h>
+#include <libcurv/exception.h>
+#include <libcurv/context.h>
+#include <libcurv/function.h>
 extern "C" {
 #include <dlfcn.h>
 }

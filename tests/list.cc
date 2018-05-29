@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include <curv/list.h>
-//#include <curv/atom.h>
+#include <libcurv/list.h>
+//#include <libcurv/atom.h>
 //#include <sstream>
 //#include <iostream>
 //#include <cstdlib>

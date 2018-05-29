@@ -11,9 +11,9 @@
 
 #include "export.h"
 #include "compiled_shape.h"
-#include <curv/shape.h>
-#include <curv/exception.h>
-#include <curv/die.h>
+#include <libcurv/shape.h>
+#include <libcurv/exception.h>
+#include <libcurv/die.h>
 
 using openvdb::Vec3s;
 using openvdb::Vec3d;

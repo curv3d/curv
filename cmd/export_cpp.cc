@@ -5,8 +5,8 @@
 #include "export.h"
 #include "compiled_shape.h"
 #include <fstream>
-#include <curv/exception.h>
-#include <curv/shape.h>
+#include <libcurv/exception.h>
+#include <libcurv/shape.h>
 
 void export_cpp(curv::Value value,
     curv::System& sys, const curv::Context& cx, const Export_Params&,

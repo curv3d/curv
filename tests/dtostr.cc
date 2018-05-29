@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <curv/dtostr.h>
+#include <libcurv/dtostr.h>
 #include <sstream>
 #include <iostream>
 #include <cstdlib>

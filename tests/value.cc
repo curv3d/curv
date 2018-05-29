@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include <curv/value.h>
-#include <curv/function.h>
-#include <curv/string.h>
+#include <libcurv/value.h>
+#include <libcurv/function.h>
+#include <libcurv/string.h>
 #include <sstream>
 #include <iostream>
 using namespace curv;

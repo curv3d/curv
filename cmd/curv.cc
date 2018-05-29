@@ -21,22 +21,22 @@ extern "C" {
 #include "export.h"
 #include "progdir.h"
 #include "tempfile.h"
-#include <curv/dtostr.h>
-#include <curv/analyser.h>
-#include <curv/context.h>
-#include <curv/program.h>
-#include <curv/exception.h>
-#include <curv/file.h>
-#include <curv/parser.h>
-#include <curv/phrase.h>
-#include <curv/shared.h>
-#include <curv/system.h>
-#include <curv/list.h>
-#include <curv/record.h>
-#include <curv/gl_compiler.h>
-#include <curv/shape.h>
-#include <curv/version.h>
-#include <curv/die.h>
+#include <libcurv/dtostr.h>
+#include <libcurv/analyser.h>
+#include <libcurv/context.h>
+#include <libcurv/program.h>
+#include <libcurv/exception.h>
+#include <libcurv/file.h>
+#include <libcurv/parser.h>
+#include <libcurv/phrase.h>
+#include <libcurv/shared.h>
+#include <libcurv/system.h>
+#include <libcurv/list.h>
+#include <libcurv/record.h>
+#include <libcurv/gl_compiler.h>
+#include <libcurv/shape.h>
+#include <libcurv/version.h>
+#include <libcurv/die.h>
 
 bool was_interrupted = false;
 

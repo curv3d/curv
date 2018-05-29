@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <curv/location.h>
+#include <libcurv/location.h>
 
 using namespace std;
 using namespace curv;

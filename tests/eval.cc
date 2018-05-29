@@ -2,13 +2,13 @@
 
 #include <gtest/gtest.h>
 
-#include <curv/analyser.h>
-#include <curv/program.h>
-#include <curv/exception.h>
-#include <curv/parser.h>
-#include <curv/phrase.h>
-#include <curv/string.h>
-#include <curv/system.h>
+#include <libcurv/analyser.h>
+#include <libcurv/program.h>
+#include <libcurv/exception.h>
+#include <libcurv/parser.h>
+#include <libcurv/phrase.h>
+#include <libcurv/string.h>
+#include <libcurv/system.h>
 
 using namespace std;
 using namespace curv;

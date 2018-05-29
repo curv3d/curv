@@ -3,8 +3,8 @@
 // See https://www.apache.org/licenses/LICENSE-2.0
 
 #include "tempfile.h"
-#include <curv/exception.h>
-#include <curv/context.h>
+#include <libcurv/exception.h>
+#include <libcurv/context.h>
 #include <vector>
 
 extern "C" {

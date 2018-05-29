@@ -1,0 +1,57 @@
+// Copyright 2016-2018 Doug Moen
+// Licensed under the Apache License, version 2.0
+// See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
+
+#include <fstream>
+#include <libcurv/context.h>
+#include <libcurv/exception.h>
+#include <libcurv/file.h>
+
+namespace curv
+{
+
+Shared<const String> readfile(const char* path, const Context& ctx)
+{
+    // TODO: Cache multiple references to the same file. Where does the cache
+    // go? System or Session object.
+
+    // TODO: Pluggable file system abstraction, for unit testing and
+    // abstracting the behaviour of `file` (would also support caching).
+    // So, use System::open(path)? Maybe this returns a Script?
+
+    // TODO: More precise error message when open fails. Maybe get that
+    // from an exception? No, the following code is useless, no useful
+    // information is stored in what() or code().message().
+    /*
+    ifstream file;
+    file.exceptions ( ifstream::failbit | ifstream::badbit );
+    try {
+      file.open ("test.txt");
+      while (!file.eof()) file.get();
+    }
+    catch (const ifstream::failure& e) {
+      cout << "Exception opening/reading file\n";
+      cout << e.what() << "\n";
+      cout << e.code().message() << "\n";
+    }
+    */
+    // I'll need to use strerror(errno).
+
+    // TODO: change File_Script to use mmap?
+
+    std::ifstream t;
+    t.open(path);
+    if (t.fail())
+        throw Exception(ctx, stringify("can't open file ", path));
+    String_Builder buffer;
+    buffer << t.rdbuf();
+    return buffer.get_string();
+}
+
+File_Script::File_Script(Shared<const String> filename, const Context& ctx)
+:
+    String_Script(filename, readfile(filename->c_str(), ctx))
+{
+}
+
+} // namespace curv
