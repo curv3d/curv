@@ -87,7 +87,7 @@ Environ::lookup(const Identifier& id)
         if (m != nullptr)
             return m;
     }
-    throw Exception(At_Phrase(id, *this), stringify(id.atom_,": not defined"));
+    throw Exception(At_Phrase(id, *this), stringify(id.symbol_,": not defined"));
 }
 
 Shared<Meaning>
@@ -103,13 +103,13 @@ Environ::lookup_var(const Identifier& id)
         }
     }
     throw Exception(At_Phrase(id, *this),
-        stringify("var ",id.atom_,": not defined"));
+        stringify("var ",id.symbol_,": not defined"));
 }
 
 Shared<Meaning>
 Builtin_Environ::single_lookup(const Identifier& id)
 {
-    auto p = names.find(id.atom_);
+    auto p = names.find(id.symbol_);
     if (p != names.end())
         return p->second->to_meaning(id);
     return nullptr;
@@ -261,12 +261,12 @@ Lambda_Phrase::analyse(Environ& env) const
 
         virtual Shared<Meaning> single_lookup(const Identifier& id)
         {
-            auto b = dictionary_.find(id.atom_);
+            auto b = dictionary_.find(id.symbol_);
             if (b != dictionary_.end())
                 return make<Data_Ref>(share(id), b->second.slot_index_);
             if (shared_nonlocals_)
                 return parent_->single_lookup(id);
-            auto n = nonlocal_dictionary_->find(id.atom_);
+            auto n = nonlocal_dictionary_->find(id.symbol_);
             if (n != nonlocal_dictionary_->end())
                 return make<Nonlocal_Data_Ref>(share(id), n->second);
             auto m = parent_->lookup(id);
@@ -274,7 +274,7 @@ Lambda_Phrase::analyse(Environ& env) const
                 return m;
             if (auto expr = cast<Operation>(m)) {
                 slot_t slot = nonlocal_exprs_.size();
-                (*nonlocal_dictionary_)[id.atom_] = slot;
+                (*nonlocal_dictionary_)[id.symbol_] = slot;
                 nonlocal_exprs_.push_back(expr);
                 return make<Nonlocal_Data_Ref>(share(id), slot);
             }
@@ -309,10 +309,10 @@ analyse_assoc(Environ& env,
         right_expr = analyse_op(*right, env);
 
     if (auto id = dynamic_cast<const Identifier*>(&left))
-        return make<Assoc>(share(src), Atom_Expr{share(*id)}, right_expr);
+        return make<Assoc>(share(src), Symbol_Expr{share(*id)}, right_expr);
     if (auto string = dynamic_cast<const String_Phrase*>(&left)) {
         auto string_expr = string->analyse_string(env);
-        return make<Assoc>(share(src), Atom_Expr{string_expr}, right_expr);
+        return make<Assoc>(share(src), Symbol_Expr{string_expr}, right_expr);
     }
 
     throw Exception(At_Phrase(left,  env), "invalid definiendum");
@@ -392,7 +392,7 @@ analyse_block(
             throw Exception(At_Phrase(*unit->source_, *parent_),
                 "wrong style of definition for this block");
         }
-        virtual slot_t add_binding(Atom, const Phrase&, unsigned) override
+        virtual slot_t add_binding(Symbol, const Phrase&, unsigned) override
         {
             return 0;
         }
@@ -516,14 +516,14 @@ Binary_Phrase::analyse(Environ& env) const
             return make<Dot_Expr>(
                 share(*this),
                 analyse_op(*left_, env),
-                Atom_Expr{id});
+                Symbol_Expr{id});
         }
         if (auto string = cast<const String_Phrase>(right_)) {
             auto str_expr = string->analyse_string(env);
             return make<Dot_Expr>(
                 share(*this),
                 analyse_op(*left_, env),
-                Atom_Expr{str_expr});
+                Symbol_Expr{str_expr});
         }
         throw Exception(At_Phrase(*right_, env),
             "invalid expression after '.'");

@@ -10,7 +10,7 @@ namespace curv {
 const char Structure::name[] = "record";
 
 Value
-Structure::getfield(Atom field, const Context& cx) const
+Structure::getfield(Symbol field, const Context& cx) const
 {
     throw Exception(cx, stringify(".",field,": not defined"));
 }

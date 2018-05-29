@@ -889,12 +889,12 @@ struct Assert_Error_Metafunction : public Metafunction
 struct Defined_Expression : public Just_Expression
 {
     Shared<const Operation> expr_;
-    Atom_Expr selector_;
+    Symbol_Expr selector_;
 
     Defined_Expression(
         Shared<const Phrase> source,
         Shared<const Operation> expr,
-        Atom_Expr selector)
+        Symbol_Expr selector)
     :
         Just_Expression(std::move(source)),
         expr_(std::move(expr)),

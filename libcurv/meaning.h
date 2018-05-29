@@ -11,7 +11,7 @@
 #include <libcurv/shared.h>
 #include <libcurv/phrase.h>
 #include <libcurv/value.h>
-#include <libcurv/atom.h>
+#include <libcurv/symbol.h>
 #include <libcurv/list.h>
 #include <libcurv/module.h>
 #include <libcurv/frame.h>
@@ -166,12 +166,12 @@ struct Null_Action : public Just_Action
 
 struct Symbolic_Ref : public Just_Expression
 {
-    Atom name_;
+    Symbol name_;
 
     Symbolic_Ref(Shared<const Identifier> id)
     :
         Just_Expression(id),
-        name_(id->atom_)
+        name_(id->symbol_)
     {}
 
     virtual Value eval(Frame&) const override;
@@ -851,36 +851,36 @@ struct String_Expr_Base : public Just_Expression
     : Just_Expression(std::move(source)) {}
 
     virtual Value eval(Frame&) const override;
-    Atom eval_atom(Frame&) const;
+    Symbol eval_symbol(Frame&) const;
     TAIL_ARRAY_MEMBERS(Shared<Segment>)
 };
 using String_Expr = Tail_Array<String_Expr_Base>;
 
-struct Atom_Expr
+struct Symbol_Expr
 {
     Shared<const Identifier> id_;
     Shared<String_Expr> string_;
 
-    Atom_Expr(Shared<const Identifier> id) : id_(id), string_(nullptr) {}
-    Atom_Expr(Shared<String_Expr> string) : id_(nullptr), string_(string) {}
+    Symbol_Expr(Shared<const Identifier> id) : id_(id), string_(nullptr) {}
+    Symbol_Expr(Shared<String_Expr> string) : id_(nullptr), string_(string) {}
 
     Shared<const Phrase> source() {
         if (id_) return id_; else return string_->source_;
     }
-    Atom eval(Frame& f) const {
-        return id_ ? id_->atom_ : string_->eval_atom(f);
+    Symbol eval(Frame& f) const {
+        return id_ ? id_->symbol_ : string_->eval_symbol(f);
     } 
 };
 
 struct Dot_Expr : public Just_Expression
 {
     Shared<Operation> base_;
-    Atom_Expr selector_;
+    Symbol_Expr selector_;
 
     Dot_Expr(
         Shared<const Phrase> source,
         Shared<Operation> base,
-        Atom_Expr selector)
+        Symbol_Expr selector)
     :
         Just_Expression(std::move(source)),
         base_(std::move(base)),
@@ -892,12 +892,12 @@ struct Dot_Expr : public Just_Expression
 
 struct Assoc : public Operation
 {
-    Atom_Expr name_;
+    Symbol_Expr name_;
     Shared<const Operation> definiens_;
 
     Assoc(
         Shared<const Phrase> source,
-        Atom_Expr name,
+        Symbol_Expr name,
         Shared<const Operation> definiens)
     :
         Operation(std::move(source)),

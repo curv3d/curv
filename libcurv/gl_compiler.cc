@@ -567,7 +567,7 @@ Value gl_constify(Operation& op, GL_Frame& f)
     else if (auto dot = dynamic_cast<Dot_Expr*>(&op)) {
         Value base = gl_constify(*dot->base_, f);
         if (dot->selector_.id_ != nullptr)
-            return base.at(dot->selector_.id_->atom_,
+            return base.at(dot->selector_.id_->symbol_,
                 At_GL_Phrase(op.source_, &f));
         else
             throw Exception(At_GL_Phrase(dot->selector_.string_->source_, &f),
@@ -758,7 +758,7 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
             return fun->gl_call_expr(*arg_, call_phrase(), f);
         }
         if (auto r = v.dycast<Structure>()) {
-            static Atom call_key = "call";
+            static Symbol call_key = "call";
             if (r->hasfield(call_key)) {
                 v = r->getfield(call_key,{});
                 continue;

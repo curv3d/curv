@@ -38,7 +38,7 @@ Value::to_abort [[noreturn]] (const Context& cx, const char* type)
 }
 
 Value
-Value::at(Atom field, const Context& cx) const
+Value::at(Symbol field, const Context& cx) const
 {
     if (is_ref()) {
         Structure* s = dynamic_cast<Structure*>(&get_ref_unsafe());

@@ -205,7 +205,6 @@ Code cleanup:
 * clean up Record_Pattern::exec
 * remove curv/arg.{h,cc}, move features into value.h and context.h
 * add std::move to curv namespace
-* rename Atom to Symbol
 
 Tensors:
 * rank? Like ArrayDepth[t] in Mathematica?

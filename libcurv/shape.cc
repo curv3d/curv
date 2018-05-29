@@ -40,11 +40,11 @@ BBox::from_value(Value val, const Context& cx)
 bool
 Shape_Recognizer::recognize(Value val)
 {
-    static Atom is_2d_key = "is_2d";
-    static Atom is_3d_key = "is_3d";
-    static Atom bbox_key = "bbox";
-    static Atom dist_key = "dist";
-    static Atom colour_key = "colour";
+    static Symbol is_2d_key = "is_2d";
+    static Symbol is_3d_key = "is_3d";
+    static Symbol bbox_key = "bbox";
+    static Symbol dist_key = "dist";
+    static Symbol colour_key = "colour";
 
     Value is_2d_val;
     Value is_3d_val;

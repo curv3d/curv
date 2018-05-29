@@ -6,7 +6,7 @@
 #define LIBCURV_MODULE_H
 
 #include <libcurv/structure.h>
-#include <libcurv/atom.h>
+#include <libcurv/symbol.h>
 #include <libcurv/shared.h>
 #include <libcurv/list.h>
 #include <libcurv/slot.h>
@@ -26,10 +26,10 @@ struct Module_Base : public Structure
     ///
     /// TODO: This might be more efficient as a sorted array of field names.
     /// The index of the field name would be interpreted as the slot index.
-    /// (Reimplementing `Atom_Map` using hash trees is another proposal.)
-    struct Dictionary : public Shared_Base, public Atom_Map<slot_t>
+    /// (Reimplementing `Symbol_Map` using hash trees is another proposal.)
+    struct Dictionary : public Shared_Base, public Symbol_Map<slot_t>
     {
-        Dictionary() : Shared_Base(), Atom_Map<slot_t>() {}
+        Dictionary() : Shared_Base(), Symbol_Map<slot_t>() {}
     };
 
     /// The `dictionary` maps field names onto slot indexes.
@@ -74,7 +74,7 @@ struct Module_Base : public Structure
             iter_(first ? m.dictionary_->begin() : m.dictionary_->end())
         {
         }
-        std::pair<Atom,Value> operator*()
+        std::pair<Symbol,Value> operator*()
         {
             return { iter_->first, m_.get(iter_->second) };
         }
@@ -97,12 +97,12 @@ struct Module_Base : public Structure
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const override;
 
-    virtual Value getfield(Atom, const Context&) const override;
-    virtual bool hasfield(Atom) const override;
-    virtual void putfields(Atom_Map<Value>&) const override;
+    virtual Value getfield(Symbol, const Context&) const override;
+    virtual bool hasfield(Symbol) const override;
+    virtual void putfields(Symbol_Map<Value>&) const override;
     virtual size_t size() const override { return size_; }
     virtual Shared<List> fields() const override;
-    virtual void each_field(std::function<void(Atom,Value)>) const override;
+    virtual void each_field(std::function<void(Symbol,Value)>) const override;
 
     static const char name[];
 

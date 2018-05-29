@@ -147,7 +147,7 @@ struct Scope : public Environ
         {}
     };
 
-    Atom_Map<Binding> dictionary_ = {};
+    Symbol_Map<Binding> dictionary_ = {};
 
     Scope(Environ& parent)
     :
@@ -158,7 +158,7 @@ struct Scope : public Environ
     }
 
     virtual Shared<Meaning> single_lookup(const Identifier&) override;
-    virtual slot_t add_binding(Atom, const Phrase&, unsigned unit);
+    virtual slot_t add_binding(Symbol, const Phrase&, unsigned unit);
 };
 
 struct Block_Scope : public Scope
@@ -175,7 +175,7 @@ struct Block_Scope : public Scope
             executable_.module_slot_ = make_slot();
     }
 
-    virtual slot_t add_binding(Atom, const Phrase&, unsigned unit) override;
+    virtual slot_t add_binding(Symbol, const Phrase&, unsigned unit) override;
 
     virtual void analyse(Definition&) = 0;
     virtual void add_action(Shared<const Phrase>) = 0;
@@ -211,7 +211,7 @@ struct Recursive_Scope : public Block_Scope
         State state_ = k_not_analysed;
         int scc_ord_ = -1; // -1 until SCC assigned
         int scc_lowlink_ = -1;
-        Atom_Map<Shared<Operation>> nonlocals_ = {};
+        Symbol_Map<Shared<Operation>> nonlocals_ = {};
 
         Unit(Shared<Unitary_Definition> def) : def_(def) {}
 

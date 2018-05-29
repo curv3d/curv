@@ -26,7 +26,7 @@ void
 Function_Definition::add_to_scope(Block_Scope& scope)
 {
     unsigned unitnum = scope.begin_unit(share(*this));
-    slot_ = scope.add_binding(name_->atom_, *source_, unitnum);
+    slot_ = scope.add_binding(name_->symbol_, *source_, unitnum);
     scope.end_unit(unitnum, share(*this));
 }
 void
@@ -67,7 +67,7 @@ Include_Definition::add_to_scope(Block_Scope& scope)
     unsigned unit = scope.begin_unit(share(*this));
     setter_ = {Include_Setter::make(record->size(), source_)};
     size_t i = 0;
-    record->each_field([&](Atom name, Value value)->void {
+    record->each_field([&](Symbol name, Value value)->void {
         slot_t slot = scope.add_binding(name, *source_, unit);
         (*setter_)[i++] = {slot, value};
     });
@@ -96,7 +96,7 @@ Compound_Definition_Base::add_to_scope(Block_Scope& scope)
 }
 
 slot_t
-Scope::add_binding(Atom name, const Phrase& unitsrc, unsigned unitno)
+Scope::add_binding(Symbol name, const Phrase& unitsrc, unsigned unitno)
 {
     if (dictionary_.find(name) != dictionary_.end())
         throw Exception(At_Phrase(unitsrc, *parent_),
@@ -108,14 +108,14 @@ Scope::add_binding(Atom name, const Phrase& unitsrc, unsigned unitno)
 Shared<Meaning>
 Scope::single_lookup(const Identifier& id)
 {
-    auto b = dictionary_.find(id.atom_);
+    auto b = dictionary_.find(id.symbol_);
     if (b != dictionary_.end())
         return make<Data_Ref>(share(id), b->second.slot_index_);
     return nullptr;
 }
 
 slot_t
-Block_Scope::add_binding(Atom name, const Phrase& unitsrc, unsigned unitno)
+Block_Scope::add_binding(Symbol name, const Phrase& unitsrc, unsigned unitno)
 {
     if (dictionary_.find(name) != dictionary_.end())
         throw Exception(At_Phrase(unitsrc, *parent_),
@@ -141,7 +141,7 @@ Sequential_Scope::analyse(Definition& def)
 Shared<Meaning>
 Sequential_Scope::single_lookup(const Identifier& id)
 {
-    auto b = dictionary_.find(id.atom_);
+    auto b = dictionary_.find(id.symbol_);
     if (b != dictionary_.end()) {
         if (b->second.unit_index_ <= nunits_) {
             if (target_is_module_) {
@@ -305,7 +305,7 @@ Recursive_Scope::make_function_setter(size_t nunits, Unit** units)
     for (size_t u = 0; u < nunits; ++u) {
         if (auto f = cast<Function_Definition>(units[u]->def_)) {
             funs.push_back(f);
-            (*nonlocal_dictionary)[f->name_->atom_] = slot++;
+            (*nonlocal_dictionary)[f->name_->symbol_] = slot++;
             nonlocal_exprs.push_back(
                 make<Constant>(Shared<const Phrase>{f->lambda_phrase_}, Value{f->lambda_}));
         } else
@@ -342,7 +342,7 @@ Recursive_Scope::make_function_setter(size_t nunits, Unit** units)
 Shared<Meaning>
 Recursive_Scope::single_lookup(const Identifier& id)
 {
-    auto b = dictionary_.find(id.atom_);
+    auto b = dictionary_.find(id.symbol_);
     if (b != dictionary_.end()) {
         analyse_unit(units_[b->second.unit_index_], &id);
         if (target_is_module_) {
@@ -361,7 +361,7 @@ Recursive_Scope::Function_Environ::single_lookup(const Identifier& id)
     if (isa<Constant>(m))
         return m;
     if (auto expr = cast<Operation>(m)) {
-        unit_.nonlocals_[id.atom_] = expr;
+        unit_.nonlocals_[id.symbol_] = expr;
         return make<Symbolic_Ref>(share(id));
     }
     return m;

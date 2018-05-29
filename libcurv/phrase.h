@@ -9,7 +9,7 @@
 #include <memory>
 #include <libcurv/shared.h>
 #include <libcurv/location.h>
-#include <libcurv/atom.h>
+#include <libcurv/symbol.h>
 #include <libcurv/tail_array.h>
 
 namespace curv {
@@ -51,12 +51,12 @@ struct Token_Phrase : public Phrase
 };
 struct Identifier final : public Token_Phrase
 {
-    Atom atom_;
+    Symbol symbol_;
 
     Identifier(const Script& s, Token tok)
     :
         Token_Phrase(s, std::move(tok)),
-        atom_{loc_.range()}
+        symbol_{loc_.range()}
     {}
 
     virtual Shared<Meaning> analyse(Environ&) const override;

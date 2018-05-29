@@ -5,7 +5,7 @@
 #ifndef LIBCURV_RECORD_H
 #define LIBCURV_RECORD_H
 
-#include <libcurv/atom.h>
+#include <libcurv/symbol.h>
 #include <libcurv/structure.h>
 
 namespace curv {
@@ -13,10 +13,10 @@ namespace curv {
 /// A record value: {x=1,y=2}
 struct Record : public Structure
 {
-    Atom_Map<Value> fields_;
+    Symbol_Map<Value> fields_;
 
     Record() : Structure(ty_record) {}
-    Record(Atom_Map<Value> fields)
+    Record(Symbol_Map<Value> fields)
     :
         Structure(ty_record),
         fields_(std::move(fields))
@@ -31,12 +31,12 @@ struct Record : public Structure
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const override;
     bool operator==(const Record&) const;
-    virtual Value getfield(Atom, const Context&) const override;
-    virtual bool hasfield(Atom) const override;
-    virtual void putfields(Atom_Map<Value>&) const override;
+    virtual Value getfield(Symbol, const Context&) const override;
+    virtual bool hasfield(Symbol) const override;
+    virtual void putfields(Symbol_Map<Value>&) const override;
     virtual Shared<List> fields() const override;
     virtual size_t size() const override { return fields_.size(); }
-    virtual void each_field(std::function<void(Atom,Value)>) const override;
+    virtual void each_field(std::function<void(Symbol,Value)>) const override;
 
     static const char name[];
 };

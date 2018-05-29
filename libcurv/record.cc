@@ -23,7 +23,7 @@ Record::print(std::ostream& out) const
 }
 
 void
-Record::putfields(Atom_Map<Value>& out) const
+Record::putfields(Symbol_Map<Value>& out) const
 {
     for (auto i : fields_)
         out[i.first] = i.second;
@@ -48,7 +48,7 @@ Record::operator==(const Record& rec) const
 }
 
 Value
-Record::getfield(Atom name, const Context& cx) const
+Record::getfield(Symbol name, const Context& cx) const
 {
     auto fp = fields_.find(name);
     if (fp != fields_.end())
@@ -57,7 +57,7 @@ Record::getfield(Atom name, const Context& cx) const
 }
 
 bool
-Record::hasfield(Atom name) const
+Record::hasfield(Symbol name) const
 {
     auto fp = fields_.find(name);
     return (fp != fields_.end());
@@ -76,7 +76,7 @@ Record::fields() const
 }
 
 void
-Record::each_field(std::function<void(Atom,Value)> visitor) const
+Record::each_field(std::function<void(Symbol,Value)> visitor) const
 {
     for (auto f : fields_)
         visitor(f.first, f.second);

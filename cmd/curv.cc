@@ -247,7 +247,7 @@ interactive_mode(curv::System& sys)
             if (den.second) {
                 bool is_shape = false;
                 if (den.second->size() == 1) {
-                    static curv::Atom lastval_key = "_";
+                    static curv::Symbol lastval_key = "_";
                     names[lastval_key] =
                         curv::make<curv::Builtin_Value>(den.second->front());
                     is_shape = display_shape(den.second->front(),

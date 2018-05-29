@@ -99,7 +99,7 @@ Value
 Dot_Expr::eval(Frame& f) const
 {
     Value basev = base_->eval(f);
-    Atom id = selector_.eval(f);
+    Symbol id = selector_.eval(f);
     return basev.at(id, At_Phrase(*base_->source_, &f));
 }
 
@@ -408,7 +408,7 @@ struct_at(const Structure& ref, Value index, const Context& cx)
             (*result)[j++] = struct_at(ref, i, cx);
         return {result};
     }
-    Atom a = index.to<const String>(cx);
+    Symbol a = index.to<const String>(cx);
     return ref.getfield(a, cx);
 }
 Value
@@ -468,7 +468,7 @@ Index_Expr::eval(Frame& f) const
 Value
 Call_Expr::eval(Frame& f) const
 {
-    static Atom callkey = "call";
+    static Symbol callkey = "call";
     Value val = fun_->eval(f);
     Value funv = val;
     for (;;) {
@@ -542,8 +542,8 @@ Spread_Op::bind(Frame& f, Record& r) const
 void
 Assoc::bind(Frame& f, Record& r) const
 {
-    Atom atom = name_.eval(f);
-    r.fields_[atom] = definiens_->eval(f);
+    Symbol symbol = name_.eval(f);
+    r.fields_[symbol] = definiens_->eval(f);
 }
 
 Value
@@ -819,8 +819,8 @@ String_Expr_Base::eval(Frame& f) const
         seg->generate(f, sb);
     return {sb.get_string()};
 }
-Atom
-String_Expr_Base::eval_atom(Frame& f) const
+Symbol
+String_Expr_Base::eval_symbol(Frame& f) const
 {
     String_Builder sb;
     for (auto seg : *this)

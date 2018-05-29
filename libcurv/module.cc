@@ -24,7 +24,7 @@ Module_Base::print(std::ostream& out) const
 }
 
 void
-Module_Base::putfields(Atom_Map<Value>& out) const
+Module_Base::putfields(Symbol_Map<Value>& out) const
 {
     for (auto i : *this)
         out[i.first] = i.second;
@@ -43,7 +43,7 @@ Module_Base::get(slot_t i) const
 }
 
 Value
-Module_Base::getfield(Atom name, const Context& cx) const
+Module_Base::getfield(Symbol name, const Context& cx) const
 {
     auto b = dictionary_->find(name);
     if (b != dictionary_->end())
@@ -52,7 +52,7 @@ Module_Base::getfield(Atom name, const Context& cx) const
 }
 
 bool
-Module_Base::hasfield(Atom name) const
+Module_Base::hasfield(Symbol name) const
 {
     auto b = dictionary_->find(name);
     return (b != dictionary_->end());
@@ -71,7 +71,7 @@ Module_Base::fields() const
 }
 
 void
-Module_Base::each_field(std::function<void(curv::Atom,curv::Value)> visitor) const
+Module_Base::each_field(std::function<void(curv::Symbol,curv::Value)> visitor) const
 {
     for (auto f : *dictionary_)
         visitor(f.first, get(f.second));

@@ -6,7 +6,7 @@
 #define LIBCURV_BUILTIN_H
 
 #include <memory>
-#include <libcurv/atom.h>
+#include <libcurv/symbol.h>
 #include <libcurv/function.h>
 #include <libcurv/value.h>
 
@@ -36,7 +36,7 @@ struct Builtin_Meaning : public Builtin
     }
 };
 
-using Namespace = Atom_Map<Shared<const Builtin>>;
+using Namespace = Symbol_Map<Shared<const Builtin>>;
 
 const Namespace& builtin_namespace();
 

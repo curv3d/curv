@@ -124,7 +124,7 @@ struct Predicate_Pattern : public Pattern
 
     bool match(Value arg, Frame& f) const
     {
-        static Atom callkey = "call";
+        static Symbol callkey = "call";
         Value val = predicate_expr_->eval(f);
         Value funv = val;
         for (;;) {
@@ -255,9 +255,9 @@ struct Record_Pattern : public Pattern
         Field(Shared<Pattern> p, Shared<Phrase> d) : pat_(p), dsrc_(d) {}
         Field() {}
     };
-    Atom_Map<Field> fields_;
+    Symbol_Map<Field> fields_;
 
-    Record_Pattern(Shared<const Phrase> s, Atom_Map<Field> fields)
+    Record_Pattern(Shared<const Phrase> s, Symbol_Map<Field> fields)
     :
         Pattern(s),
         fields_(std::move(fields))
@@ -277,7 +277,7 @@ struct Record_Pattern : public Pattern
         // TODO: clean this up OMG. Need a general Record iterator.
         auto record = value.to<Structure>(valcx);
         auto p = fields_.begin();
-        record->each_field([&](Atom name, Value val)->void {
+        record->each_field([&](Symbol name, Value val)->void {
             while (p != fields_.end()) {
                 int cmp = p->first.cmp(name);
                 if (cmp < 0) {
@@ -327,7 +327,7 @@ struct Record_Pattern : public Pattern
             return false;
         auto p = fields_.begin();
         bool success = true;
-        record->each_field([&](Atom name, Value val)->void {
+        record->each_field([&](Symbol name, Value val)->void {
             while (p != fields_.end()) {
                 int cmp = p->first.cmp(name);
                 if (cmp < 0) {
@@ -371,15 +371,15 @@ struct Record_Pattern : public Pattern
     }
 };
 
-Atom
-atomize(const Phrase& ph, Scope& scope)
+Symbol
+symbolize(const Phrase& ph, Scope& scope)
 {
     if (auto id = dynamic_cast<const Identifier*>(&ph))
-        return id->atom_;
+        return id->symbol_;
     if (auto strph = dynamic_cast<const String_Phrase*>(&ph)) {
         auto val = std_eval(*strph, scope);
         auto str = val.to<const String>(At_Phrase(ph, scope));
-        return Atom{str};
+        return Symbol{str};
     }
     throw Exception(At_Phrase(ph, scope),
         "not an identifier or string literal");
@@ -389,10 +389,10 @@ Shared<Pattern>
 make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
 {
     if (auto id = dynamic_cast<const Identifier*>(&ph)) {
-        if (id->atom_ == Atom{"_"})
+        if (id->symbol_ == Symbol{"_"})
             return make<Skip_Pattern>(share(ph));
         else {
-            slot_t slot = scope.add_binding(id->atom_, ph, unitno);
+            slot_t slot = scope.add_binding(id->symbol_, ph, unitno);
             return make<Id_Pattern>(share(ph), slot);
         }
     }
@@ -421,16 +421,16 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
         return make<List_Pattern>(share(ph), items);
     }
     if (auto braces = dynamic_cast<const Brace_Phrase*>(&ph)) {
-        Atom_Map<Record_Pattern::Field> fields;
+        Symbol_Map<Record_Pattern::Field> fields;
         each_item(*braces->body_, [&](Phrase& item)->void {
             if (auto id = dynamic_cast<const Identifier*>(&item)) {
                 auto pat = make_pattern(*id, scope, unitno);
-                fields[id->atom_] = {pat, nullptr};
+                fields[id->symbol_] = {pat, nullptr};
                 return;
             }
             if (auto bin = dynamic_cast<const Binary_Phrase*>(&item)) {
                 if (bin->op_.kind_ == Token::k_colon) {
-                    Atom name = atomize(*bin->left_, scope);
+                    Symbol name = symbolize(*bin->left_, scope);
                     Shared<Pattern> pat;
                     Shared<Phrase> dfl_src = nullptr;
                     if (auto def = dynamic_cast
@@ -455,7 +455,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
                     throw Exception(At_Phrase(*def->left_, scope),
                         "not an identifier");
                 auto pat = make_pattern(*id, scope, unitno);
-                fields[id->atom_] = {pat, def->right_};
+                fields[id->symbol_] = {pat, def->right_};
                 return;
             }
             throw Exception(At_Phrase(item, scope), "not a field pattern");
