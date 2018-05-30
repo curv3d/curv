@@ -215,6 +215,8 @@ TEST(curv, eval)
     SUCCESS("\"abc\"", "\"abc\"");
     SUCCESS("[1,2,3]", "[1,2,3]");
     SUCCESS("{x:1}", "{x:1}");
+    SUCCESS("x->x+1", "<function>");
+    SUCCESS("let f x = x + 1 in f", "f");
 
     // builtins
     SUCCESS("pi",  "3.141592653589793");
