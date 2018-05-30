@@ -73,7 +73,7 @@ struct Metafunction : public Meaning
 ///     For example, `2+2`.
 ///  2. A Generator is executed to produce a sequence of zero or more values
 ///     using `generate`. (Expressions and Actions are also generators.)
-///     For example, `for(i=1..10)i^2`.
+///     For example, `for (i in 1..10) i^2`.
 ///  3. A Binder is executed to bind zero or more names to values
 ///     in a record value that is under construction, using ``bind``.
 ///     For example, `x : 42`.
