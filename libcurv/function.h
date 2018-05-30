@@ -101,6 +101,14 @@ struct Lambda : public Ref_Value
     Shared<Operation> expr_;
     slot_t nslots_; // size of call frame
 
+    // optional name of function
+    Symbol name_{};
+
+    // Suppose this function is the result of partial application of a named
+    // function. Then this is the # of arguments that were applied to get here,
+    // and `name_` is the name of the base function.
+    int num_prior_arguments_ = 0;
+
     Lambda(
         Shared<const Pattern> pattern,
         Shared<Operation> expr,
@@ -144,7 +152,10 @@ struct Closure : public Function
         pattern_(lambda.pattern_),
         expr_(lambda.expr_),
         nonlocals_(share(const_cast<Module&>(nonlocals)))
-    {}
+    {
+        name_ = lambda.name_;
+        num_prior_arguments_ = lambda.num_prior_arguments_;
+    }
 
     virtual Value call(Value, Frame&) override;
     virtual Value try_call(Value, Frame&) override;

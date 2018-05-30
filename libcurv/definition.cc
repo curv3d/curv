@@ -43,6 +43,7 @@ Function_Definition::analyse(Environ& env)
     auto lambda = cast<Lambda_Expr>(expr);
     assert(lambda != nullptr);
     lambda_ = make<Lambda>(lambda->pattern_, lambda->body_, lambda->nslots_);
+    lambda_->name_ = name_->symbol_;
 }
 Shared<Operation>
 Data_Definition::make_setter(slot_t module_slot)
