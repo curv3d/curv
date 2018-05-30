@@ -38,36 +38,9 @@ Program::compile(const Namespace* names, Frame* parent_frame)
 }
 
 const Phrase&
-Program::value_phrase()
+Program::nub()
 {
-    Shared<const Phrase> ph = phrase_;
-    for (;;) {
-        if (auto pr = cast<const Program_Phrase>(ph)) {
-            ph = pr->body_;
-            continue;
-        }
-        if (auto let = cast<const Let_Phrase>(ph)) {
-            ph = let->body_;
-            continue;
-        }
-        if (auto bin = cast<const Binary_Phrase>(ph)) {
-            if (bin->op_.kind_ == Token::k_where) {
-                ph = bin->right_;
-                continue;
-            }
-            break;
-        }
-        if (auto p = cast<const Paren_Phrase>(ph)) {
-            if (isa<Empty_Phrase>(p->body_))
-                break;
-            if (isa<Comma_Phrase>(p->body_))
-                break;
-            ph = p->body_;
-            continue;
-        }
-        break;
-    }
-    return *ph;
+    return *nub_phrase(phrase_);
 }
 
 Value

@@ -39,7 +39,7 @@ struct Program
         const Namespace* names = nullptr,
         Frame *parent_frame = nullptr);
 
-    const Phrase& value_phrase();
+    const Phrase& nub();
 
     std::pair<Shared<Module>, Shared<List>> denotes();
 

@@ -569,5 +569,10 @@ struct Let_Phrase : public Phrase
 /// This function iterates over each constituent phrase.
 void each_item(Phrase& phrase, std::function<void(Phrase&)> func);
 
+/// Strip away let clauses, where clauses and redundant parentheses.
+/// Reduce the phrase to a smaller phrase with the same meaning, for use
+/// in error messages.
+Shared<const Phrase> nub_phrase(Shared<const Phrase>);
+
 } // namespace curv
 #endif // header guard

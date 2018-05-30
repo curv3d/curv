@@ -251,7 +251,7 @@ interactive_mode(curv::System& sys)
                     names[lastval_key] =
                         curv::make<curv::Builtin_Value>(den.second->front());
                     is_shape = display_shape(den.second->front(),
-                        sys, curv::At_Phrase(prog.value_phrase(), nullptr));
+                        sys, curv::At_Phrase(prog.nub(), nullptr));
                 }
                 if (!is_shape) {
                     for (auto e : *den.second)
@@ -288,7 +288,7 @@ live_mode(curv::System& sys, const char* editor, const char* filename)
                 prog.compile();
                 auto value = prog.eval();
                 if (display_shape(value,
-                    sys, curv::At_Phrase(prog.value_phrase(), nullptr)))
+                    sys, curv::At_Phrase(prog.nub(), nullptr)))
                 {
                 } else {
                     std::cout << value << "\n";
@@ -498,7 +498,7 @@ main(int argc, char** argv)
         if (exporter == nullptr) {
             if (!display_shape(value,
                 sys,
-                curv::At_Phrase(prog.value_phrase(), nullptr),
+                curv::At_Phrase(prog.nub(), nullptr),
                 true))
             {
                 std::cout << value << "\n";
@@ -506,7 +506,7 @@ main(int argc, char** argv)
         } else {
             exporter(value,
                 sys,
-                curv::At_Phrase(prog.value_phrase(), nullptr),
+                curv::At_Phrase(prog.nub(), nullptr),
                 eparams,
                 std::cout);
         }
