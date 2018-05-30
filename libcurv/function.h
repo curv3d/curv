@@ -56,20 +56,21 @@ struct Function : public Ref_Value
     static const char name[];
 };
 
-/// A polyadic function value. Only used for builtin functions.
-/// It has a single argument, which is a fixed size list of count `nargs`
-/// if `nargs` != 1.
+/// A legacy function value. Only used for builtin functions.
+/// Legacy functions with 0, 1 and 2 arguments are called like this:
+/// f(), f(x), f(x,y). They have a single argument,
+/// which is a fixed size list of count `nargs` if `nargs` != 1.
 /// Within `call(Frame& args)`, use `args[i]` to fetch the i'th argument.
-struct Polyadic_Function : public Function
+struct Legacy_Function : public Function
 {
     unsigned nargs_;
 
-    Polyadic_Function(unsigned nargs, const char* name)
+    Legacy_Function(unsigned nargs, const char* name)
     :
         Function(nargs, name),
         nargs_(nargs)
     {}
-    Polyadic_Function(unsigned nargs, unsigned nslots)
+    Legacy_Function(unsigned nargs, unsigned nslots)
     :
         Function(nslots),
         nargs_(nargs)

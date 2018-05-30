@@ -34,74 +34,74 @@ Builtin_Value::to_meaning(const Identifier& id) const
     return make<Constant>(share(id), value_);
 }
 
-struct Is_Null_Function : public Polyadic_Function
+struct Is_Null_Function : public Legacy_Function
 {
     static const char* name() { return "is_null"; }
-    Is_Null_Function() : Polyadic_Function(1,name()) {}
+    Is_Null_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {args[0].is_null()};
     }
 };
-struct Is_Bool_Function : public Polyadic_Function
+struct Is_Bool_Function : public Legacy_Function
 {
     static const char* name() { return "is_bool"; }
-    Is_Bool_Function() : Polyadic_Function(1,name()) {}
+    Is_Bool_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {args[0].is_bool()};
     }
 };
-struct Is_Num_Function : public Polyadic_Function
+struct Is_Num_Function : public Legacy_Function
 {
     static const char* name() { return "is_num"; }
-    Is_Num_Function() : Polyadic_Function(1,name()) {}
+    Is_Num_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {args[0].is_num()};
     }
 };
-struct Is_String_Function : public Polyadic_Function
+struct Is_String_Function : public Legacy_Function
 {
     static const char* name() { return "is_string"; }
-    Is_String_Function() : Polyadic_Function(1,name()) {}
+    Is_String_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {args[0].dycast<String>() != nullptr};
     }
 };
-struct Is_List_Function : public Polyadic_Function
+struct Is_List_Function : public Legacy_Function
 {
     static const char* name() { return "is_list"; }
-    Is_List_Function() : Polyadic_Function(1,name()) {}
+    Is_List_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {args[0].dycast<List>() != nullptr};
     }
 };
-struct Is_Record_Function : public Polyadic_Function
+struct Is_Record_Function : public Legacy_Function
 {
     static const char* name() { return "is_record"; }
-    Is_Record_Function() : Polyadic_Function(1,name()) {}
+    Is_Record_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {args[0].dycast<Structure>() != nullptr};
     }
 };
-struct Is_Fun_Function : public Polyadic_Function
+struct Is_Fun_Function : public Legacy_Function
 {
     static const char* name() { return "is_fun"; }
-    Is_Fun_Function() : Polyadic_Function(1,name()) {}
+    Is_Fun_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {args[0].dycast<Function>() != nullptr};
     }
 };
 
-struct Bit_Function : public Polyadic_Function
+struct Bit_Function : public Legacy_Function
 {
     static const char* name() { return "bit"; }
-    Bit_Function() : Polyadic_Function(1,name()) {}
+    Bit_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
         return {double(args[0].to_bool(At_Arg(args)))};
@@ -118,10 +118,10 @@ struct Bit_Function : public Polyadic_Function
     }
 };
 
-struct Sqrt_Function : public Polyadic_Function
+struct Sqrt_Function : public Legacy_Function
 {
     static const char* name() { return "sqrt"; }
-    Sqrt_Function() : Polyadic_Function(1,name()) {}
+    Sqrt_Function() : Legacy_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return sqrt(x); }
         static Shared<const String> callstr(Value x) {
@@ -139,10 +139,10 @@ struct Sqrt_Function : public Polyadic_Function
     }
 };
 // log(x) is the natural logarithm of x
-struct Log_Function : public Polyadic_Function
+struct Log_Function : public Legacy_Function
 {
     static const char* name() { return "log"; }
-    Log_Function() : Polyadic_Function(1,name()) {}
+    Log_Function() : Legacy_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return log(x); }
         static Shared<const String> callstr(Value x) {
@@ -159,10 +159,10 @@ struct Log_Function : public Polyadic_Function
         return gl_call_unary_numeric(f, "log");
     }
 };
-struct Abs_Function : public Polyadic_Function
+struct Abs_Function : public Legacy_Function
 {
     static const char* name() { return "abs"; }
-    Abs_Function() : Polyadic_Function(1,name()) {}
+    Abs_Function() : Legacy_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return abs(x); }
         static Shared<const String> callstr(Value x) {
@@ -179,10 +179,10 @@ struct Abs_Function : public Polyadic_Function
         return gl_call_unary_numeric(f, "abs");
     }
 };
-struct Floor_Function : public Polyadic_Function
+struct Floor_Function : public Legacy_Function
 {
     static const char* name() { return "floor"; }
-    Floor_Function() : Polyadic_Function(1,name()) {}
+    Floor_Function() : Legacy_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return floor(x); }
         static Shared<const String> callstr(Value x) {
@@ -202,10 +202,10 @@ struct Floor_Function : public Polyadic_Function
 // round(x) -- round x to nearest integer.
 // CPU: in case of tie, round to even.
 // GPU: in case of tie, it's GPU/driver dependent.
-struct Round_Function : public Polyadic_Function
+struct Round_Function : public Legacy_Function
 {
     static const char* name() { return "round"; }
-    Round_Function() : Polyadic_Function(1,name()) {}
+    Round_Function() : Legacy_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return rint(x); }
         static Shared<const String> callstr(Value x) {
@@ -222,10 +222,10 @@ struct Round_Function : public Polyadic_Function
         return gl_call_unary_numeric(f, "round");
     }
 };
-struct Sin_Function : public Polyadic_Function
+struct Sin_Function : public Legacy_Function
 {
     static const char* name() { return "sin"; }
-    Sin_Function() : Polyadic_Function(1,name()) {}
+    Sin_Function() : Legacy_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return sin(x); }
         static Shared<const String> callstr(Value x) {
@@ -242,10 +242,10 @@ struct Sin_Function : public Polyadic_Function
         return gl_call_unary_numeric(f, "sin");
     }
 };
-struct Asin_Function : public Polyadic_Function
+struct Asin_Function : public Legacy_Function
 {
     static const char* name() { return "asin"; }
-    Asin_Function() : Polyadic_Function(1,name()) {}
+    Asin_Function() : Legacy_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return asin(x); }
         static Shared<const String> callstr(Value x) {
@@ -262,10 +262,10 @@ struct Asin_Function : public Polyadic_Function
         return gl_call_unary_numeric(f, "asin");
     }
 };
-struct Cos_Function : public Polyadic_Function
+struct Cos_Function : public Legacy_Function
 {
     static const char* name() { return "cos"; }
-    Cos_Function() : Polyadic_Function(1,name()) {}
+    Cos_Function() : Legacy_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return cos(x); }
         static Shared<const String> callstr(Value x) {
@@ -282,10 +282,10 @@ struct Cos_Function : public Polyadic_Function
         return gl_call_unary_numeric(f, "cos");
     }
 };
-struct Acos_Function : public Polyadic_Function
+struct Acos_Function : public Legacy_Function
 {
     static const char* name() { return "acos"; }
-    Acos_Function() : Polyadic_Function(1,name()) {}
+    Acos_Function() : Legacy_Function(1,name()) {}
     struct Scalar_Op {
         static double f(double x) { return acos(x); }
         static Shared<const String> callstr(Value x) {
@@ -302,10 +302,10 @@ struct Acos_Function : public Polyadic_Function
         return gl_call_unary_numeric(f, "acos");
     }
 };
-struct Atan2_Function : public Polyadic_Function
+struct Atan2_Function : public Legacy_Function
 {
     static const char* name() { return "atan2"; }
-    Atan2_Function() : Polyadic_Function(2,name()) {}
+    Atan2_Function() : Legacy_Function(2,name()) {}
 
     struct Scalar_Op {
         static double f(double x, double y) { return atan2(x, y); }
@@ -408,10 +408,10 @@ GL_Value gl_minmax(const char* name, Operation& argx, GL_Frame& f)
     }
 }
 
-struct Max_Function : public Polyadic_Function
+struct Max_Function : public Legacy_Function
 {
     static const char* name() { return "max"; }
-    Max_Function() : Polyadic_Function(1,name()) {}
+    Max_Function() : Legacy_Function(1,name()) {}
 
     struct Scalar_Op {
         static double f(double x, double y) {
@@ -437,10 +437,10 @@ struct Max_Function : public Polyadic_Function
     }
 };
 
-struct Min_Function : public Polyadic_Function
+struct Min_Function : public Legacy_Function
 {
     static const char* name() { return "min"; }
-    Min_Function() : Polyadic_Function(1,name()) {}
+    Min_Function() : Legacy_Function(1,name()) {}
 
     struct Scalar_Op {
         static double f(double x, double y) {
@@ -468,10 +468,10 @@ struct Min_Function : public Polyadic_Function
 
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
-struct Dot_Function : public Polyadic_Function
+struct Dot_Function : public Legacy_Function
 {
     static const char* name() { return "dot"; }
-    Dot_Function() : Polyadic_Function(2,name()) {}
+    Dot_Function() : Legacy_Function(2,name()) {}
     Value call(Frame& args) override
     {
         return dot(args[0], args[1], At_Frame(&args));
@@ -490,10 +490,10 @@ struct Dot_Function : public Polyadic_Function
     }
 };
 
-struct Mag_Function : public Polyadic_Function
+struct Mag_Function : public Legacy_Function
 {
     static const char* name() { return "mag"; }
-    Mag_Function() : Polyadic_Function(1,name()) {}
+    Mag_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
         // TODO: use hypot() or BLAS DNRM2 or Eigen stableNorm/blueNorm?
@@ -520,10 +520,10 @@ struct Mag_Function : public Polyadic_Function
     }
 };
 
-struct Count_Function : public Polyadic_Function
+struct Count_Function : public Legacy_Function
 {
     static const char* name() { return "count"; }
-    Count_Function() : Polyadic_Function(1,name()) {}
+    Count_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
         if (auto list = args[0].dycast<const List>())
@@ -533,10 +533,10 @@ struct Count_Function : public Polyadic_Function
         throw Exception(At_Arg(args), "not a list or string");
     }
 };
-struct Fields_Function : public Polyadic_Function
+struct Fields_Function : public Legacy_Function
 {
     static const char* name() { return "fields"; }
-    Fields_Function() : Polyadic_Function(1,name()) {}
+    Fields_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
         if (auto structure = args[0].dycast<const Structure>())
@@ -545,10 +545,10 @@ struct Fields_Function : public Polyadic_Function
     }
 };
 
-struct Strcat_Function : public Polyadic_Function
+struct Strcat_Function : public Legacy_Function
 {
     static const char* name() { return "strcat"; }
-    Strcat_Function() : Polyadic_Function(1,name()) {}
+    Strcat_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
         if (auto list = args[0].dycast<const List>()) {
@@ -564,10 +564,10 @@ struct Strcat_Function : public Polyadic_Function
         throw Exception(At_Arg(args), "not a list");
     }
 };
-struct Repr_Function : public Polyadic_Function
+struct Repr_Function : public Legacy_Function
 {
     static const char* name() { return "repr"; }
-    Repr_Function() : Polyadic_Function(1,name()) {}
+    Repr_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
         String_Builder sb;
@@ -575,10 +575,10 @@ struct Repr_Function : public Polyadic_Function
         return {sb.get_string()};
     }
 };
-struct Decode_Function : public Polyadic_Function
+struct Decode_Function : public Legacy_Function
 {
     static const char* name() { return "decode"; }
-    Decode_Function() : Polyadic_Function(1,name()) {}
+    Decode_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& f) override
     {
         String_Builder sb;
@@ -589,10 +589,10 @@ struct Decode_Function : public Polyadic_Function
         return {sb.get_string()};
     }
 };
-struct Encode_Function : public Polyadic_Function
+struct Encode_Function : public Legacy_Function
 {
     static const char* name() { return "encode"; }
-    Encode_Function() : Polyadic_Function(1,name()) {}
+    Encode_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& f) override
     {
         List_Builder lb;
@@ -604,10 +604,10 @@ struct Encode_Function : public Polyadic_Function
     }
 };
 
-struct Match_Function : public Polyadic_Function
+struct Match_Function : public Legacy_Function
 {
     static const char* name() { return "match"; }
-    Match_Function() : Polyadic_Function(1,name()) {}
+    Match_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& f) override
     {
         At_Arg ctx0(f);
@@ -828,10 +828,8 @@ struct Assert_Metafunction : public Metafunction
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        auto args = ph.analyse_args(env);
-        if (args.size() != 1)
-            throw Exception(At_Phrase(ph, env), "assert: expecting 1 argument");
-        return make<Assert_Action>(share(ph), args.front());
+        auto arg = analyse_op(*ph.arg_, env);
+        return make<Assert_Action>(share(ph), arg);
     }
 };
 

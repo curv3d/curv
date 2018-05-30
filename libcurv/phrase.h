@@ -389,26 +389,7 @@ struct Call_Phrase : public Phrase
             return function_->location().ending_at(arg_->location().token());
     }
     virtual Shared<Meaning> analyse(Environ&) const override;
-    std::vector<Shared<Operation>> analyse_args(Environ& env) const;
 };
-
-/// Iterate over each argument in a function call argument list (Call_Phrase)
-/// or each parameter in a function formal parameter list (Lambda_Phrase).
-inline void
-each_argument(const Phrase& args, std::function<void(const Phrase&)> func)
-{
-    if (auto parens = dynamic_cast<const Paren_Phrase*>(&args)) {
-        if (dynamic_cast<const Empty_Phrase*>(&*parens->body_))
-            return;
-        if (auto commas = dynamic_cast<const Comma_Phrase*>(&*parens->body_)) {
-            for (auto a : commas->args_)
-                func(*a.expr_);
-        } else {
-            func(*parens->body_);
-        }
-    } else
-        func(args);
-}
 
 struct If_Phrase : public Phrase
 {

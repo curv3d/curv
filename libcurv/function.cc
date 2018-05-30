@@ -29,7 +29,7 @@ const
 }
 
 Value
-Polyadic_Function::call(Value arg, Frame& f)
+Legacy_Function::call(Value arg, Frame& f)
 {
     if (nargs_ == 1) {
         f[0] = arg;
@@ -47,7 +47,7 @@ Polyadic_Function::call(Value arg, Frame& f)
 }
 
 Value
-Polyadic_Function::try_call(Value arg, Frame& f)
+Legacy_Function::try_call(Value arg, Frame& f)
 {
     if (nargs_ == 1) {
         f[0] = arg;
@@ -64,7 +64,7 @@ Polyadic_Function::try_call(Value arg, Frame& f)
 }
 
 GL_Value
-Polyadic_Function::gl_call_expr(
+Legacy_Function::gl_call_expr(
     Operation& arg, const Call_Phrase* call_phrase, GL_Frame& f)
 const
 {
@@ -94,7 +94,7 @@ const
 }
 
 GL_Value
-Polyadic_Function::gl_call(GL_Frame& f) const
+Legacy_Function::gl_call(GL_Frame& f) const
 {
     throw Exception(At_GL_Frame(&f),
         "this function does not support the Geometry Compiler");

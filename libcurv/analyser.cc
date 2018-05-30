@@ -703,16 +703,6 @@ Operation::call(const Call_Phrase& src, Environ& env)
         analyse_op(*src.arg_, env));
 }
 
-std::vector<Shared<Operation>>
-Call_Phrase::analyse_args(Environ& env) const
-{
-    std::vector<Shared<Operation>> argv;
-    each_argument(*arg_, [&](const Phrase& p)->void {
-        argv.push_back(analyse_op(p, env));
-    });
-    return argv;
-}
-
 Shared<Meaning>
 Program_Phrase::analyse(Environ& env) const
 {
