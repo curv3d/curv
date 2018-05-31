@@ -777,11 +777,14 @@ Range_Expr::eval(Frame& f) const
 Value
 Lambda_Expr::eval(Frame& f) const
 {
-    return Value{make<Closure>(
+    auto c = make<Closure>(
         pattern_,
         body_,
         nonlocals_->eval_module(f),
-        nslots_)};
+        nslots_);
+    c->name_ = name_;
+    c->argpos_ = argpos_;
+    return Value{c};
 }
 
 void

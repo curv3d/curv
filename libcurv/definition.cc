@@ -42,6 +42,13 @@ Function_Definition::analyse(Environ& env)
     auto expr = analyse_op(*lambda_phrase_, env);
     auto lambda = cast<Lambda_Expr>(expr);
     assert(lambda != nullptr);
+    int argpos = 0;
+    auto lam = lambda;
+    while (lam != nullptr) {
+        lam->name_ = name_->symbol_;
+        lam->argpos_ = argpos++;
+        lam = cast<Lambda_Expr>(lam->body_);
+    }
     lambda_ = make<Lambda>(lambda->pattern_, lambda->body_, lambda->nslots_);
     lambda_->name_ = name_->symbol_;
 }

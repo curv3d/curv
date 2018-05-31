@@ -203,7 +203,10 @@ TEST(curv, eval)
 {
   int r = reps();
   for (int i = 0; i < r; ++i) {
-    // constructors
+    // data constructors
+    SUCCESS("null", "null");
+    SUCCESS("false", "false");
+    SUCCESS("true", "true");
     SUCCESS("42.7", "42.7");
     SUCCESS(".1", "0.1");
     SUCCESS("1.", "1");
@@ -215,16 +218,17 @@ TEST(curv, eval)
     SUCCESS("\"abc\"", "\"abc\"");
     SUCCESS("[1,2,3]", "[1,2,3]");
     SUCCESS("{x:1}", "{x:1}");
+    SUCCESS("{x=1}", "{x:1}");
+
+    // function constructors
     SUCCESS("x->x+1", "<function>");
     SUCCESS("let f x = x + 1 in f", "f");
+    SUCCESS("let f x y = x + y in f 1", "f _");
 
     // builtins
     SUCCESS("pi",  "3.141592653589793");
     SUCCESS("tau", "6.283185307179586");
     SUCCESS("inf", "inf");
-    SUCCESS("null", "null");
-    SUCCESS("false", "false");
-    SUCCESS("true", "true");
     SUCCESS("sqrt", "sqrt");
 
     // runtime operations

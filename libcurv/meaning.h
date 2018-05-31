@@ -793,6 +793,8 @@ struct Lambda_Expr : public Just_Expression
     Shared<Operation> body_;
     Shared<Module_Expr> nonlocals_;
     slot_t nslots_;
+    Symbol name_{}; // may be set by Function_Definition::analyse
+    int argpos_ = 0; // may be set by Function_Definition::analyse
 
     Lambda_Expr(
         Shared<const Phrase> source,
