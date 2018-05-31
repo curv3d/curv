@@ -14,7 +14,7 @@ const char Function::name[] = "function";
 void
 Function::print(std::ostream& out) const
 {
-    if (!name_.empty() && num_prior_arguments_ == 0)
+    if (!name_.empty() && argpos_ == 0)
         out << name_;
     else
         out << "<function>";

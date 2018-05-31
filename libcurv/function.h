@@ -24,7 +24,7 @@ struct Function : public Ref_Value
     // Suppose this function is the result of partial application of a named
     // function. Then this is the # of arguments that were applied to get here,
     // and `name_` is the name of the base function.
-    int num_prior_arguments_ = 0;
+    int argpos_ = 0;
 
     Function(slot_t nslots)
     :
@@ -108,7 +108,7 @@ struct Lambda : public Ref_Value
     // Suppose this function is the result of partial application of a named
     // function. Then this is the # of arguments that were applied to get here,
     // and `name_` is the name of the base function.
-    int num_prior_arguments_ = 0;
+    int argpos_ = 0;
 
     Lambda(
         Shared<const Pattern> pattern,
@@ -155,7 +155,7 @@ struct Closure : public Function
         nonlocals_(share(const_cast<Module&>(nonlocals)))
     {
         name_ = lambda.name_;
-        num_prior_arguments_ = lambda.num_prior_arguments_;
+        argpos_ = lambda.argpos_;
     }
 
     virtual Value call(Value, Frame&) override;
