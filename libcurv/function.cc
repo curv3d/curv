@@ -43,8 +43,8 @@ Legacy_Function::call(Value arg, Frame& f)
             f[i] = (*list)[i];
         return call(f);
     } else {
-        throw Exception(At_Phrase(*f.call_phrase_->arg_, &f),
-            stringify("function call argument is not a list of length ",nargs_));
+        throw Exception(At_Arg(*this, f),
+            stringify("not a list of length ",nargs_));
     }
 }
 
@@ -106,10 +106,7 @@ Value
 Closure::call(Value arg, Frame& f)
 {
     f.nonlocals_ = &*nonlocals_;
-    if (f.call_phrase_ != nullptr)
-        pattern_->exec(f.array_, arg, At_Phrase(*f.call_phrase_->arg_,&f), f);
-    else
-        pattern_->exec(f.array_, arg, {}, f);
+    pattern_->exec(f.array_, arg, At_Arg(*this, f), f);
     return expr_->eval(f);
 }
 
@@ -157,8 +154,8 @@ Piecewise_Function::call(Value val, Frame& f)
         if (result != missing)
             return result;
     }
-    throw Exception(At_Phrase(*f.call_phrase_->arg_, &f), stringify(
-        "argument ",val," has no matching pattern in switch"));
+    throw Exception(At_Arg(*this, f), stringify(
+        val," has no matching pattern"));
 }
 Value
 Piecewise_Function::try_call(Value val, Frame& f)

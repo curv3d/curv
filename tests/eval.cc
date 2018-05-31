@@ -255,7 +255,7 @@ TEST(curv, eval)
         "     ^--");
     SUCCESS("count()", "0");
     FAILALL("count 0",
-        "not a list or string\n"
+        "argument #1 of count: not a list or string\n"
         "line 1(column 7)\n"
         "  count 0\n"
         "        ^");
@@ -318,7 +318,7 @@ TEST(curv, eval)
         "        ^     ");
     SUCCESS("let f=x->(let a=x+1 in a) in f 2", "3");
     FAILMSG("let f(x,y)=x in f()",
-        "list has wrong size: expected 2, got 0");
+        "argument #1 of f: list has wrong size: expected 2, got 0");
     SUCCESS("let add=(x,y)->x+y in add(1,2)", "3");
     SUCCESS("let add=x->y->x+y in add 1 2", "3");
     SUCCESS("let add x y = x+y in add 1 2", "3");

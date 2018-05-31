@@ -14,6 +14,7 @@ namespace curv {
 struct Phrase;
 struct Environ;
 struct Scanner;
+struct Function;
 
 /// A Context describes the source code Location and call stack
 /// of a compile-time or run time error.
@@ -67,6 +68,22 @@ struct At_Phrase : public Context
     At_Phrase(const Phrase& phrase, Environ& env);
 
     virtual void get_locations(std::list<Location>& locs) const override;
+};
+
+// Bad argument to a function call.
+struct At_Arg : public Context
+{
+    Function& fun_;
+    Frame& eval_frame_;
+
+    At_Arg(Function& fn, Frame& fr)
+    :
+        fun_(fn),
+        eval_frame_(fr)
+    {}
+
+    void get_locations(std::list<Location>& locs) const override;
+    virtual Shared<const String> rewrite_message(Shared<const String>) const override;
 };
 
 struct At_Field : public Context

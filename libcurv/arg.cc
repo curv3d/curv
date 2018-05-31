@@ -9,20 +9,6 @@
 
 namespace curv {
 
-void At_Arg::get_locations(std::list<Location>& locs) const
-{
-    assert(eval_frame_.call_phrase_ != nullptr);
-    auto arg = eval_frame_.call_phrase_->arg_;
-    locs.push_back(arg->location());
-
-    // We only dump the stack starting at the parent call frame,
-    // for cosmetic reasons. It looks stupid to underline one of the
-    // arguments in a function call, and on the next line,
-    // underline the same entire function call.
-    get_frame_locations(eval_frame_.parent_frame_, locs);
-
-}
-
 // TODO: Most of the following functions are redundant with the Value API.
 
 bool arg_to_bool(Value val, const Context& ctx)

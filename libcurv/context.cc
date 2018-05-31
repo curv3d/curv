@@ -69,6 +69,30 @@ At_Phrase::get_locations(std::list<Location>& locs) const
     get_frame_locations(frame_, locs);
 }
 
+void
+At_Arg::get_locations(std::list<Location>& locs) const
+{
+    if (eval_frame_.call_phrase_ != nullptr) {
+        auto arg = eval_frame_.call_phrase_->arg_;
+        locs.push_back(arg->location());
+        // We only dump the stack starting at the parent call frame,
+        // for cosmetic reasons. It looks stupid to underline one of the
+        // arguments in a function call, and on the next line,
+        // underline the same entire function call.
+        get_frame_locations(eval_frame_.parent_frame_, locs);
+    } else {
+        get_frame_locations(&eval_frame_, locs);
+    }
+}
+
+Shared<const String>
+At_Arg::rewrite_message(Shared<const String> msg) const
+{
+    if (fun_.name_.empty())
+        return stringify("function argument: ",msg);
+    return stringify("argument #",fun_.argpos_+1," of ",fun_.name_,": ",msg);
+}
+
 At_Field::At_Field(const char* fieldname, const Context& parent)
 : fieldname_(fieldname), parent_(parent)
 {}

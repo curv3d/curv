@@ -28,9 +28,9 @@ The goal is to improve the user experience and get better error messages.
   annotated, either explicitly or by type inference.
 * Internally, we need a mechanism for using a function's annotations to generate
   good error messages when an argument fails to pattern match.
-  Arg_Context contains the function name and argument position.
+  At_Arg (Context class) contains the function name and argument position.
 
-How does Arg_Context know the function name and argument position?
+How does At_Arg know the function name and argument position?
  1. It contains the frame, which contains the call_phrase.
     If function 'f' has a function argument 'g', the name 'g' is used
     in an error message for a bad call to 'g' within the body of 'f'.

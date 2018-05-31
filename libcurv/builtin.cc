@@ -104,7 +104,7 @@ struct Bit_Function : public Legacy_Function
     Bit_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
-        return {double(args[0].to_bool(At_Arg(args)))};
+        return {double(args[0].to_bool(At_Arg(*this, args)))};
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -317,7 +317,7 @@ struct Atan2_Function : public Legacy_Function
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(args[0], args[1], At_Arg(args));
+        return array_op.op(args[0], args[1], At_Arg(*this, args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -428,7 +428,7 @@ struct Max_Function : public Legacy_Function
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.reduce(-INFINITY, args[0], At_Arg(args));
+        return array_op.reduce(-INFINITY, args[0], At_Arg(*this, args));
     }
     GL_Value gl_call_expr(Operation& argx, const Call_Phrase*, GL_Frame& f)
     const override
@@ -457,7 +457,7 @@ struct Min_Function : public Legacy_Function
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.reduce(INFINITY, args[0], At_Arg(args));
+        return array_op.reduce(INFINITY, args[0], At_Arg(*this, args));
     }
     GL_Value gl_call_expr(Operation& argx, const Call_Phrase*, GL_Frame& f)
     const override
@@ -499,7 +499,7 @@ struct Mag_Function : public Legacy_Function
         // TODO: use hypot() or BLAS DNRM2 or Eigen stableNorm/blueNorm?
         // Avoids overflow/underflow due to squaring of large/small values.
         // Slower.  https://forum.kde.org/viewtopic.php?f=74&t=62402
-        auto& list = arg_to_list(args[0], At_Arg(args));
+        auto& list = arg_to_list(args[0], At_Arg(*this, args));
         double sum = 0.0;
         for (auto val : list) {
             double x = val.get_num_or_nan();
@@ -507,7 +507,7 @@ struct Mag_Function : public Legacy_Function
         }
         if (sum == sum)
             return {sqrt(sum)};
-        throw Exception(At_Arg(args), "mag: domain error");
+        throw Exception(At_Arg(*this, args), "domain error");
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -530,7 +530,7 @@ struct Count_Function : public Legacy_Function
             return {double(list->size())};
         if (auto string = args[0].dycast<const String>())
             return {double(string->size())};
-        throw Exception(At_Arg(args), "not a list or string");
+        throw Exception(At_Arg(*this, args), "not a list or string");
     }
 };
 struct Fields_Function : public Legacy_Function
@@ -541,7 +541,7 @@ struct Fields_Function : public Legacy_Function
     {
         if (auto structure = args[0].dycast<const Structure>())
             return {structure->fields()};
-        throw Exception(At_Arg(args), "not a record");
+        throw Exception(At_Arg(*this, args), "not a record");
     }
 };
 
@@ -561,7 +561,7 @@ struct Strcat_Function : public Legacy_Function
             }
             return {sb.get_string()};
         }
-        throw Exception(At_Arg(args), "not a list");
+        throw Exception(At_Arg(*this, args), "not a list");
     }
 };
 struct Repr_Function : public Legacy_Function
@@ -582,7 +582,7 @@ struct Decode_Function : public Legacy_Function
     Value call(Frame& f) override
     {
         String_Builder sb;
-        At_Arg cx(f);
+        At_Arg cx(*this, f);
         auto list = f[0].to<List>(cx);
         for (size_t i = 0; i < list->size(); ++i)
             sb << (char)arg_to_int((*list)[i], 1, 127, At_Index(i,cx));
@@ -596,7 +596,7 @@ struct Encode_Function : public Legacy_Function
     Value call(Frame& f) override
     {
         List_Builder lb;
-        At_Arg cx(f);
+        At_Arg cx(*this, f);
         auto str = f[0].to<String>(cx);
         for (size_t i = 0; i < str->size(); ++i)
             lb.push_back({(double)(int)str->at(i)});
@@ -610,7 +610,7 @@ struct Match_Function : public Legacy_Function
     Match_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& f) override
     {
-        At_Arg ctx0(f);
+        At_Arg ctx0(*this, f);
         auto list = f[0].to<List>(ctx0);
         std::vector<Shared<Function>> cases;
         for (size_t i = 0; i < list->size(); ++i)
