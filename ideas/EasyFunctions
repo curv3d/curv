@@ -1,0 +1,89 @@
+* Better error messages for bad function calls.
+* In CLI, `help <function>` prints usage info for a function.
+
+Better error messages:
+* Clang Expressive Diagnostics: https://clang.llvm.org/diagnostics.html
+* Elm: http://elm-lang.org/blog/compiler-errors-for-humans
+* http://elm-lang.org/blog/compilers-as-assistants
+
+'f a b c' is a function call with 3 arguments.
+Error message mentions name of function and ordinal number of bad argument,
+and gives required type of argument if a parameter pattern is available.
+* Too few arguments: currying returns a function, later function is used in
+  non-function context. At this point, we can report a missing argument.
+* Too many arguments: a non-function is used in the function position of a
+  function call. If the non-function expression is a function call, then
+  report too many arguments.
+
+The goal is to improve the user experience and get better error messages.
+* If a function already uses pattern matching to restrict parameters to their
+  actual type, then this proposed mechanism can improve error messages for
+  calls to that function. But getting proper annotation for all the functions
+  in the standard library is a big challenge in itself.
+  * The `rotate` function. How to get good error messages for a bad first
+    argument? The first parameter has no pattern, but in the function body,
+    it is piped into `match`.
+  * Type inference, soft typing, gradual typing.
+* The `help` command becomes a tool for checking how well a function is
+  annotated, either explicitly or by type inference.
+* Internally, we need a mechanism for using a function's annotations to generate
+  good error messages when an argument fails to pattern match.
+  Arg_Context contains the function name and argument position.
+
+How does Arg_Context know the function name and argument position?
+ 1. It contains the frame, which contains the call_phrase.
+    If function 'f' has a function argument 'g', the name 'g' is used
+    in an error message for a bad call to 'g' within the body of 'f'.
+    [This is the style of a compile time type error.]
+ 2. It contains the function value, which contains function name and argpos.
+    This is run-time information.
+
+How does `help` know the function's usage info?
+ 1. The info is in the function value.
+
+Function value contains:
+* Symbol name_; // optional name, Symbol is a nullable type
+* int argpos_; // # args previously applied, for a partial application.
+
+Builtin functions like `sin` have a name assigned a priori.
+User defined functions have a name is assigned at compile time.
+A function definition of the form `f x y z = ...` or `f = x->y->z->...`
+adds name metadata to the Lambda_Phrase.
+* future extension: m = {f x = ...;} -- the function is named m.f, not just f.
+
+Examples
+--------
+curv> help rotate
+  rotate <rotation> <shape>
+    <rotation> is one of:
+      angle
+      {angle, axis}
+      {from: v1, to: v2}
+
+From elm-lang.org:
+    The 1st argument to function `join` is causing a mismatch.
+
+    4|  String.join 42 ["Alice", "Bob"]
+                    ^^
+    Function `join` is expecting the first argument to be:
+
+        String
+
+    But it is:
+
+        number
+
+Example: 'cube >> colour "red"'
+ERROR: argument "red" has no matching pattern in switch
+file "/usr/local/bin/../lib/std.curv", line 1329(column 18)
+  colour c shape = c >> match [
+                   ^           
+file "/usr/local/bin/../lib/std.curv", lines 1329(column 18)-1350(column 1)
+  colour c shape = c >> match [
+                   ^-----------
+line 1(columns 1-20)
+  cube >> colour "red"
+  ^-------------------
+
+A better error message would indicate that the first argument to function
+'colour' is bad.
