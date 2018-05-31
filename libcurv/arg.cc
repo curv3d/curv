@@ -23,15 +23,6 @@ void At_Arg::get_locations(std::list<Location>& locs) const
 
 }
 
-Shared<const String>
-At_Arg::rewrite_message(Shared<const String> msg) const
-{
-    if (arg_index_ < 0)
-        return msg;
-    else
-        return stringify("at argument[",arg_index_,"], ", msg);
-}
-
 // TODO: Most of the following functions are redundant with the Value API.
 
 bool arg_to_bool(Value val, const Context& ctx)

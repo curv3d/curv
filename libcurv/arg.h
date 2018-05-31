@@ -20,14 +20,11 @@ double arg_to_num(Value, const Context&);
 /// The exception context for the i'th argument in a function call.
 struct At_Arg : public Context
 {
-    int arg_index_;
     Frame& eval_frame_;
 
-    At_Arg(int i, Frame& f) : arg_index_(i), eval_frame_(f) {}
-    At_Arg(Frame& f) : arg_index_(-1), eval_frame_(f) {}
+    At_Arg(Frame& f) : eval_frame_(f) {}
 
     void get_locations(std::list<Location>& locs) const override;
-    Shared<const String> rewrite_message(Shared<const String>) const override;
 };
 
 } // namespace curv
