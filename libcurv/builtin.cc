@@ -615,7 +615,10 @@ struct Match_Function : public Legacy_Function
         std::vector<Shared<Function>> cases;
         for (size_t i = 0; i < list->size(); ++i)
             cases.push_back(list->at(i).to<Function>(At_Index(i,ctx0)));
-        return {make<Piecewise_Function>(cases)};
+        auto mf = make<Piecewise_Function>(cases);
+        mf->name_ = name_;
+        mf->argpos_ = 1;
+        return {mf};
     }
 };
 
