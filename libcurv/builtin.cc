@@ -474,7 +474,7 @@ struct Dot_Function : public Legacy_Function
     Dot_Function() : Legacy_Function(2,name()) {}
     Value call(Frame& args) override
     {
-        return dot(args[0], args[1], At_Frame(&args));
+        return dot(args[0], args[1], At_Arg(*this, args));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
