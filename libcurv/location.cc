@@ -95,15 +95,12 @@ putsrcline(
     // Is the entire line part of the selected text? Then we output '>'.
     // Otherwise, we output ' ' and output underlining on the next line.
     bool underlined;
-    char caret;
     if (mode == '1') {
-        caret = '^';
         underlined = true;
     } else {
         // Are there nonwhite characters outside the selection region?
         if (startcol > firstnw-line || endcol < lastnw-line) {
             underlined = true;
-            caret = mode;
         } else
             underlined = false;
     }
@@ -123,17 +120,12 @@ putsrcline(
         for (unsigned i = lnwidth + 2; i > 0; --i)
             out << ' ';
         struct Underline {
-            bool first = true;
-            char caret = '^';
-            char dash = '^'; // was '-'
             void put(std::ostream& out, char c)
             {
-                out << (first ? caret : dash);
-                if (c == '\t') out << dash;
-                first = false;
+                out << '^';
+                if (c == '\t') out << '^';
             }
         } under;
-        (void)caret; //was: under.caret = caret;
         unsigned linelen = endline - line;
         for (unsigned i = 0; i < linelen; ++i) {
             if (i >= startcol && i < endcol) {
@@ -169,29 +161,6 @@ Location::write(std::ostream& out) const
     if (!scriptname().empty())
         out << " file \"" << scriptname() << "\"";
     out << ":\n";
-#if 0
-    if (info.start_line_num == info.end_line_num) {
-        out << "line " << info.start_line_num+1 << "(";
-        if (info.end_column_num - info.start_column_num <= 1)
-            out << "column " << info.start_column_num+1;
-        else
-            out << "columns " << info.start_column_num+1
-                << "-" << info.end_column_num;
-        out << ")";
-    } else {
-        out << "lines "
-            << info.start_line_num+1 << "(column " << info.start_column_num+1
-            << ")-"
-            << info.end_line_num+1 << "(column " << info.end_column_num << ")";
-    }
-    switch (token_.kind_) {
-    case Token::k_end:
-        out << ", at end of script";
-        break;
-    default:
-        break;
-    }
-#endif
 
     // Output underlined program text. No final newline.
     // Inspired by http://elm-lang.org/blog/compiler-errors-for-humans
@@ -218,69 +187,6 @@ Location::write(std::ostream& out) const
             ++ln;
         }
     }
-/*
-const char*
-putsrcline(
-    unsigned ln, unsigned lnwidth,
-    const char* line, const char* end,
-    char mode, unsigned startcol, unsigned endcol)
-*/
-#if 0
-    if (info.start_line_num == info.end_line_num) {
-        out << info.start_line_num+1 << "| ";
-        const char* line = script_->first + info.start_line_begin;
-        unsigned len = 0;
-        for (const char* p = line; p < script_->last && *p != '\n'; ++p) {
-            if (*p == '\t')
-                out << "  ";
-            else
-                out << *p;
-            ++len;
-        }
-        out << "\n";
-        for (unsigned i = ndigits(info.start_line_num+1) + 2; i > 0; --i)
-            out << ' ';
-        struct Caret {
-            bool first = true;
-            void put(std::ostream& out, char c)
-            {
-                out << (first ? '^' : '-');
-                if (c == '\t') out << '-';
-                first = false;
-            }
-        } caret;
-        unsigned startcol = info.start_column_num;
-        unsigned endcol =
-            info.end_line_num > info.start_line_num ? len : info.end_column_num;
-        if (startcol == endcol)
-            ++endcol;
-        for (unsigned i = 0; i < len; ++i) {
-            if (i >= startcol && i < endcol) {
-                caret.put(out, line[i]);
-            } else {
-                if (line[i] == '\t') out << "  "; else out << ' ';
-            }
-        }
-        if (startcol == len)
-            out << '^';
-    } else {
-        unsigned lnwidth =
-            std::max(ndigits(info.start_line_num+1),ndigits(info.end_line_num+1));
-        unsigned ln = info.start_line_num;
-        const char* p = script_->first + info.start_line_begin;
-        for (;;) { // each line
-            char buf[16];
-            snprintf(buf, 16, "%*u", lnwidth, ln+1);
-            out << buf << "|>";
-            while (p < script_->last && *p != '\n')
-                out << *p++;
-            if (ln == info.end_line_num)
-                break;
-            out << *p++;
-            ++ln;
-        }
-    }
-#endif
 }
 
 Range<const char*>
