@@ -75,6 +75,10 @@ In which we linearly interpolate between two distance fields.
   and we linearly interpolate between the two SDFs while extruding.
   Similar to Autocad ``loft``.
 
+  `loft` works well if you loft between two roughly symmetrical shapes
+  that cover the origin and are centred on the origin.
+  When you deviate from that, the behaviour becomes unintuitive.
+  
   TODO: bad distance field.
 
 Future Work: high quality morph operations
