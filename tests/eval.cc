@@ -247,18 +247,18 @@ TEST(curv, eval)
     SUCCESS("sqrt << sqrt 16", "2");
     FAILALL("let f=()->sqrt(true);\nin f()",
         "sqrt(true): domain error\n"
-        "line 1(columns 11-20)\n"
-        "  let f=()->sqrt(true);\n"
-        "            ^--------- \n"
-        "line 2(columns 4-6)\n"
-        "  in f()\n"
-        "     ^--");
+        "at:\n"
+        "1| let f=()->sqrt(true);\n"
+        "             ^^^^^^^^^^ \n"
+        "at:\n"
+        "2| in f()\n"
+        "      ^^^");
     SUCCESS("count()", "0");
     FAILALL("count 0",
         "argument #1 of count: not a list or string\n"
-        "line 1(column 7)\n"
-        "  count 0\n"
-        "        ^");
+        "at:\n"
+        "1| count 0\n"
+        "         ^");
     SUCCESS("true||false", "true");
     SUCCESS("false||true", "true");
     SUCCESS("false||false", "false");
@@ -303,9 +303,9 @@ TEST(curv, eval)
     SUCCESS("[1,2,3]'1","2");
     FAILALL("[1,2,3]'1.1",
         "1.1 is not an integer\n"
-        "line 1(columns 9-11)\n"
-        "  [1,2,3]'1.1\n"
-        "          ^--");
+        "at:\n"
+        "1| [1,2,3]'1.1\n"
+        "           ^^^");
     SUCCESS("(0..10)'(3..1 by -1)", "[3,2,1]");
     SUCCESS("[false,true]'[[0,1],[1,0]]", "[[false,true],[true,false]]");
     SUCCESS("let x=1;y=2; in x+y", "3");
@@ -313,9 +313,9 @@ TEST(curv, eval)
     SUCCESS("let x=1 in let y=2 in let z=3 in x+y+z", "6");
     FAILALL("let x=x in x",
         "illegal recursive reference\n"
-        "line 1(column 7)\n"
-        "  let x=x in x\n"
-        "        ^     ");
+        "at:\n"
+        "1| let x=x in x\n"
+        "         ^     ");
     SUCCESS("let f=x->(let a=x+1 in a) in f 2", "3");
     FAILMSG("let f(x,y)=x in f()",
         "argument #1 of f: list has wrong size: expected 2, got 0");
@@ -338,32 +338,34 @@ TEST(curv, eval)
         "6");
     FAILALL("let f=x->x x in f 0",
         "0: not a function\n"
-        "line 1(column 10)\n"
-        "  let f=x->x x in f 0\n"
-        "           ^         \n"
-        "line 1(columns 17-19)\n"
-        "  let f=x->x x in f 0\n"
-        "                  ^--");
+        "at:\n"
+        "1| let f=x->x x in f 0\n"
+        "            ^         \n"
+        "at:\n"
+        "1| let f=x->x x in f 0\n"
+        "                   ^^^");
 
     // file
     FAILALL("file(\"bad_token.curv\")",
         "unterminated comment\n"
-        "file \"bad_token.curv\", lines 1(column 5)-2(column 3)\n"
-        "  x + /********\n"
-        "      ^--------\n"
-        "line 1(columns 1-22)\n"
-        "  file(\"bad_token.curv\")\n"
-        "  ^---------------------");
+        "at file \"bad_token.curv\":\n"
+        "1| x + /********\n"
+        "       ^^^^^^^^^\n"
+        "2|>y;\n"
+        "at:\n"
+        "1| file(\"bad_token.curv\")\n"
+        "   ^^^^^^^^^^^^^^^^^^^^^^");
     FAILALL("file(\n1,2)",
         "value is not a string\n"
-        "lines 1(column 5)-2(column 4)\n"
-        "  file(\n"
-        "      ^");
+        "at:\n"
+        "1| file(\n"
+        "       ^\n"
+        "2|>1,2)");
     FAILALL("file \"nonexistent\"",
         "can't open file nonexistent\n"
-        "line 1(columns 6-18)\n"
-        "  file \"nonexistent\"\n"
-        "       ^------------");
+        "at:\n"
+        "1| file \"nonexistent\"\n"
+        "        ^^^^^^^^^^^^^");
     SUCCESS("let std = file \"std.curv\" in std.concat([1], [2,3], [4])",
         "[1,2,3,4]");
     SUCCESS("file \"curv.curv\"", "null");
@@ -420,29 +422,22 @@ TEST(curv, eval)
     FAILMSG("42e+", "bad numeral");
     FAILALL("/* foo",
         "unterminated comment\n"
-        "line 1(columns 1-6)\n"
-        "  /* foo\n"
-        "  ^-----");
+        "at:\n"
+        "1| /* foo\n"
+        "   ^^^^^^");
 
     // analysis errors
     FAILMSG("fnord", "fnord: not defined");
-    /*
-    FAILALL("{x:1,x:2}",
-        "x: multiply defined\n"
-        "line 1(column 6)\n"
-        "  {x:1,x:2}\n"
-        "       ^   ");
-     */
     FAILALL("x+",
         "missing expression\n"
-        "line 1(column 3), at end of script\n"
-        "  x+\n"
-        "    ^");
+        "at:\n"
+        "1| x+\n"
+        "     ^");
     FAILALL("x+\n",
         "missing expression\n"
-        "line 1(column 3), at end of script\n"
-        "  x+\n"
-        "    ^");
+        "at:\n"
+        "1| x+\n"
+        "     ^");
     FAILMSG("(a=0)+1", "not an operation");
 
     // max, min
@@ -470,9 +465,9 @@ TEST(curv, eval)
 
     FAILALL("1,2",
         "syntax error\n"
-        "line 1(column 2)\n"
-        "  1,2\n"
-        "   ^ ");
+        "at:\n"
+        "1| 1,2\n"
+        "    ^ ");
 
     SUCCESS("let a=2; f x={print(g 2); g y=a*x*b*y; b=3} in f(5).g(7)", "210");
     EXPECT_EQ(console.str(),
