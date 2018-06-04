@@ -24,6 +24,12 @@ The goal is to improve the user experience and get better error messages.
     argument? The first parameter has no pattern, but in the function body,
     it is piped into `match`.
   * Type inference, soft typing, gradual typing.
+    * This also contributes to function help.
+  * Domain error inheritance: a kind of dynamic type inference on func params.
+    In function f, if a parameter x of f is passed as an argument to function g,
+    and g reports a domain error on x, then a domain error is reported by f.
+    * This does not contribute to function help, and is not semantically a
+      pattern match failure in f's parameter pattern.
 * The `help` command becomes a tool for checking how well a function is
   annotated, either explicitly or by type inference.
 * Internally, we need a mechanism for using a function's annotations to generate
@@ -50,6 +56,33 @@ User defined functions have a name is assigned at compile time.
 A function definition of the form `f x y z = ...` or `f = x->y->z->...`
 adds name metadata to the Lambda_Phrase.
 * future extension: m = {f x = ...;} -- the function is named m.f, not just f.
+
+Unary/Binary Arithmetic Operations: x+y, sqrt x, etc
+----------------------------------------------------
+These are tensor operations, so a domain error might be due to a bad tensor
+element. For binary ops, a domain error might occur because two tensors are
+incompatible, not just because an argument or element is not a tensor.
+So, in general case, need to show both arguments.
+
+Error message displays the bad run-time value, which I put at the end
+in case it is large.
+
+Error messages for binary ops. Stack frame uses clang-style source text
+underlining, with a caret under the operator.
+
+    ERROR: domain error: 1+true
+    1| x+y
+       -^-
+
+Error messages for named functions.
+
+    ERROR: argument #1 of sqrt: is not a number: true
+    1| sqrt true
+            ^^^^
+
+    ERROR: argument #1 of sqrt: domain error: -1
+    1| sqrt (-1)
+            ^^^^
 
 Examples
 --------
