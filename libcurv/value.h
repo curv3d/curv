@@ -284,7 +284,7 @@ public:
         }
         to_abort(cx, T::name);
     }
-    static void to_abort [[noreturn]] (const Context&, const char*);
+    void to_abort [[noreturn]] (const Context&, const char*);
 
     Value at(Symbol fieldname, const Context& cx) const;
 
