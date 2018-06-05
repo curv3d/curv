@@ -640,7 +640,7 @@ struct File_Expr : public Just_Expression
     virtual Value eval(Frame& f) const override
     {
         auto& callphrase = dynamic_cast<const Call_Phrase&>(*source_);
-        At_Phrase cx(*callphrase.arg_, &f);
+        At_Metacall cx("file", 0, *callphrase.arg_, &f);
         Value arg = arg_->eval(f);
         auto argstr = arg.to<String>(cx);
         namespace fs = boost::filesystem;
@@ -818,10 +818,8 @@ struct Assert_Action : public Just_Action
     {}
     virtual void exec(Frame& f) const override
     {
-        Value a = arg_->eval(f);
-        if (!a.is_bool())
-            throw Exception(At_Phrase(*source_, &f), "domain error");
-        bool b = a.get_bool_unsafe();
+        At_Metacall cx{"assert", 0, *arg_->source_, &f};
+        bool b = arg_->eval(f).to_bool(cx);
         if (!b)
             throw Exception(At_Phrase(*source_, &f), "assertion failed");
     }

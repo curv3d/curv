@@ -86,6 +86,26 @@ struct At_Arg : public Context
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
 };
 
+// Bad argument to a metafunction call.
+struct At_Metacall : public Context
+{
+    const char* name_;
+    unsigned argpos_;
+    const Phrase& arg_;
+    Frame* frame_;
+
+    At_Metacall(const char* name, unsigned argpos, const Phrase& arg, Frame* fr)
+    :
+        name_(name),
+        argpos_(argpos),
+        arg_(arg),
+        frame_(fr)
+    {}
+
+    void get_locations(std::list<Location>& locs) const override;
+    virtual Shared<const String> rewrite_message(Shared<const String>) const override;
+};
+
 struct At_Field : public Context
 {
     const char* fieldname_;

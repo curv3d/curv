@@ -93,6 +93,19 @@ At_Arg::rewrite_message(Shared<const String> msg) const
     return stringify("argument #",fun_.argpos_+1," of ",fun_.name_,": ",msg);
 }
 
+void
+At_Metacall::get_locations(std::list<Location>& locs) const
+{
+    locs.push_back(arg_.location());
+    get_frame_locations(frame_, locs);
+}
+
+Shared<const String>
+At_Metacall::rewrite_message(Shared<const String> msg) const
+{
+    return stringify("argument #",argpos_+1," of ",name_,": ",msg);
+}
+
 At_Field::At_Field(const char* fieldname, const Context& parent)
 : fieldname_(fieldname), parent_(parent)
 {}
