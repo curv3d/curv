@@ -202,6 +202,10 @@ assert_error(
 
 exec(file "scope.curv");
 
+assert_error(
+    "argument #1 of file: illegal recursive reference to file ""a""",
+    file "a");
+
 assert({a:1;b:2} == {a:1,b:2});
 
 let include{a:1,b:2} in assert(a+b==3);

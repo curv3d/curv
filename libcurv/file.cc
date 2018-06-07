@@ -3,6 +3,8 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <fstream>
+#include <cstring>
+#include <cerrno>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/file.h>
@@ -42,7 +44,8 @@ Shared<const String> readfile(const char* path, const Context& ctx)
     std::ifstream t;
     t.open(path);
     if (t.fail())
-        throw Exception(ctx, stringify("can't open file ", path));
+        throw Exception(ctx,
+            stringify("can't open file \"", path, "\": ", strerror(errno)));
     String_Builder buffer;
     buffer << t.rdbuf();
     return buffer.get_string();

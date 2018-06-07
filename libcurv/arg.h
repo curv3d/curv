@@ -10,10 +10,8 @@
 
 namespace curv {
 
-bool arg_to_bool(Value, const Context&);
 List& arg_to_list(Value, const Context&);
 int arg_to_int(Value, int, int, const Context&);
-double arg_to_num(Value, const Context&);
 
 } // namespace curv
 #endif // header guard

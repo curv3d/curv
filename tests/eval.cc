@@ -302,7 +302,7 @@ TEST(curv, eval)
     SUCCESS("-2^2", "-4");
     SUCCESS("[1,2,3]'1","2");
     FAILALL("[1,2,3]'1.1",
-        "1.1 is not an integer\n"
+        "is not an integer: 1.1\n"
         "at:\n"
         "1| [1,2,3]'1.1\n"
         "           ^^^");
@@ -356,13 +356,13 @@ TEST(curv, eval)
         "1| file(\"bad_token.curv\")\n"
         "   ^^^^^^^^^^^^^^^^^^^^^^");
     FAILALL("file(\n1,2)",
-        "value is not a string\n"
+        "argument #1 of file: is not a string: [1,2]\n"
         "at:\n"
         "1| file(\n"
         "       ^\n"
         "2|>1,2)");
     FAILALL("file \"nonexistent\"",
-        "can't open file nonexistent\n"
+        "argument #1 of file: can't open file \"nonexistent\": No such file or directory\n"
         "at:\n"
         "1| file \"nonexistent\"\n"
         "        ^^^^^^^^^^^^^");

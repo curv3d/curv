@@ -9,46 +9,31 @@
 
 namespace curv {
 
-// TODO: Most of the following functions are redundant with the Value API.
-
-bool arg_to_bool(Value val, const Context& ctx)
-{
-    if (!val.is_bool())
-        throw Exception(ctx, "not boolean");
-    return val.get_bool_unsafe();
-}
+// TODO:
+// * Merge with Value API?
+// * arg_to_list is unsafe, should return Shared<List>.
 
 auto arg_to_list(Value val, const Context& ctx)
 -> List&
 {
-    if (!val.is_ref())
-        throw Exception(ctx, "not a list");
-    Ref_Value& ref( val.get_ref_unsafe() );
-    if (ref.type_ != Ref_Value::ty_list)
-        throw Exception(ctx, "not a list");
-    return (List&)ref;
+    if (val.is_ref()) {
+        Ref_Value& ref( val.get_ref_unsafe() );
+        if (ref.type_ == Ref_Value::ty_list)
+            return (List&)ref;
+    }
+    throw Exception(ctx, stringify("is not a list: ",val));
 }
 
 int arg_to_int(Value val, int lo, int hi, const Context& ctx)
 {
-    if (!val.is_num())
-        throw Exception(ctx, "not an integer");
-    double num = val.get_num_unsafe();
+    double num = val.to_num(ctx);
     double intf;
     double frac = modf(num, &intf);
     if (frac != 0.0)
-        throw Exception(ctx, stringify(num," is not an integer"));
+        throw Exception(ctx, stringify("is not an integer: ",num));
     if (intf < (double)lo || intf > (double)hi)
         throw Exception(ctx, stringify(intf," is not in range ",lo,"..",hi));
     return (int)intf;
-}
-
-auto arg_to_num(Value val, const Context& ctx)
--> double
-{
-    if (!val.is_num())
-        throw Exception(ctx, "not a number");
-    return val.get_num_unsafe();
 }
 
 } // namespace curv

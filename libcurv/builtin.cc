@@ -640,7 +640,7 @@ struct File_Expr : public Just_Expression
     virtual Value eval(Frame& f) const override
     {
         auto& callphrase = dynamic_cast<const Call_Phrase&>(*source_);
-        At_Phrase cx(*callphrase.arg_, &f);
+        At_Metacall cx("file", 0, *callphrase.arg_, &f);
         Value arg = arg_->eval(f);
         auto argstr = arg.to<String>(cx);
         namespace fs = boost::filesystem;
@@ -656,8 +656,21 @@ struct File_Expr : public Just_Expression
         Program prog{*file, f.system_};
         std::unique_ptr<Frame> f2 =
             Frame::make(0, f.system_, &f, &callphrase, nullptr);
-        prog.compile(nullptr, &*f2);
-        return prog.eval();
+        auto filekey = Filesystem::canonical(filepath);
+        auto& active_files = f.system_.active_files_;
+        if (active_files.find(filekey) != active_files.end())
+            throw Exception{cx,
+                stringify("illegal recursive reference to file ",filepath)};
+        active_files.insert(filekey);
+        Value result;
+        try {
+            prog.compile(nullptr, &*f2);
+            result = prog.eval();
+        } catch (...) {
+            active_files.erase(filekey);
+            throw;
+        }
+        return result;
     }
 };
 struct File_Metafunction : public Metafunction
@@ -818,10 +831,8 @@ struct Assert_Action : public Just_Action
     {}
     virtual void exec(Frame& f) const override
     {
-        Value a = arg_->eval(f);
-        if (!a.is_bool())
-            throw Exception(At_Phrase(*source_, &f), "domain error");
-        bool b = a.get_bool_unsafe();
+        At_Metacall cx{"assert", 0, *arg_->source_, &f};
+        bool b = arg_->eval(f).to_bool(cx);
         if (!b)
             throw Exception(At_Phrase(*source_, &f), "assertion failed");
     }

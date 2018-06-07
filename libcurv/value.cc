@@ -14,27 +14,30 @@ namespace curv {
 void
 Value::to_null(const Context& cx) const
 {
-    if (!is_null()) throw Exception(cx, "value is not null");
+    if (!is_null())
+        throw Exception(cx, stringify("is not null: ", *this));
 }
 
 bool
 Value::to_bool(const Context& cx) const
 {
-    if (!is_bool()) throw Exception(cx, "value is not a boolean");
-    return get_bool_unsafe();
+    if (is_bool())
+        return get_bool_unsafe();
+    throw Exception(cx, stringify("is not a boolean: ", *this));
 }
 
 double
 Value::to_num(const Context& cx) const
 {
-    if (!is_num()) throw Exception(cx, "value is not a number");
-    return get_num_unsafe();
+    if (is_num())
+        return get_num_unsafe();
+    throw Exception(cx, stringify("is not a number: ", *this));
 }
 
 void
 Value::to_abort [[noreturn]] (const Context& cx, const char* type)
 {
-    throw Exception(cx, stringify("value is not a ",type));
+    throw Exception(cx, stringify("is not a ",type,": ",*this));
 }
 
 Value

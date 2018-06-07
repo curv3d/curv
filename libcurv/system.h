@@ -6,6 +6,8 @@
 #define LIBCURV_SYSTEM_H
 
 #include <ostream>
+#include <unordered_set>
+#include <libcurv/filesystem.h>
 #include <libcurv/builtin.h>
 
 namespace curv {
@@ -21,6 +23,10 @@ struct System
     /// used by the `file` primitive to interpret Curv source files.
     virtual const Namespace& std_namespace() = 0;
     virtual std::ostream& console() = 0;
+    // This is non-empty while a `file` operation is being evaluated.
+    // It is used to detect recursive file references.
+    // Later, this may change to a file cache.
+    std::unordered_set<Filesystem::path,Path_Hash> active_files_{};
 };
 
 /// Default implementation of the System interface.
