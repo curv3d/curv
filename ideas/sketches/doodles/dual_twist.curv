@@ -3,3 +3,4 @@ c = box.mitred(1,1,10) >> twist (tau/10);
 
 in
 smooth 1 .union (c, reflect Z_axis c)
+>> lipschitz 2
