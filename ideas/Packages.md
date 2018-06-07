@@ -272,6 +272,18 @@ I want standard packages now. What do I do?
   caches packages in `~/.cache/curv/`
 * `curvpkg` subcommands: list, install, remove, upgrade
 
+## Mutual Recursion
+Mutually recursive references between two curv files within a package
+is not supported: an error is reported. OTOH, what does work is defining a
+library in file (exporting a record value), and including that library in
+another file. That is a required feature.
+
+Directory syntax is supposedly modelled as a record literal (w.r.t. scoping).
+This suggests that mutual recursion could/should be supported. But that
+creates technical difficulties, especially when we need to support including
+another file. Curv does not let a record include a variable defined elsewhere
+in the same file.
+
 ## Synthesis
 
 Implement this combination of features:
