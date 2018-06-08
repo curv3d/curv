@@ -5,7 +5,7 @@ This code is for generalized toroidal knots.
 It seems to be a distance function for Mandelbulb3D.
 - "polyfold order" -- "number of petals"?
 
-At present I have no idea what this means:
+A distance function. Input is Vec, output is Mag.
 ------------------------
 // we modify copies of the variables not the variables ;)
 x = Vec.x; y = Vec.y; z = Vec.z;

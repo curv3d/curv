@@ -82,3 +82,7 @@ Discoverability of Building Blocks.
   internet. Then install the package and its contents become locally
   discoverable in the IDE. When a package is installed, its dependencies
   are also installed and become discoverable.
+
+Brett Victor: Visibility of intermediate values in a pipeline.
+These views are updated dynamically during an animation, or while tweaking
+a value picker.

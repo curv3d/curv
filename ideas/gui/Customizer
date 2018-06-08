@@ -1,0 +1,101 @@
+Display interactive value pickers beside the view pane,
+for tweaking the public parameters of a building block.
+
+Graphical value pickers:
+------------------------
+* enum: a fixed set of values
+* slider: for a bounded numeric range
+* integer slider (discrete slider)
+* normalized 2D vector picker: a direction
+* 2D point picker for a bounded range
+* colour picker
+* hue picker
+* boolean
+
+Building Block Syntax:
+----------------------
+A parametric record is a record with a `call` field that maps a record of
+parameter values onto a new instance. A parametric record has a set of named
+parameters with default values.
+
+For example, a parametric shape in file `lollipop.curv`:
+  param
+    diam = 1;
+    len = 4;
+  in
+    union(candy, stick)
+  where (
+    candy = sphere diam >> colour red;
+    stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
+  )
+This returns a record (union(candy,stick)) augmented with a `call` field,
+which is a function with parameter {diam=1,len=4} that returns a customized
+version of the record.
+
+The command
+  curv -Dlen=6 lollipop.curv
+modifies one of the shape parameters. Actually it treats the result
+value V as a function, and calls V{len:6}.
+
+This design does not put the parameters into the record. They might conflict
+with field names in the (extended) shape protocol. It might make sense to
+add a single field which is a parameter record. What to name it?
+Not `param`, that's a reserved word. Maybe `p`.
+
+Picker Type Declarations
+------------------------
+Each parameter in a parametric record can declare its value picker type.
+* OpenSCAD uses special comments.
+* Fragmentarium uses syntax like slider[first,default,last] and checkbox[true].
+
+In Curv, everything is a value. Picker types are values.
+If you specify a picker type for a parameter, then you have constrained its
+value set, just like using a predicate pattern. Picker types are a
+special kind of predicate function. Eg, `is_bool` implies a checkbox.
+
+* is_bool a -- a is a boolean value, use checkbox picker.
+* range(i,j) a -- a is a number between i and j inclusive, use slider picker.
+  Or `i <= a <= j` I guess.
+
+Building Block: Concept Name
+----------------------------
+* Prototype (from OpenSCAD2 and "prototype-based programming" (Wikipedia)).
+* Parametric Record
+* Building Block? That's supposed to encompass operations as well.
+
+Saving your State
+-----------------
+Is there a way to preserve the state of the sliders? (Not supported in v0.0.)
+ 1. Save the slider state in a separate file, a `*.cparam` file.
+    It records the parameter values, and references the parent program file.
+    It could have JSON or Curv syntax. Eg, `file.foo{a:1,b:2}`.
+    Opening the parameter file in a GUI opens Curv with the program file open
+    and with the sliders set.
+    In file syntax, a CPARAM file denotes a parametric record value.
+ 2. Save the slider state in the original source file.
+
+Editing Subexpressions
+----------------------
+If a subexpression of your program is a static parametric record, then it
+should be possible to open a viewer on that subexpression, pick values,
+and save the value picker state by updating the subexpression source code.
+
+GUI Implementation
+------------------
+If Curv displays a parametric record which is also a shape, then open the
+shape viewer window, add sliders to it, populate default values.
+
+The shape is compiled into GLSL code that includes uniform variables for
+each parameter. The Viewer app connects the sliders to the uniform variables.
+
+How is the Viewer implemented?
+* Hack glslViewer to include sliders. Need a widget library compatible with
+  GLFW. With an Immediate Mode GUI in OpenGL, a translucent picker window can
+  float on top of the model in full screen mode. Interactivity sucks when the
+  frame rate goes down, need progressive rendering.
+  * use github.com/wjakob/nanogui. *2,000
+  * use AntTweakBar -- it seems purpose designed for this. Translucent picker
+    window floats on top of model, suitable for full screen viewing.
+  * use github.com/ocornut/imgui. *11,000
+    Full featured--could implement editor and console window using imgui.
+* Use QT.

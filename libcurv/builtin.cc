@@ -656,8 +656,21 @@ struct File_Expr : public Just_Expression
         Program prog{*file, f.system_};
         std::unique_ptr<Frame> f2 =
             Frame::make(0, f.system_, &f, &callphrase, nullptr);
-        prog.compile(nullptr, &*f2);
-        return prog.eval();
+        auto filekey = Filesystem::canonical(filepath);
+        auto& active_files = f.system_.active_files_;
+        if (active_files.find(filekey) != active_files.end())
+            throw Exception{cx,
+                stringify("illegal recursive reference to file ",filepath)};
+        active_files.insert(filekey);
+        Value result;
+        try {
+            prog.compile(nullptr, &*f2);
+            result = prog.eval();
+        } catch (...) {
+            active_files.erase(filekey);
+            throw;
+        }
+        return result;
     }
 };
 struct File_Metafunction : public Metafunction
