@@ -594,12 +594,17 @@ This looks nice if each function in the composition is an identifier.
 The syntax makes sense if I create a library of standard function names
 that are intended to be composed in this way.
 
-Transformations can be composed.
-
 Compose a colour map with an intensity field.
 There are a bunch of standard named colour maps and intensity fields.
 eg, rainbow'linear_gradient
     rainbow'radial_gradient
     greyscale'cosine_gradient
 
+Transformations can be composed.
+
+co[f,g] or f `co` g
+
 ### Add shebang comments, `#!` to end of line
+
+### Add code comments, `(*` token_or_comment* `*)`
+Nestable comments for reliably commenting out code blocks.
