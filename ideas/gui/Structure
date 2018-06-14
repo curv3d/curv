@@ -9,19 +9,32 @@ Another idea is to leave these as separate windows, like Python's Idle.
 * Idle always has a single Console window, plus zero or more Editor windows.
 * DrRacket bonds a console & editor pane together. The interactive shell in
   the console has access to the top level scope of the program being edited.
+  * Idle has a similar feature, but the console has access to the top level
+    scope of the most recent program to be executed. Not very intuitive.
 * I can imagine using several Viewer windows while working
   on a single program.
 
-Look at the Factor IDE.
+Stuff to look at:
+* the Factor IDE
+* XCode Swift Playgrounds. Well, the UI is very bare, it's not that obvious
+  what to do.
+
+Making it obvious: when you start gcurv, it opens a 3 pane window with editor,
+console and viewer panes. The editor is initialized with the program `cube`,
+and a cube is displayed in the viewer.
 
 Remember window size/layout between runs.
 
 Other window types/features:
 * Package manager
-* Package browser
+* Package editor (& node browser)
+  * Git integration?
 * Documentation browser
 * J has interactive tutorials which run in the console window.
-* Debugger
+  Maybe the package editor has a 'slide show' feature for viewing
+  a sequence of programs.
+* Debugging.
+  * Brett Victor's ideas for visualizing the execution of a program.
 
 Console
 -------
@@ -49,3 +62,14 @@ Editor
 Python and J both have editor windows where you can type a multi-line program,
 and the storage is associated with a file in the file system.
 Initially none are open, you can open multiple.
+
+Viewer
+------
+The beginner-friendly Processing window layout has a single viewer bonded
+to an editor and console.
+
+I can imagine using several Viewer windows while working on a single program.
+* In the console shell, you can view a shape, and it will open a secondary
+  viewer.
+* Maybe there's something like an OpenSCAD 'modifier character', a way to
+  annotate a subexpression and display its value in a viewer.
