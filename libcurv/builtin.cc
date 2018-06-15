@@ -670,6 +670,7 @@ struct File_Expr : public Just_Expression
             active_files.erase(filekey);
             throw;
         }
+        active_files.erase(filekey);
         return result;
     }
 };
