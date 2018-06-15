@@ -5,11 +5,11 @@
 #ifndef TEMPFILE_H
 #define TEMPFILE_H
 
-#include <boost/filesystem.hpp>
+#include <libcurv/filesystem.h>
 
-boost::filesystem::path tempfile_name(const char* suffix);
+curv::Filesystem::path tempfile_name(const char* suffix);
 void register_tempfile(const char* suffix);
-boost::filesystem::path make_tempfile(const char* suffix);
+curv::Filesystem::path make_tempfile(const char* suffix);
 void remove_all_tempfiles();
 
 #endif // include guard

@@ -9,11 +9,13 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 include_directories(.
     extern/googletest/googletest/include
+    extern/glslViewer/include
     extern/openvdb
     extern/blosc)
 
 add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
 add_subdirectory(extern/openvdb/openvdb EXCLUDE_FROM_ALL)
+add_subdirectory(extern/glslViewer EXCLUDE_FROM_ALL)
 
 if (APPLE)
   # Homebrew installs a private copy of GNU readline, which we use, which
@@ -34,7 +36,7 @@ set_property(TARGET libcurv PROPERTY OUTPUT_NAME curv)
 
 FILE(GLOB Src "cmd/*.c" "cmd/*.cc")
 add_executable(curv ${Src})
-target_link_libraries(curv PUBLIC libcurv ${LibReadline} double-conversion boost_filesystem boost_system openvdb_static Half tbb dl)
+target_link_libraries(curv PUBLIC GlslViewer glfw GL libcurv ${LibReadline} double-conversion boost_filesystem boost_system openvdb_static Half tbb dl pthread)
 
 FILE(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})

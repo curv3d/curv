@@ -16,7 +16,7 @@ extern "C" {
 #include <stdio.h>
 }
 
-namespace fs = boost::filesystem;
+namespace fs = curv::Filesystem;
 
 std::vector<fs::path> tempfiles;
 

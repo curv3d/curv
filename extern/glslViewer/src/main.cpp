@@ -22,6 +22,7 @@
 #include "glm/gtx/rotate_vector.hpp"
 
 #include "ui/cursor.h"
+#include "viewer.h"
 
 // GLOBAL VARIABLES
 //============================================================================
@@ -104,11 +105,11 @@ void screenshot(std::string file);
 
 void onFileChange(int index);
 void onExit();
-void printUsage(char *);
+void printUsage(const char *);
 
 // Main program
 //============================================================================
-int main(int argc, char **argv){
+int viewer_main(int argc, const char **argv){
     u_centre3d = glm::vec3(0.,0.,0.);
     u_eye3d = glm::vec3(2.598076,3.0,4.5);
     u_up3d = glm::vec3(-0.25,0.866025,-0.433013);
@@ -834,6 +835,6 @@ void onExit() {
     delete vbo;
 }
 
-void printUsage(char * executableName) {
+void printUsage(const char * executableName) {
     std::cerr << "Usage: " << executableName << " <shader>.frag [<shader>.vert] [<mesh>.(obj/.ply)] [<texture>.(png/jpg)] [-<uniformName> <texture>.(png/jpg)] [-vFlip] [-x <x>] [-y <y>] [-w <width>] [-h <height>] [-l] [--square] [-s/--sec <seconds>] [-o <screenshot_file>.png] [--headless] [-c/--cursor] [-I<include_folder>] [-D<define>] [-v/--verbose] [--help]\n";
 }

@@ -4,8 +4,11 @@
 
 #include "export.h"
 #include <fstream>
+#include <sstream>
 #include <libcurv/exception.h>
+#include <libcurv/filesystem.h>
 #include <libcurv/shape.h>
+#include <viewer.h>
 
 void export_curv(curv::Value value,
     curv::System&, const curv::Context&, const Export_Params&,
@@ -121,18 +124,13 @@ void export_png(curv::Value value,
 {
     curv::Shape_Recognizer shape(cx, sys);
     if (shape.recognize(value)) {
-        auto fragname = curv::stringify(",curv",getpid(),".frag");
+        namespace fs = curv::Filesystem;
+        std::stringstream shader;
+        curv::gl_compile(shape, shader, cx);
         auto pngname = curv::stringify(",curv",getpid(),".png");
-        std::ofstream f(fragname->c_str());
-        curv::gl_compile(shape, f, cx);
-        f.close();
-        auto cmd = curv::stringify(
-            "glslViewer -s 0 --headless -o ", pngname->c_str(),
-            " ", fragname->c_str(), " >/dev/null");
+        viewer_export_png(shader.str(), fs::path(pngname->c_str()));
+        auto cmd = curv::stringify("cat ",pngname->c_str());
         system(cmd->c_str());
-        auto cmd2 = curv::stringify("cat ",pngname->c_str());
-        system(cmd2->c_str());
-        unlink(fragname->c_str());
         unlink(pngname->c_str());
     } else
         throw curv::Exception(cx, "not a shape");
