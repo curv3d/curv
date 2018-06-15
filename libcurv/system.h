@@ -29,6 +29,26 @@ struct System
     std::unordered_set<Filesystem::path,Path_Hash> active_files_{};
 };
 
+// RAII helper class, for use with System::active_files_.
+struct Active_File
+{
+    std::unordered_set<Filesystem::path,Path_Hash>& active_files_;
+    Filesystem::path& file_;
+    Active_File(
+        std::unordered_set<Filesystem::path,Path_Hash>& af,
+        Filesystem::path& f)
+    :
+        active_files_(af),
+        file_(f)
+    {
+        active_files_.insert(file_);
+    }
+    ~Active_File()
+    {
+        active_files_.erase(file_);
+    }
+};
+
 /// Default implementation of the System interface.
 struct System_Impl : public System
 {

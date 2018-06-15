@@ -661,17 +661,9 @@ struct File_Expr : public Just_Expression
         if (active_files.find(filekey) != active_files.end())
             throw Exception{cx,
                 stringify("illegal recursive reference to file ",filepath)};
-        active_files.insert(filekey);
-        Value result;
-        try {
-            prog.compile(nullptr, &*f2);
-            result = prog.eval();
-        } catch (...) {
-            active_files.erase(filekey);
-            throw;
-        }
-        active_files.erase(filekey);
-        return result;
+        Active_File af(active_files, filekey);
+        prog.compile(nullptr, &*f2);
+        return prog.eval();
     }
 };
 struct File_Metafunction : public Metafunction
