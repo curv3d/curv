@@ -23,11 +23,14 @@ if (APPLE)
   set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/local/opt/readline/include" )
   set( LibReadline /usr/local/opt/readline/lib/libreadline.dylib )
   set( sanitize "" )
+  FIND_LIBRARY(OPENGL_LIB OpenGL)
+  set( CurvLibs ${OPENGL_LIB} )
 else ()
   set( LibReadline readline)
   # The leak sanitizer is only available for 64 bit Linux (gcc and clang).
   # It adds minimal overhead, so we add it to all executables in debug builds.
   set( sanitize "-fsanitize=address" )
+  set( CurvLibs GL )
 endif (APPLE)
 
 FILE(GLOB LibCurvSrc "libcurv/*.cc")
@@ -36,7 +39,7 @@ set_property(TARGET libcurv PROPERTY OUTPUT_NAME curv)
 
 FILE(GLOB Src "cmd/*.c" "cmd/*.cc")
 add_executable(curv ${Src})
-target_link_libraries(curv PUBLIC GlslViewer glfw GL libcurv ${LibReadline} double-conversion boost_filesystem boost_system openvdb_static Half tbb dl pthread)
+target_link_libraries(curv PUBLIC GlslViewer glfw ${CurvLibs} libcurv ${LibReadline} double-conversion boost_filesystem boost_system openvdb_static Half tbb dl pthread)
 
 FILE(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})
