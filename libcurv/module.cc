@@ -34,6 +34,11 @@ Value
 Module_Base::get(slot_t i) const
 {
     Value val = array_[i];
+    // A recursive function is represented by a Closure, whose nonlocals_
+    // member is a Module that contains Lambda objects wherever there is a
+    // recursive function reference. This code converts those Lambda objects
+    // into proper Values. (This is a trick to avoid reference cycles in the
+    // representation of function values, which would break reference counting.)
     if (val.is_ref()) {
         auto& ref = val.get_ref_unsafe();
         if (ref.type_ == Ref_Value::ty_lambda)

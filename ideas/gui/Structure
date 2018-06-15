@@ -1,0 +1,75 @@
+The Curv GUI / IDE
+==================
+There are 3 important windows or panes: Console, Editor, Viewer.
+
+One idea is to bond all 3 panes into a single window, similar to Processing,
+OpenSCAD, LibFive.
+
+Another idea is to leave these as separate windows, like Python's Idle.
+* Idle always has a single Console window, plus zero or more Editor windows.
+* DrRacket bonds a console & editor pane together. The interactive shell in
+  the console has access to the top level scope of the program being edited.
+  * Idle has a similar feature, but the console has access to the top level
+    scope of the most recent program to be executed. Not very intuitive.
+* I can imagine using several Viewer windows while working
+  on a single program.
+
+Stuff to look at:
+* the Factor IDE
+* XCode Swift Playgrounds. Well, the UI is very bare, it's not that obvious
+  what to do.
+
+Making it obvious: when you start gcurv, it opens a 3 pane window with editor,
+console and viewer panes. The editor is initialized with the program `cube`,
+and a cube is displayed in the viewer.
+
+Remember window size/layout between runs.
+
+Other window types/features:
+* Package manager
+* Package editor (& node browser)
+  * Git integration?
+* Documentation browser
+* J has interactive tutorials which run in the console window.
+  Maybe the package editor has a 'slide show' feature for viewing
+  a sequence of programs.
+* Debugging.
+  * Brett Victor's ideas for visualizing the execution of a program.
+
+Console
+-------
+The Console serves 2 roles: it displays log output (error messages,
+output from `print` actions). And it is an interactive shell.
+
+* Copy and paste should work using standard shortcuts.
+* Access command history using uparrow or ^P.
+* Use colours and fonts to distinguish between input and output.
+* Use those squiggly red underlines to highlight program text in error messages.
+
+Python Idle3 console:
+* colours: prompt red, output blue, colourized program text
+* type 'print(' and a yellow tooltip appears just below the line being typed
+  containing
+      print(value, ..., sep=' ', end='\n', file=sys.stdout, flush=False)
+  and this disappears when I type the closing ) of the function call.
+
+Python and J both use a single console window that doubles as both a shell
+window (for interactive input/output) and also as a log window for all
+editor/program windows (error messages and print statement output).
+
+Editor
+------
+Python and J both have editor windows where you can type a multi-line program,
+and the storage is associated with a file in the file system.
+Initially none are open, you can open multiple.
+
+Viewer
+------
+The beginner-friendly Processing window layout has a single viewer bonded
+to an editor and console.
+
+I can imagine using several Viewer windows while working on a single program.
+* In the console shell, you can view a shape, and it will open a secondary
+  viewer.
+* Maybe there's something like an OpenSCAD 'modifier character', a way to
+  annotate a subexpression and display its value in a viewer.
