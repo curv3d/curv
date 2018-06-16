@@ -397,6 +397,15 @@ can be used as input values.
 
 .. _`Conway polyhedron operators`: https://en.wikipedia.org/wiki/Conway_polyhedron_notation
 
+To implement these operators, we need to choose a representation for a "Conway" polyhedron.
+(I.e, the subset of polyhedra for which we support Conway operators.)
+
+The conventional representation is a boundary representation: faces, edges and vertices.
+However, to efficiently render regular polyhedra (like the platonic solids) in Curv,
+we use a different representation based on the symmetries of the shape.
+See the shape library code for examples. Can this idea be generalized?
+Yes: https://syntopia.github.io/Polytopia/polytopes.html
+
 Polytope Operators
 ------------------
 A polytope is either a polygon or a polyhedron.
