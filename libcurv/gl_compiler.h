@@ -12,7 +12,6 @@
 
 namespace curv {
 
-struct Shape_Recognizer;
 struct Operation;
 struct Call_Phrase;
 struct Phrase;
@@ -21,14 +20,15 @@ using List_Expr = Tail_Array<List_Expr_Base>;
 struct Lambda_Expr;
 struct Context;
 
-/// The Geometry Compiler translates the CSG tree created by the evaluator
-/// into optimized GPU code for fast rendering on a graphics display.
+/// "GL" or "Geometry Language" is a low level, strongly-typed subset of Curv
+/// that can be efficiently translated into a low level language (currently
+/// C++ or GLSL), for fast evaluation on a CPU or GPU.
 ///
-/// The compiler output is WebGL/GLSL source code, containing an axis
-/// aligned bounding box (bbox), the scene's distance function,
-/// and library code to render the scene using ray marching.
+/// GL is a set of types and operations on those types. It is a statically
+/// typed subset of Curv which is also a subset of GLSL (but with different
+/// type and operation names). Curv distance functions must be restricted to the
+/// GL subset or the Geometry Compiler will report an error during rendering.
 ///
-/// The complexity is in translating Curv distance functions into GLSL.
 /// The compiler operates on Curv function *values*. Non-local variables
 /// captured by closures become compile time constants. Intermediate function
 /// calls are inline expanded: this eliminates first-class function values,
@@ -36,18 +36,6 @@ struct Context;
 /// where different calls to the same function have different argument types.
 /// The generated code is statically typed, and uses SSA style, where each
 /// operation is represented by an assignment to an SSA variable.
-///
-/// We may later support SPIR-V and LLVM, which natively use SSA.
-///
-/// "GL" or "Geometry Language" is a set of types and operations on those
-/// types. It is a statically typed subset of Curv which is also a subset
-/// of the WebGL shading language (but with different type and operation names).
-/// Curv distance functions must be restricted to the GL subset or the
-/// Geometry Compiler will report an error during rendering.
-
-/// Main entry point to the Geometry Compiler.
-/// Reads a 2D shape, writes a shadertoy.com GLSL script.
-void gl_compile(const Shape_Recognizer&, std::ostream&, const Context&);
 
 /// GL data types
 enum class GL_Type : unsigned

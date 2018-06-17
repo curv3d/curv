@@ -4,14 +4,16 @@
 
 #include <cmath>
 
-#include <libcurv/shape.h>
+#include <libvgeom/shape.h>
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
 #include <libcurv/gl_context.h>
 #include <libcurv/function.h>
 #include <libcurv/frame.h>
 
-namespace curv {
+using namespace curv;
+
+namespace vgeom {
 
 BBox
 BBox::from_value(Value val, const Context& cx)
@@ -154,4 +156,4 @@ Shape_Recognizer::colour(double x, double y, double z, double t)
                  cval->at(2).to_num(context_) };
 }
 
-} // namespace curv
+} // namespace vgeom

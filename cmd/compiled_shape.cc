@@ -13,7 +13,7 @@ extern "C" {
 #include <dlfcn.h>
 }
 
-Compiled_Shape::Compiled_Shape(curv::Shape_Recognizer& rshape)
+Compiled_Shape::Compiled_Shape(vgeom::Shape_Recognizer& rshape)
 {
     is_2d_ = rshape.is_2d_;
     is_3d_ = rshape.is_3d_;
@@ -67,7 +67,7 @@ Compiled_Shape::Compiled_Shape(curv::Shape_Recognizer& rshape)
 }
 
 void
-shape_to_cpp(curv::Shape_Recognizer& shape, std::ostream& out)
+shape_to_cpp(vgeom::Shape_Recognizer& shape, std::ostream& out)
 {
     curv::GL_Compiler gl(out, curv::GL_Target::cpp);
     out <<

@@ -33,10 +33,10 @@ extern "C" {
 #include <libcurv/system.h>
 #include <libcurv/list.h>
 #include <libcurv/record.h>
-#include <libcurv/gl_compiler.h>
-#include <libcurv/shape.h>
 #include <libcurv/version.h>
 #include <libcurv/die.h>
+#include <libvgeom/export_frag.h>
+#include <libvgeom/shape.h>
 
 bool was_interrupted = false;
 
@@ -182,7 +182,7 @@ bool
 display_shape(curv::Value value,
     curv::System& sys, const curv::Context &cx, bool block = false)
 {
-    curv::Shape_Recognizer shape(cx, sys);
+    vgeom::Shape_Recognizer shape(cx, sys);
     if (shape.recognize(value)) {
         if (shape.is_2d_) std::cerr << "2D";
         if (shape.is_2d_ && shape.is_3d_) std::cerr << "/";
@@ -196,7 +196,7 @@ display_shape(curv::Value value,
 
         auto filename = make_tempfile(".frag");
         std::ofstream f(filename.c_str());
-        curv::gl_compile(shape, f, cx);
+        vgeom::export_frag(shape, f);
         f.close();
         if (block) {
             auto cmd = curv::stringify("glslViewer ",filename.c_str(),

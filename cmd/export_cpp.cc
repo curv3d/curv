@@ -6,13 +6,13 @@
 #include "compiled_shape.h"
 #include <fstream>
 #include <libcurv/exception.h>
-#include <libcurv/shape.h>
+#include <libvgeom/shape.h>
 
 void export_cpp(curv::Value value,
     curv::System& sys, const curv::Context& cx, const Export_Params&,
     std::ostream& out)
 {
-    curv::Shape_Recognizer shape(cx, sys);
+    vgeom::Shape_Recognizer shape(cx, sys);
     if (!shape.recognize(value))
         throw curv::Exception(cx, "not a shape");
     shape_to_cpp(shape, out);

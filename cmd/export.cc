@@ -7,7 +7,8 @@
 #include <sstream>
 #include <libcurv/exception.h>
 #include <libcurv/filesystem.h>
-#include <libcurv/shape.h>
+#include <libvgeom/shape.h>
+#include <libvgeom/export_frag.h>
 #include <viewer.h>
 
 void export_curv(curv::Value value,
@@ -21,9 +22,9 @@ void export_frag(curv::Value value,
     curv::System& sys, const curv::Context& cx, const Export_Params&,
     std::ostream& out)
 {
-    curv::Shape_Recognizer shape(cx, sys);
+    vgeom::Shape_Recognizer shape(cx, sys);
     if (shape.recognize(value))
-        curv::gl_compile(shape, std::cout, cx);
+        vgeom::export_frag(shape, std::cout);
     else
         throw curv::Exception(cx, "not a shape");
 }
@@ -122,11 +123,11 @@ void export_png(curv::Value value,
     curv::System& sys, const curv::Context& cx, const Export_Params&,
     std::ostream& out)
 {
-    curv::Shape_Recognizer shape(cx, sys);
+    vgeom::Shape_Recognizer shape(cx, sys);
     if (shape.recognize(value)) {
         namespace fs = curv::Filesystem;
         std::stringstream shader;
-        curv::gl_compile(shape, shader, cx);
+        vgeom::export_frag(shape, shader);
         auto pngname = curv::stringify(",curv",getpid(),".png");
         viewer_export_png(shader.str(), fs::path(pngname->c_str()));
         auto cmd = curv::stringify("cat ",pngname->c_str());
