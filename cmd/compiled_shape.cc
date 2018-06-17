@@ -3,7 +3,7 @@
 // See https://www.apache.org/licenses/LICENSE-2.0
 
 #include "compiled_shape.h"
-#include "tempfile.h"
+#include <libvgeom/tempfile.h>
 #include <cstdlib>
 #include <fstream>
 #include <libcurv/exception.h>
@@ -20,8 +20,8 @@ Compiled_Shape::Compiled_Shape(vgeom::Shape_Recognizer& rshape)
     bbox_ = rshape.bbox_;
 
     // convert shape to C++ source code
-    //auto cppname = make_tempfile(".cpp");
-    auto cppname = tempfile_name(".cpp");
+    //auto cppname = vgeom::make_tempfile(".cpp");
+    auto cppname = vgeom::tempfile_name(".cpp");
     std::ofstream cpp(cppname.c_str());
     shape_to_cpp(rshape, cpp);
     cpp.close();
@@ -33,8 +33,8 @@ Compiled_Shape::Compiled_Shape(vgeom::Shape_Recognizer& rshape)
         throw curv::Exception({}, "c++ compile failed");
 
     // create shared object
-    auto obj_name = tempfile_name(".o");
-    auto so_name = tempfile_name(".so");
+    auto obj_name = vgeom::tempfile_name(".o");
+    auto so_name = vgeom::tempfile_name(".so");
     auto link_cmd = curv::stringify("c++ -shared -o ", so_name.c_str(), " ", obj_name.c_str());
     if (system(link_cmd->c_str()) != 0)
         throw curv::Exception({}, "c++ link failed");

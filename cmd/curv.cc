@@ -20,7 +20,7 @@ extern "C" {
 
 #include "export.h"
 #include "progdir.h"
-#include "tempfile.h"
+#include <libvgeom/tempfile.h>
 #include <libcurv/dtostr.h>
 #include <libcurv/analyser.h>
 #include <libcurv/context.h>
@@ -194,7 +194,7 @@ display_shape(curv::Value value,
             std::cerr << "×" << (shape.bbox_.zmax - shape.bbox_.zmin);
         std::cerr << "\n";
 
-        auto filename = make_tempfile(".frag");
+        auto filename = vgeom::make_tempfile(".frag");
         std::ofstream f(filename.c_str());
         vgeom::export_frag(shape, f);
         f.close();
@@ -472,7 +472,7 @@ main(int argc, char** argv)
 
     // Interpret arguments
     curv::System& sys(make_system(usestdlib, libs));
-    atexit(remove_all_tempfiles);
+    atexit(vgeom::remove_all_tempfiles);
 
     if (filename == nullptr) {
         return interactive_mode(sys);

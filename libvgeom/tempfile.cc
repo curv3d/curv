@@ -2,7 +2,7 @@
 // Licensed under the Apache Licence, version 2.0
 // See https://www.apache.org/licenses/LICENSE-2.0
 
-#include "tempfile.h"
+#include <libvgeom/tempfile.h>
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
 #include <vector>
@@ -15,6 +15,8 @@ extern "C" {
 #include <unistd.h>
 #include <stdio.h>
 }
+
+namespace vgeom {
 
 namespace fs = curv::Filesystem;
 
@@ -53,3 +55,5 @@ remove_all_tempfiles()
     for (auto& file : tempfiles)
         remove(file.c_str());
 }
+
+} // namespace
