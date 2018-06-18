@@ -15,6 +15,7 @@ extern "C" {
 #include <fcntl.h>
 #include <sys/unistd.h>
 #include <sys/wait.h>
+#include <signal.h>
 }
 
 namespace vgeom {
@@ -41,42 +42,6 @@ run_glslViewer(int argc, const char** argv)
     }
 }
 
-#if 0
-void
-viewer_run_shape(curv::Shape_Recognizer& shape)
-{
-    auto filename = make_tempfile(".frag");
-,,,
-        std::ofstream f(filename.c_str());
-        curv::gl_compile(shape, f, cx);
-        f.close();
-        if (block) {
-            auto cmd = curv::stringify("glslViewer ",filename.c_str(),
-                block ? "" : "&");
-            system(cmd->c_str());
-            unlink(filename.c_str());
-        } else {
-            launch_viewer(filename);
-        }
-    auto fragname = curv::stringify(",curv",getpid(),".frag");
-    std::ofstream f(fragname->c_str());
-    f << shader;
-    f.close();
-
-    const char *argv[3];
-    argv[0] = "glslViewer";
-    argv[1] = fragname->c_str();
-    argv[2] = nullptr;
-    viewer_run(2, argv);
-}
-
-void
-viewer_spawn_frag(std::string shader)
-{
-    (void) shader;
-}
-#endif
-
 // Open a Viewer window displaying shape, and block until the window is closed.
 void
 run_viewer(Shape_Recognizer& shape)
@@ -91,6 +56,64 @@ run_viewer(Shape_Recognizer& shape)
     argv[1] = fragname.c_str();
     argv[2] = nullptr;
     run_glslViewer(2, argv);
+}
+
+pid_t viewer_pid = pid_t(-1);
+
+void
+poll_viewer()
+{
+    if (viewer_pid != pid_t(-1)) {
+        int status;
+        pid_t pid = waitpid(viewer_pid, &status, WNOHANG);
+        if (pid == viewer_pid) {
+            if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
+                ;
+            else {
+                std::cerr << "Viewer process abnormal exit: " << status << "\n";
+            }
+            viewer_pid = pid_t(-1);
+        }
+    }
+}
+
+void
+launch_viewer(boost::filesystem::path filename)
+{
+    poll_viewer();
+    if (viewer_pid == pid_t(-1)) {
+        pid_t pid = fork();
+        if (pid == 0) {
+            // in child process
+            const char* argv[3];
+            argv[0] = "glslViewer";
+            argv[1] = filename.c_str();
+            argv[2] = nullptr;
+            exit(viewer_main(2, argv));
+        } else if (pid == pid_t(-1)) {
+            std::cerr << "can't fork Viewer process: "
+                      << strerror(errno) << "\n";
+        } else {
+            viewer_pid = pid;
+        }
+    }
+}
+
+void
+open_viewer(Shape_Recognizer& shape)
+{
+    auto filename = make_tempfile(".frag");
+    std::ofstream f(filename.c_str());
+    export_frag(shape, f);
+    f.close();
+    launch_viewer(filename);
+}
+
+void
+close_viewer()
+{
+    if (viewer_pid != (pid_t)(-1))
+        kill(viewer_pid, SIGTERM);
 }
 
 void

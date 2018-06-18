@@ -143,42 +143,6 @@ poll_editor()
     }
 }
 
-pid_t viewer_pid = pid_t(-1);
-
-void
-poll_viewer()
-{
-    if (viewer_pid != pid_t(-1)) {
-        int status;
-        pid_t pid = waitpid(viewer_pid, &status, WNOHANG);
-        if (pid == viewer_pid) {
-            // TODO: print abnormal exit status
-            viewer_pid = pid_t(-1);
-        }
-    }
-}
-
-void
-launch_viewer(boost::filesystem::path filename)
-{
-    poll_viewer();
-    if (viewer_pid == pid_t(-1)) {
-        pid_t pid = fork();
-        if (pid == 0) {
-            // in child process
-            int r =
-                execlp("glslViewer", "glslViewer", filename.c_str(), (char*)0);
-            std::cerr << "can't exec glslViewer\n"; // TODO: why?
-            (void) r; // TODO
-            exit(1);
-        } else if (pid == pid_t(-1)) {
-            std::cerr << "can't fork glslViewer\n"; // TODO: why?
-        } else {
-            viewer_pid = pid;
-        }
-    }
-}
-
 bool
 display_shape(curv::Value value,
     curv::System& sys, const curv::Context &cx, bool block = false)
@@ -198,11 +162,7 @@ display_shape(curv::Value value,
         if (block) {
             vgeom::run_viewer(shape);
         } else {
-            auto filename = vgeom::make_tempfile(".frag");
-            std::ofstream f(filename.c_str());
-            vgeom::export_frag(shape, f);
-            f.close();
-            launch_viewer(filename);
+            vgeom::open_viewer(shape);
         }
         return true;
     } else
@@ -232,7 +192,7 @@ interactive_mode(curv::System& sys)
             if (result == rlx_interrupt) {
                 continue;
             }
-            return EXIT_SUCCESS;
+            break;
         }
         auto script = curv::make<CString_Script>("", line);
         try {
@@ -263,6 +223,8 @@ interactive_mode(curv::System& sys)
             std::cout << "ERROR: " << e.what() << "\n";
         }
     }
+    vgeom::close_viewer();
+    return EXIT_SUCCESS;
 }
 
 int
@@ -302,8 +264,7 @@ live_mode(curv::System& sys, const char* editor, const char* filename)
         for (;;) {
             usleep(500'000);
             if (editor && !poll_editor()) {
-                if (viewer_pid != (pid_t)(-1))
-                    kill(viewer_pid, SIGTERM);
+                vgeom::close_viewer();
                 return 0;
             }
             struct stat st2;
