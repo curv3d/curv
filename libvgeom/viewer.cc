@@ -77,6 +77,22 @@ viewer_spawn_frag(std::string shader)
 }
 #endif
 
+// Open a Viewer window displaying shape, and block until the window is closed.
+void
+run_viewer(Shape_Recognizer& shape)
+{
+    auto fragname = make_tempfile(".frag");
+    std::ofstream f(fragname.c_str());
+    export_frag(shape, f);
+    f.close();
+
+    const char* argv[3];
+    argv[0] = "glslViewer";
+    argv[1] = fragname.c_str();
+    argv[2] = nullptr;
+    run_glslViewer(2, argv);
+}
+
 void
 export_png(Shape_Recognizer& shape, curv::Filesystem::path png_pathname)
 {

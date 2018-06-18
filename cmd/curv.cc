@@ -37,6 +37,7 @@ extern "C" {
 #include <libcurv/die.h>
 #include <libvgeom/export_frag.h>
 #include <libvgeom/shape.h>
+#include <libvgeom/viewer.h>
 
 bool was_interrupted = false;
 
@@ -194,16 +195,13 @@ display_shape(curv::Value value,
             std::cerr << "×" << (shape.bbox_.zmax - shape.bbox_.zmin);
         std::cerr << "\n";
 
-        auto filename = vgeom::make_tempfile(".frag");
-        std::ofstream f(filename.c_str());
-        vgeom::export_frag(shape, f);
-        f.close();
         if (block) {
-            auto cmd = curv::stringify("glslViewer ",filename.c_str(),
-                block ? "" : "&");
-            system(cmd->c_str());
-            unlink(filename.c_str());
+            vgeom::run_viewer(shape);
         } else {
+            auto filename = vgeom::make_tempfile(".frag");
+            std::ofstream f(filename.c_str());
+            vgeom::export_frag(shape, f);
+            f.close();
             launch_viewer(filename);
         }
         return true;
