@@ -27,7 +27,6 @@ Ease of Use:
 * Pre-built executables.
 
 Mesh Import:
-* Refactor: glslViewer is repackaged as a library used by `curv`.
 * RSDF import and export.
 * mesh to RSDF tool
 
@@ -140,7 +139,7 @@ More future work:
   not Lipschitz-continuous). The curv command will automatically preview
   these shapes by constructing a mesh.
   * In live mode, the Viewer window needs to dynamically switch between showing
-    a mesh and showing a fragment shader. So, no more glslViewer I guess.
+    a mesh and showing a fragment shader.
 
 ## 0.0 TODO List
 0.0 Roadmap:
@@ -172,8 +171,7 @@ Proposed change: `include lib.shape` required to access shape library.
     let include lib.shape;
     in cube
 
-3D Viewer (in glslViewer): "arcball rotation" to replace my ad-hoc
-mouse rotation code.
+3D Viewer: "arcball rotation" to replace my ad-hoc mouse rotation code.
 
 Pattern project:
 * cast patterns
@@ -313,7 +311,7 @@ GL:
   pick E1 or E2, otherwise just emit E2.
 * mat2, mat3, mat4
 
-glslViewer:
+Viewer:
 * HOME key resets view
 * other ideas:
   * SHIFT key constrains rotate and pan to one axis.
@@ -330,14 +328,10 @@ library:
 * regular polytopes are specified using incircle radius.
   `circumscale r RP` scales a regular polytope RP to specified circumcircle
   or circumsphere radius r. RP stores its bounding circle/sphere radius.
-* Use HSV colour space? Impact on image import? Colours at least need to be
-  linear, not gamma-corrected, for colour model.
 
 curv:
-* in `curv -le`, if you quit the editor then curv exits (first, glslViewer is
-  terminated and the temp file is deleted).
-* send GL output to a *.tmp file. If GL compiler fails, delete temp, otherwise
-  move it to the *.frag file so glslViewer will reload it.
+* If GL compiler fails, or GLSL compiler fails, display an error message without
+  affecting what's currently displayed by the Viewer window.
 
 3D viewer
 * use bbox to ensure entire scene is visible
@@ -442,9 +436,7 @@ ImplicitCAD:
 # Older Stuff
 
 Live programming (curv -l):
- * $CURV_EDITOR -- if defined, auto-open editor window 
- * When glslViewer window is closed, curv -l should exit.
- * When curv -l is interrupted, the glslViewer window should be closed.
+ * When curv -l is interrupted, the Viewer window should be closed.
  * redraw if an included file changes. requires integration with libcurv.
  * `fswatch` looks like a decent package on github (better than stat loop?).
    https://github.com/emcrisostomo/fswatch/tree/master/libfswatch
