@@ -11,7 +11,7 @@ You can contribute, by:
 ## Bug Reports
 Just create a new issue, if you can't find an existing issue that describes your problem.
 
-If a Curv script doesn't render properly, it might be a bug in glslViewer or an incompatibility
+If a Curv script doesn't render properly, it might be an incompatibility
 with your GPU driver or your GPU hardware. Please report:
 * What you see in the graphics window. If it's totally black, that may mean that
   the generated GPU code (a GLSL script) did not compile, in which case there should
