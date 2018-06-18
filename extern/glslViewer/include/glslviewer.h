@@ -2,9 +2,9 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef VIEWER_H
-#define VIEWER_H
+#ifndef GLSLVIEWER_H
+#define GLSLVIEWER_H
 
-int viewer_main(int argc, const char** argv);
+int glslviewer_main(int argc, const char** argv);
 
 #endif // header guard

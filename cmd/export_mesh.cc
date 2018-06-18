@@ -11,7 +11,7 @@
 
 #include "export.h"
 #include "compiled_shape.h"
-#include <libvgeom/shape.h>
+#include <libcurv/geom/shape.h>
 #include <libcurv/exception.h>
 #include <libcurv/die.h>
 
@@ -61,24 +61,24 @@ void put_triangle(std::ostream& out, Vec3s v0, Vec3s v1, Vec3s v2)
         << "endfacet\n";
 }
 
-vgeom::Vec3 linear_RGB_to_sRGB(vgeom::Vec3 c)
+curv::geom::Vec3 linear_RGB_to_sRGB(curv::geom::Vec3 c)
 {
     constexpr double k = 0.4545;
-    return vgeom::Vec3{pow(c.x, k), pow(c.y, k), pow(c.z, k)};
+    return curv::geom::Vec3{pow(c.x, k), pow(c.y, k), pow(c.z, k)};
 }
 
-void put_face_colour(std::ostream& out, vgeom::Shape& shape,
+void put_face_colour(std::ostream& out, curv::geom::Shape& shape,
     Vec3s v0, Vec3s v1, Vec3s v2)
 {
     Vec3s centroid = (v0 + v1 + v2) / 3.0;
-    vgeom::Vec3 c = shape.colour(centroid.x(), centroid.y(), centroid.z(), 0.0);
+    curv::geom::Vec3 c = shape.colour(centroid.x(), centroid.y(), centroid.z(), 0.0);
     c = linear_RGB_to_sRGB(c);
     out << " " << c.x << " " << c.y << " " << c.z;
 }
 
-void put_vertex_colour(std::ostream& out, vgeom::Shape& shape, Vec3s v)
+void put_vertex_colour(std::ostream& out, curv::geom::Shape& shape, Vec3s v)
 {
-    vgeom::Vec3 c = shape.colour(v.x(), v.y(), v.z(), 0.0);
+    curv::geom::Vec3 c = shape.colour(v.x(), v.y(), v.z(), 0.0);
     c = linear_RGB_to_sRGB(c);
     out << " " << c.x << " " << c.y << " " << c.z;
 }
@@ -100,7 +100,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
     curv::System& sys, const curv::Context& cx, const Export_Params& params,
     std::ostream& out)
 {
-    vgeom::Shape_Recognizer shape(cx, sys);
+    curv::geom::Shape_Recognizer shape(cx, sys);
     if (!shape.recognize(value) && !shape.is_3d_)
         throw curv::Exception(cx, "mesh export: not a 3D shape");
 

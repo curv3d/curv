@@ -5,29 +5,29 @@
 #ifndef COMPILED_SHAPE_H
 #define COMPILED_SHAPE_H
 
-#include <libvgeom/shape.h>
+#include <libcurv/geom/shape.h>
 #include <ostream>
 #include <glm/vec3.hpp>
 
-struct Compiled_Shape final : public vgeom::Shape
+struct Compiled_Shape final : public curv::geom::Shape
 {
     double (*dist_)(double,double,double,double);
     void (*colour_)(double,double,double,double,glm::vec3*);
 
-    Compiled_Shape(vgeom::Shape_Recognizer&);
+    Compiled_Shape(curv::geom::Shape_Recognizer&);
 
     virtual double dist(double x, double y, double z, double t) override
     {
         return dist_(x,y,z,t);
     }
-    virtual vgeom::Vec3 colour(double x, double y, double z, double t) override
+    virtual curv::geom::Vec3 colour(double x, double y, double z, double t) override
     {
         glm::vec3 c;
         colour_(x,y,z,t, &c);
-        return vgeom::Vec3{c.x,c.y,c.z};
+        return curv::geom::Vec3{c.x,c.y,c.z};
     }
 };
 
-void shape_to_cpp(vgeom::Shape_Recognizer& shape, std::ostream& out);
+void shape_to_cpp(curv::geom::Shape_Recognizer& shape, std::ostream& out);
 
 #endif // include guard

@@ -7,11 +7,9 @@
 #include <libcurv/dtostr.h>
 #include <libcurv/gl_compiler.h>
 #include <libcurv/gl_context.h>
-#include <libvgeom/shape.h>
+#include <libcurv/geom/shape.h>
 
-using namespace curv;
-
-namespace vgeom {
+namespace curv { namespace geom {
 
 void export_frag_2d(const Shape_Recognizer&, std::ostream&);
 void export_frag_3d(const Shape_Recognizer&, std::ostream&);
@@ -310,4 +308,4 @@ void export_frag_3d(const Shape_Recognizer& shape, std::ostream& out)
        ;
 }
 
-} // namespace vgeom
+}} // namespaces

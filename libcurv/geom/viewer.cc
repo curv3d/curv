@@ -2,12 +2,13 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <viewer.h>
+#include <libcurv/geom/viewer.h>
+#include <glslviewer.h>
 #include <iostream>
 #include <fstream>
 #include <libcurv/string.h>
-#include <libvgeom/export_frag.h>
-#include <libvgeom/tempfile.h>
+#include <libcurv/geom/export_frag.h>
+#include <libcurv/geom/tempfile.h>
 extern "C" {
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -17,17 +18,17 @@ extern "C" {
 #include <signal.h>
 }
 
-namespace vgeom {
+namespace curv { namespace geom {
 
 void
-run_glslViewer(int argc, const char** argv)
+run_glslviewer(int argc, const char** argv)
 {
     pid_t pid = fork();
     if (pid == 0) {
         // in child process
         int fd = open("/dev/null", O_WRONLY);
         dup2(fd, 1); // TODO: suppress unwanted messages written to stdout
-        exit(viewer_main(argc, argv));
+        exit(glslviewer_main(argc, argv));
     } else if (pid == pid_t(-1)) {
         std::cerr << "can't fork Viewer process: " << strerror(errno) << "\n";
     } else {
@@ -54,7 +55,7 @@ run_viewer(Shape_Recognizer& shape)
     argv[0] = "glslViewer";
     argv[1] = fragname.c_str();
     argv[2] = nullptr;
-    run_glslViewer(2, argv);
+    run_glslviewer(2, argv);
 }
 
 pid_t viewer_pid = pid_t(-1);
@@ -88,7 +89,7 @@ launch_viewer(boost::filesystem::path filename)
             argv[0] = "glslViewer";
             argv[1] = filename.c_str();
             argv[2] = nullptr;
-            exit(viewer_main(2, argv));
+            exit(glslviewer_main(2, argv));
         } else if (pid == pid_t(-1)) {
             std::cerr << "can't fork Viewer process: "
                       << strerror(errno) << "\n";
@@ -115,4 +116,4 @@ close_viewer()
         kill(viewer_pid, SIGTERM);
 }
 
-} // namespace
+}} // namespace

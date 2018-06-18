@@ -37,19 +37,19 @@ FILE(GLOB LibCurvSrc "libcurv/*.cc")
 add_library(libcurv ${LibCurvSrc})
 set_property(TARGET libcurv PROPERTY OUTPUT_NAME curv)
 
-FILE(GLOB LibVgeomSrc "libvgeom/*.cc")
-add_library(libvgeom ${LibVgeomSrc})
-set_property(TARGET libvgeom PROPERTY OUTPUT_NAME vgeom)
+FILE(GLOB LibCurvGeomSrc "libcurv/geom/*.cc")
+add_library(libcurv_geom ${LibCurvGeomSrc})
+set_property(TARGET libcurv_geom PROPERTY OUTPUT_NAME curv_geom)
 
 FILE(GLOB Src "cmd/*.c" "cmd/*.cc")
 add_executable(curv ${Src})
-target_link_libraries(curv PUBLIC libcurv libvgeom GlslViewer glfw ${LibOpenGL} ${LibReadline} double-conversion boost_filesystem boost_system openvdb_static Half tbb dl pthread)
+target_link_libraries(curv PUBLIC libcurv libcurv_geom GlslViewer glfw ${LibOpenGL} ${LibReadline} double-conversion boost_filesystem boost_system openvdb_static Half tbb dl pthread)
 
 FILE(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})
 target_link_libraries(tester PUBLIC gtest pthread libcurv double-conversion boost_filesystem boost_system)
 
-set_property(TARGET curv libcurv libvgeom tester PROPERTY CXX_STANDARD 14)
+set_property(TARGET curv libcurv libcurv_geom tester PROPERTY CXX_STANDARD 14)
 
 set( gccflags "-Wall -Wno-unused-result" )
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${gccflags}" )

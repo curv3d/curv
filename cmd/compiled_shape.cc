@@ -3,7 +3,7 @@
 // See https://www.apache.org/licenses/LICENSE-2.0
 
 #include "compiled_shape.h"
-#include <libvgeom/tempfile.h>
+#include <libcurv/geom/tempfile.h>
 #include <cstdlib>
 #include <fstream>
 #include <libcurv/exception.h>
@@ -13,15 +13,15 @@ extern "C" {
 #include <dlfcn.h>
 }
 
-Compiled_Shape::Compiled_Shape(vgeom::Shape_Recognizer& rshape)
+Compiled_Shape::Compiled_Shape(curv::geom::Shape_Recognizer& rshape)
 {
     is_2d_ = rshape.is_2d_;
     is_3d_ = rshape.is_3d_;
     bbox_ = rshape.bbox_;
 
     // convert shape to C++ source code
-    //auto cppname = vgeom::make_tempfile(".cpp");
-    auto cppname = vgeom::tempfile_name(".cpp");
+    //auto cppname = curv::geom::make_tempfile(".cpp");
+    auto cppname = curv::geom::tempfile_name(".cpp");
     std::ofstream cpp(cppname.c_str());
     shape_to_cpp(rshape, cpp);
     cpp.close();
@@ -33,8 +33,8 @@ Compiled_Shape::Compiled_Shape(vgeom::Shape_Recognizer& rshape)
         throw curv::Exception({}, "c++ compile failed");
 
     // create shared object
-    auto obj_name = vgeom::tempfile_name(".o");
-    auto so_name = vgeom::tempfile_name(".so");
+    auto obj_name = curv::geom::tempfile_name(".o");
+    auto so_name = curv::geom::tempfile_name(".so");
     auto link_cmd = curv::stringify("c++ -shared -o ", so_name.c_str(), " ", obj_name.c_str());
     if (system(link_cmd->c_str()) != 0)
         throw curv::Exception({}, "c++ link failed");
@@ -67,7 +67,7 @@ Compiled_Shape::Compiled_Shape(vgeom::Shape_Recognizer& rshape)
 }
 
 void
-shape_to_cpp(vgeom::Shape_Recognizer& shape, std::ostream& out)
+shape_to_cpp(curv::geom::Shape_Recognizer& shape, std::ostream& out)
 {
     curv::GL_Compiler gl(out, curv::GL_Target::cpp);
     out <<

@@ -2,7 +2,7 @@
 // Licensed under the Apache Licence, version 2.0
 // See https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libvgeom/tempfile.h>
+#include <libcurv/geom/tempfile.h>
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
 #include <vector>
@@ -16,16 +16,16 @@ extern "C" {
 #include <stdio.h>
 }
 
-namespace vgeom {
+namespace curv { namespace geom {
 
-namespace fs = curv::Filesystem;
+namespace fs = Filesystem;
 
 std::vector<fs::path> tempfiles;
 
 fs::path
 tempfile_name(const char* suffix)
 {
-    auto name = curv::stringify(",curv",getpid(),suffix);
+    auto name = stringify(",curv",getpid(),suffix);
     return fs::current_path() / fs::path(name->c_str());
 }
 
@@ -35,7 +35,7 @@ make_tempfile(const char* suffix)
     auto filename = tempfile_name(suffix);
     int fd = creat(filename.c_str(), 0666);
     if (fd == -1)
-        throw curv::Exception({}, curv::stringify(
+        throw Exception({}, stringify(
             "Can't create ",filename.c_str(),": ",strerror(errno)));
     close(fd);
     tempfiles.push_back(filename);
@@ -56,4 +56,4 @@ remove_all_tempfiles()
         remove(file.c_str());
 }
 
-} // namespace
+}} // namespace

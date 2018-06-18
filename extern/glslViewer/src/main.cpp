@@ -22,7 +22,7 @@
 #include "glm/gtx/rotate_vector.hpp"
 
 #include "ui/cursor.h"
-#include "viewer.h"
+#include "glslviewer.h"
 
 // GLOBAL VARIABLES
 //============================================================================
@@ -109,7 +109,7 @@ void printUsage(const char *);
 
 // Main program
 //============================================================================
-int viewer_main(int argc, const char **argv){
+int glslviewer_main(int argc, const char **argv){
     u_centre3d = glm::vec3(0.,0.,0.);
     u_eye3d = glm::vec3(2.598076,3.0,4.5);
     u_up3d = glm::vec3(-0.25,0.866025,-0.433013);

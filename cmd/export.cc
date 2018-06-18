@@ -7,9 +7,8 @@
 #include <sstream>
 #include <libcurv/exception.h>
 #include <libcurv/filesystem.h>
-#include <libvgeom/shape.h>
-#include <libvgeom/export_frag.h>
-#include <viewer.h>
+#include <libcurv/geom/shape.h>
+#include <libcurv/geom/export_frag.h>
 
 void export_curv(curv::Value value,
     curv::System&, const curv::Context&, const Export_Params&,
@@ -22,9 +21,9 @@ void export_frag(curv::Value value,
     curv::System& sys, const curv::Context& cx, const Export_Params&,
     std::ostream& out)
 {
-    vgeom::Shape_Recognizer shape(cx, sys);
+    curv::geom::Shape_Recognizer shape(cx, sys);
     if (shape.recognize(value))
-        vgeom::export_frag(shape, std::cout);
+        curv::geom::export_frag(shape, std::cout);
     else
         throw curv::Exception(cx, "not a shape");
 }

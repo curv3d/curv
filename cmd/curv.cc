@@ -20,7 +20,7 @@ extern "C" {
 
 #include "export.h"
 #include "progdir.h"
-#include <libvgeom/tempfile.h>
+#include <libcurv/geom/tempfile.h>
 #include <libcurv/dtostr.h>
 #include <libcurv/analyser.h>
 #include <libcurv/context.h>
@@ -35,9 +35,9 @@ extern "C" {
 #include <libcurv/record.h>
 #include <libcurv/version.h>
 #include <libcurv/die.h>
-#include <libvgeom/export_frag.h>
-#include <libvgeom/shape.h>
-#include <libvgeom/viewer.h>
+#include <libcurv/geom/export_frag.h>
+#include <libcurv/geom/shape.h>
+#include <libcurv/geom/viewer.h>
 
 bool was_interrupted = false;
 
@@ -147,7 +147,7 @@ bool
 display_shape(curv::Value value,
     curv::System& sys, const curv::Context &cx, bool block = false)
 {
-    vgeom::Shape_Recognizer shape(cx, sys);
+    curv::geom::Shape_Recognizer shape(cx, sys);
     if (shape.recognize(value)) {
         if (shape.is_2d_) std::cerr << "2D";
         if (shape.is_2d_ && shape.is_3d_) std::cerr << "/";
@@ -160,9 +160,9 @@ display_shape(curv::Value value,
         std::cerr << "\n";
 
         if (block) {
-            vgeom::run_viewer(shape);
+            curv::geom::run_viewer(shape);
         } else {
-            vgeom::open_viewer(shape);
+            curv::geom::open_viewer(shape);
         }
         return true;
     } else
@@ -223,7 +223,7 @@ interactive_mode(curv::System& sys)
             std::cout << "ERROR: " << e.what() << "\n";
         }
     }
-    vgeom::close_viewer();
+    curv::geom::close_viewer();
     return EXIT_SUCCESS;
 }
 
@@ -264,7 +264,7 @@ live_mode(curv::System& sys, const char* editor, const char* filename)
         for (;;) {
             usleep(500'000);
             if (editor && !poll_editor()) {
-                vgeom::close_viewer();
+                curv::geom::close_viewer();
                 return 0;
             }
             struct stat st2;
@@ -425,7 +425,7 @@ main(int argc, char** argv)
 
     // Interpret arguments
     curv::System& sys(make_system(usestdlib, libs));
-    atexit(vgeom::remove_all_tempfiles);
+    atexit(curv::geom::remove_all_tempfiles);
 
     if (filename == nullptr) {
         return interactive_mode(sys);
