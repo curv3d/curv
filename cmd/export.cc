@@ -9,6 +9,7 @@
 #include <libcurv/filesystem.h>
 #include <libvgeom/shape.h>
 #include <libvgeom/export_frag.h>
+#include <libvgeom/export_png.h>
 #include <viewer.h>
 
 void export_curv(curv::Value value,
@@ -126,10 +127,8 @@ void export_png(curv::Value value,
     vgeom::Shape_Recognizer shape(cx, sys);
     if (shape.recognize(value)) {
         namespace fs = curv::Filesystem;
-        std::stringstream shader;
-        vgeom::export_frag(shape, shader);
         auto pngname = curv::stringify(",curv",getpid(),".png");
-        viewer_export_png(shader.str(), fs::path(pngname->c_str()));
+        vgeom::export_png(shape, fs::path(pngname->c_str()));
         auto cmd = curv::stringify("cat ",pngname->c_str());
         system(cmd->c_str());
         unlink(pngname->c_str());

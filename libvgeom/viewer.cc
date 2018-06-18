@@ -6,6 +6,9 @@
 #include <iostream>
 #include <fstream>
 #include <libcurv/string.h>
+#include <libvgeom/export_png.h>
+#include <libvgeom/export_frag.h>
+#include <libvgeom/tempfile.h>
 extern "C" {
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -14,8 +17,10 @@ extern "C" {
 #include <sys/wait.h>
 }
 
+namespace vgeom {
+
 void
-viewer_run(int argc, const char** argv)
+run_glslViewer(int argc, const char** argv)
 {
     pid_t pid = fork();
     if (pid == 0) {
@@ -36,10 +41,33 @@ viewer_run(int argc, const char** argv)
     }
 }
 
+#if 0
 void
-viewer_run_frag(std::string shader)
+viewer_run_shape(curv::Shape_Recognizer& shape)
 {
-    (void) shader;
+    auto filename = make_tempfile(".frag");
+,,,
+        std::ofstream f(filename.c_str());
+        curv::gl_compile(shape, f, cx);
+        f.close();
+        if (block) {
+            auto cmd = curv::stringify("glslViewer ",filename.c_str(),
+                block ? "" : "&");
+            system(cmd->c_str());
+            unlink(filename.c_str());
+        } else {
+            launch_viewer(filename);
+        }
+    auto fragname = curv::stringify(",curv",getpid(),".frag");
+    std::ofstream f(fragname->c_str());
+    f << shader;
+    f.close();
+
+    const char *argv[3];
+    argv[0] = "glslViewer";
+    argv[1] = fragname->c_str();
+    argv[2] = nullptr;
+    viewer_run(2, argv);
 }
 
 void
@@ -47,13 +75,14 @@ viewer_spawn_frag(std::string shader)
 {
     (void) shader;
 }
+#endif
 
 void
-viewer_export_png(std::string shader, curv::Filesystem::path png_pathname)
+export_png(Shape_Recognizer& shape, curv::Filesystem::path png_pathname)
 {
-    auto fragname = curv::stringify(",curv",getpid(),".frag");
-    std::ofstream f(fragname->c_str());
-    f << shader;
+    auto fragname = make_tempfile(".frag");
+    std::ofstream f(fragname.c_str());
+    export_frag(shape, f);
     f.close();
 
     const char *argv[8];
@@ -63,7 +92,9 @@ viewer_export_png(std::string shader, curv::Filesystem::path png_pathname)
     argv[3] = "--headless";
     argv[4] = "-o";
     argv[5] = png_pathname.c_str();
-    argv[6] = fragname->c_str();
+    argv[6] = fragname.c_str();
     argv[7] = nullptr;
-    viewer_run(7, argv);
+    run_glslViewer(7, argv);
 }
+
+} // namespace
