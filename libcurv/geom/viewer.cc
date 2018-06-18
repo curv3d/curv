@@ -21,6 +21,13 @@ extern "C" {
 namespace curv { namespace geom {
 
 void
+run_glslviewer_interrupt_handler(int)
+{
+    remove_all_tempfiles();
+    exit(1);
+}
+
+void
 run_glslviewer(int argc, const char** argv)
 {
     pid_t pid = fork();
@@ -32,6 +39,11 @@ run_glslviewer(int argc, const char** argv)
     } else if (pid == pid_t(-1)) {
         std::cerr << "can't fork Viewer process: " << strerror(errno) << "\n";
     } else {
+        struct sigaction interrupt_action;
+        memset((void*)&interrupt_action, 0, sizeof(interrupt_action));
+        interrupt_action.sa_handler = run_glslviewer_interrupt_handler;
+        sigaction(SIGINT, &interrupt_action, nullptr);
+
         int status;
         waitpid(pid, &status, 0);
         if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
