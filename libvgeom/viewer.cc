@@ -6,7 +6,6 @@
 #include <iostream>
 #include <fstream>
 #include <libcurv/string.h>
-#include <libvgeom/export_png.h>
 #include <libvgeom/export_frag.h>
 #include <libvgeom/tempfile.h>
 extern "C" {
@@ -114,26 +113,6 @@ close_viewer()
 {
     if (viewer_pid != (pid_t)(-1))
         kill(viewer_pid, SIGTERM);
-}
-
-void
-export_png(Shape_Recognizer& shape, curv::Filesystem::path png_pathname)
-{
-    auto fragname = make_tempfile(".frag");
-    std::ofstream f(fragname.c_str());
-    export_frag(shape, f);
-    f.close();
-
-    const char *argv[8];
-    argv[0] = "glslViewer";
-    argv[1] = "-s";
-    argv[2] = "0";
-    argv[3] = "--headless";
-    argv[4] = "-o";
-    argv[5] = png_pathname.c_str();
-    argv[6] = fragname.c_str();
-    argv[7] = nullptr;
-    run_glslViewer(7, argv);
 }
 
 } // namespace

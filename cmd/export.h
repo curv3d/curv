@@ -38,10 +38,6 @@ extern void export_json(curv::Value value,
     curv::System&, const curv::Context& cx, const Export_Params& params,
     std::ostream& out);
 
-extern void export_png(curv::Value value,
-    curv::System&, const curv::Context& cx, const Export_Params& params,
-    std::ostream& out);
-
 extern void export_cpp(curv::Value value,
     curv::System&, const curv::Context& cx, const Export_Params& params,
     std::ostream& out);

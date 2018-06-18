@@ -9,7 +9,6 @@
 #include <libcurv/filesystem.h>
 #include <libvgeom/shape.h>
 #include <libvgeom/export_frag.h>
-#include <libvgeom/export_png.h>
 #include <viewer.h>
 
 void export_curv(curv::Value value,
@@ -118,20 +117,4 @@ void export_json(curv::Value value,
         out << "\n";
     else
         throw curv::Exception(cx, "value can't be converted to JSON");
-}
-
-void export_png(curv::Value value,
-    curv::System& sys, const curv::Context& cx, const Export_Params&,
-    std::ostream& out)
-{
-    vgeom::Shape_Recognizer shape(cx, sys);
-    if (shape.recognize(value)) {
-        namespace fs = curv::Filesystem;
-        auto pngname = curv::stringify(",curv",getpid(),".png");
-        vgeom::export_png(shape, fs::path(pngname->c_str()));
-        auto cmd = curv::stringify("cat ",pngname->c_str());
-        system(cmd->c_str());
-        unlink(pngname->c_str());
-    } else
-        throw curv::Exception(cx, "not a shape");
 }
