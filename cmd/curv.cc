@@ -416,11 +416,8 @@ main(int argc, char** argv)
             break;
         case 'e':
             editor = getenv("CURV_EDITOR");
-            if (editor == nullptr) {
-                std::cerr << "-e specified but $CURV_EDITOR not defined\n"
-                         << "Use " << argv0 << " --help for help.\n";
-                return EXIT_FAILURE;
-            }
+            if (editor == nullptr)
+                editor = "gedit --new-window --wait";
             break;
         case '?':
             std::cerr << "-" << (char)optopt << ": unknown option\n"
