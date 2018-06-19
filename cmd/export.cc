@@ -9,6 +9,7 @@
 #include <libcurv/filesystem.h>
 #include <libcurv/geom/shape.h>
 #include <libcurv/geom/export_frag.h>
+#include <libcurv/geom/compiled_shape.h>
 
 void export_curv(curv::Value value,
     curv::System&, const curv::Context&, const Export_Params&,
@@ -26,6 +27,16 @@ void export_frag(curv::Value value,
         curv::geom::export_frag(shape, std::cout);
     else
         throw curv::Exception(cx, "not a shape");
+}
+
+void export_cpp(curv::Value value,
+    curv::System& sys, const curv::Context& cx, const Export_Params&,
+    std::ostream& out)
+{
+    curv::geom::Shape_Recognizer shape(cx, sys);
+    if (!shape.recognize(value))
+        throw curv::Exception(cx, "not a shape");
+    curv::geom::export_cpp(shape, out);
 }
 
 bool is_json_data(curv::Value val)
