@@ -10,7 +10,7 @@
 namespace curv { namespace geom {
 
 Filesystem::path tempfile_name(const char* suffix);
-void register_tempfile(const char* suffix);
+Filesystem::path register_tempfile(const char* suffix);
 Filesystem::path make_tempfile(const char* suffix);
 void remove_all_tempfiles();
 

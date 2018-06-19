@@ -42,11 +42,12 @@ make_tempfile(const char* suffix)
     return filename;
 }
 
-void
+fs::path
 register_tempfile(const char* suffix)
 {
     auto filename = tempfile_name(suffix);
     tempfiles.push_back(filename);
+    return filename;
 }
 
 void

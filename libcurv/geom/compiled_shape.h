@@ -9,25 +9,28 @@
 #include <ostream>
 #include <glm/vec3.hpp>
 
-struct Compiled_Shape final : public curv::geom::Shape
+namespace curv { namespace geom {
+
+struct Compiled_Shape final : public Shape
 {
     double (*dist_)(double,double,double,double);
     void (*colour_)(double,double,double,double,glm::vec3*);
 
-    Compiled_Shape(curv::geom::Shape_Recognizer&);
+    Compiled_Shape(Shape_Recognizer&);
 
     virtual double dist(double x, double y, double z, double t) override
     {
         return dist_(x,y,z,t);
     }
-    virtual curv::geom::Vec3 colour(double x, double y, double z, double t) override
+    virtual Vec3 colour(double x, double y, double z, double t) override
     {
         glm::vec3 c;
         colour_(x,y,z,t, &c);
-        return curv::geom::Vec3{c.x,c.y,c.z};
+        return Vec3{c.x,c.y,c.z};
     }
 };
 
-void shape_to_cpp(curv::geom::Shape_Recognizer& shape, std::ostream& out);
+void export_cpp(Shape_Recognizer& shape, std::ostream& out);
 
+}} // namespace
 #endif // include guard

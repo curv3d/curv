@@ -10,7 +10,7 @@
 #include <openvdb/tools/VolumeToMesh.h>
 
 #include "export.h"
-#include "compiled_shape.h"
+#include <libcurv/geom/compiled_shape.h>
 #include <libcurv/geom/shape.h>
 #include <libcurv/exception.h>
 #include <libcurv/die.h>
@@ -110,11 +110,11 @@ void export_mesh(Mesh_Format format, curv::Value value,
     }
 #endif
 
-    std::unique_ptr<Compiled_Shape> cshape = nullptr;
+    std::unique_ptr<curv::geom::Compiled_Shape> cshape = nullptr;
     if (params.find("jit") != params.end()) {
         //std::chrono::time_point<std::chrono::steady_clock> cstart_time, cend_time;
         auto cstart_time = std::chrono::steady_clock::now();
-        cshape = std::make_unique<Compiled_Shape>(shape);
+        cshape = std::make_unique<curv::geom::Compiled_Shape>(shape);
         auto cend_time = std::chrono::steady_clock::now();
         std::chrono::duration<double> compile_time = cend_time - cstart_time;
         std::cerr
