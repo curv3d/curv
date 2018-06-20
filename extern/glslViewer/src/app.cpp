@@ -9,7 +9,7 @@
 
 // Common global variables
 //----------------------------------------------------
-const std::string appTitle = "glslViewer";
+const std::string appTitle = "curv";
 static glm::mat4 orthoMatrix;
 typedef struct {
     float     x,y;
@@ -431,7 +431,7 @@ void updateGL(){
             }
         }
     #else
-        std::string title = appTitle + ":..: FPS:" + toString(fFPS);
+        std::string title = appTitle + " FPS:" + toString(fFPS);
         debounceSetWindowTitle(title);
 
         // OSX/LINUX

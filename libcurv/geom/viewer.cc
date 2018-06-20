@@ -64,7 +64,7 @@ run_viewer(Shape_Recognizer& shape)
     f.close();
 
     const char* argv[3];
-    argv[0] = "glslViewer";
+    argv[0] = "curv";
     argv[1] = fragname.c_str();
     argv[2] = nullptr;
     run_glslviewer(2, argv);
@@ -98,7 +98,7 @@ launch_viewer(boost::filesystem::path filename)
         if (pid == 0) {
             // in child process
             const char* argv[3];
-            argv[0] = "glslViewer";
+            argv[0] = "curv";
             argv[1] = filename.c_str();
             argv[2] = nullptr;
             exit(glslviewer_main(2, argv));
