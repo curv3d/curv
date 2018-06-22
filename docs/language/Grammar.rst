@@ -70,7 +70,7 @@ precedence and ``postfix`` being the highest precedence::
         | 'in' | 'include' | 'let' | 'var' | 'where' | 'while'
 
     numeral ::= hexnum | mantissa | /mantissa [eE] [+-]? digits/
-      mantissa ::= /digits/ | /'.' digits/ | /digits '.'/ | /digits '.' digits/
+      mantissa ::= /digits/ | /'.' digits/ | /digits '.' digits/
       digits ::= /[0-9]+/
       hexnum ::= /'0x' [0-9a-fA-F]+/
 

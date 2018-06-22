@@ -209,9 +209,8 @@ TEST(curv, eval)
     SUCCESS("true", "true");
     SUCCESS("42.7", "42.7");
     SUCCESS(".1", "0.1");
-    SUCCESS("1.", "1");
     SUCCESS(".1e-1", "0.01");
-    SUCCESS("1.e+1", "10");
+    SUCCESS("1.0e+1", "10");
     SUCCESS("1e1", "10");
     FAILMSG("0x", "bad numeral");
     SUCCESS("0xFF", "255");

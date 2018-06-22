@@ -166,7 +166,7 @@ Scanner::get_token()
 
     // Recognize a numeral. Compatible with C and strtod().
     //   numeral ::= significand exponent? | hex
-    //   significand ::= digits | digits "." | "." digits | digits "." digits
+    //   significand ::= digits | "." digits | digits "." digits
     //   exponent ::= /[eE]/ sign? digits
     //   sign ::= "+" | "-"
     //   digits ::= /[0-9]+/
@@ -182,8 +182,8 @@ Scanner::get_token()
         }
         while (p < last && isdigit(*p))
             ++p;
-        if (p < last && *p == '.' && !(p+1 < last && p[1]=='.')) {
-            ++p;
+        if (p+1 < last && p[0] == '.' && isdigit(p[1])) {
+            p += 2;
             while (p < last && isdigit(*p))
                 ++p;
         }
