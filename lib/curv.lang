@@ -4,7 +4,7 @@
      Licensed under the Apache License, version 2.0
      See https://www.apache.org/licenses/LICENSE-2.0
 
-     Configure the 'gedit' text editor for syntax highlighting of *.curv files.
+     Configures the 'gedit' text editor for syntax highlighting of *.curv files.
      Install in: /usr/share/gtksourceview-[234].0/language-specs/curv.lang
   -->
 <language id="curv" name="Curv" version="2.0" _section="Source">
@@ -68,7 +68,17 @@
         </context>
 
         <context id="token">
-          <match>\.\.\.?|[_a-zA-Z][_a-zA-Z0-9]*</match>
+          <match extended="true">
+            \.\.\.? |
+            == |
+            [_a-zA-Z][_a-zA-Z0-9]*
+          </match>
+        </context>
+
+        <context id="symbols" style-ref="keyword">
+          <match extended="true">
+            := | = | ;
+          </match>
         </context>
 
         <context id="decimal" style-ref="numeral">
