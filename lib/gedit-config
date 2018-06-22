@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This file is part of Curv: https://github.com/doug-moen/curv
+     Copyright 2018 Doug Moen
+     Licensed under the Apache License, version 2.0
+     See https://www.apache.org/licenses/LICENSE-2.0
+
+     Configure the 'gedit' text editor for syntax highlighting of *.curv files.
+     Install in: /usr/share/gtksourceview-[234].0/language-specs/curv.lang
+  -->
+<language id="curv" name="Curv" version="2.0" _section="Source">
+  <metadata>
+    <property name="mimetypes">text/x-curv</property>
+    <property name="globs">*.curv</property>
+  </metadata>
+  <styles>
+    <style id="comment" name="Comment" map-to="def:comment"/>
+    <style id="string" name="String" map-to="def:string"/>
+    <style id="escape" name="Escape" map-to="def:special-char"/>
+    <style id="keyword" name="Keyword" map-to="def:keyword"/>
+    <style id="numeral" name="Numeral" map-to="def:number"/>
+  </styles>
+  <definitions>
+    <context id="curv">
+      <include>
+
+        <context id="comment" style-ref="comment">
+          <start>\/\/</start>
+          <end>$</end>
+        </context>
+
+        <context id="comment-multiline" style-ref="comment">
+          <start>\/\*</start>
+          <end>\*\/</end>
+          <include>
+            <context ref="def:in-comment"/>
+          </include>
+        </context>
+
+        <context id="string" end-at-line-end="false" style-ref="string">
+          <start>"</start>
+          <end>"</end>
+          <include>
+            <context id="escape" style-ref="escape">
+              <match extended="true">
+                "" |
+                \$\$ |
+                \$\([^)]*\) |
+                \$\[[^]]*\] |
+                \$\{[^}]*\}
+              </match>
+            </context>
+          </include>
+        </context>
+
+        <context id="keywords" style-ref="keyword">
+          <keyword>_</keyword>
+          <keyword>by</keyword>
+          <keyword>do</keyword>
+          <keyword>else</keyword>
+          <keyword>for</keyword>
+          <keyword>if</keyword>
+          <keyword>in</keyword>
+          <keyword>include</keyword>
+          <keyword>let</keyword>
+          <keyword>var</keyword>
+          <keyword>where</keyword>
+          <keyword>while</keyword>
+        </context>
+
+        <context id="token">
+          <match>\.\.\.?|[_a-zA-Z][_a-zA-Z0-9]*</match>
+        </context>
+
+        <context id="decimal" style-ref="numeral">
+          <match extended="true">
+            ([0-9]+(\.[0-9]+)? | \.[0-9]+) ([Ee][+-]?[0-9]+)?
+          </match>
+        </context>
+
+        <context id="hexadecimal" style-ref="numeral">
+          <match extended="true">
+            0[xX][a-fA-F0-9]+
+          </match>
+        </context>
+
+      </include>
+    </context>
+  </definitions>
+</language>
