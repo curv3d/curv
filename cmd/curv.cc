@@ -20,7 +20,7 @@ extern "C" {
 
 #include "export.h"
 #include "progdir.h"
-#include "tempfile.h"
+#include <libcurv/geom/tempfile.h>
 #include <libcurv/dtostr.h>
 #include <libcurv/analyser.h>
 #include <libcurv/context.h>
@@ -33,10 +33,11 @@ extern "C" {
 #include <libcurv/system.h>
 #include <libcurv/list.h>
 #include <libcurv/record.h>
-#include <libcurv/gl_compiler.h>
-#include <libcurv/shape.h>
 #include <libcurv/version.h>
 #include <libcurv/die.h>
+#include <libcurv/geom/export_frag.h>
+#include <libcurv/geom/shape.h>
+#include <libcurv/geom/viewer.h>
 
 bool was_interrupted = false;
 
@@ -142,47 +143,11 @@ poll_editor()
     }
 }
 
-pid_t viewer_pid = pid_t(-1);
-
-void
-poll_viewer()
-{
-    if (viewer_pid != pid_t(-1)) {
-        int status;
-        pid_t pid = waitpid(viewer_pid, &status, WNOHANG);
-        if (pid == viewer_pid) {
-            // TODO: print abnormal exit status
-            viewer_pid = pid_t(-1);
-        }
-    }
-}
-
-void
-launch_viewer(boost::filesystem::path filename)
-{
-    poll_viewer();
-    if (viewer_pid == pid_t(-1)) {
-        pid_t pid = fork();
-        if (pid == 0) {
-            // in child process
-            int r =
-                execlp("glslViewer", "glslViewer", filename.c_str(), (char*)0);
-            std::cerr << "can't exec glslViewer\n"; // TODO: why?
-            (void) r; // TODO
-            exit(1);
-        } else if (pid == pid_t(-1)) {
-            std::cerr << "can't fork glslViewer\n"; // TODO: why?
-        } else {
-            viewer_pid = pid;
-        }
-    }
-}
-
 bool
 display_shape(curv::Value value,
     curv::System& sys, const curv::Context &cx, bool block = false)
 {
-    curv::Shape_Recognizer shape(cx, sys);
+    curv::geom::Shape_Recognizer shape(cx, sys);
     if (shape.recognize(value)) {
         if (shape.is_2d_) std::cerr << "2D";
         if (shape.is_2d_ && shape.is_3d_) std::cerr << "/";
@@ -194,17 +159,10 @@ display_shape(curv::Value value,
             std::cerr << "×" << (shape.bbox_.zmax - shape.bbox_.zmin);
         std::cerr << "\n";
 
-        auto filename = make_tempfile(".frag");
-        std::ofstream f(filename.c_str());
-        curv::gl_compile(shape, f, cx);
-        f.close();
         if (block) {
-            auto cmd = curv::stringify("glslViewer ",filename.c_str(),
-                block ? "" : "&");
-            system(cmd->c_str());
-            unlink(filename.c_str());
+            curv::geom::run_viewer(shape);
         } else {
-            launch_viewer(filename);
+            curv::geom::open_viewer(shape);
         }
         return true;
     } else
@@ -234,7 +192,7 @@ interactive_mode(curv::System& sys)
             if (result == rlx_interrupt) {
                 continue;
             }
-            return EXIT_SUCCESS;
+            break;
         }
         auto script = curv::make<CString_Script>("", line);
         try {
@@ -265,6 +223,8 @@ interactive_mode(curv::System& sys)
             std::cout << "ERROR: " << e.what() << "\n";
         }
     }
+    curv::geom::close_viewer();
+    return EXIT_SUCCESS;
 }
 
 int
@@ -304,8 +264,7 @@ live_mode(curv::System& sys, const char* editor, const char* filename)
         for (;;) {
             usleep(500'000);
             if (editor && !poll_editor()) {
-                if (viewer_pid != (pid_t)(-1))
-                    kill(viewer_pid, SIGTERM);
+                curv::geom::close_viewer();
                 return 0;
             }
             struct stat st2;
@@ -331,7 +290,6 @@ const char help[] =
 "   stl -- STL mesh file (3D shape only)\n"
 "   obj -- OBJ mesh file (3D shape only)\n"
 "   x3d -- X3D colour mesh file (3D shape only)\n"
-"   png -- PNG image file (shape only)\n"
 "   cpp -- C++ source file (shape only)\n"
 "-O name=value -- parameter for one of the output formats\n"
 "--version -- display version.\n"
@@ -380,8 +338,6 @@ main(int argc, char** argv)
                 exporter = export_obj;
             else if (strcmp(optarg, "x3d") == 0)
                 exporter = export_x3d;
-            else if (strcmp(optarg, "png") == 0)
-                exporter = export_png;
             else if (strcmp(optarg, "cpp") == 0)
                 exporter = export_cpp;
             else {
@@ -416,11 +372,8 @@ main(int argc, char** argv)
             break;
         case 'e':
             editor = getenv("CURV_EDITOR");
-            if (editor == nullptr) {
-                std::cerr << "-e specified but $CURV_EDITOR not defined\n"
-                         << "Use " << argv0 << " --help for help.\n";
-                return EXIT_FAILURE;
-            }
+            if (editor == nullptr)
+                editor = "gedit --new-window --wait";
             break;
         case '?':
             std::cerr << "-" << (char)optopt << ": unknown option\n"
@@ -472,7 +425,7 @@ main(int argc, char** argv)
 
     // Interpret arguments
     curv::System& sys(make_system(usestdlib, libs));
-    atexit(remove_all_tempfiles);
+    atexit(curv::geom::remove_all_tempfiles);
 
     if (filename == nullptr) {
         return interactive_mode(sys);

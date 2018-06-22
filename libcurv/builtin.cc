@@ -16,7 +16,6 @@
 #include <libcurv/exception.h>
 #include <libcurv/file.h>
 #include <libcurv/function.h>
-#include <libcurv/shape.h>
 #include <libcurv/system.h>
 #include <libcurv/gl_context.h>
 #include <libcurv/array_op.h>

@@ -53,6 +53,14 @@ You set the ``vsize`` parameter using ``-O vsize=N``. For example::
 
    curv -o obj -O vsize=.1 foo.curv >foo.obj
 
+Speeding up Mesh Export
+-----------------------
+Use ``-O jit`` to make mesh export run 30 times faster.
+This compiles the shape into C++ code, then compiles the
+C++ code using the ``c++`` command, which must exist in the ``PATH``.
+(If you have either the GNU g++ or the clang C++ compiler installed,
+then it should work.)
+
 Simplifying the Mesh
 --------------------
 Suppose you have too many triangles (maybe, it won't 3D print), and you

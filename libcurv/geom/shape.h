@@ -2,8 +2,8 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef LIBCURV_SHAPE_H
-#define LIBCURV_SHAPE_H
+#ifndef LIBCURV_GEOM_SHAPE_H
+#define LIBCURV_GEOM_SHAPE_H
 
 #include <libcurv/record.h>
 #include <libcurv/gl_compiler.h>
@@ -15,6 +15,8 @@ namespace curv {
 struct Function;
 struct Context;
 struct System;
+
+namespace geom {
 
 struct Vec3
 {
@@ -87,5 +89,5 @@ struct Shape_Recognizer final : public Shape
     Vec3 colour(double x, double y, double z, double t);
 };
 
-} // namespace curv
+}} // namespace
 #endif // header guard

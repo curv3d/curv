@@ -9,11 +9,13 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 include_directories(.
     extern/googletest/googletest/include
+    extern/glslViewer/include
     extern/openvdb
     extern/blosc)
 
 add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
 add_subdirectory(extern/openvdb/openvdb EXCLUDE_FROM_ALL)
+add_subdirectory(extern/glslViewer EXCLUDE_FROM_ALL)
 
 if (APPLE)
   # Homebrew installs a private copy of GNU readline, which we use, which
@@ -21,26 +23,33 @@ if (APPLE)
   set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/local/opt/readline/include" )
   set( LibReadline /usr/local/opt/readline/lib/libreadline.dylib )
   set( sanitize "" )
+  FIND_LIBRARY(OPENGL_LIB OpenGL)
+  set( LibOpenGL ${OPENGL_LIB} )
 else ()
   set( LibReadline readline)
   # The leak sanitizer is only available for 64 bit Linux (gcc and clang).
   # It adds minimal overhead, so we add it to all executables in debug builds.
   set( sanitize "-fsanitize=address" )
+  set( LibOpenGL GL )
 endif (APPLE)
 
 FILE(GLOB LibCurvSrc "libcurv/*.cc")
 add_library(libcurv ${LibCurvSrc})
 set_property(TARGET libcurv PROPERTY OUTPUT_NAME curv)
 
+FILE(GLOB LibCurvGeomSrc "libcurv/geom/*.cc")
+add_library(libcurv_geom ${LibCurvGeomSrc})
+set_property(TARGET libcurv_geom PROPERTY OUTPUT_NAME curv_geom)
+
 FILE(GLOB Src "cmd/*.c" "cmd/*.cc")
 add_executable(curv ${Src})
-target_link_libraries(curv PUBLIC libcurv ${LibReadline} double-conversion boost_filesystem boost_system openvdb_static Half tbb dl)
+target_link_libraries(curv PUBLIC libcurv libcurv_geom GlslViewer glfw ${LibOpenGL} ${LibReadline} double-conversion boost_filesystem boost_system openvdb_static Half tbb dl pthread)
 
 FILE(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})
 target_link_libraries(tester PUBLIC gtest pthread libcurv double-conversion boost_filesystem boost_system)
 
-set_property(TARGET curv libcurv tester PROPERTY CXX_STANDARD 14)
+set_property(TARGET curv libcurv libcurv_geom tester PROPERTY CXX_STANDARD 14)
 
 set( gccflags "-Wall -Wno-unused-result" )
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${gccflags}" )

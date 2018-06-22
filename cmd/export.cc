@@ -4,8 +4,12 @@
 
 #include "export.h"
 #include <fstream>
+#include <sstream>
 #include <libcurv/exception.h>
-#include <libcurv/shape.h>
+#include <libcurv/filesystem.h>
+#include <libcurv/geom/shape.h>
+#include <libcurv/geom/export_frag.h>
+#include <libcurv/geom/compiled_shape.h>
 
 void export_curv(curv::Value value,
     curv::System&, const curv::Context&, const Export_Params&,
@@ -18,11 +22,21 @@ void export_frag(curv::Value value,
     curv::System& sys, const curv::Context& cx, const Export_Params&,
     std::ostream& out)
 {
-    curv::Shape_Recognizer shape(cx, sys);
+    curv::geom::Shape_Recognizer shape(cx, sys);
     if (shape.recognize(value))
-        curv::gl_compile(shape, std::cout, cx);
+        curv::geom::export_frag(shape, std::cout);
     else
         throw curv::Exception(cx, "not a shape");
+}
+
+void export_cpp(curv::Value value,
+    curv::System& sys, const curv::Context& cx, const Export_Params&,
+    std::ostream& out)
+{
+    curv::geom::Shape_Recognizer shape(cx, sys);
+    if (!shape.recognize(value))
+        throw curv::Exception(cx, "not a shape");
+    curv::geom::export_cpp(shape, out);
 }
 
 bool is_json_data(curv::Value val)
@@ -113,27 +127,4 @@ void export_json(curv::Value value,
         out << "\n";
     else
         throw curv::Exception(cx, "value can't be converted to JSON");
-}
-
-void export_png(curv::Value value,
-    curv::System& sys, const curv::Context& cx, const Export_Params&,
-    std::ostream& out)
-{
-    curv::Shape_Recognizer shape(cx, sys);
-    if (shape.recognize(value)) {
-        auto fragname = curv::stringify(",curv",getpid(),".frag");
-        auto pngname = curv::stringify(",curv",getpid(),".png");
-        std::ofstream f(fragname->c_str());
-        curv::gl_compile(shape, f, cx);
-        f.close();
-        auto cmd = curv::stringify(
-            "glslViewer -s 0 --headless -o ", pngname->c_str(),
-            " ", fragname->c_str(), " >/dev/null");
-        system(cmd->c_str());
-        auto cmd2 = curv::stringify("cat ",pngname->c_str());
-        system(cmd2->c_str());
-        unlink(fragname->c_str());
-        unlink(pngname->c_str());
-    } else
-        throw curv::Exception(cx, "not a shape");
 }
