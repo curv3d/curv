@@ -26,6 +26,9 @@
         <context id="comment" style-ref="comment">
           <start>\/\/</start>
           <end>$</end>
+          <include>
+            <context ref="def:in-comment"/>
+          </include>
         </context>
 
         <context id="comment-multiline" style-ref="comment">
