@@ -37,7 +37,7 @@ extern "C" {
 #include <libcurv/die.h>
 #include <libcurv/geom/export_frag.h>
 #include <libcurv/geom/shape.h>
-#include <libcurv/geom/viewer.h>
+#include <libcurv/geom/viewer/viewer.h>
 
 bool was_interrupted = false;
 
@@ -160,9 +160,9 @@ display_shape(curv::Value value,
         std::cerr << "\n";
 
         if (block) {
-            curv::geom::run_viewer(shape);
+            curv::geom::viewer::run_viewer(shape);
         } else {
-            curv::geom::open_viewer(shape);
+            curv::geom::viewer::open_viewer(shape);
         }
         return true;
     } else
@@ -223,7 +223,7 @@ interactive_mode(curv::System& sys)
             std::cout << "ERROR: " << e.what() << "\n";
         }
     }
-    curv::geom::close_viewer();
+    curv::geom::viewer::close_viewer();
     return EXIT_SUCCESS;
 }
 
@@ -264,7 +264,7 @@ live_mode(curv::System& sys, const char* editor, const char* filename)
         for (;;) {
             usleep(500'000);
             if (editor && !poll_editor()) {
-                curv::geom::close_viewer();
+                curv::geom::viewer::close_viewer();
                 return 0;
             }
             struct stat st2;

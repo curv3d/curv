@@ -2,7 +2,7 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/geom/viewer.h>
+#include <libcurv/geom/viewer/viewer.h>
 #include <glslviewer.h>
 #include <iostream>
 #include <fstream>
@@ -18,7 +18,7 @@ extern "C" {
 #include <signal.h>
 }
 
-namespace curv { namespace geom {
+namespace curv { namespace geom { namespace viewer {
 
 void
 run_glslviewer_interrupt_handler(int)
@@ -128,4 +128,4 @@ close_viewer()
         kill(viewer_pid, SIGTERM);
 }
 
-}} // namespace
+}}} // namespace

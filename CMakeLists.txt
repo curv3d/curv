@@ -37,7 +37,7 @@ FILE(GLOB LibCurvSrc "libcurv/*.cc")
 add_library(libcurv ${LibCurvSrc})
 set_property(TARGET libcurv PROPERTY OUTPUT_NAME curv)
 
-FILE(GLOB LibCurvGeomSrc "libcurv/geom/*.cc")
+FILE(GLOB LibCurvGeomSrc "libcurv/geom/*.cc" "libcurv/geom/viewer/*.cc")
 add_library(libcurv_geom ${LibCurvGeomSrc})
 set_property(TARGET libcurv_geom PROPERTY OUTPUT_NAME curv_geom)
 
