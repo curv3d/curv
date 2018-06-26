@@ -9,6 +9,8 @@
 #include <libcurv/string.h>
 #include <libcurv/geom/export_frag.h>
 #include <libcurv/geom/tempfile.h>
+#include <libcurv/exception.h>
+#include <libcurv/context.h>
 extern "C" {
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -19,40 +21,6 @@ extern "C" {
 }
 
 namespace curv { namespace geom { namespace viewer {
-
-void
-run_glslviewer_interrupt_handler(int)
-{
-    remove_all_tempfiles();
-    exit(1);
-}
-
-void
-run_glslviewer(int argc, const char** argv)
-{
-    pid_t pid = fork();
-    if (pid == 0) {
-        // in child process
-        int fd = open("/dev/null", O_WRONLY);
-        dup2(fd, 1); // TODO: suppress unwanted messages written to stdout
-        exit(glslviewer_main(argc, argv));
-    } else if (pid == pid_t(-1)) {
-        std::cerr << "can't fork Viewer process: " << strerror(errno) << "\n";
-    } else {
-        struct sigaction interrupt_action;
-        memset((void*)&interrupt_action, 0, sizeof(interrupt_action));
-        interrupt_action.sa_handler = run_glslviewer_interrupt_handler;
-        sigaction(SIGINT, &interrupt_action, nullptr);
-
-        int status;
-        waitpid(pid, &status, 0);
-        if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
-            ;
-        else {
-            std::cerr << "Viewer process abnormal exit: " << status << "\n";
-        }
-    }
-}
 
 pid_t viewer_pid = pid_t(-1);
 
@@ -128,7 +96,9 @@ Viewer::run()
     argv[0] = "curv";
     argv[1] = fragname_.c_str();
     argv[2] = nullptr;
-    run_glslviewer(2, argv);
+    int status = glslviewer_main(2, argv);
+    if (status != 0)
+        throw Exception({}, "Viewer error");
 }
 
 }}} // namespace
