@@ -54,22 +54,6 @@ run_glslviewer(int argc, const char** argv)
     }
 }
 
-// Open a Viewer window displaying shape, and block until the window is closed.
-void
-run_viewer(Shape_Recognizer& shape)
-{
-    auto fragname = make_tempfile(".frag");
-    std::ofstream f(fragname.c_str());
-    export_frag(shape, f);
-    f.close();
-
-    const char* argv[3];
-    argv[0] = "curv";
-    argv[1] = fragname.c_str();
-    argv[2] = nullptr;
-    run_glslviewer(2, argv);
-}
-
 pid_t viewer_pid = pid_t(-1);
 
 void
@@ -126,6 +110,25 @@ close_viewer()
 {
     if (viewer_pid != (pid_t)(-1))
         kill(viewer_pid, SIGTERM);
+}
+
+void
+Viewer::set_shape(Shape_Recognizer& shape)
+{
+    fragname_ = make_tempfile(".frag");
+    std::ofstream f(fragname_.c_str());
+    export_frag(shape, f);
+    f.close();
+}
+
+void
+Viewer::run()
+{
+    const char* argv[3];
+    argv[0] = "curv";
+    argv[1] = fragname_.c_str();
+    argv[2] = nullptr;
+    run_glslviewer(2, argv);
 }
 
 }}} // namespace

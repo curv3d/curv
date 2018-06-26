@@ -160,7 +160,9 @@ display_shape(curv::Value value,
         std::cerr << "\n";
 
         if (block) {
-            curv::geom::viewer::run_viewer(shape);
+            curv::geom::viewer::Viewer viewer;
+            viewer.set_shape(shape);
+            viewer.run();
         } else {
             curv::geom::viewer::open_viewer(shape);
         }
