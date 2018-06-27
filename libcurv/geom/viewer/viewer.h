@@ -13,6 +13,8 @@ struct Shape_Recognizer;
 
 namespace viewer {
 
+int viewer_main(int, const char**);
+
 // Open a Viewer window, if one is not already open. Display 'shape' in that
 // window, if possible, then return as soon as the shape is visible.
 void open_viewer(Shape_Recognizer& shape);

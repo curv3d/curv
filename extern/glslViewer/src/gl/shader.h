@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "gl.h"
+#include "opengl.h"
 #include "glm/glm.hpp"
 
 #include "texture.h"

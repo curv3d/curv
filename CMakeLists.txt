@@ -10,6 +10,7 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include_directories(.
     extern/googletest/googletest/include
     extern/glslViewer/include
+    extern/glslViewer/src
     extern/openvdb
     extern/blosc)
 

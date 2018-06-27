@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "gl.h"
+#include "opengl.h"
 #include "vertexLayout.h"
 
 #define MAX_INDEX_VALUE 65535

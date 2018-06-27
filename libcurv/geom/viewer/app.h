@@ -1,7 +1,12 @@
+// Copyright 2014 Patricio Gonzalez Vivo
+// Licensed under the 3-Clause BSD Licence:
+// https://opensource.org/licenses/BSD-3-Clause
 #pragma once
 
-#include "gl/gl.h"
-#include "glm/glm.hpp"
+#include <gl/opengl.h>
+#include <glm/glm.hpp>
+
+namespace curv { namespace geom { namespace viewer {
 
 //	GL Context
 //----------------------------------------------
@@ -47,3 +52,5 @@ void onMouseClick(float _x, float _y, int _button);
 void onMouseDrag(float _x, float _y, int _button);
 void onViewportResize(int _width, int _height);
 void onScroll(float _yoffset);
+
+}}}

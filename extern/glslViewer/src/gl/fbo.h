@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gl.h"
+#include "opengl.h"
 
 class Fbo {
 public:

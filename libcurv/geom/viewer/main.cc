@@ -1,3 +1,6 @@
+// Copyright 2014 Patricio Gonzalez Vivo
+// Licensed under the 3-Clause BSD Licence:
+// https://opensource.org/licenses/BSD-3-Clause
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -6,6 +9,9 @@
 #include <mutex>
 #include <atomic>
 #include <iostream>
+
+#include <glm/gtx/matrix_transform_2d.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 #include "tools/fs.h"
 #include "app.h"
@@ -18,11 +24,9 @@
 #include "gl/uniform.h"
 #include "3d/camera.h"
 #include "types/shapes.h"
-#include "glm/gtx/matrix_transform_2d.hpp"
-#include "glm/gtx/rotate_vector.hpp"
+#include <libcurv/geom/viewer/viewer.h>
 
-#include "ui/cursor.h"
-#include "glslviewer.h"
+namespace curv { namespace geom { namespace viewer {
 
 // GLOBAL VARIABLES
 //============================================================================
@@ -109,7 +113,7 @@ void printUsage(const char *);
 
 // Main program
 //============================================================================
-int glslviewer_main(int argc, const char **argv){
+int viewer_main(int argc, const char **argv){
     u_centre3d = glm::vec3(0.,0.,0.);
     u_eye3d = glm::vec3(2.598076,3.0,4.5);
     u_up3d = glm::vec3(-0.25,0.866025,-0.433013);
@@ -173,7 +177,6 @@ int glslviewer_main(int argc, const char **argv){
     // Initialize openGL context
     initGL (windowPosAndSize, headless);
 
-    Cursor cursor;  // Cursor
     struct stat st; // for files to watch
     float timeLimit = -1.0f; //  Time limit
     int textureCounter = 0; // Number of textures to load
@@ -208,9 +211,6 @@ int glslviewer_main(int argc, const char **argv){
         else if ( argument == "-v" || 
                   argument == "--verbose" ) {
             verbose = true;
-        }
-        else if (argument == "-c" || argument == "--cursor") {
-            cursor.init();
         }
         else if (argument == "-s" || argument == "--sec") {
             i++;
@@ -366,9 +366,6 @@ int glslviewer_main(int argc, const char **argv){
 
         // Draw
         draw();
-
-        // Draw Cursor
-        cursor.draw();
 
         // Swap the buffers
         renderGL();
@@ -836,5 +833,7 @@ void onExit() {
 }
 
 void printUsage(const char * executableName) {
-    std::cerr << "Usage: " << executableName << " <shader>.frag [<shader>.vert] [<mesh>.(obj/.ply)] [<texture>.(png/jpg)] [-<uniformName> <texture>.(png/jpg)] [-vFlip] [-x <x>] [-y <y>] [-w <width>] [-h <height>] [-l] [--square] [-s/--sec <seconds>] [-o <screenshot_file>.png] [--headless] [-c/--cursor] [-I<include_folder>] [-D<define>] [-v/--verbose] [--help]\n";
+    std::cerr << "Usage: " << executableName << " <shader>.frag [<shader>.vert] [<mesh>.(obj/.ply)] [<texture>.(png/jpg)] [-<uniformName> <texture>.(png/jpg)] [-vFlip] [-x <x>] [-y <y>] [-w <width>] [-h <height>] [-l] [--square] [-s/--sec <seconds>] [-o <screenshot_file>.png] [--headless] [-I<include_folder>] [-D<define>] [-v/--verbose] [--help]\n";
 }
+
+}}}

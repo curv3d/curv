@@ -1,11 +1,16 @@
-#include "app.h"
+// Copyright 2014 Patricio Gonzalez Vivo
+// Licensed under the 3-Clause BSD Licence:
+// https://opensource.org/licenses/BSD-3-Clause
+#include <libcurv/geom/viewer/app.h>
 
 #include <time.h>
 #include <sys/time.h>
 #include <chrono>
 #include <thread>
-#include "glm/gtc/matrix_transform.hpp"
+#include <glm/gtc/matrix_transform.hpp>
 #include "tools/text.h"
+
+namespace curv { namespace geom { namespace viewer {
 
 // Common global variables
 //----------------------------------------------------
@@ -586,3 +591,5 @@ int getMouseButton(){
 glm::vec4 get_iMouse() {
     return iMouse;
 }
+
+}}}

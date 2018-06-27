@@ -3,7 +3,6 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/geom/viewer/viewer.h>
-#include <glslviewer.h>
 #include <iostream>
 #include <fstream>
 #include <libcurv/string.h>
@@ -53,7 +52,7 @@ launch_viewer(boost::filesystem::path filename)
             argv[0] = "curv";
             argv[1] = filename.c_str();
             argv[2] = nullptr;
-            exit(glslviewer_main(2, argv));
+            exit(viewer_main(2, argv));
         } else if (pid == pid_t(-1)) {
             std::cerr << "can't fork Viewer process: "
                       << strerror(errno) << "\n";
@@ -96,7 +95,7 @@ Viewer::run()
     argv[0] = "curv";
     argv[1] = fragname_.c_str();
     argv[2] = nullptr;
-    int status = glslviewer_main(2, argv);
+    int status = viewer_main(2, argv);
     if (status != 0)
         throw Exception({}, "Viewer error");
 }

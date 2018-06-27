@@ -4,8 +4,7 @@ cmake_minimum_required(VERSION 3.5)
 include_directories(include src ../..)
 
 FILE(GLOB Src
-    "src/*.cpp" "src/3d/*.cpp" "src/gl/*.cpp" "src/tools/*.cpp"
-    "src/types/*.cpp"  "src/ui/*.cpp"
+    "src/3d/*.cpp" "src/gl/*.cpp" "src/tools/*.cpp" "src/types/*.cpp"
     "include/tinyobjloader/*.cc")
 add_library(GlslViewer ${Src})
 set_property(TARGET GlslViewer PROPERTY OUTPUT_NAME libGlslViewer)

@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-#include "gl.h"
+#include "opengl.h"
 #include "shader.h"
 
 enum AttrType {
