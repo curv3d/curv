@@ -113,23 +113,17 @@ void printUsage(const char *);
 
 // Main program
 //============================================================================
-int viewer_main(int argc, const char **argv){
+int viewer_main(int argc, const char **argv)
+{
     u_centre3d = glm::vec3(0.,0.,0.);
     u_eye3d = glm::vec3(2.598076,3.0,4.5);
     u_up3d = glm::vec3(-0.25,0.866025,-0.433013);
 
     // Set the size
     glm::ivec4 windowPosAndSize = glm::ivec4(0.);
-    #ifdef PLATFORM_RPI
-        // RASPBERRYPI default windows size (fullscreen)
-        glm::ivec2 screen = getScreenSize();
-        windowPosAndSize.z = screen.x;
-        windowPosAndSize.w = screen.y;
-    #else
-        // OSX/LINUX default windows size
-        windowPosAndSize.z = 500;
-        windowPosAndSize.w = 500;
-    #endif
+    // OSX/LINUX default windows size
+    windowPosAndSize.z = 500;
+    windowPosAndSize.w = 500;
 
     bool headless = false;
     bool displayHelp = false;
@@ -160,13 +154,6 @@ int viewer_main(int argc, const char **argv){
         else if (   std::string(argv[i]) == "--help" ) {
             displayHelp = true;
         }
-        #ifdef PLATFORM_RPI
-        else if (   std::string(argv[i]) == "-l" ||
-                    std::string(argv[i]) == "--life-coding" ){
-            windowPosAndSize.x = windowPosAndSize.z-500;
-            windowPosAndSize.z = windowPosAndSize.w = 500;
-        }
-        #endif
     }
 
     if (displayHelp) {
@@ -190,10 +177,6 @@ int viewer_main(int argc, const char **argv){
 
     #ifdef PLATFORM_LINUX
     defines.push_back("PLATFORM_LINUX");
-    #endif
-
-    #ifdef PLATFORM_RPI
-    defines.push_back("PLATFORM_RPI");
     #endif
 
     //Load the the resources (textures)
