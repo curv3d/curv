@@ -113,7 +113,8 @@ void printUsage(const char *);
 
 // Main program
 //============================================================================
-int viewer_main(int argc, const char **argv)
+int
+Viewer::main(int argc, const char **argv)
 {
     u_centre3d = glm::vec3(0.,0.,0.);
     u_eye3d = glm::vec3(2.598076,3.0,4.5);

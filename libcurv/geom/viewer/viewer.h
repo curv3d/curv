@@ -13,8 +13,6 @@ struct Shape_Recognizer;
 
 namespace viewer {
 
-int viewer_main(int, const char**);
-
 struct Viewer
 {
     Filesystem::path fragname_;
@@ -31,6 +29,9 @@ struct Viewer
     // If a Viewer window is currently open (due to an open() call),
     // then close it.
     void close();
+
+    // Viewer thread entry point
+    static int main(int, const char**);
 };
 
 }}} // namespace

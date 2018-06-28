@@ -41,46 +41,6 @@ poll_viewer()
 }
 
 void
-launch_viewer(boost::filesystem::path& filename)
-{
-    poll_viewer();
-    if (viewer_pid == pid_t(-1)) {
-        pid_t pid = fork();
-        if (pid == 0) {
-            // in child process
-            const char* argv[3];
-            argv[0] = "curv";
-            argv[1] = filename.c_str();
-            argv[2] = nullptr;
-            exit(viewer_main(2, argv));
-        } else if (pid == pid_t(-1)) {
-            std::cerr << "can't fork Viewer process: "
-                      << strerror(errno) << "\n";
-        } else {
-            viewer_pid = pid;
-        }
-    }
-}
-
-void
-open_viewer(Shape_Recognizer& shape)
-{
-    auto filename = make_tempfile(".frag");
-    std::ofstream f(filename.c_str());
-    export_frag(shape, f);
-    f.close();
-    launch_viewer(filename);
-}
-
-void
-close_viewer()
-{
-    poll_viewer();
-    if (viewer_pid != (pid_t)(-1))
-        kill(viewer_pid, SIGTERM);
-}
-
-void
 Viewer::set_shape(Shape_Recognizer& shape)
 {
     if (fragname_.empty())
@@ -97,7 +57,7 @@ Viewer::run()
     argv[0] = "curv";
     argv[1] = fragname_.c_str();
     argv[2] = nullptr;
-    int status = viewer_main(2, argv);
+    int status = Viewer::main(2, argv);
     if (status != 0)
         throw Exception({}, "Viewer error");
 }
@@ -105,13 +65,31 @@ Viewer::run()
 void
 Viewer::open()
 {
-    launch_viewer(fragname_);
+    poll_viewer();
+    if (viewer_pid == pid_t(-1)) {
+        pid_t pid = fork();
+        if (pid == 0) {
+            // in child process
+            const char* argv[3];
+            argv[0] = "curv";
+            argv[1] = fragname_.c_str();
+            argv[2] = nullptr;
+            exit(Viewer::main(2, argv));
+        } else if (pid == pid_t(-1)) {
+            std::cerr << "can't fork Viewer process: "
+                      << strerror(errno) << "\n";
+        } else {
+            viewer_pid = pid;
+        }
+    }
 }
 
 void
 Viewer::close()
 {
-    close_viewer();
+    poll_viewer();
+    if (viewer_pid != (pid_t)(-1))
+        kill(viewer_pid, SIGTERM);
 }
 
 }}} // namespace
