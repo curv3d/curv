@@ -143,6 +143,8 @@ poll_editor()
     }
 }
 
+curv::geom::viewer::Viewer viewer;
+
 bool
 display_shape(curv::Value value,
     curv::System& sys, const curv::Context &cx, bool block = false)
@@ -159,13 +161,11 @@ display_shape(curv::Value value,
             std::cerr << "×" << (shape.bbox_.zmax - shape.bbox_.zmin);
         std::cerr << "\n";
 
-        if (block) {
-            curv::geom::viewer::Viewer viewer;
-            viewer.set_shape(shape);
+        viewer.set_shape(shape);
+        if (block)
             viewer.run();
-        } else {
-            curv::geom::viewer::open_viewer(shape);
-        }
+        else
+            viewer.open();
         return true;
     } else
         return false;
@@ -225,7 +225,7 @@ interactive_mode(curv::System& sys)
             std::cout << "ERROR: " << e.what() << "\n";
         }
     }
-    curv::geom::viewer::close_viewer();
+    viewer.close();
     return EXIT_SUCCESS;
 }
 
@@ -266,7 +266,7 @@ live_mode(curv::System& sys, const char* editor, const char* filename)
         for (;;) {
             usleep(500'000);
             if (editor && !poll_editor()) {
-                curv::geom::viewer::close_viewer();
+                viewer.close();
                 return 0;
             }
             struct stat st2;

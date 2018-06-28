@@ -15,18 +15,22 @@ namespace viewer {
 
 int viewer_main(int, const char**);
 
-// Open a Viewer window, if one is not already open. Display 'shape' in that
-// window, if possible, then return as soon as the shape is visible.
-void open_viewer(Shape_Recognizer& shape);
-
-// Close the Viewer window created by open_viewer(), if it exists.
-void close_viewer();
-
 struct Viewer
 {
     Filesystem::path fragname_;
+
+    // Set the current shape.
     void set_shape(Shape_Recognizer&);
+    // Open a Viewer window on the current shape, and run until the window
+    // is closed by the user.
     void run();
+    // Open a Viewer window, if one is not already open. Display the current
+    // shape in that window, if possible, and return as soon as the shape
+    // is visible.
+    void open();
+    // If a Viewer window is currently open (due to an open() call),
+    // then close it.
+    void close();
 };
 
 }}} // namespace

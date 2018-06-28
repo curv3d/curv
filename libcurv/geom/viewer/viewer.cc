@@ -41,7 +41,7 @@ poll_viewer()
 }
 
 void
-launch_viewer(boost::filesystem::path filename)
+launch_viewer(boost::filesystem::path& filename)
 {
     poll_viewer();
     if (viewer_pid == pid_t(-1)) {
@@ -75,6 +75,7 @@ open_viewer(Shape_Recognizer& shape)
 void
 close_viewer()
 {
+    poll_viewer();
     if (viewer_pid != (pid_t)(-1))
         kill(viewer_pid, SIGTERM);
 }
@@ -82,7 +83,8 @@ close_viewer()
 void
 Viewer::set_shape(Shape_Recognizer& shape)
 {
-    fragname_ = make_tempfile(".frag");
+    if (fragname_.empty())
+        fragname_ = make_tempfile(".frag");
     std::ofstream f(fragname_.c_str());
     export_frag(shape, f);
     f.close();
@@ -98,6 +100,18 @@ Viewer::run()
     int status = viewer_main(2, argv);
     if (status != 0)
         throw Exception({}, "Viewer error");
+}
+
+void
+Viewer::open()
+{
+    launch_viewer(fragname_);
+}
+
+void
+Viewer::close()
+{
+    close_viewer();
 }
 
 }}} // namespace
