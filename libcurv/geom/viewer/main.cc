@@ -114,8 +114,14 @@ void printUsage(const char *);
 // Main program
 //============================================================================
 int
-Viewer::main(int argc, const char **argv)
+Viewer::main(Viewer& viewer)
 {
+    const char* argv[3];
+    argv[0] = "curv";
+    argv[1] = viewer.fragname_.c_str();
+    argv[2] = nullptr;
+    int argc = 2;
+
     u_centre3d = glm::vec3(0.,0.,0.);
     u_eye3d = glm::vec3(2.598076,3.0,4.5);
     u_up3d = glm::vec3(-0.25,0.866025,-0.433013);

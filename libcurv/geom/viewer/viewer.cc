@@ -53,11 +53,7 @@ Viewer::set_shape(Shape_Recognizer& shape)
 void
 Viewer::run()
 {
-    const char* argv[3];
-    argv[0] = "curv";
-    argv[1] = fragname_.c_str();
-    argv[2] = nullptr;
-    int status = Viewer::main(2, argv);
+    int status = Viewer::main(*this);
     if (status != 0)
         throw Exception({}, "Viewer error");
 }
@@ -70,11 +66,7 @@ Viewer::open()
         pid_t pid = fork();
         if (pid == 0) {
             // in child process
-            const char* argv[3];
-            argv[0] = "curv";
-            argv[1] = fragname_.c_str();
-            argv[2] = nullptr;
-            exit(Viewer::main(2, argv));
+            exit(Viewer::main(*this));
         } else if (pid == pid_t(-1)) {
             std::cerr << "can't fork Viewer process: "
                       << strerror(errno) << "\n";

@@ -31,7 +31,7 @@ struct Viewer
     void close();
 
     // Viewer thread entry point
-    static int main(int, const char**);
+    static int main(Viewer&);
 };
 
 }}} // namespace
