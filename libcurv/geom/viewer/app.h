@@ -8,6 +8,8 @@
 
 namespace curv { namespace geom { namespace viewer {
 
+extern GLFWwindow* window;
+
 //	GL Context
 //----------------------------------------------
 void initGL(glm::ivec4 &_viewport, bool _headless = false);

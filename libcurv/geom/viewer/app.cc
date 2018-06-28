@@ -31,7 +31,7 @@ static double fTime = 0.0f;
 static double fDelta = 0.0f;
 static double fFPS = 0.0f;
 static float fPixelDensity = 1.0;
-static GLFWwindow* window;
+GLFWwindow* window;
 
 void initGL (glm::ivec4 &_viewport, bool _headless)
 {
@@ -207,8 +207,8 @@ void renderGL(){
 }
 
 void closeGL(){
-    glfwSetWindowShouldClose(window, GL_TRUE);
-    glfwTerminate();
+    //glfwSetWindowShouldClose(window, GL_TRUE);
+    glfwDestroyWindow(window);
 }
 //-------------------------------------------------------------
 

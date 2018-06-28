@@ -114,11 +114,11 @@ void printUsage(const char *);
 // Main program
 //============================================================================
 int
-Viewer::main(Viewer& viewer)
+Viewer::main(Viewer* viewer)
 {
     const char* argv[3];
     argv[0] = "curv";
-    argv[1] = viewer.fragname_.c_str();
+    argv[1] = viewer->fragname_.c_str();
     argv[2] = nullptr;
     int argc = 2;
 
@@ -177,14 +177,6 @@ Viewer::main(Viewer& viewer)
 
     // Adding default deines
     defines.push_back("GLSLVIEWER 1");
-    // Define PLATFORM
-    #ifdef PLATFORM_OSX
-    defines.push_back("PLATFORM_OSX");
-    #endif
-
-    #ifdef PLATFORM_LINUX
-    defines.push_back("PLATFORM_LINUX");
-    #endif
 
     //Load the the resources (textures)
     for (int i = 1; i < argc ; i++){
@@ -331,27 +323,38 @@ Viewer::main(Viewer& viewer)
         exit(EXIT_FAILURE);
     }
 
+#if 0
     // Start watchers
     fileChanged = -1;
     std::thread fileWatcher(&fileWatcherThread);
     std::thread cinWatcher(&cinWatcherThread);
+#endif
 
     // Start working on the GL context
     setup();
 
     // Render Loop
-    while (isGL() && bRun.load()) {
+    while (isGL() /*&& bRun.load()*/) {
         // Update
         updateGL();
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Something change??
-        if (fileChanged != -1) {
-            onFileChange(fileChanged);
-            filesMutex.lock();
-            fileChanged = -1;
-            filesMutex.unlock();
+        if (viewer->request_ != Request::k_none) {
+            std::lock_guard<std::mutex> lock(viewer->mutex_);
+            if (viewer->request_ == Request::k_close) {
+                viewer->request_ = Request::k_none;
+                break;
+            }
+            if (viewer->request_ == Request::k_new_shape) {
+                fragSource = "";
+                if (loadFromPath(viewer->fragname_.c_str(), &fragSource, include_folders)) {
+                    shader.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
+                    shader.load(fragSource, vertSource, defines, verbose);
+                }
+                viewer->request_ = Request::k_none;
+            }
         }
 
         // Draw
@@ -359,19 +362,23 @@ Viewer::main(Viewer& viewer)
 
         // Swap the buffers
         renderGL();
-
+#if 0
         if (timeLimit >= 0.0 && getTime() >= timeLimit) {
             bRun.store(false);
         }
+#endif
     }
 
     // If is terminated by the windows manager, turn bRun off so the fileWatcher can stop
+#if 0
     if (!isGL()) {
         bRun.store(false);
     }
+#endif
 
     onExit();
 
+#if 0
     // Wait for watchers to end
     fileWatcher.join();
 
@@ -380,6 +387,14 @@ Viewer::main(Viewer& viewer)
     pthread_cancel(handler);
 
     exit(0);
+#endif
+    {
+        std::lock_guard<std::mutex> lock(viewer->mutex_);
+        // Only becomes false once the thread is past the point of accessing
+        // any Viewer state.
+        viewer->is_open_ = false;
+    }
+    return 0;
 }
 
 //  Watching Thread
@@ -703,8 +718,9 @@ void onKeyPress(int _key) {
     }
 
     if (_key == 'q' || _key == 'Q') {
-        bRun = false;
-        bRun.store(false);
+        glfwSetWindowShouldClose(window, GL_TRUE);
+        //bRun = false;
+        //bRun.store(false);
     }
 }
 
