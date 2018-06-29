@@ -1,0 +1,14 @@
+Changes to Viewer:
+
+I am attempting to maintain a persistent window size/location in the
+Viewer structure.
+
+Fix storage leaks.
+
+Replace curv*.frag temp file with a global string variable.
+
+Dead code removal (remove unneeded globals).
+
+Replace globals with member variables.
+
+Move source code to libcurv/geom/viewer

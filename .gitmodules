@@ -1,3 +1,6 @@
 [submodule "extern/openvdb"]
 	path = extern/openvdb
 	url = https://github.com/dreamworksanimation/openvdb
+[submodule "extern/glfw"]
+	path = extern/glfw
+	url = https://github.com/glfw/glfw

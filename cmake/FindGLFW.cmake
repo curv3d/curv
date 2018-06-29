@@ -5,5 +5,5 @@
 # GLFW_glfw_LIBRARY     GLFW libraries
 
 SET( GLFW_FOUND TRUE )
-SET( GLFW_INCLUDE_DIR "" )
-SET( GLFW_glfw_LIBRARY -lglfw )
+SET( GLFW_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/extern/glfw/include" )
+SET( GLFW_glfw_LIBRARY glfw )

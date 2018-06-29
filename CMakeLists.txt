@@ -12,11 +12,13 @@ include_directories(.
     extern/glslViewer/include
     extern/glslViewer/src
     extern/openvdb
-    extern/blosc)
+    extern/blosc
+    extern/glfw/include)
 
 add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
 add_subdirectory(extern/openvdb/openvdb EXCLUDE_FROM_ALL)
 add_subdirectory(extern/glslViewer EXCLUDE_FROM_ALL)
+add_subdirectory(extern/glfw EXCLUDE_FROM_ALL)
 
 if (APPLE)
   # Using Homebrew on macOS. Set the compiler, to prevent CMake from
