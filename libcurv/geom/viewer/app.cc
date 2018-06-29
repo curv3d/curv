@@ -2,6 +2,7 @@
 // Licensed under the 3-Clause BSD Licence:
 // https://opensource.org/licenses/BSD-3-Clause
 #include <libcurv/geom/viewer/app.h>
+#include <libcurv/geom/viewer/viewer.h>
 
 #include <time.h>
 #include <sys/time.h>
@@ -33,7 +34,7 @@ static double fFPS = 0.0f;
 static float fPixelDensity = 1.0;
 GLFWwindow* window;
 
-void initGL (glm::ivec4 &_viewport, bool _headless)
+void Viewer::initGL (glm::ivec4 &_viewport, bool _headless)
 {
     glfwSetErrorCallback([](int err, const char* msg)->void {
         std::cerr << "GLFW error 0x"<<std::hex<<err<<std::dec<<": "<<msg<<"\n";
@@ -54,8 +55,10 @@ void initGL (glm::ivec4 &_viewport, bool _headless)
         std::cerr << "ABORT: GLFW create window failed" << std::endl;
         exit(-1);
     }
+    glfwSetWindowUserPointer(window, (void*)this);
 
     setWindowSize(_viewport.z, _viewport.w);
+    glfwSetWindowPos(window, _viewport.x, _viewport.y);
 
     glfwMakeContextCurrent(window);
     glfwSetWindowSizeCallback(window, [](GLFWwindow* _window, int _w, int _h) {
@@ -152,6 +155,9 @@ void initGL (glm::ivec4 &_viewport, bool _headless)
     });
 
     glfwSetWindowPosCallback(window, [](GLFWwindow* _window, int x, int y) {
+        Viewer* self = (Viewer*) glfwGetWindowUserPointer(window);
+        self->window_pos_and_size_.x = x;
+        self->window_pos_and_size_.y = y;
         if (fPixelDensity != getPixelDensity()) {
             setWindowSize(viewport.z, viewport.w);
         }

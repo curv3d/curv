@@ -8,6 +8,7 @@
 #include <libcurv/filesystem.h>
 #include <thread>
 #include <mutex>
+#include <glm/glm.hpp>
 
 namespace curv { namespace geom {
 
@@ -33,8 +34,9 @@ struct Viewer
     void close();
     ~Viewer();
 
-    /*--- STATE ---*/
+    /*--- SHARED STATE ---*/
 
+    // thread_: viewer thread runs OpenGL main loop.
     std::thread thread_{};
     // mutex_: for communication with viewer thread.
     std::mutex mutex_{};
@@ -53,11 +55,14 @@ struct Viewer
     // request_: If != k_none, then denotes an outstanding request that
     // the Viewer thread has not processed yet. Guarded by mutex_.
     Request request_{Request::k_none};
-
+    // Name of fragment shader source file.
     Filesystem::path fragname_{};
 
-    // Viewer thread entry point
-    static int main(Viewer*);
+    /*--- PARAMETER STATE, can set before thread is started ---*/
+    glm::ivec4 window_pos_and_size_{0.,0.,500.,500.};
+
+    static int main(Viewer*); // Viewer thread entry point
+    void initGL(glm::ivec4 &_viewport, bool _headless = false);
 };
 
 }}} // namespace

@@ -121,50 +121,17 @@ Viewer::main(Viewer* viewer)
     u_eye3d = glm::vec3(2.598076,3.0,4.5);
     u_up3d = glm::vec3(-0.25,0.866025,-0.433013);
 
-    // Set the size
-    glm::ivec4 windowPosAndSize = glm::ivec4(0.);
-    // OSX/LINUX default windows size
-    windowPosAndSize.z = 500;
-    windowPosAndSize.w = 500;
-
     bool headless = false;
-    bool displayHelp = false;
     for (int i = 1; i < argc ; i++) {
         std::string argument = std::string(argv[i]);
 
-        if (        std::string(argv[i]) == "-x" ) {
-            i++;
-            windowPosAndSize.x = toInt(std::string(argv[i]));
-        }
-        else if (   std::string(argv[i]) == "-y" ) {
-            i++;
-            windowPosAndSize.y = toInt(std::string(argv[i]));
-        }
-        else if (   std::string(argv[i]) == "-w" ||
-                    std::string(argv[i]) == "--width" ) {
-            i++;
-            windowPosAndSize.z = toInt(std::string(argv[i]));
-        }
-        else if (   std::string(argv[i]) == "-h" ||
-                    std::string(argv[i]) == "--height" ) {
-            i++;
-            windowPosAndSize.w = toInt(std::string(argv[i]));
-        }
-        else if (   std::string(argv[i]) == "--headless" ) {
+        if (   std::string(argv[i]) == "--headless" ) {
             headless = true;
         }
-        else if (   std::string(argv[i]) == "--help" ) {
-            displayHelp = true;
-        }
-    }
-
-    if (displayHelp) {
-        printUsage(argv[0]);
-        exit(0);
     }
 
     // Initialize openGL context
-    initGL (windowPosAndSize, headless);
+    viewer->initGL (viewer->window_pos_and_size_, headless);
 
     struct stat st; // for files to watch
     float timeLimit = -1.0f; //  Time limit
@@ -177,12 +144,7 @@ Viewer::main(Viewer* viewer)
     for (int i = 1; i < argc ; i++){
         std::string argument = std::string(argv[i]);
 
-        if (argument == "-x" || argument == "-y" ||
-            argument == "-w" || argument == "--width" ||
-            argument == "-h" || argument == "--height" ) {
-            i++;
-        }
-        else if (argument == "-l" ||
+        if (argument == "-l" ||
                  argument == "--headless") {
         }
         else if ( argument == "-v" || 
@@ -311,13 +273,6 @@ Viewer::main(Viewer* viewer)
         }
     }
 
-    // If no shader
-    if (iFrag == -1 && iVert == -1 && iGeom == -1) {
-        printUsage(argv[0]);
-        onExit();
-        exit(EXIT_FAILURE);
-    }
-
     // Start working on the GL context
     setup();
 
@@ -352,6 +307,10 @@ Viewer::main(Viewer* viewer)
         renderGL();
     }
 
+    //glfwGetWindowPos(window,
+    //    &viewer->window_pos_and_size_.x, &viewer->window_pos_and_size_.y);
+    glfwGetWindowSize(window,
+        &viewer->window_pos_and_size_.w, &viewer->window_pos_and_size_.z);
     onExit();
     {
         std::lock_guard<std::mutex> lock(viewer->mutex_);

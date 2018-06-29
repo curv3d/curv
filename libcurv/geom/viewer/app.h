@@ -12,7 +12,6 @@ extern GLFWwindow* window;
 
 //	GL Context
 //----------------------------------------------
-void initGL(glm::ivec4 &_viewport, bool _headless = false);
 bool isGL();
 void updateGL();
 void renderGL();
