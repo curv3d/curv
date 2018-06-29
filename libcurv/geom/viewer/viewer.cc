@@ -10,16 +10,6 @@
 #include <libcurv/geom/tempfile.h>
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
-/*
-extern "C" {
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/unistd.h>
-#include <sys/wait.h>
-#include <signal.h>
-}
-*/
 
 namespace curv { namespace geom { namespace viewer {
 

@@ -31,7 +31,6 @@ namespace curv { namespace geom { namespace viewer {
 // GLOBAL VARIABLES
 //============================================================================
 //
-std::atomic<bool> bRun(true);
 
 //  List of FILES to watch and the variable to communicate that between process
 struct WatchFile {
@@ -96,10 +95,6 @@ std::vector<std::string> include_folders;
 PingPong buffer;
 Vbo* buffer_vbo;
 Shader buffer_shader;
-
-//================================================================= Threads
-void fileWatcherThread();
-void cinWatcherThread();
 
 //================================================================= Functions
 void setup();
@@ -323,18 +318,11 @@ Viewer::main(Viewer* viewer)
         exit(EXIT_FAILURE);
     }
 
-#if 0
-    // Start watchers
-    fileChanged = -1;
-    std::thread fileWatcher(&fileWatcherThread);
-    std::thread cinWatcher(&cinWatcherThread);
-#endif
-
     // Start working on the GL context
     setup();
 
     // Render Loop
-    while (isGL() /*&& bRun.load()*/) {
+    while (isGL()) {
         // Update
         updateGL();
 
@@ -362,32 +350,9 @@ Viewer::main(Viewer* viewer)
 
         // Swap the buffers
         renderGL();
-#if 0
-        if (timeLimit >= 0.0 && getTime() >= timeLimit) {
-            bRun.store(false);
-        }
-#endif
     }
-
-    // If is terminated by the windows manager, turn bRun off so the fileWatcher can stop
-#if 0
-    if (!isGL()) {
-        bRun.store(false);
-    }
-#endif
 
     onExit();
-
-#if 0
-    // Wait for watchers to end
-    fileWatcher.join();
-
-    // Force cinWatcher to finish (because is waiting for input)
-    pthread_t handler = cinWatcher.native_handle();
-    pthread_cancel(handler);
-
-    exit(0);
-#endif
     {
         std::lock_guard<std::mutex> lock(viewer->mutex_);
         // Only becomes false once the thread is past the point of accessing
@@ -395,117 +360,6 @@ Viewer::main(Viewer* viewer)
         viewer->is_open_ = false;
     }
     return 0;
-}
-
-//  Watching Thread
-//============================================================================
-void fileWatcherThread() {
-    struct stat st;
-    while (bRun.load()) {
-        for (uint i = 0; i < files.size(); i++) {
-            if (fileChanged == -1) {
-                stat(files[i].path.c_str(), &st);
-                int date = st.st_mtime;
-                if (date != files[i].lastChange ) {
-                    filesMutex.lock();
-                    fileChanged = i;
-                    files[i].lastChange = date;
-                    filesMutex.unlock();
-                }
-                usleep(500000);
-            }
-        }
-    }
-}
-
-void cinWatcherThread() {
-    std::string line;
-
-    while (std::getline(std::cin, line)) {
-        if (line == "q" || line == "quit" || line == "exit") {
-            bRun.store(false);
-        }
-        else if (line == "fps") {
-            // std::cout << getFPS() << std::endl;
-            printf("%f\n", getFPS());
-        }
-        else if (line == "delta") {
-            // std::cout << getDelta() << std::endl;
-            printf("%f\n", getDelta());
-        }
-        else if (line == "time") {
-            // std::cout << getTime() << std::endl;
-            printf("%f\n", getTime());
-        }
-        else if (line == "date") {
-            glm::vec4 date = getDate();
-            std::cout << date.x << ',' << date.y << ',' << date.z << ',' << date.w << std::endl;
-        }
-        else if (line == "window_width") {
-            std::cout << getWindowWidth() << std::endl;
-        }
-        else if (line == "window_height") {
-            std::cout << getWindowHeight() << std::endl;
-        }
-        else if (line == "pixel_density") {
-            std::cout << getPixelDensity() << std::endl;
-        }
-        else if (line == "screen_size") {
-            glm::ivec2 screen_size = getScreenSize();
-            std::cout << screen_size.x << ',' << screen_size.y << std::endl;
-        }
-        else if (line == "viewport") {
-            glm::ivec4 viewport = getViewport();
-            std::cout << viewport.x << ',' << viewport.y << ',' << viewport.z << ',' << viewport.w << std::endl;
-        }
-        else if (line == "mouse_x") {
-            std::cout << getMouseX() << std::endl;
-        }
-        else if (line == "mouse_y") {
-            std::cout << getMouseY() << std::endl;
-        }
-        else if (line == "mouse") {
-            glm::vec2 pos = getMousePosition();
-            std::cout << pos.x << "," << pos.y << std::endl;
-        }
-        else if (line == "view3d") {
-            std::cout
-                << "eye=("
-                    << u_eye3d.x << "," << u_eye3d.y << "," << u_eye3d.z << ") "
-                << "centre=("
-                    << u_centre3d.x << "," << u_centre3d.y << ","
-                    << u_centre3d.z << ") "
-                << "up=("
-                    << u_up3d.x << "," << u_up3d.y << "," << u_up3d.z << ")"
-                << std::endl;
-        }
-        else if (line == "frag") {
-            std::cout << fragSource << std::endl;
-        }
-        else if (line == "vert") {
-            std::cout << vertSource << std::endl;
-        }
-        else if (beginsWith(line, "screenshot")) {
-            if (line == "screenshot" && outputFile != "") {
-                screenshotMutex.lock();
-                screenshotFile = outputFile;
-                screenshotMutex.unlock();
-            }
-            else {
-                std::vector<std::string> values = split(line,' ');
-                if (values.size() == 2) {
-                    screenshotMutex.lock();
-                    screenshotFile = values[1];
-                    screenshotMutex.unlock();
-                }
-            }
-        }
-        else {
-            uniformsMutex.lock();
-            parseUniforms(line, &uniforms);
-            uniformsMutex.unlock();
-        }
-    }
 }
 
 //  MAIN RENDER Thread (needs a GL context)
@@ -719,8 +573,6 @@ void onKeyPress(int _key) {
 
     if (_key == 'q' || _key == 'Q') {
         glfwSetWindowShouldClose(window, GL_TRUE);
-        //bRun = false;
-        //bRun.store(false);
     }
 }
 
