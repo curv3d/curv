@@ -1,0 +1,13 @@
+Here are some interesting embeddings of Curv:
+* A 3 pane GUI where the language is Python.
+* Javascript integration, running in a web browser.
+* Jupyter integration.
+* ipython integration.
+* a Curv GUI or UI architected in the correct way. Rich text with embeddable
+  GUI components. Some kind of FRP. GUI components can be optionally implemented
+  using the Curv geometry engine. Maybe some embedding of FRP in Curv, eg to
+  support audio reactive models, etc.
+* Stuff that Gilad Bracha has said.
+  * Live literate programming (eg, for Curv documentation and tutorials).
+    "Ideally we'd want an interactive editor that smoothly integrated writing
+    and all manner of interactive content."

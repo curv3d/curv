@@ -10,6 +10,7 @@
 #include <atomic>
 #include <iostream>
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_transform_2d.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 

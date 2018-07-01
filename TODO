@@ -1,4 +1,85 @@
-Changes to Viewer:
+New Viewer Design
+=================
+Goal: a modular, single-process, multi-threaded design for curv and gcurv.
+A library implementation of the Viewer window.
+
+I want the Viewer window and the Curv evaluator in a single process, so that:
+* The evaluator can pull graphical objects into memory (eg images and voxels)
+  and share these values with the Viewer without going through the file system.
+  Okay, these values will still need to be copied into the GPU.
+* Share a Shape value with the Viewer, which can extract the CSG tree and
+  display value pickers. Which then feed parameter changes back to the IDE.
+
+Original Design
+---------------
+A Viewer object provides an interface to a viewer window that
+runs in a separate thread. The foreground thread calls viewer.set_shape to load
+a new shape, and viewer.open() to idempotently spawn a viewer window displaying
+the current shape. The Viewer window uses GLFW, OpenGL and Dear IMGUI, and this
+code runs asynchronously from the foreground thread, which doesn't care what
+GUI toolkit the Viewer window uses--there is no coupling.
+
+Use cases:
+* curv runs a CLI REPL loop in the foreground, using GNU readline or replxx
+  library on github. If the current expression evaluates to a shape, then
+  display it in a Viewer window that runs asynchronously from the CLI code.
+* gcurv is an IDE, possibly written in C++ with Qt, possibly in some other
+  language and GUI library that supports rich text. Whatever, the choice is
+  uncoupled from the Viewer implementation.
+* The Curv library (including the Viewer object) is wrapped in Python.
+  My vision for this is admittedly not very clear.
+
+Problem
+-------
+The multi-threaded design I created for Linux won't work on macOS:
+* glfwCreateWindow() must be called from the main thread.
+* window event handling must also occur on the main thread.
+* However, it's possible to perform OpenGL calls on an auxiliary thread
+  if glfwMakeCurrentContext(window) is first performed on that thread.
+
+Solution (for libcurv)
+----------------------
+curv::geom::viewer should not create a window, should not create a thread,
+should not own the OpenGL frame-drawing main loop, and should not poll or
+register callbacks for input events. It should present an IMGUI style API.
+It should not use GLFW directly. It should just use OpenGL, operating on
+an implicit OpenGL context provided by the caller.
+
+This API is compatible with QOpenGLContext. The client is responsible for
+calling makeCurrent() at the start of frame rendering, and swapBuffers()
+at the end.
+
+Solution (for UI)
+-----------------
+The UI app is responsible for creating windows, creating OpenGL contexts,
+obtaining and dispatching input events, running main loops, creating threads.
+
+curv::geom::viewer is compatible with sharing texture assets between viewer
+windows. This is done by enabling sharing when the context is created, and
+the caller (UI) creates the context. Direct mode rendering requires that all
+shared contexts are in the same process, so I don't want a multiprocess design.
+
+gcurv:
+Create a Qt application. The Viewer and IDE windows are Qt windows.
+The Viewer window contains an OpenGL viewport that curv::geom::viewer renders
+into.
+
+curv:
+There is a conflict between macOS and running GNU readline in the main thread.
+On macOS, the window and the GUI event queue must exist in the main thread.
+
+ 1. Curv's non-interactive mode, still capable of displaying a viewer window,
+    creates no difficulties. I'll need UI code to create and run the viewer
+    window: this is executed in the main thread.
+
+ 2. The REPL runs in a worker thread. The main thread waits for the
+    REPL to complete, and displays shapes in a viewer window on request.
+
+Very similar to my existing threaded code. Seems legit.
+
+Old Comments
+------------
+Old comments about the multi-threaded design, in progress on dev branch:
 
 I am attempting to maintain a persistent window size/location in the
 Viewer structure.
