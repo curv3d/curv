@@ -75,7 +75,7 @@ putsrcline(
     std::ostream& out,
     unsigned ln, unsigned lnwidth,
     const char* line, const char* end,
-    char mode, unsigned startcol, unsigned endcol)
+    bool underlined, unsigned startcol, unsigned endcol)
 {
     // Find end of line, first and last non-whitespace.
     const char* endline = (const char*) memchr(line, '\n', end - line);
@@ -92,17 +92,13 @@ putsrcline(
     snprintf(lnbuf, 16, "%*u", lnwidth, ln+1);
     out << lnbuf << "|";
 
-    // Is the entire line part of the selected text? Then we output '>'.
+    // Underlining is forced if there is a single source line. Otherwise,
+    // is the entire line part of the selected text? Then we output '>'.
     // Otherwise, we output ' ' and output underlining on the next line.
-    bool underlined;
-    if (mode == '1') {
-        underlined = true;
-    } else {
+    if (!underlined) {
         // Are there nonwhite characters outside the selection region?
-        if (startcol > firstnw-line || endcol < lastnw-line) {
+        if (startcol > firstnw-line || endcol < lastnw-line)
             underlined = true;
-        } else
-            underlined = false;
     }
     out << (underlined ? ' ' : '>');
 
@@ -119,17 +115,10 @@ putsrcline(
         out << "\n";
         for (unsigned i = lnwidth + 2; i > 0; --i)
             out << ' ';
-        struct Underline {
-            void put(std::ostream& out, char c)
-            {
-                out << '^';
-                if (c == '\t') out << '^';
-            }
-        } under;
         unsigned linelen = endline - line;
         for (unsigned i = 0; i < linelen; ++i) {
             if (i >= startcol && i < endcol) {
-                under.put(out, line[i]);
+                if (line[i] == '\t') out << "^^"; else out << '^';
             } else {
                 if (line[i] == '\t') out << "  "; else out << ' ';
             }
@@ -168,7 +157,7 @@ Location::write(std::ostream& out) const
         putsrcline(out,
             info.start_line_num, ndigits(info.start_line_num+1),
             script_->first + info.start_line_begin, script_->last,
-            '1', info.start_column_num, info.end_column_num);
+            true, info.start_column_num, info.end_column_num);
     } else {
         unsigned lnwidth =
             std::max(ndigits(info.start_line_num+1),ndigits(info.end_line_num+1));
@@ -179,7 +168,7 @@ Location::write(std::ostream& out) const
             p = putsrcline(out,
                 ln, lnwidth,
                 p, script_->last,
-                ln == info.start_line_num ? '^' : '-',
+                false,
                 ln == info.start_line_num ? info.start_column_num : 0,
                 ln == info.end_line_num ? info.end_column_num : unsigned(~0));
             if (ln == info.end_line_num)
