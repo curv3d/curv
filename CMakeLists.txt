@@ -18,8 +18,9 @@ add_subdirectory(extern/openvdb/openvdb EXCLUDE_FROM_ALL)
 add_subdirectory(extern/glslViewer EXCLUDE_FROM_ALL)
 
 if (APPLE)
-  # Using Homebrew on macOS. Set the compiler, to prevent CMake from
-  # choosing the Xcode compiler (bug #28).
+  # Using Homebrew on macOS. First, add /usr/local/include (bug #28):
+  include_directories(SYSTEM /usr/local/include)
+  # Second, set the compiler, to avoid variation in compilers (bug #28):
   SET(CMAKE_C_COMPILER /usr/bin/cc)
   SET(CMAKE_CXX_COMPILER /usr/bin/c++)
   # Homebrew installs a private copy of GNU readline, which we use, which
