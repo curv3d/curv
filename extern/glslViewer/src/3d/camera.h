@@ -36,7 +36,7 @@ private:
     glm::mat4 m_projectionViewMatrix;
 
     glm::mat4 m_projectionMatrix;
-    glm::mat4 m_viewMatrix;
+    //glm::mat4 m_viewMatrix;
     glm::mat3 m_normalMatrix;
 
     double m_aspect;
