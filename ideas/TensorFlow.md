@@ -34,3 +34,7 @@ Which SDF representations? Voxels. Curv programs.
 
 Maybe we can use AI to search for optimized code for generating a Euclidean
 SDF for a desired shape.
+
+Generative Adversarial Networks (GAN): two networks trained on the same
+family of shapes or images. One network generates candidates, the other network
+accepts/rejects the candidates.

@@ -128,6 +128,22 @@ the picker type. This record pattern must match the `p` field.
 The parameters are emitted as uniform variables. The body of the function
 must yield a shape record, as determined at compile time using type inference.
 
+Named Parametric Records
+------------------------
+In addition to the required `call` and `p` fields, let's add an optional `name`
+field.
+* This is used as a title for the picker window.
+* If the name is present, then a parametric record is printed as `name{params}`.
+  Eg, "cube{d:2}" is a lot more readable than dumping the cube record.
+* `parametric cube{is_distance d} = box(d,d,d)`. Now `cube` constructs a named
+  parametric record.
+* Now we need a way to print values verbosely.
+
+Functions have an optional name, too, which are also used for printing.
+For consistency, maybe f.name is defined if function value f has a name.
+
+See `Terms`_ for more details.
+
 Concept Name
 ------------
 * Parametric Record
