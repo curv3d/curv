@@ -5,7 +5,6 @@ function(f) = make_shape {
 };
 
 in
-function(x->sin x - 2)
-    >> rotate(90*deg)
-    >> complement
-    >> revolve >> lipschitz 2
+function(x->sin x + 2)
+>> rotate(-90*deg)
+>> revolve >> lipschitz 2
