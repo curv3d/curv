@@ -7,14 +7,40 @@ Two request types: new_shape and exit.
 
 Variables for thread communication:
     std::thread repl_thread;
-    std::mutex mutex;
+    std::mutex request_mutex;
+    std::condition_variable request_condition;
     enum class Request {
         k_new_shape,
         k_exit,
         k_none
-    } request; // guarded by mutex
+    } request; // guarded by request_mutex
 
 Viewer thread:
+    Request receive_request(bool block)
+    {
+        std::unique_lock<std::mutex> lock(request_mutex);
+        if (block)
+            request_condition.wait(lock, []{return request != Request::k_none;});
+        else if (!request_condition.wait_for(lock, 0ms))
+            return Request::k_none;
+     
+        // after the wait, we hold the lock.
+        Request r = request;
+
+        // process request
+        ...
+
+        request = Request::k_none; // indicate we are ready for another request
+     
+        // Manual unlocking is done before notifying, to avoid waking up
+        // the waiting thread only to block again (see notify_one for details)
+        lock.unlock();
+        request_condition.notify_one();
+        return r;
+    }
+    void reply_request()
+    {
+    }
     for (;;) {
         if (!is_open) {
             wait_request
@@ -29,6 +55,20 @@ Viewer thread:
     }
 
 REPL thread:
+    // send request to viewer thread:
+    void send_request(Request r)
+    {
+        {
+            std::lock_guard<std::mutex> lock(request_mutex);
+            request = r;
+        }
+        cv.notify_one();
+        // wait for the worker
+        {
+            std::unique_lock<std::mutex> lock(request_mutex);
+            request_condition.wait(lock, []{return request == Request::k_none;});
+        }
+    }
 
 #include <iostream>
 #include <string>
@@ -114,7 +154,10 @@ Use cases:
   language and GUI library that supports rich text. Whatever, the choice is
   uncoupled from the Viewer implementation.
 * The Curv library (including the Viewer object) is wrapped in Python.
-  My vision for this is admittedly not very clear.
+  Run a Python program from a Python IDE, and it opens the Viewer window
+  to display a Curv shape. Like the OpenSCAD/Processing UI. Works with any
+  language, with minimal work to integrate the Viewer into an IDE.
+* Jupyter integration and web browser integration, eventually.
 
 Problem
 -------
@@ -136,8 +179,11 @@ This API is compatible with QOpenGLContext. The client is responsible for
 calling makeCurrent() at the start of frame rendering, and swapBuffers()
 at the end.
 
-Solution (for UI)
------------------
+Solution (for Curv UI)
+----------------------
+The Viewer is tightly integrated with the evaluator code. They both live
+in the same process, and can efficiently share memory and GPU resources.
+
 The UI app is responsible for creating windows, creating OpenGL contexts,
 obtaining and dispatching input events, running main loops, creating threads.
 
@@ -164,6 +210,16 @@ On macOS, the window and the GUI event queue must exist in the main thread.
 
 Very similar to my existing threaded code. Seems legit.
 
+Solution (foreign-language IDE integration)
+-------------------------------------------
+I want 'shape.view()' in Python, or whatever, to display the shape in a
+separate Viewer window. The Viewer window has to keep running after the
+Python program exits. In the general case, I can't run persistent threads
+inside a foreign IDE's address space, so the integration spawns a separate
+Viewer process which maintains all the Viewer state, and the file system is
+used for communication (maybe a Unix domain socket or fifo file).
+There is a performance hit, and I'm not designing this right now.
+
 Old Comments
 ------------
 Old comments about the multi-threaded design, in progress on dev branch:
@@ -172,6 +228,9 @@ I am attempting to maintain a persistent window size/location in the
 Viewer structure.
 
 Fix storage leaks.
+
+Report error correctly if OpenGL can't be initialized: in interactive mode,
+in live mode, in batch mode.
 
 Replace curv*.frag temp file with a global string variable.
 

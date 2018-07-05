@@ -20,6 +20,8 @@ extern "C" {
 
 #include "export.h"
 #include "progdir.h"
+#include "repl.h"
+#include "cscript.h"
 #include <libcurv/geom/tempfile.h>
 #include <libcurv/dtostr.h>
 #include <libcurv/analyser.h>
@@ -38,38 +40,6 @@ extern "C" {
 #include <libcurv/geom/export_frag.h>
 #include <libcurv/geom/shape.h>
 #include <libcurv/geom/viewer/viewer.h>
-
-bool was_interrupted = false;
-
-void interrupt_handler(int)
-{
-    was_interrupted = true;
-}
-
-struct CString_Script : public curv::Script
-{
-    char* buffer_;
-
-    // buffer argument is a static string.
-    CString_Script(const char* name, const char* buffer)
-    :
-        curv::Script(curv::make_string(name), buffer, buffer + strlen(buffer)),
-        buffer_(nullptr)
-    {
-    }
-
-    // buffer argument is a heap string, allocated using malloc.
-    CString_Script(const char* name, char* buffer)
-    :
-        curv::Script(curv::make_string(name), buffer, buffer + strlen(buffer)),
-        buffer_(buffer)
-    {}
-
-    ~CString_Script()
-    {
-        if (buffer_) free(buffer_);
-    }
-};
 
 curv::System&
 make_system(const char* argv0, std::list<const char*>& libs)
@@ -169,64 +139,6 @@ display_shape(curv::Value value,
         return true;
     } else
         return false;
-}
-
-int
-interactive_mode(curv::System& sys)
-{
-    // Catch keyboard interrupts, and set was_interrupted = true.
-    // This is/will be used to interrupt the evaluator.
-    struct sigaction interrupt_action;
-    memset((void*)&interrupt_action, 0, sizeof(interrupt_action));
-    interrupt_action.sa_handler = interrupt_handler;
-    sigaction(SIGINT, &interrupt_action, nullptr);
-
-    // top level definitions, extended by typing 'id = expr'
-    curv::Namespace names = sys.std_namespace();
-
-    for (;;) {
-        // Race condition on assignment to was_interrupted.
-        was_interrupted = false;
-        RLXResult result;
-        char* line = readlinex("curv> ", &result);
-        if (line == nullptr) {
-            std::cout << "\n";
-            if (result == rlx_interrupt) {
-                continue;
-            }
-            break;
-        }
-        auto script = curv::make<CString_Script>("", line);
-        try {
-            curv::Program prog{*script, sys};
-            prog.compile(&names, nullptr);
-            auto den = prog.denotes();
-            if (den.first) {
-                for (auto f : *den.first)
-                    names[f.first] = curv::make<curv::Builtin_Value>(f.second);
-            }
-            if (den.second) {
-                bool is_shape = false;
-                if (den.second->size() == 1) {
-                    static curv::Symbol lastval_key = "_";
-                    names[lastval_key] =
-                        curv::make<curv::Builtin_Value>(den.second->front());
-                    is_shape = display_shape(den.second->front(),
-                        sys, curv::At_Phrase(prog.nub(), nullptr));
-                }
-                if (!is_shape) {
-                    for (auto e : *den.second)
-                        std::cout << e << "\n";
-                }
-            }
-        } catch (curv::Exception& e) {
-            std::cout << "ERROR: " << e << "\n";
-        } catch (std::exception& e) {
-            std::cout << "ERROR: " << e.what() << "\n";
-        }
-    }
-    viewer.close();
-    return EXIT_SUCCESS;
 }
 
 int
@@ -430,7 +342,8 @@ main(int argc, char** argv)
     atexit(curv::geom::remove_all_tempfiles);
 
     if (filename == nullptr) {
-        return interactive_mode(sys);
+        interactive_mode(sys);
+        return EXIT_SUCCESS;
     }
 
     if (live) {
