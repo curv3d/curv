@@ -1,0 +1,123 @@
+Terms
+=====
+A **term** is a record or function value
+that prints as a **constructor expression**.
+
+When evaluated in an appropriate environment, a constructor expression
+recreates the original term value. A constructor expression is a Curv postfix
+expression, consisting of an identifier followed by a sequence of zero or more
+arguments and field selectors. The initial identifier is called the **head**.
+
+Rationale:
+* More readable error messages. Shape and function values are printed in a more
+  user-friendly format.
+* CSG Trees. Shapes constructed using the standard shape library will be terms,
+  and thus will contain a metadata representation of their **CSG Tree**
+  (in the OpenSCAD sense). Then,
+  * A CSG tree can be translated into a tree of value pickers in the GUI.
+  * Can export an abstract CSG tree, similar to an OpenSCAD *.csg file.
+    Eg, using my proposed JCSG format (JSON encoded CSG tree).
+  * Can export other high level graphics file formats, such as SVG, by mapping
+    CSG tree nodes onto, eg, SVG primitives.
+  * The geometry engine can use CSG tree information to optimize certain
+    shapes, such as unions.
+* CSG and function terms could be the nodes in a node based visual programming
+  environment. Search the standard environment for term bindings, and present
+  them as graphical blocks that can be dragged onto a canvas. Use term metadata
+  to determine inputs and outputs.
+
+Examples of terms (after the standard library is modified):
+* cube
+* cube.mitred
+* cylinder{d,h}
+* reflect_x shape
+* rotate {angle,axis} shape
+* rotate {angle,axis}
+* rotate
+* union [shape1, shape2]
+* smooth r .union [shape1, shape2]
+
+This is implemented by storing additional metadata in record and function
+values.
+
+What is the API for defining terms?
+
+ 1. The metadata is represented by public record fields, and the user is
+    responsible for populating those fields when constructing a record.
+    Function terms are represented by records with a `call` field.
+
+    This is tedious, and also, it requires mutually recursive record values,
+    which are not currently supported.
+
+ 2. There is a terse, high level API. Terms are created if the `term` keyword
+    is used to define fields in a record literal. Then, those specific members
+    of the record are terms.
+
+        term <id> = <expr>
+    is a field definition that defines field <id> to be a term. The <expr> must
+    evaluate to a record or function at run time.
+
+        term <id> <param1> <param2> ... = <expr>
+    is a field definition that defines field <id> to be a function term.
+
+    With function terms, there are two interesting cases.
+    * In one case, the result of calling the function is a term. (Or for a
+      curried function, the result of applying all of the arguments is a term.)
+      That's the case we are interested in for CSG trees. In this case, we need
+      to apply term metadata to the value computed by the function body <expr>.
+    * In the other case, the body of a function does not compute a term.
+      Eg, `sin` is a term, but `sin 0` is not a term. In this case, `sin`
+      prints as "sin", which is useful for error messages.
+    * Note that this second case is already implemented in Curv without the
+      need for a `term` keyword, because I wanted better error messages.
+      So, I can reserve the syntax of `term` function definitions for the
+      first case.
+
+    This also works with the 'binding' syntax: `term id : expr`.
+
+    In the general case, `term` needs to add term metadata at run time,
+    when evaluating the <expr> of a term definition. This can optimized
+    to happen at compile time in certain cases, depending on how smart the
+    compiler is.
+
+Internally, term metadata can take one of three forms:
+* head. Metadata: string (an identifier)
+* function call. Metadata: function,arg
+* field selection. Metadata: base record,field name
+
+This metadata is added, generally at runtime, by the following operations:
+* `f x` adds function call metadata to the result if `f` is a term.
+* In `r.a`, if `a` is a term field, then:
+  * If `r` is a term, then add field selection metadata to the result.
+  * If `r` is not a term, then add head metadata to the result.
+
+Internally, the `term` keyword adds metadata to the value of the <expr>.
+  Eg, in a record literal, a special definitional form, `term <id> = <expr>`,
+
+Three cases:
+
+The metadata is represented by a field called `term` or `ctor`,
+which matches one of three patterns:
+    {is_string name}
+    {apply: (is_fun, _)}
+    {select: (is_record, is_string)}
+Or here is a flattened alternative:
+    {is_string name}
+    {is_fun fun, arg}
+    {is_record parent, is_string field}
+
+There is a problem with selection terms. Consider a constructor expression
+prefix ending in `. <id>`. Two subcases:
+* Returning a record value. This would require mutually recursive record
+  definitions, currently not allowed, so an extension is required.
+  Eg, in a record literal, a special definitional form, `term <id> = <expr>`,
+  which adds term metadata to the record returned by <expr>.
+* Returning a function value. Functions can be recursive, but we still need a
+  mechanism to add term metadata to the function. Functions can be represented
+  by records with a `call` field, but records can't be recursive.
+  So we add `term <id> <param>... = <expr>`.
+
+As part of the ongoing work of creating better error messages, I changed
+function definitions to add metadata to the function so that a function value
+and a partially applied function would print as a term. The present proposal
+extends this.

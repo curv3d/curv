@@ -1,0 +1,12 @@
+let
+r = 1;
+x_space = half_space{d:0, normal:X_axis};
+y_space = half_space{d:0, normal:Y_axis};
+z_space = half_space{d:0, normal:Z_axis};
+xy_space = smooth r .union(x_space, y_space);
+xz_space = smooth r .union(x_space, z_space);
+yz_space = smooth r .union(y_space, z_space);
+smin = union(xy_space, xz_space, yz_space).dist;
+
+in
+union(xy_space, xz_space, yz_space)

@@ -3,7 +3,6 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 extern "C" {
-#include "readlinex.h"
 #include <string.h>
 #include <signal.h>
 #include <stdlib.h>

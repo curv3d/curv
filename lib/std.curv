@@ -1572,7 +1572,7 @@ show_dist shape =
                 [1,1,1],
         bbox : [[-inf,-inf,0],[inf,inf,0]],
         is_2d : true,
-        is_3d : true,
+        is_3d : shape.is_3d,
     };
     in if (shape.is_2d) xy else union(shape, xy);
 

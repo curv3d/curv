@@ -455,6 +455,18 @@ TEST(curv, eval)
     SUCCESS("abs(inf)", "inf");
     SUCCESS("abs(2)", "2");
     SUCCESS("abs(0)", "0");
+    FAILALL("abs\ntrue",
+        "abs(true): domain error\n"
+        "at:\n"
+        "1|>abs\n"
+        "2|>true");
+    FAILALL("abs\ntrue + 1",
+        "abs(true): domain error\n"
+        "at:\n"
+        "1|>abs\n"
+        "2| true + 1\n"
+        "   ^^^^    ");
+
 
     SUCCESS("(mag(), mag(2,), mag(3,4))",
         "[0,2,5]");

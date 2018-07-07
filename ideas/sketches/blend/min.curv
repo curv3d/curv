@@ -1,0 +1,7 @@
+union(
+    everything >> colour white,
+    make_shape {
+        dist(a,b,z,t) = min(a,b);
+        is_2d = true;
+    } >> colour black)
+>> show_axes

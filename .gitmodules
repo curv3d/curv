@@ -4,3 +4,6 @@
 [submodule "extern/glfw"]
 	path = extern/glfw
 	url = https://github.com/glfw/glfw
+[submodule "extern/replxx"]
+	path = extern/replxx
+	url = https://github.com/AmokHuginnsson/replxx
