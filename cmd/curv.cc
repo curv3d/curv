@@ -3,7 +3,6 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 extern "C" {
-#include "readlinex.h"
 #include <string.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -17,6 +16,7 @@ extern "C" {
 }
 #include <iostream>
 #include <fstream>
+#include <replxx.hxx>
 
 #include "export.h"
 #include "progdir.h"
@@ -173,7 +173,7 @@ int
 interactive_mode(curv::System& sys)
 {
     // Catch keyboard interrupts, and set was_interrupted = true.
-    // This is/will be used to interrupt the evaluator.
+    // TODO: This will be used to interrupt the evaluator.
     struct sigaction interrupt_action;
     memset((void*)&interrupt_action, 0, sizeof(interrupt_action));
     interrupt_action.sa_handler = interrupt_handler;
@@ -182,18 +182,19 @@ interactive_mode(curv::System& sys)
     // top level definitions, extended by typing 'id = expr'
     curv::Namespace names = sys.std_namespace();
 
+    replxx::Replxx rx;
+
     for (;;) {
-        // Race condition on assignment to was_interrupted.
         was_interrupted = false;
-        RLXResult result;
-        char* line = readlinex("curv> ", &result);
+        const char* line = rx.input("curv> ");
         if (line == nullptr) {
+            if (errno == EAGAIN) continue;
             std::cout << "\n";
-            if (result == rlx_interrupt) {
-                continue;
-            }
             break;
         }
+        if (line[0] != '\0')
+            rx.history_add(line);
+
         auto script = curv::make<CString_Script>("", line);
         try {
             curv::Program prog{*script, sys};

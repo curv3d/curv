@@ -23,16 +23,19 @@ add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
 add_subdirectory(extern/openvdb/openvdb EXCLUDE_FROM_ALL)
 add_subdirectory(extern/glslViewer EXCLUDE_FROM_ALL)
 
+# replxx library
+file(GLOB ReplxxSrc "extern/replxx/src/*.cxx" "extern/replxx/src/*.cpp")
+add_library(replxx ${ReplxxSrc})
+target_include_directories(replxx
+   PUBLIC extern/replxx/include
+   PRIVATE extern/replxx/src)
+set_property(TARGET replxx PROPERTY CXX_STANDARD 14)
+
 if (APPLE)
-    # Homebrew installs a private copy of GNU readline, which we use, which
-    # has a different API than the Apple version of readline.
-    list(APPEND CMAKE_C_FLAGS -I/usr/local/opt/readline/include)
-    set( LibReadline /usr/local/opt/readline/lib/libreadline.dylib )
     set( sanitize "" )
     FIND_LIBRARY(OPENGL_LIB OpenGL)
     set( LibOpenGL ${OPENGL_LIB} )
 else ()
-    set( LibReadline readline)
     # The leak sanitizer is only available for 64 bit Linux (gcc and clang).
     # It adds minimal overhead, so we add it to all executables in debug builds.
     set( sanitize "-fsanitize=address" )
@@ -49,7 +52,7 @@ set_property(TARGET libcurv_geom PROPERTY OUTPUT_NAME curv_geom)
 
 file(GLOB Src "cmd/*.c" "cmd/*.cc")
 add_executable(curv ${Src})
-target_link_libraries(curv PUBLIC libcurv libcurv_geom GlslViewer glfw ${LibOpenGL} ${LibReadline} double-conversion boost_filesystem boost_system openvdb_static Half tbb dl pthread)
+target_link_libraries(curv PUBLIC libcurv libcurv_geom GlslViewer glfw ${LibOpenGL} replxx double-conversion boost_filesystem boost_system openvdb_static Half tbb dl pthread)
 
 file(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})
