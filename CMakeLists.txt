@@ -12,16 +12,19 @@ include_directories(.
     extern/googletest/googletest/include
     extern/glslViewer/include
     extern/openvdb
-    extern/blosc)
+    extern/blosc
+    extern/glfw/include)
 
 if (APPLE)
     # Using Homebrew on macOS. Search /usr/local/include (bug #28):
     include_directories(SYSTEM /usr/local/include)
+    link_directories(/usr/local/lib)
 endif (APPLE)
 
 add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
 add_subdirectory(extern/openvdb/openvdb EXCLUDE_FROM_ALL)
 add_subdirectory(extern/glslViewer EXCLUDE_FROM_ALL)
+add_subdirectory(extern/glfw EXCLUDE_FROM_ALL)
 
 # replxx library
 file(GLOB ReplxxSrc "extern/replxx/src/*.cxx" "extern/replxx/src/*.cpp")
