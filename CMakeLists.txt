@@ -18,6 +18,7 @@ include_directories(.
 if (APPLE)
     # Using Homebrew on macOS. Search /usr/local/include (bug #28):
     include_directories(SYSTEM /usr/local/include)
+    link_directories(/usr/local/lib)
 endif (APPLE)
 
 add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
