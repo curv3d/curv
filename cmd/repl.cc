@@ -40,31 +40,74 @@ extern "C" {
 #include <libcurv/geom/shape.h>
 #include <libcurv/geom/viewer/viewer.h>
 
+enum class Request {
+    k_none,
+    k_display_shape,
+    k_exit
+};
+Request request;
+std::mutex request_mutex;
+std::condition_variable request_condition;
+curv::geom::Shape_Recognizer* request_shape;
+
+void send_request(Request r)
+{
+    {
+        std::lock_guard<std::mutex> lock(request_mutex);
+        request = r;
+    }
+    request_condition.notify_one();
+    // wait for the response
+    {
+        std::unique_lock<std::mutex> lock(request_mutex);
+        request_condition.wait(lock, []{return request == Request::k_none;});
+    }
+}
+
+Request receive_request(bool block)
+{
+    using namespace std::chrono_literals;
+    std::unique_lock<std::mutex> lock(request_mutex);
+    if (block)
+        request_condition.wait(lock, []{return request != Request::k_none;});
+    else if (!request_condition.wait_for(lock, 0ms,
+                                         []{return request != Request::k_none;}))
+        return Request::k_none;
+ 
+    // after the wait, we hold the lock.
+    Request r = request;
+
+    // process request
+    if (r == Request::k_display_shape) {
+        assert(request_shape != nullptr);
+        curv::geom::viewer::Viewer view;
+        view.set_shape(*request_shape);
+        request_shape = nullptr;
+        view.run();
+    }
+
+    request = Request::k_none; // indicate we are ready for another request
+ 
+    // Manual unlocking is done before notifying, to avoid waking up
+    // the waiting thread only to block again (see notify_one for details)
+    lock.unlock();
+    request_condition.notify_one();
+    return r;
+}
+
 curv::geom::viewer::Viewer view;
 
-bool view_shape(curv::Value value,
-    curv::System& sys, const curv::Context &cx, bool block = false)
+void print_shape(curv::geom::Shape_Recognizer& shape)
 {
-    curv::geom::Shape_Recognizer shape(cx, sys);
-    if (shape.recognize(value)) {
-        if (shape.is_2d_) std::cerr << "2D";
-        if (shape.is_2d_ && shape.is_3d_) std::cerr << "/";
-        if (shape.is_3d_) std::cerr << "3D";
-        std::cerr << " shape "
-            << (shape.bbox_.xmax - shape.bbox_.xmin) << "×"
-            << (shape.bbox_.ymax - shape.bbox_.ymin);
-        if (shape.is_3d_)
-            std::cerr << "×" << (shape.bbox_.zmax - shape.bbox_.zmin);
-        std::cerr << "\n";
-
-        view.set_shape(shape);
-        if (block)
-            view.run();
-        else
-            view.open();
-        return true;
-    } else
-        return false;
+    if (shape.is_2d_) std::cerr << "2D";
+    if (shape.is_2d_ && shape.is_3d_) std::cerr << "/";
+    if (shape.is_3d_) std::cerr << "3D";
+    std::cerr << " shape "
+        << (shape.bbox_.xmax - shape.bbox_.xmin) << "×"
+        << (shape.bbox_.ymax - shape.bbox_.ymin);
+    if (shape.is_3d_)
+        std::cerr << "×" << (shape.bbox_.zmax - shape.bbox_.zmin);
+    std::cerr << "\n";
 }
 
 bool was_interrupted = false;
@@ -74,7 +117,7 @@ void interrupt_handler(int)
     was_interrupted = true;
 }
 
-void interactive_mode(curv::System& sys)
+void repl(curv::System* sys)
 {
     // Catch keyboard interrupts, and set was_interrupted = true.
     // TODO: This will be used to interrupt the evaluator.
@@ -84,7 +127,7 @@ void interactive_mode(curv::System& sys)
     sigaction(SIGINT, &interrupt_action, nullptr);
 
     // top level definitions, extended by typing 'id = expr'
-    curv::Namespace names = sys.std_namespace();
+    curv::Namespace names = sys->std_namespace();
 
     replxx::Replxx rx;
 
@@ -101,7 +144,7 @@ void interactive_mode(curv::System& sys)
 
         auto script = curv::make<CString_Script>("", line);
         try {
-            curv::Program prog{*script, sys};
+            curv::Program prog{*script, *sys};
             prog.compile(&names, nullptr);
             auto den = prog.denotes();
             if (den.first) {
@@ -114,8 +157,16 @@ void interactive_mode(curv::System& sys)
                     static curv::Symbol lastval_key = "_";
                     names[lastval_key] =
                         curv::make<curv::Builtin_Value>(den.second->front());
-                    is_shape = view_shape(den.second->front(),
-                        sys, curv::At_Phrase(prog.nub(), nullptr));
+                    curv::geom::Shape_Recognizer shape(
+                        curv::At_Phrase(prog.nub(), nullptr),
+                        *sys);
+                    if (shape.recognize(den.second->front())) {
+                        print_shape(shape);
+                        request_shape = &shape;
+                        send_request(Request::k_display_shape);
+                        assert(request_shape == nullptr);
+                        is_shape = true;
+                    }
                 }
                 if (!is_shape) {
                     for (auto e : *den.second)
@@ -128,5 +179,18 @@ void interactive_mode(curv::System& sys)
             std::cout << "ERROR: " << e.what() << "\n";
         }
     }
+    send_request(Request::k_exit);
+}
+
+void interactive_mode(curv::System& sys)
+{
+    std::thread repl_thread(repl, &sys);
+    for (;;) {
+        Request r = receive_request(true);
+        if (r == Request::k_exit)
+            break;
+    }
+    if (repl_thread.joinable())
+        repl_thread.join();
     view.close();
 }
