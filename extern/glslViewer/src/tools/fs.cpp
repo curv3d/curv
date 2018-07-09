@@ -5,8 +5,11 @@
 
 #include "tools/fs.h"
 
-std::string getAbsPath (const std::string& str) {
-    std::string abs_path = realpath(str.c_str(), NULL);
+std::string getAbsPath (const std::string& str)
+{
+    const char* path = realpath(str.c_str(), NULL);
+    std::string abs_path = path;
+    free((void*) path);
     std::size_t found = abs_path.find_last_of("\\/");
     if (found){
         return abs_path.substr(0,found);

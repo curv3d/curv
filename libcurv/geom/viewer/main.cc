@@ -51,14 +51,11 @@ std::string screenshotFile = "";
 std::mutex screenshotMutex;
 
 //  SHADER
-Shader shader;
 int iFrag = -1;
 std::string fragSource = "";
 const std::string* fragPath = nullptr;
 int iVert = -1;
-std::string vertSource = "";
 const std::string* vertPath = nullptr;
-bool verbose = false;
 
 //  CAMERA
 Camera cam;
@@ -86,9 +83,6 @@ std::string outputFile = "";
 std::map<std::string,Texture*> textures;
 bool vFlip = true;
 
-// Defines
-std::vector<std::string> defines;
-
 // Include folders
 std::vector<std::string> include_folders;
 
@@ -98,12 +92,9 @@ Vbo* buffer_vbo;
 Shader buffer_shader;
 
 //================================================================= Functions
-void setup();
-void draw();
 
 void screenshot(std::string file);
 
-void onFileChange(int index);
 void onExit();
 void printUsage(const char *);
 
@@ -139,7 +130,7 @@ Viewer::main(Viewer* viewer)
     int textureCounter = 0; // Number of textures to load
 
     // Adding default deines
-    defines.push_back("GLSLVIEWER 1");
+    viewer->defines_.push_back("GLSLVIEWER 1");
 
     //Load the the resources (textures)
     for (int i = 1; i < argc ; i++){
@@ -150,7 +141,7 @@ Viewer::main(Viewer* viewer)
         }
         else if ( argument == "-v" || 
                   argument == "--verbose" ) {
-            verbose = true;
+            viewer->verbose_ = true;
         }
         else if (argument == "-s" || argument == "--sec") {
             i++;
@@ -241,7 +232,7 @@ Viewer::main(Viewer* viewer)
         }
         else if (argument.find("-D") == 0) {
             std::string define = argument.substr(2);
-            defines.push_back(define);
+            viewer->defines_.push_back(define);
         }
         else if (argument.find("-I") == 0) {
             std::string include = argument.substr(2);
@@ -275,7 +266,7 @@ Viewer::main(Viewer* viewer)
     }
 
     // Start working on the GL context
-    setup();
+    viewer->setup();
 
     // Render Loop
     while (isGL()) {
@@ -294,15 +285,15 @@ Viewer::main(Viewer* viewer)
             if (viewer->request_ == Request::k_new_shape) {
                 fragSource = "";
                 if (loadFromPath(viewer->fragname_.c_str(), &fragSource, include_folders)) {
-                    shader.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
-                    shader.load(fragSource, vertSource, defines, verbose);
+                    viewer->shader_.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
+                    viewer->shader_.load(fragSource, viewer->vertSource_, viewer->defines_, viewer->verbose_);
                 }
                 viewer->request_ = Request::k_none;
             }
         }
 
         // Draw
-        draw();
+        viewer->draw();
 
         // Swap the buffers
         renderGL();
@@ -324,7 +315,8 @@ Viewer::main(Viewer* viewer)
 
 //  MAIN RENDER Thread (needs a GL context)
 //============================================================================
-void setup() {
+void Viewer::setup()
+{
     // Prepare viewport
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -361,14 +353,14 @@ void setup() {
 
     if (iVert != -1) {
         vertPath = &files[iVert].path;
-        vertSource = "";
-        loadFromPath(*vertPath, &vertSource, include_folders);
+        vertSource_ = "";
+        loadFromPath(*vertPath, &vertSource_, include_folders);
     }
     else {
-        vertSource = vbo->getVertexLayout()->getDefaultVertShader();
+        vertSource_ = vbo->getVertexLayout()->getDefaultVertShader();
     }
 
-    shader.load(fragSource, vertSource, defines, verbose);
+    shader_.load(fragSource, vertSource_, defines_, verbose_);
 
     cam.setViewport(getWindowWidth(), getWindowHeight());
     cam.setPosition(glm::vec3(0.0,0.0,-3.));
@@ -397,7 +389,7 @@ void main() {\n\
     vec2 st = gl_FragCoord.xy/u_resolution.xy;\n\
     gl_FragColor = texture2D(u_buffer, st);\n\
 }";
-    buffer_shader.load(buffer_frag, buffer_vert, defines);
+    buffer_shader.load(buffer_frag, buffer_vert, defines_);
 
     // Turn on Alpha blending
     glEnable(GL_BLEND);
@@ -408,77 +400,78 @@ void main() {\n\
 
 }
 
-void draw() {
-    if (shader.needBackbuffer()) {
+void Viewer::draw()
+{
+    if (shader_.needBackbuffer()) {
         buffer.swap();
         buffer.src->bind();
     }
 
-    shader.use();
+    shader_.use();
 
     // Pass uniforms
-    shader.setUniform("u_resolution", getWindowWidth(), getWindowHeight());
-    if (shader.needTime()) {
-        shader.setUniform("u_time", float(getTime()));
+    shader_.setUniform("u_resolution", getWindowWidth(), getWindowHeight());
+    if (shader_.needTime()) {
+        shader_.setUniform("u_time", float(getTime()));
     }
-    if (shader.needDelta()) {
-        shader.setUniform("u_delta", float(getDelta()));
+    if (shader_.needDelta()) {
+        shader_.setUniform("u_delta", float(getDelta()));
     }
-    if (shader.needDate()) {
-        shader.setUniform("u_date", getDate());
+    if (shader_.needDate()) {
+        shader_.setUniform("u_date", getDate());
     }
-    if (shader.needMouse()) {
-        shader.setUniform("u_mouse", getMouseX(), getMouseY());
+    if (shader_.needMouse()) {
+        shader_.setUniform("u_mouse", getMouseX(), getMouseY());
     }
-    if (shader.need_iMouse()) {
-        shader.setUniform("iMouse", get_iMouse());
+    if (shader_.need_iMouse()) {
+        shader_.setUniform("iMouse", get_iMouse());
     }
-    if (shader.needView2d()) {
-        shader.setUniform("u_view2d", u_view2d);
+    if (shader_.needView2d()) {
+        shader_.setUniform("u_view2d", u_view2d);
     }
-    if (shader.needView3d()) {
-        shader.setUniform("u_eye3d", u_eye3d);
-        shader.setUniform("u_centre3d", u_centre3d);
-        shader.setUniform("u_up3d", u_up3d);
+    if (shader_.needView3d()) {
+        shader_.setUniform("u_eye3d", u_eye3d);
+        shader_.setUniform("u_centre3d", u_centre3d);
+        shader_.setUniform("u_up3d", u_up3d);
     }
 
     for (UniformList::iterator it=uniforms.begin(); it!=uniforms.end(); ++it) {
         if (it->second.bInt) {
-            shader.setUniform(it->first, int(it->second.value[0]));
+            shader_.setUniform(it->first, int(it->second.value[0]));
         }
         else {
-            shader.setUniform(it->first, it->second.value, it->second.size);
+            shader_.setUniform(it->first, it->second.value, it->second.size);
         }
     }
 
     glm::mat4 mvp = glm::mat4(1.);
     if (iGeom != -1) {
-        shader.setUniform("u_eye", -cam.getPosition());
-        shader.setUniform("u_normalMatrix", cam.getNormalMatrix());
+        shader_.setUniform("u_eye", -cam.getPosition());
+        shader_.setUniform("u_normalMatrix", cam.getNormalMatrix());
 
-        shader.setUniform("u_modelMatrix", model_matrix);
-        shader.setUniform("u_viewMatrix", cam.getViewMatrix());
-        shader.setUniform("u_projectionMatrix", cam.getProjectionMatrix());
+        shader_.setUniform("u_modelMatrix", model_matrix);
+        shader_.setUniform("u_viewMatrix", cam.getViewMatrix());
+        shader_.setUniform("u_projectionMatrix", cam.getProjectionMatrix());
 
         mvp = cam.getProjectionViewMatrix() * model_matrix;
     }
-    shader.setUniform("u_modelViewProjectionMatrix", mvp);
+    shader_.setUniform("u_modelViewProjectionMatrix", mvp);
 
     // Pass Textures Uniforms
     unsigned int index = 0;
     for (std::map<std::string,Texture*>::iterator it = textures.begin(); it!=textures.end(); ++it) {
-        shader.setUniform(it->first, it->second, index);
-        shader.setUniform(it->first+"Resolution", it->second->getWidth(), it->second->getHeight());
+        shader_.setUniform(it->first, it->second, index);
+        shader_.setUniform(it->first+"Resolution", it->second->getWidth(), it->second->getHeight());
         index++;
     }
 
-    if (shader.needBackbuffer()) {
-        shader.setUniform("u_backbuffer", buffer.dst, index);
+    if (shader_.needBackbuffer()) {
+        shader_.setUniform("u_backbuffer", buffer.dst, index);
     }
 
-    vbo->draw(&shader);
+    vbo->draw(&shader_);
 
-    if (shader.needBackbuffer()) {
+    if (shader_.needBackbuffer()) {
         buffer.src->unbind();
         buffer_shader.use();
         buffer_shader.setUniform("u_resolution",getWindowWidth(), getWindowHeight());
@@ -495,38 +488,9 @@ void draw() {
 
 // Rendering Thread
 //============================================================================
-void onFileChange(int index) {
-    std::string type = files[index].type;
-    std::string path = files[index].path;
 
-    if (type == "fragment") {
-        fragSource = "";
-        if (loadFromPath(path, &fragSource, include_folders)) {
-            shader.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
-            shader.load(fragSource, vertSource, defines, verbose);
-        }
-    }
-    else if (type == "vertex") {
-        vertSource = "";
-        if (loadFromPath(path, &vertSource, include_folders)) {
-            shader.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
-            shader.load(fragSource, vertSource, defines, verbose);
-        }
-    }
-    else if (type == "geometry") {
-        // TODO
-    }
-    else if (type == "image") {
-        for (std::map<std::string,Texture*>::iterator it = textures.begin(); it!=textures.end(); ++it) {
-            if (path == it->second->getFilePath()) {
-                it->second->load(path, files[index].vFlip);
-                break;
-            }
-        }
-    }
-}
-
-void onKeyPress(int _key) {
+void onKeyPress(int _key)
+{
     if (_key == 's' || _key == 'S') {
         screenshot(outputFile);
     }
@@ -536,15 +500,18 @@ void onKeyPress(int _key) {
     }
 }
 
-void onMouseMove(float _x, float _y) {
+void onMouseMove(float _x, float _y)
+{
 
 }
 
-void onMouseClick(float _x, float _y, int _button) {
+void onMouseClick(float _x, float _y, int _button)
+{
 
 }
 
-void onScroll(float _yoffset) {
+void onScroll(float _yoffset)
+{
     // Vertical scroll button zooms u_view2d and view3d.
     /* zoomfactor 2^(1/4): 4 scroll wheel clicks to double in size. */
     constexpr float zoomfactor = 1.1892;
@@ -563,7 +530,8 @@ void onScroll(float _yoffset) {
     }
 }
 
-void onMouseDrag(float _x, float _y, int _button) {
+void onMouseDrag(float _x, float _y, int _button)
+{
     if (_button == 1){
         // Left-button drag is used to rotate geometry.
         float dist = glm::length(cam.getPosition());
@@ -617,12 +585,14 @@ void onMouseDrag(float _x, float _y, int _button) {
     }
 }
 
-void onViewportResize(int _newWidth, int _newHeight) {
+void onViewportResize(int _newWidth, int _newHeight)
+{
     cam.setViewport(_newWidth,_newHeight);
     buffer.allocate(_newWidth,_newHeight);
 }
 
-void screenshot(std::string _file) {
+void screenshot(std::string _file)
+{
     if (_file != "" && isGL()) {
         unsigned char* pixels = new unsigned char[getWindowWidth()*getWindowHeight()*4];
         glReadPixels(0, 0, getWindowWidth(), getWindowHeight(), GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -631,7 +601,8 @@ void screenshot(std::string _file) {
     }
 }
 
-void onExit() {
+void onExit()
+{
     // Take a screenshot if it need
     screenshot(outputFile);
 
@@ -650,7 +621,8 @@ void onExit() {
     delete vbo;
 }
 
-void printUsage(const char * executableName) {
+void printUsage(const char * executableName)
+{
     std::cerr << "Usage: " << executableName << " <shader>.frag [<shader>.vert] [<mesh>.(obj/.ply)] [<texture>.(png/jpg)] [-<uniformName> <texture>.(png/jpg)] [-vFlip] [-x <x>] [-y <y>] [-w <width>] [-h <height>] [-l] [--square] [-s/--sec <seconds>] [-o <screenshot_file>.png] [--headless] [-I<include_folder>] [-D<define>] [-v/--verbose] [--help]\n";
 }
 

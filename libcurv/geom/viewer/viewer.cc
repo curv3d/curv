@@ -72,4 +72,15 @@ Viewer::close()
     request_ = Request::k_close;
 }
 
+bool Viewer::next_frame()
+{
+    return true;
+}
+
+void Viewer::set_frag(const std::string& fragSource)
+{
+    shader_.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
+    shader_.load(fragSource, vertSource_, defines_, verbose_);
+}
+
 }}} // namespace

@@ -9,6 +9,7 @@
 #include <thread>
 #include <mutex>
 #include <glm/glm.hpp>
+#include <gl/shader.h>
 
 namespace curv { namespace geom {
 
@@ -34,6 +35,13 @@ struct Viewer
     void close();
     ~Viewer();
 
+    /*--- SUBCLASS API ---*/
+
+    // Called at start of each frame. If false, then frame loop exits.
+    virtual bool next_frame();
+    // Can be called from next_frame() to change the frag shader.
+    void set_frag(const std::string&);
+
     /*--- SHARED STATE ---*/
 
     // thread_: viewer thread runs OpenGL main loop.
@@ -57,12 +65,18 @@ struct Viewer
     Request request_{Request::k_none};
     // Name of fragment shader source file.
     Filesystem::path fragname_{};
+    Shader shader_{};
+    std::string vertSource_{};
+    std::vector<std::string> defines_{};
+    bool verbose_{false};
 
     /*--- PARAMETER STATE, can set before thread is started ---*/
     glm::ivec4 window_pos_and_size_{0.,0.,500.,500.};
 
     static int main(Viewer*); // Viewer thread entry point
     void initGL(glm::ivec4 &_viewport, bool _headless = false);
+    void setup();
+    void draw();
 };
 
 }}} // namespace
