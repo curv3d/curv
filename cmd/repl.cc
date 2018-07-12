@@ -2,6 +2,20 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
+//----------------------------------------------------------------------------
+// The REPL is the Read-Eval-Print Loop. It's the interactive command line
+// shell that lets you type Curv expressions, actions and definitions.
+//
+// It has two threads: a Repl thread that runs the REPL, and a Viewer thread
+// that displays shapes in a Viewer window, and runs the OpenGL frame loop.
+// The Viewer thread is a "worker" thread that receives messages from
+// the REPL thread telling it to display a new shape or exit.
+//
+// On macOS, windows can only be run in the main thread, so the Viewer thread
+// must be the main thread, and we must spawn a new thread to run the REPL.
+// This is an inversion of the usual practice of running workers in spawned
+// threads.
+
 extern "C" {
 #include <string.h>
 #include <signal.h>
@@ -22,6 +36,7 @@ extern "C" {
 #include "export.h"
 #include "progdir.h"
 #include "cscript.h"
+#include "shapes.h"
 #include <libcurv/geom/tempfile.h>
 #include <libcurv/dtostr.h>
 #include <libcurv/analyser.h>
@@ -50,6 +65,8 @@ Request request;
 std::mutex request_mutex;
 std::condition_variable request_condition;
 curv::geom::Shape_Recognizer* request_shape;
+
+curv::geom::viewer::Viewer view;
 
 void send_request(Request r)
 {
@@ -94,21 +111,6 @@ Request receive_request(bool block)
     lock.unlock();
     request_condition.notify_one();
     return r;
-}
-
-curv::geom::viewer::Viewer view;
-
-void print_shape(curv::geom::Shape_Recognizer& shape)
-{
-    if (shape.is_2d_) std::cerr << "2D";
-    if (shape.is_2d_ && shape.is_3d_) std::cerr << "/";
-    if (shape.is_3d_) std::cerr << "3D";
-    std::cerr << " shape "
-        << (shape.bbox_.xmax - shape.bbox_.xmin) << "×"
-        << (shape.bbox_.ymax - shape.bbox_.ymin);
-    if (shape.is_3d_)
-        std::cerr << "×" << (shape.bbox_.zmax - shape.bbox_.zmin);
-    std::cerr << "\n";
 }
 
 bool was_interrupted = false;

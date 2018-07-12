@@ -21,6 +21,7 @@ extern "C" {
 #include "progdir.h"
 #include "repl.h"
 #include "cscript.h"
+#include "shapes.h"
 #include <libcurv/geom/tempfile.h>
 #include <libcurv/dtostr.h>
 #include <libcurv/analyser.h>
@@ -120,16 +121,7 @@ display_shape(curv::Value value,
 {
     curv::geom::Shape_Recognizer shape(cx, sys);
     if (shape.recognize(value)) {
-        if (shape.is_2d_) std::cerr << "2D";
-        if (shape.is_2d_ && shape.is_3d_) std::cerr << "/";
-        if (shape.is_3d_) std::cerr << "3D";
-        std::cerr << " shape "
-            << (shape.bbox_.xmax - shape.bbox_.xmin) << "×"
-            << (shape.bbox_.ymax - shape.bbox_.ymin);
-        if (shape.is_3d_)
-            std::cerr << "×" << (shape.bbox_.zmax - shape.bbox_.zmin);
-        std::cerr << "\n";
-
+        print_shape(shape);
         viewer.set_shape(shape);
         if (block)
             viewer.run();
