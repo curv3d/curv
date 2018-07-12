@@ -7,6 +7,8 @@ endif ()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+
 # Global include directories, visible in subdirectories.
 include_directories(.
     extern/googletest/googletest/include

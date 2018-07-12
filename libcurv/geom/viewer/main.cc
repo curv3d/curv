@@ -276,21 +276,8 @@ Viewer::main(Viewer* viewer)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Something change??
-        if (viewer->request_ != Request::k_none) {
-            std::lock_guard<std::mutex> lock(viewer->mutex_);
-            if (viewer->request_ == Request::k_close) {
-                viewer->request_ = Request::k_none;
-                break;
-            }
-            if (viewer->request_ == Request::k_new_shape) {
-                fragSource = "";
-                if (loadFromPath(viewer->fragname_.c_str(), &fragSource, include_folders)) {
-                    viewer->shader_.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
-                    viewer->shader_.load(fragSource, viewer->vertSource_, viewer->defines_, viewer->verbose_);
-                }
-                viewer->request_ = Request::k_none;
-            }
-        }
+        if (!viewer->next_frame())
+            break;
 
         // Draw
         viewer->draw();

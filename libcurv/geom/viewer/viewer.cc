@@ -10,6 +10,7 @@
 #include <libcurv/geom/tempfile.h>
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
+#include <tools/fs.h>
 
 namespace curv { namespace geom { namespace viewer {
 
@@ -74,6 +75,20 @@ Viewer::close()
 
 bool Viewer::next_frame()
 {
+    if (request_ != Request::k_none) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (request_ == Request::k_close) {
+            request_ = Request::k_none;
+            return false;
+        }
+        if (request_ == Request::k_new_shape) {
+            std::string fragSource = "";
+            std::vector<std::string> include_folders;
+            if (loadFromPath(fragname_.c_str(), &fragSource, include_folders))
+                set_frag(fragSource);
+            request_ = Request::k_none;
+        }
+    }
     return true;
 }
 
