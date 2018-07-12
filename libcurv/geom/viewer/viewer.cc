@@ -4,7 +4,7 @@
 
 #include <libcurv/geom/viewer/viewer.h>
 #include <iostream>
-#include <fstream>
+#include <sstream>
 #include <libcurv/string.h>
 #include <libcurv/geom/export_frag.h>
 #include <libcurv/geom/tempfile.h>
@@ -27,18 +27,16 @@ Threaded_Viewer::~Threaded_Viewer()
 void
 Viewer::set_shape(Shape_Recognizer& shape)
 {
-    // TODO: create the frag shader somewhere the Viewer thread can't see it,
-    // then transfer ownership of the shader atomically while holding mutex_.
-    if (fragname_.empty())
-        fragname_ = make_tempfile(".frag");
-    std::ofstream f(fragname_.c_str());
+    std::stringstream f;
     export_frag(shape, f);
-    f.close();
+    fragsrc_ = f.str();
 }
 
 void
 Threaded_Viewer::set_shape(Shape_Recognizer& shape)
 {
+    // TODO: create the frag shader somewhere the Viewer thread can't see it,
+    // then transfer ownership of the shader atomically while holding mutex_.
     Viewer::set_shape(shape);
     std::lock_guard<std::mutex> lock(mutex_);
     request_ = Request::k_new_shape;
@@ -105,10 +103,7 @@ bool Threaded_Viewer::next_frame()
             return false;
         }
         if (request_ == Request::k_new_shape) {
-            std::string fragSource = "";
-            std::vector<std::string> include_folders;
-            if (loadFromPath(fragname_.c_str(), &fragSource, include_folders))
-                set_frag(fragSource);
+            set_frag(std::move(fragsrc_));
             request_ = Request::k_none;
         }
     }

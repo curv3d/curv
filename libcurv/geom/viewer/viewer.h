@@ -38,8 +38,7 @@ struct Viewer
 
     /*--- SHARED STATE ---*/
 
-    // Name of fragment shader source file.
-    Filesystem::path fragname_{};
+    std::string fragsrc_{};
     Shader shader_{};
     std::string vertSource_{};
     std::vector<std::string> defines_{};

@@ -50,13 +50,6 @@ std::mutex uniformsMutex;
 std::string screenshotFile = "";
 std::mutex screenshotMutex;
 
-//  SHADER
-int iFrag = -1;
-std::string fragSource = "";
-const std::string* fragPath = nullptr;
-int iVert = -1;
-const std::string* vertPath = nullptr;
-
 //  CAMERA
 Camera cam;
 float lat = 180.0;
@@ -103,11 +96,10 @@ void printUsage(const char *);
 int
 Viewer::main(Viewer* viewer)
 {
-    const char* argv[3];
+    const char* argv[2];
     argv[0] = "curv";
-    argv[1] = viewer->fragname_.c_str();
-    argv[2] = nullptr;
-    int argc = 2;
+    argv[1] = nullptr;
+    int argc = 1;
 
     u_centre3d = glm::vec3(0.,0.,0.);
     u_eye3d = glm::vec3(2.598076,3.0,4.5);
@@ -158,46 +150,6 @@ Viewer::main(Viewer* viewer)
             }
             else {
                 std::cerr << "At the moment screenshots only support PNG formats" << std::endl;
-            }
-        }
-        else if (iFrag == -1 && (haveExt(argument,"frag") || haveExt(argument,"fs"))) {
-            if (stat(argument.c_str(), &st) != 0) {
-                std::cerr << "Error watching file " << argv[i] << std::endl;
-            }
-            else {
-                WatchFile file;
-                file.type = "fragment";
-                file.path = argument;
-                file.lastChange = st.st_mtime;
-                files.push_back(file);
-                iFrag = files.size()-1;
-            }
-        }
-        else if ( iVert == -1 && ( haveExt(argument,"vert") || haveExt(argument,"vs") ) ) {
-            if (stat(argument.c_str(), &st) != 0) {
-                std::cerr << "Error watching file " << argument << std::endl;
-            }
-            else {
-                WatchFile file;
-                file.type = "vertex";
-                file.path = argument;
-                file.lastChange = st.st_mtime;
-                files.push_back(file);
-                iVert = files.size()-1;
-            }
-        }
-        else if (iGeom == -1 && (   haveExt(argument,"ply") || haveExt(argument,"PLY") ||
-                                    haveExt(argument,"obj") || haveExt(argument,"OBJ"))) {
-            if (stat(argument.c_str(), &st) != 0) {
-                std::cerr << "Error watching file " << argument << std::endl;
-            }
-            else {
-                WatchFile file;
-                file.type = "geometry";
-                file.path = argument;
-                file.lastChange = st.st_mtime;
-                files.push_back(file);
-                iGeom = files.size()-1;
             }
         }
         else if (argument == "-vFlip") {
@@ -322,27 +274,8 @@ void Viewer::setup()
 
     //  Build shader;
     //
-    if (iFrag != -1) {
-        fragPath = &files[iFrag].path;
-        fragSource = "";
-        if(!loadFromPath(*fragPath, &fragSource, include_folders)) {
-            return;
-        }
-    }
-    else {
-        fragSource = vbo->getVertexLayout()->getDefaultFragShader();
-    }
-
-    if (iVert != -1) {
-        vertPath = &files[iVert].path;
-        vertSource_ = "";
-        loadFromPath(*vertPath, &vertSource_, include_folders);
-    }
-    else {
-        vertSource_ = vbo->getVertexLayout()->getDefaultVertShader();
-    }
-
-    shader_.load(fragSource, vertSource_, defines_, verbose_);
+    vertSource_ = vbo->getVertexLayout()->getDefaultVertShader();
+    shader_.load(fragsrc_, vertSource_, defines_, verbose_);
 
     cam.setViewport(getWindowWidth(), getWindowHeight());
     cam.setPosition(glm::vec3(0.0,0.0,-3.));
