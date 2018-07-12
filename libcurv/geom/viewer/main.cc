@@ -291,12 +291,7 @@ Viewer::main(Viewer* viewer)
     glfwGetWindowSize(window,
         &viewer->window_pos_and_size_.w, &viewer->window_pos_and_size_.z);
     onExit();
-    {
-        std::lock_guard<std::mutex> lock(viewer->mutex_);
-        // Only becomes false once the thread is past the point of accessing
-        // any Viewer state.
-        viewer->is_open_ = false;
-    }
+    viewer->on_close();
     return 0;
 }
 

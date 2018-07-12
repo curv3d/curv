@@ -14,7 +14,7 @@
 
 namespace curv { namespace geom { namespace viewer {
 
-Viewer::~Viewer()
+Threaded_Viewer::~Threaded_Viewer()
 {
     if (thread_.joinable()) {
         { std::lock_guard<std::mutex> lock(mutex_);
@@ -34,10 +34,14 @@ Viewer::set_shape(Shape_Recognizer& shape)
     std::ofstream f(fragname_.c_str());
     export_frag(shape, f);
     f.close();
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        request_ = Request::k_new_shape;
-    }
+}
+
+void
+Threaded_Viewer::set_shape(Shape_Recognizer& shape)
+{
+    Viewer::set_shape(shape);
+    std::lock_guard<std::mutex> lock(mutex_);
+    request_ = Request::k_new_shape;
 }
 
 void
@@ -49,7 +53,7 @@ Viewer::run()
 }
 
 void
-Viewer::open()
+Threaded_Viewer::open()
 {
     // If the Viewer is open on entry, then it could be in the process of
     // closing due to the user clicking the close button, and the window
@@ -67,13 +71,32 @@ Viewer::open()
 }
 
 void
-Viewer::close()
+Threaded_Viewer::close()
 {
     std::lock_guard<std::mutex> lock(mutex_);
     request_ = Request::k_close;
 }
 
+void
+Viewer::on_close()
+{
+}
+
+void
+Threaded_Viewer::on_close()
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    // Only becomes false once the thread is past the point of accessing
+    // any Viewer state.
+    is_open_ = false;
+}
+
 bool Viewer::next_frame()
+{
+    return true;
+}
+
+bool Threaded_Viewer::next_frame()
 {
     if (request_ != Request::k_none) {
         std::lock_guard<std::mutex> lock(mutex_);

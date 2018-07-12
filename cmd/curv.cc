@@ -112,7 +112,7 @@ poll_editor()
     }
 }
 
-curv::geom::viewer::Viewer viewer;
+curv::geom::viewer::Threaded_Viewer viewer;
 
 bool
 display_shape(curv::Value value,

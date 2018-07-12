@@ -22,18 +22,10 @@ struct Viewer
     /*--- PUBLIC API ---*/
 
     // Set the current shape.
-    void set_shape(Shape_Recognizer&);
+    virtual void set_shape(Shape_Recognizer&);
     // Open a Viewer window on the current shape, and run until the window
     // is closed by the user.
     void run();
-    // Open a Viewer window, if one is not already open. Display the current
-    // shape in that window, if possible, and return as soon as the shape
-    // is visible.
-    void open();
-    // If a Viewer window is currently open (due to an open() call),
-    // then close it.
-    void close();
-    ~Viewer();
 
     /*--- SUBCLASS API ---*/
 
@@ -41,6 +33,45 @@ struct Viewer
     virtual bool next_frame();
     // Can be called from next_frame() to change the frag shader.
     void set_frag(const std::string&);
+    // Called after frame loop exits and window is closed.
+    virtual void on_close();
+
+    /*--- SHARED STATE ---*/
+
+    // Name of fragment shader source file.
+    Filesystem::path fragname_{};
+    Shader shader_{};
+    std::string vertSource_{};
+    std::vector<std::string> defines_{};
+    bool verbose_{false};
+
+    /*--- PARAMETER STATE, can set before thread is started ---*/
+    glm::ivec4 window_pos_and_size_{0.,0.,500.,500.};
+
+    static int main(Viewer*); // Viewer thread entry point
+    void initGL(glm::ivec4 &_viewport, bool _headless = false);
+    void setup();
+    void draw();
+};
+
+// Deprecated: This works on Linux, but not macOS.
+struct Threaded_Viewer : public Viewer
+{
+    /*--- PUBLIC API ---*/
+
+    virtual void set_shape(Shape_Recognizer&) override;
+    // Open a Viewer window, if one is not already open. Display the current
+    // shape in that window, if possible, and return as soon as the shape
+    // is visible.
+    void open();
+    // If a Viewer window is currently open (due to an open() call),
+    // then close it.
+    void close();
+    ~Threaded_Viewer();
+
+    /*--- SUBCLASS API ---*/
+    virtual bool next_frame() override;
+    virtual void on_close() override;
 
     /*--- SHARED STATE ---*/
 
@@ -63,20 +94,6 @@ struct Viewer
     // request_: If != k_none, then denotes an outstanding request that
     // the Viewer thread has not processed yet. Guarded by mutex_.
     Request request_{Request::k_none};
-    // Name of fragment shader source file.
-    Filesystem::path fragname_{};
-    Shader shader_{};
-    std::string vertSource_{};
-    std::vector<std::string> defines_{};
-    bool verbose_{false};
-
-    /*--- PARAMETER STATE, can set before thread is started ---*/
-    glm::ivec4 window_pos_and_size_{0.,0.,500.,500.};
-
-    static int main(Viewer*); // Viewer thread entry point
-    void initGL(glm::ivec4 &_viewport, bool _headless = false);
-    void setup();
-    void draw();
 };
 
 }}} // namespace

@@ -193,5 +193,5 @@ void interactive_mode(curv::System& sys)
     }
     if (repl_thread.joinable())
         repl_thread.join();
-    view.close();
+    //view.close();
 }
