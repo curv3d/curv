@@ -64,7 +64,7 @@ enum class Request {
 Request request;
 std::mutex request_mutex;
 std::condition_variable request_condition;
-curv::geom::Shape_Recognizer* request_shape;
+std::string request_shape;
 
 curv::geom::viewer::Viewer view;
 
@@ -97,10 +97,9 @@ Request receive_request(bool block)
 
     // process request
     if (r == Request::k_display_shape) {
-        assert(request_shape != nullptr);
+        assert(!request_shape.empty());
         curv::geom::viewer::Viewer view;
-        view.set_shape(*request_shape);
-        request_shape = nullptr;
+        std::swap(view.fragsrc_, request_shape);
         view.run();
     }
 
@@ -165,9 +164,9 @@ void repl(curv::System* sys)
                         *sys);
                     if (shape.recognize(den.second->front())) {
                         print_shape(shape);
-                        request_shape = &shape;
+                        request_shape = shape_to_frag(shape);
                         send_request(Request::k_display_shape);
-                        assert(request_shape == nullptr);
+                        assert(request_shape.empty());
                         is_shape = true;
                     }
                 }
