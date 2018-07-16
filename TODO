@@ -1,3 +1,61 @@
+Viewer API:
+* Default constructor(): Construct Viewer, initialize window parameters to
+  defaults, but don't initialize OpenGL or create the window.
+  After construction and before init(), you can modify the window parameters.
+  Initially, is_open==false.
+* bool is_open
+* void init(): Initialize OpenGL and create the window. Set is_open=true.
+  May throw exception, eg can't initialize OpenGL.
+* void set_shape(Shape&): Set the shape displayed by the viewer window.
+  May be called if is_open==true: after init(), or after draw_frame().
+  May throw an exception due to geometry compile error, or GLSL compile error.
+* bool draw_frame(). Called repeatedly in a loop. Returns false when it is
+  time to exit loop (user has closed window).
+* void final(). Close window, if not already closed. Return to just-after-
+  construction state, setting is_open=false.
+
+The REPL thread will be send blocked when we call init + set_shape,
+or just set_shape. Errors detected here will be reported as if by the REPL.
+Or use std::exception_ptr etc to capture and rethrow exception from send().
+
+Viewer thread:
+    Viewer viewer;
+    for (;;) {
+        if (!viewer.is_open) {
+            Message msg;
+            msg.receive();
+            switch (msg.id) {
+            case k_exit:
+                return;
+            case k_display_shape:
+                msg.reply([&]()->void {
+                    viewer.init();
+                    viewer.set_shape(msg.shape);
+                });
+            }
+        } else {
+            for (;;) {
+                if (!viewer.draw_frame())
+                    break;
+                Msg msg;
+                if (msg.try_receive()) {
+                    switch (msg.id) {
+                    case k_exit:
+                        return;
+                    case k_display_shape:
+                        msg.reply([&]()->void {
+                            viewer.set_shape(msg.shape);
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+struct Message {
+};
+
+------
 The curv REPL runs in a worker thread. The main thread waits for the
 REPL to complete, and displays shapes in a viewer window on request.
 

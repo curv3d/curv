@@ -81,8 +81,11 @@ struct Message {
     bool try_receive()
     {
         using namespace std::chrono_literals;
-        return request_condition.wait_for(lock_, 0ms,
+        bool b = request_condition.wait_for(lock_, 0ms,
             []{return request != Request::k_none;});
+        if (b)
+            id_ = request;
+        return b;
     }
     void reply()
     {
@@ -111,7 +114,29 @@ void log_error(std::function<void()> f)
     }
 }
 
-curv::geom::viewer::Viewer view;
+struct Repl_Viewer : public curv::geom::viewer::Viewer
+{
+    virtual bool next_frame() override
+    {
+        Message msg;
+        if (msg.try_receive()) {
+            if (msg.id_ == Request::k_exit) {
+                exiting_ = true;
+                msg.reply();
+                return false;
+            }
+            if (msg.id_ == Request::k_display_shape) {
+                assert(!request_shape.empty());
+                set_frag(request_shape);
+                msg.reply();
+                return true;
+            }
+            curv::die("bad message");
+        }
+        return true;
+    }
+    bool exiting_{false};
+} view;
 
 void send_request(Request r)
 {
@@ -211,10 +236,11 @@ void interactive_mode(curv::System& sys)
         }
         if (msg.id_ == Request::k_display_shape) {
             assert(!request_shape.empty());
-            curv::geom::viewer::Viewer view;
             std::swap(view.fragsrc_, request_shape);
-            view.run();
             msg.reply();
+            view.run();
+            if (view.exiting_)
+                break;
         }
     }
     if (repl_thread.joinable())
