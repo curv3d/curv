@@ -22,6 +22,7 @@ extern "C" {
 #include "repl.h"
 #include "cscript.h"
 #include "shapes.h"
+#include "view_server.h"
 #include <libcurv/geom/tempfile.h>
 #include <libcurv/dtostr.h>
 #include <libcurv/analyser.h>
@@ -39,7 +40,11 @@ extern "C" {
 #include <libcurv/die.h>
 #include <libcurv/geom/export_frag.h>
 #include <libcurv/geom/shape.h>
-#include <libcurv/geom/viewer/viewer.h>
+
+namespace Live
+{
+
+View_Server view_server;
 
 pid_t editor_pid = pid_t(-1);
 
@@ -79,27 +84,8 @@ poll_editor()
     }
 }
 
-curv::geom::viewer::Threaded_Viewer viewer;
-
-bool
-display_shape(curv::Value value,
-    curv::System& sys, const curv::Context &cx, bool block = false)
-{
-    curv::geom::Shape_Recognizer shape(cx, sys);
-    if (shape.recognize(value)) {
-        print_shape(shape);
-        viewer.set_shape(shape);
-        if (block)
-            viewer.run();
-        else
-            viewer.open();
-        return true;
-    } else
-        return false;
-}
-
 void
-poll_file(curv::System& sys, const char* editor, const char* filename)
+poll_file(curv::System* sys, const char* editor, const char* filename)
 {
     for (;;) {
         struct stat st;
@@ -111,12 +97,15 @@ poll_file(curv::System& sys, const char* editor, const char* filename)
             try {
                 auto file = curv::make<curv::File_Script>(
                     curv::make_string(filename), curv::Context{});
-                curv::Program prog{*file, sys};
+                curv::Program prog{*file, *sys};
                 prog.compile();
                 auto value = prog.eval();
-                if (display_shape(value,
-                    sys, curv::At_Phrase(prog.nub(), nullptr)))
-                {
+                curv::geom::Shape_Recognizer shape{
+                    curv::At_Phrase(prog.nub(), nullptr),
+                    *sys};
+                if (shape.recognize(value)) {
+                    print_shape(shape);
+                    view_server.display_shape(shape);
                 } else {
                     std::cout << value << "\n";
                 }
@@ -130,7 +119,7 @@ poll_file(curv::System& sys, const char* editor, const char* filename)
         for (;;) {
             usleep(500'000);
             if (editor && !poll_editor()) {
-                viewer.close();
+                view_server.exit();
                 return;
             }
             struct stat st2;
@@ -142,14 +131,19 @@ poll_file(curv::System& sys, const char* editor, const char* filename)
     }
 }
 
+} // namespace
+
 int
 live_mode(curv::System& sys, const char* editor, const char* filename)
 {
     if (editor) {
-        launch_editor(editor, filename);
-        if (!poll_editor())
+        Live::launch_editor(editor, filename);
+        if (!Live::poll_editor())
             return EXIT_FAILURE;
     }
-    poll_file(sys, editor, filename);
+    std::thread live_thread{Live::poll_file, &sys, editor, filename};
+    Live::view_server.run();
+    if (live_thread.joinable())
+        live_thread.join();
     return EXIT_SUCCESS;
 }
