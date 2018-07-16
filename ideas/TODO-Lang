@@ -608,3 +608,9 @@ co[f,g] or f `co` g
 
 ### Add code comments, `(*` token_or_comment* `*)`
 Nestable comments for reliably commenting out code blocks.
+* In Rust, `//...` are the recommended style of comments for most purposes.
+  `/*...*/` are nestable, and are for commenting out blocks of code.
+  So, use `/*` instead of `(*`. Don't have 3 comment syntaxes.
+* Or, simplify, and get rid of `/*...*/`. Use comment/uncomment commands in
+  a programmer's text editor to comment out blocks of code.
+* Extend Gedit so that it can comment/uncomment code blocks in Curv using `//`.
