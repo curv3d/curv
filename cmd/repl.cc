@@ -57,51 +57,125 @@ extern "C" {
 #include <libcurv/geom/shape.h>
 #include <libcurv/geom/viewer/viewer.h>
 
-enum class Request {
-    k_none,
-    k_display_shape,
-    k_exit
-};
-Request request;
-std::mutex request_mutex;
-std::condition_variable request_condition;
-std::string request_shape;
-struct Message {
-    std::unique_lock<std::mutex> lock_;
-    Request id_;
-    Message()
-    :
-        lock_(request_mutex)
-    {}
-    void receive()
-    {
-        request_condition.wait(lock_, []{return request != Request::k_none;});
-        id_ = request;
-    }
-    bool try_receive()
-    {
-        using namespace std::chrono_literals;
-        bool b = request_condition.wait_for(lock_, 0ms,
-            []{return request != Request::k_none;});
-        if (b)
-            id_ = request;
-        return b;
-    }
-    void reply()
-    {
-        request = Request::k_none; // indicate we are ready for another request
+// encapsulates the viewer thread
+struct View_Server
+{
+    enum class Request {
+        k_none,
+        k_display_shape,
+        k_exit
+    };
+    Request request;
+    std::mutex request_mutex;
+    std::condition_variable request_condition;
+    std::string request_shape;
+    bool exiting_{false};
+    struct Message {
+        View_Server& server_;
+        std::unique_lock<std::mutex> lock_;
+        Request id_;
+        Message(View_Server& s)
+        :
+            server_(s),
+            lock_(s.request_mutex)
+        {}
+        void receive()
+        {
+            server_.request_condition.wait(lock_,
+                [&]{return server_.request != Request::k_none;});
+            id_ = server_.request;
+        }
+        bool try_receive()
+        {
+            using namespace std::chrono_literals;
+            bool b = server_.request_condition.wait_for(lock_, 0ms,
+                [&]{return server_.request != Request::k_none;});
+            if (b)
+                id_ = server_.request;
+            return b;
+        }
+        void reply()
+        {
+            server_.request = Request::k_none; // indicate we are ready for another request
 
-        // Manual unlocking is done before notifying, to avoid waking up
-        // the waiting thread only to block again (see notify_one for details)
-        lock_.unlock();
-        request_condition.notify_one();
-    }
-    ~Message()
+            // Manual unlocking is done before notifying, to avoid waking up
+            // the waiting thread only to block again (see notify_one for details)
+            lock_.unlock();
+            server_.request_condition.notify_one();
+        }
+        ~Message()
+        {
+            // What should the destructor do if we received a message
+            // but have not replied?
+        }
+    };
+    struct View : public curv::geom::viewer::Viewer
     {
-        // What should the destructor do if we received a message
-        // but have not replied?
+        View_Server& server_;
+        View(View_Server& s)
+        :
+            server_(s)
+        {}
+        virtual bool next_frame() override
+        {
+            Message msg(server_);
+            if (msg.try_receive()) {
+                if (msg.id_ == Request::k_exit) {
+                    server_.exiting_ = true;
+                    msg.reply();
+                    return false;
+                }
+                if (msg.id_ == Request::k_display_shape) {
+                    assert(!server_.request_shape.empty());
+                    set_frag(server_.request_shape);
+                    msg.reply();
+                    return true;
+                }
+                curv::die("bad message");
+            }
+            return true;
+        }
+    } view;
+    View_Server()
+    :
+        view(*this)
+    {
+    }
+    void send_request(Request r)
+    {
+        {
+            std::lock_guard<std::mutex> lock(request_mutex);
+            request = r;
+        }
+        request_condition.notify_one();
+        // wait for the response
+        {
+            std::unique_lock<std::mutex> lock(request_mutex);
+            request_condition.wait(lock,
+                [&]{return request == Request::k_none;});
+        }
+    }
+    void run()
+    {
+        for (;;) {
+            Message msg(*this);
+            msg.receive();
+            if (msg.id_ == Request::k_exit) {
+                msg.reply();
+                break;
+            }
+            if (msg.id_ == Request::k_display_shape) {
+                assert(!request_shape.empty());
+                std::swap(view.fragsrc_, request_shape);
+                msg.reply();
+                view.run();
+                if (exiting_)
+                    break;
+            }
+        }
     }
 };
+View_Server view_server;
 
 void log_error(std::function<void()> f)
 {
@@ -111,44 +185,6 @@ void log_error(std::function<void()> f)
         std::cerr << "ERROR: " << e << "\n";
     } catch (std::exception& e) {
         std::cerr << "ERROR: " << e.what() << "\n";
-    }
-}
-
-struct Repl_Viewer : public curv::geom::viewer::Viewer
-{
-    virtual bool next_frame() override
-    {
-        Message msg;
-        if (msg.try_receive()) {
-            if (msg.id_ == Request::k_exit) {
-                exiting_ = true;
-                msg.reply();
-                return false;
-            }
-            if (msg.id_ == Request::k_display_shape) {
-                assert(!request_shape.empty());
-                set_frag(request_shape);
-                msg.reply();
-                return true;
-            }
-            curv::die("bad message");
-        }
-        return true;
-    }
-    bool exiting_{false};
-} view;
-
-void send_request(Request r)
-{
-    {
-        std::lock_guard<std::mutex> lock(request_mutex);
-        request = r;
-    }
-    request_condition.notify_one();
-    // wait for the response
-    {
-        std::unique_lock<std::mutex> lock(request_mutex);
-        request_condition.wait(lock, []{return request == Request::k_none;});
     }
 }
 
@@ -204,9 +240,9 @@ void repl(curv::System* sys)
                         *sys);
                     if (shape.recognize(den.second->front())) {
                         print_shape(shape);
-                        request_shape = shape_to_frag(shape);
-                        send_request(Request::k_display_shape);
-                        assert(request_shape.empty());
+                        view_server.request_shape = shape_to_frag(shape);
+                        view_server.send_request(View_Server::Request::k_display_shape);
+                        assert(view_server.request_shape.empty());
                         is_shape = true;
                     }
                 }
@@ -221,29 +257,13 @@ void repl(curv::System* sys)
             std::cout << "ERROR: " << e.what() << "\n";
         }
     }
-    send_request(Request::k_exit);
+    view_server.send_request(View_Server::Request::k_exit);
 }
 
 void interactive_mode(curv::System& sys)
 {
     std::thread repl_thread(repl, &sys);
-    for (;;) {
-        Message msg;
-        msg.receive();
-        if (msg.id_ == Request::k_exit) {
-            msg.reply();
-            break;
-        }
-        if (msg.id_ == Request::k_display_shape) {
-            assert(!request_shape.empty());
-            std::swap(view.fragsrc_, request_shape);
-            msg.reply();
-            view.run();
-            if (view.exiting_)
-                break;
-        }
-    }
+    view_server.run();
     if (repl_thread.joinable())
         repl_thread.join();
-    //view.close();
 }
