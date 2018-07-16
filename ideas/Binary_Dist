@@ -1,0 +1,62 @@
+Binary Distribution of Curv
+===========================
+The goal is to provide a simpler and more reliable way to install Curv
+than to compile from source code.
+
+The primary goal is to effortlessly install a double-clickable GUI app.
+I also want to install the command line tool at the same time.
+(And, auto updates might also be nice.)
+
+I don't like app stores because they break the connection between the author
+and the user. Users are not downloading from my site, so they might be getting
+a counterfeit containing malware.
+
+On Linux.
+* flatpak:
+  * flathub.org provides a nice web UI for setting up flatpak on most popular
+    distros. It then lets you search for and install apps registered on flathub.
+  * Click-to-install using *.flatpakref file hosted on a web server.
+    Apps installed this way can be automatically updated.
+  * Don't need to use flathub.org: I can host my own flatpak repo on curv3d.org
+    Repo contains all published versions of the app. With this, or with
+    flathub.org hosting, I can collect statistics on installations.
+  * Can't put a flatpak repo inside the curv github repo, although I can
+    distribute 'flat file' flatpaks containing a single version.
+  * RedHat sponsors flatpak.
+  * There is "sandboxing", but it's not a deal breaker.
+    I'll need to include /usr/bin/c++ in my flatpak--could be challenging.
+  * It seems more developer and open source friendly than `snap`.
+    Can host my own repo. Policies on flathub re: open source and packages
+    being distributed by original authors.
+  * I see no way to export multiple executables out of a flatpak.
+    And the command line invocation is like `flatpak org.curv3d.gcurv ...`.
+    It's meant for GUI apps that are invoked from a GUI shell.
+* snapcraft.io is the snap equivalent of flathub.org. Seems to have equivalent
+  features. Has an explicit Ubuntu bias: installation is via command line,
+  except for Ubuntu, which supports click to install. Not sure if it supports
+  the distributed model of flatpak, where I can host my own flatpak apps.
+  * Ubuntu sponsors `snap`.
+* Appimage. An app and all its dependencies are bundled as a single file.
+  Doesn't seem to allow for shipping multiple command line utilities in a
+  single package. However, the "apprun" entry point could switch on argv[0]
+  then exec the appropriate utility. Default executable could install the
+  software.
+  Appimage.org stresses the benefit of downloading from the developer site
+  instead of from a generic appimage store.
+  Fewer features: no sandboxing, no auto update, no versioned repository
+  available as a web resource, no app metadata and external installer.
+
+On macOS.
+* Provide a homebrew package.
+* Provide a downloadable macOS executable. User will need to change
+  security settings to allow download and execution.
+* sparkle-project.org is an open source framework for auto-update of macOS apps.
+* Mac App Store? I think this costs money, so I'd have to charge for it.
+  (So what if they pay, and it crashes? Are there automated test servers
+  I can use to test on different macOS releases?)
+
+On Windows.
+* As of July 2018, windows 10 is run by only 40% of Windows users.
+  Therefore, need to provide a Windows 7 installer exe, then I support most
+  Windows users.
+* Windows app store is Windows 10 only, I think.
