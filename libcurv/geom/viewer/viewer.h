@@ -21,7 +21,7 @@ struct Viewer
 {
     /*--- PUBLIC API ---*/
 
-    // Set the current shape.
+    // Set the current shape. Must be called before calling run().
     virtual void set_shape(Shape_Recognizer&);
     // Open a Viewer window on the current shape, and run until the window
     // is closed by the user.
@@ -51,48 +51,6 @@ struct Viewer
     void initGL(glm::ivec4 &_viewport, bool _headless = false);
     void setup();
     void draw();
-};
-
-// Deprecated: This works on Linux, but not macOS.
-struct Threaded_Viewer : public Viewer
-{
-    /*--- PUBLIC API ---*/
-
-    virtual void set_shape(Shape_Recognizer&) override;
-    // Open a Viewer window, if one is not already open. Display the current
-    // shape in that window, if possible, and return as soon as the shape
-    // is visible.
-    void open();
-    // If a Viewer window is currently open (due to an open() call),
-    // then close it.
-    void close();
-    ~Threaded_Viewer();
-
-    /*--- SUBCLASS API ---*/
-    virtual bool next_frame() override;
-    virtual void on_close() override;
-
-    /*--- SHARED STATE ---*/
-
-    // thread_: viewer thread runs OpenGL main loop.
-    std::thread thread_{};
-    // mutex_: for communication with viewer thread.
-    std::mutex mutex_{};
-    // is_open_: true if a viewer thread is running. Guarded by mutex_.
-    // If true: A viewer thread is running and using the Viewer global state.
-    //          Can change asynchronously to false if mutex_ not held.
-    // If false: Either the viewer thread is not running, or the viewer thread
-    //           is closing down and no longer accessing global state.
-    //           Cannot change asynchronously from this state.
-    bool is_open_{false};
-    enum class Request {
-        k_new_shape, // Shape has changed, please display it.
-        k_close,     // Please close the Viewer window and stop the thread.
-        k_none
-    };
-    // request_: If != k_none, then denotes an outstanding request that
-    // the Viewer thread has not processed yet. Guarded by mutex_.
-    Request request_{Request::k_none};
 };
 
 }}} // namespace
