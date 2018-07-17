@@ -41,10 +41,7 @@ extern "C" {
 #include <libcurv/geom/export_frag.h>
 #include <libcurv/geom/shape.h>
 
-namespace Live
-{
-
-View_Server view_server;
+View_Server live_view_server;
 
 pid_t editor_pid = pid_t(-1);
 
@@ -105,7 +102,7 @@ poll_file(curv::System* sys, const char* editor, const char* filename)
                     *sys};
                 if (shape.recognize(value)) {
                     print_shape(shape);
-                    view_server.display_shape(shape);
+                    live_view_server.display_shape(shape);
                 } else {
                     std::cout << value << "\n";
                 }
@@ -119,7 +116,7 @@ poll_file(curv::System* sys, const char* editor, const char* filename)
         for (;;) {
             usleep(500'000);
             if (editor && !poll_editor()) {
-                view_server.exit();
+                live_view_server.exit();
                 return;
             }
             struct stat st2;
@@ -131,19 +128,17 @@ poll_file(curv::System* sys, const char* editor, const char* filename)
     }
 }
 
-} // namespace
-
 int
 live_mode(curv::System& sys, const char* editor, const char* filename)
 {
     if (editor) {
-        Live::launch_editor(editor, filename);
-        if (!Live::poll_editor())
+        launch_editor(editor, filename);
+        if (!poll_editor())
             return EXIT_FAILURE;
     }
-    std::thread live_thread{Live::poll_file, &sys, editor, filename};
-    Live::view_server.run();
-    if (live_thread.joinable())
-        live_thread.join();
+    std::thread poll_file_thread{poll_file, &sys, editor, filename};
+    live_view_server.run();
+    if (poll_file_thread.joinable())
+        poll_file_thread.join();
     return EXIT_SUCCESS;
 }

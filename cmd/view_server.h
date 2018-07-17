@@ -2,46 +2,14 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-//----------------------------------------------------------------------------
-// The REPL is the Read-Eval-Print Loop. It's the interactive command line
-// shell that lets you type Curv expressions, actions and definitions.
-//
-// It has two threads: a Repl thread that runs the REPL, and a Viewer thread
-// that displays shapes in a Viewer window, and runs the OpenGL frame loop.
-// The Viewer thread is a "worker" thread that receives messages from
-// the REPL thread telling it to display a new shape or exit.
-//
-// On macOS, windows can only be run in the main thread, so the Viewer thread
-// must be the main thread, and we must spawn a new thread to run the REPL.
-// This is an inversion of the usual practice of running workers in spawned
-// threads.
-
 #ifndef VIEW_SERVER_H
 #define VIEW_SERVER_H
 
-// extern "C" {
-// #include <string.h>
-// #include <signal.h>
-// #include <stdlib.h>
-// #include <unistd.h>
-// #include <fcntl.h>
-// #include <errno.h>
-// #include <unistd.h>
-// #include <sys/types.h>
-// #include <sys/stat.h>
-// #include <sys/wait.h>
-// }
-//#include <iostream>
-//#include <fstream>
 #include <condition_variable>
 #include <functional>
-// #include <replxx.hxx>
 
-// #include "export.h"
-// #include "progdir.h"
-// #include "cscript.h"
 #include "shapes.h"
-// #include <libcurv/geom/tempfile.h>
+
 #include <libcurv/dtostr.h>
 #include <libcurv/analyser.h>
 #include <libcurv/context.h>
@@ -60,9 +28,12 @@
 #include <libcurv/geom/shape.h>
 #include <libcurv/geom/viewer/viewer.h>
 
-// encapsulates the viewer thread
+// View_Server implements a client/server architecture for running a Curv
+// viewer window. The 'client' and 'server' run in two different threads within
+// the same process, and share access to a View_Server object.
 struct View_Server
 {
+private:
     enum class Request {
         k_none,
         k_display_shape,
@@ -139,11 +110,6 @@ struct View_Server
             return true;
         }
     } view;
-    View_Server()
-    :
-        view(*this)
-    {
-    }
     void send_request(Request r)
     {
         {
@@ -158,16 +124,31 @@ struct View_Server
                 [&]{return request == Request::k_none;});
         }
     }
+public:
+    View_Server()
+    :
+        view(*this)
+    {
+    }
+    // Called by client thread. If the viewer window is not open, then open it,
+    // and display the shape. Otherwise, change the shape displayed in the
+    // current viewer window.
     void display_shape(curv::geom::Shape_Recognizer& shape)
     {
         request_shape = shape_to_frag(shape);
         send_request(Request::k_display_shape);
         assert(request_shape.empty());
     }
+    // Called by client thread. Close the viewer window, if open, and cause
+    // the server to stop running (the run() function will return).
     void exit()
     {
         send_request(Request::k_exit);
     }
+    // Called by server thread. Run the server, which is responsible for
+    // opening the viewer window (on request from the client) and making
+    // OpenGL calls to render each frame. On macOS, this must be run in the
+    // main thread.
     void run()
     {
         for (;;) {
