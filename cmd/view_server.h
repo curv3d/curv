@@ -5,35 +5,27 @@
 #ifndef VIEW_SERVER_H
 #define VIEW_SERVER_H
 
+#include <mutex>
 #include <condition_variable>
-#include <functional>
+
+#include <libcurv/die.h>
+#include <libcurv/geom/viewer/viewer.h>
 
 #include "shapes.h"
-
-#include <libcurv/dtostr.h>
-#include <libcurv/analyser.h>
-#include <libcurv/context.h>
-#include <libcurv/program.h>
-#include <libcurv/exception.h>
-#include <libcurv/file.h>
-#include <libcurv/parser.h>
-#include <libcurv/phrase.h>
-#include <libcurv/shared.h>
-#include <libcurv/system.h>
-#include <libcurv/list.h>
-#include <libcurv/record.h>
-#include <libcurv/version.h>
-#include <libcurv/die.h>
-#include <libcurv/geom/export_frag.h>
-#include <libcurv/geom/shape.h>
-#include <libcurv/geom/viewer/viewer.h>
 
 // View_Server implements a client/server architecture for running a Curv
 // viewer window. The 'client' and 'server' run in two different threads within
 // the same process, and share access to a View_Server object.
+//
+// This implements the semantics required by the REPL (curv interactive mode)
+// and by live-editing mode. The server keeps running until the client calls
+// exit(). Closing the viewer window doesn't terminate the server:
+// the window is reopened the next time the client calls display_shape().
 struct View_Server
 {
 private:
+    // Internally, I use send(), receive(), reply() to communicate between
+    // the client and the server.
     enum class Request {
         k_none,
         k_display_shape,
@@ -110,7 +102,7 @@ private:
             return true;
         }
     } view;
-    void send_request(Request r)
+    void send(Request r)
     {
         {
             std::lock_guard<std::mutex> lock(request_mutex);
@@ -136,19 +128,21 @@ public:
     void display_shape(curv::geom::Shape_Recognizer& shape)
     {
         request_shape = shape_to_frag(shape);
-        send_request(Request::k_display_shape);
+        send(Request::k_display_shape);
         assert(request_shape.empty());
     }
     // Called by client thread. Close the viewer window, if open, and cause
     // the server to stop running (the run() function will return).
     void exit()
     {
-        send_request(Request::k_exit);
+        send(Request::k_exit);
     }
-    // Called by server thread. Run the server, which is responsible for
-    // opening the viewer window (on request from the client) and making
-    // OpenGL calls to render each frame. On macOS, this must be run in the
-    // main thread.
+    // Called by server thread. Run the server, which is responsible for opening
+    // the viewer window (when display_shape() is called by the client) and
+    // calling OpenGL to render each frame. On macOS, this must be run in the
+    // main thread. The server keeps running until the client calls exit().
+    // If the user closes the window, the server keeps running, and the next
+    // call to display_shape() reopens the window.
     void run()
     {
         for (;;) {
