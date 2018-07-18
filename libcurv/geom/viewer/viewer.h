@@ -23,6 +23,11 @@ struct Viewer
 
     // Set the current shape. Must be called before calling run().
     virtual void set_shape(Shape_Recognizer&);
+
+    // Called repeatedly in a loop once the window is open.
+    // Returns false when it is time to exit the loop (user has closed window).
+    bool draw_frame();
+
     // Open a Viewer window on the current shape, and run until the window
     // is closed by the user.
     void run();

@@ -221,22 +221,7 @@ Viewer::main(Viewer* viewer)
     viewer->setup();
 
     // Render Loop
-    while (isGL()) {
-        // Update
-        updateGL();
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // Something change??
-        if (!viewer->next_frame())
-            break;
-
-        // Draw
-        viewer->draw();
-
-        // Swap the buffers
-        renderGL();
-    }
+    while (viewer->draw_frame());
 
     //glfwGetWindowPos(window,
     //    &viewer->window_pos_and_size_.x, &viewer->window_pos_and_size_.y);
@@ -247,8 +232,29 @@ Viewer::main(Viewer* viewer)
     return 0;
 }
 
-//  MAIN RENDER Thread (needs a GL context)
-//============================================================================
+bool Viewer::draw_frame()
+{
+    if (!isGL())
+        return false;
+
+    // Update
+    updateGL();
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Something change??
+    if (!next_frame())
+        return false;
+
+    // Draw
+    draw();
+
+    // Swap the buffers
+    renderGL();
+
+    return true;
+}
+
 void Viewer::setup()
 {
     // Prepare viewport
