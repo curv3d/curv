@@ -18,11 +18,9 @@ glm::ivec2 getScreenSize();
 float getPixelDensity();
 
 glm::ivec4 getViewport();
-glm::mat4 getOrthoMatrix();
 int getWindowWidth();
 int getWindowHeight();
 
-glm::vec4 getDate();
 double getTime();
 double getDelta();
 double getFPS();
@@ -34,7 +32,6 @@ float getMouseVelX();
 float getMouseVelY();
 glm::vec2 getMouseVelocity();
 int getMouseButton();
-glm::vec4 get_iMouse();
 
 // EVENTS
 //----------------------------------------------

@@ -16,17 +16,14 @@ namespace curv { namespace geom { namespace viewer {
 // Common global variables
 //----------------------------------------------------
 const std::string appTitle = "curv";
-static glm::mat4 orthoMatrix;
 typedef struct {
     float     x,y;
     int       button;
     float     velX,velY;
     glm::vec2 drag;
 } Mouse;
-struct timeval tv;
 static Mouse mouse;
 static bool left_mouse_button_down = false;
-static glm::vec4 iMouse = {0.0, 0.0, 0.0, 0.0};
 static glm::ivec4 viewport;
 static double fTime = 0.0f;
 static double fDelta = 0.0f;
@@ -73,17 +70,10 @@ void Viewer::initGL (glm::ivec4 &_viewport, bool _headless)
     // callback when a mouse button is pressed or released
     glfwSetMouseButtonCallback(window_, [](GLFWwindow* _window, int button, int action, int mods) {
         if (button == GLFW_MOUSE_BUTTON_1) {
-            // update iMouse when left mouse button is pressed or released
             if (action == GLFW_PRESS && !left_mouse_button_down) {
                 left_mouse_button_down = true;
-                iMouse.x = mouse.x;
-                iMouse.y = mouse.y;
-                iMouse.z = mouse.x;
-                iMouse.w = mouse.y;
             } else if (action == GLFW_RELEASE && left_mouse_button_down) {
                 left_mouse_button_down = false;
-                iMouse.z = -iMouse.z;
-                iMouse.w = -iMouse.w;
             }
         }
         if (action == GLFW_PRESS) {
@@ -139,12 +129,6 @@ void Viewer::onMouseMove(double x, double y)
     if (mouse.x > viewport.z * fPixelDensity) mouse.x = viewport.z * fPixelDensity;
     if (mouse.y > viewport.w * fPixelDensity) mouse.y = viewport.w * fPixelDensity;
 
-    // update iMouse when cursor moves
-    if (left_mouse_button_down) {
-        iMouse.x = mouse.x;
-        iMouse.y = mouse.y;
-    }
-
     /*
      * TODO: the following code would best be moved into the
      * mouse button callback. If you click the mouse button without
@@ -158,7 +142,6 @@ void Viewer::onMouseMove(double x, double y)
     if (action1 == GLFW_PRESS) button = 1;
     else if (action2 == GLFW_PRESS) button = 2;
 
-    // Lunch events
     if (mouse.button == 0 && button != mouse.button) {
         mouse.button = button;
         onMouseClick(mouse.x,mouse.y,mouse.button);
@@ -230,8 +213,6 @@ void Viewer::setWindowSize(int _width, int _height)
     viewport.w = _height;
     fPixelDensity = getPixelDensity();
     glViewport(0.0, 0.0, (float)getWindowWidth(), (float)getWindowHeight());
-    orthoMatrix = glm::ortho((float)viewport.x, (float)getWindowWidth(), (float)viewport.y, (float)getWindowHeight());
-
     onViewportResize(getWindowWidth(), getWindowHeight());
 }
 
@@ -259,21 +240,6 @@ int getWindowWidth() {
 
 int getWindowHeight() {
     return viewport.w*fPixelDensity;
-}
-
-glm::mat4 getOrthoMatrix() {
-    return orthoMatrix;
-}
-
-glm::vec4 getDate() {
-    gettimeofday(&tv, NULL);
-    struct tm *tm;
-    tm = localtime(&tv.tv_sec);
-    // std::cout << "y: " << tm->tm_year+1900 << " m: " << tm->tm_mon << " d: " << tm->tm_mday << " s: " << tm->tm_hour*3600.0f+tm->tm_min*60.0f+tm->tm_sec+tv.tv_usec*0.000001 << std::endl;
-    return glm::vec4(tm->tm_year+1900,
-                     tm->tm_mon,
-                     tm->tm_mday,
-                     tm->tm_hour*3600.0f+tm->tm_min*60.0f+tm->tm_sec+tv.tv_usec*0.000001);
 }
 
 double getTime() {
@@ -314,10 +280,6 @@ glm::vec2 getMouseVelocity() {
 
 int getMouseButton(){
     return mouse.button;
-}
-
-glm::vec4 get_iMouse() {
-    return iMouse;
 }
 
 }}}

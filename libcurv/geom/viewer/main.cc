@@ -342,14 +342,8 @@ void Viewer::draw()
     if (shader_.needDelta()) {
         shader_.setUniform("u_delta", float(getDelta()));
     }
-    if (shader_.needDate()) {
-        shader_.setUniform("u_date", getDate());
-    }
     if (shader_.needMouse()) {
         shader_.setUniform("u_mouse", getMouseX(), getMouseY());
-    }
-    if (shader_.need_iMouse()) {
-        shader_.setUniform("iMouse", get_iMouse());
     }
     if (shader_.needView2d()) {
         shader_.setUniform("u_view2d", u_view2d);
