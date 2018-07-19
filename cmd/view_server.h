@@ -127,9 +127,10 @@ public:
     // current viewer window.
     void display_shape(curv::geom::Shape_Recognizer& shape)
     {
+        // TODO: Call `view.set_shape(shape)`, somewhere (in viewer thread?)
         request_shape = shape_to_frag(shape);
         send(Request::k_display_shape);
-        assert(request_shape.empty());
+        //assert(request_shape.empty());
     }
     // Called by client thread. Close the viewer window, if open, and cause
     // the server to stop running (the run() function will return).
