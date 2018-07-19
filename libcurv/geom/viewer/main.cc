@@ -46,8 +46,7 @@ glm::vec3 u_up3d = glm::vec3(-0.25,0.866025,-0.433013);
 //  ASSETS
 Vbo* vbo;
 
-int
-Viewer::main(Viewer* viewer)
+void Viewer::open()
 {
     u_centre3d = glm::vec3(0.,0.,0.);
     u_eye3d = glm::vec3(2.598076,3.0,4.5);
@@ -56,19 +55,13 @@ Viewer::main(Viewer* viewer)
     bool headless = false;
 
     // Initialize openGL context
-    viewer->initGL (viewer->window_pos_and_size_, headless);
+    initGL (window_pos_and_size_, headless);
 
     // Adding default deines
-    viewer->defines_.push_back("GLSLVIEWER 1");
+    defines_.push_back("GLSLVIEWER 1");
 
     // Start working on the GL context
-    viewer->setup();
-
-    // Render Loop
-    while (viewer->draw_frame());
-
-    viewer->close();
-    return 0;
+    setup();
 }
 
 bool Viewer::draw_frame()

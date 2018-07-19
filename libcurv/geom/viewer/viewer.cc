@@ -25,9 +25,9 @@ Viewer::set_shape(Shape_Recognizer& shape)
 void
 Viewer::run()
 {
-    int status = Viewer::main(this);
-    if (status != 0)
-        throw Exception({}, "Viewer error");
+    open();
+    while (draw_frame());
+    close();
 }
 
 bool Viewer::next_frame()

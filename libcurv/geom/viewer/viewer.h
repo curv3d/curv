@@ -24,6 +24,9 @@ struct Viewer
     // Set the current shape. Must be called before calling run().
     virtual void set_shape(Shape_Recognizer&);
 
+    // Initialize OpenGL, create the window.
+    void open();
+
     // Called repeatedly in a loop once the window is open.
     // Returns false when it is time to exit the loop (user has closed window).
     bool draw_frame();
@@ -51,10 +54,10 @@ struct Viewer
     bool verbose_{false};
     GLFWwindow* window_ = nullptr;
 
-    /*--- PARAMETER STATE, can set before thread is started ---*/
+    /*--- PARAMETER STATE, can set before window is opened ---*/
     glm::ivec4 window_pos_and_size_{0.,0.,500.,500.};
 
-    static int main(Viewer*); // Viewer thread entry point
+    // INTERNAL
     void initGL(glm::ivec4 &_viewport, bool _headless = false);
     void setup();
     void draw();
