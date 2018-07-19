@@ -19,7 +19,7 @@ const std::string appTitle = "curv";
 typedef struct {
     float     x,y;
     int       button;
-    float     velX,velY;
+    glm::vec2 velocity;
     glm::vec2 drag;
 } Mouse;
 static Mouse mouse;
@@ -112,12 +112,12 @@ void Viewer::onMouseMove(double x, double y)
     y = viewport.w - y;
     x *= fPixelDensity;
     y *= fPixelDensity;
-    // mouse.velX,mouse.velY is the distance the mouse cursor has moved
+    // mouse.velocity is the distance the mouse cursor has moved
     // since the last callback, during a drag gesture.
     // mouse.drag is the previous mouse position, during a drag gesture.
     // Note that mouse.drag is *not* constrained to the viewport.
-    mouse.velX = x - mouse.drag.x;
-    mouse.velY = y - mouse.drag.y;
+    mouse.velocity.x = x - mouse.drag.x;
+    mouse.velocity.y = y - mouse.drag.y;
     mouse.drag.x = x;
     mouse.drag.y = y;
 
@@ -150,7 +150,7 @@ void Viewer::onMouseMove(double x, double y)
         mouse.button = button;
     }
 
-    if (mouse.velX != 0.0 || mouse.velY != 0.0) {
+    if (mouse.velocity.x != 0.0 || mouse.velocity.y != 0.0) {
         if (button != 0) onMouseDrag(mouse.x,mouse.y,mouse.button);
     }
 }
@@ -277,17 +277,17 @@ glm::vec2 getMousePosition()
 
 float getMouseVelX()
 {
-    return mouse.velX;
+    return mouse.velocity.x;
 }
 
 float getMouseVelY()
 {
-    return mouse.velY;
+    return mouse.velocity.y;
 }
 
 glm::vec2 getMouseVelocity()
 {
-    return glm::vec2(mouse.velX,mouse.velY);
+    return mouse.velocity;
 }
 
 int getMouseButton()
