@@ -13,13 +13,7 @@
 
 namespace curv { namespace geom { namespace viewer {
 
-// Common global variables
-//----------------------------------------------------
 const std::string appTitle = "curv";
-static bool left_mouse_button_down = false;
-static glm::ivec4 viewport;
-static double fFPS = 0.0f;
-static float fPixelDensity = 1.0;
 
 void Viewer::initGL (glm::ivec4 &_viewport, bool _headless)
 {
@@ -61,13 +55,6 @@ void Viewer::initGL (glm::ivec4 &_viewport, bool _headless)
     // callback when a mouse button is pressed or released
     glfwSetMouseButtonCallback(window_, [](GLFWwindow* win, int button, int action, int mods) {
         Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-        if (button == GLFW_MOUSE_BUTTON_1) {
-            if (action == GLFW_PRESS && !left_mouse_button_down) {
-                left_mouse_button_down = true;
-            } else if (action == GLFW_RELEASE && left_mouse_button_down) {
-                left_mouse_button_down = false;
-            }
-        }
         if (action == GLFW_PRESS) {
             self->mouse_.drag.x = self->mouse_.x;
             self->mouse_.drag.y = self->mouse_.y;
@@ -76,7 +63,7 @@ void Viewer::initGL (glm::ivec4 &_viewport, bool _headless)
 
     glfwSetScrollCallback(window_, [](GLFWwindow* win, double xoffset, double yoffset) {
         Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-        self->onScroll(-yoffset * fPixelDensity);
+        self->onScroll(-yoffset * self->fPixelDensity_);
     });
 
     // callback when the mouse cursor moves
@@ -89,8 +76,8 @@ void Viewer::initGL (glm::ivec4 &_viewport, bool _headless)
         Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
         self->window_pos_and_size_.x = x;
         self->window_pos_and_size_.y = y;
-        if (fPixelDensity != self->getPixelDensity()) {
-            self->setWindowSize(viewport.z, viewport.w);
+        if (self->fPixelDensity_ != self->getPixelDensity()) {
+            self->setWindowSize(self->viewport_.z, self->viewport_.w);
         }
     });
 
@@ -101,9 +88,9 @@ void Viewer::onMouseMove(double x, double y)
 {
     // Convert x,y to pixel coordinates relative to viewport.
     // (0,0) is lower left corner.
-    y = viewport.w - y;
-    x *= fPixelDensity;
-    y *= fPixelDensity;
+    y = viewport_.w - y;
+    x *= fPixelDensity_;
+    y *= fPixelDensity_;
     // mouse_.velocity is the distance the mouse cursor has moved
     // since the last callback, during a drag gesture.
     // mouse_.drag is the previous mouse position, during a drag gesture.
@@ -119,8 +106,8 @@ void Viewer::onMouseMove(double x, double y)
     mouse_.y = y;
     if (mouse_.x < 0) mouse_.x = 0;
     if (mouse_.y < 0) mouse_.y = 0;
-    if (mouse_.x > viewport.z * fPixelDensity) mouse_.x = viewport.z * fPixelDensity;
-    if (mouse_.y > viewport.w * fPixelDensity) mouse_.y = viewport.w * fPixelDensity;
+    if (mouse_.x > viewport_.z * fPixelDensity_) mouse_.x = viewport_.z * fPixelDensity_;
+    if (mouse_.y > viewport_.w * fPixelDensity_) mouse_.y = viewport_.w * fPixelDensity_;
 
     /*
      * TODO: the following code would best be moved into the
@@ -175,13 +162,13 @@ void Viewer::updateGL()
     frame_count++;
     lastTime += fDelta;
     if (lastTime >= 1.) {
-        fFPS = double(frame_count);
+        fFPS_ = double(frame_count);
         frame_count = 0;
         lastTime -= 1.;
     }
 
     // EVENTS
-    std::string title = appTitle + " FPS:" + std::to_string(fFPS);
+    std::string title = appTitle + " FPS:" + std::to_string(fFPS_);
     debounceSetWindowTitle(title);
     glfwPollEvents();
 }
@@ -200,9 +187,9 @@ void Viewer::closeGL()
 
 void Viewer::setWindowSize(int _width, int _height)
 {
-    viewport.z = _width;
-    viewport.w = _height;
-    fPixelDensity = getPixelDensity();
+    viewport_.z = _width;
+    viewport_.w = _height;
+    fPixelDensity_ = getPixelDensity();
     glViewport(0.0, 0.0, (float)getWindowWidth(), (float)getWindowHeight());
 }
 
@@ -216,12 +203,12 @@ float Viewer::getPixelDensity()
 
 int Viewer::getWindowWidth()
 {
-    return viewport.z*fPixelDensity;
+    return viewport_.z*fPixelDensity_;
 }
 
 int Viewer::getWindowHeight()
 {
-    return viewport.w*fPixelDensity;
+    return viewport_.w*fPixelDensity_;
 }
 
 }}}

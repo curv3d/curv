@@ -63,8 +63,11 @@ struct Viewer
     std::vector<std::string> defines_{};
     bool verbose_{false};
     GLFWwindow* window_ = nullptr;
+    glm::ivec4 viewport_;
+    float fPixelDensity_ = 1.0;
     Vbo* vbo_ = nullptr;
-    double fTime_ = 0.0f;
+    double fTime_ = 0.0;
+    double fFPS_ = 0.0;
 
     glm::mat3 u_view2d_ = glm::mat3(1.);
     // These are the 'view3d' uniforms.
