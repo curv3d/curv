@@ -174,11 +174,6 @@ void main() {\n\
 
 void Viewer::draw()
 {
-    if (shader_.needBackbuffer()) {
-        buffer.swap();
-        buffer.src->bind();
-    }
-
     shader_.use();
 
     // Pass uniforms
@@ -204,23 +199,7 @@ void Viewer::draw()
     glm::mat4 mvp = glm::mat4(1.);
     shader_.setUniform("u_modelViewProjectionMatrix", mvp);
 
-    // Pass Textures Uniforms
-    unsigned int index = 0;
-
-    if (shader_.needBackbuffer()) {
-        shader_.setUniform("u_backbuffer", buffer.dst, index);
-    }
-
     vbo->draw(&shader_);
-
-    if (shader_.needBackbuffer()) {
-        buffer.src->unbind();
-        buffer_shader.use();
-        buffer_shader.setUniform("u_resolution",getWindowWidth(), getWindowHeight());
-        buffer_shader.setUniform("u_modelViewProjectionMatrix", mvp);
-        buffer_shader.setUniform("u_buffer", buffer.src, index++);
-        buffer_vbo->draw(&buffer_shader);
-    }
 }
 
 // Rendering Thread
@@ -228,12 +207,6 @@ void Viewer::draw()
 
 void Viewer::onKeyPress(int _key)
 {
-#if 0
-    if (_key == 's' || _key == 'S') {
-        screenshot(outputFile);
-    }
-#endif
-
     if (_key == 'q' || _key == 'Q') {
         glfwSetWindowShouldClose(window_, GL_TRUE);
     }
