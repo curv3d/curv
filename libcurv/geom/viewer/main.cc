@@ -1,28 +1,27 @@
+// Copyright 2016-2018 Doug Moen
+// Licensed under the Apache License, version 2.0
+// See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
+
+// Based on glslViewer, which is
 // Copyright 2014 Patricio Gonzalez Vivo
 // Licensed under the 3-Clause BSD Licence:
 // https://opensource.org/licenses/BSD-3-Clause
+
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <map>
-#include <thread>
-#include <mutex>
-#include <atomic>
 #include <iostream>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_transform_2d.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-#include "tools/fs.h"
 #include "app.h"
 #include "tools/text.h"
 #include "tools/geom.h"
 #include "gl/shader.h"
 #include "gl/vbo.h"
-#include "gl/texture.h"
 #include "gl/pingpong.h"
-#include "gl/uniform.h"
 #include "3d/camera.h"
 #include "types/shapes.h"
 #include <libcurv/geom/viewer/viewer.h>
@@ -32,23 +31,6 @@ namespace curv { namespace geom { namespace viewer {
 // GLOBAL VARIABLES
 //============================================================================
 //
-
-//  List of FILES to watch and the variable to communicate that between process
-struct WatchFile {
-    std::string type;
-    std::string path;
-    bool vFlip;
-    int lastChange;
-};
-std::vector<WatchFile> files;
-std::mutex filesMutex;
-int fileChanged;
-
-UniformList uniforms;
-std::mutex uniformsMutex;
-
-std::string screenshotFile = "";
-std::mutex screenshotMutex;
 
 //  CAMERA
 Camera cam;
@@ -68,153 +50,28 @@ glm::vec3 u_up3d = glm::vec3(-0.25,0.866025,-0.433013);
 
 //  ASSETS
 Vbo* vbo;
-int iGeom = -1;
 glm::mat4 model_matrix = glm::mat4(1.);
 std::string outputFile = "";
-
-// Textures
-std::map<std::string,Texture*> textures;
-bool vFlip = true;
-
-// Include folders
-std::vector<std::string> include_folders;
 
 // Backbuffer
 PingPong buffer;
 Vbo* buffer_vbo;
 Shader buffer_shader;
 
-//================================================================= Functions
-
-//void screenshot(std::string file);
-
-void printUsage(const char *);
-
-// Main program
-//============================================================================
 int
 Viewer::main(Viewer* viewer)
 {
-    const char* argv[2];
-    argv[0] = "curv";
-    argv[1] = nullptr;
-    int argc = 1;
-
     u_centre3d = glm::vec3(0.,0.,0.);
     u_eye3d = glm::vec3(2.598076,3.0,4.5);
     u_up3d = glm::vec3(-0.25,0.866025,-0.433013);
 
     bool headless = false;
-    for (int i = 1; i < argc ; i++) {
-        std::string argument = std::string(argv[i]);
-
-        if (   std::string(argv[i]) == "--headless" ) {
-            headless = true;
-        }
-    }
 
     // Initialize openGL context
     viewer->initGL (viewer->window_pos_and_size_, headless);
 
-    struct stat st; // for files to watch
-    float timeLimit = -1.0f; //  Time limit
-    int textureCounter = 0; // Number of textures to load
-
     // Adding default deines
     viewer->defines_.push_back("GLSLVIEWER 1");
-
-    //Load the the resources (textures)
-    for (int i = 1; i < argc ; i++){
-        std::string argument = std::string(argv[i]);
-
-        if (argument == "-l" ||
-                 argument == "--headless") {
-        }
-        else if ( argument == "-v" || 
-                  argument == "--verbose" ) {
-            viewer->verbose_ = true;
-        }
-        else if (argument == "-s" || argument == "--sec") {
-            i++;
-            argument = std::string(argv[i]);
-            timeLimit = toFloat(argument);
-            std::cout << "// Will exit in " << timeLimit << " seconds." << std::endl;
-        }
-        else if (argument == "-o") {
-            i++;
-            argument = std::string(argv[i]);
-            if (haveExt(argument, "png")) {
-                outputFile = argument;
-                std::cout << "// Will save screenshot to " << outputFile  << " on exit." << std::endl;
-            }
-            else {
-                std::cerr << "At the moment screenshots only support PNG formats" << std::endl;
-            }
-        }
-        else if (argument == "-vFlip") {
-            vFlip = false;
-        }
-        else if (   haveExt(argument,"png") || haveExt(argument,"PNG") ||
-                    haveExt(argument,"jpg") || haveExt(argument,"JPG") ||
-                    haveExt(argument,"jpeg") || haveExt(argument,"JPEG")) {
-            if (stat(argument.c_str(), &st) != 0) {
-                std::cerr << "Error watching file " << argument << std::endl;
-            }
-            else {
-                Texture* tex = new Texture();
-
-                if (tex->load(argument, vFlip)) {
-                    std::string name = "u_tex"+toString(textureCounter);
-                    textures[name] = tex;
-
-                    WatchFile file;
-                    file.type = "image";
-                    file.path = argument;
-                    file.lastChange = st.st_mtime;
-                    file.vFlip = vFlip;
-                    files.push_back(file);
-
-                    std::cout << "// Loading " << argument << " as the following uniform: " << std::endl;
-                    std::cout << "//    uniform sampler2D " << name  << "; // loaded"<< std::endl;
-                    std::cout << "//    uniform vec2 " << name  << "Resolution;"<< std::endl;
-                    textureCounter++;
-                }
-            }
-        }
-        else if (argument.find("-D") == 0) {
-            std::string define = argument.substr(2);
-            viewer->defines_.push_back(define);
-        }
-        else if (argument.find("-I") == 0) {
-            std::string include = argument.substr(2);
-            include_folders.push_back(include);
-        }
-        else if (argument.find("-") == 0) {
-            std::string parameterPair = argument.substr(argument.find_last_of('-')+1);
-            i++;
-            argument = std::string(argv[i]);
-            if (stat(argument.c_str(), &st) != 0) {
-                std::cerr << "Error watching file " << argument << std::endl;
-            }
-            else {
-                Texture* tex = new Texture();
-                if (tex->load(argument, vFlip)) {
-                    textures[parameterPair] = tex;
-
-                    WatchFile file;
-                    file.type = "image";
-                    file.path = argument;
-                    file.lastChange = st.st_mtime;
-                    file.vFlip = vFlip;
-                    files.push_back(file);
-
-                    std::cout << "// Loading " << argument << " as the following uniform: " << std::endl;
-                    std::cout << "//     uniform sampler2D " << parameterPair  << "; // loaded"<< std::endl;
-                    std::cout << "//     uniform vec2 " << parameterPair  << "Resolution;"<< std::endl;
-                }
-            }
-        }
-    }
 
     // Start working on the GL context
     viewer->setup();
@@ -270,17 +127,7 @@ void Viewer::setup()
 
     //  Load Geometry
     //
-    if (iGeom == -1){
-        vbo = rect(0.0,0.0,1.0,1.0).getVbo();
-    }
-    else {
-        Mesh model;
-        model.load(files[iGeom].path);
-        vbo = model.getVbo();
-        glm::vec3 toCentroid = getCentroid(model.getVertices());
-        // model_matrix = glm::scale(glm::vec3(0.001));
-        model_matrix = glm::translate(-toCentroid);
-    }
+    vbo = rect(0.0,0.0,1.0,1.0).getVbo();
 
     //  Build shader;
     //
@@ -354,35 +201,11 @@ void Viewer::draw()
         shader_.setUniform("u_up3d", u_up3d);
     }
 
-    for (UniformList::iterator it=uniforms.begin(); it!=uniforms.end(); ++it) {
-        if (it->second.bInt) {
-            shader_.setUniform(it->first, int(it->second.value[0]));
-        }
-        else {
-            shader_.setUniform(it->first, it->second.value, it->second.size);
-        }
-    }
-
     glm::mat4 mvp = glm::mat4(1.);
-    if (iGeom != -1) {
-        shader_.setUniform("u_eye", -cam.getPosition());
-        shader_.setUniform("u_normalMatrix", cam.getNormalMatrix());
-
-        shader_.setUniform("u_modelMatrix", model_matrix);
-        shader_.setUniform("u_viewMatrix", cam.getViewMatrix());
-        shader_.setUniform("u_projectionMatrix", cam.getProjectionMatrix());
-
-        mvp = cam.getProjectionViewMatrix() * model_matrix;
-    }
     shader_.setUniform("u_modelViewProjectionMatrix", mvp);
 
     // Pass Textures Uniforms
     unsigned int index = 0;
-    for (std::map<std::string,Texture*>::iterator it = textures.begin(); it!=textures.end(); ++it) {
-        shader_.setUniform(it->first, it->second, index);
-        shader_.setUniform(it->first+"Resolution", it->second->getWidth(), it->second->getHeight());
-        index++;
-    }
 
     if (shader_.needBackbuffer()) {
         shader_.setUniform("u_backbuffer", buffer.dst, index);
@@ -398,13 +221,6 @@ void Viewer::draw()
         buffer_shader.setUniform("u_buffer", buffer.src, index++);
         buffer_vbo->draw(&buffer_shader);
     }
-
-#if 0
-    if (screenshotFile != "") {
-        screenshot(screenshotFile);
-        screenshotFile = "";
-    }
-#endif
 }
 
 // Rendering Thread
@@ -509,23 +325,8 @@ void onViewportResize(int _newWidth, int _newHeight)
     buffer.allocate(_newWidth,_newHeight);
 }
 
-#if 0
-void screenshot(std::string _file)
-{
-    if (_file != "" && isGL()) {
-        unsigned char* pixels = new unsigned char[getWindowWidth()*getWindowHeight()*4];
-        glReadPixels(0, 0, getWindowWidth(), getWindowHeight(), GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-        Texture::savePixels(_file, pixels, getWindowWidth(), getWindowHeight());
-        std::cout << "// Screenshot saved to " << _file << std::endl;
-    }
-}
-#endif
-
 void Viewer::onExit()
 {
-    // Take a screenshot if it need
-    //screenshot(outputFile);
-
     // clear screen
     glClear( GL_COLOR_BUFFER_BIT );
 
@@ -533,17 +334,7 @@ void Viewer::onExit()
     closeGL();
 
     // DELETE RESOURCES
-    for (std::map<std::string,Texture*>::iterator i = textures.begin(); i != textures.end(); ++i) {
-        delete i->second;
-        i->second = NULL;
-    }
-    textures.clear();
     delete vbo;
-}
-
-void printUsage(const char * executableName)
-{
-    std::cerr << "Usage: " << executableName << " <shader>.frag [<shader>.vert] [<mesh>.(obj/.ply)] [<texture>.(png/jpg)] [-<uniformName> <texture>.(png/jpg)] [-vFlip] [-x <x>] [-y <y>] [-w <width>] [-h <height>] [-l] [--square] [-s/--sec <seconds>] [-o <screenshot_file>.png] [--headless] [-I<include_folder>] [-D<define>] [-v/--verbose] [--help]\n";
 }
 
 }}}
