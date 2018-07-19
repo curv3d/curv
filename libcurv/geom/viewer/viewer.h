@@ -2,12 +2,14 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
+// Based on glslViewer, which is:
+// Copyright 2014 Patricio Gonzalez Vivo
+// Licensed under the 3-Clause BSD Licence:
+// https://opensource.org/licenses/BSD-3-Clause
+
 #ifndef LIBCURV_GEOM_VIEWER_VIEWER_H
 #define LIBCURV_GEOM_VIEWER_VIEWER_H
 
-#include <libcurv/filesystem.h>
-#include <thread>
-#include <mutex>
 #include <glm/glm.hpp>
 #include <gl/shader.h>
 #include <gl/vbo.h>

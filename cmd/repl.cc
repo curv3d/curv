@@ -30,6 +30,7 @@ extern "C" {
 }
 #include <iostream>
 #include <fstream>
+#include <thread>
 #include <condition_variable>
 #include <functional>
 #include <replxx.hxx>

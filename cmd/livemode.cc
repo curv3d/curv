@@ -16,6 +16,7 @@ extern "C" {
 }
 #include <iostream>
 #include <fstream>
+#include <thread>
 
 #include "export.h"
 #include "progdir.h"
