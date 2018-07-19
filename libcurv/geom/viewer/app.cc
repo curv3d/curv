@@ -215,7 +215,8 @@ void Viewer::setWindowSize(int _width, int _height)
     glViewport(0.0, 0.0, (float)getWindowWidth(), (float)getWindowHeight());
 }
 
-glm::ivec2 getScreenSize() {
+glm::ivec2 getScreenSize()
+{
     glm::ivec2 screen;
     glfwGetMonitorPhysicalSize(glfwGetPrimaryMonitor(), &screen.x, &screen.y);
     return screen;
@@ -229,55 +230,68 @@ float Viewer::getPixelDensity()
     return float(framebuffer_width)/float(window_width);
 }
 
-glm::ivec4 getViewport() {
+glm::ivec4 getViewport()
+{
     return viewport;
 }
 
-int getWindowWidth() {
+int getWindowWidth()
+{
     return viewport.z*fPixelDensity;
 }
 
-int getWindowHeight() {
+int getWindowHeight()
+{
     return viewport.w*fPixelDensity;
 }
 
-double getTime() {
+double getTime()
+{
     return fTime;
 }
 
-double getDelta() {
+double getDelta()
+{
     return fDelta;
 }
 
-double getFPS() {
+double getFPS()
+{
     return fFPS;
 }
 
-float getMouseX(){
+float getMouseX()
+{
     return mouse.x;
 }
 
-float getMouseY(){
+float getMouseY()
+{
     return mouse.y;
 }
 
-glm::vec2 getMousePosition() {
+glm::vec2 getMousePosition()
+{
     return glm::vec2(mouse.x,mouse.y);
 }
 
-float getMouseVelX(){
+float getMouseVelX()
+{
     return mouse.velX;
 }
 
-float getMouseVelY(){
+float getMouseVelY()
+{
     return mouse.velY;
 }
 
-glm::vec2 getMouseVelocity() {
+glm::vec2 getMouseVelocity()
+{
     return glm::vec2(mouse.velX,mouse.velY);
 }
 
-int getMouseButton(){
+int getMouseButton()
+{
     return mouse.button;
 }
 
