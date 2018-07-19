@@ -35,7 +35,7 @@ struct Viewer
     // Returns false when it is time to exit the loop (user has closed window).
     bool draw_frame();
 
-    // Close window, if not already closed. Set is_open to false.
+    // Close window.
     void close();
 
     // Open a Viewer window on the current shape, and run until the window
