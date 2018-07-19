@@ -22,7 +22,6 @@
 #include "gl/shader.h"
 #include "gl/vbo.h"
 #include "gl/pingpong.h"
-#include "3d/camera.h"
 #include "types/shapes.h"
 #include <libcurv/geom/viewer/viewer.h>
 
@@ -33,9 +32,6 @@ namespace curv { namespace geom { namespace viewer {
 //
 
 //  CAMERA
-Camera cam;
-float lat = 180.0;
-float lon = 0.0;
 glm::mat3 u_view2d = glm::mat3(1.);
 // These are the 'view3d' uniforms.
 // Note: the up3d vector must be orthogonal to (eye3d - centre3d),
@@ -50,8 +46,6 @@ glm::vec3 u_up3d = glm::vec3(-0.25,0.866025,-0.433013);
 
 //  ASSETS
 Vbo* vbo;
-glm::mat4 model_matrix = glm::mat4(1.);
-std::string outputFile = "";
 
 // Backbuffer
 PingPong buffer;
@@ -134,9 +128,6 @@ void Viewer::setup()
     vertSource_ = vbo->getVertexLayout()->getDefaultVertShader();
     shader_.load(fragsrc_, vertSource_, defines_, verbose_);
 
-    cam.setViewport(getWindowWidth(), getWindowHeight());
-    cam.setPosition(glm::vec3(0.0,0.0,-3.));
-
     buffer.allocate(getWindowWidth(), getWindowHeight(), false);
 
     buffer_vbo = rect(0.0,0.0,1.0,1.0).getVbo();
@@ -202,9 +193,6 @@ void Viewer::draw()
     vbo->draw(&shader_);
 }
 
-// Rendering Thread
-//============================================================================
-
 void Viewer::onKeyPress(int _key)
 {
     if (_key == 'q' || _key == 'Q') {
@@ -214,7 +202,6 @@ void Viewer::onKeyPress(int _key)
 
 void onMouseClick(float _x, float _y, int _button)
 {
-
 }
 
 void onScroll(float _yoffset)
@@ -240,13 +227,6 @@ void onScroll(float _yoffset)
 void onMouseDrag(float _x, float _y, int _button)
 {
     if (_button == 1){
-        // Left-button drag is used to rotate geometry.
-        float dist = glm::length(cam.getPosition());
-        lat -= getMouseVelX();
-        lon -= getMouseVelY()*0.5;
-        cam.orbit(lat,lon,dist);
-        cam.lookAt(glm::vec3(0.0));
-
         // Left-button drag is used to pan u_view2d.
         u_view2d = glm::translate(u_view2d, -getMouseVelocity());
 
@@ -268,14 +248,6 @@ void onMouseDrag(float _x, float _y, int _button)
         u_eye3d += u_centre3d;
         u_up3d += u_centre3d;
     } else {
-        // Right-button drag is used to zoom geometry.
-        float dist = glm::length(cam.getPosition());
-        dist += (-.008f * getMouseVelY());
-        if(dist > 0.0f){
-            cam.setPosition( -dist * cam.getZAxis() );
-            cam.lookAt(glm::vec3(0.0));
-        }
-
         // TODO: rotate view2d.
 
         // pan view3d.
@@ -294,7 +266,6 @@ void onMouseDrag(float _x, float _y, int _button)
 
 void onViewportResize(int _newWidth, int _newHeight)
 {
-    cam.setViewport(_newWidth,_newHeight);
     buffer.allocate(_newWidth,_newHeight);
 }
 
