@@ -30,11 +30,6 @@ Viewer::run()
         throw Exception({}, "Viewer error");
 }
 
-void
-Viewer::on_close()
-{
-}
-
 bool Viewer::next_frame()
 {
     return true;

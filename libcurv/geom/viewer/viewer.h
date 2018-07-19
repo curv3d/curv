@@ -41,8 +41,6 @@ struct Viewer
     virtual bool next_frame();
     // Can be called from next_frame() to change the frag shader.
     void set_frag(const std::string&);
-    // Called after frame loop exits and window is closed.
-    virtual void on_close();
 
     /*--- SHARED STATE ---*/
 

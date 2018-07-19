@@ -107,7 +107,6 @@ void Viewer::close()
     glfwGetWindowSize(window_,
         &window_pos_and_size_.w, &window_pos_and_size_.z);
     onExit();
-    on_close();
 }
 
 void Viewer::setup()
