@@ -19,7 +19,6 @@ namespace curv { namespace geom { namespace viewer {
 const std::string appTitle = "curv";
 static bool left_mouse_button_down = false;
 static glm::ivec4 viewport;
-static double fTime = 0.0f;
 static double fFPS = 0.0f;
 static float fPixelDensity = 1.0;
 
@@ -169,8 +168,8 @@ void Viewer::updateGL()
     // Update time
     // --------------------------------------------------------------------
     double now = glfwGetTime();
-    double fDelta = now - fTime;
-    fTime = now;
+    double fDelta = now - fTime_;
+    fTime_ = now;
 
     static int frame_count = 0;
     static double lastTime = 0.0;
@@ -225,11 +224,6 @@ int getWindowWidth()
 int getWindowHeight()
 {
     return viewport.w*fPixelDensity;
-}
-
-double getTime()
-{
-    return fTime;
 }
 
 }}}

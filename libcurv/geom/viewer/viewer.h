@@ -64,6 +64,7 @@ struct Viewer
     bool verbose_{false};
     GLFWwindow* window_ = nullptr;
     Vbo* vbo_ = nullptr;
+    double fTime_ = 0.0f;
 
     glm::mat3 u_view2d_ = glm::mat3(1.);
     // These are the 'view3d' uniforms.

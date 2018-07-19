@@ -139,7 +139,7 @@ void Viewer::draw()
     // Pass uniforms
     shader_.setUniform("u_resolution", getWindowWidth(), getWindowHeight());
     if (shader_.needTime()) {
-        shader_.setUniform("u_time", float(getTime()));
+        shader_.setUniform("u_time", float(fTime_));
     }
     if (shader_.needView2d()) {
         shader_.setUniform("u_view2d", u_view2d_);

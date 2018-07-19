@@ -11,6 +11,4 @@ namespace curv { namespace geom { namespace viewer {
 int getWindowWidth();
 int getWindowHeight();
 
-double getTime();
-
 }}}
