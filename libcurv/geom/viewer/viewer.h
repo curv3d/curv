@@ -101,6 +101,8 @@ struct Viewer
     float getPixelDensity();
     void onExit();
     void setWindowSize(int, int);
+    int getWindowWidth();
+    int getWindowHeight();
 };
 
 }}} // namespace

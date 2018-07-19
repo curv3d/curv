@@ -21,7 +21,6 @@
 #include <glm/gtx/matrix_transform_2d.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-#include "app.h"
 #include <types/shapes.h>
 
 namespace curv { namespace geom { namespace viewer {

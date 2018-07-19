@@ -2,7 +2,6 @@
 // Licensed under the 3-Clause BSD Licence:
 // https://opensource.org/licenses/BSD-3-Clause
 
-#include <libcurv/geom/viewer/app.h>
 #include <libcurv/geom/viewer/viewer.h>
 
 #include <time.h>
@@ -198,7 +197,6 @@ void Viewer::closeGL()
     //glfwSetWindowShouldClose(window_, GL_TRUE);
     glfwDestroyWindow(window_);
 }
-//-------------------------------------------------------------
 
 void Viewer::setWindowSize(int _width, int _height)
 {
@@ -216,12 +214,12 @@ float Viewer::getPixelDensity()
     return float(framebuffer_width)/float(window_width);
 }
 
-int getWindowWidth()
+int Viewer::getWindowWidth()
 {
     return viewport.z*fPixelDensity;
 }
 
-int getWindowHeight()
+int Viewer::getWindowHeight()
 {
     return viewport.w*fPixelDensity;
 }
