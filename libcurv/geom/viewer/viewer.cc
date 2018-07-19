@@ -31,6 +31,11 @@
 
 namespace curv { namespace geom { namespace viewer {
 
+Viewer::Viewer()
+{
+    defines_.push_back("GLSLVIEWER 1");
+}
+
 void
 Viewer::set_shape(Shape_Recognizer& shape)
 {
@@ -58,11 +63,6 @@ void Viewer::set_frag(const std::string& fragSource)
     shader_.load(fragSource, vertSource_, defines_, verbose_);
 }
 
-Viewer::Viewer()
-{
-    defines_.push_back("GLSLVIEWER 1");
-}
-
 void Viewer::open()
 {
     u_centre3d_ = glm::vec3(0.,0.,0.);
@@ -72,7 +72,7 @@ void Viewer::open()
     bool headless = false;
 
     // Initialize openGL context
-    initGL (window_pos_and_size_, headless);
+    initGL(window_pos_and_size_, headless);
 
     // Start working on the GL context
     setup();
@@ -242,7 +242,7 @@ void Viewer::onExit()
 
 const std::string appTitle = "curv";
 
-void Viewer::initGL (glm::ivec4 &_viewport, bool _headless)
+void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
 {
     glfwSetErrorCallback([](int err, const char* msg)->void {
         std::cerr << "GLFW error 0x"<<std::hex<<err<<std::dec<<": "<<msg<<"\n";
@@ -410,6 +410,7 @@ void Viewer::closeGL()
 {
     //glfwSetWindowShouldClose(window_, GL_TRUE);
     glfwDestroyWindow(window_);
+    window_ = nullptr;
 }
 
 void Viewer::setWindowSize(int _width, int _height)
