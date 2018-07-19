@@ -169,10 +169,6 @@ void Viewer::onKeyPress(int _key)
     }
 }
 
-void onMouseClick(float _x, float _y, int _button)
-{
-}
-
 void Viewer::onScroll(float _yoffset)
 {
     // Vertical scroll button zooms u_view2d_ and view3d.
@@ -231,10 +227,6 @@ void Viewer::onMouseDrag(float _x, float _y, int _button)
         u_centre3d_ += hoff;
         u_eye3d_ += hoff;
     }
-}
-
-void onViewportResize(int _newWidth, int _newHeight)
-{
 }
 
 void Viewer::onExit()

@@ -8,12 +8,6 @@
 
 namespace curv { namespace geom { namespace viewer {
 
-//	SET
-//----------------------------------------------
-void setWindowSize(int _width, int _height);
-
-//	GET
-//----------------------------------------------
 glm::ivec2 getScreenSize();
 float getPixelDensity();
 
@@ -32,12 +26,5 @@ float getMouseVelX();
 float getMouseVelY();
 glm::vec2 getMouseVelocity();
 int getMouseButton();
-
-// EVENTS
-//----------------------------------------------
-void onMouseClick(float _x, float _y, int _button);
-void onMouseDrag(float _x, float _y, int _button);
-void onViewportResize(int _width, int _height);
-void onScroll(float _yoffset);
 
 }}}

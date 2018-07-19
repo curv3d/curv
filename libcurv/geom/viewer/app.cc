@@ -145,7 +145,6 @@ void Viewer::onMouseMove(double x, double y)
 
     if (mouse.button == 0 && button != mouse.button) {
         mouse.button = button;
-        onMouseClick(mouse.x,mouse.y,mouse.button);
     }
     else {
         mouse.button = button;
@@ -214,7 +213,6 @@ void Viewer::setWindowSize(int _width, int _height)
     viewport.w = _height;
     fPixelDensity = getPixelDensity();
     glViewport(0.0, 0.0, (float)getWindowWidth(), (float)getWindowHeight());
-    onViewportResize(getWindowWidth(), getWindowHeight());
 }
 
 glm::ivec2 getScreenSize() {
