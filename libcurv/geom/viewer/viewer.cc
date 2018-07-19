@@ -145,7 +145,7 @@ void Viewer::draw()
         shader_.setUniform("u_delta", float(getDelta()));
     }
     if (shader_.needMouse()) {
-        shader_.setUniform("u_mouse", getMouseX(), getMouseY());
+        shader_.setUniform("u_mouse", mouse_.x, mouse_.y);
     }
     if (shader_.needView2d()) {
         shader_.setUniform("u_view2d", u_view2d_);
@@ -193,7 +193,7 @@ void Viewer::onMouseDrag(float _x, float _y, int _button)
 {
     if (_button == 1){
         // Left-button drag is used to pan u_view2d_.
-        u_view2d_ = glm::translate(u_view2d_, -getMouseVelocity());
+        u_view2d_ = glm::translate(u_view2d_, -mouse_.velocity);
 
         // Left-button drag is used to rotate eye3d around centre3d.
         // One complete drag across the screen width equals 360 degrees.
@@ -201,11 +201,11 @@ void Viewer::onMouseDrag(float _x, float _y, int _button)
         u_eye3d_ -= u_centre3d_;
         u_up3d_ -= u_centre3d_;
         // Rotate about vertical axis, defined by the 'up' vector.
-        float xangle = (getMouseVelX() / getWindowWidth()) * tau;
+        float xangle = (mouse_.velocity.x / getWindowWidth()) * tau;
         u_eye3d_ = glm::rotate(u_eye3d_, -xangle, u_up3d_);
         // Rotate about horizontal axis, which is perpendicular to
         // the (centre3d,eye3d,up3d) plane.
-        float yangle = (getMouseVelY() / getWindowHeight()) * tau;
+        float yangle = (mouse_.velocity.y / getWindowHeight()) * tau;
         glm::vec3 haxis = glm::cross(u_eye3d_-u_centre3d_, u_up3d_);
         u_eye3d_ = glm::rotate(u_eye3d_, -yangle, haxis);
         u_up3d_ = glm::rotate(u_up3d_, -yangle, haxis);
@@ -218,12 +218,12 @@ void Viewer::onMouseDrag(float _x, float _y, int _button)
         // pan view3d.
         float dist3d = glm::length(u_eye3d_ - u_centre3d_);
         glm::vec3 voff = glm::normalize(u_up3d_)
-            * (getMouseVelY()/getWindowHeight()) * dist3d;
+            * (mouse_.velocity.y/getWindowHeight()) * dist3d;
         u_centre3d_ -= voff;
         u_eye3d_ -= voff;
         glm::vec3 haxis = glm::cross(u_eye3d_-u_centre3d_, u_up3d_);
         glm::vec3 hoff = glm::normalize(haxis)
-            * (getMouseVelX()/getWindowWidth()) * dist3d;
+            * (mouse_.velocity.x/getWindowWidth()) * dist3d;
         u_centre3d_ += hoff;
         u_eye3d_ += hoff;
     }

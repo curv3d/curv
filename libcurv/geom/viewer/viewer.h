@@ -64,6 +64,7 @@ struct Viewer
     bool verbose_{false};
     GLFWwindow* window_ = nullptr;
     Vbo* vbo_ = nullptr;
+
     glm::mat3 u_view2d_ = glm::mat3(1.);
     // These are the 'view3d' uniforms.
     // Note: the up3d vector must be orthogonal to (eye3d - centre3d),
@@ -75,6 +76,14 @@ struct Viewer
     // The initial value for up3d is derived by starting with [0,1,0], then
     // applying the same rotations as above, so that up3d is orthogonal to eye3d.
     glm::vec3 u_up3d_ = glm::vec3(-0.25,0.866025,-0.433013);
+
+    typedef struct {
+        float     x,y;
+        int       button;
+        glm::vec2 velocity;
+        glm::vec2 drag;
+    } Mouse;
+    Mouse mouse_;
 
     // INTERNAL FUNCTIONS
     void initGL(glm::ivec4 &_viewport, bool _headless = false);

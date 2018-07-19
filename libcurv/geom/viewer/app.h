@@ -19,12 +19,4 @@ double getTime();
 double getDelta();
 double getFPS();
 
-float getMouseX();
-float getMouseY();
-glm::vec2 getMousePosition();
-float getMouseVelX();
-float getMouseVelY();
-glm::vec2 getMouseVelocity();
-int getMouseButton();
-
 }}}

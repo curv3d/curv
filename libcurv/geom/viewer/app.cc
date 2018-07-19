@@ -1,6 +1,7 @@
 // Copyright 2014 Patricio Gonzalez Vivo
 // Licensed under the 3-Clause BSD Licence:
 // https://opensource.org/licenses/BSD-3-Clause
+
 #include <libcurv/geom/viewer/app.h>
 #include <libcurv/geom/viewer/viewer.h>
 
@@ -8,21 +9,14 @@
 #include <sys/time.h>
 #include <chrono>
 #include <thread>
+#include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
-#include "tools/text.h"
 
 namespace curv { namespace geom { namespace viewer {
 
 // Common global variables
 //----------------------------------------------------
 const std::string appTitle = "curv";
-typedef struct {
-    float     x,y;
-    int       button;
-    glm::vec2 velocity;
-    glm::vec2 drag;
-} Mouse;
-static Mouse mouse;
 static bool left_mouse_button_down = false;
 static glm::ivec4 viewport;
 static double fTime = 0.0f;
@@ -68,7 +62,8 @@ void Viewer::initGL (glm::ivec4 &_viewport, bool _headless)
     });
 
     // callback when a mouse button is pressed or released
-    glfwSetMouseButtonCallback(window_, [](GLFWwindow* _window, int button, int action, int mods) {
+    glfwSetMouseButtonCallback(window_, [](GLFWwindow* win, int button, int action, int mods) {
+        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
         if (button == GLFW_MOUSE_BUTTON_1) {
             if (action == GLFW_PRESS && !left_mouse_button_down) {
                 left_mouse_button_down = true;
@@ -77,8 +72,8 @@ void Viewer::initGL (glm::ivec4 &_viewport, bool _headless)
             }
         }
         if (action == GLFW_PRESS) {
-            mouse.drag.x = mouse.x;
-            mouse.drag.y = mouse.y;
+            self->mouse_.drag.x = self->mouse_.x;
+            self->mouse_.drag.y = self->mouse_.y;
         }
     });
 
@@ -112,23 +107,23 @@ void Viewer::onMouseMove(double x, double y)
     y = viewport.w - y;
     x *= fPixelDensity;
     y *= fPixelDensity;
-    // mouse.velocity is the distance the mouse cursor has moved
+    // mouse_.velocity is the distance the mouse cursor has moved
     // since the last callback, during a drag gesture.
-    // mouse.drag is the previous mouse position, during a drag gesture.
-    // Note that mouse.drag is *not* constrained to the viewport.
-    mouse.velocity.x = x - mouse.drag.x;
-    mouse.velocity.y = y - mouse.drag.y;
-    mouse.drag.x = x;
-    mouse.drag.y = y;
+    // mouse_.drag is the previous mouse position, during a drag gesture.
+    // Note that mouse_.drag is *not* constrained to the viewport.
+    mouse_.velocity.x = x - mouse_.drag.x;
+    mouse_.velocity.y = y - mouse_.drag.y;
+    mouse_.drag.x = x;
+    mouse_.drag.y = y;
 
-    // mouse.x,mouse.y is the current cursor position, constrained
+    // mouse_.x,mouse_.y is the current cursor position, constrained
     // to the viewport.
-    mouse.x = x;
-    mouse.y = y;
-    if (mouse.x < 0) mouse.x = 0;
-    if (mouse.y < 0) mouse.y = 0;
-    if (mouse.x > viewport.z * fPixelDensity) mouse.x = viewport.z * fPixelDensity;
-    if (mouse.y > viewport.w * fPixelDensity) mouse.y = viewport.w * fPixelDensity;
+    mouse_.x = x;
+    mouse_.y = y;
+    if (mouse_.x < 0) mouse_.x = 0;
+    if (mouse_.y < 0) mouse_.y = 0;
+    if (mouse_.x > viewport.z * fPixelDensity) mouse_.x = viewport.z * fPixelDensity;
+    if (mouse_.y > viewport.w * fPixelDensity) mouse_.y = viewport.w * fPixelDensity;
 
     /*
      * TODO: the following code would best be moved into the
@@ -143,15 +138,15 @@ void Viewer::onMouseMove(double x, double y)
     if (action1 == GLFW_PRESS) button = 1;
     else if (action2 == GLFW_PRESS) button = 2;
 
-    if (mouse.button == 0 && button != mouse.button) {
-        mouse.button = button;
+    if (mouse_.button == 0 && button != mouse_.button) {
+        mouse_.button = button;
     }
     else {
-        mouse.button = button;
+        mouse_.button = button;
     }
 
-    if (mouse.velocity.x != 0.0 || mouse.velocity.y != 0.0) {
-        if (button != 0) onMouseDrag(mouse.x,mouse.y,mouse.button);
+    if (mouse_.velocity.x != 0.0 || mouse_.velocity.y != 0.0) {
+        if (button != 0) onMouseDrag(mouse_.x,mouse_.y,mouse_.button);
     }
 }
 
@@ -189,7 +184,7 @@ void Viewer::updateGL()
     }
 
     // EVENTS
-    std::string title = appTitle + " FPS:" + toString(fFPS);
+    std::string title = appTitle + " FPS:" + std::to_string(fFPS);
     debounceSetWindowTitle(title);
     glfwPollEvents();
 }
@@ -258,41 +253,6 @@ double getDelta()
 double getFPS()
 {
     return fFPS;
-}
-
-float getMouseX()
-{
-    return mouse.x;
-}
-
-float getMouseY()
-{
-    return mouse.y;
-}
-
-glm::vec2 getMousePosition()
-{
-    return glm::vec2(mouse.x,mouse.y);
-}
-
-float getMouseVelX()
-{
-    return mouse.velocity.x;
-}
-
-float getMouseVelY()
-{
-    return mouse.velocity.y;
-}
-
-glm::vec2 getMouseVelocity()
-{
-    return mouse.velocity;
-}
-
-int getMouseButton()
-{
-    return mouse.button;
 }
 
 }}}
