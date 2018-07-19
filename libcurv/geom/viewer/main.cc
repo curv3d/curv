@@ -21,7 +21,6 @@
 #include "tools/geom.h"
 #include "gl/shader.h"
 #include "gl/vbo.h"
-#include "gl/pingpong.h"
 #include "types/shapes.h"
 #include <libcurv/geom/viewer/viewer.h>
 
@@ -46,11 +45,6 @@ glm::vec3 u_up3d = glm::vec3(-0.25,0.866025,-0.433013);
 
 //  ASSETS
 Vbo* vbo;
-
-// Backbuffer
-PingPong buffer;
-Vbo* buffer_vbo;
-Shader buffer_shader;
 
 int
 Viewer::main(Viewer* viewer)
@@ -126,32 +120,6 @@ void Viewer::setup()
     //
     vertSource_ = vbo->getVertexLayout()->getDefaultVertShader();
     shader_.load(fragsrc_, vertSource_, defines_, verbose_);
-
-    buffer.allocate(getWindowWidth(), getWindowHeight(), false);
-
-    buffer_vbo = rect(0.0,0.0,1.0,1.0).getVbo();
-    std::string buffer_vert = "#ifdef GL_ES\n\
-precision mediump float;\n\
-#endif\n\
-\n\
-attribute vec4 a_position;\n\
-\n\
-void main(void) {\n\
-    gl_Position = a_position;\n\
-}";
-
-std::string buffer_frag = "#ifdef GL_ES\n\
-precision mediump float;\n\
-#endif\n\
-\n\
-uniform sampler2D u_buffer;\n\
-uniform vec2 u_resolution;\n\
-\n\
-void main() {\n\
-    vec2 st = gl_FragCoord.xy/u_resolution.xy;\n\
-    gl_FragColor = texture2D(u_buffer, st);\n\
-}";
-    buffer_shader.load(buffer_frag, buffer_vert, defines_);
 
     // Turn on Alpha blending
     glEnable(GL_BLEND);
@@ -265,7 +233,6 @@ void onMouseDrag(float _x, float _y, int _button)
 
 void onViewportResize(int _newWidth, int _newHeight)
 {
-    buffer.allocate(_newWidth,_newHeight);
 }
 
 void Viewer::onExit()
