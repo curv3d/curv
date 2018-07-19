@@ -82,8 +82,9 @@ void Viewer::initGL (glm::ivec4 &_viewport, bool _headless)
         }
     });
 
-    glfwSetScrollCallback(window_, [](GLFWwindow* _window, double xoffset, double yoffset) {
-        onScroll(-yoffset * fPixelDensity);
+    glfwSetScrollCallback(window_, [](GLFWwindow* win, double xoffset, double yoffset) {
+        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+        self->onScroll(-yoffset * fPixelDensity);
     });
 
     // callback when the mouse cursor moves

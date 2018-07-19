@@ -7,18 +7,11 @@
 // Licensed under the 3-Clause BSD Licence:
 // https://opensource.org/licenses/BSD-3-Clause
 
-#include <sys/stat.h>
-#include <unistd.h>
-
-#include <iostream>
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_transform_2d.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
 #include "app.h"
-#include "tools/text.h"
-#include "tools/geom.h"
 #include "gl/shader.h"
 #include "gl/vbo.h"
 #include "types/shapes.h"
@@ -26,39 +19,21 @@
 
 namespace curv { namespace geom { namespace viewer {
 
-// GLOBAL VARIABLES
-//============================================================================
-//
-
-//  CAMERA
-glm::mat3 u_view2d = glm::mat3(1.);
-// These are the 'view3d' uniforms.
-// Note: the up3d vector must be orthogonal to (eye3d - centre3d),
-// or rotation doesn't work correctly.
-glm::vec3 u_centre3d = glm::vec3(0.,0.,0.);
-// The following initial value for 'eye3d' is derived by starting with [0,0,6],
-// then rotating 30 degrees around the X and Y axes.
-glm::vec3 u_eye3d = glm::vec3(2.598076,3.0,4.5);
-// The initial value for up3d is derived by starting with [0,1,0], then
-// applying the same rotations as above, so that up3d is orthogonal to eye3d.
-glm::vec3 u_up3d = glm::vec3(-0.25,0.866025,-0.433013);
-
-//  ASSETS
-Vbo* vbo;
+Viewer::Viewer()
+{
+    defines_.push_back("GLSLVIEWER 1");
+}
 
 void Viewer::open()
 {
-    u_centre3d = glm::vec3(0.,0.,0.);
-    u_eye3d = glm::vec3(2.598076,3.0,4.5);
-    u_up3d = glm::vec3(-0.25,0.866025,-0.433013);
+    u_centre3d_ = glm::vec3(0.,0.,0.);
+    u_eye3d_ = glm::vec3(2.598076,3.0,4.5);
+    u_up3d_ = glm::vec3(-0.25,0.866025,-0.433013);
 
     bool headless = false;
 
     // Initialize openGL context
     initGL (window_pos_and_size_, headless);
-
-    // Adding default deines
-    defines_.push_back("GLSLVIEWER 1");
 
     // Start working on the GL context
     setup();
@@ -107,11 +82,11 @@ void Viewer::setup()
 
     //  Load Geometry
     //
-    vbo = rect(0.0,0.0,1.0,1.0).getVbo();
+    vbo_ = rect(0.0,0.0,1.0,1.0).getVbo();
 
     //  Build shader;
     //
-    vertSource_ = vbo->getVertexLayout()->getDefaultVertShader();
+    vertSource_ = vbo_->getVertexLayout()->getDefaultVertShader();
     shader_.load(fragsrc_, vertSource_, defines_, verbose_);
 
     // Turn on Alpha blending
@@ -139,18 +114,18 @@ void Viewer::draw()
         shader_.setUniform("u_mouse", getMouseX(), getMouseY());
     }
     if (shader_.needView2d()) {
-        shader_.setUniform("u_view2d", u_view2d);
+        shader_.setUniform("u_view2d", u_view2d_);
     }
     if (shader_.needView3d()) {
-        shader_.setUniform("u_eye3d", u_eye3d);
-        shader_.setUniform("u_centre3d", u_centre3d);
-        shader_.setUniform("u_up3d", u_up3d);
+        shader_.setUniform("u_eye3d", u_eye3d_);
+        shader_.setUniform("u_centre3d", u_centre3d_);
+        shader_.setUniform("u_up3d", u_up3d_);
     }
 
     glm::mat4 mvp = glm::mat4(1.);
     shader_.setUniform("u_modelViewProjectionMatrix", mvp);
 
-    vbo->draw(&shader_);
+    vbo_->draw(&shader_);
 }
 
 void Viewer::onKeyPress(int _key)
@@ -164,9 +139,9 @@ void onMouseClick(float _x, float _y, int _button)
 {
 }
 
-void onScroll(float _yoffset)
+void Viewer::onScroll(float _yoffset)
 {
-    // Vertical scroll button zooms u_view2d and view3d.
+    // Vertical scroll button zooms u_view2d_ and view3d.
     /* zoomfactor 2^(1/4): 4 scroll wheel clicks to double in size. */
     constexpr float zoomfactor = 1.1892;
     if (_yoffset != 0) {
@@ -175,52 +150,52 @@ void onScroll(float _yoffset)
         // zoom view2d
         glm::vec2 zoom = glm::vec2(z,z);
         glm::vec2 origin = {getWindowWidth()/2, getWindowHeight()/2};
-        u_view2d = glm::translate(u_view2d, origin);
-        u_view2d = glm::scale(u_view2d, zoom);
-        u_view2d = glm::translate(u_view2d, -origin);
+        u_view2d_ = glm::translate(u_view2d_, origin);
+        u_view2d_ = glm::scale(u_view2d_, zoom);
+        u_view2d_ = glm::translate(u_view2d_, -origin);
 
         // zoom view3d
-        u_eye3d = u_centre3d + (u_eye3d - u_centre3d)*z;
+        u_eye3d_ = u_centre3d_ + (u_eye3d_ - u_centre3d_)*z;
     }
 }
 
-void onMouseDrag(float _x, float _y, int _button)
+void Viewer::onMouseDrag(float _x, float _y, int _button)
 {
     if (_button == 1){
-        // Left-button drag is used to pan u_view2d.
-        u_view2d = glm::translate(u_view2d, -getMouseVelocity());
+        // Left-button drag is used to pan u_view2d_.
+        u_view2d_ = glm::translate(u_view2d_, -getMouseVelocity());
 
         // Left-button drag is used to rotate eye3d around centre3d.
         // One complete drag across the screen width equals 360 degrees.
         constexpr double tau = 6.283185307179586;
-        u_eye3d -= u_centre3d;
-        u_up3d -= u_centre3d;
+        u_eye3d_ -= u_centre3d_;
+        u_up3d_ -= u_centre3d_;
         // Rotate about vertical axis, defined by the 'up' vector.
         float xangle = (getMouseVelX() / getWindowWidth()) * tau;
-        u_eye3d = glm::rotate(u_eye3d, -xangle, u_up3d);
+        u_eye3d_ = glm::rotate(u_eye3d_, -xangle, u_up3d_);
         // Rotate about horizontal axis, which is perpendicular to
         // the (centre3d,eye3d,up3d) plane.
         float yangle = (getMouseVelY() / getWindowHeight()) * tau;
-        glm::vec3 haxis = glm::cross(u_eye3d-u_centre3d, u_up3d);
-        u_eye3d = glm::rotate(u_eye3d, -yangle, haxis);
-        u_up3d = glm::rotate(u_up3d, -yangle, haxis);
+        glm::vec3 haxis = glm::cross(u_eye3d_-u_centre3d_, u_up3d_);
+        u_eye3d_ = glm::rotate(u_eye3d_, -yangle, haxis);
+        u_up3d_ = glm::rotate(u_up3d_, -yangle, haxis);
         //
-        u_eye3d += u_centre3d;
-        u_up3d += u_centre3d;
+        u_eye3d_ += u_centre3d_;
+        u_up3d_ += u_centre3d_;
     } else {
         // TODO: rotate view2d.
 
         // pan view3d.
-        float dist3d = glm::length(u_eye3d - u_centre3d);
-        glm::vec3 voff = glm::normalize(u_up3d)
+        float dist3d = glm::length(u_eye3d_ - u_centre3d_);
+        glm::vec3 voff = glm::normalize(u_up3d_)
             * (getMouseVelY()/getWindowHeight()) * dist3d;
-        u_centre3d -= voff;
-        u_eye3d -= voff;
-        glm::vec3 haxis = glm::cross(u_eye3d-u_centre3d, u_up3d);
+        u_centre3d_ -= voff;
+        u_eye3d_ -= voff;
+        glm::vec3 haxis = glm::cross(u_eye3d_-u_centre3d_, u_up3d_);
         glm::vec3 hoff = glm::normalize(haxis)
             * (getMouseVelX()/getWindowWidth()) * dist3d;
-        u_centre3d += hoff;
-        u_eye3d += hoff;
+        u_centre3d_ += hoff;
+        u_eye3d_ += hoff;
     }
 }
 
@@ -237,7 +212,7 @@ void Viewer::onExit()
     closeGL();
 
     // DELETE RESOURCES
-    delete vbo;
+    delete vbo_;
 }
 
 }}}

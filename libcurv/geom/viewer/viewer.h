@@ -10,6 +10,7 @@
 #include <mutex>
 #include <glm/glm.hpp>
 #include <gl/shader.h>
+#include <gl/vbo.h>
 
 namespace curv { namespace geom {
 
@@ -20,6 +21,7 @@ namespace viewer {
 struct Viewer
 {
     /*--- PUBLIC API ---*/
+    Viewer();
 
     // Set the current shape. Must be called before calling run().
     virtual void set_shape(Shape_Recognizer&);
@@ -35,8 +37,14 @@ struct Viewer
     void close();
 
     // Open a Viewer window on the current shape, and run until the window
-    // is closed by the user.
+    // is closed by the user. It is equivalent to:
+    //     open();
+    //     while (draw_frame());
+    //     close();
     void run();
+
+    /*--- PARAMETER STATE, can set before window is opened ---*/
+    glm::ivec4 window_pos_and_size_{0.,0.,500.,500.};
 
     /*--- SUBCLASS API ---*/
 
@@ -45,7 +53,7 @@ struct Viewer
     // Can be called from next_frame() to change the frag shader.
     void set_frag(const std::string&);
 
-    /*--- SHARED STATE ---*/
+    /*--- INTERNAL STATE ---*/
 
     std::string fragsrc_{};
     Shader shader_{};
@@ -53,16 +61,27 @@ struct Viewer
     std::vector<std::string> defines_{};
     bool verbose_{false};
     GLFWwindow* window_ = nullptr;
+    Vbo* vbo_ = nullptr;
+    glm::mat3 u_view2d_ = glm::mat3(1.);
+    // These are the 'view3d' uniforms.
+    // Note: the up3d vector must be orthogonal to (eye3d - centre3d),
+    // or rotation doesn't work correctly.
+    glm::vec3 u_centre3d_ = glm::vec3(0.,0.,0.);
+    // The following initial value for 'eye3d' is derived by starting with
+    // [0,0,6], then rotating 30 degrees around the X and Y axes.
+    glm::vec3 u_eye3d_ = glm::vec3(2.598076,3.0,4.5);
+    // The initial value for up3d is derived by starting with [0,1,0], then
+    // applying the same rotations as above, so that up3d is orthogonal to eye3d.
+    glm::vec3 u_up3d_ = glm::vec3(-0.25,0.866025,-0.433013);
 
-    /*--- PARAMETER STATE, can set before window is opened ---*/
-    glm::ivec4 window_pos_and_size_{0.,0.,500.,500.};
-
-    // INTERNAL
+    // INTERNAL FUNCTIONS
     void initGL(glm::ivec4 &_viewport, bool _headless = false);
     void setup();
     void draw();
     void onKeyPress(int);
     void onMouseMove(double, double);
+    void onScroll(float);
+    void onMouseDrag(float, float, int);
     void debounceSetWindowTitle(std::string);
     void renderGL();
     void updateGL();
