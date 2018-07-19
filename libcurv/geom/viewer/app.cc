@@ -32,7 +32,6 @@ static double fTime = 0.0f;
 static double fDelta = 0.0f;
 static double fFPS = 0.0f;
 static float fPixelDensity = 1.0;
-GLFWwindow* window;
 
 void Viewer::initGL (glm::ivec4 &_viewport, bool _headless)
 {
@@ -48,29 +47,31 @@ void Viewer::initGL (glm::ivec4 &_viewport, bool _headless)
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     }
 
-    window = glfwCreateWindow(_viewport.z, _viewport.w, appTitle.c_str(), NULL, NULL);
+    window_ = glfwCreateWindow(_viewport.z, _viewport.w, appTitle.c_str(), NULL, NULL);
 
-    if(!window) {
+    if(!window_) {
         glfwTerminate();
         std::cerr << "ABORT: GLFW create window failed" << std::endl;
         exit(-1);
     }
-    glfwSetWindowUserPointer(window, (void*)this);
+    glfwSetWindowUserPointer(window_, (void*)this);
 
     setWindowSize(_viewport.z, _viewport.w);
-    glfwSetWindowPos(window, _viewport.x, _viewport.y);
+    glfwSetWindowPos(window_, _viewport.x, _viewport.y);
 
-    glfwMakeContextCurrent(window);
-    glfwSetWindowSizeCallback(window, [](GLFWwindow* _window, int _w, int _h) {
-        setWindowSize(_w,_h);
+    glfwMakeContextCurrent(window_);
+    glfwSetWindowSizeCallback(window_, [](GLFWwindow* win, int w, int h) {
+        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+        self->setWindowSize(w,h);
     });
 
-    glfwSetKeyCallback(window, [](GLFWwindow* _window, int _key, int _scancode, int _action, int _mods) {
-        onKeyPress(_key);
+    glfwSetKeyCallback(window_, [](GLFWwindow* win, int _key, int _scancode, int _action, int _mods) {
+        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+        self->onKeyPress(_key);
     });
 
     // callback when a mouse button is pressed or released
-    glfwSetMouseButtonCallback(window, [](GLFWwindow* _window, int button, int action, int mods) {
+    glfwSetMouseButtonCallback(window_, [](GLFWwindow* _window, int button, int action, int mods) {
         if (button == GLFW_MOUSE_BUTTON_1) {
             // update iMouse when left mouse button is pressed or released
             if (action == GLFW_PRESS && !left_mouse_button_down) {
@@ -91,86 +92,88 @@ void Viewer::initGL (glm::ivec4 &_viewport, bool _headless)
         }
     });
 
-    glfwSetScrollCallback(window, [](GLFWwindow* _window, double xoffset, double yoffset) {
+    glfwSetScrollCallback(window_, [](GLFWwindow* _window, double xoffset, double yoffset) {
         onScroll(-yoffset * fPixelDensity);
     });
 
     // callback when the mouse cursor moves
-    glfwSetCursorPosCallback(window, [](GLFWwindow* _window, double x, double y) {
-        // Convert x,y to pixel coordinates relative to viewport.
-        // (0,0) is lower left corner.
-        y = viewport.w - y;
-        x *= fPixelDensity;
-        y *= fPixelDensity;
-        // mouse.velX,mouse.velY is the distance the mouse cursor has moved
-        // since the last callback, during a drag gesture.
-        // mouse.drag is the previous mouse position, during a drag gesture.
-        // Note that mouse.drag is *not* constrained to the viewport.
-        mouse.velX = x - mouse.drag.x;
-        mouse.velY = y - mouse.drag.y;
-        mouse.drag.x = x;
-        mouse.drag.y = y;
-
-        // mouse.x,mouse.y is the current cursor position, constrained
-        // to the viewport.
-        mouse.x = x;
-        mouse.y = y;
-        if (mouse.x < 0) mouse.x = 0;
-        if (mouse.y < 0) mouse.y = 0;
-        if (mouse.x > viewport.z * fPixelDensity) mouse.x = viewport.z * fPixelDensity;
-        if (mouse.y > viewport.w * fPixelDensity) mouse.y = viewport.w * fPixelDensity;
-
-        // update iMouse when cursor moves
-        if (left_mouse_button_down) {
-            iMouse.x = mouse.x;
-            iMouse.y = mouse.y;
-        }
-
-        /*
-         * TODO: the following code would best be moved into the
-         * mouse button callback. If you click the mouse button without
-         * moving the mouse, then using this code, the mouse click doesn't
-         * register until the cursor is moved. (@doug-moen)
-         */
-        int action1 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1);
-        int action2 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2);
-        int button = 0;
-
-        if (action1 == GLFW_PRESS) button = 1;
-        else if (action2 == GLFW_PRESS) button = 2;
-
-        // Lunch events
-        if (mouse.button == 0 && button != mouse.button) {
-            mouse.button = button;
-            onMouseClick(mouse.x,mouse.y,mouse.button);
-        }
-        else {
-            mouse.button = button;
-        }
-
-        if (mouse.velX != 0.0 || mouse.velY != 0.0) {
-            if (button != 0) onMouseDrag(mouse.x,mouse.y,mouse.button);
-            else onMouseMove(mouse.x,mouse.y);
-        }
+    glfwSetCursorPosCallback(window_, [](GLFWwindow* win, double x, double y) {
+        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+        self->onMouseMove(x, y);
     });
 
-    glfwSetWindowPosCallback(window, [](GLFWwindow* _window, int x, int y) {
-        Viewer* self = (Viewer*) glfwGetWindowUserPointer(window);
+    glfwSetWindowPosCallback(window_, [](GLFWwindow* _window, int x, int y) {
+        Viewer* self = (Viewer*) glfwGetWindowUserPointer(_window);
         self->window_pos_and_size_.x = x;
         self->window_pos_and_size_.y = y;
-        if (fPixelDensity != getPixelDensity()) {
-            setWindowSize(viewport.z, viewport.w);
+        if (fPixelDensity != self->getPixelDensity()) {
+            self->setWindowSize(viewport.z, viewport.w);
         }
     });
 
     glfwSwapInterval(1);
 }
 
-bool isGL(){
-    return !glfwWindowShouldClose(window);
+void Viewer::onMouseMove(double x, double y)
+{
+    // Convert x,y to pixel coordinates relative to viewport.
+    // (0,0) is lower left corner.
+    y = viewport.w - y;
+    x *= fPixelDensity;
+    y *= fPixelDensity;
+    // mouse.velX,mouse.velY is the distance the mouse cursor has moved
+    // since the last callback, during a drag gesture.
+    // mouse.drag is the previous mouse position, during a drag gesture.
+    // Note that mouse.drag is *not* constrained to the viewport.
+    mouse.velX = x - mouse.drag.x;
+    mouse.velY = y - mouse.drag.y;
+    mouse.drag.x = x;
+    mouse.drag.y = y;
+
+    // mouse.x,mouse.y is the current cursor position, constrained
+    // to the viewport.
+    mouse.x = x;
+    mouse.y = y;
+    if (mouse.x < 0) mouse.x = 0;
+    if (mouse.y < 0) mouse.y = 0;
+    if (mouse.x > viewport.z * fPixelDensity) mouse.x = viewport.z * fPixelDensity;
+    if (mouse.y > viewport.w * fPixelDensity) mouse.y = viewport.w * fPixelDensity;
+
+    // update iMouse when cursor moves
+    if (left_mouse_button_down) {
+        iMouse.x = mouse.x;
+        iMouse.y = mouse.y;
+    }
+
+    /*
+     * TODO: the following code would best be moved into the
+     * mouse button callback. If you click the mouse button without
+     * moving the mouse, then using this code, the mouse click doesn't
+     * register until the cursor is moved. (@doug-moen)
+     */
+    int action1 = glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_1);
+    int action2 = glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_2);
+    int button = 0;
+
+    if (action1 == GLFW_PRESS) button = 1;
+    else if (action2 == GLFW_PRESS) button = 2;
+
+    // Lunch events
+    if (mouse.button == 0 && button != mouse.button) {
+        mouse.button = button;
+        onMouseClick(mouse.x,mouse.y,mouse.button);
+    }
+    else {
+        mouse.button = button;
+    }
+
+    if (mouse.velX != 0.0 || mouse.velY != 0.0) {
+        if (button != 0) onMouseDrag(mouse.x,mouse.y,mouse.button);
+    }
 }
 
-void debounceSetWindowTitle(std::string title){
+void Viewer::debounceSetWindowTitle(std::string title)
+{
     static double lastUpdated;
 
     double now = glfwGetTime();
@@ -179,12 +182,13 @@ void debounceSetWindowTitle(std::string title){
         return;
     }
 
-    glfwSetWindowTitle(window, title.c_str());
+    glfwSetWindowTitle(window_, title.c_str());
 
     lastUpdated = now;
 }
 
-void updateGL(){
+void Viewer::updateGL()
+{
     // Update time
     // --------------------------------------------------------------------
     double now = glfwGetTime();
@@ -207,18 +211,21 @@ void updateGL(){
     glfwPollEvents();
 }
 
-void renderGL(){
+void Viewer::renderGL()
+{
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    glfwSwapBuffers(window);
+    glfwSwapBuffers(window_);
 }
 
-void closeGL(){
-    //glfwSetWindowShouldClose(window, GL_TRUE);
-    glfwDestroyWindow(window);
+void Viewer::closeGL()
+{
+    //glfwSetWindowShouldClose(window_, GL_TRUE);
+    glfwDestroyWindow(window_);
 }
 //-------------------------------------------------------------
 
-void setWindowSize(int _width, int _height) {
+void Viewer::setWindowSize(int _width, int _height)
+{
     viewport.z = _width;
     viewport.w = _height;
     fPixelDensity = getPixelDensity();
@@ -234,10 +241,11 @@ glm::ivec2 getScreenSize() {
     return screen;
 }
 
-float getPixelDensity() {
+float Viewer::getPixelDensity()
+{
     int window_width, window_height, framebuffer_width, framebuffer_height;
-    glfwGetWindowSize(window, &window_width, &window_height);
-    glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+    glfwGetWindowSize(window_, &window_width, &window_height);
+    glfwGetFramebufferSize(window_, &framebuffer_width, &framebuffer_height);
     return float(framebuffer_width)/float(window_width);
 }
 

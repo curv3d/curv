@@ -8,15 +8,6 @@
 
 namespace curv { namespace geom { namespace viewer {
 
-extern GLFWwindow* window;
-
-//	GL Context
-//----------------------------------------------
-bool isGL();
-void updateGL();
-void renderGL();
-void closeGL();
-
 //	SET
 //----------------------------------------------
 void setWindowSize(int _width, int _height);
@@ -47,8 +38,6 @@ glm::vec4 get_iMouse();
 
 // EVENTS
 //----------------------------------------------
-void onKeyPress(int _key);
-void onMouseMove(float _x, float _y);
 void onMouseClick(float _x, float _y, int _button);
 void onMouseDrag(float _x, float _y, int _button);
 void onViewportResize(int _width, int _height);

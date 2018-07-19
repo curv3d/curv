@@ -86,9 +86,8 @@ Shader buffer_shader;
 
 //================================================================= Functions
 
-void screenshot(std::string file);
+//void screenshot(std::string file);
 
-void onExit();
 void printUsage(const char *);
 
 // Main program
@@ -223,18 +222,13 @@ Viewer::main(Viewer* viewer)
     // Render Loop
     while (viewer->draw_frame());
 
-    //glfwGetWindowPos(window,
-    //    &viewer->window_pos_and_size_.x, &viewer->window_pos_and_size_.y);
-    glfwGetWindowSize(window,
-        &viewer->window_pos_and_size_.w, &viewer->window_pos_and_size_.z);
-    onExit();
-    viewer->on_close();
+    viewer->close();
     return 0;
 }
 
 bool Viewer::draw_frame()
 {
-    if (!isGL())
+    if (glfwWindowShouldClose(window_))
         return false;
 
     // Update
@@ -253,6 +247,16 @@ bool Viewer::draw_frame()
     renderGL();
 
     return true;
+}
+
+void Viewer::close()
+{
+    //glfwGetWindowPos(window_,
+    //    &viewer->window_pos_and_size_.x, &viewer->window_pos_and_size_.y);
+    glfwGetWindowSize(window_,
+        &window_pos_and_size_.w, &window_pos_and_size_.z);
+    onExit();
+    on_close();
 }
 
 void Viewer::setup()
@@ -401,29 +405,28 @@ void Viewer::draw()
         buffer_vbo->draw(&buffer_shader);
     }
 
+#if 0
     if (screenshotFile != "") {
         screenshot(screenshotFile);
         screenshotFile = "";
     }
+#endif
 }
 
 // Rendering Thread
 //============================================================================
 
-void onKeyPress(int _key)
+void Viewer::onKeyPress(int _key)
 {
+#if 0
     if (_key == 's' || _key == 'S') {
         screenshot(outputFile);
     }
+#endif
 
     if (_key == 'q' || _key == 'Q') {
-        glfwSetWindowShouldClose(window, GL_TRUE);
+        glfwSetWindowShouldClose(window_, GL_TRUE);
     }
-}
-
-void onMouseMove(float _x, float _y)
-{
-
 }
 
 void onMouseClick(float _x, float _y, int _button)
@@ -512,6 +515,7 @@ void onViewportResize(int _newWidth, int _newHeight)
     buffer.allocate(_newWidth,_newHeight);
 }
 
+#if 0
 void screenshot(std::string _file)
 {
     if (_file != "" && isGL()) {
@@ -521,11 +525,12 @@ void screenshot(std::string _file)
         std::cout << "// Screenshot saved to " << _file << std::endl;
     }
 }
+#endif
 
-void onExit()
+void Viewer::onExit()
 {
     // Take a screenshot if it need
-    screenshot(outputFile);
+    //screenshot(outputFile);
 
     // clear screen
     glClear( GL_COLOR_BUFFER_BIT );

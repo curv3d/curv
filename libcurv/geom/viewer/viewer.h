@@ -28,6 +28,9 @@ struct Viewer
     // Returns false when it is time to exit the loop (user has closed window).
     bool draw_frame();
 
+    // Close window, if not already closed. Set is_open to false.
+    void close();
+
     // Open a Viewer window on the current shape, and run until the window
     // is closed by the user.
     void run();
@@ -48,6 +51,7 @@ struct Viewer
     std::string vertSource_{};
     std::vector<std::string> defines_{};
     bool verbose_{false};
+    GLFWwindow* window_ = nullptr;
 
     /*--- PARAMETER STATE, can set before thread is started ---*/
     glm::ivec4 window_pos_and_size_{0.,0.,500.,500.};
@@ -56,6 +60,15 @@ struct Viewer
     void initGL(glm::ivec4 &_viewport, bool _headless = false);
     void setup();
     void draw();
+    void onKeyPress(int);
+    void onMouseMove(double, double);
+    void debounceSetWindowTitle(std::string);
+    void renderGL();
+    void updateGL();
+    void closeGL();
+    float getPixelDensity();
+    void onExit();
+    void setWindowSize(int, int);
 };
 
 }}} // namespace
