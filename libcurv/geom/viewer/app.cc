@@ -20,7 +20,6 @@ const std::string appTitle = "curv";
 static bool left_mouse_button_down = false;
 static glm::ivec4 viewport;
 static double fTime = 0.0f;
-static double fDelta = 0.0f;
 static double fFPS = 0.0f;
 static float fPixelDensity = 1.0;
 
@@ -88,8 +87,8 @@ void Viewer::initGL (glm::ivec4 &_viewport, bool _headless)
         self->onMouseMove(x, y);
     });
 
-    glfwSetWindowPosCallback(window_, [](GLFWwindow* _window, int x, int y) {
-        Viewer* self = (Viewer*) glfwGetWindowUserPointer(_window);
+    glfwSetWindowPosCallback(window_, [](GLFWwindow* win, int x, int y) {
+        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
         self->window_pos_and_size_.x = x;
         self->window_pos_and_size_.y = y;
         if (fPixelDensity != self->getPixelDensity()) {
@@ -170,7 +169,7 @@ void Viewer::updateGL()
     // Update time
     // --------------------------------------------------------------------
     double now = glfwGetTime();
-    fDelta = now - fTime;
+    double fDelta = now - fTime;
     fTime = now;
 
     static int frame_count = 0;
@@ -191,7 +190,7 @@ void Viewer::updateGL()
 
 void Viewer::renderGL()
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10)); // TODO FIXME
     glfwSwapBuffers(window_);
 }
 
@@ -210,24 +209,12 @@ void Viewer::setWindowSize(int _width, int _height)
     glViewport(0.0, 0.0, (float)getWindowWidth(), (float)getWindowHeight());
 }
 
-glm::ivec2 getScreenSize()
-{
-    glm::ivec2 screen;
-    glfwGetMonitorPhysicalSize(glfwGetPrimaryMonitor(), &screen.x, &screen.y);
-    return screen;
-}
-
 float Viewer::getPixelDensity()
 {
     int window_width, window_height, framebuffer_width, framebuffer_height;
     glfwGetWindowSize(window_, &window_width, &window_height);
     glfwGetFramebufferSize(window_, &framebuffer_width, &framebuffer_height);
     return float(framebuffer_width)/float(window_width);
-}
-
-glm::ivec4 getViewport()
-{
-    return viewport;
 }
 
 int getWindowWidth()
@@ -243,16 +230,6 @@ int getWindowHeight()
 double getTime()
 {
     return fTime;
-}
-
-double getDelta()
-{
-    return fDelta;
-}
-
-double getFPS()
-{
-    return fFPS;
 }
 
 }}}

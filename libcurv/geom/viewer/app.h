@@ -8,15 +8,9 @@
 
 namespace curv { namespace geom { namespace viewer {
 
-glm::ivec2 getScreenSize();
-float getPixelDensity();
-
-glm::ivec4 getViewport();
 int getWindowWidth();
 int getWindowHeight();
 
 double getTime();
-double getDelta();
-double getFPS();
 
 }}}
