@@ -35,7 +35,6 @@ private:
     std::mutex request_mutex;
     std::condition_variable request_condition;
     std::string request_shape;
-    bool exiting_{false};
     struct Message {
         View_Server& server_;
         std::unique_lock<std::mutex> lock_;
@@ -75,33 +74,7 @@ private:
             // but have not replied?
         }
     };
-    struct View : public curv::geom::viewer::Viewer
-    {
-        View_Server& server_;
-        View(View_Server& s)
-        :
-            server_(s)
-        {}
-        virtual bool next_frame() override
-        {
-            Message msg(server_);
-            if (msg.try_receive()) {
-                if (msg.id_ == Request::k_exit) {
-                    server_.exiting_ = true;
-                    msg.reply();
-                    return false;
-                }
-                if (msg.id_ == Request::k_display_shape) {
-                    assert(!server_.request_shape.empty());
-                    set_frag(server_.request_shape);
-                    msg.reply();
-                    return true;
-                }
-                curv::die("bad message");
-            }
-            return true;
-        }
-    } view;
+    curv::geom::viewer::Viewer view_;
     void send(Request r)
     {
         {
@@ -118,8 +91,6 @@ private:
     }
 public:
     View_Server()
-    :
-        view(*this)
     {
     }
     // Called by client thread. If the viewer window is not open, then open it,
@@ -127,7 +98,7 @@ public:
     // current viewer window.
     void display_shape(curv::geom::Shape_Recognizer& shape)
     {
-        // TODO: Call `view.set_shape(shape)`, somewhere (in viewer thread?)
+        // TODO: Call `view_.set_shape(shape)`, somewhere (in viewer thread?)
         request_shape = shape_to_frag(shape);
         send(Request::k_display_shape);
         //assert(request_shape.empty());
@@ -146,6 +117,7 @@ public:
     // call to display_shape() reopens the window.
     void run()
     {
+        bool exiting = false;
         for (;;) {
             Message msg(*this);
             msg.receive();
@@ -155,10 +127,29 @@ public:
             }
             if (msg.id_ == Request::k_display_shape) {
                 assert(!request_shape.empty());
-                std::swap(view.fragsrc_, request_shape);
+                std::swap(view_.fragsrc_, request_shape);
                 msg.reply();
-                view.run();
-                if (exiting_)
+                view_.open();
+                do {
+                    // Inner loop while viewer window is open.
+                    Message imsg(*this);
+                    if (imsg.try_receive()) {
+                        if (imsg.id_ == Request::k_exit) {
+                            exiting = true;
+                            imsg.reply();
+                            break;
+                        }
+                        else if (imsg.id_ == Request::k_display_shape) {
+                            assert(!request_shape.empty());
+                            view_.set_frag(request_shape);
+                            imsg.reply();
+                        }
+                        else
+                            curv::die("bad message");
+                    }
+                } while (view_.draw_frame());
+                view_.close();
+                if (exiting)
                     break;
             }
         }

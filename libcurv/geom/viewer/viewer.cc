@@ -42,6 +42,10 @@ Viewer::set_shape(Shape_Recognizer& shape)
     std::stringstream f;
     export_frag(shape, f);
     fragsrc_ = f.str();
+    if (is_open()) {
+        shader_.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
+        shader_.load(fragsrc_, vertSource_, defines_, verbose_);
+    }
 }
 
 void
@@ -52,11 +56,6 @@ Viewer::run()
     close();
 }
 
-bool Viewer::next_frame()
-{
-    return true;
-}
-
 void Viewer::set_frag(const std::string& fragSource)
 {
     shader_.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
@@ -65,17 +64,19 @@ void Viewer::set_frag(const std::string& fragSource)
 
 void Viewer::open()
 {
-    u_centre3d_ = glm::vec3(0.,0.,0.);
-    u_eye3d_ = glm::vec3(2.598076,3.0,4.5);
-    u_up3d_ = glm::vec3(-0.25,0.866025,-0.433013);
+    if (!is_open()) {
+        u_centre3d_ = glm::vec3(0.,0.,0.);
+        u_eye3d_ = glm::vec3(2.598076,3.0,4.5);
+        u_up3d_ = glm::vec3(-0.25,0.866025,-0.433013);
 
-    bool headless = false;
+        bool headless = false;
 
-    // Initialize openGL context
-    initGL(window_pos_and_size_, headless);
+        // Initialize openGL context
+        initGL(window_pos_and_size_, headless);
 
-    // Start working on the GL context
-    setup();
+        // Start working on the GL context
+        setup();
+    }
 }
 
 bool Viewer::draw_frame()
@@ -88,10 +89,6 @@ bool Viewer::draw_frame()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Something change??
-    if (!next_frame())
-        return false;
-
     // Draw
     draw();
 
@@ -103,11 +100,18 @@ bool Viewer::draw_frame()
 
 void Viewer::close()
 {
-    //glfwGetWindowPos(window_,
-    //    &viewer->window_pos_and_size_.x, &viewer->window_pos_and_size_.y);
-    glfwGetWindowSize(window_,
-        &window_pos_and_size_.w, &window_pos_and_size_.z);
-    onExit();
+    if (is_open()) {
+        //glfwGetWindowPos(window_,
+        //    &window_pos_and_size_.x, &window_pos_and_size_.y);
+        glfwGetWindowSize(window_,
+            &window_pos_and_size_.w, &window_pos_and_size_.z);
+        onExit();
+    }
+}
+
+Viewer::~Viewer()
+{
+    close();
 }
 
 void Viewer::setup()

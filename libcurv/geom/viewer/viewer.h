@@ -25,18 +25,23 @@ struct Viewer
     /*--- PUBLIC API ---*/
     Viewer();
 
-    // Set the current shape. Must be called before calling run().
-    virtual void set_shape(Shape_Recognizer&);
+    // Set the current shape. May be called at any time, before opening the
+    // window, or while the window is open.
+    void set_shape(Shape_Recognizer&);
 
-    // Initialize OpenGL, create the window.
+    bool is_open() { return window_ != nullptr; }
+
+    // Open window: initialize OpenGL, create the window. Idempotent.
     void open();
 
     // Called repeatedly in a loop once the window is open.
     // Returns false when it is time to exit the loop (user has closed window).
     bool draw_frame();
 
-    // Close window.
+    // Close window. Idempotent.
     void close();
+
+    ~Viewer();
 
     // Open a Viewer window on the current shape, and run until the window
     // is closed by the user. It is equivalent to:
@@ -48,11 +53,10 @@ struct Viewer
     /*--- PARAMETER STATE, can set before window is opened ---*/
     glm::ivec4 window_pos_and_size_{0.,0.,500.,500.};
 
-    /*--- SUBCLASS API ---*/
+    /*--- DEPRECATED API ---*/
 
-    // Called at start of each frame. If false, then frame loop exits.
-    virtual bool next_frame();
-    // Can be called from next_frame() to change the frag shader.
+    // Can only be called when open, to change the frag shader.
+    // Use set_shape() instead.
     void set_frag(const std::string&);
 
     /*--- INTERNAL STATE ---*/

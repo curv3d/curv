@@ -1,3 +1,14 @@
+TODO:
+* vbo_ should be a unique_ptr
+* fix storage leak revealed by asan/valgrind
+* set_shape() can be called at any time
+  get rid of set_frag()
+* open() throws an exception instead of calling exit().
+* get rid of includes_ data member (move details into glslViewer/shader)
+* shadertoy compatibility.
+* get rid of 10ms delay in draw_frame()
+* make view_server.cc
+
 Viewer
 ------
 API:
