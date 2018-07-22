@@ -120,7 +120,7 @@ void repl(curv::System* sys)
                     names[lastval_key] =
                         curv::make<curv::Builtin_Value>(den.second->front());
                     curv::geom::Shape_Recognizer shape(
-                        curv::At_Phrase(prog.nub(), nullptr),
+                        std::make_unique<curv::At_Phrase>(prog.nub(), nullptr),
                         *sys);
                     if (shape.recognize(den.second->front())) {
                         print_shape(shape);

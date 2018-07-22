@@ -13,6 +13,14 @@
 
 namespace curv { namespace geom {
 
+Shape_Recognizer::Shape_Recognizer(
+    std::unique_ptr<const Context> cx,
+    System& sys)
+:
+    context_(std::move(cx)),
+    system_(sys)
+{}
+
 BBox
 BBox::from_value(Value val, const Context& cx)
 {
@@ -56,42 +64,42 @@ Shape_Recognizer::recognize(Value val)
     if (s == nullptr)
         return false;
     if (s->hasfield(is_2d_key))
-        is_2d_val = s->getfield(is_2d_key, context_);
+        is_2d_val = s->getfield(is_2d_key, *context_);
     else
         return false;
     if (s->hasfield(is_3d_key))
-        is_3d_val = s->getfield(is_3d_key, context_);
+        is_3d_val = s->getfield(is_3d_key, *context_);
     else
         return false;
     if (s->hasfield(bbox_key))
-        bbox_val = s->getfield(bbox_key, context_);
+        bbox_val = s->getfield(bbox_key, *context_);
     else
         return false;
     if (s->hasfield(dist_key))
-        dist_val = s->getfield(dist_key, context_);
+        dist_val = s->getfield(dist_key, *context_);
     else
         return false;
     if (s->hasfield(colour_key))
-        colour_val = s->getfield(colour_key, context_);
+        colour_val = s->getfield(colour_key, *context_);
     else
         return false;
 
-    is_2d_ = is_2d_val.to_bool(At_Field("is_2d", context_));
-    is_3d_ = is_3d_val.to_bool(At_Field("is_3d", context_));
+    is_2d_ = is_2d_val.to_bool(At_Field("is_2d", *context_));
+    is_3d_ = is_3d_val.to_bool(At_Field("is_3d", *context_));
     if (!is_2d_ && !is_3d_)
-        throw Exception(context_,
+        throw Exception(*context_,
             "at least one of is_2d and is_3d must be true");
-    bbox_ = BBox::from_value(bbox_val, At_Field("bbox", context_));
+    bbox_ = BBox::from_value(bbox_val, At_Field("bbox", *context_));
 
     dist_fun_ = dist_val.dycast<Function>();
     if (dist_fun_ == nullptr)
-        throw Exception(At_Field("dist", context_), "dist is not a function");
+        throw Exception(At_Field("dist", *context_), "dist is not a function");
     dist_frame_ = Frame::make(
         dist_fun_->nslots_, system_, nullptr, nullptr, nullptr);
 
     colour_fun_ = colour_val.dycast<Function>();
     if (colour_fun_ == nullptr)
-        throw Exception(At_Field("colour", context_),
+        throw Exception(At_Field("colour", *context_),
             "colour is not a function");
     colour_frame_ = Frame::make(
         colour_fun_->nslots_, system_, nullptr, nullptr, nullptr);
@@ -112,7 +120,7 @@ GL_Value
 Shape_Recognizer::gl_dist(GL_Value arg, GL_Compiler& gl) const
 {
     assert(arg.type == GL_Type::Vec4);
-    const At_Field cx("dist", context_);
+    const At_Field cx("dist", *context_);
     auto f = GL_Frame::make(0, gl, &cx, nullptr, nullptr);
     auto aref = make<GL_Data_Ref>(nullptr, arg);
     auto result = dist_fun_->gl_call_expr(*aref, nullptr, *f);
@@ -125,7 +133,7 @@ GL_Value
 Shape_Recognizer::gl_colour(GL_Value arg, GL_Compiler& gl) const
 {
     assert(arg.type == GL_Type::Vec4);
-    const At_Field cx("colour", context_);
+    const At_Field cx("colour", *context_);
     auto f = GL_Frame::make(0, gl, &cx, nullptr, nullptr);
     auto aref = make<GL_Data_Ref>(nullptr, arg);
     auto result = colour_fun_->gl_call_expr(*aref, nullptr, *f);
@@ -139,7 +147,7 @@ Shape_Recognizer::dist(double x, double y, double z, double t)
 {
     Shared<List> point = List::make({Value{x}, Value{y}, Value{z}, Value{t}});
     Value result = dist_fun_->call({point}, *dist_frame_);
-    return result.to_num(context_);
+    return result.to_num(*context_);
 }
 
 Vec3
@@ -147,11 +155,11 @@ Shape_Recognizer::colour(double x, double y, double z, double t)
 {
     Shared<List> point = List::make({Value{x}, Value{y}, Value{z}, Value{t}});
     Value result = colour_fun_->call({point}, *colour_frame_);
-    Shared<List> cval = result.to<List>(context_);
-    cval->assert_size(3, context_);
-    return Vec3{ cval->at(0).to_num(context_),
-                 cval->at(1).to_num(context_),
-                 cval->at(2).to_num(context_) };
+    Shared<List> cval = result.to<List>(*context_);
+    cval->assert_size(3, *context_);
+    return Vec3{ cval->at(0).to_num(*context_),
+                 cval->at(1).to_num(*context_),
+                 cval->at(2).to_num(*context_) };
 }
 
 }} // namespace

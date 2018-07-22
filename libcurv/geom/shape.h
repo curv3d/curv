@@ -57,7 +57,7 @@ struct Shape
 struct Shape_Recognizer final : public Shape
 {
     // describes the source code for the shape expression
-    const Context& context_;
+    std::unique_ptr<const Context> context_;
 
     System& system_;
 
@@ -67,11 +67,7 @@ struct Shape_Recognizer final : public Shape
     std::unique_ptr<Frame> dist_frame_;
     std::unique_ptr<Frame> colour_frame_;
 
-    Shape_Recognizer(const Context& cx, System& sys)
-    :
-        context_(cx),
-        system_(sys)
-    {}
+    Shape_Recognizer(std::unique_ptr<const Context> cx, System& sys);
 
     // If the value is a shape, fill in the shape fields and return true.
     bool recognize(Value);

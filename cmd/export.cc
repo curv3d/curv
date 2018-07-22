@@ -12,30 +12,33 @@
 #include <libcurv/geom/compiled_shape.h>
 
 void export_curv(curv::Value value,
-    curv::System&, const curv::Context&, const Export_Params&,
+    curv::System&, std::unique_ptr<const curv::Context>,
+    const Export_Params&,
     std::ostream& out)
 {
     out << value << "\n";
 }
 
 void export_frag(curv::Value value,
-    curv::System& sys, const curv::Context& cx, const Export_Params&,
+    curv::System& sys, std::unique_ptr<const curv::Context> cx,
+    const Export_Params&,
     std::ostream& out)
 {
-    curv::geom::Shape_Recognizer shape(cx, sys);
+    curv::geom::Shape_Recognizer shape(std::move(cx), sys);
     if (shape.recognize(value))
         curv::geom::export_frag(shape, std::cout);
     else
-        throw curv::Exception(cx, "not a shape");
+        throw curv::Exception(*cx, "not a shape");
 }
 
 void export_cpp(curv::Value value,
-    curv::System& sys, const curv::Context& cx, const Export_Params&,
+    curv::System& sys, std::unique_ptr<const curv::Context> cx,
+    const Export_Params&,
     std::ostream& out)
 {
-    curv::geom::Shape_Recognizer shape(cx, sys);
+    curv::geom::Shape_Recognizer shape(std::move(cx), sys);
     if (!shape.recognize(value))
-        throw curv::Exception(cx, "not a shape");
+        throw curv::Exception(*cx, "not a shape");
     curv::geom::export_cpp(shape, out);
 }
 
@@ -120,11 +123,12 @@ bool export_json_value(curv::Value val, std::ostream& out)
     }
 }
 void export_json(curv::Value value,
-    curv::System&, const curv::Context& cx, const Export_Params&,
+    curv::System&, std::unique_ptr<const curv::Context> cx,
+    const Export_Params&,
     std::ostream& out)
 {
     if (export_json_value(value, out))
         out << "\n";
     else
-        throw curv::Exception(cx, "value can't be converted to JSON");
+        throw curv::Exception(*cx, "value can't be converted to JSON");
 }

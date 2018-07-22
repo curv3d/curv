@@ -99,7 +99,7 @@ poll_file(curv::System* sys, const char* editor, const char* filename)
                 prog.compile();
                 auto value = prog.eval();
                 curv::geom::Shape_Recognizer shape{
-                    curv::At_Phrase(prog.nub(), nullptr),
+                    std::make_unique<curv::At_Phrase>(prog.nub(), nullptr),
                     *sys};
                 if (shape.recognize(value)) {
                     print_shape(shape);

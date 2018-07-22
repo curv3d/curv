@@ -7,14 +7,14 @@ install:
 	mkdir -p release
 	cd release; cmake -DCMAKE_BUILD_TYPE=Release ..
 	cd release; make install
+debug:
+	mkdir -p debug
+	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
+	cd debug; make
 test:
 	mkdir -p debug
 	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
 	cd debug; make tests
-curv:
-	mkdir -p debug
-	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
-	cd debug; make curv
 clean:
 	rm -rf debug release
 valgrind:
@@ -27,4 +27,4 @@ valgrind-full:
 	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
 	cd debug; make tester
 	cd tests; valgrind --leak-check=full ../debug/tester
-.PHONY: release install test curv clean valgrind valgrind-full
+.PHONY: release install test debug clean valgrind valgrind-full

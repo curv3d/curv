@@ -32,6 +32,7 @@ struct Function;
 /// Subclasses of Context are used for non-empty contexts.
 struct Context
 {
+    virtual ~Context() {}
     virtual void get_locations(std::list<Location>&) const;
     virtual Shared<const String> rewrite_message(Shared<const String>) const;
 };

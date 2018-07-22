@@ -15,31 +15,38 @@
 typedef std::map<std::string, std::string> Export_Params;
 
 extern void export_curv(curv::Value value,
-    curv::System&, const curv::Context&, const Export_Params& params,
+    curv::System&, std::unique_ptr<const curv::Context>,
+    const Export_Params& params,
     std::ostream& out);
 
 extern void export_stl(curv::Value,
-    curv::System&, const curv::Context&, const Export_Params& params,
-    std::ostream&);
+    curv::System&, std::unique_ptr<const curv::Context>,
+    const Export_Params& params,
+    std::ostream& out);
 
 extern void export_obj(curv::Value,
-    curv::System&, const curv::Context&, const Export_Params& params,
-    std::ostream&);
+    curv::System&, std::unique_ptr<const curv::Context>,
+    const Export_Params& params,
+    std::ostream& out);
 
 extern void export_x3d(curv::Value,
-    curv::System&, const curv::Context&, const Export_Params& params,
-    std::ostream&);
+    curv::System&, std::unique_ptr<const curv::Context>,
+    const Export_Params& params,
+    std::ostream& out);
 
 extern void export_frag(curv::Value value,
-    curv::System&, const curv::Context& cx, const Export_Params& params,
+    curv::System&, std::unique_ptr<const curv::Context>,
+    const Export_Params& params,
     std::ostream& out);
 
 extern void export_json(curv::Value value,
-    curv::System&, const curv::Context& cx, const Export_Params& params,
+    curv::System&, std::unique_ptr<const curv::Context>,
+    const Export_Params& params,
     std::ostream& out);
 
 extern void export_cpp(curv::Value value,
-    curv::System&, const curv::Context& cx, const Export_Params& params,
+    curv::System&, std::unique_ptr<const curv::Context>,
+    const Export_Params& params,
     std::ostream& out);
 
 #endif // include guard
