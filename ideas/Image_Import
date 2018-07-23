@@ -1,0 +1,102 @@
+Import a 2D image file
+======================
+
+Use cases:
+* RGB image, which is converted to:
+  * a rectangular shape with a colour field
+* Monochrome image, which is converted to:
+  * an intensity field
+  * a distance field
+* RGBA is not supported, for now.
+
+Let's focus on RGB images.
+
+File types? Start with PNG.
+
+What is the size of an image, or of a pixel, in Curv coordinates?
+* the PNG format has a pHYs chunk that encodes the pixel aspect ratio,
+  and optionally, its absolute dimension in metres.
+* Curv coordinates don't really have units. 'sphere' is the unit sphere
+  (of diameter 2) because that's a mathematical convention. However, when
+  exporting a mesh, then we interpret distances as millimetres.
+* A scanned image might have a meaningful physical pixel size. However, that's
+  not useful information in any current Curv workflow.
+* I should proceed as if there is no proper mapping of pixel size to Curv
+  distances. It's arbitrary. But a mapping must be chosen. So:
+  * Require the user to specify the mapping.
+    * `image_file(filename, size)`. Doesn't conform to the Package proposal.
+    * Invent a 'curv image' file format that specifies curv metadata in JSON
+      and also references an image file.
+    * An image file is imported as an image object, which must be explicitly
+      converted to a shape.
+  * Pick a simple, arbitrary mapping. Eg,
+    * The image is 2 units high (y axis), centered on origin.
+    * The image is 2 units wide (x axis), centered on origin.
+    * The image is 2 units high or wide along the shorter axis.
+    * The image is 2 units high or wide along the longer axis,
+      so is guaranteed to fit inside a `square` of default size.
+    * Pixels are 1x1 in Curv units.
+
+Image Values
+------------
+An image is converted to a shape, with important information in the dist,
+colour and bbox fields. Perhaps there is also direct access to the pixel array,
+as a rank 5 tensor?
+
+GLSL Code
+---------
+An image is represented by a uniform variable of type `sampler2D`.
+Eg, `uniform sampler2D image1`. If I use the shadertoy naming convention,
+the names will be "iChannel$i" for i >= 0.
+
+These samplers are referenced in calls to GLSL texture lookup functions.
+    my_vec4 = texture(iChannel0, my_vec2)
+
+The `texture` function requires implicit derivatives. "Non-uniform control flow"
+violates the implicit-derivative requirement (and leads to undefined results,
+not a compile time error). I don't think this can occur right now in Curv,
+but it could be a problem in the future.
+
+The GL compiler needs:
+* A count of the number of image samplers in the program.
+  Put this in Shape_Recognizer. Which should be renamed: Shape_Program.
+* When compiling a `dist` function for an image file, it retrieves a
+  sampler ID (small integer).
+
+Viewer
+------
+The Viewer must load images into the GPU and make these images available
+as sampler uniforms in the fragment shader. The Shape_Program contains the
+image array.
+
+Viewer::set_shape(Shape_Program&) must be used to set a new shape.
+Get rid of set_frag(). Either set_shape() copies data from the program,
+or the program is passed as unique_ptr<Shape_Program>.
+
+Shape_Program::recognize(Program, Value)
+
+Compiler/Evaluator
+------------------
+During compilation and/or evaluation, we need to construct the image array
+and put it somewhere so it can be referenced by the Shape_Program.
+
+Image file references are compile time constants (in the current design).
+So, we'll construct the image array at compile time. The Analyzer will store
+them in a Program structure accessed from the Environ.
+
+If one program references another using `file`, then there is actually a
+tree of Program objects. All of the image files will need to be considated
+in the root Program, once the root Program has completed analysis.
+
+`file("image_path.png")` -- or whatever the syntax -- results in a curv::Image
+object, which contains the image data, and also has a slot for an ID number,
+which is filled in by the GL compiler.
+
+Evaluator
+---------
+We need the ability to evaluate image distance functions in the CPU as well:
+* In the interpreter.
+* In C++ JIT compiler output. How is the image data referenced?
+  * It could be reloaded from the original image files.
+  * It could be inserted into the C++ code as C array data.
+    This is probably slower.
