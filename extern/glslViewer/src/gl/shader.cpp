@@ -158,13 +158,12 @@ GLuint Shader::compileShader(const std::string& _src, GLenum _type) {
             "uniform vec2 u_resolution;\n"
             "#define iResolution vec3(u_resolution, 1.0)\n"
             "\n";
-        m_time = find_id(_src, "iGlobalTime");
-        if (m_time) {
-            prolog +=
-                "uniform float u_time;\n"
-                "#define iGlobalTime u_time\n"
-                "\n";
-        }
+        m_time = true;
+        prolog +=
+            "uniform float u_time;\n"
+            "#define iGlobalTime u_time\n"
+            "#define iTime u_time\n"
+            "\n";
         m_delta = find_id(_src, "iTimeDelta");
         if (m_delta) {
             prolog +=
