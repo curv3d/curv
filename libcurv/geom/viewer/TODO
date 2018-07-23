@@ -1,13 +1,23 @@
 TODO:
-* vbo_ should be a unique_ptr
-* fix storage leak revealed by asan/valgrind
-* set_shape() can be called at any time
-  get rid of set_frag()
+* Fix storage leak revealed by asan/valgrind in debug build.
 * open() throws an exception instead of calling exit().
-* get rid of includes_ data member (move details into glslViewer/shader)
 * shadertoy compatibility.
 * get rid of 10ms delay in draw_frame()
+
+Code cleanup:
+* vbo_ should be a unique_ptr
+* set_shape() can be called at any time
+  get rid of set_frag()
+* get rid of includes_ data member (move details into glslViewer/shader)
 * make view_server.cc
+* Test more than one concurrent Viewer window.
+
+* Occasionally get this message on macOS when opening, closing then opening
+  Viewer windows. It is a rare event (timing related I guess):
+  Jul 22 19:14:13  curv[20006] <Warning>: void CGSUpdateManager::log() const: conn 0xb4df: spurious update.
+  Answers on the web:
+  * Make sure to call super in viewDidLoad, viewWillAppear and viewWillDisappear
+    These don't appear in GLFW, though.
 
 Viewer
 ------
