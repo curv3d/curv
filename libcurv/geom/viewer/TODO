@@ -6,9 +6,7 @@ TODO:
 
 Code cleanup:
 * vbo_ should be a unique_ptr
-* set_shape() can be called at any time
-  get rid of set_frag()
-* get rid of includes_ data member (move details into glslViewer/shader)
+* set_shape() can be called at any time. Get rid of set_frag()
 * make view_server.cc
 * Test more than one concurrent Viewer window.
 
@@ -36,14 +34,6 @@ API:
   time to exit loop (user has closed window).
 * void close(). Close window, if not already closed. Return to just-after-
   construction state, setting is_open=false.
-
-and this is used by curv batch mode:
-* set_shape(shape) before open()
-* run() {
-    open();
-    while (draw_frame());
-    close();
-  }
 
 View_Server
 -----------
@@ -323,10 +313,6 @@ Fix storage leaks.
 Report error correctly if OpenGL can't be initialized: in interactive mode,
 in live mode, in batch mode.
 
-Replace curv*.frag temp file with a global string variable.
-
 Dead code removal (remove unneeded globals).
-
-Replace globals with member variables.
 
 Move source code to libcurv/geom/viewer

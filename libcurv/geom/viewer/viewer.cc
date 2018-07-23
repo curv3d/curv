@@ -33,7 +33,6 @@ namespace curv { namespace geom { namespace viewer {
 
 Viewer::Viewer()
 {
-    defines_.push_back("GLSLVIEWER 1");
 }
 
 void
@@ -44,7 +43,7 @@ Viewer::set_shape(Shape_Program& shape)
     fragsrc_ = f.str();
     if (is_open()) {
         shader_.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
-        shader_.load(fragsrc_, vertSource_, defines_, verbose_);
+        shader_.load(fragsrc_, vertSource_, verbose_);
     }
 }
 
@@ -59,7 +58,7 @@ Viewer::run()
 void Viewer::set_frag(const std::string& fragSource)
 {
     shader_.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
-    shader_.load(fragSource, vertSource_, defines_, verbose_);
+    shader_.load(fragSource, vertSource_, verbose_);
 }
 
 void Viewer::open()
@@ -130,7 +129,7 @@ void Viewer::setup()
     //  Build shader;
     //
     vertSource_ = vbo_->getVertexLayout()->getDefaultVertShader();
-    shader_.load(fragsrc_, vertSource_, defines_, verbose_);
+    shader_.load(fragsrc_, vertSource_, verbose_);
 
     // Turn on Alpha blending
     glEnable(GL_BLEND);

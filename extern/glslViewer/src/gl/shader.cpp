@@ -45,17 +45,17 @@ bool find_id(const std::string& program, const char* id) {
     return std::strstr(program.c_str(), id) != 0;
 }
 
-bool Shader::load(const std::string& _fragmentSrc, const std::string& _vertexSrc, const std::vector<std::string> &_defines, bool _verbose) {
+bool Shader::load(const std::string& _fragmentSrc, const std::string& _vertexSrc, bool _verbose) {
     std::chrono::time_point<std::chrono::steady_clock> start_time, end_time;
     start_time = std::chrono::steady_clock::now();
 
-    m_vertexShader = compileShader(_vertexSrc, _defines, GL_VERTEX_SHADER);
+    m_vertexShader = compileShader(_vertexSrc, GL_VERTEX_SHADER);
 
     if(!m_vertexShader) {
         return false;
     }
 
-    m_fragmentShader = compileShader(_fragmentSrc, _defines, GL_FRAGMENT_SHADER);
+    m_fragmentShader = compileShader(_fragmentSrc, GL_FRAGMENT_SHADER);
 
     if(!m_fragmentShader) {
         return false;
@@ -144,13 +144,11 @@ bool Shader::isInUse() const {
     return (getProgram() == (GLuint)currentProgram);
 }
 
-GLuint Shader::compileShader(const std::string& _src, const std::vector<std::string> &_defines, GLenum _type) {
+GLuint Shader::compileShader(const std::string& _src, GLenum _type) {
     std::string prolog = "";
     const char* epilog = "";
 
-    for (unsigned int i = 0; i < _defines.size(); i++) {
-        prolog += "#define " + _defines[i] + "\n";
-    }
+    prolog += "#define GLSLVIEWER 1\n";
 
     // Test if this is a shadertoy.com image shader. If it is, we need to
     // define some uniforms with different names than the glslViewer standard,

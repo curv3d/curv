@@ -64,7 +64,6 @@ struct Viewer
     std::string fragsrc_{};
     Shader shader_{};
     std::string vertSource_{};
-    std::vector<std::string> defines_{};
     bool verbose_{false};
     GLFWwindow* window_ = nullptr;
     glm::ivec4 viewport_;

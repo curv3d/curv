@@ -32,7 +32,7 @@ public:
     bool    isInUse() const;
 
     const   GLint   getAttribLocation(const std::string& _attribute) const;
-    bool    load(const std::string& _fragmentSrc, const std::string& _vertexSrc, const std::vector<std::string> &_defines, bool _verbose = false);
+    bool    load(const std::string& _fragmentSrc, const std::string& _vertexSrc, bool _verbose = false);
 
     void    setUniform(const std::string& _name, int _x);
 
@@ -58,7 +58,7 @@ public:
 
 private:
 
-    GLuint  compileShader(const std::string& _src, const std::vector<std::string> &_defines, GLenum _type);
+    GLuint  compileShader(const std::string& _src, GLenum _type);
     GLint   getUniformLocation(const std::string& _uniformName) const;
 
     GLuint  m_program;
