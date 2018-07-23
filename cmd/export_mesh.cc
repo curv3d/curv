@@ -8,6 +8,7 @@
 #include <chrono>
 #include <openvdb/openvdb.h>
 #include <openvdb/tools/VolumeToMesh.h>
+#include <glm/geometric.hpp>
 
 #include "export.h"
 #include <libcurv/geom/compiled_shape.h>
@@ -54,13 +55,14 @@ void export_x3d(curv::Value value,
     export_mesh(x3d_format, value, sys, std::move(cx), params, out);
 }
 
-void put_triangle(std::ostream& out, Vec3s v0, Vec3s v1, Vec3s v2)
+void put_triangle(std::ostream& out, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2)
 {
-    out << "facet normal 0 0 0\n"
+    glm::vec3 n = glm::normalize(glm::cross(v1 - v0, v2 - v0));
+    out << "facet normal " << n.x << " " << n.y << " " << n.z << "\n"
         << " outer loop\n"
-        << "  vertex " << v0.x() << " " << v0.y() << " " << v0.z() << "\n"
-        << "  vertex " << v1.x() << " " << v1.y() << " " << v1.z() << "\n"
-        << "  vertex " << v2.x() << " " << v2.y() << " " << v2.z() << "\n"
+        << "  vertex " << v0.x << " " << v0.y << " " << v0.z << "\n"
+        << "  vertex " << v1.x << " " << v1.y << " " << v1.z << "\n"
+        << "  vertex " << v2.x << " " << v2.y << " " << v2.z << "\n"
         << " endloop\n"
         << "endfacet\n";
 }
@@ -98,6 +100,11 @@ double param_to_double(Export_Params::const_iterator i)
         exit(EXIT_FAILURE);
     }
     return result;
+}
+
+inline glm::vec3 V3(Vec3s v)
+{
+    return glm::vec3{v.x(), v.y(), v.z()};
 }
 
 void export_mesh(Mesh_Format format, curv::Value value,
@@ -266,21 +273,21 @@ void export_mesh(Mesh_Format format, curv::Value value,
             for (unsigned int j=0; j<pool.numTriangles(); ++j) {
                 // swap ordering of nodes to get outside-normals
                 put_triangle(out,
-                    mesher.pointList()[ pool.triangle(j)[0] ],
-                    mesher.pointList()[ pool.triangle(j)[2] ],
-                    mesher.pointList()[ pool.triangle(j)[1] ]);
+                    V3(mesher.pointList()[ pool.triangle(j)[0] ]),
+                    V3(mesher.pointList()[ pool.triangle(j)[2] ]),
+                    V3(mesher.pointList()[ pool.triangle(j)[1] ]));
                 ++ntri;
             }
             for (unsigned int j=0; j<pool.numQuads(); ++j) {
                 // swap ordering of nodes to get outside-normals
                 put_triangle(out,
-                    mesher.pointList()[ pool.quad(j)[0] ],
-                    mesher.pointList()[ pool.quad(j)[2] ],
-                    mesher.pointList()[ pool.quad(j)[1] ]);
+                    V3(mesher.pointList()[ pool.quad(j)[0] ]),
+                    V3(mesher.pointList()[ pool.quad(j)[2] ]),
+                    V3(mesher.pointList()[ pool.quad(j)[1] ]));
                 put_triangle(out,
-                    mesher.pointList()[ pool.quad(j)[0] ],
-                    mesher.pointList()[ pool.quad(j)[3] ],
-                    mesher.pointList()[ pool.quad(j)[2] ]);
+                    V3(mesher.pointList()[ pool.quad(j)[0] ]),
+                    V3(mesher.pointList()[ pool.quad(j)[3] ]),
+                    V3(mesher.pointList()[ pool.quad(j)[2] ]));
                 ntri += 2;
             }
         }

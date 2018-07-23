@@ -9,6 +9,7 @@
 #include <libcurv/gl_compiler.h>
 #include <libcurv/frame.h>
 #include <cmath>
+#include <glm/vec3.hpp>
 
 namespace curv {
 
@@ -18,10 +19,7 @@ struct System;
 
 namespace geom {
 
-struct Vec3
-{
-    double x, y, z;
-};
+using Vec3 = glm::dvec3;
 
 // axis aligned bounding box
 struct BBox
