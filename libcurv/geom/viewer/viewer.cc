@@ -37,7 +37,7 @@ Viewer::Viewer()
 }
 
 void
-Viewer::set_shape(Shape_Recognizer& shape)
+Viewer::set_shape(Shape_Program& shape)
 {
     std::stringstream f;
     export_frag(shape, f);

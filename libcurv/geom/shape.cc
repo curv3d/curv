@@ -13,7 +13,7 @@
 
 namespace curv { namespace geom {
 
-Shape_Recognizer::Shape_Recognizer(
+Shape_Program::Shape_Program(
     std::unique_ptr<const Context> cx,
     System& sys)
 :
@@ -46,7 +46,7 @@ BBox::from_value(Value val, const Context& cx)
 }
 
 bool
-Shape_Recognizer::recognize(Value val)
+Shape_Program::recognize(Value val)
 {
     static Symbol is_2d_key = "is_2d";
     static Symbol is_3d_key = "is_3d";
@@ -117,7 +117,7 @@ struct GL_Data_Ref : public Operation
 };
 
 GL_Value
-Shape_Recognizer::gl_dist(GL_Value arg, GL_Compiler& gl) const
+Shape_Program::gl_dist(GL_Value arg, GL_Compiler& gl) const
 {
     assert(arg.type == GL_Type::Vec4);
     const At_Field cx("dist", *context_);
@@ -130,7 +130,7 @@ Shape_Recognizer::gl_dist(GL_Value arg, GL_Compiler& gl) const
 }
 
 GL_Value
-Shape_Recognizer::gl_colour(GL_Value arg, GL_Compiler& gl) const
+Shape_Program::gl_colour(GL_Value arg, GL_Compiler& gl) const
 {
     assert(arg.type == GL_Type::Vec4);
     const At_Field cx("colour", *context_);
@@ -143,7 +143,7 @@ Shape_Recognizer::gl_colour(GL_Value arg, GL_Compiler& gl) const
 }
 
 double
-Shape_Recognizer::dist(double x, double y, double z, double t)
+Shape_Program::dist(double x, double y, double z, double t)
 {
     Shared<List> point = List::make({Value{x}, Value{y}, Value{z}, Value{t}});
     Value result = dist_fun_->call({point}, *dist_frame_);
@@ -151,7 +151,7 @@ Shape_Recognizer::dist(double x, double y, double z, double t)
 }
 
 Vec3
-Shape_Recognizer::colour(double x, double y, double z, double t)
+Shape_Program::colour(double x, double y, double z, double t)
 {
     Shared<List> point = List::make({Value{x}, Value{y}, Value{z}, Value{t}});
     Value result = colour_fun_->call({point}, *colour_frame_);

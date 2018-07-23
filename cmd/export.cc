@@ -24,7 +24,7 @@ void export_frag(curv::Value value,
     const Export_Params&,
     std::ostream& out)
 {
-    curv::geom::Shape_Recognizer shape(std::move(cx), sys);
+    curv::geom::Shape_Program shape(std::move(cx), sys);
     if (shape.recognize(value))
         curv::geom::export_frag(shape, std::cout);
     else
@@ -36,7 +36,7 @@ void export_cpp(curv::Value value,
     const Export_Params&,
     std::ostream& out)
 {
-    curv::geom::Shape_Recognizer shape(std::move(cx), sys);
+    curv::geom::Shape_Program shape(std::move(cx), sys);
     if (!shape.recognize(value))
         throw curv::Exception(*cx, "not a shape");
     curv::geom::export_cpp(shape, out);

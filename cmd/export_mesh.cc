@@ -112,7 +112,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
     const Export_Params& params,
     std::ostream& out)
 {
-    curv::geom::Shape_Recognizer shape(std::move(cx), sys);
+    curv::geom::Shape_Program shape(std::move(cx), sys);
     if (!shape.recognize(value) && !shape.is_3d_)
         throw curv::Exception(*shape.context_, "mesh export: not a 3D shape");
 

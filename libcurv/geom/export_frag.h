@@ -9,9 +9,9 @@
 
 namespace curv { namespace geom {
 
-struct Shape_Recognizer;
+struct Shape_Program;
 
-void export_frag(const Shape_Recognizer&, std::ostream&);
+void export_frag(const Shape_Program&, std::ostream&);
 
 }} // namespace
 #endif // header guard

@@ -16,7 +16,7 @@ struct Compiled_Shape final : public Shape
     double (*dist_)(double,double,double,double);
     void (*colour_)(double,double,double,double,glm::vec3*);
 
-    Compiled_Shape(Shape_Recognizer&);
+    Compiled_Shape(Shape_Program&);
 
     virtual double dist(double x, double y, double z, double t) override
     {
@@ -30,7 +30,7 @@ struct Compiled_Shape final : public Shape
     }
 };
 
-void export_cpp(Shape_Recognizer& shape, std::ostream& out);
+void export_cpp(Shape_Program& shape, std::ostream& out);
 
 }} // namespace
 #endif // include guard

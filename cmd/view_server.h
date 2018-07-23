@@ -96,7 +96,7 @@ public:
     // Called by client thread. If the viewer window is not open, then open it,
     // and display the shape. Otherwise, change the shape displayed in the
     // current viewer window.
-    void display_shape(curv::geom::Shape_Recognizer& shape)
+    void display_shape(curv::geom::Shape_Program& shape)
     {
         // TODO: Call `view_.set_shape(shape)`, somewhere (in viewer thread?)
         request_shape = shape_to_frag(shape);

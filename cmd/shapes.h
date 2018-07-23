@@ -8,7 +8,7 @@
 #include <libcurv/geom/shape.h>
 #include <string>
 
-void print_shape(curv::geom::Shape_Recognizer& shape);
-std::string shape_to_frag(curv::geom::Shape_Recognizer& shape);
+void print_shape(curv::geom::Shape_Program& shape);
+std::string shape_to_frag(curv::geom::Shape_Program& shape);
 
 #endif // include guard

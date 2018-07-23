@@ -16,7 +16,7 @@
 
 namespace curv { namespace geom {
 
-struct Shape_Recognizer;
+struct Shape_Program;
 
 namespace viewer {
 
@@ -27,7 +27,7 @@ struct Viewer
 
     // Set the current shape. May be called at any time, before opening the
     // window, or while the window is open.
-    void set_shape(Shape_Recognizer&);
+    void set_shape(Shape_Program&);
 
     bool is_open() { return window_ != nullptr; }
 

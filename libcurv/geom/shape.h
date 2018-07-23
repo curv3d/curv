@@ -52,7 +52,7 @@ struct Shape
     virtual Vec3 colour(double x, double y, double z, double t) = 0;
 };
 
-struct Shape_Recognizer final : public Shape
+struct Shape_Program final : public Shape
 {
     // describes the source code for the shape expression
     std::unique_ptr<const Context> context_;
@@ -65,7 +65,7 @@ struct Shape_Recognizer final : public Shape
     std::unique_ptr<Frame> dist_frame_;
     std::unique_ptr<Frame> colour_frame_;
 
-    Shape_Recognizer(std::unique_ptr<const Context> cx, System& sys);
+    Shape_Program(std::unique_ptr<const Context> cx, System& sys);
 
     // If the value is a shape, fill in the shape fields and return true.
     bool recognize(Value);

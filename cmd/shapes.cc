@@ -9,7 +9,7 @@
 #include <iostream>
 
 void
-print_shape(curv::geom::Shape_Recognizer& shape)
+print_shape(curv::geom::Shape_Program& shape)
 {
     if (shape.is_2d_) std::cerr << "2D";
     if (shape.is_2d_ && shape.is_3d_) std::cerr << "/";
@@ -23,7 +23,7 @@ print_shape(curv::geom::Shape_Recognizer& shape)
 }
 
 std::string
-shape_to_frag(curv::geom::Shape_Recognizer& shape)
+shape_to_frag(curv::geom::Shape_Program& shape)
 {
     std::stringstream f;
     export_frag(shape, f);

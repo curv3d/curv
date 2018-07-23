@@ -15,7 +15,7 @@ extern "C" {
 
 namespace curv { namespace geom {
 
-Compiled_Shape::Compiled_Shape(Shape_Recognizer& rshape)
+Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
 {
     is_2d_ = rshape.is_2d_;
     is_3d_ = rshape.is_3d_;
@@ -68,7 +68,7 @@ Compiled_Shape::Compiled_Shape(Shape_Recognizer& rshape)
 }
 
 void
-export_cpp(Shape_Recognizer& shape, std::ostream& out)
+export_cpp(Shape_Program& shape, std::ostream& out)
 {
     GL_Compiler gl(out, GL_Target::cpp);
     out <<

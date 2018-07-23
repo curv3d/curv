@@ -11,10 +11,10 @@
 
 namespace curv { namespace geom {
 
-void export_frag_2d(const Shape_Recognizer&, std::ostream&);
-void export_frag_3d(const Shape_Recognizer&, std::ostream&);
+void export_frag_2d(const Shape_Program&, std::ostream&);
+void export_frag_3d(const Shape_Program&, std::ostream&);
 
-void export_frag(const Shape_Recognizer& shape, std::ostream& out)
+void export_frag(const Shape_Program& shape, std::ostream& out)
 {
     if (shape.is_2d_)
         return export_frag_2d(shape, out);
@@ -23,7 +23,7 @@ void export_frag(const Shape_Recognizer& shape, std::ostream& out)
     die("export_frag: shape is not 2d or 3d");
 }
 
-void export_frag_2d(const Shape_Recognizer& shape, std::ostream& out)
+void export_frag_2d(const Shape_Program& shape, std::ostream& out)
 {
     GL_Compiler gl(out, GL_Target::glsl);
     GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
@@ -84,7 +84,7 @@ void export_frag_2d(const Shape_Recognizer& shape, std::ostream& out)
         ;
 }
 
-void export_frag_3d(const Shape_Recognizer& shape, std::ostream& out)
+void export_frag_3d(const Shape_Program& shape, std::ostream& out)
 {
     GL_Compiler gl(out, GL_Target::glsl);
 
