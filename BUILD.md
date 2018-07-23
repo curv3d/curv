@@ -16,10 +16,8 @@ Instead, build and install `curv` using:
   * `sudo apt-get upgrade`
   * `sudo apt-get install cmake git-core`
   * `sudo apt-get install libboost-all-dev libdouble-conversion-dev`
-  * `sudo apt-get install libreadline-dev`
   * `sudo apt-get install libopenexr-dev libtbb-dev`
   * `sudo apt-get install libglm-dev`
-  * `sudo apt-get install libglfw3-dev`
   * `cd ~`
   * `git clone --recursive https://github.com/doug-moen/curv`
   * `cd curv`
@@ -35,10 +33,9 @@ Instead, build and install `curv` using:
   * `brew install cmake`
   * `brew install boost`
   * `brew install double-conversion`
-  * `brew install readline`
   * `brew install gedit`
   * `brew install ilmbase openexr tbb`
-  * `brew install glm glfw3`
+  * `brew install glm`
   * `cd ~`
   * `git clone --recursive https://github.com/doug-moen/curv`
   * `cd curv`
