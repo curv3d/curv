@@ -57,11 +57,20 @@ violates the implicit-derivative requirement (and leads to undefined results,
 not a compile time error). I don't think this can occur right now in Curv,
 but it could be a problem in the future.
 
-The GL compiler needs:
-* A count of the number of image samplers in the program.
-  Put this in Shape_Recognizer. Which should be renamed: Shape_Program.
-* When compiling a `dist` function for an image file, it retrieves a
-  sampler ID (small integer).
+The GL compiler will traverse the shape value to generate code.
+During this traversal, it produces several outputs:
+ * A code string containing the main body of GLSL.
+ * An image list, stored in the GL_Compiler.
+   Each time an Image is found (that contributes to the final result), it is
+   assigned a sequential integer ID and appended to the image list.
+ 
+The Image list is used by:
+* The GL compiler (converted to a list of sampler2D declarations, which is
+  prepended to the main code body).
+* The JIT compiler emits C++ code containing pathnames of images to load
+  into memory.
+* The Viewer loads each image into the GPU and defines uniform sampler2D
+  variables for each image.
 
 Viewer
 ------
@@ -73,7 +82,8 @@ Viewer::set_shape(Shape_Program&) must be used to set a new shape.
 Get rid of set_frag(). Either set_shape() copies data from the program,
 or the program is passed as unique_ptr<Shape_Program>.
 
-Shape_Program::recognize(Program, Value)
+Shape_Program shape{program};
+b = shape.recognize(value);
 
 Compiler/Evaluator
 ------------------
@@ -89,12 +99,12 @@ tree of Program objects. All of the image files will need to be considated
 in the root Program, once the root Program has completed analysis.
 
 `file("image_path.png")` -- or whatever the syntax -- results in a curv::Image
-object, which contains the image data, and also has a slot for an ID number,
-which is filled in by the GL compiler.
+object, which contains the image file pathname, the image data (lazily loaded),
+and an ID number, which is filled in by the GL compiler.
 
 Evaluator
 ---------
-We need the ability to evaluate image distance functions in the CPU as well:
+We need the ability to evaluate image colour functions in the CPU as well:
 * In the interpreter.
 * In C++ JIT compiler output. How is the image data referenced?
   * It could be reloaded from the original image files.
