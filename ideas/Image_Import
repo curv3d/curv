@@ -13,35 +13,37 @@ Let's focus on RGB images.
 
 File types? Start with PNG.
 
-What is the size of an image, or of a pixel, in Curv coordinates?
-* the PNG format has a pHYs chunk that encodes the pixel aspect ratio,
-  and optionally, its absolute dimension in metres.
-* Curv coordinates don't really have units. 'sphere' is the unit sphere
-  (of diameter 2) because that's a mathematical convention. However, when
-  exporting a mesh, then we interpret distances as millimetres.
-* A scanned image might have a meaningful physical pixel size. However, that's
-  not useful information in any current Curv workflow.
-* I should proceed as if there is no proper mapping of pixel size to Curv
-  distances. It's arbitrary. But a mapping must be chosen. So:
-  * Require the user to specify the mapping.
-    * `image_file(filename, size)`. Doesn't conform to the Package proposal.
-    * Invent a 'curv image' file format that specifies curv metadata in JSON
-      and also references an image file.
-    * An image file is imported as an image object, which must be explicitly
-      converted to a shape.
-  * Pick a simple, arbitrary mapping. Eg,
-    * The image is 2 units high (y axis), centered on origin.
-    * The image is 2 units wide (x axis), centered on origin.
-    * The image is 2 units high or wide along the shorter axis.
-    * The image is 2 units high or wide along the longer axis,
-      so is guaranteed to fit inside a `square` of default size.
-    * Pixels are 1x1 in Curv units.
+When we import an image and convert it to a shape, there is no natural way
+to determine the pixel size or image size in Curv coordinates. So we need to
+use an arbitrary convention, or the user needs to explicitly state the image
+size or pixel size.
+
+According to the Package proposal, an image file 'foo.png' is imported using:
+  `file "foo.png"` -- old syntax
+  `file.foo` -- new syntax
+This returns a Curv image value, encoded using the 7 types.
+
+Possible requirements for image values:
+* Easy to convert an image to a shape, with minimal syntax.
+* Can explicitly specify the pixel or image size in Curv coordinates, when
+  converting to a shape.
+* Direct access to RGB pixel array, as a rank 5 tensor.
+
+Here is a possible API for image values:
+* img {psize: pixel_size} => shape
+* img {xsize: image_width} => shape
+* img {ysize: image_height} => shape
+* img {size: (xd,yd)} => shape
+* img.data => RGB pixel array as a rank 5 tensor
+
+Eg, `file.my_icon {ysize: 2}`.
 
 Image Values
 ------------
-An image is converted to a shape, with important information in the dist,
-colour and bbox fields. Perhaps there is also direct access to the pixel array,
-as a rank 5 tensor?
+curv::Image is what `file "foo.png"` returns.
+Other classes: Image_Shape, Image_Data, Image_Data_Row.
+
+Need superclasses for: abstract record, abstract list.
 
 GLSL Code
 ---------
