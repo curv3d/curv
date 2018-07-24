@@ -21,12 +21,8 @@ extern "C" {
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
 }
 #include <iostream>
 #include <fstream>
@@ -35,29 +31,18 @@ extern "C" {
 #include <functional>
 #include <replxx.hxx>
 
-#include "export.h"
-#include "progdir.h"
 #include "cscript.h"
 #include "shapes.h"
 #include "view_server.h"
-#include <libcurv/geom/tempfile.h>
-#include <libcurv/dtostr.h>
-#include <libcurv/analyser.h>
 #include <libcurv/context.h>
 #include <libcurv/program.h>
 #include <libcurv/exception.h>
-#include <libcurv/file.h>
-#include <libcurv/parser.h>
-#include <libcurv/phrase.h>
-#include <libcurv/shared.h>
 #include <libcurv/system.h>
-#include <libcurv/list.h>
-#include <libcurv/record.h>
-#include <libcurv/version.h>
 #include <libcurv/die.h>
 #include <libcurv/geom/export_frag.h>
 #include <libcurv/geom/shape.h>
 #include <libcurv/geom/viewer/viewer.h>
+#include <libcurv/ansi_colour.h>
 
 View_Server view_server;
 
@@ -95,7 +80,7 @@ void repl(curv::System* sys)
 
     for (;;) {
         was_interrupted = false;
-        const char* line = rx.input("curv> ");
+        const char* line = rx.input(AC_BLUE "curv> " AC_RESET);
         if (line == nullptr) {
             if (errno == EAGAIN) continue;
             std::cout << "\n";
