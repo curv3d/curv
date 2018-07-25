@@ -34,16 +34,28 @@ Here is a possible API for image values:
 * img {xsize: image_width} => shape
 * img {ysize: image_height} => shape
 * img {size: (xd,yd)} => shape
-* img.data => RGB pixel array as a rank 5 tensor
+* img.data => RGB pixel array as a rank 3 tensor
+* IF an image value is a shape with an arbitrary default size,
+  THEN `curv foo.png` will display an image.
+  * If 'img' is a shape and 'img{xsize:2}' is a shape, then is img a prototype
+    or parametric record? I will say yes.
+  * What is this "arbitrary default size"? If the image is square, it should
+    be 2x2. If non-square, then the smallest size that fully covers a
+    unit circle, just like the regular polygons.
 
 Eg, `file.my_icon {ysize: 2}`.
+
+How does 'file.my_icon' print? Is it a term? I'll say yes.
 
 Image Values
 ------------
 curv::Image is what `file "foo.png"` returns.
-Other classes: Image_Shape, Image_Data, Image_Data_Row.
+It is a record with shape fields, plus `call` and `data`.
+To satisfy the fields, we'll need Image_Call, Image_Data, Image_Dist,
+Image_Colour. Plus Image_Data_Row.
 
-Need superclasses for: abstract record, abstract list.
+Image is a subclass of Structure (rename as Abstract_Record).
+Image_Data is a subclass of Abstract_List (new class).
 
 GLSL Code
 ---------
