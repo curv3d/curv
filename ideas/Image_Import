@@ -45,6 +45,35 @@ Here is a possible API for image values:
 
 Eg, `file.my_icon {ysize: 2}`.
 
+What happens to the colour field outside the image boundary?
+If I provide control over this behaviour, it makes the most sense in the
+context of creating an infinite texture from the image.
+
+OpenGL provides several kinds of wrapping (note texture coordinates between 0
+and 1 are inside the image):
+* GL_REPEAT: The integer part of the coordinate will be ignored
+  and a repeating pattern is formed. This is what glslViewer uses.
+* GL_MIRRORED_REPEAT: The texture will also be repeated, but it will be
+  mirrored when the integer part of the coordinate is odd.
+* GL_CLAMP_TO_EDGE: The coordinate will simply be clamped between 0 and 1.
+  Visually, this seems almost useless.
+* GL_CLAMP_TO_BORDER: The coordinates that fall outside the range will be
+  given a specified border color.
+These can be specified independently for each coordinate.
+
+So, maybe add an optional `texture` parameter to the image argument record,
+which converts the image to an infinite texture.
+* `texture: {repeat:}`
+* `texture: {mirrored_repeat:}`
+* `texture: {border_colour: colour}`
+
+OpenGL also provides different 'filtering' options, for how interpolation
+occurs for non-integer coordinates. The main options are 'nearest' and
+'linear', the latter being bilinear interpolation. And then there is mipmapping.
+I'll just use bilinear interpolation.
+
+OpenGL doc: https://open.gl/textures
+
 How does 'file.my_icon' print? Is it a term? I'll say yes.
 
 Image Values
