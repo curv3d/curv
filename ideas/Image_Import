@@ -46,7 +46,11 @@ Here is a possible API for image values:
 Eg, `file.my_icon {ysize: 2}`.
 
 What happens to the colour field outside the image boundary?
-If I provide control over this behaviour, it makes the most sense in the
+I think {border_colour: black} would be a good default. Eg, if you offset
+an image, you'll get a black border which is visible against the default
+white backdrop.
+
+If I provide control over the full colour field, it makes the most sense in the
 context of creating an infinite texture from the image.
 
 OpenGL provides several kinds of wrapping (note texture coordinates between 0
@@ -66,6 +70,11 @@ which converts the image to an infinite texture.
 * `texture: {repeat:}`
 * `texture: {mirrored_repeat:}`
 * `texture: {border_colour: colour}`
+[Not in initial prototype.]
+
+OpenGL allows two texture objects to share the same image data,
+but with different 'wrap' options (see above). So it would be possible to
+implement the wrapping options using OpenGL.
 
 OpenGL also provides different 'filtering' options, for how interpolation
 occurs for non-integer coordinates. The main options are 'nearest' and
@@ -85,6 +94,31 @@ Image_Colour. Plus Image_Data_Row.
 
 Image is a subclass of Structure (rename as Abstract_Record).
 Image_Data is a subclass of Abstract_List (new class).
+
+The actual pixel data is stored in an Image_Data object, and the other Image
+classes contain a Shared pointer to an Image_Data:
+  Filesystem::path path_; // absolute pathname of image file
+  // pixel data: RGB triples, 8 bits per channel, sRGB encoding.
+  // lazy loading.
+  int width_;
+  int height_;
+  const char* pixels_; // nullptr if not loaded.
+  GLuint texture_id_; // lazy. 0 if not bound?
+
+Multiple Viewer Windows
+-----------------------
+If there are multiple viewer windows, then in which OpenGL context are these
+texture ids bound?
+* Initially, a shape program can be displayed in only a single viewer.
+  Image values cannot be shared between viewers. This means we can only have
+  one viewer per console/editor pair, with no sharing between pairs.
+  (And no central file cache, either.)
+  Which means, only one viewer in the current design.
+* Ultimately, we will need an invisible "system" context which owns all
+  of the textures, and the viewer contexts will be children of the system
+  context. This will allow for a central image cache, so that each image is
+  loaded only once. Now I can add a 'view shape' action which is like 'print',
+  but opens a viewer window.
 
 GLSL Code
 ---------
@@ -150,6 +184,5 @@ Evaluator
 We need the ability to evaluate image colour functions in the CPU as well:
 * In the interpreter.
 * In C++ JIT compiler output. How is the image data referenced?
-  * It could be reloaded from the original image files.
-  * It could be inserted into the C++ code as C array data.
-    This is probably slower.
+  It will be reloaded from the original image files.
+  (It could be inserted into the C++ code as C array data, but this is slower.)
