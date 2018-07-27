@@ -106,7 +106,7 @@ main(int argc, char** argv)
         return EXIT_SUCCESS;
     }
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
-        std::cout << "Curv " << curv::version << "\n";
+        std::cout << CURV_VERSION << "\n";
         return EXIT_SUCCESS;
     }
 
