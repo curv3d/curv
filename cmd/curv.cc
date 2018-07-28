@@ -93,7 +93,7 @@ const char help[] =
 "   x3d -- X3D colour mesh file (3D shape only)\n"
 "   cpp -- C++ source file (shape only)\n"
 "-O name=value -- parameter for one of the output formats\n"
-"--version -- display version.\n"
+"--version -- display version information needed for bug reports.\n"
 "--help -- display this help information.\n"
 "filename -- input file, a Curv script. Interactive CLI if missing.\n"
 ;

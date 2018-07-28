@@ -49,7 +49,7 @@ print_gpu(std::ostream& out)
     const char* version = (const char*) glGetString(GL_VERSION);
     if (version == nullptr) version = "???";
 
-    out << "GPU: " << vendor << " " << renderer << "\n";
+    out << "GPU: " << vendor << ", " << renderer << "\n";
     out << "OpenGL: " << version << "\n";
     out.flush();
 
@@ -88,6 +88,12 @@ void
 print_version(std::ostream& out)
 {
     out << "Curv: " << CURV_VERSION << "\n";
+
+    struct utsname os;
+    uname(&os);
+    out << "Kernel: " << os.sysname << " " << os.release
+        << " " << os.machine << "\n";
+
     print_gpu(out); // Last info printed, due to crashiness.
 
     // TODO: print additional system information.
@@ -101,12 +107,6 @@ print_version(std::ostream& out)
 
     // CPU information: see `lscpu` on Linux.
 
-#if 0
-    struct utsname os;
-    uname(&os);
-    out << "os: "
-        << os.sysname << " " << os.release << " " << os.version << "\n";
-#endif
 
     // TODO: cpu -- see `lscpu` on Linux
     // TODO: gpu -- see `glxinfo` on Linux
