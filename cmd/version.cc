@@ -19,6 +19,10 @@ extern "C" {
 void
 print_gpu(std::ostream& out)
 {
+    // GPU information: see `glxinfo` on Linux, but I don't want hundreds of
+    // lines of gibberish. I want: GPU model, driver version, OpenGL version.
+    // If X11, then 'direct rendering':' from glxinfo.
+
     static std::ostream* gout;
 
     out.flush(); // In case of crash while querying GPU.
@@ -83,33 +87,41 @@ print_gpu(std::ostream& out)
     glfwTerminate();
 }
 
-// Print version information useful for bug reports.
 void
-print_version(std::ostream& out)
+print_os(std::ostream& out)
 {
-    out << "Curv: " << CURV_VERSION << "\n";
+    // TODO: print "OS" distro name and version.
+    // On Linux (os.sysname=="Linux"), use /etc/os-release,
+    //   see <https://www.freedesktop.org/software/systemd/man/os-release.html>
+    // On macOS (os.sysname=="Darwin"), use
+    //   /System/Library/CoreServices/SystemVersion.plist
 
     struct utsname os;
     uname(&os);
     out << "Kernel: " << os.sysname << " " << os.release
         << " " << os.machine << "\n";
+}
 
-    print_gpu(out); // Last info printed, due to crashiness.
-
-    // TODO: print additional system information.
-    // Inspiration: openscad --info,
-    // and neofetch, which displays terse and readable system information:
-    //    see <https://github.com/dylanaraps/neofetch>
-
-    // GPU information: see `glxinfo` on Linux, but I don't want hundreds of
-    // lines of gibberish. I want: GPU model, driver version, OpenGL version.
-    // If X11, then 'direct rendering':' from glxinfo.
-
+void
+print_cpu(std::ostream&)
+{
     // CPU information: see `lscpu` on Linux.
 
-
-    // TODO: cpu -- see `lscpu` on Linux
-    // TODO: gpu -- see `glxinfo` on Linux
+    // TODO: cpu -- see `lscpu` on Linux. name, model, # of cores
     // TODO: vm -- see `lscpu` on Linux
+    // TODO: The amount of RAM.
     // see https://github.com/dylanaraps/neofetch
+}
+
+// Print version information useful for bug reports.
+// Inspiration: openscad --info,
+// and neofetch, which displays terse and readable system information:
+//    see <https://github.com/dylanaraps/neofetch>
+void
+print_version(std::ostream& out)
+{
+    out << "Curv: " << CURV_VERSION << "\n";
+    print_os(out);
+    print_cpu(out);
+    print_gpu(out); // Last info printed, due to crashiness.
 }

@@ -37,7 +37,6 @@ extern "C" {
 #include <libcurv/system.h>
 #include <libcurv/list.h>
 #include <libcurv/record.h>
-#include <libcurv/version.h>
 #include <libcurv/die.h>
 #include <libcurv/geom/export_frag.h>
 #include <libcurv/geom/shape.h>
