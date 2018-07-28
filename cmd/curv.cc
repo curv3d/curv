@@ -23,6 +23,7 @@ extern "C" {
 #include "cscript.h"
 #include "shapes.h"
 #include "livemode.h"
+#include "version.h"
 
 #include <libcurv/geom/tempfile.h>
 #include <libcurv/dtostr.h>
@@ -37,7 +38,6 @@ extern "C" {
 #include <libcurv/system.h>
 #include <libcurv/list.h>
 #include <libcurv/record.h>
-#include <libcurv/version.h>
 #include <libcurv/die.h>
 #include <libcurv/geom/export_frag.h>
 #include <libcurv/geom/shape.h>
@@ -106,7 +106,7 @@ main(int argc, char** argv)
         return EXIT_SUCCESS;
     }
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
-        std::cout << CURV_VERSION << "\n";
+        print_version(std::cout);
         return EXIT_SUCCESS;
     }
 
