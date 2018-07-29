@@ -7,10 +7,13 @@
 
 #include <ostream>
 #include <unordered_set>
+#include <map>
 #include <libcurv/filesystem.h>
 #include <libcurv/builtin.h>
 
 namespace curv {
+
+struct Context;
 
 /// An abstract interface to the client and operating system.
 ///
@@ -22,11 +25,20 @@ struct System
     /// This is the set of standard or builtin bindings
     /// used by the `file` primitive to interpret Curv source files.
     virtual const Namespace& std_namespace() = 0;
+
     virtual std::ostream& console() = 0;
+
     // This is non-empty while a `file` operation is being evaluated.
     // It is used to detect recursive file references.
     // Later, this may change to a file cache.
+    // Or, it could move into the Program structure.
     std::unordered_set<Filesystem::path,Path_Hash> active_files_{};
+
+    // Used by `file` to import a file based on its extension.
+    // The extension includes the leading '.', and "" means no extension.
+    // The extension is converted to lowercase on all platforms.
+    using Importer = Value (*)(const Filesystem::path&, const Context&);
+    std::map<std::string,Importer> importers_;
 };
 
 // RAII helper class, for use with System::active_files_.

@@ -40,6 +40,7 @@ extern "C" {
 #include <libcurv/record.h>
 #include <libcurv/die.h>
 #include <libcurv/geom/export_frag.h>
+#include <libcurv/geom/import.h>
 #include <libcurv/geom/shape.h>
 #include <libcurv/geom/viewer/viewer.h>
 
@@ -67,6 +68,7 @@ make_system(const char* argv0, std::list<const char*>& libs)
         for (const char* lib : libs) {
             sys.load_library(curv::make_string(lib));
         }
+        curv::geom::add_importers(sys);
         return sys;
     } catch (curv::Exception& e) {
         std::cerr << "ERROR: " << e << "\n";

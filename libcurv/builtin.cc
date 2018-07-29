@@ -638,8 +638,11 @@ struct File_Expr : public Just_Expression
     {}
     virtual Value eval(Frame& f) const override
     {
+        // construct argument context
         auto& callphrase = dynamic_cast<const Call_Phrase&>(*source_);
         At_Metacall cx("file", 0, *callphrase.arg_, &f);
+
+        // construct file pathname from argument
         Value arg = arg_->eval(f);
         auto argstr = arg.to<String>(cx);
         namespace fs = boost::filesystem;
@@ -651,18 +654,31 @@ struct File_Expr : public Just_Expression
             filepath = fs::path(caller_script_name->c_str()).parent_path()
                 / fs::path(argstr->c_str());
         }
-        auto file = make<File_Script>(make_string(filepath.c_str()), cx);
-        Program prog{*file, f.system_};
-        std::unique_ptr<Frame> f2 =
-            Frame::make(0, f.system_, &f, &callphrase, nullptr);
-        auto filekey = Filesystem::canonical(filepath);
-        auto& active_files = f.system_.active_files_;
-        if (active_files.find(filekey) != active_files.end())
-            throw Exception{cx,
-                stringify("illegal recursive reference to file ",filepath)};
-        Active_File af(active_files, filekey);
-        prog.compile(nullptr, &*f2);
-        return prog.eval();
+
+        // construct filename extension (includes leading '.')
+        std::string ext = filepath.extension().string();
+        for (char& c : ext)
+            c = std::tolower(c);
+
+        // import file based on extension
+        auto importp = f.system_.importers_.find(ext);
+        if (importp != f.system_.importers_.end())
+            return (*importp->second)(filepath, cx);
+        else {
+            // If extension not recognized, it defaults to a Curv program.
+            auto file = make<File_Script>(make_string(filepath.c_str()), cx);
+            Program prog{*file, f.system_};
+            std::unique_ptr<Frame> f2 =
+                Frame::make(0, f.system_, &f, &callphrase, nullptr);
+            auto filekey = Filesystem::canonical(filepath);
+            auto& active_files = f.system_.active_files_;
+            if (active_files.find(filekey) != active_files.end())
+                throw Exception{cx,
+                    stringify("illegal recursive reference to file ",filepath)};
+            Active_File af(active_files, filekey);
+            prog.compile(nullptr, &*f2);
+            return prog.eval();
+        }
     }
 };
 struct File_Metafunction : public Metafunction
