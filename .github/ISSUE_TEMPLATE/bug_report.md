@@ -35,10 +35,10 @@ If applicable, add screenshots to help explain your problem.
 
 **System Information (please complete the following information):**
  - Operating System: [e.g. "Ubuntu 16.04.4" or "macOS 10.10"]
- - CPU manufacturer, model, version, and # of cores
- - Amount of system memory
- - GPU manufacturer, model and version
- - GPU driver, if on Linux.
+ - CPU manufacturer, model, version, and # of cores:
+ - Amount of system memory:
+ - GPU manufacturer, model and version:
+ - GPU driver, if on Linux:
  - Are you running the `curv` command using a remote viewing protocol like VNC or NX?
  - Are you running the `curv` command inside a VM?
  - Curv Version: run the command `curv --version` and paste the output here.
