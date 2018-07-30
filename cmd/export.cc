@@ -6,13 +6,14 @@
 #include <fstream>
 #include <sstream>
 #include <libcurv/exception.h>
+#include <libcurv/context.h>
 #include <libcurv/filesystem.h>
 #include <libcurv/geom/shape.h>
 #include <libcurv/geom/export_frag.h>
 #include <libcurv/geom/compiled_shape.h>
 
 void export_curv(curv::Value value,
-    curv::System&, std::unique_ptr<const curv::Context>,
+    curv::Program&,
     const Export_Params&,
     std::ostream& out)
 {
@@ -20,25 +21,29 @@ void export_curv(curv::Value value,
 }
 
 void export_frag(curv::Value value,
-    curv::System& sys, std::unique_ptr<const curv::Context> cx,
+    curv::Program& prog,
     const Export_Params&,
     std::ostream& out)
 {
-    curv::geom::Shape_Program shape(std::move(cx), sys);
+    curv::geom::Shape_Program shape(prog);
     if (shape.recognize(value))
         curv::geom::export_frag(shape, std::cout);
-    else
-        throw curv::Exception(*cx, "not a shape");
+    else {
+        curv::At_Program cx(prog);
+        throw curv::Exception(cx, "not a shape");
+    }
 }
 
 void export_cpp(curv::Value value,
-    curv::System& sys, std::unique_ptr<const curv::Context> cx,
+    curv::Program& prog,
     const Export_Params&,
     std::ostream& out)
 {
-    curv::geom::Shape_Program shape(std::move(cx), sys);
-    if (!shape.recognize(value))
-        throw curv::Exception(*cx, "not a shape");
+    curv::geom::Shape_Program shape(prog);
+    if (!shape.recognize(value)) {
+        curv::At_Program cx(prog);
+        throw curv::Exception(cx, "not a shape");
+    }
     curv::geom::export_cpp(shape, out);
 }
 
@@ -123,12 +128,14 @@ bool export_json_value(curv::Value val, std::ostream& out)
     }
 }
 void export_json(curv::Value value,
-    curv::System&, std::unique_ptr<const curv::Context> cx,
+    curv::Program& prog,
     const Export_Params&,
     std::ostream& out)
 {
     if (export_json_value(value, out))
         out << "\n";
-    else
-        throw curv::Exception(*cx, "value can't be converted to JSON");
+    else {
+        curv::At_Program cx(prog);
+        throw curv::Exception(cx, "value can't be converted to JSON");
+    }
 }

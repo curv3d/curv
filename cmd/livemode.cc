@@ -97,9 +97,7 @@ poll_file(curv::System* sys, const char* editor, const char* filename)
                 curv::Program prog{*file, *sys};
                 prog.compile();
                 auto value = prog.eval();
-                curv::geom::Shape_Program shape{
-                    std::make_unique<curv::At_Phrase>(prog.nub(), nullptr),
-                    *sys};
+                curv::geom::Shape_Program shape{prog};
                 if (shape.recognize(value)) {
                     print_shape(shape);
                     live_view_server.display_shape(shape);

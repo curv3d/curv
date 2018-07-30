@@ -39,6 +39,7 @@ Program::compile(const Namespace* names, Frame* parent_frame)
 
 const Phrase&
 Program::nub()
+const
 {
     return *nub_phrase(phrase_);
 }

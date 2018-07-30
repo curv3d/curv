@@ -9,43 +9,42 @@
 #include <map>
 #include <string>
 #include <libcurv/value.h>
-#include <libcurv/system.h>
-#include <libcurv/context.h>
+#include <libcurv/program.h>
 
 typedef std::map<std::string, std::string> Export_Params;
 
 extern void export_curv(curv::Value value,
-    curv::System&, std::unique_ptr<const curv::Context>,
+    curv::Program&,
     const Export_Params& params,
     std::ostream& out);
 
 extern void export_stl(curv::Value,
-    curv::System&, std::unique_ptr<const curv::Context>,
+    curv::Program&,
     const Export_Params& params,
     std::ostream& out);
 
 extern void export_obj(curv::Value,
-    curv::System&, std::unique_ptr<const curv::Context>,
+    curv::Program&,
     const Export_Params& params,
     std::ostream& out);
 
 extern void export_x3d(curv::Value,
-    curv::System&, std::unique_ptr<const curv::Context>,
+    curv::Program&,
     const Export_Params& params,
     std::ostream& out);
 
 extern void export_frag(curv::Value value,
-    curv::System&, std::unique_ptr<const curv::Context>,
+    curv::Program&,
     const Export_Params& params,
     std::ostream& out);
 
 extern void export_json(curv::Value value,
-    curv::System&, std::unique_ptr<const curv::Context>,
+    curv::Program&,
     const Export_Params& params,
     std::ostream& out);
 
 extern void export_cpp(curv::Value value,
-    curv::System&, std::unique_ptr<const curv::Context>,
+    curv::Program&,
     const Export_Params& params,
     std::ostream& out);
 

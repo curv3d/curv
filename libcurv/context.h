@@ -71,6 +71,16 @@ struct At_Phrase : public Context
     virtual void get_locations(std::list<Location>& locs) const override;
 };
 
+struct At_Program : public At_Phrase
+{
+    // works with curv::Program or curv::geom::Shape_Program
+    template <class PROGRAM>
+    explicit At_Program(const PROGRAM& prog)
+    :
+        At_Phrase(prog.nub(), nullptr)
+    {}
+};
+
 // Bad argument to a function call.
 struct At_Arg : public Context
 {

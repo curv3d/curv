@@ -104,9 +104,7 @@ void repl(curv::System* sys)
                     static curv::Symbol lastval_key = "_";
                     names[lastval_key] =
                         curv::make<curv::Builtin_Value>(den.second->front());
-                    curv::geom::Shape_Program shape(
-                        std::make_unique<curv::At_Phrase>(prog.nub(), nullptr),
-                        *sys);
+                    curv::geom::Shape_Program shape{prog};
                     if (shape.recognize(den.second->front())) {
                         print_shape(shape);
                         view_server.display_shape(shape);

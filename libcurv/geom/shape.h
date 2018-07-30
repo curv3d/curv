@@ -16,6 +16,8 @@ namespace curv {
 struct Function;
 struct Context;
 struct System;
+struct Program;
+struct Phrase;
 
 namespace geom {
 
@@ -55,7 +57,8 @@ struct Shape
 struct Shape_Program final : public Shape
 {
     // describes the source code for the shape expression
-    std::unique_ptr<const Context> context_;
+    Shared<const Phrase> nub_;
+    const Phrase& nub() const { return *nub_; }
 
     System& system_;
 
@@ -65,7 +68,7 @@ struct Shape_Program final : public Shape
     std::unique_ptr<Frame> dist_frame_;
     std::unique_ptr<Frame> colour_frame_;
 
-    Shape_Program(std::unique_ptr<const Context> cx, System& sys);
+    Shape_Program(Program&);
 
     // If the value is a shape, fill in the shape fields and return true.
     bool recognize(Value);

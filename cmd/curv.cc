@@ -116,7 +116,7 @@ main(int argc, char** argv)
     const char* argv0 = argv[0];
     const char* usestdlib = argv0;
     void (*exporter)(curv::Value,
-        curv::System&, std::unique_ptr<const curv::Context>,
+        curv::Program&,
         const Export_Params&,
         std::ostream&)
         = nullptr;
@@ -254,9 +254,8 @@ main(int argc, char** argv)
         prog.compile();
         auto value = prog.eval();
 
-        auto cx = std::make_unique<curv::At_Phrase>(prog.nub(), nullptr);
         if (exporter == nullptr) {
-            curv::geom::Shape_Program shape{std::move(cx), sys};
+            curv::geom::Shape_Program shape{prog};
             if (shape.recognize(value)) {
                 print_shape(shape);
                 curv::geom::viewer::Viewer viewer;
@@ -266,11 +265,7 @@ main(int argc, char** argv)
                 std::cout << value << "\n";
             }
         } else {
-            exporter(value,
-                sys,
-                std::move(cx),
-                eparams,
-                std::cout);
+            exporter(value, prog, eparams, std::cout);
         }
     } catch (curv::Exception& e) {
         std::cerr << "ERROR: " << e << "\n";

@@ -14,6 +14,7 @@
 #include <libcurv/geom/compiled_shape.h>
 #include <libcurv/geom/shape.h>
 #include <libcurv/exception.h>
+#include <libcurv/context.h>
 #include <libcurv/die.h>
 
 using openvdb::Vec3s;
@@ -27,32 +28,32 @@ enum Mesh_Format {
 };
 
 void export_mesh(Mesh_Format, curv::Value value,
-    curv::System& sys, std::unique_ptr<const curv::Context> cx,
+    curv::Program&,
     const Export_Params& params,
     std::ostream& out);
 
 void export_stl(curv::Value value,
-    curv::System& sys, std::unique_ptr<const curv::Context> cx,
+    curv::Program& prog,
     const Export_Params& params,
     std::ostream& out)
 {
-    export_mesh(stl_format, value, sys, std::move(cx), params, out);
+    export_mesh(stl_format, value, prog, params, out);
 }
 
 void export_obj(curv::Value value,
-    curv::System& sys, std::unique_ptr<const curv::Context> cx,
+    curv::Program& prog,
     const Export_Params& params,
     std::ostream& out)
 {
-    export_mesh(obj_format, value, sys, std::move(cx), params, out);
+    export_mesh(obj_format, value, prog, params, out);
 }
 
 void export_x3d(curv::Value value,
-    curv::System& sys, std::unique_ptr<const curv::Context> cx,
+    curv::Program& prog,
     const Export_Params& params,
     std::ostream& out)
 {
-    export_mesh(x3d_format, value, sys, std::move(cx), params, out);
+    export_mesh(x3d_format, value, prog, params, out);
 }
 
 void put_triangle(std::ostream& out, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2)
@@ -108,13 +109,14 @@ inline glm::vec3 V3(Vec3s v)
 }
 
 void export_mesh(Mesh_Format format, curv::Value value,
-    curv::System& sys, std::unique_ptr<const curv::Context> cx,
+    curv::Program& prog,
     const Export_Params& params,
     std::ostream& out)
 {
-    curv::geom::Shape_Program shape(std::move(cx), sys);
+    curv::geom::Shape_Program shape(prog);
+    curv::At_Program cx(prog);
     if (!shape.recognize(value) && !shape.is_3d_)
-        throw curv::Exception(*shape.context_, "mesh export: not a 3D shape");
+        throw curv::Exception(cx, "mesh export: not a 3D shape");
 
 #if 0
     for (auto p : params) {
@@ -141,7 +143,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
     double volume = size.x() * size.y() * size.z();
     double infinity = 1.0/0.0;
     if (volume == infinity || volume == -infinity) {
-        throw curv::Exception(*shape.context_, "mesh export: shape is infinite");
+        throw curv::Exception(cx, "mesh export: shape is infinite");
     }
 
     double voxelsize;
@@ -149,7 +151,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
     if (vsize_p != params.end()) {
         double vsize = param_to_double(vsize_p);
         if (vsize <= 0.0) {
-            throw curv::Exception(*shape.context_, curv::stringify(
+            throw curv::Exception(cx, curv::stringify(
                 "mesh export: invalid parameter vsize=",vsize_p->second));
         }
         voxelsize = vsize;
@@ -241,7 +243,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
         else {
             adaptivity = param_to_double(adaptive_p);
             if (adaptivity < 0.0 || adaptivity > 1.0) {
-                throw curv::Exception(*shape.context_,
+                throw curv::Exception(cx,
                     "mesh export: parameter 'adaptive' must be in range 0...1");
             }
         }
@@ -257,7 +259,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
         else if (colourtype_p->second == "vertex")
             colourtype = vertex_colour;
         else {
-            throw curv::Exception(*shape.context_,
+            throw curv::Exception(cx,
                 "mesh export: parameter 'colour' must equal 'face' or 'vertex'");
         }
     }
