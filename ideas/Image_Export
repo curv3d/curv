@@ -1,0 +1,92 @@
+To start with, PNG export for finite 2D shapes.
+
+curv -o foo.png smoke.curv
+curv -o png smoke.curv >foo.png
+
+What is the pixel size?
+* default. Something reasonable for pasting in a web page. Larger dimension
+  is 500 pixels.
+* -O psize=pixel_size
+* -O xsize=image_width
+* -O ysize=image_height
+* -O xsize=image_width -O ysize=image_height
+
+If the shape is not a rectangle, how are the background pixels coloured?
+* default is white
+* transparent (alpha=0) is a nice option. But we don't support alpha on import.
+
+Maybe a border option.
+
+An anti-aliasing option would be nice.
+
+API in curv::geom
+-----------------
+<libcurv/geom/export_image.h>
+
+void export_png(Shape_Program, Export_File&, glm::ivec2)
+* This uses the Viewer. Must run in main thread? That works for CLI batch mode.
+* Atomic update: either export succeeds, or file system not changed.
+  That's handled by Export_File:
+  writes to unique temp file in same directory as target file.
+
+Export_File mediates the communication between a client, who wants to export
+a file, and a file export function called by the client.
+
+Export_File encapsulates the name of a file being exported, and an output
+stream. The caller (of a file export function) can specify either an ostream
+or a pathname. The file export function itself can ask for either an ostream
+or a pathname, and the two choices don't have to match. The file is updated
+atomically.
+
+<libcurv/export_file.h>
+
+constructors:
+    Export_File() -- must call one of set_path() or set_ostream().
+    Export_File(Filesystem::path&)
+    Export_File(std::ostream&)
+After default construction, you can use:
+    set_path(Filesystem::path&)
+or
+    set_ostream(std::ostream&)
+The file export function can use one of the following:
+    open()
+    ostream() << data // repeatedly
+or
+    path() // and then write data to the named file
+The latter is useful when you are using a library that can only write data
+to a file when given a pathname.
+Finally,
+    commit() // commits the data that was written
+If commit() is not called, due to an exception, then the tempfile is deleted
+and no partially written file remains on disk.
+
+
+Helper functions for converting CLI image export -O options to an image size:
+    ivec2 image_size_default(Shape_Program)
+    ivec2 image_size_from_psize(Shape_Program, double psize)
+    ivec2 image_size_from_xsize(Shape_Program, unsigned xsize)
+    ivec2 image_size_from_ysize(Shape_Program, unsigned xsize)
+
+Technical debt:
+---------------
+* help for -O options
+* error message for unrecognized -O option
+
+* `curv -o foo.png smoke.curv`. `-o png` still works, writes to stdout.
+  Pass pathname as an argument to an export function, instead of a stream.
+  File is only created if export is successful. (A temp file is used in stdout
+  case.)
+
+* Graphics file export code is split between CLI interface (-O processing)
+  and kernel code in libcurv/geom.
+
+Current export interface:
+    void export(curv::Value value,
+        curv::Program&,
+        const Export_Params& params,
+        std::ostream& out);
+New export interface:
+    void export(curv::Value value,
+        curv::Program&,
+        const Export_Params& params,
+        Export_File&);

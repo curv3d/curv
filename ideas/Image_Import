@@ -1,6 +1,51 @@
 Import a 2D image file
 ======================
+TODO:
+-----
+* import_png constructs a shape, one initially not recognized by the Viewer.
+  * Image is a subclass of Record. The map is populated during construction.
+  * Or, just construct a Record.
+  * The image data is loaded immediately (for now) into an Image_Data object,
+    which is referenced by the Image, and by field values in the map.
+  * field values:
+    * is_2d: true
+    * is_3d: false
+    * bbox: ...
+    * dist: just a centred rectangle. Needs call and gl_call variants.
+      class Image_Dist.
+    * colour: class Image_Colour. `call` does bilinear interpolation and
+      converts sRGB to linear. `gl_call` adds Image_Data to the GL_Compiler
+      image list, references a uniform sampler2d.
+    * call: class Image_Call. Later.
+    * data: DEFERRED.
 
+* PNG export (for finite 2D shapes) would be a nice complement to this work.
+  See Image_Export.
+
+* Image_Data is an abstract list value. DEFERRED.
+  Internally, it is a 2D array of 8bit*3 sRGB values.
+  Externally, the sRGB values appear to be linear RGB vec3 values.
+  * Virtualize the List interface using Abstract_List, use that in evaluator.
+    libcurv/list.h still defines List, libcurv/alist.h defines Abstract_List.
+  * All of my vectorized operators that work on Lists, will now work on
+    Abstract_List, which is a performance hit. list[i] will be much slower.
+    * Or, Curv supports multiple array data types for efficiency, distinguished
+      using an enum. Look at other dynamically typed tensor languages.
+      Multiple cell types (Value, sRGB24, ...). Efficient tensor type.
+  * For consistency, rename Function and Structure to Abstract_Function and
+    Abstract_Record in afunction.h and arecord.h.
+  * Maybe Abstract_Function is superclass of Abstract_List, Abstract_Record,
+    and String. Call_Expr just uses virtual call() method.
+  * Get rid of ' operator (for simplicity of refactoring).
+
+* Lazy image loading. DEFERRED.
+  We preserve the file path and the context in the Image_Data object,
+  and delay loading the image data until needed, which might not happen at all,
+  or not until the Viewer runs. The context value is preserved by converting it
+  to a Durable_Context, the only subclass of Context which is heap allocable.
+
+Intro
+-----
 Use cases:
 * RGB image, which is converted to:
   * a rectangular shape with a colour field
@@ -27,7 +72,7 @@ Possible requirements for image values:
 * Easy to convert an image to a shape, with minimal syntax.
 * Can explicitly specify the pixel or image size in Curv coordinates, when
   converting to a shape.
-* Direct access to RGB pixel array, as a rank 5 tensor.
+* Direct access to RGB pixel array, as a rank 3 tensor.
 
 Here is a possible API for image values:
 * img {psize: pixel_size} => shape
