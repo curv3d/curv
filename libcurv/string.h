@@ -113,6 +113,13 @@ operator<<(String_Builder& b, double n)
 }
 
 inline String_Builder&
+operator<<(String_Builder& b, long n)
+{
+    (std::stringstream&)b << n;
+    return b;
+}
+
+inline String_Builder&
 operator<<(String_Builder& b, unsigned long n)
 {
     (std::stringstream&)b << n;
