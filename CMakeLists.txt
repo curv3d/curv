@@ -58,11 +58,11 @@ set_property(TARGET libcurv_geom PROPERTY OUTPUT_NAME curv_geom)
 
 file(GLOB Src "cmd/*.c" "cmd/*.cc")
 add_executable(curv ${Src})
-target_link_libraries(curv PUBLIC libcurv libcurv_geom GlslViewer glfw ${LibOpenGL} replxx double-conversion boost_filesystem boost_system openvdb_static Half tbb dl pthread)
+target_link_libraries(curv PUBLIC libcurv libcurv_geom GlslViewer glfw ${LibOpenGL} replxx double-conversion boost_iostreams boost_filesystem boost_system openvdb_static Half tbb dl pthread)
 
 file(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})
-target_link_libraries(tester PUBLIC gtest pthread libcurv double-conversion boost_filesystem boost_system)
+target_link_libraries(tester PUBLIC gtest pthread libcurv double-conversion boost_iostreams boost_filesystem boost_system)
 
 set_property(TARGET curv libcurv libcurv_geom tester PROPERTY CXX_STANDARD 14)
 
