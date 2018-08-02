@@ -51,7 +51,7 @@ before the ``curv`` command will exit.]
 
 To convert a shape into an STL file for 3D printing, use::
 
-  $ curv -o stl foo.curv >foo.stl
+  $ curv -o foo.stl foo.curv
 
 For more details, see `<Mesh_Export.rst>`_.
 

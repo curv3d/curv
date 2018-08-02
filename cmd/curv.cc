@@ -25,6 +25,8 @@
 #include <libcurv/geom/tempfile.h>
 #include <libcurv/geom/viewer/viewer.h>
 
+namespace fs = curv::Filesystem;
+
 curv::System&
 make_system(const char* argv0, std::list<const char*>& libs)
 {
@@ -67,7 +69,8 @@ const char help[] =
 "-l -- live programming mode\n"
 "-e -- run <$CURV_EDITOR filename> in live mode\n"
 "-x -- interpret filename argument as expression\n"
-"-o format -- output format:\n"
+"-o pathname.format or -o format -- export using specified file format.\n"
+"Note 'curv -o foo.stl' creates 'foo.stl', while 'curv -o stl' writes to stdout.\n"
 "   curv -- Curv expression\n"
 "   json -- JSON expression\n"
 "   frag -- GLSL fragment shader (shape only, shadertoy.com compatible)\n"
@@ -112,27 +115,41 @@ main(int argc, char** argv)
     while ((opt = getopt(argc, argv, ":o:O:lni:xe")) != -1) {
         switch (opt) {
         case 'o':
-            if (strcmp(optarg, "curv") == 0)
+          {
+            const char* oarg = optarg;
+            fs::path opath{oarg};
+            std::string ext_string = opath.extension().string();
+            const char* ext = ext_string.c_str();
+            const char* oname;
+            if (ext[0] == '.')
+                oname = &ext[1];
+            else
+                oname = oarg;
+            if (strcmp(oname, "curv") == 0)
                 exporter = export_curv;
-            else if (strcmp(optarg, "json") == 0)
+            else if (strcmp(oname, "json") == 0)
                 exporter = export_json;
-            else if (strcmp(optarg, "frag") == 0)
+            else if (strcmp(oname, "frag") == 0)
                 exporter = export_frag;
-            else if (strcmp(optarg, "stl") == 0)
+            else if (strcmp(oname, "stl") == 0)
                 exporter = export_stl;
-            else if (strcmp(optarg, "obj") == 0)
+            else if (strcmp(oname, "obj") == 0)
                 exporter = export_obj;
-            else if (strcmp(optarg, "x3d") == 0)
+            else if (strcmp(oname, "x3d") == 0)
                 exporter = export_x3d;
-            else if (strcmp(optarg, "cpp") == 0)
+            else if (strcmp(oname, "cpp") == 0)
                 exporter = export_cpp;
             else {
-                std::cerr << "-o: format " << optarg << " not supported\n"
+                std::cerr << "-o: format '" << oname << "' not supported.\n"
                           << "Use " << argv0 << " --help for help.\n";
                 return EXIT_FAILURE;
             }
-            ofile.set_ostream(&std::cout);
+            if (oname == oarg)
+                ofile.set_ostream(&std::cout);
+            else
+                ofile.set_path(opath);
             break;
+          }
         case 'O':
           {
             char* eq = strchr(optarg, '=');

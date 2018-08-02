@@ -4,7 +4,6 @@ Current TODO List:
   * Install Ubuntu 18.04. Bleeding edge Mesa + 16.04 is likely a bad idea.
     Also, the 18.04 version of Nouveau might work better than a black screen.
 * Image Export. Next:
-  * implement -o foo.bar using Output_File.
   * implement PNG export.
 * Image Import.
 
@@ -76,9 +75,6 @@ Language:
 curv -o stl -O name=value file.curv >file.stl
 We'll use a 2 pass algorithm: a grid based mesher, followed by a mesh
 simplifier/optimizer.
-
-Maybe use 'curv -o file.stl file.curv' instead? Output file only created
-if no errors.
 
 Report an error if an unrecognized -O option is used.
 parse_params(params, {

@@ -23,43 +23,8 @@ API in curv::geom
 -----------------
 <libcurv/geom/export_image.h>
 
-void export_png(Shape_Program, Export_File&, glm::ivec2)
+void export_png(Shape_Program, Output_File&, glm::ivec2)
 * This uses the Viewer. Must run in main thread? That works for CLI batch mode.
-* Atomic update: either export succeeds, or file system not changed.
-  That's handled by Export_File:
-  writes to unique temp file in same directory as target file.
-
-Export_File mediates the communication between a client, who wants to export
-a file, and a file export function called by the client.
-
-Export_File encapsulates the name of a file being exported, and an output
-stream. The caller (of a file export function) can specify either an ostream
-or a pathname. The file export function itself can ask for either an ostream
-or a pathname, and the two choices don't have to match. The file is updated
-atomically.
-
-<libcurv/export_file.h>
-
-constructors:
-    Export_File() -- must call one of set_path() or set_ostream().
-    Export_File(Filesystem::path&)
-    Export_File(std::ostream&)
-After default construction, you can use:
-    set_path(Filesystem::path&)
-or
-    set_ostream(std::ostream&)
-The file export function can use one of the following:
-    open()
-    ostream() << data // repeatedly
-or
-    path() // and then write data to the named file
-The latter is useful when you are using a library that can only write data
-to a file when given a pathname.
-Finally,
-    commit() // commits the data that was written
-If commit() is not called, due to an exception, then the tempfile is deleted
-and no partially written file remains on disk.
-
 
 Helper functions for converting CLI image export -O options to an image size:
     ivec2 image_size_default(Shape_Program)
@@ -79,14 +44,3 @@ Technical debt:
 
 * Graphics file export code is split between CLI interface (-O processing)
   and kernel code in libcurv/geom.
-
-Current export interface:
-    void export(curv::Value value,
-        curv::Program&,
-        const Export_Params& params,
-        std::ostream& out);
-New export interface:
-    void export(curv::Value value,
-        curv::Program&,
-        const Export_Params& params,
-        Export_File&);

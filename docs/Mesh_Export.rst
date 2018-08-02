@@ -3,9 +3,9 @@ Mesh Export
 
 To export a 3D shape to an STL, OBJ or X3D file, use::
 
-   curv -o stl foo.curv >foo.stl
-   curv -o obj foo.curv >foo.obj
-   curv -o x3d foo.curv >foo.x3d
+   curv -o foo.stl foo.curv
+   curv -o foo.obj foo.curv
+   curv -o foo.x3d foo.curv
 
 Which format should you use?
 
@@ -51,7 +51,7 @@ appear in thin walls.
 
 You set the ``vsize`` parameter using ``-O vsize=N``. For example::
 
-   curv -o obj -O vsize=.1 foo.curv >foo.obj
+   curv -o foo.obj -O vsize=.1 foo.curv
 
 Speeding up Mesh Export
 -----------------------
@@ -124,4 +124,4 @@ will be interpolated across the faces).
 Use MeshLab to view the X3D files.
 
 For example::
-  curv -o x3d -O colour=vertex -O vsize=0.05 examples/twistor.curv >twistor.x3d
+  curv -o twistor.x3d -O colour=vertex -O vsize=0.05 examples/twistor.curv
