@@ -5,11 +5,13 @@
 #include "export.h"
 #include <fstream>
 #include <sstream>
+#include <glm/vec2.hpp>
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
 #include <libcurv/filesystem.h>
 #include <libcurv/geom/shape.h>
 #include <libcurv/geom/export_frag.h>
+#include <libcurv/geom/export_png.h>
 #include <libcurv/geom/compiled_shape.h>
 
 void export_curv(curv::Value value,
@@ -27,13 +29,12 @@ void export_frag(curv::Value value,
     curv::Output_File& ofile)
 {
     curv::geom::Shape_Program shape(prog);
-    if (shape.recognize(value)) {
-        ofile.open();
-        curv::geom::export_frag(shape, ofile.ostream());
-    } else {
+    if (!shape.recognize(value)) {
         curv::At_Program cx(prog);
         throw curv::Exception(cx, "not a shape");
     }
+    ofile.open();
+    curv::geom::export_frag(shape, ofile.ostream());
 }
 
 void export_cpp(curv::Value value,
@@ -142,4 +143,33 @@ void export_json(curv::Value value,
         curv::At_Program cx(prog);
         throw curv::Exception(cx, "value can't be converted to JSON");
     }
+}
+
+void export_png(curv::Value value,
+    curv::Program& prog,
+    const Export_Params&,
+    curv::Output_File& ofile)
+{
+    curv::geom::Shape_Program shape(prog);
+    curv::At_Program cx(prog);
+    if (!shape.recognize(value) || !shape.is_2d_)
+        throw curv::Exception(cx, "not a 2D shape");
+    if (shape.bbox_.infinite2())
+        throw curv::Exception(cx, "can't export an infinite shape to PNG");
+    if (shape.bbox_.empty2())
+        throw curv::Exception(cx, "can't export an empty shape to PNG");
+    double dx = shape.bbox_.xmax - shape.bbox_.xmin;
+    double dy = shape.bbox_.ymax - shape.bbox_.ymin;
+    glm::ivec2 size;
+    if (dx > dy) {
+        size.x = 500;
+        size.y = (int) round(dy / dx * 500);
+        if (size.y == 0) ++size.y;
+    } else {
+        size.y = 500;
+        size.x = (int) round(dx / dy * 500);
+        if (size.x == 0) ++size.x;
+    }
+    std::cerr << "image export: "<<size.x<<"×"<<size.y<<" pixels.\n";
+    curv::geom::export_png(shape, size, ofile);
 }

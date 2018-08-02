@@ -49,4 +49,9 @@ extern void export_cpp(curv::Value value,
     const Export_Params& params,
     curv::Output_File&);
 
+extern void export_png(curv::Value value,
+    curv::Program&,
+    const Export_Params& params,
+    curv::Output_File&);
+
 #endif // include guard

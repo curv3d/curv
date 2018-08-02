@@ -139,6 +139,8 @@ main(int argc, char** argv)
                 exporter = export_x3d;
             else if (strcmp(oname, "cpp") == 0)
                 exporter = export_cpp;
+            else if (strcmp(oname, "png") == 0)
+                exporter = export_png;
             else {
                 std::cerr << "-o: format '" << oname << "' not supported.\n"
                           << "Use " << argv0 << " --help for help.\n";
