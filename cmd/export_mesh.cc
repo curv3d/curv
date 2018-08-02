@@ -35,25 +35,28 @@ void export_mesh(Mesh_Format, curv::Value value,
 void export_stl(curv::Value value,
     curv::Program& prog,
     const Export_Params& params,
-    std::ostream& out)
+    curv::Output_File& ofile)
 {
-    export_mesh(stl_format, value, prog, params, out);
+    ofile.open();
+    export_mesh(stl_format, value, prog, params, ofile.ostream());
 }
 
 void export_obj(curv::Value value,
     curv::Program& prog,
     const Export_Params& params,
-    std::ostream& out)
+    curv::Output_File& ofile)
 {
-    export_mesh(obj_format, value, prog, params, out);
+    ofile.open();
+    export_mesh(obj_format, value, prog, params, ofile.ostream());
 }
 
 void export_x3d(curv::Value value,
     curv::Program& prog,
     const Export_Params& params,
-    std::ostream& out)
+    curv::Output_File& ofile)
 {
-    export_mesh(x3d_format, value, prog, params, out);
+    ofile.open();
+    export_mesh(x3d_format, value, prog, params, ofile.ostream());
 }
 
 void put_triangle(std::ostream& out, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2)

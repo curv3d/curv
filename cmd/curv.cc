@@ -2,18 +2,6 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-extern "C" {
-#include <string.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-}
 #include <iostream>
 #include <fstream>
 
@@ -25,23 +13,16 @@ extern "C" {
 #include "livemode.h"
 #include "version.h"
 
-#include <libcurv/geom/tempfile.h>
-#include <libcurv/dtostr.h>
-#include <libcurv/analyser.h>
 #include <libcurv/context.h>
-#include <libcurv/program.h>
+#include <libcurv/die.h>
 #include <libcurv/exception.h>
 #include <libcurv/file.h>
-#include <libcurv/parser.h>
-#include <libcurv/phrase.h>
-#include <libcurv/shared.h>
+#include <libcurv/output_file.h>
+#include <libcurv/program.h>
 #include <libcurv/system.h>
-#include <libcurv/list.h>
-#include <libcurv/record.h>
-#include <libcurv/die.h>
-#include <libcurv/geom/export_frag.h>
 #include <libcurv/geom/import.h>
 #include <libcurv/geom/shape.h>
+#include <libcurv/geom/tempfile.h>
 #include <libcurv/geom/viewer/viewer.h>
 
 curv::System&
@@ -118,9 +99,10 @@ main(int argc, char** argv)
     void (*exporter)(curv::Value,
         curv::Program&,
         const Export_Params&,
-        std::ostream&)
+        curv::Output_File&)
         = nullptr;
     Export_Params eparams;
+    curv::Output_File ofile;
     bool live = false;
     std::list<const char*> libs;
     bool expr = false;
@@ -149,6 +131,7 @@ main(int argc, char** argv)
                           << "Use " << argv0 << " --help for help.\n";
                 return EXIT_FAILURE;
             }
+            ofile.set_ostream(&std::cout);
             break;
         case 'O':
           {
@@ -265,7 +248,8 @@ main(int argc, char** argv)
                 std::cout << value << "\n";
             }
         } else {
-            exporter(value, prog, eparams, std::cout);
+            exporter(value, prog, eparams, ofile);
+            ofile.commit();
         }
     } catch (curv::Exception& e) {
         std::cerr << "ERROR: " << e << "\n";

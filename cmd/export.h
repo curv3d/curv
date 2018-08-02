@@ -8,44 +8,45 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include <libcurv/value.h>
+#include <libcurv/output_file.h>
 #include <libcurv/program.h>
+#include <libcurv/value.h>
 
 typedef std::map<std::string, std::string> Export_Params;
 
 extern void export_curv(curv::Value value,
     curv::Program&,
     const Export_Params& params,
-    std::ostream& out);
+    curv::Output_File&);
 
 extern void export_stl(curv::Value,
     curv::Program&,
     const Export_Params& params,
-    std::ostream& out);
+    curv::Output_File&);
 
 extern void export_obj(curv::Value,
     curv::Program&,
     const Export_Params& params,
-    std::ostream& out);
+    curv::Output_File&);
 
 extern void export_x3d(curv::Value,
     curv::Program&,
     const Export_Params& params,
-    std::ostream& out);
+    curv::Output_File&);
 
 extern void export_frag(curv::Value value,
     curv::Program&,
     const Export_Params& params,
-    std::ostream& out);
+    curv::Output_File&);
 
 extern void export_json(curv::Value value,
     curv::Program&,
     const Export_Params& params,
-    std::ostream& out);
+    curv::Output_File&);
 
 extern void export_cpp(curv::Value value,
     curv::Program&,
     const Export_Params& params,
-    std::ostream& out);
+    curv::Output_File&);
 
 #endif // include guard

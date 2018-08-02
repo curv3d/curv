@@ -15,20 +15,22 @@
 void export_curv(curv::Value value,
     curv::Program&,
     const Export_Params&,
-    std::ostream& out)
+    curv::Output_File& ofile)
 {
-    out << value << "\n";
+    ofile.open();
+    ofile.ostream() << value << "\n";
 }
 
 void export_frag(curv::Value value,
     curv::Program& prog,
     const Export_Params&,
-    std::ostream& out)
+    curv::Output_File& ofile)
 {
     curv::geom::Shape_Program shape(prog);
-    if (shape.recognize(value))
-        curv::geom::export_frag(shape, std::cout);
-    else {
+    if (shape.recognize(value)) {
+        ofile.open();
+        curv::geom::export_frag(shape, ofile.ostream());
+    } else {
         curv::At_Program cx(prog);
         throw curv::Exception(cx, "not a shape");
     }
@@ -37,14 +39,15 @@ void export_frag(curv::Value value,
 void export_cpp(curv::Value value,
     curv::Program& prog,
     const Export_Params&,
-    std::ostream& out)
+    curv::Output_File& ofile)
 {
     curv::geom::Shape_Program shape(prog);
     if (!shape.recognize(value)) {
         curv::At_Program cx(prog);
         throw curv::Exception(cx, "not a shape");
     }
-    curv::geom::export_cpp(shape, out);
+    ofile.open();
+    curv::geom::export_cpp(shape, ofile.ostream());
 }
 
 bool is_json_data(curv::Value val)
@@ -130,10 +133,11 @@ bool export_json_value(curv::Value val, std::ostream& out)
 void export_json(curv::Value value,
     curv::Program& prog,
     const Export_Params&,
-    std::ostream& out)
+    curv::Output_File& ofile)
 {
-    if (export_json_value(value, out))
-        out << "\n";
+    ofile.open();
+    if (export_json_value(value, ofile.ostream()))
+        ofile.ostream() << "\n";
     else {
         curv::At_Program cx(prog);
         throw curv::Exception(cx, "value can't be converted to JSON");
