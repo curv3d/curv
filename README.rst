@@ -53,6 +53,7 @@ on Ubuntu LTS and macos 10.11. Windows support is planned but not scheduled.
 
 Curv requires direct access to a GPU made by Intel, AMD or Nvidia, using the
 vendor supplied GPU driver.
+
 * On Linux, the Mesa open source GPU driver is currently too buggy (as of
   August 2018). You need to use the closed source vendor supplied GPU driver
   instead. For AMD GPUs, this means you need the AMDGPU-PRO driver, which is
