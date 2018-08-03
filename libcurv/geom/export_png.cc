@@ -11,6 +11,7 @@
 #include <libcurv/output_file.h>
 
 #include <gl/texture.h>
+#include <iostream>
 
 namespace curv { namespace geom {
 
@@ -36,10 +37,29 @@ export_png(
     v.set_shape(shape);
     v.open();
     v.draw_frame();
+    // On macOS, the second call to draw_frame() is needed, or glReadPixels
+    // will store zeroes in `pixels`. I think the problem is related to
+    // double buffering: only after the second call to draw_frame() do both of
+    // the buffers contain the image. On Linux, I don't need 2 calls.
+    v.draw_frame();
     unsigned char* pixels = new unsigned char[size.x*size.y*4];
+    pixels[0]=1;
+    pixels[1]=17;
+    pixels[2]=42;
+    pixels[3]=123;
+    glGetError();
     glReadPixels(0, 0, size.x, size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    auto err = glGetError();
     v.close();
-
+#if 0
+    std::cerr << "err="<<int(err)<<" RGBA[0,0]: "
+        <<int(pixels[0])<<","
+        <<int(pixels[1])<<","
+        <<int(pixels[2])<<","
+        <<int(pixels[3])<<"\n";
+#else
+    (void) err;
+#endif
     Texture::savePixels(ofile.path().c_str(), pixels, size.x, size.y);
 }
 
