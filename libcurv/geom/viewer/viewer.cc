@@ -36,7 +36,7 @@ Viewer::Viewer()
 }
 
 void
-Viewer::set_shape(Shape_Program& shape)
+Viewer::set_shape(const Shape_Program& shape)
 {
     std::stringstream f;
     export_frag(shape, f);
@@ -68,10 +68,8 @@ void Viewer::open()
         u_eye3d_ = glm::vec3(2.598076,3.0,4.5);
         u_up3d_ = glm::vec3(-0.25,0.866025,-0.433013);
 
-        bool headless = false;
-
         // Initialize openGL context
-        initGL(window_pos_and_size_, headless);
+        initGL(window_pos_and_size_, headless_);
 
         // Start working on the GL context
         setup();

@@ -161,15 +161,18 @@ void export_png(curv::Value value,
     double dx = shape.bbox_.xmax - shape.bbox_.xmin;
     double dy = shape.bbox_.ymax - shape.bbox_.ymin;
     glm::ivec2 size;
+    double pixsize;
     if (dx > dy) {
         size.x = 500;
-        size.y = (int) round(dy / dx * 500);
+        pixsize = dx / 500.0;
+        size.y = (int) round(dy / dx * 500.0);
         if (size.y == 0) ++size.y;
     } else {
         size.y = 500;
-        size.x = (int) round(dx / dy * 500);
+        pixsize = dy / 500.0;
+        size.x = (int) round(dx / dy * 500.0);
         if (size.x == 0) ++size.x;
     }
     std::cerr << "image export: "<<size.x<<"×"<<size.y<<" pixels.\n";
-    curv::geom::export_png(shape, size, ofile);
+    curv::geom::export_png(shape, size, pixsize, ofile);
 }

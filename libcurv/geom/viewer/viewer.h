@@ -27,7 +27,7 @@ struct Viewer
 
     // Set the current shape. May be called at any time, before opening the
     // window, or while the window is open.
-    void set_shape(Shape_Program&);
+    void set_shape(const Shape_Program&);
 
     bool is_open() { return window_ != nullptr; }
 
@@ -52,6 +52,7 @@ struct Viewer
 
     /*--- PARAMETER STATE, can set before window is opened ---*/
     glm::ivec4 window_pos_and_size_{0.,0.,500.,500.};
+    bool headless_{false};
 
     /*--- DEPRECATED API ---*/
 

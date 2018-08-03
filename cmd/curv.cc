@@ -78,6 +78,7 @@ const char help[] =
 "   obj -- OBJ mesh file (3D shape only)\n"
 "   x3d -- X3D colour mesh file (3D shape only)\n"
 "   cpp -- C++ source file (shape only)\n"
+"   png -- PNG image file (2D shape only)\n"
 "-O name=value -- parameter for one of the output formats\n"
 "--version -- display version information needed for bug reports.\n"
 "--help -- display this help information.\n"

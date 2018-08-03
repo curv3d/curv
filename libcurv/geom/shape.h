@@ -9,6 +9,7 @@
 #include <libcurv/gl_compiler.h>
 #include <libcurv/frame.h>
 #include <cmath>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
 namespace curv {
@@ -28,19 +29,25 @@ struct BBox
 {
     double xmin, ymin, zmin;
     double xmax, ymax, zmax;
-    bool empty2() {
+    bool empty2() const {
         return (xmin >= xmax || ymin >= ymax);
     }
-    bool empty3() {
+    bool empty3() const {
         return (xmin >= xmax || ymin >= ymax || zmin >= zmax);
     }
-    bool infinite2() {
+    bool infinite2() const {
         return (xmin == -INFINITY || ymin == -INFINITY ||
                 xmax == +INFINITY || ymax == +INFINITY);
     }
-    bool infinite3() {
+    bool infinite3() const {
         return (xmin == -INFINITY || ymin == -INFINITY || zmin == -INFINITY ||
                 xmax == +INFINITY || ymax == +INFINITY || zmax == +INFINITY);
+    }
+    glm::dvec2 size2() const {
+        return glm::dvec2(xmax - xmin, ymax - ymin);
+    }
+    glm::dvec3 size3() const {
+        return glm::dvec3(xmax - xmin, ymax - ymin, zmax - zmin);
     }
     static BBox from_value(Value, const Context&);
 };

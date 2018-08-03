@@ -13,7 +13,7 @@ struct Output_File;
 namespace geom {
 struct Shape_Program;
 
-void export_png(const Shape_Program&, glm::ivec2, Output_File&);
+void export_png(const Shape_Program&, glm::ivec2, double pixsize, Output_File&);
 
 }} // namespace
 #endif // header guard
