@@ -48,13 +48,24 @@ Getting Started
 
 Hardware Requirements
 =====================
-Two platforms are currently supported: Ubuntu 16.04 and macOS.
-Windows support is planned.
+Two platforms are currently supported: Linux and macOS. I currently test
+on Ubuntu LTS and macos 10.11. Windows support is planned but not scheduled.
 
-Currently, Curv runs on just about any GPU.
+Curv requires direct access to a GPU made by Intel, AMD or Nvidia, using the
+vendor supplied GPU driver.
+* On Linux, the Mesa open source GPU driver is currently too buggy (as of
+  August 2018). You need to use the closed source vendor supplied GPU driver
+  instead. For AMD GPUs, this means you need the AMDGPU-PRO driver, which is
+  only officially supported on Ubuntu LTS, Red Hat and SUSE. There seem to be
+  fewer problems using Intel integrated graphics and Nvidia GPUs.
+* If Curv is invoked remotely via vncviewer, then it might not have direct
+  access to GPU hardware.
+* If Curv is run inside a VM, then it might not have direct access to the GPU.
+  You need to do extra work to ensure that the VM is GPU accelerated.
 
-In the future, the geometry engine will be rewritten for scaleability
-and performance. I anticipate you will then need a GPU that supports one of
-the following standards: OpenGL 4.3, macOS Metal, DX12 or Vulkan.
-For laptops, the cutoff will be somewhere between 2012 and 2013 as the year of
-manufacture.
+..
+  In the future, the geometry engine will be rewritten for scaleability
+  and performance. I anticipate you will then need a GPU that supports one of
+  the following standards: OpenGL 4.3, macOS Metal, DX12 or Vulkan.
+  For laptops, the cutoff will be somewhere between 2012 and 2013 as the year of
+  manufacture.
