@@ -15,6 +15,9 @@ Rationale:
   and thus will contain a metadata representation of their **CSG Tree**
   (in the OpenSCAD sense). Then,
   * A CSG tree can be translated into a tree of value pickers in the GUI.
+    BUT: In general, can't represent all of the parameters in a CSG tree by
+    GLSL uniform variables, since the full Curv language cannot be translated
+    into GLSL code.
   * Can export an abstract CSG tree, similar to an OpenSCAD *.csg file.
     Eg, using my proposed JCSG format (JSON encoded CSG tree).
   * Can export other high level graphics file formats, such as SVG, by mapping
@@ -80,6 +83,18 @@ What is the API for defining terms?
     to happen at compile time in certain cases, depending on how smart the
     compiler is.
 
+Term Patterns
+-------------
+Consider the ability to write patterns that match terms.
+This provides something similar to 'user defined data types', although
+without encapsulation, and without adding type names to the language.
+It's exactly what Pure has.
+
+Terms are inspired by "term rewriting systems". I'm inspired, to various
+degrees, by Haskell, Mathematica and especially Pure.
+
+Internal Representation
+-----------------------
 Internally, term metadata can take one of three forms:
 * head. Metadata: string (an identifier)
 * function call. Metadata: function,arg
