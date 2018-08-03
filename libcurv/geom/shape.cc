@@ -19,7 +19,11 @@ Shape_Program::Shape_Program(
 :
     nub_(nub_phrase(prog.phrase_)),
     system_(prog.system_)
-{}
+{
+    // mark initial state (no shape has been recognized yet)
+    is_2d_ = false;
+    is_3d_ = false;
+}
 
 BBox
 BBox::from_value(Value val, const Context& cx)

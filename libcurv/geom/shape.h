@@ -56,6 +56,9 @@ struct Shape
 
 struct Shape_Program final : public Shape
 {
+    // is_shape is initially false, becomes true after recognize() succeeds.
+    bool is_shape() const { return is_2d_ || is_3d_; }
+
     // describes the source code for the shape expression
     Shared<const Phrase> nub_;
     const Phrase& nub() const { return *nub_; }
