@@ -212,14 +212,14 @@ main(int argc, char** argv)
                       << "Use " << argv0 << " --help for help.\n";
             return EXIT_FAILURE;
         }
-    }
-    if (filename == nullptr) {
         if (expr) {
-            std::cerr << "missing expression argument\n"
+            std::cerr << "-l and -x flags are not compatible.\n"
                       << "Use " << argv0 << " --help for help.\n";
             return EXIT_FAILURE;
         }
-        if (exporter != nullptr || live) {
+    }
+    if (filename == nullptr) {
+        if (expr || exporter || live) {
             std::cerr << "missing filename argument\n"
                       << "Use " << argv0 << " --help for help.\n";
             return EXIT_FAILURE;
@@ -227,6 +227,11 @@ main(int argc, char** argv)
     }
     if (editor && !live) {
         std::cerr << "-e flag specified without -l flag.\n"
+                  << "Use " << argv0 << " --help for help.\n";
+        return EXIT_FAILURE;
+    }
+    if (!eparams.map.empty() && !exporter) {
+        std::cerr << "-O flag specified without -o flag.\n"
                   << "Use " << argv0 << " --help for help.\n";
         return EXIT_FAILURE;
     }
@@ -258,7 +263,10 @@ main(int argc, char** argv)
         prog.compile();
         auto value = prog.eval();
 
-        if (exporter == nullptr) {
+        if (exporter) {
+            exporter(value, prog, eparams, ofile);
+            ofile.commit();
+        } else {
             curv::geom::Shape_Program shape{prog};
             if (shape.recognize(value)) {
                 print_shape(shape);
@@ -268,9 +276,6 @@ main(int argc, char** argv)
             } else {
                 std::cout << value << "\n";
             }
-        } else {
-            exporter(value, prog, eparams, ofile);
-            ofile.commit();
         }
     } catch (curv::Exception& e) {
         std::cerr << "ERROR: " << e << "\n";
