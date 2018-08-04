@@ -13,6 +13,15 @@
 
 namespace curv {
 
+// Output_File is used to mediate between a client, who is calling a
+// file export function (the 'exporter'), and the exporter.
+// The client can provide either a file name, or an open std::ostream.
+// The exporter can request either a file name, or an open std::ostream.
+// These choices can be different. The data is not written to the sink
+// specified by the client until commit() is called. If an exception is
+// thrown before this happens, we will not leave behind a partially written
+// file, or write partial data to the client's output stream. A temp file is
+// used to buffer the data until commit() is called.
 struct Output_File
 {
     using tstream =
