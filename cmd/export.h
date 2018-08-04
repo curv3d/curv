@@ -19,6 +19,13 @@ struct Export_Params
     Map map;
 };
 
+struct Exporter
+{
+    void (*call)(curv::Value, curv::Program&, const Export_Params&, curv::Output_File&);
+    const char* help;
+};
+extern std::map<std::string, Exporter> exporters;
+
 extern void export_curv(curv::Value value,
     curv::Program&,
     const Export_Params& params,

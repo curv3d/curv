@@ -176,3 +176,15 @@ void export_png(curv::Value value,
     std::cerr << "image export: "<<size.x<<"×"<<size.y<<" pixels.\n";
     curv::geom::export_png(shape, size, pixsize, ofile);
 }
+
+std::map<std::string, Exporter> exporters = {
+    {"curv", {export_curv, "Curv expression"}},
+    {"stl", {export_stl, "STL mesh file (3D shape only)"}},
+    {"obj", {export_obj, "OBJ mesh file (3D shape only)"}},
+    {"x3d", {export_x3d, "X3D colour mesh file (3D shape only)"}},
+    {"frag", {export_frag,
+              "GLSL fragment shader (shape only, shadertoy.com compatible)"}},
+    {"json", {export_json, "JSON expression"}},
+    {"cpp", {export_cpp, "C++ source file (shape only)"}},
+    {"png", {export_png, "PNG image file (2D shape only)"}},
+};

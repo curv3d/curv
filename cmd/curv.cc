@@ -62,7 +62,7 @@ make_system(const char* argv0, std::list<const char*>& libs)
     }
 }
 
-const char help[] =
+const char help_prefix[] =
 "curv --help\n"
 "   Display help information.\n"
 "curv --version\n"
@@ -75,14 +75,9 @@ const char help[] =
 "curv [-o arg] [-O arg]... [-x] [options] filename\n"
 "   Batch mode. Evaluate file, display result or export to a file format.\n"
 "   -o format : Convert to specified file format, write data to stdout.\n"
-"      curv : Curv expression\n"
-"      json : JSON expression\n"
-"      frag : GLSL fragment shader (shape only, shadertoy.com compatible)\n"
-"      stl : STL mesh file (3D shape only)\n"
-"      obj : OBJ mesh file (3D shape only)\n"
-"      x3d : X3D colour mesh file (3D shape only)\n"
-"      cpp : C++ source file (shape only)\n"
-"      png : PNG image file (2D shape only)\n"
+;
+
+const char help_suffix[] =
 "   -o filename.ext : Export to file, using filename extension as format.\n"
 "   -O name=value : Parameter for the specified output format.\n"
 "   -x : Interpret filename argument as expression.\n"
@@ -96,7 +91,12 @@ int
 main(int argc, char** argv)
 {
     if (argc == 2 && strcmp(argv[1], "--help") == 0) {
-        std::cout << help;
+        std::cout << help_prefix;
+        for (auto& ex : exporters) {
+            std::cout << "      " << ex.first << " : "
+                      << ex.second.help << "\n";
+        }
+        std::cout << help_suffix;
         return EXIT_SUCCESS;
     }
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
@@ -107,11 +107,7 @@ main(int argc, char** argv)
     // Parse arguments.
     const char* argv0 = argv[0];
     const char* usestdlib = argv0;
-    void (*exporter)(curv::Value,
-        curv::Program&,
-        const Export_Params&,
-        curv::Output_File&)
-        = nullptr;
+    Exporter* exporter = nullptr;
     Export_Params eparams;
     curv::Output_File ofile;
     bool live = false;
@@ -133,27 +129,13 @@ main(int argc, char** argv)
                 oname = &ext[1];
             else
                 oname = oarg;
-            if (strcmp(oname, "curv") == 0)
-                exporter = export_curv;
-            else if (strcmp(oname, "json") == 0)
-                exporter = export_json;
-            else if (strcmp(oname, "frag") == 0)
-                exporter = export_frag;
-            else if (strcmp(oname, "stl") == 0)
-                exporter = export_stl;
-            else if (strcmp(oname, "obj") == 0)
-                exporter = export_obj;
-            else if (strcmp(oname, "x3d") == 0)
-                exporter = export_x3d;
-            else if (strcmp(oname, "cpp") == 0)
-                exporter = export_cpp;
-            else if (strcmp(oname, "png") == 0)
-                exporter = export_png;
-            else {
+            auto ex = exporters.find(oname);
+            if (ex == exporters.end()) {
                 std::cerr << "-o: format '" << oname << "' not supported.\n"
                           << "Use " << argv0 << " --help for help.\n";
                 return EXIT_FAILURE;
             }
+            exporter = &ex->second;
             if (oname == oarg)
                 ofile.set_ostream(&std::cout);
             else
@@ -271,7 +253,7 @@ main(int argc, char** argv)
         auto value = prog.eval();
 
         if (exporter) {
-            exporter(value, prog, eparams, ofile);
+            exporter->call(value, prog, eparams, ofile);
             ofile.commit();
         } else {
             curv::geom::Shape_Program shape{prog};
