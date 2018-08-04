@@ -93,7 +93,7 @@ void put_vertex_colour(std::ostream& out, curv::geom::Shape& shape, Vec3s v)
     out << " " << c.x << " " << c.y << " " << c.z;
 }
 
-double param_to_double(Export_Params::const_iterator i)
+double param_to_double(Export_Params::Map::const_iterator i)
 {
     char *endptr;
     double result = strtod(i->second.c_str(), &endptr);
@@ -122,13 +122,13 @@ void export_mesh(Mesh_Format format, curv::Value value,
         throw curv::Exception(cx, "mesh export: not a 3D shape");
 
 #if 0
-    for (auto p : params) {
+    for (auto p : params.map) {
         std::cerr << p.first << "=" << p.second << "\n";
     }
 #endif
 
     std::unique_ptr<curv::geom::Compiled_Shape> cshape = nullptr;
-    if (params.find("jit") != params.end()) {
+    if (params.map.find("jit") != params.map.end()) {
         //std::chrono::time_point<std::chrono::steady_clock> cstart_time, cend_time;
         auto cstart_time = std::chrono::steady_clock::now();
         cshape = std::make_unique<curv::geom::Compiled_Shape>(shape);
@@ -150,8 +150,8 @@ void export_mesh(Mesh_Format format, curv::Value value,
     }
 
     double voxelsize;
-    auto vsize_p = params.find("vsize");
-    if (vsize_p != params.end()) {
+    auto vsize_p = params.map.find("vsize");
+    if (vsize_p != params.map.end()) {
         double vsize = param_to_double(vsize_p);
         if (vsize <= 0.0) {
             throw curv::Exception(cx, curv::stringify(
@@ -239,8 +239,8 @@ void export_mesh(Mesh_Format format, curv::Value value,
 
     // convert grid to a mesh
     double adaptivity = 0.0;
-    auto adaptive_p = params.find("adaptive");
-    if (adaptive_p != params.end()) {
+    auto adaptive_p = params.map.find("adaptive");
+    if (adaptive_p != params.map.end()) {
         if (adaptive_p->second.empty())
             adaptivity = 1.0;
         else {
@@ -255,8 +255,8 @@ void export_mesh(Mesh_Format format, curv::Value value,
     mesher(*grid);
 
     enum {face_colour, vertex_colour} colourtype = face_colour;
-    auto colourtype_p = params.find("colour");
-    if (colourtype_p != params.end()) {
+    auto colourtype_p = params.map.find("colour");
+    if (colourtype_p != params.map.end()) {
         if (colourtype_p->second == "face")
             colourtype = face_colour;
         else if (colourtype_p->second == "vertex")

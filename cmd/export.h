@@ -12,7 +12,12 @@
 #include <libcurv/program.h>
 #include <libcurv/value.h>
 
-typedef std::map<std::string, std::string> Export_Params;
+struct Export_Params
+{
+    using Map = std::map<std::string, std::string>;
+    std::string format;
+    Map map;
+};
 
 extern void export_curv(curv::Value value,
     curv::Program&,

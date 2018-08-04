@@ -151,16 +151,17 @@ main(int argc, char** argv)
                 ofile.set_ostream(&std::cout);
             else
                 ofile.set_path(opath);
+            eparams.format = oname;
             break;
           }
         case 'O':
           {
             char* eq = strchr(optarg, '=');
             if (eq == nullptr) {
-                eparams[std::string(optarg)] = std::string("");
+                eparams.map[std::string(optarg)] = std::string("");
             } else {
                 *eq = '\0';
-                eparams[std::string(optarg)] = std::string(eq+1);
+                eparams.map[std::string(optarg)] = std::string(eq+1);
                 *eq = '=';
             }
             break;
