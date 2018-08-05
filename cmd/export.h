@@ -17,6 +17,9 @@ struct Export_Params
     using Map = std::map<std::string, std::string>;
     std::string format;
     Map map;
+    [[noreturn]] void unknown_parameter(const Map::value_type&) const;
+    [[noreturn]] void bad_argument(const Map::value_type&, const char*) const;
+    int to_int(const Map::value_type&, int, int) const;
 };
 
 struct Exporter
