@@ -63,8 +63,9 @@ make_system(const char* argv0, std::list<const char*>& libs)
 }
 
 const char help_prefix[] =
-"curv --help\n"
+"curv --help [-o format]\n"
 "   Display help information.\n"
+"   -o format : Display help for an output format, showing -O parameters.\n"
 "curv --version\n"
 "   Display version information needed for bug reports.\n"
 "curv [options]\n"
@@ -90,22 +91,39 @@ const char help_suffix[] =
 int
 main(int argc, char** argv)
 {
-    if (argc == 2 && strcmp(argv[1], "--help") == 0) {
-        std::cout << help_prefix;
-        for (auto& ex : exporters) {
-            std::cout << "      " << ex.first << " : "
-                      << ex.second.help << "\n";
+    const char* argv0 = argv[0];
+
+    // Handle 'curv --help'.
+    if (argc >= 2 && strcmp(argv[1], "--help") == 0) {
+        if (argc == 4 && strcmp(argv[2], "-o") == 0) {
+            const char* format = argv[3];
+            auto ex = exporters.find(format);
+            if (ex == exporters.end()) {
+                std::cerr << "-o: format '" << format << "' not supported.\n"
+                          << "Use " << argv0 << " --help for help.\n";
+                return EXIT_FAILURE;
+            }
+            std::cout << ex->second.synopsis << "\n" << ex->second.description;
+            return EXIT_SUCCESS;
         }
-        std::cout << help_suffix;
-        return EXIT_SUCCESS;
+        if (argc == 2) {
+            std::cout << help_prefix;
+            for (auto& ex : exporters) {
+                std::cout << "      " << ex.first << " : "
+                          << ex.second.synopsis << "\n";
+            }
+            std::cout << help_suffix;
+            return EXIT_SUCCESS;
+        }
     }
+
+    // Handle 'curv --version'.
     if (argc == 2 && strcmp(argv[1], "--version") == 0) {
         print_version(std::cout);
         return EXIT_SUCCESS;
     }
 
-    // Parse arguments.
-    const char* argv0 = argv[0];
+    // Parse arguments for general case.
     const char* usestdlib = argv0;
     Exporter* exporter = nullptr;
     Export_Params eparams;

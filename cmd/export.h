@@ -22,7 +22,8 @@ struct Export_Params
 struct Exporter
 {
     void (*call)(curv::Value, curv::Program&, const Export_Params&, curv::Output_File&);
-    const char* help;
+    const char* synopsis;
+    const char* description;
 };
 extern std::map<std::string, Exporter> exporters;
 
@@ -65,5 +66,8 @@ extern void export_png(curv::Value value,
     curv::Program&,
     const Export_Params& params,
     curv::Output_File&);
+
+extern const char mesh_export_help[];
+extern const char colour_mesh_export_help[];
 
 #endif // include guard
