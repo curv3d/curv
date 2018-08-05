@@ -74,7 +74,7 @@ const char help_prefix[] =
 "   Live programming mode. Evaluate & display result each time file changes.\n"
 "   -e : Open editor window. $CURV_EDITOR overrides default editor.\n"
 "curv [-o arg] [-O arg]... [-x] [options] filename\n"
-"   Batch mode. Evaluate file, display result or export to a file format.\n"
+"   Batch mode. Evaluate file, display result or export to a file.\n"
 "   -o format : Convert to specified file format, write data to stdout.\n"
 ;
 
@@ -83,7 +83,7 @@ const char help_suffix[] =
 "   -O name=value : Parameter for the specified output format.\n"
 "   -x : Interpret filename argument as expression.\n"
 "general options:\n"
-"   $CURV_STDLIB : pathname of standard library, overrides PREFIX/lib/std.curv\n"
+"   $CURV_STDLIB : Pathname of standard library, overrides PREFIX/lib/std.curv\n"
 "   -n : Don't use standard library.\n"
 "   -i file : Include specified library; may be repeated.\n"
 ;
