@@ -3,8 +3,8 @@ Current TODO List:
 * Mesa driver bugs. Install latest Nouveau driver, report bugs to Mesa3D.org
   * Install Ubuntu 18.04. Bleeding edge Mesa + 16.04 is likely a bad idea.
     Also, the 18.04 version of Nouveau might work better than a black screen.
-* Image Export. Next:
-  * implement PNG export.
+* Image Export.
+  * PNG export options: background colour, transparent background, antialiasing.
 * Image Import.
 
 Big Ideas:

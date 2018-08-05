@@ -55,6 +55,14 @@ To convert a shape into an STL file for 3D printing, use::
 
 For more details, see `<Mesh_Export.rst>`_.
 
+**Exporting an image (PNG format)**
+
+To export a 2D shape as a PNG image file, use::
+
+  $ curv -o foo.png foo.curv
+
+For more details, see `<Image_Export.rst>`_.
+
 ..
   **Live Programming Mode (**\ ``curv -l``\ **)**:
 
