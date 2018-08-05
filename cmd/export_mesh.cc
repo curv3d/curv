@@ -129,7 +129,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
 {
     curv::geom::Shape_Program shape(prog);
     curv::At_Program cx(prog);
-    if (!shape.recognize(value) && !shape.is_3d_)
+    if (!shape.recognize(value) || !shape.is_3d_)
         throw curv::Exception(cx, "mesh export: not a 3D shape");
 
 #if 0
