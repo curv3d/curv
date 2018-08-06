@@ -5,7 +5,6 @@
 #include <libcurv/builtin.h>
 
 #include <libcurv/analyser.h>
-#include <libcurv/ansi_colour.h>
 #include <libcurv/arg.h>
 #include <libcurv/array_op.h>
 #include <libcurv/exception.h>
@@ -742,11 +741,7 @@ struct Warning_Action : public Just_Action
         else
             msg = stringify(arg);
         Exception exc{At_Phrase(*source_, &f), msg};
-        if (f.system_.use_colour_) f.system_.console() << AC_MESSAGE;
-        f.system_.console() << "WARNING: ";
-        if (f.system_.use_colour_) f.system_.console() << AC_RESET;
-        exc.write(f.system_.console(), f.system_.use_colour_);
-        f.system_.console() << std::endl;
+        f.system_.message("WARNING: ", exc);
     }
 };
 /// The meaning of the phrase `warning` in isolation.
