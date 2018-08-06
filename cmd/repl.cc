@@ -105,12 +105,8 @@ void repl(curv::System* sys)
                         std::cout << e << "\n";
                 }
             }
-        } catch (curv::Exception& e) {
-            std::cout << AC_MESSAGE "ERROR: " AC_RESET;
-            e.write(std::cout, true);
-            std::cout << "\n";
         } catch (std::exception& e) {
-            std::cout << AC_MESSAGE "ERROR: " << e.what() << AC_RESET "\n";
+            sys->message("ERROR: ", e);
         }
     }
     view_server.exit();

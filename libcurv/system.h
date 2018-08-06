@@ -31,6 +31,8 @@ struct System
 
     virtual std::ostream& console() = 0;
 
+    void message(const char* prefix, const std::exception&);
+
     // This is non-empty while a `file` operation is being evaluated.
     // It is used to detect recursive file references.
     // Later, this may change to a file cache.
