@@ -2,12 +2,21 @@
 Project Goals
 =============
 
-Short Term
-----------
-* first release of high level CSG API
-  * new geometry compiler: emit optimized GLSL, larger GL subset
-  * core language extensions. record patterns for keyword arguments
-* STL export: initial prototype
+GUI:
+* 3 pane GUI, built with Qt
+* sliders, to interactively tweak shape parameters
+
+Import/Export:
+* 'sharp' mesh export (eg, Dual Contouring)
+* 'fractal' mesh export
+* import image, voxels, mesh
+
+Language:
+* new geometry compiler: emit optimized GLSL, larger GL subset
+* packages & package manager
+
+Shape Library:
+* better library support and tutorials for important techniques
 
 Long Term
 ---------
