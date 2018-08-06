@@ -80,7 +80,7 @@ void repl(curv::System* sys)
 
     for (;;) {
         was_interrupted = false;
-        const char* line = rx.input(AC_BLUE "curv> " AC_RESET);
+        const char* line = rx.input(AC_Light_Blue "curv> " AC_RESET);
         if (line == nullptr) {
             if (errno == EAGAIN) continue;
             std::cout << "\n";
