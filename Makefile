@@ -29,5 +29,5 @@ valgrind-full: libcurv/version.h
 	cd tests; valgrind --leak-check=full ../debug/tester
 libcurv/version.h:
 	echo '#define CURV_VERSION "'`git describe --tags --always --dirty`'"' >,v
-	if cmp -s ,v libcurv/version.h; then :; else cp ,v libcurv/version.h; fi
+	if cmp -s ,v libcurv/version.h; then rm ,v; else mv ,v libcurv/version.h; fi
 .PHONY: release install test debug clean valgrind valgrind-full libcurv/version.h
