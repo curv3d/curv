@@ -104,10 +104,8 @@ poll_file(curv::System* sys, const char* editor, const char* filename)
                 } else {
                     std::cout << value << "\n";
                 }
-            } catch (curv::Exception& e) {
-                std::cout << "ERROR: " << e << "\n";
             } catch (std::exception& e) {
-                std::cout << "ERROR: " << e.what() << "\n";
+                sys->message("ERROR: ", e);
             }
         }
         // Wait for file to change or editor to quit.

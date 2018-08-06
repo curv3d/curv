@@ -2,6 +2,9 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
+extern "C" {
+#include <unistd.h>
+}
 #include <iostream>
 #include <fstream>
 
@@ -30,8 +33,9 @@ namespace fs = curv::Filesystem;
 curv::System&
 make_system(const char* argv0, std::list<const char*>& libs)
 {
+    static curv::System_Impl sys(std::cerr);
+    if (isatty(2)) sys.use_colour_ = true;
     try {
-        static curv::System_Impl sys(std::cerr);
         if (argv0 != nullptr) {
             const char* CURV_STDLIB = getenv("CURV_STDLIB");
             namespace fs = boost::filesystem;
@@ -53,11 +57,8 @@ make_system(const char* argv0, std::list<const char*>& libs)
         }
         curv::geom::add_importers(sys);
         return sys;
-    } catch (curv::Exception& e) {
-        std::cerr << "ERROR: " << e << "\n";
-        exit(EXIT_FAILURE);
     } catch (std::exception& e) {
-        std::cerr << "ERROR: " << e.what() << "\n";
+        sys.message("ERROR: ", e);
         exit(EXIT_FAILURE);
     }
 }
@@ -284,11 +285,8 @@ main(int argc, char** argv)
                 std::cout << value << "\n";
             }
         }
-    } catch (curv::Exception& e) {
-        std::cerr << "ERROR: " << e << "\n";
-        return EXIT_FAILURE;
     } catch (std::exception& e) {
-        std::cerr << "ERROR: " << e.what() << "\n";
+        sys.message("ERROR: ", e);
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
