@@ -46,17 +46,6 @@ extern "C" {
 
 View_Server view_server;
 
-void log_error(std::function<void()> f)
-{
-    try {
-        f();
-    } catch (curv::Exception& e) {
-        std::cerr << "ERROR: " << e << "\n";
-    } catch (std::exception& e) {
-        std::cerr << "ERROR: " << e.what() << "\n";
-    }
-}
-
 bool was_interrupted = false;
 
 void interrupt_handler(int)
@@ -117,9 +106,9 @@ void repl(curv::System* sys)
                 }
             }
         } catch (curv::Exception& e) {
-            std::cout << "ERROR: " << e << "\n";
+            std::cout << AC_Light_Red "ERROR: " AC_RESET << e << "\n";
         } catch (std::exception& e) {
-            std::cout << "ERROR: " << e.what() << "\n";
+            std::cout << AC_Light_Red "ERROR: " AC_RESET << e.what() << "\n";
         }
     }
     view_server.exit();
