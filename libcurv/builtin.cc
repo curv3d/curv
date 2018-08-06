@@ -2,25 +2,27 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <cassert>
-#include <cmath>
-#include <cstdlib>
-#include <string>
+#include <libcurv/builtin.h>
+
+#include <libcurv/analyser.h>
+#include <libcurv/ansi_colour.h>
+#include <libcurv/arg.h>
+#include <libcurv/array_op.h>
+#include <libcurv/exception.h>
+#include <libcurv/file.h>
+#include <libcurv/function.h>
+#include <libcurv/gl_context.h>
+#include <libcurv/math.h>
+#include <libcurv/program.h>
+#include <libcurv/system.h>
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/filesystem.hpp>
 
-#include <libcurv/arg.h>
-#include <libcurv/builtin.h>
-#include <libcurv/program.h>
-#include <libcurv/exception.h>
-#include <libcurv/file.h>
-#include <libcurv/function.h>
-#include <libcurv/system.h>
-#include <libcurv/gl_context.h>
-#include <libcurv/array_op.h>
-#include <libcurv/analyser.h>
-#include <libcurv/math.h>
+#include <cassert>
+#include <cmath>
+#include <cstdlib>
+#include <string>
 
 using namespace std;
 using namespace boost::math::double_constants;
@@ -740,7 +742,11 @@ struct Warning_Action : public Just_Action
         else
             msg = stringify(arg);
         Exception exc{At_Phrase(*source_, &f), msg};
-        f.system_.console() << "WARNING: " << exc << std::endl;
+        if (f.system_.use_colour_) f.system_.console() << AC_MESSAGE;
+        f.system_.console() << "WARNING: ";
+        if (f.system_.use_colour_) f.system_.console() << AC_RESET;
+        exc.write(f.system_.console(), f.system_.use_colour_);
+        f.system_.console() << std::endl;
     }
 };
 /// The meaning of the phrase `warning` in isolation.

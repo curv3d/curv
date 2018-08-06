@@ -52,8 +52,9 @@ public:
     /// Range of characters within script where error occurred.
     Range<const char*> range() const;
 
-    /// output the location part of an exception message (no final newline)
-    void write(std::ostream&) const;
+    /// Output the location part of an exception message (no final newline).
+    /// The `colour` flag enables colour text using ANSI ESC sequences.
+    void write(std::ostream&, bool colour) const;
 
     /// Line and column information for a Location
     ///

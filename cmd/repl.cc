@@ -69,7 +69,7 @@ void repl(curv::System* sys)
 
     for (;;) {
         was_interrupted = false;
-        const char* line = rx.input(AC_Light_Blue "curv> " AC_RESET);
+        const char* line = rx.input(AC_PROMPT "curv> " AC_RESET);
         if (line == nullptr) {
             if (errno == EAGAIN) continue;
             std::cout << "\n";
@@ -106,9 +106,11 @@ void repl(curv::System* sys)
                 }
             }
         } catch (curv::Exception& e) {
-            std::cout << AC_Light_Red "ERROR: " AC_RESET << e << "\n";
+            std::cout << AC_MESSAGE "ERROR: " AC_RESET;
+            e.write(std::cout, true);
+            std::cout << "\n";
         } catch (std::exception& e) {
-            std::cout << AC_Light_Red "ERROR: " AC_RESET << e.what() << "\n";
+            std::cout << AC_MESSAGE "ERROR: " << e.what() << AC_RESET "\n";
         }
     }
     view_server.exit();
@@ -116,6 +118,7 @@ void repl(curv::System* sys)
 
 void interactive_mode(curv::System& sys)
 {
+    sys.use_colour_ = true;
     std::thread repl_thread(repl, &sys);
     view_server.run();
     if (repl_thread.joinable())

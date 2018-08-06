@@ -70,7 +70,9 @@ struct Exception_Base : public std::exception
 {
     Exception_Base(const char* msg);
     Exception_Base(Shared<const String>);
-    virtual void write(std::ostream&) const;
+    // write: Print the exception text, with no final newline.
+    // The 'colour' flag enables coloured text, using ANSI ESC sequences.
+    virtual void write(std::ostream&, bool colour) const;
     virtual const char* what() const noexcept;
     Shared<const String> const shared_what() { return message_; }
 private:
@@ -80,7 +82,7 @@ private:
 inline
 std::ostream& operator<<(std::ostream& out, const Exception_Base& exc)
 {
-    exc.write(out);
+    exc.write(out, false);
     return out;
 }
 
@@ -88,9 +90,9 @@ struct Context;
 
 /// Virtual base class for Curv compile time and run time errors.
 ///
-/// Has two parts: a message (returned by what()), and a location() that
-/// specifies where the error occurred.
-/// These two parts are printed separately (see write()).
+/// Has two parts: a message (returned by what() or shared_what()),
+/// and a stack trace that specifies where the error occurred.
+/// Both parts are printed by write().
 struct Exception : public Exception_Base
 {
     // TODO: use std::shared_ptr so copy-ctor doesn't throw?
@@ -99,17 +101,16 @@ struct Exception : public Exception_Base
     Exception(const Context& cx, const char* msg);
     Exception(const Context& cx, Shared<const String> msg);
 
-    /// write the message and location to a stream.
-    ///
-    /// Multiple lines may be written, but no final newline.
-    virtual void write(std::ostream&) const override;
+    // Write the message and stack trace to a stream.
+    // Multiple lines may be written, but no final newline.
+    virtual void write(std::ostream&, bool colour) const override;
 };
 
 Shared<const String> illegal_character_message(char ch);
 
 inline std::ostream& operator<<(std::ostream& out, const Exception& e)
 {
-    e.write(out);
+    e.write(out, false);
     return out;
 }
 

@@ -32,4 +32,9 @@
 #define AC_Yellow           "\x1b[1;33m"
 #define AC_White            "\x1b[1;37m"
 
+// Curv colour scheme
+#define AC_PROMPT   AC_Dark_Grey
+#define AC_MESSAGE  AC_Light_Red
+#define AC_CARET    AC_Light_Red
+
 #endif

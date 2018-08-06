@@ -3,15 +3,17 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/exception.h>
-#include <libcurv/string.h>
+
+#include <libcurv/ansi_colour.h>
 #include <libcurv/context.h>
-#include <sstream>
+#include <libcurv/string.h>
 #include <boost/format.hpp>
+#include <sstream>
 
 namespace curv {
 
 void
-Exception_Base::write(std::ostream& out) const
+Exception_Base::write(std::ostream& out, bool) const
 {
     out << *message_;
 }
@@ -59,12 +61,14 @@ illegal_character_message(char ch)
 }
 
 void
-Exception::write(std::ostream& out) const
+Exception::write(std::ostream& out, bool colour) const
 {
+    if (colour) out << AC_MESSAGE;
     out << what();
+    if (colour) out << AC_RESET;
     for (auto L : loc_) {
         out << "\n";
-        L.write(out);
+        L.write(out, colour);
     }
 }
 
