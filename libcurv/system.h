@@ -31,6 +31,8 @@ struct System
 
     virtual std::ostream& console() = 0;
 
+    // Write an error message on the console, given an exception object.
+    // Special behaviour for curv::Exception. Honours `use_colour_`.
     void message(const char* prefix, const std::exception&);
 
     // This is non-empty while a `file` operation is being evaluated.
