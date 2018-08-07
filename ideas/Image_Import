@@ -2,11 +2,61 @@ Import a 2D image file
 ======================
 TODO:
 -----
+* Script and Location
+  * A PNG file is now considered a "source file", and hence can be named
+    in a stack trace item. Two cases:
+     1. Just print the file name:
+           At file "foo.png"
+        Eg, an error in the `dist` or `colour` members of the shape record.
+     2. Print filename and byte offset+length, when reporting an error while
+        parsing the image file.
+    These are the two cases for a Location that references a PNG file.
+  * Need to generalize the Script class so that it can denote a PNG file, and
+    contain the pathname, without containing the raw file data. I will rename
+    this class to Source, with subclasses Source_File, Source_String,
+    Source_Buffer. An instance of the base class Source may contain a pathname
+    and no file contents.
+  * Maybe `Source_Image` contains the pixel array, instead of `Image_Data`.
+
+* `curv foo.png` imports foo.png, converts to value, displays or exports it.
+        curv::Shared<curv::Script> script;
+        if (expr) {
+            script = curv::make<CString_Script>("", filename);
+        } else {
+            script = curv::make<curv::File_Script>(
+                curv::make_string(filename), curv::Context{});
+        }
+
+        curv::Program prog{*script, sys};
+        prog.compile();
+        auto value = prog.eval();
+
+        if (exporter) {
+            exporter->call(value, prog, eparams, ofile);
+            ofile.commit();
+        } else {
+            curv::geom::Shape_Program shape{prog};
+            if (shape.recognize(value)) {
+                print_shape(shape);
+                curv::geom::viewer::Viewer viewer;
+                viewer.set_shape(shape);
+                viewer.run();
+            } else {
+                std::cout << value << "\n";
+            }
+        }
+  This code requires a Program and a Value. How do we construct the Program?
+  * How is the Program used?
+     * Shape_Program shape{prog}; shape.recognize(value)
+       * init nub_ from nub_phrase(prog.phrase_)
+         * nub_ is used by At_Program.
+       * init system_ from prog.system_
+     * At_Program cx{prog}
+
 * import_png constructs a shape, one initially not recognized by the Viewer.
-  * Image is a subclass of Record. The map is populated during construction.
-  * Or, just construct a Record.
+  * An image value is just a Record.
   * The image data is loaded immediately (for now) into an Image_Data object,
-    which is referenced by the Image, and by field values in the map.
+    which is referenced by field values in the Record.
   * field values:
     * is_2d: true
     * is_3d: false
@@ -18,9 +68,6 @@ TODO:
       image list, references a uniform sampler2d.
     * call: class Image_Call. Later.
     * data: DEFERRED.
-
-* PNG export (for finite 2D shapes) would be a nice complement to this work.
-  See Image_Export.
 
 * Image_Data is an abstract list value. DEFERRED.
   Internally, it is a 2D array of 8bit*3 sRGB values.
