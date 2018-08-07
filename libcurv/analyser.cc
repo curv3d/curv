@@ -415,6 +415,13 @@ Let_Phrase::analyse(Environ& env) const
 Shared<Meaning>
 Where_Phrase::analyse(Environ& env) const
 {
+    // Deprecation warning if right argument not parenthesized.
+    if (!isa<const Paren_Phrase>(right_)) {
+        Exception exc{At_Token(right_->location().starting_at(op_), env),
+            "right argument of `where` must be parenthesized"};
+        env.system_.message("DEPRECATION WARNING: ", exc);
+    }
+
     Shared<const Phrase> source = share(*this);
     Shared<Phrase> bindings = right_;
     Shared<const Phrase> bodysrc = left_;

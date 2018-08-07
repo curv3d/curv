@@ -8,6 +8,7 @@ cone{d:2, h:3}
 //>> colour (sRGB.HSV(.5,.5,.9))
 >> colour marble
 
-where
+where (
 include file "lib/experimental.curv";
 marble(x,y,z,t) = smoke(x,y,z,z*5);
+)

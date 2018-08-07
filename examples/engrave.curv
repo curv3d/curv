@@ -8,7 +8,7 @@ row [
     emboss .2 pattern target
 ]
 
-where
+where (
 engrave depth pattern target =
     difference (target,
         intersection (
@@ -17,3 +17,4 @@ engrave depth pattern target =
     );
 
 emboss i pat shape = morph i (shape, intersection(shape, pat));
+)

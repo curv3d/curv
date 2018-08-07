@@ -2,7 +2,7 @@
 
 menger 4
 
-where
+where (
 menger n =
     let cutout =
         union[
@@ -13,3 +13,4 @@ menger n =
        `difference` cutout
        `difference` reflect_yz cutout
        `difference` reflect_xz cutout;
+)

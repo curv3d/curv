@@ -32,9 +32,10 @@ Here is a larger example, which constructs a lollipop shape::
   in
   union(candy, stick)
 
-  where
+  where (
   candy = sphere diam >> colour red;
   stick = cylinder{h: len, d: diam/8} >> move(0,0,-len/2);
+  )
 
 This illustrates a common coding pattern,
 where you place model parameters at the top of the program
@@ -90,8 +91,9 @@ Here is how the lollipop example could be split into 3 source files:
 ``lollipop.curv``::
 
   union(candy, stick)
-  where
+  where (
   include file "lolli-lib.curv";
+  )
 
 ``lolli-parameters.curv``::
 

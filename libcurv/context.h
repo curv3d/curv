@@ -55,6 +55,7 @@ struct At_Token : public Context
 
     At_Token(Token, const Scanner&);
     At_Token(Token, const Phrase&, Environ&);
+    At_Token(Location, Environ&);
 
     virtual void get_locations(std::list<Location>&) const override;
 };

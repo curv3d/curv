@@ -4,7 +4,8 @@ union (
 )
 //>> show_dist
 
-where
+where (
 h = 5;
 ftwist t = sin(t/2) * (tau/h);
 include file "lib/animate.curv";
+)

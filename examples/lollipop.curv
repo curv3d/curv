@@ -5,6 +5,7 @@ len = 4;
 in
 union(candy, stick)
 
-where
+where (
 candy = sphere diam >> colour red;
 stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
+)

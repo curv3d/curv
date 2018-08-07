@@ -4,7 +4,7 @@ row [
     sphere 20 >> texture (i_gyroid, sRGB.grey)
 ]
 
-where
+where (
 gyroid_bones = gyroid >> offset (-1.2) >> lipschitz 1.5;
 gyroid_bones2 = complement gyroid >> offset (-1.2) >> lipschitz 1.5;
 double_gyroid_bones = union(
@@ -13,3 +13,4 @@ double_gyroid_bones = union(
 );
 
 gyroid_surface = shell (.2) gyroid >> lipschitz 1.5;
+)

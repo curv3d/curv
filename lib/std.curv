@@ -278,7 +278,7 @@ half_space = (
     [a, b, c] -> impl(a, normalize(cross(b-a,c-b)));
     {at: a, normal: n} -> impl(a,n);
     ]
-where
+where (
     impl(a,n) = // a is point on boundary, n is unit normal
         make_shape {
             dist(x,y,z,_) = dot(-n, a-[x,y,z]);
@@ -290,7 +290,7 @@ where
                        if (n[X]==0 && n[Y]==0 && n[Z]>0) a[Z] else inf, ] ];
             is_3d = true;
         };
-);
+));
 
 half_plane = (
     match [
@@ -298,7 +298,7 @@ half_plane = (
     [a, b] -> impl(a, normalize(perp(b-a)));
     {at: a, normal: n} -> impl(a,n);
     ]
-where
+where (
     impl(a,n) = // a is point on boundary, n is unit normal
         make_shape {
             dist(x,y,_,_) = dot(-n, a-[x,y]);
@@ -310,7 +310,7 @@ where
                        0, ], ];
             is_2d = true;
         };
-);
+));
 
 square = (
     {
@@ -325,7 +325,7 @@ square = (
             ... square_m 2,
             call : square_m,
         },
-    } where
+    } where (
         square_m d =
             let r = d / 2;
             in make_shape {
@@ -334,7 +334,7 @@ square = (
                 is_2d = true;
             };
         square_e d = rect.exact(d,d);
-);
+));
 
 // rect: an axis aligned rectangle.
 rect = {
@@ -417,11 +417,11 @@ regular_polygon n = (
         call: mitred,
         mitred: mitred,
         circumratio : 1 / cos(angle/2),
-    } where
+    } where (
         angle = tau / n;
         mitred d = half_plane{d: d/2, normal: [0,-1]}
                    >> repeat_radial n;
-);
+));
 
 // convex polygon: vertices are in counterclockwise order.
 convex_polygon = {
@@ -497,9 +497,9 @@ prism n = ({
         ... prism_m {d: 2, h: 2},
         call : prism_m,
     },
-} where
+} where (
     prism_m {d,h} = regular_polygon n .mitred d >> extrude.mitred h;
-);
+));
 
 // TODO: pyramid(n,d,h)
 
@@ -513,7 +513,7 @@ tetrahedron = (
         },
         // radius of circumscribed sphere / radius of inscribed sphere
         circumratio : (sqrt(3/2)/2) / (1/(2*sqrt 6)),
-    } where
+    } where (
         tetrahedron_m d =
             let r = d / 2;
                 // vertices of a tetrahedron
@@ -541,7 +541,7 @@ tetrahedron = (
                 is_3d : true,
                 bbox : sqrt(3) * [[-r,-r,-r], [r,r,r]],
             };
-);
+));
 
 cube = (
     {
@@ -557,7 +557,7 @@ cube = (
             call: cube_m
         },
     }
-    where
+    where (
         cube_m d =
             let r = d / 2;
             in make_shape {
@@ -566,7 +566,7 @@ cube = (
                 is_3d = true;
             };
         cube_e d = box.exact(d,d,d);
-);
+));
 
 octahedron = (
     {
@@ -577,7 +577,7 @@ octahedron = (
             ... octahedron_m 2,
             call: octahedron_m
         },
-    } where
+    } where (
         octahedron_m d =
             let r = d / 2;
                 v0 = normalize(1,1,1);
@@ -597,7 +597,7 @@ octahedron = (
                 is_3d : true,
                 bbox : circumratio * [[-r,-r,-r], [r,r,r]],
             };
-);
+));
 
 dodecahedron = (
     {
@@ -608,7 +608,7 @@ dodecahedron = (
             ... dodecahedron_m 2,
             call: dodecahedron_m
         },
-    } where
+    } where (
         dodecahedron_m d =
             let r = d / 2;
                 v0 = normalize(0, phi, 1);
@@ -632,7 +632,7 @@ dodecahedron = (
                 is_3d : true,
                 bbox : midratio * [[-r,-r,-r],[r,r,r]],
             };
-);
+));
 
 icosahedron = (
     {
@@ -643,7 +643,7 @@ icosahedron = (
             ... icosahedron_m 2,
             call: icosahedron_m
         },
-    } where
+    } where (
         icosahedron_m d =
             let r = d / 2;
                 v0 = normalize(1,1,1);
@@ -676,7 +676,7 @@ icosahedron = (
                 is_3d : true,
                 bbox : midratio * [[-r,-r,-r], [r,r,r]],
             };
-);
+));
 
 /////////////////////////////////////////////
 // BOOLEAN / SET THEORETIC SHAPE OPERATORS //
@@ -736,7 +736,7 @@ symmetric_difference shapes = difference(union shapes, intersection shapes);
 row = (match [
     (is_num d) -> shapes -> row_impl(d,shapes);
     shapes -> row_impl(null, shapes);
-] where
+] where (
     row_impl(d,shapes) =
         let widths = [for (s in shapes) size s [X]];
             gap = if (d==null) max widths / 4 else d;
@@ -751,7 +751,7 @@ row = (match [
                 i := i + 1;
             );
         in union[for (i in 0..<count shapes) shapes[i] >> move(xdelta[i],0,0)];
-);
+));
 
 smooth k = {
     union (s1,s2) =

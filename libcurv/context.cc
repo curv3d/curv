@@ -47,6 +47,13 @@ At_Token::At_Token(Token tok, const Phrase& phrase, Environ& env)
 {
 }
 
+At_Token::At_Token(Location loc, Environ& env)
+:
+    loc_(std::move(loc)),
+    eval_frame_{env.eval_frame_}
+{
+}
+
 void
 At_Token::get_locations(std::list<Location>& locs) const
 {
