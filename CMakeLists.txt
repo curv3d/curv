@@ -56,7 +56,7 @@ FILE(GLOB LibCurvGeomSrc "libcurv/geom/*.cc" "libcurv/geom/viewer/*.cc")
 add_library(libcurv_geom ${LibCurvGeomSrc})
 set_property(TARGET libcurv_geom PROPERTY OUTPUT_NAME curv_geom)
 
-file(GLOB Src "cmd/*.c" "cmd/*.cc")
+file(GLOB Src "curv/*.c" "curv/*.cc")
 add_executable(curv ${Src})
 target_link_libraries(curv PUBLIC libcurv libcurv_geom GlslViewer glfw ${LibOpenGL} replxx double-conversion boost_iostreams boost_filesystem boost_system openvdb_static Half tbb dl pthread)
 
