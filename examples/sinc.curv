@@ -5,9 +5,9 @@ sinc x = if (x == 0) 1 else sin x / x;
 
 in
 make_shape {
-  dist(x,y,z,t) = z - sinc(mag[x,y])*10;
+  dist(x,y,z,t) = abs(z - sinc(mag[x,y])*10) - 1;
   is_3d = true;
 }
 >> lipschitz 5
-`intersection` box(40,40,20)
-`intersection` box{zmin: -5}
+`intersection` box(40,40,40)
+//>> slice_xz >> show_dist

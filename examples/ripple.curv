@@ -1,5 +1,0 @@
-let
-include file "lib/experimental.curv";
-
-in
-box (40,40,1) >> ripple >> lipschitz 2

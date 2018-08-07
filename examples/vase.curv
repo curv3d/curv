@@ -10,5 +10,5 @@ cone{d:2, h:3}
 
 where (
 include file "lib/experimental.curv";
-marble(x,y,z,t) = smoke(x,y,z,z*5);
+marble(x,y,z,t) = smoke(x,y,z,z*10);
 )
