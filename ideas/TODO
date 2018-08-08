@@ -3,8 +3,8 @@ Current TODO List:
   * Install Ubuntu 18.04. Bleeding edge Mesa + 16.04 is likely a bad idea.
     Also, the 18.04 version of Nouveau might work better than a black screen.
 * Image Export.
-  * PNG export options: transparent background (RGB vs RGBA), antialiasing.
-  * APNG export.
+  * PNG export options: transparent background (RGB vs RGBA), antialiasing, time= for animation frame.
+  * multi-image export: time='0..3 by 1/12'
 * Image Import.
 * Mesh Export.
   * Refactor mesh export. Core->libcurv/geom. Error for bad -O flag.
