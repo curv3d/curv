@@ -80,18 +80,10 @@ bool Viewer::draw_frame()
 {
     if (glfwWindowShouldClose(window_))
         return false;
-
-    // Update
-    updateGL();
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Draw
-    draw();
-
-    // Swap the buffers
-    renderGL();
-
+    render();
+    swap_buffers();
+    poll_events();
+    measure_time();
     return true;
 }
 
@@ -138,14 +130,16 @@ void Viewer::setup()
 
 }
 
-void Viewer::draw()
+void Viewer::render()
 {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     shader_.use();
 
     // Pass uniforms
     shader_.setUniform("u_resolution", getWindowWidth(), getWindowHeight());
     if (shader_.needTime()) {
-        shader_.setUniform("u_time", float(fTime_));
+        shader_.setUniform("u_time", float(current_time_));
     }
     if (shader_.needView2d()) {
         shader_.setUniform("u_view2d", u_view2d_);
@@ -377,13 +371,13 @@ void Viewer::debounceSetWindowTitle(std::string title)
     lastUpdated = now;
 }
 
-void Viewer::updateGL()
+void Viewer::measure_time()
 {
     // Update time
     // --------------------------------------------------------------------
     double now = glfwGetTime();
-    double fDelta = now - fTime_;
-    fTime_ = now;
+    double fDelta = now - current_time_;
+    current_time_ = now;
 
     static int frame_count = 0;
     static double lastTime = 0.0;
@@ -398,10 +392,14 @@ void Viewer::updateGL()
     // EVENTS
     std::string title = appTitle + " FPS:" + std::to_string(fFPS_);
     debounceSetWindowTitle(title);
+}
+
+void Viewer::poll_events()
+{
     glfwPollEvents();
 }
 
-void Viewer::renderGL()
+void Viewer::swap_buffers()
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(10)); // TODO FIXME
     glfwSwapBuffers(window_);

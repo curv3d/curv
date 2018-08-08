@@ -20,6 +20,7 @@ struct Export_Params
     [[noreturn]] void unknown_parameter(const Map::value_type&) const;
     [[noreturn]] void bad_argument(const Map::value_type&, const char*) const;
     int to_int(const Map::value_type&, int, int) const;
+    double to_double(const Map::value_type&) const;
 };
 
 struct Exporter

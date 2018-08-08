@@ -70,7 +70,7 @@ struct Viewer
     glm::ivec4 viewport_;
     float fPixelDensity_ = 1.0;
     Vbo* vbo_ = nullptr;
-    double fTime_ = 0.0;
+    double current_time_ = 0.0;
     double fFPS_ = 0.0;
 
     glm::mat3 u_view2d_ = glm::mat3(1.);
@@ -96,14 +96,15 @@ struct Viewer
     // INTERNAL FUNCTIONS
     void initGL(glm::ivec4 &_viewport, bool _headless = false);
     void setup();
-    void draw();
     void onKeyPress(int);
     void onMouseMove(double, double);
     void onScroll(float);
     void onMouseDrag(float, float, int);
+    void render();
+    void swap_buffers();
+    void poll_events();
+    void measure_time();
     void debounceSetWindowTitle(std::string);
-    void renderGL();
-    void updateGL();
     void closeGL();
     float getPixelDensity();
     void onExit();

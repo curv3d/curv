@@ -52,6 +52,16 @@ int Export_Params::to_int(const Map::value_type& p, int lo, int hi) const
     bad_argument(p, "argument is not an integer");
 }
 
+double Export_Params::to_double(const Map::value_type& p) const
+{
+    const char* str = p.second.c_str();
+    char *endptr;
+    double result = strtod(str, &endptr);
+    if (*str == '\0' || *endptr != '\0' || result != result)
+        bad_argument(p, "argument is not a number");
+    return result;
+}
+
 void export_curv(curv::Value value,
     curv::Program&,
     const Export_Params&,
@@ -185,13 +195,16 @@ void export_json(curv::Value value,
 
 const char export_png_help[] =
     "-O xsize=<image width in pixels>\n"
-    "-O ysize=<image height in pixels>\n";
+    "-O ysize=<image height in pixels>\n"
+    "-O time=<animation frame timestamp, in seconds, default 0>\n";
 
 void export_png(curv::Value value,
     curv::Program& prog,
     const Export_Params& params,
     curv::Output_File& ofile)
 {
+    curv::geom::Image_Export ix;
+
     int xsize = 0;
     int ysize = 0;
     for (auto& p : params.map) {
@@ -199,6 +212,8 @@ void export_png(curv::Value value,
             xsize = params.to_int(p, 1, INT_MAX);
         } else if (p.first == "ysize") {
             ysize = params.to_int(p, 1, INT_MAX);
+        } else if (p.first == "time") {
+            ix.time = params.to_double(p);
         } else {
             params.unknown_parameter(p);
         }
@@ -214,8 +229,6 @@ void export_png(curv::Value value,
         throw curv::Exception(cx, "can't export an empty shape to PNG");
     double dx = shape.bbox_.xmax - shape.bbox_.xmin;
     double dy = shape.bbox_.ymax - shape.bbox_.ymin;
-    glm::ivec2 size;
-    double pixsize;
     if (!xsize && !ysize) {
         if (dx > dy)
             xsize = 500;
@@ -223,23 +236,23 @@ void export_png(curv::Value value,
             ysize = 500;
     }
     if (xsize && !ysize) {
-        size.x = xsize;
-        pixsize = dx / double(xsize);
-        size.y = (int) round(dy / dx * double(xsize));
-        if (size.y == 0) ++size.y;
+        ix.size.x = xsize;
+        ix.pixel_size = dx / double(xsize);
+        ix.size.y = (int) round(dy / dx * double(xsize));
+        if (ix.size.y == 0) ++ix.size.y;
     } else if (!xsize && ysize) {
-        size.y = ysize;
-        pixsize = dy / double(ysize);
-        size.x = (int) round(dx / dy * double(ysize));
-        if (size.x == 0) ++size.x;
+        ix.size.y = ysize;
+        ix.pixel_size = dy / double(ysize);
+        ix.size.x = (int) round(dx / dy * double(ysize));
+        if (ix.size.x == 0) ++ix.size.x;
     } else {
-        size.x = xsize;
-        size.y = ysize;
-        pixsize = std::min(dx / double(xsize), dy / double(ysize));
+        ix.size.x = xsize;
+        ix.size.y = ysize;
+        ix.pixel_size = std::min(dx / double(xsize), dy / double(ysize));
     }
-    std::cerr << "Image export: "<<size.x<<"×"<<size.y<<" pixels."
+    std::cerr << "Image export: "<<ix.size.x<<"×"<<ix.size.y<<" pixels."
         " Use 'curv --help -o png' for help.\n";
-    curv::geom::export_png(shape, size, pixsize, ofile);
+    curv::geom::export_png(shape, ix, ofile);
 }
 
 std::map<std::string, Exporter> exporters = {

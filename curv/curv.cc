@@ -116,6 +116,9 @@ main(int argc, char** argv)
             std::cout << help_suffix;
             return EXIT_SUCCESS;
         }
+        std::cerr << argv[2] << ": bad argument to --help\n"
+                  << "Use " << argv0 << " --help for help.\n";
+        return EXIT_FAILURE;
     }
 
     // Handle 'curv --version'.
