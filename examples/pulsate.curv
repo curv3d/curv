@@ -12,6 +12,6 @@ make_shape {
     colour(x,y,z,t) =
         let ph = mod(phase(x,y),tau/16)/(tau/16);
         in sRGB.HSV(.1,.8,ph/2+.5);
-    bbox = [[-1,-1,-1],[1,1,1]];
+    bbox = [[-3,-3,-3],[3,3,3]];
     is_3d = true;
 } >> lipschitz 2
