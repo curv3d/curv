@@ -59,10 +59,14 @@ vendor supplied GPU driver.
   For AMD GPUs, you need the AMDGPU-PRO driver, which is
   only officially supported on Ubuntu LTS, Red Hat and SUSE. There are
   fewer limitations if you use Intel integrated graphics or an Nvidia GPU.
-* If Curv is invoked remotely via vncviewer, then it might not have direct
-  access to GPU hardware.
+* If Curv is invoked within a VNC session, then it might not have direct
+  access to GPU hardware. Curv requires a GPU accelerated VNC server.
+  Try `TurboVNC`_ combined with `VirtualGL`_.
 * If Curv is run inside a VM, then it might not have direct access to the GPU.
   You need to ensure that the VM is GPU accelerated.
+
+.. _`TurboVNC`: https://turbovnc.org/About/Introduction
+.. _`VirtualGL`: https://virtualgl.org/About/Introduction
 
 ..
   In the future, the geometry engine will be rewritten for scaleability
