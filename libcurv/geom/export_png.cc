@@ -28,6 +28,7 @@ export_png(
         shape.bbox_.xmin - overpaint.x/2.0 + p.pixel_size/2.0,
         shape.bbox_.ymax + overpaint.y/2.0 - p.pixel_size/2.0,
     };
+    (void) origin; // TODO
 
     viewer::Viewer v;
     v.window_pos_and_size_.z = p.size.x;
