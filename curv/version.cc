@@ -113,6 +113,18 @@ print_cpu(std::ostream&)
     // see https://github.com/dylanaraps/neofetch
 }
 
+void
+print_compiler(std::ostream& out)
+{
+    #if defined __clang_version__
+        out << "Compiler: clang " << __clang_version__ << "\n";
+    #elif defined __GNUC__
+        out << "Compiler: gcc " << __VERSION__ << "\n";
+    #else
+        (void) out;
+    #endif
+}
+
 // Print version information useful for bug reports.
 // Inspiration: openscad --info,
 // and neofetch, which displays terse and readable system information:
@@ -123,5 +135,6 @@ print_version(std::ostream& out)
     out << "Curv: " << CURV_VERSION << "\n";
     print_os(out);
     print_cpu(out);
+    print_compiler(out);
     print_gpu(out); // Last info printed, due to crashiness.
 }
