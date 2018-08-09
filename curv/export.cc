@@ -221,37 +221,52 @@ void export_png(curv::Value value,
 
     curv::geom::Shape_Program shape(prog);
     curv::At_Program cx(prog);
-    if (!shape.recognize(value) || !shape.is_2d_)
-        throw curv::Exception(cx, "not a 2D shape");
-    if (shape.bbox_.infinite2())
-        throw curv::Exception(cx, "can't export an infinite shape to PNG");
-    if (shape.bbox_.empty2())
-        throw curv::Exception(cx, "can't export an empty shape to PNG");
-    double dx = shape.bbox_.xmax - shape.bbox_.xmin;
-    double dy = shape.bbox_.ymax - shape.bbox_.ymin;
-    if (!xsize && !ysize) {
-        if (dx > dy)
-            xsize = 500;
-        else
-            ysize = 500;
-    }
-    if (xsize && !ysize) {
-        ix.size.x = xsize;
-        ix.pixel_size = dx / double(xsize);
-        ix.size.y = (int) round(dy / dx * double(xsize));
-        if (ix.size.y == 0) ++ix.size.y;
-    } else if (!xsize && ysize) {
-        ix.size.y = ysize;
-        ix.pixel_size = dy / double(ysize);
-        ix.size.x = (int) round(dx / dy * double(ysize));
-        if (ix.size.x == 0) ++ix.size.x;
+    if (!shape.recognize(value))
+        throw curv::Exception(cx, "not a shape");
+    if (shape.is_2d_) {
+        if (shape.bbox_.infinite2())
+            throw curv::Exception(cx, "can't export an infinite 2D shape to PNG");
+        if (shape.bbox_.empty2())
+            throw curv::Exception(cx, "can't export an empty 2D shape to PNG");
+        double dx = shape.bbox_.xmax - shape.bbox_.xmin;
+        double dy = shape.bbox_.ymax - shape.bbox_.ymin;
+        if (!xsize && !ysize) {
+            if (dx > dy)
+                xsize = 500;
+            else
+                ysize = 500;
+        }
+        if (xsize && !ysize) {
+            ix.size.x = xsize;
+            ix.pixel_size = dx / double(xsize);
+            ix.size.y = (int) round(dy / dx * double(xsize));
+            if (ix.size.y == 0) ++ix.size.y;
+        } else if (!xsize && ysize) {
+            ix.size.y = ysize;
+            ix.pixel_size = dy / double(ysize);
+            ix.size.x = (int) round(dx / dy * double(ysize));
+            if (ix.size.x == 0) ++ix.size.x;
+        } else {
+            ix.size.x = xsize;
+            ix.size.y = ysize;
+            ix.pixel_size = std::min(dx / double(xsize), dy / double(ysize));
+        }
     } else {
-        ix.size.x = xsize;
-        ix.size.y = ysize;
-        ix.pixel_size = std::min(dx / double(xsize), dy / double(ysize));
+        // 3D export to PNG is basically a screenshot.
+        // We ignore the bounding box.
+        if (!xsize && !ysize)
+            ix.size.x = ix.size.y = 500;
+        else if (!xsize)
+            ix.size.x = ix.size.y = ysize;
+        else if (!ysize)
+            ix.size.x = ix.size.y = xsize;
+        else {
+            ix.size.x = xsize;
+            ix.size.y = ysize;
+        }
     }
     std::cerr << "Image export: "<<ix.size.x<<"×"<<ix.size.y<<" pixels."
-        " Use 'curv --help -o png' for help.\n";
+        " Use 'curv --help -o png' for more options.\n";
     curv::geom::export_png(shape, ix, ofile);
 }
 
@@ -266,5 +281,5 @@ std::map<std::string, Exporter> exporters = {
               ""}},
     {"json", {export_json, "JSON expression", ""}},
     {"cpp", {export_cpp, "C++ source file (shape only)", ""}},
-    {"png", {export_png, "PNG image file (2D shape only)", export_png_help}},
+    {"png", {export_png, "PNG image file (shape only)", export_png_help}},
 };
