@@ -22,6 +22,12 @@ TODO:
        2. use class Asset, File_Asset, String_Asset, CString_Asset, Image_Asset.
   * Maybe `Source_Image` contains the pixel array, instead of `Image_Data`.
 
+* Command line arguments are source code (for printing errors).
+  Numeric arguments are Curv expressions.
+     ERROR: bad numeral
+     1| -O time=42foo
+                ^^^^^
+
 * `curv foo.png` imports foo.png, converts to value, displays or exports it.
         curv::Shared<curv::Script> script;
         if (expr) {

@@ -1,0 +1,56 @@
+Currently I use -O options to specify parameters for file export.
+I need to add an antialiasing (aa) parameter.
+This leads deep into a rabbit hole.
+
+Level 1
+-------
+I need 'aa' for PNG export, but it's implemented down in FRAG export.
+So '-O aa=' also makes sense for FRAG export.
+
+For consistency with other exporters, it makes sense to add a Frag_Export
+argument to export_frag().
+Populate this with the 'aa' parameter, where available.
+
+I also considered adding 'aa' to Shape_Program. See also: Level 4.
+
+Level 2
+-------
+aa makes sense in any context that uses the viewer:
+- batch mode, default output
+- repl mode
+- live mode
+
+How does a user control aa in all of the viewer modes?
+First of all, via command line:
+* Maybe '-O aa=n' works in all modes.
+* It's no longer tied to -o, so consider a name change?
+  * Maybe `-D` (for define).
+  * Maybe replace `-O aa=4` with `--aa=4` (nonstandard arg parsing).
+  * or `-aa=4` (cc style arg parsing)
+
+Level 3
+-------
+In REPL mode, it would be nice if you could modify this parameter
+interactively. Here we are setting a global variable that affects all future
+viewer invocations.
+* `aa=4` seems like the obvious gesture.
+* If this is for some reason unacceptable, maybe an action: `set "aa" 4`,
+  where `set` is a REPL only binding. Plus a way to view current render
+  parameters.
+
+Level 4
+-------
+If you can set render parameters in the REPL, maybe you should also be able
+to set them in the model's source code.
+* OpenSCAD has $variables for this, eg camera position.
+* Fragmentarium has a large collection of render parameters, which are treated
+  the same way as model parameters--you can set all these parameters in the
+  frag source, you get sliders for all these parameters, they are implemented
+  as uniform variables.
+
+Given the way Curv works, a shape program needs to return a value containing
+both the geometry to be rendered, plus the render parameters.
+* Add render parameters to the shape value.
+  These parameters would be discarded if shape operators are applied.
+* Return a Rendered_Shape object that contains a shape and render parameters.
+  This is not itself a shape.
