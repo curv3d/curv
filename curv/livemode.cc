@@ -100,7 +100,8 @@ poll_file(curv::System* sys, const char* editor, const char* filename)
                 curv::geom::Shape_Program shape{prog};
                 if (shape.recognize(value)) {
                     print_shape(shape);
-                    live_view_server.display_shape(shape);
+                    curv::geom::Frag_Export opts;
+                    live_view_server.display_shape(shape, opts);
                 } else {
                     std::cout << value << "\n";
                 }

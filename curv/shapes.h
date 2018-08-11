@@ -6,9 +6,11 @@
 #define SHAPES_H
 
 #include <libcurv/geom/shape.h>
+#include <libcurv/geom/export_frag.h>
 #include <string>
 
-void print_shape(curv::geom::Shape_Program& shape);
-std::string shape_to_frag(curv::geom::Shape_Program& shape);
+void print_shape(const curv::geom::Shape_Program&);
+std::string shape_to_frag(
+    const curv::geom::Shape_Program&, const curv::geom::Frag_Export&);
 
 #endif // include guard

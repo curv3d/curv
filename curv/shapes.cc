@@ -3,13 +3,14 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include "shapes.h"
-#include <libcurv/geom/export_frag.h>
+
 #include <libcurv/function.h>
 #include <sstream>
 #include <iostream>
 
 void
-print_shape(curv::geom::Shape_Program& shape)
+print_shape(
+    const curv::geom::Shape_Program& shape)
 {
     if (shape.is_2d_) std::cerr << "2D";
     if (shape.is_2d_ && shape.is_3d_) std::cerr << "/";
@@ -23,9 +24,11 @@ print_shape(curv::geom::Shape_Program& shape)
 }
 
 std::string
-shape_to_frag(curv::geom::Shape_Program& shape)
+shape_to_frag(
+    const curv::geom::Shape_Program& shape,
+    const curv::geom::Frag_Export& opts)
 {
     std::stringstream f;
-    export_frag(shape, f);
+    export_frag(shape, opts, f);
     return f.str();
 }

@@ -9,8 +9,8 @@
 
 #include <libcurv/geom/viewer/viewer.h>
 
-#include <time.h>
-#include <sys/time.h>
+//#include <time.h>
+//#include <sys/time.h>
 
 #include <iostream>
 #include <sstream>
@@ -18,7 +18,6 @@
 #include <thread>
 
 #include <libcurv/string.h>
-#include <libcurv/geom/export_frag.h>
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
 
@@ -36,10 +35,10 @@ Viewer::Viewer()
 }
 
 void
-Viewer::set_shape(const Shape_Program& shape)
+Viewer::set_shape(const Shape_Program& shape, const Frag_Export& opts)
 {
     std::stringstream f;
-    export_frag(shape, f);
+    export_frag(shape, opts, f);
     fragsrc_ = f.str();
     if (is_open()) {
         shader_.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);

@@ -10,9 +10,10 @@
 #ifndef LIBCURV_GEOM_VIEWER_VIEWER_H
 #define LIBCURV_GEOM_VIEWER_VIEWER_H
 
-#include <glm/glm.hpp>
+#include <libcurv/geom/export_frag.h>
 #include <gl/shader.h>
 #include <gl/vbo.h>
+#include <glm/glm.hpp>
 
 namespace curv { namespace geom {
 
@@ -27,7 +28,7 @@ struct Viewer
 
     // Set the current shape. May be called at any time, before opening the
     // window, or while the window is open.
-    void set_shape(const Shape_Program&);
+    void set_shape(const Shape_Program&, const Frag_Export&);
 
     bool is_open() { return window_ != nullptr; }
 

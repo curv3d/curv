@@ -96,7 +96,8 @@ void repl(curv::System* sys)
                     curv::geom::Shape_Program shape{prog};
                     if (shape.recognize(den.second->front())) {
                         print_shape(shape);
-                        view_server.display_shape(shape);
+                        curv::geom::Frag_Export opts;
+                        view_server.display_shape(shape, opts);
                         is_shape = true;
                     }
                 }

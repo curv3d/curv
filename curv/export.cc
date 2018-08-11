@@ -64,32 +64,50 @@ double Export_Params::to_double(const Map::value_type& p) const
 
 void export_curv(curv::Value value,
     curv::Program&,
-    const Export_Params&,
+    const Export_Params& params,
     curv::Output_File& ofile)
 {
+    for (auto& p : params.map) {
+        params.unknown_parameter(p);
+    }
     ofile.open();
     ofile.ostream() << value << "\n";
 }
 
+const char export_frag_help[] =
+    "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n";
+
 void export_frag(curv::Value value,
     curv::Program& prog,
-    const Export_Params&,
+    const Export_Params& params,
     curv::Output_File& ofile)
 {
+    curv::geom::Frag_Export opts;
+    for (auto& p : params.map) {
+        if (p.first == "aa") {
+            opts.aa_ = params.to_int(p, 1, 16);
+        } else {
+            params.unknown_parameter(p);
+        }
+    }
+
     curv::geom::Shape_Program shape(prog);
     if (!shape.recognize(value)) {
         curv::At_Program cx(prog);
         throw curv::Exception(cx, "not a shape");
     }
     ofile.open();
-    curv::geom::export_frag(shape, ofile.ostream());
+    curv::geom::export_frag(shape, opts, ofile.ostream());
 }
 
 void export_cpp(curv::Value value,
     curv::Program& prog,
-    const Export_Params&,
+    const Export_Params& params,
     curv::Output_File& ofile)
 {
+    for (auto& p : params.map) {
+        params.unknown_parameter(p);
+    }
     curv::geom::Shape_Program shape(prog);
     if (!shape.recognize(value)) {
         curv::At_Program cx(prog);
@@ -181,9 +199,12 @@ bool export_json_value(curv::Value val, std::ostream& out)
 }
 void export_json(curv::Value value,
     curv::Program& prog,
-    const Export_Params&,
+    const Export_Params& params,
     curv::Output_File& ofile)
 {
+    for (auto& p : params.map) {
+        params.unknown_parameter(p);
+    }
     ofile.open();
     if (export_json_value(value, ofile.ostream()))
         ofile.ostream() << "\n";
@@ -196,7 +217,8 @@ void export_json(curv::Value value,
 const char export_png_help[] =
     "-O xsize=<image width in pixels>\n"
     "-O ysize=<image height in pixels>\n"
-    "-O time=<animation frame timestamp, in seconds, default 0>\n";
+    "-O time=<animation frame timestamp, in seconds, default 0>\n"
+    "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n";
 
 void export_png(curv::Value value,
     curv::Program& prog,
@@ -214,6 +236,8 @@ void export_png(curv::Value value,
             ysize = params.to_int(p, 1, INT_MAX);
         } else if (p.first == "time") {
             ix.time = params.to_double(p);
+        } else if (p.first == "aa") {
+            ix.aa = params.to_int(p, 1, 16);
         } else {
             params.unknown_parameter(p);
         }
@@ -278,7 +302,7 @@ std::map<std::string, Exporter> exporters = {
              colour_mesh_export_help}},
     {"frag", {export_frag,
               "GLSL fragment shader (shape only, shadertoy.com compatible)",
-              ""}},
+              export_frag_help}},
     {"json", {export_json, "JSON expression", ""}},
     {"cpp", {export_cpp, "C++ source file (shape only)", ""}},
     {"png", {export_png, "PNG image file (shape only)", export_png_help}},

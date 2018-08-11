@@ -2,33 +2,39 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/function.h>
+#include <libcurv/geom/export_frag.h>
+
+#include <libcurv/geom/shape.h>
+
 #include <libcurv/die.h>
 #include <libcurv/dtostr.h>
+#include <libcurv/function.h>
 #include <libcurv/gl_compiler.h>
 #include <libcurv/gl_context.h>
-#include <libcurv/geom/shape.h>
 
 namespace curv { namespace geom {
 
-void export_frag_2d(const Shape_Program&, std::ostream&);
-void export_frag_3d(const Shape_Program&, std::ostream&);
+void export_frag_2d(const Shape_Program&, const Frag_Export&, std::ostream&);
+void export_frag_3d(const Shape_Program&, const Frag_Export&, std::ostream&);
 
-void export_frag(const Shape_Program& shape, std::ostream& out)
+void export_frag(
+    const Shape_Program& shape, const Frag_Export& opts, std::ostream& out)
 {
     if (shape.is_2d_)
-        return export_frag_2d(shape, out);
+        return export_frag_2d(shape, opts, out);
     if (shape.is_3d_)
-        return export_frag_3d(shape, out);
+        return export_frag_3d(shape, opts, out);
     die("export_frag: shape is not 2d or 3d");
 }
 
-void export_frag_2d(const Shape_Program& shape, std::ostream& out)
+void export_frag_2d(
+    const Shape_Program& shape, const Frag_Export& opts, std::ostream& out)
 {
     GL_Compiler gl(out, GL_Target::glsl);
     GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
 
     out <<
+        "#define AA " << opts.aa_ << "\n"
         "#ifdef GLSLVIEWER\n"
         "uniform mat3 u_view2d;\n"
         "#endif\n"
@@ -84,12 +90,14 @@ void export_frag_2d(const Shape_Program& shape, std::ostream& out)
         ;
 }
 
-void export_frag_3d(const Shape_Program& shape, std::ostream& out)
+void export_frag_3d(
+    const Shape_Program& shape, const Frag_Export& opts, std::ostream& out)
 {
     GL_Compiler gl(out, GL_Target::glsl);
 
     GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
     out <<
+        "#define AA " << opts.aa_ << "\n"
         "#ifdef GLSLVIEWER\n"
         "uniform vec3 u_eye3d;\n"
         "uniform vec3 u_centre3d;\n"
@@ -279,10 +287,18 @@ void export_frag_3d(const Shape_Program& shape, std::ostream& out)
 
        "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n"
        "{\n"
+       "    vec3 tot = vec3(0.0);\n"
        "    const vec3 origin = (bbox_min + bbox_max) / 2.0;\n"
        "    const vec3 radius = (bbox_max - bbox_min) / 2.0;\n"
        "    float r = max(radius.x, max(radius.y, radius.z)) / 1.3;\n"
-       "    vec2 p = -1.0 + 2.0 * fragCoord.xy / iResolution.xy;\n"
+       "#if AA>1\n"
+       "  for (int m=0; m<AA; ++m)\n"
+       "  for (int n=0; n<AA; ++n) {\n"
+       "    vec2 o = vec2(float(m),float(n)) / float(AA) - 0.5;\n"
+       "#else\n"
+       "    const vec2 o = vec2(0.0);\n"
+       "#endif\n"
+       "    vec2 p = -1.0 + 2.0 * (fragCoord+o) / iResolution.xy;\n"
        "    p.x *= iResolution.x/iResolution.y;\n"
        "\n"
        // convert from the OpenGL coordinate system to the Curv coord system.
@@ -299,11 +315,15 @@ void export_frag_3d(const Shape_Program& shape, std::ostream& out)
        "    vec3 dir = ray_direction(camera, p, 2.5);\n"
        "\n"
        "    vec3 col = render( eye, dir );\n"
-       "    \n"
+       "\n"
        "    // convert linear RGB to sRGB\n"
-       "    col = pow(col, vec3(0.4545));\n"
-       "    \n"
-       "    fragColor = vec4(col,1.0);\n"
+       "    tot += pow(col, vec3(0.4545));\n"
+       "#if AA>1\n"
+       "  }\n"
+       "    tot /= float(AA*AA);\n"
+       "#endif\n"
+       "\n"
+       "    fragColor = vec4(tot,1.0);\n"
        "}\n"
        ;
 }

@@ -11,7 +11,13 @@ namespace curv { namespace geom {
 
 struct Shape_Program;
 
-void export_frag(const Shape_Program&, std::ostream&);
+struct Frag_Export
+{
+    // anti-aliasing via supersampling. aa_==1 means it is turned off.
+    int aa_ = 1;
+};
+
+void export_frag(const Shape_Program&, const Frag_Export&, std::ostream&);
 
 }} // namespace
 #endif // header guard

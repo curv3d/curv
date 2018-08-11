@@ -30,11 +30,14 @@ export_png(
     };
     (void) origin; // TODO
 
+    Frag_Export opts;
+    opts.aa_ = p.aa;
+
     viewer::Viewer v;
     v.window_pos_and_size_.z = p.size.x;
     v.window_pos_and_size_.w = p.size.y;
     v.headless_ = true;
-    v.set_shape(shape);
+    v.set_shape(shape, opts);
     v.open();
     v.current_time_ = p.time;
     v.draw_frame();

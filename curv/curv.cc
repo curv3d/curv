@@ -282,7 +282,8 @@ main(int argc, char** argv)
             if (shape.recognize(value)) {
                 print_shape(shape);
                 curv::geom::viewer::Viewer viewer;
-                viewer.set_shape(shape);
+                curv::geom::Frag_Export opts;
+                viewer.set_shape(shape, opts);
                 viewer.run();
             } else {
                 std::cout << value << "\n";
