@@ -5,7 +5,13 @@ Current TODO List:
 * Image Export.
   * PNG export options: transparent background (RGB vs RGBA)
   * antialiasing: -O aa=n
-  * multi-image export: -O time='0..3 by 1/12' -o 'foo*.png'
+  * multi-image export, for animation:
+    * -O animate=duration -o 'foo*.png' (default 25 FPS)
+    * -O fps=<1/frame_duration in seconds>
+    * -O time=<start time>
+    * -O taa=<scale factor for temporal antialiasing> -- requires fps
+      It's in Curv because not supported by ImageMagick, and also, it's faster
+      than doing it in an external tool. ffmpeg has 'tblend'.
 * Image Import.
 * Mesh Export.
   * Refactor mesh export. Core->libcurv/geom. Error for bad -O flag.
