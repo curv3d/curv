@@ -74,12 +74,16 @@ export_png(
     v.open();
     v.current_time_ = p.time;
     v.draw_frame();
+#if 1
     // On macOS, the second call to draw_frame() is needed, or glReadPixels
-    // will store zeroes in `pixels`. I think the problem is related to
-    // double buffering: only after the second call to draw_frame() do both of
-    // the buffers contain the image. On Linux, I don't need 2 calls.
+    // will store zeroes in `pixels`. (Calling glFinish() doesn't help.)
+    // I think the problem is related to double buffering: only after the
+    // second call to draw_frame() do both of the buffers contain the image.
+    // On Linux, I don't need 2 calls.
     v.current_time_ = p.time;
     v.draw_frame();
+#endif
+    glFinish();
     unsigned char* pixels = new unsigned char[p.size.x*p.size.y*3];
     pixels[0]=1;
     pixels[1]=17;
