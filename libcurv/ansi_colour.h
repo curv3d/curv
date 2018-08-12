@@ -38,6 +38,7 @@
 // Instead of the usual "unicorn barf",
 // I want a simple, coordinated colour scheme.
 #define AC_PROMPT   AC_Dark_Grey
+#define AC_LINENO   AC_Dark_Grey
 #define AC_MESSAGE  AC_BOLD
 #define AC_CARET    AC_Light_Red
 

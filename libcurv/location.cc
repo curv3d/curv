@@ -93,7 +93,9 @@ putsrcline(
     // Put line number.
     char lnbuf[16];
     snprintf(lnbuf, 16, "%*u", lnwidth, ln+1);
+    if (colour) out << AC_LINENO;
     out << lnbuf << "|";
+    if (colour) out << AC_RESET;
 
     // Underlining is forced if there is a single source line. Otherwise,
     // is the entire line part of the selected text? Then we output '>'.
@@ -146,21 +148,21 @@ putsrcline(
 }
 
 void
-Location::write(std::ostream& out, bool colour) const
+Location::write(std::ostream& out, bool colour, bool many) const
 {
     // TODO: more expressive and helpful diagnostics.
     // Inspiration: http://clang.llvm.org/diagnostics.html
     // and http://elm-lang.org/blog/compiler-errors-for-humans
-    // TODO: unicode underlining? a̲b̲c̲d̲e̲f̲
-    // TODO: mark bad text in red, ANSI escapes for console output?
 
     auto info = line_info();
 
     // Output filename and line number, followed by newline.
-    out << "at";
-    if (!scriptname().empty())
-        out << " file \"" << scriptname() << "\"";
-    out << ":\n";
+    if (many || !scriptname().empty()) {
+        out << "at";
+        if (!scriptname().empty())
+            out << " file \"" << scriptname() << "\"";
+        out << ":\n";
+    }
 
     // Output underlined program text. No final newline.
     // Inspired by http://elm-lang.org/blog/compiler-errors-for-humans

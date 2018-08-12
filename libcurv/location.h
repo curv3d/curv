@@ -54,7 +54,7 @@ public:
 
     /// Output the location part of an exception message (no final newline).
     /// The `colour` flag enables colour text using ANSI ESC sequences.
-    void write(std::ostream&, bool colour) const;
+    void write(std::ostream&, bool colour, bool many) const;
 
     /// Line and column information for a Location
     ///

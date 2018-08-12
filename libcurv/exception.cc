@@ -68,7 +68,7 @@ Exception::write(std::ostream& out, bool colour) const
     if (colour) out << AC_RESET;
     for (auto L : loc_) {
         out << "\n";
-        L.write(out, colour);
+        L.write(out, colour, loc_.size() > 1);
     }
 }
 
