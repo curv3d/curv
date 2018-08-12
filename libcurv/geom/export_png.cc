@@ -15,6 +15,39 @@
 
 namespace curv { namespace geom {
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "std/stb_image.h"
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "std/stb_image_write.h"
+
+bool
+savePixels(const std::string& _path, unsigned char* _pixels, int _width, int _height)
+{
+    // Flip the image on Y
+    int depth = 3;
+    unsigned char *result = new unsigned char[_width*_height*depth];
+    memcpy(result, _pixels, _width*_height*depth);
+    int row,col,z;
+    stbi_uc temp;
+
+    for (row = 0; row < (_height>>1); row++) {
+     for (col = 0; col < _width; col++) {
+        for (z = 0; z < depth; z++) {
+           temp = result[(row * _width + col) * depth + z];
+           result[(row * _width + col) * depth + z] = result[((_height - row - 1) * _width + col) * depth + z];
+           result[((_height - row - 1) * _width + col) * depth + z] = temp;
+        }
+     }
+    }
+    if (0 == stbi_write_png(_path.c_str(), _width, _height, depth, result, _width * depth)) {
+        std::cout << "can't create file " << _path << std::endl;
+    }
+    delete [] result;
+
+    return true;
+}
+
 void
 export_png(
     const Shape_Program& shape,
@@ -47,13 +80,13 @@ export_png(
     // the buffers contain the image. On Linux, I don't need 2 calls.
     v.current_time_ = p.time;
     v.draw_frame();
-    unsigned char* pixels = new unsigned char[p.size.x*p.size.y*4];
+    unsigned char* pixels = new unsigned char[p.size.x*p.size.y*3];
     pixels[0]=1;
     pixels[1]=17;
     pixels[2]=42;
     pixels[3]=123;
     glGetError();
-    glReadPixels(0, 0, p.size.x, p.size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glReadPixels(0, 0, p.size.x, p.size.y, GL_RGB, GL_UNSIGNED_BYTE, pixels);
     auto err = glGetError();
     v.close();
 #if 0
@@ -65,7 +98,7 @@ export_png(
 #else
     (void) err;
 #endif
-    Texture::savePixels(ofile.path().c_str(), pixels, p.size.x, p.size.y);
+    savePixels(ofile.path().c_str(), pixels, p.size.x, p.size.y);
 }
 
 }} // namespace
