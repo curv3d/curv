@@ -196,4 +196,10 @@ How is the Viewer implemented?
     the OpenGL main loop?
 
 Can the Viewer code be kept modular, so that the picker code (using a particular
-GUI toolkit) is separate from the model rendering code?
+GUI toolkit) is separate from the model rendering code? This is vague.
+A better question: what integrations do I want to support?
+* Integrate with Python
+* Integrate with a Qt application
+  * Which uses the curv Viewer window
+  * Which renders application data using the Curv graphics engine
+* Integrate with an IDE

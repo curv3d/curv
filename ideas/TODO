@@ -3,11 +3,16 @@ Current TODO List:
   * Install Ubuntu 18.04. Bleeding edge Mesa + 16.04 is likely a bad idea.
     Also, the 18.04 version of Nouveau might work better than a black screen.
 * Image Export options:
+  * higher priority:
+    * 2D antialiasing: -O aa=n
+    * -O animate=duration -o 'foo*.png' (default 25 FPS)
+    * -O delay=<frame_duration in seconds> -- eg, delay=1/25 means 25 FPS.
+    * documentation
   * transparent background (exports RGBA, not RGB)
-  * antialiasing: -O aa=n
   * multi-image export, for animation:
     * -O animate=duration -o 'foo*.png' (default 25 FPS)
       Why? Speed, and convenience of not writing a python script.
+      * If animate= specified, client pathname must be set and contain a '*'.
     * -O frame=<frame_duration in seconds> -- eg, frame=1/25 means 25 FPS.
     * -O time=<start time>
     * -O taa=<scale factor for temporal antialiasing> -- requires frame=
@@ -15,7 +20,12 @@ Current TODO List:
       * Faster than doing it in an external tool.
       * ImageMagick has no support for this.
       * ffmpeg only supports power-of-2 scale factors, eg not taa=3.
+    * document animation export.
 * Image Import.
+  * rename Meaning::source_ to syntax_.
+  * rename Script to Source, with Source_File, Source_String, Source_Buffer.
+  * an instance of Source may contain a pathname and no file contents.
+  * a PNG file can occur in the stack trace.
 * Mesh Export.
   * Refactor mesh export. Core->libcurv/geom. Error for bad -O flag.
 
