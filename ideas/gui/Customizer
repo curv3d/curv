@@ -176,13 +176,24 @@ The shape is compiled into GLSL code that includes uniform variables for
 each parameter. The Viewer app connects the sliders to the uniform variables.
 
 How is the Viewer implemented?
-* Hack glslViewer to include sliders. Need a widget library compatible with
-  GLFW. With an Immediate Mode GUI in OpenGL, a translucent picker window can
-  float on top of the model in full screen mode. Interactivity sucks when the
-  frame rate goes down, need progressive rendering.
-  * use github.com/wjakob/nanogui. *2,000
-  * use AntTweakBar -- it seems purpose designed for this. Translucent picker
-    window floats on top of model, suitable for full screen viewing.
-  * use github.com/ocornut/imgui. *11,000
+* Use a "gamer" widget library that: integrates with your OpenGL main loop,
+  supports translucent picker widgets that float in front of the scene.
+  * But: if GUI runs in same window as model, interactivity sucks when the
+    frame rate goes down. Need progressive rendering?
+  * github.com/wjakob/nanogui. *2,000. GP retained mode GUI, no globals.
+    https://github.com/darrenmothersele/nanogui-test/blob/master/test.cpp
+    Looks nice.
+  * github.com/ocornut/imgui. *11,000.
     Full featured--could implement editor and console window using imgui.
+    It appears to use global variables, only support 1 window.
+  * AntTweakBar: old and specialized. NanoGUI and IMGUI can do the same things.
 * Use QT.
+  * Can I have a full screen viewer with floating widgets on top of a sphere
+    traced scene? Can the widgets be in a separate window/separate
+    OpenGL context, distinct from the scene?
+    Yes: https://stackoverflow.com/questions/18316710/frameless-and-transparent-window-qt5
+  * Then how do changes to uniform variables get propagated from the UI to
+    the OpenGL main loop?
+
+Can the Viewer code be kept modular, so that the picker code (using a particular
+GUI toolkit) is separate from the model rendering code?
