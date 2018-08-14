@@ -165,7 +165,7 @@ void export_frag_3d(
        "//    (-1,-1,-1) means no object was hit.\n"
        "vec4 castRay( in vec3 ro, in vec3 rd )\n"
        "{\n"
-       "    float tmin = 1.0;\n"
+       "    float tmin = 0.0;\n" // was 1.0
        "    float tmax = 200.0;\n"
        "   \n"
        // TODO: implement bounding volume. If I remove the 'if(t>tmax)break'
