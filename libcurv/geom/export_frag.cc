@@ -337,7 +337,7 @@ void export_frag_3d(
        "\n"
        "    // convert linear RGB to sRGB\n"
        "    col = pow(col, vec3(0.4545));\n"
-       "    fragColour = vec4(tot,1.0);\n"
+       "    fragColour = vec4(col,1.0);\n"
        "}\n"
        ;
 }
