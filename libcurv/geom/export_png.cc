@@ -12,6 +12,8 @@
 
 #include <gl/texture.h>
 #include <iostream>
+#include <cstring>
+#include <cerrno>
 
 namespace curv { namespace geom {
 
@@ -21,31 +23,32 @@ namespace curv { namespace geom {
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "std/stb_image_write.h"
 
-bool
-savePixels(const std::string& _path, unsigned char* _pixels, int _width, int _height)
+// The input is 4 bytes per pixel (RGBA).
+// The output is 3 bytes per pixel (RGB), and the image is flipped on Y.
+void
+write_png_rgb(
+    const std::string& path, unsigned char* pixels, int width, int height)
 {
-    // Flip the image on Y
-    int depth = 3;
-    unsigned char *result = new unsigned char[_width*_height*depth];
-    memcpy(result, _pixels, _width*_height*depth);
-    int row,col,z;
-    stbi_uc temp;
+    using uchar = unsigned char;
+    std::unique_ptr<uchar[]> result(new uchar[width*height*3]);
 
-    for (row = 0; row < (_height>>1); row++) {
-     for (col = 0; col < _width; col++) {
-        for (z = 0; z < depth; z++) {
-           temp = result[(row * _width + col) * depth + z];
-           result[(row * _width + col) * depth + z] = result[((_height - row - 1) * _width + col) * depth + z];
-           result[((_height - row - 1) * _width + col) * depth + z] = temp;
+    for (int y = 0; y < height; ++y) {
+        uchar* irow = &pixels[(height - 1 - y) * width * 4];
+        uchar* orow = &result[y * width * 3];
+        for (int x = 0; x < width; ++x) {
+            uchar* ipix = &irow[x * 4];
+            uchar* opix = &orow[x * 3];
+            opix[0] = ipix[0];
+            opix[1] = ipix[1];
+            opix[2] = ipix[2];
         }
-     }
     }
-    if (0 == stbi_write_png(_path.c_str(), _width, _height, depth, result, _width * depth)) {
-        std::cout << "can't create file " << _path << std::endl;
-    }
-    delete [] result;
 
-    return true;
+    int r = stbi_write_png(path.c_str(), width, height, 3, result.get(), width * 3);
+    if (!r) {
+        throw Exception({},
+            stringify("Can't create file ",path,": ", strerror(errno)));
+    }
 }
 
 void
@@ -84,14 +87,17 @@ export_png(
     v.draw_frame();
 #endif
     glFinish();
-    unsigned char* pixels = new unsigned char[p.size.x*p.size.y*3];
-    pixels[0]=1;
-    pixels[1]=17;
-    pixels[2]=42;
-    pixels[3]=123;
+
+    // Read the pixels into CPU memory.
+    // We request GL_RGBA format (which has 4 byte alignment), instead of GL_RGB
+    // format (which has 3 byte alignment), to avoid a problem with the driver
+    // substituting formats due to alignment.
+    // See: https://www.khronos.org/opengl/wiki/Common_Mistakes
+    std::unique_ptr<unsigned char[]> pixels(new unsigned char[p.size.x*p.size.y*4]);
     glGetError();
-    glReadPixels(0, 0, p.size.x, p.size.y, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+    glReadPixels(0, 0, p.size.x, p.size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
     auto err = glGetError();
+
     v.close();
 #if 0
     std::cerr << "err="<<int(err)<<" RGBA[0,0]: "
@@ -102,7 +108,7 @@ export_png(
 #else
     (void) err;
 #endif
-    savePixels(ofile.path().c_str(), pixels, p.size.x, p.size.y);
+    write_png_rgb(ofile.path().c_str(), pixels.get(), p.size.x, p.size.y);
 }
 
 }} // namespace
