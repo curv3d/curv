@@ -75,7 +75,9 @@ void export_curv(curv::Value value,
 }
 
 const char export_frag_help[] =
-    "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n";
+    "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n"
+    "-O taa=<supersampling factor for temporal antialiasing; 1 means disabled>\n"
+    "-O delay=<frame duration for animation (used with TAA)>\n";
 
 void export_frag(curv::Value value,
     curv::Program& prog,
@@ -86,6 +88,10 @@ void export_frag(curv::Value value,
     for (auto& p : params.map) {
         if (p.first == "aa") {
             opts.aa_ = params.to_int(p, 1, 16);
+        } else if (p.first == "taa") {
+            opts.taa_ = params.to_int(p, 1, 16);
+        } else if (p.first == "delay") {
+            opts.delay_ = params.to_double(p);
         } else {
             params.unknown_parameter(p);
         }
@@ -218,7 +224,9 @@ const char export_png_help[] =
     "-O xsize=<image width in pixels>\n"
     "-O ysize=<image height in pixels>\n"
     "-O time=<animation frame timestamp, in seconds, default 0>\n"
-    "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n";
+    "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n"
+    "-O taa=<supersampling factor for temporal antialiasing; 1 means disabled>\n"
+    "-O delay=<frame duration for animation (used with TAA)>\n";
 
 void export_png(curv::Value value,
     curv::Program& prog,
@@ -237,7 +245,11 @@ void export_png(curv::Value value,
         } else if (p.first == "time") {
             ix.time = params.to_double(p);
         } else if (p.first == "aa") {
-            ix.aa = params.to_int(p, 1, 16);
+            ix.aa_ = params.to_int(p, 1, 64);
+        } else if (p.first == "taa") {
+            ix.taa_ = params.to_int(p, 1, 64);
+        } else if (p.first == "delay") {
+            ix.delay_ = params.to_double(p);
         } else {
             params.unknown_parameter(p);
         }

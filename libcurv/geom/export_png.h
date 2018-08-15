@@ -19,7 +19,9 @@ struct Image_Export
     glm::ivec2 size;    // Size of exported image, in pixels.
     double pixel_size;  // Size of a square pixel, in shape space.
     double time = 0.0;  // Time stamp in seconds of shape, for animations.
-    int aa = 1;         // Supersampling factor for antialiasing.
+    int aa_ = 1;         // Supersampling factor for spatial antialiasing.
+    int taa_ = 1;        // Supersampling factor for temporal antialiasing.
+    double delay_ = 0.04; // Frame duration for animation; needed for TAA.
 };
 
 void export_png(const Shape_Program&, const Image_Export&, Output_File&);

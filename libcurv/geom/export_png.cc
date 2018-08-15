@@ -67,7 +67,9 @@ export_png(
     (void) origin; // TODO
 
     Frag_Export opts;
-    opts.aa_ = p.aa;
+    opts.aa_ = p.aa_;
+    opts.taa_ = p.taa_;
+    opts.delay_ = p.delay_;
 
     viewer::Viewer v;
     v.window_pos_and_size_.z = p.size.x;

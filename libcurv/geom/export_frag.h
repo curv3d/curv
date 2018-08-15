@@ -13,8 +13,12 @@ struct Shape_Program;
 
 struct Frag_Export
 {
-    // anti-aliasing via supersampling. aa_==1 means it is turned off.
+    // spatial anti-aliasing via supersampling. aa_==1 means it is turned off.
     int aa_ = 1;
+    // temporal anti-aliasing.
+    int taa_ = 1;
+    // frame duration for animation, needed for TAA.
+    double delay_ = 0.04; // 25 FPS
 };
 
 void export_frag(const Shape_Program&, const Frag_Export&, std::ostream&);
