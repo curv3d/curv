@@ -234,10 +234,10 @@ in
 //smooth 0.5 3 .intersection (sphere, cube >> move(1,1,1)) // WORKS
 
 //chamfer_union 0.5 3 .union (sphere, cube >> move(1,1,1)) // WORKS
-chamfer_intersection 0.1 3 .difference (sphere, cube >> move(1,1,1)) // PROBLEM
+//chamfer_intersection 0.1 3 .difference (sphere, cube >> move(1,1,1)) // PROBLEM
 //chamfer_intersection 0.5 3 .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
 
-//stairs 0.5 3 .union (sphere, cube >> move(1,1,1)) // WORKS
+stairs 0.5 3 .union (sphere, cube >> move(1,1,1)) // WORKS
 //stairs 0.5 3 .difference (sphere, cube >> move(1,1,1)) // WORKS
 //stairs 0.5 3 .intersection (sphere, cube >> move(1,1,1)) // WORKS
 
