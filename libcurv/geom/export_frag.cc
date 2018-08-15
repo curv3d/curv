@@ -271,7 +271,7 @@ void export_frag_3d(
        "        vec3 iqcol = col*lin;\n"
        "\n"
        "        //col = mix( col, vec3(0.8,0.9,1.0), 1.0-exp( -0.0002*t*t*t ) );\n"
-       "        col = mix(col,iqcol, 0.4);\n"
+       "        col = mix(col,iqcol, 0.5);\n" // adjust contrast
        "    }\n"
        "\n"
        "    return vec3( clamp(col,0.0,1.0) );\n"
