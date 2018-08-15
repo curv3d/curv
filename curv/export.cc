@@ -87,9 +87,9 @@ void export_frag(curv::Value value,
     curv::geom::Frag_Export opts;
     for (auto& p : params.map) {
         if (p.first == "aa") {
-            opts.aa_ = params.to_int(p, 1, 16);
+            opts.aa_ = params.to_int(p, 1, INT_MAX);
         } else if (p.first == "taa") {
-            opts.taa_ = params.to_int(p, 1, 16);
+            opts.taa_ = params.to_int(p, 1, INT_MAX);
         } else if (p.first == "delay") {
             opts.delay_ = params.to_double(p);
         } else {
@@ -245,9 +245,9 @@ void export_png(curv::Value value,
         } else if (p.first == "time") {
             ix.time = params.to_double(p);
         } else if (p.first == "aa") {
-            ix.aa_ = params.to_int(p, 1, 64);
+            ix.aa_ = params.to_int(p, 1, INT_MAX);
         } else if (p.first == "taa") {
-            ix.taa_ = params.to_int(p, 1, 64);
+            ix.taa_ = params.to_int(p, 1, INT_MAX);
         } else if (p.first == "delay") {
             ix.delay_ = params.to_double(p);
         } else {
