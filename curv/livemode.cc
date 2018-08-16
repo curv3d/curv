@@ -18,27 +18,12 @@ extern "C" {
 #include <fstream>
 #include <thread>
 
-#include "export.h"
-#include "progdir.h"
-#include "repl.h"
-#include "cscript.h"
 #include "shapes.h"
 #include "view_server.h"
-#include <libcurv/geom/tempfile.h>
-#include <libcurv/dtostr.h>
-#include <libcurv/analyser.h>
 #include <libcurv/context.h>
 #include <libcurv/program.h>
-#include <libcurv/exception.h>
 #include <libcurv/file.h>
-#include <libcurv/parser.h>
-#include <libcurv/phrase.h>
-#include <libcurv/shared.h>
 #include <libcurv/system.h>
-#include <libcurv/list.h>
-#include <libcurv/record.h>
-#include <libcurv/die.h>
-#include <libcurv/geom/frag.h>
 #include <libcurv/geom/shape.h>
 
 View_Server live_view_server;

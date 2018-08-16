@@ -29,6 +29,7 @@ extern "C" {
 #include <thread>
 #include <condition_variable>
 #include <functional>
+
 #include <replxx.hxx>
 
 #include "cscript.h"
@@ -36,10 +37,7 @@ extern "C" {
 #include "view_server.h"
 #include <libcurv/context.h>
 #include <libcurv/program.h>
-#include <libcurv/exception.h>
 #include <libcurv/system.h>
-#include <libcurv/die.h>
-#include <libcurv/geom/frag.h>
 #include <libcurv/geom/shape.h>
 #include <libcurv/geom/viewer/viewer.h>
 #include <libcurv/ansi_colour.h>
