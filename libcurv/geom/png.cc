@@ -81,10 +81,12 @@ export_png(
     v.draw_frame();
 #if 1
     // On macOS, the second call to draw_frame() is needed, or glReadPixels
-    // will store zeroes in `pixels`. (Calling glFinish() doesn't help.)
+    // will store zeroes in `pixels`.
     // I think the problem is related to double buffering: only after the
     // second call to draw_frame() do both of the buffers contain the image.
-    // On Linux, I don't need 2 calls.
+    // On Linux, I don't need 2 calls. How to fix?
+    // * Calling glFinish() doesn't help.
+    // * Try render to a Frame Buffer Object (FBO).
     v.current_time_ = p.time;
     v.draw_frame();
 #endif
