@@ -1,0 +1,8 @@
+// curv -o taa.png -O taa=40 -O delay=1 taa.curv
+
+circle 1 >> a_move {f t: (cos t, -sin t, 0), bbox: bb}
+
+where (
+include file "../lib/animate.curv";
+bb = [[-1,-1,0], [1,1,0]];
+)
