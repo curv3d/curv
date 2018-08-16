@@ -18,7 +18,7 @@ struct Frag_Export
     // temporal anti-aliasing.
     int taa_ = 1;
     // frame duration for animation, needed for TAA.
-    double delay_ = 0.04; // 25 FPS
+    double fdur_ = 0.04; // 25 FPS
 };
 
 void export_frag(const Shape_Program&, const Frag_Export&, std::ostream&);

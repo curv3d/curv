@@ -4,7 +4,7 @@ Current TODO List:
     * -O animate=duration -o 'foo*.png' (default 25 FPS)
     * documentation
   * Refactor code.
-    * export_frag.h -> frag.h, etc. Frag_Options, frag_write().
+    * in frag.h: Frag_Options, frag_write().
     * Share code between Frag and PNG options, which includes:
       * member variables in Frag_Options and Image_Options
       * help text
@@ -18,9 +18,7 @@ Current TODO List:
       1| -O aa=23foo
                ^^^^^
     * -O parameter values are Curv expressions. Missing means 'true'.
-    * parameter renaming:
-      * fstart (time stamp of first frame in an animation) -- was 'time'
-      * fdur (frame duration, eg 1/30 == 30 FPS) -- was 'delay'
+      Eg, -O fdur=1/30 or -O animate='2*pi'
   * transparent background (exports RGBA, not RGB)
   * multi-image export, for animation:
     * -O animate=duration -o 'foo*.png' (default 25 FPS)

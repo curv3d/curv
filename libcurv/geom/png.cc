@@ -69,7 +69,7 @@ export_png(
     Frag_Export opts;
     opts.aa_ = p.aa_;
     opts.taa_ = p.taa_;
-    opts.delay_ = p.delay_;
+    opts.fdur_ = p.fdur_;
 
     viewer::Viewer v;
     v.window_pos_and_size_.z = p.size.x;
@@ -77,7 +77,7 @@ export_png(
     v.headless_ = true;
     v.set_shape(shape, opts);
     v.open();
-    v.current_time_ = p.time;
+    v.current_time_ = p.fstart_;
     v.draw_frame();
 #if 1
     // On macOS, the second call to draw_frame() is needed, or glReadPixels
@@ -87,7 +87,7 @@ export_png(
     // On Linux, I don't need 2 calls. How to fix?
     // * Calling glFinish() doesn't help.
     // * Try render to a Frame Buffer Object (FBO).
-    v.current_time_ = p.time;
+    v.current_time_ = p.fstart_;
     v.draw_frame();
 #endif
     glFinish();
