@@ -1,13 +1,26 @@
 Current TODO List:
-* Mesa driver bugs. Install latest Nouveau driver, report bugs to Mesa3D.org
-  * Install Ubuntu 18.04. Bleeding edge Mesa + 16.04 is likely a bad idea.
-    Also, the 18.04 version of Nouveau might work better than a black screen.
 * Image Export options:
   * higher priority:
-    * 2D antialiasing: -O aa=n
     * -O animate=duration -o 'foo*.png' (default 25 FPS)
-    * -O delay=<frame_duration in seconds> -- eg, delay=1/25 means 25 FPS.
     * documentation
+  * Refactor code.
+    * export_frag.h -> frag.h, etc. Frag_Options, frag_write().
+    * Share code between Frag and PNG options, which includes:
+      * member variables in Frag_Options and Image_Options
+      * help text
+      * option parsing
+      Ideas:
+       1. struct Image_Options : public Frag_Options
+          std::string Frag_Options::help()
+          bool Frag_Options::parse(Export_Params)
+    * Nicer error messages:
+      ERROR: Invalid numeral
+      1| -O aa=23foo
+               ^^^^^
+    * -O parameter values are Curv expressions. Missing means 'true'.
+    * parameter renaming:
+      * fstart (time stamp of first frame in an animation) -- was 'time'
+      * fdur (frame duration, eg 1/30 == 30 FPS) -- was 'delay'
   * transparent background (exports RGBA, not RGB)
   * multi-image export, for animation:
     * -O animate=duration -o 'foo*.png' (default 25 FPS)
@@ -28,6 +41,9 @@ Current TODO List:
   * a PNG file can occur in the stack trace.
 * Mesh Export.
   * Refactor mesh export. Core->libcurv/geom. Error for bad -O flag.
+* Mesa driver bugs. Install latest Nouveau driver, report bugs to Mesa3D.org
+  * Install Ubuntu 18.04. Bleeding edge Mesa + 16.04 is likely a bad idea.
+    Also, the 18.04 version of Nouveau might work better than a black screen.
 
 # Release 0.2
 Big Ideas:
