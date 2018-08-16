@@ -6,7 +6,7 @@
 
 #include <libcurv/geom/compiled_shape.h>
 #include <libcurv/geom/frag.h>
-#include <libcurv/geom/export_png.h>
+#include <libcurv/geom/png.h>
 #include <libcurv/geom/shape.h>
 
 #include <libcurv/context.h>
