@@ -39,7 +39,7 @@ extern "C" {
 #include <libcurv/exception.h>
 #include <libcurv/system.h>
 #include <libcurv/die.h>
-#include <libcurv/geom/export_frag.h>
+#include <libcurv/geom/frag.h>
 #include <libcurv/geom/shape.h>
 #include <libcurv/geom/viewer/viewer.h>
 #include <libcurv/ansi_colour.h>

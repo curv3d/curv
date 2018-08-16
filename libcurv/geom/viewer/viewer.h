@@ -10,7 +10,7 @@
 #ifndef LIBCURV_GEOM_VIEWER_VIEWER_H
 #define LIBCURV_GEOM_VIEWER_VIEWER_H
 
-#include <libcurv/geom/export_frag.h>
+#include <libcurv/geom/frag.h>
 #include <gl/shader.h>
 #include <gl/vbo.h>
 #include <glm/glm.hpp>

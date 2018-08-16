@@ -5,7 +5,7 @@
 #include "export.h"
 
 #include <libcurv/geom/compiled_shape.h>
-#include <libcurv/geom/export_frag.h>
+#include <libcurv/geom/frag.h>
 #include <libcurv/geom/export_png.h>
 #include <libcurv/geom/shape.h>
 
