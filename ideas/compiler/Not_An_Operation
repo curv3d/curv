@@ -1,0 +1,114 @@
+This is a story of vague error messages.
+
+There are 3 functions in analyser.cc that throw a "not an operation" error.
+This is the worst error message in Curv: too vague to be meaningful. Even
+"syntax error" would be an improvement.
+
+So we'll fix that specific error message, in those 3 locations.
+
+Initial Gloss
+-------------
+Abstracted from a bug report:
+    let
+        d = 1;
+        for (i in 0..2)
+            d = d + i;
+    in
+        d
+
+The error is 'not an operation', on the body of the `for`, which is a
+definition, where an action was expected.
+
+    ERROR: not an operation
+    at file "test.curv":
+    4|         d = d + i;
+               ^^^^^^^^^ 
+
+Make this error message easier to understand: less vague.
+
+    ERROR: Body of `for` statement: Expected a statement, got a definition.
+    at file "test.curv":
+    4|         d = d + i;
+               ^^^^^^^^^ 
+
+This is only part way to an Elm style diagnostic, which guesses what you are
+trying to do, and suggests what you should try instead.
+Eg, suggest using an assignment (:=) statement instead of a definition.
+
+    ERROR: Body of `for` statement: Expected a statement, got a definition.
+    Maybe try an assignment statement (:=) instead of a definition (=).
+    at file "test.curv":
+    4|         d = d + i;
+               ^^^^^^^^^ 
+
+In this case, the hint is triggered by some context: expecting statement,
+got definition.
+
+Need to redesign analyser APIs so that there is more context for constructing
+such an error message.
+
+Current code:
+
+    in For_Phrase::analyse()
+    auto body = analyse_tail(*body_, scope);
+
+    in analyse_tail()
+    return ph.analyse(env)->to_operation(env.eval_frame_);
+
+    in Recursive_Definition_Phrase::analyse()
+    throw Exception(At_Phrase(*this, env), "not an operation");
+
+Phrase::analyse(env) needs context.
+
+Where to put it?
+  1. In the Environ. push/pop context, like we do for env.is_analysing_action_
+     within analyse_op, analyse_action, analyse_tail.
+  2. Additional argument to Phrase::analyse().
+
+How is the context specified by the client?
+* In this case, analyse_tail(ph,env) is called by the client.
+  The context is: "Body of `for` statement", WANT_STATEMENT.
+  Maybe an AContext object.
+    struct AContext {const char* where; Want want;}
+  analyse_tail(Phrase& ph, Environ& env, const AContext& ac)
+  analyse_tail(ph, env, {"Body of `for` statement", WANT_STATEMENT})
+
+in analyse_tail(ph,env,ac)
+return ph.analyse(env,ac)->to_operation(env.eval_frame_,ac);
+
+in Recursive_Definition_Phrase::analyse(env,ac)
+throw Exception(At_Phrase(*this, env),
+    ac.msg("a definition","not an operation"));
+
+Simplified Version
+------------------
+I'm going to simplify this by removing the "Body of `for` statement" part
+of the error message. It's redundant (the source listing shows you the context)
+and potentially adds a lot of extra work and boilerplate to what might already
+be a large change to the analyser.
+
+    ERROR: Expected a statement, got a definition.
+    Maybe try an assignment statement (:=) instead of a definition (=).
+    at file "test.curv":
+    4|         d = d + i;
+               ^^^^^^^^^ 
+
+Phrase::analyse(env,req) now has a second argument, req, which is a bitmask of
+the legal meaning types for the context in which the phrase is being analysed.
+
+    enum class MKind {
+        none = 0,
+        expr = 1,
+        action = 2,
+        elem_gen = 4,
+        field_gen = 8,
+        statement = action | elem_gen | field_gen,
+        operation = expr | statement,
+        all = operation
+    };
+
+After a phrase has been analysed in a context, we can compute a kind for the
+Meaning that is constrained by the context, and store that in the meaning.
+This, in turn, may inform subsequent analysis and give better error messages.
+
+    MKind Meaning::kind_

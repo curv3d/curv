@@ -55,26 +55,26 @@ This will not be part of Curv. Case analysis:
 
 This also means I won't have 'parameterized file readers'.
 
-**Parameterized File Readers**
-* If additional parameters must be supplied in order to interpret the contents
-  of a file, then a new function must be defined that is specific to that file
-  type. Eg, `svg_file` or `dxf_file`.
-* This is the case where the File mechanism can provide functionality not
-  duplicated by the other 2 reference mechanisms.
-* But, this may be a bad idea. There's no mechanism to refer directly to a file
-  embedded in an external Tree or Package. What to do?
-  * An Tree can provide an API to its clients for accessing data files that
-    require a parameterized file reader.
-  * We can banish the concept of a parameterized file reader. Instead,
-    * A file reader for something like an SVG or DXF file can return a subtype
-      of Shape that provides rich access to the data.
-    * An external tool can convert one of these files into an alternate form
-      that can be read by Curv without parameterization. For example,
-      mesh files are not directly readable in Curv, you must instead convert
-      the mesh to an RSDF file, and provide the mesh conversion parameters
-      to this external tool.
-    * If we banish parameterized file readers, then the File mechanism can
-      be deprecated, and perhaps not supported in a Tree.
+## Parameterized File Readers
+
+Suppose that additional parameters must be supplied in order to interpret
+the contents of a file. How are these parameters specified?
+
+* The original plan was to provide type-specific file import functions with
+  extra parameters beyond the pathname. Eg, `svg_file` or `dxf_file`.
+  But, I want to deprecate the file function.
+* Put the parameters into an optional separate file, with the same basename
+  as the file being imported, but with a `.opts` file extension.
+  This contains a JSON or CURV record literal.
+  This is compatible with using the `file.identifier` syntax
+  for referencing file based components within a package.
+* A file reader for something like an SVG or DXF file can return a subtype
+  of Shape that provides rich access to the format-specific data.
+* An external tool can convert one of these files into an alternate form
+  that can be read by Curv without parameterization. For example,
+  mesh files are not directly readable in Curv, you must instead convert
+  the mesh to an RSDF file, and provide the mesh conversion parameters
+  to this external tool.
 
 ## Trees
 
