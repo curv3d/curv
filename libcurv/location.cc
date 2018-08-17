@@ -5,6 +5,7 @@
 #include <libcurv/location.h>
 
 #include <libcurv/ansi_colour.h>
+#include <libcurv/format.h>
 
 namespace curv {
 
@@ -58,20 +59,6 @@ Location::line_info() const
     return info;
 }
 
-// # of decimal digits in n
-unsigned
-ndigits(unsigned n)
-{
-    unsigned count = 1;
-    for (;;) {
-        if (n < 10)
-            return count;
-        n = n / 10;
-        ++count;
-    }
-}
-
-//
 const char*
 putsrcline(
     std::ostream& out,

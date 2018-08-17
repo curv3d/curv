@@ -12,12 +12,16 @@
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/filesystem.h>
+#include <libcurv/format.h>
+#include <libcurv/range.h>
 
 #include <glm/vec2.hpp>
 
 #include <algorithm>
 #include <climits>
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <sstream>
 
@@ -220,13 +224,53 @@ void export_json(curv::Value value,
     }
 }
 
+// wrapper that exports image sequences if requested
+void export_all_png(
+    const curv::geom::Shape_Program& shape,
+    curv::geom::Image_Export& ix,
+    double animate,
+    curv::Output_File& ofile)
+{
+    if (animate <= 0) {
+        // export single image
+        curv::geom::export_png(shape, ix, ofile);
+    }
+
+    const char* ipath = ofile.path_.c_str();
+    const char* p = strchr(ipath, '*');
+    if (p == nullptr) {
+        throw curv::Exception({},
+          "'-O animate=' requires pathname in '-o pathname' to contain a '*'");
+    }
+    curv::Range<const char*> prefix(ipath, p);
+    curv::Range<const char*> suffix(p+1, strlen(p+1));
+
+    unsigned count = unsigned(animate / ix.fdur_ + 0.5);
+    if (count == 0) count = 1;
+    unsigned digs = curv::ndigits(count);
+    double fstart = ix.fstart_;
+    for (unsigned i = 0; i < count; ++i) {
+        ix.fstart_ = fstart + i * ix.fdur_;
+        char num[12];
+        snprintf(num, sizeof(num), "%0*d", digs, i);
+        auto opath = curv::stringify(prefix, num, suffix);
+        curv::Output_File oofile(opath->c_str());
+        curv::geom::export_png(shape, ix, oofile);
+        oofile.commit();
+        std::cerr << ".";
+        std::cerr.flush();
+    }
+    std::cerr << "done\n";
+}
+
 const char export_png_help[] =
-    "-O xsize=<image width in pixels>\n"
-    "-O ysize=<image height in pixels>\n"
-    "-O fstart=<animation frame timestamp, in seconds, default 0>\n"
-    "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n"
-    "-O taa=<supersampling factor for temporal antialiasing; 1 means disabled>\n"
-    "-O fdur=<frame duration for animation (used with TAA)>\n";
+  "-O xsize=<image width in pixels>\n"
+  "-O ysize=<image height in pixels>\n"
+  "-O fstart=<animation frame timestamp, in seconds, default 0>\n"
+  "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n"
+  "-O taa=<supersampling factor for temporal antialiasing; 1 means disabled>\n"
+  "-O fdur=<frame duration for animation (used with TAA)>\n"
+  "-O animate=<duration of animation (exports an image sequence)>\n";
 
 void export_png(curv::Value value,
     curv::Program& prog,
@@ -237,6 +281,7 @@ void export_png(curv::Value value,
 
     int xsize = 0;
     int ysize = 0;
+    double animate = 0.0;
     for (auto& p : params.map) {
         if (p.first == "xsize") {
             xsize = params.to_int(p, 1, INT_MAX);
@@ -250,6 +295,8 @@ void export_png(curv::Value value,
             ix.taa_ = params.to_int(p, 1, INT_MAX);
         } else if (p.first == "fdur") {
             ix.fdur_ = params.to_double(p);
+        } else if (p.first == "animate") {
+            animate = params.to_double(p);
         } else {
             params.unknown_parameter(p);
         }
@@ -303,7 +350,7 @@ void export_png(curv::Value value,
     }
     std::cerr << "Image export: "<<ix.size.x<<"×"<<ix.size.y<<" pixels."
         " Use 'curv --help -o png' for more options.\n";
-    curv::geom::export_png(shape, ix, ofile);
+    export_all_png(shape, ix, animate, ofile);
 }
 
 std::map<std::string, Exporter> exporters = {

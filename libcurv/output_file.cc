@@ -73,17 +73,19 @@ Output_File::path()
 void
 Output_File::commit()
 {
-    if (tempfile_ostream_.is_open())
-        tempfile_ostream_.close();
-    if (path_.empty()) {
-        // copy tempfile to ostream_
-        std::ifstream tmp(tempfile_path_.c_str());
-        *ostream_ << tmp.rdbuf();
-    } else {
-        if (rename(tempfile_path_.c_str(), path_.c_str()) == -1) {
-            throw Exception({}, stringify(
-                "can't rename ", tempfile_path_.c_str(),
-                " to ", path_.c_str(), ": ", strerror(errno)));
+    if (!tempfile_path_.empty()) {
+        if (tempfile_ostream_.is_open())
+            tempfile_ostream_.close();
+        if (path_.empty()) {
+            // copy tempfile to ostream_
+            std::ifstream tmp(tempfile_path_.c_str());
+            *ostream_ << tmp.rdbuf();
+        } else {
+            if (rename(tempfile_path_.c_str(), path_.c_str()) == -1) {
+                throw Exception({}, stringify(
+                    "can't rename ", tempfile_path_.c_str(),
+                    " to ", path_.c_str(), ": ", strerror(errno)));
+            }
         }
     }
 }
