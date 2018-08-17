@@ -1,0 +1,198 @@
+Viewer TODO
+===========
+* get rid of static variables in viewer.cc
+
+* fix iTime and FPS code.
+
+  current_time_: (value of iTime uniform)
+  * double open_time_: time when window was opened; set by Viewer::open().
+  * Use std::chrono::steady_clock to avoid GLFW dependency in this part of code.
+        double now()
+        {
+           using namespace std::chrono;
+           return
+               duration_cast<duration<double>>
+                   (steady_clock::now().time_since_epoch())
+               .count();
+        }
+  * double current_time_; // value of iTime uniform variable.
+    // Can set this just before calling draw_frame().
+    // Updated just before draw_frame() returns: iTime_ = now() - open_time_;
+
+  FPS:
+  Measure the time between swapbuffer calls, averaged over multiple frames.
+  Don't display an FPS immediately, only after some data has been accumulated.
+  (There is no portable way to accurately measure a single frame time.)
+
+  draw_frame()
+  {
+    render
+    swap buffers
+    poll events
+    // update time and measure FPS
+    current_time_ = now() - open_time_;
+    ++nframes_;
+    if (current_time_ - last_time_ >= 1.0) {
+        fps = 
+    }
+    ...
+  }
+
+  opengl-tutorial.org:
+    double lastTime = glfwGetTime();
+    int nbFrames = 0;
+
+    do {
+        // Measure speed
+        double currentTime = glfwGetTime();
+        nbFrames++;
+        if ( currentTime - lastTime >= 1.0 ){ // If last prinf() was more than 1 sec ago
+            // printf and reset timer
+            printf("%f ms/frame\n", 1000.0/double(nbFrames));
+            nbFrames = 0;
+            lastTime += 1.0;
+        }
+
+        ... rest of the main loop
+
+  Rate limiting the display loop (while accurately measuring frame duration):
+    const int FRAMES_PER_SECOND = 25;
+    const int SKIP_TICKS = 1000 / FRAMES_PER_SECOND;
+
+    DWORD next_game_tick = GetTickCount();
+    // GetTickCount() returns the current number of milliseconds
+    // that have elapsed since the system was started
+
+    int sleep_time = 0;
+
+    bool game_is_running = true;
+
+    while( game_is_running ) {
+        update_game();
+        display_game();
+
+        next_game_tick += SKIP_TICKS;
+        sleep_time = next_game_tick - GetTickCount();
+        if( sleep_time >= 0 ) {
+            Sleep( sleep_time );
+        }
+        else {
+            // Shit, we are running behind!
+        }
+    }
+
+  Okay, but what about platforms that rate limit to 60fps?
+
+    I've recently started using glfw for a small side project I'm working on,
+    and I've use std::chrono along side std::this_thread::sleep_until
+    to achieve 60fps
+
+    auto start = std::chrono::steady_clock::now();
+    while(!glfwWindowShouldClose(window))
+    {
+        ++frames;
+        auto now = std::chrono::steady_clock::now();
+        auto diff = now - start;
+        auto end = now + std::chrono::milliseconds(16);
+        if(diff >= std::chrono::seconds(1))
+        {
+            start = now;
+            std::cout << "FPS: " << frames << std::endl;
+            frames = 0;
+
+        }
+        glfwPollEvents();
+
+        processTransition(countit);
+        render.TickTok();
+        render.RenderBackground();
+        render.RenderCovers(countit);
+
+        std::this_thread::sleep_until(end);
+        glfwSwapBuffers(window);
+    }
+
+    You can easily adjust FPS preference by adjusting end.
+    Now with that said, I know glfw was limited to 60fps but I had to disable
+    the limit with glfwSwapInterval(0); just before the while loop.
+---
+void glfwSwapInterval	(	int 	interval	)	
+This function sets the swap interval for the current context, i.e. the number of
+screen updates to wait from the time glfwSwapBuffers was called before swapping
+the buffers and returning. This is sometimes called vertical synchronization,
+vertical retrace synchronization or just vsync.
+
+Contexts that support either of the WGL_EXT_swap_control_tear and
+GLX_EXT_swap_control_tear extensions also accept negative swap intervals, which
+allow the driver to swap even if a frame arrives a little bit late. You can
+check for the presence of these extensions using glfwExtensionSupported. For
+more information about swap tearing, see the extension specifications.
+---
+    void glXSwapIntervalEXT(Display *dpy,
+                            GLXDrawable drawable,
+                            int interval);
+
+    glXSwapIntervalEXT specifies the minimum number of video frame
+    periods per buffer swap for a particular GLX drawable (e.g. a value
+    of two means that the color buffers will be swapped at most every
+    other video frame). The interval takes effect when glXSwapBuffers
+    is first called on the drawable subsequent to the glXSwapIntervalEXT call.
+
+Note: by observation, I think there is a time delay implemented within
+SwapBuffers.
+
+Swap Interval is a means of synchronizing the swapping of the front and back
+frame buffers with vertical blanks (v-blank): the hardware event where the
+screen image is updated with data from the front framebuffer. It is a very
+common means of preventing frame "tearing," (seeing half of one frame and half
+of another) as often seen in high-motion-content graphics.
+
+Swap Interval control is provided via platform-specific extensions.
+
+---
+To glFinish or not to glFinish, that is the question!
+
+Swap interval = 1 without glFinish: The buffer swapping command instructs the
+GPU to swap the front and back buffers. This command is typically treated like
+any other GL command, and is executed by the GPU asynchronously from the CPU.
+However, because all subsequent rendering commands that affect the back buffer
+must wait until the back buffer has been swapped, these commands will pile up in
+the queue and eventually force a CPU synchronization. It is generally a good
+idea in this case to put the buffer swapping last in this case, and spend CPU
+time doing non-OpenGL tasks.
+
+Swap interval = 1 with glFinish: The CPU thread can be synchronized with the
+buffer swap by calling glFinish() after issuing the swap. This introduces a
+penalty as it kills throughput advantages offered by the GL pipeline when the
+video card is under consistent activity. Video latency becomes the same as the
+vertical refresh period; at 60 Hz, this is 1/60th of a second or 16.666...ms.
+This method may save power on laptops, but may be less favorable for fast-paced
+games.
+
+In one test case, in which "Wait for Vertical Refresh" was set to Always on both
+setups, an Intel graphics chipset from a 2011 Sandy Bridge laptop was found to
+exclude the buffer swap from glFinish, thus churning 1000 frames per second, and
+a PCI-e 2.0 AMD Radeon HD 3870 from 2008 was found to drop to 55fps with the
+addition of glFinish to SwapBuffers. If GPU<->CPU synchronization is desired,
+you should use a high-precision/multimedia timer rather than glFinish after a
+buffer swap.
+
+------
+Graphics cards are quite complex parallel systems and it's exceedingly hard to
+measure precisely what's going on.
+
+The best practical solution is to measure the time between consecutive returns
+from the swapbuffer command with your entire application running. You can then
+adjust one piece of the code at a time, remeasure and get a reasonable idea of
+the practical improvements you are getting as a result of your optimisation
+efforts.
+
+Even when you do this, you may have to take a little care - some systems force
+the swapbuffers command to wait for the next video vertical retrace before
+performing the swap - if that is the case then you'll only ever see times that
+are an exact multiple of the video frame time and it will be impossible to see
+exactly how much time you are consuming.
+------
+Timing a single frame won't give you very good data; you'll need to measure a
+number of frames (at steady state) and divide time by frame count to get a
+"good" measurement.
