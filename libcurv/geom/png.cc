@@ -87,6 +87,8 @@ export_png(
     // On Linux, I don't need 2 calls. How to fix?
     // * Calling glFinish() doesn't help.
     // * Try render to a Frame Buffer Object (FBO).
+    // According to the GLFW docs, I need an FBO because the framebuffer of
+    // a hidden window might not be useable.
     v.current_time_ = p.fstart_;
     v.draw_frame();
 #endif
