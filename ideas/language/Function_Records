@@ -1,0 +1,89 @@
+# Function/Record Equivalence.
+
+Using {call x = f x}, a record can behave like a function.
+So there is some sense in which 'function' is a subtype of 'record'.
+Work out the details and make it consistent.
+
+Some possibilities:
+ 1. Functions and records are distinct.
+    is_function and is_record are disjoint.
+    Functions have no fields, and can be applied.
+    A record with a call field can be applied.
+    Kind of inconsistent, because is_function doesn't accurately tell you
+    if a value is 'callable'. But `is_callable` is true both for functions
+    and for records with a call field. But now there is a subtle distinction
+    between is_function and is_callable, which would lead to mistakes.
+ 2. Callable records should work in any context where an equivalent function
+    would also work.
+
+Take the "parametric record" proposal into account.
+Two models for how built-in or primitive parametric records could work.
+ 1. `R` is a parametric record.
+    `R.call` is a primitive function (no fields).
+    `R.call arg` is a record, another instance of R.
+    `R arg` is an abbreviation for `R.call arg`.
+ 2. `R` is a parametric argument.
+    There is no `call` field.
+    `R arg` is an instance of R.
+
+
+* For symmetry, a function behaves like a record with a single `call` field.
+* What about `is_fun`?
+  * Get rid of `is_fun`. `is_record` is true for primitive functions.
+    Test for `call` field in a record to identify a function.
+  * Or, `is_fun` is true for records that contain a `call` field,
+    and `is_record` is true for primitive functions. So Fun is a subtype of
+    Record.
+
+A virtual Structure::call() allows easier creation of "parametric records".
+(As opposed to extracting the `call` field, and requiring it to be a Function,
+which when called returns another Structure.)
+* This has a subtle but funny effect on the data model. In effect, an image is
+  a kind of native function. Either there is no `call` field, or the `call`
+  field is the value itself, which are also the choices we have for functions.
+
+Lists and Strings
+-----------------
+What about lists and strings, which also support function call syntax?
+Are List and String subtypes of Fun?
+
+Callable Values are Functions
+-----------------------------
+`is_callable X` is true for any value that can be applied:
+* function
+* record with a `call` field
+* list
+* string
+
+Callable values work with any primitive operator that also accepts functions.
+* f x
+* match[f1,f2]
+* compose[f1,f2]
+* (f x) = expr -- lists and strings aren't suitable for f
+
+Function is a subtype of Record???
+----------------------------------
+This implies that a function can be used in any situation where a record with
+a call field would work. Maybe 'functions' and 'records' are collectively
+called 'objects'.
+
+This implies that (maybe) primitive functions have a `call` field, which is the
+function itself, and the following operations are supported:
+    f.call
+    fields f == ["call"]
+    ... f
+    include f
+    is_record f == true
+This is a bit weird. It handles the case where code is written that assumes
+a record with just a call field, and ensure that functions work in that context
+as well.
+
+To the contrary, Curv data structures are meant to be finite, acyclic trees,
+and `f.call.call.call.call.call.call ...` violates this.
+This suggests that the presence of a call field is not a requirement for
+callable values.
+
+If the requirement exists, then String and List should also have `call` fields.
+
+The "parametric record" proposal makes this more plausible, since these are
+records that are also functions.
