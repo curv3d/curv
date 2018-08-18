@@ -265,6 +265,7 @@ void export_all_png(
 }
 
 const char export_png_help[] =
+  "-v : verbose output logged to stderr\n"
   "-O xsize=<image width in pixels>\n"
   "-O ysize=<image height in pixels>\n"
   "-O fstart=<animation frame timestamp, in seconds, default 0>\n"
@@ -349,12 +350,15 @@ void export_png(curv::Value value,
             ix.size.y = ysize;
         }
     }
-    std::cerr << ix.size.x<<"×"<<ix.size.y<<" pixels";
-    if (ix.aa_ > 1)
-        std::cerr << ", " << ix.aa_<<"× antialiasing";
-    if (ix.taa_ > 1)
-        std::cerr << ", " << ix.aa_<<"× temporal antialiasing";
-    std::cerr << std::endl;
+    ix.verbose_ = params.verbose_;
+    if (params.verbose_) {
+        std::cerr << ix.size.x<<"×"<<ix.size.y<<" pixels";
+        if (ix.aa_ > 1)
+            std::cerr << ", " << ix.aa_<<"× antialiasing";
+        if (ix.taa_ > 1)
+            std::cerr << ", " << ix.aa_<<"× temporal antialiasing";
+        std::cerr << std::endl;
+    }
     export_all_png(shape, ix, animate, ofile);
 }
 

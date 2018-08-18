@@ -22,6 +22,7 @@ struct Image_Export
     int aa_ = 4;         // Supersampling factor for spatial antialiasing.
     int taa_ = 1;        // Supersampling factor for temporal antialiasing.
     double fdur_ = 0.04; // Frame duration for animation; needed for TAA.
+    bool verbose_ = false;
 };
 
 void export_png(const Shape_Program&, const Image_Export&, Output_File&);

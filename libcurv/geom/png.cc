@@ -75,9 +75,13 @@ export_png(
     v.window_pos_and_size_.z = p.size.x;
     v.window_pos_and_size_.w = p.size.y;
     v.headless_ = true;
+    v.verbose_ = p.verbose_;
     v.set_shape(shape, opts);
     v.open();
     v.current_time_ = p.fstart_;
+
+    std::chrono::time_point<std::chrono::steady_clock> start_time, end_time;
+    start_time = std::chrono::steady_clock::now();
     v.draw_frame();
 #if 1
     // On macOS, the second call to draw_frame() is needed, or glReadPixels
@@ -103,6 +107,7 @@ export_png(
     glGetError();
     glReadPixels(0, 0, p.size.x, p.size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
     auto err = glGetError();
+    end_time = std::chrono::steady_clock::now();
 
     v.close();
 #if 0
@@ -114,6 +119,10 @@ export_png(
 #else
     (void) err;
 #endif
+    if (p.verbose_) {
+        std::chrono::duration<double> render_time = end_time - start_time;
+        std::cerr << "image render time: " << render_time.count() << "s\n";
+    }
     write_png_rgb(ofile.path().c_str(), pixels.get(), p.size.x, p.size.y);
 }
 

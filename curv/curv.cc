@@ -84,6 +84,7 @@ const char help_suffix[] =
 "   -O name=value : Parameter for the specified output format.\n"
 "   -x : Interpret filename argument as expression.\n"
 "general options:\n"
+"   -v : Verbose & debug output.\n"
 "   $CURV_STDLIB : Pathname of standard library, overrides PREFIX/lib/std.curv\n"
 "   -n : Don't use standard library.\n"
 "   -i file : Include specified library; may be repeated.\n"
@@ -136,9 +137,10 @@ main(int argc, char** argv)
     std::list<const char*> libs;
     bool expr = false;
     const char* editor = nullptr;
+    bool verbose = false;
 
     int opt;
-    while ((opt = getopt(argc, argv, ":o:O:lni:xe")) != -1) {
+    while ((opt = getopt(argc, argv, ":o:O:lni:xev")) != -1) {
         switch (opt) {
         case 'o':
           {
@@ -193,6 +195,10 @@ main(int argc, char** argv)
             editor = getenv("CURV_EDITOR");
             if (editor == nullptr)
                 editor = "gedit --new-window --wait";
+            break;
+        case 'v':
+            verbose = true;
+            eparams.verbose_ = true;
             break;
         case '?':
             std::cerr << "-" << (char)optopt << ": unknown option\n"
@@ -252,11 +258,13 @@ main(int argc, char** argv)
     atexit(curv::geom::remove_all_tempfiles);
 
     if (filename == nullptr) {
+        // TODO: support -v (verbose)
         interactive_mode(sys);
         return EXIT_SUCCESS;
     }
 
     if (live) {
+        // TODO: support -v (verbose)
         return live_mode(sys, editor, filename);
     }
 
