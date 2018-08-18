@@ -54,6 +54,17 @@ concept).
 In order to create something like a text editor, we need values that evolve
 over time, accumulating changes triggered by events. This is missing from Curv.
 
+I don't think that Event streams are a requirement for Curv. In the VJ and
+interactive art use cases, use a front end that converts events to an animated
+tensor value that is robust to being sampled at various frequencies.
+
+Integration over time is a big change from how Curv currently works on the GPU.
+You can do it on the CPU.
+It is a useful technique for 3D modelling, so I must consider it in more detail.
+(Let the CPU language render things on the GPU and then query the results.)
+In the context of FRP, the question is whether animated values can integrate
+over time, or whether they have GL-restricted semantics that prevent this.
+
 (TODO: add details.)
 
 Parametric Records
