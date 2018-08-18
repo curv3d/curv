@@ -75,9 +75,9 @@ export_cpp(Shape_Program& shape, std::ostream& out)
         "#include <glm/vec2.hpp>\n"
         "#include <glm/vec3.hpp>\n"
         "#include <glm/vec4.hpp>\n"
-        "#include <glm/detail/func_common.hpp>\n"
-        "#include <glm/detail/func_geometric.hpp>\n"
-        "#include <glm/detail/func_trigonometric.hpp>\n"
+        "#include <glm/common.hpp>\n"
+        "#include <glm/geometric.hpp>\n"
+        "#include <glm/trigonometric.hpp>\n"
         "\n"
         "using namespace glm;\n"
         "\n";
