@@ -19,7 +19,7 @@ struct Image_Export
     glm::ivec2 size;    // Size of exported image, in pixels.
     double pixel_size;  // Size of a square pixel, in shape space.
     double fstart_ = 0.0;  // Frame start time, in seconds, for animations.
-    int aa_ = 1;         // Supersampling factor for spatial antialiasing.
+    int aa_ = 4;         // Supersampling factor for spatial antialiasing.
     int taa_ = 1;        // Supersampling factor for temporal antialiasing.
     double fdur_ = 0.04; // Frame duration for animation; needed for TAA.
 };

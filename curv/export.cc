@@ -231,9 +231,10 @@ void export_all_png(
     double animate,
     curv::Output_File& ofile)
 {
-    if (animate <= 0) {
+    if (animate <= 0.0) {
         // export single image
         curv::geom::export_png(shape, ix, ofile);
+        return;
     }
 
     const char* ipath = ofile.path_.c_str();
@@ -348,8 +349,12 @@ void export_png(curv::Value value,
             ix.size.y = ysize;
         }
     }
-    std::cerr << "Image export: "<<ix.size.x<<"×"<<ix.size.y<<" pixels."
-        " Use 'curv --help -o png' for more options.\n";
+    std::cerr << ix.size.x<<"×"<<ix.size.y<<" pixels";
+    if (ix.aa_ > 1)
+        std::cerr << ", " << ix.aa_<<"× antialiasing";
+    if (ix.taa_ > 1)
+        std::cerr << ", " << ix.aa_<<"× temporal antialiasing";
+    std::cerr << std::endl;
     export_all_png(shape, ix, animate, ofile);
 }
 
