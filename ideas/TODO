@@ -1,8 +1,8 @@
 Current TODO List:
-* Image Export options:
-  * higher priority:
-    * -O animate=duration -o 'foo*.png' (default 25 FPS)
-    * documentation
+* Image Export.
+  * speed up -O animate= (compile shape once)
+  * add curv -v flag
+  * documentation
   * Refactor code.
     * in frag.h: Frag_Options, frag_write().
     * Share code between Frag and PNG options, which includes:
@@ -20,18 +20,7 @@ Current TODO List:
     * -O parameter values are Curv expressions. Missing means 'true'.
       Eg, -O fdur=1/30 or -O animate='2*pi'
   * transparent background (exports RGBA, not RGB)
-  * multi-image export, for animation:
-    * -O animate=duration -o 'foo*.png' (default 25 FPS)
-      Why? Speed, and convenience of not writing a python script.
-      * If animate= specified, client pathname must be set and contain a '*'.
-    * -O frame=<frame_duration in seconds> -- eg, frame=1/25 means 25 FPS.
-    * -O time=<start time>
-    * -O taa=<scale factor for temporal antialiasing> -- requires frame=
-      Why implement this?
-      * Faster than doing it in an external tool.
-      * ImageMagick has no support for this.
-      * ffmpeg only supports power-of-2 scale factors, eg not taa=3.
-    * document animation export.
+  * use OpenGL FBO to avoid unreliable semantics of framebuf of hidden window.
 * Image Import.
   * rename Meaning::source_ to syntax_.
   * rename Script to Source, with Source_File, Source_String, Source_Buffer.
