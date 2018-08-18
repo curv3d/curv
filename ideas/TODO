@@ -29,6 +29,8 @@ Current TODO List:
 * Mesh Export.
   * Refactor mesh export. Core->libcurv/geom. Error for bad -O flag.
 
+* Read: http://matter.media.mit.edu/publications/article/data-driven-material-modeling
+  Data-Driven Material Modeling for 3D-Printing of Materially Heterogeneous Objects
 * Replace 'not an operation' analysis time error with useful message.
 * Mesa driver bugs. Install latest Nouveau driver, report bugs to Mesa3D.org
   * Install Ubuntu 18.04. Bleeding edge Mesa + 16.04 is likely a bad idea.
