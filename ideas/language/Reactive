@@ -1,0 +1,68 @@
+Reactive Programming: Connecting External Inputs to a Shape
+===========================================================
+Inputs:
+* Audio input, processed into power levels within frequency bands.
+  Eg, from a microphone, or a sound file.
+* OSC events (Open Sound Control).
+* Video input.
+* Graphical sliders control shape parameters.
+* Mouse and keyboard.
+
+Create interactive animations to explore mathematical objects.
+A video synthesizer for VJ-ing, or for a public art installation.
+
+Curv is a pure functional language.
+What does this look like at the language level?
+
+ 1. Brute force approach. Global variables that change over time,
+    linked to GLSL uniform variables. Time itself doesn't work this way,
+    and it's not very "functional".
+ 2. Some approach inspired by Functional Reactive Programming (FRP)?
+ 3. Some approach inspired by Haskell Monads?
+
+Suppose it was global variables. Then a Curv program is implicitly a
+function parameterized by these global variables. But, can you directly
+access this implicit function and call it with chosen parameter values?
+If the answer is no, then it isn't expressive enough.
+
+Relation to parametric records (for connecting shapes to graphical inputs)?
+Well, a parametric record is a kind of function that: maps a parameter
+record onto a shape, gives all parameters initial or default values, and
+advertises those parameters so that we can hook them up to external inputs.
+(Maybe call this a Reactive Record.)
+
+Is FRP the programming model?
+There are many varieties of FRP: continuous vs discrete time, push vs pull vs
+push-pull, etc. It's confusing. Superficially, it looks like the right thing
+for Curv, but I'm not sure about the details.
+
+Curv has a very particular architecture, based on volume representation,
+continuous fields (distance and colour fields), GPU evaluation, animation
+as a pair of 4D space-time fields. Is there a variety of FRP that fits this
+architecture? The original Conal Eliot system (Fran) seems like a good fit:
+continuous functions parameterized by time.
+
+Fran: Functional Reactive Animation (1997)
+http://conal.net/papers/icfp97/icfp97.pdf
+
+Elm is a functional language; it transitioned from a discrete time, "push"
+variety of FRP to the new "Elm architecture" that is said to be simpler
+and more powerful.
+
+Pull vs push:
+* Fran is a "pull" system: continuous resampling of data, efficiency issue.
+  Like how Curv currently works on the GPU. The efficiency issue in Curv is
+  redrawing the view 60 times per second even when nothing changes.
+* Elm is a "push" system: discrete events, values only change when events occur,
+  global event dispatcher pushes events. In Curv, a CPU side event dispatcher
+  that only draws a frame when something changes would improve GPU efficiency.
+
+Figure out some programs I'd like to write, try implementing them using
+different paradigms, see what is simplest and easiest.
+
+In Fran, it looks like `time` is a constantly mutating global variable, the
+way code is written, but actually:
+* `time` is a Behaviour: a time varying reactive value that is actually a
+  function from time to a value.
+* scalar operators, applied to Behaviour values, are automatically lifted
+  to Behaviour expressions.
