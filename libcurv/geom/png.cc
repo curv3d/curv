@@ -11,9 +11,11 @@
 #include <libcurv/output_file.h>
 
 #include <gl/texture.h>
-#include <iostream>
-#include <cstring>
+
 #include <cerrno>
+#include <chrono>
+#include <cstring>
+#include <iostream>
 
 namespace curv { namespace geom {
 

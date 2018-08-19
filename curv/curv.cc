@@ -139,6 +139,7 @@ main(int argc, char** argv)
     bool expr = false;
     const char* editor = nullptr;
     bool verbose = false;
+    (void) verbose; // TODO
 
     int opt;
     while ((opt = getopt(argc, argv, ":o:O:lni:xev")) != -1) {
