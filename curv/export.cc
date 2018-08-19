@@ -78,10 +78,33 @@ void export_curv(curv::Value value,
     ofile.ostream() << value << "\n";
 }
 
-const char export_frag_help[] =
-    "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n"
-    "-O taa=<supersampling factor for temporal antialiasing; 1 means disabled>\n"
-    "-O fdur=<frame duration for animation (used with TAA)>\n";
+void describe_frag_opts(std::ostream& out)
+{
+  out <<
+  "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n"
+  "-O taa=<supersampling factor for temporal antialiasing; 1 means disabled>\n"
+  "-O fdur=<frame duration for animation (used with TAA)>\n";
+}
+
+bool parse_frag_opt(
+    const Export_Params& params,
+    const Export_Params::Map::value_type& p,
+    curv::geom::Frag_Export& opts)
+{
+    if (p.first == "aa") {
+        opts.aa_ = params.to_int(p, 1, INT_MAX);
+        return true;
+    }
+    if (p.first == "taa") {
+        opts.taa_ = params.to_int(p, 1, INT_MAX);
+        return true;
+    }
+    if (p.first == "fdur") {
+        opts.fdur_ = params.to_double(p);
+        return true;
+    }
+    return false;
+}
 
 void export_frag(curv::Value value,
     curv::Program& prog,
@@ -90,15 +113,8 @@ void export_frag(curv::Value value,
 {
     curv::geom::Frag_Export opts;
     for (auto& p : params.map) {
-        if (p.first == "aa") {
-            opts.aa_ = params.to_int(p, 1, INT_MAX);
-        } else if (p.first == "taa") {
-            opts.taa_ = params.to_int(p, 1, INT_MAX);
-        } else if (p.first == "fdur") {
-            opts.fdur_ = params.to_double(p);
-        } else {
+        if (!parse_frag_opt(params, p, opts))
             params.unknown_parameter(p);
-        }
     }
 
     curv::geom::Shape_Program shape(prog);
@@ -264,15 +280,17 @@ void export_all_png(
     std::cerr << "done\n";
 }
 
-const char export_png_help[] =
-  "-v : verbose output logged to stderr\n"
-  "-O xsize=<image width in pixels>\n"
-  "-O ysize=<image height in pixels>\n"
-  "-O fstart=<animation frame timestamp, in seconds, default 0>\n"
-  "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n"
-  "-O taa=<supersampling factor for temporal antialiasing; 1 means disabled>\n"
-  "-O fdur=<frame duration for animation (used with TAA)>\n"
-  "-O animate=<duration of animation (exports an image sequence)>\n";
+void describe_png_opts(std::ostream& out)
+{
+    out <<
+    "-v : verbose output logged to stderr\n"
+    "-O xsize=<image width in pixels>\n"
+    "-O ysize=<image height in pixels>\n"
+    "-O fstart=<animation frame timestamp, in seconds, default 0>\n";
+    describe_frag_opts(out);
+    out <<
+    "-O animate=<duration of animation (exports an image sequence)>\n";
+}
 
 void export_png(curv::Value value,
     curv::Program& prog,
@@ -285,18 +303,14 @@ void export_png(curv::Value value,
     int ysize = 0;
     double animate = 0.0;
     for (auto& p : params.map) {
-        if (p.first == "xsize") {
+        if (parse_frag_opt(params, p, ix)) {
+            ;
+        } else if (p.first == "xsize") {
             xsize = params.to_int(p, 1, INT_MAX);
         } else if (p.first == "ysize") {
             ysize = params.to_int(p, 1, INT_MAX);
         } else if (p.first == "fstart") {
             ix.fstart_ = params.to_double(p);
-        } else if (p.first == "aa") {
-            ix.aa_ = params.to_int(p, 1, INT_MAX);
-        } else if (p.first == "taa") {
-            ix.taa_ = params.to_int(p, 1, INT_MAX);
-        } else if (p.first == "fdur") {
-            ix.fdur_ = params.to_double(p);
         } else if (p.first == "animate") {
             animate = params.to_double(p);
         } else {
@@ -362,16 +376,18 @@ void export_png(curv::Value value,
     export_all_png(shape, ix, animate, ofile);
 }
 
+void describe_no_opts(std::ostream&) {}
+
 std::map<std::string, Exporter> exporters = {
-    {"curv", {export_curv, "Curv expression", ""}},
-    {"stl", {export_stl, "STL mesh file (3D shape only)", mesh_export_help}},
-    {"obj", {export_obj, "OBJ mesh file (3D shape only)", mesh_export_help}},
+    {"curv", {export_curv, "Curv expression", describe_no_opts}},
+    {"stl", {export_stl, "STL mesh file (3D shape only)", describe_mesh_opts}},
+    {"obj", {export_obj, "OBJ mesh file (3D shape only)", describe_mesh_opts}},
     {"x3d", {export_x3d, "X3D colour mesh file (3D shape only)",
-             colour_mesh_export_help}},
+             describe_colour_mesh_opts}},
     {"frag", {export_frag,
               "GLSL fragment shader (shape only, shadertoy.com compatible)",
-              export_frag_help}},
-    {"json", {export_json, "JSON expression", ""}},
-    {"cpp", {export_cpp, "C++ source file (shape only)", ""}},
-    {"png", {export_png, "PNG image file (shape only)", export_png_help}},
+              describe_frag_opts}},
+    {"json", {export_json, "JSON expression", describe_no_opts}},
+    {"cpp", {export_cpp, "C++ source file (shape only)", describe_no_opts}},
+    {"png", {export_png, "PNG image file (shape only)", describe_png_opts}},
 };

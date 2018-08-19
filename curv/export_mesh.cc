@@ -111,16 +111,21 @@ inline glm::vec3 V3(Vec3s v)
     return glm::vec3{v.x(), v.y(), v.z()};
 }
 
-#define MESH_EXPORT_HELP \
-"-O jit : Speed up evaluation using JIT compiler (uses external C++ compiler).\n" \
-"-O vsize=<voxel size>\n" \
-"-O adaptive=<0...1> : Deprecated. Use meshlab to simplify mesh, instead.\n"
-
-const char mesh_export_help[] = MESH_EXPORT_HELP;
-const char colour_mesh_export_help[] =
-    MESH_EXPORT_HELP
+void describe_mesh_opts(std::ostream& out)
+{
+    out <<
+    "-O jit : Fast evaluation using JIT compiler (uses C++ compiler).\n"
+    "-O vsize=<voxel size>\n"
+    "-O adaptive=<0...1> : Deprecated. Use meshlab to simplify mesh.\n"
+    ;
+}
+void describe_colour_mesh_opts(std::ostream& out)
+{
+    describe_mesh_opts(out);
+    out <<
     "-O colour=face|vertex\n"
     ;
+}
 
 void export_mesh(Mesh_Format format, curv::Value value,
     curv::Program& prog,

@@ -105,7 +105,8 @@ main(int argc, char** argv)
                           << "Use " << argv0 << " --help for help.\n";
                 return EXIT_FAILURE;
             }
-            std::cout << ex->second.synopsis << "\n" << ex->second.description;
+            std::cout << ex->second.synopsis << "\n";
+            ex->second.describe_options(std::cout);
             return EXIT_SUCCESS;
         }
         if (argc == 2) {

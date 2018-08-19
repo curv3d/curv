@@ -28,7 +28,7 @@ struct Exporter
 {
     void (*call)(curv::Value, curv::Program&, const Export_Params&, curv::Output_File&);
     const char* synopsis;
-    const char* description;
+    void (*describe_options)(std::ostream&);
 };
 extern std::map<std::string, Exporter> exporters;
 
@@ -72,7 +72,7 @@ extern void export_png(curv::Value value,
     const Export_Params& params,
     curv::Output_File&);
 
-extern const char mesh_export_help[];
-extern const char colour_mesh_export_help[];
+void describe_mesh_opts(std::ostream&);
+void describe_colour_mesh_opts(std::ostream&);
 
 #endif // include guard

@@ -3,22 +3,12 @@ Current TODO List:
 * Image Export.
   * speed up -O animate= (compile shape once)
   * documentation
-  * Refactor code.
-    * in frag.h: Frag_Options, frag_write().
-    * Share code between Frag and PNG options, which includes:
-      * member variables in Frag_Options and Image_Options
-      * help text
-      * option parsing
-      Ideas:
-       1. struct Image_Options : public Frag_Options
-          std::string Frag_Options::help()
-          bool Frag_Options::parse(Export_Params)
-    * Nicer error messages:
-      ERROR: Invalid numeral
-      1| -O aa=23foo
-               ^^^^^
-    * -O parameter values are Curv expressions. Missing means 'true'.
-      Eg, -O fdur=1/30 or -O animate='2*pi'
+  * Nicer error messages:
+    ERROR: Invalid numeral
+    1| -O aa=23foo
+             ^^^^^
+  * -O parameter values are Curv expressions. Missing means 'true'.
+    Eg, -O fdur=1/30 or -O animate='2*pi'
   * transparent background (exports RGBA, not RGB)
   * use OpenGL FBO to avoid unreliable semantics of framebuf of hidden window.
 * Image Import.

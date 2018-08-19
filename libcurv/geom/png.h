@@ -5,6 +5,7 @@
 #ifndef LIBCURV_GEOM_PNG_H
 #define LIBCURV_GEOM_PNG_H
 
+#include <libcurv/geom/frag.h>
 #include <glm/vec2.hpp>
 
 namespace curv {
@@ -14,14 +15,12 @@ namespace geom {
 struct Shape_Program;
 
 // Image export parameters
-struct Image_Export
+struct Image_Export : public Frag_Export
 {
+    Image_Export() { aa_ = 4; }
     glm::ivec2 size;    // Size of exported image, in pixels.
     double pixel_size;  // Size of a square pixel, in shape space.
     double fstart_ = 0.0;  // Frame start time, in seconds, for animations.
-    int aa_ = 4;         // Supersampling factor for spatial antialiasing.
-    int taa_ = 1;        // Supersampling factor for temporal antialiasing.
-    double fdur_ = 0.04; // Frame duration for animation; needed for TAA.
     bool verbose_ = false;
 };
 
