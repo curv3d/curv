@@ -1,0 +1,28 @@
+Voxel File Formats
+==================
+Curv will support the import and export of voxel files.
+Which file formats?
+* Formats supported by other tools.
+* If necessary, invent a new format that is more practical than existing
+  alternatives. Eg, because it has really good compression.
+
+Types of voxel data I may need to represent:
+* signed distance field. 32 bit floats.
+* intensity field, values between 0 and 1.
+* colour field: RGB
+* colour field: RGBA
+
+FFV1 is a lossless video format supported by FFmpeg.
+Excellent compression, very fast decode/encode, open source.
+Test this to see if is usable for voxel grids, and if the compression ratio
+is better than the alternatives.
+
+SVX is a voxel array format that Shapeways attempted to popularize.
+As of 2018, it is moribund. No one really supports it. Shapeways still
+supports it for their service, but they don't mention the format on their
+web site anymore. It uses an array of PNG files inside a ZIP container.
+That's easy, but measure the compression ratio against the alternatives.
+
+VDB.
+
+The 3MF committee is investigating voxel formats.

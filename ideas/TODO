@@ -1,15 +1,15 @@
 Current TODO List:
 * extend curv -v flag to live, repl and batch viewer mode. -O viewer options.
 * Image Export.
-  * speed up -O animate= (compile shape once)
+  * -O parameter values are Curv expressions. Missing means 'true'.
+    Eg, -O fdur=1/30 or -O animate='2*pi'
   * documentation
   * Nicer error messages:
     ERROR: Invalid numeral
     1| -O aa=23foo
              ^^^^^
-  * -O parameter values are Curv expressions. Missing means 'true'.
-    Eg, -O fdur=1/30 or -O animate='2*pi'
   * transparent background (exports RGBA, not RGB)
+  * speed up -O animate= (compile shape once)
   * use OpenGL FBO to avoid unreliable semantics of framebuf of hidden window.
 * Image Import.
   * rename Meaning::source_ to syntax_.
