@@ -20,22 +20,22 @@ namespace curv {
 Value
 Operation::eval(Frame& f) const
 {
-    throw Exception(At_Phrase(*source_, &f), "not an expression");
+    throw Exception(At_Phrase(*syntax_, &f), "not an expression");
 }
 void
 Operation::exec(Frame& f) const
 {
-    throw Exception(At_Phrase(*source_, &f), "not an action");
+    throw Exception(At_Phrase(*syntax_, &f), "not an action");
 }
 void
 Operation::bind(Frame& f, Record&) const
 {
-    throw Exception(At_Phrase(*source_, &f), "not a binder or action");
+    throw Exception(At_Phrase(*syntax_, &f), "not a binder or action");
 }
 void
 Operation::generate(Frame& f, List_Builder&) const
 {
-    throw Exception(At_Phrase(*source_, &f), "not a generator, expression or action");
+    throw Exception(At_Phrase(*syntax_, &f), "not a generator, expression or action");
 }
 
 void
@@ -100,7 +100,7 @@ Dot_Expr::eval(Frame& f) const
 {
     Value basev = base_->eval(f);
     Symbol id = selector_.eval(f);
-    return basev.at(id, At_Phrase(*base_->source_, &f));
+    return basev.at(id, At_Phrase(*base_->syntax_, &f));
 }
 
 Value
@@ -119,7 +119,7 @@ eval_not(Value x, const Context& cx)
 Value
 Not_Expr::eval(Frame& f) const
 {
-    return eval_not(arg_->eval(f), At_Phrase(*source_, &f));
+    return eval_not(arg_->eval(f), At_Phrase(*syntax_, &f));
 }
 
 Value
@@ -132,7 +132,7 @@ Positive_Expr::eval(Frame& f) const
         }
     };
     static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(arg_->eval(f), At_Phrase(*source_, &f));
+    return array_op.op(arg_->eval(f), At_Phrase(*syntax_, &f));
 }
 Value
 Negative_Expr::eval(Frame& f) const
@@ -144,7 +144,7 @@ Negative_Expr::eval(Frame& f) const
         }
     };
     static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(arg_->eval(f), At_Phrase(*source_, &f));
+    return array_op.op(arg_->eval(f), At_Phrase(*syntax_, &f));
 }
 
 Value
@@ -152,7 +152,7 @@ Add_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return add(a,b, At_Phrase(*source_, &f));
+    return add(a,b, At_Phrase(*syntax_, &f));
 }
 Value
 Subtract_Expr::eval(Frame& f) const
@@ -167,14 +167,14 @@ Subtract_Expr::eval(Frame& f) const
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return array_op.op(a,b, At_Phrase(*source_, &f));
+    return array_op.op(a,b, At_Phrase(*syntax_, &f));
 }
 Value
 Multiply_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return multiply(a,b, At_Phrase(*source_, &f));
+    return multiply(a,b, At_Phrase(*syntax_, &f));
 }
 Value
 Divide_Expr::eval(Frame& f) const
@@ -189,7 +189,7 @@ Divide_Expr::eval(Frame& f) const
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return array_op.op(a,b, At_Phrase(*source_, &f));
+    return array_op.op(a,b, At_Phrase(*syntax_, &f));
 }
 
 Value
@@ -202,9 +202,9 @@ Or_Expr::eval(Frame& f) const
         Value b = arg2_->eval(f);
         if (b.is_bool())
             return b;
-        throw Exception(At_Phrase(*arg2_->source_, &f), "not a boolean value");
+        throw Exception(At_Phrase(*arg2_->syntax_, &f), "not a boolean value");
     }
-    throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
+    throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 Value
 And_Expr::eval(Frame& f) const
@@ -216,15 +216,15 @@ And_Expr::eval(Frame& f) const
         Value b = arg2_->eval(f);
         if (b.is_bool())
             return b;
-        throw Exception(At_Phrase(*arg2_->source_, &f), "not a boolean value");
+        throw Exception(At_Phrase(*arg2_->syntax_, &f), "not a boolean value");
     }
-    throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
+    throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 
 Value
 If_Op::eval(Frame& f) const
 {
-    throw Exception{At_Phrase{*source_, &f},
+    throw Exception{At_Phrase{*syntax_, &f},
         "if: not an expression (missing else clause)"};
 }
 void
@@ -236,7 +236,7 @@ If_Op::generate(Frame& f, List_Builder& lb) const
     else if (a == Value{false})
         return;
     else
-        throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
+        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 void
 If_Op::bind(Frame& f, Record& r) const
@@ -247,7 +247,7 @@ If_Op::bind(Frame& f, Record& r) const
     else if (a == Value{false})
         return;
     else
-        throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
+        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 void
 If_Op::exec(Frame& f) const
@@ -258,7 +258,7 @@ If_Op::exec(Frame& f) const
     else if (a == Value{false})
         return;
     else
-        throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
+        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 
 Value
@@ -269,7 +269,7 @@ If_Else_Op::eval(Frame& f) const
         return arg2_->eval(f);
     if (a == Value{false})
         return arg3_->eval(f);
-    throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
+    throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 void
 If_Else_Op::generate(Frame& f, List_Builder& lb) const
@@ -280,7 +280,7 @@ If_Else_Op::generate(Frame& f, List_Builder& lb) const
     else if (a == Value{false})
         arg3_->generate(f, lb);
     else
-        throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
+        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 void
 If_Else_Op::bind(Frame& f, Record& r) const
@@ -291,7 +291,7 @@ If_Else_Op::bind(Frame& f, Record& r) const
     else if (a == Value{false})
         arg3_->bind(f, r);
     else
-        throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
+        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 void
 If_Else_Op::exec(Frame& f) const
@@ -302,7 +302,7 @@ If_Else_Op::exec(Frame& f) const
     else if (a == Value{false})
         arg3_->exec(f);
     else
-        throw Exception(At_Phrase(*arg1_->source_, &f), "not a boolean value");
+        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 
 Value
@@ -329,7 +329,7 @@ Less_Expr::eval(Frame& f) const
         return {true};
     if (a.get_num_or_nan() >= b.get_num_or_nan())
         return {false};
-    throw Exception(At_Phrase(*source_, &f),
+    throw Exception(At_Phrase(*syntax_, &f),
         stringify(a,"<",b,": domain error"));
 }
 Value
@@ -342,7 +342,7 @@ Greater_Expr::eval(Frame& f) const
         return {true};
     if (a.get_num_or_nan() <= b.get_num_or_nan())
         return {false};
-    throw Exception(At_Phrase(*source_, &f),
+    throw Exception(At_Phrase(*syntax_, &f),
         stringify(a,">",b,": domain error"));
 }
 Value
@@ -355,7 +355,7 @@ Less_Or_Equal_Expr::eval(Frame& f) const
         return {true};
     if (a.get_num_or_nan() > b.get_num_or_nan())
         return {false};
-    throw Exception(At_Phrase(*source_, &f),
+    throw Exception(At_Phrase(*syntax_, &f),
         stringify(a,"<=",b,": domain error"));
 }
 Value
@@ -368,7 +368,7 @@ Greater_Or_Equal_Expr::eval(Frame& f) const
         return {true};
     if (a.get_num_or_nan() < b.get_num_or_nan())
         return {false};
-    throw Exception(At_Phrase(*source_, &f),
+    throw Exception(At_Phrase(*syntax_, &f),
         stringify(a,">=",b,": domain error"));
 }
 Value
@@ -382,7 +382,7 @@ Power_Expr::eval(Frame& f) const
         }
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(arg1_->eval(f), arg2_->eval(f), At_Phrase(*source_, &f));
+    return array_op.op(arg1_->eval(f), arg2_->eval(f), At_Phrase(*syntax_, &f));
 }
 
 Value
@@ -457,12 +457,12 @@ Index_Expr::eval(Frame& f) const
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
     if (auto list = a.dycast<const List>())
-        return list_at(*list, b, At_Phrase(*arg2_->source_, &f));
+        return list_at(*list, b, At_Phrase(*arg2_->syntax_, &f));
     if (auto structure = a.dycast<const Structure>())
-        return struct_at(*structure, b, At_Phrase(*arg2_->source_, &f));
+        return struct_at(*structure, b, At_Phrase(*arg2_->syntax_, &f));
     if (auto string = a.dycast<const String>())
-        return string_at(*string, b, At_Phrase(*arg2_->source_, &f));
-    throw Exception(At_Phrase(*arg1_->source_, &f),
+        return string_at(*string, b, At_Phrase(*arg2_->syntax_, &f));
+    throw Exception(At_Phrase(*arg1_->syntax_, &f),
         "not a list, record or string");
 }
 Value
@@ -473,7 +473,7 @@ Call_Expr::eval(Frame& f) const
     Value funv = val;
     for (;;) {
         if (!funv.is_ref())
-            throw Exception(At_Phrase(*fun_->source_, &f),
+            throw Exception(At_Phrase(*fun_->syntax_, &f),
                 stringify(funv,": not a function"));
         Ref_Value& funp( funv.get_ref_unsafe() );
         switch (funp.type_) {
@@ -498,12 +498,12 @@ Call_Expr::eval(Frame& f) const
         case Ref_Value::ty_string:
         case Ref_Value::ty_list:
           {
-            At_Phrase cx(*arg_->source_, &f);
+            At_Phrase cx(*arg_->syntax_, &f);
             auto path = arg_->eval(f).to<List>(cx);
             return value_at_path(funv, *path, cx);
           }
         }
-        throw Exception(At_Phrase(*fun_->source_, &f),
+        throw Exception(At_Phrase(*fun_->syntax_, &f),
             stringify(val,": not a function"));
     }
 }
@@ -528,14 +528,14 @@ List_Expr_Base::eval(Frame& f) const
 void
 Spread_Op::generate(Frame& f, List_Builder& lb) const
 {
-    auto list = arg_->eval(f).to<const List>(At_Phrase(*arg_->source_, &f));
+    auto list = arg_->eval(f).to<const List>(At_Phrase(*arg_->syntax_, &f));
     for (size_t i = 0; i < list->size(); ++i)
         lb.push_back(list->at(i));
 }
 void
 Spread_Op::bind(Frame& f, Record& r) const
 {
-    auto s = arg_->eval(f).to<const Structure>(At_Phrase(*arg_->source_, &f));
+    auto s = arg_->eval(f).to<const Structure>(At_Phrase(*arg_->syntax_, &f));
     s->putfields(r.fields_);
 }
 
@@ -690,7 +690,7 @@ While_Action::exec(Frame& f) const
 {
     for (;;) {
         Value c = cond_->eval(f);
-        bool b = c.to_bool(At_Phrase{*cond_->source_, &f});
+        bool b = c.to_bool(At_Phrase{*cond_->syntax_, &f});
         if (!b) return;
         body_->exec(f);
     }
@@ -699,7 +699,7 @@ While_Action::exec(Frame& f) const
 void
 For_Op::generate(Frame& f, List_Builder& lb) const
 {
-    At_Phrase cx{*list_->source_, &f};
+    At_Phrase cx{*list_->syntax_, &f};
     At_Index icx{0, cx};
     Value listval = list_->eval(f);
     List& list = arg_to_list(listval, cx);
@@ -712,7 +712,7 @@ For_Op::generate(Frame& f, List_Builder& lb) const
 void
 For_Op::bind(Frame& f, Record& r) const
 {
-    At_Phrase cx{*list_->source_, &f};
+    At_Phrase cx{*list_->syntax_, &f};
     At_Index icx{0, cx};
     Value listval = list_->eval(f);
     List& list = arg_to_list(listval, cx);
@@ -725,7 +725,7 @@ For_Op::bind(Frame& f, Record& r) const
 void
 For_Op::exec(Frame& f) const
 {
-    At_Phrase cx{*list_->source_, &f};
+    At_Phrase cx{*list_->syntax_, &f};
     At_Index icx{0, cx};
     Value listval = list_->eval(f);
     List& list = arg_to_list(listval, cx);
@@ -766,7 +766,7 @@ Range_Expr::eval(Frame& f) const
         const char* err =
             (countd == countd ? "too many elements in range" : "domain error");
         const char* dots = (half_open_ ? "..<" : "..");
-        throw Exception(At_Phrase(*source_, &f),
+        throw Exception(At_Phrase(*syntax_, &f),
             arg3_
                 ? stringify(firstv,dots,lastv," by ",stepv,": ", err)
                 : stringify(firstv,dots,lastv,": ", err));
@@ -800,7 +800,7 @@ Paren_Segment::generate(Frame& f, String_Builder& sb) const
 void
 Bracket_Segment::generate(Frame& f, String_Builder& sb) const
 {
-    At_Phrase cx(*expr_->source_,&f);
+    At_Phrase cx(*expr_->syntax_,&f);
     auto list = expr_->eval(f).to<List>(cx);
     for (size_t i = 0; i < list->size(); ++i)
         sb << (char)arg_to_int((*list)[i], 1, 127, At_Index(i,cx));
@@ -845,7 +845,7 @@ Pattern_Setter::exec(Frame& f) const
         slots = &m->at(0);
     }
     Value value = definiens_->eval(f);
-    pattern_->exec(slots, value, At_Phrase(*definiens_->source_, &f), f);
+    pattern_->exec(slots, value, At_Phrase(*definiens_->syntax_, &f), f);
 }
 
 void

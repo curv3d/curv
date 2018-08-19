@@ -15,14 +15,14 @@ struct Pattern;
 
 struct Definition : public Shared_Base
 {
-    Shared<const Phrase> source_;
+    Shared<const Phrase> syntax_;
     enum Kind { k_recursive, k_sequential } kind_;
 
     Definition(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Kind k)
     :
-        source_(std::move(source)),
+        syntax_(std::move(syntax)),
         kind_(k)
     {}
 
@@ -35,10 +35,10 @@ struct Definition : public Shared_Base
 struct Unitary_Definition : public Definition
 {
     Unitary_Definition(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Kind k)
     :
-        Definition(source, k)
+        Definition(syntax, k)
     {}
 
     virtual void analyse(Environ&) = 0;
@@ -57,11 +57,11 @@ struct Function_Definition : public Unitary_Definition
     Shared<Lambda> lambda_; // initialized by analyse()
 
     Function_Definition(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<const Identifier> name,
         Shared<Lambda_Phrase> lambda_phrase)
     :
-        Unitary_Definition(source, k_recursive),
+        Unitary_Definition(syntax, k_recursive),
         name_(std::move(name)),
         lambda_phrase_(std::move(lambda_phrase))
     {}
@@ -83,12 +83,12 @@ struct Data_Definition : public Unitary_Definition
     Shared<Operation> definiens_expr_; // initialized by analyse()
 
     Data_Definition(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Kind k,
         Shared<const Phrase> definiendum,
         Shared<Phrase> definiens)
     :
-        Unitary_Definition(source, k),
+        Unitary_Definition(syntax, k),
         definiendum_(std::move(definiendum)),
         definiens_phrase_(std::move(definiens))
     {}
@@ -103,10 +103,10 @@ struct Include_Definition : public Unitary_Definition
     Shared<Include_Setter> setter_; // initialized by add_to_scope()
 
     Include_Definition(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Phrase> arg)
     :
-        Unitary_Definition(source, k_recursive),
+        Unitary_Definition(syntax, k_recursive),
         arg_(std::move(arg))
     {}
 
@@ -125,8 +125,8 @@ struct Compound_Definition_Base : public Definition
         Shared<Definition> definition_;
     };
 
-    Compound_Definition_Base(Shared<const Phrase> source)
-    : Definition(std::move(source), k_recursive) {}
+    Compound_Definition_Base(Shared<const Phrase> syntax)
+    : Definition(std::move(syntax), k_recursive) {}
 
     virtual void add_to_scope(Block_Scope&) override;
 
@@ -235,7 +235,7 @@ struct Recursive_Scope : public Block_Scope
         virtual Shared<Meaning> single_lookup(const Identifier&) override;
     };
 
-    Shared<const Phrase> source_;
+    Shared<const Phrase> syntax_;
     std::vector<Shared<const Phrase>> action_phrases_ = {};
     std::vector<Unit> units_ = {};
     int scc_count_ = 0;
@@ -243,10 +243,10 @@ struct Recursive_Scope : public Block_Scope
     std::vector<Unit*> analysis_stack_ = {};
 
     Recursive_Scope(
-        Environ& parent, bool target_is_module, Shared<const Phrase> source)
+        Environ& parent, bool target_is_module, Shared<const Phrase> syntax)
     :
         Block_Scope(parent, target_is_module),
-        source_(std::move(source))
+        syntax_(std::move(syntax))
     {
     }
 

@@ -58,13 +58,13 @@ std_eval(const Phrase& ph, Environ& env)
 Shared<Operation>
 Meaning::to_operation(Frame* f)
 {
-    throw Exception(At_Phrase(*source_, f), "not an operation");
+    throw Exception(At_Phrase(*syntax_, f), "not an operation");
 }
 
 Shared<Meaning>
 Meaning::call(const Call_Phrase&, Environ& env)
 {
-    throw Exception(At_Phrase(*source_, env), "not callable");
+    throw Exception(At_Phrase(*syntax_, env), "not callable");
 }
 
 Shared<Operation>
@@ -342,7 +342,7 @@ each_item(Phrase& phrase, std::function<void(Phrase&)> func)
 Shared<Meaning>
 analyse_block(
     Environ& env,
-    Shared<const Phrase> source,
+    Shared<const Phrase> syntax,
     Definition::Kind kind,
     Shared<Phrase> bindings,
     Shared<const Phrase> bodysrc)
@@ -351,7 +351,7 @@ analyse_block(
     if (adef == nullptr) {
         // no definitions, just actions.
         return make<Preaction_Op>(
-            source,
+            syntax,
             analyse_op(*bindings, env),
             analyse_tail(*bodysrc, env));
     }
@@ -363,18 +363,18 @@ analyse_block(
         sscope.is_analysing_action_ = env.is_analysing_action_;
         auto body = analyse_tail(*bodysrc, sscope);
         env.frame_maxslots_ = sscope.frame_maxslots_;
-        return make<Block_Op>(source,
+        return make<Block_Op>(syntax,
             std::move(sscope.executable_), std::move(body));
     }
     if (adef->kind_ == Definition::k_recursive
         && kind == Definition::k_recursive)
     {
-        Recursive_Scope rscope(env, false, adef->source_);
+        Recursive_Scope rscope(env, false, adef->syntax_);
         rscope.analyse(*adef);
         rscope.is_analysing_action_ = env.is_analysing_action_;
         auto body = analyse_tail(*bodysrc, rscope);
         env.frame_maxslots_ = rscope.frame_maxslots_;
-        return make<Block_Op>(source,
+        return make<Block_Op>(syntax,
             std::move(rscope.executable_), std::move(body));
     }
     struct Bad_Scope : public Block_Scope
@@ -389,7 +389,7 @@ analyse_block(
         virtual void add_action(Shared<const Phrase>) override {}
         virtual unsigned begin_unit(Shared<Unitary_Definition> unit) override
         {
-            throw Exception(At_Phrase(*unit->source_, *parent_),
+            throw Exception(At_Phrase(*unit->syntax_, *parent_),
                 "wrong style of definition for this block");
         }
         virtual slot_t add_binding(Symbol, const Phrase&, unsigned) override
@@ -422,7 +422,7 @@ Where_Phrase::analyse(Environ& env) const
         env.system_.message("DEPRECATION WARNING: ", exc);
     }
 
-    Shared<const Phrase> source = share(*this);
+    Shared<const Phrase> syntax = share(*this);
     Shared<Phrase> bindings = right_;
     Shared<const Phrase> bodysrc = left_;
     auto let = cast<const Let_Phrase>(bodysrc);
@@ -434,18 +434,18 @@ Where_Phrase::analyse(Environ& env) const
         if (adef1 && adef1->kind_ == Definition::k_recursive
             && adef2 && adef2->kind_ == Definition::k_recursive)
         {
-            Recursive_Scope rscope(env, false, source);
+            Recursive_Scope rscope(env, false, syntax);
             adef1->add_to_scope(rscope);
             adef2->add_to_scope(rscope);
             rscope.analyse();
             rscope.is_analysing_action_ = env.is_analysing_action_;
             auto body = analyse_tail(*let->body_, rscope);
             env.frame_maxslots_ = rscope.frame_maxslots_;
-            return make<Block_Op>(source,
+            return make<Block_Op>(syntax,
                 std::move(rscope.executable_), std::move(body));
         }
     }
-    return analyse_block(env, source,
+    return analyse_block(env, syntax,
         Definition::k_recursive, bindings, bodysrc);
 }
 
@@ -581,22 +581,22 @@ Assignment_Phrase::analyse(Environ& env) const
 
 Shared<Definition>
 as_definition_iter(
-    Environ& env, Shared<const Phrase> source,
+    Environ& env, Shared<const Phrase> syntax,
     Phrase& left, Shared<Phrase> right, Definition::Kind kind)
 {
     if (auto id = dynamic_cast<const Identifier*>(&left)) {
         auto lambda = cast<Lambda_Phrase>(right);
         if (lambda && kind == Definition::k_recursive)
-            return make<Function_Definition>(std::move(source),
+            return make<Function_Definition>(std::move(syntax),
                 share(*id), std::move(lambda));
         else
-            return make<Data_Definition>(std::move(source), kind,
+            return make<Data_Definition>(std::move(syntax), kind,
                 share(*id), std::move(right));
     }
     if (auto call = dynamic_cast<const Call_Phrase*>(&left))
-        return as_definition_iter(env, std::move(source), *call->function_,
+        return as_definition_iter(env, std::move(syntax), *call->function_,
             make<Lambda_Phrase>(call->arg_, Token(), right), kind);
-    return make<Data_Definition>(std::move(source), kind,
+    return make<Data_Definition>(std::move(syntax), kind,
         share(left), std::move(right));
 }
 Shared<Definition>

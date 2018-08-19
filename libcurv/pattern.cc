@@ -117,9 +117,9 @@ struct Predicate_Pattern : public Pattern
 
     inline const Call_Phrase* call_phrase() const
     {
-        // This is safe because, by construction, the source_ field
+        // This is safe because, by construction, the syntax_ field
         // is initialized from a Call_Phrase. See constructor, above.
-        return (Call_Phrase*) &*source_;
+        return (Call_Phrase*) &*syntax_;
     }
 
     bool match(Value arg, Frame& f) const
@@ -219,7 +219,7 @@ struct List_Pattern : public Pattern
     {
         if (auto list = dynamic_cast<List_Expr*>(&expr)) {
             if (list->size() != items_.size()) {
-                throw Exception(At_GL_Phrase(expr.source_, &caller),
+                throw Exception(At_GL_Phrase(expr.syntax_, &caller),
                     stringify("list pattern: expected ",items_.size(),
                         " items, got ",list->size()));
             }
@@ -228,7 +228,7 @@ struct List_Pattern : public Pattern
         } else {
             this->gl_exec(
                 expr.gl_eval(caller),
-                At_GL_Phrase(expr.source_, &callee),
+                At_GL_Phrase(expr.syntax_, &callee),
                 callee);
         }
     }
@@ -366,7 +366,7 @@ struct Record_Pattern : public Pattern
     const override
     {
         // TODO: implement this
-        throw Exception(At_GL_Phrase(source_, &caller),
+        throw Exception(At_GL_Phrase(syntax_, &caller),
             "record patterns not supported by Geometry Compiler");
     }
 };
@@ -468,13 +468,13 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
 void
 Pattern::gl_exec(GL_Value val, const Context& valcx, GL_Frame& callee) const
 {
-    throw Exception(At_GL_Phrase(source_, &callee),
+    throw Exception(At_GL_Phrase(syntax_, &callee),
         "pattern not supported by Geometry Compiler");
 }
 void
 Pattern::gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee) const
 {
-    throw Exception(At_GL_Phrase(source_, &callee),
+    throw Exception(At_GL_Phrase(syntax_, &callee),
         "pattern not supported by Geometry Compiler");
 }
 

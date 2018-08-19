@@ -26,15 +26,14 @@ struct Lambda;
 /// An abstract base class representing a semantically analysed Phrase.
 struct Meaning : public Shared_Base
 {
-    /// The original source code for this meaning.
+    /// The original syntax tree for this meaning.
     ///
-    /// The syntax of the source code need not have any relation to the meaning
-    /// class. Eg, an Identifier phrase can be analysed into a variety of
-    /// different meanings. That's why we separate the Phrase tree from the
-    /// Meaning tree.
-    Shared<const Phrase> source_;
+    /// The syntax need not have any relation to the meaning class.
+    /// Eg, an Identifier phrase can be analysed into a variety of different
+    /// meanings. That's why we separate the Phrase tree from the Meaning tree.
+    Shared<const Phrase> syntax_;
 
-    Meaning(Shared<const Phrase> source) : source_(std::move(source)) {}
+    Meaning(Shared<const Phrase> syntax) : syntax_(std::move(syntax)) {}
 
     // These functions are called during semantic analysis.
     virtual Shared<Operation> to_operation(Frame*);
@@ -149,8 +148,8 @@ struct Constant : public Just_Expression
 {
     Value value_;
 
-    Constant(Shared<const Phrase> source, Value v)
-    : Just_Expression(std::move(source)), value_(std::move(v))
+    Constant(Shared<const Phrase> syntax, Value v)
+    : Just_Expression(std::move(syntax)), value_(std::move(v))
     {}
 
     virtual Value eval(Frame&) const override;
@@ -183,8 +182,8 @@ struct Module_Data_Ref : public Just_Expression
     slot_t slot_;
     slot_t index_;
 
-    Module_Data_Ref(Shared<const Phrase> source, slot_t slot, slot_t index)
-    : Just_Expression(std::move(source)), slot_(slot), index_(index)
+    Module_Data_Ref(Shared<const Phrase> syntax, slot_t slot, slot_t index)
+    : Just_Expression(std::move(syntax)), slot_(slot), index_(index)
     {}
 
     virtual Value eval(Frame&) const override;
@@ -195,8 +194,8 @@ struct Nonlocal_Data_Ref : public Just_Expression
 {
     slot_t slot_;
 
-    Nonlocal_Data_Ref(Shared<const Phrase> source, slot_t slot)
-    : Just_Expression(std::move(source)), slot_(slot)
+    Nonlocal_Data_Ref(Shared<const Phrase> syntax, slot_t slot)
+    : Just_Expression(std::move(syntax)), slot_(slot)
     {}
 
     virtual Value eval(Frame&) const override;
@@ -207,8 +206,8 @@ struct Data_Ref : public Just_Expression
 {
     slot_t slot_;
 
-    Data_Ref(Shared<const Phrase> source, slot_t slot)
-    : Just_Expression(std::move(source)), slot_(slot)
+    Data_Ref(Shared<const Phrase> syntax, slot_t slot)
+    : Just_Expression(std::move(syntax)), slot_(slot)
     {}
 
     virtual Value eval(Frame&) const override;
@@ -221,20 +220,20 @@ struct Call_Expr : public Just_Expression
     Shared<Operation> arg_;
 
     Call_Expr(
-        Shared<const Call_Phrase> source,
+        Shared<const Call_Phrase> syntax,
         Shared<Operation> fun,
         Shared<Operation> arg)
     :
-        Just_Expression(std::move(source)),
+        Just_Expression(std::move(syntax)),
         fun_(std::move(fun)),
         arg_(std::move(arg))
     {}
 
     inline const Call_Phrase* call_phrase() const
     {
-        // This is safe because, by construction, the source_ field
+        // This is safe because, by construction, the syntax_ field
         // is initialized from a Call_Phrase. See constructor, above.
-        return (Call_Phrase*) &*source_;
+        return (Call_Phrase*) &*syntax_;
     }
 
     virtual Value eval(Frame&) const override;
@@ -246,10 +245,10 @@ struct Prefix_Expr_Base : public Just_Expression
     Shared<Operation> arg_;
 
     Prefix_Expr_Base(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Just_Expression(source),
+        Just_Expression(syntax),
         arg_(std::move(arg))
     {}
 };
@@ -276,10 +275,10 @@ struct Spread_Op : public Operation
     Shared<Operation> arg_;
 
     Spread_Op(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(source),
+        Operation(syntax),
         arg_(std::move(arg))
     {}
 
@@ -293,11 +292,11 @@ struct Infix_Expr_Base : public Just_Expression
     Shared<Operation> arg2_;
 
     Infix_Expr_Base(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Operation> arg1,
         Shared<Operation> arg2)
     :
-        Just_Expression(source),
+        Just_Expression(syntax),
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2))
     {}
@@ -395,13 +394,13 @@ struct Range_Expr : public Just_Expression
     bool half_open_;
 
     Range_Expr(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Operation> arg1,
         Shared<Operation> arg2,
         Shared<Operation> arg3,
         bool half_open)
     :
-        Just_Expression(source),
+        Just_Expression(syntax),
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2)),
         arg3_(std::move(arg3)),
@@ -412,8 +411,8 @@ struct Range_Expr : public Just_Expression
 
 struct List_Expr_Base : public Just_Expression
 {
-    List_Expr_Base(Shared<const Phrase> source)
-    : Just_Expression(std::move(source)) {}
+    List_Expr_Base(Shared<const Phrase> syntax)
+    : Just_Expression(std::move(syntax)) {}
 
     virtual Value eval(Frame&) const override;
     Shared<List> eval_list(Frame&) const;
@@ -427,7 +426,7 @@ struct Record_Expr : public Just_Expression
     // `fields_` contains actions and binders.
     std::vector<Shared<const Operation>> fields_;
 
-    Record_Expr(Shared<const Phrase> source) : Just_Expression(source) {}
+    Record_Expr(Shared<const Phrase> syntax) : Just_Expression(syntax) {}
 
     virtual Value eval(Frame&) const override;
 };
@@ -464,12 +463,12 @@ struct Data_Setter : public Just_Action
     bool reassign_;
 
     Data_Setter(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         slot_t slot,
         Shared<Operation> expr,
         bool reassign)
     :
-        Just_Action(std::move(source)),
+        Just_Action(std::move(syntax)),
         slot_(slot),
         expr_(std::move(expr)),
         reassign_(reassign)
@@ -488,12 +487,12 @@ struct Module_Data_Setter : public Just_Action
     Shared<Operation> expr_;
 
     Module_Data_Setter(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         slot_t slot,
         slot_t index,
         Shared<Operation> expr)
     :
-        Just_Action(std::move(source)),
+        Just_Action(std::move(syntax)),
         slot_(slot),
         index_(index),
         expr_(std::move(expr))
@@ -514,10 +513,10 @@ struct Const_Module_Expr final : public Module_Expr
     Shared<Module> value_;
 
     Const_Module_Expr(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Module> value)
     :
-        Module_Expr(source),
+        Module_Expr(syntax),
         value_(value)
     {}
 
@@ -533,11 +532,11 @@ struct Enum_Module_Expr final : public Module_Expr
     std::vector<Shared<Operation>> exprs_;
 
     Enum_Module_Expr(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Module::Dictionary> dictionary,
         std::vector<Shared<Operation>> exprs)
     :
-        Module_Expr(source),
+        Module_Expr(syntax),
         dictionary_(dictionary),
         exprs_(exprs)
     {}
@@ -550,10 +549,10 @@ struct Scoped_Module_Expr : public Module_Expr
     Scope_Executable executable_;
 
     Scoped_Module_Expr(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Scope_Executable executable)
     :
-        Module_Expr(source),
+        Module_Expr(syntax),
         executable_(std::move(executable))
     {}
 
@@ -567,12 +566,12 @@ struct Pattern_Setter : public Just_Action
     Shared<Operation> definiens_;
 
     Pattern_Setter(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         slot_t module_slot,
         Shared<Pattern> pattern,
         Shared<Operation> definiens)
     :
-        Just_Action(std::move(source)),
+        Just_Action(std::move(syntax)),
         module_slot_(module_slot),
         pattern_(std::move(pattern)),
         definiens_(std::move(definiens))
@@ -595,11 +594,11 @@ struct Function_Setter_Base : public Just_Action
     Shared<Enum_Module_Expr> nonlocals_;
 
     Function_Setter_Base(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         slot_t module_slot,
         Shared<Enum_Module_Expr> nonlocals)
     :
-        Just_Action(std::move(source)),
+        Just_Action(std::move(syntax)),
         module_slot_(module_slot),
         nonlocals_(std::move(nonlocals))
     {}
@@ -636,8 +635,8 @@ using Include_Setter = Tail_Array<Include_Setter_Base>;
 
 struct Compound_Op_Base : public Operation
 {
-    Compound_Op_Base(Shared<const Phrase> source)
-    : Operation(std::move(source)) {}
+    Compound_Op_Base(Shared<const Phrase> syntax)
+    : Operation(std::move(syntax)) {}
 
     virtual void generate(Frame&, List_Builder&) const override;
     virtual void bind(Frame&, Record&) const override;
@@ -656,11 +655,11 @@ struct Preaction_Op : public Operation
     Shared<const Operation> body_;
 
     Preaction_Op(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<const Operation> a,
         Shared<const Operation> body)
     :
-        Operation(std::move(source)),
+        Operation(std::move(syntax)),
         actions_(std::move(a)),
         body_(std::move(body))
     {}
@@ -679,11 +678,11 @@ struct Block_Op : public Operation
     Shared<const Operation> body_;
 
     Block_Op(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Scope_Executable b,
         Shared<const Operation> body)
     :
-        Operation(std::move(source)),
+        Operation(std::move(syntax)),
         statements_(std::move(b)),
         body_(std::move(body))
     {}
@@ -703,12 +702,12 @@ struct For_Op : public Operation
     Shared<const Operation> body_;
 
     For_Op(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<const Pattern> pattern,
         Shared<const Operation> list,
         Shared<const Operation> body)
     :
-        Operation(std::move(source)),
+        Operation(std::move(syntax)),
         pattern_(std::move(pattern)),
         list_(std::move(list)),
         body_(std::move(body))
@@ -726,11 +725,11 @@ struct While_Action : public Just_Action
     Shared<const Operation> body_;
 
     While_Action(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<const Operation> cond,
         Shared<const Operation> body)
     :
-        Just_Action(std::move(source)),
+        Just_Action(std::move(syntax)),
         cond_(std::move(cond)),
         body_(std::move(body))
     {}
@@ -745,11 +744,11 @@ struct If_Op : public Operation
     Shared<Operation> arg2_;
 
     If_Op(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Operation> arg1,
         Shared<Operation> arg2)
     :
-        Operation(source),
+        Operation(syntax),
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2))
     {}
@@ -768,12 +767,12 @@ struct If_Else_Op : public Operation
     Shared<Operation> arg3_;
 
     If_Else_Op(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Operation> arg1,
         Shared<Operation> arg2,
         Shared<Operation> arg3)
     :
-        Operation(source),
+        Operation(syntax),
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2)),
         arg3_(std::move(arg3))
@@ -797,13 +796,13 @@ struct Lambda_Expr : public Just_Expression
     int argpos_ = 0; // may be set by Function_Definition::analyse
 
     Lambda_Expr(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<const Pattern> pattern,
         Shared<Operation> body,
         Shared<Module_Expr> nonlocals,
         slot_t nslots)
     :
-        Just_Expression(source),
+        Just_Expression(syntax),
         pattern_(std::move(pattern)),
         body_(std::move(body)),
         nonlocals_(std::move(nonlocals)),
@@ -815,42 +814,42 @@ struct Lambda_Expr : public Just_Expression
 
 struct Segment : public Shared_Base
 {
-    Shared<const Segment_Phrase> source_;
-    Segment(Shared<const Segment_Phrase> source) : source_(std::move(source)) {}
+    Shared<const Segment_Phrase> syntax_;
+    Segment(Shared<const Segment_Phrase> syntax) : syntax_(std::move(syntax)) {}
     virtual void generate(Frame&, String_Builder&) const = 0;
 };
 struct Literal_Segment : public Segment
 {
     Shared<const String> data_;
-    Literal_Segment(Shared<const Segment_Phrase> source, Shared<const String> data)
-    : Segment(std::move(source)), data_(std::move(data)) {}
+    Literal_Segment(Shared<const Segment_Phrase> syntax, Shared<const String> data)
+    : Segment(std::move(syntax)), data_(std::move(data)) {}
     virtual void generate(Frame&, String_Builder&) const;
 };
 struct Paren_Segment : public Segment
 {
     Shared<Operation> expr_;
-    Paren_Segment(Shared<const Segment_Phrase> source, Shared<Operation> expr)
-    : Segment(std::move(source)), expr_(std::move(expr)) {}
+    Paren_Segment(Shared<const Segment_Phrase> syntax, Shared<Operation> expr)
+    : Segment(std::move(syntax)), expr_(std::move(expr)) {}
     virtual void generate(Frame&, String_Builder&) const;
 };
 struct Bracket_Segment : public Segment
 {
     Shared<Operation> expr_;
-    Bracket_Segment(Shared<const Segment_Phrase> source, Shared<Operation> expr)
-    : Segment(std::move(source)), expr_(std::move(expr)) {}
+    Bracket_Segment(Shared<const Segment_Phrase> syntax, Shared<Operation> expr)
+    : Segment(std::move(syntax)), expr_(std::move(expr)) {}
     virtual void generate(Frame&, String_Builder&) const;
 };
 struct Brace_Segment : public Segment
 {
     Shared<Operation> expr_;
-    Brace_Segment(Shared<const Segment_Phrase> source, Shared<Operation> expr)
-    : Segment(std::move(source)), expr_(std::move(expr)) {}
+    Brace_Segment(Shared<const Segment_Phrase> syntax, Shared<Operation> expr)
+    : Segment(std::move(syntax)), expr_(std::move(expr)) {}
     virtual void generate(Frame&, String_Builder&) const;
 };
 struct String_Expr_Base : public Just_Expression
 {
-    String_Expr_Base(Shared<const Phrase> source)
-    : Just_Expression(std::move(source)) {}
+    String_Expr_Base(Shared<const Phrase> syntax)
+    : Just_Expression(std::move(syntax)) {}
 
     virtual Value eval(Frame&) const override;
     Symbol eval_symbol(Frame&) const;
@@ -866,8 +865,8 @@ struct Symbol_Expr
     Symbol_Expr(Shared<const Identifier> id) : id_(id), string_(nullptr) {}
     Symbol_Expr(Shared<String_Expr> string) : id_(nullptr), string_(string) {}
 
-    Shared<const Phrase> source() {
-        if (id_) return id_; else return string_->source_;
+    Shared<const Phrase> syntax() {
+        if (id_) return id_; else return string_->syntax_;
     }
     Symbol eval(Frame& f) const {
         return id_ ? id_->symbol_ : string_->eval_symbol(f);
@@ -880,11 +879,11 @@ struct Dot_Expr : public Just_Expression
     Symbol_Expr selector_;
 
     Dot_Expr(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Operation> base,
         Symbol_Expr selector)
     :
-        Just_Expression(std::move(source)),
+        Just_Expression(std::move(syntax)),
         base_(std::move(base)),
         selector_(std::move(selector))
     {}
@@ -898,11 +897,11 @@ struct Assoc : public Operation
     Shared<const Operation> definiens_;
 
     Assoc(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Symbol_Expr name,
         Shared<const Operation> definiens)
     :
-        Operation(std::move(source)),
+        Operation(std::move(syntax)),
         name_(std::move(name)),
         definiens_(std::move(definiens))
     {}

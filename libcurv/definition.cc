@@ -26,7 +26,7 @@ void
 Function_Definition::add_to_scope(Block_Scope& scope)
 {
     unsigned unitnum = scope.begin_unit(share(*this));
-    slot_ = scope.add_binding(name_->symbol_, *source_, unitnum);
+    slot_ = scope.add_binding(name_->symbol_, *syntax_, unitnum);
     scope.end_unit(unitnum, share(*this));
 }
 void
@@ -56,7 +56,7 @@ Shared<Operation>
 Data_Definition::make_setter(slot_t module_slot)
 {
     return make<Pattern_Setter>(
-        source_, module_slot, pattern_, definiens_expr_);
+        syntax_, module_slot, pattern_, definiens_expr_);
 }
 Shared<Operation>
 Function_Definition::make_setter(slot_t module_slot)
@@ -73,10 +73,10 @@ Include_Definition::add_to_scope(Block_Scope& scope)
 
     // construct a Include_Setter from the record argument.
     unsigned unit = scope.begin_unit(share(*this));
-    setter_ = {Include_Setter::make(record->size(), source_)};
+    setter_ = {Include_Setter::make(record->size(), syntax_)};
     size_t i = 0;
     record->each_field([&](Symbol name, Value value)->void {
-        slot_t slot = scope.add_binding(name, *source_, unit);
+        slot_t slot = scope.add_binding(name, *syntax_, unit);
         (*setter_)[i++] = {slot, value};
     });
     scope.end_unit(unit, share(*this));
@@ -303,7 +303,7 @@ Recursive_Scope::analyse_unit(Unit& unit, const Identifier* id)
 Shared<Operation>
 Recursive_Scope::make_function_setter(size_t nunits, Unit** units)
 {
-    Shared<const Phrase> source = nunits==1 ? units[0]->def_->source_ : source_;
+    Shared<const Phrase> syntax = nunits==1 ? units[0]->def_->syntax_ : syntax_;
     Shared<Module::Dictionary> nonlocal_dictionary = make<Module::Dictionary>();
     std::vector<Shared<Operation>> nonlocal_exprs;
     slot_t slot = 0;
@@ -317,7 +317,7 @@ Recursive_Scope::make_function_setter(size_t nunits, Unit** units)
             nonlocal_exprs.push_back(
                 make<Constant>(Shared<const Phrase>{f->lambda_phrase_}, Value{f->lambda_}));
         } else
-            throw Exception(At_Phrase(*units[u]->def_->source_, *this),
+            throw Exception(At_Phrase(*units[u]->def_->syntax_, *this),
                 "recursive data definition");
     }
 
@@ -331,9 +331,9 @@ Recursive_Scope::make_function_setter(size_t nunits, Unit** units)
     }
 
     Shared<Enum_Module_Expr> nonlocals = make<Enum_Module_Expr>(
-        source, nonlocal_dictionary, nonlocal_exprs);
+        syntax, nonlocal_dictionary, nonlocal_exprs);
     Shared<Function_Setter> setter =
-        Function_Setter::make(nunits, source, executable_.module_slot_, nonlocals);
+        Function_Setter::make(nunits, syntax, executable_.module_slot_, nonlocals);
     for (size_t i = 0; i < nunits; ++i)
         setter->at(i) = {funs[i]->slot_, funs[i]->lambda_};
     return setter;
@@ -398,13 +398,13 @@ analyse_module(Definition& def, Environ& env)
     if (def.kind_ == Definition::k_sequential) {
         Sequential_Scope scope(env, true);
         scope.analyse(def);
-        return make<Scoped_Module_Expr>(def.source_,
+        return make<Scoped_Module_Expr>(def.syntax_,
             std::move(scope.executable_));
     }
     if (def.kind_ == Definition::k_recursive) {
-        Recursive_Scope scope(env, true, def.source_);
+        Recursive_Scope scope(env, true, def.syntax_);
         scope.analyse(def);
-        return make<Scoped_Module_Expr>(def.source_,
+        return make<Scoped_Module_Expr>(def.syntax_,
             std::move(scope.executable_));
     }
     die("analyse_module: bad definition type");

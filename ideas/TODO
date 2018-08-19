@@ -12,7 +12,6 @@ Current TODO List:
   * speed up -O animate= (compile shape once)
   * use OpenGL FBO to avoid unreliable semantics of framebuf of hidden window.
 * Image Import.
-  * rename Meaning::source_ to syntax_.
   * rename Script to Source, with Source_File, Source_String, Source_Buffer.
   * an instance of Source may contain a pathname and no file contents.
   * a PNG file can occur in the stack trace.
