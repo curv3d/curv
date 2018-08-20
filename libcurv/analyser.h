@@ -14,8 +14,8 @@ struct Environ
 {
     Environ* parent_;
     System& system_;
-    /// eval_frame_ is nullptr, unless we are analysing a script due to an
-    /// evaluation-time call to `file`. It's used as an Exception Context,
+    /// eval_frame_ is nullptr, unless we are analysing a source file due to
+    /// an evaluation-time call to `file`. It's used as an Exception Context,
     /// to add a stack trace to compile time errors.
     Frame* eval_frame_;
     slot_t frame_nslots_;

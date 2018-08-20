@@ -11,9 +11,9 @@
 using namespace std;
 namespace curv {
 
-Scanner::Scanner(const Script& s, Frame* f)
+Scanner::Scanner(const Source& s, Frame* f)
 :
-    script_(s),
+    source_(s),
     eval_frame_(f),
     string_begin_(),
     ptr_(s.begin()),
@@ -40,8 +40,8 @@ Scanner::get_token()
 
     Token tok;
     const char* p = ptr_;
-    const char* first = script_.first;
-    const char* last = script_.last;
+    const char* first = source_.first;
+    const char* last = source_.last;
 
     if (string_begin_.kind_ != Token::k_missing) {
         // We are inside a string literal.
@@ -158,7 +158,7 @@ Scanner::get_token()
     }
     tok.first_ = p - first;
 
-    // recognize end of script
+    // recognize end of source
     if (p == last) {
         tok.kind_ = Token::k_end;
         goto success;

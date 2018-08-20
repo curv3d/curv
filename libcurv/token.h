@@ -12,22 +12,22 @@ namespace curv {
 /// A lexeme identified by the lexical analyser,
 /// or the text spanned by a parse tree node.
 ///
-/// A token is a contiguous substring of a script,
+/// A token is a contiguous substring of a source,
 /// represented as the half-open range (first,last).
-/// We use 32 bit indexes into the script, rather than 64 bit pointers,
+/// We use 32 bit indexes into the source, rather than 64 bit pointers,
 /// to save space.
 ///
 /// Each token remembers the preceding whitespace and comments
 /// as the range (first_white, first). This is needed for processing
 /// thingiverse customizer attributes, which are hidden in comments.
-/// The trailing whitespace at the end of the script is attached to the zero
-/// length k_end token identified at the end of script.
+/// The trailing whitespace at the end of the source is attached to the zero
+/// length k_end token identified at the end of source.
 ///
-/// We don't copy string data out of the script:
+/// We don't copy string data out of the source:
 /// this is a zero copy lexical analyser.
 ///
 /// We don't store line numbers or column numbers. Those can be reconstructed
-/// by scanning the script. This scanning is expensive, but the cost is only
+/// by scanning the source. This scanning is expensive, but the cost is only
 /// paid when there is an error to report, and if there is no error, we save
 /// time and memory.
 ///
@@ -98,7 +98,7 @@ struct Token
         k_or,               ///! `||` operator
         k_left_call,        ///! `<<` operator
         k_right_call,       ///! `>>` operator
-        k_end               ///! end of script
+        k_end               ///! end of source
     } kind_ = k_missing;
 };
 

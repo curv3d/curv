@@ -5,16 +5,16 @@
 #ifndef CSCRIPT_H
 #define CSCRIPT_H
 
-#include <libcurv/script.h>
+#include <libcurv/source.h>
 
-struct CString_Script : public curv::Script
+struct CString_Script : public curv::Source
 {
     char* buffer_;
 
     // buffer argument is a static string.
     CString_Script(const char* name, const char* buffer)
     :
-        curv::Script(curv::make_string(name), buffer, buffer + strlen(buffer)),
+        curv::Source(curv::make_string(name), buffer, buffer + strlen(buffer)),
         buffer_(nullptr)
     {
     }
@@ -22,7 +22,7 @@ struct CString_Script : public curv::Script
     // buffer argument is a heap string, allocated using malloc.
     CString_Script(const char* name, char* buffer)
     :
-        curv::Script(curv::make_string(name), buffer, buffer + strlen(buffer)),
+        curv::Source(curv::make_string(name), buffer, buffer + strlen(buffer)),
         buffer_(buffer)
     {}
 

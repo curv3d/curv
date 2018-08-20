@@ -34,7 +34,7 @@ Location::line_info() const
             info.end_line_num = lineno;
             info.end_column_num = colno;
         }
-        if (i > 0 && (*script_)[i-1] == '\n') {
+        if (i > 0 && (*source_)[i-1] == '\n') {
             // ambiguous character position, see above.
             ++lineno;
             linebegin = i;
@@ -144,10 +144,10 @@ Location::write(std::ostream& out, bool colour, bool many) const
     auto info = line_info();
 
     // Output filename and line number, followed by newline.
-    if (many || !scriptname().empty()) {
+    if (many || !filename().empty()) {
         out << "at";
-        if (!scriptname().empty())
-            out << " file \"" << scriptname() << "\"";
+        if (!filename().empty())
+            out << " file \"" << filename() << "\"";
         out << ":\n";
     }
 
@@ -156,19 +156,19 @@ Location::write(std::ostream& out, bool colour, bool many) const
     if (info.start_line_num == info.end_line_num) {
         putsrcline(out,
             info.start_line_num, ndigits(info.start_line_num+1),
-            script_->first + info.start_line_begin, script_->last,
+            source_->first + info.start_line_begin, source_->last,
             true, info.start_column_num, info.end_column_num,
             colour);
     } else {
         unsigned lnwidth =
             std::max(ndigits(info.start_line_num+1),ndigits(info.end_line_num+1));
         unsigned ln = info.start_line_num;
-        const char* p = script_->first + info.start_line_begin;
+        const char* p = source_->first + info.start_line_begin;
         for (;;) { // each line
             if (ln > info.start_line_num) out << '\n';
             p = putsrcline(out,
                 ln, lnwidth,
-                p, script_->last,
+                p, source_->last,
                 false,
                 ln == info.start_line_num ? info.start_column_num : 0,
                 ln == info.end_line_num ? info.end_column_num : unsigned(~0),
@@ -184,7 +184,7 @@ Range<const char*>
 Location::range() const
 {
     return Range<const char*>(
-        script_->first + token_.first_, script_->first + token_.last_);
+        source_->first + token_.first_, source_->first + token_.last_);
 }
 
 Location

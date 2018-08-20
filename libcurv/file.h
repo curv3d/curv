@@ -5,17 +5,17 @@
 #ifndef LIBCURV_FILE_H
 #define LIBCURV_FILE_H
 
-#include <libcurv/script.h>
+#include <libcurv/source.h>
 
 namespace curv {
 
 struct Context;
 
-/// A concrete Script class that represents a file.
-struct File_Script : public String_Script
+/// A concrete Source class that represents a file.
+struct Source_File : public Source_String
 {
-    // TODO: Should File_Script use mmap() to load the file into memory?
-    File_Script(Shared<const String> filename, const Context&);
+    // TODO: Should Source_File use mmap() to load the file into memory?
+    Source_File(Shared<const String> filename, const Context&);
 };
 
 } // namespace curv

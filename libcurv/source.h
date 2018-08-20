@@ -2,8 +2,8 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef LIBCURV_SCRIPT_H
-#define LIBCURV_SCRIPT_H
+#ifndef LIBCURV_SOURCE_H
+#define LIBCURV_SOURCE_H
 
 #include <libcurv/range.h>
 #include <libcurv/shared.h>
@@ -11,7 +11,7 @@
 
 namespace curv {
 
-/// Abstract base class: the name and contents of a script file.
+/// Abstract base class: the name and contents of a source file.
 ///
 /// The name is just an uninterpreted utf8 string for now, will later be
 /// a filename or uri. If there is no filename, then the name is a zero-length
@@ -23,26 +23,26 @@ namespace curv {
 ///
 /// To use this class, you must define a subclass, and heap-allocate
 /// instances using make.
-struct Script : public Shared_Base, public Range<const char*>
+struct Source : public Shared_Base, public Range<const char*>
 {
     Shared<const String> name_;
 protected:
-    Script(Shared<const String> name, const char*f, const char*l)
+    Source(Shared<const String> name, const char*f, const char*l)
     :
         Range(f,l), name_(std::move(name))
     {}
 public:
-    virtual ~Script() {}
+    virtual ~Source() {}
 };
 
-/// A concrete Script subclass where the contents are represented as a String.
-struct String_Script : public curv::Script
+/// A concrete Source subclass where the contents are represented as a String.
+struct Source_String : public curv::Source
 {
     Shared<const String> buffer_;
 
-    String_Script(Shared<const String> name, Shared<const String> buffer)
+    Source_String(Shared<const String> name, Shared<const String> buffer)
     :
-        curv::Script(
+        curv::Source(
             std::move(name), buffer->data(), buffer->data() + buffer->size()),
         buffer_(std::move(buffer))
     {}

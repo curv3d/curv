@@ -5,7 +5,7 @@
 #ifndef LIBCURV_LOCATION_H
 #define LIBCURV_LOCATION_H
 
-#include <libcurv/script.h>
+#include <libcurv/source.h>
 #include <libcurv/token.h>
 #include <libcurv/range.h>
 #include <libcurv/shared.h>
@@ -24,13 +24,13 @@ namespace curv {
 struct Location
 {
 private:
-    Shared<const Script> script_;
+    Shared<const Source> source_;
     Token token_;
 
 public:
-    Location(const Script& script, Token token)
+    Location(const Source& source, Token token)
     :
-        script_(share(script)),
+        source_(share(source)),
         token_(std::move(token))
     {}
 
@@ -40,16 +40,16 @@ public:
     /// Modify location to end at 'tok'
     Location ending_at(Token tok) const;
 
-    /// Script where error occurred.
-    const Script& script() const { return *script_; }
+    /// Source where error occurred.
+    const Source& source() const { return *source_; }
 
     /// Index of text range where error occurred.
     Token token() const { return token_; }
 
-    /// Name of script where error occurred.
-    const String& scriptname() const { return *script_->name_; }
+    /// Name of source file where error occurred.
+    const String& filename() const { return *source_->name_; }
 
-    /// Range of characters within script where error occurred.
+    /// Range of characters within source where error occurred.
     Range<const char*> range() const;
 
     /// Output the location part of an exception message (no final newline).
@@ -60,7 +60,7 @@ public:
     ///
     /// Line and column numbers begin at 0.
     /// [start_column_num,end_column_num) is a half-open range.
-    /// start_line_begin is the 0 based byte index into the script of the
+    /// start_line_begin is the 0 based byte index into the source of the
     /// start line.
     struct Line_Info
     {

@@ -78,7 +78,7 @@ parse_list(Scanner& scanner)
     if (is_list_end_token(tok.kind_)) {
         Token begin = tok;
         begin.last_ = begin.first_;
-        return make<Empty_Phrase>(Location{scanner.script_, begin});
+        return make<Empty_Phrase>(Location{scanner.source_, begin});
     }
     if (tok.kind_ == Token::k_semicolon)
         return parse_semicolons(scanner, nullptr);
@@ -159,7 +159,7 @@ parse_semicolons(Scanner& scanner, Shared<Phrase> firstitem)
     if (firstitem == nullptr) {
         Token empty = tok;
         empty.last_ = empty.first_;
-        firstitem = make<Empty_Phrase>(Location{scanner.script_, empty});
+        firstitem = make<Empty_Phrase>(Location{scanner.source_, empty});
     }
     auto semis = make<Semicolon_Phrase>();
     semis->args_.push_back({firstitem, tok});
@@ -169,14 +169,14 @@ parse_semicolons(Scanner& scanner, Shared<Phrase> firstitem)
             scanner.push_token(tok);
             Token etok = tok;
             etok.last_ = etok.first_;
-            auto empty = make<Empty_Phrase>(Location{scanner.script_, etok});
+            auto empty = make<Empty_Phrase>(Location{scanner.source_, etok});
             semis->args_.push_back({empty, etok});
             return semis;
         }
         if (tok.kind_ == Token::k_semicolon) {
             Token etok = tok;
             etok.last_ = etok.first_;
-            auto empty = make<Empty_Phrase>(Location{scanner.script_, etok});
+            auto empty = make<Empty_Phrase>(Location{scanner.source_, etok});
             semis->args_.push_back({empty, tok});
             continue;
         }
@@ -338,7 +338,7 @@ parse_item(Scanner& scanner)
         if (is_item_end_token(tok2.kind_)) {
             tok2.kind_ = Token::k_missing;
             tok2.last_ = tok2.first_;
-            right = make<Empty_Phrase>(Location{scanner.script_, tok2});
+            right = make<Empty_Phrase>(Location{scanner.source_, tok2});
         } else {
             right = parse_item(scanner);
         }
@@ -614,12 +614,12 @@ parse_string(Scanner& scanner, Token begin)
         switch (tok.kind_) {
         case Token::k_quote:
             return String_Phrase::make_elements(
-                segments, scanner.script_, begin, tok);
+                segments, scanner.source_, begin, tok);
         case Token::k_string_segment:
-            segments.push_back(make<String_Segment_Phrase>(scanner.script_, tok));
+            segments.push_back(make<String_Segment_Phrase>(scanner.source_, tok));
             continue;
         case Token::k_char_escape:
-            segments.push_back(make<Char_Escape_Phrase>(scanner.script_, tok));
+            segments.push_back(make<Char_Escape_Phrase>(scanner.source_, tok));
             continue;
         case Token::k_dollar_paren:
           {
@@ -655,7 +655,7 @@ parse_string(Scanner& scanner, Token begin)
           {
             Token id = tok;
             ++id.first_;
-            auto ident = make<Identifier>(scanner.script_, id);
+            auto ident = make<Identifier>(scanner.source_, id);
             segments.push_back(make<Brace_Segment_Phrase>(ident));
             continue;
           }
@@ -681,9 +681,9 @@ parse_primary(Scanner& scanner, const char* what)
     switch (tok.kind_) {
     case Token::k_num:
     case Token::k_hexnum:
-        return make<Numeral>(scanner.script_, tok);
+        return make<Numeral>(scanner.source_, tok);
     case Token::k_ident:
-        return make<Identifier>(scanner.script_, tok);
+        return make<Identifier>(scanner.source_, tok);
     case Token::k_quote:
         return parse_string(scanner, tok);
     case Token::k_lparen:

@@ -22,7 +22,7 @@ struct System;
 /// You can think of a Frame as containing all of the registers used
 /// by the Curv virtual machine.
 ///
-/// A program (script file) has a frame for evaluating the top level
+/// A program (source file) has a frame for evaluating the top level
 /// program expression.
 /// Calls to builtin and user-defined functions have call frames.
 using Frame = Tail_Array<Frame_Base>;

@@ -19,7 +19,7 @@ Shared<const String> readfile(const char* path, const Context& ctx)
 
     // TODO: Pluggable file system abstraction, for unit testing and
     // abstracting the behaviour of `file` (would also support caching).
-    // So, use System::open(path)? Maybe this returns a Script?
+    // So, use System::open(path)? Maybe this returns a Source?
 
     // TODO: More precise error message when open fails. Maybe get that
     // from an exception? No, the following code is useless, no useful
@@ -39,7 +39,7 @@ Shared<const String> readfile(const char* path, const Context& ctx)
     */
     // I'll need to use strerror(errno).
 
-    // TODO: change File_Script to use mmap?
+    // TODO: change Source_File to use mmap?
 
     std::ifstream t;
     t.open(path);
@@ -51,9 +51,9 @@ Shared<const String> readfile(const char* path, const Context& ctx)
     return buffer.get_string();
 }
 
-File_Script::File_Script(Shared<const String> filename, const Context& ctx)
+Source_File::Source_File(Shared<const String> filename, const Context& ctx)
 :
-    String_Script(filename, readfile(filename->c_str(), ctx))
+    Source_String(filename, readfile(filename->c_str(), ctx))
 {
 }
 

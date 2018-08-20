@@ -76,9 +76,9 @@ void repl(curv::System* sys)
         if (line[0] != '\0')
             rx.history_add(line);
 
-        auto script = curv::make<CString_Script>("", line);
+        auto source = curv::make<CString_Script>("", line);
         try {
-            curv::Program prog{*script, *sys};
+            curv::Program prog{*source, *sys};
             prog.compile(&names, nullptr);
             auto den = prog.denotes();
             if (den.first) {

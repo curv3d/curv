@@ -31,13 +31,13 @@ make_system()
     }
 }
 
-struct CString_Script : public curv::Script
+struct CString_Script : public curv::Source
 {
     const char* buffer_;
 
     CString_Script(const char* name, const char* buffer)
     :
-        curv::Script(make_string(name), buffer, buffer + strlen(buffer)),
+        curv::Source(make_string(name), buffer, buffer + strlen(buffer)),
         buffer_(buffer)
     {}
 };
@@ -46,7 +46,7 @@ struct Evaluator
 {
     Evaluator(const char* source)
     :
-        script_(make<CString_Script>("", source)),
+        source_(make<CString_Script>("", source)),
         failmsg_(nullptr),
         failall_(nullptr),
         success_(nullptr)
@@ -54,7 +54,7 @@ struct Evaluator
         try {
             console.str("");
             console.clear(); // Clear state flags.
-            curv::Program prog{*script_, make_system()};
+            curv::Program prog{*source_, make_system()};
             prog.compile();
             auto den = prog.denotes();
 
@@ -89,7 +89,7 @@ struct Evaluator
         }
     }
 
-    Shared<CString_Script> script_;
+    Shared<CString_Script> source_;
 
     const char* failmsg_;
     Shared<const curv::String> failmsg_str_;

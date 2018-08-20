@@ -37,7 +37,7 @@ System_Impl::System_Impl(std::ostream& console)
 
 void System_Impl::load_library(Shared<const String> path)
 {
-    auto file = make<File_Script>(std::move(path), Context{});
+    auto file = make<Source_File>(std::move(path), Context{});
     Program prog{*file, *this};
     prog.compile();
     auto stdlib = prog.eval();

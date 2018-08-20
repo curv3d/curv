@@ -623,10 +623,10 @@ struct Match_Function : public Legacy_Function
 };
 
 // The filename argument to "file", if it is a relative filename,
-// is interpreted relative to the parent directory of the script file from
+// is interpreted relative to the parent directory of the source file from
 // which "file" is called.
 //
-// Because "file" has this hidden parameter (the name of the script file from
+// Because "file" has this hidden parameter (the name of the source file from
 // which it is called), it is not a pure function. For this reason, it isn't
 // a function value at all, it's a metafunction.
 struct File_Expr : public Just_Expression
@@ -648,11 +648,11 @@ struct File_Expr : public Just_Expression
         auto argstr = arg.to<String>(cx);
         namespace fs = boost::filesystem;
         fs::path filepath;
-        auto caller_script_name = syntax_->location().script().name_;
-        if (caller_script_name->empty()) {
+        auto caller_filename = syntax_->location().source().name_;
+        if (caller_filename->empty()) {
             filepath = fs::path(argstr->c_str());
         } else {
-            filepath = fs::path(caller_script_name->c_str()).parent_path()
+            filepath = fs::path(caller_filename->c_str()).parent_path()
                 / fs::path(argstr->c_str());
         }
 
@@ -667,7 +667,7 @@ struct File_Expr : public Just_Expression
             return (*importp->second)(filepath, cx);
         else {
             // If extension not recognized, it defaults to a Curv program.
-            auto file = make<File_Script>(make_string(filepath.c_str()), cx);
+            auto file = make<Source_File>(make_string(filepath.c_str()), cx);
             Program prog{*file, f.system_};
             std::unique_ptr<Frame> f2 =
                 Frame::make(0, f.system_, &f, &callphrase, nullptr);
@@ -803,7 +803,7 @@ struct Error_Metafunction : public Metafunction
 };
 
 // exec(expr) -- a debug action that evaluates expr, then discards the result.
-// It is used to call functions or scripts for their side effects.
+// It is used to call functions or source files for their side effects.
 struct Exec_Action : public Just_Action
 {
     Shared<Operation> arg_;

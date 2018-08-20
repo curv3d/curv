@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <libcurv/script.h>
+#include <libcurv/source.h>
 #include <libcurv/scanner.h>
 #include <libcurv/parser.h>
 #include <libcurv/phrase.h>
@@ -10,8 +10,8 @@ using namespace curv;
 Shared<const Phrase>
 nub(const char* str)
 {
-    auto script = make<String_Script>(make_string(""), make_string(str));
-    Scanner scanner{*script, nullptr};
+    auto source = make<Source_String>(make_string(""), make_string(str));
+    Scanner scanner{*source, nullptr};
     auto phrase = parse_program(scanner);
     return nub_phrase(phrase);
 }

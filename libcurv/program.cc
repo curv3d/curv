@@ -23,7 +23,7 @@ Program::compile(const Namespace* names, Frame* parent_frame)
         names_ = names;
     parent_frame_ = parent_frame;
 
-    Scanner scanner{script_, parent_frame};
+    Scanner scanner{source_, parent_frame};
     phrase_ = parse_program(scanner);
 
     Builtin_Environ env{*names_, system_, parent_frame};

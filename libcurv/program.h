@@ -9,7 +9,7 @@
 #include <libcurv/frame.h>
 #include <libcurv/meaning.h>
 #include <libcurv/module.h>
-#include <libcurv/script.h>
+#include <libcurv/source.h>
 #include <libcurv/shared.h>
 #include <libcurv/system.h>
 #include <libcurv/list.h>
@@ -18,7 +18,7 @@ namespace curv {
 
 struct Program
 {
-    const Script& script_;
+    const Source& source_;
     System& system_;
     const Namespace* names_ = nullptr;
     Frame *parent_frame_ = nullptr;
@@ -28,10 +28,10 @@ struct Program
     std::unique_ptr<Frame> frame_ = nullptr;
 
     Program(
-        const Script& script,
+        const Source& source,
         System& system)
     :
-        script_(script),
+        source_(source),
         system_(system)
     {}
 

@@ -6,7 +6,7 @@
 #define LIBCURV_SCANNER_H
 
 #include <vector>
-#include <libcurv/script.h>
+#include <libcurv/source.h>
 #include <libcurv/token.h>
 #include <libcurv/frame.h>
 
@@ -20,14 +20,14 @@ namespace curv {
 /// supporting infinite lookahead.
 struct Scanner
 {
-    const Script& script_;
+    const Source& source_;
     Frame* eval_frame_;
     Token string_begin_;
 private:
     const char* ptr_;
     std::vector<Token> lookahead_;
 public:
-    Scanner(const Script&, Frame*);
+    Scanner(const Source&, Frame*);
     Token get_token();
     void push_token(Token);
 };

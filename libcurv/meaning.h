@@ -58,7 +58,7 @@ struct Metafunction : public Meaning
 };
 
 /// An Operation is a fragment of compiled code that "does something" at run
-/// time. During analysis, a Curv script is compiled into an Operation tree.
+/// time. During analysis, a syntax tree is compiled into an Operation tree.
 ///
 /// At present, the Operation tree has two roles. It is our "IR" (Intermediate
 /// Representation) to which optimizations are applied, and it is also our

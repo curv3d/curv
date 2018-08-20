@@ -272,15 +272,15 @@ main(int argc, char** argv)
 
     // batch mode
     try {
-        curv::Shared<curv::Script> script;
+        curv::Shared<curv::Source> source;
         if (expr) {
-            script = curv::make<CString_Script>("", filename);
+            source = curv::make<CString_Script>("", filename);
         } else {
-            script = curv::make<curv::File_Script>(
+            source = curv::make<curv::Source_File>(
                 curv::make_string(filename), curv::Context{});
         }
 
-        curv::Program prog{*script, sys};
+        curv::Program prog{*source, sys};
         prog.compile();
         auto value = prog.eval();
 
