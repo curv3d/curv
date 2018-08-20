@@ -11,7 +11,6 @@ extern "C" {
 #include "export.h"
 #include "progdir.h"
 #include "repl.h"
-#include "cscript.h"
 #include "shapes.h"
 #include "livemode.h"
 #include "version.h"
@@ -274,7 +273,7 @@ main(int argc, char** argv)
     try {
         curv::Shared<curv::Source> source;
         if (expr) {
-            source = curv::make<CString_Script>("", filename);
+            source = curv::make<curv::C_Source_String>("", filename);
         } else {
             source = curv::make<curv::Source_File>(
                 curv::make_string(filename), curv::Context{});

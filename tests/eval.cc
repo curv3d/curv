@@ -31,22 +31,11 @@ make_system()
     }
 }
 
-struct CString_Script : public curv::Source
-{
-    const char* buffer_;
-
-    CString_Script(const char* name, const char* buffer)
-    :
-        curv::Source(make_string(name), buffer, buffer + strlen(buffer)),
-        buffer_(buffer)
-    {}
-};
-
 struct Evaluator
 {
     Evaluator(const char* source)
     :
-        source_(make<CString_Script>("", source)),
+        source_(make<C_Source_String>("", source)),
         failmsg_(nullptr),
         failall_(nullptr),
         success_(nullptr)
@@ -89,7 +78,7 @@ struct Evaluator
         }
     }
 
-    Shared<CString_Script> source_;
+    Shared<C_Source_String> source_;
 
     const char* failmsg_;
     Shared<const curv::String> failmsg_str_;

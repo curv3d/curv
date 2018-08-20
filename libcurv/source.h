@@ -56,5 +56,33 @@ struct Source_File : public Source_String
     Source_File(Shared<const String> filename, const Context&);
 };
 
+// A Source class where the contents are represented as a null-terminated
+// C string. The string is optionally heap allocated using malloc(), in which
+// case this class will take ownership and call free() in the destructor.
+struct C_Source_String : public curv::Source
+{
+    char* buffer_;
+
+    // buffer argument is a static string.
+    C_Source_String(const char* name, const char* buffer)
+    :
+        curv::Source(curv::make_string(name), buffer, buffer + strlen(buffer)),
+        buffer_(nullptr)
+    {
+    }
+
+    // buffer argument is a heap string, allocated using malloc.
+    C_Source_String(const char* name, char* buffer)
+    :
+        curv::Source(curv::make_string(name), buffer, buffer + strlen(buffer)),
+        buffer_(buffer)
+    {}
+
+    ~C_Source_String()
+    {
+        if (buffer_) free(buffer_);
+    }
+};
+
 } // namespace curv
 #endif // header guard

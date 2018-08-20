@@ -32,15 +32,17 @@ extern "C" {
 
 #include <replxx.hxx>
 
-#include "cscript.h"
 #include "shapes.h"
 #include "view_server.h"
+
+#include <libcurv/ansi_colour.h>
 #include <libcurv/context.h>
 #include <libcurv/program.h>
+#include <libcurv/source.h>
 #include <libcurv/system.h>
+
 #include <libcurv/geom/shape.h>
 #include <libcurv/geom/viewer/viewer.h>
-#include <libcurv/ansi_colour.h>
 
 View_Server view_server;
 
@@ -76,7 +78,7 @@ void repl(curv::System* sys)
         if (line[0] != '\0')
             rx.history_add(line);
 
-        auto source = curv::make<CString_Script>("", line);
+        auto source = curv::make<curv::C_Source_String>("", line);
         try {
             curv::Program prog{*source, *sys};
             prog.compile(&names, nullptr);
