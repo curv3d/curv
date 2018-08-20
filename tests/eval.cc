@@ -35,7 +35,7 @@ struct Evaluator
 {
     Evaluator(const char* source)
     :
-        source_(make<C_Source_String>("", source)),
+        source_(make<Source_String>("", source)),
         failmsg_(nullptr),
         failall_(nullptr),
         success_(nullptr)
@@ -78,7 +78,7 @@ struct Evaluator
         }
     }
 
-    Shared<C_Source_String> source_;
+    Shared<Source_String> source_;
 
     const char* failmsg_;
     Shared<const curv::String> failmsg_str_;

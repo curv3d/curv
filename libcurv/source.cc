@@ -10,6 +10,7 @@
 #include <cerrno>
 #include <cstring>
 #include <fstream>
+#include <sstream>
 
 namespace curv
 {
@@ -48,12 +49,12 @@ Shared<const String> readfile(const char* path, const Context& ctx)
     if (t.fail())
         throw Exception(ctx,
             stringify("can't open file \"", path, "\": ", strerror(errno)));
-    String_Builder buffer;
+    std::stringstream buffer;
     buffer << t.rdbuf();
-    return buffer.get_string();
+    return make_string(buffer.str());
 }
 
-Source_File::Source_File(Shared<const String> filename, const Context& ctx)
+Source_File::Source_File(String_Ref filename, const Context& ctx)
 :
     Source_String(filename, readfile(filename->c_str(), ctx))
 {

@@ -78,7 +78,7 @@ void repl(curv::System* sys)
         if (line[0] != '\0')
             rx.history_add(line);
 
-        auto source = curv::make<curv::C_Source_String>("", line);
+        auto source = curv::make<curv::Source_String>("", line);
         try {
             curv::Program prog{*source, *sys};
             prog.compile(&names, nullptr);

@@ -273,7 +273,7 @@ main(int argc, char** argv)
     try {
         curv::Shared<curv::Source> source;
         if (expr) {
-            source = curv::make<curv::C_Source_String>("", filename);
+            source = curv::make<curv::Source_String>("", filename);
         } else {
             source = curv::make<curv::Source_File>(
                 curv::make_string(filename), curv::Context{});

@@ -10,7 +10,7 @@ using namespace curv;
 Shared<const Phrase>
 nub(const char* str)
 {
-    auto source = make<Source_String>(make_string(""), make_string(str));
+    auto source = make<Source_String>("", str);
     Scanner scanner{*source, nullptr};
     auto phrase = parse_program(scanner);
     return nub_phrase(phrase);

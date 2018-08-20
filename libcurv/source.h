@@ -20,16 +20,12 @@ struct Context;
 /// string, which won't be reported in error messages.
 ///
 /// The contents are a const utf-8 character array.
-/// Subclasses provide storage management for the contents:
-/// eg, a std::string, a memory mapped file, or a GNU readline() buffer.
-///
-/// To use this class, you must define a subclass, and heap-allocate
-/// instances using make.
+/// Subclasses provide storage management for the contents.
 struct Source : public Shared_Base, public Range<const char*>
 {
     Shared<const String> name_;
 protected:
-    Source(Shared<const String> name, const char*f, const char*l)
+    Source(String_Ref name, const char*f, const char*l)
     :
         Range(f,l), name_(std::move(name))
     {}
@@ -37,51 +33,22 @@ public:
     virtual ~Source() {}
 };
 
-/// A concrete Source subclass where the contents are represented as a String.
+/// A Source subclass where the program text is represented as a String.
 struct Source_String : public curv::Source
 {
-    Shared<const String> buffer_;
+    Shared<const String> text_;
 
-    Source_String(Shared<const String> name, Shared<const String> buffer)
+    Source_String(String_Ref name, String_Ref text)
     :
-        curv::Source(
-            std::move(name), buffer->data(), buffer->data() + buffer->size()),
-        buffer_(std::move(buffer))
+        Source(std::move(name), text->data(), text->data() + text->size()),
+        text_(std::move(text))
     {}
 };
 
-/// A concrete Source class that represents a file.
+/// A Source subclass that represents a file.
 struct Source_File : public Source_String
 {
-    Source_File(Shared<const String> filename, const Context&);
-};
-
-// A Source class where the contents are represented as a null-terminated
-// C string. The string is optionally heap allocated using malloc(), in which
-// case this class will take ownership and call free() in the destructor.
-struct C_Source_String : public curv::Source
-{
-    char* buffer_;
-
-    // buffer argument is a static string.
-    C_Source_String(const char* name, const char* buffer)
-    :
-        curv::Source(curv::make_string(name), buffer, buffer + strlen(buffer)),
-        buffer_(nullptr)
-    {
-    }
-
-    // buffer argument is a heap string, allocated using malloc.
-    C_Source_String(const char* name, char* buffer)
-    :
-        curv::Source(curv::make_string(name), buffer, buffer + strlen(buffer)),
-        buffer_(buffer)
-    {}
-
-    ~C_Source_String()
-    {
-        if (buffer_) free(buffer_);
-    }
+    Source_File(String_Ref filename, const Context&);
 };
 
 } // namespace curv
