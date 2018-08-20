@@ -24,26 +24,15 @@ Exception_Base::what() const noexcept
     return message_->c_str();
 }
 
-Exception_Base::Exception_Base(const char* msg)
-:
-    message_(curv::make_string(msg))
-{
-}
-
-Exception_Base::Exception_Base(curv::Shared<const curv::String> msg)
+Exception_Base::Exception_Base(String_Ref msg)
 :
     message_(std::move(msg))
 {
 }
 
-Exception::Exception(const Context& cx, const char* msg)
-: Exception_Base(cx.rewrite_message(make_string(msg)))
-{
-    cx.get_locations(loc_);
-}
-
-Exception::Exception(const Context& cx, Shared<const String> msg)
-: Exception_Base(cx.rewrite_message(std::move(msg)))
+Exception::Exception(const Context& cx, String_Ref msg)
+:
+    Exception_Base(cx.rewrite_message(std::move(msg)))
 {
     cx.get_locations(loc_);
 }

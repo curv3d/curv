@@ -34,7 +34,7 @@ public:
 };
 
 /// A Source subclass where the program text is represented as a String.
-struct Source_String : public curv::Source
+struct Source_String : public Source
 {
     Shared<const String> text_;
 
