@@ -11,6 +11,8 @@
 
 namespace curv {
 
+struct Context;
+
 /// Abstract base class: the name and contents of a source file.
 ///
 /// The name is just an uninterpreted utf8 string for now, will later be
@@ -46,6 +48,12 @@ struct Source_String : public curv::Source
             std::move(name), buffer->data(), buffer->data() + buffer->size()),
         buffer_(std::move(buffer))
     {}
+};
+
+/// A concrete Source class that represents a file.
+struct Source_File : public Source_String
+{
+    Source_File(Shared<const String> filename, const Context&);
 };
 
 } // namespace curv

@@ -22,7 +22,7 @@ extern "C" {
 #include "view_server.h"
 #include <libcurv/context.h>
 #include <libcurv/program.h>
-#include <libcurv/file.h>
+#include <libcurv/source.h>
 #include <libcurv/system.h>
 #include <libcurv/geom/shape.h>
 

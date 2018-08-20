@@ -8,11 +8,11 @@
 #include <libcurv/arg.h>
 #include <libcurv/array_op.h>
 #include <libcurv/exception.h>
-#include <libcurv/file.h>
 #include <libcurv/function.h>
 #include <libcurv/gl_context.h>
 #include <libcurv/math.h>
 #include <libcurv/program.h>
+#include <libcurv/source.h>
 #include <libcurv/system.h>
 
 #include <boost/math/constants/constants.hpp>

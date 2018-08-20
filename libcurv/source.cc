@@ -2,12 +2,14 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <fstream>
-#include <cstring>
-#include <cerrno>
+#include <libcurv/source.h>
+
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
-#include <libcurv/file.h>
+
+#include <cerrno>
+#include <cstring>
+#include <fstream>
 
 namespace curv
 {

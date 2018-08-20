@@ -19,9 +19,9 @@ extern "C" {
 #include <libcurv/context.h>
 #include <libcurv/die.h>
 #include <libcurv/exception.h>
-#include <libcurv/file.h>
 #include <libcurv/output_file.h>
 #include <libcurv/program.h>
+#include <libcurv/source.h>
 #include <libcurv/system.h>
 #include <libcurv/geom/import.h>
 #include <libcurv/geom/shape.h>
