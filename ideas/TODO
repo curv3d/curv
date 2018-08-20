@@ -3,16 +3,29 @@ Current TODO List:
 * Image Export.
   * -O parameter values are Curv expressions. Missing means 'true'.
     Eg, -O fdur=1/30 or -O animate='2*pi'
+    * Nicer error messages:
+      ERROR: Invalid numeral
+      1| -O aa=23foo
+               ^^^^^
+    * Scanner needs to ignore the "-O name=" prefix when scanning the source.
+      * Program::skip_prefix(len) is called after construction, before compile.
+        Program::scanner_ is initialized by ctor, modified by skip_prefix.
+    * Code for evaluating param and reporting param errors.
+      In general, two phases. Loop over parameters and collect values.
+      Then validate, report inconsistencies between parameters.
+      1. Param_Program pp(param, p);
+         pp.to_double()
+         throw Exception(At_Program(pp), "must be positive")
+      2. param.to_double(p)
+         throw Exception(At_Param(param,p), "must be positive")
+         throw Exception(At_Param(param,"name"), "must be positive")
   * documentation
-  * Nicer error messages:
-    ERROR: Invalid numeral
-    1| -O aa=23foo
-             ^^^^^
   * transparent background (exports RGBA, not RGB)
   * speed up -O animate= (compile shape once)
   * use OpenGL FBO to avoid unreliable semantics of framebuf of hidden window.
+  * macOS: don't create a menu bar during image export. GLFW enhancement?
+  * linux: don't use X server during image export. EGL?
 * Image Import.
-  * rename Script to Source, with Source_File, Source_String, Source_Buffer.
   * an instance of Source may contain a pathname and no file contents.
   * a PNG file can occur in the stack trace.
 * Mesh Export.
