@@ -96,8 +96,7 @@ void repl(curv::System* sys)
                     curv::geom::Shape_Program shape{prog};
                     if (shape.recognize(den.second->front())) {
                         print_shape(shape);
-                        curv::geom::Frag_Export opts;
-                        view_server.display_shape(shape, opts);
+                        view_server.display_shape(shape);
                         is_shape = true;
                     }
                 }
@@ -113,11 +112,13 @@ void repl(curv::System* sys)
     view_server.exit();
 }
 
-void interactive_mode(curv::System& sys)
+void interactive_mode(
+    curv::System& sys, const curv::geom::viewer::Viewer_Config& opts)
 {
+    (void) opts; // TODO
     sys.use_colour_ = true;
     std::thread repl_thread(repl, &sys);
-    view_server.run();
+    view_server.run(opts);
     if (repl_thread.joinable())
         repl_thread.join();
 }

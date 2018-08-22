@@ -12,6 +12,10 @@
 #include <libcurv/program.h>
 #include <libcurv/value.h>
 
+namespace curv { namespace geom { namespace viewer {
+struct Viewer_Config;
+}}}
+
 struct Export_Params
 {
     using Map = std::map<std::string, std::string>;
@@ -74,5 +78,10 @@ extern void export_png(curv::Value value,
 
 void describe_mesh_opts(std::ostream&);
 void describe_colour_mesh_opts(std::ostream&);
+
+void parse_viewer_config(
+    const Export_Params& params,
+    curv::geom::viewer::Viewer_Config& opts);
+void describe_viewer_options(std::ostream&, const char* prefix="");
 
 #endif // include guard

@@ -73,17 +73,22 @@ const char help_prefix[] =
 "curv -l [-e] [options] filename\n"
 "   Live programming mode. Evaluate & display result each time file changes.\n"
 "   -e : Open editor window. $CURV_EDITOR overrides default editor.\n"
-"curv [-o arg] [-O arg]... [-x] [options] filename\n"
+"curv [-o arg] [-x] [options] filename\n"
 "   Batch mode. Evaluate file, display result or export to a file.\n"
 "   -o format : Convert to specified file format, write data to stdout.\n"
 ;
 
-const char help_suffix[] =
+const char help_infix[] =
 "   -o filename.ext : Export to file, using filename extension as format.\n"
-"   -O name=value : Parameter for the specified output format.\n"
 "   -x : Interpret filename argument as expression.\n"
 "general options:\n"
 "   -v : Verbose & debug output.\n"
+"   -O name=value : Parameter controlling the specified output format.\n"
+"      If '-o fmt' is specified, use 'curv --help -o fmt' for help.\n"
+"      If '-o fmt' is not specified, the following parameters are available:\n"
+;
+
+const char help_suffix[] =
 "   $CURV_STDLIB : Pathname of standard library, overrides PREFIX/lib/std.curv\n"
 "   -n : Don't use standard library.\n"
 "   -i file : Include specified library; may be repeated.\n"
@@ -114,6 +119,8 @@ main(int argc, char** argv)
                 std::cout << "      " << ex.first << " : "
                           << ex.second.synopsis << "\n";
             }
+            std::cout << help_infix;
+            describe_viewer_options(std::cout, "      ");
             std::cout << help_suffix;
             return EXIT_SUCCESS;
         }
@@ -137,8 +144,6 @@ main(int argc, char** argv)
     std::list<const char*> libs;
     bool expr = false;
     const char* editor = nullptr;
-    bool verbose = false;
-    (void) verbose; // TODO
 
     int opt;
     while ((opt = getopt(argc, argv, ":o:O:lni:xev")) != -1) {
@@ -198,7 +203,6 @@ main(int argc, char** argv)
                 editor = "gedit --new-window --wait";
             break;
         case 'v':
-            verbose = true;
             eparams.verbose_ = true;
             break;
         case '?':
@@ -248,11 +252,10 @@ main(int argc, char** argv)
                   << "Use " << argv0 << " --help for help.\n";
         return EXIT_FAILURE;
     }
-    if (!eparams.map.empty() && !exporter) {
-        std::cerr << "-O flag specified without -o flag.\n"
-                  << "Use " << argv0 << " --help for help.\n";
-        return EXIT_FAILURE;
-    }
+
+    curv::geom::viewer::Viewer_Config viewer_config;
+    if (!exporter)
+        parse_viewer_config(eparams, viewer_config);
 
     // Interpret arguments
     curv::System& sys(make_system(usestdlib, libs));
@@ -260,13 +263,13 @@ main(int argc, char** argv)
 
     if (filename == nullptr) {
         // TODO: support -v (verbose)
-        interactive_mode(sys);
+        interactive_mode(sys, viewer_config);
         return EXIT_SUCCESS;
     }
 
     if (live) {
         // TODO: support -v (verbose)
-        return live_mode(sys, editor, filename);
+        return live_mode(sys, editor, filename, viewer_config);
     }
 
     // batch mode
@@ -290,9 +293,8 @@ main(int argc, char** argv)
             curv::geom::Shape_Program shape{prog};
             if (shape.recognize(value)) {
                 print_shape(shape);
-                curv::geom::viewer::Viewer viewer;
-                curv::geom::Frag_Export opts;
-                viewer.set_shape(shape, opts);
+                curv::geom::viewer::Viewer viewer(viewer_config);
+                viewer.set_shape(shape);
                 viewer.run();
             } else {
                 std::cout << value << "\n";

@@ -1,5 +1,4 @@
 Current TODO List:
-* extend curv -v flag to live, repl and batch viewer mode. -O viewer options.
 * Image Export.
   * -O parameter values are Curv expressions. Missing means 'true'.
     Eg, -O fdur=1/30 or -O animate='2*pi'

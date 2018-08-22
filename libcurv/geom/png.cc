@@ -79,7 +79,7 @@ export_png(
     v.window_pos_and_size_.z = p.size.x;
     v.window_pos_and_size_.w = p.size.y;
     v.headless_ = true;
-    v.verbose_ = p.verbose_;
+    v.config_.verbose_ = p.verbose_;
     v.set_shape(shape, opts);
     v.open();
     v.current_time_ = p.fstart_;

@@ -34,6 +34,18 @@ Viewer::Viewer()
 {
 }
 
+Viewer::Viewer(const Viewer_Config& config)
+:
+    config_(config)
+{
+}
+
+void
+Viewer::set_shape(const Shape_Program& shape)
+{
+    set_shape(shape, config_);
+}
+
 void
 Viewer::set_shape(const Shape_Program& shape, const Frag_Export& opts)
 {
@@ -42,7 +54,7 @@ Viewer::set_shape(const Shape_Program& shape, const Frag_Export& opts)
     fragsrc_ = f.str();
     if (is_open()) {
         shader_.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
-        shader_.load(fragsrc_, vertSource_, verbose_);
+        shader_.load(fragsrc_, vertSource_, config_.verbose_);
     }
 }
 
@@ -57,7 +69,7 @@ Viewer::run()
 void Viewer::set_frag(const std::string& fragSource)
 {
     shader_.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
-    shader_.load(fragSource, vertSource_, verbose_);
+    shader_.load(fragSource, vertSource_, config_.verbose_);
 }
 
 void Viewer::open()
@@ -118,7 +130,7 @@ void Viewer::setup()
     //  Build shader;
     //
     vertSource_ = vbo_->getVertexLayout()->getDefaultVertShader();
-    shader_.load(fragsrc_, vertSource_, verbose_);
+    shader_.load(fragsrc_, vertSource_, config_.verbose_);
 
     // Turn on Alpha blending
     glEnable(GL_BLEND);

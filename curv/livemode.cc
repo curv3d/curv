@@ -85,8 +85,7 @@ poll_file(curv::System* sys, const char* editor, const char* filename)
                 curv::geom::Shape_Program shape{prog};
                 if (shape.recognize(value)) {
                     print_shape(shape);
-                    curv::geom::Frag_Export opts;
-                    live_view_server.display_shape(shape, opts);
+                    live_view_server.display_shape(shape);
                 } else {
                     std::cout << value << "\n";
                 }
@@ -111,7 +110,8 @@ poll_file(curv::System* sys, const char* editor, const char* filename)
 }
 
 int
-live_mode(curv::System& sys, const char* editor, const char* filename)
+live_mode(curv::System& sys, const char* editor, const char* filename,
+    curv::geom::viewer::Viewer_Config& opts)
 {
     if (editor) {
         launch_editor(editor, filename);
@@ -119,7 +119,7 @@ live_mode(curv::System& sys, const char* editor, const char* filename)
             return EXIT_FAILURE;
     }
     std::thread poll_file_thread{poll_file, &sys, editor, filename};
-    live_view_server.run();
+    live_view_server.run(opts);
     if (poll_file_thread.joinable())
         poll_file_thread.join();
     return EXIT_SUCCESS;

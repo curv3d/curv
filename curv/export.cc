@@ -4,6 +4,8 @@
 
 #include "export.h"
 
+#include <libcurv/geom/viewer/viewer.h>
+
 #include <libcurv/geom/compiled_shape.h>
 #include <libcurv/geom/frag.h>
 #include <libcurv/geom/png.h>
@@ -78,12 +80,20 @@ void export_curv(curv::Value value,
     ofile.ostream() << value << "\n";
 }
 
+void describe_frag_options(std::ostream& out, const char*prefix)
+{
+  out
+  << prefix <<
+  "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n"
+  << prefix <<
+  "-O taa=<supersampling factor for temporal antialiasing; 1 means disabled>\n"
+  << prefix <<
+  "-O fdur=<frame duration for animation (used with TAA)>\n"
+  ;
+}
 void describe_frag_opts(std::ostream& out)
 {
-  out <<
-  "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n"
-  "-O taa=<supersampling factor for temporal antialiasing; 1 means disabled>\n"
-  "-O fdur=<frame duration for animation (used with TAA)>\n";
+    describe_frag_options(out, "");
 }
 
 bool parse_frag_opt(
@@ -391,3 +401,18 @@ std::map<std::string, Exporter> exporters = {
     {"cpp", {export_cpp, "C++ source file (shape only)", describe_no_opts}},
     {"png", {export_png, "PNG image file (shape only)", describe_png_opts}},
 };
+
+void parse_viewer_config(
+    const Export_Params& params,
+    curv::geom::viewer::Viewer_Config& opts)
+{
+    opts.verbose_ = params.verbose_;
+    for (auto& p : params.map) {
+        if (!parse_frag_opt(params, p, opts))
+            params.unknown_parameter(p);
+    }
+}
+void describe_viewer_options(std::ostream& out, const char* prefix)
+{
+    describe_frag_options(out, prefix);
+}
