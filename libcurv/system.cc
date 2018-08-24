@@ -12,20 +12,22 @@
 
 namespace curv {
 
-void System::message(const char* prefix, const std::exception& exc)
+void System::print_exception(
+    const char* prefix, const std::exception& exc,
+    std::ostream& out, bool use_colour)
 {
     const Exception *e = dynamic_cast<const Exception*>(&exc);
     if (e) {
-        if (use_colour_) console() << AC_MESSAGE;
-        console() << prefix;
-        if (use_colour_) console() << AC_RESET;
-        e->write(console(), use_colour_);
+        if (use_colour) out << AC_MESSAGE;
+        out << prefix;
+        if (use_colour) out << AC_RESET;
+        e->write(out, use_colour);
     } else {
-        if (use_colour_) console() << AC_MESSAGE;
-        console() << prefix << exc.what();
-        if (use_colour_) console() << AC_RESET;
+        if (use_colour) out << AC_MESSAGE;
+        out << prefix << exc.what();
+        if (use_colour) out << AC_RESET;
     }
-    console() << std::endl;
+    out << std::endl;
 }
 
 System_Impl::System_Impl(std::ostream& console)

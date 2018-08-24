@@ -31,9 +31,20 @@ struct System
 
     virtual std::ostream& console() = 0;
 
+    // Write an exception object to an output stream, using the Curv colour
+    // scheme if use_colour is true. Special behaviour for curv::Exception.
+    // This static function is handy for printing an exception caught during
+    // the construction of a System object (otherwise, use System::message).
+    static void print_exception(
+        const char* prefix, const std::exception& exc,
+        std::ostream& out, bool use_colour = false);
+
     // Write an error message on the console, given an exception object.
     // Special behaviour for curv::Exception. Honours `use_colour_`.
-    void message(const char* prefix, const std::exception&);
+    inline void message(const char* prefix, const std::exception& exc)
+    {
+        print_exception(prefix, exc, console(), use_colour_);
+    }
 
     // This is non-empty while a `file` operation is being evaluated.
     // It is used to detect recursive file references.

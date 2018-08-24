@@ -29,11 +29,8 @@ make_system()
     try {
         static Std_System sys;
         return sys;
-    } catch (curv::Exception& e) {
-        std::cerr << "ERROR: " << e << "\n";
-        exit(EXIT_FAILURE);
     } catch (std::exception& e) {
-        std::cerr << "ERROR: " << e.what() << "\n";
+        System::print_exception("ERROR: ", e, std::cerr);
         exit(EXIT_FAILURE);
     }
 }
