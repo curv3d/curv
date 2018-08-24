@@ -29,19 +29,19 @@ struct Scanner_Opts
 /// supporting infinite lookahead.
 struct Scanner
 {
-    const Source& source_;
+    Shared<const Source> source_;
     Frame* eval_frame_;
     Token string_begin_;
 private:
     const char* ptr_;
     std::vector<Token> lookahead_;
 public:
-    Scanner(const Source& s, Scanner_Opts opts = {})
+    Scanner(Shared<const Source> s, Scanner_Opts opts = {})
     :
-        source_(s),
+        source_(std::move(s)),
         eval_frame_(opts.eval_frame_),
         string_begin_(),
-        ptr_(s.begin() + opts.skip_prefix_),
+        ptr_(source_->begin() + opts.skip_prefix_),
         lookahead_()
     {}
     Token get_token();

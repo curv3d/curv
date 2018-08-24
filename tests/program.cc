@@ -13,7 +13,7 @@ Shared<const Phrase>
 nub(const char* str)
 {
     auto source = make<Source_String>("", str);
-    Scanner scanner{*source};
+    Scanner scanner{source};
     auto phrase = parse_program(scanner);
     return nub_phrase(phrase);
 }
@@ -22,7 +22,7 @@ Value
 skip_prefix(const char* src, unsigned len)
 {
     auto source = make<Source_String>("", src);
-    Program prog{*source, sys, Program_Opts().skip_prefix(len)};
+    Program prog{source, sys, Program_Opts().skip_prefix(len)};
     prog.compile();
     return prog.eval();
 }

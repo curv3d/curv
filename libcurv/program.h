@@ -37,11 +37,11 @@ struct Program
     std::unique_ptr<Frame> frame_ = nullptr;
 
     Program(
-        const Source& source,
+        Shared<const Source> source,
         System& system,
         Program_Opts opts = {})
     :
-        scanner_(source, Scanner_Opts()
+        scanner_(std::move(source), Scanner_Opts()
             .eval_frame(opts.parent_frame_)
             .skip_prefix(opts.skip_prefix_)),
         system_(system)

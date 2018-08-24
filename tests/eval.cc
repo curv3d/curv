@@ -37,9 +37,8 @@ make_system()
 
 struct Evaluator
 {
-    Evaluator(const char* source)
+    Evaluator(const char* text)
     :
-        source_(make<Source_String>("", source)),
         failmsg_(nullptr),
         failall_(nullptr),
         success_(nullptr)
@@ -47,7 +46,8 @@ struct Evaluator
         try {
             sconsole.str("");
             sconsole.clear(); // Clear state flags.
-            curv::Program prog{*source_, make_system()};
+            auto source = make<Source_String>("", text);
+            Program prog{std::move(source), make_system()};
             prog.compile();
             auto den = prog.denotes();
 
@@ -81,8 +81,6 @@ struct Evaluator
             failall_ = failmsg_;
         }
     }
-
-    Shared<Source_String> source_;
 
     const char* failmsg_;
     Shared<const curv::String> failmsg_str_;

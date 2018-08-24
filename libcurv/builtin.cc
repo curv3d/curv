@@ -670,7 +670,8 @@ struct File_Expr : public Just_Expression
             auto file = make<Source_File>(make_string(filepath.c_str()), cx);
             std::unique_ptr<Frame> f2 =
                 Frame::make(0, f.system_, &f, &callphrase, nullptr);
-            Program prog{*file, f.system_, Program_Opts().parent_frame(&*f2)};
+            Program prog{std::move(file), f.system_,
+                Program_Opts().parent_frame(&*f2)};
             auto filekey = Filesystem::canonical(filepath);
             auto& active_files = f.system_.active_files_;
             if (active_files.find(filekey) != active_files.end())

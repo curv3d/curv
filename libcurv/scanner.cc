@@ -30,8 +30,8 @@ Scanner::get_token()
 
     Token tok;
     const char* p = ptr_;
-    const char* first = source_.first;
-    const char* last = source_.last;
+    const char* first = source_->first;
+    const char* last = source_->last;
 
     if (string_begin_.kind_ != Token::k_missing) {
         // We are inside a string literal.

@@ -282,7 +282,7 @@ main(int argc, char** argv)
                 curv::make_string(filename), curv::Context{});
         }
 
-        curv::Program prog{*source, sys};
+        curv::Program prog{std::move(source), sys};
         prog.compile();
         auto value = prog.eval();
 

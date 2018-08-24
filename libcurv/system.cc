@@ -40,7 +40,7 @@ System_Impl::System_Impl(std::ostream& console)
 void System_Impl::load_library(String_Ref path)
 {
     auto file = make<Source_File>(std::move(path), Context{});
-    Program prog{*file, *this};
+    Program prog{std::move(file), *this};
     prog.compile();
     auto stdlib = prog.eval();
     auto m = stdlib.to<Module>(At_Phrase(*prog.phrase_, nullptr));

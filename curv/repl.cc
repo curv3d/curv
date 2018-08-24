@@ -78,9 +78,9 @@ void repl(curv::System* sys)
         if (line[0] != '\0')
             rx.history_add(line);
 
-        auto source = curv::make<curv::Source_String>("", line);
         try {
-            curv::Program prog{*source, *sys};
+            auto source = curv::make<curv::Source_String>("", line);
+            curv::Program prog{std::move(source), *sys};
             prog.compile(&names);
             auto den = prog.denotes();
             if (den.first) {

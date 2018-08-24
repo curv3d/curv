@@ -35,7 +35,7 @@ get_frame_locations(const Frame* f, std::list<Location>& locs)
 
 At_Token::At_Token(Token tok, const Scanner& scanner)
 :
-    loc_{scanner.source_, tok},
+    loc_{*scanner.source_, tok},
     eval_frame_(scanner.eval_frame_)
 {
 }
