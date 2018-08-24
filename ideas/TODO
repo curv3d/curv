@@ -325,8 +325,6 @@ BUG: Doesn't GL compile.
 stereographic_projection plane = sphere 1 >> colourfield
     ((x,y,z)->plane.colour(x/(1-z), y/(1-z), 0));
 
-BUG: tests recently slowed down by 2 orders of magnitude.
-
 display axes in 3D view
 
 source reorganization:

@@ -35,7 +35,7 @@ System_Impl::System_Impl(std::ostream& console)
     std_namespace_ = builtin_namespace();
 }
 
-void System_Impl::load_library(Shared<const String> path)
+void System_Impl::load_library(String_Ref path)
 {
     auto file = make<Source_File>(std::move(path), Context{});
     Program prog{*file, *this};

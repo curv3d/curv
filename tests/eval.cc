@@ -13,14 +13,21 @@
 using namespace std;
 using namespace curv;
 
-std::stringstream console;
+std::stringstream sconsole;
+
+struct Std_System : public System_Impl
+{
+    Std_System() : System_Impl(sconsole)
+    {
+        load_library("../lib/std.curv");
+    }
+};
 
 curv::System&
 make_system()
 {
     try {
-        static curv::System_Impl sys(console);
-        sys.load_library(curv::make_string("../lib/std.curv"));
+        static Std_System sys;
         return sys;
     } catch (curv::Exception& e) {
         std::cerr << "ERROR: " << e << "\n";
@@ -41,8 +48,8 @@ struct Evaluator
         success_(nullptr)
     {
         try {
-            console.str("");
-            console.clear(); // Clear state flags.
+            sconsole.str("");
+            sconsole.clear(); // Clear state flags.
             curv::Program prog{*source_, make_system()};
             prog.compile();
             auto den = prog.denotes();
@@ -380,7 +387,7 @@ TEST(curv, eval)
             "   for(x in -1..1) if(x<0) print \"-\" else if(x>0) print \"+\";"
             "in 0",
         "0");
-    EXPECT_EQ(console.str(),
+    EXPECT_EQ(sconsole.str(),
         "1\n"
         "2\n"
         "-\n"
@@ -393,11 +400,11 @@ TEST(curv, eval)
 
     // let operator
     SUCCESS("(let a=1; print \"$(a)\" in a)+1", "2");
-    EXPECT_EQ(console.str(), "1\n");
+    EXPECT_EQ(sconsole.str(), "1\n");
 
     // print action
     SUCCESS("print \"$(17,42)\"", "");
-    EXPECT_EQ(console.str(), "[17,42]\n");
+    EXPECT_EQ(sconsole.str(), "[17,42]\n");
 
     // lexical errors
     FAILMSG("\\foo", "illegal character '\\'");
@@ -459,7 +466,7 @@ TEST(curv, eval)
         "    ^ ");
 
     SUCCESS("let a=2; f x={print(g 2); g y=a*x*b*y; b=3} in f(5).g(7)", "210");
-    EXPECT_EQ(console.str(),
+    EXPECT_EQ(sconsole.str(),
         "60\n");
 
     FAILMSG("let var a:=2 in a", "wrong style of definition for this block");

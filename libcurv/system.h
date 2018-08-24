@@ -74,7 +74,7 @@ struct System_Impl : public System
     Namespace std_namespace_;
     std::ostream& console_;
     System_Impl(std::ostream&);
-    void load_library(Shared<const String> path);
+    void load_library(String_Ref path);
     virtual const Namespace& std_namespace() override;
     virtual std::ostream& console() override;
 };
