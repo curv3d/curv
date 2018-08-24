@@ -12,6 +12,15 @@
 
 namespace curv {
 
+struct Scanner_Opts
+{
+    Frame* eval_frame_ = nullptr;
+    Scanner_Opts& eval_frame(Frame* f) { eval_frame_=f; return *this; }
+
+    unsigned skip_prefix_ = 0;
+    Scanner_Opts& skip_prefix(unsigned n) { skip_prefix_=n; return *this; }
+};
+
 /// \brief A lexical analyser.
 ///
 /// The state of a lexical analyser is stored in this class.
@@ -27,7 +36,14 @@ private:
     const char* ptr_;
     std::vector<Token> lookahead_;
 public:
-    Scanner(const Source&, Frame*);
+    Scanner(const Source& s, Scanner_Opts opts = {})
+    :
+        source_(s),
+        eval_frame_(opts.eval_frame_),
+        string_begin_(),
+        ptr_(s.begin() + opts.skip_prefix_),
+        lookahead_()
+    {}
     Token get_token();
     void push_token(Token);
 };

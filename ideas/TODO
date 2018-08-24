@@ -6,9 +6,6 @@ Current TODO List:
       ERROR: Invalid numeral
       1| -O aa=23foo
                ^^^^^
-    * Scanner needs to ignore the "-O name=" prefix when scanning the source.
-      * Program::skip_prefix(len) is called after construction, before compile.
-        Program::scanner_ is initialized by ctor, modified by skip_prefix.
     * Code for evaluating param and reporting param errors.
       In general, two phases. Loop over parameters and collect values.
       Then validate, report inconsistencies between parameters.

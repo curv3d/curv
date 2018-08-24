@@ -11,16 +11,6 @@
 using namespace std;
 namespace curv {
 
-Scanner::Scanner(const Source& s, Frame* f)
-:
-    source_(s),
-    eval_frame_(f),
-    string_begin_(),
-    ptr_(s.begin()),
-    lookahead_()
-{
-}
-
 void
 Scanner::push_token(Token tok)
 {

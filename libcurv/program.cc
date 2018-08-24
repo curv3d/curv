@@ -15,18 +15,16 @@
 namespace curv {
 
 void
-Program::compile(const Namespace* names, Frame* parent_frame)
+Program::compile(const Namespace* names)
 {
     if (names == nullptr)
         names_ = &system_.std_namespace();
     else
         names_ = names;
-    parent_frame_ = parent_frame;
 
-    Scanner scanner{source_, parent_frame};
-    phrase_ = parse_program(scanner);
+    phrase_ = parse_program(scanner_);
 
-    Builtin_Environ env{*names_, system_, parent_frame};
+    Builtin_Environ env{*names_, system_, scanner_.eval_frame_};
     if (auto def = phrase_->as_definition(env)) {
         module_ = analyse_module(*def, env);
     } else {
@@ -34,7 +32,7 @@ Program::compile(const Namespace* names, Frame* parent_frame)
     }
 
     frame_ = {Frame::make(env.frame_maxslots_,
-        system_, parent_frame, nullptr, nullptr)};
+        system_, scanner_.eval_frame_, nullptr, nullptr)};
 }
 
 const Phrase&
@@ -48,10 +46,10 @@ Value
 Program::eval()
 {
     if (module_ != nullptr) {
-        throw Exception(At_Phrase(*phrase_, parent_frame_),
+        throw Exception(At_Phrase(*phrase_, scanner_.eval_frame_),
             "definition found; expecting an expression");
     } else {
-        auto expr = meaning_->to_operation(parent_frame_);
+        auto expr = meaning_->to_operation(scanner_.eval_frame_);
         return expr->eval(*frame_);
     }
 }
@@ -65,7 +63,7 @@ Program::denotes()
         module = module_->eval_module(*frame_);
     } else {
         List_Builder lb;
-        auto gen = meaning_->to_operation(parent_frame_);
+        auto gen = meaning_->to_operation(scanner_.eval_frame_);
         gen->generate(*frame_, lb);
         list = lb.get_list();
     }

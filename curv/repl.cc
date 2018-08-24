@@ -81,7 +81,7 @@ void repl(curv::System* sys)
         auto source = curv::make<curv::Source_String>("", line);
         try {
             curv::Program prog{*source, *sys};
-            prog.compile(&names, nullptr);
+            prog.compile(&names);
             auto den = prog.denotes();
             if (den.first) {
                 for (auto f : *den.first)
