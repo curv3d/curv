@@ -1,21 +1,17 @@
 Current TODO List:
+* Refactor:
+  * Viewer_Opts
+  * remove arg_to_int()
+  * Param_Program to header
+  * mesh: error for bad -O flag
+  * mesh: Export_Params::to_bool(), missing means 'true'
+  * mesh: Mesh_Write_Opts
+  * dfmt -> <libcurv/format.h>
+  * Location ctor takes Shared<const Source>
+  * Source_String -> String_Source
 * Image Export.
-  * -O parameter values are Curv expressions. Missing means 'true'.
-    Eg, -O fdur=1/30 or -O animate='2*pi'
-    * Nicer error messages:
-      ERROR: Invalid numeral
-      1| -O aa=23foo
-               ^^^^^
-    * Code for evaluating param and reporting param errors.
-      In general, two phases. Loop over parameters and collect values.
-      Then validate, report inconsistencies between parameters.
-      1. Param_Program pp(param, p);
-         pp.to_double()
-         throw Exception(At_Program(pp), "must be positive")
-      2. param.to_double(p)
-         throw Exception(At_Param(param,p), "must be positive")
-         throw Exception(At_Param(param,"name"), "must be positive")
   * documentation
+    Eg, -O fdur=1/30 or -O animate='2*pi'
   * transparent background (exports RGBA, not RGB)
   * speed up -O animate= (compile shape once)
   * use OpenGL FBO to avoid unreliable semantics of framebuf of hidden window.
