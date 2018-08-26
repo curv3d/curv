@@ -138,13 +138,13 @@ void export_mesh(Mesh_Format format, curv::Value value,
         throw curv::Exception(cx, "mesh export: not a 3D shape");
 
 #if 0
-    for (auto p : params.map) {
+    for (auto p : params.map_) {
         std::cerr << p.first << "=" << p.second << "\n";
     }
 #endif
 
     std::unique_ptr<curv::geom::Compiled_Shape> cshape = nullptr;
-    if (params.map.find("jit") != params.map.end()) {
+    if (params.map_.find("jit") != params.map_.end()) {
         //std::chrono::time_point<std::chrono::steady_clock> cstart_time, cend_time;
         auto cstart_time = std::chrono::steady_clock::now();
         cshape = std::make_unique<curv::geom::Compiled_Shape>(shape);
@@ -166,8 +166,8 @@ void export_mesh(Mesh_Format format, curv::Value value,
     }
 
     double voxelsize;
-    auto vsize_p = params.map.find("vsize");
-    if (vsize_p != params.map.end()) {
+    auto vsize_p = params.map_.find("vsize");
+    if (vsize_p != params.map_.end()) {
         double vsize = param_to_double(vsize_p);
         if (vsize <= 0.0) {
             throw curv::Exception(cx, curv::stringify(
@@ -255,8 +255,8 @@ void export_mesh(Mesh_Format format, curv::Value value,
 
     // convert grid to a mesh
     double adaptivity = 0.0;
-    auto adaptive_p = params.map.find("adaptive");
-    if (adaptive_p != params.map.end()) {
+    auto adaptive_p = params.map_.find("adaptive");
+    if (adaptive_p != params.map_.end()) {
         if (adaptive_p->second.empty())
             adaptivity = 1.0;
         else {
@@ -271,8 +271,8 @@ void export_mesh(Mesh_Format format, curv::Value value,
     mesher(*grid);
 
     enum {face_colour, vertex_colour} colourtype = face_colour;
-    auto colourtype_p = params.map.find("colour");
-    if (colourtype_p != params.map.end()) {
+    auto colourtype_p = params.map_.find("colour");
+    if (colourtype_p != params.map_.end()) {
         if (colourtype_p->second == "face")
             colourtype = face_colour;
         else if (colourtype_p->second == "vertex")

@@ -137,8 +137,10 @@ main(int argc, char** argv)
 
     // Parse arguments for general case.
     const char* usestdlib = argv0;
-    Exporter* exporter = nullptr;
-    Export_Params eparams;
+    using ExPtr = decltype(exporters)::const_iterator;
+    ExPtr exporter = exporters.end();
+    Export_Params::Map oparam_map;
+    bool verbose;
     curv::Output_File ofile;
     bool live = false;
     std::list<const char*> libs;
@@ -159,28 +161,26 @@ main(int argc, char** argv)
                 oname = &ext[1];
             else
                 oname = oarg;
-            auto ex = exporters.find(oname);
-            if (ex == exporters.end()) {
+            exporter = exporters.find(oname);
+            if (exporter == exporters.end()) {
                 std::cerr << "-o: format '" << oname << "' not supported.\n"
                           << "Use " << argv0 << " --help for help.\n";
                 return EXIT_FAILURE;
             }
-            exporter = &ex->second;
             if (oname == oarg)
                 ofile.set_ostream(&std::cout);
             else
                 ofile.set_path(opath);
-            eparams.format = oname;
             break;
           }
         case 'O':
           {
             char* eq = strchr(optarg, '=');
             if (eq == nullptr) {
-                eparams.map[std::string(optarg)] = std::string("");
+                oparam_map[std::string(optarg)] = std::string("");
             } else {
                 *eq = '\0';
-                eparams.map[std::string(optarg)] = std::string(eq+1);
+                oparam_map[std::string(optarg)] = std::string(eq+1);
                 *eq = '=';
             }
             break;
@@ -203,7 +203,7 @@ main(int argc, char** argv)
                 editor = "gedit --new-window --wait";
             break;
         case 'v':
-            eparams.verbose_ = true;
+            verbose = true;
             break;
         case '?':
             std::cerr << "-" << (char)optopt << ": unknown option\n"
@@ -229,7 +229,7 @@ main(int argc, char** argv)
 
     // Validate arguments
     if (live) {
-        if (exporter) {
+        if (exporter != exporters.end()) {
             std::cerr << "-l and -o flags are not compatible.\n"
                       << "Use " << argv0 << " --help for help.\n";
             return EXIT_FAILURE;
@@ -241,7 +241,7 @@ main(int argc, char** argv)
         }
     }
     if (filename == nullptr) {
-        if (expr || exporter || live) {
+        if (expr || exporter != exporters.end() || live) {
             std::cerr << "missing filename argument\n"
                       << "Use " << argv0 << " --help for help.\n";
             return EXIT_FAILURE;
@@ -253,27 +253,34 @@ main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    curv::geom::viewer::Viewer_Config viewer_config;
-    if (!exporter)
-        parse_viewer_config(eparams, viewer_config);
-
-    // Interpret arguments
+    // Create system, a precondition for parsing -O parameters.
+    // This can fail, so we do as much argument validation as possible
+    // before this point.
     curv::System& sys(make_system(usestdlib, libs));
     atexit(curv::geom::remove_all_tempfiles);
 
-    if (filename == nullptr) {
-        // TODO: support -v (verbose)
-        interactive_mode(sys, viewer_config);
-        return EXIT_SUCCESS;
-    }
+    Export_Params oparams(sys);
+    if (exporter != exporters.end())
+        oparams.format_ = exporter->first;
+    std::swap(oparams.map_, oparam_map);
+    oparams.verbose_ = verbose;
 
-    if (live) {
-        // TODO: support -v (verbose)
-        return live_mode(sys, editor, filename, viewer_config);
-    }
-
-    // batch mode
     try {
+        curv::geom::viewer::Viewer_Config viewer_config;
+        if (exporter == exporters.end())
+            parse_viewer_config(oparams, viewer_config);
+
+        // Finally, do stuff.
+        if (filename == nullptr) {
+            interactive_mode(sys, viewer_config);
+            return EXIT_SUCCESS;
+        }
+
+        if (live) {
+            return live_mode(sys, editor, filename, viewer_config);
+        }
+
+        // batch mode
         curv::Shared<curv::Source> source;
         if (expr) {
             source = curv::make<curv::Source_String>("", filename);
@@ -286,8 +293,8 @@ main(int argc, char** argv)
         prog.compile();
         auto value = prog.eval();
 
-        if (exporter) {
-            exporter->call(value, prog, eparams, ofile);
+        if (exporter != exporters.end()) {
+            exporter->second.call(value, prog, oparams, ofile);
             ofile.commit();
         } else {
             curv::geom::Shape_Program shape{prog};

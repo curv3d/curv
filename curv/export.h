@@ -18,12 +18,13 @@ struct Viewer_Config;
 
 struct Export_Params
 {
+    Export_Params(curv::System& sys) : system_(sys) {}
     using Map = std::map<std::string, std::string>;
-    std::string format;
-    Map map;
+    curv::System& system_;
+    std::string format_;
+    Map map_;
     bool verbose_ = false;
     [[noreturn]] void unknown_parameter(const Map::value_type&) const;
-    [[noreturn]] void bad_argument(const Map::value_type&, const char*) const;
     int to_int(const Map::value_type&, int, int) const;
     double to_double(const Map::value_type&) const;
 };

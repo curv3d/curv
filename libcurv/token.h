@@ -36,6 +36,18 @@ namespace curv {
 /// That's done at a higher level. This simplifies the representation of tokens.
 struct Token
 {
+    Token() {}
+
+    // This constructor creates a simple 'generic' token for error messages,
+    // not suitable for input to the parser.
+    Token(uint32_t first, uint32_t last)
+    :
+        first_white_(first),
+        first_(first),
+        last_(last),
+        kind_(k_phrase)
+    {}
+
     uint32_t first_white_ = 0, first_ = 0, last_ = 0;
     enum Kind {
         k_missing,    ///! not a token; marks an uninitialized token variable.

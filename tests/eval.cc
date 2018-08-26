@@ -343,7 +343,7 @@ TEST(curv, eval)
         "1| file(\"bad_token.curv\")\n"
         "   ^^^^^^^^^^^^^^^^^^^^^^");
     FAILALL("file(\n1,2)",
-        "argument #1 of file: is not a string: [1,2]\n"
+        "argument #1 of file: [1,2] is not a string\n"
         "1| file(\n"
         "       ^\n"
         "2|>1,2)");
