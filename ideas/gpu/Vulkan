@@ -67,6 +67,11 @@ library providing a common API on Linux/Mac/Windows/Android.
 The open source browser makers will need this?
 * Firefox/Servo: https://github.com/gfx-rs/gfx Based on Rustified Vulkan.
 * Chrome/Blink: ?? just a small amount of stub code is in the repo
+* WebGPU is "designed to provide a efficient bindings for both JavaScript and
+  WebAssembly, possibly requiring separate interfaces for each."
+  This means that, if you are generating WebAssembly from C++ or Rust,
+  then there would need to be a WebGPU API in C++ or Rust? Which the WebGPU
+  devs will provide?
 
 So a sane, reliable, cross platform GPU API is still years in the future?
 
