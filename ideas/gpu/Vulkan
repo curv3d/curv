@@ -64,17 +64,36 @@ Notes:
 
 WebGPU sounds awesome. Be nice if there was a corresponding C++ or Rust 
 library providing a common API on Linux/Mac/Windows/Android.
-The open source browser makers will need this?
-* Firefox/Servo: https://github.com/gfx-rs/gfx Based on Rustified Vulkan.
-* Chrome/Blink: ?? just a small amount of stub code is in the repo
+* The open source browser makers will need this to code their browser?
 * WebGPU is "designed to provide a efficient bindings for both JavaScript and
   WebAssembly, possibly requiring separate interfaces for each."
   This means that, if you are generating WebAssembly from C++ or Rust,
-  then there would need to be a WebGPU API in C++ or Rust? Which the WebGPU
-  devs will provide?
+  then there would need to be a WebGPU API in C++ or Rust?
+  "The (WebGPU) Group may develop a software library that implements the GPU
+  for the Web work across multiple platforms using existing native APIs. For
+  example, a C++ library that exposes GPU for the Web using Direct3D, Metal or
+  Vulkan."
 
-So a sane, reliable, cross platform GPU API is still years in the future?
+WebGPU will replace OpenGL as Curv's internal, cross platform GPU API.
 
+This won't happen quickly. WebGL 2 took 4 years, so WebGPU could be released
+in 2021? It's being developed in the open on github, so I can use prerelease
+versions.
+
+WebGPU is a layer on top of Vulkan, DX12 and Metal, and it's a new design
+based on the best ideas from these 3 platforms. While I'm waiting for WebGPU,
+the most similar viable API is Vulkan.
+
+So here is a plan:
+* Continue using OpenGL for now.
+* Transition to Vulkan. This gives me compute shaders on Linux, macOS, WIN32,
+  and Android.
+* Transition to WebGPU. This gives me the Web platform and UWP.
+
+Qt supports Linux, macOS, Windows, Android, and WebAssembly, so I can use Qt
+for my GUI and run on all platforms.
+
+-------------------------------------------------------------------------
 For now, I should target a mix of GL and EGL, and not look further until
 I need to target a different API, either for its capabilities, or for its
 platform support.
