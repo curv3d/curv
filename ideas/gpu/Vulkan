@@ -1,4 +1,94 @@
-Should I use Vulkan? Long term, Yes.
+Right now, Curv uses OpenGL. Should I use another API, like Vulkan?
+
+Here are the platforms that I might want Curv to support:
+* Linux
+* macOS
+* Windows WIN32
+* Windows UWP?
+* Android
+* Web, via WebAssembly
+
+(No RaspberryPi, because there is no compute shader support.)
+(No iOS, because the App Store restrictions are incompatible with the
+principles and practices of Open Source software.)
+
+And here are the APIs supported by these platforms:
+| Linux         | GL  EGL  Vulkan
+| macOS         | GL*      Vulkan* Metal
+| Windows WIN32 | GL  EGL  Vulkan        DX12
+| Windows UWP   |     EGL*               DX12
+| Android       |     EGL  Vulkan
+| Web           |     EGL
+
+There is no universal GPU API that works on all platforms.
+Notes:
+* OpenGL is deprecated in macOS, and is an old version that doesn't support
+  compute shaders. Vulkan is emulated using Metal by MoltenVK.
+* Microsoft doesn't support OpenGL or Vulkan in UWP apps.
+  ANGLE can be used to get an EGL API. There is a Vulkan portability
+  initiative that may eventually emulate Vulkan on DX12 for Windows.
+* EGL (OpenGL ES) is mostly a subset of OpenGL, with some API differences.
+  On Linux, the EGL library supports offscreen rendering without an X server.
+  It's probably not too hard to maintain a mixed GL/EGL code base.
+  Newer versions of EGL have compute shaders, are probably capable enough
+  to support Curv. I only need a subset of OpenGL anyway, although I
+  don't know what that subset is yet.
+* WebGL and compute shaders.
+  * Firefox 51 added WebGL 2. Chrome 56 added WebGL 2 (Mar 2017).
+  * EGL 3.1 has compute shaders. WebGL 2 is based on EGL 3.0. But compute
+    shaders may also be available in WebGL 1 and 2 as an extension
+    (ARB_compute_shader).
+  * On Ubuntu 16.04, I'm running Firefox v61. Consulted about:support and
+    about:config. WebGL 2 and ARB_compute_shader are available.
+    And this webgl2 demo works: https://playcanv.as/e/p/44MRmJRU/
+  * The "WebGL 2.0 Compute specification" proposes to add EGL 3.1 compute
+    shaders to WebGL 2.0, while possibly losing some backward compatibility
+    with WebGL 2.0. (Not definite: the spec is under construction.)
+    Seems to be a Google/Intel thing.
+    https://docs.google.com/document/d/1EwhDJO_lBH1mGMMwheQUXGhhFk9yoC98Ant3TPqwmmA/view
+    macOS would not be supported:
+    https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/bPD47wqY-r8
+    This won't be implemented, in favour of WebGPU?
+    Meaning no ARB_compute_shader extension in Chrome?
+  * "Obsidian" was a Mozilla proposal, but now they are doing WebGPU.
+  * "WebGPU" will replace WebGL and its extensions with something resembling
+    Metal. Has a clean object oriented API, unlike the OpenGL shitstorm.
+    Proposed by Apple, endorsed by Google Chrome, Firefox, Microsoft Edge.
+    https://webkit.org/blog/7380/next-generation-3d-graphics-on-the-web/
+    Google Chrome committed to implementing it June 2018.
+    Mozilla is working on it? https://github.com/kvark/webgpu-servo
+    The API hasn't been agreed on. Working on high level concepts, scope.
+    https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/dxqWTSvyhDg
+    The Chromium Blink rendering engine will implement WebGPU on top of Vulkan,
+    DX12 or Metal.
+
+WebGPU sounds awesome. Be nice if there was a corresponding C++ or Rust 
+library providing a common API on Linux/Mac/Windows/Android.
+The open source browser makers will need this?
+* Firefox/Servo: https://github.com/gfx-rs/gfx Based on Rustified Vulkan.
+* Chrome/Blink: ?? just a small amount of stub code is in the repo
+
+So a sane, reliable, cross platform GPU API is still years in the future?
+
+For now, I should target a mix of GL and EGL, and not look further until
+I need to target a different API, either for its capabilities, or for its
+platform support.
+
+On macOS, I need to target either Metal or Vulkan if I want compute shaders.
+* Dev machine: Have a late 2012 Mac Mini, Intel HD Graphics 4000.
+  Supports Mohave 10.14. Supports Metal 2.
+* Is there an open source macOS web browser that supports compute shaders?
+  If so, maybe it has an EGL emulation lib that runs on top of Metal?
+  Unlikely this exists. First, test browsers on Mohave.
+* If not, I need to support Metal or Vulkan to get compute shaders on macOS.
+  Probably Vulkan, since it is cross platform.
+
+* Vulkan has higher performance than GL/EGL for certain kinds of applications
+  (video games), where you are dynamically adding and modifying assets in the
+  GPU while the animation is running: Vulkan increases the CPU-GPU bandwidth.
+  Curv doesn't rely on this at all right now. Until I specifically need
+  Vulkan either for its capabilities or for its platform support, I should
+  ignore it.
 
 Right now, if I want compute shaders on all GPUs that support it (2012+),
 I could support a combo of OpenGL 4.3 and Vulkan. Later, Vulkan support will
