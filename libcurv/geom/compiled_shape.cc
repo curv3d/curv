@@ -78,6 +78,7 @@ export_cpp(Shape_Program& shape, std::ostream& out)
         "#include <glm/common.hpp>\n"
         "#include <glm/geometric.hpp>\n"
         "#include <glm/trigonometric.hpp>\n"
+        "#include <glm/exponential.hpp>\n"
         "\n"
         "using namespace glm;\n"
         "\n";
