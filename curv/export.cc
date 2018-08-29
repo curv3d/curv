@@ -96,11 +96,11 @@ void describe_frag_options(std::ostream& out, const char*prefix)
 {
   out
   << prefix <<
-  "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n"
+  "-O aa=<supersampling factor for antialiasing> (1 means disabled)\n"
   << prefix <<
-  "-O taa=<supersampling factor for temporal antialiasing; 1 means disabled>\n"
+  "-O taa=<supersampling factor for temporal antialiasing> (1 means disabled)\n"
   << prefix <<
-  "-O fdur=<frame duration for animation (used with TAA)>\n"
+  "-O fdur=<animation frame duration> (used with TAA)\n"
   ;
 }
 void describe_frag_opts(std::ostream& out)
@@ -308,10 +308,10 @@ void describe_png_opts(std::ostream& out)
     "-v : verbose output logged to stderr\n"
     "-O xsize=<image width in pixels>\n"
     "-O ysize=<image height in pixels>\n"
-    "-O fstart=<animation frame timestamp, in seconds, default 0>\n";
+    "-O fstart=<animation frame start time, in seconds> (default 0)\n";
     describe_frag_opts(out);
     out <<
-    "-O animate=<duration of animation (exports an image sequence)>\n";
+    "-O animate=<duration of animation> (exports an image sequence)\n";
 }
 
 void export_png(Value value,

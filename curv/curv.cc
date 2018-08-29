@@ -83,7 +83,7 @@ const char help_infix[] =
 "   -x : Interpret filename argument as expression.\n"
 "general options:\n"
 "   -v : Verbose & debug output.\n"
-"   -O name=value : Parameter controlling the specified output format.\n"
+"   -O name=value : Set parameter controlling the specified output format.\n"
 "      If '-o fmt' is specified, use 'curv --help -o fmt' for help.\n"
 "      If '-o fmt' is not specified, the following parameters are available:\n"
 ;
