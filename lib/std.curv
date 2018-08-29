@@ -17,8 +17,6 @@ Y_axis = [0,1,0];
 Z_axis = [0,0,1];
 nl = decode[0xA]; // ASCII newline
 
-ceil n = -floor(-n);
-trunc n = if (n >= 0) floor(n) else ceil(n);
 mod(a,m) = a - m * floor(a/m);
 rem(a,m) = a - m * trunc(a/m);
 lerp(a,b,t) = a*(1-t) + b*t;
@@ -32,8 +30,6 @@ smoothstep(lo,hi,x) =
 clamp(v,lo,hi) = min(max(v,lo),hi);
 //isinf x = x == inf || x == -inf; // deprecated
 
-tan a = sin a / cos a;
-atan x = atan2(x,1);
 sec a = 1 / sin a;
 csc a = 1 / cos a;
 cot a = cos a / sin a;

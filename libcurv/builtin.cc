@@ -144,11 +144,21 @@ UNARY_NUMERIC_FUNCTION(Sqrt_Function, sqrt, sqrt, sqrt)
 UNARY_NUMERIC_FUNCTION(Log_Function, log, log, log)
 UNARY_NUMERIC_FUNCTION(Abs_Function, abs, abs, abs)
 UNARY_NUMERIC_FUNCTION(Floor_Function, floor, floor, floor)
+UNARY_NUMERIC_FUNCTION(Ceil_Function, ceil, ceil, ceil)
+UNARY_NUMERIC_FUNCTION(Trunc_Function, trunc, trunc, trunc)
 UNARY_NUMERIC_FUNCTION(Round_Function, round, rint, roundEven)
 UNARY_NUMERIC_FUNCTION(Sin_Function, sin, sin, sin)
-UNARY_NUMERIC_FUNCTION(Asin_Function, asin, asin, asin)
 UNARY_NUMERIC_FUNCTION(Cos_Function, cos, cos, cos)
+UNARY_NUMERIC_FUNCTION(Tan_Function, tan, tan, tan)
 UNARY_NUMERIC_FUNCTION(Acos_Function, acos, acos, acos)
+UNARY_NUMERIC_FUNCTION(Asin_Function, asin, asin, asin)
+UNARY_NUMERIC_FUNCTION(Atan_Function, atan, atan, atan)
+UNARY_NUMERIC_FUNCTION(Sinh_Function, sinh, sinh, sinh)
+UNARY_NUMERIC_FUNCTION(Cosh_Function, cosh, cosh, cosh)
+UNARY_NUMERIC_FUNCTION(Tanh_Function, tanh, tanh, tanh)
+UNARY_NUMERIC_FUNCTION(Acosh_Function, acosh, acosh, acosh)
+UNARY_NUMERIC_FUNCTION(Asinh_Function, asinh, asinh, asinh)
+UNARY_NUMERIC_FUNCTION(Atanh_Function, atanh, atanh, atanh)
 
 struct Atan2_Function : public Legacy_Function
 {
@@ -853,12 +863,22 @@ builtin_namespace()
     FUNCTION(Log_Function),
     FUNCTION(Abs_Function),
     FUNCTION(Floor_Function),
+    FUNCTION(Ceil_Function),
+    FUNCTION(Trunc_Function),
     FUNCTION(Round_Function),
     FUNCTION(Sin_Function),
-    FUNCTION(Asin_Function),
     FUNCTION(Cos_Function),
+    FUNCTION(Tan_Function),
+    FUNCTION(Asin_Function),
     FUNCTION(Acos_Function),
+    FUNCTION(Atan_Function),
     FUNCTION(Atan2_Function),
+    FUNCTION(Sinh_Function),
+    FUNCTION(Cosh_Function),
+    FUNCTION(Tanh_Function),
+    FUNCTION(Asinh_Function),
+    FUNCTION(Acosh_Function),
+    FUNCTION(Atanh_Function),
     FUNCTION(Max_Function),
     FUNCTION(Min_Function),
     FUNCTION(Dot_Function),
