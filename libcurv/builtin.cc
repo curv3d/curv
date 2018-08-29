@@ -118,190 +118,38 @@ struct Bit_Function : public Legacy_Function
     }
 };
 
-struct Sqrt_Function : public Legacy_Function
-{
-    static const char* name() { return "sqrt"; }
-    Sqrt_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return sqrt(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify(name(),"(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "sqrt");
-    }
-};
-// log(x) is the natural logarithm of x
-struct Log_Function : public Legacy_Function
-{
-    static const char* name() { return "log"; }
-    Log_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return log(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("log(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "log");
-    }
-};
-struct Abs_Function : public Legacy_Function
-{
-    static const char* name() { return "abs"; }
-    Abs_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return abs(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("abs(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "abs");
-    }
-};
-struct Floor_Function : public Legacy_Function
-{
-    static const char* name() { return "floor"; }
-    Floor_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return floor(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("floor(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "floor");
-    }
-};
-// round(x) -- round x to nearest integer.
-// CPU: in case of tie, round to even.
-// GPU: in case of tie, it's GPU/driver dependent.
-struct Round_Function : public Legacy_Function
-{
-    static const char* name() { return "round"; }
-    Round_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return rint(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("round(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "round");
-    }
-};
-struct Sin_Function : public Legacy_Function
-{
-    static const char* name() { return "sin"; }
-    Sin_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return sin(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("sin(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "sin");
-    }
-};
-struct Asin_Function : public Legacy_Function
-{
-    static const char* name() { return "asin"; }
-    Asin_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return asin(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("asin(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "asin");
-    }
-};
-struct Cos_Function : public Legacy_Function
-{
-    static const char* name() { return "cos"; }
-    Cos_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return cos(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("cos(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "cos");
-    }
-};
-struct Acos_Function : public Legacy_Function
-{
-    static const char* name() { return "acos"; }
-    Acos_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return acos(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("acos(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "acos");
-    }
-};
+#define UNARY_NUMERIC_FUNCTION(Class_Name,curv_name,c_name,glsl_name) \
+struct Class_Name : public Legacy_Function \
+{ \
+    static const char* name() { return #curv_name; } \
+    Class_Name() : Legacy_Function(1,name()) {} \
+    struct Scalar_Op { \
+        static double f(double x) { return c_name(x); } \
+        static Shared<const String> callstr(Value x) { \
+            return stringify(name(),"(",x,")"); \
+        } \
+    }; \
+    static Unary_Numeric_Array_Op<Scalar_Op> array_op; \
+    Value call(Frame& args) override \
+    { \
+        return array_op.op(args[0], At_Frame(&args)); \
+    } \
+    GL_Value gl_call(GL_Frame& f) const override \
+    { \
+        return gl_call_unary_numeric(f, #glsl_name); \
+    } \
+}; \
+
+UNARY_NUMERIC_FUNCTION(Sqrt_Function, sqrt, sqrt, sqrt)
+UNARY_NUMERIC_FUNCTION(Log_Function, log, log, log)
+UNARY_NUMERIC_FUNCTION(Abs_Function, abs, abs, abs)
+UNARY_NUMERIC_FUNCTION(Floor_Function, floor, floor, floor)
+UNARY_NUMERIC_FUNCTION(Round_Function, round, rint, roundEven)
+UNARY_NUMERIC_FUNCTION(Sin_Function, sin, sin, sin)
+UNARY_NUMERIC_FUNCTION(Asin_Function, asin, asin, asin)
+UNARY_NUMERIC_FUNCTION(Cos_Function, cos, cos, cos)
+UNARY_NUMERIC_FUNCTION(Acos_Function, acos, acos, acos)
+
 struct Atan2_Function : public Legacy_Function
 {
     static const char* name() { return "atan2"; }
