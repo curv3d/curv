@@ -147,12 +147,17 @@ UNARY_NUMERIC_FUNCTION(Floor_Function, floor, floor, floor)
 UNARY_NUMERIC_FUNCTION(Ceil_Function, ceil, ceil, ceil)
 UNARY_NUMERIC_FUNCTION(Trunc_Function, trunc, trunc, trunc)
 UNARY_NUMERIC_FUNCTION(Round_Function, round, rint, roundEven)
+
+inline double frac(double n) { return n - floor(n); }
+UNARY_NUMERIC_FUNCTION(Frac_Function, frac, frac, fract)
+
 UNARY_NUMERIC_FUNCTION(Sin_Function, sin, sin, sin)
 UNARY_NUMERIC_FUNCTION(Cos_Function, cos, cos, cos)
 UNARY_NUMERIC_FUNCTION(Tan_Function, tan, tan, tan)
 UNARY_NUMERIC_FUNCTION(Acos_Function, acos, acos, acos)
 UNARY_NUMERIC_FUNCTION(Asin_Function, asin, asin, asin)
 UNARY_NUMERIC_FUNCTION(Atan_Function, atan, atan, atan)
+
 UNARY_NUMERIC_FUNCTION(Sinh_Function, sinh, sinh, sinh)
 UNARY_NUMERIC_FUNCTION(Cosh_Function, cosh, cosh, cosh)
 UNARY_NUMERIC_FUNCTION(Tanh_Function, tanh, tanh, tanh)
@@ -866,6 +871,7 @@ builtin_namespace()
     FUNCTION(Ceil_Function),
     FUNCTION(Trunc_Function),
     FUNCTION(Round_Function),
+    FUNCTION(Frac_Function),
     FUNCTION(Sin_Function),
     FUNCTION(Cos_Function),
     FUNCTION(Tan_Function),

@@ -41,7 +41,7 @@ pagoda shape =
         is_3d = true;
     };
 
-random xy = mod(sin(dot(xy, (12.9898,78.233)))*43758.5453123, 1);
+random xy = frac(sin(dot(xy, (12.9898,78.233)))*43758.5453123);
 
 // Based on Morgan McGuire @morgan3d
 // https://www.shadertoy.com/view/4dS3Wd
