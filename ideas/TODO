@@ -10,8 +10,6 @@ Current TODO List:
   * Location ctor takes Shared<const Source>
   * Source_String -> String_Source
 * Image Export.
-  * documentation
-    Eg, -O fdur=1/30 or -O animate='2*pi'
   * transparent background (exports RGBA, not RGB)
   * speed up -O animate= (compile shape once)
   * use OpenGL FBO to avoid unreliable semantics of framebuf of hidden window.
