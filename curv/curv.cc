@@ -283,9 +283,9 @@ main(int argc, char** argv)
         // batch mode
         curv::Shared<curv::Source> source;
         if (expr) {
-            source = curv::make<curv::Source_String>("", filename);
+            source = curv::make<curv::String_Source>("", filename);
         } else {
-            source = curv::make<curv::Source_File>(
+            source = curv::make<curv::File_Source>(
                 curv::make_string(filename), curv::Context{});
         }
 

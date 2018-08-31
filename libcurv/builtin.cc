@@ -530,7 +530,7 @@ struct File_Expr : public Just_Expression
             return (*importp->second)(filepath, cx);
         else {
             // If extension not recognized, it defaults to a Curv program.
-            auto file = make<Source_File>(make_string(filepath.c_str()), cx);
+            auto file = make<File_Source>(make_string(filepath.c_str()), cx);
             std::unique_ptr<Frame> f2 =
                 Frame::make(0, f.system_, &f, &callphrase, nullptr);
             Program prog{std::move(file), f.system_,

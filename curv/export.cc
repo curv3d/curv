@@ -38,7 +38,7 @@ struct Param_Program : public Program
         const Export_Params::Map::value_type& p)
     :
         Program(
-            make<Source_String>("", stringify("-O ",p.first,"=",p.second)),
+            make<String_Source>("", stringify("-O ",p.first,"=",p.second)),
             params.system_,
             Program_Opts().skip_prefix(4+p.first.size()))
     {}
@@ -54,7 +54,7 @@ struct Param_Program : public Program
 
 void Export_Params::unknown_parameter(const Map::value_type& p) const
 {
-    auto src = make<Source_String>("", stringify("-O ",p.first,"=",p.second));
+    auto src = make<String_Source>("", stringify("-O ",p.first,"=",p.second));
     Location loc{*src, {3, unsigned(3+p.first.size())}};
     if (format_.empty()) {
         throw Exception(At_Token(loc), stringify(

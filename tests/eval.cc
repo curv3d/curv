@@ -46,7 +46,7 @@ struct Evaluator
         try {
             sconsole.str("");
             sconsole.clear(); // Clear state flags.
-            auto source = make<Source_String>("", text);
+            auto source = make<String_Source>("", text);
             Program prog{std::move(source), make_system()};
             prog.compile();
             auto den = prog.denotes();

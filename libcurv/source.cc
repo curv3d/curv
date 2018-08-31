@@ -42,7 +42,7 @@ Shared<const String> readfile(const char* path, const Context& ctx)
     */
     // I'll need to use strerror(errno).
 
-    // TODO: change Source_File to use mmap?
+    // TODO: change File_Source to use mmap?
 
     std::ifstream t;
     t.open(path);
@@ -54,9 +54,9 @@ Shared<const String> readfile(const char* path, const Context& ctx)
     return make_string(buffer.str());
 }
 
-Source_File::Source_File(String_Ref filename, const Context& ctx)
+File_Source::File_Source(String_Ref filename, const Context& ctx)
 :
-    Source_String(filename, readfile(filename->c_str(), ctx))
+    String_Source(filename, readfile(filename->c_str(), ctx))
 {
 }
 

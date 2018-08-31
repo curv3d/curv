@@ -6,7 +6,7 @@ using namespace curv;
 
 TEST(curv, parse)
 {
-    auto s1 = make<Source_String>("", "x+\n");
+    auto s1 = make<String_Source>("", "x+\n");
     Token t1;
     t1.first_ = 3;
     t1.first_white_ = 3;
@@ -20,7 +20,7 @@ TEST(curv, parse)
     ASSERT_EQ(li1.end_column_num, 2u); //not 3
     ASSERT_EQ(li1.start_line_begin, 0u);
 
-    auto s2 = make<Source_String>("", "abc\ndef\n");
+    auto s2 = make<String_Source>("", "abc\ndef\n");
     Token t2;
     t2.first_ = 5;
     t2.first_white_ = 5;

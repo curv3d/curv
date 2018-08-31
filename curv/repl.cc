@@ -79,7 +79,7 @@ void repl(curv::System* sys)
             rx.history_add(line);
 
         try {
-            auto source = curv::make<curv::Source_String>("", line);
+            auto source = curv::make<curv::String_Source>("", line);
             curv::Program prog{std::move(source), *sys};
             prog.compile(&names);
             auto den = prog.denotes();

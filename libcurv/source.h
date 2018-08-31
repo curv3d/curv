@@ -34,11 +34,11 @@ public:
 };
 
 /// A Source subclass where the program text is represented as a String.
-struct Source_String : public Source
+struct String_Source : public Source
 {
     Shared<const String> text_;
 
-    Source_String(String_Ref name, String_Ref text)
+    String_Source(String_Ref name, String_Ref text)
     :
         Source(std::move(name), text->data(), text->data() + text->size()),
         text_(std::move(text))
@@ -46,9 +46,9 @@ struct Source_String : public Source
 };
 
 /// A Source subclass that represents a file.
-struct Source_File : public Source_String
+struct File_Source : public String_Source
 {
-    Source_File(String_Ref filename, const Context&);
+    File_Source(String_Ref filename, const Context&);
 };
 
 } // namespace curv

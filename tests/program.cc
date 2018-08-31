@@ -12,7 +12,7 @@ System_Impl sys(std::cerr);
 Shared<const Phrase>
 nub(const char* str)
 {
-    auto source = make<Source_String>("", str);
+    auto source = make<String_Source>("", str);
     Scanner scanner{source};
     auto phrase = parse_program(scanner);
     return nub_phrase(phrase);
@@ -21,7 +21,7 @@ nub(const char* str)
 Value
 skip_prefix(const char* src, unsigned len)
 {
-    auto source = make<Source_String>("", src);
+    auto source = make<String_Source>("", src);
     Program prog{source, sys, Program_Opts().skip_prefix(len)};
     prog.compile();
     return prog.eval();

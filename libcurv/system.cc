@@ -39,7 +39,7 @@ System_Impl::System_Impl(std::ostream& console)
 
 void System_Impl::load_library(String_Ref path)
 {
-    auto file = make<Source_File>(std::move(path), Context{});
+    auto file = make<File_Source>(std::move(path), Context{});
     Program prog{std::move(file), *this};
     prog.compile();
     auto stdlib = prog.eval();
