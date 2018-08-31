@@ -296,10 +296,10 @@ void export_all_png(
         Output_File oofile(opath->c_str());
         geom::export_png(shape, ix, oofile);
         oofile.commit();
-        std::cerr << ".";
-        std::cerr.flush();
+        //std::cerr << ".";
+        //std::cerr.flush();
     }
-    std::cerr << "done\n";
+    //std::cerr << "done\n";
 }
 
 void describe_png_opts(std::ostream& out)

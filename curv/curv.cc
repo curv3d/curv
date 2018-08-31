@@ -140,7 +140,7 @@ main(int argc, char** argv)
     using ExPtr = decltype(exporters)::const_iterator;
     ExPtr exporter = exporters.end();
     Export_Params::Map oparam_map;
-    bool verbose;
+    bool verbose = false;
     curv::Output_File ofile;
     bool live = false;
     std::list<const char*> libs;
