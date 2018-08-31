@@ -30,10 +30,21 @@ Current TODO List:
   * Install Ubuntu 18.04. Bleeding edge Mesa + 16.04 is likely a bad idea.
     Also, the 18.04 version of Nouveau might work better than a black screen.
 
+Language:
+* better GLSL transliteration:
+  * sequential let
+  * v[X] := x; v[[X,Y,Z]] := v3;
+  * matrices
+  * all of the GLSL numeric functions
+* better stdlib:
+  * new `where`
+  * mixed a=/a: record literals
+* greatly expanded, modular stdlib
+  * packages, maybe `lib` if packages are delayed
+
 # Release 0.2
 Big Ideas:
 * Ease of Use: funcall errors, function help, tutorial
-* Language: new `where`, packages
 * RSDF and RSIF (voxel) import and export
 * Mesh Import via RSDF
 * sharp and fractal Mesh Export
