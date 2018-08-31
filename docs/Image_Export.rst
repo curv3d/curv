@@ -109,7 +109,7 @@ to a WEBM file using ``ffmpeg``, try::
 
     ffmpeg -i %03d.png -r 25 pulsate.webm
 
-WEBM is the most popular and best available open source and royalty free
+WEBM is a popular, open source and royalty free
 video file format. The pulsate video needs to be looped, but you enable that
 in your viewer, or in your HTML5 ``<video>`` tag, not in the WEBM file itself.
 
