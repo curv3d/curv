@@ -5,6 +5,8 @@ To export a shape to a PNG file, use::
 
    curv -o foo.png [options] foo.curv
 
+Use the ``-v`` flag to get progress and render time information written to stderr.
+
 Exporting a 2D Shape
 --------------------
 This exports a rectangular image of everything inside of the shape's bounding
@@ -21,9 +23,9 @@ These are both optional.
   to preserve the aspect ratio of the shape's bounding box.
 * If neither is specified, the aspect ratio is preserved
   and the larger dimension is set to 500 pixels. 
-* If both ``xsize`` and ``ysize`` are specified, then the image is
-  "letterboxed", adding a horizontal or vertical white border that
-  preserves the shape's aspect ratio.
+* If both ``xsize`` and ``ysize`` are specified, then the shape is
+  "letterboxed" inside the image, adding a horizontal or vertical white border if necessary to
+  preserve the shape's aspect ratio.
 
 You can control the bounding box, and add a border around the shape,
 by writing Curv code.
