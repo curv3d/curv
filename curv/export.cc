@@ -31,26 +31,24 @@
 
 using namespace curv;
 
-struct Param_Program : public Program
+Param_Program::Param_Program(
+    const Export_Params& params,
+    const Export_Params::Map::value_type& p)
+:
+    Program(
+        make<String_Source>("", stringify("-O ",p.first,"=",p.second)),
+        params.system_,
+        Program_Opts().skip_prefix(4+p.first.size()))
+{}
+
+Value Param_Program::eval()
 {
-    Param_Program(
-        const Export_Params& params,
-        const Export_Params::Map::value_type& p)
-    :
-        Program(
-            make<String_Source>("", stringify("-O ",p.first,"=",p.second)),
-            params.system_,
-            Program_Opts().skip_prefix(4+p.first.size()))
-    {}
-    Value eval()
-    {
-        if (phrase_ == nullptr)
-            compile();
-        if (isa<const Empty_Phrase>(nub_phrase(phrase_)))
-            throw Exception(At_Program(*this), "missing argument");
-        return Program::eval();
-    }
-};
+    if (phrase_ == nullptr)
+        compile();
+    if (isa<const Empty_Phrase>(nub_phrase(phrase_)))
+        throw Exception(At_Program(*this), "missing argument");
+    return Program::eval();
+}
 
 void Export_Params::unknown_parameter(const Map::value_type& p) const
 {
@@ -78,6 +76,14 @@ double Export_Params::to_double(const Map::value_type& p) const
 {
     Param_Program pp(*this, p);
     return pp.eval().to_num(At_Program(pp));
+}
+
+bool Export_Params::to_bool(const Map::value_type& p) const
+{
+    if (p.second.empty())
+        return true;
+    Param_Program pp(*this, p);
+    return pp.eval().to_bool(At_Program(pp));
 }
 
 void export_curv(Value value,

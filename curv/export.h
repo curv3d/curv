@@ -27,6 +27,15 @@ struct Export_Params
     [[noreturn]] void unknown_parameter(const Map::value_type&) const;
     int to_int(const Map::value_type&, int, int) const;
     double to_double(const Map::value_type&) const;
+    bool to_bool(const Map::value_type&) const;
+};
+
+struct Param_Program : public curv::Program
+{
+    Param_Program(
+        const Export_Params& params,
+        const Export_Params::Map::value_type& p);
+    curv::Value eval();
 };
 
 struct Exporter

@@ -137,14 +137,50 @@ void export_mesh(Mesh_Format format, curv::Value value,
     if (!shape.recognize(value) || !shape.is_3d_)
         throw curv::Exception(cx, "mesh export: not a 3D shape");
 
-#if 0
-    for (auto p : params.map_) {
-        std::cerr << p.first << "=" << p.second << "\n";
+    bool jit = false;
+    double vsize = 0.0;
+    double adaptive = 0.0;
+    enum {face_colour, vertex_colour} colourtype = face_colour;
+    for (auto& p : params.map_) {
+        if (p.first == "jit")
+            jit = params.to_bool(p);
+        else if (p.first == "vsize") {
+            vsize = params.to_double(p);
+            if (vsize <= 0.0) {
+                Param_Program pp{params,p};
+                std::cerr << "p.second=";
+                std::cerr.flush();
+                std::cerr << p.second << "\n";
+                throw curv::Exception(curv::At_Program(pp), curv::stringify(
+                    "mesh export: invalid parameter vsize=",p.second));
+            }
+        } else if (p.first == "adaptive") {
+            if (p.second.empty())
+                adaptive = 1.0;
+            else {
+                adaptive = params.to_double(p);
+                if (adaptive < 0.0 || adaptive > 1.0) {
+                    Param_Program pp{params,p};
+                    throw curv::Exception(curv::At_Program(pp),
+                        "mesh export: parameter 'adaptive' must be in range 0...1");
+                }
+            }
+        } else if (format == Mesh_Format::x3d_format && p.first == "colour") {
+            if (p.second == "face")
+                colourtype = face_colour;
+            else if (p.second == "vertex")
+                colourtype = vertex_colour;
+            else {
+                Param_Program pp{params,p};
+                throw curv::Exception(curv::At_Program(pp),
+                    "mesh export: parameter 'colour' must equal 'face' or 'vertex'");
+            }
+        } else
+            params.unknown_parameter(p);
     }
-#endif
 
     std::unique_ptr<curv::geom::Compiled_Shape> cshape = nullptr;
-    if (params.map_.find("jit") != params.map_.end()) {
+    if (jit) {
         //std::chrono::time_point<std::chrono::steady_clock> cstart_time, cend_time;
         auto cstart_time = std::chrono::steady_clock::now();
         cshape = std::make_unique<curv::geom::Compiled_Shape>(shape);
@@ -166,13 +202,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
     }
 
     double voxelsize;
-    auto vsize_p = params.map_.find("vsize");
-    if (vsize_p != params.map_.end()) {
-        double vsize = param_to_double(vsize_p);
-        if (vsize <= 0.0) {
-            throw curv::Exception(cx, curv::stringify(
-                "mesh export: invalid parameter vsize=",vsize_p->second));
-        }
+    if (vsize > 0.0) {
         voxelsize = vsize;
     } else {
         voxelsize = cbrt(volume / 100'000);
@@ -254,34 +284,8 @@ void export_mesh(Mesh_Format format, curv::Value value,
     std::cerr.flush();
 
     // convert grid to a mesh
-    double adaptivity = 0.0;
-    auto adaptive_p = params.map_.find("adaptive");
-    if (adaptive_p != params.map_.end()) {
-        if (adaptive_p->second.empty())
-            adaptivity = 1.0;
-        else {
-            adaptivity = param_to_double(adaptive_p);
-            if (adaptivity < 0.0 || adaptivity > 1.0) {
-                throw curv::Exception(cx,
-                    "mesh export: parameter 'adaptive' must be in range 0...1");
-            }
-        }
-    }
-    openvdb::tools::VolumeToMesh mesher(0.0, adaptivity);
+    openvdb::tools::VolumeToMesh mesher(0.0, adaptive);
     mesher(*grid);
-
-    enum {face_colour, vertex_colour} colourtype = face_colour;
-    auto colourtype_p = params.map_.find("colour");
-    if (colourtype_p != params.map_.end()) {
-        if (colourtype_p->second == "face")
-            colourtype = face_colour;
-        else if (colourtype_p->second == "vertex")
-            colourtype = vertex_colour;
-        else {
-            throw curv::Exception(cx,
-                "mesh export: parameter 'colour' must equal 'face' or 'vertex'");
-        }
-    }
 
     // output a mesh file
     int ntri = 0;
