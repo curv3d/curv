@@ -73,13 +73,13 @@ struct At_Phrase : public Context
     virtual void get_locations(std::list<Location>& locs) const override;
 };
 
-struct At_Program : public At_Phrase
+struct At_Program : public At_Token
 {
     // works with curv::Program or curv::geom::Shape_Program
     template <class PROGRAM>
     explicit At_Program(const PROGRAM& prog)
     :
-        At_Phrase(prog.nub(), nullptr)
+        At_Token(prog.location(), prog.parent_frame())
     {}
 };
 

@@ -32,10 +32,9 @@ struct Scanner
     Shared<const Source> source_;
     Frame* eval_frame_;
     Token string_begin_;
-private:
     const char* ptr_;
     std::vector<Token> lookahead_;
-public:
+
     Scanner(Shared<const Source> s, Scanner_Opts opts = {})
     :
         source_(std::move(s)),

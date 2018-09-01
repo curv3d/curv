@@ -148,11 +148,8 @@ void export_mesh(Mesh_Format format, curv::Value value,
             vsize = params.to_double(p);
             if (vsize <= 0.0) {
                 Param_Program pp{params,p};
-                std::cerr << "p.second=";
-                std::cerr.flush();
-                std::cerr << p.second << "\n";
-                throw curv::Exception(curv::At_Program(pp), curv::stringify(
-                    "mesh export: invalid parameter vsize=",p.second));
+                throw curv::Exception(curv::At_Program(pp),
+                    "'vsize' must be positive");
             }
         } else if (p.first == "adaptive") {
             if (p.second.empty())
@@ -162,7 +159,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
                 if (adaptive < 0.0 || adaptive > 1.0) {
                     Param_Program pp{params,p};
                     throw curv::Exception(curv::At_Program(pp),
-                        "mesh export: parameter 'adaptive' must be in range 0...1");
+                        "'adaptive' must be in range 0...1");
                 }
             }
         } else if (format == Mesh_Format::x3d_format && p.first == "colour") {
@@ -173,7 +170,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
             else {
                 Param_Program pp{params,p};
                 throw curv::Exception(curv::At_Program(pp),
-                    "mesh export: parameter 'colour' must equal 'face' or 'vertex'");
+                    "'colour' must be 'face' or 'vertex'");
             }
         } else
             params.unknown_parameter(p);

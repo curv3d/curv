@@ -2,15 +2,15 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <cmath>
-
 #include <libcurv/geom/shape.h>
+
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
 #include <libcurv/gl_context.h>
 #include <libcurv/function.h>
 #include <libcurv/frame.h>
 #include <libcurv/program.h>
+#include <cmath>
 
 namespace curv { namespace geom {
 
@@ -23,6 +23,11 @@ Shape_Program::Shape_Program(
     // mark initial state (no shape has been recognized yet)
     is_2d_ = false;
     is_3d_ = false;
+}
+
+Location Shape_Program::location() const
+{
+    return nub_->location();
 }
 
 BBox

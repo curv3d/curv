@@ -53,6 +53,9 @@ struct Program
 
     const Phrase& nub() const;
 
+    Location location() const;
+    Frame* parent_frame() const { return scanner_.eval_frame_; }
+
     std::pair<Shared<Module>, Shared<List>> denotes();
 
     Value eval();
