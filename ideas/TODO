@@ -1,4 +1,11 @@
+Big Items (target: Dec 2018)
+* graphical sliders in the viewer
+* standard libraries for some important techniques
+* better documentation, a web site
+* sharp STL export?
+
 Current TODO List:
+* -o glsl
 * Refactor:
   * Viewer_Opts
   * remove arg_to_int()
@@ -25,6 +32,9 @@ Current TODO List:
       * colour: Initially, red (a stub). Bilinear interpolation.
     * Should PNG files appear as source files in the stack trace?
 
+Ideas:
+* grid-tracer: -Otracer=grid (default sphere).
+  glsl-function-grapher by Michael Firmin on github
 * Read: http://matter.media.mit.edu/publications/article/data-driven-material-modeling
   Data-Driven Material Modeling for 3D-Printing of Materially Heterogeneous Objects
 * Replace 'not an operation' analysis time error with useful message.
