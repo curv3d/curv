@@ -1,0 +1,65 @@
+Creative Coding: Making Art on a 3D Printer
+-------------------------------------------
+"Creative Coding" is the act of writing a computer program to make art,
+or create an esthetic experience. It can be a fun and rewarding way to
+engage in computer programming.
+
+I make trippy, abstract geometric art using a 3D printer.
+I write programs to generate the designs. This is called "Generative Art".
+It's also called "Parametric Design", because you define
+numeric parameters that control what gets generated. By tweaking the parameters,
+you can explore a design space and find the one that best expresses your
+artistic goals.
+
+Sometimes, in Creative Coding, the source code for the program is considered
+to be a part of the art work. I want to write short, beautiful programs, and
+share them so that other people can understand and modify them.
+
+I wanted an easy, open source tool for writing these programs
+and generating 3D printable model files. Nothing existing supported the
+full range of modelling techniques I wanted to explore,
+so I started my own open source project.
+
+In this talk, I will show a variety of techniques for generating 3D shapes,
+and demo them using my software.
+
+I will also describe the underlying technology, "signed distance fields".
+I'll explain why it is better suited for parametric design and 3D printing
+than the conventional technology used in most 3D CAD and sculpturing programs,
+and why recent advances in GPUs have made the technology more practical.
+
+Timeline
+--------
+* Introduction 3
+* Techniques and Live Programming Demo
+  * eg, fractals 3
+  * eg, lattices and voronoi patterns 3
+  * eg, blending and morphing 3
+* Technology 3
+
+Why do you want to talk at StarCon?
+-----------------------------------
+I want to share my ideas and inspire other people.
+* Writing programs that make art is a fun and gentle introduction to
+  programming. You can write simple programs and get immediate visual feedback,
+  and even bugs can lead to interesting results. Maybe this is a way to
+  get a more diverse group of people interested in computer programming.
+* 3D printers are cool, but they are even cooler if you can design and print
+  your own art. The approach I use is accessible to people without conventional
+  artistic skills, and I want to raise awareness.
+* Writing and delivering this presentation will be a lot of work, but it will
+  help me to refine my message and learn how to communicate it to others.
+* I would like to meet other people at Star Con with related interests and
+  learn from them.
+
+BIO
+---
+Doug Moen is a computer programmer, maker, and aspiring digital artist
+from Waterloo, Ontario. He works on the Curv open source software project,
+and is a member of the Kwartzlab makerspace, where he makes things using
+the 3D printer and the laser cutter. Doug is also a trustee for the KW
+Awesome Foundation, which funds awesome community projects.
+
+Creative Coding
+---------------
+https://en.wikipedia.org/wiki/Creative_coding
