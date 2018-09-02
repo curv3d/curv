@@ -36,7 +36,7 @@ maketemp(
     fs::path trypath;
     for (int i = 0; i < 20; ++i) {
         clock_t now = clock();
-        auto name = stringify(",",pid,"-",now,suffix);
+        auto name = stringify(",curv-",pid,"-",now,suffix);
         trypath = tempdir / fs::path(name->c_str());
         int fd = open(trypath.c_str(), O_WRONLY|O_CREAT|O_EXCL, 0600);
         if (fd != -1) {
