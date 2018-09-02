@@ -2,12 +2,15 @@ Current TODO List:
 * Refactor:
   * Viewer_Opts
   * remove arg_to_int()
-  * Param_Program to header
-  * mesh: error for bad -O flag
-  * mesh: Export_Params::to_bool(), missing means 'true'
-  * mesh: Mesh_Write_Opts
+  * mesh: geom::mesh_write & Mesh_Write_Opts
   * dfmt -> <libcurv/format.h>
   * Location ctor takes Shared<const Source>
+  * Source should contain a prefix length (don't put this in Scanner).
+    Location{Source} is a location spanning the entire program (mod prefix)
+    Program::location() uses above in case where program not compiled.
+    Program no longer needs to know about Scanner::ptr_.
+  * geom uses System::console(), not std::cerr
+  * remove global variables from geom::viewer
 * Image Export.
   * transparent background (exports RGBA, not RGB)
   * speed up -O animate= (compile shape once)
@@ -15,10 +18,12 @@ Current TODO List:
   * macOS: don't create a menu bar during image export. GLFW enhancement?
   * linux: don't use X server during image export. EGL?
 * Image Import.
-  * an instance of Source may contain a pathname and no file contents.
-  * a PNG file can occur in the stack trace.
-* Mesh Export.
-  * Refactor mesh export. Core->libcurv/geom. Error for bad -O flag.
+  * file "foo.png" imports the PNG file, returns a shape value (no GL support).
+    * We return a standard record object with magic values in dist, colour.
+      * bbox: The smallest rectangle that fully covers a unit circle.
+      * dist: euclidean rectangle SDF for the bbox.
+      * colour: Initially, red (a stub). Bilinear interpolation.
+    * Should PNG files appear as source files in the stack trace?
 
 * Read: http://matter.media.mit.edu/publications/article/data-driven-material-modeling
   Data-Driven Material Modeling for 3D-Printing of Materially Heterogeneous Objects

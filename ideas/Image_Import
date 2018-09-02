@@ -2,6 +2,16 @@ Import a 2D image file
 ======================
 TODO:
 -----
+1. file "foo.png" imports the PNG file, returns a shape value (no GL support).
+  * We return a standard record object with magic values in dist, colour.
+    * bbox: The smallest rectangle that fully covers a unit circle.
+    * dist: euclidean rectangle SDF for the bbox.
+    * colour: Initially, red (a stub). Bilinear interpolation.
+  * Should PNG files appear as source files in the stack trace?
+2. add GL/Viewer support to PNG shapes.
+3. `curv foo.png` displays the image in a viewer window.
+
+
 * Source and Location
   * A PNG file is now considered a "source file", and hence can be named
     in a stack trace item. Two cases:
@@ -18,15 +28,15 @@ TODO:
   * Maybe `Image_Source` contains the pixel array, instead of `Image_Data`.
 
 * `curv foo.png` imports foo.png, converts to value, displays or exports it.
-        curv::Shared<curv::Script> script;
+        curv::Shared<curv::Source> source;
         if (expr) {
-            script = curv::make<CString_Script>("", filename);
+            source = curv::make<String_Source>("", filename);
         } else {
-            script = curv::make<curv::File_Script>(
+            source = curv::make<curv::File_Source>(
                 curv::make_string(filename), curv::Context{});
         }
 
-        curv::Program prog{*script, sys};
+        curv::Program prog{source, sys};
         prog.compile();
         auto value = prog.eval();
 
