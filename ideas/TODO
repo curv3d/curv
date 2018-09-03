@@ -1,11 +1,13 @@
 Big Items (target: Dec 2018)
-* graphical sliders in the viewer
+* graphical value pickers in the viewer
 * standard libraries for some important techniques
 * better documentation, a web site
 * sharp STL export?
 
 Current TODO List:
 * -o glsl
+* graphical value pickers
+  * parametric records
 * Refactor:
   * Viewer_Opts
   * remove arg_to_int()
@@ -33,9 +35,15 @@ Current TODO List:
     * Should PNG files appear as source files in the stack trace?
 
 Ideas:
-* grid-tracer: -Otracer=grid (default sphere).
-  glsl-function-grapher by Michael Firmin on github
-* Read: http://matter.media.mit.edu/publications/article/data-driven-material-modeling
+* Ray-casting non-Lipschitz implicit surfaces:
+  * grid-tracer: -Otracer=grid (default sphere).
+    glsl-function-grapher by Michael Firmin on github
+  * http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.417.5616&rep=rep1&type=pdf
+    Real-Time Ray-Tracing of Implicit Surfaces on the GPU
+* awesome progressive rendering for SDFs:
+  https://nshelton.github.io/vr/fractals/2017/12/30/RTA.html
+* http://erleuchtet.org/~cupe/permanent/enhanced_sphere_tracing.pdf (2014)
+* http://matter.media.mit.edu/publications/article/data-driven-material-modeling
   Data-Driven Material Modeling for 3D-Printing of Materially Heterogeneous Objects
 * Replace 'not an operation' analysis time error with useful message.
 * Mesa driver bugs. Install latest Nouveau driver, report bugs to Mesa3D.org
