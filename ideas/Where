@@ -61,14 +61,14 @@ struct Where_Scope : public Block_Scope
 //What's a Definition?
 struct Definition : public Shared_Base
 {
-    Shared<const Phrase> source_;
+    Shared<const Phrase> syntax_;
     enum Kind { k_recursive, k_sequential } kind_;
 
     Definition(
         Shared<const Phrase> source,
         Kind k)
     :
-        source_(std::move(source)),
+        syntax_(std::move(source)),
         kind_(k)
     {}
 

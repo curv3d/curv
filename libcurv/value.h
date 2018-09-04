@@ -193,6 +193,10 @@ public:
     /// Convert a Value to `double`, throw an exception if wrong type.
     double to_num(const Context&) const;
 
+    // Convert a Value to `int`.
+    // Throw an exception if wrong type or out of range.
+    int to_int(int lo, int hi, const Context&) const;
+
     /// Construct a reference value.
     ///
     /// If the argument is nullptr, construct the null value.

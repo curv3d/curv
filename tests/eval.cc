@@ -13,48 +13,41 @@
 using namespace std;
 using namespace curv;
 
-std::stringstream console;
+std::stringstream sconsole;
+
+struct Std_System : public System_Impl
+{
+    Std_System() : System_Impl(sconsole)
+    {
+        load_library("../lib/std.curv");
+    }
+};
 
 curv::System&
 make_system()
 {
     try {
-        static curv::System_Impl sys(console);
-        sys.load_library(curv::make_string("../lib/std.curv"));
+        static Std_System sys;
         return sys;
-    } catch (curv::Exception& e) {
-        std::cerr << "ERROR: " << e << "\n";
-        exit(EXIT_FAILURE);
     } catch (std::exception& e) {
-        std::cerr << "ERROR: " << e.what() << "\n";
+        System::print_exception("ERROR: ", e, std::cerr);
         exit(EXIT_FAILURE);
     }
 }
 
-struct CString_Script : public curv::Script
-{
-    const char* buffer_;
-
-    CString_Script(const char* name, const char* buffer)
-    :
-        curv::Script(make_string(name), buffer, buffer + strlen(buffer)),
-        buffer_(buffer)
-    {}
-};
-
 struct Evaluator
 {
-    Evaluator(const char* source)
+    Evaluator(const char* text)
     :
-        script_(make<CString_Script>("", source)),
         failmsg_(nullptr),
         failall_(nullptr),
         success_(nullptr)
     {
         try {
-            console.str("");
-            console.clear(); // Clear state flags.
-            curv::Program prog{*script_, make_system()};
+            sconsole.str("");
+            sconsole.clear(); // Clear state flags.
+            auto source = make<String_Source>("", text);
+            Program prog{std::move(source), make_system()};
             prog.compile();
             auto den = prog.denotes();
 
@@ -88,8 +81,6 @@ struct Evaluator
             failall_ = failmsg_;
         }
     }
-
-    Shared<CString_Script> script_;
 
     const char* failmsg_;
     Shared<const curv::String> failmsg_str_;
@@ -352,7 +343,7 @@ TEST(curv, eval)
         "1| file(\"bad_token.curv\")\n"
         "   ^^^^^^^^^^^^^^^^^^^^^^");
     FAILALL("file(\n1,2)",
-        "argument #1 of file: is not a string: [1,2]\n"
+        "argument #1 of file: [1,2] is not a string\n"
         "1| file(\n"
         "       ^\n"
         "2|>1,2)");
@@ -391,7 +382,7 @@ TEST(curv, eval)
             "   for(x in -1..1) if(x<0) print \"-\" else if(x>0) print \"+\";"
             "in 0",
         "0");
-    EXPECT_EQ(console.str(),
+    EXPECT_EQ(sconsole.str(),
         "1\n"
         "2\n"
         "-\n"
@@ -404,11 +395,11 @@ TEST(curv, eval)
 
     // let operator
     SUCCESS("(let a=1; print \"$(a)\" in a)+1", "2");
-    EXPECT_EQ(console.str(), "1\n");
+    EXPECT_EQ(sconsole.str(), "1\n");
 
     // print action
     SUCCESS("print \"$(17,42)\"", "");
-    EXPECT_EQ(console.str(), "[17,42]\n");
+    EXPECT_EQ(sconsole.str(), "[17,42]\n");
 
     // lexical errors
     FAILMSG("\\foo", "illegal character '\\'");
@@ -470,7 +461,7 @@ TEST(curv, eval)
         "    ^ ");
 
     SUCCESS("let a=2; f x={print(g 2); g y=a*x*b*y; b=3} in f(5).g(7)", "210");
-    EXPECT_EQ(console.str(),
+    EXPECT_EQ(sconsole.str(),
         "60\n");
 
     FAILMSG("let var a:=2 in a", "wrong style of definition for this block");

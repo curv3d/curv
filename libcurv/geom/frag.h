@@ -2,8 +2,8 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef LIBCURV_GEOM_EXPORT_FRAG_H
-#define LIBCURV_GEOM_EXPORT_FRAG_H
+#ifndef LIBCURV_GEOM_FRAG_H
+#define LIBCURV_GEOM_FRAG_H
 
 #include <ostream>
 
@@ -18,7 +18,7 @@ struct Frag_Export
     // temporal anti-aliasing.
     int taa_ = 1;
     // frame duration for animation, needed for TAA.
-    double delay_ = 0.04; // 25 FPS
+    double fdur_ = 0.04; // 25 FPS
 };
 
 void export_frag(const Shape_Program&, const Frag_Export&, std::ostream&);

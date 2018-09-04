@@ -1,19 +1,45 @@
 Display interactive value pickers within the Viewer window,
 for tweaking the parameters of a parametric shape.
 
-Graphical value pickers:
-------------------------
+Graphical value pickers
+-----------------------
 * enum: a fixed set of values
 * slider: for a bounded numeric range
 * integer slider (discrete slider)
 * normalized 2D vector picker: a direction
 * 2D point picker for a bounded range
+* 2D translation (pan control)
+* 3D rotation
 * colour picker
 * hue picker
 * boolean
 
-Building Block Syntax:
-----------------------
+Reactive Records
+----------------
+// Lollipop:
+  param
+    diam = 1; /*annotation?*/
+    len = 4; /*annotation?*/
+  in
+    union(candy, stick)
+  where (
+    candy = sphere diam >> colour red;
+    stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
+  )
+
+The annotations (TBD) cause the GL compiler to assign uniform variables to the
+parameters diam and len. There is a GL compile error if the resulting code
+is not GL compatible, which goes away if you remove the annotation.
+
+The Lollipop is a parametric shape. It has a `call` field mapping {diam,len} to
+another lollipop. The GL compiler recognizes parametric shapes. The parameters
+of `call` which have annotations are mapped to uniform variables, while non
+annotated parameters are replaced by their default values. Then the body
+is GL compiled to a shape record. The GL compiler outputs each shape field as
+a top level GLSL definition.
+
+Parametric Records
+------------------
 A parametric record is a record with a `call` field that maps a record of
 parameter values onto a new instance. A parametric record has a set of named
 parameters with default values.
@@ -152,13 +178,11 @@ Concept Name
 
 Saving your State
 -----------------
-Is there a way to preserve the state of the sliders? (Not supported in v0.0.)
- 1. Save the slider state in a separate file, a `*.cparam` file.
-    It records the parameter values, and references the parent program file.
-    It could have JSON or Curv syntax. Eg, `file.foo{a:1,b:2}`.
-    Opening the parameter file in a GUI opens Curv with the program file open
-    and with the sliders set.
-    In file syntax, a CPARAM file denotes a parametric record value.
+Is there a way to preserve the state of the sliders?
+ 1. If the source file is named `foo.curv`, then save the picker state in
+    `foo.opts`, which is a Curv or JSON record literal. When `foo.curv` is
+    opened later, the parameter values are read from `foo.opts`.
+    * If the OPTS file is bad, a warning is displayed and the OPTS are ignored.
  2. Save the slider state in the original source file.
 
 Editing Subexpressions

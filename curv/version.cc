@@ -133,8 +133,8 @@ void
 print_version(std::ostream& out)
 {
     out << "Curv: " << CURV_VERSION << "\n";
+    print_compiler(out);
     print_os(out);
     print_cpu(out);
-    print_compiler(out);
     print_gpu(out); // Last info printed, due to crashiness.
 }

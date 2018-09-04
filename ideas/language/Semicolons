@@ -1,0 +1,27 @@
+From reddit, re: programming language design:
+"I think it's more recently that people understand the value of not being
+unnecessarily permissive; it keeps code more homogenous and prevents
+misunderstandings."
+
+From a recent Curv support email:
+"Its not clear, when to put an ';' in between the statments and when they
+even forbidden."
+
+I don't have a good answer to the question "When should you use semicolon,
+and when should you use comma?". They are interchangeable in some contexts,
+but not others, and it's a bit arbitrary.
+
+Let's start with a recommended coding style.
+
+The best rule I've come up with is that semicolons should be used to
+terminate a statement or definition.
+
+Commas can be used in the following contexts:
+   (expr1, expr2, expr3)
+   [expr1, expr2, expr3]
+   {id1: expr1, id2: expr2, id3: expr3}
+These expressions construct lists or records, and each comma-separated item
+adds exactly 1 member to the data structure.
+
+When you switch to the more general list/record comprehension syntax,
+then you use square brackets (for lists) and semicolons.

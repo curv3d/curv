@@ -11,8 +11,8 @@ Two questions:
 * Some math operations are built-in functions, for efficiency reasons.
   * If the function is in the C library and is not something you'd want to
     write in Curv, like trig and exponential functions.
-  * If the function is a SPIR-V primitive math operation, indicating that
-    it has special hardware support on GPUs. Eg, `dot`.
+  * If the function is a GLSL built-in function. The goal is to generate
+    efficient GLSL code, and this is the most conservative option.
 * Some Curv primitive math operations are written as idioms that compile into
   special internal operators. Eg, `(a*b)+c` compiles to FMA(a,b,c),
   e^x compiles to EXP(x).

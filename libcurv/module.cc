@@ -76,7 +76,7 @@ Module_Base::fields() const
 }
 
 void
-Module_Base::each_field(std::function<void(curv::Symbol,curv::Value)> visitor) const
+Module_Base::each_field(std::function<void(Symbol,Value)> visitor) const
 {
     for (auto f : *dictionary_)
         visitor(f.first, get(f.second));

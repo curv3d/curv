@@ -68,8 +68,7 @@ namespace curv {
 ///   after the exception handler goes out of scope. That won't work here.
 struct Exception_Base : public std::exception
 {
-    Exception_Base(const char* msg);
-    Exception_Base(Shared<const String>);
+    Exception_Base(String_Ref);
     // write: Print the exception text, with no final newline.
     // The 'colour' flag enables coloured text, using ANSI ESC sequences.
     virtual void write(std::ostream&, bool colour) const;
@@ -98,8 +97,7 @@ struct Exception : public Exception_Base
     // TODO: use std::shared_ptr so copy-ctor doesn't throw?
     std::list<Location> loc_;
 
-    Exception(const Context& cx, const char* msg);
-    Exception(const Context& cx, Shared<const String> msg);
+    Exception(const Context& cx, String_Ref msg);
 
     // Write the message and stack trace to a stream.
     // Multiple lines may be written, but no final newline.

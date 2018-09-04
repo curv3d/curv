@@ -1,27 +1,40 @@
 #include <gtest/gtest.h>
-#include <libcurv/script.h>
+#include <libcurv/source.h>
 #include <libcurv/scanner.h>
 #include <libcurv/parser.h>
 #include <libcurv/phrase.h>
+#include <libcurv/program.h>
 
-using namespace std;
 using namespace curv;
+
+System_Impl sys(std::cerr);
 
 Shared<const Phrase>
 nub(const char* str)
 {
-    auto script = make<String_Script>(make_string(""), make_string(str));
-    Scanner scanner{*script, nullptr};
+    auto source = make<String_Source>("", str);
+    Scanner scanner{source};
     auto phrase = parse_program(scanner);
     return nub_phrase(phrase);
 }
 
-TEST(curv, phrase)
+Value
+skip_prefix(const char* src, unsigned len)
+{
+    auto source = make<String_Source>("", src);
+    Program prog{source, sys, Program_Opts().skip_prefix(len)};
+    prog.compile();
+    return prog.eval();
+}
+
+TEST(curv, program)
 {
     ASSERT_TRUE(isa<const Identifier>(nub("foo")));
     ASSERT_TRUE(isa<const Identifier>(nub("(foo)")));
     ASSERT_TRUE(isa<const Identifier>(nub("let i=0 in (foo)")));
     ASSERT_TRUE(isa<const Identifier>(nub("let i=0 in (foo) where j=0")));
+
+    ASSERT_TRUE(skip_prefix("-foo=42",5).get_num_or_nan() == 42.0);
 /*
     auto xp = List::make(2);
     auto x = Shared<List>{std::move(xp)};

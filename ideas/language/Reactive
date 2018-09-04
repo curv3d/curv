@@ -1,0 +1,114 @@
+Reactive Programming: Connecting External Inputs to a Shape
+===========================================================
+Inputs:
+* Audio input, processed into power levels within frequency bands.
+  Eg, from a microphone, or a sound file.
+* OSC events (Open Sound Control).
+* Video input.
+* Graphical sliders control shape parameters.
+* Mouse and keyboard.
+
+Create interactive animations to explore mathematical objects.
+A video synthesizer for VJ-ing, or for a public art installation.
+
+Curv is a pure functional language.
+What does this look like at the language level?
+
+Fran: Functional Reactive Animation
+-----------------------------------
+Fran was the first FRP system: Conal Elliott, 1997:
+http://conal.net/papers/icfp97/icfp97.pdf
+
+Animated Values (Behaviours)
+----------------------------
+In Fran, a *Behaviour* is an "animated value": one that varies over time.
+Internally, a Behaviour encapsulates a function mapping time to a value.
+Externally, a Behaviour with value type V can be used as an argument to any
+operation expecting a value of type V, and the result is another Behaviour.
+
+Curv has 3 kinds of animated values: shapes, colour fields, and intensity
+fields. An animated shape can be used as an operand to any shape operation,
+yielding another animated shape. So Curv is almost an FRP system,
+it just needs to be generalized.
+
+In an FRP system, an audio input would be modeled as an animated number.
+From a programming perspective, using an animated number variable is like
+using a uniform variable in GLSL. In an FRP system, `time` is a global
+variable bound to an animated number, and other animated values can be
+constructed by expressions over `time`.
+
+A critical difference between GLSL and Curv or Fran is that a behaviour value
+is actually a function from time to a value. You can access that function,
+and call it with a constructed time value.
+
+Next step for Curv: animated numbers.
+
+In Curv, do we need to restrict expressions over `time` to the GL subset,
+so that they can be implemented on the GPU?
+
+Events, and Integrating over Time
+---------------------------------
+To handle mouse, keyboard and OSC events, we need *Events* (another Fran
+concept).
+
+In order to create something like a text editor, we need values that evolve
+over time, accumulating changes triggered by events. This is missing from Curv.
+
+I don't think that Event streams are a requirement for Curv. In the VJ and
+interactive art use cases, use a front end that converts events to an animated
+tensor value that is robust to being sampled at various frequencies.
+
+Integration over time is a big change from how Curv currently works on the GPU.
+You can do it on the CPU.
+It is a useful technique for 3D modelling, so I must consider it in more detail.
+(Let the CPU language render things on the GPU and then query the results.)
+In the context of FRP, the question is whether animated values can integrate
+over time, or whether they have GL-restricted semantics that prevent this.
+
+(TODO: add details.)
+
+Parametric Records
+------------------
+How does this relate to the parametric record proposal, for connecting shapes
+to graphical inputs? A parametric record is a kind of function that: maps a
+parameter record onto a shape, gives all parameters initial or default values,
+and advertises those parameters so that we can hook them up to external inputs.
+
+Maybe call this a Reactive Record. One key feature of a Reactive Record would
+be restricting expressions over reactive parameters so that they can be
+compiled into GL.
+
+Relation to other FRP systems
+-----------------------------
+Fran prioritized simplicity of use and expressive power over ease and efficiency
+of implementation. Subsequent FRP systems have made different tradeoffs.
+* An efficient implementation means different things on a CPU vs on a GPU.
+  The way you write efficient code is different. Curv needs to follow its
+  own path.
+
+There are many varieties of FRP: continuous vs discrete time, push vs pull vs
+push-pull, etc.
+
+Curv has a very particular architecture, based on volume representation,
+continuous fields (distance and colour fields), GPU evaluation, animation
+as a pair of 4D space-time fields. Is there a variety of FRP that fits this
+architecture? Fran seems like a good fit: continuous functions parameterized
+by time.
+
+Elm is a functional language; it transitioned from a discrete time, "push"
+variety of FRP to the new "Elm architecture" that is said to be simpler
+and more powerful (than the old Elm FRP model). But is it? The animated clock
+example on elm.org has more complexity and boilerplate than a Fran or Curv
+solution. The real test is a complex example that processes events and
+integrates over time, comparing Elm to Fran code.
+
+Pull vs push:
+* Fran is a "pull" system: continuous resampling of data, efficiency issue.
+  Like how Curv currently works on the GPU. The efficiency issue in Curv is
+  redrawing the view 60 times per second even when nothing changes.
+* Elm is a "push" system: discrete events, values only change when events occur,
+  global event dispatcher pushes events. In Curv, a CPU side event dispatcher
+  that only draws a frame when something changes would improve GPU efficiency.
+
+Figure out some programs I'd like to write, try implementing them using
+different paradigms, see what is simplest and easiest.

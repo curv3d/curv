@@ -2,7 +2,7 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/geom/export_frag.h>
+#include <libcurv/geom/frag.h>
 
 #include <libcurv/geom/shape.h>
 
@@ -35,6 +35,8 @@ void export_frag_2d(
 
     out <<
         "#define AA " << opts.aa_ << "\n"
+        "#define TAA " << opts.taa_ << "\n"
+        "#define FDUR " << opts.fdur_ << "\n"
         "#ifdef GLSLVIEWER\n"
         "uniform mat3 u_view2d;\n"
         "#endif\n"
@@ -87,15 +89,26 @@ void export_frag_2d(
         "#ifdef GLSLVIEWER\n"
         "    xy = (u_view2d * vec3(xy,1)).xy;\n"
         "#endif\n"
-        "    float d = main_dist(vec4(xy*scale+offset,0,iTime), fragColour);\n"
+        "#if TAA>1\n"
+        "  for (int t=0; t<TAA; ++t) {\n"
+        "    float time = iTime + float(t)/float(TAA)*float(FDUR);\n"
+        "#else\n"
+        "    float time = iTime;\n"
+        "#endif\n"
+        "    float d = main_dist(vec4(xy*scale+offset,0,time), fragColour);\n"
         "    if (d > 0.0) {\n"
         "        fragColour = vec4(1.0);\n" // white background
         "    }\n"
         "    col += fragColour.xyz;\n"
         "    \n"
+        "#if TAA>1\n"
+        "  }\n"
+        "#endif\n"
         "#if AA>1\n"
         "  }\n"
-        "    col /= float(AA*AA);\n"
+        "#endif\n"
+        "#if AA>1 || TAA>1\n"
+        "    col /= float(AA*AA*TAA);\n"
         "#endif\n"
         "    // convert linear RGB to sRGB\n"
         "    fragColour.xyz = pow(col, vec3(0.4545));\n"
@@ -113,7 +126,7 @@ void export_frag_3d(
     out <<
         "#define AA " << opts.aa_ << "\n"
         "#define TAA " << opts.taa_ << "\n"
-        "#define DELAY " << opts.delay_ << "\n"
+        "#define FDUR " << opts.fdur_ << "\n"
         "#ifdef GLSLVIEWER\n"
         "uniform vec3 u_eye3d;\n"
         "uniform vec3 u_centre3d;\n"
@@ -332,7 +345,7 @@ void export_frag_3d(
        "\n"
        "#if TAA>1\n"
        "  for (int t=0; t<TAA; ++t) {\n"
-       "    float time = iTime + float(t)/float(TAA)*float(DELAY);\n"
+       "    float time = iTime + float(t)/float(TAA)*float(FDUR);\n"
        "#else\n"
        "    float time = iTime;\n"
        "#endif\n"

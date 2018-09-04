@@ -1,0 +1,235 @@
+Sequential Let
+==============
+This is a redesign of how sequential (mutable) variables are defined and used.
+This language change can be introduced by adding new syntax and deprecating
+old syntax, without breaking backward compatibility.
+
+New Syntax
+----------
+ 1. `let a := 0; b := 1; in ...` is a "sequential let". It defines sequential
+    variables that can be assigned or referenced in the body.
+    * Between let and in, we use sequential scoping, and the definitions are
+      executed in order.
+    * There is no support for abbreviated function definitions
+      such as 'f x := x + 1' because that syntax might be confused with
+      'a[i] := x' array element update? Debateable. Sequential scoping makes
+      function definitions less useful (no recursion).
+    * The body is a sequential phrase: a statement or a do phrase. If the body
+      is a do phrase, and if the body of the do is also sequential, then the
+      scope of the sequential variables is extended to the do body.
+ 2. The body of a while is now a statement (previously, an action).
+ 3. If a 'do' phrase is used as a statement in a list (or record) constructor,
+    the statements between 'do' and 'in' may be element (or field) generators.
+
+Eg,
+* let i := 0; t:=0; in do while (i < n) (t := t + i; i := i + 1); in t
+* let i := 0; in ( while (i < n) (print i; i:=i+1;); )
+* [ let i := 0; in while (i < n) (i; i:=i+1;); ]
+* { let i := 0; in while (i < n) ("$i":i; i:=i+1;); }
+
+Benefits:
+* `let` is consistently used to define all varieties of local variables.
+* `while` is now available in list and record comprehensions.
+* Generalized blocks work in all statement contexts.
+
+Generalized Blocks
+------------------
+In an imperative language, a block is a mixed sequence of local variable
+definitions and statements. In Curv, statements and definitions are segregated,
+but we can still have alternating statements and definitions, like this:
+    do
+        statements;
+    in let
+        definitions;
+    in do
+        statements;
+    in
+        result
+We want this syntax to work in list and record constructors.
+If `do` is used in a list constructor, then the 'statements' may include
+both actions and element generators. Likewise, if `do` is used in a record
+constructor, the statements may be actions or field generators.
+
+Other Thoughts
+--------------
+A previously considered extension. Allow list and record constructors
+to be sequential phrases. This now seems less important.
+* let i := 0; in [ while (i < n) (i; i:=i+1;); ]
+* let i := 0; in { while (i < n) ("$i":i; i:=i+1;); }
+
+Deprecated Syntax
+-----------------
+* The `var` keyword.
+* `var` variable definitions in a `do` clause.
+  The `do` clause contains actions, but not definitions.
+* `var` variable definitions in a record constructor.
+* Actions in a `let` clause. (They'd be ambiguous anyway, due to `a:=b`.)
+  The `let` clause now just contains definitions.
+  No need to put "asserts" into a `let` clause; just chain a `do` clause.
+* Actions in a `where` clause. (This is more debatable.)
+
+Brainstorming Notes
+===================
+The body of a while loop must be an action.
+It can't be used in a list or record comprehension.
+I want to fix this.
+
+To use while, you need one or more sequential variables.
+There is also a problem using these in a list or record comprehension.
+
+List comprehension problem:
+    ERROR: not an operation
+    1| [var x:=1; x:=2; x]
+        ^^^^^^^^          
+
+Record comprehension problems:
+    curv> {var x:=1; x:=2;}
+    {x:2}
+    This is a problem because you don't want iteration variables belonging
+    to a while loop to be added to your record.
+
+    ERROR: not an action
+    1| {var i:=0; while(i<3) ("$i":0; i:=i+1;)}
+                              ^^^^^^           
+
+    I am thinking about allowing recursive definitions and field generators
+    to co-exist in a record constructor. If you also allow sequential
+    definitions in the same scope as these other phrases, what does that mean?
+
+Original Proposal
+-----------------
+ 1. The `while` action is generalized so that the body can contain generators
+    or binders, same as how the `for` operation is already generalized.
+
+ 2. If the body of a `do` is a record or list constructor, then the `do`'s
+    sequential scope is continued into the body of the constructor.
+    Reassignments and `while` phrases may be used in the constructor body.
+
+    `do <sequential definitions> in [ <generators, actions, reassignments> ]`
+    `do <sequential definitions> in { <binders, actions, reassignments> }`
+
+    This syntax segregates the definitions (which are outside the constructor)
+    from the generators/binders (which are inside the constructor).
+    It avoids the ambiguity of putting local definitions (which don't define
+    a field) inside a record constructor.
+
+`while (c) (a;b;c)` is an iterative compound phrase.
+
+`do var i:= 0 in [while (i < 10) (i; i:=i+1)]`
+
+Thoughts on Records
+-------------------
+To support while in a record constructor, the iteration variables must not
+be defined in the record scope. Either they are defined outside the record,
+as in the above proposal, or there is some kind of block syntax wherein you
+embed a block in a record literal, and the block locally defines iteration
+variables and also contains the while.
+
+Also, "sequential record literals" are unnecessary and can be removed from the
+language.
+
+Rethinking Blocks
+-----------------
+`do <sequential definitions and actions> in <phrase>`.
+The first argument of `do` feels like an Algol68 block, as you have have
+definitions and actions intermixed. However, when you use compound statements
+in this 'block', the arguments of the compound statements can be compound
+actions, but they cannot be 'blocks'. This feels inconsistent, when
+transliterating code from a block language like GLSL.
+
+Alternatives:
+ 1. Be consistent by always separating sequential definitions from the
+    statements that reference them, similar to "Original Proposal".
+ 2. Be consistent by introducing a block syntax that lets you mix locally
+    scoped sequential definitions with statements. A block is a statement.
+    This is consistent with popular imperative languages.
+    However, the contents of a record constructor are not a block,
+    even though they may contain a statement sequence.
+
+Design #1: Sequential Let
+-------------------------
+The `let` and `where` clause contains definitions, but not actions.
+Don't need to put "asserts" into a `let` clause; just chain a `do` clause.
+The `do` clause contains actions, but not definitions.
+
+The `var` keyword is dropped. "Sequential record constructors" are dropped.
+
+`let a := 0; b := 1; in ...` is a "sequential let". It defines sequential
+variables that can be assigned or referenced in the body. The body can
+assign variables if it is a sequential phrase: statement, do phrase,
+record constructor, list constructor.
+Eg,
+* let i := 0; t:=0; in do while (i < n) (t := t + i; i := i + 1); in t
+* let i := 0; in [ while (i < n) (i; i:=i+1;); ]
+* let i := 0; in { while (i < n) ("$i":i; i:=i+1;); }
+* let i := 0; in ( while (i < n) (print i; i:=i+1;); )
+
+Existing forms of definition abstraction: semicolon and paren phrase.
+Do we need this much syntactic flexibility?
+
+The only context where actions and definitions can potentially still mix
+is a record constructor. Pure use cases:
+* Just recursive definitions, no mixing.
+* Just assignments, actions, field constructors. No mixing.
+Mixed use cases:
+* Recursive definitions plus actions (eg, assert).
+* Recursive definitions plus field constructors (proposed extension).
+
+'action' is not a subtype of 'definition'. Record literals are a special case.
+
+Benefits:
+* More restricted grammar should be easier to learn and explain.
+* `let` is consistently used for introducing local variables.
+  In imperative code, `let a=...` is used for defining const variables,
+  and `let a:=...` is used for defining mutable variables.
+
+Drawbacks:
+* Rigid separation of definitions from statements/assignments is less
+  convenient when translating code from a block-structured imperative language.
+
+Design #2: Statement Blocks
+---------------------------
+A compound statement may contain sequential variable definitions,
+using the `var name := initial_value' syntax. This binds a name local to the
+statement block, with sequential scope.
+
+As with #1,
+* The syntax of a `do` becomes `do <action> in <phrase>`.
+* "Sequential record constructors" are dropped.
+
+Eg,
+* do var i := 0; var t:=0; while (i < n) (t := t + i; i := i + 1); in t
+* [ var i := 0; while (i < n) (i; i:=i+1;); ]
+* { var i := 0; while (i < n) ("$i":i; i:=i+1;); }
+* ( var i := 0; while (i < n) (print i; i:=i+1;); )
+
+Benefit: More compatible with the syntax of GLSL and other block structured
+imperative languages. Easier to transliterate code, since you don't need
+to use `let` and introduce nesting to define a variable in the middle of
+a compound statement.
+
+Drawbacks: Two quite different syntaxes for defining local variables.
+Suppose I'm transliterating GLSL code, and there is a variable defined in
+the middle of a compound statement.
+    ...;
+    const float a = expr;
+    ...;
+becomes
+    ...;
+    let a = expr;
+    in ...;
+but
+    ...;
+    float a = expr;
+    ...;
+becomes
+    ...;
+    var a := expr;
+    ...;
+(Unless I introduce `const name = expr` as an imperative-style alternative
+to `let`.)
+
+Within a mixed record constructor, `a=...` is a recursive definition that
+creates a field, while `var a:=...` is a sequential definition that defines
+a local variable, but does not create field. This is confusing, when compared
+to #1, which uses `let` to introduce local variables.

@@ -7,25 +7,27 @@
 #include <libcurv/ansi_colour.h>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
-#include <libcurv/file.h>
 #include <libcurv/program.h>
+#include <libcurv/source.h>
 
 namespace curv {
 
-void System::message(const char* prefix, const std::exception& exc)
+void System::print_exception(
+    const char* prefix, const std::exception& exc,
+    std::ostream& out, bool use_colour)
 {
     const Exception *e = dynamic_cast<const Exception*>(&exc);
     if (e) {
-        if (use_colour_) console() << AC_MESSAGE;
-        console() << prefix;
-        if (use_colour_) console() << AC_RESET;
-        e->write(console(), use_colour_);
+        if (use_colour) out << AC_MESSAGE;
+        out << prefix;
+        if (use_colour) out << AC_RESET;
+        e->write(out, use_colour);
     } else {
-        if (use_colour_) console() << AC_MESSAGE;
-        console() << prefix << exc.what();
-        if (use_colour_) console() << AC_RESET;
+        if (use_colour) out << AC_MESSAGE;
+        out << prefix << exc.what();
+        if (use_colour) out << AC_RESET;
     }
-    console() << std::endl;
+    out << std::endl;
 }
 
 System_Impl::System_Impl(std::ostream& console)
@@ -35,10 +37,10 @@ System_Impl::System_Impl(std::ostream& console)
     std_namespace_ = builtin_namespace();
 }
 
-void System_Impl::load_library(Shared<const String> path)
+void System_Impl::load_library(String_Ref path)
 {
-    auto file = make<File_Script>(std::move(path), Context{});
-    Program prog{*file, *this};
+    auto file = make<File_Source>(std::move(path), Context{});
+    Program prog{std::move(file), *this};
     prog.compile();
     auto stdlib = prog.eval();
     auto m = stdlib.to<Module>(At_Phrase(*prog.phrase_, nullptr));

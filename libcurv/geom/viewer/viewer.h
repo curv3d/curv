@@ -10,7 +10,7 @@
 #ifndef LIBCURV_GEOM_VIEWER_VIEWER_H
 #define LIBCURV_GEOM_VIEWER_VIEWER_H
 
-#include <libcurv/geom/export_frag.h>
+#include <libcurv/geom/frag.h>
 #include <gl/shader.h>
 #include <gl/vbo.h>
 #include <glm/glm.hpp>
@@ -21,13 +21,20 @@ struct Shape_Program;
 
 namespace viewer {
 
+struct Viewer_Config : public Frag_Export
+{
+    bool verbose_ = false;
+};
+
 struct Viewer
 {
     /*--- PUBLIC API ---*/
     Viewer();
+    Viewer(const Viewer_Config&);
 
     // Set the current shape. May be called at any time, before opening the
     // window, or while the window is open.
+    void set_shape(const Shape_Program&);
     void set_shape(const Shape_Program&, const Frag_Export&);
 
     bool is_open() { return window_ != nullptr; }
@@ -52,6 +59,7 @@ struct Viewer
     void run();
 
     /*--- PARAMETER STATE, can set before window is opened ---*/
+    Viewer_Config config_;
     glm::ivec4 window_pos_and_size_{0.,0.,500.,500.};
     bool headless_{false};
 
@@ -66,7 +74,6 @@ struct Viewer
     std::string fragsrc_{};
     Shader shader_{};
     std::string vertSource_{};
-    bool verbose_{false};
     GLFWwindow* window_ = nullptr;
     glm::ivec4 viewport_;
     float fPixelDensity_ = 1.0;

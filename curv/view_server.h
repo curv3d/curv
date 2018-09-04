@@ -96,12 +96,10 @@ public:
     // Called by client thread. If the viewer window is not open, then open it,
     // and display the shape. Otherwise, change the shape displayed in the
     // current viewer window.
-    void display_shape(
-        const curv::geom::Shape_Program& shape,
-        const curv::geom::Frag_Export& opts)
+    void display_shape(const curv::geom::Shape_Program& shape)
     {
-        // TODO: Call `view_.set_shape(shape,opts)` in viewer thread
-        request_shape = shape_to_frag(shape, opts);
+        // TODO: Call `view_.set_shape(shape)` in viewer thread
+        request_shape = shape_to_frag(shape, view_.config_);
         send(Request::k_display_shape);
         //assert(request_shape.empty());
     }
@@ -117,8 +115,9 @@ public:
     // main thread. The server keeps running until the client calls exit().
     // If the user closes the window, the server keeps running, and the next
     // call to display_shape() reopens the window.
-    void run()
+    void run(const curv::geom::viewer::Viewer_Config& config)
     {
+        view_.config_ = config;
         bool exiting = false;
         for (;;) {
             Message msg(*this);

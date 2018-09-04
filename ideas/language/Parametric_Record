@@ -1,0 +1,135 @@
+A parametric record remembers how it was constructed.
+
+Suppose R is a parametric record. Then R contains two special fields:
+* `R.parameter` is a record containing the construction parameters.
+* `R.call` is a function that maps a record of construction parameters
+  (all of which are optional) onto a new instance of R.
+  So `R.call(R.parameter)` returns R.
+  Since the parameters are all optional, `R{}` also returns R.
+
+This is a bit like prototype-based programming, in the sense that you have
+a set of prototypical objects, and you construct new instances of these objects
+by cloning the prototypes, with alterations (rather than by calling constructor
+functions). That's where the similarity ends. There is no inheritance or
+delegation.
+
+Use cases:
+* As a mechanism for hooking graphical value pickers into a shape.
+* Similar to OpenSCAD2 customizable objects, supports a simple form of
+  prototype-based programming in Curv.
+
+Basic Syntax
+------------
+For example, a parametric shape in file `lollipop.curv`:
+  parameters
+    diam = 1;
+    len = 4;
+  in
+    union(candy, stick)
+  where (
+    candy = sphere diam >> colour red;
+    stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
+  )
+This returns a record (union(candy,stick)) augmented with a `call` field,
+which is a function with parameter {diam=1,len=4} that returns a customized
+version of the record, and a `parameter` field (containing {diam=1,len=4}).
+
+The command
+  curv -Dlen=6 lollipop.curv
+modifies one of the shape parameters. Actually it treats the result
+value V as a function, and calls V{len:6}.
+
+Alternate Syntax
+----------------
+    parametric {...} -> record_expr
+is the same as
+    parameters  ...  in record_expr
+
+and
+    parametric foo{...} = ...
+is the same as
+    foo = parametric {...} -> ...
+
+Semantics
+---------
+    kube =
+      parameters
+        d = 2;
+      in
+        box(d,d,d);
+or
+    parametric kube{d:2} = box(d,d,d);
+
+is just syntactic sugar for:
+
+kube =
+    make{d:2}
+where (
+    make{d} =
+      { ... box(d,d,d);
+        call{d=d} : make{d:d};
+        parameters : {d:d};
+      };
+);
+
+Prototype Libraries
+-------------------
+Can we change the existing primitive shape constructors (like cube) to
+parametric records? One advantage is customization in the Viewer. Another is
+that the code might shrink if we use the `parametric` operator.
+
+But, there's a backward compatibility and expressiveness issue:
+1. `cube` just takes a number argument.
+2. Half-plane is overloaded with several record patterns.
+3. The sharp solids have `.exact` and `.mitred` variants.
+
+Can we preserve these interfaces in the shape constructors?
+
+1. "Just a number argument." We could extend `parametric` to allow a
+   non-record parameter, as in `parametric (is_num n) -> box(n,n,n)`.
+   Now `.parameter` is a num instead of a record. The Viewer can still
+   provide a value picker.
+
+2. Overloading.
+   * There is no prototypical half-plane. There's no problem writing a
+     half_plane constructor as a `match` of a list of prototypes.
+     Then half_plane will return a prototype, but that prototype is not
+     itself overloaded on multiple record patterns. But that's good enough
+     for displaying value pickers.
+   * An overloaded prototype is more difficult.
+     Maybe `match`, given a list of prototypes, returns a prototype.
+     Then how does the Viewer create a UI for this?
+
+3. ".exact" and ".mitred" variants, like for "cube".
+   If only the original "cube" has the variants, and not the clones,
+   then the code is simple. If we want the Viewer to provide pickers for
+   choosing between exact and mitred, then more difficult.
+
+Named Parametric Records
+------------------------
+In addition to the required `call` and `parameter` fields,
+let's add an optional `name` field.
+* This is used as a title for the picker window.
+* If the name is present, then a parametric record is printed as `name{params}`.
+  Eg, "cube{d:2}" is a lot more readable than dumping the cube record.
+* `parametric cube{is_distance d} = box(d,d,d)`. Now `cube` constructs a named
+  parametric record.
+* Now we need a way to print values verbosely.
+
+Functions have an optional name, too, which are also used for printing.
+For consistency, maybe f.name is defined if function value f has a name.
+
+See `Terms`_ for more details.
+
+Concept Name
+------------
+* Parametric Record
+* Prototype (from "prototype-based programming" (Wikipedia)).
+* Archetype
+* model, exemplar, instance
+
+lollipop = proto {diam:1, len:4} -> union(candy,stick) where ...
+proto lollipop {diam:1, len:4} = union(candy,stick) where ...
+
+lollipop = parametric {diam:1, len:4} -> union(candy,stick) where ...
+parametric lollipop {diam:1, len:4} = union(candy,stick) where ...

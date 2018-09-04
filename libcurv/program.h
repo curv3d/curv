@@ -9,37 +9,52 @@
 #include <libcurv/frame.h>
 #include <libcurv/meaning.h>
 #include <libcurv/module.h>
-#include <libcurv/script.h>
+#include <libcurv/scanner.h>
+#include <libcurv/source.h>
 #include <libcurv/shared.h>
 #include <libcurv/system.h>
 #include <libcurv/list.h>
 
 namespace curv {
 
+struct Program_Opts
+{
+    Frame* parent_frame_ = nullptr;
+    Program_Opts& parent_frame(Frame* f) { parent_frame_=f; return *this; }
+
+    unsigned skip_prefix_ = 0;
+    Program_Opts& skip_prefix(unsigned n) { skip_prefix_=n; return *this; }
+};
+
 struct Program
 {
-    const Script& script_;
+    Scanner scanner_;
     System& system_;
     const Namespace* names_ = nullptr;
-    Frame *parent_frame_ = nullptr;
     Shared<Phrase> phrase_ = nullptr;
     Shared<Meaning> meaning_ = nullptr;
     Shared<Module_Expr> module_ = nullptr;
     std::unique_ptr<Frame> frame_ = nullptr;
 
     Program(
-        const Script& script,
-        System& system)
+        Shared<const Source> source,
+        System& system,
+        Program_Opts opts = {})
     :
-        script_(script),
+        scanner_(std::move(source), Scanner_Opts()
+            .eval_frame(opts.parent_frame_)
+            .skip_prefix(opts.skip_prefix_)),
         system_(system)
     {}
 
-    void compile(
-        const Namespace* names = nullptr,
-        Frame *parent_frame = nullptr);
+    void skip_prefix(unsigned len);
+
+    void compile(const Namespace* names = nullptr);
 
     const Phrase& nub() const;
+
+    Location location() const;
+    Frame* parent_frame() const { return scanner_.eval_frame_; }
 
     std::pair<Shared<Module>, Shared<List>> denotes();
 

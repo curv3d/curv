@@ -11,7 +11,6 @@ extern "C" {
 #include "export.h"
 #include "progdir.h"
 #include "repl.h"
-#include "cscript.h"
 #include "shapes.h"
 #include "livemode.h"
 #include "version.h"
@@ -19,9 +18,9 @@ extern "C" {
 #include <libcurv/context.h>
 #include <libcurv/die.h>
 #include <libcurv/exception.h>
-#include <libcurv/file.h>
 #include <libcurv/output_file.h>
 #include <libcurv/program.h>
+#include <libcurv/source.h>
 #include <libcurv/system.h>
 #include <libcurv/geom/import.h>
 #include <libcurv/geom/shape.h>
@@ -74,16 +73,22 @@ const char help_prefix[] =
 "curv -l [-e] [options] filename\n"
 "   Live programming mode. Evaluate & display result each time file changes.\n"
 "   -e : Open editor window. $CURV_EDITOR overrides default editor.\n"
-"curv [-o arg] [-O arg]... [-x] [options] filename\n"
+"curv [-o arg] [-x] [options] filename\n"
 "   Batch mode. Evaluate file, display result or export to a file.\n"
 "   -o format : Convert to specified file format, write data to stdout.\n"
 ;
 
-const char help_suffix[] =
+const char help_infix[] =
 "   -o filename.ext : Export to file, using filename extension as format.\n"
-"   -O name=value : Parameter for the specified output format.\n"
 "   -x : Interpret filename argument as expression.\n"
 "general options:\n"
+"   -v : Verbose & debug output.\n"
+"   -O name=value : Set parameter controlling the specified output format.\n"
+"      If '-o fmt' is specified, use 'curv --help -o fmt' for help.\n"
+"      If '-o fmt' is not specified, the following parameters are available:\n"
+;
+
+const char help_suffix[] =
 "   $CURV_STDLIB : Pathname of standard library, overrides PREFIX/lib/std.curv\n"
 "   -n : Don't use standard library.\n"
 "   -i file : Include specified library; may be repeated.\n"
@@ -104,7 +109,8 @@ main(int argc, char** argv)
                           << "Use " << argv0 << " --help for help.\n";
                 return EXIT_FAILURE;
             }
-            std::cout << ex->second.synopsis << "\n" << ex->second.description;
+            std::cout << ex->second.synopsis << "\n";
+            ex->second.describe_options(std::cout);
             return EXIT_SUCCESS;
         }
         if (argc == 2) {
@@ -113,6 +119,8 @@ main(int argc, char** argv)
                 std::cout << "      " << ex.first << " : "
                           << ex.second.synopsis << "\n";
             }
+            std::cout << help_infix;
+            describe_viewer_options(std::cout, "      ");
             std::cout << help_suffix;
             return EXIT_SUCCESS;
         }
@@ -129,8 +137,10 @@ main(int argc, char** argv)
 
     // Parse arguments for general case.
     const char* usestdlib = argv0;
-    Exporter* exporter = nullptr;
-    Export_Params eparams;
+    using ExPtr = decltype(exporters)::const_iterator;
+    ExPtr exporter = exporters.end();
+    Export_Params::Map oparam_map;
+    bool verbose = false;
     curv::Output_File ofile;
     bool live = false;
     std::list<const char*> libs;
@@ -138,7 +148,7 @@ main(int argc, char** argv)
     const char* editor = nullptr;
 
     int opt;
-    while ((opt = getopt(argc, argv, ":o:O:lni:xe")) != -1) {
+    while ((opt = getopt(argc, argv, ":o:O:lni:xev")) != -1) {
         switch (opt) {
         case 'o':
           {
@@ -151,28 +161,26 @@ main(int argc, char** argv)
                 oname = &ext[1];
             else
                 oname = oarg;
-            auto ex = exporters.find(oname);
-            if (ex == exporters.end()) {
+            exporter = exporters.find(oname);
+            if (exporter == exporters.end()) {
                 std::cerr << "-o: format '" << oname << "' not supported.\n"
                           << "Use " << argv0 << " --help for help.\n";
                 return EXIT_FAILURE;
             }
-            exporter = &ex->second;
             if (oname == oarg)
                 ofile.set_ostream(&std::cout);
             else
                 ofile.set_path(opath);
-            eparams.format = oname;
             break;
           }
         case 'O':
           {
             char* eq = strchr(optarg, '=');
             if (eq == nullptr) {
-                eparams.map[std::string(optarg)] = std::string("");
+                oparam_map[std::string(optarg)] = std::string("");
             } else {
                 *eq = '\0';
-                eparams.map[std::string(optarg)] = std::string(eq+1);
+                oparam_map[std::string(optarg)] = std::string(eq+1);
                 *eq = '=';
             }
             break;
@@ -193,6 +201,9 @@ main(int argc, char** argv)
             editor = getenv("CURV_EDITOR");
             if (editor == nullptr)
                 editor = "gedit --new-window --wait";
+            break;
+        case 'v':
+            verbose = true;
             break;
         case '?':
             std::cerr << "-" << (char)optopt << ": unknown option\n"
@@ -218,7 +229,7 @@ main(int argc, char** argv)
 
     // Validate arguments
     if (live) {
-        if (exporter) {
+        if (exporter != exporters.end()) {
             std::cerr << "-l and -o flags are not compatible.\n"
                       << "Use " << argv0 << " --help for help.\n";
             return EXIT_FAILURE;
@@ -230,7 +241,7 @@ main(int argc, char** argv)
         }
     }
     if (filename == nullptr) {
-        if (expr || exporter || live) {
+        if (expr || exporter != exporters.end() || live) {
             std::cerr << "missing filename argument\n"
                       << "Use " << argv0 << " --help for help.\n";
             return EXIT_FAILURE;
@@ -241,49 +252,56 @@ main(int argc, char** argv)
                   << "Use " << argv0 << " --help for help.\n";
         return EXIT_FAILURE;
     }
-    if (!eparams.map.empty() && !exporter) {
-        std::cerr << "-O flag specified without -o flag.\n"
-                  << "Use " << argv0 << " --help for help.\n";
-        return EXIT_FAILURE;
-    }
 
-    // Interpret arguments
+    // Create system, a precondition for parsing -O parameters.
+    // This can fail, so we do as much argument validation as possible
+    // before this point.
     curv::System& sys(make_system(usestdlib, libs));
     atexit(curv::geom::remove_all_tempfiles);
 
-    if (filename == nullptr) {
-        interactive_mode(sys);
-        return EXIT_SUCCESS;
-    }
+    Export_Params oparams(sys);
+    if (exporter != exporters.end())
+        oparams.format_ = exporter->first;
+    std::swap(oparams.map_, oparam_map);
+    oparams.verbose_ = verbose;
 
-    if (live) {
-        return live_mode(sys, editor, filename);
-    }
-
-    // batch mode
     try {
-        curv::Shared<curv::Script> script;
+        curv::geom::viewer::Viewer_Config viewer_config;
+        if (exporter == exporters.end())
+            parse_viewer_config(oparams, viewer_config);
+
+        // Finally, do stuff.
+        if (filename == nullptr) {
+            interactive_mode(sys, viewer_config);
+            return EXIT_SUCCESS;
+        }
+
+        if (live) {
+            return live_mode(sys, editor, filename, viewer_config);
+        }
+
+        // batch mode
+        curv::Shared<curv::Source> source;
         if (expr) {
-            script = curv::make<CString_Script>("", filename);
+            source = curv::make<curv::String_Source>("", filename);
         } else {
-            script = curv::make<curv::File_Script>(
+            source = curv::make<curv::File_Source>(
                 curv::make_string(filename), curv::Context{});
         }
 
-        curv::Program prog{*script, sys};
+        curv::Program prog{std::move(source), sys};
         prog.compile();
         auto value = prog.eval();
 
-        if (exporter) {
-            exporter->call(value, prog, eparams, ofile);
+        if (exporter != exporters.end()) {
+            exporter->second.call(value, prog, oparams, ofile);
             ofile.commit();
         } else {
             curv::geom::Shape_Program shape{prog};
             if (shape.recognize(value)) {
                 print_shape(shape);
-                curv::geom::viewer::Viewer viewer;
-                curv::geom::Frag_Export opts;
-                viewer.set_shape(shape, opts);
+                curv::geom::viewer::Viewer viewer(viewer_config);
+                viewer.set_shape(shape);
                 viewer.run();
             } else {
                 std::cout << value << "\n";

@@ -12,22 +12,37 @@
 #include <libcurv/program.h>
 #include <libcurv/value.h>
 
+namespace curv { namespace geom { namespace viewer {
+struct Viewer_Config;
+}}}
+
 struct Export_Params
 {
+    Export_Params(curv::System& sys) : system_(sys) {}
     using Map = std::map<std::string, std::string>;
-    std::string format;
-    Map map;
+    curv::System& system_;
+    std::string format_;
+    Map map_;
+    bool verbose_ = false;
     [[noreturn]] void unknown_parameter(const Map::value_type&) const;
-    [[noreturn]] void bad_argument(const Map::value_type&, const char*) const;
     int to_int(const Map::value_type&, int, int) const;
     double to_double(const Map::value_type&) const;
+    bool to_bool(const Map::value_type&) const;
+};
+
+struct Param_Program : public curv::Program
+{
+    Param_Program(
+        const Export_Params& params,
+        const Export_Params::Map::value_type& p);
+    curv::Value eval();
 };
 
 struct Exporter
 {
     void (*call)(curv::Value, curv::Program&, const Export_Params&, curv::Output_File&);
     const char* synopsis;
-    const char* description;
+    void (*describe_options)(std::ostream&);
 };
 extern std::map<std::string, Exporter> exporters;
 
@@ -71,7 +86,12 @@ extern void export_png(curv::Value value,
     const Export_Params& params,
     curv::Output_File&);
 
-extern const char mesh_export_help[];
-extern const char colour_mesh_export_help[];
+void describe_mesh_opts(std::ostream&);
+void describe_colour_mesh_opts(std::ostream&);
+
+void parse_viewer_config(
+    const Export_Params& params,
+    curv::geom::viewer::Viewer_Config& opts);
+void describe_viewer_options(std::ostream&, const char* prefix="");
 
 #endif // include guard

@@ -84,6 +84,33 @@ make_string(const char*str)
     return String::make(str, strlen(str));
 }
 
+/// Make a curv::String from a std::string
+inline Shared<String>
+make_string(const std::string& str)
+{
+    return String::make(str.data(), str.size());
+}
+
+struct String_Ref : public Shared<const String>
+{
+    String_Ref(const char* str)
+    :
+        Shared<const String>(make_string(str))
+    {}
+    String_Ref(const std::string& str)
+    :
+        Shared<const String>(make_string(str.c_str(), str.size()))
+    {}
+    String_Ref(Shared<const String> str)
+    :
+        Shared<const String>(std::move(str))
+    {}
+    String_Ref(Shared<String> str)
+    :
+        Shared<const String>(std::move(str))
+    {}
+};
+
 /// Factory class for building a curv::String using ostream operations.
 struct String_Builder : public std::stringstream
 {

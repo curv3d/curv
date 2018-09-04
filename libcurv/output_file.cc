@@ -36,7 +36,7 @@ maketemp(
     fs::path trypath;
     for (int i = 0; i < 20; ++i) {
         clock_t now = clock();
-        auto name = stringify(pid,"-",now,suffix);
+        auto name = stringify(",curv-",pid,"-",now,suffix);
         trypath = tempdir / fs::path(name->c_str());
         int fd = open(trypath.c_str(), O_WRONLY|O_CREAT|O_EXCL, 0600);
         if (fd != -1) {
@@ -58,7 +58,7 @@ Output_File::open()
         tempdir = fs::temp_directory_path();
     else
         tempdir = path_.parent_path();
-    int fd = maketemp(tempdir, "", tempfile_path_);
+    int fd = maketemp(tempdir, ".tmp", tempfile_path_);
     tempfile_ostream_.open(io::file_descriptor_sink(fd, io::close_handle));
 }
 
@@ -73,17 +73,19 @@ Output_File::path()
 void
 Output_File::commit()
 {
-    if (tempfile_ostream_.is_open())
-        tempfile_ostream_.close();
-    if (path_.empty()) {
-        // copy tempfile to ostream_
-        std::ifstream tmp(tempfile_path_.c_str());
-        *ostream_ << tmp.rdbuf();
-    } else {
-        if (rename(tempfile_path_.c_str(), path_.c_str()) == -1) {
-            throw Exception({}, stringify(
-                "can't rename ", tempfile_path_.c_str(),
-                " to ", path_.c_str(), ": ", strerror(errno)));
+    if (!tempfile_path_.empty()) {
+        if (tempfile_ostream_.is_open())
+            tempfile_ostream_.close();
+        if (path_.empty()) {
+            // copy tempfile to ostream_
+            std::ifstream tmp(tempfile_path_.c_str());
+            *ostream_ << tmp.rdbuf();
+        } else {
+            if (rename(tempfile_path_.c_str(), path_.c_str()) == -1) {
+                throw Exception({}, stringify(
+                    "can't rename ", tempfile_path_.c_str(),
+                    " to ", path_.c_str(), ": ", strerror(errno)));
+            }
         }
     }
 }

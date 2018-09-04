@@ -2,12 +2,15 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <fstream>
-#include <cstring>
-#include <cerrno>
+#include <libcurv/source.h>
+
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
-#include <libcurv/file.h>
+
+#include <cerrno>
+#include <cstring>
+#include <fstream>
+#include <sstream>
 
 namespace curv
 {
@@ -19,7 +22,7 @@ Shared<const String> readfile(const char* path, const Context& ctx)
 
     // TODO: Pluggable file system abstraction, for unit testing and
     // abstracting the behaviour of `file` (would also support caching).
-    // So, use System::open(path)? Maybe this returns a Script?
+    // So, use System::open(path)? Maybe this returns a Source?
 
     // TODO: More precise error message when open fails. Maybe get that
     // from an exception? No, the following code is useless, no useful
@@ -39,21 +42,21 @@ Shared<const String> readfile(const char* path, const Context& ctx)
     */
     // I'll need to use strerror(errno).
 
-    // TODO: change File_Script to use mmap?
+    // TODO: change File_Source to use mmap?
 
     std::ifstream t;
     t.open(path);
     if (t.fail())
         throw Exception(ctx,
             stringify("can't open file \"", path, "\": ", strerror(errno)));
-    String_Builder buffer;
+    std::stringstream buffer;
     buffer << t.rdbuf();
-    return buffer.get_string();
+    return make_string(buffer.str());
 }
 
-File_Script::File_Script(Shared<const String> filename, const Context& ctx)
+File_Source::File_Source(String_Ref filename, const Context& ctx)
 :
-    String_Script(filename, readfile(filename->c_str(), ctx))
+    String_Source(filename, readfile(filename->c_str(), ctx))
 {
 }
 

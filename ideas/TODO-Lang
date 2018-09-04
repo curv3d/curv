@@ -527,19 +527,39 @@ Eg,
 Eg,
   make_shape{is_3d:, ...}
 
-### User defined infix operators.
-Maybe `foo` also works as a low precedence prefix operator.
-(`foo` b) a <==> (a `foo` b) <==> foo(a,b).
-So you can also write:
+### Prefix Sections
+This is inspired by 'sections' from Haskell.
+In certain cases, an infix operator may be used as a prefix operator,
+which causes it to be partially applied.
 
-gyroid
-  >> shell .2
-  >> lipshitz 2
-  >> bend (tau*12)
-  >> `smooth .1 .intersection` torus(tau*4, tau*2)
-  >> colour (sRGB.HSV (1/3, 1, .5))
+ 1. Backtick operators.
+    (`foo` b) a <=> (a `foo` b) <=> foo(a,b)
+ 2. Relational operators.
+    (== b) a <=> a == b
 
-map (`sum` 1) list
+For example, a more uniform syntax for shape pipelines:
+  gyroid
+    >> shell .2
+    >> lipshitz 2
+    >> bend (tau*12)
+    >> `smooth .1 .intersection` torus(tau*4, tau*2)
+    >> colour (sRGB.HSV (1/3, 1, .5))
+
+And,
+  map (`sum` 1) list
+  filter (>= 0) list
+  filter (`equal` 0) list  // see Vectorized boolean operators
+
+There are also section patterns, when the section happens to be a predicate.
+  match [(== 0) -> ...] -- section pattern
+  match [(`equal` 0) -> ...] -- section pattern
+Actually, this is really only useful for `==`, which is good for simulating
+a `switch` statement. Otherwise you probably want to capture the argument value
+in a parameter, eg `(x < 0) -> ...`. And then you could write `(_ == 0) -> ...`
+as a case in a simulated switch.
+
+This can't be extended to the arithmetic operators, since (+a) and (-a) already
+have a different meaning. Sections of the boolean ops && and || aren't useful.
 
 ### Indentation As Syntax
 let:
@@ -614,3 +634,27 @@ Nestable comments for reliably commenting out code blocks.
 * Or, simplify, and get rid of `/*...*/`. Use comment/uncomment commands in
   a programmer's text editor to comment out blocks of code.
 * Extend Gedit so that it can comment/uncomment code blocks in Curv using `//`.
+
+### Alternate String Escape Sequences
+
+$~  expands to $
+$=  expands to "
+
+Rationale:
+* Readability: it is easier to visually parse these sequences out of the noise
+  of the surrounding text, without counting characters.
+  ~ and =, which are not full height characters, are juxtaposed with $, which
+  is a full height character. Visually, this works well.
+  ~ contains the S curve of the $ character, as a mneumonic.
+  = is like a sideways " character, as a mneumonic.
+* More suitable for iterated string escaping/unescaping.
+  $~~~ -> $~~ -> $~ -> $
+  instead of $$$$$$$$ -> $$$$ -> $$ -> $
+  I know this isn't an important use case, but it's still a cool property
+  of the syntax. Becomes more relevant if we add an 'eval' function.
+
+repr "foo" => "$=foo$="
+repr(repr "foo") => "$~=foo$~="
+
+Downside is that this is novel syntax that nobody will understand
+without memorizing it.

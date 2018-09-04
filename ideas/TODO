@@ -1,38 +1,70 @@
+Big Items (target: Dec 2018)
+* graphical value pickers in the viewer
+* standard libraries for some important techniques
+* better documentation, a web site
+* sharp STL export?
+
 Current TODO List:
+* -o glsl
+* graphical value pickers
+  * parametric records
+* Refactor:
+  * Viewer_Opts
+  * remove arg_to_int()
+  * mesh: geom::mesh_write & Mesh_Write_Opts
+  * dfmt -> <libcurv/format.h>
+  * Location ctor takes Shared<const Source>
+  * Source should contain a prefix length (don't put this in Scanner).
+    Location{Source} is a location spanning the entire program (mod prefix)
+    Program::location() uses above in case where program not compiled.
+    Program no longer needs to know about Scanner::ptr_.
+  * geom uses System::console(), not std::cerr
+  * remove global variables from geom::viewer
+* Image Export.
+  * transparent background (exports RGBA, not RGB)
+  * speed up -O animate= (compile shape once)
+  * use OpenGL FBO to avoid unreliable semantics of framebuf of hidden window.
+  * macOS: don't create a menu bar during image export. GLFW enhancement?
+  * linux: don't use X server during image export. EGL?
+* Image Import.
+  * file "foo.png" imports the PNG file, returns a shape value (no GL support).
+    * We return a standard record object with magic values in dist, colour.
+      * bbox: The smallest rectangle that fully covers a unit circle.
+      * dist: euclidean rectangle SDF for the bbox.
+      * colour: Initially, red (a stub). Bilinear interpolation.
+    * Should PNG files appear as source files in the stack trace?
+
+Ideas:
+* Ray-casting non-Lipschitz implicit surfaces:
+  * grid-tracer: -Otracer=grid (default sphere).
+    glsl-function-grapher by Michael Firmin on github
+  * http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.417.5616&rep=rep1&type=pdf
+    Real-Time Ray-Tracing of Implicit Surfaces on the GPU
+* awesome progressive rendering for SDFs:
+  https://nshelton.github.io/vr/fractals/2017/12/30/RTA.html
+* http://erleuchtet.org/~cupe/permanent/enhanced_sphere_tracing.pdf (2014)
+* http://matter.media.mit.edu/publications/article/data-driven-material-modeling
+  Data-Driven Material Modeling for 3D-Printing of Materially Heterogeneous Objects
+* Replace 'not an operation' analysis time error with useful message.
 * Mesa driver bugs. Install latest Nouveau driver, report bugs to Mesa3D.org
   * Install Ubuntu 18.04. Bleeding edge Mesa + 16.04 is likely a bad idea.
     Also, the 18.04 version of Nouveau might work better than a black screen.
-* Image Export options:
-  * higher priority:
-    * 2D antialiasing: -O aa=n
-    * -O animate=duration -o 'foo*.png' (default 25 FPS)
-    * -O delay=<frame_duration in seconds> -- eg, delay=1/25 means 25 FPS.
-    * documentation
-  * transparent background (exports RGBA, not RGB)
-  * multi-image export, for animation:
-    * -O animate=duration -o 'foo*.png' (default 25 FPS)
-      Why? Speed, and convenience of not writing a python script.
-      * If animate= specified, client pathname must be set and contain a '*'.
-    * -O frame=<frame_duration in seconds> -- eg, frame=1/25 means 25 FPS.
-    * -O time=<start time>
-    * -O taa=<scale factor for temporal antialiasing> -- requires frame=
-      Why implement this?
-      * Faster than doing it in an external tool.
-      * ImageMagick has no support for this.
-      * ffmpeg only supports power-of-2 scale factors, eg not taa=3.
-    * document animation export.
-* Image Import.
-  * rename Meaning::source_ to syntax_.
-  * rename Script to Source, with Source_File, Source_String, Source_Buffer.
-  * an instance of Source may contain a pathname and no file contents.
-  * a PNG file can occur in the stack trace.
-* Mesh Export.
-  * Refactor mesh export. Core->libcurv/geom. Error for bad -O flag.
+
+Language:
+* better GLSL transliteration:
+  * sequential let
+  * v[X] := x; v[[X,Y,Z]] := v3;
+  * matrices
+  * all of the GLSL numeric functions
+* better stdlib:
+  * new `where`
+  * mixed a=/a: record literals
+* greatly expanded, modular stdlib
+  * packages, maybe `lib` if packages are delayed
 
 # Release 0.2
 Big Ideas:
 * Ease of Use: funcall errors, function help, tutorial
-* Language: new `where`, packages
 * RSDF and RSIF (voxel) import and export
 * Mesh Import via RSDF
 * sharp and fractal Mesh Export
@@ -319,8 +351,6 @@ BUG: bad Web GLSL (testing mandelbrot in shadertoy.com in Chrome on macOS):
 BUG: Doesn't GL compile.
 stereographic_projection plane = sphere 1 >> colourfield
     ((x,y,z)->plane.colour(x/(1-z), y/(1-z), 0));
-
-BUG: tests recently slowed down by 2 orders of magnitude.
 
 display axes in 3D view
 

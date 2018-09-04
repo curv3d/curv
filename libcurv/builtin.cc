@@ -8,11 +8,11 @@
 #include <libcurv/arg.h>
 #include <libcurv/array_op.h>
 #include <libcurv/exception.h>
-#include <libcurv/file.h>
 #include <libcurv/function.h>
 #include <libcurv/gl_context.h>
 #include <libcurv/math.h>
 #include <libcurv/program.h>
+#include <libcurv/source.h>
 #include <libcurv/system.h>
 
 #include <boost/math/constants/constants.hpp>
@@ -118,190 +118,53 @@ struct Bit_Function : public Legacy_Function
     }
 };
 
-struct Sqrt_Function : public Legacy_Function
-{
-    static const char* name() { return "sqrt"; }
-    Sqrt_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return sqrt(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify(name(),"(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "sqrt");
-    }
-};
-// log(x) is the natural logarithm of x
-struct Log_Function : public Legacy_Function
-{
-    static const char* name() { return "log"; }
-    Log_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return log(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("log(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "log");
-    }
-};
-struct Abs_Function : public Legacy_Function
-{
-    static const char* name() { return "abs"; }
-    Abs_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return abs(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("abs(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "abs");
-    }
-};
-struct Floor_Function : public Legacy_Function
-{
-    static const char* name() { return "floor"; }
-    Floor_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return floor(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("floor(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "floor");
-    }
-};
-// round(x) -- round x to nearest integer.
-// CPU: in case of tie, round to even.
-// GPU: in case of tie, it's GPU/driver dependent.
-struct Round_Function : public Legacy_Function
-{
-    static const char* name() { return "round"; }
-    Round_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return rint(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("round(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "round");
-    }
-};
-struct Sin_Function : public Legacy_Function
-{
-    static const char* name() { return "sin"; }
-    Sin_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return sin(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("sin(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "sin");
-    }
-};
-struct Asin_Function : public Legacy_Function
-{
-    static const char* name() { return "asin"; }
-    Asin_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return asin(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("asin(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "asin");
-    }
-};
-struct Cos_Function : public Legacy_Function
-{
-    static const char* name() { return "cos"; }
-    Cos_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return cos(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("cos(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "cos");
-    }
-};
-struct Acos_Function : public Legacy_Function
-{
-    static const char* name() { return "acos"; }
-    Acos_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        static double f(double x) { return acos(x); }
-        static Shared<const String> callstr(Value x) {
-            return stringify("acos(",x,")");
-        }
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(args[0], At_Frame(&args));
-    }
-    GL_Value gl_call(GL_Frame& f) const override
-    {
-        return gl_call_unary_numeric(f, "acos");
-    }
-};
+#define UNARY_NUMERIC_FUNCTION(Class_Name,curv_name,c_name,glsl_name) \
+struct Class_Name : public Legacy_Function \
+{ \
+    static const char* name() { return #curv_name; } \
+    Class_Name() : Legacy_Function(1,name()) {} \
+    struct Scalar_Op { \
+        static double f(double x) { return c_name(x); } \
+        static Shared<const String> callstr(Value x) { \
+            return stringify(name(),"(",x,")"); \
+        } \
+    }; \
+    static Unary_Numeric_Array_Op<Scalar_Op> array_op; \
+    Value call(Frame& args) override \
+    { \
+        return array_op.op(args[0], At_Frame(&args)); \
+    } \
+    GL_Value gl_call(GL_Frame& f) const override \
+    { \
+        return gl_call_unary_numeric(f, #glsl_name); \
+    } \
+}; \
+
+UNARY_NUMERIC_FUNCTION(Sqrt_Function, sqrt, sqrt, sqrt)
+UNARY_NUMERIC_FUNCTION(Log_Function, log, log, log)
+UNARY_NUMERIC_FUNCTION(Abs_Function, abs, abs, abs)
+UNARY_NUMERIC_FUNCTION(Floor_Function, floor, floor, floor)
+UNARY_NUMERIC_FUNCTION(Ceil_Function, ceil, ceil, ceil)
+UNARY_NUMERIC_FUNCTION(Trunc_Function, trunc, trunc, trunc)
+UNARY_NUMERIC_FUNCTION(Round_Function, round, rint, roundEven)
+
+inline double frac(double n) { return n - floor(n); }
+UNARY_NUMERIC_FUNCTION(Frac_Function, frac, frac, fract)
+
+UNARY_NUMERIC_FUNCTION(Sin_Function, sin, sin, sin)
+UNARY_NUMERIC_FUNCTION(Cos_Function, cos, cos, cos)
+UNARY_NUMERIC_FUNCTION(Tan_Function, tan, tan, tan)
+UNARY_NUMERIC_FUNCTION(Acos_Function, acos, acos, acos)
+UNARY_NUMERIC_FUNCTION(Asin_Function, asin, asin, asin)
+UNARY_NUMERIC_FUNCTION(Atan_Function, atan, atan, atan)
+
+UNARY_NUMERIC_FUNCTION(Sinh_Function, sinh, sinh, sinh)
+UNARY_NUMERIC_FUNCTION(Cosh_Function, cosh, cosh, cosh)
+UNARY_NUMERIC_FUNCTION(Tanh_Function, tanh, tanh, tanh)
+UNARY_NUMERIC_FUNCTION(Acosh_Function, acosh, acosh, acosh)
+UNARY_NUMERIC_FUNCTION(Asinh_Function, asinh, asinh, asinh)
+UNARY_NUMERIC_FUNCTION(Atanh_Function, atanh, atanh, atanh)
+
 struct Atan2_Function : public Legacy_Function
 {
     static const char* name() { return "atan2"; }
@@ -360,11 +223,11 @@ GL_Value gl_minmax(const char* name, Operation& argx, GL_Frame& f)
                 if (type == GL_Type::Num)
                     type = val.type;
                 else if (type != val.type)
-                    throw Exception(At_GL_Phrase(op->source_, &f), stringify(
+                    throw Exception(At_GL_Phrase(op->syntax_, &f), stringify(
                         "GL: ",name,
                         ": vector arguments of different lengths"));
             } else {
-                throw Exception(At_GL_Phrase(op->source_, &f), stringify(
+                throw Exception(At_GL_Phrase(op->syntax_, &f), stringify(
                     "GL: ",name,": argument has bad type"));
             }
         }
@@ -402,7 +265,7 @@ GL_Value gl_minmax(const char* name, Operation& argx, GL_Frame& f)
             f.gl.out << name<<"("<<name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
                 <<arg<<".z),"<<arg<<".w);\n";
         else
-            throw Exception(At_GL_Phrase(argx.source_, &f), stringify(
+            throw Exception(At_GL_Phrase(argx.syntax_, &f), stringify(
                 name,": argument is not a vector"));
         return result;
     }
@@ -623,10 +486,10 @@ struct Match_Function : public Legacy_Function
 };
 
 // The filename argument to "file", if it is a relative filename,
-// is interpreted relative to the parent directory of the script file from
+// is interpreted relative to the parent directory of the source file from
 // which "file" is called.
 //
-// Because "file" has this hidden parameter (the name of the script file from
+// Because "file" has this hidden parameter (the name of the source file from
 // which it is called), it is not a pure function. For this reason, it isn't
 // a function value at all, it's a metafunction.
 struct File_Expr : public Just_Expression
@@ -640,7 +503,7 @@ struct File_Expr : public Just_Expression
     virtual Value eval(Frame& f) const override
     {
         // construct argument context
-        auto& callphrase = dynamic_cast<const Call_Phrase&>(*source_);
+        auto& callphrase = dynamic_cast<const Call_Phrase&>(*syntax_);
         At_Metacall cx("file", 0, *callphrase.arg_, &f);
 
         // construct file pathname from argument
@@ -648,11 +511,11 @@ struct File_Expr : public Just_Expression
         auto argstr = arg.to<String>(cx);
         namespace fs = boost::filesystem;
         fs::path filepath;
-        auto caller_script_name = source_->location().script().name_;
-        if (caller_script_name->empty()) {
+        auto caller_filename = syntax_->location().source().name_;
+        if (caller_filename->empty()) {
             filepath = fs::path(argstr->c_str());
         } else {
-            filepath = fs::path(caller_script_name->c_str()).parent_path()
+            filepath = fs::path(caller_filename->c_str()).parent_path()
                 / fs::path(argstr->c_str());
         }
 
@@ -667,17 +530,18 @@ struct File_Expr : public Just_Expression
             return (*importp->second)(filepath, cx);
         else {
             // If extension not recognized, it defaults to a Curv program.
-            auto file = make<File_Script>(make_string(filepath.c_str()), cx);
-            Program prog{*file, f.system_};
+            auto file = make<File_Source>(make_string(filepath.c_str()), cx);
             std::unique_ptr<Frame> f2 =
                 Frame::make(0, f.system_, &f, &callphrase, nullptr);
+            Program prog{std::move(file), f.system_,
+                Program_Opts().parent_frame(&*f2)};
             auto filekey = Filesystem::canonical(filepath);
             auto& active_files = f.system_.active_files_;
             if (active_files.find(filekey) != active_files.end())
                 throw Exception{cx,
                     stringify("illegal recursive reference to file ",filepath)};
             Active_File af(active_files, filekey);
-            prog.compile(nullptr, &*f2);
+            prog.compile();
             return prog.eval();
         }
     }
@@ -696,10 +560,10 @@ struct Print_Action : public Just_Action
 {
     Shared<Operation> arg_;
     Print_Action(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Just_Action(std::move(source)),
+        Just_Action(std::move(syntax)),
         arg_(std::move(arg))
     {}
     virtual void exec(Frame& f) const override
@@ -726,10 +590,10 @@ struct Warning_Action : public Just_Action
 {
     Shared<Operation> arg_;
     Warning_Action(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Just_Action(std::move(source)),
+        Just_Action(std::move(syntax)),
         arg_(std::move(arg))
     {}
     virtual void exec(Frame& f) const override
@@ -740,7 +604,7 @@ struct Warning_Action : public Just_Action
             msg = str;
         else
             msg = stringify(arg);
-        Exception exc{At_Phrase(*source_, &f), msg};
+        Exception exc{At_Phrase(*syntax_, &f), msg};
         f.system_.message("WARNING: ", exc);
     }
 };
@@ -759,10 +623,10 @@ struct Error_Operation : public Operation
 {
     Shared<Operation> arg_;
     Error_Operation(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(std::move(source)),
+        Operation(std::move(syntax)),
         arg_(std::move(arg))
     {}
     [[noreturn]] void run(Frame& f) const
@@ -803,15 +667,15 @@ struct Error_Metafunction : public Metafunction
 };
 
 // exec(expr) -- a debug action that evaluates expr, then discards the result.
-// It is used to call functions or scripts for their side effects.
+// It is used to call functions or source files for their side effects.
 struct Exec_Action : public Just_Action
 {
     Shared<Operation> arg_;
     Exec_Action(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Just_Action(std::move(source)),
+        Just_Action(std::move(syntax)),
         arg_(std::move(arg))
     {}
     virtual void exec(Frame& f) const override
@@ -832,18 +696,18 @@ struct Assert_Action : public Just_Action
 {
     Shared<Operation> arg_;
     Assert_Action(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Just_Action(std::move(source)),
+        Just_Action(std::move(syntax)),
         arg_(std::move(arg))
     {}
     virtual void exec(Frame& f) const override
     {
-        At_Metacall cx{"assert", 0, *arg_->source_, &f};
+        At_Metacall cx{"assert", 0, *arg_->syntax_, &f};
         bool b = arg_->eval(f).to_bool(cx);
         if (!b)
-            throw Exception(At_Phrase(*source_, &f), "assertion failed");
+            throw Exception(At_Phrase(*syntax_, &f), "assertion failed");
     }
 };
 struct Assert_Metafunction : public Metafunction
@@ -863,12 +727,12 @@ struct Assert_Error_Action : public Just_Action
     Shared<Operation> expr_;
 
     Assert_Error_Action(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<Operation> expected_message,
         Shared<const String> actual_message,
         Shared<Operation> expr)
     :
-        Just_Action(std::move(source)),
+        Just_Action(std::move(syntax)),
         expected_message_(std::move(expected_message)),
         actual_message_(std::move(actual_message)),
         expr_(std::move(expr))
@@ -878,11 +742,11 @@ struct Assert_Error_Action : public Just_Action
     {
         Value expected_msg_val = expected_message_->eval(f);
         auto expected_msg_str = expected_msg_val.to<const String>(
-            At_Phrase(*expected_message_->source_, &f));
+            At_Phrase(*expected_message_->syntax_, &f));
 
         if (actual_message_ != nullptr) {
             if (*actual_message_ != *expected_msg_str)
-                throw Exception(At_Phrase(*source_, &f),
+                throw Exception(At_Phrase(*syntax_, &f),
                     stringify("assertion failed: expected error \"",
                         expected_msg_str,
                         "\", actual error \"",
@@ -896,7 +760,7 @@ struct Assert_Error_Action : public Just_Action
             result = expr_->eval(f);
         } catch (Exception& e) {
             if (*e.shared_what() != *expected_msg_str) {
-                throw Exception(At_Phrase(*source_, &f),
+                throw Exception(At_Phrase(*syntax_, &f),
                     stringify("assertion failed: expected error \"",
                         expected_msg_str,
                         "\", actual error \"",
@@ -905,7 +769,7 @@ struct Assert_Error_Action : public Just_Action
             }
             return;
         }
-        throw Exception(At_Phrase(*source_, &f),
+        throw Exception(At_Phrase(*syntax_, &f),
             stringify("assertion failed: expected error \"",
                 expected_msg_str,
                 "\", got value ", result));
@@ -942,11 +806,11 @@ struct Defined_Expression : public Just_Expression
     Symbol_Expr selector_;
 
     Defined_Expression(
-        Shared<const Phrase> source,
+        Shared<const Phrase> syntax,
         Shared<const Operation> expr,
         Symbol_Expr selector)
     :
-        Just_Expression(std::move(source)),
+        Just_Expression(std::move(syntax)),
         expr_(std::move(expr)),
         selector_(std::move(selector))
     {
@@ -1004,12 +868,23 @@ builtin_namespace()
     FUNCTION(Log_Function),
     FUNCTION(Abs_Function),
     FUNCTION(Floor_Function),
+    FUNCTION(Ceil_Function),
+    FUNCTION(Trunc_Function),
     FUNCTION(Round_Function),
+    FUNCTION(Frac_Function),
     FUNCTION(Sin_Function),
-    FUNCTION(Asin_Function),
     FUNCTION(Cos_Function),
+    FUNCTION(Tan_Function),
+    FUNCTION(Asin_Function),
     FUNCTION(Acos_Function),
+    FUNCTION(Atan_Function),
     FUNCTION(Atan2_Function),
+    FUNCTION(Sinh_Function),
+    FUNCTION(Cosh_Function),
+    FUNCTION(Tanh_Function),
+    FUNCTION(Asinh_Function),
+    FUNCTION(Acosh_Function),
+    FUNCTION(Atanh_Function),
     FUNCTION(Max_Function),
     FUNCTION(Min_Function),
     FUNCTION(Dot_Function),

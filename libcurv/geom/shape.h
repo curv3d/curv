@@ -5,9 +5,9 @@
 #ifndef LIBCURV_GEOM_SHAPE_H
 #define LIBCURV_GEOM_SHAPE_H
 
-#include <libcurv/record.h>
 #include <libcurv/gl_compiler.h>
 #include <libcurv/frame.h>
+#include <libcurv/location.h>
 #include <cmath>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -68,7 +68,9 @@ struct Shape_Program final : public Shape
 
     // describes the source code for the shape expression
     Shared<const Phrase> nub_;
-    const Phrase& nub() const { return *nub_; }
+
+    Location location() const;
+    Frame* parent_frame() const { return nullptr; }
 
     System& system_;
 

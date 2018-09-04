@@ -4,133 +4,181 @@
 
 #include "export.h"
 
+#include <libcurv/geom/viewer/viewer.h>
+
 #include <libcurv/geom/compiled_shape.h>
-#include <libcurv/geom/export_frag.h>
-#include <libcurv/geom/export_png.h>
+#include <libcurv/geom/frag.h>
+#include <libcurv/geom/png.h>
 #include <libcurv/geom/shape.h>
 
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/filesystem.h>
+#include <libcurv/format.h>
+#include <libcurv/program.h>
+#include <libcurv/range.h>
+#include <libcurv/source.h>
 
 #include <glm/vec2.hpp>
 
 #include <algorithm>
 #include <climits>
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <sstream>
 
-void Export_Params::unknown_parameter(const Map::value_type& p) const
+using namespace curv;
+
+Param_Program::Param_Program(
+    const Export_Params& params,
+    const Export_Params::Map::value_type& p)
+:
+    Program(
+        make<String_Source>("", stringify("-O ",p.first,"=",p.second)),
+        params.system_,
+        Program_Opts().skip_prefix(4+p.first.size()))
+{}
+
+Value Param_Program::eval()
 {
-    std::cerr
-        << "-O " << p.first << ": unknown parameter name\n"
-        << "Use 'curv --help -o " << format << "' for help.\n";
-    exit(EXIT_FAILURE);
+    if (phrase_ == nullptr)
+        compile();
+    if (isa<const Empty_Phrase>(nub_phrase(phrase_)))
+        throw Exception(At_Program(*this), "missing argument");
+    return Program::eval();
 }
 
-void Export_Params::bad_argument(const Map::value_type& p, const char* msg) const
+void Export_Params::unknown_parameter(const Map::value_type& p) const
 {
-    if (p.second.empty())
-        msg = "missing argument";
-    std::cerr
-        << "-O " << p.first << "=" << p.second << ": " << msg << "\n"
-        << "Use 'curv --help -o " << format << "' for help.\n";
-    exit(EXIT_FAILURE);
+    auto src = make<String_Source>("", stringify("-O ",p.first,"=",p.second));
+    Location loc{*src, {3, unsigned(3+p.first.size())}};
+    if (format_.empty()) {
+        throw Exception(At_Token(loc), stringify(
+            "'",p.first,"': Unknown -O parameter.\n"
+            "Use 'curv --help' for help."));
+    } else {
+        throw Exception(At_Token(loc), stringify(
+            "'",p.first,"': "
+            "Unknown -O parameter for output format '",format_,"'.\n"
+            "Use 'curv --help -o ",format_,"' for help."));
+    }
 }
 
 int Export_Params::to_int(const Map::value_type& p, int lo, int hi) const
 {
-    const char* str = p.second.c_str();
-    char* endptr;
-    long n = strtol(str, &endptr, 10);
-    if (*str != '\0' && *endptr == '\0') {
-        if (n < lo || n > hi)
-            bad_argument(p, "integer value is outsize of legal range");
-        return int(n);
-    }
-    bad_argument(p, "argument is not an integer");
+    Param_Program pp(*this, p);
+    return pp.eval().to_int(lo, hi, At_Program(pp));
 }
 
 double Export_Params::to_double(const Map::value_type& p) const
 {
-    const char* str = p.second.c_str();
-    char *endptr;
-    double result = strtod(str, &endptr);
-    if (*str == '\0' || *endptr != '\0' || result != result)
-        bad_argument(p, "argument is not a number");
-    return result;
+    Param_Program pp(*this, p);
+    return pp.eval().to_num(At_Program(pp));
 }
 
-void export_curv(curv::Value value,
-    curv::Program&,
-    const Export_Params& params,
-    curv::Output_File& ofile)
+bool Export_Params::to_bool(const Map::value_type& p) const
 {
-    for (auto& p : params.map) {
+    if (p.second.empty())
+        return true;
+    Param_Program pp(*this, p);
+    return pp.eval().to_bool(At_Program(pp));
+}
+
+void export_curv(Value value,
+    Program&,
+    const Export_Params& params,
+    Output_File& ofile)
+{
+    for (auto& p : params.map_) {
         params.unknown_parameter(p);
     }
     ofile.open();
     ofile.ostream() << value << "\n";
 }
 
-const char export_frag_help[] =
-    "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n"
-    "-O taa=<supersampling factor for temporal antialiasing; 1 means disabled>\n"
-    "-O delay=<frame duration for animation (used with TAA)>\n";
-
-void export_frag(curv::Value value,
-    curv::Program& prog,
-    const Export_Params& params,
-    curv::Output_File& ofile)
+void describe_frag_options(std::ostream& out, const char*prefix)
 {
-    curv::geom::Frag_Export opts;
-    for (auto& p : params.map) {
-        if (p.first == "aa") {
-            opts.aa_ = params.to_int(p, 1, 16);
-        } else if (p.first == "taa") {
-            opts.taa_ = params.to_int(p, 1, 16);
-        } else if (p.first == "delay") {
-            opts.delay_ = params.to_double(p);
-        } else {
-            params.unknown_parameter(p);
-        }
-    }
-
-    curv::geom::Shape_Program shape(prog);
-    if (!shape.recognize(value)) {
-        curv::At_Program cx(prog);
-        throw curv::Exception(cx, "not a shape");
-    }
-    ofile.open();
-    curv::geom::export_frag(shape, opts, ofile.ostream());
+  out
+  << prefix <<
+  "-O aa=<supersampling factor for antialiasing> (1 means disabled)\n"
+  << prefix <<
+  "-O taa=<supersampling factor for temporal antialiasing> (1 means disabled)\n"
+  << prefix <<
+  "-O fdur=<animation frame duration> (used with TAA)\n"
+  ;
+}
+void describe_frag_opts(std::ostream& out)
+{
+    describe_frag_options(out, "");
 }
 
-void export_cpp(curv::Value value,
-    curv::Program& prog,
+bool parse_frag_opt(
     const Export_Params& params,
-    curv::Output_File& ofile)
+    const Export_Params::Map::value_type& p,
+    geom::Frag_Export& opts)
 {
-    for (auto& p : params.map) {
+    if (p.first == "aa") {
+        opts.aa_ = params.to_int(p, 1, INT_MAX);
+        return true;
+    }
+    if (p.first == "taa") {
+        opts.taa_ = params.to_int(p, 1, INT_MAX);
+        return true;
+    }
+    if (p.first == "fdur") {
+        opts.fdur_ = params.to_double(p);
+        return true;
+    }
+    return false;
+}
+
+void export_frag(Value value,
+    Program& prog,
+    const Export_Params& params,
+    Output_File& ofile)
+{
+    geom::Frag_Export opts;
+    for (auto& p : params.map_) {
+        if (!parse_frag_opt(params, p, opts))
+            params.unknown_parameter(p);
+    }
+
+    geom::Shape_Program shape(prog);
+    if (!shape.recognize(value)) {
+        At_Program cx(prog);
+        throw Exception(cx, "not a shape");
+    }
+    ofile.open();
+    geom::export_frag(shape, opts, ofile.ostream());
+}
+
+void export_cpp(Value value,
+    Program& prog,
+    const Export_Params& params,
+    Output_File& ofile)
+{
+    for (auto& p : params.map_) {
         params.unknown_parameter(p);
     }
-    curv::geom::Shape_Program shape(prog);
+    geom::Shape_Program shape(prog);
     if (!shape.recognize(value)) {
-        curv::At_Program cx(prog);
-        throw curv::Exception(cx, "not a shape");
+        At_Program cx(prog);
+        throw Exception(cx, "not a shape");
     }
     ofile.open();
-    curv::geom::export_cpp(shape, ofile.ostream());
+    geom::export_cpp(shape, ofile.ostream());
 }
 
-bool is_json_data(curv::Value val)
+bool is_json_data(Value val)
 {
     if (val.is_ref()) {
         auto& ref = val.get_ref_unsafe();
         switch (ref.type_) {
-        case curv::Ref_Value::ty_string:
-        case curv::Ref_Value::ty_list:
-        case curv::Ref_Value::ty_record:
+        case Ref_Value::ty_string:
+        case Ref_Value::ty_list:
+        case Ref_Value::ty_record:
             return true;
         default:
             return false;
@@ -139,7 +187,7 @@ bool is_json_data(curv::Value val)
         return true; // null, bool or num
     }
 }
-bool export_json_value(curv::Value val, std::ostream& out)
+bool export_json_value(Value val, std::ostream& out)
 {
     if (val.is_null()) {
         out << "null";
@@ -150,15 +198,15 @@ bool export_json_value(curv::Value val, std::ostream& out)
         return true;
     }
     if (val.is_num()) {
-        out << curv::dfmt(val.get_num_unsafe(), curv::dfmt::JSON);
+        out << dfmt(val.get_num_unsafe(), dfmt::JSON);
         return true;
     }
     assert(val.is_ref());
     auto& ref = val.get_ref_unsafe();
     switch (ref.type_) {
-    case curv::Ref_Value::ty_string:
+    case Ref_Value::ty_string:
       {
-        auto& str = (curv::String&)ref;
+        auto& str = (String&)ref;
         out << '"';
         for (auto c : str) {
             if (c == '\\' || c == '"')
@@ -168,9 +216,9 @@ bool export_json_value(curv::Value val, std::ostream& out)
         out << '"';
         return true;
       }
-    case curv::Ref_Value::ty_list:
+    case Ref_Value::ty_list:
       {
-        auto& list = (curv::List&)ref;
+        auto& list = (List&)ref;
         out << "[";
         bool first = true;
         for (auto e : list) {
@@ -183,9 +231,9 @@ bool export_json_value(curv::Value val, std::ostream& out)
         out << "]";
         return true;
       }
-    case curv::Ref_Value::ty_record:
+    case Ref_Value::ty_record:
       {
-        auto& record = (curv::Record&)ref;
+        auto& record = (Record&)ref;
         out << "{";
         bool first = true;
         for (auto i : record.fields_) {
@@ -203,67 +251,110 @@ bool export_json_value(curv::Value val, std::ostream& out)
         return false;
     }
 }
-void export_json(curv::Value value,
-    curv::Program& prog,
+void export_json(Value value,
+    Program& prog,
     const Export_Params& params,
-    curv::Output_File& ofile)
+    Output_File& ofile)
 {
-    for (auto& p : params.map) {
+    for (auto& p : params.map_) {
         params.unknown_parameter(p);
     }
     ofile.open();
     if (export_json_value(value, ofile.ostream()))
         ofile.ostream() << "\n";
     else {
-        curv::At_Program cx(prog);
-        throw curv::Exception(cx, "value can't be converted to JSON");
+        At_Program cx(prog);
+        throw Exception(cx, "value can't be converted to JSON");
     }
 }
 
-const char export_png_help[] =
+// wrapper that exports image sequences if requested
+void export_all_png(
+    const geom::Shape_Program& shape,
+    geom::Image_Export& ix,
+    double animate,
+    Output_File& ofile)
+{
+    if (animate <= 0.0) {
+        // export single image
+        geom::export_png(shape, ix, ofile);
+        return;
+    }
+
+    const char* ipath = ofile.path_.c_str();
+    const char* p = strchr(ipath, '*');
+    if (p == nullptr) {
+        throw Exception({},
+          "'-O animate=' requires pathname in '-o pathname' to contain a '*'");
+    }
+    Range<const char*> prefix(ipath, p);
+    Range<const char*> suffix(p+1, strlen(p+1));
+
+    unsigned count = unsigned(animate / ix.fdur_ + 0.5);
+    if (count == 0) count = 1;
+    unsigned digs = ndigits(count);
+    double fstart = ix.fstart_;
+    for (unsigned i = 0; i < count; ++i) {
+        ix.fstart_ = fstart + i * ix.fdur_;
+        char num[12];
+        snprintf(num, sizeof(num), "%0*d", digs, i);
+        auto opath = stringify(prefix, num, suffix);
+        Output_File oofile(opath->c_str());
+        geom::export_png(shape, ix, oofile);
+        oofile.commit();
+        //std::cerr << ".";
+        //std::cerr.flush();
+    }
+    //std::cerr << "done\n";
+}
+
+void describe_png_opts(std::ostream& out)
+{
+    out <<
+    "-v : verbose output logged to stderr\n"
     "-O xsize=<image width in pixels>\n"
     "-O ysize=<image height in pixels>\n"
-    "-O time=<animation frame timestamp, in seconds, default 0>\n"
-    "-O aa=<supersampling factor for antialiasing; 1 means disabled>\n"
-    "-O taa=<supersampling factor for temporal antialiasing; 1 means disabled>\n"
-    "-O delay=<frame duration for animation (used with TAA)>\n";
+    "-O fstart=<animation frame start time, in seconds> (default 0)\n";
+    describe_frag_opts(out);
+    out <<
+    "-O animate=<duration of animation> (exports an image sequence)\n";
+}
 
-void export_png(curv::Value value,
-    curv::Program& prog,
+void export_png(Value value,
+    Program& prog,
     const Export_Params& params,
-    curv::Output_File& ofile)
+    Output_File& ofile)
 {
-    curv::geom::Image_Export ix;
+    geom::Image_Export ix;
 
     int xsize = 0;
     int ysize = 0;
-    for (auto& p : params.map) {
-        if (p.first == "xsize") {
+    double animate = 0.0;
+    for (auto& p : params.map_) {
+        if (parse_frag_opt(params, p, ix)) {
+            ;
+        } else if (p.first == "xsize") {
             xsize = params.to_int(p, 1, INT_MAX);
         } else if (p.first == "ysize") {
             ysize = params.to_int(p, 1, INT_MAX);
-        } else if (p.first == "time") {
-            ix.time = params.to_double(p);
-        } else if (p.first == "aa") {
-            ix.aa_ = params.to_int(p, 1, 64);
-        } else if (p.first == "taa") {
-            ix.taa_ = params.to_int(p, 1, 64);
-        } else if (p.first == "delay") {
-            ix.delay_ = params.to_double(p);
+        } else if (p.first == "fstart") {
+            ix.fstart_ = params.to_double(p);
+        } else if (p.first == "animate") {
+            animate = params.to_double(p);
         } else {
             params.unknown_parameter(p);
         }
     }
 
-    curv::geom::Shape_Program shape(prog);
-    curv::At_Program cx(prog);
+    geom::Shape_Program shape(prog);
+    At_Program cx(prog);
     if (!shape.recognize(value))
-        throw curv::Exception(cx, "not a shape");
+        throw Exception(cx, "not a shape");
     if (shape.is_2d_) {
         if (shape.bbox_.infinite2())
-            throw curv::Exception(cx, "can't export an infinite 2D shape to PNG");
+            throw Exception(cx, "can't export an infinite 2D shape to PNG");
         if (shape.bbox_.empty2())
-            throw curv::Exception(cx, "can't export an empty 2D shape to PNG");
+            throw Exception(cx, "can't export an empty 2D shape to PNG");
         double dx = shape.bbox_.xmax - shape.bbox_.xmin;
         double dy = shape.bbox_.ymax - shape.bbox_.ymin;
         if (!xsize && !ysize) {
@@ -301,21 +392,45 @@ void export_png(curv::Value value,
             ix.size.y = ysize;
         }
     }
-    std::cerr << "Image export: "<<ix.size.x<<"×"<<ix.size.y<<" pixels."
-        " Use 'curv --help -o png' for more options.\n";
-    curv::geom::export_png(shape, ix, ofile);
+    ix.verbose_ = params.verbose_;
+    if (params.verbose_) {
+        std::cerr << ix.size.x<<"×"<<ix.size.y<<" pixels";
+        if (ix.aa_ > 1)
+            std::cerr << ", " << ix.aa_<<"× antialiasing";
+        if (ix.taa_ > 1)
+            std::cerr << ", " << ix.aa_<<"× temporal antialiasing";
+        std::cerr << std::endl;
+    }
+    export_all_png(shape, ix, animate, ofile);
 }
 
+void describe_no_opts(std::ostream&) {}
+
 std::map<std::string, Exporter> exporters = {
-    {"curv", {export_curv, "Curv expression", ""}},
-    {"stl", {export_stl, "STL mesh file (3D shape only)", mesh_export_help}},
-    {"obj", {export_obj, "OBJ mesh file (3D shape only)", mesh_export_help}},
+    {"curv", {export_curv, "Curv expression", describe_no_opts}},
+    {"stl", {export_stl, "STL mesh file (3D shape only)", describe_mesh_opts}},
+    {"obj", {export_obj, "OBJ mesh file (3D shape only)", describe_mesh_opts}},
     {"x3d", {export_x3d, "X3D colour mesh file (3D shape only)",
-             colour_mesh_export_help}},
+             describe_colour_mesh_opts}},
     {"frag", {export_frag,
               "GLSL fragment shader (shape only, shadertoy.com compatible)",
-              export_frag_help}},
-    {"json", {export_json, "JSON expression", ""}},
-    {"cpp", {export_cpp, "C++ source file (shape only)", ""}},
-    {"png", {export_png, "PNG image file (shape only)", export_png_help}},
+              describe_frag_opts}},
+    {"json", {export_json, "JSON expression", describe_no_opts}},
+    {"cpp", {export_cpp, "C++ source file (shape only)", describe_no_opts}},
+    {"png", {export_png, "PNG image file (shape only)", describe_png_opts}},
 };
+
+void parse_viewer_config(
+    const Export_Params& params,
+    geom::viewer::Viewer_Config& opts)
+{
+    opts.verbose_ = params.verbose_;
+    for (auto& p : params.map_) {
+        if (!parse_frag_opt(params, p, opts))
+            params.unknown_parameter(p);
+    }
+}
+void describe_viewer_options(std::ostream& out, const char* prefix)
+{
+    describe_frag_options(out, prefix);
+}

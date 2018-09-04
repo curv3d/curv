@@ -143,7 +143,7 @@ definiens. BUT we can't have reference cycles in the Operation graph.
   Common-subexpression optimization can result in the same situation.
   In the end, it's the existence of common subexpressions, not variable
   definitions, that controls frame slot allocations.
-* But, that conflicts with keeping a meaning tree (not DAG) with a source_
+* But, that conflicts with keeping a meaning tree (not DAG) with a syntax_
   field in each tree node? It seems that for non-recursive variables, we won't
   have operations with Identifiers as source. If such an identifier is an
   argument to a function call, it won't be underlined in an error message?

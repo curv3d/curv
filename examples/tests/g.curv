@@ -1,0 +1,98 @@
+let
+phi =(sqrt(5)+1)/2;
+
+gdf_index(i) =
+
+if(i == 0) normalize([1, 0, 0])
+else if(i == 1) normalize([0, 1, 0])
+else if(i == 2) normalize([0, 0, 1])
+
+else if(i == 3) normalize([1, 1, 1 ])
+else if(i == 4) normalize([-1, 1, 1])
+else if(i == 5) normalize([1, 1, -1])
+else if(i == 6) normalize([1, -1, 1])
+
+else if(i == 7) normalize([0, 1, phi+1])
+else if(i == 8) normalize([0, -1, phi+1])
+else if(i == 9) normalize([phi+1, 0, 1])
+else if(i == 10) normalize([-phi-1, 0, 1])
+else if(i == 11) normalize([1, phi+1, 0])
+else if(i == 12) normalize([-1, phi+1, 0])
+
+else if(i == 13) normalize([0, phi, 1])
+else if(i == 14) normalize([0, -phi, 1])
+else if(i == 15) normalize([1, 0, phi])
+else if(i == 16) normalize([-1, 0, phi])
+else if(i == 17) normalize([phi, 1, 0])
+else  normalize([-phi, 1, 0])
+
+;
+
+solid(i1,i2) = make_shape {
+dist(x,y,z,t):
+do
+var d := 0;
+var i := i1;
+while(i <= i2)
+(
+d := max(d,abs(dot([x,y,z],gdf_index(i))));
+i := i+1;
+)
+
+in d - 1;
+    is_3d : true;
+bbox : [[-1,-1,-1],[1,1,1]];
+
+};
+
+wire(i1,i2) = make_shape {
+dist(x,y,z,t) =
+do
+var d := 0;
+var i := 0;
+
+var imax := 0;
+
+var max1 := -inf;
+i := i1;
+while(i <= i2)
+(
+	d := abs(dot([x,y,z],gdf_index(i)))-1;
+	if(d>max1) (
+		max1 := d;
+		imax := i;
+	);
+
+	i := i+1;
+);
+
+var max2 := -inf;
+i := i1;
+while(i <= i2)
+(
+	d := abs(dot([x,y,z],gdf_index(i)))-1;
+	if(d>max2 && i != imax) (
+		max2 := d;
+	);
+
+	i := i+1;
+);
+
+in mag(max1,max2)-0.05;
+    is_3d = true;
+bbox = [[-2,-2,-2],[2,2,2]];
+
+};
+
+cube_solid = solid(0,2);
+oct_solid = solid(3,6);
+ico_solid = solid(3,12);
+dod_solid = solid(13,18);
+
+cube_wire = wire(0,2);
+oct_wire = wire(3,6);
+ico_wire = wire(3,12);
+dod_wire = wire(13,18);
+
+in
+dod_solid

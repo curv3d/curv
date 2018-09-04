@@ -2,7 +2,17 @@ Import a 2D image file
 ======================
 TODO:
 -----
-* Script and Location
+1. file "foo.png" imports the PNG file, returns a shape value (no GL support).
+  * We return a standard record object with magic values in dist, colour.
+    * bbox: The smallest rectangle that fully covers a unit circle.
+    * dist: euclidean rectangle SDF for the bbox.
+    * colour: Initially, red (a stub). Bilinear interpolation.
+  * Should PNG files appear as source files in the stack trace?
+2. add GL/Viewer support to PNG shapes.
+3. `curv foo.png` displays the image in a viewer window.
+
+
+* Source and Location
   * A PNG file is now considered a "source file", and hence can be named
     in a stack trace item. Two cases:
      1. Just print the file name:
@@ -11,33 +21,22 @@ TODO:
      2. Print filename and byte offset+length, when reporting an error while
         parsing the image file.
     These are the two cases for a Location that references a PNG file.
-  * Need to generalize the Script class so that it can denote a PNG file, and
-    contain the pathname, without containing the raw file data. `Script`
-    is the wrong name for an image file.
-    * Rename this class to Source, with subclasses Source_File, Source_String,
-      Source_Buffer. An instance of the base class Source may contain a pathname
+  * Generalize the Source class so that it can denote a PNG file, and
+    contain the pathname, without containing the raw file data.
+    * An instance of the base class Source may contain a pathname
       and no file contents.
-    * But, Location now has a source_ element, which is confusing, due to Meaning::source_.
-       1. Rename Meaning::source_ to syntax_
-       2. use class Asset, File_Asset, String_Asset, CString_Asset, Image_Asset.
-  * Maybe `Source_Image` contains the pixel array, instead of `Image_Data`.
-
-* Command line arguments are source code (for printing errors).
-  Numeric arguments are Curv expressions.
-     ERROR: bad numeral
-     1| -O time=42foo
-                ^^^^^
+  * Maybe `Image_Source` contains the pixel array, instead of `Image_Data`.
 
 * `curv foo.png` imports foo.png, converts to value, displays or exports it.
-        curv::Shared<curv::Script> script;
+        curv::Shared<curv::Source> source;
         if (expr) {
-            script = curv::make<CString_Script>("", filename);
+            source = curv::make<String_Source>("", filename);
         } else {
-            script = curv::make<curv::File_Script>(
+            source = curv::make<curv::File_Source>(
                 curv::make_string(filename), curv::Context{});
         }
 
-        curv::Program prog{*script, sys};
+        curv::Program prog{source, sys};
         prog.compile();
         auto value = prog.eval();
 

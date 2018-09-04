@@ -7,6 +7,7 @@
 
 #include <libcurv/system.h>
 
-int live_mode(curv::System& sys, const char* editor, const char* filename);
+int live_mode(curv::System& sys, const char* editor, const char* filename,
+    curv::geom::viewer::Viewer_Config&);
 
 #endif // header guard

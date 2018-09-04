@@ -18,27 +18,12 @@ extern "C" {
 #include <fstream>
 #include <thread>
 
-#include "export.h"
-#include "progdir.h"
-#include "repl.h"
-#include "cscript.h"
 #include "shapes.h"
 #include "view_server.h"
-#include <libcurv/geom/tempfile.h>
-#include <libcurv/dtostr.h>
-#include <libcurv/analyser.h>
 #include <libcurv/context.h>
 #include <libcurv/program.h>
-#include <libcurv/exception.h>
-#include <libcurv/file.h>
-#include <libcurv/parser.h>
-#include <libcurv/phrase.h>
-#include <libcurv/shared.h>
+#include <libcurv/source.h>
 #include <libcurv/system.h>
-#include <libcurv/list.h>
-#include <libcurv/record.h>
-#include <libcurv/die.h>
-#include <libcurv/geom/export_frag.h>
 #include <libcurv/geom/shape.h>
 
 View_Server live_view_server;
@@ -92,16 +77,15 @@ poll_file(curv::System* sys, const char* editor, const char* filename)
         } else {
             // evaluate file.
             try {
-                auto file = curv::make<curv::File_Script>(
+                auto file = curv::make<curv::File_Source>(
                     curv::make_string(filename), curv::Context{});
-                curv::Program prog{*file, *sys};
+                curv::Program prog{std::move(file), *sys};
                 prog.compile();
                 auto value = prog.eval();
                 curv::geom::Shape_Program shape{prog};
                 if (shape.recognize(value)) {
                     print_shape(shape);
-                    curv::geom::Frag_Export opts;
-                    live_view_server.display_shape(shape, opts);
+                    live_view_server.display_shape(shape);
                 } else {
                     std::cout << value << "\n";
                 }
@@ -126,7 +110,8 @@ poll_file(curv::System* sys, const char* editor, const char* filename)
 }
 
 int
-live_mode(curv::System& sys, const char* editor, const char* filename)
+live_mode(curv::System& sys, const char* editor, const char* filename,
+    curv::geom::viewer::Viewer_Config& opts)
 {
     if (editor) {
         launch_editor(editor, filename);
@@ -134,7 +119,7 @@ live_mode(curv::System& sys, const char* editor, const char* filename)
             return EXIT_FAILURE;
     }
     std::thread poll_file_thread{poll_file, &sys, editor, filename};
-    live_view_server.run();
+    live_view_server.run(opts);
     if (poll_file_thread.joinable())
         poll_file_thread.join();
     return EXIT_SUCCESS;

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/geom/export_png.h>
+#include <libcurv/geom/png.h>
 
 #include <libcurv/geom/shape.h>
 #include <libcurv/geom/viewer/viewer.h>
@@ -11,9 +11,11 @@
 #include <libcurv/output_file.h>
 
 #include <gl/texture.h>
-#include <iostream>
-#include <cstring>
+
 #include <cerrno>
+#include <chrono>
+#include <cstring>
+#include <iostream>
 
 namespace curv { namespace geom {
 
@@ -66,26 +68,36 @@ export_png(
     };
     (void) origin; // TODO
 
-    Frag_Export opts;
+    Frag_Export opts{ p };
+    /*
     opts.aa_ = p.aa_;
     opts.taa_ = p.taa_;
-    opts.delay_ = p.delay_;
+    opts.fdur_ = p.fdur_;
+     */
 
     viewer::Viewer v;
     v.window_pos_and_size_.z = p.size.x;
     v.window_pos_and_size_.w = p.size.y;
     v.headless_ = true;
+    v.config_.verbose_ = p.verbose_;
     v.set_shape(shape, opts);
     v.open();
-    v.current_time_ = p.time;
+    v.current_time_ = p.fstart_;
+
+    std::chrono::time_point<std::chrono::steady_clock> start_time, end_time;
+    start_time = std::chrono::steady_clock::now();
     v.draw_frame();
 #if 1
     // On macOS, the second call to draw_frame() is needed, or glReadPixels
-    // will store zeroes in `pixels`. (Calling glFinish() doesn't help.)
+    // will store zeroes in `pixels`.
     // I think the problem is related to double buffering: only after the
     // second call to draw_frame() do both of the buffers contain the image.
-    // On Linux, I don't need 2 calls.
-    v.current_time_ = p.time;
+    // On Linux, I don't need 2 calls. How to fix?
+    // * Calling glFinish() doesn't help.
+    // * Try render to a Frame Buffer Object (FBO).
+    // According to the GLFW docs, I need an FBO because the framebuffer of
+    // a hidden window might not be useable.
+    v.current_time_ = p.fstart_;
     v.draw_frame();
 #endif
     glFinish();
@@ -99,6 +111,7 @@ export_png(
     glGetError();
     glReadPixels(0, 0, p.size.x, p.size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
     auto err = glGetError();
+    end_time = std::chrono::steady_clock::now();
 
     v.close();
 #if 0
@@ -110,6 +123,10 @@ export_png(
 #else
     (void) err;
 #endif
+    if (p.verbose_) {
+        std::chrono::duration<double> render_time = end_time - start_time;
+        std::cerr << "image render time: " << render_time.count() << "s\n";
+    }
     write_png_rgb(ofile.path().c_str(), pixels.get(), p.size.x, p.size.y);
 }
 

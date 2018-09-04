@@ -6,7 +6,7 @@
 #define SHAPES_H
 
 #include <libcurv/geom/shape.h>
-#include <libcurv/geom/export_frag.h>
+#include <libcurv/geom/frag.h>
 #include <string>
 
 void print_shape(const curv::geom::Shape_Program&);

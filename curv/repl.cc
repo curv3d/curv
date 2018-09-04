@@ -29,20 +29,20 @@ extern "C" {
 #include <thread>
 #include <condition_variable>
 #include <functional>
+
 #include <replxx.hxx>
 
-#include "cscript.h"
 #include "shapes.h"
 #include "view_server.h"
+
+#include <libcurv/ansi_colour.h>
 #include <libcurv/context.h>
 #include <libcurv/program.h>
-#include <libcurv/exception.h>
+#include <libcurv/source.h>
 #include <libcurv/system.h>
-#include <libcurv/die.h>
-#include <libcurv/geom/export_frag.h>
+
 #include <libcurv/geom/shape.h>
 #include <libcurv/geom/viewer/viewer.h>
-#include <libcurv/ansi_colour.h>
 
 View_Server view_server;
 
@@ -78,10 +78,10 @@ void repl(curv::System* sys)
         if (line[0] != '\0')
             rx.history_add(line);
 
-        auto script = curv::make<CString_Script>("", line);
         try {
-            curv::Program prog{*script, *sys};
-            prog.compile(&names, nullptr);
+            auto source = curv::make<curv::String_Source>("", line);
+            curv::Program prog{std::move(source), *sys};
+            prog.compile(&names);
             auto den = prog.denotes();
             if (den.first) {
                 for (auto f : *den.first)
@@ -96,8 +96,7 @@ void repl(curv::System* sys)
                     curv::geom::Shape_Program shape{prog};
                     if (shape.recognize(den.second->front())) {
                         print_shape(shape);
-                        curv::geom::Frag_Export opts;
-                        view_server.display_shape(shape, opts);
+                        view_server.display_shape(shape);
                         is_shape = true;
                     }
                 }
@@ -113,11 +112,13 @@ void repl(curv::System* sys)
     view_server.exit();
 }
 
-void interactive_mode(curv::System& sys)
+void interactive_mode(
+    curv::System& sys, const curv::geom::viewer::Viewer_Config& opts)
 {
+    (void) opts; // TODO
     sys.use_colour_ = true;
     std::thread repl_thread(repl, &sys);
-    view_server.run();
+    view_server.run(opts);
     if (repl_thread.joinable())
         repl_thread.join();
 }

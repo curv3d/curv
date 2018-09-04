@@ -1,11 +1,11 @@
 let
 random2f(x,y) =
     let t = sin(x+y*1e3);
-    in (mod(t*1e4,1), mod(t*1e6,1));
+    in (frac(t*1e4), frac(t*1e6));
 
 voronoi(x,y) =
     let p = floor(x,y);
-        f = mod((x,y),1);
+        f = frac(x,y);
     in do
         var res := 8;
         for (i in -1 .. 1)

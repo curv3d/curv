@@ -18,9 +18,9 @@ struct Context;
 
 struct Pattern : public Shared_Base
 {
-    Shared<const Phrase> source_;
+    Shared<const Phrase> syntax_;
 
-    Pattern(Shared<const Phrase> s) : Shared_Base(), source_(std::move(s)) {}
+    Pattern(Shared<const Phrase> s) : Shared_Base(), syntax_(std::move(s)) {}
 
     virtual void analyse(Environ&) = 0;
     virtual void exec(Value* slots, Value, const Context&, Frame&) const = 0;

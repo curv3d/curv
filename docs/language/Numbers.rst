@@ -42,6 +42,11 @@ The arithmetic operators:
   The integer nearest to *n*. In case of a tie (the fractional part of *n* is 0.5),
   then the result is the nearest even integer.
 
+``frac n``
+  The fractional part of *n*.
+  Equivalent to ``n - floor n``, or to ``mod(n,1)``.
+  The function ``y=frac x`` is a sawtooth wave.
+
 ``max list``
   The maximum value in a list of numbers.
   ``max[]`` is ``-inf``, which is the identity element for the maximum operation.

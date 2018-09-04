@@ -46,14 +46,14 @@ struct Phrase : public Shared_Base
 struct Token_Phrase : public Phrase
 {
     Location loc_;
-    Token_Phrase(const Script& s, Token tok) : loc_(s, std::move(tok)) {}
+    Token_Phrase(const Source& s, Token tok) : loc_(s, std::move(tok)) {}
     virtual Location location() const override { return loc_; }
 };
 struct Identifier final : public Token_Phrase
 {
     Symbol symbol_;
 
-    Identifier(const Script& s, Token tok)
+    Identifier(const Source& s, Token tok)
     :
         Token_Phrase(s, std::move(tok)),
         symbol_{loc_.range()}
@@ -75,7 +75,7 @@ struct Segment_Phrase : public Shared_Base
 struct String_Segment_Phrase : public Segment_Phrase
 {
     Location loc_;
-    String_Segment_Phrase(const Script& s, Token tok)
+    String_Segment_Phrase(const Source& s, Token tok)
     : loc_(s, std::move(tok)) {}
     virtual Location location() const override { return loc_; }
     virtual Shared<Segment> analyse(Environ&) const override;
@@ -83,7 +83,7 @@ struct String_Segment_Phrase : public Segment_Phrase
 struct Char_Escape_Phrase : public Segment_Phrase
 {
     Location loc_;
-    Char_Escape_Phrase(const Script& s, Token tok)
+    Char_Escape_Phrase(const Source& s, Token tok)
     : loc_(s, std::move(tok)) {}
     virtual Location location() const override { return loc_; }
     virtual Shared<Segment> analyse(Environ&) const override;
@@ -117,7 +117,7 @@ struct String_Phrase_Base : public Phrase
     Location begin_;
     Token end_;
 
-    String_Phrase_Base(const Script& s, Token begin, Token end)
+    String_Phrase_Base(const Source& s, Token begin, Token end)
     :
         begin_{s, std::move(begin)},
         end_(std::move(end))

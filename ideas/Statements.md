@@ -226,36 +226,6 @@ while loops in list/record constructors, and conditional compound definitions.
 `[1;2;3]` is now a list constructor.
 `if (c) (a;b;c)` is a conditional compound phrase.
 
-## `while` loops in list/record constructors
-
-This is low priority.
-
-Right now, `for` loops are legal in list and record constructors, but not
-`while` loops.  To fix this, we need to extend list/record constructors with:
-* `while` loops containing generators/binders
-* `a := b` reassignment actions, with a matching sequential definition in scope.
-
-Proposal:
-
- 1. The `while` action is generalized so that the body can contain generators
-    or binders, same as how the `for` operation is already generalized.
-
- 2. If the body of a `do` is a record or list constructor, then the `do`'s
-    sequential scope is continued into the body of the constructor.
-    Reassignments and `while` phrases may be used in the constructor body.
-
-    `do <sequential definitions> in [ <generators, actions, reassignments> ]`
-    `do <sequential definitions> in { <binders, actions, reassignments> }`
-
-    This syntax segregates the definitions (which are outside the constructor)
-    from the generators/binders (which are inside the constructor).
-    It avoids the ambiguity of putting local definitions (which don't define
-    a field) inside a record constructor.
-
-`while (c) (a;b;c)` is an iterative compound phrase.
-
-`do var i:= 0 in [while (i < 10) (i; i:=i+1)]`
-
 ## `let` syntax
 
 Proposal:

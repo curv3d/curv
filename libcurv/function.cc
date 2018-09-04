@@ -75,7 +75,7 @@ const
         (*f2)[0] = arg.gl_eval(f);
     else if (auto list = dynamic_cast<List_Expr*>(&arg)) {
         if (list->size() != nargs_)
-            throw Exception(At_GL_Phrase(arg.source_, &f), stringify(
+            throw Exception(At_GL_Phrase(arg.syntax_, &f), stringify(
                 "wrong number of arguments (got ",list->size(),
                 ", expected ",nargs_,")"));
         for (size_t i = 0; i < list->size(); ++i)
@@ -83,10 +83,10 @@ const
     } else {
         auto glarg = arg.gl_eval(f);
         if (!gl_type_is_vec(glarg.type))
-            throw Exception(At_GL_Phrase(arg.source_, &f),
+            throw Exception(At_GL_Phrase(arg.syntax_, &f),
                 "function call argument is not a vector");
         if (gl_type_count(glarg.type) != nargs_)
-            throw Exception(At_GL_Phrase(arg.source_, &f), stringify(
+            throw Exception(At_GL_Phrase(arg.syntax_, &f), stringify(
                 "wrong number of arguments (got ",gl_type_count(glarg.type),
                 ", expected ",nargs_,")"));
         for (unsigned i = 0; i < gl_type_count(glarg.type); ++i)

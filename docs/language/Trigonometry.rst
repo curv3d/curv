@@ -69,3 +69,24 @@ Curv uses `radians`_ (not degrees) to specify angles.
 
 ``cot a``
   The cotangent (reciprocal tangent) of angle ``a``.
+
+Hyperbolic Functions
+--------------------
+
+``sinh x``
+  The hyperbolic sine of ``x``.
+
+``cosh x``
+  The hyperbolic cosine of ``x``.
+
+``tanh x``
+  The hyperbolic tangent of ``x``.
+
+``asinh x``
+  The inverse hyperbolic sine of ``x``.
+
+``acosh x``
+  The principal value of the inverse hyperbolic cosine of ``x``.
+
+``atanh x``
+  The inverse hyperbolic tangent of ``x``.

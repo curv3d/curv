@@ -8,6 +8,7 @@
 #include <libcurv/list.h>
 #include <libcurv/record.h>
 #include <libcurv/exception.h>
+#include <cmath>
 
 namespace curv {
 
@@ -15,7 +16,7 @@ void
 Value::to_null(const Context& cx) const
 {
     if (!is_null())
-        throw Exception(cx, stringify("is not null: ", *this));
+        throw Exception(cx, stringify(*this, " is not null"));
 }
 
 bool
@@ -23,7 +24,7 @@ Value::to_bool(const Context& cx) const
 {
     if (is_bool())
         return get_bool_unsafe();
-    throw Exception(cx, stringify("is not a boolean: ", *this));
+    throw Exception(cx, stringify(*this, " is not a boolean"));
 }
 
 double
@@ -31,13 +32,29 @@ Value::to_num(const Context& cx) const
 {
     if (is_num())
         return get_num_unsafe();
-    throw Exception(cx, stringify("is not a number: ", *this));
+    throw Exception(cx, stringify(*this, " is not a number"));
+}
+
+int
+Value::to_int(int lo, int hi, const Context& cx) const
+{
+    if (!is_num())
+        throw Exception(cx, stringify(*this, " is not a number"));
+    double num = get_num_unsafe();
+    double intf;
+    double frac = modf(num, &intf);
+    if (frac != 0.0)
+        throw Exception(cx, stringify(num, " is not an integer"));
+    if (intf < double(lo) || intf > double(hi))
+        throw Exception(cx, stringify(
+            intf, " is not in the range ",lo,"..",hi));
+    return int(intf);
 }
 
 void
 Value::to_abort [[noreturn]] (const Context& cx, const char* type)
 {
-    throw Exception(cx, stringify("is not a ",type,": ",*this));
+    throw Exception(cx, stringify(*this, " is not a ",type));
 }
 
 Value
