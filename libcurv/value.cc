@@ -65,7 +65,7 @@ Value::at(Symbol field, const Context& cx) const
         if (s)
             return s->getfield(field, cx);
     }
-    throw Exception(cx, stringify(".",field,": not defined"));
+    throw Exception(cx, stringify(*this," does not contain field .",field));
 }
 
 void
