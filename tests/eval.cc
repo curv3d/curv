@@ -212,14 +212,14 @@ TEST(curv, eval)
 
     // function constructors
     SUCCESS("x->x+1", "<function>");
-    SUCCESS("let f x = x + 1 in f", "f");
-    SUCCESS("let f x y = x + y in f 1", "f _");
+    SUCCESS("let f x = x + 1 in f", "<function f>");
+    SUCCESS("let f x y = x + y in f 1", "<function f _>");
 
     // builtins
     SUCCESS("pi",  "3.141592653589793");
     SUCCESS("tau", "6.283185307179586");
     SUCCESS("inf", "inf");
-    SUCCESS("sqrt", "sqrt");
+    SUCCESS("sqrt", "<function sqrt>");
 
     // runtime operations
     SUCCESS("-0", "-0");

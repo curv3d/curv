@@ -14,12 +14,13 @@ const char Function::name[] = "function";
 void
 Function::print(std::ostream& out) const
 {
-    if (name_.empty())
-        out << "<function>";
-    else
-        out << name_;
-    for (int i = 0; i < argpos_; ++i)
-        out << " _";
+    out << "<function";
+    if (!name_.empty()) {
+        out << " " << name_;
+        for (int i = 0; i < argpos_; ++i)
+            out << " _";
+    }
+    out << ">";
 }
 
 GL_Value
