@@ -270,17 +270,17 @@ in
 // chamfer_intersection 0.1  .difference (sphere, cube >> move(1,1,1)) // PROBLEM
 // chamfer_intersection  0.5 .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
 
-//stairs [ 0.5,5 ] .union (sphere, cube >> move(1,1,1)) // WORKS
-//stairs [ 0.5,3 ] .difference (sphere, cube >> move(1,1,1)) // WORKS
-//stairs [ 0.5,3 ] .intersection (sphere, cube >> move(1,1,1)) // WORKS
+stairs ( 0.5,3) .union (sphere, cube >> move(1,1,1)) // WORKS
+//stairs ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // WORKS
+//stairs ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // WORKS
 
-//columns_union [ 0.5,3 ] .union (sphere, cube >> move(1,1,1)) // WORKS
-//columns_difference [ 0.5,3 ] .difference (sphere, cube >> move(1,1,1)) // PROBLEM
-//columns_difference [ 0.5,3 ] .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
+//columns_union ( 0.5,3 ) .union (sphere, cube >> move(1,1,1)) // WORKS
+//columns_difference ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // PROBLEM
+//columns_difference ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
 
 //pipes  0.2 .union (sphere, cube >> move(1,1,1)) >> lipschitz 2 // WORKS 
 //engrave  0.2 .union (sphere, cube >> move(1,1,1)) // WORKS 
-//groove [ 0.2,0.1 ] .union (sphere, cube >> move(1,1,1)) // WORKS 
-tongue [ 0.2,0.1 ] .union (sphere, cube >> move(1,1,1)) // WORKS 
+//groove ( 0.2,0.1 ) .union (sphere, cube >> move(1,1,1)) // WORKS 
+//tongue ( 0.2,0.1 ) .union (sphere, cube >> move(1,1,1)) // WORKS 
 
 >> show_grid 0.3
