@@ -3,7 +3,7 @@
 
 // Common function which defines union, difference and intersction
 let 
-make_blend config r n = {
+make_blend config args = {
     union (s1,s2) =
         make_shape {
             dist p =
@@ -35,8 +35,8 @@ make_blend config r n = {
 
     difference (s1,s2) = intersection (s1, complement s2);
 
-    bmin(a,b) = config.fmin(a, b, r,n);
-    bmax(a,b) = -config.fmin(-a, -b, r,n);
+    bmin(a,b) = config.fmin(a, b, args);
+    bmax(a,b) = -config.fmin(-a, -b, args);
 };
 
 ////////////////////////////
@@ -45,7 +45,7 @@ make_blend config r n = {
 
 // fOpUnionRound 
 round = make_blend {
-    fmin (a, b, r, n) =
+    fmin (a, b, r ) =
 	let 
 	ux = max(r - a,0);
 	uy = max(r - b,0);
@@ -60,8 +60,10 @@ round = make_blend {
 
 
 smooth = make_blend {
-    fmin (a, b, r, n) =
-	let h = clamp( 0.5+0.5*(b-a)/r, 0, 1 );
+    fmin (a, b, args) =
+	let
+	r=args;
+	h = clamp( 0.5+0.5*(b-a)/r, 0, 1 );
         in lerp( b, a, h ) - r*h*(1.0-h);
 
 };
@@ -73,13 +75,19 @@ smooth = make_blend {
 
 // fOpUnionChamfer
 chamfer_union = make_blend {
-    fmin (a, b, r, n) =
+    fmin (a, b, args) =
+	let
+	r=args;
+	in
 	min(a, b, (a - r + b)/sqrt(2));
 };
 
 // fOpIntersectionChamfer
 chamfer_intersection = make_blend {
-    fmin (a, b, r, n) =
+    fmin (a, b, args) =
+	let
+	r=args;
+	in
 	min(a, -b, (a - r - b)/sqrt(2));
 };
 
@@ -92,8 +100,10 @@ chamfer_intersection = make_blend {
 
 // fOpUnionStairs
 stairs = make_blend {
-    fmin (a, b, r, n) =
+    fmin (a, b, args) =
 	let
+	r=args[0];
+	n=args[1];
 	s=r/n ;
         u=b-r;
         in
@@ -112,24 +122,33 @@ stairs = make_blend {
 
 // fOpUnionColumns
 columns_union = make_blend {
-    fmin (a, b, r, n) =
-		if (a >=r || b >= r)
-			min(a,b)
+    fmin (a, b, arg) =
+		if (a >=arg[0] || b >= arg[0])
+		(
+			let
+			result=min(a,b);
+			in
+			result
+		)
 		else
-                let
-                columnradius=r*sqrt(2)/((n-1)*2+sqrt(2));
-                px = a + b/sqrt(2) - r/sqrt(2)+columnradius*sqrt(2);
-                py = b - a/sqrt(2);
-
-                py1=
-                if(mod(n,2) == 1)
-                        mod(py+2*columnradius,2*columnradius)-columnradius
-                else
-                        mod(py+columnradius,2*columnradius)-columnradius
-                ;
-                result=mag(px,py1) - columnradius;
-                in
-                min(result,px,a,b)
+		(
+			let
+			r=arg[0];
+			n=arg[1];
+	                columnradius=r*sqrt(2)/((n-1)*2+sqrt(2));
+	                px = a + b/sqrt(2) - r/sqrt(2)+columnradius*sqrt(2);
+	         py = b - a/sqrt(2);
+	
+	                py1=
+	                if(mod(n,2) == 1)
+	                        mod(py+2*columnradius,2*columnradius)-columnradius
+	                else
+	                        mod(py+columnradius,2*columnradius)-columnradius
+	                ;
+	                result=min(mag(px,py1) - columnradius,px,a,b);
+	                in
+	                result
+		)
 };
 
 
@@ -138,10 +157,12 @@ columns_union = make_blend {
 
 // fOpDifferenceColumns
 columns_difference = make_blend {
-    fmin (a, b, r, n) =
-		if (a >=r || b >= r) -min(-a,b)
+    fmin (a, b, arg) =
+		if (a >=arg[0] || b >= arg[0]) -min(-a,b)
 		else
                 let
+		r=arg[0];
+		n=arg[1];
                 columnradius=r*sqrt(2)/((n-1)*2+sqrt(2));
                 px = -a + b/sqrt(2)-r/sqrt(2)-columnradius/sqrt(2);
                 py = b +  a/sqrt(2)+columnradius;
@@ -165,7 +186,10 @@ columns_difference = make_blend {
 
 // fOpPipe
 pipes = make_blend {
-    fmin (a, b, r, n) =
+    fmin (a, b, arg) =
+	let
+	r=arg;
+	in
 	mag(a,b)-r;
 };
 
@@ -175,7 +199,10 @@ pipes = make_blend {
 
 // fOpEngrave 
 engrave = make_blend {
-    fmin (a, b, r, n) =
+    fmin (a, b, arg) =
+	 let
+	 r=arg;
+	 in
 	 max(a,(a+r-abs(b))/sqrt(2));
 };
 
@@ -183,10 +210,13 @@ engrave = make_blend {
 // Groove
 ////////////////////////////
 
-// fOpGroove TODO radius!!!
 groove = make_blend {
-    fmin (a, b, r, n) = 
-	 max(a,min(a+r,r-abs(b)));
+    fmin (a, b, arg) = 
+         let
+         ra=arg[0];
+         rb=arg[1];
+	 in
+	 max(a,min(a+ra,rb-abs(b)));
 	
 };
 
@@ -194,10 +224,13 @@ groove = make_blend {
 // Tongue
 ////////////////////////////
 
-// fOpTongue TODO radius!!!
 tongue = make_blend {
-    fmin (a, b, r, n) =
-	min(a,max(a-r,abs(b)-r));
+    fmin (a, b, arg) =
+        let
+        ra=arg[0];
+        rb=arg[1];
+        in
+	min(a,max(a-ra,abs(b)-rb));
 };
 
 
@@ -225,29 +258,29 @@ show_grid pitch (shape) =
 
 in
 
-//round 0.5 3 .union (sphere, cube >> move(1,1,1)) // WORKS
-//round 0.5 3 .difference (sphere, cube >> move(1,1,1)) // WORKS
-//round 0.5 3 .intersection (sphere, cube >> move(1,1,1)) // WORKS
+//round  0.5  .union (sphere, cube >> move(1,1,1)) // WORKS
+// round 0.5  .difference (sphere, cube >> move(1,1,1)) // WORKS
+//round  0.5  .intersection (sphere, cube >> move(1,1,1)) // WORKS
 
-//smooth 0.5 3 .union (sphere, cube >> move(1,1,1)) // WORKS
-//smooth 0.5 3 .difference (sphere, cube >> move(1,1,1)) // WORKS
-//smooth 0.5 3 .intersection (sphere, cube >> move(1,1,1)) // WORKS
+// smooth  0.5  .union (sphere, cube >> move(1,1,1)) // WORKS
+// smooth  0.5  .difference (sphere, cube >> move(1,1,1)) // WORKS
+// smooth  0.5  .intersection (sphere, cube >> move(1,1,1)) // WORKS
 
-//chamfer_union 0.5 3 .union (sphere, cube >> move(1,1,1)) // WORKS
-//chamfer_intersection 0.1 3 .difference (sphere, cube >> move(1,1,1)) // PROBLEM
-//chamfer_intersection 0.5 3 .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
+// chamfer_union 0.5 .union (sphere, cube >> move(1,1,1)) // WORKS
+// chamfer_intersection 0.1  .difference (sphere, cube >> move(1,1,1)) // PROBLEM
+// chamfer_intersection  0.5 .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
 
-stairs 0.5 3 .union (sphere, cube >> move(1,1,1)) // WORKS
-//stairs 0.5 3 .difference (sphere, cube >> move(1,1,1)) // WORKS
-//stairs 0.5 3 .intersection (sphere, cube >> move(1,1,1)) // WORKS
+//stairs [ 0.5,5 ] .union (sphere, cube >> move(1,1,1)) // WORKS
+//stairs [ 0.5,3 ] .difference (sphere, cube >> move(1,1,1)) // WORKS
+//stairs [ 0.5,3 ] .intersection (sphere, cube >> move(1,1,1)) // WORKS
 
-//columns_union 0.5 3 .union (sphere, cube >> move(1,1,1)) // WORKS
-//columns_difference 0.5 3 .difference (sphere, cube >> move(1,1,1)) // PROBLEM
-//columns_difference 0.5 3 .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
+//columns_union [ 0.5,3 ] .union (sphere, cube >> move(1,1,1)) // WORKS
+//columns_difference [ 0.5,3 ] .difference (sphere, cube >> move(1,1,1)) // PROBLEM
+//columns_difference [ 0.5,3 ] .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
 
-//pipes 0.2 3 .union (sphere, cube >> move(1,1,1)) // WORKS PARTIALLY, Display problem ?
-//engrave 0.2 3 .union (sphere, cube >> move(1,1,1)) // WORKS 
-//groove 0.2 3 .union (sphere, cube >> move(1,1,1)) // WORKS 
-//tongue 0.2 3 .union (sphere, cube >> move(1,1,1)) // WORKS 
+//pipes  0.2 .union (sphere, cube >> move(1,1,1)) >> lipschitz 2 // WORKS 
+//engrave  0.2 .union (sphere, cube >> move(1,1,1)) // WORKS 
+//groove [ 0.2,0.1 ] .union (sphere, cube >> move(1,1,1)) // WORKS 
+tongue [ 0.2,0.1 ] .union (sphere, cube >> move(1,1,1)) // WORKS 
 
 >> show_grid 0.3
