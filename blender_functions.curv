@@ -45,9 +45,8 @@ make_blend config args = {
 
 
 smooth = make_blend {
-    fmin (a, b, args) =
+    fmin (a, b, r) =
 	let
-	r=args;
 	h = clamp( 0.5+0.5*(b-a)/r, 0, 1 );
         in lerp( b, a, h ) - r*h*(1.0-h);
 
@@ -63,9 +62,8 @@ smooth = make_blend {
 // fOpDifferenceChamfer
 // = fOpIntersectionChamfer(a, -b, r);
 chamfer = make_blend {
-    fmin (a, b, args) =
+    fmin (a, b, r) =
 	let
-	r=args;
 	e = max(r - abs(a - b), 0);
         in
 	min(a, b) - e*.5;
@@ -78,10 +76,8 @@ chamfer = make_blend {
 
 // fOpUnionStairs
 stairs = make_blend {
-    fmin (a, b, args) =
+    fmin (a, b, (r,n) ) =
 	let
-	r=args[0];
-	n=args[1];
 	s=r/n ;
         u=b-r;
         in
@@ -100,8 +96,8 @@ stairs = make_blend {
 
 // fOpUnionColumns
 columns_union = make_blend {
-    fmin (a, b, arg) =
-		if (a >=arg[0] || b >= arg[0])
+    fmin (a, b, r, n) =
+		if (a >=r || b >= r)
 		(
 			let
 			result=min(a,b);
@@ -111,8 +107,6 @@ columns_union = make_blend {
 		else
 		(
 			let
-			r=arg[0];
-			n=arg[1];
 	                columnradius=r*sqrt(2)/((n-1)*2+sqrt(2));
 	                px = a + b/sqrt(2) - r/sqrt(2)+columnradius*sqrt(2);
 	         py = b - a/sqrt(2);
@@ -135,12 +129,10 @@ columns_union = make_blend {
 
 // fOpDifferenceColumns
 columns_difference = make_blend {
-    fmin (a, b, arg) =
-		if (a >=arg[0] || b >= arg[0]) -min(-a,b)
+    fmin (a, b, r, n) =
+		if (a >=r  || b >= r) -min(-a,b)
 		else
                 let
-		r=arg[0];
-		n=arg[1];
                 columnradius=r*sqrt(2)/((n-1)*2+sqrt(2));
                 px = -a + b/sqrt(2)-r/sqrt(2)-columnradius/sqrt(2);
                 py = b +  a/sqrt(2)+columnradius;
@@ -164,9 +156,8 @@ columns_difference = make_blend {
 
 // fOpPipe
 pipes = make_blend {
-    fmin (a, b, arg) =
+    fmin (a, b, r) =
 	let
-	r=arg;
 	in
 	mag(a,b)-r;
 };
@@ -177,9 +168,8 @@ pipes = make_blend {
 
 // fOpEngrave 
 engrave = make_blend {
-    fmin (a, b, arg) =
+    fmin (a, b, r) =
 	 let
-	 r=arg;
 	 in
 	 max(a,(a+r-abs(b))/sqrt(2));
 };
@@ -189,11 +179,7 @@ engrave = make_blend {
 ////////////////////////////
 
 groove = make_blend {
-    fmin (a, b, arg) = 
-         let
-         ra=arg[0];
-         rb=arg[1];
-	 in
+    fmin (a, b, ra, rb) = 
 	 max(a,min(a+ra,rb-abs(b)));
 	
 };
@@ -203,11 +189,7 @@ groove = make_blend {
 ////////////////////////////
 
 tongue = make_blend {
-    fmin (a, b, arg) =
-        let
-        ra=arg[0];
-        rb=arg[1];
-        in
+    fmin (a, b, ra, rb) =
 	min(a,max(a-ra,abs(b)-rb));
 };
 
@@ -240,11 +222,11 @@ in
 // smooth  0.5  .difference (sphere, cube >> move(1,1,1)) // WORKS
 // smooth  0.5  .intersection (sphere, cube >> move(1,1,1)) // WORKS
 
-chamfer 0.1 .union (sphere, cube >> move(1,1,1)) // WORKS
+//chamfer 0.1 .union (sphere, cube >> move(1,1,1)) // WORKS
 //chamfer 0.5  .difference (sphere, cube >> move(1,1,1)) // PROBLEM
 //chamfer  0.5 .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
 
-//stairs ( 0.5,3) .union (sphere, cube >> move(1,1,1)) // WORKS
+stairs ( 0.5,3) .union (sphere, cube >> move(1,1,1)) // WORKS
 //stairs ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // WORKS
 //stairs ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // WORKS
 
