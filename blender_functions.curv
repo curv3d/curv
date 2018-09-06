@@ -1,4 +1,4 @@
-
+//
 // Blender functions ported from http://mercury.sexy/hg_sdf/
 
 // Common function which defines union, difference and intersction
@@ -40,21 +40,6 @@ make_blend config args = {
 };
 
 ////////////////////////////
-// Round
-////////////////////////////
-
-// fOpUnionRound 
-round = make_blend {
-    fmin (a, b, r ) =
-	let 
-	ux = max(r - a,0);
-	uy = max(r - b,0);
-	in
-	max(r, min (a, b)) - mag(ux,uy);
-};
-
-
-////////////////////////////
 // Smooth
 ////////////////////////////
 
@@ -74,25 +59,18 @@ smooth = make_blend {
 ////////////////////////////
 
 // fOpUnionChamfer
-chamfer_union = make_blend {
-    fmin (a, b, args) =
-	let
-	r=args;
-	in
-	min(a, b, (a - r + b)/sqrt(2));
-};
-
 // fOpIntersectionChamfer
-chamfer_intersection = make_blend {
-    fmin (a, b, args) =
-	let
-	r=args;
-	in
-	min(a, -b, (a - r - b)/sqrt(2));
-};
-
 // fOpDifferenceChamfer
 // = fOpIntersectionChamfer(a, -b, r);
+chamfer = make_blend {
+    fmin (a, b, args) =
+	let
+	r=args;
+	e = max(r - abs(a - b), 0)/sqrt(2);
+        in
+	min(a, b) - e*.5;
+};
+
 
 ////////////////////////////
 // Stairs
@@ -258,19 +236,15 @@ show_grid pitch (shape) =
 
 in
 
-//round  0.5  .union (sphere, cube >> move(1,1,1)) // WORKS
-// round 0.5  .difference (sphere, cube >> move(1,1,1)) // WORKS
-//round  0.5  .intersection (sphere, cube >> move(1,1,1)) // WORKS
-
 // smooth  0.5  .union (sphere, cube >> move(1,1,1)) // WORKS
 // smooth  0.5  .difference (sphere, cube >> move(1,1,1)) // WORKS
 // smooth  0.5  .intersection (sphere, cube >> move(1,1,1)) // WORKS
 
-// chamfer_union 0.5 .union (sphere, cube >> move(1,1,1)) // WORKS
-// chamfer_intersection 0.1  .difference (sphere, cube >> move(1,1,1)) // PROBLEM
-// chamfer_intersection  0.5 .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
+chamfer 0.1 .union (sphere, cube >> move(1,1,1)) // WORKS
+//chamfer 0.5  .difference (sphere, cube >> move(1,1,1)) // PROBLEM
+//chamfer  0.5 .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
 
-stairs ( 0.5,3) .union (sphere, cube >> move(1,1,1)) // WORKS
+//stairs ( 0.5,3) .union (sphere, cube >> move(1,1,1)) // WORKS
 //stairs ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // WORKS
 //stairs ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // WORKS
 
@@ -284,3 +258,4 @@ stairs ( 0.5,3) .union (sphere, cube >> move(1,1,1)) // WORKS
 //tongue ( 0.2,0.1 ) .union (sphere, cube >> move(1,1,1)) // WORKS 
 
 >> show_grid 0.3
+
