@@ -8,7 +8,7 @@ let _bmax =
     if (defined(config.fmax))
         (a, b) -> config.fmax(a, b, args)
     else
-        (a, b) -> config.fmax(a, b, args);
+        (a, b) -> -config.fmin(-a, -b, args);
 in {
     union (s1,s2) =
         make_shape {
@@ -230,8 +230,8 @@ in
 //stairs ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // WORKS
 //stairs ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // WORKS
 
-//columns ( 0.5,3 ) .union (sphere, cube >> move(1,1,1)) // WORKS
-columns ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // PROBLEM
+columns ( 0.5,3 ) .union (sphere, cube >> move(1,1,1)) // WORKS
+//columns ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // PROBLEM
 //columns ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
 
 //pipes  0.2 .union (sphere, cube >> move(1,1,1)) >> lipschitz 2 // WORKS 
