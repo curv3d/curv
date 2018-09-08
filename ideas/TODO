@@ -727,7 +727,6 @@ Other:
     ASCII or explicitly initialize your console using `chcp 65001`.
 
 # CURV0 (expressions):
-* bug: (-1)^-0.5 error message needs parens around '-1'
 * x^y: right associative, -x^y==-(x^y), x^-y==x^(-y)
   **: algolw, Python, Rexx, Simula, Cobol, Ruby, Tcl
   ^^: D

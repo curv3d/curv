@@ -16,7 +16,7 @@ Value add(Value a, Value b, const Context& cx)
         static double f(double x, double y) { return x + y; }
         static const char* name() { return "+"; }
         static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x,"+",y);
+            return stringify(x," + ",y);
         }
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
@@ -29,7 +29,7 @@ Value multiply(Value a, Value b, const Context& cx)
         static double f(double x, double y) { return x * y; }
         static const char* name() { return "*"; }
         static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x,"*",y);
+            return stringify(x," * ",y);
         }
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
