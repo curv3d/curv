@@ -1,0 +1,56 @@
+Better Error Messages
+=====================
+Curv needs more expressive and helpful diagnostics.
+Inspiration: http://clang.llvm.org/diagnostics.html
+and http://elm-lang.org/blog/compiler-errors-for-humans
+and http://elm-lang.org/blog/compilers-as-assistants
+
+Bad Values
+----------
+Error messages triggered by bad values should print the value first,
+followed by the reason the value is bad. The 'narrowing' conversions
+in class Value (like to_bool(), etc) produce these kinds of error messages.
+Now just change the remaining errors to follow the standard.
+
+ERROR: at field .dist: not a vector
+at file "blend":
+83|   r=args[0];
+        ^^^^    
+at file "blend":
+38|     bmin(a,b) = config.fmin(a, b, args);
+                    ^^^^^^^^^^^^^^^^^^^^^^^ 
+at file "blend":
+12|                 in bmin(a,b);
+                       ^^^^^^^^^ 
+at file "/usr/local/lib/std.curv":
+709|         dist p : min(s1.dist p, s2.dist p),
+                          ^^^^^^^^^             
+at file "stairs":
+6| stairs 1 .union (box(1,1,10), box(1,1,10)>>rotate(15*deg)) >> show_dist
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pattern Match Failure
+---------------------
+A subclass of bad value. A pattern match failure should print the pattern
+(or list of patterns) that the value failed to match.
+For example,
+    ERROR: argument #1 of f: 42 does not match the pattern (r,n)
+
+instead of
+ERROR: at field .dist: list pattern: argument is not a vector
+at file "blend":
+38|     bmin(a,b) = config.fmin(a, b, args);
+                                      ^^^^  
+at file "blend":
+38|     bmin(a,b) = config.fmin(a, b, args);
+                    ^^^^^^^^^^^^^^^^^^^^^^^ 
+at file "blend":
+12|                 in bmin(a,b);
+                       ^^^^^^^^^ 
+at file "/usr/local/lib/std.curv":
+709|         dist p : min(s1.dist p, s2.dist p),
+                          ^^^^^^^^^             
+at file "stairs":
+6| stairs 1 .union (box(1,1,10), box(1,1,10)>>rotate(15*deg)) >> show_dist
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+

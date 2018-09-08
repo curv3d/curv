@@ -6,8 +6,17 @@ Big Items (target: Dec 2018)
 
 Current TODO List:
 * -o glsl
+* -Obg=<colour>
 * graphical value pickers
-  * parametric records
+  * parametric records (which are syntactic sugar)
+  * value picker predicates (eg, is_bool and in_range)
+  * GL compile a shape into a set of GLSL definitions.
+  * GL compile a parametric shape into a set of GLSL definitions + uniforms.
+    * GL abstract evaluator.
+  * uniforms + picker descriptors -> GL_Compiler -> Shape_Program.
+    * View_Server::request_shape is a string: this no longer suffices.
+  * Viewer initializes uniforms
+  * Viewer displays pickers, updates uniforms
 * Refactor:
   * Viewer_Opts
   * remove arg_to_int()
