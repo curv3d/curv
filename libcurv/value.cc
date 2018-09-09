@@ -150,23 +150,31 @@ bool Value::equal(Value v, const Context& cx) const
     const Ref_Value& r1{get_ref_unsafe()};
     const Ref_Value& r2{v.get_ref_unsafe()};
 
-    if (r1.type_ != r2.type_)
-        return false;
+    // TODO: restore this code after getting rid of ty_module
+    //if (r1.type_ != r2.type_)
+    //    return false;
 
-    // two reference values with the same type
-    switch (r1.type_) {
-    case Ref_Value::ty_string:
-        return (String&)r1 == (String&)r2;
-    case Ref_Value::ty_list:
-        return (List&)r1 == (List&)r2;
-    case Ref_Value::ty_record:
-    case Ref_Value::ty_module:
-        return ((Structure&)r1).equal((Structure&)r2, cx);
-    default:
-        // Outside of the 6 data types, two values are equal if they have
-        // the same type.
-        return true;
+    if (r1.type_ == r2.type_
+        || (r1.type_ == Ref_Value::ty_record&&r2.type_==Ref_Value::ty_module)
+        || (r2.type_ == Ref_Value::ty_record&&r1.type_==Ref_Value::ty_module))
+    {
+        // two reference values with the same type
+        switch (r1.type_) {
+        case Ref_Value::ty_string:
+            return (String&)r1 == (String&)r2;
+        case Ref_Value::ty_list:
+            return (List&)r1 == (List&)r2;
+        case Ref_Value::ty_record:
+        case Ref_Value::ty_module:
+            return ((Structure&)r1).equal((Structure&)r2, cx);
+        default:
+            // Outside of the 6 data types, two values are equal if they have
+            // the same type.
+            //return true;
+            return r1.type_ == r2.type_;
+        }
     }
+    return false;
 }
 
 // special marker that denotes the absence of a value
