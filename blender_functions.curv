@@ -3,12 +3,6 @@
 
 // Common function which defines union, difference and intersction
 let 
-<<<<<<< HEAD
-make_blend config args = {
-    bmin(a,b) : config.fmin(a, b, args);
-    bmax(a,b) : -config.fmin(-a, -b, args);
-    union (s1,s2) :
-=======
 make_blend config args =
 let _bmax =
     if (defined(config.fmax))
@@ -17,7 +11,6 @@ let _bmax =
         (a, b) -> -config.fmin(-a, -b, args);
 in {
     union (s1,s2) =
->>>>>>> refs/remotes/origin/blender_functions
         make_shape {
             dist p =
                 let a = s1.dist p;
@@ -33,7 +26,7 @@ in {
             is_3d = s1.is_3d && s2.is_3d;
         };
 
-    intersection (s1,s2) :
+    intersection (s1,s2) =
         make_shape {
             dist p =
                 let a = s1.dist p;
@@ -46,13 +39,10 @@ in {
             is_3d = s1.is_3d && s2.is_3d;
         };
 
-    difference (s1,s2) : intersection (s1, complement s2);
+    difference (s1,s2) = intersection (s1, complement s2);
 
-<<<<<<< HEAD
-=======
     bmin(a,b) = config.fmin(a, b, args);
     bmax = _bmax;
->>>>>>> refs/remotes/origin/blender_functions
 };
 
 ////////////////////////////
@@ -111,13 +101,8 @@ stairs = make_blend {
 ////////////////////////////
 
 // fOpUnionColumns
-<<<<<<< HEAD
-columns_union = make_blend {
-    fmin (a, b, (r, n) ) =
-=======
 columns = make_blend {
     fmin (a, b, (r, n)) =
->>>>>>> refs/remotes/origin/blender_functions
 		if (a >=r || b >= r)
 		(
 			let
@@ -141,25 +126,11 @@ columns = make_blend {
 	                result=min(mag(px,py1) - columnradius,px,a,b);
 	                in
 	                result
-<<<<<<< HEAD
-		)
-};
-
-
-// fOpIntersectionColumns
-// derive from differenceColumns
-
-// fOpDifferenceColumns
-columns_difference = make_blend {
-    fmin (a, b, (r, n)) =
-		if (a >=r  || b >= r) -min(-a,b)
-=======
 		);
     fmax (a, b, (r, n)) = diff(a, -b, (r, n));
     diff (a, b, (r, n)) =
 		if (a >=r  || b >= r)
             -min(-a,b)
->>>>>>> refs/remotes/origin/blender_functions
 		else
             let
             columnradius=r*sqrt(2)/((n-1)*2+sqrt(2));
@@ -208,7 +179,7 @@ engrave = make_blend {
 ////////////////////////////
 
 groove = make_blend {
-    fmin (a, b, ( ra, rb) ) = 
+    fmin (a, b, ra, rb) = 
 	 max(a,min(a+ra,rb-abs(b)));
 	
 };
@@ -218,7 +189,7 @@ groove = make_blend {
 ////////////////////////////
 
 tongue = make_blend {
-    fmin (a, b, ( ra, rb) ) =
+    fmin (a, b, ra, rb) =
 	min(a,max(a-ra,abs(b)-rb));
 };
 
@@ -255,15 +226,6 @@ in
 //chamfer 0.5  .difference (sphere, cube >> move(1,1,1)) // PROBLEM
 //chamfer  0.5 .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
 
-<<<<<<< HEAD
-// stairs ( 0.5,3) .union (sphere, cube >> move(1,1,1)) // WORKS
-stairs ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // WORKS
-//stairs ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // WORKS
-
-// columns_union ( 0.5,3 ) .union (sphere, cube >> move(1,1,1)) // WORKS
-//columns_difference ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // PROBLEM
-//columns_difference ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
-=======
 //stairs ( 0.5,3) .union (sphere, cube >> move(1,1,1)) // WORKS
 //stairs ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // WORKS
 //stairs ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // WORKS
@@ -271,10 +233,9 @@ stairs ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // WORKS
 columns ( 0.5,3 ) .union (sphere, cube >> move(1,1,1)) // WORKS
 //columns ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // PROBLEM
 //columns ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
->>>>>>> refs/remotes/origin/blender_functions
 
 //pipes  0.2 .union (sphere, cube >> move(1,1,1)) >> lipschitz 2 // WORKS 
-//engrave  0.2 .union (cube, cube >> move(1,1,1)) // WORKS 
+//engrave  0.2 .union (sphere, cube >> move(1,1,1)) // WORKS 
 //groove ( 0.2,0.1 ) .union (sphere, cube >> move(1,1,1)) // WORKS 
 //tongue ( 0.2,0.1 ) .union (sphere, cube >> move(1,1,1)) // WORKS 
 
