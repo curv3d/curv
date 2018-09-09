@@ -75,9 +75,8 @@ void Viewer::set_frag(const std::string& fragSource)
 void Viewer::open()
 {
     if (!is_open()) {
-        u_centre3d_ = glm::vec3(0.,0.,0.);
-        u_eye3d_ = glm::vec3(2.598076,3.0,4.5);
-        u_up3d_ = glm::vec3(-0.25,0.866025,-0.433013);
+        // Set initial default values for centre, eye and up
+        reset_view();
 
         // Initialize openGL context
         initGL(window_pos_and_size_, headless_);
@@ -85,6 +84,13 @@ void Viewer::open()
         // Start working on the GL context
         setup();
     }
+}
+
+void Viewer::reset_view()
+{
+    u_centre3d_ = glm::vec3(0.,0.,0.);
+    u_eye3d_ = glm::vec3(2.598076,3.0,4.5);
+    u_up3d_ = glm::vec3(-0.25,0.866025,-0.433013);
 }
 
 bool Viewer::draw_frame()
@@ -171,6 +177,9 @@ void Viewer::onKeyPress(int _key)
 {
     if (_key == 'q' || _key == 'Q') {
         glfwSetWindowShouldClose(window_, GL_TRUE);
+    }
+    else if (_key == 'r' || _key == 'R') {
+        reset_view();
     }
 }
 
