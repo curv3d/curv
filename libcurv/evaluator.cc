@@ -79,7 +79,7 @@ Value
 Module_Data_Ref::eval(Frame& f) const
 {
     Module& m = (Module&)f[slot_].get_ref_unsafe();
-    assert(m.type_ == Ref_Value::ty_module);
+    assert(m.subtype_ == Ref_Value::sty_module);
     return m.at(index_);
 }
 
@@ -457,7 +457,6 @@ Call_Expr::eval(Frame& f) const
             return fun->call(arg_->eval(f), *f2);
           }
         case Ref_Value::ty_record:
-        case Ref_Value::ty_module:
           {
             Structure* s = (Structure*)&funp;
             if (s->hasfield(callkey)) {
@@ -561,7 +560,7 @@ void
 Module_Data_Setter::exec(Frame& f) const
 {
     Module& m = (Module&)f[slot_].get_ref_unsafe();
-    assert(m.type_ == Ref_Value::ty_module);
+    assert(m.subtype_ == Ref_Value::sty_module);
     m.at(index_) = expr_->eval(f);
 }
 
@@ -812,7 +811,7 @@ Pattern_Setter::exec(Frame& f) const
     else {
         auto mval = f[module_slot_];
         auto m = (Module*)&mval.get_ref_unsafe();
-        assert(m->type_ == Ref_Value::ty_module);
+        assert(m->subtype_ == Ref_Value::sty_module);
         slots = &m->at(0);
     }
     Value value = definiens_->eval(f);
@@ -828,7 +827,7 @@ Function_Setter_Base::exec(Frame& f) const
     else {
         auto mval = f[module_slot_];
         auto m = (Module*)&mval.get_ref_unsafe();
-        assert(m->type_ == Ref_Value::ty_module);
+        assert(m->subtype_ == Ref_Value::sty_module);
         slots = &m->at(0);
     }
     Shared<Module> nonlocals = nonlocals_->eval_module(f);
@@ -845,7 +844,7 @@ Include_Setter_Base::exec(Frame& f) const
     else {
         auto mval = f[module_slot_];
         auto m = (Module*)&mval.get_ref_unsafe();
-        assert(m->type_ == Ref_Value::ty_module);
+        assert(m->subtype_ == Ref_Value::sty_module);
         slots = &m->at(0);
     }
     for (auto& e : *this)

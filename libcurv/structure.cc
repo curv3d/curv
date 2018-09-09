@@ -26,7 +26,7 @@ Structure::equal(const Structure& rhs, const Context& cx) const
     this->each_field([&](Symbol sym, Value val) {
         if (!rhs.hasfield(sym))
             r = false;
-        else if (val != rhs.getfield(sym,cx))
+        else if (!val.equal(rhs.getfield(sym,cx),cx))
             r = false;
     });
     return r;

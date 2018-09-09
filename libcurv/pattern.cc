@@ -22,7 +22,7 @@ struct Skip_Pattern : public Pattern
     const override
     {
     }
-    virtual bool try_exec(Value*, Value, Frame&)
+    virtual bool try_exec(Value*, Value, const Context&, Frame&)
     const override
     {
         return true;
@@ -51,7 +51,7 @@ struct Id_Pattern : public Pattern
     {
         slots[slot_] = value;
     }
-    virtual bool try_exec(Value* slots, Value value, Frame&)
+    virtual bool try_exec(Value* slots, Value value, const Context&, Frame&)
     const override
     {
         slots[slot_] = value;
@@ -91,14 +91,14 @@ struct Const_Pattern : public Pattern
     virtual void exec(Value* slots, Value value, const Context& cx, Frame& f)
     const override
     {
-        if (value != value_)
+        if (!value.equal(value_,cx))
             throw Exception(cx,
                 stringify("argument ",value, " does not equal ", value_));
     }
-    virtual bool try_exec(Value* slots, Value value, Frame& f)
+    virtual bool try_exec(Value* slots, Value value, const Context& cx, Frame& f)
     const override
     {
-        return value == value_;
+        return value.equal(value_,cx);
     }
 };
 
@@ -143,7 +143,6 @@ struct Predicate_Pattern : public Pattern
                 return result.to_bool(At_Phrase(*call_phrase(), &f));
               }
             case Ref_Value::ty_record:
-            case Ref_Value::ty_module:
               {
                 Structure* s = (Structure*)&funp;
                 if (s->hasfield(callkey)) {
@@ -171,10 +170,10 @@ struct Predicate_Pattern : public Pattern
                 predicate_phrase_->location().range()));
         pattern_->exec(slots, value, cx, f);
     }
-    virtual bool try_exec(Value* slots, Value value, Frame& f)
+    virtual bool try_exec(Value* slots, Value value, const Context& cx, Frame& f)
     const override
     {
-        return match(value, f) && pattern_->try_exec(slots, value, f);
+        return match(value, f) && pattern_->try_exec(slots, value, cx, f);
     }
 };
 
@@ -201,7 +200,7 @@ struct List_Pattern : public Pattern
         for (size_t i = 0; i < items_.size(); ++i)
             items_[i]->exec(slots, list->at(i), At_Index(i, valcx), f);
     }
-    virtual bool try_exec(Value* slots, Value val, Frame& f)
+    virtual bool try_exec(Value* slots, Value val, const Context& cx, Frame& f)
     const override
     {
         auto list = val.dycast<List>();
@@ -210,7 +209,7 @@ struct List_Pattern : public Pattern
         if (list->size() != items_.size())
             return false;
         for (size_t i = 0; i < items_.size(); ++i)
-            if (!items_[i]->try_exec(slots, list->at(i), f))
+            if (!items_[i]->try_exec(slots, list->at(i), cx, f))
                 return false;
         return true;
     }
@@ -318,7 +317,7 @@ struct Record_Pattern : public Pattern
             ++p;
         }
     }
-    virtual bool try_exec(Value* slots, Value value, Frame& f)
+    virtual bool try_exec(Value* slots, Value value, const Context& cx, Frame& f)
     const override
     {
         // TODO: clean this up OMG. Need a general Record iterator.
@@ -334,7 +333,7 @@ struct Record_Pattern : public Pattern
                     // record is missing a field in the pattern
                     if (p->second.dexpr_) {
                         auto fval = p->second.dexpr_->eval(f);
-                        p->second.pat_->try_exec(slots, fval, f);
+                        p->second.pat_->try_exec(slots, fval, cx, f);
                     } else {
                         success = false;
                     }
@@ -343,7 +342,7 @@ struct Record_Pattern : public Pattern
                 } else if (cmp == 0) {
                     // matching field in record and pattern
                     auto fval = record->getfield(p->first,{});
-                    p->second.pat_->try_exec(slots, fval, f);
+                    p->second.pat_->try_exec(slots, fval, cx, f);
                     ++p;
                     return;
                 } else
@@ -354,7 +353,7 @@ struct Record_Pattern : public Pattern
         while (p != fields_.end()) {
             if (p->second.dexpr_) {
                 auto fval = p->second.dexpr_->eval(f);
-                p->second.pat_->try_exec(slots, fval, f);
+                p->second.pat_->try_exec(slots, fval, cx, f);
             } else {
                 return false;
             }

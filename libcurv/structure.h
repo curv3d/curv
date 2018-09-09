@@ -16,7 +16,7 @@ namespace curv {
 // in this pure virtual class.
 struct Structure : public Ref_Value
 {
-    Structure(int type) : Ref_Value(type) {}
+    Structure(int subtype) : Ref_Value(ty_record, subtype) {}
 
     /// Get the value of a named field, throw exception if not defined.
     virtual Value getfield(Symbol, const Context&) const;

@@ -53,7 +53,7 @@ struct Module_Base : public Structure
 
     Module_Base(Shared<Dictionary> dictionary)
     :
-        Structure(ty_module),
+        Structure(sty_module),
         dictionary_(std::move(dictionary))
     {}
 

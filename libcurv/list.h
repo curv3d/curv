@@ -18,7 +18,7 @@ struct List_Base : public Ref_Value
 {
     List_Base() : Ref_Value(ty_list) {}
     virtual void print(std::ostream&) const;
-    bool operator==(const List_Base&) const;
+    bool equal(const List_Base&, const Context&) const;
     void assert_size(size_t sz, const Context& cx) const;
 
     static const char name[];

@@ -115,7 +115,7 @@ Value
 Closure::try_call(Value arg, Frame& f)
 {
     f.nonlocals_ = &*nonlocals_;
-    if (!pattern_->try_exec(f.array_, arg, f))
+    if (!pattern_->try_exec(f.array_, arg, At_Arg(*this, f), f))
         return missing;
     return expr_->eval(f);
 }
@@ -152,7 +152,7 @@ Piecewise_Function::call(Value val, Frame& f)
 {
     for (auto c : cases_) {
         Value result = c->try_call(val, f);
-        if (result != missing)
+        if (!result.eq(missing))
             return result;
     }
     throw Exception(At_Arg(*this, f), stringify(
@@ -163,7 +163,7 @@ Piecewise_Function::try_call(Value val, Frame& f)
 {
     for (auto c : cases_) {
         Value result = c->try_call(val, f);
-        if (result != missing)
+        if (!result.eq(missing))
             return result;
     }
     return missing;
