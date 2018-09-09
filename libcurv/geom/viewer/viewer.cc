@@ -416,7 +416,8 @@ void Viewer::measure_time()
 
 void Viewer::poll_events()
 {
-    glfwPollEvents();
+    if (config_.lazy_) glfwWaitEvents();
+    else glfwPollEvents();
 }
 
 void Viewer::swap_buffers()

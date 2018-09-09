@@ -24,6 +24,7 @@ namespace viewer {
 struct Viewer_Config : public Frag_Export
 {
     bool verbose_ = false;
+    bool lazy_ = false;
 };
 
 struct Viewer

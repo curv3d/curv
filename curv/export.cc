@@ -107,6 +107,8 @@ void describe_frag_options(std::ostream& out, const char*prefix)
   "-O taa=<supersampling factor for temporal antialiasing> (1 means disabled)\n"
   << prefix <<
   "-O fdur=<animation frame duration> (used with TAA)\n"
+  << prefix <<
+  "-O lazy (redraw only when geometry changes or on user input - disables time component of geometry)\n"
   ;
 }
 void describe_frag_opts(std::ostream& out)
@@ -426,7 +428,8 @@ void parse_viewer_config(
 {
     opts.verbose_ = params.verbose_;
     for (auto& p : params.map_) {
-        if (!parse_frag_opt(params, p, opts))
+        if (p.first == "lazy") opts.lazy_ = true;
+        else if (!parse_frag_opt(params, p, opts))
             params.unknown_parameter(p);
     }
 }
