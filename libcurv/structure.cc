@@ -15,4 +15,21 @@ Structure::getfield(Symbol field, const Context& cx) const
     throw Exception(cx, stringify(".",field,": not defined"));
 }
 
+bool
+Structure::equal(const Structure& rhs, const Context& cx) const
+{
+    // TODO: This is not efficient. There is no way to short-circuit
+    // the 'each_field' loop. We need a Structure iterator.
+    if (this->size() != rhs.size())
+        return false;
+    bool r = true;
+    this->each_field([&](Symbol sym, Value val) {
+        if (!rhs.hasfield(sym))
+            r = false;
+        else if (val != rhs.getfield(sym,cx))
+            r = false;
+    });
+    return r;
+}
+
 } // namespace curv

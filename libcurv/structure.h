@@ -34,6 +34,8 @@ struct Structure : public Ref_Value
     // visit each field
     virtual void each_field(std::function<void(Symbol,Value)>) const = 0;
 
+    bool equal(const Structure&, const Context&) const;
+
     static const char name[];
 };
 

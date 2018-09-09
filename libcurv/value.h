@@ -340,6 +340,17 @@ public:
 
     bool operator==(Value) const;
     bool operator!=(Value v) const { return !(*this == v); }
+
+    // Deep equality, which traverses the value tree and forces thunks.
+    // May throw an Exception if forcing a thunk fails.
+    // Used to implement `a == b` in the Curv language. Expensive.
+    bool equal(Value, const Context&) const;
+
+    // Shallow equality, compares the bit patterns of two Values. Fast.
+    bool eq(Value rhs) const
+    {
+        return bits_ == rhs.bits_;
+    }
 };
 
 /// Special marker that denotes the absence of a value
