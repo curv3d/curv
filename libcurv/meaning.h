@@ -92,7 +92,7 @@ struct Operation : public Meaning
     // These functions are called during evaluation.
     virtual Value eval(Frame&) const;
     virtual void generate(Frame&, List_Builder&) const;
-    virtual void bind(Frame&, Record&) const;
+    virtual void bind(Frame&, DRecord&) const;
     virtual void exec(Frame&) const;
 
     // These functions are called by the Geometry Compiler.
@@ -139,7 +139,7 @@ struct Just_Action : public Operation
 
     // These functions are called during evaluation.
     virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, Record&) const override;
+    virtual void bind(Frame&, DRecord&) const override;
     virtual void exec(Frame&) const override = 0;
 };
 
@@ -283,7 +283,7 @@ struct Spread_Op : public Operation
     {}
 
     virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, Record&) const override;
+    virtual void bind(Frame&, DRecord&) const override;
 };
 
 struct Infix_Expr_Base : public Just_Expression
@@ -639,7 +639,7 @@ struct Compound_Op_Base : public Operation
     : Operation(std::move(syntax)) {}
 
     virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, Record&) const override;
+    virtual void bind(Frame&, DRecord&) const override;
     virtual void exec(Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 
@@ -666,7 +666,7 @@ struct Preaction_Op : public Operation
 
     virtual Value eval(Frame&) const override;
     virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, Record&) const override;
+    virtual void bind(Frame&, DRecord&) const override;
     virtual void exec(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
@@ -689,7 +689,7 @@ struct Block_Op : public Operation
 
     virtual Value eval(Frame&) const override;
     virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, Record&) const override;
+    virtual void bind(Frame&, DRecord&) const override;
     virtual void exec(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
@@ -714,7 +714,7 @@ struct For_Op : public Operation
     {}
 
     virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, Record&) const override;
+    virtual void bind(Frame&, DRecord&) const override;
     virtual void exec(Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 };
@@ -755,7 +755,7 @@ struct If_Op : public Operation
 
     virtual Value eval(Frame&) const override; // error message: missing else
     virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, Record&) const override;
+    virtual void bind(Frame&, DRecord&) const override;
     virtual void exec(Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 };
@@ -780,7 +780,7 @@ struct If_Else_Op : public Operation
 
     virtual Value eval(Frame&) const override;
     virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, Record&) const override;
+    virtual void bind(Frame&, DRecord&) const override;
     virtual void exec(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
@@ -906,7 +906,7 @@ struct Assoc : public Operation
         definiens_(std::move(definiens))
     {}
 
-    virtual void bind(Frame&, Record&) const override;
+    virtual void bind(Frame&, DRecord&) const override;
 };
 
 } // namespace curv

@@ -651,7 +651,7 @@ struct Error_Operation : public Operation
     {
         run(f);
     }
-    virtual void bind(Frame& f, Record&) const override
+    virtual void bind(Frame& f, DRecord&) const override
     {
         run(f);
     }

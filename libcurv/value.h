@@ -45,7 +45,7 @@ struct Ref_Value : public Shared_Base
         ty_function,
         ty_missing,
         ty_lambda,
-        sty_record,
+        sty_drecord,
         sty_module
     };
     Ref_Value(int type) : Shared_Base(), type_(type), subtype_(type) {}

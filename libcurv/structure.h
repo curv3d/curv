@@ -11,7 +11,7 @@
 namespace curv {
 
 // A curv 'structure' is a value containing a set of fields (name/value pairs).
-// Subtypes are Record and Module.
+// Subtypes are DRecord and Module.
 // All structures have the same protocol for field access, which is encapsulated
 // in this pure virtual class.
 struct Structure : public Ref_Value

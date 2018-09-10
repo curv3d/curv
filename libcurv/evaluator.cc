@@ -28,7 +28,7 @@ Operation::exec(Frame& f) const
     throw Exception(At_Phrase(*syntax_, &f), "not an action");
 }
 void
-Operation::bind(Frame& f, Record&) const
+Operation::bind(Frame& f, DRecord&) const
 {
     throw Exception(At_Phrase(*syntax_, &f), "not a binder or action");
 }
@@ -50,7 +50,7 @@ Just_Action::generate(Frame& f, List_Builder&) const
     exec(f);
 }
 void
-Just_Action::bind(Frame& f, Record&) const
+Just_Action::bind(Frame& f, DRecord&) const
 {
     exec(f);
 }
@@ -225,7 +225,7 @@ If_Op::generate(Frame& f, List_Builder& lb) const
         arg2_->generate(f, lb);
 }
 void
-If_Op::bind(Frame& f, Record& r) const
+If_Op::bind(Frame& f, DRecord& r) const
 {
     bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, &f));
     if (a)
@@ -258,7 +258,7 @@ If_Else_Op::generate(Frame& f, List_Builder& lb) const
         arg3_->generate(f, lb);
 }
 void
-If_Else_Op::bind(Frame& f, Record& r) const
+If_Else_Op::bind(Frame& f, DRecord& r) const
 {
     bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, &f));
     if (a)
@@ -503,14 +503,14 @@ Spread_Op::generate(Frame& f, List_Builder& lb) const
         lb.push_back(list->at(i));
 }
 void
-Spread_Op::bind(Frame& f, Record& r) const
+Spread_Op::bind(Frame& f, DRecord& r) const
 {
     auto s = arg_->eval(f).to<const Structure>(At_Phrase(*arg_->syntax_, &f));
     s->putfields(r.fields_);
 }
 
 void
-Assoc::bind(Frame& f, Record& r) const
+Assoc::bind(Frame& f, DRecord& r) const
 {
     Symbol symbol = name_.eval(f);
     r.fields_[symbol] = definiens_->eval(f);
@@ -519,7 +519,7 @@ Assoc::bind(Frame& f, Record& r) const
 Value
 Record_Expr::eval(Frame& f) const
 {
-    auto record = make<Record>();
+    auto record = make<DRecord>();
     for (auto op : fields_)
         op->bind(f, *record);
     return {record};
@@ -599,7 +599,7 @@ Block_Op::generate(Frame& f, List_Builder& lb) const
     body_->generate(f, lb);
 }
 void
-Block_Op::bind(Frame& f, Record& r) const
+Block_Op::bind(Frame& f, DRecord& r) const
 {
     statements_.exec(f);
     body_->bind(f, r);
@@ -624,7 +624,7 @@ Preaction_Op::generate(Frame& f, List_Builder& lb) const
     body_->generate(f, lb);
 }
 void
-Preaction_Op::bind(Frame& f, Record& r) const
+Preaction_Op::bind(Frame& f, DRecord& r) const
 {
     actions_->exec(f);
     body_->bind(f, r);
@@ -643,7 +643,7 @@ Compound_Op_Base::generate(Frame& f, List_Builder& lb) const
         s->generate(f, lb);
 }
 void
-Compound_Op_Base::bind(Frame& f, Record& r) const
+Compound_Op_Base::bind(Frame& f, DRecord& r) const
 {
     for (auto s : *this)
         s->bind(f, r);
@@ -680,7 +680,7 @@ For_Op::generate(Frame& f, List_Builder& lb) const
     }
 }
 void
-For_Op::bind(Frame& f, Record& r) const
+For_Op::bind(Frame& f, DRecord& r) const
 {
     At_Phrase cx{*list_->syntax_, &f};
     At_Index icx{0, cx};

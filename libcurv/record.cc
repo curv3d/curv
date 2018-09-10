@@ -6,10 +6,10 @@
 
 namespace curv {
 
-const char Record::name[] = "record";
+const char DRecord::name[] = "record";
 
 void
-Record::print(std::ostream& out) const
+DRecord::print(std::ostream& out) const
 {
     out << "{";
     bool first = true;
@@ -23,14 +23,14 @@ Record::print(std::ostream& out) const
 }
 
 void
-Record::putfields(Symbol_Map<Value>& out) const
+DRecord::putfields(Symbol_Map<Value>& out) const
 {
     for (auto i : fields_)
         out[i.first] = i.second;
 }
 
 Value
-Record::getfield(Symbol name, const Context& cx) const
+DRecord::getfield(Symbol name, const Context& cx) const
 {
     auto fp = fields_.find(name);
     if (fp != fields_.end())
@@ -39,14 +39,14 @@ Record::getfield(Symbol name, const Context& cx) const
 }
 
 bool
-Record::hasfield(Symbol name) const
+DRecord::hasfield(Symbol name) const
 {
     auto fp = fields_.find(name);
     return (fp != fields_.end());
 }
 
 Shared<List>
-Record::fields() const
+DRecord::fields() const
 {
     auto list = List::make(fields_.size());
     int i = 0;
@@ -58,7 +58,7 @@ Record::fields() const
 }
 
 void
-Record::each_field(std::function<void(Symbol,Value)> visitor) const
+DRecord::each_field(std::function<void(Symbol,Value)> visitor) const
 {
     for (auto f : fields_)
         visitor(f.first, f.second);

@@ -11,21 +11,21 @@
 namespace curv {
 
 /// A record value: {x=1,y=2}
-struct Record : public Structure
+struct DRecord : public Structure
 {
     Symbol_Map<Value> fields_;
 
-    Record() : Structure(sty_record) {}
-    Record(Symbol_Map<Value> fields)
+    DRecord() : Structure(sty_drecord) {}
+    DRecord(Symbol_Map<Value> fields)
     :
-        Structure(sty_record),
+        Structure(sty_drecord),
         fields_(std::move(fields))
     {
     }
 
-    Shared<const Record> clone() const
+    Shared<const DRecord> clone() const
     {
-        return make<const Record>(fields_);
+        return make<const DRecord>(fields_);
     }
 
     /// Print a value like a Curv expression.
