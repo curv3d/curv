@@ -25,3 +25,25 @@ adds exactly 1 member to the data structure.
 
 When you switch to the more general list/record comprehension syntax,
 then you use square brackets (for lists) and semicolons.
+
+------
+In C, semicolons are used to terminate a statement.
+That's quite different from Curv, even if I said "terminate a statement"
+above. Semicolons are separators in Curv. Case in point:
+  {
+    if (defined(config.fmax))
+        bmax(a,b) : config.fmax(a, b, args);
+    else
+        bmax(a,b) : -config.fmin(-a, -b, args);
+  }
+The first semicolon turns this into a syntax error, but it looks valid
+from the perspective of C / Javascript / C++ etc.
+
+Pascal has the same issue: ';' before 'else' is illegal.
+But semicolons as terminators have won, in imperative language syntax.
+
+Haskell 2010 allows a `;` to be inserted before an `else`.
+This seems like the easiest fix.
+While parsing an `if`, if the 'then' phrase is terminated by a `;`,
+and the following token is `else`, then consume the `;` and process the
+`else`. When this happens, the `else` phrase must also be terminated by `;`.

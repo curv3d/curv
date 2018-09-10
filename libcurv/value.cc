@@ -65,7 +65,7 @@ Value::at(Symbol field, const Context& cx) const
         if (s)
             return s->getfield(field, cx);
     }
-    throw Exception(cx, stringify(".",field,": not defined"));
+    throw Exception(cx, stringify(*this," does not contain field .",field));
 }
 
 void
@@ -85,8 +85,7 @@ const
     }
 }
 
-auto Value::operator==(Value v) const
--> bool
+bool Value::equal(Value v, const Context& cx) const
 {
     // Numeric equality is the fast path, so it is handled first.
     // If both are numbers, this computes floating point equality:
@@ -96,7 +95,7 @@ auto Value::operator==(Value v) const
         return number_ == v.number_;
 
     if (!is_ref()) {
-        // *this is a non-numeric immediate value.
+        // *this is a non-numeric immediate value: boolean or null.
         return bits_ == v.bits_;
     }
 
@@ -117,9 +116,9 @@ auto Value::operator==(Value v) const
     case Ref_Value::ty_string:
         return (String&)r1 == (String&)r2;
     case Ref_Value::ty_list:
-        return (List&)r1 == (List&)r2;
+        return ((List&)r1).equal((List&)r2, cx);
     case Ref_Value::ty_record:
-        return (Record&)r1 == (Record&)r2;
+        return ((Structure&)r1).equal((Structure&)r2, cx);
     default:
         // Outside of the 6 data types, two values are equal if they have
         // the same type.

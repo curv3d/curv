@@ -16,6 +16,23 @@ along the ray at regular intervals and look for a sign change, which would
 indicate a shape boundary within the interval. But you might have skipped over
 a small feature enclosed by an earlier interval.
 
+Grid Tracing
+------------
+A method that works for tracing algebraic functions. Used by many 3D
+equation plotters, which can plot functions that Curv cannot.
+This will at least give me parity with equation plotters (and libfive)
+in terms of what SDFs I can render, and might be a fallback when faster
+algorithms fail.
+
+Sample along the ray at regular intervals and look for a sign change, which
+indicates a shape boundary within the interval. But you might have skipped over
+a small feature enclosed by an earlier interval. And it's slow.
+
+Requires a finite bounding box, and requires user to specify step size
+when stepping inside that bounding box.
+
+glsl-function-grapher by Michael Firmin on github
+
 Sphere Tracing
 --------------
 Sphere tracing is the most popular method for ray-tracing implicit functions.
@@ -33,6 +50,24 @@ of some notable implicit functions:
 * The result of applying a deformation (non-similarity transformation).
 
 See also: `<Deriving_Distance_Functions.rst>`_.
+
+Enhanced Sphere Tracing
+-----------------------
+http://erleuchtet.org/~cupe/permanent/enhanced_sphere_tracing.pdf
+https://www.shadertoy.com/view/4tVXRV
+
+Method of marching further than 1.*radius, and then checking if last 2 circles
+overlap, and jumping back if they do not overlap.
+
+This shader uses "enhanced spheretracing" that is more optimistic, in favor of
+convex surfaces, but it becomes less efficient of the surface has too many
+convex valleys. See figure 3 of paper: it tends to measure cones, and not just
+spheres. The overhead is one more subtraction, 1 more distance variable and 1
+state variable within the marching loop. It does not merge too well with a "glow
+accumulating marcher" and likely merges well with a "cheap AO accumulating
+marcher" (that just buffers the last 4 radii for very lazy AO, that is to the
+camera and not a surface normal). Both of these are common, one accumulates
+illumination/fog, one rotates 4 buffers for AO.
 
 Newton Tracing
 --------------
@@ -93,6 +128,11 @@ it has linear convergence. Newton's method is faster (quadratic convergence),
 but as mentioned above, now we need the implicit function to be C1 continuous.
 The "Realsurf" paper claims that bisection is more numerically stable than
 faster rootfinding methods when using 32 bit floats.
+
+More Methods
+------------
+Real-Time Ray-Tracing of Implicit Surfaces on the GPU
+http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.417.5616&rep=rep1&type=pdf
 
 Hybrid V-Rep
 ------------

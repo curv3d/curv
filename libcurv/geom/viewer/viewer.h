@@ -24,6 +24,7 @@ namespace viewer {
 struct Viewer_Config : public Frag_Export
 {
     bool verbose_ = false;
+    bool lazy_ = false;
 };
 
 struct Viewer
@@ -38,6 +39,9 @@ struct Viewer
     void set_shape(const Shape_Program&, const Frag_Export&);
 
     bool is_open() { return window_ != nullptr; }
+
+    // Set centre3d, eye3d and up3d to default values
+    void reset_view();
 
     // Open window: initialize OpenGL, create the window. Idempotent.
     void open();

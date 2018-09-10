@@ -79,7 +79,7 @@ Value
 Module_Data_Ref::eval(Frame& f) const
 {
     Module& m = (Module&)f[slot_].get_ref_unsafe();
-    assert(m.type_ == Ref_Value::ty_module);
+    assert(m.subtype_ == Ref_Value::sty_module);
     return m.at(index_);
 }
 
@@ -161,7 +161,7 @@ Subtract_Expr::eval(Frame& f) const
         static double f(double x, double y) { return x - y; }
         static const char* name() { return "-"; }
         static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x,"-",y);
+            return stringify(x," - ",y);
         }
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
@@ -183,7 +183,7 @@ Divide_Expr::eval(Frame& f) const
         static double f(double x, double y) { return x / y; }
         static const char* name() { return "/"; }
         static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x,"/",y);
+            return stringify(x," / ",y);
         }
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
@@ -195,30 +195,20 @@ Divide_Expr::eval(Frame& f) const
 Value
 Or_Expr::eval(Frame& f) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
-        return a;
-    if (a == Value{false}) {
-        Value b = arg2_->eval(f);
-        if (b.is_bool())
-            return b;
-        throw Exception(At_Phrase(*arg2_->syntax_, &f), "not a boolean value");
-    }
-    throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, &f));
+    if (a)
+        return {true};
+    bool b = arg2_->eval(f).to_bool(At_Phrase(*arg2_->syntax_, &f));
+    return {b};
 }
 Value
 And_Expr::eval(Frame& f) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{false})
-        return a;
-    if (a == Value{true}) {
-        Value b = arg2_->eval(f);
-        if (b.is_bool())
-            return b;
-        throw Exception(At_Phrase(*arg2_->syntax_, &f), "not a boolean value");
-    }
-    throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, &f));
+    if (!a)
+        return {false};
+    bool b = arg2_->eval(f).to_bool(At_Phrase(*arg2_->syntax_, &f));
+    return {b};
 }
 
 Value
@@ -230,79 +220,60 @@ If_Op::eval(Frame& f) const
 void
 If_Op::generate(Frame& f, List_Builder& lb) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, &f));
+    if (a)
         arg2_->generate(f, lb);
-    else if (a == Value{false})
-        return;
-    else
-        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 void
 If_Op::bind(Frame& f, Record& r) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, &f));
+    if (a)
         arg2_->bind(f, r);
-    else if (a == Value{false})
-        return;
-    else
-        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 void
 If_Op::exec(Frame& f) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, &f));
+    if (a)
         arg2_->exec(f);
-    else if (a == Value{false})
-        return;
-    else
-        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 
 Value
 If_Else_Op::eval(Frame& f) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, &f));
+    if (a)
         return arg2_->eval(f);
-    if (a == Value{false})
+    else
         return arg3_->eval(f);
-    throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 void
 If_Else_Op::generate(Frame& f, List_Builder& lb) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, &f));
+    if (a)
         arg2_->generate(f, lb);
-    else if (a == Value{false})
-        arg3_->generate(f, lb);
     else
-        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
+        arg3_->generate(f, lb);
 }
 void
 If_Else_Op::bind(Frame& f, Record& r) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, &f));
+    if (a)
         arg2_->bind(f, r);
-    else if (a == Value{false})
-        arg3_->bind(f, r);
     else
-        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
+        arg3_->bind(f, r);
 }
 void
 If_Else_Op::exec(Frame& f) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, &f));
+    if (a)
         arg2_->exec(f);
-    else if (a == Value{false})
-        arg3_->exec(f);
     else
-        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
+        arg3_->exec(f);
 }
 
 Value
@@ -310,14 +281,14 @@ Equal_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return {a == b};
+    return {a.equal(b, At_Phrase(*syntax_, &f))};
 }
 Value
 Not_Equal_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return {a != b};
+    return {!a.equal(b, At_Phrase(*syntax_, &f))};
 }
 Value
 Less_Expr::eval(Frame& f) const
@@ -330,7 +301,7 @@ Less_Expr::eval(Frame& f) const
     if (a.get_num_or_nan() >= b.get_num_or_nan())
         return {false};
     throw Exception(At_Phrase(*syntax_, &f),
-        stringify(a,"<",b,": domain error"));
+        stringify(a," < ",b,": domain error"));
 }
 Value
 Greater_Expr::eval(Frame& f) const
@@ -343,7 +314,7 @@ Greater_Expr::eval(Frame& f) const
     if (a.get_num_or_nan() <= b.get_num_or_nan())
         return {false};
     throw Exception(At_Phrase(*syntax_, &f),
-        stringify(a,">",b,": domain error"));
+        stringify(a," > ",b,": domain error"));
 }
 Value
 Less_Or_Equal_Expr::eval(Frame& f) const
@@ -356,7 +327,7 @@ Less_Or_Equal_Expr::eval(Frame& f) const
     if (a.get_num_or_nan() > b.get_num_or_nan())
         return {false};
     throw Exception(At_Phrase(*syntax_, &f),
-        stringify(a,"<=",b,": domain error"));
+        stringify(a," <= ",b,": domain error"));
 }
 Value
 Greater_Or_Equal_Expr::eval(Frame& f) const
@@ -369,7 +340,7 @@ Greater_Or_Equal_Expr::eval(Frame& f) const
     if (a.get_num_or_nan() < b.get_num_or_nan())
         return {false};
     throw Exception(At_Phrase(*syntax_, &f),
-        stringify(a,">=",b,": domain error"));
+        stringify(a," >= ",b,": domain error"));
 }
 Value
 Power_Expr::eval(Frame& f) const
@@ -378,7 +349,7 @@ Power_Expr::eval(Frame& f) const
         static double f(double x, double y) { return pow(x,y); }
         static const char* name() { return "^"; }
         static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x,"^",y);
+            return stringify(x," ^ ",y);
         }
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
@@ -486,7 +457,6 @@ Call_Expr::eval(Frame& f) const
             return fun->call(arg_->eval(f), *f2);
           }
         case Ref_Value::ty_record:
-        case Ref_Value::ty_module:
           {
             Structure* s = (Structure*)&funp;
             if (s->hasfield(callkey)) {
@@ -590,7 +560,7 @@ void
 Module_Data_Setter::exec(Frame& f) const
 {
     Module& m = (Module&)f[slot_].get_ref_unsafe();
-    assert(m.type_ == Ref_Value::ty_module);
+    assert(m.subtype_ == Ref_Value::sty_module);
     m.at(index_) = expr_->eval(f);
 }
 
@@ -841,7 +811,7 @@ Pattern_Setter::exec(Frame& f) const
     else {
         auto mval = f[module_slot_];
         auto m = (Module*)&mval.get_ref_unsafe();
-        assert(m->type_ == Ref_Value::ty_module);
+        assert(m->subtype_ == Ref_Value::sty_module);
         slots = &m->at(0);
     }
     Value value = definiens_->eval(f);
@@ -857,7 +827,7 @@ Function_Setter_Base::exec(Frame& f) const
     else {
         auto mval = f[module_slot_];
         auto m = (Module*)&mval.get_ref_unsafe();
-        assert(m->type_ == Ref_Value::ty_module);
+        assert(m->subtype_ == Ref_Value::sty_module);
         slots = &m->at(0);
     }
     Shared<Module> nonlocals = nonlocals_->eval_module(f);
@@ -874,7 +844,7 @@ Include_Setter_Base::exec(Frame& f) const
     else {
         auto mval = f[module_slot_];
         auto m = (Module*)&mval.get_ref_unsafe();
-        assert(m->type_ == Ref_Value::ty_module);
+        assert(m->subtype_ == Ref_Value::sty_module);
         slots = &m->at(0);
     }
     for (auto& e : *this)

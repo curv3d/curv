@@ -29,24 +29,6 @@ Record::putfields(Symbol_Map<Value>& out) const
         out[i.first] = i.second;
 }
 
-bool
-Record::operator==(const Record& rec) const
-{
-    auto i1 = fields_.begin();
-    auto i2 = rec.fields_.begin();
-    while (i1 != fields_.end()) {
-        if (i2 == rec.fields_.end())
-            return false;
-        if (i1->first != i2->first)
-            return false;
-        if (i1->second != i2->second)
-            return false;
-        ++i1;
-        ++i2;
-    }
-    return true;
-}
-
 Value
 Record::getfield(Symbol name, const Context& cx) const
 {

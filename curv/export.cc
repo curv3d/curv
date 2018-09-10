@@ -426,11 +426,16 @@ void parse_viewer_config(
 {
     opts.verbose_ = params.verbose_;
     for (auto& p : params.map_) {
-        if (!parse_frag_opt(params, p, opts))
+        if (p.first == "lazy") opts.lazy_ = true;
+        else if (!parse_frag_opt(params, p, opts))
             params.unknown_parameter(p);
     }
 }
 void describe_viewer_options(std::ostream& out, const char* prefix)
 {
     describe_frag_options(out, prefix);
+    out
+    << prefix <<
+    "-O lazy (redraw only when geometry changes or on user input - disables time component of geometry)\n"
+    ;
 }
