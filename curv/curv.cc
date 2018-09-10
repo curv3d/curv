@@ -69,7 +69,7 @@ const char help_prefix[] =
 "curv --version\n"
 "   Display version information needed for bug reports.\n"
 "curv [options]\n"
-"   Interactive shell.\n"
+"   Interactive command-line shell.\n"
 "curv -l [-e] [options] filename\n"
 "   Live programming mode. Evaluate & display result each time file changes.\n"
 "   -e : Open editor window. $CURV_EDITOR overrides default editor.\n"
