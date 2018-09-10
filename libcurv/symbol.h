@@ -30,21 +30,13 @@ private:
     using Base = Shared<const String>;
 public:
     using Shared<const String>::Shared;
-    inline Symbol(Shared<const String> str)
-    :
-        Base(str)
-    {}
     inline Symbol(const char* str)
     :
-        Base(String::make(str, strlen(str)))
+        Base(make_string(str))
     {}
-    inline Symbol(const char* str, size_t len)
+    inline Symbol(String_Ref str)
     :
-        Base(String::make(str, len))
-    {}
-    inline Symbol(Range<const char*> str)
-    :
-        Base(String::make(str.begin(), str.size()))
+        Base(str)
     {}
     inline Symbol& operator=(Symbol a2)
     {

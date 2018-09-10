@@ -798,8 +798,7 @@ String_Expr_Base::eval_symbol(Frame& f) const
     String_Builder sb;
     for (auto seg : *this)
         seg->generate(f, sb);
-    auto s = sb.str();
-    return {s.data(), s.size()};
+    return {sb.str()};
 }
 
 void

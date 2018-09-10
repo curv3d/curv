@@ -101,6 +101,10 @@ struct String_Ref : public Shared<const String>
     :
         Shared<const String>(make_string(str.c_str(), str.size()))
     {}
+    String_Ref(Range<const char*> str)
+    :
+        Shared<const String>(make_string(str.begin(), str.size()))
+    {}
     String_Ref(Shared<const String> str)
     :
         Shared<const String>(std::move(str))
