@@ -15,10 +15,10 @@ struct Record : public Structure
 {
     Symbol_Map<Value> fields_;
 
-    Record() : Structure(ty_record) {}
+    Record() : Structure(sty_record) {}
     Record(Symbol_Map<Value> fields)
     :
-        Structure(ty_record),
+        Structure(sty_record),
         fields_(std::move(fields))
     {
     }
@@ -30,7 +30,6 @@ struct Record : public Structure
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const override;
-    bool operator==(const Record&) const;
     virtual Value getfield(Symbol, const Context&) const override;
     virtual bool hasfield(Symbol) const override;
     virtual void putfields(Symbol_Map<Value>&) const override;

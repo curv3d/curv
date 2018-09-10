@@ -271,6 +271,9 @@ TEST(curv, eval)
     SUCCESS("[1,2]==[1,2]", "true");
     SUCCESS("[1,true]==[1,2]", "false");
     SUCCESS("{x:1,y:2}=={x:1,y:2}", "true");
+    SUCCESS("{x:1,y:2}=={x:1,z:2}", "false");
+    SUCCESS("{x:1,y:2}=={x:1,y:3}", "false");
+    SUCCESS("{x:1,y:2}=={x=1;y=2}", "true");
     SUCCESS("sqrt==sqrt", "true");
     SUCCESS("!true", "false");
     SUCCESS("!false", "true");
