@@ -88,11 +88,7 @@ public:
     {
         a1.swap(a2);
     }
-    friend std::ostream& operator<<(std::ostream& out, Symbol a)
-    {
-        out << *a;
-        return out;
-    }
+    friend std::ostream& operator<<(std::ostream& out, Symbol a);
 
     Value to_value() const
     {
@@ -100,6 +96,7 @@ public:
         // but a Value can only be constructed from a mutable String reference.
         return {String::make(data(), size())};
     }
+    bool is_identifier() const;
 };
 
 /// A Symbol_Map<T> is a map from Symbol to T.

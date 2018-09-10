@@ -263,7 +263,6 @@ Language changes:
 * lib
 
 Code cleanup:
-* rename Structure/Record/Module to Record/Dict/Module.
 * unit tests for: CLI supports compound definitions
 * unit tests for: GL error messages
 * GL_Frame::gl renamed to gl_
@@ -275,8 +274,6 @@ Code cleanup:
 Tensors:
 * rank? Like ArrayDepth[t] in Mathematica?
 * dimensions? Like Dimensions[t] in Mathematica?
-
-Bug: records with non-identifier field names are not printed correctly.
 
 weird error message: Should underline the default value expression.
 curv> {a: [x,y] = []} = {}

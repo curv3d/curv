@@ -209,6 +209,7 @@ TEST(curv, eval)
     SUCCESS("[1,2,3]", "[1,2,3]");
     SUCCESS("{x:1}", "{x:1}");
     SUCCESS("{x=1}", "{x:1}");
+    SUCCESS("{\"x y\":1}", "{\"x y\":1}");
 
     // function constructors
     SUCCESS("x->x+1", "<function>");
