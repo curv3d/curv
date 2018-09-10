@@ -144,7 +144,7 @@ struct Predicate_Pattern : public Pattern
               }
             case Ref_Value::ty_record:
               {
-                Structure* s = (Structure*)&funp;
+                Record* s = (Record*)&funp;
                 if (s->hasfield(callkey)) {
                     funv = s->getfield(callkey, {});
                     continue;
@@ -274,7 +274,7 @@ struct Record_Pattern : public Pattern
     const override
     {
         // TODO: clean this up OMG. Need a general Record iterator.
-        auto record = value.to<Structure>(valcx);
+        auto record = value.to<Record>(valcx);
         auto p = fields_.begin();
         record->each_field([&](Symbol name, Value val)->void {
             while (p != fields_.end()) {
@@ -321,7 +321,7 @@ struct Record_Pattern : public Pattern
     const override
     {
         // TODO: clean this up OMG. Need a general Record iterator.
-        auto record = value.dycast<Structure>();
+        auto record = value.dycast<Record>();
         if (record == nullptr)
             return false;
         auto p = fields_.begin();

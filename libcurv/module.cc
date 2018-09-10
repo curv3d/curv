@@ -53,7 +53,7 @@ Module_Base::getfield(Symbol name, const Context& cx) const
     auto b = dictionary_->find(name);
     if (b != dictionary_->end())
         return get(b->second);
-    return Structure::getfield(name, cx);
+    return Record::getfield(name, cx);
 }
 
 bool

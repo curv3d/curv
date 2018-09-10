@@ -370,13 +370,13 @@ list_at(const List& list, Value index, const Context& cx)
     return list[i];
 }
 Value
-struct_at(const Structure& ref, Value index, const Context& cx)
+record_at(const Record& ref, Value index, const Context& cx)
 {
     if (auto indices = index.dycast<List>()) {
         Shared<List> result = List::make(indices->size());
         int j = 0;
         for (auto i : *indices)
-            (*result)[j++] = struct_at(ref, i, cx);
+            (*result)[j++] = record_at(ref, i, cx);
         return {result};
     }
     Symbol a = index.to<const String>(cx);
@@ -429,8 +429,8 @@ Index_Expr::eval(Frame& f) const
     Value b = arg2_->eval(f);
     if (auto list = a.dycast<const List>())
         return list_at(*list, b, At_Phrase(*arg2_->syntax_, &f));
-    if (auto structure = a.dycast<const Structure>())
-        return struct_at(*structure, b, At_Phrase(*arg2_->syntax_, &f));
+    if (auto record = a.dycast<const Record>())
+        return record_at(*record, b, At_Phrase(*arg2_->syntax_, &f));
     if (auto string = a.dycast<const String>())
         return string_at(*string, b, At_Phrase(*arg2_->syntax_, &f));
     throw Exception(At_Phrase(*arg1_->syntax_, &f),
@@ -458,7 +458,7 @@ Call_Expr::eval(Frame& f) const
           }
         case Ref_Value::ty_record:
           {
-            Structure* s = (Structure*)&funp;
+            Record* s = (Record*)&funp;
             if (s->hasfield(callkey)) {
                 funv = s->getfield(callkey, {});
                 continue;
@@ -505,7 +505,7 @@ Spread_Op::generate(Frame& f, List_Builder& lb) const
 void
 Spread_Op::bind(Frame& f, DRecord& r) const
 {
-    auto s = arg_->eval(f).to<const Structure>(At_Phrase(*arg_->syntax_, &f));
+    auto s = arg_->eval(f).to<const Record>(At_Phrase(*arg_->syntax_, &f));
     s->putfields(r.fields_);
 }
 

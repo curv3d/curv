@@ -61,7 +61,7 @@ Value
 Value::at(Symbol field, const Context& cx) const
 {
     if (is_ref()) {
-        Structure* s = dynamic_cast<Structure*>(&get_ref_unsafe());
+        Record* s = dynamic_cast<Record*>(&get_ref_unsafe());
         if (s)
             return s->getfield(field, cx);
     }
@@ -118,7 +118,7 @@ bool Value::equal(Value v, const Context& cx) const
     case Ref_Value::ty_list:
         return ((List&)r1).equal((List&)r2, cx);
     case Ref_Value::ty_record:
-        return ((Structure&)r1).equal((Structure&)r2, cx);
+        return ((Record&)r1).equal((Record&)r2, cx);
     default:
         // Outside of the 6 data types, two values are equal if they have
         // the same type.

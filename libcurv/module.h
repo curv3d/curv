@@ -5,7 +5,7 @@
 #ifndef LIBCURV_MODULE_H
 #define LIBCURV_MODULE_H
 
-#include <libcurv/structure.h>
+#include <libcurv/record.h>
 #include <libcurv/symbol.h>
 #include <libcurv/shared.h>
 #include <libcurv/list.h>
@@ -18,7 +18,7 @@ namespace curv {
 ///
 /// Each module value constructed from the same module literal shares the
 /// same dictionary. Only the value list is different.
-struct Module_Base : public Structure
+struct Module_Base : public Record
 {
     /// A Dictionary maps field names onto slot indexes.
     /// It has a reference count so that the same dictionary
@@ -53,7 +53,7 @@ struct Module_Base : public Structure
 
     Module_Base(Shared<Dictionary> dictionary)
     :
-        Structure(sty_module),
+        Record(sty_module),
         dictionary_(std::move(dictionary))
     {}
 

@@ -237,7 +237,7 @@ bool export_json_value(Value val, std::ostream& out)
       }
     case Ref_Value::ty_record:
       {
-        auto& record = (Structure&)ref;
+        auto& record = (Record&)ref;
         out << "{";
         bool first = true;
         record.each_field([&](Symbol id, Value val) {

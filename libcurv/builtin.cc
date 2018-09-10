@@ -85,7 +85,7 @@ struct Is_Record_Function : public Legacy_Function
     Is_Record_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
-        return {args[0].dycast<Structure>() != nullptr};
+        return {args[0].dycast<Record>() != nullptr};
     }
 };
 struct Is_Fun_Function : public Legacy_Function
@@ -402,8 +402,8 @@ struct Fields_Function : public Legacy_Function
     Fields_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
-        if (auto structure = args[0].dycast<const Structure>())
-            return {structure->fields()};
+        if (auto record = args[0].dycast<const Record>())
+            return {record->fields()};
         throw Exception(At_Arg(*this, args), "not a record");
     }
 };
@@ -819,7 +819,7 @@ struct Defined_Expression : public Just_Expression
     virtual Value eval(Frame& f) const override
     {
         auto val = expr_->eval(f);
-        auto s = val.dycast<Structure>();
+        auto s = val.dycast<Record>();
         if (s) {
             auto id = selector_.eval(f);
             return {s->hasfield(id)};

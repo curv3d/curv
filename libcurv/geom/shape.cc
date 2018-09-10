@@ -71,7 +71,7 @@ Shape_Program::recognize(Value val)
 
     At_Program cx(*this);
 
-    auto s = val.dycast<Structure>();
+    auto s = val.dycast<Record>();
     if (s == nullptr)
         return false;
     if (s->hasfield(is_2d_key))

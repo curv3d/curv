@@ -459,7 +459,7 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
         if (auto fun = v.dycast<Function>()) {
             return fun->gl_call_expr(*arg_, call_phrase(), f);
         }
-        if (auto r = v.dycast<Structure>()) {
+        if (auto r = v.dycast<Record>()) {
             static Symbol call_key = "call";
             if (r->hasfield(call_key)) {
                 v = r->getfield(call_key,{});

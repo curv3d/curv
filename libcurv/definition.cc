@@ -67,11 +67,11 @@ Function_Definition::make_setter(slot_t module_slot)
 void
 Include_Definition::add_to_scope(Block_Scope& scope)
 {
-    // Evaluate the argument to `use` in the builtin environment.
+    // Evaluate the argument to `include` in the builtin environment.
     auto val = std_eval(*arg_, scope);
-    auto record = val.to<Structure>(At_Phrase(*arg_, scope));
+    auto record = val.to<Record>(At_Phrase(*arg_, scope));
 
-    // construct a Include_Setter from the record argument.
+    // construct an Include_Setter from the record argument.
     unsigned unit = scope.begin_unit(share(*this));
     setter_ = {Include_Setter::make(record->size(), syntax_)};
     size_t i = 0;

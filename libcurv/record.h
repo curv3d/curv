@@ -5,20 +5,51 @@
 #ifndef LIBCURV_RECORD_H
 #define LIBCURV_RECORD_H
 
+#include <libcurv/list.h>
 #include <libcurv/symbol.h>
-#include <libcurv/structure.h>
 
 namespace curv {
 
-/// A record value: {x=1,y=2}
-struct DRecord : public Structure
+// A curv 'Record' is a value containing a set of fields (name/value pairs).
+// Subtypes are DRecord and Module.
+// All records have the same protocol for field access, which is encapsulated
+// in this pure virtual class.
+struct Record : public Ref_Value
+{
+    Record(int subtype) : Ref_Value(ty_record, subtype) {}
+
+    /// Get the value of a named field, throw exception if not defined.
+    virtual Value getfield(Symbol, const Context&) const;
+
+    /// Test if the value contains the named field.
+    virtual bool hasfield(Symbol) const = 0;
+
+    // Copy the fields into an Symbol_Map.
+    virtual void putfields(Symbol_Map<Value>&) const = 0;
+
+    virtual Shared<List> fields() const = 0;
+
+    virtual size_t size() const = 0;
+
+    // visit each field
+    virtual void each_field(std::function<void(Symbol,Value)>) const = 0;
+
+    bool equal(const Record&, const Context&) const;
+
+    static const char name[];
+};
+
+/// A DRecord is a dynamic record. It's a concrete implementation of the
+/// Record protocol for which it is possible to dynamically add new fields
+/// at run-time. Constrast this with Module, which is a static record.
+struct DRecord : public Record
 {
     Symbol_Map<Value> fields_;
 
-    DRecord() : Structure(sty_drecord) {}
+    DRecord() : Record(sty_drecord) {}
     DRecord(Symbol_Map<Value> fields)
     :
-        Structure(sty_drecord),
+        Record(sty_drecord),
         fields_(std::move(fields))
     {
     }
@@ -36,8 +67,6 @@ struct DRecord : public Structure
     virtual Shared<List> fields() const override;
     virtual size_t size() const override { return fields_.size(); }
     virtual void each_field(std::function<void(Symbol,Value)>) const override;
-
-    static const char name[];
 };
 
 } // namespace curv
