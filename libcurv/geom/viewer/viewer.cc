@@ -100,7 +100,8 @@ bool Viewer::draw_frame()
     render();
     swap_buffers();
     poll_events();
-    measure_time();
+    if (!config_.lazy_)
+        measure_time();
     return true;
 }
 
@@ -416,8 +417,10 @@ void Viewer::measure_time()
 
 void Viewer::poll_events()
 {
-    if (config_.lazy_) glfwWaitEvents();
-    else glfwPollEvents();
+    if (config_.lazy_)
+        glfwWaitEvents();
+    else
+        glfwPollEvents();
 }
 
 void Viewer::swap_buffers()
