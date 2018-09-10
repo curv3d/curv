@@ -187,6 +187,16 @@ bool is_json_data(Value val)
         return true; // null, bool or num
     }
 }
+void export_json_string(const char* str, std::ostream& out)
+{
+    out << '"';
+    for (const char* p = str; *p != '\0'; ++p) {
+        if (*p == '\\' || *p == '"')
+            out << '\\';
+        out << *p;
+    }
+    out << '"';
+}
 bool export_json_value(Value val, std::ostream& out)
 {
     if (val.is_null()) {
@@ -207,13 +217,7 @@ bool export_json_value(Value val, std::ostream& out)
     case Ref_Value::ty_string:
       {
         auto& str = (String&)ref;
-        out << '"';
-        for (auto c : str) {
-            if (c == '\\' || c == '"')
-                out << '\\';
-            out << c;
-        }
-        out << '"';
+        export_json_string(str.c_str(), out);
         return true;
       }
     case Ref_Value::ty_list:
@@ -233,17 +237,18 @@ bool export_json_value(Value val, std::ostream& out)
       }
     case Ref_Value::ty_record:
       {
-        auto& record = (Record&)ref;
+        auto& record = (Structure&)ref;
         out << "{";
         bool first = true;
-        for (auto i : record.fields_) {
-            if (is_json_data(i.second)) {
+        record.each_field([&](Symbol id, Value val) {
+            if (is_json_data(val)) {
                 if (!first) out << ",";
                 first = false;
-                out << '"' << i.first << "\":";
-                export_json_value(i.second, out);
+                export_json_string(id.c_str(), out);
+                out << ":";
+                export_json_value(val, out);
             }
-        }
+        });
         out << "}";
         return true;
       }
