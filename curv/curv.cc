@@ -90,7 +90,7 @@ const char help_infix[] =
 
 const char help_suffix[] =
 "   $CURV_STDLIB : Pathname of standard library, overrides PREFIX/lib/std.curv\n"
-"   -n : Don't use standard library.\n"
+"   -n : Don't include standard library.\n"
 "   -i file : Include specified library; may be repeated.\n"
 ;
 
