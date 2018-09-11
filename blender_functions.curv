@@ -3,6 +3,7 @@
 
 // Common function which defines union, difference and intersction
 let 
+
 make_blend config args =
 let _bmax =
     if (defined(config.fmax))
@@ -43,6 +44,47 @@ in {
 
     bmin(a,b) = config.fmin(a, b, args);
     bmax = _bmax;
+};
+
+show_grid1 pitch (shape) =
+    make_shape {
+        dist p : shape.dist p,
+        colour p : let
+                c=if (
+                        mod(abs(p[0])+(0.001+pitch)/2,pitch) < 0.01 ||
+                        mod(abs(p[1])+(0.001+pitch)/2,pitch) < 0.01 ||
+                        mod(abs(p[2])+(0.001+pitch)/2,pitch) < 0.01
+                )
+                        [0,0,0]
+                else
+                        [1,1,1] // [0.9,0.9,0.9]
+                in
+                c ,
+        bbox : shape.bbox, 
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    };
+
+
+make_blend_simple config args =
+{
+//    union (s1,s2) =
+        make_shape {
+            dist p =
+                let a = s1.dist p;
+                    b = s2.dist p;
+                in bmin(a,b);
+            colour p =
+                let d1 = s1.dist p;
+                    d2 = s2.dist p;
+                in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p;
+            bbox = [ min(s1.bbox[MIN], s2.bbox[MIN]),
+                     max(s1.bbox[MAX], s2.bbox[MAX]) ];
+            is_2d = s1.is_2d && s2.is_2d;
+            is_3d = s1.is_3d && s2.is_3d;
+        };
+
+    bmin(a,b) = config.fmin(a, b, args);
 };
 
 ////////////////////////////
@@ -155,7 +197,7 @@ columns = make_blend {
 
 
 // fOpPipe
-pipes = make_blend {
+pipes = make_blend_simple {
     fmin (a, b, r) =
 	let
 	in
@@ -167,7 +209,7 @@ pipes = make_blend {
 ////////////////////////////
 
 // fOpEngrave 
-engrave = make_blend {
+engrave = make_blend_simple {
     fmin (a, b, r) =
 	 let
 	 in
@@ -178,7 +220,7 @@ engrave = make_blend {
 // Groove
 ////////////////////////////
 
-groove = make_blend {
+groove = make_blend_simple {
     fmin (a, b, ra, rb) = 
 	 max(a,min(a+ra,rb-abs(b)));
 	
@@ -188,7 +230,7 @@ groove = make_blend {
 // Tongue
 ////////////////////////////
 
-tongue = make_blend {
+tongue = make_blend_simple {
     fmin (a, b, ra, rb) =
 	min(a,max(a-ra,abs(b)-rb));
 };
@@ -230,14 +272,14 @@ in
 //stairs ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // WORKS
 //stairs ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // WORKS
 
-columns ( 0.5,3 ) .union (sphere, cube >> move(1,1,1)) // WORKS
+//columns ( 0.5,3 ) .union (sphere, cube >> move(1,1,1)) // WORKS
 //columns ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // PROBLEM
 //columns ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
 
-//pipes  0.2 .union (sphere, cube >> move(1,1,1)) >> lipschitz 2 // WORKS 
-//engrave  0.2 .union (sphere, cube >> move(1,1,1)) // WORKS 
-//groove ( 0.2,0.1 ) .union (sphere, cube >> move(1,1,1)) // WORKS 
-//tongue ( 0.2,0.1 ) .union (sphere, cube >> move(1,1,1)) // WORKS 
+pipes  0.2 (sphere, cube >> move(1,1,1)) >> lipschitz 2 // WORKS 
+//engrave  0.2 (sphere, cube >> move(1,1,1)) // WORKS 
+//groove ( 0.2,0.1 ) (sphere, cube >> move(1,1,1)) // WORKS 
+//tongue ( 0.2,0.1 ) (sphere, cube >> move(1,1,1)) // WORKS 
 
 >> show_grid 0.3
 
