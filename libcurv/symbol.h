@@ -34,6 +34,10 @@ public:
     :
         Base(make_string(str))
     {}
+    inline Symbol(Shared<const String> str)
+    :
+        Base(std::move(str))
+    {}
     inline Symbol(String_Ref str)
     :
         Base(str)
