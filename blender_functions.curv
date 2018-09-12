@@ -73,7 +73,8 @@ make_blend_simple config ( args ) (s1,s2) =
                     b = s2.dist p;
                 in config.fmin(a,b,args);
             colour p = s1.colour p;
-            bbox = s1.bbox;
+//            bbox = [ s1.bbox[MIN] - [args[0],args[0],args[0]], s1.bbox[MAX] +[args[0],args[0], args[0] ]];
+            bbox = [ s1.bbox[MIN] - [args,args,args], s1.bbox[MAX] +[args,args, args ]]; // for pipe, engrave
             is_2d = s1.is_2d && s2.is_2d;
             is_3d = s1.is_3d && s2.is_3d;
         };
@@ -269,11 +270,10 @@ in
 //columns ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
 
 //pipes  0.2 (sphere, cube >> move(1,1,1)) >> lipschitz 2 // WORKS 
-//engrave  0.2 (sphere >> colour red, cube >> move(1,1,1)) // WORKS 
+engrave  0.2 (sphere >> colour red, cube >> move(1,1,1)) // WORKS 
 //groove ( 0.2,0.1 ) (sphere >> colour red , cube >> move(1,1,1)) // WORKS 
-tongue ( 0.2,0.1 ) (sphere >> colour red, cube >> move(1,1,1)) // WORKS 
+//tongue ( 0.2,0.1 ) (sphere >> colour red, cube >> move(1,1,1)) // WORKS 
 
 //>> show_grid 0.3
 
-//pipes ( 0.2,0.1 ) (circle >> colour red, square >> move(1,1)) // WORKS 
-
+//tongue (0.2,0.1) (circle, square) >> show_bbox
