@@ -18,18 +18,15 @@ Record::getfield(Symbol field, const Context& cx) const
 bool
 Record::equal(const Record& rhs, const Context& cx) const
 {
-    // TODO: This is not efficient. There is no way to short-circuit
-    // the 'each_field' loop. We need a Record iterator.
     if (this->size() != rhs.size())
         return false;
-    bool r = true;
-    this->each_field([&](Symbol sym, Value val) {
-        if (!rhs.hasfield(sym))
-            r = false;
-        else if (!val.equal(rhs.getfield(sym,cx),cx))
-            r = false;
-    });
-    return r;
+    for (auto i = iter(); !i->empty(); i->next()) {
+        if (!rhs.hasfield(i->key()))
+            return false;
+        if (!i->value(cx).equal(rhs.getfield(i->key(),cx),cx))
+            return false;
+    }
+    return true;
 }
 
 void

@@ -106,6 +106,38 @@ struct Module_Base : public Record
 
     static const char name[];
 
+    class Iter : public Record::Iter
+    {
+    public:
+        Iter(const Module_Base& rec)
+        :
+            rec_(rec),
+            i_(rec.dictionary_->begin())
+        {
+            if (i_ != rec_.dictionary_->end()) {
+                key_ = i_->first;
+                value_ = rec_.get(i_->second);
+            }
+        }
+    protected:
+        const Module_Base& rec_;
+        Dictionary::const_iterator i_;
+        virtual void load_value(const Context&) override {}
+        virtual void next() override
+        {
+            ++i_;
+            if (i_ != rec_.dictionary_->end()) {
+                key_ = i_->first;
+                value_ = rec_.get(i_->second);
+            } else
+                key_ = Symbol();
+        }
+    };
+    virtual std::unique_ptr<Record::Iter> iter() const override
+    {
+        return std::make_unique<Iter>(*this);
+    }
+
 protected:
     // interface used by Tail_Array. Must be declared last.
     using value_type = Value;
