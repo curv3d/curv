@@ -72,10 +72,7 @@ make_blend_simple config ( args ) (s1,s2) =
                 let a = s1.dist p;
                     b = s2.dist p;
                 in config.fmin(a,b,args);
-            colour p =
-                let d1 = s1.dist p;
-                    d2 = s2.dist p;
-                in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p;
+            colour p = s1.colour p;
             bbox = [ min(s1.bbox[MIN], s2.bbox[MIN]),
                      max(s1.bbox[MAX], s2.bbox[MAX]) ];
             is_2d = s1.is_2d && s2.is_2d;
@@ -268,14 +265,14 @@ in
 //stairs ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // WORKS
 //stairs ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // WORKS
 
-//columns ( 0.5,3 ) .union (sphere, cube >> move(1,1,1)) // WORKS
+//columns ( 0.5,3 ) .union (sphere >> colour red, cube >> move(1,1,1)) // WORKS
 //columns ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // PROBLEM
 //columns ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
 
 //pipes  0.2 (sphere, cube >> move(1,1,1)) >> lipschitz 2 // WORKS 
-engrave  0.2 (sphere, cube >> move(1,1,1)) // WORKS 
+engrave  0.2 (sphere >> colour red, cube >> move(1,1,1)) // WORKS 
 //groove ( 0.2,0.1 ) (sphere, cube >> move(1,1,1)) // WORKS 
 //tongue ( 0.2,0.1 ) (sphere, cube >> move(1,1,1)) // WORKS 
 
->> show_grid 0.3
+//>> show_grid 0.3
 
