@@ -27,7 +27,7 @@ struct Record : public Ref_Value
     // Copy the fields into an Symbol_Map.
     virtual void putfields(Symbol_Map<Value>&) const = 0;
 
-    virtual Shared<List> fields() const = 0;
+    Shared<List> fields() const;
 
     virtual size_t size() const = 0;
 
@@ -86,7 +86,6 @@ struct DRecord : public Record
     virtual Value getfield(Symbol, const Context&) const override;
     virtual bool hasfield(Symbol) const override;
     virtual void putfields(Symbol_Map<Value>&) const override;
-    virtual Shared<List> fields() const override;
     virtual size_t size() const override { return fields_.size(); }
 
     class Iter : public Record::Iter

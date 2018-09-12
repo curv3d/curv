@@ -100,7 +100,6 @@ struct Module_Base : public Record
     virtual bool hasfield(Symbol) const override;
     virtual void putfields(Symbol_Map<Value>&) const override;
     virtual size_t size() const override { return size_; }
-    virtual Shared<List> fields() const override;
 
     static const char name[];
 

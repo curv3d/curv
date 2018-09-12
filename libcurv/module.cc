@@ -63,16 +63,4 @@ Module_Base::hasfield(Symbol name) const
     return (b != dictionary_->end());
 }
 
-Shared<List>
-Module_Base::fields() const
-{
-    auto list = List::make(dictionary_->size());
-    int i = 0;
-    for (auto f : *dictionary_) {
-        list->at(i) = f.first.to_value();
-        ++i;
-    }
-    return {std::move(list)};
-}
-
 } // namespace curv

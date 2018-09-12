@@ -37,6 +37,18 @@ Record::each_field(
         visitor(f->key(), f->value(cx));
 }
 
+Shared<List>
+Record::fields() const
+{
+    auto list = List::make(size());
+    int i = 0;
+    for (auto f = iter(); !f->empty(); f->next()) {
+        list->at(i) = f->key().to_value();
+        ++i;
+    }
+    return {std::move(list)};
+}
+
 void
 DRecord::print(std::ostream& out) const
 {
@@ -72,18 +84,6 @@ DRecord::hasfield(Symbol name) const
 {
     auto fp = fields_.find(name);
     return (fp != fields_.end());
-}
-
-Shared<List>
-DRecord::fields() const
-{
-    auto list = List::make(fields_.size());
-    int i = 0;
-    for (auto f : fields_) {
-        list->at(i) = f.first.to_value();
-        ++i;
-    }
-    return {std::move(list)};
 }
 
 } // namespace curv
