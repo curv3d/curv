@@ -23,13 +23,6 @@ Module_Base::print(std::ostream& out) const
     out << "}";
 }
 
-void
-Module_Base::putfields(Symbol_Map<Value>& out) const
-{
-    for (auto i : *this)
-        out[i.first] = i.second;
-}
-
 Value
 Module_Base::get(slot_t i) const
 {

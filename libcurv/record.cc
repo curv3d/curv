@@ -63,13 +63,6 @@ DRecord::print(std::ostream& out) const
     out << "}";
 }
 
-void
-DRecord::putfields(Symbol_Map<Value>& out) const
-{
-    for (auto i : fields_)
-        out[i.first] = i.second;
-}
-
 Value
 DRecord::getfield(Symbol name, const Context& cx) const
 {

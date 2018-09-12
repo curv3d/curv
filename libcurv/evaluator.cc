@@ -505,8 +505,10 @@ Spread_Op::generate(Frame& f, List_Builder& lb) const
 void
 Spread_Op::bind(Frame& f, DRecord& r) const
 {
-    auto s = arg_->eval(f).to<const Record>(At_Phrase(*arg_->syntax_, &f));
-    s->putfields(r.fields_);
+    At_Phrase cx(*arg_->syntax_, &f);
+    auto s = arg_->eval(f).to<const Record>(cx);
+    for (auto i = s->iter(); !i->empty(); i->next())
+        r.fields_[i->key()] = i->value(cx);
 }
 
 void

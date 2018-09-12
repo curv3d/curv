@@ -24,12 +24,9 @@ struct Record : public Ref_Value
     /// Test if the value contains the named field.
     virtual bool hasfield(Symbol) const = 0;
 
-    // Copy the fields into an Symbol_Map.
-    virtual void putfields(Symbol_Map<Value>&) const = 0;
+    virtual size_t size() const = 0;
 
     Shared<List> fields() const;
-
-    virtual size_t size() const = 0;
 
     // visit each field
     void each_field(const Context&, std::function<void(Symbol,Value)>) const;
@@ -85,7 +82,6 @@ struct DRecord : public Record
     virtual void print(std::ostream&) const override;
     virtual Value getfield(Symbol, const Context&) const override;
     virtual bool hasfield(Symbol) const override;
-    virtual void putfields(Symbol_Map<Value>&) const override;
     virtual size_t size() const override { return fields_.size(); }
 
     class Iter : public Record::Iter
