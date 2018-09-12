@@ -75,11 +75,4 @@ Module_Base::fields() const
     return {std::move(list)};
 }
 
-void
-Module_Base::each_field(std::function<void(Symbol,Value)> visitor) const
-{
-    for (auto f : *dictionary_)
-        visitor(f.first, get(f.second));
-}
-
 } // namespace curv

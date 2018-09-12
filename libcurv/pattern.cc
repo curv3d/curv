@@ -273,10 +273,10 @@ struct Record_Pattern : public Pattern
     virtual void exec(Value* slots, Value value, const Context& valcx, Frame& f)
     const override
     {
-        // TODO: clean this up OMG. Need a general Record iterator.
+        // TODO: Rewrite using a Record iterator.
         auto record = value.to<Record>(valcx);
         auto p = fields_.begin();
-        record->each_field([&](Symbol name, Value val)->void {
+        record->each_field(valcx, [&](Symbol name, Value val)->void {
             while (p != fields_.end()) {
                 int cmp = p->first.cmp(name);
                 if (cmp < 0) {
@@ -320,13 +320,13 @@ struct Record_Pattern : public Pattern
     virtual bool try_exec(Value* slots, Value value, const Context& cx, Frame& f)
     const override
     {
-        // TODO: clean this up OMG. Need a general Record iterator.
+        // TODO: Rewrite using a Record iterator.
         auto record = value.dycast<Record>();
         if (record == nullptr)
             return false;
         auto p = fields_.begin();
         bool success = true;
-        record->each_field([&](Symbol name, Value val)->void {
+        record->each_field(cx, [&](Symbol name, Value val)->void {
             while (p != fields_.end()) {
                 int cmp = p->first.cmp(name);
                 if (cmp < 0) {

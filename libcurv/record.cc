@@ -30,6 +30,14 @@ Record::equal(const Record& rhs, const Context& cx) const
 }
 
 void
+Record::each_field(
+    const Context& cx, std::function<void(Symbol,Value)> visitor) const
+{
+    for (auto f = iter(); !f->empty(); f->next())
+        visitor(f->key(), f->value(cx));
+}
+
+void
 DRecord::print(std::ostream& out) const
 {
     out << "{";
@@ -76,13 +84,6 @@ DRecord::fields() const
         ++i;
     }
     return {std::move(list)};
-}
-
-void
-DRecord::each_field(std::function<void(Symbol,Value)> visitor) const
-{
-    for (auto f : fields_)
-        visitor(f.first, f.second);
 }
 
 } // namespace curv

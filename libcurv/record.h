@@ -32,8 +32,9 @@ struct Record : public Ref_Value
     virtual size_t size() const = 0;
 
     // visit each field
-    virtual void each_field(std::function<void(Symbol,Value)>) const = 0;
+    void each_field(const Context&, std::function<void(Symbol,Value)>) const;
 
+    // compare two record values for equality
     bool equal(const Record&, const Context&) const;
 
     static const char name[];
@@ -81,14 +82,12 @@ struct DRecord : public Record
         return make<const DRecord>(fields_);
     }
 
-    /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const override;
     virtual Value getfield(Symbol, const Context&) const override;
     virtual bool hasfield(Symbol) const override;
     virtual void putfields(Symbol_Map<Value>&) const override;
     virtual Shared<List> fields() const override;
     virtual size_t size() const override { return fields_.size(); }
-    virtual void each_field(std::function<void(Symbol,Value)>) const override;
 
     class Iter : public Record::Iter
     {

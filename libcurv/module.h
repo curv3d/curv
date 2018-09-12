@@ -94,7 +94,6 @@ struct Module_Base : public Record
     iterator begin() const { return iterator(*this, true); }
     iterator end() const { return iterator(*this, false); }
 
-    /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const override;
 
     virtual Value getfield(Symbol, const Context&) const override;
@@ -102,7 +101,6 @@ struct Module_Base : public Record
     virtual void putfields(Symbol_Map<Value>&) const override;
     virtual size_t size() const override { return size_; }
     virtual Shared<List> fields() const override;
-    virtual void each_field(std::function<void(Symbol,Value)>) const override;
 
     static const char name[];
 
