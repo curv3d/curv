@@ -6,15 +6,11 @@ TODO:
 * Implement Dir_Record and a directory syntax importer.
 * Implement `lib`.
 
-The System object contains the libdir (which is also used to load std.curv).
-On first attempt to access the fields of `lib`, we read libdir and populate
-a dictionary. But reading the files is still lazy. The `lib` object is owned
-by the System object.
+The System object contains the `lib` object, which is constructed at
+System construction time from the libdir, as an instance of Dir_Record.
+The fields are populated at this time by reading the directory.
+(Meaning that Dir_Record::hasfield(sym) cannot fail.) But the files are not
+read until they are first referenced (meaning that Dir_Record::getfield(sym,cx)
+can fail during file i/o).
 
 The libdir is configurable, using $CURV_LIBDIR.
-
-Laziness of the `lib` object.
-Dir_Record is a subclass of Structure, which has a virtual interface.
-Dir_Record::getfield() needs a reference to libdir.
-Maybe use `openat` and use a file descriptor for libdir?
-Note that I need the directory name for the File_Source objects.
