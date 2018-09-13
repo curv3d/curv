@@ -12,7 +12,7 @@
 
 namespace curv {
 
-Value dir_importer(const Filesystem::path&, const Context&);
+Value dir_import(const Filesystem::path&, const Context&);
 
 struct Dir_Record : public Record
 {

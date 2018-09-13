@@ -6,7 +6,7 @@
 
 namespace curv {
 
-Value dir_importer(const Filesystem::path& dir, const Context& cx)
+Value dir_import(const Filesystem::path& dir, const Context& cx)
 {
     return {make<Dir_Record>(dir, cx)};
 }
@@ -30,11 +30,23 @@ Dir_Record::Dir_Record(Filesystem::path dir, const Context& )
     dir_(dir),
     fields_{}
 {
+    boost::filesystem::directory_iterator i(dir);
+    boost::filesystem::directory_iterator end;
+    for (; i != end; ++i) {
+        fields_[{i->path().leaf().string()}] = File{nullptr, missing};
+    }
 }
 
 void Dir_Record::print(std::ostream& out) const
 {
-    out << "{dir}";
+    out << "{";
+    bool first = true;
+    for (auto& f : fields_) {
+        if (!first) out << ",";
+        first = false;
+        out << f.first;
+    }
+    out << "}";
 }
 
 Value Dir_Record::getfield(Symbol, const Context&) const
