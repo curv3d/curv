@@ -12,7 +12,7 @@ const char Record::name[] = "record";
 Value
 Record::getfield(Symbol field, const Context& cx) const
 {
-    throw Exception(cx, stringify(".",field,": not defined"));
+    throw Exception(cx, stringify(*this," does not contain field .",field));
 }
 
 bool

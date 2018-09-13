@@ -59,6 +59,13 @@ struct Record : public Ref_Value
     virtual std::unique_ptr<Iter> iter() const = 0;
 };
 
+inline std::ostream&
+operator<<(std::ostream& out, const Record& rec)
+{
+    rec.print(out);
+    return out;
+}
+
 /// A DRecord is a dynamic record. It's a concrete implementation of the
 /// Record protocol for which it is possible to dynamically add new fields
 /// at run-time. Constrast this with Module, which is a static record.

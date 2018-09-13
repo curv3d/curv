@@ -353,7 +353,7 @@ TEST(curv, eval)
         "       ^\n"
         "2|>1,2)");
     FAILALL("file \"nonexistent\"",
-        "argument #1 of file: can't open file \"nonexistent\": No such file or directory\n"
+        "argument #1 of file: \"nonexistent\": No such file or directory\n"
         "1| file \"nonexistent\"\n"
         "        ^^^^^^^^^^^^^");
     SUCCESS("let std = file \"std.curv\" in std.concat([1], [2,3], [4])",
