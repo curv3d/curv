@@ -11,6 +11,7 @@
 #include <libcurv/output_file.h>
 #include <libcurv/program.h>
 #include <libcurv/value.h>
+#include <glm/vec3.hpp>
 
 namespace curv { namespace geom { namespace viewer {
 struct Viewer_Config;
@@ -27,6 +28,7 @@ struct Export_Params
     [[noreturn]] void unknown_parameter(const Map::value_type&) const;
     int to_int(const Map::value_type&, int, int) const;
     double to_double(const Map::value_type&) const;
+    glm::dvec3 to_vec3(const Map::value_type&) const;
     bool to_bool(const Map::value_type&) const;
 };
 

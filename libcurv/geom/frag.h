@@ -6,6 +6,7 @@
 #define LIBCURV_GEOM_FRAG_H
 
 #include <ostream>
+#include <glm/vec3.hpp>
 
 namespace curv { namespace geom {
 
@@ -19,6 +20,8 @@ struct Frag_Export
     int taa_ = 1;
     // frame duration for animation, needed for TAA.
     double fdur_ = 0.04; // 25 FPS
+    // background colour, defaults to white
+    glm::dvec3 bg_ = glm::dvec3(1.0,1.0,1.0);
 };
 
 void export_frag(const Shape_Program&, const Frag_Export&, std::ostream&);

@@ -78,6 +78,20 @@ double Export_Params::to_double(const Map::value_type& p) const
     return pp.eval().to_num(At_Program(pp));
 }
 
+glm::dvec3 Export_Params::to_vec3(const Map::value_type& p) const
+{
+    Param_Program pp(*this, p);
+    At_Program cx(pp);
+    glm::dvec3 result;
+    Value val = pp.eval();
+    auto list = val.to<List>(cx);
+    list->assert_size(3, cx);
+    result.x = list->at(0).to_num(At_Index(0, cx));
+    result.y = list->at(1).to_num(At_Index(1, cx));
+    result.z = list->at(2).to_num(At_Index(2, cx));
+    return result;
+}
+
 bool Export_Params::to_bool(const Map::value_type& p) const
 {
     if (p.second.empty())
@@ -107,6 +121,8 @@ void describe_frag_options(std::ostream& out, const char*prefix)
   "-O taa=<supersampling factor for temporal antialiasing> (1 means disabled)\n"
   << prefix <<
   "-O fdur=<animation frame duration> (used with TAA)\n"
+  << prefix <<
+  "-O bg=<background colour>\n"
   ;
 }
 void describe_frag_opts(std::ostream& out)
@@ -129,6 +145,10 @@ bool parse_frag_opt(
     }
     if (p.first == "fdur") {
         opts.fdur_ = params.to_double(p);
+        return true;
+    }
+    if (p.first == "bg") {
+        opts.bg_ = params.to_vec3(p);
         return true;
     }
     return false;
@@ -444,6 +464,6 @@ void describe_viewer_options(std::ostream& out, const char* prefix)
     describe_frag_options(out, prefix);
     out
     << prefix <<
-    "-O lazy : Redraw only on user input. Disable animation & FPS counter.\n"
+    "-O lazy : Redraw only on user input. Disables animation & FPS counter.\n"
     ;
 }
