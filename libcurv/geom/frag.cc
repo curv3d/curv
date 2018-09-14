@@ -253,7 +253,7 @@ void export_frag_3d(
        "{ \n"
        "    //vec3 col = vec3(0.7, 0.9, 1.0) +rd.z*0.8;\n"
        "    //vec3 col = vec3(0.8, 0.9, 1.0);\n"
-       "    vec3 col = vec3(0.007, 0.007, 0.007);\n"
+       "    vec3 col = vec3(1.0, 1.0, 1.0);\n"
        "    vec4 res = castRay(ro,rd, time);\n"
        "    float t = res.x;\n"
        "    vec3 c = res.yzw;\n"
