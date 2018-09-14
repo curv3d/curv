@@ -87,15 +87,13 @@ private:
         {
             using namespace std::chrono_literals;
             std::unique_lock<std::mutex> lock(request_mutex);
-            if (lazy_) {
-                if (view_.is_open()) {
-                    // In lazy mode, we post empty glfw events to wake main thread,
-                    // as it might be sleeping waiting for glfw events. Keep posting
-                    // until it acknowlegdes the message.
-                    do glfwPostEmptyEvent();
-                    while (!request_condition.wait_for(lock, 10ms,
-                                [&]{return request == Request::k_none;}));
-                }
+            if (lazy_ && view_.is_open()) {
+                // In lazy mode, we post empty glfw events to wake main thread,
+                // as it might be sleeping waiting for glfw events. Keep posting
+                // until it acknowledges the message.
+                do glfwPostEmptyEvent();
+                while (!request_condition.wait_for(lock, 10ms,
+                            [&]{return request == Request::k_none;}));
             }
             else {
                 request_condition.wait(lock,

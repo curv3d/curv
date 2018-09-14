@@ -444,6 +444,6 @@ void describe_viewer_options(std::ostream& out, const char* prefix)
     describe_frag_options(out, prefix);
     out
     << prefix <<
-    "-O lazy : Redraw only on user input. Disable animation.\n"
+    "-O lazy : Redraw only on user input. Disable animation & FPS counter.\n"
     ;
 }
