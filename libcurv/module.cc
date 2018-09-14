@@ -23,13 +23,6 @@ Module_Base::print(std::ostream& out) const
     out << "}";
 }
 
-void
-Module_Base::putfields(Symbol_Map<Value>& out) const
-{
-    for (auto i : *this)
-        out[i.first] = i.second;
-}
-
 Value
 Module_Base::get(slot_t i) const
 {
@@ -61,25 +54,6 @@ Module_Base::hasfield(Symbol name) const
 {
     auto b = dictionary_->find(name);
     return (b != dictionary_->end());
-}
-
-Shared<List>
-Module_Base::fields() const
-{
-    auto list = List::make(dictionary_->size());
-    int i = 0;
-    for (auto f : *dictionary_) {
-        list->at(i) = f.first.to_value();
-        ++i;
-    }
-    return {std::move(list)};
-}
-
-void
-Module_Base::each_field(std::function<void(Symbol,Value)> visitor) const
-{
-    for (auto f : *dictionary_)
-        visitor(f.first, get(f.second));
 }
 
 } // namespace curv

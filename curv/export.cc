@@ -197,7 +197,7 @@ void export_json_string(const char* str, std::ostream& out)
     }
     out << '"';
 }
-bool export_json_value(Value val, std::ostream& out)
+bool export_json_value(Value val, std::ostream& out, const Context& cx)
 {
     if (val.is_null()) {
         out << "null";
@@ -225,12 +225,14 @@ bool export_json_value(Value val, std::ostream& out)
         auto& list = (List&)ref;
         out << "[";
         bool first = true;
+        size_t i = 0;
         for (auto e : list) {
             if (is_json_data(e)) {
                 if (!first) out << ",";
                 first = false;
-                export_json_value(e, out);
+                export_json_value(e, out, At_Index(i, cx));
             }
+            ++i;
         }
         out << "]";
         return true;
@@ -240,13 +242,13 @@ bool export_json_value(Value val, std::ostream& out)
         auto& record = (Record&)ref;
         out << "{";
         bool first = true;
-        record.each_field([&](Symbol id, Value val) {
+        record.each_field(cx, [&](Symbol id, Value val) {
             if (is_json_data(val)) {
                 if (!first) out << ",";
                 first = false;
                 export_json_string(id.c_str(), out);
                 out << ":";
-                export_json_value(val, out);
+                export_json_value(val, out, At_Field(id.c_str(), cx));
             }
         });
         out << "}";
@@ -265,10 +267,10 @@ void export_json(Value value,
         params.unknown_parameter(p);
     }
     ofile.open();
-    if (export_json_value(value, ofile.ostream()))
+    At_Program cx(prog);
+    if (export_json_value(value, ofile.ostream(), cx))
         ofile.ostream() << "\n";
     else {
-        At_Program cx(prog);
         throw Exception(cx, "value can't be converted to JSON");
     }
 }

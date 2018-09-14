@@ -664,6 +664,12 @@ Also consider $= as an alternative to $''
 
 Downside is that this is novel syntax.
 
+${dollar}  expands to $    similar to &dollar; in HTML5
+${quot}    expands to "    similar to &quot; in HTML5
+
+    print "Can't open file $quot$filename$quot: $error";
+    print "Can't open file ${quot}${filename}${quot}: ${error}";
+
 ### String Comprehensions
 "${ stmt1; stmt2; stmt3 }"
 eg, "${if (c) "foo"}"

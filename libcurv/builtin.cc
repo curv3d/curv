@@ -7,6 +7,7 @@
 #include <libcurv/analyser.h>
 #include <libcurv/arg.h>
 #include <libcurv/array_op.h>
+#include <libcurv/dir_record.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
 #include <libcurv/gl_context.h>
@@ -518,6 +519,12 @@ struct File_Expr : public Just_Expression
             filepath = fs::path(caller_filename->c_str()).parent_path()
                 / fs::path(argstr->c_str());
         }
+
+        boost::system::error_code errcode;
+        if (fs::is_directory(filepath, errcode))
+            return dir_import(filepath, cx);
+        if (errcode)
+            throw Exception(cx, stringify(filepath,": ",errcode.message()));
 
         // construct filename extension (includes leading '.')
         std::string ext = filepath.extension().string();

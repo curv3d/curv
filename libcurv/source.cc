@@ -48,7 +48,7 @@ Shared<const String> readfile(const char* path, const Context& ctx)
     t.open(path);
     if (t.fail())
         throw Exception(ctx,
-            stringify("can't open file \"", path, "\": ", strerror(errno)));
+            stringify("\"", path, "\": ", strerror(errno)));
     std::stringstream buffer;
     buffer << t.rdbuf();
     return make_string(buffer.str());

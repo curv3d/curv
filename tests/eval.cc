@@ -275,6 +275,7 @@ TEST(curv, eval)
     SUCCESS("{x:1,y:2}=={x:1,z:2}", "false");
     SUCCESS("{x:1,y:2}=={x:1,y:3}", "false");
     SUCCESS("{x:1,y:2}=={x=1;y=2}", "true");
+    SUCCESS("{x=1;y=2}=={x:1;y:2}", "true");
     SUCCESS("sqrt==sqrt", "true");
     SUCCESS("!true", "false");
     SUCCESS("!false", "true");
@@ -352,7 +353,7 @@ TEST(curv, eval)
         "       ^\n"
         "2|>1,2)");
     FAILALL("file \"nonexistent\"",
-        "argument #1 of file: can't open file \"nonexistent\": No such file or directory\n"
+        "argument #1 of file: \"nonexistent\": No such file or directory\n"
         "1| file \"nonexistent\"\n"
         "        ^^^^^^^^^^^^^");
     SUCCESS("let std = file \"std.curv\" in std.concat([1], [2,3], [4])",

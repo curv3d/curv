@@ -12,24 +12,41 @@ const char Record::name[] = "record";
 Value
 Record::getfield(Symbol field, const Context& cx) const
 {
-    throw Exception(cx, stringify(".",field,": not defined"));
+    throw Exception(cx, stringify(*this," does not contain field .",field));
 }
 
 bool
 Record::equal(const Record& rhs, const Context& cx) const
 {
-    // TODO: This is not efficient. There is no way to short-circuit
-    // the 'each_field' loop. We need a Record iterator.
     if (this->size() != rhs.size())
         return false;
-    bool r = true;
-    this->each_field([&](Symbol sym, Value val) {
-        if (!rhs.hasfield(sym))
-            r = false;
-        else if (!val.equal(rhs.getfield(sym,cx),cx))
-            r = false;
-    });
-    return r;
+    for (auto i = iter(); !i->empty(); i->next()) {
+        if (!rhs.hasfield(i->key()))
+            return false;
+        if (!i->value(cx).equal(rhs.getfield(i->key(),cx),cx))
+            return false;
+    }
+    return true;
+}
+
+void
+Record::each_field(
+    const Context& cx, std::function<void(Symbol,Value)> visitor) const
+{
+    for (auto f = iter(); !f->empty(); f->next())
+        visitor(f->key(), f->value(cx));
+}
+
+Shared<List>
+Record::fields() const
+{
+    auto list = List::make(size());
+    int i = 0;
+    for (auto f = iter(); !f->empty(); f->next()) {
+        list->at(i) = f->key().to_value();
+        ++i;
+    }
+    return {std::move(list)};
 }
 
 void
@@ -46,13 +63,6 @@ DRecord::print(std::ostream& out) const
     out << "}";
 }
 
-void
-DRecord::putfields(Symbol_Map<Value>& out) const
-{
-    for (auto i : fields_)
-        out[i.first] = i.second;
-}
-
 Value
 DRecord::getfield(Symbol name, const Context& cx) const
 {
@@ -67,25 +77,6 @@ DRecord::hasfield(Symbol name) const
 {
     auto fp = fields_.find(name);
     return (fp != fields_.end());
-}
-
-Shared<List>
-DRecord::fields() const
-{
-    auto list = List::make(fields_.size());
-    int i = 0;
-    for (auto f : fields_) {
-        list->at(i) = f.first.to_value();
-        ++i;
-    }
-    return {std::move(list)};
-}
-
-void
-DRecord::each_field(std::function<void(Symbol,Value)> visitor) const
-{
-    for (auto f : fields_)
-        visitor(f.first, f.second);
 }
 
 } // namespace curv

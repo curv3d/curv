@@ -125,10 +125,10 @@ struct String_Builder : public std::stringstream
 
     // variadic function that appends each argument to the string buffer
     template<typename First, typename... Rest>
-    void write_all(First first, Rest... rest)
+    void write_all(First&& first, Rest&&... rest)
     {
-        *this << first;
-        write_all(rest...);
+        *this << std::forward<First>(first);
+        write_all(std::forward<Rest>(rest)...);
     }
 
     // base case for write_all, to terminate recursive call in variadic case
@@ -180,10 +180,10 @@ operator<<(String_Builder& b, char c)
 
 /// Variadic function that converts its arguments into a curv String.
 template<typename... Args>
-Shared<String> stringify(Args... args)
+Shared<String> stringify(Args&&... args)
 {
     String_Builder s;
-    s.write_all(args...);
+    s.write_all(std::forward<Args>(args)...);
     return s.get_string();
 }
 
