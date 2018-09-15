@@ -175,12 +175,12 @@ void Viewer::render()
     vbo_->draw(&shader_);
 }
 
-void Viewer::onKeyPress(int _key)
+void Viewer::onKeyPress(int key)
 {
-    if (_key == 'q' || _key == 'Q') {
+    if (key == 'q' || key == 'Q') {
         glfwSetWindowShouldClose(window_, GL_TRUE);
     }
-    else if (_key == 'r' || _key == 'R') {
+    else if (key == 'r' || key == 'R' || key == GLFW_KEY_HOME) {
         reset_view();
     }
 }
