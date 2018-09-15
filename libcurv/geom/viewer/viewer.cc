@@ -88,6 +88,7 @@ void Viewer::open()
 
 void Viewer::reset_view()
 {
+    u_view2d_ = glm::mat3(1.);
     u_centre3d_ = glm::vec3(0.,0.,0.);
     u_eye3d_ = glm::vec3(2.598076,3.0,4.5);
     u_up3d_ = glm::vec3(-0.25,0.866025,-0.433013);

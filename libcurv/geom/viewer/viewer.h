@@ -40,7 +40,7 @@ struct Viewer
 
     bool is_open() { return window_ != nullptr; }
 
-    // Set centre3d, eye3d and up3d to default values
+    // Reset camera to initial position.
     void reset_view();
 
     // Open window: initialize OpenGL, create the window. Idempotent.
