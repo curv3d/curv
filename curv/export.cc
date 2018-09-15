@@ -120,7 +120,7 @@ void describe_frag_options(std::ostream& out, const char*prefix)
   << prefix <<
   "-O taa=<supersampling factor for temporal antialiasing> (1 means disabled)\n"
   << prefix <<
-  "-O fdur=<animation frame duration> (used with TAA)\n"
+  "-O fdur=<frame duration, in seconds> : Used with -Otaa and -Oanimate\n"
   << prefix <<
   "-O bg=<background colour>\n"
   ;
