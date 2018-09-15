@@ -4,6 +4,7 @@
 
 extern "C" {
 #include <unistd.h>
+#include <getopt.h>
 }
 #include <iostream>
 #include <fstream>
@@ -99,42 +100,6 @@ main(int argc, char** argv)
 {
     const char* argv0 = argv[0];
 
-    // Handle 'curv --help'.
-    if (argc >= 2 && strcmp(argv[1], "--help") == 0) {
-        if (argc == 4 && strcmp(argv[2], "-o") == 0) {
-            const char* format = argv[3];
-            auto ex = exporters.find(format);
-            if (ex == exporters.end()) {
-                std::cerr << "-o: format '" << format << "' not supported.\n"
-                          << "Use " << argv0 << " --help for help.\n";
-                return EXIT_FAILURE;
-            }
-            std::cout << ex->second.synopsis << "\n";
-            ex->second.describe_options(std::cout);
-            return EXIT_SUCCESS;
-        }
-        if (argc == 2) {
-            std::cout << help_prefix;
-            for (auto& ex : exporters) {
-                std::cout << "      " << ex.first << " : "
-                          << ex.second.synopsis << "\n";
-            }
-            std::cout << help_infix;
-            describe_viewer_options(std::cout, "      ");
-            std::cout << help_suffix;
-            return EXIT_SUCCESS;
-        }
-        std::cerr << argv[2] << ": bad argument to --help\n"
-                  << "Use " << argv0 << " --help for help.\n";
-        return EXIT_FAILURE;
-    }
-
-    // Handle 'curv --version'.
-    if (argc == 2 && strcmp(argv[1], "--version") == 0) {
-        print_version(std::cout);
-        return EXIT_SUCCESS;
-    }
-
     // Parse arguments for general case.
     const char* usestdlib = argv0;
     using ExPtr = decltype(exporters)::const_iterator;
@@ -146,10 +111,27 @@ main(int argc, char** argv)
     std::list<const char*> libs;
     bool expr = false;
     const char* editor = nullptr;
+    bool help = false;
+    bool version = false;
+
+    constexpr int HELP = 1000;
+    constexpr int VERSION = 1001;
+    static struct option longopts[] = {
+        {"help",    no_argument, nullptr, HELP },
+        {"version", no_argument, nullptr, VERSION },
+        {nullptr,   0,           nullptr, 0 }
+    };
 
     int opt;
-    while ((opt = getopt(argc, argv, ":o:O:lni:xev")) != -1) {
+    while ((opt = getopt_long(argc, argv, ":o:O:lni:xev", longopts, NULL)) != -1)
+    {
         switch (opt) {
+        case HELP:
+            help = true;
+            break;
+        case VERSION:
+            version = true;
+            break;
         case 'o':
           {
             const char* oarg = optarg;
@@ -251,6 +233,30 @@ main(int argc, char** argv)
         std::cerr << "-e flag specified without -l flag.\n"
                   << "Use " << argv0 << " --help for help.\n";
         return EXIT_FAILURE;
+    }
+
+    // Handle 'curv --help'.
+    if (help) {
+        if (exporter != exporters.end()) {
+            std::cout << exporter->second.synopsis << "\n";
+            exporter->second.describe_options(std::cout);
+        } else {
+            std::cout << help_prefix;
+            for (auto& ex : exporters) {
+                std::cout << "      " << ex.first << " : "
+                          << ex.second.synopsis << "\n";
+            }
+            std::cout << help_infix;
+            describe_viewer_options(std::cout, "      ");
+            std::cout << help_suffix;
+        }
+        return EXIT_SUCCESS;
+    }
+
+    // Handle 'curv --version'.
+    if (version) {
+        print_version(std::cout);
+        return EXIT_SUCCESS;
     }
 
     // Create system, a precondition for parsing -O parameters.
