@@ -10,7 +10,8 @@ Use the ``-v`` flag to get progress and render time information written to stder
 Exporting a 2D Shape
 --------------------
 This exports a rectangular image of everything inside of the shape's bounding
-box. Pixels outside the shape's boundary are set to white.
+box. Pixels outside the shape's boundary are set to white by default
+(see Background Colour below).
 
 The size of the image in pixels is determined by command line options::
 
@@ -24,8 +25,8 @@ These are both optional.
 * If neither is specified, the aspect ratio is preserved
   and the larger dimension is set to 500 pixels. 
 * If both ``xsize`` and ``ysize`` are specified, then the shape is
-  "letterboxed" inside the image, adding a horizontal or vertical white border if necessary to
-  preserve the shape's aspect ratio.
+  "letterboxed" inside the image, adding a horizontal or vertical white border
+  if necessary to preserve the shape's aspect ratio.
 
 You can control the bounding box, and add a border around the shape,
 by writing Curv code.
@@ -47,6 +48,18 @@ The results are similar to creating a screen shot of the Viewer window.
 There are no options yet for controlling the camera position,
 so for now I modify the source code:
 I rotate the shape and shrink the bbox using ``set_bbox`` to zoom in.
+
+Setting the Background Colour
+-----------------------------
+The command line option::
+
+    -O bg=<colour>
+
+sets the background colour for 2D and 3D image export. It defaults to white.
+
+``<colour>`` is a Curv colour expression.
+For example, try ``-Obg=black``.
+See `<shapes/Colour.rst>`_ for more colour expressions.
 
 Spatial Antialiasing
 --------------------
