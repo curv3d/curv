@@ -108,7 +108,7 @@ struct Viewer
     // INTERNAL FUNCTIONS
     void initGL(glm::ivec4 &_viewport, bool _headless = false);
     void setup();
-    void onKeyPress(int);
+    void onKeyPress(int, int);
     void onMouseMove(double, double);
     void onScroll(float);
     void onMouseDrag(float, float, int);
