@@ -223,7 +223,7 @@ main(int argc, char** argv)
         }
     }
     if (filename == nullptr) {
-        if (expr || exporter != exporters.end() || live) {
+        if (expr || live || (exporter != exporters.end() && !help)) {
             std::cerr << "missing filename argument\n"
                       << "Use " << argv0 << " --help for help.\n";
             return EXIT_FAILURE;
