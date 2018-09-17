@@ -29,7 +29,6 @@ struct Program_Opts
 struct Program
 {
     Scanner scanner_;
-    System& system_;
     const Namespace* names_ = nullptr;
     Shared<Phrase> phrase_ = nullptr;
     Shared<Meaning> meaning_ = nullptr;
@@ -41,10 +40,9 @@ struct Program
         System& system,
         Program_Opts opts = {})
     :
-        scanner_(std::move(source), Scanner_Opts()
+        scanner_(std::move(source), system, Scanner_Opts()
             .eval_frame(opts.parent_frame_)
-            .skip_prefix(opts.skip_prefix_)),
-        system_(system)
+            .skip_prefix(opts.skip_prefix_))
     {}
 
     void skip_prefix(unsigned len);

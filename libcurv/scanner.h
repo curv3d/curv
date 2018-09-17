@@ -30,14 +30,16 @@ struct Scanner_Opts
 struct Scanner
 {
     Shared<const Source> source_;
+    System& system_;
     Frame* eval_frame_;
     Token string_begin_;
     const char* ptr_;
     std::vector<Token> lookahead_;
 
-    Scanner(Shared<const Source> s, Scanner_Opts opts = {})
+    Scanner(Shared<const Source> s, System& system, Scanner_Opts opts = {})
     :
         source_(std::move(s)),
+        system_(system),
         eval_frame_(opts.eval_frame_),
         string_begin_(),
         ptr_(source_->begin() + opts.skip_prefix_),

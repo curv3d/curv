@@ -13,7 +13,7 @@ Shared<const Phrase>
 nub(const char* str)
 {
     auto source = make<String_Source>("", str);
-    Scanner scanner{source};
+    Scanner scanner{source, sys};
     auto phrase = parse_program(scanner);
     return nub_phrase(phrase);
 }
