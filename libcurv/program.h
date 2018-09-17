@@ -19,8 +19,8 @@ namespace curv {
 
 struct Program_Opts
 {
-    Frame* parent_frame_ = nullptr;
-    Program_Opts& parent_frame(Frame* f) { parent_frame_=f; return *this; }
+    Frame* file_frame_ = nullptr;
+    Program_Opts& file_frame(Frame* f) { file_frame_=f; return *this; }
 
     unsigned skip_prefix_ = 0;
     Program_Opts& skip_prefix(unsigned n) { skip_prefix_=n; return *this; }
@@ -41,7 +41,7 @@ struct Program
         Program_Opts opts = {})
     :
         scanner_(std::move(source), system, Scanner_Opts()
-            .eval_frame(opts.parent_frame_)
+            .file_frame(opts.file_frame_)
             .skip_prefix(opts.skip_prefix_))
     {}
 
@@ -53,7 +53,7 @@ struct Program
 
     Location location() const;
     System& system() const { return scanner_.system_; }
-    Frame* parent_frame() const { return scanner_.eval_frame_; }
+    Frame* file_frame() const { return scanner_.file_frame_; }
 
     std::pair<Shared<Module>, Shared<List>> denotes();
 

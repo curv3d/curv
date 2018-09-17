@@ -14,10 +14,10 @@ struct Environ
 {
     Environ* parent_;
     System& system_;
-    /// eval_frame_ is nullptr, unless we are analysing a source file due to
-    /// an evaluation-time call to `file`. It's used as an Exception Context,
+    /// file_frame_ is nullptr, unless we are analysing a source file due to
+    /// an evaluation-time call to `file`. It's used by the Exception Context,
     /// to add a stack trace to compile time errors.
-    Frame* eval_frame_;
+    Frame* file_frame_;
     slot_t frame_nslots_;
     slot_t frame_maxslots_;
 
@@ -29,11 +29,11 @@ struct Environ
     bool is_analysing_action_ = false;
 
     // constructor for root environment
-    Environ(System& system, Frame* eval_frame)
+    Environ(System& system, Frame* file_frame)
     :
         parent_(nullptr),
         system_(system),
-        eval_frame_(eval_frame),
+        file_frame_(file_frame),
         frame_nslots_(0),
         frame_maxslots_(0)
     {}
@@ -43,7 +43,7 @@ struct Environ
     :
         parent_(parent),
         system_(parent->system_),
-        eval_frame_(parent->eval_frame_),
+        file_frame_(parent->file_frame_),
         frame_nslots_(0),
         frame_maxslots_(0)
     {}

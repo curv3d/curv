@@ -304,7 +304,7 @@ parse_item(Scanner& scanner)
         auto p = parse_primary(scanner, "argument following 'while'");
         auto args = cast<Paren_Phrase>(p);
         if (args == nullptr)
-            throw Exception(At_Phrase(*p, scanner.eval_frame_),
+            throw Exception(At_Phrase(*p, scanner),
                 "while: malformed argument");
         auto body = parse_item(scanner);
         return make<While_Phrase>(tok, args, body);

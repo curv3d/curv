@@ -129,7 +129,7 @@ struct Predicate_Pattern : public Pattern
         Value funv = val;
         for (;;) {
             if (!funv.is_ref())
-                throw Exception(At_Phrase(*predicate_phrase_, &f),
+                throw Exception(At_Phrase(*predicate_phrase_, f),
                     stringify(funv,": not a function"));
             Ref_Value& funp( funv.get_ref_unsafe() );
             switch (funp.type_) {
@@ -140,7 +140,7 @@ struct Predicate_Pattern : public Pattern
                     Frame::make(fun->nslots_, f.system_, &f, call_phrase(), nullptr)
                 };
                 auto result = fun->call(arg, *f2);
-                return result.to_bool(At_Phrase(*call_phrase(), &f));
+                return result.to_bool(At_Phrase(*call_phrase(), f));
               }
             case Ref_Value::ty_record:
               {
@@ -152,7 +152,7 @@ struct Predicate_Pattern : public Pattern
                 break;
               }
             }
-            throw Exception(At_Phrase(*predicate_phrase_, &f),
+            throw Exception(At_Phrase(*predicate_phrase_, f),
                 stringify(val,": not a function"));
         }
     }

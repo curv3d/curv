@@ -71,7 +71,7 @@ struct Shape_Program final : public Shape
 
     Location location() const;
     System& system() const { return system_; }
-    Frame* parent_frame() const { return nullptr; }
+    Frame* file_frame() const { return nullptr; }
 
     System& system_;
 

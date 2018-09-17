@@ -49,9 +49,9 @@ struct At_System : public Context
 
 struct At_Frame : public Context
 {
-    Frame& frame_;
+    Frame& call_frame_;
 
-    At_Frame(Frame& frame) : frame_(frame) {}
+    At_Frame(Frame& frame) : call_frame_(frame) {}
 
     virtual void get_locations(std::list<Location>& locs) const;
 };
@@ -62,7 +62,7 @@ struct At_Token : public Context
 {
     Location loc_;
     System& system_;
-    Frame* eval_frame_;
+    Frame* file_frame_;
 
     At_Token(Token, const Scanner&);
     At_Token(Token, const Phrase&, Environ&);
@@ -76,9 +76,11 @@ struct At_Token : public Context
 struct At_Phrase : public Context
 {
     const Phrase& phrase_;
-    Frame* frame_;
+    Frame* frame_; // file_frame or call_frame
 
+    At_Phrase(const Phrase& phrase, Frame& call_frame);
     At_Phrase(const Phrase& phrase, Frame* frame);
+    At_Phrase(const Phrase& phrase, Scanner& scanner);
     At_Phrase(const Phrase& phrase, Environ& env);
 
     virtual void get_locations(std::list<Location>& locs) const;
@@ -90,7 +92,7 @@ struct At_Program : public At_Token
     template <class PROGRAM>
     explicit At_Program(const PROGRAM& prog)
     :
-        At_Token(prog.location(), prog.system(), prog.parent_frame())
+        At_Token(prog.location(), prog.system(), prog.file_frame())
     {}
 };
 
@@ -98,12 +100,12 @@ struct At_Program : public At_Token
 struct At_Arg : public Context
 {
     Function& fun_;
-    Frame& eval_frame_;
+    Frame& call_frame_;
 
     At_Arg(Function& fn, Frame& fr)
     :
         fun_(fn),
-        eval_frame_(fr)
+        call_frame_(fr)
     {}
 
     void get_locations(std::list<Location>& locs) const;
@@ -116,14 +118,14 @@ struct At_Metacall : public Context
     const char* name_;
     unsigned argpos_;
     const Phrase& arg_;
-    Frame* frame_;
+    Frame& call_frame_;
 
-    At_Metacall(const char* name, unsigned argpos, const Phrase& arg, Frame* fr)
+    At_Metacall(const char* name, unsigned argpos, const Phrase& arg, Frame& fr)
     :
         name_(name),
         argpos_(argpos),
         arg_(arg),
-        frame_(fr)
+        call_frame_(fr)
     {}
 
     void get_locations(std::list<Location>& locs) const;

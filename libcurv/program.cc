@@ -24,7 +24,7 @@ Program::compile(const Namespace* names)
 
     phrase_ = parse_program(scanner_);
 
-    Builtin_Environ env{*names_, scanner_.system_, scanner_.eval_frame_};
+    Builtin_Environ env{*names_, scanner_.system_, scanner_.file_frame_};
     if (auto def = phrase_->as_definition(env)) {
         module_ = analyse_module(*def, env);
     } else {
@@ -32,7 +32,7 @@ Program::compile(const Namespace* names)
     }
 
     frame_ = {Frame::make(env.frame_maxslots_,
-        scanner_.system_, scanner_.eval_frame_, nullptr, nullptr)};
+        scanner_.system_, scanner_.file_frame_, nullptr, nullptr)};
 }
 
 const Phrase&
@@ -60,10 +60,10 @@ Value
 Program::eval()
 {
     if (module_ != nullptr) {
-        throw Exception(At_Phrase(*phrase_, scanner_.eval_frame_),
+        throw Exception(At_Phrase(*phrase_, scanner_),
             "definition found; expecting an expression");
     } else {
-        auto expr = meaning_->to_operation(scanner_.eval_frame_);
+        auto expr = meaning_->to_operation(scanner_.file_frame_);
         return expr->eval(*frame_);
     }
 }
@@ -77,7 +77,7 @@ Program::denotes()
         module = module_->eval_module(*frame_);
     } else {
         List_Builder lb;
-        auto gen = meaning_->to_operation(scanner_.eval_frame_);
+        auto gen = meaning_->to_operation(scanner_.file_frame_);
         gen->generate(*frame_, lb);
         list = lb.get_list();
     }

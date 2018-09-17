@@ -60,13 +60,13 @@ At_GL_Phrase::rewrite_message(Shared<const String> msg) const
 
 void At_GL_Arg::get_locations(std::list<Location>& locs) const
 {
-    get_gl_frame_locations(&eval_frame_, locs);
+    get_gl_frame_locations(&call_frame_, locs);
 }
 
 Shared<const String>
 At_GL_Arg::rewrite_message(Shared<const String> msg) const
 {
-    return gl_frame_rewrite_message(&eval_frame_,
+    return gl_frame_rewrite_message(&call_frame_,
         stringify("argument[",arg_index_,"]: ", msg));
 }
 

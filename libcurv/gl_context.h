@@ -36,9 +36,9 @@ struct At_GL_Phrase : public Context
 struct At_GL_Arg : public Context
 {
     size_t arg_index_;
-    GL_Frame& eval_frame_;
+    GL_Frame& call_frame_;
 
-    At_GL_Arg(size_t i, GL_Frame& f) : arg_index_(i), eval_frame_(f) {}
+    At_GL_Arg(size_t i, GL_Frame& f) : arg_index_(i), call_frame_(f) {}
 
     void get_locations(std::list<Location>& locs) const;
     Shared<const String> rewrite_message(Shared<const String>) const override;

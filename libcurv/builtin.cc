@@ -505,7 +505,7 @@ struct File_Expr : public Just_Expression
     {
         // construct argument context
         auto& callphrase = dynamic_cast<const Call_Phrase&>(*syntax_);
-        At_Metacall cx("file", 0, *callphrase.arg_, &f);
+        At_Metacall cx("file", 0, *callphrase.arg_, f);
 
         // construct file pathname from argument
         Value arg = arg_->eval(f);
@@ -541,7 +541,7 @@ struct File_Expr : public Just_Expression
             std::unique_ptr<Frame> f2 =
                 Frame::make(0, f.system_, &f, &callphrase, nullptr);
             Program prog{std::move(file), f.system_,
-                Program_Opts().parent_frame(&*f2)};
+                Program_Opts().file_frame(&*f2)};
             auto filekey = Filesystem::canonical(filepath);
             auto& active_files = f.system_.active_files_;
             if (active_files.find(filekey) != active_files.end())
@@ -611,7 +611,7 @@ struct Warning_Action : public Just_Action
             msg = str;
         else
             msg = stringify(arg);
-        Exception exc{At_Phrase(*syntax_, &f), msg};
+        Exception exc{At_Phrase(*syntax_, f), msg};
         f.system_.message("WARNING: ", exc);
     }
 };
@@ -711,10 +711,10 @@ struct Assert_Action : public Just_Action
     {}
     virtual void exec(Frame& f) const override
     {
-        At_Metacall cx{"assert", 0, *arg_->syntax_, &f};
+        At_Metacall cx{"assert", 0, *arg_->syntax_, f};
         bool b = arg_->eval(f).to_bool(cx);
         if (!b)
-            throw Exception(At_Phrase(*syntax_, &f), "assertion failed");
+            throw Exception(At_Phrase(*syntax_, f), "assertion failed");
     }
 };
 struct Assert_Metafunction : public Metafunction
@@ -749,11 +749,11 @@ struct Assert_Error_Action : public Just_Action
     {
         Value expected_msg_val = expected_message_->eval(f);
         auto expected_msg_str = expected_msg_val.to<const String>(
-            At_Phrase(*expected_message_->syntax_, &f));
+            At_Phrase(*expected_message_->syntax_, f));
 
         if (actual_message_ != nullptr) {
             if (*actual_message_ != *expected_msg_str)
-                throw Exception(At_Phrase(*syntax_, &f),
+                throw Exception(At_Phrase(*syntax_, f),
                     stringify("assertion failed: expected error \"",
                         expected_msg_str,
                         "\", actual error \"",
@@ -767,7 +767,7 @@ struct Assert_Error_Action : public Just_Action
             result = expr_->eval(f);
         } catch (Exception& e) {
             if (*e.shared_what() != *expected_msg_str) {
-                throw Exception(At_Phrase(*syntax_, &f),
+                throw Exception(At_Phrase(*syntax_, f),
                     stringify("assertion failed: expected error \"",
                         expected_msg_str,
                         "\", actual error \"",
@@ -776,7 +776,7 @@ struct Assert_Error_Action : public Just_Action
             }
             return;
         }
-        throw Exception(At_Phrase(*syntax_, &f),
+        throw Exception(At_Phrase(*syntax_, f),
             stringify("assertion failed: expected error \"",
                 expected_msg_str,
                 "\", got value ", result));
