@@ -63,7 +63,7 @@ Program::eval()
         throw Exception(At_Phrase(*phrase_, scanner_),
             "definition found; expecting an expression");
     } else {
-        auto expr = meaning_->to_operation(scanner_.file_frame_);
+        auto expr = meaning_->to_operation(scanner_.system_,scanner_.file_frame_);
         return expr->eval(*frame_);
     }
 }
@@ -77,7 +77,7 @@ Program::denotes()
         module = module_->eval_module(*frame_);
     } else {
         List_Builder lb;
-        auto gen = meaning_->to_operation(scanner_.file_frame_);
+        auto gen = meaning_->to_operation(scanner_.system_,scanner_.file_frame_);
         gen->generate(*frame_, lb);
         list = lb.get_list();
     }

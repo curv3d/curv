@@ -76,10 +76,11 @@ struct At_Token : public Context
 struct At_Phrase : public Context
 {
     const Phrase& phrase_;
+    System& system_;
     Frame* frame_; // file_frame or call_frame
 
     At_Phrase(const Phrase& phrase, Frame& call_frame);
-    At_Phrase(const Phrase& phrase, Frame* frame);
+    At_Phrase(const Phrase& phrase, System& sys, Frame* frame);
     At_Phrase(const Phrase& phrase, Scanner& scanner);
     At_Phrase(const Phrase& phrase, Environ& env);
 

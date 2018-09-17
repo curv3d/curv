@@ -43,7 +43,7 @@ void System_Impl::load_library(String_Ref path)
     Program prog{std::move(file), *this};
     prog.compile();
     auto stdlib = prog.eval();
-    auto m = stdlib.to<Module>(At_Phrase(*prog.phrase_, nullptr));
+    auto m = stdlib.to<Module>(At_Phrase(*prog.phrase_, *this, nullptr));
     for (auto b : *m)
         std_namespace_[b.first] = make<Builtin_Value>(b.second);
 }

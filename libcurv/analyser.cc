@@ -22,7 +22,7 @@ analyse_op(const Phrase& ph, Environ& env)
 {
     bool old = env.is_analysing_action_;
     env.is_analysing_action_ = false;
-    auto result = ph.analyse(env)->to_operation(env.file_frame_);
+    auto result = ph.analyse(env)->to_operation(env.system_, env.file_frame_);
     env.is_analysing_action_ = old;
     return result;
 }
@@ -32,7 +32,7 @@ analyse_action(const Phrase& ph, Environ& env)
 {
     bool old = env.is_analysing_action_;
     env.is_analysing_action_ = true;
-    auto result = ph.analyse(env)->to_operation(env.file_frame_);
+    auto result = ph.analyse(env)->to_operation(env.system_, env.file_frame_);
     env.is_analysing_action_ = old;
     return result;
 }
@@ -40,7 +40,7 @@ analyse_action(const Phrase& ph, Environ& env)
 Shared<Operation>
 analyse_tail(const Phrase& ph, Environ& env)
 {
-    return ph.analyse(env)->to_operation(env.file_frame_);
+    return ph.analyse(env)->to_operation(env.system_, env.file_frame_);
 }
 
 // Evaluate the phrase as a constant expression in the builtin environment.
@@ -56,9 +56,9 @@ std_eval(const Phrase& ph, Environ& env)
 }
 
 Shared<Operation>
-Meaning::to_operation(Frame* f)
+Meaning::to_operation(System& sys, Frame* f)
 {
-    throw Exception(At_Phrase(*syntax_, f), "not an operation");
+    throw Exception(At_Phrase(*syntax_, sys, f), "not an operation");
 }
 
 Shared<Meaning>
@@ -68,7 +68,7 @@ Meaning::call(const Call_Phrase&, Environ& env)
 }
 
 Shared<Operation>
-Operation::to_operation(Frame*)
+Operation::to_operation(System&, Frame*)
 {
     return share(*this);
 }

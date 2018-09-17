@@ -73,19 +73,19 @@ At_Token::get_locations(std::list<Location>& locs) const
 }
 
 At_Phrase::At_Phrase(const Phrase& phrase, Frame& call_frame)
-: phrase_(phrase), frame_(&call_frame)
+: phrase_(phrase), system_(call_frame.system_), frame_(&call_frame)
 {}
 
-At_Phrase::At_Phrase(const Phrase& phrase, Frame* frame)
-: phrase_(phrase), frame_(frame)
+At_Phrase::At_Phrase(const Phrase& phrase, System& sys, Frame* frame)
+: phrase_(phrase), system_(sys), frame_(frame)
 {}
 
 At_Phrase::At_Phrase(const Phrase& phrase, Scanner& scanner)
-: phrase_(phrase), frame_(scanner.file_frame_)
+: phrase_(phrase), system_(scanner.system_), frame_(scanner.file_frame_)
 {}
 
 At_Phrase::At_Phrase(const Phrase& phrase, Environ& env)
-: phrase_(phrase), frame_(env.file_frame_)
+: phrase_(phrase), system_(env.system_), frame_(env.file_frame_)
 {}
 
 void
