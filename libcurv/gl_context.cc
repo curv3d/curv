@@ -10,13 +10,13 @@ namespace curv {
 void
 At_GL_Frame::get_locations(std::list<Location>& locs) const
 {
-    get_gl_frame_locations(frame_, locs);
+    get_gl_frame_locations(&call_frame_, locs);
 }
 
 Shared<const String>
 At_GL_Frame::rewrite_message(Shared<const String> msg) const
 {
-    return gl_frame_rewrite_message(frame_, msg);
+    return gl_frame_rewrite_message(&call_frame_, msg);
 }
 
 void

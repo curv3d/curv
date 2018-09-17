@@ -99,7 +99,7 @@ const
 GL_Value
 Legacy_Function::gl_call(GL_Frame& f) const
 {
-    throw Exception(At_GL_Frame(&f),
+    throw Exception(At_GL_Frame(f),
         "this function does not support the Geometry Compiler");
 }
 

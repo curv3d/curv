@@ -12,9 +12,9 @@ namespace curv {
 
 struct At_GL_Frame : public Context
 {
-    GL_Frame* frame_;
+    GL_Frame& call_frame_;
 
-    At_GL_Frame(GL_Frame* frame) : frame_(frame) {}
+    At_GL_Frame(GL_Frame& frame) : call_frame_(frame) {}
 
     virtual void get_locations(std::list<Location>& locs) const;
     Shared<const String> rewrite_message(Shared<const String>) const override;
