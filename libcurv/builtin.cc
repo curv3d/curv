@@ -133,7 +133,7 @@ struct Class_Name : public Legacy_Function \
     static Unary_Numeric_Array_Op<Scalar_Op> array_op; \
     Value call(Frame& args) override \
     { \
-        return array_op.op(args[0], At_Frame(&args)); \
+        return array_op.op(args[0], At_Frame(args)); \
     } \
     GL_Value gl_call(GL_Frame& f) const override \
     { \
@@ -644,7 +644,7 @@ struct Error_Operation : public Operation
             msg = s;
         else
             msg = stringify(val);
-        throw Exception(At_Frame(&f), msg);
+        throw Exception(At_Frame(f), msg);
     }
     virtual void exec(Frame& f) const override
     {

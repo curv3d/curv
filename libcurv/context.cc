@@ -8,11 +8,6 @@
 
 namespace curv {
 
-void
-Context::get_locations(std::list<Location>&) const
-{
-}
-
 Shared<const String>
 Context::rewrite_message(Shared<const String> msg) const
 {
@@ -20,9 +15,14 @@ Context::rewrite_message(Shared<const String> msg) const
 }
 
 void
+At_System::get_locations(std::list<Location>& locs) const
+{
+}
+
+void
 At_Frame::get_locations(std::list<Location>& locs) const
 {
-    get_frame_locations(frame_, locs);
+    get_frame_locations(&frame_, locs);
 }
 
 void

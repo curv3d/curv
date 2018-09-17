@@ -292,7 +292,7 @@ main(int argc, char** argv)
             source = curv::make<curv::String_Source>("", filename);
         } else {
             source = curv::make<curv::File_Source>(
-                curv::make_string(filename), curv::Context{});
+                curv::make_string(filename), curv::At_System{sys});
         }
 
         curv::Program prog{std::move(source), sys};

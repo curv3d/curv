@@ -15,6 +15,7 @@ struct Phrase;
 struct Environ;
 struct Scanner;
 struct Function;
+struct System;
 
 /// A Context describes the source code Location and call stack
 /// of a compile-time or run time error.
@@ -33,17 +34,26 @@ struct Function;
 struct Context
 {
     virtual ~Context() {}
-    virtual void get_locations(std::list<Location>&) const;
+    virtual void get_locations(std::list<Location>&) const = 0;
     virtual Shared<const String> rewrite_message(Shared<const String>) const;
+};
+
+struct At_System : public Context
+{
+    System& system_;
+
+    At_System(System& system) : system_(system) {}
+
+    virtual void get_locations(std::list<Location>& locs) const;
 };
 
 struct At_Frame : public Context
 {
-    Frame* frame_;
+    Frame& frame_;
 
-    At_Frame(Frame* frame) : frame_(frame) {}
+    At_Frame(Frame& frame) : frame_(frame) {}
 
-    virtual void get_locations(std::list<Location>& locs) const override;
+    virtual void get_locations(std::list<Location>& locs) const;
 };
 
 void get_frame_locations(const Frame* f, std::list<Location>& locs);
@@ -58,7 +68,7 @@ struct At_Token : public Context
     At_Token(Location, Environ&);
     At_Token(Location, Frame* = nullptr);
 
-    virtual void get_locations(std::list<Location>&) const override;
+    virtual void get_locations(std::list<Location>&) const;
 };
 
 /// Exception Context where we know the Phrase that contains the error.
@@ -70,7 +80,7 @@ struct At_Phrase : public Context
     At_Phrase(const Phrase& phrase, Frame* frame);
     At_Phrase(const Phrase& phrase, Environ& env);
 
-    virtual void get_locations(std::list<Location>& locs) const override;
+    virtual void get_locations(std::list<Location>& locs) const;
 };
 
 struct At_Program : public At_Token
@@ -95,7 +105,7 @@ struct At_Arg : public Context
         eval_frame_(fr)
     {}
 
-    void get_locations(std::list<Location>& locs) const override;
+    void get_locations(std::list<Location>& locs) const;
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
 };
 
@@ -115,7 +125,7 @@ struct At_Metacall : public Context
         frame_(fr)
     {}
 
-    void get_locations(std::list<Location>& locs) const override;
+    void get_locations(std::list<Location>& locs) const;
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
 };
 
@@ -126,7 +136,7 @@ struct At_Field : public Context
 
     At_Field(const char* fieldname, const Context& parent);
 
-    virtual void get_locations(std::list<Location>&) const override;
+    virtual void get_locations(std::list<Location>&) const;
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
 };
 
@@ -137,7 +147,7 @@ struct At_Index : public Context
 
     At_Index(size_t index, const Context& parent);
 
-    virtual void get_locations(std::list<Location>&) const override;
+    virtual void get_locations(std::list<Location>&) const;
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
 };
 
