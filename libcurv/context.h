@@ -61,12 +61,13 @@ void get_frame_locations(const Frame* f, std::list<Location>& locs);
 struct At_Token : public Context
 {
     Location loc_;
+    System& system_;
     Frame* eval_frame_;
 
     At_Token(Token, const Scanner&);
     At_Token(Token, const Phrase&, Environ&);
     At_Token(Location, Environ&);
-    At_Token(Location, Frame* = nullptr);
+    At_Token(Location, System&, Frame* = nullptr);
 
     virtual void get_locations(std::list<Location>&) const;
 };
@@ -89,7 +90,7 @@ struct At_Program : public At_Token
     template <class PROGRAM>
     explicit At_Program(const PROGRAM& prog)
     :
-        At_Token(prog.location(), prog.parent_frame())
+        At_Token(prog.location(), prog.system(), prog.parent_frame())
     {}
 };
 

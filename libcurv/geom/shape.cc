@@ -18,7 +18,7 @@ Shape_Program::Shape_Program(
     Program& prog)
 :
     nub_(nub_phrase(prog.phrase_)),
-    system_(prog.scanner_.system_)
+    system_(prog.system())
 {
     // mark initial state (no shape has been recognized yet)
     is_2d_ = false;

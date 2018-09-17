@@ -55,11 +55,11 @@ void Export_Params::unknown_parameter(const Map::value_type& p) const
     auto src = make<String_Source>("", stringify("-O ",p.first,"=",p.second));
     Location loc{*src, {3, unsigned(3+p.first.size())}};
     if (format_.empty()) {
-        throw Exception(At_Token(loc), stringify(
+        throw Exception(At_Token{loc, system_}, stringify(
             "'",p.first,"': Unknown -O parameter.\n"
             "Use 'curv --help' for help."));
     } else {
-        throw Exception(At_Token(loc), stringify(
+        throw Exception(At_Token{loc, system_}, stringify(
             "'",p.first,"': "
             "Unknown -O parameter for output format '",format_,"'.\n"
             "Use 'curv --help -o ",format_,"' for help."));

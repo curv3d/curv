@@ -52,6 +52,7 @@ struct Program
     const Phrase& nub() const;
 
     Location location() const;
+    System& system() const { return scanner_.system_; }
     Frame* parent_frame() const { return scanner_.eval_frame_; }
 
     std::pair<Shared<Module>, Shared<List>> denotes();

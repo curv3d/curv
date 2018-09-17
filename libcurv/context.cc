@@ -36,27 +36,31 @@ get_frame_locations(const Frame* f, std::list<Location>& locs)
 At_Token::At_Token(Token tok, const Scanner& scanner)
 :
     loc_{*scanner.source_, tok},
-    eval_frame_(scanner.eval_frame_)
+    system_{scanner.system_},
+    eval_frame_{scanner.eval_frame_}
 {
 }
 
 At_Token::At_Token(Token tok, const Phrase& phrase, Environ& env)
 :
     loc_{phrase.location().source(), tok},
+    system_{env.system_},
     eval_frame_{env.eval_frame_}
 {
 }
 
 At_Token::At_Token(Location loc, Environ& env)
 :
-    loc_(std::move(loc)),
+    loc_{std::move(loc)},
+    system_{env.system_},
     eval_frame_{env.eval_frame_}
 {
 }
 
-At_Token::At_Token(Location loc, Frame* f)
+At_Token::At_Token(Location loc, System& sys, Frame* f)
 :
-    loc_(std::move(loc)),
+    loc_{std::move(loc)},
+    system_{sys},
     eval_frame_{f}
 {
 }
