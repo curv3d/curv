@@ -40,8 +40,8 @@ gl_frame_rewrite_message(const GL_Frame* f, Shared<const String> msg)
     return msg;
 }
 
-At_GL_Phrase::At_GL_Phrase(Shared<const Phrase> phrase, GL_Frame* frame)
-: phrase_(std::move(phrase)), frame_(frame)
+At_GL_Phrase::At_GL_Phrase(Shared<const Phrase> phrase, GL_Frame& frame)
+: phrase_(std::move(phrase)), call_frame_(frame)
 {}
 
 void
@@ -49,13 +49,13 @@ At_GL_Phrase::get_locations(std::list<Location>& locs) const
 {
     if (phrase_)
         locs.push_back(phrase_->location());
-    get_gl_frame_locations(frame_, locs);
+    get_gl_frame_locations(&call_frame_, locs);
 }
 
 Shared<const String>
 At_GL_Phrase::rewrite_message(Shared<const String> msg) const
 {
-    return gl_frame_rewrite_message(frame_, msg);
+    return gl_frame_rewrite_message(&call_frame_, msg);
 }
 
 void At_GL_Arg::get_locations(std::list<Location>& locs) const

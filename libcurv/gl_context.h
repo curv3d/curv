@@ -24,9 +24,9 @@ struct At_GL_Frame : public Context
 struct At_GL_Phrase : public Context
 {
     Shared<const Phrase> phrase_;
-    GL_Frame* frame_;
+    GL_Frame& call_frame_;
 
-    At_GL_Phrase(Shared<const Phrase> phrase, GL_Frame* frame);
+    At_GL_Phrase(Shared<const Phrase> phrase, GL_Frame& frame);
 
     virtual void get_locations(std::list<Location>& locs) const;
     Shared<const String> rewrite_message(Shared<const String>) const override;
