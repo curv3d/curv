@@ -70,7 +70,7 @@ Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
 void
 export_cpp(Shape_Program& shape, std::ostream& out)
 {
-    GL_Compiler gl(out, GL_Target::cpp);
+    GL_Compiler gl(out, GL_Target::cpp, shape.system());
     out <<
         "#include <glm/vec2.hpp>\n"
         "#include <glm/vec3.hpp>\n"

@@ -30,7 +30,7 @@ void export_frag(
 void export_frag_2d(
     const Shape_Program& shape, const Frag_Export& opts, std::ostream& out)
 {
-    GL_Compiler gl(out, GL_Target::glsl);
+    GL_Compiler gl(out, GL_Target::glsl, shape.system());
     GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
 
     out <<
@@ -124,7 +124,7 @@ void export_frag_2d(
 void export_frag_3d(
     const Shape_Program& shape, const Frag_Export& opts, std::ostream& out)
 {
-    GL_Compiler gl(out, GL_Target::glsl);
+    GL_Compiler gl(out, GL_Target::glsl, shape.system());
 
     GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
     out <<
