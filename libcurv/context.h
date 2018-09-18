@@ -17,25 +17,54 @@ struct Scanner;
 struct Function;
 struct System;
 
-/// A Context describes the source code Location and call stack
-/// of a compile-time or run time error.
+/// The primary use of a Context is to describe the source code Location and
+/// call stack of a compile-time or run time error. A Context reference is
+/// passed as the first constructor argument to curv::Exception, which is used
+/// for reporting errors and warnings. The Context is used to construct the
+/// stack trace, via Context::get_locations().
 ///
-/// More specifically, Context is an abstract interface to an object that
-/// converts compile-time or run-time data structures into a list of Locations.
+/// Libcurv is written in a functional style. There are no global mutable
+/// variables. Runtime functions in libcurv have no access to 'global'
+/// interpreter state, exception via arguments that are passed in. Since you
+/// need a Context to throw an exception, many runtime functions
+/// have a Context argument, if they don't already have a Frame argument.
+///
+/// As a consequence of this coding style, the secondary use of a Context is
+/// to gain access to the System object, and to the Frame at the top of the
+/// evaluator stack, via Context::system() and Context::frame().
+/// This is needed to construct a Program object for compiling a Curv source
+/// file. This need can arise whenever the `lib` is passed around as a value,
+/// due to lazy evaluation and lazy program loading in `lib`.
+///
+/// We only need Context::frame() at runtime: that's when `lib` expressions
+/// are evaluated. During GL_Compile, Context::frame() returns nullptr.
+///
+/// Context objects must be very cheap to construct.
+/// Therefore, they are small, with only a few fields to fill in, and with
+/// little or no computation required in the constructor. There are many
+/// Context subclasses, each tailored to a particular kind of context, where
+/// different compile-time or run-time data is available. In each case, we
+/// take whatever data structures are readily available, store references to
+/// them in the Context object, and later (if an Exception is thrown),
+/// then we perform additional and more expensive computation to construct
+/// a stack trace. So construction is cheap, but Context::get_location() is
+/// expensive.
 ///
 /// Context objects are not allocated on the heap, and don't own the data
-/// structures that they point to. Instances of Context subclasses are
-/// constructed in argument position as rvalues, are passed as `const Context&`
-/// parameters to functions that may throw a curv::Exception, and are finally
-/// consumed by the curv::Exception constructor.
+/// structures that they point to. Instances of Context subclasses are usually
+/// constructed in argument position as rvalues, and passed as `const Context&`
+/// parameters to functions that may throw a curv::Exception.
 ///
-/// An empty Context argument is `{}`.
-/// Subclasses of Context are used for non-empty contexts.
+/// Context::frame() and Context::system() are a little more expensive than
+/// the Context constructors, but that's okay, because we need them when
+/// loading a source file into memory, which is already expensive.
 struct Context
 {
     virtual ~Context() {}
     virtual void get_locations(std::list<Location>&) const = 0;
     virtual Shared<const String> rewrite_message(Shared<const String>) const;
+    virtual System& system() const = 0;
+    virtual Frame* frame() const = 0;
 };
 
 struct At_System : public Context
@@ -44,7 +73,9 @@ struct At_System : public Context
 
     At_System(System& system) : system_(system) {}
 
-    virtual void get_locations(std::list<Location>& locs) const;
+    virtual void get_locations(std::list<Location>& locs) const override;
+    virtual System& system() const override;
+    virtual Frame* frame() const override;
 };
 
 struct At_Frame : public Context
@@ -53,7 +84,9 @@ struct At_Frame : public Context
 
     At_Frame(Frame& frame) : call_frame_(frame) {}
 
-    virtual void get_locations(std::list<Location>& locs) const;
+    virtual void get_locations(std::list<Location>& locs) const override;
+    virtual System& system() const override;
+    virtual Frame* frame() const override;
 };
 
 void get_frame_locations(const Frame* f, std::list<Location>& locs);
@@ -69,7 +102,9 @@ struct At_Token : public Context
     At_Token(Location, Environ&);
     At_Token(Location, System&, Frame* = nullptr);
 
-    virtual void get_locations(std::list<Location>&) const;
+    virtual void get_locations(std::list<Location>&) const override;
+    virtual System& system() const override;
+    virtual Frame* frame() const override;
 };
 
 /// Exception Context where we know the Phrase that contains the error.
@@ -84,7 +119,9 @@ struct At_Phrase : public Context
     At_Phrase(const Phrase& phrase, Scanner& scanner);
     At_Phrase(const Phrase& phrase, Environ& env);
 
-    virtual void get_locations(std::list<Location>& locs) const;
+    virtual void get_locations(std::list<Location>& locs) const override;
+    virtual System& system() const override;
+    virtual Frame* frame() const override;
 };
 
 struct At_Program : public At_Token
@@ -109,8 +146,10 @@ struct At_Arg : public Context
         call_frame_(fr)
     {}
 
-    void get_locations(std::list<Location>& locs) const;
+    void get_locations(std::list<Location>& locs) const override;
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
+    virtual System& system() const override;
+    virtual Frame* frame() const override;
 };
 
 // Bad argument to a metafunction call.
@@ -129,8 +168,10 @@ struct At_Metacall : public Context
         call_frame_(fr)
     {}
 
-    void get_locations(std::list<Location>& locs) const;
+    void get_locations(std::list<Location>& locs) const override;
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
+    virtual System& system() const override;
+    virtual Frame* frame() const override;
 };
 
 struct At_Field : public Context
@@ -140,8 +181,10 @@ struct At_Field : public Context
 
     At_Field(const char* fieldname, const Context& parent);
 
-    virtual void get_locations(std::list<Location>&) const;
+    virtual void get_locations(std::list<Location>&) const override;
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
+    virtual System& system() const override;
+    virtual Frame* frame() const override;
 };
 
 struct At_Index : public Context
@@ -151,8 +194,10 @@ struct At_Index : public Context
 
     At_Index(size_t index, const Context& parent);
 
-    virtual void get_locations(std::list<Location>&) const;
+    virtual void get_locations(std::list<Location>&) const override;
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
+    virtual System& system() const override;
+    virtual Frame* frame() const override;
 };
 
 } // namespace curv

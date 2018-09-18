@@ -12,6 +12,8 @@ At_GL_Frame::get_locations(std::list<Location>& locs) const
 {
     get_gl_frame_locations(&call_frame_, locs);
 }
+System& At_GL_Frame::system() const { return call_frame_.gl.system_; }
+Frame* At_GL_Frame::frame() const { return nullptr; }
 
 Shared<const String>
 At_GL_Frame::rewrite_message(Shared<const String> msg) const
@@ -51,6 +53,8 @@ At_GL_Phrase::get_locations(std::list<Location>& locs) const
         locs.push_back(phrase_->location());
     get_gl_frame_locations(&call_frame_, locs);
 }
+System& At_GL_Phrase::system() const { return call_frame_.gl.system_; }
+Frame* At_GL_Phrase::frame() const { return nullptr; }
 
 Shared<const String>
 At_GL_Phrase::rewrite_message(Shared<const String> msg) const
@@ -62,6 +66,8 @@ void At_GL_Arg::get_locations(std::list<Location>& locs) const
 {
     get_gl_frame_locations(&call_frame_, locs);
 }
+System& At_GL_Arg::system() const { return call_frame_.gl.system_; }
+Frame* At_GL_Arg::frame() const { return nullptr; }
 
 Shared<const String>
 At_GL_Arg::rewrite_message(Shared<const String> msg) const

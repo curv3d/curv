@@ -14,16 +14,17 @@ Context::rewrite_message(Shared<const String> msg) const
     return msg;
 }
 
-void
-At_System::get_locations(std::list<Location>& locs) const
-{
-}
+void At_System::get_locations(std::list<Location>& locs) const { }
+System& At_System::system() const { return system_; }
+Frame* At_System::frame() const { return nullptr; }
 
 void
 At_Frame::get_locations(std::list<Location>& locs) const
 {
     get_frame_locations(&call_frame_, locs);
 }
+System& At_Frame::system() const { return call_frame_.system_; }
+Frame* At_Frame::frame() const { return &call_frame_; }
 
 void
 get_frame_locations(const Frame* f, std::list<Location>& locs)
@@ -71,6 +72,8 @@ At_Token::get_locations(std::list<Location>& locs) const
     locs.push_back(loc_);
     get_frame_locations(file_frame_, locs);
 }
+System& At_Token::system() const { return system_; }
+Frame* At_Token::frame() const { return file_frame_; }
 
 At_Phrase::At_Phrase(const Phrase& phrase, Frame& call_frame)
 : phrase_(phrase), system_(call_frame.system_), frame_(&call_frame)
@@ -94,6 +97,8 @@ At_Phrase::get_locations(std::list<Location>& locs) const
     locs.push_back(phrase_.location());
     get_frame_locations(frame_, locs);
 }
+System& At_Phrase::system() const { return system_; }
+Frame* At_Phrase::frame() const { return frame_; }
 
 void
 At_Arg::get_locations(std::list<Location>& locs) const
@@ -110,6 +115,8 @@ At_Arg::get_locations(std::list<Location>& locs) const
         get_frame_locations(&call_frame_, locs);
     }
 }
+System& At_Arg::system() const { return call_frame_.system_; }
+Frame* At_Arg::frame() const { return &call_frame_; }
 
 Shared<const String>
 At_Arg::rewrite_message(Shared<const String> msg) const
@@ -125,6 +132,8 @@ At_Metacall::get_locations(std::list<Location>& locs) const
     locs.push_back(arg_.location());
     get_frame_locations(&call_frame_, locs);
 }
+System& At_Metacall::system() const { return call_frame_.system_; }
+Frame* At_Metacall::frame() const { return &call_frame_; }
 
 Shared<const String>
 At_Metacall::rewrite_message(Shared<const String> msg) const
@@ -141,6 +150,8 @@ At_Field::get_locations(std::list<Location>& locs) const
 {
     parent_.get_locations(locs);
 }
+System& At_Field::system() const { return parent_.system(); }
+Frame* At_Field::frame() const { return parent_.frame(); }
 
 Shared<const String>
 At_Field::rewrite_message(Shared<const String> msg) const
@@ -157,6 +168,8 @@ At_Index::get_locations(std::list<Location>& locs) const
 {
     parent_.get_locations(locs);
 }
+System& At_Index::system() const { return parent_.system(); }
+Frame* At_Index::frame() const { return parent_.frame(); }
 
 Shared<const String>
 At_Index::rewrite_message(Shared<const String> msg) const
