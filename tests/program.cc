@@ -4,10 +4,9 @@
 #include <libcurv/parser.h>
 #include <libcurv/phrase.h>
 #include <libcurv/program.h>
+#include "sys.h"
 
 using namespace curv;
-
-System_Impl sys(std::cerr);
 
 Shared<const Phrase>
 nub(const char* str)

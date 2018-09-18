@@ -4,6 +4,7 @@
 #include <libcurv/value.h>
 #include <sstream>
 #include <iostream>
+#include "sys.h"
 using namespace curv;
 
 static bool prints_as(Value val, const char* expect)
@@ -20,6 +21,8 @@ static bool prints_as(Value val, const char* expect)
 
 TEST(curv, record)
 {
+    At_System cx{sys};
+
     auto r = make<DRecord>();
     r->fields_[Symbol{"a"}] = Value{1.0};
     r->fields_[Symbol{"b"}] = Value{true};
@@ -29,13 +32,13 @@ TEST(curv, record)
     // at first field
     ASSERT_FALSE(i->empty());
     ASSERT_EQ(i->key(), Symbol{"a"});
-    ASSERT_TRUE(i->value({}).equal({1.0},{}));
+    ASSERT_TRUE(i->value(cx).equal({1.0},cx));
     i->next();
 
     // at second field
     ASSERT_FALSE(i->empty());
     ASSERT_EQ(i->key(), Symbol{"b"});
-    ASSERT_TRUE(i->value({}).equal({true},{}));
+    ASSERT_TRUE(i->value(cx).equal({true},cx));
     i->next();
 
     // at end

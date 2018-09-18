@@ -30,7 +30,8 @@ int
 maketemp(
     const fs::path& tempdir,
     const std::string& suffix,
-    fs::path& path)
+    fs::path& path,
+    System& sys)
 {
     pid_t pid = getpid();
     fs::path trypath;
@@ -46,7 +47,7 @@ maketemp(
         if (errno != EEXIST)
             break;
     }
-    throw Exception({}, stringify(
+    throw Exception(At_System(sys), stringify(
         "can't create tempfile ",trypath.c_str(),": ",strerror(errno)));
 }
 
@@ -58,7 +59,7 @@ Output_File::open()
         tempdir = fs::temp_directory_path();
     else
         tempdir = path_.parent_path();
-    int fd = maketemp(tempdir, ".tmp", tempfile_path_);
+    int fd = maketemp(tempdir, ".tmp", tempfile_path_, system_);
     tempfile_ostream_.open(io::file_descriptor_sink(fd, io::close_handle));
 }
 
@@ -82,7 +83,7 @@ Output_File::commit()
             *ostream_ << tmp.rdbuf();
         } else {
             if (rename(tempfile_path_.c_str(), path_.c_str()) == -1) {
-                throw Exception({}, stringify(
+                throw Exception(At_System(system_), stringify(
                     "can't rename ", tempfile_path_.c_str(),
                     " to ", path_.c_str(), ": ", strerror(errno)));
             }

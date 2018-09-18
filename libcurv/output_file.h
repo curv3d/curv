@@ -13,6 +13,8 @@
 
 namespace curv {
 
+struct System;
+
 // Output_File is used to mediate between a client, who is calling a
 // file export function (the 'exporter'), and the exporter.
 // The client can provide either a file name, or an open std::ostream.
@@ -27,6 +29,8 @@ struct Output_File
     using tstream =
         boost::iostreams::stream<boost::iostreams::file_descriptor_sink>;
 
+    System& system_;
+
     // Client state.
     Filesystem::path path_{};
     std::ostream* ostream_ = nullptr;
@@ -34,9 +38,7 @@ struct Output_File
     // Following are used by client, who is calling a file export function.
     // Client specifies if she wants the data to be written to a named file,
     // or to an already open output stream.
-    Output_File(Filesystem::path p) : path_(std::move(p)) {}
-    Output_File(std::ostream* s) : ostream_(s) {}
-    Output_File() {}
+    Output_File(System& sys) : system_(sys) {}
     void set_path(Filesystem::path p) { std::swap(path_, p); }
     void set_ostream(std::ostream* s) { ostream_ = s; }
 

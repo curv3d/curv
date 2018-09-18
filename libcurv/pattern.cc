@@ -146,7 +146,7 @@ struct Predicate_Pattern : public Pattern
               {
                 Record* s = (Record*)&funp;
                 if (s->hasfield(callkey)) {
-                    funv = s->getfield(callkey, {});
+                    funv = s->getfield(callkey, At_Phrase(*call_phrase(), f));
                     continue;
                 }
                 break;
@@ -293,7 +293,7 @@ struct Record_Pattern : public Pattern
                     continue;
                 } else if (cmp == 0) {
                     // matching field in record and pattern
-                    auto fval = record->getfield(p->first,{});
+                    auto fval = record->getfield(p->first,valcx);
                     p->second.pat_->exec(
                         slots, fval, At_Field(p->first.data(), valcx), f);
                     ++p;
@@ -341,7 +341,7 @@ struct Record_Pattern : public Pattern
                     continue;
                 } else if (cmp == 0) {
                     // matching field in record and pattern
-                    auto fval = record->getfield(p->first,{});
+                    auto fval = record->getfield(p->first,cx);
                     p->second.pat_->try_exec(slots, fval, cx, f);
                     ++p;
                     return;

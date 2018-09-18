@@ -102,11 +102,11 @@ main(int argc, char** argv)
 
     // Parse arguments for general case.
     const char* usestdlib = argv0;
+    fs::path opath;
     using ExPtr = decltype(exporters)::const_iterator;
     ExPtr exporter = exporters.end();
     Export_Params::Map oparam_map;
     bool verbose = false;
-    curv::Output_File ofile;
     bool live = false;
     std::list<const char*> libs;
     bool expr = false;
@@ -135,24 +135,22 @@ main(int argc, char** argv)
         case 'o':
           {
             const char* oarg = optarg;
-            fs::path opath{oarg};
+            opath = oarg;
             std::string ext_string = opath.extension().string();
             const char* ext = ext_string.c_str();
             const char* oname;
             if (ext[0] == '.')
                 oname = &ext[1];
-            else
+            else {
                 oname = oarg;
+                opath.clear();
+            }
             exporter = exporters.find(oname);
             if (exporter == exporters.end()) {
                 std::cerr << "-o: format '" << oname << "' not supported.\n"
                           << "Use " << argv0 << " --help for help.\n";
                 return EXIT_FAILURE;
             }
-            if (oname == oarg)
-                ofile.set_ostream(&std::cout);
-            else
-                ofile.set_path(opath);
             break;
           }
         case 'O':
@@ -300,6 +298,11 @@ main(int argc, char** argv)
         auto value = prog.eval();
 
         if (exporter != exporters.end()) {
+            curv::Output_File ofile{sys};
+            if (opath.empty())
+                ofile.set_ostream(&std::cout);
+            else
+                ofile.set_path(opath);
             exporter->second.call(value, prog, oparams, ofile);
             ofile.commit();
         } else {

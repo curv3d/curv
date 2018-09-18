@@ -29,18 +29,20 @@ tempfile_name(const char* suffix)
     return fs::current_path() / fs::path(name->c_str());
 }
 
+#if 0
 fs::path
 make_tempfile(const char* suffix)
 {
     auto filename = tempfile_name(suffix);
     int fd = creat(filename.c_str(), 0666);
     if (fd == -1)
-        throw Exception({}, stringify(
+        throw Exception(cx, stringify(
             "Can't create ",filename.c_str(),": ",strerror(errno)));
     close(fd);
     tempfiles.push_back(filename);
     return filename;
 }
+#endif
 
 fs::path
 register_tempfile(const char* suffix)

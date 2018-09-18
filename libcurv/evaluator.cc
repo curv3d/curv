@@ -460,7 +460,7 @@ Call_Expr::eval(Frame& f) const
           {
             Record* s = (Record*)&funp;
             if (s->hasfield(callkey)) {
-                funv = s->getfield(callkey, {});
+                funv = s->getfield(callkey, At_Phrase(*call_phrase(), f));
                 continue;
             }
             break;

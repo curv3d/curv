@@ -29,7 +29,8 @@ namespace curv { namespace geom {
 // The output is 3 bytes per pixel (RGB), and the image is flipped on Y.
 void
 write_png_rgb(
-    const std::string& path, unsigned char* pixels, int width, int height)
+    const std::string& path, unsigned char* pixels, int width, int height,
+    System& sys)
 {
     using uchar = unsigned char;
     std::unique_ptr<uchar[]> result(new uchar[width*height*3]);
@@ -48,7 +49,7 @@ write_png_rgb(
 
     int r = stbi_write_png(path.c_str(), width, height, 3, result.get(), width * 3);
     if (!r) {
-        throw Exception({},
+        throw Exception(At_System(sys),
             stringify("Can't create file ",path,": ", strerror(errno)));
     }
 }
@@ -127,7 +128,8 @@ export_png(
         std::chrono::duration<double> render_time = end_time - start_time;
         std::cerr << "image render time: " << render_time.count() << "s\n";
     }
-    write_png_rgb(ofile.path().c_str(), pixels.get(), p.size.x, p.size.y);
+    write_png_rgb(ofile.path().c_str(), pixels.get(), p.size.x, p.size.y,
+        ofile.system_);
 }
 
 }} // namespace
