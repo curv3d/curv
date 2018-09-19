@@ -118,8 +118,10 @@ Dir_Record::Iter::Iter(const Dir_Record& rec)
     rec_{rec},
     i_{rec.fields_.begin()}
 {
-    if (i_ != rec_.fields_.end())
+    if (i_ != rec_.fields_.end()) {
         key_ = i_->first;
+        value_ = i_->second.value_;
+    }
 }
 
 void Dir_Record::Iter::load_value(const Context& cx)
@@ -134,9 +136,10 @@ void Dir_Record::Iter::load_value(const Context& cx)
 void Dir_Record::Iter::next()
 {
     ++i_;
-    if (i_ != rec_.fields_.end())
+    if (i_ != rec_.fields_.end()) {
         key_ = i_->first;
-    else
+        value_ = i_->second.value_;
+    } else
         key_ = Symbol();
 }
 
