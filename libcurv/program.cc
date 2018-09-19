@@ -2,17 +2,26 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/analyser.h>
-#include <libcurv/definition.h>
-#include <libcurv/builtin.h>
 #include <libcurv/program.h>
+
+#include <libcurv/analyser.h>
+#include <libcurv/builtin.h>
+#include <libcurv/context.h>
+#include <libcurv/definition.h>
+#include <libcurv/exception.h>
 #include <libcurv/parser.h>
 #include <libcurv/scanner.h>
 #include <libcurv/system.h>
-#include <libcurv/exception.h>
-#include <libcurv/context.h>
 
 namespace curv {
+
+Value curv_import(const Filesystem::path& path, const Context& cx)
+{
+    auto source = make<File_Source>(path.c_str(), cx);
+    Program prog{std::move(source), cx.system()};
+    prog.compile();
+    return prog.eval();
+}
 
 void
 Program::compile(const Namespace* names)

@@ -6,16 +6,18 @@
 #define LIBCURV_PROGRAM_H
 
 #include <libcurv/builtin.h>
+#include <libcurv/filesystem.h>
 #include <libcurv/frame.h>
+#include <libcurv/list.h>
 #include <libcurv/meaning.h>
 #include <libcurv/module.h>
 #include <libcurv/scanner.h>
 #include <libcurv/source.h>
-#include <libcurv/shared.h>
 #include <libcurv/system.h>
-#include <libcurv/list.h>
 
 namespace curv {
+
+Value curv_import(const Filesystem::path& path, const Context& cx);
 
 struct Program_Opts
 {

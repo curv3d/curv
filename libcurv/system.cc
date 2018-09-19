@@ -35,6 +35,7 @@ System_Impl::System_Impl(std::ostream& console)
     console_(console)
 {
     std_namespace_ = builtin_namespace();
+    importers_[".curv"] = curv_import;
 }
 
 void System_Impl::load_library(String_Ref path)
