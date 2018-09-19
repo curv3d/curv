@@ -94,9 +94,9 @@ Value Dir_Record::getfield(Symbol sym, const Context& cx) const
     return p->second.value_;
 }
 
-bool Dir_Record::hasfield(Symbol) const
+bool Dir_Record::hasfield(Symbol sym) const
 {
-    return false;
+    return fields_.find(sym) != fields_.end();
 }
 
 size_t Dir_Record::size() const

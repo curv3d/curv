@@ -44,7 +44,7 @@ struct Record : public Ref_Value
     {
     protected:
         Symbol key_{};
-        Value value_{};
+        Value value_{missing};
         virtual void load_value(const Context&) = 0;
     public:
         virtual ~Iter() {}
