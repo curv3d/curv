@@ -1,13 +1,8 @@
 A parametric record remembers how it was constructed.
+It remembers its construction parameters, and it allows you to selectively
+change those parameters and make a modified copy of the record.
 
-Suppose R is a parametric record. Then R contains two special fields:
-* `R.parameter` is a record containing the construction parameters.
-* `R.call` is a function that maps a record of construction parameters
-  (all of which are optional) onto a new instance of R.
-  So `R.call(R.parameter)` returns R.
-  Since the parameters are all optional, `R{}` also returns R.
-
-This is a bit like prototype-based programming, in the sense that you have
+This is a bit like prototype-based programming, in the sense that you can have
 a set of prototypical objects, and you construct new instances of these objects
 by cloning the prototypes, with alterations (rather than by calling constructor
 functions). That's where the similarity ends. There is no inheritance or
@@ -15,8 +10,17 @@ delegation.
 
 Use cases:
 * As a mechanism for hooking graphical value pickers into a shape.
+* Can view a shape using 'curv foo.curv', then modify parameters
+  on the command line using -D options.
 * Similar to OpenSCAD2 customizable objects, supports a simple form of
   prototype-based programming in Curv.
+
+Suppose R is a parametric record. Then R contains two special fields:
+* `R.parameter` is a record containing the construction parameters.
+* `R.call` is a function that maps a record of construction parameters
+  (all of which are optional) onto a new instance of R.
+  So `R.call(R.parameter)` returns R.
+  Since the parameters are all optional, `R{}` also returns R.
 
 Basic Syntax
 ------------
