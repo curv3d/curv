@@ -20,6 +20,7 @@ struct Dir_Record : public Record
     struct File
     {
         System::Importer importer_;
+        Filesystem::path path_;
         mutable Value value_;
     };
     Symbol_Map<File> fields_;
