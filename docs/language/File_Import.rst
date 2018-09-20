@@ -38,3 +38,9 @@ For each file contained within the directory,
   of the known extensions in the above table, then the file is imported
   based on its extension. The corresponding record field name is the filename
   with its extension removed.
+
+The record values constructed by parsing directory syntax use lazy evaluation.
+The file contents of a record field are not read into memory and converted to a value
+until the field value is required. This means you can import a large directory,
+or a deep directory hierarchy, containing many ``*.curv`` files, without reading and
+evaluating all of those files.
