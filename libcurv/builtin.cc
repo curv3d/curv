@@ -503,9 +503,12 @@ struct File_Expr : public Just_Expression
     {}
     virtual Value eval(Frame& f) const override
     {
-        // construct argument context
+        // construct argument context and frame context
         auto& callphrase = dynamic_cast<const Call_Phrase&>(*syntax_);
         At_Metacall cx("file", 0, *callphrase.arg_, f);
+        std::unique_ptr<Frame> f2 =
+            Frame::make(0, f.system_, &f, &callphrase, nullptr);
+        At_Frame cx2(*f2);
 
         // construct file pathname from argument
         Value arg = arg_->eval(f);
@@ -534,12 +537,10 @@ struct File_Expr : public Just_Expression
         // import file based on extension
         auto importp = f.system_.importers_.find(ext);
         if (importp != f.system_.importers_.end())
-            return (*importp->second)(filepath, cx);
+            return (*importp->second)(filepath, cx2);
         else {
             // If extension not recognized, it defaults to a Curv program.
             auto file = make<File_Source>(make_string(filepath.c_str()), cx);
-            std::unique_ptr<Frame> f2 =
-                Frame::make(0, f.system_, &f, &callphrase, nullptr);
             Program prog{std::move(file), f.system_,
                 Program_Opts().file_frame(&*f2)};
             auto filekey = Filesystem::canonical(filepath);
