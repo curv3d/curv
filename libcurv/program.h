@@ -17,8 +17,6 @@
 
 namespace curv {
 
-Value curv_import(const Filesystem::path& path, const Context& cx);
-
 struct Program_Opts
 {
     Frame* file_frame_ = nullptr;

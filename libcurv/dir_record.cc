@@ -6,16 +6,11 @@
 
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
-//#include <boost/system/error_code.hpp>
+#include <libcurv/import.h>
 #include <cstdlib>
 #include <iostream>
 
 namespace curv {
-
-Value dir_import(const Filesystem::path& dir, const Context& cx)
-{
-    return {make<Dir_Record>(dir, cx)};
-}
 
 /*
 struct Dir_Record : public Record

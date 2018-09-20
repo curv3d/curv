@@ -7,6 +7,7 @@
 #include <libcurv/ansi_colour.h>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
+#include <libcurv/import.h>
 #include <libcurv/program.h>
 #include <libcurv/source.h>
 

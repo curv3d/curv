@@ -15,15 +15,6 @@
 
 namespace curv {
 
-Value curv_import(const Filesystem::path& path, const Context& cx)
-{
-    auto source = make<File_Source>(path.c_str(), cx);
-    Program prog{std::move(source), cx.system(),
-        Program_Opts{}.file_frame(cx.frame())};
-    prog.compile();
-    return prog.eval();
-}
-
 void
 Program::compile(const Namespace* names)
 {

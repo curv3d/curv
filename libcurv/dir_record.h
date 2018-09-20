@@ -12,8 +12,6 @@
 
 namespace curv {
 
-Value dir_import(const Filesystem::path&, const Context&);
-
 struct Dir_Record : public Record
 {
     Filesystem::path dir_;

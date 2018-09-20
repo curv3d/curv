@@ -11,6 +11,7 @@
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
 #include <libcurv/gl_context.h>
+#include <libcurv/import.h>
 #include <libcurv/math.h>
 #include <libcurv/program.h>
 #include <libcurv/source.h>
@@ -524,35 +525,7 @@ struct File_Expr : public Just_Expression
                 / fs::path(argstr->c_str());
         }
 
-        boost::system::error_code errcode;
-        if (fs::is_directory(filepath, errcode))
-            return dir_import(filepath, cx);
-        if (errcode)
-            throw Exception(cx, stringify(filepath,": ",errcode.message()));
-
-        // construct filename extension (includes leading '.')
-        std::string ext = filepath.extension().string();
-        for (char& c : ext)
-            c = std::tolower(c);
-
-        // import file based on extension
-        auto importp = f.system_.importers_.find(ext);
-        if (importp != f.system_.importers_.end())
-            return (*importp->second)(filepath, cx);
-        else {
-            // If extension not recognized, it defaults to a Curv program.
-            auto file = make<File_Source>(make_string(filepath.c_str()), cx);
-            Program prog{std::move(file), f.system_,
-                Program_Opts().file_frame(&*f2)};
-            auto filekey = Filesystem::canonical(filepath);
-            auto& active_files = f.system_.active_files_;
-            if (active_files.find(filekey) != active_files.end())
-                throw Exception{cx,
-                    stringify("illegal recursive reference to file ",filepath)};
-            Active_File af(active_files, filekey);
-            prog.compile();
-            return prog.eval();
-        }
+        return import(filepath, cx);
     }
 };
 struct File_Metafunction : public Metafunction
