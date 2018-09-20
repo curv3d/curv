@@ -21,6 +21,13 @@ Filename Extension   Description
 
 More graphical file formats will be added to this list in the future.
 
+The ``file`` operator works as follows:
+
+* If ``filename`` names a directory, then the file is imported using directory syntax.
+* Otherwise, if the filename extension is one of the extensions in the above table,
+  then the file is imported based on its extension.
+* Otherwise, by default, the file is interpreted as a Curv language source file.
+
 Directory Syntax
 ----------------
 In the directory syntax, the filename names a directory (also known as a folder),
