@@ -5,13 +5,7 @@ Big Items (target: Dec 2018)
 * sharp STL export?
 
 Current TODO List:
-* --help and --version work if preceded by standard options
-  * GNU option parser on MacOS
 * `lib`
-  * Dir_Record
-    * System& Context::system() and Frame* Context::frame()
-    * curv_import(filepath,context)
-    * use System::importers to import files
 * -o glsl
 * graphical value pickers
   * parametric records (which are syntactic sugar)
@@ -24,6 +18,7 @@ Current TODO List:
   * Viewer initializes uniforms
   * Viewer displays pickers, updates uniforms
 * Refactor:
+  * batch mode uses curv::import, can input any source file type
   * refactor Viewer + View_Server. View_Server should not know that Viewer uses
     GLFW. Maybe Viewer has a single event queue that includes set_shape and quit
   * Viewer_Opts
