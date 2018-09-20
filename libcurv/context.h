@@ -135,6 +135,7 @@ struct At_Program : public At_Token
 };
 
 // Bad argument to a function call.
+// The Frame argument is the stack frame for the function call.
 struct At_Arg : public Context
 {
     Function& fun_;
@@ -152,19 +153,46 @@ struct At_Arg : public Context
     virtual Frame* frame() const override;
 };
 
-// Bad argument to a metafunction call.
+// Bad argument to a metafunction call (Exception Context only).
+// The Frame argument is the parent stack frame; the metafunction call doesn't
+// have its own stack frame. This is good if the Context is just being used as
+// an Exception context, but not good for more general uses, such as passing
+// to an import function, where the frame() is accessed. For a more expensive
+// but more general purpose Context, use At_Metacall_With_Call_Frame.
 struct At_Metacall : public Context
 {
     const char* name_;
     unsigned argpos_;
     const Phrase& arg_;
-    Frame& call_frame_;
+    Frame& parent_frame_;
 
     At_Metacall(const char* name, unsigned argpos, const Phrase& arg, Frame& fr)
     :
         name_(name),
         argpos_(argpos),
         arg_(arg),
+        parent_frame_(fr)
+    {}
+
+    void get_locations(std::list<Location>& locs) const override;
+    virtual Shared<const String> rewrite_message(Shared<const String>) const override;
+    virtual System& system() const override;
+    virtual Frame* frame() const override;
+};
+
+// Bad argument to a metafunction call (general purpose Context).
+// The client must explicitly allocate a call frame for the metafunction call,
+// and pass it as the frame argument.
+struct At_Metacall_With_Call_Frame : public Context
+{
+    const char* name_;
+    unsigned argpos_;
+    Frame& call_frame_;
+
+    At_Metacall_With_Call_Frame(const char* name, unsigned argpos, Frame& fr)
+    :
+        name_(name),
+        argpos_(argpos),
         call_frame_(fr)
     {}
 

@@ -503,12 +503,13 @@ struct File_Expr : public Just_Expression
     {}
     virtual Value eval(Frame& f) const override
     {
-        // construct argument context and frame context
+        // Metafunction calls do not automatically get a new stack frame
+        // allocated. But I want the call to `file pathname` to appear
+        // in stack traces, so I need a Frame.
         auto& callphrase = dynamic_cast<const Call_Phrase&>(*syntax_);
-        At_Metacall cx("file", 0, *callphrase.arg_, f);
         std::unique_ptr<Frame> f2 =
             Frame::make(0, f.system_, &f, &callphrase, nullptr);
-        At_Frame cx2(*f2);
+        At_Metacall_With_Call_Frame cx("file", 0, *f2);
 
         // construct file pathname from argument
         Value arg = arg_->eval(f);
@@ -537,7 +538,7 @@ struct File_Expr : public Just_Expression
         // import file based on extension
         auto importp = f.system_.importers_.find(ext);
         if (importp != f.system_.importers_.end())
-            return (*importp->second)(filepath, cx2);
+            return (*importp->second)(filepath, cx);
         else {
             // If extension not recognized, it defaults to a Curv program.
             auto file = make<File_Source>(make_string(filepath.c_str()), cx);

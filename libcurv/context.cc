@@ -130,13 +130,31 @@ void
 At_Metacall::get_locations(std::list<Location>& locs) const
 {
     locs.push_back(arg_.location());
-    get_frame_locations(&call_frame_, locs);
+    get_frame_locations(&parent_frame_, locs);
 }
-System& At_Metacall::system() const { return call_frame_.system_; }
-Frame* At_Metacall::frame() const { return &call_frame_; }
+System& At_Metacall::system() const { return parent_frame_.system_; }
+Frame* At_Metacall::frame() const { return &parent_frame_; }
 
 Shared<const String>
 At_Metacall::rewrite_message(Shared<const String> msg) const
+{
+    return stringify("argument #",argpos_+1," of ",name_,": ",msg);
+}
+
+void
+At_Metacall_With_Call_Frame::get_locations(std::list<Location>& locs) const
+{
+    auto arg = call_frame_.call_phrase_->arg_;
+    locs.push_back(arg->location());
+    get_frame_locations(call_frame_.parent_frame_, locs);
+}
+System& At_Metacall_With_Call_Frame::system() const
+{
+    return call_frame_.system_;
+}
+Frame* At_Metacall_With_Call_Frame::frame() const { return &call_frame_; }
+Shared<const String>
+At_Metacall_With_Call_Frame::rewrite_message(Shared<const String> msg) const
 {
     return stringify("argument #",argpos_+1," of ",name_,": ",msg);
 }
