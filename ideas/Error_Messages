@@ -54,3 +54,28 @@ at file "stairs":
 6| stairs 1 .union (box(1,1,10), box(1,1,10)>>rotate(15*deg)) >> show_dist
    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Record Context
+--------------
+Dir_Record::Iter::load_value(cx) must import a file as a Value.
+The 'cx' denotes the source location of the Dir_Record expression.
+Examples:
+    fields myrec
+           ^^^^^
+    ... myrec
+        ^^^^^
+load_value() should internally use At_Field(fieldname,cx) as the context
+for importing a curv file.
+
+A Dot_Expr calls Value::at(fieldname,cx),
+which calls Record::getfield(fieldname,cx).
+Currently, the context denotes the record value.
+    myrec.menger_sponge
+    ^^^^^
+I think the context should be the entire Dot expression.
+The caller can use At_Field if necessary.
+    lib.fractal.menger_sponge
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Another code path is
+    file "menger_sponge.curv"
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
