@@ -1,16 +1,53 @@
-`lib` is a builtin lazy record value.
-Its fields are the *.curv files in the directory PREFIX/lib/curv.
-(So this is a preview of directory syntax.)
+lib: a hierarchical module namespace for the standard library
+=============================================================
+Curv is meant to have a large standard library that provides a rich set
+of primitives for constructing shapes. The new `lib` feature allows these
+primitives to be organized into a hierarchical module namespace, with modules
+that are only loaded into memory on first reference.
 
-TODO:
-* Implement Dir_Record and a directory syntax importer.
-* Implement `lib`.
+Suppose that `web_colour` is a standard library module that contains all of
+the HTML5 colour names. Then here is how you can use it:
 
-The System object contains the `lib` object, which is constructed at
-System construction time from the libdir, as an instance of Dir_Record.
-The fields are populated at this time by reading the directory.
-(Meaning that Dir_Record::hasfield(sym) cannot fail.) But the files are not
-read until they are first referenced (meaning that Dir_Record::getfield(sym,cx)
-can fail during file i/o).
+    lib.web_colour.peach
 
-The libdir is configurable, using $CURV_LIBDIR.
+    let
+        include lib.web_colour;
+    in
+        peach
+
+    let
+        wc = lib.web_colour;
+    in
+        wc.peach
+
+Here are some ideas for new library modules.
+
+web_colour
+    Contains all of the HTML5/CSS colour names.
+    Also contains the function rgb(r,g,b), where the arguments are
+    numbers in the range 0 to 255.
+blend
+    A richer set of blending primitives.
+    @gsohler is working on a pull request to add the Mercury blend primitives.
+noise
+    Contains math functions that hash their arguments and generate pseudo-random
+    numbers that visually represent different kinds of noise. Eg,
+    * white noise (uniformly distributed random numbers).
+    * value noise.
+    * gradient noise.
+    * fractal noise (fractal brownian motion). Useful for smoke, clouds,
+      mountains, procedural textures.
+    * cellular noise, aka Worley noise, aka Voronoi noise.
+fractal
+    Primitives for making fractals, perhaps based on Mandelbulber
+    and the example code in Fragmentarium.
+texture
+    Primitives for making 2D and 3D procedural textures.
+    (It will use lib.noise.)
+engraving & embossing
+    Primitives for modifying the surface of an object.
+lattice
+    Regular lattices, like cubic and tetrahedron/octahedron.
+    A "Voronoi" lattice based on cellular noise.
+repetition & space folding
+polyhedron
