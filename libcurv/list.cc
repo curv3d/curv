@@ -29,13 +29,13 @@ List_Base::print(std::ostream& out) const
     out << "]";
 }
 
-auto List_Base::operator==(const List_Base& list) const
+auto List_Base::equal(const List_Base& list, const Context& cx) const
 -> bool
 {
     if (size() != list.size())
         return false;
     for (size_t i = 0; i < size(); ++i) {
-        if (array_[i] != list.array_[i])
+        if (!array_[i].equal(list.array_[i], cx))
             return false;
     }
     return true;

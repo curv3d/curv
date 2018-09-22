@@ -28,8 +28,6 @@ TEST(curv, string)
     ASSERT_TRUE(a2 < a0);
     ASSERT_FALSE(a0 < a2);
     ASSERT_FALSE(a0 < a0);
-    Symbol a3("barf", 3);
-    ASSERT_TRUE(a2 == a3);
 
     Symbol anull;
     ASSERT_TRUE(anull.empty());

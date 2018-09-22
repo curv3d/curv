@@ -22,7 +22,7 @@ struct Skip_Pattern : public Pattern
     const override
     {
     }
-    virtual bool try_exec(Value*, Value, Frame&)
+    virtual bool try_exec(Value*, Value, const Context&, Frame&)
     const override
     {
         return true;
@@ -51,7 +51,7 @@ struct Id_Pattern : public Pattern
     {
         slots[slot_] = value;
     }
-    virtual bool try_exec(Value* slots, Value value, Frame&)
+    virtual bool try_exec(Value* slots, Value value, const Context&, Frame&)
     const override
     {
         slots[slot_] = value;
@@ -91,14 +91,14 @@ struct Const_Pattern : public Pattern
     virtual void exec(Value* slots, Value value, const Context& cx, Frame& f)
     const override
     {
-        if (value != value_)
+        if (!value.equal(value_,cx))
             throw Exception(cx,
                 stringify("argument ",value, " does not equal ", value_));
     }
-    virtual bool try_exec(Value* slots, Value value, Frame& f)
+    virtual bool try_exec(Value* slots, Value value, const Context& cx, Frame& f)
     const override
     {
-        return value == value_;
+        return value.equal(value_,cx);
     }
 };
 
@@ -129,7 +129,7 @@ struct Predicate_Pattern : public Pattern
         Value funv = val;
         for (;;) {
             if (!funv.is_ref())
-                throw Exception(At_Phrase(*predicate_phrase_, &f),
+                throw Exception(At_Phrase(*predicate_phrase_, f),
                     stringify(funv,": not a function"));
             Ref_Value& funp( funv.get_ref_unsafe() );
             switch (funp.type_) {
@@ -140,20 +140,19 @@ struct Predicate_Pattern : public Pattern
                     Frame::make(fun->nslots_, f.system_, &f, call_phrase(), nullptr)
                 };
                 auto result = fun->call(arg, *f2);
-                return result.to_bool(At_Phrase(*call_phrase(), &f));
+                return result.to_bool(At_Phrase(*call_phrase(), f));
               }
             case Ref_Value::ty_record:
-            case Ref_Value::ty_module:
               {
-                Structure* s = (Structure*)&funp;
+                Record* s = (Record*)&funp;
                 if (s->hasfield(callkey)) {
-                    funv = s->getfield(callkey, {});
+                    funv = s->getfield(callkey, At_Phrase(*call_phrase(), f));
                     continue;
                 }
                 break;
               }
             }
-            throw Exception(At_Phrase(*predicate_phrase_, &f),
+            throw Exception(At_Phrase(*predicate_phrase_, f),
                 stringify(val,": not a function"));
         }
     }
@@ -171,10 +170,10 @@ struct Predicate_Pattern : public Pattern
                 predicate_phrase_->location().range()));
         pattern_->exec(slots, value, cx, f);
     }
-    virtual bool try_exec(Value* slots, Value value, Frame& f)
+    virtual bool try_exec(Value* slots, Value value, const Context& cx, Frame& f)
     const override
     {
-        return match(value, f) && pattern_->try_exec(slots, value, f);
+        return match(value, f) && pattern_->try_exec(slots, value, cx, f);
     }
 };
 
@@ -201,7 +200,7 @@ struct List_Pattern : public Pattern
         for (size_t i = 0; i < items_.size(); ++i)
             items_[i]->exec(slots, list->at(i), At_Index(i, valcx), f);
     }
-    virtual bool try_exec(Value* slots, Value val, Frame& f)
+    virtual bool try_exec(Value* slots, Value val, const Context& cx, Frame& f)
     const override
     {
         auto list = val.dycast<List>();
@@ -210,7 +209,7 @@ struct List_Pattern : public Pattern
         if (list->size() != items_.size())
             return false;
         for (size_t i = 0; i < items_.size(); ++i)
-            if (!items_[i]->try_exec(slots, list->at(i), f))
+            if (!items_[i]->try_exec(slots, list->at(i), cx, f))
                 return false;
         return true;
     }
@@ -219,7 +218,7 @@ struct List_Pattern : public Pattern
     {
         if (auto list = dynamic_cast<List_Expr*>(&expr)) {
             if (list->size() != items_.size()) {
-                throw Exception(At_GL_Phrase(expr.syntax_, &caller),
+                throw Exception(At_GL_Phrase(expr.syntax_, caller),
                     stringify("list pattern: expected ",items_.size(),
                         " items, got ",list->size()));
             }
@@ -228,7 +227,7 @@ struct List_Pattern : public Pattern
         } else {
             this->gl_exec(
                 expr.gl_eval(caller),
-                At_GL_Phrase(expr.syntax_, &callee),
+                At_GL_Phrase(expr.syntax_, callee),
                 callee);
         }
     }
@@ -274,10 +273,10 @@ struct Record_Pattern : public Pattern
     virtual void exec(Value* slots, Value value, const Context& valcx, Frame& f)
     const override
     {
-        // TODO: clean this up OMG. Need a general Record iterator.
-        auto record = value.to<Structure>(valcx);
+        // TODO: Rewrite using a Record iterator.
+        auto record = value.to<Record>(valcx);
         auto p = fields_.begin();
-        record->each_field([&](Symbol name, Value val)->void {
+        record->each_field(valcx, [&](Symbol name, Value val)->void {
             while (p != fields_.end()) {
                 int cmp = p->first.cmp(name);
                 if (cmp < 0) {
@@ -294,7 +293,7 @@ struct Record_Pattern : public Pattern
                     continue;
                 } else if (cmp == 0) {
                     // matching field in record and pattern
-                    auto fval = record->getfield(p->first,{});
+                    auto fval = record->getfield(p->first,valcx);
                     p->second.pat_->exec(
                         slots, fval, At_Field(p->first.data(), valcx), f);
                     ++p;
@@ -318,23 +317,23 @@ struct Record_Pattern : public Pattern
             ++p;
         }
     }
-    virtual bool try_exec(Value* slots, Value value, Frame& f)
+    virtual bool try_exec(Value* slots, Value value, const Context& cx, Frame& f)
     const override
     {
-        // TODO: clean this up OMG. Need a general Record iterator.
-        auto record = value.dycast<Structure>();
+        // TODO: Rewrite using a Record iterator.
+        auto record = value.dycast<Record>();
         if (record == nullptr)
             return false;
         auto p = fields_.begin();
         bool success = true;
-        record->each_field([&](Symbol name, Value val)->void {
+        record->each_field(cx, [&](Symbol name, Value val)->void {
             while (p != fields_.end()) {
                 int cmp = p->first.cmp(name);
                 if (cmp < 0) {
                     // record is missing a field in the pattern
                     if (p->second.dexpr_) {
                         auto fval = p->second.dexpr_->eval(f);
-                        p->second.pat_->try_exec(slots, fval, f);
+                        p->second.pat_->try_exec(slots, fval, cx, f);
                     } else {
                         success = false;
                     }
@@ -342,8 +341,8 @@ struct Record_Pattern : public Pattern
                     continue;
                 } else if (cmp == 0) {
                     // matching field in record and pattern
-                    auto fval = record->getfield(p->first,{});
-                    p->second.pat_->try_exec(slots, fval, f);
+                    auto fval = record->getfield(p->first,cx);
+                    p->second.pat_->try_exec(slots, fval, cx, f);
                     ++p;
                     return;
                 } else
@@ -354,7 +353,7 @@ struct Record_Pattern : public Pattern
         while (p != fields_.end()) {
             if (p->second.dexpr_) {
                 auto fval = p->second.dexpr_->eval(f);
-                p->second.pat_->try_exec(slots, fval, f);
+                p->second.pat_->try_exec(slots, fval, cx, f);
             } else {
                 return false;
             }
@@ -366,7 +365,7 @@ struct Record_Pattern : public Pattern
     const override
     {
         // TODO: implement this
-        throw Exception(At_GL_Phrase(syntax_, &caller),
+        throw Exception(At_GL_Phrase(syntax_, caller),
             "record patterns not supported by Geometry Compiler");
     }
 };
@@ -468,13 +467,13 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
 void
 Pattern::gl_exec(GL_Value val, const Context& valcx, GL_Frame& callee) const
 {
-    throw Exception(At_GL_Phrase(syntax_, &callee),
+    throw Exception(At_GL_Phrase(syntax_, callee),
         "pattern not supported by Geometry Compiler");
 }
 void
 Pattern::gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee) const
 {
-    throw Exception(At_GL_Phrase(syntax_, &callee),
+    throw Exception(At_GL_Phrase(syntax_, callee),
         "pattern not supported by Geometry Compiler");
 }
 

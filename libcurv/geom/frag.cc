@@ -30,13 +30,17 @@ void export_frag(
 void export_frag_2d(
     const Shape_Program& shape, const Frag_Export& opts, std::ostream& out)
 {
-    GL_Compiler gl(out, GL_Target::glsl);
+    GL_Compiler gl(out, GL_Target::glsl, shape.system());
     GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
 
     out <<
         "#define AA " << opts.aa_ << "\n"
         "#define TAA " << opts.taa_ << "\n"
         "#define FDUR " << opts.fdur_ << "\n"
+        "const vec3 background_colour = vec3("
+            << opts.bg_.x << ","
+            << opts.bg_.y << ","
+            << opts.bg_.z << ");\n"
         "#ifdef GLSLVIEWER\n"
         "uniform mat3 u_view2d;\n"
         "#endif\n"
@@ -97,7 +101,7 @@ void export_frag_2d(
         "#endif\n"
         "    float d = main_dist(vec4(xy*scale+offset,0,time), fragColour);\n"
         "    if (d > 0.0) {\n"
-        "        fragColour = vec4(1.0);\n" // white background
+        "        fragColour = vec4(background_colour,1.0);\n"
         "    }\n"
         "    col += fragColour.xyz;\n"
         "    \n"
@@ -120,13 +124,17 @@ void export_frag_2d(
 void export_frag_3d(
     const Shape_Program& shape, const Frag_Export& opts, std::ostream& out)
 {
-    GL_Compiler gl(out, GL_Target::glsl);
+    GL_Compiler gl(out, GL_Target::glsl, shape.system());
 
     GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
     out <<
         "#define AA " << opts.aa_ << "\n"
         "#define TAA " << opts.taa_ << "\n"
         "#define FDUR " << opts.fdur_ << "\n"
+        "const vec3 background_colour = vec3("
+            << opts.bg_.x << ","
+            << opts.bg_.y << ","
+            << opts.bg_.z << ");\n"
         "#ifdef GLSLVIEWER\n"
         "uniform vec3 u_eye3d;\n"
         "uniform vec3 u_centre3d;\n"
@@ -181,7 +189,7 @@ void export_frag_3d(
        "vec4 castRay( in vec3 ro, in vec3 rd, float time )\n"
        "{\n"
        "    float tmin = 0.0;\n" // was 1.0
-       "    float tmax = 200.0;\n"
+       "    float tmax = 400.0;\n"
        "   \n"
        // TODO: implement bounding volume. If I remove the 'if(t>tmax)break'
        // check, then `tetrahedron` breaks. The hard coded tmax=200 fails for
@@ -252,8 +260,7 @@ void export_frag_3d(
        "vec3 render( in vec3 ro, in vec3 rd, float time )\n"
        "{ \n"
        "    //vec3 col = vec3(0.7, 0.9, 1.0) +rd.z*0.8;\n"
-       "    //vec3 col = vec3(0.8, 0.9, 1.0);\n"
-       "    vec3 col = vec3(1.0, 1.0, 1.0);\n"
+       "    vec3 col = background_colour;\n"
        "    vec4 res = castRay(ro,rd, time);\n"
        "    float t = res.x;\n"
        "    vec3 c = res.yzw;\n"

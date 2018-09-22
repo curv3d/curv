@@ -23,38 +23,37 @@ struct Context;
 ///
 /// The next data member has 128 bit alignment with no hole on 64 bit platforms.
 ///
-/// The type_ field enables us to query the type by loading the first 128 bits
-/// of the object into a cache line, without indirecting through the vtable,
-/// which would cost a 2nd cache line hit and either a virtual function call
-/// or a RTTL, both relatively costly.
+/// The type_ and subtype_ fields enable us to query the type by loading the
+/// first 128 bits of the object into a cache line, without indirecting through
+/// the vtable, which would cost a 2nd cache line hit and either a virtual
+/// function call or an RTTI lookup, both relatively costly.
 ///
 /// Why not put the type code into Value? Right now, there are an extra 3 bits
 /// in curv::Value where I could store a type code, similar to LuaJIT and most
-/// Javascript VMs.
-/// * Yes, it would make some code shorter and easier.
-/// * But, those spare bits are going away when Value supports 52 bit pointers
-///   on the ARMv8.2 platform.
-/// * A type code in Value adds complexity to an already complex class.
-/// * I doubt it increases performance, since you usually have to load the
-///   object into a cache line anyway to access the vtable, bump the use_count
-///   or access other data members.
-/// * The type code in Ref_Value has lots of room for expansion,
-///   we aren't restricted to 3 or 4 bits.
+/// Javascript VMs. I chose not to do this, for simplicity, and to leave room
+/// for updating later to support 52 bit pointers.
 ///
 /// All Ref_Values must be allocated on the heap: see Shared_Base.
 struct Ref_Value : public Shared_Base
 {
-    uint32_t type_;
+    uint16_t type_;
+    uint16_t subtype_;
     enum {
         ty_string,
         ty_list,
-        ty_function,
         ty_record,
-        ty_module,
+        ty_function,
         ty_missing,
-        ty_lambda
+        ty_lambda,
+        sty_drecord,
+        sty_module,
+        sty_dir_record
     };
-    Ref_Value(int type) : Shared_Base(), type_(type) {}
+    Ref_Value(int type) : Shared_Base(), type_(type), subtype_(type) {}
+    Ref_Value(int type, int subtype)
+    :
+        Shared_Base(), type_(type), subtype_(subtype)
+    {}
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const = 0;
@@ -75,7 +74,14 @@ struct Ref_Value : public Shared_Base
 /// a Ref_Value* pointer is stored in the low order 48 bits of the Value.
 /// This works on 64 bit Intel and ARM systems because those architectures
 /// use 48 bit virtual addresses, with the upper 16 bits of a 64 bit pointer
-/// being wasted space. (A planned upgrade will support 52 bit pointers.)
+/// being wasted space.
+///
+/// Since this code was written, ARM and Intel have added support for pointers
+/// with more than 48 significant bits. The Linux kernel does not enable this
+/// feature by default, because it breaks all of the modern web browsers,
+/// which use NaN boxing. So my implementation continues to be viable, for now.
+/// I could upgrade my Nan boxing implementation to support 52 bit pointers,
+/// but it's not clear if that would actually help anybody.
 ///
 /// Reference values have Shared semantics. The copy constructor increments
 /// the reference count, the destructor decrements the reference count and
@@ -338,8 +344,17 @@ public:
     /// Print a value like a Curv expression.
     void print(std::ostream&) const;
 
-    bool operator==(Value) const;
-    bool operator!=(Value v) const { return !(*this == v); }
+    // Deep equality, which traverses the value tree and forces thunks.
+    // May throw an Exception if forcing a thunk fails.
+    // Used to implement `a == b` in the Curv language.
+    // Optimized for numbers, may be expensive for lists and records.
+    bool equal(Value, const Context&) const;
+
+    // Shallow equality, compares the bit patterns of two Values. Fast.
+    bool eq(Value rhs) const
+    {
+        return bits_ == rhs.bits_;
+    }
 };
 
 /// Special marker that denotes the absence of a value

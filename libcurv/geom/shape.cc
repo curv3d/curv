@@ -18,7 +18,7 @@ Shape_Program::Shape_Program(
     Program& prog)
 :
     nub_(nub_phrase(prog.phrase_)),
-    system_(prog.system_)
+    system_(prog.system())
 {
     // mark initial state (no shape has been recognized yet)
     is_2d_ = false;
@@ -71,7 +71,7 @@ Shape_Program::recognize(Value val)
 
     At_Program cx(*this);
 
-    auto s = val.dycast<Structure>();
+    auto s = val.dycast<Record>();
     if (s == nullptr)
         return false;
     if (s->hasfield(is_2d_key))

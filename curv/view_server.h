@@ -75,6 +75,7 @@ private:
         }
     };
     curv::geom::viewer::Viewer view_;
+    bool lazy_;
     void send(Request r)
     {
         {
@@ -84,9 +85,20 @@ private:
         request_condition.notify_one();
         // wait for the response
         {
+            using namespace std::chrono_literals;
             std::unique_lock<std::mutex> lock(request_mutex);
-            request_condition.wait(lock,
-                [&]{return request == Request::k_none;});
+            if (lazy_ && view_.is_open()) {
+                // In lazy mode, we post empty glfw events to wake main thread,
+                // as it might be sleeping waiting for glfw events. Keep posting
+                // until it acknowledges the message.
+                do glfwPostEmptyEvent();
+                while (!request_condition.wait_for(lock, 10ms,
+                            [&]{return request == Request::k_none;}));
+            }
+            else {
+                request_condition.wait(lock,
+                        [&]{return request == Request::k_none;});
+            }
         }
     }
 public:
@@ -118,6 +130,7 @@ public:
     void run(const curv::geom::viewer::Viewer_Config& config)
     {
         view_.config_ = config;
+        lazy_ = config.lazy_;
         bool exiting = false;
         for (;;) {
             Message msg(*this);

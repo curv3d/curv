@@ -24,6 +24,7 @@ namespace viewer {
 struct Viewer_Config : public Frag_Export
 {
     bool verbose_ = false;
+    bool lazy_ = false;
 };
 
 struct Viewer
@@ -39,7 +40,7 @@ struct Viewer
 
     bool is_open() { return window_ != nullptr; }
 
-    // Set centre3d, eye3d and up3d to default values
+    // Reset camera to initial position.
     void reset_view();
 
     // Open window: initialize OpenGL, create the window. Idempotent.
@@ -107,7 +108,7 @@ struct Viewer
     // INTERNAL FUNCTIONS
     void initGL(glm::ivec4 &_viewport, bool _headless = false);
     void setup();
-    void onKeyPress(int);
+    void onKeyPress(int, int);
     void onMouseMove(double, double);
     void onScroll(float);
     void onMouseDrag(float, float, int);

@@ -78,7 +78,7 @@ poll_file(curv::System* sys, const char* editor, const char* filename)
             // evaluate file.
             try {
                 auto file = curv::make<curv::File_Source>(
-                    curv::make_string(filename), curv::Context{});
+                    curv::make_string(filename), curv::At_System{*sys});
                 curv::Program prog{std::move(file), *sys};
                 prog.compile();
                 auto value = prog.eval();

@@ -5,10 +5,22 @@ Big Items (target: Dec 2018)
 * sharp STL export?
 
 Current TODO List:
+* `lib`
 * -o glsl
 * graphical value pickers
-  * parametric records
+  * parametric records (which are syntactic sugar)
+  * value picker predicates (eg, is_bool and in_range)
+  * GL compile a shape into a set of GLSL definitions.
+  * GL compile a parametric shape into a set of GLSL definitions + uniforms.
+    * GL abstract evaluator.
+  * uniforms + picker descriptors -> GL_Compiler -> Shape_Program.
+    * View_Server::request_shape is a string: this no longer suffices.
+  * Viewer initializes uniforms
+  * Viewer displays pickers, updates uniforms
 * Refactor:
+  * batch mode uses curv::import, can input any source file type
+  * refactor Viewer + View_Server. View_Server should not know that Viewer uses
+    GLFW. Maybe Viewer has a single event queue that includes set_shape and quit
   * Viewer_Opts
   * remove arg_to_int()
   * mesh: geom::mesh_write & Mesh_Write_Opts
@@ -254,7 +266,6 @@ Language changes:
 * lib
 
 Code cleanup:
-* rename Structure/Record/Module to Record/Dict/Module.
 * unit tests for: CLI supports compound definitions
 * unit tests for: GL error messages
 * GL_Frame::gl renamed to gl_
@@ -266,8 +277,6 @@ Code cleanup:
 Tensors:
 * rank? Like ArrayDepth[t] in Mathematica?
 * dimensions? Like Dimensions[t] in Mathematica?
-
-Bug: records with non-identifier field names are not printed correctly.
 
 weird error message: Should underline the default value expression.
 curv> {a: [x,y] = []} = {}
@@ -718,7 +727,6 @@ Other:
     ASCII or explicitly initialize your console using `chcp 65001`.
 
 # CURV0 (expressions):
-* bug: (-1)^-0.5 error message needs parens around '-1'
 * x^y: right associative, -x^y==-(x^y), x^-y==x^(-y)
   **: algolw, Python, Rexx, Simula, Cobol, Ruby, Tcl
   ^^: D

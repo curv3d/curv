@@ -209,6 +209,7 @@ TEST(curv, eval)
     SUCCESS("[1,2,3]", "[1,2,3]");
     SUCCESS("{x:1}", "{x:1}");
     SUCCESS("{x=1}", "{x:1}");
+    SUCCESS("{\"x y\":1}", "{\"x y\":1}");
 
     // function constructors
     SUCCESS("x->x+1", "<function>");
@@ -224,13 +225,13 @@ TEST(curv, eval)
     // runtime operations
     SUCCESS("-0", "-0");
     SUCCESS("-inf", "-inf");
-    FAILMSG("1+null", "1+null: domain error");
+    FAILMSG("1+null", "1 + null: domain error");
     SUCCESS("[10,20]-3", "[7,17]");
     SUCCESS("5-[1,2]", "[4,3]");
     SUCCESS("[1,2]-[10,20]", "[-9,-18]");
-    FAILMSG("inf-inf","inf-inf: domain error");
+    FAILMSG("inf-inf","inf - inf: domain error");
     FAILMSG("[]-[1]","-: mismatched list sizes (0,1) in array operation");
-    FAILMSG("0/0", "0/0: domain error");
+    FAILMSG("0/0", "0 / 0: domain error");
     SUCCESS("1/0", "inf");
     SUCCESS("sqrt(2)", "1.4142135623730951");
     SUCCESS("max(1,2,)", "2"); // test syntax: trailing , after last argument
@@ -252,12 +253,12 @@ TEST(curv, eval)
     SUCCESS("false||true", "true");
     SUCCESS("false||false", "false");
     SUCCESS("true||null", "true");
-    FAILMSG("null||true", "not a boolean value");
+    FAILMSG("null||true", "null is not a boolean");
 
     SUCCESS("false&&true", "false");
     SUCCESS("false&&null", "false");
     SUCCESS("true&&false", "false");
-    FAILMSG("true&&null", "not a boolean value");
+    FAILMSG("true&&null", "null is not a boolean");
     SUCCESS("true&&true", "true");
 
     FAILMSG("count(if (true) [])",
@@ -271,6 +272,10 @@ TEST(curv, eval)
     SUCCESS("[1,2]==[1,2]", "true");
     SUCCESS("[1,true]==[1,2]", "false");
     SUCCESS("{x:1,y:2}=={x:1,y:2}", "true");
+    SUCCESS("{x:1,y:2}=={x:1,z:2}", "false");
+    SUCCESS("{x:1,y:2}=={x:1,y:3}", "false");
+    SUCCESS("{x:1,y:2}=={x=1;y=2}", "true");
+    SUCCESS("{x=1;y=2}=={x:1;y:2}", "true");
     SUCCESS("sqrt==sqrt", "true");
     SUCCESS("!true", "false");
     SUCCESS("!false", "true");
@@ -281,7 +286,7 @@ TEST(curv, eval)
     SUCCESS("null!=false", "true");
     SUCCESS("0 < 1", "true");
     SUCCESS("-0 < +0", "false");
-    FAILMSG("0 < null", "0<null: domain error");
+    FAILMSG("0 < null", "0 < null: domain error");
     SUCCESS("0 <= 1", "true");
     SUCCESS("1 > 0", "true");
     SUCCESS("1 >= 0", "true");
@@ -348,7 +353,7 @@ TEST(curv, eval)
         "       ^\n"
         "2|>1,2)");
     FAILALL("file \"nonexistent\"",
-        "argument #1 of file: can't open file \"nonexistent\": No such file or directory\n"
+        "argument #1 of file: \"nonexistent\": No such file or directory\n"
         "1| file \"nonexistent\"\n"
         "        ^^^^^^^^^^^^^");
     SUCCESS("let std = file \"std.curv\" in std.concat([1], [2,3], [4])",

@@ -4,6 +4,7 @@
 
 extern "C" {
 #include <unistd.h>
+#include <getopt.h>
 }
 #include <iostream>
 #include <fstream>
@@ -69,7 +70,7 @@ const char help_prefix[] =
 "curv --version\n"
 "   Display version information needed for bug reports.\n"
 "curv [options]\n"
-"   Interactive shell.\n"
+"   Interactive command-line shell.\n"
 "curv -l [-e] [options] filename\n"
 "   Live programming mode. Evaluate & display result each time file changes.\n"
 "   -e : Open editor window. $CURV_EDITOR overrides default editor.\n"
@@ -90,7 +91,7 @@ const char help_infix[] =
 
 const char help_suffix[] =
 "   $CURV_STDLIB : Pathname of standard library, overrides PREFIX/lib/std.curv\n"
-"   -n : Don't use standard library.\n"
+"   -n : Don't include standard library.\n"
 "   -i file : Include specified library; may be repeated.\n"
 ;
 
@@ -99,78 +100,57 @@ main(int argc, char** argv)
 {
     const char* argv0 = argv[0];
 
-    // Handle 'curv --help'.
-    if (argc >= 2 && strcmp(argv[1], "--help") == 0) {
-        if (argc == 4 && strcmp(argv[2], "-o") == 0) {
-            const char* format = argv[3];
-            auto ex = exporters.find(format);
-            if (ex == exporters.end()) {
-                std::cerr << "-o: format '" << format << "' not supported.\n"
-                          << "Use " << argv0 << " --help for help.\n";
-                return EXIT_FAILURE;
-            }
-            std::cout << ex->second.synopsis << "\n";
-            ex->second.describe_options(std::cout);
-            return EXIT_SUCCESS;
-        }
-        if (argc == 2) {
-            std::cout << help_prefix;
-            for (auto& ex : exporters) {
-                std::cout << "      " << ex.first << " : "
-                          << ex.second.synopsis << "\n";
-            }
-            std::cout << help_infix;
-            describe_viewer_options(std::cout, "      ");
-            std::cout << help_suffix;
-            return EXIT_SUCCESS;
-        }
-        std::cerr << argv[2] << ": bad argument to --help\n"
-                  << "Use " << argv0 << " --help for help.\n";
-        return EXIT_FAILURE;
-    }
-
-    // Handle 'curv --version'.
-    if (argc == 2 && strcmp(argv[1], "--version") == 0) {
-        print_version(std::cout);
-        return EXIT_SUCCESS;
-    }
-
     // Parse arguments for general case.
     const char* usestdlib = argv0;
+    fs::path opath;
     using ExPtr = decltype(exporters)::const_iterator;
     ExPtr exporter = exporters.end();
     Export_Params::Map oparam_map;
     bool verbose = false;
-    curv::Output_File ofile;
     bool live = false;
     std::list<const char*> libs;
     bool expr = false;
     const char* editor = nullptr;
+    bool help = false;
+    bool version = false;
+
+    constexpr int HELP = 1000;
+    constexpr int VERSION = 1001;
+    static struct option longopts[] = {
+        {"help",    no_argument, nullptr, HELP },
+        {"version", no_argument, nullptr, VERSION },
+        {nullptr,   0,           nullptr, 0 }
+    };
 
     int opt;
-    while ((opt = getopt(argc, argv, ":o:O:lni:xev")) != -1) {
+    while ((opt = getopt_long(argc, argv, ":o:O:lni:xev", longopts, NULL)) != -1)
+    {
         switch (opt) {
+        case HELP:
+            help = true;
+            break;
+        case VERSION:
+            version = true;
+            break;
         case 'o':
           {
             const char* oarg = optarg;
-            fs::path opath{oarg};
+            opath = oarg;
             std::string ext_string = opath.extension().string();
             const char* ext = ext_string.c_str();
             const char* oname;
             if (ext[0] == '.')
                 oname = &ext[1];
-            else
+            else {
                 oname = oarg;
+                opath.clear();
+            }
             exporter = exporters.find(oname);
             if (exporter == exporters.end()) {
                 std::cerr << "-o: format '" << oname << "' not supported.\n"
                           << "Use " << argv0 << " --help for help.\n";
                 return EXIT_FAILURE;
             }
-            if (oname == oarg)
-                ofile.set_ostream(&std::cout);
-            else
-                ofile.set_path(opath);
             break;
           }
         case 'O':
@@ -241,7 +221,7 @@ main(int argc, char** argv)
         }
     }
     if (filename == nullptr) {
-        if (expr || exporter != exporters.end() || live) {
+        if (expr || live || (exporter != exporters.end() && !help)) {
             std::cerr << "missing filename argument\n"
                       << "Use " << argv0 << " --help for help.\n";
             return EXIT_FAILURE;
@@ -251,6 +231,30 @@ main(int argc, char** argv)
         std::cerr << "-e flag specified without -l flag.\n"
                   << "Use " << argv0 << " --help for help.\n";
         return EXIT_FAILURE;
+    }
+
+    // Handle 'curv --help'.
+    if (help) {
+        if (exporter != exporters.end()) {
+            std::cout << exporter->second.synopsis << "\n";
+            exporter->second.describe_options(std::cout);
+        } else {
+            std::cout << help_prefix;
+            for (auto& ex : exporters) {
+                std::cout << "      " << ex.first << " : "
+                          << ex.second.synopsis << "\n";
+            }
+            std::cout << help_infix;
+            describe_viewer_options(std::cout, "      ");
+            std::cout << help_suffix;
+        }
+        return EXIT_SUCCESS;
+    }
+
+    // Handle 'curv --version'.
+    if (version) {
+        print_version(std::cout);
+        return EXIT_SUCCESS;
     }
 
     // Create system, a precondition for parsing -O parameters.
@@ -286,7 +290,7 @@ main(int argc, char** argv)
             source = curv::make<curv::String_Source>("", filename);
         } else {
             source = curv::make<curv::File_Source>(
-                curv::make_string(filename), curv::Context{});
+                curv::make_string(filename), curv::At_System{sys});
         }
 
         curv::Program prog{std::move(source), sys};
@@ -294,6 +298,11 @@ main(int argc, char** argv)
         auto value = prog.eval();
 
         if (exporter != exporters.end()) {
+            curv::Output_File ofile{sys};
+            if (opath.empty())
+                ofile.set_ostream(&std::cout);
+            else
+                ofile.set_path(opath);
             exporter->second.call(value, prog, oparams, ofile);
             ofile.commit();
         } else {

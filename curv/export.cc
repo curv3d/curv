@@ -55,11 +55,11 @@ void Export_Params::unknown_parameter(const Map::value_type& p) const
     auto src = make<String_Source>("", stringify("-O ",p.first,"=",p.second));
     Location loc{*src, {3, unsigned(3+p.first.size())}};
     if (format_.empty()) {
-        throw Exception(At_Token(loc), stringify(
+        throw Exception(At_Token{loc, system_}, stringify(
             "'",p.first,"': Unknown -O parameter.\n"
             "Use 'curv --help' for help."));
     } else {
-        throw Exception(At_Token(loc), stringify(
+        throw Exception(At_Token{loc, system_}, stringify(
             "'",p.first,"': "
             "Unknown -O parameter for output format '",format_,"'.\n"
             "Use 'curv --help -o ",format_,"' for help."));
@@ -76,6 +76,20 @@ double Export_Params::to_double(const Map::value_type& p) const
 {
     Param_Program pp(*this, p);
     return pp.eval().to_num(At_Program(pp));
+}
+
+glm::dvec3 Export_Params::to_vec3(const Map::value_type& p) const
+{
+    Param_Program pp(*this, p);
+    At_Program cx(pp);
+    glm::dvec3 result;
+    Value val = pp.eval();
+    auto list = val.to<List>(cx);
+    list->assert_size(3, cx);
+    result.x = list->at(0).to_num(At_Index(0, cx));
+    result.y = list->at(1).to_num(At_Index(1, cx));
+    result.z = list->at(2).to_num(At_Index(2, cx));
+    return result;
 }
 
 bool Export_Params::to_bool(const Map::value_type& p) const
@@ -106,7 +120,9 @@ void describe_frag_options(std::ostream& out, const char*prefix)
   << prefix <<
   "-O taa=<supersampling factor for temporal antialiasing> (1 means disabled)\n"
   << prefix <<
-  "-O fdur=<animation frame duration> (used with TAA)\n"
+  "-O fdur=<frame duration, in seconds> : Used with -Otaa and -Oanimate\n"
+  << prefix <<
+  "-O bg=<background colour>\n"
   ;
 }
 void describe_frag_opts(std::ostream& out)
@@ -129,6 +145,10 @@ bool parse_frag_opt(
     }
     if (p.first == "fdur") {
         opts.fdur_ = params.to_double(p);
+        return true;
+    }
+    if (p.first == "bg") {
+        opts.bg_ = params.to_vec3(p);
         return true;
     }
     return false;
@@ -187,7 +207,17 @@ bool is_json_data(Value val)
         return true; // null, bool or num
     }
 }
-bool export_json_value(Value val, std::ostream& out)
+void export_json_string(const char* str, std::ostream& out)
+{
+    out << '"';
+    for (const char* p = str; *p != '\0'; ++p) {
+        if (*p == '\\' || *p == '"')
+            out << '\\';
+        out << *p;
+    }
+    out << '"';
+}
+bool export_json_value(Value val, std::ostream& out, const Context& cx)
 {
     if (val.is_null()) {
         out << "null";
@@ -207,13 +237,7 @@ bool export_json_value(Value val, std::ostream& out)
     case Ref_Value::ty_string:
       {
         auto& str = (String&)ref;
-        out << '"';
-        for (auto c : str) {
-            if (c == '\\' || c == '"')
-                out << '\\';
-            out << c;
-        }
-        out << '"';
+        export_json_string(str.c_str(), out);
         return true;
       }
     case Ref_Value::ty_list:
@@ -221,12 +245,14 @@ bool export_json_value(Value val, std::ostream& out)
         auto& list = (List&)ref;
         out << "[";
         bool first = true;
+        size_t i = 0;
         for (auto e : list) {
             if (is_json_data(e)) {
                 if (!first) out << ",";
                 first = false;
-                export_json_value(e, out);
+                export_json_value(e, out, At_Index(i, cx));
             }
+            ++i;
         }
         out << "]";
         return true;
@@ -236,14 +262,15 @@ bool export_json_value(Value val, std::ostream& out)
         auto& record = (Record&)ref;
         out << "{";
         bool first = true;
-        for (auto i : record.fields_) {
-            if (is_json_data(i.second)) {
+        record.each_field(cx, [&](Symbol id, Value val) {
+            if (is_json_data(val)) {
                 if (!first) out << ",";
                 first = false;
-                out << '"' << i.first << "\":";
-                export_json_value(i.second, out);
+                export_json_string(id.c_str(), out);
+                out << ":";
+                export_json_value(val, out, At_Field(id.c_str(), cx));
             }
-        }
+        });
         out << "}";
         return true;
       }
@@ -260,10 +287,10 @@ void export_json(Value value,
         params.unknown_parameter(p);
     }
     ofile.open();
-    if (export_json_value(value, ofile.ostream()))
+    At_Program cx(prog);
+    if (export_json_value(value, ofile.ostream(), cx))
         ofile.ostream() << "\n";
     else {
-        At_Program cx(prog);
         throw Exception(cx, "value can't be converted to JSON");
     }
 }
@@ -284,7 +311,7 @@ void export_all_png(
     const char* ipath = ofile.path_.c_str();
     const char* p = strchr(ipath, '*');
     if (p == nullptr) {
-        throw Exception({},
+        throw Exception(At_System(shape.system_),
           "'-O animate=' requires pathname in '-o pathname' to contain a '*'");
     }
     Range<const char*> prefix(ipath, p);
@@ -299,7 +326,8 @@ void export_all_png(
         char num[12];
         snprintf(num, sizeof(num), "%0*d", digs, i);
         auto opath = stringify(prefix, num, suffix);
-        Output_File oofile(opath->c_str());
+        Output_File oofile{shape.system_};
+        oofile.set_path(opath->c_str());
         geom::export_png(shape, ix, oofile);
         oofile.commit();
         //std::cerr << ".";
@@ -426,11 +454,17 @@ void parse_viewer_config(
 {
     opts.verbose_ = params.verbose_;
     for (auto& p : params.map_) {
-        if (!parse_frag_opt(params, p, opts))
+        if (p.first == "lazy")
+            opts.lazy_ = params.to_bool(p);
+        else if (!parse_frag_opt(params, p, opts))
             params.unknown_parameter(p);
     }
 }
 void describe_viewer_options(std::ostream& out, const char* prefix)
 {
     describe_frag_options(out, prefix);
+    out
+    << prefix <<
+    "-O lazy : Redraw only on user input. Disables animation & FPS counter.\n"
+    ;
 }

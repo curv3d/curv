@@ -3,6 +3,7 @@
 #include <sstream>
 #include <fstream>
 #include <cstdio>
+#include "sys.h"
 
 using namespace std;
 using namespace curv;
@@ -24,7 +25,7 @@ std::string readfile(const fs::path& path)
 
 TEST(curv, output_file)
 {
-    Output_File f1;
+    Output_File f1{sys};
     stringstream b1;
     f1.set_ostream(&b1);
     f1.open();
@@ -33,7 +34,7 @@ TEST(curv, output_file)
     f1.commit();
     ASSERT_EQ(b1.str(), "foo");
 
-    Output_File f2;
+    Output_File f2{sys};
     stringstream b2;
     f2.set_ostream(&b2);
     writefile(f2.path(), "foo");
@@ -41,7 +42,7 @@ TEST(curv, output_file)
     f2.commit();
     ASSERT_EQ(b2.str(), "foo");
 
-    Output_File f3;
+    Output_File f3{sys};
     fs::path p3(",f3");
     f3.set_path(p3);
     f3.open();
@@ -51,7 +52,7 @@ TEST(curv, output_file)
     ASSERT_EQ(readfile(p3), "foo");
     remove(",f3");
 
-    Output_File f4;
+    Output_File f4{sys};
     fs::path p4(",f4");
     f4.set_path(p4);
     writefile(f4.path(), "foo");

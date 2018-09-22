@@ -27,7 +27,7 @@ GL_Value
 Function::gl_call_expr(Operation& arg, const Call_Phrase* call_phrase, GL_Frame& f)
 const
 {
-    throw Exception(At_GL_Phrase(call_phrase->function_, &f),
+    throw Exception(At_GL_Phrase(call_phrase->function_, f),
         "this function does not support the Geometry Compiler");
 }
 
@@ -76,7 +76,7 @@ const
         (*f2)[0] = arg.gl_eval(f);
     else if (auto list = dynamic_cast<List_Expr*>(&arg)) {
         if (list->size() != nargs_)
-            throw Exception(At_GL_Phrase(arg.syntax_, &f), stringify(
+            throw Exception(At_GL_Phrase(arg.syntax_, f), stringify(
                 "wrong number of arguments (got ",list->size(),
                 ", expected ",nargs_,")"));
         for (size_t i = 0; i < list->size(); ++i)
@@ -84,10 +84,10 @@ const
     } else {
         auto glarg = arg.gl_eval(f);
         if (!gl_type_is_vec(glarg.type))
-            throw Exception(At_GL_Phrase(arg.syntax_, &f),
+            throw Exception(At_GL_Phrase(arg.syntax_, f),
                 "function call argument is not a vector");
         if (gl_type_count(glarg.type) != nargs_)
-            throw Exception(At_GL_Phrase(arg.syntax_, &f), stringify(
+            throw Exception(At_GL_Phrase(arg.syntax_, f), stringify(
                 "wrong number of arguments (got ",gl_type_count(glarg.type),
                 ", expected ",nargs_,")"));
         for (unsigned i = 0; i < gl_type_count(glarg.type); ++i)
@@ -99,7 +99,7 @@ const
 GL_Value
 Legacy_Function::gl_call(GL_Frame& f) const
 {
-    throw Exception(At_GL_Frame(&f),
+    throw Exception(At_GL_Frame(f),
         "this function does not support the Geometry Compiler");
 }
 
@@ -115,7 +115,7 @@ Value
 Closure::try_call(Value arg, Frame& f)
 {
     f.nonlocals_ = &*nonlocals_;
-    if (!pattern_->try_exec(f.array_, arg, f))
+    if (!pattern_->try_exec(f.array_, arg, At_Arg(*this, f), f))
         return missing;
     return expr_->eval(f);
 }
@@ -152,7 +152,7 @@ Piecewise_Function::call(Value val, Frame& f)
 {
     for (auto c : cases_) {
         Value result = c->try_call(val, f);
-        if (result != missing)
+        if (!result.eq(missing))
             return result;
     }
     throw Exception(At_Arg(*this, f), stringify(
@@ -163,7 +163,7 @@ Piecewise_Function::try_call(Value val, Frame& f)
 {
     for (auto c : cases_) {
         Value result = c->try_call(val, f);
-        if (result != missing)
+        if (!result.eq(missing))
             return result;
     }
     return missing;

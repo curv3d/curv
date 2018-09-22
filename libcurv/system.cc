@@ -7,6 +7,7 @@
 #include <libcurv/ansi_colour.h>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
+#include <libcurv/import.h>
 #include <libcurv/program.h>
 #include <libcurv/source.h>
 
@@ -35,15 +36,16 @@ System_Impl::System_Impl(std::ostream& console)
     console_(console)
 {
     std_namespace_ = builtin_namespace();
+    importers_[".curv"] = curv_import;
 }
 
 void System_Impl::load_library(String_Ref path)
 {
-    auto file = make<File_Source>(std::move(path), Context{});
+    auto file = make<File_Source>(std::move(path), At_System{*this});
     Program prog{std::move(file), *this};
     prog.compile();
     auto stdlib = prog.eval();
-    auto m = stdlib.to<Module>(At_Phrase(*prog.phrase_, nullptr));
+    auto m = stdlib.to<Module>(At_Phrase(*prog.phrase_, *this, nullptr));
     for (auto b : *m)
         std_namespace_[b.first] = make<Builtin_Value>(b.second);
 }

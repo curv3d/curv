@@ -1,0 +1,2 @@
+This is the root directory for `lib` in the Curv standard library.
+It contains a hierarchy of named standard libraries that are loaded on use.

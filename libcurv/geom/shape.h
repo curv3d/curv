@@ -70,7 +70,8 @@ struct Shape_Program final : public Shape
     Shared<const Phrase> nub_;
 
     Location location() const;
-    Frame* parent_frame() const { return nullptr; }
+    System& system() const { return system_; }
+    Frame* file_frame() const { return nullptr; }
 
     System& system_;
 

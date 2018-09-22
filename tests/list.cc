@@ -16,7 +16,7 @@ TEST(curv, list)
     (*x)[1] = Value{y};
 
     ASSERT_EQ(x->size(), 2u);
-    ASSERT_EQ((*x)[0], Value{42.0});
+    ASSERT_TRUE((*x)[0].eq(Value{42.0}));
     ASSERT_EQ(x->use_count, 1u);
     ASSERT_EQ(y->use_count, 2u);
     x = nullptr;

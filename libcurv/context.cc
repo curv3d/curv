@@ -8,22 +8,23 @@
 
 namespace curv {
 
-void
-Context::get_locations(std::list<Location>&) const
-{
-}
-
 Shared<const String>
 Context::rewrite_message(Shared<const String> msg) const
 {
     return msg;
 }
 
+void At_System::get_locations(std::list<Location>& locs) const { }
+System& At_System::system() const { return system_; }
+Frame* At_System::frame() const { return nullptr; }
+
 void
 At_Frame::get_locations(std::list<Location>& locs) const
 {
-    get_frame_locations(frame_, locs);
+    get_frame_locations(&call_frame_, locs);
 }
+System& At_Frame::system() const { return call_frame_.system_; }
+Frame* At_Frame::frame() const { return &call_frame_; }
 
 void
 get_frame_locations(const Frame* f, std::list<Location>& locs)
@@ -36,28 +37,32 @@ get_frame_locations(const Frame* f, std::list<Location>& locs)
 At_Token::At_Token(Token tok, const Scanner& scanner)
 :
     loc_{*scanner.source_, tok},
-    eval_frame_(scanner.eval_frame_)
+    system_{scanner.system_},
+    file_frame_{scanner.file_frame_}
 {
 }
 
 At_Token::At_Token(Token tok, const Phrase& phrase, Environ& env)
 :
     loc_{phrase.location().source(), tok},
-    eval_frame_{env.eval_frame_}
+    system_{env.system_},
+    file_frame_{env.file_frame_}
 {
 }
 
 At_Token::At_Token(Location loc, Environ& env)
 :
-    loc_(std::move(loc)),
-    eval_frame_{env.eval_frame_}
+    loc_{std::move(loc)},
+    system_{env.system_},
+    file_frame_{env.file_frame_}
 {
 }
 
-At_Token::At_Token(Location loc, Frame* f)
+At_Token::At_Token(Location loc, System& sys, Frame* f)
 :
-    loc_(std::move(loc)),
-    eval_frame_{f}
+    loc_{std::move(loc)},
+    system_{sys},
+    file_frame_{f}
 {
 }
 
@@ -65,15 +70,25 @@ void
 At_Token::get_locations(std::list<Location>& locs) const
 {
     locs.push_back(loc_);
-    get_frame_locations(eval_frame_, locs);
+    get_frame_locations(file_frame_, locs);
 }
+System& At_Token::system() const { return system_; }
+Frame* At_Token::frame() const { return file_frame_; }
 
-At_Phrase::At_Phrase(const Phrase& phrase, Frame* frame)
-: phrase_(phrase), frame_(frame)
+At_Phrase::At_Phrase(const Phrase& phrase, Frame& call_frame)
+: phrase_(phrase), system_(call_frame.system_), frame_(&call_frame)
+{}
+
+At_Phrase::At_Phrase(const Phrase& phrase, System& sys, Frame* frame)
+: phrase_(phrase), system_(sys), frame_(frame)
+{}
+
+At_Phrase::At_Phrase(const Phrase& phrase, Scanner& scanner)
+: phrase_(phrase), system_(scanner.system_), frame_(scanner.file_frame_)
 {}
 
 At_Phrase::At_Phrase(const Phrase& phrase, Environ& env)
-: phrase_(phrase), frame_(env.eval_frame_)
+: phrase_(phrase), system_(env.system_), frame_(env.file_frame_)
 {}
 
 void
@@ -82,22 +97,26 @@ At_Phrase::get_locations(std::list<Location>& locs) const
     locs.push_back(phrase_.location());
     get_frame_locations(frame_, locs);
 }
+System& At_Phrase::system() const { return system_; }
+Frame* At_Phrase::frame() const { return frame_; }
 
 void
 At_Arg::get_locations(std::list<Location>& locs) const
 {
-    if (eval_frame_.call_phrase_ != nullptr) {
-        auto arg = eval_frame_.call_phrase_->arg_;
+    if (call_frame_.call_phrase_ != nullptr) {
+        auto arg = call_frame_.call_phrase_->arg_;
         locs.push_back(arg->location());
         // We only dump the stack starting at the parent call frame,
         // for cosmetic reasons. It looks stupid to underline one of the
         // arguments in a function call, and on the next line,
         // underline the same entire function call.
-        get_frame_locations(eval_frame_.parent_frame_, locs);
+        get_frame_locations(call_frame_.parent_frame_, locs);
     } else {
-        get_frame_locations(&eval_frame_, locs);
+        get_frame_locations(&call_frame_, locs);
     }
 }
+System& At_Arg::system() const { return call_frame_.system_; }
+Frame* At_Arg::frame() const { return &call_frame_; }
 
 Shared<const String>
 At_Arg::rewrite_message(Shared<const String> msg) const
@@ -111,11 +130,31 @@ void
 At_Metacall::get_locations(std::list<Location>& locs) const
 {
     locs.push_back(arg_.location());
-    get_frame_locations(frame_, locs);
+    get_frame_locations(&parent_frame_, locs);
 }
+System& At_Metacall::system() const { return parent_frame_.system_; }
+Frame* At_Metacall::frame() const { return &parent_frame_; }
 
 Shared<const String>
 At_Metacall::rewrite_message(Shared<const String> msg) const
+{
+    return stringify("argument #",argpos_+1," of ",name_,": ",msg);
+}
+
+void
+At_Metacall_With_Call_Frame::get_locations(std::list<Location>& locs) const
+{
+    auto arg = call_frame_.call_phrase_->arg_;
+    locs.push_back(arg->location());
+    get_frame_locations(call_frame_.parent_frame_, locs);
+}
+System& At_Metacall_With_Call_Frame::system() const
+{
+    return call_frame_.system_;
+}
+Frame* At_Metacall_With_Call_Frame::frame() const { return &call_frame_; }
+Shared<const String>
+At_Metacall_With_Call_Frame::rewrite_message(Shared<const String> msg) const
 {
     return stringify("argument #",argpos_+1," of ",name_,": ",msg);
 }
@@ -129,6 +168,8 @@ At_Field::get_locations(std::list<Location>& locs) const
 {
     parent_.get_locations(locs);
 }
+System& At_Field::system() const { return parent_.system(); }
+Frame* At_Field::frame() const { return parent_.frame(); }
 
 Shared<const String>
 At_Field::rewrite_message(Shared<const String> msg) const
@@ -145,6 +186,8 @@ At_Index::get_locations(std::list<Location>& locs) const
 {
     parent_.get_locations(locs);
 }
+System& At_Index::system() const { return parent_.system(); }
+Frame* At_Index::frame() const { return parent_.frame(); }
 
 Shared<const String>
 At_Index::rewrite_message(Shared<const String> msg) const

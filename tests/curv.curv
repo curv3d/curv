@@ -294,5 +294,16 @@ in (
     assert_error("argument #2 of f: argument true does not match is_num", f 1 true);
 );
 
+let
+    d = file "dir";
+    r = {n:42, d:{b:true}};
+in (
+    assert("$d" == "{d,n}");
+    assert(defined(d.n) && defined(d.d));
+    assert(d.d.b == true);
+    assert(d == r);
+    assert(r == d);
+);
+
 // script return value:
 in null

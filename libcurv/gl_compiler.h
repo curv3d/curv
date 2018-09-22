@@ -19,6 +19,7 @@ struct List_Expr_Base;
 using List_Expr = Tail_Array<List_Expr_Base>;
 struct Lambda_Expr;
 struct Context;
+struct System;
 
 /// "GL" or "Geometry Language" is a low level, strongly-typed subset of Curv
 /// that can be efficiently translated into a low level language (currently
@@ -114,10 +115,11 @@ struct GL_Compiler
     std::ostream& out;
     GL_Target target;
     unsigned valcount;
+    System &system_;
 
-    GL_Compiler(std::ostream& s, GL_Target t)
+    GL_Compiler(std::ostream& s, GL_Target t, System& sys)
     :
-        out(s), target(t), valcount(0)
+        out(s), target(t), valcount(0), system_(sys)
     {}
 
     inline GL_Value newvalue(GL_Type type)
@@ -164,7 +166,6 @@ using GL_Frame = Tail_Array<GL_Frame_Base>;
 struct GL_Frame_Base
 {
     GL_Compiler& gl;
-
 
     /// The root frame has a context pointer, which points to the shape
     /// expression that is being compiled. Used for printing a stack trace.

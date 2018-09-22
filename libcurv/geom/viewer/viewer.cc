@@ -88,6 +88,7 @@ void Viewer::open()
 
 void Viewer::reset_view()
 {
+    u_view2d_ = glm::mat3(1.);
     u_centre3d_ = glm::vec3(0.,0.,0.);
     u_eye3d_ = glm::vec3(2.598076,3.0,4.5);
     u_up3d_ = glm::vec3(-0.25,0.866025,-0.433013);
@@ -100,7 +101,8 @@ bool Viewer::draw_frame()
     render();
     swap_buffers();
     poll_events();
-    measure_time();
+    if (!config_.lazy_)
+        measure_time();
     return true;
 }
 
@@ -173,12 +175,14 @@ void Viewer::render()
     vbo_->draw(&shader_);
 }
 
-void Viewer::onKeyPress(int _key)
+void Viewer::onKeyPress(int key, int mods)
 {
-    if (_key == 'q' || _key == 'Q') {
+    if (key == GLFW_KEY_Q ||
+       (key == GLFW_KEY_W && (mods & (GLFW_MOD_CONTROL|GLFW_MOD_SUPER))))
+    {
         glfwSetWindowShouldClose(window_, GL_TRUE);
     }
-    else if (_key == 'r' || _key == 'R') {
+    else if (key == GLFW_KEY_R || key == GLFW_KEY_HOME) {
         reset_view();
     }
 }
@@ -289,9 +293,10 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
         self->setWindowSize(w,h);
     });
 
-    glfwSetKeyCallback(window_, [](GLFWwindow* win, int _key, int _scancode, int _action, int _mods) {
+    glfwSetKeyCallback(window_, [](GLFWwindow* win, int key, int scancode, int action, int mods) {
         Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-        self->onKeyPress(_key);
+        if (action == GLFW_PRESS)
+            self->onKeyPress(key, mods);
     });
 
     // callback when a mouse button is pressed or released
@@ -416,7 +421,10 @@ void Viewer::measure_time()
 
 void Viewer::poll_events()
 {
-    glfwPollEvents();
+    if (config_.lazy_)
+        glfwWaitEvents();
+    else
+        glfwPollEvents();
 }
 
 void Viewer::swap_buffers()

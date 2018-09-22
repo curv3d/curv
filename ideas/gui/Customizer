@@ -17,9 +17,9 @@ Graphical value pickers
 Reactive Records
 ----------------
 // Lollipop:
-  param
-    diam = 1; /*annotation?*/
-    len = 4; /*annotation?*/
+  parameters
+    (slider(0.5,4) diam) = 1;
+    (slider(1,8)   len) = 4;
   in
     union(candy, stick)
   where (
@@ -27,9 +27,12 @@ Reactive Records
     stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
   )
 
-The annotations (TBD) cause the GL compiler to assign uniform variables to the
+The slider annotations cause the GL compiler to assign uniform variables to the
 parameters diam and len. There is a GL compile error if the resulting code
 is not GL compatible, which goes away if you remove the annotation.
+
+This is an extension of Parametric Records, `../language/Parametric_Record`.
+The new feature is the annotations.
 
 The Lollipop is a parametric shape. It has a `call` field mapping {diam,len} to
 another lollipop. The GL compiler recognizes parametric shapes. The parameters
@@ -38,92 +41,12 @@ annotated parameters are replaced by their default values. Then the body
 is GL compiled to a shape record. The GL compiler outputs each shape field as
 a top level GLSL definition.
 
-Parametric Records
-------------------
-A parametric record is a record with a `call` field that maps a record of
-parameter values onto a new instance. A parametric record has a set of named
-parameters with default values.
+Possibly we can change some or all of the primitive shape constructors to use
+reactive records, thereby enabling the Viewer to display value pickers.
+See Parametric_Records for more discussion.
 
-For example, a parametric shape in file `lollipop.curv`:
-  param
-    diam = 1;
-    len = 4;
-  in
-    union(candy, stick)
-  where (
-    candy = sphere diam >> colour red;
-    stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
-  )
-This returns a record (union(candy,stick)) augmented with a `call` field,
-which is a function with parameter {diam=1,len=4} that returns a customized
-version of the record.
-
-The command
-  curv -Dlen=6 lollipop.curv
-modifies one of the shape parameters. Actually it treats the result
-value V as a function, and calls V{len:6}.
-
-This design does not put the parameters into the record. They might conflict
-with field names in the (extended) shape protocol. It might make sense to
-add a single field which is a parameter record. What to name it?
-Not `param`, that's a reserved word. Maybe `p`.
-
-Parametric Record Semantics
----------------------------
-kube =
-  param
-    d = 2;
-  in
-    box(d,d,d);
-
-is semantically equivalent to:
-
-kube = (
-    make{d:2}
-where
-    make{d} =
-      { ... box(d,d,d);
-        call{d:d} : make{d:d};
-      };
-);
-
-except that the Viewer recognizes the first as a "parametric record" and
-displays value pickers. Internally, parametric records must preserve the
-parameter name/value mappings in a way that the Viewer can access: the second
-form doesn't obviously do that.
-
-We now have a reason to change the existing shape constructors (like cube)
-into parametric records--so that they can be customized. Eg, just typing 'cube'
-will display the cube, plus pickers for modifying the cube. But, there's a
-backward compatibility and expressiveness issue. `cube` just takes a number
-argument. Half-plane is overloaded with several record patterns. The sharp
-solids have `.exact` and `.mitred` variants.
-* Can we preserve these interfaces in the shape constructors?
-  * No problem with `.exact` and `.mitred`. Overloading is an issue.
-  * Does it help if the `param` syntax is sugar for a more general syntax?
-    Eg, `parametric <function>`, see below.
-* Can we expose a full shape constructor interface in a graphical picker?
-  * Suppose that a parametric record preserves the particular overloading
-    used in the constructor (ie, the constructor argument, which is normally
-    a record here). The value pickers let you modify the fields of the
-    constructor argument, but don't let you change to a different overloading.
-    Then it's easy.
-  * Suppose the picker interface lets you switch between alternate
-    parameter patterns. Then there needs to be code that reconstructs the
-    parameter values for the new basis. That's harder.
-  * Exposing the `.exact`, `.mitred` interfaces is harder.
-    Would need to mark specific elements of a record as constructors.
-
-Let's add syntax: 
-    parametric {...} -> record_expr
-This can be composed with `match` to create overloaded shape constructor
-functions that return parametric shapes. Also, the abbreviation:
-    parametric name {...} = record_expr
-creates a function that maps a record onto a parametric-record. Eg:
-    parametric cylinder {is_distance d, is_distance h} = ...;
-
-Picker Type Declarations
-------------------------
+Picker Type Annotations
+-----------------------
 Each parameter in a parametric record can declare its value picker type.
 * OpenSCAD uses special comments.
 * Fragmentarium uses syntax like slider[first,default,last] and checkbox[true].
@@ -131,50 +54,33 @@ Each parameter in a parametric record can declare its value picker type.
 In Curv, everything is a value. Picker types are values.
 If you specify a picker type for a parameter, then you have constrained its
 value set, just like using a predicate pattern. Picker types are a
-special kind of predicate function. Eg, `is_bool` implies a checkbox.
+special kind of predicate function.
 
-* is_bool a -- a is a boolean value, use checkbox picker.
-* range(i,j) a -- a is a number between i and j inclusive, use slider picker.
-  Or `i <= a <= j` I guess.
+Originally, I thought `is_bool` implies a checkbox. But constraining a
+record parameter to be a checkbox not only forces it to be bool, but also
+constrains the code that uses the parameter to be GL-compilable.
+For this reason, I need a new set of primitive predicates that are specifically
+for binding a parameter to a value picker.
 
-Parametric Record Objects
--------------------------
-A parametric record is just an ordinary record value, containing:
+* checkbox a -- a is a boolean value, use checkbox picker.
+* slider(i,j) a -- a is a number between i and j inclusive, use slider picker.
+
+Reactive Record Objects
+-----------------------
+A reactive record is just an ordinary record value, containing:
 * A constructor function, which maps a parameter record to a new precord.
   Stored in the `call` field.
 * A parameter record (with the name and value of each parameter)
-  stored in the `p` field.
+  stored in the `parameters` field.
 
 The Viewer recognizes a parametric shape because it is a shape record with
-these two extra fields, `call` and `p`.
+these two extra fields, `call` and `parameters`.
 
 The Viewer compiles the `call` field into GLSL. The `call` pattern is
 a record pattern, and each field has a predicate pattern, which contains
-the picker type. This record pattern must match the `p` field.
+the picker type. This record pattern must match the `parameters` field.
 The parameters are emitted as uniform variables. The body of the function
 must yield a shape record, as determined at compile time using type inference.
-
-Named Parametric Records
-------------------------
-In addition to the required `call` and `p` fields, let's add an optional `name`
-field.
-* This is used as a title for the picker window.
-* If the name is present, then a parametric record is printed as `name{params}`.
-  Eg, "cube{d:2}" is a lot more readable than dumping the cube record.
-* `parametric cube{is_distance d} = box(d,d,d)`. Now `cube` constructs a named
-  parametric record.
-* Now we need a way to print values verbosely.
-
-Functions have an optional name, too, which are also used for printing.
-For consistency, maybe f.name is defined if function value f has a name.
-
-See `Terms`_ for more details.
-
-Concept Name
-------------
-* Parametric Record
-* Prototype (from "prototype-based programming" (Wikipedia)).
-* model, exemplar, archetype, instance
 
 Saving your State
 -----------------

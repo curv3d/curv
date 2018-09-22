@@ -2,15 +2,16 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/analyser.h>
-#include <libcurv/definition.h>
-#include <libcurv/builtin.h>
 #include <libcurv/program.h>
+
+#include <libcurv/analyser.h>
+#include <libcurv/builtin.h>
+#include <libcurv/context.h>
+#include <libcurv/definition.h>
+#include <libcurv/exception.h>
 #include <libcurv/parser.h>
 #include <libcurv/scanner.h>
 #include <libcurv/system.h>
-#include <libcurv/exception.h>
-#include <libcurv/context.h>
 
 namespace curv {
 
@@ -18,13 +19,13 @@ void
 Program::compile(const Namespace* names)
 {
     if (names == nullptr)
-        names_ = &system_.std_namespace();
+        names_ = &scanner_.system_.std_namespace();
     else
         names_ = names;
 
     phrase_ = parse_program(scanner_);
 
-    Builtin_Environ env{*names_, system_, scanner_.eval_frame_};
+    Builtin_Environ env{*names_, scanner_.system_, scanner_.file_frame_};
     if (auto def = phrase_->as_definition(env)) {
         module_ = analyse_module(*def, env);
     } else {
@@ -32,7 +33,7 @@ Program::compile(const Namespace* names)
     }
 
     frame_ = {Frame::make(env.frame_maxslots_,
-        system_, scanner_.eval_frame_, nullptr, nullptr)};
+        scanner_.system_, scanner_.file_frame_, nullptr, nullptr)};
 }
 
 const Phrase&
@@ -60,10 +61,10 @@ Value
 Program::eval()
 {
     if (module_ != nullptr) {
-        throw Exception(At_Phrase(*phrase_, scanner_.eval_frame_),
+        throw Exception(At_Phrase(*phrase_, scanner_),
             "definition found; expecting an expression");
     } else {
-        auto expr = meaning_->to_operation(scanner_.eval_frame_);
+        auto expr = meaning_->to_operation(scanner_.system_,scanner_.file_frame_);
         return expr->eval(*frame_);
     }
 }
@@ -77,7 +78,7 @@ Program::denotes()
         module = module_->eval_module(*frame_);
     } else {
         List_Builder lb;
-        auto gen = meaning_->to_operation(scanner_.eval_frame_);
+        auto gen = meaning_->to_operation(scanner_.system_,scanner_.file_frame_);
         gen->generate(*frame_, lb);
         list = lb.get_list();
     }

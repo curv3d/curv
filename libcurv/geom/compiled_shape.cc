@@ -21,6 +21,8 @@ Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
     is_3d_ = rshape.is_3d_;
     bbox_ = rshape.bbox_;
 
+    At_System cx{rshape.system_};
+
     // convert shape to C++ source code
     auto cppname = register_tempfile(".cpp");
     std::ofstream cpp(cppname.c_str());
@@ -31,14 +33,14 @@ Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
     auto cc_cmd = stringify("c++ -fpic -O3 -c ", cppname.c_str());
     //auto cc_cmd = stringify("c++ -fpic -c -g ", cppname.c_str());
     if (system(cc_cmd->c_str()) != 0)
-        throw Exception({}, "c++ compile failed");
+        throw Exception(cx, "c++ compile failed");
 
     // create shared object
     auto obj_name = register_tempfile(".o");
     auto so_name = register_tempfile(".so");
     auto link_cmd = stringify("c++ -shared -o ", so_name.c_str(), " ", obj_name.c_str());
     if (system(link_cmd->c_str()) != 0)
-        throw Exception({}, "c++ link failed");
+        throw Exception(cx, "c++ link failed");
 
     // load shared object
     // TODO: so_name should contain a / character to prevent PATH search.
@@ -46,14 +48,14 @@ Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
     // absolute pathname.
     void* dll = dlopen(so_name.c_str(), RTLD_NOW|RTLD_LOCAL);
     if (dll == nullptr)
-        throw Exception({},
+        throw Exception(cx,
             stringify("can't load shared object: ", dlerror()));
 
     dlerror(); // Clear previous error.
     void* dist_p = dlsym(dll, "dist");
     const char* dist_err = dlerror();
     if (dist_err != nullptr)
-        throw Exception({},
+        throw Exception(cx,
             stringify("can't load dist function: ",dist_err));
     assert(dist_p != nullptr);
     dist_ = reinterpret_cast<double (*)(double,double,double,double)>(dist_p);
@@ -61,7 +63,7 @@ Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
     void* colour_p = dlsym(dll, "colour");
     const char* colour_err = dlerror();
     if (colour_err != nullptr)
-        throw Exception({},
+        throw Exception(cx,
             stringify("can't load colour function: ",colour_err));
     assert(colour_p != nullptr);
     colour_ = (void (*)(double,double,double,double,glm::vec3*))colour_p;
@@ -70,7 +72,7 @@ Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
 void
 export_cpp(Shape_Program& shape, std::ostream& out)
 {
-    GL_Compiler gl(out, GL_Target::cpp);
+    GL_Compiler gl(out, GL_Target::cpp, shape.system());
     out <<
         "#include <glm/vec2.hpp>\n"
         "#include <glm/vec3.hpp>\n"

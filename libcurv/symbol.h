@@ -30,21 +30,17 @@ private:
     using Base = Shared<const String>;
 public:
     using Shared<const String>::Shared;
-    inline Symbol(Shared<const String> str)
-    :
-        Base(str)
-    {}
     inline Symbol(const char* str)
     :
-        Base(String::make(str, strlen(str)))
+        Base(make_string(str))
     {}
-    inline Symbol(const char* str, size_t len)
+    inline Symbol(Shared<const String> str)
     :
-        Base(String::make(str, len))
+        Base(std::move(str))
     {}
-    inline Symbol(Range<const char*> str)
+    inline Symbol(String_Ref str)
     :
-        Base(String::make(str.begin(), str.size()))
+        Base(str)
     {}
     inline Symbol& operator=(Symbol a2)
     {
@@ -88,11 +84,7 @@ public:
     {
         a1.swap(a2);
     }
-    friend std::ostream& operator<<(std::ostream& out, Symbol a)
-    {
-        out << *a;
-        return out;
-    }
+    friend std::ostream& operator<<(std::ostream& out, Symbol a);
 
     Value to_value() const
     {
@@ -100,6 +92,7 @@ public:
         // but a Value can only be constructed from a mutable String reference.
         return {String::make(data(), size())};
     }
+    bool is_identifier() const;
 };
 
 /// A Symbol_Map<T> is a map from Symbol to T.

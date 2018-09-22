@@ -7,9 +7,11 @@
 #include <libcurv/analyser.h>
 #include <libcurv/arg.h>
 #include <libcurv/array_op.h>
+#include <libcurv/dir_record.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
 #include <libcurv/gl_context.h>
+#include <libcurv/import.h>
 #include <libcurv/math.h>
 #include <libcurv/program.h>
 #include <libcurv/source.h>
@@ -85,7 +87,7 @@ struct Is_Record_Function : public Legacy_Function
     Is_Record_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
-        return {args[0].dycast<Structure>() != nullptr};
+        return {args[0].dycast<Record>() != nullptr};
     }
 };
 struct Is_Fun_Function : public Legacy_Function
@@ -132,7 +134,7 @@ struct Class_Name : public Legacy_Function \
     static Unary_Numeric_Array_Op<Scalar_Op> array_op; \
     Value call(Frame& args) override \
     { \
-        return array_op.op(args[0], At_Frame(&args)); \
+        return array_op.op(args[0], At_Frame(args)); \
     } \
     GL_Value gl_call(GL_Frame& f) const override \
     { \
@@ -195,7 +197,7 @@ struct Atan2_Function : public Legacy_Function
         else if (y.type == GL_Type::Num)
             rtype = x.type;
         if (rtype == GL_Type::Bool)
-            throw Exception(At_GL_Phrase(f.call_phrase_, &f),
+            throw Exception(At_GL_Phrase(f.call_phrase_, f),
                 "GL domain error");
 
         GL_Value result = f.gl.newvalue(rtype);
@@ -223,11 +225,11 @@ GL_Value gl_minmax(const char* name, Operation& argx, GL_Frame& f)
                 if (type == GL_Type::Num)
                     type = val.type;
                 else if (type != val.type)
-                    throw Exception(At_GL_Phrase(op->syntax_, &f), stringify(
+                    throw Exception(At_GL_Phrase(op->syntax_, f), stringify(
                         "GL: ",name,
                         ": vector arguments of different lengths"));
             } else {
-                throw Exception(At_GL_Phrase(op->syntax_, &f), stringify(
+                throw Exception(At_GL_Phrase(op->syntax_, f), stringify(
                     "GL: ",name,": argument has bad type"));
             }
         }
@@ -265,7 +267,7 @@ GL_Value gl_minmax(const char* name, Operation& argx, GL_Frame& f)
             f.gl.out << name<<"("<<name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
                 <<arg<<".z),"<<arg<<".w);\n";
         else
-            throw Exception(At_GL_Phrase(argx.syntax_, &f), stringify(
+            throw Exception(At_GL_Phrase(argx.syntax_, f), stringify(
                 name,": argument is not a vector"));
         return result;
     }
@@ -402,8 +404,8 @@ struct Fields_Function : public Legacy_Function
     Fields_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
-        if (auto structure = args[0].dycast<const Structure>())
-            return {structure->fields()};
+        if (auto record = args[0].dycast<const Record>())
+            return {record->fields()};
         throw Exception(At_Arg(*this, args), "not a record");
     }
 };
@@ -502,9 +504,13 @@ struct File_Expr : public Just_Expression
     {}
     virtual Value eval(Frame& f) const override
     {
-        // construct argument context
+        // Metafunction calls do not automatically get a new stack frame
+        // allocated. But I want the call to `file pathname` to appear
+        // in stack traces, so I need a Frame.
         auto& callphrase = dynamic_cast<const Call_Phrase&>(*syntax_);
-        At_Metacall cx("file", 0, *callphrase.arg_, &f);
+        std::unique_ptr<Frame> f2 =
+            Frame::make(0, f.system_, &f, &callphrase, nullptr);
+        At_Metacall_With_Call_Frame cx("file", 0, *f2);
 
         // construct file pathname from argument
         Value arg = arg_->eval(f);
@@ -519,31 +525,7 @@ struct File_Expr : public Just_Expression
                 / fs::path(argstr->c_str());
         }
 
-        // construct filename extension (includes leading '.')
-        std::string ext = filepath.extension().string();
-        for (char& c : ext)
-            c = std::tolower(c);
-
-        // import file based on extension
-        auto importp = f.system_.importers_.find(ext);
-        if (importp != f.system_.importers_.end())
-            return (*importp->second)(filepath, cx);
-        else {
-            // If extension not recognized, it defaults to a Curv program.
-            auto file = make<File_Source>(make_string(filepath.c_str()), cx);
-            std::unique_ptr<Frame> f2 =
-                Frame::make(0, f.system_, &f, &callphrase, nullptr);
-            Program prog{std::move(file), f.system_,
-                Program_Opts().parent_frame(&*f2)};
-            auto filekey = Filesystem::canonical(filepath);
-            auto& active_files = f.system_.active_files_;
-            if (active_files.find(filekey) != active_files.end())
-                throw Exception{cx,
-                    stringify("illegal recursive reference to file ",filepath)};
-            Active_File af(active_files, filekey);
-            prog.compile();
-            return prog.eval();
-        }
+        return import(filepath, cx);
     }
 };
 struct File_Metafunction : public Metafunction
@@ -604,7 +586,7 @@ struct Warning_Action : public Just_Action
             msg = str;
         else
             msg = stringify(arg);
-        Exception exc{At_Phrase(*syntax_, &f), msg};
+        Exception exc{At_Phrase(*syntax_, f), msg};
         f.system_.message("WARNING: ", exc);
     }
 };
@@ -637,7 +619,7 @@ struct Error_Operation : public Operation
             msg = s;
         else
             msg = stringify(val);
-        throw Exception(At_Frame(&f), msg);
+        throw Exception(At_Frame(f), msg);
     }
     virtual void exec(Frame& f) const override
     {
@@ -651,7 +633,7 @@ struct Error_Operation : public Operation
     {
         run(f);
     }
-    virtual void bind(Frame& f, Record&) const override
+    virtual void bind(Frame& f, DRecord&) const override
     {
         run(f);
     }
@@ -704,10 +686,10 @@ struct Assert_Action : public Just_Action
     {}
     virtual void exec(Frame& f) const override
     {
-        At_Metacall cx{"assert", 0, *arg_->syntax_, &f};
+        At_Metacall cx{"assert", 0, *arg_->syntax_, f};
         bool b = arg_->eval(f).to_bool(cx);
         if (!b)
-            throw Exception(At_Phrase(*syntax_, &f), "assertion failed");
+            throw Exception(At_Phrase(*syntax_, f), "assertion failed");
     }
 };
 struct Assert_Metafunction : public Metafunction
@@ -742,11 +724,11 @@ struct Assert_Error_Action : public Just_Action
     {
         Value expected_msg_val = expected_message_->eval(f);
         auto expected_msg_str = expected_msg_val.to<const String>(
-            At_Phrase(*expected_message_->syntax_, &f));
+            At_Phrase(*expected_message_->syntax_, f));
 
         if (actual_message_ != nullptr) {
             if (*actual_message_ != *expected_msg_str)
-                throw Exception(At_Phrase(*syntax_, &f),
+                throw Exception(At_Phrase(*syntax_, f),
                     stringify("assertion failed: expected error \"",
                         expected_msg_str,
                         "\", actual error \"",
@@ -760,7 +742,7 @@ struct Assert_Error_Action : public Just_Action
             result = expr_->eval(f);
         } catch (Exception& e) {
             if (*e.shared_what() != *expected_msg_str) {
-                throw Exception(At_Phrase(*syntax_, &f),
+                throw Exception(At_Phrase(*syntax_, f),
                     stringify("assertion failed: expected error \"",
                         expected_msg_str,
                         "\", actual error \"",
@@ -769,7 +751,7 @@ struct Assert_Error_Action : public Just_Action
             }
             return;
         }
-        throw Exception(At_Phrase(*syntax_, &f),
+        throw Exception(At_Phrase(*syntax_, f),
             stringify("assertion failed: expected error \"",
                 expected_msg_str,
                 "\", got value ", result));
@@ -819,7 +801,7 @@ struct Defined_Expression : public Just_Expression
     virtual Value eval(Frame& f) const override
     {
         auto val = expr_->eval(f);
-        auto s = val.dycast<Structure>();
+        auto s = val.dycast<Record>();
         if (s) {
             auto id = selector_.eval(f);
             return {s->hasfield(id)};

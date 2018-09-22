@@ -637,24 +637,39 @@ Nestable comments for reliably commenting out code blocks.
 
 ### Alternate String Escape Sequences
 
-$~  expands to $
-$=  expands to "
+$.  expands to $
+$'' expands to "
 
 Rationale:
 * Readability: it is easier to visually parse these sequences out of the noise
   of the surrounding text, without counting characters.
-  ~ and =, which are not full height characters, are juxtaposed with $, which
+  . and ', which are not full height characters, are juxtaposed with $, which
   is a full height character. Visually, this works well.
-  ~ contains the S curve of the $ character, as a mneumonic.
-  = is like a sideways " character, as a mneumonic.
-* More suitable for iterated string escaping/unescaping.
-  $~~~ -> $~~ -> $~ -> $
+* The escapes are visually similar to the characters they expand to.
+* The characters after the $ are not metacharacters (neither $ nor ").
+  Thus, more suitable for iterated string escaping/unescaping.
+  $... -> $.. -> $. -> $
   instead of $$$$$$$$ -> $$$$ -> $$ -> $
   I know this isn't an important use case, but it's still a cool property
   of the syntax. Becomes more relevant if we add an 'eval' function.
 
-repr "foo" => "$=foo$="
-repr(repr "foo") => "$~=foo$~="
+repr "foo" => "$''foo$''"
+repr(repr "foo") => "$.''foo$.''"
+print "Can't open file $''$filename$'': $error";
 
-Downside is that this is novel syntax that nobody will understand
-without memorizing it.
+Also consider $= as an alternative to $''
+(= is a sideways " character)
+    "foo" => "$=foo$=" => "$.=foo$.="
+    print "Can't open file $=$filename$=: $error";
+
+Downside is that this is novel syntax.
+
+${dollar}  expands to $    similar to &dollar; in HTML5
+${quot}    expands to "    similar to &quot; in HTML5
+
+    print "Can't open file $quot$filename$quot: $error";
+    print "Can't open file ${quot}${filename}${quot}: ${error}";
+
+### String Comprehensions
+"${ stmt1; stmt2; stmt3 }"
+eg, "${if (c) "foo"}"

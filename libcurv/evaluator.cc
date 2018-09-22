@@ -20,22 +20,22 @@ namespace curv {
 Value
 Operation::eval(Frame& f) const
 {
-    throw Exception(At_Phrase(*syntax_, &f), "not an expression");
+    throw Exception(At_Phrase(*syntax_, f), "not an expression");
 }
 void
 Operation::exec(Frame& f) const
 {
-    throw Exception(At_Phrase(*syntax_, &f), "not an action");
+    throw Exception(At_Phrase(*syntax_, f), "not an action");
 }
 void
-Operation::bind(Frame& f, Record&) const
+Operation::bind(Frame& f, DRecord&) const
 {
-    throw Exception(At_Phrase(*syntax_, &f), "not a binder or action");
+    throw Exception(At_Phrase(*syntax_, f), "not a binder or action");
 }
 void
 Operation::generate(Frame& f, List_Builder&) const
 {
-    throw Exception(At_Phrase(*syntax_, &f), "not a generator, expression or action");
+    throw Exception(At_Phrase(*syntax_, f), "not a generator, expression or action");
 }
 
 void
@@ -50,7 +50,7 @@ Just_Action::generate(Frame& f, List_Builder&) const
     exec(f);
 }
 void
-Just_Action::bind(Frame& f, Record&) const
+Just_Action::bind(Frame& f, DRecord&) const
 {
     exec(f);
 }
@@ -79,7 +79,7 @@ Value
 Module_Data_Ref::eval(Frame& f) const
 {
     Module& m = (Module&)f[slot_].get_ref_unsafe();
-    assert(m.type_ == Ref_Value::ty_module);
+    assert(m.subtype_ == Ref_Value::sty_module);
     return m.at(index_);
 }
 
@@ -100,7 +100,7 @@ Dot_Expr::eval(Frame& f) const
 {
     Value basev = base_->eval(f);
     Symbol id = selector_.eval(f);
-    return basev.at(id, At_Phrase(*base_->syntax_, &f));
+    return basev.at(id, At_Phrase(*base_->syntax_, f));
 }
 
 Value
@@ -119,7 +119,7 @@ eval_not(Value x, const Context& cx)
 Value
 Not_Expr::eval(Frame& f) const
 {
-    return eval_not(arg_->eval(f), At_Phrase(*syntax_, &f));
+    return eval_not(arg_->eval(f), At_Phrase(*syntax_, f));
 }
 
 Value
@@ -132,7 +132,7 @@ Positive_Expr::eval(Frame& f) const
         }
     };
     static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(arg_->eval(f), At_Phrase(*syntax_, &f));
+    return array_op.op(arg_->eval(f), At_Phrase(*syntax_, f));
 }
 Value
 Negative_Expr::eval(Frame& f) const
@@ -144,7 +144,7 @@ Negative_Expr::eval(Frame& f) const
         }
     };
     static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(arg_->eval(f), At_Phrase(*syntax_, &f));
+    return array_op.op(arg_->eval(f), At_Phrase(*syntax_, f));
 }
 
 Value
@@ -152,7 +152,7 @@ Add_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return add(a,b, At_Phrase(*syntax_, &f));
+    return add(a,b, At_Phrase(*syntax_, f));
 }
 Value
 Subtract_Expr::eval(Frame& f) const
@@ -161,20 +161,20 @@ Subtract_Expr::eval(Frame& f) const
         static double f(double x, double y) { return x - y; }
         static const char* name() { return "-"; }
         static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x,"-",y);
+            return stringify(x," - ",y);
         }
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return array_op.op(a,b, At_Phrase(*syntax_, &f));
+    return array_op.op(a,b, At_Phrase(*syntax_, f));
 }
 Value
 Multiply_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return multiply(a,b, At_Phrase(*syntax_, &f));
+    return multiply(a,b, At_Phrase(*syntax_, f));
 }
 Value
 Divide_Expr::eval(Frame& f) const
@@ -183,126 +183,97 @@ Divide_Expr::eval(Frame& f) const
         static double f(double x, double y) { return x / y; }
         static const char* name() { return "/"; }
         static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x,"/",y);
+            return stringify(x," / ",y);
         }
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return array_op.op(a,b, At_Phrase(*syntax_, &f));
+    return array_op.op(a,b, At_Phrase(*syntax_, f));
 }
 
 Value
 Or_Expr::eval(Frame& f) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
-        return a;
-    if (a == Value{false}) {
-        Value b = arg2_->eval(f);
-        if (b.is_bool())
-            return b;
-        throw Exception(At_Phrase(*arg2_->syntax_, &f), "not a boolean value");
-    }
-    throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
+    if (a)
+        return {true};
+    bool b = arg2_->eval(f).to_bool(At_Phrase(*arg2_->syntax_, f));
+    return {b};
 }
 Value
 And_Expr::eval(Frame& f) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{false})
-        return a;
-    if (a == Value{true}) {
-        Value b = arg2_->eval(f);
-        if (b.is_bool())
-            return b;
-        throw Exception(At_Phrase(*arg2_->syntax_, &f), "not a boolean value");
-    }
-    throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
+    if (!a)
+        return {false};
+    bool b = arg2_->eval(f).to_bool(At_Phrase(*arg2_->syntax_, f));
+    return {b};
 }
 
 Value
 If_Op::eval(Frame& f) const
 {
-    throw Exception{At_Phrase{*syntax_, &f},
+    throw Exception{At_Phrase{*syntax_, f},
         "if: not an expression (missing else clause)"};
 }
 void
 If_Op::generate(Frame& f, List_Builder& lb) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
+    if (a)
         arg2_->generate(f, lb);
-    else if (a == Value{false})
-        return;
-    else
-        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 void
-If_Op::bind(Frame& f, Record& r) const
+If_Op::bind(Frame& f, DRecord& r) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
+    if (a)
         arg2_->bind(f, r);
-    else if (a == Value{false})
-        return;
-    else
-        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 void
 If_Op::exec(Frame& f) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
+    if (a)
         arg2_->exec(f);
-    else if (a == Value{false})
-        return;
-    else
-        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 
 Value
 If_Else_Op::eval(Frame& f) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
+    if (a)
         return arg2_->eval(f);
-    if (a == Value{false})
+    else
         return arg3_->eval(f);
-    throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
 }
 void
 If_Else_Op::generate(Frame& f, List_Builder& lb) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
+    if (a)
         arg2_->generate(f, lb);
-    else if (a == Value{false})
-        arg3_->generate(f, lb);
     else
-        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
+        arg3_->generate(f, lb);
 }
 void
-If_Else_Op::bind(Frame& f, Record& r) const
+If_Else_Op::bind(Frame& f, DRecord& r) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
+    if (a)
         arg2_->bind(f, r);
-    else if (a == Value{false})
-        arg3_->bind(f, r);
     else
-        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
+        arg3_->bind(f, r);
 }
 void
 If_Else_Op::exec(Frame& f) const
 {
-    Value a = arg1_->eval(f);
-    if (a == Value{true})
+    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
+    if (a)
         arg2_->exec(f);
-    else if (a == Value{false})
-        arg3_->exec(f);
     else
-        throw Exception(At_Phrase(*arg1_->syntax_, &f), "not a boolean value");
+        arg3_->exec(f);
 }
 
 Value
@@ -310,14 +281,14 @@ Equal_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return {a == b};
+    return {a.equal(b, At_Phrase(*syntax_, f))};
 }
 Value
 Not_Equal_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return {a != b};
+    return {!a.equal(b, At_Phrase(*syntax_, f))};
 }
 Value
 Less_Expr::eval(Frame& f) const
@@ -329,8 +300,8 @@ Less_Expr::eval(Frame& f) const
         return {true};
     if (a.get_num_or_nan() >= b.get_num_or_nan())
         return {false};
-    throw Exception(At_Phrase(*syntax_, &f),
-        stringify(a,"<",b,": domain error"));
+    throw Exception(At_Phrase(*syntax_, f),
+        stringify(a," < ",b,": domain error"));
 }
 Value
 Greater_Expr::eval(Frame& f) const
@@ -342,8 +313,8 @@ Greater_Expr::eval(Frame& f) const
         return {true};
     if (a.get_num_or_nan() <= b.get_num_or_nan())
         return {false};
-    throw Exception(At_Phrase(*syntax_, &f),
-        stringify(a,">",b,": domain error"));
+    throw Exception(At_Phrase(*syntax_, f),
+        stringify(a," > ",b,": domain error"));
 }
 Value
 Less_Or_Equal_Expr::eval(Frame& f) const
@@ -355,8 +326,8 @@ Less_Or_Equal_Expr::eval(Frame& f) const
         return {true};
     if (a.get_num_or_nan() > b.get_num_or_nan())
         return {false};
-    throw Exception(At_Phrase(*syntax_, &f),
-        stringify(a,"<=",b,": domain error"));
+    throw Exception(At_Phrase(*syntax_, f),
+        stringify(a," <= ",b,": domain error"));
 }
 Value
 Greater_Or_Equal_Expr::eval(Frame& f) const
@@ -368,8 +339,8 @@ Greater_Or_Equal_Expr::eval(Frame& f) const
         return {true};
     if (a.get_num_or_nan() < b.get_num_or_nan())
         return {false};
-    throw Exception(At_Phrase(*syntax_, &f),
-        stringify(a,">=",b,": domain error"));
+    throw Exception(At_Phrase(*syntax_, f),
+        stringify(a," >= ",b,": domain error"));
 }
 Value
 Power_Expr::eval(Frame& f) const
@@ -378,11 +349,11 @@ Power_Expr::eval(Frame& f) const
         static double f(double x, double y) { return pow(x,y); }
         static const char* name() { return "^"; }
         static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x,"^",y);
+            return stringify(x," ^ ",y);
         }
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(arg1_->eval(f), arg2_->eval(f), At_Phrase(*syntax_, &f));
+    return array_op.op(arg1_->eval(f), arg2_->eval(f), At_Phrase(*syntax_, f));
 }
 
 Value
@@ -399,13 +370,13 @@ list_at(const List& list, Value index, const Context& cx)
     return list[i];
 }
 Value
-struct_at(const Structure& ref, Value index, const Context& cx)
+record_at(const Record& ref, Value index, const Context& cx)
 {
     if (auto indices = index.dycast<List>()) {
         Shared<List> result = List::make(indices->size());
         int j = 0;
         for (auto i : *indices)
-            (*result)[j++] = struct_at(ref, i, cx);
+            (*result)[j++] = record_at(ref, i, cx);
         return {result};
     }
     Symbol a = index.to<const String>(cx);
@@ -457,12 +428,12 @@ Index_Expr::eval(Frame& f) const
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
     if (auto list = a.dycast<const List>())
-        return list_at(*list, b, At_Phrase(*arg2_->syntax_, &f));
-    if (auto structure = a.dycast<const Structure>())
-        return struct_at(*structure, b, At_Phrase(*arg2_->syntax_, &f));
+        return list_at(*list, b, At_Phrase(*arg2_->syntax_, f));
+    if (auto record = a.dycast<const Record>())
+        return record_at(*record, b, At_Phrase(*arg2_->syntax_, f));
     if (auto string = a.dycast<const String>())
-        return string_at(*string, b, At_Phrase(*arg2_->syntax_, &f));
-    throw Exception(At_Phrase(*arg1_->syntax_, &f),
+        return string_at(*string, b, At_Phrase(*arg2_->syntax_, f));
+    throw Exception(At_Phrase(*arg1_->syntax_, f),
         "not a list, record or string");
 }
 Value
@@ -473,7 +444,7 @@ Call_Expr::eval(Frame& f) const
     Value funv = val;
     for (;;) {
         if (!funv.is_ref())
-            throw Exception(At_Phrase(*fun_->syntax_, &f),
+            throw Exception(At_Phrase(*fun_->syntax_, f),
                 stringify(funv,": not a function"));
         Ref_Value& funp( funv.get_ref_unsafe() );
         switch (funp.type_) {
@@ -486,11 +457,10 @@ Call_Expr::eval(Frame& f) const
             return fun->call(arg_->eval(f), *f2);
           }
         case Ref_Value::ty_record:
-        case Ref_Value::ty_module:
           {
-            Structure* s = (Structure*)&funp;
+            Record* s = (Record*)&funp;
             if (s->hasfield(callkey)) {
-                funv = s->getfield(callkey, {});
+                funv = s->getfield(callkey, At_Phrase(*call_phrase(), f));
                 continue;
             }
             break;
@@ -498,12 +468,12 @@ Call_Expr::eval(Frame& f) const
         case Ref_Value::ty_string:
         case Ref_Value::ty_list:
           {
-            At_Phrase cx(*arg_->syntax_, &f);
+            At_Phrase cx(*arg_->syntax_, f);
             auto path = arg_->eval(f).to<List>(cx);
             return value_at_path(funv, *path, cx);
           }
         }
-        throw Exception(At_Phrase(*fun_->syntax_, &f),
+        throw Exception(At_Phrase(*fun_->syntax_, f),
             stringify(val,": not a function"));
     }
 }
@@ -528,19 +498,21 @@ List_Expr_Base::eval(Frame& f) const
 void
 Spread_Op::generate(Frame& f, List_Builder& lb) const
 {
-    auto list = arg_->eval(f).to<const List>(At_Phrase(*arg_->syntax_, &f));
+    auto list = arg_->eval(f).to<const List>(At_Phrase(*arg_->syntax_, f));
     for (size_t i = 0; i < list->size(); ++i)
         lb.push_back(list->at(i));
 }
 void
-Spread_Op::bind(Frame& f, Record& r) const
+Spread_Op::bind(Frame& f, DRecord& r) const
 {
-    auto s = arg_->eval(f).to<const Structure>(At_Phrase(*arg_->syntax_, &f));
-    s->putfields(r.fields_);
+    At_Phrase cx(*arg_->syntax_, f);
+    auto s = arg_->eval(f).to<const Record>(cx);
+    for (auto i = s->iter(); !i->empty(); i->next())
+        r.fields_[i->key()] = i->value(cx);
 }
 
 void
-Assoc::bind(Frame& f, Record& r) const
+Assoc::bind(Frame& f, DRecord& r) const
 {
     Symbol symbol = name_.eval(f);
     r.fields_[symbol] = definiens_->eval(f);
@@ -549,7 +521,7 @@ Assoc::bind(Frame& f, Record& r) const
 Value
 Record_Expr::eval(Frame& f) const
 {
-    auto record = make<Record>();
+    auto record = make<DRecord>();
     for (auto op : fields_)
         op->bind(f, *record);
     return {record};
@@ -590,7 +562,7 @@ void
 Module_Data_Setter::exec(Frame& f) const
 {
     Module& m = (Module&)f[slot_].get_ref_unsafe();
-    assert(m.type_ == Ref_Value::ty_module);
+    assert(m.subtype_ == Ref_Value::sty_module);
     m.at(index_) = expr_->eval(f);
 }
 
@@ -629,7 +601,7 @@ Block_Op::generate(Frame& f, List_Builder& lb) const
     body_->generate(f, lb);
 }
 void
-Block_Op::bind(Frame& f, Record& r) const
+Block_Op::bind(Frame& f, DRecord& r) const
 {
     statements_.exec(f);
     body_->bind(f, r);
@@ -654,7 +626,7 @@ Preaction_Op::generate(Frame& f, List_Builder& lb) const
     body_->generate(f, lb);
 }
 void
-Preaction_Op::bind(Frame& f, Record& r) const
+Preaction_Op::bind(Frame& f, DRecord& r) const
 {
     actions_->exec(f);
     body_->bind(f, r);
@@ -673,7 +645,7 @@ Compound_Op_Base::generate(Frame& f, List_Builder& lb) const
         s->generate(f, lb);
 }
 void
-Compound_Op_Base::bind(Frame& f, Record& r) const
+Compound_Op_Base::bind(Frame& f, DRecord& r) const
 {
     for (auto s : *this)
         s->bind(f, r);
@@ -690,7 +662,7 @@ While_Action::exec(Frame& f) const
 {
     for (;;) {
         Value c = cond_->eval(f);
-        bool b = c.to_bool(At_Phrase{*cond_->syntax_, &f});
+        bool b = c.to_bool(At_Phrase{*cond_->syntax_, f});
         if (!b) return;
         body_->exec(f);
     }
@@ -699,7 +671,7 @@ While_Action::exec(Frame& f) const
 void
 For_Op::generate(Frame& f, List_Builder& lb) const
 {
-    At_Phrase cx{*list_->syntax_, &f};
+    At_Phrase cx{*list_->syntax_, f};
     At_Index icx{0, cx};
     Value listval = list_->eval(f);
     List& list = arg_to_list(listval, cx);
@@ -710,9 +682,9 @@ For_Op::generate(Frame& f, List_Builder& lb) const
     }
 }
 void
-For_Op::bind(Frame& f, Record& r) const
+For_Op::bind(Frame& f, DRecord& r) const
 {
-    At_Phrase cx{*list_->syntax_, &f};
+    At_Phrase cx{*list_->syntax_, f};
     At_Index icx{0, cx};
     Value listval = list_->eval(f);
     List& list = arg_to_list(listval, cx);
@@ -725,7 +697,7 @@ For_Op::bind(Frame& f, Record& r) const
 void
 For_Op::exec(Frame& f) const
 {
-    At_Phrase cx{*list_->syntax_, &f};
+    At_Phrase cx{*list_->syntax_, f};
     At_Index icx{0, cx};
     Value listval = list_->eval(f);
     List& list = arg_to_list(listval, cx);
@@ -766,7 +738,7 @@ Range_Expr::eval(Frame& f) const
         const char* err =
             (countd == countd ? "too many elements in range" : "domain error");
         const char* dots = (half_open_ ? "..<" : "..");
-        throw Exception(At_Phrase(*syntax_, &f),
+        throw Exception(At_Phrase(*syntax_, f),
             arg3_
                 ? stringify(firstv,dots,lastv," by ",stepv,": ", err)
                 : stringify(firstv,dots,lastv,": ", err));
@@ -800,7 +772,7 @@ Paren_Segment::generate(Frame& f, String_Builder& sb) const
 void
 Bracket_Segment::generate(Frame& f, String_Builder& sb) const
 {
-    At_Phrase cx(*expr_->syntax_,&f);
+    At_Phrase cx(*expr_->syntax_, f);
     auto list = expr_->eval(f).to<List>(cx);
     for (size_t i = 0; i < list->size(); ++i)
         sb << (char)arg_to_int((*list)[i], 1, 127, At_Index(i,cx));
@@ -828,8 +800,7 @@ String_Expr_Base::eval_symbol(Frame& f) const
     String_Builder sb;
     for (auto seg : *this)
         seg->generate(f, sb);
-    auto s = sb.str();
-    return {s.data(), s.size()};
+    return {sb.str()};
 }
 
 void
@@ -841,11 +812,11 @@ Pattern_Setter::exec(Frame& f) const
     else {
         auto mval = f[module_slot_];
         auto m = (Module*)&mval.get_ref_unsafe();
-        assert(m->type_ == Ref_Value::ty_module);
+        assert(m->subtype_ == Ref_Value::sty_module);
         slots = &m->at(0);
     }
     Value value = definiens_->eval(f);
-    pattern_->exec(slots, value, At_Phrase(*definiens_->syntax_, &f), f);
+    pattern_->exec(slots, value, At_Phrase(*definiens_->syntax_, f), f);
 }
 
 void
@@ -857,7 +828,7 @@ Function_Setter_Base::exec(Frame& f) const
     else {
         auto mval = f[module_slot_];
         auto m = (Module*)&mval.get_ref_unsafe();
-        assert(m->type_ == Ref_Value::ty_module);
+        assert(m->subtype_ == Ref_Value::sty_module);
         slots = &m->at(0);
     }
     Shared<Module> nonlocals = nonlocals_->eval_module(f);
@@ -874,7 +845,7 @@ Include_Setter_Base::exec(Frame& f) const
     else {
         auto mval = f[module_slot_];
         auto m = (Module*)&mval.get_ref_unsafe();
-        assert(m->type_ == Ref_Value::ty_module);
+        assert(m->subtype_ == Ref_Value::sty_module);
         slots = &m->at(0);
     }
     for (auto& e : *this)

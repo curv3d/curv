@@ -1,0 +1,16 @@
+`lib` is a builtin lazy record value.
+Its fields are the *.curv files in the directory PREFIX/lib/curv.
+(So this is a preview of directory syntax.)
+
+TODO:
+* Implement Dir_Record and a directory syntax importer.
+* Implement `lib`.
+
+The System object contains the `lib` object, which is constructed at
+System construction time from the libdir, as an instance of Dir_Record.
+The fields are populated at this time by reading the directory.
+(Meaning that Dir_Record::hasfield(sym) cannot fail.) But the files are not
+read until they are first referenced (meaning that Dir_Record::getfield(sym,cx)
+can fail during file i/o).
+
+The libdir is configurable, using $CURV_LIBDIR.
