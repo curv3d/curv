@@ -88,10 +88,30 @@ void Viewer::open()
 
 void Viewer::reset_view()
 {
+    // Reset the 2D camera position.
     u_view2d_ = glm::mat3(1.);
-    u_centre3d_ = glm::vec3(0.,0.,0.);
-    u_eye3d_ = glm::vec3(2.598076,3.0,4.5);
-    u_up3d_ = glm::vec3(-0.25,0.866025,-0.433013);
+
+    // Reset the 3D camera position.
+    //
+    // The 3D camera position assumes that the object being viewed
+    // is a centred, axis aligned cube of size 2,
+    // extending between -1 and 1 along the X, Y, and Z axes.
+    // The rendering code transforms coordinates based on the actual
+    // shape's bounding box to get the actual camera position.
+    //
+    // Note: the up3d vector must be orthogonal to (eye3d - centre3d),
+    // or rotation doesn't work correctly.
+
+    // The centre is the origin.
+    u_centre3d_ = glm::vec3(0., 0., 0.);
+
+    // 'eye3d' is derived by starting with [0,0,6], then rotating 30 degrees
+    // around the X and Y axes.
+    u_eye3d_ = glm::vec3(2.598076, 3.0, 4.5);
+
+    // up3d is derived by starting with [0,1,0], then applying
+    // the same rotations as above, so that up3d is orthogonal to eye3d.
+    u_up3d_ = glm::vec3(-0.25, 0.866025, -0.433013);
 }
 
 bool Viewer::draw_frame()

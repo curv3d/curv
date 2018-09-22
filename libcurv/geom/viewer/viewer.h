@@ -85,17 +85,13 @@ struct Viewer
     double current_time_ = 0.0;
     double fFPS_ = 0.0;
 
-    glm::mat3 u_view2d_ = glm::mat3(1.);
-    // These are the 'view3d' uniforms.
-    // Note: the up3d vector must be orthogonal to (eye3d - centre3d),
-    // or rotation doesn't work correctly.
-    glm::vec3 u_centre3d_ = glm::vec3(0.,0.,0.);
-    // The following initial value for 'eye3d' is derived by starting with
-    // [0,0,6], then rotating 30 degrees around the X and Y axes.
-    glm::vec3 u_eye3d_ = glm::vec3(2.598076,3.0,4.5);
-    // The initial value for up3d is derived by starting with [0,1,0], then
-    // applying the same rotations as above, so that up3d is orthogonal to eye3d.
-    glm::vec3 u_up3d_ = glm::vec3(-0.25,0.866025,-0.433013);
+    // The 2D camera position.
+    glm::mat3 u_view2d_ {};
+
+    // The 3D camera position. See reset_view() for more information.
+    glm::vec3 u_centre3d_ {};
+    glm::vec3 u_eye3d_ {};
+    glm::vec3 u_up3d_ {};
 
     typedef struct {
         float     x,y;
