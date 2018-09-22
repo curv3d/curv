@@ -10,10 +10,14 @@
 
 namespace curv {
 
-// A curv 'Record' is a value containing a set of fields (name/value pairs).
-// Subtypes are DRecord and Module.
-// All records have the same protocol for field access, which is encapsulated
-// in this pure virtual class.
+// `Record` is a pure virtual class describing Curv record values.
+// A Record is a collection of fields (name/value pairs).
+// Subtypes are DRecord, Module and Dir_Record.
+//
+// A Record knows what its field names are at all times.
+// Thus, hasfield(), fields() and size() do not throw an exception.
+// However, field values can be lazily evaluated (needed for Dir_Record).
+// Thus, all APIs that retrieve a field value require a Context.
 struct Record : public Ref_Value
 {
     Record(int subtype) : Ref_Value(ty_record, subtype) {}
