@@ -5,9 +5,10 @@ of primitives for constructing shapes. The new `lib` feature allows these
 primitives to be organized into a hierarchical module namespace, with modules
 that are only loaded into memory on first reference.
 
-Suppose that `web_colour` is a standard library module that contains all of
-the HTML5 colour names. To define it, create `lib/curv/web_colour.curv`,
-then run `make install`. Then here is how you can use it:
+Currently defined library modules:
+* lib.web_colour : defines all of the standard CSS colour names
+
+Here is how you can use lib.web_colour:
 
     lib.web_colour.peach_puff
 
@@ -21,13 +22,11 @@ then run `make install`. Then here is how you can use it:
     in
         wc.peach_puff
 
+The source code for library modules is found in lib/curv, and these files
+are installed in /usr/local/lib/curv by `make install`.
+
 Here are some ideas for new library modules.
 
-web_colour
-    Defines all of the HTML5/CSS colour names.
-    Defines the function rgb(r,g,b): arguments are in the range 0 to 255.
-    The colour names are defined using the `rgb` function.
-    For example: `peach_puff = rgb(55,218,185);`
 blend
     A richer set of blending primitives, pulled from multiple sources.
     @gsohler is working on a pull request to add the Mercury blend primitives
@@ -45,6 +44,7 @@ noise
     Resources:
     * http://github.com/ashima/webgl-noise
     * https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
+    * https://www.shadertoy.com/results?query=tag%3Dnoise
 fractal
     Primitives for making fractals, perhaps based on Mandelbulber
     and the example code in Fragmentarium.
@@ -69,5 +69,5 @@ repetition & space folding
 
 Additional resources:
 Look at the examples in Fragmentarium, or perhaps shadertoy.com, and recreate
-interesting examples using high level library primitives, inventing new
+interesting models using high level library primitives, inventing new
 primitives as necessary.
