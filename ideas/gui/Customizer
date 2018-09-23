@@ -3,6 +3,7 @@ for tweaking the parameters of a parametric shape.
 
 Graphical value pickers
 -----------------------
+* checkbox: for a boolean value
 * enum: a fixed set of values
 * slider: for a bounded numeric range
 * integer slider (discrete slider)
@@ -12,7 +13,6 @@ Graphical value pickers
 * 3D rotation
 * colour picker
 * hue picker
-* boolean
 
 Reactive Records
 ----------------
@@ -71,14 +71,14 @@ A reactive record is just an ordinary record value, containing:
 * A constructor function, which maps a parameter record to a new precord.
   Stored in the `call` field.
 * A parameter record (with the name and value of each parameter)
-  stored in the `parameters` field.
+  stored in the `parameter` field.
 
 The Viewer recognizes a parametric shape because it is a shape record with
-these two extra fields, `call` and `parameters`.
+these two extra fields, `call` and `parameter`.
 
 The Viewer compiles the `call` field into GLSL. The `call` pattern is
 a record pattern, and each field has a predicate pattern, which contains
-the picker type. This record pattern must match the `parameters` field.
+the picker type. This record pattern must match the `parameter` field.
 The parameters are emitted as uniform variables. The body of the function
 must yield a shape record, as determined at compile time using type inference.
 

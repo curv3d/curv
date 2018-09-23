@@ -1,0 +1,41 @@
+Compiler changes to support the Customizer
+==========================================
+The main interface to the GLSL compiler takes a shape as an argument,
+and outputs a set of GLSL definitions.
+    void glsl_export(const Shape_Program& shape, std::ostream& out)
+
+GL compile a parametric shape + picker patterns
+into a set of GLSL definitions + uniforms
+using the GL abstract evaluator.
+
+A parametric shape is distinguished by two fields:
+* `call` is a function mapping a parameter record to another instance of the
+  same shape family. The argument has a record pattern, and within the record
+  pattern, each individual field:
+  * may have a predicate pattern, where the predicate may be a picker.
+  * has a default value that matches the `parameter field below.
+* `parameter` is a record of default parameter values, matching the record
+  pattern in the `call` function.
+
+If we are GL compiling a shape that has the `call` and `parameter` fields,
+but they aren't valid as a parametric record, we issue a warning
+and compile the shape as non-parametric.
+
+Picker predicates cause the GL compiler to assign uniform variables to the
+corresponding parameters. There is a GL compile error if the resulting code
+is not GL compatible, which goes away if you remove the annotation.
+
+The GL compiler recognizes parametric shapes. The parameters of `call`
+which have picker predicates are mapped to uniform variables, while non
+annotated parameters are replaced by their default values.
+
+The GL compiler compiles the body of the call function into an abstract
+record value, parameterized by uniforms defined by the parameter record,
+using abstract evaluation.
+
+This abstract record value is then recognized as an abstract shape value,
+and we output each shape field as a top level GLSL definition.
+And we also output uniform variable definitions.
+
+* checkbox a -- a is a boolean value, use checkbox picker.
+* slider(i,j) a -- a is a number between i and j inclusive, use slider picker.
