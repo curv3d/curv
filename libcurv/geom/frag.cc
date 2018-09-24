@@ -4,13 +4,12 @@
 
 #include <libcurv/geom/frag.h>
 
+#include <libcurv/geom/glsl.h>
 #include <libcurv/geom/shape.h>
 
 #include <libcurv/die.h>
 #include <libcurv/dtostr.h>
 #include <libcurv/function.h>
-#include <libcurv/gl_compiler.h>
-#include <libcurv/gl_context.h>
 
 namespace curv { namespace geom {
 
@@ -30,9 +29,6 @@ void export_frag(
 void export_frag_2d(
     const Shape_Program& shape, const Frag_Export& opts, std::ostream& out)
 {
-    GL_Compiler gl(out, GL_Target::glsl, shape.system());
-    GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
-
     out <<
         "#define AA " << opts.aa_ << "\n"
         "#define TAA " << opts.taa_ << "\n"
@@ -43,18 +39,10 @@ void export_frag_2d(
             << opts.bg_.z << ");\n"
         "#ifdef GLSLVIEWER\n"
         "uniform mat3 u_view2d;\n"
-        "#endif\n"
-        "float main_dist(vec4 " << dist_param << ", out vec4 colour)\n"
-        "{\n";
+        "#endif\n";
 
-    GL_Value result = shape.gl_dist(dist_param, gl);
+    glsl_function_export(shape, out);
 
-    GL_Value colour = shape.gl_colour(dist_param, gl);
-    out << "  colour = vec4(" << colour << ", 1.0);\n";
-
-    out <<
-        "  return " << result << ";\n"
-        "}\n";
     BBox bbox = shape.bbox_;
     if (bbox.empty2() || bbox.infinite2()) {
         out <<
@@ -99,11 +87,13 @@ void export_frag_2d(
         "#else\n"
         "    float time = iTime;\n"
         "#endif\n"
-        "    float d = main_dist(vec4(xy*scale+offset,0,time), fragColour);\n"
+        "    vec4 p = vec4(xy*scale+offset,0,time);\n"
+        "    float d = dist(p);\n"
         "    if (d > 0.0) {\n"
-        "        fragColour = vec4(background_colour,1.0);\n"
+        "        col += background_colour;\n"
+        "    } else {\n"
+        "        col += colour(p);\n"
         "    }\n"
-        "    col += fragColour.xyz;\n"
         "    \n"
         "#if TAA>1\n"
         "  }\n"
@@ -115,7 +105,7 @@ void export_frag_2d(
         "    col /= float(AA*AA*TAA);\n"
         "#endif\n"
         "    // convert linear RGB to sRGB\n"
-        "    fragColour.xyz = pow(col, vec3(0.4545));\n"
+        "    fragColour = vec4(pow(col, vec3(0.454545454545454545)),1.0);\n"
         "    \n"
         "}\n"
         ;
@@ -124,9 +114,6 @@ void export_frag_2d(
 void export_frag_3d(
     const Shape_Program& shape, const Frag_Export& opts, std::ostream& out)
 {
-    GL_Compiler gl(out, GL_Target::glsl, shape.system());
-
-    GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
     out <<
         "#define AA " << opts.aa_ << "\n"
         "#define TAA " << opts.taa_ << "\n"
@@ -139,24 +126,9 @@ void export_frag_3d(
         "uniform vec3 u_eye3d;\n"
         "uniform vec3 u_centre3d;\n"
         "uniform vec3 u_up3d;\n"
-        "#endif\n"
-        "float dist(vec4 " << dist_param << ")\n"
-        "{\n";
-    GL_Value dist_result = shape.gl_dist(dist_param, gl);
-    out <<
-        "  return " << dist_result << ";\n"
-        "}\n"
-        "\n";
+        "#endif\n";
 
-    GL_Value colour_param = gl.newvalue(GL_Type::Vec4);
-    out <<
-        "vec3 colour(vec4 " << colour_param << ")\n"
-        "{\n";
-    GL_Value colour_result = shape.gl_colour(colour_param, gl);
-    out <<
-        "  return " << colour_result << ";\n"
-        "}\n"
-        "\n";
+    glsl_function_export(shape, out);
 
     BBox bbox = shape.bbox_;
     if (bbox.empty3() || bbox.infinite3()) {
@@ -369,7 +341,7 @@ void export_frag_3d(
        "#endif\n"
        "\n"
        "    // convert linear RGB to sRGB\n"
-       "    col = pow(col, vec3(0.4545));\n"
+       "    col = pow(col, vec3(0.454545454545454545));\n"
        "    fragColour = vec4(col,1.0);\n"
        "}\n"
        ;
