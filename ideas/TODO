@@ -5,11 +5,11 @@ Big Items (target: Dec 2018)
 * sharp STL export?
 
 Current TODO List:
-* `lib`
 * -o glsl
+* configure default values for -O options. ~/.config/curv/config.curv
 * graphical value pickers
   * parametric records (which are syntactic sugar)
-  * value picker predicates (eg, is_bool and in_range)
+  * value picker predicates (eg, checkbox and slider)
   * GL compile a shape into a set of GLSL definitions.
   * GL compile a parametric shape into a set of GLSL definitions + uniforms.
     * GL abstract evaluator.
