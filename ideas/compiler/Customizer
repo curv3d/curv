@@ -39,3 +39,85 @@ And we also output uniform variable definitions.
 
 * checkbox a -- a is a boolean value, use checkbox picker.
 * slider(i,j) a -- a is a number between i and j inclusive, use slider picker.
+
+Compiler Changes
+----------------
+I'd like the ability to output an 'inf' const definition.
+In GLSL 4.1, it's technically legal to write
+    #version 410
+    const float inf = 1.0 / 0.0;
+
+WebGL 2 is based on GLSL-ES 3.0, in which Inf support is optional.
+MacOS may not tolerate the '#version 410', since it advertises OpenGL 2.1.
+Maybe I dynamically figure out the OpenGL version requirement during
+compilation. Some shapes won't run if the GPU driver doesn't meet minimum
+Curv requirements, but less demanding shapes can still work.
+
+While compiling a function, we may generate prerequisite definitions.
+
+The output of the first phase of GL compilation is a data structure, consisting
+of a list of top-level definitions, with their values represented by IR trees.
+An ordered list that encodes dependency ordering, maybe.
+Then we traverse the data structure and output GLSL text.
+
+An IR tree is just an Operation tree. It's good to have a single intermediate
+compiler representation that can be used across multiple compiler passes.
+
+I've considered whether the IR representation can be unified with Values.
+Possible antecedents are: Lisp "programs are data structures" (only in a weak
+sense), and Mathematica symbolic evaluation. This idea is premature, but good
+to consider for the long term, if it leads to a simpler and more powerful
+system. Right now, it's better to mimic a conventional compiler.
+
+Requirements for the IR.
+* Expression nodes optionally have a GL type, which is propagated using
+  type inference.
+* Partial evaluation / constant folding / function call inlining.
+* Expression nodes have a `simplify` method that performs partial evaluation,
+  constant folding, etc. Function values have an optional `simplify` method
+  that maps an argument Expression to a simplified version of the function
+  call. If the argument is a Const, then we `call` the function instead.
+* Not all function calls need to be inlined. If a function has a GL type,
+  then we could emit a function definition and call it out-of-line.
+* Pattern matching works on Expression arguments during function call inlining.
+* I can print an IR tree, so that I can debug what the simpifier is doing.
+
+Simplify: Phase 1 of GL Compiler
+--------------------------------
+This phase transforms the program into statically typed procedural code
+(aka GLCode), not yet specialized into GLSL or C++.
+* Performs GL type checking, attaches optional GL types to Expression nodes.
+* Performs code transformations that eliminate untyped expressions.
+    Inline expand calls to untyped functions.
+    {a:x}.a => x
+    (x,y,z)[0] => x
+    make_shape{...} => GLCode record
+* This phase could be extended to a full optimization pass. That is not
+  required for the Customizer.
+
+Input: a function value (eg, dist or colour function).
+Output: a GLCode function definition, plus auxiliary definitions.
+
+Input: a parametric record.
+Output: a GLCode record, plus auxiliary definitions, incl. uniform variables.
+
+Need a data structure that collects top level definitions.
+
+What does the GLCode for a record look like?
+* Currently, I have a Record_Expr, and a Module_Expr abstract class.
+  These could also occur as the body of a Preaction_Op or a Block_Op.
+  There will also be Const(record_value) nodes.
+
+How do I recognize a GLCode record?
+* Maybe there is a type() function on expression nodes. There could be a
+  record type that contains a set of (fieldname,type) pairs.
+
+How do I extract a field named F from a GLCode record EXPR?
+* In the general case, one could create a new Dot(EXPR,F) expression,
+  then simplify it. This would include dead code elimination.
+* In a realistic example, the body of a parametric record will compile into
+  a GLCode expression of type record, with shape fields. We want to extract
+  the 'dist' and 'colour' fields, which will not be constant values, but
+  expression trees that share common subexpressions. There won't be a way to
+  share code (except if we can emit common function definitions called by
+  both trees, to be considered later).
