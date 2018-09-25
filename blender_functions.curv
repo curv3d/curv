@@ -1,0 +1,62 @@
+// Code for testing the blend library
+
+let 
+// This includes the installed version of the blend library:
+//include lib.blend;
+
+// This includes the copy of the blend library in the source tree:
+include file "lib/curv/blend.curv";
+
+show_grid pitch (shape) =
+    make_shape {
+        dist p : shape.dist p,
+        colour p : let
+                c=if (
+                        mod(abs(p[0])+(0.001+pitch)/2,pitch) < 0.01 ||
+                        mod(abs(p[1])+(0.001+pitch)/2,pitch) < 0.01 ||
+                        mod(abs(p[2])+(0.001+pitch)/2,pitch) < 0.01
+                )
+                        [0,0,0]
+                else
+                        [1,1,1] // [0.9,0.9,0.9]
+                in
+                c ,
+        bbox : shape.bbox, 
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    };
+
+caps=capsule{d:0.5, from:[0,0,0],to:[1,0,0] }
+
+in
+
+// smooth  0.5  .union (sphere, cube >> move(1,1,1)) // WORKS
+// smooth  0.5  .difference (sphere, cube >> move(1,1,1)) // WORKS
+// smooth  0.5  .intersection (sphere, cube >> move(1,1,1)) // WORKS
+
+//chamfer 0.1 .union (sphere, cube >> move(1,1,1)) // WORKS
+//chamfer 0.5  .difference (sphere, cube >> move(1,1,1)) // PROBLEM
+//chamfer  0.5 .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
+
+//stairs ( 0.5,3) .union (sphere, cube >> move(1,1,1)) // WORKS
+//stairs ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // WORKS
+//stairs ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // WORKS
+
+//columns ( 0.5,3 ) .union (sphere >> colour red, cube >> move(1,1,1)) // WORKS
+//columns ( 0.5,3 ) .difference (sphere, cube >> move(1,1,1)) // PROBLEM
+//columns ( 0.5,3 ) .intersection (sphere, cube >> move(1,1,1)) // PROBLEM
+
+// pipes  0.2 (sphere, cube >> move(1,1,1)) >> lipschitz 2 // WORKS 
+// engrave  0.2 (sphere >> colour red, cube >> move(1,1,1)) // WORKS 
+//groove ( 0.2,0.1 ) (sphere >> colour red , cube >> move(1,1,1)) // WORKS 
+//tongue ( 0.2,0.1 ) (sphere >> colour red, cube >> move(1,1,1)) // WORKS 
+
+//>> show_grid 0.3
+
+//columns  (0.2,3) .union (circle, square >> move(1,1)) >> show_bbox
+//tongue (0.1 , 0.2) (sphere, cube >> move(1,1,1)) >> lipschitz 2 // >> show_bbox
+
+// union  (circle, square >> move(1,1)) >> show_bbox
+
+chamfer .5 .union(caps,caps >> rotate(3.14))  >> show_bbox
+//caps
