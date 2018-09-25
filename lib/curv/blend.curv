@@ -18,9 +18,9 @@ in {
                 let d1 = s1.dist p;
                     d2 = s2.dist p;
                 in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p;
-            bbox = let ext=0.5
-                   in [ min(s1.bbox[MIN], s2.bbox[MIN]-(ext,ext,ext)),
-                     max(s1.bbox[MAX], s2.bbox[MAX])+(ext,ext,ext) ];
+            bbox = let bulge = -bmin(0,0);
+                   in [ min(s1.bbox[MIN], s2.bbox[MIN]) - bulge,
+                        max(s1.bbox[MAX], s2.bbox[MAX]) + bulge ];
             is_2d = s1.is_2d && s2.is_2d;
             is_3d = s1.is_3d && s2.is_3d;
         };

@@ -58,5 +58,9 @@ in
 
 // union  (circle, square >> move(1,1)) >> show_bbox
 
-chamfer .5 .union(caps,caps >> rotate(3.14))  >> show_bbox
+//chamfer .5 .union(caps,caps >> rotate(3.14))  >> show_bbox
 //caps
+//smooth 0.5 .union(circle, circle) >> show_bbox
+//chamfer 0.5 .union(circle, circle) >> show_bbox
+//stairs (0.5,3) .union(circle, circle) >> show_bbox
+columns (0.5,3) .union(circle, circle) >> show_bbox
