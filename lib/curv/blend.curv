@@ -1,4 +1,4 @@
-// Blending functions ported from http://mercury.sexy/hg_sdf/
+// Blending functions ported from http://mercury.sexy/hg_sdf/ by @gsohler
 {
 
 make_blend config args =
@@ -45,6 +45,7 @@ make_blend config args =
     };
 
 smooth = make_blend {
+    // Credit: original algorithm in GLSL by Inigo Quilez
     fmin (a, b, r) =
         let
         h = clamp( 0.5+0.5*(b-a)/r, 0, 1 );
@@ -53,6 +54,7 @@ smooth = make_blend {
 };
 
 chamfer = make_blend {
+    // Credit: Doug Moen
     fmin (a, b, r) =
         let
         e = max(r - abs(a - b), 0);
@@ -61,6 +63,7 @@ chamfer = make_blend {
 };
 
 stairs = make_blend {
+    // Credit: original algorithm in GLSL by @paniq
     fmin (a, b, (r,n) ) =
         let
         s=r/n ;
@@ -70,6 +73,7 @@ stairs = make_blend {
 };
 
 columns = make_blend {
+    // Credit: original algorithm in GLSL by MERCURY
     fmin (a, b, (r, n)) =
         if (a >=r || b >= r)
         (
@@ -119,6 +123,7 @@ columns = make_blend {
 
 pipes r (s1, s2) =
     make_shape {
+        // Credit: original dist function in GLSL by MERCURY
         dist p = mag(s1.dist p, s2.dist p) - r;
         colour = s1.colour;
         bbox = [ max(s1.bbox[MIN], s2.bbox[MIN]) - r,
@@ -129,6 +134,7 @@ pipes r (s1, s2) =
 
 engrave r (s1, s2) =
     make_shape {
+        // Credit: original dist function in GLSL by MERCURY
         dist p = max(s1.dist p,((s1.dist p)+r-abs((s2.dist p)))/sqrt(2));
         colour = s1.colour;
         bbox = s1.bbox;
@@ -138,6 +144,7 @@ engrave r (s1, s2) =
 
 groove (ra, rb )(s1, s2) =
     make_shape {
+        // Credit: original dist function in GLSL by MERCURY
         dist p = max(s1.dist p,min((s1.dist p) +ra,rb-abs(s2.dist p)));
         colour = s1.colour;
         bbox = s1.bbox;
@@ -147,6 +154,7 @@ groove (ra, rb )(s1, s2) =
 
 tongue (ra, rb )(s1, s2) =
     make_shape {
+        // Credit: original dist function in GLSL by MERCURY
         dist p = min(s1.dist p,max((s1.dist p)-ra,abs(s2.dist p)-rb));
         colour = s1.colour;
         bbox = [ s1.bbox[MIN] - (ra,ra,ra),
