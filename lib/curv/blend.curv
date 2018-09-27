@@ -1,0 +1,158 @@
+// Blending functions ported from http://mercury.sexy/hg_sdf/
+{
+
+make_blend config args =
+    let _bmax =
+        if (defined(config.fmax))
+            (a, b) -> config.fmax(a, b, args)
+        else
+            (a, b) -> -config.fmin(-a, -b, args);
+    in {
+        union (s1,s2) =
+            make_shape {
+                dist p =
+                    let a = s1.dist p;
+                        b = s2.dist p;
+                    in bmin(a,b);
+                colour p =
+                    let d1 = s1.dist p;
+                        d2 = s2.dist p;
+                    in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p;
+                bbox = let bulge = -bmin(0,0);
+                       in [ min(s1.bbox[MIN], s2.bbox[MIN]) - bulge,
+                            max(s1.bbox[MAX], s2.bbox[MAX]) + bulge ];
+                is_2d = s1.is_2d && s2.is_2d;
+                is_3d = s1.is_3d && s2.is_3d;
+            };
+
+        intersection (s1,s2) =
+            make_shape {
+                dist p =
+                    let a = s1.dist p;
+                        b = s2.dist p;
+                    in bmax(a,b);
+                colour = s1.colour;
+                bbox = [ max(s1.bbox[MIN], s2.bbox[MIN]),
+                         min(s1.bbox[MAX], s2.bbox[MAX]) ];
+                is_2d = s1.is_2d && s2.is_2d;
+                is_3d = s1.is_3d && s2.is_3d;
+            };
+
+        difference (s1,s2) = intersection (s1, complement s2);
+
+        bmin(a,b) = config.fmin(a, b, args);
+        bmax = _bmax;
+    };
+
+smooth = make_blend {
+    fmin (a, b, r) =
+        let
+        h = clamp( 0.5+0.5*(b-a)/r, 0, 1 );
+        in lerp( b, a, h ) - r*h*(1.0-h);
+
+};
+
+chamfer = make_blend {
+    fmin (a, b, r) =
+        let
+        e = max(r - abs(a - b), 0);
+        in
+        min(a, b) - e*.5;
+};
+
+stairs = make_blend {
+    fmin (a, b, (r,n) ) =
+        let
+        s=r/n ;
+        u=b-r;
+        in
+        min(min(a,b),0.5*(u+a+abs((mod(u-a+s,2*s))-s)));
+};
+
+columns = make_blend {
+    fmin (a, b, (r, n)) =
+        if (a >=r || b >= r)
+        (
+                let
+                result=min(a,b);
+                in
+                result
+        )
+        else
+        (
+                let
+                columnradius=r*sqrt(2)/((n-1)*2+sqrt(2));
+                px = a + b/sqrt(2) - r/sqrt(2)+columnradius*sqrt(2);
+         py = b - a/sqrt(2);
+
+                py1=
+                if(mod(n,2) == 1)
+                        mod(py+2*columnradius,2*columnradius)-columnradius
+                else
+                        mod(py+columnradius,2*columnradius)-columnradius
+                ;
+                result=min(mag(px,py1) - columnradius,px,a,b);
+                in
+                result
+        );
+    fmax (a, b, (r, n)) = diff(a, -b, (r, n));
+    diff (a, b, (r, n)) =
+        if (a >=r  || b >= r)
+            -min(-a,b)
+        else
+            let
+            columnradius=r*sqrt(2)/((n-1)*2+sqrt(2));
+            px = -a + b/sqrt(2)-r/sqrt(2)-columnradius/sqrt(2);
+            py = b +  a/sqrt(2)+columnradius;
+
+            py1=
+            if(mod(n,2) == 1)
+                    mod(py+2*columnradius,2*columnradius)-columnradius
+            else
+                    mod(py+columnradius,2*columnradius)-columnradius
+            ;
+
+            result=columnradius - mag(px,py1)
+            in
+            -min(max(result,px),-a,b);
+};
+
+pipes r (s1, s2) =
+    make_shape {
+        dist p = mag(s1.dist p, s2.dist p) - r;
+        colour = s1.colour;
+        bbox = [ max(s1.bbox[MIN], s2.bbox[MIN]) - r,
+                 min(s1.bbox[MAX], s2.bbox[MAX]) + r ];
+        is_2d = s1.is_2d && s2.is_2d;
+        is_3d = s1.is_3d && s2.is_3d;
+    };
+
+engrave r (s1, s2) =
+    make_shape {
+        dist p = max(s1.dist p,((s1.dist p)+r-abs((s2.dist p)))/sqrt(2));
+        colour = s1.colour;
+        bbox = s1.bbox;
+        is_2d = s1.is_2d && s2.is_2d;
+        is_3d = s1.is_3d && s2.is_3d;
+    };
+
+groove (ra, rb )(s1, s2) =
+    make_shape {
+        dist p = max(s1.dist p,min((s1.dist p) +ra,rb-abs(s2.dist p)));
+        colour = s1.colour;
+        bbox = s1.bbox;
+        is_2d = s1.is_2d && s2.is_2d;
+        is_3d = s1.is_3d && s2.is_3d;
+    };
+
+tongue (ra, rb )(s1, s2) =
+    make_shape {
+        dist p = min(s1.dist p,max((s1.dist p)-ra,abs(s2.dist p)-rb));
+        colour = s1.colour;
+        bbox = [ s1.bbox[MIN] - (ra,ra,ra),
+                 s1.bbox[MAX] + (ra,ra,ra) ];
+        is_2d = s1.is_2d && s2.is_2d;
+        is_3d = s1.is_3d && s2.is_3d;
+    };
+
+}

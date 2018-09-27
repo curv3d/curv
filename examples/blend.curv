@@ -1,0 +1,28 @@
+// This reproduces a sample image from http://mercury.sexy/hg_sdf
+// Credit: @gsohler
+
+let
+include lib.blend;
+show_grid pitch (shape) =
+    make_shape {
+        dist p : shape.dist p,
+        colour p : let
+                c=if (
+                        mod(abs(p[0])+(0.001+pitch)/2,pitch) < 0.01 ||
+                        mod(abs(p[1])+(0.001+pitch)/2,pitch) < 0.01 ||
+                        mod(abs(p[2])+(0.001+pitch)/2,pitch) < 0.01
+                )
+                        [0,0,0]
+                else
+                        [1,1,1] // [0.9,0.9,0.9]
+                in
+                c ,
+        bbox : shape.bbox,
+        is_2d : shape.is_2d,
+        is_3d : shape.is_3d,
+    };
+
+in
+columns (0.5, 3) .union (sphere, cube >> move(1,1,1))
+  >> lipschitz 2
+  >> show_grid 0.3
