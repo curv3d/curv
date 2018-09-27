@@ -61,6 +61,16 @@ Notes:
     https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/dxqWTSvyhDg
     The Chromium Blink rendering engine will implement WebGPU on top of Vulkan,
     DX12 or Metal.
+* Kronos wants Vulkan to be the cross platform API. But Vulkan is unsafe, and
+  not suitable for the web. WebGPU will be safe, fast, powerful and high level,
+  and implementable on top of Vulkan, Metal, DX12. Hopefully the browser vendors
+  will make a C/C++/Rust library for WebGPU that I can use, even if the WebGPU
+  group doesn't see designing that API as their job.
+* A Sept2018 peek at the WebGPU github suggests they will use either SPIR-V
+  or HLSL as their shading language: pick something popular, don't invent
+  something new. That could influence what targets I pick for the GL compiler.
+  (SPIR-V makes more sense. Maybe this leads to Apple supporting SPIR-V in
+  metal? Who knows.)
 
 WebGPU sounds awesome. Be nice if there was a corresponding C++ or Rust 
 library providing a common API on Linux/Mac/Windows/Android.
