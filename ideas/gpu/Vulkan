@@ -4,21 +4,31 @@ Here are the platforms that I might want Curv to support:
 * Linux
 * macOS
 * Windows WIN32
-* Windows UWP?
 * Android
 * Web, via WebAssembly
 
 (No RaspberryPi, because there is no compute shader support.)
 (No iOS, because the App Store restrictions are incompatible with the
 principles and practices of Open Source software.)
+(Probably no Windows UWP. In Sept 2018, >50% of Windows users can't run UWP
+executables, and there's no real downside to WIN32 only. UWP is unpopular,
+has worse GPU support, MS has stopped developing the UWP version of Office.)
 
 And here are the APIs supported by these platforms:
 | Linux         | GL  EGL  Vulkan
 | macOS         | GL*      Vulkan* Metal
 | Windows WIN32 | GL  EGL  Vulkan        DX12
-| Windows UWP   |     EGL*               DX12
+| Windows UWP   |     EGL*               DX12  // UWP is unpopular, fading
 | Android       |     EGL  Vulkan
 | Web           |     EGL
+
+My strategy:
+* Use OpenGL for the next few years. Perhaps support multiple versions of
+  OpenGL, to increase the range of systems that can run Curv.
+* Wait for the next-gen cross platform API. It won't be "Vulkan Portability",
+  because that will never work on the web. See if WebGPU succeeds, and if
+  a cross platform C library API is created for it.
+* If the project gets more resources, it could target multiple GPU APIs.
 
 There is no universal GPU API that works on all platforms.
 Notes:
@@ -75,7 +85,7 @@ Notes:
 WebGPU sounds awesome. Be nice if there was a corresponding C++ or Rust 
 library providing a common API on Linux/Mac/Windows/Android.
 * The open source browser makers will need this to code their browser?
-* WebGPU is "designed to provide a efficient bindings for both JavaScript and
+* WebGPU is "designed to provide efficient bindings for both JavaScript and
   WebAssembly, possibly requiring separate interfaces for each."
   This means that, if you are generating WebAssembly from C++ or Rust,
   then there would need to be a WebGPU API in C++ or Rust?

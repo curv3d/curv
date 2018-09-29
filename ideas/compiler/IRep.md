@@ -1,4 +1,7 @@
 # IR (Intermediate Representation) 2018
+This is a huge project that comprises both a more powerful GL compiler,
+and a more efficient interpreter. It is too big to digest in one piece.
+For just the GL compiler part, see `New_GL_Compiler`.
 
 ## Nov 2017: New Compiler
 Primary goal: to expand the subset of Curv useable in GL code.

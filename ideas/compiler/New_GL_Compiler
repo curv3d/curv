@@ -1,0 +1,87 @@
+New GL Compiler
+===============
+This is a large project to improve the GL compiler:
+* Expand the subset of Curv useable in GL code.
+  * Call a library shape constructor from a GL compiled function.
+  * Static aggregate data (arrays and structs) for table driven dist functions.
+* Support image import.
+* Support GUI value pickers for parametric shapes.
+* Optimized GLSL code, to support the Mesa GPU driver (deferred; future)
+
+New GL Compiler
+---------------
+Two phases.
+* First phase:
+  * type inference
+  * partial evaluation
+  * generate a sequence of non-recursive definitions in dependency order.
+  Values are represented by IR trees.
+  Records lowest GLSL version that will work for this code.
+* Second phase, generate GLSL or C++ from the tree representation.
+  Outputs GLSL #version when appropriate.
+
+Can generate definitions for the following cases:
+* On first use of infinity, generate a definition for it, eg GLSL:
+    #version 410
+    const float inf = 1.0 / 0.0;
+* Image reference, from `file "foo.png"`.
+* Uniform variable, from parametric shape.
+* Aggregate value (array or struct), turns into global const variable.
+* Monomorphic non-recursive function.
+* Compile a shape record into a set of definitions.
+
+An IR tree can represent intermediate values that are not GL compatible.
+An IR tree can be partially evaluated to infer more specific expression types
+and to eliminate non-GL-compatible expressions:
+* constant folding
+* dead code elimination
+* inlining calls to polymorphic functions
+* abstract evaluation of a[i] and r.f
+* if (true) a else b => a
+
+Other optimizations that could help make Curv work with the Mesa GPU driver:
+(deferred; future work)
+* common subexpression elimination
+* algebraic identities/strength reduction
+
+An IR tree is an Operation tree, but changes are needed.
+
+Type Inference
+--------------
+* Static operation types (expr,elem gen,field gen,action) would help.
+  In order to have static expression types, we need to know which operations
+  are expressions. Also, for abstract evaluation of (x,y,z)[1]
+  it helps to know if x is an Expr.
+  * We also know that static operation types can be used to generate
+    higher quality error messages (get rid of "not an operation" error).
+* Static expression types are needed,
+  * To determine if a function value is monomorphic, so that it can be emitted
+    as a function def.
+  * For pattern matching a non-const expression argument.
+  * Maybe they are useful for generating better error messages?
+* Expression types cover the full range of Curv values, and cover the full
+  range of GL static types, which will now include monomorphic arrays,
+  structures, and functions.
+  * `Any` is the union of all expression types.
+  * Null, Bool, Num, String, List(count,elemtype), Record(fieldname to type map)
+    Fun(argtype,resulttype)
+  * maybe Const(value) is an expression type?
+  * An ambiguous expression like (1,2,3) can be either a Vec3 or an array
+    of numbers. It can be both in the same program: the code generator can
+    make two copies of the value, one to use in an array context, and one to
+    use in a Vec3 context.
+
+Abstract Values vs IR Nodes:
+Suppose that an IR node `R` is known to evaluate to a record value, but it isn't
+a compile time constant. Then we can perform 'abstract evaluation' on it,
+eg, extract a field and get back another abstract value. Or perform an
+abstract evaluation of `... R` within a record literal, eg within `make_shape`,
+so that `make_shape` can be analyzed into another abstract record value.
+* What is the IR representation of an abstract record value?
+ 1. There is an IR_Abstract_Record class that represents all abstract record
+    values. This is an old idea that has blocked progress.
+ 2. An abstract record value can have many different IR node types.
+    It can be a Const, or a Variable, or a Block, or a Call.
+    But in all these cases, the expression type is a Record type.
+* Okay, but how do I extract a field value from an abstract record value R?
+  Concretely, I just construct Dot(R,symbol) then simplify.

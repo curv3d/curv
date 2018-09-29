@@ -121,29 +121,3 @@ How do I extract a field named F from a GLCode record EXPR?
   expression trees that share common subexpressions. There won't be a way to
   share code (except if we can emit common function definitions called by
   both trees, to be considered later).
-
-New GL Compiler
----------------
-Two phases.
-* First phase, generate a sequence of non-recursive definitions in
-  dependency order. Values are represented by IR trees.
-  Records lowest GLSL version that will work for this code.
-* Second phase, generate GLSL or C++ from the tree representation.
-  Outputs GLSL #version when appropriate.
-
-Can generate definitions for the following cases:
-* On first use of infinity, generate a definition for it, eg GLSL:
-    #version 410
-    const float inf = 1.0 / 0.0;
-* Image reference, from `file "foo.png"`.
-* Uniform variable, from parametric shape.
-* Aggregate value (array or struct), turns into global const variable.
-* Monomorphic non-recursive function.
-* Compile a shape record into a set of definitions.
-
-IR tree can represent intermediate values that are not GL compatible.
-IR tree can be transformed to eliminate non-GL-compatible values:
-* constant folding
-* dead code elimination
-* inlining calls to polymorphic functions
-* abstract evaluation of a[i] and r.f
