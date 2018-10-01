@@ -5,7 +5,8 @@ Here are the platforms that I might want Curv to support:
 * macOS
 * Windows WIN32
 * Android
-* Web, via WebAssembly
+* Web (via WebAssembly?)
+* Chromebook: runs Chrome (HTML5), Android, & Debian apps (v69+, newer hardware)
 
 (No RaspberryPi, because there is no compute shader support.)
 (No iOS, because the App Store restrictions are incompatible with the
@@ -23,14 +24,27 @@ And here are the APIs supported by these platforms:
 | Web           |     EGL
 
 My strategy:
-* Use OpenGL for the next few years. Perhaps support multiple versions of
+* Use OpenGL until I hit a brick wall. Perhaps support multiple versions of
   OpenGL, to increase the range of systems that can run Curv.
 * Wait for the next-gen cross platform API. It won't be "Vulkan Portability",
   because that will never work on the web. See if WebGPU succeeds, and if
   a cross platform C library API is created for it.
-* If the project gets more resources, it could target multiple GPU APIs.
+* With more resources, Curv could directly target multiple GPU APIs.
 
-There is no universal GPU API that works on all platforms.
+Compiling C++ to WebAssembly is not a panacea. The GPU rendering API may not be
+the biggest problem. Code size and dependencies will be an issue that could
+trigger a rewrite of libcurv.
+
+Indie cross-platform GPU APIs:
+* GLFW
+* https://github.com/bkaradzic/bgfx
+* sokol_gfx: https://github.com/floooh/sokol
+  lightweight, in C, doesn't create window or context (eg use GLFW),
+  doesn't abstract shader language. GLES3/WebGL2, GL3.3, D3D11 and Metal.
+* flextGL: https://github.com/mosra/flextgl
+  an OpenGL and Vulkan header and loader generator, can use with GLFW and sokol
+
+There is no standard universal GPU API that works on all platforms.
 Notes:
 * OpenGL is deprecated in macOS, and is an old version that doesn't support
   compute shaders. Vulkan is emulated using Metal by MoltenVK.
@@ -210,7 +224,7 @@ http://store.steampowered.com/hwsurvey/videocard/
 
 If I compile Curv into SPIR-V, does this speed up shader/compute
 kernel compilation?
-* with Vulkan Portability, that might be platform dependent.
+* With Vulkan Portability, that might be platform dependent.
 
 Vulkan will eventually unify graphics and general purpose compute.
 OpenCL will eventually be merged into Vulkan.
