@@ -6,7 +6,9 @@ This is a large project to improve the GL compiler:
   * Static aggregate data (arrays and structs) for table driven dist functions.
 * Support image import.
 * Support GUI value pickers for parametric shapes.
-* Optimized GLSL code, to support the Mesa GPU driver (deferred; future)
+* Secondary goal: better compile time error messages.
+* Deferred goal: If time is not used, set -Olazy=true.
+* Deferred goal: Optimized GLSL code, to support the Mesa GPU driver.
 
 New GL Compiler
 ---------------
@@ -71,13 +73,20 @@ Type Inference
     make two copies of the value, one to use in an array context, and one to
     use in a Vec3 context.
 
-Abstract Values vs IR Nodes:
+Abstract Values vs IR Nodes
+---------------------------
+Would a term rewrite system like Mathematica or Pure would be suitable for
+partial evaluation of Curv programs? The problem is that Curv is lexically
+scoped, and term rewrite semantics (with free identifiers, not bound to any
+scope) is not hygienic (same problem as Lisp macros).
+
 Suppose that an IR node `R` is known to evaluate to a record value, but it isn't
 a compile time constant. Then we can perform 'abstract evaluation' on it,
 eg, extract a field and get back another abstract value. Or perform an
 abstract evaluation of `... R` within a record literal, eg within `make_shape`,
 so that `make_shape` can be analyzed into another abstract record value.
-* What is the IR representation of an abstract record value?
+
+What is the IR representation of an abstract record value?
  1. There is an IR_Abstract_Record class that represents all abstract record
     values. This is an old idea that has blocked progress.
  2. An abstract record value can have many different IR node types.
