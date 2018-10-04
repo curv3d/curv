@@ -41,7 +41,8 @@ struct Viewer
     bool is_open() { return window_ != nullptr; }
 
     // Reset camera to initial position.
-    void reset_view(int view);
+	enum viewtype {home,upside, downside, leftside, rightside, frontside, backside};
+    void reset_view(viewtype view);
 
     // Open window: initialize OpenGL, create the window. Idempotent.
     void open();

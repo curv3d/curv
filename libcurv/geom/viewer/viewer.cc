@@ -76,7 +76,7 @@ void Viewer::open()
 {
     if (!is_open()) {
         // Set initial default values for centre, eye and up
-        reset_view(0);
+        reset_view(home);
 
         // Initialize openGL context
         initGL(window_pos_and_size_, headless_);
@@ -86,7 +86,7 @@ void Viewer::open()
     }
 }
 
-void Viewer::reset_view(int view )
+void Viewer::reset_view(viewtype view )
 {
     // Reset the 2D camera position.
     u_view2d_ = glm::mat3(1.);
@@ -104,38 +104,38 @@ void Viewer::reset_view(int view )
 
     // The centre is the origin.
     u_centre3d_ = glm::vec3(0., 0., 0.);
-	if (view==1)
-	{
-		    u_eye3d_ = glm::vec3(0, 6, 0);
+    if (view==upside)
+    {
+            u_eye3d_ = glm::vec3(0, 6, 0);
             u_up3d_ = glm::vec3(0, 0, -1);
-	}
-	else	if (view==2)
-	{
-		    u_eye3d_ = glm::vec3(0, -6, 0);
+    }
+    else    if (view==downside)
+    {
+            u_eye3d_ = glm::vec3(0, -6, 0);
             u_up3d_ = glm::vec3(0, 0, -1);
-	}
-	else if (view==3)
-	{
-		    u_eye3d_ = glm::vec3(-6, 0, 0);
+    }
+    else if (view==leftside)
+    {
+            u_eye3d_ = glm::vec3(-6, 0, 0);
             u_up3d_ = glm::vec3(0, 1, 0);
-	}
-	else	if (view==4)
-	{
-		    u_eye3d_ = glm::vec3(6, 0, 0);
+    }
+    else    if (view==rightside)
+    {
+            u_eye3d_ = glm::vec3(6, 0, 0);
             u_up3d_ = glm::vec3(0, 1, 0);
-	}
-    else if (view==5)
-	{
-		    u_eye3d_ = glm::vec3(0, 0, 6);
+    }
+    else if (view==frontside)
+    {
+            u_eye3d_ = glm::vec3(0, 0, 6);
             u_up3d_ = glm::vec3(0, 1, 0);
-	}
-	else	if (view==6)
-	{
-		    u_eye3d_ = glm::vec3(0, 0, -6);
+    }
+    else    if (view==backside)
+    {
+            u_eye3d_ = glm::vec3(0, 0, -6);
             u_up3d_ = glm::vec3(0, 1, 0);
-	}
-	
-	else{
+    }
+     
+    else{
     // 'eye3d' is derived by starting with [0,0,6], then rotating 30 degrees
     // around the X and Y axes.
     u_eye3d_ = glm::vec3(2.598076, 3.0, 4.5);
@@ -143,10 +143,10 @@ void Viewer::reset_view(int view )
     // up3d is derived by starting with [0,1,0], then applying
     // the same rotations as above, so that up3d is orthogonal to eye3d.
     u_up3d_ = glm::vec3(-0.25, 0.866025, -0.433013);
-	}
-	
-	
-	}
+    }
+    
+    
+    }
 
 bool Viewer::draw_frame()
 {
@@ -237,29 +237,29 @@ void Viewer::onKeyPress(int key, int mods)
         glfwSetWindowShouldClose(window_, GL_TRUE);
     }
     else if (key == GLFW_KEY_HOME) {// reset to default
-        reset_view(0);
+        reset_view(home);
     }
-  else if (key == GLFW_KEY_T  ) {// top
-        reset_view(1);
+  else if (key == GLFW_KEY_U  ) {// upside
+        reset_view(upside);
     }
-  else if (key == GLFW_KEY_U ) {// under
-        reset_view(2);
+  else if (key == GLFW_KEY_D ) {// downside
+        reset_view(downside);
     }
-  else if (key == GLFW_KEY_L ) {// left
-        reset_view(3);
+  else if (key == GLFW_KEY_L ) {// left side
+        reset_view(leftside);
     }
- else if (key == GLFW_KEY_R ) {// right
-        reset_view(4);
+ else if (key == GLFW_KEY_R ) {// right side
+        reset_view(rightside);
     }
- else if (key == GLFW_KEY_F )  {// front
-        reset_view(5);
+ else if (key == GLFW_KEY_F )  {// frontside
+        reset_view(frontside);
     }
- else if (key == GLFW_KEY_B  ) {// back
-        reset_view(6);
+ else if (key == GLFW_KEY_B  ) {// backside
+        reset_view(backside);
     }
  
  
-	
+    
 }
 
 void Viewer::onScroll(float _yoffset)
