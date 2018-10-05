@@ -1,33 +1,30 @@
-release: libcurv/version.h
+release:
 	rm -rf CMakeCache.txt CMakeFiles
 	mkdir -p release
 	cd release; cmake -DCMAKE_BUILD_TYPE=Release ..
 	cd release; $(MAKE)
-install: libcurv/version.h
+install:
 	mkdir -p release
 	cd release; cmake -DCMAKE_BUILD_TYPE=Release ..
 	cd release; $(MAKE) install
-debug: libcurv/version.h
+debug:
 	mkdir -p debug
 	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
 	cd debug; $(MAKE)
-test: libcurv/version.h
+test:
 	mkdir -p debug
 	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
 	cd debug; $(MAKE) tests
 clean:
 	rm -rf debug release
-valgrind: libcurv/version.h
+valgrind:
 	mkdir -p debug
 	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
 	cd debug; $(MAKE) tester
 	cd tests; valgrind ../debug/tester
-valgrind-full: libcurv/version.h
+valgrind-full:
 	mkdir -p debug
 	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
 	cd debug; $(MAKE) tester
 	cd tests; valgrind --leak-check=full ../debug/tester
-libcurv/version.h:
-	echo '#define CURV_VERSION "'`git describe --tags --always --dirty`'"' >,v
-	if cmp -s ,v libcurv/version.h; then rm ,v; else mv ,v libcurv/version.h; fi
-.PHONY: release install test debug clean valgrind valgrind-full libcurv/version.h
+.PHONY: release install test debug clean valgrind valgrind-full
