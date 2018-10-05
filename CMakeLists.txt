@@ -80,10 +80,4 @@ add_dependencies(tests tester curv)
 install(TARGETS curv RUNTIME DESTINATION bin)
 install(FILES lib/std.curv DESTINATION lib)
 install(DIRECTORY lib/curv DESTINATION lib)
-
-file(GLOB GeditDir
-    "/usr/local/share/gtksourceview-[234].0/language-specs"
-    "/usr/share/gtksourceview-[234].0/language-specs")
-foreach(Dir ${GeditDir})
-    install(FILES lib/curv.lang DESTINATION "${Dir}")
-endforeach(Dir)
+install(FILES lib/curv.lang DESTINATION share/gtksourceview-3.0/language-specs)
