@@ -1,0 +1,11 @@
+let
+include lib.blend;
+cd = circle >> repeat_x 2 >> rotate (-45*deg) >> move(sqrt(0.5), sqrt(0.5))
+    >> scale(1/sqrt 2);
+col = make_blend {
+    fmin(a,b,r) =
+        min(min(a,b), cd.dist(a,b,0,0));
+};
+in
+//col 0 .union (rect(1,10), rect(10,1)) >> show_dist
+col 0 .union (sphere 10, cube 10 >> move(5,5,5))

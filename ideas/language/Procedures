@@ -6,6 +6,7 @@ Benefits:
   Eg, in a list comprehension.
 * Once I have an interactive debugger, and a rich set of actions for
   controlling the debugger, then procedures are used as debugger scripts.
+* print, error, warning, assert become values.
 * Another step in making it easier to port imperative code.
 
 Technical Challenge: The REPL.
@@ -28,7 +29,7 @@ Solution:
 * The record constructor Consumer only consumes field bindings.
 * The REPL Consumer consumes both.
 
-We could further unify Operation::exec() and Operation::generate(Consumer&).
+Operation::exec() and ::generate(Consumer&) are replaced by ::exec(Consumer&).
 The action Consumer fails if put_value or put_binding are called.
 
 Philosophical Challenge: Two ways to do it.
@@ -55,57 +56,71 @@ capture the output in a list or record first (which could be lazy?).
 Perhaps this mitigates the perceived problem. Generator procedures are strictly
 an imperative construct, not part of the preferred functional subset.
 
-Proposal: Segregated Function and Procedure Values
---------------------------------------------------
-In this proposal, we will segregate functions and procedures.
-Procedural values are not function values (is_fun and is_proc are disjoint).
-A procedural literal is syntactically not a function literal.
-A procedure call is syntactically not a function call.
+Proposal: Procedure Call Syntax
+-------------------------------
+Maybe the syntaxes for procedure and function call should be segregated.
 
-The rationale for segregation is that it's a conservative extension that
-doesn't change the nature of function values and function calls, and doesn't
-add performance overhead or cause semantic changes to those concepts.
+Benefits:
+* It can be helpful for human readability. It makes the procedural subset of
+  Curv stand out syntactically from functional code.
+* The compiler can distinguish expressions from statements at compile time.
+  We can distinguish expressions from element generators in a list constructor.
+  Because we know that 'f x' is an expression, not a procedure call:
+  * The partial evaluator can replace '(f x, a)[1]' with 'a'.
+  * We can produce better At_Index error messages. Instead of:
+        ERROR: at index [1]: true is not a number
+        1|       [f x,true,3]
+                 ^^^^^^^^^^^^
+    we can say:
+        ERROR: true is not a number
+        1|       [f x,true,3]
+                      ^^^^
+* After calling Program::compile(), you can query the Program to determine
+  if you have compiled an expression, statement or definition, and then call
+  Value eval(), exec(Consumer&) or Shared<Record> define()
+  to execute each type of program.
 
-Also, it makes the procedural subset of Curv stand out syntactically from
-functional code.
+A proposed syntax for procedure call:
+  postfix ::= postfix '!'   -- this is a procedure reference, not an expression
+  procedure call syntaxes:
+    procedure_ref primary
+    expression >> procedure_ref
+    procedure_ref << expression
+For example,
+  print! "hello world"
+Curried procedure call is a bit odd:
+  myproc a b! c
 
-We can determine if the elements of a list constructor are expressions
-(as opposed to statements) just by examining the syntax. This can be used
-for better At_Index error messages. Instead of:
-    ERROR: at index [1]: true is not a number
-    1|       [1,true,3]
-             ^^^^^^^^^^
-we can say:
-    ERROR: true is not a number
-    1|       [1,true,3]
-                ^^^^
+If you call a procedure using function call syntax, or call a function using
+procedure call syntax, you get an error. So procedure and function values must
+be internally distinguished in some way.
+* Maybe not. This seemingly conflicts with the doctrine that Expression
+  is a subtype of Element_Generator. So is Function a subtype of Procedure?
 
-In the Program API, after calling Program::compile(), you can query the
-Program to determine if you have compiled an expression, statement or
-definition, and call different APIs to execute each type of operation.
-(Does it help to distinguish expressions and statements this way?)
+* `print`, `warning`, `assert` are procedure values.
+* As a special case, `error` is both a procedure and a function.
 
-Procedure literal:
-    parameter => statement
-A statement is the usual: an action, element generator, or field generator.
-An expression in this context is treated as an element generator.
+Two type predicates: `is_fun` and `is_proc`.
 
-Curried procedure:
+Libcurv has a "generalized function" class with both a call() method
+(for function call) and an exec() method (for procedure call).
+
+Lambda expressions and functor definitions need not have segregated syntax
+for procedures and functions. The compiler doesn't need it, it would only be
+for the benefit of human readers, if there is a benefit. Syntax could be:
+    param => statement
     param1 -> param2 -> finalparam => statement
+    identifier! param = statement;
+    identifier param1 param2! finalparam = statement;
+If a procedure body is an expression, it's treated as an element generator.
+Without this syntax, you would use `x->...[x]` for a procedure that generates x.
+With this syntax, you could use `x=>x`.
 
-Procedure call:
-    'exec' procedure-expr argument-expr
-    '!' procedure-expr argument-expr
+Can a Curv source file contain a statement?
+We could use `file! filename` to execute such a program.
 
-The ! syntax conflicts with the 'not' operator, but is terser.
-I find `exec print foo` a bit verbose. `!print foo` is nicer.
-* The prefix ! operator is consistent with curried procedures, where
-    !proc a b c
-  is equivalent to `!(proc a b) c`: `proc` and `proc a` are actually functions.
-  [`print! foo` is too weird when curried: `proc a b! c`.]
-* Or a suffix: `print foo!`.
-
-A procedure cannot reassign a nonlocal sequential variable.
+A procedure cannot reassign a nonlocal sequential variable
+----------------------------------------------------------
 `x := x + 1` cannot be the body of a procedure, because of restrictions
 on the scope of sequential variables.
 * The OpenSCAD 'do' proposal had procedures with by-reference 'var' parameters.
@@ -116,28 +131,9 @@ on the scope of sequential variables.
   In that case, you write a function that invokes actions as side effects,
   using `do`, and you just return the results from the function call.
 
-Problems:
-* print, warning, assert are not procedure values,
-  because you write 'print x' and not 'exec print x'.
-  Maybe `print`, et al, are procedure values, and we use a terser syntax
-  for procedure call, such as:
-    !print x
-
-error is both a procedure and a function. In a `do` clause, you need to
-write `!error foo` (like `!warning foo`), but you can call `error foo`
-in an expression context.
-
-The body of a procedure is a 'weak statement context'. When a procedure value
-is constructed, we don't know if the procedure will be called from an action,
-list constructor, or record constructor context. And we can't necessarily
-determine the 'kind' of a procedure body during procedure construction.
-So, a procedure object has 'exec', 'bind' and 'generate' methods,
-in parallel with the 'call' method of a function object.
-
 Proposal: Unified Function and Procedure Values
 -----------------------------------------------
 * No new syntax.
-* A function object has call, exec, and generate methods.
 * print, warning, assert become values with no syntax change.
 * error is a value, only one syntax to invoke it.
 
@@ -146,9 +142,11 @@ returns a value, and it optionally generates a sequence of elements or fields.
 The context of a function call determines which of these behaviours are legal.
 
 Since we distinguish returning a value from generating a single value,
-and since there is no `!` prefix to distinguish procedure from function calls,
+and since there is no `!` marker to distinguish procedure from function calls,
 I want the REPL to distinguish generated from returned values in the output
 of a command. A `>` prefix for generated values.
+
+Instead of Program::eval() and ::exec(), we have ::run().
 
 Proposal: Procedures are not Values
 -----------------------------------
@@ -162,7 +160,7 @@ Procedures (Functions returning actions or generators):
 * Pragmatic justification:
   * It should be possible to replace any use of `for` with tail recursion.
     This requires procedures.
-  * It should be possible to use `switch` in any context where `if` is legal.
+  * It should be possible to use `match` in any context where `if` is legal.
     Eg, in a list comprehension. This requires procedures.
   * Once I have an interactive debugger, and a rich set of actions for
     controlling the debugger, then procedures are used as debugger scripts.
