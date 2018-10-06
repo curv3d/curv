@@ -16,7 +16,6 @@
 #include <libcurv/list.h>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
-#include <libcurv/arg.h>
 
 namespace curv {
 
@@ -28,9 +27,9 @@ struct Binary_Numeric_Array_Op
     static Value
     reduce(double zero, Value arg, const Context& cx)
     {
-        auto& list = arg_to_list(arg, cx);
+        auto list = arg.to<List>(cx);
         Value result = {zero};
-        for (auto val : list)
+        for (auto val : *list)
             result = op(result, val, cx);
         return result;
     }

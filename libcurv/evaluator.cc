@@ -2,7 +2,6 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/arg.h>
 #include <libcurv/meaning.h>
 #include <libcurv/string.h>
 #include <libcurv/exception.h>
@@ -673,11 +672,10 @@ For_Op::generate(Frame& f, List_Builder& lb) const
 {
     At_Phrase cx{*list_->syntax_, f};
     At_Index icx{0, cx};
-    Value listval = list_->eval(f);
-    List& list = arg_to_list(listval, cx);
-    for (size_t i = 0; i < list.size(); ++i) {
+    auto list = list_->eval(f).to<List>(cx);
+    for (size_t i = 0; i < list->size(); ++i) {
         icx.index_ = i;
-        pattern_->exec(f.array_, list[i], icx, f);
+        pattern_->exec(f.array_, list->at(i), icx, f);
         body_->generate(f, lb);
     }
 }
@@ -686,11 +684,10 @@ For_Op::bind(Frame& f, DRecord& r) const
 {
     At_Phrase cx{*list_->syntax_, f};
     At_Index icx{0, cx};
-    Value listval = list_->eval(f);
-    List& list = arg_to_list(listval, cx);
-    for (size_t i = 0; i < list.size(); ++i) {
+    auto list = list_->eval(f).to<List>(cx);
+    for (size_t i = 0; i < list->size(); ++i) {
         icx.index_ = i;
-        pattern_->exec(f.array_, list[i], icx, f);
+        pattern_->exec(f.array_, list->at(i), icx, f);
         body_->bind(f, r);
     }
 }
@@ -699,11 +696,10 @@ For_Op::exec(Frame& f) const
 {
     At_Phrase cx{*list_->syntax_, f};
     At_Index icx{0, cx};
-    Value listval = list_->eval(f);
-    List& list = arg_to_list(listval, cx);
-    for (size_t i = 0; i < list.size(); ++i) {
+    auto list = list_->eval(f).to<List>(cx);
+    for (size_t i = 0; i < list->size(); ++i) {
         icx.index_ = i;
-        pattern_->exec(f.array_, list[i], icx, f);
+        pattern_->exec(f.array_, list->at(i), icx, f);
         body_->exec(f);
     }
 }

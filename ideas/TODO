@@ -22,7 +22,6 @@ Current TODO List:
   * refactor Viewer + View_Server. View_Server should not know that Viewer uses
     GLFW. Maybe Viewer has a single event queue that includes set_shape and quit
   * Viewer_Opts
-  * remove arg_to_list()
   * mesh: geom::mesh_write & Mesh_Write_Opts
   * dfmt -> <libcurv/format.h>
   * Location ctor takes Shared<const Source>

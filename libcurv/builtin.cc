@@ -5,7 +5,6 @@
 #include <libcurv/builtin.h>
 
 #include <libcurv/analyser.h>
-#include <libcurv/arg.h>
 #include <libcurv/array_op.h>
 #include <libcurv/dir_record.h>
 #include <libcurv/exception.h>
@@ -364,9 +363,9 @@ struct Mag_Function : public Legacy_Function
         // TODO: use hypot() or BLAS DNRM2 or Eigen stableNorm/blueNorm?
         // Avoids overflow/underflow due to squaring of large/small values.
         // Slower.  https://forum.kde.org/viewtopic.php?f=74&t=62402
-        auto& list = arg_to_list(args[0], At_Arg(*this, args));
+        auto list = args[0].to<List>(At_Arg(*this, args));
         double sum = 0.0;
-        for (auto val : list) {
+        for (auto val : *list) {
             double x = val.get_num_or_nan();
             sum += x * x;
         }
