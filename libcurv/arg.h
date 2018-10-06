@@ -11,7 +11,6 @@
 namespace curv {
 
 List& arg_to_list(Value, const Context&);
-int arg_to_int(Value, int, int, const Context&);
 
 } // namespace curv
 #endif // header guard

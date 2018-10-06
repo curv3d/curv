@@ -296,7 +296,7 @@ TEST(curv, eval)
     SUCCESS("-2^2", "-4");
     SUCCESS("[1,2,3]'1","2");
     FAILALL("[1,2,3]'1.1",
-        "is not an integer: 1.1\n"
+        "1.1 is not an integer\n"
         "1| [1,2,3]'1.1\n"
         "           ^^^");
     SUCCESS("(0..10)'(3..1 by -1)", "[3,2,1]");

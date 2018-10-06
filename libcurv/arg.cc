@@ -24,16 +24,4 @@ auto arg_to_list(Value val, const Context& ctx)
     throw Exception(ctx, stringify("is not a list: ",val));
 }
 
-int arg_to_int(Value val, int lo, int hi, const Context& ctx)
-{
-    double num = val.to_num(ctx);
-    double intf;
-    double frac = modf(num, &intf);
-    if (frac != 0.0)
-        throw Exception(ctx, stringify("is not an integer: ",num));
-    if (intf < (double)lo || intf > (double)hi)
-        throw Exception(ctx, stringify(intf," is not in range ",lo,"..",hi));
-    return (int)intf;
-}
-
 } // namespace curv

@@ -366,7 +366,7 @@ list_at(const List& list, Value index, const Context& cx)
             (*result)[j++] = list_at(list, i, cx);
         return {result};
     }
-    int i = arg_to_int(index, 0, (int)(list.size()-1), cx);
+    int i = index.to_int(0, (int)(list.size()-1), cx);
     return list[i];
 }
 Value
@@ -389,12 +389,12 @@ string_at(const String& string, Value index, const Context& cx)
     if (auto indices = index.dycast<List>()) {
         String_Builder sb;
         for (auto ival : *indices) {
-            int i = arg_to_int(ival, 0, (int)(string.size()-1), cx);
+            int i = ival.to_int(0, (int)(string.size()-1), cx);
             sb << string[i];
         }
         return {sb.get_string()};
     }
-    int i = arg_to_int(index, 0, (int)(string.size()-1), cx);
+    int i = index.to_int(0, (int)(string.size()-1), cx);
     return {String::make(string.data()+i, 1)};
 }
 Value
@@ -412,7 +412,7 @@ value_at_path(Value a, const List& path, const Context& cx)
         }
         if (auto list = a.dycast<List>()) {
             if (i < path.size()-1) {
-                int j = arg_to_int(path[i], 0, (int)(list->size()-1), icx);
+                int j = path[i].to_int(0, (int)(list->size()-1), icx);
                 a = list->at(j);
             } else
                 a = list_at(*list, path[i], icx);
@@ -775,7 +775,7 @@ Bracket_Segment::generate(Frame& f, String_Builder& sb) const
     At_Phrase cx(*expr_->syntax_, f);
     auto list = expr_->eval(f).to<List>(cx);
     for (size_t i = 0; i < list->size(); ++i)
-        sb << (char)arg_to_int((*list)[i], 1, 127, At_Index(i,cx));
+        sb << (char)(*list)[i].to_int(1, 127, At_Index(i,cx));
 }
 void
 Brace_Segment::generate(Frame& f, String_Builder& sb) const

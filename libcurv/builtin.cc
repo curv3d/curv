@@ -450,7 +450,7 @@ struct Decode_Function : public Legacy_Function
         At_Arg cx(*this, f);
         auto list = f[0].to<List>(cx);
         for (size_t i = 0; i < list->size(); ++i)
-            sb << (char)arg_to_int((*list)[i], 1, 127, At_Index(i,cx));
+            sb << (char)(*list)[i].to_int(1, 127, At_Index(i,cx));
         return {sb.get_string()};
     }
 };
