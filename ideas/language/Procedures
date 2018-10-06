@@ -7,7 +7,7 @@ Benefits:
 * Once I have an interactive debugger, and a rich set of actions for
   controlling the debugger, then procedures are used as debugger scripts.
 * print, error, warning, assert become values.
-* Another step in making it easier to port imperative code.
+* Another step in making it easier to port imperative code?
 
 Technical Challenge: The REPL.
 ------------------------------
@@ -20,17 +20,21 @@ Problem:
   Generate works for expressions, actions and element generators.
 
 Solution:
-* Unify field generators and element generators into just 'generators', which
-  generate a sequence of element values or fields.
-* Operation::generate() takes a Consumer as an argument.
+* Currently, Operation has 4 methods: eval(), exec(), generate(List_Builder&)
+  and bind(DRecord&). These are replaced by: eval(), exec(Consumer&).
 * Consumer::put_value(Value,cx) is called to output an element value.
 * Consumer::put_binding(Symbol,Value,cx) is called to output a field binding.
+* expression.exec(c) calls c.put_value(result).
 * The list constructor Consumer only consumes element values.
 * The record constructor Consumer only consumes field bindings.
-* The REPL Consumer consumes both.
+* The action Consumer (used by `do`) fails on put_value or put_binding.
+* The REPL now calls exec() on an operation. The REPL Consumer supports both
+  put_value and put_binding. In most cases, the value or binding is printed on
+  the console. If there is 1 put_value and no put_binding calls, then I test
+  if the value is a shape, and display the shape graphically.
 
-Operation::exec() and ::generate(Consumer&) are replaced by ::exec(Consumer&).
-The action Consumer fails if put_value or put_binding are called.
+This design fixes a bug in the REPL, and also eliminates code duplication
+among exec, generate & bind methods.
 
 Philosophical Challenge: Two ways to do it.
 -------------------------------------------
@@ -51,10 +55,14 @@ So now I have generators, which are phrases that generate a sequence of values.
 Consider generators in Icon, or generators in Python.
 I'd rather have lazy lists (like Haskell) instead.
 
-Note, there is no way to directly iterate over a generator. You have to
-capture the output in a list or record first (which could be lazy?).
-Perhaps this mitigates the perceived problem. Generator procedures are strictly
-an imperative construct, not part of the preferred functional subset.
+There is no way to directly iterate over a generator. You have to
+capture the output in a list or record first. Does this mitigate the problem,
+by deterring the use of generator procedures in libraries?
+
+"If you only have a hammer, then every problem looks like a nail."
+Element generators will have a performance advantage over lists, in the
+case where you are incrementally accumulating a list of values, eg 1 per
+function call, due to the O(N) cost of list concatenation.
 
 Proposal: Procedure Call Syntax
 -------------------------------
@@ -79,6 +87,11 @@ Benefits:
   if you have compiled an expression, statement or definition, and then call
   Value eval(), exec(Consumer&) or Shared<Record> define()
   to execute each type of program.
+  * Right now, the REPL doesn't distinguish between 'cube' and '...[cube]',
+    because it can't distinguish an expression from a statement. No big deal,
+    but now it can make that distinction.
+* The proposal for compiling Curv into CPS instructions benefits if we can
+  generate different code for expressions and statements.
 
 A proposed syntax for procedure call:
   postfix ::= postfix '!'   -- this is a procedure reference, not an expression
@@ -88,6 +101,7 @@ A proposed syntax for procedure call:
     procedure_ref << expression
 For example,
   print! "hello world"
+  "hello world" >> print!
 Curried procedure call is a bit odd:
   myproc a b! c
 

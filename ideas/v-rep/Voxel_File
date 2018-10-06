@@ -17,6 +17,12 @@ Excellent compression, very fast decode/encode, open source.
 Test this to see if is usable for voxel grids, and if the compression ratio
 is better than the alternatives.
 
+The new AV1 standard is open source, royalty free, supported by all the big
+tech companies, and aims to dominate all previous video formats.
+It supports lossless encoding, although not as a primary goal.
+Try it and see, compare to FFV1.
+* https://aomedia.googlesource.com/aom/+/master/examples/lossless_encoder.c
+
 SVX is a voxel array format that Shapeways attempted to popularize.
 As of 2018, it is moribund. No one really supports it. Shapeways still
 supports it for their service, but they don't mention the format on their
@@ -26,3 +32,6 @@ That's easy, but measure the compression ratio against the alternatives.
 VDB.
 
 The 3MF committee is investigating voxel formats.
+
+Shapeways just announced Stratasys J750 support! (Launch in 2019.)
+Voxel files are needed to fully exploit the hardware.
