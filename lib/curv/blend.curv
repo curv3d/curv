@@ -121,7 +121,7 @@ columns = make_blend {
             -min(max(result,px),-a,b);
 };
 
-pipes r (s1, s2) =
+pipe r (s1, s2) =
     make_shape {
         // Credit: original dist function in GLSL by MERCURY
         dist p = mag(s1.dist p, s2.dist p) - r;
