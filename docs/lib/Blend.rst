@@ -41,3 +41,11 @@ and are thus subject to the constraints described here:
 A family of blended Boolean operators is represented by a "blending kernel",
 which is a record containing 3 functions named ``union``, ``intersection`` and ``difference``.
 
+For More Information
+--------------------
+This document isn't finished yet. For more information, see:
+
+* `<../shapes/Distance_Field_Operations.rst>`_
+* The Blending section of `<../Theory.rst>`_
+* `<http://mercury.sexy/hg_sdf/>`_, which inspired many of the operations in ``lib.blend``.
+* The source code, `<../../lib/curv/blend.curv>`_.
