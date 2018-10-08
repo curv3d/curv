@@ -34,8 +34,19 @@ Mouse and Keyboard Shortcuts
 
 * To rotate in 3D, drag with the left mouse button.
   Use pan to change the centre of rotation.
-* To close the window, use CTRL-W, or COMMAND-W on MacOS.
-* To reset the camera to the original viewing position, use the HOME key.
+
+=======  =========
+Key      Effect
+=======  =========
+CTRL-W   Close the window (COMMAND-W on MacOS)
+HOME     Reset camera to original viewing position
+U        View top (up side)
+D        View bottom (down side)
+L        View left side
+R        View right side
+F        View front side
+B        View back side
+=======  =========
   
 Command Line Options
 --------------------
