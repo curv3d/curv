@@ -53,6 +53,23 @@ void interrupt_handler(int)
     was_interrupted = true;
 }
 
+replxx::Replxx::completions_t get_completions(std::string const& context, int index, void* user_data)
+{
+    auto* names = static_cast<curv::Namespace*>(user_data);
+    replxx::Replxx::completions_t completions;
+
+    std::string prefix {context.substr(index)};
+    for (auto const& n : *names) {
+        if (n.first.size() < prefix.size())
+            continue;
+
+        if (prefix.compare(0, std::string::npos, n.first.c_str(), prefix.size()) == 0)
+            completions.emplace_back(n.first.c_str());
+    }
+
+    return completions;
+}
+
 void repl(curv::System* sys)
 {
     // Catch keyboard interrupts, and set was_interrupted = true.
@@ -66,6 +83,7 @@ void repl(curv::System* sys)
     curv::Namespace names = sys->std_namespace();
 
     replxx::Replxx rx;
+    rx.set_completion_callback(get_completions, static_cast<void*>(&names));
 
     for (;;) {
         was_interrupted = false;
