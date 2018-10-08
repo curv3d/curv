@@ -1,0 +1,16 @@
+let
+gap g (s1, s2) =
+    make_shape {
+        dist p =
+            let a=s1.dist p;
+                b=s2.dist p;
+                d=if(a > g || b > g) min(a,b) else -abs(a-b)+g;
+            in d;
+        colour = s1.colour;
+        bbox = s1.bbox;
+        is_2d = s1.is_2d && s2.is_2d;
+        is_3d = s1.is_3d && s2.is_3d;
+    };
+
+in
+gap 0.1 (sphere, sphere >> move(1,0,0) )

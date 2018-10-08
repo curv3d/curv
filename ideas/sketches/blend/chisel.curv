@@ -1,0 +1,33 @@
+// chisel removes material from the surface of shape s1,
+// to a depth of d, in regions surrounding where s2 intersects with s1.
+// It is used for applying a textured pattern to the surface of a shape.
+// Problem: bad distance field.
+let
+chisel d (s1, s2) =
+    make_shape {
+        dist p =
+            let a=s1.dist p;
+                b=s2.dist p;
+            in if (a >= 0) a+d else -abs(a-b)+d;
+        colour = s1.colour;
+        bbox = s1.bbox;
+        is_2d = s1.is_2d && s2.is_2d;
+        is_3d = s1.is_3d && s2.is_3d;
+    };
+
+in
+row
+[
+chisel 1.5
+  ( sphere 33 >> colour (sRGB.HSV(0,.8,.8)),
+    gyroid >> shell .2 )
+,
+chisel 1
+  ( sphere 33,
+    cylinder{d:1,h:inf} >> repeat_xy (2,2) )
+,
+chisel 1
+  ( sphere 33,
+    cube 1 >> repeat_xyz (2,2,2) )
+]
+>> lipschitz 4
