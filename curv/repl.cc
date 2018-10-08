@@ -92,7 +92,7 @@ void color_input(std::string const& context, replxx::Replxx::colors_t& colors, v
         // numerals
         case Token::k_num:
         case Token::k_hexnum:
-          col = Color::YELLOW;
+          col = Color::BROWN;
           break;
 
         // string literal
@@ -109,7 +109,7 @@ void color_input(std::string const& context, replxx::Replxx::colors_t& colors, v
         case Token::k_dollar_brace:
         case Token::k_dollar_bracket:
         case Token::k_dollar_ident:
-          col = Color::YELLOW;
+          col = Color::BROWN;
           break;
 
         // syntactic symbols
@@ -145,7 +145,7 @@ void color_input(std::string const& context, replxx::Replxx::colors_t& colors, v
           break;
 
         default:
-          col = Color::NORMAL;
+          col = Color::DEFAULT;
           break;
       }
 
