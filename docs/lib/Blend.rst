@@ -1,10 +1,6 @@
 ``lib.blend`` defines a collection of blending operators,
 which combine two shapes to create a new shape.
-If both shapes are 2D (3D), the result is 2D (3D).
-
-Blending operators are distance field operations,
-and are thus subject to the constraints described here:
-`<../shapes/Distance_Field_Operations.rst>`_.
+They work in 2D and in 3D.
 
 Some of these operators are generalized Boolean operations.
 
@@ -12,9 +8,6 @@ Some of these operators are generalized Boolean operations.
   at the edges where two shapes meet.
 * A blended intersection or difference removes material from the edges where two shapes meet,
   which can produce a rounded or chamfered edge.
-
-A family of blended Boolean operators is represented by a "blending kernel",
-which is a record containing 3 functions named ``union``, ``intersection`` and ``difference``.
 
 Summary of the blended Booleans:
 
@@ -38,3 +31,13 @@ engrave    First object gets a v-shaped engraving where it intersects the second
 groove     First object gets a carpenter-style groove cut out.
 tongue     First object gets a carpenter-style tongue attached.
 =========  =============
+
+Technical Details
+-----------------
+Blending operators are distance field operations,
+and are thus subject to the constraints described here:
+`<../shapes/Distance_Field_Operations.rst>`_.
+
+A family of blended Boolean operators is represented by a "blending kernel",
+which is a record containing 3 functions named ``union``, ``intersection`` and ``difference``.
+
