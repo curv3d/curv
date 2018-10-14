@@ -74,9 +74,11 @@ Type Inference
     of numbers. It can be both in the same program: the code generator can
     make two copies of the value, one to use in an array context, and one to
     use in a Vec3 context.
-* The List and Record types have to be rich enough to match what is supported
-  by List and Record patterns. Eg, if we add a [x,y,...] pattern then we need
-  a corresponding [Type1,Type2,...] type.
+* The List and Record types must rich enough to match what is supported
+  by List and Record patterns.
+  * Tuple types: [Type1,Type2,Type3].
+  * If we add a [x,y,...] pattern then we need
+    a corresponding [Type1,Type2,...] type.
 
 Partial Evaluation Rules
 ------------------------

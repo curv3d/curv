@@ -1,0 +1,240 @@
+# Unicode
+Curv currently restricts programs and strings to ASCII, since Unicode is too
+complex for humans to understand and will create too many bugs.
+
+In addition to the inhuman complexity, the Unicode standard keeps changing.
+So the semantics of strings and identifiers changes as Curv is updated to
+understand new Unicode versions. So a program that works under one version
+of Unicode may break when Curv is updated. Or, a program that works in current
+Curv may break if run by somebody running an old version of Curv.
+
+But maybe there will be a requirement to support Unicode in the future.
+How badly will I be screwed? What are the tradeoffs for different approaches
+to handling Unicode?
+
+I should make separate decisions about permitting Unicode in comments,
+string values, and identifiers/field names.
+
+## Unicode comments
+This is relatively safe, since comments are (for now) uninterpreted.
+If Curv gets "documentation comments", then issues may arise.
+
+## Unicode Identifiers and Field Names
+This is a minefield of buggy behaviour. We have to consider: when are two
+identifiers considered equal? Directory record syntax adds to the problem.
+
+Unicode recommends: "All user-level comparison should behave as if it
+normalizes the input to NFC."
+
+MacOS converts all filenames to NFD for storage in HFS+. So MacOS compares
+filenames that are in normal form. Common Linux file systems know nothing
+about Unicode, so filenames do not need to be legal UTF-8, and there is no
+normalization. You can have two distinct files whose names compare equal if
+normalized. In most cases, Linux filenames will be in NFC, since keyboards
+and keyboard input processes generally create NFC (including on MacOS!).
+The internet has also standardized on NFC, it's the most popular normalization
+form.
+
+If I support Unicode identifiers, then I *must* normalize to NFC before
+comparing them. Otherwise there will be bugs. Directory syntax is one possible
+source of bugs. On MacOS, I could get an NFD identifier via readdir and an
+NFC identifier from the source code. I saw a bug like this on github.
+
+BUT this creates another problem. The normalization algorithm changes from
+one release of Unicode to the next: when new code points are assigned, they
+may be subject to normalization, whereas unassigned code points are not changed
+during normalization. And this means that identifier equality changes from
+one Unicode release to the next, *if* identifiers are permitted to contain
+unassigned code points. To fix this, unassigned code points are not permitted
+in an identifier. Each release of Curv is tied to a specific Unicode version.
+Updating to a new release of Curv may also update the Unicode version, and
+add new code points that are permitted in identifiers.
+
+For performance reasons, I should store identifiers in NFC form.
+So curv::Symbol is NFC normalized. It's probably a good idea to ensure that
+curv::String is NFC normalized as well.
+
+In addition to normalization, there is also the problem of distinct identifiers
+that look identical even when normalized. For example, "AB" (Latin script),
+vs "ΑΒ" (Greek script), vs "АВ" (Cyrillic script).
+
+The safest policy is to only support ASCII identifiers and field names.
+If I support Unicode strings, then Curv support for string field names,
+as in R."funny business", conflicts with this.
+
+## Safe Unicode Subset
+Unicode is a shitstorm of endless complexity and buggy behaviour.
+Restricting the set of code points that we support in strings and identifiers
+can help avoid some bugs.
+
+Put it this way: right now, my safe Unicode subset is a subset of ASCII.
+Here, I'm proposing to vastly expand the safe subset by using a black list
+instead of a white list. The safe subset could be expanded in the future,
+without causing problems, but contracting it is not backward compatible.
+So it pays to be strict and just ban all dubious code points.
+
+* Only legal code points may be used.
+  Any integer outside the range 0 .. 0x10FFFF is not a legal code point.
+* Surrogates are integers in the range 0xD800 to 0xDFFF. They are not legal
+  code points (they cannot be legally encoded as code points in UTF-8).
+  Some sources refer to them as "surrogate code points". Not supported.
+* There are 66 "non-character code points" which are guaranteed to never be
+  used for a character. These are not supported.
+* Private use code points are not supported. Maybe they could be subject
+  to private normalization, leading to problems in the definition of string
+  or identifier equality. Whatever: if I don't know what these code points
+  mean, then they are not supported.
+* Unassigned code points are not supported. See reasons in **Identifiers**.
+* The code point 0 (NUL) is not supported. Curv uses C library code and
+  NUL terminated strings in its implementation, so this avoids buggy behaviour.
+
+What do these options mean in the utf8proc library?
+ - strip "ignorable" (@ref UTF8PROC_IGNORE) characters,
+   control characters (@ref UTF8PROC_STRIPCC),
+   or combining characters such as accents (@ref UTF8PROC_STRIPMARK)
+More research needs to be done...
+
+## Unicode Strings
+A string is a sequence of characters, but what is a character in Unicode?
+ 0. Legal code points.
+    The NUL character is disallowed.
+    Surrogate and noncharacter code points are disallowed.
+ 1. Character boundaries.
+    * In Swift, a character is an "extended grapheme cluster". Eg, an emoji
+      flag character consists of two code points, but counts as one character.
+      The 'string.count' method iterates over the string.
+      The Unicode standard says that a "user perceived character"
+      is most closely approximated by an "extended grapheme cluster".
+      (Any closer approximation is locale-dependent.)
+      http://unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries
+      Regular expressions should ideally use EGCs as character boundaries.
+      If I can find an open source library that implements these semantics,
+      may I should use it.
+       * https://github.com/michaelnmmeyer/grapheme
+         It uses Ragel, which is similar to re2c.
+         Ragel is in the Ubuntu Universe.
+    * Or, a character is a code point. This has many technical advantages.
+      * The Unicode standard is unstable. EGC boundaries change from one
+        release to the next. Eg, when new compound emoji classes are added.
+      * The definition of a code point should now be stable. It changed once
+        when Unicode expanded beyond 16 bits, which screwed over languages
+        that standardized on 16 bit code points, like Java and JavaScript.
+        But I don't expect that to happen again, so code points are safe
+        to rely on.
+      * String concatenation has complex, unexpected semantics if characters
+        are EGCs, since count(strcat(s1,s2)) != count s1 + count s2.
+      * It is simpler to implement. Way too much complexity otherwise.
+    * I suppose that users may eventually want to split strings into EGCs.
+      Since the results depend on Unicode version, the API should be in an
+      external library that is versioned.
+ 2. When are two strings equal?
+    If I don't normalize strings on construction, and I don't normalize on
+    comparison, then I will have bugs. Bugs will occur with "directory syntax",
+    where a field name in a Dir_Record will compare unequal to a field name
+    supplied by user code. MacOS converts all filenames to NFD for storage in
+    HFS+. MacOS keyboard shortcuts generate NFC. Many other external processes
+    convert strings to NFC.
+
+    * Maybe, if they represent the same sequence of code points.
+      But this means, two strings that normalize to the same thing may be
+      unequal.
+    * Unicode recommends: "All user-level comparison should behave as if it
+      normalizes the input to NFC." But this means, two strings with a different
+      number of code points can be equal. If `count` counts the number of code
+      points, not the number of EGCs, then this is visible.
+    If two grapheme clusters are guaranteed (by the Unicode standard)
+    to have the same printed representation, then they compare equal?
+    * If two code point sequences are canonically equivalent, then they should
+      test equal, independent of locale.
+      https://en.wikipedia.org/wiki/Unicode_equivalence
+    * Is there open source for comparing two unicode strings and determining
+      canonical equivalence?
+    * Is it easier or harder to pre-normalize all Curv strings and then
+      test byte-level equality? If I support Unicode in symbols, then those
+      should probably be normalized, for efficiency reasons.
+      Normal forms are not closed under concatenation. strcat two normalized
+      strings and you can get an unnormalized string.
+    * Does canonical equivalence change from one Unicode release to the next?
+      There are stabilility guarantees, weakened by weasel words.
+ 3. String Concatenation, Legal EGCs.
+    Suppose S1 and S2 are strings.
+    Is it guaranteed that count(strcat(S1,S2)) == count S1 + count S2?
+    What if S1 is a latin base character, and S2 is a latin accent
+    combining character? Should S2 even be treated as a legal character string?
+    Suppose S1 and S2 are normalized. Is strcat(S1,S2) guaranteed to be
+    normalized? No.
+
+It is impossible to view a Unicode string as a list of characters, in the
+same way we think of an ASCII string as a list of characters, because none of
+the algebraic invariants associated with that mental model actually hold.
+* Maybe we treat strings as atomic. You can't count the characters
+  in a string, or request the n'th character, because that is ill defined.
+  Basically, the entire concept of a character is ill defined in Unicode.
+* Strings are internally represented as lists of code points in NFC form.
+  You can convert between strings and lists of code points.
+
+We could treat Unicode strings as lists of code points. Then we get a
+simple implementation and the expected algebraic invariants. But a character
+is a sequence of one or more code points. And we run into problems if we
+convert these strings into identifiers, IE field names in a record.
+* The weirdness goes away if we require field names to be ASCII.
+* Maybe we normalize strings to NFC before conversion to field names.
+  Then two unequal strings map to the same field name.
+
+## Non-defective Unicode Strings?
+https://en.wikipedia.org/wiki/Unicode_equivalence
+
+This Wikipedia page tries to enumerate the situations where string concatenation
+is closed under normalization. I had some brief hope that I could require
+Curv strings to be "non-defective", and thus have well behaved string
+concatenation. Alas, I now suspect that the requirements for well behaved
+string concatenation could change with new releases of Unicode.
+For example, I think that the addition of emoji flag sequences added a new kind
+of defective sequence. I don't want to be in charge of maintaining the code
+that checks for "defective strings", updating it at each Unicode release.
+
+For non-defective Unicode strings not starting with a Hangul vowel or trailing
+conjoining jamo, the normal forms are closed under string concatenation:
+the concatenation of two well-formed Unicode strings in the same normal form
+will itself be in that normal form. This is because a non-defective Unicode
+string never begins with a combining character[3] and the only two kinds
+of non-combining characters, which may interact with preceding characters
+during composition, are Korean vowel conjoining jamos and trailing conjoining
+jamos.[citation needed] Note, however, that this is not true of arbitrary
+strings: accents are canonically ordered and may be rearranged around the
+point where the strings are joined (for example, concatenating "a◌̂"
+and "◌̣" will produce "a◌̂◌̣", but the correct normalization is
+"a◌̣ ◌̂").[4]
+
+However, they are not injective (they map different original glyphs and
+sequences to the same normalized sequence) and thus also not bijective
+(can't be restored). For example, the distinct Unicode strings "U+212B"
+(the angstrom sign "Å") and "U+00C5" (the Swedish letter "Å") are both
+expanded by NFD (or NFKD) into the sequence "U+0041 U+030A" (Latin letter
+"A" and combining ring above "°") which is then reduced by NFC (or NFKC)
+to "U+00C5" (the Swedish letter "Å").
+
+A single character (other than a Hangul syllable block) that will get replaced
+by another under normalization can be identified in the Unicode tables for
+having a non-empty compatibility field but lacking a compatibility tag.
+
+## Proposal:
+* A string is represented internally as UTF-8 and NFC,
+  using only code points from the Safe Unicode Subset defined above.
+* String comparison is just memcmp. Record field names use the same
+  representation as strings, and so have a fast compare operator.
+* We need to perform NFC normalization when a curv::String is constructed,
+  and after construction it must be immutable.
+* From a user perspective, a string is a list of code points in NFC.
+  The core language has no concept of characters or EGCs.
+* So, `count str` is the number of code points, `str[i]` is the i'th code point.
+  These operations are O(N), not O(1).
+
+## A UTF-8 String Library
+A small, clean, maintained C library for UTF-8 strings.
+Has clear licensing. Updated for each Unicode release.
+https://github.com/JuliaStrings/utf8proc
+
+When you normalize a string, it mallocs a new buffer for the result,
+which conflicts with the curv::String representation.
+(NFC normalization can expand a string, eg by decomposing certain ligatures.
