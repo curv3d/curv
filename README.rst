@@ -52,13 +52,25 @@ Two platforms are currently supported: Linux and macOS. I currently test
 on Ubuntu LTS and macos 10.11. Windows support is planned but not scheduled.
 
 Curv requires direct access to a GPU made by Intel, AMD or Nvidia, using the
-vendor supplied GPU driver.
+vendor supplied GPU driver. On Linux, the GPU needs to be modern enough to be supported
+by the latest version of the vendor supplied driver. Any GPU from 2012 or later
+will work. Some older GPUs may work: check the list of supported hardware for the driver.
 
-* On Linux, the Mesa open source GPU driver is too buggy (as of August 2018).
-  You need to use the closed source vendor supplied GPU driver instead.
-  For AMD GPUs, you need the AMDGPU-PRO driver, which is
-  only officially supported on Ubuntu LTS, Red Hat and SUSE. There are
-  fewer limitations if you use Intel integrated graphics or an Nvidia GPU.
+* On Linux, you have 3 choices:
+
+  * Nvidia has the best GPU hardware. You will need to use the Nvidia closed source driver,
+    not the open source Nouveau driver. Any GPU supported by the latest Nvidia driver will
+    work with Curv. Eg, see this supported hardware list:
+    https://www.geforce.com/drivers/results/137276
+  * An Intel GPU, using the Intel supplied open source driver (based on Mesa).
+    Intel is your choice if you want to use a driver that is free software.
+    Any GPU supported by the latest Intel driver will work with Curv.
+    You need Intel HD Graphics -- earlier GPU technology is not supported.
+  * An AMD GPU, using the AMDGPU-PRO (closed source) driver,
+    which is only officially supported on Ubuntu LTS, Red Hat EL (not Fedora),
+    and SUSE. Unfortunately, the open source AMD driver (based on Mesa) is too buggy
+    to work with Curv right now. Your choice of Linux distro is very restricted with AMD.
+
 * If Curv is invoked within a VNC session, then it might not have direct
   access to GPU hardware. Curv requires a GPU accelerated VNC server.
   Try `TurboVNC`_ combined with `VirtualGL`_.
@@ -67,10 +79,3 @@ vendor supplied GPU driver.
 
 .. _`TurboVNC`: https://turbovnc.org/About/Introduction
 .. _`VirtualGL`: https://virtualgl.org/About/Introduction
-
-..
-  In the future, the geometry engine will be rewritten for scaleability
-  and performance. I anticipate you will then need a GPU that supports one of
-  the following standards: OpenGL 4.3, macOS Metal, DX12 or Vulkan.
-  For laptops, the cutoff will be somewhere between 2012 and 2013 as the year of
-  manufacture.
