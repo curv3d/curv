@@ -6,7 +6,7 @@ Big Items (target: Dec 2018)
 
 Current TODO List:
 * -o glsl
-* configure default values for -O options. ~/.config/curv/config.curv
+* configure default values for -O options. ~/.config/curv.curv or ~/.config/curv/
 * graphical value pickers
   * parametric records (which are syntactic sugar)
   * value picker predicates (eg, checkbox and slider)
