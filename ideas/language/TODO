@@ -133,6 +133,14 @@ New Pattern Types:
       Is 'true' a constant pattern or an identifier pattern?
     * Conflicts with field_generator ::= "string":expr|pattern:expr
       and that's needed to support {"${foo}":expr}
+    * Neither of these is a big problem. I can classify literal constants
+      (number, string, list and record constructors) as patterns,
+      such that '42' is an abbreviation for '_ == 42'. If you want a string
+      literal pattern in a field generator, you must write '("foo"): expr'
+      or '(_ == "foo"): expr'. But I can't think of any use case,
+      so the clumsy syntax is not a problem.
+    * '== expr' could be an abbreviation of '_ == expr'.
+      Eg, 'match[ ==0 -> ...; ==1 -> ...; ... ]'
 
 "Pattern Guards and Transformational Patterns", Simon Peyton Jones
 

@@ -56,11 +56,33 @@ curv::String is NFC normalized as well.
 
 In addition to normalization, there is also the problem of distinct identifiers
 that look identical even when normalized. For example, "AB" (Latin script),
-vs "ΑΒ" (Greek script), vs "АВ" (Cyrillic script).
+vs "ΑΒ" (Greek script), vs "АВ" (Cyrillic script). Until the security community
+agrees on a standard solution, I can't do anything about this.
 
 The safest policy is to only support ASCII identifiers and field names.
 If I support Unicode strings, then Curv support for string field names,
 as in R."funny business", conflicts with this.
+
+I might want to support control characters (eg, newline) in strings.
+I can't think of a reason to support them in identifiers.
+
+## Unicode Stability and Versioning
+The Unicode standard keeps changing, which affects the semantics of operations
+on Unicode strings, which affects the meaning of Curv programs. Potentially,
+a change to Unicode can cause a Curv boolean expression to change from true
+to false. I don't want the meaning of a Curv program to depend on which version
+of an external library dependency that you link with when you build Curv
+from source.  So each commit in the Curv repository is tied to a specific
+version of Unicode. Curv will contain a copy of the Unicode character property
+table, and that will be periodically updated to new Unicode versions.
+
+Some Unicode character properties are immutable: they can't change, even to
+fix bugs. But this immutability guarantee only applies to properties of assigned
+code points. So if I want Curv semantics to only rely on immutable properties,
+then unassigned code points must be illegal in Curv strings.
+
+A "fixed property" can change, but only to fix obvious or clerical errors.
+Should I allow Curv string semantics to depend on fixed properties?
 
 ## Safe Unicode Subset
 Unicode is a shitstorm of endless complexity and buggy behaviour.
@@ -87,6 +109,10 @@ So it pays to be strict and just ban all dubious code points.
 * Unassigned code points are not supported. See reasons in **Identifiers**.
 * The code point 0 (NUL) is not supported. Curv uses C library code and
   NUL terminated strings in its implementation, so this avoids buggy behaviour.
+* "These code points do not have a Name (na=""): Controls (category Cc),
+  Private use (Co), Surrogate (Cs), Non-characters (Cn) and Reserved (Cn)."
+  I banned all of these scalars above, except for Controls, of which there are
+  65 (all in ASCII and Latin-1).
 
 What do these options mean in the utf8proc library?
  - strip "ignorable" (@ref UTF8PROC_IGNORE) characters,
@@ -96,9 +122,6 @@ More research needs to be done...
 
 ## Unicode Strings
 A string is a sequence of characters, but what is a character in Unicode?
- 0. Legal code points.
-    The NUL character is disallowed.
-    Surrogate and noncharacter code points are disallowed.
  1. Character boundaries.
     * In Swift, a character is an "extended grapheme cluster". Eg, an emoji
       flag character consists of two code points, but counts as one character.
@@ -113,6 +136,12 @@ A string is a sequence of characters, but what is a character in Unicode?
        * https://github.com/michaelnmmeyer/grapheme
          It uses Ragel, which is similar to re2c.
          Ragel is in the Ubuntu Universe.
+    * But, there is no stability guarantee for EGC boundaries, unlike the
+      stability guarantee for normalization. For example, the definition of
+      EGC boundaries for emoji flag characters (two adjacent code points)
+      changed, after emoji flag characters had already been released. It was
+      a bug fix, but it impacted the Swift language by changing the meaning
+      of the string length and index operators.
     * Or, a character is a code point. This has many technical advantages.
       * The Unicode standard is unstable. EGC boundaries change from one
         release to the next. Eg, when new compound emoji classes are added.

@@ -2,6 +2,7 @@ New GL Compiler
 ===============
 This is a large project to improve the GL compiler:
 * Expand the subset of Curv useable in GL code.
+  * Functions with record arguments.
   * Call a library shape constructor from a GL compiled function.
   * Static aggregate data (arrays and structs) for table driven dist functions.
 * Support image import.
