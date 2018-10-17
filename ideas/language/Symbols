@@ -1,0 +1,160 @@
+`#foo` is a symbol value.
+Symbol values are used when you need a C-like enumerated type.
+
+Rationale: I like the syntax.
+
+I want it for modelling the x3d -O colour=face|vertex option.
+You will type `-Ocolour=#vertex`
+instead of `-Ocolour='"vertex"'` or `-Ocolour={vertex:}`.
+The latter syntax is too cumbersome for the Unix command line.
+
+This avoids an even bigger problem in Windows, where escaping " characters
+in a command line argument is infeasibly difficult, see:
+https://stackoverflow.com/questions/562038/escaping-double-quotes-in-batch-script
+
+This syntax is also nice in the general case where you are working with
+enum types or algebraic types. In that context, we want `#foo` to work as a
+pattern.
+
+Note, #foo is intentionally similar to a Twitter hash tag.
+Also, # is reserved as a prefix for future syntax.
+Eg, if I need more container types, #[a,b,c] is a set,
+#{key1: value1, ...} is a map. Or, #! comments.
+
+What does it mean, and how does it interact with the "7 data types" doctrine?
+ 1) #vertex abbreviates "vertex". MAYBE NOT.
+ 2) #vertex abbreviates {vertex:} which abbreviates {vertex: true}. PROBABLY.
+ 3) Symbols are a new (8th) data type. MAYBE.
+
+1. Symbols as Strings
+---------------------
+Pros:
+* If JSON export is important, strings are the most natural translation
+  for symbols. It's what you would use if modelling data directly in JSON.
+* Strings as the representation for symbols is simple and easy for users
+  to understand. Especially if we just use "foo" and forget about #foo.
+  This entire proposal adds needless complexity.
+
+But, I don't like the idea of using strings for enumerated values.
+* A string is a collection, but symbols are 'atomic' values.
+  Conceptually, they are a better match to the domain.
+* Semantically, symbols are more closely related to records than they
+  are to strings, due to the analogy with enum types and algebraic types.
+* I don't want symbols to compare equal to strings.
+  I want them to be disjoint from strings, so that overloaded
+  functions can distinguish symbol arguments from string arguments.
+* Symbol equality is traditionally faster than string equality.
+
+So, symbols are not strings.
+
+2. Symbols as Records
+---------------------
+Here's the sales pitch for this design alternative:
+* Curv has 7 data types, there's no compelling reason to add an 8th.
+  This preserves the ability to map all Curv non-function data to JSON.
+* Symbols are closely related to records, when you think about how
+  algebraic types are represented in Curv.
+* Records are the general mechanism for representing new data types.
+  So representing symbols as records fits this tendency.
+* Record literals are patterns. Symbol literals need to be patterns.
+
+Let's recall the doctrine for representing labelled options
+and algebraic data types in Curv.
+
+* A set of labelled arguments is a record.
+  Examples from other languages:
+  * Swift function calls
+  * HTML attributes, within a tag
+  * Unix command line arguments: options
+  Some of these domains permit labelled arguments that have
+  just a name, not a value. The underlying parameter is a
+  boolean, defaulting to false, but if the name is specified,
+  the parameter becomes true. Eg, --foo instead of --foo=value
+  in Unix, or foo instead of foo=value as an HTML attribute.
+  That's why `foo:` is an abbreviate for `foo:true` in a Curv record.
+
+A Haskell algebraic type is a set of named alternatives. 
+The constructor for an alternative is written as `Foo` or `Bar value`.
+We can think of `Foo` as an abbreviation; you would otherwise need
+to write `Foo ()` if all alternatives were required to have an argument.
+
+In Curv, an algebraic type is a set of tagged values of the
+form {name: value} -- tagged values are singleton records.
+The abbreviation for tagged value that only needs a name is {name:}:
+the value is implicitly `true`. In this case, the choice of the value
+`true` is arbitrary: `null` would make as much sense.
+
+With the introduction of symbol syntax, the idiomatic syntax for
+members of an algebraic type will be #foo and {bar: value}.
+
+Possible reasons for identifying #foo with {foo:} in an algebraic type.
+* Maybe there are benefits to uniformly representing all members
+  of an algebraic type as singleton records?
+  * Like, an algebraic value is isomorphic to a single field of a record,
+    and can be interpolated into a set of labelled arguments using `...`.
+  * A uniform API for extracting the name and value components of an
+    algebraic value.
+
+3. Symbols as the 8th Type
+--------------------------
+Sales pitch:
+* Due to Lisp, we have the idea of symbols as a fundamental atomic data type in
+  dynamically typed languages. A symbol is a pure tag with no additional data.
+* Symbols could occupy the role of being the value representation of a record
+  field name (like in Erlang). Then we redesign records around this idea.
+  It might be more elegant.
+
+Cons:
+* I feel resistance to adding another fundamental value type.
+* It kind of breaks JSON export (but does that matter?)
+* Refactoring the record facility may break backward compatibility.
+  And I haven't demonstrated an increase in expressiveness or useability.
+* I argued earlier that symbols should be distinct from strings.
+  There isn't as strong an argument for making symbols distinct from records,
+  since records are the general mechanism for representing new data types.
+
+In Lisp/Scheme, symbols are a distinct type. Does the Lisp design matter
+for Curv? In Lisp, the original necessity for symbols came from the ability
+to quote a Lisp expression and get back a data structure. Other popular
+languages have copied this feature of Lisp: Julia, Ruby, R.
+Even though this design feature of Lisp has been raised to mythic status,
+and characterized as a fundamental advance, and given the name "homoiconic", I
+don't like it. I don't like the fact that a quoted expression does not capture
+its environment. If Curv gets a similar feature, I would represent "quoted
+expressions" as functions. The new feature would be ways to disasssemble
+a function. Do I need symbols as an 8th data type, for the purpose of
+disassembling functions? No idea right now. I do have an internal Symbol
+data type in libcurv. But there are zillions of classes used by libcurv,
+due to it being written in C++.
+
+In Erlang, symbols (called atoms) are more fundamental than strings.
+`foo` is an atom, and also a pattern, while `Foo` is a variable name.
+In a record, field names are atoms.
+
+The Erlang design seems more relevant. Maybe symbols are the value
+representation of field names. {foo=1} or {#foo: 1} are the two syntaxes
+for record literals. `fields R` returns a list of symbols.
+More radically, maybe R.#foo is field selection. This is elegant, but too
+much of a departure from conventional syntax, since R.foo now contains a
+reference to a variable named 'foo'. Well, I could resurrect the ' syntax,
+so that V'0 and R'#foo index a vector or record respectively.
+If ' is too valuable, maybe use V::0 and R::#foo instead.
+* The full version of this proposal breaks backward compatibility.
+  Doesn't make Curv more expressive or easier to write. Maybe more elegant.
+
+If symbols are their own type, then we need an API for converting between
+strings and symbols.
+    #"$a" -- convert a string to a symbol
+    ??? -- convert a symbol to a string
+
+Maybe `fields` should return a list of symbols, instead of a list of strings?
+That aligns with the internal representation of records.
+There are additional contexts where strings proxy for field names:
+  R."name"
+  {"name": value}
+In these contexts, the " syntax is what's important, not the string data type.
+I have considered replacing this with a quoted identifier syntax:
+  'hello, world'
+  R.'hello world'
+  {'hello world': value}
+And $ substitutions are legal in quoted identifiers.

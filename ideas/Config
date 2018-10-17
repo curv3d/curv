@@ -1,0 +1,40 @@
+Curv has an optional user-defined configuration file, which the `curv`
+command reads during startup.
+
+All of the -O options can be given default values in the config file.
+Which means all -O option values are Curv values.
+What about '-O colour=face|vertex' for -o x3d?
+'face' and 'vertex' need to either be strings, or symbols.
+See <language/Symbols> proposal.
+Depending on the outcome of this proposal, we will use one of the following:
+    -O colour='"vertex"'   -- in bash
+    -O "colour=""vertex""" -- in cmd.exe, but for caveats see (*)
+    -O colour=#vertex
+(*) https://stackoverflow.com/questions/562038/escaping-double-quotes-in-batch-script
+
+All configuration can be overidden on the command line.
+Currently, all of the relevant command line options are -O options.
+
+$XDG_CONFIG_HOME defines the base directory relative to which the Curv
+config file is stored. If $XDG_CONFIG_HOME is either not set or empty,
+it defaults to "$HOME/.config", unless $HOME is either not set or empty,
+in which case there is no Curv config file.
+
+There are two possible names for the Curv user configuration file.
+First, we try "$XDG_CONFIG_HOME/curv.curv".
+If this file exists, we evaluate it as a Curv syntax source file,
+and the result must be a record value.
+Otherwise, if the directory $XDG_CONFIG_HOME/curv exists, we evaluate it
+using directory syntax.
+
+In libcurv, Curv configuration is stored in System::config_,
+as a value of type Shared<const Record>.
+
+Algorithm for parsing configuration and -O options.
+* error checking: I want to report invalid -O options, and invalid config
+  settings.
+* For each internal options structure, like geom::Frag_Export, there is a
+  Parse_Opt function that validates a specific name/value pair,
+  modelled after parse_frag_opt(). This validates a name/value pair from
+  either the config, or from a -O option.
+* template<T> typedef bool (*Parse_Opt)(
