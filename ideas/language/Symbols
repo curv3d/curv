@@ -8,10 +8,6 @@ You will type `-Ocolour=#vertex`
 instead of `-Ocolour='"vertex"'` or `-Ocolour={vertex:}`.
 The latter syntax is too cumbersome for the Unix command line.
 
-This avoids an even bigger problem in Windows, where escaping " characters
-in a command line argument is infeasibly difficult, see:
-https://stackoverflow.com/questions/562038/escaping-double-quotes-in-batch-script
-
 This syntax is also nice in the general case where you are working with
 enum types or algebraic types. In that context, we want `#foo` to work as a
 pattern.
@@ -21,10 +17,24 @@ Also, # is reserved as a prefix for future syntax.
 Eg, if I need more container types, #[a,b,c] is a set,
 #{key1: value1, ...} is a map. Or, #! comments.
 
-What does it mean, and how does it interact with the "7 data types" doctrine?
- 1) #vertex abbreviates "vertex". MAYBE NOT.
- 2) #vertex abbreviates {vertex:} which abbreviates {vertex: true}. PROBABLY.
- 3) Symbols are a new (8th) data type. MAYBE.
+What is the type of a symbol? How do they print?
+ 1) #vertex abbreviates "vertex".
+ 2) #vertex abbreviates {vertex:} which abbreviates {vertex: true}.
+ 3) Symbols are a new (8th) data type.
+
+0. No Symbols
+-------------
+An alternate to this proposal is to parse enum-valued -O options differently
+from other options. Enum-valued -O options are actually string valued options,
+with only a fixed set of string values being legal. We just interpret the
+option value as a string, without any quotation syntax required.
+
+We parse pure string valued options the same way: the option string is
+taken literally, you don't need to include double quote characters.
+But, we do interpret '$' escape sequences, so you still have full access
+to the Curv expression language in string valued options if you need it.
+
+Enum values are string values. This means we want "foo" to work as a pattern.
 
 1. Symbols as Strings
 ---------------------
@@ -32,20 +42,33 @@ Pros:
 * If JSON export is important, strings are the most natural translation
   for symbols. It's what you would use if modelling data directly in JSON.
 * Strings as the representation for symbols is simple and easy for users
-  to understand. Especially if we just use "foo" and forget about #foo.
-  This entire proposal adds needless complexity.
+  to understand.
+* When I first encountered Lisp/Scheme, the distinction between symbols and
+  strings seemed unnecessary. Curv doesn't use different types for integers
+  and non-integral reals. So why make this distinction? If the only technical
+  benefit is "faster equality", that's pretty weak.
+* This proposal is the simplest, and requires the least code to implement.
 
-But, I don't like the idea of using strings for enumerated values.
+If symbols are strings, why provide an alternate syntax for string literals?
+* Usability on the command line, for setting enum-valued options.
+* At present, strings are rarely used in Curv. If you see a string literal
+  in Curv, it's probably uninterpreted text, to be printed to the console
+  or rendered using the future `text` primitive. Writing #foo instead of "foo"
+  is a signal to the reader that this is a semantic tag, not uninterpreted
+  natural language text. Symbols are used as enum values, as nilary constructors
+  for an algebraic type, as field names for indexing a record.
+
+Cons:
+* Since symbols have semantics (semantic tags, not uninterpreted text),
+  they ought to print as symbols, not as quoted strings.
 * A string is a collection, but symbols are 'atomic' values.
-  Conceptually, they are a better match to the domain.
+  Conceptually, a non-string symbol type is a better match to the domain.
 * Semantically, symbols are more closely related to records than they
   are to strings, due to the analogy with enum types and algebraic types.
 * I don't want symbols to compare equal to strings.
   I want them to be disjoint from strings, so that overloaded
   functions can distinguish symbol arguments from string arguments.
 * Symbol equality is traditionally faster than string equality.
-
-So, symbols are not strings.
 
 2. Symbols as Records
 ---------------------
@@ -98,63 +121,37 @@ Possible reasons for identifying #foo with {foo:} in an algebraic type.
 3. Symbols as the 8th Type
 --------------------------
 Sales pitch:
+* #foo prints as #foo, not as anything else. #foo is only equal to values that
+  print as #foo. There's no weird aliasing with other types. Simple.
 * Due to Lisp, we have the idea of symbols as a fundamental atomic data type in
-  dynamically typed languages. A symbol is a pure tag with no additional data.
-* Symbols could occupy the role of being the value representation of a record
-  field name (like in Erlang). Then we redesign records around this idea.
-  It might be more elegant.
+  dynamically typed languages. A symbol is a pure semantic tag with no
+  additional data. So it's not a record or a string, which are more complex.
+
+Symbols and strings are distinct, so maybe symbols become the natural
+representation for field names? Eg, `fields` returns a list of symbols.
+This raises some questions:
+* What about field names that aren't proper identifiers?
+  I guess we have #"hello world" as a symbol. Or #'hello world' if quoted
+  identifiers are added.
+* Syntax for a `:` field generator, given a symbol value?
+  Currently we have `"$x":value`, if x denotes a string.
+  Remove this syntax (to allow literal patterns to be added later).
+  Then add `$x : value`, if x is a symbol.
+  If quoted identifiers are added, then we will also have `'$str': value`,
+  where str is a string.
+* Syntax for field selection, given a symbol value?
+  Currently we have `R."$a"`.
+  Maybe `R.$a` or `get [a] R`.
+
+How do you substitute a symbol into a string without the leading # character?
+Use the symbol_to_string API?
 
 Cons:
-* I feel resistance to adding another fundamental value type.
-* It kind of breaks JSON export (but does that matter?)
-* Refactoring the record facility may break backward compatibility.
-  And I haven't demonstrated an increase in expressiveness or useability.
-* I argued earlier that symbols should be distinct from strings.
-  There isn't as strong an argument for making symbols distinct from records,
-  since records are the general mechanism for representing new data types.
-
-In Lisp/Scheme, symbols are a distinct type. Does the Lisp design matter
-for Curv? In Lisp, the original necessity for symbols came from the ability
-to quote a Lisp expression and get back a data structure. Other popular
-languages have copied this feature of Lisp: Julia, Ruby, R.
-Even though this design feature of Lisp has been raised to mythic status,
-and characterized as a fundamental advance, and given the name "homoiconic", I
-don't like it. I don't like the fact that a quoted expression does not capture
-its environment. If Curv gets a similar feature, I would represent "quoted
-expressions" as functions. The new feature would be ways to disasssemble
-a function. Do I need symbols as an 8th data type, for the purpose of
-disassembling functions? No idea right now. I do have an internal Symbol
-data type in libcurv. But there are zillions of classes used by libcurv,
-due to it being written in C++.
-
-In Erlang, symbols (called atoms) are more fundamental than strings.
-`foo` is an atom, and also a pattern, while `Foo` is a variable name.
-In a record, field names are atoms.
-
-The Erlang design seems more relevant. Maybe symbols are the value
-representation of field names. {foo=1} or {#foo: 1} are the two syntaxes
-for record literals. `fields R` returns a list of symbols.
-More radically, maybe R.#foo is field selection. This is elegant, but too
-much of a departure from conventional syntax, since R.foo now contains a
-reference to a variable named 'foo'. Well, I could resurrect the ' syntax,
-so that V'0 and R'#foo index a vector or record respectively.
-If ' is too valuable, maybe use V::0 and R::#foo instead.
-* The full version of this proposal breaks backward compatibility.
-  Doesn't make Curv more expressive or easier to write. Maybe more elegant.
-
-If symbols are their own type, then we need an API for converting between
-strings and symbols.
-    #"$a" -- convert a string to a symbol
-    ??? -- convert a symbol to a string
-
-Maybe `fields` should return a list of symbols, instead of a list of strings?
-That aligns with the internal representation of records.
-There are additional contexts where strings proxy for field names:
-  R."name"
-  {"name": value}
-In these contexts, the " syntax is what's important, not the string data type.
-I have considered replacing this with a quoted identifier syntax:
-  'hello, world'
-  R.'hello world'
-  {'hello world': value}
-And $ substitutions are legal in quoted identifiers.
+* Compared to symbols as strings, there is extra complexity:
+  * API for converting between symbols and strings.
+  * #'foo bar' syntax for non-standard symbol names, vs "foo bar".
+  * Suppressing the leading # when substituting a symbol?
+    Maybe if you are using a symbol to denote a single component of a longer
+    name or string, then you are using symbols incorrectly.
+  * Potential confusion about when to use a string and when to use a symbol?
+* It breaks or complicates JSON export (but does that matter?)

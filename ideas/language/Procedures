@@ -64,6 +64,12 @@ Element generators will have a performance advantage over lists, in the
 case where you are incrementally accumulating a list of values, eg 1 per
 function call, due to the O(N) cost of list concatenation.
 
+The Jq proposal, to extend Curv to embrace the features of Jq, actually
+requires the use of element generator procedures (as a supertype of functions).
+Haskell style lazy lists do not have the required semantic properties.
+We need the concept of a flat stream of values, where embedding one stream in
+another results in automatic flattening, and not a tree structure.
+
 Proposal: Procedure Call Syntax
 -------------------------------
 Maybe the syntaxes for procedure and function call should be segregated.
@@ -110,6 +116,11 @@ procedure call syntax, you get an error. So procedure and function values must
 be internally distinguished in some way.
 * Maybe not. This seemingly conflicts with the doctrine that Expression
   is a subtype of Element_Generator. So is Function a subtype of Procedure?
+* In the discussion of `jq`, it's useful to consider Function to be a subtype
+  of Element Generator Procedure.
+* So this would mean, calling a function with procedure call syntax results
+  in an element generator phrase. Which might cause an error if the context
+  doesn't allow this. But it would be legal in a list constructor.
 
 * `print`, `warning`, `assert` are procedure values.
 * As a special case, `error` is both a procedure and a function.

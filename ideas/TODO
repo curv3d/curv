@@ -774,7 +774,16 @@ Other:
 * dtostr() refactor
   * put all 4 parameters into a DStyle struct.
 
-build system?
+Build system? Current candidates are:
+* cmake. The popular standard, what I now use. Kind of horrible, but workable.
+  * I should use the ninja back end. It is fast and reliable.
+* meson. Newer, seems inspired by cmake, hopefully less horrible.
+  Written in Python, so there's a big dependency. High profile automake
+  projects are moving to meson.
+* build2. Looks very good: high quality and an excellent match to my needs.
+  New and not very popular. Not an Ubuntu package; users must download and
+  build it. At version 0.8 (as of Oct 2018). Re-examine this in 2019.
+
 * Fast. Correct: auto track dependencies, rebuild on recipe change,
   delete stale objects. High level: standard abstractions that are portable
   across linux/osX/win. Cross project dependency discovery and configuration

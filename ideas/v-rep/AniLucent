@@ -1,0 +1,64 @@
+Animation and Translucency
+--------------------------
+Two planned changes to the representation of shapes, colour fields,
+and intensity fields.
+
+To support lazy rendering, we need to tag shapes, colour fields, and intensity
+fields with a boolean `animated` field. If false, then time is assumed to be 0.
+
+To support the Stratasys J750 (supported by Shapeways in 2019),
+we need to support translucent shapes. Colour values now have an alpha
+component.
+
+Translucent shapes are more expensive to render, so shapes and colour fields
+need a boolean `translucent` field. If false, then alpha is assumed to be 1.
+
+A colour field is a record containing:
+    colour : [x,y,z,t] -> [r,g,b,a]
+    animated : boolean
+    translucent : boolean
+
+An intensity field is a record containing:
+    intensity : [x,y,z,t] -> n
+    animated : boolean
+
+Colour_Field and Intensity_Field records are graphical values.
+Note that Colour_Field :> Shape.
+
+Note that a shape may be animated due to its distance field, its colour field,
+or both. When we upcast a Shape to a Colour_Field, the animated field might be
+a false positive. This could be handled by storing two animated fields, one in
+the colour function itself.
+
+Colour API
+----------
+sRGB(r,g,b) -> colour
+    This will change so that the result is (lr,lg,lb,a).
+
+sRGB(r,g,b,a) -> colour
+    New API.
+
+The GL compiler will now need to deal with the overloaded sRGB function.
+
+Colour Field API
+----------------
+Current API:
+  colour c shape
+    c matches Vec3, (ifield,cmap), shape, fun
+  texture = colour
+  make_texture c
+
+New API:
+  colour c shape
+    c matches Vec3, Vec4, (ifield,cmap), cfield, fun
+  make_colour c
+
+Intensity Field API
+-------------------
+Current API:
+  i_radial, i_concentric, i_gyroid, i_animate
+  show_ifield
+
+New API:
+  make_ifield if
+    if matches number, fun, ifield

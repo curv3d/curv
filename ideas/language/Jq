@@ -1,0 +1,47 @@
+# jq
+The `jq` tool is a powerful, expressive, general purpose tool for transforming
+JSON data. It's a dynamically typed, pure functional language with JSON as its
+data model. It's really elegant and compelling. So many similarities to Curv
+that I should examine it closely and see what ideas to steal.
+
+Some day, I might extract the Curv core language into a separate product,
+and make that core language as convenient and powerful as jq for transforming
+Curv values.
+
+As Curv adds more strategies for defining shapes, it will need to become more
+of a general purpose language. I'm thinking about building large 'volume data
+structures' for representing shapes, of various kinds. Jq style data
+transformation might be useful here, as well.
+
+A jq program is a 'filter', which maps a value to a value. A jq filter is
+thus like a Curv function. Everything in jq is either a constructor for
+primitive functions or an operation that maps functions onto functions. Eg,
+    42  -- in Curv, x->42
+    f+g -- in Curv, x->f x + g x
+We could imagine generalizing a+b in Curv to map functions onto functions.
+It's not so different from how + is generalized to tensors.
+This is also required for the Functional Reactive Animation proposal.
+
+jq maps a stream of JSON values (the input) to another stream (the output).
+And actually, a filter maps a value onto a stream of zero or more values.
+So this is actually trickier to map onto Curv.
+
+There is a proposed (but controversial) feature, an element generator procedure
+(EGP), which maps a value onto a stream of values. A jq filter is actually a
+Curv EGP. It has been proposed that regular Curv functions are a subtype of
+EGPs. So that provides a possible mapping from jq to Curv. The other mapping is
+to think like Haskell, and represent a stream of values as a lazy list. Under
+that interpretation, a filter is a function mapping arbitrary values to lists.
+The drawback is that standard Curv functions like 'count' and 'mod', which have
+counterparts in Jq, cannot be interpreted as filters. The first interpretation,
+of filters as EGPs, allows Function to be a subtype of EGP, which allows
+ordinary Curv code to be directly embedded in the filter language or the filter
+interpretation. A secondary reason that lazy lists don't work is that Jq filters
+output a flat stream of values (streams cannot be nested). If one stream is
+embedded in another, the result is automatically flattened. EGPs have this
+auto-flattening property, but lazy lists do not.
+
+Experiment: in jq, (1,2,3)+(10,20) is x->(11,12,13,21,22,23)
+
+In Curv, `1;2;3` is a stream of values, while in jq, `1,2,3` maps a value onto
+the same stream of values.

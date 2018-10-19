@@ -1,4 +1,29 @@
-## TODO: Language Changes
+# TODO: Language Changes
+
+Recent Ideas (Oct 2018):
+* sequential let
+* string comprehensions
+* Enum values. How are they represented? Syntax of '-Ocolour=vertex' if the
+  RHS is a Curv enum value expression?
+  1. Enum values are symbols. #foo is a symbol value. #foo is a pattern.
+     Use '-Ocolour=#vertex'. See Symbol proposal.
+  2. Enum values are strings. "foo" is a pattern. Use '-Ocolour=vertex',
+     because string valued -O options don't require double quotes, but do
+     support $ escapes.
+* Quoted identifiers: 'hello world', R.'hello world', {'hello world':expr}
+  $ escapes are legal in quoted identifiers.
+  Utility: Fluent parameter names in parametric shapes. The quoted string
+  syntax "foo" no longer has 2 different meanings depending on context:
+  sometimes it is a string value, sometimes it represents a quoted identifier.
+  Remove R."foo" and {"foo":expr} syntax: the latter change makes room for
+  string literals as patterns, consistent with the enum/symbol proposals.
+* Use _ as digit separator in numerals.
+* `X where Y` is an item, not a list. X can be a definition.
+* any, all
+* v[X] := x; v[[X,Y,Z]] := v3;
+  * `f x := expr` function definition syntax is *not* supported.
+* mixed a=/a: record literals
+* >> `intersection` foo
 
 Breaking changes:
 * file.foo and package. Remove 'file pathname'.
@@ -25,9 +50,7 @@ Extensions:
 * Record constructors may combine definitions and field generators.
   Shorter definitions for shape constructors with .mitred/.exact members.
 
-## Ideas Under Development
-
-### `where` syntax
+## `where` syntax
 
 I would like a `where` expression to be an item, not a list.
 Currently, adding a `where` clause to the end of a definiens requires
@@ -90,7 +113,7 @@ New syntax:
 ```
 This is acceptable.
 
-### Patterns
+## Patterns
 
 New Pattern Types:
 * '<pattern> if <condition>' -- conditional pattern. The pattern is matched,
@@ -132,13 +155,18 @@ New Pattern Types:
     * Conflicts with name abstraction, creates ambiguity.
       Is 'true' a constant pattern or an identifier pattern?
     * Conflicts with field_generator ::= "string":expr|pattern:expr
-      and that's needed to support {"${foo}":expr}
-    * Neither of these is a big problem. I can classify literal constants
-      (number, string, list and record constructors) as patterns,
-      such that '42' is an abbreviation for '_ == 42'. If you want a string
-      literal pattern in a field generator, you must write '("foo"): expr'
-      or '(_ == "foo"): expr'. But I can't think of any use case,
-      so the clumsy syntax is not a problem.
+      and that's needed to support {"$foo":expr}
+      * There is no obvious use case for `"foo":expr` as an abbreviation
+        for assert(expr=="foo"), so don't worry? Inconsistency sucks, though.
+      * Quick fix: use `("$foo"): expr`.
+      * Better: Replace this syntax with `{$foo: expr}`.
+        Also, `R.$a` instead of `R."$a"`.
+        Using string literals in a context requiring an identifier always
+        felt weird anyway. This is more elegant.
+    * Classify literal constants (number, string, list and record constructors)
+      as patterns. Symbol constants (#foo) should be patterns.
+      Introduce `$a:expr` and `R.$a`.
+      Replace `"foo":expr` with `$"foo":expr`.
     * '== expr' could be an abbreviation of '_ == expr'.
       Eg, 'match[ ==0 -> ...; ==1 -> ...; ... ]'
 
@@ -209,7 +237,7 @@ It reminds me of:
   
 This is now very general. "pattern directed evaluation"
 
-### Type Classes:
+## Type Classes:
 We can define a 'type class' as a record containing a 'call' function
 (a type predicate), plus constructors (eg 'make')
 and operations on type instances. Eg,
@@ -222,7 +250,7 @@ If multiple classes implement the same protocol, then we have the effect of
 Haskell type classes. A class needs to be passed as an explicit argument.
     f T (T x) = ...
 
-### Tensors
+## Tensors
 * rank t
 * dimension t -- vector of dimensions of tensor t.
 
@@ -278,7 +306,7 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
 * `a` is an array, all indices are arrays. As in APL.
   What happens if the same element is indexed twice? What's the new value?
 
-### Vectorized boolean operations:
+## Vectorized boolean operations:
 * vectorize `bit`
 * Vectorized relations are:
   * infix operators:
@@ -305,7 +333,7 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
       * le, less_equal, less_or_equal, less_than_or_equal_to
 * `not` is vectorized version of `!`.
 * `all` and `any` are vectorized boolean monoids for && and ||.
-  * Name is consistent with GLSL,R,Julia,Python,Matlab.
+  * Name is consistent with GLSL,HLSL,R,Julia,Python,Matlab.
   * Use some(pred)list, every(pred)list, name consistent with Javascript.
   * Haskell uses "and". Eg, a `any` b  vs  a `and` b
 * ifelse(cond,thenval,elseval)
@@ -330,7 +358,7 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
   * idiom: i != 0, or i !=' 0
   * bit(b) = ifelse(b, 1, 0);
 
-### Debug actions:
+## Debug actions:
 * print_timing(string,expr), returns value of expr
 * `debug identifier action` -- locally bind identifier in the scope of action
   to a debug object, used to query and modify the state of the debugger.
@@ -345,19 +373,21 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
 * `enter_debugger`, aka `debug`
 * assert_error(errorMessageString, expression)
 
-### Generalized Definitions:
+## Generalized Definitions:
 * `include {module}`
   Could be used to embed sequential bindings in a recursive scope, or v.v.?
   Could be useful in abstract evaluation where the {module} argument is
   unwrapped during abstract evaluation? Dunno.
   `include {module} where (localDefinitions)`? Information hiding, in lieu of
   private module members.
+  With the proposed compile type type inference system, `include` could accept
+  any argument with type Record.
 * `if (cond) (a=foo;b=bar) else (a=bar;b=foo)`
 * `def where bindings`, let bindings in def`.
   Could be used to embed sequential bindings in a recursive scope, or v.v.
   Information hiding, in lieu of private module members.
 
-### Lexical:
+## Lexical:
 * unicode operators (needs re2c or Ragel)
     90° == 90*deg
     ≤ ≥ ≠
@@ -381,7 +411,7 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
 * 'foo' quoted identifiers. Compatibility with GUI interfaces that display
   parameter names as GUI labels.
 
-### Parametric records
+## Parametric records
 For example, a parametric shape in file `lollipop.curv`:
   param
     diam = 1;
@@ -405,7 +435,7 @@ with field names in the (extended) shape protocol. It might make sense to
 add a single field which is a parameter record. What to name it?
 Not `param`, that's a reserved word. Maybe `p`.
 
-### OpenSCAD2 prototype oriented programming?
+## OpenSCAD2 prototype oriented programming?
 * Model parameters and shape are bundled into one value.
 * Simple syntax for customizing a subset of model parameters, generating
   a new shape.
@@ -419,7 +449,7 @@ Not `param`, that's a reserved word. Maybe `p`.
   Shapes contain the name of their constructor, and their constructor
   arguments. (Implemented using a proposed 'constructor' feature.)
 
-### Data Abstraction:
+## Data Abstraction:
 * Wm. Cook distinguishes two kinds of data abstraction: CLU style "ADT"s,
   and Smalltalk style "objects". The untyped lambda calculus is enough to
   do object oriented data abstraction. Record literals make it easier.
@@ -467,7 +497,7 @@ Not `param`, that's a reserved word. Maybe `p`.
   that invokes the constructor with a transformed copy of the instance variables
   as arguments.
 
-### Function/Record Equivalence.
+## Function/Record Equivalence.
 * Using {call x = f x}, a record can behave like a function.
 * For symmetry, a function behaves like a record with a single `call` field.
 * What about `is_fun`?
@@ -481,7 +511,7 @@ Not `param`, that's a reserved word. Maybe `p`.
       be polymorphic across Record and List. We maybe need to use
       `count(fields record)` to count the fields in a record.
 
-### Haskell algebraic type constructors
+## Haskell algebraic type constructors
   data Maybe a = Nothing | Just a
 Constructors for this type, in Curv:
   {Nothing:}     -- or `null`, to be idiomatic.
@@ -495,7 +525,9 @@ Eg,
 Eg,
   make_shape{is_3d:, ...}
 
-### Prefix Sections
+In the Symbol proposal, I would use #Nothing and {Just: 42} instead.
+
+## Prefix Sections
 This is inspired by 'sections' from Haskell.
 In certain cases, an infix operator may be used as a prefix operator,
 which causes it to be partially applied.
@@ -529,7 +561,7 @@ as a case in a simulated switch.
 This can't be extended to the arithmetic operators, since (+a) and (-a) already
 have a different meaning. Sections of the boolean ops && and || aren't useful.
 
-### Indentation As Syntax
+## Indentation As Syntax
 let:
   x=1
   y=2
@@ -567,14 +599,14 @@ whatever editor is around to make a quick edit, not realising that the file
 labeled .conf is actually a YAML file, you hit tab because it makes logical
 sense and then shit breaks."
 
-### Action/Generator Abstraction
+## Action/Generator Abstraction
 Support tail recursion as a form of iteration in list/record generators.
 This could mean:
 * New syntax: a recursive loop construct whose body can be an action or
   generator. Previously designed as `loop` (aka Scheme named let).
 * Lambda abstraction for actions, list/record generators.
 
-### Function Composition
+## Function Composition
 Long-form function composition is `compose[f,g]`.
 Maybe I want an abbreviated infix form?
     f'g
@@ -592,9 +624,9 @@ Transformations can be composed.
 
 co[f,g] or f `co` g
 
-### Add shebang comments, `#!` to end of line
+## Add shebang comments, `#!` to end of line
 
-### Add code comments, `(*` token_or_comment* `*)`
+## Add code comments, `(*` token_or_comment* `*)`
 Nestable comments for reliably commenting out code blocks.
 * In Rust, `//...` are the recommended style of comments for most purposes.
   `/*...*/` are nestable, and are for commenting out blocks of code.
@@ -603,10 +635,10 @@ Nestable comments for reliably commenting out code blocks.
   a programmer's text editor to comment out blocks of code.
 * Extend Gedit so that it can comment/uncomment code blocks in Curv using `//`.
 
-### Alternate String Escape Sequences
+## Alternate String Escape Sequences
 
-$.  expands to $
-$'' expands to "
+$.  expands to $      instead of $$
+$'' expands to "      instead of ""
 
 Rationale:
 * Readability: it is easier to visually parse these sequences out of the noise
@@ -638,6 +670,31 @@ ${quot}    expands to "    similar to &quot; in HTML5
     print "Can't open file $quot$filename$quot: $error";
     print "Can't open file ${quot}${filename}${quot}: ${error}";
 
-### String Comprehensions
+## String Comprehensions
 "${ stmt1; stmt2; stmt3 }"
 eg, "${if (c) "foo"}"
+
+## Eval
+eval string        -- use std environment
+eval(string,env)   -- environment is env, then std
+
+I'm not saying this is a good idea, BTW. It just keeps coming up, so it
+needs a section. Eval is easy to implement, but there are probably better
+APIs for anything you might actually use it for.
+
+Use cases? Ummm... convert a string to a numeral? Using Curv as a general
+data transformation language, outside of making shapes? See also: Jq.
+
+If I actually want to manipulate Curv programs as data (which is outside any
+use case I'm considering) then strings may not be the best representation.
+
+## get and update
+Traverse and update a data structure (nested records and lists)
+using path values. A path is a list of list indexes and record field names.
+
+Curried, pipelineable API:
+  get path structure
+  update (path, newvalue) structure
+
+Update uses the unique reference count optimization, available once we have
+an optimizing compiler and a new instruction format that supports it.
