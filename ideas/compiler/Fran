@@ -1,0 +1,71 @@
+GL Compilation for Functional Reactive Animation
+================================================
+I'm going to focus on one specific subgoal of the new GL compiler.
+Given a function value, where some of the formal parameters are bound to
+GLSL uniform variables, and the remaining parameters are bound to constants,
+and where the body of the function evaluates to a shape, compile 
+the function body to GLSL.
+
+Ideas:
+ 0. I have considered generalizing the existing evaluator so that it is also
+    a partial evaluator, and so that unevaluated terms are represented as
+    pseudo-values. This is very general and vague, however.
+ 1. Would a term rewrite system like Mathematica or Pure be suitable?
+    I can't get any traction on this idea. One potential problem is that Curv
+    is lexically scoped, and term rewrite semantics (with free identifiers,
+    not bound to any scope) is not hygienic (same problem as Lisp macros).
+ 2. Use a mixture of Abstract Interpretation (mostly to infer types) and
+    Partial Evaluation (to evaluate away subexpressions that aren't GL
+    compileable). We combine these strategies in an `abeval` pass.
+    The input is an Operation tree (same as analyser output), the output is
+    another Operation tree or IR tree that is annotated with types, which will
+    guide GL code generation. I got bogged down thinking about how to abeval
+    a call to union(s1,s2,s3), with either recursion or iteration to iterate
+    over the shape list.
+ 3. Create a new pseudo-value type called a "reactive value", which denotes
+    a GLSL uniform variable. The printable representation is, eg, "!time".
+    Evaluate the function call using the regular evaluator, and expect to get
+    a shape value as a result. If the evaluator tries to evaluate an expression
+    like `!time + 1`, it will abort: too bad, that's not supported. Uniform
+    variables can only be used inside of the shape's dist and colour closures,
+    where they will be captured as nonlocal bindings. Then, just run the GL
+    compiler on the resulting shape, with special handling for reactive values
+    (each one is pre-bound to a specific uniform variable ahead of time).
+
+Idea #3 is easy. The other two are research projects.
+#3 is just enough to implement the customizer, but it doesn't generalize.
+
+Lazy Rendering
+--------------
+What if we pass `!time` as the 4th argument to the dist and colour functions
+during regular GL compilation. The GL compiler replaces references to this
+pseudovalue with `iTime`. The shader loader scans the GLSL, looking for
+references to `iTime`, and if there are none, then it marks the shader as lazy.
+
+It seems plausible. The problem is that dist and colour have a single argument
+of type Vec4. That would need to be separated out, so that the two arguments
+are (Vec3 pt, Num time). Not backward compatible, and doesn't help with the
+related problem of automatically determining if the z coordinate is ever
+used (so that is_2d, is_3d can be inferred).
+
+In principle, we can use abstract interpretation to determine if the z and t
+coordinates are ever used by a dist or colour function, but it's more work.
+
+animate function
+----------------
+I once planned an `animate` function:
+    animate(t->shape_expr)
+This returns a shape with time-varying dist and colour functions.
+
+Can this be implemented in Curv as a shape constructor?
+  animate f = make_shape {
+    dist(x,y,z,t) = f(t).dist(x,y,z,t);
+    colour(x,y,z,t) = f(t).colour(x,y,z,t);
+    bbox = f(0).bbox;
+    is_2d = f(0).is_2d;
+    is_3d = f(0).is_3d;
+  };
+This won't GL compile without idea #2. Also, bbox isn't right, we might want
+to use interval arithmetic, but that's a side issue.
+
+Can `animate` be implemented as a builtin, using idea #3?
