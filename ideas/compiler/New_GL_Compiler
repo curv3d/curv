@@ -67,28 +67,39 @@ Type Inference
 * Expression types cover the full range of Curv values, and cover the full
   range of GL static types, which will now include monomorphic arrays,
   structures, and functions.
-  * `Any` is the union of all expression types.
-  * Null, Bool, Num, String, List(count,elemtype), Record(fieldname to type map)
-    Fun(argtype,resulttype)
-  * maybe Const(value) is an expression type?
+* An Expression type is a set of values. The set of expression types form a
+  lattice.
+  * `All` is the set of all values, the union of all expression types.
+  * `None` is the empty set, the type of a call to `error`. We could also store
+    a Location. If the top level expression of a program has type None, then
+    we issue a compile time error indicating the Location where it fails.
+  * Single(value) is the type of a constant expression.
+  * Null, Bool, Num, String.
+  * List(count,elemtype)
+  * Tuple[Type1,Type2,Type3]
+  * Record(fieldname to type map)
+  * Fun(argtype,resulttype)
   * An ambiguous expression like (1,2,3) can be either a Vec3 or an array
     of numbers. It can be both in the same program: the code generator can
     make two copies of the value, one to use in an array context, and one to
     use in a Vec3 context.
 * The List and Record types must rich enough to match what is supported
   by List and Record patterns.
-  * Tuple types: [Type1,Type2,Type3].
   * If we add a [x,y,...] pattern then we need
     a corresponding [Type1,Type2,...] type.
 
-Partial Evaluation Rules
-------------------------
-What's the minimum set of rewrite rules I need to call a shape library
+Compiler Mechanisms
+-------------------
+What's the minimum set of compiler mechanisms I need to call a shape library
 constructor from a GL compiled function?
 
-A shape expression compiles into some kind of abstract record node R.
-And then I need to be able to extract R.dist and R.colour, throwing out the
-remainder.
+Abstract Interpretation of a shape expression S yields a type, which can be
+checked to ensure that it is a shape record.
+Then we Partially Evaluate the expressions S.dist and S.colour and generate
+GL functions. The type annotations guide partial evaluation and code generation.
+
+Can Abstract Interpretation, Partial Evaluation, function call inlining,
+all be combined in a single Abstract Evaluation pass which maps IR to IR?
 
 Consider box[a,b,c].
 * box is a record value, captured by a closure.
@@ -123,27 +134,15 @@ Consider box[a,b,c].
     similar to inline expanding calls to functions that don't have GL types.
 
 * Pattern matching a' against (is_vec3 v):
+  * a' has type [Ta,Tb,Tc]. Let's say that Ta,Tb and Tc are all Num.
+  * is_vec3 x =
+      is_list x && count x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]);
+  * `is_list x` partially evaluates to `true`
+  * `count x` partially evaluates to 3
+  * `count x == 3` partially evaluates to true
+  * x[0] has type Num
+  * is_num(x[0]) partially evaluates to true
+  * yielding: true && true && true && true && true
+  * yielding: true, so the pattern matches.
+
 * Pattern matching a' against [x,y,z]:
-
-
-Abstract Values vs IR Nodes
----------------------------
-Would a term rewrite system like Mathematica or Pure would be suitable for
-partial evaluation of Curv programs? The problem is that Curv is lexically
-scoped, and term rewrite semantics (with free identifiers, not bound to any
-scope) is not hygienic (same problem as Lisp macros).
-
-Suppose that an IR node `R` is known to evaluate to a record value, but it isn't
-a compile time constant. Then we can perform 'abstract evaluation' on it,
-eg, extract a field and get back another abstract value. Or perform an
-abstract evaluation of `... R` within a record literal, eg within `make_shape`,
-so that `make_shape` can be analyzed into another abstract record value.
-
-What is the IR representation of an abstract record value?
- 1. There is an IR_Abstract_Record class that represents all abstract record
-    values. This is an old idea that has blocked progress.
- 2. An abstract record value can have many different IR node types.
-    It can be a Const, or a Variable, or a Block, or a Call.
-    But in all these cases, the expression type is a Record type.
-* Okay, but how do I extract a field value from an abstract record value R?
-  Concretely, I just construct Dot(R,symbol) then simplify.
