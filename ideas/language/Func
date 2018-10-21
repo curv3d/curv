@@ -1,0 +1,30 @@
+Rename `is_fun` to `is_func`.
+Rationale: 'func' is an unambiguous abbreviation for 'function',
+and will be less confusing for some people.
+
+Prefix function definitions with the `func` keyword.
+    func f x = x + 1;
+At the same time, permit definitions with unparenthesized predicate patterns.
+For example,
+    is_num n = 42;
+Rationale: predicate patterns do not need to be parenthesized in
+* lambda expressions, eg: `is_num n -> n + 1`
+* record patterns, eg: `{is_num n}`
+* list patterns, eg: `[is_num n]`
+And with the new parametric record syntax, it's weird that
+    checkbox animated = false;
+works as a `parametric` parameter, but not as a definition in a `let`.
+
+Notes:
+* Swift and Go have a `func` keyword that prefixes function definitions.
+* This change makes function definitions more verbose than data definitions
+  using a lambda. For example,
+    func f x = x + 1;
+    f = x -> x + 1;
+  But, hopefully `func` definitions are more readable.
+* A ton of languages use `function` as the prefix for function definitions.
+  A bunch of others use `def`. So a keyword to introduce a function definition
+  is familiar from other languages. I'm proposing `func` instead of the more
+  popular `function`, and `is_func` instead of `is_function` just to be terse.
+  I think `func` is readable enough, since it is a unique prefix for `function`
+  in English.
