@@ -422,6 +422,8 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
     if (auto braces = dynamic_cast<const Brace_Phrase*>(&ph)) {
         Symbol_Map<Record_Pattern::Field> fields;
         each_item(*braces->body_, [&](Phrase& item)->void {
+            if (dynamic_cast<const Empty_Phrase*>(&item))
+                return;
             if (auto id = dynamic_cast<const Identifier*>(&item)) {
                 auto pat = make_pattern(*id, scope, unitno);
                 fields[id->symbol_] = {pat, nullptr};

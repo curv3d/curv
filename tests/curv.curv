@@ -305,5 +305,7 @@ in (
     assert(r == d);
 );
 
+let {a;} = {a:42} in assert(a == 42);
+
 // script return value:
 in null
