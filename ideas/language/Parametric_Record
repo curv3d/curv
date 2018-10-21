@@ -74,6 +74,15 @@ written in the same way.
   a customized instance of a parametric records changes these default values.
   There is no reasonable implementation for parameter dependencies.
 
+Ideas for partially unifying let definitions with parametric parameter specs:
+* Scopeless let. Use letrec for a recursive scope.
+* Function definitions are prefixed with `func`.
+  `x y = z` has a predicate pattern on left, in both cases.
+* `func f x = y` is a field pattern that matches a function valued field `f`
+  and provides a default value.
+* `(x,y,z) = expr` is a field pattern that matches 3 separate fields, and
+  their defaults are obtained by decomposing `expr`.
+
 Alternate Syntax
 ----------------
 The original proposal uses `parameters ... in ...`, very much like `let`.
