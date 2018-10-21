@@ -110,6 +110,7 @@ putsrcline(
 
     // Output the underlining.
     if (underlined) {
+        if (startcol == endcol) ++endcol;
         out << "\n";
         for (unsigned i = lnwidth + 2; i > 0; --i)
             out << ' ';
