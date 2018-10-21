@@ -7,13 +7,18 @@ Prefix function definitions with the `func` keyword.
 At the same time, permit definitions with unparenthesized predicate patterns.
 For example,
     is_num n = 42;
-Rationale: predicate patterns do not need to be parenthesized in
+Rationale: Predicate patterns do not need to be parenthesized in
 * lambda expressions, eg: `is_num n -> n + 1`
 * record patterns, eg: `{is_num n}`
 * list patterns, eg: `[is_num n]`
 And with the new parametric record syntax, it's weird that
     checkbox animated = false;
 works as a `parametric` parameter, but not as a definition in a `let`.
+
+Currently, the same syntax means a function definition (if written as a
+definition) or a predicate pattern with a default (if written as a field
+pattern). This is a potential source of confusion, especially when creating
+parameterized shapes.
 
 Notes:
 * Swift and Go have a `func` keyword that prefixes function definitions.

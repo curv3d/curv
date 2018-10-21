@@ -9,7 +9,8 @@ the function body to GLSL.
 Ideas:
  0. I have considered generalizing the existing evaluator so that it is also
     a partial evaluator, and so that unevaluated terms are represented as
-    pseudo-values. This is very general and vague, however.
+    pseudo-values. This is vague, and values don't contain location data,
+    so would compile time error messages be compromised?
  1. Would a term rewrite system like Mathematica or Pure be suitable?
     I can't get any traction on this idea. One potential problem is that Curv
     is lexically scoped, and term rewrite semantics (with free identifiers,
@@ -32,8 +33,13 @@ Ideas:
     compiler on the resulting shape, with special handling for reactive values
     (each one is pre-bound to a specific uniform variable ahead of time).
 
-Idea #3 is easy. The other two are research projects.
+Idea #3 is easy. The others are research projects.
 #3 is just enough to implement the customizer, but it doesn't generalize.
+
+There's nothing wrong with using 'reactive values' to represent uniform
+variables. In a true FRAN implementation, I would also be using special values.
+So I'm going to use #3 for the first Customizer implementation. I think there
+will be very little throw-away code when I move to the new GL compiler.
 
 Lazy Rendering
 --------------

@@ -43,16 +43,70 @@ The command
 modifies one of the shape parameters. Actually it treats the result
 value V as a function, and calls V{len:6}.
 
+Parameter Syntax
+----------------
+The parameter list is actually a list of field patterns with mandatory default
+values. In the semantics, this parameter list must be convertable to either a
+record pattern or to a record literal. It's not quite the same as a definition
+list following `let` or `where`. Although I'd like the common cases to be
+written in the same way.
+
+* There are no dependencies between parameters. One parameter can't reference
+  another.
+* Function definition syntax is not legal, although you can use a lambda
+  expression as a default value. The semantic reason for this is that the
+  parameters don't form a scope. A recursive definition wouldn't work, nor
+  would references to other parameters in the function body.
+  (Syntactically, f x = a is a field pattern containing a predicate pattern,
+  it can't be parsed as a function definition.)
+* `(x,y,z) = default` is not legal, even though that is a legal definition,
+  because there is no parameter name.
+* This is supported: `fieldname: varname = default`? It might be useful
+  for using a verbose name with embedded spaces in the value picker UI,
+  while using a short identifier in the code body.
+* This is supported: `fieldname: (x,y,z) = default`.
+* Field patterns may be separated by commas (unlike let or where).
+* Can we support dependencies between parameters? No.
+  Suppose we allow R = parametric{x=1,y=x+1}f(x,y). This creates the expectation
+  that R{x=2} will implicitly set y to 3. In actual fact, the default values
+  for parameters are independent of each other, and are stored as a simple
+  record value in the parametric record, as the `parameter` field. Making
+  a customized instance of a parametric records changes these default values.
+  There is no reasonable implementation for parameter dependencies.
+
 Alternate Syntax
 ----------------
-    parametric {...} -> record_expr
-is the same as
-    parameters  ...  in record_expr
+The original proposal uses `parameters ... in ...`, very much like `let`.
+But the actual parameter syntax differs, see above. So that could lead to
+confusion, if you expect that you can just replace `let` with `parameters`
+and have things still work.
 
-and
-    parametric foo{...} = ...
-is the same as
-    foo = parametric {...} -> ...
+So instead, use
+    parametric {...} record_expr
+which reflects that fact that the parameters are field patterns with defaults.
+This is closely related to:
+    {...} -> record_expr
+
+parametric {
+  slider(.5,4) diam = 1;
+  slider(2,8)  len = 4;
+}
+  union(candy, stick)
+where (
+  candy = sphere diam >> colour red;
+  stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
+)
+
+kube = parametric{d=2} cube d;
+
+kube =
+  match [
+    d -> cube d;
+    parametric {d=2} cube d;
+  ];
+
+One criticism, for top level bindings, is that let, where and parametric
+use 3 different syntaxes for delimiting their bindings.
 
 Semantics
 ---------
@@ -72,7 +126,7 @@ where (
     make{d} =
       { ... box(d,d,d);
         call{d=d} : make{d:d};
-        parameters : {d:d};
+        parameter : {d:d};
       };
 );
 
@@ -93,6 +147,10 @@ Can we preserve these interfaces in the shape constructors?
    non-record parameter, as in `parametric (is_num n) -> box(n,n,n)`.
    Now `.parameter` is a num instead of a record. The Viewer can still
    provide a value picker.
+
+   Alternately, `cube` is overloaded over `cube n` and `cube{d:n}`. The former
+   syntax is forwarded to the latter; the latter yields a parametric shape.
+   So, we don't need to extend `parametric` to allow a non-record parameter.
 
 2. Overloading.
    * There is no prototypical half-plane. There's no problem writing a
