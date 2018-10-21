@@ -44,14 +44,18 @@ Compiler Changes
 ----------------
 I'd like the ability to output an 'inf' const definition.
 In GLSL 4.1, it's technically legal to write
-    #version 410
     const float inf = 1.0 / 0.0;
 
-WebGL 2 is based on GLSL-ES 3.0, in which Inf support is optional.
-MacOS may not tolerate the '#version 410', since it advertises OpenGL 2.1.
-Maybe I dynamically figure out the OpenGL version requirement during
-compilation. Some shapes won't run if the GPU driver doesn't meet minimum
-Curv requirements, but less demanding shapes can still work.
+I could dynamically figure out the OpenGL version requirement during
+compilation. I could compare the version requirement to the OpenGL version
+advertised by the GPU driver, and issue a warning or error if the driver
+is too primitive to support the requested shape.
+
+I haven't found a good reason to begin a GLSL program with #version.
+If I don't use it, I just get the latest version supported by the compiler,
+and errors on lines of GLSL that use unsupported features. #version moves
+the error so that the driver can complain about an unsupported version on the
+first line, at the GLSL #version line.
 
 While compiling a function, we may generate prerequisite definitions.
 
