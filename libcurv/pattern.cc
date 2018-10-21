@@ -384,6 +384,35 @@ symbolize(const Phrase& ph, Scope& scope)
         "not an identifier or string literal");
 }
 
+// A helper function while parsing fields in a record pattern.
+// Test if a phrase is a pattern that binds exactly 1 identifier,
+// which is then used as the fieldname.
+// If true, return the identifier, otherwise nullptr.
+//
+// Within a record pattern, a field pattern is:
+//    identifier_pattern
+//    identifier_pattern = default_value
+//    fieldname : pattern
+//    fieldname : pattern = default_value
+const Identifier*
+identifier_pattern(const Phrase& ph)
+{
+    if (auto id = dynamic_cast<const Identifier*>(&ph)) {
+        if (id->symbol_ == Symbol{"_"})
+            return nullptr;
+        else
+            return id;
+    }
+    if (auto call = dynamic_cast<const Call_Phrase*>(&ph)) {
+        if (call->op_.kind_ == Token::k_missing)
+            return identifier_pattern(*call->arg_);
+    }
+    if (auto parens = dynamic_cast<const Paren_Phrase*>(&ph)) {
+        return identifier_pattern(*parens->body_);
+    }
+    return nullptr;
+}
+
 Shared<Pattern>
 make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
 {
@@ -424,8 +453,8 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
         each_item(*braces->body_, [&](Phrase& item)->void {
             if (dynamic_cast<const Empty_Phrase*>(&item))
                 return;
-            if (auto id = dynamic_cast<const Identifier*>(&item)) {
-                auto pat = make_pattern(*id, scope, unitno);
+            if (auto id = identifier_pattern(item)) {
+                auto pat = make_pattern(item, scope, unitno);
                 fields[id->symbol_] = {pat, nullptr};
                 return;
             }
@@ -451,11 +480,11 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
             if (auto def =
                 dynamic_cast<const Recursive_Definition_Phrase*>(&item))
             {
-                auto id = cast<const Identifier>(def->left_);
+                auto id = identifier_pattern(*def->left_);
                 if (id == nullptr)
                     throw Exception(At_Phrase(*def->left_, scope),
-                        "not an identifier");
-                auto pat = make_pattern(*id, scope, unitno);
+                        "not an identifier pattern");
+                auto pat = make_pattern(*def->left_, scope, unitno);
                 fields[id->symbol_] = {pat, def->right_};
                 return;
             }
