@@ -57,8 +57,6 @@ written in the same way.
   expression as a default value. The semantic reason for this is that the
   parameters don't form a scope. A recursive definition wouldn't work, nor
   would references to other parameters in the function body.
-  (Syntactically, f x = a is a field pattern containing a predicate pattern,
-  it can't be parsed as a function definition.)
 * `(x,y,z) = default` is not legal, even though that is a legal definition,
   because there is no parameter name.
 * This is supported: `fieldname: varname = default`? It might be useful
@@ -74,11 +72,14 @@ written in the same way.
   a customized instance of a parametric records changes these default values.
   There is no reasonable implementation for parameter dependencies.
 
+There was a conflict between function definition syntax and predicate pattern
+syntax, but that is going away with the new predicate assertion pattern.
+    f x = x + 1;         // function definition
+    x :: predicate = 0;  // predicate assertion pattern, no conflict with above
+
 Ideas for partially unifying let definitions with parametric parameter specs:
 * Scopeless let. Use letrec for a recursive scope.
-* Function definitions are prefixed with `func`.
-  `x y = z` has a predicate pattern on left, in both cases.
-* `func f x = y` is a field pattern that matches a function valued field `f`
+* `f x = y` is a field pattern that matches a function valued field `f`
   and provides a default value.
 * `(x,y,z) = expr` is a field pattern that matches 3 separate fields, and
   their defaults are obtained by decomposing `expr`.
@@ -97,8 +98,8 @@ This is closely related to:
     {...} -> record_expr
 
 parametric {
-  slider(.5,4) diam = 1;
-  slider(2,8)  len = 4;
+  diam :: slider(.5,4) = 1;
+  len :: slider(2,8) = 4;
 }
   union(candy, stick)
 where (

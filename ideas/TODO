@@ -10,6 +10,7 @@ Current TODO List:
 * graphical value pickers
   * parametric records (which are syntactic sugar)
   * builtin value picker predicates: `slider (lo,hi) n`
+  * predicate assertion expression and pattern: `val :: predicate`
   * GL compile a parametric shape using reactive values:
     * Shape_Program::recognize() finds & validates call & parameter fields.
     * glsl_function_export() outputs uniform variable decls, creates reactive
