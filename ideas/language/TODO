@@ -3,6 +3,10 @@
 Recent Ideas (Oct 2018):
 * sequential let
 * string comprehensions
+* predicate assertion: `val :: predicate`. `::` has same precedence as `>>`.
+  In an expression, yields val if predicate val, otherwise pattern match fail.
+  As a pattern, `pat :: predicate` fails if `predicate val` fails.
+  This syntax is part of the Parametric Shapes / Customizer project.
 * Enum values. How are they represented? Syntax of '-Ocolour=vertex' if the
   RHS is a Curv enum value expression?
   1. Enum values are symbols. #foo is a symbol value. #foo is a pattern.
@@ -12,9 +16,14 @@ Recent Ideas (Oct 2018):
      support $ escapes.
 * Quoted identifiers: 'hello world', R.'hello world', {'hello world':expr}
   $ escapes are legal in quoted identifiers.
-  Utility: Fluent parameter names in parametric shapes. The quoted string
-  syntax "foo" no longer has 2 different meanings depending on context:
-  sometimes it is a string value, sometimes it represents a quoted identifier.
+  Utility:
+  * '_' is an ordinary identifier, not a wildcard.
+  * Shortcut for fluent parameter names in customized parametric shapes.
+    In the earlier design you could say `"Fluent Name" : varname = ...`.
+    Now you can just say `'Fluent Name' = ...`.
+  * The quoted string syntax "foo" no longer has 2 different meanings depending
+    on context: sometimes it is a string value, sometimes it represents a
+    quoted identifier.
   Remove R."foo" and {"foo":expr} syntax: the latter change makes room for
   string literals as patterns, consistent with the enum/symbol proposals.
 * Use _ as digit separator in numerals.
@@ -114,6 +123,18 @@ New syntax:
 This is acceptable.
 
 ## Patterns
+
+New New Pattern Design:
+* `val :: predicate` is a predicate assertion expression,
+  which aborts if `predicate val` is false, otherwise returns val.
+* `pat :: predicate` is a predicate assertion pattern,
+  which fails if `predicate val` is false, otherwise matches pat.
+* `pat >> cast` is the new syntax for a cast pattern.
+  Note that `pat :: predicate` is equivalent to `pat >> ensure predicate`.
+  Note that >> is left associative, so `pat >> f1 >> f2` is equivalent to
+  `(pat >> f1) >> f2`, which should work. Fixes bug in previous cast syntax.
+* The `pat == val` syntax is consistent with the previous two.
+  In all three cases, you have variable names lining up in a column on the left.
 
 New Pattern Types:
 * '<pattern> if <condition>' -- conditional pattern. The pattern is matched,

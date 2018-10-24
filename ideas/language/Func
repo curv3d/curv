@@ -4,6 +4,22 @@ and will be less confusing for some people.
 
 Prefix function definitions with the `func` keyword.
     func f x = x + 1;
+New rationale: this may be more readable.
+* A ton of languages use `function` as the prefix for function definitions.
+  A bunch of others use `def`. So a keyword to introduce a function definition
+  is familiar from other languages.
+* Swift and Go have a `func` keyword that prefixes function definitions.
+
+I'm proposing `func` instead of the more popular `function`, and `is_func`
+instead of `is_function`, just to be terse.  I think `func` is readable enough,
+since it is a unique prefix for `function` in English.
+
+Old Version Of Proposal
+-----------------------
+PREDICATE ASSERTION PATTERNS INVALIDATE THE OLD PROPOSAL.
+
+Prefix function definitions with the `func` keyword.
+    func f x = x + 1;
 At the same time, permit definitions with unparenthesized predicate patterns.
 For example,
     is_num n = 42;
@@ -11,7 +27,7 @@ Rationale: Predicate patterns do not need to be parenthesized in
 * lambda expressions, eg: `is_num n -> n + 1`
 * record patterns, eg: `{is_num n}`
 * list patterns, eg: `[is_num n]`
-And with the new parametric record syntax, it's weird that
+And with the new parametric record syntax, it's confusing that
     checkbox animated = false;
 works as a `parametric` parameter, but not as a definition in a `let`.
 
@@ -22,10 +38,12 @@ parameterized shapes.
 
 Notes:
 * Swift and Go have a `func` keyword that prefixes function definitions.
-* This change makes function definitions more verbose than data definitions
+* This change makes some function definitions more verbose than data definitions
   using a lambda. For example,
     func f x = x + 1;
     f = x -> x + 1;
+    func add x y = x + y;
+    add = x -> y -> x + y;
   But, hopefully `func` definitions are more readable.
 * A ton of languages use `function` as the prefix for function definitions.
   A bunch of others use `def`. So a keyword to introduce a function definition
@@ -33,3 +51,172 @@ Notes:
   popular `function`, and `is_func` instead of `is_function` just to be terse.
   I think `func` is readable enough, since it is a unique prefix for `function`
   in English.
+
+Terms
+-----
+This impacts the Terms proposal, which adds the keyword `term` to the beginning
+of a definition, in two cases:
+    // The expr evaluates to a function or record value, which is labelled
+    // as an 'id' term.
+    term id = expr;
+    // A call to f x y evaluates to a function or record value,
+    // which is labelled as an 'f x y' term.
+    term f x y = expr;
+
+In the second case, we would now have two keywords at the beginning of a
+function definition. Which keyword comes first?
+I prefer
+    func term f x y = expr;
+
+Alternate Syntax
+----------------
+NOTE: THIS SYNTAX IS APPROVED.
+
+Instead of changing function definition syntax, change the syntax of
+predicate patterns (and cast patterns). The new syntax puts the name first,
+and the predicate or cast expression second, for readability in a list of
+parametric parameter definitions. New syntax:
+    pat :: predicate
+    pat >> cast
+This is closely related to
+    pat == expr
+
+We will also introduce `expr :: predicate` as an expression,
+inspired by Julia. It's equivalent to `expr >> ensure predicate` in old Curv.
+Note that `::` is a pipeline operator, same precedence as `>>`.
+
+parametric {
+  diam :: slider(.5,4) = 1;
+  len :: slider(2,8) = 1;
+}
+  union (candy, stick)
+where (
+  candy = sphere diam >> colour red;
+  stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
+)
+
+In this example, putting the picker expression after the parameter name
+is a great idea. The parameter names line up in a column on the left,
+they don't get hidden in the middle of a long declaration.
+Putting the picker expression right before the default value is also great.
+
+Now look at existing code in std.curv that would change:
+    is_bbox2 = match [
+        (is_vec2 _, is_vec2 _) -> true;
+        _ -> false;
+    ];
+becomes
+    is_bbox2 = match [
+        (_ :: is_vec2, _ :: is_vec2) -> true;
+        _ -> false;
+    ];
+And
+    match [
+    is_vec2 b -> ...;
+    is_vec3 b -> ...;
+    ]
+becomes
+    match [
+    b :: is_vec2 -> ...;
+    b :: is_vec3 -> ...;
+    ]
+And
+    scale (is_num s) shape =
+becomes
+    scale (s :: is_num) shape =
+
+Rationale for Alternate Syntax
+------------------------------
+Instead of changing function definition syntax, maybe we change the syntax
+of predicate patterns. It is more readable to have the name come first,
+and the predicate come afterwards. The name and the predicate can't just
+be separated by white space, as that syntax is occupied by function definition.
+So we need to use an infix operator:
+    name <op> predicate = value
+
+Predicate patterns are not very common in Curv code, so this change will
+cause less disruption. (Although the project is probably too small for this
+to be a big concern right now.)
+
+This change in syntax for predicate patterns should be considered together
+with the overall roadmap for proposed new pattern syntax.
+
+New patterns:
+    <pattern> if <condition>
+    pat1 && pat2
+    pat1 || pat2
+    cast >> pat
+    pat == expr
+    pat `elem` listexpr
+    == expr
+
+A PM or 'pattern matching phrase' (used as an if condition) either succeeds
+and binds some identifiers, or fails. 'pat <- expr' is read 'pat matches expr'.
+    pat <- expr
+    PM1 && PM2
+    PM1 && expr
+    expr && PM2
+    PM1 || PM2
+    pat <- GE
+
+A GE or 'guarded expression' yields a value, or fails:
+    if (...) expr
+    if (...) GE
+    if (...) GE else GE
+    try expr
+    try expr else GE
+    expr
+
+The two patterns we want to reconsider are:
+    predicate pat
+    cast >> pat
+The pattern comes first.
+    pat <isa> predicate
+    pat <as> cast
+
+Pascal 'name : type' syntax would be great, but ':' is unavailable.
+    f (x : is_int) = x + 1;
+    f (x : Int) = x + 1;
+Maybe Haskell 'name :: type' syntax?
+    f (x :: is_int) = x + 1;
+    f (x :: Int) = x + 1;
+
+Alt syntax 1:
+    pat ? predicate
+    pat ! cast
+
+    f (x ? is_int) = x + 1;
+
+Alt syntax 2:
+    pat is predicate
+    pat as cast
+
+    f (x is is_int) = x + 1;  // nope
+    f (x is Int) = x + 1;
+vs  func f (Int x) = x + 1;
+
+In Julia, `expr::typeExpr` is an expression that returns the value of `expr`
+if that value has type `typeExpr`. It is a type assertion.
+And, 'pat <isa> predicate' is a predicate assertion, almost the same.
+
+In Curv, `ensure predicate expr` is *also* a predicate assertion.
+More naturally written as
+    expr >> ensure predicate
+in a pipeline, or as
+    ensure predicate << expr
+at the top of a function body.
+So a natural syntax for 'pat <isa> predicate' might be
+    pat >> ensure predicate
+And then 'pat <as> cast' becomes
+    pat >> cast
+So we get
+    f (x >> ensure is_int) = x + 1;
+which might actually work, using a Curv definition of `ensure`, if we
+rewrite `ensure` to use a pattern match failure instead of calling `assert`,
+since we have already defined the pattern matching cast operation, now written
+    pat >> f
+to report a pattern match failure if 'f argval' fails to match.
+
+`x >> ensure is_int` is really verbose, so provide a shortcut.
+    pat >> cast
+    pat :: predicate

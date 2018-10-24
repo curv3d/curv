@@ -544,7 +544,9 @@ Binary_Phrase::analyse(Environ& env) const
     case Token::k_colon:
         return analyse_assoc(env, *this, *left_, right_);
     default:
-        die("Binary_Phrase::analyse: bad operator token type");
+        throw Exception(At_Token(op_, *this, env),
+            "compiler internal error: "
+            "Binary_Phrase::analyse: bad operator token type");
     }
 }
 
