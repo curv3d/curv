@@ -618,7 +618,7 @@ struct Error_Operation : public Operation
             msg = s;
         else
             msg = stringify(val);
-        throw Exception(At_Frame(f), msg);
+        throw Exception{At_Phrase(*syntax_, f), msg};
     }
     virtual void exec(Frame& f) const override
     {
