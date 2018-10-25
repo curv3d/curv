@@ -436,14 +436,13 @@ Index_Expr::eval(Frame& f) const
         "not a list, record or string");
 }
 Value
-Call_Expr::eval(Frame& f) const
+call(Value func, Value arg, const Call_Phrase* call_phrase, Frame& f)
 {
     static Symbol callkey = "call";
-    Value val = fun_->eval(f);
-    Value funv = val;
+    Value funv = func;
     for (;;) {
         if (!funv.is_ref())
-            throw Exception(At_Phrase(*fun_->syntax_, f),
+            throw Exception(At_Phrase(*call_phrase->function_, f),
                 stringify(funv,": not a function"));
         Ref_Value& funp( funv.get_ref_unsafe() );
         switch (funp.type_) {
@@ -451,15 +450,15 @@ Call_Expr::eval(Frame& f) const
           {
             Function* fun = (Function*)&funp;
             std::unique_ptr<Frame> f2 {
-                Frame::make(fun->nslots_, f.system_, &f, call_phrase(), nullptr)
+                Frame::make(fun->nslots_, f.system_, &f, call_phrase, nullptr)
             };
-            return fun->call(arg_->eval(f), *f2);
+            return fun->call(arg, *f2);
           }
         case Ref_Value::ty_record:
           {
             Record* s = (Record*)&funp;
             if (s->hasfield(callkey)) {
-                funv = s->getfield(callkey, At_Phrase(*call_phrase(), f));
+                funv = s->getfield(callkey, At_Phrase(*call_phrase, f));
                 continue;
             }
             break;
@@ -467,14 +466,19 @@ Call_Expr::eval(Frame& f) const
         case Ref_Value::ty_string:
         case Ref_Value::ty_list:
           {
-            At_Phrase cx(*arg_->syntax_, f);
-            auto path = arg_->eval(f).to<List>(cx);
+            At_Phrase cx(*call_phrase->arg_, f);
+            auto path = arg.to<List>(cx);
             return value_at_path(funv, *path, cx);
           }
         }
-        throw Exception(At_Phrase(*fun_->syntax_, f),
-            stringify(val,": not a function"));
+        throw Exception(At_Phrase(*call_phrase->function_, f),
+            stringify(func,": not a function"));
     }
+}
+Value
+Call_Expr::eval(Frame& f) const
+{
+    return curv::call(fun_->eval(f), arg_->eval(f), call_phrase(), f);
 }
 
 Shared<List>
@@ -846,6 +850,20 @@ Include_Setter_Base::exec(Frame& f) const
     }
     for (auto& e : *this)
         slots[e.slot_] = e.value_;
+}
+
+// `val :: pred` is a predicate assertion.
+// It aborts if `pred val` is false, returns val if `pred val` is true.
+Value
+Predicate_Assertion_Expr::eval(Frame& f) const
+{
+    Value val = arg1_->eval(f);
+    Value pred = arg2_->eval(f);
+    bool r =
+        curv::call(pred, val, call_phrase(), f)
+        .to_bool(At_Phrase(*syntax_, f));
+    if (r) return val;
+    throw Exception(At_Phrase(*syntax_, f), "predicate assertion failed");
 }
 
 } // namespace curv

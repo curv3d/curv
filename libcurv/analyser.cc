@@ -788,4 +788,13 @@ Range_Phrase::analyse(Environ& env) const
         op1_.kind_ == Token::k_open_range);
 }
 
+Shared<Meaning>
+Predicate_Assertion_Phrase::analyse(Environ& env) const
+{
+    return make<Predicate_Assertion_Expr>(
+        share(*this),
+        analyse_op(*arg_, env),
+        analyse_op(*function_, env));
+}
+
 } // namespace curv

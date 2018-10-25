@@ -106,6 +106,7 @@ struct Token
         k_not,              ///! `!` operator
         k_equate,           ///! `=` operator
         k_assign,           ///! `:=` operator
+        k_colon_colon,      ///! `::` operator
         k_and,              ///! `&&` operator
         k_or,               ///! `||` operator
         k_left_call,        ///! `<<` operator

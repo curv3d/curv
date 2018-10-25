@@ -391,6 +391,22 @@ struct Call_Phrase : public Phrase
     virtual Shared<Meaning> analyse(Environ&) const override;
 };
 
+struct Predicate_Assertion_Phrase : public Call_Phrase
+{
+    Predicate_Assertion_Phrase(
+        Shared<Phrase> arg,
+        Token op,
+        Shared<Phrase> predicate)
+    :
+        Call_Phrase(std::move(predicate), std::move(arg), std::move(op))
+    {}
+    virtual Location location() const override
+    {
+        return arg_->location().ending_at(function_->location().token());
+    }
+    virtual Shared<Meaning> analyse(Environ&) const override;
+};
+
 struct If_Phrase : public Phrase
 {
     Token if_;

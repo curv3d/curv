@@ -307,5 +307,8 @@ in (
 
 let {is_num(a);} = {a:42} in assert(a == 42);
 
+assert((1::is_num) == 1);
+assert_error("predicate assertion failed", true::is_num);
+
 // script return value:
 in null

@@ -279,6 +279,9 @@ Scanner::get_token()
         if (p < last && *p == '=') {
             tok.kind_ = Token::k_assign;
             ++p;
+        } else if (p < last && *p == ':') {
+            tok.kind_ = Token::k_colon_colon;
+            ++p;
         } else
             tok.kind_ = Token::k_colon;
         goto success;
