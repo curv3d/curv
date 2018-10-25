@@ -139,7 +139,7 @@ Pattern Use Cases
 *pattern* ``=`` *expression*
   Definition.
 
-*name* (*pattern*) ... = *expression*
+*name* (*pattern1*) ... = *expression*
   Function definition with 1 or more parameters.
   A parameter pattern which is just an identifier need not be parenthesized.
 
