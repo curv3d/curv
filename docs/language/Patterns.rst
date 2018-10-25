@@ -113,7 +113,7 @@ Pattern Syntax
   a single *identifier pattern*, which contains a single identifier that
   is both the field name, and the variable to which the value is bound.
   An identifier pattern is just an identifier, optionally followed by
-  ``:: predicate`. For example, ``{a, n :: is_num}`` matches a record containing
+  ``:: predicate``. For example, ``{a, n :: is_num}`` matches a record containing
   the fields ``a`` and ``n``, and binds the field values to variables of
   the same names. The value of ``n`` is required to be a number.
 
