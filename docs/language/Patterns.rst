@@ -49,6 +49,10 @@ It's recommended to use a record pattern instead::
 
     f {shape, angle, point: [x,y,z]} = ...;
 
+Then a call to ``f`` looks like this::
+
+    f {shape: cube, angle: 90*deg, point: [0,0,0]}
+
 Pattern Syntax
 --------------
 
@@ -74,9 +78,9 @@ Pattern Syntax
   The element patterns are separated or terminated by commas or semicolons.
 
 ``(`` *pattern1* ``,`` ... ``)``
-  A list pattern, equivalent to the ``[`` ... ``]`` case.
+  A list pattern, similar to the ``[`` ... ``]`` case.
   A parenthesized list pattern is either empty ``()``
-  or it contains at least one comma or semicolon.
+  or it contains at least one comma.
 
 ``{`` *field_pattern1* ``,`` ... ``}``
   A record pattern contains a list of field patterns::
@@ -113,9 +117,9 @@ Pattern Syntax
   the fields ``a`` and ``n``, and binds the field values to variables of
   the same names. The value of ``n`` is required to be a number.
 
-  If a field pattern is suffixed with ``= expr``, then if the record being
-  matched doesn't contain a field of the expected name, then ``expr`` is used
-  as the default value of the field.
+  A field pattern may be suffixed with ``= expr`` to specify a default value.
+  If the record being matched doesn't contain a field of the expected name,
+  then ``expr`` is used as the field value.
 
   ``name:`` is a special field pattern that matches a field ``name:true``,
   and binds no variables.
@@ -135,10 +139,14 @@ Pattern Use Cases
 *pattern* ``=`` *expression*
   Definition.
 
+*name* (*pattern*1) ... (*pattern*n) = *expression*
+  Function definition with *n* parameters.
+  A parameter pattern which is just an identifier need not be parenthesized.
+
 ``for (`` *pattern* ``in`` *list_expression* ``)`` *statement*
   ``for`` statement.
 
-*pattern* ``:`` *expression*
+{ *pattern1* ``:`` *expression1*, ... }
   Field specifier in a record literal.
 
 ``match [`` *pattern1* ``->`` *expression1* ``,`` ... ``]``
