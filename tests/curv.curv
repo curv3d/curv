@@ -288,7 +288,7 @@ assert(
 
 assert( sort[7,8,9,1,2,3] == [1,2,3,7,8,9] );
 
-let f (is_num x) (is_num y) = x + y;
+let f (x::is_num) (y::is_num) = x + y;
 in (
     assert_error("argument #1 of f: argument true does not match is_num", f true);
     assert_error("argument #2 of f: argument true does not match is_num", f 1 true);
@@ -305,7 +305,10 @@ in (
     assert(r == d);
 );
 
-let {is_num(a);} = {a:42} in assert(a == 42);
+let {a::is_num;} = {a:42};
+    b :: is_num = 17;
+in assert(a == 42 && b == 17);
+
 
 assert((1::is_num) == 1);
 assert_error("predicate assertion failed", true::is_num);

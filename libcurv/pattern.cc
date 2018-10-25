@@ -404,8 +404,11 @@ identifier_pattern(const Phrase& ph)
             return id;
     }
     if (auto call = dynamic_cast<const Call_Phrase*>(&ph)) {
-        if (call->op_.kind_ == Token::k_missing)
+        if (call->op_.kind_ == Token::k_missing ||
+            call->op_.kind_ == Token::k_colon_colon)
+        {
             return identifier_pattern(*call->arg_);
+        }
     }
     if (auto parens = dynamic_cast<const Paren_Phrase*>(&ph)) {
         return identifier_pattern(*parens->body_);
@@ -425,9 +428,12 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
         }
     }
     if (auto call = dynamic_cast<const Call_Phrase*>(&ph)) {
-        if (call->op_.kind_ == Token::k_missing)
+        if (call->op_.kind_ == Token::k_missing ||
+            call->op_.kind_ == Token::k_colon_colon)
+        {
             return make<Predicate_Pattern>(share(*call),
                 make_pattern(*call->arg_, scope, unitno));
+        }
     }
     if (auto brackets = dynamic_cast<const Bracket_Phrase*>(&ph)) {
         std::vector<Shared<Pattern>> items;

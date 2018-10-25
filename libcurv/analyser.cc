@@ -299,8 +299,11 @@ analyse_assoc(Environ& env,
     const Phrase& src, const Phrase& left, Shared<Phrase> right)
 {
     if (auto call = dynamic_cast<const Call_Phrase*>(&left))
-        return analyse_assoc(env, src, *call->function_,
-            make<Lambda_Phrase>(call->arg_, Token(), right));
+        if (call->op_.kind_ == Token::k_missing)
+        {
+            return analyse_assoc(env, src, *call->function_,
+                make<Lambda_Phrase>(call->arg_, Token(), right));
+        }
 
     Shared<Operation> right_expr;
     if (isa<Empty_Phrase>(right))
@@ -596,8 +599,9 @@ as_definition_iter(
                 share(*id), std::move(right));
     }
     if (auto call = dynamic_cast<const Call_Phrase*>(&left))
-        return as_definition_iter(env, std::move(syntax), *call->function_,
-            make<Lambda_Phrase>(call->arg_, Token(), right), kind);
+        if (call->op_.kind_ == Token::k_missing)
+            return as_definition_iter(env, std::move(syntax), *call->function_,
+                make<Lambda_Phrase>(call->arg_, Token(), right), kind);
     return make<Data_Definition>(std::move(syntax), kind,
         share(left), std::move(right));
 }
