@@ -108,11 +108,28 @@ of the primitive types, otherwise ``false``::
       do assert(is_num n)
       in n + 1;
 
-*predicate* *pat*
-  This is a compound pattern which can be used as the formal parameter
-  of a function. It is a terse way to enforce a contract on a function argument.
+*value* :: *predicate*
+  This expression is called a "predicate assertion".
+  The left operand of ``::`` is an expression that evaluates to an arbitrary
+  value. The right operand is a *predicate*, a function that returns true
+  or false. If ``predicate(value)`` returns false, then the assertion fails,
+  and the program is aborted.
+  Otherwise, the predicate assertion returns ``value``.
+
+  ``::`` is a low precedence, left associative binary operator,
+  with the same precedence as ``>>``. This means ``:: predicate`` can be used
+  as a component of a pipeline.
+
+  In this example, we use a predicate assertion to enforce a post-condition
+  on the return value of a function::
+
+    incr n = n + 1 :: is_num;
+
+*pat* :: *predicate*
+  A predicate assertion can also be used as a pattern (eg, on the left side
+  of a definition, or as a function formal parameter). This is a common
+  use case. It is a terse way to enforce a contract on a function argument.
   
-  The *predicate* is a function that returns true or false.
   If the predicate is false for the value being matched by the pattern,
   then the pattern match fails.
   Otherwise, if the predicate is true, then the value is matched against
@@ -120,13 +137,15 @@ of the primitive types, otherwise ``false``::
 
   For example::
 
-    incr (is_num n) = n + 1;
+    incr (n :: is_num) = n + 1;
 
 ``ensure`` *pred* *val*
-  This is an expression asserting that ``pred val`` is true,
-  and then returning ``val`` if the assertion succeeds.
-  It can be used to enforce a post-condition on the return value of a function::
+  This is an alternate (older) syntax for predicate assertions.
+  Assert that ``pred val`` is true,
+  then return ``val`` if the assertion succeeds.
+  It can be used to enforce a post-condition on the return value of a function,
+  with the predicate appearing at the beginning of the function::
 
-    incr (is_num n) =
+    incr (n :: is_num) =
         ensure is_num <<
         n + 1;
