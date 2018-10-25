@@ -139,8 +139,8 @@ Pattern Use Cases
 *pattern* ``=`` *expression*
   Definition.
 
-*name* (*pattern*1) ... (*pattern*n) = *expression*
-  Function definition with *n* parameters.
+*name* (*pattern*) ... = *expression*
+  Function definition with 1 or more parameters.
   A parameter pattern which is just an identifier need not be parenthesized.
 
 ``for (`` *pattern* ``in`` *list_expression* ``)`` *statement*
