@@ -185,7 +185,7 @@ assert( (let x=1 in x+2) == 3
 assert( [if (true) (1;2)] == [1,2] );
 assert( {if (true) (a:1;b:2)} == {a:1,b:2} );
 
-assert( (x+y where x=1;y=2) == 3 );
+assert( (x+y where (x=1;y=2)) == 3 );
 
 assert(
     let m = {var x:=1;x:=x+3};
@@ -312,6 +312,18 @@ in assert(a == 42 && b == 17);
 
 assert((1::is_num) == 1);
 assert_error("predicate assertion failed", true::is_num);
+
+let
+    r = make_parametric({a=1,b=2}->{x:a,y:b});
+    r2 = r{a:10,b:20};
+in (
+    assert(fields r == ["call","parameter","x","y"]);
+    assert(r.x == 1 && r.y == 2);
+    assert(r.parameter == {a:1,b:2});
+    //assert(fields r2 == ["call","parameter","x","y"]);
+    assert(r2.x == 10 && r2.y == 20);
+    //assert(r2.parameter == {a:10,b:20});
+);
 
 // script return value:
 in null

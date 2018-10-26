@@ -250,8 +250,12 @@ struct Record_Pattern : public Pattern
 {
     struct Field
     {
-        Shared<Pattern> pat_; Shared<Phrase> dsrc_; Shared<Operation> dexpr_;
-        Field(Shared<Pattern> p, Shared<Phrase> d) : pat_(p), dsrc_(d) {}
+        Shared<const Phrase> syntax_;
+        Shared<Pattern> pat_;
+        Shared<Phrase> dsrc_;
+        Shared<Operation> dexpr_;
+        Field(Shared<const Phrase> syntax, Shared<Pattern> p, Shared<Phrase> d)
+        : syntax_(std::move(syntax)), pat_(p), dsrc_(d) {}
         Field() {}
     };
     Symbol_Map<Field> fields_;
@@ -461,7 +465,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
                 return;
             if (auto id = identifier_pattern(item)) {
                 auto pat = make_pattern(item, scope, unitno);
-                fields[id->symbol_] = {pat, nullptr};
+                fields[id->symbol_] = {share(item), pat, nullptr};
                 return;
             }
             if (auto bin = dynamic_cast<const Binary_Phrase*>(&item)) {
@@ -479,7 +483,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
                     } else {
                         pat = make_pattern(*bin->right_, scope, unitno);
                     }
-                    fields[name] = {pat, dfl_src};
+                    fields[name] = {share(item), pat, dfl_src};
                     return;
                 }
             }
@@ -491,7 +495,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
                     throw Exception(At_Phrase(*def->left_, scope),
                         "not an identifier pattern");
                 auto pat = make_pattern(*def->left_, scope, unitno);
-                fields[id->symbol_] = {pat, def->right_};
+                fields[id->symbol_] = {share(item), pat, def->right_};
                 return;
             }
             throw Exception(At_Phrase(item, scope), "not a field pattern");
@@ -512,6 +516,23 @@ Pattern::gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee) const
 {
     throw Exception(At_GL_Phrase(syntax_, callee),
         "pattern not supported by Geometry Compiler");
+}
+
+Shared<Record>
+record_pattern_default_value(const Pattern& pat, Frame& f)
+{
+    auto rpat = dynamic_cast<const Record_Pattern*>(&pat);
+    if (rpat == nullptr)
+        throw Exception(At_Phrase(*pat.syntax_,f), "not a record pattern");
+    auto drec = make<DRecord>();
+    for (auto& i : rpat->fields_) {
+        if (i.second.dexpr_)
+            drec->fields_[i.first] = i.second.dexpr_->eval(f);
+        else
+            throw Exception(At_Phrase(*i.second.syntax_,f),
+                "field pattern has no default value");
+    }
+    return {drec};
 }
 
 } // namespace curv

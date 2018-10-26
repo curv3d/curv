@@ -15,6 +15,7 @@ struct Environ;
 struct Scope;
 struct Phrase;
 struct Context;
+struct Record;
 
 struct Pattern : public Shared_Base
 {
@@ -30,6 +31,8 @@ struct Pattern : public Shared_Base
 };
 
 Shared<Pattern> make_pattern(const Phrase&, Scope&, unsigned unitno);
+
+Shared<Record> record_pattern_default_value(const Pattern&, Frame&);
 
 } // namespace
 #endif // header guard
