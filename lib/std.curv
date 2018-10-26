@@ -1604,4 +1604,7 @@ show_bbox shape =
         shape >> colour green `intersection` bb,
     );
 
+// temporary mockup of `slider`
+slider (lo, hi) = is_num;
+
 }
