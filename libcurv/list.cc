@@ -15,7 +15,7 @@ const
 {
     if (size() != sz)
         throw Exception(cx,
-            stringify("list has wrong size: expected ",sz,", got ",size()));
+            stringify("list ",*this," does not have ",sz," elements"));
 }
 
 void

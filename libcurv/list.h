@@ -25,6 +25,13 @@ struct List_Base : public Ref_Value
     TAIL_ARRAY_MEMBERS(Value)
 };
 
+inline std::ostream&
+operator<<(std::ostream& out, const List_Base& list)
+{
+    list.print(out);
+    return out;
+}
+
 /// Representation of lists in the Curv runtime.
 ///
 /// This is a variable length object: the size and the value array

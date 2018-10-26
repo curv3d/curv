@@ -310,7 +310,7 @@ TEST(curv, eval)
         "         ^     ");
     SUCCESS("let f=x->(let a=x+1 in a) in f 2", "3");
     FAILMSG("let f(x,y)=x in f()",
-        "argument #1 of f: list has wrong size: expected 2, got 0");
+        "argument #1 of f: list [] does not have 2 elements");
     SUCCESS("let add=(x,y)->x+y in add(1,2)", "3");
     SUCCESS("let add=x->y->x+y in add 1 2", "3");
     SUCCESS("let add x y = x+y in add 1 2", "3");

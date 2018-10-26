@@ -38,15 +38,12 @@ Legacy_Function::call(Value arg, Frame& f)
         f[0] = arg;
         return call(f);
     }
-    auto list = arg.dycast<const List>();
-    if (list && list->size() == nargs_) {
-        for (size_t i = 0; i < list->size(); ++i)
-            f[i] = (*list)[i];
-        return call(f);
-    } else {
-        throw Exception(At_Arg(*this, f),
-            stringify("not a list of length ",nargs_));
-    }
+    At_Arg cx(*this, f);
+    auto list = arg.to<const List>(cx);
+    list->assert_size(nargs_,cx);
+    for (size_t i = 0; i < list->size(); ++i)
+        f[i] = (*list)[i];
+    return call(f);
 }
 
 Value
