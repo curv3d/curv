@@ -659,34 +659,34 @@ Nestable comments for reliably commenting out code blocks.
 ## Alternate String Escape Sequences
 
 $.  expands to $      instead of $$
+$-  expands to '      instead of '', in a quoted identifier
+$=  expands to "      instead of "", in a quoted string
+
+Earlier proposal, inconsistent with quoted identifiers:
 $'' expands to "      instead of ""
 
 Rationale:
 * Readability: it is easier to visually parse these sequences out of the noise
   of the surrounding text, without counting characters.
-  . and ', which are not full height characters, are juxtaposed with $, which
-  is a full height character. Visually, this works well.
+  . - =, which are not full height characters, are juxtaposed with $, which
+  is a full height character, making the pair easy to parse visually.
 * The escapes are visually similar to the characters they expand to.
-* The characters after the $ are not metacharacters (neither $ nor ").
+* The characters after the $ are not metacharacters (neither $ nor " nor ').
   Thus, more suitable for iterated string escaping/unescaping.
   $... -> $.. -> $. -> $
   instead of $$$$$$$$ -> $$$$ -> $$ -> $
   I know this isn't an important use case, but it's still a cool property
   of the syntax. Becomes more relevant if we add an 'eval' function.
 
-repr "foo" => "$''foo$''"
-repr(repr "foo") => "$.''foo$.''"
-print "Can't open file $''$filename$'': $error";
+repr "foo" => "$=foo$="
+repr(repr "foo") => "$.=foo$.="
+print "Can't open file $=$filename$=: $error";
 
-Also consider $= as an alternative to $''
-(= is a sideways " character)
-    "foo" => "$=foo$=" => "$.=foo$.="
-    print "Can't open file $=$filename$=: $error";
-
-Downside is that this is novel syntax.
+Downside is that this is novel syntax. You have to memorize them.
 
 ${dollar}  expands to $    similar to &dollar; in HTML5
 ${quot}    expands to "    similar to &quot; in HTML5
+${apos}    expands to '    similar to &apos; in HTML5
 
     print "Can't open file $quot$filename$quot: $error";
     print "Can't open file ${quot}${filename}${quot}: ${error}";
