@@ -16,7 +16,7 @@ test:
 	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
 	cd debug; $(MAKE) tests
 clean:
-	rm -rf debug release
+	rm -rf debug release libcurv/version.h
 valgrind:
 	mkdir -p debug
 	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
