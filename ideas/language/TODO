@@ -152,22 +152,26 @@ New Pattern Types:
   * Useful when simulating a switch statement (one case matching 2 values).
   * [x,y] || [x,y,_==0]
   * Rust, F# use 'pat1|pat2' -- looks nice in switch.
-* 'cast >> pat' -- cast pattern.
-  * If V is the value being matched, then we evaluate `cast V`: if cast's
-    parameter pattern fails, the match fails. Otherwise, the result of `cast V`
-    becomes the new value that is matched against `pat`.
+* 'pat >> cast' -- cast pattern.
+  * If V is the value being matched, then we evaluate `cast V`.
+    If cast's parameter pattern fails, the match fails.
+    If the body of cast aborts, then the program aborts.
+    Otherwise, the result of `cast V` becomes the new value
+    that is matched against `pat`.
   * A cast is a function that maps values onto a particular type, and is
     idempotent for members of that type. This feature implements implicit
     conversions to a type.
-  * The parameter pattern match fails for values that are clearly not a member
-    of the type. For values that are considered corrupted instances of the type,    the pattern match succeeds but an assertion fails.
+  * Within the cast function, the parameter pattern match fails for values that
+    are clearly not a member of the type. For values that are considered
+    corrupted instances of the type, the parameter matches but an assertion
+    fails, aborting the program.
   * S.P.Jones uses the term 'transformational pattern' (pat!fun), and shows
     that this is a way to reconcile pattern matching with data abstraction.
     The cast fun transforms an ADT to a pattern matchable value.
-  * This wants to be a right-associative operator, but >> is left-associative.
-  * Is 'cast1 >> (cast2 >> pat)' the same as 'compose[cast1,cast2] >> pat'?
-    Only if the result of compose reports a pattern match failure if any
-    of the constituent functions have a pattern match failure.
+  * `pat >> cast1 >> cast2` equals `(pat >> cast1) >> cast2`.
+  * Which equals `pat >> compose[cast1,cast2]`, but only if the result of
+    `compose` reports a pattern match failure if any of the constituent
+    functions have a pattern match failure.
 * Variations of predicate patterns:
   * 'pat == expr', 'pat != expr', 'pat < expr', ... -- relational op predicates
   * 'pat `elem` listexpr' -- range patterns, like 'x `elem` 1..10'.
@@ -182,8 +186,13 @@ New Pattern Types:
       * Quick fix: use `("$foo"): expr`.
       * Better: Replace this syntax with `{$foo: expr}`.
         Also, `R.$a` instead of `R."$a"`.
-        Using string literals in a context requiring an identifier always
-        felt weird anyway. This is more elegant.
+      * If we implement quoted identifiers, then {'$foo':expr} will work.
+        But we need to treat this as a special case, and allow dynamic $foo
+        substitutions using the current lexical scope. That's not supported
+        for the general case of quoted identifiers. The quoted identifier
+        '$foo' proposal treats quoted identifiers specially, allowing dynamic
+        substitutions, in the same contexts where the $foo proposal allows
+        unquoted $foo substitutions.
     * Classify literal constants (number, string, list and record constructors)
       as patterns. Symbol constants (#foo) should be patterns.
       Introduce `$a:expr` and `R.$a`.
