@@ -1,0 +1,22 @@
+let
+gap g (s1, s2) =
+    make_shape {
+        dist p =
+            let a=s1.dist p;
+                b=s2.dist p;
+                d=if(a > g || b > g) min(a,b) else -abs(a-b)+g;
+            in d;
+        colour p =
+            let d1 = s1.dist p;
+                d2 = s2.dist p;
+            in if (d1 <= d2) s1.colour p else s2.colour p;
+        bbox = s1.bbox;
+        is_2d = s1.is_2d && s2.is_2d;
+        is_3d = s1.is_3d && s2.is_3d;
+    };
+
+in
+gap 1.5
+    ( sphere 33 >> colour (sRGB.HSV(0,.8,.8)),
+      gyroid >> shell .2 `intersection` cube 30 )
+  >> lipschitz 2

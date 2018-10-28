@@ -1,0 +1,10 @@
+let
+twisted_torus(r1, r2, ntwists) =
+    difference( cylinder{d:r1, h:r2}, box{xmin: 0} )
+    >> twist (360*ntwists*deg/r2)
+    >> rotate {angle: 90*deg, axis: Y_axis}
+    >> bend {}
+    >> lipschitz 2;
+
+in
+twisted_torus(25, 50, 1)
