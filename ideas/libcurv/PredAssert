@@ -1,0 +1,79 @@
+Predicate Assertion
+
+val :: pred
+
+As an expression:
+When this expression calls pred(val), what appears in the stack trace?
+
+(1) val :: pred
+    ^^^^^^^^^^^
+(2) val::pred is compiled into the expression '::'(val,pred)
+    and '::' is defined in the standard library.
+
+As a pattern:
+    <pat> :: pred
+When this expression calls pred(value_to_be_matched),
+what appears in the stack trace?
+
+Well what happens now with the old pattern syntax?
+    curv> pred n = 17
+    curv> (pred n) = 42
+    ERROR: 17 is not a boolean
+    1| (pred n) = 42
+        ^^^^^^      
+This is a bit obscure.
+There was a call to 'pred 42', which has completed, and returned 17,
+which is not a boolean. A boolean is required for the pattern 'pred n'.
+The call to 'pred 42' is not clearly being shown.
+
+If we duplicate this behaviour with the new pattern syntax:
+    curv> pred n = 17
+    curv> n :: pred = 42
+    ERROR: 17 is not a boolean
+    1| n :: pred = 42
+       ^^^^^^^^^    
+It's not good either.
+
+This is the message where the error is in the predicate.
+    curv> pred x = error "grond"
+    curv> (pred n) = 42
+    ERROR: grond
+    1| (pred n) = 42
+        ^^^^^^      
+Maybe this is better:
+    ERROR: grond
+    at:
+    1| pred x = error "grond"
+                ^^^^^^^^^^^^^
+    at:
+    1| (pred n) = 42
+        ^^^^      ^^
+
+Error messages and stack traces for the following situations.
+-------------------------------------------------------------
+[I] in a predicate assertion pattern:
+(I.i) in a function parameter
+ 1. Error in the predicate function.
+    p(x,y)=x+y;
+    f(p a)=a
+    * We should see the error & stack trace for this error.
+      Under that, in the stack trace, we see the context where the predicate
+      function was called. What does this look like?
+    * The error is a bad argument to the predicate function. Which is
+      allowed for in the spec: value matches the predicate in a defective way.
+        ---
+        curv> p 1
+        ERROR: argument #1 of p: 1 is not a list
+        1| p 1
+             ^
+        ---
+        curv> f 1
+        ERROR: argument #1 of p: 1 is not a list
+        at:
+        1| f(p a)=a
+               ^   
+        at:
+        1| f 1
+           ^^^
+ 2. Predicate returns non-boolean.
+ 3. Predicate returns false, parameter pattern match fails, funcall fails.

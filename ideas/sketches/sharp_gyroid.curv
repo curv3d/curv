@@ -1,0 +1,19 @@
+// What happens if we make a Gyroid out of triangle waves
+// instead of sine waves?
+let
+plot(f) = make_shape {
+    dist p : p[Y] - f(p[X]),
+    is_2d : true,
+} >> show_axes;
+f n = 4 * abs(n - round n) - 1;
+cc x = let n = x-.5; in 4 * abs(n - round n) - 1;
+ss x = let n = x-.25; in 4 * abs(n - round n) - 1;
+gyr =
+    make_shape {
+        dist(x,y,z,t) = cc(x)*ss(y) + cc(y)*ss(z) + cc(z)*ss(x);
+        is_3d = true;
+    } >> lipschitz 5;
+
+in
+//plot ss
+intersection(gyr,cube 2)

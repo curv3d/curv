@@ -1,0 +1,17 @@
+Curv is:
+
+* A creative coding / live coding platform for creating 2D and 3D graphics.
+
+* A domain specific programming language for generating 2D and 3D graphics.
+
+* A data structure and file format
+  for representing and distributing 2D and 3D geometric objects,
+  using volumetric representation with signed distance fields.
+
+* A platform for advanced 3D printing.
+
+---
+I will also describe the underlying technology, "signed distance fields".
+I'll explain why it is better suited for parametric design and 3D printing
+than the conventional technology used in most 3D CAD and sculpturing programs,
+and why recent advances in GPUs have made the technology more practical.

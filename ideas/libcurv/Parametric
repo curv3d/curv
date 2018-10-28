@@ -1,0 +1,53 @@
+make_parametric ( {d=1} -> cube d )
+
+Argument is a function f, actually restricted to a Closure.
+Parameter pattern f->pattern_ is a record pattern,
+where all fields have default values.
+
+Extract the default parameter values into a record value called 'p'.
+* Create a Frame for the function, evaluate default value
+  expressions in that Frame.
+* record_pattern_default_value(pattern, f)
+Call 'f(parameter)', returning value r, which must be a record.
+Extend r with two fields:
+    r.call := f
+    r.parameter := p
+
+Return r.
+
+///////
+A record pattern contains Symbol_Map<Field> fields_.
+Field contains Shared<Operation> dexpr_, which is the expression to evaluate
+in order to determine the default value of the field.
+
+Maybe this is a bug? Either the function literal needs to be evaluated
+in its original context to convert default value expressions to values,
+or it needs to capture nonlocals in the closure.
+
+f = let a=1 in {x=a}->x
+Seems to work.
+
+Are the default value expressions evaluated in the context of the parameter
+scope? Seems to be yes. I think that's a bug.
+
+let f{x=y,y}=(x,y)
+in f{y:42}
+=> [null,42]
+
+So that's a bug.
+
+//////
+How to fix?
+
+I think the simple fix is to analyze patterns in the parent environment
+of the scope that contains the parameter bindings. Then everything should
+just work, right?
+* in Lambda_Phrase::analyse, don't want to bypass the code that captures
+  nonlocal variable references.
+
+//////
+How to implement make_parametric?
+Simple approach: create a Frame for the function, evaluate default value
+expressions in that Frame.
+
+* For closures, could store default values in the nonlocals_ array.

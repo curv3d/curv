@@ -1,0 +1,108 @@
+Implementation Inheritance is Evil
+==================================
+I've been writing OOP code for a long time, at this point it an ingrained habit.
+But I've been dissatisfied with OOP for years.
+Conventional OOP is very complex and bureaucratic. The small amount of code
+that expresses the problem domain is buried in a large pile of OOP boilerplate,
+and you spend all of your time writing and refactoring the boilerplate.
+
+Once consequence of these feelings is that Curv is not an OOP language.
+There are no classes and no inheritance. There is no data abstraction at all,
+because that seems like it might be the root of the disease.
+So it's a pure functional programming language with 7 types.
+
+Libcurv tries to avoid some of the problems of conventional OOP.
+There are no global mutable variables at all. Instead, I pass around references
+to the System object, and I pass around Contexts a lot. It's a bit more
+functional in style, and I feel this helps me to understand what code
+is depending on what state. I think that Contexts have proven to be a huge win
+in implementing humane error messages, vs the alternative of using global
+state to determine the exception context.
+
+At this point, I still haven't learned a new style of coding that would allow
+me to break free from implementation inheritance. As a result, I have
+difficulty imagining how to write large scale programs in Haskell or Rust.
+Okay, I no longer want to implement Curv in Haskell, but I might want to
+try implementing libcurv in Rust.
+
+Libcurv does use inheritance to inherit data members.
+For years, I've had a gut feeling that this is bad practice, and there are
+plenty of pundits on the net that agree.
+I'd like to figure out if there really is a practical alternative.
+Can libcurv be reimplemented in a new style that avoids implementation
+inheritance, without making the code larger and harder to maintain, and
+without taking a performance hit? The Servo people are pushing back on the
+absence of implementation inheritance in Rust, describing things that they
+can't do in the current Rust language, and from my current perspective,
+it looks like they are scoring legitimate points. But maybe I'm just
+ignorant about better ways to write code.
+
+While googling this, I found the Entity Component System architecture
+for writing 3D video games. It's a radical change from OOP, and a big change
+to how data is represented in a program. It's claimed to be better than OOP
+for this particular niche: "it simplifies game architecture, and encourages
+clean separation of responsibilities in your code".
+
+In the following section, I get very protective about my current data
+structures and their memory layout.
+
+This is all about how data is represented, and how it is laid out in memory.
+* class Shared_Base is inherited by all libcurv classes that are both heap
+  allocated and reference counted. It provides the following data prefix:
+    vtable pointer : 64 bits
+    use_count : 32 bits
+  In C++, how do I get this data prefix into subclasses without using
+  implementation inheritance?
+* I'm happy with the Value class. Compared to OpenSCAD, there is one less
+  pointer indirection for every use of a Value, and Values consume less memory.
+  I use NaN boxing to represent floats, meaning no pointer dereference at all
+  for that case. The tail array represention of Lists eliminate a pointer
+  dereference to access list data.
+  Reference values (class Ref_Value) have the following layout:
+    vtable pointer : 64 bits
+    use_count : 32 bits, type: 16 bits, subtype: 16 bits
+    <type specific data>
+  The first 128 bits of a Ref_Value are laid out in the Ref_Value class,
+  then subclasses like String and List inherit this data prefix.
+  So I use implementation inheritance here. It's a great memory layout:
+  I'd lose the vtable-ptr if I could do that without taking a performance hit
+  or complicating my code. Otherwise I want to keep it.
+  Supposedly I should use composition instead of inheritance?
+  * In C++, shared_ptr<T> and make_shared<T>() are a way to prefix an object
+    with a reference count, without using inheritance.
+  * Maybe Ref_Value<T> prefixes an instance of T with a Ref_Value header,
+    using composition + some other magic. The "other magic" is some way to
+    obtain a vtable for T and then expose that vtable for dispatching function
+    calls. It's a kind of dependent record.
+* Meaning is a subclass of Shared_Base. Meaning is an abstract superclass,
+  but it also has a data member called `syntax_`, which all subclasses must
+  possess. One problem in C++ is that the type of syntax_ needs to be more
+  specific: a Call_Phrase rather than a Phrase, in Call_Expr.
+
+Is there a different coding style that avoids implementation inheritance?
+
+https://codeburst.io/inheritance-is-evil-stop-using-it-6c4f1caf5117
+
+* I use only two type of class-level declarations: interfaces and final classes;
+* I inject interfaces in dependent classes’ constructors;
+* I don’t allow any class dependency to be injected other than interfaces;
+* I use a Dependency Injection Container (or an equivalent method, depending on
+  which language I’m coding with) to handle the creation of my instances;
+* If I feel I’m injecting too many dependencies in a class, I rethink my design
+  in terms of class responsibilities and using the interface segregation
+  principle;
+* When required, I split complex behavior in multiple final classes
+  implementing the same interface;
+* I use inheritance only, and I mean only, when it makes sense on a semantical
+  level and only for extension purposes, without any base behavior change;
+* I allow myself to break the previous rules only in the 1% of my code.
+Being able to apply these rules doesn’t happen over night. You need practice
+and discipline before you internalize them. Your brain will be busy trying
+to comply with them, leaving few space for the design of your code.
+
+You should stop using inheritance right now. Instead:
+* use interfaces to define the contracts between your classes;
+* use final classes to implement behavior for those interfaces;
+* use composition (through constructor dependency injection) to put things
+  together and prevent complexity.
+
