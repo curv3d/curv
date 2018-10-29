@@ -114,11 +114,18 @@ So it pays to be strict and just ban all dubious code points.
   I banned all of these scalars above, except for Controls, of which there are
   65 (all in ASCII and Latin-1).
 
+Incorporate this information:
+https://en.wikipedia.org/wiki/Valid_characters_in_XML
+
 What do these options mean in the utf8proc library?
  - strip "ignorable" (@ref UTF8PROC_IGNORE) characters,
    control characters (@ref UTF8PROC_STRIPCC),
    or combining characters such as accents (@ref UTF8PROC_STRIPMARK)
+
 More research needs to be done...
+
+See String Concatenation for a more radical proposal: safe characters
+are restricted to EGCs that are represented by a single code point in NFC.
 
 ## Unicode Strings
 A string is a sequence of characters, but what is a character in Unicode?
@@ -150,8 +157,6 @@ A string is a sequence of characters, but what is a character in Unicode?
         that standardized on 16 bit code points, like Java and JavaScript.
         But I don't expect that to happen again, so code points are safe
         to rely on.
-      * String concatenation has complex, unexpected semantics if characters
-        are EGCs, since count(strcat(s1,s2)) != count s1 + count s2.
       * It is simpler to implement. Way too much complexity otherwise.
     * I suppose that users may eventually want to split strings into EGCs.
       Since the results depend on Unicode version, the API should be in an
@@ -185,13 +190,6 @@ A string is a sequence of characters, but what is a character in Unicode?
       strings and you can get an unnormalized string.
     * Does canonical equivalence change from one Unicode release to the next?
       There are stabilility guarantees, weakened by weasel words.
- 3. String Concatenation, Legal EGCs.
-    Suppose S1 and S2 are strings.
-    Is it guaranteed that count(strcat(S1,S2)) == count S1 + count S2?
-    What if S1 is a latin base character, and S2 is a latin accent
-    combining character? Should S2 even be treated as a legal character string?
-    Suppose S1 and S2 are normalized. Is strcat(S1,S2) guaranteed to be
-    normalized? No.
 
 It is impossible to view a Unicode string as a list of characters, in the
 same way we think of an ASCII string as a list of characters, because none of
@@ -209,6 +207,60 @@ convert these strings into identifiers, IE field names in a record.
 * The weirdness goes away if we require field names to be ASCII.
 * Maybe we normalize strings to NFC before conversion to field names.
   Then two unequal strings map to the same field name.
+
+## String Concatenation.
+Suppose S1 and S2 are strings.
+We can't guarantee that count(strcat(S1,S2)) == count S1 + count S2.
+* Suppose that a character is defined to be an EGC.
+  Then string concatenation may combine code points at the end of the first
+  string with code points at the start of the second string to create a
+  single EGC.
+* Suppose that a character is defined to be a code point. And suppose that
+  strings are stored in NFC, to speed up equality tests, etc.
+  String concatenation is not closed under normalization, so we need to
+  renormalize, and that may change the number of code points.
+
+Maybe we can fix this problem by restricting the set of legal Unicode
+characters, and/or by disallowing "defective" code point sequences at
+the start and end of a string? Man, that is a big can of worms.
+* Does this restriction cause a problem for users?
+* Does the Unicode standard support an algorithm for detecting these
+  defective strings? If not, then the idea isn't feasible.
+
+Maybe we define a character as a code point, and we don't store strings
+in normalized form. Then, if we want fast string equality, we need an
+algorithm that compares two strings and normalizes on the fly. That's
+very complicated, and I haven't found an open source implemention yet.
+(I can imagine compiling the Unicode character property table into a
+state machine that does this, and the state machine could be compiled into
+efficient machine code. You rerun the metaprogram each time the standard
+changes. I don't think you want to code this by hand.)
+
+Maybe we restrict our safe subset of Unicode to EGCs that are
+represented by a single code point in NFC. Then the distinction
+between code point and character doesn't matter: they are the same thing.
+The only time we normalize strings is when receiving text from the
+operating system: text files, command line options, filenames from readdir().
+Curv string operators that construct new strings don't normalize their output.
+`decode` just rejects code points it doesn't like.
+* PRO: Leads to simpler code that is less likely to conceal weird bugs.
+  Such as: the bug that crashed iPhones when you texted a poisoned Unicode
+  sequence.
+* CON: Users will be pissed if they can't use the entire Unicode repertoire.
+  No emoji flags or skin tone modifiers.
+
+If I further restrict "safe" Unicode to the BMP, then I can lock down the
+Unicode property table, I can represent code points in 16 bits (UTF-16 subset),
+and have constant-time string indexing, and I can avoid interoperability
+problems with old Unicode software.
+* No emojis at all.
+
+A possible advantage of no emojis is that the Curv 'text' primitive
+can define a character as pure geometry with no colour field. It's simpler.
+
+If there is a one-to-one correspondence between code points and characters
+and glyphs, that is also simpler. Text rendering becomes simple, and the
+user API for measuring and controlling text rendering is simplified.
 
 ## Non-defective Unicode Strings?
 https://en.wikipedia.org/wiki/Unicode_equivalence
