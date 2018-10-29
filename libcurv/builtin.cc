@@ -13,6 +13,7 @@
 #include <libcurv/import.h>
 #include <libcurv/math.h>
 #include <libcurv/pattern.h>
+#include <libcurv/picker.h>
 #include <libcurv/program.h>
 #include <libcurv/source.h>
 #include <libcurv/system.h>
@@ -520,6 +521,19 @@ struct Make_Parametric_Function : public Legacy_Function
     }
 };
 
+struct Slider_Function : public Legacy_Function
+{
+    static const char* name() { return "slider"; }
+    Slider_Function() : Legacy_Function(2,name()) {}
+    Value call(Frame& f) override
+    {
+        At_Arg cx(*this, f);
+        double lo = f[0].to_num(At_Index(0,cx));
+        double hi = f[1].to_num(At_Index(1,cx));
+        return {make<Slider_Picker>(lo, hi)};
+    }
+};
+
 // The filename argument to "file", if it is a relative filename,
 // is interpreted relative to the parent directory of the source file from
 // which "file" is called.
@@ -912,6 +926,7 @@ builtin_namespace()
     FUNCTION(Encode_Function),
     FUNCTION(Match_Function),
     FUNCTION(Make_Parametric_Function),
+    FUNCTION(Slider_Function),
 
     {"file", make<Builtin_Meaning<File_Metafunction>>()},
     {"print", make<Builtin_Meaning<Print_Metafunction>>()},
