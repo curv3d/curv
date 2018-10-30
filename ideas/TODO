@@ -8,13 +8,12 @@ Current TODO List:
 * -o glsl
 * configure default values for -O options: see Config
 * graphical value pickers
-  * value picker predicate: `slider (lo,hi) n`
-  * GL compile a parametric shape using reactive values:
+  * Viewed_Shape stores uniform variables, pickers.
+    GL compile a parametric shape using reactive values:
     * Shape_Program::recognize() finds & validates call & parameter fields.
     * glsl_function_export() outputs uniform variable decls, creates reactive
       values, compiles dist & colour functions.
-  * View_Server::request_shape is a string: this no longer suffices.
-  * Viewer initializes uniforms using Shape_Program.
+  * Viewer initializes uniforms using Viewed_Shape.
   * Viewer displays pickers, updates uniforms
 * Refactor:
   * batch mode uses curv::import, can input any source file type

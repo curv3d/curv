@@ -9,6 +9,7 @@
 #include <condition_variable>
 
 #include <libcurv/die.h>
+#include <libcurv/geom/viewed_shape.h>
 #include <libcurv/geom/viewer/viewer.h>
 
 #include "shapes.h"
@@ -31,10 +32,10 @@ private:
         k_display_shape,
         k_exit
     };
-    Request request;
-    std::mutex request_mutex;
-    std::condition_variable request_condition;
-    std::string request_shape;
+    Request request_;
+    std::mutex request_mutex_;
+    std::condition_variable request_condition_;
+    curv::geom::Viewed_Shape request_shape_;
     struct Message {
         View_Server& server_;
         std::unique_lock<std::mutex> lock_;
@@ -42,31 +43,31 @@ private:
         Message(View_Server& s)
         :
             server_(s),
-            lock_(s.request_mutex)
+            lock_(s.request_mutex_)
         {}
         void receive()
         {
-            server_.request_condition.wait(lock_,
-                [&]{return server_.request != Request::k_none;});
-            id_ = server_.request;
+            server_.request_condition_.wait(lock_,
+                [&]{return server_.request_ != Request::k_none;});
+            id_ = server_.request_;
         }
         bool try_receive()
         {
             using namespace std::chrono_literals;
-            bool b = server_.request_condition.wait_for(lock_, 0ms,
-                [&]{return server_.request != Request::k_none;});
+            bool b = server_.request_condition_.wait_for(lock_, 0ms,
+                [&]{return server_.request_ != Request::k_none;});
             if (b)
-                id_ = server_.request;
+                id_ = server_.request_;
             return b;
         }
         void reply()
         {
-            server_.request = Request::k_none; // indicate we are ready for another request
+            server_.request_ = Request::k_none; // indicate we are ready for another request
 
             // Manual unlocking is done before notifying, to avoid waking up
             // the waiting thread only to block again (see notify_one for details)
             lock_.unlock();
-            server_.request_condition.notify_one();
+            server_.request_condition_.notify_one();
         }
         ~Message()
         {
@@ -79,25 +80,25 @@ private:
     void send(Request r)
     {
         {
-            std::lock_guard<std::mutex> lock(request_mutex);
-            request = r;
+            std::lock_guard<std::mutex> lock(request_mutex_);
+            request_ = r;
         }
-        request_condition.notify_one();
+        request_condition_.notify_one();
         // wait for the response
         {
             using namespace std::chrono_literals;
-            std::unique_lock<std::mutex> lock(request_mutex);
+            std::unique_lock<std::mutex> lock(request_mutex_);
             if (lazy_ && view_.is_open()) {
                 // In lazy mode, we post empty glfw events to wake main thread,
                 // as it might be sleeping waiting for glfw events. Keep posting
                 // until it acknowledges the message.
                 do glfwPostEmptyEvent();
-                while (!request_condition.wait_for(lock, 10ms,
-                            [&]{return request == Request::k_none;}));
+                while (!request_condition_.wait_for(lock, 10ms,
+                            [&]{return request_ == Request::k_none;}));
             }
             else {
-                request_condition.wait(lock,
-                        [&]{return request == Request::k_none;});
+                request_condition_.wait(lock,
+                        [&]{return request_ == Request::k_none;});
             }
         }
     }
@@ -110,10 +111,9 @@ public:
     // current viewer window.
     void display_shape(const curv::geom::Shape_Program& shape)
     {
-        // TODO: Call `view_.set_shape(shape)` in viewer thread
-        request_shape = shape_to_frag(shape, view_.config_);
+        request_shape_ = curv::geom::Viewed_Shape(shape, view_.config_);
         send(Request::k_display_shape);
-        //assert(request_shape.empty());
+        //assert(request_shape_.empty());
     }
     // Called by client thread. Close the viewer window, if open, and cause
     // the server to stop running (the run() function will return).
@@ -140,8 +140,8 @@ public:
                 break;
             }
             if (msg.id_ == Request::k_display_shape) {
-                assert(!request_shape.empty());
-                std::swap(view_.fragsrc_, request_shape);
+                assert(!request_shape_.empty());
+                view_.set_shape(std::move(request_shape_));
                 msg.reply();
                 view_.open();
                 do {
@@ -154,8 +154,8 @@ public:
                             break;
                         }
                         else if (imsg.id_ == Request::k_display_shape) {
-                            assert(!request_shape.empty());
-                            view_.set_frag(request_shape);
+                            assert(!request_shape_.empty());
+                            view_.set_shape(std::move(request_shape_));
                             imsg.reply();
                         }
                         else

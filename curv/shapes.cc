@@ -22,13 +22,3 @@ print_shape(
         std::cerr << "×" << (shape.bbox_.zmax - shape.bbox_.zmin);
     std::cerr << "\n";
 }
-
-std::string
-shape_to_frag(
-    const curv::geom::Shape_Program& shape,
-    const curv::geom::Frag_Export& opts)
-{
-    std::stringstream f;
-    export_frag(shape, opts, f);
-    return f.str();
-}

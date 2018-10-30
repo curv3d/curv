@@ -11,6 +11,7 @@
 #define LIBCURV_GEOM_VIEWER_VIEWER_H
 
 #include <libcurv/geom/frag.h>
+#include <libcurv/geom/viewed_shape.h>
 #include <gl/shader.h>
 #include <gl/vbo.h>
 #include <glm/glm.hpp>
@@ -37,6 +38,7 @@ struct Viewer
     // window, or while the window is open.
     void set_shape(const Shape_Program&);
     void set_shape(const Shape_Program&, const Frag_Export&);
+    void set_shape(Viewed_Shape);
 
     bool is_open() { return window_ != nullptr; }
 
@@ -68,15 +70,9 @@ struct Viewer
     glm::ivec4 window_pos_and_size_{0.,0.,500.,500.};
     bool headless_{false};
 
-    /*--- DEPRECATED API ---*/
-
-    // Can only be called when open, to change the frag shader.
-    // Use set_shape() instead.
-    void set_frag(const std::string&);
-
     /*--- INTERNAL STATE ---*/
 
-    std::string fragsrc_{};
+    Viewed_Shape shape_{};
     Shader shader_{};
     std::string vertSource_{};
     GLFWwindow* window_ = nullptr;
