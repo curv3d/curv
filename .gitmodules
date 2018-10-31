@@ -7,3 +7,6 @@
 [submodule "extern/replxx"]
 	path = extern/replxx
 	url = https://github.com/AmokHuginnsson/replxx
+[submodule "extern/imgui"]
+	path = extern/imgui
+	url = https://github.com/ocornut/imgui
