@@ -32,13 +32,33 @@ add_subdirectory(extern/openvdb/openvdb EXCLUDE_FROM_ALL)
 add_subdirectory(extern/glslViewer EXCLUDE_FROM_ALL)
 add_subdirectory(extern/glfw EXCLUDE_FROM_ALL)
 
-# replxx library
+# REPLxx library
 file(GLOB ReplxxSrc "extern/replxx/src/*.cxx" "extern/replxx/src/*.cpp")
 add_library(replxx ${ReplxxSrc})
 target_include_directories(replxx
    PUBLIC extern/replxx/include
    PRIVATE extern/replxx/src)
 set_property(TARGET replxx PROPERTY CXX_STANDARD 14)
+
+# gl3w library, required by IMGUI library
+add_library(gl3w
+    extern/imgui/examples/libs/gl3w/GL/gl3w.c)
+target_include_directories(gl3w
+    PUBLIC extern/imgui/examples/libs/gl3w)
+set_property(TARGET gl3w PROPERTY CXX_STANDARD 14)
+
+# Dear IMGUI library
+add_library(imgui
+    extern/imgui/examples/imgui_impl_glfw.cpp
+    extern/imgui/examples/imgui_impl_opengl3.cpp
+    extern/imgui/imgui.cpp
+    extern/imgui/imgui_demo.cpp
+    extern/imgui/imgui_draw.cpp
+    extern/imgui/imgui_widgets.cpp)
+target_include_directories(imgui
+    PUBLIC extern/imgui extern/imgui/examples)
+target_link_libraries(imgui PUBLIC glfw gl3w)
+set_property(TARGET imgui PROPERTY CXX_STANDARD 14)
 
 if (APPLE)
     set( sanitize "" )
@@ -50,6 +70,14 @@ else ()
     set( sanitize "-fsanitize=address" )
     set( LibOpenGL GL )
 endif (APPLE)
+
+# imdemo, will probably remove later
+add_executable(imdemo
+    extern/imgui/examples/example_glfw_opengl3/main.cpp)
+target_include_directories(imdemo
+    PUBLIC extern/imgui/examples/example_glfw_opengl3)
+target_link_libraries(imdemo PUBLIC glfw gl3w imgui ${LibOpenGL})
+set_property(TARGET imdemo PROPERTY CXX_STANDARD 14)
 
 file(GLOB LibCurvSrc "libcurv/*.cc")
 add_library(libcurv ${LibCurvSrc})
