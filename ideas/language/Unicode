@@ -126,6 +126,13 @@ More research needs to be done...
 
 See String Concatenation for a more radical proposal: safe characters
 are restricted to EGCs that are represented by a single code point in NFC.
+Combining characters, jamo, etc are forbidden. With this restriction,
+* A string can be considered a list of characters.
+* count (strcat(s1,s2)) == count(s1)+count(s2)
+* The concept of a character literal becomes more meaningful.
+* With no combining characters, C-like character literals 'a' and string
+  literals "abc" will be rendered correctly, because the first character will
+  not try to merge with the preceding quote character into a single glyph.
 
 ## Unicode Strings
 A string is a sequence of characters, but what is a character in Unicode?
@@ -236,23 +243,27 @@ state machine that does this, and the state machine could be compiled into
 efficient machine code. You rerun the metaprogram each time the standard
 changes. I don't think you want to code this by hand.)
 
-Maybe we restrict our safe subset of Unicode to EGCs that are
-represented by a single code point in NFC. Then the distinction
-between code point and character doesn't matter: they are the same thing.
-The only time we normalize strings is when receiving text from the
-operating system: text files, command line options, filenames from readdir().
-Curv string operators that construct new strings don't normalize their output.
-`decode` just rejects code points it doesn't like.
+Maybe we restrict our safe subset of Unicode to EGCs that are represented by
+a single code point in NFC. Combining characters, jamo, etc, are forbidden.
+Then the distinction between code point and character doesn't matter: they
+are the same thing. The only time we normalize strings is when receiving
+text from the operating system: text files, command line options, filenames
+from readdir(). Curv string operators that construct new strings don't
+normalize their output. `decode` just rejects code points it doesn't like.
 * PRO: Leads to simpler code that is less likely to conceal weird bugs.
   Such as: the bug that crashed iPhones when you texted a poisoned Unicode
   sequence.
 * CON: Users will be pissed if they can't use the entire Unicode repertoire.
   No emoji flags or skin tone modifiers.
+  No jamo means no archaic Korean characters, only modern ones.
+  No combining diacritics means no archaic accented latin characters.
 
 If I further restrict "safe" Unicode to the BMP, then I can lock down the
-Unicode property table, I can represent code points in 16 bits (UTF-16 subset),
-and have constant-time string indexing, and I can avoid interoperability
-problems with old Unicode software.
+Unicode property table. I can represent code points in 16 bits (UTF-16 subset),
+and have constant-time string indexing. I can avoid interoperability problems
+with old Unicode software. I could provide a font that contains all of the
+supported characters, and a text primitive that renders all legal Curv strings,
+and that functionality would be locked down and would not need updating.
 * No emojis at all.
 
 A possible advantage of no emojis is that the Curv 'text' primitive
