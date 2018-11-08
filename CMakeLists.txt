@@ -58,6 +58,8 @@ add_library(imgui
 target_include_directories(imgui
     PUBLIC extern/imgui extern/imgui/examples)
 target_link_libraries(imgui PUBLIC glfw gl3w)
+target_compile_definitions(imgui PUBLIC
+    IMGUI_IMPL_OPENGL_LOADER_CUSTOM=<gl/opengl.h> )
 set_property(TARGET imgui PROPERTY CXX_STANDARD 14)
 
 if (APPLE)
@@ -72,12 +74,12 @@ else ()
 endif (APPLE)
 
 # imdemo, will probably remove later
-add_executable(imdemo
-    extern/imgui/examples/example_glfw_opengl3/main.cpp)
-target_include_directories(imdemo
-    PUBLIC extern/imgui/examples/example_glfw_opengl3)
-target_link_libraries(imdemo PUBLIC glfw gl3w imgui ${LibOpenGL})
-set_property(TARGET imdemo PROPERTY CXX_STANDARD 14)
+#add_executable(imdemo
+#    extern/imgui/examples/example_glfw_opengl3/main.cpp)
+#target_include_directories(imdemo
+#    PUBLIC extern/imgui/examples/example_glfw_opengl3)
+#target_link_libraries(imdemo PUBLIC glfw gl3w imgui ${LibOpenGL})
+#set_property(TARGET imdemo PROPERTY CXX_STANDARD 14)
 
 file(GLOB LibCurvSrc "libcurv/*.cc")
 add_library(libcurv ${LibCurvSrc})
@@ -86,10 +88,11 @@ set_property(TARGET libcurv PROPERTY OUTPUT_NAME curv)
 FILE(GLOB LibCurvGeomSrc "libcurv/geom/*.cc" "libcurv/geom/viewer/*.cc")
 add_library(libcurv_geom ${LibCurvGeomSrc})
 set_property(TARGET libcurv_geom PROPERTY OUTPUT_NAME curv_geom)
+target_link_libraries(libcurv_geom PUBLIC imgui)
 
 file(GLOB Src "curv/*.c" "curv/*.cc")
 add_executable(curv ${Src})
-target_link_libraries(curv PUBLIC libcurv libcurv_geom GlslViewer glfw ${LibOpenGL} replxx double-conversion boost_iostreams boost_filesystem boost_system openvdb_static Half tbb dl pthread)
+target_link_libraries(curv PUBLIC libcurv libcurv_geom imgui GlslViewer glfw ${LibOpenGL} replxx double-conversion boost_iostreams boost_filesystem boost_system openvdb_static Half tbb dl pthread)
 
 file(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})

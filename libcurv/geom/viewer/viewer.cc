@@ -28,6 +28,10 @@
 
 #include <types/shapes.h>
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 namespace curv { namespace geom { namespace viewer {
 
 Viewer::Viewer()
@@ -150,9 +154,17 @@ bool Viewer::draw_frame()
 {
     if (glfwWindowShouldClose(window_))
         return false;
+    poll_events();
+
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    static bool show_demo_window = true;
+    if (show_demo_window)
+        ImGui::ShowDemoWindow(&show_demo_window);
+
     render();
     swap_buffers();
-    poll_events();
     if (!config_.lazy_)
         measure_time();
     return true;
@@ -203,6 +215,8 @@ void Viewer::setup()
 
 void Viewer::render()
 {
+    ImGui::Render();
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shader_.use();
@@ -225,6 +239,8 @@ void Viewer::render()
     shader_.setUniform("u_modelViewProjectionMatrix", mvp);
 
     vbo_->draw(&shader_);
+
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void Viewer::onKeyPress(int key, int mods)
@@ -344,6 +360,24 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
         exit(-1);
     }
 
+    // the ImGui example startup code contains this:
+    // Decide GL+GLSL versions
+#if __APPLE__
+    // GL 3.2 + GLSL 150
+    const char* glsl_version = "#version 150";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+#else
+    // GL 3.0 + GLSL 130
+    const char* glsl_version = "#version 130";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+#endif
+
     if (_headless) {
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     }
@@ -402,6 +436,17 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
     });
 
     glfwSwapInterval(1);
+
+    // Initialize ImGUI
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+    ImGui_ImplGlfw_InitForOpenGL(window_, false);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+    //ImGui::StyleColorsDark();
+    ImGui::StyleColorsClassic();
 }
 
 void Viewer::onMouseMove(double x, double y)
