@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "opengl.h"
+#include <libcurv/geom/glfw.h>
 #include "vertexLayout.h"
 
 #define MAX_INDEX_VALUE 65535

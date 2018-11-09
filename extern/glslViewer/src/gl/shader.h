@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "opengl.h"
+#include <libcurv/geom/glfw.h>
 #include "glm/glm.hpp"
 
 #include "texture.h"

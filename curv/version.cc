@@ -8,7 +8,7 @@ extern "C" {
 #include <sys/utsname.h>
 #include <stdlib.h>
 }
-#include <gl/opengl.h>
+#include <libcurv/geom/glfw.h>
 
 #define USE_X11 0
 #if USE_X11
@@ -45,6 +45,10 @@ print_gpu(std::ostream& out)
         return;
     }
     glfwMakeContextCurrent(window);
+    if (gl3wInit() != 0) {
+        *gout << "GPU: can't load OpenGL library (gl3wInit failed)\n";
+        return;
+    }
 
     const char* vendor = (const char*) glGetString(GL_VENDOR);
     if (vendor == nullptr) vendor = "???";

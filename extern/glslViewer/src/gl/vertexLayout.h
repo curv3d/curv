@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-#include "opengl.h"
+#include <libcurv/geom/glfw.h>
 #include "shader.h"
 
 enum AttrType {

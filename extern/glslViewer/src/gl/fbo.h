@@ -1,6 +1,6 @@
 #pragma once
 
-#include "opengl.h"
+#include <libcurv/geom/glfw.h>
 
 class Fbo {
 public:

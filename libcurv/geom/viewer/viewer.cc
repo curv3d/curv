@@ -382,19 +382,25 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     }
 
+    // Create window, create OpenGL context, load OpenGL library.
     window_ = glfwCreateWindow(_viewport.z, _viewport.w, appTitle.c_str(), NULL, NULL);
-
     if(!window_) {
         glfwTerminate();
         std::cerr << "ABORT: GLFW create window failed" << std::endl;
         exit(-1);
     }
+    glfwMakeContextCurrent(window_);
+    if (gl3wInit() != 0) {
+        std::cerr << "ABORT: Can't load OpenGL library (gl3wInit failed)\n";
+        exit(-1);
+    }
+
     glfwSetWindowUserPointer(window_, (void*)this);
 
     setWindowSize(_viewport.z, _viewport.w);
     glfwSetWindowPos(window_, _viewport.x, _viewport.y);
 
-    glfwMakeContextCurrent(window_);
+
     glfwSetWindowSizeCallback(window_, [](GLFWwindow* win, int w, int h) {
         Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
         self->setWindowSize(w,h);
