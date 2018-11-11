@@ -422,7 +422,7 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
         exit(-1);
     }
 
-    // enable OpenGL debugging, so I can print error messages when errors occur
+    // Enable OpenGL debugging, so I can print messages when errors occur.
     if (GLAD_GL_KHR_debug) {
         glEnable(GL_DEBUG_OUTPUT);
         glDebugMessageCallback(MessageCallback, (void*)this);
@@ -430,7 +430,9 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
 
     // The GL context is now set up and ready for use.
 
-    // create a VAO
+    glfwSwapInterval(1);
+
+    // Create and bind a VAO (Vertex Array Object) for later use.
     glGenVertexArrays(1, &vao_);
     glBindVertexArray(vao_);
 
@@ -438,49 +440,6 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
 
     setWindowSize(_viewport.z, _viewport.w);
     glfwSetWindowPos(window_, _viewport.x, _viewport.y);
-
-
-    glfwSetWindowSizeCallback(window_, [](GLFWwindow* win, int w, int h) {
-        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-        self->setWindowSize(w,h);
-    });
-
-    glfwSetKeyCallback(window_, [](GLFWwindow* win, int key, int scancode, int action, int mods) {
-        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-        if (action == GLFW_PRESS)
-            self->onKeyPress(key, mods);
-    });
-
-    // callback when a mouse button is pressed or released
-    glfwSetMouseButtonCallback(window_, [](GLFWwindow* win, int button, int action, int mods) {
-        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-        if (action == GLFW_PRESS) {
-            self->mouse_.drag.x = self->mouse_.x;
-            self->mouse_.drag.y = self->mouse_.y;
-        }
-    });
-
-    glfwSetScrollCallback(window_, [](GLFWwindow* win, double xoffset, double yoffset) {
-        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-        self->onScroll(-yoffset * self->fPixelDensity_);
-    });
-
-    // callback when the mouse cursor moves
-    glfwSetCursorPosCallback(window_, [](GLFWwindow* win, double x, double y) {
-        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-        self->onMouseMove(x, y);
-    });
-
-    glfwSetWindowPosCallback(window_, [](GLFWwindow* win, int x, int y) {
-        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-        self->window_pos_and_size_.x = x;
-        self->window_pos_and_size_.y = y;
-        if (self->fPixelDensity_ != self->getPixelDensity()) {
-            self->setWindowSize(self->viewport_.z, self->viewport_.w);
-        }
-    });
-
-    glfwSwapInterval(1);
 
     // Initialize ImGUI
     IMGUI_CHECKVERSION();
@@ -493,6 +452,53 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
     //ImGui::StyleColorsDark();
     //ImGui::StyleColorsClassic();
     ImGui::StyleColorsLight();
+
+    // Install event callbacks.
+    glfwSetWindowSizeCallback(window_, [](GLFWwindow* win, int w, int h) {
+        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+        self->setWindowSize(w,h);
+    });
+
+    glfwSetKeyCallback(window_, [](GLFWwindow* win, int key, int scancode, int action, int mods) {
+        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+        ImGuiIO& io = ImGui::GetIO();
+        if (!io.WantCaptureKeyboard && action == GLFW_PRESS)
+            self->onKeyPress(key, mods);
+    });
+
+    // callback when a mouse button is pressed or released
+    glfwSetMouseButtonCallback(window_, [](GLFWwindow* win, int button, int action, int mods) {
+        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+        ImGuiIO& io = ImGui::GetIO();
+        if (!io.WantCaptureMouse && action == GLFW_PRESS) {
+            self->mouse_.drag.x = self->mouse_.x;
+            self->mouse_.drag.y = self->mouse_.y;
+        }
+    });
+
+    glfwSetScrollCallback(window_, [](GLFWwindow* win, double xoffset, double yoffset) {
+        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+        ImGuiIO& io = ImGui::GetIO();
+        if (!io.WantCaptureMouse)
+            self->onScroll(-yoffset * self->fPixelDensity_);
+    });
+
+    // callback when the mouse cursor moves
+    glfwSetCursorPosCallback(window_, [](GLFWwindow* win, double x, double y) {
+        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+        ImGuiIO& io = ImGui::GetIO();
+        if (!io.WantCaptureMouse)
+            self->onMouseMove(x, y);
+    });
+
+    glfwSetWindowPosCallback(window_, [](GLFWwindow* win, int x, int y) {
+        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+        self->window_pos_and_size_.x = x;
+        self->window_pos_and_size_.y = y;
+        if (self->fPixelDensity_ != self->getPixelDensity()) {
+            self->setWindowSize(self->viewport_.z, self->viewport_.w);
+        }
+    });
 }
 
 void Viewer::onMouseMove(double x, double y)
