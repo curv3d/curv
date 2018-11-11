@@ -108,47 +108,45 @@ void Viewer::reset_view(viewtype view )
     u_centre3d_ = glm::vec3(0., 0., 0.);
     if (view==upside)
     {
-            u_eye3d_ = glm::vec3(0, 6, 0);
-            u_up3d_ = glm::vec3(0, 0, -1);
+        u_eye3d_ = glm::vec3(0, 6, 0);
+        u_up3d_ = glm::vec3(0, 0, -1);
     }
-    else    if (view==downside)
+    else if (view==downside)
     {
-            u_eye3d_ = glm::vec3(0, -6, 0);
-            u_up3d_ = glm::vec3(0, 0, -1);
+        u_eye3d_ = glm::vec3(0, -6, 0);
+        u_up3d_ = glm::vec3(0, 0, -1);
     }
     else if (view==leftside)
     {
-            u_eye3d_ = glm::vec3(-6, 0, 0);
-            u_up3d_ = glm::vec3(0, 1, 0);
+        u_eye3d_ = glm::vec3(-6, 0, 0);
+        u_up3d_ = glm::vec3(0, 1, 0);
     }
-    else    if (view==rightside)
+    else if (view==rightside)
     {
-            u_eye3d_ = glm::vec3(6, 0, 0);
-            u_up3d_ = glm::vec3(0, 1, 0);
+        u_eye3d_ = glm::vec3(6, 0, 0);
+        u_up3d_ = glm::vec3(0, 1, 0);
     }
     else if (view==frontside)
     {
-            u_eye3d_ = glm::vec3(0, 0, 6);
-            u_up3d_ = glm::vec3(0, 1, 0);
+        u_eye3d_ = glm::vec3(0, 0, 6);
+        u_up3d_ = glm::vec3(0, 1, 0);
     }
-    else    if (view==backside)
+    else if (view==backside)
     {
-            u_eye3d_ = glm::vec3(0, 0, -6);
-            u_up3d_ = glm::vec3(0, 1, 0);
+        u_eye3d_ = glm::vec3(0, 0, -6);
+        u_up3d_ = glm::vec3(0, 1, 0);
     }
-     
-    else{
-    // 'eye3d' is derived by starting with [0,0,6], then rotating 30 degrees
-    // around the X and Y axes.
-    u_eye3d_ = glm::vec3(2.598076, 3.0, 4.5);
+    else
+    {
+        // 'eye3d' is derived by starting with [0,0,6], then rotating 30 degrees
+        // around the X and Y axes.
+        u_eye3d_ = glm::vec3(2.598076, 3.0, 4.5);
 
-    // up3d is derived by starting with [0,1,0], then applying
-    // the same rotations as above, so that up3d is orthogonal to eye3d.
-    u_up3d_ = glm::vec3(-0.25, 0.866025, -0.433013);
+        // up3d is derived by starting with [0,1,0], then applying
+        // the same rotations as above, so that up3d is orthogonal to eye3d.
+        u_up3d_ = glm::vec3(-0.25, 0.866025, -0.433013);
     }
-    
-    
-    }
+}
 
 bool Viewer::draw_frame()
 {
@@ -159,9 +157,8 @@ bool Viewer::draw_frame()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    static bool show_demo_window = true;
-    if (show_demo_window)
-        ImGui::ShowDemoWindow(&show_demo_window);
+    if (hud_)
+        ImGui::ShowDemoWindow(&hud_);
 
     render();
     swap_buffers();
@@ -245,35 +242,31 @@ void Viewer::render()
 
 void Viewer::onKeyPress(int key, int mods)
 {
-    if (key == GLFW_KEY_Q ||
-       (key == GLFW_KEY_W && (mods & (GLFW_MOD_CONTROL|GLFW_MOD_SUPER))))
-    {
+    bool ctrl = (mods & (GLFW_MOD_CONTROL|GLFW_MOD_SUPER)) != 0;
+    if (key == GLFW_KEY_Q || (key == GLFW_KEY_W && ctrl)) {
         glfwSetWindowShouldClose(window_, GL_TRUE);
     }
-    else if (key == GLFW_KEY_HOME) {// reset to default
+    else if (key == GLFW_KEY_HOME) { // reset to default
         reset_view(home);
     }
-  else if (key == GLFW_KEY_U  ) {// upside
+    else if (key == GLFW_KEY_U) {
         reset_view(upside);
     }
-  else if (key == GLFW_KEY_D ) {// downside
+    else if (key == GLFW_KEY_D) {
         reset_view(downside);
     }
-  else if (key == GLFW_KEY_L ) {// left side
+    else if (key == GLFW_KEY_L) {
         reset_view(leftside);
     }
- else if (key == GLFW_KEY_R ) {// right side
+    else if (key == GLFW_KEY_R) {
         reset_view(rightside);
     }
- else if (key == GLFW_KEY_F )  {// frontside
+    else if (key == GLFW_KEY_F) {
         reset_view(frontside);
     }
- else if (key == GLFW_KEY_B  ) {// backside
+    else if (key == GLFW_KEY_B) {
         reset_view(backside);
     }
- 
- 
-    
 }
 
 void Viewer::onScroll(float _yoffset)
@@ -454,51 +447,67 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
     ImGui::StyleColorsLight();
 
     // Install event callbacks.
-    glfwSetWindowSizeCallback(window_, [](GLFWwindow* win, int w, int h) {
-        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-        self->setWindowSize(w,h);
-    });
+    glfwSetWindowSizeCallback(window_,
+        [](GLFWwindow* win, int w, int h) {
+            Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+            self->setWindowSize(w,h);
+        });
 
-    glfwSetKeyCallback(window_, [](GLFWwindow* win, int key, int scancode, int action, int mods) {
-        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-        ImGuiIO& io = ImGui::GetIO();
-        if (!io.WantCaptureKeyboard && action == GLFW_PRESS)
-            self->onKeyPress(key, mods);
-    });
+    glfwSetKeyCallback(window_,
+        [](GLFWwindow* win, int key, int scancode, int action, int mods) {
+            Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+            ImGuiIO& io = ImGui::GetIO();
+            if (key == GLFW_KEY_H && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS)
+                self->hud_ = !self->hud_;
+            else if (io.WantCaptureKeyboard)
+                ImGui_ImplGlfw_KeyCallback(win, key, scancode, action, mods);
+            else if (action == GLFW_PRESS)
+                self->onKeyPress(key, mods);
+        });
+
+    glfwSetCharCallback(window_, ImGui_ImplGlfw_CharCallback);
 
     // callback when a mouse button is pressed or released
-    glfwSetMouseButtonCallback(window_, [](GLFWwindow* win, int button, int action, int mods) {
-        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-        ImGuiIO& io = ImGui::GetIO();
-        if (!io.WantCaptureMouse && action == GLFW_PRESS) {
-            self->mouse_.drag.x = self->mouse_.x;
-            self->mouse_.drag.y = self->mouse_.y;
-        }
-    });
+    glfwSetMouseButtonCallback(window_,
+        [](GLFWwindow* win, int button, int action, int mods) {
+            Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+            ImGuiIO& io = ImGui::GetIO();
+            if (io.WantCaptureMouse)
+                ImGui_ImplGlfw_MouseButtonCallback(win, button, action, mods);
+            else if (action == GLFW_PRESS) {
+                self->mouse_.drag.x = self->mouse_.x;
+                self->mouse_.drag.y = self->mouse_.y;
+            }
+        });
 
-    glfwSetScrollCallback(window_, [](GLFWwindow* win, double xoffset, double yoffset) {
-        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-        ImGuiIO& io = ImGui::GetIO();
-        if (!io.WantCaptureMouse)
-            self->onScroll(-yoffset * self->fPixelDensity_);
-    });
+    glfwSetScrollCallback(window_,
+        [](GLFWwindow* win, double xoffset, double yoffset) {
+            Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+            ImGuiIO& io = ImGui::GetIO();
+            if (io.WantCaptureMouse)
+                ImGui_ImplGlfw_ScrollCallback(win, xoffset, yoffset);
+            else
+                self->onScroll(-yoffset * self->fPixelDensity_);
+        });
 
     // callback when the mouse cursor moves
-    glfwSetCursorPosCallback(window_, [](GLFWwindow* win, double x, double y) {
-        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-        ImGuiIO& io = ImGui::GetIO();
-        if (!io.WantCaptureMouse)
-            self->onMouseMove(x, y);
-    });
+    glfwSetCursorPosCallback(window_,
+        [](GLFWwindow* win, double x, double y) {
+            Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+            ImGuiIO& io = ImGui::GetIO();
+            if (!io.WantCaptureMouse)
+                self->onMouseMove(x, y);
+        });
 
-    glfwSetWindowPosCallback(window_, [](GLFWwindow* win, int x, int y) {
-        Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-        self->window_pos_and_size_.x = x;
-        self->window_pos_and_size_.y = y;
-        if (self->fPixelDensity_ != self->getPixelDensity()) {
-            self->setWindowSize(self->viewport_.z, self->viewport_.w);
-        }
-    });
+    glfwSetWindowPosCallback(window_,
+        [](GLFWwindow* win, int x, int y) {
+            Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
+            self->window_pos_and_size_.x = x;
+            self->window_pos_and_size_.y = y;
+            if (self->fPixelDensity_ != self->getPixelDensity()) {
+                self->setWindowSize(self->viewport_.z, self->viewport_.w);
+            }
+        });
 }
 
 void Viewer::onMouseMove(double x, double y)

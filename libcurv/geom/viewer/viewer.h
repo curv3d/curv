@@ -82,6 +82,7 @@ struct Viewer
     double current_time_ = 0.0;
     double fFPS_ = 0.0;
     GLuint vao_; // a Vertex Array Object
+    bool hud_ = false;
 
     // The 2D camera position.
     glm::mat3 u_view2d_ {};
