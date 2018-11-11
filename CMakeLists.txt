@@ -70,13 +70,13 @@ else ()
     set( LibOpenGL GL )
 endif (APPLE)
 
-# imdemo, will probably remove later
-add_executable(imdemo
-    extern/imgui/examples/example_glfw_opengl3/main.cpp)
-target_include_directories(imdemo
-    PUBLIC extern/imgui/examples/example_glfw_opengl3)
-target_link_libraries(imdemo PUBLIC glfw glad imgui ${LibOpenGL})
-set_property(TARGET imdemo PROPERTY CXX_STANDARD 14)
+# imdemo, broken in v1.65 of ImGui, need to upgrade to headrev
+#add_executable(imdemo
+#    extern/imgui/examples/example_glfw_opengl3/main.cpp)
+#target_include_directories(imdemo
+#    PUBLIC extern/imgui/examples/example_glfw_opengl3)
+#target_link_libraries(imdemo PUBLIC glfw glad imgui ${LibOpenGL})
+#set_property(TARGET imdemo PROPERTY CXX_STANDARD 14)
 
 file(GLOB LibCurvSrc "libcurv/*.cc")
 add_library(libcurv ${LibCurvSrc})
