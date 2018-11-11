@@ -48,12 +48,14 @@ Getting Started
 
 Hardware Requirements
 =====================
-Two platforms are currently supported: Linux and macOS. I currently test
-on Ubuntu LTS and macos 10.11. Windows support is planned but not scheduled.
+Two platforms are currently supported: Linux and MacOS. I currently test
+on Ubuntu LTS and MacOS 10.11. Windows support is planned but not scheduled.
 
 Curv requires direct access to a GPU made by Intel, AMD or Nvidia, using the
-vendor supplied GPU driver. On Linux, the GPU needs to be modern enough to be supported
-by the latest version of the vendor supplied driver. Any GPU from 2012 or later
+vendor supplied GPU driver.
+On Macintosh, you need MacOS 10.7 or later.
+On Linux, the GPU needs to be modern enough to be supported
+by the latest driver version from the GPU vendor. Any GPU from 2012 or later
 will work. Some older GPUs may work: check the list of supported hardware for the driver.
 
 * On Linux, you have 3 choices:
