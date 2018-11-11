@@ -156,10 +156,10 @@ bool Viewer::draw_frame()
         return false;
     poll_events();
 
-    //+ImGui_ImplOpenGL3_NewFrame();
-    //+ImGui_ImplGlfw_NewFrame();
-    //+ImGui::NewFrame();
-    static bool show_demo_window = false;
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    static bool show_demo_window = true;
     if (show_demo_window)
         ImGui::ShowDemoWindow(&show_demo_window);
 
@@ -215,7 +215,7 @@ void Viewer::setup()
 
 void Viewer::render()
 {
-    //+ImGui::Render();
+    ImGui::Render();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -240,7 +240,7 @@ void Viewer::render()
 
     vbo_->draw(&shader_);
 
-    //+ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void Viewer::onKeyPress(int key, int mods)
@@ -483,15 +483,16 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
     glfwSwapInterval(1);
 
     // Initialize ImGUI
-    //+IMGUI_CHECKVERSION();
-    //+ImGui::CreateContext();
-    //+ImGuiIO& io = ImGui::GetIO(); (void)io;
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
-    //+ImGui_ImplGlfw_InitForOpenGL(window_, false);
-    //+ImGui_ImplOpenGL3_Init(glsl_version);
+    ImGui_ImplGlfw_InitForOpenGL(window_, false);
+    ImGui_ImplOpenGL3_Init(glsl_version);
     //ImGui::StyleColorsDark();
-    //+ImGui::StyleColorsClassic();
+    //ImGui::StyleColorsClassic();
+    ImGui::StyleColorsLight();
 }
 
 void Viewer::onMouseMove(double x, double y)
