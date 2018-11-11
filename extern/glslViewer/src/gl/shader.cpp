@@ -78,6 +78,7 @@ bool Shader::load(const std::string& _fragmentSrc, const std::string& _vertexSrc
 
     glAttachShader(m_program, m_vertexShader);
     glAttachShader(m_program, m_fragmentShader);
+    glBindFragDataLocation(m_program, 0, "oFragColour");
     glLinkProgram(m_program);
 
     end_time = std::chrono::steady_clock::now();
@@ -148,7 +149,8 @@ GLuint Shader::compileShader(const std::string& _src, GLenum _type) {
     std::string prolog = "";
     const char* epilog = "";
 
-    prolog += "#define GLSLVIEWER 1\n";
+    prolog += curv::geom::glsl_version;
+    prolog += "\n#define GLSLVIEWER 1\n";
 
     // Test if this is a shadertoy.com image shader. If it is, we need to
     // define some uniforms with different names than the glslViewer standard,
@@ -157,6 +159,7 @@ GLuint Shader::compileShader(const std::string& _src, GLenum _type) {
         prolog +=
             "uniform vec2 u_resolution;\n"
             "#define iResolution vec3(u_resolution, 1.0)\n"
+            "out vec4 oFragColour;\n"
             "\n";
         m_time = true;
         prolog +=
@@ -187,11 +190,9 @@ GLuint Shader::compileShader(const std::string& _src, GLenum _type) {
         epilog =
             "\n"
             "void main(void) {\n"
-            "    mainImage(gl_FragColor, gl_FragCoord.st);\n"
+            "    mainImage(oFragColour, gl_FragCoord.st);\n"
             "}\n";
     }
-
-    prolog += "#line 1\n";
 
     const GLchar* sources[3] = {
         (const GLchar*) prolog.c_str(),
@@ -219,7 +220,10 @@ GLuint Shader::compileShader(const std::string& _src, GLenum _type) {
         else {
             std::cerr << "vertex ";
         }
-        std::cerr << "shader:\n" << &infoLog[0] << std::endl;
+        std::cerr << "shader:\n" << &infoLog[0] << std::endl
+            << "---source---\n"
+            << prolog << _src << epilog
+            << "---EOF---\n";
     }
 
     if (isCompiled == GL_FALSE) {

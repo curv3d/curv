@@ -97,8 +97,8 @@ std::string VertexLayout::getDefaultVertShader() {
         if (m_positionAttribIndex == int(i)) {
             size = 4;
         }
-        rta += "attribute vec" + toString(size) + " a_" + m_attribs[i].name + ";\n";
-        rta += "varying vec" + toString(size) + " v_" + m_attribs[i].name + ";\n";
+        rta += "in vec" + toString(size) + " a_" + m_attribs[i].name + ";\n";
+        rta += "out vec" + toString(size) + " v_" + m_attribs[i].name + ";\n";
     }
 
     rta += "\n"
@@ -140,7 +140,7 @@ std::string VertexLayout::getDefaultFragShader() {
         if (m_positionAttribIndex == int(i)) {
             size = 4;
         }
-        rta += "varying vec" + toString(size) + " v_" + m_attribs[i].name + ";\n";
+        rta += "out vec" + toString(size) + " v_" + m_attribs[i].name + ";\n";
     }
 
     rta += "\n"

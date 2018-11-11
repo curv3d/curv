@@ -20,6 +20,7 @@ include_directories(.
     extern/openvdb
     extern/blosc
     extern/glfw/include
+    extern/glad
     extern/imgui/examples/libs/gl3w)
 
 if (APPLE)
@@ -41,12 +42,17 @@ target_include_directories(replxx
    PRIVATE extern/replxx/src)
 set_property(TARGET replxx PROPERTY CXX_STANDARD 14)
 
-# gl3w library, required by IMGUI library
+# gl3w library, an OpenGL loader
 add_library(gl3w
     extern/imgui/examples/libs/gl3w/GL/gl3w.c)
 target_include_directories(gl3w
     PUBLIC extern/imgui/examples/libs/gl3w)
 set_property(TARGET gl3w PROPERTY CXX_STANDARD 14)
+
+# glad library, an OpenGL loader
+add_library(glad
+    extern/glad/glad/glad.c)
+set_property(TARGET glad PROPERTY CXX_STANDARD 14)
 
 # Dear IMGUI library
 add_library(imgui
@@ -60,7 +66,7 @@ target_include_directories(imgui
     PUBLIC extern/imgui extern/imgui/examples)
 target_link_libraries(imgui PUBLIC glfw gl3w)
 target_compile_definitions(imgui PUBLIC
-    IMGUI_IMPL_OPENGL_LOADER_GL3W )
+    IMGUI_IMPL_OPENGL_LOADER_GLAD )
 set_property(TARGET imgui PROPERTY CXX_STANDARD 14)
 
 if (APPLE)
@@ -79,7 +85,7 @@ add_executable(imdemo
     extern/imgui/examples/example_glfw_opengl3/main.cpp)
 target_include_directories(imdemo
     PUBLIC extern/imgui/examples/example_glfw_opengl3)
-target_link_libraries(imdemo PUBLIC glfw gl3w imgui ${LibOpenGL})
+target_link_libraries(imdemo PUBLIC glfw glad imgui ${LibOpenGL})
 set_property(TARGET imdemo PROPERTY CXX_STANDARD 14)
 
 file(GLOB LibCurvSrc "libcurv/*.cc")
@@ -93,7 +99,7 @@ target_link_libraries(libcurv_geom PUBLIC imgui)
 
 file(GLOB Src "curv/*.c" "curv/*.cc")
 add_executable(curv ${Src})
-target_link_libraries(curv PUBLIC libcurv libcurv_geom imgui GlslViewer glfw gl3w ${LibOpenGL} replxx double-conversion boost_iostreams boost_filesystem boost_system openvdb_static Half tbb dl pthread)
+target_link_libraries(curv PUBLIC libcurv libcurv_geom imgui GlslViewer glfw glad ${LibOpenGL} replxx double-conversion boost_iostreams boost_filesystem boost_system openvdb_static Half tbb dl pthread)
 
 file(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})

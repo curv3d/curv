@@ -350,6 +350,26 @@ void Viewer::onExit()
 
 const std::string appTitle = "curv";
 
+extern "C"
+void GLAPIENTRY
+MessageCallback(
+    GLenum source,
+    GLenum type,
+    GLuint id,
+    GLenum severity,
+    GLsizei length,
+    const GLchar* message,
+    const void* userParam)
+{
+    (void)userParam; (void)source; (void)id; (void)length;
+    std::cerr << "GL "
+      << (type == GL_DEBUG_TYPE_ERROR ? "ERROR" : "Message")
+      << ": type=" << type
+      << ", severity=" << severity
+      << ", message=" << message
+      << "\n";
+}
+
 void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
 {
     glfwSetErrorCallback([](int err, const char* msg)->void {
@@ -360,24 +380,8 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
         exit(-1);
     }
 
-    // the ImGui example startup code contains this:
-    // Decide GL+GLSL versions
-#if __APPLE__
-    // GL 3.2 + GLSL 150
-    const char* glsl_version = "#version 150";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
-#else
-    // GL 3.0 + GLSL 130
-    const char* glsl_version = "#version 130";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
-#endif
-
+    // Set window and context parameters.
+    glfw_set_context_parameters();
     if (_headless) {
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     }
@@ -390,9 +394,15 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
         exit(-1);
     }
     glfwMakeContextCurrent(window_);
-    if (gl3wInit() != 0) {
-        std::cerr << "ABORT: Can't load OpenGL library (gl3wInit failed)\n";
+    if (!opengl_init()) {
+        std::cerr << "ABORT: Can't load OpenGL library\n";
         exit(-1);
+    }
+
+    // enable OpenGL debugging, so I can print error messages when errors occur
+    if (GLAD_GL_KHR_debug) {
+        glEnable(GL_DEBUG_OUTPUT);
+        glDebugMessageCallback(MessageCallback, 0);
     }
 
     glfwSetWindowUserPointer(window_, (void*)this);
