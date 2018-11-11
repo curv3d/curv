@@ -26,7 +26,7 @@
 #include <glm/gtx/matrix_transform_2d.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-#include <types/shapes.h>
+#include "shapes.h"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -156,10 +156,10 @@ bool Viewer::draw_frame()
         return false;
     poll_events();
 
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-    static bool show_demo_window = true;
+    //+ImGui_ImplOpenGL3_NewFrame();
+    //+ImGui_ImplGlfw_NewFrame();
+    //+ImGui::NewFrame();
+    static bool show_demo_window = false;
     if (show_demo_window)
         ImGui::ShowDemoWindow(&show_demo_window);
 
@@ -215,7 +215,7 @@ void Viewer::setup()
 
 void Viewer::render()
 {
-    ImGui::Render();
+    //+ImGui::Render();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -240,7 +240,7 @@ void Viewer::render()
 
     vbo_->draw(&shader_);
 
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    //+ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void Viewer::onKeyPress(int key, int mods)
@@ -350,8 +350,7 @@ void Viewer::onExit()
 
 const std::string appTitle = "curv";
 
-extern "C"
-void GLAPIENTRY
+extern "C" void
 MessageCallback(
     GLenum source,
     GLenum type,
@@ -361,13 +360,37 @@ MessageCallback(
     const GLchar* message,
     const void* userParam)
 {
-    (void)userParam; (void)source; (void)id; (void)length;
-    std::cerr << "GL "
-      << (type == GL_DEBUG_TYPE_ERROR ? "ERROR" : "Message")
-      << ": type=" << type
-      << ", severity=" << severity
-      << ", message=" << message
-      << "\n";
+    (void) length;
+    Viewer* viewer = (Viewer*)userParam;
+    if (viewer->config_.verbose_ || severity == GL_DEBUG_SEVERITY_HIGH) {
+        std::cerr << "GL ";
+        switch (type) {
+        case GL_DEBUG_TYPE_ERROR:
+            std::cerr << "ERROR"; break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+            std::cerr << "DEPRECATED"; break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+            std::cerr << "UNDEFINED"; break;
+        case GL_DEBUG_TYPE_PORTABILITY:
+            std::cerr << "PORTABILITY"; break;
+        case GL_DEBUG_TYPE_PERFORMANCE:
+            std::cerr << "PERFORMANCE"; break;
+        case GL_DEBUG_TYPE_MARKER:
+            std::cerr << "MARKER"; break;
+        case GL_DEBUG_TYPE_PUSH_GROUP:
+            std::cerr << "PUSH_GROUP"; break;
+        case GL_DEBUG_TYPE_POP_GROUP:
+            std::cerr << "POP_GROUP"; break;
+        case GL_DEBUG_TYPE_OTHER:
+            std::cerr << "OTHER"; break;
+        default:
+            std::cerr << "<"<<type<<">";
+        }
+        std::cerr << ": src=" << source
+            << ",id=" << id
+            << ",sev=" << severity
+            << " " << message << "\n";
+    }
 }
 
 void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
@@ -402,8 +425,14 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
     // enable OpenGL debugging, so I can print error messages when errors occur
     if (GLAD_GL_KHR_debug) {
         glEnable(GL_DEBUG_OUTPUT);
-        glDebugMessageCallback(MessageCallback, 0);
+        glDebugMessageCallback(MessageCallback, (void*)this);
     }
+
+    // The GL context is now set up and ready for use.
+
+    // create a VAO
+    glGenVertexArrays(1, &vao_);
+    glBindVertexArray(vao_);
 
     glfwSetWindowUserPointer(window_, (void*)this);
 
@@ -454,15 +483,15 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
     glfwSwapInterval(1);
 
     // Initialize ImGUI
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    //+IMGUI_CHECKVERSION();
+    //+ImGui::CreateContext();
+    //+ImGuiIO& io = ImGui::GetIO(); (void)io;
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
-    ImGui_ImplGlfw_InitForOpenGL(window_, false);
-    ImGui_ImplOpenGL3_Init(glsl_version);
+    //+ImGui_ImplGlfw_InitForOpenGL(window_, false);
+    //+ImGui_ImplOpenGL3_Init(glsl_version);
     //ImGui::StyleColorsDark();
-    ImGui::StyleColorsClassic();
+    //+ImGui::StyleColorsClassic();
 }
 
 void Viewer::onMouseMove(double x, double y)

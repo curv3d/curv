@@ -1,6 +1,6 @@
 #include "shader.h"
 
-#include "tools/text.h"
+#include "text.h"
 #include <cstring>
 #include <chrono>
 #include <algorithm>

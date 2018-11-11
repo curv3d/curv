@@ -15,13 +15,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 # Global include directories, visible in subdirectories.
 include_directories(.
     extern/googletest/googletest/include
-    extern/glslViewer/include
-    extern/glslViewer/src
     extern/openvdb
     extern/blosc
+    extern/stb
     extern/glfw/include
-    extern/glad
-    extern/imgui/examples/libs/gl3w)
+    extern/glad)
 
 if (APPLE)
     # Using Homebrew on macOS. Search /usr/local/include (bug #28):
@@ -31,7 +29,6 @@ endif (APPLE)
 
 add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
 add_subdirectory(extern/openvdb/openvdb EXCLUDE_FROM_ALL)
-add_subdirectory(extern/glslViewer EXCLUDE_FROM_ALL)
 add_subdirectory(extern/glfw EXCLUDE_FROM_ALL)
 
 # REPLxx library
@@ -41,13 +38,6 @@ target_include_directories(replxx
    PUBLIC extern/replxx/include
    PRIVATE extern/replxx/src)
 set_property(TARGET replxx PROPERTY CXX_STANDARD 14)
-
-# gl3w library, an OpenGL loader
-add_library(gl3w
-    extern/imgui/examples/libs/gl3w/GL/gl3w.c)
-target_include_directories(gl3w
-    PUBLIC extern/imgui/examples/libs/gl3w)
-set_property(TARGET gl3w PROPERTY CXX_STANDARD 14)
 
 # glad library, an OpenGL loader
 add_library(glad
@@ -64,7 +54,7 @@ add_library(imgui
     extern/imgui/imgui_widgets.cpp)
 target_include_directories(imgui
     PUBLIC extern/imgui extern/imgui/examples)
-target_link_libraries(imgui PUBLIC glfw gl3w)
+target_link_libraries(imgui PUBLIC glfw glad)
 target_compile_definitions(imgui PUBLIC
     IMGUI_IMPL_OPENGL_LOADER_GLAD )
 set_property(TARGET imgui PROPERTY CXX_STANDARD 14)
@@ -99,7 +89,7 @@ target_link_libraries(libcurv_geom PUBLIC imgui)
 
 file(GLOB Src "curv/*.c" "curv/*.cc")
 add_executable(curv ${Src})
-target_link_libraries(curv PUBLIC libcurv libcurv_geom imgui GlslViewer glfw glad ${LibOpenGL} replxx double-conversion boost_iostreams boost_filesystem boost_system openvdb_static Half tbb dl pthread)
+target_link_libraries(curv PUBLIC libcurv libcurv_geom imgui glfw glad ${LibOpenGL} replxx double-conversion boost_iostreams boost_filesystem boost_system openvdb_static Half tbb dl pthread)
 
 file(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})

@@ -12,8 +12,8 @@
 
 #include <libcurv/geom/frag.h>
 #include <libcurv/geom/viewed_shape.h>
-#include <gl/shader.h>
-#include <gl/vbo.h>
+#include "shader.h"
+#include "vbo.h"
 #include <glm/glm.hpp>
 
 namespace curv { namespace geom {
@@ -81,6 +81,7 @@ struct Viewer
     Vbo* vbo_ = nullptr;
     double current_time_ = 0.0;
     double fFPS_ = 0.0;
+    GLuint vao_; // a Vertex Array Object
 
     // The 2D camera position.
     glm::mat3 u_view2d_ {};

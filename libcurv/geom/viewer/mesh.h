@@ -3,9 +3,9 @@
 #include <vector>
 #include <string>
 
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
 
-#include "../gl/vbo.h"
+#include "vbo.h"
 
 class Mesh {
 public:
@@ -13,9 +13,6 @@ public:
     Mesh();
     Mesh(const Mesh &_mother);
     virtual ~Mesh();
-
-    bool    load(const std::string& _file);
-    bool    save(const std::string& _file, bool _useBinary = false);
 
     void    setDrawMode(GLenum _drawMode = GL_TRIANGLES);
 

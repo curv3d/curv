@@ -7,14 +7,7 @@
 #include <iostream>
 #include <iomanip>
 
-// #include <cctype>
-// #include <iomanip>
-// #include <math.h>
-
-// #include <limits.h>
-// #include <stdlib.h>
-
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
 
 //  Return new string with all into lower letters 
 std::string toLower(const std::string& _string);

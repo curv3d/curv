@@ -1,5 +1,5 @@
 #include "vertexLayout.h"
-#include "tools/text.h"
+#include "text.h"
 
 std::map<GLint, GLuint> VertexLayout::s_enabledAttribs = std::map<GLint, GLuint>();
 

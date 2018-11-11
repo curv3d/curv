@@ -1,4 +1,4 @@
-#include "tools/text.h"
+#include "text.h"
 
 #include <algorithm>
 

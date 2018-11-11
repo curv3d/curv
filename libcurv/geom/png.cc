@@ -10,7 +10,7 @@
 #include <libcurv/exception.h>
 #include <libcurv/output_file.h>
 
-#include <gl/texture.h>
+#include <libcurv/geom/viewer/texture.h>
 
 #include <cerrno>
 #include <chrono>
@@ -20,10 +20,10 @@
 namespace curv { namespace geom {
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "std/stb_image.h"
+#include "stb/stb_image.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "std/stb_image_write.h"
+#include "stb/stb_image_write.h"
 
 // The input is 4 bytes per pixel (RGBA).
 // The output is 3 bytes per pixel (RGB), and the image is flipped on Y.

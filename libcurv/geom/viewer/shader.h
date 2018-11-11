@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <libcurv/geom/glfw.h>
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
 
 #include "texture.h"
 #include "fbo.h"
