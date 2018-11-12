@@ -234,6 +234,12 @@ the start and end of a string? Man, that is a big can of worms.
 * Does the Unicode standard support an algorithm for detecting these
   defective strings? If not, then the idea isn't feasible.
 
+I think there is a zero width unicode character that prevents the left
+and the right neighbours from coalescing into a single EGC. The string
+concat operator could emit this ZW code as necessary to preserve the
+identity of EGCs under concatenation. Then the code is not counted as
+part of the length of a string.
+
 Maybe we define a character as a code point, and we don't store strings
 in normalized form. Then, if we want fast string equality, we need an
 algorithm that compares two strings and normalizes on the fly. That's
@@ -310,6 +316,88 @@ A single character (other than a Hangul syllable block) that will get replaced
 by another under normalization can be identified in the Unicode tables for
 having a non-empty compatibility field but lacking a compatibility tag.
 
+## Perl6 String Representation
+Perl6 allows efficient indexing of EGSs using a fancy string representation.
+https://github.com/MoarVM/MoarVM/blob/master/docs/strings.asciidoc
+
+A string has 3 forms:
+ * 32-bit buffer of graphemes (Unicode codepoints or synthetic codepoints)
+ * 8-bit buffer of codepoints that all fall in the ASCII range
+ * Buffer of strands: list of non-strand strings.
+   No recursive strands: this simplifies iteration.
+   Created by: concatenation, substring ops & string repeat op.
+
+A Strand is: a general string reference, start + end indexes, repetition count.
+
+When two flat strings are concatenated, a Strand with references to
+both string a and string b is created. If string a and string b were strands
+themselves, the references of string a and references of string b are copied
+one after another into the Strand.
+
+A Grapheme is a 32 bit signed int. A negative grapheme (a Synthetic) denotes
+2 or more code points.
+
+All strings are stored normalized using NFC. Graphemes are segmented
+(which codepoints are a part of which graphemes) following Unicode’s Text
+Segmentation rules for Grapheme Clusters Technical Report 29.
+
+Synthetics are graphemes which contain multiple codepoints. In MoarVM these
+are stored and accessed using a trie, while the actual data itself stores
+the base character seprately and then the combiners are stored in an array.
+
+A Synthetic’s codepoints are stored in a single array, with the base
+character pointed to by storing the location of its index in the array. The
+base character may not be the first codepoint, due to combining characters
+with the Unicode Prepend property.
+
+NOTES:
+This may be buggy. Does Perl6 implement the weird semantics of Unicode
+string concatenation? With this representation, correctness would be tricky.
+
+## Swift String Representation
+A Character is an Extended Grapheme Cluster. The representation is 64
+bits, which either contains 4 inline BMP code points (in 63 bits) plus a 1 bit
+flag meaning small or large. The large representation is a pointer.
+
+A Character can be converted into an array of code points.
+
+A character literal is no longer restricted to containing a single EGC,
+due to bugs.swift.org/browse/SR-4955, where a character literal that
+contained two japanese flags (interpreted as a single EGC in Unicode 9)
+turned into an error under Unicode 10. Although, I would consider allowing
+an upgrade to a new Unicode standard to invalidate old programs, because
+really there is no choice. If the Unicode table changes, then some old
+programs may break, QED.
+
+String equality works as if both strings are in canonical form.
+However, strings preserve whatever sequence of code units that you provide
+as input. And yes, they did it: they implemented the algorithm for comparing
+two strings in non-canonical form. It is infinitely complex. A string is
+represented as either an ASCII string or a general Unicode string, and there
+is fast-path code to deal with the ASCII case. Right now, the general case
+is represented as UTF-16, but they are moving this to UTF-8.
+A String value is 64 bits; a small string can represent up to 7 ASCII
+characters inline; a large string stores a pointer in the same space.
+
+The Swift implementation is the right way to do Unicode strings.
+Better than anything else I've found in an open source language, anyway.
+
+## Strings are Lists of Characters
+I am seriously considering a change so that a string is a list of characters.
+I'll need a character data type.
+
+## Simple Proposal:
+This version has disappointing limitations, but the code complexity
+is manageable.
+* We only support a "safe" subset of Unicode. Only standalone code points
+  that represent a single EGC in NFC. No compound EGCs. No astral plane.
+* Internal representation is UTF-8. No need for normalization: once we reject
+  unsupported code points, the result is always NFC.
+* String comparison is just memcmp. Record field names use the same
+  representation as strings, so we have fast identifier comparison.
+* `count str` is the number of code points, and also the number of characters.
+  `str[i]` is the i'th character, etc. These operations are O(N), not O(1).
+
 ## Proposal:
 * A string is represented internally as UTF-8 and NFC,
   using only code points from the Safe Unicode Subset defined above.
@@ -330,3 +418,7 @@ https://github.com/JuliaStrings/utf8proc
 When you normalize a string, it mallocs a new buffer for the result,
 which conflicts with the curv::String representation.
 (NFC normalization can expand a string, eg by decomposing certain ligatures.
+
+## References
+No matter how messed up I think Unicode is, the reality is always worse.
+https://eev.ee/blog/2015/09/12/dark-corners-of-unicode/

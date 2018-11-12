@@ -1,0 +1,123 @@
+Generic Programming
+===================
+This file contains thoughts on the following topics:
+* C++ generic algorithms.
+  "Concepts", which are the requirements that a generic algorithm places
+  on the data it is operating on. What's cool is the fact that concepts arise
+  organically from analysis of the generic algorithms; they aren't an a-priori
+  property of the data types of the arguments.
+* Haskell type classes.
+* SML module system: signatures, structures and functors, which are more
+  expressive than Haskell type classes, at the cost of being more verbose.
+
+In Curv:
+* To what extent do we support generic algorithms over strings and lists?
+  Eg, `reverse`.
+* How are imported images represented? The image data is a tensor, but it uses
+  a more compact representation than general Curv tensors, which are nested
+  lists of 64 bit floats.
+  To what extent do we support generic algorithms over lists and image data?
+* Complex numbers are generalized real numbers.
+  Many languages support generic algorithms over complex and real numbers.
+  Not Curv; there is no 'complex number' abstraction that is supported
+  by all the standard numeric operations.
+
+Strings and Lists.
+------------------
+Generic concatenation of strings and lists. Some thoughts.
+
+concat("foo", "bar") -> "foobar"
+concat([1,2], [3,4]) -> [1,2,3,4]
+concat("foo", [3,4]) -> ERROR
+concat() -> []
+
+That's right, the identity element for concat is [].
+To make this work, concat ignores elements that are "" or [].
+Within concat, an empty string is equivalent to an empty list.
+The , operator in kona also works this way.
+
+For consistency, ""==[] is true, not false.
+It is as if a string is just a list of characters, with the restriction that
+the only place a character value can actually occur is within a string.
+* Are "" and [] distinct values (that happen to be equal, like +0 and -0),
+  or are they the same value?
+* ${x} substitution in a string. Right now, "" and [] substitute differently.
+  Or we could use Perl6 substitution semantics: for a list, the [] brackets
+  disappear and multiple items are separated by spaces.
+* So that means f() and f"" are the same. That's unexpected.
+
+If we take this a little farther, we could introduce character values for
+real. Although we might run into a problem with Unicode semantics, which
+do not seem to be compatible with the concept of character values.
+But if I had this concept, then seq == [for (i in seq) i] would work correctly
+for both lists and strings.
+
+If strings are not lists, then you might want a vectorized string concat
+operator, which I do not offer. But this operation requires "" and []
+to be distinct values.
+
+App-Types and Overloaded Operations
+-----------------------------------
+An App-Type is an application-specific data type, which describes how a
+particular datum is interpreted by your program.  App-types don't need to
+be made explicit in the language, they can just be conventions that only
+the developer knows. For example, in Curv, [0,.5,1] might be a point in
+3-space, or it might be a colour, so those are different app-types. Or,
+[0,1] could be a complex number, or it could be a point in 2-space, or it
+could be a [lo,hi] pair indicating a range.
+
+In Typeful programming, you use language mechanisms to give names to all
+of your app types. Which then allows you to leverage other language mechanisms
+... see below.
+
+Actually, you probably want to leave many of your app types unnamed.
+Naming things is hard, and extra names can add to the burden of writing and
+understanding a program. In Curv, lots of functions take an (a,b) pair as
+an argument, which means there is a convention about what 'a' and 'b' mean,
+which means there is an app-type. But you wouldn't want to invent a new name
+for all of these trivial app-types.
+
+To make generic programming work to its full potential, you would like to
+have multiple implementations of the same abstract interface, specialized
+for different app-types. I will call this "overloading".
+
+There are many different language mechanisms for implementing overloading.
+ * Given an abstract operation F, and value V belonging to some app-type,
+   how does the VM find the correct implementation of F for the value V?
+ * Locality: When reading code and looking at an invocation of F on the value
+   V, how does the reader figure out where the general abstract definition of
+   F is defined, and how do they figure out where the specific implementation
+   of F for the apptype of V is defined?
+ * Modularity: if we combine modules written by different authors in the
+   same program, can we have a conflict between different bindings of F
+   for the app-type of V?
+ * Polymorphic containers: Can different elements of
+   the same array have different implementations of F?
+ * Multiple perspectives: Can the value V be bound to different
+   implementations of F in different contexts?
+ * RTTI: Can we execute different code for different app-types
+   by testing a property of V in a conditional statement?
+
+No single mechanism achieves all of these goals.
+
+* OOP. An object V contains named methods like V.F.
+  Nice locality, but putting methods inside of values famously leads to
+  code structure and modularity problems.
+  The method dictionary is part of the object. The same object can't be
+  associated with different method dictionaries in different contexts.
+* CLOS. V is tagged as an instance of a specific class, which corresponds to
+  its app-type. F is a generic function, specialized for the class of V.
+  (F V). A most non-local solution. Doesn't use method dictionaries.
+* SML. App is a Structure module describing the app-type of V.
+  App.T is the type of V. App.F implements the abstraction operation F.
+  A generic function G is contained in a Functor module, parameterized by
+  one or more app-type Structures, such as A. So G might invoke A.F(V).
+  Very local. All the connections are explicit and obvious.
+  Method dictionaries are passed as explicit arguments.
+* Haskell type classes. Less verbosity: method dictionaries are passed
+  as implicit arguments, using type inference. It's not clear how to do
+  this in a dynamically typed language.
+* Existential types. A standalone value V is paired with a method dictionary.
+
+To make the full edifice of generic and typeful programming work, you have
+lots of different 'types', corresponding 

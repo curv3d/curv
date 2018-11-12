@@ -3,29 +3,13 @@
 Recent Ideas (Oct 2018):
 * sequential let
 * string comprehensions
-* predicate assertion: `val :: predicate`. `::` has same precedence as `>>`.
-  In an expression, yields val if predicate val, otherwise pattern match fail.
-  As a pattern, `pat :: predicate` fails if `predicate val` fails.
-  This syntax is part of the Parametric Shapes / Customizer project.
+* `== value` is a predicate, and it is an equality pattern.
 * Enum values. How are they represented? Syntax of '-Ocolour=vertex' if the
   RHS is a Curv enum value expression?
-  1. Enum values are symbols. #foo is a symbol value. #foo is a pattern.
+  1. Enum values are strings. Use '-Ocolour=vertex', because string valued
+     -O options don't require double quotes, but do support $ escapes.
+  2. Enum values are symbols. #foo is a symbol value.
      Use '-Ocolour=#vertex'. See Symbol proposal.
-  2. Enum values are strings. "foo" is a pattern. Use '-Ocolour=vertex',
-     because string valued -O options don't require double quotes, but do
-     support $ escapes.
-* Quoted identifiers: 'hello world', R.'hello world', {'hello world':expr}
-  $ escapes are legal in quoted identifiers.
-  Utility:
-  * '_' is an ordinary identifier, not a wildcard.
-  * Shortcut for fluent parameter names in customized parametric shapes.
-    In the earlier design you could say `"Fluent Name" : varname = ...`.
-    Now you can just say `'Fluent Name' = ...`.
-  * The quoted string syntax "foo" no longer has 2 different meanings depending
-    on context: sometimes it is a string value, sometimes it represents a
-    quoted identifier.
-  Remove R."foo" and {"foo":expr} syntax: the latter change makes room for
-  string literals as patterns, consistent with the enum/symbol proposals.
 * Use _ as digit separator in numerals.
 * `X where Y` is an item, not a list. X can be a definition.
 * any, all
@@ -58,6 +42,51 @@ Extensions:
 * any, all
 * Record constructors may combine definitions and field generators.
   Shorter definitions for shape constructors with .mitred/.exact members.
+
+## Quoted Identifiers and DFNs
+`'hello world'` is a quoted identifier.
+It can be useful in the following contexts:
+ 0. Reserved words become available as identifiers, eg 'if' or '_'.
+ 1. As a fluent parameter name for a parametric shape.
+    The name appears in the GUI.
+ 2. `foo.'hello world'`, as an alternative to `foo."hello world"`.
+ 3. `{'hello world':value}`, as an alternative to `{"hello world":value}`.
+
+It bothers me that double-quoted-strings have two meanings, depending
+on context: either an identifier (cases 2 & 3), or a string literal.
+So quoted identifiers are a path to fixing this.
+
+There are two use cases for the `{"hello world":value}` syntax.
+* Non-standard field names (containing spaces, punctuation).
+  For this use case, each name is static. Quoted identifiers are a
+  more general solution than the quoted string syntax, because they can be
+  used in complex patterns. Eg, `{('nsi-1','nsi-2'):value}`.
+* Dynamic field names. Quoted strings are the current syntax for a DFN
+  in a field generator, because you can use "$var" as a DFN.
+  The syntax for a field generator is:
+    field_generator ::= DFN : expr | pattern : expr
+  That is, only one DFN per field generator.
+
+I considered using '$var' as the syntax for a DFN, but this creates confusion:
+in what contexts is it legal to put a dynamic $var subsitution inside a quoted
+identifier? This source of confusion goes away if the syntax for a quoted
+identifier and a DFN are clearly distinct.
+
+An alternate syntax for DFNs: `$<primary_expr>`.
+    foo.$var
+    {$var : value}
+    if (defined foo.$var) ...
+This echoes the proposed syntax for string-valued options: -Ofoo='$var'.
+We could combine this proposal with the static quoted identifier proposal.
+Or, note that `$"hello world"` is legal syntax for a dynamic field name.
+
+Comparison to other programming languages:
+    `foo[fieldname]` in Javascript, Python, etc,
+    vs `foo.$fieldname` in this proposal,
+    vs `foo."$fieldname"` in original Curv.
+
+However, the current DFN syntax is mostly backwards compatible with JSON,
+modulo $ and \ escapes, which is kind of cool.
 
 ## `where` syntax
 
@@ -136,6 +165,34 @@ New New Pattern Design:
 * The `pat == val` syntax is consistent with the previous two.
   In all three cases, you have variable names lining up in a column on the left.
 
+Equality Patterns:
+A 'equality pattern' tests if the value to be matched is equal to a specific
+value. Useful for simulating C switch statements (using `match`).
+Useful for matching nilary constructors (when simulating algebraic types).
+I have considered several alternate proposals:
+* `== value`
+  * Works for any value.
+  * Sections: This syntax could also be used as a 'section' of the equality
+    operator. Eg, `filter(==0)`.
+  * This is consistent with another right section proposal: "`f` x".
+  * Which leads to range patterns. Suppose we add elem(val,list).
+    And we add `f` x as a pattern. Then `elem` 1..10 is a range pattern.
+* Literal constant patterns. (Haskell has them.)
+  * Only works for literal constants with special syntax, not true, false, null.
+  * Doesn't work for string literals either, it conflicts with "name":value
+    field constructors. Unless I consider further changes:
+    * Replace "name":value and foo."name" syntax with quoted identifier syntax:
+      'name':value and foo.'name'.
+    * String literal patterns must be parenthesized in situations where they
+      are ambiguous, such as `("foo"):value`.
+Yes to `== value` patterns. No to literal constant patterns.
+  match [
+    == 0 -> case zero;
+    == 1 -> case one;
+  ]
+  f (== 0) = case zero;
+  f (== 1) = case one;
+
 New Pattern Types:
 * '<pattern> if <condition>' -- conditional pattern. The pattern is matched,
   variables are bound, then the condition is evaluated over the bound variables,
@@ -175,30 +232,7 @@ New Pattern Types:
 * Variations of predicate patterns:
   * 'pat == expr', 'pat != expr', 'pat < expr', ... -- relational op predicates
   * 'pat `elem` listexpr' -- range patterns, like 'x `elem` 1..10'.
-  * Many languages have constant and range patterns, eg 42 and 1..10 are
-    patterns, which works well in the 'switch statement' use case. But:
-    * Conflicts with name abstraction, creates ambiguity.
-      Is 'true' a constant pattern or an identifier pattern?
-    * Conflicts with field_generator ::= "string":expr|pattern:expr
-      and that's needed to support {"$foo":expr}
-      * There is no obvious use case for `"foo":expr` as an abbreviation
-        for assert(expr=="foo"), so don't worry? Inconsistency sucks, though.
-      * Quick fix: use `("$foo"): expr`.
-      * Better: Replace this syntax with `{$foo: expr}`.
-        Also, `R.$a` instead of `R."$a"`.
-      * If we implement quoted identifiers, then {'$foo':expr} will work.
-        But we need to treat this as a special case, and allow dynamic $foo
-        substitutions using the current lexical scope. That's not supported
-        for the general case of quoted identifiers. The quoted identifier
-        '$foo' proposal treats quoted identifiers specially, allowing dynamic
-        substitutions, in the same contexts where the $foo proposal allows
-        unquoted $foo substitutions.
-    * Classify literal constants (number, string, list and record constructors)
-      as patterns. Symbol constants (#foo) should be patterns.
-      Introduce `$a:expr` and `R.$a`.
-      Replace `"foo":expr` with `$"foo":expr`.
-    * '== expr' could be an abbreviation of '_ == expr'.
-      Eg, 'match[ ==0 -> ...; ==1 -> ...; ... ]'
+  * Equality patterns, `== expr`, see above.
 
 "Pattern Guards and Transformational Patterns", Simon Peyton Jones
 
@@ -437,6 +471,16 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
     “foo” == "foo"  -- note, resistant to systems that autocorrect "" to “”
     g∘f == compose[g,f]
     1.0₁₀3 == 1.0e3 -- not seriously, though.
+  The problem with Unicode characters is the difficulty of typing them.
+  I'd like to see a cross platform solution for typing Unicode technical
+  characters using standardized mneumonics: eg, 'Compose <=' gives ≤.
+  Must be easy to install and use the same input sequences on all platforms.
+    https://docs.perl6.org/language/unicode_entry
+    https://github.com/kragen/xcompose/ (for Unixy systems)
+    https://github.com/SamHocevar/wincompose (xcompose for Windows)
+    https://github.com/tekezo/Karabiner-Elements (macos, but not xcompose)
+  Or, represent Curv source as ASCII, and use solutions like a programmer's
+  ligature font or a custom IDE to improve readability of source code.
 * Use _ as digit separator in numerals.
 * 'foo' quoted identifiers. Compatibility with GUI interfaces that display
   parameter names as GUI labels.
@@ -628,6 +672,21 @@ SSH'ed to a machine you are setting up, or one that is customer owned, you use
 whatever editor is around to make a quick edit, not realising that the file
 labeled .conf is actually a YAML file, you hit tab because it makes logical
 sense and then shit breaks."
+
+from eev.ee:
+* Python’s syntax is relatively low on noise.
+* If your language has braces, then you are indenting for the sake of humans
+  (because humans are good at noticing alignment and edges), and bracing for
+  the sake of computers. That’s double the effort for something as mundane
+  as where a block ends. If they get out of sync, then your code naturally
+  breaks in a way that’s very difficult for you to detect.
+* Braces mean that you waste an entire line at the end of every block just for
+  a single closing brace. See Locality.
+* Locality. A stronger and better-defined constraint than “readability”.
+  I want to maximize how much I can know about runtime context for a given line
+  of code, while minimizing how much stuff I have to read (or, worse, hunt
+  down). Brevity is part of this: an idea that seems simple to humans should
+  ideally take less code to express.
 
 ## Action/Generator Abstraction
 Support tail recursion as a form of iteration in list/record generators.

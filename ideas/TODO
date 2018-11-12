@@ -4,9 +4,13 @@ Big Items (target: Dec 2018)
 * better documentation, a web site
 * sharp STL export?
 
+TODO (value pickers impl)
+* `make_parametric f p` should return another parametric record
+* BUG: While compiling a pattern, parameters are added to the scope as they are
+  found. This same uncompleted scope is used for analyzing subexpressions,
+  such as the predicate in pat::pred. Use parent environment instead.
+
 Current TODO List:
-* -o glsl
-* configure default values for -O options: see Config
 * graphical value pickers
   * Viewed_Shape stores uniform variables, pickers.
     GL compile a parametric shape using reactive values:
@@ -15,6 +19,8 @@ Current TODO List:
       values, compiles dist & colour functions.
   * Viewer initializes uniforms using Viewed_Shape.
   * Viewer displays pickers, updates uniforms
+* configure default values for -O options: see Config
+* -o glsl
 * Refactor:
   * batch mode uses curv::import, can input any source file type
   * refactor Viewer + View_Server. View_Server should not know that Viewer uses

@@ -1,0 +1,116 @@
+Data Abstraction and Generic Programming
+========================================
+
+Maximally Generic Functions
+---------------------------
+I'll start by describing a system that maximizes the reuseability and
+generality of generic functions.
+
+A Signature is:
+* A set of abstract type names.
+* A set of value and function names, together with requirements that
+  give the semantics of these value names.
+  A requirement for a value name could be a type signature, written in
+  some static type language. For a simple example, value V has type T,
+  where T is one of the abstract type names.
+  Requirements can more generally be axioms: equations
+  that must be true, involving one or more named values.
+  Since axioms can describe relationships between two or more named values,
+  they can describe requirements that can't be described using just a type
+  signature.
+
+Signatures can be organized into a multiple inheritance DAG.
+Examples from abstract algebra: Group and Monoid are signatures;
+Group is a subsignature of Monoid.
+
+A Structure is an instance or a concrete implementation of a Signature.
+
+Note that Structures are not contained inside of types, so this is not like
+OOP. You could have multiple structures, defined in different modules or
+packages by different authors, that implement different signatures for the
+same concrete type. For example, you could have two different structures
+that implement the Monoid signature for Number: one would be the additive
+monoid, the other the multiplicative monoid.
+
+An interface in OOP is like a restricted Signature over exactly one type.
+And a class in OOP is like a Structure that implements an interface.
+
+A generic algorithm is an algorithm that uses named types and values and
+functions described by a signature. A generic algorithm can be instantiated
+for any structure that implements that signature. When a structure contains
+one or more functions that are defined in terms of the structure's signature,
+those functions are generic algorithms.
+
+My model for this system is the SML module system.
+C++ templates are another system with this goal.
+A related system is Racket's combination of Units and Mixins:
+http://www.cs.utah.edu/plt/publications/icfp98-ff/icfp98-ff.pdf
+
+What these systems have in common is that, in order for a generic
+algorithm to be maximally generic, it must be embedded in some kind of
+parameterized module. Eg, the parameters can have signature types and the
+arguments can be structures. Maybe all of the parameters have default values,
+but to cover all the use cases, you have to be able to explicitly invoke
+the module multiple times with different arguments.
+
+Curv can mostly do this already. You can define a generic function inside
+a parameterized record, and invoke the parameterized record with structure
+arguments. You could even use a parametric record, so that passing an
+argument is completely optional.
+
+There is missing syntactic sugar: if the structure defines a '+' operator,
+you can't invoke it from inside the generic function using a+b syntax.
+* What would that look like? Maybe, following Mathematica, a+b is a hardwired
+  synonym for plus[a,b].
+    S.plus(a, b)
+    a S.+ b
+
+In Mathematica, code and data are represented by symbolic expressions,
+which can be manipulated as data. I think you can also reinterpret the meaning
+of unbound symbols within an S-expression. In which case, there is no need
+to plan ahead and explicitly parameterize a generic function with respect to
+its dependencies?
+* If this account is true, then it is in conflict with the idea of a closure,
+  where a function value carries around bindings for all of its dependencies.
+* Curv could have operations for querying and modifying the environment of a
+  closure. Is this a good idea? It seems related to the idea of a parametric
+  record, which also has an 'environment' that you can query and modify.
+* I suspect that genericity may be more complex than this. Perhaps, in some
+  cases, it is necessary to decide which occurrences of '+' belong to which
+  signatures. Either your type system deduces this for you (as in Haskell with
+  type classes) or you do it manually.
+
+Dynamic Type Tags
+-----------------
+Curv is dynamically typed. Curv values contain type tags that attest to
+their type. A type is not the same thing as a signature or a structure,
+so this is different from OOP, where a class is a type. Signatures contain
+abstract type names, and values contain type tags: am I using the word "type"
+consistently in these two cases? Maybe a Signature is a Pattern.
+
+What are the possible type tags?
+* List values contain an element type. This is for efficiency reasons.
+  A general list [a,b,c] can contain any type of value.
+  A string "abc" is a list restricted to only contain character values.
+  Once I support image import, I will have image data values, which are
+  arrays of pixel values, using a compact type-specific representation
+  for the pixel values (ie, not 64 bit boxed values). And I will have types
+  that correspond to various pixel value representations.
+  In-place update of a list will be restricted to members of the list's
+  element type.
+* Atomic types (null, bool, character, number) have a type tag.
+  Looks like there will be multiple numeric types, due to image import.
+* There are an infinite number of record type tags.
+  There's some way to construct a branded record, I think.
+  Maybe related to the 'term' proposal.
+  Record branding means we are diverging from duck typing.
+  But, it allows overloading an interface,
+* Function values can also be branded. A brand on a function attests to that
+  function having certain properties, so we are diverging from duck typing.
+
+Is there a concept of "subtype" for type tags?
+I think so. An imported 8 bit greyscale image has pixel values in the range 0
+to 1, but represented as 8 bits, not as 64 bits. So that's a subtype of Number.
+(Julia doesn't have subtype relationships between concrete types.
+On the other hand, Julia has abstract types, which I don't think makes sense
+in my framework. I have signatures and structures instead.)

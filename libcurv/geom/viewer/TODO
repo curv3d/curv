@@ -1,7 +1,6 @@
 TODO:
 * Fix storage leak revealed by asan/valgrind in debug build.
 * open() throws an exception instead of calling exit().
-* get rid of 10ms delay in draw_frame()
 
 Code cleanup:
 * vbo_ should be a unique_ptr
