@@ -608,7 +608,6 @@ void Viewer::poll_events()
 
 void Viewer::swap_buffers()
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10)); // TODO FIXME
     glfwSwapBuffers(window_);
 }
 
