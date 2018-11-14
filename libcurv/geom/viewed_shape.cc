@@ -2,7 +2,9 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
+#include <libcurv/context.h>
 #include <libcurv/geom/viewed_shape.h>
+#include <iostream>
 
 namespace curv {
 namespace geom {
@@ -50,6 +52,38 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
     //   If I use IMGUI, then I iterate over the parameter table and render
     //   each picker.
 
+    // Recognize a parametric shape (it has `parameter` and `call` fields).
+    At_System cx{shape.system_};
+    Shared<Record> sh_parameter = nullptr;
+    if (shape.record_->hasfield("parameter")) {
+        sh_parameter = shape.record_->getfield("parameter", cx).to<Record>(cx);
+    }
+    Shared<Closure> sh_call = nullptr;
+    if (sh_parameter && shape.record_->hasfield("call")) {
+        sh_call = shape.record_->getfield("call", cx).to<Closure>(cx);
+    }
+    if (sh_parameter && sh_call) {
+        // We have a parametric shape.
+        record_pattern_each_parameter(*sh_call, shape.system_,
+            [&](Symbol name, Value pred, Value value) -> void {
+                auto picker = pred.dycast<Picker>();
+                std::cerr << "> " << name;
+                if (picker) {
+                    std::cerr << " :: ";
+                    picker->config_.write(std::cerr);
+                }
+                std::cerr << " = " << value << "\n";
+                if (picker) {
+                    params_.push_back(Parameter{name.c_str(), picker->config_,
+                        Picker::State{
+                            picker->config_.type_,
+                            value,
+                            At_System{shape.system_}}});
+                }
+            });
+    }
+
+    // Non-parametric case.
     std::stringstream frag;
     export_frag(shape, opts, frag);
     frag_ = frag.str();

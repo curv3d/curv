@@ -16,6 +16,7 @@ struct Scope;
 struct Phrase;
 struct Context;
 struct Record;
+struct Closure;
 
 struct Pattern : public Shared_Base
 {
@@ -33,6 +34,9 @@ struct Pattern : public Shared_Base
 Shared<Pattern> make_pattern(const Phrase&, Scope&, unsigned unitno);
 
 Shared<Record> record_pattern_default_value(const Pattern&, Frame&);
+
+void record_pattern_each_parameter(
+    Closure&, System&, std::function<void(Symbol, Value, Value)>);
 
 } // namespace
 #endif // header guard

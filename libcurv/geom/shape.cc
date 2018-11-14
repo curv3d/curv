@@ -71,27 +71,27 @@ Shape_Program::recognize(Value val)
 
     At_Program cx(*this);
 
-    auto s = val.dycast<Record>();
-    if (s == nullptr)
+    auto r = val.dycast<Record>();
+    if (r == nullptr)
         return false;
-    if (s->hasfield(is_2d_key))
-        is_2d_val = s->getfield(is_2d_key, cx);
+    if (r->hasfield(is_2d_key))
+        is_2d_val = r->getfield(is_2d_key, cx);
     else
         return false;
-    if (s->hasfield(is_3d_key))
-        is_3d_val = s->getfield(is_3d_key, cx);
+    if (r->hasfield(is_3d_key))
+        is_3d_val = r->getfield(is_3d_key, cx);
     else
         return false;
-    if (s->hasfield(bbox_key))
-        bbox_val = s->getfield(bbox_key, cx);
+    if (r->hasfield(bbox_key))
+        bbox_val = r->getfield(bbox_key, cx);
     else
         return false;
-    if (s->hasfield(dist_key))
-        dist_val = s->getfield(dist_key, cx);
+    if (r->hasfield(dist_key))
+        dist_val = r->getfield(dist_key, cx);
     else
         return false;
-    if (s->hasfield(colour_key))
-        colour_val = s->getfield(colour_key, cx);
+    if (r->hasfield(colour_key))
+        colour_val = r->getfield(colour_key, cx);
     else
         return false;
 
@@ -115,6 +115,7 @@ Shape_Program::recognize(Value val)
     colour_frame_ = Frame::make(
         colour_fun_->nslots_, system_, nullptr, nullptr, nullptr);
 
+    record_ = r;
     return true;
 }
 

@@ -535,4 +535,28 @@ record_pattern_default_value(const Pattern& pat, Frame& f)
     return {drec};
 }
 
+void
+record_pattern_each_parameter(
+    Closure& call, System& sys, std::function<void(Symbol, Value, Value)> f)
+{
+    auto frame = Frame::make(call.nslots_, sys, nullptr, nullptr, nullptr);
+    auto rpat = dynamic_cast<const Record_Pattern*>(&*call.pattern_);
+    if (rpat == nullptr)
+        throw Exception(At_Phrase(*call.pattern_->syntax_, *frame),
+            "not a record pattern");
+    for (auto& i : rpat->fields_) {
+        Value pred = missing;
+        auto ppat = dynamic_cast<const Predicate_Pattern*>(&*i.second.pat_);
+        if (ppat)
+            pred = ppat->predicate_expr_->eval(*frame);
+        Value val;
+        if (i.second.dexpr_)
+            val = i.second.dexpr_->eval(*frame);
+        else
+            throw Exception(At_Phrase(*i.second.syntax_, *frame),
+                "field pattern has no default value");
+        f(i.first, pred, val);
+    }
+}
+
 } // namespace curv

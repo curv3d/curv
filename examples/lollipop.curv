@@ -1,11 +1,10 @@
-let
-diam = 1;
-len = 4;
-
-in
+make_parametric ({
+    diam :: slider(.5, 2) = 1;
+    len :: slider(2, 8) = 4;
+} -> (
 union(candy, stick)
 
 where (
 candy = sphere diam >> colour red;
 stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
-)
+)))

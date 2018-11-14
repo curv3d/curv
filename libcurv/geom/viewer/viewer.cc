@@ -60,6 +60,14 @@ void
 Viewer::set_shape(Viewed_Shape shape)
 {
     shape_ = std::move(shape);
+    // describe sliders on stderr (TODO: remove debug code)
+    for (auto& i : shape_.params_) {
+        std::cerr << i.name_ << " :: ";
+        i.pconfig_.write(std::cerr);
+        std::cerr << " = ";
+        i.pstate_.write(std::cerr, i.pconfig_.type_);
+        std::cerr << "\n";
+    }
     if (is_open()) {
         shader_.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
         shader_.load(shape_.frag_, vertSource_, config_.verbose_);
