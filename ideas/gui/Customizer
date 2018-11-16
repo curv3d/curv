@@ -112,18 +112,41 @@ How is the Viewer implemented?
     frame rate goes down. Need progressive rendering?
   * github.com/wjakob/nanogui. *2,000. GP retained mode GUI, no globals.
     https://github.com/darrenmothersele/nanogui-test/blob/master/test.cpp
-    Looks nice.
+    At first glance, looks nice.
+    * OpenGL 3.3 only. But is layered on nanovg, which has 3rd party support
+      for multiple GPU APIs.
+    * Better fonts than ImGUI. Weird limitations, eg no window resizing
+      (the PR for this is in limbo).
+    * Nanogui and Nanovg both need more volunteer support. But, it looks like
+      a reasonable base for a lightweight OpenGL GUI framework, if I wanted to
+      put in the effort to fix the holes.
   * github.com/ocornut/imgui. *11,000.
-    Full featured--could implement editor and console window using imgui.
-    It appears to use global variables, only support 1 window.
-  * AntTweakBar: old and specialized. NanoGUI and IMGUI can do the same things.
+    * Just good enough for MVP. Could implement editor and console window.
+    * It uses global variables, only supports 1 window.
+    * Actively supported, active community. The code is the documentation.
+    * Limited capabilities. A retained-mode GUI is a better architecture.
+      Wonky and limited layout support makes some things that should be easy
+      quite difficult.
+    * Looks bad. Poor font support.
+    * Supports OpenGL, Metal, Vulkan, DX12.
 * Use QT.
+  * Supports translucent widgets on top of an OpenGL scene:
+    https://doc.qt.io/archives/qq/qq26-openglcanvas.html
+  * More picker widgets: https://gitlab.com/mattia.basaglia/Qt-Color-Widgets
+  * Better documentation.
+  * Bigger community, more and higher quality widgets, more support.
   * Can I have a full screen viewer with floating widgets on top of a sphere
     traced scene? Can the widgets be in a separate window/separate
     OpenGL context, distinct from the scene?
     Yes: https://stackoverflow.com/questions/18316710/frameless-and-transparent-window-qt5
   * Then how do changes to uniform variables get propagated from the UI to
     the OpenGL main loop?
+  * Qt 5.12 supports Vulkan on macOS via MoltenVK. No Metal or DX12 support.
+  * Qt 5.11 has Qt for Webassembly Tech Preview. (5.12 has Tech Preview 2.)
+    The Preview generates huge executables, has lots of bugs.
+
+After reading about sokol_gfx, I've thought about using a minimal GUI toolkit
+that compiles into compact webassembly.
 
 Can the Viewer code be kept modular, so that the picker code (using a particular
 GUI toolkit) is separate from the model rendering code? This is vague.
