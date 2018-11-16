@@ -1,6 +1,46 @@
 Data Abstraction and Generic Programming
 ========================================
 
+Data Abstraction means several things to me:
+* The act of coding a generic algorithm, which involves specifying the
+  minimum requirements on the data that the algorithm acts on.
+  I would like to support generic programming in Curv, as long as it doesn't
+  involve too much language complexity. Ideally, generic programming arises
+  as a side effect of simplicity, orthogonality and generality, rather than
+  being supported by complex, specialized features.
+* The complex facilities found in general purpose languages for defining
+  data types, which may include classes, inheritance, information hiding,
+  types, user defined types, type constructors, and so on. These features
+  in C++, Haskell, CLOS, etc, are far too complex for Curv.
+
+The original Curv design rejects complex features for defining data types.
+There are only 7 types: the 6 JSON data types, plus functions. There are no
+user defined types, and no concept of a named type. You represent data
+structures the same way you do when encoding them in JSON.
+
+I'm not 100% happy with this. In some cases, like shapes, the representation can
+be large and messy, and I don't always want to dump this representation on the
+screen when you examine the value. Now I'm thinking about parametric shapes,
+which know what their parameters are, and let you interactively modify those
+parameters using a GUI. Now I want to separate the outside representation of
+a shape from its inside representation (both can be examined). The outside
+representation is a constructor name, and a set of parameters.
+
+So there is plain and fancy data.
+* Plain data is JSON data, and you construct it directly using using JSON
+  value constructors. When you print the data, it looks like JSON.
+  Pattern matching works using JSON value constructors.
+* Fancy data is constructed using high level constructor functions.
+  The underlying representation is usually a record.
+  When you print the data, it looks like calls to high level constructor
+  functions. Pattern matching uses calls to constructor functions.
+  So this is a kind of data abstraction.
+
+[Functions are another kind of value where you have an outside and an inside. In
+some languages that are based on Symbolic Expressions, a function is represented
+internally by a data structure that you can examine. I can see utility in doing
+this for Curv.]
+
 Maximally Generic Functions
 ---------------------------
 I'll start by describing a system that maximizes the reuseability and

@@ -106,6 +106,7 @@ Ease of Use:
 Mesh Import:
 * RSDF import and export.
 * mesh to RSDF tool
+  look at https://github.com/InteractiveComputerGraphics/Discregrid
 
 Mesh Export:
 * smooth export: the current default.
