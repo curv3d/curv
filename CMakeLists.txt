@@ -89,7 +89,7 @@ target_link_libraries(libcurv_geom PUBLIC imgui)
 
 file(GLOB Src "curv/*.c" "curv/*.cc")
 add_executable(curv ${Src})
-target_link_libraries(curv PUBLIC libcurv libcurv_geom imgui glfw glad ${LibOpenGL} replxx double-conversion boost_iostreams boost_filesystem boost_system openvdb_static Half tbb dl pthread)
+target_link_libraries(curv PUBLIC libcurv_geom libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion boost_iostreams boost_filesystem boost_system openvdb_static Half tbb dl pthread)
 
 file(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})
