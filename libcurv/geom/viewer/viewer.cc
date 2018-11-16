@@ -60,6 +60,8 @@ void
 Viewer::set_shape(Viewed_Shape shape)
 {
     shape_ = std::move(shape);
+    hud_ = !shape_.params_.empty();
+  #if 0
     // describe sliders on stderr (TODO: remove debug code)
     for (auto& i : shape_.params_) {
         std::cerr << i.name_ << " :: ";
@@ -68,6 +70,7 @@ Viewer::set_shape(Viewed_Shape shape)
         i.pstate_.write(std::cerr, i.pconfig_.type_);
         std::cerr << "\n";
     }
+  #endif
     if (is_open()) {
         shader_.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
         shader_.load(shape_.frag_, vertSource_, config_.verbose_);
@@ -165,8 +168,21 @@ bool Viewer::draw_frame()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    if (hud_)
-        ImGui::ShowDemoWindow(&hud_);
+    if (hud_) {
+        //ImGui::ShowDemoWindow(&hud_);
+        ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(200,0), ImGuiCond_Once);
+        ImGui::Begin("Shape Parameters", &hud_, 0);
+        for (auto& i : shape_.params_) {
+            switch (i.pconfig_.type_) {
+            case Picker::Type::slider:
+                ImGui::SliderFloat(i.name_.c_str(), &i.pstate_.slider_,
+                    i.pconfig_.slider_.low_, i.pconfig_.slider_.high_);
+                break;
+            }
+        }
+        ImGui::End();
+    }
 
     render();
     swap_buffers();
@@ -446,6 +462,7 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.IniFilename = nullptr;
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
     ImGui_ImplGlfw_InitForOpenGL(window_, false);

@@ -28,7 +28,7 @@ struct Picker : public Function
         void write(std::ostream&);
     };
     union State {
-        double slider_;
+        float slider_; // not double, because ImGui sliders use float
         State(Type, Value, const Context&);
         void write(std::ostream&, Type);
     };
