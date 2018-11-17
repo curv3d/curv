@@ -36,10 +36,33 @@ So there is plain and fancy data.
   functions. Pattern matching uses calls to constructor functions.
   So this is a kind of data abstraction.
 
-[Functions are another kind of value where you have an outside and an inside. In
-some languages that are based on Symbolic Expressions, a function is represented
-internally by a data structure that you can examine. I can see utility in doing
-this for Curv.]
+[Functions are maybe another kind of value where you have an outside and
+an inside representation. In some languages that are based on Symbolic
+Expressions, a function is represented internally by a data structure that
+you can examine. I can see some utility in doing this for Curv: it provides
+a low level mechanism that would allow more language primitives to be coded
+in Curv rather than in C++. But this is tangential to the main concerns of
+this page.]
+
+Fancy Data
+----------
+* Fancy data is constructed using high level constructor functions.
+* The printed representation looks like calls to constructor functions.
+* Pattern matching uses calls to constructor functions.
+
+Fancy data is important for visual programming. A parametric shape is a fancy
+datum with constructor arguments that you can tweak in the Viewer window
+using graphical value pickers. Fancy data may be nodes in a node-based
+visual programming environment.
+
+Fancy data can support a particular style of generic programming, where
+CLOS-like generic functions have different implementations for different
+constructors. Closely related to Haskell type classes, with dynamic dispatch.
+
+Fancy data will use the simplest design that works. This design is being
+driven by the requirements of visual programming. There is no intent to mimic
+the data abstraction mechanisms of general purpose programming languages.
+Instead, I'm trying to let the requirements determine the design.
 
 Maximally Generic Functions
 ---------------------------
