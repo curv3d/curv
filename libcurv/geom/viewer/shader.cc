@@ -234,18 +234,18 @@ GLuint Shader::compileShader(const std::string& _src, GLenum _type) {
     return shader;
 }
 
-void Shader::detach(GLenum _type) {
+void Shader::detach(GLenum _type)
+{
     bool vert = (GL_VERTEX_SHADER & _type) == GL_VERTEX_SHADER;
     bool frag = (GL_FRAGMENT_SHADER & _type) == GL_FRAGMENT_SHADER;
 
-    if(vert) {
+    if (vert) {
         glDeleteShader(m_vertexShader);
-        glDetachShader(m_vertexShader, GL_VERTEX_SHADER);
+        glDetachShader(m_program, m_vertexShader);
     }
-
-    if(frag) {
+    if (frag) {
         glDeleteShader(m_fragmentShader);
-        glDetachShader(m_fragmentShader, GL_FRAGMENT_SHADER);
+        glDetachShader(m_program, m_fragmentShader);
     }
 }
 
