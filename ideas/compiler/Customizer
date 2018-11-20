@@ -1,3 +1,55 @@
+Compiling a Parametric Shape into GLSL
+======================================
+Let's say that S is a parametric shape with parameter and call fields.
+How to compile the function S.call into GLSL?
+Need to partially evaluate S.call before generating GLSL.
+Alternatives:
+ 1. Use the evaluator.
+    * Create a parameter record A (a Value). Parameters that have a picker
+      get a Reactive Value as their argument. Non-picker parameters get a
+      proper value taken from S.parameter.
+    * Evaluate S.call(A).
+    * The result must be a shape record S1 (otherwise error).
+    * GL compile S1.dist and S1.colour into GLSL. References to reactive
+      values are converted to uniform variable references.
+
+    Expressions containing uniform variables are evaluated to thunks, as in
+    lazy evaluation, but subexpressions that don't contain uniform variables
+    are evaluated to constants, as in partial evaluation, so that the thunks
+    don't need to capture non-local variables.
+
+    In the resulting shape value, the dist and colour functions will capture
+    non-local variables containing reactive values, and thunks containing the
+    same. The bbox field will depend on shape parameters, so it becomes a thunk.
+
+    It's a big change that affects every Operation class.
+
+ 2. Add an 'abstract evaluator' pass.
+    * cons:
+      * Code duplication with the evaluator?
+      * How in detail does the abstract evaluator work?
+    * pros: the run-time state for a partial evaluator might ideally be
+      different from the regular evaluator? I wonder if the evaluator strategy
+      leads to a lot of large independent thunks containing large common
+      subexpressions. So a separate partial evaluator could be more efficient?
+
+The evaluator approach can be extended to support a form of Functional Reactive
+Programming (FRP) where time-varying external inputs, like real-time audio
+or video signals, are represented in Curv as global Reactive variables. In
+the GPU, these are mapped to GLSL uniform variables.
+
+The Abstract Evaluator (compile time) approach was originally intended to
+extend the expressiveness of the GL subset, to partially evaluate subexpressions
+and to discard unneeded subexpressions that can't be compiled to GL.
+
+Maybe the code required for all these features can be unified into the
+evaluator. The reactive evaluator and the abstract evaluator have things in
+common, similar data structures and algorithms:
+* Abstract values are represented by expression trees (annotated by types)
+  or by proper values.
+* Partial evaluation.
+* 'is_num X', where X is an abstract value of type Num, evaluates to true.
+
 Compiler changes to support the Customizer
 ==========================================
 The main interface to the GLSL compiler takes a shape as an argument,

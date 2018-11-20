@@ -18,19 +18,23 @@ There are only 7 types: the 6 JSON data types, plus functions. There are no
 user defined types, and no concept of a named type. You represent data
 structures the same way you do when encoding them in JSON.
 
-I'm not 100% happy with this. In some cases, like shapes, the representation can
-be large and messy, and I don't always want to dump this representation on the
-screen when you examine the value. Now I'm thinking about parametric shapes,
-which know what their parameters are, and let you interactively modify those
-parameters using a GUI. Now I want to separate the outside representation of
-a shape from its inside representation (both can be examined). The outside
-representation is a constructor name, and a set of parameters.
+I'm not 100% happy with this.
+* In some cases, like shapes, the representation can be large and messy,
+  and I don't always want to dump this representation on the screen
+  when you examine the value.
+* There are some technical benefits to storing the CSG tree in a shape value.
+  Eg, for symbolic export of a shape, to an SVG file.
+* Parametric shapes know what their parameters are, and let you interactively
+  modify those parameters using a GUI.
+So now I want to separate the outside representation of a shape from its inside
+representation (both can be examined). The outside representation is a
+constructor name, and a set of parameters.
 
-So there is plain and fancy data.
+So there is plain and branded data.
 * Plain data is JSON data, and you construct it directly using using JSON
   value constructors. When you print the data, it looks like JSON.
   Pattern matching works using JSON value constructors.
-* Fancy data is constructed using high level constructor functions.
+* Branded data is constructed using high level constructor functions.
   The underlying representation is usually a record.
   When you print the data, it looks like calls to high level constructor
   functions. Pattern matching uses calls to constructor functions.
@@ -44,25 +48,36 @@ a low level mechanism that would allow more language primitives to be coded
 in Curv rather than in C++. But this is tangential to the main concerns of
 this page.]
 
-Fancy Data
-----------
-* Fancy data is constructed using high level constructor functions.
+Branded Data
+------------
+* Branded data is constructed using high level constructor functions.
 * The printed representation looks like calls to constructor functions.
 * Pattern matching uses calls to constructor functions.
 
-Fancy data is important for visual programming. A parametric shape is a fancy
-datum with constructor arguments that you can tweak in the Viewer window
-using graphical value pickers. Fancy data may be nodes in a node-based
+Equality compares the constructor name and the argument values.
+This is the only way to get meaningful equality tests for shapes, or any
+other compound data that includes functions.
+
+Branded data is important for visual programming. A parametric shape is a
+branded datum with constructor arguments that you can tweak in the Viewer
+window using graphical value pickers. Branded data may be nodes in a node-based
 visual programming environment.
 
-Fancy data can support a particular style of generic programming, where
+Branded data can support a particular style of generic programming, where
 CLOS-like generic functions have different implementations for different
-constructors. Closely related to Haskell type classes, with dynamic dispatch.
+constructors. Like Haskell type classes, except with dynamic dispatch.
 
-Fancy data will use the simplest design that works. This design is being
-driven by the requirements of visual programming. There is no intent to mimic
-the data abstraction mechanisms of general purpose programming languages.
-Instead, I'm trying to let the requirements determine the design.
+Branded data will use the simplest design that meets the requirements:
+* A shape (may) contain its CSG tree in symbolic form.
+* A parametric shape contains its parameters and its constructor function.
+
+There are many possible designs.
+
+OOP:
+    Branded data are records. Parameter names and shape fields occupy the same
+    namespace (both are just fields). Class names and inheritance. There is a
+    shape class, and every concrete shape inherits from that.
+Records have branding metadata:
 
 Maximally Generic Functions
 ---------------------------

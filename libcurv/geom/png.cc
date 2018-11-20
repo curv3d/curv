@@ -89,6 +89,7 @@ export_png(
     start_time = std::chrono::steady_clock::now();
     v.draw_frame();
 #if 1
+    // TODO: use a FBO to render the exported image.
     // On macOS, the second call to draw_frame() is needed, or glReadPixels
     // will store zeroes in `pixels`.
     // I think the problem is related to double buffering: only after the

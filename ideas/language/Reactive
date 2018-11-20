@@ -67,6 +67,59 @@ over time, or whether they have GL-restricted semantics that prevent this.
 
 (TODO: add details.)
 
+Behaviour Proposal
+------------------
+What is the Curv language interface for a time varying external input I?
+It needs to be simple. The syntax should be 'I'. Curv must be pure-functional,
+expressions must be referentially transparent. So use FRP Behaviours.
+* 'I' is a behaviour variable. A behaviour is a sequence of time-stamped values,
+  or a function from time onto a value. This comes from FRP.
+* A primitive behaviour value:
+  * Is represented by a variable in the std namespace. There are a fixed number
+    of these with distinct names.
+  * Compiles into a GLSL uniform variable name.
+  * Has a GL type like Num or Vec3. If X is a numeric behaviour, 'is_num X'
+    is true.
+  * The only way to extract a numeric value from a primitive behaviour variable
+    is during GPU execution. In the standard interpreter, it remains an
+    abstract <behaviour> value.
+* Composite behaviour values:
+  * Numeric operations are generalized to accept numeric behaviours as
+    arguments, in which case a numeric behaviour is the result.
+  * A composite behaviour value is represented, in the general case, as code,
+    a thunk that depends on one or more primitive behaviour variables.
+    Eg, if `time` is a primitive behaviour, then `sin time` is a thunk that
+    computes a new number each time the time changes.
+  * A behaviour need not be code. For example, '0*B' can return 0 if B is
+    a numeric behaviour. So a number is a special case of a numeric behaviour.
+    These optimizations increase the expressiveness of GL by eliminating code
+    from a behaviour thunk that might not be GL compatible.
+  * All primitive operations are extended to accept behaviour arguments.
+* When you print a behaviour B, you see the names of all primitive behaviours
+  that B depends on.
+* Invoking a behaviour with modified primitive behaviour values.
+  * In FRAN, `Behaviour` is just a wrapper around a function; you can access
+    the function directly and call it with an argument.
+  * In Curv 0, shape dist functions have an explicit time parameter,
+    which you can specify as something other than the current time. This
+    permits temporal shape transformations.
+  * So in this proposal, there's a syntax for invoking any Behaviour with
+    modified values of any primitive behaviour variable. Since a function can
+    itself be a behaviour (dist and colour functions are important examples),
+    this syntax isn't just function call syntax. Eg, b@{var1=val1,...}
+    Reactions:
+    * Is this necessary? Why not use ordinary functions to parameterize values?
+    * Are the semantics similar to dynamically scoped variables?
+    * Is this really part of the Behaviour feature, or an orthogonal feature?
+    * 'b@' converts a behaviour to a function.
+
+Probably I'll call these 'reactive variables' and 'reactive values', since
+'reactive' is a well known buzzword.
+
+Does it make sense to support new user-defined behaviour variables?
+Associate these variables with picker configs. Is this a workable design for
+parametric shapes? Maybe we have a feature, 'parametric values'.
+
 Parametric Records
 ------------------
 How does this relate to the parametric record proposal, for connecting shapes
