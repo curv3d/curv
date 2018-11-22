@@ -16,23 +16,6 @@
 
 namespace curv {
 
-GL_Type_Attr gl_types[] =
-{
-    {"bool",  0, 1, 1},
-    {"float", 0, 1, 1},
-    {"vec2",  1, 2, 1},
-    {"vec3",  1, 3, 1},
-    {"vec4",  1, 4, 1},
-    {"mat2",  2, 2, 2},
-    {"mat3",  2, 3, 3},
-    {"mat4",  2, 4, 4},
-};
-
-std::ostream& operator<<(std::ostream& out, GL_Type type)
-{
-    return out << gl_type_name(type);
-}
-
 GL_Value gl_call_unary_numeric(GL_Frame& f, const char* name)
 {
     auto arg = f[0];

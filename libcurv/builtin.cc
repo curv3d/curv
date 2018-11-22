@@ -61,7 +61,7 @@ struct Is_Num_Function : public Legacy_Function
     Is_Num_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
-        return {args[0].is_num()};
+        return {isnum(args[0])};
     }
 };
 struct Is_String_Function : public Legacy_Function

@@ -626,8 +626,8 @@ struct Function_Setter_Base : public Just_Action
     struct Element {
         slot_t slot_;
         Shared<Lambda> lambda_;
-        Element(slot_t s, Shared<Lambda> l) : slot_(s), lambda_(l) {}
-        Element() noexcept {}
+        Element(slot_t s, Shared<Lambda> l);
+        Element() noexcept;
     };
     TAIL_ARRAY_MEMBERS(Element)
 };

@@ -99,6 +99,7 @@ At_Phrase::get_locations(std::list<Location>& locs) const
 }
 System& At_Phrase::system() const { return system_; }
 Frame* At_Phrase::frame() const { return frame_; }
+const Phrase& At_Phrase::syntax() const { return phrase_; }
 
 void
 At_Arg::get_locations(std::list<Location>& locs) const
@@ -117,6 +118,7 @@ At_Arg::get_locations(std::list<Location>& locs) const
 }
 System& At_Arg::system() const { return call_frame_.system_; }
 Frame* At_Arg::frame() const { return &call_frame_; }
+const Phrase& At_Arg::syntax() const { return *call_frame_.call_phrase_->arg_; }
 
 Shared<const String>
 At_Arg::rewrite_message(Shared<const String> msg) const
@@ -134,6 +136,7 @@ At_Metacall::get_locations(std::list<Location>& locs) const
 }
 System& At_Metacall::system() const { return parent_frame_.system_; }
 Frame* At_Metacall::frame() const { return &parent_frame_; }
+const Phrase& At_Metacall::syntax() const { return arg_; }
 
 Shared<const String>
 At_Metacall::rewrite_message(Shared<const String> msg) const
@@ -153,6 +156,10 @@ System& At_Metacall_With_Call_Frame::system() const
     return call_frame_.system_;
 }
 Frame* At_Metacall_With_Call_Frame::frame() const { return &call_frame_; }
+const Phrase& At_Metacall_With_Call_Frame::syntax() const
+{
+    return *call_frame_.call_phrase_->arg_;
+}
 Shared<const String>
 At_Metacall_With_Call_Frame::rewrite_message(Shared<const String> msg) const
 {

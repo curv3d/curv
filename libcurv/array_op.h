@@ -25,7 +25,7 @@ struct Binary_Numeric_Array_Op
     // TODO: optimize: move semantics. unique object reuse.
 
     static Value
-    reduce(double zero, Value arg, const Context& cx)
+    reduce(double zero, Value arg, const At_Syntax& cx)
     {
         auto list = arg.to<List>(cx);
         Value result = {zero};
@@ -35,7 +35,7 @@ struct Binary_Numeric_Array_Op
     }
 
     static Value
-    op(Value x, Value y, const Context& cx)
+    op(Value x, Value y, const At_Syntax& cx)
     {
         double r = Scalar_Op::f(x.get_num_or_nan(), y.get_num_or_nan());
         if (r == r)
@@ -52,7 +52,7 @@ struct Binary_Numeric_Array_Op
     }
 
     static Shared<List>
-    broadcast_left(Shared<List> xlist, Value y, const Context& cx)
+    broadcast_left(Shared<List> xlist, Value y, const At_Syntax& cx)
     {
         Shared<List> result = List::make(xlist->size());
         for (unsigned i = 0; i < xlist->size(); ++i) {
@@ -70,7 +70,7 @@ struct Binary_Numeric_Array_Op
     }
 
     static Shared<List>
-    broadcast_right(Value x, Shared<List> ylist, const Context& cx)
+    broadcast_right(Value x, Shared<List> ylist, const At_Syntax& cx)
     {
         Shared<List> result = List::make(ylist->size());
         for (unsigned i = 0; i < ylist->size(); ++i) {
@@ -88,7 +88,7 @@ struct Binary_Numeric_Array_Op
     }
 
     static Shared<List>
-    element_wise_op(Shared<List> xs, Shared<List> ys, const Context& cx)
+    element_wise_op(Shared<List> xs, Shared<List> ys, const At_Syntax& cx)
     {
         if (xs->size() != ys->size())
             throw Exception(cx, stringify(

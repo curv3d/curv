@@ -411,4 +411,11 @@ analyse_module(Definition& def, Environ& env)
     die("analyse_module: bad definition type");
 }
 
+Function_Setter_Base::Element::Element(slot_t s, Shared<Lambda> l)
+:
+    slot_(s), lambda_(l)
+{}
+
+Function_Setter_Base::Element::Element() noexcept {}
+
 } // namespace curv

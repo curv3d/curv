@@ -6,6 +6,8 @@
 #define LIBCURV_PICKER_H
 
 #include <libcurv/function.h>
+#include <libcurv/reactive.h>
+#include <libcurv/symbol.h>
 
 namespace curv {
 
@@ -59,7 +61,17 @@ struct Slider_Picker : public Picker
         config_.slider_.high_ = hi;
     }
 
-    virtual Value call(Value v, Frame& f) { return v.is_num(); }
+    virtual Value call(Value v, Frame& f) override;
+};
+
+// This is a pseudo-value that denotes a GLSL uniform variable.
+// More specifically, it's one of the parameters in a parametric shape.
+// These things are only used when compiling a parametric shape to GLSL.
+struct Uniform_Variable : public Reactive_Value
+{
+    Symbol name_;
+    Uniform_Variable(Symbol name, Picker::Type ptype);
+    virtual void print(std::ostream&) const override;
 };
 
 } // namespace curv

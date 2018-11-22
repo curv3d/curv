@@ -4,6 +4,8 @@
 
 #include <libcurv/picker.h>
 #include <libcurv/exception.h>
+#include <libcurv/die.h>
+#include <libcurv/math.h>
 
 namespace curv {
 
@@ -42,6 +44,34 @@ Picker::State::State(Type type, Value val, const Context& cx)
     default:
         throw Exception{cx, stringify("bad picker type ", int(type))};
     }
+}
+
+GL_Type
+ptype_to_gltype(Picker::Type ptype)
+{
+    switch (ptype) {
+    case Picker::Type::slider:
+        return GL_Type::Num;
+    default:
+        die("bad picker type");
+    }
+}
+
+Uniform_Variable::Uniform_Variable(Symbol name, Picker::Type ptype)
+:
+    Reactive_Value(Ref_Value::sty_uniform_variable, ptype_to_gltype(ptype)),
+    name_(std::move(name))
+{
+}
+
+void Uniform_Variable::print(std::ostream& out) const
+{
+    out << "<uniform " << name_ << ">";
+}
+
+Value Slider_Picker::call(Value v, Frame& f)
+{
+    return isnum(v);
 }
 
 } // namespace curv

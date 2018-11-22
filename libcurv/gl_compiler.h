@@ -9,6 +9,7 @@
 #include <vector>
 #include <libcurv/tail_array.h>
 #include <libcurv/module.h>
+#include <libcurv/gl_type.h>
 
 namespace curv {
 
@@ -37,54 +38,6 @@ struct System;
 /// where different calls to the same function have different argument types.
 /// The generated code is statically typed, and uses SSA style, where each
 /// operation is represented by an assignment to an SSA variable.
-
-/// GL data types
-enum class GL_Type : unsigned
-{
-    Bool = 0,
-    Num = 1,
-    Vec2 = 2,
-    Vec3 = 3,
-    Vec4 = 4,
-    Mat2 = 5,
-    Mat3 = 6,
-    Mat4 = 7
-};
-extern struct GL_Type_Attr
-{
-    const char* name;
-    int rank;
-    int dim1;
-    int dim2;
-} gl_types[];
-// is a number, a vector, or a matrix
-inline bool gl_type_numeric(GL_Type type)
-{
-    return type >= GL_Type::Num;
-}
-inline bool gl_type_is_vec(GL_Type type)
-{
-    return gl_types[unsigned(type)].rank == 1;
-}
-inline bool gl_type_is_mat(GL_Type type)
-{
-    return gl_types[unsigned(type)].rank == 2;
-}
-// if numeric, how many numbers are stored.
-inline unsigned gl_type_count(GL_Type type)
-{
-    GL_Type_Attr &ta = gl_types[unsigned(type)];
-    return ta.dim1 * ta.dim2;
-}
-inline const char* gl_type_name(GL_Type type)
-{
-    return gl_types[(int)type].name;
-}
-inline GL_Type gl_vec_type(unsigned len /* range 2..4 */)
-{
-    return (GL_Type)len;
-}
-std::ostream& operator<<(std::ostream& out, GL_Type);
 
 /// An SSA variable used during GL code generation.
 struct GL_Value

@@ -64,6 +64,7 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
     }
     if (sh_parameter && sh_call) {
         // We have a parametric shape.
+        auto cparams = make<DRecord>();
         record_pattern_each_parameter(*sh_call, shape.system_,
             [&](Symbol name, Value pred, Value value) -> void {
                 auto picker = pred.dycast<Picker>();
@@ -79,8 +80,17 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
                             picker->config_.type_,
                             value,
                             At_System{shape.system_}}});
+                    cparams->fields_[name] =
+                        {make<Uniform_Variable>(name, picker->config_.type_)};
+                } else {
+                    cparams->fields_[name] = value;
                 }
             });
+        std::unique_ptr<Frame> f2 {
+            Frame::make(sh_call->nslots_, shape.system_, nullptr, nullptr, nullptr)
+        };
+        Value result = sh_call->call({cparams}, *f2);
+        std::cerr << "parametric shape: " << result << "\n";
     }
 
     // Non-parametric case.

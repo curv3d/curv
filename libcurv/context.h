@@ -107,8 +107,15 @@ struct At_Token : public Context
     virtual Frame* frame() const override;
 };
 
+// An abstract Context class which contains a const Phrase& reference,
+// indicating the span of program text where the error occurred.
+struct At_Syntax : public Context
+{
+    virtual const Phrase& syntax() const = 0;
+};
+
 /// Exception Context where we know the Phrase that contains the error.
-struct At_Phrase : public Context
+struct At_Phrase : public At_Syntax
 {
     const Phrase& phrase_;
     System& system_;
@@ -122,6 +129,7 @@ struct At_Phrase : public Context
     virtual void get_locations(std::list<Location>& locs) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
+    virtual const Phrase& syntax() const override;
 };
 
 struct At_Program : public At_Token
@@ -136,7 +144,7 @@ struct At_Program : public At_Token
 
 // Bad argument to a function call.
 // The Frame argument is the stack frame for the function call.
-struct At_Arg : public Context
+struct At_Arg : public At_Syntax
 {
     Function& fun_;
     Frame& call_frame_;
@@ -151,6 +159,7 @@ struct At_Arg : public Context
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
+    virtual const Phrase& syntax() const override;
 };
 
 // Bad argument to a metafunction call (Exception Context only).
@@ -159,7 +168,7 @@ struct At_Arg : public Context
 // an Exception context, but not good for more general uses, such as passing
 // to an import function, where the frame() is accessed. For a more expensive
 // but more general purpose Context, use At_Metacall_With_Call_Frame.
-struct At_Metacall : public Context
+struct At_Metacall : public At_Syntax
 {
     const char* name_;
     unsigned argpos_;
@@ -178,12 +187,13 @@ struct At_Metacall : public Context
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
+    virtual const Phrase& syntax() const override;
 };
 
 // Bad argument to a metafunction call (general purpose Context).
 // The client must explicitly allocate a call frame for the metafunction call,
 // and pass it as the frame argument.
-struct At_Metacall_With_Call_Frame : public Context
+struct At_Metacall_With_Call_Frame : public At_Syntax
 {
     const char* name_;
     unsigned argpos_;
@@ -200,6 +210,7 @@ struct At_Metacall_With_Call_Frame : public Context
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
+    virtual const Phrase& syntax() const override;
 };
 
 struct At_Field : public Context

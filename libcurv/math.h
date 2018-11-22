@@ -9,14 +9,16 @@
 
 namespace curv {
 
-struct Context;
+struct At_Syntax;
+
+bool isnum(Value a);
 
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
-Value dot(Value a, Value b, const Context& cx);
+Value dot(Value a, Value b, const At_Syntax& cx);
 
-Value add(Value a, Value b, const Context& cx);
-Value multiply(Value a, Value b, const Context& cx);
+Value add(Value a, Value b, const At_Syntax& cx);
+Value multiply(Value a, Value b, const At_Syntax& cx);
 
 } // namespace curv
 #endif // header guard

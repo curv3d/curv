@@ -5,12 +5,18 @@
 #include <libcurv/math.h>
 #include <libcurv/context.h>
 #include <libcurv/array_op.h>
+#include <libcurv/reactive.h>
 
 namespace curv {
 
-struct Context;
+bool isnum(Value a)
+{
+    if (a.is_num()) return true;
+    auto r = a.dycast<Reactive_Value>();
+    return r && r->gltype_ == GL_Type::Num;
+}
 
-Value add(Value a, Value b, const Context& cx)
+Value add(Value a, Value b, const At_Syntax& cx)
 {
     struct Scalar_Op {
         static double f(double x, double y) { return x + y; }
@@ -23,7 +29,7 @@ Value add(Value a, Value b, const Context& cx)
     return array_op.op(a, b, cx);
 }
 
-Value multiply(Value a, Value b, const Context& cx)
+Value multiply(Value a, Value b, const At_Syntax& cx)
 {
     struct Scalar_Op {
         static double f(double x, double y) { return x * y; }
@@ -43,7 +49,7 @@ Value multiply(Value a, Value b, const Context& cx)
 //      [for (row in a) dot(row,b)]  // matrix*...
 //    else
 //      sum(a*b)                     // vector*...
-Value dot(Value a, Value b, const Context& cx)
+Value dot(Value a, Value b, const At_Syntax& cx)
 {
     auto av = a.to<List>(cx);
     auto bv = b.to<List>(cx);
