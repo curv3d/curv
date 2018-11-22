@@ -5,6 +5,7 @@
 #include <libcurv/analyser.h>
 #include <libcurv/context.h>
 #include <libcurv/scanner.h>
+#include <libcurv/exception.h>
 
 namespace curv {
 
@@ -118,7 +119,17 @@ At_Arg::get_locations(std::list<Location>& locs) const
 }
 System& At_Arg::system() const { return call_frame_.system_; }
 Frame* At_Arg::frame() const { return &call_frame_; }
-const Phrase& At_Arg::syntax() const { return *call_frame_.call_phrase_->arg_; }
+const Phrase& At_Arg::syntax() const
+{
+    // A function call frame should always have a non-null call_phrase_,
+    // except when it doesn't. When a primitive operation takes a function
+    // argument, it may be impossible to construct a call_phrase for calling
+    // the function argument. This is a hole in the design.
+    if (call_frame_.call_phrase_ == nullptr)
+        throw Exception{At_Frame(call_frame_),
+            "Internal error: At_Arg::syntax(): call_phrase_ is null"};
+    return *call_frame_.call_phrase_->arg_;
+}
 
 Shared<const String>
 At_Arg::rewrite_message(Shared<const String> msg) const
