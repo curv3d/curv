@@ -6,6 +6,7 @@
 #define LIBCURV_REACTIVE_H
 
 #include <libcurv/gl_type.h>
+#include <libcurv/function.h> // prereq of meaning.h
 #include <libcurv/meaning.h>
 
 namespace curv {
@@ -21,6 +22,9 @@ struct Reactive_Value : public Ref_Value
         Ref_Value(ty_reactive, subty),
         gltype_(gltype)
     {}
+
+    virtual void print(std::ostream&) const override;
+    virtual Shared<Operation> expr(const Phrase&);
 };
 
 // An expression over one or more reactive variables. Essentially, this is a
@@ -37,6 +41,8 @@ struct Reactive_Expression : public Reactive_Value
         Reactive_Value(sty_reactive_expression, gltype),
         expr_(std::move(expr))
     {}
+
+    virtual Shared<Operation> expr(const Phrase&) override;
 };
 
 } // namespace curv

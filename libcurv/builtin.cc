@@ -6,6 +6,7 @@
 
 #include <libcurv/analyser.h>
 #include <libcurv/array_op.h>
+#include <libcurv/die.h>
 #include <libcurv/dir_record.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
@@ -175,6 +176,15 @@ struct Atan2_Function : public Legacy_Function
 
     struct Scalar_Op {
         static double f(double x, double y) { return atan2(x, y); }
+        static Shared<Operation> make_expr(
+            const Phrase& syntax,
+            Shared<Operation> x, Shared<Operation> y)
+        {
+            //throw Exception(At_Phrase(syntax,nullptr),
+            die(
+                "Internal error: atan2 applied to a reactive value");
+            //return make<Divide_Expr>(share(syntax), std::move(x), std::move(y));
+        }
         static const char* name() { return "atan2"; }
         static Shared<const String> callstr(Value x, Value y) {
             return stringify("atan2(",x,",",y,")");
@@ -286,6 +296,15 @@ struct Max_Function : public Legacy_Function
             if (x < y) return y;
             return 0.0/0.0;
         }
+        static Shared<Operation> make_expr(
+            const Phrase& syntax,
+            Shared<Operation> x, Shared<Operation> y)
+        {
+            //throw Exception(At_Phrase(syntax,nullptr),
+            die(
+                "Internal error: max applied to a reactive value");
+            //return make<Divide_Expr>(share(syntax), std::move(x), std::move(y));
+        }
         static const char* name() { return "max"; }
         static Shared<const String> callstr(Value x, Value y) {
             return stringify("max(",x,",",y,")");
@@ -314,6 +333,15 @@ struct Min_Function : public Legacy_Function
             if (x <= y) return x;
             if (x > y) return y;
             return 0.0/0.0;
+        }
+        static Shared<Operation> make_expr(
+            const Phrase& syntax,
+            Shared<Operation> x, Shared<Operation> y)
+        {
+            //throw Exception(At_Phrase(syntax,nullptr),
+            die(
+                "Internal error: min applied to a reactive value");
+            //return make<Divide_Expr>(share(syntax), std::move(x), std::move(y));
         }
         static const char* name() { return "min"; }
         static Shared<const String> callstr(Value x, Value y) {

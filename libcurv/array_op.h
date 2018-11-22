@@ -16,6 +16,7 @@
 #include <libcurv/list.h>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
+#include <libcurv/reactive.h>
 
 namespace curv {
 
@@ -45,6 +46,19 @@ struct Binary_Numeric_Array_Op
                 return {element_wise_op(xlist, ylist, cx)};
             return {broadcast_left(xlist, y, cx)};
         }
+        auto xre = x.dycast<Reactive_Value>();
+        if (xre && xre->gltype_ == GL_Type::Num) {
+            auto& syn = cx.syntax();
+            if (y.is_num())
+                return {make<Reactive_Expression>(GL_Type::Num,
+                    Scalar_Op::make_expr(syn, xre->expr(syn),
+                        make<Constant>(share(syn), y)))};
+            auto yre = y.dycast<Reactive_Value>();
+            if (yre && yre->gltype_ == GL_Type::Num)
+                return {make<Reactive_Expression>(GL_Type::Num,
+                    Scalar_Op::make_expr(syn,
+                        xre->expr(syn), yre->expr(syn)))};
+        }
         if (auto ylist = y.dycast<List>())
             return {broadcast_right(x, ylist, cx)};
         throw Exception(cx,
@@ -62,9 +76,17 @@ struct Binary_Numeric_Array_Op
                 (*result)[i] = {r};
             else if (auto exlist = ex.dycast<List>())
                 (*result)[i] = {broadcast_left(exlist, y, cx)};
-            else
-                throw Exception(cx,
+            else {
+                auto exre = ex.dycast<Reactive_Value>();
+                auto& syn = cx.syntax();
+                if (exre && exre->gltype_ == GL_Type::Num)
+                    (*result)[i] = {make<Reactive_Expression>(GL_Type::Num,
+                        Scalar_Op::make_expr(syn,
+                            exre->expr(syn),
+                            make<Constant>(share(syn), y)))};
+                else throw Exception(cx,
                     stringify(Scalar_Op::callstr(ex,y),": domain error"));
+            }
         }
         return result;
     }
@@ -80,9 +102,17 @@ struct Binary_Numeric_Array_Op
                 (*result)[i] = {r};
             else if (auto eylist = ey.dycast<List>())
                 (*result)[i] = {broadcast_right(x, eylist, cx)};
-            else
-                throw Exception(cx,
+            else {
+                auto eyre = ey.dycast<Reactive_Value>();
+                auto& syn = cx.syntax();
+                if (eyre && eyre->gltype_ == GL_Type::Num)
+                    (*result)[i] = {make<Reactive_Expression>(GL_Type::Num,
+                        Scalar_Op::make_expr(syn,
+                            make<Constant>(share(syn), x),
+                            eyre->expr(syn)))};
+                else throw Exception(cx,
                     stringify(Scalar_Op::callstr(x,ey),": domain error"));
+            }
         }
         return result;
     }
