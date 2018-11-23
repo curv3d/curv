@@ -182,10 +182,9 @@ struct Atan2_Function : public Legacy_Function
     Atan2_Function() : Legacy_Function(2,name()) {}
 
     struct Scalar_Op {
-        static double f(double x, double y) { return atan2(x, y); }
-        static Shared<Operation> make_expr(
-            const At_Syntax& cx,
-            Shared<Operation> x, Shared<Operation> y)
+        static double call(double x, double y) { return atan2(x, y); }
+        Shared<Operation> make_expr(
+            Shared<Operation> x, Shared<Operation> y) const
         {
             throw Exception(cx,
                 "Internal error: atan2 applied to a reactive value");
@@ -195,11 +194,13 @@ struct Atan2_Function : public Legacy_Function
         static Shared<const String> callstr(Value x, Value y) {
             return stringify("atan2(",x,",",y,")");
         }
+        At_Arg cx;
+        Scalar_Op(Function& fun, Frame& args) : cx(fun, args) {}
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(args[0], args[1], At_Arg(*this, args));
+        return array_op.op(Scalar_Op(*this, args), args[0], args[1]);
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
@@ -296,15 +297,14 @@ struct Max_Function : public Legacy_Function
     Max_Function() : Legacy_Function(1,name()) {}
 
     struct Scalar_Op {
-        static double f(double x, double y) {
+        static double call(double x, double y) {
             // return NaN if either argument is NaN.
             if (x >= y) return x;
             if (x < y) return y;
             return 0.0/0.0;
         }
-        static Shared<Operation> make_expr(
-            const At_Syntax& cx,
-            Shared<Operation> x, Shared<Operation> y)
+        Shared<Operation> make_expr(
+            Shared<Operation> x, Shared<Operation> y) const
         {
             throw Exception(cx,
                 "Internal error: max applied to a reactive value");
@@ -314,11 +314,13 @@ struct Max_Function : public Legacy_Function
         static Shared<const String> callstr(Value x, Value y) {
             return stringify("max(",x,",",y,")");
         }
+        At_Arg cx;
+        Scalar_Op(Function& fun, Frame& args) : cx(fun,args) {}
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.reduce(-INFINITY, args[0], At_Arg(*this, args));
+        return array_op.reduce(Scalar_Op(*this, args), -INFINITY, args[0]);
     }
     GL_Value gl_call_expr(Operation& argx, const Call_Phrase*, GL_Frame& f)
     const override
@@ -333,15 +335,14 @@ struct Min_Function : public Legacy_Function
     Min_Function() : Legacy_Function(1,name()) {}
 
     struct Scalar_Op {
-        static double f(double x, double y) {
+        static double call(double x, double y) {
             // return NaN if either argument is NaN
             if (x <= y) return x;
             if (x > y) return y;
             return 0.0/0.0;
         }
-        static Shared<Operation> make_expr(
-            const At_Syntax& cx,
-            Shared<Operation> x, Shared<Operation> y)
+        Shared<Operation> make_expr(
+            Shared<Operation> x, Shared<Operation> y) const
         {
             throw Exception(cx,
                 "Internal error: min applied to a reactive value");
@@ -351,11 +352,13 @@ struct Min_Function : public Legacy_Function
         static Shared<const String> callstr(Value x, Value y) {
             return stringify("min(",x,",",y,")");
         }
+        At_Arg cx;
+        Scalar_Op(Function& fun, Frame& args) : cx(fun, args) {}
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.reduce(INFINITY, args[0], At_Arg(*this, args));
+        return array_op.reduce(Scalar_Op(*this, args), INFINITY, args[0]);
     }
     GL_Value gl_call_expr(Operation& argx, const Call_Phrase*, GL_Frame& f)
     const override

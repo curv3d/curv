@@ -26,108 +26,105 @@ struct Binary_Numeric_Array_Op
     // TODO: optimize: move semantics. unique object reuse.
 
     static Value
-    reduce(double zero, Value arg, const At_Syntax& cx)
+    reduce(const Scalar_Op& f, double zero, Value arg)
     {
-        auto list = arg.to<List>(cx);
+        auto list = arg.to<List>(f.cx);
         Value result = {zero};
         for (auto val : *list)
-            result = op(result, val, cx);
+            result = op(f, result, val);
         return result;
     }
 
     static Value
-    op(Value x, Value y, const At_Syntax& cx)
+    op(const Scalar_Op& f, Value x, Value y)
     {
-        double r = Scalar_Op::f(x.get_num_or_nan(), y.get_num_or_nan());
+        double r = f.call(x.get_num_or_nan(), y.get_num_or_nan());
         if (r == r)
             return {r};
         if (auto xlist = x.dycast<List>()) {
             if (auto ylist = y.dycast<List>())
-                return {element_wise_op(xlist, ylist, cx)};
-            return {broadcast_left(xlist, y, cx)};
+                return {element_wise_op(f, xlist, ylist)};
+            return {broadcast_left(f, xlist, y)};
         }
         auto xre = x.dycast<Reactive_Value>();
         if (xre && xre->gltype_ == GL_Type::Num) {
-            auto& syn = cx.syntax();
+            auto& syn = f.cx.syntax();
             if (y.is_num())
                 return {make<Reactive_Expression>(GL_Type::Num,
-                    Scalar_Op::make_expr(cx, xre->expr(syn),
+                    f.make_expr(xre->expr(syn),
                         make<Constant>(share(syn), y)))};
             auto yre = y.dycast<Reactive_Value>();
             if (yre && yre->gltype_ == GL_Type::Num)
                 return {make<Reactive_Expression>(GL_Type::Num,
-                    Scalar_Op::make_expr(cx,
-                        xre->expr(syn), yre->expr(syn)))};
+                    f.make_expr(xre->expr(syn), yre->expr(syn)))};
         }
         if (auto ylist = y.dycast<List>())
-            return {broadcast_right(x, ylist, cx)};
-        throw Exception(cx,
-            stringify(Scalar_Op::callstr(x,y),": domain error"));
+            return {broadcast_right(f, x, ylist)};
+        throw Exception(f.cx,
+            stringify(f.callstr(x,y),": domain error"));
     }
 
     static Shared<List>
-    broadcast_left(Shared<List> xlist, Value y, const At_Syntax& cx)
+    broadcast_left(const Scalar_Op& f, Shared<List> xlist, Value y)
     {
         Shared<List> result = List::make(xlist->size());
         for (unsigned i = 0; i < xlist->size(); ++i) {
             Value ex = (*xlist)[i];
-            double r = Scalar_Op::f(ex.get_num_or_nan(),y.get_num_or_nan());
+            double r = f.call(ex.get_num_or_nan(),y.get_num_or_nan());
             if (r == r)
                 (*result)[i] = {r};
             else if (auto exlist = ex.dycast<List>())
-                (*result)[i] = {broadcast_left(exlist, y, cx)};
+                (*result)[i] = {broadcast_left(f, exlist, y)};
             else {
                 auto exre = ex.dycast<Reactive_Value>();
-                auto& syn = cx.syntax();
+                auto& syn = f.cx.syntax();
                 if (exre && exre->gltype_ == GL_Type::Num)
                     (*result)[i] = {make<Reactive_Expression>(GL_Type::Num,
-                        Scalar_Op::make_expr(cx,
-                            exre->expr(syn),
+                        f.make_expr(exre->expr(syn),
                             make<Constant>(share(syn), y)))};
-                else throw Exception(cx,
-                    stringify(Scalar_Op::callstr(ex,y),": domain error"));
+                else throw Exception(f.cx,
+                    stringify(f.callstr(ex,y),": domain error"));
             }
         }
         return result;
     }
 
     static Shared<List>
-    broadcast_right(Value x, Shared<List> ylist, const At_Syntax& cx)
+    broadcast_right(const Scalar_Op& f, Value x, Shared<List> ylist)
     {
         Shared<List> result = List::make(ylist->size());
         for (unsigned i = 0; i < ylist->size(); ++i) {
             Value ey = (*ylist)[i];
-            double r = Scalar_Op::f(x.get_num_or_nan(), ey.get_num_or_nan());
+            double r = f.call(x.get_num_or_nan(), ey.get_num_or_nan());
             if (r == r)
                 (*result)[i] = {r};
             else if (auto eylist = ey.dycast<List>())
-                (*result)[i] = {broadcast_right(x, eylist, cx)};
+                (*result)[i] = {broadcast_right(f, x, eylist)};
             else {
                 auto eyre = ey.dycast<Reactive_Value>();
-                auto& syn = cx.syntax();
+                auto& syn = f.cx.syntax();
                 if (eyre && eyre->gltype_ == GL_Type::Num)
                     (*result)[i] = {make<Reactive_Expression>(GL_Type::Num,
-                        Scalar_Op::make_expr(cx,
-                            make<Constant>(share(syn), x),
+                        f.make_expr(make<Constant>(share(syn), x),
                             eyre->expr(syn)))};
-                else throw Exception(cx,
-                    stringify(Scalar_Op::callstr(x,ey),": domain error"));
+                else throw Exception(f.cx,
+                    stringify(f.callstr(x,ey),": domain error"));
             }
         }
         return result;
     }
 
     static Shared<List>
-    element_wise_op(Shared<List> xs, Shared<List> ys, const At_Syntax& cx)
+    element_wise_op(const Scalar_Op& f, Shared<List> xs, Shared<List> ys)
     {
         if (xs->size() != ys->size())
-            throw Exception(cx, stringify(
-                Scalar_Op::name(),
+            throw Exception(f.cx, stringify(
+                f.name(),
                 ": mismatched list sizes (",
                 xs->size(),",",ys->size(),") in array operation"));
         Shared<List> result = List::make(xs->size());
         for (unsigned i = 0; i < xs->size(); ++i)
-            (*result)[i] = op((*xs)[i], (*ys)[i], cx);
+            (*result)[i] = op(f, (*xs)[i], (*ys)[i]);
         return result;
     }
 };

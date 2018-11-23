@@ -19,10 +19,9 @@ bool isnum(Value a)
 Value add(Value a, Value b, const At_Syntax& cx)
 {
     struct Scalar_Op {
-        static double f(double x, double y) { return x + y; }
-        static Shared<Operation> make_expr(
-            const At_Syntax& cx,
-            Shared<Operation> x, Shared<Operation> y)
+        static double call(double x, double y) { return x + y; }
+        Shared<Operation> make_expr(
+            Shared<Operation> x, Shared<Operation> y) const
         {
             return make<Add_Expr>(share(cx.syntax()),
                 std::move(x), std::move(y));
@@ -31,18 +30,19 @@ Value add(Value a, Value b, const At_Syntax& cx)
         static Shared<const String> callstr(Value x, Value y) {
             return stringify(x," + ",y);
         }
+        const At_Syntax& cx;
+        Scalar_Op(const At_Syntax& as) : cx(as) {}
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(a, b, cx);
+    return array_op.op(Scalar_Op(cx), a, b);
 }
 
 Value multiply(Value a, Value b, const At_Syntax& cx)
 {
     struct Scalar_Op {
-        static double f(double x, double y) { return x * y; }
-        static Shared<Operation> make_expr(
-            const At_Syntax& cx,
-            Shared<Operation> x, Shared<Operation> y)
+        static double call(double x, double y) { return x * y; }
+        Shared<Operation> make_expr(
+            Shared<Operation> x, Shared<Operation> y) const
         {
             return make<Multiply_Expr>(share(cx.syntax()),
                 std::move(x), std::move(y));
@@ -51,9 +51,11 @@ Value multiply(Value a, Value b, const At_Syntax& cx)
         static Shared<const String> callstr(Value x, Value y) {
             return stringify(x," * ",y);
         }
+        const At_Syntax& cx;
+        Scalar_Op(const At_Syntax& as) : cx(as) {}
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(a, b, cx);
+    return array_op.op(Scalar_Op(cx), a, b);
 }
 
 // Generalized dot product that includes vector dot product and matrix product.
