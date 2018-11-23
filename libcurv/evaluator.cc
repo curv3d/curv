@@ -125,25 +125,25 @@ Value
 Positive_Expr::eval(Frame& f) const
 {
     struct Scalar_Op {
-        static double f(double x) { return +x; }
-        static Shared<const String> callstr(Value x) {
-            return stringify("+",x);
-        }
+        static double call(double x) { return +x; }
+        static auto callstr(Value x) { return stringify("+",x); }
+        At_Phrase cx;
+        Scalar_Op(const Phrase& ph, Frame& f) : cx(ph,f) {}
     };
     static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(arg_->eval(f), At_Phrase(*syntax_, f));
+    return array_op.op(Scalar_Op(*syntax_, f), arg_->eval(f));
 }
 Value
 Negative_Expr::eval(Frame& f) const
 {
     struct Scalar_Op {
-        static double f(double x) { return -x; }
-        static Shared<const String> callstr(Value x) {
-            return stringify("-",x);
-        }
+        static double call(double x) { return -x; }
+        static auto callstr(Value x) { return stringify("-",x); }
+        At_Phrase cx;
+        Scalar_Op(const Phrase& ph, Frame& f) : cx(ph,f) {}
     };
     static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(arg_->eval(f), At_Phrase(*syntax_, f));
+    return array_op.op(Scalar_Op(*syntax_, f), arg_->eval(f));
 }
 
 Value

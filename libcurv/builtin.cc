@@ -128,15 +128,17 @@ struct Class_Name : public Legacy_Function \
     static const char* name() { return #curv_name; } \
     Class_Name() : Legacy_Function(1,name()) {} \
     struct Scalar_Op { \
-        static double f(double x) { return c_name(x); } \
+        static double call(double x) { return c_name(x); } \
         static Shared<const String> callstr(Value x) { \
             return stringify(name(),"(",x,")"); \
         } \
+        At_Frame cx; \
+        Scalar_Op(Frame& args) : cx(args) {} \
     }; \
     static Unary_Numeric_Array_Op<Scalar_Op> array_op; \
     Value call(Frame& args) override \
     { \
-        return array_op.op(args[0], At_Frame(args)); \
+        return array_op.op(Scalar_Op(args), args[0]); \
     } \
     GL_Value gl_call(GL_Frame& f) const override \
     { \

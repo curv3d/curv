@@ -138,23 +138,23 @@ struct Unary_Numeric_Array_Op
     // TODO: optimize: move semantics. unique object reuse.
 
     static Value
-    op(Value x, const Context& cx)
+    op(const Scalar_Op& f, Value x)
     {
-        double r = Scalar_Op::f(x.get_num_or_nan());
+        double r = f.call(x.get_num_or_nan());
         if (r == r)
             return {r};
         if (auto xlist = x.dycast<List>())
-            return {element_wise_op(xlist, cx)};
-        throw Exception(cx,
-            stringify(Scalar_Op::callstr(x),": domain error"));
+            return {element_wise_op(f, xlist)};
+        throw Exception(f.cx,
+            stringify(f.callstr(x),": domain error"));
     }
 
     static Shared<List>
-    element_wise_op(Shared<List> xs, const Context& cx)
+    element_wise_op(const Scalar_Op& f, Shared<List> xs)
     {
         Shared<List> result = List::make(xs->size());
         for (unsigned i = 0; i < xs->size(); ++i)
-            (*result)[i] = op((*xs)[i], cx);
+            (*result)[i] = op(f, (*xs)[i]);
         return result;
     }
 };
