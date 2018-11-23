@@ -78,17 +78,6 @@ struct At_System : public Context
     virtual Frame* frame() const override;
 };
 
-struct At_Frame : public Context
-{
-    Frame& call_frame_;
-
-    At_Frame(Frame& frame) : call_frame_(frame) {}
-
-    virtual void get_locations(std::list<Location>& locs) const override;
-    virtual System& system() const override;
-    virtual Frame* frame() const override;
-};
-
 void get_frame_locations(const Frame* f, std::list<Location>& locs);
 
 struct At_Token : public Context
@@ -112,6 +101,18 @@ struct At_Token : public Context
 struct At_Syntax : public Context
 {
     virtual const Phrase& syntax() const = 0;
+};
+
+struct At_Frame : public At_Syntax
+{
+    Frame& call_frame_;
+
+    At_Frame(Frame& frame) : call_frame_(frame) {}
+
+    virtual void get_locations(std::list<Location>& locs) const override;
+    virtual System& system() const override;
+    virtual Frame* frame() const override;
+    virtual const Phrase& syntax() const override;
 };
 
 /// Exception Context where we know the Phrase that contains the error.

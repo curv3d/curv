@@ -126,6 +126,10 @@ Positive_Expr::eval(Frame& f) const
 {
     struct Scalar_Op {
         static double call(double x) { return +x; }
+        Shared<Operation> make_expr(Shared<Operation> x) const
+        {
+            return make<Positive_Expr>(share(cx.syntax()), std::move(x));
+        }
         static auto callstr(Value x) { return stringify("+",x); }
         At_Phrase cx;
         Scalar_Op(const Phrase& ph, Frame& f) : cx(ph,f) {}
@@ -138,6 +142,10 @@ Negative_Expr::eval(Frame& f) const
 {
     struct Scalar_Op {
         static double call(double x) { return -x; }
+        Shared<Operation> make_expr(Shared<Operation> x) const
+        {
+            return make<Negative_Expr>(share(cx.syntax()), std::move(x));
+        }
         static auto callstr(Value x) { return stringify("-",x); }
         At_Phrase cx;
         Scalar_Op(const Phrase& ph, Frame& f) : cx(ph,f) {}

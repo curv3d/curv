@@ -26,6 +26,17 @@ At_Frame::get_locations(std::list<Location>& locs) const
 }
 System& At_Frame::system() const { return call_frame_.system_; }
 Frame* At_Frame::frame() const { return &call_frame_; }
+const Phrase& At_Frame::syntax() const
+{
+    // A function call frame should always have a non-null call_phrase_,
+    // except when it doesn't. When a primitive operation takes a function
+    // argument, it may be impossible to construct a call_phrase for calling
+    // the function argument. This is a hole in the design.
+    if (call_frame_.call_phrase_ == nullptr)
+        throw Exception{*this,
+            "Internal error: At_Frame::syntax(): call_phrase_ is null"};
+    return *call_frame_.call_phrase_;
+}
 
 void
 get_frame_locations(const Frame* f, std::list<Location>& locs)

@@ -129,6 +129,11 @@ struct Class_Name : public Legacy_Function \
     Class_Name() : Legacy_Function(1,name()) {} \
     struct Scalar_Op { \
         static double call(double x) { return c_name(x); } \
+        Shared<Operation> make_expr(Shared<Operation> x) const \
+        { \
+            throw Exception(cx, stringify( \
+                "Internal error: ",name()," applied to a reactive value")); \
+        } \
         static Shared<const String> callstr(Value x) { \
             return stringify(name(),"(",x,")"); \
         } \

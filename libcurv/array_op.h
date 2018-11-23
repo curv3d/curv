@@ -145,6 +145,11 @@ struct Unary_Numeric_Array_Op
             return {r};
         if (auto xlist = x.dycast<List>())
             return {element_wise_op(f, xlist)};
+        auto xre = x.dycast<Reactive_Value>();
+        if (xre && xre->gltype_ == GL_Type::Num) {
+            return {make<Reactive_Expression>(GL_Type::Num,
+                f.make_expr(xre->expr(f.cx.syntax())))};
+        }
         throw Exception(f.cx,
             stringify(f.callstr(x),": domain error"));
     }
