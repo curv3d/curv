@@ -159,10 +159,11 @@ Subtract_Expr::eval(Frame& f) const
     struct Scalar_Op {
         static double f(double x, double y) { return x - y; }
         static Shared<Operation> make_expr(
-            const Phrase& syntax,
+            const At_Syntax& cx,
             Shared<Operation> x, Shared<Operation> y)
         {
-            return make<Subtract_Expr>(share(syntax), std::move(x), std::move(y));
+            return make<Subtract_Expr>(share(cx.syntax()),
+                std::move(x), std::move(y));
         }
         static const char* name() { return "-"; }
         static Shared<const String> callstr(Value x, Value y) {
@@ -187,10 +188,11 @@ Divide_Expr::eval(Frame& f) const
     struct Scalar_Op {
         static double f(double x, double y) { return x / y; }
         static Shared<Operation> make_expr(
-            const Phrase& syntax,
+            const At_Syntax& cx,
             Shared<Operation> x, Shared<Operation> y)
         {
-            return make<Divide_Expr>(share(syntax), std::move(x), std::move(y));
+            return make<Divide_Expr>(share(cx.syntax()),
+                std::move(x), std::move(y));
         }
         static const char* name() { return "/"; }
         static Shared<const String> callstr(Value x, Value y) {
@@ -359,10 +361,11 @@ Power_Expr::eval(Frame& f) const
     struct Scalar_Op {
         static double f(double x, double y) { return pow(x,y); }
         static Shared<Operation> make_expr(
-            const Phrase& syntax,
+            const At_Syntax& cx,
             Shared<Operation> x, Shared<Operation> y)
         {
-            return make<Power_Expr>(share(syntax), std::move(x), std::move(y));
+            return make<Power_Expr>(share(cx.syntax()),
+                std::move(x), std::move(y));
         }
         static const char* name() { return "^"; }
         static Shared<const String> callstr(Value x, Value y) {

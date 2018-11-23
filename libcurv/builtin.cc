@@ -177,11 +177,10 @@ struct Atan2_Function : public Legacy_Function
     struct Scalar_Op {
         static double f(double x, double y) { return atan2(x, y); }
         static Shared<Operation> make_expr(
-            const Phrase& syntax,
+            const At_Syntax& cx,
             Shared<Operation> x, Shared<Operation> y)
         {
-            //throw Exception(At_Phrase(syntax,nullptr),
-            die(
+            throw Exception(cx,
                 "Internal error: atan2 applied to a reactive value");
             //return make<Divide_Expr>(share(syntax), std::move(x), std::move(y));
         }
@@ -297,11 +296,10 @@ struct Max_Function : public Legacy_Function
             return 0.0/0.0;
         }
         static Shared<Operation> make_expr(
-            const Phrase& syntax,
+            const At_Syntax& cx,
             Shared<Operation> x, Shared<Operation> y)
         {
-            //throw Exception(At_Phrase(syntax,nullptr),
-            die(
+            throw Exception(cx,
                 "Internal error: max applied to a reactive value");
             //return make<Divide_Expr>(share(syntax), std::move(x), std::move(y));
         }
@@ -335,11 +333,10 @@ struct Min_Function : public Legacy_Function
             return 0.0/0.0;
         }
         static Shared<Operation> make_expr(
-            const Phrase& syntax,
+            const At_Syntax& cx,
             Shared<Operation> x, Shared<Operation> y)
         {
-            //throw Exception(At_Phrase(syntax,nullptr),
-            die(
+            throw Exception(cx,
                 "Internal error: min applied to a reactive value");
             //return make<Divide_Expr>(share(syntax), std::move(x), std::move(y));
         }

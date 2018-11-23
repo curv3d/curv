@@ -21,10 +21,11 @@ Value add(Value a, Value b, const At_Syntax& cx)
     struct Scalar_Op {
         static double f(double x, double y) { return x + y; }
         static Shared<Operation> make_expr(
-            const Phrase& syntax,
+            const At_Syntax& cx,
             Shared<Operation> x, Shared<Operation> y)
         {
-            return make<Add_Expr>(share(syntax), std::move(x), std::move(y));
+            return make<Add_Expr>(share(cx.syntax()),
+                std::move(x), std::move(y));
         }
         static const char* name() { return "+"; }
         static Shared<const String> callstr(Value x, Value y) {
@@ -40,10 +41,11 @@ Value multiply(Value a, Value b, const At_Syntax& cx)
     struct Scalar_Op {
         static double f(double x, double y) { return x * y; }
         static Shared<Operation> make_expr(
-            const Phrase& syntax,
+            const At_Syntax& cx,
             Shared<Operation> x, Shared<Operation> y)
         {
-            return make<Multiply_Expr>(share(syntax), std::move(x), std::move(y));
+            return make<Multiply_Expr>(share(cx.syntax()),
+                std::move(x), std::move(y));
         }
         static const char* name() { return "*"; }
         static Shared<const String> callstr(Value x, Value y) {

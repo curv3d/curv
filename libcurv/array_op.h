@@ -51,12 +51,12 @@ struct Binary_Numeric_Array_Op
             auto& syn = cx.syntax();
             if (y.is_num())
                 return {make<Reactive_Expression>(GL_Type::Num,
-                    Scalar_Op::make_expr(syn, xre->expr(syn),
+                    Scalar_Op::make_expr(cx, xre->expr(syn),
                         make<Constant>(share(syn), y)))};
             auto yre = y.dycast<Reactive_Value>();
             if (yre && yre->gltype_ == GL_Type::Num)
                 return {make<Reactive_Expression>(GL_Type::Num,
-                    Scalar_Op::make_expr(syn,
+                    Scalar_Op::make_expr(cx,
                         xre->expr(syn), yre->expr(syn)))};
         }
         if (auto ylist = y.dycast<List>())
@@ -81,7 +81,7 @@ struct Binary_Numeric_Array_Op
                 auto& syn = cx.syntax();
                 if (exre && exre->gltype_ == GL_Type::Num)
                     (*result)[i] = {make<Reactive_Expression>(GL_Type::Num,
-                        Scalar_Op::make_expr(syn,
+                        Scalar_Op::make_expr(cx,
                             exre->expr(syn),
                             make<Constant>(share(syn), y)))};
                 else throw Exception(cx,
@@ -107,7 +107,7 @@ struct Binary_Numeric_Array_Op
                 auto& syn = cx.syntax();
                 if (eyre && eyre->gltype_ == GL_Type::Num)
                     (*result)[i] = {make<Reactive_Expression>(GL_Type::Num,
-                        Scalar_Op::make_expr(syn,
+                        Scalar_Op::make_expr(cx,
                             make<Constant>(share(syn), x),
                             eyre->expr(syn)))};
                 else throw Exception(cx,
