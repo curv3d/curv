@@ -3,6 +3,7 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/context.h>
+#include <libcurv/exception.h>
 #include <libcurv/geom/viewed_shape.h>
 #include <iostream>
 
@@ -91,6 +92,13 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
         };
         Value result = sh_call->call({cparams}, *f2);
         std::cerr << "parametric shape: " << result << "\n";
+
+        auto r = result.dycast<Record>();
+        if (r == nullptr)
+            throw Exception{cx, stringify(
+                "bad parametric shape: call function returns non-record: ",
+                result)};
+        Shape_Program shape2(shape, r, this);
     }
 
     // Non-parametric case.

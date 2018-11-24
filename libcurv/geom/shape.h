@@ -22,6 +22,7 @@ struct Phrase;
 
 namespace geom {
 
+struct Viewed_Shape;
 using Vec3 = glm::dvec3;
 
 // axis aligned bounding box
@@ -82,10 +83,18 @@ struct Shape_Program final : public Shape
     std::unique_ptr<Frame> dist_frame_;
     std::unique_ptr<Frame> colour_frame_;
 
+    Viewed_Shape* viewed_shape_ = nullptr;
+
     Shape_Program(Program&);
 
     // If the value is a shape, fill in the shape fields and return true.
+    // Used with the first constructor.
     bool recognize(Value);
+
+    // This is called from the Viewed_Shape constructor, after a
+    // parametric shape has been recognized. We construct a Shape_Program
+    // that describes a parametric shape.
+    Shape_Program(const Shape_Program&, Shared<Record>, Viewed_Shape*);
 
     /// Invoke the Geometry Compiler on the shape's `dist` function.
     GL_Value gl_dist(GL_Value, GL_Compiler&) const;

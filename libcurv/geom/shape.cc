@@ -119,6 +119,35 @@ Shape_Program::recognize(Value val)
     return true;
 }
 
+Shape_Program::Shape_Program(
+    const Shape_Program& shape,
+    Shared<Record> r,
+    Viewed_Shape* vs)
+:
+    nub_(shape.nub_),
+    system_(shape.system_),
+    record_(r),
+    viewed_shape_(vs)
+{
+    is_2d_ = shape.is_2d_;
+    is_3d_ = shape.is_3d_;
+    bbox_ = shape.bbox_;
+
+    At_Program cx(*this);
+
+    if (r->hasfield("dist"))
+        dist_fun_ = r->getfield("dist", cx).to<Function>(cx);
+    else
+        throw Exception{cx, stringify(
+            "bad parametric shape: call result has no 'dist' field: ", r)};
+
+    if (r->hasfield("colour"))
+        colour_fun_ = r->getfield("colour", cx).to<Function>(cx);
+    else
+        throw Exception{cx, stringify(
+            "bad parametric shape: call result has no 'colour' field: ", r)};
+}
+
 struct GL_Data_Ref : public Operation
 {
     GL_Value val_;
