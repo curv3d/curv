@@ -306,9 +306,12 @@ struct Max_Function : public Legacy_Function
         Shared<Operation> make_expr(
             Shared<Operation> x, Shared<Operation> y) const
         {
-            throw Exception(cx,
-                "Internal error: max applied to a reactive value");
-            //return make<Divide_Expr>(share(syntax), std::move(x), std::move(y));
+            return make<Call_Expr>(
+                share(*cx.call_frame_.call_phrase_),
+                make<Constant>(
+                    cx.call_frame_.call_phrase_->function_,
+                    Value{share(cx.fun_)}),
+                List_Expr::make({x, y}, cx.call_frame_.call_phrase_->arg_));
         }
         static const char* name() { return "max"; }
         static Shared<const String> callstr(Value x, Value y) {
@@ -344,9 +347,12 @@ struct Min_Function : public Legacy_Function
         Shared<Operation> make_expr(
             Shared<Operation> x, Shared<Operation> y) const
         {
-            throw Exception(cx,
-                "Internal error: min applied to a reactive value");
-            //return make<Divide_Expr>(share(syntax), std::move(x), std::move(y));
+            return make<Call_Expr>(
+                share(*cx.call_frame_.call_phrase_),
+                make<Constant>(
+                    cx.call_frame_.call_phrase_->function_,
+                    Value{share(cx.fun_)}),
+                List_Expr::make({x, y}, cx.call_frame_.call_phrase_->arg_));
         }
         static const char* name() { return "min"; }
         static Shared<const String> callstr(Value x, Value y) {
