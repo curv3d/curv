@@ -99,12 +99,16 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
                 "bad parametric shape: call function returns non-record: ",
                 result)};
         Shape_Program shape2(shape, r, this);
-    }
 
-    // Non-parametric case.
-    std::stringstream frag;
-    export_frag(shape, opts, frag);
-    frag_ = frag.str();
+        std::stringstream frag;
+        export_frag(shape2, opts, frag);
+        frag_ = frag.str();
+    } else {
+        // Non-parametric case.
+        std::stringstream frag;
+        export_frag(shape, opts, frag);
+        frag_ = frag.str();
+    }
 }
 
 }} // namespace

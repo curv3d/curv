@@ -14,7 +14,6 @@
 namespace curv {
 
 struct Operation;
-struct Call_Phrase;
 struct Phrase;
 struct List_Expr_Base;
 using List_Expr = Tail_Array<List_Expr_Base>;
@@ -129,10 +128,10 @@ struct GL_Frame_Base
     GL_Frame* parent_frame_;
 
     /// If this is a function call frame, then call_phrase_ is the source code
-    /// for the function call, otherwise it's nullptr. This is debug metadata.
-    /// Module frames do not have a call_phrase_. If the call_phrase_ is null,
-    /// then the frame does not appear in a stack trace.
-    const Call_Phrase* call_phrase_;
+    /// for the function call. If it is a frame for a reactive value expression,
+    /// then it's source code for the expression. Otherwise it's nullptr.
+    /// If not null, then the phrase creates a stack trace entry.
+    const Phrase* call_phrase_;
 
     /// Slot array containing the values of nonlocal bindings.
     ///
@@ -157,7 +156,7 @@ struct GL_Frame_Base
         GL_Compiler& g,
         const Context* cx,
         GL_Frame* parent,
-        const Call_Phrase* src)
+        const Phrase* src)
     :
         gl(g),
         root_context_(cx),

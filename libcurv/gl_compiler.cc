@@ -13,6 +13,7 @@
 #include <libcurv/gl_compiler.h>
 #include <libcurv/gl_context.h>
 #include <libcurv/meaning.h>
+#include <libcurv/reactive.h>
 
 namespace curv {
 
@@ -125,6 +126,11 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                 return result;
             }
         }
+        goto error;
+    }
+    if (auto re = val.dycast<Reactive_Expression>()) {
+        auto f2 = GL_Frame::make(0, f.gl, nullptr, &f, &syntax);
+        return re->expr_->gl_eval(*f2);
     }
 error:
     throw Exception(At_GL_Phrase(share(syntax), f),
