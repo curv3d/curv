@@ -255,9 +255,14 @@ void Viewer::render()
         shader_.setUniform("u_centre3d", u_centre3d_);
         shader_.setUniform("u_up3d", u_up3d_);
     }
-
     glm::mat4 mvp = glm::mat4(1.);
     shader_.setUniform("u_modelViewProjectionMatrix", mvp);
+
+    for (auto& p : shape_.params_) {
+        // TODO: precompute uniform id; switch on param type
+        auto name = stringify("rv_",p.name_);
+        shader_.setUniform(name->c_str(), float(p.pstate_.slider_));
+    }
 
     vbo_->draw(&shader_);
 

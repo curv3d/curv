@@ -22,8 +22,7 @@ void glsl_function_export(const Shape_Program& shape, std::ostream& out)
     if (shape.viewed_shape_) {
         // output uniform variables for parametric shape
         for (auto& p : shape.viewed_shape_->params_) {
-            out << "const float rv_" << p.name_ << " = " << p.pstate_.slider_
-                << ";\n";
+            out << "uniform float rv_" << p.name_ << ";\n";
         }
     }
 
