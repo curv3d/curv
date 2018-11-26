@@ -1,8 +1,0 @@
-let
-function(f) = make_shape {
-    dist p : p[Y] - f(p[X]),
-    is_2d : true,
-};
-
-in
-function (n->sin n * sin(n*10))

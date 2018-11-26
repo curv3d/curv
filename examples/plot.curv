@@ -1,0 +1,8 @@
+let
+plot(f) = make_shape {
+    dist p : p[Y] - f(p[X]),
+    is_2d : true,
+} >> show_axes;
+
+in
+plot (x->sin x * sin(x*10))
