@@ -1,0 +1,32 @@
+Syntax Colouring
+================
+* The colour scheme looks good with a black background,
+  and also with a white background.
+* The colour scheme is well designed and harmonious. It highlights important
+  syntactic distinctions while avoiding visual clutter.
+
+The colour scheme can or should make the following distinctions:
+* between identifiers and keywords
+* between identifiers and numerals
+* between numerals and the `..` operator
+* between comments and non-comments
+* between strings and non-strings
+* between expressions and statements/definitions
+* lexical errors are shown as error tokens with a red background, white text
+
+It's hard to create a portable colour scheme for ANSI colours, since you
+don't know what palette is installed or what the text/background colours are.
+Some colours must be avoided, like bright yellow, which isn't legible against
+a white background.
+
+Solarized is a well designed standard 16-colour palette:
+   https://ethanschoonover.com/solarized/
+I'd like to design a syntax colour scheme for Solarized, which can be activated
+if the user has Solarized installed. It will look better than our default
+portable colour scheme.
+
+Curv programs are mostly made of expressions. By default, expression tokens
+have the default text colour (white on a black background, or black on a white
+background). This includes: ordinary identifiers, expression operators.
+
+Comments are blue.
