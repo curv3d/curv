@@ -12,7 +12,9 @@
 #include <libcurv/function.h>
 #include <libcurv/gl_compiler.h>
 #include <libcurv/gl_context.h>
+#include <libcurv/math.h>
 #include <libcurv/meaning.h>
+#include <libcurv/picker.h>
 #include <libcurv/reactive.h>
 
 namespace curv {
@@ -71,8 +73,14 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
     }
     if (auto list = val.dycast<List>()) {
         if (list->size() >= 2 && list->size() <= 4) {
-            if (list->front().is_num()) {
+            if (isnum(list->front())) {
                 // vector
+                GL_Value values[4];
+                for (unsigned i = 0; i < list->size(); ++i) {
+                    values[i] = gl_eval_const(f, list->at(i), syntax);
+                    if (values[i].type != GL_Type::Num)
+                        goto error;
+                }
                 static GL_Type types[5] = {
                     {}, {}, GL_Type::Vec2, GL_Type::Vec3, GL_Type::Vec4
                 };
@@ -86,13 +94,10 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                     << result.type
                     << "(";
                 bool first = true;
-                for (auto e : *list) {
-                    if (e.is_num()) {
-                        if (!first) f.gl.out << ",";
-                        first = false;
-                        f.gl.out << dfmt(e.get_num_unsafe(), dfmt::EXPR);
-                    } else
-                        goto error;
+                for (unsigned i = 0; i < list->size(); ++i) {
+                    if (!first) f.gl.out << ",";
+                    first = false;
+                    f.gl.out << values[i];
                 }
                 f.gl.out << ");\n";
                 return result;
@@ -131,6 +136,12 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
     if (auto re = val.dycast<Reactive_Expression>()) {
         auto f2 = GL_Frame::make(0, f.gl, nullptr, &f, &syntax);
         return re->expr_->gl_eval(*f2);
+    }
+    if (auto uv = val.dycast<Uniform_Variable>()) {
+        GL_Value result = f.gl.newvalue(uv->gltype_);
+        f.gl.out << "  " << gl_type_name(uv->gltype_)
+            << " " << result << " = rv_" << uv->name_ << ";\n";
+        return result;
     }
 error:
     throw Exception(At_GL_Phrase(share(syntax), f),

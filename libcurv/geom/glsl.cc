@@ -5,6 +5,7 @@
 #include <libcurv/geom/glsl.h>
 
 #include <libcurv/geom/shape.h>
+#include <libcurv/geom/viewed_shape.h>
 
 #include <libcurv/die.h>
 #include <libcurv/dtostr.h>
@@ -17,6 +18,14 @@ namespace curv { namespace geom {
 void glsl_function_export(const Shape_Program& shape, std::ostream& out)
 {
     GL_Compiler gl(out, GL_Target::glsl, shape.system());
+
+    if (shape.viewed_shape_) {
+        // output uniform variables for parametric shape
+        for (auto& p : shape.viewed_shape_->params_) {
+            out << "const float rv_" << p.name_ << " = " << p.pstate_.slider_
+                << ";\n";
+        }
+    }
 
     GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
     out <<
