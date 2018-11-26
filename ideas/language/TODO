@@ -636,6 +636,28 @@ This can't be extended to the arithmetic operators, since (+a) and (-a) already
 have a different meaning. Sections of the boolean ops && and || aren't useful.
 
 ## Indentation As Syntax
+Note: The main problem that "indentation as syntax" solves is the redundancy
+between two kinds of information: layout, that tells the human reader how the
+code is hierarchically structured, and punctuation like { ; } that tells the
+compiler how the code is structured. It's a problem if you have to manually
+keep these two kinds of information in sync, and confusing if they get out of
+sync.
+
+I would like a smart editor that automatically generates layout for an
+expression-oriented functional language, and that automatically reflows
+the text when the window width changes. With such an editor, I don't need
+to manually specify layout. I don't need to ever hit the return key or
+issue indent/undent commands. The layout is generated from the punctuation
+that I write. This is attractive for Curv, since it's not statement oriented:
+instead of a single kind of list (a statement list) that can be described
+using layout, there are 3 kinds of list (a;b), [a;b] and {a;b} that need to
+be distinguished using punctuation.
+
+This means that, instead of getting rid of manually specified punctuation,
+I'd like to get rid of manually specified layout. Indentation as syntax is
+not my preferred solution to the problem. (Must be Lisp editors that work
+this way. Investigate?)
+
 let:
   x=1
   y=2

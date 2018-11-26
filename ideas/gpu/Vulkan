@@ -8,12 +8,15 @@ Here are the platforms that I might want Curv to support:
 * Web (via WebAssembly?)
 * Chromebook: runs Chrome (HTML5), Android, & Debian apps (v69+, newer hardware)
 
-(No RaspberryPi, because there is no compute shader support.)
-(No iOS, because the App Store restrictions are incompatible with the
-principles and practices of Open Source software.)
-(Probably no Windows UWP. In Sept 2018, >50% of Windows users can't run UWP
-executables, and there's no real downside to WIN32 only. UWP is unpopular,
-has worse GPU support, MS has stopped developing the UWP version of Office.)
+* No RaspberryPi, because there is no compute shader support.
+* No iOS, because the App Store restrictions are incompatible with the
+  principles and practices of Open Source software.
+* Probably no Windows UWP. In Sept 2018, >50% of Windows users can't run UWP
+  executables, and there's no real downside to WIN32 only. UWP is unpopular,
+  has worse GPU support, MS has stopped developing the UWP version of Office.
+* Nov 2018: How committed is Apple to the Mac? The iPad Pro is being marketed
+  as a Mac replacement. The Mac seems a weak match to Apple's business model.
+  OpenGL is deprecated. I may drop Mac support when OpenGL is finally dropped.
 
 And here are the APIs supported by these platforms:
 | Linux         | GL  EGL  Vulkan
@@ -25,7 +28,7 @@ And here are the APIs supported by these platforms:
 
 My strategy:
 * Use OpenGL until I hit a brick wall. Perhaps support multiple versions of
-  OpenGL, to increase the range of systems that can run Curv.
+  OpenGL, to increase the range of systems that can run Curv?
 * Wait for the next-gen cross platform API. It won't be "Vulkan Portability",
   because that will never work on the web. See if WebGPU succeeds, and if
   a cross platform C library API is created for it.
