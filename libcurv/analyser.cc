@@ -240,8 +240,13 @@ Unary_Phrase::as_definition(Environ& env)
     }
 }
 
-Shared<Meaning>
-Lambda_Phrase::analyse(Environ& env) const
+Shared<Lambda_Expr>
+analyse_lambda(
+    Environ& env,
+    Shared<const Phrase> src,
+    bool shared_nonlocals,
+    Shared<const Phrase> left,
+    Shared<const Phrase> right)
 {
     struct Arg_Scope : public Scope
     {
@@ -280,18 +285,23 @@ Lambda_Phrase::analyse(Environ& env) const
             }
             return m;
         }
-    } scope(env, shared_nonlocals_);
+    } scope(env, shared_nonlocals);
 
-    auto src = share(*this);
-    auto pattern = make_pattern(*left_, scope, 0);
+    auto pattern = make_pattern(*left, scope, 0);
     pattern->analyse(scope);
-    auto expr = analyse_op(*right_, scope);
+    auto expr = analyse_op(*right, scope);
     auto nonlocals = make<Enum_Module_Expr>(src,
         std::move(scope.nonlocal_dictionary_),
         std::move(scope.nonlocal_exprs_));
 
     return make<Lambda_Expr>(
         src, pattern, expr, nonlocals, scope.frame_maxslots_);
+}
+
+Shared<Meaning>
+Lambda_Phrase::analyse(Environ& env) const
+{
+    return analyse_lambda(env, share(*this), shared_nonlocals_, left_, right_);
 }
 
 Shared<Meaning>
@@ -428,6 +438,22 @@ Where_Phrase::analyse(Environ& env) const
     Shared<const Phrase> syntax = share(*this);
     Shared<Phrase> bindings = right_;
     Shared<const Phrase> bodysrc = left_;
+
+    // parametric {params} body where bindings
+    // is reparsed as
+    // parametric {params} (body where bindings)
+    auto para = cast<const Parametric_Phrase>(bodysrc);
+    if (para) {
+        auto newparse = make<Parametric_Phrase>(
+            para->keyword_,
+            para->param_,
+            make<Where_Phrase>(
+                para->body_,
+                op_,
+                bindings));
+        return newparse->analyse(env);
+    }
+
     auto let = cast<const Let_Phrase>(bodysrc);
     if (let && let->let_.kind_ == Token::k_let)
     {
@@ -779,6 +805,13 @@ While_Phrase::analyse(Environ& env) const
     auto cond = analyse_op(*args_, env);
     auto body = analyse_tail(*body_, env);
     return make<While_Action>(share(*this), cond, body);
+}
+
+Shared<Meaning>
+Parametric_Phrase::analyse(Environ& env) const
+{
+    auto ctor = analyse_lambda(env, share(*this), false, param_, body_);
+    return make<Parametric_Expr>(share(*this), ctor);
 }
 
 Shared<Meaning>

@@ -529,39 +529,6 @@ struct Match_Function : public Legacy_Function
     }
 };
 
-struct Make_Parametric_Function : public Legacy_Function
-{
-    static const char* name() { return "make_parametric"; }
-    Make_Parametric_Function() : Legacy_Function(1,name()) {}
-    Value call(Frame& f) override
-    {
-        // TODO: rewrite `make_parametric` in Curv language.
-        At_Arg cx(*this, f);
-        auto fun = f[0].to<Function>(cx);
-        auto closure = cast<Closure>(fun);
-        if (closure == nullptr) {
-            throw Exception(cx,
-                stringify("the parameter of ",f[0],
-                          " is not a record pattern"));
-        }
-        Call_Phrase* call_phrase = nullptr; // TODO?
-        std::unique_ptr<Frame> f2 {
-            Frame::make(fun->nslots_, f.system_, &f, call_phrase, nullptr)
-        };
-        auto default_arg = record_pattern_default_value(*closure->pattern_,*f2);
-        Value res = closure->call({default_arg}, *f2);
-        auto rec = res.to<Record>(cx);
-        auto drec = make<DRecord>();
-        rec->each_field(cx, [&](Symbol id, Value val) -> void {
-            drec->fields_[id] = val;
-        });
-        // TODO: The `call` function should return another parametric record.
-        drec->fields_["call"] = f[0];
-        drec->fields_["parameter"] = {default_arg};
-        return {drec};
-    }
-};
-
 struct Slider_Function : public Legacy_Function
 {
     static const char* name() { return "slider"; }
@@ -966,7 +933,6 @@ builtin_namespace()
     FUNCTION(Decode_Function),
     FUNCTION(Encode_Function),
     FUNCTION(Match_Function),
-    FUNCTION(Make_Parametric_Function),
     FUNCTION(Slider_Function),
 
     {"file", make<Builtin_Meaning<File_Metafunction>>()},

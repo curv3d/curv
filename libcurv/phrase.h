@@ -504,6 +504,29 @@ struct While_Phrase : public Control_Phrase
     virtual Shared<Meaning> analyse(Environ&) const override;
 };
 
+struct Parametric_Phrase : public Phrase
+{
+    Token keyword_;
+    Shared<Brace_Phrase> param_;
+    Shared<Phrase> body_;
+
+    Parametric_Phrase(
+        Token keyword,
+        Shared<Brace_Phrase> param,
+        Shared<Phrase> body)
+    :
+        keyword_(keyword),
+        param_(param),
+        body_(body)
+    {}
+
+    virtual Location location() const override
+    {
+        return body_->location().starting_at(keyword_);
+    }
+    virtual Shared<Meaning> analyse(Environ&) const override;
+};
+
 struct Range_Phrase : public Phrase
 {
     Range_Phrase(

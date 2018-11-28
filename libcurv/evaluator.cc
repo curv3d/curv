@@ -898,4 +898,29 @@ Predicate_Assertion_Expr::eval(Frame& f) const
     throw Exception(At_Phrase(*syntax_, f), "predicate assertion failed");
 }
 
+Value
+Parametric_Expr::eval(Frame& f) const
+{
+    At_Phrase cx(*syntax_, f);
+    Value fun = ctor_->eval(f);
+    auto closure = fun.dycast<Closure>();
+    if (closure == nullptr)
+        throw Exception(cx, "internal error in Parametric_Expr");
+    Call_Phrase* call_phrase = nullptr; // TODO?
+    std::unique_ptr<Frame> f2 {
+        Frame::make(closure->nslots_, f.system_, &f, call_phrase, nullptr)
+    };
+    auto default_arg = record_pattern_default_value(*closure->pattern_,*f2);
+    Value res = closure->call({default_arg}, *f2);
+    auto rec = res.to<Record>(cx);
+    auto drec = make<DRecord>();
+    rec->each_field(cx, [&](Symbol id, Value val) -> void {
+        drec->fields_[id] = val;
+    });
+    // TODO: The `call` function should return another parametric record.
+    drec->fields_["call"] = fun;
+    drec->fields_["parameter"] = {default_arg};
+    return {drec};
+}
+
 } // namespace curv

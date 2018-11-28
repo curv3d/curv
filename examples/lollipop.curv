@@ -1,12 +1,12 @@
-// This is experimental syntax for declaring graphical sliders. It will change.
+// This is experimental syntax for declaring parameters that are bound
+// to graphical sliders in the Viewer window. It may change.
 
-make_parametric ({
+parametric {
     diam :: slider(.5, 2) = 1;
     len :: slider(2, 8) = 4;
-} -> (
+}
 union(candy, stick)
-
 where (
-candy = sphere diam >> colour red;
-stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
-)))
+    candy = sphere diam >> colour red;
+    stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
+)

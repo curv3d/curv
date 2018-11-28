@@ -238,6 +238,7 @@ is_item_end_token(Token::Kind k)
 //  | 'while' parens item
 //  | 'let' list 'in' item
 //  | 'do' list 'in' item
+//  | 'parametric' primary item
 Shared<Phrase>
 parse_item(Scanner& scanner)
 {
@@ -308,6 +309,16 @@ parse_item(Scanner& scanner)
                 "while: malformed argument");
         auto body = parse_item(scanner);
         return make<While_Phrase>(tok, args, body);
+      }
+    case Token::k_parametric:
+      {
+        auto p = parse_primary(scanner, "argument following 'parametric'");
+        auto param = cast<Brace_Phrase>(p);
+        if (param == nullptr)
+            throw Exception(At_Phrase(*p, scanner),
+                "parametric: malformed argument");
+        auto body = parse_item(scanner);
+        return make<Parametric_Phrase>(tok, param, body);
       }
     default:
         break;

@@ -314,7 +314,7 @@ assert((1::is_num) == 1);
 assert_error("predicate assertion failed", true::is_num);
 
 let
-    r = make_parametric({a=1,b=2}->{x:a,y:b});
+    r = parametric {a=1,b=2} {x:a,y:b};
     r2 = r{a:10,b:20};
 in (
     assert(fields r == ["call","parameter","x","y"]);

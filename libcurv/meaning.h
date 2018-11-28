@@ -927,5 +927,20 @@ struct Assoc : public Operation
     virtual void bind(Frame&, DRecord&) const override;
 };
 
+struct Parametric_Expr : public Just_Expression
+{
+    Shared<Lambda_Expr> ctor_;
+
+    Parametric_Expr(
+        Shared<const Phrase> syntax,
+        Shared<Lambda_Expr> ctor)
+    :
+        Just_Expression(std::move(syntax)),
+        ctor_(std::move(ctor))
+    {}
+
+    virtual Value eval(Frame&) const override;
+};
+
 } // namespace curv
 #endif // header guard
