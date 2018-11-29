@@ -12,30 +12,33 @@ precedence and ``postfix`` being the highest precedence::
 
   program ::= list
 
-  list ::= empty | item | commas | semicolons | item 'where' list
+  list ::= empty | item | commas | semicolons
     commas ::= item ',' | item ',' item | item ',' commas
     semicolons ::= optitem | semicolons ';' optitem
     optitem ::= empty | item
 
-  item ::= pipeline
-    | '...' item
-    | 'include' item
-    | pipeline '=' item
-    | pipeline ':=' item
+  item ::= ritem | ritem `where` ritem
+  
+  ritem ::= pipeline
+    | '...' ritem
+    | 'include' ritem
+    | pipeline '=' ritem
+    | pipeline ':=' ritem
     | pipeline ':'
-    | pipeline ':' item
-    | pipeline '->' item
-    | pipeline '<<' item
-    | 'if' parens item
-    | 'if' parens item 'else' item
-    | 'for' '(' item 'in' item ')' item
-    | 'while' parens item
-    | 'let' list 'in' item
-    | 'do' list 'in' item
+    | pipeline ':' ritem
+    | pipeline '->' ritem
+    | pipeline '<<' ritem
+    | 'if' parens ritem
+    | 'if' parens ritem 'else' ritem
+    | 'for' '(' ritem 'in' ritem ')' ritem
+    | 'while' parens ritem
+    | 'let' list 'in' ritem
+    | 'do' list 'in' ritem
 
   pipeline ::= disjunction
     | pipeline '>>' disjunction
     | pipeline '`' postfix '`' disjunction
+    | pipeline '::' disjunction
 
   disjunction ::= conjunction | disjunction '||' conjunction
 
