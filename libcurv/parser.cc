@@ -27,6 +27,7 @@ Shared<Phrase> parse_list(Scanner&);
 Shared<Phrase> parse_semicolons(Scanner&, Shared<Phrase> firstitem);
 Shared<Phrase> parse_commas(Scanner&, Shared<Phrase> firstitem);
 Shared<Phrase> parse_item(Scanner&);
+Shared<Phrase> parse_ritem(Scanner&);
 Shared<Phrase> parse_pipeline(Scanner&);
 Shared<Phrase> parse_disjunction(Scanner&);
 Shared<Phrase> parse_conjunction(Scanner&);
@@ -69,7 +70,6 @@ is_list_end_token(Token::Kind k)
 }
 
 // list : empty | item | commas | semicolons
-//      | item `where` list
 Shared<Phrase>
 parse_list(Scanner& scanner)
 {
@@ -92,10 +92,6 @@ parse_list(Scanner& scanner)
         return parse_commas(scanner, item);
     if (tok.kind_ == Token::k_semicolon)
         return parse_semicolons(scanner, item);
-    if (tok.kind_ == Token::k_where) {
-        tok = scanner.get_token();
-        return make<Where_Phrase>(std::move(item), tok, parse_list(scanner));
-    }
     throw Exception(At_Token(tok, scanner), "syntax error in list");
 }
 
@@ -205,8 +201,22 @@ parse_semicolons(Scanner& scanner, Shared<Phrase> firstitem)
     }
 }
 
+// item : ritem | ritem `where` ritem
+Shared<Phrase>
+parse_item(Scanner& scanner)
+{
+    auto ritem = parse_ritem(scanner);
+    Token tok = scanner.get_token();
+    if (tok.kind_ == Token::k_where) {
+        return make<Where_Phrase>(std::move(ritem), tok, parse_ritem(scanner));
+    } else {
+        scanner.push_token(tok);
+        return ritem;
+    }
+}
+
 bool
-is_item_end_token(Token::Kind k)
+is_ritem_end_token(Token::Kind k)
 {
     if (is_list_end_token(k))
         return true;
@@ -223,24 +233,24 @@ is_item_end_token(Token::Kind k)
 
 // Low precedence right associative operators.
 //
-// item : pipeline
-//  | ... item
-//  | 'include' item
-//  | pipeline = item
-//  | pipeline := item
+// ritem : pipeline
+//  | ... ritem
+//  | 'include' ritem
+//  | pipeline = ritem
+//  | pipeline := ritem
 //  | pipeline :
-//  | pipeline : item
-//  | pipeline -> item
-//  | pipeline << item
-//  | 'if' primary item
-//  | 'if' primary item 'else' item
-//  | 'for' '(' item 'in' item ')' item
-//  | 'while' parens item
-//  | 'let' list 'in' item
-//  | 'do' list 'in' item
-//  | 'parametric' primary item
+//  | pipeline : ritem
+//  | pipeline -> ritem
+//  | pipeline << ritem
+//  | 'if' primary ritem
+//  | 'if' primary ritem 'else' ritem
+//  | 'for' '(' ritem 'in' ritem ')' ritem
+//  | 'while' parens ritem
+//  | 'let' list 'in' ritem
+//  | 'do' list 'in' ritem
+//  | 'parametric' primary ritem
 Shared<Phrase>
-parse_item(Scanner& scanner)
+parse_ritem(Scanner& scanner)
 {
     auto tok = scanner.get_token();
     switch (tok.kind_) {
@@ -346,7 +356,7 @@ parse_item(Scanner& scanner)
         auto tok2 = scanner.get_token();
         scanner.push_token(tok2);
         Shared<Phrase> right;
-        if (is_item_end_token(tok2.kind_)) {
+        if (is_ritem_end_token(tok2.kind_)) {
             tok2.kind_ = Token::k_missing;
             tok2.last_ = tok2.first_;
             right = make<Empty_Phrase>(Location{*scanner.source_, tok2});
