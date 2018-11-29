@@ -38,13 +38,31 @@ struct Binary_Numeric_Array_Op
     static Value
     op(const Scalar_Op& f, Value x, Value y)
     {
+        // if both x and y are numbers
         double r = f.call(x.get_num_or_nan(), y.get_num_or_nan());
         if (r == r)
             return {r};
+
+        // if x, y, or both, are lists
         if (auto xlist = x.dycast<List>()) {
             if (auto ylist = y.dycast<List>())
                 return {element_wise_op(f, xlist, ylist)};
             return {broadcast_left(f, xlist, y)};
+        }
+        if (auto ylist = y.dycast<List>())
+            return {broadcast_right(f, x, ylist)};
+
+        // One of x or y is reactive, the other is a number.
+        // Both x and y are reactive.
+        if (x.is_num()) {
+            auto yre = y.dycast<Reactive_Value>();
+            if (yre && yre->gltype_ == GL_Type::Num) {
+                auto& syn = f.cx.syntax();
+                return {make<Reactive_Expression>(GL_Type::Num,
+                    f.make_expr(
+                        make<Constant>(share(syn), x),
+                        yre->expr(syn)))};
+            }
         }
         auto xre = x.dycast<Reactive_Value>();
         if (xre && xre->gltype_ == GL_Type::Num) {
@@ -58,8 +76,7 @@ struct Binary_Numeric_Array_Op
                 return {make<Reactive_Expression>(GL_Type::Num,
                     f.make_expr(xre->expr(syn), yre->expr(syn)))};
         }
-        if (auto ylist = y.dycast<List>())
-            return {broadcast_right(f, x, ylist)};
+
         throw Exception(f.cx,
             stringify(f.callstr(x,y),": domain error"));
     }
@@ -68,24 +85,8 @@ struct Binary_Numeric_Array_Op
     broadcast_left(const Scalar_Op& f, Shared<List> xlist, Value y)
     {
         Shared<List> result = List::make(xlist->size());
-        for (unsigned i = 0; i < xlist->size(); ++i) {
-            Value ex = (*xlist)[i];
-            double r = f.call(ex.get_num_or_nan(),y.get_num_or_nan());
-            if (r == r)
-                (*result)[i] = {r};
-            else if (auto exlist = ex.dycast<List>())
-                (*result)[i] = {broadcast_left(f, exlist, y)};
-            else {
-                auto exre = ex.dycast<Reactive_Value>();
-                auto& syn = f.cx.syntax();
-                if (exre && exre->gltype_ == GL_Type::Num)
-                    (*result)[i] = {make<Reactive_Expression>(GL_Type::Num,
-                        f.make_expr(exre->expr(syn),
-                            make<Constant>(share(syn), y)))};
-                else throw Exception(f.cx,
-                    stringify(f.callstr(ex,y),": domain error"));
-            }
-        }
+        for (unsigned i = 0; i < xlist->size(); ++i)
+            (*result)[i] = op(f, (*xlist)[i], y);
         return result;
     }
 
@@ -93,24 +94,8 @@ struct Binary_Numeric_Array_Op
     broadcast_right(const Scalar_Op& f, Value x, Shared<List> ylist)
     {
         Shared<List> result = List::make(ylist->size());
-        for (unsigned i = 0; i < ylist->size(); ++i) {
-            Value ey = (*ylist)[i];
-            double r = f.call(x.get_num_or_nan(), ey.get_num_or_nan());
-            if (r == r)
-                (*result)[i] = {r};
-            else if (auto eylist = ey.dycast<List>())
-                (*result)[i] = {broadcast_right(f, x, eylist)};
-            else {
-                auto eyre = ey.dycast<Reactive_Value>();
-                auto& syn = f.cx.syntax();
-                if (eyre && eyre->gltype_ == GL_Type::Num)
-                    (*result)[i] = {make<Reactive_Expression>(GL_Type::Num,
-                        f.make_expr(make<Constant>(share(syn), x),
-                            eyre->expr(syn)))};
-                else throw Exception(f.cx,
-                    stringify(f.callstr(x,ey),": domain error"));
-            }
-        }
+        for (unsigned i = 0; i < ylist->size(); ++i)
+            (*result)[i] = op(f, x, (*ylist)[i]);
         return result;
     }
 
