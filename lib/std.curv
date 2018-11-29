@@ -270,7 +270,7 @@ perimeter_extrude perimeter cross_section =
 // POLYTOPES //
 ///////////////
 
-half_space = (
+half_space =
     match [
     {d, normal: n} -> impl(d*n,n);
     [a, b, c] -> impl(a, normalize(cross(b-a,c-b)));
@@ -288,9 +288,9 @@ where (
                        if (n[X]==0 && n[Y]==0 && n[Z]>0) a[Z] else inf, ] ];
             is_3d = true;
         };
-));
+);
 
-half_plane = (
+half_plane =
     match [
     {d, normal: n} -> impl(d*n,n);
     [a, b] -> impl(a, normalize(perp(b-a)));
@@ -308,9 +308,9 @@ where (
                        0, ], ];
             is_2d = true;
         };
-));
+);
 
-square = (
+square =
     {
         ... square_e 2,
         call : square_e,
@@ -332,7 +332,7 @@ square = (
                 is_2d = true;
             };
         square_e d = rect.exact(d,d);
-));
+    );
 
 // rect: an axis aligned rectangle.
 rect = {
@@ -409,7 +409,7 @@ rect = {
 };
 
 // regular_polygon: n is # of sides, d is incircle diameter
-regular_polygon n = (
+regular_polygon n =
     {
         ... mitred 2,
         call: mitred,
@@ -419,7 +419,7 @@ regular_polygon n = (
         angle = tau / n;
         mitred d = half_plane{d: d/2, normal: [0,-1]}
                    >> repeat_radial n;
-));
+    );
 
 // convex polygon: vertices are in counterclockwise order.
 convex_polygon = {
@@ -488,7 +488,7 @@ box = {
         ];
 };
 
-prism n = ({
+prism n = {
     ... prism_m {d: 2, h: 2},
     call : prism_m,
     mitred : {
@@ -497,11 +497,11 @@ prism n = ({
     },
 } where (
     prism_m {d,h} = regular_polygon n .mitred d >> extrude.mitred h;
-));
+);
 
 // TODO: pyramid(n,d,h)
 
-tetrahedron = (
+tetrahedron =
     {
         ... tetrahedron_m 2,
         call : tetrahedron_m,
@@ -539,9 +539,9 @@ tetrahedron = (
                 is_3d : true,
                 bbox : sqrt(3) * [[-r,-r,-r], [r,r,r]],
             };
-));
+    );
 
-cube = (
+cube =
     {
         ... cube_e 2,
         call: cube_e,
@@ -564,9 +564,9 @@ cube = (
                 is_3d = true;
             };
         cube_e d = box.exact(d,d,d);
-));
+    );
 
-octahedron = (
+octahedron =
     {
         ... octahedron_m 2,
         call : octahedron_m,
@@ -595,9 +595,9 @@ octahedron = (
                 is_3d : true,
                 bbox : circumratio * [[-r,-r,-r], [r,r,r]],
             };
-));
+    );
 
-dodecahedron = (
+dodecahedron =
     {
         ... dodecahedron_m 2,
         call : dodecahedron_m,
@@ -630,9 +630,9 @@ dodecahedron = (
                 is_3d : true,
                 bbox : midratio * [[-r,-r,-r],[r,r,r]],
             };
-));
+    );
 
-icosahedron = (
+icosahedron =
     {
         ... icosahedron_m 2,
         call : icosahedron_m,
@@ -674,7 +674,7 @@ icosahedron = (
                 is_3d : true,
                 bbox : midratio * [[-r,-r,-r], [r,r,r]],
             };
-));
+    );
 
 /////////////////////////////////////////////
 // BOOLEAN / SET THEORETIC SHAPE OPERATORS //
@@ -731,7 +731,7 @@ _intersection2 (s1,s2) =
 difference(s1,s2) = _intersection2(s1, complement s2);
 symmetric_difference shapes = difference(union shapes, intersection shapes);
 
-row = (match [
+row = match [
     (is_num d) -> shapes -> row_impl(d,shapes);
     shapes -> row_impl(null, shapes);
 ] where (
@@ -749,7 +749,7 @@ row = (match [
                 i := i + 1;
             );
         in union[for (i in 0..<count shapes) shapes[i] >> move(xdelta[i],0,0)];
-));
+);
 
 smooth k = {
     union (s1,s2) =
