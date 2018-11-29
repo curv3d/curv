@@ -332,5 +332,7 @@ in (
     assert(!(s true));
 );
 
+let a = b where b = 1; in assert(a == 1);
+
 // script return value:
 in null

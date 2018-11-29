@@ -454,6 +454,26 @@ Where_Phrase::analyse(Environ& env) const
         return newparse->analyse(env);
     }
 
+    // a = b where bindings
+    // is reparsed as
+    // a = (b where bindings)
+    //
+    // TODO: I would like to permit a definition to be used as the body of
+    // a `where` or `let`, so that subexpressions in the left side of the
+    // definition are within scope. That's a lot of work to implement. Once
+    // done, this code will go away.
+    auto def = cast<const Recursive_Definition_Phrase>(bodysrc);
+    if (def) {
+        auto newparse = make<Recursive_Definition_Phrase>(
+            def->left_,
+            def->op_,
+            make<Where_Phrase>(
+                def->right_,
+                op_,
+                bindings));
+        return newparse->analyse(env);
+    }
+
     auto let = cast<const Let_Phrase>(bodysrc);
     if (let && let->let_.kind_ == Token::k_let)
     {
