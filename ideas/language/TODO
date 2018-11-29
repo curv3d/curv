@@ -11,7 +11,6 @@ Recent Ideas (Oct 2018):
   2. Enum values are symbols. #foo is a symbol value.
      Use '-Ocolour=#vertex'. See Symbol proposal.
 * Use _ as digit separator in numerals.
-* `X where Y` is an item, not a list. X can be a definition.
 * any, all
 * v[X] := x; v[[X,Y,Z]] := v3;
   * `f x := expr` function definition syntax is *not* supported.
@@ -21,7 +20,6 @@ Recent Ideas (Oct 2018):
 Breaking changes:
 * file.foo and package. Remove 'file pathname'.
 * Remove `a'b` syntax.
-* `x where y` is an item, not a list.
 * function/record equivalence
   * primitive functions have a 'call' field, support 'fields' and 'defined'
     and 'f.call' and 'include' and '...'.
@@ -88,68 +86,16 @@ Comparison to other programming languages:
 However, the current DFN syntax is mostly backwards compatible with JSON,
 modulo $ and \ escapes, which is kind of cool.
 
-## `where` syntax
+## Definition as a Block Body
 
-I would like a `where` expression to be an item, not a list.
-Currently, adding a `where` clause to the end of a definiens requires
-a nonlocal change: wrapping the entire definition body in parens.
-
-New syntax:
-  body where a=1
-  body where (a=1; b=2;)   // consistent with 'compound definition' syntax
-
-Grammar:
-  item ::= ritem | ritem `where` ritem
-  ritem ::= <what used to be called 'item'>
-
-My intention is to write code like this:
-```
-regular_polygon n =
-    {
-        ... mitred 2,
-        call: mitred,
-        mitred: mitred,
-        circumratio : 1 / cos(angle/2),
-    }
-where (
-    angle = tau / n;
-    mitred d = half_plane{d: d/2, normal: [0,-1]} >> repeat_radial n;
-);
-```
-Note that a definition can be qualified by a `where` clause. This allows
-the `where` bindings to be visible in patterns on the left side of the `=`
-in the definition.
-
-This adds extra parens when a `where` clause is used at the top level,
-and that's what I was trying to avoid with the original syntax.
-Old syntax:
-```
-  let
-  diam = 1;
-  len = 4;
-
-  in
-  union(candy, stick)
-
-  where
-  candy = sphere diam >> colour red;
-  stick = cylinder{h: len, d: diam/8} >> move(0,0,-len/2);
-```
-New syntax:
-```
-  let
-  diam = 1;
-  len = 4;
-
-  in
-  union(candy, stick)
-
-  where (
-  candy = sphere diam >> colour red;
-  stick = cylinder{h: len, d: diam/8} >> move(0,0,-len/2);
-  )
-```
-This is acceptable.
+A definition should be legal as the body of a `let` or `where` phrase.
+I am particular interested in this case:
+    f pattern =
+        ...
+    where
+        ...
+This allows subexpressions in patterns on the left side of the `=`
+to be in the scope of the `where` clause.
 
 ## Patterns
 

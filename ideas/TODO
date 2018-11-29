@@ -72,7 +72,6 @@ Language:
   * matrices
   * all of the GLSL numeric functions
 * better stdlib:
-  * new `where`
   * mixed a=/a: record literals
 * greatly expanded, modular stdlib
   * packages, maybe `lib` if packages are delayed
@@ -137,7 +136,6 @@ Intensity Fields:
   * Convert SDF to density grid by sampling and antialiasing.
 
 Language:
-* new `where`
 * Packages
 * >> `intersection` foo
 
