@@ -30,7 +30,7 @@ Blocks are created by attaching ``let``\ ...\ ``in`` and ``where``\ ... clauses 
 
   | ``let`` *definitions* ``in`` *phrase*
   | *phrase* ``where`` *definitions*
-  | ``let`` *definitions* ``in`` *phrase* ``where`` *more_definitions*
+  | ``let`` *definitions* ``in`` *phrase* ``where`` ``(`` *more_definitions* ``)``
 
 where *phrase* is either a statement or an expression,
 and *definitions* is a sequence of definitions, separated by semicolons,
