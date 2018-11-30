@@ -16,6 +16,13 @@ bool isnum(Value a)
     return r && r->gltype_ == GL_Type::Num;
 }
 
+bool isbool(Value a)
+{
+    if (a.is_bool()) return true;
+    auto r = a.dycast<Reactive_Value>();
+    return r && r->gltype_ == GL_Type::Bool;
+}
+
 Value add(Value a, Value b, const At_Syntax& cx)
 {
     struct Scalar_Op {

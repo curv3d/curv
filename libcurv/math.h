@@ -12,6 +12,7 @@ namespace curv {
 struct At_Syntax;
 
 bool isnum(Value a);
+bool isbool(Value a);
 
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)

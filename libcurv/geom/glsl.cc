@@ -7,8 +7,10 @@
 #include <libcurv/geom/shape.h>
 #include <libcurv/geom/viewed_shape.h>
 
+#include <libcurv/context.h>
 #include <libcurv/die.h>
 #include <libcurv/dtostr.h>
+#include <libcurv/exception.h>
 #include <libcurv/function.h>
 #include <libcurv/gl_compiler.h>
 #include <libcurv/gl_context.h>
@@ -22,7 +24,20 @@ void glsl_function_export(const Shape_Program& shape, std::ostream& out)
     if (shape.viewed_shape_) {
         // output uniform variables for parametric shape
         for (auto& p : shape.viewed_shape_->params_) {
-            out << "uniform float rv_" << p.name_ << ";\n";
+            out << "uniform ";
+            switch (p.pconfig_.gltype_) {
+            case GL_Type::Num:
+                out << "float";
+                break;
+            case GL_Type::Bool:
+                out << "bool";
+                break;
+            default:
+                throw Exception(At_Program(shape), stringify(
+                    "Internal error: uniform variable has bad gltype ",
+                    int(p.pconfig_.gltype_)));
+            }
+            out << " rv_" << p.name_ << ";\n";
         }
     }
 

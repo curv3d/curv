@@ -17,9 +17,10 @@
 #include <chrono>
 #include <thread>
 
-#include <libcurv/string.h>
-#include <libcurv/exception.h>
 #include <libcurv/context.h>
+#include <libcurv/die.h>
+#include <libcurv/exception.h>
+#include <libcurv/string.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
@@ -176,8 +177,11 @@ bool Viewer::draw_frame()
         for (auto& i : shape_.params_) {
             switch (i.pconfig_.type_) {
             case Picker::Type::slider:
-                ImGui::SliderFloat(i.name_.c_str(), &i.pstate_.slider_,
+                ImGui::SliderFloat(i.name_.c_str(), &i.pstate_.num_,
                     i.pconfig_.slider_.low_, i.pconfig_.slider_.high_);
+                break;
+            case Picker::Type::checkbox:
+                ImGui::Checkbox(i.name_.c_str(), &i.pstate_.bool_);
                 break;
             }
         }
@@ -259,9 +263,18 @@ void Viewer::render()
     shader_.setUniform("u_modelViewProjectionMatrix", mvp);
 
     for (auto& p : shape_.params_) {
-        // TODO: precompute uniform id; switch on param type
+        // TODO: precompute uniform id
         auto name = stringify("rv_",p.name_);
-        shader_.setUniform(name->c_str(), float(p.pstate_.slider_));
+        switch (p.pconfig_.gltype_) {
+        case GL_Type::Num:
+            shader_.setUniform(name->c_str(), float(p.pstate_.num_));
+            break;
+        case GL_Type::Bool:
+            shader_.setUniform(name->c_str(), int(p.pstate_.bool_));
+            break;
+        default:
+            die("picker with bad gltype");
+        }
     }
 
     vbo_->draw(&shader_);

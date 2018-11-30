@@ -16,6 +16,9 @@ Picker::Config::write(std::ostream& out)
     case Type::slider:
         out << "slider(" << slider_.low_ << "," << slider_.high_ << ")";
         break;
+    case Type::checkbox:
+        out << "checkbox";
+        break;
     default:
         out << "bad picker config type " << int(type_);
         break;
@@ -23,43 +26,38 @@ Picker::Config::write(std::ostream& out)
 }
 
 void
-Picker::State::write(std::ostream& out, Type type)
+Picker::State::write(std::ostream& out, GL_Type gltype)
 {
-    switch (type) {
-    case Type::slider:
-        out << slider_;
+    switch (gltype) {
+    case GL_Type::Bool:
+        out << bool_;
+        break;
+    case GL_Type::Num:
+        out << num_;
         break;
     default:
-        out << "bad picker config type " << int(type);
+        out << "bad picker value type " << gltype;
         break;
     }
 }
 
-Picker::State::State(Type type, Value val, const Context& cx)
+Picker::State::State(GL_Type gltype, Value val, const Context& cx)
 {
-    switch (type) {
-    case Type::slider:
-        slider_ = val.to_num(cx);
+    switch (gltype) {
+    case GL_Type::Bool:
+        bool_ = val.to_bool(cx);
+        break;
+    case GL_Type::Num:
+        num_ = val.to_num(cx);
         break;
     default:
-        throw Exception{cx, stringify("bad picker type ", int(type))};
+        throw Exception{cx, stringify("bad picker value type ", gltype)};
     }
 }
 
-GL_Type
-ptype_to_gltype(Picker::Type ptype)
-{
-    switch (ptype) {
-    case Picker::Type::slider:
-        return GL_Type::Num;
-    default:
-        die("bad picker type");
-    }
-}
-
-Uniform_Variable::Uniform_Variable(Symbol name, Picker::Type ptype)
+Uniform_Variable::Uniform_Variable(Symbol name, GL_Type gltype)
 :
-    Reactive_Value(Ref_Value::sty_uniform_variable, ptype_to_gltype(ptype)),
+    Reactive_Value(Ref_Value::sty_uniform_variable, gltype),
     name_(std::move(name))
 {
 }
@@ -72,6 +70,11 @@ void Uniform_Variable::print(std::ostream& out) const
 Value Slider_Picker::call(Value v, Frame& f)
 {
     return isnum(v);
+}
+
+Value Checkbox_Picker::call(Value v, Frame& f)
+{
+    return isbool(v);
 }
 
 } // namespace curv

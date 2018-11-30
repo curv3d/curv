@@ -17,10 +17,12 @@ struct Picker : public Function
 {
     // Type, Config and State describe a graphical value picker.
     enum class Type {
-        slider
+        slider,
+        checkbox
     };
     struct Config {
         Type type_;
+        GL_Type gltype_;
         union {
             struct {
                 double low_;
@@ -30,9 +32,10 @@ struct Picker : public Function
         void write(std::ostream&);
     };
     union State {
-        float slider_; // not double, because ImGui sliders use float
-        State(Type, Value, const Context&);
-        void write(std::ostream&, Type);
+        bool bool_;
+        float num_; // not double, because ImGui sliders use float
+        State(GL_Type, Value, const Context&);
+        void write(std::ostream&, GL_Type);
     };
     
     Config config_;
@@ -57,8 +60,23 @@ struct Slider_Picker : public Picker
         Picker("slider", 1)
     {
         config_.type_ = Type::slider;
+        config_.gltype_ = GL_Type::Num;
         config_.slider_.low_ = lo;
         config_.slider_.high_ = hi;
+    }
+
+    virtual Value call(Value v, Frame& f) override;
+};
+
+// The `checkbox` builtin function.
+struct Checkbox_Picker : public Picker
+{
+    Checkbox_Picker()
+    :
+        Picker("checkbox", 0)
+    {
+        config_.type_ = Type::checkbox;
+        config_.gltype_ = GL_Type::Bool;
     }
 
     virtual Value call(Value v, Frame& f) override;
@@ -70,7 +88,7 @@ struct Slider_Picker : public Picker
 struct Uniform_Variable : public Reactive_Value
 {
     Symbol name_;
-    Uniform_Variable(Symbol name, Picker::Type ptype);
+    Uniform_Variable(Symbol name, GL_Type gltype);
     virtual void print(std::ostream&) const override;
 };
 

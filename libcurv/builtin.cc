@@ -53,7 +53,7 @@ struct Is_Bool_Function : public Legacy_Function
     Is_Bool_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
-        return {args[0].is_bool()};
+        return {isbool(args[0])};
     }
 };
 struct Is_Num_Function : public Legacy_Function
@@ -542,6 +542,12 @@ struct Slider_Function : public Legacy_Function
     }
 };
 
+struct Checkbox_Function : public Checkbox_Picker
+{
+    static const char* name() { return "checkbox"; }
+    Checkbox_Function() : Checkbox_Picker() {}
+};
+
 // The filename argument to "file", if it is a relative filename,
 // is interpreted relative to the parent directory of the source file from
 // which "file" is called.
@@ -934,6 +940,7 @@ builtin_namespace()
     FUNCTION(Encode_Function),
     FUNCTION(Match_Function),
     FUNCTION(Slider_Function),
+    FUNCTION(Checkbox_Function),
 
     {"file", make<Builtin_Meaning<File_Metafunction>>()},
     {"print", make<Builtin_Meaning<Print_Metafunction>>()},
