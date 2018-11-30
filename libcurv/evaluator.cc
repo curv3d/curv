@@ -265,11 +265,28 @@ If_Op::exec(Frame& f) const
 Value
 If_Else_Op::eval(Frame& f) const
 {
-    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
-    if (a)
-        return arg2_->eval(f);
-    else
-        return arg3_->eval(f);
+    Value cond = arg1_->eval(f);
+    At_Phrase cx(*arg1_->syntax_, f);
+    if (cond.is_bool()) {
+        if (cond.to_bool(cx))
+            return arg2_->eval(f);
+        else
+            return arg3_->eval(f);
+    }
+    auto re = cond.dycast<Reactive_Value>();
+    if (re && re->gltype_ == GL_Type::Bool) {
+        Value a2 = arg2_->eval(f);
+        Value a3 = arg3_->eval(f);
+        return {make<Reactive_Expression>(
+            gl_type_join(gl_type_of(a2), gl_type_of(a3)),
+            make<If_Else_Op>(
+                share(*syntax_),
+                make<Constant>(share(*arg1_->syntax_), cond),
+                make<Constant>(share(*arg2_->syntax_), a2),
+                make<Constant>(share(*arg3_->syntax_), a3)
+            ))};
+    }
+    throw Exception(cx, stringify(cond, " is not a boolean"));
 }
 void
 If_Else_Op::generate(Frame& f, List_Builder& lb) const

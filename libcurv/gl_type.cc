@@ -3,11 +3,13 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/gl_type.h>
+#include <libcurv/reactive.h>
 
 namespace curv {
 
-GL_Type_Attr gl_types[] =
+GL_Type_Info gl_type_info_array[] =
 {
+    {"Any",   0, 1, 1},
     {"bool",  0, 1, 1},
     {"float", 0, 1, 1},
     {"vec2",  1, 2, 1},
@@ -21,6 +23,25 @@ GL_Type_Attr gl_types[] =
 std::ostream& operator<<(std::ostream& out, GL_Type type)
 {
     return out << gl_type_name(type);
+}
+
+GL_Type
+gl_type_of(Value v)
+{
+    if (v.is_bool())
+        return GL_Type::Bool;
+    if (v.is_num())
+        return GL_Type::Num;
+    if (auto re = v.dycast<Reactive_Value>())
+        return re->gltype_;
+    return GL_Type::Any;
+}
+
+GL_Type
+gl_type_join(GL_Type t1, GL_Type t2)
+{
+    if (t1 == t2) return t1;
+    return GL_Type::Any;
 }
 
 } // namespace curv
