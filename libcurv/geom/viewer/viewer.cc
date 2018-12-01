@@ -160,6 +160,20 @@ void Viewer::reset_view(viewtype view )
     }
 }
 
+// Helper to display a little (?) mark which shows a tooltip when hovered.
+static void ShowHelpMarker(const char* desc)
+{
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(desc);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
+
 bool Viewer::draw_frame()
 {
     if (glfwWindowShouldClose(window_))
@@ -172,7 +186,7 @@ bool Viewer::draw_frame()
     if (hud_) {
         //ImGui::ShowDemoWindow(&hud_);
         ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(200,0), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(350,0), ImGuiCond_Once);
         ImGui::Begin("Shape Parameters", &hud_, 0);
         for (auto& i : shape_.params_) {
             switch (i.pconfig_.type_) {
@@ -186,6 +200,11 @@ bool Viewer::draw_frame()
             case Picker::Type::colour_picker:
                 ImGui::ColorEdit3(i.name_.c_str(), i.pstate_.vec3_,
                     ImGuiColorEditFlags_PickerHueWheel);
+                ImGui::SameLine(); ShowHelpMarker(
+                    "Click on the coloured square to open a colour picker.\n"
+                    "Click and drag, then drop on another coloured square.\n"
+                    "Right-click on the coloured square to show options.\n"
+                    "CTRL+click on individual component to input value.\n");
                 break;
             }
         }
