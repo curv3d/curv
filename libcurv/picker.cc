@@ -19,6 +19,9 @@ Picker::Config::write(std::ostream& out)
     case Type::checkbox:
         out << "checkbox";
         break;
+    case Type::colour_picker:
+        out << "colour_picker";
+        break;
     default:
         out << "bad picker config type " << int(type_);
         break;
@@ -35,6 +38,9 @@ Picker::State::write(std::ostream& out, GL_Type gltype)
     case GL_Type::Num:
         out << num_;
         break;
+    case GL_Type::Vec3:
+        out << "[" << vec3_[0] << "," << vec3_[1] << "," << vec3_[2] << "]";
+        break;
     default:
         out << "bad picker value type " << gltype;
         break;
@@ -50,6 +56,15 @@ Picker::State::State(GL_Type gltype, Value val, const Context& cx)
     case GL_Type::Num:
         num_ = val.to_num(cx);
         break;
+    case GL_Type::Vec3:
+      {
+        auto v = val.to<List>(cx);
+        v->assert_size(3, cx);
+        vec3_[0] = v->at(0).to_num(cx);
+        vec3_[1] = v->at(1).to_num(cx);
+        vec3_[2] = v->at(2).to_num(cx);
+        break;
+      }
     default:
         throw Exception{cx, stringify("bad picker value type ", gltype)};
     }
@@ -75,6 +90,11 @@ Value Slider_Picker::call(Value v, Frame& f)
 Value Checkbox_Picker::call(Value v, Frame& f)
 {
     return isbool(v);
+}
+
+Value Colour_Picker::call(Value v, Frame& f)
+{
+    return isvec3(v);
 }
 
 } // namespace curv

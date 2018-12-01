@@ -18,7 +18,8 @@ struct Picker : public Function
     // Type, Config and State describe a graphical value picker.
     enum class Type {
         slider,
-        checkbox
+        checkbox,
+        colour_picker
     };
     struct Config {
         Type type_;
@@ -34,6 +35,7 @@ struct Picker : public Function
     union State {
         bool bool_;
         float num_; // not double, because ImGui sliders use float
+        float vec3_[3];
         State(GL_Type, Value, const Context&);
         void write(std::ostream&, GL_Type);
     };
@@ -77,6 +79,20 @@ struct Checkbox_Picker : public Picker
     {
         config_.type_ = Type::checkbox;
         config_.gltype_ = GL_Type::Bool;
+    }
+
+    virtual Value call(Value v, Frame& f) override;
+};
+
+// The `colour_picker` builtin function.
+struct Colour_Picker : public Picker
+{
+    Colour_Picker()
+    :
+        Picker("colour_picker", 0)
+    {
+        config_.type_ = Type::colour_picker;
+        config_.gltype_ = GL_Type::Vec3;
     }
 
     virtual Value call(Value v, Frame& f) override;

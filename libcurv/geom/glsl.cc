@@ -24,20 +24,8 @@ void glsl_function_export(const Shape_Program& shape, std::ostream& out)
     if (shape.viewed_shape_) {
         // output uniform variables for parametric shape
         for (auto& p : shape.viewed_shape_->params_) {
-            out << "uniform ";
-            switch (p.pconfig_.gltype_) {
-            case GL_Type::Num:
-                out << "float";
-                break;
-            case GL_Type::Bool:
-                out << "bool";
-                break;
-            default:
-                throw Exception(At_Program(shape), stringify(
-                    "Internal error: uniform variable has bad gltype ",
-                    int(p.pconfig_.gltype_)));
-            }
-            out << " rv_" << p.name_ << ";\n";
+            out << "uniform " << gl_type_name(p.pconfig_.gltype_)
+                << " rv_" << p.name_ << ";\n";
         }
     }
 

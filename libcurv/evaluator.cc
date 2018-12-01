@@ -446,16 +446,16 @@ string_at(const String& string, Value index, const Context& cx)
     return {String::make(string.data()+i, 1)};
 }
 Value
-value_at_path(Value a, const List& path, const Context& cx)
+value_at_path(Value a, const List& path, const Call_Phrase& callph, Frame& f)
 {
+    At_Phrase cx(*callph.arg_, f);
     At_Index icx(0, cx);
-    for (size_t i = 0; i < path.size(); ++i) {
+    size_t i = 0;
+    for (; i < path.size(); ++i) {
         icx.index_ = i;
         if (auto string = a.dycast<String>()) {
-            if (i < path.size()-1) {
-                throw Exception(icx,
-                    "string used with multidimensional indexing (like string[i,j])");
-            }
+            if (i < path.size()-1)
+                goto domain_error;
             return string_at(*string, path[i], icx);
         }
         if (auto list = a.dycast<List>()) {
@@ -466,9 +466,33 @@ value_at_path(Value a, const List& path, const Context& cx)
                 a = list_at(*list, path[i], icx);
             continue;
         }
-        throw Exception(icx, "not list or string");
+        auto re = a.dycast<Reactive_Value>();
+        if (re && gl_type_is_vec(re->gltype_)) {
+            if (i < path.size()-1)
+                goto domain_error;
+            Value b = path[i];
+            if (isnum(b)) {
+                return {make<Reactive_Expression>(
+                    GL_Type::Num,
+                    make<Call_Expr>(
+                        share(callph),
+                        make<Constant>(callph.function_, a),
+                        make<Constant>(callph.arg_, b)))};
+            }
+            // TODO: reactive: handle more cases
+        }
+        goto domain_error;
     }
     return a;
+domain_error:
+    String_Builder msg;
+    msg << a << "[";
+    for (size_t j = i; j < path.size(); ++j) {
+        if (j > i) msg << ",";
+        msg << path[i];
+    }
+    msg << "]: domain error";
+    throw Exception(At_Phrase(callph, f), msg.str());
 }
 Value
 Index_Expr::eval(Frame& f) const
@@ -514,10 +538,11 @@ call(Value func, Value arg, const Call_Phrase* call_phrase, Frame& f)
           }
         case Ref_Value::ty_string:
         case Ref_Value::ty_list:
+        case Ref_Value::ty_reactive:
           {
             At_Phrase cx(*call_phrase->arg_, f);
             auto path = arg.to<List>(cx);
-            return value_at_path(funv, *path, cx);
+            return value_at_path(funv, *path, *call_phrase, f);
           }
         }
         throw Exception(At_Phrase(*call_phrase->function_, f),

@@ -80,7 +80,7 @@ struct Is_List_Function : public Legacy_Function
     Is_List_Function() : Legacy_Function(1,name()) {}
     Value call(Frame& args) override
     {
-        return {args[0].dycast<List>() != nullptr};
+        return {islist(args[0])};
     }
 };
 struct Is_Record_Function : public Legacy_Function
@@ -437,6 +437,21 @@ struct Count_Function : public Legacy_Function
             return {double(list->size())};
         if (auto string = args[0].dycast<const String>())
             return {double(string->size())};
+        if (auto re = args[0].dycast<const Reactive_Value>()) {
+            switch (re->gltype_) {
+            case GL_Type::Vec2:
+            case GL_Type::Mat2:
+                return {2.0};
+            case GL_Type::Vec3:
+            case GL_Type::Mat3:
+                return {3.0};
+            case GL_Type::Vec4:
+            case GL_Type::Mat4:
+                return {4.0};
+            default:
+                break;
+            }
+        }
         throw Exception(At_Arg(*this, args), "not a list or string");
     }
 };
@@ -546,6 +561,12 @@ struct Checkbox_Function : public Checkbox_Picker
 {
     static const char* name() { return "checkbox"; }
     Checkbox_Function() : Checkbox_Picker() {}
+};
+
+struct Colour_Picker_Function : public Colour_Picker
+{
+    static const char* name() { return "colour_picker"; }
+    Colour_Picker_Function() : Colour_Picker() {}
 };
 
 // The filename argument to "file", if it is a relative filename,
@@ -941,6 +962,7 @@ builtin_namespace()
     FUNCTION(Match_Function),
     FUNCTION(Slider_Function),
     FUNCTION(Checkbox_Function),
+    FUNCTION(Colour_Picker_Function),
 
     {"file", make<Builtin_Meaning<File_Metafunction>>()},
     {"print", make<Builtin_Meaning<Print_Metafunction>>()},

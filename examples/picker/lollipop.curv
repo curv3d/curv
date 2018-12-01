@@ -2,11 +2,12 @@
 // to graphical sliders in the Viewer window. It may change.
 
 parametric {
-    diam :: slider(.5, 2) = 1;
-    len :: slider(2, 8) = 4;
+    Diameter: diam :: slider(.5, 2) = 1;
+    Stick_Length: len :: slider(2, 8) = 4;
+    Colour: c :: colour_picker = red;
 }
 union(candy, stick)
 where (
-    candy = sphere diam >> colour red;
+    candy = sphere diam >> colour c;
     stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
 )

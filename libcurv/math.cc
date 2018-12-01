@@ -23,6 +23,38 @@ bool isbool(Value a)
     return r && r->gltype_ == GL_Type::Bool;
 }
 
+bool islist(Value a)
+{
+    if (a.dycast<List>())
+        return true;
+    auto r = a.dycast<Reactive_Value>();
+    if (r)
+        switch (r->gltype_) {
+        case GL_Type::Vec2:
+        case GL_Type::Vec3:
+        case GL_Type::Vec4:
+        case GL_Type::Mat2:
+        case GL_Type::Mat3:
+        case GL_Type::Mat4:
+            return true;
+        default:
+            break;
+        }
+    return false;
+}
+
+bool isvec3(Value a)
+{
+    auto v = a.dycast<List>();
+    if (v && v->size() == 3
+          && v->at(0).is_num()
+          && v->at(1).is_num()
+          && v->at(2).is_num())
+        return true;
+    auto r = a.dycast<Reactive_Value>();
+    return r && r->gltype_ == GL_Type::Vec3;
+}
+
 Value add(Value a, Value b, const At_Syntax& cx)
 {
     struct Scalar_Op {

@@ -3,6 +3,7 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/gl_type.h>
+#include <libcurv/math.h>
 #include <libcurv/reactive.h>
 
 namespace curv {
@@ -32,6 +33,8 @@ gl_type_of(Value v)
         return GL_Type::Bool;
     if (v.is_num())
         return GL_Type::Num;
+    if (isvec3(v))
+        return GL_Type::Vec3;
     if (auto re = v.dycast<Reactive_Value>())
         return re->gltype_;
     return GL_Type::Any;

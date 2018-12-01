@@ -183,6 +183,10 @@ bool Viewer::draw_frame()
             case Picker::Type::checkbox:
                 ImGui::Checkbox(i.name_.c_str(), &i.pstate_.bool_);
                 break;
+            case Picker::Type::colour_picker:
+                ImGui::ColorEdit3(i.name_.c_str(), i.pstate_.vec3_,
+                    ImGuiColorEditFlags_PickerHueWheel);
+                break;
             }
         }
         ImGui::End();
@@ -271,6 +275,9 @@ void Viewer::render()
             break;
         case GL_Type::Bool:
             shader_.setUniform(name->c_str(), int(p.pstate_.bool_));
+            break;
+        case GL_Type::Vec3:
+            shader_.setUniform(name->c_str(), p.pstate_.vec3_, 3);
             break;
         default:
             die("picker with bad gltype");
