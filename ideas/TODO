@@ -5,20 +5,19 @@ Big Items (target: Dec 2018)
 * sharp STL export?
 
 TODO (value pickers impl)
-* `make_parametric f p` should return another parametric record
+* `(parametric param body) arg` should return another parametric record.
 * BUG: While compiling a pattern, parameters are added to the scope as they are
   found. This same uncompleted scope is used for analyzing subexpressions,
   such as the predicate in pat::pred. Use parent environment instead.
+* There is a performance hit to using `parametric`. Need a code optimizer?
+* Precompute uniform ids, before entering main loop.
+* In parametric parameters, support labels that aren't C identifiers.
+* Support all expressions over reactive values.
 
 Current TODO List:
 * graphical value pickers
-  * Viewed_Shape stores uniform variables, pickers.
-    GL compile a parametric shape using reactive values:
-    * Shape_Program::recognize() finds & validates call & parameter fields.
-    * glsl_function_export() outputs uniform variable decls, creates reactive
-      values, compiles dist & colour functions.
-  * Viewer initializes uniforms using Viewed_Shape.
-  * Viewer displays pickers, updates uniforms
+  * add more picker types
+  * `term` proposal
 * configure default values for -O options: see Config
 * -o glsl
 * Refactor:
