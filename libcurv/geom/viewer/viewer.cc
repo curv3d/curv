@@ -185,6 +185,8 @@ bool Viewer::draw_frame()
     ImGui::NewFrame();
     if (hud_) {
         //ImGui::ShowDemoWindow(&hud_);
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, // modify the Light style
+            (ImVec4)ImColor(230,230,230,255));
         ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(350,0), ImGuiCond_Once);
         ImGui::Begin("Shape Parameters", &hud_, 0);
@@ -213,6 +215,7 @@ bool Viewer::draw_frame()
             }
         }
         ImGui::End();
+        ImGui::PopStyleColor(1);
     }
 
     render();
