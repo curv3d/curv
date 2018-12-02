@@ -209,8 +209,9 @@ bool Viewer::draw_frame()
                 ImGui::SameLine(); ShowHelpMarker(
                     "Click on the coloured square to open a colour picker.\n"
                     "Click and drag, then drop on another coloured square.\n"
-                    "Right-click on the coloured square to show options.\n"
-                    "CTRL+click on individual component to input value.\n");
+                    "Right-click on the coloured square to set colour space.\n"
+                    "To adjust a colour component, drag on numeric field,\n"
+                    "or CTRL+click to edit text.\n");
                 break;
             }
         }
@@ -538,10 +539,11 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
             ImGuiIO& io = ImGui::GetIO();
             if (key == GLFW_KEY_H && (mods & GLFW_MOD_CONTROL) && action == GLFW_PRESS)
                 self->hud_ = !self->hud_;
-            else if (io.WantCaptureKeyboard)
+            else {
                 ImGui_ImplGlfw_KeyCallback(win, key, scancode, action, mods);
-            else if (action == GLFW_PRESS)
-                self->onKeyPress(key, mods);
+                if (!io.WantCaptureKeyboard && action == GLFW_PRESS)
+                    self->onKeyPress(key, mods);
+            }
         });
 
     glfwSetCharCallback(window_, ImGui_ImplGlfw_CharCallback);
@@ -551,9 +553,8 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
         [](GLFWwindow* win, int button, int action, int mods) {
             Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
             ImGuiIO& io = ImGui::GetIO();
-            if (io.WantCaptureMouse)
-                ImGui_ImplGlfw_MouseButtonCallback(win, button, action, mods);
-            else if (action == GLFW_PRESS) {
+            ImGui_ImplGlfw_MouseButtonCallback(win, button, action, mods);
+            if (!io.WantCaptureMouse && action == GLFW_PRESS) {
                 self->mouse_.drag.x = self->mouse_.x;
                 self->mouse_.drag.y = self->mouse_.y;
             }
@@ -563,9 +564,8 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
         [](GLFWwindow* win, double xoffset, double yoffset) {
             Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
             ImGuiIO& io = ImGui::GetIO();
-            if (io.WantCaptureMouse)
-                ImGui_ImplGlfw_ScrollCallback(win, xoffset, yoffset);
-            else
+            ImGui_ImplGlfw_ScrollCallback(win, xoffset, yoffset);
+            if (!io.WantCaptureMouse)
                 self->onScroll(-yoffset * self->fPixelDensity_);
         });
 
