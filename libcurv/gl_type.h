@@ -24,6 +24,13 @@ enum class GL_Type : int
     Mat4 = 7
 };
 
+// Used by Reactive_Value to supplement the information in GL_Type.
+enum class GL_Subtype : int
+{
+    None,
+    Int
+};
+
 extern struct GL_Type_Info
 {
     const char* name;

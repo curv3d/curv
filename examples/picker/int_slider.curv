@@ -1,0 +1,4 @@
+parametric {
+    i :: int_slider(1,5) = 3;
+}
+cube i

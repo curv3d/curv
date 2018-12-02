@@ -17,27 +17,34 @@ struct Picker : public Function
 {
     // Type, Config and State describe a graphical value picker.
     enum class Type {
-        slider,
+        num_slider,
+        int_slider,
         checkbox,
         colour_picker
     };
     struct Config {
         Type type_;
         GL_Type gltype_;
+        GL_Subtype glsubtype_{GL_Subtype::None};
         union {
             struct {
                 double low_;
                 double high_;
-            } slider_;
+            } num_slider_;
+            struct {
+                int low_;
+                int high_;
+            } int_slider_;
         };
         void write(std::ostream&);
     };
     union State {
         bool bool_;
+        int int_;
         float num_; // not double, because ImGui sliders use float
         float vec3_[3];
-        State(GL_Type, Value, const Context&);
-        void write(std::ostream&, GL_Type);
+        State(Type, Value, const Context&);
+        void write(std::ostream&, Type);
     };
     
     Config config_;
@@ -54,17 +61,34 @@ struct Picker : public Function
     virtual Value try_call(Value v, Frame& f) override { return call(v,f); }
 };
 
-// Constructed using the `slider` builtin function.
-struct Slider_Picker : public Picker
+// Constructed using the `num_slider` builtin function.
+struct Num_Slider_Picker : public Picker
 {
-    Slider_Picker(double lo, double hi)
+    Num_Slider_Picker(double lo, double hi)
     :
-        Picker("slider", 1)
+        Picker("num_slider", 1)
     {
-        config_.type_ = Type::slider;
+        config_.type_ = Type::num_slider;
         config_.gltype_ = GL_Type::Num;
-        config_.slider_.low_ = lo;
-        config_.slider_.high_ = hi;
+        config_.num_slider_.low_ = lo;
+        config_.num_slider_.high_ = hi;
+    }
+
+    virtual Value call(Value v, Frame& f) override;
+};
+
+// Constructed using the `int_slider` builtin function.
+struct Int_Slider_Picker : public Picker
+{
+    Int_Slider_Picker(int lo, int hi)
+    :
+        Picker("int_slider", 1)
+    {
+        config_.type_ = Type::int_slider;
+        config_.gltype_ = GL_Type::Num;
+        config_.glsubtype_ = GL_Subtype::Int;
+        config_.int_slider_.low_ = lo;
+        config_.int_slider_.high_ = hi;
     }
 
     virtual Value call(Value v, Frame& f) override;
@@ -104,7 +128,7 @@ struct Colour_Picker : public Picker
 struct Uniform_Variable : public Reactive_Value
 {
     Symbol name_;
-    Uniform_Variable(Symbol name, GL_Type gltype);
+    Uniform_Variable(Symbol name, GL_Type, GL_Subtype);
     virtual void print(std::ostream&) const override;
 };
 

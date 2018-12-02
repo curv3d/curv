@@ -190,9 +190,13 @@ bool Viewer::draw_frame()
         ImGui::Begin("Shape Parameters", &hud_, 0);
         for (auto& i : shape_.params_) {
             switch (i.pconfig_.type_) {
-            case Picker::Type::slider:
+            case Picker::Type::num_slider:
                 ImGui::SliderFloat(i.name_.c_str(), &i.pstate_.num_,
-                    i.pconfig_.slider_.low_, i.pconfig_.slider_.high_);
+                    i.pconfig_.num_slider_.low_, i.pconfig_.num_slider_.high_);
+                break;
+            case Picker::Type::int_slider:
+                ImGui::SliderInt(i.name_.c_str(), &i.pstate_.int_,
+                    i.pconfig_.int_slider_.low_, i.pconfig_.int_slider_.high_);
                 break;
             case Picker::Type::checkbox:
                 ImGui::Checkbox(i.name_.c_str(), &i.pstate_.bool_);
@@ -288,14 +292,17 @@ void Viewer::render()
     for (auto& p : shape_.params_) {
         // TODO: precompute uniform id
         auto name = stringify("rv_",p.name_);
-        switch (p.pconfig_.gltype_) {
-        case GL_Type::Num:
+        switch (p.pconfig_.type_) {
+        case Picker::Type::num_slider:
             shader_.setUniform(name->c_str(), float(p.pstate_.num_));
             break;
-        case GL_Type::Bool:
+        case Picker::Type::int_slider:
+            shader_.setUniform(name->c_str(), float(p.pstate_.int_));
+            break;
+        case Picker::Type::checkbox:
             shader_.setUniform(name->c_str(), int(p.pstate_.bool_));
             break;
-        case GL_Type::Vec3:
+        case Picker::Type::colour_picker:
             shader_.setUniform(name->c_str(), p.pstate_.vec3_, 3);
             break;
         default:

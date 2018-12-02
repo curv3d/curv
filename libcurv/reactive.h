@@ -16,11 +16,14 @@ namespace curv {
 struct Reactive_Value : public Ref_Value
 {
     GL_Type gltype_;
+    GL_Subtype glsubtype_;
 
-    Reactive_Value(int subty, GL_Type gltype)
+    Reactive_Value(
+        int subty, GL_Type gltype, GL_Subtype glsubtype = GL_Subtype::None)
     :
         Ref_Value(ty_reactive, subty),
-        gltype_(gltype)
+        gltype_(gltype),
+        glsubtype_(glsubtype)
     {}
 
     virtual void print(std::ostream&) const override;

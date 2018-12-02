@@ -181,6 +181,8 @@ public:
         return number_ == number_;
     }
 
+    bool is_int() const noexcept;
+
     /// Convert a number value to `double`.
     ///
     /// Only defined if `is_num()` is true.

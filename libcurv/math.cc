@@ -16,6 +16,13 @@ bool isnum(Value a)
     return r && r->gltype_ == GL_Type::Num;
 }
 
+bool isint(Value a)
+{
+    if (a.is_int()) return true;
+    auto r = a.dycast<Reactive_Value>();
+    return r && r->glsubtype_ == GL_Subtype::Int;
+}
+
 bool isbool(Value a)
 {
     if (a.is_bool()) return true;

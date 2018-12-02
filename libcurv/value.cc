@@ -9,6 +9,7 @@
 #include <libcurv/record.h>
 #include <libcurv/exception.h>
 #include <cmath>
+#include <climits>
 
 namespace curv {
 
@@ -33,6 +34,16 @@ Value::to_num(const Context& cx) const
     if (is_num())
         return get_num_unsafe();
     throw Exception(cx, stringify(*this, " is not a number"));
+}
+
+bool
+Value::is_int() const noexcept
+{
+    if (number_ != number_) return false;
+    double intf;
+    return modf(number_, &intf) == 0.0
+        && intf >= double(INT_MIN)
+        && intf <= double(INT_MAX);
 }
 
 int

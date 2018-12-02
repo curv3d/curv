@@ -23,6 +23,7 @@
 #include <boost/filesystem.hpp>
 
 #include <cassert>
+#include <climits>
 #include <cmath>
 #include <cstdlib>
 #include <string>
@@ -544,16 +545,29 @@ struct Match_Function : public Legacy_Function
     }
 };
 
-struct Slider_Function : public Legacy_Function
+struct Int_Slider_Function : public Legacy_Function
 {
-    static const char* name() { return "slider"; }
-    Slider_Function() : Legacy_Function(2,name()) {}
+    static const char* name() { return "int_slider"; }
+    Int_Slider_Function() : Legacy_Function(2,name()) {}
+    Value call(Frame& f) override
+    {
+        At_Arg cx(*this, f);
+        int lo = f[0].to_int(INT_MIN, INT_MAX, At_Index(0,cx));
+        int hi = f[1].to_int(INT_MIN, INT_MAX, At_Index(1,cx));
+        return {make<Int_Slider_Picker>(lo, hi)};
+    }
+};
+
+struct Num_Slider_Function : public Legacy_Function
+{
+    static const char* name() { return "num_slider"; }
+    Num_Slider_Function() : Legacy_Function(2,name()) {}
     Value call(Frame& f) override
     {
         At_Arg cx(*this, f);
         double lo = f[0].to_num(At_Index(0,cx));
         double hi = f[1].to_num(At_Index(1,cx));
-        return {make<Slider_Picker>(lo, hi)};
+        return {make<Num_Slider_Picker>(lo, hi)};
     }
 };
 
@@ -960,7 +974,8 @@ builtin_namespace()
     FUNCTION(Decode_Function),
     FUNCTION(Encode_Function),
     FUNCTION(Match_Function),
-    FUNCTION(Slider_Function),
+    FUNCTION(Int_Slider_Function),
+    FUNCTION(Num_Slider_Function),
     FUNCTION(Checkbox_Function),
     FUNCTION(Colour_Picker_Function),
 

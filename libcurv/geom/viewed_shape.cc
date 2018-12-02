@@ -78,11 +78,14 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
                 if (picker) {
                     params_.push_back(Parameter{name.c_str(), picker->config_,
                         Picker::State{
-                            picker->config_.gltype_,
+                            picker->config_.type_,
                             value,
                             At_System{shape.system_}}});
                     cparams->fields_[name] =
-                        {make<Uniform_Variable>(name, picker->config_.gltype_)};
+                        {make<Uniform_Variable>(
+                            name,
+                            picker->config_.gltype_,
+                            picker->config_.glsubtype_)};
                 } else {
                     cparams->fields_[name] = value;
                 }
