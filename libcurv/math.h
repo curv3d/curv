@@ -12,7 +12,6 @@ namespace curv {
 struct At_Syntax;
 
 bool isnum(Value a);
-bool isint(Value a);
 bool isbool(Value a);
 bool islist(Value a);
 bool isvec3(Value a);

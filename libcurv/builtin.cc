@@ -571,6 +571,12 @@ struct Num_Slider_Function : public Legacy_Function
     }
 };
 
+struct Scale_Picker_Function : public Scale_Picker
+{
+    static const char* name() { return "scale_picker"; }
+    Scale_Picker_Function() : Scale_Picker() {}
+};
+
 struct Checkbox_Function : public Checkbox_Picker
 {
     static const char* name() { return "checkbox"; }
@@ -976,6 +982,7 @@ builtin_namespace()
     FUNCTION(Match_Function),
     FUNCTION(Int_Slider_Function),
     FUNCTION(Num_Slider_Function),
+    FUNCTION(Scale_Picker_Function),
     FUNCTION(Checkbox_Function),
     FUNCTION(Colour_Picker_Function),
 

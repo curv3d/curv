@@ -27,6 +27,7 @@
 #include <glm/gtx/matrix_transform_2d.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
+#include "scale_picker.h"
 #include "shapes.h"
 
 #include <imgui.h>
@@ -200,6 +201,9 @@ bool Viewer::draw_frame()
                 ImGui::SliderInt(i.name_.c_str(), &i.pstate_.int_,
                     i.pconfig_.int_slider_.low_, i.pconfig_.int_slider_.high_);
                 break;
+            case Picker::Type::scale_picker:
+                run_scale_picker(i.name_.c_str(), &i.pstate_.num_);
+                break;
             case Picker::Type::checkbox:
                 ImGui::Checkbox(i.name_.c_str(), &i.pstate_.bool_);
                 break;
@@ -298,6 +302,7 @@ void Viewer::render()
         auto name = stringify("rv_",p.name_);
         switch (p.pconfig_.type_) {
         case Picker::Type::num_slider:
+        case Picker::Type::scale_picker:
             shader_.setUniform(name->c_str(), float(p.pstate_.num_));
             break;
         case Picker::Type::int_slider:

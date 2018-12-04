@@ -19,6 +19,7 @@ struct Picker : public Function
     enum class Type {
         num_slider,
         int_slider,
+        scale_picker,
         checkbox,
         colour_picker
     };
@@ -89,6 +90,20 @@ struct Int_Slider_Picker : public Picker
         config_.glsubtype_ = GL_Subtype::Int;
         config_.int_slider_.low_ = lo;
         config_.int_slider_.high_ = hi;
+    }
+
+    virtual Value call(Value v, Frame& f) override;
+};
+
+// The `scale_picker` builtin function.
+struct Scale_Picker : public Picker
+{
+    Scale_Picker()
+    :
+        Picker("scale_picker", 0)
+    {
+        config_.type_ = Type::scale_picker;
+        config_.gltype_ = GL_Type::Num;
     }
 
     virtual Value call(Value v, Frame& f) override;

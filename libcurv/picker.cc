@@ -22,6 +22,9 @@ Picker::Config::write(std::ostream& out)
         out << "int_slider(" << int_slider_.low_
             << "," << int_slider_.high_ << ")";
         return;
+    case Type::scale_picker:
+        out << "scale_picker";
+        return;
     case Type::checkbox:
         out << "checkbox";
         return;
@@ -43,6 +46,7 @@ Picker::State::write(std::ostream& out, Picker::Type ptype)
         out << int_;
         return;
     case Type::num_slider:
+    case Type::scale_picker:
         out << num_;
         return;
     case Type::colour_picker:
@@ -54,6 +58,7 @@ Picker::State::write(std::ostream& out, Picker::Type ptype)
 
 Picker::State::State(Picker::Type ptype, Value val, const Context& cx)
 {
+    // TODO: enforce range constraints. Pass a Picker::Config instead.
     switch (ptype) {
     case Type::checkbox:
         bool_ = val.to_bool(cx);
@@ -62,6 +67,7 @@ Picker::State::State(Picker::Type ptype, Value val, const Context& cx)
         int_ = val.to_int(INT_MIN, INT_MAX, cx);
         return;
     case Type::num_slider:
+    case Type::scale_picker:
         num_ = val.to_num(cx);
         return;
     case Type::colour_picker:
@@ -97,7 +103,12 @@ Value Num_Slider_Picker::call(Value v, Frame& f)
 
 Value Int_Slider_Picker::call(Value v, Frame& f)
 {
-    return isint(v);
+    return isnum(v);
+}
+
+Value Scale_Picker::call(Value v, Frame& f)
+{
+    return isnum(v);
 }
 
 Value Checkbox_Picker::call(Value v, Frame& f)
