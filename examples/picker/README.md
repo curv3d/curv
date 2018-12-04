@@ -87,6 +87,8 @@ In one case, I saw a performance hit for adding shape parameters. This may be
 dependent on the quality of the GPU driver. A better GLSL code generator
 would address the problem.
 
+The widgets are somewhat ugly. I am using the ImGui widget library.
+
 ## TODO
 Any parameter can be copied and then pasted as a Curv expression.
 
@@ -104,3 +106,5 @@ Here are some ideas for new picker types:
   visualized as a direction in 3D space. As seen in the AntTweakBar widget library.
 * 3D rotation -- a 3D picker widget that lets you specify a 3D rotation,
   encoded as a quaternion. As seen in the AntTweakBar widget library.
+
+Make the GUI look more beautiful. Should I consider using a different widget library?
