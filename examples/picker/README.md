@@ -110,5 +110,14 @@ Here are some ideas for new picker types:
 * 3D rotation -- a 3D picker widget that lets you specify a 3D rotation,
   encoded as a quaternion. As seen in the AntTweakBar widget library.
 
+There is a half implemented feature that lets you specify a verbose parameter name
+string, with embedded spaces, for display in the GUI, which is separate from
+the parameter variable name that is used in the body of the `parametric` expression.
+It looks like this:
+```
+parametric { "size of cube": n :: slider(1,5) = 3; } cube n
+```
+Finish implementing this.
+
 Make the GUI look more beautiful and have a more intuitive UI.
 Should I consider using a different widget library?
