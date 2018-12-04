@@ -17,7 +17,7 @@ struct Picker : public Function
 {
     // Type, Config and State describe a graphical value picker.
     enum class Type {
-        num_slider,
+        slider,
         int_slider,
         scale_picker,
         checkbox,
@@ -31,7 +31,7 @@ struct Picker : public Function
             struct {
                 double low_;
                 double high_;
-            } num_slider_;
+            } slider_;
             struct {
                 int low_;
                 int high_;
@@ -62,17 +62,17 @@ struct Picker : public Function
     virtual Value try_call(Value v, Frame& f) override { return call(v,f); }
 };
 
-// Constructed using the `num_slider` builtin function.
-struct Num_Slider_Picker : public Picker
+// Constructed using the `slider` builtin function.
+struct Slider_Picker : public Picker
 {
-    Num_Slider_Picker(double lo, double hi)
+    Slider_Picker(double lo, double hi)
     :
-        Picker("num_slider", 1)
+        Picker("slider", 1)
     {
-        config_.type_ = Type::num_slider;
+        config_.type_ = Type::slider;
         config_.gltype_ = GL_Type::Num;
-        config_.num_slider_.low_ = lo;
-        config_.num_slider_.high_ = hi;
+        config_.slider_.low_ = lo;
+        config_.slider_.high_ = hi;
     }
 
     virtual Value call(Value v, Frame& f) override;

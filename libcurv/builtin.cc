@@ -558,16 +558,16 @@ struct Int_Slider_Function : public Legacy_Function
     }
 };
 
-struct Num_Slider_Function : public Legacy_Function
+struct Slider_Function : public Legacy_Function
 {
-    static const char* name() { return "num_slider"; }
-    Num_Slider_Function() : Legacy_Function(2,name()) {}
+    static const char* name() { return "slider"; }
+    Slider_Function() : Legacy_Function(2,name()) {}
     Value call(Frame& f) override
     {
         At_Arg cx(*this, f);
         double lo = f[0].to_num(At_Index(0,cx));
         double hi = f[1].to_num(At_Index(1,cx));
-        return {make<Num_Slider_Picker>(lo, hi)};
+        return {make<Slider_Picker>(lo, hi)};
     }
 };
 
@@ -981,7 +981,7 @@ builtin_namespace()
     FUNCTION(Encode_Function),
     FUNCTION(Match_Function),
     FUNCTION(Int_Slider_Function),
-    FUNCTION(Num_Slider_Function),
+    FUNCTION(Slider_Function),
     FUNCTION(Scale_Picker_Function),
     FUNCTION(Checkbox_Function),
     FUNCTION(Colour_Picker_Function),

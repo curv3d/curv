@@ -2,8 +2,8 @@
 // to graphical sliders in the Viewer window. It may change.
 
 parametric {
-    Diameter: diam :: num_slider(.5, 2) = 1;
-    Stick_Length: len :: num_slider(2, 8) = 4;
+    Diameter: diam :: slider(.5, 2) = 1;
+    Stick_Length: len :: slider(2, 8) = 4;
     Colour: c :: colour_picker = red;
 }
 union(candy, stick)

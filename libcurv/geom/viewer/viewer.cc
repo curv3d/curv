@@ -193,9 +193,9 @@ bool Viewer::draw_frame()
         ImGui::Begin("Shape Parameters", &hud_, 0);
         for (auto& i : shape_.params_) {
             switch (i.pconfig_.type_) {
-            case Picker::Type::num_slider:
+            case Picker::Type::slider:
                 ImGui::SliderFloat(i.name_.c_str(), &i.pstate_.num_,
-                    i.pconfig_.num_slider_.low_, i.pconfig_.num_slider_.high_);
+                    i.pconfig_.slider_.low_, i.pconfig_.slider_.high_);
                 ImGui::SameLine(); ShowHelpMarker(
                     "Click or drag slider to set value.\n"
                     "CTRL+click to edit value as text.\n");
@@ -312,7 +312,7 @@ void Viewer::render()
         // TODO: precompute uniform id
         auto name = stringify("rv_",p.name_);
         switch (p.pconfig_.type_) {
-        case Picker::Type::num_slider:
+        case Picker::Type::slider:
         case Picker::Type::scale_picker:
             shader_.setUniform(name->c_str(), float(p.pstate_.num_));
             break;

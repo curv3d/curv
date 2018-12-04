@@ -14,9 +14,9 @@ void
 Picker::Config::write(std::ostream& out)
 {
     switch (type_) {
-    case Type::num_slider:
-        out << "num_slider(" << num_slider_.low_
-            << "," << num_slider_.high_ << ")";
+    case Type::slider:
+        out << "slider(" << slider_.low_
+            << "," << slider_.high_ << ")";
         return;
     case Type::int_slider:
         out << "int_slider(" << int_slider_.low_
@@ -45,7 +45,7 @@ Picker::State::write(std::ostream& out, Picker::Type ptype)
     case Type::int_slider:
         out << int_;
         return;
-    case Type::num_slider:
+    case Type::slider:
     case Type::scale_picker:
         out << num_;
         return;
@@ -66,7 +66,7 @@ Picker::State::State(Picker::Type ptype, Value val, const Context& cx)
     case Type::int_slider:
         int_ = val.to_int(INT_MIN, INT_MAX, cx);
         return;
-    case Type::num_slider:
+    case Type::slider:
     case Type::scale_picker:
         num_ = val.to_num(cx);
         return;
@@ -96,7 +96,7 @@ void Uniform_Variable::print(std::ostream& out) const
     out << "<uniform " << name_ << ">";
 }
 
-Value Num_Slider_Picker::call(Value v, Frame& f)
+Value Slider_Picker::call(Value v, Frame& f)
 {
     return isnum(v);
 }
