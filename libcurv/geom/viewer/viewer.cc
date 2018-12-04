@@ -196,13 +196,24 @@ bool Viewer::draw_frame()
             case Picker::Type::num_slider:
                 ImGui::SliderFloat(i.name_.c_str(), &i.pstate_.num_,
                     i.pconfig_.num_slider_.low_, i.pconfig_.num_slider_.high_);
+                ImGui::SameLine(); ShowHelpMarker(
+                    "Click or drag slider to set value.\n"
+                    "CTRL+click to edit value as text.\n");
                 break;
             case Picker::Type::int_slider:
                 ImGui::SliderInt(i.name_.c_str(), &i.pstate_.int_,
                     i.pconfig_.int_slider_.low_, i.pconfig_.int_slider_.high_);
+                ImGui::SameLine(); ShowHelpMarker(
+                    "Click or drag slider to set value.\n"
+                    "CTRL+click to edit value as text.\n");
                 break;
             case Picker::Type::scale_picker:
                 run_scale_picker(i.name_.c_str(), &i.pstate_.num_);
+                ImGui::SameLine(); ShowHelpMarker(
+                    "Drag and hold to adjust value.\n"
+                    "SHIFT+drag changes value more quickly.\n"
+                    "ALT+drag changes value more slowly.\n"
+                    "CTRL+click to edit value as text.\n");
                 break;
             case Picker::Type::checkbox:
                 ImGui::Checkbox(i.name_.c_str(), &i.pstate_.bool_);
@@ -212,10 +223,10 @@ bool Viewer::draw_frame()
                     ImGuiColorEditFlags_PickerHueWheel);
                 ImGui::SameLine(); ShowHelpMarker(
                     "Click on the coloured square to open a colour picker.\n"
-                    "Click and drag, then drop on another coloured square.\n"
-                    "Right-click on the coloured square to set colour space.\n"
                     "To adjust a colour component, drag on numeric field,\n"
-                    "or CTRL+click to edit text.\n");
+                    "or CTRL+click to edit value as text.\n"
+                    "Right-click on the coloured square to set colour space.\n"
+                    "Drag coloured square and drop on another coloured square.\n");
                 break;
             }
         }

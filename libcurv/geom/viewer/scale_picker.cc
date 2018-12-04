@@ -21,6 +21,7 @@ using namespace ImGui;
 #include <iostream>
 
 // Those MIN/MAX values are not define because we need to point to them
+#if 0
 static const ImS32  IM_S32_MIN = INT_MIN;    // (-2147483647 - 1), (0x80000000);
 static const ImS32  IM_S32_MAX = INT_MAX;    // (2147483647), (0x7FFFFFFF)
 static const ImU32  IM_U32_MIN = 0;
@@ -37,6 +38,7 @@ static const ImU64  IM_U64_MIN = 0;
 static const ImU64  IM_U64_MAX = ULLONG_MAX; // (0xFFFFFFFFFFFFFFFFull);
 #else
 static const ImU64  IM_U64_MAX = (2ULL * 9223372036854775807LL + 1);
+#endif
 #endif
 
 struct ImGuiDataTypeInfo
@@ -132,7 +134,7 @@ std::cerr << ","<<v_speed;
     {
         adjust_delta = g.IO.MouseDelta.x;
         if (g.IO.KeyAlt)
-            adjust_delta *= 1.0f/100.0f;
+            adjust_delta *= 1.0f/10.0f;
         if (g.IO.KeyShift)
             adjust_delta *= 10.0f;
     }
@@ -326,5 +328,9 @@ run_scale_picker(const char* label, float* v)
     const char* format = "%g";
     float power = 2.0f;
     float v_speed = 0.0005f;
-    return MyDragScalar(label, ImGuiDataType_Float, v, v_speed, &v_min, &v_max, format, power);
+    bool b = MyDragScalar(label, ImGuiDataType_Float, v,
+        v_speed, &v_min, &v_max, format, power);
+    if (*v < FLT_MIN) *v = FLT_MIN;
+    if (*v > FLT_MAX) *v = FLT_MAX;
+    return b;
 }

@@ -69,12 +69,14 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
         record_pattern_each_parameter(*sh_call, shape.system_,
             [&](Symbol name, Value pred, Value value) -> void {
                 auto picker = pred.dycast<Picker>();
+              #if 0
                 std::cerr << "> " << name;
                 if (picker) {
                     std::cerr << " :: ";
                     picker->config_.write(std::cerr);
                 }
                 std::cerr << " = " << value << "\n";
+              #endif
                 if (picker) {
                     params_.push_back(Parameter{name.c_str(), picker->config_,
                         Picker::State{
@@ -94,7 +96,7 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
             Frame::make(sh_call->nslots_, shape.system_, nullptr, nullptr, nullptr)
         };
         Value result = sh_call->call({cparams}, *f2);
-        std::cerr << "parametric shape: " << result << "\n";
+        //std::cerr << "parametric shape: " << result << "\n";
 
         auto r = result.dycast<Record>();
         if (r == nullptr)

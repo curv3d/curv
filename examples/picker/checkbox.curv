@@ -1,1 +1,1 @@
-parametric { long :: checkbox = true } cylinder{d: 1, h: if (long) 2 else 1}
+parametric { tall :: checkbox = true } cylinder{d: 1, h: if (tall) 2 else 1}
