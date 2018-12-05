@@ -339,14 +339,14 @@ rect = {
     call = exact;
     mitred x =
         x >> match [
-        (is_vec2 b) ->
+        b :: is_vec2 ->
             let r = b / 2;
             in make_shape {
                 dist(x,y,z,t) = max(abs(x,y) - r);
                 bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]];
                 is_2d = true;
             };
-        (is_bbox2 b) ->
+        b :: is_bbox2 ->
             let xmin = b[MIN,X];
                 ymin = b[MIN,Y];
                 xmax = b[MAX,X];
@@ -378,7 +378,7 @@ rect = {
         ];
     exact x =
         x >> match [
-        (is_vec2 b) ->
+        b :: is_vec2 ->
             let r = b / 2;
             in make_shape {
                 dist(x,y,z,t) =
@@ -387,7 +387,7 @@ rect = {
                 bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]];
                 is_2d = true;
             };
-        (is_bbox2 b) ->
+        b :: is_bbox2 ->
             let lo = b[MIN];
                 hi = b[MAX];
                 outsideness(a,amin,amax) =
@@ -437,14 +437,14 @@ box = {
     call = exact;
     mitred a =
         a >> match [
-        (is_vec3 b) ->
+        b :: is_vec3 ->
             let r = b / 2;
             in make_shape {
                 dist(x,y,z,t) = max(abs(x,y,z) - r);
                 bbox = [-r, r];
                 is_3d = true;
             };
-        (is_bbox3 b) ->
+        b :: is_bbox3 ->
             let lo = b[MIN];
                 hi = b[MAX];
             in make_shape {
@@ -457,7 +457,7 @@ box = {
         ];
     exact a =
         a >> match [
-        (is_vec3 b) ->
+        b :: is_vec3 ->
             let r = b / 2;
             in make_shape {
                 dist(x,y,z,t) =
@@ -466,7 +466,7 @@ box = {
                 bbox = [-r, r];
                 is_3d = true;
             };
-        (is_bbox3 b) ->
+        b :: is_bbox3 ->
             let lo = b[MIN];
                 hi = b[MAX];
                 outsideness(a,amin,amax) =
@@ -732,7 +732,7 @@ difference(s1,s2) = _intersection2(s1, complement s2);
 symmetric_difference shapes = difference(union shapes, intersection shapes);
 
 row = match [
-    (is_num d) -> shapes -> row_impl(d,shapes);
+    d :: is_num -> shapes -> row_impl(d,shapes);
     shapes -> row_impl(null, shapes);
 ] where (
     row_impl(d,shapes) =
@@ -897,7 +897,7 @@ warp_domain_xy warp shape =
 // rotate (angle,axis) shape -- 3D rotation around specified axis
 rotate arg shape =
     arg >> match [
-    (is_num a) ->
+    a :: is_num ->
         let // 2D rotation around the Z axis
             rot2(a,p) = cmul(p, cis a);
             b = if (shape.bbox[MIN,X] == -inf || shape.bbox[MIN,Y] == -inf
@@ -1325,7 +1325,7 @@ repeat_radial reps shape =
 ////////////
 
 colour c shape = c >> match [
-    (is_vec3 c) ->
+    c :: is_vec3 ->
         make_shape {
             ... shape,
             colour p : c,
@@ -1335,12 +1335,12 @@ colour c shape = c >> match [
             ... shape,
             colour : compose(ifield, cmap),
         };
-    (is_shape c) ->
+    c :: is_shape ->
         make_shape {
             ... shape,
             colour : c.colour,
         };
-    (is_fun c) ->
+    c :: is_fun ->
         make_shape {
             ... shape,
             colour : c,
