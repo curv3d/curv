@@ -86,8 +86,7 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
                     cparams->fields_[name] =
                         {make<Uniform_Variable>(
                             name,
-                            picker->config_.gltype_,
-                            picker->config_.glsubtype_)};
+                            picker->config_.gltype_)};
                 } else {
                     cparams->fields_[name] = value;
                 }

@@ -83,10 +83,9 @@ Picker::State::State(Picker::Type ptype, Value val, const Context& cx)
     throw Exception{cx, stringify("bad picker type ", int(ptype))};
 }
 
-Uniform_Variable::Uniform_Variable(
-    Symbol name, GL_Type gltype, GL_Subtype glsubtype)
+Uniform_Variable::Uniform_Variable(Symbol name, GL_Type gltype)
 :
-    Reactive_Value(Ref_Value::sty_uniform_variable, gltype, glsubtype),
+    Reactive_Value(Ref_Value::sty_uniform_variable, gltype),
     name_(std::move(name))
 {
 }

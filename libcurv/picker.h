@@ -26,7 +26,6 @@ struct Picker : public Function
     struct Config {
         Type type_;
         GL_Type gltype_;
-        GL_Subtype glsubtype_{GL_Subtype::None};
         union {
             struct {
                 double low_;
@@ -87,7 +86,6 @@ struct Int_Slider_Picker : public Picker
     {
         config_.type_ = Type::int_slider;
         config_.gltype_ = GL_Type::Num;
-        config_.glsubtype_ = GL_Subtype::Int;
         config_.int_slider_.low_ = lo;
         config_.int_slider_.high_ = hi;
     }
@@ -143,7 +141,7 @@ struct Colour_Picker : public Picker
 struct Uniform_Variable : public Reactive_Value
 {
     Symbol name_;
-    Uniform_Variable(Symbol name, GL_Type, GL_Subtype);
+    Uniform_Variable(Symbol name, GL_Type);
     virtual void print(std::ostream&) const override;
 };
 
