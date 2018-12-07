@@ -1,0 +1,42 @@
+Referencing Time in an Animated Shape
+=====================================
+Animated shapes and colours are represented by distance and colour functions
+that take [x,y,z,t] arguments. Time is passed as a 4th vector element.
+
+Using the new Reactive Values feature, it is now possible to represent
+time as a global reactive variable. This means that distance and colour
+functions could be represented as functions with [x,y,z] arguments,
+and referencing `time` as a global variable if needed.
+
+If a function `dist` references the reactive variable `time`, then
+`dist[1,2,3]` does not return a number. It instead returns a Reactive_Expression
+that contains references to `time`.
+
+With the current protocol, it is possible to simply call a distance function
+at different time values. With the new protocol, this is also possible,
+using hypothetical syntax like this:
+    dist[x,y,z]@{time=42}
+if `val` is a regular (non-reactive) value, or if `val` contains no references
+to `time`, then `val@{time=n}` is equivalent to `val`.
+
+So, we can still just as easily write Curv code that transforms time.
+
+Advantages of this technique:
+* It's easier to write an animated shape expression: it's just a normal shape
+  expression with `time` references. No need for a special `animate` operator.
+* Should be feasible to automatically detect if a distance or colour function
+  references time. No need for the `animated` tag of `../v-rep/AniLucent`.
+* Fixes a problem with the proposed `animated` field. A shape may be animated
+  due to its distance field, its colour field, or both. When we upcast a Shape
+  to a Colour_Field, the animated field might be a false positive. The fix is
+  for the colour and dist functions to independently be tagged with whether they
+  depend on the time, and this happens automatically in the Time proposal.
+* In short, we are not manually maintaining the same information in two places
+  and attempting to keep it in sync.
+* Passing the t argument around is slightly annoying in some cases.
+    dist(x,y,z,t) = mag(x,y,z) - r;   // vs dist p = mag p - r, for a sphere
+    dist(x,y,z,t) = max(abs(x,y,z) - r); // vs dist p = max(abs p - r) for a box
+* We can add new global reactive variables, which vary continously over time,
+  and are accessed the same way as time, without changing APIs or adding
+  additional arguments to distance/colour functions.
+* Upward compatible with full FRP.

@@ -13,6 +13,10 @@ component.
 Translucent shapes are more expensive to render, so shapes and colour fields
 need a boolean `translucent` field. If false, then alpha is assumed to be 1.
 
+[For a competing proposal, see ../language/Time, where time is represented
+by a global reactive variable called `time`. No need for `t` parameters in
+`dist` and `colour` functions; the `animated` field is not required.]
+
 A colour field is a record containing:
     colour : [x,y,z,t] -> [r,g,b,a]
     animated : boolean
@@ -23,17 +27,19 @@ An intensity field is a record containing:
     animated : boolean
 
 Colour_Field and Intensity_Field records are graphical values.
-Note that Colour_Field :> Shape.
+Colour_Field :> Shape.
 
-Note that a shape may be animated due to its distance field, its colour field,
+A shape may be animated due to its distance field, its colour field,
 or both. When we upcast a Shape to a Colour_Field, the animated field might be
 a false positive. This could be handled by storing two animated fields, one in
 the colour function itself.
+* This problem is fixed by `../language/Time`, which stores this information
+  in each individual distance or colour function.
 
 Colour API
 ----------
 sRGB(r,g,b) -> colour
-    This will change so that the result is (lr,lg,lb,a).
+    This will change so that the result is (lr,lg,lb,1).
 
 sRGB(r,g,b,a) -> colour
     New API.
@@ -50,8 +56,13 @@ Current API:
 
 New API:
   colour c shape
-    c matches Vec3, Vec4, (ifield,cmap), cfield, fun
   make_colour c
+    c matches Vec3, Vec4, (ifield,cmap), cfield
+
+No need for 'fun' arguments. Instead of writing
+    make_colour ([x,y,z,t] -> ...)
+you write
+    make_colour {colour[x,y,z,t] = ...}
 
 Intensity Field API
 -------------------
@@ -61,4 +72,4 @@ Current API:
 
 New API:
   make_ifield if
-    if matches number, fun, ifield
+    if matches number, ifield
