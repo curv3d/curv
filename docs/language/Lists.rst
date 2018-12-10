@@ -97,3 +97,6 @@ List Slicing
     f(f(f(a,b),c),d)
 
   If the list has zero length, the result is ``zero``.
+
+``contains (list, x)``
+  A predicate, returns ``true`` if ``x`` is an element of ``list``.

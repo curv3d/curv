@@ -61,6 +61,11 @@ sort a =
         in [...sort[for (e in rest) if (e < first) e],
             first,
             ...sort[for (e in rest) if (e >= first) e]];
+contains (list, x) =
+    do  var i := 0;
+        while (i < count list && list[i] != x)
+            i := i + 1;
+    in i < count list;
 
 merge rs = {for (r in rs) ...r};
 
