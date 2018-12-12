@@ -30,21 +30,21 @@ GL_Type
 gl_type_of(Value v)
 {
     if (v.is_bool())
-        return GL_Type::Bool;
+        return GL_Type::Bool();
     if (v.is_num())
-        return GL_Type::Num;
+        return GL_Type::Num();
     if (isvec3(v))
-        return GL_Type::Vec3;
+        return GL_Type::Vec(3);
     if (auto re = v.dycast<Reactive_Value>())
         return re->gltype_;
-    return GL_Type::Any;
+    return GL_Type::Any();
 }
 
 GL_Type
 gl_type_join(GL_Type t1, GL_Type t2)
 {
     if (t1 == t2) return t1;
-    return GL_Type::Any;
+    return GL_Type::Any();
 }
 
 } // namespace curv

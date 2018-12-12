@@ -274,7 +274,7 @@ If_Else_Op::eval(Frame& f) const
             return arg3_->eval(f);
     }
     auto re = cond.dycast<Reactive_Value>();
-    if (re && re->gltype_ == GL_Type::Bool) {
+    if (re && re->gltype_ == GL_Type::Bool()) {
         Value a2 = arg2_->eval(f);
         Value a3 = arg3_->eval(f);
         return {make<Reactive_Expression>(
@@ -473,7 +473,7 @@ value_at_path(Value a, const List& path, const Call_Phrase& callph, Frame& f)
             Value b = path[i];
             if (isnum(b)) {
                 return {make<Reactive_Expression>(
-                    GL_Type::Num,
+                    GL_Type::Num(),
                     make<Call_Expr>(
                         share(callph),
                         make<Constant>(callph.function_, a),

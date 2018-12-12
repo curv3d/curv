@@ -85,7 +85,7 @@ export_cpp(Shape_Program& shape, std::ostream& out)
         "using namespace glm;\n"
         "\n";
 
-    GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
+    GL_Value dist_param = gl.newvalue(GL_Type::Vec(4));
     out <<
         "extern \"C\" double dist(double x, double y, double z, double t)\n"
         "{\n"
@@ -95,7 +95,7 @@ export_cpp(Shape_Program& shape, std::ostream& out)
         "  return " << dist_result << ";\n"
         "}\n";
 
-    GL_Value colour_param = gl.newvalue(GL_Type::Vec4);
+    GL_Value colour_param = gl.newvalue(GL_Type::Vec(4));
     out <<
         "\n"
         "extern \"C\" void colour(double x,double y,double z,double t,vec3* result)\n"

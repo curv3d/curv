@@ -13,33 +13,22 @@ bool isnum(Value a)
 {
     if (a.is_num()) return true;
     auto r = a.dycast<Reactive_Value>();
-    return r && r->gltype_ == GL_Type::Num;
+    return r && r->gltype_ == GL_Type::Num();
 }
 
 bool isbool(Value a)
 {
     if (a.is_bool()) return true;
     auto r = a.dycast<Reactive_Value>();
-    return r && r->gltype_ == GL_Type::Bool;
+    return r && r->gltype_ == GL_Type::Bool();
 }
 
 bool islist(Value a)
 {
     if (a.dycast<List>())
         return true;
-    auto r = a.dycast<Reactive_Value>();
-    if (r)
-        switch (r->gltype_) {
-        case GL_Type::Vec2:
-        case GL_Type::Vec3:
-        case GL_Type::Vec4:
-        case GL_Type::Mat2:
-        case GL_Type::Mat3:
-        case GL_Type::Mat4:
-            return true;
-        default:
-            break;
-        }
+    if (auto r = a.dycast<Reactive_Value>())
+        return r->gltype_.is_list();
     return false;
 }
 
@@ -52,7 +41,7 @@ bool isvec3(Value a)
           && v->at(2).is_num())
         return true;
     auto r = a.dycast<Reactive_Value>();
-    return r && r->gltype_ == GL_Type::Vec3;
+    return r && r->gltype_ == GL_Type::Vec(3);
 }
 
 Value add(Value a, Value b, const At_Syntax& cx)

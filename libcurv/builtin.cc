@@ -114,10 +114,10 @@ struct Bit_Function : public Legacy_Function
     GL_Value gl_call(GL_Frame& f) const override
     {
         auto arg = f[0];
-        if (arg.type != GL_Type::Bool)
+        if (arg.type != GL_Type::Bool())
             throw Exception(At_GL_Arg(0, f),
                 stringify(name(),": argument is not a bool"));
-        auto result = f.gl.newvalue(GL_Type::Num);
+        auto result = f.gl.newvalue(GL_Type::Num());
         f.gl.out << "  float "<<result<<" = float("<<arg<<");\n";
         return result;
     }
@@ -208,14 +208,14 @@ struct Atan2_Function : public Legacy_Function
         auto x = f[0];
         auto y = f[1];
 
-        GL_Type rtype = GL_Type::Bool;
+        GL_Type rtype = GL_Type::Bool();
         if (x.type == y.type)
             rtype = x.type;
-        else if (x.type == GL_Type::Num)
+        else if (x.type == GL_Type::Num())
             rtype = y.type;
-        else if (y.type == GL_Type::Num)
+        else if (y.type == GL_Type::Num())
             rtype = x.type;
-        if (rtype == GL_Type::Bool)
+        if (rtype == GL_Type::Bool())
             throw Exception(At_GL_Phrase(f.call_phrase_, f),
                 "GL domain error");
 
@@ -234,14 +234,14 @@ GL_Value gl_minmax(const char* name, Operation& argx, GL_Frame& f)
     auto list = dynamic_cast<List_Expr*>(&argx);
     if (list) {
         std::list<GL_Value> args;
-        GL_Type type = GL_Type::Num;
+        GL_Type type = GL_Type::Num();
         for (auto op : *list) {
             auto val = op->gl_eval(f);
             args.push_back(val);
-            if (val.type == GL_Type::Num)
+            if (val.type == GL_Type::Num())
                 ;
             else if (gl_type_count(val.type) >= 2) {
-                if (type == GL_Type::Num)
+                if (type == GL_Type::Num())
                     type = val.type;
                 else if (type != val.type)
                     throw Exception(At_GL_Phrase(op->syntax_, f), stringify(
@@ -275,14 +275,14 @@ GL_Value gl_minmax(const char* name, Operation& argx, GL_Frame& f)
         return result;
     } else {
         auto arg = argx.gl_eval(f);
-        auto result = f.gl.newvalue(GL_Type::Num);
+        auto result = f.gl.newvalue(GL_Type::Num());
         f.gl.out << "  float "<<result<<" = ";
-        if (arg.type == GL_Type::Vec2)
+        if (arg.type == GL_Type::Vec(2))
             f.gl.out << name <<"("<<arg<<".x,"<<arg<<".y);\n";
-        else if (arg.type == GL_Type::Vec3)
+        else if (arg.type == GL_Type::Vec(3))
             f.gl.out << name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
                 <<arg<<".z);\n";
-        else if (arg.type == GL_Type::Vec4)
+        else if (arg.type == GL_Type::Vec(4))
             f.gl.out << name<<"("<<name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
                 <<arg<<".z),"<<arg<<".w);\n";
         else
@@ -392,7 +392,7 @@ struct Dot_Function : public Legacy_Function
             throw Exception(At_GL_Arg(0, f), "dot: argument is not a vector");
         if (a.type != b.type)
             throw Exception(At_GL_Arg(1, f), "dot: arguments have different types");
-        auto result = f.gl.newvalue(GL_Type::Num);
+        auto result = f.gl.newvalue(GL_Type::Num());
         f.gl.out << "  float "<<result<<" = dot("<<a<<","<<b<<");\n";
         return result;
     }
@@ -422,7 +422,7 @@ struct Mag_Function : public Legacy_Function
         auto arg = f[0];
         if (gl_type_count(arg.type) < 2)
             throw Exception(At_GL_Arg(0, f), "mag: argument is not a vector");
-        auto result = f.gl.newvalue(GL_Type::Num);
+        auto result = f.gl.newvalue(GL_Type::Num());
         f.gl.out << "  float "<<result<<" = length("<<arg<<");\n";
         return result;
     }
@@ -439,19 +439,10 @@ struct Count_Function : public Legacy_Function
         if (auto string = args[0].dycast<const String>())
             return {double(string->size())};
         if (auto re = args[0].dycast<const Reactive_Value>()) {
-            switch (re->gltype_) {
-            case GL_Type::Vec2:
-            case GL_Type::Mat2:
-                return {2.0};
-            case GL_Type::Vec3:
-            case GL_Type::Mat3:
-                return {3.0};
-            case GL_Type::Vec4:
-            case GL_Type::Mat4:
-                return {4.0};
-            default:
-                break;
-            }
+            if (re->gltype_.is_list())
+                return {double(re->gltype_.count())};
+            //TODO:
+            //if (re->gltype_ == GL_Type::Any())
         }
         throw Exception(At_Arg(*this, args), "not a list or string");
     }

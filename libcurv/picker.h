@@ -69,7 +69,7 @@ struct Slider_Picker : public Picker
         Picker("slider", 1)
     {
         config_.type_ = Type::slider;
-        config_.gltype_ = GL_Type::Num;
+        config_.gltype_ = GL_Type::Num();
         config_.slider_.low_ = lo;
         config_.slider_.high_ = hi;
     }
@@ -85,7 +85,7 @@ struct Int_Slider_Picker : public Picker
         Picker("int_slider", 1)
     {
         config_.type_ = Type::int_slider;
-        config_.gltype_ = GL_Type::Num;
+        config_.gltype_ = GL_Type::Num();
         config_.int_slider_.low_ = lo;
         config_.int_slider_.high_ = hi;
     }
@@ -101,7 +101,7 @@ struct Scale_Picker : public Picker
         Picker("scale_picker", 0)
     {
         config_.type_ = Type::scale_picker;
-        config_.gltype_ = GL_Type::Num;
+        config_.gltype_ = GL_Type::Num();
     }
 
     virtual Value call(Value v, Frame& f) override;
@@ -115,7 +115,7 @@ struct Checkbox_Picker : public Picker
         Picker("checkbox", 0)
     {
         config_.type_ = Type::checkbox;
-        config_.gltype_ = GL_Type::Bool;
+        config_.gltype_ = GL_Type::Bool();
     }
 
     virtual Value call(Value v, Frame& f) override;
@@ -129,7 +129,7 @@ struct Colour_Picker : public Picker
         Picker("colour_picker", 0)
     {
         config_.type_ = Type::colour_picker;
-        config_.gltype_ = GL_Type::Vec3;
+        config_.gltype_ = GL_Type::Vec(3);
     }
 
     virtual Value call(Value v, Frame& f) override;

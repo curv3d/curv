@@ -160,13 +160,13 @@ struct GL_Data_Ref : public Operation
 GL_Value
 Shape_Program::gl_dist(GL_Value arg, GL_Compiler& gl) const
 {
-    assert(arg.type == GL_Type::Vec4);
+    assert(arg.type == GL_Type::Vec(4));
     At_Program cx0(*this);
     const At_Field cx("dist", cx0);
     auto f = GL_Frame::make(0, gl, &cx, nullptr, nullptr);
     auto aref = make<GL_Data_Ref>(nullptr, arg);
     auto result = dist_fun_->gl_call_expr(*aref, nullptr, *f);
-    if (result.type != GL_Type::Num)
+    if (result.type != GL_Type::Num())
         throw Exception(cx, stringify("dist function returns ",result.type));
     return result;
 }
@@ -174,13 +174,13 @@ Shape_Program::gl_dist(GL_Value arg, GL_Compiler& gl) const
 GL_Value
 Shape_Program::gl_colour(GL_Value arg, GL_Compiler& gl) const
 {
-    assert(arg.type == GL_Type::Vec4);
+    assert(arg.type == GL_Type::Vec(4));
     At_Program cx0(*this);
     const At_Field cx("colour", cx0);
     auto f = GL_Frame::make(0, gl, &cx, nullptr, nullptr);
     auto aref = make<GL_Data_Ref>(nullptr, arg);
     auto result = colour_fun_->gl_call_expr(*aref, nullptr, *f);
-    if (result.type != GL_Type::Vec3)
+    if (result.type != GL_Type::Vec(3))
         throw Exception(cx, stringify("colour function returns ",result.type));
     return result;
 }

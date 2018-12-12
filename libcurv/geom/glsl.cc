@@ -29,7 +29,7 @@ void glsl_function_export(const Shape_Program& shape, std::ostream& out)
         }
     }
 
-    GL_Value dist_param = gl.newvalue(GL_Type::Vec4);
+    GL_Value dist_param = gl.newvalue(GL_Type::Vec(4));
     out <<
         "float dist(vec4 " << dist_param << ")\n"
         "{\n";
@@ -38,7 +38,7 @@ void glsl_function_export(const Shape_Program& shape, std::ostream& out)
         "  return " << dist_result << ";\n"
         "}\n";
 
-    GL_Value colour_param = gl.newvalue(GL_Type::Vec4);
+    GL_Value colour_param = gl.newvalue(GL_Type::Vec(4));
     out <<
         "vec3 colour(vec4 " << colour_param << ")\n"
         "{\n";
