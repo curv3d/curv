@@ -467,7 +467,7 @@ value_at_path(Value a, const List& path, const Call_Phrase& callph, Frame& f)
             continue;
         }
         auto re = a.dycast<Reactive_Value>();
-        if (re && gl_type_is_vec(re->gltype_)) {
+        if (re && re->gltype_.is_vec()) {
             if (i < path.size()-1)
                 goto domain_error;
             Value b = path[i];

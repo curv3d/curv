@@ -80,14 +80,14 @@ const
             (*f2)[i] = (*list)[i]->gl_eval(f);
     } else {
         auto glarg = arg.gl_eval(f);
-        if (!gl_type_is_vec(glarg.type))
+        if (!glarg.type.is_vec())
             throw Exception(At_GL_Phrase(arg.syntax_, f),
                 "function call argument is not a vector");
-        if (gl_type_count(glarg.type) != nargs_)
+        if (glarg.type.count() != nargs_)
             throw Exception(At_GL_Phrase(arg.syntax_, f), stringify(
-                "wrong number of arguments (got ",gl_type_count(glarg.type),
+                "wrong number of arguments (got ",glarg.type.count(),
                 ", expected ",nargs_,")"));
-        for (unsigned i = 0; i < gl_type_count(glarg.type); ++i)
+        for (unsigned i = 0; i < glarg.type.count(); ++i)
             (*f2)[i] = gl_vec_element(f, glarg, i);
     }
     return gl_call(*f2);

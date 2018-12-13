@@ -235,12 +235,12 @@ struct List_Pattern : public Pattern
     gl_exec(GL_Value val, const Context& valcx, GL_Frame& callee)
     const override
     {
-        if (!gl_type_is_vec(val.type))
+        if (!val.type.is_vec())
             throw Exception(valcx, "list pattern: argument is not a vector");
-        if (gl_type_count(val.type) != items_.size())
+        if (val.type.count() != items_.size())
             throw Exception(valcx,
                 stringify("list pattern: expected ",items_.size(),
-                    " items, got ",gl_type_count(val.type)));
+                    " items, got ",val.type.count()));
         for (size_t i = 0; i < items_.size(); ++i)
             items_[i]->gl_exec(gl_vec_element(callee, val, i), valcx, callee);
     }

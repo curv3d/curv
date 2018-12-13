@@ -22,7 +22,7 @@ namespace curv {
 GL_Value gl_call_unary_numeric(GL_Frame& f, const char* name)
 {
     auto arg = f[0];
-    if (!gl_type_numeric(arg.type))
+    if (!arg.type.is_numeric())
         throw Exception(At_GL_Arg(0, f),
             stringify(name,": argument is not numeric"));
     auto result = f.gl.newvalue(arg.type);
@@ -139,7 +139,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
     }
     if (auto uv = val.dycast<Uniform_Variable>()) {
         GL_Value result = f.gl.newvalue(uv->gltype_);
-        f.gl.out << "  " << gl_type_name(uv->gltype_)
+        f.gl.out << "  " << uv->gltype_
             << " " << result << " = rv_" << uv->name_ << ";\n";
         return result;
     }
@@ -170,7 +170,7 @@ GL_Value Constant::gl_eval(GL_Frame& f) const
 GL_Value Negative_Expr::gl_eval(GL_Frame& f) const
 {
     auto x = arg_->gl_eval(f);
-    if (!gl_type_numeric(x.type))
+    if (!x.type.is_numeric())
         throw Exception(At_GL_Phrase(arg_->syntax_, f),
             "argument not numeric");
     GL_Value result = f.gl.newvalue(x.type);
@@ -381,7 +381,7 @@ char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
 GL_Value gl_eval_index_expr(
     GL_Value arg1, const Phrase& src1, Operation& index, GL_Frame& f)
 {
-    if (!gl_type_is_vec(arg1.type))
+    if (!arg1.type.is_vec())
         throw Exception(At_GL_Phrase(share(src1), f), "not a vector");
 
     auto k = gl_constify(index, f);
@@ -394,10 +394,10 @@ GL_Value gl_eval_index_expr(
         memset(swizzle, 0, 5);
         for (size_t i = 0; i <list->size(); ++i) {
             swizzle[i] = gl_index_letter((*list)[i],
-                gl_type_count(arg1.type),
+                arg1.type.count(),
                 At_Index(i, At_GL_Phrase(index.syntax_, f)));
         }
-        GL_Value result = f.gl.newvalue(gl_vec_type(list->size()));
+        GL_Value result = f.gl.newvalue(GL_Type::Vec(list->size()));
         f.gl.out << "  " << result.type << " "<< result<<" = ";
         if (f.gl.target == GL_Target::glsl) {
             // use GLSL swizzle syntax: v.xyz
@@ -423,14 +423,14 @@ GL_Value gl_eval_index_expr(
         arg2 = ".x";
     else if (num == 1.0)
         arg2 = ".y";
-    else if (num == 2.0 && gl_type_count(arg1.type) > 2)
+    else if (num == 2.0 && arg1.type.count() > 2)
         arg2 = ".z";
-    else if (num == 3.0 && gl_type_count(arg1.type) > 3)
+    else if (num == 3.0 && arg1.type.count() > 3)
         arg2 = ".w";
     if (arg2 == nullptr)
         throw Exception(At_GL_Phrase(index.syntax_, f),
             stringify("Geometry Compiler: got ",k,", expected 0..",
-                gl_type_count(arg1.type)-1));
+                arg1.type.count()-1));
 
     GL_Value result = f.gl.newvalue(GL_Type::Num());
     f.gl.out << "  float "<<result<<" = "<<arg1<<arg2<<";\n";

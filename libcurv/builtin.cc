@@ -240,7 +240,7 @@ GL_Value gl_minmax(const char* name, Operation& argx, GL_Frame& f)
             args.push_back(val);
             if (val.type == GL_Type::Num())
                 ;
-            else if (gl_type_count(val.type) >= 2) {
+            else if (val.type.is_vec()) {
                 if (type == GL_Type::Num())
                     type = val.type;
                 else if (type != val.type)
@@ -388,7 +388,7 @@ struct Dot_Function : public Legacy_Function
     {
         auto a = f[0];
         auto b = f[1];
-        if (gl_type_count(a.type) < 2)
+        if (!a.type.is_vec())
             throw Exception(At_GL_Arg(0, f), "dot: argument is not a vector");
         if (a.type != b.type)
             throw Exception(At_GL_Arg(1, f), "dot: arguments have different types");
@@ -420,7 +420,7 @@ struct Mag_Function : public Legacy_Function
     GL_Value gl_call(GL_Frame& f) const override
     {
         auto arg = f[0];
-        if (gl_type_count(arg.type) < 2)
+        if (!arg.type.is_vec())
             throw Exception(At_GL_Arg(0, f), "mag: argument is not a vector");
         auto result = f.gl.newvalue(GL_Type::Num());
         f.gl.out << "  float "<<result<<" = length("<<arg<<");\n";
