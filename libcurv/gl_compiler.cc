@@ -57,6 +57,7 @@ get_mat(List& list, int i, int j, double& elem)
 
 GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
 {
+    At_GL_Phrase cx(share(syntax), f);
     if (val.is_num()) {
         GL_Value result = f.gl.newvalue(GL_Type::Num());
         double num = val.get_num_unsafe();
@@ -72,8 +73,11 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
         return result;
     }
     if (auto list = val.dycast<List>()) {
-        if (list->size() >= 2 && list->size() <= 4) {
-            if (isnum(list->front())) {
+        if (list->size() == 0)
+            goto error;
+        if (isnum(list->front())) {
+            // It is a list of numbers. Size 2..4 is a vector.
+            if (list->size() >= 2 && list->size() <= 4) {
                 // vector
                 GL_Value values[4];
                 for (unsigned i = 0; i < list->size(); ++i) {
@@ -101,7 +105,27 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                 }
                 f.gl.out << ");\n";
                 return result;
-            } else {
+            }
+            // It is a float array.
+            GL_Value result = f.gl.newvalue(GL_Type::Num(list->size()));
+            f.gl.out
+                << "  const "
+                << result.type
+                << " "
+                << result
+                << " = "
+                << result.type
+                << "(";
+            bool first = true;
+            for (unsigned i = 0; i < list->size(); ++i) {
+                if (!first) f.gl.out << ",";
+                first = false;
+                f.gl.out << dfmt(list->at(i).to_num(cx), dfmt::EXPR);
+            }
+            f.gl.out << ");\n";
+            return result;
+          #if 0
+            else {
                 // matrix
                 static GL_Type types[5] = {
                     {}, {}, GL_Type::Mat(2), GL_Type::Mat(3), GL_Type::Mat(4)
@@ -130,6 +154,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                 f.gl.out << ");\n";
                 return result;
             }
+          #endif
         }
         goto error;
     }

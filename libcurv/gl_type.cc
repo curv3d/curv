@@ -23,7 +23,10 @@ GL_Type_Info gl_type_info_array[] =
 
 std::ostream& operator<<(std::ostream& out, GL_Type type)
 {
-    return out << type.info().name;
+    out << type.info().name;
+    if (type.rank_ == 1)
+        out << "[" << type.dim1_ << "]";
+    return out;
 }
 
 GL_Type

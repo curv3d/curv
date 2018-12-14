@@ -22,7 +22,7 @@ extern struct GL_Type_Info
 // GL data types
 struct GL_Type
 {
-    enum class Base_Type : int
+    enum class Base_Type : short
     {
         Any = -1,
         Bool = 0,
@@ -34,12 +34,33 @@ struct GL_Type
         Mat3 = 6,
         Mat4 = 7
     };
+
+    // 4 shorts == 64 bit representation
     Base_Type base_type_;
+    // rank 0: The type is just 'base_type_'.
+    // rank 1: The type is array of base_type_.
+    // rank 2: A 2D array of base_type, represented in GLSL as a 1D array,
+    //         since we target GLSL 1.5, which doesn't support multi-D arrays.
+    unsigned short rank_ = 0;
+    unsigned short dim1_ = 0;
+    unsigned short dim2_ = 0;
+
     constexpr GL_Type() : base_type_(Base_Type::Any) {}
-    constexpr GL_Type(Base_Type bt) : base_type_(bt) {}
+    constexpr GL_Type(Base_Type bt, unsigned rank = 0, unsigned dim1 = 0)
+    :
+        base_type_(bt),
+        rank_(rank),
+        dim1_(dim1)
+    {}
     static constexpr inline GL_Type Any() { return {Base_Type::Any}; }
     static constexpr inline GL_Type Bool() { return {Base_Type::Bool}; }
-    static constexpr inline GL_Type Num() { return {Base_Type::Num}; }
+    static constexpr inline GL_Type Num(unsigned dim1 = 0)
+    {
+        if (dim1 != 0)
+            return {Base_Type::Num, 1, dim1};
+        else
+            return {Base_Type::Num};
+    }
     static constexpr inline GL_Type Vec(int n)
     {
         return {Base_Type(int(Base_Type::Vec2) + n - 2)};
