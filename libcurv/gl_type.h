@@ -11,13 +11,13 @@
 namespace curv {
 
 // an array indexed by GL_Type::Base_Type
-extern struct GL_Type_Info
+extern struct GL_Base_Type_Info
 {
     const char* name;
     unsigned rank;
     unsigned dim1;
     unsigned dim2;
-} gl_type_info_array[];
+} gl_base_type_info_array[];
 
 // GL data types
 struct GL_Type
@@ -70,30 +70,52 @@ struct GL_Type
         return {Base_Type(int(Base_Type::Mat2) + n - 2)};
     }
 
-    inline const GL_Type_Info& info() const
+    inline const GL_Base_Type_Info& base_info() const
     {
-        return gl_type_info_array[int(base_type_) + 1];
+        return gl_base_type_info_array[int(base_type_) + 1];
     }
     // is a number, a vector, or a matrix
     inline bool is_numeric() const { return base_type_ >= Base_Type::Num; }
-    inline bool is_list() const { return base_type_ >= Base_Type::Vec2; }
-    inline unsigned count() const { return info().dim1; }
-    inline bool is_vec() const { return info().rank == 1; }
-    inline bool is_mat() const { return info().rank == 2; }
+    inline bool is_list() const
+    {
+        return base_type_ >= Base_Type::Vec2 || rank_ > 0;
+    }
+    // number of dimensions: 0 means a scalar (Num or Bool or Any)
+    inline unsigned rank() const
+    {
+        return rank_ + base_info().rank;
+    }
+    // first dimension, if type is a list
+    inline unsigned count() const
+    {
+        if (base_type_ >= Base_Type::Vec2)
+            return base_info().dim1;
+        else
+            return dim1_;
+    }
+    inline bool is_vec() const
+    {
+        return rank_ == 0 && base_info().rank == 1;
+    }
+    inline bool is_mat() const
+    {
+        return rank_ == 0 && base_info().rank == 2;
+    }
     inline bool operator==(GL_Type rhs) const
     {
-        return base_type_ == rhs.base_type_;
+        return base_type_ == rhs.base_type_ && rank_ == rhs.rank_
+            && dim1_ == rhs.dim1_ && dim2_ == rhs.dim2_;
     }
     inline bool operator!=(GL_Type rhs) const
     {
-        return base_type_ != rhs.base_type_;
+        return !(*this == rhs);
     }
 };
 
 // if numeric, how many numbers are stored.
 inline unsigned gl_type_count(GL_Type type)
 {
-    const GL_Type_Info &ta = type.info();
+    const GL_Base_Type_Info &ta = type.base_info();
     return ta.dim1 * ta.dim2;
 }
 std::ostream& operator<<(std::ostream& out, GL_Type);

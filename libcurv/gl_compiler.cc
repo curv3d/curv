@@ -73,7 +73,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
         return result;
     }
     if (auto list = val.dycast<List>()) {
-        if (list->size() == 0)
+        if (list->size() == 0 || list->size() > 65535)
             goto error;
         if (isnum(list->front())) {
             // It is a list of numbers. Size 2..4 is a vector.
@@ -416,11 +416,12 @@ char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
 GL_Value gl_eval_index_expr(
     GL_Value arg1, const Phrase& src1, Operation& index, GL_Frame& f)
 {
-    if (!arg1.type.is_vec())
-        throw Exception(At_GL_Phrase(share(src1), f), "not a vector");
+    if (arg1.type.rank() != 1)
+        throw Exception(At_GL_Phrase(share(src1), f), "not a list of numbers");
 
     Value k;
-    if (gl_try_constify(index, f, k)) {
+    if (arg1.type.is_vec() && gl_try_constify(index, f, k)) {
+        // A vector with a constant index. Swizzling is supported.
         if (auto list = k.dycast<List>()) {
             if (list->size() < 2 || list->size() > 4) {
                 throw Exception(At_GL_Phrase(index.syntax_, f),
@@ -472,6 +473,7 @@ GL_Value gl_eval_index_expr(
         f.gl.out << "  float "<<result<<" = "<<arg1<<arg2<<";\n";
         return result;
     }
+    // General case: A list of numbers, indexed with a number.
     auto ix = gl_eval_expr(f, index, GL_Type::Num());
     GL_Value result = f.gl.newvalue(GL_Type::Num());
     f.gl.out << "  float "<<result<<" = "<<arg1<<"[int("<<ix<<")];\n";

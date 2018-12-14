@@ -8,7 +8,7 @@
 
 namespace curv {
 
-GL_Type_Info gl_type_info_array[] =
+GL_Base_Type_Info gl_base_type_info_array[] =
 {
     {"Any",   0, 1, 1},
     {"bool",  0, 1, 1},
@@ -23,7 +23,7 @@ GL_Type_Info gl_type_info_array[] =
 
 std::ostream& operator<<(std::ostream& out, GL_Type type)
 {
-    out << type.info().name;
+    out << type.base_info().name;
     if (type.rank_ == 1)
         out << "[" << type.dim1_ << "]";
     return out;
