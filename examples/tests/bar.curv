@@ -1,0 +1,1 @@
+make_texture (p->sRGB[frac(p[p[Z]]),0,0])

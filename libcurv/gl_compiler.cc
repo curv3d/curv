@@ -322,6 +322,16 @@ Value gl_constify(Operation& op, GL_Frame& f)
         "Geometry Compiler: not a constant");
 }
 
+bool gl_try_constify(Operation& op, GL_Frame& f, Value& val)
+{
+    try {
+        val = gl_constify(op, f);
+        return true;
+    } catch (Exception&) {
+        return false;
+    }
+}
+
 bool gl_try_eval(Operation& op, GL_Frame& f, GL_Value& val)
 {
     try {
@@ -409,56 +419,62 @@ GL_Value gl_eval_index_expr(
     if (!arg1.type.is_vec())
         throw Exception(At_GL_Phrase(share(src1), f), "not a vector");
 
-    auto k = gl_constify(index, f);
-    if (auto list = k.dycast<List>()) {
-        if (list->size() < 2 || list->size() > 4) {
-            throw Exception(At_GL_Phrase(index.syntax_, f),
-                "list index vector must have between 2 and 4 elements");
-        }
-        char swizzle[5];
-        memset(swizzle, 0, 5);
-        for (size_t i = 0; i <list->size(); ++i) {
-            swizzle[i] = gl_index_letter((*list)[i],
-                arg1.type.count(),
-                At_Index(i, At_GL_Phrase(index.syntax_, f)));
-        }
-        GL_Value result = f.gl.newvalue(GL_Type::Vec(list->size()));
-        f.gl.out << "  " << result.type << " "<< result<<" = ";
-        if (f.gl.target == GL_Target::glsl) {
-            // use GLSL swizzle syntax: v.xyz
-            f.gl.out <<arg1<<"."<<swizzle;
-        } else {
-            // fall back to a vector constructor: vec3(v.x,v.y,v.z)
-            f.gl.out << result.type << "(";
-            bool first = true;
-            for (size_t i = 0; i < list->size(); ++i) {
-                if (!first)
-                    f.gl.out << ",";
-                first = false;
-                f.gl.out << arg1 << "." << swizzle[i];
+    Value k;
+    if (gl_try_constify(index, f, k)) {
+        if (auto list = k.dycast<List>()) {
+            if (list->size() < 2 || list->size() > 4) {
+                throw Exception(At_GL_Phrase(index.syntax_, f),
+                    "list index vector must have between 2 and 4 elements");
             }
-            f.gl.out << ")";
+            char swizzle[5];
+            memset(swizzle, 0, 5);
+            for (size_t i = 0; i <list->size(); ++i) {
+                swizzle[i] = gl_index_letter((*list)[i],
+                    arg1.type.count(),
+                    At_Index(i, At_GL_Phrase(index.syntax_, f)));
+            }
+            GL_Value result = f.gl.newvalue(GL_Type::Vec(list->size()));
+            f.gl.out << "  " << result.type << " "<< result<<" = ";
+            if (f.gl.target == GL_Target::glsl) {
+                // use GLSL swizzle syntax: v.xyz
+                f.gl.out <<arg1<<"."<<swizzle;
+            } else {
+                // fall back to a vector constructor: vec3(v.x,v.y,v.z)
+                f.gl.out << result.type << "(";
+                bool first = true;
+                for (size_t i = 0; i < list->size(); ++i) {
+                    if (!first)
+                        f.gl.out << ",";
+                    first = false;
+                    f.gl.out << arg1 << "." << swizzle[i];
+                }
+                f.gl.out << ")";
+            }
+            f.gl.out <<";\n";
+            return result;
         }
-        f.gl.out <<";\n";
+        const char* arg2 = nullptr;
+        auto num = k.get_num_or_nan();
+        if (num == 0.0)
+            arg2 = ".x";
+        else if (num == 1.0)
+            arg2 = ".y";
+        else if (num == 2.0 && arg1.type.count() > 2)
+            arg2 = ".z";
+        else if (num == 3.0 && arg1.type.count() > 3)
+            arg2 = ".w";
+        if (arg2 == nullptr)
+            throw Exception(At_GL_Phrase(index.syntax_, f),
+                stringify("Geometry Compiler: got ",k,", expected 0..",
+                    arg1.type.count()-1));
+
+        GL_Value result = f.gl.newvalue(GL_Type::Num());
+        f.gl.out << "  float "<<result<<" = "<<arg1<<arg2<<";\n";
         return result;
     }
-    const char* arg2 = nullptr;
-    auto num = k.get_num_or_nan();
-    if (num == 0.0)
-        arg2 = ".x";
-    else if (num == 1.0)
-        arg2 = ".y";
-    else if (num == 2.0 && arg1.type.count() > 2)
-        arg2 = ".z";
-    else if (num == 3.0 && arg1.type.count() > 3)
-        arg2 = ".w";
-    if (arg2 == nullptr)
-        throw Exception(At_GL_Phrase(index.syntax_, f),
-            stringify("Geometry Compiler: got ",k,", expected 0..",
-                arg1.type.count()-1));
-
+    auto ix = gl_eval_expr(f, index, GL_Type::Num());
     GL_Value result = f.gl.newvalue(GL_Type::Num());
-    f.gl.out << "  float "<<result<<" = "<<arg1<<arg2<<";\n";
+    f.gl.out << "  float "<<result<<" = "<<arg1<<"[int("<<ix<<")];\n";
     return result;
 }
 
