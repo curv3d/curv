@@ -40,6 +40,7 @@ GL_Value gl_eval_expr(GL_Frame& f, const Operation& op, GL_Type type)
     return arg;
 }
 
+#if 0
 bool
 get_mat(List& list, int i, int j, double& elem)
 {
@@ -53,6 +54,28 @@ get_mat(List& list, int i, int j, double& elem)
         }
     }
     return false;
+}
+#endif
+
+void
+gl_put_num(Value val, const Context& cx, std::ostream& out)
+{
+    out << dfmt(val.to_num(cx), dfmt::EXPR);
+}
+
+void
+gl_put_vec(unsigned size, Value val, const Context& cx, std::ostream& out)
+{
+    auto list = val.to<List>(cx);
+    list->assert_size(size, cx);
+    out << GL_Type::Vec(size) << "(";
+    bool first = true;
+    for (unsigned i = 0; i < size; ++i) {
+        if (!first) out << ",";
+        first = false;
+        gl_put_num(list->at(i), cx, out);
+    }
+    out << ")";
 }
 
 GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
@@ -73,8 +96,11 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
         return result;
     }
     if (auto list = val.dycast<List>()) {
-        if (list->size() == 0 || list->size() > 65535)
-            goto error;
+        if (list->size() == 0 || list->size() > GL_Type::MAX_LIST) {
+            throw Exception(cx, stringify(
+                "Geometry Compiler: list of size ",list->size(),
+                " is not supported"));
+        }
         if (isnum(list->front())) {
             // It is a list of numbers. Size 2..4 is a vector.
             if (list->size() >= 2 && list->size() <= 4) {
@@ -89,14 +115,8 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                     {}, {}, GL_Type::Vec(2), GL_Type::Vec(3), GL_Type::Vec(4)
                 };
                 GL_Value result = f.gl.newvalue(types[list->size()]);
-                f.gl.out
-                    << "  "
-                    << result.type
-                    << " "
-                    << result
-                    << " = "
-                    << result.type
-                    << "(";
+                f.gl.out << "  " << result.type << " " << result
+                    << " = " << result.type << "(";
                 bool first = true;
                 for (unsigned i = 0; i < list->size(); ++i) {
                     if (!first) f.gl.out << ",";
@@ -108,14 +128,8 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
             }
             // It is a float array.
             GL_Value result = f.gl.newvalue(GL_Type::Num(list->size()));
-            f.gl.out
-                << "  const "
-                << result.type
-                << " "
-                << result
-                << " = "
-                << result.type
-                << "(";
+            f.gl.out << "  const " << result.type << " " << result
+                << " = " << result.type << "(";
             bool first = true;
             for (unsigned i = 0; i < list->size(); ++i) {
                 if (!first) f.gl.out << ",";
@@ -131,14 +145,8 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                     {}, {}, GL_Type::Mat(2), GL_Type::Mat(3), GL_Type::Mat(4)
                 };
                 GL_Value result = f.gl.newvalue(types[list->size()]);
-                f.gl.out
-                    << "  "
-                    << result.type
-                    << " "
-                    << result
-                    << " = "
-                    << result.type
-                    << "(";
+                f.gl.out << "  " << result.type << " " << result
+                    << " = " << result.type << "(";
                 bool first = true;
                 for (size_t i = 0; i < list->size(); ++i) {
                     for (size_t j = 0; j < list->size(); ++j) {
@@ -155,6 +163,22 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                 return result;
             }
           #endif
+        }
+        if (auto list2 = list->front().dycast<List>()) {
+            // A list of lists... For now, support list of vectors.
+            if (list2->size() < 2 || list2->size() > 4) goto error;
+            GL_Value result =
+                f.gl.newvalue(GL_Type::Vec(list2->size(), list->size()));
+            f.gl.out << "  const " << result.type
+                << " " << result << " = " << result.type << "(";
+            bool first = true;
+            for (unsigned i = 0; i < list->size(); ++i) {
+                if (!first) f.gl.out << ",";
+                first = false;
+                gl_put_vec(list2->size(), list->at(i), cx, f.gl.out);
+            }
+            f.gl.out << ");\n";
+            return result;
         }
         goto error;
     }
@@ -416,8 +440,8 @@ char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
 GL_Value gl_eval_index_expr(
     GL_Value arg1, const Phrase& src1, Operation& index, GL_Frame& f)
 {
-    if (arg1.type.rank() != 1)
-        throw Exception(At_GL_Phrase(share(src1), f), "not a list of numbers");
+    if (!arg1.type.is_list())
+        throw Exception(At_GL_Phrase(share(src1), f), "not an array");
 
     Value k;
     if (arg1.type.is_vec() && gl_try_constify(index, f, k)) {
@@ -473,10 +497,11 @@ GL_Value gl_eval_index_expr(
         f.gl.out << "  float "<<result<<" = "<<arg1<<arg2<<";\n";
         return result;
     }
-    // General case: A list of numbers, indexed with a number.
+    // General case: An array of numbers, indexed with a number.
     auto ix = gl_eval_expr(f, index, GL_Type::Num());
-    GL_Value result = f.gl.newvalue(GL_Type::Num());
-    f.gl.out << "  float "<<result<<" = "<<arg1<<"[int("<<ix<<")];\n";
+    GL_Value result = f.gl.newvalue(arg1.type.abase());
+    f.gl.out << "  " << result.type << " " << result << " = "
+             << arg1 << "[int(" << ix << ")];\n";
     return result;
 }
 

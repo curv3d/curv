@@ -22,6 +22,7 @@ extern struct GL_Base_Type_Info
 // GL data types
 struct GL_Type
 {
+    static constexpr unsigned MAX_LIST = 65535; // max size of an array dimension
     enum class Base_Type : short
     {
         Any = -1,
@@ -61,9 +62,13 @@ struct GL_Type
         else
             return {Base_Type::Num};
     }
-    static constexpr inline GL_Type Vec(int n)
+    static constexpr inline GL_Type Vec(int n, unsigned dim1 = 0)
     {
-        return {Base_Type(int(Base_Type::Vec2) + n - 2)};
+        Base_Type base = Base_Type(int(Base_Type::Vec2) + n - 2);
+        if (dim1 != 0)
+            return {base, 1, dim1};
+        else
+            return {base};
     }
     static constexpr inline GL_Type Mat(int n)
     {
@@ -92,6 +97,13 @@ struct GL_Type
             return base_info().dim1;
         else
             return dim1_;
+    }
+    // if this is an array, strip one dimension off of the type.
+    GL_Type abase()
+    {
+        if (is_vec())
+            return Num();
+        return {base_type_};
     }
     inline bool is_vec() const
     {
