@@ -15,9 +15,9 @@ Rationale:
   and thus will contain a metadata representation of their **CSG Tree**
   (in the OpenSCAD sense). Then,
   * A CSG tree can be translated into a tree of value pickers in the GUI.
-    BUT: In general, can't represent all of the parameters in a CSG tree by
-    GLSL uniform variables, since the full Curv language cannot be translated
-    into GLSL code.
+    The parametric shape proposal extends the 'term' mechanism with picker
+    predicates, to indicate which parameters are to be represented by GLSL
+    uniform variables, and what GUI to use for that parameter.
   * Can export an abstract CSG tree, similar to an OpenSCAD *.csg file.
     Eg, using my proposed JCSG format (JSON encoded CSG tree).
   * Can export other high level graphics file formats, such as SVG, by mapping
@@ -28,6 +28,11 @@ Rationale:
   environment. Search the standard environment for term bindings, and present
   them as graphical blocks that can be dragged onto a canvas. Use term metadata
   to determine inputs and outputs.
+* There are patterns that match terms.
+  This provides something similar to 'user defined data types', although
+  without encapsulation, and without adding type names to the language.
+* Term equality compares constructor expressions. This provides meaningful
+  equality tests for shapes, and other compound data that includes functions.
 
 Examples of terms (after the standard library is modified):
 * cube
@@ -79,7 +84,7 @@ What is the API for defining terms?
     This also works with the 'binding' syntax: `term id : expr`.
 
     In the general case, `term` needs to add term metadata at run time,
-    when evaluating the <expr> of a term definition. This can optimized
+    when evaluating the <expr> of a term definition. This can be optimized
     to happen at compile time in certain cases, depending on how smart the
     compiler is.
 
@@ -89,6 +94,11 @@ Consider the ability to write patterns that match terms.
 This provides something similar to 'user defined data types', although
 without encapsulation, and without adding type names to the language.
 It's exactly what Pure has.
+
+Example syntax:
+    term_pattern ::= '#' identifier
+        | term_pattern '.' identifier
+        | term_pattern primary_pattern
 
 Terms are inspired by "term rewriting systems". I'm inspired, to various
 degrees, by Haskell, Mathematica and especially Pure.
@@ -109,17 +119,29 @@ This metadata is added, generally at runtime, by the following operations:
 Internally, the `term` keyword adds metadata to the value of the <expr>.
   Eg, in a record literal, a special definitional form, `term <id> = <expr>`,
 
-Three cases:
+The metadata is represented by a record field called:
+* `term` (not if `term` is a keyword),
+* `ctor` or `constructor`,
+* or `meta`.
+Or place the metadata record fields at the top level.
 
-The metadata is represented by a field called `term` or `ctor`,
-which matches one of three patterns:
-    {is_string name}
+The metadata record matches one of three patterns:
+    {name :: is_string}
     {apply: (is_fun, _)}
     {select: (is_record, is_string)}
 Or here is a flattened alternative:
-    {is_string name}
-    {is_fun fun, arg}
-    {is_record parent, is_string field}
+    {name :: is_string}
+    {fun :: is_fun, arg}
+    {parent :: is_record, field :: is_string}
+or:
+    {name :: is_string}
+    {parent :: is_record, name :: is_string}
+    {constructor :: is_fun, argument}
+
+The 'parent' field describes the parent record R, in the case of an R.F term.
+But, 'parent' cannot simply contain the parent record, or there will be
+mutual recursion, which breaks reference counting. So, 'parent' is a record
+that only contains the term metadata fields of the parent record.
 
 There is a problem with selection terms. Consider a constructor expression
 prefix ending in `. <id>`. Two subcases:
@@ -136,3 +158,54 @@ As part of the ongoing work of creating better error messages, I changed
 function definitions to add metadata to the function so that a function value
 and a partially applied function would print as a term. The present proposal
 extends this.
+
+Unifying Terms with Parametric Records
+--------------------------------------
+Right now, a parametric record is like a function call term, with an
+anonymous constructor function, which is bound to the `call` field.
+Let us unify parametric records with terms.
+
+If a parametric record is bound to a record field, it becomes a full term.
+This includes directory syntax: if the file `lollipop.curv` contains an
+anonymous parametric record, you get a term named "lollipop".
+
+Metadata:
+* A named parametric record is simultaneously two kinds of term:
+  * It is a named record, so it has 'name' metadata.
+  * It is a constructed record, so it has constructor/argument metadata.
+    And the constructor has the same name. Eg, R.name==R.constructor.name
+  So we should use 'flattened' metadata.
+* For a parametric record, R==R.constructor(R.argument). The viewer relies on
+  this property, and uses magic fields to identify records with this property.
+  But, a constructed record term has this same property. So we can unify.
+* The use of `call` by the parametric record system is problematic.
+  It is used to support 'customization' for 'prototype oriented programming',
+  a feature imported from OpenSCAD2. But,
+  * The term system can't use `call` for the constructor function: that doesn't
+    work if the term is a function.
+  * Some record terms need `call` to do other work.
+  There is nothing about 'prototype oriented programming' that is needed by the
+  Viewer or by the Term system. So maybe remove this feature, and implement
+  it explicitly where desired?
+* I just need to choose a naming scheme for term metadata.
+  The extension is that a constructor function can be anonymous (not a term).
+  Eg, top level: name, parent, constructor, argument. (Absent a better idea.)
+
+Syntax:
+Three cases for parametric records:
+ 1. A constructed record term is a parametric record. Given
+        term C {d=2} = cube d;
+    then `C x` is a constructed record term that is also a parametric record.
+    Both cases have `constructor`/`argument` metadata.
+    Note that C is a function, but it isn't a shape.
+ 2. Given
+        term S = cube;
+    then `S` is a term but is not parametric. There are no parameters.
+    However, given
+        term S = parametric {d=2} cube d;
+    then S is a term and is also a parametric shape.
+ 3. Given
+        S = parametric {d=2} cube d;
+    then S is not a term, but it is a parametric shape.
+In 2 and 3, S is a parametric shape, but has no call field, and is not a
+function, since we removed that feature.

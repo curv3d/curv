@@ -39,13 +39,27 @@ the biggest problem. Code size and dependencies will be an issue that could
 trigger a rewrite of libcurv.
 
 Indie cross-platform GPU APIs:
-* GLFW
-* https://github.com/bkaradzic/bgfx
-* sokol_gfx: https://github.com/floooh/sokol
-  lightweight, in C, doesn't create window or context (eg use GLFW),
-  doesn't abstract shader language. GLES3/WebGL2, GL3.3, D3D11 and Metal.
-* flextGL: https://github.com/mosra/flextgl
-  an OpenGL and Vulkan header and loader generator, can use with GLFW and sokol
+* Header and loader generator
+  * glad (what I'm using)
+  * flextGL: https://github.com/mosra/flextgl
+* Windows, contexts, input
+  * GLFW
+* Rendering
+  * https://github.com/bkaradzic/bgfx -- C++, impressively heavy duty
+  * sokol_gfx: https://github.com/floooh/sokol -- C, lightweight
+    GLES3/WebGL2, GL3.3, D3D11, Metal. No shader abstraction.
+* Shader Language abstraction
+  * https://github.com/KhronosGroup/SPIRV-Cross: SPIR-V to GLSL, MSL, HLSL, C++
+  * https://github.com/KhronosGroup/SPIRV-Tools: SPIR-V optimizer, immature.
+    https://www.lunarg.com/wp-content/uploads/2018/06/SPIR-V-Shader-Legalization-and-Size-Reduction-Using-spirv-opt_v1.2.pdf
+  * https://github.com/aras-p/glsl-optimizer, outputs GLSL or Metal, obsolete.
+  * https://github.com/Unity-Technologies/HLSLcc: what replaced glsl-optimizer.
+    compiles DirectX shader bytecode to GLSL (3.3+, ES & Vulkan) or MSL
+  * LunarGlass: LLVM based shader compiler
+    Front ends: GLSL, SPIR-V
+    Back ends: GLSL (LunarGOO), Mesa GLSL IR
+  * glslang: https://github.com/KhronosGroup/glslang
+    compile GLSL or HLSL to SPIR-V
 
 There is no standard universal GPU API that works on all platforms.
 Notes:

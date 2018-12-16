@@ -3,15 +3,29 @@ for tweaking the parameters of a parametric shape.
 
 Graphical value pickers
 -----------------------
-* checkbox: for a boolean value
-* enum: a fixed set of values
+* checkbox: a boolean value
+* enum: a fixed set of labelled integers
+  * radio_buttons (imgui: "radio a")
+  * dropdown_list (imgui: "combo")
+* int_range: a contiguous range of integers
+  * imgui: "slider int"
+* num_range: 
+  * imgui: "slider float", "slider float (curve)"
+* nat: a natural number: 0, 1, 2, ...
+* int: an arbitrary integer
+* mag: a real number between 0 and infinity
+  * mag_picker
+  * ImGui::DragFloat()
+  * logarithmic dragging, like Pan in the Viewer. imgui "slider float (curve)"
+* num: an arbitrary real number
+  * imgui: "drag float"
 * slider: for a bounded numeric range
 * integer slider (discrete slider)
 * normalized 2D vector picker: a direction
 * 2D point picker for a bounded range
 * 2D translation (pan control)
 * 3D rotation
-* colour picker
+* colour_picker
 * hue picker
 
 Reactive Records
@@ -120,6 +134,8 @@ How is the Viewer implemented?
     * Nanogui and Nanovg both need more volunteer support. But, it looks like
       a reasonable base for a lightweight OpenGL GUI framework, if I wanted to
       put in the effort to fix the holes.
+    * If Nanovg is a 2D drawing API, then how do you implement a 3D widget,
+      eg like the AntTweakBar 3D rotation widget?
   * github.com/ocornut/imgui. *11,000.
     * Just good enough for MVP. Could implement editor and console window.
     * It uses global variables, only supports 1 window.
@@ -128,7 +144,10 @@ How is the Viewer implemented?
       Wonky and limited layout support makes some things that should be easy
       quite difficult.
     * Looks bad. Poor font support.
+    * Doesn't have all the widgets that I want.
     * Supports OpenGL, Metal, Vulkan, DX12.
+  * AntTweakBar. Project halted in 2013. Has some nice 3D widgets that I want,
+    and don't see replicated elsewhere. No colour wheel picker, unlike ImGui.
 * Use QT.
   * Supports translucent widgets on top of an OpenGL scene:
     https://doc.qt.io/archives/qq/qq26-openglcanvas.html

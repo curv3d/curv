@@ -383,8 +383,31 @@ The Swift implementation is the right way to do Unicode strings.
 Better than anything else I've found in an open source language, anyway.
 
 ## Strings are Lists of Characters
-I am seriously considering a change so that a string is a list of characters.
-I'll need a character data type.
+I am considering a change so that a string is a list of 'string elements'
+(aka characters?) I'll need a suitable character data type.
+
+We need to support list semantics:
+* count(append[l1,l2]) == count(l1) + count(l2)
+* You can amend a list, replacing one of the elements, without disturbing the
+  other elements or changing the count.
+* Two lists are equal if they have the same count and corresponding elements
+  are equal.
+
+To satisfy these requirements,
+* Use Minimal Safe Unicode, where a code point is an EGC is a character.
+  The requirements are met trivially, and strings are always in NFC.
+* A string element is a code point, all graphical characters are supported.
+  Strings are arbitrary lists of code points, not guaranteed to be NFC.
+  To support Unicode compatible string equality,
+  * The generic equality operator has special rules for contiguous subsequences
+    of code points within a list.
+  * The generic equality operator just implements simple list equality, and
+    string equality is a separate operation.
+
+In Kona, there is only one list concept: a list of values. Internally, there
+are efficient representations for uniform lists of booleans, integers, etc.
+In Julia, another dynamically typed language, list values have an associated
+element type (which can be Any), and this is exposed in the language semantics.
 
 ## Simple Proposal:
 This version has disappointing limitations, but the code complexity
@@ -400,13 +423,16 @@ is manageable.
 
 ## Proposal:
 * A string is represented internally as UTF-8 and NFC,
-  using only code points from the Safe Unicode Subset defined above.
+  using only code points from a Mostly-Safe Unicode Subset that includes all
+  graphic characters.
 * String comparison is just memcmp. Record field names use the same
   representation as strings, and so have a fast compare operator.
-* We need to perform NFC normalization when a curv::String is constructed,
-  and after construction it must be immutable.
 * From a user perspective, a string is a list of code points in NFC.
   The core language has no concept of characters or EGCs.
+* We need to perform NFC normalization when a curv::String is constructed,
+  and after construction it must be immutable.
+  * Amending a string, by changing a code point, may trigger renormalization
+    and the number of code points may change. That's awkward.
 * So, `count str` is the number of code points, `str[i]` is the i'th code point.
   These operations are O(N), not O(1).
 

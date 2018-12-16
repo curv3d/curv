@@ -12,7 +12,9 @@ TODO (value pickers impl)
 * There is a performance hit to using `parametric`. Need a code optimizer?
 * Precompute uniform ids, before entering main loop.
 * In parametric parameters, support labels that aren't C identifiers.
-* Support all expressions over reactive values.
+* Support all GL-compatible expressions over reactive values.
+  * Should picker predicates restrict their range to something more precise
+    than a GL_Type?
 
 Current TODO List:
 * graphical value pickers

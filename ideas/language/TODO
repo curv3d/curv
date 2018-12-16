@@ -1,6 +1,12 @@
 # TODO: Language Changes
 
-Recent Ideas (Oct 2018):
+Recent Ideas (Dec 2018):
+* Parametric Records and Terms
+  * Finalize naming scheme for metadata.
+    * Rename ParametricRecord metadata fields to constructor, argument.
+  * If a parametric record is bound to a field, it becomes a term.
+  * Constructor terms, which can construct parametric records.
+* Picker predicates: implement the complete set
 * sequential let
 * string comprehensions
 * `== value` is a predicate, and it is an equality pattern.
@@ -16,10 +22,15 @@ Recent Ideas (Oct 2018):
   * `f x := expr` function definition syntax is *not* supported.
 * mixed a=/a: record literals
 * >> `intersection` foo
+* Issue #50: unintuitive operator precedence. My proposed solutions:
+  * warn about inconsistent white space in expressions, eg: 'f -1' or 'f a.b'
+  * Lua-like function call syntax. 'f 1' and 'f a' no longer supported,
+    but 'f(x)', 'f[x]' and 'f{a:b}' are still supported.
+  * Two precedence levels for prefix expressions, significant white space.
+    'f a.b' means 'f(a.b)'. But what about 'f -1'?
 
 Breaking changes:
 * file.foo and package. Remove 'file pathname'.
-* Remove `a'b` syntax.
 * function/record equivalence
   * primitive functions have a 'call' field, support 'fields' and 'defined'
     and 'f.call' and 'include' and '...'.
@@ -244,7 +255,7 @@ It reminds me of:
   and backtracking on failure.
 * Exception handling, although this particular variety is restricted so that
   it does not break referential transparency.
-  
+
 This is now very general. "pattern directed evaluation"
 
 ## Type Classes:
@@ -347,6 +358,9 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
   * Use some(pred)list, every(pred)list, name consistent with Javascript.
   * Haskell uses "and". Eg, a `any` b  vs  a `and` b
 * ifelse(cond,thenval,elseval)
+  * The name comes from R. In GLSL 4.5, this is mix(elseval,thenval,cond).
+  * In Dec2018 Curv, `if (a) b else c` evaluates all 3 arguments if `a` is a
+    reactive value. We could vectorize the `if` operator.
 * Rationale: vectorized boolean ops have different names than unvectorized ones.
   * x==y compares vectors and returns bool, unlike xs=='ys/xs `equal` ys.
   * a&&b short circuits if a==false, but all(a,b) must evaluate b if a==false
