@@ -294,13 +294,13 @@ TEST(curv, eval)
     SUCCESS("4^0.5", "2");
     SUCCESS("4^-1", "0.25");
     SUCCESS("-2^2", "-4");
-    SUCCESS("[1,2,3]'1","2");
-    FAILALL("[1,2,3]'1.1",
-        "1.1 is not an integer\n"
-        "1| [1,2,3]'1.1\n"
-        "           ^^^");
-    SUCCESS("(0..10)'(3..1 by -1)", "[3,2,1]");
-    SUCCESS("[false,true]'[[0,1],[1,0]]", "[[false,true],[true,false]]");
+    SUCCESS("[1,2,3][1]","2");
+    FAILALL("[1,2,3][1.1]",
+        "at index [0]: 1.1 is not an integer\n"
+        "1| [1,2,3][1.1]\n"
+        "          ^^^^^");
+    SUCCESS("(0..10)[3..1 by -1]", "[3,2,1]");
+    SUCCESS("[false,true][[[0,1],[1,0]]]", "[[false,true],[true,false]]");
     SUCCESS("let x=1;y=2; in x+y", "3");
     SUCCESS("let a=c+1;b=1;c=b+1; in a", "3");
     SUCCESS("let x=1 in let y=2 in let z=3 in x+y+z", "6");
@@ -315,12 +315,12 @@ TEST(curv, eval)
     SUCCESS("let add=x->y->x+y in add 1 2", "3");
     SUCCESS("let add x y = x+y in add 1 2", "3");
     SUCCESS(
-        "let sum = (list,i,f)->if (i < count list) list'i+f(list,i+1,f) else 0;"
+        "let sum = (list,i,f)->if (i < count list) list[i]+f(list,i+1,f) else 0;"
         "in sum([1,2,3],0,sum)",
         "6");
     SUCCESS(
         "/* tail-recursive function */"
-        "let sum = (list,i)->if (i < count list) list'i+sum(list,i+1) else 0;"
+        "let sum = (list,i)->if (i < count list) list[i]+sum(list,i+1) else 0;"
         "in sum([1,2,3],0)",
         "6");
     SUCCESS(

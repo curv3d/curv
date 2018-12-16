@@ -578,11 +578,6 @@ Binary_Phrase::analyse(Environ& env) const
             "invalid expression after '.'");
     case Token::k_in:
         throw Exception(At_Token(op_, *this, env), "syntax error");
-    case Token::k_apostrophe:
-        return make<Index_Expr>(
-            share(*this),
-            analyse_op(*left_, env),
-            analyse_op(*right_, env));
     case Token::k_colon:
         return analyse_assoc(env, *this, *left_, right_);
     default:

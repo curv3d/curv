@@ -602,11 +602,8 @@ parse_postfix(Scanner& scanner)
         tok = scanner.get_token();
         switch (tok.kind_) {
         case Token::k_dot:
-        case Token::k_apostrophe:
-            postfix = make<Binary_Phrase>(postfix, tok, parse_primary(scanner,
-                tok.kind_ == Token::k_dot
-                ? "expression following ."
-                : "expression following '"));
+            postfix = make<Binary_Phrase>(postfix, tok,
+                parse_primary(scanner, "expression following ."));
             continue;
         default:
             scanner.push_token(tok);

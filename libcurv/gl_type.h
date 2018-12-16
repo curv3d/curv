@@ -47,11 +47,13 @@ struct GL_Type
     unsigned short dim2_ = 0;
 
     constexpr GL_Type() : base_type_(Base_Type::Any) {}
-    constexpr GL_Type(Base_Type bt, unsigned rank = 0, unsigned dim1 = 0)
+    constexpr GL_Type(
+        Base_Type bt, unsigned rank = 0, unsigned dim1 = 0, unsigned dim2 = 0)
     :
         base_type_(bt),
         rank_(rank),
-        dim1_(dim1)
+        dim1_(dim1),
+        dim2_(dim2)
     {}
     static constexpr inline GL_Type Any() { return {Base_Type::Any}; }
     static constexpr inline GL_Type Bool() { return {Base_Type::Bool}; }
@@ -62,13 +64,15 @@ struct GL_Type
         else
             return {Base_Type::Num};
     }
-    static constexpr inline GL_Type Vec(int n, unsigned dim1 = 0)
+    static constexpr inline GL_Type Vec(
+        int n, unsigned dim1 = 0, unsigned dim2 = 0)
     {
         Base_Type base = Base_Type(int(Base_Type::Vec2) + n - 2);
+        if (dim2 != 0)
+            return {base, 2, dim1, dim2};
         if (dim1 != 0)
             return {base, 1, dim1};
-        else
-            return {base};
+        return {base};
     }
     static constexpr inline GL_Type Mat(int n)
     {
@@ -98,7 +102,7 @@ struct GL_Type
         else
             return dim1_;
     }
-    // if this is an array, strip one dimension off of the type.
+    // If this is an array, strip one dimension off of the type.
     GL_Type abase()
     {
         if (is_vec())

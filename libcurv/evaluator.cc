@@ -417,6 +417,7 @@ list_at(const List& list, Value index, const Context& cx)
     int i = index.to_int(0, (int)(list.size()-1), cx);
     return list[i];
 }
+#if 0
 Value
 record_at(const Record& ref, Value index, const Context& cx)
 {
@@ -430,6 +431,7 @@ record_at(const Record& ref, Value index, const Context& cx)
     Symbol a = index.to<const String>(cx);
     return ref.getfield(a, cx);
 }
+#endif
 Value
 string_at(const String& string, Value index, const Context& cx)
 {
@@ -493,20 +495,6 @@ domain_error:
     }
     msg << "]: domain error";
     throw Exception(At_Phrase(callph, f), msg.str());
-}
-Value
-Index_Expr::eval(Frame& f) const
-{
-    Value a = arg1_->eval(f);
-    Value b = arg2_->eval(f);
-    if (auto list = a.dycast<const List>())
-        return list_at(*list, b, At_Phrase(*arg2_->syntax_, f));
-    if (auto record = a.dycast<const Record>())
-        return record_at(*record, b, At_Phrase(*arg2_->syntax_, f));
-    if (auto string = a.dycast<const String>())
-        return string_at(*string, b, At_Phrase(*arg2_->syntax_, f));
-    throw Exception(At_Phrase(*arg1_->syntax_, f),
-        "not a list, record or string");
 }
 Value
 call(Value func, Value arg, const Call_Phrase* call_phrase, Frame& f)

@@ -165,20 +165,50 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
           #endif
         }
         if (auto list2 = list->front().dycast<List>()) {
-            // A list of lists... For now, support list of vectors.
-            if (list2->size() < 2 || list2->size() > 4) goto error;
-            GL_Value result =
-                f.gl.newvalue(GL_Type::Vec(list2->size(), list->size()));
-            f.gl.out << "  const " << result.type
-                << " " << result << " = " << result.type << "(";
-            bool first = true;
-            for (unsigned i = 0; i < list->size(); ++i) {
-                if (!first) f.gl.out << ",";
-                first = false;
-                gl_put_vec(list2->size(), list->at(i), cx, f.gl.out);
+            if (list2->size() == 0 || list2->size() > GL_Type::MAX_LIST) {
+                throw Exception(cx, stringify(
+                    "Geometry Compiler: list of size ",list2->size(),
+                    " is not supported"));
             }
-            f.gl.out << ");\n";
-            return result;
+            if (isnum(list2->front())) {
+                // A list of lists of numbers...
+                // For now, support list of vectors.
+                if (list2->size() < 2 || list2->size() > 4) goto error;
+                GL_Value result =
+                    f.gl.newvalue(GL_Type::Vec(list2->size(), list->size()));
+                f.gl.out << "  const " << result.type
+                    << " " << result << " = " << result.type << "(";
+                bool first = true;
+                for (unsigned i = 0; i < list->size(); ++i) {
+                    if (!first) f.gl.out << ",";
+                    first = false;
+                    gl_put_vec(list2->size(), list->at(i), cx, f.gl.out);
+                }
+                f.gl.out << ");\n";
+                return result;
+            }
+            if (auto list3 = list2->front().dycast<List>()) {
+                // A list of lists of lists: interpret as 2D array of vectors
+                if (list3->size() < 2 || list3->size() > 4) goto error;
+                GL_Value result =
+                    f.gl.newvalue(GL_Type::Vec(list3->size(),
+                        list->size(), list2->size()));
+                f.gl.out << "  const " << result.type
+                    << " " << result << " = " << result.type << "(";
+                bool first = true;
+                for (unsigned i = 0; i < list->size(); ++i) {
+                    auto l2 = list->at(i).to<List>(cx);
+                    if (l2->size() != list2->size())
+                        goto error;
+                    for (unsigned j = 0; j < l2->size(); ++j) {
+                        if (!first) f.gl.out << ",";
+                        first = false;
+                        gl_put_vec(list3->size(), l2->at(j), cx, f.gl.out);
+                    }
+                }
+                f.gl.out << ");\n";
+                return result;
+            }
         }
         goto error;
     }
@@ -437,14 +467,11 @@ char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
         stringify("Geometry Compiler: got ",k,", expected 0..",vecsize-1));
 }
 
-GL_Value gl_eval_index_expr(
-    GL_Value arg1, const Phrase& src1, Operation& index, GL_Frame& f)
+// compile array[i] expression
+GL_Value gl_eval_index_expr(GL_Value array, Operation& index, GL_Frame& f)
 {
-    if (!arg1.type.is_list())
-        throw Exception(At_GL_Phrase(share(src1), f), "not an array");
-
     Value k;
-    if (arg1.type.is_vec() && gl_try_constify(index, f, k)) {
+    if (array.type.is_vec() && gl_try_constify(index, f, k)) {
         // A vector with a constant index. Swizzling is supported.
         if (auto list = k.dycast<List>()) {
             if (list->size() < 2 || list->size() > 4) {
@@ -455,14 +482,14 @@ GL_Value gl_eval_index_expr(
             memset(swizzle, 0, 5);
             for (size_t i = 0; i <list->size(); ++i) {
                 swizzle[i] = gl_index_letter((*list)[i],
-                    arg1.type.count(),
+                    array.type.count(),
                     At_Index(i, At_GL_Phrase(index.syntax_, f)));
             }
             GL_Value result = f.gl.newvalue(GL_Type::Vec(list->size()));
             f.gl.out << "  " << result.type << " "<< result<<" = ";
             if (f.gl.target == GL_Target::glsl) {
                 // use GLSL swizzle syntax: v.xyz
-                f.gl.out <<arg1<<"."<<swizzle;
+                f.gl.out <<array<<"."<<swizzle;
             } else {
                 // fall back to a vector constructor: vec3(v.x,v.y,v.z)
                 f.gl.out << result.type << "(";
@@ -471,7 +498,7 @@ GL_Value gl_eval_index_expr(
                     if (!first)
                         f.gl.out << ",";
                     first = false;
-                    f.gl.out << arg1 << "." << swizzle[i];
+                    f.gl.out << array << "." << swizzle[i];
                 }
                 f.gl.out << ")";
             }
@@ -484,42 +511,63 @@ GL_Value gl_eval_index_expr(
             arg2 = ".x";
         else if (num == 1.0)
             arg2 = ".y";
-        else if (num == 2.0 && arg1.type.count() > 2)
+        else if (num == 2.0 && array.type.count() > 2)
             arg2 = ".z";
-        else if (num == 3.0 && arg1.type.count() > 3)
+        else if (num == 3.0 && array.type.count() > 3)
             arg2 = ".w";
         if (arg2 == nullptr)
             throw Exception(At_GL_Phrase(index.syntax_, f),
                 stringify("Geometry Compiler: got ",k,", expected 0..",
-                    arg1.type.count()-1));
+                    array.type.count()-1));
 
         GL_Value result = f.gl.newvalue(GL_Type::Num());
-        f.gl.out << "  float "<<result<<" = "<<arg1<<arg2<<";\n";
+        f.gl.out << "  float "<<result<<" = "<<array<<arg2<<";\n";
         return result;
     }
-    // General case: An array of numbers, indexed with a number.
+    // An array of numbers, indexed with a number.
     auto ix = gl_eval_expr(f, index, GL_Type::Num());
-    GL_Value result = f.gl.newvalue(arg1.type.abase());
+    GL_Value result = f.gl.newvalue(array.type.abase());
     f.gl.out << "  " << result.type << " " << result << " = "
-             << arg1 << "[int(" << ix << ")];\n";
+             << array << "[int(" << ix << ")];\n";
     return result;
 }
 
-GL_Value Index_Expr::gl_eval(GL_Frame& f) const
+// compile array[i,j] expression
+GL_Value gl_eval_index2_expr(
+    GL_Value array, Operation& op_ix1, Operation& op_ix2, GL_Frame& f,
+    const Context& acx)
 {
-    auto arg1 = arg1_->gl_eval(f);
-    return gl_eval_index_expr(arg1, *arg1_->syntax_, *arg2_, f);
+    if (array.type.rank_ == 2) {
+        // 2D array of number or vector. Not supported by GLSL 1.5,
+        // so we emulate this type using a 1D array.
+        // Index value must be [i,j], can't use a single index.
+        auto ix1 = gl_eval_expr(f, op_ix1, GL_Type::Num());
+        auto ix2 = gl_eval_expr(f, op_ix2, GL_Type::Num());
+        GL_Value result = f.gl.newvalue({array.type.base_type_});
+        f.gl.out << "  " << result.type << " " << result << " = " << array
+                 << "[int(" << ix1 << ")*" << array.type.dim1_
+                 << "+" << "int(" << ix2 << ")];\n";
+        return result;
+    }
+    throw Exception(acx, "2 indexes (a[i,j]) not supported for this array");
 }
 
 GL_Value Call_Expr::gl_eval(GL_Frame& f) const
 {
     GL_Value glval;
     if (gl_try_eval(*fun_, f, glval)) {
+        if (!glval.type.is_list())
+            throw Exception(At_GL_Phrase(fun_->syntax_, f),
+                "Geometry Compiler: not an array or function");
         auto list = cast<List_Expr>(arg_);
-        if (list == nullptr || list->size() != 1)
+        if (list == nullptr)
             throw Exception(At_GL_Phrase(arg_->syntax_, f),
                 "Geometry Compiler: expected '[index]' expression");
-        return gl_eval_index_expr(glval, *fun_->syntax_, *list->at(0), f);
+        if (list->size() == 1)
+            return gl_eval_index_expr(glval, *list->at(0), f);
+        if (list->size() == 2)
+            return gl_eval_index2_expr(glval, *list->at(0), *list->at(1), f,
+                At_GL_Phrase(arg_->syntax_, f));
     }
     Value val = gl_constify(*fun_, f);
     Value v = val;
@@ -537,7 +585,7 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
         break;
     }
     throw Exception(At_GL_Phrase(fun_->syntax_, f),
-        stringify("Geometry Compiler: ",val," is not a function"));
+        stringify("Geometry Compiler: ",val," is not an array or function"));
 }
 
 GL_Value Data_Ref::gl_eval(GL_Frame& f) const

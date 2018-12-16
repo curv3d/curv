@@ -26,6 +26,8 @@ std::ostream& operator<<(std::ostream& out, GL_Type type)
     out << type.base_info().name;
     if (type.rank_ == 1)
         out << "[" << type.dim1_ << "]";
+    else if (type.rank_ == 2)
+        out << "[" << type.dim1_ << "*" << type.dim2_ << "]";
     return out;
 }
 
