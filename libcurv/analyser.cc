@@ -432,9 +432,18 @@ Where_Phrase::analyse(Environ& env) const
     Shared<Phrase> bindings = right_;
     Shared<const Phrase> bodysrc = left_;
 
+#if 0 // this logic is in the parser
     // parametric {params} body where bindings
     // is reparsed as
     // parametric {params} (body where bindings)
+    // Rationale:
+    // 1. 'parametric {params}' can be prefixed to any <list> phrase,
+    //    without adding parentheses, and it will work.
+    // 2. Recursion between the params and the where bindings is not allowed,
+    //    so the params and the bindings cannot share a scope.
+    // 3. The params must be visible in the where bindings. There's not a
+    //    compelling use case for where bindings to be visible in the params,
+    //    and it has to be either one or the other (see #2).
     auto para = cast<const Parametric_Phrase>(bodysrc);
     if (para) {
         auto newparse = make<Parametric_Phrase>(
@@ -450,6 +459,8 @@ Where_Phrase::analyse(Environ& env) const
     // a = b where bindings
     // is reparsed as
     // a = (b where bindings)
+    // Rational: a <where> clause can be affixed to any <list> phrase,
+    // without adding parentheses, and it will work.
     //
     // TODO: I would like to permit a definition to be used as the body of
     // a `where` or `let`, so that subexpressions in the left side of the
@@ -466,11 +477,13 @@ Where_Phrase::analyse(Environ& env) const
                 bindings));
         return newparse->analyse(env);
     }
+#endif
 
+    // Given 'let bindings1 in body where bindings2',
+    // body is analysed in a scope that combines bindings1 and bindings2.
     auto let = cast<const Let_Phrase>(bodysrc);
     if (let && let->let_.kind_ == Token::k_let)
     {
-        // let bindings1 in body where bindings2
         Shared<Definition> adef1 = let->bindings_->as_definition(env);
         Shared<Definition> adef2 = bindings->as_definition(env);
         if (adef1 && adef1->kind_ == Definition::k_recursive

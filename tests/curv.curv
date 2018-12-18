@@ -338,5 +338,20 @@ let a = b where b = 1; in assert(a == 1);
 
 assert(contains([1,2,3],1) && !contains([1,2,3],7));
 
+assert((
+    let
+        dummy = 1;
+    in
+        let
+            b = a;
+        in
+            b
+    where
+        (
+            a = 42;
+        ))
+== 42);
+
+
 // script return value:
 in null

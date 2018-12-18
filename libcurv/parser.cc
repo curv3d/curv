@@ -256,18 +256,18 @@ parse_ritem(Scanner& scanner)
     switch (tok.kind_) {
     case Token::k_ellipsis:
     case Token::k_include:
-        return make<Unary_Phrase>(tok, parse_item(scanner));
+        return make<Unary_Phrase>(tok, parse_ritem(scanner));
     case Token::k_if:
       {
         auto condition = parse_primary(scanner, "condition following 'if'");
-        auto then_expr = parse_item(scanner);
+        auto then_expr = parse_ritem(scanner);
         Token tok2 = scanner.get_token();
         if (tok2.kind_ != Token::k_else) {
             scanner.push_token(tok2);
             return make<If_Phrase>(
                 tok, condition, then_expr, Token{}, nullptr);
         }
-        auto else_expr = parse_item(scanner);
+        auto else_expr = parse_ritem(scanner);
         return make<If_Phrase>(
             tok, condition, then_expr, tok2, else_expr);
       }
@@ -279,7 +279,7 @@ parse_ritem(Scanner& scanner)
         if (tok2.kind_ != Token::k_in)
             throw Exception(At_Token(tok2, scanner),
                 "syntax error: expecting 'in'");
-        auto body = parse_item(scanner);
+        auto body = parse_ritem(scanner);
         return make<Let_Phrase>(tok, bindings, tok2, body);
       }
     case Token::k_for:
@@ -298,7 +298,7 @@ parse_ritem(Scanner& scanner)
                 "syntax error: expecting 'in'");
         }
 
-        auto listexpr = parse_item(scanner);
+        auto listexpr = parse_ritem(scanner);
 
         Token tok4 = scanner.get_token();
         if (tok4.kind_ != Token::k_rparen) {
@@ -306,7 +306,7 @@ parse_ritem(Scanner& scanner)
                 "syntax error: expecting ')'");
         }
 
-        auto body = parse_item(scanner);
+        auto body = parse_ritem(scanner);
 
         return make<For_Phrase>(tok, tok2, pat, tok3, listexpr, tok4, body);
       }
@@ -317,7 +317,7 @@ parse_ritem(Scanner& scanner)
         if (args == nullptr)
             throw Exception(At_Phrase(*p, scanner),
                 "while: malformed argument");
-        auto body = parse_item(scanner);
+        auto body = parse_ritem(scanner);
         return make<While_Phrase>(tok, args, body);
       }
     case Token::k_parametric:
@@ -327,6 +327,9 @@ parse_ritem(Scanner& scanner)
         if (param == nullptr)
             throw Exception(At_Phrase(*p, scanner),
                 "parametric: malformed argument");
+        // NOTE: calling parse_item, not parse_ritem.
+        // 'parametric {params} ... where (bindings)' is parsed as
+        // 'parametric {params} (... where (bindings))'.
         auto body = parse_item(scanner);
         return make<Parametric_Phrase>(tok, param, body);
       }
@@ -339,6 +342,11 @@ parse_ritem(Scanner& scanner)
     tok = scanner.get_token();
     switch (tok.kind_) {
     case Token::k_equate:
+        // NOTE: calling parse_item, not parse_ritem.
+        // 'param = body where (bindings)' is parsed as
+        // 'param = (body where (bindings))'.
+        // TODO: change the parse (calling parse_ritem) so that subexpressions
+        // within the 'param' are in the scope of the while.
         return make<Recursive_Definition_Phrase>(
             std::move(left), tok, parse_item(scanner));
     case Token::k_assign:
@@ -346,11 +354,11 @@ parse_ritem(Scanner& scanner)
             if (unary->op_.kind_ == Token::k_var) {
                 return make<Sequential_Definition_Phrase>(
                     unary->op_, std::move(unary->arg_), tok,
-                    parse_item(scanner));
+                    parse_ritem(scanner));
             }
         }
         return make<Assignment_Phrase>(
-            std::move(left), tok, parse_item(scanner));
+            std::move(left), tok, parse_ritem(scanner));
     case Token::k_colon:
       {
         auto tok2 = scanner.get_token();
@@ -361,16 +369,16 @@ parse_ritem(Scanner& scanner)
             tok2.last_ = tok2.first_;
             right = make<Empty_Phrase>(Location{*scanner.source_, tok2});
         } else {
-            right = parse_item(scanner);
+            right = parse_ritem(scanner);
         }
         return make<Binary_Phrase>(std::move(left), tok, std::move(right));
       }
     case Token::k_right_arrow:
         return make<Lambda_Phrase>(
-            std::move(left), tok, parse_item(scanner));
+            std::move(left), tok, parse_ritem(scanner));
     case Token::k_left_call:
         return make<Call_Phrase>(
-            std::move(left), parse_item(scanner), tok);
+            std::move(left), parse_ritem(scanner), tok);
     default:
         scanner.push_token(tok);
         return left;
