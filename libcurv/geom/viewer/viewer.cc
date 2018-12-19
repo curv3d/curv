@@ -74,8 +74,11 @@ Viewer::set_shape(Viewed_Shape shape)
     }
   #endif
     if (is_open()) {
+        error_ = false;
+        num_errors_ = 0;
         shader_.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
-        shader_.load(shape_.frag_, vertSource_, config_.verbose_);
+        if (!shader_.load(shape_.frag_, vertSource_, config_.verbose_))
+            error_ = true;
     }
 }
 
@@ -273,7 +276,8 @@ void Viewer::setup()
     //  Build shader;
     //
     vertSource_ = vbo_->getVertexLayout()->getDefaultVertShader();
-    shader_.load(shape_.frag_, vertSource_, config_.verbose_);
+    if (!shader_.load(shape_.frag_, vertSource_, config_.verbose_))
+        error_ = true;
 
     // Turn on Alpha blending
     glEnable(GL_BLEND);
@@ -286,53 +290,59 @@ void Viewer::setup()
 
 void Viewer::render()
 {
-    ImGui::Render();
+    unsigned cnt = num_errors_;
+
+    if (!error_) ImGui::Render();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    shader_.use();
+    if (!error_) {
+        shader_.use();
 
-    // Pass uniforms
-    shader_.setUniform("u_resolution", getWindowWidth(), getWindowHeight());
-    if (shader_.needTime()) {
-        shader_.setUniform("u_time", float(current_time_));
-    }
-    if (shader_.needView2d()) {
-        shader_.setUniform("u_view2d", u_view2d_);
-    }
-    if (shader_.needView3d()) {
-        shader_.setUniform("u_eye3d", u_eye3d_);
-        shader_.setUniform("u_centre3d", u_centre3d_);
-        shader_.setUniform("u_up3d", u_up3d_);
-    }
-    glm::mat4 mvp = glm::mat4(1.);
-    shader_.setUniform("u_modelViewProjectionMatrix", mvp);
-
-    for (auto& p : shape_.params_) {
-        // TODO: precompute uniform id
-        auto name = stringify("rv_",p.name_);
-        switch (p.pconfig_.type_) {
-        case Picker::Type::slider:
-        case Picker::Type::scale_picker:
-            shader_.setUniform(name->c_str(), float(p.pstate_.num_));
-            break;
-        case Picker::Type::int_slider:
-            shader_.setUniform(name->c_str(), float(p.pstate_.int_));
-            break;
-        case Picker::Type::checkbox:
-            shader_.setUniform(name->c_str(), int(p.pstate_.bool_));
-            break;
-        case Picker::Type::colour_picker:
-            shader_.setUniform(name->c_str(), p.pstate_.vec3_, 3);
-            break;
-        default:
-            die("picker with bad gltype");
+        // Pass uniforms
+        shader_.setUniform("u_resolution", getWindowWidth(), getWindowHeight());
+        if (shader_.needTime()) {
+            shader_.setUniform("u_time", float(current_time_));
         }
+        if (shader_.needView2d()) {
+            shader_.setUniform("u_view2d", u_view2d_);
+        }
+        if (shader_.needView3d()) {
+            shader_.setUniform("u_eye3d", u_eye3d_);
+            shader_.setUniform("u_centre3d", u_centre3d_);
+            shader_.setUniform("u_up3d", u_up3d_);
+        }
+        glm::mat4 mvp = glm::mat4(1.);
+        shader_.setUniform("u_modelViewProjectionMatrix", mvp);
+
+        for (auto& p : shape_.params_) {
+            // TODO: precompute uniform id
+            auto name = stringify("rv_",p.name_);
+            switch (p.pconfig_.type_) {
+            case Picker::Type::slider:
+            case Picker::Type::scale_picker:
+                shader_.setUniform(name->c_str(), float(p.pstate_.num_));
+                break;
+            case Picker::Type::int_slider:
+                shader_.setUniform(name->c_str(), float(p.pstate_.int_));
+                break;
+            case Picker::Type::checkbox:
+                shader_.setUniform(name->c_str(), int(p.pstate_.bool_));
+                break;
+            case Picker::Type::colour_picker:
+                shader_.setUniform(name->c_str(), p.pstate_.vec3_, 3);
+                break;
+            default:
+                die("picker with bad gltype");
+            }
+        }
+
+        vbo_->draw(&shader_);
+
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
-    vbo_->draw(&shader_);
-
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    if (num_errors_ > cnt) error_ = true;
 }
 
 void Viewer::onKeyPress(int key, int mods)
@@ -479,6 +489,7 @@ MessageCallback(
             << ",sev=" << severity
             << " " << message << "\n";
     }
+    if (severity == GL_DEBUG_SEVERITY_HIGH) ++viewer->num_errors_;
 }
 
 void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
@@ -511,6 +522,8 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
     }
 
     // Enable OpenGL debugging, so I can print messages when errors occur.
+    error_ = false;
+    num_errors_ = 0;
     if (GLAD_GL_KHR_debug) {
         glEnable(GL_DEBUG_OUTPUT);
         glDebugMessageCallback(MessageCallback, (void*)this);

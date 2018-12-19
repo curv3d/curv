@@ -83,6 +83,8 @@ struct Viewer
     double fFPS_ = 0.0;
     GLuint vao_; // a Vertex Array Object
     bool hud_ = false;
+    bool error_ = false;
+    unsigned num_errors_ = 0;
 
     // The 2D camera position.
     glm::mat3 u_view2d_ {};
