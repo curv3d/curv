@@ -370,7 +370,7 @@ struct Record_Pattern : public Pattern
     {
         // TODO: implement this
         throw Exception(At_GL_Phrase(syntax_, caller),
-            "record patterns not supported by Geometry Compiler");
+            "record patterns are not supported");
     }
 };
 
@@ -509,13 +509,13 @@ void
 Pattern::gl_exec(GL_Value val, const Context& valcx, GL_Frame& callee) const
 {
     throw Exception(At_GL_Phrase(syntax_, callee),
-        "pattern not supported by Geometry Compiler");
+        "pattern not supported");
 }
 void
 Pattern::gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee) const
 {
     throw Exception(At_GL_Phrase(syntax_, callee),
-        "pattern not supported by Geometry Compiler");
+        "pattern not supported");
 }
 
 Shared<Record>

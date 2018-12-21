@@ -98,8 +98,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
     if (auto list = val.dycast<List>()) {
         if (list->size() == 0 || list->size() > GL_Type::MAX_LIST) {
             throw Exception(cx, stringify(
-                "Geometry Compiler: list of size ",list->size(),
-                " is not supported"));
+                "list of size ",list->size(), " is not supported"));
         }
         if (isnum(list->front())) {
             // It is a list of numbers. Size 2..4 is a vector.
@@ -167,8 +166,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
         if (auto list2 = list->front().dycast<List>()) {
             if (list2->size() == 0 || list2->size() > GL_Type::MAX_LIST) {
                 throw Exception(cx, stringify(
-                    "Geometry Compiler: list of size ",list2->size(),
-                    " is not supported"));
+                    "list of size ",list2->size()," is not supported"));
             }
             if (isnum(list2->front())) {
                 // A list of lists of numbers...
@@ -224,20 +222,20 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
     }
 error:
     throw Exception(At_GL_Phrase(share(syntax), f),
-        stringify("value ",val," is not supported by the Geometry Compiler"));
+        stringify("value ",val," is not supported "));
 }
 
 GL_Value Operation::gl_eval(GL_Frame& f) const
 {
     throw Exception(At_GL_Phrase(syntax_, f), stringify(
-        "this expression is not supported by the Geometry Compiler: ",
+        "this expression is not supported: ",
         boost::core::demangle(typeid(*this).name())));
 }
 
 void Operation::gl_exec(GL_Frame& f) const
 {
     throw Exception(At_GL_Phrase(syntax_, f), stringify(
-        "this action is not supported by the Geometry Compiler: ",
+        "this action is not supported: ",
         boost::core::demangle(typeid(*this).name())));
 }
 
@@ -352,7 +350,7 @@ Value gl_constify(Operation& op, GL_Frame& f)
                 At_GL_Phrase(op.syntax_, f));
         else
             throw Exception(At_GL_Phrase(dot->selector_.string_->syntax_, f),
-                "Geometry Compiler: not an identifier");
+                "not an identifier");
     }
     else if (auto ref = dynamic_cast<Nonlocal_Data_Ref*>(&op))
         return f.nonlocals_->at(ref->slot_);
@@ -373,7 +371,7 @@ Value gl_constify(Operation& op, GL_Frame& f)
             return Value(-arg.get_num_unsafe());
     }
     throw Exception(At_GL_Phrase(op.syntax_, f),
-        "Geometry Compiler: not a constant");
+        "not a constant");
 }
 
 bool gl_try_constify(Operation& op, GL_Frame& f, Value& val)
@@ -464,7 +462,7 @@ char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
     if (num == 3.0 && vecsize > 3)
         return 'w';
     throw Exception(cx,
-        stringify("Geometry Compiler: got ",k,", expected 0..",vecsize-1));
+        stringify("got ",k,", expected 0..",vecsize-1));
 }
 
 // compile array[i] expression
@@ -517,7 +515,7 @@ GL_Value gl_eval_index_expr(GL_Value array, Operation& index, GL_Frame& f)
             arg2 = ".w";
         if (arg2 == nullptr)
             throw Exception(At_GL_Phrase(index.syntax_, f),
-                stringify("Geometry Compiler: got ",k,", expected 0..",
+                stringify("got ",k,", expected 0..",
                     array.type.count()-1));
 
         GL_Value result = f.gl.newvalue(GL_Type::Num());
@@ -558,11 +556,11 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
     if (gl_try_eval(*fun_, f, glval)) {
         if (!glval.type.is_list())
             throw Exception(At_GL_Phrase(fun_->syntax_, f),
-                "Geometry Compiler: not an array or function");
+                "not an array or function");
         auto list = cast<List_Expr>(arg_);
         if (list == nullptr)
             throw Exception(At_GL_Phrase(arg_->syntax_, f),
-                "Geometry Compiler: expected '[index]' expression");
+                "expected '[index]' expression");
         if (list->size() == 1)
             return gl_eval_index_expr(glval, *list->at(0), f);
         if (list->size() == 2)
@@ -585,7 +583,7 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
         break;
     }
     throw Exception(At_GL_Phrase(fun_->syntax_, f),
-        stringify("Geometry Compiler: ",val," is not an array or function"));
+        stringify("",val," is not an array or function"));
 }
 
 GL_Value Data_Ref::gl_eval(GL_Frame& f) const
@@ -634,7 +632,7 @@ GL_Value List_Expr_Base::gl_eval(GL_Frame& f) const
         return result;
     }
     throw Exception(At_GL_Phrase(syntax_, f),
-        "this list constructor does not support the Geometry Compiler");
+        "this list constructor is not supported");
 }
 
 GL_Value Not_Expr::gl_eval(GL_Frame& f) const
@@ -670,7 +668,7 @@ GL_Value If_Else_Op::gl_eval(GL_Frame& f) const
     auto arg3 = arg3_->gl_eval(f);
     if (arg2.type != arg3.type) {
         throw Exception(At_GL_Phrase(syntax_, f),
-            "Geometry Compiler: if: type mismatch in 'then' and 'else' arms");
+            "if: type mismatch in 'then' and 'else' arms");
     }
     GL_Value result = f.gl.newvalue(arg2.type);
     f.gl.out <<"  "<<arg2.type<<" "<<result

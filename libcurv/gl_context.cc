@@ -39,6 +39,7 @@ gl_frame_rewrite_message(const GL_Frame* f, Shared<const String> msg)
         if (f->root_context_ != nullptr)
             msg = f->root_context_->rewrite_message(msg);
     }
+    msg = stringify("Geometry Compiler: ", msg);
     return msg;
 }
 

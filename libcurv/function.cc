@@ -28,7 +28,7 @@ Function::gl_call_expr(Operation& arg, const Call_Phrase* call_phrase, GL_Frame&
 const
 {
     throw Exception(At_GL_Phrase(call_phrase->function_, f),
-        "this function does not support the Geometry Compiler");
+        "this function is not supported");
 }
 
 Value
@@ -96,8 +96,7 @@ const
 GL_Value
 Legacy_Function::gl_call(GL_Frame& f) const
 {
-    throw Exception(At_GL_Frame(f),
-        "this function does not support the Geometry Compiler");
+    throw Exception(At_GL_Frame(f), "this function is not supported");
 }
 
 Value
