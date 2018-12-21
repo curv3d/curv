@@ -127,15 +127,23 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
             }
             // It is a float array.
             GL_Value result = f.gl.newvalue(GL_Type::Num(list->size()));
-            f.gl.out << "  const " << result.type << " " << result
-                << " = " << result.type << "(";
+            if (f.gl.target == GL_Target::cpp) {
+                f.gl.out << "  static const float "<<result<<"[] = {";
+            } else {
+                f.gl.out << "  const " << result.type << " " << result
+                    << " = " << result.type << "(";
+            }
             bool first = true;
             for (unsigned i = 0; i < list->size(); ++i) {
                 if (!first) f.gl.out << ",";
                 first = false;
                 f.gl.out << dfmt(list->at(i).to_num(cx), dfmt::EXPR);
             }
-            f.gl.out << ");\n";
+            if (f.gl.target == GL_Target::cpp) {
+                f.gl.out << "};\n";
+            } else {
+                f.gl.out << ");\n";
+            }
             return result;
           #if 0
             else {
@@ -170,19 +178,57 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
             }
             if (isnum(list2->front())) {
                 // A list of lists of numbers...
-                // For now, support list of vectors.
-                if (list2->size() < 2 || list2->size() > 4) goto error;
+                if (list2->size() >= 2 && list2->size() <= 4) {
+                    // list of vectors
+                    GL_Value result =
+                        f.gl.newvalue(
+                            GL_Type::Vec(list2->size(), list->size()));
+                    if (f.gl.target == GL_Target::cpp) {
+                        f.gl.out
+                            << "  static const " << GL_Type::Vec(list2->size())
+                            << " "<<result<<"[] = {";
+                    } else {
+                        f.gl.out << "  const " << result.type << " " << result
+                            << " = " << result.type << "(";
+                    }
+                    bool first = true;
+                    for (unsigned i = 0; i < list->size(); ++i) {
+                        if (!first) f.gl.out << ",";
+                        first = false;
+                        gl_put_vec(list2->size(), list->at(i), cx, f.gl.out);
+                    }
+                    if (f.gl.target == GL_Target::cpp) {
+                        f.gl.out << "};\n";
+                    } else {
+                        f.gl.out << ");\n";
+                    }
+                    return result;
+                }
+                // 2D array of numbers
                 GL_Value result =
-                    f.gl.newvalue(GL_Type::Vec(list2->size(), list->size()));
-                f.gl.out << "  const " << result.type
-                    << " " << result << " = " << result.type << "(";
+                    f.gl.newvalue(GL_Type::Num(list->size(), list2->size()));
+                if (f.gl.target == GL_Target::cpp) {
+                    f.gl.out << "  static const float " <<result<<"[] = {";
+                } else {
+                    f.gl.out << "  const " << result.type << " " << result
+                        << " = " << result.type << "(";
+                }
                 bool first = true;
                 for (unsigned i = 0; i < list->size(); ++i) {
-                    if (!first) f.gl.out << ",";
-                    first = false;
-                    gl_put_vec(list2->size(), list->at(i), cx, f.gl.out);
+                    auto l2 = list->at(i).to<List>(cx);
+                    if (l2->size() != list2->size())
+                        goto error;
+                    for (unsigned j = 0; j < l2->size(); ++j) {
+                        if (!first) f.gl.out << ",";
+                        first = false;
+                        gl_put_num(l2->at(j), cx, f.gl.out);
+                    }
                 }
-                f.gl.out << ");\n";
+                if (f.gl.target == GL_Target::cpp) {
+                    f.gl.out << "};\n";
+                } else {
+                    f.gl.out << ");\n";
+                }
                 return result;
             }
             if (auto list3 = list2->front().dycast<List>()) {
@@ -191,8 +237,14 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                 GL_Value result =
                     f.gl.newvalue(GL_Type::Vec(list3->size(),
                         list->size(), list2->size()));
-                f.gl.out << "  const " << result.type
-                    << " " << result << " = " << result.type << "(";
+                if (f.gl.target == GL_Target::cpp) {
+                    f.gl.out << "  static const "
+                        << GL_Type::Vec(list3->size())
+                        << " " <<result<<"[] = {";
+                } else {
+                    f.gl.out << "  const " << result.type << " " << result
+                        << " = " << result.type << "(";
+                }
                 bool first = true;
                 for (unsigned i = 0; i < list->size(); ++i) {
                     auto l2 = list->at(i).to<List>(cx);
@@ -204,7 +256,11 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                         gl_put_vec(list3->size(), l2->at(j), cx, f.gl.out);
                     }
                 }
-                f.gl.out << ");\n";
+                if (f.gl.target == GL_Target::cpp) {
+                    f.gl.out << "};\n";
+                } else {
+                    f.gl.out << ");\n";
+                }
                 return result;
             }
         }
@@ -701,15 +757,20 @@ void While_Action::gl_exec(GL_Frame& f) const
 }
 void For_Op::gl_exec(GL_Frame& f) const
 {
+  #define RANGE_EXPRESSIONS 1
     auto range = cast<const Range_Expr>(list_);
     if (range == nullptr)
         throw Exception(At_GL_Phrase(list_->syntax_, f),
             "GL: not a range");
-    /*
+  #if RANGE_EXPRESSIONS
+    // range arguments are general expressions
     auto first = gl_eval_expr(f, *range->arg1_, GL_Type::Num());
     auto last = gl_eval_expr(f, *range->arg2_, GL_Type::Num());
-    auto step = gl_eval_expr(f, *range->arg3_, GL_Type::Num());
-    */
+    auto step = range->arg3_ != nullptr
+        ? gl_eval_expr(f, *range->arg3_, GL_Type::Num())
+        : gl_eval_const(f, Value{1.0}, *syntax_);
+  #else
+    // range arguments are constants
     double first = gl_constify(*range->arg1_, f)
         .to_num(At_GL_Phrase(range->arg1_->syntax_, f));
     double last = gl_constify(*range->arg2_, f)
@@ -718,10 +779,17 @@ void For_Op::gl_exec(GL_Frame& f) const
         ? gl_constify(*range->arg3_, f)
           .to_num(At_GL_Phrase(range->arg3_->syntax_, f))
         : 1.0;
+  #endif
     auto i = f.gl.newvalue(GL_Type::Num());
+  #if RANGE_EXPRESSIONS
+    f.gl.out << "  for (float " << i << "=" << first << ";"
+             << i << (range->half_open_ ? "<" : "<=") << last << ";"
+             << i << "+=" << step << ") {\n";
+  #else
     f.gl.out << "  for (float " << i << "=" << dfmt(first, dfmt::EXPR) << ";"
              << i << (range->half_open_ ? "<" : "<=") << dfmt(last, dfmt::EXPR) << ";"
              << i << "+=" << dfmt(step, dfmt::EXPR) << ") {\n";
+  #endif
     pattern_->gl_exec(i, At_GL_Phrase(list_->syntax_, f), f);
     body_->gl_exec(f);
     f.gl.out << "  }\n";
