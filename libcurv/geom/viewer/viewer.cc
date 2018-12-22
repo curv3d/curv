@@ -722,6 +722,9 @@ void Viewer::swap_buffers()
 void Viewer::closeGL()
 {
     //glfwSetWindowShouldClose(window_, GL_TRUE);
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     glfwDestroyWindow(window_);
     window_ = nullptr;
 }
