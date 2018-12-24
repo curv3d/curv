@@ -8,12 +8,33 @@ Records are used to represent:
 
 * sets of labeled arguments in a function call;
 * geometric shapes (each field is a shape attribute);
-* modules or libraries.
+* libraries.
 
 Record Constructors
 ~~~~~~~~~~~~~~~~~~~
+A record constructor is an expression that constructs a record value.
+It is surrounded by brace brackets ``{...}``.
 
-A record constructor consists of a comma-separated list of field generators
+There are two kinds of record constructor:
+
+1. A record comprehension. E.g., ``{a:1, b:2}``.
+2. A scoped record constructor, aka a module. E.g., ``{a=1; b=2;}``.
+
+Record comprehensions are a generalization of JSON object literals.
+Unlike modules, they do not introduce a scope (field specifiers can't refer to one another),
+so they are useful in a context like this::
+
+   f(x,y) = {x:x, y:y};
+
+Modules (scoped record constructors) contain a list of definitions
+that form a mutually recursive scope. Definitions can refer to one another,
+and you can define recursive functions. Modules are used to define libraries.
+See ``lib/curv/*.curv`` in the source tree for examples.
+Note that these files begin and end with ``{`` and ``}``.
+
+Record Comprehensions
+~~~~~~~~~~~~~~~~~~~~~
+A record comprehension consists of a comma- or semicolon-separated list of field generators
 inside of brace brackets. A field generator is a kind of `statement`_ that adds 0 or more
 fields to the record being constructed.
 
@@ -42,7 +63,7 @@ This can be used to specify defaults and overrides:
   with ``x:0`` overriding any previous binding.
 
 Complex field generators may be composed from simpler ones
-using blocks and control structures, as described in `Statements`_.
+using if statements, for loops, and other control structures, as described in `Statements`_.
 For example,
 
 * ``{for (i in 1..3) "f$i" : i}``
@@ -53,16 +74,16 @@ For example,
 
 Modules
 ~~~~~~~
+Modules are an alternate syntax for constructing record values, and are useful when
+one field definition must reference another.
 
 A module is a semicolon-separated or semicolon-terminated list of definitions
-inside of brace brackets. The definitions form a single, mutually recursive scope.
+inside of brace brackets. The definitions form a single, mutually recursive scope,
+meaning that definitions can refer to one another, and you can define recursive functions.
 The order of the definitions doesn't matter. Duplicate definitions are an error.
 For definition syntax, see: `Blocks`_.
 
 .. _`Blocks`: Blocks.rst
-
-Modules are an alternate syntax for constructing record values, and are useful when
-one field definition must reference another.
 
 Record Operations
 ~~~~~~~~~~~~~~~~~
