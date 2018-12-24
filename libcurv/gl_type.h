@@ -88,10 +88,9 @@ struct GL_Type
     // first dimension, if type is a list
     inline unsigned count() const
     {
-        if (base_type_ >= Base_Type::Vec2)
-            return base_info().dim1;
-        else
+        if (rank_)
             return dim1_;
+        return base_info().dim1;
     }
     // If this is an array, strip one dimension off of the type.
     GL_Type abase()

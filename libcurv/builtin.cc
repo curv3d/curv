@@ -446,6 +446,15 @@ struct Count_Function : public Legacy_Function
         }
         throw Exception(At_Arg(*this, args), "not a list or string");
     }
+    GL_Value gl_call(GL_Frame& f) const override
+    {
+        auto arg = f[0];
+        if (!arg.type.is_list())
+            throw Exception(At_GL_Arg(0, f), "count: argument is not a list");
+        auto result = f.gl.newvalue(GL_Type::Num());
+        f.gl.out << "  float "<<result<<" = "<<arg.type.count()<<";\n";
+        return result;
+    }
 };
 struct Fields_Function : public Legacy_Function
 {
