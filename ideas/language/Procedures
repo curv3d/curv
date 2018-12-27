@@ -20,21 +20,62 @@ Problem:
   Generate works for expressions, actions and element generators.
 
 Solution:
-* Currently, Operation has 4 methods: eval(), exec(), generate(List_Builder&)
-  and bind(DRecord&). These are replaced by: eval(), exec(Consumer&).
-* Consumer::put_value(Value,cx) is called to output an element value.
-* Consumer::put_binding(Symbol,Value,cx) is called to output a field binding.
-* expression.exec(c) calls c.put_value(result).
+* Original Operation methods: eval(f), exec(f), generate(f,List_Builder&)
+  and bind(f,DRecord&). These are replaced by: eval(f), exec(f,Consumer&).
+* Consumer::push_value(Value,cx) is called to output an element value.
+* Consumer::push_field(Symbol,Value,cx) is called to output a field binding.
+* expression.exec(c) calls c.push_value(result).
 * The list constructor Consumer only consumes element values.
-* The record constructor Consumer only consumes field bindings.
-* The action Consumer (used by `do`) fails on put_value or put_binding.
+* The record comprehension Consumer only consumes field bindings.
+* The action Consumer (used by `do`) fails on push_value or push_field.
 * The REPL now calls exec() on an operation. The REPL Consumer supports both
-  put_value and put_binding. In most cases, the value or binding is printed on
-  the console. If there is 1 put_value and no put_binding calls, then I test
+  push_value and push_field. In most cases, the value or binding is printed on
+  the console. If there is 1 push_value and no push_field calls, then I test
   if the value is a shape, and display the shape graphically.
+  (With multi-viewer support, 'cube;sphere' could open multiple Viewers.)
 
 This design fixes a bug in the REPL, and also eliminates code duplication
 among exec, generate & bind methods.
+
+Challenge: Expressions vs Statements
+------------------------------------
+Originally, every Operation is either an expression or statement, determined
+by syntax, meaning it can be determined at compile time.
+
+A function/procedure call can be ambiguous: it can be either an expression or a
+statement, depending on argument values. An if-else phrase can be either an
+expression or a statement, ditto a call to error, so user-defined functions/
+procedures can have the same property.
+
+If we embrace this flexibility, then higher order functions
+can act as either functions or procedures, depending on argument values.
+Function calls can't be classified as expressions/statements until runtime.
+Does this cause technical problems?
+* No problem for the REPL.
+* Future IR/executable format: no problem. Operations will be compiled into
+  either expression or statement nodes (corresponding to Operation::eval()
+  and Operation::exec()), based on syntactic context.
+* But with segregated function/procedure call, we can do more analysis.
+  We can distinguish expressions from element generators in a list constructor.
+  Because we know that 'f x' is an expression, not a procedure call:
+  * The partial evaluator can replace '(f x, a)[1]' with 'a'.
+  * We can produce better At_Index error messages. Instead of:
+        ERROR: at index [1]: true is not a number
+        1|       [f x,true,3]
+                 ^^^^^^^^^^^^
+    we can say:
+        ERROR: true is not a number
+        1|       [f x,true,3]
+                      ^^^^
+  These benefits could be mostly restored with better compile time analysis:
+  most functions could be classified as true functions at compile time just
+  by looking at the syntax tree.
+
+Does this flexibility cause usability problems?
+Benefits are:
+* More expressive power. 'error' is a value.
+* Only one syntax for functions and for function call. Splitting these syntaxes
+  introduces unfamiliar concepts not found in other languages.
 
 Philosophical Challenge: Two ways to do it.
 -------------------------------------------

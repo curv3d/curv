@@ -15,6 +15,7 @@ TODO (value pickers impl)
 * Support all GL-compatible expressions over reactive values.
   * Should picker predicates restrict their range to something more precise
     than a GL_Type?
+* Support multiple viewer windows. 'cube;sphere' in CLI opens 2 Viewers.
 
 Current TODO List:
 * graphical value pickers
