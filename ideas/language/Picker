@@ -1,0 +1,106 @@
+This is an alternate design for parametric shapes with graphical value pickers.
+We now have picker parameter patterns like
+    d :: slider(1,10)
+What if we allow them everywhere that they make sense?
+
+They make sense in phrases where there is a record expression as a body,
+and a separate parameter pattern. Like these:
+ * f (d :: slider(1,10)) = cube d
+ * let d :: slider(1,10) = 2 in cube d
+ * d :: slider(1,10) -> cube d
+ * for (d :: slider(1,10) in 1..10) cube d
+They don't make sense in field definitions in a record constructor.
+
+The record is extended with 'constructor', 'argument' metadata.
+For a `let` phrase, the argument is a record.
+
+How do we know to trigger this behaviour (assert that the body is a record,
+and generate constructor metadata)?
+ 1. The 'parametric' keyword must be present. In the case of function literals,
+    the parametric property can be inherited from the parent phrase,
+    see proposal below. E.g.,
+     * parametric f (d :: slider(1,10)) = cube d
+     * parametric let d :: slider(1,10) = 2 in cube d
+     * parametric d :: slider(1,10) -> cube d
+     * parametric for (d :: slider(1,10) in 1..10) cube d
+ 2. Special syntax for picker assertions. This syntax triggers the behaviour.
+    E.g.,
+        d ::: slider(1,10)  // delete a ':' to disable picker GUI for 'd'
+        d pick slider(1,10)
+    The right argument of a picker assertion is a picker value.
+    Picker assertions are only legal in contexts where they can be acted on.
+    A pattern containing picker assertions is a picker pattern.
+
+    let
+        Diam ::: slider(.5, 2) = 1;
+        Stick_Len ::: slider(2, 8) = 4;
+        Colour ::: colour_picker = red;
+    in
+    union(candy, stick)
+    where (
+        candy = sphere Diam >> colour Colour;
+        stick = cylinder {h: Stick_Len, d: Diam/8} >> move(0,0,-Stick_Len/2);
+    )
+
+    I like the ease with which `let` bindings are converted to picker
+    parameters.
+
+Viewer
+------
+Using the syntax sketched out above, how do we use metadata to lay out
+value pickers in the Viewer GUI?
+
+    cube 2
+    >> colour red
+
+    (colour red) (cube 2)
+
+precord:
+    .constructor = (colour red)
+        pfunction:
+            .constructor = colour
+            .argument = red
+    .argument = (cube 2)
+        precord:
+            .constructor = cube
+            .argument = 2
+
+In the Viewer, we display pickers as a hierarchy with flattened pipelines,
+in pipeline order: output the argument as a single node, then output the
+constructor as a series of nodes. Constructor names are used as labels.
+    cube: 2
+    >> colour: red
+
+Parametric Shape Constructors
+-----------------------------
+The above assumes `colour` has a simple definition like this:
+    colour (c ::: colour_picker) shape = ...
+
+But, `colour` is currently defined as
+    colour c shape = c >> match
+      [
+        c :: is_vec3 -> make_shape { ... shape; colour p : c };
+        ...;
+      ]
+I could add some more rules for the body of a function definition to inherit
+the function name. Consider this definition of `colour`:
+    colour = match
+      [
+        c :: is_vec3 -> shape -> make_shape { ... shape; colour p : c };
+        ...;
+      ]
+The lambdas in the match argument list could inherit the name 'colour'.
+This version of `colour` also has the benefit that a partial application
+with a bad first argument reports an error immediately. And presumably,
+using the IDE to query the first argument also works better.
+
+Consider:
+    colour = match
+      [
+        c ::: colour_picker -> shape -> make_shape { ... shape; colour p : c };
+        ...;
+      ]
+The function 'colour' has the name 'colour' (it is a term).
+'colour <vec3>' is parametric, because of the ':::', and inherits the name
+'colour'. 'colour <vec3> <shape>' inherits the parametric property and the
+name property.
