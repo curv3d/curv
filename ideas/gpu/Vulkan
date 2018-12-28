@@ -48,6 +48,8 @@ Indie cross-platform GPU APIs:
   * https://github.com/bkaradzic/bgfx -- C++, impressively heavy duty
   * sokol_gfx: https://github.com/floooh/sokol -- C, lightweight
     GLES3/WebGL2, GL3.3, D3D11, Metal. No shader abstraction.
+  * https://github.com/gfx-rs/wgpu -- prototype WebGPU lib; Rust/C bindings
+  * https://github.com/gfx-rs/portability -- Rust/C; portable Vulkan subset
 * Shader Language abstraction
   * https://github.com/KhronosGroup/SPIRV-Cross: SPIR-V to GLSL, MSL, HLSL, C++
   * https://github.com/KhronosGroup/SPIRV-Tools: SPIR-V optimizer, immature.
