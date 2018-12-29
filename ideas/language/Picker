@@ -14,6 +14,8 @@ They don't make sense in field definitions in a record constructor.
 The record is extended with 'constructor', 'argument' metadata.
 For a `let` phrase, the argument is a record.
 
+Syntax
+------
 How do we know to trigger this behaviour (assert that the body is a record,
 and generate constructor metadata)?
  1. The 'parametric' keyword must be present. In the case of function literals,
@@ -44,6 +46,79 @@ and generate constructor metadata)?
 
     I like the ease with which `let` bindings are converted to picker
     parameters.
+
+            Diam ::: slider(.5, 2) : 1;
+            c ::: colour_picker -> shape -> make_shape {...}
+
+            Diam ::> slider(.5, 2) : 1;
+            c ::> colour_picker -> shape -> make_shape {...}
+
+            Diam ::* slider(.5, 2) : 1;
+            c ::* colour_picker -> shape -> make_shape {...}
+
+            Diam ::? slider(.5, 2) : 1;
+            c ::? colour_picker -> shape -> make_shape {...}
+
+            Diam ::/ slider(.5, 2) : 1;
+            c ::/ colour_picker -> shape -> make_shape {...}
+
+            Diam ::& slider(.5, 2) : 1;
+            c ::& colour_picker -> shape -> make_shape {...}
+
+            Diam ::# slider(.5, 2) : 1;
+            c ::# colour_picker -> shape -> make_shape {...}
+
+            Diam pick slider(.5, 2) : 1;
+            c pick colour_picker -> shape -> make_shape {...}
+
+`let` bindings are a special case, because we don't support dependencies
+between parameters. How to enforce this restriction?
+* Perhaps we distinguish recursive from parallel let.
+  * `parametric let ...` is a parallel let.
+  * Or, parallel let uses ':' definitions instead of '=' definitions.
+    This echoes the distinction between ':' and '=' field defs in records.
+    (And sequential let uses ':=' definitions.) So:
+        let
+            Diam ::: slider(.5, 2) : 1;
+            Stick_Len ::: slider(2, 8) : 4;
+            Colour ::: colour_picker : red;
+        in ...
+* Compiler dependency analysis reports error for dependent parameters.
+
+Dependencies between parameters would be useful in some cases:
+* [Dependent Parameters] Range of one parameter depends on value of another.
+* [Variant Parameters] Some parameters only appear if a toggle is set to true,
+  or if an enum is set to a particular value.
+
+[Dependent Parameters]
+* For a let phrase, we could allow parameter dependencies in a recursive let,
+  and have the compiler report illegal dependencies. Or, you could nest two
+  parallel let clauses or parametric clauses.
+* For a function, you could use a curried function, with the dependee parameters
+  in the first fun param, and the dependents in the second fun param. This is
+  consistent with the nested let construction.
+* For a `for` loop, you nest a `let` inside the `for`.
+Nested binding constructs for the win.
+
+[Variant Parameters]
+This can be handled by modelling a parameter set as an algebraic type.
+* Within the parameter bindings, there is a pattern that matches an instance
+  of an algebraic type, and binds it to a identifier.
+* Within the body, you must do a pattern match on the identifier to discover
+  the variant name (using `match` I guess), then you have a pattern that
+  matches the value for that variant.
+
+An Algebraic Value is a single-field record (field name is variant name).
+
+Here's a predicate that matches an Algebraic Value:
+  is_variant{ vname1: <pred1>, vname2: <pred2>, ... }
+The predicate arguments could be pickers, in which case the result is also
+a picker. And the GL type system is extended with variant types.
+
+Pattern match an algebraic value V to discover its variant:
+  V >> match[ {vname1: a} -> do1(a); {vname2: b} -> do2(b); ... ]
+In GL code, a variant value must be pattern matched like this in order to
+be used, due to strong typing.
 
 Viewer
 ------

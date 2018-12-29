@@ -21,55 +21,62 @@ Here are the platforms that I might want Curv to support:
 And here are the APIs supported by these platforms:
 | Linux         | GL  EGL  Vulkan
 | macOS         | GL*      Vulkan* Metal
-| Windows WIN32 | GL  EGL  Vulkan        DX12
+| Windows WIN32 | GL  EGL  Vulkan        DX11/12
 | Windows UWP   |     EGL*               DX12  // UWP is unpopular, fading
 | Android       |     EGL  Vulkan
 | Web           |     EGL
+
+In 2019, I want compute shaders, which requires: OpenGL 4.3, EGL 3.1,
+WebGL 2 + ARB_compute_shader, DX11, Metal, Vulkan, WebGPU.
 
 My strategy:
 * Use OpenGL until I hit a brick wall. Perhaps support multiple versions of
   OpenGL, to increase the range of systems that can run Curv?
 * Wait for the next-gen cross platform API. It won't be "Vulkan Portability",
-  because that will never work on the web. See if WebGPU succeeds, and if
-  a cross platform C library API is created for it.
+  because that will never work on the web. See if WebGPU succeeds.
 * With more resources, Curv could directly target multiple GPU APIs.
 
 Compiling C++ to WebAssembly is not a panacea. The GPU rendering API may not be
 the biggest problem. Code size and dependencies will be an issue that could
 trigger a rewrite of libcurv.
 
-Indie cross-platform GPU APIs:
+Cross-platform GPU libraries:
 * Header and loader generator
   * glad (what I'm using)
   * flextGL: https://github.com/mosra/flextgl
 * Windows, contexts, input
   * GLFW
 * Rendering
-  * https://github.com/bkaradzic/bgfx -- C++, impressively heavy duty
-  * sokol_gfx: https://github.com/floooh/sokol -- C, lightweight
+  * github.com/bkaradzic/bgfx -- C++, impressively heavy duty
+  * sokol_gfx: github.com/floooh/sokol -- C, lightweight
     GLES3/WebGL2, GL3.3, D3D11, Metal. No shader abstraction.
-  * https://github.com/gfx-rs/wgpu -- prototype WebGPU lib; Rust/C bindings
-  * https://github.com/gfx-rs/portability -- Rust/C; portable Vulkan subset
+  * github.com/gfx-rs/wgpu -- prototype WebGPU lib; Rust/C bindings
+  * github.com/gfx-rs/portability -- Rust/C; portable Vulkan subset
+  * MoltenVK: emulate Vulkan on Metal. More mature than Vk Portability on Mac.
 * Shader Language abstraction
-  * https://github.com/KhronosGroup/SPIRV-Cross: SPIR-V to GLSL, MSL, HLSL, C++
-  * https://github.com/KhronosGroup/SPIRV-Tools: SPIR-V optimizer, immature.
-    https://www.lunarg.com/wp-content/uploads/2018/06/SPIR-V-Shader-Legalization-and-Size-Reduction-Using-spirv-opt_v1.2.pdf
-  * https://github.com/aras-p/glsl-optimizer, outputs GLSL or Metal, obsolete.
+  * github.com/KhronosGroup/glslang -- compile GLSL or HLSL to SPIR-V
+  * github.com/KhronosGroup/SPIRV-Cross: SPIR-V to GLSL, MSL, HLSL, C++
+  * github.com/KhronosGroup/SPIRV-Tools: SPIR-V optimizer, immature.
+    www.lunarg.com/wp-content/uploads/2018/06/SPIR-V-Shader-Legalization-and-Size-Reduction-Using-spirv-opt_v1.2.pdf
+  * github.com/KhronosGroup/SPIRV-LLVM-Translator -- SPIR-V <=> LLVM-IR
+  * github.com/talvos/talvos -- SPIR-V interpreter, Vulkan debug/emulator
   * https://github.com/Unity-Technologies/HLSLcc: what replaced glsl-optimizer.
     compiles DirectX shader bytecode to GLSL (3.3+, ES & Vulkan) or MSL
+
+Dead end GPU libraries:
+  * https://github.com/aras-p/glsl-optimizer, outputs GLSL or Metal, obsolete.
   * LunarGlass: LLVM based shader compiler
     Front ends: GLSL, SPIR-V
     Back ends: GLSL (LunarGOO), Mesa GLSL IR
-  * glslang: https://github.com/KhronosGroup/glslang
-    compile GLSL or HLSL to SPIR-V
+  * github.com/google/angle -- emulate EGL 2.0/3.0 on D3D11,OpenGL,Vulkan.
+    Render API & shaders. No compute shaders, no Metal: waiting for WebGPU.
+  * Allegro 5: github.com/liballeg/allegro5 -- no Metal.
+  * SDL: www.libsdl.org -- no Metal.
 
 There is no standard universal GPU API that works on all platforms.
 Notes:
-* OpenGL is deprecated in macOS, and is an old version that doesn't support
-  compute shaders. Vulkan is emulated using Metal by MoltenVK.
+* OpenGL is deprecated in macOS, doesn't support compute shaders.
 * Microsoft doesn't support OpenGL or Vulkan in UWP apps.
-  ANGLE can be used to get an EGL API. There is a Vulkan portability
-  initiative that may eventually emulate Vulkan on DX12 for Windows.
 * EGL (OpenGL ES) is mostly a subset of OpenGL, with some API differences.
   On Linux, the EGL library supports offscreen rendering without an X server.
   It's probably not too hard to maintain a mixed GL/EGL code base.
@@ -104,34 +111,18 @@ Notes:
     https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/dxqWTSvyhDg
     The Chromium Blink rendering engine will implement WebGPU on top of Vulkan,
     DX12 or Metal.
-* Kronos wants Vulkan to be the cross platform API. But Vulkan is unsafe, and
-  not suitable for the web. WebGPU will be safe, fast, powerful and high level,
-  and implementable on top of Vulkan, Metal, DX12. Hopefully the browser vendors
-  will make a C/C++/Rust library for WebGPU that I can use, even if the WebGPU
-  group doesn't see designing that API as their job.
-* A Sept2018 peek at the WebGPU github suggests they will use either SPIR-V
-  or HLSL as their shading language: pick something popular, don't invent
-  something new. That could influence what targets I pick for the GL compiler.
-  (SPIR-V makes more sense. Maybe this leads to Apple supporting SPIR-V in
-  metal? Who knows.)
+* Kronos wants Vulkan to be the cross platform API. But Vulkan is unsafe, has
+  undefined rendering behaviour when you break rules, is not suitable for web.
+* WebGPU will be safe, portable, powerful and high level. Faster than OpenGL,
+  slower than Vulkan. Implementable on top of Vulkan, Metal, DX12.
+* WebGPU group is debating SPIR-V vs HLSL, but I'm betting SPIR-V.
+  The prototype github.com/gfx-rs/wgpu uses SPIR-V.
 
-WebGPU sounds awesome. Be nice if there was a corresponding C++ or Rust 
-library providing a common API on Linux/Mac/Windows/Android.
-* The open source browser makers will need this to code their browser?
-* WebGPU is "designed to provide efficient bindings for both JavaScript and
-  WebAssembly, possibly requiring separate interfaces for each."
-  This means that, if you are generating WebAssembly from C++ or Rust,
-  then there would need to be a WebGPU API in C++ or Rust?
-  "The (WebGPU) Group may develop a software library that implements the GPU
-  for the Web work across multiple platforms using existing native APIs. For
-  example, a C++ library that exposes GPU for the Web using Direct3D, Metal or
-  Vulkan."
-
-WebGPU will replace OpenGL as Curv's internal, cross platform GPU API.
-
-This won't happen quickly. WebGL 2 took 4 years, so WebGPU could be released
-in 2021? It's being developed in the open on github, so I can use prerelease
-versions.
+WebGPU & SPIR-V may replace OpenGL as Curv's internal, cross platform GPU API.
+This won't happen quickly.
+* WebGL 2 took 4 years, so WebGPU could be released in 2021?
+* There's a prototype on github, but I need a widget library, GPU debugging,
+  GL compiler unit testing.
 
 WebGPU is a layer on top of Vulkan, DX12 and Metal, and it's a new design
 based on the best ideas from these 3 platforms. While I'm waiting for WebGPU,
