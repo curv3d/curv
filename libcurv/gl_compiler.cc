@@ -611,6 +611,25 @@ GL_Value gl_eval_index2_expr(
     throw Exception(acx, "2 indexes (a[i,j]) not supported for this array");
 }
 
+// compile array[i,j,k] expression
+GL_Value gl_eval_index3_expr(
+    GL_Value array, Operation& op_ix1, Operation& op_ix2, Operation& op_ix3,
+    GL_Frame& f, const Context& acx)
+{
+    if (array.type.rank_ == 2 && array.type.base_info().rank == 1) {
+        // 2D array of vector.
+        auto ix1 = gl_eval_expr(f, op_ix1, GL_Type::Num());
+        auto ix2 = gl_eval_expr(f, op_ix2, GL_Type::Num());
+        auto ix3 = gl_eval_expr(f, op_ix3, GL_Type::Num());
+        GL_Value result = f.gl.newvalue(GL_Type::Num());
+        f.gl.out << "  " << result.type << " " << result << " = " << array
+                 << "[int(" << ix1 << ")*" << array.type.dim1_
+                 << "+" << "int(" << ix2 << ")][int(" << ix3 << ")];\n";
+        return result;
+    }
+    throw Exception(acx, "3 indexes (a[i,j,k]) not supported for this array");
+}
+
 GL_Value Call_Expr::gl_eval(GL_Frame& f) const
 {
     GL_Value glval;
@@ -627,6 +646,10 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
         if (list->size() == 2)
             return gl_eval_index2_expr(glval, *list->at(0), *list->at(1), f,
                 At_GL_Phrase(arg_->syntax_, f));
+        if (list->size() == 3)
+            return gl_eval_index3_expr(glval,
+                *list->at(0), *list->at(1), *list->at(2),
+                f, At_GL_Phrase(arg_->syntax_, f));
     }
     Value val = gl_constify(*fun_, f);
     Value v = val;
