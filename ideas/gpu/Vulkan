@@ -47,12 +47,15 @@ Cross-platform GPU libraries:
 * Windows, contexts, input
   * GLFW
 * Rendering
-  * github.com/bkaradzic/bgfx -- C++, impressively heavy duty
-  * sokol_gfx: github.com/floooh/sokol -- C, lightweight
-    GLES3/WebGL2, GL3.3, D3D11, Metal. No shader abstraction.
+  * github.com/bkaradzic/bgfx -- C++, very complete, +ShaderAbs, +ComputeShader
+  * sokol_gfx: github.com/floooh/sokol -- C, generates compact WebAssembly.
+    GLES3/WebGL2, GL3.3, D3D11, Metal. No shader abstraction or compute shaders.
   * github.com/gfx-rs/wgpu -- prototype WebGPU lib; Rust/C bindings
   * github.com/gfx-rs/portability -- Rust/C; portable Vulkan subset
   * MoltenVK: emulate Vulkan on Metal. More mature than Vk Portability on Mac.
+  * OpenGL 4.3 on Mac via MoltenVK? Not that I can see, but there are some
+    OpenGL over Vulkan projects:
+    www.phoronix.com/scan.php?page=news_item&px=Zink-Gallium3D-OpenGL-Vulkan
 * Shader Language abstraction
   * github.com/KhronosGroup/glslang -- compile GLSL or HLSL to SPIR-V
   * github.com/KhronosGroup/SPIRV-Cross: SPIR-V to GLSL, MSL, HLSL, C++
@@ -63,6 +66,20 @@ Cross-platform GPU libraries:
   * https://github.com/Unity-Technologies/HLSLcc: what replaced glsl-optimizer.
     compiles DirectX shader bytecode to GLSL (3.3+, ES & Vulkan) or MSL
 
+If I want a cross-platform API that works on all of my target platforms, and
+supports compute shaders, then I can use Bgfx, Vulkan-Portability, or WebGPU.
+* Bgfx supports WebGL and OpenGL 2.1. ImGui support. 113 contributors.
+  * The Mud C++ library wraps Bgfx. hugoam.github.io/mud-io/
+  * Few people use Bgfx and Mud; it will be buggy and incomplete.
+* Vulkan-Portability is very verbose and low level. Only targets modern hardware
+  But, there's a large, high quality ecosystem for Vulkan.
+* WebGPU targets modern hardware. Will have excellent web support (in 2021?).
+  Prototype phase, still being designed, no ecosystem or widget library yet.
+
+In Rust, there is gfx-rs (GPU abstraction) and piston (modular game engine),
+with 160 and 71 contributors. The gfx-rs project also does VkPort and WebGPU.
+* "oxidize the codebase"
+
 Dead end GPU libraries:
   * https://github.com/aras-p/glsl-optimizer, outputs GLSL or Metal, obsolete.
   * LunarGlass: LLVM based shader compiler
@@ -72,6 +89,7 @@ Dead end GPU libraries:
     Render API & shaders. No compute shaders, no Metal: waiting for WebGPU.
   * Allegro 5: github.com/liballeg/allegro5 -- no Metal.
   * SDL: www.libsdl.org -- no Metal.
+
 
 There is no standard universal GPU API that works on all platforms.
 Notes:
