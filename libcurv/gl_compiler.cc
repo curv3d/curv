@@ -579,6 +579,11 @@ GL_Value gl_eval_index_expr(GL_Value array, Operation& index, GL_Frame& f)
         return result;
     }
     // An array of numbers, indexed with a number.
+    if (array.type.rank_ > 1) {
+        throw Exception(At_GL_Phrase(index.syntax_,f), stringify(
+            "can't index a ", array.type.rank_, "D array of ",
+            GL_Type(array.type.base_type_), " with a single index"));
+    }
     auto ix = gl_eval_expr(f, index, GL_Type::Num());
     GL_Value result = f.gl.newvalue(array.type.abase());
     f.gl.out << "  " << result.type << " " << result << " = "
@@ -612,7 +617,7 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
     if (gl_try_eval(*fun_, f, glval)) {
         if (!glval.type.is_list())
             throw Exception(At_GL_Phrase(fun_->syntax_, f),
-                "not an array or function");
+                stringify("type ", glval.type, ": not an array or function"));
         auto list = cast<List_Expr>(arg_);
         if (list == nullptr)
             throw Exception(At_GL_Phrase(arg_->syntax_, f),

@@ -172,6 +172,20 @@ operator<<(String_Builder& b, unsigned n)
 }
 
 inline String_Builder&
+operator<<(String_Builder& b, short n)
+{
+    (std::stringstream&)b << n;
+    return b;
+}
+
+inline String_Builder&
+operator<<(String_Builder& b, unsigned short n)
+{
+    (std::stringstream&)b << n;
+    return b;
+}
+
+inline String_Builder&
 operator<<(String_Builder& b, char c)
 {
     (std::stringstream&)b << c;
