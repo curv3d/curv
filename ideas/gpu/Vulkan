@@ -50,7 +50,9 @@ Cross-platform GPU libraries:
   * github.com/bkaradzic/bgfx -- C++, very complete, +ShaderAbs, +ComputeShader
   * sokol_gfx: github.com/floooh/sokol -- C, generates compact WebAssembly.
     GLES3/WebGL2, GL3.3, D3D11, Metal. No shader abstraction or compute shaders.
-  * github.com/gfx-rs/wgpu -- prototype WebGPU lib; Rust/C bindings
+  * github.com/gfx-rs/wgpu -- WebGPU Rust/C bindings.
+  * dawn.googlesource.com/dawn -- WebGPU C/C++ bindings. D3D12, Metal, Vulkan.
+    OpenGL is a 2nd class target.
   * github.com/gfx-rs/portability -- Rust/C; portable Vulkan subset
   * MoltenVK: emulate Vulkan on Metal. More mature than Vk Portability on Mac.
   * OpenGL 4.3 on Mac via MoltenVK? Not that I can see, but there are some
