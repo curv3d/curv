@@ -653,11 +653,10 @@ struct Print_Action : public Just_Action
     virtual void exec(Frame& f) const override
     {
         Value arg = arg_->eval(f);
-        if (auto str = arg.dycast<String>())
-            f.system_.console() << *str;
-        else
-            f.system_.console() << arg;
-        f.system_.console() << std::endl;
+        auto str = arg.dycast<String>();
+        if (str == nullptr)
+            str = stringify(arg);
+        f.system_.print(str->c_str());
     }
 };
 /// The meaning of the phrase `print` in isolation.
@@ -689,7 +688,7 @@ struct Warning_Action : public Just_Action
         else
             msg = stringify(arg);
         Exception exc{At_Phrase(*syntax_, f), msg};
-        f.system_.message("WARNING: ", exc);
+        f.system_.warning(exc);
     }
 };
 /// The meaning of the phrase `warning` in isolation.

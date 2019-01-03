@@ -31,6 +31,58 @@ void System::print_exception(
     out << std::endl;
 }
 
+static void export_json_string(const char* str, std::ostream& out)
+{
+    out << '"';
+    for (const char* p = str; *p != '\0'; ++p) {
+        if (*p == '\\' || *p == '"')
+            out << '\\';
+        out << *p;
+    }
+    out << '"';
+}
+
+void System::print_json_exception(
+    const char* type, const std::exception& exc, std::ostream& out)
+{
+    out << "{\"" << type << "\":{";
+    out << "\"message\":";
+    export_json_string(exc.what(), out);
+    const Exception *e = dynamic_cast<const Exception*>(&exc);
+    if (e) {
+        // print location array
+    }
+    out << "}}" << std::endl;
+}
+
+void System::error(const std::exception& exc)
+{
+    if (use_json_api_)
+        print_json_exception("error", exc, console());
+    else
+        print_exception("ERROR: ", exc, console(), use_colour_);
+}
+
+void System::warning(const std::exception& exc)
+{
+    if (use_json_api_)
+        print_json_exception("warning", exc, console());
+    else
+        print_exception("WARNING: ", exc, console(), use_colour_);
+}
+
+void System::print(const char* str)
+{
+    if (use_json_api_) {
+        console() << "{\"print\":";
+        export_json_string(str, console());
+        console() << "}";
+    } else {
+        console() << str;
+    }
+    console() << std::endl;
+}
+
 System_Impl::System_Impl(std::ostream& console)
 :
     console_(console)

@@ -10,6 +10,7 @@
 #include <libcurv/geom/frag.h>
 #include <libcurv/geom/png.h>
 #include <libcurv/geom/shape.h>
+#include <libcurv/geom/viewed_shape.h>
 
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
@@ -295,6 +296,32 @@ void export_json(Value value,
     }
 }
 
+void export_json_api(Value value,
+    Program& prog, const Export_Params& params, Output_File& ofile)
+{
+    geom::Frag_Export opts;
+    for (auto& p : params.map_) {
+        if (!parse_frag_opt(params, p, opts))
+            params.unknown_parameter(p);
+    }
+
+    ofile.open();
+    At_Program cx(prog);
+    geom::Shape_Program shape(prog);
+    if (!shape.recognize(value)) {
+        ofile.ostream() << "{\"value\":";
+        if (!export_json_value(value, ofile.ostream(), cx))
+            ofile.ostream() << "{\"<not-a-value>\":true}";
+        ofile.ostream() << "}\n";
+    } else {
+        geom::Viewed_Shape vshape(shape, opts);
+        ofile.ostream() << "{\"shape\":{";
+        ofile.ostream() << "\"shader\":";
+        export_json_string(vshape.frag_.c_str(), ofile.ostream());
+        ofile.ostream() << "}}\n";
+    }
+}
+
 // wrapper that exports image sequences if requested
 void export_all_png(
     const geom::Shape_Program& shape,
@@ -444,6 +471,8 @@ std::map<std::string, Exporter> exporters = {
               "GLSL fragment shader (shape only, shadertoy.com compatible)",
               describe_frag_opts}},
     {"json", {export_json, "JSON expression", describe_no_opts}},
+    {"json-api", {export_json_api,
+        "program execution results as a JSON stream", describe_frag_opts}},
     {"cpp", {export_cpp, "C++ source file (shape only)", describe_no_opts}},
     {"png", {export_png, "PNG image file (shape only)", describe_png_opts}},
 };

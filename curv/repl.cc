@@ -227,7 +227,7 @@ void repl(curv::System* sys)
                 }
             }
         } catch (std::exception& e) {
-            sys->message("ERROR: ", e);
+            sys->error(e);
         }
     }
     view_server.exit();

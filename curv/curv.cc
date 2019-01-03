@@ -5,6 +5,7 @@
 extern "C" {
 #include <unistd.h>
 #include <getopt.h>
+#include <string.h>
 }
 #include <iostream>
 #include <fstream>
@@ -58,7 +59,7 @@ make_system(const char* argv0, std::list<const char*>& libs)
         curv::geom::add_importers(sys);
         return sys;
     } catch (std::exception& e) {
-        sys.message("ERROR: ", e);
+        sys.error(e);
         exit(EXIT_FAILURE);
     }
 }
@@ -113,6 +114,7 @@ main(int argc, char** argv)
     const char* editor = nullptr;
     bool help = false;
     bool version = false;
+    bool json_api = false;
 
     constexpr int HELP = 1000;
     constexpr int VERSION = 1001;
@@ -151,6 +153,7 @@ main(int argc, char** argv)
                           << "Use " << argv0 << " --help for help.\n";
                 return EXIT_FAILURE;
             }
+            json_api = (strcmp(oname, "json-api") == 0);
             break;
           }
         case 'O':
@@ -261,6 +264,7 @@ main(int argc, char** argv)
     // This can fail, so we do as much argument validation as possible
     // before this point.
     curv::System& sys(make_system(usestdlib, libs));
+    sys.use_json_api_ = json_api;
     atexit(curv::geom::remove_all_tempfiles);
 
     Export_Params oparams(sys);
@@ -317,7 +321,7 @@ main(int argc, char** argv)
             }
         }
     } catch (std::exception& e) {
-        sys.message("ERROR: ", e);
+        sys.error(e);
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;

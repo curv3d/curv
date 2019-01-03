@@ -29,6 +29,9 @@ struct System
     // Set to true if you want coloured text to be written on the console.
     bool use_colour_ = false;
 
+    // True if the json-api protocol is being used.
+    bool use_json_api_ = false;
+
     virtual std::ostream& console() = 0;
 
     // Write an exception object to an output stream, using the Curv colour
@@ -39,12 +42,12 @@ struct System
         const char* prefix, const std::exception& exc,
         std::ostream& out, bool use_colour = false);
 
-    // Write an error message on the console, given an exception object.
-    // Special behaviour for curv::Exception. Honours `use_colour_`.
-    inline void message(const char* prefix, const std::exception& exc)
-    {
-        print_exception(prefix, exc, console(), use_colour_);
-    }
+    static void print_json_exception(
+        const char* type, const std::exception& exc, std::ostream& out);
+
+    void error(const std::exception& exc);
+    void warning(const std::exception& exc);
+    void print(const char*);
 
     // This is non-empty while a `file` operation is being evaluated.
     // It is used to detect recursive file references.
