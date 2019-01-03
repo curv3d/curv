@@ -315,8 +315,16 @@ void export_json_api(Value value,
         ofile.ostream() << "}\n";
     } else {
         geom::Viewed_Shape vshape(shape, opts);
-        ofile.ostream() << "{\"shape\":{";
-        ofile.ostream() << "\"shader\":";
+        ofile.ostream() << "{\"shape\":{"
+            << "\"is_2d\":" << Value{shape.is_2d_}
+            << ",\"is_3d\":" << Value{shape.is_3d_}
+            << ",\"bbox\":[[" << dfmt(shape.bbox_.xmin, dfmt::JSON)
+                << "," << dfmt(shape.bbox_.ymin, dfmt::JSON)
+                << "," << dfmt(shape.bbox_.zmin, dfmt::JSON)
+                << "],[" << dfmt(shape.bbox_.xmax, dfmt::JSON)
+                << "," << dfmt(shape.bbox_.ymax, dfmt::JSON)
+                << "," << dfmt(shape.bbox_.zmax, dfmt::JSON)
+            << "]],\"shader\":";
         export_json_string(vshape.frag_.c_str(), ofile.ostream());
         ofile.ostream() << "}}\n";
     }
