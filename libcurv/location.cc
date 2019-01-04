@@ -185,8 +185,16 @@ Location::write(std::ostream& out, bool colour, bool many) const
 void
 Location::write_json(std::ostream& out) const
 {
-    out << "{\"byte_range\":["
-        << token().first_ << "," << token().last_ << "]";
+    auto info = line_info();
+
+    out << "{\"start\":{\"char\":" << token().first_
+        << ",\"line_begin\":" << info.start_line_begin
+        << ",\"line\":" << info.start_line_num
+        << ",\"column\":" << info.start_column_num
+        << "},\"end\":{\"char\":" << token().last_
+        << ",\"line\":" << info.end_line_num
+        << ",\"column\":" << info.end_column_num
+        << "}";
     if (!filename().empty()) {
         out << ",\"filename\":";
         write_json_string(filename().c_str(), out);
