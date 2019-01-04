@@ -32,9 +32,9 @@ extern "C" {
 namespace fs = curv::Filesystem;
 
 curv::System&
-make_system(const char* argv0, std::list<const char*>& libs)
+make_system(const char* argv0, std::list<const char*>& libs, std::ostream& out)
 {
-    static curv::System_Impl sys(std::cerr);
+    static curv::System_Impl sys(out);
     if (isatty(2)) sys.use_colour_ = true;
     try {
         if (argv0 != nullptr) {
@@ -263,7 +263,8 @@ main(int argc, char** argv)
     // Create system, a precondition for parsing -O parameters.
     // This can fail, so we do as much argument validation as possible
     // before this point.
-    curv::System& sys(make_system(usestdlib, libs));
+    std::ostream* console = json_api ? &std::cout : &std::cerr;
+    curv::System& sys(make_system(usestdlib, libs, *console));
     sys.use_json_api_ = json_api;
     atexit(curv::geom::remove_all_tempfiles);
 
