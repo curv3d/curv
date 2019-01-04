@@ -8,6 +8,7 @@
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/import.h>
+#include <libcurv/json.h>
 #include <libcurv/program.h>
 #include <libcurv/source.h>
 
@@ -31,26 +32,23 @@ void System::print_exception(
     out << std::endl;
 }
 
-static void export_json_string(const char* str, std::ostream& out)
-{
-    out << '"';
-    for (const char* p = str; *p != '\0'; ++p) {
-        if (*p == '\\' || *p == '"')
-            out << '\\';
-        out << *p;
-    }
-    out << '"';
-}
-
 void System::print_json_exception(
     const char* type, const std::exception& exc, std::ostream& out)
 {
     out << "{\"" << type << "\":{";
     out << "\"message\":";
-    export_json_string(exc.what(), out);
+    write_json_string(exc.what(), out);
     const Exception *e = dynamic_cast<const Exception*>(&exc);
-    if (e) {
+    if (e && !e->loc_.empty()) {
         // print location array
+        out << ",\"location\":[";
+        bool first = true;
+        for (auto L : e->loc_) {
+            if (!first) out << ",";
+            first = false;
+            L.write_json(out);
+        }
+        out << "]";
     }
     out << "}}" << std::endl;
 }
@@ -75,7 +73,7 @@ void System::print(const char* str)
 {
     if (use_json_api_) {
         console() << "{\"print\":";
-        export_json_string(str, console());
+        write_json_string(str, console());
         console() << "}";
     } else {
         console() << str;

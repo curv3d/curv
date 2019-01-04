@@ -56,6 +56,8 @@ public:
     /// The `colour` flag enables colour text using ANSI ESC sequences.
     void write(std::ostream&, bool colour, bool many) const;
 
+    void write_json(std::ostream&) const;
+
     /// Line and column information for a Location
     ///
     /// Line and column numbers begin at 0.

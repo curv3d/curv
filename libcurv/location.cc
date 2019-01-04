@@ -6,6 +6,7 @@
 
 #include <libcurv/ansi_colour.h>
 #include <libcurv/format.h>
+#include <libcurv/json.h>
 
 namespace curv {
 
@@ -179,6 +180,18 @@ Location::write(std::ostream& out, bool colour, bool many) const
             ++ln;
         }
     }
+}
+
+void
+Location::write_json(std::ostream& out) const
+{
+    out << "{\"byte_range\":["
+        << token().first_ << "," << token().last_ << "]";
+    if (!filename().empty()) {
+        out << ",\"filename\":";
+        write_json_string(filename().c_str(), out);
+    }
+    out << "}";
 }
 
 Range<const char*>

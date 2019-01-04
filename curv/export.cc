@@ -16,6 +16,7 @@
 #include <libcurv/exception.h>
 #include <libcurv/filesystem.h>
 #include <libcurv/format.h>
+#include <libcurv/json.h>
 #include <libcurv/program.h>
 #include <libcurv/range.h>
 #include <libcurv/source.h>
@@ -208,16 +209,6 @@ bool is_json_data(Value val)
         return true; // null, bool or num
     }
 }
-void export_json_string(const char* str, std::ostream& out)
-{
-    out << '"';
-    for (const char* p = str; *p != '\0'; ++p) {
-        if (*p == '\\' || *p == '"')
-            out << '\\';
-        out << *p;
-    }
-    out << '"';
-}
 bool export_json_value(Value val, std::ostream& out, const Context& cx)
 {
     if (val.is_null()) {
@@ -238,7 +229,7 @@ bool export_json_value(Value val, std::ostream& out, const Context& cx)
     case Ref_Value::ty_string:
       {
         auto& str = (String&)ref;
-        export_json_string(str.c_str(), out);
+        write_json_string(str.c_str(), out);
         return true;
       }
     case Ref_Value::ty_list:
@@ -267,7 +258,7 @@ bool export_json_value(Value val, std::ostream& out, const Context& cx)
             if (is_json_data(val)) {
                 if (!first) out << ",";
                 first = false;
-                export_json_string(id.c_str(), out);
+                write_json_string(id.c_str(), out);
                 out << ":";
                 export_json_value(val, out, At_Field(id.c_str(), cx));
             }
@@ -325,7 +316,7 @@ void export_json_api(Value value,
                 << "," << dfmt(shape.bbox_.ymax, dfmt::JSON)
                 << "," << dfmt(shape.bbox_.zmax, dfmt::JSON)
             << "]],\"shader\":";
-        export_json_string(vshape.frag_.c_str(), ofile.ostream());
+        write_json_string(vshape.frag_.c_str(), ofile.ostream());
         ofile.ostream() << "}}\n";
     }
 }
