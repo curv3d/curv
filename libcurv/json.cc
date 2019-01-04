@@ -10,9 +10,17 @@ void write_json_string(const char* str, std::ostream& out)
 {
     out << '"';
     for (const char* p = str; *p != '\0'; ++p) {
-        if (*p == '\\' || *p == '"')
-            out << '\\';
-        out << *p;
+        // In the JSON-API protocol, top level objects are separated by
+        // newlines, and for ease of parsing by the client, top level objects
+        // cannot contain raw newlines. So newlines are encoded as \n in
+        // JSON strings.
+        if (*p == '\n')
+            out << "\\n";
+        else {
+            if (*p == '\\' || *p == '"')
+                out << '\\';
+            out << *p;
+        }
     }
     out << '"';
 }
