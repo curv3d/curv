@@ -1,1 +1,5 @@
 theme: jekyll-theme-cayman
+name: Curv
+description: a language for making art using mathematics
+author: Doug Moen
+markdown: kramdown
