@@ -1,5 +1,6 @@
 theme: jekyll-theme-cayman
 name: Curv
 description: a language for making art using mathematics
+logo: images/shreks_donut.png
 author: Doug Moen
 markdown: kramdown
