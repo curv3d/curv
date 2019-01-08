@@ -1,6 +1,6 @@
 ---
 title: Curv
-adjective: powerful
+logo: images/shreks_donut.png
 ---
 Curv is a programming language for creating art using mathematics.
 It's a 2D and 3D geometric modelling tool that supports full colour,
