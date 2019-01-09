@@ -36,7 +36,8 @@ struct Picker : public Function
                 int high_;
             } int_slider_;
         };
-        void write(std::ostream&);
+        void write(std::ostream&) const;
+        void write_json(std::ostream&) const;
     };
     union State {
         bool bool_;
@@ -44,7 +45,8 @@ struct Picker : public Function
         float num_; // not double, because ImGui sliders use float
         float vec3_[3];
         State(Type, Value, const Context&);
-        void write(std::ostream&, Type);
+        void write(std::ostream&, Type) const;
+        void write_json(std::ostream&, Type) const;
     };
     
     Config config_;

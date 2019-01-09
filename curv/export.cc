@@ -315,8 +315,8 @@ void export_json_api(Value value,
                 << "],[" << dfmt(shape.bbox_.xmax, dfmt::JSON)
                 << "," << dfmt(shape.bbox_.ymax, dfmt::JSON)
                 << "," << dfmt(shape.bbox_.zmax, dfmt::JSON)
-            << "]],\"shader\":";
-        write_json_string(vshape.frag_.c_str(), ofile.ostream());
+            << "]],";
+        vshape.write_json(ofile.ostream());
         ofile.ostream() << "}}\n";
     }
 }

@@ -4,6 +4,7 @@
 
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
+#include <libcurv/json.h>
 #include <libcurv/geom/viewed_shape.h>
 #include <iostream>
 
@@ -113,6 +114,27 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
         export_frag(shape, opts, frag);
         frag_ = frag.str();
     }
+}
+
+void
+Viewed_Shape::write_json(std::ostream& out) const
+{
+    out << "\"shader\":";
+    write_json_string(frag_.c_str(), out);
+    out << ",\"parameters\":[";
+    bool first = true;
+    for (auto& p : params_) {
+        if (!first) out << ",";
+        first = false;
+        out << "{";
+        out << "\"name\":\"rv_" << p.name_ << "\"";
+        out << ",\"type\":\"" << p.pconfig_.gltype_ << "\"";
+        out << ",\"value\":"; p.pstate_.write_json(out, p.pconfig_.type_);
+        out << ",\"label\":"; write_json_string(p.name_.c_str(), out);
+        out << ",\"config\":"; p.pconfig_.write_json(out);
+        out << "}";
+    }
+    out << "]";
 }
 
 }} // namespace

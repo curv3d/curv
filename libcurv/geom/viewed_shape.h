@@ -57,6 +57,10 @@ struct Viewed_Shape
     Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts);
 
     bool empty() const { return frag_.empty(); }
+
+    // Serialize as a sequence of JSON object fields,
+    // without an enclosing '{...}'.
+    void write_json(std::ostream&) const;
 };
 
 }} // namespace
