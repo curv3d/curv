@@ -24,6 +24,9 @@ Instead, build and install `curv` using:
   * `make`
   * `sudo make install`
 
+* When building on a Ubuntu Server version, run the following command before building:
+  * `sudo apt-get install libxcursor-dev libxinerama-dev libxrandr-dev libglu1-mesa-dev libgles2-mesa-dev libgl1-mesa-dev libxi-dev`
+  
 ## macOS build instructions
 * Install homebrew (http://brew.sh)
 * Open the Terminal application and run the following commands:
