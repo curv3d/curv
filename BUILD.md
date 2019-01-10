@@ -18,6 +18,7 @@ Instead, build and install `curv` using:
   * `sudo apt-get install libboost-all-dev libdouble-conversion-dev`
   * `sudo apt-get install libopenexr-dev libtbb-dev`
   * `sudo apt-get install libglm-dev`
+  * `sudo apt-get install libxcursor-dev libxinerama-dev libxrandr-dev libglu1-mesa-dev libgles2-mesa-dev libgl1-mesa-dev libxi-dev openexr-dev libtbb-dev`
   * `cd ~`
   * `git clone --recursive https://github.com/doug-moen/curv`
   * `cd curv`
