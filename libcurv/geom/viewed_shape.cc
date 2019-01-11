@@ -79,11 +79,12 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
                 std::cerr << " = " << value << "\n";
               #endif
                 if (picker) {
+                    Picker::State state{
+                        picker->config_.type_,
+                        value,
+                        At_System{shape.system_}};
                     params_.push_back(Parameter{name.c_str(), picker->config_,
-                        Picker::State{
-                            picker->config_.type_,
-                            value,
-                            At_System{shape.system_}}});
+                        state, state});
                     cparams->fields_[name] =
                         {make<Uniform_Variable>(
                             name,

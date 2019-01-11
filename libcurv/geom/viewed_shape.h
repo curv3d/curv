@@ -47,6 +47,7 @@ struct Viewed_Shape
         std::string name_;
         Picker::Config pconfig_;
         Picker::State pstate_;
+        Picker::State default_state_;
     };
     std::vector<Parameter> params_{};
 

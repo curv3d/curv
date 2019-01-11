@@ -233,6 +233,10 @@ bool Viewer::draw_frame()
                 break;
             }
         }
+        if (ImGui::Button("Reset")) {
+            for (auto& i : shape_.params_)
+                i.pstate_ = i.default_state_;
+        }
         ImGui::End();
         ImGui::PopStyleColor(1);
     }
