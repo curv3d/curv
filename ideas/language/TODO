@@ -154,6 +154,8 @@ New Pattern Types:
 * '<pattern> if <condition>' -- conditional pattern. The pattern is matched,
   variables are bound, then the condition is evaluated over the bound variables,
   and the match fails if the condition is false.
+  * I might prefer '<pattern> when <condition>' for better readability.
+    (Not confusible with an 'if' expression when quickly scanning code.)
   * The 'phrase abstraction' design pattern asks if the syntax for this should
     actually be 'if (condition) pattern'? But the C if syntax is
     counterintuitive because the pattern binds variables in the condition.
