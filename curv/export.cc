@@ -462,10 +462,6 @@ void describe_no_opts(std::ostream&) {}
 
 std::map<std::string, Exporter> exporters = {
     {"curv", {export_curv, "Curv expression", describe_no_opts}},
-    {"stl", {export_stl, "STL mesh file (3D shape only)", describe_mesh_opts}},
-    {"obj", {export_obj, "OBJ mesh file (3D shape only)", describe_mesh_opts}},
-    {"x3d", {export_x3d, "X3D colour mesh file (3D shape only)",
-             describe_colour_mesh_opts}},
     {"frag", {export_frag,
               "GLSL fragment shader (shape only, shadertoy.com compatible)",
               describe_frag_opts}},
