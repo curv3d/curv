@@ -1,6 +1,8 @@
 # TODO: Language Changes
 
-Recent Ideas (Dec 2018):
+Recent Ideas (Jan 2018):
+* Multipart function definitions, allows recursive piecewise functions,
+  which are wanted for lib.noise.
 * Parametric Records and Terms
   * Finalize naming scheme for metadata.
     * Rename ParametricRecord metadata fields to constructor, argument.
@@ -52,7 +54,7 @@ Extensions:
 * Record constructors may combine definitions and field generators.
   Shorter definitions for shape constructors with .mitred/.exact members.
 
-## Quoted Identifiers and DFNs
+## Quoted Identifiers and DFNs (Dynamic Field Names)
 `'hello world'` is a quoted identifier.
 It can be useful in the following contexts:
  0. Reserved words become available as identifiers, eg 'if' or '_'.
@@ -84,7 +86,7 @@ identifier and a DFN are clearly distinct.
 An alternate syntax for DFNs: `$<primary_expr>`.
     foo.$var
     {$var : value}
-    if (defined foo.$var) ...
+    if (defined (foo.$var)) ...
 This echoes the proposed syntax for string-valued options: -Ofoo='$var'.
 We could combine this proposal with the static quoted identifier proposal.
 Or, note that `$"hello world"` is legal syntax for a dynamic field name.
@@ -361,13 +363,13 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
   * Haskell uses "and". Eg, a `any` b  vs  a `and` b
 * ifelse(cond,thenval,elseval)
   * The name comes from R. In GLSL 4.5, this is mix(elseval,thenval,cond).
-  * In Dec2018 Curv, `if (a) b else c` evaluates all 3 arguments if `a` is a
-    reactive value. We could vectorize the `if` operator.
 * Rationale: vectorized boolean ops have different names than unvectorized ones.
   * x==y compares vectors and returns bool, unlike xs=='ys/xs `equal` ys.
   * a&&b short circuits if a==false, but all(a,b) must evaluate b if a==false
     to implement broadcasting.
   * ifelse(b,c,a) must evaluate all 3 arguments if b is an array.
+    But, in Dec2018 Curv, `if (a) b else c` evaluates all 3 arguments
+    if `a` is a reactive value. So, just use `if` syntax.
   * The unvectorized relations are guaranteed to return Bool, or fail,
     which is appropriate for the most common use case, which is to construct
     an argument for if, &&, ||, which require a Bool argument.
@@ -598,12 +600,11 @@ This can't be extended to the arithmetic operators, since (+a) and (-a) already
 have a different meaning. Sections of the boolean ops && and || aren't useful.
 
 ## Indentation As Syntax
-Note: The main problem that "indentation as syntax" solves is the redundancy
-between two kinds of information: layout, that tells the human reader how the
-code is hierarchically structured, and punctuation like { ; } that tells the
-compiler how the code is structured. It's a problem if you have to manually
-keep these two kinds of information in sync, and confusing if they get out of
-sync.
+The main problem that "indentation as syntax" solves is the redundancy between
+two kinds of information: layout, that tells the human reader how the code is
+hierarchically structured, and punctuation like { ; } that tells the compiler
+how the code is structured. It's a problem if you have to manually keep these
+two kinds of information in sync, and confusing if they get out of sync.
 
 I would like a smart editor that automatically generates layout for an
 expression-oriented functional language, and that automatically reflows
@@ -734,7 +735,7 @@ repr "foo" => "$=foo$="
 repr(repr "foo") => "$.=foo$.="
 print "Can't open file $=$filename$=: $error";
 
-Downside is that this is novel syntax. You have to memorize them.
+Downside is that this is novel syntax. You have to memorize it.
 
 ${dollar}  expands to $    similar to &dollar; in HTML5
 ${quot}    expands to "    similar to &quot; in HTML5
@@ -747,6 +748,14 @@ ${apos}    expands to '    similar to &apos; in HTML5
 "${ stmt1; stmt2; stmt3 }"
 eg, "${if (c) "foo"}"
 
+## Swift-Inspired Fat String Literals
+`#"... #${foo} ..."#` is a fat string literal. The `#` can be replaced with
+2 or more hashes. The `""` and `$$` escapes become `#""` and `#$$`.
+Use case: quoting a multiline string containing " and $, without escaping
+each occurrence of " and $. Not as nice if you have a lot of escape sequences.
+    #"Can't open "#$filename": #$error"#
+    "foo" => #""foo""# => ##"#""foo""#"##
+
 ## Eval
 eval string        -- use std environment
 eval(string,env)   -- environment is env, then std
@@ -755,7 +764,7 @@ I'm not saying this is a good idea, BTW. It just keeps coming up, so it
 needs a section. Eval is easy to implement, but there are probably better
 APIs for anything you might actually use it for.
 
-Use cases? Ummm... convert a string to a numeral? Using Curv as a general
+Use cases? Ummm... convert a string to a number? Using Curv as a general
 data transformation language, outside of making shapes? See also: Jq.
 
 If I actually want to manipulate Curv programs as data (which is outside any
@@ -771,3 +780,29 @@ Curried, pipelineable API:
 
 Update uses the unique reference count optimization, available once we have
 an optimizing compiler and a new instruction format that supports it.
+* `amend` is an alternate name for `update`. Shorter, more precise.
+
+## Multipart Definitions
+Multipart function definitions:
+    f (x :: is_num) = ...;
+    f (x, y) = ...;
+    f (x, y, z) = ...;
+is similar to
+    f = match [
+        (x :: is_num) -> ...;
+        (x, y) -> ...;
+        (x, y, z) -> ...;
+    ];
+except that the former can be recursive (one case can be defined in terms of
+another case).
+
+Multipart record definitions:
+    r.a = ...;
+    r.b = ...;
+    r.c = ...;
+is the same as
+    r = {
+        a = ...;
+        b = ...;
+        c = ...;
+    };

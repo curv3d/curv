@@ -18,9 +18,38 @@ Eg, if I need more container types, #[a,b,c] is a set,
 #{key1: value1, ...} is a map. Or, #! comments.
 
 What is the type of a symbol? How do they print?
- 1) #vertex abbreviates "vertex".
- 2) #vertex abbreviates {vertex:} which abbreviates {vertex: true}.
+ 0) No symbol syntax. Use strings, special syntax for string-valued options.
+ 1) #vertex abbreviates "vertex", which prints as "vertex".
+ 2) #vertex abbreviates {vertex:null}, which prints as #vertex.
  3) Symbols are a new (8th) data type.
+
+But what about a command line option X with an algebraic type, where some
+variants have values, and some variants do not? This can't be a string-valued
+option.
+ * Without symbol syntax: '-OX="foo"' and -OX={bar:a}
+ * With symbol syntax: -OX=#foo and -OX={bar:a}
+ * With multipart record definitions: -OX=#foo and -OX.bar=a
+
+Judgement:
+* Not 0, doesn't work for options with algebraic types.
+* Not 3, don't want extra complexity of a new type.
+* 1 or 2.
+* I slightly prefer 2: #foo == {foo:null}, prints as #foo, is a pattern.
+  #"foo bar" if name is not a C identifier.
+
+Symbols are used to simulate 'enumerated types'.
+Symbols are used to simulate niladic variants in an algebraic type.
+
+Symbols are used to simulate 'enumerated types' in the GL dialect.
+Drop-down-list picker type. In a C-like language, the options in a drop-down
+list would be enums, which would map to integers in GLSL. So these should be
+symbols?
+    parametric {s :: dropdown[#square,#circle,#triangle] = #square} ...
+In the GL dialect, symbols are normally illegal, and even if we get record
+values, the null value in a symbol is illegal. But, if a dropdown picker is
+used, then the symbols it uses become legal GL values, represented as integers.
+We could also use these semantics for interpreting an is_enum[#foo,#bar]
+type predicate in the GL dialect.
 
 0. No Symbols
 -------------
@@ -41,6 +70,8 @@ Enum values are string values. This means we want "foo" to work as a pattern.
 Pros:
 * If JSON export is important, strings are the most natural translation
   for symbols. It's what you would use if modelling data directly in JSON.
+  * Counterexample: in JSON-API, a picker config is {"type":data}. If no
+    data is needed, I use {"type":true} instead of "type".
 * Strings as the representation for symbols is simple and easy for users
   to understand.
 * When I first encountered Lisp/Scheme, the distinction between symbols and
@@ -51,12 +82,14 @@ Pros:
 
 If symbols are strings, why provide an alternate syntax for string literals?
 * Usability on the command line, for setting enum-valued options.
+  -Omethod=#sharp instead of '-Omethod="sharp"'.
 * At present, strings are rarely used in Curv. If you see a string literal
   in Curv, it's probably uninterpreted text, to be printed to the console
   or rendered using the future `text` primitive. Writing #foo instead of "foo"
   is a signal to the reader that this is a semantic tag, not uninterpreted
   natural language text. Symbols are used as enum values, as nilary constructors
   for an algebraic type, as field names for indexing a record.
+* #foo is a pattern, "foo" is not a pattern due to field generator syntax.
 
 Cons:
 * Since symbols have semantics (semantic tags, not uninterpreted text),
@@ -70,6 +103,8 @@ Cons:
   functions can distinguish symbol arguments from string arguments.
 * Symbol equality is traditionally faster than string equality.
 
+JSON export: #foo -> "foo"
+
 2. Symbols as Records
 ---------------------
 Here's the sales pitch for this design alternative:
@@ -80,6 +115,9 @@ Here's the sales pitch for this design alternative:
 * Records are the general mechanism for representing new data types.
   So representing symbols as records fits this tendency.
 * Record literals are patterns. Symbol literals need to be patterns.
+* #foo prints as #foo, not as a string.
+* Symbols and strings are distinct, which is good, they have different semantic
+  roles.
 
 Let's recall the doctrine for representing labelled options
 and algebraic data types in Curv.
@@ -94,7 +132,7 @@ and algebraic data types in Curv.
   boolean, defaulting to false, but if the name is specified,
   the parameter becomes true. Eg, --foo instead of --foo=value
   in Unix, or foo instead of foo=value as an HTML attribute.
-  That's why `foo:` is an abbreviate for `foo:true` in a Curv record.
+  That's why `foo:` abbreviates `foo:true` in a Curv record.
 
 A Haskell algebraic type is a set of named alternatives. 
 The constructor for an alternative is written as `Foo` or `Bar value`.
@@ -106,6 +144,9 @@ form {name: value} -- tagged values are singleton records.
 The abbreviation for tagged value that only needs a name is {name:}:
 the value is implicitly `true`. In this case, the choice of the value
 `true` is arbitrary: `null` would make as much sense.
+* I'm no longer convinced that conflating enum values with singleton boolean
+  options is a good idea. Let's define #foo == {foo:null}, which prints as #foo.
+  By contrast, {foo:} prints as {foo:true}.
 
 With the introduction of symbol syntax, the idiomatic syntax for
 members of an algebraic type will be #foo and {bar: value}.
@@ -117,6 +158,8 @@ Possible reasons for identifying #foo with {foo:} in an algebraic type.
     and can be interpolated into a set of labelled arguments using `...`.
   * A uniform API for extracting the name and value components of an
     algebraic value.
+
+JSON export: #foo -> {"foo":true}
 
 3. Symbols as the 8th Type
 --------------------------
@@ -154,4 +197,5 @@ Cons:
     Maybe if you are using a symbol to denote a single component of a longer
     name or string, then you are using symbols incorrectly.
   * Potential confusion about when to use a string and when to use a symbol?
-* It breaks or complicates JSON export (but does that matter?)
+
+JSON export: #foo -> {"\0":"#foo"}
