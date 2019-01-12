@@ -193,7 +193,7 @@ bool Viewer::draw_frame()
             (ImVec4)ImColor(230,230,230,255));
         ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(350,0), ImGuiCond_Once);
-        ImGui::Begin("Shape Parameters", &hud_, 0);
+        ImGui::Begin("Parameters", &hud_, 0);
         for (auto& i : shape_.params_) {
             switch (i.pconfig_.type_) {
             case Picker::Type::slider:
@@ -233,10 +233,14 @@ bool Viewer::draw_frame()
                 break;
             }
         }
-        if (ImGui::Button("Reset")) {
-            for (auto& i : shape_.params_)
-                i.pstate_ = i.default_state_;
+        if (!shape_.params_.empty()) {
+            if (ImGui::Button("Reset")) {
+                for (auto& i : shape_.params_)
+                    i.pstate_ = i.default_state_;
+            }
+            ImGui::SameLine();
         }
+        ImGui::Checkbox("Power Saver", &config_.lazy_);
         ImGui::End();
         ImGui::PopStyleColor(1);
     }
