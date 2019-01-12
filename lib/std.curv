@@ -173,10 +173,13 @@ sphere =
 ellipsoid(dx,dy,dz) = sphere 1 >> stretch(dx,dy,dz);
 
 cylinder =
-    {
-        call = exact;
-        mitred{d,h} = extrude.mitred h (circle d);
+    let mitred{d,h} = extrude.mitred h (circle d);
         exact{d,h} = extrude.exact h (circle d);
+    in {
+        ... exact{d:1,h:1};
+        call : exact;
+        mitred : mitred;
+        exact : exact;
     };
 
 // Cone: +Z is up, origin is in the middle of the base.
