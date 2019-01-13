@@ -83,8 +83,9 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
                         picker->config_.type_,
                         value,
                         At_System{shape.system_}};
-                    params_.push_back(Parameter{name.c_str(), picker->config_,
-                        state, state});
+                    param_.insert(std::pair<const std::string,Parameter>(
+                        name.c_str(),
+                        Parameter{picker->config_, state, state}));
                     cparams->fields_[name] =
                         {make<Uniform_Variable>(
                             name,
@@ -124,15 +125,16 @@ Viewed_Shape::write_json(std::ostream& out) const
     write_json_string(frag_.c_str(), out);
     out << ",\"parameters\":[";
     bool first = true;
-    for (auto& p : params_) {
+    for (auto& p : param_) {
         if (!first) out << ",";
         first = false;
         out << "{";
-        out << "\"name\":\"rv_" << p.name_ << "\"";
-        out << ",\"type\":\"" << p.pconfig_.gltype_ << "\"";
-        out << ",\"value\":"; p.pstate_.write_json(out, p.pconfig_.type_);
-        out << ",\"label\":"; write_json_string(p.name_.c_str(), out);
-        out << ",\"config\":"; p.pconfig_.write_json(out);
+        out << "\"name\":\"rv_" << p.first << "\"";
+        out << ",\"type\":\"" << p.second.pconfig_.gltype_ << "\"";
+        out << ",\"value\":";
+        p.second.pstate_.write_json(out, p.second.pconfig_.type_);
+        out << ",\"label\":"; write_json_string(p.first.c_str(), out);
+        out << ",\"config\":"; p.second.pconfig_.write_json(out);
         out << "}";
     }
     out << "]";

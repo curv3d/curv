@@ -9,9 +9,6 @@
 
 #include <libcurv/geom/viewer/viewer.h>
 
-//#include <time.h>
-//#include <sys/time.h>
-
 #include <iostream>
 #include <sstream>
 #include <chrono>
@@ -61,15 +58,30 @@ Viewer::set_shape(const Shape_Program& shape, const Frag_Export& opts)
 void
 Viewer::set_shape(Viewed_Shape shape)
 {
+    // preserve picker state
+    if (!shape_.param_.empty()) {
+        for (auto pnew = shape.param_.begin();
+             pnew != shape.param_.end();
+             ++pnew)
+        {
+            auto pold = shape_.param_.find(pnew->first);
+            if (pold != shape_.param_.end()
+                && pnew->second.pconfig_.type_ == pold->second.pconfig_.type_)
+            {
+                pnew.value().pstate_ = pold->second.pstate_;
+            }
+        }
+    }
+
     shape_ = std::move(shape);
-    hud_ = !shape_.params_.empty();
+    hud_ = !shape_.param_.empty();
   #if 0
     // describe sliders on stderr (TODO: remove debug code)
-    for (auto& i : shape_.params_) {
-        std::cerr << i.name_ << " :: ";
-        i.pconfig_.write(std::cerr);
+    for (auto& i : shape_.param_) {
+        std::cerr << i.first << " :: ";
+        i.second.pconfig_.write(std::cerr);
         std::cerr << " = ";
-        i.pstate_.write(std::cerr, i.pconfig_.type_);
+        i.second.pstate_.write(std::cerr, i.second.pconfig_.type_);
         std::cerr << "\n";
     }
   #endif
@@ -194,24 +206,29 @@ bool Viewer::draw_frame()
         ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Once);
         ImGui::SetNextWindowSize(ImVec2(350,0), ImGuiCond_Once);
         ImGui::Begin("Parameters", &hud_, 0);
-        for (auto& i : shape_.params_) {
-            switch (i.pconfig_.type_) {
+        for (auto i = shape_.param_.begin();
+             i != shape_.param_.end();
+             ++i)
+        {
+            switch (i->second.pconfig_.type_) {
             case Picker::Type::slider:
-                ImGui::SliderFloat(i.name_.c_str(), &i.pstate_.num_,
-                    i.pconfig_.slider_.low_, i.pconfig_.slider_.high_);
+                ImGui::SliderFloat(i->first.c_str(), &i.value().pstate_.num_,
+                    i->second.pconfig_.slider_.low_,
+                    i->second.pconfig_.slider_.high_);
                 ImGui::SameLine(); ShowHelpMarker(
                     "Click or drag slider to set value.\n"
                     "CTRL+click to edit value as text.\n");
                 break;
             case Picker::Type::int_slider:
-                ImGui::SliderInt(i.name_.c_str(), &i.pstate_.int_,
-                    i.pconfig_.int_slider_.low_, i.pconfig_.int_slider_.high_);
+                ImGui::SliderInt(i->first.c_str(), &i.value().pstate_.int_,
+                    i->second.pconfig_.int_slider_.low_,
+                    i->second.pconfig_.int_slider_.high_);
                 ImGui::SameLine(); ShowHelpMarker(
                     "Click or drag slider to set value.\n"
                     "CTRL+click to edit value as text.\n");
                 break;
             case Picker::Type::scale_picker:
-                run_scale_picker(i.name_.c_str(), &i.pstate_.num_);
+                run_scale_picker(i->first.c_str(), &i.value().pstate_.num_);
                 ImGui::SameLine(); ShowHelpMarker(
                     "Drag and hold to adjust value.\n"
                     "SHIFT+drag changes value more quickly.\n"
@@ -219,10 +236,10 @@ bool Viewer::draw_frame()
                     "CTRL+click to edit value as text.\n");
                 break;
             case Picker::Type::checkbox:
-                ImGui::Checkbox(i.name_.c_str(), &i.pstate_.bool_);
+                ImGui::Checkbox(i->first.c_str(), &i.value().pstate_.bool_);
                 break;
             case Picker::Type::colour_picker:
-                ImGui::ColorEdit3(i.name_.c_str(), i.pstate_.vec3_,
+                ImGui::ColorEdit3(i->first.c_str(), i.value().pstate_.vec3_,
                     ImGuiColorEditFlags_PickerHueWheel);
                 ImGui::SameLine(); ShowHelpMarker(
                     "Click on the coloured square to open a colour picker.\n"
@@ -233,10 +250,14 @@ bool Viewer::draw_frame()
                 break;
             }
         }
-        if (!shape_.params_.empty()) {
+        if (!shape_.param_.empty()) {
             if (ImGui::Button("Reset")) {
-                for (auto& i : shape_.params_)
-                    i.pstate_ = i.default_state_;
+                for (auto i = shape_.param_.begin();
+                     i != shape_.param_.end();
+                     ++i)
+                {
+                    i.value().pstate_ = i->second.default_state_;
+                }
             }
             ImGui::SameLine();
         }
@@ -323,22 +344,22 @@ void Viewer::render()
         glm::mat4 mvp = glm::mat4(1.);
         shader_.setUniform("u_modelViewProjectionMatrix", mvp);
 
-        for (auto& p : shape_.params_) {
+        for (auto& p : shape_.param_) {
             // TODO: precompute uniform id
-            auto name = stringify("rv_",p.name_);
-            switch (p.pconfig_.type_) {
+            auto name = stringify("rv_",p.first);
+            switch (p.second.pconfig_.type_) {
             case Picker::Type::slider:
             case Picker::Type::scale_picker:
-                shader_.setUniform(name->c_str(), float(p.pstate_.num_));
+                shader_.setUniform(name->c_str(), float(p.second.pstate_.num_));
                 break;
             case Picker::Type::int_slider:
-                shader_.setUniform(name->c_str(), float(p.pstate_.int_));
+                shader_.setUniform(name->c_str(), float(p.second.pstate_.int_));
                 break;
             case Picker::Type::checkbox:
-                shader_.setUniform(name->c_str(), int(p.pstate_.bool_));
+                shader_.setUniform(name->c_str(), int(p.second.pstate_.bool_));
                 break;
             case Picker::Type::colour_picker:
-                shader_.setUniform(name->c_str(), p.pstate_.vec3_, 3);
+                shader_.setUniform(name->c_str(), p.second.pstate_.vec3_, 3);
                 break;
             default:
                 die("picker with bad gltype");

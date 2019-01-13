@@ -10,3 +10,6 @@
 [submodule "extern/imgui"]
 	path = extern/imgui
 	url = https://github.com/ocornut/imgui
+[submodule "extern/ordered-map"]
+	path = extern/ordered-map
+	url = https://github.com/Tessil/ordered-map

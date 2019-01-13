@@ -15,6 +15,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 # Global include directories, visible in subdirectories.
 include_directories(.
     extern/googletest/googletest/include
+    extern/ordered-map/include
     extern/openvdb
     extern/blosc
     extern/stb

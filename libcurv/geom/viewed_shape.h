@@ -8,6 +8,7 @@
 #include <libcurv/picker.h>
 #include <libcurv/geom/frag.h>
 #include <libcurv/geom/shape.h>
+#include <tsl/ordered_map.h>
 
 namespace curv {
 namespace geom {
@@ -44,12 +45,11 @@ struct Viewed_Shape
     // If the shape is parametric, there will be one or more parameters.
     struct Parameter
     {
-        std::string name_;
         Picker::Config pconfig_;
         Picker::State pstate_;
         Picker::State default_state_;
     };
-    std::vector<Parameter> params_{};
+    tsl::ordered_map<std::string, Parameter> param_{};
 
     // This creates an empty Viewed_Shape (contains no shape).
     Viewed_Shape() {};
