@@ -237,10 +237,10 @@ TEST(curv, eval)
     SUCCESS("max(1,2,)", "2"); // test syntax: trailing , after last argument
     SUCCESS("sqrt << sqrt 16", "2");
     FAILALL("let f=()->sqrt(true);\nin f()",
-        "sqrt(true): domain error\n"
+        "argument #1 of sqrt: true: domain error\n"
         "at:\n"
         "1| let f=()->sqrt(true);\n"
-        "             ^^^^^^^^^^ \n"
+        "                 ^^^^^^ \n"
         "at:\n"
         "2| in f()\n"
         "      ^^^");
@@ -444,12 +444,11 @@ TEST(curv, eval)
     SUCCESS("abs(2)", "2");
     SUCCESS("abs(0)", "0");
     FAILALL("abs\ntrue",
-        "abs(true): domain error\n"
-        "1|>abs\n"
-        "2|>true");
+        "argument #1 of abs: true: domain error\n"
+        "2| true\n"
+        "   ^^^^");
     FAILALL("abs\ntrue + 1",
-        "abs(true): domain error\n"
-        "1|>abs\n"
+        "argument #1 of abs: true: domain error\n"
         "2| true + 1\n"
         "   ^^^^    ");
 

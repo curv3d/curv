@@ -132,19 +132,23 @@ struct Class_Name : public Legacy_Function \
         static double call(double x) { return c_name(x); } \
         Shared<Operation> make_expr(Shared<Operation> x) const \
         { \
-            throw Exception(cx, stringify( \
-                "Internal error: ",name()," applied to a reactive value")); \
+            return make<Call_Expr>( \
+                share(*cx.call_frame_.call_phrase_), \
+                make<Constant>( \
+                    cx.call_frame_.call_phrase_->function_, \
+                    Value{share(cx.fun_)}), \
+                x); \
         } \
         static Shared<const String> callstr(Value x) { \
-            return stringify(name(),"(",x,")"); \
+            return stringify(x); \
         } \
-        At_Frame cx; \
-        Scalar_Op(Frame& args) : cx(args) {} \
+        At_Arg cx; \
+        Scalar_Op(Function& fun, Frame& args) : cx(fun,args) {} \
     }; \
     static Unary_Numeric_Array_Op<Scalar_Op> array_op; \
     Value call(Frame& args) override \
     { \
-        return array_op.op(Scalar_Op(args), args[0]); \
+        return array_op.op(Scalar_Op(*this, args), args[0]); \
     } \
     GL_Value gl_call(GL_Frame& f) const override \
     { \
@@ -193,7 +197,7 @@ struct Atan2_Function : public Legacy_Function
         }
         static const char* name() { return "atan2"; }
         static Shared<const String> callstr(Value x, Value y) {
-            return stringify("atan2(",x,",",y,")");
+            return stringify("[",x,",",y,"]");
         }
         At_Arg cx;
         Scalar_Op(Function& fun, Frame& args) : cx(fun, args) {}
@@ -316,7 +320,7 @@ struct Max_Function : public Legacy_Function
         }
         static const char* name() { return "max"; }
         static Shared<const String> callstr(Value x, Value y) {
-            return stringify("max(",x,",",y,")");
+            return stringify("[",x,",",y,"]");
         }
         At_Arg cx;
         Scalar_Op(Function& fun, Frame& args) : cx(fun,args) {}
@@ -357,7 +361,7 @@ struct Min_Function : public Legacy_Function
         }
         static const char* name() { return "min"; }
         static Shared<const String> callstr(Value x, Value y) {
-            return stringify("min(",x,",",y,")");
+            return stringify("[",x,",",y,"]");
         }
         At_Arg cx;
         Scalar_Op(Function& fun, Frame& args) : cx(fun, args) {}
