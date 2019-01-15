@@ -412,6 +412,7 @@ struct Mag_Function : public Legacy_Function
         // Avoids overflow/underflow due to squaring of large/small values.
         // Slower.  https://forum.kde.org/viewtopic.php?f=74&t=62402
         auto list = args[0].to<List>(At_Arg(*this, args));
+        // Fast path: assume we have a list of number, compute a result.
         double sum = 0.0;
         for (auto val : *list) {
             double x = val.get_num_or_nan();
@@ -419,7 +420,35 @@ struct Mag_Function : public Legacy_Function
         }
         if (sum == sum)
             return {sqrt(sum)};
-        throw Exception(At_Arg(*this, args), "domain error");
+        // The computation failed. Second fastest path: assume a mix of numbers
+        // and reactive numbers, try to return a reactive result.
+        Shared<List_Expr> rlist =
+            List_Expr::make(list->size(),args.call_phrase_->arg_);
+        for (unsigned i = 0; i < list->size(); ++i) {
+            Value val = list->at(i);
+            if (val.is_num()) {
+                rlist->at(i) = make<Constant>(args.call_phrase_->arg_, val);
+                continue;
+            }
+            auto r = val.dycast<Reactive_Value>();
+            if (r && r->gltype_ == GL_Type::Num()) {
+                rlist->at(i) = r->expr(*args.call_phrase_->arg_);
+                continue;
+            }
+            rlist = nullptr;
+            break;
+        }
+        if (rlist) {
+            return {make<Reactive_Expression>(GL_Type::Num(),
+                make<Call_Expr>(
+                    share(*args.call_phrase_),
+                    make<Constant>(
+                        args.call_phrase_->function_,
+                        Value{share(*this)}),
+                    rlist))};
+        }
+        throw Exception(At_Arg(*this, args),
+            stringify(args[0],": domain error"));
     }
     GL_Value gl_call(GL_Frame& f) const override
     {
