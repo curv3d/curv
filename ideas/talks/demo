@@ -1,0 +1,12 @@
+parametric {
+    Cyl_Diam :: slider(0, 4) = 1;
+    N :: int_slider(3,12) = 5;
+    Twists :: int_slider(0,10) = 1;
+}
+cylinder{d: Cyl_Diam, h: 4}
+>> move(0,-1,0)
+>> repeat_radial N
+>> twist (tau/N*Twists/4)
+>> rotate{axis: Y_axis, angle: 90*deg}
+//>> bend{}
+>> show_axes
