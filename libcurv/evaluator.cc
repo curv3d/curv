@@ -799,7 +799,7 @@ Range_Expr::eval(Frame& f) const
     } else {
         const char* err =
             (countd == countd ? "too many elements in range" : "domain error");
-        const char* dots = (half_open_ ? "..<" : "..");
+        const char* dots = (half_open_ ? " ..< " : " .. ");
         throw Exception(At_Phrase(*syntax_, f),
             arg3_
                 ? stringify(firstv,dots,lastv," by ",stepv,": ", err)

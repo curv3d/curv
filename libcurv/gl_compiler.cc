@@ -751,8 +751,9 @@ GL_Value If_Else_Op::gl_eval(GL_Frame& f) const
     auto arg2 = arg2_->gl_eval(f);
     auto arg3 = arg3_->gl_eval(f);
     if (arg2.type != arg3.type) {
-        throw Exception(At_GL_Phrase(syntax_, f),
-            "if: type mismatch in 'then' and 'else' arms");
+        throw Exception(At_GL_Phrase(syntax_, f), stringify(
+            "if: type mismatch in 'then' and 'else' arms (",
+            arg2.type, ",", arg3.type, ")"));
     }
     GL_Value result = f.gl.newvalue(arg2.type);
     f.gl.out <<"  "<<arg2.type<<" "<<result
