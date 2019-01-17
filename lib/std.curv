@@ -442,7 +442,11 @@ convex_polygon = {
 
 // box: an axis aligned cuboid.
 box = {
-    call = exact;
+    call : exact;
+    mitred : mitred;
+    exact : exact;
+    ... exact [2,2,2];
+} where (
     mitred a =
         a >> match [
         b :: is_vec3 ->
@@ -494,7 +498,7 @@ box = {
         {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf} ->
             exact((xmin,ymin,zmin),(xmax,ymax,zmax));
         ];
-};
+);
 
 prism n = {
     ... prism_m {d: 2, h: 2},
