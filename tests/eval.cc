@@ -368,8 +368,8 @@ TEST(curv, eval)
     SUCCESS("1..-1", "[]");
     SUCCESS("1..3 by -1", "[]");
     SUCCESS("3..1 by -1", "[3,2,1]");
-    FAILMSG("1..inf", "1..inf: too many elements in range");
-    FAILMSG("1..true", "1..true: domain error");
+    FAILMSG("1..inf", "1 .. inf: too many elements in range");
+    FAILMSG("1..true", "1 .. true: domain error");
 
     // for
     FAILMSG("for", "syntax error: expecting '(' after 'for'");
