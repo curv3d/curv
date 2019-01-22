@@ -1,3 +1,28 @@
+Version 0.4 Planning:
+* new since 0.3 (as of Jan 21):
+  * lib.blend
+  * Torleif: keyboard viewer controls
+  * s-ol: repl autocomplete, repl syntax colouring
+  * predicate assertion patterns and expressions
+  * calls to error now appear in stack trace
+  * parametric records, value pickers, HUD
+  * Curv now requires OpenGL 3.2
+  * `where` operator is now higher precedence than `,` or `;`
+    `a = b where (bindings)` is now legal syntax, is equivalent to
+    `a = (b where (bindings))`.
+  * GL compiler: 1D and 2D arrays of numbers and vectors
+  * json-api
+  * `cylinder` with no argument is `cylinder{d:2,h:2}`.
+  * `box` with no argument defaults to `box[2,2,2]`.
+* what's needed before a release is possible:
+  * Finish implementing reactive values.
+  * Compiler optimization: don't output multiple copies of the same
+    expression. Happens a lot with reactive values.
+  * Finalize syntax for parametric records.
+  * Unit test GL arrays (run unit tests on GPU)
+  * finalize json-api
+  * JSON shape import, a dual feature to json-api output
+
 Big Items (target: Dec 2018)
 * graphical value pickers in the viewer
 * standard libraries for some important techniques
