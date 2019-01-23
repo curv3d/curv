@@ -6,6 +6,7 @@
 #define LIBCURV_GL_COMPILER_H
 
 #include <ostream>
+#include <unordered_map>
 #include <vector>
 #include <libcurv/tail_array.h>
 #include <libcurv/module.h>
@@ -66,17 +67,24 @@ struct GL_Compiler
 {
     std::ostream& out;
     GL_Target target;
-    unsigned valcount;
+    unsigned valcount_;
     System &system_;
+    std::unordered_map<Value, GL_Value, Value::Hash, Value::Hash_Eq> valcache_{};
 
     GL_Compiler(std::ostream& s, GL_Target t, System& sys)
     :
-        out(s), target(t), valcount(0), system_(sys)
+        out(s), target(t), valcount_(0), system_(sys)
     {}
 
     inline GL_Value newvalue(GL_Type type)
     {
-        return GL_Value(valcount++, type);
+        return GL_Value(valcount_++, type);
+    }
+
+    inline void newfunction()
+    {
+        valcount_ = 0;
+        valcache_.clear();
     }
 
     // TODO: maybe add a member function for each operation that we support.

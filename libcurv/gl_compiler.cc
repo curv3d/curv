@@ -80,12 +80,17 @@ gl_put_vec(unsigned size, Value val, const Context& cx, std::ostream& out)
 
 GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
 {
+    auto existing = f.gl.valcache_.find(val);
+    if (existing != f.gl.valcache_.end())
+        return existing->second;
+
     At_GL_Phrase cx(share(syntax), f);
     if (val.is_num()) {
         GL_Value result = f.gl.newvalue(GL_Type::Num());
         double num = val.get_num_unsafe();
         f.gl.out << "  float " << result << " = "
             << dfmt(num, dfmt::EXPR) << ";\n";
+        f.gl.valcache_[val] = result;
         return result;
     }
     if (val.is_bool()) {
@@ -93,6 +98,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
         bool b = val.get_bool_unsafe();
         f.gl.out << "  bool " << result << " = "
             << (b ? "true" : "false") << ";\n";
+        f.gl.valcache_[val] = result;
         return result;
     }
     if (auto list = val.dycast<List>()) {
@@ -123,6 +129,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                     f.gl.out << values[i];
                 }
                 f.gl.out << ");\n";
+                f.gl.valcache_[val] = result;
                 return result;
             }
             // It is a float array.
@@ -144,6 +151,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
             } else {
                 f.gl.out << ");\n";
             }
+            f.gl.valcache_[val] = result;
             return result;
           #if 0
             else {
@@ -202,6 +210,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                     } else {
                         f.gl.out << ");\n";
                     }
+                    f.gl.valcache_[val] = result;
                     return result;
                 }
                 // 2D array of numbers
@@ -229,6 +238,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                 } else {
                     f.gl.out << ");\n";
                 }
+                f.gl.valcache_[val] = result;
                 return result;
             }
             if (auto list3 = list2->front().dycast<List>()) {
@@ -261,6 +271,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                 } else {
                     f.gl.out << ");\n";
                 }
+                f.gl.valcache_[val] = result;
                 return result;
             }
         }
@@ -268,12 +279,15 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
     }
     if (auto re = val.dycast<Reactive_Expression>()) {
         auto f2 = GL_Frame::make(0, f.gl, nullptr, &f, &syntax);
-        return re->expr_->gl_eval(*f2);
+        auto result = re->expr_->gl_eval(*f2);
+        f.gl.valcache_[val] = result;
+        return result;
     }
     if (auto uv = val.dycast<Uniform_Variable>()) {
         GL_Value result = f.gl.newvalue(uv->gltype_);
         f.gl.out << "  " << uv->gltype_
             << " " << result << " = rv_" << uv->name_ << ";\n";
+        f.gl.valcache_[val] = result;
         return result;
     }
 error:

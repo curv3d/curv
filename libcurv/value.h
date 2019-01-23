@@ -360,6 +360,21 @@ public:
     {
         return bits_ == rhs.bits_;
     }
+
+    struct Hash
+    {
+        size_t operator()(Value val) const noexcept
+        {
+            return val.bits_;
+        }
+    };
+    struct Hash_Eq
+    {
+        bool operator()(Value v1, Value v2) const noexcept
+        {
+            return v1.bits_ == v2.bits_;
+        }
+    };
 };
 
 /// Special marker that denotes the absence of a value
