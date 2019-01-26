@@ -37,13 +37,18 @@ struct Reactive_Expression : public Reactive_Value
 {
     Shared<Operation> expr_;
 
-    Reactive_Expression(GL_Type gltype, Shared<Operation> expr)
-    :
-        Reactive_Value(sty_reactive_expression, gltype),
-        expr_(std::move(expr))
-    {}
+    Reactive_Expression(GL_Type, Shared<Operation> expr, const Context&);
 
     virtual Shared<Operation> expr(const Phrase&) override;
+
+    size_t hash() const noexcept
+    {
+        return expr_->hash();
+    }
+    bool hash_eq(const Reactive_Expression& re) const noexcept
+    {
+        return expr_->hash_eq(*re.expr_);
+    }
 };
 
 } // namespace curv

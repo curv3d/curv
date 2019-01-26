@@ -280,7 +280,7 @@ public:
 
     /// Like dynamic_cast for a Value.
     template <class T>
-    inline Shared<T> dycast()
+    inline Shared<T> dycast() const noexcept
     {
         if (is_ref()) {
             T* p = dynamic_cast<T*>(&get_ref_unsafe());
@@ -361,18 +361,21 @@ public:
         return bits_ == rhs.bits_;
     }
 
+    size_t hash() const noexcept;
+    bool hash_eq(Value) const noexcept;
+
     struct Hash
     {
         size_t operator()(Value val) const noexcept
         {
-            return val.bits_;
+            return val.hash();
         }
     };
     struct Hash_Eq
     {
         bool operator()(Value v1, Value v2) const noexcept
         {
-            return v1.bits_ == v2.bits_;
+            return v1.hash_eq(v2);
         }
     };
 };

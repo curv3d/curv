@@ -8,7 +8,7 @@
 #include <libcurv/value.h>
 #include <libcurv/meaning.h>
 #include <libcurv/list.h>
-#include <libcurv/gl_compiler.h>
+#include <libcurv/gl_frame.h>
 
 namespace curv {
 

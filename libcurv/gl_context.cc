@@ -3,6 +3,7 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/analyser.h>
+#include <libcurv/gl_compiler.h>
 #include <libcurv/gl_context.h>
 
 namespace curv {

@@ -7,6 +7,7 @@
 #include <libcurv/definition.h>
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
+#include <libcurv/gl_compiler.h>
 #include <libcurv/gl_context.h>
 
 namespace curv {
@@ -65,7 +66,7 @@ struct Id_Pattern : public Pattern
     virtual void gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee)
     const override
     {
-        GL_Value val = expr.gl_eval(caller);
+        GL_Value val = gl_eval_op(caller, expr);
         // Why am I creating a new var and initializing it with val?
         // This is useless for an immutable binding (the common case), but
         // necessary for a sequential variable that might be reassigned later.
@@ -226,7 +227,7 @@ struct List_Pattern : public Pattern
                 items_[i]->gl_exec(*list->at(i), caller, callee);
         } else {
             this->gl_exec(
-                expr.gl_eval(caller),
+                gl_eval_op(caller, expr),
                 At_GL_Phrase(expr.syntax_, callee),
                 callee);
         }

@@ -5,7 +5,7 @@
 #ifndef LIBCURV_MEANING_H
 #define LIBCURV_MEANING_H
 
-#include <libcurv/gl_compiler.h>
+#include <libcurv/gl_frame.h>
 #include <vector>
 #include <libcurv/tail_array.h>
 #include <libcurv/shared.h>
@@ -85,6 +85,10 @@ struct Operation : public Meaning
 {
     using Meaning::Meaning;
 
+    // pure_ is true if the Operation can be proven to be a referentially
+    // transparent expression whose value does not depend on mutable variables.
+    bool pure_ = false;
+
     // These functions are called during semantic analysis.
     virtual Shared<Operation> to_operation(System&, Frame*);
     virtual Shared<Meaning> call(const Call_Phrase&, Environ&);
@@ -98,6 +102,10 @@ struct Operation : public Meaning
     // These functions are called by the Geometry Compiler.
     virtual GL_Value gl_eval(GL_Frame&) const;
     virtual void gl_exec(GL_Frame&) const;
+
+    // Called when using a pure Operation as a key to an unordered_map.
+    virtual size_t hash() const noexcept;
+    virtual bool hash_eq(const Operation&) const noexcept;
 };
 
 /// `Just_Expression` is an implementation class, inherited by Operation classes
@@ -150,10 +158,17 @@ struct Constant : public Just_Expression
 
     Constant(Shared<const Phrase> syntax, Value v)
     : Just_Expression(std::move(syntax)), value_(std::move(v))
-    {}
+    {
+        // Constant expressions are pure. The tricky case is
+        // Reactive_Expression values, which encapsulate an unevaluated
+        // expression, which is required to be pure.
+        pure_ = true;
+    }
 
     virtual Value eval(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual size_t hash() const noexcept override;
+    virtual bool hash_eq(const Operation&) const noexcept override;
 };
 
 struct Null_Action : public Just_Action
@@ -207,11 +222,16 @@ struct Data_Ref : public Just_Expression
     slot_t slot_;
 
     Data_Ref(Shared<const Phrase> syntax, slot_t slot)
-    : Just_Expression(std::move(syntax)), slot_(slot)
-    {}
+    :
+        Just_Expression(std::move(syntax)),
+        slot_(slot)
+    {
+    }
 
     virtual Value eval(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual size_t hash() const noexcept override;
+    virtual bool hash_eq(const Operation&) const noexcept override;
 };
 
 struct Call_Expr : public Just_Expression
@@ -227,7 +247,9 @@ struct Call_Expr : public Just_Expression
         Just_Expression(std::move(syntax)),
         fun_(std::move(fun)),
         arg_(std::move(arg))
-    {}
+    {
+        pure_ = (fun_->pure_ && arg_->pure_);
+    }
 
     inline const Call_Phrase* call_phrase() const
     {
@@ -238,6 +260,8 @@ struct Call_Expr : public Just_Expression
 
     virtual Value eval(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual size_t hash() const noexcept override;
+    virtual bool hash_eq(const Operation&) const noexcept override;
 };
 
 struct Prefix_Expr_Base : public Just_Expression
@@ -250,7 +274,11 @@ struct Prefix_Expr_Base : public Just_Expression
     :
         Just_Expression(syntax),
         arg_(std::move(arg))
-    {}
+    {
+        pure_ = arg_->pure_;
+    }
+    virtual size_t hash() const noexcept override;
+    virtual bool hash_eq(const Operation&) const noexcept override;
 };
 struct Not_Expr : public Prefix_Expr_Base
 {
@@ -299,7 +327,9 @@ struct Infix_Expr_Base : public Just_Expression
         Just_Expression(syntax),
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2))
-    {}
+    {
+        pure_ = (arg1_->pure_ && arg2_->pure_);
+    }
 };
 struct Predicate_Assertion_Expr : public Infix_Expr_Base
 {
@@ -372,24 +402,32 @@ struct Add_Expr : public Infix_Expr_Base
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual size_t hash() const noexcept override;
+    virtual bool hash_eq(const Operation&) const noexcept override;
 };
 struct Subtract_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual size_t hash() const noexcept override;
+    virtual bool hash_eq(const Operation&) const noexcept override;
 };
 struct Multiply_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual size_t hash() const noexcept override;
+    virtual bool hash_eq(const Operation&) const noexcept override;
 };
 struct Divide_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual size_t hash() const noexcept override;
+    virtual bool hash_eq(const Operation&) const noexcept override;
 };
 struct Power_Expr : public Infix_Expr_Base
 {
@@ -426,9 +464,12 @@ struct List_Expr_Base : public Just_Expression
     List_Expr_Base(Shared<const Phrase> syntax)
     : Just_Expression(std::move(syntax)) {}
 
+    void init(); // call after construction & initialization of array elements
     virtual Value eval(Frame&) const override;
     Shared<List> eval_list(Frame&) const;
     virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual size_t hash() const noexcept override;
+    virtual bool hash_eq(const Operation&) const noexcept override;
     TAIL_ARRAY_MEMBERS(Shared<Operation>)
 };
 using List_Expr = Tail_Array<List_Expr_Base>;
@@ -788,7 +829,9 @@ struct If_Else_Op : public Operation
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2)),
         arg3_(std::move(arg3))
-    {}
+    {
+        pure_ = (arg1_->pure_ && arg2_->pure_ && arg3_->pure_);
+    }
 
     virtual Value eval(Frame&) const override;
     virtual void generate(Frame&, List_Builder&) const override;
@@ -796,6 +839,8 @@ struct If_Else_Op : public Operation
     virtual void exec(Frame&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
+    virtual size_t hash() const noexcept override;
+    virtual bool hash_eq(const Operation&) const noexcept override;
 };
 
 struct Lambda_Expr : public Just_Expression

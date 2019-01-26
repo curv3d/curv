@@ -707,6 +707,18 @@ Comma_Phrase::analyse(Environ& env) const
     throw Exception(At_Token(args_[0].separator_, *this, env), "syntax error");
 }
 
+void
+List_Expr_Base::init()
+{
+    pure_ = true;
+    for (size_t i = 0; i < size(); ++i) {
+        if (!array_[i]->pure_) {
+            pure_ = false;
+            return;
+        }
+    }
+}
+
 Shared<Meaning>
 Paren_Phrase::analyse(Environ& env) const
 {
@@ -717,6 +729,7 @@ Paren_Phrase::analyse(Environ& env) const
         Shared<List_Expr> list = List_Expr::make(items.size(), share(*this));
         for (size_t i = 0; i < items.size(); ++i)
             (*list)[i] = analyse_op(*items[i].expr_, env);
+        list->init();
         return list;
     } else {
         // One of the few places we directly call Phrase::analyse().
@@ -740,10 +753,12 @@ Bracket_Phrase::analyse(Environ& env) const
         Shared<List_Expr> list = List_Expr::make(items.size(), share(*this));
         for (size_t i = 0; i < items.size(); ++i)
             (*list)[i] = analyse_op(*items[i].expr_, env);
+        list->init();
         return list;
     } else {
         Shared<List_Expr> list = List_Expr::make(1, share(*this));
         (*list)[0] = analyse_op(*body_, env);
+        list->init();
         return list;
     }
 }

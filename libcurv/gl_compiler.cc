@@ -3,6 +3,7 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <cctype>
+#include <iostream>
 #include <typeinfo>
 #include <boost/core/demangle.hpp>
 #include <libcurv/context.h>
@@ -16,6 +17,7 @@
 #include <libcurv/meaning.h>
 #include <libcurv/picker.h>
 #include <libcurv/reactive.h>
+#include <libcurv/system.h>
 
 namespace curv {
 
@@ -30,9 +32,27 @@ GL_Value gl_call_unary_numeric(GL_Frame& f, const char* name)
     return result;
 }
 
+// Wrapper for Operation::gl_eval(f), does common subexpression elimination.
+GL_Value gl_eval_op(GL_Frame& f, const Operation& op)
+{
+    if (!op.pure_)
+        return op.gl_eval(f);
+    // 'op' is a uniform expression, consisting of pure operations at interior
+    // nodes and Constants at leaf nodes. There can be no variable references
+    // (eg, no Data_Ref ops), other than uniform variables in reactive values.
+    // What follows is a limited form of common subexpression elimination
+    // which reduces code size when reactive values are used.
+    auto cached = f.gl.opcache_.find(share(op));
+    if (cached != f.gl.opcache_.end())
+        return cached->second;
+    auto val = op.gl_eval(f);
+    f.gl.opcache_[share(op)] = val;
+    return val;
+}
+
 GL_Value gl_eval_expr(GL_Frame& f, const Operation& op, GL_Type type)
 {
-    GL_Value arg = op.gl_eval(f);
+    GL_Value arg = gl_eval_op(f, op);
     if (arg.type != type) {
         throw Exception(At_GL_Phrase(op.syntax_, f),
             stringify("wrong argument type: expected ",type,", got ",arg.type));
@@ -80,9 +100,9 @@ gl_put_vec(unsigned size, Value val, const Context& cx, std::ostream& out)
 
 GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
 {
-    auto existing = f.gl.valcache_.find(val);
-    if (existing != f.gl.valcache_.end())
-        return existing->second;
+    auto cached = f.gl.valcache_.find(val);
+    if (cached != f.gl.valcache_.end())
+        return cached->second;
 
     At_GL_Phrase cx(share(syntax), f);
     if (val.is_num()) {
@@ -279,7 +299,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
     }
     if (auto re = val.dycast<Reactive_Expression>()) {
         auto f2 = GL_Frame::make(0, f.gl, nullptr, &f, &syntax);
-        auto result = re->expr_->gl_eval(*f2);
+        auto result = gl_eval_op(*f2, *re->expr_);
         f.gl.valcache_[val] = result;
         return result;
     }
@@ -316,7 +336,7 @@ GL_Value Constant::gl_eval(GL_Frame& f) const
 
 GL_Value Negative_Expr::gl_eval(GL_Frame& f) const
 {
-    auto x = arg_->gl_eval(f);
+    auto x = gl_eval_op(f, *arg_);
     if (!x.type.is_numeric())
         throw Exception(At_GL_Phrase(arg_->syntax_, f),
             "argument not numeric");
@@ -351,8 +371,8 @@ GL_Value
 gl_arith_expr(GL_Frame& f, const Phrase& syntax,
     const Operation& xexpr, const char* op, const Operation& yexpr)
 {
-    auto x = xexpr.gl_eval(f);
-    auto y = yexpr.gl_eval(f);
+    auto x = gl_eval_op(f, xexpr);
+    auto y = gl_eval_op(f, yexpr);
 
     GL_Type rtype = GL_Type::Bool();
     if (x.type == y.type)
@@ -457,7 +477,7 @@ bool gl_try_constify(Operation& op, GL_Frame& f, Value& val)
 bool gl_try_eval(Operation& op, GL_Frame& f, GL_Value& val)
 {
     try {
-        val = op.gl_eval(f);
+        val = gl_eval_op(f, op);
         return true;
     } catch (Exception&) {
         return false;
@@ -467,7 +487,7 @@ bool gl_try_eval(Operation& op, GL_Frame& f, GL_Value& val)
 GL_Value Block_Op::gl_eval(GL_Frame& f) const
 {
     statements_.gl_exec(f);
-    return body_->gl_eval(f);
+    return gl_eval_op(f, *body_);
 }
 void Block_Op::gl_exec(GL_Frame& f) const
 {
@@ -478,7 +498,7 @@ void Block_Op::gl_exec(GL_Frame& f) const
 GL_Value Preaction_Op::gl_eval(GL_Frame& f) const
 {
     actions_->gl_exec(f);
-    return body_->gl_eval(f);
+    return gl_eval_op(f, *body_);
 }
 void Preaction_Op::gl_exec(GL_Frame& f) const
 {
@@ -504,7 +524,7 @@ void Null_Action::gl_exec(GL_Frame&) const
 void
 Data_Setter::gl_exec(GL_Frame& f) const
 {
-    GL_Value val = expr_->gl_eval(f);
+    GL_Value val = gl_eval_op(f, *expr_);
     if (reassign_)
         f.gl.out << "  "<<f[slot_]<<"="<<val<<";\n";
     else {
@@ -762,8 +782,8 @@ GL_Value If_Else_Op::gl_eval(GL_Frame& f) const
 {
     // TODO: change GL If to use lazy evaluation.
     auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Bool());
-    auto arg2 = arg2_->gl_eval(f);
-    auto arg3 = arg3_->gl_eval(f);
+    auto arg2 = gl_eval_op(f, *arg2_);
+    auto arg3 = gl_eval_op(f, *arg3_);
     if (arg2.type != arg3.type) {
         throw Exception(At_GL_Phrase(syntax_, f), stringify(
             "if: type mismatch in 'then' and 'else' arms (",

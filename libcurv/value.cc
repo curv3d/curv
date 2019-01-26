@@ -6,6 +6,7 @@
 #include <libcurv/dtostr.h>
 #include <libcurv/string.h>
 #include <libcurv/list.h>
+#include <libcurv/reactive.h>
 #include <libcurv/record.h>
 #include <libcurv/exception.h>
 #include <cmath>
@@ -135,6 +136,25 @@ bool Value::equal(Value v, const Context& cx) const
         // the same type.
         return true;
     }
+}
+
+size_t Value::hash() const noexcept
+{
+    auto re = this->dycast<const Reactive_Expression>();
+    if (re) return re->hash();
+    return bits_;
+}
+
+bool Value::hash_eq(Value rhs) const noexcept
+{
+    if (bits_ == rhs.bits_) return true;
+    auto re = this->dycast<const Reactive_Expression>();
+    if (re) {
+        auto re2 = rhs.dycast<const Reactive_Expression>();
+        if (re2)
+            return re->hash_eq(*re2);
+    }
+    return false;
 }
 
 // special marker that denotes the absence of a value

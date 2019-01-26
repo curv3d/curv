@@ -10,6 +10,7 @@
 #include <libcurv/dir_record.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
+#include <libcurv/gl_compiler.h>
 #include <libcurv/gl_context.h>
 #include <libcurv/import.h>
 #include <libcurv/math.h>
@@ -240,7 +241,7 @@ GL_Value gl_minmax(const char* name, Operation& argx, GL_Frame& f)
         std::list<GL_Value> args;
         GL_Type type = GL_Type::Num();
         for (auto op : *list) {
-            auto val = op->gl_eval(f);
+            auto val = gl_eval_op(f, *op);
             args.push_back(val);
             if (val.type == GL_Type::Num())
                 ;
@@ -278,7 +279,7 @@ GL_Value gl_minmax(const char* name, Operation& argx, GL_Frame& f)
         }
         return result;
     } else {
-        auto arg = argx.gl_eval(f);
+        auto arg = gl_eval_op(f, argx);
         auto result = f.gl.newvalue(GL_Type::Num());
         f.gl.out << "  float "<<result<<" = ";
         if (arg.type == GL_Type::Vec(2))
@@ -311,12 +312,15 @@ struct Max_Function : public Legacy_Function
         Shared<Operation> make_expr(
             Shared<Operation> x, Shared<Operation> y) const
         {
+            Shared<List_Expr> args =
+                List_Expr::make({x, y}, cx.call_frame_.call_phrase_->arg_);
+            args->init();
             return make<Call_Expr>(
                 share(*cx.call_frame_.call_phrase_),
                 make<Constant>(
                     cx.call_frame_.call_phrase_->function_,
                     Value{share(cx.fun_)}),
-                List_Expr::make({x, y}, cx.call_frame_.call_phrase_->arg_));
+                args);
         }
         static const char* name() { return "max"; }
         static Shared<const String> callstr(Value x, Value y) {
@@ -352,12 +356,15 @@ struct Min_Function : public Legacy_Function
         Shared<Operation> make_expr(
             Shared<Operation> x, Shared<Operation> y) const
         {
+            Shared<List_Expr> args =
+                List_Expr::make({x, y}, cx.call_frame_.call_phrase_->arg_);
+            args->init();
             return make<Call_Expr>(
                 share(*cx.call_frame_.call_phrase_),
                 make<Constant>(
                     cx.call_frame_.call_phrase_->function_,
                     Value{share(cx.fun_)}),
-                List_Expr::make({x, y}, cx.call_frame_.call_phrase_->arg_));
+                args);
         }
         static const char* name() { return "min"; }
         static Shared<const String> callstr(Value x, Value y) {
@@ -439,13 +446,16 @@ struct Mag_Function : public Legacy_Function
             break;
         }
         if (rlist) {
-            return {make<Reactive_Expression>(GL_Type::Num(),
+            rlist->init();
+            return {make<Reactive_Expression>(
+                GL_Type::Num(),
                 make<Call_Expr>(
                     share(*args.call_phrase_),
                     make<Constant>(
                         args.call_phrase_->function_,
                         Value{share(*this)}),
-                    rlist))};
+                    rlist),
+                At_Arg(*this, args))};
         }
         throw Exception(At_Arg(*this, args),
             stringify(args[0],": domain error"));

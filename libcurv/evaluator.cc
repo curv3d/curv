@@ -284,7 +284,8 @@ If_Else_Op::eval(Frame& f) const
                 make<Constant>(share(*arg1_->syntax_), cond),
                 make<Constant>(share(*arg2_->syntax_), a2),
                 make<Constant>(share(*arg3_->syntax_), a3)
-            ))};
+            ),
+            At_Phrase(*syntax_, f))};
     }
     throw Exception(cx, stringify(cond, " is not a boolean"));
 }
@@ -479,7 +480,8 @@ value_at_path(Value a, const List& path, const Call_Phrase& callph, Frame& f)
                     make<Call_Expr>(
                         share(callph),
                         make<Constant>(callph.function_, a),
-                        make<Constant>(callph.arg_, b)))};
+                        make<Constant>(callph.arg_, b)),
+                    icx)};
             }
             // TODO: reactive: handle more cases
         }

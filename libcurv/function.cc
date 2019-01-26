@@ -5,6 +5,7 @@
 #include <libcurv/function.h>
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
+#include <libcurv/gl_compiler.h>
 #include <libcurv/gl_context.h>
 
 namespace curv {
@@ -70,16 +71,16 @@ const
 {
     auto f2 = GL_Frame::make(nslots_, f.gl, nullptr, &f, call_phrase);
     if (nargs_ == 1)
-        (*f2)[0] = arg.gl_eval(f);
+        (*f2)[0] = gl_eval_op(f, arg);
     else if (auto list = dynamic_cast<List_Expr*>(&arg)) {
         if (list->size() != nargs_)
             throw Exception(At_GL_Phrase(arg.syntax_, f), stringify(
                 "wrong number of arguments (got ",list->size(),
                 ", expected ",nargs_,")"));
         for (size_t i = 0; i < list->size(); ++i)
-            (*f2)[i] = (*list)[i]->gl_eval(f);
+            (*f2)[i] = gl_eval_op(f, *(*list)[i]);
     } else {
-        auto glarg = arg.gl_eval(f);
+        auto glarg = gl_eval_op(f, arg);
         if (!glarg.type.is_vec())
             throw Exception(At_GL_Phrase(arg.syntax_, f),
                 "function call argument is not a vector");
@@ -125,7 +126,7 @@ Closure::gl_call_expr(Operation& arg, const Call_Phrase* cp, GL_Frame& f) const
     // match pattern against argument, store formal parameters in frame
     pattern_->gl_exec(arg, f, *f2);
     // evaluation function body, return result.
-    return expr_->gl_eval(*f2);
+    return gl_eval_op(*f2, *expr_);
 }
 
 void

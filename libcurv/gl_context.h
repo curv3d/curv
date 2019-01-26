@@ -6,7 +6,7 @@
 #define LIBCURV_GL_CONTEXT_H
 
 #include <libcurv/context.h>
-#include <libcurv/gl_compiler.h>
+#include <libcurv/gl_frame.h>
 
 namespace curv {
 

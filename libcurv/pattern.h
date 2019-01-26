@@ -7,7 +7,7 @@
 
 #include <libcurv/value.h>
 #include <libcurv/frame.h>
-#include <libcurv/gl_compiler.h>
+#include <libcurv/gl_frame.h>
 
 namespace curv {
 
@@ -17,6 +17,7 @@ struct Phrase;
 struct Context;
 struct Record;
 struct Closure;
+struct Operation;
 
 struct Pattern : public Shared_Base
 {
