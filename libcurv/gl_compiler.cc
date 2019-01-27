@@ -35,6 +35,7 @@ GL_Value gl_call_unary_numeric(GL_Frame& f, const char* name)
 // Wrapper for Operation::gl_eval(f), does common subexpression elimination.
 GL_Value gl_eval_op(GL_Frame& f, const Operation& op)
 {
+#if 0
     if (!op.pure_)
         return op.gl_eval(f);
     // 'op' is a uniform expression, consisting of pure operations at interior
@@ -48,6 +49,9 @@ GL_Value gl_eval_op(GL_Frame& f, const Operation& op)
     auto val = op.gl_eval(f);
     f.gl.opcache_[share(op)] = val;
     return val;
+#else
+    return op.gl_eval(f);
+#endif
 }
 
 GL_Value gl_eval_expr(GL_Frame& f, const Operation& op, GL_Type type)
@@ -100,9 +104,11 @@ gl_put_vec(unsigned size, Value val, const Context& cx, std::ostream& out)
 
 GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
 {
+#if 0
     auto cached = f.gl.valcache_.find(val);
     if (cached != f.gl.valcache_.end())
         return cached->second;
+#endif
 
     At_GL_Phrase cx(share(syntax), f);
     if (val.is_num()) {
