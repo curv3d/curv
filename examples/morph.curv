@@ -1,7 +1,4 @@
-// morph a white cube into a rainbow torus
-row [
-    for (i in 0..4)
-        morph (i/4)
-            (cube 4 >> colour (.8,.8,.8),
-            torus{major:4, minor:2} >> texture (i_radial 1, sRGB.hue))
-]
+parametric {
+    M :: slider(-1,2) = 0;
+}
+morph M (cube, sphere)
