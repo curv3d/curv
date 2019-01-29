@@ -1,0 +1,218 @@
+Creative Coding: Making Art on a 3D Printer
+===========================================
+Hi, my name is Doug Moen. I'm an aspiring digital artist. I make 3D printed
+art using an open source software tool that I wrote, called Curv.
+
+Today, I'm going to explain what Creative Coding is,
+I'll show you my process, and I'll explain why I wrote Curv.
+
+# Creative Coding
+
+"Creative Coding" is the act of writing a computer program to make art.
+It's fun, it's interesting, and it lets you do things that are hard to
+do in any other artistic medium.
+
+To start with, Creating Coding is a fun and rewarding way to learn computer
+programming. You can write simple programs and get immediate visual feedback,
+and even bugs can lead to interesting results.
+
+If you go deeper, you can find communities of creative coders who share
+their code and ideas, so you can make new projects by building on other
+people's work. It even gets competitive, when people try to make short,
+beautiful programs that produce amazing looking results. Then, the program
+itself becomes part of the art.
+
+# 3D Printed Generative Art
+
+3D printers are cool, but they are even cooler if you can design and print
+your own art.
+I use Creative Coding to make abstract geometric art.
+This is something you can do, too, even if you don't have conventional
+artistic skills.
+
+This (wave at screen) is called Generative Art.
+Instead of drawing a picture,
+you are writing a computer program to generate a picture for you.
+The advantage is that the computer can generate imagery that is way more
+complex and precise than anything you could easily do by hand.
+
+If you add numeric parameters that control what gets generated,
+then it becomes "Parametric Design".
+By tweaking the parameters, you can explore a range of possible designs
+and find the one that best expresses your artistic goals.
+
+# The Curv Project
+
+A few years ago, I played with a number of creative coding platforms.
+The two that impressed me were OpenSCAD and ShaderToy.
+
+OpenSCAD has a simple, powerful language that I found very addictive.
+It lets you build 3D models for 3D printing.
+OpenSCAD is designed for engineering and CAD. I ran into a brick wall when
+I tried to use it to make curved organic shapes and fractals.
+
+ShaderToy is extremely good at making animated organic shapes and fractals.
+However, you can only use it to make demo videos (it doesn't do 3D printing),
+and the programming model is very low level and difficult.
+
+So I decided to create my own language. Curv combines the best features
+of OpenSCAD and ShaderToy. Like OpenSCAD, it has a simple, expressive,
+easy to use language. It is built on top of ShaderToy technology, which
+makes it very powerful.
+
+Two programming interfaces
+--------------------------
+The Curv language has two programming interfaces.
+
+The high level "building blocks" interface is inspired by OpenSCAD.
+It is a library of standard geometric shapes,
+plus operators for transforming and combining shapes.
+These can be plugged together like Lego to make 2D and 3D models.
+
+The low level interface is based on ShaderToy, and is used to define
+new building blocks using the technology of signed distance fields.
+
+Transforming a Shape
+--------------------
+Now let's try some creative coding using Curv building blocks.
+
+The first Curv program you should try is "box".
+You just type the word "box", that is the entire program.
+    box
+
+Let's set the size of the box by specifying X, Y and Z dimensions:
+    box [1,1,5]
+
+Curv has many transformations that modify a shape. Some examples are:
+move, rotate, scale, stretch, bend, twist and colour.
+
+In this demo, I'm going to transform the box into something interesting
+using a chain of transformations, similar to a pipeline in the Unix shell.
+
+First, let's change the colour:
+    box [1,1,5]
+    >> colour red
+This is a pipeline. We take a box, we pipe it into a transformation,
+which is 'colour red', and the result is a red box.
+
+Let's make the colour a parameter, which we control using a colour picker.
+    parametric {
+        C :: colour_picker = red;
+    }
+    box [1,1,5]
+    >> colour C
+Let's adjust the colour ... We are now doing parametric design.
+
+Next, we will deform the box with some additional transformations.
+
+Let's twist it:
+    parametric {
+        C :: colour_picker = red;
+    }
+    box [1,1,5]
+    >> colour C
+    >> twist (90*deg/5)
+The argument of twist is the angle twisted per unit distance along the Z axis.
+Here we are twisting 90 degrees every 5 units.
+The box is 5 units high, so it is a 90 degree twist.
+
+Let's make the twist angle into a parameter:
+    parametric {
+        C :: colour_picker = red;
+        Angle :: slider(0,720) = 90;
+    }
+    box [1,1,5]
+    >> colour C
+    >> twist (Angle*deg/5)
+
+In my next move, I will rotate the object so that it is lying along the
+X axis. This puts it into the correct position for the final transformation.
+To show you what I'm doing, I will turn on the display of the X/Y/Z axes.
+    parametric {
+        C :: colour_picker = red;
+        Angle :: slider(0,720) = 90;
+    }
+    box [1,1,5]
+    >> colour C
+    >> twist (Angle*deg/5)
+    >> rotate {angle: 90*deg, axis: Y_axis}
+    >> show_axes
+
+Finally, I will bend the shape around into a ring:
+    parametric {
+        C :: colour_picker = red;
+        Angle :: slider(0,720) = 90;
+    }
+    box [1,1,5]
+    >> colour C
+    >> twist (Angle*deg/5)
+    >> rotate {angle: 90*deg, axis: Y_axis}
+    >> bend{}
+    //>> show_axes
+The bend operator bends the shape around an imaginary cylinder
+aligned with the Z axis. (I'll get rid of the axis display now.)
+
+But Wait, There's More
+----------------------
+This live demo only touched some of Curv's features.
+There are also operators for making curved organic looking shapes,
+procedurally generated textures,
+fractals, and 2D models.
+
+How Curv Works
+--------------
+I said earlier that Curv is built on ShaderToy technology, which makes it
+powerful.
+
+Curv represents shapes using mathematical functions.
+* The geometry of a shape is represented by a distance function,
+  which maps a point onto the distance to the nearest boundary:
+  a positive number if you are outside the shape, zero if
+  you are on the boundary, and negative if you are inside the shape.
+  Google "signed distance field" for more information.
+* The colour of a shape is represented by a colour function, which maps
+  points onto colours.
+
+In the future, we'll extend this representation to support advanced 3D
+printing. We'll add an alpha component to colours, to represent translucency,
+and we may add a material function, to better support printers that can
+print multiple materials at once, and continuously vary material properties
+in the interior of an object.
+
+Function representation is very powerful.
+* Shapes can be infinitely detailed or infinitely large.
+  A wide range of shapes and colour patterns can be described exactly
+  using mathematics.
+* Distance functions are the preferred representation for fractals,
+  and are the only representation that supports deep zooms into 3D fractals.
+
+Function representation can be directly executed on a GPU,
+and this is how Curv renders shapes and animations on the display.
+
+How to get involved
+-------------------
+Suppose you want to get involved in Creative Coding.
+There are a number of communities and software projects that you can check out.
+
+`processing.org` has one of the oldest and largest communities.
+The Processing language is very general purpose:
+3D printing is not the main focus.
+
+`openscad.org` is a much better choice for 3D printing. It has a high
+level "building blocks" programming interface, which inspired Curv,
+and it has a large, vibrant community.
+
+`mandelbulber.org` is a software tool for making fractals.
+It is a product of the Fractal Forums online community, who have done a lot of
+ground breaking research on creating 3D fractals using signed distance fields.
+
+The demoscene is an international subculture of creative coders who create
+"demos", which are self contained programs that generate animated graphics
+and music. They hold festivals and competitions. `shadertoy.com` is a website
+for coding, running and sharing demos that use GPU shader programs and
+signed distance fields.
+
+`curv3d.org` and `github.com/curv3d` are the Curv websites.
+Curv is a young project with a small community of early adopters.
+We hope that 2019 will be a big year for Curv
+as we move towards a 1.0 release of the software.

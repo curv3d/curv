@@ -1,8 +1,11 @@
 # TODO: Language Changes
 
 Recent Ideas (Jan 2018):
+* for (<pattern> in <list> while <condition>) ...
+  Bounded `while` or early exit `for`. An alternative to a `break` statement,
+  useful for `mandelbrot.curv`.
 * Multipart function definitions, allows recursive piecewise functions,
-  which are wanted for lib.noise.
+  which are wanted for lib.noise. OR: `match` is a keyword, see Match.
 * Parametric Records and Terms
   * Finalize naming scheme for metadata.
     * Rename ParametricRecord metadata fields to constructor, argument.
@@ -709,33 +712,9 @@ Nestable comments for reliably commenting out code blocks.
   a programmer's text editor to comment out blocks of code.
 * Extend Gedit so that it can comment/uncomment code blocks in Curv using `//`.
 
-## Alternate String Escape Sequences
-
-$.  expands to $      instead of $$
-$-  expands to '      instead of '', in a quoted identifier
-$=  expands to "      instead of "", in a quoted string
-
-Earlier proposal, inconsistent with quoted identifiers:
-$'' expands to "      instead of ""
-
-Rationale:
-* Readability: it is easier to visually parse these sequences out of the noise
-  of the surrounding text, without counting characters.
-  . - =, which are not full height characters, are juxtaposed with $, which
-  is a full height character, making the pair easy to parse visually.
-* The escapes are visually similar to the characters they expand to.
-* The characters after the $ are not metacharacters (neither $ nor " nor ').
-  Thus, more suitable for iterated string escaping/unescaping.
-  $... -> $.. -> $. -> $
-  instead of $$$$$$$$ -> $$$$ -> $$ -> $
-  I know this isn't an important use case, but it's still a cool property
-  of the syntax. Becomes more relevant if we add an 'eval' function.
-
-repr "foo" => "$=foo$="
-repr(repr "foo") => "$.=foo$.="
-print "Can't open file $=$filename$=: $error";
-
-Downside is that this is novel syntax. You have to memorize it.
+## Fluent String Escapes
+Here, "fluent" means pronounceable and readable as (close to) English prose.
+Verbosity is not considered a problem for fluent interfaces.
 
 ${dollar}  expands to $    similar to &dollar; in HTML5
 ${quot}    expands to "    similar to &quot; in HTML5
@@ -744,9 +723,47 @@ ${apos}    expands to '    similar to &apos; in HTML5
     print "Can't open file $quot$filename$quot: $error";
     print "Can't open file ${quot}${filename}${quot}: ${error}";
 
-## String Comprehensions
-"${ stmt1; stmt2; stmt3 }"
-eg, "${if (c) "foo"}"
+## Compact String Escapes
+
+$.  expands to $      instead of $$
+$-  expands to '      instead of '', in a quoted identifier
+$=  expands to "      instead of "", in a quoted string
+
+Earlier proposal, inconsistent with quoted identifiers:
+$'' expands to "      instead of ""
+
+It's compact because the characters after the $ are not metacharacters
+(neither $ nor " nor '). Thus, this escape syntax is more suitable for
+iterated string escaping/unescaping. The escape sequences do not grow
+exponentially if you escape an escape sequence, then escape it again.
+    $... -> $.. -> $. -> $
+    instead of $$$$$$$$ -> $$$$ -> $$ -> $
+Also:
+    $..= -> $.= -> $= -> "
+    instead of """""""" -> """" -> "" -> "
+
+Readability: it is easier to visually parse these sequences out of the noise
+of the surrounding text, without counting characters.
+* " characters do not appear in the middle of a quoted string, so it is easier
+  to scan and find the start and end of the string.
+* . - =, which are not full height characters, are juxtaposed with $, which
+  is a full height character, making the pair easy to parse visually.
+* The escapes are visually similar to the characters they expand to.
+
+repr "foo" => "$=foo$="
+repr(repr "foo") => "$.=foo$.="
+print "Can't open file $=$filename$=: $error";
+
+A short Quine:
+    (s->"$s$(s)")"(s->$=$.s$.(s)$=)"
+In the REPL, the output prints as
+    "(s->$=$.s$.(s)$=)$=(s->$.=$..s$..(s)$.=)$="
+instead of
+    (s->"$s$(s)")"(s->""$$s$$(s)"")"
+which prints as 4 characters longer than the compact syntax:
+    "(s->""$$s$$(s)"")""(s->""""$$$$s$$$$(s)"""")"""
+
+The downside is that this is novel syntax. You have to memorize it.
 
 ## Swift-Inspired Fat String Literals
 `#"... #${foo} ..."#` is a fat string literal. The `#` can be replaced with
@@ -755,6 +772,10 @@ Use case: quoting a multiline string containing " and $, without escaping
 each occurrence of " and $. Not as nice if you have a lot of escape sequences.
     #"Can't open "#$filename": #$error"#
     "foo" => #""foo""# => ##"#""foo""#"##
+
+## String Comprehensions
+"${ stmt1; stmt2; stmt3 }"
+eg, "${if (c) "foo"}"
 
 ## Eval
 eval string        -- use std environment

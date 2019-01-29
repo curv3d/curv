@@ -1,0 +1,70 @@
+`match` should be a keyword
+---------------------------
+The `colour` operator is currently defined like this:
+
+    colour c shape = c >> match [
+        c :: is_vec3 ->
+            make_shape {
+                ... shape,
+                colour p : c,
+            };
+        (ifield, cmap) ->
+            make_shape {
+                ... shape,
+                colour : compose(ifield, cmap),
+            };
+        c :: is_shape ->
+            make_shape {
+                ... shape,
+                colour : c.colour,
+            };
+        c :: is_fun ->
+            make_shape {
+                ... shape,
+                colour : c,
+            };
+    ];
+
+But this form is more desirable:
+
+    colour = match [
+        c :: is_vec3 -> shape ->
+            make_shape {
+                ... shape,
+                colour p : c,
+            };
+        (ifield, cmap) -> shape ->
+            make_shape {
+                ... shape,
+                colour : compose(ifield, cmap),
+            };
+        c :: is_shape -> shape ->
+            make_shape {
+                ... shape,
+                colour : c.colour,
+            };
+        c :: is_fun -> shape ->
+            make_shape {
+                ... shape,
+                colour : c,
+            };
+    ];
+
+because:
+ 1. Partial application with a bad first argument reports an error immediately.
+ 2. Using the IDE to query the first argument (presumably) works better.
+
+The second definition doesn't work, the error is "illegal recursive definition".
+To fix this, `match` is special syntax, not an ordinary function binding.
+
+The lambdas in the match argument list should inherit the name 'colour',
+so that partial applications print better and we get better error messages.
+That also requires `match` to be magic.
+
+If a piecewise function definition (like the second form of `colour`)
+is declared `parametric`, then the parametric property should be inherited
+by the lambdas in the match argument list. Also requires `match` to be magic.
+
+In the Picker and Prototypes proposals, perhaps
+    parametric match [...]
+is an anonymous parametric function. This works if `match` is a keyword.

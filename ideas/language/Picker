@@ -18,6 +18,7 @@ Syntax
 ------
 How do we know to trigger this behaviour (assert that the body is a record,
 and generate constructor metadata)?
+
  1. The 'parametric' keyword must be present. In the case of function literals,
     the parametric property can be inherited from the parent phrase,
     see proposal below. E.g.,
@@ -25,6 +26,13 @@ and generate constructor metadata)?
      * parametric let d :: slider(1,10) = 2 in cube d
      * parametric d :: slider(1,10) -> cube d
      * parametric for (d :: slider(1,10) in 1..10) cube d
+
+    This syntax might win if we consider 'parametric records' and 'prototypes'
+    as a more general feature that supports the customizer. We want special
+    syntax to add term/parametric record/prototype metadata to a record.
+    We don't want this to only happen if picker predicates are used (as in
+    syntax 2 below).
+
  2. Special syntax for picker assertions. This syntax triggers the behaviour.
     E.g.,
         d ::: slider(1,10)  // delete a ':' to disable picker GUI for 'd'

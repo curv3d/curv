@@ -1,0 +1,58 @@
+let
+hash2x2 xy = frac([262144, 32768] * sin(dot(xy, [41, 289])));
+
+// Points cannot be closer than sqrt(EPSILON)
+EPSILON = .00001;
+
+// input: 2D coordinate, output: distance to cell border
+voronoi2 xy =
+    let
+        n = floor(xy - 1.5);
+        f = xy - n;
+    in do
+        // first pass: distance to cell centre
+        var mr := [0,0];
+        var md := 8;
+        for (j in 0 .. 3)
+            for (i in 0 .. 3) do
+                var g := [i,j];
+                var o := hash2x2(n + g);
+                var r := g + o - f;
+                var d := dot(r,r);
+            in
+                if (d < md) (
+                    md := d;
+                    mr := r;
+                );
+        // second pass: distance to border
+        md := 8.0;
+        for (j in 0 .. 3)
+            for (i in 0 .. 3) do
+                var g := [i,j];
+                var o := hash2x2( n + g );
+                var r := g + o - f;
+            in (
+                if (dot(mr-r,mr-r)>EPSILON) // skip the same cell
+                    //md := smooth_min(md, dot(0.5*(mr+r), normalize(r-mr)),.2);
+                    md := min(md, dot(0.5*(mr+r), normalize(r-mr)));
+            );
+    in /*sqrt*/ md;
+
+v2d = make_shape {
+    dist(x,y,z,t) = voronoi2(x,y);
+    is_2d = true;
+};
+
+in
+v2d >> pancake .1 >> show_dist
+
+/*
+make_texture ((x,y,z,t)->
+    let d = voronoi(x,y);
+        interior = sRGB[.2,.8,1];
+        border = sRGB[.2,.8,.4];
+    in lerp(
+        d * 2 * (sin(d*12)*.1 + .9) * interior,
+        border,
+        smoothstep(.08,.06,d)))
+ */

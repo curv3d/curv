@@ -1,0 +1,2 @@
+(s->strcat[s,repr s])"(s->strcat[s,repr s])"
+//(s->"$s$(s)")"(s->""$$s$$(s)"")"
