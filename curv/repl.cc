@@ -42,7 +42,7 @@ extern "C" {
 #include <libcurv/source.h>
 #include <libcurv/system.h>
 
-#include <libcurv/geom/shape.h>
+#include <libcurv/shape.h>
 #include <libcurv/geom/viewer/viewer.h>
 
 View_Server view_server;
@@ -214,7 +214,7 @@ void repl(curv::System* sys)
                     static curv::Symbol lastval_key = "_";
                     names[lastval_key] =
                         curv::make<curv::Builtin_Value>(den.second->front());
-                    curv::geom::Shape_Program shape{prog};
+                    curv::Shape_Program shape{prog};
                     if (shape.recognize(den.second->front())) {
                         print_shape(shape);
                         view_server.display_shape(shape);

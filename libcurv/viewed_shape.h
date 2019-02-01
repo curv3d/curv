@@ -2,16 +2,15 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef LIBCURV_GEOM_VIEWED_SHAPE_H
-#define LIBCURV_GEOM_VIEWED_SHAPE_H
+#ifndef LIBCURV_VIEWED_SHAPE_H
+#define LIBCURV_VIEWED_SHAPE_H
 
 #include <libcurv/picker.h>
-#include <libcurv/geom/frag.h>
-#include <libcurv/geom/shape.h>
+#include <libcurv/frag.h>
+#include <libcurv/shape.h>
 #include <tsl/ordered_map.h>
 
 namespace curv {
-namespace geom {
 
 // Viewed_Shape is a representation of a Shape that is directly usable by
 // the Viewer. It encodes the frag program, uniform variables, and pickers.
@@ -64,5 +63,5 @@ struct Viewed_Shape
     void write_json(std::ostream&) const;
 };
 
-}} // namespace
+} // namespace
 #endif // header guard

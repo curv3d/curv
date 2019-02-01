@@ -2,16 +2,16 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/geom/frag.h>
+#include <libcurv/frag.h>
 
-#include <libcurv/geom/glsl.h>
-#include <libcurv/geom/shape.h>
+#include <libcurv/glsl.h>
+#include <libcurv/shape.h>
 
 #include <libcurv/die.h>
 #include <libcurv/dtostr.h>
 #include <libcurv/function.h>
 
-namespace curv { namespace geom {
+namespace curv {
 
 void export_frag_2d(const Shape_Program&, const Frag_Export&, std::ostream&);
 void export_frag_3d(const Shape_Program&, const Frag_Export&, std::ostream&);
@@ -347,4 +347,4 @@ void export_frag_3d(
        ;
 }
 
-}} // namespaces
+} // namespaces

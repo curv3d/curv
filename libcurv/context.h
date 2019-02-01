@@ -135,7 +135,7 @@ struct At_Phrase : public At_Syntax
 
 struct At_Program : public At_Token
 {
-    // works with curv::Program or curv::geom::Shape_Program
+    // works with curv::Program or curv::Shape_Program
     template <class PROGRAM>
     explicit At_Program(const PROGRAM& prog)
     :

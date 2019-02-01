@@ -5,11 +5,10 @@
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/json.h>
-#include <libcurv/geom/viewed_shape.h>
+#include <libcurv/viewed_shape.h>
 #include <iostream>
 
 namespace curv {
-namespace geom {
 
 Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
 {
@@ -140,4 +139,4 @@ Viewed_Shape::write_json(std::ostream& out) const
     out << "]";
 }
 
-}} // namespace
+} // namespace

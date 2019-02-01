@@ -58,6 +58,7 @@ struct Record : public Ref_Value
             if (value_.eq(missing)) load_value(cx);
             return value_;
         }
+        Value maybe_value() { return value_; }
         virtual void next() = 0;
     };
     virtual std::unique_ptr<Iter> iter() const = 0;

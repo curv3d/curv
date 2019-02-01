@@ -6,6 +6,7 @@
 #define LIBCURV_VALUE_H
 
 #include <libcurv/shared.h>
+#include <cstdint>
 #include <ostream>
 
 namespace curv {

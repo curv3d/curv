@@ -4,7 +4,7 @@
 
 #include <libcurv/geom/png.h>
 
-#include <libcurv/geom/shape.h>
+#include <libcurv/shape.h>
 #include <libcurv/geom/viewer/viewer.h>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>

@@ -92,11 +92,15 @@ file(GLOB Src "curv/*.c" "curv/*.cc")
 add_executable(curv ${Src})
 target_link_libraries(curv PUBLIC libcurv_geom libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion boost_iostreams boost_filesystem boost_system openvdb_static Half tbb dl pthread)
 
+file(GLOB CurvcSrc "curvc/*.cc")
+add_executable(curvc ${CurvcSrc})
+target_link_libraries(curvc -static libcurv boost_filesystem boost_system double-conversion)
+
 file(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})
 target_link_libraries(tester PUBLIC gtest pthread libcurv double-conversion boost_iostreams boost_filesystem boost_system)
 
-set_property(TARGET curv libcurv libcurv_geom tester PROPERTY CXX_STANDARD 14)
+set_property(TARGET curv curvc libcurv libcurv_geom tester PROPERTY CXX_STANDARD 14)
 
 set(gccflags "-Wall -Wno-unused-result" )
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${gccflags}" )
@@ -106,7 +110,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${sanitize} -O1 -Werror" )
 add_custom_target(tests tester WORKING_DIRECTORY ../tests)
 add_dependencies(tests tester curv)
 
-install(TARGETS curv RUNTIME DESTINATION bin)
+install(TARGETS curv curvc RUNTIME DESTINATION bin)
 install(FILES lib/std.curv DESTINATION lib)
 install(DIRECTORY lib/curv DESTINATION lib)
 install(FILES lib/curv.lang DESTINATION share/gtksourceview-3.0/language-specs)

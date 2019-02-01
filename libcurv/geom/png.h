@@ -5,14 +5,14 @@
 #ifndef LIBCURV_GEOM_PNG_H
 #define LIBCURV_GEOM_PNG_H
 
-#include <libcurv/geom/frag.h>
+#include <libcurv/frag.h>
 #include <glm/vec2.hpp>
 
 namespace curv {
 struct Output_File;
+struct Shape_Program;
 
 namespace geom {
-struct Shape_Program;
 
 // Image export parameters
 struct Image_Export : public Frag_Export

@@ -11,7 +11,7 @@ extern "C" {
 #include <fstream>
 
 #include "export.h"
-#include "progdir.h"
+#include <libcurv/progdir.h>
 #include "repl.h"
 #include "shapes.h"
 #include "livemode.h"
@@ -25,7 +25,7 @@ extern "C" {
 #include <libcurv/source.h>
 #include <libcurv/system.h>
 #include <libcurv/geom/import.h>
-#include <libcurv/geom/shape.h>
+#include <libcurv/shape.h>
 #include <libcurv/geom/tempfile.h>
 #include <libcurv/geom/viewer/viewer.h>
 
@@ -311,7 +311,7 @@ main(int argc, char** argv)
             exporter->second.call(value, prog, oparams, ofile);
             ofile.commit();
         } else {
-            curv::geom::Shape_Program shape{prog};
+            curv::Shape_Program shape{prog};
             if (shape.recognize(value)) {
                 print_shape(shape);
                 curv::geom::viewer::Viewer viewer(viewer_config);

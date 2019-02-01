@@ -2,15 +2,15 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef LIBCURV_GEOM_SHAPE_H
-#define LIBCURV_GEOM_SHAPE_H
+#ifndef LIBCURV_SHAPE_H
+#define LIBCURV_SHAPE_H
 
-#include <libcurv/gl_compiler.h>
 #include <libcurv/frame.h>
+#include <libcurv/gl_compiler.h>
 #include <libcurv/location.h>
-#include <cmath>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <cmath>
 
 namespace curv {
 
@@ -19,8 +19,6 @@ struct Context;
 struct System;
 struct Program;
 struct Phrase;
-
-namespace geom {
 
 struct Viewed_Shape;
 using Vec3 = glm::dvec3;
@@ -109,5 +107,5 @@ struct Shape_Program final : public Shape
     Vec3 colour(double x, double y, double z, double t);
 };
 
-}} // namespace
+} // namespace
 #endif // header guard

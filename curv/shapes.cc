@@ -10,7 +10,7 @@
 
 void
 print_shape(
-    const curv::geom::Shape_Program& shape)
+    const curv::Shape_Program& shape)
 {
     if (shape.is_2d_) std::cerr << "2D";
     if (shape.is_2d_ && shape.is_3d_) std::cerr << "/";

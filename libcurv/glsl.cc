@@ -2,10 +2,10 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/geom/glsl.h>
+#include <libcurv/glsl.h>
 
-#include <libcurv/geom/shape.h>
-#include <libcurv/geom/viewed_shape.h>
+#include <libcurv/shape.h>
+#include <libcurv/viewed_shape.h>
 
 #include <libcurv/context.h>
 #include <libcurv/die.h>
@@ -15,7 +15,7 @@
 #include <libcurv/gl_compiler.h>
 #include <libcurv/gl_context.h>
 
-namespace curv { namespace geom {
+namespace curv {
 
 void glsl_function_export(const Shape_Program& shape, std::ostream& out)
 {
@@ -50,4 +50,4 @@ void glsl_function_export(const Shape_Program& shape, std::ostream& out)
         "}\n";
 }
 
-}} // namespace
+} // namespace

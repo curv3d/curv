@@ -2,17 +2,18 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/geom/shape.h>
+#include <libcurv/shape.h>
 
-#include <libcurv/exception.h>
 #include <libcurv/context.h>
-#include <libcurv/gl_context.h>
-#include <libcurv/function.h>
+#include <libcurv/exception.h>
 #include <libcurv/frame.h>
+#include <libcurv/function.h>
+#include <libcurv/gl_context.h>
 #include <libcurv/program.h>
+
 #include <cmath>
 
-namespace curv { namespace geom {
+namespace curv {
 
 Shape_Program::Shape_Program(
     Program& prog)
@@ -207,4 +208,4 @@ Shape_Program::colour(double x, double y, double z, double t)
                  cval->at(2).to_num(cx) };
 }
 
-}} // namespace
+} // namespace

@@ -24,7 +24,7 @@ extern "C" {
 #include <libcurv/program.h>
 #include <libcurv/source.h>
 #include <libcurv/system.h>
-#include <libcurv/geom/shape.h>
+#include <libcurv/shape.h>
 
 View_Server live_view_server;
 
@@ -82,7 +82,7 @@ poll_file(curv::System* sys, const char* editor, const char* filename)
                 curv::Program prog{std::move(file), *sys};
                 prog.compile();
                 auto value = prog.eval();
-                curv::geom::Shape_Program shape{prog};
+                curv::Shape_Program shape{prog};
                 if (shape.recognize(value)) {
                     print_shape(shape);
                     live_view_server.display_shape(shape);

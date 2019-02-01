@@ -10,15 +10,16 @@
 #ifndef LIBCURV_GEOM_VIEWER_VIEWER_H
 #define LIBCURV_GEOM_VIEWER_VIEWER_H
 
-#include <libcurv/geom/frag.h>
-#include <libcurv/geom/viewed_shape.h>
+#include <libcurv/frag.h>
+#include <libcurv/viewed_shape.h>
 #include "shader.h"
 #include "vbo.h"
 #include <glm/glm.hpp>
 
-namespace curv { namespace geom {
-
+namespace curv {
 struct Shape_Program;
+
+namespace geom {
 
 namespace viewer {
 

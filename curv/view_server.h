@@ -9,7 +9,7 @@
 #include <condition_variable>
 
 #include <libcurv/die.h>
-#include <libcurv/geom/viewed_shape.h>
+#include <libcurv/viewed_shape.h>
 #include <libcurv/geom/viewer/viewer.h>
 
 #include "shapes.h"
@@ -35,7 +35,7 @@ private:
     Request request_;
     std::mutex request_mutex_;
     std::condition_variable request_condition_;
-    curv::geom::Viewed_Shape request_shape_;
+    curv::Viewed_Shape request_shape_;
     struct Message {
         View_Server& server_;
         std::unique_lock<std::mutex> lock_;
@@ -109,9 +109,9 @@ public:
     // Called by client thread. If the viewer window is not open, then open it,
     // and display the shape. Otherwise, change the shape displayed in the
     // current viewer window.
-    void display_shape(const curv::geom::Shape_Program& shape)
+    void display_shape(const curv::Shape_Program& shape)
     {
-        request_shape_ = curv::geom::Viewed_Shape(shape, view_.config_);
+        request_shape_ = curv::Viewed_Shape(shape, view_.config_);
         send(Request::k_display_shape);
         //assert(request_shape_.empty());
     }
