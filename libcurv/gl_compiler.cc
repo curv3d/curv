@@ -29,7 +29,7 @@ GL_Value gl_call_unary_numeric(GL_Frame& f, const char* name)
         throw Exception(At_GL_Arg(0, f),
             stringify(name,": argument is not numeric"));
     auto result = f.gl.newvalue(arg.type);
-    f.gl.out<<"  "<<arg.type<<" "<<result<<" = "<<name<<"("<<arg<<");\n";
+    f.gl.out()<<"  "<<arg.type<<" "<<result<<" = "<<name<<"("<<arg<<");\n";
     return result;
 }
 
@@ -115,7 +115,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
     if (val.is_num()) {
         GL_Value result = f.gl.newvalue(GL_Type::Num());
         double num = val.get_num_unsafe();
-        f.gl.out << "  float " << result << " = "
+        f.gl.out() << "  float " << result << " = "
             << dfmt(num, dfmt::EXPR) << ";\n";
         f.gl.valcache_[val] = result;
         return result;
@@ -123,7 +123,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
     if (val.is_bool()) {
         GL_Value result = f.gl.newvalue(GL_Type::Bool());
         bool b = val.get_bool_unsafe();
-        f.gl.out << "  bool " << result << " = "
+        f.gl.out() << "  bool " << result << " = "
             << (b ? "true" : "false") << ";\n";
         f.gl.valcache_[val] = result;
         return result;
@@ -147,36 +147,36 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                     {}, {}, GL_Type::Vec(2), GL_Type::Vec(3), GL_Type::Vec(4)
                 };
                 GL_Value result = f.gl.newvalue(types[list->size()]);
-                f.gl.out << "  " << result.type << " " << result
+                f.gl.out() << "  " << result.type << " " << result
                     << " = " << result.type << "(";
                 bool first = true;
                 for (unsigned i = 0; i < list->size(); ++i) {
-                    if (!first) f.gl.out << ",";
+                    if (!first) f.gl.out() << ",";
                     first = false;
-                    f.gl.out << values[i];
+                    f.gl.out() << values[i];
                 }
-                f.gl.out << ");\n";
+                f.gl.out() << ");\n";
                 f.gl.valcache_[val] = result;
                 return result;
             }
             // It is a float array.
             GL_Value result = f.gl.newvalue(GL_Type::Num(list->size()));
             if (f.gl.target == GL_Target::cpp) {
-                f.gl.out << "  static const float "<<result<<"[] = {";
+                f.gl.out() << "  static const float "<<result<<"[] = {";
             } else {
-                f.gl.out << "  const " << result.type << " " << result
+                f.gl.out() << "  const " << result.type << " " << result
                     << " = " << result.type << "(";
             }
             bool first = true;
             for (unsigned i = 0; i < list->size(); ++i) {
-                if (!first) f.gl.out << ",";
+                if (!first) f.gl.out() << ",";
                 first = false;
-                f.gl.out << dfmt(list->at(i).to_num(cx), dfmt::EXPR);
+                f.gl.out() << dfmt(list->at(i).to_num(cx), dfmt::EXPR);
             }
             if (f.gl.target == GL_Target::cpp) {
-                f.gl.out << "};\n";
+                f.gl.out() << "};\n";
             } else {
-                f.gl.out << ");\n";
+                f.gl.out() << ");\n";
             }
             f.gl.valcache_[val] = result;
             return result;
@@ -187,21 +187,21 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                     {}, {}, GL_Type::Mat(2), GL_Type::Mat(3), GL_Type::Mat(4)
                 };
                 GL_Value result = f.gl.newvalue(types[list->size()]);
-                f.gl.out << "  " << result.type << " " << result
+                f.gl.out() << "  " << result.type << " " << result
                     << " = " << result.type << "(";
                 bool first = true;
                 for (size_t i = 0; i < list->size(); ++i) {
                     for (size_t j = 0; j < list->size(); ++j) {
                         double elem;
                         if (get_mat(*list, j, i, elem)) {
-                            if (!first) f.gl.out << ",";
+                            if (!first) f.gl.out() << ",";
                             first = false;
-                            f.gl.out << dfmt(elem, dfmt::EXPR);
+                            f.gl.out() << dfmt(elem, dfmt::EXPR);
                         } else
                             goto error;
                     }
                 }
-                f.gl.out << ");\n";
+                f.gl.out() << ");\n";
                 return result;
             }
           #endif
@@ -219,23 +219,23 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                         f.gl.newvalue(
                             GL_Type::Vec(list2->size(), list->size()));
                     if (f.gl.target == GL_Target::cpp) {
-                        f.gl.out
+                        f.gl.out()
                             << "  static const " << GL_Type::Vec(list2->size())
                             << " "<<result<<"[] = {";
                     } else {
-                        f.gl.out << "  const " << result.type << " " << result
+                        f.gl.out() << "  const " << result.type << " " << result
                             << " = " << result.type << "(";
                     }
                     bool first = true;
                     for (unsigned i = 0; i < list->size(); ++i) {
-                        if (!first) f.gl.out << ",";
+                        if (!first) f.gl.out() << ",";
                         first = false;
-                        gl_put_vec(list2->size(), list->at(i), cx, f.gl.out);
+                        gl_put_vec(list2->size(), list->at(i), cx, f.gl.out());
                     }
                     if (f.gl.target == GL_Target::cpp) {
-                        f.gl.out << "};\n";
+                        f.gl.out() << "};\n";
                     } else {
-                        f.gl.out << ");\n";
+                        f.gl.out() << ");\n";
                     }
                     f.gl.valcache_[val] = result;
                     return result;
@@ -244,9 +244,9 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                 GL_Value result =
                     f.gl.newvalue(GL_Type::Num(list->size(), list2->size()));
                 if (f.gl.target == GL_Target::cpp) {
-                    f.gl.out << "  static const float " <<result<<"[] = {";
+                    f.gl.out() << "  static const float " <<result<<"[] = {";
                 } else {
-                    f.gl.out << "  const " << result.type << " " << result
+                    f.gl.out() << "  const " << result.type << " " << result
                         << " = " << result.type << "(";
                 }
                 bool first = true;
@@ -255,15 +255,15 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                     if (l2->size() != list2->size())
                         goto error;
                     for (unsigned j = 0; j < l2->size(); ++j) {
-                        if (!first) f.gl.out << ",";
+                        if (!first) f.gl.out() << ",";
                         first = false;
-                        gl_put_num(l2->at(j), cx, f.gl.out);
+                        gl_put_num(l2->at(j), cx, f.gl.out());
                     }
                 }
                 if (f.gl.target == GL_Target::cpp) {
-                    f.gl.out << "};\n";
+                    f.gl.out() << "};\n";
                 } else {
-                    f.gl.out << ");\n";
+                    f.gl.out() << ");\n";
                 }
                 f.gl.valcache_[val] = result;
                 return result;
@@ -275,11 +275,11 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                     f.gl.newvalue(GL_Type::Vec(list3->size(),
                         list->size(), list2->size()));
                 if (f.gl.target == GL_Target::cpp) {
-                    f.gl.out << "  static const "
+                    f.gl.out() << "  static const "
                         << GL_Type::Vec(list3->size())
                         << " " <<result<<"[] = {";
                 } else {
-                    f.gl.out << "  const " << result.type << " " << result
+                    f.gl.out() << "  const " << result.type << " " << result
                         << " = " << result.type << "(";
                 }
                 bool first = true;
@@ -288,15 +288,15 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                     if (l2->size() != list2->size())
                         goto error;
                     for (unsigned j = 0; j < l2->size(); ++j) {
-                        if (!first) f.gl.out << ",";
+                        if (!first) f.gl.out() << ",";
                         first = false;
-                        gl_put_vec(list3->size(), l2->at(j), cx, f.gl.out);
+                        gl_put_vec(list3->size(), l2->at(j), cx, f.gl.out());
                     }
                 }
                 if (f.gl.target == GL_Target::cpp) {
-                    f.gl.out << "};\n";
+                    f.gl.out() << "};\n";
                 } else {
-                    f.gl.out << ");\n";
+                    f.gl.out() << ");\n";
                 }
                 f.gl.valcache_[val] = result;
                 return result;
@@ -312,7 +312,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
     }
     if (auto uv = val.dycast<Uniform_Variable>()) {
         GL_Value result = f.gl.newvalue(uv->gltype_);
-        f.gl.out << "  " << uv->gltype_
+        f.gl.out() << "  " << uv->gltype_
             << " " << result << " = rv_" << uv->name_ << ";\n";
         f.gl.valcache_[val] = result;
         return result;
@@ -348,26 +348,26 @@ GL_Value Negative_Expr::gl_eval(GL_Frame& f) const
         throw Exception(At_GL_Phrase(arg_->syntax_, f),
             "argument not numeric");
     GL_Value result = f.gl.newvalue(x.type);
-    f.gl.out<<"  "<<x.type<<" "<<result<<" = -"<<x<< ";\n";
+    f.gl.out()<<"  "<<x.type<<" "<<result<<" = -"<<x<< ";\n";
     return result;
 }
 
 void gl_put_as(GL_Frame& f, GL_Value val, const Context& cx, GL_Type type)
 {
     if (val.type == type) {
-        f.gl.out << val;
+        f.gl.out() << val;
         return;
     }
     if (val.type == GL_Type::Num()) {
         if (gl_type_count(type) > 1) {
-            f.gl.out << type << "(";
+            f.gl.out() << type << "(";
             bool first = true;
             for (unsigned i = 0; i < gl_type_count(type); ++i) {
-                if (!first) f.gl.out << ",";
-                f.gl.out << val;
+                if (!first) f.gl.out() << ",";
+                f.gl.out() << val;
                 first = false;
             }
-            f.gl.out << ")";
+            f.gl.out() << ")";
             return;
         }
     }
@@ -393,19 +393,19 @@ gl_arith_expr(GL_Frame& f, const Phrase& syntax,
             stringify("GL domain error: ",x.type,op,y.type));
 
     GL_Value result = f.gl.newvalue(rtype);
-    f.gl.out <<"  "<<rtype<<" "<<result<<" = ";
+    f.gl.out() <<"  "<<rtype<<" "<<result<<" = ";
     if (isalpha(*op)) {
-        f.gl.out << op << "(";
+        f.gl.out() << op << "(";
         gl_put_as(f, x, At_GL_Phrase(xexpr.syntax_, f), rtype);
-        f.gl.out << ",";
+        f.gl.out() << ",";
         gl_put_as(f, y, At_GL_Phrase(yexpr.syntax_, f), rtype);
-        f.gl.out << ")";
+        f.gl.out() << ")";
     } else {
         gl_put_as(f, x, At_GL_Phrase(xexpr.syntax_, f), rtype);
-        f.gl.out << op;
+        f.gl.out() << op;
         gl_put_as(f, y, At_GL_Phrase(yexpr.syntax_, f), rtype);
     }
-    f.gl.out << ";\n";
+    f.gl.out() << ";\n";
     return result;
 }
 
@@ -533,10 +533,10 @@ Data_Setter::gl_exec(GL_Frame& f) const
 {
     GL_Value val = gl_eval_op(f, *expr_);
     if (reassign_)
-        f.gl.out << "  "<<f[slot_]<<"="<<val<<";\n";
+        f.gl.out() << "  "<<f[slot_]<<"="<<val<<";\n";
     else {
         GL_Value var = f.gl.newvalue(val.type);
-        f.gl.out << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
+        f.gl.out() << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
         f[slot_] = var;
     }
 }
@@ -581,23 +581,23 @@ GL_Value gl_eval_index_expr(GL_Value array, Operation& index, GL_Frame& f)
                     At_Index(i, At_GL_Phrase(index.syntax_, f)));
             }
             GL_Value result = f.gl.newvalue(GL_Type::Vec(list->size()));
-            f.gl.out << "  " << result.type << " "<< result<<" = ";
+            f.gl.out() << "  " << result.type << " "<< result<<" = ";
             if (f.gl.target == GL_Target::glsl) {
                 // use GLSL swizzle syntax: v.xyz
-                f.gl.out <<array<<"."<<swizzle;
+                f.gl.out() <<array<<"."<<swizzle;
             } else {
                 // fall back to a vector constructor: vec3(v.x,v.y,v.z)
-                f.gl.out << result.type << "(";
+                f.gl.out() << result.type << "(";
                 bool first = true;
                 for (size_t i = 0; i < list->size(); ++i) {
                     if (!first)
-                        f.gl.out << ",";
+                        f.gl.out() << ",";
                     first = false;
-                    f.gl.out << array << "." << swizzle[i];
+                    f.gl.out() << array << "." << swizzle[i];
                 }
-                f.gl.out << ")";
+                f.gl.out() << ")";
             }
-            f.gl.out <<";\n";
+            f.gl.out() <<";\n";
             return result;
         }
         const char* arg2 = nullptr;
@@ -616,7 +616,7 @@ GL_Value gl_eval_index_expr(GL_Value array, Operation& index, GL_Frame& f)
                     array.type.count()-1));
 
         GL_Value result = f.gl.newvalue(GL_Type::Num());
-        f.gl.out << "  float "<<result<<" = "<<array<<arg2<<";\n";
+        f.gl.out() << "  float "<<result<<" = "<<array<<arg2<<";\n";
         return result;
     }
     // An array of numbers, indexed with a number.
@@ -627,7 +627,7 @@ GL_Value gl_eval_index_expr(GL_Value array, Operation& index, GL_Frame& f)
     }
     auto ix = gl_eval_expr(f, index, GL_Type::Num());
     GL_Value result = f.gl.newvalue(array.type.abase());
-    f.gl.out << "  " << result.type << " " << result << " = "
+    f.gl.out() << "  " << result.type << " " << result << " = "
              << array << "[int(" << ix << ")];\n";
     return result;
 }
@@ -644,7 +644,7 @@ GL_Value gl_eval_index2_expr(
         auto ix1 = gl_eval_expr(f, op_ix1, GL_Type::Num());
         auto ix2 = gl_eval_expr(f, op_ix2, GL_Type::Num());
         GL_Value result = f.gl.newvalue({array.type.base_type_});
-        f.gl.out << "  " << result.type << " " << result << " = " << array
+        f.gl.out() << "  " << result.type << " " << result << " = " << array
                  << "[int(" << ix1 << ")*" << array.type.dim1_
                  << "+" << "int(" << ix2 << ")];\n";
         return result;
@@ -663,7 +663,7 @@ GL_Value gl_eval_index3_expr(
         auto ix2 = gl_eval_expr(f, op_ix2, GL_Type::Num());
         auto ix3 = gl_eval_expr(f, op_ix3, GL_Type::Num());
         GL_Value result = f.gl.newvalue(GL_Type::Num());
-        f.gl.out << "  " << result.type << " " << result << " = " << array
+        f.gl.out() << "  " << result.type << " " << result << " = " << array
                  << "[int(" << ix1 << ")*" << array.type.dim1_
                  << "+" << "int(" << ix2 << ")][int(" << ix3 << ")];\n";
         return result;
@@ -734,7 +734,7 @@ GL_Value List_Expr_Base::gl_eval(GL_Frame& f) const
         auto e1 = gl_eval_expr(f, *(*this)[0], GL_Type::Num());
         auto e2 = gl_eval_expr(f, *(*this)[1], GL_Type::Num());
         GL_Value result = f.gl.newvalue(GL_Type::Vec(2));
-        f.gl.out << "  vec2 "<<result<<" = vec2("<<e1<<","<<e2<<");\n";
+        f.gl.out() << "  vec2 "<<result<<" = vec2("<<e1<<","<<e2<<");\n";
         return result;
     }
     if (this->size() == 3) {
@@ -742,7 +742,7 @@ GL_Value List_Expr_Base::gl_eval(GL_Frame& f) const
         auto e2 = gl_eval_expr(f, *(*this)[1], GL_Type::Num());
         auto e3 = gl_eval_expr(f, *(*this)[2], GL_Type::Num());
         GL_Value result = f.gl.newvalue(GL_Type::Vec(3));
-        f.gl.out << "  vec3 "<<result<<" = vec3("
+        f.gl.out() << "  vec3 "<<result<<" = vec3("
             <<e1<<","<<e2<<","<<e3<<");\n";
         return result;
     }
@@ -752,7 +752,7 @@ GL_Value List_Expr_Base::gl_eval(GL_Frame& f) const
         auto e3 = gl_eval_expr(f, *(*this)[2], GL_Type::Num());
         auto e4 = gl_eval_expr(f, *(*this)[3], GL_Type::Num());
         GL_Value result = f.gl.newvalue(GL_Type::Vec(4));
-        f.gl.out << "  vec4 "<<result<<" = vec4("
+        f.gl.out() << "  vec4 "<<result<<" = vec4("
             <<e1<<","<<e2<<","<<e3<<","<<e4<<");\n";
         return result;
     }
@@ -764,7 +764,7 @@ GL_Value Not_Expr::gl_eval(GL_Frame& f) const
 {
     auto arg = gl_eval_expr(f, *arg_, GL_Type::Bool());
     GL_Value result = f.gl.newvalue(GL_Type::Bool());
-    f.gl.out <<"  bool "<<result<<" = !"<<arg<<";\n";
+    f.gl.out() <<"  bool "<<result<<" = !"<<arg<<";\n";
     return result;
 }
 GL_Value Or_Expr::gl_eval(GL_Frame& f) const
@@ -773,7 +773,7 @@ GL_Value Or_Expr::gl_eval(GL_Frame& f) const
     auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Bool());
     auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Bool());
     GL_Value result = f.gl.newvalue(GL_Type::Bool());
-    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" || "<<arg2<<");\n";
+    f.gl.out() <<"  bool "<<result<<" =("<<arg1<<" || "<<arg2<<");\n";
     return result;
 }
 GL_Value And_Expr::gl_eval(GL_Frame& f) const
@@ -782,7 +782,7 @@ GL_Value And_Expr::gl_eval(GL_Frame& f) const
     auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Bool());
     auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Bool());
     GL_Value result = f.gl.newvalue(GL_Type::Bool());
-    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" && "<<arg2<<");\n";
+    f.gl.out() <<"  bool "<<result<<" =("<<arg1<<" && "<<arg2<<");\n";
     return result;
 }
 GL_Value If_Else_Op::gl_eval(GL_Frame& f) const
@@ -797,33 +797,33 @@ GL_Value If_Else_Op::gl_eval(GL_Frame& f) const
             arg2.type, ",", arg3.type, ")"));
     }
     GL_Value result = f.gl.newvalue(arg2.type);
-    f.gl.out <<"  "<<arg2.type<<" "<<result
+    f.gl.out() <<"  "<<arg2.type<<" "<<result
              <<" =("<<arg1<<" ? "<<arg2<<" : "<<arg3<<");\n";
     return result;
 }
 void If_Else_Op::gl_exec(GL_Frame& f) const
 {
     auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Bool());
-    f.gl.out << "  if ("<<arg1<<") {\n";
+    f.gl.out() << "  if ("<<arg1<<") {\n";
     arg2_->gl_exec(f);
-    f.gl.out << "  } else {\n";
+    f.gl.out() << "  } else {\n";
     arg3_->gl_exec(f);
-    f.gl.out << "  }\n";
+    f.gl.out() << "  }\n";
 }
 void If_Op::gl_exec(GL_Frame& f) const
 {
     auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Bool());
-    f.gl.out << "  if ("<<arg1<<") {\n";
+    f.gl.out() << "  if ("<<arg1<<") {\n";
     arg2_->gl_exec(f);
-    f.gl.out << "  }\n";
+    f.gl.out() << "  }\n";
 }
 void While_Action::gl_exec(GL_Frame& f) const
 {
-    f.gl.out << "  while (true) {\n";
+    f.gl.out() << "  while (true) {\n";
     auto cond = gl_eval_expr(f, *cond_, GL_Type::Bool());
-    f.gl.out << "  if (!"<<cond<<") break;\n";
+    f.gl.out() << "  if (!"<<cond<<") break;\n";
     body_->gl_exec(f);
-    f.gl.out << "  }\n";
+    f.gl.out() << "  }\n";
 }
 void For_Op::gl_exec(GL_Frame& f) const
 {
@@ -852,24 +852,24 @@ void For_Op::gl_exec(GL_Frame& f) const
   #endif
     auto i = f.gl.newvalue(GL_Type::Num());
   #if RANGE_EXPRESSIONS
-    f.gl.out << "  for (float " << i << "=" << first << ";"
+    f.gl.out() << "  for (float " << i << "=" << first << ";"
              << i << (range->half_open_ ? "<" : "<=") << last << ";"
              << i << "+=" << step << ") {\n";
   #else
-    f.gl.out << "  for (float " << i << "=" << dfmt(first, dfmt::EXPR) << ";"
+    f.gl.out() << "  for (float " << i << "=" << dfmt(first, dfmt::EXPR) << ";"
              << i << (range->half_open_ ? "<" : "<=") << dfmt(last, dfmt::EXPR) << ";"
              << i << "+=" << dfmt(step, dfmt::EXPR) << ") {\n";
   #endif
     pattern_->gl_exec(i, At_GL_Phrase(list_->syntax_, f), f);
     body_->gl_exec(f);
-    f.gl.out << "  }\n";
+    f.gl.out() << "  }\n";
 }
 GL_Value Equal_Expr::gl_eval(GL_Frame& f) const
 {
     auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Num());
     auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num());
     GL_Value result = f.gl.newvalue(GL_Type::Bool());
-    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" == "<<arg2<<");\n";
+    f.gl.out() <<"  bool "<<result<<" =("<<arg1<<" == "<<arg2<<");\n";
     return result;
 }
 GL_Value Not_Equal_Expr::gl_eval(GL_Frame& f) const
@@ -877,7 +877,7 @@ GL_Value Not_Equal_Expr::gl_eval(GL_Frame& f) const
     auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Num());
     auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num());
     GL_Value result = f.gl.newvalue(GL_Type::Bool());
-    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" != "<<arg2<<");\n";
+    f.gl.out() <<"  bool "<<result<<" =("<<arg1<<" != "<<arg2<<");\n";
     return result;
 }
 GL_Value Less_Expr::gl_eval(GL_Frame& f) const
@@ -885,7 +885,7 @@ GL_Value Less_Expr::gl_eval(GL_Frame& f) const
     auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Num());
     auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num());
     GL_Value result = f.gl.newvalue(GL_Type::Bool());
-    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" < "<<arg2<<");\n";
+    f.gl.out() <<"  bool "<<result<<" =("<<arg1<<" < "<<arg2<<");\n";
     return result;
 }
 GL_Value Greater_Expr::gl_eval(GL_Frame& f) const
@@ -893,7 +893,7 @@ GL_Value Greater_Expr::gl_eval(GL_Frame& f) const
     auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Num());
     auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num());
     GL_Value result = f.gl.newvalue(GL_Type::Bool());
-    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" > "<<arg2<<");\n";
+    f.gl.out() <<"  bool "<<result<<" =("<<arg1<<" > "<<arg2<<");\n";
     return result;
 }
 GL_Value Less_Or_Equal_Expr::gl_eval(GL_Frame& f) const
@@ -901,7 +901,7 @@ GL_Value Less_Or_Equal_Expr::gl_eval(GL_Frame& f) const
     auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Num());
     auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num());
     GL_Value result = f.gl.newvalue(GL_Type::Bool());
-    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" <= "<<arg2<<");\n";
+    f.gl.out() <<"  bool "<<result<<" =("<<arg1<<" <= "<<arg2<<");\n";
     return result;
 }
 GL_Value Greater_Or_Equal_Expr::gl_eval(GL_Frame& f) const
@@ -909,14 +909,14 @@ GL_Value Greater_Or_Equal_Expr::gl_eval(GL_Frame& f) const
     auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Num());
     auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num());
     GL_Value result = f.gl.newvalue(GL_Type::Bool());
-    f.gl.out <<"  bool "<<result<<" =("<<arg1<<" >= "<<arg2<<");\n";
+    f.gl.out() <<"  bool "<<result<<" =("<<arg1<<" >= "<<arg2<<");\n";
     return result;
 }
 
 GL_Value gl_vec_element(GL_Frame& f, GL_Value vec, int i)
 {
     GL_Value r = f.gl.newvalue(GL_Type::Num());
-    f.gl.out << "  float " << r << " = " << vec << "[" << i << "];\n";
+    f.gl.out() << "  float " << r << " = " << vec << "[" << i << "];\n";
     return r;
 }
 

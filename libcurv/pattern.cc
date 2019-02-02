@@ -71,7 +71,7 @@ struct Id_Pattern : public Pattern
         // This is useless for an immutable binding (the common case), but
         // necessary for a sequential variable that might be reassigned later.
         GL_Value var = caller.gl.newvalue(val.type);
-        caller.gl.out << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
+        caller.gl.out() << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
         callee[slot_] = var;
     }
 };

@@ -58,7 +58,7 @@ struct Op_Hash_Eq
 /// Global state for the GLSL code generator.
 struct GL_Compiler
 {
-    std::ostream& out;
+    std::ostream& out_;
     GL_Target target;
     unsigned valcount_;
     System &system_;
@@ -69,8 +69,10 @@ struct GL_Compiler
 
     GL_Compiler(std::ostream& s, GL_Target t, System& sys)
     :
-        out(s), target(t), valcount_(0), system_(sys)
+        out_(s), target(t), valcount_(0), system_(sys)
     {}
+
+    std::ostream& out() { return out_; }
 
     inline GL_Value newvalue(GL_Type type)
     {

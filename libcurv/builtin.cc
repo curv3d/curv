@@ -119,7 +119,7 @@ struct Bit_Function : public Legacy_Function
             throw Exception(At_GL_Arg(0, f),
                 stringify(name(),": argument is not a bool"));
         auto result = f.gl.newvalue(GL_Type::Num());
-        f.gl.out << "  float "<<result<<" = float("<<arg<<");\n";
+        f.gl.out() << "  float "<<result<<" = float("<<arg<<");\n";
         return result;
     }
 };
@@ -225,11 +225,11 @@ struct Atan2_Function : public Legacy_Function
                 "GL domain error");
 
         GL_Value result = f.gl.newvalue(rtype);
-        f.gl.out <<"  "<<rtype<<" "<<result<<" = atan(";
+        f.gl.out() <<"  "<<rtype<<" "<<result<<" = atan(";
         gl_put_as(f, x, At_GL_Arg(0, f), rtype);
-        f.gl.out << ",";
+        f.gl.out() << ",";
         gl_put_as(f, y, At_GL_Arg(1, f), rtype);
-        f.gl.out << ");\n";
+        f.gl.out() << ");\n";
         return result;
     }
 };
@@ -259,36 +259,36 @@ GL_Value gl_minmax(const char* name, Operation& argx, GL_Frame& f)
         }
         auto result = f.gl.newvalue(type);
         if (args.size() == 0)
-            f.gl.out << "  " << type << " " << result << " = -0.0/0.0;\n";
+            f.gl.out() << "  " << type << " " << result << " = -0.0/0.0;\n";
         else if (args.size() == 1)
             return args.front();
         else {
-            f.gl.out << "  " << type << " " << result << " = ";
+            f.gl.out() << "  " << type << " " << result << " = ";
             int rparens = 0;
             while (args.size() > 2) {
-                f.gl.out << name << "(" << args.front() << ",";
+                f.gl.out() << name << "(" << args.front() << ",";
                 args.pop_front();
                 ++rparens;
             }
-            f.gl.out << name << "(" << args.front() << "," << args.back() << ")";
+            f.gl.out() << name << "(" << args.front() << "," << args.back() << ")";
             while (rparens > 0) {
-                f.gl.out << ")";
+                f.gl.out() << ")";
                 --rparens;
             }
-            f.gl.out << ";\n";
+            f.gl.out() << ";\n";
         }
         return result;
     } else {
         auto arg = gl_eval_op(f, argx);
         auto result = f.gl.newvalue(GL_Type::Num());
-        f.gl.out << "  float "<<result<<" = ";
+        f.gl.out() << "  float "<<result<<" = ";
         if (arg.type == GL_Type::Vec(2))
-            f.gl.out << name <<"("<<arg<<".x,"<<arg<<".y);\n";
+            f.gl.out() << name <<"("<<arg<<".x,"<<arg<<".y);\n";
         else if (arg.type == GL_Type::Vec(3))
-            f.gl.out << name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
+            f.gl.out() << name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
                 <<arg<<".z);\n";
         else if (arg.type == GL_Type::Vec(4))
-            f.gl.out << name<<"("<<name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
+            f.gl.out() << name<<"("<<name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
                 <<arg<<".z),"<<arg<<".w);\n";
         else
             throw Exception(At_GL_Phrase(argx.syntax_, f), stringify(
@@ -404,7 +404,7 @@ struct Dot_Function : public Legacy_Function
         if (a.type != b.type)
             throw Exception(At_GL_Arg(1, f), "dot: arguments have different types");
         auto result = f.gl.newvalue(GL_Type::Num());
-        f.gl.out << "  float "<<result<<" = dot("<<a<<","<<b<<");\n";
+        f.gl.out() << "  float "<<result<<" = dot("<<a<<","<<b<<");\n";
         return result;
     }
 };
@@ -466,7 +466,7 @@ struct Mag_Function : public Legacy_Function
         if (!arg.type.is_vec())
             throw Exception(At_GL_Arg(0, f), "mag: argument is not a vector");
         auto result = f.gl.newvalue(GL_Type::Num());
-        f.gl.out << "  float "<<result<<" = length("<<arg<<");\n";
+        f.gl.out() << "  float "<<result<<" = length("<<arg<<");\n";
         return result;
     }
 };
@@ -495,7 +495,7 @@ struct Count_Function : public Legacy_Function
         if (!arg.type.is_list())
             throw Exception(At_GL_Arg(0, f), "count: argument is not a list");
         auto result = f.gl.newvalue(GL_Type::Num());
-        f.gl.out << "  float "<<result<<" = "<<arg.type.count()<<";\n";
+        f.gl.out() << "  float "<<result<<" = "<<arg.type.count()<<";\n";
         return result;
     }
 };
