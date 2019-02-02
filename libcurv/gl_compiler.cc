@@ -161,7 +161,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
             }
             // It is a float array.
             GL_Value result = f.gl.newvalue(GL_Type::Num(list->size()));
-            if (f.gl.target == GL_Target::cpp) {
+            if (f.gl.target_ == GL_Target::cpp) {
                 f.gl.out() << "  static const float "<<result<<"[] = {";
             } else {
                 f.gl.out() << "  const " << result.type << " " << result
@@ -173,7 +173,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                 first = false;
                 f.gl.out() << dfmt(list->at(i).to_num(cx), dfmt::EXPR);
             }
-            if (f.gl.target == GL_Target::cpp) {
+            if (f.gl.target_ == GL_Target::cpp) {
                 f.gl.out() << "};\n";
             } else {
                 f.gl.out() << ");\n";
@@ -218,7 +218,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                     GL_Value result =
                         f.gl.newvalue(
                             GL_Type::Vec(list2->size(), list->size()));
-                    if (f.gl.target == GL_Target::cpp) {
+                    if (f.gl.target_ == GL_Target::cpp) {
                         f.gl.out()
                             << "  static const " << GL_Type::Vec(list2->size())
                             << " "<<result<<"[] = {";
@@ -232,7 +232,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                         first = false;
                         gl_put_vec(list2->size(), list->at(i), cx, f.gl.out());
                     }
-                    if (f.gl.target == GL_Target::cpp) {
+                    if (f.gl.target_ == GL_Target::cpp) {
                         f.gl.out() << "};\n";
                     } else {
                         f.gl.out() << ");\n";
@@ -243,7 +243,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                 // 2D array of numbers
                 GL_Value result =
                     f.gl.newvalue(GL_Type::Num(list->size(), list2->size()));
-                if (f.gl.target == GL_Target::cpp) {
+                if (f.gl.target_ == GL_Target::cpp) {
                     f.gl.out() << "  static const float " <<result<<"[] = {";
                 } else {
                     f.gl.out() << "  const " << result.type << " " << result
@@ -260,7 +260,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                         gl_put_num(l2->at(j), cx, f.gl.out());
                     }
                 }
-                if (f.gl.target == GL_Target::cpp) {
+                if (f.gl.target_ == GL_Target::cpp) {
                     f.gl.out() << "};\n";
                 } else {
                     f.gl.out() << ");\n";
@@ -274,7 +274,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                 GL_Value result =
                     f.gl.newvalue(GL_Type::Vec(list3->size(),
                         list->size(), list2->size()));
-                if (f.gl.target == GL_Target::cpp) {
+                if (f.gl.target_ == GL_Target::cpp) {
                     f.gl.out() << "  static const "
                         << GL_Type::Vec(list3->size())
                         << " " <<result<<"[] = {";
@@ -293,7 +293,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
                         gl_put_vec(list3->size(), l2->at(j), cx, f.gl.out());
                     }
                 }
-                if (f.gl.target == GL_Target::cpp) {
+                if (f.gl.target_ == GL_Target::cpp) {
                     f.gl.out() << "};\n";
                 } else {
                     f.gl.out() << ");\n";
@@ -582,7 +582,7 @@ GL_Value gl_eval_index_expr(GL_Value array, Operation& index, GL_Frame& f)
             }
             GL_Value result = f.gl.newvalue(GL_Type::Vec(list->size()));
             f.gl.out() << "  " << result.type << " "<< result<<" = ";
-            if (f.gl.target == GL_Target::glsl) {
+            if (f.gl.target_ == GL_Target::glsl) {
                 // use GLSL swizzle syntax: v.xyz
                 f.gl.out() <<array<<"."<<swizzle;
             } else {

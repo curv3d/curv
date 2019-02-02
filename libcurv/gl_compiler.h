@@ -59,7 +59,7 @@ struct Op_Hash_Eq
 struct GL_Compiler
 {
     std::ostream& out_;
-    GL_Target target;
+    GL_Target target_;
     unsigned valcount_;
     System &system_;
     std::unordered_map<Value, GL_Value, Value::Hash, Value::Hash_Eq>
@@ -69,7 +69,7 @@ struct GL_Compiler
 
     GL_Compiler(std::ostream& s, GL_Target t, System& sys)
     :
-        out_(s), target(t), valcount_(0), system_(sys)
+        out_(s), target_(t), valcount_(0), system_(sys)
     {}
 
     std::ostream& out() { return out_; }
