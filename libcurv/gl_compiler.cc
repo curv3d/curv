@@ -15,6 +15,7 @@
 #include <libcurv/gl_context.h>
 #include <libcurv/math.h>
 #include <libcurv/meaning.h>
+#include <libcurv/optimizer.h>
 #include <libcurv/picker.h>
 #include <libcurv/reactive.h>
 #include <libcurv/system.h>
@@ -35,7 +36,7 @@ GL_Value gl_call_unary_numeric(GL_Frame& f, const char* name)
 // Wrapper for Operation::gl_eval(f), does common subexpression elimination.
 GL_Value gl_eval_op(GL_Frame& f, const Operation& op)
 {
-#if 0
+#if OPTIMIZE
     if (!op.pure_)
         return op.gl_eval(f);
     // 'op' is a uniform expression, consisting of pure operations at interior
@@ -104,7 +105,7 @@ gl_put_vec(unsigned size, Value val, const Context& cx, std::ostream& out)
 
 GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
 {
-#if 0
+#if OPTIMIZE
     auto cached = f.gl.valcache_.find(val);
     if (cached != f.gl.valcache_.end())
         return cached->second;
