@@ -32,6 +32,25 @@ Benefits:
 * `while` is now available in list and record comprehensions.
 * Generalized blocks work in all statement contexts.
 
+Alt syntax:
+    let_mutable
+        a := 0;
+        b := a + 1;
+    in
+        ...
+Benefits:
+* The name `let_mutable` becomes the name for this feature.
+  It makes the feature easy to talk about, and easy to google, and it's easy
+  to know when the feature is being used.
+* The name is more descriptive. Gives more clues to the reader.
+* An IDE can perhaps provide better assistance after you type either `let`
+  or `let_mutable`.
+* If `let` is overloaded, then it is complicated to describe the syntax of
+  a let clause. There is potential for confusion about the scope rules for
+  variables defined by a `let`, since the scoping could be either sequential
+  or recursive. You might expect to be able to use both = and := in the same
+  scope, just based on the syntax.
+
 Generalized Blocks
 ------------------
 In an imperative language, a block is a mixed sequence of local variable

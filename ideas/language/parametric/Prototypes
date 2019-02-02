@@ -24,12 +24,22 @@ It is not reasonable for all record terms to be prototypes.
 Even if a record term has a call field, it need not be a prototype.
 So terms and prototypes are distinct concepts.
 
-We can consider prototypes to be a generalization of parametric records.
+Can we consider prototypes to be a generalization of parametric records?
 All prototypes are also parametric records.
 This would mean we support anonymous prototypes.
 P-recs were created to support the customizer. It's already the case that
 not all p-recs have pickers. Likewise, not all prototypes have pickers, not
 all structure in a prototype is recognized by the customizer.
+
+There is a counter-example. Sometimes we want a record to be parametric
+(in terms of having picker parameters) without also being a prototype.
+This is because the `call` field is being used for something different.
+For example,
+  There is a proposal for coordinate transformations to be records, with
+  * `.call shape` applies the transformation to a shape.
+  * `.f(x,y,z,t)` exposes the forward transform.
+  * `.inv(x,y,z,t)` is the inverse transform, when available.
+So, `move(x,y,z)` is a parametric record, but not a prototype.
 
 ---
 So: Prototypes subsume and replace parametric records.

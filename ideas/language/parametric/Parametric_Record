@@ -118,6 +118,18 @@ kube =
 One criticism, for top level bindings, is that let, where and parametric
 use 3 different syntaxes for delimiting their bindings.
 
+Now that I want to use `let_mutable` for defining mutable variables,
+how about this:
+    let_parametric
+      diam :: slider(.5,4) = 1;
+      len :: slider(2,8) = 4;
+    in
+      union(candy, stick)
+    where (
+      candy = sphere diam >> colour red;
+      stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
+    )
+
 Semantics
 ---------
     kube =

@@ -28,10 +28,10 @@ and generate constructor metadata)?
      * parametric for (d :: slider(1,10) in 1..10) cube d
 
     This syntax might win if we consider 'parametric records' and 'prototypes'
-    as a more general feature that supports the customizer. We want special
-    syntax to add term/parametric record/prototype metadata to a record.
-    We don't want this to only happen if picker predicates are used (as in
-    syntax 2 below).
+    as a more general feature, that supports the customizer as a special case.
+    We want special syntax to add term/parametric record/prototype metadata
+    to a record. We don't want this to only happen if picker predicates are
+    used (as in syntax 2 below).
 
  2. Special syntax for picker assertions. This syntax triggers the behaviour.
     E.g.,
@@ -81,6 +81,8 @@ and generate constructor metadata)?
 
 `let` bindings are a special case, because we don't support dependencies
 between parameters. How to enforce this restriction?
+* `let_parametric` is the keyword. What follows has different syntax and
+  scoping rules than `let`. Consistent with `let_mutable`.
 * Perhaps we distinguish recursive from parallel let.
   * `parametric let ...` is a parallel let.
   * Or, parallel let uses ':' definitions instead of '=' definitions.
