@@ -1,0 +1,122 @@
+General Theory of Parametric Values
+===================================
+A parametric value is a record or function that remembers how it was
+constructed. This generalizes parametric records, prototypes, and terms
+into a common framework.
+
+(1) parametric record
+Remembers its constructor function and its constructor argument.
+Use case: the customizer: tweak parameters using sliders.
+
+(2) prototype
+A parametric record that binds the `call` field to the constructor function.
+This lets you clone the record with modified parameters using funcall syntax,
+like OpenSCAD2. Eg, like 'box' and 'cube' in the standard library.
+This allows you to construct prototypical shapes without specifying an argument,
+and is inspired by prototype oriented programming.
+Use the -D command line option to modify the shape, like in OpenSCAD.
+
+(3) term
+A term is a record or function that prints as a constructor expression.
+Use cases:
+* printing a high level representation of the value
+* preserve the CSG tree of a shape, for high level processing
+* pattern matching, application-level types, typeful programming
+* high level equality comparisons
+
+Metadata
+--------
+By characterizing the metadata, we describe the set of all possible
+parametric value configurations.
+
+The metadata matches one of the following three possibilities:
+
+(1) The value was constructed by calling a function.
+    The metadata is `constructor` and `argument`.
+    (1p) If this value is also a record, and is a prototype,
+         then the `call` field is an alias for the `constructor` metadatum.
+
+(2) The value was constructed by field selection from a parent record.
+    The metadata is `parent` and `name`.
+    * `parent` is a record containing just the metadata for the parent
+      record, to avoid circular reference.
+    * `name` is the fieldname within parent, and is a string.
+
+(3) The value has a name, is the head of a term.
+    The metadata is `name`, a string.
+
+The `constructor` and `parent` metadata fields form a chain or linked list.
+If this chain terminates at a parametric value with a name, then we have found
+the head of a term.
+
+Parametric values without a head are not terms, and are dubbed 'anonymous'.
+
+Syntax
+------
+We need syntax for constructing all of the different variants
+of a parametric value, as enumerated in the metadata model.
+I'll skip prototypes for now; variants are:
+    f1a, f1t, r1a, r1t
+    f2a, f2t, r2a, r2t
+    f3, r3
+where 'a' and 't' are anonymous and term variants.
+
+Given an ordinary function definition F in a record constructor R,
+* If R is a parametric value, then F's metadata is `parent`=R, `name`.
+  Variant f2. If R is anonymous, f3a; if R is a term, f3t.
+* If R is not a parametric value, then F's metadata is `name`.
+  Variant f3.
+If F is curried, then partial applications of F are parametric values
+with `constructor` and `argument` metadata. Variants f1a and f1t.
+
+`let_parametric <parameters> in <record expression>`
+returns a parametric record. In isolation, variant r1a, and the `constructor`
+function has no metadata.
+If used on the right side of a definition within a record constructor,
+then the `constructor` function acquires metadata.
+* Data definition, with a single identifier pattern Id on the right side:
+  The `constructor` function gets `name`=Id metadata. Variant r1t for the
+  record, and its constructor has variant f3.
+* Function definition F.
+  The `constructor` function gets `constructor`=F,`argument` metadata.
+  The record's constructor has variant f1a or f1t based on F.
+
+Missing so far: r2, r3.
+
+Record Metadata Syntax
+~~~~~~~~~~~~~~~~~~~~~~
+Note: a function definition is
+    f x = x + 1
+    f = x -> x + 1
+    f = match [x -> ...; ...]
+A data definition with function constructor syntax on the right side is enough
+to create metadata. No special annotation syntax is required.
+
+By analogy, a record definition is
+    Rc = { ... }
+    Rp = let_parametric ... in ...
+If a record definition is contained within a parent record constructor PR,
+* If PR is not a parametric value, then Rc's metadata is `name`=Rx, variant r3.
+  Rp.constructor's metadata is `name`=Rx, variant f3.
+* If PR is a parametric value, then Rc's metadata is `name`=Rx,`parent`=PR,
+  variant r2.
+
+If we have function constructor syntax, and the function body is
+{...} record constructor syntax, then the constructed record has r1 metadata.
+
+But, I need to be careful about which record constructor syntax I magically
+add metadata to. If metadata fields are ordinary record fields, then I
+definitely don't want to do this for {a: 1, b: 2} style records, which are
+used to provide labelled arguments to functions.
+But maybe it's okay for 'module' records, {a=1; b=2;}.
+
+Let's define a 'module' as a record that is used to represent a library,
+or to represent an instance of a named application data type like 'shape'.
+Modules can contain parametric metadata. I need syntax for a module literal
+(to which metadata can be implicitly added as extra record fields).
+ * {a=1; b=2;}
+ * module {a=1; b=2;}
+I also need a naming convention for metadata fields, one that avoids name
+collisions.
+ * __CONSTRUCTOR__, __ARGUMENT__
+ * meta.constructor, meta.argument
