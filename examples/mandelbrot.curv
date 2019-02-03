@@ -3,17 +3,17 @@ make_shape {
     colour (x,y,_,_) :
         do  var z := [x,y];
             var color := [0,0,0];
-            var i := 0;
-            while (i < 100) (
-                z := csqr(z) + [x,y];
-                if (dot(z,z) > 4)
-                    let cr = (i-1)-log(log(dot(z,z))/log 2)/log 2;
-                    in (
-                        color := [0.95+.012*cr, 1, .2+.4*(1+sin(.3*cr))];
-                        i := 100;
-                    )
-                else
-                    i := i + 1;
+            var done := false;
+            for (i in 0 ..< 100) (
+                if (!done) (
+                    z := csqr(z) + [x,y];
+                    if (dot(z,z) > 4)
+                        let cr = (i-1)-log(log(dot(z,z))/log 2)/log 2;
+                        in (
+                            color := [0.95+.012*cr, 1, .2+.4*(1+sin(.3*cr))];
+                            done := true;
+                        )
+                )
             );
         in sRGB.HSV color,
     bbox : [[-2.5,-2,-2],[1.5,2,2]],
