@@ -16,9 +16,8 @@ Version 0.4 Planning:
   * `box` with no argument defaults to `box[2,2,2]`.
 * release blockers:
   * Value Pickers:
-    * optimizer, so that 3-picker 'demo' works
     * Finish implementing reactive values.
-    * Finalize syntax for parametric records.
+    * Finalize syntax for parametric records. let_parametric
     * deprecate 'pred ident' pattern, in favour of 'ident :: pred'
   * finalize json-api, create json-run program
     * disallow -o foo.json-api, or remove json-api export from `curv`
@@ -29,6 +28,7 @@ Version 0.4 Planning:
     * finalize shape encoding.
       * JSON shape import/export, a dual feature to json-api output
   * Unit test GL arrays (run unit tests on GPU)
+    * p-e-w's curv-solids.cube doesn't work.
 
 Big Items
 * graphical value pickers in the viewer
