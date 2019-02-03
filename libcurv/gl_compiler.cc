@@ -33,12 +33,55 @@ GL_Value gl_call_unary_numeric(GL_Frame& f, const char* name)
     return result;
 }
 
+struct Set_Purity
+{
+    GL_Compiler& gl_;
+    bool previous_purity_;
+    Set_Purity(GL_Compiler& gl, bool purity)
+    :
+        gl_(gl),
+        previous_purity_(gl.in_constants_)
+    {
+        gl_.in_constants_ = purity;
+    }
+    ~Set_Purity()
+    {
+        gl_.in_constants_ = previous_purity_;
+    }
+};
+
 // Wrapper for Operation::gl_eval(f), does common subexpression elimination.
 GL_Value gl_eval_op(GL_Frame& f, const Operation& op)
 {
 #if OPTIMIZE
-    if (!op.pure_)
+    if (!op.pure_) {
+      #if 0
+        bool previous = f.gl.in_constants_;
+        f.gl.in_constants_ = false;
+        auto k = f.gl.valcount_;
+        f.gl.out()
+            <<"/*in "<<k<<" IMPR "
+            <<boost::core::demangle(typeid(op).name())<<"*/\n";
+        GL_Value val;
+        try {
+            val = op.gl_eval(f);
+        } catch (...) {
+            f.gl.out()
+                <<"/*except "<<k<<"/"<<f.gl.valcount_<<" IMPR "
+                <<boost::core::demangle(typeid(op).name())<<"*/\n";
+            f.gl.in_constants_ = previous;
+            throw;
+        }
+        f.gl.out()
+            <<"/*out "<<k<<"/"<<f.gl.valcount_<<" IMPR "
+            <<boost::core::demangle(typeid(op).name())<<"*/\n";
+        f.gl.in_constants_ = previous;
+        return val;
+      #else
+        Set_Purity pu(f.gl, false);
         return op.gl_eval(f);
+      #endif
+    }
     // 'op' is a uniform expression, consisting of pure operations at interior
     // nodes and Constants at leaf nodes. There can be no variable references
     // (eg, no Data_Ref ops), other than uniform variables in reactive values.
@@ -47,9 +90,35 @@ GL_Value gl_eval_op(GL_Frame& f, const Operation& op)
     auto cached = f.gl.opcache_.find(share(op));
     if (cached != f.gl.opcache_.end())
         return cached->second;
+  #if 0
+    bool previous = f.gl.in_constants_;
+    f.gl.in_constants_ = true;
+    auto k = f.gl.valcount_;
+    f.gl.out()
+        <<"/*in "<<k<<" PURE "
+        <<boost::core::demangle(typeid(op).name())<<"*/\n";
+    GL_Value val;
+    try {
+        val = op.gl_eval(f);
+    } catch (...) {
+        f.gl.out()
+            <<"/*except "<<k<<"/"<<f.gl.valcount_<<" PURE "
+            <<boost::core::demangle(typeid(op).name())<<"*/\n";
+        f.gl.in_constants_ = previous;
+        throw;
+    }
+    f.gl.out()
+        <<"/*out "<<k<<"/"<<f.gl.valcount_<<" PURE "
+        <<boost::core::demangle(typeid(op).name())<<"*/\n";
+    f.gl.in_constants_ = previous;
+    f.gl.opcache_[share(op)] = val;
+    return val;
+  #else
+    Set_Purity pu(f.gl, true);
     auto val = op.gl_eval(f);
     f.gl.opcache_[share(op)] = val;
     return val;
+  #endif
 #else
     return op.gl_eval(f);
 #endif
@@ -111,11 +180,12 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
         return cached->second;
 #endif
 
+    Set_Purity pu(f.gl, true);
     At_GL_Phrase cx(share(syntax), f);
     if (val.is_num()) {
         GL_Value result = f.gl.newvalue(GL_Type::Num());
         double num = val.get_num_unsafe();
-        f.gl.out() << "  float " << result << " = "
+        f.gl.out() << "  const float " << result << " = "
             << dfmt(num, dfmt::EXPR) << ";\n";
         f.gl.valcache_[val] = result;
         return result;
@@ -123,7 +193,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
     if (val.is_bool()) {
         GL_Value result = f.gl.newvalue(GL_Type::Bool());
         bool b = val.get_bool_unsafe();
-        f.gl.out() << "  bool " << result << " = "
+        f.gl.out() << "  const bool " << result << " = "
             << (b ? "true" : "false") << ";\n";
         f.gl.valcache_[val] = result;
         return result;

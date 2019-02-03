@@ -6,7 +6,7 @@
 #define LIBCURV_OPTIMIZER_H
 
 // The optimizer is disabled by default; it's not ready for general use yet.
-#define OPTIMIZE 0
+#define OPTIMIZE 1
 
 #endif // header guard
 

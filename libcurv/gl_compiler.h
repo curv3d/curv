@@ -59,6 +59,9 @@ struct Op_Hash_Eq
 struct GL_Compiler
 {
     std::ostream& out_;
+    std::stringstream constants_{};
+    std::stringstream body_{};
+    bool in_constants_ = false;
     GL_Target target_;
     unsigned valcount_;
     System &system_;
@@ -72,18 +75,33 @@ struct GL_Compiler
         out_(s), target_(t), valcount_(0), system_(sys)
     {}
 
-    std::ostream& out() { return out_; }
+    std::ostream& out()
+    {
+        if (in_constants_)
+            return constants_;
+        else
+            return body_;
+    }
 
     inline GL_Value newvalue(GL_Type type)
     {
         return GL_Value(valcount_++, type);
     }
 
-    inline void newfunction()
+    inline void begin_function()
     {
         valcount_ = 0;
         valcache_.clear();
         opcache_.clear();
+        constants_.str("");
+        body_.str("");
+    }
+    inline void end_function()
+    {
+        out_ << "  /* constants */\n";
+        out_ << constants_.str();
+        out_ << "  /* body */\n";
+        out_ << body_.str();
     }
 
     // TODO: maybe add a member function for each operation that we support.
