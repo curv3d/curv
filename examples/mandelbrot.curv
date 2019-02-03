@@ -16,5 +16,6 @@ make_shape {
                     i := i + 1;
             );
         in sRGB.HSV color,
+    bbox : [[-2.5,-2,-2],[1.5,2,2]],
     is_2d : true,
 }

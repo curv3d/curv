@@ -1,8 +1,8 @@
 parametric {Amplitude :: slider(0, 20) = 0}
 let
-displace (ifield, amp) shape = make_shape {
+displace (ifield, amp, off) shape = make_shape {
     ... shape;
-    dist p : shape.dist p - ifield p * amp;
+    dist p : shape.dist p - (ifield p + off) * amp;
 };
 
 
@@ -49,4 +49,4 @@ fire i =
 
 
 in
-sphere 12 >> displace(i_fractal, Amplitude) >> lipschitz 3 >> colour(i_fractal, fire)
+sphere 12 >> displace(i_fractal, Amplitude,-.2) >> lipschitz 3 >> colour(i_fractal, fire)

@@ -8,8 +8,8 @@ where (
 gyroid_bones = gyroid >> offset (-1.2) >> lipschitz 1.5;
 gyroid_bones2 = complement gyroid >> offset (-1.2) >> lipschitz 1.5;
 double_gyroid_bones = union(
-    colour blue gyroid_bones,
-    colour green gyroid_bones2,
+    colour (sRGB.HSV(2/3,.7,1)) gyroid_bones,
+    colour (sRGB.HSV(1/3,.7,.7)) gyroid_bones2,
 );
 
 gyroid_surface = shell (.2) gyroid >> lipschitz 1.5;

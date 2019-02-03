@@ -21,6 +21,6 @@ schwartzize t shape = morph t (shape, intersection(shape, schwartz_surface));
 in
 row 5 (
     schwartz_surface `intersection` sphere(tau*3),
-    schwartz_surface >> colour red `intersection` cube(tau*3),
+    schwartz_surface >> colour (sRGB.HSV(0,.7,.8)) `intersection` cube(tau*3),
     schwartzize(.1) (cube 20),
 )
