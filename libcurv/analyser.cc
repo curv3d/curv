@@ -418,6 +418,12 @@ analyse_block(
 Shared<Meaning>
 Let_Phrase::analyse(Environ& env) const
 {
+    if (let_.kind_ == Token::k_make_parametric) {
+        auto ctor = analyse_lambda(env, share(*this), false,
+            make<Brace_Phrase>(let_, bindings_, in_),
+            body_);
+        return make<Parametric_Expr>(share(*this), ctor);
+    }
     Definition::Kind kind =
         let_.kind_ == Token::k_let
         ? Definition::k_recursive

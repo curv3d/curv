@@ -1,11 +1,11 @@
 // This is experimental syntax for declaring parameters that are bound
 // to graphical sliders in the Viewer window. It may change.
 
-parametric {
+make_parametric
     Diameter: diam :: slider(.5, 2) = 1;
     Stick_Length: len :: slider(2, 8) = 4;
     Colour: c :: colour_picker = red;
-}
+in
 union(candy, stick)
 where (
     candy = sphere diam >> colour c;

@@ -1,10 +1,11 @@
-parametric {Amplitude :: slider(0, 20) = 0}
+make_parametric
+    Amplitude :: slider(0, 20) = 0;
+in
 let
 displace (ifield, amp, off) shape = make_shape {
     ... shape;
     dist p : shape.dist p - (ifield p + off) * amp;
 };
-
 
 hash n = frac(sin(n)*43758.5453);
 noise xyz =
@@ -18,6 +19,7 @@ noise xyz =
          lerp(lerp( hash(n+113), hash(n+114),f[X]),
               lerp( hash(n+170), hash(n+171),f[X]),f[Y]),
          f[Z]);
+
 rot v =
     [ dot(v, [0.0, 0.8, 0.6]),
       dot(v, [-0.80, 0.36, -0.48]),
@@ -29,7 +31,6 @@ i_fractal(x,y,z,t) =
         f := f + 0.2500*noise(p); p := p*3.03;
         f := f + 0.0625*noise(p);
     in f/0.9375;
-
 
 fire i =
     let yellow = (1.7, 1.3, 1.0);
@@ -46,7 +47,6 @@ fire i =
         lerp(red, orange, i*4-2)
     else
         lerp(orange, yellow, i*4-3);
-
 
 in
 sphere 12 >> displace(i_fractal, Amplitude,-.2) >> lipschitz 3 >> colour(i_fractal, fire)

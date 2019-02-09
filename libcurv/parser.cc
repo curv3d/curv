@@ -246,9 +246,9 @@ is_ritem_end_token(Token::Kind k)
 //  | 'if' primary ritem 'else' ritem
 //  | 'for' '(' ritem 'in' ritem ')' ritem
 //  | 'while' parens ritem
-//  | 'let' list 'in' ritem
 //  | 'do' list 'in' ritem
-//  | 'parametric' primary ritem
+//  | 'let' list 'in' ritem
+//  | 'make_parametric' list 'in' item
 Shared<Phrase>
 parse_ritem(Scanner& scanner)
 {
@@ -271,15 +271,23 @@ parse_ritem(Scanner& scanner)
         return make<If_Phrase>(
             tok, condition, then_expr, tok2, else_expr);
       }
-    case Token::k_let:
     case Token::k_do:
+    case Token::k_let:
+    case Token::k_make_parametric:
       {
         auto bindings = parse_list(scanner);
         Token tok2 = scanner.get_token();
         if (tok2.kind_ != Token::k_in)
             throw Exception(At_Token(tok2, scanner),
                 "syntax error: expecting 'in'");
-        auto body = parse_ritem(scanner);
+        // for make_parametric, call parse_item, not parse_ritem.
+        // 'make_parametric params in ... where (bindings)' is parsed as
+        // 'make_parametric params in (... where (bindings))'.
+        Shared<Phrase> body;
+        if (tok.kind_ == Token::k_make_parametric)
+            body = parse_item(scanner);
+        else
+            body = parse_ritem(scanner);
         return make<Let_Phrase>(tok, bindings, tok2, body);
       }
     case Token::k_for:

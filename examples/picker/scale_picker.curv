@@ -1,5 +1,6 @@
-parametric {size :: scale_picker = 1}
-let
+make_parametric
+    size :: scale_picker = 1;
+in let
 log_spiral(s,g) = make_shape {
     dist(x,y,z,t) =
         let r = mag[x,y,z];

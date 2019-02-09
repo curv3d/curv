@@ -11,9 +11,9 @@ The shape animates in real time as you change parameter values.
 The following program declares a shape parameter that is 
 bound to a graphical slider widget:
 ```
-  parametric {
+  make_parametric
       size :: slider(1,5) = 3;
-  }
+  in
   cube size
 ```
 When you run this program, the Viewer window contains a slider that lets
@@ -28,9 +28,9 @@ Each value picker widget has a `(?)` help button that explains its user interfac
 
 ## Language Changes
 To add graphical parameters to a shape in a Curv program,
-you prefix a shape expression with a `parametric` clause:
+you prefix a shape expression with a `make_parametric` clause:
 ```
-  parametric { <parameter1>; <parameter2>; ... } <shape-expression>
+  make_parametric <parameter1>; <parameter2>; ... in <shape-expression>
 ```
 This is an expression that returns a parametric shape value.
 
@@ -78,7 +78,7 @@ converting a colour parameter `c` to linear RGB using `sRGB(c)`.
 However, I think it is better if colour parameters are represented
 directly as linear RGB.
 
-The shape expression that follows a "parametric clause" must be compiled into
+The shape expression that follows a `make_parametric` clause must be compiled into
 a GLSL shader program for execution on the GPU. This means that only a restricted
 subset of Curv may be used. Right now, there are too many limitations. The
 implementation is not yet complete.
@@ -112,10 +112,10 @@ Here are some ideas for new picker types:
 
 There is a half implemented feature that lets you specify a verbose parameter name
 string, with embedded spaces, for display in the GUI, which is separate from
-the parameter variable name that is used in the body of the `parametric` expression.
+the parameter variable name that is used in the body of the `make_parametric` expression.
 It looks like this:
 ```
-parametric { "size of cube": n :: slider(1,5) = 3; } cube n
+make_parametric "size of cube": n :: slider(1,5) = 3; in cube n
 ```
 Finish implementing this.
 
