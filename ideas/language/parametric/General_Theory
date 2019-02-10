@@ -69,8 +69,8 @@ Given an ordinary function definition F in a record constructor R,
 If F is curried, then partial applications of F are parametric values
 with `constructor` and `argument` metadata. Variants f1a and f1t.
 
-`let_parametric <parameters> in <record expression>`
-returns a parametric record. In isolation, variant r1a, and the `constructor`
+`make_parametric <parameters> in <record expression>` (per issue #62)
+constructs a parametric record. In isolation, variant r1a, and the `constructor`
 function has no metadata.
 If used on the right side of a definition within a record constructor,
 then the `constructor` function acquires metadata.
@@ -94,7 +94,7 @@ to create metadata. No special annotation syntax is required.
 
 By analogy, a record definition is
     Rc = { ... }
-    Rp = let_parametric ... in ...
+    Rp = make_parametric ... in ...
 If a record definition is contained within a parent record constructor PR,
 * If PR is not a parametric value, then Rc's metadata is `name`=Rx, variant r3.
   Rp.constructor's metadata is `name`=Rx, variant f3.
@@ -118,5 +118,63 @@ Modules can contain parametric metadata. I need syntax for a module literal
  * module {a=1; b=2;}
 I also need a naming convention for metadata fields, one that avoids name
 collisions.
+ * constructor, argument
  * __CONSTRUCTOR__, __ARGUMENT__
+   like Python.
  * meta.constructor, meta.argument
+   In directory syntax, metadata fields would be defined by
+   a `meta.curv` file. We could also put package metadata here, eg
+   author and licence.
+
+Primitive Shapes are Parametric
+-------------------------------
+Let's say that all primitive shapes in the standard library are parametric.
+What's missing from this design that would let me do that.
+The design doesn't support prototypes yet, so we'll skip that.
+
+cube(d) is the API. Then define
+    cube(d) = make_parametric D :: range_picker = d in box(D,D,D)
+
+The API is:
+    cube(d)
+    cube.mitered(d)
+    cube.exact(d)
+Then:
+    cube = let
+        exact d = make_parametric ...;
+        mitred d = make_parametric ...;
+    in {
+        call : exact;
+        exact : exact;
+        mitred : mitred;
+    };
+
+Without prototypes, this is really simple and boring.
+I can make `cube` into an abbreviation for `cube 2`, without introducing
+the full prototype mechanism, using:
+    cube = let
+        exact d = make_parametric ...;
+        mitred d = make_parametric ...;
+    in {
+        ... exact 2;
+        call : exact;
+        exact : exact;
+        mitred : mitred;
+    };
+
+Maybe the prototype mechanism is too complex to be worth it.
+
+Primitive Shapes are Terms
+--------------------------
+I want `cube` to be a term. How is it defined, how is a cube printed?
+The above definition doesn't have the right syntax to be automatically
+converted to a term. I guess I need special syntax after all. Eg,
+    term cube = let
+        exact d = make_parametric ...;
+        mitred d = make_parametric ...;
+    in {
+        ... exact 2;
+        call : exact;
+        exact : exact;
+        mitred : mitred;
+    };

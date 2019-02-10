@@ -1,0 +1,85 @@
+Postfix Expressions
+-------------------
+There is an ease-of-use issue in expressions like:
+1. `abs a.x`
+2. `f a[0]`
+3. `move cross(a,b) cube`
+4. offset -1
+The parsing of function arguments doesn't match the use of whitespace in these
+examples.
+
+I have four alternate plans for resolving this issue:
+A. **Warning messages for misleading expression syntax**, when the whitespace
+   between tokens suggests a different grouping than what the grammar provides.
+B. **Lua-like function call syntax**, where we drop support for `f 42` and `f x`
+   style function calls, requiring parentheses in these cases:
+   `f(42)` and `f(x)`. This eliminates the ambiguity in all 4 cases.
+   Argument expressions must be delimited: (...) [...] {...} "..."
+   More verbose, especially curried function calls like f(a)(b)(c).
+   In ReasonML, f(a,b,c) == f(a)(b)(c).
+C. **White-space sensitive expression parsing**.
+   A big can of worms.
+D. A function argument is either a self delimiting primary
+   like (...) [...] {...} "..." or it is a high-precedence
+   Tpostfix expression beginning with an identifier.
+   Almost as terse as C, without whitespace-sensitive parsing.
+   Details of grammar?
+
+Tight Control Syntax
+--------------------
+In newer languages with a C-like syntax, we have moved to a new syntax for
+control statements like `if`, `while`, etc. (For example: Go, Rust, Swift).
+* The statement argument is required to be braced, as in
+    while cond { statements }
+  This avoids a mistake in C where the braces are optional, and if you forget
+  and write multiple statements indented after the `while`, it won't be parsed
+  properly, but the compiler won't catch this.
+* It also avoids the dangling else ambiguity. After an `else` is either a
+  braced statement block, or an `if` statement.
+* C function definitions have always required the body to be braced, so maybe
+  this is more consistent.
+
+I can mimic this syntax style in Curv (if I break backward compatibility)
+by making these syntax elements into primary expressions: then-part or
+else-part of an if, body of a while, body of an anonymous function.
+
+This means that if, while and -> become high precedence operators.
+What are the consequences, for embedding uses of these operations in
+larger expressions?
+
+Anonymous Functions
+-------------------
+Some languages with functional programming features have weird syntax
+for passing an anonymous function as the last argument of a function call.
+It makes function calls that mimic control structures look more like the syntax
+for built-in control structures. (Ruby, Scala, Swift, Nim)
+
+Swift closure expression:
+    { s1, s2 in s1 > s2 }   --   like: (s1, s2)->(s1 > s2)
+Trailing closure syntax for function calls:
+    f(a,b,{...}) can be written as f(a,b){...}
+This looks like a special case of the curried function call syntax in Reason.
+
+Mixfix Operators
+----------------
+User defined mixfix operators, based on Tight Control Syntax and Syntax D.
+This gets us closer to Lisp-like extensible syntax.
+* We do not permit a bare identifier or numeral to be a function argument.
+  Function arguments are delimited primary expressions like (...) [...] {...}.
+* `if (x > y) then (x) else (y)` is sugar for `if_then_else(x > y, x, y)`.
+* `if (x > 0) then (1) else if (x < 0) then (-1) else (0)`
+  is sugar for `if_then_else(x > 0, 1, if_then_else(x < 0, -1, 0))`.
+
+How does mixfix syntax combine with postfix syntax?
+What about:
+  if (a) then b(c)
+  if (a) then b.c
+  if (a) then (b)(c)
+  f (a)(b)(c)
+Let's say: the final argument in a mixfix form is
+
+arg ::= (...) | [...] | {...} | "..."
+arg_postfix ::= arg | arg_postfix arg | arg_postfix '.' id
+id_postfix ::= id | id_postfix arg | id_postfix '.' id
+
+... TODO
