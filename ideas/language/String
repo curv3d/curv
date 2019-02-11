@@ -1,0 +1,98 @@
+## Fluent String Escapes
+Here, "fluent" means pronounceable and readable as (close to) English prose.
+Verbosity is not considered a problem for fluent interfaces.
+More important is that the meaning of the code is obvious.
+
+${dollar}  expands to $    similar to &dollar; in HTML5
+${quot}    expands to "    similar to &quot; in HTML5
+${apos}    expands to '    similar to &apos; in HTML5
+
+    print "Can't open file $quot$filename$quot: $error";
+    print "Can't open file ${quot}${filename}${quot}: ${error}";
+
+## Compact String Escapes
+The escape sequences for $ and " should be compact, and should not grow
+exponentially if you escape the escape sequence, and escape it again.
+
+$.  expands to $      instead of $$
+$-  expands to '      instead of '', in a quoted identifier
+$=  expands to "      instead of "", in a quoted string
+
+Earlier proposal, inconsistent with quoted identifiers:
+$'' expands to "      instead of ""
+
+It's compact because the characters after the $ are not metacharacters
+(neither $ nor " nor '). Thus, this escape syntax is more suitable for
+iterated string escaping/unescaping. The escape sequences do not grow
+exponentially if you escape an escape sequence, then escape it again.
+    $... -> $.. -> $. -> $
+    instead of $$$$$$$$ -> $$$$ -> $$ -> $
+Also:
+    $..= -> $.= -> $= -> "
+    instead of """""""" -> """" -> "" -> "
+
+Readability: it is easier to visually parse these sequences out of the noise
+of the surrounding text, without counting characters.
+* " characters do not appear in the middle of a quoted string, so it is easier
+  to scan and find the start and end of the string.
+* . - =, which are not full height characters, are juxtaposed with $, which
+  is a full height character, making the pair easy to parse visually.
+* Mneumonics:
+    = is a sideways " character.
+    . is the smallest ASCII character, so $. is visually close to $
+
+repr "foo" => "$=foo$="
+repr(repr "foo") => "$.=foo$.="
+print "Can't open file $=$filename$=: $error";
+
+A short Quine:
+    (s->"$s$(s)")"(s->$=$.s$.(s)$=)"
+In the REPL, the output prints as
+    "(s->$=$.s$.(s)$=)$=(s->$.=$..s$..(s)$.=)$="
+instead of
+    (s->"$s$(s)")"(s->""$$s$$(s)"")"
+which prints as 4 characters longer than the compact syntax:
+    "(s->""$$s$$(s)"")""(s->""""$$$$s$$$$(s)"""")"""
+
+The downside is that this is novel syntax. You have to memorize it.
+
+## Swift-Inspired Fat String Literals
+`#"... #${foo} ..."#` is a fat string literal. The `#` can be replaced with
+2 or more hashes. $ escapes are prefixed with the same number of hashes.
+Use case: quoting a multiline string containing " and $, without escaping
+each occurrence of " and $. Not recommended if you have many escape sequences.
+    #"Can't open "#$filename": #$error"#
+Iterated escaping:
+    "foo" => #""foo""# => ##"#""foo""#"##
+ vs "foo" => "$=foo$=" => "$.=foo$.="
+
+## Indentable Multi-Line String Literals
+It should be possible to indent a multi-line string literal
+without adding the indentation to the string content.
+
+Solutions I've seen:
+* Nix expression language:
+  * If the first line of the literal is " then whitespace then newline,
+    then those characters are ignored.
+  * Each line of the string begins with a variable amount of whitespace.
+    The longest initial whitespace prefix that is common to each line is
+    ignored.
+  Problem: this is visually ambiguous, especially for a long string literal
+  that spans multiple screens, where the lines have varying indentation.
+* C++ string literal concatenation
+    "first line\n"
+    "second line\n"
+    "final line\n"
+
+My solution:
+* A non-initial line of a multi-line string literal begins with optional
+  whitespace, followed by the '|' character, and this prefix is ignored.
+  Note that '"' and '|' are both a single character, so they line up:
+    "first line
+    |second line
+    |final line
+    "
+
+## String Comprehensions
+"${ stmt1; stmt2; stmt3 }"
+eg, "${if (c) "foo"}"
