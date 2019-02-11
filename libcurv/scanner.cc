@@ -61,7 +61,7 @@ Scanner::get_token()
                 throw Exception(At_Token(string_begin_, *this),
                     "unterminated string literal");
             }
-            if (*p == '$') {
+            if (*p == '$' || *p == '.' || *p == '=') {
                 ++p;
                 tok.kind_ = Token::k_char_escape;
                 goto success;

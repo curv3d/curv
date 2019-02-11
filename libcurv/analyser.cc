@@ -170,8 +170,20 @@ String_Segment_Phrase::analyse(Environ& env) const
 Shared<Segment>
 Char_Escape_Phrase::analyse(Environ& env) const
 {
-    return make<Literal_Segment>(share(*this),
-        String::make(location().range().first+1, 1));
+    char c;
+    switch (location().range()[1]) {
+    case '"':
+    case '=':
+        c = '"';
+        break;
+    case '$':
+    case '.':
+        c = '$';
+        break;
+    default:
+        die("bad char escape");
+    }
+    return make<Literal_Segment>(share(*this), String::make(&c, 1));
 }
 Shared<Segment>
 Paren_Segment_Phrase::analyse(Environ& env) const

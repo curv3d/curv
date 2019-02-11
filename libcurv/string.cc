@@ -34,9 +34,12 @@ String::print(std::ostream& out) const
     out << '"';
     for (size_t i = 0; i < size_; ++i) {
         char c = data_[i];
-        if (c == '$' || c == '"')
+        if (c == '$')
+            out << "$.";
+        else if (c == '"')
+            out << "$=";
+        else
             out << c;
-        out << c;
     }
     out << '"';
 }
