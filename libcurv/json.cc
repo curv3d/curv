@@ -86,7 +86,7 @@ void write_json_value(Value val, std::ostream& out)
             out << ":";
             Value fval = f->maybe_value();
             if (fval.eq(missing)) {
-                out << "{\"\\0\":\"\"}";
+                out << "{\"\\u0000\":\"\"}";
             } else {
                 write_json_value(fval, out);
             }
@@ -95,7 +95,7 @@ void write_json_value(Value val, std::ostream& out)
         return;
       }
     default:
-        out << "{\"\\0\":\"" << val << "\"}";
+        out << "{\"\\u0000\":\"" << val << "\"}";
         return;
     }
 }
