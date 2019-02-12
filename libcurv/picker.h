@@ -38,6 +38,7 @@ struct Picker : public Function
         };
         void write(std::ostream&) const;
         void write_json(std::ostream&) const;
+        void write_curv(std::ostream&) const;
     };
     union State {
         bool bool_;
@@ -47,6 +48,7 @@ struct Picker : public Function
         State(Type, Value, const Context&);
         void write(std::ostream&, Type) const;
         void write_json(std::ostream&, Type) const;
+        void write_curv(std::ostream&, Type) const;
     };
     
     Config config_;

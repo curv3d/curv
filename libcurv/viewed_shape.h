@@ -61,6 +61,8 @@ struct Viewed_Shape
     // Serialize as a sequence of JSON object fields,
     // without an enclosing '{...}'.
     void write_json(std::ostream&) const;
+
+    void write_curv(std::ostream&) const;
 };
 
 } // namespace

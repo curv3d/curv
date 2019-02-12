@@ -64,6 +64,8 @@ operator<<(std::ostream& out, const String& str)
     return out;
 }
 
+void write_curv_string(const char*, unsigned, std::ostream&);
+
 inline std::ostream&
 operator<<(std::ostream& out, Shared<const String> str)
 {

@@ -139,4 +139,23 @@ Viewed_Shape::write_json(std::ostream& out) const
     out << "]";
 }
 
+void
+Viewed_Shape::write_curv(std::ostream& out) const
+{
+    out << "  shader:\n    ";
+    write_curv_string(frag_.c_str(), 4, out);
+    out << ";\n  parameters: [\n";
+    for (auto& p : param_) {
+        out << "    {";
+        out << "name: \"rv_" << p.first << "\"";
+        out << ", type: \"" << p.second.pconfig_.gltype_ << "\"";
+        out << ", value: ";
+        p.second.pstate_.write_curv(out, p.second.pconfig_.type_);
+        out << ", label: "; write_curv_string(p.first.c_str(), 0, out);
+        out << ", config: "; p.second.pconfig_.write_curv(out);
+        out << "};\n";
+    }
+    out << "  ];\n";
+}
+
 } // namespace

@@ -61,6 +61,31 @@ Picker::Config::write_json(std::ostream& out) const
 }
 
 void
+Picker::Config::write_curv(std::ostream& out) const
+{
+    switch (type_) {
+    case Type::slider:
+        out << "{slider:[" << slider_.low_
+            << "," << slider_.high_ << "]}";
+        return;
+    case Type::int_slider:
+        out << "{int_slider:[" << int_slider_.low_
+            << "," << int_slider_.high_ << "]}";
+        return;
+    case Type::scale_picker:
+        out << "{scale_picker:true}";
+        return;
+    case Type::checkbox:
+        out << "{checkbox:true}";
+        return;
+    case Type::colour_picker:
+        out << "{colour_picker:true}";
+        return;
+    }
+    out << "\"bad picker config type " << int(type_) << "\"";
+}
+
+void
 Picker::State::write(std::ostream& out, Picker::Type ptype) const
 {
     switch (ptype) {
@@ -83,6 +108,27 @@ Picker::State::write(std::ostream& out, Picker::Type ptype) const
 
 void
 Picker::State::write_json(std::ostream& out, Picker::Type ptype) const
+{
+    switch (ptype) {
+    case Type::checkbox:
+        out << (bool_ ? "true" : "false");
+        return;
+    case Type::int_slider:
+        out << int_;
+        return;
+    case Type::slider:
+    case Type::scale_picker:
+        out << num_;
+        return;
+    case Type::colour_picker:
+        out << "[" << vec3_[0] << "," << vec3_[1] << "," << vec3_[2] << "]";
+        return;
+    }
+    out << "\"bad picker value type " << int(ptype) << "\"";
+}
+
+void
+Picker::State::write_curv(std::ostream& out, Picker::Type ptype) const
 {
     switch (ptype) {
     case Type::checkbox:

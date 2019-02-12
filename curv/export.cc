@@ -238,6 +238,35 @@ void export_json_api(Value value,
     }
 }
 
+void export_gpu(Value value,
+    Program& prog, const Export_Params& params, Output_File& ofile)
+{
+    Frag_Export opts;
+    for (auto& p : params.map_) {
+        if (!parse_frag_opt(params, p, opts))
+            params.unknown_parameter(p);
+    }
+
+    ofile.open();
+    At_Program cx(prog);
+    Shape_Program shape(prog);
+    if (!shape.recognize(value))
+        throw Exception(cx, "not a shape");
+    Viewed_Shape vshape(shape, opts);
+    ofile.ostream() << "{\n"
+        << "  is_2d: " << Value{shape.is_2d_} << ";\n"
+        << "  is_3d: " << Value{shape.is_3d_} << ";\n"
+        << "  bbox: [[" << dfmt(shape.bbox_.xmin, dfmt::JSON)
+            << "," << dfmt(shape.bbox_.ymin, dfmt::JSON)
+            << "," << dfmt(shape.bbox_.zmin, dfmt::JSON)
+            << "],[" << dfmt(shape.bbox_.xmax, dfmt::JSON)
+            << "," << dfmt(shape.bbox_.ymax, dfmt::JSON)
+            << "," << dfmt(shape.bbox_.zmax, dfmt::JSON)
+        << "]];\n";
+    vshape.write_curv(ofile.ostream());
+    ofile.ostream() << "}\n";
+}
+
 // wrapper that exports image sequences if requested
 void export_all_png(
     const Shape_Program& shape,
@@ -386,6 +415,8 @@ std::map<std::string, Exporter> exporters = {
     {"frag", {export_frag,
               "GLSL fragment shader (shape only, shadertoy.com compatible)",
               describe_frag_opts}},
+    {"gpu", {export_gpu,
+        "compiled GPU program as Curv data", describe_frag_opts}},
     {"json", {export_json, "JSON expression", describe_no_opts}},
     {"json-api", {export_json_api,
         "program execution results as a JSON stream", describe_frag_opts}},

@@ -31,18 +31,25 @@ String_Builder::get_string()
 void
 String::print(std::ostream& out) const
 {
+    write_curv_string(data_, 0, out);
+}
+
+void
+write_curv_string(const char* s, unsigned indent, std::ostream& out)
+{
     out << '"';
-    for (size_t i = 0; i < size_; ++i) {
-        char c = data_[i];
+    for (; *s != '\0'; ++s) {
+        char c = *s;
         if (c == '$')
             out << "$.";
         else if (c == '"')
             out << "$=";
         else if (c == '\n') {
-            if (i == size_ - 1)
-                out << "\n";
-            else
-                out << "\n|";
+            out << "\n";
+            for (unsigned i = 0; i < indent; ++i)
+                out << " ";
+            if (s[1] != '\0')
+                out << "|";
         } else
             out << c;
     }
