@@ -94,7 +94,31 @@ Scanner::get_token()
             ptr_ = p;
             throw Exception(At_Token(tok, *this), "illegal string escape");
         }
-        while (p < last && *p != '$' && *p != '"' && *p != 0)
+        if (*p == '\n') {
+            ++p;
+            while (p < last && (*p == ' ' || *p == '\t'))
+                ++p;
+            if (p >= last) {
+                throw Exception(At_Token(string_begin_, *this),
+                    "unterminated string literal");
+            }
+            if (*p == '|') {
+                ++p;
+                tok.kind_ = Token::k_string_newline;
+                goto success;
+            }
+            if (*p == '"') {
+                tok.kind_ = Token::k_string_newline;
+                goto success;
+            }
+            tok.first_ = p - first;
+            tok.last_ = tok.first_ + 1;
+            tok.kind_ = Token::k_bad_token;
+            ptr_ = p + 1;
+            throw Exception(At_Token(tok, *this),
+                "expecting \" or | within a multi-line string literal");
+        }
+        while (p < last && *p != '$' && *p != '\n' && *p != '"' && *p != 0)
             ++p;
         tok.kind_ = Token::k_string_segment;
         goto success;

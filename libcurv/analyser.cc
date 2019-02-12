@@ -171,17 +171,21 @@ Shared<Segment>
 Char_Escape_Phrase::analyse(Environ& env) const
 {
     char c;
-    switch (location().range()[1]) {
-    case '"':
-    case '=':
-        c = '"';
-        break;
-    case '$':
-    case '.':
-        c = '$';
-        break;
-    default:
-        die("bad char escape");
+    if (location().token().kind_ == Token::k_string_newline)
+        c = '\n';
+    else {
+        switch (location().range()[1]) {
+        case '"':
+        case '=':
+            c = '"';
+            break;
+        case '$':
+        case '.':
+            c = '$';
+            break;
+        default:
+            die("bad char escape");
+        }
     }
     return make<Literal_Segment>(share(*this), String::make(&c, 1));
 }

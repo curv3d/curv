@@ -657,6 +657,7 @@ parse_string(Scanner& scanner, Token begin)
         case Token::k_string_segment:
             segments.push_back(make<String_Segment_Phrase>(*scanner.source_, tok));
             continue;
+        case Token::k_string_newline:
         case Token::k_char_escape:
             segments.push_back(make<Char_Escape_Phrase>(*scanner.source_, tok));
             continue;

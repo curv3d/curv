@@ -38,7 +38,12 @@ String::print(std::ostream& out) const
             out << "$.";
         else if (c == '"')
             out << "$=";
-        else
+        else if (c == '\n') {
+            if (i == size_ - 1)
+                out << "\n";
+            else
+                out << "\n|";
+        } else
             out << c;
     }
     out << '"';
