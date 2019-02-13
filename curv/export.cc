@@ -13,6 +13,7 @@
 #include <libcurv/filesystem.h>
 #include <libcurv/format.h>
 #include <libcurv/frag.h>
+#include <libcurv/gpu_program.h>
 #include <libcurv/json.h>
 #include <libcurv/program.h>
 #include <libcurv/range.h>
@@ -216,25 +217,15 @@ void export_json_api(Value value,
 
     ofile.open();
     At_Program cx(prog);
-    Shape_Program shape(prog);
-    if (!shape.recognize(value)) {
+    GPU_Program gprog(prog);
+    if (!gprog.recognize(value,  opts)) {
         ofile.ostream() << "{\"value\":";
         write_json_value(value, ofile.ostream());
         ofile.ostream() << "}\n";
     } else {
-        Viewed_Shape vshape(shape, opts);
-        ofile.ostream() << "{\"shape\":{"
-            << "\"is_2d\":" << Value{shape.is_2d_}
-            << ",\"is_3d\":" << Value{shape.is_3d_}
-            << ",\"bbox\":[[" << dfmt(shape.bbox_.xmin, dfmt::JSON)
-                << "," << dfmt(shape.bbox_.ymin, dfmt::JSON)
-                << "," << dfmt(shape.bbox_.zmin, dfmt::JSON)
-                << "],[" << dfmt(shape.bbox_.xmax, dfmt::JSON)
-                << "," << dfmt(shape.bbox_.ymax, dfmt::JSON)
-                << "," << dfmt(shape.bbox_.zmax, dfmt::JSON)
-            << "]],";
-        vshape.write_json(ofile.ostream());
-        ofile.ostream() << "}}\n";
+        ofile.ostream() << "{\"shape\":";
+        gprog.write_json(ofile.ostream());
+        ofile.ostream() << "}\n";
     }
 }
 
@@ -249,22 +240,10 @@ void export_gpu(Value value,
 
     ofile.open();
     At_Program cx(prog);
-    Shape_Program shape(prog);
-    if (!shape.recognize(value))
+    GPU_Program gprog(prog);
+    if (!gprog.recognize(value, opts))
         throw Exception(cx, "not a shape");
-    Viewed_Shape vshape(shape, opts);
-    ofile.ostream() << "{\n"
-        << "  is_2d: " << Value{shape.is_2d_} << ";\n"
-        << "  is_3d: " << Value{shape.is_3d_} << ";\n"
-        << "  bbox: [[" << dfmt(shape.bbox_.xmin, dfmt::JSON)
-            << "," << dfmt(shape.bbox_.ymin, dfmt::JSON)
-            << "," << dfmt(shape.bbox_.zmin, dfmt::JSON)
-            << "],[" << dfmt(shape.bbox_.xmax, dfmt::JSON)
-            << "," << dfmt(shape.bbox_.ymax, dfmt::JSON)
-            << "," << dfmt(shape.bbox_.zmax, dfmt::JSON)
-        << "]];\n";
-    vshape.write_curv(ofile.ostream());
-    ofile.ostream() << "}\n";
+    gprog.write_curv(ofile.ostream());
 }
 
 // wrapper that exports image sequences if requested

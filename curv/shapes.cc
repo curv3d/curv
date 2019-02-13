@@ -8,9 +8,10 @@
 #include <sstream>
 #include <iostream>
 
+template <class SHAPE>
 void
-print_shape(
-    const curv::Shape_Program& shape)
+print_shape_generic(
+    const SHAPE& shape)
 {
     if (shape.is_2d_) std::cerr << "2D";
     if (shape.is_2d_ && shape.is_3d_) std::cerr << "/";
@@ -21,4 +22,18 @@ print_shape(
     if (shape.is_3d_)
         std::cerr << "×" << (shape.bbox_.zmax - shape.bbox_.zmin);
     std::cerr << "\n";
+}
+
+void
+print_shape(
+    const curv::Shape_Program& shape)
+{
+    print_shape_generic(shape);
+}
+
+void
+print_shape(
+    const curv::GPU_Program& shape)
+{
+    print_shape_generic(shape);
 }

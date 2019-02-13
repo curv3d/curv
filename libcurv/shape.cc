@@ -18,8 +18,8 @@ namespace curv {
 Shape_Program::Shape_Program(
     Program& prog)
 :
-    nub_(nub_phrase(prog.phrase_)),
-    system_(prog.system())
+    system_(prog.system()),
+    nub_(nub_phrase(prog.phrase_))
 {
     // mark initial state (no shape has been recognized yet)
     is_2d_ = false;
@@ -125,8 +125,8 @@ Shape_Program::Shape_Program(
     Shared<Record> r,
     Viewed_Shape* vs)
 :
-    nub_(shape.nub_),
     system_(shape.system_),
+    nub_(shape.nub_),
     record_(r),
     viewed_shape_(vs)
 {

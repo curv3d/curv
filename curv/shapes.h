@@ -5,8 +5,9 @@
 #ifndef SHAPES_H
 #define SHAPES_H
 
-#include <libcurv/shape.h>
+#include <libcurv/gpu_program.h>
 
 void print_shape(const curv::Shape_Program&);
+void print_shape(const curv::GPU_Program&);
 
 #endif // include guard

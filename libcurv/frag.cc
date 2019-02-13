@@ -106,7 +106,6 @@ void export_frag_2d(
         "#endif\n"
         "    // convert linear RGB to sRGB\n"
         "    fragColour = vec4(pow(col, vec3(0.454545454545454545)),1.0);\n"
-        "    \n"
         "}\n"
         ;
 }

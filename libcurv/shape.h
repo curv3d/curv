@@ -65,14 +65,14 @@ struct Shape_Program final : public Shape
     // is_shape is initially false, becomes true after recognize() succeeds.
     bool is_shape() const { return is_2d_ || is_3d_; }
 
+    System& system_;
+
     // describes the source code for the shape expression
     Shared<const Phrase> nub_;
 
     Location location() const;
     System& system() const { return system_; }
     Frame* file_frame() const { return nullptr; }
-
-    System& system_;
 
     // shape fields, filled in by recognize()
     Shared<Record> record_;
@@ -84,6 +84,10 @@ struct Shape_Program final : public Shape
     Viewed_Shape* viewed_shape_ = nullptr;
 
     Shape_Program(Program&);
+
+    Shape_Program(System& sys, Shared<const Phrase> nub)
+    : system_(sys), nub_(std::move(nub))
+    {}
 
     // If the value is a shape, fill in the shape fields and return true.
     // Used with the first constructor.

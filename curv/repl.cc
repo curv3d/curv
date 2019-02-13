@@ -236,7 +236,6 @@ void repl(curv::System* sys)
 void interactive_mode(
     curv::System& sys, const curv::geom::viewer::Viewer_Config& opts)
 {
-    (void) opts; // TODO
     sys.use_colour_ = true;
     std::thread repl_thread(repl, &sys);
     view_server.run(opts);

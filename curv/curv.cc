@@ -20,12 +20,13 @@ extern "C" {
 #include <libcurv/context.h>
 #include <libcurv/die.h>
 #include <libcurv/exception.h>
+#include <libcurv/gpu_program.h>
 #include <libcurv/output_file.h>
 #include <libcurv/program.h>
 #include <libcurv/source.h>
 #include <libcurv/system.h>
+
 #include <libcurv/geom/import.h>
-#include <libcurv/shape.h>
 #include <libcurv/geom/tempfile.h>
 #include <libcurv/geom/viewer/viewer.h>
 
@@ -311,11 +312,11 @@ main(int argc, char** argv)
             exporter->second.call(value, prog, oparams, ofile);
             ofile.commit();
         } else {
-            curv::Shape_Program shape{prog};
-            if (shape.recognize(value)) {
-                print_shape(shape);
+            curv::GPU_Program gpu_prog{prog};
+            if (gpu_prog.recognize(value, viewer_config)) {
+                print_shape(gpu_prog);
                 curv::geom::viewer::Viewer viewer(viewer_config);
-                viewer.set_shape(shape);
+                viewer.set_shape(std::move(gpu_prog.vshape_));
                 viewer.run();
             } else {
                 std::cout << value << "\n";
