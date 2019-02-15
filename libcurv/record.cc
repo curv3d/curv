@@ -49,6 +49,16 @@ Record::fields() const
     return {std::move(list)};
 }
 
+std::pair<Symbol, Value>
+value_to_variant(Value val, const Context& cx)
+{
+    Shared<Record> rec = val.to<Record>(cx);
+    if (rec->size() != 1)
+        throw Exception(cx, stringify(val, " is not a variant"));
+    auto i = rec->iter();
+    return std::pair<Symbol,Value>{i->key(), i->value(cx)};
+}
+
 void
 DRecord::print(std::ostream& out) const
 {

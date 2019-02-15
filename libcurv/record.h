@@ -64,6 +64,8 @@ struct Record : public Ref_Value
     virtual std::unique_ptr<Iter> iter() const = 0;
 };
 
+std::pair<Symbol, Value> value_to_variant(Value, const Context& cx);
+
 inline std::ostream&
 operator<<(std::ostream& out, const Record& rec)
 {
