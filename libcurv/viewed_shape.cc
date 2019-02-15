@@ -82,9 +82,12 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
                         picker->config_.type_,
                         value,
                         At_System{shape.system_}};
-                    param_.insert(std::pair<const std::string,Parameter>(
+                    param_.insert(std::pair<const std::string,Parameter>{
                         name.c_str(),
-                        Parameter{picker->config_, state, state}));
+                        Parameter{
+                            std::string("rv_") + name.c_str(),
+                            picker->config_,
+                            state}});
                     cparams->fields_[name] =
                         {make<Uniform_Variable>(
                             name,

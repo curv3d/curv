@@ -14,8 +14,10 @@ namespace curv {
 
 // Viewed_Shape is a representation of a Shape that is directly usable by
 // the Viewer. It encodes the frag program, uniform variables, and pickers.
+//
 // It is self contained, containing no references to data owned by the
-// evaluator thread.
+// evaluator thread. So it uses std::string, not Shared<String>, because
+// Shared pointers can't be shared between threads.
 
 // Contains an array of Parameters. A Parameter comprises:
 //   name
@@ -44,9 +46,20 @@ struct Viewed_Shape
     // If the shape is parametric, there will be one or more parameters.
     struct Parameter
     {
+        std::string identifier_; // name of GLSL uniform variable
         Picker::Config pconfig_;
         Picker::State pstate_;
         Picker::State default_state_;
+        Parameter(
+            std::string identifier,
+            Picker::Config config,
+            Picker::State state)
+        :
+            identifier_(identifier),
+            pconfig_(config),
+            pstate_(state),
+            default_state_(state)
+        {}
     };
     tsl::ordered_map<std::string, Parameter> param_{};
 

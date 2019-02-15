@@ -346,20 +346,20 @@ void Viewer::render()
 
         for (auto& p : shape_.param_) {
             // TODO: precompute uniform id
-            auto name = stringify("rv_",p.first);
+            auto& name = p.second.identifier_;
             switch (p.second.pconfig_.type_) {
             case Picker::Type::slider:
             case Picker::Type::scale_picker:
-                shader_.setUniform(name->c_str(), float(p.second.pstate_.num_));
+                shader_.setUniform(name.c_str(), float(p.second.pstate_.num_));
                 break;
             case Picker::Type::int_slider:
-                shader_.setUniform(name->c_str(), float(p.second.pstate_.int_));
+                shader_.setUniform(name.c_str(), float(p.second.pstate_.int_));
                 break;
             case Picker::Type::checkbox:
-                shader_.setUniform(name->c_str(), int(p.second.pstate_.bool_));
+                shader_.setUniform(name.c_str(), int(p.second.pstate_.bool_));
                 break;
             case Picker::Type::colour_picker:
-                shader_.setUniform(name->c_str(), p.second.pstate_.vec3_, 3);
+                shader_.setUniform(name.c_str(), p.second.pstate_.vec3_, 3);
                 break;
             default:
                 die("picker with bad gltype");
