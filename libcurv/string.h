@@ -115,6 +115,7 @@ struct String_Ref : public Shared<const String>
     :
         Shared<const String>(std::move(str))
     {}
+    operator const char*() { return (*this)->c_str(); }
 };
 
 /// Factory class for building a curv::String using ostream operations.
