@@ -115,6 +115,12 @@ public:
         send(Request::k_display_shape);
         //assert(request_shape_.empty());
     }
+    void display_shape(curv::Viewed_Shape vshape)
+    {
+        std::swap(request_shape_, vshape);
+        send(Request::k_display_shape);
+        //assert(request_shape_.empty());
+    }
     // Called by client thread. Close the viewer window, if open, and cause
     // the server to stop running (the run() function will return).
     void exit()

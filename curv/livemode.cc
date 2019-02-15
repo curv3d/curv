@@ -67,7 +67,9 @@ poll_editor()
 }
 
 void
-poll_file(curv::System* sys, const char* editor, const char* filename)
+poll_file(
+    curv::System* sys, curv::geom::viewer::Viewer_Config* opts,
+    const char* editor, const char* filename)
 {
     for (;;) {
         struct stat st;
@@ -82,10 +84,10 @@ poll_file(curv::System* sys, const char* editor, const char* filename)
                 curv::Program prog{std::move(file), *sys};
                 prog.compile();
                 auto value = prog.eval();
-                curv::Shape_Program shape{prog};
-                if (shape.recognize(value)) {
-                    print_shape(shape);
-                    live_view_server.display_shape(shape);
+                curv::GPU_Program gprog{prog};
+                if (gprog.recognize(value, *opts)) {
+                    print_shape(gprog);
+                    live_view_server.display_shape(std::move(gprog.vshape_));
                 } else {
                     std::cout << value << "\n";
                 }
@@ -118,7 +120,7 @@ live_mode(curv::System& sys, const char* editor, const char* filename,
         if (!poll_editor())
             return EXIT_FAILURE;
     }
-    std::thread poll_file_thread{poll_file, &sys, editor, filename};
+    std::thread poll_file_thread{poll_file, &sys, &opts, editor, filename};
     live_view_server.run(opts);
     if (poll_file_thread.joinable())
         poll_file_thread.join();
