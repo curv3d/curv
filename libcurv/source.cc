@@ -6,6 +6,7 @@
 
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
+#include <libcurv/filesystem.h>
 
 #include <cerrno>
 #include <cstring>
@@ -58,6 +59,8 @@ File_Source::File_Source(String_Ref filename, const Context& ctx)
 :
     String_Source(filename, readfile(filename->c_str(), ctx))
 {
+    if (Filesystem::path(filename).extension() == ".gpu")
+        type_ = Type::gpu;
 }
 
 } // namespace curv

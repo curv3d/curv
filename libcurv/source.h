@@ -23,7 +23,10 @@ struct Context;
 /// Subclasses provide storage management for the contents.
 struct Source : public Shared_Base, public Range<const char*>
 {
+    enum class Type { curv, gpu };
+
     Shared<const String> name_;
+    Type type_ = Type::curv;
 protected:
     Source(String_Ref name, const char*f, const char*l)
     :
