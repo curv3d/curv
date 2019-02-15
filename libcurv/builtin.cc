@@ -588,50 +588,6 @@ struct Match_Function : public Legacy_Function
     }
 };
 
-struct Int_Slider_Function : public Legacy_Function
-{
-    static const char* name() { return "int_slider"; }
-    Int_Slider_Function() : Legacy_Function(2,name()) {}
-    Value call(Frame& f) override
-    {
-        At_Arg cx(*this, f);
-        int lo = f[0].to_int(INT_MIN, INT_MAX, At_Index(0,cx));
-        int hi = f[1].to_int(INT_MIN, INT_MAX, At_Index(1,cx));
-        return {make<Int_Slider_Picker>(lo, hi)};
-    }
-};
-
-struct Slider_Function : public Legacy_Function
-{
-    static const char* name() { return "slider"; }
-    Slider_Function() : Legacy_Function(2,name()) {}
-    Value call(Frame& f) override
-    {
-        At_Arg cx(*this, f);
-        double lo = f[0].to_num(At_Index(0,cx));
-        double hi = f[1].to_num(At_Index(1,cx));
-        return {make<Slider_Picker>(lo, hi)};
-    }
-};
-
-struct Scale_Picker_Function : public Scale_Picker
-{
-    static const char* name() { return "scale_picker"; }
-    Scale_Picker_Function() : Scale_Picker() {}
-};
-
-struct Checkbox_Function : public Checkbox_Picker
-{
-    static const char* name() { return "checkbox"; }
-    Checkbox_Function() : Checkbox_Picker() {}
-};
-
-struct Colour_Picker_Function : public Colour_Picker
-{
-    static const char* name() { return "colour_picker"; }
-    Colour_Picker_Function() : Colour_Picker() {}
-};
-
 // The filename argument to "file", if it is a relative filename,
 // is interpreted relative to the parent directory of the source file from
 // which "file" is called.
@@ -1022,11 +978,6 @@ builtin_namespace()
     FUNCTION(Decode_Function),
     FUNCTION(Encode_Function),
     FUNCTION(Match_Function),
-    FUNCTION(Int_Slider_Function),
-    FUNCTION(Slider_Function),
-    FUNCTION(Scale_Picker_Function),
-    FUNCTION(Checkbox_Function),
-    FUNCTION(Colour_Picker_Function),
 
     {"file", make<Builtin_Meaning<File_Metafunction>>()},
     {"print", make<Builtin_Meaning<Print_Metafunction>>()},

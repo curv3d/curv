@@ -1616,4 +1616,26 @@ show_bbox shape =
         shape >> colour green `intersection` bb,
     );
 
+/// VALUE PICKERS ///
+slider(lo,hi) =
+  { call = is_num;
+    picker = {slider:[lo,hi]};
+  };
+int_slider(lo,hi) =
+  { call = is_num;
+    picker = {int_slider:[lo,hi]};
+  };
+scale_picker =
+  { call = is_num;
+    picker = {scale_picker:null};
+  };
+checkbox =
+  { call = is_bool;
+    picker = {checkbox:null};
+  };
+colour_picker =
+  { call = is_vec3;
+    picker = {colour_picker:null};
+  };
+
 }

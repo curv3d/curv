@@ -68,30 +68,24 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
         auto cparams = make<DRecord>();
         record_pattern_each_parameter(*sh_call, shape.system_,
             [&](Symbol name, Value pred, Value value) -> void {
-                auto picker = pred.dycast<Picker>();
-              #if 0
-                std::cerr << "> " << name;
-                if (picker) {
-                    std::cerr << " :: ";
-                    picker->config_.write(std::cerr);
-                }
-                std::cerr << " = " << value << "\n";
-              #endif
-                if (picker) {
+                auto pred_record = pred.dycast<Record>();
+                if (pred_record && pred_record->hasfield("picker")) {
+                    auto picker = pred_record->getfield("picker",cx);
+                    Picker::Config config(picker, cx);
                     Picker::State state{
-                        picker->config_.type_,
+                        config.type_,
                         value,
                         At_System{shape.system_}};
                     param_.insert(std::pair<const std::string,Parameter>{
                         name.c_str(),
                         Parameter{
                             std::string("rv_") + name.c_str(),
-                            picker->config_,
+                            config,
                             state}});
                     cparams->fields_[name] =
                         {make<Uniform_Variable>(
                             name,
-                            picker->config_.gltype_)};
+                            config.gltype_)};
                 } else {
                     cparams->fields_[name] = value;
                 }

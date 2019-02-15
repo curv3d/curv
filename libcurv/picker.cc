@@ -49,31 +49,6 @@ Picker::Config::Config(Value val, const Context& cx)
 }
 
 void
-Picker::Config::write(std::ostream& out) const
-{
-    switch (type_) {
-    case Type::slider:
-        out << "slider(" << slider_.low_
-            << "," << slider_.high_ << ")";
-        return;
-    case Type::int_slider:
-        out << "int_slider(" << int_slider_.low_
-            << "," << int_slider_.high_ << ")";
-        return;
-    case Type::scale_picker:
-        out << "scale_picker";
-        return;
-    case Type::checkbox:
-        out << "checkbox";
-        return;
-    case Type::colour_picker:
-        out << "colour_picker";
-        return;
-    }
-    out << "bad picker config type " << int(type_);
-}
-
-void
 Picker::Config::write_json(std::ostream& out) const
 {
     switch (type_) {
@@ -223,31 +198,6 @@ Uniform_Variable::Uniform_Variable(Symbol name, GL_Type gltype)
 void Uniform_Variable::print(std::ostream& out) const
 {
     out << "<uniform " << name_ << ">";
-}
-
-Value Slider_Picker::call(Value v, Frame& f)
-{
-    return isnum(v);
-}
-
-Value Int_Slider_Picker::call(Value v, Frame& f)
-{
-    return isnum(v);
-}
-
-Value Scale_Picker::call(Value v, Frame& f)
-{
-    return isnum(v);
-}
-
-Value Checkbox_Picker::call(Value v, Frame& f)
-{
-    return isbool(v);
-}
-
-Value Colour_Picker::call(Value v, Frame& f)
-{
-    return isvec3(v);
 }
 
 } // namespace curv
