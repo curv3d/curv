@@ -66,6 +66,10 @@ public:
     {
         return *a1 == *a2;
     }
+    friend bool operator==(Symbol a1, const char* a2) noexcept
+    {
+        return strcmp(a1->c_str(), a2) == 0;
+    }
     friend bool operator!=(Symbol a1, Symbol a2) noexcept
     {
         return !(*a1 == *a2);
