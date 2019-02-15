@@ -3,12 +3,50 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/picker.h>
-#include <libcurv/exception.h>
+
+#include <libcurv/context.h>
 #include <libcurv/die.h>
+#include <libcurv/exception.h>
 #include <libcurv/math.h>
+
 #include <climits>
 
 namespace curv {
+
+Picker::Config::Config(Value val, const Context& cx)
+{
+    auto config_v = value_to_variant(val, cx);
+    if (config_v.first == "slider") {
+        type_ = Picker::Type::slider;
+        gltype_ = GL_Type::Num();
+        At_Field list_cx("slider", cx);
+        auto list = config_v.second.to<List>(list_cx);
+        list->assert_size(2, list_cx);
+        slider_.low_ = list->at(0).to_num(At_Index(0, list_cx));
+        slider_.high_ = list->at(1).to_num(At_Index(1, list_cx));
+    } else if (config_v.first == "int_slider") {
+        type_ = Picker::Type::int_slider;
+        gltype_ = GL_Type::Num();
+        At_Field list_cx("int_slider", cx);
+        auto list = config_v.second.to<List>(list_cx);
+        list->assert_size(2, list_cx);
+        int_slider_.low_ =
+            list->at(0).to_int(INT_MIN,INT_MAX,At_Index(0, list_cx));
+        int_slider_.high_
+            = list->at(1).to_int(INT_MIN,INT_MAX,At_Index(1, list_cx));
+    } else if (config_v.first == "scale_picker") {
+        type_ = Picker::Type::scale_picker;
+        gltype_ = GL_Type::Num();
+    } else if (config_v.first == "checkbox") {
+        type_ = Picker::Type::checkbox;
+        gltype_ = GL_Type::Bool();
+    } else if (config_v.first == "colour_picker") {
+        type_ = Picker::Type::colour_picker;
+        gltype_ = GL_Type::Vec(3);
+    } else {
+        throw Exception(cx, "not a picker descriptor");
+    }
+}
 
 void
 Picker::Config::write(std::ostream& out) const

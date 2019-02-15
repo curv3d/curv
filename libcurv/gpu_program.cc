@@ -68,40 +68,9 @@ GPU_Program::recognize(Value val, const Frag_Export& opts)
                 .to<String>(At_Field("name",picx))->c_str();
             auto label = prec->getfield(label_key, picx)
                 .to<String>(At_Field("label",picx))->c_str();
-            At_Field config_cx("config", picx);
-            auto config_v = value_to_variant(
-                prec->getfield(config_key, picx), config_cx);
-            Picker::Config config;
-            if (config_v.first == "slider") {
-                config.type_ = Picker::Type::slider;
-                config.gltype_ = GL_Type::Num();
-                At_Field list_cx("slider", config_cx);
-                auto list = config_v.second.to<List>(list_cx);
-                list->assert_size(2, list_cx);
-                config.slider_.low_ = list->at(0).to_num(At_Index(0, list_cx));
-                config.slider_.high_ = list->at(1).to_num(At_Index(1, list_cx));
-            } else if (config_v.first == "int_slider") {
-                config.type_ = Picker::Type::int_slider;
-                config.gltype_ = GL_Type::Num();
-                At_Field list_cx("int_slider", config_cx);
-                auto list = config_v.second.to<List>(list_cx);
-                list->assert_size(2, list_cx);
-                config.int_slider_.low_ =
-                    list->at(0).to_int(INT_MIN,INT_MAX,At_Index(0, list_cx));
-                config.int_slider_.high_
-                    = list->at(1).to_int(INT_MIN,INT_MAX,At_Index(1, list_cx));
-            } else if (config_v.first == "scale_picker") {
-                config.type_ = Picker::Type::scale_picker;
-                config.gltype_ = GL_Type::Num();
-            } else if (config_v.first == "checkbox") {
-                config.type_ = Picker::Type::checkbox;
-                config.gltype_ = GL_Type::Bool();
-            } else if (config_v.first == "colour_picker") {
-                config.type_ = Picker::Type::colour_picker;
-                config.gltype_ = GL_Type::Vec(3);
-            } else {
-                throw Exception(config_cx, "not a picker descriptor");
-            }
+            Picker::Config config(
+                prec->getfield(config_key, picx),
+                At_Field("config", picx));
             auto state_val = prec->getfield(value_key, picx);
             Picker::State state(config.type_, state_val, At_Field("value",picx));
             vshape_.param_.insert(

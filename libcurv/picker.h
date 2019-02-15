@@ -36,6 +36,8 @@ struct Picker : public Function
                 int high_;
             } int_slider_;
         };
+        Config() {}
+        Config(Value, const Context&);
         void write(std::ostream&) const;
         void write_json(std::ostream&) const;
         void write_curv(std::ostream&) const;
