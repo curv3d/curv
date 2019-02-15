@@ -156,26 +156,6 @@ bool parse_frag_opt(
     return false;
 }
 
-void export_frag(Value value,
-    Program& prog,
-    const Export_Params& params,
-    Output_File& ofile)
-{
-    Frag_Export opts;
-    for (auto& p : params.map_) {
-        if (!parse_frag_opt(params, p, opts))
-            params.unknown_parameter(p);
-    }
-
-    Shape_Program shape(prog);
-    if (!shape.recognize(value)) {
-        At_Program cx(prog);
-        throw Exception(cx, "not a shape");
-    }
-    ofile.open();
-    export_frag(shape, opts, ofile.ostream());
-}
-
 void export_cpp(Value value,
     Program& prog,
     const Export_Params& params,
@@ -391,11 +371,8 @@ std::map<std::string, Exporter> exporters = {
     {"obj", {export_obj, "OBJ mesh file (3D shape only)", describe_mesh_opts}},
     {"x3d", {export_x3d, "X3D colour mesh file (3D shape only)",
              describe_colour_mesh_opts}},
-    {"frag", {export_frag,
-              "GLSL fragment shader (shape only, shadertoy.com compatible)",
-              describe_frag_opts}},
     {"gpu", {export_gpu,
-        "compiled GPU program as Curv data", describe_frag_opts}},
+        "compiled GPU program, as Curv expression", describe_frag_opts}},
     {"json", {export_json, "JSON expression", describe_no_opts}},
     {"json-api", {export_json_api,
         "program execution results as a JSON stream", describe_frag_opts}},

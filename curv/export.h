@@ -68,11 +68,6 @@ extern void export_x3d(curv::Value,
     const Export_Params& params,
     curv::Output_File&);
 
-extern void export_frag(curv::Value value,
-    curv::Program&,
-    const Export_Params& params,
-    curv::Output_File&);
-
 extern void export_json(curv::Value value,
     curv::Program&,
     const Export_Params& params,
