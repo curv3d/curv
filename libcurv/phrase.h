@@ -594,5 +594,11 @@ void each_item(Phrase& phrase, std::function<void(Phrase&)> func);
 /// in error messages.
 Shared<const Phrase> nub_phrase(Shared<const Phrase>);
 
+/// If ph is a Call_Phrase, return the function part, otherwise return ph.
+Shared<const Phrase> func_part(Shared<const Phrase> ph);
+
+/// If ph is a Call_Phrase, return the argument part, otherwise return ph.
+Shared<const Phrase> arg_part(Shared<const Phrase> ph);
+
 } // namespace curv
 #endif // header guard

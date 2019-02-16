@@ -766,7 +766,7 @@ GL_Value Call_Expr::gl_eval(GL_Frame& f) const
     Value v = val;
     for (;;) {
         if (auto fun = v.dycast<Function>()) {
-            return fun->gl_call_expr(*arg_, call_phrase(), f);
+            return fun->gl_call_expr(*arg_, syntax_, f);
         }
         if (auto r = v.dycast<Record>()) {
             static Symbol call_key = "call";

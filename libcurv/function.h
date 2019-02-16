@@ -12,6 +12,9 @@
 
 namespace curv {
 
+// call a function
+Value call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f);
+
 /// A function value.
 struct Function : public Ref_Value
 {
@@ -48,7 +51,7 @@ struct Function : public Ref_Value
 
     // Generate a call to the function during geometry compilation.
     // The argument is represented as an expression.
-    virtual GL_Value gl_call_expr(Operation&, const Call_Phrase*, GL_Frame&) const;
+    virtual GL_Value gl_call_expr(Operation&, Shared<const Phrase>, GL_Frame&) const;
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const;
@@ -85,7 +88,7 @@ struct Legacy_Function : public Function
 
     // Generate a call to the function during geometry compilation.
     // The argument is represented as an expression.
-    virtual GL_Value gl_call_expr(Operation&, const Call_Phrase*, GL_Frame&) const override;
+    virtual GL_Value gl_call_expr(Operation&, Shared<const Phrase>, GL_Frame&) const override;
 
     // generate a call to the function during geometry compilation
     virtual GL_Value gl_call(GL_Frame&) const;
@@ -162,7 +165,7 @@ struct Closure : public Function
     virtual Value try_call(Value, Frame&) override;
 
     // generate a call to the function during geometry compilation
-    virtual GL_Value gl_call_expr(Operation&, const Call_Phrase*, GL_Frame&) const override;
+    virtual GL_Value gl_call_expr(Operation&, Shared<const Phrase>, GL_Frame&) const override;
 };
 
 struct Piecewise_Function : public Function

@@ -14,7 +14,7 @@
 namespace curv {
 
 struct Frame_Base;
-struct Call_Phrase;
+struct Phrase;
 struct System;
 
 /// A Frame is an evaluation context.
@@ -42,10 +42,16 @@ struct Frame_Base
     Frame* parent_frame_;
 
     /// If this is a function call frame, then call_phrase_ is the source code
-    /// for the function call, otherwise it's nullptr. This is debug metadata.
+    /// for the function call, otherwise it's nullptr.
+    ///
     /// Program frames do not have a call_phrase_. If the call_phrase_ is null,
     /// then the frame does not appear in a stack trace.
-    const Call_Phrase* call_phrase_;
+    ///
+    /// In the common case, *call_phrase_ is a Call_Phrase. However, in the
+    /// case of a builtin function B that takes a function F as an argument,
+    /// there is no Call_Phrase in Curv source code where F is called, so
+    /// Call_Phrase is a best effort approximation, such as the call to B.
+    Shared<const Phrase> call_phrase_;
 
     /// Slot array containing the values of nonlocal bindings.
     ///
@@ -66,13 +72,7 @@ struct Frame_Base
         return array_[i];
     }
 
-    Frame_Base(System& sys, Frame* parent, const Call_Phrase* src, Module* nl)
-    :
-        system_(sys),
-        parent_frame_(parent),
-        call_phrase_(src),
-        nonlocals_(nl)
-    {}
+    Frame_Base(System&, Frame* parent, Shared<const Phrase>, Module*);
 };
 
 } // namespace curv

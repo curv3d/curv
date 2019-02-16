@@ -28,10 +28,7 @@ System& At_Frame::system() const { return call_frame_.system_; }
 Frame* At_Frame::frame() const { return &call_frame_; }
 const Phrase& At_Frame::syntax() const
 {
-    // A function call frame should always have a non-null call_phrase_,
-    // except when it doesn't. When a primitive operation takes a function
-    // argument, it may be impossible to construct a call_phrase for calling
-    // the function argument. This is a hole in the design.
+    // A function call frame should always have a non-null call_phrase_.
     if (call_frame_.call_phrase_ == nullptr)
         throw Exception{*this,
             "Internal error: At_Frame::syntax(): call_phrase_ is null"};
@@ -117,7 +114,7 @@ void
 At_Arg::get_locations(std::list<Location>& locs) const
 {
     if (call_frame_.call_phrase_ != nullptr) {
-        auto arg = call_frame_.call_phrase_->arg_;
+        auto arg = arg_part(call_frame_.call_phrase_);
         locs.push_back(arg->location());
         // We only dump the stack starting at the parent call frame,
         // for cosmetic reasons. It looks stupid to underline one of the
@@ -132,14 +129,11 @@ System& At_Arg::system() const { return call_frame_.system_; }
 Frame* At_Arg::frame() const { return &call_frame_; }
 const Phrase& At_Arg::syntax() const
 {
-    // A function call frame should always have a non-null call_phrase_,
-    // except when it doesn't. When a primitive operation takes a function
-    // argument, it may be impossible to construct a call_phrase for calling
-    // the function argument. This is a hole in the design.
+    // A function call frame should always have a non-null call_phrase_.
     if (call_frame_.call_phrase_ == nullptr)
         throw Exception{At_Frame(call_frame_),
             "Internal error: At_Arg::syntax(): call_phrase_ is null"};
-    return *call_frame_.call_phrase_->arg_;
+    return *arg_part(call_frame_.call_phrase_);
 }
 
 Shared<const String>
@@ -169,7 +163,7 @@ At_Metacall::rewrite_message(Shared<const String> msg) const
 void
 At_Metacall_With_Call_Frame::get_locations(std::list<Location>& locs) const
 {
-    auto arg = call_frame_.call_phrase_->arg_;
+    auto arg = arg_part(call_frame_.call_phrase_);
     locs.push_back(arg->location());
     get_frame_locations(call_frame_.parent_frame_, locs);
 }
@@ -180,7 +174,7 @@ System& At_Metacall_With_Call_Frame::system() const
 Frame* At_Metacall_With_Call_Frame::frame() const { return &call_frame_; }
 const Phrase& At_Metacall_With_Call_Frame::syntax() const
 {
-    return *call_frame_.call_phrase_->arg_;
+    return *arg_part(call_frame_.call_phrase_);
 }
 Shared<const String>
 At_Metacall_With_Call_Frame::rewrite_message(Shared<const String> msg) const

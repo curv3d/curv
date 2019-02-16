@@ -35,4 +35,24 @@ nub_phrase(Shared<const Phrase> ph)
     return ph;
 }
 
+Shared<const Phrase>
+func_part(Shared<const Phrase> ph)
+{
+    auto cp = cast<const Call_Phrase>(ph);
+    if (cp != nullptr)
+        return cp->function_;
+    else
+        return ph;
+}
+
+Shared<const Phrase>
+arg_part(Shared<const Phrase> ph)
+{
+    auto cp = cast<const Call_Phrase>(ph);
+    if (cp != nullptr)
+        return cp->arg_;
+    else
+        return ph;
+}
+
 } // namespace curv

@@ -134,9 +134,9 @@ struct Class_Name : public Legacy_Function \
         Shared<Operation> make_expr(Shared<Operation> x) const \
         { \
             return make<Call_Expr>( \
-                share(*cx.call_frame_.call_phrase_), \
+                cx.call_frame_.call_phrase_, \
                 make<Constant>( \
-                    cx.call_frame_.call_phrase_->function_, \
+                    func_part(cx.call_frame_.call_phrase_), \
                     Value{share(cx.fun_)}), \
                 x); \
         } \
@@ -313,12 +313,12 @@ struct Max_Function : public Legacy_Function
             Shared<Operation> x, Shared<Operation> y) const
         {
             Shared<List_Expr> args =
-                List_Expr::make({x, y}, cx.call_frame_.call_phrase_->arg_);
+                List_Expr::make({x, y}, arg_part(cx.call_frame_.call_phrase_));
             args->init();
             return make<Call_Expr>(
-                share(*cx.call_frame_.call_phrase_),
+                cx.call_frame_.call_phrase_,
                 make<Constant>(
-                    cx.call_frame_.call_phrase_->function_,
+                    func_part(cx.call_frame_.call_phrase_),
                     Value{share(cx.fun_)}),
                 args);
         }
@@ -334,7 +334,7 @@ struct Max_Function : public Legacy_Function
     {
         return array_op.reduce(Scalar_Op(*this, args), -INFINITY, args[0]);
     }
-    GL_Value gl_call_expr(Operation& argx, const Call_Phrase*, GL_Frame& f)
+    GL_Value gl_call_expr(Operation& argx, Shared<const Phrase>, GL_Frame& f)
     const override
     {
         return gl_minmax(name(),argx,f);
@@ -357,12 +357,12 @@ struct Min_Function : public Legacy_Function
             Shared<Operation> x, Shared<Operation> y) const
         {
             Shared<List_Expr> args =
-                List_Expr::make({x, y}, cx.call_frame_.call_phrase_->arg_);
+                List_Expr::make({x, y}, arg_part(cx.call_frame_.call_phrase_));
             args->init();
             return make<Call_Expr>(
-                share(*cx.call_frame_.call_phrase_),
+                cx.call_frame_.call_phrase_,
                 make<Constant>(
-                    cx.call_frame_.call_phrase_->function_,
+                    func_part(cx.call_frame_.call_phrase_),
                     Value{share(cx.fun_)}),
                 args);
         }
@@ -378,7 +378,7 @@ struct Min_Function : public Legacy_Function
     {
         return array_op.reduce(Scalar_Op(*this, args), INFINITY, args[0]);
     }
-    GL_Value gl_call_expr(Operation& argx, const Call_Phrase*, GL_Frame& f)
+    GL_Value gl_call_expr(Operation& argx, Shared<const Phrase>, GL_Frame& f)
     const override
     {
         return gl_minmax("min",argx,f);
@@ -430,16 +430,16 @@ struct Mag_Function : public Legacy_Function
         // The computation failed. Second fastest path: assume a mix of numbers
         // and reactive numbers, try to return a reactive result.
         Shared<List_Expr> rlist =
-            List_Expr::make(list->size(),args.call_phrase_->arg_);
+            List_Expr::make(list->size(),arg_part(args.call_phrase_));
         for (unsigned i = 0; i < list->size(); ++i) {
             Value val = list->at(i);
             if (val.is_num()) {
-                rlist->at(i) = make<Constant>(args.call_phrase_->arg_, val);
+                rlist->at(i) = make<Constant>(arg_part(args.call_phrase_), val);
                 continue;
             }
             auto r = val.dycast<Reactive_Value>();
             if (r && r->gltype_ == GL_Type::Num()) {
-                rlist->at(i) = r->expr(*args.call_phrase_->arg_);
+                rlist->at(i) = r->expr(*arg_part(args.call_phrase_));
                 continue;
             }
             rlist = nullptr;
@@ -450,9 +450,9 @@ struct Mag_Function : public Legacy_Function
             return {make<Reactive_Expression>(
                 GL_Type::Num(),
                 make<Call_Expr>(
-                    share(*args.call_phrase_),
+                    args.call_phrase_,
                     make<Constant>(
-                        args.call_phrase_->function_,
+                        func_part(args.call_phrase_),
                         Value{share(*this)}),
                     rlist),
                 At_Arg(*this, args))};

@@ -57,7 +57,7 @@ struct GL_Frame_Base
     /// for the function call. If it is a frame for a reactive value expression,
     /// then it's source code for the expression. Otherwise it's nullptr.
     /// If not null, then the phrase creates a stack trace entry.
-    const Phrase* call_phrase_;
+    Shared<const Phrase> call_phrase_;
 
     /// Slot array containing the values of nonlocal bindings.
     ///
@@ -82,12 +82,12 @@ struct GL_Frame_Base
         GL_Compiler& g,
         const Context* cx,
         GL_Frame* parent,
-        const Phrase* src)
+        Shared<const Phrase> src)
     :
         gl(g),
         root_context_(cx),
         parent_frame_(parent),
-        call_phrase_(src),
+        call_phrase_(std::move(src)),
         nonlocals_(nullptr)
     {}
 };

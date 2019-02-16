@@ -449,9 +449,9 @@ string_at(const String& string, Value index, const Context& cx)
     return {String::make(string.data()+i, 1)};
 }
 Value
-value_at_path(Value a, const List& path, const Call_Phrase& callph, Frame& f)
+value_at_path(Value a, const List& path, Shared<const Phrase> callph, Frame& f)
 {
-    At_Phrase cx(*callph.arg_, f);
+    At_Phrase cx(*arg_part(callph), f);
     At_Index icx(0, cx);
     size_t i = 0;
     for (; i < path.size(); ++i) {
@@ -478,9 +478,9 @@ value_at_path(Value a, const List& path, const Call_Phrase& callph, Frame& f)
                 return {make<Reactive_Expression>(
                     GL_Type::Num(),
                     make<Call_Expr>(
-                        share(callph),
-                        make<Constant>(callph.function_, a),
-                        make<Constant>(callph.arg_, b)),
+                        callph,
+                        make<Constant>(func_part(callph), a),
+                        make<Constant>(arg_part(callph), b)),
                     icx)};
             }
             // TODO: reactive: handle more cases
@@ -496,16 +496,16 @@ domain_error:
         msg << path[i];
     }
     msg << "]: domain error";
-    throw Exception(At_Phrase(callph, f), msg.str());
+    throw Exception(At_Phrase(*callph, f), msg.str());
 }
 Value
-call(Value func, Value arg, const Call_Phrase* call_phrase, Frame& f)
+call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
 {
     static Symbol callkey = "call";
     Value funv = func;
     for (;;) {
         if (!funv.is_ref())
-            throw Exception(At_Phrase(*call_phrase->function_, f),
+            throw Exception(At_Phrase(*func_part(call_phrase), f),
                 stringify(funv,": not a function"));
         Ref_Value& funp( funv.get_ref_unsafe() );
         switch (funp.type_) {
@@ -530,19 +530,19 @@ call(Value func, Value arg, const Call_Phrase* call_phrase, Frame& f)
         case Ref_Value::ty_list:
         case Ref_Value::ty_reactive:
           {
-            At_Phrase cx(*call_phrase->arg_, f);
+            At_Phrase cx(*arg_part(call_phrase), f);
             auto path = arg.to<List>(cx);
-            return value_at_path(funv, *path, *call_phrase, f);
+            return value_at_path(funv, *path, call_phrase, f);
           }
         }
-        throw Exception(At_Phrase(*call_phrase->function_, f),
+        throw Exception(At_Phrase(*func_part(call_phrase), f),
             stringify(func,": not a function"));
     }
 }
 Value
 Call_Expr::eval(Frame& f) const
 {
-    return curv::call(fun_->eval(f), arg_->eval(f), call_phrase(), f);
+    return call_func(fun_->eval(f), arg_->eval(f), syntax_, f);
 }
 
 Shared<List>
@@ -924,8 +924,7 @@ Predicate_Assertion_Expr::eval(Frame& f) const
     Value val = arg1_->eval(f);
     Value pred = arg2_->eval(f);
     bool r =
-        curv::call(pred, val, call_phrase(), f)
-        .to_bool(At_Phrase(*syntax_, f));
+        call_func(pred, val, syntax_, f).to_bool(At_Phrase(*syntax_, f));
     if (r) return val;
     throw Exception(At_Phrase(*syntax_, f), "predicate assertion failed");
 }
@@ -938,7 +937,7 @@ Parametric_Expr::eval(Frame& f) const
     auto closure = fun.dycast<Closure>();
     if (closure == nullptr)
         throw Exception(cx, "internal error in Parametric_Expr");
-    Call_Phrase* call_phrase = nullptr; // TODO?
+    Shared<const Phrase> call_phrase = syntax_; // TODO?
     std::unique_ptr<Frame> f2 {
         Frame::make(closure->nslots_, f.system_, &f, call_phrase, nullptr)
     };

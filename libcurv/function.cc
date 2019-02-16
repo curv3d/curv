@@ -25,10 +25,10 @@ Function::print(std::ostream& out) const
 }
 
 GL_Value
-Function::gl_call_expr(Operation& arg, const Call_Phrase* call_phrase, GL_Frame& f)
+Function::gl_call_expr(Operation& arg, Shared<const Phrase> call_phrase, GL_Frame& f)
 const
 {
-    throw Exception(At_GL_Phrase(call_phrase->function_, f),
+    throw Exception(At_GL_Phrase(func_part(call_phrase), f),
         "this function is not supported");
 }
 
@@ -66,7 +66,7 @@ Legacy_Function::try_call(Value arg, Frame& f)
 
 GL_Value
 Legacy_Function::gl_call_expr(
-    Operation& arg, const Call_Phrase* call_phrase, GL_Frame& f)
+    Operation& arg, Shared<const Phrase> call_phrase, GL_Frame& f)
 const
 {
     auto f2 = GL_Frame::make(nslots_, f.gl, nullptr, &f, call_phrase);
@@ -118,7 +118,7 @@ Closure::try_call(Value arg, Frame& f)
 }
 
 GL_Value
-Closure::gl_call_expr(Operation& arg, const Call_Phrase* cp, GL_Frame& f) const
+Closure::gl_call_expr(Operation& arg, Shared<const Phrase> cp, GL_Frame& f) const
 {
     // create a frame to call this closure
     auto f2 = GL_Frame::make(nslots_, f.gl, nullptr, &f, cp);

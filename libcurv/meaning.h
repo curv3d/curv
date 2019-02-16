@@ -240,7 +240,7 @@ struct Call_Expr : public Just_Expression
     Shared<Operation> arg_;
 
     Call_Expr(
-        Shared<const Call_Phrase> syntax,
+        Shared<const Phrase> syntax,
         Shared<Operation> fun,
         Shared<Operation> arg)
     :
@@ -249,13 +249,6 @@ struct Call_Expr : public Just_Expression
         arg_(std::move(arg))
     {
         pure_ = (fun_->pure_ && arg_->pure_);
-    }
-
-    inline const Call_Phrase* call_phrase() const
-    {
-        // This is safe because, by construction, the syntax_ field
-        // is initialized from a Call_Phrase. See constructor, above.
-        return (Call_Phrase*) &*syntax_;
     }
 
     virtual Value eval(Frame&) const override;
@@ -334,18 +327,12 @@ struct Infix_Expr_Base : public Just_Expression
 struct Predicate_Assertion_Expr : public Infix_Expr_Base
 {
     Predicate_Assertion_Expr(
-        Shared<const Call_Phrase> syntax,
+        Shared<const Phrase> syntax,
         Shared<Operation> arg1,
         Shared<Operation> arg2)
     :
         Infix_Expr_Base(std::move(syntax),std::move(arg1),std::move(arg2))
     {}
-    inline const Call_Phrase* call_phrase() const
-    {
-        // This is safe because, by construction, the syntax_ field
-        // is initialized from a Call_Phrase. See constructor, above.
-        return (Call_Phrase*) &*syntax_;
-    }
     virtual Value eval(Frame&) const override;
     //virtual GL_Value gl_eval(GL_Frame&) const override;
 };
