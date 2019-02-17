@@ -39,11 +39,18 @@ GL_Compiler::define_function(
 {
     begin_function();
     GL_Value param = newvalue(param_type);
-    if (target_ == GL_Target::cpp)
-        out_ << "extern \"C\" ";
-    out_ <<
+    if (target_ == GL_Target::cpp) {
+        out_
+            << "extern \"C\" void " << name
+            << "(const " << param_type << "* param, "
+            << result_type << "* result)\n"
+            "{\n"
+            "  " << param_type << " " << param << " = *param;\n";
+    } else {
+        out_ <<
         result_type << " " << name << "(" << param_type << " " << param << ")\n"
         "{\n";
+    }
     auto f = GL_Frame::make(0, *this, &cx, nullptr, nullptr);
     auto param_ref = make<GL_Data_Ref>(nullptr, param);
     auto result = func->gl_call_expr(*param_ref, nullptr, *f);
@@ -51,9 +58,12 @@ GL_Compiler::define_function(
         throw Exception(cx, stringify(name," function returns ",result.type));
     }
     end_function();
-    out_ <<
-        "  return " << result << ";\n"
-        "}\n";
+    if (target_ == GL_Target::cpp) {
+        out_ << "  *result = " << result << ";\n";
+    } else {
+        out_ << "  return " << result << ";\n";
+    }
+    out_ << "}\n";
 }
 
 void

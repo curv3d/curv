@@ -8,25 +8,30 @@
 #include <libcurv/shape.h>
 #include <ostream>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 namespace curv { namespace geom {
 
 struct Compiled_Shape final : public Shape
 {
-    double (*dist_)(double,double,double,double);
-    void (*colour_)(double,double,double,double,glm::vec3*);
+    void (*dist_)(const glm::vec4* in, float* out);
+    void (*colour_)(const glm::vec4* in, glm::vec3* out);
 
     Compiled_Shape(Shape_Program&);
 
     virtual double dist(double x, double y, double z, double t) override
     {
-        return dist_(x,y,z,t);
+        glm::vec4 in{x,y,z,t};
+        float out;
+        dist_(&in, &out);
+        return out;
     }
     virtual Vec3 colour(double x, double y, double z, double t) override
     {
-        glm::vec3 c;
-        colour_(x,y,z,t, &c);
-        return Vec3{c.x,c.y,c.z};
+        glm::vec4 in{x,y,z,t};
+        glm::vec3 out;
+        colour_(&in, &out);
+        return Vec3{out.x,out.y,out.z};
     }
 };
 

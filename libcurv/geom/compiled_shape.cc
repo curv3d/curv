@@ -4,14 +4,17 @@
 
 #include <libcurv/geom/compiled_shape.h>
 #include <libcurv/geom/tempfile.h>
-#include <cstdlib>
-#include <fstream>
-#include <libcurv/exception.h>
+
 #include <libcurv/context.h>
+#include <libcurv/exception.h>
 #include <libcurv/function.h>
+#include <libcurv/system.h>
+
 extern "C" {
 #include <dlfcn.h>
 }
+#include <cstdlib>
+#include <fstream>
 
 namespace curv { namespace geom {
 
@@ -58,7 +61,7 @@ Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
         throw Exception(cx,
             stringify("can't load dist function: ",dist_err));
     assert(dist_p != nullptr);
-    dist_ = reinterpret_cast<double (*)(double,double,double,double)>(dist_p);
+    dist_ = reinterpret_cast<void (*)(const glm::vec4*,float*)>(dist_p);
 
     void* colour_p = dlsym(dll, "colour");
     const char* colour_err = dlerror();
@@ -66,13 +69,15 @@ Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
         throw Exception(cx,
             stringify("can't load colour function: ",colour_err));
     assert(colour_p != nullptr);
-    colour_ = (void (*)(double,double,double,double,glm::vec3*))colour_p;
+    colour_ = (void (*)(const glm::vec4*,glm::vec3*))colour_p;
 }
 
 void
 export_cpp(Shape_Program& shape, std::ostream& out)
 {
     GL_Compiler gl(out, GL_Target::cpp, shape.system());
+    At_Program cx(shape);
+
     out <<
         "#include <glm/vec2.hpp>\n"
         "#include <glm/vec3.hpp>\n"
@@ -84,27 +89,10 @@ export_cpp(Shape_Program& shape, std::ostream& out)
         "\n"
         "using namespace glm;\n"
         "\n";
-
-    GL_Value dist_param = gl.newvalue(GL_Type::Vec(4));
-    out <<
-        "extern \"C\" double dist(double x, double y, double z, double t)\n"
-        "{\n"
-        "  vec4 "<<dist_param<<" = vec4(x,y,z,t);\n";
-    GL_Value dist_result = shape.gl_dist(dist_param, gl);
-    out <<
-        "  return " << dist_result << ";\n"
-        "}\n";
-
-    GL_Value colour_param = gl.newvalue(GL_Type::Vec(4));
-    out <<
-        "\n"
-        "extern \"C\" void colour(double x,double y,double z,double t,vec3* result)\n"
-        "{\n"
-        "  vec4 "<<colour_param<<" = vec4(x,y,z,t);\n";
-    GL_Value colour_result = shape.gl_colour(colour_param, gl);
-    out <<
-        "  *result = "<<colour_result<<";\n"
-        "}\n";
+    gl.define_function("dist", GL_Type::Vec(4), GL_Type::Num(),
+        shape.dist_fun_, cx);
+    gl.define_function("colour", GL_Type::Vec(4), GL_Type::Vec(3),
+        shape.colour_fun_, cx);
 }
 
 }} // namespace
