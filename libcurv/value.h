@@ -212,7 +212,7 @@ public:
     /// Construct a reference value.
     ///
     /// If the argument is nullptr, construct the null value.
-    inline Value(Shared<Ref_Value> ptr) : Value(ptr.detach())
+    inline Value(Shared<const Ref_Value> ptr) : Value(ptr.detach())
     {
     }
 
