@@ -13,6 +13,7 @@
 namespace curv {
 
 struct Context;
+struct Function;
 struct System;
 
 /// "GL" or "Geometry Language" is a low level, strongly-typed subset of Curv
@@ -55,7 +56,7 @@ struct Op_Hash_Eq
     }
 };
 
-/// Global state for the GLSL code generator.
+/// Global state for the GLSL/C++ code generator.
 struct GL_Compiler
 {
     std::ostream& out_;
@@ -83,25 +84,17 @@ struct GL_Compiler
             return body_;
     }
 
+    // This is the main entry point to the GL compiler.
+    void define_function(
+        const char* name, GL_Type param_type, GL_Type result_type,
+        Shared<const Function> func, const Context&);
+
+    void begin_function();
+    void end_function();
+
     inline GL_Value newvalue(GL_Type type)
     {
         return GL_Value(valcount_++, type);
-    }
-
-    inline void begin_function()
-    {
-        valcount_ = 0;
-        valcache_.clear();
-        opcache_.clear();
-        constants_.str("");
-        body_.str("");
-    }
-    inline void end_function()
-    {
-        out_ << "  /* constants */\n";
-        out_ << constants_.str();
-        out_ << "  /* body */\n";
-        out_ << body_.str();
     }
 
     // TODO: maybe add a member function for each operation that we support.

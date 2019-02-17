@@ -4,52 +4,30 @@
 
 #include <libcurv/glsl.h>
 
-#include <libcurv/shape.h>
-#include <libcurv/viewed_shape.h>
-
 #include <libcurv/context.h>
-#include <libcurv/die.h>
-#include <libcurv/dtostr.h>
-#include <libcurv/exception.h>
 #include <libcurv/function.h>
 #include <libcurv/gl_compiler.h>
-#include <libcurv/gl_context.h>
+#include <libcurv/shape.h>
+#include <libcurv/viewed_shape.h>
 
 namespace curv {
 
 void glsl_function_export(const Shape_Program& shape, std::ostream& out)
 {
     GL_Compiler gl(out, GL_Target::glsl, shape.system());
+    At_Program cx(shape);
 
     if (shape.viewed_shape_) {
         // output uniform variables for parametric shape
         for (auto& p : shape.viewed_shape_->param_) {
-            out << "uniform " << p.second.pconfig_.gltype_
-                << " rv_" << p.first << ";\n";
+            out << "uniform " << p.second.pconfig_.gltype_ << " "
+                << p.second.identifier_ << ";\n";
         }
     }
-
-    gl.begin_function();
-    GL_Value dist_param = gl.newvalue(GL_Type::Vec(4));
-    out <<
-        "float dist(vec4 " << dist_param << ")\n"
-        "{\n";
-    GL_Value dist_result = shape.gl_dist(dist_param, gl);
-    gl.end_function();
-    out <<
-        "  return " << dist_result << ";\n"
-        "}\n";
-
-    gl.begin_function();
-    GL_Value colour_param = gl.newvalue(GL_Type::Vec(4));
-    out <<
-        "vec3 colour(vec4 " << colour_param << ")\n"
-        "{\n";
-    GL_Value colour_result = shape.gl_colour(colour_param, gl);
-    gl.end_function();
-    out <<
-        "  return " << colour_result << ";\n"
-        "}\n";
+    gl.define_function("dist", GL_Type::Vec(4), GL_Type::Num(),
+        shape.dist_fun_, cx);
+    gl.define_function("colour", GL_Type::Vec(4), GL_Type::Vec(3),
+        shape.colour_fun_, cx);
 }
 
 } // namespace

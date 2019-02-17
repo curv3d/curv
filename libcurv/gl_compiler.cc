@@ -22,6 +22,59 @@
 
 namespace curv {
 
+struct GL_Data_Ref : public Operation
+{
+    GL_Value val_;
+    GL_Data_Ref(Shared<const Phrase> src, GL_Value v)
+    : Operation(std::move(src)), val_(v)
+    {}
+    GL_Value gl_eval(GL_Frame&) const override { return val_; }
+};
+
+// This is the main entry point into the GL compiler.
+void
+GL_Compiler::define_function(
+    const char* name, GL_Type param_type, GL_Type result_type,
+    Shared<const Function> func, const Context& cx)
+{
+    begin_function();
+    GL_Value param = newvalue(param_type);
+    if (target_ == GL_Target::cpp)
+        out_ << "extern \"C\" ";
+    out_ <<
+        result_type << " " << name << "(" << param_type << " " << param << ")\n"
+        "{\n";
+    auto f = GL_Frame::make(0, *this, &cx, nullptr, nullptr);
+    auto param_ref = make<GL_Data_Ref>(nullptr, param);
+    auto result = func->gl_call_expr(*param_ref, nullptr, *f);
+    if (result.type != result_type) {
+        throw Exception(cx, stringify(name," function returns ",result.type));
+    }
+    end_function();
+    out_ <<
+        "  return " << result << ";\n"
+        "}\n";
+}
+
+void
+GL_Compiler::begin_function()
+{
+    valcount_ = 0;
+    valcache_.clear();
+    opcache_.clear();
+    constants_.str("");
+    body_.str("");
+}
+
+void
+GL_Compiler::end_function()
+{
+    out_ << "  /* constants */\n";
+    out_ << constants_.str();
+    out_ << "  /* body */\n";
+    out_ << body_.str();
+}
+
 GL_Value gl_call_unary_numeric(GL_Frame& f, const char* name)
 {
     auto arg = f[0];
