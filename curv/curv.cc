@@ -26,6 +26,7 @@ extern "C" {
 #include <libcurv/source.h>
 #include <libcurv/system.h>
 
+#include <libcurv/geom/builtin.h>
 #include <libcurv/geom/import.h>
 #include <libcurv/geom/tempfile.h>
 #include <libcurv/geom/viewer/viewer.h>
@@ -38,6 +39,8 @@ make_system(const char* argv0, std::list<const char*>& libs, std::ostream& out)
     static curv::System_Impl sys(out);
     if (isatty(2)) sys.use_colour_ = true;
     try {
+        curv::geom::add_builtins(sys);
+        curv::geom::add_importers(sys);
         if (argv0 != nullptr) {
             const char* CURV_STDLIB = getenv("CURV_STDLIB");
             namespace fs = boost::filesystem;
@@ -57,7 +60,6 @@ make_system(const char* argv0, std::list<const char*>& libs, std::ostream& out)
         for (const char* lib : libs) {
             sys.load_library(curv::make_string(lib));
         }
-        curv::geom::add_importers(sys);
         return sys;
     } catch (std::exception& e) {
         sys.error(e);
