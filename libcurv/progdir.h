@@ -2,8 +2,8 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef PROGDIR_H
-#define PROGDIR_H
+#ifndef LIBCURV_PROGDIR_H
+#define LIBCURV_PROGDIR_H
 
 #include <boost/filesystem.hpp>
 
