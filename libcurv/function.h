@@ -12,8 +12,7 @@
 
 namespace curv {
 
-// call a function
-Value call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f);
+struct Context;
 
 /// A function value.
 struct Function : public Ref_Value
@@ -58,6 +57,18 @@ struct Function : public Ref_Value
 
     static const char name[];
 };
+
+// Returns nullptr if argument is not a function.
+// If the Value is a record with a `call` field, then we cast the value
+// of the `call` field to a function by recursively calling `cast_to_function`.
+// May throw an exception if fetching the `call` field fails (currently
+// only happens for directory records).
+Shared<const Function> cast_to_function(Value, const Context&);
+
+// Call a function or index into a list or string.
+// Implements the Curv juxtaposition operator: `func arg`.
+Value call_func(
+    Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f);
 
 /// A legacy function value. Only used for builtin functions.
 /// Legacy functions with 0, 1 and 2 arguments are called like this:

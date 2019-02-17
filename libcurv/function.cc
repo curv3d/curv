@@ -10,6 +10,23 @@
 
 namespace curv {
 
+Shared<const Function>
+cast_to_function(Value funv, const Context& cx)
+{
+    static Symbol callkey = "call";
+    for (;;) {
+        auto func = funv.dycast<const Function>();
+        if (func)
+            return func;
+        auto rec = funv.dycast<const Record>();
+        if (rec->hasfield(callkey)) {
+            funv = rec->getfield(callkey, cx);
+            continue;
+        }
+        return nullptr;
+    }
+}
+
 const char Function::name[] = "function";
 
 void
