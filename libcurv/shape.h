@@ -98,12 +98,6 @@ struct Shape_Program final : public Shape
     // that describes a parametric shape.
     Shape_Program(const Shape_Program&, Shared<Record>, Viewed_Shape*);
 
-    /// Invoke the Geometry Compiler on the shape's `dist` function.
-    GL_Value gl_dist(GL_Value, GL_Compiler&) const;
-
-    /// Invoke the Geometry Compiler on the shape's `colour` function.
-    GL_Value gl_colour(GL_Value, GL_Compiler&) const;
-
     // Invoke the shape's `dist` function.
     double dist(double x, double y, double z, double t);
 
