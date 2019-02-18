@@ -778,7 +778,7 @@ GL_Value gl_eval_index2_expr(
         auto ix2 = gl_eval_expr(f, op_ix2, GL_Type::Num());
         GL_Value result = f.gl.newvalue({array.type.base_type_});
         f.gl.out() << "  " << result.type << " " << result << " = " << array
-                 << "[int(" << ix1 << ")*" << array.type.dim1_
+                 << "[int(" << ix1 << ")*" << array.type.dim2_
                  << "+" << "int(" << ix2 << ")];\n";
         return result;
     }
