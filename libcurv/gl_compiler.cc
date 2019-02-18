@@ -770,16 +770,24 @@ GL_Value gl_eval_index2_expr(
     GL_Value array, Operation& op_ix1, Operation& op_ix2, GL_Frame& f,
     const Context& acx)
 {
+    auto ix1 = gl_eval_expr(f, op_ix1, GL_Type::Num());
+    auto ix2 = gl_eval_expr(f, op_ix2, GL_Type::Num());
     if (array.type.rank_ == 2) {
         // 2D array of number or vector. Not supported by GLSL 1.5,
         // so we emulate this type using a 1D array.
         // Index value must be [i,j], can't use a single index.
-        auto ix1 = gl_eval_expr(f, op_ix1, GL_Type::Num());
-        auto ix2 = gl_eval_expr(f, op_ix2, GL_Type::Num());
         GL_Value result = f.gl.newvalue({array.type.base_type_});
         f.gl.out() << "  " << result.type << " " << result << " = " << array
                  << "[int(" << ix1 << ")*" << array.type.dim2_
                  << "+" << "int(" << ix2 << ")];\n";
+        return result;
+    }
+    if (array.type.rank_ == 1 && array.type.base_info().rank == 1) {
+        // 1D array of vector.
+        GL_Value result = f.gl.newvalue(GL_Type::Num());
+        f.gl.out() << "  " << result.type << " " << result << " = " << array
+                 << "[int(" << ix1 << ")]"
+                 << "[int(" << ix2 << ")];\n";
         return result;
     }
     throw Exception(acx, "2 indexes (a[i,j]) not supported for this array");
