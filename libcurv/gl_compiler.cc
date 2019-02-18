@@ -805,7 +805,7 @@ GL_Value gl_eval_index3_expr(
         auto ix3 = gl_eval_expr(f, op_ix3, GL_Type::Num());
         GL_Value result = f.gl.newvalue(GL_Type::Num());
         f.gl.out() << "  " << result.type << " " << result << " = " << array
-                 << "[int(" << ix1 << ")*" << array.type.dim1_
+                 << "[int(" << ix1 << ")*" << array.type.dim2_
                  << "+" << "int(" << ix2 << ")][int(" << ix3 << ")];\n";
         return result;
     }
