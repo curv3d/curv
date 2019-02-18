@@ -303,7 +303,7 @@ analyse_lambda(
         }
     } scope(env, shared_nonlocals);
 
-    auto pattern = make_pattern(*left, scope, 0);
+    auto pattern = make_pattern(*left, false, scope, 0);
     pattern->analyse(scope);
     auto expr = analyse_op(*right, scope);
     auto nonlocals = make<Enum_Module_Expr>(src,
@@ -848,7 +848,7 @@ For_Phrase::analyse(Environ& env) const
     Scope scope(env);
     scope.is_analysing_action_ = env.is_analysing_action_;
 
-    auto pat = make_pattern(*pattern_, scope, 0);
+    auto pat = make_pattern(*pattern_, false, scope, 0);
     pat->analyse(scope);
     auto list = analyse_op(*listexpr_, env);
     auto body = analyse_tail(*body_, scope);

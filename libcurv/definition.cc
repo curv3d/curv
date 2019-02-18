@@ -19,7 +19,7 @@ void
 Data_Definition::add_to_scope(Block_Scope& scope)
 {
     unsigned unitnum = scope.begin_unit(share(*this));
-    pattern_ = make_pattern(*definiendum_, scope, unitnum);
+    pattern_ = make_pattern(*definiendum_, kind_==k_sequential, scope, unitnum);
     scope.end_unit(unitnum, share(*this));
 }
 void

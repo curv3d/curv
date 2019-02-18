@@ -23,7 +23,11 @@ struct Pattern : public Shared_Base
 {
     Shared<const Phrase> syntax_;
 
-    Pattern(Shared<const Phrase> s) : Shared_Base(), syntax_(std::move(s)) {}
+    Pattern(Shared<const Phrase> s)
+    :
+        Shared_Base(),
+        syntax_(std::move(s))
+    {}
 
     virtual void analyse(Environ&) = 0;
     virtual void exec(Value* slots, Value, const Context&, Frame&) const = 0;
@@ -32,7 +36,7 @@ struct Pattern : public Shared_Base
     virtual void gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee) const;
 };
 
-Shared<Pattern> make_pattern(const Phrase&, Scope&, unsigned unitno);
+Shared<Pattern> make_pattern(const Phrase&, bool mut, Scope&, unsigned unitno);
 
 Shared<Record> record_pattern_default_value(const Pattern&, Frame&);
 

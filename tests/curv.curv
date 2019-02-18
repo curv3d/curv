@@ -386,6 +386,8 @@ in exec (gl_test {
            && a56v2[1,2] == [120,121]
            && a56v2[1,2,0] == 120
            && a56v2[1,2][0] == 120;
+    "local_array_variable": _->
+        let a = a5n in a[2] == 2;
 });
 
 // script return value:

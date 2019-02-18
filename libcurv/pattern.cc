@@ -41,8 +41,12 @@ struct Skip_Pattern : public Pattern
 struct Id_Pattern : public Pattern
 {
     slot_t slot_;
+    bool is_mutable_;
 
-    Id_Pattern(Shared<const Phrase> s, slot_t i) : Pattern(s), slot_(i) {}
+    Id_Pattern(Shared<const Phrase> s, bool mut, slot_t i)
+    :
+        Pattern(s), slot_(i), is_mutable_(mut)
+    {}
 
     virtual void analyse(Environ&) override
     {
@@ -67,12 +71,22 @@ struct Id_Pattern : public Pattern
     const override
     {
         GL_Value val = gl_eval_op(caller, expr);
-        // Why am I creating a new var and initializing it with val?
-        // This is useless for an immutable binding (the common case), but
-        // necessary for a sequential variable that might be reassigned later.
-        GL_Value var = caller.gl.newvalue(val.type);
-        caller.gl.out() << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
-        callee[slot_] = var;
+        if (is_mutable_) {
+            // This is a mutable variable, so create a new var and initialize
+            // it with val. But, arrays are not supported.
+            if (val.type.rank_ > 0) {
+                throw Exception(At_GL_Phrase(expr.syntax_, caller),
+                    "mutable array variables are not supported");
+            }
+            // If I do support mutable array variables, I'll need to use
+            // memcpy() for the C++ case.
+            GL_Value var = caller.gl.newvalue(val.type);
+            caller.gl.out() << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
+            callee[slot_] = var;
+        } else {
+            // Immutable variable.
+            callee[slot_] = val;
+        }
     }
 };
 
@@ -422,14 +436,14 @@ identifier_pattern(const Phrase& ph)
 }
 
 Shared<Pattern>
-make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
+make_pattern(const Phrase& ph, bool mut, Scope& scope, unsigned unitno)
 {
     if (auto id = dynamic_cast<const Identifier*>(&ph)) {
         if (id->symbol_ == Symbol{"_"})
             return make<Skip_Pattern>(share(ph));
         else {
             slot_t slot = scope.add_binding(id->symbol_, ph, unitno);
-            return make<Id_Pattern>(share(ph), slot);
+            return make<Id_Pattern>(share(ph), mut, slot);
         }
     }
     if (auto call = dynamic_cast<const Call_Phrase*>(&ph)) {
@@ -437,13 +451,13 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
             call->op_.kind_ == Token::k_colon_colon)
         {
             return make<Predicate_Pattern>(share(*call),
-                make_pattern(*call->arg_, scope, unitno));
+                make_pattern(*call->arg_, mut, scope, unitno));
         }
     }
     if (auto brackets = dynamic_cast<const Bracket_Phrase*>(&ph)) {
         std::vector<Shared<Pattern>> items;
         each_item(*brackets->body_, [&](Phrase& item)->void {
-            items.push_back(make_pattern(item, scope, unitno));
+            items.push_back(make_pattern(item, mut, scope, unitno));
         });
         return make<List_Pattern>(share(ph), items);
     }
@@ -453,9 +467,9 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
             return make<List_Pattern>(share(ph), items);
         if (dynamic_cast<const Comma_Phrase*>(&*parens->body_) == nullptr
          && dynamic_cast<const Semicolon_Phrase*>(&*parens->body_) == nullptr)
-            return make_pattern(*parens->body_, scope, unitno);
+            return make_pattern(*parens->body_, mut, scope, unitno);
         each_item(*parens->body_, [&](Phrase& item)->void {
-            items.push_back(make_pattern(item, scope, unitno));
+            items.push_back(make_pattern(item, mut, scope, unitno));
         });
         return make<List_Pattern>(share(ph), items);
     }
@@ -465,7 +479,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
             if (dynamic_cast<const Empty_Phrase*>(&item))
                 return;
             if (auto id = identifier_pattern(item)) {
-                auto pat = make_pattern(item, scope, unitno);
+                auto pat = make_pattern(item, mut, scope, unitno);
                 fields[id->symbol_] = {share(item), pat, nullptr};
                 return;
             }
@@ -477,12 +491,12 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
                     if (auto def = dynamic_cast
                         <const Recursive_Definition_Phrase*>(&*bin->right_))
                     {
-                        pat = make_pattern(*def->left_, scope, unitno);
+                        pat = make_pattern(*def->left_, mut, scope, unitno);
                         dfl_src = def->right_;
                     } else if (isa<Empty_Phrase>(bin->right_)) {
                         pat = make<Const_Pattern>(bin->right_, Value{true});
                     } else {
-                        pat = make_pattern(*bin->right_, scope, unitno);
+                        pat = make_pattern(*bin->right_, mut, scope, unitno);
                     }
                     fields[name] = {share(item), pat, dfl_src};
                     return;
@@ -495,7 +509,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
                 if (id == nullptr)
                     throw Exception(At_Phrase(*def->left_, scope),
                         "not an identifier pattern");
-                auto pat = make_pattern(*def->left_, scope, unitno);
+                auto pat = make_pattern(*def->left_, mut, scope, unitno);
                 fields[id->symbol_] = {share(item), pat, def->right_};
                 return;
             }
