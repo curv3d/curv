@@ -7,17 +7,21 @@
 
 namespace curv {
 
-bool Symbol::is_identifier() const
+bool is_C_identifier(const char* p)
 {
-    if (empty() || size() == 0)
-        return false;
-    const char* p = c_str();
     if (!(isalpha(*p) || *p == '_'))
         return false;
     for (++p; *p != '\0'; ++p)
         if (!(isalnum(*p) || *p == '_'))
             return false;
     return true;
+}
+
+bool Symbol::is_identifier() const
+{
+    if (empty())
+        return false;
+    return is_C_identifier(c_str());
 }
 
 std::ostream& operator<<(std::ostream& out, Symbol a)

@@ -99,6 +99,8 @@ public:
     bool is_identifier() const;
 };
 
+bool is_C_identifier(const char*);
+
 /// A Symbol_Map<T> is a map from Symbol to T.
 ///
 /// When you iterate over a Symbol_Map, the entries are produced in order,
