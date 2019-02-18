@@ -10,6 +10,8 @@
 #include <libcurv/string.h>
 #include <libcurv/system.h>
 
+#include <libcurv/geom/builtin.h>
+
 using namespace std;
 using namespace curv;
 
@@ -19,6 +21,7 @@ struct Std_System : public System_Impl
 {
     Std_System() : System_Impl(sconsole)
     {
+        curv::geom::add_builtins(*this);
         load_library("../lib/std.curv");
     }
 };

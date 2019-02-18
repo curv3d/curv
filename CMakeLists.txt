@@ -98,7 +98,7 @@ target_link_libraries(curvc -static libcurv boost_filesystem boost_system double
 
 file(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})
-target_link_libraries(tester PUBLIC gtest pthread libcurv double-conversion boost_iostreams boost_filesystem boost_system)
+target_link_libraries(tester PUBLIC gtest pthread libcurv libcurv_geom double-conversion boost_iostreams boost_filesystem boost_system)
 
 set_property(TARGET curv curvc libcurv libcurv_geom tester PROPERTY CXX_STANDARD 14)
 
