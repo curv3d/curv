@@ -999,18 +999,26 @@ void For_Op::gl_exec(GL_Frame& f) const
 }
 GL_Value Equal_Expr::gl_eval(GL_Frame& f) const
 {
-    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Num());
-    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num());
+    auto a = gl_eval_op(f, *arg1_);
+    auto b = gl_eval_op(f, *arg2_);
+    if (a.type != b.type || a.type.rank_ > 0) {
+        throw Exception(At_GL_Phrase(syntax_, f),
+            stringify("GL domain error: ",a.type," == ",b.type));
+    }
     GL_Value result = f.gl.newvalue(GL_Type::Bool());
-    f.gl.out() <<"  bool "<<result<<" =("<<arg1<<" == "<<arg2<<");\n";
+    f.gl.out() <<"  bool "<<result<<" =("<<a<<" == "<<b<<");\n";
     return result;
 }
 GL_Value Not_Equal_Expr::gl_eval(GL_Frame& f) const
 {
-    auto arg1 = gl_eval_expr(f, *arg1_, GL_Type::Num());
-    auto arg2 = gl_eval_expr(f, *arg2_, GL_Type::Num());
+    auto a = gl_eval_op(f, *arg1_);
+    auto b = gl_eval_op(f, *arg2_);
+    if (a.type != b.type || a.type.rank_ > 0) {
+        throw Exception(At_GL_Phrase(syntax_, f),
+            stringify("GL domain error: ",a.type," != ",b.type));
+    }
     GL_Value result = f.gl.newvalue(GL_Type::Bool());
-    f.gl.out() <<"  bool "<<result<<" =("<<arg1<<" != "<<arg2<<");\n";
+    f.gl.out() <<"  bool "<<result<<" =("<<a<<" != "<<b<<");\n";
     return result;
 }
 GL_Value Less_Expr::gl_eval(GL_Frame& f) const
