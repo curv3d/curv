@@ -14,7 +14,7 @@ namespace curv { namespace geom {
 
 // A structure for building a C++ source file, compiling it, and getting
 // the results. This holds the C++ source code and the compiled binary.
-struct CPP_Program
+struct Cpp_Program
 {
     System& system_;
     Filesystem::path path_;
@@ -22,8 +22,8 @@ struct CPP_Program
     GL_Compiler gl_;
     void* dll_ = nullptr;
 
-    CPP_Program(System&);
-    ~CPP_Program();
+    Cpp_Program(System&);
+    ~Cpp_Program();
     static const char standard_header[];
     inline void define_function(
         const char* name, GL_Type param_type, GL_Type result_type,

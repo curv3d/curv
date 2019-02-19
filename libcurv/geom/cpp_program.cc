@@ -14,7 +14,7 @@ extern "C" {
 
 namespace curv { namespace geom {
 
-const char CPP_Program::standard_header[] =
+const char Cpp_Program::standard_header[] =
     "#include <glm/vec2.hpp>\n"
     "#include <glm/vec3.hpp>\n"
     "#include <glm/vec4.hpp>\n"
@@ -26,7 +26,7 @@ const char CPP_Program::standard_header[] =
     "using namespace glm;\n"
     "\n";
 
-CPP_Program::CPP_Program(System& sys)
+Cpp_Program::Cpp_Program(System& sys)
 :
     system_{sys},
     path_{register_tempfile(".cpp")},
@@ -40,14 +40,14 @@ CPP_Program::CPP_Program(System& sys)
     file_ << standard_header;
 }
 
-CPP_Program::~CPP_Program()
+Cpp_Program::~Cpp_Program()
 {
     if (dll_ != nullptr)
         dlclose(dll_);
 }
 
 void
-CPP_Program::compile()
+Cpp_Program::compile()
 {
     At_System cx{system_};
     file_.close();
@@ -75,14 +75,18 @@ CPP_Program::compile()
 }
 
 void*
-CPP_Program::get_function(const char* name)
+Cpp_Program::get_function(const char* name)
 {
     dlerror(); // Clear previous error.
     void* object = dlsym(dll_, name);
     const char* err = dlerror();
     if (err != nullptr) {
         throw Exception(At_System{system_},
-            stringify("can't load ",name,": ",err));
+            stringify("can't load function ",name,": ",err));
+    }
+    if (object == nullptr) {
+        throw Exception(At_System{system_},
+            stringify("can't load function ",name,": got null pointer"));
     }
     return object;
 }

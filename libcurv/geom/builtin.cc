@@ -18,7 +18,7 @@ namespace curv { namespace geom {
 void
 run_cpp_test(const Context& cx, Shared<const Function> func)
 {
-    CPP_Program cpp{cx.system()};
+    Cpp_Program cpp{cx.system()};
     cpp.define_function("test", GL_Type::Bool(), GL_Type::Bool(), func, cx);
     cpp.compile();
     auto test = (void(*)(const bool*,bool*))cpp.get_function("test");

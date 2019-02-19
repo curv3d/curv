@@ -5,6 +5,7 @@
 #ifndef LIBCURV_GEOM_COMPILED_SHAPE_H
 #define LIBCURV_GEOM_COMPILED_SHAPE_H
 
+#include <libcurv/geom/cpp_program.h>
 #include <libcurv/shape.h>
 #include <ostream>
 #include <glm/vec3.hpp>
@@ -12,10 +13,16 @@
 
 namespace curv { namespace geom {
 
+extern "C" {
+    typedef void (*Cpp_Dist_Func)(const glm::vec4* in, float* out);
+    typedef void (*Cpp_Colour_Func)(const glm::vec4* in, glm::vec3* out);
+}
+
 struct Compiled_Shape final : public Shape
 {
-    void (*dist_)(const glm::vec4* in, float* out);
-    void (*colour_)(const glm::vec4* in, glm::vec3* out);
+    Cpp_Program cpp_;
+    Cpp_Dist_Func dist_;
+    Cpp_Colour_Func colour_;
 
     Compiled_Shape(Shape_Program&);
 
