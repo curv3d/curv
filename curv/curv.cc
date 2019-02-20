@@ -117,7 +117,6 @@ main(int argc, char** argv)
     const char* editor = nullptr;
     bool help = false;
     bool version = false;
-    bool json_api = false;
 
     constexpr int HELP = 1000;
     constexpr int VERSION = 1001;
@@ -156,7 +155,6 @@ main(int argc, char** argv)
                           << "Use " << argv0 << " --help for help.\n";
                 return EXIT_FAILURE;
             }
-            json_api = (strcmp(oname, "json-api") == 0);
             break;
           }
         case 'O':
@@ -266,9 +264,7 @@ main(int argc, char** argv)
     // Create system, a precondition for parsing -O parameters.
     // This can fail, so we do as much argument validation as possible
     // before this point.
-    std::ostream* console = json_api ? &std::cout : &std::cerr;
-    curv::System& sys(make_system(usestdlib, libs, *console));
-    sys.use_json_api_ = json_api;
+    curv::System& sys(make_system(usestdlib, libs, std::cerr));
     atexit(curv::geom::remove_all_tempfiles);
 
     Export_Params oparams(sys);

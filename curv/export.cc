@@ -186,29 +186,6 @@ void export_json(Value value,
     ofile.ostream() << "\n";
 }
 
-void export_json_api(Value value,
-    Program& prog, const Export_Params& params, Output_File& ofile)
-{
-    Frag_Export opts;
-    for (auto& p : params.map_) {
-        if (!parse_frag_opt(params, p, opts))
-            params.unknown_parameter(p);
-    }
-
-    ofile.open();
-    At_Program cx(prog);
-    GPU_Program gprog(prog);
-    if (!gprog.recognize(value,  opts)) {
-        ofile.ostream() << "{\"value\":";
-        write_json_value(value, ofile.ostream());
-        ofile.ostream() << "}\n";
-    } else {
-        ofile.ostream() << "{\"shape\":";
-        gprog.write_json(ofile.ostream());
-        ofile.ostream() << "}\n";
-    }
-}
-
 void export_gpu(Value value,
     Program& prog, const Export_Params& params, Output_File& ofile)
 {
@@ -371,11 +348,9 @@ std::map<std::string, Exporter> exporters = {
     {"obj", {export_obj, "OBJ mesh file (3D shape only)", describe_mesh_opts}},
     {"x3d", {export_x3d, "X3D colour mesh file (3D shape only)",
              describe_colour_mesh_opts}},
-    {"gpu", {export_gpu,
-        "compiled GPU program, as Curv expression", describe_frag_opts}},
+    {"gpu", {export_gpu, "compiled GPU program, in Curv format (shape only)",
+        describe_frag_opts}},
     {"json", {export_json, "JSON expression", describe_no_opts}},
-    {"json-api", {export_json_api,
-        "program execution results as a JSON stream", describe_frag_opts}},
     {"cpp", {export_cpp, "C++ source file (shape only)", describe_no_opts}},
     {"png", {export_png, "PNG image file (shape only)", describe_png_opts}},
 };

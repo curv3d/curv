@@ -73,9 +73,6 @@ extern void export_json(curv::Value value,
     const Export_Params& params,
     curv::Output_File&);
 
-extern void export_json_api(curv::Value,
-    curv::Program&, const Export_Params&, curv::Output_File&);
-
 extern void export_gpu(curv::Value,
     curv::Program&, const Export_Params&, curv::Output_File&);
 
