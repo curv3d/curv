@@ -7,6 +7,7 @@
 #include <libcurv/json.h>
 #include <libcurv/viewed_shape.h>
 #include <iostream>
+#include <cctype>
 
 namespace curv {
 
@@ -71,6 +72,13 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
                 auto pred_record = pred.dycast<Record>();
                 if (pred_record && pred_record->hasfield("picker")) {
                     auto picker = pred_record->getfield("picker",cx);
+                    std::string id{"rv_"};
+                    for (const char*p = name.c_str(); *p; ++p) {
+                        if (std::isalnum(*p))
+                            id += *p;
+                        else
+                            id += '_';
+                    }
                     Picker::Config config(picker, cx);
                     Picker::State state{
                         config.type_,
@@ -78,14 +86,9 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
                         At_System{shape.system_}};
                     param_.insert(std::pair<const std::string,Parameter>{
                         name.c_str(),
-                        Parameter{
-                            std::string("rv_") + name.c_str(),
-                            config,
-                            state}});
+                        Parameter{id, config, state}});
                     cparams->fields_[name] =
-                        {make<Uniform_Variable>(
-                            name,
-                            config.gltype_)};
+                        {make<Uniform_Variable>(name, id, config.gltype_)};
                 } else {
                     cparams->fields_[name] = value;
                 }

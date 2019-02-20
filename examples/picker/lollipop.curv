@@ -3,7 +3,7 @@
 
 make_parametric
     Diameter: diam :: slider(.5, 2) = 1;
-    Stick_Length: len :: slider(2, 8) = 4;
+    "Stick Length": len :: slider(2, 8) = 4;
     Colour: c :: colour_picker = red;
 in
 union(candy, stick)

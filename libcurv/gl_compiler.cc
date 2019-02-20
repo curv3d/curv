@@ -446,7 +446,7 @@ GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase& syntax)
     if (auto uv = val.dycast<Uniform_Variable>()) {
         GL_Value result = f.gl.newvalue(uv->gltype_);
         f.gl.out() << "  " << uv->gltype_
-            << " " << result << " = rv_" << uv->name_ << ";\n";
+            << " " << result << " = " << uv->identifier_ << ";\n";
         f.gl.valcache_[val] = result;
         return result;
     }

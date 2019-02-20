@@ -59,7 +59,8 @@ struct Picker
 struct Uniform_Variable : public Reactive_Value
 {
     Symbol name_;
-    Uniform_Variable(Symbol name, GL_Type);
+    std::string identifier_;
+    Uniform_Variable(Symbol name, std::string id, GL_Type);
     virtual void print(std::ostream&) const override;
 };
 
