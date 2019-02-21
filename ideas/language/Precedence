@@ -1,3 +1,5 @@
+Ideas for non-backward-compatible syntax changes.
+
 Postfix Expressions
 -------------------
 There is an ease-of-use issue in expressions like:
@@ -69,8 +71,42 @@ This gets us closer to Lisp-like extensible syntax.
 * `if (x > y) then (x) else (y)` is sugar for `if_then_else(x > y, x, y)`.
 * `if (x > 0) then (1) else if (x < 0) then (-1) else (0)`
   is sugar for `if_then_else(x > 0, 1, if_then_else(x < 0, -1, 0))`.
+* A mixfix operator can be selected from a record, eg
+  `R.if (a) then (b) else (c)`
 
 How does mixfix syntax combine with postfix syntax?
+
+term ::= num | id | postfix | mixfix
+
+postfix ::= id | arg | postfix arg | postfix . id
+arg ::= (...) | [...] | {...} | "..."
+
+A mixfix is 'id arg | id arg id arg | id arg id arg id arg ...'
+except that the initial id can be a postfix whose first and last token are id,
+and the final arg can be a mixfix.
+
+So now,
+1. `abs a.x` -- illegal, unless an arg follows
+2. `f a[0]` -- legal
+3. `move cross(a,b) cube` -- illegal, unless an arg follows
+   move cross(a,b) cube(3) is move(cross(a,b) cube(3))
+                           is move(cross_cube((a,b),3))
+4. offset -1 -- illegal
+
+The coding style will use white space differently for function calls vs
+mixfix calls: f(x) vs f (x) g (y). This syntax will be confusing, has potential
+for "ambiguous whitespace", just as in previous section.
+
+Intuitively, postfix has higher visual precedence than mixfix.
+Using a mixfix as an argument to an arithmetic operator like + is also weird.
+* The mixfix notation is partially inspired by Smalltalk and Self, where mixfix
+  has lower precedence that left associative symbolic operators.
+* The mixfix notation is partially inspired by the mixfix operators in <ritem>.
+
+What if I put mixfix into <ritem>? And impose whitespace requirements for
+parsing postfix and mixfix?
+
+-----------------
 What about:
   if (a) then b(c)
   if (a) then b.c
@@ -81,5 +117,3 @@ Let's say: the final argument in a mixfix form is
 arg ::= (...) | [...] | {...} | "..."
 arg_postfix ::= arg | arg_postfix arg | arg_postfix '.' id
 id_postfix ::= id | id_postfix arg | id_postfix '.' id
-
-... TODO

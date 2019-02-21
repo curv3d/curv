@@ -1,0 +1,43 @@
+Scriptable Camera Position
+==========================
+* The GUI displays the camera position in the HUD.
+* You can copy these numbers and use them in the CLI to set the initial
+  camera position in the viewer or in 3D image export using -Ocamera=...
+* Maybe you can specify the initial camera position using Curv code. How?
+  * Using the camera field in a shape value.
+    But the data would not be inherited by derived shapes returned by shape
+    operators. So it's not really a property of the shape, even though it is
+    stored like one.
+  * Using a 'Viewer' object that contains a shape plus viewer parameters.
+    Another kind of graphical value.
+* The current camera position is available as a set of reactive variables,
+  like $vpr/$vpt/$vpd in OpenSCAD (ViewPort Rotation, Translation, Distance).
+  Applications include: a billboard that is rotated to always face the front.
+
+What are the components of a 3D camera position?
+
+gluLookAt(eye, centre, up)
+    eye: point, camera location
+    centre: reference point
+    up: vector
+
+Curv:
+    centre -- a point the camera is looking at
+    eye -- a vector from centre to the eye point (in the camera)
+    up -- a normalized vector perpendicular to eye
+
+In OpenSCAD, it is:
+    {translate=[x,y,z], rotate=[x,y,z], distance=d}
+Maybe add a FOV, since that has been requested multiple times.
+
+Microsoft .net
+  PerspectiveCamera(
+    position :: Point3D -- position of camera
+    lookDirection :: Vector3D
+    upDirection :: Vector3D
+    fieldOfView :: Double -- angle of projection in degrees)
+  OrthographicCamera(
+    position :: Point3D -- position of camera
+    lookDirection :: Vector3D
+    upDirection :: Vector3D
+    width :: Double // width of viewing box in world units)

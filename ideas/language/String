@@ -56,6 +56,39 @@ which prints as 4 characters longer than the compact syntax:
 
 The downside is that this is novel syntax. You have to memorize it.
 
+## Compact Escapes, Version 2
+I implemented `$.` and $=`. The implementation is simple, but it's not very
+recognizable to developers who are used to the `\\` and `\"` escapes of C-like
+languages.
+
+Here's another design:
+  $ -> $$ -> $\$ -> $\\$
+  " -> $" -> $\" -> $\\"
+Note that `$\\\"` is a multi-character escape sequence
+that is rewritten to `$\\"`. These escape sequences should be easier for
+developers to recognize in text, since they reference the C-style escape
+sequences using a kind of visual pun. This syntax is probably also easier
+to remember and easier to figure out the meaning of if you aren't familiar
+with it.
+
+    print "Can't open file $"$filename$": $error";
+Quine:
+    (a->"$a$(a)")"(a->$"$$a$$(a)$")"
+ vs (a->"$a$(a)")"(a->$=$.a$.(a)$=)"
+The new design might be more *recognizable*, but in the Quine, it's harder
+to visually parse, because: $ is not always the beginning of an escape,
+and " is not always the beginning or end of a string literal.
+
+Syntax colouring helps with readability and recognizability, but syntax design
+is still quite important.
+
+Here's a variant of the new syntax that helps with readability:
+  $ -> $\$ -> $\\$ -> $\\\$
+  " -> $\" -> $\\" -> $\\\"
+The benefit is that $ and " are always preceded by \ when they are quoted.
+    (a->"$a$(a)")"(a->$\"$\$a$\$(a)$\")"
+ vs (a->"$a$(a)")"(a->$=$.a$.(a)$=)"
+
 ## Swift-Inspired Fat String Literals
 `#"... #${foo} ..."#` is a fat string literal. The `#` can be replaced with
 2 or more hashes. $ escapes are prefixed with the same number of hashes.
@@ -93,6 +126,17 @@ My solution:
     |final line
     "
 
+As an extension, I could add continuation lines:
+    &more text added to previous line
+which do not add a newline.
+
 ## String Comprehensions
 "${ stmt1; stmt2; stmt3 }"
 eg, "${if (c) "foo"}"
+
+If I allow for loops on strings, following the recent change to OpenSCAD,
+then `for (c in "abc")` generates the sequence "a", "b", "c", which when
+placed inside a string comprehension, gives:
+    "${for (c in "abc") c}" == "abc"
+This does not support generic algorithms across lists and strings,
+like what you get in Haskell, where a string is a list of characters.

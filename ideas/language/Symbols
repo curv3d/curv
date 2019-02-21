@@ -159,7 +159,7 @@ Possible reasons for identifying #foo with {foo:} in an algebraic type.
   * A uniform API for extracting the name and value components of an
     algebraic value.
 
-JSON export: #foo -> {"foo":true}
+JSON export: #foo -> {"foo":null}
 
 3. Symbols as the 8th Type
 --------------------------
@@ -198,4 +198,4 @@ Cons:
     name or string, then you are using symbols incorrectly.
   * Potential confusion about when to use a string and when to use a symbol?
 
-JSON export: #foo -> {"\0":"#foo"}
+JSON export: #foo -> {"\u0000":"#foo"}

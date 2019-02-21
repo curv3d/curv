@@ -1,0 +1,43 @@
+Tail Recursion Optimization
+===========================
+What are the minimal changes required to the current evaluator?
+(We don't yet support single stepping in a hypothetical debugger.)
+
+Expressions that are in tail position:
+* Body of a lambda.
+* If a let/where/do is in tail position, then so is its body.
+* If an if-then-else is in tail position, then so are its then and else exprs.
+
+Add a new method, Operation::tail_eval(), which defaults to calling eval()
+in most cases.
+If you tail_eval a function call, then you don't push a new Curv stack frame,
+and you also do not push a new C++ stack frame.
+
+Normal eval() is 'Value eval(Frame&)'.
+
+New design, based on my previous design for a CPS based VM.
+-----------------------------------------------------------
+The Frame now contains new VM registers:
+* 'Operation *op_', current Operation.
+* 'Value result_', to which is stored the result of a tail call.
+
+The new interpreter is now a loop that invokes the current instruction,
+referenced by the IP.  Each instruction is responsible for advancing the IP,
+and possibly for replacing the current Frame with another one.
+
+    void Operation::tail_eval(unique_ptr<Frame>&)
+
+    interpreter(unique_ptr<Frame> f)
+    {
+        while (f != nullptr)
+            f->op_->tail_eval(f);
+    }
+
+The Operation::tail_eval method:
+* reads dynamic arguments from the Frame, and static arguments from the
+  Operation.
+* Performs a computation, usually producing a result, sometimes causing
+  side effects.
+* "calls its continuation", which means storing result values in the frame,
+  updating `f->op` to point to the next Operation, sometimes pushing or popping
+  the frame stack (and returning a different frame than it was passed).

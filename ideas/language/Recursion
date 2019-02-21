@@ -1,0 +1,40 @@
+Expand the circumstances where recursive definitions are legal.
+
+Goals:
+ 1) Recursive (infinite) lists.
+ 2) Recursive function definitions, where you call a combinator to
+    construct a function, and the recursive references are within lambda
+    abstractions passed as arguments. Eg, `match` (see Match), or `reduce`.
+
+It's tricky, there are two challenges.
+* Representation: because runtime objects are reference counted, and cannot
+  contain cycles.
+* Compilation: the compiler must figure out when to generate our cycle free
+  representations without the aid of static typing. Certain syntactic
+  structures can be recognized as legal recursive definitions that we know
+  how to compile, but then what happens if those syntactic structures are
+  hidden behind function calls?
+
+We support infinite lists by using a more elaborate representation for lists.
+A recursive list has a nonlocals table (similar to a closure) plus a tree.
+The tree node types are:
+ * flat array of values;
+ * concat node;
+ * concat node where the tail node is a recursive reference, containing an
+   index into the nonlocals table.
+
+I think the compiler can be extended to support recursive list references
+in the context of [a,b, ... Ref].
+
+And the compiler allows recursive functions only when it can recognize a
+function definition using syntax.
+
+What if...
+An ambiguous recursive definition is partially evaluated, leaving those
+recursive references unevaluated. If the final result has the syntactic form
+of a legal recursive list or function definition, then we construct the
+appropriate recursive data structure.
+
+That is pretty complicated. But eventually I'll have all of the necessary
+mechanisms in place for other reasons (to support GPU compilation), and then
+maybe I can revisit this idea.
