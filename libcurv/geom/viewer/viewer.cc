@@ -261,7 +261,7 @@ bool Viewer::draw_frame()
             }
             ImGui::SameLine();
         }
-        ImGui::Checkbox("Power Saver", &config_.lazy_);
+        //ImGui::Checkbox("Power Saver", &config_.lazy_); // TODO: fix
         ImGui::End();
         ImGui::PopStyleColor(1);
     }
