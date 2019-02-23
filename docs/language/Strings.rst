@@ -98,6 +98,11 @@ Expression Substitutions
   ``${expr}``
     Interpolate the value of ``expr``.
     If the value is not a string, then it is converted to a string by ``repr``.
+  ``${statement;statement;...}``
+    This is a string comprehension, similar to a list comprehension.
+    Each statement is either an expression, or a control structure that may
+    generate zero or more values, which are interpolated into the string in sequence.
+    Equivalent to ``${strcat[statement;statement;...]}``.
   ``$(expr)``
     Similar to ``${expr}``, except that if ``expr`` evaluates to a string,
     then a quoted string literal will be interpolated.
