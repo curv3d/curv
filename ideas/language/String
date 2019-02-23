@@ -126,9 +126,91 @@ My solution:
     |final line
     "
 
-As an extension, I could add continuation lines:
-    &more text added to previous line
-which do not add a newline.
+### Extension: line continuations
+Problem: break up a long line over multiple source code lines.
+
+Solution: The escape sequence `$ optional-spaces-and-tabs newline`
+expands to nothing.
+
+    "First line.
+    |This line$
+      | is broken up$
+      | over multiple source lines.
+    |Final line.
+    "
+
+As a special case, if you want the first line of a multi-line string
+to not contribute any text (not even a blank line), then you could write
+    my_string = "$
+        |First line.
+        |Second line.
+        |Final line.
+    ";
+
+Use this escape to write embedded, multi-line statement blocks which themselves
+do not introduce an additional newline.
+    "solid polyhedron
+    |${for (f in triangles)
+        "facet normal 0 0 0
+        |  outer loop
+        |${for (v in f)
+            "    vertex ${v[X]}, ${v[Y]}, ${v[Z]}
+            "
+        }$
+        |  endloop
+        |endfacet
+        "
+    }$
+    |endsolid polyhedron
+    "
+
+You can introduce comments into the middle of a multi-line string literal
+like this:
+    "Some text.
+    |${ /* comment */ }$
+    |Some more text.
+    "
+
+### Extension: clean syntax for embedded, multi-line statement blocks
+As an alternative to writing
+    |${ ... }$
+you can instead write
+    { ... }
+within a multi-line string literal.
+
+For example,
+   "solid polyhedron
+   {for (f in triangles)
+      "facet normal 0 0 0
+      |  outer loop
+      {for (v in f)
+         "    vertex ${v[X]}, ${v[Y]}, ${v[Z]}
+         "
+      }
+      |  endloop
+      |endfacet
+      "
+   }
+   |endsolid polyhedron
+   "
+A continuation line may begin with `{`, a code insertion that continues
+to a matching `}`. After the `}`, whitespace is eaten up to and including a
+newline, which is dropped.
+
+An embedded comment:
+    "Some text.
+    { /* comment */ }
+    |Some more text.
+    "
+
+If the first element in the string is a multi-line block,
+you can begin the string with a `"$` line:
+    "$
+    { for (a in list)
+        "${a}
+        "
+    }
+    "
 
 ## String Comprehensions
 "${ stmt1; stmt2; stmt3 }"
