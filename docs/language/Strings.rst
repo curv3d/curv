@@ -148,6 +148,8 @@ String Literal Grammar
   * ``$=`` is replaced by a ``"`` character.
   * ``${expr}`` interpolates the value of ``expr``. If the value is not a string,
     then it is converted to a string by ``repr``.
+  * ``${stmt1,stmt2,...}`` or ``${stmt1;stmt2;...}``
+    is equivalent to ``${strcat[statements]}``.
   * ``$(expr)`` is equivalent to ``${repr(expr)}``.
   * ``$[...]`` is equivalent to ``${decode[...]}``.
   * ``$identifier`` is equivalent to ``${identifier}``.
