@@ -13,7 +13,6 @@ Recent Ideas (Jan 2018):
   * Constructor terms, which can construct parametric records.
 * Picker predicates: implement the complete set
 * sequential let
-* string comprehensions
 * `== value` is a predicate, and it is an equality pattern.
 * Enum values. How are they represented? Syntax of '-Ocolour=vertex' if the
   RHS is a Curv enum value expression?

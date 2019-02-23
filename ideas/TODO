@@ -19,23 +19,36 @@ Version 0.4 Planning:
   * `box` with no argument defaults to `box[2,2,2]`.
   * `-o frag` replaced by `-o gpu`. Can also read GPU files, display in Viewer.
   * $. $= and multi-line string literals
-  * fix bug in `-o json` (proper escaping of control characters)
-* release blockers:
+  * fix bug in `-o json` (escaping of control characters)
+
+* v0.4 release blockers:
   * CLI token colouring fixes. $=$. bad-token string-escapes
-  * copyright 2019
-  * fix or remove Energy Saver
+  * deprecate or remove $$ "" escapes.
+  * add `$<newline>` escape so that string literals are finished.
   * Value Pickers:
     * Finish implementing reactive values.
     * deprecate 'pred ident' pattern, in favour of 'ident :: pred'
-  * document GL arrays
-  * document *.gpu
-  * better unit tests: cli tests, curvc
+  * document new features
+  * better unit tests:
+    * cli tests, curvc
+    * detect console output from curv.curv
+    * full gl_test suite
 
 Big Items
 * graphical value pickers in the viewer
 * standard libraries for some important techniques
 * better documentation, a web site
 * sharp STL export
+
+More Big Items
+* a GUI application
+* Homebrew package, Mac Linux Windows
+* a web GUI, a wasm executable
+* tail recursion optimization
+* common subexpression optimization and partial evaluation
+* image import
+* voxel import/export
+* Stratasys J750 support
 
 TODO (value pickers impl)
 * Parametric shape constructors in the standard library.
@@ -50,6 +63,7 @@ TODO (value pickers impl)
 * Support multiple viewer windows. 'cube;sphere' in CLI opens 2 Viewers.
 
 Current TODO List:
+* fix Power Saver button to work correctly
 * graphical value pickers
   * add more picker types
   * `term` proposal
