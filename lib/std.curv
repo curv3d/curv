@@ -17,7 +17,10 @@ T = 3;
 X_axis = [1,0,0];
 Y_axis = [0,1,0];
 Z_axis = [0,0,1];
-nl = decode[0xA]; // ASCII newline
+nl = decode[0xA];   // newline character
+tab = decode[0x9];  // tab character
+dol = "$.";         // dollar sign character
+quot = "$=";        // double quote character
 
 mod(a,m) = a - m * floor(a/m);
 rem(a,m) = a - m * trunc(a/m);
