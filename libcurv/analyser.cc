@@ -190,6 +190,11 @@ Char_Escape_Phrase::analyse(Environ& env) const
     return make<Literal_Segment>(share(*this), String::make(&c, 1));
 }
 Shared<Segment>
+Ident_Segment_Phrase::analyse(Environ& env) const
+{
+    return make<Ident_Segment>(share(*this), analyse_op(*expr_, env));
+}
+Shared<Segment>
 Paren_Segment_Phrase::analyse(Environ& env) const
 {
     return make<Paren_Segment>(share(*this), analyse_op(*expr_, env));

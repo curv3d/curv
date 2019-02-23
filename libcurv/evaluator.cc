@@ -829,6 +829,15 @@ Literal_Segment::generate(Frame&, String_Builder& sb) const
     sb << *data_;
 }
 void
+Ident_Segment::generate(Frame& f, String_Builder& sb) const
+{
+    Value val = expr_->eval(f);
+    if (auto str = val.dycast<String>())
+        sb << *str;
+    else
+        sb << val;
+}
+void
 Paren_Segment::generate(Frame& f, String_Builder& sb) const
 {
     sb << expr_->eval(f);
@@ -844,11 +853,14 @@ Bracket_Segment::generate(Frame& f, String_Builder& sb) const
 void
 Brace_Segment::generate(Frame& f, String_Builder& sb) const
 {
-    Value val = expr_->eval(f);
-    if (auto str = val.dycast<String>())
-        sb << *str;
-    else
-        sb << val;
+    At_Phrase cx(*expr_->syntax_, f);
+    auto list = expr_->eval(f).to<List>(cx);
+    for (auto val : *list) {
+        if (auto str = val.dycast<String>())
+            sb << *str;
+        else
+            sb << val;
+    }
 }
 Value
 String_Expr_Base::eval(Frame& f) const

@@ -686,7 +686,7 @@ parse_string(Scanner& scanner, Token begin)
             auto state = scanner.string_begin_;
             scanner.string_begin_.kind_ = Token::k_missing;
             auto braces =
-                parse_delimited<Paren_Phrase>(tok, Token::k_rbrace, scanner);
+                parse_delimited<Bracket_Phrase>(tok, Token::k_rbrace, scanner);
             scanner.string_begin_ = state;
             segments.push_back(make<Brace_Segment_Phrase>(braces));
             continue;
@@ -696,7 +696,7 @@ parse_string(Scanner& scanner, Token begin)
             Token id = tok;
             ++id.first_;
             auto ident = make<Identifier>(*scanner.source_, id);
-            segments.push_back(make<Brace_Segment_Phrase>(ident));
+            segments.push_back(make<Ident_Segment_Phrase>(ident));
             continue;
           }
         default:

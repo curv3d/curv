@@ -88,6 +88,14 @@ struct Char_Escape_Phrase : public Segment_Phrase
     virtual Location location() const override { return loc_; }
     virtual Shared<Segment> analyse(Environ&) const override;
 };
+struct Ident_Segment_Phrase : public Segment_Phrase
+{
+    Shared<const Phrase> expr_;
+    Ident_Segment_Phrase(Shared<const Phrase> expr)
+    : expr_(std::move(expr)) {}
+    virtual Location location() const override { return expr_->location(); }
+    virtual Shared<Segment> analyse(Environ&) const override;
+};
 struct Paren_Segment_Phrase : public Segment_Phrase
 {
     Shared<const Phrase> expr_;

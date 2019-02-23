@@ -111,12 +111,12 @@ Scanner::get_token()
                 tok.kind_ = Token::k_string_newline;
                 goto success;
             }
-            tok.first_ = p - first;
-            tok.last_ = tok.first_ + 1;
+            tok = string_begin_;
+            tok.last_ = p - first + 1;
             tok.kind_ = Token::k_bad_token;
             ptr_ = p + 1;
             throw Exception(At_Token(tok, *this),
-                "expecting \" or | within a multi-line string literal");
+                "unterminated string literal");
         }
         while (p < last && *p != '$' && *p != '\n' && *p != '"' && *p != 0)
             ++p;

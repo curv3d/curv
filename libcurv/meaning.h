@@ -869,6 +869,13 @@ struct Literal_Segment : public Segment
     : Segment(std::move(syntax)), data_(std::move(data)) {}
     virtual void generate(Frame&, String_Builder&) const;
 };
+struct Ident_Segment : public Segment
+{
+    Shared<Operation> expr_;
+    Ident_Segment(Shared<const Segment_Phrase> syntax, Shared<Operation> expr)
+    : Segment(std::move(syntax)), expr_(std::move(expr)) {}
+    virtual void generate(Frame&, String_Builder&) const;
+};
 struct Paren_Segment : public Segment
 {
     Shared<Operation> expr_;

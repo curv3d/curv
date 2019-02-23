@@ -352,6 +352,13 @@ assert((
         ))
 == 42);
 
+// string comprehensions
+assert("${1,2,3}" == "123");
+assert("${"foo";"bar"}" == "foobar");
+assert("${
+    for (i in 0..3) i;
+}" == "0123");
+
 let
     a5n = [0,1,2,3,4];
     a5v2 = [[00,01],[10,11],[20,21],[30,31],[40,41]];
