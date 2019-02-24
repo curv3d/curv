@@ -48,8 +48,13 @@ Scanner::get_token()
             ++p;
             if (p < last && *p == '"') {
                 ++p;
-                tok.kind_ = Token::k_char_escape;
-                goto success;
+                tok.last_ = p - first;
+                tok.kind_ = Token::k_bad_token;
+                ptr_ = p;
+                throw Exception(At_Token(tok, *this),
+                    "\"\" is no longer a valid escape sequence.\n"
+                    "Use ${quot} or $="
+                      " to interpolate a \" character into a string.");
             }
             tok.kind_ = Token::k_quote;
             string_begin_.kind_ = Token::k_missing;
@@ -61,7 +66,17 @@ Scanner::get_token()
                 throw Exception(At_Token(string_begin_, *this),
                     "unterminated string literal");
             }
-            if (*p == '$' || *p == '.' || *p == '=') {
+            if (*p == '$') {
+                ++p;
+                tok.last_ = p - first;
+                tok.kind_ = Token::k_bad_token;
+                ptr_ = p;
+                throw Exception(At_Token(tok, *this),
+                    "$$ is no longer a valid escape sequence.\n"
+                    "Use ${dol} or $."
+                      " to interpolate a $ character into a string.");
+            }
+            if (*p == '.' || *p == '=') {
                 ++p;
                 tok.kind_ = Token::k_char_escape;
                 goto success;

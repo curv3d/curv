@@ -175,11 +175,9 @@ Char_Escape_Phrase::analyse(Environ& env) const
         c = '\n';
     else {
         switch (location().range()[1]) {
-        case '"':
         case '=':
             c = '"';
             break;
-        case '$':
         case '.':
             c = '$';
             break;

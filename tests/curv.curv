@@ -171,15 +171,15 @@ assert( {call x = x + 1} 3 == 4 );
 assert( strcat("foo","bar",0) == "foobar0" );
 
 assert(
-    count "foo" == 3 && count "$$" == 1 && count(repr "$$") == 4
-    && count """" == 1
+    count "foo" == 3 && count "$." == 1 && count(repr "$.") == 4
+    && count "$=" == 1
 );
 
 assert( "foo"[0] == "f" && "foobar"[[3,2,4]] == "boa" );
 
 assert( [if (true) (;)] == [] );
 
-assert( "$(2+2)" == "4" && "$("foo")" == """foo""" && "${"foo"}" == "foo" );
+assert( "$(2+2)" == "4" && "$("foo")" == "$=foo$=" && "${"foo"}" == "foo" );
 
 assert( (let x=1 in x+2) == 3
     && (let x=2; y=3; in x+y) == 5
@@ -196,16 +196,16 @@ assert(
 
 assert_error("foo",error "foo");
 assert_error(
-    "assertion failed: expected error ""foo"", actual error ""bar""",
+    "assertion failed: expected error $=foo$=, actual error $=bar$=",
     do assert_error("foo",error "bar") in null);
 assert_error(
-    "assertion failed: expected error ""foo"", got value ""bar""",
+    "assertion failed: expected error $=foo$=, got value $=bar$=",
     do assert_error("foo","bar") in null);
 
 exec(file "scope.curv");
 
 assert_error(
-    "argument #1 of file: illegal recursive reference to file ""a""",
+    "argument #1 of file: illegal recursive reference to file $=a$=",
     file "a");
 
 assert({a:1;b:2} == {a:1,b:2});
