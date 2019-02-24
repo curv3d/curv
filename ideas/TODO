@@ -22,9 +22,8 @@ Version 0.4 Planning:
   * fix bug in `-o json` (escaping of control characters)
 
 * v0.4 release blockers:
-  * CLI token colouring fixes. $=$. bad-token string-escapes
-  * deprecate or remove $$ "" escapes.
-  * add `$<newline>` escape so that string literals are finished.
+  * CLI token colouring: New string escapes. Special colour for string-escapes.
+    Bad token handling.
   * Value Pickers:
     * Finish implementing reactive values.
     * deprecate 'pred ident' pattern, in favour of 'ident :: pred'

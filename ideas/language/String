@@ -171,6 +171,30 @@ like this:
     |Some more text.
     "
 
+### Ugly line continuations (do not use)
+Note that these examples can also be written using ${} split over 2 lines.
+But, this coding style is too ugly to recommend.
+Eg,
+    "First line.
+    |This line${
+      } is broken up${
+      } over multiple source lines.
+    |Final line.
+    "
+Or,
+    "solid polyhedron
+    |${for (f in triangles)
+        "facet normal 0 0 0
+        |  outer loop
+        |${for (v in f)
+            "    vertex ${v[X]}, ${v[Y]}, ${v[Z]}
+            "
+        }  endloop
+        |endfacet
+        "
+    }endsolid polyhedron
+    "
+
 ### Extension: clean syntax for embedded, multi-line statement blocks
 As an alternative to writing
     |${ ... }$
@@ -211,6 +235,59 @@ you can begin the string with a `"$` line:
         "
     }
     "
+
+### Can the syntax be even more regular?
+A multi-line string literal looks like this:
+    """
+    |First line.
+    |Second line.
+    |Final line.
+    """
+If you don't want a trailing newline after the final line, use:
+    """
+    |First line.
+    |Second line.
+    "Final line."
+    """
+Another use case:
+    """
+    |First line.
+    "This line"
+      " is broken up"
+      | over multiple source lines.
+    |Final line.
+    """
+The STL generator becomes more regular:
+   stl triangles =
+      """
+      |solid polyhedron
+      {for (f in triangles)
+         """
+         |facet normal 0 0 0
+         |  outer loop
+         {for (v in f)
+            """
+            |    vertex ${v[X]}, ${v[Y]}, ${v[Z]}
+            """
+         }
+         |  endloop
+         |endfacet
+         """
+      }
+      |endsolid polyhedron
+      """;
+
+A multi-line string literal is a sequence of zero or more segments
+between """ delimiters.
+   `|...` includes a trailing newline. Within `...`, `"` is not special.
+   `"..."` does not include a trailing newline.
+   `{...}` is a string comprehension.
+   Commentary is allowed between segments.
+
+There is no trailing line-continuation escape. The information you need
+to interpret a segment is in the first non-white character on the line.
+Trailing-newline segments always begin with |.
+And that's the benefit.
 
 ## String Comprehensions
 "${ stmt1; stmt2; stmt3 }"
