@@ -257,12 +257,12 @@ in assert( [f(1,2,3), f 17] == [6,null] );
 
 assert( (3 `max` 5) == 5 );
 
-let (is_bool b, is_num n) = (false,0) in assert(!b && n==0);
+let (b :: is_bool, n :: is_num) = (false,0) in assert(!b && n==0);
 
 assert(
     (42 >> match [
-        (is_bool b) -> error "can't happen";
-        (is_num n) -> n+1 ])
+        (b :: is_bool) -> error "can't happen";
+        (n :: is_num) -> n+1 ])
     == 43);
 
 assert( {a:} == {a:true} );

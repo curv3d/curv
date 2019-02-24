@@ -22,11 +22,10 @@ Version 0.4 Planning:
   * fix bug in `-o json` (escaping of control characters)
 
 * v0.4 release blockers:
-  * CLI token colouring: New string escapes. Special colour for string-escapes.
-    Bad token handling.
   * Value Pickers:
     * Finish implementing reactive values.
-    * deprecate 'pred ident' pattern, in favour of 'ident :: pred'
+  * CLI token colouring: New string escapes. Special colour for string-escapes.
+    Bad token handling.
   * document new features
   * better unit tests:
     * cli tests, curvc

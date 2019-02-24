@@ -447,9 +447,12 @@ make_pattern(const Phrase& ph, bool mut, Scope& scope, unsigned unitno)
         }
     }
     if (auto call = dynamic_cast<const Call_Phrase*>(&ph)) {
-        if (call->op_.kind_ == Token::k_missing ||
-            call->op_.kind_ == Token::k_colon_colon)
-        {
+        if (call->op_.kind_ == Token::k_missing) {
+            throw Exception(At_Phrase(ph, scope),
+                "'<predicate> <pattern>' is no longer legal syntax.\n"
+                "Use '<pattern> :: <predicate>' instead.");
+        }
+        if (call->op_.kind_ == Token::k_colon_colon) {
             return make<Predicate_Pattern>(share(*call),
                 make_pattern(*call->arg_, mut, scope, unitno));
         }

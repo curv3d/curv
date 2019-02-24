@@ -133,11 +133,11 @@ MIN = 0;
 MAX = 1;
 
 is_bbox2 = match [
-    (is_vec2 _, is_vec2 _) -> true;
+    (_ :: is_vec2, _ :: is_vec2) -> true;
     _ -> false;
 ];
 is_bbox3 = match [
-    (is_vec3 _, is_vec3 _) -> true;
+    (_ :: is_vec3, _ :: is_vec3) -> true;
     _ -> false;
 ];
 
@@ -862,7 +862,7 @@ translate _delta shape =
     };
 
 // Isotropic scale operation, preserves structure of the distance field.
-scale (is_num s) shape =
+scale (s :: is_num) shape =
     make_shape {
         // TODO: dist p : shape.dist(...p[[X,Y,Z]] / s, p[T]) * s,
         dist(x,y,z,t) : shape.dist(x/s, y/s, z/s, t) * s,
@@ -1605,7 +1605,7 @@ show_axes shape =
             box(eps, eps, inf) >> colour blue,
         ];
 
-set_bbox (is_bbox3 bbox) shape = {...shape; bbox: bbox};
+set_bbox (bbox :: is_bbox3) shape = {...shape; bbox: bbox};
 
 show_bbox shape =
     let bb =
