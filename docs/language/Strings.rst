@@ -39,7 +39,7 @@ Later, Unicode will be supported.
   Convert a list of Unicode code points to a string.
   Currently the only supported code points are 1 to 127.
 
-Simple String Literals
+Simple String Literals with Variable Substitutions
   A simple string literal is a sequence of zero or more literal characters
   and variable substitutions, enclosed in double quotes.
   For example, ``"Hello, world!"`` is a string literal.
@@ -91,27 +91,37 @@ Multi-Line String Literals
     |Second line.
     |Final line without trailing newline."
 
-Expression Substitutions
+Expression Substitutions and String Comprehensions
   These escape sequences evaluate arbitrary expressions,
   and substitute the resulting values into string literals.
   
-  ``${expr}``
-    Interpolate the value of ``expr``.
-    If the value is not a string, then it is converted to a string by ``repr``.
-  ``${statement;statement;...}``
-    This is a string comprehension, similar to a list comprehension.
-    Each statement is either an expression, or a control structure that may
-    generate zero or more values, which are interpolated into the string in sequence.
-    Equivalent to ``${strcat[statement;statement;...]}``.
-  ``$(expr)``
-    Similar to ``${expr}``, except that if ``expr`` evaluates to a string,
+  ``${...}``
+    Replaced by the string ``strcat[...]``. For example,
+    
+    * ``${a[i]}`` interpolates the value of the expression ``a[i]``
+      into the string. If ``a[i]`` is not a string, it is converted
+      to a string using ``repr``.
+    * ``${if (cond) "foo"}`` executes the ``if`` statement, interpolating
+      ``"foo"`` into the string if ``cond`` is true.
+    
+    More generally, the ``...`` is a sequence of zero or more expressions and statements,
+    separated or terminated by commas or semicolons.
+    Inside the braces, you can include comments, newlines, and quoted
+    string literals. This feature is called "string comprehensions".
+  ``$(...)``
+    Replaced by the string ``repr(...)``.
+    
+    ``$(expr)`` is similar to ``${expr}``, except that if ``expr`` evaluates to a string,
     then a quoted string literal will be interpolated.
-    Useful for interpolating the value of a variable in a debug print statement.
-    Equivalent to ``${repr(expr)}``.
+    This is useful for interpolating the value of a variable in a debug print statement.
   ``$[...]``
-    Equivalent to ``${decode[...]}``.
-    For example, ``$[65,66,67]`` interpolates the characters ``ABC``,
-    since ``65`` is the ASCII encoding of ``A``, and so on.
+    Replaced by the string ``decode[...]``. For example,
+    ``$[65]`` or ``$[0x41]`` is replaced by the character ``A``,
+    since ``65`` is the ASCII encoding of ``A``.
+    
+    More generally, the ``...`` is a list comprehension,
+    so ``$[65,66,67,68,69]`` or ``$[... 65..69]``
+    are replaced by the characters ``ABCDE``.
 
 Compact Escape Sequences for ``$`` and ``"``
   ``$.`` is replaced by ``$``, and ``$=`` is replaced by ``"``.
