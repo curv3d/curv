@@ -118,12 +118,14 @@ Shape Constructors
   
   * ``ellipsoid.exact``: exact distance field, more expensive to compute (TODO).
 
-``cylinder {d, h}``
-  Construct a cylinder, centered on the origin, whose axis of rotation is the Z axis.
-  Diameter is ``d`` and height is ``h``.
- 
-  * ``cylinder.mitred``: mitred distance field.
-  * ``cylinder.exact``: exact distance field, more expensive.
+``cylinder``
+  Construct a cylinder, centred on the origin,
+  whose axis of rotation is the Z axis.
+
+  * ``cylinder``: A prototypical cylinder of diameter 2 and height 2.
+  * ``cylinder {d, h}``: A cylinder of diameter ``d`` and height ``h``.
+  * ``cylinder.mitred {d, h}``: With a mitred distance field.
+  * ``cylinder.exact {d, h}``: With an exact distance field, more expensive.
 
 ``cone {d, h}``
   Construct a cone.
@@ -135,14 +137,15 @@ Shape Constructors
 
 ``torus {major: d1, minor: d2}``
   Construct a torus, centred on the origin, axis of rotation is Z axis.
-  Major diameter is ``d1`` (center of tube to centre of tube, crossing the origin).
+  Major diameter is ``d1`` (centre of tube to centre of tube, crossing the origin).
   Minor diameter is ``d2`` (diameter of the tube).
   Total width of shape is ``d1+d2``.
   Exact distance field.
 
 ``box ...``
-  Construct an axis-aligned cuboid.
+  Construct an axis-aligned cuboid, centred on the origin.
 
+  * ``box``: A prototypical box of size 2x2x2.
   * ``box (dx, dy, dz)``: a cuboid of width ``dx``, depth ``dy``,
     and height ``dz``, centred on the origin. Any argument may be ``inf``.
   * ``box ((xmin,ymin,zmin),(xmax,ymax,zmax))``: a cuboid with vertices
