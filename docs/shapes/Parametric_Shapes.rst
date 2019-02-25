@@ -67,5 +67,6 @@ new versions of the shape to be constructed using modified parameter values.
 One consequence is that you can define library functions that return
 parametric shapes.
 
-Details and Caveats
--------------------
+..
+  Details and Caveats
+  -------------------
