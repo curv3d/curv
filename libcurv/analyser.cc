@@ -22,7 +22,7 @@ analyse_op(const Phrase& ph, Environ& env)
 {
     bool old = env.is_analysing_action_;
     env.is_analysing_action_ = false;
-    auto result = ph.analyse(env)->to_operation(env.system_, env.file_frame_);
+    auto result = ph.analyse(env, 0)->to_operation(env.system_, env.file_frame_);
     env.is_analysing_action_ = old;
     return result;
 }
@@ -32,7 +32,7 @@ analyse_action(const Phrase& ph, Environ& env)
 {
     bool old = env.is_analysing_action_;
     env.is_analysing_action_ = true;
-    auto result = ph.analyse(env)->to_operation(env.system_, env.file_frame_);
+    auto result = ph.analyse(env, 0)->to_operation(env.system_, env.file_frame_);
     env.is_analysing_action_ = old;
     return result;
 }
@@ -40,7 +40,7 @@ analyse_action(const Phrase& ph, Environ& env)
 Shared<Operation>
 analyse_tail(const Phrase& ph, Environ& env)
 {
-    return ph.analyse(env)->to_operation(env.system_, env.file_frame_);
+    return ph.analyse(env, 0)->to_operation(env.system_, env.file_frame_);
 }
 
 // Evaluate the phrase as a constant expression in the builtin environment.
@@ -116,19 +116,19 @@ Builtin_Environ::single_lookup(const Identifier& id)
 }
 
 Shared<Meaning>
-Empty_Phrase::analyse(Environ& env) const
+Empty_Phrase::analyse(Environ& env, unsigned) const
 {
     return make<Null_Action>(share(*this));
 }
 
 Shared<Meaning>
-Identifier::analyse(Environ& env) const
+Identifier::analyse(Environ& env, unsigned) const
 {
     return env.lookup(*this);
 }
 
 Shared<Meaning>
-Numeral::analyse(Environ& env) const
+Numeral::analyse(Environ& env, unsigned) const
 {
     switch (loc_.token().kind_) {
     case Token::k_num:
@@ -162,13 +162,13 @@ Numeral::analyse(Environ& env) const
 }
 
 Shared<Segment>
-String_Segment_Phrase::analyse(Environ& env) const
+String_Segment_Phrase::analyse(Environ& env, unsigned) const
 {
     return make<Literal_Segment>(share(*this),
         String::make(location().range()));
 }
 Shared<Segment>
-Char_Escape_Phrase::analyse(Environ& env) const
+Char_Escape_Phrase::analyse(Environ& env, unsigned) const
 {
     char c;
     if (location().token().kind_ == Token::k_string_newline)
@@ -188,27 +188,27 @@ Char_Escape_Phrase::analyse(Environ& env) const
     return make<Literal_Segment>(share(*this), String::make(&c, 1));
 }
 Shared<Segment>
-Ident_Segment_Phrase::analyse(Environ& env) const
+Ident_Segment_Phrase::analyse(Environ& env, unsigned) const
 {
     return make<Ident_Segment>(share(*this), analyse_op(*expr_, env));
 }
 Shared<Segment>
-Paren_Segment_Phrase::analyse(Environ& env) const
+Paren_Segment_Phrase::analyse(Environ& env, unsigned) const
 {
     return make<Paren_Segment>(share(*this), analyse_op(*expr_, env));
 }
 Shared<Segment>
-Bracket_Segment_Phrase::analyse(Environ& env) const
+Bracket_Segment_Phrase::analyse(Environ& env, unsigned) const
 {
     return make<Bracket_Segment>(share(*this), analyse_op(*expr_, env));
 }
 Shared<Segment>
-Brace_Segment_Phrase::analyse(Environ& env) const
+Brace_Segment_Phrase::analyse(Environ& env, unsigned) const
 {
     return make<Brace_Segment>(share(*this), analyse_op(*expr_, env));
 }
 Shared<Meaning>
-String_Phrase_Base::analyse(Environ& env) const
+String_Phrase_Base::analyse(Environ& env, unsigned) const
 {
     return analyse_string(env);
 }
@@ -217,12 +217,12 @@ String_Phrase_Base::analyse_string(Environ& env) const
 {
     std::vector<Shared<Segment>> ops;
     for (Shared<const Segment_Phrase> seg : *this)
-        ops.push_back(seg->analyse(env));
+        ops.push_back(seg->analyse(env, 0));
     return String_Expr::make_elements(ops, this);
 }
 
 Shared<Meaning>
-Unary_Phrase::analyse(Environ& env) const
+Unary_Phrase::analyse(Environ& env, unsigned) const
 {
     switch (op_.kind_) {
     case Token::k_not:
@@ -318,7 +318,7 @@ analyse_lambda(
 }
 
 Shared<Meaning>
-Lambda_Phrase::analyse(Environ& env) const
+Lambda_Phrase::analyse(Environ& env, unsigned) const
 {
     return analyse_lambda(env, share(*this), shared_nonlocals_, left_, right_);
 }
@@ -435,7 +435,7 @@ analyse_block(
 }
 
 Shared<Meaning>
-Let_Phrase::analyse(Environ& env) const
+Let_Phrase::analyse(Environ& env, unsigned) const
 {
     if (let_.kind_ == Token::k_make_parametric) {
         auto ctor = analyse_lambda(env, share(*this), false,
@@ -451,7 +451,7 @@ Let_Phrase::analyse(Environ& env) const
 }
 
 Shared<Meaning>
-Where_Phrase::analyse(Environ& env) const
+Where_Phrase::analyse(Environ& env, unsigned) const
 {
     Shared<const Phrase> syntax = share(*this);
     Shared<Phrase> bindings = right_;
@@ -530,7 +530,7 @@ Where_Phrase::analyse(Environ& env) const
 }
 
 Shared<Meaning>
-Binary_Phrase::analyse(Environ& env) const
+Binary_Phrase::analyse(Environ& env, unsigned) const
 {
     switch (op_.kind_) {
     case Token::k_or:
@@ -626,17 +626,17 @@ Binary_Phrase::analyse(Environ& env) const
 }
 
 Shared<Meaning>
-Recursive_Definition_Phrase::analyse(Environ& env) const
+Recursive_Definition_Phrase::analyse(Environ& env, unsigned) const
 {
     throw Exception(At_Phrase(*this, env), "not an operation");
 }
 Shared<Meaning>
-Sequential_Definition_Phrase::analyse(Environ& env) const
+Sequential_Definition_Phrase::analyse(Environ& env, unsigned) const
 {
     throw Exception(At_Phrase(*this, env), "not an operation");
 }
 Shared<Meaning>
-Assignment_Phrase::analyse(Environ& env) const
+Assignment_Phrase::analyse(Environ& env, unsigned) const
 {
     auto id = cast<Identifier>(left_);
     if (id == nullptr)
@@ -691,7 +691,7 @@ Sequential_Definition_Phrase::as_definition(Environ& env)
 }
 
 Shared<Meaning>
-Semicolon_Phrase::analyse(Environ& env) const
+Semicolon_Phrase::analyse(Environ& env, unsigned) const
 {
     Shared<Compound_Op> compound = Compound_Op::make(args_.size(), share(*this));
     for (size_t i = 0; i < args_.size(); ++i)
@@ -727,7 +727,7 @@ Semicolon_Phrase::as_definition(Environ& env)
 }
 
 Shared<Meaning>
-Comma_Phrase::analyse(Environ& env) const
+Comma_Phrase::analyse(Environ& env, unsigned) const
 {
     throw Exception(At_Token(args_[0].separator_, *this, env), "syntax error");
 }
@@ -745,7 +745,7 @@ List_Expr_Base::init()
 }
 
 Shared<Meaning>
-Paren_Phrase::analyse(Environ& env) const
+Paren_Phrase::analyse(Environ& env, unsigned edepth) const
 {
     if (cast<const Empty_Phrase>(body_))
         return List_Expr::make(0, share(*this));
@@ -759,7 +759,7 @@ Paren_Phrase::analyse(Environ& env) const
     } else {
         // One of the few places we directly call Phrase::analyse().
         // The result can be an operation or a metafunction.
-        return body_->analyse(env);
+        return body_->analyse(env, edepth);
     }
 }
 Shared<Definition>
@@ -769,7 +769,7 @@ Paren_Phrase::as_definition(Environ& env)
 }
 
 Shared<Meaning>
-Bracket_Phrase::analyse(Environ& env) const
+Bracket_Phrase::analyse(Environ& env, unsigned) const
 {
     if (cast<const Empty_Phrase>(body_))
         return List_Expr::make(0, share(*this));
@@ -789,9 +789,9 @@ Bracket_Phrase::analyse(Environ& env) const
 }
 
 Shared<Meaning>
-Call_Phrase::analyse(Environ& env) const
+Call_Phrase::analyse(Environ& env, unsigned) const
 {
-    return function_->analyse(env)->call(*this, env);
+    return function_->analyse(env, 0)->call(*this, env);
 }
 
 Shared<Meaning>
@@ -804,9 +804,9 @@ Operation::call(const Call_Phrase& src, Environ& env)
 }
 
 Shared<Meaning>
-Program_Phrase::analyse(Environ& env) const
+Program_Phrase::analyse(Environ& env, unsigned) const
 {
-    return body_->analyse(env);
+    return body_->analyse(env, 0);
 }
 Shared<Definition>
 Program_Phrase::as_definition(Environ& env)
@@ -815,7 +815,7 @@ Program_Phrase::as_definition(Environ& env)
 }
 
 Shared<Meaning>
-Brace_Phrase::analyse(Environ& env) const
+Brace_Phrase::analyse(Environ& env, unsigned) const
 {
     Shared<Definition> adef = body_->as_definition(env);
     if (adef == nullptr) {
@@ -829,7 +829,7 @@ Brace_Phrase::analyse(Environ& env) const
 }
 
 Shared<Meaning>
-If_Phrase::analyse(Environ& env) const
+If_Phrase::analyse(Environ& env, unsigned) const
 {
     if (else_expr_ == nullptr) {
         return make<If_Op>(
@@ -846,7 +846,7 @@ If_Phrase::analyse(Environ& env) const
 }
 
 Shared<Meaning>
-For_Phrase::analyse(Environ& env) const
+For_Phrase::analyse(Environ& env, unsigned) const
 {
     Scope scope(env);
     scope.is_analysing_action_ = env.is_analysing_action_;
@@ -861,7 +861,7 @@ For_Phrase::analyse(Environ& env) const
 }
 
 Shared<Meaning>
-While_Phrase::analyse(Environ& env) const
+While_Phrase::analyse(Environ& env, unsigned) const
 {
     auto cond = analyse_op(*args_, env);
     auto body = analyse_tail(*body_, env);
@@ -869,14 +869,14 @@ While_Phrase::analyse(Environ& env) const
 }
 
 Shared<Meaning>
-Parametric_Phrase::analyse(Environ& env) const
+Parametric_Phrase::analyse(Environ& env, unsigned) const
 {
     auto ctor = analyse_lambda(env, share(*this), false, param_, body_);
     return make<Parametric_Expr>(share(*this), ctor);
 }
 
 Shared<Meaning>
-Range_Phrase::analyse(Environ& env) const
+Range_Phrase::analyse(Environ& env, unsigned) const
 {
     return make<Range_Expr>(
         share(*this),
@@ -887,7 +887,7 @@ Range_Phrase::analyse(Environ& env) const
 }
 
 Shared<Meaning>
-Predicate_Assertion_Phrase::analyse(Environ& env) const
+Predicate_Assertion_Phrase::analyse(Environ& env, unsigned) const
 {
     return make<Predicate_Assertion_Expr>(
         share(*this),
