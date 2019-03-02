@@ -166,7 +166,7 @@ Sequential_Scope::single_lookup(const Identifier& id)
 void
 Sequential_Scope::add_action(Shared<const Phrase> phrase)
 {
-    executable_.actions_.push_back(analyse_action(*phrase, *this));
+    executable_.actions_.push_back(analyse_op(*phrase, *this, edepth_+1));
 }
 unsigned
 Sequential_Scope::begin_unit(Shared<Unitary_Definition> unit)
@@ -397,7 +397,8 @@ Shared<Module_Expr>
 analyse_module(Definition& def, Environ& env)
 {
     if (def.kind_ == Definition::k_sequential) {
-        Sequential_Scope scope(env, true);
+        // TODO: remove this code
+        Sequential_Scope scope(env, true, 0);
         scope.analyse(def);
         return make<Scoped_Module_Expr>(def.syntax_,
             std::move(scope.executable_));

@@ -958,7 +958,7 @@ void If_Op::gl_exec(GL_Frame& f) const
     arg2_->gl_exec(f);
     f.gl.out() << "  }\n";
 }
-void While_Action::gl_exec(GL_Frame& f) const
+void While_Op::gl_exec(GL_Frame& f) const
 {
     f.gl.out() << "  while (true) {\n";
     auto cond = gl_eval_expr(f, *cond_, GL_Type::Bool());

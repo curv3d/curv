@@ -18,29 +18,9 @@ namespace curv
 {
 
 Shared<Operation>
-analyse_op(const Phrase& ph, Environ& env)
+analyse_op(const Phrase& ph, Environ& env, unsigned edepth)
 {
-    bool old = env.is_analysing_action_;
-    env.is_analysing_action_ = false;
-    auto result = ph.analyse(env, 0)->to_operation(env.system_, env.file_frame_);
-    env.is_analysing_action_ = old;
-    return result;
-}
-
-Shared<Operation>
-analyse_action(const Phrase& ph, Environ& env)
-{
-    bool old = env.is_analysing_action_;
-    env.is_analysing_action_ = true;
-    auto result = ph.analyse(env, 0)->to_operation(env.system_, env.file_frame_);
-    env.is_analysing_action_ = old;
-    return result;
-}
-
-Shared<Operation>
-analyse_tail(const Phrase& ph, Environ& env)
-{
-    return ph.analyse(env, 0)->to_operation(env.system_, env.file_frame_);
+    return ph.analyse(env, edepth)->to_operation(env.system_, env.file_frame_);
 }
 
 // Evaluate the phrase as a constant expression in the builtin environment.
@@ -91,19 +71,35 @@ Environ::lookup(const Identifier& id)
 }
 
 Shared<Meaning>
-Environ::lookup_var(const Identifier& id)
+Environ::lookup_lvar(const Identifier& id, unsigned edepth)
 {
     for (Environ* e = this; e != nullptr; e = e->parent_) {
-        if (!e->is_analysing_action_)
+        if (edepth == 0)
             break;
-        if (e->is_sequential_statement_list_) {
-            auto m = e->single_lookup(id);
-            if (m != nullptr)
-                return m;
-        }
+        --edepth;
+        auto m = e->single_lookup(id);
+        if (m != nullptr)
+            return m;
+    }
+    // throw an exception
+    Shared<Meaning> m = nullptr;
+    for (Environ* e = this; e != nullptr; e = e->parent_) {
+        m = e->single_lookup(id);
+        if (m != nullptr)
+            break;
+    }
+    if (m == nullptr) {
+        throw Exception(At_Phrase(id, *this),
+            stringify(id.symbol_,": not defined"));
+    }
+    auto data = cast<Data_Ref>(m);
+    if (data == nullptr) {
+        throw Exception(At_Phrase(id, *this),
+            stringify(id.symbol_,": not a local variable"));
     }
     throw Exception(At_Phrase(id, *this),
-        stringify("var ",id.symbol_,": not defined"));
+        stringify("local variable ",id.symbol_,
+            ": not assignable from inside an expression"));
 }
 
 Shared<Meaning>
@@ -308,7 +304,7 @@ analyse_lambda(
 
     auto pattern = make_pattern(*left, false, scope, 0);
     pattern->analyse(scope);
-    auto expr = analyse_op(*right, scope);
+    auto expr = analyse_op(*right, scope, 1);
     auto nonlocals = make<Enum_Module_Expr>(src,
         std::move(scope.nonlocal_dictionary_),
         std::move(scope.nonlocal_exprs_));
@@ -377,23 +373,23 @@ analyse_block(
     Shared<const Phrase> syntax,
     Definition::Kind kind,
     Shared<Phrase> bindings,
-    Shared<const Phrase> bodysrc)
+    Shared<const Phrase> bodysrc,
+    unsigned edepth)
 {
     Shared<Definition> adef = bindings->as_definition(env);
     if (adef == nullptr) {
         // no definitions, just actions.
         return make<Preaction_Op>(
             syntax,
-            analyse_op(*bindings, env),
-            analyse_tail(*bodysrc, env));
+            analyse_op(*bindings, env, edepth),
+            analyse_op(*bodysrc, env, edepth));
     }
     if (adef->kind_ == Definition::k_sequential
         && kind == Definition::k_sequential)
     {
-        Sequential_Scope sscope(env, false);
+        Sequential_Scope sscope(env, false, edepth);
         sscope.analyse(*adef);
-        sscope.is_analysing_action_ = env.is_analysing_action_;
-        auto body = analyse_tail(*bodysrc, sscope);
+        auto body = analyse_op(*bodysrc, sscope, edepth+1);
         env.frame_maxslots_ = sscope.frame_maxslots_;
         return make<Block_Op>(syntax,
             std::move(sscope.executable_), std::move(body));
@@ -403,8 +399,7 @@ analyse_block(
     {
         Recursive_Scope rscope(env, false, adef->syntax_);
         rscope.analyse(*adef);
-        rscope.is_analysing_action_ = env.is_analysing_action_;
-        auto body = analyse_tail(*bodysrc, rscope);
+        auto body = analyse_op(*bodysrc, rscope, edepth+1);
         env.frame_maxslots_ = rscope.frame_maxslots_;
         return make<Block_Op>(syntax,
             std::move(rscope.executable_), std::move(body));
@@ -435,7 +430,7 @@ analyse_block(
 }
 
 Shared<Meaning>
-Let_Phrase::analyse(Environ& env, unsigned) const
+Let_Phrase::analyse(Environ& env, unsigned edepth) const
 {
     if (let_.kind_ == Token::k_make_parametric) {
         auto ctor = analyse_lambda(env, share(*this), false,
@@ -447,11 +442,11 @@ Let_Phrase::analyse(Environ& env, unsigned) const
         let_.kind_ == Token::k_let
         ? Definition::k_recursive
         : Definition::k_sequential;
-    return analyse_block(env, share(*this), kind, bindings_, body_);
+    return analyse_block(env, share(*this), kind, bindings_, body_, edepth);
 }
 
 Shared<Meaning>
-Where_Phrase::analyse(Environ& env, unsigned) const
+Where_Phrase::analyse(Environ& env, unsigned edepth) const
 {
     Shared<const Phrase> syntax = share(*this);
     Shared<Phrase> bindings = right_;
@@ -518,15 +513,14 @@ Where_Phrase::analyse(Environ& env, unsigned) const
             adef1->add_to_scope(rscope);
             adef2->add_to_scope(rscope);
             rscope.analyse();
-            rscope.is_analysing_action_ = env.is_analysing_action_;
-            auto body = analyse_tail(*let->body_, rscope);
+            auto body = analyse_op(*let->body_, rscope, edepth+1);
             env.frame_maxslots_ = rscope.frame_maxslots_;
             return make<Block_Op>(syntax,
                 std::move(rscope.executable_), std::move(body));
         }
     }
     return analyse_block(env, syntax,
-        Definition::k_recursive, bindings, bodysrc);
+        Definition::k_recursive, bindings, bodysrc, edepth);
 }
 
 Shared<Meaning>
@@ -636,12 +630,12 @@ Sequential_Definition_Phrase::analyse(Environ& env, unsigned) const
     throw Exception(At_Phrase(*this, env), "not an operation");
 }
 Shared<Meaning>
-Assignment_Phrase::analyse(Environ& env, unsigned) const
+Assignment_Phrase::analyse(Environ& env, unsigned edepth) const
 {
     auto id = cast<Identifier>(left_);
     if (id == nullptr)
         throw Exception(At_Phrase(*left_, env), "not a variable name");
-    auto m = env.lookup_var(*id);
+    auto m = env.lookup_lvar(*id, edepth);
     auto expr = analyse_op(*right_, env);
 
     auto let = cast<Data_Ref>(m);
@@ -653,7 +647,8 @@ Assignment_Phrase::analyse(Environ& env, unsigned) const
             indir->slot_, indir->index_, expr);
 
     // this should never happen
-    throw Exception(At_Phrase(*left_, env), "not a sequential variable name");
+    throw Exception(At_Phrase(*left_, env),
+        "compiler error: not an assignable variable name");
 }
 
 Shared<Definition>
@@ -691,11 +686,11 @@ Sequential_Definition_Phrase::as_definition(Environ& env)
 }
 
 Shared<Meaning>
-Semicolon_Phrase::analyse(Environ& env, unsigned) const
+Semicolon_Phrase::analyse(Environ& env, unsigned edepth) const
 {
     Shared<Compound_Op> compound = Compound_Op::make(args_.size(), share(*this));
     for (size_t i = 0; i < args_.size(); ++i)
-        compound->at(i) = analyse_action(*args_[i].expr_, env);
+        compound->at(i) = analyse_op(*args_[i].expr_, env, edepth);
     return compound;
 }
 
@@ -829,43 +824,42 @@ Brace_Phrase::analyse(Environ& env, unsigned) const
 }
 
 Shared<Meaning>
-If_Phrase::analyse(Environ& env, unsigned) const
+If_Phrase::analyse(Environ& env, unsigned edepth) const
 {
     if (else_expr_ == nullptr) {
         return make<If_Op>(
             share(*this),
             analyse_op(*condition_, env),
-            analyse_tail(*then_expr_, env));
+            analyse_op(*then_expr_, env, edepth));
     } else {
         return make<If_Else_Op>(
             share(*this),
             analyse_op(*condition_, env),
-            analyse_tail(*then_expr_, env),
-            analyse_tail(*else_expr_, env));
+            analyse_op(*then_expr_, env, edepth),
+            analyse_op(*else_expr_, env, edepth));
     }
 }
 
 Shared<Meaning>
-For_Phrase::analyse(Environ& env, unsigned) const
+For_Phrase::analyse(Environ& env, unsigned edepth) const
 {
     Scope scope(env);
-    scope.is_analysing_action_ = env.is_analysing_action_;
 
     auto pat = make_pattern(*pattern_, false, scope, 0);
     pat->analyse(scope);
     auto list = analyse_op(*listexpr_, env);
-    auto body = analyse_tail(*body_, scope);
+    auto body = analyse_op(*body_, scope, edepth+1);
 
     env.frame_maxslots_ = scope.frame_maxslots_;
     return make<For_Op>(share(*this), pat, list, body);
 }
 
 Shared<Meaning>
-While_Phrase::analyse(Environ& env, unsigned) const
+While_Phrase::analyse(Environ& env, unsigned edepth) const
 {
     auto cond = analyse_op(*args_, env);
-    auto body = analyse_tail(*body_, env);
-    return make<While_Action>(share(*this), cond, body);
+    auto body = analyse_op(*body_, env, edepth);
+    return make<While_Op>(share(*this), cond, body);
 }
 
 Shared<Meaning>

@@ -185,13 +185,14 @@ struct Block_Scope : public Scope
 
 struct Sequential_Scope : public Block_Scope
 {
+    unsigned edepth_;
     unsigned nunits_ = 0;
 
-    Sequential_Scope(Environ& parent, bool target_is_module)
+    Sequential_Scope(Environ& parent, bool target_is_module, unsigned edepth)
     :
-        Block_Scope(parent, target_is_module)
+        Block_Scope(parent, target_is_module),
+        edepth_(edepth)
     {
-        is_sequential_statement_list_ = true;
     }
 
     virtual Shared<Meaning> single_lookup(const Identifier&) override;
