@@ -52,7 +52,7 @@ make_system(const char* argv0, std::list<const char*>& libs, std::ostream& out)
                     stdlib = nullptr;
             } else {
                 fs::path stdlib_path =
-                    fs::canonical(progdir(argv0) / "../lib/std.curv");
+                    fs::canonical(curv::progdir(argv0) / "../lib/std.curv");
                 stdlib = curv::make_string(stdlib_path.c_str());
             }
             sys.load_library(stdlib);

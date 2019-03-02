@@ -6,6 +6,8 @@ extern "C" {
 #include <libcurv/progdir.h>
 namespace fs = boost::filesystem;
 
+namespace curv {
+
 /*
  * Compute the absolute pathname of the directory
  * containing the program executable.
@@ -18,11 +20,9 @@ progdir(const char *argv0)
 {
     fs::path cmd(argv0);
 
-    if (cmd.is_absolute())
-        return cmd.parent_path();
-
-    if (cmd.has_parent_path())
-        return fs::current_path() / cmd.parent_path();
+    if (cmd.has_parent_path()) {
+        return fs::canonical(cmd).parent_path();
+    }
 
     const char* PATH = getenv("PATH");
     if (PATH == NULL) {
@@ -40,12 +40,15 @@ progdir(const char *argv0)
             q = pend;
         fs::path file(p, q);
         file /= argv0;
-        if (fs::exists(fs::status(file)))
-            return file.parent_path();
+        if (fs::exists(fs::status(file))) {
+            return fs::canonical(file).parent_path();
+        }
         p = (q < pend ? q + 1 : pend);
     }
 
     throw curv::Exception_Base(curv::stringify(
         "Can't determine directory of program ", argv0,
         ": can't find ", argv0, " in $PATH"));
+}
+
 }

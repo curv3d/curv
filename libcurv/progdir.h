@@ -7,7 +7,9 @@
 
 #include <boost/filesystem.hpp>
 
+namespace curv {
+
 boost::filesystem::path progdir(const char* argv0);
 
+}
 #endif // header guard
-
