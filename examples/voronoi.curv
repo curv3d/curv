@@ -6,8 +6,8 @@ random2f(x,y) =
 voronoi(x,y) =
     let p = floor(x,y);
         f = frac(x,y);
+        res = 8;
     in do
-        var res := 8;
         for (i in -1 .. 1)
             for (j in -1 .. 1)
                 let b = (i,j);

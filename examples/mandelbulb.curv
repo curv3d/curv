@@ -44,11 +44,11 @@ make_shape {
     dist p =
         let pos = p[[X,Y,Z]];
             rot = 1;
+            dr = 1;
+            z = pos;
+            i = 0;
+            r = mag z;
         in do
-            var dr := 1;
-            var z := pos;
-            var i := 0;
-            var r := mag z;
             while (r<Bailout && i<Iterations)
                 let zdr = powN1(z,r,dr);
                 in (

@@ -10,8 +10,9 @@ gl_assert(f) = make_shape {
     is_2d : true,
 };
 fact n =
-    do  var i := 1;
-        var r := 1;
+    let i = 1;
+        r = 1;
+    in do
         while (i <= n) (
             r := r * i;
             i := i + 1;

@@ -1,9 +1,10 @@
 make_shape {
     dist : everything.dist,
     colour (x,y,_,_) :
-        do  var z := [x,y];
-            var color := [0,0,0];
-            var done := false;
+        let z = [x,y];
+            color = [0,0,0];
+            done = false;
+        in do
             for (i in 0 ..< 100) (
                 if (!done) (
                     z := csqr(z) + [x,y];

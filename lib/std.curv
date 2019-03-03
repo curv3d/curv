@@ -48,7 +48,9 @@ reduce (zero, f) list =
     if (list == [])
         zero
     else
-        do  var r := list[0];
+        let
+            r = list[0];
+        in do
             for (i in 1..<count list)
                 r := f(r, list[i]);
         in r;
@@ -65,7 +67,9 @@ sort a =
             first,
             ...sort[for (e in rest) if (e >= first) e]];
 contains (list, x) =
-    do  var i := 0;
+    let
+        i = 0;
+    in do
         while (i < count list && list[i] != x)
             i := i + 1;
     in i < count list;
@@ -213,13 +217,11 @@ cone =
                         mantleDir = normalize(height, radius);
                         mantle = dot(apex, mantleDir);
                         projected = dot(apex, [mantleDir[Y], -mantleDir[X]]);
+                        d = max(mantle, -q[Y]);
                     in do
-                        var d := max(mantle, -q[Y]);
-
                         // distance to apex
                         if (q[Y] > height && projected < 0)
                             d := max(d, mag(apex));
-
                         // distance to base ring
                         if (q[X] > radius && projected > mag(height, radius))
                             d := max(d, mag(q - [radius, 0]));
@@ -754,10 +756,10 @@ row = match [
         let widths = [for (s in shapes) size s [X]];
             gap = if (d==null) max widths / 4 else d;
             width = sum widths + (count shapes - 1)*gap;
+            xdelta = [];
+            x = -width / 2;
+            i = 0;
         in do 
-            var xdelta := [];
-            var x := -width / 2;
-            var i := 0;
             while (i < count shapes) (
                 xdelta := concat(xdelta, [x - shapes[i].bbox[MIN,X]]);
                 x := x + gap + size(shapes[i])[X];
@@ -1314,10 +1316,10 @@ repeat_radial reps shape =
                 circumradius * sin((floor(reps/4)+.5)*angle);
         ashift = tau/4 + angle/2;
         f(x,y,z,t) =
-            do  var a := phase[x,y] + ashift;
-                var r := mag[x,y];
-                a := mod(a,angle) - ashift;
-                var xy := cis(a) * r;
+            let a = phase[x,y] + ashift;
+                r = mag[x,y];
+                a2 = mod(a,angle) - ashift;
+                xy = cis(a2) * r;
             in (xy[X], xy[Y], z, t);
     in make_shape {
         dist p = shape.dist(f p);
