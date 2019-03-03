@@ -448,7 +448,8 @@ assert(
     [let i = 0 in while (i < 3) (i; i := i + 1)]
     == [0,1,2]
 );
-assert(
+assert_error(
+  "x: not a local variable",
   (
     let
         f x =

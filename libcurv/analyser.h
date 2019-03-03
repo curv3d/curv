@@ -73,7 +73,6 @@ public:
 // in which an lvar (a local variable on the left side of a := statement)
 // can be looked up. The parent phrase computes an edepth for each of its
 // subphrases. Ultimately the edepth is passed to Environ::lvar_lookup().
-// * The body of a lambda phrase has edepth 1.
 // * If PH is a phrase that binds local variables (let, where, for),
 //   the body of PH has PH's edepth + 1.
 // * Otherwise, if PH is a phrase with sequential order of evaluation for each

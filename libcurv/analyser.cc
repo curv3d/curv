@@ -59,6 +59,57 @@ Phrase::as_definition(Environ&)
     return nullptr;
 }
 
+// Scope object for analysing a Lambda body. Contains both parameters and
+// nonlocals. We don't classify function parameters as 'local variables' that
+// are assignable using := for several reasons:
+//  1. The 'elevel' mechanism won't let us classify parameters as assignable
+//     local variables, while keeping out nonlocals, because both are mixed
+//     together in the same scope object.
+//  2. In a curried function, all parameters except the last are actually
+//     implemented as nonlocals. If we copied nonlocal parameters into data
+//     slots then they could be assignable.
+//  3. In GLSL, formal parameters are nonassignable unless they are 'out'
+//     parameters. Again, this is fixable by copying the parameter value
+//     into a local variable in the GL compiler.
+struct Lambda_Scope : public Scope
+{
+    bool shared_nonlocals_;
+    Shared<Module::Dictionary> nonlocal_dictionary_ =
+        make<Module::Dictionary>();
+    std::vector<Shared<Operation>> nonlocal_exprs_;
+
+    Lambda_Scope(Environ& parent, bool shared_nonlocals)
+    :
+        Scope(parent),
+        shared_nonlocals_(shared_nonlocals)
+    {
+        frame_nslots_ = 0;
+        frame_maxslots_ = 0;
+    }
+
+    virtual Shared<Meaning> single_lookup(const Identifier& id)
+    {
+        auto b = dictionary_.find(id.symbol_);
+        if (b != dictionary_.end())
+            return make<Data_Ref>(share(id), b->second.slot_index_);
+        if (shared_nonlocals_)
+            return parent_->single_lookup(id);
+        auto n = nonlocal_dictionary_->find(id.symbol_);
+        if (n != nonlocal_dictionary_->end())
+            return make<Nonlocal_Data_Ref>(share(id), n->second);
+        auto m = parent_->lookup(id);
+        if (isa<Constant>(m))
+            return m;
+        if (auto expr = cast<Operation>(m)) {
+            slot_t slot = nonlocal_exprs_.size();
+            (*nonlocal_dictionary_)[id.symbol_] = slot;
+            nonlocal_exprs_.push_back(expr);
+            return make<Nonlocal_Data_Ref>(share(id), slot);
+        }
+        return m;
+    }
+};
+
 Shared<Meaning>
 Environ::lookup(const Identifier& id)
 {
@@ -81,19 +132,25 @@ Environ::lookup_lvar(const Identifier& id, unsigned edepth)
         if (m != nullptr)
             return m;
     }
-    // throw an exception
+    // Figure out what went wrong and give a good error.
     Shared<Meaning> m = nullptr;
+    Environ *env = nullptr;
     for (Environ* e = this; e != nullptr; e = e->parent_) {
         m = e->single_lookup(id);
-        if (m != nullptr)
+        if (m != nullptr) {
+            env = e;
             break;
+        }
     }
     if (m == nullptr) {
         throw Exception(At_Phrase(id, *this),
             stringify(id.symbol_,": not defined"));
     }
+    auto lambda = dynamic_cast<Lambda_Scope*>(env);
     auto data = cast<Data_Ref>(m);
-    if (data == nullptr) {
+    if (lambda || data == nullptr) {
+        // A lambda parameter is a Data_Ref, but is not classified as a local
+        // variable: see comment on Lambda_Scope for details.
         throw Exception(At_Phrase(id, *this),
             stringify(id.symbol_,": not a local variable"));
     }
@@ -263,48 +320,11 @@ analyse_lambda(
     Shared<const Phrase> left,
     Shared<const Phrase> right)
 {
-    struct Arg_Scope : public Scope
-    {
-        bool shared_nonlocals_;
-        Shared<Module::Dictionary> nonlocal_dictionary_ =
-            make<Module::Dictionary>();
-        std::vector<Shared<Operation>> nonlocal_exprs_;
-
-        Arg_Scope(Environ& parent, bool shared_nonlocals)
-        :
-            Scope(parent),
-            shared_nonlocals_(shared_nonlocals)
-        {
-            frame_nslots_ = 0;
-            frame_maxslots_ = 0;
-        }
-
-        virtual Shared<Meaning> single_lookup(const Identifier& id)
-        {
-            auto b = dictionary_.find(id.symbol_);
-            if (b != dictionary_.end())
-                return make<Data_Ref>(share(id), b->second.slot_index_);
-            if (shared_nonlocals_)
-                return parent_->single_lookup(id);
-            auto n = nonlocal_dictionary_->find(id.symbol_);
-            if (n != nonlocal_dictionary_->end())
-                return make<Nonlocal_Data_Ref>(share(id), n->second);
-            auto m = parent_->lookup(id);
-            if (isa<Constant>(m))
-                return m;
-            if (auto expr = cast<Operation>(m)) {
-                slot_t slot = nonlocal_exprs_.size();
-                (*nonlocal_dictionary_)[id.symbol_] = slot;
-                nonlocal_exprs_.push_back(expr);
-                return make<Nonlocal_Data_Ref>(share(id), slot);
-            }
-            return m;
-        }
-    } scope(env, shared_nonlocals);
+    Lambda_Scope scope(env, shared_nonlocals);
 
     auto pattern = make_pattern(*left, false, scope, 0);
     pattern->analyse(scope);
-    auto expr = analyse_op(*right, scope, 1);
+    auto expr = analyse_op(*right, scope, 0);
     auto nonlocals = make<Enum_Module_Expr>(src,
         std::move(scope.nonlocal_dictionary_),
         std::move(scope.nonlocal_exprs_));
