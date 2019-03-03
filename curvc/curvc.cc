@@ -52,7 +52,6 @@ main(int argc, char** argv)
         }
     } catch (std::exception& e) {
         sys.error(e);
-        return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
 }
