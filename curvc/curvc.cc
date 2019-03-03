@@ -14,6 +14,7 @@ extern "C" {
 #include <libcurv/program.h>
 #include <libcurv/source.h>
 #include <libcurv/system.h>
+#include <libcurv/version.h>
 
 namespace fs = curv::Filesystem;
 using namespace curv;
@@ -22,8 +23,12 @@ int
 main(int argc, char** argv)
 {
     if (argc != 2) {
-        std::cerr << "Usage: curvc filename\n";
+        std::cerr << "Usage: curvc filename | curvc --version\n";
         return EXIT_FAILURE;
+    }
+    if (strcmp(argv[1], "--version") == 0) {
+        std::cout << CURV_VERSION << "\n";
+        return EXIT_SUCCESS;
     }
     System_Impl sys(std::cout);
     sys.use_json_api_ = true;
