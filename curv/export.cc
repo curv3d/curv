@@ -287,10 +287,20 @@ void export_png(Value value,
     if (!shape.recognize(value))
         throw Exception(cx, "not a shape");
     if (shape.is_2d_) {
+      #if 0
         if (shape.bbox_.infinite2())
             throw Exception(cx, "can't export an infinite 2D shape to PNG");
         if (shape.bbox_.empty2())
             throw Exception(cx, "can't export an empty 2D shape to PNG");
+      #else
+        // bug #67
+        if (shape.bbox_.infinite2() || shape.bbox_.empty2()) {
+            shape.bbox_.xmin = -10.0;
+            shape.bbox_.ymin = -10.0;
+            shape.bbox_.xmax = +10.0;
+            shape.bbox_.ymax = +10.0;
+        }
+      #endif
         double dx = shape.bbox_.xmax - shape.bbox_.xmin;
         double dy = shape.bbox_.ymax - shape.bbox_.ymin;
         if (!xsize && !ysize) {
