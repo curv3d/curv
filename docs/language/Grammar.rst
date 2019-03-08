@@ -154,29 +154,26 @@ Parenthesized phrase: ``(phrase)``
 Compound phrase: ``phrase1; phrase2``
   * If both phrases are definitions, then this is a compound definition.
     The order doesn't matter, and the definitions may be mutually recursive.
-  * If both phrases are actions, element generators, or field generators,
-    then the phrases are executed in sequence.
+  * If both phrases are statements,
+    then the statements are executed in sequence.
 
-Single-arm conditional: ``if (condition) phrase``
-  If the phrase is an action, element generator, or field generator,
-  then the phrase is only executed if the condition is true.
+Single-arm conditional: ``if (condition) statement``
+  The statement is only executed if the condition is true.
 
 Double-arm conditional: ``if (condition) phrase1 else phrase2``
-  The phrases may be expressions, actions, element generators, or field generators.
+  The phrases may be expressions or statements.
 
-Bounded iteration: ``for (pattern in list_expression) phrase``
-  The phrase may be an action, element generator, or field generator.
-  The phrase is executed once for each element in the list.
+Bounded iteration: ``for (pattern in list_expression) statement``
+  The statement is executed once for each element in the list.
   At each iteration,
   the element is bound to zero or more local variables by the pattern.
 
+Unbounded iteration: ``while (condition) statement``
+  The statement is executed zero or more times, until condition becomes false.
+
 Local variables: ``let definition in phrase``
   Define local variables over the phrase.
-  The phrase can be an expression, action, element generator or field generator.
+  The phrase can be an expression or statement.
 
 Local variables: ``phrase where definition``
   An alternate syntax for defining local variables.
-
-Local actions: ``do action in phrase``
-  The phrase can be an expression, action, element generator or field generator.
-  The action is executed first, then the phrase is evaluated.
