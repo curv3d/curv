@@ -32,8 +32,9 @@ precedence and ``postfix`` being the highest precedence::
     | 'if' parens ritem 'else' ritem
     | 'for' '(' ritem 'in' ritem ')' ritem
     | 'while' parens ritem
-    | 'let' list 'in' ritem
     | 'do' list 'in' ritem
+    | 'let' list 'in' ritem
+    | 'make_parametric' list 'in' ritem
 
   pipeline ::= disjunction
     | pipeline '>>' disjunction
@@ -70,7 +71,7 @@ precedence and ``postfix`` being the highest precedence::
   primary ::= identifier | numeral | string | parens | brackets | braces
     identifier ::= /[a-zA-Z_] [a-zA-Z_0-9]*/, except for reserved words
       reserved_word ::= '_' | 'by' | 'do' | 'else' | 'for' | 'if' | 'in'
-        | 'include' | 'let' | 'parametric' | 'var' | 'where' | 'while'
+        | 'include' | 'let' | 'make_parametric' | 'var' | 'where' | 'while'
 
     numeral ::= hexnum | mantissa | /mantissa [eE] [+-]? digits/
       mantissa ::= /digits/ | /'.' digits/ | /digits '.' digits/
@@ -79,12 +80,14 @@ precedence and ``postfix`` being the highest precedence::
 
     string ::= /'"' segment* '"'/
       segment ::= /[white space or printable ASCII character, except for " or $]+/
-        | /'""'/
-        | /'$$'/
+        | /'$.'/
+        | /'$='/
         | /'${' list '}'/
         | /'$[' list ']'/
         | /'$(' list ')'/
         | /'$' identifier/
+        | /newline (space|tab)* '|'/
+        | /newline (space|tab)*/ followed by /'"'/
 
     parens ::= '(' list ')'
     brackets ::= '[' list ']'
