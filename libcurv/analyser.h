@@ -21,13 +21,6 @@ struct Environ
     slot_t frame_nslots_;
     slot_t frame_maxslots_;
 
-    /// true if this Environ represents a sequential statement list.
-    bool is_sequential_statement_list_ = false;
-
-    /// true if we are currently analysing an action statement within a
-    /// sequential statement list: set and restored by analyse_action().
-    bool is_analysing_action_ = false;
-
     // constructor for root environment
     Environ(System& system, Frame* file_frame)
     :
@@ -57,7 +50,7 @@ struct Environ
     }
 
     Shared<Meaning> lookup(const Identifier& id);
-    Shared<Meaning> lookup_var(const Identifier& id);
+    Shared<Meaning> lookup_lvar(const Identifier& id, unsigned edepth);
     virtual Shared<Meaning> single_lookup(const Identifier&) = 0;
 };
 
@@ -74,9 +67,24 @@ public:
     virtual Shared<Meaning> single_lookup(const Identifier&);
 };
 
-Shared<Operation> analyse_op(const Phrase& ph, Environ& env);
-Shared<Operation> analyse_action(const Phrase& ph, Environ& env);
-Shared<Operation> analyse_tail(const Phrase& ph, Environ& env);
+// Analyse a Phrase, throw an error if it is not an Operation.
+//
+// 'edepth' is the number of nested environments surrounding the phrase
+// in which an lvar (a local variable on the left side of a := statement)
+// can be looked up. The parent phrase computes an edepth for each of its
+// subphrases. Ultimately the edepth is passed to Environ::lvar_lookup().
+// * If PH is a phrase that binds local variables (let, where, for),
+//   the body of PH has PH's edepth + 1.
+// * Otherwise, if PH is a phrase with sequential order of evaluation for each
+//   of its subphrases (eg, semicolon or do phrase), then the edepth of each
+//   subphrase is the same as its parent.
+// * The common case is a compound phrase that doesn't have a defined order
+//   of evaluation. In this case, the edepth of each subphrase is 0, which means
+//   that you can't assign local variables inside that phrase that are defined
+//   outside that phrase. If you could do so, then the order of evaluation
+//   would be exposed. For example, the + operator is commutative, so A+B is
+//   equivalent to B+A, so we don't support assignment inside a plus phrase.
+Shared<Operation> analyse_op(const Phrase& ph, Environ& env, unsigned edepth=0);
 
 // Evaluate the phrase as a constant expression in the builtin environment.
 Value std_eval(const Phrase& ph, Environ& env);

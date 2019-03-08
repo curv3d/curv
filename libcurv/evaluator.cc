@@ -725,13 +725,33 @@ Compound_Op_Base::exec(Frame& f) const
 }
 
 void
-While_Action::exec(Frame& f) const
+While_Op::exec(Frame& f) const
 {
     for (;;) {
         Value c = cond_->eval(f);
         bool b = c.to_bool(At_Phrase{*cond_->syntax_, f});
         if (!b) return;
         body_->exec(f);
+    }
+}
+void
+While_Op::generate(Frame& f, List_Builder& lb) const
+{
+    for (;;) {
+        Value c = cond_->eval(f);
+        bool b = c.to_bool(At_Phrase{*cond_->syntax_, f});
+        if (!b) return;
+        body_->generate(f, lb);
+    }
+}
+void
+While_Op::bind(Frame& f, DRecord& r) const
+{
+    for (;;) {
+        Value c = cond_->eval(f);
+        bool b = c.to_bool(At_Phrase{*cond_->syntax_, f});
+        if (!b) return;
+        body_->bind(f, r);
     }
 }
 

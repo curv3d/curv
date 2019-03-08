@@ -25,8 +25,9 @@ rot v =
       dot(v, [-0.80, 0.36, -0.48]),
       dot(v, [-0.60, -0.48, 0.64]) ];
 i_fractal(x,y,z,t) =
-    do  var p := rot(x,y,z);
-        var f := 0;
+    let p = rot(x,y,z);
+        f = 0;
+    in do
         f := f + 0.5000*noise(p); p := p*2.32;
         f := f + 0.2500*noise(p); p := p*3.03;
         f := f + 0.0625*noise(p);

@@ -29,7 +29,7 @@ Program::compile(const Namespace* names)
     if (auto def = phrase_->as_definition(env)) {
         module_ = analyse_module(*def, env);
     } else {
-        meaning_ = phrase_->analyse(env);
+        meaning_ = phrase_->analyse(env, 0);
     }
 
     frame_ = {Frame::make(env.frame_maxslots_,

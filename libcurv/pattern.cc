@@ -71,7 +71,13 @@ struct Id_Pattern : public Pattern
     const override
     {
         GL_Value val = gl_eval_op(caller, expr);
-        if (is_mutable_) {
+        // TODO: Temporary kludge. With generalized :=, all variables are now
+        // potentially mutable, but we don't yet have info from the analyser
+        // about which variables are actually mutated.
+        // And note that this is a minor optimization.
+        // bool is_mutable = is_mutable_; // TODO: disabled for now
+        bool is_mutable = val.type.rank_ == 0;
+        if (is_mutable) {
             // This is a mutable variable, so create a new var and initialize
             // it with val. But, arrays are not supported.
             if (val.type.rank_ > 0) {

@@ -759,12 +759,12 @@ struct For_Op : public Operation
     virtual void gl_exec(GL_Frame&) const override;
 };
 
-struct While_Action : public Just_Action
+struct While_Op : public Just_Action
 {
     Shared<const Operation> cond_;
     Shared<const Operation> body_;
 
-    While_Action(
+    While_Op(
         Shared<const Phrase> syntax,
         Shared<const Operation> cond,
         Shared<const Operation> body)
@@ -775,6 +775,8 @@ struct While_Action : public Just_Action
     {}
 
     virtual void exec(Frame&) const override;
+    virtual void generate(Frame&, List_Builder&) const override;
+    virtual void bind(Frame&, DRecord&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 };
 
