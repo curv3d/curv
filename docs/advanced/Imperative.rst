@@ -6,26 +6,26 @@ who have some exposure to computer programming. Users are not expected to
 be software engineers or expert programmers.
 
 There is a problem with creating a pure functional language that is targeted
-at novice computer programmers. The first programming language that you learn,
-before encountering Curv, will almost certainly be an imperative language like
-Python, Javascript or Basic. If so, you will be most familiar with imperative
-style programming, using mutable variables and assignment statements. But
+at novice computer programmers. The programming languages that they learn
+before encountering Curv will almost certainly be imperative languages like
+Python, Javascript or Basic. If so, they will expect to write imperative
+style code, using mutable variables and assignment statements. But
 conventional pure functional languages do not have assignment statements,
-and this is a major source of confusion for novice programmers when they
-first encounter these languages. Standard imperative idioms do not work.
+and this is a major source of difficulty for novice programmers when they
+first encounter these languages.
 
 Curv solves this problem by providing an assignment statement, together with
 standard imperative control structures: compound statements, ``if``, ``for``
 and ``while`` statements. The assignment statement is restricted
 to preserve the pure functional semantics of Curv, but the restrictions
-are subtle enough that the most common imperative idioms still work.
+are subtle enough that basic imperative idioms still work.
 
 This feature also makes it easier to port imperative code to run in Curv.
 You don't need to rewrite imperative algorithms in a functional style
 (eg, converting while loops to tail recursion) before you can get the
 code running.
 
-Curv has list comprehensions. But instead of the odd syntax used by Haskell,
+Curv has list comprehensions. But instead of the idiosyncratic syntax used by Haskell,
 Curv uses the same imperative control structures mentioned earlier
 as the syntax for list comprehensions. It's another way of making the syntax
 more friendly to imperative programmers.
