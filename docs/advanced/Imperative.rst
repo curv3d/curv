@@ -131,6 +131,8 @@ preserve the pure functional semantics of Curv. Let's review those semantics.
   are pure: they always map a given argument value onto the same result.
   (This follows from the absence of shared mutable state.)
 
+* Expressions do not have side effects.
+
 * Curv supports "equational reasoning". You can use the laws of high
   school algebra to reason about the meaning of a Curv program. For example,
   in Curv, addition is commutative, which means that ``a+b`` and ``b+a``
@@ -146,7 +148,7 @@ Assignment is Redefinition
 Assignment is like defining a new variable with the same name. This new
 variable hides the original variable for the remainder of its scope. If you
 use this mental model for understanding the meaning of the Curv assignment
-statement, then the restrictions that I am about to describe all make sense.
+statement, then the restrictions that I am about to describe make more sense.
 
 "Top level" assignment statement:
 
@@ -263,8 +265,15 @@ Modifying the first element of ``a`` has no effect on ``b``.
 
 [TODO: assignments like ``a[0] := 42`` are not implemented yet.]
 
-4. Order of evaluation in expressions is not exposed by assignments
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4. Expressions have no side effects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Assignment statements have side effects,
+and statements can be embedded in expressions, but these side effects are local,
+and do not escape from the expression.
+
+As a corollary, the order of evaluation of expressions
+is not exposed by assignment statements.
+
 An arithmetic expression like ``f()+g()`` is not guaranteed to be
 commutative in imperative languages, because the subexpressions ``f()``
 and ``g()`` might have side effects. Rewriting the expression as ``g()+f()``
@@ -291,6 +300,8 @@ In fact, this program is illegal, and you will get an error message.
 If you consider the parse tree of this program, then between the variable
 definition and the assignment statements, there is an operation (``+``)
 which does not guarantee an order of evaluation, and that is not allowed.
+You can not assign to a local variable V inside of an expression, if the
+definition of V is outside of that expression.
 
 List Comprehensions
 -------------------
@@ -312,6 +323,22 @@ which yields ``[4,16,36,64,100]``.
 The full statement syntax is available in list comprehensions, so you
 can even use assignment statements and ``while`` loops.
 F# uses a similar design.
+
+Appendix: Referential Transparency
+----------------------------------
+The term "referential transparency" is used within the functional programming
+community to describe the semantics of pure functional languages.
+To understand what the term means, ignore Wikipedia and
+read both of Uday Reddy's answers to `this stack exchange question`_.
+It's commonly claimed that pure functional languages are referentially transparent,
+and that imperative languages are not, but Uday Reddy demolishes this claim.
+
+.. _`this stack exchange question`: https://stackoverflow.com/questions/210835/what-is-referential-transparency
+
+I'm concerned that the term "referentially transparent" has become vague and incoherent,
+so instead of using it to describe Curv, I've identified more specific and clearly
+defined properties of the language to talk about (eg, that functions are pure, and that
+expressions have no side effects).
 
 Acknowledgements
 ----------------
