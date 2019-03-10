@@ -9,6 +9,9 @@ Curv has two imperative features:
   A "while" statement.
 
 These features allow you to write code in an imperative style.
+You can use assignments and while statements inside of `do`
+expressions, and in list, record and string comprehensions.
+
 The semantics of these features are restricted,
 so that it is impossible to define impure functions.
 Curv retains its pure functional semantics.
