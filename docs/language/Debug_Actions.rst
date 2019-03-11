@@ -2,32 +2,32 @@ Debug Actions
 -------------
 Curv programs are debugged by inserting ``print`` statements and other debug actions.
 
-Debug actions are statements, not expressions, but you can embed them
-in expressions using a ``do`` expression.
+Debug actions are statements, not expressions, but you can attach them
+to an expression using a ``do`` expression.
 
 ``do actions in expression``
   Execute the ``actions``, then evaluate the ``expression`` and return its result.
 
-  The ``action`` argument can be a simple action, as enumerated below,
-  or it can be a compound action which is sequenced using ``if``, ``for`` and ``;``
-  or which defines local variables using ``let`` and ``where``.
-  For example, you can write a sequence of actions separated by ``;``,
-  and they will be executed in sequence.
+For example::
 
-  The ``phrase`` argument can be an expression or statement.
-  (A statement is an element generator in a list constructor,
-  a field generator in a record constructor, or an action.)
-  A ``do`` phrase can be used in any context where its ``phrase`` argument
-  would also be legal.
-
-  For example::
-
-    f x =
+  f x =
       do print "calling function f with argument x=$x";
       in x+1;
 
-  Then ``f 2`` returns ``3``, and as a side effect, prints a message
-  to the debug console.
+Then ``f 2`` returns ``3``, and as a side effect, prints a message
+to the debug console.
+
+The *actions* in a ``do`` clause can be a simple debug action, as listed below,
+or it can be an imperative style program written using debug actions,
+compound statements, ``if`` statements, ``for`` statements, ``while`` statements,
+``let`` statements (to introduce local variables) and assignment statements.
+See: `<Statements.rst>`_.
+
+For example, you can write a sequence of actions separated by ``;``,
+and they will be executed in sequence.
+
+Debug actions can also be used in list comprehensions, record comprehensions
+and string comprehensions.
 
 Simple Debug Actions
 ~~~~~~~~~~~~~~~~~~~~
