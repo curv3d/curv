@@ -66,3 +66,14 @@ Simple Debug Actions
   Evaluate the expression and then ignore the result.
   This is used for calling a function whose only purpose is to have a side effect
   (by executing debug actions) and you don't care about the result.
+
+A Note about Pure Functional Semantics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Elsewhere, I claim that Curv is a pure functional language, and that expressions do
+not have side effects. This is because debug side effects "don't count" as side effects:
+they are only used for debugging, and these side effects cannot change the value computed
+by a program. Furthermore, Curv has no globally defined order of evaluation, so there is
+no guarantee that messages written to the debug console will occur in the order that you
+want. The compiler is free to evaluate independent expressions in any order; it can
+execute debug actions at compile time instead of at run time, and it can even ignore
+debug actions when compiling for certain execution environments.
