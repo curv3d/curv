@@ -63,7 +63,7 @@ Local variables: ``let definitions in statement``
 Local variables: ``statement where definitions``
   An alternate syntax for defining local variables. See: `Blocks`_.
 
-Local actions: ``do statements in statement2``
+Chained statements: ``do statements in statement2``
   First execute the statements, then execute statement2.
   This is rarely needed (since we have compound statements)
   but is useful in the context of ``do statements in let definitions in statement``
