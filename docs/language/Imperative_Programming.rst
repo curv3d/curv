@@ -7,11 +7,11 @@ compound statements, if statements, for statements and while statements.
 
 Curv has two imperative features:
 
-``name := value``:
+``name := value``
   An assignment statement that allows you to modify a
   local variable defined in an enclosing scope
   using ``let``, ``where`` or ``for``.
-``while (condition) statement``:
+``while (condition) statement``
   A "while" loop. The condition tests one or more variables
   which are modified by assignments within the loop body on each iteration.
 
