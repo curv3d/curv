@@ -65,8 +65,8 @@ Local variables: ``statement where definitions``
 
 Chained statements: ``do statements in statement2``
   First execute the statements, then execute statement2.
-  This is rarely needed (since we have compound statements)
-  but is useful in the context of ``do statements in let definitions in statement``
+  This is a variant syntax, equivalent to a compound statement.
+  It is useful in the context of ``do statements in let definitions in statement``
   since it avoids adding a trailing parenthesis.
 
 .. _`Boolean Values`: Boolean_Values.rst
