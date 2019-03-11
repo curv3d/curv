@@ -1,12 +1,12 @@
 Debug Actions
 -------------
-Curv programs are debugged by inserting ``print`` statements and other actions.
+Curv programs are debugged by inserting ``print`` statements and other debug actions.
 
-An action is a phrase that has a debug-related side effect.
-Unlike an expression, an action does not compute a value.
+Debug actions are statements, not expressions, but you can embed them
+in expressions using a ``do`` expression.
 
-``do action in phrase``
-  Execute the ``action``, then evaluate the ``phrase``.
+``do actions in expression``
+  Execute the ``actions``, then evaluate the ``expression`` and return its result.
 
   The ``action`` argument can be a simple action, as enumerated below,
   or it can be a compound action which is sequenced using ``if``, ``for`` and ``;``
@@ -29,8 +29,8 @@ Unlike an expression, an action does not compute a value.
   Then ``f 2`` returns ``3``, and as a side effect, prints a message
   to the debug console.
 
-Simple Actions
-~~~~~~~~~~~~~~
+Simple Debug Actions
+~~~~~~~~~~~~~~~~~~~~
 
 ``print message``
   Print a message string on the debug console, followed by newline.
