@@ -1,15 +1,23 @@
-The Imperative Sublanguage
-==========================
+Imperative Programming
+======================
+Even though Curv is a pure functional language,
+you can write imperative style code using assignment statements
+and standard imperative control structures:
+compound statements, if statements, for statements and while statements.
+
 Curv has two imperative features:
 
 ``name := value``:
   An assignment statement that allows you to modify a
-  local variable defined using ``let``, ``where`` or ``for``.
+  local variable defined in an enclosing scope
+  using ``let``, ``where`` or ``for``.
 ``while (condition) statement``:
-  A "while" statement.
+  A "while" loop. The condition tests one or more variables
+  which are modified by assignments within the loop body on each iteration.
 
-These features allow you to write code in an imperative style.
-You can use assignments and while statements inside of `do`
+These features are combined with other imperative control structures:
+see `<Statements.rst>`_.
+You can write imperative code inside of `do`
 expressions, and in list, record and string comprehensions.
 
 The semantics of these features are restricted,
