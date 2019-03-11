@@ -23,7 +23,7 @@ compound statements, ``if`` statements, ``for`` statements, ``while`` statements
 ``let`` statements (to introduce local variables) and assignment statements.
 See: `<Statements.rst>`_.
 
-For example, you can write a sequence of actions separated by ``;``,
+For example, inside a ``do`` clause, you can write a sequence of actions separated by ``;``,
 and they will be executed in sequence.
 
 Debug actions can also be used as elements of list comprehensions, record comprehensions
