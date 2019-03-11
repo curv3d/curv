@@ -63,11 +63,11 @@ Local variables: ``let definitions in statement``
 Local variables: ``statement where definitions``
   An alternate syntax for defining local variables. See: `Blocks`_.
 
-Local actions: ``do action in statement``
-  First execute the action, then execute the statement.
+Local actions: ``do statements in statement2``
+  First execute the statements, then execute statement2.
   This is rarely needed (since we have compound statements)
-  but is useful in the context of ``do action in let definitions in statement``.
-  See: `Debug Actions`_ and `Imperative Sublanguage`_.
+  but is useful in the context of ``do statements in let definitions in statement``
+  since it avoids adding a trailing parenthesis.
 
 .. _`Boolean Values`: Boolean_Values.rst
 .. _`Lists`: Lists.rst
