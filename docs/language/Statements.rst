@@ -24,7 +24,7 @@ Actions
   * An assignment statement ``name := value``
     assigns a new variable to the local variable ``name``,
     which was defined in an enclosing scope using ``let``, ``where`` or ``for``.
-    See: `Imperative Sublanguage`_.
+    See: `Imperative Programming`_.
 
 Curv has a set of generic operations for constructing complex statements
 out of simpler statements of the same type.
@@ -73,6 +73,6 @@ Chained statements: ``do statements in statement2``
 .. _`Lists`: Lists.rst
 .. _`Records`: Records.rst
 .. _`Debug Actions`: Debug_Actions.rst
-.. _`Imperative Sublanguage`: Imperative_Sublanguage.rst
+.. _`Imperative Programming`: Imperative_Programming.rst
 .. _`Blocks`: Blocks.rst
 .. _`Patterns`: Patterns.rst
