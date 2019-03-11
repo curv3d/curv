@@ -5,19 +5,26 @@ A statement is a syntactic unit (a phrase), distinct from an expression,
 which expresses some action to carry out.
 There are 3 kinds of statements:
 
-* Element generators (found in list constructors).
+Element generators (found in list constructors)
   An element generator generates a sequence of 0 or more values,
   which are added to the list under construction.
   See: `Lists`_.
-* Field generators (found in record constructors).
+Field generators (found in record constructors)
   A field generator generates a sequence of 0 or more fields,
   which are added to the record under construction.
   See: `Records`_.
-* Debug actions.
-  A debug action has side effects which aid in debugging:
-  printing a message on the debug console, or terminating the
-  program in case of error.
-  See: `Debug Actions`_.
+Actions
+  An action causes side effects,
+  and can be used in any statement context.
+  
+  * A debug action has side effects which aid in debugging:
+    printing a message on the debug console, or terminating the
+    program in case of error.
+    See: `Debug Actions`_.
+  * An assignment statement ``name := value``
+    assigns a new variable to the local variable ``name``,
+    which was defined in an enclosing scope using ``let``, ``where`` or ``for``.
+    See: `Imperative Sublanguage`_.
 
 Curv has a set of generic operations for constructing complex statements
 out of simpler statements of the same type.
@@ -44,6 +51,12 @@ Bounded iteration: ``for (pattern in list_expression) statement``
   the element is bound to zero or more local variables by the pattern.
   See: `Patterns`_.
 
+Unbounded iteration: ``while (condition) statement``
+  The statement is executed repeatedly, zero or more times,
+  until ``condition`` becomes false. The condition tests one or
+  more variables which are modified by assignments within
+  the loop body on each iteration.
+
 Local variables: ``let definitions in statement``
   Define local variables over the statement. See: `Blocks`_.
 
@@ -52,6 +65,8 @@ Local variables: ``statement where definitions``
 
 Local actions: ``do action in statement``
   First execute the action, then execute the statement.
+  This is rarely needed (since we have compound statements)
+  but is useful in the context of ``do action in let definitions in statement``.
   See: `Debug Actions`_ and `Imperative Sublanguage`_.
 
 .. _`Boolean Values`: Boolean_Values.rst
@@ -61,4 +76,3 @@ Local actions: ``do action in statement``
 .. _`Imperative Sublanguage`: Imperative_Sublanguage.rst
 .. _`Blocks`: Blocks.rst
 .. _`Patterns`: Patterns.rst
-
