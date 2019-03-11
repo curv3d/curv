@@ -689,13 +689,13 @@ Preaction_Op::eval(Frame& f) const
 void
 Preaction_Op::generate(Frame& f, List_Builder& lb) const
 {
-    actions_->exec(f);
+    actions_->generate(f, lb);
     body_->generate(f, lb);
 }
 void
 Preaction_Op::bind(Frame& f, DRecord& r) const
 {
-    actions_->exec(f);
+    actions_->bind(f, r);
     body_->bind(f, r);
 }
 void

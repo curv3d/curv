@@ -459,5 +459,10 @@ assert(
     == [0,1,2]
 );
 
+// generalized do
+assert(
+    [do 1 in 2] == [1,2]
+);
+
 // script return value:
 in null
