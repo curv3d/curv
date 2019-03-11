@@ -26,7 +26,7 @@ See: `<Statements.rst>`_.
 For example, you can write a sequence of actions separated by ``;``,
 and they will be executed in sequence.
 
-Debug actions can also be used in list comprehensions, record comprehensions
+Debug actions can also be used as elements of list comprehensions, record comprehensions
 and string comprehensions.
 
 Simple Debug Actions
