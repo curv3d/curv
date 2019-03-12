@@ -104,7 +104,6 @@ Syntax:
 * `Debug Actions`_
 * `Patterns`_
 * `Grammar`_
-* `Imperative Programming`_
 
 Design principles and patterns:
 
@@ -118,7 +117,6 @@ Design principles and patterns:
 .. _`Expressions`: Expressions.rst
 .. _`Functions`: Functions.rst
 .. _`Grammar`: Grammar.rst
-.. _`Imperative Programming`: Imperative_Programming.rst
 .. _`Lists`: Lists.rst
 .. _`Matrices`: Matrices.rst
 .. _`Null`: Null.rst
