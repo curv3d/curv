@@ -103,6 +103,7 @@ Syntax:
 * `Statements`_
 * `Debug Actions`_
 * `Patterns`_
+* `File Import`_
 * `Grammar`_
 
 Design principles and patterns:
@@ -115,6 +116,7 @@ Design principles and patterns:
 .. _`Debug Actions`: Debug_Actions.rst
 .. _`Design by Contract`: Design_by_Contract.rst
 .. _`Expressions`: Expressions.rst
+.. _`File Import`: File_Import.rst
 .. _`Functions`: Functions.rst
 .. _`Grammar`: Grammar.rst
 .. _`Lists`: Lists.rst
