@@ -11,12 +11,12 @@ Local variables are defined over statement scope using ``let`` clauses.
 
 Rationale:
 
-* Statements make it easier to port code from an imperative language.
-  You don't need to rewrite imperative algorithms in a functional style
-  (eg, converting while loops to tail recursion) before you can get the code running.
 * Statements are an aid to new users whose previous programming experience
   is with imperative languages. Basic imperative idioms like conditional assignment
   and while loops can be used in Curv.
+* Statements make it easier to port code from an imperative language.
+  You don't need to rewrite imperative algorithms in a functional style
+  (eg, converting while loops to tail recursion) before you can get the code running.
 * ``For`` and ``while`` loops are the only way to iterate within a shape's distance function.
   The Geometry Compiler does not yet support tail recursion.
   (Due to the limitations of GPU shader languages,
