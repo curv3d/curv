@@ -65,15 +65,21 @@ Pure Functional Language
     The only outcome of a running a program
     is to compute a value (which is usually a geometric shape).
 
-Functional Programming Idioms
-  Curried functions, pattern matching, list/record/string comprehensions.
-
 Expression Language
   Curv is an expression language, not a statement language.
   A program is an expression, not a statement list.
   The body of a function is an expression, not a statement list.
 
-Array Language
+Functional Programming
+  Higher order functions, curried functions, pattern matching, list/record/string comprehensions.
+
+Imperative Programming
+  Curv has a small imperative subset: assignment statements, compound statements,
+  if statements, while loops, for loops. This allows algorithms to be coded
+  in an imperative style, but statement semantics are tightly restricted so that
+  the expression language still has pure functional semantics.
+
+Array Programming
   Curv is an array language. Scalar arithmetic operations are generalized
   to work on Vectors_, Matrices_, and higher dimensional arrays called Tensors_.
   This makes geometric algorithms involving linear algebra easier to code,
