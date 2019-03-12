@@ -10,11 +10,13 @@ Instead, build and install `curv` using:
 * `make`
 * `make install`
 
+# Installing 
+
 ## Ubuntu Linux 16.04 build instructions
 * Open the Terminal application and run the following commands:
   * Install the relevant dependencies used to build `curv`:
   
-  `sudo apt install cmake git-core libboost-all-dev libdouble-conversion-dev libopenexr-dev libtbb-dev libglm-dev checkinstall`
+  `sudo apt install cmake git-core libboost-all-dev libdouble-conversion-dev libopenexr-dev libtbb-dev libglm-dev gedit  checkinstall`
   
   * If you don't already have dev packages for your GPU installed -- eg running a **server version** -- then you'll probably need to also install these:
   
@@ -52,3 +54,8 @@ Instead, build and install `curv` using:
   * `git submodule update --init`
   * `make`
   * `make install` (or `sudo make install` on Linux)
+  
+# Testing
+## A simple test
+
+Run `curv -le myshape.curv` from a command line. It should open and editor window, type `cube` and then save the file. A window should open showing a cube that you can drag to interact with. The original console will give error messages and such.
