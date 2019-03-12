@@ -14,7 +14,7 @@ Design Goals
   Libraries of new shape operations can be written in Curv and distributed over the internet.
 * Rendering speed.
   Curv programs are compiled into efficient GPU code for fast rendering.
-* Interoperability with other programming languages.
+* Interoperability with other programming languages. (Future)
   Two way data interchange with external programs. The shape library can be embedded
   in other programming languages (like Javascript and Python).
 * Safety and security.
@@ -60,7 +60,7 @@ Pure Functional Language
     only on the argument value, and not on shared mutable state, which doesn't
     exist in Curv.
   * Data structures are immutable values, not mutable objects.
-  * A variable is an immutable association between a name and a value.
+  * Expressions do not have side effects.
   * There is no I/O: Curv is not a scripting language.
     The only outcome of a running a program
     is to compute a value (which is usually a geometric shape).
@@ -99,8 +99,8 @@ Syntax:
 
 * `Programs`_
 * `Expressions`_
-* `Blocks`_
-* `Statements`_
+* `Blocks`_ (local variables)
+* `Statements`_ (imperative style programming)
 * `Debug Actions`_
 * `Patterns`_
 * `File Import`_
@@ -109,6 +109,7 @@ Syntax:
 Design principles and patterns:
 
 * `Design by Contract`_
+* `Imperative Style Programming in a Pure Functional Language`_
 
 .. _`Blocks`: Blocks.rst
 .. _`Boolean Values`: Boolean_Values.rst
@@ -119,6 +120,7 @@ Design principles and patterns:
 .. _`File Import`: File_Import.rst
 .. _`Functions`: Functions.rst
 .. _`Grammar`: Grammar.rst
+.. _`Imperative Style Programming in a Pure Functional Language`: ../advanced/Imperative.rst
 .. _`Lists`: Lists.rst
 .. _`Matrices`: Matrices.rst
 .. _`Null`: Null.rst
