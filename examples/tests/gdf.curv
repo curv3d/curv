@@ -4,9 +4,9 @@
 
 // This program is a test case for using arrays within distance functions.
 
-parametric {
-    exp /*:: scale_picker*/ = 1;
-}
+make_parametric
+    exp :: scale_picker = 1;
+in
 
 let
 GDFVectors = [
@@ -58,6 +58,7 @@ xOcta(r, e) =
 Octa r =
     make_shape {
         dist p = GDF(p[[X,Y,Z]], r, 3, 6);
+        colour p = sRGB(count GDFVectors/19,0,0);
         circumratio = (1/2*sqrt 2) / (1/6*sqrt 6);
         bbox = circumratio * [[-r,-r,-r], [r,r,r]];
         is_3d = true;
