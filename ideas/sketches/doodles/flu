@@ -5,8 +5,8 @@ row 1 [
     dodecahedron,
     icosahedron
 ]
-`smooth 5 .union` (sphere 0
-         >> animove {f:t -> [(t `mod` 20)-10,0,0], bbox:[[-10,0,0],[10,0,0]]})
+`smooth 5 .union` (sphere 0 >> colour red
+         >> a_move {f:t -> [(t `mod` 20)-10,0,0], bbox:[[-10,0,0],[10,0,0]]})
 
 where
-include file "lib/experimental.curv";
+include file "../../../examples/lib/animate.curv"
