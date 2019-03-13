@@ -9,6 +9,35 @@ Benefits:
 * print, error, warning, assert become values.
 * Another step in making it easier to port imperative code?
 
+Challenge: Mutable Variables
+----------------------------
+I just redesigned Curv so that mutable variables, the assignment statement,
+and the while statement are fully supported and general within the imperative
+sublanguage.
+
+Those 'benefits' seem to require that procedures will capture references to
+mutable variables. Which would violate the pure functional semantics of Curv,
+if these procedures are first class values. It introduces shared mutable state.
+This isn't going to happen.
+
+The use cases for the imperative sublanguage are:
+* Imperative algorithms using mutable variables & while statements.
+  * To use pattern matching conditional statements in this code, we can't
+    use the `match` function, we need a pattern-matching switch statement.
+  * To use tail recursion, you have to convert the code to a functional form
+    that uses pure functions instead of mutable variables.
+* List comprehensions.
+* Debugging and unit testing.
+
+The latter two use cases could benefit from a restricted kind of procedure
+that can't capture non-local mutable variable references. Further analysis
+would probably reveal an underlying monadic structure to specialized domains
+such as list comprehensions and debugger control.
+
+The question is: are these use cases enough to justify procedures?
+Maybe new monadic structures will arise in the future that will create more
+of a need for this feature?
+
 Technical Challenge: The REPL.
 ------------------------------
 It ought to be possible to call any procedure or function from the command line

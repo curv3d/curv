@@ -1,9 +1,10 @@
 Version 0.4 Planning:
-* new since 0.3 (as of Feb 20):
+* new since 0.3 (as of Feb 24):
   * lib.blend
   * Torleif: keyboard viewer controls
   * s-ol: repl autocomplete, repl syntax colouring
-  * predicate assertion patterns and expressions
+  * predicate assertion patterns and expressions using ::
+    * 'pred pat' pattern removed.
   * calls to error now appear in stack trace
   * parametric records (make_parametric), value pickers, HUD
   * Curv now requires OpenGL 3.2
@@ -18,15 +19,43 @@ Version 0.4 Planning:
   * `cylinder` with no argument is `cylinder{d:2,h:2}`.
   * `box` with no argument defaults to `box[2,2,2]`.
   * `-o frag` replaced by `-o gpu`. Can also read GPU files, display in Viewer.
-  * $. $= and multi-line string literals
+  * $. $= ($$ and "" escapes removed)
+  * multi-line string literals
+  * string comprehensions using ${...}
+  * new character names: dol, quot, tab
   * fix bug in `-o json` (escaping of control characters)
 
 * v0.4 release blockers:
-  * Value Pickers:
+  * Parametric shapes:
+    * metadata naming in parametric records: constructor and argument
+    * prototypes: R is record, R(x) searches for R.call then R.constructor
+    * constructor returns another parametric record.
+    * `curv -D param=value parametric.curv`
+    * documentation
+    * colour_picker: convert between sRGB in the uniform variable,
+      and linear RGB in the Curv parameter.
+    * Unit testing for reactive values.
     * Finish implementing reactive values.
+  * Assignment statement:
+    * deprecate 'var name := value'
+      * Environ contains Analyser& analyser_. Analyser contains system_
+        and bool var_deprecated_ (prevents multiple 'var deprecated' msgs)
+    * combine Statements.rst with Imperative_Programming.rst
+    * docs: there are no procedures, only pure functions. Curv has imperative
+      features but is not a full procedural programming language.
+    * docs: relevance of ISPiaPFL to other DSLs: OpenSCAD, Jsonnet, Nix, etc.
+    * debug actions ignored by GL compiler
+    * no sequential definitions in a record constructor
+    * no actions in a let clause. `a:=b` gives an error: did you mean `a=b`?
+    * no recursive definitions in a do clause. a=b error: did you mean a:=b?
+    * in expression context, a=b error: did you mean a==b?
+  * document new features
+    * lib.blend
+    * precedence of 'where' operator
+    * update Grammar docs
+    * Geometry Compiler -- arrays
   * CLI token colouring: New string escapes. Special colour for string-escapes.
     Bad token handling.
-  * document new features
   * better unit tests:
     * cli tests, curvc
     * detect console output from curv.curv

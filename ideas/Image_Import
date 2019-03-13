@@ -1,3 +1,58 @@
+CLI File Import
+===============
+Two cases to consider:
+    curv [-le] foo.gpu
+    curv foo.png
+These will both load a shape into the Viewer.
+A *.gpu file can even be live edited.
+
+In both cases, the file is converted to a Curv value.
+* A PNG file is imported as a Curv Shape, with some magical internal
+  structure that contains the image data.
+* A GPU file is imported as a Curv record.
+   * Maybe this record is interpreted specially, due to the extension?
+     * It means, we enforce that a *.gpu file contains a GPU program,
+       in batch and live-edit mode.
+   * Or by recognizing a GPU value, either due to a tag like {gpu:{...}}
+     or by recognizing the fields, as is done for shape records?
+     * It means, we don't need a *.gpu extension, *.curv will work.
+       The live-editor can switch between GPU programs and HL shape programs.
+     * It lets GPU programs leak into the general Curv ecosystem.
+       * Is there a security issue if you can download a *.curv file and run it,
+         and it turns out to be a GPU program?
+       * Is there a reason to use abstraction mechanisms & libraries to
+         construct GPU programs? Well, that's the job of the GL compiler.
+   * A GPU file can't be exported as a mesh, and is not a shape.
+
+Also, think about allowing the source file (in batch mode) to be stdin.
+Possible design: `-i filetype` uses stdin as the source file, and the
+unlabeled filename argument cannot be specified.
+
+The Curv kernel high level API will change to support this.
+
+The Source object will contain a filetype: Curv or PNG or possibly GPU.
+File_Source infers the filetype from the filename extension.
+
+curv.cc batch mode uses GPU_Program, not Shape_Program.
+    curv::GPU_Program shape{prog};
+    if (shape.recognize(value)) {
+A GPU_Program can be serialized as a *.gpu file.
+
+If GPU values only reside in *.gpu files, then:
+* File_Source sets the filetype to GPU, based on filename extension.
+* GPU_Program::recognize() uses the Source file type.
+
+How much GLSL does the GPU_Program 'shader' field contain?
+(This should be synced with: The *.gpu shader field, the JSON-API shape shader
+field, and do we keep *.frag export or is that an historical relic?)
+* All of it, including #version 150 at the top.
+  However, WebGL 2 requires #version es 300 (?) instead.
+* Split the GLSL into modules. The model (dist and colour) is separate from
+  the renderer (which maps the model to linear RGB). Describe the uniforms
+  declaratively (like with the 'parameters' field) rather that by encoding their
+  declarations in GLSL.
+This is not urgent.
+
 Import a 2D image file
 ======================
 TODO:
@@ -10,7 +65,6 @@ TODO:
   * Should PNG files appear as source files in the stack trace?
 2. add GL/Viewer support to PNG shapes.
 3. `curv foo.png` displays the image in a viewer window.
-
 
 * Source and Location
   * A PNG file is now considered a "source file", and hence can be named

@@ -9,20 +9,71 @@ Remembers its constructor function and its constructor argument.
 Use case: the customizer: tweak parameters using sliders.
 
 (2) prototype
-A parametric record that binds the `call` field to the constructor function.
-This lets you clone the record with modified parameters using funcall syntax,
-like OpenSCAD2. Eg, like 'box' and 'cube' in the standard library.
+A 'prototype' is a parametric record R that is callable like a function.
+When you apply R to an argument, you are really calling R's constructor.
+This lets you clone the record with modified parameters using function call
+syntax, like OpenSCAD2. Eg, like 'box' and 'cube' in the standard library.
 This allows you to construct prototypical shapes without specifying an argument,
 and is inspired by prototype oriented programming.
-Use the -D command line option to modify the shape, like in OpenSCAD.
+* Use the -D command line option to modify the shape, like in OpenSCAD?
+  The design for -D requires the constructor argument to be a record.
+  Let's lose this restriction.
 
 (3) term
 A term is a record or function that prints as a constructor expression.
 Use cases:
-* printing a high level representation of the value
-* preserve the CSG tree of a shape, for high level processing
-* pattern matching, application-level types, typeful programming
-* high level equality comparisons
+* Printing a high level representation of the value.
+* Preserve the CSG tree of a shape, for high level processing.
+* Application-level types: pattern matching, high level equality,
+  typeful programming.
+
+Parametric Records
+------------------
+The current design for `make_parametric` requires the argument to be a record.
+This conflicts with my desire to convert standard library shapes like `cube`
+into parametric shapes. Either I need to consistently use record arguments
+in the standard shape library, or I need to generalize the parametric record
+constructors to support non-record arguments (like numbers and vectors), and
+I need to extend the viewer to display a picker for such parametric shapes.
+
+For example, `cube` is a parametric shape, with default argument `2`.
+How do I construct a parameteric record with a number (rather than record)
+as a parameter? Something like this:
+    cube = parametric(d :: scale_picker = 2) box(d,d,d);
+vs
+    parametric{def1, def2, ...}
+which uses a record argument.
+
+In practice, I use records to group multiple arguments.
+But for a single argument, I just pass it directly, as it is terser.
+`make_parametric` can use the same convention if there is a single parameter.
+If a parametric record P has one parameter, then:
+* P.constructor accepts `{name:val}` or `val` as an argument.
+  The former is compatible with -D. The latter is compatible with shape library
+  parameter conventions. So P.constructor is a piecewise function.
+* P.argument is `{name:val}`, not `val`. So `cube` prints as `cube{d:2}`,
+  not as `cube 2`, once `cube` is a parametric term. Parametric shapes are
+  printed in verbose form, showing all of their parameter values, even if some
+  of these are same as default, and also showing all parameter names.
+* The viewer now needs to deal with P.constructor if it is piecewise.
+  It finds the parameter pattern that matches P.argument.
+* With this design, no additional metadata is needed,
+  and no additional language complexity is needed.
+
+Alternately, `cube` is overloaded over `cube n` and `cube{d:n}`. The former
+syntax is forwarded to the latter; the latter yields a parametric shape.
+So, we don't need to extend `make_parametric` with this special case.
+
+A parametric record's constructor should return another parametric record
+of the same type.
+
+`curv -Dname=val foo.curv` overrides the value of a shape parameter.
+* Mimics a feature of OpenSCAD.
+* Implemented as `curv -x 'file "foo.curv" {name=val}'`.
+* prototypes: R is record, R(x) searches for R.call then R.constructor
+* Parametric record's constructor returns another parametric record.
+* Single-parameter parametric-record's constructor accepts either
+  `{name=val}` or `val` as an argument.
 
 Metadata
 --------
@@ -119,50 +170,119 @@ Modules can contain parametric metadata. I need syntax for a module literal
 I also need a naming convention for metadata fields, one that avoids name
 collisions.
  * constructor, argument
- * __CONSTRUCTOR__, __ARGUMENT__
-   like Python.
+ * CONSTRUCTOR, ARGUMENT
+   Use `CALL` instead of `call` if we use this convention
+   for naming magic record fields.
  * meta.constructor, meta.argument
    In directory syntax, metadata fields would be defined by
    a `meta.curv` file. We could also put package metadata here, eg
    author and licence.
 
+It should be possible to use record comprehensions to build a module.
+The `...` spread operator can be used for a kind of inheritance, where one
+module is defined as changes to another module. This argues in favour of an
+explicit keyword for marking a module.
+
+Prototypes
+----------
+A 'prototype' is a parametric record R that is callable like a function.
+When you apply R to an argument, you are really calling R's constructor.
+This lets you clone the record with modified parameters using function call
+syntax, like OpenSCAD2. Eg, like 'box' and 'cube' in the standard library.
+This allows you to construct prototypical shapes without specifying an argument,
+and is inspired by prototype oriented programming.
+
+Perhaps the simplest design is to change the semantics for calling a
+record like a function. First, we check if the record has a `call` field.
+If not, we check if it has a `meta.constructor` field. With this design,
+we get prototypes almost for free.
+
+Some parametric records are not prototypes: they have a `call` field which
+is different from their `meta.constructor` field. These things are "extended
+functions" whose primary use is to be called as a function, but which have
+additional fields beyond the `call` field to provide additional features.
+
 Primitive Shapes are Parametric
 -------------------------------
 Let's say that all primitive shapes in the standard library are parametric.
-What's missing from this design that would let me do that.
-The design doesn't support prototypes yet, so we'll skip that.
+What's missing from this design that would let me do that?
 
-cube(d) is the API. Then define
-    cube(d) = make_parametric D :: range_picker = d in box(D,D,D)
+If the API is:
+    cube
+    cube d
+then define
+    cube = make_parametric d :: scale_picker = 2 in box(d,d,d)
+This relies on the extension of `make_parametric` that treats single-parameter
+precs specially. Without this extension, use:
+    cube = match [
+        d :: is_num -> cube{d:d};
+        make_parametric d :: scale_picker = 2 in box(d,d,d);
+    ];
+This relies on support for recursive `match`.
 
-The API is:
+If the API is:
+    cube
     cube(d)
+    cube.mitered
+    cube.exact
     cube.mitered(d)
     cube.exact(d)
-Then:
+Then define:
     cube = let
-        exact d = make_parametric ...;
-        mitred d = make_parametric ...;
+        exact = make_parametric d :: scale_picker = 2 in box.exact(d,d,d);
+        mitred = make_parametric d :: scale_picker = 2 in box.mitred(d,d,d);
     in {
-        call : exact;
+        ... exact;
         exact : exact;
         mitred : mitred;
     };
+I don't need a `call` field, I get one for free from the "prototype" mechanism.
 
-Without prototypes, this is really simple and boring.
-I can make `cube` into an abbreviation for `cube 2`, without introducing
-the full prototype mechanism, using:
+In the above design, `cube(d)` does not have `exact` or `mitred` fields.
+I can fix this:
     cube = let
-        exact d = make_parametric ...;
-        mitred d = make_parametric ...;
-    in {
-        ... exact 2;
-        call : exact;
-        exact : exact;
-        mitred : mitred;
-    };
+        exact = make_parametric d :: scale_picker = 2 in
+          { ... box.exact(d,d,d);
+            exact : exact d;
+            mitred : mitred d;
+          }
+        mitred = make_parametric d :: scale_picker = 2 in
+          { ... box.mitred(d,d,d);
+            exact : exact d;
+            mitred : mitred d;
+          }
+    in exact;
 
-Maybe the prototype mechanism is too complex to be worth it.
+With this version, if you display an exact cube in the viewer, you do not have
+a picker that lets you switch to the mitred version (or vice versa).
+ 1. Let's say that, internally, a fully parameterized invocation of `cube`
+    looks like this:
+        cube{exact:{d:2}}
+        cube{mitred:{d:2}}
+    The other constructor syntax is sugar for this.
+    Then we extend the picker gui to support record-encoded algebraic types.
+
+Piecewise Primitive Shapes
+--------------------------
+half_space =
+    match [
+    {d, normal: n} -> impl(d*n,n);
+    [a, b, c] -> impl(a, normalize(cross(b-a,c-b)));
+    {at: a, normal: n} -> impl(a,n);
+    ]
+where (
+    impl(a,n) = // a is point on boundary, n is unit normal
+        make_shape {
+            dist(x,y,z,_) = dot(-n, a-[x,y,z]);
+            bbox = [ [ if (n[Y]==0 && n[Z]==0 && n[X]<0) a[X] else -inf,
+                       if (n[X]==0 && n[Z]==0 && n[Y]<0) a[Y] else -inf,
+                       if (n[X]==0 && n[Y]==0 && n[Z]<0) a[Z] else -inf, ],
+                     [ if (n[Y]==0 && n[Z]==0 && n[X]>0) a[X] else inf,
+                       if (n[X]==0 && n[Z]==0 && n[Y]>0) a[Y] else inf,
+                       if (n[X]==0 && n[Y]==0 && n[Z]>0) a[Z] else inf, ] ];
+            is_3d = true;
+        };
+);
 
 Primitive Shapes are Terms
 --------------------------
