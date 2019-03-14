@@ -14,6 +14,7 @@ Shared<const Function>
 cast_to_function(Value funv, const Context& cx)
 {
     static Symbol callkey = "call";
+    static Symbol conskey = "constructor";
     for (;;) {
         auto func = funv.dycast<const Function>();
         if (func)
@@ -21,6 +22,10 @@ cast_to_function(Value funv, const Context& cx)
         auto rec = funv.dycast<const Record>();
         if (rec->hasfield(callkey)) {
             funv = rec->getfield(callkey, cx);
+            continue;
+        }
+        if (rec->hasfield(conskey)) {
+            funv = rec->getfield(conskey, cx);
             continue;
         }
         return nullptr;

@@ -319,12 +319,12 @@ let
     r = parametric {a=1,b=2} {x:a,y:b};
     r2 = r{a:10,b:20};
 in (
-    assert(fields r == ["call","parameter","x","y"]);
+    assert(fields r == ["argument","constructor","x","y"]);
     assert(r.x == 1 && r.y == 2);
-    assert(r.parameter == {a:1,b:2});
-    //assert(fields r2 == ["call","parameter","x","y"]);
+    assert(r.argument == {a:1,b:2});
+    //assert(fields r2 == ["argument","constructor","x","y"]);
     assert(r2.x == 10 && r2.y == 20);
-    //assert(r2.parameter == {a:10,b:20});
+    //assert(r2.argument == {a:10,b:20});
 );
 
 let s = slider(1,10);

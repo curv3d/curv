@@ -502,6 +502,7 @@ Value
 call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
 {
     static Symbol callkey = "call";
+    static Symbol conskey = "constructor";
     Value funv = func;
     for (;;) {
         if (!funv.is_ref())
@@ -522,6 +523,10 @@ call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
             Record* s = (Record*)&funp;
             if (s->hasfield(callkey)) {
                 funv = s->getfield(callkey, At_Phrase(*call_phrase, f));
+                continue;
+            }
+            if (s->hasfield(conskey)) {
+                funv = s->getfield(conskey, At_Phrase(*call_phrase, f));
                 continue;
             }
             break;
@@ -980,9 +985,9 @@ Parametric_Expr::eval(Frame& f) const
     rec->each_field(cx, [&](Symbol id, Value val) -> void {
         drec->fields_[id] = val;
     });
-    // TODO: The `call` function should return another parametric record.
-    drec->fields_["call"] = fun;
-    drec->fields_["parameter"] = {default_arg};
+    // TODO: The `constructor` function should return another parametric record.
+    drec->fields_["constructor"] = fun;
+    drec->fields_["argument"] = {default_arg};
     return {drec};
 }
 

@@ -13,7 +13,8 @@ namespace curv {
 
 Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
 {
-    // Recognize a parametric shape S, which contains call & parameter fields.
+    // Recognize a parametric shape S,
+    // which contains constructor & argument fields.
     // If found:
     // * Extract the parameters.
     //   Each parameter has: name, value, optional picker.
@@ -54,20 +55,20 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
     //   If I use IMGUI, then I iterate over the parameter table and render
     //   each picker.
 
-    // Recognize a parametric shape (it has `parameter` and `call` fields).
+    // Recognize a parametric shape (it has `argument` and `constructor` fields).
     At_System cx{shape.system_};
-    Shared<Record> sh_parameter = nullptr;
-    if (shape.record_->hasfield("parameter")) {
-        sh_parameter = shape.record_->getfield("parameter", cx).to<Record>(cx);
+    Shared<Record> sh_argument = nullptr;
+    if (shape.record_->hasfield("argument")) {
+        sh_argument = shape.record_->getfield("argument", cx).to<Record>(cx);
     }
-    Shared<Closure> sh_call = nullptr;
-    if (sh_parameter && shape.record_->hasfield("call")) {
-        sh_call = shape.record_->getfield("call", cx).to<Closure>(cx);
+    Shared<Closure> sh_constructor = nullptr;
+    if (sh_argument && shape.record_->hasfield("constructor")) {
+        sh_constructor = shape.record_->getfield("constructor", cx).to<Closure>(cx);
     }
-    if (sh_parameter && sh_call) {
+    if (sh_argument && sh_constructor) {
         // We have a parametric shape.
         auto cparams = make<DRecord>();
-        record_pattern_each_parameter(*sh_call, shape.system_,
+        record_pattern_each_parameter(*sh_constructor, shape.system_,
             [&](Symbol name, Value pred, Value value) -> void {
                 auto pred_record = pred.dycast<Record>();
                 if (pred_record && pred_record->hasfield("picker")) {
@@ -94,9 +95,9 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
                 }
             });
         std::unique_ptr<Frame> f2 {
-            Frame::make(sh_call->nslots_, shape.system_, nullptr, nullptr, nullptr)
+            Frame::make(sh_constructor->nslots_, shape.system_, nullptr, nullptr, nullptr)
         };
-        Value result = sh_call->call({cparams}, *f2);
+        Value result = sh_constructor->call({cparams}, *f2);
         //std::cerr << "parametric shape: " << result << "\n";
 
         auto r = result.dycast<Record>();
