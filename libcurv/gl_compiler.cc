@@ -71,7 +71,8 @@ GL_Compiler::begin_function()
 {
     valcount_ = 0;
     valcache_.clear();
-    opcache_.clear();
+    opcaches_.clear();
+    opcaches_.emplace_back(Op_Cache{});
     constants_.str("");
     body_.str("");
 }
@@ -150,9 +151,11 @@ GL_Value gl_eval_op(GL_Frame& f, const Operation& op)
     // (eg, no Data_Ref ops), other than uniform variables in reactive values.
     // What follows is a limited form of common subexpression elimination
     // which reduces code size when reactive values are used.
-    auto cached = f.gl.opcache_.find(share(op));
-    if (cached != f.gl.opcache_.end())
-        return cached->second;
+    for (Op_Cache& opcache : f.gl.opcaches_) {
+        auto cached = opcache.find(share(op));
+        if (cached != opcache.end())
+            return cached->second;
+    }
   #if 0
     bool previous = f.gl.in_constants_;
     f.gl.in_constants_ = true;
@@ -179,7 +182,7 @@ GL_Value gl_eval_op(GL_Frame& f, const Operation& op)
   #else
     Set_Purity pu(f.gl, true);
     auto val = op.gl_eval(f);
-    f.gl.opcache_[share(op)] = val;
+    f.gl.opcaches_.back()[share(op)] = val;
     return val;
   #endif
 #else
@@ -960,11 +963,13 @@ void If_Op::gl_exec(GL_Frame& f) const
 }
 void While_Op::gl_exec(GL_Frame& f) const
 {
+    f.gl.opcaches_.emplace_back(Op_Cache{});
     f.gl.out() << "  while (true) {\n";
     auto cond = gl_eval_expr(f, *cond_, GL_Type::Bool());
     f.gl.out() << "  if (!"<<cond<<") break;\n";
     body_->gl_exec(f);
     f.gl.out() << "  }\n";
+    f.gl.opcaches_.pop_back();
 }
 void For_Op::gl_exec(GL_Frame& f) const
 {
@@ -992,6 +997,7 @@ void For_Op::gl_exec(GL_Frame& f) const
         : 1.0;
   #endif
     auto i = f.gl.newvalue(GL_Type::Num());
+    f.gl.opcaches_.emplace_back(Op_Cache{});
   #if RANGE_EXPRESSIONS
     f.gl.out() << "  for (float " << i << "=" << first << ";"
              << i << (range->half_open_ ? "<" : "<=") << last << ";"
@@ -1004,6 +1010,7 @@ void For_Op::gl_exec(GL_Frame& f) const
     pattern_->gl_exec(i, At_GL_Phrase(list_->syntax_, f), f);
     body_->gl_exec(f);
     f.gl.out() << "  }\n";
+    f.gl.opcaches_.pop_back();
 }
 GL_Value Equal_Expr::gl_eval(GL_Frame& f) const
 {

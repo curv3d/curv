@@ -55,6 +55,8 @@ struct Op_Hash_Eq
         return op1->hash_eq(*op2);
     }
 };
+using Op_Cache =
+    std::unordered_map<Shared<const Operation>, GL_Value, Op_Hash, Op_Hash_Eq>;
 
 /// Global state for the GLSL/C++ code generator.
 struct GL_Compiler
@@ -68,13 +70,13 @@ struct GL_Compiler
     System &system_;
     std::unordered_map<Value, GL_Value, Value::Hash, Value::Hash_Eq>
         valcache_{};
-    std::unordered_map<Shared<const Operation>, GL_Value, Op_Hash, Op_Hash_Eq>
-        opcache_{};
+    std::vector<Op_Cache> opcaches_{};
 
     GL_Compiler(std::ostream& s, GL_Target t, System& sys)
     :
         out_(s), target_(t), valcount_(0), system_(sys)
-    {}
+    {
+    }
 
     std::ostream& out()
     {
