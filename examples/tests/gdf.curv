@@ -35,14 +35,15 @@ GDFVectors = [
 ];
 
 xGDF(p, r, e, begin, end) =
-    do
-        var d := 0;
+    let d = 0
+    in do
         for (i in begin..end)
             d := d + abs(dot(p, GDFVectors[i]))^e;
 	in d^(1/e) - r;
 
 GDF(p, r, begin, end) =
-    do  var d := 0;
+    let d = 0
+    in do
         for (i in begin..end)
             d := max(d, abs(dot(p, GDFVectors[i])));
     in d - r;
