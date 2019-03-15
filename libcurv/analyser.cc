@@ -424,29 +424,7 @@ analyse_block(
         return make<Block_Op>(syntax,
             std::move(rscope.executable_), std::move(body));
     }
-    struct Bad_Scope : public Block_Scope
-    {
-        Bad_Scope(Environ& env) : Block_Scope(env, false) {}
-
-        virtual Shared<Meaning> single_lookup(const Identifier&) override
-        {
-            return nullptr;
-        }
-        virtual void analyse(Definition&) override {}
-        virtual void add_action(Shared<const Phrase>) override {}
-        virtual unsigned begin_unit(Shared<Unitary_Definition> unit) override
-        {
-            throw Exception(At_Phrase(*unit->syntax_, *parent_),
-                "wrong style of definition for this block");
-        }
-        virtual slot_t add_binding(Symbol, const Phrase&, unsigned) override
-        {
-            return 0;
-        }
-        virtual void end_unit(unsigned, Shared<Unitary_Definition>) override {}
-    } bscope(env);
-    adef->add_to_scope(bscope); // throws an exception
-    die("analyse_block: add_to_scope failed to throw an exception");
+    bad_definition(*adef, env, "wrong style of definition for this block");
 }
 
 Shared<Meaning>
@@ -661,10 +639,6 @@ Assignment_Phrase::analyse(Environ& env, unsigned edepth) const
     auto let = cast<Data_Ref>(m);
     if (let)
         return make<Data_Setter>(share(*this), let->slot_, expr, true);
-    auto indir = cast<Module_Data_Ref>(m);
-    if (indir)
-        return make<Module_Data_Setter>(share(*this),
-            indir->slot_, indir->index_, expr);
 
     // this should never happen
     throw Exception(At_Phrase(*left_, env),

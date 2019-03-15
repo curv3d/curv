@@ -518,29 +518,6 @@ struct Data_Setter : public Just_Action
     void gl_exec(GL_Frame&) const override;
 };
 
-// An internal action for storing the value of a data definition
-// in the evaluation frame. Part of the actions_ list in a Scope_Executable.
-struct Module_Data_Setter : public Just_Action
-{
-    slot_t slot_;
-    slot_t index_;
-    Shared<Operation> expr_;
-
-    Module_Data_Setter(
-        Shared<const Phrase> syntax,
-        slot_t slot,
-        slot_t index,
-        Shared<Operation> expr)
-    :
-        Just_Action(std::move(syntax)),
-        slot_(slot),
-        index_(index),
-        expr_(std::move(expr))
-    {}
-
-    void exec(Frame&) const override;
-};
-
 struct Module_Expr : public Just_Expression
 {
     using Just_Expression::Just_Expression;

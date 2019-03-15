@@ -262,8 +262,10 @@ struct Recursive_Scope : public Block_Scope
     virtual void end_unit(unsigned, Shared<Unitary_Definition>) override;
 };
 
-Shared<Module_Expr>
-analyse_module(Definition&, Environ&);
+Shared<Module_Expr> analyse_module(Definition&, Environ&);
+
+// Throw an exception to report the wrong kind of definition.
+[[noreturn]] void bad_definition(Definition&, Environ&, const char*);
 
 } // namespace
 #endif // header guard

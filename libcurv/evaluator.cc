@@ -630,14 +630,6 @@ Data_Setter::exec(Frame& f) const
     f[slot_] = expr_->eval(f);
 }
 
-void
-Module_Data_Setter::exec(Frame& f) const
-{
-    Module& m = (Module&)f[slot_].get_ref_unsafe();
-    assert(m.subtype_ == Ref_Value::sty_module);
-    m.at(index_) = expr_->eval(f);
-}
-
 Value
 Module_Expr::eval(Frame& f) const
 {

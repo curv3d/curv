@@ -397,11 +397,8 @@ Shared<Module_Expr>
 analyse_module(Definition& def, Environ& env)
 {
     if (def.kind_ == Definition::k_sequential) {
-        // TODO: remove this code
-        Sequential_Scope scope(env, true, 0);
-        scope.analyse(def);
-        return make<Scoped_Module_Expr>(def.syntax_,
-            std::move(scope.executable_));
+        bad_definition(def, env,
+            "'var' definition not legal in a record constructor");
     }
     if (def.kind_ == Definition::k_recursive) {
         Recursive_Scope scope(env, true, def.syntax_);
@@ -418,5 +415,37 @@ Function_Setter_Base::Element::Element(slot_t s, Shared<Lambda> l)
 {}
 
 Function_Setter_Base::Element::Element() noexcept {}
+
+// Throw an exception to report the wrong kind of definition.
+void
+bad_definition(Definition& def, Environ& env, const char* msg)
+{
+    struct Bad_Scope : public Block_Scope
+    {
+        const char* msg_;
+
+        Bad_Scope(Environ& env, const char* msg)
+        : Block_Scope(env, false), msg_(msg)
+        {}
+
+        virtual Shared<Meaning> single_lookup(const Identifier&) override
+        {
+            return nullptr;
+        }
+        virtual void analyse(Definition&) override {}
+        virtual void add_action(Shared<const Phrase>) override {}
+        virtual unsigned begin_unit(Shared<Unitary_Definition> unit) override
+        {
+            throw Exception(At_Phrase(*unit->syntax_, *parent_), msg_);
+        }
+        virtual slot_t add_binding(Symbol, const Phrase&, unsigned) override
+        {
+            return 0;
+        }
+        virtual void end_unit(unsigned, Shared<Unitary_Definition>) override {}
+    } badscope(env, msg);
+    def.add_to_scope(badscope); // throws an exception
+    die("bad_definition: add_to_scope failed to throw an exception");
+}
 
 } // namespace curv
