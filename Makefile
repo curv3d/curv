@@ -7,6 +7,10 @@ install:
 	mkdir -p release
 	cd release; cmake -DCMAKE_BUILD_TYPE=Release ..
 	cd release; $(MAKE) install
+uninstall:
+	mkdir -p release
+	cd release; cmake -DCMAKE_BUILD_TYPE=Release ..
+	cd release; $(MAKE) uninstall
 debug:
 	mkdir -p debug
 	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..

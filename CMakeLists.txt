@@ -28,10 +28,6 @@ if (APPLE)
     link_directories(/usr/local/lib)
 endif (APPLE)
 
-add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
-add_subdirectory(extern/openvdb/openvdb EXCLUDE_FROM_ALL)
-add_subdirectory(extern/glfw EXCLUDE_FROM_ALL)
-
 # REPLxx library
 file(GLOB ReplxxSrc "extern/replxx/src/*.cxx" "extern/replxx/src/*.cpp")
 add_library(replxx ${ReplxxSrc})
@@ -114,3 +110,17 @@ install(TARGETS curv RUNTIME DESTINATION bin)
 install(FILES lib/std.curv DESTINATION lib)
 install(DIRECTORY lib/curv DESTINATION lib)
 install(FILES lib/curv.lang DESTINATION share/gtksourceview-3.0/language-specs)
+
+# Only generate this target if no higher-level project already has
+if (NOT TARGET uninstall)
+    add_custom_target(uninstall rm -rfv
+        "${CMAKE_INSTALL_PREFIX}/bin/curv"
+        "${CMAKE_INSTALL_PREFIX}/lib/curv"
+        "${CMAKE_INSTALL_PREFIX}/lib/std.curv"
+        "${CMAKE_INSTALL_PREFIX}/share/gtksourceview-3.0/language-specs/curv.lang"
+    )
+endif()
+
+add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
+add_subdirectory(extern/openvdb/openvdb EXCLUDE_FROM_ALL)
+add_subdirectory(extern/glfw EXCLUDE_FROM_ALL)
