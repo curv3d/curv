@@ -11,7 +11,7 @@ Shader::Shader():m_program(0),m_fragmentShader(0),m_vertexShader(0), m_backbuffe
 }
 
 Shader::~Shader() {
-    if (m_program != 0) {           // Avoid crash when no command line arguments supplied
+    if (m_program != 0) {           // Avoid crash on MacOS due to driver bug
         glDeleteProgram(m_program);
     }
 }
