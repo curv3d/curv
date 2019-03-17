@@ -25,7 +25,7 @@ Instead, build and install `curv` using:
   
   * Now create your local copy of the git repo, change to it, make the program, package it and install that package:
   
-  `git clone --recursive https://github.com/curv3d/curv; cd curv; make; sudo make install
+  `git clone --recursive https://github.com/curv3d/curv; cd curv; make; sudo make install`
   
   These instructions have been tested on versions up to at least Ubuntu 18.04.1.
   
