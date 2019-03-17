@@ -10,22 +10,24 @@ Instead, build and install `curv` using:
 * `make`
 * `make install`
 
+# Installing 
+
 ## Ubuntu Linux 16.04 build instructions
 * Open the Terminal application and run the following commands:
-  * `sudo apt-get update`
-  * `sudo apt-get upgrade`
-  * `sudo apt-get install cmake git-core`
-  * `sudo apt-get install libboost-all-dev libdouble-conversion-dev`
-  * `sudo apt-get install libopenexr-dev libtbb-dev`
-  * `sudo apt-get install libglm-dev`
-  * `cd ~`
-  * `git clone --recursive https://github.com/doug-moen/curv`
-  * `cd curv`
-  * `make`
-  * `sudo make install`
-
-* When building on a Ubuntu Server version, run the following command before building:
-  * `sudo apt-get install libxcursor-dev libxinerama-dev libxrandr-dev libglu1-mesa-dev libgles2-mesa-dev libgl1-mesa-dev libxi-dev`
+  * Install the relevant dependencies used to build `curv`:
+  
+  `sudo apt install cmake git-core libboost-all-dev libdouble-conversion-dev libopenexr-dev libtbb-dev libglm-dev gedit  checkinstall`
+  
+  * If you don't already have dev packages for your GPU installed -- eg running a **server version** -- then you'll probably need to also install these:
+  
+  `sudo apt-get install libxcursor-dev libxinerama-dev libxrandr-dev libglu1-mesa-dev libgles2-mesa-dev libgl1-mesa-dev libxi-dev`
+  * now `cd` to your preferred installation directory below which the `curv` directory will be placed, eg `cd ~`
+  
+  * Now create your local copy of the git repo, change to it, make the program, package it and install that package:
+  
+  `git clone --recursive https://github.com/doug-moen/curv; cd curv; make; sudo checkinstall -D; sudo dpkg -i ./curv*.deb`
+  
+  These instructions have been tested on versions up to at least Ubuntu 18.04.1.
   
 ## macOS build instructions
 * Install homebrew (http://brew.sh)
@@ -52,3 +54,8 @@ Instead, build and install `curv` using:
   * `git submodule update --init`
   * `make`
   * `make install` (or `sudo make install` on Linux)
+  
+# Testing
+## A simple test
+
+Run `curv -le myshape.curv` from a command line. It should open and editor window, type `cube` and then save the file. A window should open showing a cube that you can drag to interact with. The original console will give error messages and such.
