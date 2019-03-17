@@ -1,6 +1,6 @@
 **Warning** to **git** users:
 This project uses `git submodule`. Use:
-* `git clone --recursive https://github.com/doug-moen/curv` to clone the repo.
+* `git clone --recursive https://github.com/curv3d/curv` to clone the repo.
 * `git submodule update --init` after pulling updates.
 
 **Warning** to **cmake** users:
@@ -16,7 +16,7 @@ Instead, build and install `curv` using:
 * Open the Terminal application and run the following commands:
   * Install the relevant dependencies used to build `curv`:
   
-  `sudo apt install cmake git-core libboost-all-dev libdouble-conversion-dev libopenexr-dev libtbb-dev libglm-dev gedit  checkinstall`
+  `sudo apt install cmake git-core libboost-all-dev libdouble-conversion-dev libopenexr-dev libtbb-dev libglm-dev gedit`
   
   * If you don't already have dev packages for your GPU installed -- eg running a **server version** -- then you'll probably need to also install these:
   
@@ -25,7 +25,7 @@ Instead, build and install `curv` using:
   
   * Now create your local copy of the git repo, change to it, make the program, package it and install that package:
   
-  `git clone --recursive https://github.com/doug-moen/curv; cd curv; make; sudo checkinstall -D; sudo dpkg -i ./curv*.deb`
+  `git clone --recursive https://github.com/curv3d/curv; cd curv; make; sudo make install
   
   These instructions have been tested on versions up to at least Ubuntu 18.04.1.
   
@@ -42,7 +42,7 @@ Instead, build and install `curv` using:
   * `brew install ilmbase openexr tbb`
   * `brew install glm`
   * `cd ~`
-  * `git clone --recursive https://github.com/doug-moen/curv`
+  * `git clone --recursive https://github.com/curv3d/curv`
   * `cd curv`
   * `make`
   * `make install`
@@ -54,7 +54,12 @@ Instead, build and install `curv` using:
   * `git submodule update --init`
   * `make`
   * `make install` (or `sudo make install` on Linux)
-  
+
+## Uninstall Curv
+* Open the Terminal application and run the following commands:
+  * `cd ~/curv`
+  * `make uninstall` (or `sudo make uninstall` on Linux)
+
 # Testing
 ## A simple test
 
