@@ -196,5 +196,5 @@ You can look in `<../examples>`_ to see examples.
 
 The low level interface used to implement the shape library is
 poorly documented right now.
-You can read the source code in `<../lib/std.curv>`_.
+You can read the source code in `<../lib/curv/std.curv>`_.
 See `<Theory.rst>`_ more more information about how the shape library works.

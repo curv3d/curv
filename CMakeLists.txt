@@ -107,7 +107,6 @@ add_custom_target(tests tester WORKING_DIRECTORY ../tests)
 add_dependencies(tests tester curv)
 
 install(TARGETS curv RUNTIME DESTINATION bin)
-install(FILES lib/std.curv DESTINATION lib)
 install(DIRECTORY lib/curv DESTINATION lib)
 install(FILES lib/curv.lang DESTINATION share/gtksourceview-3.0/language-specs)
 

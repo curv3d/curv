@@ -5,7 +5,7 @@
 /* Curv standard library, automatically loaded at startup. */
 {
 
-lib = file "curv";
+lib = file "lib";
 
 deg = tau/360;
 e = 2.71828182845904523536028747135266249775724709369995;

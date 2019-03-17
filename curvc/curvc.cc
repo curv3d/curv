@@ -34,7 +34,7 @@ main(int argc, char** argv)
     sys.use_json_api_ = true;
     try {
         sys.load_library(
-            fs::canonical(progdir(argv[0])/"../lib/std.curv").c_str());
+            fs::canonical(progdir(argv[0])/"../lib/curv/std.curv").c_str());
         auto source = make<File_Source>(argv[1], At_System(sys));
         Program prog{std::move(source), sys};
         prog.compile();

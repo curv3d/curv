@@ -42,17 +42,18 @@ make_system(const char* argv0, std::list<const char*>& libs, std::ostream& out)
         curv::geom::add_builtins(sys);
         curv::geom::add_importers(sys);
         if (argv0 != nullptr) {
-            const char* CURV_STDLIB = getenv("CURV_STDLIB");
+            const char* CURV_LIBDIR = getenv("CURV_LIBDIR");
             namespace fs = boost::filesystem;
             curv::Shared<const curv::String> stdlib;
-            if (CURV_STDLIB != nullptr) {
-                if (CURV_STDLIB[0] != '\0')
-                    stdlib = curv::make_string(CURV_STDLIB);
-                else
+            if (CURV_LIBDIR != nullptr) {
+                if (CURV_LIBDIR[0] != '\0') {
+                    fs::path stdlib_path = fs::path(CURV_LIBDIR) / "std.curv";
+                    stdlib = curv::make_string(stdlib_path.c_str());
+                } else
                     stdlib = nullptr;
             } else {
-                fs::path stdlib_path =
-                    fs::canonical(curv::progdir(argv0) / "../lib/std.curv");
+                fs::path stdlib_path = fs::canonical(
+                    curv::progdir(argv0) / "../lib/curv/std.curv");
                 stdlib = curv::make_string(stdlib_path.c_str());
             }
             sys.load_library(stdlib);
@@ -94,7 +95,7 @@ const char help_infix[] =
 ;
 
 const char help_suffix[] =
-"   $CURV_STDLIB : Pathname of standard library, overrides PREFIX/lib/std.curv\n"
+"   $CURV_LIBDIR : Standard library directory, overrides PREFIX/lib/curv\n"
 "   -n : Don't include standard library.\n"
 "   -i file : Include specified library; may be repeated.\n"
 ;
