@@ -54,7 +54,7 @@ At_Token::At_Token(Token tok, const Scanner& scanner)
 At_Token::At_Token(Token tok, const Phrase& phrase, Environ& env)
 :
     loc_{phrase.location().source(), tok},
-    system_{env.system_},
+    system_{env.analyser_.system_},
     file_frame_{env.file_frame_}
 {
 }
@@ -62,7 +62,7 @@ At_Token::At_Token(Token tok, const Phrase& phrase, Environ& env)
 At_Token::At_Token(Location loc, Environ& env)
 :
     loc_{std::move(loc)},
-    system_{env.system_},
+    system_{env.analyser_.system_},
     file_frame_{env.file_frame_}
 {
 }
@@ -97,7 +97,7 @@ At_Phrase::At_Phrase(const Phrase& phrase, Scanner& scanner)
 {}
 
 At_Phrase::At_Phrase(const Phrase& phrase, Environ& env)
-: phrase_(phrase), system_(env.system_), frame_(env.file_frame_)
+: phrase_(phrase), system_(env.analyser_.system_), frame_(env.file_frame_)
 {}
 
 void

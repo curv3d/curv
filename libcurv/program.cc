@@ -25,7 +25,8 @@ Program::compile(const Namespace* names)
 
     phrase_ = parse_program(scanner_);
 
-    Builtin_Environ env{*names_, scanner_.system_, scanner_.file_frame_};
+    Analyser ana(scanner_.system_);
+    Builtin_Environ env{*names_, ana, scanner_.file_frame_};
     if (auto def = phrase_->as_definition(env)) {
         module_ = analyse_module(*def, env);
     } else {

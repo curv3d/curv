@@ -10,10 +10,18 @@
 
 namespace curv {
 
+// Global analysis state while analysing a whole program.
+struct Analyser
+{
+    System& system_;
+    Analyser(System& system) : system_(system) {}
+};
+
+// Local analysis state that changes when entering a new name-binding scope.
 struct Environ
 {
     Environ* parent_;
-    System& system_;
+    Analyser& analyser_;
     /// file_frame_ is nullptr, unless we are analysing a source file due to
     /// an evaluation-time call to `file`. It's used by the Exception Context,
     /// to add a stack trace to compile time errors.
@@ -22,10 +30,10 @@ struct Environ
     slot_t frame_maxslots_;
 
     // constructor for root environment
-    Environ(System& system, Frame* file_frame)
+    Environ(Analyser& analyser, Frame* file_frame)
     :
         parent_(nullptr),
-        system_(system),
+        analyser_(analyser),
         file_frame_(file_frame),
         frame_nslots_(0),
         frame_maxslots_(0)
@@ -35,7 +43,7 @@ struct Environ
     Environ(Environ* parent)
     :
         parent_(parent),
-        system_(parent->system_),
+        analyser_(parent->analyser_),
         file_frame_(parent->file_frame_),
         frame_nslots_(0),
         frame_maxslots_(0)
@@ -59,9 +67,9 @@ struct Builtin_Environ : public Environ
 protected:
     const Namespace& names;
 public:
-    Builtin_Environ(const Namespace& n, System& s, Frame* f)
+    Builtin_Environ(const Namespace& n, Analyser& a, Frame* f)
     :
-        Environ(s, f),
+        Environ(a, f),
         names(n)
     {}
     virtual Shared<Meaning> single_lookup(const Identifier&);
