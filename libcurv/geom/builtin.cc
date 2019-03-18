@@ -5,6 +5,8 @@
 #include <libcurv/geom/builtin.h>
 
 #include <libcurv/geom/cpp_program.h>
+
+#include <libcurv/analyser.h>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
@@ -28,14 +30,21 @@ run_cpp_test(const Context& cx, Shared<const Function> func)
     if (!result)
         throw Exception(cx, "assertion failed in C++");
 }
-
-struct GL_Test_Function : public Legacy_Function
+struct GL_Test_Action : public Just_Action
 {
-    GL_Test_Function() : Legacy_Function(1, "gl_test") {}
-    Value call(Frame& args) override
+    Shared<Operation> arg_;
+    GL_Test_Action(
+        Shared<const Phrase> syntax,
+        Shared<Operation> arg)
+    :
+        Just_Action(std::move(syntax)),
+        arg_(std::move(arg))
+    {}
+    virtual void exec(Frame& f) const override
     {
-        At_Arg cx(*this, args);
-        auto rec = args[0].to<Record>(cx);
+        Value arg = arg_->eval(f);
+        At_Phrase cx(*arg_->syntax_, f);
+        auto rec = arg.to<Record>(cx);
         Value nil = Value{List::make(0)};
         rec->each_field(cx, [&](Symbol name, Value val)->void {
             At_Field test_cx{name.c_str(), cx};
@@ -43,20 +52,27 @@ struct GL_Test_Function : public Legacy_Function
             if (func == nullptr)
                 throw Exception(test_cx, stringify(val," is not a function"));
             bool test_result =
-                call_func({func}, nil, args.call_phrase_, args)
+                call_func({func}, nil, syntax_, f)
                 .to_bool(test_cx);
             if (!test_result)
                 throw Exception(test_cx, "assertion failed in interpreter");
             run_cpp_test(test_cx, func);
         });
-        return {true};
+    }
+};
+struct GL_Test_Metafunction : public Metafunction
+{
+    using Metafunction::Metafunction;
+    virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
+    {
+        return make<GL_Test_Action>(share(ph), analyse_op(*ph.arg_, env));
     }
 };
 
 void add_builtins(System_Impl& sys)
 {
     sys.std_namespace_["gl_test"] =
-        make<curv::Builtin_Value>(Value{make<GL_Test_Function>()});
+        make<Builtin_Meaning<GL_Test_Metafunction>>();
 }
 
 }} // namespaces
