@@ -676,6 +676,11 @@ Recursive_Definition_Phrase::as_definition(Environ& env)
 Shared<Definition>
 Sequential_Definition_Phrase::as_definition(Environ& env)
 {
+    if (!env.analyser_.var_deprecated_) {
+        env.analyser_.system_.warning(Exception{At_Phrase(*this, env),
+            "`var` definitions are deprecated"});
+        env.analyser_.var_deprecated_ = true;
+    }
     return as_definition_iter(env, share(*this), *left_, right_,
         Definition::k_sequential);
 }

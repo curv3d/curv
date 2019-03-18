@@ -14,6 +14,11 @@ namespace curv {
 struct Analyser
 {
     System& system_;
+
+    // Have we already emitted a 'var deprecated' warning?
+    // Used to prevent an avalanche of warning messages.
+    bool var_deprecated_ = false;
+
     Analyser(System& system) : system_(system) {}
 };
 
