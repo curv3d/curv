@@ -101,7 +101,7 @@ The seven types of `Values`_:
 * `Records`_
 * `Functions`_
 
-Syntax:
+Basic Syntax:
 
 * `Programs`_
 * `Expressions`_
@@ -111,12 +111,13 @@ Syntax:
 * `Debug Actions`_
 * `Patterns`_
 * `File Import`_
-* `Grammar`_
 
-Design principles and patterns:
+Advanced Topics:
 
+* `Geometry Compiler`_
 * `Design by Contract`_
 * `Imperative Style Programming in a Pure Functional Language`_
+* `Grammar`_
 
 .. _`Blocks`: Blocks.rst
 .. _`Boolean Values`: Boolean_Values.rst
@@ -126,6 +127,7 @@ Design principles and patterns:
 .. _`Expressions`: Expressions.rst
 .. _`File Import`: File_Import.rst
 .. _`Functions`: Functions.rst
+.. _`Geometry Compiler`: Geometry_Compiler.rst
 .. _`Grammar`: Grammar.rst
 .. _`Imperative Style Programming in a Pure Functional Language`: ../advanced/Imperative.rst
 .. _`Lists`: Lists.rst
