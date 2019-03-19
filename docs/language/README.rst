@@ -106,6 +106,7 @@ Syntax:
 * `Programs`_
 * `Expressions`_
 * `Blocks`_ (local variables)
+* `Parametric Shapes`_
 * `Statements`_ (imperative style programming)
 * `Debug Actions`_
 * `Patterns`_
@@ -131,6 +132,7 @@ Design principles and patterns:
 .. _`Matrices`: Matrices.rst
 .. _`Null`: Null.rst
 .. _`Numbers`: Numbers.rst
+.. _`Parametric Shapes`: Parametric_Shapes.rst
 .. _`Patterns`: Patterns.rst
 .. _`Programs`: Programs.rst
 .. _`Records`: Records.rst
