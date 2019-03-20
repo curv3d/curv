@@ -34,7 +34,21 @@ tongue     First object gets a carpenter-style tongue attached.
 
 Boolean Blends
 ==============
-Smooth:
+The boolean blends are represented by values called "blending kernels".
+A blending kernel is a record with 3 fields named ``union``,
+``intersection`` and ``difference``. These fields are functions that
+take a list of 2 shapes as an argument.
+
+For example, the ``smooth r`` blending kernel comprises:
+
+* ``smooth r .union (shape1, shape2)``
+* ``smooth r .intersection (shape1, shape2)``
+* ``smooth r .difference (shape1, shape2)``
+
+``smooth r``
+  This blend creates a 1/4 circle fillet (if the two shapes meet at
+  90°) or an elliptical fillet in the general case.
+  The parameter ``r`` controls the size/radius of the blending band.
   |uRound| |iRound|
 
 Chamfer:
