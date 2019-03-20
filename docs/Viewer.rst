@@ -47,6 +47,13 @@ R        View right side
 F        View front side
 B        View back side
 =======  =========
+
+Head Up Display
+---------------
+When a parametric shape is viewed, the value picker GUI is displayed
+as an overlay on top of the shape.
+This overlay is called the HUD (Head Up Display), and it is toggled
+using CTRL-H (or COMMAND-H on MacOS).
   
 Command Line Options
 --------------------
