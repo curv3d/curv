@@ -32,6 +32,30 @@ groove     First object gets a carpenter-style groove cut out.
 tongue     First object gets a carpenter-style tongue attached.
 =========  =============
 
+Boolean Blends
+==============
+Smooth:
+  |uRound| |iRound|
+
+Chamfer:
+  |uChamfer| |iChamfer|
+
+Stairs:
+  |uStairs| |iStairs|
+
+Columns:
+  |uColumns| |iColumns|
+
+.. |iChamfer| image:: ../images/fOpIntersectionChamfer.png
+.. |iColumns| image:: ../images/fOpIntersectionColumns.png
+.. |iRound| image:: ../images/fOpIntersectionRound.png
+.. |iStairs| image:: ../images/fOpIntersectionStairs.png
+.. |uChamfer| image:: ../images/fOpUnionChamfer.png
+.. |uColumns| image:: ../images/fOpUnionColumns.png
+.. |uRound| image:: ../images/fOpUnionRound.png
+.. |uStairs| image:: ../images/fOpUnionStairs.png
+
+
 Technical Details
 -----------------
 Blending operators are distance field operations,
