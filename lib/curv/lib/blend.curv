@@ -64,9 +64,9 @@ chamfer = make_blend {
 
 stairs = make_blend {
     // Credit: original algorithm in GLSL by @paniq
-    fmin (a, b, (r,n) ) =
+    fmin (a, b, (r, n)) =
         let
-        s=r/n ;
+        s=r/(n+1);
         u=b-r;
         in
         min(min(a,b),0.5*(u+a+abs((mod(u-a+s,2*s))-s)));
