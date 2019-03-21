@@ -74,6 +74,7 @@ For example, the ``smooth r`` blending kernel comprises:
 
   WARNING: this feature is experimental, the API will change.
   PROBLEMS: the parameters don't make sense and the distance field is bad.
+  
   |uColumns| |iColumns|
 
 .. |iChamfer| image:: ../images/fOpIntersectionChamfer.png
