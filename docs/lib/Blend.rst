@@ -56,13 +56,23 @@ For example, the ``smooth r`` blending kernel comprises:
   |uChamfer| |iChamfer|
 
 ``stairs (r, n)``
-  Staircase effect. ``r`` is the size/radius of the blending band.
+  Staircase effect. ``r`` is related to the size of the blending band.
   ``n`` is the number of steps:
   the number of stairsteps added to a union,
   or the number of grooves cut out of an intersection.
+  
+  WARNING: this feature is experimental, the API may change.
+  PROBLEMS: What is the relationship of the ``r`` parameter to the size
+  of the blending band? Once I find out, I may change the meaning of the parameter
+  to make it more rational/predictable. Also, I might switch to labeled parameters.
   |uStairs| |iStairs|
 
-Columns:
+``columns (r, n)``
+  Scalloped effect.
+  ``r`` is somehow related to the size of the blending band.
+  ``n`` is somehow related to the number of columns.
+
+  WARNING: this feature is experimental, the API will change.
   |uColumns| |iColumns|
 
 .. |iChamfer| image:: ../images/fOpIntersectionChamfer.png
