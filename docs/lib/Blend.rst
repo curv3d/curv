@@ -57,7 +57,9 @@ For example, the ``smooth r`` blending kernel comprises:
 
 ``stairs (r, n)``
   Staircase effect. ``r`` is the size/radius of the blending band.
-  ``n`` is the number of steps.
+  ``n`` is the number of steps:
+  the number of stairsteps added to a union,
+  or the number of grooves cut out of an intersection.
   |uStairs| |iStairs|
 
 Columns:
