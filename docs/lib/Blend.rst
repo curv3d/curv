@@ -51,10 +51,13 @@ For example, the ``smooth r`` blending kernel comprises:
   The parameter ``r`` controls the size/radius of the blending band.
   |uRound| |iRound|
 
-Chamfer:
+``chamfer r``
+   Makes a 45-degree chamfered edge (the diagonal of a square of size ``r``).
   |uChamfer| |iChamfer|
 
-Stairs:
+``stairs (r, n)``
+  Staircase effect. ``r`` is the size/radius of the blending band.
+  ``n`` is the number of steps.
   |uStairs| |iStairs|
 
 Columns:
