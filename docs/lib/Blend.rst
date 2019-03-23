@@ -105,7 +105,7 @@ Non-Boolean Blends
 
 ``tongue (ra, rb) (s1, s2)``
   Shape ``s1`` gets a carpenter-style tongue attached where it intersects shape ``s2``.
-  The tongue has heightd ``ra`` and width ``2*rb``.
+  The tongue has height ``ra`` and width ``2*rb``.
   
   |Tongue|
 
