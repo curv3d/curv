@@ -1,7 +1,7 @@
 // This is experimental syntax for declaring parameters that are bound
 // to graphical sliders in the Viewer window. It may change.
 
-make_parametric
+parametric
     Diameter: diam :: slider(.5, 2) = 1;
     "Stick Length": len :: slider(2, 8) = 4;
     Colour: c :: colour_picker = red;

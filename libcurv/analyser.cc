@@ -431,7 +431,7 @@ analyse_block(
 Shared<Meaning>
 Let_Phrase::analyse(Environ& env, unsigned edepth) const
 {
-    if (let_.kind_ == Token::k_make_parametric) {
+    if (let_.kind_ == Token::k_parametric) {
         auto ctor = analyse_lambda(env, share(*this), false,
             make<Brace_Phrase>(let_, bindings_, in_),
             body_);

@@ -1,4 +1,4 @@
-make_parametric
+parametric
     C :: colour_picker = sRGB.HSV(0,.7,.7);
     Angle :: slider(0,720) = 90;
 in

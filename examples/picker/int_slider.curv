@@ -1,4 +1,4 @@
-make_parametric
+parametric
     i :: int_slider(1,5) = 3;
 in
 cube i

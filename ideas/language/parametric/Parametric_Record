@@ -118,8 +118,8 @@ kube =
 One criticism, for top level bindings, is that let, where and parametric
 use 3 different syntaxes for delimiting their bindings.
 
-In issue #62, I am proposing `make_parametric`.
-    make_parametric
+In issue #62, I am proposing `parametric`.
+    parametric
       diam :: slider(.5,4) = 1;
       len :: slider(2,8) = 4;
     in

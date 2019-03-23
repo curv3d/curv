@@ -4,7 +4,7 @@
 
 // This program is a test case for using arrays within distance functions.
 
-make_parametric
+parametric
     exp :: scale_picker = 1;
 in
 

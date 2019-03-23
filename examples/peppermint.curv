@@ -1,6 +1,6 @@
 // demo of 'swirl' transformation
 
-make_parametric
+parametric
     Swirl_Strength: ss :: slider(-10,10) = 4;
     Swirl_Diameter: sd :: slider(4,40) = 16;
 in

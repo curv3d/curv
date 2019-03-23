@@ -248,7 +248,7 @@ is_ritem_end_token(Token::Kind k)
 //  | 'while' parens ritem
 //  | 'do' list 'in' ritem
 //  | 'let' list 'in' ritem
-//  | 'make_parametric' list 'in' item
+//  | 'parametric' list 'in' item
 Shared<Phrase>
 parse_ritem(Scanner& scanner)
 {
@@ -273,18 +273,18 @@ parse_ritem(Scanner& scanner)
       }
     case Token::k_do:
     case Token::k_let:
-    case Token::k_make_parametric:
+    case Token::k_parametric:
       {
         auto bindings = parse_list(scanner);
         Token tok2 = scanner.get_token();
         if (tok2.kind_ != Token::k_in)
             throw Exception(At_Token(tok2, scanner),
                 "syntax error: expecting 'in'");
-        // for make_parametric, call parse_item, not parse_ritem.
-        // 'make_parametric params in ... where (bindings)' is parsed as
-        // 'make_parametric params in (... where (bindings))'.
+        // for parametric, call parse_item, not parse_ritem.
+        // 'parametric params in ... where (bindings)' is parsed as
+        // 'parametric params in (... where (bindings))'.
         Shared<Phrase> body;
-        if (tok.kind_ == Token::k_make_parametric)
+        if (tok.kind_ == Token::k_parametric)
             body = parse_item(scanner);
         else
             body = parse_ritem(scanner);
@@ -327,19 +327,6 @@ parse_ritem(Scanner& scanner)
                 "while: malformed argument");
         auto body = parse_ritem(scanner);
         return make<While_Phrase>(tok, args, body);
-      }
-    case Token::k_parametric:
-      {
-        auto p = parse_primary(scanner, "argument following 'parametric'");
-        auto param = cast<Brace_Phrase>(p);
-        if (param == nullptr)
-            throw Exception(At_Phrase(*p, scanner),
-                "parametric: malformed argument");
-        // NOTE: calling parse_item, not parse_ritem.
-        // 'parametric {params} ... where (bindings)' is parsed as
-        // 'parametric {params} (... where (bindings))'.
-        auto body = parse_item(scanner);
-        return make<Parametric_Phrase>(tok, param, body);
       }
     default:
         break;

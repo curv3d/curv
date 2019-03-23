@@ -262,8 +262,6 @@ Scanner::get_token()
             tok.kind_ = Token::k_include;
         else if (id == "let")
             tok.kind_ = Token::k_let;
-        else if (id == "make_parametric")
-            tok.kind_ = Token::k_make_parametric;
         else if (id == "parametric")
             tok.kind_ = Token::k_parametric;
         else if (id == "var")

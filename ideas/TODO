@@ -6,7 +6,7 @@ Version 0.4 Planning:
   * predicate assertion patterns and expressions using ::
     * 'pred pat' pattern removed.
   * calls to error now appear in stack trace
-  * parametric records (make_parametric), value pickers, HUD
+  * parametric records (parametric), value pickers, HUD
     * metadata fields are `constructor` and `argument`
   * Curv now requires OpenGL 3.3
   * `where` operator is now higher precedence than `,` or `;`

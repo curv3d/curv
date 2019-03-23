@@ -2,7 +2,7 @@ Release 0.4
 ===========
 
 Graphical value pickers for interactively tweaking shape parameters.
-* `make_parametric` constructs a parametric shape, with named parameters
+* `parametric` constructs a parametric shape, with named parameters
   that are bound to value-picker types.
 * HUD (head up display) overlays the value picker GUI on top of the
   shape displayed in the Viewer window.
@@ -29,7 +29,7 @@ Language changes:
 * `where` operator is now higher precedence than `,` or `;`.
   `a = b where (bindings)` is now legal syntax, is equivalent to
   `a = (b where (bindings))`.
-* Parametric records (constructed by `make_parametric`) remember how they were
+* Parametric records (constructed by `parametric`) remember how they were
   constructed, by storing metadata (`constructor` and `argument` fields).
   When a record value is called like a function, first try `call` field,
   then try `constructor` field.

@@ -29,7 +29,7 @@ Use cases:
 
 Parametric Records
 ------------------
-The current design for `make_parametric` requires the argument to be a record.
+The current design for `parametric` requires the argument to be a record.
 This conflicts with my desire to convert standard library shapes like `cube`
 into parametric shapes. Either I need to consistently use record arguments
 in the standard shape library, or I need to generalize the parametric record
@@ -46,7 +46,7 @@ which uses a record argument.
 
 In practice, I use records to group multiple arguments.
 But for a single argument, I just pass it directly, as it is terser.
-`make_parametric` can use the same convention if there is a single parameter.
+`parametric` can use the same convention if there is a single parameter.
 If a parametric record P has one parameter, then:
 * P.constructor accepts `{name:val}` or `val` as an argument.
   The former is compatible with -D. The latter is compatible with shape library
@@ -62,7 +62,7 @@ If a parametric record P has one parameter, then:
 
 Alternately, `cube` is overloaded over `cube n` and `cube{d:n}`. The former
 syntax is forwarded to the latter; the latter yields a parametric shape.
-So, we don't need to extend `make_parametric` with this special case.
+So, we don't need to extend `parametric` with this special case.
 
 A parametric record's constructor should return another parametric record
 of the same type.
@@ -120,7 +120,7 @@ Given an ordinary function definition F in a record constructor R,
 If F is curried, then partial applications of F are parametric values
 with `constructor` and `argument` metadata. Variants f1a and f1t.
 
-`make_parametric <parameters> in <record expression>` (per issue #62)
+`parametric <parameters> in <record expression>` (per issue #62)
 constructs a parametric record. In isolation, variant r1a, and the `constructor`
 function has no metadata.
 If used on the right side of a definition within a record constructor,
@@ -145,7 +145,7 @@ to create metadata. No special annotation syntax is required.
 
 By analogy, a record definition is
     Rc = { ... }
-    Rp = make_parametric ... in ...
+    Rp = parametric ... in ...
 If a record definition is contained within a parent record constructor PR,
 * If PR is not a parametric value, then Rc's metadata is `name`=Rx, variant r3.
   Rp.constructor's metadata is `name`=Rx, variant f3.
@@ -211,12 +211,12 @@ If the API is:
     cube
     cube d
 then define
-    cube = make_parametric d :: scale_picker = 2 in box(d,d,d)
-This relies on the extension of `make_parametric` that treats single-parameter
+    cube = parametric d :: scale_picker = 2 in box(d,d,d)
+This relies on the extension of `parametric` that treats single-parameter
 precs specially. Without this extension, use:
     cube = match [
         d :: is_num -> cube{d:d};
-        make_parametric d :: scale_picker = 2 in box(d,d,d);
+        parametric d :: scale_picker = 2 in box(d,d,d);
     ];
 This relies on support for recursive `match`.
 
@@ -229,8 +229,8 @@ If the API is:
     cube.exact(d)
 Then define:
     cube = let
-        exact = make_parametric d :: scale_picker = 2 in box.exact(d,d,d);
-        mitred = make_parametric d :: scale_picker = 2 in box.mitred(d,d,d);
+        exact = parametric d :: scale_picker = 2 in box.exact(d,d,d);
+        mitred = parametric d :: scale_picker = 2 in box.mitred(d,d,d);
     in {
         ... exact;
         exact : exact;
@@ -241,12 +241,12 @@ I don't need a `call` field, I get one for free from the "prototype" mechanism.
 In the above design, `cube(d)` does not have `exact` or `mitred` fields.
 I can fix this:
     cube = let
-        exact = make_parametric d :: scale_picker = 2 in
+        exact = parametric d :: scale_picker = 2 in
           { ... box.exact(d,d,d);
             exact : exact d;
             mitred : mitred d;
           }
-        mitred = make_parametric d :: scale_picker = 2 in
+        mitred = parametric d :: scale_picker = 2 in
           { ... box.mitred(d,d,d);
             exact : exact d;
             mitred : mitred d;
@@ -290,8 +290,8 @@ I want `cube` to be a term. How is it defined, how is a cube printed?
 The above definition doesn't have the right syntax to be automatically
 converted to a term. I guess I need special syntax after all. Eg,
     term cube = let
-        exact d = make_parametric ...;
-        mitred d = make_parametric ...;
+        exact d = parametric ...;
+        mitred d = parametric ...;
     in {
         ... exact 2;
         call : exact;

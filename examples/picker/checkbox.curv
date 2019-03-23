@@ -1,4 +1,4 @@
-make_parametric
+parametric
     tall :: checkbox = true;
 in
 cylinder{d: 1, h: if (tall) 2 else 1}

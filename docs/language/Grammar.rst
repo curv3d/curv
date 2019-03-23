@@ -34,7 +34,7 @@ precedence and ``postfix`` being the highest precedence::
     | 'while' parens ritem
     | 'do' list 'in' ritem
     | 'let' list 'in' ritem
-    | 'make_parametric' list 'in' ritem
+    | 'parametric' list 'in' ritem
 
   pipeline ::= disjunction
     | pipeline '>>' disjunction
@@ -71,7 +71,7 @@ precedence and ``postfix`` being the highest precedence::
   primary ::= identifier | numeral | string | parens | brackets | braces
     identifier ::= /[a-zA-Z_] [a-zA-Z_0-9]*/, except for reserved words
       reserved_word ::= '_' | 'by' | 'do' | 'else' | 'for' | 'if' | 'in'
-        | 'include' | 'let' | 'make_parametric' | 'var' | 'where' | 'while'
+        | 'include' | 'let' | 'parametric' | 'var' | 'where' | 'while'
 
     numeral ::= hexnum | mantissa | /mantissa [eE] [+-]? digits/
       mantissa ::= /digits/ | /'.' digits/ | /digits '.' digits/

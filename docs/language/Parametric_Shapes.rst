@@ -7,7 +7,7 @@ The shape animates in real time as you change parameter values.
 The following program declares a shape parameter that is bound
 to a graphical slider widget::
 
-    make_parametric
+    parametric
         Size :: slider(1,5) = 3;
     in
     cube Size
@@ -25,9 +25,9 @@ that explains its user interface.
 Programming Interface
 ---------------------
 To add graphical parameters to a shape in a Curv program,
-you prefix a shape expression with a ``make_parametric`` clause::
+you prefix a shape expression with a ``parametric`` clause::
 
-    make_parametric <parameter1>; <parameter2>; ... in <shape-expression>
+    parametric <parameter1>; <parameter2>; ... in <shape-expression>
 
 This is an expression that returns a parametric shape value.
 
