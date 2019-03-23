@@ -1,0 +1,104 @@
+In the first comment, @p-e-w describes an ease-of-use issue in expressions like:
+1. `abs a.x`
+2. `f a[0]`
+3. `move cross(a, b) cube`
+
+There is a similar ease-of-use issue in 4. `offset -1`, which looks like it should be grouped as `offset(-1)`, given that `offset 1` works as expected. I have run into these problems myself while I was learning how to program in Curv.
+
+I have four alternate plans for resolving this issue:
+A. **Warning messages for misleading expression syntax**, when the whitespace
+   between tokens suggests a different grouping than what the grammar provides.
+B. **Lua-like function call syntax**, where we drop support for `f 42` and `f x`
+   style function calls, requiring parentheses in these cases:
+   `f(42)` and `f(x)`. This eliminates the ambiguity in all 4 cases.
+C. **White-space sensitive expression parsing**.
+D. Numerals must be parenthesized in argument position: offset(1), not offset 1.
+   A function argument is either a self delimiting primary
+   like (...) [...] {...} "..." or it is a high-precedence
+   Tpostfix expression beginning with an identifier.
+   Almost as terse as C, without whitespace-sensitive parsing.
+
+Option B is more verbose, especially curried function calls like f(a)(b)(c).
+Look at other languages that attempt to combine functional programming with
+a more C-like language:
+* ReasonML is a C-like syntax for OCaml. f(a,b,c) == f(a)(b)(c).
+
+Does option D work? What about
+    smooth .union 
+
+unary ::= power | '-' unary | '+' unary | '!' unary | 'var' unary
+power ::= postfix | postfix '^' unary
+postfix ::= Tpostfix | postfix argument | postfix .identifier
+argument ::= Tpostfix | -numeral | +numeral
+Tpostfix ::= primary | Tpostfix(list) | Tpostfix[list] | Tpostfix{list} | Tpostfix.identifier
+
+Option C reduces verbosity, but it's a can of worms.
+
+The grammar I gave in the previous comment only covers the first 3 ambiguous
+cases, and not case 4, `offset -1`. To handle case 4,
+
+a. I could use the 'Lua' move, and require numerals to be parenthesized in
+   argument position. I use this syntax a lot, though: `square 2`, `scale 4`,
+   `lipschitz 2`, and so on. I'm not keen on this.
+   It gives me an idea, though. A function argument is either a self
+   delimiting primary like (...) [...] {...} "..." or it is a high-precedence
+   postfix expression beginning with an identifier.
+   This could eliminate the space-sensitive property of the grammar,
+   thus perhaps closing the can of worms.
+
+b. I could further extend the grammar, by splitting 'unary' expressions
+   into 2 operator precedence levels. Which seems to open a can of worms.
+c. Can I limit the grammar changes by treating -numeral and +numeral
+   specially?
+   * If I treat these as tokens, then `a-1` has an unwanted interpretation.
+
+Here's the restricted version of the new grammar, that provides special
+treatment for -numeral and +numeral, so that 'offset -1' parses as
+'offset(-1)', but other expressions don't change:
+
+unary ::= power | '-' unary | '+' unary | '!' unary | 'var' unary
+power ::= postfix | postfix '^' unary
+postfix ::= Tpostfix | postfix argument | postfix .identifier
+argument ::= Tpostfix | -numeral | +numeral
+Tpostfix ::= primary | Tpostfix(list) | Tpostfix[list] | Tpostfix{list} | Tpostfix.identifier
+
+These are minimal changes to the grammar that address the 4 cases.
+
+We could combine this with warning messages about ambiguous syntax,
+to cover other cases where inconsistent spacing suggests grouping
+that's different from what the grammar offers. That won't affect my coding
+style, but it will affect some other Curv code that I've seen.
+
+----
+
+unary ::= power | '-' unary | '+' unary | '!' unary | 'var' unary
+power ::= postfix | postfix '^' unary
+postfix ::= Tpostfix | postfix Tunary | postfix .identifier
+
+Tunary ::= Tpostfix | -Tpostfix | +Tpostfix | !Tpostfix
+Tpostfix ::= primary | Tpostfix(list) | Tpostfix[list] | Tpostfix{list} | Tpostfix.identifier
+
+Now let's look at some edge conditions, to see if these changes create new
+usability problems.
+
+`a-b` and `a - b` parse as infix subtraction.
+`a -b` parses as `a(-b)`. This is by design, and I think it's okay.
+
+`-a b` parses as `-(a b)`.
+`f -a b` parses as `f(-a)(b)`.
+This seems like a usability problem.
+How can we fix this, if unary minus has a lower precedence than power?
+* Fix it so that `-a b` parses as `(-a) b`?
+* How does unary minus interact with power expressions?
+  * `a b ^ c d` is legal, right?
+  * `-a b ^ c d` ??
+  * `a b ^ -c d` ??
+
+------------------------
+How does the prefix - operator interact with power expressions?
+
+ -a         -<Tpostfix> has the obvious interpretation.
+ -a ^ b     Spacing suggests (-a)^b, but the traditional parse is otherwise.
+ -a b       This looks like (-a) b, but that doesn't make sense.
+            Examples from real code: -sin t, -sin (t*vel)
+ -a^b

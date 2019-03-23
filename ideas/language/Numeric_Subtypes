@@ -1,0 +1,42 @@
+Right now, there is a single numeric type, Num, represented as float64 in C++
+and float32 on the GPU. That makes things simple.
+
+In the future, I may want to use multiple numeric representations.
+
+ 1. The `int_slider` picker type wants to use an 'int' uniform variable.
+    That's the most convenient & direct representation for the Viewer code,
+    since ImGui needs an int variable to stuff its result into.
+    Otherwise, I convert the int to a float in the main loop when I populate
+    the uniform variable. Which is not a big deal.
+
+ 2. However, it might be cool to be able to use `int` variables and expressions
+    in GL code. For some algorithms, this could lead to better performance,
+    and more portability from GLSL. This is not required for v1.0.
+
+    Add a new type predicate `is_int`, and add Int to the static type system.
+    (Note this doesn't change the language semantics, in the way that #3 might.)
+
+ 3. Image import is part of v1.0. An image is a tensor. The numeric components
+    have a compact representation and a restricted range. An RGB 2D 24bit image
+    is a rank 5 tensor where the numbers are in the range 0 to 1, represented
+    as unorm8. If we support operations for constructing new images from
+    existing ones, then we can't efficiently pretend that images are general
+    nested lists of general numbers. We need image operations that are
+    restricted, to preserve the representation, which in turn means that the
+    numeric subtype (like unorm8) is a property of the tensor value.
+
+    The static type system already needs static list and array types, where
+    all elements have the same type. Function values already carry around
+    type information in their parameter pattern. What this adds is tensor
+    values that carry their element type, plus some new numeric subtypes.
+
+    Kona has efficient internal tensor representations, and it has tensor
+    transformations that preserve these representations. However, if you
+    amend a tensor, replacing one of the elements, then the resulting tensor
+    is upgraded to the general representation, you don't get an error.
+    So this internal efficiency stuff doesn't restrict the language semantics.
+    Also note that in Kona a string is just a vector of characters, there is
+    no separate string type. In Kona, I can replace one of the characters in
+    a string with a non-character, and that works.
+
+Two places where I

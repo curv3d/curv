@@ -1,0 +1,143 @@
+These are the changes to Curv language syntax
+that I propose to make for release 0.4:
+* `let_parametric` is a variant of `let` that defines variables which are
+  shape parameters, and which can be associated with sliders and other
+  graphical value pickers. It replaces the `parametric` keyword in the
+  prototype implementation of value pickers.
+* `let_mutable` is a variant of `let` that defines mutable variables.
+  It replaces the undocumented `var` keyword.
+
+The goal for both of these syntax changes is to make the syntax more
+consistent and orthogonal. Local variables are now always defined using
+the word "let".
+
+# `let_parametric`
+
+The `let_parametric` feature allows you to define "parametric shapes",
+with shape parameters that are bound to sliders and other graphical
+value pickers in the Viewer window.
+
+The following program declares a shape parameter that is 
+bound to a graphical slider widget:
+```
+  let_parametric
+      size :: slider(1,5) = 3;
+  in
+  cube size
+```
+When you run this program, the Viewer window contains a slider that lets
+you vary the `size` parameter from 1 to 5, with an initial value of `3`.
+
+There are 3 associated language features:
+* `::`, the predicate assertion operator.
+* picker values, such as `slider(1,5)`.
+* `let_parametric`.
+
+## predicate assertions
+An expression of the form `value :: predicate`
+asserts that `predicate(value)` returns `true`,
+and then it returns `value`.
+
+For example, `x :: is_num` returns `x`, after first checking that `x`
+is a number, and aborting the program if `x` is non-numeric.
+You could achieve the same thing by writing
+```
+do assert(is_num x) in x
+```
+
+`name :: predicate` is a predicate pattern that binds a value V
+to `name`, after first checking that `predicate(V)` is true.
+If the predicate is false, the pattern match fails.
+
+For example, given
+```
+cuboid =
+    match [
+    n :: is_num -> cube n;
+    v :: is_vec3 -> box v;
+    ]
+```
+then `cuboid 3` is a cube of size 3, and `cuboid[1,2,3]` is a box
+of dimensions `[1,2,3]`.
+
+## picker values
+A *picker value* is a predicate function that specifies the type and range of
+values of a shape parameter that is associated with a graphical value picker.
+It also specifies what kind of value picker widget is used by the GUI.
+
+Here are the currently supported picker expressions:
+* `checkbox` -- A boolean parameter (true or false), represented by
+  a checkbox widget.
+* `colour_picker` -- An RGB colour value. The widget allows you to edit RGB
+  or HSV colour components directly, or use a colour wheel to select colours
+  visually.
+* `slider(low,high)` -- The parameter is a number in a continuous range
+  between `low` and `high`. A linear slider widget is used to set the number.
+* `int_slider(low,high)` -- The parameter is an integer between `low` and
+  `high`. A linear slider widget is used to set the integer.
+* `scale_picker` -- The parameter is a *scale factor*: a number \> 0 and \< infinity.
+  The widget lets you increase or decrease the value by dragging with the mouse,
+  and the value changes according to a logarithmic (not linear) scale.
+  This is the same logic used to modify the zoom factor in the Viewer window
+  using a mouse scroll wheel or trackpad scroll gesture.
+
+## `let_parametric`
+To add graphical parameters to a shape in a Curv program,
+you prefix a shape expression with a `let_parametric` clause:
+```
+  let_parametric <parameter1>; <parameter2>; ... in <shape-expression>
+```
+This is an expression that returns a parametric shape value.
+
+Each `<parameter>` has the form:
+```
+  <identifier> :: <picker> = <initial-value>;
+```
+
+A `let_parametric` expression differs from a `let` expression in several ways:
+* The right-hand expression must evaluate to a record value (usually a shape).
+  This record is extended with parameter metadata used by the Viewer GUI.
+* The scoping is different. A `let` allows mutually recursive
+  definitions, while the parameter definitions in `let_parametric`
+  cannot reference one another.
+
+# `let_mutable`
+
+This is a redesign of how mutable variables are defined and used.
+
+The old syntax, which was an undocumented experimental feature, used the `var`
+keyword to define mutable variables inside of a `do` block.
+
+The new syntax uses `let_mutable` to define mutable variables.
+With this change,
+* The feature is now referred to as "mutable variables".
+* Local variables are now always defined using the word "let".
+* Mutable variables now work in more contexts than with the old syntax. You can
+  now use `while` loops within list comprehensions and record comprehensions.
+
+The ability to define mutable variables using `var` will be deprecated.
+
+Mutable variables in an expression:
+```
+sum a =
+    let_mutable
+        i := 0;
+        total := 0;
+    in do
+        while (i < count a) (
+            total := total + a[i];
+            i := i + 1;
+        );
+    in total;
+```
+
+Mutable variables in a list comprehension.
+In this case, we don't use `do`:
+```
+[ let_mutable i := 0; in while (i < 10) (i; i:=i+1;) ]
+// => [0,1,2,3,4,5,6,7,8,9]
+```
+
+When multiple mutable variables are defined in a single block, the
+definitions are executed in sequence, and are sequentially scoped.
+The scope of each variable begins at the following definition.

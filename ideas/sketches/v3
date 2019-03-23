@@ -1,0 +1,54 @@
+let
+hash2x2 xy = frac([262144, 32768] * sin(dot(xy, [41, 289])));
+
+// Points cannot be closer than sqrt(EPSILON)
+EPSILON = .00001;
+
+// input: 2D coordinate, output: distance to cell border
+voronoi pt =
+    let
+        n = floor(pt - 1.5);
+        f = pt - n;
+    in do
+        // Compute s: the seed point of the Voronoi cell enclosing pt.
+        var s := [0,0];
+        var md := 8;
+        for (j in 0 .. 3)
+            for (i in 0 .. 3) do
+                var g := [i,j];
+                var o := hash2x2(n + g);
+                var r := g + o - f;
+                var d := dot(r,r);
+            in
+                if (d < md) (
+                    md := d;
+                    s := r;
+                );
+        // md: square of distance to cell border
+        md := 8.0;
+        for (j in 0 .. 3)
+            for (i in 0 .. 3) do
+                var g := [i,j];
+                var o := hash2x2( n + g );
+                var r := g + o - f;
+            in (
+                if (dot(s-r,s-r)>EPSILON) // skip the same cell
+                    md := smooth_min(md, dot(0.5*(s+r), normalize(r-s)),.2);
+            );
+    in md;
+
+in
+make_shape {
+    dist(x,y,z,t) = voronoi(x,y);
+    is_2d = true;
+} >> pancake (.1)
+/*
+make_texture ((x,y,z,t)->
+    let d = voronoi(x,y);
+        interior = sRGB[.2,.8,1];
+        border = sRGB[.2,.8,.4];
+    in lerp(
+        d * 2 * (sin(d*12)*.1 + .9) * interior,
+        border,
+        smoothstep(.08,.06,d)))
+ */

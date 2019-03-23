@@ -1,0 +1,83 @@
+3 versions of let are planned: `let`, `let_parametric`, `let_mutable`.
+
+There is a question of how these interact with `where`. One proposal:
+* a `where` clause combines scope with a top level `let`.
+* `let_parametric` bindings are visible in a `where` clause, but not vice versa.
+* a `let_mutable` can see `where` bindings, but not vice versa.
+
+This is complicated. I am tempted to get rid of `where` and have simpler rules.
+
+Competing syntax proposals
+--------------------------
+    let
+    diam = 1;
+    len = 4;
+    c = red;
+    in
+    union(candy, stick)
+    where (
+        candy = sphere diam >> colour c;
+        stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
+    )
+//
+    let
+        diam = 1;
+        len = 4;
+        c = red;
+    in
+    union(candy, stick)
+    where (
+        candy = sphere diam >> colour c;
+        stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
+    )
+//
+    let (
+        diam = 1;
+        len = 4;
+        c = red;
+    )
+    union(candy, stick)
+    where (
+        candy = sphere diam >> colour c;
+        stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
+    )
+//
+    let_parametric (
+        Diameter: diam :: slider(.5, 2) = 1;
+        Stick_Length: len :: slider(2, 8) = 4;
+        Colour: c :: colour_picker = red;
+    )
+    let (
+        candy = sphere diam >> colour c;
+        stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
+    )
+    union(candy, stick)
+
+By getting rid of `in` and parenthesizing the bindings,
+we make the syntax more consistent with `if`, `for` and `while`.
+
+Alternate Semantics
+-------------------
+Currently, 'let' is a recursive let, while the proposed 'let_mutable' is
+sequential. After seeing feedback on let_mutable, I have considered replacing
+these with a recursive let and a sequential let. The sequential let supports
+both immutable and mutable bindings.
+
+Maybe use 'let' for sequential let and 'def' or 'define' for recursive let.
+Rationale: most popular languages with the keyword 'let' use it to introduce
+local variables into a block, with sequential scope. Examples: Javascript,
+Rust, Swift, etc. The word 'def' is associated with recursive function definitions
+in Python, Ruby, etc.
+
+Now `let` and `define` are no longer orthogonal, and you need to choose which
+version to use when defining local variables, and they are so very similar.
+
+Statement Blocks
+I considered generalizing the compound statement so you
+can define local mutable & immutable variables with
+sequential scope. This works in `do` and in parens.
+When porting imperative code, it looks very similar.
+Body of imperative function is do ... in retval.
+* This interferes with definition abstraction: a compound
+  definition in oldcurv is interpreted as a compound
+  statement. Relevant in cli, module ctors.

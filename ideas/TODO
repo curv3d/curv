@@ -1,5 +1,5 @@
 Version 0.4 Planning:
-* new since 0.3 (as of Mar 13):
+* new since 0.3 (as of Mar 18):
   * lib.blend
   * Torleif: keyboard viewer controls
   * s-ol: repl autocomplete, repl syntax colouring
@@ -8,7 +8,7 @@ Version 0.4 Planning:
   * calls to error now appear in stack trace
   * parametric records (make_parametric), value pickers, HUD
     * metadata fields are `constructor` and `argument`
-  * Curv now requires OpenGL 3.2
+  * Curv now requires OpenGL 3.3
   * `where` operator is now higher precedence than `,` or `;`
     `a = b where (bindings)` is now legal syntax, is equivalent to
     `a = (b where (bindings))`.
@@ -31,6 +31,9 @@ Version 0.4 Planning:
     * generalized `do` works in list/record comprehensions
     * generalized `while` works in list/record comprehensions
   * can export empty/infinite 2D shapes as PNG (defaults to Viewer behaviour)
+  * `var` definitions are deprecated
+  * 'make uninstall'
+  * new locations for Curv library files
 
 * v0.4 release blockers:
   * Parametric shapes:
@@ -42,35 +45,32 @@ Version 0.4 Planning:
     * Unit testing for reactive values.
     * Finish implementing reactive values.
   * Assignment statement:
-    * Deprecate 'var name := value'
-      * Environ contains Analyser& analyser_. Analyser contains system_
-        and bool var_deprecated_ (prevents multiple 'var deprecated' msgs)
     * docs:
       * Statements: quick characterization of assignment restrictions.
         There is a statement language and an expression language. Local
         variables are mutable within the statement language but immutable
         within the expression language, which has pure functional semantics.
         What we do support: unconditional assignment, conditional assignment,
-        iterative assignment within the body of a loop.
+        iterative assignment within the body of a loop, a[i]:=x
       * There are no procedures, only pure functions. Curv has imperative
         features but is not a full procedural programming language.
       * Relevance of ISPiaPFL to other DSLs: OpenSCAD, Jsonnet, Nix, etc.
     * debug actions ignored by GL compiler
-    * no sequential definitions in a record constructor
     * no actions in a let clause. `a:=b` gives an error: did you mean `a=b`?
     * no recursive definitions in a do clause. a=b error: did you mean a:=b?
     * in expression context, a=b error: did you mean a==b?
   * document new features
     * lib.blend
-    * precedence of 'where' operator
-    * update Grammar docs
-    * Geometry Compiler -- arrays
   * CLI token colouring: New string escapes. Special colour for string-escapes.
     Bad token handling.
   * better unit tests:
     * cli tests, curvc
     * detect console output from curv.curv
     * full gl_test suite
+ * REPL language dialect
+   * document it
+   * support :=
+   * support 'field generator' statements
 
 Big Items
 * graphical value pickers in the viewer
@@ -87,6 +87,13 @@ More Big Items
 * image import
 * voxel import/export
 * Stratasys J750 support
+
+Language TODO:
+* `a[i] := x` -- adds to ISPiaPFL story.
+  Assignment_Action::locative_, Locative::store_value()
+* Geometry Compiler: matrix multiplication
+* tail recursion optimization (interpreter)
+* mantissa(num), random{,2,3,4}(seed)
 
 TODO (value pickers impl)
 * Parametric shape constructors in the standard library.

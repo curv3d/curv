@@ -1,0 +1,60 @@
+A shape transformation `T {Tparams} S`, returning a parametric shape R
+containing the parameters for shape S (if any), and also Tparams.
+
+Since T and S may be written by different authors who are unable to coordinate,
+the parameter names introduced by T and S are not required to be disjoint.
+They are somehow in different namespaces.
+
+In the Viewer GUI, shape parameters are organized into a tree with labelled
+interior nodes. The named parameters for T and S are in different nodes,
+with separate labelled disclosure triangles.
+
+In the language,
+* R is a branded value that contains its CSG tree.
+* When R is printed, the T and S parameters are printed.
+* The parameter values can be queried.
+* The parameter values can be adjusted, constructing a new shape.
+* How is T defined?
+
+Printing
+--------
+R is printed like this:
+    T {Tparams} S
+
+A partial application of T is printed as:
+    T {Tparams}
+or
+    <function T {Tparams}>
+
+If S is a anonymous parametric shape (it doesn't have a named constructor),
+then print S as
+    parametric {Sparams}
+or
+    <parametric {Sparams}>
+
+If S is parametric with a named constructor, then
+    Scons {Sparams}
+
+Querying the parameters
+-----------------------
+Could use pattern matching to access parameters, per branded value proposal.
+
+Or, the operation tree (CSG tree) is accessed as a hierarchical data structure,
+using term metadata (see Terms):
+    R.constructor -- a function, `T {Tparams}`
+    R.argument -- same as S: `R.constructor(R.argument)` reconstructs `R`
+R.constructor is also a term, so,
+    R.constructor.constructor == T
+    R.constructor.argument == {Tparams}
+And T is a term, with
+    T.name == "T"
+
+Defining T
+----------
+Using the Term proposal,
+    term T {Tparams} shape = <a shape expression>;
+
+Viewing T
+---------
+Extending the Picker proposal, the Viewer will walk the term tree looking
+for picker parameters.

@@ -8,5 +8,6 @@ cylinder{d: Cyl_Diam, h: 4}
 >> repeat_radial N
 >> twist (tau/N*Twists/4)
 >> rotate{axis: Y_axis, angle: 90*deg}
-//>> bend{}
->> show_axes
+>> bend{}
+>> colour ((x,y,z,t) -> sRGB.HSV(phase(x,y) / tau,.5,.9))
+>> lipschitz 2

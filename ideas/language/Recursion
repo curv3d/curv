@@ -38,3 +38,26 @@ appropriate recursive data structure.
 That is pretty complicated. But eventually I'll have all of the necessary
 mechanisms in place for other reasons (to support GPU compilation), and then
 maybe I can revisit this idea.
+
+Just Recursive Functions
+------------------------
+A recursive data definition (`f = expr` where expr is not a lambda)
+is compiled into `f x = x >> expr`.
+Note this aborts at runtime if expr does not return a function.
+
+But this means
+    x = x
+compiles to
+    x a = x a
+which is wrong. Either the definition is a compile time error, or 'x'
+is a thunk that runs in an infinite loop.
+
+Maybe there is a restricted subset of definitions for which that design
+will work.
+
+Thunkification
+--------------
+Recursive data definitions should be compiled into thunks.
+All the definitions in a mutual recursion group compile into
+* a slot containing a shared nonlocals module
+* 

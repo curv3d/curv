@@ -1,0 +1,384 @@
+Let vs Where
+------------
+The interaction between `where` and other binding constructs is complicated
+and seems arbitrary. I am tempted to get rid of `where` and have simpler rules.
+
+Redesigning the Imperative Sublanguage
+======================================
+TODO:
+* Disallow actions in the definition section of `let`.
+* Allow `:=` to reassign local variables defined using `let`,
+  in a few specific cases:
+    let <local defs> in <statement>
+    let <local defs> in do <actions> in <expr>
+* Allow `:=` to reassign variables in the REPL global environment,
+  if an assignment appears at the top level of a REPL program.
+* Disallow '{var x := 1}'.
+* Implement block-local variable definitions. Replace the 'var x := y' syntax
+  with 'var x=y' or 'local x=y' and generalize the contexts where it works.
+
+Sequential or Mutable Let
+-------------------------
+I planned to separate the binding of mutable variables from `do`.
+The goal was to make the language simpler and more orthogonal.
+
+My original idea was `let_mutable`, which has the benefit of being orthogonal
+to everything else (`let` and `do`).
+
+That received negative feedback: "too much syntax" when writing code.
+`let_mutable` now seems like a bad idea.
+
+let_sequential
+--------------
+The request was for a way to combine immutable and mutable bindings in a
+single binding construct. That could be done using a 'sequential let' binding
+construct, where each binding is marked as immutable or mutable. Eg,
+    let_sequential
+        pi = 3.1416;
+        mut x := 0;
+    in ...
+And in testing, I'm finding this more convenient for porting code.
+It's less orthogonal: there is overlap between `let` and `let_sequential`.
+(If there are two ways to do something, then you need to think about which
+syntax to use: this adds mental overhead.)
+But sequential scoping has the benefit that you can execute in your head
+reading top to bottom, since no forward references.
+
+On further reflection, making a distinction between mutable and immutable
+sequential variables is not valuable in Curv, and adds needless complexity.
+It's an important distinction in imperative languages where you can obtain
+a pointer or a reference to a variable, not in Curv.
+
+So this is better:
+    let_sequential
+        pi = 3.1416;
+        x = 0;
+    in ...
+Or, frankly, you can use nested `let` to get sequential binding.
+    let x = 0 in
+    let y = 1 in
+    ...
+
+Assignment works on any local variable
+--------------------------------------
+Since we aren't distinguishing mutable and immutable variables, the `:=`
+assignment operator should work on any local variable, regardless of whether
+it is declared using `let` or `let_sequential`.
+
+For example,
+    let i = 0;
+        total = 0;
+    in do
+        while (i < 10) (
+            total := total + i;
+            i := i + 1;
+        )
+    in total
+Or,
+    {let i = 0 in while (i < 10) ("$i": i; i := i+1)}
+
+But,
+* It is technically possible to put actions into the definition section
+  of a let. It would be confusing to allow assignments to the same variables
+  being defined there, due to order of execution being unrelated to
+  the order of definitions. Maybe actions shouldn't be permitted there at all.
+  You should use 'let defs in do actions in ...' instead.
+* It is technically possible to put actions into a module.
+  A possible use case is assertions on library bindings.
+  Module bindings are *not* local variables, and you should not be able to
+  assign them using `:=`.
+
+In the REPL, you can use `:=` to assign to existing global REPL bindings
+(which, like local variables, are not marked mutable/immutable).
+This is useful for incrementing a numeric variable:
+    i := i + 1
+(not interpreted as a recursive definition), or updating a structure:
+    a[i] := 0
+    r.foo := 1
+
+Rationale (for no `mut` keyword)
+--------------------------------
+Rust, like other modern imperative languages, supports shared mutable state.
+This is a very tricky and dangerous feature: changes to shared mutable state
+over *here* affects code over *there* in a non-local way that can be difficult
+to reason about. It's a major source of bugs. One way to tame this is to have
+control over which shared state is mutable. Keywords like `const` and `mut`
+are used. You can adopt a functional style, where you try to minimize the
+amount of shared mutable state, and make most shared state immutable. Then
+you need to either use `const` (eg, C++) or avoid `mut` (in Rust) as much as
+possible.
+
+But the same argument does not apply to Curv.
+Curv is a pure functional language. It has no concept of shared mutable state,
+and this makes Curv programs much easier to reason about. If we add a `mut`
+keyword, and force users to specify which local variables are "mutable", then
+we are imposing an additional burden on users, one which is not found in
+popular languages like Python, or Javascript (pre ES6), or Scheme. And there's
+very little payoff for imposing this discipline. There is no concept in Curv
+of a reference or a pointer to a mutable variable. Two local variables with
+different names cannot share mutable state. A function closure cannot capture
+a reference to a mutable variable. Although Curv has an assignment operator,
+it doesn't have the same concept of "mutable variables" that is found in
+imperative languages. Instead, reassigning a variable is conceptually
+equivalent to defining a new variable of the same name, with a scope that
+hides the old definition in the following uses of that variable. Based on this
+mental model, you can rewrite code that uses the assignment operator into
+traditional functional style. By introducing a `mut` keyword, we would be
+creating false expectations that variables declared `mut` are potentially
+sharable mutable objects.
+
+Block Local Variables
+---------------------
+In Curv, a compound statement (aka a statement block) is two or more
+statements separated by semicolons.
+
+We extend statement block syntax with sequentially scoped local variables.
+Statements and local variable definitions may be freely intermixed, just
+like the compound statement syntax in any modern imperative language.
+This makes it easier to port imperative code from other languages.
+
+A block-local, sequentially scoped variable is declared like this:
+    var x = 0;      // good; `var` is most popular keyword for variable defs
+    local x = 0;
+    x = 0;          // not good: confusible with a C assignment statement.
+
+I currently prefer:
+    local x = 0;
+I thinks it works well in a record comprehension:
+    {local i = 0; while (i < 10) ("$i": i; i := i+1)}
+since the word `local` is a cue that this variable is not exported as a
+record field.
+
+Block-local variables may be reassigned using the `:=` assignment operator,
+just like let-bound local variables.
+
+Block syntax
+------------
+We extend Curv syntax with *blocks*.
+A 'block' is a sequence of statements and sequential definitions, separated
+or terminated by semicolons. A block is syntactically a statement, and may
+contain local variables with sequential scope. Local variable definitions
+and statements may be freely intermixed. This brings Curv syntax closer to
+the structure of a block-structured imperative language.
+
+A sequential definition may be either immutable or mutable:
+    var pi = 3.1416;   // immutable
+    var total := 0;    // mutable
+
+A `do` expression is still `do <statement> in <expression>`.
+But now we have local immutable variables, and when porting blocks from an
+imperative program, we just write then as blocks.
+
+Using blocks, you can put a while statement into a list comprehension.
+  [var i := 0; while (i < 10) (i; i := i+1)]
+Also a record comprehension.
+  {var i := 0; while (i < 10) ("$i": i; i := i+1)}
+
+Comparison to other languages:
+Scala:  val pi = 3.1416;
+        var total = 0;
+Rust:   let pi = 3.1416;
+        let mut total = 0;
+Swift:  const pi = 3.1416;
+        var total = 0;
+Javascript:
+        const pi = 3.1416;
+        let total = 0;
+Java:   final float pi = 3.1416;
+        float total = 0.0;
+Go: 'const' is used for constants, not for immutable variables.
+There is huge variability, no real standard.
+I am no longer distinguishing mutable and immutable variables.
+The keyword `var` is used in Javascript, Go, Swift, Scala ... it's probably
+the most popular choice for a keyword that introduces a variable definition.
+
+The choice of keyword affects how users talk about language constructs.
+In Swift, an immutable variable is erroneously refered to as a 'constant'.
+In Scala documentation, I saw an immutable variable referred to as a 'value'.
+So I won't use the keywords 'val' or 'const' to introduce an immutable variable.
+And 'let' is not available. Therefore,
+    var i = 0;
+    [mut] var m := 1;
+
+On the meaning of phrases:
+* 'var x := 0' is a sequential definition.
+* 'var x := 0; var y := 1' is a sequential definition.
+  As is any sequence of actions and sequential definitions that ends in
+  a sequential definition.
+* 'var x := 0; print x' is a sequential definition (in a sequential definition
+  context like (do ... in expr), or it is an action in an action context.
+* '(var x := 0; print x)' is an action, with 'x' bound as a local variable.
+  I think. This means parentheses are magic in this context (they are already
+  magic when enclosing a comma-list).
+  * Why? I figure that in an unrestricted context (currently, just the top level
+    phrase in the REPL), you should be able to write any phrase type at the
+    top level. Including an action block with local variables.
+
+What does 'var x := 0' and 'x := 1' do in the Curv repl?
+
+Is a sequential definition legal at the top level of the Curv REPL,
+or is it an incomplete phrase that only has meaning within a statement block
+or a do clause?
+* Suppose it is legal.
+  * In the REPL, is there any real difference between 'var x=0' and 'x=0'?
+    There can't be a difference.
+  * In the REPL, is there a difference between 'var x=0' and 'mut var x := 0'?
+    Either they have the same effect, or the global namespace distinguishes
+    between mutable and immutable bindings. We'd have to introduce the same
+    distinction into records. Which is a no-go. So there's no difference.
+  * So sequential definitions in the REPL are kind of useless?
+    I guess that a compound sequential def gets you sequential scoping.
+* Or it is not legal. A top-level REPL phrase is interpreted as either a
+  recursive definition or an operation.
+
+* 'var x := 0; print x' is the same action. It's actually an action block,
+  and the local variables are accessible to an enclosing `do`.
+* 'do <phrase> in <expr>': the <phrase> is a sequential definition or action.
+  If the action is a block, then its local variables are visible in <expr>.
+
+What does 'x := 1' do in the Curv REPL?
+* 'a[0] := 42' should update element 0 of list a in the global environment.
+  'a' must already be defined.
+* 'x := 1' updates 'x' in the global environment, which must already exist.
+* The global REPL environment has no concept of 'mutable variable',
+  so assignment works on any global variable.
+
+If "assignment works on any global REPL variable", then maybe it should work
+on any local variable in a statement block? Why am I distinguishing mutable
+and immutable variables in a statement block? There is no concept of a
+pointer or reference, functions can't capture variable references, so there's
+a lot less reason for programmers to flag the difference.
+The syntax for a local variable can just be:
+    local x = 0;
+
+* (var x := 0; print x) is an action block, 'x' is a local variable
+  and is not added to the global environment.
+* 'var x := 0; print x', without parens, means the same thing, 'x' is local.
+* 'do var x := 0 in x' works, yields 0.
+* 'mut var x := 0' does what?
+  In a sequential definition context, like `do ... in expr`, it's a definition.
+  In an action context, it's an error.
+
+Examples
+--------
+
+So what does this look like in actual Curv code?
+
+    do  var r := list[0];
+        for (i in 1..<count list)
+            r := f(r, list[i]);
+    in r;
+->
+    let_sequential
+        mut r := list[0];
+    in do
+        for (i in 1..<count list)
+            r := f(r, list[i]);
+    in r;
+-------
+    let q = [mag(x,y), z];
+        apex = q - [0, height];
+        mantleDir = normalize(height, radius);
+        mantle = dot(apex, mantleDir);
+        projected = dot(apex, [mantleDir[Y], -mantleDir[X]]);
+    in do
+        var d := max(mantle, -q[Y]);
+
+        if (q[Y] > height && projected < 0)
+            d := max(d, mag(apex));
+        if (q[X] > radius && projected > mag(height, radius))
+            d := max(d, mag(q - [radius, 0]));
+    in d;
+->
+    let_sequential
+        q = [mag(x,y), z];
+        apex = q - [0, height];
+        mantleDir = normalize(height, radius);
+        mantle = dot(apex, mantleDir);
+        projected = dot(apex, [mantleDir[Y], -mantleDir[X]]);
+        mut d := max(mantle, -q[Y]);
+    in do
+        if (q[Y] > height && projected < 0)
+            d := max(d, mag(apex));
+        if (q[X] > radius && projected > mag(height, radius))
+            d := max(d, mag(q - [radius, 0]));
+    in d;
+->
+    do
+        var q = [mag(x,y), z];
+        var apex = q - [0, height];
+        var mantleDir = normalize(height, radius);
+        var mantle = dot(apex, mantleDir);
+        var projected = dot(apex, [mantleDir[Y], -mantleDir[X]]);
+        mut var d := max(mantle, -q[Y]);
+
+        if (q[Y] > height && projected < 0)
+            d := max(d, mag(apex));
+        if (q[X] > radius && projected > mag(height, radius))
+            d := max(d, mag(q - [radius, 0]));
+    in d;
+This combines the variables into one section, and the explicit sequential
+scoping means I can just read this top to bottom without skipping around
+(no forward references are possible).
+-------
+    let_sequential
+        widths = [for (s in shapes) size s [X]];
+        gap = if (d==null) max widths / 4 else d;
+        width = sum widths + (count shapes - 1)*gap;
+        mut xdelta := [];
+        mut x := -width / 2;
+        mut i := 0;
+    in do
+        while (i < count shapes) (
+            xdelta := concat(xdelta, [x - shapes[i].bbox[MIN,X]]);
+            x := x + gap + size(shapes[i])[X];
+            i := i + 1;
+        );
+    in union[for (i in 0..<count shapes) shapes[i] >> move(xdelta[i],0,0)];
+or
+    let
+        widths = [for (s in shapes) size s [X]];
+        gap = if (d==null) max widths / 4 else d;
+        width = sum widths + (count shapes - 1)*gap;
+        xdelta = [];
+        x = -width / 2;
+        i = 0;
+    in do
+        while (i < count shapes) (
+            xdelta := concat(xdelta, [x - shapes[i].bbox[MIN,X]]);
+            x := x + gap + size(shapes[i])[X];
+            i := i + 1;
+        );
+    in union[for (i in 0..<count shapes) shapes[i] >> move(xdelta[i],0,0)];
+------
+In this code, I made 'r' and 'xy' mutable, even though they doesn't need to be.
+It's weird code; I probably ported it from somewhere without a lot of thought
+to restructure it.
+    do  var a := phase[x,y] + ashift;
+        var r := mag[x,y];
+        a := mod(a,angle) - ashift;
+        var xy := cis(a) * r;
+    in (xy[X], xy[Y], z, t);
+->
+    do  var a := phase[x,y] + ashift;
+        var r = mag[x,y];
+        a := mod(a,angle) - ashift;
+        var xy = cis(a) * r;
+    in (xy[X], xy[Y], z, t);
+->
+    let_sequential
+        mut a := phase[x,y] + ashift;
+        r = mag[x,y];
+    in do
+        a := mod(a,angle) - ashift;
+    in let_sequential
+        xy = cis(a) * r;
+    in (xy[X], xy[Y], z, t);
+->
+    let_sequential
+        a = phase[x,y] + ashift;
+        r = mag[x,y];
+    in let_sequential
+        a = mod(a,angle) - ashift;
+        xy = cis(a) * r;
+    in (xy[X], xy[Y], z, t);

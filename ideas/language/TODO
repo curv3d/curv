@@ -7,12 +7,9 @@ Recent Ideas (Jan 2018):
 * Multipart function definitions, allows recursive piecewise functions,
   which are wanted for lib.noise. OR: `match` is a keyword, see Match.
 * Parametric Records and Terms
-  * Finalize naming scheme for metadata.
-    * Rename ParametricRecord metadata fields to constructor, argument.
   * If a parametric record is bound to a field, it becomes a term.
   * Constructor terms, which can construct parametric records.
 * Picker predicates: implement the complete set
-* sequential let
 * `== value` is a predicate, and it is an equality pattern.
 * Enum values. How are they represented? Syntax of '-Ocolour=vertex' if the
   RHS is a Curv enum value expression?
@@ -25,13 +22,11 @@ Recent Ideas (Jan 2018):
 * v[X] := x; v[[X,Y,Z]] := v3;
   * `f x := expr` function definition syntax is *not* supported.
 * mixed a=/a: record literals
-* >> `intersection` foo
+* maybe: >> `intersection` foo  --or--  >> into intersection (foo)
 * Issue #50: unintuitive operator precedence. My proposed solutions:
   * warn about inconsistent white space in expressions, eg: 'f -1' or 'f a.b'
   * Lua-like function call syntax. 'f 1' and 'f a' no longer supported,
     but 'f(x)', 'f[x]' and 'f{a:b}' are still supported.
-  * Two precedence levels for prefix expressions, significant white space.
-    'f a.b' means 'f(a.b)'. But what about 'f -1'?
 
 Breaking changes:
 * file.foo and package. Remove 'file pathname'.

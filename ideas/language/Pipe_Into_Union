@@ -1,0 +1,74 @@
+pipe into union
+===============
+As part of a pipeline, I can write:
+    `union` shape
+For example,
+    cone{d:2, h:3}
+    >> reflect Z_axis
+    >> move(0,0,3)
+    `smooth 1 .union` ellipsoid(3,3,2.5)
+    `intersection` box{zmin: -1.1}
+    >> shell .1
+    `intersection` box{zmax: 2.9}
+    >> colour marble
+
+But I would rather start each pipeline element with `>>` for consistency.
+
+One idea I had:
+    a >> `f` b   means    f(a,b)
+
+I looked at Elm. Elm has backtick and also |> for pipe forward.
+I found an Elm style guide suggesting you avoid backtick and use pipe forward
+combined with a higher order function to massage the arguments.
+
+Elm has some higher order helper functions:
+    flip f a b = f b a;
+    curry f a b = f(a,b)
+    uncurry f (a,b) = f a b
+
+So I could use
+    >> curry union shape
+as a pipeline element.
+
+The name 'curry' is not obvious.
+If '>>' is the pipe operator, then I want to pipe a shape into a union.
+So how about this:
+    >> into union shape
+
+into f b a = f(a,b)
+
+So the vase pipeline becomes:
+    cone {d:2, h:3}
+    >> reflect Z_axis
+    >> move (0,0,3)
+    >> into (smooth 1 .union) (ellipsoid (3,3,2.5))
+    >> into intersection (box {zmin: -1.1})
+    >> shell .1
+    >> into intersection (box {zmax: 2.9})
+    >> colour marble
+
+And then you could write either
+    a `max` b
+or
+    a >> into max b
+
+Don't pipe into union
+---------------------
+Instead of weird syntax or weird combinators, don't use pipelines for union.
+Do this instead:
+    intersection(
+        intersection(
+            smooth 1 .union (
+                cone {d:2, h:3}
+                  >> reflect Z_axis
+                  >> move (0,0,3),
+                ellipsoid (3,3,2.5)),
+            box {zmin: -1.1})
+          >> shell .1,
+        box {zmax: 2.9})
+    >> colour marble
+
+This isn't good for live coding or for understanding the flow of data.
+
+Clojure has a `->` operator for pipelines that avoids the specific problem
+that I'm having here with Curv.
