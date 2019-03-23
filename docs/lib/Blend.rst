@@ -49,10 +49,12 @@ For example, the ``smooth r`` blending kernel comprises:
   This blend creates a 1/4 circle fillet (if the two shapes meet at
   90°) or an elliptical fillet in the general case.
   The parameter ``r`` controls the size/radius of the blending band.
+
   |uRound| |iRound|
 
 ``chamfer r``
-   Makes a 45-degree chamfered edge (the diagonal of a square of size ``r``).
+  Makes a 45-degree chamfered edge (the diagonal of a square of size ``r``).
+
   |uChamfer| |iChamfer|
 
 ``stairs (r, n)``
@@ -63,8 +65,10 @@ For example, the ``smooth r`` blending kernel comprises:
   
   WARNING: this feature is experimental, the API may change.
   PROBLEMS: What is the relationship of the ``r`` parameter to the size
-  of the blending band? Once I find out, I may change the meaning of the parameter
-  to make it more rational/predictable. Also, I might switch to labeled parameters.
+  of the blending band? Once I find out, I may change the meaning of the
+  parameter to make it more rational/predictable. Also, I might switch to
+  labeled parameters.
+
   |uStairs| |iStairs|
 
 ``columns (r, n)``
@@ -77,6 +81,29 @@ For example, the ``smooth r`` blending kernel comprises:
   
   |uColumns| |iColumns|
 
+Non-Boolean Blends
+------------------
+``pipe r (s1, s2)``
+  Produces a cylindical pipe that runs along the intersection.
+  No objects remain, only the pipe.
+
+  |Pipe|
+
+``engrave r (s1, s2)``
+  First object gets a v-shaped engraving where it intersects the second.
+
+  |Engrave|
+
+``groove (ra, rb) (s1, s2)``
+  First object gets a carpenter-style groove cut out.
+
+  |Groove|
+
+``tongue (ra, rb) (s1, s2)``
+  First object gets a carpenter-style tongue attached.
+
+  |Tongue|
+
 .. |iChamfer| image:: ../images/fOpIntersectionChamfer.png
 .. |iColumns| image:: ../images/fOpIntersectionColumns.png
 .. |iRound| image:: ../images/fOpIntersectionRound.png
@@ -86,6 +113,10 @@ For example, the ``smooth r`` blending kernel comprises:
 .. |uRound| image:: ../images/fOpUnionRound.png
 .. |uStairs| image:: ../images/fOpUnionStairs.png
 
+.. |Engrave| image:: ../images/fOpEngrave.png
+.. |Groove| image:: ../images/fOpGroove.png
+.. |Pipe| image:: ../images/fOpPipe.png
+.. |Tongue| image:: ../images/fOpTongue.png
 
 Technical Details
 -----------------
