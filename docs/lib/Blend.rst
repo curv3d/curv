@@ -83,25 +83,30 @@ For example, the ``smooth r`` blending kernel comprises:
 
 Non-Boolean Blends
 ------------------
-``pipe r (s1, s2)``
-  Produces a cylindical pipe that runs along the intersection.
-  No objects remain, only the pipe.
+``pipe d (s1, s2)``
+  Produces a cylindical pipe of diameter ``d``
+  that runs along the intersection of shapes ``s1`` and ``s2``.
+  
+  WARNING: bad distance field.
 
   |Pipe|
 
 ``engrave r (s1, s2)``
-  First object gets a v-shaped engraving where it intersects the second.
+  Shape ``s1`` gets a V-shaped engraving where it intersects shape ``s2``.
+  The V-shaped trench has depth ``r`` and width ``2*r``.
 
   |Engrave|
 
 ``groove (ra, rb) (s1, s2)``
-  First object gets a carpenter-style groove cut out.
+  Shape ``s1`` gets a carpenter-style groove cut out where it intersects shape ``s2``.
+  The groove has depth ``ra`` and width ``2*rb``.
 
   |Groove|
 
 ``tongue (ra, rb) (s1, s2)``
-  First object gets a carpenter-style tongue attached.
-
+  Shape ``s1`` gets a carpenter-style tongue attached where it intersects shape ``s2``.
+  The tongue has heightd ``ra`` and width ``2*rb``.
+  
   |Tongue|
 
 .. |iChamfer| image:: ../images/fOpIntersectionChamfer.png
