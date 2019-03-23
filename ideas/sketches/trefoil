@@ -1,0 +1,32 @@
+parametric {
+    tubeRadius :: slider(0.01,1) = 0.12;
+    groupRadius :: slider(0.01,2) = 0.9;
+    rotNumeratorX :: int_slider(-10,10) = 5;
+    rotNumeratorY :: int_slider(-10,10) = -5;
+    rotDenominator :: int_slider(1,20) = 8;
+    rotations :: int_slider(1,10) = 8;
+}
+
+let
+objectRadius = 1;
+twist p =
+    // seen from above it is a lissajou figure
+    let ra = p[Z]*rotNumeratorX/rotDenominator;
+        raz = p[Z]*rotNumeratorY/rotDenominator;
+    in mag(p[[X,Y]] - [groupRadius*cos(ra) + objectRadius,
+                       groupRadius*sin(raz) + objectRadius])
+       - tubeRadius;
+
+in
+make_shape {
+    dist p =
+        let r = mag(p[[X,Z]]);
+            ang = phase(p[X],p[Z]);
+            y = p[Y];
+        in do
+            var d := 1;
+            for (i in 0..<8) // replace '8' with 'rotations'
+                d := min(d, twist[r-objectRadius, y, ang+tau*i]);
+        in min(d, p[Y]+0.25);
+    is_3d = true;
+} `intersection` cube 8

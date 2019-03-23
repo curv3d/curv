@@ -1,0 +1,5 @@
+let
+rand1_1 x = frac(sin(x)*100000.0);
+rand2_1 (x,y) = rand1_1(rand1_1(x) + rand1_1(y));
+in
+square >> colour ((x,y,z,t) -> sRGB.hue(rand2_1(x,y)))

@@ -1,0 +1,9 @@
+Sea of Nodes is a kind of SSA-like compiler IR.
+http://paperhub.s3.amazonaws.com/24842c95fb1bc5d7c5da2ec735e106f0.pdf
+
+Authors claim their IR is lightweight, easy to code fast optimizations in C++.
+
+The main idea is that control flow dependencies are explicit, rather than
+implied by a total ordering on statements. And this makes certain optimizations
+easier to write. But final code generation is more difficult, since you have
+to impose a total ordering.

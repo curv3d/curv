@@ -1,0 +1,19 @@
+parametric {
+  Z1 :: slider(-6,6) = 0;
+  Z2 :: slider(-6,6) = 0;
+  RScale :: scale_picker = 1;
+}
+let
+gtorus =
+    gyroid
+    >> shell .75
+    >> set_bbox [[-tau*6, -inf, -inf], [tau*6, 0, inf]]
+    >> bend {}
+    //`smooth .375 .intersection` torus {major: tau*4, minor: tau*2}
+    ;
+gslice Z = gtorus >> move[0,0,Z] >> slice_xy;
+in
+union [
+    gslice Z1 >> colour (sRGB.HSV (1/3, 1, .5));
+    gslice Z2 >> colour red >> scale RScale;
+]

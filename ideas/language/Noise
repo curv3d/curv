@@ -1,0 +1,50 @@
+The Noise Library
+=================
+random(seed): A good white-noise hash function for the GPU
+----------------------------------------------------------
+To hash a 32 bit float to a uniformly distributed random number in [0..1].
+
+Using standard float numeric operations seems to result in hashes that only
+work well in a restricted range--you need different magic numbers for different
+ranges.
+
+To work well for most floats, I think we would use floatBitsToInt, use int
+operations, then use intBitsToFloat. Requires OpenGL 3.3 or OpenGL ES 3.0.
+* Brian Sharpe says "Modern cards can also perform integer hashing which
+  in some cases produce superior results but will often still run slower than
+  floating point operations."
+  * int multiply is often slower than float multiply.
+  * otherwise, int ops are generally the same speed as float ops.
+  * but there may be more float arithmetic units than int arith units.
+* Idea: new Curv primitive: fphash(num) maps an arbitrary float to another
+  float in the range [0..1], using all of the bits in the input to construct
+  the result. Essentially, it just XORs the mantissa bits with the non-mantissa
+  bits. Or, even simpler, mantissa(num) returns the floating point mantissa.
+
+Olano, 2005, https://www.csee.umbc.edu/~olano/papers/mNoise.pdf
+    Improvements to Perlin noise on the GPU.
+    Discusses the BBS or blumblumshub hash.
+    Note, Olano *invented the shader*.
+
+S Tzeng, 2008, Parallel White Noise Generation on a GPU via Cryptographic Hash
+http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.650.2121&rep=rep1&type=pdf
+    They use MD5 with 64 rounds (!), and demonstrate that the output has
+    excellent statistical properties. The output gets worse if you reduce
+    to 32 or 16 rounds. This sounds very slow.
+
+Olano, 2010, GPU Random Numbers via the Tiny Encryption Algorithm
+https://www.csee.umbc.edu/~olano/papers/GPUTEA.pdf
+    TEA, the Tiny Encryption Algorithm
+    Faster than MD5, and "good enough" to avoid visual artifacts.
+    Better than BBS.
+    Tuneable for speed/quality tradeoff.
+
+https://github.com/BrianSharpe/GPU-Noise-Lib/blob/master/gpu_noise_lib.glsl
+    Implements the FAST_32 hash.
+    Also implements BBS, and SGPP from Ashima.
+    http://briansharpe.wordpress.com/2011/11/15/a-fast-and-simple-32bit-floating-point-hash-function/
+    Looks good, esp. for generating lots of numbers in one call.
+    But it looks range restricted.
+
+http://github.com/ashima/webgl-noise
+    Much referenced.

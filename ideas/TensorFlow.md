@@ -31,6 +31,9 @@ This is easy and accessible today.
 Deep Curv: generating signed distance fields using a neural network.
 You train a neural network on signed distance fields, then run it backwards.
 Which SDF representations? Voxels. Curv programs.
+* The DeepSDF project does this.
+  https://arxiv.org/pdf/1901.05103v1.pdf
+  https://www.youtube.com/watch?v=LILRJzMQw5o
 
 Maybe we can use AI to search for optimized code for generating a Euclidean
 SDF for a desired shape.

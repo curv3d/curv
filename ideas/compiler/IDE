@@ -1,0 +1,26 @@
+An IDE contains a compiler to implement
+- syntax highlighting, (needs lexical info)
+- collapsible trees, (needs syntax tree)
+- intellisense, (needs type analysis).
+But these compilers are implemented differently than classical compilers.
+https://www.youtube.com/watch?v=wSdV1M7n4gQ
+
+Curv uses a classical compiler structure.
+
+In an IDE, you are compiling a program that the user is in the middle of typing,
+so you need error tolerance.
+
+Roslyn project: a single compiler that works in the IDE and also as an AOT
+compiler (don't write two compilers and keep them in sync). For C#.
+Compiler is an API.
+
+Roslyn parse tree data structure:
+https://blogs.msdn.microsoft.com/ericlippert/2012/06/08/persistence-facades-and-roslyns-red-green-trees/
+
+Swift libSyntax:
+https://github.com/apple/swift/tree/7ae7038f10bdd6344c8c32c8b258a8e358109da0/lib/Syntax
+
+need:
+- error tolerant lexer: do not throw exceptions, create error tokens instead.
+  Use for token colouring in the CLI.
+- error tolerant parser.
