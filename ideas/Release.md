@@ -40,6 +40,7 @@ Language changes:
   * See [docs/language/Strings.rst](https://github.com/curv3d/curv/blob/master/docs/language/Strings.rst)
 * predicate assertion patterns and expressions using ::
   * 'pred pat' pattern removed.
+  * See [docs/language/Design_by_Contract.rst](https://github.com/curv3d/curv/blob/master/docs/language/Design_by_Contract.rst)
 * `where` operator is now higher precedence than `,` or `;`.
   `a = b where (bindings)` is now legal syntax, is equivalent to
   `a = (b where (bindings))`.
@@ -53,6 +54,7 @@ Shape Library:
 
 Geometry Compiler:
 * Experimental support for 1D and 2D arrays of numbers and vectors
+  See [docs/language/Geometry_Compiler.rst](https://github.com/curv3d/curv/blob/master/docs/language/Geometry_Compiler.rst)
 * polymorphic == and != (works on vectors and bools now)
 * a primitive code optimizer
 * `-o frag` file format replaced by `-o gpu`.
@@ -61,6 +63,16 @@ Geometry Compiler:
   geometry compiler, and the file format is subject to change.
   The `curv` tool can now also read GPU files, display them in the Viewer,
   and you can live edit them.
+
+Breaking Changes:
+* During the development of parametric shapes, the syntax changed multiple times.
+  It has stabilized with the `parametric` keyword.
+* If you have used the prerelease version of `lib.blend`, there are two recent changes:
+  * `lib.blend.stairs(r,n)`: n is now the # of stair steps
+  * `lib.blend.pipe(d)`: d is now the pipe diameter
+* In a string literal, the `$$` and `""` escapes have been replaced by `${dol}` and `${quot}`.
+* The `var` variable definition syntax has been deprecated, will be removed in some future release.
+* The `pred pat` pattern syntax has been removed, replaced by `pat :: pred`.
 
 Other changes:
 * Curv now requires OpenGL 3.3
