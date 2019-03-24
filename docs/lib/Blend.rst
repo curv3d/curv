@@ -66,8 +66,7 @@ For example, the ``smooth r`` blending kernel comprises:
   WARNING: this feature is experimental, the API may change.
   PROBLEMS: What is the relationship of the ``r`` parameter to the size
   of the blending band? Once I find out, I may change the meaning of the
-  parameter to make it more rational/predictable. Also, I might switch to
-  labeled parameters.
+  parameter to make it more rational/predictable.
 
   |uStairs| |iStairs|
 
