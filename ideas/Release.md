@@ -4,12 +4,16 @@ Release 0.4
 Graphical value pickers for interactively tweaking shape parameters.
 * `parametric` constructs a parametric shape, with named parameters
   that are bound to value-picker types.
+  See [docs/language/Parametric_Shapes.rst](https://github.com/curv3d/curv/blob/master/docs/language/Parametric_Shapes.rst)
 * HUD (head up display) overlays the value picker GUI on top of the
   shape displayed in the Viewer window.
+  See [docs/Viewer.rst](https://github.com/curv3d/curv/blob/master/docs/Viewer.rst)
 
 Contributed features:
 * @gsohler: lib.blend
+  See [docs/lib/Blend.rst](https://github.com/curv3d/curv/blob/master/docs/lib/Blend.rst)
 * @tlc123: new keyboard viewer controls
+  See [docs/Viewer.rst](https://github.com/curv3d/curv/blob/master/docs/Viewer.rst)
 * @s-ol: REPL autocomplete, REPL syntax colouring
 
 Language changes:
@@ -37,14 +41,11 @@ Language changes:
 * `where` operator is now higher precedence than `,` or `;`.
   `a = b where (bindings)` is now legal syntax, is equivalent to
   `a = (b where (bindings))`.
-* Parametric records (constructed by `parametric`) remember how they were
-  constructed, by storing metadata (`constructor` and `argument` fields).
-  When a record value is called like a function, first try `call` field,
-  then try `constructor` field.
 * calls to `error` now appear in stack trace
 
 Shape Library:
 * lib.blend
+  See [docs/lib/Blend.rst](https://github.com/curv3d/curv/blob/master/docs/lib/Blend.rst)
 * `cylinder` with no argument is `cylinder{d:2,h:2}`.
 * `box` with no argument defaults to `box[2,2,2]`.
 
@@ -68,3 +69,9 @@ Other changes:
 * can export empty/infinite 2D shapes as PNG (defaults to Viewer behaviour)
 * use `make uninstall` to uninstall Curv
 * all Curv library files are now stored under /usr/local/lib/curv
+
+Because the location of the library files have changed, you may wish to do
+perform a clean install by using::
+
+   [sudo] make uninstall
+   [sudo] make install
