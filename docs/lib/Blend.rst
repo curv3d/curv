@@ -132,4 +132,4 @@ For more information, see:
 
 * The Blending section of `<../Theory.rst>`_
 * `<http://mercury.sexy/hg_sdf/>`_, which inspired many of the operations in ``lib.blend``.
-* The source code, `<../../lib/curv/blend.curv>`_.
+* The source code, `<../../lib/curv/lib/blend.curv>`_.
