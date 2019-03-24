@@ -13,6 +13,14 @@ Contributed features:
 * @s-ol: REPL autocomplete, REPL syntax colouring
 
 Language changes:
+* New features used to construct parametric shapes:
+  * Parametric records (constructed by `parametric`) remember how they were
+    constructed by storing metadata.
+  * Picker predicates specify a value picker type & its configuration.
+  * Predicate assertion patterns associate a predicate function with a variable.
+    Syntax is `name :: predicate`, eg `pi :: is_num = 3.1416`.
+    Can be used to associate a "type" with a variable definition or function
+    parameter, or to associate a picker predicate with a shape parameter.
 * Imperative programming
   * generalized `:=` (assignment statement) works on all local variables
     defined using `let`, `where`, `for`
