@@ -31,11 +31,13 @@ Language changes:
   * `var` definitions are deprecated
   * generalized `do` works in list/record/string comprehensions
   * generalized `while` works in list/record/string comprehensions
+  * See [docs/language/Statements.rst](https://github.com/curv3d/curv/blob/master/docs/language/Statements.rst)
 * String literals
   * multi-line string literals
   * new character names: dol, quot, tab
   * string comprehensions using ${...}
   * $. $= ($$ and "" escapes removed)
+  * See [docs/language/Strings.rst](https://github.com/curv3d/curv/blob/master/docs/language/Strings.rst)
 * predicate assertion patterns and expressions using ::
   * 'pred pat' pattern removed.
 * `where` operator is now higher precedence than `,` or `;`.
@@ -70,8 +72,9 @@ Other changes:
 * use `make uninstall` to uninstall Curv
 * all Curv library files are now stored under /usr/local/lib/curv
 
-Because the location of the library files have changed, you may wish to do
-perform a clean install by using::
-
-   [sudo] make uninstall
-   [sudo] make install
+Because the location of the library files has changed, you may wish to
+perform a clean install by using:
+```
+  [sudo] make uninstall
+  [sudo] make install
+```
