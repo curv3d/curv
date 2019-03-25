@@ -1,49 +1,44 @@
-Version 0.4 Planning:
-* new since 0.3 (as of Mar 18):
-  * lib.blend
-  * Torleif: keyboard viewer controls
-  * s-ol: repl autocomplete, repl syntax colouring
-  * predicate assertion patterns and expressions using ::
-    * 'pred pat' pattern removed.
-  * calls to error now appear in stack trace
-  * parametric records (parametric), value pickers, HUD
-    * metadata fields are `constructor` and `argument`
-  * Curv now requires OpenGL 3.3
-  * `where` operator is now higher precedence than `,` or `;`
-    `a = b where (bindings)` is now legal syntax, is equivalent to
-    `a = (b where (bindings))`.
-  * Geometry compiler:
-    * 1D and 2D arrays of numbers and vectors
-    * polymorphic == and != (works on vectors and bools now)
-    * a primitive code optimizer
-  * curvc
-  * `cylinder` with no argument is `cylinder{d:2,h:2}`.
-  * `box` with no argument defaults to `box[2,2,2]`.
-  * `-o frag` replaced by `-o gpu`. Can also read GPU files, display in Viewer.
-  * $. $= ($$ and "" escapes removed)
-  * multi-line string literals
-  * string comprehensions using ${...}
-  * new character names: dol, quot, tab
-  * fix bug in `-o json` (escaping of control characters)
-  * record value called like function: first try `call`, then try `constructor`
-  * imperative programming:
-    * generalized := works on all local variables defined by let,where,for
-    * generalized `do` works in list/record comprehensions
-    * generalized `while` works in list/record comprehensions
-  * can export empty/infinite 2D shapes as PNG (defaults to Viewer behaviour)
-  * `var` definitions are deprecated
-  * 'make uninstall'
-  * new locations for Curv library files
+v0.5 Planning
+-------------
+* Smart STL export with edge detection.
+* Larger GL subset: piecewise functions, functions with record & tuple arguments
+  partial evaluation.
+* Geometry Optimizer: common subexpression elimination, constant folding,
+  partial evaluation. AMD Mesa support.
+* Interpreter VM improvements:
+  * tail recursion optimization: Operation::tail_eval()
+  * generic Operation::exec() -- DRY, support field generator stmts in REPL
+* Better compile time error messages
+  * Replace 'not an operation' analysis time error with useful message.
+* Parametric shapes:
+  * constructor returns another parametric record.
+  * `curv -D param=value parametric.curv`
+  * colour_picker: convert between sRGB in the uniform variable,
+    and linear RGB in the Curv parameter.
+  * Unit testing for reactive values.
+  * Finish implementing reactive values.
+* geometry engine/shape representation:
+  * image import
+  * voxel import/export
+  * alpha channel in colour functions
+  * `time` is a global reactive variable
+  * Ray-casting non-Lipschitz implicit surfaces
+* shape library
+  * noise library
+  * fractals
+  * polyhedra
+* WASM executable
+* language:
+  * `a[i] := x`, a[[X,Y]] := [x,y]
+    Assignment_Action::locative_, Locative::store_value()
+  * Geometry Compiler: matrix multiplication
+  * tail recursion optimization (interpreter)
+  * mantissa(num), random{,2,3,4}(seed)
+* Package manager; packages are referenced using URLs.
+* Improved Viewer UI that can zoom in to 3D fractals.
+* User defined lighting models can be written in Curv.
 
-* v0.4 release blockers:
-  * Parametric shapes:
-    * constructor returns another parametric record.
-    * `curv -D param=value parametric.curv`
-    * documentation
-    * colour_picker: convert between sRGB in the uniform variable,
-      and linear RGB in the Curv parameter.
-    * Unit testing for reactive values.
-    * Finish implementing reactive values.
+* v0.4 leftovers:
   * Assignment statement:
     * docs:
       * Statements: quick characterization of assignment restrictions.
@@ -59,8 +54,6 @@ Version 0.4 Planning:
     * no actions in a let clause. `a:=b` gives an error: did you mean `a=b`?
     * no recursive definitions in a do clause. a=b error: did you mean a:=b?
     * in expression context, a=b error: did you mean a==b?
-  * document new features
-    * lib.blend
   * CLI token colouring: New string escapes. Special colour for string-escapes.
     Bad token handling.
   * better unit tests:
@@ -76,16 +69,12 @@ Big Items
 * graphical value pickers in the viewer
 * standard libraries for some important techniques
 * better documentation, a web site
-* sharp STL export
 
 More Big Items
 * a GUI application
 * Homebrew package, Mac Linux Windows
 * a web GUI, a wasm executable
-* tail recursion optimization
 * common subexpression optimization and partial evaluation
-* image import
-* voxel import/export
 * Stratasys J750 support
 
 Language TODO:
@@ -96,7 +85,6 @@ Language TODO:
 * mantissa(num), random{,2,3,4}(seed)
 
 TODO (value pickers impl)
-* Parametric shape constructors in the standard library.
 * `(parametric param body) arg` should return another parametric record.
 * BUG: While compiling a pattern, parameters are added to the scope as they are
   found. This same uncompleted scope is used for analyzing subexpressions,
@@ -160,7 +148,6 @@ Ideas:
 
 Language:
 * better GLSL transliteration:
-  * sequential let
   * v[X] := x; v[[X,Y,Z]] := v3;
   * matrices
   * all of the GLSL numeric functions
