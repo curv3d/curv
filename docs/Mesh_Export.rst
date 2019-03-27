@@ -13,13 +13,15 @@ Which format should you use?
   It's the only format in this list understood by OpenSCAD.
 * OBJ is the recommended format for export from Curv (unless you need colour
   or OpenSCAD import).
-  * It is supported by all 3D printing slicer software and service providers.
-  * The files are significantly smaller (they can be 20% of the size of an STL
-    file).
-  * OBJ files record "topology" information, which is needed by some
-    applications. Meshlab imports OBJ files with no issues, whereas it needs to
-    repair an STL file when it imports it, and I've seen Meshlab hang up while
-    attempting to do this (for a large file).
+
+    * It is supported by all 3D printing slicer software and service providers.
+    * The files are significantly smaller (they can be 20% of the size of an STL
+      file).
+    * OBJ files record "topology" information, which is needed by some
+      applications. Meshlab imports OBJ files with no issues, whereas it needs to
+      repair an STL file when it imports it, and I've seen Meshlab hang up while
+      attempting to do this (for a large file).
+
 * X3D contains colour information. Use it for full colour 3D printing on
   shapeways.com, i.materialise.com, etc.
 

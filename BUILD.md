@@ -16,7 +16,7 @@ Instead, build and install `curv` using:
 * Open the Terminal application and run the following commands:
   * Install the relevant dependencies used to build `curv`:
   
-  `sudo apt install cmake git-core libboost-all-dev libdouble-conversion-dev libopenexr-dev libtbb-dev libglm-dev gedit`
+  `sudo apt install clang cmake git-core libboost-all-dev libdouble-conversion-dev libopenexr-dev libtbb-dev libglm-dev gedit dbus-x11`
   
   * If you don't already have dev packages for your GPU installed -- eg running a **server version** -- then you'll probably need to also install these:
   
