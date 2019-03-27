@@ -10,6 +10,9 @@ Instead, build and install `curv` using:
 * `make`
 * `make install`
 
+**C++ Notes**: Curv requires a C++ 14 compiler.
+You can use gcc 5.4 (or later), or clang 3.4 (or later).
+
 # Installing 
 
 ## Ubuntu Linux 16.04 build instructions
