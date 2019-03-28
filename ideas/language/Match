@@ -48,7 +48,7 @@ But this form is more desirable:
                 ... shape,
                 colour : c,
             };
-    ];
+        ];
 
 because:
  1. Partial application with a bad first argument reports an error immediately.

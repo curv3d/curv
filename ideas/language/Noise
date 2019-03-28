@@ -1,5 +1,25 @@
 The Noise Library
 =================
+random(seed): The API
+---------------------
+This is an okay API to start with.
+These functions take an argument (num, vec2, vec3 or vec4)
+and hash them into floating point numbers that are uniformly distributed
+in the range >=0 and <1.
+    random(seed)  // result is num
+    random2(seed) // result is vec2
+    random3(seed) // result is vec3
+    random4(seed) // result is vec4
+
+Problem: piecewise functions not supported by Geometry Compiler.
+What happens: "this function is not supported" error for a piecewise function
+value returned by `match`.
+
+Solutions:
+* Piecewise_Function::gl_call_expr() is defined to do something reasonable.
+  Compile argument, get its gl_type, search component functions for one whose
+  pattern matches the gl_type.
+
 random(seed): A good white-noise hash function for the GPU
 ----------------------------------------------------------
 To hash a 32 bit float to a uniformly distributed random number in [0..1].
@@ -16,10 +36,12 @@ operations, then use intBitsToFloat. Requires OpenGL 3.3 or OpenGL ES 3.0.
   * int multiply is often slower than float multiply.
   * otherwise, int ops are generally the same speed as float ops.
   * but there may be more float arithmetic units than int arith units.
-* Idea: new Curv primitive: fphash(num) maps an arbitrary float to another
-  float in the range [0..1], using all of the bits in the input to construct
-  the result. Essentially, it just XORs the mantissa bits with the non-mantissa
-  bits. Or, even simpler, mantissa(num) returns the floating point mantissa.
+
+Idea: new Curv primitive: fhash(num) maps an arbitrary float to another
+float in the range [0..1], using all of the bits in the input to construct
+the result. Essentially, it just XORs the mantissa bits with the non-mantissa
+bits. In GLSL, 3 integer ops, plus a fract() call.
+* It's useless by itself. I still need some non-obvious float hash code.
 
 Olano, 2005, https://www.csee.umbc.edu/~olano/papers/mNoise.pdf
     Improvements to Perlin noise on the GPU.
@@ -39,6 +61,16 @@ https://www.csee.umbc.edu/~olano/papers/GPUTEA.pdf
     Better than BBS.
     Tuneable for speed/quality tradeoff.
 
+Plus the blog post:
+https://umbcgaim.wordpress.com/2010/07/01/gpu-random-numbers/
+"Lots of graphic tasks work well with just two rounds (of TEA)":
+    uvec2 v = <input>;
+    v.x += ((v.y<<4u)+0xA341316Cu)^(v.y+0x9E3779B9u)^((v.y>>5u)+0xC8013EA4u);
+    v.y += ((v.x<<4u)+0xAD90777Du)^(v.x+0x9E3779B9u)^((v.x>>5u)+0x7E95761Eu);
+    v.x += ((v.y<<4u)+0xA341316Cu)^(v.y+0x3C6EF372u)^((v.y>>5u)+0xC8013EA4u);
+    v.y += ((v.x<<4u)+0xAD90777Du)^(v.x+0x3C6EF372u)^((v.x>>5u)+0x7E95761Eu);
+Note: 2 32 bit inputs, 2 outputs, and 32 int operations.
+
 https://github.com/BrianSharpe/GPU-Noise-Lib/blob/master/gpu_noise_lib.glsl
     Implements the FAST_32 hash.
     Also implements BBS, and SGPP from Ashima.
@@ -48,3 +80,56 @@ https://github.com/BrianSharpe/GPU-Noise-Lib/blob/master/gpu_noise_lib.glsl
 
 http://github.com/ashima/webgl-noise
     Much referenced.
+
+Bitwise Operations in Curv
+--------------------------
+Several GPU hashing algorithms use uint32 bitwise and arithmetic operations.
+It would be cool if these algorithms could be prototyped in Curv.
+
+C, Python,etc, have integers and floats as separate types.
+I don't want Curv users to be aware of the difference between integers and
+floats, unless they are using bitwise operations.
+
+Javascript has a single 'number' type, but embeds 32 bit ints inside of 64
+bit floats and supports bitwise operations on the 32 bit int subset.
+* That would work in the interpreter.
+* In the Geometry Compiler, I could map 32 bit unsigned integers onto the 'uint'
+  type, all other numbers onto the 'float' type, and implicitly convert uint
+  to float where needed.
+* Problem: bad results when uint arithmetic overflows and wraps around.
+  Solution: 32 bit integer addition that wraps around is a different operation
+  than `+`.
+
+bits32 operations in Curv:
+    bits_add(a,b)
+    bits_lshift(a,b)
+    bits_rshift(a,b)
+    bits_and(a,b)
+    bits_or(a,b)
+    bits_xor(a,b)
+
+Curv is an array language. The proper domain of bitwise operations is
+boolean arrays. With this representation, we'll need explicit operations
+to convert between integers/floats and bits32, which is a list of 32 bools.
+    int_to_bits32    bits32_to_int
+    uint_to_bits32   bits32_to_uint
+    float_to_bits32  bits32_to_float
+
+If I solve this problem, I still have the issue of writing bithacking code
+that converts between floats and bitvectors, and that is portable between
+Curv and CurvGL -- Curv has 64 bit floats, CurvGL has 32 bit floats.
+
+Naming for the low-level Curv subset and its compiler
+-----------------------------------------------------
+The low-level subset of Curv:
+    GL
+    LLCurv
+    FastCurv
+    SubCurv (SC)
+The low-level compiler
+    Geometry Compiler
+    Shape Compiler (SC)
+Prefixes in libcurv
+    GL_Type
+    LL_Type
+    SC_Type
