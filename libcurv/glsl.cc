@@ -12,11 +12,23 @@
 
 namespace curv {
 
+const char glsl_header[] =
+   "float fhash(float f)\n"
+   "{\n"
+   "    uint u = floatBitsToUint(f);\n"
+   "    u = ((u & 0x007FFFFFu)\n"
+   "        | 0x3F800000u)\n"
+   "        ^ (u >> 9);\n"
+   "    float f2 = uintBitsToFloat(u);\n"
+   "    return fract(f2);\n"
+   "}\n";
+
 void glsl_function_export(const Shape_Program& shape, std::ostream& out)
 {
     GL_Compiler gl(out, GL_Target::glsl, shape.system());
     At_Program cx(shape);
 
+    out << glsl_header;
     if (shape.viewed_shape_) {
         // output uniform variables for parametric shape
         for (auto& p : shape.viewed_shape_->param_) {
