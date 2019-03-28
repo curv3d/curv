@@ -99,7 +99,7 @@ struct Operation : public Meaning
     virtual void bind(Frame&, DRecord&) const;
     virtual void exec(Frame&) const;
 
-    // These functions are called by the Geometry Compiler.
+    // These functions are called by the Shape Compiler.
     virtual GL_Value gl_eval(GL_Frame&) const;
     virtual void gl_exec(GL_Frame&) const;
 

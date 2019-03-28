@@ -18,7 +18,7 @@ Rationale:
   You don't need to rewrite imperative algorithms in a functional style
   (eg, converting while loops to tail recursion) before you can get the code running.
 * ``For`` and ``while`` loops are the only way to iterate within a shape's distance function.
-  The Geometry Compiler does not yet support tail recursion.
+  The Shape Compiler does not yet support tail recursion.
   (Due to the limitations of GPU shader languages,
   this is a complex feature that is not currently planned for release 1.0.)
 

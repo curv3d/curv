@@ -12,7 +12,7 @@ Import/Export:
 * import image, voxels, mesh
 
 Language:
-* new geometry compiler: emit optimized GLSL, larger GL subset
+* new shape compiler: emit optimized GLSL, larger GL subset
 * packages & package manager
 
 Shape Library:

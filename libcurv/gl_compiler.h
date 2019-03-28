@@ -23,7 +23,7 @@ struct System;
 /// GL is a set of types and operations on those types. It is a statically
 /// typed subset of Curv which is also a subset of GLSL (but with different
 /// type and operation names). Curv distance functions must be restricted to the
-/// GL subset or the Geometry Compiler will report an error during rendering.
+/// GL subset or the Shape Compiler will report an error during rendering.
 ///
 /// The compiler operates on Curv function *values*. Non-local variables
 /// captured by closures become compile time constants. Intermediate function

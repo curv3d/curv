@@ -114,7 +114,7 @@ Basic Syntax:
 
 Advanced Topics:
 
-* `Geometry Compiler`_
+* `Shape Compiler`_
 * `Design by Contract`_
 * `Imperative Style Programming in a Pure Functional Language`_
 * `Grammar`_
@@ -127,7 +127,7 @@ Advanced Topics:
 .. _`Expressions`: Expressions.rst
 .. _`File Import`: File_Import.rst
 .. _`Functions`: Functions.rst
-.. _`Geometry Compiler`: Geometry_Compiler.rst
+.. _`Shape Compiler`: Shape_Compiler.rst
 .. _`Grammar`: Grammar.rst
 .. _`Imperative Style Programming in a Pure Functional Language`: ../advanced/Imperative.rst
 .. _`Lists`: Lists.rst

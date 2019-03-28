@@ -11,7 +11,7 @@ in the range >=0 and <1.
     random3(seed) // result is vec3
     random4(seed) // result is vec4
 
-Problem: piecewise functions not supported by Geometry Compiler.
+Problem: piecewise functions not supported by Shape Compiler.
 What happens: "this function is not supported" error for a piecewise function
 value returned by `match`.
 
@@ -93,7 +93,7 @@ floats, unless they are using bitwise operations.
 Javascript has a single 'number' type, but embeds 32 bit ints inside of 64
 bit floats and supports bitwise operations on the 32 bit int subset.
 * That would work in the interpreter.
-* In the Geometry Compiler, I could map 32 bit unsigned integers onto the 'uint'
+* In the Shape Compiler, I could map 32 bit unsigned integers onto the 'uint'
   type, all other numbers onto the 'float' type, and implicitly convert uint
   to float where needed.
 * Problem: bad results when uint arithmetic overflows and wraps around.

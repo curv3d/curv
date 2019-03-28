@@ -31,7 +31,7 @@ v0.5 Planning
 * language:
   * `a[i] := x`, a[[X,Y]] := [x,y]
     Assignment_Action::locative_, Locative::store_value()
-  * Geometry Compiler: matrix multiplication
+  * Shape Compiler: matrix multiplication
   * tail recursion optimization (interpreter)
   * mantissa(num), random{,2,3,4}(seed)
 * Package manager; packages are referenced using URLs.
@@ -82,7 +82,7 @@ More Big Items
 Language TODO:
 * `a[i] := x` -- adds to ISPiaPFL story.
   Assignment_Action::locative_, Locative::store_value()
-* Geometry Compiler: matrix multiplication
+* Shape Compiler: matrix multiplication
 * tail recursion optimization (interpreter)
 * mantissa(num), random{,2,3,4}(seed)
 
@@ -371,7 +371,7 @@ line 1(columns 19-20)
 
 weird error message: The "at field .colour" qualifier really applies to the
 final item in the stack trace.
-ERROR: at field .colour: this list constructor does not support the Geometry Compiler
+ERROR: at field .colour: this list constructor does not support the Shape Compiler
 file "../examples/assert.curv", line 6(columns 24-25)
       colour p : [1-bit(f()), bit(f()), 0],
                          ^-                

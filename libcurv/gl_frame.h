@@ -36,7 +36,7 @@ inline std::ostream& operator<<(std::ostream& out, GL_Value v)
 struct GL_Frame_Base;
 using GL_Frame = Tail_Array<GL_Frame_Base>;
 
-/// A function call frame used by the Geometry Compiler.
+/// A function call frame used by the Shape Compiler.
 ///
 /// The GL compilation process is a kind of abstract evaluation.
 /// That's really clear when you see that GL_Frame is isomorphic to Frame,

@@ -7,7 +7,7 @@ High Level Geometry Interface (Wishlist)
 * 2D->3D: cylinder_extrude, stereographic_extrude, ...
 * A properly designed set of colour operations, with multiple colour spaces,
   and colour blending.
-* Animation operators (depends on the new geometry compiler).
+* Animation operators (depends on the new shape compiler).
 * Easing functions.
 * Noise functions.
 * Conway polyhedron operators.
@@ -46,7 +46,7 @@ High Level Geometry Interface
 * Finalize and document the v1.0 CSG interface.
 * CSG operations can take a shape constructing function as argument,
   and invoke it from a distance function. Needed for animation API, etc.
-  Depends on rewrite of geometry compiler.
+  Depends on rewrite of shape compiler.
 * Pluggable renderer and parameterized lighting model.
 
 Core Language

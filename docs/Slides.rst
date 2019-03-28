@@ -786,7 +786,7 @@ linear interpolation between two distance fields.
 .. If you use numerical methods then it is (allegedly) slow, so many people
 .. use symbolic algebra to convolve the F-Rep equation of a shape, which would
 .. have to be done using a tool like Mathematica, outside of Curv.
-.. The Curv geometry compiler already does a limited amount of symbolic algebra
+.. The Curv shape compiler already does a limited amount of symbolic algebra
 .. to compile Curv code into efficient GPU code, so this suggests a future direction.
 
 .. http://www.sciencedirect.com/science/article/pii/S0747717111002197
@@ -1059,7 +1059,7 @@ vertex/edge/face information.
 
 Compiling Curv to GPU Code
 ==========================
-The Geometry Compiler translates a shape to GPU code for rendering that shape.
+The Shape Compiler translates a shape to GPU code for rendering that shape.
 
 The shape's distance and colour functions
 are compiled into a fragment shader or compute kernel.

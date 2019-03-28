@@ -21,7 +21,7 @@ STL file import
   discrete SDF file. Then import the SDF file from a Curv program.
   Look at: mTec.
 
-Optimizing geometry compiler
+Optimizing shape compiler
   Generates optimized GLSL code for faster rendering.
   Extends the subset of Curv that can be used to write distance functions.
 
