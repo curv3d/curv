@@ -194,6 +194,9 @@ struct Piecewise_Function : public Function
     // call the function during evaluation, with specified argument value.
     virtual Value call(Value, Frame&) override;
     virtual Value try_call(Value, Frame&) override;
+
+    // generate a call to the function during geometry compilation
+    virtual GL_Value gl_call_expr(Operation&, Shared<const Phrase>, GL_Frame&) const override;
 };
 
 } // namespace curv

@@ -188,4 +188,13 @@ Piecewise_Function::try_call(Value val, Frame& f)
     return missing;
 }
 
+GL_Value
+Piecewise_Function::gl_call_expr(
+    Operation& arg, Shared<const Phrase> call_phrase, GL_Frame& f)
+const
+{
+    throw Exception(At_GL_Phrase(func_part(call_phrase), f),
+        "piecewise function is not supported");
+}
+
 } // namespace curv
