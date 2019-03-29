@@ -38,34 +38,6 @@ The question is: are these use cases enough to justify procedures?
 Maybe new monadic structures will arise in the future that will create more
 of a need for this feature?
 
-Technical Challenge: The REPL.
-------------------------------
-It ought to be possible to call any procedure or function from the command line
-and see what it does.
-
-Problem:
-  Right now, I analyze a command line to a Definition or an Operation.
-  For operations, I call the generate method, which fails for a field generator.
-  Generate works for expressions, actions and value generators.
-
-Solution:
-* Original Operation methods: eval(f), exec(f), generate(f,List_Builder&)
-  and bind(f,DRecord&). These are replaced by: eval(f), exec(f,Consumer&).
-* Consumer::push_value(Value,cx) is called to output an element value.
-* Consumer::push_field(Symbol,Value,cx) is called to output a field binding.
-* expression.exec(c) calls c.push_value(result).
-* The list constructor Consumer only consumes element values.
-* The record comprehension Consumer only consumes field bindings.
-* The action Consumer (used by `do`) fails on push_value or push_field.
-* The REPL now calls exec() on an operation. The REPL Consumer supports both
-  push_value and push_field. In most cases, the value or binding is printed on
-  the console. If there is 1 push_value and no push_field calls, then I test
-  if the value is a shape, and display the shape graphically.
-  (With multi-viewer support, 'cube;sphere' could open multiple Viewers.)
-
-This design fixes a bug in the REPL, and also eliminates code duplication
-among exec, generate & bind methods.
-
 Challenge: Expressions vs Statements
 ------------------------------------
 Originally, every Operation is either an expression or statement, determined

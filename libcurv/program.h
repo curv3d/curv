@@ -55,7 +55,7 @@ struct Program
     System& system() const { return scanner_.system_; }
     Frame* file_frame() const { return scanner_.file_frame_; }
 
-    std::pair<Shared<Module>, Shared<List>> denotes();
+    Shared<Module> exec(Operation::Executor&);
 
     Value eval();
 };

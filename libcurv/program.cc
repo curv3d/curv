@@ -70,21 +70,16 @@ Program::eval()
     }
 }
 
-std::pair<Shared<Module>, Shared<List>>
-Program::denotes()
+Shared<Module>
+Program::exec(Operation::Executor& ex)
 {
-    Shared<Module> module = nullptr;
-    Shared<List> list = nullptr;
     if (module_) {
-        module = module_->eval_module(*frame_);
+        return module_->eval_module(*frame_);
     } else {
-        List_Builder lb;
-        Operation::List_Executor lex(lb);
-        auto gen = meaning_->to_operation(scanner_.system_,scanner_.file_frame_);
-        gen->exec(*frame_, lex);
-        list = lb.get_list();
+        auto op = meaning_->to_operation(scanner_.system_,scanner_.file_frame_);
+        op->exec(*frame_, ex);
+        return nullptr;
     }
-    return {module, list};
 }
 
 } // namespace curv

@@ -172,6 +172,67 @@ void color_input(std::string const& context, replxx::Replxx::colors_t& colors, v
   } catch (curv::Exception&) {}
 }
 
+// REPL_Executor is used to execute a command line program that is a statement.
+// Both push_value() and push_field() are supported.
+// In most cases, the value or field is printed on the console.
+// If there is 1 push_value and no push_field calls, then I test if the value
+// is a shape, and display the shape graphically.
+//
+// Future: With multi-viewer support, 'cube;sphere' could open multiple Viewers.
+// I don't know how reuse of already open viewer windows would work.
+struct REPL_Executor : public curv::Operation::Executor
+{
+    curv::Namespace& names_;
+    bool has_produced_output_ = false;
+    curv::Value only_output_so_far_is_this_value_ = curv::missing;
+
+    REPL_Executor(curv::Namespace& n) : names_(n) {}
+
+    void start_command()
+    {
+        has_produced_output_ = false;
+        only_output_so_far_is_this_value_ = curv::missing;
+    }
+    void push_value(curv::Value val, const curv::Context&) override
+    {
+        if (!has_produced_output_) {
+            only_output_so_far_is_this_value_ = val;
+            has_produced_output_ = true;
+        } else {
+            if (!only_output_so_far_is_this_value_.eq(curv::missing)) {
+                std::cout << only_output_so_far_is_this_value_ << "\n";
+                only_output_so_far_is_this_value_ = curv::missing;
+            }
+            std::cout << val << "\n";
+        }
+    }
+    void push_field(curv::Symbol name, curv::Value val, const curv::Context&)
+    override
+    {
+        if (!only_output_so_far_is_this_value_.eq(curv::missing)) {
+            std::cout << only_output_so_far_is_this_value_ << "\n";
+            only_output_so_far_is_this_value_ = curv::missing;
+        }
+        std::cout << name << ":" << val << "\n";
+        has_produced_output_ = true;
+    }
+    void end_command(curv::Program& prog)
+    {
+        if (!only_output_so_far_is_this_value_.eq(curv::missing)) {
+            curv::Value val = only_output_so_far_is_this_value_;
+            static curv::Symbol lastval_key = "_";
+            names_[lastval_key] = curv::make<curv::Builtin_Value>(val);
+            curv::Shape_Program shape{prog};
+            if (shape.recognize(val)) {
+                print_shape(shape);
+                view_server.display_shape(shape);
+            } else {
+                std::cout << val << "\n";
+            }
+        }
+    }
+};
+
 void repl(curv::System* sys)
 {
     // Catch keyboard interrupts, and set was_interrupted = true.
@@ -188,6 +249,8 @@ void repl(curv::System* sys)
     rx.set_completion_callback(get_completions, static_cast<void*>(&names));
     rx.set_highlighter_callback(color_input, static_cast<void*>(sys));
 
+    REPL_Executor executor{names};
+
     for (;;) {
         was_interrupted = false;
         const char* line = rx.input(AC_PROMPT "curv> " AC_RESET);
@@ -203,28 +266,12 @@ void repl(curv::System* sys)
             auto source = curv::make<curv::String_Source>("", line);
             curv::Program prog{std::move(source), *sys};
             prog.compile(&names);
-            auto den = prog.denotes();
-            if (den.first) {
-                for (auto f : *den.first)
+            executor.start_command();
+            auto bindings = prog.exec(executor);
+            executor.end_command(prog);
+            if (bindings) {
+                for (auto f : *bindings)
                     names[f.first] = curv::make<curv::Builtin_Value>(f.second);
-            }
-            if (den.second) {
-                bool is_shape = false;
-                if (den.second->size() == 1) {
-                    static curv::Symbol lastval_key = "_";
-                    names[lastval_key] =
-                        curv::make<curv::Builtin_Value>(den.second->front());
-                    curv::Shape_Program shape{prog};
-                    if (shape.recognize(den.second->front())) {
-                        print_shape(shape);
-                        view_server.display_shape(shape);
-                        is_shape = true;
-                    }
-                }
-                if (!is_shape) {
-                    for (auto e : *den.second)
-                        std::cout << e << "\n";
-                }
             }
         } catch (std::exception& e) {
             sys->error(e);
