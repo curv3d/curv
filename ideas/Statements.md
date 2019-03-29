@@ -2,7 +2,7 @@
 
 ## Generalized Actions and Generators
 Procedures (Functions returning actions or generators):
-* A statement is an action, element generator, or field generator.
+* A statement is an action, value generator, or field generator.
   A procedure is a function that abstracts over a statement.
   Procedures are values, but can only be invoked in a statement context.
 * Pragmatic justification:

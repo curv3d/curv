@@ -68,12 +68,12 @@ struct Metafunction : public Meaning
 ///
 /// Kinds of Operations:
 /// * An Expression is evaluated to return a single value using `eval`.
-///   Every expression is also an element generator that produces 1 value.
+///   Every expression is also a value generator that produces 1 value.
 ///   For example, `2+2`.
 /// * A Statement is executed for its side effects using `exec`.
 ///   There are 3 kinds of statement, and the Executor argument of `exec`
 ///   determines which kinds are legal in a given execution context.
-///   * An Element Generator is executed to produce a sequence of zero
+///   * A Value Generator is executed to produce a sequence of zero
 ///     or more values, calling `executor.push_value` for each value.
 ///     For example, `for (i in 1..10) i^2`.
 ///   * A Field Generator is executed to produce a sequence of zero or
@@ -81,7 +81,7 @@ struct Metafunction : public Meaning
 ///     for each field. For example, `x : 42`.
 ///   * An Action is executed to cause a debug side effect or assign
 ///     a local variable, and no values or fields are produced.
-///     Every action is also an element generator that produces 0 values.
+///     Every action is also a value generator that produces 0 values.
 ///     Every action is also a field generator that produces 0 fields.
 ///     For example, `assert(x>0)`.
 struct Operation : public Meaning

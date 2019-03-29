@@ -66,7 +66,7 @@ but we can still have alternating statements and definitions, like this:
         result
 We want this syntax to work in list and record constructors.
 If `do` is used in a list constructor, then the 'statements' may include
-both actions and element generators. Likewise, if `do` is used in a record
+both actions and value generators. Likewise, if `do` is used in a record
 constructor, the statements may be actions or field generators.
 
 Other Thoughts

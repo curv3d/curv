@@ -79,8 +79,8 @@ Statement Types
 ---------------
 There are 3 kinds of statements:
 
-Element generators (found in list constructors)
-  An element generator generates a sequence of 0 or more values,
+Value generators (found in list constructors)
+  A value generator generates a sequence of 0 or more values,
   which are added to the list under construction.
   See: `Lists`_.
 Field generators (found in record constructors)

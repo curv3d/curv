@@ -26,19 +26,19 @@ jq maps a stream of JSON values (the input) to another stream (the output).
 And actually, a filter maps a value onto a stream of zero or more values.
 So this is actually trickier to map onto Curv.
 
-There is a proposed (but controversial) feature, an element generator procedure
-(EGP), which maps a value onto a stream of values. A jq filter is actually a
-Curv EGP. It has been proposed that regular Curv functions are a subtype of
-EGPs. So that provides a possible mapping from jq to Curv. The other mapping is
+There is a proposed (but controversial) feature, a value generator procedure
+(VGP), which maps a value onto a stream of values. A jq filter is actually a
+Curv VGP. It has been proposed that regular Curv functions are a subtype of
+VGPs. So that provides a possible mapping from jq to Curv. The other mapping is
 to think like Haskell, and represent a stream of values as a lazy list. Under
 that interpretation, a filter is a function mapping arbitrary values to lists.
 The drawback is that standard Curv functions like 'count' and 'mod', which have
 counterparts in Jq, cannot be interpreted as filters. The first interpretation,
-of filters as EGPs, allows Function to be a subtype of EGP, which allows
+of filters as VGPs, allows Function to be a subtype of VGP, which allows
 ordinary Curv code to be directly embedded in the filter language or the filter
 interpretation. A secondary reason that lazy lists don't work is that Jq filters
 output a flat stream of values (streams cannot be nested). If one stream is
-embedded in another, the result is automatically flattened. EGPs have this
+embedded in another, the result is automatically flattened. VGPs have this
 auto-flattening property, but lazy lists do not.
 
 Experiment: in jq, (1,2,3)+(10,20) is x->(11,12,13,21,22,23)

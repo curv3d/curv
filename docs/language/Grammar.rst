@@ -118,14 +118,14 @@ expression
   A phrase that computes a value.
 
 statement
-  A statement is an action, element generator, or field generator.
+  A statement is an action, value generator, or field generator.
 
   action
     A phrase that causes a side effect, and doesn't compute a value.
 
-  element generator
+  value generator
     A phrase that computes a sequence of zero or more values.
-    ``[``\ *element_generator*\ ``]`` is a list constructor.
+    ``[``\ *value_generator*\ ``]`` is a list constructor.
 
   field generator
     A phrase that computes a sequence of zero or more fields,
@@ -133,7 +133,7 @@ statement
     ``{``\ *field_generator*\ ``}`` is a record constructor.
 
 An action can be used in a statement or definition context.
-An expression can be used in any context requiring an element generator.
+An expression can be used in any context requiring a value generator.
 
 Programs
 --------

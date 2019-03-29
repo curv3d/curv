@@ -46,7 +46,7 @@ and see what it does.
 Problem:
   Right now, I analyze a command line to a Definition or an Operation.
   For operations, I call the generate method, which fails for a field generator.
-  Generate works for expressions, actions and element generators.
+  Generate works for expressions, actions and value generators.
 
 Solution:
 * Original Operation methods: eval(f), exec(f), generate(f,List_Builder&)
@@ -85,7 +85,7 @@ Does this cause technical problems?
   either expression or statement nodes (corresponding to Operation::eval()
   and Operation::exec()), based on syntactic context.
 * But with segregated function/procedure call, we can do more analysis.
-  We can distinguish expressions from element generators in a list constructor.
+  We can distinguish expressions from value generators in a list constructor.
   Because we know that 'f x' is an expression, not a procedure call:
   * The partial evaluator can replace '(f x, a)[1]' with 'a'.
   * We can produce better At_Index error messages. Instead of:
@@ -130,12 +130,12 @@ capture the output in a list or record first. Does this mitigate the problem,
 by deterring the use of generator procedures in libraries?
 
 "If you only have a hammer, then every problem looks like a nail."
-Element generators will have a performance advantage over lists, in the
+Value generators will have a performance advantage over lists, in the
 case where you are incrementally accumulating a list of values, eg 1 per
 function call, due to the O(N) cost of list concatenation.
 
 The Jq proposal, to extend Curv to embrace the features of Jq, actually
-requires the use of element generator procedures (as a supertype of functions).
+requires the use of value generator procedures (as a supertype of functions).
 Haskell style lazy lists do not have the required semantic properties.
 We need the concept of a flat stream of values, where embedding one stream in
 another results in automatic flattening, and not a tree structure.
@@ -148,7 +148,7 @@ Benefits:
 * It can be helpful for human readability. It makes the procedural subset of
   Curv stand out syntactically from functional code.
 * The compiler can distinguish expressions from statements at compile time.
-  We can distinguish expressions from element generators in a list constructor.
+  We can distinguish expressions from value generators in a list constructor.
   Because we know that 'f x' is an expression, not a procedure call:
   * The partial evaluator can replace '(f x, a)[1]' with 'a'.
   * We can produce better At_Index error messages. Instead of:
@@ -185,11 +185,11 @@ If you call a procedure using function call syntax, or call a function using
 procedure call syntax, you get an error. So procedure and function values must
 be internally distinguished in some way.
 * Maybe not. This seemingly conflicts with the doctrine that Expression
-  is a subtype of Element_Generator. So is Function a subtype of Procedure?
+  is a subtype of Value_Generator. So is Function a subtype of Procedure?
 * In the discussion of `jq`, it's useful to consider Function to be a subtype
-  of Element Generator Procedure.
+  of Value Generator Procedure.
 * So this would mean, calling a function with procedure call syntax results
-  in an element generator phrase. Which might cause an error if the context
+  in a value generator phrase. Which might cause an error if the context
   doesn't allow this. But it would be legal in a list constructor.
 
 * `print`, `warning`, `assert` are procedure values.
@@ -207,7 +207,7 @@ for the benefit of human readers, if there is a benefit. Syntax could be:
     param1 -> param2 -> finalparam => statement
     identifier! param = statement;
     identifier param1 param2! finalparam = statement;
-If a procedure body is an expression, it's treated as an element generator.
+If a procedure body is an expression, it's treated as a value generator.
 Without this syntax, you would use `x->...[x]` for a procedure that generates x.
 With this syntax, you could use `x=>x`.
 
@@ -249,7 +249,7 @@ Proposal: Procedures are not Values
 Old Thoughts about Procedures
 =============================
 Procedures (Functions returning actions or generators):
-* A statement is an action, element generator, or field generator.
+* A statement is an action, value generator, or field generator.
   A procedure is a function that abstracts over a statement.
   Procedures are values, but can only be invoked in a statement context.
 * Pragmatic justification:

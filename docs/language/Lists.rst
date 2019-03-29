@@ -4,10 +4,10 @@ A list is a finite, ordered sequence of values.
 For example, ``[1,2,3]`` is a list of 3 numbers.
 
 List Constructors
-  A list constructor is a comma-separated list of expressions or element generators,
+  A list constructor is a comma-separated list of expressions or value generators,
   inside square brackets or parentheses.
   If parentheses are used, either the list is empty ``()`` or contains
-  at least one comma. The final expression or element generator may be followed
+  at least one comma. The final expression or value generator may be followed
   by an optional comma.
   
   For example::
@@ -16,9 +16,9 @@ List Constructors
     [1] or [1,] or (1,)
     [1,2] or (1,2)
 
-  An element generator is a kind of `statement`_
+  A value generator is a kind of `statement`_
   that adds zero or more elements to the list being constructed.
-  The simplest element generator is just an expression,
+  The simplest value generator is just an expression,
   which adds one element to the list.
   
   The spread operator (``...list_expression``) interpolates all of the elements
@@ -27,7 +27,7 @@ List Constructors
   
     [...a, ...b]
   
-  Complex element generators may be composed from simpler ones using blocks and control structures,
+  Complex value generators may be composed from simpler ones using blocks and control structures,
   as described in `Statements`_.
   This syntax is a generalization of the *list comprehensions* found in other languages.
   For example, this yields ``[1,4,9,16,25]``::
