@@ -79,8 +79,9 @@ Program::denotes()
         module = module_->eval_module(*frame_);
     } else {
         List_Builder lb;
+        Operation::List_Executor lex(lb);
         auto gen = meaning_->to_operation(scanner_.system_,scanner_.file_frame_);
-        gen->generate(*frame_, lb);
+        gen->exec(*frame_, lex);
         list = lb.get_list();
     }
     return {module, list};

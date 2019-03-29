@@ -21,41 +21,50 @@ Operation::eval(Frame& f) const
 {
     throw Exception(At_Phrase(*syntax_, f), "not an expression");
 }
+
 void
-Operation::exec(Frame& f) const
+Operation::Action_Executor::push_value(Value, const Context& cstmt)
 {
-    throw Exception(At_Phrase(*syntax_, f), "not an action");
+    throw Exception(cstmt, "illegal statement type: expecting an action");
 }
 void
-Operation::bind(Frame& f, DRecord&) const
+Operation::Action_Executor::push_field(Symbol, Value, const Context& cstmt)
 {
-    throw Exception(At_Phrase(*syntax_, f), "not a binder or action");
-}
-void
-Operation::generate(Frame& f, List_Builder&) const
-{
-    throw Exception(At_Phrase(*syntax_, f), "not a generator, expression or action");
+    throw Exception(cstmt, "illegal statement type: expecting an action");
 }
 
 void
-Just_Expression::generate(Frame& f, List_Builder& lb) const
+Operation::List_Executor::push_value(Value val, const Context& cx)
 {
-    lb.push_back(eval(f));
+    list_.push_back(val);
+}
+void
+Operation::List_Executor::push_field(Symbol, Value, const Context& cstmt)
+{
+    throw Exception(cstmt,
+        "illegal statement type: can't add record fields to a list");
 }
 
 void
-Just_Action::generate(Frame& f, List_Builder&) const
+Operation::Record_Executor::push_value(Value, const Context& cstmt)
 {
-    exec(f);
+    throw Exception(cstmt,
+        "illegal statement type: can't add list elements to a record");
 }
 void
-Just_Action::bind(Frame& f, DRecord&) const
+Operation::Record_Executor::push_field(Symbol name, Value value, const Context& cx)
 {
-    exec(f);
+    record_.fields_[name] = value;
 }
 
 void
-Null_Action::exec(Frame&) const
+Just_Expression::exec(Frame& f, Executor& ex) const
+{
+    ex.push_value(eval(f), At_Phrase(*syntax_,f));
+}
+
+void
+Null_Action::exec(Frame&, Executor&) const
 {
 }
 
@@ -241,25 +250,11 @@ If_Op::eval(Frame& f) const
         "if: not an expression (missing else clause)"};
 }
 void
-If_Op::generate(Frame& f, List_Builder& lb) const
+If_Op::exec(Frame& f, Executor& ex) const
 {
     bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
     if (a)
-        arg2_->generate(f, lb);
-}
-void
-If_Op::bind(Frame& f, DRecord& r) const
-{
-    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
-    if (a)
-        arg2_->bind(f, r);
-}
-void
-If_Op::exec(Frame& f) const
-{
-    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
-    if (a)
-        arg2_->exec(f);
+        arg2_->exec(f, ex);
 }
 
 Value
@@ -290,31 +285,13 @@ If_Else_Op::eval(Frame& f) const
     throw Exception(cx, stringify(cond, " is not a boolean"));
 }
 void
-If_Else_Op::generate(Frame& f, List_Builder& lb) const
+If_Else_Op::exec(Frame& f, Executor& ex) const
 {
     bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
     if (a)
-        arg2_->generate(f, lb);
+        arg2_->exec(f, ex);
     else
-        arg3_->generate(f, lb);
-}
-void
-If_Else_Op::bind(Frame& f, DRecord& r) const
-{
-    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
-    if (a)
-        arg2_->bind(f, r);
-    else
-        arg3_->bind(f, r);
-}
-void
-If_Else_Op::exec(Frame& f) const
-{
-    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
-    if (a)
-        arg2_->exec(f);
-    else
-        arg3_->exec(f);
+        arg3_->exec(f, ex);
 }
 
 Value
@@ -556,8 +533,9 @@ List_Expr_Base::eval_list(Frame& f) const
     // TODO: if the # of elements generated is known at compile time,
     // then the List could be constructed directly without using a std::vector.
     List_Builder lb;
+    List_Executor lex(lb);
     for (size_t i = 0; i < this->size(); ++i)
-        (*this)[i]->generate(f, lb);
+        (*this)[i]->exec(f, lex);
     return lb.get_list();
 }
 
@@ -568,34 +546,37 @@ List_Expr_Base::eval(Frame& f) const
 }
 
 void
-Spread_Op::generate(Frame& f, List_Builder& lb) const
+Spread_Op::exec(Frame& f, Executor& ex) const
 {
-    auto list = arg_->eval(f).to<const List>(At_Phrase(*arg_->syntax_, f));
-    for (size_t i = 0; i < list->size(); ++i)
-        lb.push_back(list->at(i));
-}
-void
-Spread_Op::bind(Frame& f, DRecord& r) const
-{
-    At_Phrase cx(*arg_->syntax_, f);
-    auto s = arg_->eval(f).to<const Record>(cx);
-    for (auto i = s->iter(); !i->empty(); i->next())
-        r.fields_[i->key()] = i->value(cx);
+    At_Phrase cstmt(*syntax_, f);
+    At_Phrase carg(*arg_->syntax_, f);
+    auto arg = arg_->eval(f);
+    if (auto list = arg.dycast<const List>()) {
+        for (size_t i = 0; i < list->size(); ++i)
+            ex.push_value(list->at(i), cstmt);
+        return;
+    }
+    if (auto rec = arg.dycast<const Record>()) {
+        for (auto i = rec->iter(); !i->empty(); i->next())
+            ex.push_field(i->key(), i->value(carg), cstmt);
+        return;
+    }
+    throw Exception(carg, stringify(arg, " is not a list or record"));
 }
 
 void
-Assoc::bind(Frame& f, DRecord& r) const
+Assoc::exec(Frame& f, Executor& ex) const
 {
-    Symbol symbol = name_.eval(f);
-    r.fields_[symbol] = definiens_->eval(f);
+    ex.push_field(name_.eval(f), definiens_->eval(f), At_Phrase(*syntax_, f));
 }
 
 Value
 Record_Expr::eval(Frame& f) const
 {
     auto record = make<DRecord>();
+    Record_Executor rex(*record);
     for (auto op : fields_)
-        op->bind(f, *record);
+        op->exec(f, rex);
     return {record};
 }
 
@@ -608,8 +589,9 @@ Scope_Executable::eval_module(Frame& f) const
     Shared<Module> module =
         Module::make(module_dictionary_->size(), module_dictionary_);
     f[module_slot_] = {module};
+    Operation::Action_Executor aex;
     for (auto action : actions_)
-        action->exec(f);
+        action->exec(f, aex);
     return module;
 }
 void
@@ -618,14 +600,15 @@ Scope_Executable::exec(Frame& f) const
     if (module_slot_ != (slot_t)(-1)) {
         (void) eval_module(f);
     } else {
+        Operation::Action_Executor aex;
         for (auto action : actions_) {
-            action->exec(f);
+            action->exec(f, aex);
         }
     }
 }
 
 void
-Data_Setter::exec(Frame& f) const
+Data_Setter::exec(Frame& f, Executor&) const
 {
     f[slot_] = expr_->eval(f);
 }
@@ -659,101 +642,46 @@ Block_Op::eval(Frame& f) const
     return body_->eval(f);
 }
 void
-Block_Op::generate(Frame& f, List_Builder& lb) const
+Block_Op::exec(Frame& f, Executor& ex) const
 {
     statements_.exec(f);
-    body_->generate(f, lb);
-}
-void
-Block_Op::bind(Frame& f, DRecord& r) const
-{
-    statements_.exec(f);
-    body_->bind(f, r);
-}
-void
-Block_Op::exec(Frame& f) const
-{
-    statements_.exec(f);
-    body_->exec(f);
+    body_->exec(f, ex);
 }
 
 Value
 Preaction_Op::eval(Frame& f) const
 {
-    actions_->exec(f);
+    Action_Executor aex;
+    actions_->exec(f, aex);
     return body_->eval(f);
 }
 void
-Preaction_Op::generate(Frame& f, List_Builder& lb) const
+Preaction_Op::exec(Frame& f, Executor& ex) const
 {
-    actions_->generate(f, lb);
-    body_->generate(f, lb);
-}
-void
-Preaction_Op::bind(Frame& f, DRecord& r) const
-{
-    actions_->bind(f, r);
-    body_->bind(f, r);
-}
-void
-Preaction_Op::exec(Frame& f) const
-{
-    actions_->exec(f);
-    body_->exec(f);
+    actions_->exec(f, ex);
+    body_->exec(f, ex);
 }
 
 void
-Compound_Op_Base::generate(Frame& f, List_Builder& lb) const
+Compound_Op_Base::exec(Frame& f, Executor& ex) const
 {
     for (auto s : *this)
-        s->generate(f, lb);
-}
-void
-Compound_Op_Base::bind(Frame& f, DRecord& r) const
-{
-    for (auto s : *this)
-        s->bind(f, r);
-}
-void
-Compound_Op_Base::exec(Frame& f) const
-{
-    for (auto s : *this)
-        s->exec(f);
+        s->exec(f, ex);
 }
 
 void
-While_Op::exec(Frame& f) const
+While_Op::exec(Frame& f, Executor& ex) const
 {
     for (;;) {
         Value c = cond_->eval(f);
         bool b = c.to_bool(At_Phrase{*cond_->syntax_, f});
         if (!b) return;
-        body_->exec(f);
-    }
-}
-void
-While_Op::generate(Frame& f, List_Builder& lb) const
-{
-    for (;;) {
-        Value c = cond_->eval(f);
-        bool b = c.to_bool(At_Phrase{*cond_->syntax_, f});
-        if (!b) return;
-        body_->generate(f, lb);
-    }
-}
-void
-While_Op::bind(Frame& f, DRecord& r) const
-{
-    for (;;) {
-        Value c = cond_->eval(f);
-        bool b = c.to_bool(At_Phrase{*cond_->syntax_, f});
-        if (!b) return;
-        body_->bind(f, r);
+        body_->exec(f, ex);
     }
 }
 
 void
-For_Op::generate(Frame& f, List_Builder& lb) const
+For_Op::exec(Frame& f, Executor& ex) const
 {
     At_Phrase cx{*list_->syntax_, f};
     At_Index icx{0, cx};
@@ -761,31 +689,7 @@ For_Op::generate(Frame& f, List_Builder& lb) const
     for (size_t i = 0; i < list->size(); ++i) {
         icx.index_ = i;
         pattern_->exec(f.array_, list->at(i), icx, f);
-        body_->generate(f, lb);
-    }
-}
-void
-For_Op::bind(Frame& f, DRecord& r) const
-{
-    At_Phrase cx{*list_->syntax_, f};
-    At_Index icx{0, cx};
-    auto list = list_->eval(f).to<List>(cx);
-    for (size_t i = 0; i < list->size(); ++i) {
-        icx.index_ = i;
-        pattern_->exec(f.array_, list->at(i), icx, f);
-        body_->bind(f, r);
-    }
-}
-void
-For_Op::exec(Frame& f) const
-{
-    At_Phrase cx{*list_->syntax_, f};
-    At_Index icx{0, cx};
-    auto list = list_->eval(f).to<List>(cx);
-    for (size_t i = 0; i < list->size(); ++i) {
-        icx.index_ = i;
-        pattern_->exec(f.array_, list->at(i), icx, f);
-        body_->exec(f);
+        body_->exec(f, ex);
     }
 }
 
@@ -897,7 +801,7 @@ String_Expr_Base::eval_symbol(Frame& f) const
 }
 
 void
-Pattern_Setter::exec(Frame& f) const
+Pattern_Setter::exec(Frame& f, Executor&) const
 {
     Value* slots;
     if (module_slot_ == (slot_t)(-1))
@@ -913,7 +817,7 @@ Pattern_Setter::exec(Frame& f) const
 }
 
 void
-Function_Setter_Base::exec(Frame& f) const
+Function_Setter_Base::exec(Frame& f, Executor&) const
 {
     Value* slots;
     if (module_slot_ == (slot_t)(-1))
@@ -930,7 +834,7 @@ Function_Setter_Base::exec(Frame& f) const
 }
 
 void
-Include_Setter_Base::exec(Frame& f) const
+Include_Setter_Base::exec(Frame& f, Executor&) const
 {
     Value* slots;
     if (module_slot_ == (slot_t)(-1))

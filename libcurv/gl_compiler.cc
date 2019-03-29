@@ -29,6 +29,7 @@ struct GL_Data_Ref : public Operation
     : Operation(std::move(src)), val_(v)
     {}
     GL_Value gl_eval(GL_Frame&) const override { return val_; }
+    void exec(Frame&, Executor&) const override { }
 };
 
 // This is the main entry point into the GL compiler.

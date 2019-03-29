@@ -657,17 +657,17 @@ struct File_Metafunction : public Metafunction
 };
 
 /// The meaning of a call to `print`, such as `print "foo"`.
-struct Print_Action : public Just_Action
+struct Print_Action : public Operation
 {
     Shared<Operation> arg_;
     Print_Action(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Just_Action(std::move(syntax)),
+        Operation(std::move(syntax)),
         arg_(std::move(arg))
     {}
-    virtual void exec(Frame& f) const override
+    virtual void exec(Frame& f, Executor&) const override
     {
         Value arg = arg_->eval(f);
         auto str = arg.dycast<String>();
@@ -686,17 +686,17 @@ struct Print_Metafunction : public Metafunction
     }
 };
 
-struct Warning_Action : public Just_Action
+struct Warning_Action : public Operation
 {
     Shared<Operation> arg_;
     Warning_Action(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Just_Action(std::move(syntax)),
+        Operation(std::move(syntax)),
         arg_(std::move(arg))
     {}
-    virtual void exec(Frame& f) const override
+    virtual void exec(Frame& f, Executor&) const override
     {
         Value arg = arg_->eval(f);
         Shared<String> msg;
@@ -739,19 +739,11 @@ struct Error_Operation : public Operation
             msg = stringify(val);
         throw Exception{At_Phrase(*syntax_, f), msg};
     }
-    virtual void exec(Frame& f) const override
+    virtual void exec(Frame& f, Executor&) const override
     {
         run(f);
     }
     virtual Value eval(Frame& f) const override
-    {
-        run(f);
-    }
-    virtual void generate(Frame& f, List_Builder&) const override
-    {
-        run(f);
-    }
-    virtual void bind(Frame& f, DRecord&) const override
     {
         run(f);
     }
@@ -768,17 +760,17 @@ struct Error_Metafunction : public Metafunction
 
 // exec(expr) -- a debug action that evaluates expr, then discards the result.
 // It is used to call functions or source files for their side effects.
-struct Exec_Action : public Just_Action
+struct Exec_Action : public Operation
 {
     Shared<Operation> arg_;
     Exec_Action(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Just_Action(std::move(syntax)),
+        Operation(std::move(syntax)),
         arg_(std::move(arg))
     {}
-    virtual void exec(Frame& f) const override
+    virtual void exec(Frame& f, Executor&) const override
     {
         arg_->eval(f);
     }
@@ -792,17 +784,17 @@ struct Exec_Metafunction : public Metafunction
     }
 };
 
-struct Assert_Action : public Just_Action
+struct Assert_Action : public Operation
 {
     Shared<Operation> arg_;
     Assert_Action(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Just_Action(std::move(syntax)),
+        Operation(std::move(syntax)),
         arg_(std::move(arg))
     {}
-    virtual void exec(Frame& f) const override
+    virtual void exec(Frame& f, Executor&) const override
     {
         At_Metacall cx{"assert", 0, *arg_->syntax_, f};
         bool b = arg_->eval(f).to_bool(cx);
@@ -820,7 +812,7 @@ struct Assert_Metafunction : public Metafunction
     }
 };
 
-struct Assert_Error_Action : public Just_Action
+struct Assert_Error_Action : public Operation
 {
     Shared<Operation> expected_message_;
     Shared<const String> actual_message_;
@@ -832,13 +824,13 @@ struct Assert_Error_Action : public Just_Action
         Shared<const String> actual_message,
         Shared<Operation> expr)
     :
-        Just_Action(std::move(syntax)),
+        Operation(std::move(syntax)),
         expected_message_(std::move(expected_message)),
         actual_message_(std::move(actual_message)),
         expr_(std::move(expr))
     {}
 
-    virtual void exec(Frame& f) const override
+    virtual void exec(Frame& f, Executor&) const override
     {
         Value expected_msg_val = expected_message_->eval(f);
         auto expected_msg_str = expected_msg_val.to<const String>(

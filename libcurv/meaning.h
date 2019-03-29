@@ -93,11 +93,42 @@ struct Operation : public Meaning
     virtual Shared<Operation> to_operation(System&, Frame*);
     virtual Shared<Meaning> call(const Call_Phrase&, Environ&);
 
+    // An object that is used to execute a statement,
+    // in conjunction with Operation::exec().
+    struct Executor
+    {
+        // The Context argument denotes the statement which generated the
+        // value or field, not the value or field itself.
+        virtual void push_value(Value, const Context&) = 0;
+        virtual void push_field(Symbol, Value, const Context&) = 0;
+    };
+    // Execute statements in a context like a `do` expression,
+    // where only pure actions are permitted.
+    struct Action_Executor : public Executor
+    {
+        virtual void push_value(Value, const Context&) override;
+        virtual void push_field(Symbol, Value, const Context&) override;
+    };
+    // Execute statements within a list comprehension.
+    struct List_Executor : public Executor
+    {
+        List_Builder& list_;
+        List_Executor(List_Builder& list) : list_(list) {}
+        virtual void push_value(Value, const Context&) override;
+        virtual void push_field(Symbol, Value, const Context&) override;
+    };
+    // Execute statements within a record comprehension.
+    struct Record_Executor : public Executor
+    {
+        DRecord& record_;
+        Record_Executor(DRecord& rec) : record_(rec) {}
+        virtual void push_value(Value, const Context&) override;
+        virtual void push_field(Symbol, Value, const Context&) override;
+    };
+
     // These functions are called during evaluation.
     virtual Value eval(Frame&) const;
-    virtual void generate(Frame&, List_Builder&) const;
-    virtual void bind(Frame&, DRecord&) const;
-    virtual void exec(Frame&) const;
+    virtual void exec(Frame&, Executor&) const = 0;
 
     // These functions are called by the Shape Compiler.
     virtual GL_Value gl_eval(GL_Frame&) const;
@@ -126,29 +157,7 @@ struct Just_Expression : public Operation
 
     // These functions are called during evaluation.
     virtual Value eval(Frame&) const override = 0;
-    virtual void generate(Frame&, List_Builder&) const override;
-};
-
-/// `Just_Action` is an implementation class, inherited by Operation classes
-/// whose instances are always actions. It provides sensible defaults
-/// for the eval/generate/exec virtual functions.
-///
-/// An action is an Operation that causes a side effect and produces no values.
-/// The work is done by the `exec` method, which must be defined.
-/// All actions are generators that produce no values, so the `generate` method
-/// calls the `exec` method.
-///
-/// This is not an interface class, and not all action objects are derived
-/// from Just_Action. Functions should not take Just_Actions as values
-/// or return Just_Actions as results: use Operation instead.
-struct Just_Action : public Operation
-{
-    using Operation::Operation;
-
-    // These functions are called during evaluation.
-    virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, DRecord&) const override;
-    virtual void exec(Frame&) const override = 0;
+    virtual void exec(Frame&, Executor&) const override;
 };
 
 /// A Constant is an Expression whose value is known at compile time.
@@ -171,10 +180,10 @@ struct Constant : public Just_Expression
     virtual bool hash_eq(const Operation&) const noexcept override;
 };
 
-struct Null_Action : public Just_Action
+struct Null_Action : public Operation
 {
-    using Just_Action::Just_Action;
-    virtual void exec(Frame&) const override;
+    using Operation::Operation;
+    virtual void exec(Frame&, Executor&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 };
 
@@ -303,8 +312,7 @@ struct Spread_Op : public Operation
         arg_(std::move(arg))
     {}
 
-    virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, DRecord&) const override;
+    virtual void exec(Frame&, Executor&) const override;
 };
 
 struct Infix_Expr_Base : public Just_Expression
@@ -496,7 +504,7 @@ struct Scope_Executable
 
 // An internal action for storing the value of a data definition
 // in the evaluation frame. Part of the actions_ list in a Scope_Executable.
-struct Data_Setter : public Just_Action
+struct Data_Setter : public Operation
 {
     slot_t slot_;
     Shared<Operation> expr_;
@@ -508,13 +516,13 @@ struct Data_Setter : public Just_Action
         Shared<Operation> expr,
         bool reassign)
     :
-        Just_Action(std::move(syntax)),
+        Operation(std::move(syntax)),
         slot_(slot),
         expr_(std::move(expr)),
         reassign_(reassign)
     {}
 
-    void exec(Frame&) const override;
+    virtual void exec(Frame&, Executor&) const override;
     void gl_exec(GL_Frame&) const override;
 };
 
@@ -576,7 +584,7 @@ struct Scoped_Module_Expr : public Module_Expr
     virtual Shared<Module> eval_module(Frame&) const override;
 };
 
-struct Pattern_Setter : public Just_Action
+struct Pattern_Setter : public Operation
 {
     slot_t module_slot_; // copied from enclosing Scope_Executable
     Shared<Pattern> pattern_;
@@ -588,13 +596,13 @@ struct Pattern_Setter : public Just_Action
         Shared<Pattern> pattern,
         Shared<Operation> definiens)
     :
-        Just_Action(std::move(syntax)),
+        Operation(std::move(syntax)),
         module_slot_(module_slot),
         pattern_(std::move(pattern)),
         definiens_(std::move(definiens))
     {}
 
-    virtual void exec(Frame&) const override;
+    virtual void exec(Frame&, Executor&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 };
 
@@ -602,7 +610,7 @@ struct Pattern_Setter : public Just_Action
 // for a group of mutually recursive closures.
 // The closures share a single `nonlocals` object.
 // Part of the actions_ list in a Scope_Executable for a Recursive_Scope.
-struct Function_Setter_Base : public Just_Action
+struct Function_Setter_Base : public Operation
 {
     // a copy of module_slot_ from the enclosing Scope_Executable.
     slot_t module_slot_;
@@ -615,12 +623,12 @@ struct Function_Setter_Base : public Just_Action
         slot_t module_slot,
         Shared<Enum_Module_Expr> nonlocals)
     :
-        Just_Action(std::move(syntax)),
+        Operation(std::move(syntax)),
         module_slot_(module_slot),
         nonlocals_(std::move(nonlocals))
     {}
 
-    void exec(Frame&) const override;
+    virtual void exec(Frame&, Executor&) const override;
 
     struct Element {
         slot_t slot_;
@@ -632,13 +640,13 @@ struct Function_Setter_Base : public Just_Action
 };
 using Function_Setter = Tail_Array<Function_Setter_Base>;
 
-struct Include_Setter_Base : public Just_Action
+struct Include_Setter_Base : public Operation
 {
     slot_t module_slot_ = (slot_t)(-1);
 
-    using Just_Action::Just_Action;
+    using Operation::Operation;
 
-    void exec(Frame&) const override;
+    virtual void exec(Frame&, Executor&) const override;
 
     struct Element {
         slot_t slot_;
@@ -655,9 +663,7 @@ struct Compound_Op_Base : public Operation
     Compound_Op_Base(Shared<const Phrase> syntax)
     : Operation(std::move(syntax)) {}
 
-    virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, DRecord&) const override;
-    virtual void exec(Frame&) const override;
+    virtual void exec(Frame&, Executor&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 
     TAIL_ARRAY_MEMBERS(Shared<Operation>)
@@ -682,9 +688,7 @@ struct Preaction_Op : public Operation
     {}
 
     virtual Value eval(Frame&) const override;
-    virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, DRecord&) const override;
-    virtual void exec(Frame&) const override;
+    virtual void exec(Frame&, Executor&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 };
@@ -705,9 +709,7 @@ struct Block_Op : public Operation
     {}
 
     virtual Value eval(Frame&) const override;
-    virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, DRecord&) const override;
-    virtual void exec(Frame&) const override;
+    virtual void exec(Frame&, Executor&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 };
@@ -730,13 +732,11 @@ struct For_Op : public Operation
         body_(std::move(body))
     {}
 
-    virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, DRecord&) const override;
-    virtual void exec(Frame&) const override;
+    virtual void exec(Frame&, Executor&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 };
 
-struct While_Op : public Just_Action
+struct While_Op : public Operation
 {
     Shared<const Operation> cond_;
     Shared<const Operation> body_;
@@ -746,14 +746,12 @@ struct While_Op : public Just_Action
         Shared<const Operation> cond,
         Shared<const Operation> body)
     :
-        Just_Action(std::move(syntax)),
+        Operation(std::move(syntax)),
         cond_(std::move(cond)),
         body_(std::move(body))
     {}
 
-    virtual void exec(Frame&) const override;
-    virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, DRecord&) const override;
+    virtual void exec(Frame&, Executor&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 };
 
@@ -773,9 +771,7 @@ struct If_Op : public Operation
     {}
 
     virtual Value eval(Frame&) const override; // error message: missing else
-    virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, DRecord&) const override;
-    virtual void exec(Frame&) const override;
+    virtual void exec(Frame&, Executor&) const override;
     virtual void gl_exec(GL_Frame&) const override;
 };
 
@@ -800,9 +796,7 @@ struct If_Else_Op : public Operation
     }
 
     virtual Value eval(Frame&) const override;
-    virtual void generate(Frame&, List_Builder&) const override;
-    virtual void bind(Frame&, DRecord&) const override;
-    virtual void exec(Frame&) const override;
+    virtual void exec(Frame&, Executor&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
     virtual size_t hash() const noexcept override;
@@ -936,7 +930,7 @@ struct Assoc : public Operation
         definiens_(std::move(definiens))
     {}
 
-    virtual void bind(Frame&, DRecord&) const override;
+    virtual void exec(Frame&, Executor&) const override;
 };
 
 struct Parametric_Expr : public Just_Expression

@@ -30,17 +30,17 @@ run_cpp_test(const Context& cx, Shared<const Function> func)
     if (!result)
         throw Exception(cx, "assertion failed in C++");
 }
-struct GL_Test_Action : public Just_Action
+struct GL_Test_Action : public Operation
 {
     Shared<Operation> arg_;
     GL_Test_Action(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Just_Action(std::move(syntax)),
+        Operation(std::move(syntax)),
         arg_(std::move(arg))
     {}
-    virtual void exec(Frame& f) const override
+    virtual void exec(Frame& f, Executor&) const override
     {
         Value arg = arg_->eval(f);
         At_Phrase cx(*arg_->syntax_, f);
