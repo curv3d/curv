@@ -38,6 +38,20 @@ make_system()
     }
 }
 
+struct Test_Executor : public Operation::Executor
+{
+    String_Builder& out_;
+    Test_Executor(String_Builder& out) : out_(out) {}
+    void push_value(Value val, const Context&) override
+    {
+        out_ << val << "\n";
+    }
+    void push_field(Symbol name, Value val, const Context&) override
+    {
+        out_ << name << ":" << val << "\n";
+    }
+};
+
 struct Evaluator
 {
     Evaluator(const char* text)
@@ -52,27 +66,20 @@ struct Evaluator
             auto source = make<String_Source>("", text);
             Program prog{std::move(source), make_system()};
             prog.compile();
-            auto den = prog.denotes();
 
             String_Builder buf;
-            bool first = true;
-            if (den.first) {
-                for (auto f : *den.first) {
-                    if (!first) buf << "\n";
-                    buf << f.first << "=" << f.second;
-                    first = false;
-                }
-            }
-            if (den.second) {
-                for (auto e : *den.second) {
-                    if (!first) buf << "\n";
-                    buf << e;
-                    first = false;
+            Test_Executor executor(buf);
+            auto bindings = prog.exec(executor);
+            if (bindings) {
+                for (auto f : *bindings) {
+                    buf << f.first << "=" << f.second << "\n";
                 }
             }
 
             success_str_ = buf.get_string();
             success_ = success_str_->c_str();
+            if (!success_str_->empty()) // remove trailing newline
+                ((char*)success_)[success_str_->size() - 1] = '\0';
         } catch (curv::Exception& e) {
             failmsg_str_ = e.shared_what();
             failmsg_ = failmsg_str_->c_str();
