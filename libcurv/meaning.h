@@ -64,22 +64,25 @@ struct Metafunction : public Meaning
 /// Representation) to which optimizations are applied, and it is also our
 /// executable format. In the future, we should separate these roles, add a
 /// separate code generation phase, and use a more efficient executable code
-/// representaton.
+/// representation.
 ///
-/// There are 4 kinds of Operation:
-///  1. An Expression is evaluated to produce a single value using `eval`.
-///     Every expression is also a generator that produces 1 value.
-///     For example, `2+2`.
-///  2. A Generator is executed to produce a sequence of zero or more values
-///     using `generate`. (Expressions and Actions are also generators.)
+/// Kinds of Operations:
+/// * An Expression is evaluated to return a single value using `eval`.
+///   Every expression is also an element generator that produces 1 value.
+///   For example, `2+2`.
+/// * A Statement is executed for its side effects using `exec`.
+///   There are 3 kinds of statement, and the Executor argument of `exec`
+///   determines which kinds are legal in a given execution context.
+///   * An Element Generator is executed to produce a sequence of zero
+///     or more values, calling `executor.push_value` for each value.
 ///     For example, `for (i in 1..10) i^2`.
-///  3. A Binder is executed to bind zero or more names to values
-///     in a record value that is under construction, using ``bind``.
-///     For example, `x : 42`.
-///  4. An Action is executed to cause a side effect using `exec`,
-///     and no value is produced.
-///     Every action is also a generator that produces 0 values.
-///     Every action is also a binder that binds no names.
+///   * A Field Generator is executed to produce a sequence of zero or
+///     more record fields (name/value pairs), calling `executor.push_field`
+///     for each field. For example, `x : 42`.
+///   * An Action is executed to cause a debug side effect or assign
+///     a local variable, and no values or fields are produced.
+///     Every action is also an element generator that produces 0 values.
+///     Every action is also a field generator that produces 0 fields.
 ///     For example, `assert(x>0)`.
 struct Operation : public Meaning
 {
