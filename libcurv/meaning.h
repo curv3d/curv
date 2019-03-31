@@ -23,7 +23,19 @@ namespace curv {
 struct Operation;
 struct Lambda;
 
-/// An abstract base class representing a semantically analysed Phrase.
+// An abstract base class representing a semantically analysed Phrase.
+// Currently, a Meaning is a Metafunction or an Operation.
+//
+// PROPOSAL: Convert Metafunction to a value type, replacing Meaning
+// with Operation.
+// * A Metafunction value can be used as the left argument of a function call,
+//   only if the Metafunction is a compile time constant. This will become
+//   useful once we have compile time constant folding and partial evaluation
+//   (ie, abstraction over constants).
+//
+// PROPOSAL: Make Curv homoiconic, so that Operations are values.
+// A Metafunction becomes a tagged record value, and there are user defined
+// metafunctions.
 struct Meaning : public Shared_Base
 {
     /// The original syntax tree for this meaning.
