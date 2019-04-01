@@ -7,7 +7,6 @@ v0.5 Planning
   partial evaluation. AMD Mesa support.
 * Interpreter VM improvements:
   * tail recursion optimization: Operation::tail_eval()
-  * generic Operation::exec() -- DRY, support field generator stmts in REPL
 * Better compile time error messages
   * Replace 'not an operation' analysis time error with useful message.
 * Parametric shapes:
@@ -29,6 +28,7 @@ v0.5 Planning
   * polyhedra
 * WASM executable
 * language:
+  * `pattern : expr`
   * `a[i] := x`, a[[X,Y]] := [x,y]
     Assignment_Action::locative_, Locative::store_value()
   * Shape Compiler: matrix multiplication
@@ -65,7 +65,6 @@ v0.5 Planning
  * REPL language dialect
    * document it
    * support :=
-   * support 'field generator' statements
 
 Big Items
 * graphical value pickers in the viewer

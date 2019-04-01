@@ -4,6 +4,7 @@ What are the minimal changes required to the current evaluator?
 (We don't yet support single stepping in a hypothetical debugger.)
 
 Expressions that are in tail position:
+* Top level of a program.
 * Body of a lambda.
 * If a let/where/do is in tail position, then so is its body.
 * If an if-then-else is in tail position, then so are its then and else exprs.
@@ -18,26 +19,63 @@ Normal eval() is 'Value eval(Frame&)'.
 New design, based on my previous design for a CPS based VM.
 -----------------------------------------------------------
 The Frame now contains new VM registers:
-* 'Operation *op_', current Operation.
+* 'const Operation *next_op_',
 * 'Value result_', to which is stored the result of a tail call.
 
 The new interpreter is now a loop that invokes the current instruction,
 referenced by the IP.  Each instruction is responsible for advancing the IP,
 and possibly for replacing the current Frame with another one.
 
-    void Operation::tail_eval(unique_ptr<Frame>&)
+    void Operation::tail_eval(unique_ptr<Frame>&) const
 
-    interpreter(unique_ptr<Frame> f)
+    Value evaluate(unique_ptr<Frame> f)
     {
-        while (f != nullptr)
-            f->op_->tail_eval(f);
+        while (f->next_op_ != nullptr)
+            f->next_op_->tail_eval(f);
+        return f->result_;
     }
 
 The Operation::tail_eval method:
-* reads dynamic arguments from the Frame, and static arguments from the
+* Reads dynamic arguments from the Frame, and static arguments from the
   Operation.
 * Performs a computation, usually producing a result, sometimes causing
   side effects.
 * "calls its continuation", which means storing result values in the frame,
-  updating `f->op` to point to the next Operation, sometimes pushing or popping
-  the frame stack (and returning a different frame than it was passed).
+  updating `f->next_op_` to point to the next Operation, sometimes replacing
+  the frame stack with the frame of its continuation.
+
+Program::eval()
+    frame_->next_op_ = &*expr_;
+    return evaluate(frame_);
+
+Operation::tail_eval(unique_ptr<Frame>& f) // default implementation
+    f->result_ = eval(f);
+    f->next_op_ = nullptr;
+
+Call_Expr::tail_eval(unique_ptr<Frame>& f)
+    eval function
+    eval argument
+    f = make frame
+    fun->tail_call(arg, f)
+
+Value Call_Expr::eval(Frame& f)
+    eval function
+    eval argument
+    f2 = make frame
+    fun->tail_call(arg, f2)
+    return evaluate(f2);
+
+Closure::tail_call(Value arg, unique_ptr<Frame>& f)
+    f->nonlocals_ = &*nonlocals_;
+    pattern_->exec(f->array_, arg, At_Arg(*this, *f), *f);
+    f->next_op = &*expr_;
+
+If_Else_Op::tail_eval(unique_ptr<Frame>& f)
+    ...
+    if (cond.is_bool()) {
+        if (cond.to_bool(cx))
+            f->next_op_ = &*arg2_;
+        else
+            f->next_op_ = &*arg3_;
+        return;
+    }
