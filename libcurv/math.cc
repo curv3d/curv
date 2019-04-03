@@ -106,7 +106,7 @@ Value dot(Value a, Value b, const At_Syntax& cx)
     } else {
         if (av->size() != bv->size())
             throw Exception(cx, stringify("list of size ",av->size(),
-                "can't be multiplied by list of size ",bv->size()));
+                " can't be multiplied by list of size ",bv->size()));
         Value result = {0.0};
         for (size_t i = 0; i < av->size(); ++i)
             result = add(result, multiply(av->at(i), bv->at(i), cx), cx);
