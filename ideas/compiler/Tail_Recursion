@@ -66,9 +66,9 @@ Value Call_Expr::eval(Frame& f)
     return evaluate(f2);
 
 Closure::tail_call(Value arg, unique_ptr<Frame>& f)
-    f->nonlocals_ = &*nonlocals_;
+    f->nonlocals_ = &*nonlocals_; // TODO: dangling pointer risk?
     pattern_->exec(f->array_, arg, At_Arg(*this, *f), *f);
-    f->next_op = &*expr_;
+    f->next_op_ = &*expr_;        // TODO: dangling pointer risk?
 
 If_Else_Op::tail_eval(unique_ptr<Frame>& f)
     ...
@@ -79,3 +79,41 @@ If_Else_Op::tail_eval(unique_ptr<Frame>& f)
             f->next_op_ = &*arg3_;
         return;
     }
+
+Truncated Stack Traces
+----------------------
+So I implemented this, and noticed that stack traces now have missing
+elements. The concern is that this will impact debugging, by making stack
+traces harder to use due to discontinuities.
+
+Javascript ES6 introduced a requirement for tail call elimination,
+and there was pushback (Chrome implemented it, then reverted the changes).
+This counterproposal was written:
+    https://github.com/tc39/proposal-ptc-syntax
+This was a bad idea; it wasn't added to Javascript, and would also be bad
+for Curv.
+
+Lua has tail call elimination. I found a forum discussion with instructions
+on how to disable it by hacking the compiler, so that you can debug programs.
+
+Is there a way to make stack traces more useful while still keeping the
+good bits of tail call optimization? Let's set out some requirements.
+
+First, consider programs that do not treat functions as value: they are not
+passed as arguments, returned as results, or stored in data structures.
+For this subset of programs,
+* If a program contains no recursion, then no tail call frames are elided.
+  Stack traces are the same as you expect in an imperative language.
+* If there is recursion, then for a tail call to a recursive function,
+  within a recursive function, the new stack frame is elided.
+
+Next, consider programs that treat functions as data (this is a characteristic
+of functional programming style). Consider tail calls where the identity
+of the function is not determined until run time. These function calls might
+be part of a tail recursive loop, but as a first approximation, we don't know.
+So to be safe, the frames for these tail calls are elided.
+
+These rules try to achieve two goals:
+1. We guarantee that tail-recursive loops will not blow up the stack.
+2. Imperative-style programs will have imperative-style stack traces,
+   except in cases where this violates goal 1.

@@ -14,6 +14,8 @@
 namespace curv {
 
 struct Frame_Base;
+struct Function;
+struct Operation;
 struct Phrase;
 struct System;
 
@@ -60,6 +62,17 @@ struct Frame_Base
     /// * nullptr, for a builtin function call, or a program frame.
     Module* nonlocals_;
 
+    // Registers used by tail_eval_frame and Operation::tail_eval.
+    // next_op_ is the next Operation to be executed by the tail-evaluation
+    // interpreter loop, or it is nullptr, in which case result_ holds the
+    // evaluation result.
+    const Operation* next_op_;
+    Value result_;
+
+    // A counted reference to `func_` is held in order to keep the 'nonlocals_'
+    // and 'next_op_' objects alive.
+    Shared<const Function> func_;
+
     // Tail array, containing the slots used for local bindings:
     // function arguments, block bindings and other local, temporary values.
     using value_type = Value;
@@ -74,6 +87,8 @@ struct Frame_Base
 
     Frame_Base(System&, Frame* parent, Shared<const Phrase>, Module*);
 };
+
+Value tail_eval_frame(std::unique_ptr<Frame>);
 
 } // namespace curv
 #endif // header guard

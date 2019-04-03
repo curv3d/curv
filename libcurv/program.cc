@@ -66,7 +66,8 @@ Program::eval()
             "definition found; expecting an expression");
     } else {
         auto expr = meaning_->to_operation(scanner_.system_,scanner_.file_frame_);
-        return expr->eval(*frame_);
+        frame_->next_op_ = &*expr;
+        return tail_eval_frame(std::move(frame_));
     }
 }
 

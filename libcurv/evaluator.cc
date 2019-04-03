@@ -17,9 +17,24 @@
 namespace curv {
 
 Value
+tail_eval_frame(std::unique_ptr<Frame> f)
+{
+    while (f->next_op_ != nullptr)
+        f->next_op_->tail_eval(f);
+    return f->result_;
+}
+
+Value
 Operation::eval(Frame& f) const
 {
     throw Exception(At_Phrase(*syntax_, f), "not an expression");
+}
+
+void
+Operation::tail_eval(std::unique_ptr<Frame>& f) const
+{
+    f->result_ = eval(*f);
+    f->next_op_ = nullptr;
 }
 
 void
@@ -285,6 +300,36 @@ If_Else_Op::eval(Frame& f) const
     throw Exception(cx, stringify(cond, " is not a boolean"));
 }
 void
+If_Else_Op::tail_eval(std::unique_ptr<Frame>& f) const
+{
+    Value cond = arg1_->eval(*f);
+    At_Phrase cx(*arg1_->syntax_, *f);
+    if (cond.is_bool()) {
+        if (cond.to_bool(cx))
+            f->next_op_ = &*arg2_;
+        else
+            f->next_op_ = &*arg3_;
+        return;
+    }
+    auto re = cond.dycast<Reactive_Value>();
+    if (re && re->gltype_ == GL_Type::Bool()) {
+        Value a2 = arg2_->eval(*f);
+        Value a3 = arg3_->eval(*f);
+        f->result_ = Value{make<Reactive_Expression>(
+            gl_type_join(gl_type_of(a2), gl_type_of(a3)),
+            make<If_Else_Op>(
+                share(*syntax_),
+                make<Constant>(share(*arg1_->syntax_), cond),
+                make<Constant>(share(*arg2_->syntax_), a2),
+                make<Constant>(share(*arg3_->syntax_), a3)
+            ),
+            At_Phrase(*syntax_, *f))};
+        f->next_op_ = nullptr;
+        return;
+    }
+    throw Exception(cx, stringify(cond, " is not a boolean"));
+}
+void
 If_Else_Op::exec(Frame& f, Executor& ex) const
 {
     bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
@@ -493,7 +538,9 @@ call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
             std::unique_ptr<Frame> f2 {
                 Frame::make(fun->nslots_, f.system_, &f, call_phrase, nullptr)
             };
-            return fun->call(arg, *f2);
+            f2->func_ = share(*fun);
+            fun->tail_call(arg, f2);
+            return tail_eval_frame(std::move(f2));
           }
         case Ref_Value::ty_record:
           {
@@ -521,10 +568,67 @@ call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
             stringify(func,": not a function"));
     }
 }
+void
+tail_call_func(
+    Value func, Value arg,
+    Shared<const Phrase> call_phrase, std::unique_ptr<Frame>& f)
+{
+    static Symbol callkey = "call";
+    static Symbol conskey = "constructor";
+    Value funv = func;
+    for (;;) {
+        if (!funv.is_ref())
+            throw Exception(At_Phrase(*func_part(call_phrase), *f),
+                stringify(funv,": not a function"));
+        Ref_Value& funp( funv.get_ref_unsafe() );
+        switch (funp.type_) {
+        case Ref_Value::ty_function:
+          {
+            Function* fun = (Function*)&funp;
+            f = Frame::make(
+                fun->nslots_, f->system_, f->parent_frame_,
+                call_phrase, nullptr);
+            f->func_ = share(*fun);
+            fun->tail_call(arg, f);
+            return;
+          }
+        case Ref_Value::ty_record:
+          {
+            Record* s = (Record*)&funp;
+            if (s->hasfield(callkey)) {
+                funv = s->getfield(callkey, At_Phrase(*call_phrase, *f));
+                continue;
+            }
+            if (s->hasfield(conskey)) {
+                funv = s->getfield(conskey, At_Phrase(*call_phrase, *f));
+                continue;
+            }
+            break;
+          }
+        case Ref_Value::ty_string:
+        case Ref_Value::ty_list:
+        case Ref_Value::ty_reactive:
+          {
+            At_Phrase cx(*arg_part(call_phrase), *f);
+            auto path = arg.to<List>(cx);
+            f->result_ = value_at_path(funv, *path, call_phrase, *f);
+            f->next_op_ = nullptr;
+            return;
+          }
+        }
+        throw Exception(At_Phrase(*func_part(call_phrase), *f),
+            stringify(func,": not a function"));
+    }
+}
 Value
 Call_Expr::eval(Frame& f) const
 {
     return call_func(fun_->eval(f), arg_->eval(f), syntax_, f);
+}
+void
+Call_Expr::tail_eval(std::unique_ptr<Frame>& f) const
+{
+    tail_call_func(fun_->eval(*f), arg_->eval(*f), syntax_, f);
 }
 
 Shared<List>
@@ -642,6 +746,12 @@ Block_Op::eval(Frame& f) const
     return body_->eval(f);
 }
 void
+Block_Op::tail_eval(std::unique_ptr<Frame>& f) const
+{
+    statements_.exec(*f);
+    body_->tail_eval(f);
+}
+void
 Block_Op::exec(Frame& f, Executor& ex) const
 {
     statements_.exec(f);
@@ -654,6 +764,13 @@ Preaction_Op::eval(Frame& f) const
     Action_Executor aex;
     actions_->exec(f, aex);
     return body_->eval(f);
+}
+void
+Preaction_Op::tail_eval(std::unique_ptr<Frame>& f) const
+{
+    Action_Executor aex;
+    actions_->exec(*f, aex);
+    body_->tail_eval(f);
 }
 void
 Preaction_Op::exec(Frame& f, Executor& ex) const

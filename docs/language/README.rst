@@ -71,7 +71,8 @@ Expression Language
   The body of a function is an expression, not a statement list.
 
 Functional Programming
-  Higher order functions, curried functions, pattern matching, list/record/string comprehensions.
+  Higher order functions, curried functions, pattern matching,
+  list/record/string comprehensions, tail call optimization.
 
 Imperative Programming
   Curv has a small imperative subset: assignment statements, compound statements,

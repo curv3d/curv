@@ -248,12 +248,14 @@ TEST(curv, eval)
     SUCCESS("sqrt << sqrt 16", "2");
     FAILALL("let f=()->sqrt(true);\nin f()",
         "argument #1 of sqrt: true: domain error\n"
-        "at:\n"
         "1| let f=()->sqrt(true);\n"
-        "                 ^^^^^^ \n"
+        "                 ^^^^^^ "
+        /* removed due to tail call optimization
         "at:\n"
         "2| in f()\n"
-        "      ^^^");
+        "      ^^^"
+        */
+        );
     SUCCESS("count()", "0");
     FAILALL("count 0",
         "argument #1 of count: not a list or string\n"

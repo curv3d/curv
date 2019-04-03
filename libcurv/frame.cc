@@ -4,6 +4,7 @@
 
 #include <libcurv/frame.h>
 
+#include <libcurv/function.h>
 #include <libcurv/phrase.h>
 
 namespace curv {

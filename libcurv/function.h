@@ -43,10 +43,12 @@ struct Function : public Ref_Value
 
     // call the function during evaluation
     virtual Value call(Value, Frame&) = 0;
+    virtual void tail_call(Value, std::unique_ptr<Frame>&);
 
     // Attempt a function call: return `missing` if the parameter pattern
     // doesn't match the value; otherwise call the function and return result.
     virtual Value try_call(Value, Frame&) = 0;
+    virtual bool try_tail_call(Value, std::unique_ptr<Frame>&);
 
     // Generate a call to the function during geometry compilation.
     // The argument is represented as an expression.
@@ -173,7 +175,9 @@ struct Closure : public Function
     }
 
     virtual Value call(Value, Frame&) override;
+    virtual void tail_call(Value, std::unique_ptr<Frame>&) override;
     virtual Value try_call(Value, Frame&) override;
+    virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) override;
 
     // generate a call to the function during geometry compilation
     virtual GL_Value gl_call_expr(Operation&, Shared<const Phrase>, GL_Frame&) const override;
@@ -193,7 +197,9 @@ struct Piecewise_Function : public Function
 
     // call the function during evaluation, with specified argument value.
     virtual Value call(Value, Frame&) override;
+    virtual void tail_call(Value, std::unique_ptr<Frame>&) override;
     virtual Value try_call(Value, Frame&) override;
+    virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) override;
 
     // generate a call to the function during geometry compilation
     virtual GL_Value gl_call_expr(Operation&, Shared<const Phrase>, GL_Frame&) const override;

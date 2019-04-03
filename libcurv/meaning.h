@@ -143,6 +143,7 @@ struct Operation : public Meaning
 
     // These functions are called during evaluation.
     virtual Value eval(Frame&) const;
+    virtual void tail_eval(std::unique_ptr<Frame>&) const;
     virtual void exec(Frame&, Executor&) const = 0;
 
     // These functions are called by the Shape Compiler.
@@ -276,6 +277,7 @@ struct Call_Expr : public Just_Expression
     }
 
     virtual Value eval(Frame&) const override;
+    virtual void tail_eval(std::unique_ptr<Frame>&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
@@ -703,6 +705,7 @@ struct Preaction_Op : public Operation
     {}
 
     virtual Value eval(Frame&) const override;
+    virtual void tail_eval(std::unique_ptr<Frame>&) const override;
     virtual void exec(Frame&, Executor&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
@@ -724,6 +727,7 @@ struct Block_Op : public Operation
     {}
 
     virtual Value eval(Frame&) const override;
+    virtual void tail_eval(std::unique_ptr<Frame>&) const override;
     virtual void exec(Frame&, Executor&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;
@@ -811,6 +815,7 @@ struct If_Else_Op : public Operation
     }
 
     virtual Value eval(Frame&) const override;
+    virtual void tail_eval(std::unique_ptr<Frame>&) const override;
     virtual void exec(Frame&, Executor&) const override;
     virtual GL_Value gl_eval(GL_Frame&) const override;
     virtual void gl_exec(GL_Frame&) const override;

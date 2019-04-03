@@ -46,6 +46,25 @@ Function::print(std::ostream& out) const
     out << ">";
 }
 
+void
+Function::tail_call(Value arg, std::unique_ptr<Frame>& f)
+{
+    f->result_ = call(arg, *f);
+    f->next_op_ = nullptr;
+}
+
+bool
+Function::try_tail_call(Value arg, std::unique_ptr<Frame>& f)
+{
+    Value result = try_call(arg, *f);
+    if (!result.eq(missing)) {
+        f->result_ = result;
+        f->next_op_ = nullptr;
+        return true;
+    }
+    return false;
+}
+
 GL_Value
 Function::gl_call_expr(Operation& arg, Shared<const Phrase> call_phrase, GL_Frame& f)
 const
@@ -130,6 +149,14 @@ Closure::call(Value arg, Frame& f)
     return expr_->eval(f);
 }
 
+void
+Closure::tail_call(Value arg, std::unique_ptr<Frame>& f)
+{
+    f->nonlocals_ = &*nonlocals_;
+    pattern_->exec(f->array_, arg, At_Arg(*this, *f), *f);
+    f->next_op_ = &*expr_;
+}
+
 Value
 Closure::try_call(Value arg, Frame& f)
 {
@@ -137,6 +164,16 @@ Closure::try_call(Value arg, Frame& f)
     if (!pattern_->try_exec(f.array_, arg, At_Arg(*this, f), f))
         return missing;
     return expr_->eval(f);
+}
+
+bool
+Closure::try_tail_call(Value arg, std::unique_ptr<Frame>& f)
+{
+    f->nonlocals_ = &*nonlocals_;
+    if (!pattern_->try_exec(f->array_, arg, At_Arg(*this, *f), *f))
+        return false;
+    f->next_op_ = &*expr_;
+    return true;
 }
 
 GL_Value
@@ -167,25 +204,47 @@ Piecewise_Function::maxslots(std::vector<Shared<Function>>& cases)
 }
 
 Value
-Piecewise_Function::call(Value val, Frame& f)
+Piecewise_Function::call(Value arg, Frame& f)
 {
     for (auto c : cases_) {
-        Value result = c->try_call(val, f);
+        Value result = c->try_call(arg, f);
         if (!result.eq(missing))
             return result;
     }
     throw Exception(At_Arg(*this, f), stringify(
-        val," has no matching pattern"));
+        arg," has no matching pattern"));
 }
-Value
-Piecewise_Function::try_call(Value val, Frame& f)
+
+void
+Piecewise_Function::tail_call(Value arg, std::unique_ptr<Frame>& f)
 {
     for (auto c : cases_) {
-        Value result = c->try_call(val, f);
+        if (c->try_tail_call(arg, f))
+            return;
+    }
+    throw Exception(At_Arg(*this, *f), stringify(
+        arg," has no matching pattern"));
+}
+
+Value
+Piecewise_Function::try_call(Value arg, Frame& f)
+{
+    for (auto c : cases_) {
+        Value result = c->try_call(arg, f);
         if (!result.eq(missing))
             return result;
     }
     return missing;
+}
+
+bool
+Piecewise_Function::try_tail_call(Value arg, std::unique_ptr<Frame>& f)
+{
+    for (auto c : cases_) {
+        if (c->try_tail_call(arg, f))
+            return true;
+    }
+    return false;
 }
 
 GL_Value
