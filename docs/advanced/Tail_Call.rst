@@ -37,6 +37,7 @@ Definition of a Tail Call
 -------------------------
 A tail call is a function call that appears in a tail context.
 A tail context is defined as follows:
+
 * The body of a function is a tail context.
 * If ``if A then B else C`` appears in a tail context,
   then ``B`` and ``C`` are also tail contexts.
