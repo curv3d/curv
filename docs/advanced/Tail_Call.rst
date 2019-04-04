@@ -83,18 +83,27 @@ support this (the list includes GLSL, C++, SPIR-V, WebAssembly).
 
 It is theoretically possible for the Shape Compiler to support tail call
 optimization for recursive calls (the case that matters most), but without
-target support, it is very complex and difficult to do so in the general case.
+target support, it is complex and difficult to do so in the general case.
 You could identify groups of functions that recursively call each other
 (a mutual recursion group), inline expand all of the functions of each group into
 a single uber-function. Each uber-function has an outer ``while`` loop,
 and uses variables and a state machine to keep track of which function
-is currently executing within the uber-function. The resulting code would be quite slow on a GPU, so you want
+is currently executing within the uber-function.
+(There is a related technique, called a *trampoline*, but it requires function
+pointers, which are not supported by GLSL or SPIR-V.)
+
+The resulting code would be quite slow on a GPU, so you want
 to optimize the code and get rid of the variables. GLSL, SPIR-V and WebAssembly don't have goto
 statements, so you need to convert a control flow graph (CFG) into high level structured
 control statements (if, while, for) using an algorithm like Relooper or Stackifier.
 Emscripten does something like this, but "The Relooper is the most complex module in Emscripten".
 
-Until somebody implements this complex algorithm in Curv, you will need to implement
+It becomes easier if you restrict the problem to supporting self-recursive tail calls (no mutual recursion).
+For example, Elm supports self-recursive tail calls (when compiling to Javascript)
+by generating a ``while`` loop. Without optimization, this code will often be slower in GLSL
+than manually written ``for`` loops, but it would be a start.
+
+Until somebody implements this in Curv, you will need to implement
 your loops imperatively using ``for`` and ``while``, in Curv code that is
 compiled by the Shape Compiler.
 
