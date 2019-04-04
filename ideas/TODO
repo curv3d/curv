@@ -5,8 +5,6 @@ v0.5 Planning
   partial evaluation.
 * Geometry Optimizer: common subexpression elimination, constant folding,
   partial evaluation. AMD Mesa support.
-* Interpreter VM improvements:
-  * tail recursion optimization: Operation::tail_eval()
 * Better compile time error messages
   * Replace 'not an operation' analysis time error with useful message.
 * Parametric shapes:
@@ -32,7 +30,6 @@ v0.5 Planning
   * `a[i] := x`, a[[X,Y]] := [x,y]
     Assignment_Action::locative_, Locative::store_value()
   * Shape Compiler: matrix multiplication
-  * tail recursion optimization (interpreter)
   * mantissa(num), random{,2,3,4}(seed)
 * Package manager; packages are referenced using URLs.
 * Improved Viewer UI that can zoom in to 3D fractals.
@@ -82,7 +79,6 @@ Language TODO:
 * `a[i] := x` -- adds to ISPiaPFL story.
   Assignment_Action::locative_, Locative::store_value()
 * Shape Compiler: matrix multiplication
-* tail recursion optimization (interpreter)
 * mantissa(num), random{,2,3,4}(seed)
 
 TODO (value pickers impl)
