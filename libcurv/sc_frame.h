@@ -43,7 +43,7 @@ using SC_Frame = Tail_Array<SC_Frame_Base>;
 /// with local slot Values replaced by SC_Values.
 struct SC_Frame_Base
 {
-    SC_Compiler& sc;
+    SC_Compiler& sc_;
 
     /// The root frame has a context pointer, which points to the shape
     /// expression that is being compiled. Used for printing a stack trace.
@@ -79,12 +79,12 @@ struct SC_Frame_Base
     }
 
     SC_Frame_Base(
-        SC_Compiler& g,
+        SC_Compiler& sc,
         const Context* cx,
         SC_Frame* parent,
         Shared<const Phrase> src)
     :
-        sc(g),
+        sc_(sc),
         root_context_(cx),
         parent_frame_(parent),
         call_phrase_(std::move(src)),

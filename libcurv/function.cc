@@ -110,7 +110,7 @@ Legacy_Function::sc_call_expr(
     Operation& arg, Shared<const Phrase> call_phrase, SC_Frame& f)
 const
 {
-    auto f2 = SC_Frame::make(nslots_, f.sc, nullptr, &f, call_phrase);
+    auto f2 = SC_Frame::make(nslots_, f.sc_, nullptr, &f, call_phrase);
     if (nargs_ == 1)
         (*f2)[0] = sc_eval_op(f, arg);
     else if (auto list = dynamic_cast<List_Expr*>(&arg)) {
@@ -180,7 +180,7 @@ SC_Value
 Closure::sc_call_expr(Operation& arg, Shared<const Phrase> cp, SC_Frame& f) const
 {
     // create a frame to call this closure
-    auto f2 = SC_Frame::make(nslots_, f.sc, nullptr, &f, cp);
+    auto f2 = SC_Frame::make(nslots_, f.sc_, nullptr, &f, cp);
     f2->nonlocals_ = &*nonlocals_;
     // match pattern against argument, store formal parameters in frame
     pattern_->sc_exec(arg, f, *f2);

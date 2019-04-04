@@ -13,7 +13,7 @@ At_SC_Frame::get_locations(std::list<Location>& locs) const
 {
     get_sc_frame_locations(&call_frame_, locs);
 }
-System& At_SC_Frame::system() const { return call_frame_.sc.system_; }
+System& At_SC_Frame::system() const { return call_frame_.sc_.system_; }
 Frame* At_SC_Frame::frame() const { return nullptr; }
 
 Shared<const String>
@@ -55,7 +55,7 @@ At_SC_Phrase::get_locations(std::list<Location>& locs) const
         locs.push_back(phrase_->location());
     get_sc_frame_locations(&call_frame_, locs);
 }
-System& At_SC_Phrase::system() const { return call_frame_.sc.system_; }
+System& At_SC_Phrase::system() const { return call_frame_.sc_.system_; }
 Frame* At_SC_Phrase::frame() const { return nullptr; }
 
 Shared<const String>
@@ -68,7 +68,7 @@ void At_SC_Arg::get_locations(std::list<Location>& locs) const
 {
     get_sc_frame_locations(&call_frame_, locs);
 }
-System& At_SC_Arg::system() const { return call_frame_.sc.system_; }
+System& At_SC_Arg::system() const { return call_frame_.sc_.system_; }
 Frame* At_SC_Arg::frame() const { return nullptr; }
 
 Shared<const String>

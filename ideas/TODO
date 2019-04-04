@@ -341,16 +341,11 @@ Pattern project:
   * `a[i] := expr` *is* supported for assignments only.
 * optional features: id==expr, pat if cond
 
-Language changes:
-* lib
-
 Code cleanup:
 * unit tests for: CLI supports compound definitions
 * unit tests for: SC error messages
-* SC_Frame::sc renamed to sc_
 * clean up Recursive_Scope::analyse_unit
 * clean up Record_Pattern::exec
-* remove curv/arg.{h,cc}, move features into value.h and context.h
 * add std::move to curv namespace
 
 Tensors:

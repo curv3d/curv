@@ -118,8 +118,8 @@ struct Bit_Function : public Legacy_Function
         if (arg.type != SC_Type::Bool())
             throw Exception(At_SC_Arg(0, f),
                 stringify(name(),": argument is not a bool"));
-        auto result = f.sc.newvalue(SC_Type::Num());
-        f.sc.out() << "  float "<<result<<" = float("<<arg<<");\n";
+        auto result = f.sc_.newvalue(SC_Type::Num());
+        f.sc_.out() << "  float "<<result<<" = float("<<arg<<");\n";
         return result;
     }
 };
@@ -242,12 +242,12 @@ struct Atan2_Function : public Legacy_Function
             throw Exception(At_SC_Phrase(f.call_phrase_, f),
                 "domain error");
 
-        SC_Value result = f.sc.newvalue(rtype);
-        f.sc.out() <<"  "<<rtype<<" "<<result<<" = atan(";
+        SC_Value result = f.sc_.newvalue(rtype);
+        f.sc_.out() <<"  "<<rtype<<" "<<result<<" = atan(";
         sc_put_as(f, x, At_SC_Arg(0, f), rtype);
-        f.sc.out() << ",";
+        f.sc_.out() << ",";
         sc_put_as(f, y, At_SC_Arg(1, f), rtype);
-        f.sc.out() << ");\n";
+        f.sc_.out() << ");\n";
         return result;
     }
 };
@@ -274,38 +274,38 @@ SC_Value sc_minmax(const char* name, Operation& argx, SC_Frame& f)
                     name,": argument has bad type"));
             }
         }
-        auto result = f.sc.newvalue(type);
+        auto result = f.sc_.newvalue(type);
         if (args.size() == 0)
-            f.sc.out() << "  " << type << " " << result << " = -0.0/0.0;\n";
+            f.sc_.out() << "  " << type << " " << result << " = -0.0/0.0;\n";
         else if (args.size() == 1)
             return args.front();
         else {
-            f.sc.out() << "  " << type << " " << result << " = ";
+            f.sc_.out() << "  " << type << " " << result << " = ";
             int rparens = 0;
             while (args.size() > 2) {
-                f.sc.out() << name << "(" << args.front() << ",";
+                f.sc_.out() << name << "(" << args.front() << ",";
                 args.pop_front();
                 ++rparens;
             }
-            f.sc.out() << name << "(" << args.front() << "," << args.back() << ")";
+            f.sc_.out() << name << "(" << args.front() << "," << args.back() << ")";
             while (rparens > 0) {
-                f.sc.out() << ")";
+                f.sc_.out() << ")";
                 --rparens;
             }
-            f.sc.out() << ";\n";
+            f.sc_.out() << ";\n";
         }
         return result;
     } else {
         auto arg = sc_eval_op(f, argx);
-        auto result = f.sc.newvalue(SC_Type::Num());
-        f.sc.out() << "  float "<<result<<" = ";
+        auto result = f.sc_.newvalue(SC_Type::Num());
+        f.sc_.out() << "  float "<<result<<" = ";
         if (arg.type == SC_Type::Vec(2))
-            f.sc.out() << name <<"("<<arg<<".x,"<<arg<<".y);\n";
+            f.sc_.out() << name <<"("<<arg<<".x,"<<arg<<".y);\n";
         else if (arg.type == SC_Type::Vec(3))
-            f.sc.out() << name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
+            f.sc_.out() << name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
                 <<arg<<".z);\n";
         else if (arg.type == SC_Type::Vec(4))
-            f.sc.out() << name<<"("<<name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
+            f.sc_.out() << name<<"("<<name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
                 <<arg<<".z),"<<arg<<".w);\n";
         else
             throw Exception(At_SC_Phrase(argx.syntax_, f), stringify(
@@ -420,8 +420,8 @@ struct Dot_Function : public Legacy_Function
             throw Exception(At_SC_Arg(0, f), "dot: argument is not a vector");
         if (a.type != b.type)
             throw Exception(At_SC_Arg(1, f), "dot: arguments have different types");
-        auto result = f.sc.newvalue(SC_Type::Num());
-        f.sc.out() << "  float "<<result<<" = dot("<<a<<","<<b<<");\n";
+        auto result = f.sc_.newvalue(SC_Type::Num());
+        f.sc_.out() << "  float "<<result<<" = dot("<<a<<","<<b<<");\n";
         return result;
     }
 };
@@ -482,8 +482,8 @@ struct Mag_Function : public Legacy_Function
         auto arg = f[0];
         if (!arg.type.is_vec())
             throw Exception(At_SC_Arg(0, f), "mag: argument is not a vector");
-        auto result = f.sc.newvalue(SC_Type::Num());
-        f.sc.out() << "  float "<<result<<" = length("<<arg<<");\n";
+        auto result = f.sc_.newvalue(SC_Type::Num());
+        f.sc_.out() << "  float "<<result<<" = length("<<arg<<");\n";
         return result;
     }
 };
@@ -511,8 +511,8 @@ struct Count_Function : public Legacy_Function
         auto arg = f[0];
         if (!arg.type.is_list())
             throw Exception(At_SC_Arg(0, f), "count: argument is not a list");
-        auto result = f.sc.newvalue(SC_Type::Num());
-        f.sc.out() << "  float "<<result<<" = "<<arg.type.count()<<";\n";
+        auto result = f.sc_.newvalue(SC_Type::Num());
+        f.sc_.out() << "  float "<<result<<" = "<<arg.type.count()<<";\n";
         return result;
     }
 };

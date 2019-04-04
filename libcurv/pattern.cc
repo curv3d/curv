@@ -86,8 +86,8 @@ struct Id_Pattern : public Pattern
             }
             // If I do support mutable array variables, I'll need to use
             // memcpy() for the C++ case.
-            SC_Value var = caller.sc.newvalue(val.type);
-            caller.sc.out() << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
+            SC_Value var = caller.sc_.newvalue(val.type);
+            caller.sc_.out() << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
             callee[slot_] = var;
         } else {
             // Immutable variable.

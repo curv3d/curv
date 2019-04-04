@@ -93,8 +93,8 @@ SC_Value sc_call_unary_numeric(SC_Frame& f, const char* name)
     if (!arg.type.is_numeric())
         throw Exception(At_SC_Arg(0, f),
             stringify(name,": argument is not numeric"));
-    auto result = f.sc.newvalue(arg.type);
-    f.sc.out()<<"  "<<arg.type<<" "<<result<<" = "<<name<<"("<<arg<<");\n";
+    auto result = f.sc_.newvalue(arg.type);
+    f.sc_.out()<<"  "<<arg.type<<" "<<result<<" = "<<name<<"("<<arg<<");\n";
     return result;
 }
 
@@ -121,29 +121,29 @@ SC_Value sc_eval_op(SC_Frame& f, const Operation& op)
 #if OPTIMIZE
     if (!op.pure_) {
       #if 0
-        bool previous = f.sc.in_constants_;
-        f.sc.in_constants_ = false;
-        auto k = f.sc.valcount_;
-        f.sc.out()
+        bool previous = f.sc_.in_constants_;
+        f.sc_.in_constants_ = false;
+        auto k = f.sc_.valcount_;
+        f.sc_.out()
             <<"/*in "<<k<<" IMPR "
             <<boost::core::demangle(typeid(op).name())<<"*/\n";
         SC_Value val;
         try {
             val = op.sc_eval(f);
         } catch (...) {
-            f.sc.out()
-                <<"/*except "<<k<<"/"<<f.sc.valcount_<<" IMPR "
+            f.sc_.out()
+                <<"/*except "<<k<<"/"<<f.sc_.valcount_<<" IMPR "
                 <<boost::core::demangle(typeid(op).name())<<"*/\n";
-            f.sc.in_constants_ = previous;
+            f.sc_.in_constants_ = previous;
             throw;
         }
-        f.sc.out()
-            <<"/*out "<<k<<"/"<<f.sc.valcount_<<" IMPR "
+        f.sc_.out()
+            <<"/*out "<<k<<"/"<<f.sc_.valcount_<<" IMPR "
             <<boost::core::demangle(typeid(op).name())<<"*/\n";
-        f.sc.in_constants_ = previous;
+        f.sc_.in_constants_ = previous;
         return val;
       #else
-        Set_Purity pu(f.sc, false);
+        Set_Purity pu(f.sc_, false);
         return op.sc_eval(f);
       #endif
     }
@@ -152,38 +152,38 @@ SC_Value sc_eval_op(SC_Frame& f, const Operation& op)
     // (eg, no Data_Ref ops), other than uniform variables in reactive values.
     // What follows is a limited form of common subexpression elimination
     // which reduces code size when reactive values are used.
-    for (Op_Cache& opcache : f.sc.opcaches_) {
+    for (Op_Cache& opcache : f.sc_.opcaches_) {
         auto cached = opcache.find(share(op));
         if (cached != opcache.end())
             return cached->second;
     }
   #if 0
-    bool previous = f.sc.in_constants_;
-    f.sc.in_constants_ = true;
-    auto k = f.sc.valcount_;
-    f.sc.out()
+    bool previous = f.sc_.in_constants_;
+    f.sc_.in_constants_ = true;
+    auto k = f.sc_.valcount_;
+    f.sc_.out()
         <<"/*in "<<k<<" PURE "
         <<boost::core::demangle(typeid(op).name())<<"*/\n";
     SC_Value val;
     try {
         val = op.sc_eval(f);
     } catch (...) {
-        f.sc.out()
-            <<"/*except "<<k<<"/"<<f.sc.valcount_<<" PURE "
+        f.sc_.out()
+            <<"/*except "<<k<<"/"<<f.sc_.valcount_<<" PURE "
             <<boost::core::demangle(typeid(op).name())<<"*/\n";
-        f.sc.in_constants_ = previous;
+        f.sc_.in_constants_ = previous;
         throw;
     }
-    f.sc.out()
-        <<"/*out "<<k<<"/"<<f.sc.valcount_<<" PURE "
+    f.sc_.out()
+        <<"/*out "<<k<<"/"<<f.sc_.valcount_<<" PURE "
         <<boost::core::demangle(typeid(op).name())<<"*/\n";
-    f.sc.in_constants_ = previous;
-    f.sc.opcache_[share(op)] = val;
+    f.sc_.in_constants_ = previous;
+    f.sc_.opcache_[share(op)] = val;
     return val;
   #else
-    Set_Purity pu(f.sc, true);
+    Set_Purity pu(f.sc_, true);
     auto val = op.sc_eval(f);
-    f.sc.opcaches_.back()[share(op)] = val;
+    f.sc_.opcaches_.back()[share(op)] = val;
     return val;
   #endif
 #else
@@ -242,27 +242,27 @@ sc_put_vec(unsigned size, Value val, const Context& cx, std::ostream& out)
 SC_Value sc_eval_const(SC_Frame& f, Value val, const Phrase& syntax)
 {
 #if OPTIMIZE
-    auto cached = f.sc.valcache_.find(val);
-    if (cached != f.sc.valcache_.end())
+    auto cached = f.sc_.valcache_.find(val);
+    if (cached != f.sc_.valcache_.end())
         return cached->second;
 #endif
 
-    Set_Purity pu(f.sc, true);
+    Set_Purity pu(f.sc_, true);
     At_SC_Phrase cx(share(syntax), f);
     if (val.is_num()) {
-        SC_Value result = f.sc.newvalue(SC_Type::Num());
+        SC_Value result = f.sc_.newvalue(SC_Type::Num());
         double num = val.get_num_unsafe();
-        f.sc.out() << "  const float " << result << " = "
+        f.sc_.out() << "  const float " << result << " = "
             << dfmt(num, dfmt::EXPR) << ";\n";
-        f.sc.valcache_[val] = result;
+        f.sc_.valcache_[val] = result;
         return result;
     }
     if (val.is_bool()) {
-        SC_Value result = f.sc.newvalue(SC_Type::Bool());
+        SC_Value result = f.sc_.newvalue(SC_Type::Bool());
         bool b = val.get_bool_unsafe();
-        f.sc.out() << "  const bool " << result << " = "
+        f.sc_.out() << "  const bool " << result << " = "
             << (b ? "true" : "false") << ";\n";
-        f.sc.valcache_[val] = result;
+        f.sc_.valcache_[val] = result;
         return result;
     }
     if (auto list = val.dycast<List>()) {
@@ -283,39 +283,39 @@ SC_Value sc_eval_const(SC_Frame& f, Value val, const Phrase& syntax)
                 static SC_Type types[5] = {
                     {}, {}, SC_Type::Vec(2), SC_Type::Vec(3), SC_Type::Vec(4)
                 };
-                SC_Value result = f.sc.newvalue(types[list->size()]);
-                f.sc.out() << "  " << result.type << " " << result
+                SC_Value result = f.sc_.newvalue(types[list->size()]);
+                f.sc_.out() << "  " << result.type << " " << result
                     << " = " << result.type << "(";
                 bool first = true;
                 for (unsigned i = 0; i < list->size(); ++i) {
-                    if (!first) f.sc.out() << ",";
+                    if (!first) f.sc_.out() << ",";
                     first = false;
-                    f.sc.out() << values[i];
+                    f.sc_.out() << values[i];
                 }
-                f.sc.out() << ");\n";
-                f.sc.valcache_[val] = result;
+                f.sc_.out() << ");\n";
+                f.sc_.valcache_[val] = result;
                 return result;
             }
             // It is a float array.
-            SC_Value result = f.sc.newvalue(SC_Type::Num(list->size()));
-            if (f.sc.target_ == SC_Target::cpp) {
-                f.sc.out() << "  static const float "<<result<<"[] = {";
+            SC_Value result = f.sc_.newvalue(SC_Type::Num(list->size()));
+            if (f.sc_.target_ == SC_Target::cpp) {
+                f.sc_.out() << "  static const float "<<result<<"[] = {";
             } else {
-                f.sc.out() << "  const " << result.type << " " << result
+                f.sc_.out() << "  const " << result.type << " " << result
                     << " = " << result.type << "(";
             }
             bool first = true;
             for (unsigned i = 0; i < list->size(); ++i) {
-                if (!first) f.sc.out() << ",";
+                if (!first) f.sc_.out() << ",";
                 first = false;
-                f.sc.out() << dfmt(list->at(i).to_num(cx), dfmt::EXPR);
+                f.sc_.out() << dfmt(list->at(i).to_num(cx), dfmt::EXPR);
             }
-            if (f.sc.target_ == SC_Target::cpp) {
-                f.sc.out() << "};\n";
+            if (f.sc_.target_ == SC_Target::cpp) {
+                f.sc_.out() << "};\n";
             } else {
-                f.sc.out() << ");\n";
+                f.sc_.out() << ");\n";
             }
-            f.sc.valcache_[val] = result;
+            f.sc_.valcache_[val] = result;
             return result;
           #if 0
             else {
@@ -323,22 +323,22 @@ SC_Value sc_eval_const(SC_Frame& f, Value val, const Phrase& syntax)
                 static SC_Type types[5] = {
                     {}, {}, SC_Type::Mat(2), SC_Type::Mat(3), SC_Type::Mat(4)
                 };
-                SC_Value result = f.sc.newvalue(types[list->size()]);
-                f.sc.out() << "  " << result.type << " " << result
+                SC_Value result = f.sc_.newvalue(types[list->size()]);
+                f.sc_.out() << "  " << result.type << " " << result
                     << " = " << result.type << "(";
                 bool first = true;
                 for (size_t i = 0; i < list->size(); ++i) {
                     for (size_t j = 0; j < list->size(); ++j) {
                         double elem;
                         if (get_mat(*list, j, i, elem)) {
-                            if (!first) f.sc.out() << ",";
+                            if (!first) f.sc_.out() << ",";
                             first = false;
-                            f.sc.out() << dfmt(elem, dfmt::EXPR);
+                            f.sc_.out() << dfmt(elem, dfmt::EXPR);
                         } else
                             goto error;
                     }
                 }
-                f.sc.out() << ");\n";
+                f.sc_.out() << ");\n";
                 return result;
             }
           #endif
@@ -353,37 +353,37 @@ SC_Value sc_eval_const(SC_Frame& f, Value val, const Phrase& syntax)
                 if (list2->size() >= 2 && list2->size() <= 4) {
                     // list of vectors
                     SC_Value result =
-                        f.sc.newvalue(
+                        f.sc_.newvalue(
                             SC_Type::Vec(list2->size(), list->size()));
-                    if (f.sc.target_ == SC_Target::cpp) {
-                        f.sc.out()
+                    if (f.sc_.target_ == SC_Target::cpp) {
+                        f.sc_.out()
                             << "  static const " << SC_Type::Vec(list2->size())
                             << " "<<result<<"[] = {";
                     } else {
-                        f.sc.out() << "  const " << result.type << " " << result
+                        f.sc_.out() << "  const " << result.type << " " << result
                             << " = " << result.type << "(";
                     }
                     bool first = true;
                     for (unsigned i = 0; i < list->size(); ++i) {
-                        if (!first) f.sc.out() << ",";
+                        if (!first) f.sc_.out() << ",";
                         first = false;
-                        sc_put_vec(list2->size(), list->at(i), cx, f.sc.out());
+                        sc_put_vec(list2->size(), list->at(i), cx, f.sc_.out());
                     }
-                    if (f.sc.target_ == SC_Target::cpp) {
-                        f.sc.out() << "};\n";
+                    if (f.sc_.target_ == SC_Target::cpp) {
+                        f.sc_.out() << "};\n";
                     } else {
-                        f.sc.out() << ");\n";
+                        f.sc_.out() << ");\n";
                     }
-                    f.sc.valcache_[val] = result;
+                    f.sc_.valcache_[val] = result;
                     return result;
                 }
                 // 2D array of numbers
                 SC_Value result =
-                    f.sc.newvalue(SC_Type::Num(list->size(), list2->size()));
-                if (f.sc.target_ == SC_Target::cpp) {
-                    f.sc.out() << "  static const float " <<result<<"[] = {";
+                    f.sc_.newvalue(SC_Type::Num(list->size(), list2->size()));
+                if (f.sc_.target_ == SC_Target::cpp) {
+                    f.sc_.out() << "  static const float " <<result<<"[] = {";
                 } else {
-                    f.sc.out() << "  const " << result.type << " " << result
+                    f.sc_.out() << "  const " << result.type << " " << result
                         << " = " << result.type << "(";
                 }
                 bool first = true;
@@ -392,31 +392,31 @@ SC_Value sc_eval_const(SC_Frame& f, Value val, const Phrase& syntax)
                     if (l2->size() != list2->size())
                         goto error;
                     for (unsigned j = 0; j < l2->size(); ++j) {
-                        if (!first) f.sc.out() << ",";
+                        if (!first) f.sc_.out() << ",";
                         first = false;
-                        sc_put_num(l2->at(j), cx, f.sc.out());
+                        sc_put_num(l2->at(j), cx, f.sc_.out());
                     }
                 }
-                if (f.sc.target_ == SC_Target::cpp) {
-                    f.sc.out() << "};\n";
+                if (f.sc_.target_ == SC_Target::cpp) {
+                    f.sc_.out() << "};\n";
                 } else {
-                    f.sc.out() << ");\n";
+                    f.sc_.out() << ");\n";
                 }
-                f.sc.valcache_[val] = result;
+                f.sc_.valcache_[val] = result;
                 return result;
             }
             if (auto list3 = list2->front().dycast<List>()) {
                 // A list of lists of lists: interpret as 2D array of vectors
                 if (list3->size() < 2 || list3->size() > 4) goto error;
                 SC_Value result =
-                    f.sc.newvalue(SC_Type::Vec(list3->size(),
+                    f.sc_.newvalue(SC_Type::Vec(list3->size(),
                         list->size(), list2->size()));
-                if (f.sc.target_ == SC_Target::cpp) {
-                    f.sc.out() << "  static const "
+                if (f.sc_.target_ == SC_Target::cpp) {
+                    f.sc_.out() << "  static const "
                         << SC_Type::Vec(list3->size())
                         << " " <<result<<"[] = {";
                 } else {
-                    f.sc.out() << "  const " << result.type << " " << result
+                    f.sc_.out() << "  const " << result.type << " " << result
                         << " = " << result.type << "(";
                 }
                 bool first = true;
@@ -425,33 +425,33 @@ SC_Value sc_eval_const(SC_Frame& f, Value val, const Phrase& syntax)
                     if (l2->size() != list2->size())
                         goto error;
                     for (unsigned j = 0; j < l2->size(); ++j) {
-                        if (!first) f.sc.out() << ",";
+                        if (!first) f.sc_.out() << ",";
                         first = false;
-                        sc_put_vec(list3->size(), l2->at(j), cx, f.sc.out());
+                        sc_put_vec(list3->size(), l2->at(j), cx, f.sc_.out());
                     }
                 }
-                if (f.sc.target_ == SC_Target::cpp) {
-                    f.sc.out() << "};\n";
+                if (f.sc_.target_ == SC_Target::cpp) {
+                    f.sc_.out() << "};\n";
                 } else {
-                    f.sc.out() << ");\n";
+                    f.sc_.out() << ");\n";
                 }
-                f.sc.valcache_[val] = result;
+                f.sc_.valcache_[val] = result;
                 return result;
             }
         }
         goto error;
     }
     if (auto re = val.dycast<Reactive_Expression>()) {
-        auto f2 = SC_Frame::make(0, f.sc, nullptr, &f, &syntax);
+        auto f2 = SC_Frame::make(0, f.sc_, nullptr, &f, &syntax);
         auto result = sc_eval_op(*f2, *re->expr_);
-        f.sc.valcache_[val] = result;
+        f.sc_.valcache_[val] = result;
         return result;
     }
     if (auto uv = val.dycast<Uniform_Variable>()) {
-        SC_Value result = f.sc.newvalue(uv->sctype_);
-        f.sc.out() << "  " << uv->sctype_
+        SC_Value result = f.sc_.newvalue(uv->sctype_);
+        f.sc_.out() << "  " << uv->sctype_
             << " " << result << " = " << uv->identifier_ << ";\n";
-        f.sc.valcache_[val] = result;
+        f.sc_.valcache_[val] = result;
         return result;
     }
 error:
@@ -484,27 +484,27 @@ SC_Value Negative_Expr::sc_eval(SC_Frame& f) const
     if (!x.type.is_numeric())
         throw Exception(At_SC_Phrase(arg_->syntax_, f),
             "argument not numeric");
-    SC_Value result = f.sc.newvalue(x.type);
-    f.sc.out()<<"  "<<x.type<<" "<<result<<" = -"<<x<< ";\n";
+    SC_Value result = f.sc_.newvalue(x.type);
+    f.sc_.out()<<"  "<<x.type<<" "<<result<<" = -"<<x<< ";\n";
     return result;
 }
 
 void sc_put_as(SC_Frame& f, SC_Value val, const Context& cx, SC_Type type)
 {
     if (val.type == type) {
-        f.sc.out() << val;
+        f.sc_.out() << val;
         return;
     }
     if (val.type == SC_Type::Num()) {
         if (sc_type_count(type) > 1) {
-            f.sc.out() << type << "(";
+            f.sc_.out() << type << "(";
             bool first = true;
             for (unsigned i = 0; i < sc_type_count(type); ++i) {
-                if (!first) f.sc.out() << ",";
-                f.sc.out() << val;
+                if (!first) f.sc_.out() << ",";
+                f.sc_.out() << val;
                 first = false;
             }
-            f.sc.out() << ")";
+            f.sc_.out() << ")";
             return;
         }
     }
@@ -529,20 +529,20 @@ sc_arith_expr(SC_Frame& f, const Phrase& syntax,
         throw Exception(At_SC_Phrase(share(syntax), f),
             stringify("domain error: ",x.type,op,y.type));
 
-    SC_Value result = f.sc.newvalue(rtype);
-    f.sc.out() <<"  "<<rtype<<" "<<result<<" = ";
+    SC_Value result = f.sc_.newvalue(rtype);
+    f.sc_.out() <<"  "<<rtype<<" "<<result<<" = ";
     if (isalpha(*op)) {
-        f.sc.out() << op << "(";
+        f.sc_.out() << op << "(";
         sc_put_as(f, x, At_SC_Phrase(xexpr.syntax_, f), rtype);
-        f.sc.out() << ",";
+        f.sc_.out() << ",";
         sc_put_as(f, y, At_SC_Phrase(yexpr.syntax_, f), rtype);
-        f.sc.out() << ")";
+        f.sc_.out() << ")";
     } else {
         sc_put_as(f, x, At_SC_Phrase(xexpr.syntax_, f), rtype);
-        f.sc.out() << op;
+        f.sc_.out() << op;
         sc_put_as(f, y, At_SC_Phrase(yexpr.syntax_, f), rtype);
     }
-    f.sc.out() << ";\n";
+    f.sc_.out() << ";\n";
     return result;
 }
 
@@ -670,10 +670,10 @@ Data_Setter::sc_exec(SC_Frame& f) const
 {
     SC_Value val = sc_eval_op(f, *expr_);
     if (reassign_)
-        f.sc.out() << "  "<<f[slot_]<<"="<<val<<";\n";
+        f.sc_.out() << "  "<<f[slot_]<<"="<<val<<";\n";
     else {
-        SC_Value var = f.sc.newvalue(val.type);
-        f.sc.out() << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
+        SC_Value var = f.sc_.newvalue(val.type);
+        f.sc_.out() << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
         f[slot_] = var;
     }
 }
@@ -717,24 +717,24 @@ SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& f)
                     array.type.count(),
                     At_Index(i, At_SC_Phrase(index.syntax_, f)));
             }
-            SC_Value result = f.sc.newvalue(SC_Type::Vec(list->size()));
-            f.sc.out() << "  " << result.type << " "<< result<<" = ";
-            if (f.sc.target_ == SC_Target::glsl) {
+            SC_Value result = f.sc_.newvalue(SC_Type::Vec(list->size()));
+            f.sc_.out() << "  " << result.type << " "<< result<<" = ";
+            if (f.sc_.target_ == SC_Target::glsl) {
                 // use GLSL swizzle syntax: v.xyz
-                f.sc.out() <<array<<"."<<swizzle;
+                f.sc_.out() <<array<<"."<<swizzle;
             } else {
                 // fall back to a vector constructor: vec3(v.x,v.y,v.z)
-                f.sc.out() << result.type << "(";
+                f.sc_.out() << result.type << "(";
                 bool first = true;
                 for (size_t i = 0; i < list->size(); ++i) {
                     if (!first)
-                        f.sc.out() << ",";
+                        f.sc_.out() << ",";
                     first = false;
-                    f.sc.out() << array << "." << swizzle[i];
+                    f.sc_.out() << array << "." << swizzle[i];
                 }
-                f.sc.out() << ")";
+                f.sc_.out() << ")";
             }
-            f.sc.out() <<";\n";
+            f.sc_.out() <<";\n";
             return result;
         }
         const char* arg2 = nullptr;
@@ -752,8 +752,8 @@ SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& f)
                 stringify("got ",k,", expected 0..",
                     array.type.count()-1));
 
-        SC_Value result = f.sc.newvalue(SC_Type::Num());
-        f.sc.out() << "  float "<<result<<" = "<<array<<arg2<<";\n";
+        SC_Value result = f.sc_.newvalue(SC_Type::Num());
+        f.sc_.out() << "  float "<<result<<" = "<<array<<arg2<<";\n";
         return result;
     }
     // An array of numbers, indexed with a number.
@@ -763,8 +763,8 @@ SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& f)
             SC_Type(array.type.base_type_), " with a single index"));
     }
     auto ix = sc_eval_expr(f, index, SC_Type::Num());
-    SC_Value result = f.sc.newvalue(array.type.abase());
-    f.sc.out() << "  " << result.type << " " << result << " = "
+    SC_Value result = f.sc_.newvalue(array.type.abase());
+    f.sc_.out() << "  " << result.type << " " << result << " = "
              << array << "[int(" << ix << ")];\n";
     return result;
 }
@@ -780,16 +780,16 @@ SC_Value sc_eval_index2_expr(
         // 2D array of number or vector. Not supported by GLSL 1.5,
         // so we emulate this type using a 1D array.
         // Index value must be [i,j], can't use a single index.
-        SC_Value result = f.sc.newvalue({array.type.base_type_});
-        f.sc.out() << "  " << result.type << " " << result << " = " << array
+        SC_Value result = f.sc_.newvalue({array.type.base_type_});
+        f.sc_.out() << "  " << result.type << " " << result << " = " << array
                  << "[int(" << ix1 << ")*" << array.type.dim2_
                  << "+" << "int(" << ix2 << ")];\n";
         return result;
     }
     if (array.type.rank_ == 1 && array.type.base_info().rank == 1) {
         // 1D array of vector.
-        SC_Value result = f.sc.newvalue(SC_Type::Num());
-        f.sc.out() << "  " << result.type << " " << result << " = " << array
+        SC_Value result = f.sc_.newvalue(SC_Type::Num());
+        f.sc_.out() << "  " << result.type << " " << result << " = " << array
                  << "[int(" << ix1 << ")]"
                  << "[int(" << ix2 << ")];\n";
         return result;
@@ -807,8 +807,8 @@ SC_Value sc_eval_index3_expr(
         auto ix1 = sc_eval_expr(f, op_ix1, SC_Type::Num());
         auto ix2 = sc_eval_expr(f, op_ix2, SC_Type::Num());
         auto ix3 = sc_eval_expr(f, op_ix3, SC_Type::Num());
-        SC_Value result = f.sc.newvalue(SC_Type::Num());
-        f.sc.out() << "  " << result.type << " " << result << " = " << array
+        SC_Value result = f.sc_.newvalue(SC_Type::Num());
+        f.sc_.out() << "  " << result.type << " " << result << " = " << array
                  << "[int(" << ix1 << ")*" << array.type.dim2_
                  << "+" << "int(" << ix2 << ")][int(" << ix3 << ")];\n";
         return result;
@@ -878,16 +878,16 @@ SC_Value List_Expr_Base::sc_eval(SC_Frame& f) const
     if (this->size() == 2) {
         auto e1 = sc_eval_expr(f, *(*this)[0], SC_Type::Num());
         auto e2 = sc_eval_expr(f, *(*this)[1], SC_Type::Num());
-        SC_Value result = f.sc.newvalue(SC_Type::Vec(2));
-        f.sc.out() << "  vec2 "<<result<<" = vec2("<<e1<<","<<e2<<");\n";
+        SC_Value result = f.sc_.newvalue(SC_Type::Vec(2));
+        f.sc_.out() << "  vec2 "<<result<<" = vec2("<<e1<<","<<e2<<");\n";
         return result;
     }
     if (this->size() == 3) {
         auto e1 = sc_eval_expr(f, *(*this)[0], SC_Type::Num());
         auto e2 = sc_eval_expr(f, *(*this)[1], SC_Type::Num());
         auto e3 = sc_eval_expr(f, *(*this)[2], SC_Type::Num());
-        SC_Value result = f.sc.newvalue(SC_Type::Vec(3));
-        f.sc.out() << "  vec3 "<<result<<" = vec3("
+        SC_Value result = f.sc_.newvalue(SC_Type::Vec(3));
+        f.sc_.out() << "  vec3 "<<result<<" = vec3("
             <<e1<<","<<e2<<","<<e3<<");\n";
         return result;
     }
@@ -896,8 +896,8 @@ SC_Value List_Expr_Base::sc_eval(SC_Frame& f) const
         auto e2 = sc_eval_expr(f, *(*this)[1], SC_Type::Num());
         auto e3 = sc_eval_expr(f, *(*this)[2], SC_Type::Num());
         auto e4 = sc_eval_expr(f, *(*this)[3], SC_Type::Num());
-        SC_Value result = f.sc.newvalue(SC_Type::Vec(4));
-        f.sc.out() << "  vec4 "<<result<<" = vec4("
+        SC_Value result = f.sc_.newvalue(SC_Type::Vec(4));
+        f.sc_.out() << "  vec4 "<<result<<" = vec4("
             <<e1<<","<<e2<<","<<e3<<","<<e4<<");\n";
         return result;
     }
@@ -908,8 +908,8 @@ SC_Value List_Expr_Base::sc_eval(SC_Frame& f) const
 SC_Value Not_Expr::sc_eval(SC_Frame& f) const
 {
     auto arg = sc_eval_expr(f, *arg_, SC_Type::Bool());
-    SC_Value result = f.sc.newvalue(SC_Type::Bool());
-    f.sc.out() <<"  bool "<<result<<" = !"<<arg<<";\n";
+    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
+    f.sc_.out() <<"  bool "<<result<<" = !"<<arg<<";\n";
     return result;
 }
 SC_Value Or_Expr::sc_eval(SC_Frame& f) const
@@ -917,8 +917,8 @@ SC_Value Or_Expr::sc_eval(SC_Frame& f) const
     // TODO: change Or to use lazy evaluation.
     auto arg1 = sc_eval_expr(f, *arg1_, SC_Type::Bool());
     auto arg2 = sc_eval_expr(f, *arg2_, SC_Type::Bool());
-    SC_Value result = f.sc.newvalue(SC_Type::Bool());
-    f.sc.out() <<"  bool "<<result<<" =("<<arg1<<" || "<<arg2<<");\n";
+    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
+    f.sc_.out() <<"  bool "<<result<<" =("<<arg1<<" || "<<arg2<<");\n";
     return result;
 }
 SC_Value And_Expr::sc_eval(SC_Frame& f) const
@@ -926,8 +926,8 @@ SC_Value And_Expr::sc_eval(SC_Frame& f) const
     // TODO: change And to use lazy evaluation.
     auto arg1 = sc_eval_expr(f, *arg1_, SC_Type::Bool());
     auto arg2 = sc_eval_expr(f, *arg2_, SC_Type::Bool());
-    SC_Value result = f.sc.newvalue(SC_Type::Bool());
-    f.sc.out() <<"  bool "<<result<<" =("<<arg1<<" && "<<arg2<<");\n";
+    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
+    f.sc_.out() <<"  bool "<<result<<" =("<<arg1<<" && "<<arg2<<");\n";
     return result;
 }
 SC_Value If_Else_Op::sc_eval(SC_Frame& f) const
@@ -941,36 +941,36 @@ SC_Value If_Else_Op::sc_eval(SC_Frame& f) const
             "if: type mismatch in 'then' and 'else' arms (",
             arg2.type, ",", arg3.type, ")"));
     }
-    SC_Value result = f.sc.newvalue(arg2.type);
-    f.sc.out() <<"  "<<arg2.type<<" "<<result
+    SC_Value result = f.sc_.newvalue(arg2.type);
+    f.sc_.out() <<"  "<<arg2.type<<" "<<result
              <<" =("<<arg1<<" ? "<<arg2<<" : "<<arg3<<");\n";
     return result;
 }
 void If_Else_Op::sc_exec(SC_Frame& f) const
 {
     auto arg1 = sc_eval_expr(f, *arg1_, SC_Type::Bool());
-    f.sc.out() << "  if ("<<arg1<<") {\n";
+    f.sc_.out() << "  if ("<<arg1<<") {\n";
     arg2_->sc_exec(f);
-    f.sc.out() << "  } else {\n";
+    f.sc_.out() << "  } else {\n";
     arg3_->sc_exec(f);
-    f.sc.out() << "  }\n";
+    f.sc_.out() << "  }\n";
 }
 void If_Op::sc_exec(SC_Frame& f) const
 {
     auto arg1 = sc_eval_expr(f, *arg1_, SC_Type::Bool());
-    f.sc.out() << "  if ("<<arg1<<") {\n";
+    f.sc_.out() << "  if ("<<arg1<<") {\n";
     arg2_->sc_exec(f);
-    f.sc.out() << "  }\n";
+    f.sc_.out() << "  }\n";
 }
 void While_Op::sc_exec(SC_Frame& f) const
 {
-    f.sc.opcaches_.emplace_back(Op_Cache{});
-    f.sc.out() << "  while (true) {\n";
+    f.sc_.opcaches_.emplace_back(Op_Cache{});
+    f.sc_.out() << "  while (true) {\n";
     auto cond = sc_eval_expr(f, *cond_, SC_Type::Bool());
-    f.sc.out() << "  if (!"<<cond<<") break;\n";
+    f.sc_.out() << "  if (!"<<cond<<") break;\n";
     body_->sc_exec(f);
-    f.sc.out() << "  }\n";
-    f.sc.opcaches_.pop_back();
+    f.sc_.out() << "  }\n";
+    f.sc_.opcaches_.pop_back();
 }
 void For_Op::sc_exec(SC_Frame& f) const
 {
@@ -997,21 +997,21 @@ void For_Op::sc_exec(SC_Frame& f) const
           .to_num(At_SC_Phrase(range->arg3_->syntax_, f))
         : 1.0;
   #endif
-    auto i = f.sc.newvalue(SC_Type::Num());
-    f.sc.opcaches_.emplace_back(Op_Cache{});
+    auto i = f.sc_.newvalue(SC_Type::Num());
+    f.sc_.opcaches_.emplace_back(Op_Cache{});
   #if RANGE_EXPRESSIONS
-    f.sc.out() << "  for (float " << i << "=" << first << ";"
+    f.sc_.out() << "  for (float " << i << "=" << first << ";"
              << i << (range->half_open_ ? "<" : "<=") << last << ";"
              << i << "+=" << step << ") {\n";
   #else
-    f.sc.out() << "  for (float " << i << "=" << dfmt(first, dfmt::EXPR) << ";"
+    f.sc_.out() << "  for (float " << i << "=" << dfmt(first, dfmt::EXPR) << ";"
              << i << (range->half_open_ ? "<" : "<=") << dfmt(last, dfmt::EXPR) << ";"
              << i << "+=" << dfmt(step, dfmt::EXPR) << ") {\n";
   #endif
     pattern_->sc_exec(i, At_SC_Phrase(list_->syntax_, f), f);
     body_->sc_exec(f);
-    f.sc.out() << "  }\n";
-    f.sc.opcaches_.pop_back();
+    f.sc_.out() << "  }\n";
+    f.sc_.opcaches_.pop_back();
 }
 SC_Value Equal_Expr::sc_eval(SC_Frame& f) const
 {
@@ -1021,8 +1021,8 @@ SC_Value Equal_Expr::sc_eval(SC_Frame& f) const
         throw Exception(At_SC_Phrase(syntax_, f),
             stringify("domain error: ",a.type," == ",b.type));
     }
-    SC_Value result = f.sc.newvalue(SC_Type::Bool());
-    f.sc.out() <<"  bool "<<result<<" =("<<a<<" == "<<b<<");\n";
+    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
+    f.sc_.out() <<"  bool "<<result<<" =("<<a<<" == "<<b<<");\n";
     return result;
 }
 SC_Value Not_Equal_Expr::sc_eval(SC_Frame& f) const
@@ -1033,47 +1033,47 @@ SC_Value Not_Equal_Expr::sc_eval(SC_Frame& f) const
         throw Exception(At_SC_Phrase(syntax_, f),
             stringify("domain error: ",a.type," != ",b.type));
     }
-    SC_Value result = f.sc.newvalue(SC_Type::Bool());
-    f.sc.out() <<"  bool "<<result<<" =("<<a<<" != "<<b<<");\n";
+    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
+    f.sc_.out() <<"  bool "<<result<<" =("<<a<<" != "<<b<<");\n";
     return result;
 }
 SC_Value Less_Expr::sc_eval(SC_Frame& f) const
 {
     auto arg1 = sc_eval_expr(f, *arg1_, SC_Type::Num());
     auto arg2 = sc_eval_expr(f, *arg2_, SC_Type::Num());
-    SC_Value result = f.sc.newvalue(SC_Type::Bool());
-    f.sc.out() <<"  bool "<<result<<" =("<<arg1<<" < "<<arg2<<");\n";
+    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
+    f.sc_.out() <<"  bool "<<result<<" =("<<arg1<<" < "<<arg2<<");\n";
     return result;
 }
 SC_Value Greater_Expr::sc_eval(SC_Frame& f) const
 {
     auto arg1 = sc_eval_expr(f, *arg1_, SC_Type::Num());
     auto arg2 = sc_eval_expr(f, *arg2_, SC_Type::Num());
-    SC_Value result = f.sc.newvalue(SC_Type::Bool());
-    f.sc.out() <<"  bool "<<result<<" =("<<arg1<<" > "<<arg2<<");\n";
+    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
+    f.sc_.out() <<"  bool "<<result<<" =("<<arg1<<" > "<<arg2<<");\n";
     return result;
 }
 SC_Value Less_Or_Equal_Expr::sc_eval(SC_Frame& f) const
 {
     auto arg1 = sc_eval_expr(f, *arg1_, SC_Type::Num());
     auto arg2 = sc_eval_expr(f, *arg2_, SC_Type::Num());
-    SC_Value result = f.sc.newvalue(SC_Type::Bool());
-    f.sc.out() <<"  bool "<<result<<" =("<<arg1<<" <= "<<arg2<<");\n";
+    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
+    f.sc_.out() <<"  bool "<<result<<" =("<<arg1<<" <= "<<arg2<<");\n";
     return result;
 }
 SC_Value Greater_Or_Equal_Expr::sc_eval(SC_Frame& f) const
 {
     auto arg1 = sc_eval_expr(f, *arg1_, SC_Type::Num());
     auto arg2 = sc_eval_expr(f, *arg2_, SC_Type::Num());
-    SC_Value result = f.sc.newvalue(SC_Type::Bool());
-    f.sc.out() <<"  bool "<<result<<" =("<<arg1<<" >= "<<arg2<<");\n";
+    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
+    f.sc_.out() <<"  bool "<<result<<" =("<<arg1<<" >= "<<arg2<<");\n";
     return result;
 }
 
 SC_Value sc_vec_element(SC_Frame& f, SC_Value vec, int i)
 {
-    SC_Value r = f.sc.newvalue(SC_Type::Num());
-    f.sc.out() << "  float " << r << " = " << vec << "[" << i << "];\n";
+    SC_Value r = f.sc_.newvalue(SC_Type::Num());
+    f.sc_.out() << "  float " << r << " = " << vec << "[" << i << "];\n";
     return r;
 }
 
