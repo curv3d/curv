@@ -86,7 +86,8 @@ optimization for recursive calls (the case that matters most), but without
 target support, it is very complex and difficult to do so in the general case.
 You could identify groups of functions that recursively call each other
 (a mutual recursion group), inline expand all of the functions of each group into
-a single uber-function, use variables and a state machine to keep track of which function
+a single uber-function. Each uber-function has an outer ``while`` loop,
+and uses variables and a state machine to keep track of which function
 is currently executing within the uber-function. The resulting code would be quite slow on a GPU, so you want
 to optimize the code and get rid of the variables. GLSL, SPIR-V and WebAssembly don't have goto
 statements, so you need to convert a control flow graph (CFG) into high level structured
