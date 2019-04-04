@@ -46,24 +46,24 @@ A tail context is defined as follows:
 
 Shortened Stack Traces
 ----------------------
-Although TRO is a requirement for functional languages, it is controversial
+Although TCO is a requirement for functional languages, it is controversial
 in the imperative programming community. Lua does it. But Guido doesn't want it in Python
 (he considers it "unpythonic"). The Javascript standards committee tried to add it to Javascript ES6
 in 2015, but there was a developer rebellion: Google implemented it in Chrome, then reverted the change.
 
 What could be the problem?
-TRO eliminates frames from the call stack, which means that it shortens stack traces
-that are used for debugging. Adding TRO to an existing imperative language is a non-starter
+TCO eliminates frames from the call stack, which means that it shortens stack traces
+that are used for debugging. Adding TCO to an existing imperative language is a non-starter
 for this reason: after the change, stack traces have less information, which the existing dev
 community sees as a loss, and nobody is writing
-the kind of functional code that benefits from this change, because without TRO, tail recursive
+the kind of functional code that benefits from this change, because without TCO, tail recursive
 loops don't work: your program exhausts the stack and crashes.
 
 On the flip side, if you actually do write code in a functional style, using tail recursive
 loops, then you don't want each iteration of a loop to appear in your stack traces.
 You get huge stack traces that are full of noise.
 
-Curv has TRO, which means stack traces are shorter than they would be without TRO.
+Curv has TCO, which means stack traces are shorter than they would be without TCO.
 If this turns out to be a real problem for debugging,
 we will investigate ways to mitigate it.
 
