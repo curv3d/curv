@@ -284,11 +284,11 @@ If_Else_Op::eval(Frame& f) const
             return arg3_->eval(f);
     }
     auto re = cond.dycast<Reactive_Value>();
-    if (re && re->gltype_ == GL_Type::Bool()) {
+    if (re && re->sctype_ == SC_Type::Bool()) {
         Value a2 = arg2_->eval(f);
         Value a3 = arg3_->eval(f);
         return {make<Reactive_Expression>(
-            gl_type_join(gl_type_of(a2), gl_type_of(a3)),
+            sc_type_join(sc_type_of(a2), sc_type_of(a3)),
             make<If_Else_Op>(
                 share(*syntax_),
                 make<Constant>(share(*arg1_->syntax_), cond),
@@ -312,11 +312,11 @@ If_Else_Op::tail_eval(std::unique_ptr<Frame>& f) const
         return;
     }
     auto re = cond.dycast<Reactive_Value>();
-    if (re && re->gltype_ == GL_Type::Bool()) {
+    if (re && re->sctype_ == SC_Type::Bool()) {
         Value a2 = arg2_->eval(*f);
         Value a3 = arg3_->eval(*f);
         f->result_ = Value{make<Reactive_Expression>(
-            gl_type_join(gl_type_of(a2), gl_type_of(a3)),
+            sc_type_join(sc_type_of(a2), sc_type_of(a3)),
             make<If_Else_Op>(
                 share(*syntax_),
                 make<Constant>(share(*arg1_->syntax_), cond),
@@ -492,13 +492,13 @@ value_at_path(Value a, const List& path, Shared<const Phrase> callph, Frame& f)
             continue;
         }
         auto re = a.dycast<Reactive_Value>();
-        if (re && re->gltype_.is_vec()) {
+        if (re && re->sctype_.is_vec()) {
             if (i < path.size()-1)
                 goto domain_error;
             Value b = path[i];
             if (isnum(b)) {
                 return {make<Reactive_Expression>(
-                    GL_Type::Num(),
+                    SC_Type::Num(),
                     make<Call_Expr>(
                         callph,
                         make<Constant>(func_part(callph), a),

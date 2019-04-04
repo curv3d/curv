@@ -10,18 +10,18 @@
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
-#include <libcurv/gl_compiler.h>
+#include <libcurv/sc_compiler.h>
 #include <libcurv/record.h>
 
 namespace curv { namespace geom {
 
-// Run a unit test by compiling it to C++, thus testing the GL compiler's
+// Run a unit test by compiling it to C++, thus testing the SC compiler's
 // C++ code generator.
 void
 run_cpp_test(const Context& cx, Shared<const Function> func)
 {
     Cpp_Program cpp{cx.system()};
-    cpp.define_function("test", GL_Type::Bool(), GL_Type::Bool(), func, cx);
+    cpp.define_function("test", SC_Type::Bool(), SC_Type::Bool(), func, cx);
     cpp.compile();
     auto test = (void(*)(const bool*,bool*))cpp.get_function("test");
     bool arg = true;
@@ -30,10 +30,10 @@ run_cpp_test(const Context& cx, Shared<const Function> func)
     if (!result)
         throw Exception(cx, "assertion failed in C++");
 }
-struct GL_Test_Action : public Operation
+struct SC_Test_Action : public Operation
 {
     Shared<Operation> arg_;
-    GL_Test_Action(
+    SC_Test_Action(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
@@ -60,19 +60,19 @@ struct GL_Test_Action : public Operation
         });
     }
 };
-struct GL_Test_Metafunction : public Metafunction
+struct SC_Test_Metafunction : public Metafunction
 {
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        return make<GL_Test_Action>(share(ph), analyse_op(*ph.arg_, env));
+        return make<SC_Test_Action>(share(ph), analyse_op(*ph.arg_, env));
     }
 };
 
 void add_builtins(System_Impl& sys)
 {
-    sys.std_namespace_["gl_test"] =
-        make<Builtin_Meaning<GL_Test_Metafunction>>();
+    sys.std_namespace_["sc_test"] =
+        make<Builtin_Meaning<SC_Test_Metafunction>>();
 }
 
 }} // namespaces

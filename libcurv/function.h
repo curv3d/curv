@@ -8,7 +8,7 @@
 #include <libcurv/value.h>
 #include <libcurv/meaning.h>
 #include <libcurv/list.h>
-#include <libcurv/gl_frame.h>
+#include <libcurv/sc_frame.h>
 
 namespace curv {
 
@@ -52,7 +52,7 @@ struct Function : public Ref_Value
 
     // Generate a call to the function during geometry compilation.
     // The argument is represented as an expression.
-    virtual GL_Value gl_call_expr(Operation&, Shared<const Phrase>, GL_Frame&) const;
+    virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const;
 
     /// Print a value like a Curv expression.
     virtual void print(std::ostream&) const;
@@ -101,10 +101,10 @@ struct Legacy_Function : public Function
 
     // Generate a call to the function during geometry compilation.
     // The argument is represented as an expression.
-    virtual GL_Value gl_call_expr(Operation&, Shared<const Phrase>, GL_Frame&) const override;
+    virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const override;
 
     // generate a call to the function during geometry compilation
-    virtual GL_Value gl_call(GL_Frame&) const;
+    virtual SC_Value sc_call(SC_Frame&) const;
 };
 
 /// The run-time representation of a compiled lambda expression.
@@ -180,7 +180,7 @@ struct Closure : public Function
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) override;
 
     // generate a call to the function during geometry compilation
-    virtual GL_Value gl_call_expr(Operation&, Shared<const Phrase>, GL_Frame&) const override;
+    virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const override;
 };
 
 struct Piecewise_Function : public Function
@@ -202,7 +202,7 @@ struct Piecewise_Function : public Function
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) override;
 
     // generate a call to the function during geometry compilation
-    virtual GL_Value gl_call_expr(Operation&, Shared<const Phrase>, GL_Frame&) const override;
+    virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const override;
 };
 
 } // namespace curv

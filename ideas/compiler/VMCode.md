@@ -19,7 +19,7 @@ and its eval/exec/generate protocol.
 **Architecture:**
 ```
 scanner -> parser -> analyser -> optimizer -> codegen -> evaluator
-shape value -> gl_analyser -> optimizer -> gl_codegen
+shape value -> sc_analyser -> optimizer -> sc_codegen
 ```
 
 **IR (Intermediate Representation):**
@@ -131,7 +131,7 @@ Given this, what's the path to GL support for `iterate`?
 constituent operations into executable code.
 
 **Older Notes**<br>
-New GL IR, replaces `GL_Value`.
+New SC IR, replaces `SC_Value`.
 It's an updated version of Meaning/Operation/Expression, in which a variable
 reference links to the definiens. We support IR to IR transformations, such as
 constant folding, abstract/partial evaluation, common subexpression elimination.
@@ -207,8 +207,8 @@ The `&&` op suggests that the executable format is not quite an IR? I was hoping
 it would be isomorphic to CPS. More analysis later.
 
 **GL IR**:
-* GL_Value/GL_Frame/gl_eval: not useful for optimizations. I can't test if
-  a GL_Value is constant, so no constant folding.
+* SC_Value/SC_Frame/sc_eval: not useful for optimizations. I can't test if
+  a SC_Value is constant, so no constant folding.
 
 ## Jan 2017
 Goals:

@@ -2,12 +2,12 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef LIBCURV_GL_COMPILER_H
-#define LIBCURV_GL_COMPILER_H
+#ifndef LIBCURV_SC_COMPILER_H
+#define LIBCURV_SC_COMPILER_H
 
 #include <unordered_map>
 #include <vector>
-#include <libcurv/gl_frame.h>
+#include <libcurv/sc_frame.h>
 #include <libcurv/meaning.h>
 
 namespace curv {
@@ -16,14 +16,14 @@ struct Context;
 struct Function;
 struct System;
 
-/// "GL" or "Geometry Language" is a low level, strongly-typed subset of Curv
+/// SubCurv is a low level, strongly-typed subset of Curv
 /// that can be efficiently translated into a low level language (currently
 /// C++ or GLSL), for fast evaluation on a CPU or GPU.
 ///
-/// GL is a set of types and operations on those types. It is a statically
+/// SubCurv is a set of types and operations on those types. It is a statically
 /// typed subset of Curv which is also a subset of GLSL (but with different
 /// type and operation names). Curv distance functions must be restricted to the
-/// GL subset or the Shape Compiler will report an error during rendering.
+/// SC subset or the Shape Compiler will report an error during rendering.
 ///
 /// The compiler operates on Curv function *values*. Non-local variables
 /// captured by closures become compile time constants. Intermediate function
@@ -33,7 +33,7 @@ struct System;
 /// The generated code is statically typed, and uses SSA style, where each
 /// operation is represented by an assignment to an SSA variable.
 
-enum class GL_Target
+enum class SC_Target
 {
     glsl,   // output GLSL code
     cpp     // output C++ code using GLM library
@@ -56,23 +56,23 @@ struct Op_Hash_Eq
     }
 };
 using Op_Cache =
-    std::unordered_map<Shared<const Operation>, GL_Value, Op_Hash, Op_Hash_Eq>;
+    std::unordered_map<Shared<const Operation>, SC_Value, Op_Hash, Op_Hash_Eq>;
 
 /// Global state for the GLSL/C++ code generator.
-struct GL_Compiler
+struct SC_Compiler
 {
     std::ostream& out_;
     std::stringstream constants_{};
     std::stringstream body_{};
     bool in_constants_ = false;
-    GL_Target target_;
+    SC_Target target_;
     unsigned valcount_;
     System &system_;
-    std::unordered_map<Value, GL_Value, Value::Hash, Value::Hash_Eq>
+    std::unordered_map<Value, SC_Value, Value::Hash, Value::Hash_Eq>
         valcache_{};
     std::vector<Op_Cache> opcaches_{};
 
-    GL_Compiler(std::ostream& s, GL_Target t, System& sys)
+    SC_Compiler(std::ostream& s, SC_Target t, System& sys)
     :
         out_(s), target_(t), valcount_(0), system_(sys)
     {
@@ -86,34 +86,34 @@ struct GL_Compiler
             return body_;
     }
 
-    // This is the main entry point to the GL compiler.
+    // This is the main entry point to the Shape Compiler.
     void define_function(
-        const char* name, GL_Type param_type, GL_Type result_type,
+        const char* name, SC_Type param_type, SC_Type result_type,
         Shared<const Function> func, const Context&);
 
     void begin_function();
     void end_function();
 
-    inline GL_Value newvalue(GL_Type type)
+    inline SC_Value newvalue(SC_Type type)
     {
-        return GL_Value(valcount_++, type);
+        return SC_Value(valcount_++, type);
     }
 
     // TODO: maybe add a member function for each operation that we support.
     // Maybe these can later be virtual functions, so that this interface
     // becomes generic for SPIR-V and LLVM code generation. Eg,
-    // GL_Value add(GL_Value x, GL_Value y)
+    // SC_Value add(SC_Value x, SC_Value y)
     // {
-    //     assert(x.type == GL_Type::num);
-    //     assert(y.type == GL_Type::num);
-    //     auto result = newvalue(GL_Type::num);
+    //     assert(x.type == SC_Type::num);
+    //     assert(y.type == SC_Type::num);
+    //     auto result = newvalue(SC_Type::num);
     //     out << result << "=" << x << "+" << y << ";\n";
     //     return result;
     // }
     //
     // This API looks handy for code generation for built-in shapes
     // with built-in dist functions. You can nest these function calls,
-    // it would look Lispy. gl.sqrt(gl.add(gl.square(x), gl.square(y)))
+    // it would look Lispy. sc.sqrt(sc.add(sc.square(x), sc.square(y)))
     //
     // The caller is responsible for passing arguments (to `add`) of the
     // correct type. (Otherwise, there is an assertion failure.)
@@ -121,18 +121,18 @@ struct GL_Compiler
     // to report a shape argument of the wrong type, or a failure of static
     // type checking within a user-defined dist function.
     //
-    // Maybe GL_Compiler will track context for expressive exceptions?
+    // Maybe SC_Compiler will track context for expressive exceptions?
     // There is no eval stack at this time, but there is a CSG tree,
     // so maybe we can have a CSG tree stack trace. There is also a
-    // gl_call stack, once we support nested function calls in dist functions.
+    // sc_call stack, once we support nested function calls in dist functions.
 };
 
-GL_Value gl_eval_op(GL_Frame& f, const Operation& op);
-GL_Value gl_eval_expr(GL_Frame&, const Operation& op, GL_Type);
-GL_Value gl_eval_const(GL_Frame& f, Value val, const Phrase&);
-GL_Value gl_call_unary_numeric(GL_Frame&, const char*);
-void gl_put_as(GL_Frame& f, GL_Value val, const Context&, GL_Type type);
-GL_Value gl_vec_element(GL_Frame&, GL_Value, int);
+SC_Value sc_eval_op(SC_Frame& f, const Operation& op);
+SC_Value sc_eval_expr(SC_Frame&, const Operation& op, SC_Type);
+SC_Value sc_eval_const(SC_Frame& f, Value val, const Phrase&);
+SC_Value sc_call_unary_numeric(SC_Frame&, const char*);
+void sc_put_as(SC_Frame& f, SC_Value val, const Context&, SC_Type type);
+SC_Value sc_vec_element(SC_Frame&, SC_Value, int);
 
 } // namespace
 #endif // header guard

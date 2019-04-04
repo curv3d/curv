@@ -6,7 +6,7 @@
 
 #include <libcurv/context.h>
 #include <libcurv/function.h>
-#include <libcurv/gl_compiler.h>
+#include <libcurv/sc_compiler.h>
 #include <libcurv/shape.h>
 #include <libcurv/viewed_shape.h>
 
@@ -25,20 +25,20 @@ const char glsl_header[] =
 
 void glsl_function_export(const Shape_Program& shape, std::ostream& out)
 {
-    GL_Compiler gl(out, GL_Target::glsl, shape.system());
+    SC_Compiler sc(out, SC_Target::glsl, shape.system());
     At_Program cx(shape);
 
     out << glsl_header;
     if (shape.viewed_shape_) {
         // output uniform variables for parametric shape
         for (auto& p : shape.viewed_shape_->param_) {
-            out << "uniform " << p.second.pconfig_.gltype_ << " "
+            out << "uniform " << p.second.pconfig_.sctype_ << " "
                 << p.second.identifier_ << ";\n";
         }
     }
-    gl.define_function("dist", GL_Type::Vec(4), GL_Type::Num(),
+    sc.define_function("dist", SC_Type::Vec(4), SC_Type::Num(),
         shape.dist_fun_, cx);
-    gl.define_function("colour", GL_Type::Vec(4), GL_Type::Vec(3),
+    sc.define_function("colour", SC_Type::Vec(4), SC_Type::Vec(3),
         shape.colour_fun_, cx);
 }
 

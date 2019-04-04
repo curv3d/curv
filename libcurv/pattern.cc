@@ -7,8 +7,8 @@
 #include <libcurv/definition.h>
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
-#include <libcurv/gl_compiler.h>
-#include <libcurv/gl_context.h>
+#include <libcurv/sc_compiler.h>
+#include <libcurv/sc_context.h>
 
 namespace curv {
 
@@ -28,11 +28,11 @@ struct Skip_Pattern : public Pattern
     {
         return true;
     }
-    virtual void gl_exec(GL_Value, const Context&, GL_Frame&)
+    virtual void sc_exec(SC_Value, const Context&, SC_Frame&)
     const override
     {
     }
-    virtual void gl_exec(Operation&, GL_Frame&, GL_Frame&)
+    virtual void sc_exec(Operation&, SC_Frame&, SC_Frame&)
     const override
     {
     }
@@ -62,15 +62,15 @@ struct Id_Pattern : public Pattern
         slots[slot_] = value;
         return true;
     }
-    virtual void gl_exec(GL_Value value, const Context&, GL_Frame& callee)
+    virtual void sc_exec(SC_Value value, const Context&, SC_Frame& callee)
     const override
     {
         callee[slot_] = value;
     }
-    virtual void gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee)
+    virtual void sc_exec(Operation& expr, SC_Frame& caller, SC_Frame& callee)
     const override
     {
-        GL_Value val = gl_eval_op(caller, expr);
+        SC_Value val = sc_eval_op(caller, expr);
         // TODO: Temporary kludge. With generalized :=, all variables are now
         // potentially mutable, but we don't yet have info from the analyser
         // about which variables are actually mutated.
@@ -81,13 +81,13 @@ struct Id_Pattern : public Pattern
             // This is a mutable variable, so create a new var and initialize
             // it with val. But, arrays are not supported.
             if (val.type.rank_ > 0) {
-                throw Exception(At_GL_Phrase(expr.syntax_, caller),
+                throw Exception(At_SC_Phrase(expr.syntax_, caller),
                     "mutable array variables are not supported");
             }
             // If I do support mutable array variables, I'll need to use
             // memcpy() for the C++ case.
-            GL_Value var = caller.gl.newvalue(val.type);
-            caller.gl.out() << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
+            SC_Value var = caller.sc.newvalue(val.type);
+            caller.sc.out() << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
             callee[slot_] = var;
         } else {
             // Immutable variable.
@@ -234,26 +234,26 @@ struct List_Pattern : public Pattern
                 return false;
         return true;
     }
-    virtual void gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee)
+    virtual void sc_exec(Operation& expr, SC_Frame& caller, SC_Frame& callee)
     const override
     {
         if (auto list = dynamic_cast<List_Expr*>(&expr)) {
             if (list->size() != items_.size()) {
-                throw Exception(At_GL_Phrase(expr.syntax_, caller),
+                throw Exception(At_SC_Phrase(expr.syntax_, caller),
                     stringify("list pattern: expected ",items_.size(),
                         " items, got ",list->size()));
             }
             for (size_t i = 0; i < items_.size(); ++i)
-                items_[i]->gl_exec(*list->at(i), caller, callee);
+                items_[i]->sc_exec(*list->at(i), caller, callee);
         } else {
-            this->gl_exec(
-                gl_eval_op(caller, expr),
-                At_GL_Phrase(expr.syntax_, callee),
+            this->sc_exec(
+                sc_eval_op(caller, expr),
+                At_SC_Phrase(expr.syntax_, callee),
                 callee);
         }
     }
     virtual void
-    gl_exec(GL_Value val, const Context& valcx, GL_Frame& callee)
+    sc_exec(SC_Value val, const Context& valcx, SC_Frame& callee)
     const override
     {
         if (!val.type.is_vec())
@@ -263,7 +263,7 @@ struct List_Pattern : public Pattern
                 stringify("list pattern: expected ",items_.size(),
                     " items, got ",val.type.count()));
         for (size_t i = 0; i < items_.size(); ++i)
-            items_[i]->gl_exec(gl_vec_element(callee, val, i), valcx, callee);
+            items_[i]->sc_exec(sc_vec_element(callee, val, i), valcx, callee);
     }
 };
 
@@ -386,11 +386,11 @@ struct Record_Pattern : public Pattern
         }
         return success;
     }
-    virtual void gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee)
+    virtual void sc_exec(Operation& expr, SC_Frame& caller, SC_Frame& callee)
     const override
     {
         // TODO: implement this
-        throw Exception(At_GL_Phrase(syntax_, caller),
+        throw Exception(At_SC_Phrase(syntax_, caller),
             "record patterns are not supported");
     }
 };
@@ -530,15 +530,15 @@ make_pattern(const Phrase& ph, bool mut, Scope& scope, unsigned unitno)
 }
 
 void
-Pattern::gl_exec(GL_Value val, const Context& valcx, GL_Frame& callee) const
+Pattern::sc_exec(SC_Value val, const Context& valcx, SC_Frame& callee) const
 {
-    throw Exception(At_GL_Phrase(syntax_, callee),
+    throw Exception(At_SC_Phrase(syntax_, callee),
         "pattern not supported");
 }
 void
-Pattern::gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee) const
+Pattern::sc_exec(Operation& expr, SC_Frame& caller, SC_Frame& callee) const
 {
-    throw Exception(At_GL_Phrase(syntax_, callee),
+    throw Exception(At_SC_Phrase(syntax_, callee),
         "pattern not supported");
 }
 

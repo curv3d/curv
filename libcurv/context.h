@@ -37,7 +37,7 @@ struct System;
 /// due to lazy evaluation and lazy program loading in `lib`.
 ///
 /// We only need Context::frame() at runtime: that's when `lib` expressions
-/// are evaluated. During GL_Compile, Context::frame() returns nullptr.
+/// are evaluated. During SC_Compile, Context::frame() returns nullptr.
 ///
 /// Context objects must be very cheap to construct.
 /// Therefore, they are small, with only a few fields to fill in, and with

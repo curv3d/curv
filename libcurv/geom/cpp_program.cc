@@ -31,7 +31,7 @@ Cpp_Program::Cpp_Program(System& sys)
     system_{sys},
     path_{register_tempfile(".cpp")},
     file_{path_.c_str()},
-    gl_{file_, GL_Target::cpp, sys}
+    sc_{file_, SC_Target::cpp, sys}
 {
     if (file_.fail()) {
         throw Exception{At_System{system_},

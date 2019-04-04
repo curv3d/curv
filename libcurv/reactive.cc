@@ -9,11 +9,11 @@
 namespace curv {
 
 Reactive_Expression::Reactive_Expression(
-    GL_Type gltype,
+    SC_Type sctype,
     Shared<Operation> expr,
     const Context& cx)
 :
-    Reactive_Value(sty_reactive_expression, gltype),
+    Reactive_Value(sty_reactive_expression, sctype),
     expr_(std::move(expr))
 {
     if (!expr_->pure_) {

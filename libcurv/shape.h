@@ -6,7 +6,7 @@
 #define LIBCURV_SHAPE_H
 
 #include <libcurv/frame.h>
-#include <libcurv/gl_compiler.h>
+#include <libcurv/sc_compiler.h>
 #include <libcurv/location.h>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>

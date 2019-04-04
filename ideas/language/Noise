@@ -16,9 +16,9 @@ What happens: "this function is not supported" error for a piecewise function
 value returned by `match`.
 
 Solutions:
-* Piecewise_Function::gl_call_expr() is defined to do something reasonable.
-  Compile argument, get its gl_type, search component functions for one whose
-  pattern matches the gl_type.
+* Piecewise_Function::sc_call_expr() is defined to do something reasonable.
+  Compile argument, get its sc_type, search component functions for one whose
+  pattern matches the sc_type.
 
 random(seed): A good white-noise hash function for the GPU
 ----------------------------------------------------------
@@ -130,6 +130,6 @@ The low-level compiler
     Geometry Compiler
     Shape Compiler (SC)
 Prefixes in libcurv
-    GL_Type
+    SC_Type
     LL_Type
     SC_Type

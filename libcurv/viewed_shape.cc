@@ -24,11 +24,11 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
     //   proper value taken from S.parameter.
     // * Evaluate S.call(A).
     // * The result must be a shape record S1 (otherwise error).
-    // * GL compile S1.dist and S1.colour into GLSL. References to reactive
+    // * compile S1.dist and S1.colour into GLSL. References to reactive
     //   values are converted to uniform variable references. Note that S1.bbox
     //   etc are ignored. (glsl_function_export)
     // If not found:
-    // * GL compile S.dist and S.colour into GLSL. (glsl_function_export)
+    // * compile S.dist and S.colour into GLSL. (glsl_function_export)
 
     // Recognize a parametric shape, create ptable.
     // If found, create S1. Store ptable ptr in S1.
@@ -37,7 +37,7 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
     // Else, call export_frag(S), the boring case.
 
     // Viewed_Shape data structures:
-    // * A set of reactive values, used by the GL compiler. These are not
+    // * A set of reactive values, used by the SC compiler. These are not
     //   stored in the Viewed_Shape itself, because it is self contained,
     //   doesn't reference objects shared with other threads.
     // * A parameter table, used by the Viewer in the OpenGL main loop.
@@ -89,7 +89,7 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
                         name.c_str(),
                         Parameter{id, config, state}});
                     cparams->fields_[name] =
-                        {make<Uniform_Variable>(name, id, config.gltype_)};
+                        {make<Uniform_Variable>(name, id, config.sctype_)};
                 } else {
                     cparams->fields_[name] = value;
                 }
@@ -130,7 +130,7 @@ Viewed_Shape::write_json(std::ostream& out) const
         first = false;
         out << "{";
         out << "\"name\":\"rv_" << p.first << "\"";
-        out << ",\"type\":\"" << p.second.pconfig_.gltype_ << "\"";
+        out << ",\"type\":\"" << p.second.pconfig_.sctype_ << "\"";
         out << ",\"value\":";
         p.second.pstate_.write_json(out, p.second.pconfig_.type_);
         out << ",\"label\":"; write_json_string(p.first.c_str(), out);
@@ -149,7 +149,7 @@ Viewed_Shape::write_curv(std::ostream& out) const
     for (auto& p : param_) {
         out << "    {";
         out << "name: \"rv_" << p.first << "\"";
-        out << ", type: \"" << p.second.pconfig_.gltype_ << "\"";
+        out << ", type: \"" << p.second.pconfig_.sctype_ << "\"";
         out << ", value: ";
         p.second.pstate_.write_curv(out, p.second.pconfig_.type_);
         out << ", label: "; write_curv_string(p.first.c_str(), 0, out);

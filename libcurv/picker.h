@@ -25,7 +25,7 @@ struct Picker
     };
     struct Config {
         Type type_;
-        GL_Type gltype_;
+        SC_Type sctype_;
         union {
             struct {
                 double low_;
@@ -60,7 +60,7 @@ struct Uniform_Variable : public Reactive_Value
 {
     Symbol name_;
     std::string identifier_;
-    Uniform_Variable(Symbol name, std::string id, GL_Type);
+    Uniform_Variable(Symbol name, std::string id, SC_Type);
     virtual void print(std::ostream&) const override;
 };
 

@@ -7,7 +7,7 @@
 
 #include <libcurv/value.h>
 #include <libcurv/frame.h>
-#include <libcurv/gl_frame.h>
+#include <libcurv/sc_frame.h>
 
 namespace curv {
 
@@ -32,8 +32,8 @@ struct Pattern : public Shared_Base
     virtual void analyse(Environ&) = 0;
     virtual void exec(Value* slots, Value, const Context&, Frame&) const = 0;
     virtual bool try_exec(Value* slots, Value, const Context&, Frame&) const = 0;
-    virtual void gl_exec(GL_Value, const Context&, GL_Frame&) const;
-    virtual void gl_exec(Operation& expr, GL_Frame& caller, GL_Frame& callee) const;
+    virtual void sc_exec(SC_Value, const Context&, SC_Frame&) const;
+    virtual void sc_exec(Operation& expr, SC_Frame& caller, SC_Frame& callee) const;
 };
 
 Shared<Pattern> make_pattern(const Phrase&, bool mut, Scope&, unsigned unitno);

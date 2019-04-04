@@ -5,8 +5,8 @@
 #include <libcurv/function.h>
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
-#include <libcurv/gl_compiler.h>
-#include <libcurv/gl_context.h>
+#include <libcurv/sc_compiler.h>
+#include <libcurv/sc_context.h>
 
 namespace curv {
 
@@ -65,11 +65,11 @@ Function::try_tail_call(Value arg, std::unique_ptr<Frame>& f)
     return false;
 }
 
-GL_Value
-Function::gl_call_expr(Operation& arg, Shared<const Phrase> call_phrase, GL_Frame& f)
+SC_Value
+Function::sc_call_expr(Operation& arg, Shared<const Phrase> call_phrase, SC_Frame& f)
 const
 {
-    throw Exception(At_GL_Phrase(func_part(call_phrase), f),
+    throw Exception(At_SC_Phrase(func_part(call_phrase), f),
         "this function is not supported");
 }
 
@@ -105,40 +105,40 @@ Legacy_Function::try_call(Value arg, Frame& f)
     }
 }
 
-GL_Value
-Legacy_Function::gl_call_expr(
-    Operation& arg, Shared<const Phrase> call_phrase, GL_Frame& f)
+SC_Value
+Legacy_Function::sc_call_expr(
+    Operation& arg, Shared<const Phrase> call_phrase, SC_Frame& f)
 const
 {
-    auto f2 = GL_Frame::make(nslots_, f.gl, nullptr, &f, call_phrase);
+    auto f2 = SC_Frame::make(nslots_, f.sc, nullptr, &f, call_phrase);
     if (nargs_ == 1)
-        (*f2)[0] = gl_eval_op(f, arg);
+        (*f2)[0] = sc_eval_op(f, arg);
     else if (auto list = dynamic_cast<List_Expr*>(&arg)) {
         if (list->size() != nargs_)
-            throw Exception(At_GL_Phrase(arg.syntax_, f), stringify(
+            throw Exception(At_SC_Phrase(arg.syntax_, f), stringify(
                 "wrong number of arguments (got ",list->size(),
                 ", expected ",nargs_,")"));
         for (size_t i = 0; i < list->size(); ++i)
-            (*f2)[i] = gl_eval_op(f, *(*list)[i]);
+            (*f2)[i] = sc_eval_op(f, *(*list)[i]);
     } else {
-        auto glarg = gl_eval_op(f, arg);
-        if (!glarg.type.is_vec())
-            throw Exception(At_GL_Phrase(arg.syntax_, f),
+        auto scarg = sc_eval_op(f, arg);
+        if (!scarg.type.is_vec())
+            throw Exception(At_SC_Phrase(arg.syntax_, f),
                 "function call argument is not a vector");
-        if (glarg.type.count() != nargs_)
-            throw Exception(At_GL_Phrase(arg.syntax_, f), stringify(
-                "wrong number of arguments (got ",glarg.type.count(),
+        if (scarg.type.count() != nargs_)
+            throw Exception(At_SC_Phrase(arg.syntax_, f), stringify(
+                "wrong number of arguments (got ",scarg.type.count(),
                 ", expected ",nargs_,")"));
-        for (unsigned i = 0; i < glarg.type.count(); ++i)
-            (*f2)[i] = gl_vec_element(f, glarg, i);
+        for (unsigned i = 0; i < scarg.type.count(); ++i)
+            (*f2)[i] = sc_vec_element(f, scarg, i);
     }
-    return gl_call(*f2);
+    return sc_call(*f2);
 }
 
-GL_Value
-Legacy_Function::gl_call(GL_Frame& f) const
+SC_Value
+Legacy_Function::sc_call(SC_Frame& f) const
 {
-    throw Exception(At_GL_Frame(f), "this function is not supported");
+    throw Exception(At_SC_Frame(f), "this function is not supported");
 }
 
 Value
@@ -176,16 +176,16 @@ Closure::try_tail_call(Value arg, std::unique_ptr<Frame>& f)
     return true;
 }
 
-GL_Value
-Closure::gl_call_expr(Operation& arg, Shared<const Phrase> cp, GL_Frame& f) const
+SC_Value
+Closure::sc_call_expr(Operation& arg, Shared<const Phrase> cp, SC_Frame& f) const
 {
     // create a frame to call this closure
-    auto f2 = GL_Frame::make(nslots_, f.gl, nullptr, &f, cp);
+    auto f2 = SC_Frame::make(nslots_, f.sc, nullptr, &f, cp);
     f2->nonlocals_ = &*nonlocals_;
     // match pattern against argument, store formal parameters in frame
-    pattern_->gl_exec(arg, f, *f2);
+    pattern_->sc_exec(arg, f, *f2);
     // evaluation function body, return result.
-    return gl_eval_op(*f2, *expr_);
+    return sc_eval_op(*f2, *expr_);
 }
 
 void
@@ -247,12 +247,12 @@ Piecewise_Function::try_tail_call(Value arg, std::unique_ptr<Frame>& f)
     return false;
 }
 
-GL_Value
-Piecewise_Function::gl_call_expr(
-    Operation& arg, Shared<const Phrase> call_phrase, GL_Frame& f)
+SC_Value
+Piecewise_Function::sc_call_expr(
+    Operation& arg, Shared<const Phrase> call_phrase, SC_Frame& f)
 const
 {
-    throw Exception(At_GL_Phrase(func_part(call_phrase), f),
+    throw Exception(At_SC_Phrase(func_part(call_phrase), f),
         "piecewise function is not supported");
 }
 

@@ -56,10 +56,10 @@ struct Binary_Numeric_Array_Op
         // Both x and y are reactive.
         if (x.is_num()) {
             auto yre = y.dycast<Reactive_Value>();
-            if (yre && yre->gltype_ == GL_Type::Num()) {
+            if (yre && yre->sctype_ == SC_Type::Num()) {
                 auto& syn = f.cx.syntax();
                 return {make<Reactive_Expression>(
-                    GL_Type::Num(),
+                    SC_Type::Num(),
                     f.make_expr(
                         make<Constant>(share(syn), x),
                         yre->expr(syn)),
@@ -67,18 +67,18 @@ struct Binary_Numeric_Array_Op
             }
         }
         auto xre = x.dycast<Reactive_Value>();
-        if (xre && xre->gltype_ == GL_Type::Num()) {
+        if (xre && xre->sctype_ == SC_Type::Num()) {
             auto& syn = f.cx.syntax();
             if (y.is_num())
                 return {make<Reactive_Expression>(
-                    GL_Type::Num(),
+                    SC_Type::Num(),
                     f.make_expr(xre->expr(syn),
                         make<Constant>(share(syn), y)),
                     f.cx)};
             auto yre = y.dycast<Reactive_Value>();
-            if (yre && yre->gltype_ == GL_Type::Num())
+            if (yre && yre->sctype_ == SC_Type::Num())
                 return {make<Reactive_Expression>(
-                    GL_Type::Num(),
+                    SC_Type::Num(),
                     f.make_expr(xre->expr(syn), yre->expr(syn)),
                     f.cx)};
         }
@@ -134,9 +134,9 @@ struct Unary_Numeric_Array_Op
         if (auto xlist = x.dycast<List>())
             return {element_wise_op(f, xlist)};
         auto xre = x.dycast<Reactive_Value>();
-        if (xre && xre->gltype_ == GL_Type::Num()) {
+        if (xre && xre->sctype_ == SC_Type::Num()) {
             return {make<Reactive_Expression>(
-                GL_Type::Num(),
+                SC_Type::Num(),
                 f.make_expr(xre->expr(f.cx.syntax())),
                 f.cx)};
         }

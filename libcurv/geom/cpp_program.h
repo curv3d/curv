@@ -6,7 +6,7 @@
 #define LIBCURV_GEOM_CPP_PROGRAM_H
 
 #include <libcurv/filesystem.h>
-#include <libcurv/gl_compiler.h>
+#include <libcurv/sc_compiler.h>
 #include <libcurv/system.h>
 #include <fstream>
 
@@ -19,17 +19,17 @@ struct Cpp_Program
     System& system_;
     Filesystem::path path_;
     std::ofstream file_;
-    GL_Compiler gl_;
+    SC_Compiler sc_;
     void* dll_ = nullptr;
 
     Cpp_Program(System&);
     ~Cpp_Program();
     static const char standard_header[];
     inline void define_function(
-        const char* name, GL_Type param_type, GL_Type result_type,
+        const char* name, SC_Type param_type, SC_Type result_type,
         Shared<const Function> func, const Context& cx)
     {
-        gl_.define_function(name, param_type, result_type, func, cx);
+        sc_.define_function(name, param_type, result_type, func, cx);
     }
     void compile();
     void* get_function(const char* name);

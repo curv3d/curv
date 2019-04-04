@@ -5,7 +5,7 @@
 #ifndef LIBCURV_MEANING_H
 #define LIBCURV_MEANING_H
 
-#include <libcurv/gl_frame.h>
+#include <libcurv/sc_frame.h>
 #include <vector>
 #include <libcurv/tail_array.h>
 #include <libcurv/shared.h>
@@ -147,8 +147,8 @@ struct Operation : public Meaning
     virtual void exec(Frame&, Executor&) const = 0;
 
     // These functions are called by the Shape Compiler.
-    virtual GL_Value gl_eval(GL_Frame&) const;
-    virtual void gl_exec(GL_Frame&) const;
+    virtual SC_Value sc_eval(SC_Frame&) const;
+    virtual void sc_exec(SC_Frame&) const;
 
     // Called when using a pure Operation as a key to an unordered_map.
     virtual size_t hash() const noexcept;
@@ -191,7 +191,7 @@ struct Constant : public Just_Expression
     }
 
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
 };
@@ -200,7 +200,7 @@ struct Null_Action : public Operation
 {
     using Operation::Operation;
     virtual void exec(Frame&, Executor&) const override;
-    virtual void gl_exec(GL_Frame&) const override;
+    virtual void sc_exec(SC_Frame&) const override;
 };
 
 struct Symbolic_Ref : public Just_Expression
@@ -214,7 +214,7 @@ struct Symbolic_Ref : public Just_Expression
     {}
 
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 
 struct Module_Data_Ref : public Just_Expression
@@ -239,7 +239,7 @@ struct Nonlocal_Data_Ref : public Just_Expression
     {}
 
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 
 struct Data_Ref : public Just_Expression
@@ -254,7 +254,7 @@ struct Data_Ref : public Just_Expression
     }
 
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
 };
@@ -278,7 +278,7 @@ struct Call_Expr : public Just_Expression
 
     virtual Value eval(Frame&) const override;
     virtual void tail_eval(std::unique_ptr<Frame>&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
 };
@@ -303,7 +303,7 @@ struct Not_Expr : public Prefix_Expr_Base
 {
     using Prefix_Expr_Base::Prefix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 struct Positive_Expr : public Prefix_Expr_Base
 {
@@ -314,7 +314,7 @@ struct Negative_Expr : public Prefix_Expr_Base
 {
     using Prefix_Expr_Base::Prefix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 
 struct Spread_Op : public Operation
@@ -359,61 +359,61 @@ struct Predicate_Assertion_Expr : public Infix_Expr_Base
         Infix_Expr_Base(std::move(syntax),std::move(arg1),std::move(arg2))
     {}
     virtual Value eval(Frame&) const override;
-    //virtual GL_Value gl_eval(GL_Frame&) const override;
+    //virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 struct Or_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 struct And_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 struct Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 struct Not_Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 struct Less_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 struct Greater_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 struct Less_Or_Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 struct Greater_Or_Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 struct Add_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
 };
@@ -421,7 +421,7 @@ struct Subtract_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
 };
@@ -429,7 +429,7 @@ struct Multiply_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
 };
@@ -437,7 +437,7 @@ struct Divide_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
 };
@@ -445,7 +445,7 @@ struct Power_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 
 struct Range_Expr : public Just_Expression
@@ -479,7 +479,7 @@ struct List_Expr_Base : public Just_Expression
     void init(); // call after construction & initialization of array elements
     virtual Value eval(Frame&) const override;
     Shared<List> eval_list(Frame&) const;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
     TAIL_ARRAY_MEMBERS(Shared<Operation>)
@@ -516,7 +516,7 @@ struct Scope_Executable
     /// Return the module.
     Shared<Module> eval_module(Frame&) const;
     void exec(Frame&) const;
-    void gl_exec(GL_Frame&) const;
+    void sc_exec(SC_Frame&) const;
 };
 
 // An internal action for storing the value of a data definition
@@ -540,7 +540,7 @@ struct Data_Setter : public Operation
     {}
 
     virtual void exec(Frame&, Executor&) const override;
-    void gl_exec(GL_Frame&) const override;
+    void sc_exec(SC_Frame&) const override;
 };
 
 struct Module_Expr : public Just_Expression
@@ -620,7 +620,7 @@ struct Pattern_Setter : public Operation
     {}
 
     virtual void exec(Frame&, Executor&) const override;
-    virtual void gl_exec(GL_Frame&) const override;
+    virtual void sc_exec(SC_Frame&) const override;
 };
 
 // An internal action for initializing the slots in the evaluation frame
@@ -681,7 +681,7 @@ struct Compound_Op_Base : public Operation
     : Operation(std::move(syntax)) {}
 
     virtual void exec(Frame&, Executor&) const override;
-    virtual void gl_exec(GL_Frame&) const override;
+    virtual void sc_exec(SC_Frame&) const override;
 
     TAIL_ARRAY_MEMBERS(Shared<Operation>)
 };
@@ -707,8 +707,8 @@ struct Preaction_Op : public Operation
     virtual Value eval(Frame&) const override;
     virtual void tail_eval(std::unique_ptr<Frame>&) const override;
     virtual void exec(Frame&, Executor&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
-    virtual void gl_exec(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
+    virtual void sc_exec(SC_Frame&) const override;
 };
 
 struct Block_Op : public Operation
@@ -729,8 +729,8 @@ struct Block_Op : public Operation
     virtual Value eval(Frame&) const override;
     virtual void tail_eval(std::unique_ptr<Frame>&) const override;
     virtual void exec(Frame&, Executor&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
-    virtual void gl_exec(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
+    virtual void sc_exec(SC_Frame&) const override;
 };
 
 struct For_Op : public Operation
@@ -752,7 +752,7 @@ struct For_Op : public Operation
     {}
 
     virtual void exec(Frame&, Executor&) const override;
-    virtual void gl_exec(GL_Frame&) const override;
+    virtual void sc_exec(SC_Frame&) const override;
 };
 
 struct While_Op : public Operation
@@ -771,7 +771,7 @@ struct While_Op : public Operation
     {}
 
     virtual void exec(Frame&, Executor&) const override;
-    virtual void gl_exec(GL_Frame&) const override;
+    virtual void sc_exec(SC_Frame&) const override;
 };
 
 struct If_Op : public Operation
@@ -791,7 +791,7 @@ struct If_Op : public Operation
 
     virtual Value eval(Frame&) const override; // error message: missing else
     virtual void exec(Frame&, Executor&) const override;
-    virtual void gl_exec(GL_Frame&) const override;
+    virtual void sc_exec(SC_Frame&) const override;
 };
 
 struct If_Else_Op : public Operation
@@ -817,8 +817,8 @@ struct If_Else_Op : public Operation
     virtual Value eval(Frame&) const override;
     virtual void tail_eval(std::unique_ptr<Frame>&) const override;
     virtual void exec(Frame&, Executor&) const override;
-    virtual GL_Value gl_eval(GL_Frame&) const override;
-    virtual void gl_exec(GL_Frame&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
+    virtual void sc_exec(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
 };

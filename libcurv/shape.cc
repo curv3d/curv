@@ -8,7 +8,7 @@
 #include <libcurv/exception.h>
 #include <libcurv/frame.h>
 #include <libcurv/function.h>
-#include <libcurv/gl_context.h>
+#include <libcurv/sc_context.h>
 #include <libcurv/program.h>
 
 #include <cmath>

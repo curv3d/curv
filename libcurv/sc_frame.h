@@ -2,48 +2,48 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef LIBCURV_GL_FRAME_H
-#define LIBCURV_GL_FRAME_H
+#ifndef LIBCURV_SC_FRAME_H
+#define LIBCURV_SC_FRAME_H
 
 #include <ostream>
-#include <libcurv/gl_type.h>
+#include <libcurv/sc_type.h>
 #include <libcurv/module.h>
 #include <libcurv/tail_array.h>
 
 namespace curv {
 
 struct Context;
-struct GL_Compiler;
+struct SC_Compiler;
 struct Phrase;
 
-/// An SSA variable used during GL code generation.
-struct GL_Value
+/// An SSA variable used during SC code generation.
+struct SC_Value
 {
     unsigned index;
-    GL_Type type;
+    SC_Type type;
 
-    GL_Value(unsigned i, GL_Type t) : index(i), type(t) {}
-    GL_Value() noexcept {}
+    SC_Value(unsigned i, SC_Type t) : index(i), type(t) {}
+    SC_Value() noexcept {}
 };
 
 /// print the GLSL variable name
-inline std::ostream& operator<<(std::ostream& out, GL_Value v)
+inline std::ostream& operator<<(std::ostream& out, SC_Value v)
 {
     out << "r" << v.index;
     return out;
 }
 
-struct GL_Frame_Base;
-using GL_Frame = Tail_Array<GL_Frame_Base>;
+struct SC_Frame_Base;
+using SC_Frame = Tail_Array<SC_Frame_Base>;
 
 /// A function call frame used by the Shape Compiler.
 ///
-/// The GL compilation process is a kind of abstract evaluation.
-/// That's really clear when you see that GL_Frame is isomorphic to Frame,
-/// with local slot Values replaced by GL_Values.
-struct GL_Frame_Base
+/// The SC compilation process is a kind of abstract evaluation.
+/// That's really clear when you see that SC_Frame is isomorphic to Frame,
+/// with local slot Values replaced by SC_Values.
+struct SC_Frame_Base
 {
-    GL_Compiler& gl;
+    SC_Compiler& sc;
 
     /// The root frame has a context pointer, which points to the shape
     /// expression that is being compiled. Used for printing a stack trace.
@@ -51,7 +51,7 @@ struct GL_Frame_Base
 
     /// Frames are linked into a stack. This is metadata used for printing
     /// a stack trace and by the debugger. It is not used during evaluation.
-    GL_Frame* parent_frame_;
+    SC_Frame* parent_frame_;
 
     /// If this is a function call frame, then call_phrase_ is the source code
     /// for the function call. If it is a frame for a reactive value expression,
@@ -68,23 +68,23 @@ struct GL_Frame_Base
 
     // Tail array, containing the slots used for local bindings:
     // function arguments, block bindings and other local, temporary values.
-    using value_type = GL_Value;
+    using value_type = SC_Value;
     size_t size_;
     value_type array_[0];
 
-    GL_Value& operator[](size_t i)
+    SC_Value& operator[](size_t i)
     {
         assert(i < size_);
         return array_[i];
     }
 
-    GL_Frame_Base(
-        GL_Compiler& g,
+    SC_Frame_Base(
+        SC_Compiler& g,
         const Context* cx,
-        GL_Frame* parent,
+        SC_Frame* parent,
         Shared<const Phrase> src)
     :
-        gl(g),
+        sc(g),
         root_context_(cx),
         parent_frame_(parent),
         call_phrase_(std::move(src)),

@@ -124,10 +124,10 @@ TODO:
     * is_2d: true
     * is_3d: false
     * bbox: ...
-    * dist: just a centred rectangle. Needs call and gl_call variants.
+    * dist: just a centred rectangle. Needs call and sc_call variants.
       class Image_Dist.
     * colour: class Image_Colour. `call` does bilinear interpolation and
-      converts sRGB to linear. `gl_call` adds Image_Data to the GL_Compiler
+      converts sRGB to linear. `sc_call` adds Image_Data to the SC_Compiler
       image list, references a uniform sampler2d.
     * call: class Image_Call. Later.
     * data: DEFERRED.
@@ -292,7 +292,7 @@ but it could be a problem in the future.
 The GL compiler will traverse the shape value to generate code.
 During this traversal, it produces several outputs:
  * A code string containing the main body of GLSL.
- * An image list, stored in the GL_Compiler.
+ * An image list, stored in the SC_Compiler.
    Each time an Image is found (that contributes to the final result), it is
    assigned a sequential integer ID and appended to the image list.
  

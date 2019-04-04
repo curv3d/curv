@@ -2,25 +2,25 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef LIBCURV_GL_TYPE_H
-#define LIBCURV_GL_TYPE_H
+#ifndef LIBCURV_SC_TYPE_H
+#define LIBCURV_SC_TYPE_H
 
 #include <libcurv/value.h>
 #include <ostream>
 
 namespace curv {
 
-// an array indexed by GL_Type::Base_Type
-extern struct GL_Base_Type_Info
+// an array indexed by SC_Type::Base_Type
+extern struct SC_Base_Type_Info
 {
     const char* name;
     unsigned rank;
     unsigned dim1;
     unsigned dim2;
-} gl_base_type_info_array[];
+} sc_base_type_info_array[];
 
-// GL data types
-struct GL_Type
+// SC data types
+struct SC_Type
 {
     static constexpr unsigned MAX_LIST = 65535; // max size of an array dimension
     enum class Base_Type : short
@@ -46,33 +46,33 @@ struct GL_Type
     unsigned short dim1_ = 0;
     unsigned short dim2_ = 0;
 
-    constexpr GL_Type() : base_type_(Base_Type::Any) {}
-    constexpr GL_Type(Base_Type bt, unsigned dim1 = 0, unsigned dim2 = 0)
+    constexpr SC_Type() : base_type_(Base_Type::Any) {}
+    constexpr SC_Type(Base_Type bt, unsigned dim1 = 0, unsigned dim2 = 0)
     :
         base_type_(bt),
         rank_(dim2 ? 2 : dim1 ? 1 : 0),
         dim1_(dim1),
         dim2_(dim2)
     {}
-    static constexpr inline GL_Type Any() { return {Base_Type::Any}; }
-    static constexpr inline GL_Type Bool() { return {Base_Type::Bool}; }
-    static constexpr inline GL_Type Num(unsigned dim1 = 0, unsigned dim2 = 0)
+    static constexpr inline SC_Type Any() { return {Base_Type::Any}; }
+    static constexpr inline SC_Type Bool() { return {Base_Type::Bool}; }
+    static constexpr inline SC_Type Num(unsigned dim1 = 0, unsigned dim2 = 0)
     {
         return {Base_Type::Num, dim1, dim2};
     }
-    static constexpr inline GL_Type Vec(
+    static constexpr inline SC_Type Vec(
         int n, unsigned dim1 = 0, unsigned dim2 = 0)
     {
         return {Base_Type(int(Base_Type::Vec2) + n - 2), dim1, dim2};
     }
-    static constexpr inline GL_Type Mat(int n)
+    static constexpr inline SC_Type Mat(int n)
     {
         return {Base_Type(int(Base_Type::Mat2) + n - 2)};
     }
 
-    inline const GL_Base_Type_Info& base_info() const
+    inline const SC_Base_Type_Info& base_info() const
     {
-        return gl_base_type_info_array[int(base_type_) + 1];
+        return sc_base_type_info_array[int(base_type_) + 1];
     }
     // is a number, a vector, or a matrix
     inline bool is_numeric() const { return base_type_ >= Base_Type::Num; }
@@ -93,7 +93,7 @@ struct GL_Type
         return base_info().dim1;
     }
     // If this is an array, strip one dimension off of the type.
-    GL_Type abase()
+    SC_Type abase()
     {
         if (is_vec())
             return Num();
@@ -107,29 +107,29 @@ struct GL_Type
     {
         return rank_ == 0 && base_info().rank == 2;
     }
-    inline bool operator==(GL_Type rhs) const
+    inline bool operator==(SC_Type rhs) const
     {
         return base_type_ == rhs.base_type_ && rank_ == rhs.rank_
             && dim1_ == rhs.dim1_ && dim2_ == rhs.dim2_;
     }
-    inline bool operator!=(GL_Type rhs) const
+    inline bool operator!=(SC_Type rhs) const
     {
         return !(*this == rhs);
     }
 };
 
 // if numeric, how many numbers are stored.
-inline unsigned gl_type_count(GL_Type type)
+inline unsigned sc_type_count(SC_Type type)
 {
-    const GL_Base_Type_Info &ta = type.base_info();
+    const SC_Base_Type_Info &ta = type.base_info();
     return ta.dim1 * ta.dim2;
 }
-std::ostream& operator<<(std::ostream& out, GL_Type);
+std::ostream& operator<<(std::ostream& out, SC_Type);
 
-GL_Type gl_type_of(Value);
+SC_Type sc_type_of(Value);
 
 // The smallest type that includes both t1 and t2.
-GL_Type gl_type_join(GL_Type t1, GL_Type t2);
+SC_Type sc_type_join(SC_Type t1, SC_Type t2);
 
 } // namespace
 #endif // header guard

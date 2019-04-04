@@ -10,8 +10,8 @@
 #include <libcurv/dir_record.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
-#include <libcurv/gl_compiler.h>
-#include <libcurv/gl_context.h>
+#include <libcurv/sc_compiler.h>
+#include <libcurv/sc_context.h>
 #include <libcurv/import.h>
 #include <libcurv/math.h>
 #include <libcurv/pattern.h>
@@ -112,14 +112,14 @@ struct Bit_Function : public Legacy_Function
     {
         return {double(args[0].to_bool(At_Arg(*this, args)))};
     }
-    GL_Value gl_call(GL_Frame& f) const override
+    SC_Value sc_call(SC_Frame& f) const override
     {
         auto arg = f[0];
-        if (arg.type != GL_Type::Bool())
-            throw Exception(At_GL_Arg(0, f),
+        if (arg.type != SC_Type::Bool())
+            throw Exception(At_SC_Arg(0, f),
                 stringify(name(),": argument is not a bool"));
-        auto result = f.gl.newvalue(GL_Type::Num());
-        f.gl.out() << "  float "<<result<<" = float("<<arg<<");\n";
+        auto result = f.sc.newvalue(SC_Type::Num());
+        f.sc.out() << "  float "<<result<<" = float("<<arg<<");\n";
         return result;
     }
 };
@@ -151,9 +151,9 @@ struct Class_Name : public Legacy_Function \
     { \
         return array_op.op(Scalar_Op(*this, args), args[0]); \
     } \
-    GL_Value gl_call(GL_Frame& f) const override \
+    SC_Value sc_call(SC_Frame& f) const override \
     { \
-        return gl_call_unary_numeric(f, #glsl_name); \
+        return sc_call_unary_numeric(f, #glsl_name); \
     } \
 }; \
 
@@ -226,90 +226,89 @@ struct Atan2_Function : public Legacy_Function
     {
         return array_op.op(Scalar_Op(*this, args), args[0], args[1]);
     }
-    GL_Value gl_call(GL_Frame& f) const override
+    SC_Value sc_call(SC_Frame& f) const override
     {
         auto x = f[0];
         auto y = f[1];
 
-        GL_Type rtype = GL_Type::Bool();
+        SC_Type rtype = SC_Type::Bool();
         if (x.type == y.type)
             rtype = x.type;
-        else if (x.type == GL_Type::Num())
+        else if (x.type == SC_Type::Num())
             rtype = y.type;
-        else if (y.type == GL_Type::Num())
+        else if (y.type == SC_Type::Num())
             rtype = x.type;
-        if (rtype == GL_Type::Bool())
-            throw Exception(At_GL_Phrase(f.call_phrase_, f),
-                "GL domain error");
+        if (rtype == SC_Type::Bool())
+            throw Exception(At_SC_Phrase(f.call_phrase_, f),
+                "domain error");
 
-        GL_Value result = f.gl.newvalue(rtype);
-        f.gl.out() <<"  "<<rtype<<" "<<result<<" = atan(";
-        gl_put_as(f, x, At_GL_Arg(0, f), rtype);
-        f.gl.out() << ",";
-        gl_put_as(f, y, At_GL_Arg(1, f), rtype);
-        f.gl.out() << ");\n";
+        SC_Value result = f.sc.newvalue(rtype);
+        f.sc.out() <<"  "<<rtype<<" "<<result<<" = atan(";
+        sc_put_as(f, x, At_SC_Arg(0, f), rtype);
+        f.sc.out() << ",";
+        sc_put_as(f, y, At_SC_Arg(1, f), rtype);
+        f.sc.out() << ");\n";
         return result;
     }
 };
 
-GL_Value gl_minmax(const char* name, Operation& argx, GL_Frame& f)
+SC_Value sc_minmax(const char* name, Operation& argx, SC_Frame& f)
 {
     auto list = dynamic_cast<List_Expr*>(&argx);
     if (list) {
-        std::list<GL_Value> args;
-        GL_Type type = GL_Type::Num();
+        std::list<SC_Value> args;
+        SC_Type type = SC_Type::Num();
         for (auto op : *list) {
-            auto val = gl_eval_op(f, *op);
+            auto val = sc_eval_op(f, *op);
             args.push_back(val);
-            if (val.type == GL_Type::Num())
+            if (val.type == SC_Type::Num())
                 ;
             else if (val.type.is_vec()) {
-                if (type == GL_Type::Num())
+                if (type == SC_Type::Num())
                     type = val.type;
                 else if (type != val.type)
-                    throw Exception(At_GL_Phrase(op->syntax_, f), stringify(
-                        "GL: ",name,
-                        ": vector arguments of different lengths"));
+                    throw Exception(At_SC_Phrase(op->syntax_, f), stringify(
+                        name, ": vector arguments of different lengths"));
             } else {
-                throw Exception(At_GL_Phrase(op->syntax_, f), stringify(
-                    "GL: ",name,": argument has bad type"));
+                throw Exception(At_SC_Phrase(op->syntax_, f), stringify(
+                    name,": argument has bad type"));
             }
         }
-        auto result = f.gl.newvalue(type);
+        auto result = f.sc.newvalue(type);
         if (args.size() == 0)
-            f.gl.out() << "  " << type << " " << result << " = -0.0/0.0;\n";
+            f.sc.out() << "  " << type << " " << result << " = -0.0/0.0;\n";
         else if (args.size() == 1)
             return args.front();
         else {
-            f.gl.out() << "  " << type << " " << result << " = ";
+            f.sc.out() << "  " << type << " " << result << " = ";
             int rparens = 0;
             while (args.size() > 2) {
-                f.gl.out() << name << "(" << args.front() << ",";
+                f.sc.out() << name << "(" << args.front() << ",";
                 args.pop_front();
                 ++rparens;
             }
-            f.gl.out() << name << "(" << args.front() << "," << args.back() << ")";
+            f.sc.out() << name << "(" << args.front() << "," << args.back() << ")";
             while (rparens > 0) {
-                f.gl.out() << ")";
+                f.sc.out() << ")";
                 --rparens;
             }
-            f.gl.out() << ";\n";
+            f.sc.out() << ";\n";
         }
         return result;
     } else {
-        auto arg = gl_eval_op(f, argx);
-        auto result = f.gl.newvalue(GL_Type::Num());
-        f.gl.out() << "  float "<<result<<" = ";
-        if (arg.type == GL_Type::Vec(2))
-            f.gl.out() << name <<"("<<arg<<".x,"<<arg<<".y);\n";
-        else if (arg.type == GL_Type::Vec(3))
-            f.gl.out() << name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
+        auto arg = sc_eval_op(f, argx);
+        auto result = f.sc.newvalue(SC_Type::Num());
+        f.sc.out() << "  float "<<result<<" = ";
+        if (arg.type == SC_Type::Vec(2))
+            f.sc.out() << name <<"("<<arg<<".x,"<<arg<<".y);\n";
+        else if (arg.type == SC_Type::Vec(3))
+            f.sc.out() << name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
                 <<arg<<".z);\n";
-        else if (arg.type == GL_Type::Vec(4))
-            f.gl.out() << name<<"("<<name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
+        else if (arg.type == SC_Type::Vec(4))
+            f.sc.out() << name<<"("<<name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
                 <<arg<<".z),"<<arg<<".w);\n";
         else
-            throw Exception(At_GL_Phrase(argx.syntax_, f), stringify(
+            throw Exception(At_SC_Phrase(argx.syntax_, f), stringify(
                 name,": argument is not a vector"));
         return result;
     }
@@ -352,10 +351,10 @@ struct Max_Function : public Legacy_Function
     {
         return array_op.reduce(Scalar_Op(*this, args), -INFINITY, args[0]);
     }
-    GL_Value gl_call_expr(Operation& argx, Shared<const Phrase>, GL_Frame& f)
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase>, SC_Frame& f)
     const override
     {
-        return gl_minmax(name(),argx,f);
+        return sc_minmax(name(),argx,f);
     }
 };
 
@@ -396,10 +395,10 @@ struct Min_Function : public Legacy_Function
     {
         return array_op.reduce(Scalar_Op(*this, args), INFINITY, args[0]);
     }
-    GL_Value gl_call_expr(Operation& argx, Shared<const Phrase>, GL_Frame& f)
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase>, SC_Frame& f)
     const override
     {
-        return gl_minmax("min",argx,f);
+        return sc_minmax("min",argx,f);
     }
 };
 
@@ -413,16 +412,16 @@ struct Dot_Function : public Legacy_Function
     {
         return dot(args[0], args[1], At_Arg(*this, args));
     }
-    GL_Value gl_call(GL_Frame& f) const override
+    SC_Value sc_call(SC_Frame& f) const override
     {
         auto a = f[0];
         auto b = f[1];
         if (!a.type.is_vec())
-            throw Exception(At_GL_Arg(0, f), "dot: argument is not a vector");
+            throw Exception(At_SC_Arg(0, f), "dot: argument is not a vector");
         if (a.type != b.type)
-            throw Exception(At_GL_Arg(1, f), "dot: arguments have different types");
-        auto result = f.gl.newvalue(GL_Type::Num());
-        f.gl.out() << "  float "<<result<<" = dot("<<a<<","<<b<<");\n";
+            throw Exception(At_SC_Arg(1, f), "dot: arguments have different types");
+        auto result = f.sc.newvalue(SC_Type::Num());
+        f.sc.out() << "  float "<<result<<" = dot("<<a<<","<<b<<");\n";
         return result;
     }
 };
@@ -456,7 +455,7 @@ struct Mag_Function : public Legacy_Function
                 continue;
             }
             auto r = val.dycast<Reactive_Value>();
-            if (r && r->gltype_ == GL_Type::Num()) {
+            if (r && r->sctype_ == SC_Type::Num()) {
                 rlist->at(i) = r->expr(*arg_part(args.call_phrase_));
                 continue;
             }
@@ -466,7 +465,7 @@ struct Mag_Function : public Legacy_Function
         if (rlist) {
             rlist->init();
             return {make<Reactive_Expression>(
-                GL_Type::Num(),
+                SC_Type::Num(),
                 make<Call_Expr>(
                     args.call_phrase_,
                     make<Constant>(
@@ -478,13 +477,13 @@ struct Mag_Function : public Legacy_Function
         throw Exception(At_Arg(*this, args),
             stringify(args[0],": domain error"));
     }
-    GL_Value gl_call(GL_Frame& f) const override
+    SC_Value sc_call(SC_Frame& f) const override
     {
         auto arg = f[0];
         if (!arg.type.is_vec())
-            throw Exception(At_GL_Arg(0, f), "mag: argument is not a vector");
-        auto result = f.gl.newvalue(GL_Type::Num());
-        f.gl.out() << "  float "<<result<<" = length("<<arg<<");\n";
+            throw Exception(At_SC_Arg(0, f), "mag: argument is not a vector");
+        auto result = f.sc.newvalue(SC_Type::Num());
+        f.sc.out() << "  float "<<result<<" = length("<<arg<<");\n";
         return result;
     }
 };
@@ -500,20 +499,20 @@ struct Count_Function : public Legacy_Function
         if (auto string = args[0].dycast<const String>())
             return {double(string->size())};
         if (auto re = args[0].dycast<const Reactive_Value>()) {
-            if (re->gltype_.is_list())
-                return {double(re->gltype_.count())};
+            if (re->sctype_.is_list())
+                return {double(re->sctype_.count())};
             //TODO:
-            //if (re->gltype_ == GL_Type::Any())
+            //if (re->sctype_ == SC_Type::Any())
         }
         throw Exception(At_Arg(*this, args), "not a list or string");
     }
-    GL_Value gl_call(GL_Frame& f) const override
+    SC_Value sc_call(SC_Frame& f) const override
     {
         auto arg = f[0];
         if (!arg.type.is_list())
-            throw Exception(At_GL_Arg(0, f), "count: argument is not a list");
-        auto result = f.gl.newvalue(GL_Type::Num());
-        f.gl.out() << "  float "<<result<<" = "<<arg.type.count()<<";\n";
+            throw Exception(At_SC_Arg(0, f), "count: argument is not a list");
+        auto result = f.sc.newvalue(SC_Type::Num());
+        f.sc.out() << "  float "<<result<<" = "<<arg.type.count()<<";\n";
         return result;
     }
 };

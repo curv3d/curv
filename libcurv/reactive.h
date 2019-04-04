@@ -5,7 +5,7 @@
 #ifndef LIBCURV_REACTIVE_H
 #define LIBCURV_REACTIVE_H
 
-#include <libcurv/gl_type.h>
+#include <libcurv/sc_type.h>
 #include <libcurv/function.h> // prereq of meaning.h
 #include <libcurv/meaning.h>
 
@@ -15,13 +15,13 @@ namespace curv {
 // reactive programming. An abstract class.
 struct Reactive_Value : public Ref_Value
 {
-    GL_Type gltype_;
+    SC_Type sctype_;
 
     Reactive_Value(
-        int subty, GL_Type gltype)
+        int subty, SC_Type sctype)
     :
         Ref_Value(ty_reactive, subty),
-        gltype_(gltype)
+        sctype_(sctype)
     {}
 
     virtual void print(std::ostream&) const override;
@@ -37,7 +37,7 @@ struct Reactive_Expression : public Reactive_Value
 {
     Shared<Operation> expr_;
 
-    Reactive_Expression(GL_Type, Shared<Operation> expr, const Context&);
+    Reactive_Expression(SC_Type, Shared<Operation> expr, const Context&);
 
     virtual Shared<Operation> expr(const Phrase&) override;
 

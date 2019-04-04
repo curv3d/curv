@@ -362,7 +362,7 @@ void Viewer::render()
                 shader_.setUniform(name.c_str(), p.second.pstate_.vec3_, 3);
                 break;
             default:
-                die("picker with bad gltype");
+                die("picker with bad sctype");
             }
         }
 

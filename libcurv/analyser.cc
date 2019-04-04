@@ -71,7 +71,7 @@ Phrase::as_definition(Environ&)
 //     slots then they could be assignable.
 //  3. In GLSL, formal parameters are nonassignable unless they are 'out'
 //     parameters. Again, this is fixable by copying the parameter value
-//     into a local variable in the GL compiler.
+//     into a local variable in the SC compiler.
 struct Lambda_Scope : public Scope
 {
     bool shared_nonlocals_;

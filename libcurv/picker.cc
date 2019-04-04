@@ -18,7 +18,7 @@ Picker::Config::Config(Value val, const Context& cx)
     auto config_v = value_to_variant(val, cx);
     if (config_v.first == "slider") {
         type_ = Picker::Type::slider;
-        gltype_ = GL_Type::Num();
+        sctype_ = SC_Type::Num();
         At_Field list_cx("slider", cx);
         auto list = config_v.second.to<List>(list_cx);
         list->assert_size(2, list_cx);
@@ -26,7 +26,7 @@ Picker::Config::Config(Value val, const Context& cx)
         slider_.high_ = list->at(1).to_num(At_Index(1, list_cx));
     } else if (config_v.first == "int_slider") {
         type_ = Picker::Type::int_slider;
-        gltype_ = GL_Type::Num();
+        sctype_ = SC_Type::Num();
         At_Field list_cx("int_slider", cx);
         auto list = config_v.second.to<List>(list_cx);
         list->assert_size(2, list_cx);
@@ -36,13 +36,13 @@ Picker::Config::Config(Value val, const Context& cx)
             = list->at(1).to_int(INT_MIN,INT_MAX,At_Index(1, list_cx));
     } else if (config_v.first == "scale_picker") {
         type_ = Picker::Type::scale_picker;
-        gltype_ = GL_Type::Num();
+        sctype_ = SC_Type::Num();
     } else if (config_v.first == "checkbox") {
         type_ = Picker::Type::checkbox;
-        gltype_ = GL_Type::Bool();
+        sctype_ = SC_Type::Bool();
     } else if (config_v.first == "colour_picker") {
         type_ = Picker::Type::colour_picker;
-        gltype_ = GL_Type::Vec(3);
+        sctype_ = SC_Type::Vec(3);
     } else {
         throw Exception(cx, "not a picker descriptor");
     }
@@ -188,9 +188,9 @@ Picker::State::State(Picker::Type ptype, Value val, const Context& cx)
     throw Exception{cx, stringify("bad picker type ", int(ptype))};
 }
 
-Uniform_Variable::Uniform_Variable(Symbol name, std::string id, GL_Type gltype)
+Uniform_Variable::Uniform_Variable(Symbol name, std::string id, SC_Type sctype)
 :
-    Reactive_Value(Ref_Value::sty_uniform_variable, gltype),
+    Reactive_Value(Ref_Value::sty_uniform_variable, sctype),
     name_(std::move(name)),
     identifier_(std::move(id))
 {
