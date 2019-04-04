@@ -29,7 +29,7 @@ This means that the function call ``factorial 10`` only requires a single stack
 frame on the function call stack.
 
 In the functional programming community,
-efficient implementation of tail calls is considered to be a basic requirement
+efficient implementation of tail calls is considered to be a fundamental requirement
 for functional programming languages.
 Curv meets this requirement.
 
@@ -48,16 +48,16 @@ community sees as a loss, and nobody is writing
 the kind of functional code that benefits from this change, because without TRO, tail recursive
 loops don't work: your program exhausts the stack and crashes.
 
-On the flip side, if you actually do write code in a functional style, using tail recursion
-for loops, then you don't want each iteration of a loop to appear in your stack traces.
+On the flip side, if you actually do write code in a functional style, using tail recursive
+loops, then you don't want each iteration of a loop to appear in your stack traces.
 You get huge stack traces that are full of noise.
 
 Curv has TRO, which means stack traces are shorter than they would be without TRO.
 If this turns out to be a real problem for debugging,
 we will investigate ways to mitigate it.
 
-Limitations: the Shape Compiler
--------------------------------
+Limitation: the Shape Compiler
+------------------------------
 The Shape Compiler does not support tail call optimization.
 This is because none of the current and future code generation targets
 support this (the list includes GLSL, C++, SPIR-V, WebAssembly).
