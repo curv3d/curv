@@ -67,6 +67,14 @@ Curv has TCO, which means stack traces are shorter than they would be without TC
 If this turns out to be a real problem for debugging,
 we will investigate ways to mitigate it.
 
+Note that it's really easy to suppress TCO on a case-by-case basis.
+Just define::
+
+  id x = x
+
+and wrap tail calls like ``f(x)`` that you want to appear in a stack trace
+using ``id(f(x))``.
+
 Limitation: the Shape Compiler
 ------------------------------
 The Shape Compiler does not support tail call optimization.
