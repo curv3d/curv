@@ -1,8 +1,8 @@
 v0.5 Planning
 -------------
 * Smart STL export with edge detection.
-* Larger GL subset: piecewise functions, functions with record & tuple arguments
-  partial evaluation.
+* SubCurv: piecewise functions, functions with record & tuple arguments,
+  partial evaluation, matrix multiplication
 * Geometry Optimizer: common subexpression elimination, constant folding,
   partial evaluation. AMD Mesa support.
 * Better compile time error messages
@@ -29,12 +29,12 @@ v0.5 Planning
   * `pattern : expr`
   * `a[i] := x`, a[[X,Y]] := [x,y]
     Assignment_Action::locative_, Locative::store_value()
-  * Shape Compiler: matrix multiplication
-  * mantissa(num), random{,2,3,4}(seed)
+  * random{,2,3,4}(seed)
+  * recursive piecewise functions
 * Package manager; packages are referenced using URLs.
 * Improved Viewer UI that can zoom in to 3D fractals.
 * User defined lighting models can be written in Curv.
-* populate the curv3d.org web site
+* improve the curv3d.org web site
 * Interrupt a running program (in REPL)
 
 * v0.4 leftovers:

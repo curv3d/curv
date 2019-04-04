@@ -13,12 +13,14 @@ interpreter, and then the shape value is further compiled to machine code.
   compiled into C++ code by the Shape Compiler, which is then compiled
   into optimized machine code and run on the CPU.
 
+SubCurv
+-------
 Curv is a dynamically typed language, but the Shape Compiler only accepts a
-statically typed subset of Curv. If you write your own ``dist`` and ``colour``
-functions from scratch, you may get error messages from the Shape Compiler,
-indicating that your code uses constructs that are outside of the supported
-subset. Curv is a work in progress: the subset of Curv supported by the
-Shape Compiler will grow from release to release.
+statically typed subset of Curv (called SubCurv). If you write your own
+``dist`` and ``colour`` functions from scratch, you may get error messages
+from the Shape Compiler, indicating that your code uses constructs that are
+outside of the supported subset. Curv is a work in progress: the subset of
+Curv supported by the Shape Compiler will grow from release to release.
 
 The Shape Compiler uses bottom-up type inference to infer static types
 for each expression in a ``dist`` or ``colour`` function.
