@@ -33,6 +33,16 @@ efficient implementation of tail calls is considered to be a fundamental require
 for functional programming languages.
 Curv meets this requirement.
 
+Definition of a Tail Call
+-------------------------
+A tail call is a function call that appears in a tail context.
+A tail context is defined as follows:
+* The body of a function is a tail context.
+* If ``if A then B else C`` appears in a tail context,
+  then ``B`` and ``C`` are also tail contexts.
+* If ``let A in B`` or or ``B where A`` or ``do A in B``
+  appear in a tail context, then ``B`` is also a tail context.
+
 Shortened Stack Traces
 ----------------------
 Although TRO is a requirement for functional languages, it is controversial
