@@ -112,3 +112,17 @@ Meaning that is constrained by the context, and store that in the meaning.
 This, in turn, may inform subsequent analysis and give better error messages.
 
     MKind Meaning::kind_
+
+April 2019 Update
+-----------------
+I now have good errors if a value generator is used in a record constructor,
+or if a field generator is used in a list constructor.
+
+"not an operation" occurs if a definition or a metafunction is used in an
+operation context. For a better error message, I just need to know if a
+statement, expression, or both, is expected.
+
+enum class Operation::Kind { expr, stmt, both };
+
+An Operation::Kind needs to be passed as an argument to Phrase::analyse
+and Meaning::to_operation.
