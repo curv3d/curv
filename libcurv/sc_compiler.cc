@@ -666,16 +666,10 @@ void Null_Action::sc_exec(SC_Frame&) const
 }
 
 void
-Data_Setter::sc_exec(SC_Frame& f) const
+Assignment_Action::sc_exec(SC_Frame& f) const
 {
     SC_Value val = sc_eval_op(f, *expr_);
-    if (reassign_)
-        f.sc_.out() << "  "<<f[slot_]<<"="<<val<<";\n";
-    else {
-        SC_Value var = f.sc_.newvalue(val.type);
-        f.sc_.out() << "  "<<var.type<<" "<<var<<"="<<val<<";\n";
-        f[slot_] = var;
-    }
+    f.sc_.out() << "  "<<f[slot_]<<"="<<val<<";\n";
 }
 void
 Pattern_Setter::sc_exec(SC_Frame& f) const

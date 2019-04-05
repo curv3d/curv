@@ -712,7 +712,7 @@ Scope_Executable::exec(Frame& f) const
 }
 
 void
-Data_Setter::exec(Frame& f, Executor&) const
+Assignment_Action::exec(Frame& f, Executor&) const
 {
     f[slot_] = expr_->eval(f);
 }

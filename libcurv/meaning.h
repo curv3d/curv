@@ -519,24 +519,20 @@ struct Scope_Executable
     void sc_exec(SC_Frame&) const;
 };
 
-// An internal action for storing the value of a data definition
-// in the evaluation frame. Part of the actions_ list in a Scope_Executable.
-struct Data_Setter : public Operation
+// 'locative := expression'
+struct Assignment_Action : public Operation
 {
     slot_t slot_;
     Shared<Operation> expr_;
-    bool reassign_;
 
-    Data_Setter(
+    Assignment_Action(
         Shared<const Phrase> syntax,
         slot_t slot,
-        Shared<Operation> expr,
-        bool reassign)
+        Shared<Operation> expr)
     :
         Operation(std::move(syntax)),
         slot_(slot),
-        expr_(std::move(expr)),
-        reassign_(reassign)
+        expr_(std::move(expr))
     {}
 
     virtual void exec(Frame&, Executor&) const override;

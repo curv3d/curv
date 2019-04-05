@@ -658,7 +658,7 @@ Assignment_Phrase::analyse(Environ& env, unsigned edepth) const
 
     auto let = cast<Data_Ref>(m);
     if (let)
-        return make<Data_Setter>(share(*this), let->slot_, expr, true);
+        return make<Assignment_Action>(share(*this), let->slot_, expr);
 
     // this should never happen
     throw Exception(At_Phrase(*left_, env),
