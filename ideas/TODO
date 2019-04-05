@@ -1,12 +1,15 @@
 v0.5 Planning
 -------------
-* Smart STL export with edge detection.
+* Compiler/IR changes for new features:
+  * Better compile time error messages
+    * Replace 'not an operation' analysis time error with useful message.
+  * `a[i] := x`, a[[X,Y]] := [x,y]
+    Assignment_Action::locative_, Locative::store_value()
+  * image import
+* SC Refactor/Optimizer: common subexpression elimination, constant folding,
+  partial evaluation. AMD Mesa support. >Compiler changes.
 * SubCurv: piecewise functions, functions with record & tuple arguments,
-  partial evaluation, matrix multiplication
-* Geometry Optimizer: common subexpression elimination, constant folding,
-  partial evaluation. AMD Mesa support.
-* Better compile time error messages
-  * Replace 'not an operation' analysis time error with useful message.
+  partial evaluation, matrix multiplication. >SC Refactor.
 * Parametric shapes:
   * constructor returns another parametric record.
   * `curv -D param=value parametric.curv`
@@ -20,8 +23,10 @@ v0.5 Planning
   * alpha channel in colour functions
   * `time` is a global reactive variable
   * Ray-casting non-Lipschitz implicit surfaces
+* Smart STL export with edge detection: SHREC and/or libfive.
+  * SHREC uses NRRD voxel data as input. >Voxel i/o.
 * shape library
-  * noise library
+  * noise library, >SC piecewise functions.
   * fractals
   * polyhedra
 * WASM executable
@@ -33,7 +38,7 @@ v0.5 Planning
   * recursive piecewise functions
 * Package manager; packages are referenced using URLs.
 * Improved Viewer UI that can zoom in to 3D fractals.
-* User defined lighting models can be written in Curv.
+* User defined lighting models can be written in Curv. >SC Refactor.
 * improve the curv3d.org web site
 * Interrupt a running program (in REPL)
 
