@@ -39,7 +39,7 @@ std_eval(const Phrase& ph, Environ& env)
 Shared<Operation>
 Meaning::to_operation(System& sys, Frame* f)
 {
-    throw Exception(At_Phrase(*syntax_, sys, f), "not an operation");
+    throw Exception(At_Phrase(*syntax_, sys, f), "not an expression or statement");
 }
 
 Shared<Meaning>
@@ -621,12 +621,12 @@ Binary_Phrase::analyse(Environ& env, unsigned) const
 Shared<Meaning>
 Recursive_Definition_Phrase::analyse(Environ& env, unsigned) const
 {
-    throw Exception(At_Phrase(*this, env), "not an operation");
+    throw Exception(At_Phrase(*this, env), "not an expression or statement");
 }
 Shared<Meaning>
 Sequential_Definition_Phrase::analyse(Environ& env, unsigned) const
 {
-    throw Exception(At_Phrase(*this, env), "not an operation");
+    throw Exception(At_Phrase(*this, env), "not an expression or statement");
 }
 Shared<Meaning>
 Assignment_Phrase::analyse(Environ& env, unsigned edepth) const
