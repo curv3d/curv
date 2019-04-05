@@ -122,7 +122,23 @@ or if a field generator is used in a list constructor.
 operation context. For a better error message, I just need to know if a
 statement, expression, or both, is expected.
 
-enum class Operation::Kind { expr, stmt, both };
+enum class Op_Kind { expr, stmt, both };
 
-An Operation::Kind needs to be passed as an argument to Phrase::analyse
+An Op_Kind needs to be passed as an argument to Phrase::analyse
 and Meaning::to_operation.
+
+It's a lot of extra code though, and most of it is boilerplate, passing Op_Kind
+values down the tree to the few places where they are used.
+
+As an alternative,
+* Metafunctions are values (but can only be called if they are constant).
+  This also eliminates the Meaning/Operation distinction.
+  Wait 'til we have abstraction over constants (partial evaluation, etc).
+* Definitions analyse into operations that explode if they are evaled
+  or execed, with a good error message:
+    defn->eval():
+      Not an expression.
+      Maybe try an equality expression (==) instead of a definition (=).
+    defn->exec():
+      Not a statement.
+      Maybe try an assignment statement (:=) instead of a definition (=).
