@@ -968,5 +968,17 @@ struct Parametric_Expr : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
+// Recursive definitions are not operations.
+// So this is a magic operation that throws an exception if you eval it
+// or exec it, giving a meaningful error message.
+struct Recursive_Definition_Op : public Operation
+{
+    using Operation::Operation;
+
+    // These functions are called during evaluation.
+    virtual Value eval(Frame&) const override;
+    virtual void exec(Frame&, Executor&) const override;
+};
+
 } // namespace curv
 #endif // header guard

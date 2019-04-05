@@ -618,11 +618,30 @@ Binary_Phrase::analyse(Environ& env, unsigned) const
     }
 }
 
+// A recursive definition is not an operation.
+// But it's easier to report the error at runtime than at analysis time:
+// we have more context (we know if we are being evaluated as an expression
+// or executed as a statement) so we can give a better error message.
 Shared<Meaning>
 Recursive_Definition_Phrase::analyse(Environ& env, unsigned) const
 {
-    throw Exception(At_Phrase(*this, env), "not an expression or statement");
+    return make<Recursive_Definition_Op>(share(*this));
 }
+Value
+Recursive_Definition_Op::eval(Frame& f) const
+{
+    throw Exception(At_Phrase(*syntax_, f),
+        "Not an expression.\n"
+        "Maybe try an equality expression (==) instead of a definition (=).");
+}
+void
+Recursive_Definition_Op::exec(Frame& f, Executor&) const
+{
+    throw Exception(At_Phrase(*syntax_, f),
+        "Not a statement.\n"
+        "Maybe try an assignment statement (:=) instead of a definition (=).");
+}
+
 Shared<Meaning>
 Sequential_Definition_Phrase::analyse(Environ& env, unsigned) const
 {

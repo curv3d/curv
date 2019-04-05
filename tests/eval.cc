@@ -437,7 +437,9 @@ TEST(curv, eval)
         "missing expression\n"
         "1| x+\n"
         "     ^");
-    FAILMSG("(a=0)+1", "not an operation");
+    FAILMSG("(a=0)+1",
+        "Not an expression.\n"
+        "Maybe try an equality expression (==) instead of a definition (=).");
 
     // max, min
     SUCCESS("max()", "-inf");
