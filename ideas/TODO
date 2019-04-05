@@ -1,8 +1,6 @@
 v0.5 Planning
 -------------
 * Compiler/IR changes for new features:
-  * Better compile time error messages
-    * Replace 'not an operation' analysis time error with useful message.
   * `a[i] := x`, a[[X,Y]] := [x,y]
     Assignment_Action::locative_, Locative::store_value()
   * image import
@@ -57,7 +55,6 @@ v0.5 Planning
     * debug actions ignored by SC compiler
     * no actions in a let clause. `a:=b` gives an error: did you mean `a=b`?
     * no recursive definitions in a do clause. a=b error: did you mean a:=b?
-    * in expression context, a=b error: did you mean a==b?
   * CLI token colouring: New string escapes. Special colour for string-escapes.
     Bad token handling.
   * better unit tests:
@@ -65,8 +62,7 @@ v0.5 Planning
     * detect console output from curv.curv
     * full sc_test suite
  * REPL language dialect
-   * document it
-   * support :=
+   * document it. Note, no global :=.
 
 Big Items
 * graphical value pickers in the viewer
@@ -85,6 +81,7 @@ Language TODO:
   Assignment_Action::locative_, Locative::store_value()
 * Shape Compiler: matrix multiplication
 * mantissa(num), random{,2,3,4}(seed)
+* Metafunctions are values, can only be called if constant. Remove Meaning.
 
 TODO (value pickers impl)
 * `(parametric param body) arg` should return another parametric record.
