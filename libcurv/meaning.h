@@ -597,13 +597,15 @@ struct Scoped_Module_Expr : public Module_Expr
     virtual Shared<Module> eval_module(Frame&) const override;
 };
 
-struct Pattern_Setter : public Operation
+// An internal action for initializing the slots of a data definition
+// in the evaluation frame. Part of the actions_ list in a Scope_Executable.
+struct Data_Setter : public Operation
 {
     slot_t module_slot_; // copied from enclosing Scope_Executable
     Shared<Pattern> pattern_;
     Shared<Operation> definiens_;
 
-    Pattern_Setter(
+    Data_Setter(
         Shared<const Phrase> syntax,
         slot_t module_slot,
         Shared<Pattern> pattern,
@@ -619,8 +621,8 @@ struct Pattern_Setter : public Operation
     virtual void sc_exec(SC_Frame&) const override;
 };
 
-// An internal action for initializing the slots in the evaluation frame
-// for a group of mutually recursive closures.
+// An internal action for initializing the slots in the evaluation frame for
+// a single non-recursive closure, or a group of mutually recursive closures.
 // The closures share a single `nonlocals` object.
 // Part of the actions_ list in a Scope_Executable for a Recursive_Scope.
 struct Function_Setter_Base : public Operation

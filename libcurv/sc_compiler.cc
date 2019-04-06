@@ -672,7 +672,7 @@ Assignment_Action::sc_exec(SC_Frame& f) const
     f.sc_.out() << "  "<<f[slot_]<<"="<<val<<";\n";
 }
 void
-Pattern_Setter::sc_exec(SC_Frame& f) const
+Data_Setter::sc_exec(SC_Frame& f) const
 {
     assert(module_slot_ == (slot_t)(-1));
     pattern_->sc_exec(*definiens_, f, f);

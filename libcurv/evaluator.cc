@@ -918,7 +918,7 @@ String_Expr_Base::eval_symbol(Frame& f) const
 }
 
 void
-Pattern_Setter::exec(Frame& f, Executor&) const
+Data_Setter::exec(Frame& f, Executor&) const
 {
     Value* slots;
     if (module_slot_ == (slot_t)(-1))

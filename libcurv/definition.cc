@@ -55,7 +55,7 @@ Function_Definition::analyse(Environ& env)
 Shared<Operation>
 Data_Definition::make_setter(slot_t module_slot)
 {
-    return make<Pattern_Setter>(
+    return make<Data_Setter>(
         syntax_, module_slot, pattern_, definiens_expr_);
 }
 Shared<Operation>
