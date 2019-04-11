@@ -146,7 +146,6 @@ TODO:
     Abstract_Record in afunction.h and arecord.h.
   * Maybe Abstract_Function is superclass of Abstract_List, Abstract_Record,
     and String. Call_Expr just uses virtual call() method.
-  * Get rid of ' operator (for simplicity of refactoring).
 
 * Lazy image loading. DEFERRED.
   We preserve the file path and the context in the Image_Data object,

@@ -1,0 +1,45 @@
+Locatives
+=========
+The idea is to support compound assignment statements like
+    a[i].f := x
+My initial goal is for SubCurv to match the features of GLSL.
+
+'a[i].f' is a Locative.
+
+Assignment_Action contains a Locative and an Expression.
+void Locative::store(Value) stores a value at run time.
+
+I've got two choices:
+1. Use a special analyser to analyse Locatives.
+   That's based on what we have now, where env.lvar_lookup() is used
+   to analyse a locative.
+2. Locative is a subtype of Expression. Bottom up semantic analysis:
+   := analyses its left argument in a general way, then checks if it is
+   a Locative.
+   * This is more complicated to implement, given how the existing code works,
+     and provides no benefit, since there will never be abstraction over
+     locatives: they can't be passed as parameters or returned as results, etc.
+
+So use choice 1.
+
+Typed Locatives
+---------------
+The SC should assign a type to a locative, then ensure that the right side
+of := has the same type as the left side.
+
+This syntax:
+    let x :: is_num = 3;
+    in do x := x + 1;
+    in x
+should produce a variable 'x' with predicate 'is_num', and the predicate
+should be enforced by assignment statements.
+
+All assignments of the same local variable should contain the same Locative
+object, which carries the variable's type and location.
+Which means Environ::lvar_lookup should return a Locative.
+
+Locative Patterns
+-----------------
+Maybe I should support
+    (a, b) := x
+This is a low priority; I don't need it for porting GLSL code.

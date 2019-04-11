@@ -1,19 +1,47 @@
-New GL Compiler
-===============
-This is a large project to improve the GL compiler:
-* Expand the subset of Curv useable in GL code.
+New Shape Compiler
+==================
+This is a large project to improve the SC compiler:
+* Expand the subset of Curv useable in SC code.
   * Functions with record arguments.
-  * Call a library shape constructor from a GL compiled function.
+  * Call a library shape constructor from a SC compiled function.
   * Static aggregate data (arrays and structs) for table driven dist functions.
 * Support image import.
-* Support GUI value pickers for parametric shapes.
 * `sRGB` is overloaded over Vec3 and Vec4, and called from colour functions.
 * Secondary goal: better compile time error messages.
-* Secondary goal: visibility and control over GL compiler output.
+* Secondary goal: visibility and control over SC compiler output.
 * Deferred goal: If time is not used, set -Olazy=true.
 * Deferred goal: Optimized GLSL code, to support the Mesa GPU driver.
 
-New GL Compiler
+Goals (v0.5)
+------------
+
+New SC Compiler (April 2019)
+----------------------------
+First, generate & optimize statically typed IR; then emit GLSL.
+IR trees are Operation trees; class Operation will be tweaked as necessary.
+ * Add an SC_Type field. Do I need an ID field? (parity with SC_Value)
+ * New operation types, as necessary.
+   Calls to GLSL primitive functions & operators have their own node types.
+
+Common subexpression elimination; constant folding; inlining; peephole opt.
+* Perform CSE on uninlined code first: increase # hits, reduce cost of opt.
+* Then walk tree, do constant folding and inlining together.
+  Before inlining a call, optimize the func and arg trees.
+  After inlining a call, optimize the result (CSE, then const fold/inline):
+  the call might reduce to a constant.
+
+sc_optimize_expr(expr, sc) =
+    optimize each subexpression;
+    if (all subexpressions are constant)
+        fold to a constant;
+        CSE(the constant, sc);
+    else if (it is a function call)
+        inline the function call, optimizing the resulting expr tree
+    else
+        operation-specific peephole optimizations
+    assign an SC_Type to the result.
+
+New SC Compiler
 ---------------
 Two phases.
 * First phase:
@@ -35,9 +63,9 @@ Can generate definitions for the following cases:
 * Monomorphic non-recursive function.
 * Compile a shape record into a set of definitions.
 
-An IR tree can represent intermediate values that are not GL compatible.
+An IR tree can represent intermediate values that are not SC compatible.
 An IR tree can be partially evaluated to infer more specific expression types
-and to eliminate non-GL-compatible expressions:
+and to eliminate non-SC-compatible expressions:
 * constant folding
 * dead code elimination
 * inlining calls to polymorphic functions
@@ -65,7 +93,7 @@ Type Inference
   * For pattern matching a non-const expression argument.
   * Maybe they are useful for generating better error messages?
 * Expression types cover the full range of Curv values, and cover the full
-  range of GL static types, which will now include monomorphic arrays,
+  range of SC static types, which will now include monomorphic arrays,
   structures, and functions.
 * An Expression type is a set of values. The set of expression types form a
   lattice.
@@ -91,12 +119,12 @@ Type Inference
 Compiler Mechanisms
 -------------------
 What's the minimum set of compiler mechanisms I need to call a shape library
-constructor from a GL compiled function?
+constructor from a SC compiled function?
 
 Abstract Interpretation of a shape expression S yields a type, which can be
 checked to ensure that it is a shape record.
 Then we Partially Evaluate the expressions S.dist and S.colour and generate
-GL functions. The type annotations guide partial evaluation and code generation.
+SC functions. The type annotations guide partial evaluation and code generation.
 
 Can Abstract Interpretation, Partial Evaluation, function call inlining,
 all be combined in a single Abstract Evaluation pass which maps IR to IR?
@@ -122,16 +150,16 @@ Consider box[a,b,c].
   * If arg is a constant, match it directly.
   * Otherwise, infer the type of arg, and match the type against the parameter
     pattern.
-  * If arg has a GL type, then either we can complete the pattern match at
+  * If arg has a SC type, then either we can complete the pattern match at
     compile time, or if we are searching a `match` list, then we can generate
-    an if-else chain and then see if that has a GL type.
-  * Otherwise, there isn't a GL type. But maybe the arg is a list or record,
+    an if-else chain and then see if that has a SC type.
+  * Otherwise, there isn't a SC type. But maybe the arg is a list or record,
     and the pattern is a list or record. Then we deconstruct the arg by
     constructing 'arg[i]' or 'arg.f' IR expressions, and then simplifying
-    those expressions, with the hope of simplifying down to a GL compilable
+    those expressions, with the hope of simplifying down to a SC compilable
     expression. This simplication is easy if 'arg' is a list or module
     constructor, but could otherwise lead to code duplication of parts of 'arg',
-    similar to inline expanding calls to functions that don't have GL types.
+    similar to inline expanding calls to functions that don't have SC types.
 
 * Pattern matching a' against (is_vec3 v):
   * a' has type [Ta,Tb,Tc]. Let's say that Ta,Tb and Tc are all Num.

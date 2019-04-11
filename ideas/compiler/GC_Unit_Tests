@@ -1,7 +1,0 @@
-I don't have proper unit testing for the shape compiler.
-
-Proposal.
-
-A unit test is a Curv boolean expression. It is GC compiled to GLSL and C++,
-executed in both formats, and the boolean result is required to be true.
-The tests are embedded in a *.cc file.
