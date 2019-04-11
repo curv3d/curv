@@ -12,8 +12,8 @@ This is a large project to improve the SC compiler:
 * Deferred goal: If time is not used, set -Olazy=true.
 * Deferred goal: Optimized GLSL code, to support the Mesa GPU driver.
 
-Goals (v0.5)
-------------
+Look at: https://github.com/tensorflow/mlir
+cell-lang.net: are relational automata good for writing optimizers?
 
 New SC Compiler (April 2019)
 ----------------------------
@@ -22,6 +22,8 @@ IR trees are Operation trees; class Operation will be tweaked as necessary.
  * Add an SC_Type field. Do I need an ID field? (parity with SC_Value)
  * New operation types, as necessary.
    Calls to GLSL primitive functions & operators have their own node types.
+ * Local variable references contain compile-time metadata.
+   Is this a mutable variable? If not, what is the definiens, is it constant?
 
 Common subexpression elimination; constant folding; inlining; peephole opt.
 * Perform CSE on uninlined code first: increase # hits, reduce cost of opt.
