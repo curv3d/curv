@@ -55,9 +55,9 @@ What could be the problem?
 TCO eliminates frames from the call stack, which means that it shortens stack traces
 that are used for debugging. Adding TCO to an existing imperative language is a non-starter
 for this reason: after the change, stack traces have less information, which the existing dev
-community sees as a loss, and nobody is writing
-the kind of functional code that benefits from this change, because without TCO, tail recursive
-loops don't work: your program exhausts the stack and crashes.
+community sees as a loss. Few people support the change, because nobody is writing
+the kind of functional code that benefits from this change. They can't, because without TCO, tail recursive
+loops exhaust the stack and crash your program.
 
 On the flip side, if you actually do write code in a functional style, using tail recursive
 loops, then you don't want each iteration of a loop to appear in your stack traces.
@@ -79,33 +79,44 @@ Limitation: the Shape Compiler
 ------------------------------
 The Shape Compiler does not support tail call optimization.
 This is because none of the current and future code generation targets
-support this (the list includes GLSL, C++, SPIR-V, WebAssembly).
+support this (the list includes GLSL, C++, WebGPU, WebAssembly).
 
-It is theoretically possible for the Shape Compiler to support tail call
-optimization for recursive calls (the case that matters most), but without
-target support, it is complex and difficult to do so in the general case.
-You could identify groups of functions that recursively call each other
-(a mutual recursion group), inline expand all of the functions of each group into
+The Shape Compiler also doesn't support recursive function calls,
+because GLSL and WebGPU don't support this. Therefore, you can't use
+tail recursive loops in any function that will be compiled by the Shape
+Compiler. You must instead use imperative `for` and `while` loops.
+
+Can we do better than this in the future? Yes, but it's complicated.
+
+The first step is to support self-recursive tail calls, by converting
+them into `while` loops. Elm does this when compiling to Javascript.
+(Elm doesn't support mutually recursive tail call optimization, however.)
+
+On the GPU, `while` loops are often slower than `for` loops, especially
+loops of the form `for (i = k1; i < k2; i += k3)`,
+where `k1`, `k2` and `k3` are constants. This latter form of `for` loop
+is recognized as a special case by GPU shader compilers, which inline the
+loop if the number of iterations is small enough.
+
+So the second step is to optimize the `while` loops that we generate into
+`for` loops when that is feasible. Without this optimization, developers will
+still need to avoid self-tail-recursion in favour of imperative style loops.
+
+A possible third step is support general tail recursion for mutually recursive functions.
+This is pretty complex, and I don't know another language that attempts this.
+You would need to identify groups of functions that recursively call each other
+(a mutual recursion group),and inline expand all of the functions of each group into
 a single uber-function. Each uber-function has an outer ``while`` loop,
 and uses variables and a state machine to keep track of which function
 is currently executing within the uber-function.
-(There is a related technique, called a *trampoline*, but it requires function
-pointers, which are not supported by GLSL or SPIR-V.)
 
-The resulting code would be quite slow on a GPU, so you want
-to optimize the code and get rid of the variables. GLSL, SPIR-V and WebAssembly don't have goto
-statements, so you need to convert a control flow graph (CFG) into high level structured
-control statements (if, while, for) using an algorithm like Relooper or Stackifier.
-Emscripten does something like this, but "The Relooper is the most complex module in Emscripten".
-
-It becomes easier if you restrict the problem to supporting self-recursive tail calls (no mutual recursion).
-For example, Elm supports self-recursive tail calls (when compiling to Javascript)
-by generating a ``while`` loop. Without optimization, this code will often be slower in GLSL
-than manually written ``for`` loops, but it would be a start.
-
-Until somebody implements this in Curv, you will need to implement
-your loops imperatively using ``for`` and ``while``, in Curv code that is
-compiled by the Shape Compiler.
+This use of while loops and variables to simulate a state machine is slower
+than hand-written imperative code, especially on a GPU.
+So you want to optimize this code to get rid of the variables.
+This is possible, but quite complicated.
+This is equivalent to converting a control flow graph (CFG) into high level
+structured control statements (if, while, for) using an algorithm like Relooper or Stackifier.
+Emscripten does this, but "The Relooper is the most complex module in Emscripten".
 
 References
 ----------
