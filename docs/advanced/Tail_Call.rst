@@ -94,7 +94,7 @@ them into ``while`` loops. Elm does this when compiling to Javascript.
 
 On the GPU, ``while`` loops are often slower than ``for`` loops, especially
 loops of the form ``for (i = k1; i < k2; i += k3)``,
-where ``k1``, ``k2`` and ``k3`` are constants. This latter form of `for` loop
+where ``k1``, ``k2`` and ``k3`` are constants. This latter form of ``for`` loop
 is recognized as a special case by GPU shader compilers, which inline the
 loop if the number of iterations is small enough.
 
