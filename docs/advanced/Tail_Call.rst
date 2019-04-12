@@ -89,17 +89,17 @@ Compiler. You must instead use imperative `for` and `while` loops.
 Can we do better than this in the future? Yes, but it's complicated.
 
 The first step is to support self-recursive tail calls, by converting
-them into `while` loops. Elm does this when compiling to Javascript.
+them into ``while`` loops. Elm does this when compiling to Javascript.
 (Elm doesn't support mutually recursive tail call optimization, however.)
 
-On the GPU, `while` loops are often slower than `for` loops, especially
-loops of the form `for (i = k1; i < k2; i += k3)`,
-where `k1`, `k2` and `k3` are constants. This latter form of `for` loop
+On the GPU, ``while`` loops are often slower than ``for`` loops, especially
+loops of the form ``for (i = k1; i < k2; i += k3)``,
+where ``k1``, ``k2`` and ``k3`` are constants. This latter form of `for` loop
 is recognized as a special case by GPU shader compilers, which inline the
 loop if the number of iterations is small enough.
 
-So the second step is to optimize the `while` loops that we generate into
-`for` loops when that is feasible. Without this optimization, developers will
+So the second step is to optimize the ``while`` loops that we generate into
+``for`` loops when that is feasible. Without this optimization, developers will
 still need to avoid self-tail-recursion in favour of imperative style loops.
 
 A possible third step is support general tail recursion for mutually recursive functions.
@@ -110,7 +110,7 @@ a single uber-function. Each uber-function has an outer ``while`` loop,
 and uses variables and a state machine to keep track of which function
 is currently executing within the uber-function.
 
-This use of while loops and variables to simulate a state machine is slower
+This use of ``while`` loops and variables to simulate a state machine is slower
 than hand-written imperative code, especially on a GPU.
 So you want to optimize this code to get rid of the variables.
 This is possible, but quite complicated.
