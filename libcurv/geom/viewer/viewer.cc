@@ -475,7 +475,7 @@ void Viewer::onExit()
     delete vbo_;
 }
 
-const std::string appTitle = "curv";
+const char appTitle[] = "curv";
 
 extern "C" void
 MessageCallback(
@@ -538,7 +538,7 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
     }
 
     // Create window, create OpenGL context, load OpenGL library.
-    window_ = glfwCreateWindow(_viewport.z, _viewport.w, appTitle.c_str(), NULL, NULL);
+    window_ = glfwCreateWindow(_viewport.z, _viewport.w, appTitle, NULL, NULL);
     if(!window_) {
         glfwTerminate();
         std::cerr << "ABORT: GLFW create window failed" << std::endl;
@@ -697,42 +697,29 @@ void Viewer::onMouseMove(double x, double y)
     }
 }
 
-void Viewer::debounceSetWindowTitle(std::string title)
-{
-    static double lastUpdated;
-
-    double now = glfwGetTime();
-
-    if ((now - lastUpdated) < 1.) {
-        return;
-    }
-
-    glfwSetWindowTitle(window_, title.c_str());
-
-    lastUpdated = now;
-}
-
 void Viewer::measure_time()
 {
-    // Update time
-    // --------------------------------------------------------------------
     double now = glfwGetTime();
-    double fDelta = now - current_time_;
+    double delta = now - current_time_;
     current_time_ = now;
 
-    static int frame_count = 0;
-    static double lastTime = 0.0;
-    frame_count++;
-    lastTime += fDelta;
-    if (lastTime >= 1.) {
-        fFPS_ = double(frame_count);
-        frame_count = 0;
-        lastTime -= 1.;
-    }
+    fps_.delta_time_ += delta;
+    ++fps_.frames_;
+    if (fps_.delta_time_ > 1.0) { // update FPS every second
+        // this makes the frame rate more stable:
+        fps_.frame_rate_ = (double)fps_.frames_*0.5 + fps_.frame_rate_*0.5;
+        fps_.frames_ = 0;
+        fps_.delta_time_ -= 1.0;
+        fps_.avg_frame_time_ = 1.0/fmax(0.001, fps_.frame_rate_);
 
-    // EVENTS
-    std::string title = appTitle + " FPS:" + std::to_string(fFPS_);
-    debounceSetWindowTitle(title);
+        // display FPS in window title
+        char title[sizeof appTitle + 60];
+        snprintf(title, sizeof title, "%s ms/frame: %.2f FPS: %.2f",
+            appTitle,
+            fps_.avg_frame_time_*1000.0,
+            1.0/fps_.avg_frame_time_);
+        glfwSetWindowTitle(window_, title);
+    }
 }
 
 void Viewer::poll_events()

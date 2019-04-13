@@ -81,7 +81,12 @@ struct Viewer
     float fPixelDensity_ = 1.0;
     Vbo* vbo_ = nullptr;
     double current_time_ = 0.0;
-    double fFPS_ = 0.0;
+    struct {
+        double delta_time_ = 0.0;
+        unsigned frames_ = 0;
+        double frame_rate_ = 30.0;
+        double avg_frame_time_ = 1.0/30.0;
+    } fps_;
     GLuint vao_; // a Vertex Array Object
     bool hud_ = false;
     bool error_ = false;
@@ -114,7 +119,6 @@ struct Viewer
     void swap_buffers();
     void poll_events();
     void measure_time();
-    void debounceSetWindowTitle(std::string);
     void closeGL();
     float getPixelDensity();
     void onExit();
