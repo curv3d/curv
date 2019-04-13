@@ -266,11 +266,11 @@ struct Call_Expr : public Just_Expression
 
     Call_Expr(
         Shared<const Phrase> syntax,
-        Shared<Operation> fun,
+        Shared<Operation> func,
         Shared<Operation> arg)
     :
         Just_Expression(std::move(syntax)),
-        func_(std::move(fun)),
+        func_(std::move(func)),
         arg_(std::move(arg))
     {
         pure_ = (func_->pure_ && arg_->pure_);

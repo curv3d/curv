@@ -834,8 +834,8 @@ SC_Value Call_Expr::sc_eval(SC_Frame& f) const
     Value val = sc_constify(*func_, f);
     Value v = val;
     for (;;) {
-        if (auto fun = v.dycast<Function>()) {
-            return fun->sc_call_expr(*arg_, syntax_, f);
+        if (auto func = v.dycast<Function>()) {
+            return func->sc_call_expr(*arg_, syntax_, f);
         }
         if (auto r = v.dycast<Record>()) {
             static Symbol call_key = "call";

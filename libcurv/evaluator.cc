@@ -983,8 +983,8 @@ Value
 Parametric_Expr::eval(Frame& f) const
 {
     At_Phrase cx(*syntax_, f);
-    Value fun = ctor_->eval(f);
-    auto closure = fun.dycast<Closure>();
+    Value func = ctor_->eval(f);
+    auto closure = func.dycast<Closure>();
     if (closure == nullptr)
         throw Exception(cx, "internal error in Parametric_Expr");
     Shared<const Phrase> call_phrase = syntax_; // TODO?
@@ -999,7 +999,7 @@ Parametric_Expr::eval(Frame& f) const
         drec->fields_[id] = val;
     });
     // TODO: The `constructor` function should return another parametric record.
-    drec->fields_["constructor"] = fun;
+    drec->fields_["constructor"] = func;
     drec->fields_["argument"] = {default_arg};
     return {drec};
 }

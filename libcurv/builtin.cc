@@ -144,7 +144,7 @@ struct Class_Name : public Legacy_Function \
             return stringify(x); \
         } \
         At_Arg cx; \
-        Scalar_Op(Function& fun, Frame& args) : cx(fun,args) {} \
+        Scalar_Op(Function& func, Frame& args) : cx(func,args) {} \
     }; \
     static Unary_Numeric_Array_Op<Scalar_Op> array_op; \
     Value call(Frame& args) override \
@@ -219,7 +219,7 @@ struct Atan2_Function : public Legacy_Function
             return stringify("[",x,",",y,"]");
         }
         At_Arg cx;
-        Scalar_Op(Function& fun, Frame& args) : cx(fun, args) {}
+        Scalar_Op(Function& func, Frame& args) : cx(func, args) {}
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
@@ -344,7 +344,7 @@ struct Max_Function : public Legacy_Function
             return stringify("[",x,",",y,"]");
         }
         At_Arg cx;
-        Scalar_Op(Function& fun, Frame& args) : cx(fun,args) {}
+        Scalar_Op(Function& func, Frame& args) : cx(func,args) {}
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
@@ -388,7 +388,7 @@ struct Min_Function : public Legacy_Function
             return stringify("[",x,",",y,"]");
         }
         At_Arg cx;
-        Scalar_Op(Function& fun, Frame& args) : cx(fun, args) {}
+        Scalar_Op(Function& func, Frame& args) : cx(func, args) {}
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
