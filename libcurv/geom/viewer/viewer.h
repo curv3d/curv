@@ -82,10 +82,14 @@ struct Viewer
     Vbo* vbo_ = nullptr;
     double current_time_ = 0.0;
     struct {
+        double last_reported_ = 0.0;
         double delta_time_ = 0.0;
         unsigned frames_ = 0;
-        double frame_rate_ = 30.0;
-        double avg_frame_time_ = 1.0/30.0;
+        void reset() {
+            last_reported_ = glfwGetTime();
+            delta_time_ = 0.0;
+            frames_ = 0;
+        }
     } fps_;
     GLuint vao_; // a Vertex Array Object
     bool hud_ = false;

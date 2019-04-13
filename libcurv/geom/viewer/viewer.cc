@@ -91,6 +91,7 @@ Viewer::set_shape(Viewed_Shape shape)
         shader_.detach(GL_FRAGMENT_SHADER | GL_VERTEX_SHADER);
         if (!shader_.load(shape_.frag_, vertSource_, config_.verbose_))
             error_ = true;
+        fps_.reset();
     }
 }
 
@@ -315,6 +316,7 @@ void Viewer::setup()
     // Clear the background
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    fps_.reset();
 }
 
 void Viewer::render()
@@ -705,19 +707,19 @@ void Viewer::measure_time()
 
     fps_.delta_time_ += delta;
     ++fps_.frames_;
-    if (fps_.delta_time_ > 1.0) { // update FPS every second
-        // this makes the frame rate more stable:
-        fps_.frame_rate_ = (double)fps_.frames_*0.5 + fps_.frame_rate_*0.5;
+    // Don't update the FPS more than once per second.
+    if (now - fps_.last_reported_ >= 1.0) {
+        fps_.last_reported_ = now;
+        double frame_time = fps_.delta_time_ / fps_.frames_;
         fps_.frames_ = 0;
-        fps_.delta_time_ -= 1.0;
-        fps_.avg_frame_time_ = 1.0/fmax(0.001, fps_.frame_rate_);
+        fps_.delta_time_ = 0.0;
 
         // display FPS in window title
         char title[sizeof appTitle + 60];
         snprintf(title, sizeof title, "%s ms/frame: %.2f FPS: %.2f",
             appTitle,
-            fps_.avg_frame_time_*1000.0,
-            1.0/fps_.avg_frame_time_);
+            frame_time*1000.0,
+            1.0/frame_time);
         glfwSetWindowTitle(window_, title);
     }
 }
