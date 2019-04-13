@@ -623,12 +623,12 @@ tail_call_func(
 Value
 Call_Expr::eval(Frame& f) const
 {
-    return call_func(fun_->eval(f), arg_->eval(f), syntax_, f);
+    return call_func(func_->eval(f), arg_->eval(f), syntax_, f);
 }
 void
 Call_Expr::tail_eval(std::unique_ptr<Frame>& f) const
 {
-    tail_call_func(fun_->eval(*f), arg_->eval(*f), syntax_, f);
+    tail_call_func(func_->eval(*f), arg_->eval(*f), syntax_, f);
 }
 
 Shared<List>

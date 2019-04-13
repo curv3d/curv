@@ -137,7 +137,7 @@ struct Class_Name : public Legacy_Function \
                 cx.call_frame_.call_phrase_, \
                 make<Constant>( \
                     func_part(cx.call_frame_.call_phrase_), \
-                    Value{share(cx.fun_)}), \
+                    Value{share(cx.func_)}), \
                 x); \
         } \
         static Shared<const String> callstr(Value x) { \
@@ -336,7 +336,7 @@ struct Max_Function : public Legacy_Function
                 cx.call_frame_.call_phrase_,
                 make<Constant>(
                     func_part(cx.call_frame_.call_phrase_),
-                    Value{share(cx.fun_)}),
+                    Value{share(cx.func_)}),
                 args);
         }
         static const char* name() { return "max"; }
@@ -380,7 +380,7 @@ struct Min_Function : public Legacy_Function
                 cx.call_frame_.call_phrase_,
                 make<Constant>(
                     func_part(cx.call_frame_.call_phrase_),
-                    Value{share(cx.fun_)}),
+                    Value{share(cx.func_)}),
                 args);
         }
         static const char* name() { return "min"; }

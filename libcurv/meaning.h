@@ -261,7 +261,7 @@ struct Data_Ref : public Just_Expression
 
 struct Call_Expr : public Just_Expression
 {
-    Shared<Operation> fun_;
+    Shared<Operation> func_;
     Shared<Operation> arg_;
 
     Call_Expr(
@@ -270,10 +270,10 @@ struct Call_Expr : public Just_Expression
         Shared<Operation> arg)
     :
         Just_Expression(std::move(syntax)),
-        fun_(std::move(fun)),
+        func_(std::move(fun)),
         arg_(std::move(arg))
     {
-        pure_ = (fun_->pure_ && arg_->pure_);
+        pure_ = (func_->pure_ && arg_->pure_);
     }
 
     virtual Value eval(Frame&) const override;

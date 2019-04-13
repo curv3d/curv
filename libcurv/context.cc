@@ -139,9 +139,9 @@ const Phrase& At_Arg::syntax() const
 Shared<const String>
 At_Arg::rewrite_message(Shared<const String> msg) const
 {
-    if (fun_.name_.empty())
+    if (func_.name_.empty())
         return stringify("function argument: ",msg);
-    return stringify("argument #",fun_.argpos_+1," of ",fun_.name_,": ",msg);
+    return stringify("argument #",func_.argpos_+1," of ",func_.name_,": ",msg);
 }
 
 void

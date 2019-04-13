@@ -813,9 +813,9 @@ SC_Value sc_eval_index3_expr(
 SC_Value Call_Expr::sc_eval(SC_Frame& f) const
 {
     SC_Value scval;
-    if (sc_try_eval(*fun_, f, scval)) {
+    if (sc_try_eval(*func_, f, scval)) {
         if (!scval.type.is_list())
-            throw Exception(At_SC_Phrase(fun_->syntax_, f),
+            throw Exception(At_SC_Phrase(func_->syntax_, f),
                 stringify("type ", scval.type, ": not an array or function"));
         auto list = cast<List_Expr>(arg_);
         if (list == nullptr)
@@ -831,7 +831,7 @@ SC_Value Call_Expr::sc_eval(SC_Frame& f) const
                 *list->at(0), *list->at(1), *list->at(2),
                 f, At_SC_Phrase(arg_->syntax_, f));
     }
-    Value val = sc_constify(*fun_, f);
+    Value val = sc_constify(*func_, f);
     Value v = val;
     for (;;) {
         if (auto fun = v.dycast<Function>()) {
@@ -840,13 +840,13 @@ SC_Value Call_Expr::sc_eval(SC_Frame& f) const
         if (auto r = v.dycast<Record>()) {
             static Symbol call_key = "call";
             if (r->hasfield(call_key)) {
-                v = r->getfield(call_key,At_SC_Phrase(fun_->syntax_,f));
+                v = r->getfield(call_key,At_SC_Phrase(func_->syntax_,f));
                 continue;
             }
         }
         break;
     }
-    throw Exception(At_SC_Phrase(fun_->syntax_, f),
+    throw Exception(At_SC_Phrase(func_->syntax_, f),
         stringify("",val," is not an array or function"));
 }
 

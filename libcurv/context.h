@@ -147,12 +147,12 @@ struct At_Program : public At_Token
 // The Frame argument is the stack frame for the function call.
 struct At_Arg : public At_Syntax
 {
-    Function& fun_;
+    Function& func_;
     Frame& call_frame_;
 
     At_Arg(Function& fn, Frame& fr)
     :
-        fun_(fn),
+        func_(fn),
         call_frame_(fr)
     {}
 

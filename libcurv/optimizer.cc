@@ -55,7 +55,7 @@ GEN_BINARY_HASH(Subtract_Expr)
 GEN_BINARY_HASH(Multiply_Expr)
 GEN_BINARY_HASH(Divide_Expr)
 
-#define arg1_ fun_
+#define arg1_ func_
 #define arg2_ arg_
 GEN_BINARY_HASH(Call_Expr)
 #undef arg1_
