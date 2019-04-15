@@ -1,4 +1,9 @@
-Right now, Curv uses OpenGL. Should I use another API, like Vulkan?
+Right now, Curv uses OpenGL. I am thinking about transitioning to WebGPU,
+once it is ready, since that offers more performance and power than I can
+get from OpenGL, plus it is a safe and easy to use API. I am particularly
+interested in getting access to compute shaders, which are not available
+in MacOS OpenGL or in WebGL 2. The alternative of writing multiple backends
+for OpenGL, Vulkan, Metal, DX12 is not appealing.
 
 Here are the platforms that I might want Curv to support:
 * Linux
@@ -14,9 +19,13 @@ Here are the platforms that I might want Curv to support:
 * Probably no Windows UWP. In Sept 2018, >50% of Windows users can't run UWP
   executables, and there's no real downside to WIN32 only. UWP is unpopular,
   has worse GPU support, MS has stopped developing the UWP version of Office.
-* Nov 2018: How committed is Apple to the Mac? The iPad Pro is being marketed
-  as a Mac replacement. The Mac seems a weak match to Apple's business model.
-  OpenGL is deprecated. I may drop Mac support when OpenGL is finally dropped.
+* I am skeptical about the future of Curv on the Mac. OpenGL is deprecated,
+  and I don't want to build a Metal or Vulkan backend. WebGPU may be available
+  by the time Apple drops OpenGL. Mac support goes away if Apple makes it
+  impossible to distribute Curv via HomeBrew. I'm not personally interested in
+  paying Apple to put signed binaries on the Mac app store.
+* My initial Windows port will use Windows 10 + WSL. WIN32 won't happen unless
+  somebody volunteers to port it and maintain it.
 
 And here are the APIs supported by these platforms:
 | Linux         | GL  EGL  Vulkan
