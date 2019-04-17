@@ -1,20 +1,8 @@
 Curv has an optional user-defined configuration file, which the `curv`
 command reads during startup.
 
-All of the -O options can be given default values in the config file.
-Which means all -O option values are Curv values.
-What about '-O colour=face|vertex' for -o x3d?
-'face' and 'vertex' need to either be strings, or symbols.
-See <language/Symbols> proposal.
-Depending on the outcome of this proposal, we will use one of the following:
-    -O colour='"vertex"'   -- in bash
-    -O "colour=""vertex""" -- in cmd.exe, but for caveats see (*)
-    -O colour=#vertex
-(*) https://stackoverflow.com/questions/562038/escaping-double-quotes-in-batch-script
-
-All configuration can be overidden on the command line.
-Currently, all of the relevant command line options are -O options.
-
+Loading the Config File
+-----------------------
 $XDG_CONFIG_HOME defines the base directory relative to which the Curv
 config file is stored. If $XDG_CONFIG_HOME is either not set or empty,
 it defaults to "$HOME/.config", unless $HOME is either not set or empty,
@@ -30,6 +18,27 @@ using directory syntax.
 In libcurv, Curv configuration is stored in System::config_,
 as a value of type Shared<const Record>.
 
+The Config Namespace
+--------------------
+The config record contains top-level fields which name various configurable
+subsystems within Curv, and the field values are records.
+
+Command Line Overrides
+----------------------
+All of the -O options can be given default values in the config file.
+Which means all -O option values are Curv values.
+What about '-O colour=face|vertex' for -o x3d?
+'face' and 'vertex' need to either be strings, or symbols.
+See <language/Symbols> proposal.
+Depending on the outcome of this proposal, we will use one of the following:
+    -O colour='"vertex"'   -- in bash
+    -O "colour=""vertex""" -- in cmd.exe, but for caveats see (*)
+    -O colour=#vertex
+(*) https://stackoverflow.com/questions/562038/escaping-double-quotes-in-batch-script
+
+All configuration can be overidden on the command line.
+Currently, all of the relevant command line options are -O options.
+
 Algorithm for parsing configuration and -O options.
 * error checking: I want to report invalid -O options, and invalid config
   settings.
@@ -38,3 +47,13 @@ Algorithm for parsing configuration and -O options.
   modelled after parse_frag_opt(). This validates a name/value pair from
   either the config, or from a -O option.
 * template<T> typedef bool (*Parse_Opt)(
+
+Lighting Models
+---------------
+There is a default lighting model, which has two attributes, background_colour
+and contrast. The user can override either or both of these attributes,
+and can also replace the default lighting model with another,
+perhaps user-defined lighting model.
+
+Perhaps user-defined lighting models can provide additional parameters that
+can be selectively overridden using the config file or the command line.

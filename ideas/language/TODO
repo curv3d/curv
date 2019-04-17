@@ -75,7 +75,7 @@ There are two use cases for the `{"hello world":value}` syntax.
     field_generator ::= DFN : expr | pattern : expr
   That is, only one DFN per field generator.
 
-I considered using '$var' as the syntax for a DFN, but this creates confusion:
+I considered using `'$var'` as the syntax for a DFN, but this creates confusion:
 in what contexts is it legal to put a dynamic $var subsitution inside a quoted
 identifier? This source of confusion goes away if the syntax for a quoted
 identifier and a DFN are clearly distinct.
@@ -95,6 +95,22 @@ Comparison to other programming languages:
 
 However, the current DFN syntax is mostly backwards compatible with JSON,
 modulo $ and \ escapes, which is kind of cool.
+
+Instead of overloading the `:` statement with either a pattern or DFN as
+left argument, the "maps and symbols" proposal adds a Map data type,
+and defines a Record as a Map where all the keys are symbols. There is new
+syntax for Map literals:
+    {key1=>value1, key2=>value2, ...}
+and so you can write:
+    {#foo=>value1, #bar=>value2}
+as equivalent to {foo:value1, bar:value2}.
+
+Instead of DFNs for field selection, provide a new operation for selecting
+a map element using a key. Maybe bring back the `structure'key` operation
+in some form (structure is a list, record or map). Seems like I'll need `'`
+for quoted identifiers, so why not `!`.
+    foo.bar
+    foo!#bar
 
 ## Definition as a Block Body
 
@@ -135,10 +151,15 @@ I have considered several alternate proposals:
     And we add `f` x as a pattern. Then `elem` 1..10 is a range pattern.
 * Literal constant patterns. (Haskell has them.)
   * Only works for literal constants with special syntax, not true, false, null.
+    * I could introduce a Symbol type, identify true=#true, false=#false, etc.
+      Then '#true' is a pattern matching 'true'.
   * Doesn't work for string literals either, it conflicts with "name":value
     field constructors. Unless I consider further changes:
+    * The Map proposal defines a Record as a Map where the keys are Symbols.
+      A record may be written as {#foo=>1, #bar=>2}. The `:` statement is no
+      longer overloaded, it's just `pattern:expr`.
     * Replace "name":value and foo."name" syntax with quoted identifier syntax:
-      'name':value and foo.'name'.
+      'name':value and foo.'name'. Not good for dynamic field names.
     * String literal patterns must be parenthesized in situations where they
       are ambiguous, such as `("foo"):value`.
 Yes to `== value` patterns. No to literal constant patterns.

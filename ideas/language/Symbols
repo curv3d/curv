@@ -6,7 +6,7 @@ Rationale: I like the syntax.
 I want it for modelling the x3d -O colour=face|vertex option.
 You will type `-Ocolour=#vertex`
 instead of `-Ocolour='"vertex"'` or `-Ocolour={vertex:}`.
-The latter syntax is too cumbersome for the Unix command line.
+The latter syntax is too cumbersome for the Unix command line (or cmd.exe).
 
 This syntax is also nice in the general case where you are working with
 enum types or algebraic types. In that context, we want `#foo` to work as a
@@ -40,16 +40,16 @@ Judgement:
 Symbols are used to simulate 'enumerated types'.
 Symbols are used to simulate niladic variants in an algebraic type.
 
-Symbols are used to simulate 'enumerated types' in the GL dialect.
+Symbols are used to simulate 'enumerated types' in SubCurv.
 Drop-down-list picker type. In a C-like language, the options in a drop-down
 list would be enums, which would map to integers in GLSL. So these should be
 symbols?
     parametric {s :: dropdown[#square,#circle,#triangle] = #square} ...
-In the GL dialect, symbols are normally illegal, and even if we get record
-values, the null value in a symbol is illegal. But, if a dropdown picker is
-used, then the symbols it uses become legal GL values, represented as integers.
+In SubCurv, symbols are normally illegal, and even if we get record values,
+the null value in a symbol is illegal. But, if a dropdown picker is used,
+then the symbols it uses become legal SubCurv values, represented as integers.
 We could also use these semantics for interpreting an is_enum[#foo,#bar]
-type predicate in the GL dialect.
+type predicate in SubCurv.
 
 0. No Symbols
 -------------
@@ -71,7 +71,7 @@ Pros:
 * If JSON export is important, strings are the most natural translation
   for symbols. It's what you would use if modelling data directly in JSON.
   * Counterexample: in JSON-API, a picker config is {"type":data}. If no
-    data is needed, I use {"type":true} instead of "type".
+    data is needed, I use {"type":null} instead of "type".
 * Strings as the representation for symbols is simple and easy for users
   to understand.
 * When I first encountered Lisp/Scheme, the distinction between symbols and
@@ -164,38 +164,65 @@ JSON export: #foo -> {"foo":null}
 3. Symbols as the 8th Type
 --------------------------
 Sales pitch:
-* #foo prints as #foo, not as anything else. #foo is only equal to values that
-  print as #foo. There's no weird aliasing with other types. Simple.
-* Due to Lisp, we have the idea of symbols as a fundamental atomic data type in
-  dynamically typed languages. A symbol is a pure semantic tag with no
-  additional data. So it's not a record or a string, which are more complex.
+* Symbols are fully abstract, simple, scalar values.
+  The only Symbol operations are construction, equality, conversion to string
+  (which are the generic operations supported by all values).
+* #foo prints as #foo, is only equal to values that print as #foo.
+  There's no aliasing with other types. Simple.
+* Symbols are more fundamental than strings or records, which are aggregates.
+* Symbols are the natural representation for nilary enum constructors (instead
+  of strings or integers), and the natural representation for field names
+  (instead of strings).
+* Define true=#true, false=#false, null=#null. Then, in conjunction with Maps,
+  all data types have literals that can be used as patterns. (But, aliasing.)
+* Now there are only 6 types: Symbol, Number, String, List, Map, Function.
+* Are symbols useful in SubCurv? #foo is compiled to an enum value with an int
+  representation?
 
-Symbols and strings are distinct, so maybe symbols become the natural
-representation for field names? Eg, `fields` returns a list of symbols.
-This raises some questions:
-* What about field names that aren't proper identifiers?
-  I guess we have #"hello world" as a symbol. Or #'hello world' if quoted
-  identifiers are added.
-* Syntax for a `:` field generator, given a symbol value?
-  Currently we have `"$x":value`, if x denotes a string.
-  Remove this syntax (to allow literal patterns to be added later).
-  Then add `$x : value`, if x is a symbol.
-  If quoted identifiers are added, then we will also have `'$str': value`,
-  where str is a string.
+Break free of JSON and support a more expressive system of fundamental types.
+* Symbols are #foo
+* Define true=#true, false=#false, null=#null.
+* Sets are #[1, 2, 3]
+        or <[1, 2, 3]>
+* Maps are {key1=>value1, key2=>value2, ...}     like Ruby
+* A record is a map where all of the keys are symbols.
+  So {a: 1, b: 2} is {#a=>1, #b=>2}
+* No need to overload the `:` statement as both DFN:expr and pattern:expr,
+  where DFN is the syntax for a dynamic field name.
+  Now, all data types have literals that can be used as patterns.
+  "foo" is a pattern, #true is a pattern.
+* `S!I`, where S is list/record/map, and I is integer/symbol/value.
+
+Instances of algebraic types are notated as:
+    #nilary
+    {binary: (a, b)}
+The field name `binary` is internally represented as #binary,
+so in this sense the constructor name is always a symbol.
+
+Construction:
+    #foo
+    #"hello world"
+    #"${interpolated_string}"
+
+Conversion to string:
+    "${#foo}" becomes "foo"
+    "$(#foo)" becomes "#foo"
+
+Field names are represented by symbols.
+* `fields` returns a list of symbols. Maybe it is renamed `keys`.
+* Syntax for a `:` field generator, given a symbol variable x?
+  * `$x : value`, from the DFN proposal.
+  * `x => value`, from the Map proposal.
 * Syntax for field selection, given a symbol value?
-  Currently we have `R."$a"`.
-  Maybe `R.$a` or `get [a] R`.
-
-How do you substitute a symbol into a string without the leading # character?
-Use the symbol_to_string API?
+  * `R.$a` from the DFN proposal.
+  * `R!a` from the Map proposal.
+  * `get [a] R` from the Path proposal.
 
 Cons:
 * Compared to symbols as strings, there is extra complexity:
-  * API for converting between symbols and strings.
-  * #'foo bar' syntax for non-standard symbol names, vs "foo bar".
-  * Suppressing the leading # when substituting a symbol?
-    Maybe if you are using a symbol to denote a single component of a longer
-    name or string, then you are using symbols incorrectly.
+  * A new data type, distinct from String.
+  * #"foo bar" syntax for non-standard symbol names, vs "foo bar".
   * Potential confusion about when to use a string and when to use a symbol?
 
 JSON export: #foo -> {"\u0000":"#foo"}
+                  or "\u0000foo"
