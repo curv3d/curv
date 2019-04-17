@@ -46,13 +46,14 @@ Viewer::Viewer(const Viewer_Config& config)
 void
 Viewer::set_shape(const Shape_Program& shape)
 {
-    set_shape(shape, config_);
+    set_shape(Viewed_Shape(shape, config_));
 }
 
 void
-Viewer::set_shape(const Shape_Program& shape, const Frag_Export& opts)
+Viewer::set_shape_no_hud(const Shape_Program& shape, const Frag_Export& opts)
 {
     set_shape(Viewed_Shape(shape, opts));
+    hud_ = false;
 }
 
 void
