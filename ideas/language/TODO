@@ -52,6 +52,7 @@ Extensions:
   Shorter definitions for shape constructors with .mitred/.exact members.
 
 ## Quoted Identifiers and DFNs (Dynamic Field Names)
+### Quoted Identifiers
 `'hello world'` is a quoted identifier.
 It can be useful in the following contexts:
  0. Reserved words become available as identifiers, eg 'if' or '_'.
@@ -59,11 +60,14 @@ It can be useful in the following contexts:
     The name appears in the GUI.
  2. `foo.'hello world'`, as an alternative to `foo."hello world"`.
  3. `{'hello world':value}`, as an alternative to `{"hello world":value}`.
+ 4. In the Cue language, a field definition whose name begins with _ is
+    private, unless the name is quoted.
 
 It bothers me that double-quoted-strings have two meanings, depending
 on context: either an identifier (cases 2 & 3), or a string literal.
 So quoted identifiers are a path to fixing this.
 
+### Dynamic Field Name Syntax
 There are two use cases for the `{"hello world":value}` syntax.
 * Non-standard field names (containing spaces, punctuation).
   For this use case, each name is static. Quoted identifiers are a
@@ -96,6 +100,7 @@ Comparison to other programming languages:
 However, the current DFN syntax is mostly backwards compatible with JSON,
 modulo $ and \ escapes, which is kind of cool.
 
+### Map Syntax
 Instead of overloading the `:` statement with either a pattern or DFN as
 left argument, the "maps and symbols" proposal adds a Map data type,
 and defines a Record as a Map where all the keys are symbols. There is new
@@ -150,16 +155,24 @@ I have considered several alternate proposals:
   * Which leads to range patterns. Suppose we add elem(val,list).
     And we add `f` x as a pattern. Then `elem` 1..10 is a range pattern.
 * Literal constant patterns. (Haskell has them.)
-  * Only works for literal constants with special syntax, not true, false, null.
-    * I could introduce a Symbol type, identify true=#true, false=#false, etc.
+  * Literals for true, false, null.
+    * Introduce a Symbol type, define true=#true, false=#false, null=#null.
       Then '#true' is a pattern matching 'true'.
-  * Doesn't work for string literals either, it conflicts with "name":value
-    field constructors. Unless I consider further changes:
+    * Convert true, false, null to keywords.
+  * Negative numbers and infinity?
+    * `-<numeral>` and `+<numeral>` are patterns.
+    * There is a <numeral> for infinity.
+      * `inf` is a keyword.
+      * Use some other special syntax like `0inf` or `inf.0`.
+        SFRI-70 uses `+inf.0` and `-inf.0` as infinite numerals.
+      * I don't like `#inf`, I think that Symbol and Number types are disjoint.
+  * String patterns currently conflict with "name":value field constructors.
     * The Map proposal defines a Record as a Map where the keys are Symbols.
       A record may be written as {#foo=>1, #bar=>2}. The `:` statement is no
       longer overloaded, it's just `pattern:expr`.
+    * The DFN proposal is `$foo:value` for dynamic field names.
     * Replace "name":value and foo."name" syntax with quoted identifier syntax:
-      'name':value and foo.'name'. Not good for dynamic field names.
+      'name':value and foo.'name'. Doesn't support dynamic field names.
     * String literal patterns must be parenthesized in situations where they
       are ambiguous, such as `("foo"):value`.
 Yes to `== value` patterns. No to literal constant patterns.

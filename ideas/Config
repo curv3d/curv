@@ -20,8 +20,28 @@ as a value of type Shared<const Record>.
 
 The Config Namespace
 --------------------
-The config record contains top-level fields which name various configurable
-subsystems within Curv, and the field values are records.
+Here's the current CLI -O configuration:
+  mesh (STL, OBJ, X3D)
+    vsize, jit, adaptive,
+  mesh (X3D)
+    colour
+  viewer, GPU (aka Frag options)
+    aa, taa, fdur, bg
+  PNG
+    xsize, ysize, fstart, animate, + the Frag options
+
+I could just put all these names at the top level of the config record.
+
+However, I might want different Frag options for PNG export vs the Viewer
+(eg, high quality for PNG export, higher performance for the Viewer).
+So then I need a 2-level namespace, eg like:
+  config
+    mesh
+      vsize, jit, adaptive, colour
+    view
+      aa, taa, fdur, bg
+    image
+      xsize, ysize, fstart, animate, + the Frag options
 
 Command Line Overrides
 ----------------------
@@ -57,3 +77,11 @@ perhaps user-defined lighting model.
 
 Perhaps user-defined lighting models can provide additional parameters that
 can be selectively overridden using the config file or the command line.
+
+In 3D, these config variables are called
+    viewer.lighting
+    viewer.lighting.background_colour
+    viewer.lighting.contrast
+
+In 2D, there is still a background colour, but there is no lighting model.
+What is it called? Currently it is called -Obg=.

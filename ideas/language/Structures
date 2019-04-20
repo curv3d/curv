@@ -1,0 +1,159 @@
+Break free of JSON and support a more expressive system of fundamental types.
+* Maps (aka Dictionaries)
+* Sets (maybe)
+* Symbols (maybe)
+* All data types have associated literal patterns (maybe).
+* New function equality.
+* Quoted identifiers.
+
+Quoted Identifiers.
+-------------------
+'hello world' is a quoted identifier. Use cases:
+* Permit embedded spaces and punctuation characters in identifiers.
+  Useful if identifiers are shown in the GUI, via parametric records.
+* Permit reserved words like 'if' and '_' to be identifiers.
+* In Cue, within a scoped record literal,
+  a field named _foo is private, but '_foo' is public. Maybe?
+
+There is no reason to support control characters in quoted identifiers,
+only printable ASCII (32-126) for now.
+
+Escape sequences? Note they have to be resolved prior to semantic analysis.
+For now, the only character that would need to be escaped is `'`. Later,
+if Unicode is supported, we might want numeric code-point escape sequences.
+Use case: include Unicode characters in the GUI, but the source code
+remains ASCII for ease of editing. Eg, '$[0x263A]'.
+Initially, I'll only support two escape sequences: `$-` and `$.`.
+If Unicode happens, I'll add numeric code-point escapes.
+
+I'm not sure about interpolating named characters, because how do you
+include a library of character names prior to semantic analysis?
+
+Symbols.
+--------
+* Symbols are abstract values, distinguished only by their name.
+  They only support equality and conversion to and from strings.
+  #foo is a symbol; it prints as #foo; it is only equal to itself.
+* #'hello world' is a symbol with nonstandard name. Used with dropdown_menu
+  proposal: `dropdown_menu[#'Value Noise', #'Fractal Noise']`.
+  (Note, not #"hello world" as that conflicts with the proposal for adding
+   Swift5 string literal syntax.)
+* Define true=#true, false=#false, null=#null.
+* #foo is a pattern.
+* Thus, #true and #false are the literal pattern syntax for booleans.
+  (An alternative is for true and false to be keywords.)
+* Record fields are symbols internally.
+* `is_symbol x`
+
+Number patterns.
+----------------
+* <numeral> is a pattern.
+* +<numeral> and -<numeral> are patterns.
+* `inf` is the numeral for infinity. It is a keyword.
+  * `#inf` is not preferred, I don't want to imply that infinity is a symbol.
+    I don't want is_symbol(inf) to be true.
+  * Scheme uses `+inf.0`. That's cryptic.
+  * Most languages drop the ball, don't support a way to write infinity.
+    The corollary is that people mostly won't care what I choose.
+
+String patterns.
+----------------
+"foo"
+
+Lists.
+------
+No change.
+
+Sets.
+-----
+* The Python syntax {1,2,3} is great, but {} now denotes both an empty set
+  and an empty record. In Python, {} is an empty dictionary,
+  and set([]) is the empty set. In SETL, a map is a set of ordered pairs:
+  this is consistent with the {...} syntax for sets. But how do I determine
+  that a given set of ordered pairs is actually a map without copying the set
+  into a hash table? That seems expensive.
+* Thus, Set is disjoint from Record and Map.
+* Syntax: #[1, 2, 3]
+* A set pattern is a set literal containing constant patterns.
+  You can't bind variables.
+
+Function Equality.
+------------------
+Functions don't support proper equality. Semantics that I want:
+1. You can't put a Function value in a Set or use it as a Map key (error).
+   * Thus, you can't put Shapes into a Set.
+2. If you match a Function value against a non-Function pattern,
+   the match fails (no error).
+3. As a corollary, for the proposed `==x` pattern,
+   * Error if `x` is a function.
+   * No match if the value being matched is a function.
+4. Non-function predicates return false for function arguments.
+   Eg, `is_bool(max) == false`.
+
+What are the semantics of `a==b` for functions?
+a. The current implementation is: all functions are equal.
+   It's an equivalence relation. It seems inconsistent with the above semantics.
+b. If a function appears as either argument of `==`, then an error.
+   This seems consistent with the idea that Function is not an equality type,
+   and it seems consistent with the equivalence relation axioms.
+   However, suppose we define
+      is_bool a = a==#true || a==#false;
+   Then `is_bool(max)` is an error, contrary to the requirements.
+c. If two functions are compared, an error. If a function and non-function
+   are compared, false. This is compatible with the `is_bool` definition,
+   and seems the most consistent with the required semantics above.
+   It seems to violate the `a==a` axiom of an equivalence relation.
+   (It is impossible to implement a==a for functions, if we want operational
+   or mathematical equivalence.)
+We will use 'c'.
+
+Records vs Maps.
+----------------
+Is a Record just a Map where the keys are Symbols?
+* It seems elegant & mathematical. SETL and Cell work this way.
+  Consider a map M where all the keys are symbols, and an isomorphic record R.
+  What's the difference?
+* Ah, but records and maps are used differently.
+  A record type is a set of name/type pairs, which constitute an API.
+  * Records are indexed using dot notation: R.F
+  * A record with a `call` field is callable; that's part of its API.
+  A map type is Map(KeyType,ValueType).
+  * In popular dynamic languages, maps are indexed using the same syntax
+    as arrays: M[K]. A map with integer keys is like a sparse array.
+So Records are not Maps.
+
+Maps.
+-----
+* #{ key1 => value1, ... }
+  Like Ruby syntax but with a #, so that #{} is the empty map.
+* M[K] looks up key K in map M, returns the corresponding value.
+* Each binding in a map pattern is `expr => pattern`. All of the keys
+  in the map value being matched must match one of the keys in the bindings.
+
+Records.
+--------
+Internally, field names are represented by Symbols.
+* `fields aRecord` returns a Set of Symbols.
+
+Right now, we overload the `:` statement as <string>:<expr> and <ident>:<expr>.
+New design, we use
+    <symbol-expr> => <expr>
+to generate a field from a symbol expression, and use
+    <pattern> : <expr>
+to generate fields by binding against a pattern.
+This frees up string literals to be used as literal patterns.
+* We also need quoted identifiers, to satisfy the use case of non-standard
+  identifiers as field names.
+* The need for => to construct fields with computed names is questionable,
+  once maps are added.
+
+Generic structure operations.
+-----------------------------
+S!I
+S is a list/string/record/map and I is integer/integer/symbol/value.
+
+S!
+Here ! is a postfix operator converting S to a function of an index value.
+
+fetch [i1,i2,i3] S      or S >> fetch path
+amend path newvalue S   or S >> amend path newvalue

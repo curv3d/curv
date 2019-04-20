@@ -1,7 +1,6 @@
 v0.5 Planning
 -------------
 * fix Intel GPU bug. v0.4.1
-* fix PNG parametric export bug.
 * Compiler/IR/VM changes for new features:
   * `a[i] := x`, a[[X,Y]] := [x,y]
     Assignment_Action::locative_, Locative::store_value()

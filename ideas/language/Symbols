@@ -161,37 +161,28 @@ Possible reasons for identifying #foo with {foo:} in an algebraic type.
 
 JSON export: #foo -> {"foo":null}
 
-3. Symbols as the 8th Type
---------------------------
+3. Symbols as an Abstract Type
+------------------------------
 Sales pitch:
 * Symbols are fully abstract, simple, scalar values.
   The only Symbol operations are construction, equality, conversion to string
   (which are the generic operations supported by all values).
 * #foo prints as #foo, is only equal to values that print as #foo.
   There's no aliasing with other types. Simple.
+* (Why not use strings?) Symbols do not compare equal to strings.
+  Overloaded functions can distinguish symbol arguments from string arguments.
 * Symbols are more fundamental than strings or records, which are aggregates.
 * Symbols are the natural representation for nilary enum constructors (instead
-  of strings or integers), and the natural representation for field names
-  (instead of strings).
+  of strings or integers).
+* Symbols are the natural representation for field names in records
+  (instead of strings; see Structure proposal).
 * Define true=#true, false=#false, null=#null. Then, in conjunction with Maps,
   all data types have literals that can be used as patterns. (But, aliasing.)
-* Now there are only 6 types: Symbol, Number, String, List, Map, Function.
-* Are symbols useful in SubCurv? #foo is compiled to an enum value with an int
-  representation?
-
-Break free of JSON and support a more expressive system of fundamental types.
-* Symbols are #foo
-* Define true=#true, false=#false, null=#null.
-* Sets are #[1, 2, 3]
-        or <[1, 2, 3]>
-* Maps are {key1=>value1, key2=>value2, ...}     like Ruby
-* A record is a map where all of the keys are symbols.
-  So {a: 1, b: 2} is {#a=>1, #b=>2}
-* No need to overload the `:` statement as both DFN:expr and pattern:expr,
-  where DFN is the syntax for a dynamic field name.
-  Now, all data types have literals that can be used as patterns.
-  "foo" is a pattern, #true is a pattern.
-* `S!I`, where S is list/record/map, and I is integer/symbol/value.
+* Symbols in SubCurv:
+  * #foo is compiled to an enum value with an int representation.
+  * `dropdown_menu[#Value_Noise,#Fractal_Noise]` is a picker value.
+  * is_enum[#foo,#bar] is a type predicate supported by SubCurv?
+* Symbols might have a use if Curv becomes homoiconic and supports macros?
 
 Instances of algebraic types are notated as:
     #nilary
@@ -201,28 +192,21 @@ so in this sense the constructor name is always a symbol.
 
 Construction:
     #foo
-    #"hello world"
-    #"${interpolated_string}"
+    #'hello world'
+Some conversion from String to Symbol? make_symbol "foo" == #foo
 
 Conversion to string:
-    "${#foo}" becomes "foo"
-    "$(#foo)" becomes "#foo"
+    "${#foo}" becomes "foo"    or strcat[#foo]
+    "$(#foo)" becomes "#foo"   or repr[#foo]
 
-Field names are represented by symbols.
-* `fields` returns a list of symbols. Maybe it is renamed `keys`.
-* Syntax for a `:` field generator, given a symbol variable x?
-  * `$x : value`, from the DFN proposal.
-  * `x => value`, from the Map proposal.
-* Syntax for field selection, given a symbol value?
-  * `R.$a` from the DFN proposal.
-  * `R!a` from the Map proposal.
-  * `get [a] R` from the Path proposal.
+Field names are represented by symbols (Structure proposal).
+* `fields` returns a list of symbols.
 
 Cons:
-* Compared to symbols as strings, there is extra complexity:
-  * A new data type, distinct from String.
-  * #"foo bar" syntax for non-standard symbol names, vs "foo bar".
-  * Potential confusion about when to use a string and when to use a symbol?
+* Explaining to users why symbols are different from strings.
+  It's doable, esp. if #true and #false are the boolean values.
 
 JSON export: #foo -> {"\u0000":"#foo"}
                   or "\u0000foo"
+or record keys are strings, no Curv value maps to JSON null, and
+             #foo -> {"foo":null}

@@ -81,6 +81,9 @@ https://github.com/BrianSharpe/GPU-Noise-Lib/blob/master/gpu_noise_lib.glsl
 http://github.com/ashima/webgl-noise
     Much referenced.
 
+https://github.com/Auburns/FastNoiseSIMD
+    SIMD C++ noise library.
+
 Bitwise Operations in Curv
 --------------------------
 Several GPU hashing algorithms use uint32 bitwise and arithmetic operations.
