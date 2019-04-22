@@ -2,7 +2,7 @@ Break free of JSON and support a more expressive system of fundamental types.
 * Maps (aka Dictionaries)
 * Sets (maybe)
 * Symbols (maybe)
-* All data types have associated literal patterns (maybe).
+* Some data types have associated literal patterns.
 * New function equality.
 * Quoted identifiers.
 
@@ -58,7 +58,8 @@ Number patterns.
 
 String patterns.
 ----------------
-"foo"
+We don't need string patterns. You shouldn't compare or match strings in Curv.
+Use symbols instead.
 
 Lists.
 ------
@@ -147,13 +148,28 @@ This frees up string literals to be used as literal patterns.
 * The need for => to construct fields with computed names is questionable,
   once maps are added.
 
-Generic structure operations.
------------------------------
+Indexing Operations.
+--------------------
 S!I
-S is a list/string/record/map and I is integer/integer/symbol/value.
+* list!integer | list![ix0,ix1,...]
+* string!integer | string![ix0,ix1,...]
+* record!symbol
+  * vectorized indexing for records? Wait for more requirements.
+    Maybe: record!set_of_symbols -> record
+    Maybe: record!list_of_symbols -> list_of_values
+* map!key
+  * vectorized indexing is not possible: key can be a list or set.
+* Motivations for this unusual syntax: it's consistent across list, string,
+  record and map. (Record doesn't support R[i] for indexing.)
+  Also, the `S!` syntax is potentially useful.
 
 S!
 Here ! is a postfix operator converting S to a function of an index value.
+
+S[i,j,k,...]
+* list[i,j,k] indexes a multidimensional array, can extract n-d slices.
+* string[i] is same as string!i, map[k] is same as map!k.
+  The reason for this redundancy is that this is the conventional syntax.
 
 fetch [i1,i2,i3] S      or S >> fetch path
 amend path newvalue S   or S >> amend path newvalue

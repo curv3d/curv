@@ -63,6 +63,9 @@ taken literally, you don't need to include double quote characters.
 But, we do interpret '$' escape sequences, so you still have full access
 to the Curv expression language in string valued options if you need it.
 
+Or, the option parser treats `#identifier` as a special case,
+so you can type -Oname=#foo and set name to the string "foo".
+
 Enum values are string values. This means we want "foo" to work as a pattern.
 
 1. Symbols as Strings
@@ -182,6 +185,7 @@ Sales pitch:
   * #foo is compiled to an enum value with an int representation.
   * `dropdown_menu[#Value_Noise,#Fractal_Noise]` is a picker value.
   * is_enum[#foo,#bar] is a type predicate supported by SubCurv?
+* Symbols might be useful in the Term proposal.
 * Symbols might have a use if Curv becomes homoiconic and supports macros?
 
 Instances of algebraic types are notated as:
@@ -193,11 +197,14 @@ so in this sense the constructor name is always a symbol.
 Construction:
     #foo
     #'hello world'
-Some conversion from String to Symbol? make_symbol "foo" == #foo
+
+Some conversion from String to Symbol? make_symbol "foo" == #foo.
+This shouldn't be needed in normal circumstances (maybe metaprogramming?).
 
 Conversion to string:
     "${#foo}" becomes "foo"    or strcat[#foo]
     "$(#foo)" becomes "#foo"   or repr[#foo]
+    `strcat[#'Hello world']` becomes "Hello world".
 
 Field names are represented by symbols (Structure proposal).
 * `fields` returns a list of symbols.
@@ -205,8 +212,63 @@ Field names are represented by symbols (Structure proposal).
 Cons:
 * Explaining to users why symbols are different from strings.
   It's doable, esp. if #true and #false are the boolean values.
+* Is there any context where we need a variable that is either a string
+  or a symbol? Or are the use cases disjoint? (Because then why not unify them.)
 
 JSON export: #foo -> {"\u0000":"#foo"}
                   or "\u0000foo"
 or record keys are strings, no Curv value maps to JSON null, and
              #foo -> {"foo":null}
+
+Symbols vs Strings
+------------------
+A Symbol is an abstract value whose only property is its name.
+The symbol `#foo` prints as `#foo`, and is only equal to itself.
+You can compare a symbol for equality to any other value, use it as a map key,
+or convert it to a string. Those are the only operations.
+
+Symbol constants look like Twitter hash tags, and that's not a coincidence.
+Symbols are abstract names that have semantic meaning within a program.
+
+In Curv, the Boolean values are called `#true` and `#false` (they are symbols),
+and this is a good example of what symbols are used for. They are used to
+distinguish between several different named alternatives.
+
+Statically typed languages like C, Rust, Swift and Go do not have a generic
+symbol type. Instead, they have user-defined `enum` types, which serve the
+same purpose. Internally, `enum` values are represented efficiently by small
+integers. When Curv programs are compiled into statically typed code (eg, into
+C++ or into GLSL), symbol values are compiled to small integers or enum values.
+
+The only other languages with a symbol type are dynamically typed languages:
+* Lisp, Scheme and other languages from the Lisp family.
+* Ruby.
+* Erlang and Elixir (where symbols are called "atoms").
+Javascript has a Symbol class, but it is an unrelated concept.
+
+When users first encounter Symbols in a language like Scheme, Elixir or Ruby,
+it can be unclear how Symbols differ from Strings. In Curv, the distinction
+is very clear.
+
+Strings are meant to represent uninterpreted text that is destined to form
+part of the program's output.
+* A string of text that will be rendered into an image using the future `text`
+  primitive.
+* A string of text that will be printed as a debug message.
+* A string of text that represents the final output of a program
+  (in the case where you are using Curv to convert your data to some text
+  based file format for further use outside of Curv).
+
+You are not meant to parse strings. Curv has no way of opening and reading a
+text file, so there's no input to parse. Curv isn't a text processing language,
+and doesn't have regular expressions or parsing facilities.
+
+You are not meant to use strings to encode meaning within your data structures.
+* You shouldn't internally represent a compound data structure using Strings,
+  because now your code has to parse that string to traverse the data structure.
+  That's a code smell, because parsing is complex and error prone compared to
+  just traversing a real data structure.
+* You shouldn't use strings to encode semantically meaningful names, eg denoting
+  one of several alternatives. That's what Symbols are for. If your code
+  compares two strings for equality, or uses a string as a map key,
+  then you should use Symbols instead.
