@@ -37,7 +37,6 @@ struct Viewer
 
     // Set the current shape. May be called at any time, before opening the
     // window, or while the window is open.
-    void set_shape(const Shape_Program&);
     void set_shape_no_hud(const Shape_Program&, const Frag_Export&);
     void set_shape(Viewed_Shape);
 
