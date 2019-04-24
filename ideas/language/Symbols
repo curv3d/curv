@@ -198,8 +198,9 @@ Construction:
     #foo
     #'hello world'
 
-Some conversion from String to Symbol? make_symbol "foo" == #foo.
-This shouldn't be needed in normal circumstances (maybe metaprogramming?).
+A conversion from String to Symbol? make_symbol "foo" == #foo.
+This is in the same category as a conversion from String to Number.
+It shouldn't normally be needed, given the role of strings in Curv.
 
 Conversion to string:
     "${#foo}" becomes "foo"    or strcat[#foo]
@@ -220,8 +221,8 @@ JSON export: #foo -> {"\u0000":"#foo"}
 or record keys are strings, no Curv value maps to JSON null, and
              #foo -> {"foo":null}
 
-Symbols vs Strings
-------------------
+Symbols are not Strings
+-----------------------
 A Symbol is an abstract value whose only property is its name.
 The symbol `#foo` prints as `#foo`, and is only equal to itself.
 You can compare a symbol for equality to any other value, use it as a map key,
@@ -252,6 +253,7 @@ is very clear.
 
 Strings are meant to represent uninterpreted text that is destined to form
 part of the program's output.
+* Documentation/help strings (in a future language version).
 * A string of text that will be rendered into an image using the future `text`
   primitive.
 * A string of text that will be printed as a debug message.

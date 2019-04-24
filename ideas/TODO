@@ -1,5 +1,6 @@
 v0.5 Planning
 -------------
+* Monday May 6: KWLUG talk
 * fix Intel GPU bug. v0.4.1
 * Compiler/IR/VM changes for new features:
   * `a[i] := x`, a[[X,Y]] := [x,y]
@@ -64,7 +65,7 @@ v0.5 Planning
     * detect console output from curv.curv
     * full sc_test suite
  * REPL language dialect
-   * document it. Note, no global :=.
+   * Document it. Note, no global :=.
 
 Big Items
 * graphical value pickers in the viewer

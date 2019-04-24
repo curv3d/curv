@@ -15,6 +15,17 @@ to handling Unicode?
 I should make separate decisions about permitting Unicode in comments,
 string values, and identifiers/field names.
 
+## Symbols and Uninterpreted Strings
+The new design (Symbols and Structures) proposes that strings are uninterpreted
+blobs. You can construct a string using a string literal, and you can
+concatenate a string. But you don't compare strings for equality or decompose
+them into a sequence of characters. Under this design, the problems of
+Unicode become more manageable.
+
+Symbols can be compared for equality, but we will restrict what Unicode
+strings are legal as Symbols, and we'll NFC normalize, to eliminate
+problems.
+
 ## Unicode comments
 This is relatively safe, since comments are (for now) uninterpreted.
 If Curv gets "documentation comments", then issues may arise.
