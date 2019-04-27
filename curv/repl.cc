@@ -237,10 +237,12 @@ void repl(curv::System* sys)
 {
     // Catch keyboard interrupts, and set was_interrupted = true.
     // TODO: This will be used to interrupt the evaluator.
-    struct sigaction interrupt_action;
-    memset((void*)&interrupt_action, 0, sizeof(interrupt_action));
-    interrupt_action.sa_handler = interrupt_handler;
-    sigaction(SIGINT, &interrupt_action, nullptr);
+    if (isatty(0)) {
+        struct sigaction interrupt_action;
+        memset((void*)&interrupt_action, 0, sizeof(interrupt_action));
+        interrupt_action.sa_handler = interrupt_handler;
+        sigaction(SIGINT, &interrupt_action, nullptr);
+    }
 
     // top level definitions, extended by typing 'id = expr'
     curv::Namespace names = sys->std_namespace();
