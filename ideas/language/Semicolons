@@ -1,3 +1,42 @@
+Canonical Syntax
+----------------
+Sebastien expressed concern that Curv syntax provides too many ways
+of expressing the same things (in ways that other languages don't).
+
+The following are equivalent list expressions: (1,2,3) [1,2,3] [1;2;3].
+  But (1;2;3) is a compound statement that can be used in a list comprehension.
+
+The following are equivalent record expressions: {a=1;b=2} {a:1;b:2} {a:1,b:2}.
+  But {a=1,b=2} is a syntax error.
+
+In the examples, the calls to `make_shape` sometimes use {dist p=...}
+and sometimes use {dist p:...}. These should be made consistent.
+
+To simplify this, we will standardize on a smaller number of canonical forms.
+We will only use these canonical forms in example code in the documentation,
+and in the `examples` directory.
+
+I'll say that commas are used for separating items in a list or record
+comprehension, while semicolons are used for:
+* separating definitions in a scoped record constructor or in a `let` clause;
+* separating statements in a compound statement or in a `do` clause.
+
+This leaves us with:
+* [a, b] or (a, b) is a list comprehension.
+* {a:1, b:2} is a record comprehension, used for labeled arguments to a
+  function call, such as `make_shape`.
+* {a=1; b=2} is a scoped record constructor, used to construct a library.
+* (a; b; c) is a compound statement. It is used in list and record
+  comprehensions, and in `do` clauses.
+
+Note: In my usual coding style, I use `;` in list and record comprehensions if
+they are "code like", and `,` if they are "data like". By "code like", I mean
+"contains multi-line functions". Eg, the argument to `match` is code-like,
+and the argument to `make_shape` is code-like. So I actually the syntax the
+way it is.
+
+Semicolons
+----------
 From reddit, re: programming language design:
 "I think it's more recently that people understand the value of not being
 unnecessarily permissive; it keeps code more homogenous and prevents

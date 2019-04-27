@@ -45,6 +45,43 @@ Symbols.
 * Record fields are symbols internally.
 * `is_symbol x`
 
+Tagged Values (Algebraic Data Types)
+------------------------------------
+An instance of an algebraic data type is written
+    #niladic
+    {monadic: a}
+    {dyadic: (a,b)}
+and I'll call these "tagged values". A tagged value has a name and an
+optional value.
+
+A tagged value is deconstructed using pattern matching:
+    match [
+      #niladic -> [],
+      {monadic: a} -> [a],
+      {dyadic: (a,b)} -> [a,b],
+    ]
+
+I'd like to define a picker that takes an algebraic type as an argument.
+It displays a drop-down menu for the tag, plus additional pickers for
+data associated with the current tag value.
+    enum_picker [ alternative, ... ]
+Each alternative is either a symbol, or {tag: {record of pickers}},
+or {tag: [alternative, ...]} if we want an alternate form of nesting.
+The parameter that is bound to an enum_picker has a tagged value that
+must be deconstructed using `match`.
+
+Algebraic data types introduce a different way to model blending kernels:
+    smooth 0.5 .union [a,b]
+ vs smooth 0.5 {union: [a,b]}
+
+We could unify these approaches by extending `record!` to take a tagged
+value as argument, like so:
+    record!#foo    => record.foo
+    record!{bar:a} => record.bar a
+
+We could also do this in reverse: a piecewise function over tagged values
+could export field names for each tag.
+
 Number patterns.
 ----------------
 * <numeral> is a pattern.
@@ -82,7 +119,7 @@ Function Equality.
 ------------------
 Functions don't support proper equality. Semantics that I want:
 1. You can't put a Function value in a Set or use it as a Map key (error).
-   * Thus, you can't put Shapes into a Set.
+   * Thus, you can't put Shapes into a Set, unless they are Terms.
 2. If you match a Function value against a non-Function pattern,
    the match fails (no error).
 3. As a corollary, for the proposed `==x` pattern,
@@ -106,6 +143,7 @@ c. If two functions are compared, an error. If a function and non-function
    It seems to violate the `a==a` axiom of an equivalence relation.
    (It is impossible to implement a==a for functions, if we want operational
    or mathematical equivalence.)
+
 We will use 'c'.
 
 Records vs Maps.

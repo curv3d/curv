@@ -121,18 +121,3 @@ to convert between integers/floats and bits32, which is a list of 32 bools.
 If I solve this problem, I still have the issue of writing bithacking code
 that converts between floats and bitvectors, and that is portable between
 Curv and CurvGL -- Curv has 64 bit floats, CurvGL has 32 bit floats.
-
-Naming for the low-level Curv subset and its compiler
------------------------------------------------------
-The low-level subset of Curv:
-    GL
-    LLCurv
-    FastCurv
-    SubCurv (SC)
-The low-level compiler
-    Geometry Compiler
-    Shape Compiler (SC)
-Prefixes in libcurv
-    SC_Type
-    LL_Type
-    SC_Type
