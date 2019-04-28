@@ -19,7 +19,7 @@ You can use gcc 5.4 (or later), or clang 3.4 (or later).
 * Open the Terminal application and run the following commands:
   * Install the relevant dependencies used to build `curv`:
   
-  `sudo apt install clang cmake git-core libboost-all-dev libdouble-conversion-dev libopenexr-dev libtbb-dev libglm-dev gedit dbus-x11`
+  `sudo apt install clang cmake git-core libboost-all-dev libopenexr-dev libtbb-dev libglm-dev gedit dbus-x11`
   
   * If you don't already have dev packages for your GPU installed -- eg running a **server version** -- then you'll probably need to also install these:
   
@@ -40,7 +40,6 @@ You can use gcc 5.4 (or later), or clang 3.4 (or later).
   * `brew install git`
   * `brew install cmake`
   * `brew install boost`
-  * `brew install double-conversion`
   * `brew install gedit`
   * `brew install ilmbase openexr tbb`
   * `brew install glm`
