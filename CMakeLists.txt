@@ -15,6 +15,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 # Global include directories, visible in subdirectories.
 include_directories(.
     extern/googletest/googletest/include
+    extern/double-conversion
     extern/ordered-map/include
     extern/openvdb
     extern/blosc
@@ -35,6 +36,11 @@ target_include_directories(replxx
    PUBLIC extern/replxx/include
    PRIVATE extern/replxx/src)
 set_property(TARGET replxx PROPERTY CXX_STANDARD 14)
+
+# double-conversion library
+file(GLOB DoubleConversionSrc "extern/double-conversion/double-conversion/*.cc")
+add_library(double-conversion ${DoubleConversionSrc})
+set_property(TARGET double-conversion PROPERTY CXX_STANDARD 14)
 
 # glad library, an OpenGL loader
 add_library(glad

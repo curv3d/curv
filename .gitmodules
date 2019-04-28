@@ -13,3 +13,6 @@
 [submodule "extern/ordered-map"]
 	path = extern/ordered-map
 	url = https://github.com/Tessil/ordered-map
+[submodule "extern/double-conversion"]
+	path = extern/double-conversion
+	url = https://github.com/google/double-conversion.git
