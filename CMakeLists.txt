@@ -21,6 +21,7 @@ include_directories(.
     extern/blosc
     extern/stb
     extern/glfw/include
+    extern/glm
     extern/glad)
 
 if (APPLE)
