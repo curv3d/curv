@@ -17,10 +17,10 @@ It is surrounded by brace brackets ``{...}``.
 
 There are two kinds of record constructor:
 
-1. A record comprehension. E.g., ``{a:1, b:2}``.
-2. A scoped record constructor, aka a module. E.g., ``{a=1; b=2;}``.
+1. Record comprehensions. E.g., ``{a:1, b:2}``.
+2. Modules (scoped record constructors). E.g., ``{a=1; b=2;}``.
 
-Record comprehensions are a generalization of JSON object literals.
+Record comprehensions permit you to generate a set of fields using conditionals and loops.
 Unlike modules, they do not introduce a scope (field specifiers can't refer to one another),
 so they are useful in a context like this::
 
