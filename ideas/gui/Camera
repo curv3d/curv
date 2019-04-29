@@ -3,18 +3,21 @@ Scriptable Camera Position
 * The GUI displays the camera position in the HUD.
 * You can copy these numbers and use them in the CLI to set the initial
   camera position in the viewer or in 3D image export using -Ocamera=...
-* Maybe you can specify the initial camera position using Curv code. How?
-  * Using the camera field in a shape value.
-    But the data would not be inherited by derived shapes returned by shape
-    operators. So it's not really a property of the shape, even though it is
-    stored like one.
-  * Using a 'Viewer' object that contains a shape plus viewer parameters.
-    Another kind of graphical value.
-* The current camera position is available as a set of reactive variables,
+* You can specify the initial camera position using Curv code.
+  A 'View' is a record with 'shape' and 'camera' fields.
+  It's another kind of graphical value.
+* The current camera position is available as a read-only reactive 'camera'
+  record variable,
   like $vpr/$vpt/$vpd in OpenSCAD (ViewPort Rotation, Translation, Distance).
   Applications include: a billboard that is rotated to always face the front.
 
+"arcball rotation" to replace my ad-hoc mouse rotation code.
+
 What are the components of a 3D camera position?
+Requirements:
+ * arcball rotation: does this have a preferred camera representation?
+ * the billboard application: ease of coding?
+ * shadertoy-style shaders: ease of coding?
 
 gluLookAt(eye, centre, up)
     eye: point, camera location
@@ -41,3 +44,12 @@ Microsoft .net
     lookDirection :: Vector3D
     upDirection :: Vector3D
     width :: Double // width of viewing box in world units)
+
+In issue #73, P-E-W suggested:
+  target = [0,0,0];  // Point the camera is aimed at
+  direction = [1,0,0];  // Direction of the camera's location from the above point
+  distance = 10;  // Distance of the camera's location from the above point
+  zoom = 5;  // Magnification of the camera's field of view.
+      Large values for both distance and zoom approximate a parallel projection.
+Which doesn't work because it doesn't account for rotation around the axis from
+camera to target.
