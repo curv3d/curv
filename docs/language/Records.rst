@@ -20,13 +20,20 @@ There are two kinds of record constructor:
 1. Record comprehensions. E.g., ``{a:1, b:2}``.
 2. Modules (scoped record constructors). E.g., ``{a=1; b=2;}``.
 
-Record comprehensions permit you to generate a set of fields using conditionals and loops.
-Unlike modules, they do not introduce a scope (field specifiers can't refer to one another),
-so they are useful in a context like this::
+Unlike modules, record comprehensions do not introduce a scope (field specifiers can't refer to one another).
+This means you can write a record comprehension that references local variables
+with the same names as the field names, like this: ``{x:x,y:y}``.
+This makes record comprehensions the preferred syntax for specifying labeled arguments
+in a function call.  For example::
 
-   f(x,y) = {x:x, y:y};
+    rotate {angle: 45*deg, axis: Z_axis} cube
 
-Modules (scoped record constructors) contain a list of definitions
+Record comprehensions permit you override fields in
+existing records, or specify default values, using the ``...`` operator.
+You can add a field to a record conditionally, using an ``if`` statement,
+and you can even generate a set of fields using a loop.
+
+Modules (scoped record constructors) contain a set of definitions
 that form a mutually recursive scope. Definitions can refer to one another,
 and you can define recursive functions. Modules are used to define libraries.
 See ``lib/curv/*.curv`` in the source tree for examples.
