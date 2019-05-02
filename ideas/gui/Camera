@@ -19,6 +19,15 @@ Requirements:
  * the billboard application: ease of coding?
  * shadertoy-style shaders: ease of coding?
 
+Camera parameterization: https://jsantell.com/3d-projection
+ * Dolly-zoom: a nice design for what it looks like to change the field-of-view
+   angle without changing anything else.
+ * Mentions the model-viewer project: a lot of thought went into creating the
+   scene and framing rules in model-viewer. We wanted an arbitrarily-sized model
+   inside a viewport of any size and aspect to be framed well. The model is
+   placed inside a "room" that maximizes the model's size given the current
+   aspect ratio, with the camera "framing" the room's outer plane.
+
 gluLookAt(eye, centre, up)
     eye: point, camera location
     centre: reference point

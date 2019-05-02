@@ -45,42 +45,56 @@ Symbols.
 * Record fields are symbols internally.
 * `is_symbol x`
 
-Tagged Values (Algebraic Data Types)
-------------------------------------
-An instance of an algebraic data type is written
+Variant Values (and Variant Types)
+----------------------------------
+Variant types are a feature of statically typed languages.
+They have many names: unions, enums, variants and algebraic data types.
+However, the core idea is that a variant type consists of a fixed set of
+alternatives. Each alternative has a name, and optionally a value.
+An enum type is one in which all of the alternatives are just names.
+
+A variant (or variant value) is an instance of a variant type.
+To construct a variant, you need to specify the name of one of the alternatives,
+plus a value, if that alternative carries a value.
+
+In Curv, we don't have explicitly declared variant types. Instead, variants
+can be constructed directly. A variant with just a name is a symbol.
+A variant with a name and a value is a record with a single field.
     #niladic
     {monadic: a}
     {dyadic: (a,b)}
-and I'll call these "tagged values". A tagged value has a name and an
-optional value.
 
-A tagged value is deconstructed using pattern matching:
+A variant value is queried using pattern matching:
     match [
       #niladic -> [],
       {monadic: a} -> [a],
       {dyadic: (a,b)} -> [a,b],
     ]
 
-I'd like to define a picker that takes an algebraic type as an argument.
+I'd like to define a picker that takes a variant type as an argument.
 It displays a drop-down menu for the tag, plus additional pickers for
 data associated with the current tag value.
-    enum_picker [ alternative, ... ]
+    variant_picker [ alternative, ... ]
 Each alternative is either a symbol, or {tag: {record of pickers}},
 or {tag: [alternative, ...]} if we want an alternate form of nesting.
-The parameter that is bound to an enum_picker has a tagged value that
-must be deconstructed using `match`.
+The parameter that is bound to a variant_picker has a variant value that
+must be queried using `match`.
 
-Algebraic data types introduce a different way to model blending kernels:
+Variant data types introduce a different way to model blending kernels:
     smooth 0.5 .union [a,b]
  vs smooth 0.5 {union: [a,b]}
 
-We could unify these approaches by extending `record!` to take a tagged
+We could unify these approaches by extending `record!` to take a variant
 value as argument, like so:
     record!#foo    => record.foo
     record!{bar:a} => record.bar a
 
-We could also do this in reverse: a piecewise function over tagged values
+We could also do this in reverse: a piecewise function over variant values
 could export field names for each tag.
+
+Note: variant values are abstract: you need to pattern match to retrieve
+the value. There is another kind of tagged value which preserves the operations
+on the value (eg, Cell tagged values, or Curv terms).
 
 Number patterns.
 ----------------
@@ -145,6 +159,24 @@ c. If two functions are compared, an error. If a function and non-function
    or mathematical equivalence.)
 
 We will use 'c'.
+
+ALTERNATIVELY, maybe we should support intensional function equality.
+
+Idris allows you to prove that two functions are equivalent,
+based on them having the same ASTs and non-local bindings, possibly differing
+via eta- and beta-conversion. This is intensional, not extensional equality.
+Shouldn't Curv be at least as expressive?
+
+The Curv optimizer will perform CSE elimination based on some notion of
+expression equivalence. The optimizer will also perform partial evaluation, and
+that at least will be visible in the semantics (via which programs are in
+SubCurv). If CSE somehow adds new opportunities for partial evaluation, then
+CSE's rules of expression equivalence will become visible in the semantics.
+Here's an example of how that could happen:
+    if (expr1 == expr2) E1 else E2
+If expr1 and expr2 are equivalent at compile time, replace this expression with
+E1 (and it doesn't matter if E2 is in SubCurv). If expression equivalence
+is in the semantics, then use it for function equality?
 
 Records vs Maps.
 ----------------

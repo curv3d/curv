@@ -84,6 +84,8 @@ http://github.com/ashima/webgl-noise
 https://github.com/Auburns/FastNoiseSIMD
     SIMD C++ noise library.
 
+GLM has noise functions.
+
 Bitwise Operations in Curv
 --------------------------
 Several GPU hashing algorithms use uint32 bitwise and arithmetic operations.
