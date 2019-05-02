@@ -43,7 +43,10 @@ Shared<const String> readfile(const char* path, const Context& ctx)
     */
     // I'll need to use strerror(errno).
 
-    // TODO: change File_Source to use mmap?
+    // Don't use mmap. If source file is on a remote networked file system,
+    // and network disconnects, you get a SIGBUS when reading file memory.
+    // Handling SIGBUS correctly is extremely complex and platform dependent.
+    // https://www.sublimetext.com/blog/articles/use-mmap-with-care
 
     std::ifstream t;
     t.open(path);
