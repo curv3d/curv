@@ -43,7 +43,7 @@ Operation::Action_Executor::push_value(Value, const Context& cstmt)
     throw Exception(cstmt, "illegal statement type: expecting an action");
 }
 void
-Operation::Action_Executor::push_field(Symbol, Value, const Context& cstmt)
+Operation::Action_Executor::push_field(Symbol_Ref, Value, const Context& cstmt)
 {
     throw Exception(cstmt, "illegal statement type: expecting an action");
 }
@@ -54,7 +54,7 @@ Operation::List_Executor::push_value(Value val, const Context& cx)
     list_.push_back(val);
 }
 void
-Operation::List_Executor::push_field(Symbol, Value, const Context& cstmt)
+Operation::List_Executor::push_field(Symbol_Ref, Value, const Context& cstmt)
 {
     throw Exception(cstmt,
         "illegal statement type: can't add record fields to a list");
@@ -67,7 +67,7 @@ Operation::Record_Executor::push_value(Value, const Context& cstmt)
         "illegal statement type: can't add list elements to a record");
 }
 void
-Operation::Record_Executor::push_field(Symbol name, Value value, const Context& cx)
+Operation::Record_Executor::push_field(Symbol_Ref name, Value value, const Context& cx)
 {
     record_.fields_[name] = value;
 }
@@ -122,7 +122,7 @@ Value
 Dot_Expr::eval(Frame& f) const
 {
     Value basev = base_->eval(f);
-    Symbol id = selector_.eval(f);
+    Symbol_Ref id = selector_.eval(f);
     return basev.at(id, At_Phrase(*base_->syntax_, f));
 }
 
@@ -451,7 +451,7 @@ record_at(const Record& ref, Value index, const Context& cx)
             (*result)[j++] = record_at(ref, i, cx);
         return {result};
     }
-    Symbol a = index.to<const String>(cx);
+    Symbol_Ref a = index.to<const String>(cx);
     return ref.getfield(a, cx);
 }
 #endif
@@ -523,8 +523,8 @@ domain_error:
 Value
 call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
 {
-    static Symbol callkey = "call";
-    static Symbol conskey = "constructor";
+    static Symbol_Ref callkey = "call";
+    static Symbol_Ref conskey = "constructor";
     Value funv = func;
     for (;;) {
         if (!funv.is_ref())
@@ -573,8 +573,8 @@ tail_call_func(
     Value func, Value arg,
     Shared<const Phrase> call_phrase, std::unique_ptr<Frame>& f)
 {
-    static Symbol callkey = "call";
-    static Symbol conskey = "constructor";
+    static Symbol_Ref callkey = "call";
+    static Symbol_Ref conskey = "constructor";
     Value funv = func;
     for (;;) {
         if (!funv.is_ref())
@@ -908,7 +908,7 @@ String_Expr_Base::eval(Frame& f) const
         seg->generate(f, sb);
     return {sb.get_string()};
 }
-Symbol
+Symbol_Ref
 String_Expr_Base::eval_symbol(Frame& f) const
 {
     String_Builder sb;
@@ -995,7 +995,7 @@ Parametric_Expr::eval(Frame& f) const
     Value res = closure->call({default_arg}, *f2);
     auto rec = res.to<Record>(cx);
     auto drec = make<DRecord>();
-    rec->each_field(cx, [&](Symbol id, Value val) -> void {
+    rec->each_field(cx, [&](Symbol_Ref id, Value val) -> void {
         drec->fields_[id] = val;
     });
     // TODO: The `constructor` function should return another parametric record.

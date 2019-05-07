@@ -206,7 +206,7 @@ struct REPL_Executor : public curv::Operation::Executor
             std::cout << val << "\n";
         }
     }
-    void push_field(curv::Symbol name, curv::Value val, const curv::Context&)
+    void push_field(curv::Symbol_Ref name, curv::Value val, const curv::Context&)
     override
     {
         if (!only_output_so_far_is_this_value_.eq(curv::missing)) {
@@ -220,7 +220,7 @@ struct REPL_Executor : public curv::Operation::Executor
     {
         if (!only_output_so_far_is_this_value_.eq(curv::missing)) {
             curv::Value val = only_output_so_far_is_this_value_;
-            static curv::Symbol lastval_key = "_";
+            static curv::Symbol_Ref lastval_key = "_";
             names_[lastval_key] = curv::make<curv::Builtin_Value>(val);
             curv::Shape_Program shape{prog};
             if (shape.recognize(val)) {

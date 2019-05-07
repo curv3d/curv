@@ -12,7 +12,7 @@
 namespace curv {
 
 union Value;
-struct Symbol;
+struct Symbol_Ref;
 struct Context;
 
 /// Base class for the object referenced by a curv reference value.
@@ -302,7 +302,7 @@ public:
     }
     void to_abort [[noreturn]] (const Context&, const char*);
 
-    Value at(Symbol fieldname, const Context& cx) const;
+    Value at(Symbol_Ref fieldname, const Context& cx) const;
 
     /// The copy constructor increments the use_count of a ref value.
     inline Value(const Value& val) noexcept

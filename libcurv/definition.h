@@ -158,7 +158,7 @@ struct Scope : public Environ
     }
 
     virtual Shared<Meaning> single_lookup(const Identifier&) override;
-    virtual slot_t add_binding(Symbol, const Phrase&, unsigned unit);
+    virtual slot_t add_binding(Symbol_Ref, const Phrase&, unsigned unit);
 };
 
 struct Block_Scope : public Scope
@@ -175,7 +175,7 @@ struct Block_Scope : public Scope
             executable_.module_slot_ = make_slot();
     }
 
-    virtual slot_t add_binding(Symbol, const Phrase&, unsigned unit) override;
+    virtual slot_t add_binding(Symbol_Ref, const Phrase&, unsigned unit) override;
 
     virtual void analyse(Definition&) = 0;
     virtual void add_action(Shared<const Phrase>) = 0;

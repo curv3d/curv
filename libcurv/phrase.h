@@ -51,7 +51,7 @@ struct Token_Phrase : public Phrase
 };
 struct Identifier final : public Token_Phrase
 {
-    Symbol symbol_;
+    Symbol_Ref symbol_;
 
     Identifier(const Source& s, Token tok)
     :

@@ -46,7 +46,7 @@ struct SC_Test_Action : public Operation
         At_Phrase cx(*arg_->syntax_, f);
         auto rec = arg.to<Record>(cx);
         Value nil = Value{List::make(0)};
-        rec->each_field(cx, [&](Symbol name, Value val)->void {
+        rec->each_field(cx, [&](Symbol_Ref name, Value val)->void {
             At_Field test_cx{name.c_str(), cx};
             auto func = cast_to_function(val, test_cx);
             if (func == nullptr)

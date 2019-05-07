@@ -74,7 +74,7 @@ struct Module_Base : public Record
             iter_(first ? m.dictionary_->begin() : m.dictionary_->end())
         {
         }
-        std::pair<Symbol,Value> operator*()
+        std::pair<Symbol_Ref,Value> operator*()
         {
             return { iter_->first, m_.get(iter_->second) };
         }
@@ -96,8 +96,8 @@ struct Module_Base : public Record
 
     virtual void print(std::ostream&) const override;
 
-    virtual Value getfield(Symbol, const Context&) const override;
-    virtual bool hasfield(Symbol) const override;
+    virtual Value getfield(Symbol_Ref, const Context&) const override;
+    virtual bool hasfield(Symbol_Ref) const override;
     virtual size_t size() const override { return size_; }
 
     static const char name[];
@@ -126,7 +126,7 @@ struct Module_Base : public Record
                 key_ = i_->first;
                 value_ = rec_.get(i_->second);
             } else
-                key_ = Symbol();
+                key_ = Symbol_Ref();
         }
     };
     virtual std::unique_ptr<Record::Iter> iter() const override

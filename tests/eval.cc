@@ -46,7 +46,7 @@ struct Test_Executor : public Operation::Executor
     {
         out_ << val << "\n";
     }
-    void push_field(Symbol name, Value val, const Context&) override
+    void push_field(Symbol_Ref name, Value val, const Context&) override
     {
         out_ << name << ":" << val << "\n";
     }

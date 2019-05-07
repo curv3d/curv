@@ -32,15 +32,15 @@ GPU_Program::recognize(Value val, const Frag_Export& opts)
 {
     if (location().source().type_ == Source::Type::gpu) {
         // Note: throw exception if val is not a GPU program.
-        static Symbol is_2d_key = "is_2d";
-        static Symbol is_3d_key = "is_3d";
-        static Symbol bbox_key = "bbox";
-        static Symbol shader_key = "shader";
-        static Symbol parameters_key = "parameters";
-        static Symbol name_key = "name";
-        static Symbol value_key = "value";
-        static Symbol label_key = "label";
-        static Symbol config_key = "config";
+        static Symbol_Ref is_2d_key = "is_2d";
+        static Symbol_Ref is_3d_key = "is_3d";
+        static Symbol_Ref bbox_key = "bbox";
+        static Symbol_Ref shader_key = "shader";
+        static Symbol_Ref parameters_key = "parameters";
+        static Symbol_Ref name_key = "name";
+        static Symbol_Ref value_key = "value";
+        static Symbol_Ref label_key = "label";
+        static Symbol_Ref config_key = "config";
 
         At_Program cx(*this);
         auto r = val.to<Record>(cx);

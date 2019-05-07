@@ -188,7 +188,7 @@ Picker::State::State(Picker::Type ptype, Value val, const Context& cx)
     throw Exception{cx, stringify("bad picker type ", int(ptype))};
 }
 
-Uniform_Variable::Uniform_Variable(Symbol name, std::string id, SC_Type sctype)
+Uniform_Variable::Uniform_Variable(Symbol_Ref name, std::string id, SC_Type sctype)
 :
     Reactive_Value(Ref_Value::sty_uniform_variable, sctype),
     name_(std::move(name)),

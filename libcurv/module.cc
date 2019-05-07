@@ -41,7 +41,7 @@ Module_Base::get(slot_t i) const
 }
 
 Value
-Module_Base::getfield(Symbol name, const Context& cx) const
+Module_Base::getfield(Symbol_Ref name, const Context& cx) const
 {
     auto b = dictionary_->find(name);
     if (b != dictionary_->end())
@@ -50,7 +50,7 @@ Module_Base::getfield(Symbol name, const Context& cx) const
 }
 
 bool
-Module_Base::hasfield(Symbol name) const
+Module_Base::hasfield(Symbol_Ref name) const
 {
     auto b = dictionary_->find(name);
     return (b != dictionary_->end());

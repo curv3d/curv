@@ -58,9 +58,9 @@ struct Picker
 // These things are only used when compiling a parametric shape to GLSL.
 struct Uniform_Variable : public Reactive_Value
 {
-    Symbol name_;
+    Symbol_Ref name_;
     std::string identifier_;
-    Uniform_Variable(Symbol name, std::string id, SC_Type);
+    Uniform_Variable(Symbol_Ref name, std::string id, SC_Type);
     virtual void print(std::ostream&) const override;
 };
 

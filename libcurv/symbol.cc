@@ -17,14 +17,14 @@ bool is_C_identifier(const char* p)
     return true;
 }
 
-bool Symbol::is_identifier() const
+bool Symbol_Ref::is_identifier() const
 {
     if (empty())
         return false;
     return is_C_identifier(c_str());
 }
 
-std::ostream& operator<<(std::ostream& out, Symbol a)
+std::ostream& operator<<(std::ostream& out, Symbol_Ref a)
 {
     if (a.is_identifier())
         out << *a;

@@ -20,16 +20,16 @@ TEST(curv, string)
     auto s1 = stringify("sqrt(2)==",sqrt(2));
     ASSERT_STREQ(s1->c_str(), "sqrt(2)==1.4142135623730951");
 
-    Symbol a0("foo");
-    Symbol a1("foo");
+    Symbol_Ref a0("foo");
+    Symbol_Ref a1("foo");
     ASSERT_TRUE(a0 == a1);
-    Symbol a2("bar");
+    Symbol_Ref a2("bar");
     ASSERT_FALSE(a0 == a2);
     ASSERT_TRUE(a2 < a0);
     ASSERT_FALSE(a0 < a2);
     ASSERT_FALSE(a0 < a0);
 
-    Symbol anull;
+    Symbol_Ref anull;
     ASSERT_TRUE(anull.empty());
     ASSERT_FALSE(a0.empty());
 

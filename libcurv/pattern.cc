@@ -145,7 +145,7 @@ struct Predicate_Pattern : public Pattern
 
     bool match(Value arg, Frame& f) const
     {
-        static Symbol callkey = "call";
+        static Symbol_Ref callkey = "call";
         Value val = predicate_expr_->eval(f);
         Value funv = val;
         for (;;) {
@@ -301,7 +301,7 @@ struct Record_Pattern : public Pattern
         // TODO: Rewrite using a Record iterator.
         auto record = value.to<Record>(valcx);
         auto p = fields_.begin();
-        record->each_field(valcx, [&](Symbol name, Value val)->void {
+        record->each_field(valcx, [&](Symbol_Ref name, Value val)->void {
             while (p != fields_.end()) {
                 int cmp = p->first.cmp(name);
                 if (cmp < 0) {
@@ -351,7 +351,7 @@ struct Record_Pattern : public Pattern
             return false;
         auto p = fields_.begin();
         bool success = true;
-        record->each_field(cx, [&](Symbol name, Value val)->void {
+        record->each_field(cx, [&](Symbol_Ref name, Value val)->void {
             while (p != fields_.end()) {
                 int cmp = p->first.cmp(name);
                 if (cmp < 0) {
@@ -395,7 +395,7 @@ struct Record_Pattern : public Pattern
     }
 };
 
-Symbol
+Symbol_Ref
 symbolize(const Phrase& ph, Scope& scope)
 {
     if (auto id = dynamic_cast<const Identifier*>(&ph))
@@ -403,7 +403,7 @@ symbolize(const Phrase& ph, Scope& scope)
     if (auto strph = dynamic_cast<const String_Phrase*>(&ph)) {
         auto val = std_eval(*strph, scope);
         auto str = val.to<const String>(At_Phrase(ph, scope));
-        return Symbol{str};
+        return Symbol_Ref{str};
     }
     throw Exception(At_Phrase(ph, scope),
         "not an identifier or string literal");
@@ -423,7 +423,7 @@ const Identifier*
 identifier_pattern(const Phrase& ph)
 {
     if (auto id = dynamic_cast<const Identifier*>(&ph)) {
-        if (id->symbol_ == Symbol{"_"})
+        if (id->symbol_ == Symbol_Ref{"_"})
             return nullptr;
         else
             return id;
@@ -445,7 +445,7 @@ Shared<Pattern>
 make_pattern(const Phrase& ph, bool mut, Scope& scope, unsigned unitno)
 {
     if (auto id = dynamic_cast<const Identifier*>(&ph)) {
-        if (id->symbol_ == Symbol{"_"})
+        if (id->symbol_ == Symbol_Ref{"_"})
             return make<Skip_Pattern>(share(ph));
         else {
             slot_t slot = scope.add_binding(id->symbol_, ph, unitno);
@@ -494,7 +494,7 @@ make_pattern(const Phrase& ph, bool mut, Scope& scope, unsigned unitno)
             }
             if (auto bin = dynamic_cast<const Binary_Phrase*>(&item)) {
                 if (bin->op_.kind_ == Token::k_colon) {
-                    Symbol name = symbolize(*bin->left_, scope);
+                    Symbol_Ref name = symbolize(*bin->left_, scope);
                     Shared<Pattern> pat;
                     Shared<Phrase> dfl_src = nullptr;
                     if (auto def = dynamic_cast
@@ -561,7 +561,7 @@ record_pattern_default_value(const Pattern& pat, Frame& f)
 
 void
 record_pattern_each_parameter(
-    Closure& call, System& sys, std::function<void(Symbol, Value, Value)> f)
+    Closure& call, System& sys, std::function<void(Symbol_Ref, Value, Value)> f)
 {
     auto frame = Frame::make(call.nslots_, sys, nullptr, nullptr, nullptr);
     auto rpat = dynamic_cast<const Record_Pattern*>(&*call.pattern_);

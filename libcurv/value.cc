@@ -70,7 +70,7 @@ Value::to_abort [[noreturn]] (const Context& cx, const char* type)
 }
 
 Value
-Value::at(Symbol field, const Context& cx) const
+Value::at(Symbol_Ref field, const Context& cx) const
 {
     if (is_ref()) {
         Record* s = dynamic_cast<Record*>(&get_ref_unsafe());

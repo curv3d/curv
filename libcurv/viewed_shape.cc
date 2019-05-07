@@ -69,7 +69,7 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
         // We have a parametric shape.
         auto cparams = make<DRecord>();
         record_pattern_each_parameter(*sh_constructor, shape.system_,
-            [&](Symbol name, Value pred, Value value) -> void {
+            [&](Symbol_Ref name, Value pred, Value value) -> void {
                 auto pred_record = pred.dycast<Record>();
                 if (pred_record && pred_record->hasfield("picker")) {
                     auto picker = pred_record->getfield("picker",cx);

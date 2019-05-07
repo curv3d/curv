@@ -23,17 +23,17 @@ struct Record : public Ref_Value
     Record(int subtype) : Ref_Value(ty_record, subtype) {}
 
     /// Get the value of a named field, throw exception if not defined.
-    virtual Value getfield(Symbol, const Context&) const;
+    virtual Value getfield(Symbol_Ref, const Context&) const;
 
     /// Test if the value contains the named field.
-    virtual bool hasfield(Symbol) const = 0;
+    virtual bool hasfield(Symbol_Ref) const = 0;
 
     virtual size_t size() const = 0;
 
     Shared<List> fields() const;
 
     // visit each field
-    void each_field(const Context&, std::function<void(Symbol,Value)>) const;
+    void each_field(const Context&, std::function<void(Symbol_Ref,Value)>) const;
 
     // compare two record values for equality
     bool equal(const Record&, const Context&) const;
@@ -47,13 +47,13 @@ struct Record : public Ref_Value
     class Iter
     {
     protected:
-        Symbol key_{};
+        Symbol_Ref key_{};
         Value value_{missing};
         virtual void load_value(const Context&) = 0;
     public:
         virtual ~Iter() {}
         bool empty() { return key_.empty(); }
-        Symbol key() { return key_; }
+        Symbol_Ref key() { return key_; }
         Value value(const Context& cx) {
             if (value_.eq(missing)) load_value(cx);
             return value_;
@@ -64,7 +64,7 @@ struct Record : public Ref_Value
     virtual std::unique_ptr<Iter> iter() const = 0;
 };
 
-std::pair<Symbol, Value> value_to_variant(Value, const Context& cx);
+std::pair<Symbol_Ref, Value> value_to_variant(Value, const Context& cx);
 
 inline std::ostream&
 operator<<(std::ostream& out, const Record& rec)
@@ -94,8 +94,8 @@ struct DRecord : public Record
     }
 
     virtual void print(std::ostream&) const override;
-    virtual Value getfield(Symbol, const Context&) const override;
-    virtual bool hasfield(Symbol) const override;
+    virtual Value getfield(Symbol_Ref, const Context&) const override;
+    virtual bool hasfield(Symbol_Ref) const override;
     virtual size_t size() const override { return fields_.size(); }
 
     class Iter : public Record::Iter
@@ -122,7 +122,7 @@ struct DRecord : public Record
                 key_ = i_->first;
                 value_ = i_->second;
             } else
-                key_ = Symbol();
+                key_ = Symbol_Ref();
         }
     };
     virtual std::unique_ptr<Record::Iter> iter() const override

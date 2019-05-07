@@ -13,8 +13,8 @@ namespace curv {
 Shared<const Function>
 cast_to_function(Value funv, const Context& cx)
 {
-    static Symbol callkey = "call";
-    static Symbol conskey = "constructor";
+    static Symbol_Ref callkey = "call";
+    static Symbol_Ref conskey = "constructor";
     for (;;) {
         auto func = funv.dycast<const Function>();
         if (func)

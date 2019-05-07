@@ -115,14 +115,14 @@ struct Operation : public Meaning
         // The Context argument denotes the statement which generated the
         // value or field, not the value or field itself.
         virtual void push_value(Value, const Context&) = 0;
-        virtual void push_field(Symbol, Value, const Context&) = 0;
+        virtual void push_field(Symbol_Ref, Value, const Context&) = 0;
     };
     // Execute statements in a context like a `do` expression,
     // where only pure actions are permitted.
     struct Action_Executor : public Executor
     {
         virtual void push_value(Value, const Context&) override;
-        virtual void push_field(Symbol, Value, const Context&) override;
+        virtual void push_field(Symbol_Ref, Value, const Context&) override;
     };
     // Execute statements within a list comprehension.
     struct List_Executor : public Executor
@@ -130,7 +130,7 @@ struct Operation : public Meaning
         List_Builder& list_;
         List_Executor(List_Builder& list) : list_(list) {}
         virtual void push_value(Value, const Context&) override;
-        virtual void push_field(Symbol, Value, const Context&) override;
+        virtual void push_field(Symbol_Ref, Value, const Context&) override;
     };
     // Execute statements within a record comprehension.
     struct Record_Executor : public Executor
@@ -138,7 +138,7 @@ struct Operation : public Meaning
         DRecord& record_;
         Record_Executor(DRecord& rec) : record_(rec) {}
         virtual void push_value(Value, const Context&) override;
-        virtual void push_field(Symbol, Value, const Context&) override;
+        virtual void push_field(Symbol_Ref, Value, const Context&) override;
     };
 
     // These functions are called during evaluation.
@@ -205,7 +205,7 @@ struct Null_Action : public Operation
 
 struct Symbolic_Ref : public Just_Expression
 {
-    Symbol name_;
+    Symbol_Ref name_;
 
     Symbolic_Ref(Shared<const Identifier> id)
     :
@@ -827,7 +827,7 @@ struct Lambda_Expr : public Just_Expression
     Shared<Operation> body_;
     Shared<Module_Expr> nonlocals_;
     slot_t nslots_;
-    Symbol name_{}; // may be set by Function_Definition::analyse
+    Symbol_Ref name_{}; // may be set by Function_Definition::analyse
     int argpos_ = 0; // may be set by Function_Definition::analyse
 
     Lambda_Expr(
@@ -894,7 +894,7 @@ struct String_Expr_Base : public Just_Expression
     : Just_Expression(std::move(syntax)) {}
 
     virtual Value eval(Frame&) const override;
-    Symbol eval_symbol(Frame&) const;
+    Symbol_Ref eval_symbol(Frame&) const;
     TAIL_ARRAY_MEMBERS(Shared<Segment>)
 };
 using String_Expr = Tail_Array<String_Expr_Base>;
@@ -910,7 +910,7 @@ struct Symbol_Expr
     Shared<const Phrase> syntax() {
         if (id_) return id_; else return string_->syntax_;
     }
-    Symbol eval(Frame& f) const {
+    Symbol_Ref eval(Frame& f) const {
         return id_ ? id_->symbol_ : string_->eval_symbol(f);
     } 
 };

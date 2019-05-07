@@ -58,11 +58,11 @@ BBox::from_value(Value val, const Context& cx)
 bool
 Shape_Program::recognize(Value val)
 {
-    static Symbol is_2d_key = "is_2d";
-    static Symbol is_3d_key = "is_3d";
-    static Symbol bbox_key = "bbox";
-    static Symbol dist_key = "dist";
-    static Symbol colour_key = "colour";
+    static Symbol_Ref is_2d_key = "is_2d";
+    static Symbol_Ref is_3d_key = "is_3d";
+    static Symbol_Ref bbox_key = "bbox";
+    static Symbol_Ref dist_key = "dist";
+    static Symbol_Ref colour_key = "colour";
 
     Value is_2d_val;
     Value is_3d_val;

@@ -21,7 +21,7 @@ struct Function : public Ref_Value
     slot_t nslots_;
 
     // optional name of function
-    Symbol name_{};
+    Symbol_Ref name_{};
 
     // Suppose this function is the result of partial application of a named
     // function. Then this is the # of arguments that were applied to get here,
@@ -119,7 +119,7 @@ struct Lambda : public Ref_Value
     slot_t nslots_; // size of call frame
 
     // optional name of function
-    Symbol name_{};
+    Symbol_Ref name_{};
 
     // Suppose this function is the result of partial application of a named
     // function. Then this is the # of arguments that were applied to get here,

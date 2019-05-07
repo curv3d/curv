@@ -79,7 +79,7 @@ void Dir_Record::print(std::ostream& out) const
     out << "}";
 }
 
-Value Dir_Record::getfield(Symbol sym, const Context& cx) const
+Value Dir_Record::getfield(Symbol_Ref sym, const Context& cx) const
 {
     auto p = fields_.find(sym);
     if (p == fields_.end())
@@ -89,7 +89,7 @@ Value Dir_Record::getfield(Symbol sym, const Context& cx) const
     return p->second.value_;
 }
 
-bool Dir_Record::hasfield(Symbol sym) const
+bool Dir_Record::hasfield(Symbol_Ref sym) const
 {
     return fields_.find(sym) != fields_.end();
 }
@@ -135,7 +135,7 @@ void Dir_Record::Iter::next()
         key_ = i_->first;
         value_ = i_->second.value_;
     } else
-        key_ = Symbol();
+        key_ = Symbol_Ref();
 }
 
 std::unique_ptr<Record::Iter> Dir_Record::iter() const

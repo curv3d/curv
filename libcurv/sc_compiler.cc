@@ -838,7 +838,7 @@ SC_Value Call_Expr::sc_eval(SC_Frame& f) const
             return func->sc_call_expr(*arg_, syntax_, f);
         }
         if (auto r = v.dycast<Record>()) {
-            static Symbol call_key = "call";
+            static Symbol_Ref call_key = "call";
             if (r->hasfield(call_key)) {
                 v = r->getfield(call_key,At_SC_Phrase(func_->syntax_,f));
                 continue;

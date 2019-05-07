@@ -76,7 +76,7 @@ Include_Definition::add_to_scope(Block_Scope& scope)
     unsigned unit = scope.begin_unit(share(*this));
     setter_ = {Include_Setter::make(record->size(), syntax_)};
     size_t i = 0;
-    record->each_field(cx, [&](Symbol name, Value value)->void {
+    record->each_field(cx, [&](Symbol_Ref name, Value value)->void {
         slot_t slot = scope.add_binding(name, *syntax_, unit);
         (*setter_)[i++] = {slot, value};
     });
@@ -105,7 +105,7 @@ Compound_Definition_Base::add_to_scope(Block_Scope& scope)
 }
 
 slot_t
-Scope::add_binding(Symbol name, const Phrase& unitsrc, unsigned unitno)
+Scope::add_binding(Symbol_Ref name, const Phrase& unitsrc, unsigned unitno)
 {
     if (dictionary_.find(name) != dictionary_.end())
         throw Exception(At_Phrase(unitsrc, *parent_),
@@ -124,7 +124,7 @@ Scope::single_lookup(const Identifier& id)
 }
 
 slot_t
-Block_Scope::add_binding(Symbol name, const Phrase& unitsrc, unsigned unitno)
+Block_Scope::add_binding(Symbol_Ref name, const Phrase& unitsrc, unsigned unitno)
 {
     if (dictionary_.find(name) != dictionary_.end())
         throw Exception(At_Phrase(unitsrc, *parent_),
@@ -438,7 +438,7 @@ bad_definition(Definition& def, Environ& env, const char* msg)
         {
             throw Exception(At_Phrase(*unit->syntax_, *parent_), msg_);
         }
-        virtual slot_t add_binding(Symbol, const Phrase&, unsigned) override
+        virtual slot_t add_binding(Symbol_Ref, const Phrase&, unsigned) override
         {
             return 0;
         }

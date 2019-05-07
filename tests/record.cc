@@ -24,20 +24,20 @@ TEST(curv, record)
     At_System cx{sys};
 
     auto r = make<DRecord>();
-    r->fields_[Symbol{"a"}] = Value{1.0};
-    r->fields_[Symbol{"b"}] = Value{true};
+    r->fields_[Symbol_Ref{"a"}] = Value{1.0};
+    r->fields_[Symbol_Ref{"b"}] = Value{true};
     ASSERT_TRUE(prints_as(Value{r}, "{a:1,b:true}"));
     auto i = r->iter();
 
     // at first field
     ASSERT_FALSE(i->empty());
-    ASSERT_EQ(i->key(), Symbol{"a"});
+    ASSERT_EQ(i->key(), Symbol_Ref{"a"});
     ASSERT_TRUE(i->value(cx).equal({1.0},cx));
     i->next();
 
     // at second field
     ASSERT_FALSE(i->empty());
-    ASSERT_EQ(i->key(), Symbol{"b"});
+    ASSERT_EQ(i->key(), Symbol_Ref{"b"});
     ASSERT_TRUE(i->value(cx).equal({true},cx));
     i->next();
 

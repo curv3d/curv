@@ -10,7 +10,7 @@ namespace curv {
 const char Record::name[] = "record";
 
 Value
-Record::getfield(Symbol field, const Context& cx) const
+Record::getfield(Symbol_Ref field, const Context& cx) const
 {
     throw Exception(cx, stringify(*this," does not contain field .",field));
 }
@@ -31,7 +31,7 @@ Record::equal(const Record& rhs, const Context& cx) const
 
 void
 Record::each_field(
-    const Context& cx, std::function<void(Symbol,Value)> visitor) const
+    const Context& cx, std::function<void(Symbol_Ref,Value)> visitor) const
 {
     for (auto f = iter(); !f->empty(); f->next())
         visitor(f->key(), f->value(cx));
@@ -49,14 +49,14 @@ Record::fields() const
     return {std::move(list)};
 }
 
-std::pair<Symbol, Value>
+std::pair<Symbol_Ref, Value>
 value_to_variant(Value val, const Context& cx)
 {
     Shared<Record> rec = val.to<Record>(cx);
     if (rec->size() != 1)
         throw Exception(cx, stringify(val, " is not a variant"));
     auto i = rec->iter();
-    return std::pair<Symbol,Value>{i->key(), i->value(cx)};
+    return std::pair<Symbol_Ref,Value>{i->key(), i->value(cx)};
 }
 
 void
@@ -74,7 +74,7 @@ DRecord::print(std::ostream& out) const
 }
 
 Value
-DRecord::getfield(Symbol name, const Context& cx) const
+DRecord::getfield(Symbol_Ref name, const Context& cx) const
 {
     auto fp = fields_.find(name);
     if (fp != fields_.end())
@@ -83,7 +83,7 @@ DRecord::getfield(Symbol name, const Context& cx) const
 }
 
 bool
-DRecord::hasfield(Symbol name) const
+DRecord::hasfield(Symbol_Ref name) const
 {
     auto fp = fields_.find(name);
     return (fp != fields_.end());
