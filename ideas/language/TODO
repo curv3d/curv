@@ -594,7 +594,9 @@ Eg,
 Eg,
   make_shape{is_3d:, ...}
 
-In the Symbol proposal, I would use #Nothing and {Just: 42} instead.
+In the Symbol/Variants proposal, I would use
+  align{x: #centre, z: {above:0}}
+  #null and {just: 42}
 
 ## Prefix Sections
 This is inspired by 'sections' from Haskell.
