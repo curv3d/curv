@@ -7,6 +7,9 @@ install:
 	mkdir -p release
 	cd release; cmake -DCMAKE_BUILD_TYPE=Release ..
 	cd release; $(MAKE) install
+upgrade:
+	git pull origin master
+	git submodule update --init
 uninstall:
 	mkdir -p release
 	cd release; cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -31,4 +34,4 @@ valgrind-full:
 	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
 	cd debug; $(MAKE) tester
 	cd tests; valgrind --leak-check=full ../debug/tester
-.PHONY: release install test debug clean valgrind valgrind-full
+.PHONY: release install upgrade uninstall test debug clean valgrind valgrind-full

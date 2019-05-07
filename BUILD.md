@@ -1,7 +1,7 @@
 **Warning** to **git** users:
 This project uses `git submodule`. Use:
 * `git clone --recursive https://github.com/curv3d/curv` to clone the repo.
-* `git submodule update --init` after pulling updates.
+* `git submodule update --init` after pulling updates (or use `make update`)
 
 **Warning** to **cmake** users:
 This project uses `make` as a wrapper around `cmake`.
@@ -50,17 +50,20 @@ You can use gcc 5.4 (or later), or clang 3.4 (or later).
   * `make install`
 
 ## Upgrade to a new version of Curv
-* Open the Terminal application and run the following commands:
-  * `cd ~/curv`
-  * `git pull origin master`
-  * `git submodule update --init`
-  * `make`
-  * `make install` (or `sudo make install` on Linux)
+Open the Terminal application and run the following commands:
+ * `cd ~/curv`
+ * `make upgrade`
+ * `make`
+ * `make install` (or `sudo make install` on Linux)
+
+Note that `make upgrade` is equivalent to:
+ * `git pull origin master`
+ * `git submodule update --init`
 
 ## Uninstall Curv
-* Open the Terminal application and run the following commands:
-  * `cd ~/curv`
-  * `make uninstall` (or `sudo make uninstall` on Linux)
+Open the Terminal application and run the following commands:
+ * `cd ~/curv`
+ * `make uninstall` (or `sudo make uninstall` on Linux)
 
 # Testing
 ## A simple test
