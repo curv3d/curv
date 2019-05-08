@@ -49,36 +49,61 @@ Getting Started
 Hardware Requirements
 =====================
 Two platforms are currently supported: Linux and Macintosh. I currently test
-on Ubuntu LTS and MacOS 10.11. Windows support is planned but not scheduled.
+on Ubuntu LTS and MacOS 10.11. Windows 10 with WSL might work, but isn't tested.
 
 Curv uses OpenGL 3.3.
-It requires direct access to a GPU made by Intel, AMD or Nvidia, using the
-vendor supplied GPU driver.
-On Macintosh, you just need MacOS 10.7 or later.
-On Linux, the GPU needs to be modern enough to be supported
-by the latest driver version from the GPU vendor. Any GPU from 2012 or later
-will work. Some older GPUs may work: check the list of supported hardware for the driver.
+The recommended configuration is a GPU made by Intel, AMD or Nvidia,
+using the vendor supplied GPU driver.
+* On Macintosh, you need MacOS 10.7 or later.
+  If your system supports Metal, Curv is fully supported.
+  On a pre-Metal system (hardware from 2011 or earlier),
+  some Curv programs may not work correctly.
+* On Linux, the GPU needs to be modern enough to be supported
+  by the latest driver version from the GPU vendor. Any GPU from 2012 or later
+  will work. Some older GPUs may work: check the list of supported hardware for the driver.
+* On Windows 10, you should be able to use WSL to run Curv.
+  I'm waiting for a volunteer to confirm this.
+* Raspberry Pi is not yet supported. Currently, Raspberry Pi only supports OpenGL 2.0,
+  due to an outdated GPU driver, and Curv needs OpenGL 3.3.
+  Eric Anholt of Broadcom is developing an open source OpenGL driver based on Mesa
+  that will fully support Curv on Raspberry Pi (https://gitlab.freedesktop.org/anholt).
+  I'm waiting for this driver.
 
 * On Linux, you have 3 choices:
 
-  * Nvidia has the best GPU hardware. You will need to use the Nvidia closed source driver,
-    not the open source Nouveau driver. Any GPU supported by the latest Nvidia driver will
+  * Nvidia has the best GPU hardware. I recommend the Nvidia closed source driver,
+    not the open source Nouveau driver. The Nouveau driver is notoriously slow,
+    incomplete, and buggy, and Curv runs poorly on this driver.
+    Any GPU supported by the latest Nvidia driver will
     work with Curv. Eg, see this supported hardware list:
     https://www.geforce.com/drivers/results/137276
   * An Intel GPU, using the Intel supplied open source driver (based on Mesa).
-    Intel is your choice if you want to use a driver that is free software.
+    Intel is your best choice if you want to use a driver that is free software.
     Any GPU supported by the latest Intel driver will work with Curv.
     You need Intel HD Graphics -- earlier GPU technology is not supported.
   * An AMD GPU, using the AMDGPU-PRO (closed source) driver,
     which is only officially supported on Ubuntu LTS, Red Hat EL (not Fedora),
-    and SUSE. Unfortunately, the open source AMD driver (based on Mesa) is too buggy
-    to work with Curv right now. Your choice of Linux distro is very restricted with AMD.
+    and SUSE. Unfortunately, the open source AMD driver (based on Mesa) has
+    [a bug](https://bugs.freedesktop.org/show_bug.cgi?id=105371)
+    which prevents some Curv programs from running.
+    If you avoid the Mesa driver, then your choice of Linux distro is very restricted with AMD.
 
 * If Curv is invoked within a VNC session, then it might not have direct
-  access to GPU hardware. Curv requires a GPU accelerated VNC server.
+  access to GPU hardware (a slow software renderer is used instead of the GPU).
+  Curv requires a GPU accelerated VNC server.
   Try `TurboVNC`_ combined with `VirtualGL`_.
 * If Curv is run inside a VM, then it might not have direct access to the GPU.
   You need to ensure that the VM is GPU accelerated.
+
+Why is Curv so picky about GPU hardware, when [some old 3D software] runs just fine?
+The answer is that old 3D software relies primarily on triangle meshes for representing
+and rendering 3D shapes, whereas Curv uses signed distance fields to represent shapes.
+Signed distance fields are a powerful, hot new technology that is only made practical
+by modern GPUs.
+Curv uses shader programs to render shapes, and uses larger and more complex shader
+programs than [some old 3D software]. This places a heavy and atypical load on
+the GPU driver and hardware, which old hardware and old, outdated driver software
+may not be prepared to deal with.
 
 .. _`TurboVNC`: https://turbovnc.org/About/Introduction
 .. _`VirtualGL`: https://virtualgl.org/About/Introduction
