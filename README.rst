@@ -54,6 +54,7 @@ on Ubuntu LTS and MacOS 10.11. Windows 10 with WSL might work, but isn't tested.
 Curv uses OpenGL 3.3.
 The recommended configuration is a GPU made by Intel, AMD or Nvidia,
 using the vendor supplied GPU driver.
+
 * On Macintosh, you need MacOS 10.7 or later.
   If your system supports Metal, Curv is fully supported.
   On a pre-Metal system (hardware from 2011 or earlier),
