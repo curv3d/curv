@@ -51,7 +51,7 @@ Hardware Requirements
 Two platforms are currently supported: Linux and Macintosh. I currently test
 on Ubuntu LTS and MacOS 10.11. Windows support is planned but not scheduled.
 
-Curv uses OpenGL 3.2.
+Curv uses OpenGL 3.3.
 It requires direct access to a GPU made by Intel, AMD or Nvidia, using the
 vendor supplied GPU driver.
 On Macintosh, you just need MacOS 10.7 or later.
