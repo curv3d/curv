@@ -11,6 +11,7 @@ To view a shape defined by a Curv program without editing the file,
 just type ``curv myshape.curv``. For example::
 
   $ curv examples/shreks_donut.curv
+  3D shape 75.3982×75.3982×25.1327
   **a graphics window opens, displaying the shape**
 
 **Live Editing Mode (**\ ``curv -le``\ **)**
@@ -44,6 +45,7 @@ before the ``curv`` command will exit.]
   curv> 2+2
   4
   curv> cube
+  3D shape 2×2×2
   **a graphics window opens, displaying the shape**
   curv>
 
