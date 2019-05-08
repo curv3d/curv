@@ -1,8 +1,4 @@
 # Parametric Shapes
-2018 Dec 4: First public preview of the Parametric Shape feature.
-This is an experimental feature that will change based on feedback,
-testing and bug fixes.
-
 You can now create parametric shapes, which contain named parameters bound
 to GUI widgets (like sliders), that you can manipulate in the Viewer window.
 The shape animates in real time as you change parameter values.
@@ -40,6 +36,11 @@ Each `<parameter>` has the form:
 ```
 A *picker* expression specifies the type and range of values of the parameter,
 and also specifies what kind of value picker widget is used in the GUI.
+
+Since the `<identifier>` appears as a label in the GUI, we now support
+quoted identifiers, which can contain spaces and ASCII punctuation.
+For example, `'hello world'` is a quoted identifier, legal in any situation
+where a normal identifier is legal.
 
 Here are the currently supported picker expressions:
 * `checkbox` -- A boolean parameter (true or false), represented by
@@ -83,10 +84,6 @@ a GLSL shader program for execution on the GPU. This means that only a restricte
 subset of Curv may be used. Right now, there are too many limitations. The
 implementation is not yet complete.
 
-In one case, I saw a performance hit for adding shape parameters. This may be
-dependent on the quality of the GPU driver. A better GLSL code generator
-would address the problem.
-
 There is no way for a library function to take a parametric shape as an argument,
 add more GUI parameters, and return an extended parametric shape as the result.
 
@@ -109,15 +106,6 @@ Here are some ideas for new picker types:
   visualized as a direction in 3D space. As seen in the AntTweakBar widget library.
 * 3D rotation -- a 3D picker widget that lets you specify a 3D rotation,
   encoded as a quaternion. As seen in the AntTweakBar widget library.
-
-There is a half implemented feature that lets you specify a verbose parameter name
-string, with embedded spaces, for display in the GUI, which is separate from
-the parameter variable name that is used in the body of the `parametric` expression.
-It looks like this:
-```
-parametric "size of cube": n :: slider(1,5) = 3; in cube n
-```
-Finish implementing this.
 
 Make the GUI look more beautiful and have a more intuitive UI.
 Should I consider using a different widget library?

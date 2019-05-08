@@ -277,6 +277,29 @@ Scanner::get_token()
 
     // recognize remaining tokens
     switch (*p++) {
+    case '\'':
+        tok.kind_ = Token::k_ident;
+        ++p;
+        while (p < last) {
+            if (*p == '\'') {
+                ++p;
+                goto success;
+            }
+            if (*p == '$') {
+                ++p;
+                if (p < last && (*p == '-' || *p == '.')) {
+                    ++p;
+                    continue;
+                }
+                goto error;
+            }
+            if (*p >= ' ' && *p <= '~') {
+                ++p;
+                continue;
+            }
+            break;
+        }
+        goto error;
     case '(':
         tok.kind_ = Token::k_lparen;
         goto success;
@@ -344,9 +367,6 @@ Scanner::get_token()
         goto success;
     case '^':
         tok.kind_ = Token::k_power;
-        goto success;
-    case '\'':
-        tok.kind_ = Token::k_apostrophe;
         goto success;
     case '`':
         tok.kind_ = Token::k_backtick;

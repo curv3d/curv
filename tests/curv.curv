@@ -459,5 +459,8 @@ assert(
     [do 1 in 2] == [1,2]
 );
 
+let 'a'= {'foo bar'=0;'baz'=1};
+in assert(strcat[a]=="{baz:1,'foo bar':0}");
+
 // script return value:
 in null

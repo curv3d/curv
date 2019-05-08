@@ -87,7 +87,6 @@ struct Token
         k_comma,
         k_semicolon,
         k_colon,
-        k_apostrophe,       ///! `'`
         k_backtick,         ///! `
         k_at,               ///! `@` operator
         k_right_arrow,      ///! `->` operator

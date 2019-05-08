@@ -30,6 +30,12 @@ private:
     using Base = Shared<const String>;
 public:
     using Shared<const String>::Shared;
+
+    inline Symbol_Ref()
+    :
+        Base()
+    {
+    }
     inline Symbol_Ref(const char* str)
     :
         Base(make_string(str))
@@ -42,17 +48,15 @@ public:
     :
         Base(str)
     {}
+    // Construct a symbol from an identifier token, which may be quoted.
+    Symbol_Ref(Range<const char*>, bool);
+
     inline Symbol_Ref& operator=(Symbol_Ref a2)
     {
         Base::operator=(a2);
         return *this;
     }
 
-    inline Symbol_Ref()
-    :
-        Base()
-    {
-    }
     bool empty() const noexcept
     {
         return this->get() == nullptr;

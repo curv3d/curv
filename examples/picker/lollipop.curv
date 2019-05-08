@@ -1,13 +1,11 @@
-// This is experimental syntax for declaring parameters that are bound
-// to graphical sliders in the Viewer window. It may change.
-
 parametric
-    Diameter: diam :: slider(.5, 2) = 1;
-    "Stick Length": len :: slider(2, 8) = 4;
-    Colour: c :: colour_picker = red;
+    Diameter :: slider(.5, 2) = 1;
+    'Stick Length' :: slider(2, 8) = 4;
+    Colour :: colour_picker = red;
 in
 union(candy, stick)
 where (
-    candy = sphere diam >> colour c;
-    stick = cylinder {h: len, d: diam/8} >> move(0,0,-len/2);
+    candy = sphere Diameter >> colour Colour;
+    stick = cylinder {h: 'Stick Length', d: Diameter/8}
+            >> move [0, 0, -'Stick Length'/2];
 )

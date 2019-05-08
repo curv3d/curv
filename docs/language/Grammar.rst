@@ -69,29 +69,35 @@ precedence and ``postfix`` being the highest precedence::
     | postfix '.' primary
 
   primary ::= identifier | numeral | string | parens | brackets | braces
-    identifier ::= /[a-zA-Z_] [a-zA-Z_0-9]*/, except for reserved words
+
+  identifier ::= plain_id | quoted_id
+    plain_id ::= /[a-zA-Z_] [a-zA-Z_0-9]*/, except for reserved words
       reserved_word ::= '_' | 'by' | 'do' | 'else' | 'for' | 'if' | 'in'
         | 'include' | 'let' | 'parametric' | 'var' | 'where' | 'while'
+    quoted_id ::= /['] id_segment* [']/
+      id_segment ::= plain_char | id_escape
+      plain_char ::= /[space or printable ASCII character, except ' or $]/
+      id_escape ::= /'$.'/ | /'$-'/
 
-    numeral ::= hexnum | mantissa | /mantissa [eE] [+-]? digits/
-      mantissa ::= /digits/ | /'.' digits/ | /digits '.' digits/
-      digits ::= /[0-9]+/
-      hexnum ::= /'0x' [0-9a-fA-F]+/
+  numeral ::= hexnum | mantissa | /mantissa [eE] [+-]? digits/
+    mantissa ::= /digits/ | /'.' digits/ | /digits '.' digits/
+    digits ::= /[0-9]+/
+    hexnum ::= /'0x' [0-9a-fA-F]+/
 
-    string ::= /'"' segment* '"'/
-      segment ::= /[white space or printable ASCII character, except for " or $]+/
-        | /'$.'/
-        | /'$='/
-        | /'${' list '}'/
-        | /'$[' list ']'/
-        | /'$(' list ')'/
-        | /'$' identifier/
-        | /newline (space|tab)* '|'/
-        | /newline (space|tab)*/ followed by /'"'/
+  string ::= /'"' segment* '"'/
+    segment ::= /[white space or printable ASCII character, except for " or $]+/
+      | /'$.'/
+      | /'$='/
+      | /'${' list '}'/
+      | /'$[' list ']'/
+      | /'$(' list ')'/
+      | /'$' identifier/
+      | /newline (space|tab)* '|'/
+      | /newline (space|tab)*/ followed by /'"'/
 
-    parens ::= '(' list ')'
-    brackets ::= '[' list ']'
-    braces ::= '{' list '}'
+  parens ::= '(' list ')'
+  brackets ::= '[' list ']'
+  braces ::= '{' list '}'
 
   C style comments, either '//' to end of line, or '/*'...'*/'
 

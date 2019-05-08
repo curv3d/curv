@@ -116,7 +116,6 @@ void color_input(std::string const& context, replxx::Replxx::colors_t& colors, v
         case Token::k_quote:
         case Token::k_string_segment:
         case Token::k_char_escape:
-        case Token::k_apostrophe:
         case Token::k_backtick:
           col = Color::BRIGHTGREEN;
           break;

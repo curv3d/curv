@@ -35,10 +35,9 @@ Each ``<parameter>`` has the form::
 
     <identifier> :: <picker> = <initial-value>;
 
-You can optionally specify a label string, which is shown in the GUI
-in place of the identifier::
-
-    "label string" : <identifier> :: <picker> = <initial-value>;
+The ``<identifier>`` is displayed in the GUI as a label string.
+If you want to include spaces or punctuation in the label, you can use a quoted
+identifier, eg ``'Body Colour'`` instead of ``Body_Colour``.
 
 A **picker** expression specifies the type and range of values of the parameter,
 and also specifies what kind of value picker widget is used in the GUI.

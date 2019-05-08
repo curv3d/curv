@@ -24,12 +24,53 @@ bool Symbol_Ref::is_identifier() const
     return is_C_identifier(c_str());
 }
 
+Shared<const String> token_to_symbol(Range<const char*> str)
+{
+    if (str[0] == '\'') {
+        // parse the quoted identifier
+        assert(str.size() >= 2);
+        assert(str[str.size()-1] == '\'');
+        String_Builder sb;
+        for (const char* p = &str[1]; *p != '\''; ++p) {
+            if (*p == '$') {
+                ++p;
+                if (*p == '-')
+                    sb << '\'';
+                else if (*p == '.')
+                    sb << '$';
+            } else
+                sb << *p;
+        }
+        return sb.get_string();
+    } else {
+        return make_string(str);
+    }
+}
+
+// Construct a symbol from an identifier token, which may be quoted.
+Symbol_Ref::Symbol_Ref(Range<const char*> str, bool)
+:
+    Base(token_to_symbol(str))
+{
+}
+
 std::ostream& operator<<(std::ostream& out, Symbol_Ref a)
 {
     if (a.is_identifier())
         out << *a;
-    else
-        out << a.to_value();
+    else {
+        out << '\'';
+        for (const char* s = a.c_str(); *s != '\0'; ++s) {
+            char c = *s;
+            if (c == '$')
+                out << "$.";
+            else if (c == '\'')
+                out << "$-";
+            else
+                out << c;
+        }
+        out << '\'';
+    }
     return out;
 }
 
