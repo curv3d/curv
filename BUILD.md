@@ -66,6 +66,37 @@ Open the Terminal application and run the following commands:
  * `make uninstall` (or `sudo make uninstall` on Linux)
 
 # Testing
-## A simple test
+Here are some simple tests to ensure that Curv is working correctly.
+Open the Terminal application and type these commands.
+The `$` represents your shell prompt, and the expected command output is shown.
 
-Run `curv -le myshape.curv` from a command line. It should open and editor window, type `cube` and then save the file. A window should open showing a cube that you can drag to interact with. The original console will give error messages and such.
+1. Evaluate an arithmetic expression:
+   ```
+   $ curv -x 2+2
+   4
+   ```
+
+2. Display a circle (2D graphics):
+   ```
+   $ curv -x circle
+   2D shape 2×2
+   ** a graphics window opens, displaying a yellow circle **
+   ```
+   If the graphics window could not be opened, an error message should be displayed.
+   If you can't see the graphics window, make sure it is not behind another window.
+   If there is a problem with the GPU driver, then the graphics window should still open,
+   but it may turn black or display garbage.
+
+3. Display a cube (3D graphics):
+   ```
+   $ curv -x cube
+   3D shape 2×2×2
+   ** a graphics window opens, displaying a yellow cube **
+   ```
+
+4. Run Curv in "live editing" mode:
+   * Type the following command: `curv -le myshape.curv`
+   * A text editor window will open (`gedit`). If you can't see this window, make sure it isn't behind another window.
+   * Enter the word `cube` into the text editor. Save the file.
+   * A graphics window should open displaying a yellow cube. You can rotate and zoom it using the mouse or trackpad.
+   * If there is an error in your program, it will be displayed in the original terminal window.
