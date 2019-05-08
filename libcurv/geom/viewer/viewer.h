@@ -67,7 +67,7 @@ struct Viewer
 
     /*--- PARAMETER STATE, can set before window is opened ---*/
     Viewer_Config config_;
-    glm::ivec4 window_pos_and_size_{0.,0.,500.,500.};
+    glm::ivec2 window_size_{500, 500}; // initial window size
     bool headless_{false};
 
     /*--- INTERNAL STATE ---*/
@@ -76,7 +76,9 @@ struct Viewer
     Shader shader_{};
     std::string vertSource_{};
     GLFWwindow* window_ = nullptr;
-    glm::ivec4 viewport_;
+    bool have_window_pos_ = false;
+    glm::ivec2 window_pos_;
+    glm::ivec2 viewport_; // window size in screen coordinates
     float fPixelDensity_ = 1.0;
     Vbo* vbo_ = nullptr;
     double current_time_ = 0.0;
@@ -112,7 +114,7 @@ struct Viewer
     Mouse mouse_;
 
     // INTERNAL FUNCTIONS
-    void initGL(glm::ivec4 &_viewport, bool _headless = false);
+    void initGL();
     void setup();
     void onKeyPress(int, int);
     void onMouseMove(double, double);

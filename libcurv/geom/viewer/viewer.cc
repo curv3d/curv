@@ -105,7 +105,7 @@ void Viewer::open()
         reset_view(home);
 
         // Initialize openGL context
-        initGL(window_pos_and_size_, headless_);
+        initGL();
 
         // Start working on the GL context
         setup();
@@ -272,10 +272,8 @@ bool Viewer::draw_frame()
 void Viewer::close()
 {
     if (is_open()) {
-        //glfwGetWindowPos(window_,
-        //    &window_pos_and_size_.x, &window_pos_and_size_.y);
-        glfwGetWindowSize(window_,
-            &window_pos_and_size_.w, &window_pos_and_size_.z);
+        //glfwGetWindowPos(window_, &window_pos_.x, &window_pos_.y);
+        glfwGetWindowSize(window_, &window_size_.x, &window_size_.y);
         onExit();
     }
 }
@@ -518,7 +516,7 @@ MessageCallback(
     if (severity == GL_DEBUG_SEVERITY_HIGH) ++viewer->num_errors_;
 }
 
-void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
+void Viewer::initGL()
 {
     glfwSetErrorCallback([](int err, const char* msg)->void {
         std::cerr << "GLFW error 0x"<<std::hex<<err<<std::dec<<": "<<msg<<"\n";
@@ -530,12 +528,13 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
 
     // Set window and context parameters.
     glfw_set_context_parameters();
-    if (_headless) {
+    if (headless_) {
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     }
 
     // Create window, create OpenGL context, load OpenGL library.
-    window_ = glfwCreateWindow(_viewport.z, _viewport.w, appTitle, NULL, NULL);
+    window_ = glfwCreateWindow(window_size_.x, window_size_.y, appTitle,
+        NULL, NULL);
     if(!window_) {
         glfwTerminate();
         std::cerr << "ABORT: GLFW create window failed" << std::endl;
@@ -565,8 +564,13 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
 
     glfwSetWindowUserPointer(window_, (void*)this);
 
-    setWindowSize(_viewport.z, _viewport.w);
-    glfwSetWindowPos(window_, _viewport.x, _viewport.y);
+    setWindowSize(window_size_.x, window_size_.y);
+    if (!have_window_pos_) {
+        glfwGetWindowPos(window_, &window_pos_.x, &window_pos_.y);
+        have_window_pos_ = true;
+    } else {
+        glfwSetWindowPos(window_, window_pos_.x, window_pos_.y);
+    }
 
     // Initialize ImGUI
     IMGUI_CHECKVERSION();
@@ -636,10 +640,10 @@ void Viewer::initGL(glm::ivec4 &_viewport, bool _headless)
     glfwSetWindowPosCallback(window_,
         [](GLFWwindow* win, int x, int y) {
             Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
-            self->window_pos_and_size_.x = x;
-            self->window_pos_and_size_.y = y;
+            self->window_pos_.x = x;
+            self->window_pos_.y = y;
             if (self->fPixelDensity_ != self->getPixelDensity()) {
-                self->setWindowSize(self->viewport_.z, self->viewport_.w);
+                self->setWindowSize(self->viewport_.x, self->viewport_.y);
             }
         });
 }
@@ -648,7 +652,7 @@ void Viewer::onMouseMove(double x, double y)
 {
     // Convert x,y to pixel coordinates relative to viewport.
     // (0,0) is lower left corner.
-    y = viewport_.w - y;
+    y = viewport_.y - y;
     x *= fPixelDensity_;
     y *= fPixelDensity_;
     // mouse_.velocity is the distance the mouse cursor has moved
@@ -666,8 +670,8 @@ void Viewer::onMouseMove(double x, double y)
     mouse_.y = y;
     if (mouse_.x < 0) mouse_.x = 0;
     if (mouse_.y < 0) mouse_.y = 0;
-    if (mouse_.x > viewport_.z * fPixelDensity_) mouse_.x = viewport_.z * fPixelDensity_;
-    if (mouse_.y > viewport_.w * fPixelDensity_) mouse_.y = viewport_.w * fPixelDensity_;
+    if (mouse_.x > viewport_.x * fPixelDensity_) mouse_.x = viewport_.x * fPixelDensity_;
+    if (mouse_.y > viewport_.y * fPixelDensity_) mouse_.y = viewport_.y * fPixelDensity_;
 
     /*
      * TODO: the following code would best be moved into the
@@ -744,8 +748,8 @@ void Viewer::closeGL()
 
 void Viewer::setWindowSize(int _width, int _height)
 {
-    viewport_.z = _width;
-    viewport_.w = _height;
+    viewport_.x = _width;
+    viewport_.y = _height;
     fPixelDensity_ = getPixelDensity();
     glViewport(0.0, 0.0, (float)getWindowWidth(), (float)getWindowHeight());
 }
@@ -760,12 +764,12 @@ float Viewer::getPixelDensity()
 
 int Viewer::getWindowWidth()
 {
-    return viewport_.z*fPixelDensity_;
+    return viewport_.x*fPixelDensity_;
 }
 
 int Viewer::getWindowHeight()
 {
-    return viewport_.w*fPixelDensity_;
+    return viewport_.y*fPixelDensity_;
 }
 
 }}} // namespace

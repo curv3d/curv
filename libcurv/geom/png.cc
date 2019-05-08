@@ -77,8 +77,8 @@ export_png(
      */
 
     viewer::Viewer v;
-    v.window_pos_and_size_.z = p.size.x;
-    v.window_pos_and_size_.w = p.size.y;
+    v.window_size_.x = p.size.x;
+    v.window_size_.y = p.size.y;
     v.headless_ = true;
     v.config_.verbose_ = p.verbose_;
     v.set_shape_no_hud(shape, opts);
