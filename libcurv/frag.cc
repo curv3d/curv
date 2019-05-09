@@ -121,6 +121,8 @@ void export_frag_3d(
             << opts.bg_.x << ","
             << opts.bg_.y << ","
             << opts.bg_.z << ");\n"
+        "const int ray_max_iter = " << opts.ray_max_iter_ << ";\n"
+        "const float ray_max_depth = " << opts.ray_max_depth_ << ";\n"
         "#ifdef GLSLVIEWER\n"
         "uniform vec3 u_eye3d;\n"
         "uniform vec3 u_centre3d;\n"
@@ -160,7 +162,7 @@ void export_frag_3d(
        "vec4 castRay( in vec3 ro, in vec3 rd, float time )\n"
        "{\n"
        "    float tmin = 0.0;\n" // was 1.0
-       "    float tmax = 400.0;\n"
+       "    float tmax = ray_max_depth;\n"
        "   \n"
        // TODO: implement bounding volume. If I remove the 'if(t>tmax)break'
        // check, then `tetrahedron` breaks. The hard coded tmax=200 fails for
@@ -174,7 +176,7 @@ void export_frag_3d(
        //"    \n"
        "    float t = tmin;\n"
        "    vec3 c = vec3(-1.0,-1.0,-1.0);\n"
-       "    for (int i=0; i<200; i++) {\n"
+       "    for (int i=0; i<ray_max_iter; i++) {\n"
        "        float precis = 0.0005*t;\n"
        "        vec4 p = vec4(ro+rd*t,time);\n"
        "        float d = dist(p);\n"

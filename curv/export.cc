@@ -116,6 +116,7 @@ void export_curv(Value value,
 
 void describe_frag_options(std::ostream& out, const char*prefix)
 {
+  Frag_Export opts;
   out
   << prefix <<
   "-O aa=<supersampling factor for antialiasing> (1 means disabled)\n"
@@ -125,6 +126,12 @@ void describe_frag_options(std::ostream& out, const char*prefix)
   "-O fdur=<frame duration, in seconds> : Used with -Otaa and -Oanimate\n"
   << prefix <<
   "-O bg=<background colour>\n"
+  << prefix <<
+  "-O ray_max_iter=<maximum # of ray-march iterations> (default "
+    << opts.ray_max_iter_ << ")\n"
+  << prefix <<
+  "-O ray_max_depth=<maximum ray-marching depth> (default "
+    << opts.ray_max_depth_ << ")\n"
   ;
 }
 void describe_frag_opts(std::ostream& out)
@@ -151,6 +158,14 @@ bool parse_frag_opt(
     }
     if (p.first == "bg") {
         opts.bg_ = params.to_vec3(p);
+        return true;
+    }
+    if (p.first == "ray_max_iter") {
+        opts.ray_max_iter_ = params.to_int(p, 1, INT_MAX);
+        return true;
+    }
+    if (p.first == "ray_max_depth") {
+        opts.ray_max_depth_ = params.to_double(p);
         return true;
     }
     return false;

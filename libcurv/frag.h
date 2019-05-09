@@ -22,6 +22,10 @@ struct Frag_Export
     double fdur_ = 0.04; // 25 FPS
     // background colour, defaults to white
     glm::dvec3 bg_ = glm::dvec3(1.0,1.0,1.0);
+    // max # of iterations in the ray-marcher
+    int ray_max_iter_ = 200;
+    // max ray-marching distance
+    double ray_max_depth_ = 400.0;
 };
 
 void export_frag(const Shape_Program&, const Frag_Export&, std::ostream&);
