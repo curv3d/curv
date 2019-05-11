@@ -84,8 +84,7 @@ using the vendor supplied GPU driver.
     You need Intel HD Graphics -- earlier GPU technology is not supported.
   * An AMD GPU, using the AMDGPU-PRO (closed source) driver,
     which is only officially supported on Ubuntu LTS, Red Hat EL (not Fedora),
-    and SUSE. Unfortunately, the open source AMD driver (based on Mesa) has
-    [a bug](https://bugs.freedesktop.org/show_bug.cgi?id=105371)
+    and SUSE. Unfortunately, `the open source AMD driver has a bug`_
     which prevents some Curv programs from running.
     If you avoid the Mesa driver, then your choice of Linux distro is very restricted with AMD.
 
@@ -109,3 +108,4 @@ may not be prepared to deal with.
 .. _`TurboVNC`: https://turbovnc.org/About/Introduction
 .. _`VirtualGL`: https://virtualgl.org/About/Introduction
 .. _`Curv runs poorly on this driver`: https://github.com/curv3d/curv/issues/78
+.. _`the open source AMD driver has a bug`: https://bugs.freedesktop.org/show_bug.cgi?id=105371
