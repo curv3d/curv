@@ -67,14 +67,14 @@ using the vendor supplied GPU driver.
 * Raspberry Pi is not yet supported. Currently, Raspberry Pi only supports OpenGL 2.0,
   due to an outdated GPU driver, and Curv needs OpenGL 3.3.
   Eric Anholt of Broadcom is developing an open source OpenGL driver based on Mesa
-  that will fully support Curv on Raspberry Pi (https://gitlab.freedesktop.org/anholt).
+  that should fully support Curv on Raspberry Pi (https://gitlab.freedesktop.org/anholt).
   I'm waiting for this driver.
 
 * On Linux, you have 3 choices:
 
-  * Nvidia has the best GPU hardware. I recommend the Nvidia closed source driver,
-    not the open source Nouveau driver. The Nouveau driver is notoriously slow,
-    incomplete, and buggy, and Curv runs poorly on this driver.
+  * Nvidia has the best GPU hardware. I recommend the Nvidia closed source driver.
+    The open source Nouveau driver is not supported: it is too slow and buggy, and
+    [Curv runs poorly on this driver](https://github.com/curv3d/curv/issues/78).
     Any GPU supported by the latest Nvidia driver will
     work with Curv. Eg, see this supported hardware list:
     https://www.geforce.com/drivers/results/137276
@@ -96,7 +96,7 @@ using the vendor supplied GPU driver.
 * If Curv is run inside a VM, then it might not have direct access to the GPU.
   You need to ensure that the VM is GPU accelerated.
 
-Why is Curv so picky about GPU hardware, when [some old 3D software] runs just fine?
+Why is Curv so picky about GPU drivers and hardware, when [some old 3D software] runs just fine?
 The answer is that old 3D software relies primarily on triangle meshes for representing
 and rendering 3D shapes, whereas Curv uses signed distance fields to represent shapes.
 Signed distance fields are a powerful, hot new technology that is only made practical
