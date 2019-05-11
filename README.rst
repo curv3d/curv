@@ -74,7 +74,7 @@ using the vendor supplied GPU driver.
 
   * Nvidia has the best GPU hardware. I recommend the Nvidia closed source driver.
     The open source Nouveau driver is not supported: it is too slow and buggy, and
-    [Curv runs poorly on this driver](https://github.com/curv3d/curv/issues/78).
+    `Curv runs poorly on this driver`_.
     Any GPU supported by the latest Nvidia driver will
     work with Curv. Eg, see this supported hardware list:
     https://www.geforce.com/drivers/results/137276
@@ -108,3 +108,4 @@ may not be prepared to deal with.
 
 .. _`TurboVNC`: https://turbovnc.org/About/Introduction
 .. _`VirtualGL`: https://virtualgl.org/About/Introduction
+.. _`Curv runs poorly on this driver`: https://github.com/curv3d/curv/issues/78
