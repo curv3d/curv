@@ -1,0 +1,67 @@
+Spline support is important for compatibility with external tools that create
+spline curves and surfaces.
+
+2D Splines:
+* Adobe Illustrator supports cubic Bezier curves only.
+* The SVG file format supports quadradic and cubic Beziers.
+* Inkscape can read quadratic Beziers, but elevates them to cubic for editing.
+* iWork now supports Hobby splines as the default (see below).
+  They are easier to define and edit than Beziers. Hobby control points
+  are converted to Bezier form for rendering.
+
+TrueType fonts contain quadratic Bezier splines.
+OpenType fonts contain quadratic, may contain cubic Bezier splines.
+So font rendering is tied in with 2D spline support; see Fast_2D.
+
+3D Splines:
+"Bezier curves do exist in 3D, where they are known as B-splines, and they
+are computable, but they have the drawback that they limit the ways you
+can connect your mesh together. Surfaces like Catmull-Clark and NURBS allow
+for arbitrarily connected meshes to empower artists, but this can lead to
+polynomials greater than the fourth degree, which tend to have no closed-form
+solution. Instead, what you get are approximations based on subdividing
+polygons, like what happens in Pixar’s OpenSubdiv. If someone ever finds an
+analytic closed-form solution to root-finding either Catmull-Clark or NURBS,
+Autodesk will pay a lot of money for it."
+
+3D CAD programs (FreeCAD, Rhino, etc) support B-Splines and NURBS
+(and sometimes T-Splines).
+
+Mathematica has BezierCurve, BSplineCurve, and BSplineSurface (for NURBS).
+
+* Sweep a spline curve using a circle/sphere in 2D/3D. Open or closed curve.
+  A solution for cubic Bezier curves is outlined in `Sphere Tracing`_, based on
+  code from Graphics Gems:
+  https://github.com/erich666/GraphicsGems/blob/master/gems/NearestPoint.c.
+  
+  * Given a point ``p`` and 4 Bezier control points, construct a 5th order
+    Bezier equation whose solution finds the point on the curve closest to ``p``.
+  * Find the roots of the 5th degree equation using iterative root finding.
+    The roots are parameter values ``t`` for the Bezier curve.
+  * Evaluate the Bezier at each root ``t`` to produce a set of candidate points.
+    Extend the set of candidate points with the first and last control point,
+    which are the endpoints of the curve. Select the candidate point that is
+    closest to ``p``.
+  * The distance from ``p`` to the candidate point gives an exact SDF for a
+    zero-width Bezier curve.
+    Subtract ``d`` from the SDF to sweep the curve with a ball of radius ``d``.
+
+* Construct a shape by filling the space bounded by a closed spline curve (2D)
+  or surface (3D).
+
+-----
+Hobby splines:
+https://bosker.wordpress.com/2013/11/13/beyond-bezier-curves/
+
+Hobby splines were invented by John Hobby in 1985 or so, originally for Don
+Knuth’s much celebrated but rarely used Metafont system. They are actually
+ordinary cubic Béziers, but the control handles are placed not by the user
+but by an efficient algorithm that ensures smoothness. So of course they
+interoperate perfectly with software that expects to see Bézier curves.
+
+It very quickly becomes clear, playing with them, that Hobby splines are just
+a better way for casual users to draw attractive curves. All the fine-tuning
+of control handles is eliminated, though the shape can still be refined by
+adding additional curve points.
+
+------

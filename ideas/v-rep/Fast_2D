@@ -1,0 +1,44 @@
+Conventional 2D primitives (the Postscript model that everyone uses)
+can be rendered much faster on a modern GPU, than is done by current software.
+So this the best platform for building a 2D GUI toolkit -- the speed can
+open new possibilities.
+
+The Curv 2D subsystem should adapt these ideas.
+
+"Why are 2D vector graphics so much harder than 3D?"
+https://blog.mecheye.net/2019/05/why-is-2d-graphics-is-harder-than-3d-graphics/
+
+Pathfinder
+A fast, practical GPU rasterizer for fonts and vector graphics (Rust)
+https://github.com/pcwalton/pathfinder
+"Patrick Walton of Mozilla has explored not just one, but three separate
+approaches in Pathfinder, culminating in now Pathfinder V3."
+* https://github.com/pcwalton/pathfinder/wiki/Related-approaches
+https://pcwalton.github.io/2017/02/14/pathfinder.html (2017 version)
+
+Massively-Parallel Vector Graphics (siggraph 2014)
+http://w3.impa.br/~diego/projects/GanEtAl14/
+
+Raph Levien @raphlinus
+https://github.com/linebender/piet-metal (Rust, eventually)
+Experimental Metal-based GPU renderer for piet 2D graphics.
+To simplify research, it only targets Metal 2.1 (represents near future of GPUs)
+https://docs.google.com/document/d/1LILagXyJgYtlm6y83x1Mc2VoNfOcvW_ZiCldZbs4yO8/
+"2D Graphics on Modern GPU" blog post
+https://raphlinus.github.io/rust/graphics/gpu/2019/05/08/modern-2d.html
+* inspired by Pathfinder and M-PVG
+
+These projects are largely focused on fast rasterization, whereas Curv needs
+a signed distance field to feed into further shape operators. But I think I
+can extract useful approaches from this work.
+
+Glyphy: high quality font rendering using SDFs on the GPU.
+Not as high performance as the previous projects, but looks plenty fast enough
+in the demo part of the talk (https://vimeo.com/83732058), plus he is showing
+an SDF of a page of text and performing all sorts of transformations on the SDF
+at 60 FPS.
+
+https://ultralig.ht
+Ultralight: a lightweight, pure-GPU, HTML UI renderer for native apps
+https://github.com/ultralight-ux/ultralight
+closed source, binary only

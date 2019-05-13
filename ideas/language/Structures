@@ -18,13 +18,23 @@ Quoted Identifiers.
 There is no reason to support control characters in quoted identifiers,
 only printable ASCII (32-126) for now.
 
+Within a string,
+    $'foo'
+may be an abbreviation of
+    ${'foo'}
+
 Escape sequences? Note they have to be resolved prior to semantic analysis.
 For now, the only character that would need to be escaped is `'`. Later,
 if Unicode is supported, we might want numeric code-point escape sequences.
 Use case: include Unicode characters in the GUI, but the source code
 remains ASCII for ease of editing. Eg, '$[0x263A]'.
-Initially, I'll only support two escape sequences: `$-` and `$.`.
-If Unicode happens, I'll add numeric code-point escapes.
+Ideas:
+* Initially, support two escape sequences: `$-` and `$.`.
+  If Unicode happens, add numeric code-point escapes.
+  (I note an unexpected advantage of `$-` over a more C-like `$'`:
+  the latter conflicts with the meaning of `$'` in a string literal.)
+* `''` could be an escape for `'`, following the original syntax for
+  Curv string literals, but I abandoned that syntax style.
 
 I'm not sure about interpolating named characters, because how do you
 include a library of character names prior to semantic analysis?
@@ -48,9 +58,9 @@ Symbols.
 Variant Values (and Variant Types)
 ----------------------------------
 Variant types are a feature of statically typed languages.
-They have many names: unions, enums, variants and algebraic data types.
-However, the core idea is that a variant type consists of a fixed set of
-alternatives. Each alternative has a name, and optionally a value.
+They have many names: discriminated unions, enums, variants and algebraic data types.
+The core idea is that a variant type consists of a fixed set of alternatives.
+Each alternative has a name, and optionally a value.
 An enum type is one in which all of the alternatives are just names.
 
 A variant (or variant value) is an instance of a variant type.
@@ -80,6 +90,12 @@ or {tag: [alternative, ...]} if we want an alternate form of nesting.
 The parameter that is bound to a variant_picker has a variant value that
 must be queried using `match`.
 
+Variant values are abstract: you use pattern matching to query the value.
+There is another kind of tagged value which preserves the operations
+on the value (eg, Cell tagged values, or Curv terms).
+
+Variant Terms
+-------------
 Variant data types introduce a different way to model blending kernels:
     smooth 0.5 .union [a,b]
  vs smooth 0.5 {union: [a,b]}
@@ -90,11 +106,21 @@ value as argument, like so:
     record!{bar:a} => record.bar a
 
 We could also do this in reverse: a piecewise function over variant values
-could export field names for each tag.
+could export field names for each tag. So,
+    pfun #foo  => pfun.foo => pfun!#foo
+    pfun {a:b} => pfun.a b => pfun!{a:b}
 
-Note: variant values are abstract: you need to pattern match to retrieve
-the value. There is another kind of tagged value which preserves the operations
-on the value (eg, Cell tagged values, or Curv terms).
+Also the cube:
+    cube .mitred 5
+    cube #mitred 5   or cube {mitred: 5}
+If I want `cube` to be parametric, and the parameters include the exact/mitred
+alternatives, what's the best way to organize the parameters,
+and what do cube terms look like?
+
+In a GUI, it might be good to present the cube parameters like this:
+    size :: scale_picker = 2;
+    field :: variant_picker[#exact, #mitred] = #exact;
+    blend :: blend_picker = sharp;
 
 Number patterns.
 ----------------
