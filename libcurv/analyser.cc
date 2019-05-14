@@ -219,7 +219,7 @@ Shared<Segment>
 String_Segment_Phrase::analyse(Environ& env, unsigned) const
 {
     return make<Literal_Segment>(share(*this),
-        String::make(location().range()));
+        make_string(location().range()));
 }
 Shared<Segment>
 Char_Escape_Phrase::analyse(Environ& env, unsigned) const
@@ -239,7 +239,7 @@ Char_Escape_Phrase::analyse(Environ& env, unsigned) const
             die("bad char escape");
         }
     }
-    return make<Literal_Segment>(share(*this), String::make(&c, 1));
+    return make<Literal_Segment>(share(*this), make_string(&c, 1));
 }
 Shared<Segment>
 Ident_Segment_Phrase::analyse(Environ& env, unsigned) const

@@ -20,24 +20,17 @@ namespace curv {
 /// only a single cache hit is required to access both the size and the data.
 struct String : public Ref_Value
 {
-private:
+protected:
     // you must call make() to construct a String.
     String() : Ref_Value(ty_string) {}
-    friend Shared<String> make(const char*, size_t);
+    friend Shared<String> make_string(const char*, size_t);
     String(const String&) = delete;
     String(String&&) = delete;
     String& operator=(const String&) = delete;
-private:
+
     size_t size_;
     char data_[1];
 public:
-    /// Make a curv::String from an array of characters
-    static Shared<String> make(const char*, size_t);
-    inline static Shared<String> make(Range<const char*> r)
-    {
-        return make(r.begin(), r.size());
-    }
-
     // interface is based on std::string and the STL container concept
     size_t size() const { return size_; }
     bool empty() const { return size_ == 0; }
@@ -74,23 +67,26 @@ operator<<(std::ostream& out, Shared<const String> str)
 }
 
 /// Make a curv::String from an array of characters
-inline Shared<String> make_string(const char* str, size_t len)
+Shared<String> make_string(const char* str, size_t len);
+
+/// Make a curv::String from a character Range
+inline Shared<String> make_string(Range<const char*> r)
 {
-    return String::make(str, len);
+    return make_string(r.begin(), r.size());
 }
 
 /// Make a curv::String from a C string
 inline Shared<String>
 make_string(const char*str)
 {
-    return String::make(str, strlen(str));
+    return make_string(str, strlen(str));
 }
 
 /// Make a curv::String from a std::string
 inline Shared<String>
 make_string(const std::string& str)
 {
-    return String::make(str.data(), str.size());
+    return make_string(str.data(), str.size());
 }
 
 struct String_Ref : public Shared<const String>

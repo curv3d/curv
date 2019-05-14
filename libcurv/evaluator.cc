@@ -468,7 +468,7 @@ string_at(const String& string, Value index, const Context& cx)
         return {sb.get_string()};
     }
     int i = index.to_int(0, (int)(string.size()-1), cx);
-    return {String::make(string.data()+i, 1)};
+    return {make_string(string.data()+i, 1)};
 }
 Value
 value_at_path(Value a, const List& path, Shared<const Phrase> callph, Frame& f)

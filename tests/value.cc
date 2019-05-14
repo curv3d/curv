@@ -95,7 +95,7 @@ TEST(curv, value)
     EXPECT_FALSE(v.is_ref());
     EXPECT_TRUE(prints_as(v, "null"));
 
-    auto ptr = String::make("abc", 3);
+    auto ptr = make_string("abc", 3);
     EXPECT_TRUE(ptr->use_count == 1);
     v = Value(ptr);
     EXPECT_FALSE(v.is_null());

@@ -98,7 +98,7 @@ public:
     {
         // Currently, we copy the string data, because a Symbol_Ref is immutable,
         // but a Value can only be constructed from a mutable String reference.
-        return {String::make(data(), size())};
+        return {make_string(data(), size())};
     }
     bool is_identifier() const;
 };

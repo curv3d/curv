@@ -9,7 +9,7 @@ namespace curv {
 const char String::name[] = "string";
 
 Shared<String>
-String::make(const char* str, size_t len)
+make_string(const char* str, size_t len)
 {
     void* raw = malloc(sizeof(String) + len);
     if (raw == nullptr)
@@ -25,7 +25,7 @@ Shared<String>
 String_Builder::get_string()
 {
     auto s = str(); // copies the data
-    return String::make(s.data(), s.size()); // copies the data again
+    return make_string(s.data(), s.size()); // copies the data again
 }
 
 void
