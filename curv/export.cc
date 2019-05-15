@@ -102,6 +102,12 @@ bool Export_Params::to_bool(const Map::value_type& p) const
     return pp.eval().to_bool(At_Program(pp));
 }
 
+curv::Symbol_Ref Export_Params::to_symbol(const Map::value_type& p) const
+{
+    Param_Program pp(*this, p);
+    return pp.eval().to<Symbol>(At_Program(pp));
+}
+
 void export_curv(Value value,
     Program&,
     const Export_Params& params,

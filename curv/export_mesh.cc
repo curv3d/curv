@@ -123,7 +123,7 @@ void describe_colour_mesh_opts(std::ostream& out)
 {
     describe_mesh_opts(out);
     out <<
-    "-O colour=face|vertex\n"
+    "-O colour=#face|#vertex\n"
     ;
 }
 
@@ -163,14 +163,15 @@ void export_mesh(Mesh_Format format, curv::Value value,
                 }
             }
         } else if (format == Mesh_Format::x3d_format && p.first == "colour") {
-            if (p.second == "face")
+            auto val = params.to_symbol(p);
+            if (val == "face")
                 colourtype = face_colour;
-            else if (p.second == "vertex")
+            else if (val == "vertex")
                 colourtype = vertex_colour;
             else {
                 Param_Program pp{params,p};
                 throw curv::Exception(curv::At_Program(pp),
-                    "'colour' must be 'face' or 'vertex'");
+                    "'colour' must be #face or #vertex");
             }
         } else
             params.unknown_parameter(p);

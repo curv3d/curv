@@ -10,6 +10,7 @@
 #include <string>
 #include <libcurv/output_file.h>
 #include <libcurv/program.h>
+#include <libcurv/symbol.h>
 #include <libcurv/value.h>
 #include <glm/vec3.hpp>
 
@@ -30,6 +31,7 @@ struct Export_Params
     double to_double(const Map::value_type&) const;
     glm::dvec3 to_vec3(const Map::value_type&) const;
     bool to_bool(const Map::value_type&) const;
+    curv::Symbol_Ref to_symbol(const Map::value_type&) const;
 };
 
 struct Param_Program : public curv::Program

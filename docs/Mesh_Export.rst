@@ -119,11 +119,11 @@ and you'll have more triangles than necessary.
 Full Colour Meshes
 ------------------
 To create a full colour mesh, export an X3D file.
-Use `-O colour=face` to give a uniform colour to each face.
-Use `-O colour=vertex` to colour each vertex (and the vertex colours
+Use `-O colour=#face` to give a uniform colour to each face.
+Use `-O colour=#vertex` to colour each vertex (and the vertex colours
 will be interpolated across the faces).
 
 Use MeshLab to view the X3D files.
 
 For example::
-  curv -o twistor.x3d -O colour=vertex -O vsize=0.05 examples/twistor.curv
+  curv -o twistor.x3d -O colour=#vertex -O vsize=0.05 examples/twistor.curv
