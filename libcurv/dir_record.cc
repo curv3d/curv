@@ -62,7 +62,8 @@ Dir_Record::Dir_Record(Filesystem::path dir, const Context& cx)
         }
         auto importp = sys.importers_.find(ext);
         if (importp != sys.importers_.end())
-            fields_[{path.stem().string()}] = File{importp->second, path, missing};
+            fields_[make_symbol(path.stem().string())] =
+                File{importp->second, path, missing};
         // TODO: detect duplicate entries
     }
 }

@@ -692,7 +692,7 @@ parse_string(Scanner& scanner, Token begin)
     }
 }
 
-// primary : numeral | identifier | string | parens | brackets | braces
+// primary : symbol | numeral | identifier | string | parens | brackets | braces
 // parens : ( list )
 // brackets : [ list ]
 // braces : { list }
@@ -708,6 +708,7 @@ parse_primary(Scanner& scanner, const char* what)
     switch (tok.kind_) {
     case Token::k_num:
     case Token::k_hexnum:
+    case Token::k_symbol:
         return make<Numeral>(*scanner.source_, tok);
     case Token::k_ident:
         return make<Identifier>(*scanner.source_, tok);

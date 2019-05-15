@@ -41,6 +41,7 @@ struct Ref_Value : public Shared_Base
     uint16_t subtype_;
     enum {
         ty_string,
+        ty_symbol,
         ty_list,
         ty_record,
             sty_drecord,

@@ -10,6 +10,29 @@
 
 namespace curv {
 
+struct Symbol : public String
+{
+    using String::String;
+    // you must call make_symbol() to construct a Symbol.
+    friend Shared<const Symbol> make_symbol(const char*, size_t);
+    virtual void print(std::ostream&) const;
+    static const char name[];
+};
+
+Shared<const Symbol> make_symbol(const char*, size_t);
+
+inline Shared<const Symbol> make_symbol(const char* s)
+{
+    return make_symbol(s, strlen(s));
+}
+
+inline Shared<const Symbol> make_symbol(std::string s)
+{
+    return make_symbol(s.data(), s.size());
+}
+
+Shared<const Symbol> token_to_symbol(Range<const char*> str);
+
 /// A Symbol_Ref is a short immutable string with an efficient representation.
 ///
 /// A Symbol_Ref represents an identifier during semantic analysis and run time.
@@ -24,12 +47,12 @@ namespace curv {
 ///   symbols are unique, so we can use pointer equality as symbol equality.
 ///   This will also eliminate refcount manipulation, at a cost: the symbol
 ///   table slowly grows, never shrinks.
-struct Symbol_Ref : private Shared<const String>
+struct Symbol_Ref : private Shared<const Symbol>
 {
 private:
-    using Base = Shared<const String>;
+    using Base = Shared<const Symbol>;
 public:
-    using Shared<const String>::Shared;
+    using Shared<const Symbol>::Shared;
 
     inline Symbol_Ref()
     :
@@ -38,16 +61,18 @@ public:
     }
     inline Symbol_Ref(const char* str)
     :
-        Base(make_string(str))
+        Base(make_symbol(str))
     {}
-    inline Symbol_Ref(Shared<const String> str)
+    inline Symbol_Ref(Shared<const Symbol> str)
     :
         Base(std::move(str))
     {}
+    /*
     inline Symbol_Ref(String_Ref str)
     :
         Base(str)
     {}
+    */
     // Construct a symbol from an identifier token, which may be quoted.
     Symbol_Ref(Range<const char*>, bool);
 
@@ -96,9 +121,12 @@ public:
 
     Value to_value() const
     {
+        return Value{*this};
+        /*
         // Currently, we copy the string data, because a Symbol_Ref is immutable,
         // but a Value can only be constructed from a mutable String reference.
         return {make_string(data(), size())};
+        */
     }
     bool is_identifier() const;
 };

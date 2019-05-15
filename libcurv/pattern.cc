@@ -403,7 +403,7 @@ symbolize(const Phrase& ph, Scope& scope)
     if (auto strph = dynamic_cast<const String_Phrase*>(&ph)) {
         auto val = std_eval(*strph, scope);
         auto str = val.to<const String>(At_Phrase(ph, scope));
-        return Symbol_Ref{str};
+        return make_symbol(str->data(), str->size());
     }
     throw Exception(At_Phrase(ph, scope),
         "not an identifier or string literal");

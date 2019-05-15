@@ -2,17 +2,19 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <functional>
-
-#include <libcurv/phrase.h>
 #include <libcurv/analyser.h>
+
+#include <libcurv/context.h>
 #include <libcurv/definition.h>
 #include <libcurv/die.h>
-#include <libcurv/shared.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
-#include <libcurv/context.h>
+#include <libcurv/phrase.h>
+#include <libcurv/shared.h>
+#include <libcurv/symbol.h>
 #include <libcurv/system.h>
+
+#include <functional>
 
 namespace curv
 {
@@ -209,6 +211,13 @@ Numeral::analyse(Environ& env, unsigned) const
                 die("Numeral::analyse: bad hex numeral");
         }
         return make<Constant>(share(*this), n);
+      }
+    case Token::k_symbol:
+      {
+        auto r = location().range();
+        ++r.first;
+        auto s = token_to_symbol(r);
+        return make<Constant>(share(*this), Value{s});
       }
     default:
         die("Numeral::analyse: bad token type");

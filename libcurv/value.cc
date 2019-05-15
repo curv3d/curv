@@ -125,6 +125,8 @@ bool Value::equal(Value v, const Context& cx) const
 
     // two reference values with the same type
     switch (r1.type_) {
+    case Ref_Value::ty_symbol:
+        return (Symbol&)r1 == (Symbol&)r2;
     case Ref_Value::ty_string:
         return (String&)r1 == (String&)r2;
     case Ref_Value::ty_list:

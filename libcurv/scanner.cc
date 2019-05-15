@@ -241,7 +241,7 @@ Scanner::get_token()
         goto success;
     }
 
-    // recognize an identifier
+    // recognize an unquoted identifier
     if (isalpha(*p) || *p == '_') {
         while (p < last && (isalnum(*p) || *p == '_'))
             ++p;
@@ -278,8 +278,9 @@ Scanner::get_token()
     // recognize remaining tokens
     switch (*p++) {
     case '\'':
+        // quoted identifier
         tok.kind_ = Token::k_ident;
-        ++p;
+quoted_identifier:
         while (p < last) {
             if (*p == '\'') {
                 ++p;
@@ -298,6 +299,20 @@ Scanner::get_token()
                 continue;
             }
             break;
+        }
+        goto error;
+    case '#':
+        // symbol literal
+        tok.kind_ = Token::k_symbol;
+        if (p >= last) goto error;
+        if (*p == '\'') {
+            ++p;
+            goto quoted_identifier;
+        }
+        if (isalpha(*p) || *p == '_') {
+            while (p < last && (isalnum(*p) || *p == '_'))
+                ++p;
+            goto success;
         }
         goto error;
     case '(':

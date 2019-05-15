@@ -20,14 +20,27 @@ namespace curv {
 /// only a single cache hit is required to access both the size and the data.
 struct String : public Ref_Value
 {
-protected:
-    // you must call make() to construct a String.
-    String() : Ref_Value(ty_string) {}
-    friend Shared<String> make_string(const char*, size_t);
+private:
     String(const String&) = delete;
     String(String&&) = delete;
     String& operator=(const String&) = delete;
-
+protected:
+    String(int t) : Ref_Value(t) {}
+    template <class STRING>
+    static Shared<STRING>
+    make(int ty, const char* str, size_t len)
+    {
+        void* raw = malloc(sizeof(STRING) + len);
+        if (raw == nullptr)
+            throw std::bad_alloc();
+        STRING* s = new(raw) STRING(ty);
+        memcpy(s->data_, str, len);
+        s->data_[len] = '\0';
+        s->size_ = len;
+        return Shared<STRING>{s};
+    }
+    friend Shared<String> make_string(const char*, size_t);
+private:
     size_t size_;
     char data_[1];
 public:

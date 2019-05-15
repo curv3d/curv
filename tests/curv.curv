@@ -24,9 +24,9 @@ assert(
 );
 
 assert(
-    (do var a:=1;
-        var b:=2;
-        var c:= do var x:=10; var y:=20; in [x,y];
+    (let a = 1;
+         b = 2;
+         c = let x=10; y=20 in [x,y];
      in [a,b,c])
     == [1,2,[10,20]]
 );
@@ -37,7 +37,7 @@ assert(
 );
 
 assert(
-  do var r := {a:1};
+  let r = {a:1};
   in defined(r.a) && defined(r."a") && !defined(r.b)
 );
 
@@ -48,7 +48,7 @@ assert(reverse(1,2,3) == [3,2,1] && reverse() == []);
 assert(sum(1,2,3)==6 && sum()==0);
 
 assert(
-  (do var f(x,y) := x+y; var a := (2,3); in f a)
+  (let f(x,y) = x+y; a = (2,3); in f a)
   == 5
 );
 
@@ -88,8 +88,8 @@ assert(
 );
 
 assert(
-    do var a := 1;
-       var f x := x + a;
+    let a = 1;
+        f x = x + a;
     in f 2 == 3
 );
 
@@ -101,11 +101,12 @@ assert(
 */
 
 assert(
-    (do var a:=1; a:=a+2; in a) == 3
+    (let a=1 in do a:=a+2 in a) == 3
 );
 
 assert(
-  (do var a := 1;
+  (let a = 1;
+   in do
       if (a > 0)
           a := a + 2
       else
@@ -114,7 +115,8 @@ assert(
 );
 
 assert(
-  (do var a := 1;
+  (let a = 1;
+   in do
       if (a > 0) (
           a := a + 2
       );
@@ -157,7 +159,7 @@ assert( asin 1 == 1.5707963267948966 && acos 1 == 0 );
 
 assert( round 0.5 == 0 && round 1.5 == 2 );
 
-assert( indices(1,2) == [0,1] && fields{a:1} == ["a"] );
+assert( indices(1,2) == [0,1] && fields{a:1} == [#a] );
 
 assert(
     let a = {x:1, y:2};
@@ -314,10 +316,10 @@ let
     r = parametric a=1,b=2 in {x:a,y:b};
     r2 = r{a:10,b:20};
 in (
-    assert(fields r == ["argument","constructor","x","y"]);
+    assert(fields r == [#argument,#constructor,#x,#y]);
     assert(r.x == 1 && r.y == 2);
     assert(r.argument == {a:1,b:2});
-    //assert(fields r2 == ["argument","constructor","x","y"]);
+    //assert(fields r2 == [#argument,#constructor,#x,#y]);
     assert(r2.x == 10 && r2.y == 20);
     //assert(r2.argument == {a:10,b:20});
 );
@@ -461,6 +463,11 @@ assert(
 
 let 'a'= {'foo bar'=0;'baz'=1};
 in assert(strcat[a]=="{baz:1,'foo bar':0}");
+
+assert(#foo == #'foo');
+assert(#foo != #bar);
+assert(#foo != "foo");
+assert(fields{'':0, 'a b':1, 'foo':2} == [#'', #'a b', #foo]);
 
 // script return value:
 in null

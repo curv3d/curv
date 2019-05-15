@@ -11,14 +11,7 @@ const char String::name[] = "string";
 Shared<String>
 make_string(const char* str, size_t len)
 {
-    void* raw = malloc(sizeof(String) + len);
-    if (raw == nullptr)
-        throw std::bad_alloc();
-    String* s = new(raw) String();
-    memcpy(s->data_, str, len);
-    s->data_[len] = '\0';
-    s->size_ = len;
-    return Shared<String>{s};
+    return String::make<String>(Ref_Value::ty_string, str, len);
 }
 
 Shared<String>

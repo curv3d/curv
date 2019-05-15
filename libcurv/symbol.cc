@@ -7,6 +7,14 @@
 
 namespace curv {
 
+const char Symbol::name[] = "symbol";
+
+Shared<const Symbol>
+make_symbol(const char* str, size_t len)
+{
+    return Symbol::make<Symbol>(Ref_Value::ty_symbol, str, len);
+}
+
 bool is_C_identifier(const char* p)
 {
     if (!(isalpha(*p) || *p == '_'))
@@ -24,7 +32,7 @@ bool Symbol_Ref::is_identifier() const
     return is_C_identifier(c_str());
 }
 
-Shared<const String> token_to_symbol(Range<const char*> str)
+Shared<const Symbol> token_to_symbol(Range<const char*> str)
 {
     if (str[0] == '\'') {
         // parse the quoted identifier
@@ -41,9 +49,9 @@ Shared<const String> token_to_symbol(Range<const char*> str)
             } else
                 sb << *p;
         }
-        return sb.get_string();
+        return make_symbol(sb.str());
     } else {
-        return make_string(str);
+        return make_symbol(str);
     }
 }
 
@@ -72,6 +80,12 @@ std::ostream& operator<<(std::ostream& out, Symbol_Ref a)
         out << '\'';
     }
     return out;
+}
+
+void
+Symbol::print(std::ostream& out) const
+{
+    out << "#" << Symbol_Ref(share(*this));
 }
 
 }
