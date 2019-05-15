@@ -68,7 +68,7 @@ precedence and ``postfix`` being the highest precedence::
     | postfix primary
     | postfix '.' primary
 
-  primary ::= identifier | numeral | string | parens | brackets | braces
+  primary ::= identifier | symbol | numeral | string | parens | brackets | braces
 
   identifier ::= plain_id | quoted_id
     plain_id ::= /[a-zA-Z_] [a-zA-Z_0-9]*/, except for reserved words
@@ -78,6 +78,8 @@ precedence and ``postfix`` being the highest precedence::
       id_segment ::= plain_char | id_escape
       plain_char ::= /[space or printable ASCII character, except ' or $]/
       id_escape ::= /'$.'/ | /'$-'/
+
+  symbol ::= /'#' identifier/
 
   numeral ::= hexnum | mantissa | /mantissa [eE] [+-]? digits/
     mantissa ::= /digits/ | /'.' digits/ | /digits '.' digits/
