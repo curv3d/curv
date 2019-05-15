@@ -24,7 +24,7 @@ private:
     String(const String&) = delete;
     String(String&&) = delete;
     String& operator=(const String&) = delete;
-protected:
+public:
     String(int t) : Ref_Value(t) {}
     template <class STRING>
     static Shared<STRING>
