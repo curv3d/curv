@@ -39,6 +39,8 @@ struct Symbol_Ref : private Shared<const Symbol>
 {
 private:
     using Base = Shared<const Symbol>;
+    inline Symbol_Ref(Base sym) : Base(sym) {}
+    friend void Symbol::print(std::ostream& out) const;
 public:
     using Shared<const Symbol>::Shared;
 
