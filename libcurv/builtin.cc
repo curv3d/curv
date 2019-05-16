@@ -40,15 +40,6 @@ Builtin_Value::to_meaning(const Identifier& id) const
     return make<Constant>(share(id), value_);
 }
 
-struct Is_Null_Function : public Legacy_Function
-{
-    static const char* name() { return "is_null"; }
-    Is_Null_Function() : Legacy_Function(1,name()) {}
-    Value call(Frame& args) override
-    {
-        return {args[0].is_null()};
-    }
-};
 struct Is_Bool_Function : public Legacy_Function
 {
     static const char* name() { return "is_bool"; }
@@ -952,11 +943,9 @@ builtin_namespace()
     {make_symbol("pi"), make<Builtin_Value>(pi)},
     {make_symbol("tau"), make<Builtin_Value>(two_pi)},
     {make_symbol("inf"), make<Builtin_Value>(INFINITY)},
-    {make_symbol("null"), make<Builtin_Value>(Value())},
     {make_symbol("false"), make<Builtin_Value>(Value(false))},
     {make_symbol("true"), make<Builtin_Value>(Value(true))},
 
-    FUNCTION(Is_Null_Function),
     FUNCTION(Is_Bool_Function),
     FUNCTION(Is_Symbol_Function),
     FUNCTION(Is_Num_Function),

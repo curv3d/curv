@@ -48,7 +48,6 @@ struct Ref_Value : public Shared_Base
             sty_module,
             sty_dir_record,
         ty_function,
-        ty_missing,
         ty_lambda,
         ty_reactive,
             sty_uniform_variable,
@@ -108,9 +107,9 @@ private:
     // will ignore. (On PA-RISC and MIPS we'd use 0x7FF7 for a quiet NaN, but
     // we don't currently support those architectures.)
     static constexpr uint64_t k_nanbits = 0x7FFF'0000'0000'0000;
-    // The null value has a 48 bit payload of 0, same representation as the
-    // null pointer. So Value((Ref_Value*)0) is null.
-    static constexpr uint64_t k_nullbits = k_nanbits|0;
+    // The missing value has a 48 bit payload of 0, same representation as the
+    // null pointer. So Value((Ref_Value*)0) is missing.
+    static constexpr uint64_t k_missingbits = k_nanbits|0;
     // false and true have a payload of 2 and 3. The '2' bit is only set in the
     // payload for a boolean value (assuming all Ref_Value* pointers have
     // at least 4 byte alignment). The '1' bit is 0 or 1 for false and true.
@@ -132,19 +131,18 @@ private:
     }
     template<class T, class... Args> friend Value make_ref_value(Args&&...);
 public:
-    /// Construct the `null` value (default constructor).
+    /// Construct the `missing` value (default constructor).
     ///
-    /// This is the `null` value in Curv.
-    /// It corresponds to both NaN and `undef` in OpenSCAD.
-    inline constexpr Value() noexcept : bits_{k_nullbits} {}
+    /// There is no way for a Curv program to construct the missing value.
+    /// It's kind of like a null pointer: it can be used as a special value
+    /// to signify that no value is present.
+    inline constexpr Value() noexcept : bits_{k_missingbits} {}
 
-    /// True if value is null.
-    inline bool is_null() const noexcept
+    /// True if value is missing.
+    inline bool is_missing() const noexcept
     {
-        return bits_ == k_nullbits;
+        return bits_ == k_missingbits;
     }
-    /// Abort if value is not null.
-    void to_null(const Context& cx) const;
 
     /// Construct a boolean value.
     inline constexpr Value(bool b) : bits_{k_boolbits|(uint64_t)b} {}
@@ -168,13 +166,13 @@ public:
     ///
     /// The Curv Number type includes all of the IEEE 64 bit floating point
     /// values except for NaN.
-    /// If the argument is NaN, construct the null value.
+    /// If the argument is NaN, construct the missing value.
     inline Value(double n)
     {
         if (n == n)
             number_ = n;
         else
-            bits_ = k_nullbits;
+            bits_ = k_missingbits;
     }
 
     /// True if the value is a number.
@@ -317,7 +315,7 @@ public:
     inline Value(Value&& val) noexcept
     {
         bits_ = val.bits_;
-        val.bits_ = k_nullbits;
+        val.bits_ = k_missingbits;
     }
 
     /// The assignment operator.
@@ -383,7 +381,7 @@ public:
 };
 
 /// Special marker that denotes the absence of a value
-extern Value missing;
+extern const Value missing;
 
 inline std::ostream&
 operator<<(std::ostream& out, Value val)

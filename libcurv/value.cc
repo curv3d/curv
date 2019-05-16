@@ -14,13 +14,6 @@
 
 namespace curv {
 
-void
-Value::to_null(const Context& cx) const
-{
-    if (!is_null())
-        throw Exception(cx, stringify(*this, " is not null"));
-}
-
 bool
 Value::to_bool(const Context& cx) const
 {
@@ -84,8 +77,8 @@ void
 Value::print(std::ostream& out)
 const
 {
-    if (is_null()) {
-        out << "null";
+    if (is_missing()) {
+        out << "<missing>";
     } else if (is_bool()) {
         out << (get_bool_unsafe() ? "#true" : "#false");
     } else if (is_num()) {
@@ -159,16 +152,6 @@ bool Value::hash_eq(Value rhs) const noexcept
     return false;
 }
 
-// special marker that denotes the absence of a value
-struct Missing : public Ref_Value
-{
-    Missing() : Ref_Value(ty_missing) {}
-
-    void print(std::ostream& out) const override
-    {
-        out << "<missing>";
-    }
-};
-Value missing {make<Missing>()};
+const Value missing{};
 
 } // namespace curv

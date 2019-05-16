@@ -40,12 +40,8 @@ void write_json_string(const char* str, std::ostream& out)
 
 void write_json_value(Value val, std::ostream& out)
 {
-    if (val.is_null()) {
-        out << "null";
-        return;
-    }
     if (val.is_bool()) {
-        out << val;
+        out << (val.get_bool_unsafe() ? "true" : "false");
         return;
     }
     if (val.is_num()) {
@@ -55,6 +51,12 @@ void write_json_value(Value val, std::ostream& out)
     assert(val.is_ref());
     auto& ref = val.get_ref_unsafe();
     switch (ref.type_) {
+    case Ref_Value::ty_symbol:
+      {
+        auto& sym = (Symbol&)ref;
+        write_json_string(sym.c_str(), out);
+        return;
+      }
     case Ref_Value::ty_string:
       {
         auto& str = (String&)ref;
@@ -86,7 +88,7 @@ void write_json_value(Value val, std::ostream& out)
             out << ":";
             Value fval = f->maybe_value();
             if (fval.eq(missing)) {
-                out << "{\"\\u0000\":\"\"}";
+                out << "\"\\u0000\"";
             } else {
                 write_json_value(fval, out);
             }
@@ -95,8 +97,11 @@ void write_json_value(Value val, std::ostream& out)
         return;
       }
     default:
-        out << "{\"\\u0000\":\"" << val << "\"}";
+      {
+        auto str = stringify(val);
+        write_json_string(str->c_str(), out);
         return;
+      }
     }
 }
 

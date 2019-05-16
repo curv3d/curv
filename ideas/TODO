@@ -1,12 +1,11 @@
 Symbols:
-* null=#null
+* strcat[#foo] == "foo"
+* documentation
 * user configuration file
 * SC support for symbols
 * variant_picker[#foo, #bar]
 * align{x: #centre}
-* documentation
 * nilary picker types are encoded as symbols, eg #colour_picker
-* strcat[#foo] == "foo"
 * make_symbol("foo") == #foo
 * numeral patterns (positive, negative, infinite)
 

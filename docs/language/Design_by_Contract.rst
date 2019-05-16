@@ -76,9 +76,9 @@ an error if a contract violation is detected.
 The following predicates return ``true`` if the argument belongs to one
 of the primitive types, otherwise ``false``::
 
-  is_null
   is_bool
   is_num
+  is_symbol
   is_string
   is_list
   is_record

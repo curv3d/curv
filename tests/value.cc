@@ -33,14 +33,14 @@ TEST(curv, value)
     Value v;
 
     v = Value();
-    EXPECT_TRUE(v.is_null());
+    EXPECT_TRUE(v.is_missing());
     EXPECT_FALSE(v.is_bool());
     EXPECT_FALSE(v.is_num());
     EXPECT_FALSE(v.is_ref());
-    EXPECT_TRUE(prints_as(v, "null"));
+    EXPECT_TRUE(prints_as(v, "<missing>"));
 
     v = Value(false);
-    EXPECT_FALSE(v.is_null());
+    EXPECT_FALSE(v.is_missing());
     EXPECT_TRUE(v.is_bool());
     EXPECT_FALSE(v.is_num());
     EXPECT_FALSE(v.is_ref());
@@ -49,7 +49,7 @@ TEST(curv, value)
     EXPECT_TRUE(prints_as(v, "#false"));
 
     v = Value(true);
-    EXPECT_FALSE(v.is_null());
+    EXPECT_FALSE(v.is_missing());
     EXPECT_TRUE(v.is_bool());
     EXPECT_FALSE(v.is_num());
     EXPECT_FALSE(v.is_ref());
@@ -57,7 +57,7 @@ TEST(curv, value)
     EXPECT_TRUE(prints_as(v, "#true"));
 
     v = Value(0.0);
-    EXPECT_FALSE(v.is_null());
+    EXPECT_FALSE(v.is_missing());
     EXPECT_FALSE(v.is_bool());
     EXPECT_TRUE(v.is_num());
     EXPECT_FALSE(v.is_ref());
@@ -65,7 +65,7 @@ TEST(curv, value)
     EXPECT_TRUE(prints_as(v, "0"));
 
     v = Value(-0.0);
-    EXPECT_FALSE(v.is_null());
+    EXPECT_FALSE(v.is_missing());
     EXPECT_FALSE(v.is_bool());
     EXPECT_TRUE(v.is_num());
     EXPECT_FALSE(v.is_ref());
@@ -73,7 +73,7 @@ TEST(curv, value)
     EXPECT_TRUE(prints_as(v, "-0"));
 
     v = Value(1.0/0.0);
-    EXPECT_FALSE(v.is_null());
+    EXPECT_FALSE(v.is_missing());
     EXPECT_FALSE(v.is_bool());
     EXPECT_TRUE(v.is_num());
     EXPECT_FALSE(v.is_ref());
@@ -81,7 +81,7 @@ TEST(curv, value)
     EXPECT_TRUE(prints_as(v, "inf"));
 
     v = Value(-1.0/0.0);
-    EXPECT_FALSE(v.is_null());
+    EXPECT_FALSE(v.is_missing());
     EXPECT_FALSE(v.is_bool());
     EXPECT_TRUE(v.is_num());
     EXPECT_FALSE(v.is_ref());
@@ -89,16 +89,16 @@ TEST(curv, value)
     EXPECT_TRUE(prints_as(v, "-inf"));
 
     v = Value(0.0/0.0);
-    EXPECT_TRUE(v.is_null());
+    EXPECT_TRUE(v.is_missing());
     EXPECT_FALSE(v.is_bool());
     EXPECT_FALSE(v.is_num());
     EXPECT_FALSE(v.is_ref());
-    EXPECT_TRUE(prints_as(v, "null"));
+    EXPECT_TRUE(prints_as(v, "<missing>"));
 
     auto ptr = make_string("abc", 3);
     EXPECT_TRUE(ptr->use_count == 1);
     v = Value(ptr);
-    EXPECT_FALSE(v.is_null());
+    EXPECT_FALSE(v.is_missing());
     EXPECT_FALSE(v.is_bool());
     EXPECT_FALSE(v.is_num());
     ASSERT_TRUE(v.is_ref());
@@ -109,7 +109,7 @@ TEST(curv, value)
 
 #if 0
     v = make_ref_value<Ref_Value>(17);
-    EXPECT_FALSE(v.is_null());
+    EXPECT_FALSE(v.is_missing());
     EXPECT_FALSE(v.is_bool());
     EXPECT_FALSE(v.is_num());
     ASSERT_TRUE(v.is_ref());
@@ -118,7 +118,7 @@ TEST(curv, value)
 #endif
 
     v = make_ref_value<Id_Function>();
-    EXPECT_FALSE(v.is_null());
+    EXPECT_FALSE(v.is_missing());
     EXPECT_FALSE(v.is_bool());
     EXPECT_FALSE(v.is_num());
     ASSERT_TRUE(v.is_ref());
@@ -145,7 +145,7 @@ TEST(curv, value)
         ASSERT_TRUE(r1.type_ == Ref_Value::ty_function);
 
         Value v2(std::move(v1));
-        ASSERT_TRUE(v1.is_null());
+        ASSERT_TRUE(v1.is_missing());
         ASSERT_TRUE(v2.is_ref());
         Ref_Value& r2(v2.get_ref_unsafe());
         ASSERT_TRUE(&r2 == &r0);

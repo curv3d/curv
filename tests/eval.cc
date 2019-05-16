@@ -205,7 +205,7 @@ TEST(curv, eval)
   int r = reps();
   for (int i = 0; i < r; ++i) {
     // data constructors
-    SUCCESS("null", "null");
+    SUCCESS("null", "#null");
     SUCCESS("false", "#false");
     SUCCESS("true", "#true");
     SUCCESS("42.7", "42.7");
@@ -235,7 +235,7 @@ TEST(curv, eval)
     // runtime operations
     SUCCESS("-0", "-0");
     SUCCESS("-inf", "-inf");
-    FAILMSG("1+null", "1 + null: domain error");
+    FAILMSG("1+null", "1 + #null: domain error");
     SUCCESS("[10,20]-3", "[7,17]");
     SUCCESS("5-[1,2]", "[4,3]");
     SUCCESS("[1,2]-[10,20]", "[-9,-18]");
@@ -265,12 +265,12 @@ TEST(curv, eval)
     SUCCESS("false||true", "#true");
     SUCCESS("false||false", "#false");
     SUCCESS("true||null", "#true");
-    FAILMSG("null||true", "null is not a boolean");
+    FAILMSG("null||true", "#null is not a boolean");
 
     SUCCESS("false&&true", "#false");
     SUCCESS("false&&null", "#false");
     SUCCESS("true&&false", "#false");
-    FAILMSG("true&&null", "null is not a boolean");
+    FAILMSG("true&&null", "#null is not a boolean");
     SUCCESS("true&&true", "#true");
 
     FAILMSG("count(if (true) [])",
@@ -293,12 +293,12 @@ TEST(curv, eval)
     SUCCESS("!false", "#true");
     SUCCESS("![false,true,[false]]","[#true,#false,[#true]]");
     SUCCESS("![]","[]");
-    FAILMSG("!null", "!null: domain error");
+    FAILMSG("!null", "!#null: domain error");
     SUCCESS("null!=null", "#false");
     SUCCESS("null!=false", "#true");
     SUCCESS("0 < 1", "#true");
     SUCCESS("-0 < +0", "#false");
-    FAILMSG("0 < null", "0 < null: domain error");
+    FAILMSG("0 < null", "0 < #null: domain error");
     SUCCESS("0 <= 1", "#true");
     SUCCESS("1 > 0", "#true");
     SUCCESS("1 >= 0", "#true");
@@ -370,7 +370,7 @@ TEST(curv, eval)
         "        ^^^^^^^^^^^^^");
     SUCCESS("let std = file \"std.curv\" in std.concat([1], [2,3], [4])",
         "[1,2,3,4]");
-    SUCCESS("file \"curv.curv\"", "null");
+    SUCCESS("file \"curv.curv\"", "#null");
 
     // range generator
     SUCCESS("1..4", "[1,2,3,4]");

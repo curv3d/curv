@@ -146,7 +146,7 @@ assert(
 );
 
 assert(
-    is_null null && is_bool false && is_num 42 && is_string "" && is_list ()
+    is_bool false && is_num 42 && is_string "" && is_list ()
     && is_record{a:1} && is_record{a=1} && is_record(cube 1) && !is_record()
     && is_fun(x->x) && is_shape(cube 1)
 );
@@ -470,7 +470,7 @@ assert(#foo != #bar);
 assert(#foo != "foo");
 assert(fields{'':0, 'a b':1, 'foo':2} == [#'', #'a b', #foo]);
 assert(!fields{true:1} == [#false]);
-assert(is_symbol(#true) && is_symbol(#foo));
+assert(is_symbol #true && is_symbol #foo);
 let f = match [ /*0->#zero,*/ #one->1 ]; in (
     /*assert(f 0 == #zero);*/
     assert(f #one == 1);
