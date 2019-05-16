@@ -183,8 +183,8 @@ Identifier::analyse(Environ& env, unsigned) const
     return env.lookup(*this);
 }
 
-Shared<Meaning>
-Numeral::analyse(Environ& env, unsigned) const
+Value
+Numeral::eval() const
 {
     switch (loc_.token().kind_) {
     case Token::k_num:
@@ -193,7 +193,7 @@ Numeral::analyse(Environ& env, unsigned) const
         char* endptr;
         double n = strtod(str.c_str(), &endptr);
         assert(endptr == str.c_str() + str.size());
-        return make<Constant>(share(*this), n);
+        return {n};
       }
     case Token::k_hexnum:
       {
@@ -210,18 +210,24 @@ Numeral::analyse(Environ& env, unsigned) const
             else
                 die("Numeral::analyse: bad hex numeral");
         }
-        return make<Constant>(share(*this), n);
+        return {n};
       }
     case Token::k_symbol:
       {
         auto r = location().range();
         ++r.first;
         auto s = token_to_symbol(r);
-        return make<Constant>(share(*this), s.to_value());
+        return s.to_value();
       }
     default:
         die("Numeral::analyse: bad token type");
     }
+}
+
+Shared<Meaning>
+Numeral::analyse(Environ& env, unsigned) const
+{
+    return make<Constant>(share(*this), eval());
 }
 
 Shared<Segment>

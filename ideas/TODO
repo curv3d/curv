@@ -1,6 +1,5 @@
 Symbols:
 * null=#null
-* symbol patterns
 * user configuration file
 * SC support for symbols
 * variant_picker[#foo, #bar]

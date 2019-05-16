@@ -66,6 +66,7 @@ struct Identifier final : public Token_Phrase
 struct Numeral final : public Token_Phrase
 {
     using Token_Phrase::Token_Phrase;
+    Value eval() const;
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
 };
 

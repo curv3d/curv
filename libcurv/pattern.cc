@@ -445,6 +445,9 @@ identifier_pattern(const Phrase& ph)
 Shared<Pattern>
 make_pattern(const Phrase& ph, bool mut, Scope& scope, unsigned unitno)
 {
+    if (auto num = dynamic_cast<const Numeral*>(&ph)) {
+        return make<Const_Pattern>(share(ph), num->eval());
+    }
     if (auto id = dynamic_cast<const Identifier*>(&ph)) {
         if (id->symbol_ == "_" && !id->quoted())
             return make<Skip_Pattern>(share(ph));
