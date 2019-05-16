@@ -1,0 +1,65 @@
+The data model of the Cell programming language is very Curvy.
+If we use Cell as an inspiration, we get a more general set of primitive
+data types:
+
+Symbols are primitive values.
+    #foo
+
+Numbers are primitive values.
+
+The boolean values are actually symbols: #true, #false.
+The null value is actually #null.
+
+A set is an unordered collection of values with no duplicates.
+    #[1, 2, 3]
+
+A map is a set of key/value pairs with no duplicate keys. A key is any value.
+    #{#foo: 0, #bar: 1}
+
+A record is a map where all of the keys are symbols.
+
+A tagged value is a (symbol,value) pair.
+    #colour[red,green,blue]
+    #shape{dist,colour,bbox}
+
+A list is an ordered sequence of values.
+    [a,b,c]
+
+A string is a tagged list of unicode code points (integers).
+    "ABC" == #string[65,66,67]
+
+There are no other values.
+
+Equality is a primitive concept, based on comparing the structure of two
+data values. It is required in order for sets to make sense.
+There is no "user defined" equality operator for application types.
+
+It isn't practical to define equality for functions, so in Cell, functions
+aren't values. This last part isn't good for Curv. Alternatives:
+1. f==g is true if f and g are functions. This obeys the rules for equivalence
+   relations. If you put multiple functions into a set, only 1 will remain,
+   and it's an arbitrary choice.
+2. a==b fails if both a and b are functions, is false if only one is a function.
+   This does allow you to compare a function value with null.
+   But violates the rule a==a of an equivalence relation.
+   You can put at most 1 function into a set. If you try to put 2 functions in
+   a set, it will fail. Unioning two sets can fail if each contains a function.
+   The behaviour with sets is just weird.
+3. a==b fails if either a or b are functions. A set cannot contain a function.
+   Consistent with ML/Haskell, where function types are not equality types.
+   Consistent with an equivalence relation that does not contain function values
+   within its domain.
+4. Function equality works by comparing the code of two functions.
+   This makes code fragile: changing the internal implementation of Curv
+   might affect program behaviour.
+
+Tagged values interest me, but the Cell version doesn't play well with
+Curv function values. My Term proposal is better, because it allows tagged
+values that contain function values but which also have meaningful equality.
+
+Equality design #3 seems best. Untagged function values are not in the domain
+of ==, but function terms are.
+
+Untagged function values cannot be serialized correctly, but terms can be
+serialized*. This is relevant to serializing (exporting) shape values.
+ * as long as there are no function parameters
