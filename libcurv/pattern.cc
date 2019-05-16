@@ -145,7 +145,7 @@ struct Predicate_Pattern : public Pattern
 
     bool match(Value arg, Frame& f) const
     {
-        static Symbol_Ref callkey = "call";
+        static Symbol_Ref callkey = make_symbol("call");
         Value val = predicate_expr_->eval(f);
         Value funv = val;
         for (;;) {
@@ -309,7 +309,7 @@ struct Record_Pattern : public Pattern
                     if (p->second.dexpr_) {
                         auto fval = p->second.dexpr_->eval(f);
                         p->second.pat_->exec(
-                            slots, fval, At_Field(p->first.data(), valcx), f);
+                            slots, fval, At_Field(p->first.c_str(), valcx), f);
                     } else {
                         throw Exception(valcx, stringify(
                             "record is missing a field named ",p->first));
@@ -320,7 +320,7 @@ struct Record_Pattern : public Pattern
                     // matching field in record and pattern
                     auto fval = record->getfield(p->first,valcx);
                     p->second.pat_->exec(
-                        slots, fval, At_Field(p->first.data(), valcx), f);
+                        slots, fval, At_Field(p->first.c_str(), valcx), f);
                     ++p;
                     return;
                 } else
@@ -334,7 +334,7 @@ struct Record_Pattern : public Pattern
             if (p->second.dexpr_) {
                 auto fval = p->second.dexpr_->eval(f);
                 p->second.pat_->exec(
-                    slots, fval, At_Field(p->first.data(), valcx), f);
+                    slots, fval, At_Field(p->first.c_str(), valcx), f);
             } else {
                 throw Exception(valcx, stringify(
                     "record is missing a field named ",p->first));
@@ -423,7 +423,7 @@ const Identifier*
 identifier_pattern(const Phrase& ph)
 {
     if (auto id = dynamic_cast<const Identifier*>(&ph)) {
-        if (id->symbol_ == Symbol_Ref{"_"})
+        if (id->symbol_ == "_")
             return nullptr;
         else
             return id;
@@ -445,7 +445,7 @@ Shared<Pattern>
 make_pattern(const Phrase& ph, bool mut, Scope& scope, unsigned unitno)
 {
     if (auto id = dynamic_cast<const Identifier*>(&ph)) {
-        if (id->symbol_ == Symbol_Ref{"_"})
+        if (id->symbol_ == "_")
             return make<Skip_Pattern>(share(ph));
         else {
             slot_t slot = scope.add_binding(id->symbol_, ph, unitno);

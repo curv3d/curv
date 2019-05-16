@@ -38,7 +38,7 @@ struct Function : public Ref_Value
     :
         Function(nslots)
     {
-        name_ = name;
+        name_ = make_symbol(name);
     }
 
     // call the function during evaluation

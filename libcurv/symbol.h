@@ -10,28 +10,16 @@
 
 namespace curv {
 
+struct Symbol_Ref;
+
 struct Symbol : public String
 {
     using String::String;
     // you must call make_symbol() to construct a Symbol.
-    friend Shared<const Symbol> make_symbol(const char*, size_t);
+    friend Symbol_Ref make_symbol(const char*, size_t);
     virtual void print(std::ostream&) const;
     static const char name[];
 };
-
-Shared<const Symbol> make_symbol(const char*, size_t);
-
-inline Shared<const Symbol> make_symbol(const char* s)
-{
-    return make_symbol(s, strlen(s));
-}
-
-inline Shared<const Symbol> make_symbol(std::string s)
-{
-    return make_symbol(s.data(), s.size());
-}
-
-Shared<const Symbol> token_to_symbol(Range<const char*> str);
 
 /// A Symbol_Ref is a short immutable string with an efficient representation.
 ///
@@ -59,22 +47,6 @@ public:
         Base()
     {
     }
-    inline Symbol_Ref(const char* str)
-    :
-        Base(make_symbol(str))
-    {}
-    inline Symbol_Ref(Shared<const Symbol> str)
-    :
-        Base(std::move(str))
-    {}
-    /*
-    inline Symbol_Ref(String_Ref str)
-    :
-        Base(str)
-    {}
-    */
-    // Construct a symbol from an identifier token, which may be quoted.
-    Symbol_Ref(Range<const char*>, bool);
 
     inline Symbol_Ref& operator=(Symbol_Ref a2)
     {
@@ -108,10 +80,12 @@ public:
         return *a1 < *a2;
     }
 
-    inline size_t size() const { return (*this)->size(); }
+  #if 0
     inline const char* data() const { return (*this)->data(); }
-    inline const char* c_str() const { return (*this)->c_str(); }
     inline char operator[](size_t i) const { return (**this)[i]; }
+  #endif
+    inline size_t size() const { return (*this)->size(); }
+    inline const char* c_str() const { return (*this)->c_str(); }
 
     friend void swap(Symbol_Ref& a1, Symbol_Ref& a2) noexcept
     {
@@ -122,14 +96,23 @@ public:
     Value to_value() const
     {
         return Value{*this};
-        /*
-        // Currently, we copy the string data, because a Symbol_Ref is immutable,
-        // but a Value can only be constructed from a mutable String reference.
-        return {make_string(data(), size())};
-        */
     }
     bool is_identifier() const;
 };
+
+Symbol_Ref make_symbol(const char*, size_t);
+
+inline Symbol_Ref make_symbol(const char* s)
+{
+    return make_symbol(s, strlen(s));
+}
+
+inline Symbol_Ref make_symbol(std::string s)
+{
+    return make_symbol(s.data(), s.size());
+}
+
+Symbol_Ref token_to_symbol(Range<const char*> str);
 
 bool is_C_identifier(const char*);
 

@@ -197,7 +197,7 @@ Frame* At_Field::frame() const { return parent_.frame(); }
 Shared<const String>
 At_Field::rewrite_message(Shared<const String> msg) const
 {
-    return stringify("at field .",Symbol_Ref{fieldname_},": ",parent_.rewrite_message(msg));
+    return stringify("at field .",make_symbol(fieldname_),": ",parent_.rewrite_message(msg));
 }
 
 At_Index::At_Index(size_t index, const Context& parent)

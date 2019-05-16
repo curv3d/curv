@@ -56,7 +56,7 @@ struct Identifier final : public Token_Phrase
     Identifier(const Source& s, Token tok)
     :
         Token_Phrase(s, std::move(tok)),
-        symbol_{loc_.range(), true}
+        symbol_{token_to_symbol(loc_.range())}
     {}
 
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;

@@ -71,7 +71,7 @@ struct SC_Test_Metafunction : public Metafunction
 
 void add_builtins(System_Impl& sys)
 {
-    sys.std_namespace_["sc_test"] =
+    sys.std_namespace_[make_symbol("sc_test")] =
         make<Builtin_Meaning<SC_Test_Metafunction>>();
 }
 

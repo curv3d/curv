@@ -20,10 +20,10 @@ TEST(curv, string)
     auto s1 = stringify("sqrt(2)==",sqrt(2));
     ASSERT_STREQ(s1->c_str(), "sqrt(2)==1.4142135623730951");
 
-    Symbol_Ref a0("foo");
-    Symbol_Ref a1("foo");
+    Symbol_Ref a0 = make_symbol("foo");
+    Symbol_Ref a1 = make_symbol("foo");
     ASSERT_TRUE(a0 == a1);
-    Symbol_Ref a2("bar");
+    Symbol_Ref a2 = make_symbol("bar");
     ASSERT_FALSE(a0 == a2);
     ASSERT_TRUE(a2 < a0);
     ASSERT_FALSE(a0 < a2);
@@ -35,12 +35,12 @@ TEST(curv, string)
 
     Symbol_Map<int> m;
     //m["0"] = 0;
-    m["1"] = 1;
+    m[make_symbol("1")] = 1;
     //m["2"] = 2;
     //m["3"] = 3;
     //m["4"] = 4;
     //ASSERT_TRUE(m["0"] == 0);
-    ASSERT_TRUE(m["1"] == 1);
+    ASSERT_TRUE(m[make_symbol("1")] == 1);
     //ASSERT_TRUE(m["2"] == 2);
     //ASSERT_TRUE(m["3"] == 3);
     //ASSERT_TRUE(m["4"] == 4);

@@ -217,7 +217,7 @@ Numeral::analyse(Environ& env, unsigned) const
         auto r = location().range();
         ++r.first;
         auto s = token_to_symbol(r);
-        return make<Constant>(share(*this), Value{s});
+        return make<Constant>(share(*this), s.to_value());
       }
     default:
         die("Numeral::analyse: bad token type");

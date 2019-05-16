@@ -58,11 +58,11 @@ BBox::from_value(Value val, const Context& cx)
 bool
 Shape_Program::recognize(Value val)
 {
-    static Symbol_Ref is_2d_key = "is_2d";
-    static Symbol_Ref is_3d_key = "is_3d";
-    static Symbol_Ref bbox_key = "bbox";
-    static Symbol_Ref dist_key = "dist";
-    static Symbol_Ref colour_key = "colour";
+    static Symbol_Ref is_2d_key = make_symbol("is_2d");
+    static Symbol_Ref is_3d_key = make_symbol("is_3d");
+    static Symbol_Ref bbox_key = make_symbol("bbox");
+    static Symbol_Ref dist_key = make_symbol("dist");
+    static Symbol_Ref colour_key = make_symbol("colour");
 
     Value is_2d_val;
     Value is_3d_val;
@@ -130,20 +130,23 @@ Shape_Program::Shape_Program(
     record_(r),
     viewed_shape_(vs)
 {
+    static Symbol_Ref dist_key = make_symbol("dist");
+    static Symbol_Ref colour_key = make_symbol("colour");
+
     is_2d_ = shape.is_2d_;
     is_3d_ = shape.is_3d_;
     bbox_ = shape.bbox_;
 
     At_Program cx(*this);
 
-    if (r->hasfield("dist"))
-        dist_fun_ = r->getfield("dist", cx).to<Function>(cx);
+    if (r->hasfield(dist_key))
+        dist_fun_ = r->getfield(dist_key, cx).to<Function>(cx);
     else
         throw Exception{cx, stringify(
             "bad parametric shape: call result has no 'dist' field: ", r)};
 
-    if (r->hasfield("colour"))
-        colour_fun_ = r->getfield("colour", cx).to<Function>(cx);
+    if (r->hasfield(colour_key))
+        colour_fun_ = r->getfield(colour_key, cx).to<Function>(cx);
     else
         throw Exception{cx, stringify(
             "bad parametric shape: call result has no 'colour' field: ", r)};

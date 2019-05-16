@@ -937,15 +937,15 @@ struct Defined_Metafunction : public Metafunction
 const Namespace&
 builtin_namespace()
 {
-    #define FUNCTION(f) {f::name(), make<Builtin_Value>(Value{make<f>()})}
+    #define FUNCTION(f) {make_symbol(f::name()), make<Builtin_Value>(Value{make<f>()})}
 
     static const Namespace names = {
-    {"pi", make<Builtin_Value>(pi)},
-    {"tau", make<Builtin_Value>(two_pi)},
-    {"inf", make<Builtin_Value>(INFINITY)},
-    {"null", make<Builtin_Value>(Value())},
-    {"false", make<Builtin_Value>(Value(false))},
-    {"true", make<Builtin_Value>(Value(true))},
+    {make_symbol("pi"), make<Builtin_Value>(pi)},
+    {make_symbol("tau"), make<Builtin_Value>(two_pi)},
+    {make_symbol("inf"), make<Builtin_Value>(INFINITY)},
+    {make_symbol("null"), make<Builtin_Value>(Value())},
+    {make_symbol("false"), make<Builtin_Value>(Value(false))},
+    {make_symbol("true"), make<Builtin_Value>(Value(true))},
 
     FUNCTION(Is_Null_Function),
     FUNCTION(Is_Bool_Function),
@@ -989,14 +989,14 @@ builtin_namespace()
     FUNCTION(Encode_Function),
     FUNCTION(Match_Function),
 
-    {"file", make<Builtin_Meaning<File_Metafunction>>()},
-    {"print", make<Builtin_Meaning<Print_Metafunction>>()},
-    {"warning", make<Builtin_Meaning<Warning_Metafunction>>()},
-    {"error", make<Builtin_Meaning<Error_Metafunction>>()},
-    {"assert", make<Builtin_Meaning<Assert_Metafunction>>()},
-    {"assert_error", make<Builtin_Meaning<Assert_Error_Metafunction>>()},
-    {"exec", make<Builtin_Meaning<Exec_Metafunction>>()},
-    {"defined", make<Builtin_Meaning<Defined_Metafunction>>()},
+    {make_symbol("file"), make<Builtin_Meaning<File_Metafunction>>()},
+    {make_symbol("print"), make<Builtin_Meaning<Print_Metafunction>>()},
+    {make_symbol("warning"), make<Builtin_Meaning<Warning_Metafunction>>()},
+    {make_symbol("error"), make<Builtin_Meaning<Error_Metafunction>>()},
+    {make_symbol("assert"), make<Builtin_Meaning<Assert_Metafunction>>()},
+    {make_symbol("assert_error"), make<Builtin_Meaning<Assert_Error_Metafunction>>()},
+    {make_symbol("exec"), make<Builtin_Meaning<Exec_Metafunction>>()},
+    {make_symbol("defined"), make<Builtin_Meaning<Defined_Metafunction>>()},
     };
     return names;
 }

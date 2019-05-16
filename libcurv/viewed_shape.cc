@@ -55,15 +55,19 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
     //   If I use IMGUI, then I iterate over the parameter table and render
     //   each picker.
 
+    static Symbol_Ref argument_key = make_symbol("argument");
+    static Symbol_Ref constructor_key = make_symbol("constructor");
+    static Symbol_Ref picker_key = make_symbol("picker");
+
     // Recognize a parametric shape (it has `argument` and `constructor` fields).
     At_System cx{shape.system_};
     Shared<Record> sh_argument = nullptr;
-    if (shape.record_->hasfield("argument")) {
-        sh_argument = shape.record_->getfield("argument", cx).to<Record>(cx);
+    if (shape.record_->hasfield(argument_key)) {
+        sh_argument = shape.record_->getfield(argument_key, cx).to<Record>(cx);
     }
     Shared<Closure> sh_constructor = nullptr;
-    if (sh_argument && shape.record_->hasfield("constructor")) {
-        sh_constructor = shape.record_->getfield("constructor", cx).to<Closure>(cx);
+    if (sh_argument && shape.record_->hasfield(constructor_key)) {
+        sh_constructor = shape.record_->getfield(constructor_key, cx).to<Closure>(cx);
     }
     if (sh_argument && sh_constructor) {
         // We have a parametric shape.
@@ -71,8 +75,8 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
         record_pattern_each_parameter(*sh_constructor, shape.system_,
             [&](Symbol_Ref name, Value pred, Value value) -> void {
                 auto pred_record = pred.dycast<Record>();
-                if (pred_record && pred_record->hasfield("picker")) {
-                    auto picker = pred_record->getfield("picker",cx);
+                if (pred_record && pred_record->hasfield(picker_key)) {
+                    auto picker = pred_record->getfield(picker_key,cx);
                     std::string id{"rv_"};
                     for (const char*p = name.c_str(); *p; ++p) {
                         if (std::isalnum(*p))

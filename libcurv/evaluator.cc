@@ -523,8 +523,8 @@ domain_error:
 Value
 call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
 {
-    static Symbol_Ref callkey = "call";
-    static Symbol_Ref conskey = "constructor";
+    static Symbol_Ref callkey = make_symbol("call");
+    static Symbol_Ref conskey = make_symbol("constructor");
     Value funv = func;
     for (;;) {
         if (!funv.is_ref())
@@ -573,8 +573,8 @@ tail_call_func(
     Value func, Value arg,
     Shared<const Phrase> call_phrase, std::unique_ptr<Frame>& f)
 {
-    static Symbol_Ref callkey = "call";
-    static Symbol_Ref conskey = "constructor";
+    static Symbol_Ref callkey = make_symbol("call");
+    static Symbol_Ref conskey = make_symbol("constructor");
     Value funv = func;
     for (;;) {
         if (!funv.is_ref())
@@ -999,8 +999,8 @@ Parametric_Expr::eval(Frame& f) const
         drec->fields_[id] = val;
     });
     // TODO: The `constructor` function should return another parametric record.
-    drec->fields_["constructor"] = func;
-    drec->fields_["argument"] = {default_arg};
+    drec->fields_[make_symbol("constructor")] = func;
+    drec->fields_[make_symbol("argument")] = {default_arg};
     return {drec};
 }
 

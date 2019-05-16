@@ -55,7 +55,7 @@ Dir_Record::Dir_Record(Filesystem::path dir, const Context& cx)
             // a directory. If yes, it is imported, otherwise it is ignored.
             boost::system::error_code errcode;
             if (fs::is_directory(path, errcode))
-                fields_[cname] = File{dir_import, path, missing};
+                fields_[make_symbol(cname)] = File{dir_import, path, missing};
             else if (errcode)
                 throw Exception(cx, stringify(path,": ",errcode.message()));
             continue;
