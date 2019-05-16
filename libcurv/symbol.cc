@@ -57,7 +57,22 @@ Symbol_Ref token_to_symbol(Range<const char*> str)
 
 Symbol_Ref value_to_symbol(Value val, const Context& cx)
 {
+    static Symbol_Ref true_sym = make_symbol("true");
+    static Symbol_Ref false_sym = make_symbol("false");
+
+    if (val.eq(Value{true}))
+        return true_sym;
+    if (val.eq(Value{false}))
+        return false_sym;
     return val.to<Symbol>(cx);
+}
+Value Symbol_Ref::to_value() const
+{
+    if (*this == "true")
+        return Value{true};
+    if (*this == "false")
+        return Value{false};
+    return Value{*this};
 }
 
 std::ostream& operator<<(std::ostream& out, Symbol_Ref a)

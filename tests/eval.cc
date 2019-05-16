@@ -206,8 +206,8 @@ TEST(curv, eval)
   for (int i = 0; i < r; ++i) {
     // data constructors
     SUCCESS("null", "null");
-    SUCCESS("false", "false");
-    SUCCESS("true", "true");
+    SUCCESS("false", "#false");
+    SUCCESS("true", "#true");
     SUCCESS("42.7", "42.7");
     SUCCESS(".1", "0.1");
     SUCCESS(".1e-1", "0.01");
@@ -247,7 +247,7 @@ TEST(curv, eval)
     SUCCESS("max(1,2,)", "2"); // test syntax: trailing , after last argument
     SUCCESS("sqrt << sqrt 16", "2");
     FAILALL("let f=()->sqrt(true);\nin f()",
-        "argument #1 of sqrt: true: domain error\n"
+        "argument #1 of sqrt: #true: domain error\n"
         "1| let f=()->sqrt(true);\n"
         "                 ^^^^^^ "
         /* removed due to tail call optimization
@@ -261,47 +261,47 @@ TEST(curv, eval)
         "argument #1 of count: not a list or string\n"
         "1| count 0\n"
         "         ^");
-    SUCCESS("true||false", "true");
-    SUCCESS("false||true", "true");
-    SUCCESS("false||false", "false");
-    SUCCESS("true||null", "true");
+    SUCCESS("true||false", "#true");
+    SUCCESS("false||true", "#true");
+    SUCCESS("false||false", "#false");
+    SUCCESS("true||null", "#true");
     FAILMSG("null||true", "null is not a boolean");
 
-    SUCCESS("false&&true", "false");
-    SUCCESS("false&&null", "false");
-    SUCCESS("true&&false", "false");
+    SUCCESS("false&&true", "#false");
+    SUCCESS("false&&null", "#false");
+    SUCCESS("true&&false", "#false");
     FAILMSG("true&&null", "null is not a boolean");
-    SUCCESS("true&&true", "true");
+    SUCCESS("true&&true", "#true");
 
     FAILMSG("count(if (true) [])",
         "if: not an expression (missing else clause)");
 
-    SUCCESS("null==null", "true");
-    SUCCESS("null==false", "false");
-    SUCCESS("false==false", "true");
-    SUCCESS("42==42.0", "true");
-    SUCCESS("0==false", "false");
-    SUCCESS("[1,2]==[1,2]", "true");
-    SUCCESS("[1,true]==[1,2]", "false");
-    SUCCESS("{x:1,y:2}=={x:1,y:2}", "true");
-    SUCCESS("{x:1,y:2}=={x:1,z:2}", "false");
-    SUCCESS("{x:1,y:2}=={x:1,y:3}", "false");
-    SUCCESS("{x:1,y:2}=={x=1;y=2}", "true");
-    SUCCESS("{x=1;y=2}=={x:1;y:2}", "true");
-    SUCCESS("sqrt==sqrt", "true");
-    SUCCESS("!true", "false");
-    SUCCESS("!false", "true");
-    SUCCESS("![false,true,[false]]","[true,false,[true]]");
+    SUCCESS("null==null", "#true");
+    SUCCESS("null==false", "#false");
+    SUCCESS("false==false", "#true");
+    SUCCESS("42==42.0", "#true");
+    SUCCESS("0==false", "#false");
+    SUCCESS("[1,2]==[1,2]", "#true");
+    SUCCESS("[1,true]==[1,2]", "#false");
+    SUCCESS("{x:1,y:2}=={x:1,y:2}", "#true");
+    SUCCESS("{x:1,y:2}=={x:1,z:2}", "#false");
+    SUCCESS("{x:1,y:2}=={x:1,y:3}", "#false");
+    SUCCESS("{x:1,y:2}=={x=1;y=2}", "#true");
+    SUCCESS("{x=1;y=2}=={x:1;y:2}", "#true");
+    SUCCESS("sqrt==sqrt", "#true");
+    SUCCESS("!true", "#false");
+    SUCCESS("!false", "#true");
+    SUCCESS("![false,true,[false]]","[#true,#false,[#true]]");
     SUCCESS("![]","[]");
     FAILMSG("!null", "!null: domain error");
-    SUCCESS("null!=null", "false");
-    SUCCESS("null!=false", "true");
-    SUCCESS("0 < 1", "true");
-    SUCCESS("-0 < +0", "false");
+    SUCCESS("null!=null", "#false");
+    SUCCESS("null!=false", "#true");
+    SUCCESS("0 < 1", "#true");
+    SUCCESS("-0 < +0", "#false");
     FAILMSG("0 < null", "0 < null: domain error");
-    SUCCESS("0 <= 1", "true");
-    SUCCESS("1 > 0", "true");
-    SUCCESS("1 >= 0", "true");
+    SUCCESS("0 <= 1", "#true");
+    SUCCESS("1 > 0", "#true");
+    SUCCESS("1 >= 0", "#true");
     SUCCESS("{f:sqrt}.f(4)", "2");
     SUCCESS("4^0.5", "2");
     SUCCESS("4^-1", "0.25");
@@ -312,7 +312,7 @@ TEST(curv, eval)
         "1| [1,2,3][1.1]\n"
         "          ^^^^^");
     SUCCESS("(0..10)[3..1 by -1]", "[3,2,1]");
-    SUCCESS("[false,true][[[0,1],[1,0]]]", "[[false,true],[true,false]]");
+    SUCCESS("[false,true][[[0,1],[1,0]]]", "[[#false,#true],[#true,#false]]");
     SUCCESS("let x=1;y=2; in x+y", "3");
     SUCCESS("let a=c+1;b=1;c=b+1; in a", "3");
     SUCCESS("let x=1 in let y=2 in let z=3 in x+y+z", "6");
@@ -381,7 +381,7 @@ TEST(curv, eval)
     SUCCESS("1..3 by -1", "[]");
     SUCCESS("3..1 by -1", "[3,2,1]");
     FAILMSG("1..inf", "1 .. inf: too many elements in range");
-    FAILMSG("1..true", "1 .. true: domain error");
+    FAILMSG("1..true", "1 .. #true: domain error");
 
     // for
     FAILMSG("for", "syntax error: expecting '(' after 'for'");
@@ -458,11 +458,11 @@ TEST(curv, eval)
     SUCCESS("abs(2)", "2");
     SUCCESS("abs(0)", "0");
     FAILALL("abs\ntrue",
-        "argument #1 of abs: true: domain error\n"
+        "argument #1 of abs: #true: domain error\n"
         "2| true\n"
         "   ^^^^");
     FAILALL("abs\ntrue + 1",
-        "argument #1 of abs: true: domain error\n"
+        "argument #1 of abs: #true: domain error\n"
         "2| true + 1\n"
         "   ^^^^    ");
 
@@ -470,8 +470,8 @@ TEST(curv, eval)
     SUCCESS("(mag(), mag(2,), mag(3,4))",
         "[0,2,5]");
 
-    SUCCESS("is_list 0","false");
-    SUCCESS("is_list ()","true");
+    SUCCESS("is_list 0","#false");
+    SUCCESS("is_list ()","#true");
 
     FAILALL("1,2",
         "syntax error\n"

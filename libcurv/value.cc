@@ -87,7 +87,7 @@ const
     if (is_null()) {
         out << "null";
     } else if (is_bool()) {
-        out << (get_bool_unsafe() ? "true" : "false");
+        out << (get_bool_unsafe() ? "#true" : "#false");
     } else if (is_num()) {
         out << dfmt(get_num_unsafe());
     } else if (is_ref()) {

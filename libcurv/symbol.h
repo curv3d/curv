@@ -92,11 +92,7 @@ public:
         a1.swap(a2);
     }
     friend std::ostream& operator<<(std::ostream& out, Symbol_Ref a);
-
-    Value to_value() const
-    {
-        return Value{*this};
-    }
+    Value to_value() const;
     bool is_identifier() const;
 };
 

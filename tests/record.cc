@@ -26,7 +26,7 @@ TEST(curv, record)
     auto r = make<DRecord>();
     r->fields_[make_symbol("a")] = Value{1.0};
     r->fields_[make_symbol("b")] = Value{true};
-    ASSERT_TRUE(prints_as(Value{r}, "{a:1,b:true}"));
+    ASSERT_TRUE(prints_as(Value{r}, "{a:1,b:#true}"));
     auto i = r->iter();
 
     // at first field

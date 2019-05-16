@@ -46,7 +46,7 @@ TEST(curv, value)
     EXPECT_FALSE(v.is_ref());
     EXPECT_TRUE(v.get_bool_unsafe() == false);
     EXPECT_TRUE(v.eq(false));
-    EXPECT_TRUE(prints_as(v, "false"));
+    EXPECT_TRUE(prints_as(v, "#false"));
 
     v = Value(true);
     EXPECT_FALSE(v.is_null());
@@ -54,7 +54,7 @@ TEST(curv, value)
     EXPECT_FALSE(v.is_num());
     EXPECT_FALSE(v.is_ref());
     EXPECT_TRUE(v.get_bool_unsafe() == true);
-    EXPECT_TRUE(prints_as(v, "true"));
+    EXPECT_TRUE(prints_as(v, "#true"));
 
     v = Value(0.0);
     EXPECT_FALSE(v.is_null());

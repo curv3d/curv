@@ -289,8 +289,8 @@ assert( sort[7,8,9,1,2,3] == [1,2,3,7,8,9] );
 
 let f (x::is_num) (y::is_num) = x + y;
 in (
-    assert_error("argument #1 of f: argument true does not match is_num", f true);
-    assert_error("argument #2 of f: argument true does not match is_num", f 1 true);
+    assert_error("argument #1 of f: argument #true does not match is_num", f true);
+    assert_error("argument #2 of f: argument #true does not match is_num", f 1 true);
 );
 
 let
@@ -468,6 +468,7 @@ assert(#foo == #'foo');
 assert(#foo != #bar);
 assert(#foo != "foo");
 assert(fields{'':0, 'a b':1, 'foo':2} == [#'', #'a b', #foo]);
+assert(!fields{true:1} == [#false]);
 
 // script return value:
 in null
