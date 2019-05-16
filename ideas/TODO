@@ -1,6 +1,18 @@
+Symbols:
+* is_symbol #foo
+* null=#null
+* symbol patterns
+* user configuration file
+* SC support for symbols
+* variant_picker[#foo, #bar]
+* align{x: #centre}
+* documentation
+* nilary picker types are encoded as symbols, eg #colour_picker
+* strcat[#foo] == "foo"
+* make_symbol("foo") == #foo
+
 v0.5 Planning
 -------------
-* Monday May 6: KWLUG talk
 * fix Intel GPU bug. v0.4.1
 * Compiler/IR/VM changes for new features:
   * `a[i] := x`, a[[X,Y]] := [x,y]
