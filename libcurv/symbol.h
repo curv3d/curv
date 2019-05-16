@@ -114,6 +114,8 @@ inline Symbol_Ref make_symbol(std::string s)
 
 Symbol_Ref token_to_symbol(Range<const char*> str);
 
+Symbol_Ref value_to_symbol(Value, const Context&);
+
 bool is_C_identifier(const char*);
 
 /// A Symbol_Map<T> is a map from Symbol_Ref to T.

@@ -55,6 +55,11 @@ Symbol_Ref token_to_symbol(Range<const char*> str)
     }
 }
 
+Symbol_Ref value_to_symbol(Value val, const Context& cx)
+{
+    return val.to<Symbol>(cx);
+}
+
 std::ostream& operator<<(std::ostream& out, Symbol_Ref a)
 {
     if (a.is_identifier())
