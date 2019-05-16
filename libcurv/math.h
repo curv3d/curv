@@ -13,6 +13,7 @@ struct At_Syntax;
 
 bool isnum(Value a);
 bool isbool(Value a);
+bool issymbol(Value a);
 bool islist(Value a);
 bool isvec3(Value a);
 

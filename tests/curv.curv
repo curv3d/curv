@@ -469,6 +469,7 @@ assert(#foo != #bar);
 assert(#foo != "foo");
 assert(fields{'':0, 'a b':1, 'foo':2} == [#'', #'a b', #foo]);
 assert(!fields{true:1} == [#false]);
+assert(is_symbol(#true) && is_symbol(#foo));
 
 // script return value:
 in null

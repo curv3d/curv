@@ -23,6 +23,14 @@ bool isbool(Value a)
     return r && r->sctype_ == SC_Type::Bool();
 }
 
+bool issymbol(Value a)
+{
+    if (a.is_bool()) return true;
+    if (a.dycast<Symbol>() != nullptr) return true;
+    auto r = a.dycast<Reactive_Value>();
+    return r && r->sctype_ == SC_Type::Bool();
+}
+
 bool islist(Value a)
 {
     if (a.dycast<List>())

@@ -58,6 +58,15 @@ struct Is_Bool_Function : public Legacy_Function
         return {isbool(args[0])};
     }
 };
+struct Is_Symbol_Function : public Legacy_Function
+{
+    static const char* name() { return "is_symbol"; }
+    Is_Symbol_Function() : Legacy_Function(1,name()) {}
+    Value call(Frame& args) override
+    {
+        return {issymbol(args[0])};
+    }
+};
 struct Is_Num_Function : public Legacy_Function
 {
     static const char* name() { return "is_num"; }
@@ -949,6 +958,7 @@ builtin_namespace()
 
     FUNCTION(Is_Null_Function),
     FUNCTION(Is_Bool_Function),
+    FUNCTION(Is_Symbol_Function),
     FUNCTION(Is_Num_Function),
     FUNCTION(Is_String_Function),
     FUNCTION(Is_List_Function),
