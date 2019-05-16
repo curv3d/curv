@@ -471,8 +471,8 @@ assert(#foo != "foo");
 assert(fields{'':0, 'a b':1, 'foo':2} == [#'', #'a b', #foo]);
 assert(!fields{true:1} == [#false]);
 assert(is_symbol(#true) && is_symbol(#foo));
-let f = match [ 0->#zero, #one->1 ]; in (
-    assert(f 0 == #zero);
+let f = match [ /*0->#zero,*/ #one->1 ]; in (
+    /*assert(f 0 == #zero);*/
     assert(f #one == 1);
 );
 

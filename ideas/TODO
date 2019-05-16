@@ -8,6 +8,7 @@ Symbols:
 * nilary picker types are encoded as symbols, eg #colour_picker
 * strcat[#foo] == "foo"
 * make_symbol("foo") == #foo
+* numeral patterns (positive, negative, infinite)
 
 v0.5 Planning
 -------------
