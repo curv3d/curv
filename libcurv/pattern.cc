@@ -12,6 +12,7 @@
 
 namespace curv {
 
+// _ matches any value, discards the value
 struct Skip_Pattern : public Pattern
 {
     Skip_Pattern(Shared<const Phrase> s) : Pattern(s) {}
@@ -445,7 +446,7 @@ Shared<Pattern>
 make_pattern(const Phrase& ph, bool mut, Scope& scope, unsigned unitno)
 {
     if (auto id = dynamic_cast<const Identifier*>(&ph)) {
-        if (id->symbol_ == "_")
+        if (id->symbol_ == "_" && !id->quoted())
             return make<Skip_Pattern>(share(ph));
         else {
             slot_t slot = scope.add_binding(id->symbol_, ph, unitno);

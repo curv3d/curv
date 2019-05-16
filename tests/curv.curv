@@ -463,6 +463,7 @@ assert(
 
 let 'a'= {'foo bar'=0;'baz'=1};
 in assert(strcat[a]=="{baz:1,'foo bar':0}");
+let '_' = 1 in assert('_' == 1);
 
 assert(#foo == #'foo');
 assert(#foo != #bar);

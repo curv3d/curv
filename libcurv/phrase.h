@@ -59,6 +59,8 @@ struct Identifier final : public Token_Phrase
         symbol_{token_to_symbol(loc_.range())}
     {}
 
+    bool quoted() const { return location().range()[0] == '\''; }
+
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
 };
 struct Numeral final : public Token_Phrase
