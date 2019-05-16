@@ -1,5 +1,4 @@
 Symbols:
-* strcat[#foo] == "foo"
 * documentation
 * user configuration file
 * SC support for symbols

@@ -475,6 +475,7 @@ let f = match [ /*0->#zero,*/ #one->1 ]; in (
     /*assert(f 0 == #zero);*/
     assert(f #one == 1);
 );
+assert(strcat[#foo] == "foo");
 
 // script return value:
 in null
