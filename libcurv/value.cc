@@ -64,7 +64,7 @@ Value::to_int(int lo, int hi, const Context& cx) const
 }
 
 void
-Value::to_abort [[noreturn]] (const Context& cx, const char* type)
+Value::to_abort [[noreturn]] (const Context& cx, const char* type) const
 {
     throw Exception(cx, stringify(*this, " is not a ",type));
 }

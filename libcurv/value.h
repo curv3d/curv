@@ -292,7 +292,7 @@ public:
         return nullptr;
     }
     template <class T>
-    inline Shared<T> to(const Context& cx)
+    inline Shared<T> to(const Context& cx) const
     {
         if (is_ref()) {
             T* p = dynamic_cast<T*>(&get_ref_unsafe());
@@ -301,7 +301,7 @@ public:
         }
         to_abort(cx, T::name);
     }
-    void to_abort [[noreturn]] (const Context&, const char*);
+    void to_abort [[noreturn]] (const Context&, const char*) const;
 
     Value at(Symbol_Ref fieldname, const Context& cx) const;
 
