@@ -131,7 +131,7 @@ Advanced Topics:
 .. _`Functions`: Functions.rst
 .. _`Shape Compiler`: Shape_Compiler.rst
 .. _`Grammar`: Grammar.rst
-.. _`Imperative Style Programming in a Pure Functional Language`: ../advanced/Imperative.rst
+.. _`Imperative Style Programming in a Pure Functional Language`: ../theory/Imperative.rst
 .. _`Lists`: Lists.rst
 .. _`Matrices`: Matrices.rst
 .. _`Null`: Null.rst
@@ -142,7 +142,7 @@ Advanced Topics:
 .. _`Records`: Records.rst
 .. _`Statements`: Statements.rst
 .. _`Strings`: Strings.rst
-.. _`Tail Call Optimization`: ../advanced/Tail_Call.rst
+.. _`Tail Call Optimization`: ../theory/Tail_Call.rst
 .. _`Tensors`: Tensors.rst
 .. _`Trigonometry`: Trigonometry.rst
 .. _`Values`: Values.rst

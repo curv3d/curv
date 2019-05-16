@@ -25,7 +25,7 @@ Rationale:
 Assignment statements are not usually found in pure functional languages.
 Curv restricts the semantics of mutable variables and assignment statements
 so that it retains its pure functional semantics.
-For a detailed discussion, see: `<../advanced/Imperative.rst>`_.
+For a detailed discussion, see: `<../theory/Imperative.rst>`_.
 
 Using Statements
 ----------------
