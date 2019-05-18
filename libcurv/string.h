@@ -13,19 +13,19 @@
 
 namespace curv {
 
-/// Representation of strings in the Curv runtime.
+/// Representation of strings and symbols in the Curv runtime.
 ///
 /// This is a variable length object: the size and the character array
 /// are in the same object. This is very efficient for small strings:
 /// only a single cache hit is required to access both the size and the data.
-struct String : public Ref_Value
+struct String_or_Symbol : public Ref_Value
 {
 private:
-    String(const String&) = delete;
-    String(String&&) = delete;
-    String& operator=(const String&) = delete;
+    String_or_Symbol(const String_or_Symbol&) = delete;
+    String_or_Symbol(String_or_Symbol&&) = delete;
+    String_or_Symbol& operator=(const String_or_Symbol&) = delete;
 public:
-    String(int t) : Ref_Value(t) {}
+    String_or_Symbol(int t) : Ref_Value(t) {}
     template <class STRING>
     static Shared<STRING>
     make(int ty, const char* str, size_t len)
@@ -39,7 +39,6 @@ public:
         s->size_ = len;
         return Shared<STRING>{s};
     }
-    friend Shared<String> make_string(const char*, size_t);
 private:
     size_t size_;
     char data_[1];
@@ -54,17 +53,21 @@ public:
     const char* begin() const { return data_; }
     const char* end() const { return data_ + size_; }
     bool operator==(const char* s) const { return strcmp(data_, s) == 0; }
-    bool operator==(const String& s) const { return strcmp(data_,s.data_)==0; }
-    bool operator!=(const String& s) const { return strcmp(data_,s.data_)!=0; }
-    bool operator<(const String& s) const { return strcmp(data_,s.data_)<0; }
+    bool operator==(const String_or_Symbol& s) const { return strcmp(data_,s.data_)==0; }
+    bool operator!=(const String_or_Symbol& s) const { return strcmp(data_,s.data_)!=0; }
+    bool operator<(const String_or_Symbol& s) const { return strcmp(data_,s.data_)<0; }
+};
 
-    /// Print a value like a Curv expression.
+struct String : public String_or_Symbol
+{
+    using String_or_Symbol::String_or_Symbol;
+    friend Shared<String> make_string(const char*, size_t);
     virtual void print(std::ostream&) const;
     static const char name[];
 };
 
 inline std::ostream&
-operator<<(std::ostream& out, const String& str)
+operator<<(std::ostream& out, const String_or_Symbol& str)
 {
     out.write(str.data(), str.size());
     return out;

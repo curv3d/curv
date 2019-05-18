@@ -24,7 +24,7 @@ String_Builder::get_string()
 void
 String::print(std::ostream& out) const
 {
-    write_curv_string(data_, 0, out);
+    write_curv_string(c_str(), 0, out);
 }
 
 void

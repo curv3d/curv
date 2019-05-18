@@ -894,7 +894,7 @@ Brace_Segment::generate(Frame& f, String_Builder& sb) const
     At_Phrase cx(*expr_->syntax_, f);
     auto list = expr_->eval(f).to<List>(cx);
     for (auto val : *list) {
-        if (auto str = val.dycast<String>())
+        if (auto str = val.dycast<String_or_Symbol>())
             sb << *str;
         else
             sb << val;

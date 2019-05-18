@@ -12,9 +12,9 @@ namespace curv {
 
 struct Symbol_Ref;
 
-struct Symbol : public String
+struct Symbol : public String_or_Symbol
 {
-    using String::String;
+    using String_or_Symbol::String_or_Symbol;
     // you must call make_symbol() to construct a Symbol.
     friend Symbol_Ref make_symbol(const char*, size_t);
     virtual void print(std::ostream&) const;

@@ -537,8 +537,8 @@ struct Strcat_Function : public Legacy_Function
         if (auto list = args[0].dycast<const List>()) {
             String_Builder sb;
             for (auto val : *list) {
-                if (auto str = val.dycast<const String>())
-                    sb << str;
+                if (auto str = val.dycast<const String_or_Symbol>())
+                    sb << *str;
                 else
                     sb << val;
             }
