@@ -54,7 +54,10 @@ void write_json_value(Value val, std::ostream& out)
     case Ref_Value::ty_symbol:
       {
         auto& sym = (Symbol&)ref;
-        write_json_string(sym.c_str(), out);
+        if (sym == "null")
+            out << "null";
+        else
+            write_json_string(sym.c_str(), out);
         return;
       }
     case Ref_Value::ty_string:
