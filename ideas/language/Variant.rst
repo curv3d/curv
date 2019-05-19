@@ -25,7 +25,7 @@ of symbols.
 Variants
 --------
 Variant types are a tool for organizing and modelling data.
-The core idea is that a variant type consists of a fixed set of alternatives.
+A variant type consists of a fixed set of alternatives.
 Each alternative has a name, and optionally a value.
 To construct an instance of a variant type,
 you specify the name of one of the alternatives,
@@ -42,7 +42,7 @@ a variant value. Instead, variants are constructed directly:
 * A variant with a name and a value is a record with a single field.
   Eg, ``{bar: x}``.
 
-For example, Curv represents value pickers internally as variants:
+For example, Curv represents value picker configuration internally as variants:
 
 * ``{slider:[low,high]}``
 * ``{int_slider:[low,high]}``
