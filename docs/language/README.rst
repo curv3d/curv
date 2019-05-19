@@ -91,10 +91,9 @@ Table of Contents
 -----------------
 Introduction: `Programs`_
 
-The seven types of `Values`_:
+The six types of `Values`_:
 
-* `Null`_
-* `Boolean Values`_
+* `Symbols`_ -- which include `Boolean Values`_
 * `Numbers`_ -- and `Trigonometry`_
 * `Lists`_ -- which include `Vectors`_, `Complex Numbers`_,
   `Matrices`_, `Tensors`_
@@ -134,7 +133,7 @@ Advanced Topics:
 .. _`Imperative Style Programming in a Pure Functional Language`: ../theory/Imperative.rst
 .. _`Lists`: Lists.rst
 .. _`Matrices`: Matrices.rst
-.. _`Null`: Null.rst
+.. _`Symbols`: Variant.rst
 .. _`Numbers`: Numbers.rst
 .. _`Parametric Shapes`: Parametric_Shapes.rst
 .. _`Patterns`: Patterns.rst
