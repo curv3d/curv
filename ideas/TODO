@@ -4,8 +4,9 @@ Symbols:
 * SC support for symbols
 * variant_picker[#foo, #bar]
 * align{x: #centre}
-* nilary picker types are encoded as symbols, eg #colour_picker
 * make_symbol("foo") == #foo
+Structures:
+* struct!index, where struct is a list, string or record. Eg, {a:1}!#a
 * numeral patterns (positive, negative, infinite)
 
 v0.5 Planning

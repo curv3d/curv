@@ -126,11 +126,18 @@ Number patterns.
 ----------------
 * <numeral> is a pattern.
 * +<numeral> and -<numeral> are patterns.
-* `inf` is the numeral for infinity. It is a keyword.
-  * `#inf` is not preferred, I don't want to imply that infinity is a symbol.
-    I don't want is_symbol(inf) to be true.
-  * Scheme uses `+inf.0`. That's cryptic.
+* There needs to be a numeral for infinity, that isn't an identifier.
+  * `0inf` -- consistent with the `0x` prefix. It's obviously a numeral.
+    It is novel syntax, though.
+  * `inf` is a keyword. Not obvious this is a keyword; not obvious that when
+    used as a pattern, that it doesn't define a variable binding.
+  * `#inf` is not preferred, I don't want infinity to be a symbol.
+    I don't want is_symbol(inf) to be true. Why?
+    * It would complicate the implementation of the Symbol type in SubCurv.
+      Now we have one specific numeric value that belongs to the Symbol type,
+      it complicates static type checking.
   * Most languages drop the ball, don't support a way to write infinity.
+    Javascript has `Infinity`, Scheme has `+inf.0`, no standard.
     The corollary is that people mostly won't care what I choose.
 
 String patterns.
@@ -214,6 +221,8 @@ Is a Record just a Map where the keys are Symbols?
   A record type is a set of name/type pairs, which constitute an API.
   * Records are indexed using dot notation: R.F
   * A record with a `call` field is callable; that's part of its API.
+  * `record.key := foo` reports an error if #key doesn't exist,
+    while `map[#key] := foo` creates a binding for #key if it doesn't exist.
   A map type is Map(KeyType,ValueType).
   * In popular dynamic languages, maps are indexed using the same syntax
     as arrays: M[K]. A map with integer keys is like a sparse array.
@@ -255,9 +264,12 @@ S!I
     Maybe: record!list_of_symbols -> list_of_values
 * map!key
   * vectorized indexing is not possible: key can be a list or set.
-* Motivations for this unusual syntax: it's consistent across list, string,
-  record and map. (Record doesn't support R[i] for indexing.)
-  Also, the `S!` syntax is potentially useful.
+* Motivations for this unusual syntax:
+  * It's consistent across list, string, record and map.
+    (Record doesn't support R[i] for indexing.)
+    Might be useful for polymorphic operations like `fetch` or lenses?
+  * Also, the `S!` syntax is potentially useful.
+  * Unlike `fetch[i]S`, we can use `S!i` as a locative: `S!i := val`.
 
 S!
 Here ! is a postfix operator converting S to a function of an index value.
@@ -269,3 +281,46 @@ S[i,j,k,...]
 
 fetch [i1,i2,i3] S      or S >> fetch path
 amend path newvalue S   or S >> amend path newvalue
+
+Note on currying:
+* path must be a separate argument so that fetch and amend can be used
+  to construct lenses (see below).
+* S must be a separate argument so that amend can be part of a structure
+  pipeline.
+
+Do fetch and amend support multi-d array slicing?
+
+The old record indexing syntax is R."string-ctor", eg R."$a".
+This syntax needs to go away.
+But, R.(#foo) or R.(a) seems like a possible replacement.
+
+Lenses.
+-------
+Simple Lens.
+A Lens is a getter and a setter, bound together in a single data structure.
+Like a combination of `fetch path` and `amend path` in Curv.
+    data Lens struc item 
+      = Lens { get :: struc -> item
+             , set :: item -> struc -> struc
+             }
+or,
+    lens path = {get: fetch path, set: amend path};
+    l = lens mypath; l.get, l.set
+
+Lens Composition.
+    -- | Lens composition
+    (>-) :: Lens a b -> Lens b c -> Lens a c
+    la >- lb = Lens (get lb . get la) $ \part whole ->
+      set la (set lb part (get la whole)) whole
+semantics:
+* Get the original middle part from the original big part
+* Update the middle part with the new little part
+* Update the big part with the new middle part
+In Curv:
+    lcomp(lens1,lens2) =
+      { get:
+      , set:
+      };
+
+Generalized Lenses.
+https://www.schoolofhaskell.com/user/tel/lenses-from-scratch
