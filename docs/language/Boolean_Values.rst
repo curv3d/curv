@@ -1,6 +1,6 @@
 Boolean Values
 --------------
-The Boolean values are ``true`` and ``false``.
+The Boolean values are ``#true`` and ``#false``.
 They are used for making decisions:
 if some condition holds, do this, otherwise do that.
 
@@ -36,7 +36,7 @@ The conditional operator selects between two alternatives based on a boolean con
   if (condition) result_if_true else result_if_false
 
 For some algorithms, it is convenient to represent booleans as integers:
-``true`` is ``1`` and ``false`` is ``0``. We support this via conversions
+``#true`` is ``1`` and ``#false`` is ``0``. We support this via conversions
 between boolean and integer:
 
 * ``bit b`` -- convert boolean value ``b`` to an integer

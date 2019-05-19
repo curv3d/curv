@@ -99,4 +99,4 @@ List Slicing
   If the list has zero length, the result is ``zero``.
 
 ``contains (list, x)``
-  A predicate, returns ``true`` if ``x`` is an element of ``list``.
+  A predicate, returns ``#true`` if ``x`` is an element of ``list``.

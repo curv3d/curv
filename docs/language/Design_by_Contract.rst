@@ -63,7 +63,7 @@ In short, many dynamically typed languages have a complex and arbitrary contract
 for boolean operations that breaks the laws of boolean algebra.
 
 Curv has a simple contract for boolean operations, which obey the laws of boolean algebra.
-The only boolean values are ``true`` and ``false``.
+The only boolean values are ``#true`` and ``#false``.
 If a non-boolean value is passed to a boolean operation, the contract is violated,
 and the program is aborted with an error message.
 
@@ -73,8 +73,8 @@ Curv provides a set of operations for enforcing contracts.
 There are predicates for classifying values, and there are ways to report
 an error if a contract violation is detected.
 
-The following predicates return ``true`` if the argument belongs to one
-of the primitive types, otherwise ``false``::
+The following predicates return ``#true`` if the argument belongs to one
+of the primitive types, otherwise ``#false``::
 
   is_bool
   is_num

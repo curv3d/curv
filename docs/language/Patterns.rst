@@ -66,7 +66,7 @@ Pattern Syntax
 *pattern* :: *predicate*
   Predicate pattern.
   First, evaluate the *predicate* expression, which must yield a function
-  that returns ``true`` or ``false``.
+  that returns ``#true`` or ``#false``.
   Call the predicate function with the to-be-matched value as an argument.
   If the predicate is false, the match fails. If the predicate is true,
   then match the value against *pattern*.
