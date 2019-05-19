@@ -9,11 +9,13 @@ Symbols are simple, abstract values with no internal structure.
 Symbols are used when you need to distinguish between a fixed set
 of named alternatives. For example,
 
-* In Curv, the boolean values are ``#true`` and ``#false``.
+* In Curv, the `Boolean values`_ are ``#true`` and ``#false``.
 * When exporting a .X3D mesh file, you use the ``-Ocolour=`` command line
   option to specify whether you want face colouring or vertex colouring.
   These two alternatives are represented by symbols, so the command line
   syntax is ``-Ocolour=#face`` or ``-Ocolour=#vertex``.
+
+.. _`Boolean values`: Boolean_Values.rst
 
 By convention, the symbol ``#null`` can be used as the null value.
 When exporting Curv data as JSON, ``#null`` is converted to JSON ``null``.
