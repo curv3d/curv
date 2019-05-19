@@ -4,7 +4,11 @@ The Boolean values are ``#true`` and ``#false``.
 They are used for making decisions:
 if some condition holds, do this, otherwise do that.
 
-The relational operators compare two values and return a boolean:
+Booleans are a special case of `Symbols`_.
+
+.. _`Symbols`: Variant.rst
+
+The relational operators compare two values and return a Boolean:
 
 ==============     ============================================
 ``a == b``         ``a`` is equal to ``b``
@@ -23,7 +27,7 @@ The ``==`` operator is an equivalence relation:
 * For any pair of values ``a`` and ``b``, if ``a==b`` then ``b==a``.
 * For any three values ``a``, ``b`` and ``c``, if ``a==b`` and ``b==c`` then ``a==c``.
 
-The logical operators take boolean values as arguments, and return a boolean:
+The logical operators take Boolean values as arguments, and return a Boolean:
 
 ==========   =============================================================
 ``a && b``   Logical and: True if ``a`` and ``b`` are both true.
@@ -31,16 +35,16 @@ The logical operators take boolean values as arguments, and return a boolean:
 ``!a``       Logical not: ``!true==false`` and ``!false==true``.
 ==========   =============================================================
 
-The conditional operator selects between two alternatives based on a boolean condition::
+The conditional operator selects between two alternatives based on a Boolean condition::
 
   if (condition) result_if_true else result_if_false
 
-For some algorithms, it is convenient to represent booleans as integers:
+For some algorithms, it is convenient to represent Booleans as integers:
 ``#true`` is ``1`` and ``#false`` is ``0``. We support this via conversions
-between boolean and integer:
+between Boolean and integer:
 
-* ``bit b`` -- convert boolean value ``b`` to an integer
-* ``i != 0`` -- convert an integer bit value ``i`` to a boolean
+* ``bit b`` -- convert Boolean value ``b`` to an integer
+* ``i != 0`` -- convert an integer bit value ``i`` to a Boolean
 
 ``is_bool value``
-  True if the value is boolean, false otherwise.
+  True if the value is Boolean, false otherwise.
