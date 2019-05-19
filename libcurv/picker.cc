@@ -86,13 +86,13 @@ Picker::Config::write_curv(std::ostream& out) const
             << "," << int_slider_.high_ << "]}";
         return;
     case Type::scale_picker:
-        out << "{scale_picker:null}";
+        out << "#scale_picker";
         return;
     case Type::checkbox:
-        out << "{checkbox:null}";
+        out << "#checkbox";
         return;
     case Type::colour_picker:
-        out << "{colour_picker:null}";
+        out << "#colour_picker";
         return;
     }
     out << "\"bad picker config type " << int(type_) << "\"";

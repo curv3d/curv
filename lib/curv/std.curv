@@ -1633,15 +1633,15 @@ int_slider(lo,hi) =
   };
 scale_picker =
   { call = is_num;
-    picker = {scale_picker:null};
+    picker = #scale_picker;
   };
 checkbox =
   { call = is_bool;
-    picker = {checkbox:null};
+    picker = #checkbox;
   };
 colour_picker =
   { call = is_vec3;
-    picker = {colour_picker:null};
+    picker = #colour_picker;
   };
 
 }

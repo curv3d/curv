@@ -66,6 +66,17 @@ Symbol_Ref value_to_symbol(Value val, const Context& cx)
         return false_sym;
     return val.to<Symbol>(cx);
 }
+Symbol_Ref value_to_symbol(Value val)
+{
+    static Symbol_Ref true_sym = make_symbol("true");
+    static Symbol_Ref false_sym = make_symbol("false");
+
+    if (val.eq(Value{true}))
+        return true_sym;
+    if (val.eq(Value{false}))
+        return false_sym;
+    return val.dycast<Symbol>();
+}
 Value Symbol_Ref::to_value() const
 {
     if (*this == "true")

@@ -52,11 +52,16 @@ Record::fields() const
 std::pair<Symbol_Ref, Value>
 value_to_variant(Value val, const Context& cx)
 {
-    Shared<Record> rec = val.to<Record>(cx);
-    if (rec->size() != 1)
-        throw Exception(cx, stringify(val, " is not a variant"));
-    auto i = rec->iter();
-    return std::pair<Symbol_Ref,Value>{i->key(), i->value(cx)};
+    auto sym = value_to_symbol(val);
+    if (!sym.empty()) {
+        return std::pair<Symbol_Ref,Value>{sym, missing};
+    }
+    Shared<Record> rec = val.dycast<Record>();
+    if (rec && rec->size() == 1) {
+        auto i = rec->iter();
+        return std::pair<Symbol_Ref,Value>{i->key(), i->value(cx)};
+    }
+    throw Exception(cx, stringify(val, " is not a variant"));
 }
 
 void
