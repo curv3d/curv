@@ -133,7 +133,7 @@ Viewed_Shape::write_json(std::ostream& out) const
         if (!first) out << ",";
         first = false;
         out << "{";
-        out << "\"name\":\"rv_" << p.first << "\"";
+        out << "\"name\":\"" << p.second.identifier_ << "\"";
         out << ",\"type\":\"" << p.second.pconfig_.sctype_ << "\"";
         out << ",\"value\":";
         p.second.pstate_.write_json(out, p.second.pconfig_.type_);
@@ -152,7 +152,7 @@ Viewed_Shape::write_curv(std::ostream& out) const
     out << ";\n  parameters: [\n";
     for (auto& p : param_) {
         out << "    {";
-        out << "name: \"rv_" << p.first << "\"";
+        out << "name: \"" << p.second.identifier_ << "\"";
         out << ", type: \"" << p.second.pconfig_.sctype_ << "\"";
         out << ", value: ";
         p.second.pstate_.write_curv(out, p.second.pconfig_.type_);
