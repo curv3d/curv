@@ -73,20 +73,25 @@ using the vendor supplied GPU driver.
 * On Linux, you have 3 choices:
 
   * Nvidia has the best GPU hardware. I recommend the Nvidia closed source driver.
-    The open source Nouveau driver is not supported: it is too slow and buggy, and
-    `Curv runs poorly on this driver`_.
     Any GPU supported by the latest Nvidia driver will
-    work with Curv. Eg, see this supported hardware list:
-    https://www.geforce.com/drivers/results/137276
+    work with Curv.
+
+    The open source Nouveau driver is slow and buggy. Curv runs too slow,
+    with visual glitches. If you don't mind driver hacking, there are some
+    mitigations you can try. See `issue #78`_.
+
   * An Intel GPU, using the Intel supplied open source driver (based on Mesa).
     Intel is your best choice if you want to use a driver that is free software.
     Any GPU supported by the latest Intel driver will work with Curv.
     You need Intel HD Graphics -- earlier GPU technology is not supported.
-  * An AMD GPU, using the AMDGPU-PRO (closed source) driver,
+
+  * An AMD GPU. I recommend using the AMDGPU-PRO (closed source) driver,
     which is only officially supported on Ubuntu LTS, Red Hat EL (not Fedora),
-    and SUSE. Unfortunately, `the open source AMD driver has a bug`_
-    which prevents some Curv programs from running.
-    If you avoid the Mesa driver, then your choice of Linux distro is very restricted with AMD.
+    and SUSE. 
+
+    `The open source AMD driver has a bug`_ which prevents some Curv programs from running.
+    If you don't mind driver hacking, read the bug report and try some of the mitigations
+    suggested there. You might need to install a new driver version and/or install driver patches.
 
 * If Curv is invoked within a VNC session, then it might not have direct
   access to GPU hardware (a slow software renderer is used instead of the GPU).
@@ -107,5 +112,5 @@ may not be prepared to deal with.
 
 .. _`TurboVNC`: https://turbovnc.org/About/Introduction
 .. _`VirtualGL`: https://virtualgl.org/About/Introduction
-.. _`Curv runs poorly on this driver`: https://github.com/curv3d/curv/issues/78
-.. _`the open source AMD driver has a bug`: https://bugs.freedesktop.org/show_bug.cgi?id=105371
+.. _`issue #78`: https://github.com/curv3d/curv/issues/78
+.. _`The open source AMD driver has a bug`: https://bugs.freedesktop.org/show_bug.cgi?id=105371
