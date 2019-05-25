@@ -122,11 +122,12 @@ void Param::get_locations(std::list<Location>& locs) const
 
 Shared<const String> Param::rewrite_message(Shared<const String> msg) const
 {
-    msg = stringify("at field .",make_symbol(name_),": ",msg);
     if (value_.opt) {
         return msg;
     } else {
-        return stringify(params_.config_path_, ": ", msg);
+        return stringify(
+            params_.config_path_, ": ",
+            "at field .",make_symbol(name_),": ",msg);
     }
 }
 
