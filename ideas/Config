@@ -18,8 +18,21 @@ and the result must be a record value.
 Otherwise, if the directory $XDG_CONFIG_HOME/curv exists, we evaluate it
 using directory syntax.
 
+Update: At present, I just import $XDG_CONFIG_HOME/curv using either file
+syntax or directory syntax.
+
+Accessing Configuration
+-----------------------
 In libcurv, Curv configuration is stored in System::config_,
-as a value of type Shared<const Record>.
+as a value of type Shared<const Record>. Not implemented yet; don't need it.
+So far config is only used to provide defaults for export parameters in the
+Curv program, and libcurv knows nothing about this.
+
+Idea: `config` is a builtin binding.
+It sounds cool, but why do I need it? What are the use cases?
+Curv is a file format for sharing geometric models, and it's not obviously
+good for shared models to depend on config. So I've leave this feature out
+until required.
 
 The Config Namespace
 --------------------
@@ -45,6 +58,11 @@ So then I need a 2-level namespace, eg like:
       aa, taa, fdur, bg
     image
       xsize, ysize, fstart, animate, + the Frag options
+I like this one better:
+  config
+    export
+    viewer
+    repl
 
 Command Line Overrides
 ----------------------
