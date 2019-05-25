@@ -144,13 +144,16 @@ Export_Params::Export_Params(
 {
     for (auto& opt : options)
         map_[opt.first] = {opt.second, curv::missing};
-    config->each_field(At_System(sys), [&](Symbol_Ref sym, Value val)->void {
-        auto field = map_.find(sym.c_str());
-        if (field != map_.end())
-            field->second.config = val;
-        else
-            map_[sym.c_str()] = {nullptr, val};
-    });
+    if (config) {
+        config->each_field(At_System(sys),
+            [&](Symbol_Ref sym, Value val)->void {
+                auto field = map_.find(sym.c_str());
+                if (field != map_.end())
+                    field->second.config = val;
+                else
+                    map_[sym.c_str()] = {nullptr, val};
+            });
+    }
 }
 
 void export_curv(Value value,
