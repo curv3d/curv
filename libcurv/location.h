@@ -28,6 +28,8 @@ private:
     Token token_;
 
 public:
+    Location() {}
+
     Location(const Source& source, Token token)
     :
         source_(share(source)),

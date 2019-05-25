@@ -33,79 +33,124 @@
 
 using namespace curv;
 
-Param_Program::Param_Program(
-    const Export_Params& params,
-    const Export_Params::Map::value_type& p)
-:
-    Program(
-        make<String_Source>("", stringify("-O ",p.first,"=",p.second)),
-        params.system_,
-        Program_Opts().skip_prefix(4+p.first.size()))
-{}
-
-Value Param_Program::eval()
+Value Param::eval(Value defl)
 {
-    if (phrase_ == nullptr)
-        compile();
-    if (isa<const Empty_Phrase>(nub_phrase(phrase_)))
-        throw Exception(At_Program(*this), "missing argument");
-    return Program::eval();
-}
-
-void Export_Params::unknown_parameter(const Map::value_type& p) const
-{
-    auto src = make<String_Source>("", stringify("-O ",p.first,"=",p.second));
-    Location loc{*src, {3, unsigned(3+p.first.size())}};
-    if (format_.empty()) {
-        throw Exception(At_Token{loc, system_}, stringify(
-            "'",p.first,"': Unknown -O parameter.\n"
-            "Use 'curv --help' for help."));
+    if (value_.opt) {
+        auto src = make<String_Source>("",
+            stringify("-O ",name_,"=",value_.opt));
+        Program prog(
+            src,
+            params_.system_,
+            Program_Opts().skip_prefix(4+name_.size()));
+        prog.compile();
+        auto nub = nub_phrase(prog.phrase_);
+        loc_ = nub->location();
+        if (isa<const Empty_Phrase>(nub)) {
+            if (!defl.is_missing())
+                return defl;
+            else
+                throw Exception(At_Program(prog), "missing argument");
+        }
+        return prog.eval();
     } else {
-        throw Exception(At_Token{loc, system_}, stringify(
-            "'",p.first,"': "
-            "Unknown -O parameter for output format '",format_,"'.\n"
-            "Use 'curv --help -o ",format_,"' for help."));
+        return value_.config;
     }
 }
 
-int Export_Params::to_int(const Map::value_type& p, int lo, int hi) const
+int Param::to_int(int lo, int hi)
 {
-    Param_Program pp(*this, p);
-    return pp.eval().to_int(lo, hi, At_Program(pp));
+    return eval().to_int(lo, hi, *this);
 }
 
-double Export_Params::to_double(const Map::value_type& p) const
+double Param::to_double()
 {
-    Param_Program pp(*this, p);
-    return pp.eval().to_num(At_Program(pp));
+    return eval().to_num(*this);
 }
 
-glm::dvec3 Export_Params::to_vec3(const Map::value_type& p) const
+double Param::to_double(double defl)
 {
-    Param_Program pp(*this, p);
-    At_Program cx(pp);
+    return eval(defl).to_num(*this);
+}
+
+glm::dvec3 Param::to_vec3()
+{
     glm::dvec3 result;
-    Value val = pp.eval();
-    auto list = val.to<List>(cx);
-    list->assert_size(3, cx);
-    result.x = list->at(0).to_num(At_Index(0, cx));
-    result.y = list->at(1).to_num(At_Index(1, cx));
-    result.z = list->at(2).to_num(At_Index(2, cx));
+    auto list = eval().to<List>(*this);
+    list->assert_size(3, *this);
+    result.x = list->at(0).to_num(At_Index(0, *this));
+    result.y = list->at(1).to_num(At_Index(1, *this));
+    result.z = list->at(2).to_num(At_Index(2, *this));
     return result;
 }
 
-bool Export_Params::to_bool(const Map::value_type& p) const
+bool Param::to_bool()
 {
-    if (p.second.empty())
-        return true;
-    Param_Program pp(*this, p);
-    return pp.eval().to_bool(At_Program(pp));
+    return eval(true).to_bool(*this);
 }
 
-curv::Symbol_Ref Export_Params::to_symbol(const Map::value_type& p) const
+curv::Symbol_Ref Param::to_symbol()
 {
-    Param_Program pp(*this, p);
-    return value_to_symbol(pp.eval(), At_Program(pp));
+    auto val = eval();
+    return value_to_symbol(val, *this);
+}
+
+void Param::unknown_parameter() const
+{
+    if (value_.opt) {
+        auto src = make<String_Source>("",
+            stringify("-O ",name_,"=",value_.opt));
+        Location loc{*src, {3, unsigned(3+name_.size())}};
+        if (params_.format_.empty()) {
+            throw Exception(At_Token{loc, params_.system_}, stringify(
+                "'",name_,"': Unknown -O parameter.\n"
+                "Use 'curv --help' for help."));
+        } else {
+            throw Exception(At_Token{loc, params_.system_}, stringify(
+                "'",name_,"': "
+                "Unknown -O parameter for output format '",params_.format_,"'.\n"
+                "Use 'curv --help -o ",params_.format_,"' for help."));
+        }
+    }
+}
+
+void Param::get_locations(std::list<Location>& locs) const
+{
+    if (value_.opt) {
+        locs.push_back(loc_);
+    }
+}
+
+Shared<const String> Param::rewrite_message(Shared<const String> msg) const
+{
+    msg = stringify("at field .",make_symbol(name_),": ",msg);
+    if (value_.opt) {
+        return msg;
+    } else {
+        return stringify(params_.config_path_, ": ", msg);
+    }
+}
+
+System& Param::system() const { return params_.system_; }
+Frame* Param::frame() const { return nullptr; }
+
+Export_Params::Export_Params(
+    Options options,
+    curv::Shared<const curv::Record> config,
+    curv::Shared<const curv::String> config_path,
+    curv::System& sys)
+:
+    config_path_(config_path),
+    system_(sys)
+{
+    for (auto& opt : options)
+        map_[opt.first] = {opt.second, curv::missing};
+    config->each_field(At_System(sys), [&](Symbol_Ref sym, Value val)->void {
+        auto field = map_.find(sym.c_str());
+        if (field != map_.end())
+            field->second.config = val;
+        else
+            map_[sym.c_str()] = {nullptr, val};
+    });
 }
 
 void export_curv(Value value,
@@ -113,8 +158,9 @@ void export_curv(Value value,
     const Export_Params& params,
     Output_File& ofile)
 {
-    for (auto& p : params.map_) {
-        params.unknown_parameter(p);
+    for (auto& i : params.map_) {
+        Param p(params, i);
+        p.unknown_parameter();
     }
     ofile.open();
     ofile.ostream() << value << "\n";
@@ -145,33 +191,32 @@ void describe_frag_opts(std::ostream& out)
     describe_frag_options(out, "");
 }
 
-bool parse_frag_opt(
-    const Export_Params& params,
-    const Export_Params::Map::value_type& p,
+bool parse_frag_param(
+    Param& p,
     Frag_Export& opts)
 {
-    if (p.first == "aa") {
-        opts.aa_ = params.to_int(p, 1, INT_MAX);
+    if (p.name_ == "aa") {
+        opts.aa_ = p.to_int(1, INT_MAX);
         return true;
     }
-    if (p.first == "taa") {
-        opts.taa_ = params.to_int(p, 1, INT_MAX);
+    if (p.name_ == "taa") {
+        opts.taa_ = p.to_int(1, INT_MAX);
         return true;
     }
-    if (p.first == "fdur") {
-        opts.fdur_ = params.to_double(p);
+    if (p.name_ == "fdur") {
+        opts.fdur_ = p.to_double();
         return true;
     }
-    if (p.first == "bg") {
-        opts.bg_ = params.to_vec3(p);
+    if (p.name_ == "bg") {
+        opts.bg_ = p.to_vec3();
         return true;
     }
-    if (p.first == "ray_max_iter") {
-        opts.ray_max_iter_ = params.to_int(p, 1, INT_MAX);
+    if (p.name_ == "ray_max_iter") {
+        opts.ray_max_iter_ = p.to_int(1, INT_MAX);
         return true;
     }
-    if (p.first == "ray_max_depth") {
-        opts.ray_max_depth_ = params.to_double(p);
+    if (p.name_ == "ray_max_depth") {
+        opts.ray_max_depth_ = p.to_double();
         return true;
     }
     return false;
@@ -182,8 +227,9 @@ void export_cpp(Value value,
     const Export_Params& params,
     Output_File& ofile)
 {
-    for (auto& p : params.map_) {
-        params.unknown_parameter(p);
+    for (auto& i : params.map_) {
+        Param p{params, i};
+        p.unknown_parameter();
     }
     Shape_Program shape(prog);
     if (!shape.recognize(value)) {
@@ -199,8 +245,9 @@ void export_json(Value value,
     const Export_Params& params,
     Output_File& ofile)
 {
-    for (auto& p : params.map_) {
-        params.unknown_parameter(p);
+    for (auto& i : params.map_) {
+        Param p{params, i};
+        p.unknown_parameter();
     }
     ofile.open();
     write_json_value(value, ofile.ostream());
@@ -211,9 +258,10 @@ void export_gpu(Value value,
     Program& prog, const Export_Params& params, Output_File& ofile)
 {
     Frag_Export opts;
-    for (auto& p : params.map_) {
-        if (!parse_frag_opt(params, p, opts))
-            params.unknown_parameter(p);
+    for (auto& i : params.map_) {
+        Param p{params, i};
+        if (!parse_frag_param(p, opts))
+            p.unknown_parameter();
     }
 
     ofile.open();
@@ -287,19 +335,20 @@ void export_png(Value value,
     int xsize = 0;
     int ysize = 0;
     double animate = 0.0;
-    for (auto& p : params.map_) {
-        if (parse_frag_opt(params, p, ix)) {
+    for (auto& i : params.map_) {
+        Param p{params, i};
+        if (parse_frag_param(p, ix)) {
             ;
-        } else if (p.first == "xsize") {
-            xsize = params.to_int(p, 1, INT_MAX);
-        } else if (p.first == "ysize") {
-            ysize = params.to_int(p, 1, INT_MAX);
-        } else if (p.first == "fstart") {
-            ix.fstart_ = params.to_double(p);
-        } else if (p.first == "animate") {
-            animate = params.to_double(p);
+        } else if (p.name_ == "xsize") {
+            xsize = p.to_int(1, INT_MAX);
+        } else if (p.name_ == "ysize") {
+            ysize = p.to_int(1, INT_MAX);
+        } else if (p.name_ == "fstart") {
+            ix.fstart_ = p.to_double();
+        } else if (p.name_ == "animate") {
+            animate = p.to_double();
         } else {
-            params.unknown_parameter(p);
+            p.unknown_parameter();
         }
     }
 
@@ -391,11 +440,12 @@ void parse_viewer_config(
     geom::viewer::Viewer_Config& opts)
 {
     opts.verbose_ = params.verbose_;
-    for (auto& p : params.map_) {
-        if (p.first == "lazy")
-            opts.lazy_ = params.to_bool(p);
-        else if (!parse_frag_opt(params, p, opts))
-            params.unknown_parameter(p);
+    for (auto& i : params.map_) {
+        Param p{params, i};
+        if (p.name_ == "lazy")
+            opts.lazy_ = p.to_bool();
+        else if (!parse_frag_param(p, opts))
+            p.unknown_parameter();
     }
 }
 void describe_viewer_options(std::ostream& out, const char* prefix)

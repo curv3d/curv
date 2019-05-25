@@ -93,19 +93,6 @@ void put_vertex_colour(std::ostream& out, curv::Shape& shape, Vec3s v)
     out << " " << c.x << " " << c.y << " " << c.z;
 }
 
-double param_to_double(Export_Params::Map::const_iterator i)
-{
-    char *endptr;
-    double result = strtod(i->second.c_str(), &endptr);
-    if (endptr == i->second.c_str() || result != result) {
-        // error
-        std::cerr << "invalid number in: -O "<< i->first.c_str() << "='"
-            << i->second.c_str() << "'\n";
-        exit(EXIT_FAILURE);
-    }
-    return result;
-}
-
 inline glm::vec3 V3(Vec3s v)
 {
     return glm::vec3{v.x(), v.y(), v.z()};
@@ -141,40 +128,31 @@ void export_mesh(Mesh_Format format, curv::Value value,
     double vsize = 0.0;
     double adaptive = 0.0;
     enum {face_colour, vertex_colour} colourtype = face_colour;
-    for (auto& p : params.map_) {
-        if (p.first == "jit")
-            jit = params.to_bool(p);
-        else if (p.first == "vsize") {
-            vsize = params.to_double(p);
+    for (auto& i : params.map_) {
+        Param p{params, i};
+        if (p.name_ == "jit")
+            jit = p.to_bool();
+        else if (p.name_ == "vsize") {
+            vsize = p.to_double();
             if (vsize <= 0.0) {
-                Param_Program pp{params,p};
-                throw curv::Exception(curv::At_Program(pp),
-                    "'vsize' must be positive");
+                throw curv::Exception(p, "'vsize' must be positive");
             }
-        } else if (p.first == "adaptive") {
-            if (p.second.empty())
-                adaptive = 1.0;
-            else {
-                adaptive = params.to_double(p);
-                if (adaptive < 0.0 || adaptive > 1.0) {
-                    Param_Program pp{params,p};
-                    throw curv::Exception(curv::At_Program(pp),
-                        "'adaptive' must be in range 0...1");
-                }
+        } else if (p.name_ == "adaptive") {
+            adaptive = p.to_double(1.0);
+            if (adaptive < 0.0 || adaptive > 1.0) {
+                throw curv::Exception(p, "'adaptive' must be in range 0...1");
             }
-        } else if (format == Mesh_Format::x3d_format && p.first == "colour") {
-            auto val = params.to_symbol(p);
+        } else if (format == Mesh_Format::x3d_format && p.name_ == "colour") {
+            auto val = p.to_symbol();
             if (val == "face")
                 colourtype = face_colour;
             else if (val == "vertex")
                 colourtype = vertex_colour;
             else {
-                Param_Program pp{params,p};
-                throw curv::Exception(curv::At_Program(pp),
-                    "'colour' must be #face or #vertex");
+                throw curv::Exception(p, "'colour' must be #face or #vertex");
             }
         } else
-            params.unknown_parameter(p);
+            p.unknown_parameter();
     }
 
     std::unique_ptr<curv::geom::Compiled_Shape> cshape = nullptr;

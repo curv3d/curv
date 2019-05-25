@@ -8,6 +8,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <libcurv/context.h>
 #include <libcurv/output_file.h>
 #include <libcurv/program.h>
 #include <libcurv/symbol.h>
@@ -20,26 +21,69 @@ struct Viewer_Config;
 
 struct Export_Params
 {
-    Export_Params(curv::System& sys) : system_(sys) {}
-    using Map = std::map<std::string, std::string>;
+    using Options = std::map<std::string, curv::Shared<const curv::String>>;
+    struct PValue {
+        curv::Shared<const curv::String> opt;
+        curv::Value config;
+    };
+    using Map = std::map<std::string, PValue>;
+
+    Export_Params(
+        Options options,
+        curv::Shared<const curv::Record> config,
+        curv::Shared<const curv::String> config_path,
+        curv::System& sys);
+
+    curv::Shared<const curv::String> config_path_;
     curv::System& system_;
     std::string format_;
     Map map_;
     bool verbose_ = false;
-    [[noreturn]] void unknown_parameter(const Map::value_type&) const;
-    int to_int(const Map::value_type&, int, int) const;
-    double to_double(const Map::value_type&) const;
-    glm::dvec3 to_vec3(const Map::value_type&) const;
-    bool to_bool(const Map::value_type&) const;
-    curv::Symbol_Ref to_symbol(const Map::value_type&) const;
 };
 
-struct Param_Program : public curv::Program
+struct Param : public curv::Context
 {
-    Param_Program(
+    Param(
         const Export_Params& params,
-        const Export_Params::Map::value_type& p);
-    curv::Value eval();
+        const Export_Params::Map::value_type& p)
+    :
+        params_(params),
+        name_(p.first),
+        value_(p.second),
+        loc_()
+    {}
+
+    const Export_Params& params_;
+    const std::string& name_;
+    const Export_Params::PValue& value_;
+    curv::Location loc_;
+
+    // First, ye must evaluate the parameter.
+    // If the parameter was specified as a command line option `-Ofoo`
+    // (without `=value` at the end) and `defl` is not missing,
+    // then `defl` is returned.
+    curv::Value eval(curv::Value defl = curv::missing);
+
+    // These are high level wrappers that call eval() and then validate
+    // the parameter value.
+    int to_int(int, int);
+    double to_double();
+    double to_double(double);
+    glm::dvec3 to_vec3();
+    bool to_bool();
+    curv::Symbol_Ref to_symbol();
+
+    void unknown_parameter() const;
+
+    // After eval() is called, ye may report a bad value by throwing
+    // an Exception, using the Param as a context. But throw not
+    // before calling eval(), because the Param is not yet initialized
+    // as a Context.
+    virtual void get_locations(std::list<curv::Location>&) const override;
+    virtual curv::Shared<const curv::String> rewrite_message(
+        curv::Shared<const curv::String>) const override;
+    virtual curv::System& system() const override;
+    virtual curv::Frame* frame() const override;
 };
 
 struct Exporter

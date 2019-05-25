@@ -10,8 +10,8 @@ extern "C" {
 #include <iostream>
 #include <fstream>
 
+#include "config.h"
 #include "export.h"
-#include <libcurv/progdir.h>
 #include "repl.h"
 #include "shapes.h"
 #include "livemode.h"
@@ -22,6 +22,7 @@ extern "C" {
 #include <libcurv/exception.h>
 #include <libcurv/gpu_program.h>
 #include <libcurv/output_file.h>
+#include <libcurv/progdir.h>
 #include <libcurv/program.h>
 #include <libcurv/source.h>
 #include <libcurv/system.h>
@@ -110,7 +111,7 @@ main(int argc, char** argv)
     fs::path opath;
     using ExPtr = decltype(exporters)::const_iterator;
     ExPtr exporter = exporters.end();
-    Export_Params::Map oparam_map;
+    Export_Params::Options options;
     bool verbose = false;
     bool live = false;
     std::list<const char*> libs;
@@ -162,10 +163,10 @@ main(int argc, char** argv)
           {
             char* eq = strchr(optarg, '=');
             if (eq == nullptr) {
-                oparam_map[std::string(optarg)] = std::string("");
+                options[std::string(optarg)] = curv::make_string("");
             } else {
                 *eq = '\0';
-                oparam_map[std::string(optarg)] = std::string(eq+1);
+                options[std::string(optarg)] = curv::make_string(eq+1);
                 *eq = '=';
             }
             break;
@@ -268,10 +269,11 @@ main(int argc, char** argv)
     curv::System& sys(make_system(usestdlib, libs, std::cerr));
     atexit(curv::geom::remove_all_tempfiles);
 
-    Export_Params oparams(sys);
+    curv::Shared<const curv::String> config_path;
+    auto config = get_config(curv::At_System(sys), config_path);
+    Export_Params oparams(std::move(options), config, config_path, sys);
     if (exporter != exporters.end())
         oparams.format_ = exporter->first;
-    std::swap(oparams.map_, oparam_map);
     oparams.verbose_ = verbose;
 
     try {
