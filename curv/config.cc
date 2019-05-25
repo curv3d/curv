@@ -52,14 +52,17 @@ get_config(const Context& cx, Shared<const String>&cpath_out)
     } else {
         config_dir = XDG_CONFIG_HOME;
     }
+  #if 0
+    // I changed my mind about supporting multiple config file names.
     fs::path cpath = config_dir / "curv.curv";
     auto config = load_config(cpath, cx);
     if (config != nullptr) {
         cpath_out = make_string(cpath.c_str());
         return config;
     }
-    cpath = config_dir / "curv";
-    config = load_config(cpath, cx);
+  #endif
+    auto cpath = config_dir / "curv";
+    auto config = load_config(cpath, cx);
     if (config != nullptr) {
         cpath_out = make_string(cpath.c_str());
         return config;
