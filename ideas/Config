@@ -1,6 +1,9 @@
 Curv has an optional user-defined configuration file, which the `curv`
 command reads during startup.
 
+The configuration file provides default values for -O options which are
+given on the command line.
+
 Loading the Config File
 -----------------------
 $XDG_CONFIG_HOME defines the base directory relative to which the Curv
@@ -67,6 +70,38 @@ Algorithm for parsing configuration and -O options.
   modelled after parse_frag_opt(). This validates a name/value pair from
   either the config, or from a -O option.
 * template<T> typedef bool (*Parse_Opt)(
+
+Let's say there is a flat config namespace, and we ignore names not relevant
+to the current export context.
+ 1. An option structure like Frag_Export is default initialized.
+ 2. config values with matching names are copied into the option struct,
+    unknown names are ignored. curv::Values are converted to the correct type.
+ 3. All of the -O options are processed. Bad names are reported as an error.
+    Strings are evaluated as Curv values, then converted to the correct type.
+What API do we use?
+
+I could extend the Export_Param::Map to contain a string field (for the -O
+value) and a Value field (for the config value). Load the config record into
+the Export_Param::Map. Then, the current API is mostly unaffected and only
+the internal implementation of Export_Params needs to change.
+
+A Map item now contains a string `opt` and an Value `config`, both nullable.
+How do we evaluate it?
+* Currently we build a Param_Prog pp(*this, p), then we use pp.eval()
+  and At_Program(pp) as an error context.
+* If the parameter has no opt string, only a config value, then we still
+  need a Context for reporting a type or range error on the config value.
+* The minimum config context is the pathname of the root config file and
+  the data path of the config field.
+* Alternatively, we need the 'Program' for the config source file.
+  The important part is the Location. But, what if the config file
+  is a directory tree containing multiple *.curv files?
+  The config value containing the error could come from multiple sources.
+  Tracking this is tricky. In theory, this information can be reconstructed
+  from the minimum config context.
+
+At_Param cx(*this, p);
+cx.eval(deflval)
 
 Lighting Models
 ---------------
