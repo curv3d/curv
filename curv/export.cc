@@ -53,6 +53,7 @@ Value Param::eval(Value defl)
         }
         return prog.eval();
     } else {
+        loc_ = Location{make<Source>(params_.config_path_), Token{}};
         return value_.config;
     }
 }
@@ -97,9 +98,9 @@ curv::Symbol_Ref Param::to_symbol()
 void Param::unknown_parameter() const
 {
     if (value_.opt) {
-        auto src = make<String_Source>("",
-            stringify("-O ",name_,"=",value_.opt));
-        Location loc{*src, {3, unsigned(3+name_.size())}};
+        Location loc{
+            make<String_Source>("", stringify("-O ",name_,"=",value_.opt)),
+            {3, unsigned(3+name_.size())}};
         if (params_.format_.empty()) {
             throw Exception(At_Token{loc, params_.system_}, stringify(
                 "'",name_,"': Unknown -O parameter.\n"
@@ -115,9 +116,7 @@ void Param::unknown_parameter() const
 
 void Param::get_locations(std::list<Location>& locs) const
 {
-    if (value_.opt) {
-        locs.push_back(loc_);
-    }
+    locs.push_back(loc_);
 }
 
 Shared<const String> Param::rewrite_message(Shared<const String> msg) const
@@ -126,7 +125,6 @@ Shared<const String> Param::rewrite_message(Shared<const String> msg) const
         return msg;
     } else {
         return stringify(
-            params_.config_path_, ": ",
             "at field .",make_symbol(name_),": ",msg);
     }
 }

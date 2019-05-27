@@ -50,7 +50,7 @@ const
 {
     if (phrase_ == nullptr) {
         return Location{
-            *scanner_.source_,
+            scanner_.source_,
             Token{unsigned(scanner_.ptr_ - scanner_.source_->begin()),
                   unsigned(scanner_.source_->size())}};
     } else {

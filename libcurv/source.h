@@ -14,6 +14,7 @@ namespace curv {
 struct Context;
 
 /// Abstract base class: the name and contents of a source file.
+/// Either the name or contents can be missing (but not both).
 ///
 /// The name is just an uninterpreted utf8 string for now, will later be
 /// a filename or uri. If there is no filename, then the name is a zero-length
@@ -21,6 +22,8 @@ struct Context;
 ///
 /// The contents are a const utf-8 character array.
 /// Subclasses provide storage management for the contents.
+/// The contents can be null (different from zero length),
+/// in which case error messages only report the file name.
 struct Source : public Shared_Base, public Range<const char*>
 {
     enum class Type { curv, gpu };
@@ -33,6 +36,12 @@ protected:
         Range(f,l), name_(std::move(name))
     {}
 public:
+    Source(String_Ref name)
+    :
+        Range(nullptr,nullptr), name_(std::move(name))
+    {}
+    bool no_name() const { return name_->empty(); }
+    bool no_contents() const { return first == nullptr; }
     virtual ~Source() {}
 };
 

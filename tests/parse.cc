@@ -11,7 +11,7 @@ TEST(curv, parse)
     t1.first_ = 3;
     t1.first_white_ = 3;
     t1.last_ = 3;
-    Location l1(*s1, t1);
+    Location l1(s1, t1);
     Location::Line_Info li1 = l1.line_info();
 
     ASSERT_EQ(li1.start_line_num, 0u);
@@ -25,7 +25,7 @@ TEST(curv, parse)
     t2.first_ = 5;
     t2.first_white_ = 5;
     t2.last_ = 6;
-    Location l2(*s2, t2);
+    Location l2(s2, t2);
     Location::Line_Info li2 = l2.line_info();
 
     ASSERT_EQ(li2.start_line_num, 1u);

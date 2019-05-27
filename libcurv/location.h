@@ -30,9 +30,9 @@ private:
 public:
     Location() {}
 
-    Location(const Source& source, Token token)
+    Location(Shared<const Source> source, Token token)
     :
-        source_(share(source)),
+        source_(std::move(source)),
         token_(std::move(token))
     {}
 

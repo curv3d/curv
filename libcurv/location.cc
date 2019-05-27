@@ -143,6 +143,11 @@ Location::write(std::ostream& out, bool colour, bool many) const
     // Inspiration: http://clang.llvm.org/diagnostics.html
     // and http://elm-lang.org/blog/compiler-errors-for-humans
 
+    if (source_->no_contents()) {
+        out << "at file \"" << filename() << "\"";
+        return;
+    }
+
     auto info = line_info();
 
     // Output filename and line number, followed by newline.
@@ -185,6 +190,14 @@ Location::write(std::ostream& out, bool colour, bool many) const
 void
 Location::write_json(std::ostream& out) const
 {
+    if (source_->no_contents()) {
+        out << "{";
+        out << "\"filename\":";
+        write_json_string(filename().c_str(), out);
+        out << "}";
+        return;
+    }
+
     auto info = line_info();
 
     out << "{\"start\":{\"char\":" << token().first_
