@@ -53,7 +53,7 @@ Value Param::eval(Value defl)
         }
         return prog.eval();
     } else {
-        loc_ = Location{make<Source>(params_.config_path_), Token{}};
+        loc_ = Location{make<Source>(params_.config_.filename_), Token{}};
         return value_.config;
     }
 }
@@ -125,7 +125,8 @@ Shared<const String> Param::rewrite_message(Shared<const String> msg) const
         return msg;
     } else {
         return stringify(
-            "at field .",make_symbol(name_),": ",msg);
+            "at field .",params_.config_.branchname_,
+            ".",make_symbol(name_),": ",msg);
     }
 }
 
@@ -134,17 +135,16 @@ Frame* Param::frame() const { return nullptr; }
 
 Export_Params::Export_Params(
     Options options,
-    curv::Shared<const curv::Record> config,
-    curv::Shared<const curv::String> config_path,
+    const Config& config,
     curv::System& sys)
 :
-    config_path_(config_path),
+    config_(config),
     system_(sys)
 {
     for (auto& opt : options)
         map_[opt.first] = {opt.second, curv::missing};
-    if (config) {
-        config->each_field(At_System(sys),
+    if (config.branch_) {
+        config.branch_->each_field(At_System(sys),
             [&](Symbol_Ref sym, Value val)->void {
                 auto field = map_.find(sym.c_str());
                 if (field != map_.end())

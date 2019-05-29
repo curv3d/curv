@@ -269,14 +269,14 @@ main(int argc, char** argv)
     curv::System& sys(make_system(usestdlib, libs, std::cerr));
     atexit(curv::geom::remove_all_tempfiles);
 
-    curv::Shared<const curv::String> config_path;
-    auto config = get_config(curv::At_System(sys), config_path);
-    Export_Params oparams(std::move(options), config, config_path, sys);
-    if (exporter != exporters.end())
-        oparams.format_ = exporter->first;
-    oparams.verbose_ = verbose;
-
     try {
+        auto config = get_config(sys, curv::make_symbol(
+            exporter == exporters.end() ? "viewer" : "export"));
+        Export_Params oparams(std::move(options), config, sys);
+        if (exporter != exporters.end())
+            oparams.format_ = exporter->first;
+        oparams.verbose_ = verbose;
+
         curv::geom::viewer::Viewer_Config viewer_config;
         if (exporter == exporters.end())
             parse_viewer_config(oparams, viewer_config);

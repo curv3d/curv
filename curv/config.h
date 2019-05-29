@@ -8,8 +8,26 @@
 #include <libcurv/context.h>
 #include <libcurv/record.h>
 
-curv::Shared<const curv::Record> get_config(
-    const curv::Context&,
-    curv::Shared<const curv::String>&);
+struct Config {
+    Config() {}
+    Config(
+        curv::Shared<const curv::Record> root,
+        curv::Shared<const curv::Record> branch,
+        curv::String_Ref filename,
+        curv::Symbol_Ref branchname)
+    :
+        root_(root),
+        branch_(branch),
+        filename_(filename),
+        branchname_(branchname)
+    {}
+    bool is_empty() const { return root_ == nullptr; }
+    curv::Shared<const curv::Record> root_;
+    curv::Shared<const curv::Record> branch_;
+    curv::Shared<const curv::String> filename_;
+    curv::Symbol_Ref branchname_;
+};
+
+Config get_config(curv::System&, curv::Symbol_Ref);
 
 #endif // header guard

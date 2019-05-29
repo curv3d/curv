@@ -17,36 +17,55 @@ extern "C" {
 using namespace curv;
 namespace fs = curv::Filesystem;
 
-Shared<const Record>
-load_config(const fs::path& name, const Context& cx)
+struct At_Path : public Context
 {
-    int r = access(name.c_str(), R_OK);
-    if (r == 0) {
-        Value val = import(name, cx);
-        auto config = val.dycast<const Record>();
-        if (config == nullptr)
-            throw Exception(cx,
-                stringify(name, ": config data is not a record value"));
-        return config;
+    System& sys_;
+    fs::path& path_;
+
+    At_Path(System& sys, fs::path& path)
+    :
+        sys_(sys),
+        path_(path)
+    {}
+
+    virtual void get_locations(std::list<Location>& locs) const override
+    {
+        locs.emplace_back(make<Source>(path_.c_str()), Token{});
     }
+    virtual System& system() const override
+    {
+        return sys_;
+    }
+    virtual Frame* frame() const override
+    {
+        return nullptr;
+    }
+};
+
+Shared<const Record>
+load_config(const At_Path& cx)
+{
+    int r = access(cx.path_.c_str(), R_OK);
+    if (r == 0)
+        return import(cx.path_, cx).to<Record>(cx);
     if (errno == ENOENT)
         return nullptr;
-    throw Exception(cx, stringify(name, ": ", strerror(errno)));
+    throw Exception(cx, strerror(errno));
 }
 
 // Find the user's Curv config file, evaluate it, and return the config value.
 // If the config file cannot be found, return missing.
 // If an error occurs during processing (or an access error occurs while
 // opening the file), then throw an exception.
-Shared<const Record>
-get_config(const Context& cx, Shared<const String>&cpath_out)
+Config
+get_config(System& sys, Symbol_Ref branchname)
 {
     fs::path config_dir;
     const char* XDG_CONFIG_HOME = getenv("XDG_CONFIG_HOME");
     if (XDG_CONFIG_HOME == nullptr || XDG_CONFIG_HOME[0] == '\0') {
         const char* HOME = getenv("HOME");
         if (HOME == nullptr || HOME[0] == '\0')
-            return nullptr;
+            return Config{};
         config_dir = HOME;
         config_dir /= ".config";
     } else {
@@ -62,10 +81,14 @@ get_config(const Context& cx, Shared<const String>&cpath_out)
     }
   #endif
     auto cpath = config_dir / "curv";
-    auto config = load_config(cpath, cx);
-    if (config != nullptr) {
-        cpath_out = make_string(cpath.c_str());
-        return config;
+    At_Path cx(sys, cpath);
+    auto root = load_config(cx);
+    if (root != nullptr) {
+        Value branchval = root->find_field(branchname, cx);
+        if (!branchval.is_missing()) {
+            auto branch = branchval.to<Record>(At_Field(branchname.c_str(), cx));
+            return Config{root, branch, cpath.c_str(), branchname};
+        }
     }
-    return nullptr;
+    return Config{};
 }

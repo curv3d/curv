@@ -5,15 +5,16 @@
 #ifndef EXPORT_H
 #define EXPORT_H
 
-#include <iostream>
-#include <map>
-#include <string>
+#include "config.h"
 #include <libcurv/context.h>
 #include <libcurv/output_file.h>
 #include <libcurv/program.h>
 #include <libcurv/symbol.h>
 #include <libcurv/value.h>
 #include <glm/vec3.hpp>
+#include <iostream>
+#include <map>
+#include <string>
 
 namespace curv { namespace geom { namespace viewer {
 struct Viewer_Config;
@@ -30,11 +31,10 @@ struct Export_Params
 
     Export_Params(
         Options options,
-        curv::Shared<const curv::Record> config,
-        curv::Shared<const curv::String> config_path,
+        const Config& config,
         curv::System& sys);
 
-    curv::Shared<const curv::String> config_path_;
+    const Config& config_;
     curv::System& system_;
     std::string format_;
     Map map_;
