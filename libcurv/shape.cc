@@ -64,37 +64,20 @@ Shape_Program::recognize(Value val)
     static Symbol_Ref dist_key = make_symbol("dist");
     static Symbol_Ref colour_key = make_symbol("colour");
 
-    Value is_2d_val;
-    Value is_3d_val;
-    Value bbox_val;
-    Value dist_val;
-    Value colour_val;
-
     At_Program cx(*this);
 
     auto r = val.dycast<Record>();
-    if (r == nullptr)
-        return false;
-    if (r->hasfield(is_2d_key))
-        is_2d_val = r->getfield(is_2d_key, cx);
-    else
-        return false;
-    if (r->hasfield(is_3d_key))
-        is_3d_val = r->getfield(is_3d_key, cx);
-    else
-        return false;
-    if (r->hasfield(bbox_key))
-        bbox_val = r->getfield(bbox_key, cx);
-    else
-        return false;
-    if (r->hasfield(dist_key))
-        dist_val = r->getfield(dist_key, cx);
-    else
-        return false;
-    if (r->hasfield(colour_key))
-        colour_val = r->getfield(colour_key, cx);
-    else
-        return false;
+    if (r == nullptr) return false;
+    Value is_2d_val = r->find_field(is_2d_key, cx);
+    if (is_2d_val.is_missing()) return false;
+    Value is_3d_val = r->find_field(is_3d_key, cx);
+    if (is_3d_val.is_missing()) return false;
+    Value bbox_val = r->find_field(bbox_key, cx);
+    if (bbox_val.is_missing()) return false;
+    Value dist_val = r->find_field(dist_key, cx);
+    if (dist_val.is_missing()) return false;
+    Value colour_val = r->find_field(colour_key, cx);
+    if (colour_val.is_missing()) return false;
 
     is_2d_ = is_2d_val.to_bool(At_Field("is_2d", cx));
     is_3d_ = is_3d_val.to_bool(At_Field("is_3d", cx));

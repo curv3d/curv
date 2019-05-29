@@ -22,8 +22,11 @@ struct Record : public Ref_Value
 {
     Record(int subtype) : Ref_Value(ty_record, subtype) {}
 
+    /// Get the value of a named field, return missing if not defined.
+    virtual Value find_field(Symbol_Ref, const Context&) const = 0;
+
     /// Get the value of a named field, throw exception if not defined.
-    virtual Value getfield(Symbol_Ref, const Context&) const;
+    Value getfield(Symbol_Ref, const Context&) const;
 
     /// Test if the value contains the named field.
     virtual bool hasfield(Symbol_Ref) const = 0;
@@ -94,7 +97,7 @@ struct DRecord : public Record
     }
 
     virtual void print(std::ostream&) const override;
-    virtual Value getfield(Symbol_Ref, const Context&) const override;
+    virtual Value find_field(Symbol_Ref, const Context&) const override;
     virtual bool hasfield(Symbol_Ref) const override;
     virtual size_t size() const override { return fields_.size(); }
 

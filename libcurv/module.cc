@@ -41,12 +41,12 @@ Module_Base::get(slot_t i) const
 }
 
 Value
-Module_Base::getfield(Symbol_Ref name, const Context& cx) const
+Module_Base::find_field(Symbol_Ref name, const Context& cx) const
 {
     auto b = dictionary_->find(name);
     if (b != dictionary_->end())
         return get(b->second);
-    return Record::getfield(name, cx);
+    return missing;
 }
 
 bool

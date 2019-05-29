@@ -12,7 +12,10 @@ const char Record::name[] = "record";
 Value
 Record::getfield(Symbol_Ref field, const Context& cx) const
 {
-    throw Exception(cx, stringify(*this," does not contain field .",field));
+    Value val = find_field(field, cx);
+    if (val.is_missing())
+        throw Exception(cx, stringify(*this," does not contain field .",field));
+    return val;
 }
 
 bool
@@ -79,12 +82,12 @@ DRecord::print(std::ostream& out) const
 }
 
 Value
-DRecord::getfield(Symbol_Ref name, const Context& cx) const
+DRecord::find_field(Symbol_Ref name, const Context& cx) const
 {
     auto fp = fields_.find(name);
     if (fp != fields_.end())
         return fp->second;
-    return Record::getfield(name, cx);
+    return missing;
 }
 
 bool

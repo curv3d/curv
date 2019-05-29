@@ -80,11 +80,11 @@ void Dir_Record::print(std::ostream& out) const
     out << "}";
 }
 
-Value Dir_Record::getfield(Symbol_Ref sym, const Context& cx) const
+Value Dir_Record::find_field(Symbol_Ref sym, const Context& cx) const
 {
     auto p = fields_.find(sym);
     if (p == fields_.end())
-        return Record::getfield(sym, cx);
+        return missing;
     if (p->second.value_.is_missing())
         p->second.value_ = p->second.importer_(p->second.path_, cx);
     return p->second.value_;

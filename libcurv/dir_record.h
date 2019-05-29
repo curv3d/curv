@@ -26,7 +26,7 @@ struct Dir_Record : public Record
     Dir_Record(Filesystem::path dir, const Context&);
 
     virtual void print(std::ostream&) const override;
-    virtual Value getfield(Symbol_Ref, const Context&) const override;
+    virtual Value find_field(Symbol_Ref, const Context&) const override;
     virtual bool hasfield(Symbol_Ref) const override;
     virtual size_t size() const override;
     class Iter : public Record::Iter
