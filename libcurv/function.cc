@@ -57,7 +57,7 @@ bool
 Function::try_tail_call(Value arg, std::unique_ptr<Frame>& f)
 {
     Value result = try_call(arg, *f);
-    if (!result.eq(missing)) {
+    if (!result.is_missing()) {
         f->result_ = result;
         f->next_op_ = nullptr;
         return true;
@@ -208,7 +208,7 @@ Piecewise_Function::call(Value arg, Frame& f)
 {
     for (auto c : cases_) {
         Value result = c->try_call(arg, f);
-        if (!result.eq(missing))
+        if (!result.is_missing())
             return result;
     }
     throw Exception(At_Arg(*this, f), stringify(
@@ -231,7 +231,7 @@ Piecewise_Function::try_call(Value arg, Frame& f)
 {
     for (auto c : cases_) {
         Value result = c->try_call(arg, f);
-        if (!result.eq(missing))
+        if (!result.is_missing())
             return result;
     }
     return missing;

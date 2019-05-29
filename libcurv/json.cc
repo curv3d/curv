@@ -90,7 +90,7 @@ void write_json_value(Value val, std::ostream& out)
             write_json_string(f->key().c_str(), out);
             out << ":";
             Value fval = f->maybe_value();
-            if (fval.eq(missing)) {
+            if (fval.is_missing()) {
                 out << "\"\\u0000\"";
             } else {
                 write_json_value(fval, out);

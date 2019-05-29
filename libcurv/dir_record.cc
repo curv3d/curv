@@ -85,7 +85,7 @@ Value Dir_Record::getfield(Symbol_Ref sym, const Context& cx) const
     auto p = fields_.find(sym);
     if (p == fields_.end())
         return Record::getfield(sym, cx);
-    if (p->second.value_.eq(missing))
+    if (p->second.value_.is_missing())
         p->second.value_ = p->second.importer_(p->second.path_, cx);
     return p->second.value_;
 }
@@ -123,7 +123,7 @@ Dir_Record::Iter::Iter(const Dir_Record& rec)
 void Dir_Record::Iter::load_value(const Context& cx)
 {
     if (i_ != rec_.fields_.end()) {
-        if (i_->second.value_.eq(missing))
+        if (i_->second.value_.is_missing())
             i_->second.value_ = i_->second.importer_(i_->second.path_, cx);
         value_ = i_->second.value_;
     }

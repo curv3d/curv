@@ -55,7 +55,7 @@ struct Record : public Ref_Value
         bool empty() { return key_.empty(); }
         Symbol_Ref key() { return key_; }
         Value value(const Context& cx) {
-            if (value_.eq(missing)) load_value(cx);
+            if (value_.is_missing()) load_value(cx);
             return value_;
         }
         Value maybe_value() { return value_; }
