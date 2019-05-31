@@ -65,7 +65,7 @@ Phrase::as_definition(Environ&)
 // Scope object for analysing a Lambda body. Contains both parameters and
 // nonlocals. We don't classify function parameters as 'local variables' that
 // are assignable using := for several reasons:
-//  1. The 'elevel' mechanism won't let us classify parameters as assignable
+//  1. The 'edepth' mechanism won't let us classify parameters as assignable
 //     local variables, while keeping out nonlocals, because both are mixed
 //     together in the same scope object.
 //  2. In a curried function, all parameters except the last are actually
