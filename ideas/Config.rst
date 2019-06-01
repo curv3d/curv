@@ -1,0 +1,28 @@
+Curv has an optional user-defined configuration file, which the ``curv``
+command reads during startup.
+
+The configuration file provides default values for ``-O`` options which are
+given on the command line.
+
+Config File Location
+--------------------
+``$XDG_CONFIG_HOME`` defines the base directory relative to which the Curv
+config file is stored. If ``$XDG_CONFIG_HOME`` is either not set or empty,
+it defaults to ``$HOME/.config``, unless ``$HOME`` is either not set or empty,
+in which case there is no Curv config file.
+
+The config file is named ``$XDG_CONFIG_HOME/curv``.
+This can be a regular file, evaluated as a Curv syntax source file,
+or it can be a directory, which is evaluated using directory syntax.
+
+The Config Namespace
+--------------------
+The config value (the result of evaluating the config file)
+is a hierarchical namespace of configuration parameters,
+represented as a tree of records.
+
+The top level names are ``export`` and ``viewer``.
+
+* ``export`` contains defaults for ``-O`` parameters used when exporting a file
+  using ``-o``.
+* ``viewer`` contains defaults for ``-O`` parameters used when viewing a shape.
