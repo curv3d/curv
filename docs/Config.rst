@@ -1,8 +1,10 @@
 Curv has an optional user-defined configuration file, which the ``curv``
 command reads during startup.
 
-The configuration file provides default values for ``-O`` options which are
+You use the configuration file to customize the behaviour of Curv when viewing or exporting shapes.
+It works by providing default values for ``-O`` options which are
 given on the command line.
+Use ``curv --help`` to get a list of the current ``-O`` options.
 
 Config File Location
 --------------------
