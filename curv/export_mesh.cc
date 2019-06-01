@@ -110,7 +110,7 @@ void describe_colour_mesh_opts(std::ostream& out)
 {
     describe_mesh_opts(out);
     out <<
-    "-O colour=#face|#vertex\n"
+    "-O colouring=#face|#vertex (default #face)\n"
     ;
 }
 
@@ -127,7 +127,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
     bool jit = false;
     double vsize = 0.0;
     double adaptive = 0.0;
-    enum {face_colour, vertex_colour} colourtype = face_colour;
+    enum {face_colour, vertex_colour} colouring = face_colour;
     for (auto& i : params.map_) {
         Param p{params, i};
         if (p.name_ == "jit")
@@ -142,14 +142,14 @@ void export_mesh(Mesh_Format format, curv::Value value,
             if (adaptive < 0.0 || adaptive > 1.0) {
                 throw curv::Exception(p, "'adaptive' must be in range 0...1");
             }
-        } else if (format == Mesh_Format::x3d_format && p.name_ == "colour") {
+        } else if (format == Mesh_Format::x3d_format && p.name_ == "colouring") {
             auto val = p.to_symbol();
             if (val == "face")
-                colourtype = face_colour;
+                colouring = face_colour;
             else if (val == "vertex")
-                colourtype = vertex_colour;
+                colouring = vertex_colour;
             else {
-                throw curv::Exception(p, "'colour' must be #face or #vertex");
+                throw curv::Exception(p, "'colouring' must be #face or #vertex");
             }
         } else
             p.unknown_parameter();
@@ -332,7 +332,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
         " <Scene>\n"
         "  <Shape>\n"
         "   <IndexedFaceSet colorPerVertex=\"";
-        out << (colourtype == vertex_colour ? "true" : "false");
+        out << (colouring == vertex_colour ? "true" : "false");
         out << "\" coordIndex=\"";
         bool first = true;
         for (unsigned int i=0; i<mesher.polygonPoolListSize(); ++i) {
@@ -366,7 +366,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
         out <<
         "\"/>\n"
         "    <Color color=\"";
-        switch (colourtype) {
+        switch (colouring) {
         case face_colour:
             for (unsigned int i=0; i<mesher.polygonPoolListSize(); ++i) {
                 openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
