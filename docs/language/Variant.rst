@@ -10,10 +10,10 @@ Symbols are used when you need to distinguish between a fixed set
 of named alternatives. For example,
 
 * In Curv, the `Boolean values`_ are ``#true`` and ``#false``.
-* When exporting a .X3D mesh file, you use the ``-Ocolour=`` command line
+* When exporting a .X3D mesh file, you use the ``-Ocolouring=`` command line
   option to specify whether you want face colouring or vertex colouring.
   These two alternatives are represented by symbols, so the command line
-  syntax is ``-Ocolour=#face`` or ``-Ocolour=#vertex``.
+  syntax is ``-Ocolouring=#face`` or ``-Ocolouring=#vertex``.
 
 .. _`Boolean values`: Boolean_Values.rst
 
