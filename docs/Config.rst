@@ -45,14 +45,19 @@ Here is an example. This is a text file stored at ``~/.config/curv``::
   {
     export = {
       aa=4;
+      colouring=#vertex;
     };
     viewer = {
       bg=black; // dark mode
     };
   }
 
-Here, we have set the anti-aliasing parameter to ``4`` in order to obtain
+We have set the anti-aliasing parameter to ``4`` in order to obtain
 higher quality when performing an image export. But anti-aliasing is disabled
-when viewing objects, for performance reasons.
+when viewing objects (the default), for performance reasons.
+
+Use vertex colouring when exporting X3D files.
 
 The background colour is set to black when viewing shapes, because we prefer "dark mode".
+But the background colour is set to the default (white) when exporting PNG files,
+because we haven't overridden that value in ``export``.
