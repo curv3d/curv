@@ -37,3 +37,22 @@ The top level names are ``export`` and ``viewer``.
 * ``export`` contains defaults for ``-O`` parameters used when exporting a file
   using ``-o``.
 * ``viewer`` contains defaults for ``-O`` parameters used when viewing a shape.
+
+Example
+-------
+Here is an example. This is a text file stored at ``~/.config/curv``::
+
+  {
+    export = {
+      aa=4;
+    };
+    viewer = {
+      bg=black; // dark mode
+    };
+  }
+
+Here, we have set the anti-aliasing parameter to ``4`` in order to obtain
+higher quality when performing an image export. But anti-aliasing is disabled
+when viewing objects, for performance reasons.
+
+The background colour is set to black when viewing shapes, because we prefer "dark mode".
