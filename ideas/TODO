@@ -1,5 +1,4 @@
 Symbols:
-* user configuration file
 * SC support for symbols
 * variant_picker[#foo, #bar]
 * align{x: #centre}
@@ -112,7 +111,6 @@ Current TODO List:
 * graphical value pickers
   * add more picker types
   * `term` proposal
-* configure default values for -O options: see Config
 * -o glsl
 * Refactor:
   * batch mode uses curv::import, can input any source file type
