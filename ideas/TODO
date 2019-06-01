@@ -6,6 +6,7 @@ Symbols:
 * make_symbol("foo") == #foo
 Structures:
 * struct!index, where struct is a list, string or record. Eg, {a:1}!#a
+* 'symbol-expr => expr' as a field generator
 * numeral patterns (positive, negative, infinite)
 
 v0.5 Planning

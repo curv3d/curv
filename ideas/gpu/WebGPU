@@ -5,15 +5,21 @@ interested in getting access to compute shaders, which are not available
 in MacOS OpenGL or in WebGL 2. The alternative of writing multiple backends
 for OpenGL, Vulkan, Metal, DX12 is not appealing.
 
+Right now (May 2019), it's planned that WebGPU will run on Vulkan, Metal, DX12.
+To support all modern GPUs with compute shaders (2012+) there is also
+a need to run on OpenGL ES 3.1 (some Android phones) and DX11 (Windows 7).
+I'm not sure I will actually care about these older platforms.
+
 Here are the platforms that I might want Curv to support:
 * Linux
 * macOS
 * Windows WIN32
 * Android
-* Web (via WebAssembly?)
+* Web (via WebAssembly)
 * Chromebook: runs Chrome (HTML5), Android, & Debian apps (v69+, newer hardware)
 
-* No RaspberryPi, because there is no compute shader support.
+* No RaspberryPi 3, because only OpenGL 2 (no compute shader support).
+  Raspberry Pi 4 (in 2020) might have a sufficiently powerful GPU.
 * No iOS, because the App Store restrictions are incompatible with the
   principles and practices of Open Source software.
 * Probably no Windows UWP. In Sept 2018, >50% of Windows users can't run UWP
