@@ -65,6 +65,17 @@ To export a 2D shape as a PNG image file, use::
 
 For more details, see `<Image_Export.rst>`_.
 
+**Configuration File**
+
+You can customize the behaviour of the Viewer window
+and of file export (``-o``) using command line ``-O`` options.
+Use ``curv --help`` for help.
+You can create a configuration file to specify default values
+for the ``-O`` options, and thereby customize the behaviour of Curv
+when viewing or exporting shapes.
+
+For more details, see `<Config.rst>`_.
+
 ..
   **Live Programming Mode (**\ ``curv -l``\ **)**:
 
