@@ -21,7 +21,7 @@ since Curv attempts to conform to the `XDG Base Directory Specification`_:
   it defaults to ``$HOME/.config``, unless ``$HOME`` is either not set or empty,
   in which case there is no Curv config file.
 * The config file is named ``$XDG_CONFIG_HOME/curv``.
-* Curv ignores the ``$XDG_CONFIG_DIRS`` environment variable.
+* Curv ignores the ``$XDG_CONFIG_DIRS`` environment variable and the ``/etc/xdg`` directory.
 
 .. _`directory syntax`: language/File_Import.rst
 .. _`XDG Base Directory Specification`: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
