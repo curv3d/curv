@@ -34,7 +34,7 @@ represented as a tree of records.
 
 The top level names are ``export`` and ``viewer``.
 
-* ``export`` contains defaults for ``-O`` parameters used when exporting a file
+* ``export`` contains defaults for ``-O`` parameters used when exporting a shape
   using ``-o``.
 * ``viewer`` contains defaults for ``-O`` parameters used when viewing a shape.
 
