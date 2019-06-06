@@ -21,7 +21,7 @@ All application data is represented using the 6 value types.
 For example,
 
 * The boolean values are represented by the symbols ``#true`` and ``#false``.
-* If you need a null value, like the `null`` in JSON or Javascript,
+* If you need a null value, like the ``null`` in JSON or Javascript,
   you can use the symbol ``#null``.
 * A geometric point or vector is a list of numbers.
 * A matrix is a list of lists of numbers.
