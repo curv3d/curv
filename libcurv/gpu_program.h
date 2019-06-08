@@ -24,7 +24,7 @@ struct GPU_Program
 
     // If the value is a shape, fill in most fields and return true.
     // Used with the (Program&) constructor.
-    bool recognize(Value, const Frag_Export&);
+    bool recognize(Value, const Render_Opts&);
 
     // abstract interface to PROGRAM classes (see At_Program)
     Location location() const;

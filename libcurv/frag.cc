@@ -13,11 +13,11 @@
 
 namespace curv {
 
-void export_frag_2d(const Shape_Program&, const Frag_Export&, std::ostream&);
-void export_frag_3d(const Shape_Program&, const Frag_Export&, std::ostream&);
+void export_frag_2d(const Shape_Program&, const Render_Opts&, std::ostream&);
+void export_frag_3d(const Shape_Program&, const Render_Opts&, std::ostream&);
 
 void export_frag(
-    const Shape_Program& shape, const Frag_Export& opts, std::ostream& out)
+    const Shape_Program& shape, const Render_Opts& opts, std::ostream& out)
 {
     if (shape.is_2d_)
         return export_frag_2d(shape, opts, out);
@@ -27,7 +27,7 @@ void export_frag(
 }
 
 void export_frag_2d(
-    const Shape_Program& shape, const Frag_Export& opts, std::ostream& out)
+    const Shape_Program& shape, const Render_Opts& opts, std::ostream& out)
 {
     out <<
         "#define AA " << opts.aa_ << "\n"
@@ -111,7 +111,7 @@ void export_frag_2d(
 }
 
 void export_frag_3d(
-    const Shape_Program& shape, const Frag_Export& opts, std::ostream& out)
+    const Shape_Program& shape, const Render_Opts& opts, std::ostream& out)
 {
     out <<
         "#define AA " << opts.aa_ << "\n"

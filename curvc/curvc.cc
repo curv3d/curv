@@ -40,7 +40,7 @@ main(int argc, char** argv)
         prog.compile();
         auto value = prog.eval();
         GPU_Program gprog{prog};
-        Frag_Export opts;
+        Render_Opts opts;
         if (!gprog.recognize(value, opts)) {
             std::cout << "{\"value\":";
             write_json_value(value, std::cout);

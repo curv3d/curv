@@ -5,30 +5,14 @@
 #ifndef LIBCURV_FRAG_H
 #define LIBCURV_FRAG_H
 
+#include <libcurv/render.h>
 #include <ostream>
-#include <glm/vec3.hpp>
 
 namespace curv {
 
 struct Shape_Program;
 
-struct Frag_Export
-{
-    // spatial anti-aliasing via supersampling. aa_==1 means it is turned off.
-    int aa_ = 1;
-    // temporal anti-aliasing.
-    int taa_ = 1;
-    // frame duration for animation, needed for TAA.
-    double fdur_ = 0.04; // 25 FPS
-    // background colour, defaults to white
-    glm::dvec3 bg_ = glm::dvec3(1.0,1.0,1.0);
-    // max # of iterations in the ray-marcher
-    int ray_max_iter_ = 200;
-    // max ray-marching distance
-    double ray_max_depth_ = 400.0;
-};
-
-void export_frag(const Shape_Program&, const Frag_Export&, std::ostream&);
+void export_frag(const Shape_Program&, const Render_Opts&, std::ostream&);
 
 } // namespace
 #endif // header guard

@@ -69,7 +69,7 @@ export_png(
     };
     (void) origin; // TODO
 
-    Frag_Export opts{ p };
+    Render_Opts opts{ p };
     /*
     opts.aa_ = p.aa_;
     opts.taa_ = p.taa_;

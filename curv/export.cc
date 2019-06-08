@@ -170,7 +170,7 @@ void export_curv(Value value,
 
 void describe_frag_options(std::ostream& out, const char*prefix)
 {
-  Frag_Export opts;
+  Render_Opts opts;
   out
   << prefix <<
   "-O aa=<supersampling factor for antialiasing> (1 means disabled)\n"
@@ -195,7 +195,7 @@ void describe_frag_opts(std::ostream& out)
 
 bool parse_frag_param(
     Param& p,
-    Frag_Export& opts)
+    Render_Opts& opts)
 {
     if (p.name_ == "aa") {
         opts.aa_ = p.to_int(1, INT_MAX);
@@ -259,7 +259,7 @@ void export_json(Value value,
 void export_gpu(Value value,
     Program& prog, const Export_Params& params, Output_File& ofile)
 {
-    Frag_Export opts;
+    Render_Opts opts;
     for (auto& i : params.map_) {
         Param p{params, i};
         if (!parse_frag_param(p, opts))

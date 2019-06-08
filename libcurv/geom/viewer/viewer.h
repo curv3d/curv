@@ -23,7 +23,7 @@ namespace geom {
 
 namespace viewer {
 
-struct Viewer_Config : public Frag_Export
+struct Viewer_Config : public Render_Opts
 {
     bool verbose_ = false;
     bool lazy_ = false;
@@ -37,7 +37,7 @@ struct Viewer
 
     // Set the current shape. May be called at any time, before opening the
     // window, or while the window is open.
-    void set_shape_no_hud(const Shape_Program&, const Frag_Export&);
+    void set_shape_no_hud(const Shape_Program&, const Render_Opts&);
     void set_shape(Viewed_Shape);
 
     bool is_open() { return window_ != nullptr; }

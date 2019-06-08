@@ -15,7 +15,7 @@ struct Shape_Program;
 namespace geom {
 
 // Image export parameters
-struct Image_Export : public Frag_Export
+struct Image_Export : public Render_Opts
 {
     Image_Export() { aa_ = 4; }
     glm::ivec2 size;    // Size of exported image, in pixels.

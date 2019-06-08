@@ -67,7 +67,7 @@ struct Viewed_Shape
     Viewed_Shape() {};
 
     // This creates a non-empty Viewed_Shape (contains a viewable shape).
-    Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts);
+    Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts);
 
     bool empty() const { return frag_.empty(); }
 

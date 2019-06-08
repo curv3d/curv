@@ -28,7 +28,7 @@ GPU_Program::location() const
 }
 
 bool
-GPU_Program::recognize(Value val, const Frag_Export& opts)
+GPU_Program::recognize(Value val, const Render_Opts& opts)
 {
     if (location().source().type_ == Source::Type::gpu) {
         // Note: throw exception if val is not a GPU program.

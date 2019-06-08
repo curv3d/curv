@@ -11,7 +11,7 @@
 
 namespace curv {
 
-Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Frag_Export& opts)
+Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
 {
     // Recognize a parametric shape S,
     // which contains constructor & argument fields.
