@@ -5,7 +5,7 @@
 #ifndef LIBCURV_GPU_PROGRAM_H
 #define LIBCURV_GPU_PROGRAM_H
 
-#include <libcurv/frag.h>
+#include <libcurv/render.h>
 #include <libcurv/shape.h>
 #include <libcurv/viewed_shape.h>
 

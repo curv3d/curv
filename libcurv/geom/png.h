@@ -5,7 +5,7 @@
 #ifndef LIBCURV_GEOM_PNG_H
 #define LIBCURV_GEOM_PNG_H
 
-#include <libcurv/frag.h>
+#include <libcurv/render.h>
 #include <glm/vec2.hpp>
 
 namespace curv {

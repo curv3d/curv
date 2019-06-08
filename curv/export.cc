@@ -12,7 +12,7 @@
 #include <libcurv/exception.h>
 #include <libcurv/filesystem.h>
 #include <libcurv/format.h>
-#include <libcurv/frag.h>
+#include <libcurv/render.h>
 #include <libcurv/gpu_program.h>
 #include <libcurv/json.h>
 #include <libcurv/program.h>
@@ -168,7 +168,7 @@ void export_curv(Value value,
     ofile.ostream() << value << "\n";
 }
 
-void describe_frag_options(std::ostream& out, const char*prefix)
+void describe_render_options(std::ostream& out, const char*prefix)
 {
   Render_Opts opts;
   out
@@ -188,9 +188,9 @@ void describe_frag_options(std::ostream& out, const char*prefix)
     << opts.ray_max_depth_ << ")\n"
   ;
 }
-void describe_frag_opts(std::ostream& out)
+void describe_render_opts(std::ostream& out)
 {
-    describe_frag_options(out, "");
+    describe_render_options(out, "");
 }
 
 bool parse_frag_param(
@@ -322,7 +322,7 @@ void describe_png_opts(std::ostream& out)
     "-O xsize=<image width in pixels>\n"
     "-O ysize=<image height in pixels>\n"
     "-O fstart=<animation frame start time, in seconds> (default 0)\n";
-    describe_frag_opts(out);
+    describe_render_opts(out);
     out <<
     "-O animate=<duration of animation> (exports an image sequence)\n";
 }
@@ -431,7 +431,7 @@ std::map<std::string, Exporter> exporters = {
     {"x3d", {export_x3d, "X3D colour mesh file (3D shape only)",
              describe_colour_mesh_opts}},
     {"gpu", {export_gpu, "compiled GPU program, in Curv format (shape only)",
-        describe_frag_opts}},
+        describe_render_opts}},
     {"json", {export_json, "JSON expression", describe_no_opts}},
     {"cpp", {export_cpp, "C++ source file (shape only)", describe_no_opts}},
     {"png", {export_png, "PNG image file (shape only)", describe_png_opts}},
@@ -452,7 +452,7 @@ void parse_viewer_config(
 }
 void describe_viewer_options(std::ostream& out, const char* prefix)
 {
-    describe_frag_options(out, prefix);
+    describe_render_options(out, prefix);
     out
     << prefix <<
     "-O lazy : Redraw only on user input. Disables animation & FPS counter.\n"

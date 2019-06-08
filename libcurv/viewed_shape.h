@@ -6,7 +6,7 @@
 #define LIBCURV_VIEWED_SHAPE_H
 
 #include <libcurv/picker.h>
-#include <libcurv/frag.h>
+#include <libcurv/render.h>
 #include <libcurv/shape.h>
 #include <tsl/ordered_map.h>
 

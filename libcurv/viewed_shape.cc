@@ -2,10 +2,12 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
+#include <libcurv/viewed_shape.h>
+
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
+#include <libcurv/frag.h>
 #include <libcurv/json.h>
-#include <libcurv/viewed_shape.h>
 #include <iostream>
 #include <cctype>
 
