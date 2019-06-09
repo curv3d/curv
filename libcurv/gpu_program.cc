@@ -97,8 +97,8 @@ void
 GPU_Program::write_json(std::ostream& out) const
 {
     out << "{"
-        << "\"is_2d\":" << Value{is_2d_}
-        << ",\"is_3d\":" << Value{is_3d_}
+        << "\"is_2d\":" << (is_2d_ ? "true" : "false")
+        << ",\"is_3d\":" << (is_3d_ ? "true" : "false")
         << ",\"bbox\":[[" << dfmt(bbox_.xmin, dfmt::JSON)
             << "," << dfmt(bbox_.ymin, dfmt::JSON)
             << "," << dfmt(bbox_.zmin, dfmt::JSON)
