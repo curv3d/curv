@@ -156,13 +156,13 @@ struct Operation : public Meaning
 };
 
 /// `Just_Expression` is an implementation class, inherited by Operation classes
-/// whose instances are always expressions. It provides sensible defaults
-/// for the eval/generate/exec virtual functions.
+/// whose instances are always expressions. It provides a sensible default
+/// for the exec virtual function.
 ///
 /// An expression is an Operation that can be evaluated to produce a single 
 /// value. The work is done by the `eval` method, which must be defined.
-/// All expressions are also generators that produce a single value,
-/// so the `generate` function calls `eval`.
+/// All expressions are also value generators that produce a single value,
+/// so the `exec` function calls `eval`.
 ///
 /// This is not an interface class, and not all expression objects are derived
 /// from Just_Expression. Functions should not take Just_Expressions as values
