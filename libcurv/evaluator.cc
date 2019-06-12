@@ -712,7 +712,7 @@ Scope_Executable::exec(Frame& f) const
 }
 
 void
-Locative::store(Frame& f, Value v) const
+Local_Locative::store(Frame& f, Value v) const
 {
     f[slot_] = v;
 }

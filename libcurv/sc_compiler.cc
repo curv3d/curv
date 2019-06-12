@@ -666,7 +666,7 @@ void Null_Action::sc_exec(SC_Frame&) const
 }
 
 void
-Locative::sc_print(SC_Frame& f) const
+Local_Locative::sc_print(SC_Frame& f) const
 {
     f.sc_.out() << f[slot_];
 }

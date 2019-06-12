@@ -139,7 +139,7 @@ Environ::lookup_lvar(const Identifier& id, unsigned edepth)
                 throw Exception(At_Phrase(*m->syntax_, *this),
                     "compiler error: not an assignable variable name");
             }
-            return make<Locative>(share(id), dref->slot_);
+            return make<Local_Locative>(share(id), dref->slot_);
         }
     }
     // Figure out what went wrong and give a good error.
