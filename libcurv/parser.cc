@@ -605,7 +605,7 @@ parse_postfix(Scanner& scanner)
         tok = scanner.get_token();
         switch (tok.kind_) {
         case Token::k_dot:
-            postfix = make<Binary_Phrase>(postfix, tok,
+            postfix = make<Dot_Phrase>(postfix, tok,
                 parse_primary(scanner, "expression following ."));
             continue;
         default:

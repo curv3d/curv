@@ -613,22 +613,6 @@ Binary_Phrase::analyse(Environ& env, unsigned) const
             share(*this),
             analyse_op(*left_, env),
             analyse_op(*right_, env));
-    case Token::k_dot:
-        if (auto id = cast<const Identifier>(right_)) {
-            return make<Dot_Expr>(
-                share(*this),
-                analyse_op(*left_, env),
-                Symbol_Expr{id});
-        }
-        if (auto string = cast<const String_Phrase>(right_)) {
-            auto str_expr = string->analyse_string(env);
-            return make<Dot_Expr>(
-                share(*this),
-                analyse_op(*left_, env),
-                Symbol_Expr{str_expr});
-        }
-        throw Exception(At_Phrase(*right_, env),
-            "invalid expression after '.'");
     case Token::k_in:
         throw Exception(At_Token(op_, *this, env), "syntax error");
     case Token::k_colon:
@@ -638,6 +622,26 @@ Binary_Phrase::analyse(Environ& env, unsigned) const
             "compiler internal error: "
             "Binary_Phrase::analyse: bad operator token type");
     }
+}
+
+Shared<Meaning>
+Dot_Phrase::analyse(Environ& env, unsigned) const
+{
+    if (auto id = cast<const Identifier>(right_)) {
+        return make<Dot_Expr>(
+            share(*this),
+            analyse_op(*left_, env),
+            Symbol_Expr{id});
+    }
+    if (auto string = cast<const String_Phrase>(right_)) {
+        auto str_expr = string->analyse_string(env);
+        return make<Dot_Expr>(
+            share(*this),
+            analyse_op(*left_, env),
+            Symbol_Expr{str_expr});
+    }
+    throw Exception(At_Phrase(*right_, env),
+        "invalid expression after '.'");
 }
 
 // A recursive definition is not an operation.
