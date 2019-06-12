@@ -124,7 +124,7 @@ Environ::lookup(const Identifier& id)
     throw Exception(At_Phrase(id, *this), stringify(id.symbol_,": not defined"));
 }
 
-Shared<Meaning>
+Shared<Locative>
 Environ::lookup_lvar(const Identifier& id, unsigned edepth)
 {
     for (Environ* e = this; e != nullptr; e = e->parent_) {
@@ -132,8 +132,15 @@ Environ::lookup_lvar(const Identifier& id, unsigned edepth)
             break;
         --edepth;
         auto m = e->single_lookup(id);
-        if (m != nullptr)
-            return m;
+        if (m != nullptr) {
+            auto dref = cast<Data_Ref>(m);
+            if (dref == nullptr) {
+                // this should never happen
+                throw Exception(At_Phrase(*m->syntax_, *this),
+                    "compiler error: not an assignable variable name");
+            }
+            return make<Locative>(share(id), dref->slot_);
+        }
     }
     // Figure out what went wrong and give a good error.
     Shared<Meaning> m = nullptr;
@@ -668,16 +675,9 @@ Assignment_Phrase::analyse(Environ& env, unsigned edepth) const
     auto id = cast<Identifier>(left_);
     if (id == nullptr)
         throw Exception(At_Phrase(*left_, env), "not a variable name");
-    auto m = env.lookup_lvar(*id, edepth);
+    auto lvar = env.lookup_lvar(*id, edepth);
     auto expr = analyse_op(*right_, env);
-
-    auto let = cast<Data_Ref>(m);
-    if (let)
-        return make<Assignment_Action>(share(*this), let->slot_, expr);
-
-    // this should never happen
-    throw Exception(At_Phrase(*left_, env),
-        "compiler error: not an assignable variable name");
+    return make<Assignment_Action>(share(*this), lvar, expr);
 }
 
 Shared<Definition>

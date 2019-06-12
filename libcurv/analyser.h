@@ -63,7 +63,7 @@ struct Environ
     }
 
     Shared<Meaning> lookup(const Identifier& id);
-    Shared<Meaning> lookup_lvar(const Identifier& id, unsigned edepth);
+    Shared<Locative> lookup_lvar(const Identifier& id, unsigned edepth);
     virtual Shared<Meaning> single_lookup(const Identifier&) = 0;
 };
 

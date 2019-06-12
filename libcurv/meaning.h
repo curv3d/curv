@@ -519,19 +519,34 @@ struct Scope_Executable
     void sc_exec(SC_Frame&) const;
 };
 
+// A Locative is the phrase on the left side of an assignment statement.
+// TODO: WIP. Initially, this is a clone of the Data_Ref class.
+struct Locative : public Shared_Base
+{
+    Shared<const Phrase> syntax_;
+    Locative(Shared<const Phrase> syntax, slot_t slot)
+    :
+        syntax_(std::move(syntax)),
+        slot_(slot)
+    {}
+    slot_t slot_;
+    void store(Frame& f, Value v) const;
+    void sc_print(SC_Frame& f) const;
+};
+
 // 'locative := expression'
 struct Assignment_Action : public Operation
 {
-    slot_t slot_;
+    Shared<Locative> locative_;
     Shared<Operation> expr_;
 
     Assignment_Action(
         Shared<const Phrase> syntax,
-        slot_t slot,
+        Shared<Locative> locative,
         Shared<Operation> expr)
     :
         Operation(std::move(syntax)),
-        slot_(slot),
+        locative_(std::move(locative)),
         expr_(std::move(expr))
     {}
 

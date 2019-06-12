@@ -666,10 +666,18 @@ void Null_Action::sc_exec(SC_Frame&) const
 }
 
 void
+Locative::sc_print(SC_Frame& f) const
+{
+    f.sc_.out() << f[slot_];
+}
+
+void
 Assignment_Action::sc_exec(SC_Frame& f) const
 {
     SC_Value val = sc_eval_op(f, *expr_);
-    f.sc_.out() << "  "<<f[slot_]<<"="<<val<<";\n";
+    f.sc_.out() << "  ";
+    locative_->sc_print(f);
+    f.sc_.out() << "="<<val<<";\n";
 }
 void
 Data_Setter::sc_exec(SC_Frame& f) const

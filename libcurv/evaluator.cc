@@ -712,9 +712,15 @@ Scope_Executable::exec(Frame& f) const
 }
 
 void
+Locative::store(Frame& f, Value v) const
+{
+    f[slot_] = v;
+}
+
+void
 Assignment_Action::exec(Frame& f, Executor&) const
 {
-    f[slot_] = expr_->eval(f);
+    locative_->store(f, expr_->eval(f));
 }
 
 Value
