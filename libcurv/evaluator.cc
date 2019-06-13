@@ -718,6 +718,12 @@ Local_Locative::store(Frame& f, Value v) const
 }
 
 void
+Dot_Locative::store(Frame& f, Value v) const
+{
+    throw Exception(At_Phrase(*syntax_, f), "dot expression is not assignable yet");
+}
+
+void
 Assignment_Action::exec(Frame& f, Executor&) const
 {
     locative_->store(f, expr_->eval(f));

@@ -673,13 +673,40 @@ Sequential_Definition_Phrase::analyse(Environ& env, unsigned) const
 {
     throw Exception(At_Phrase(*this, env), "not an expression or statement");
 }
+
+Shared<Locative>
+analyse_locative(const Phrase& ph, Environ& env, unsigned edepth)
+{
+    auto id = dynamic_cast<const Identifier*>(&ph);
+    if (id != nullptr)
+        return env.lookup_lvar(*id, edepth);
+    auto dot = dynamic_cast<const Dot_Phrase*>(&ph);
+    if (dot != nullptr) {
+        // TODO: copypasta from Dot_Phrase::analyse
+        // But, edepth is handled differently.
+        if (auto id = cast<const Identifier>(dot->right_)) {
+            return make<Dot_Locative>(
+                share(ph),
+                analyse_locative(*dot->left_, env, edepth),
+                Symbol_Expr{id});
+        }
+        if (auto string = cast<const String_Phrase>(dot->right_)) {
+            auto str_expr = string->analyse_string(env);
+            return make<Dot_Locative>(
+                share(ph),
+                analyse_locative(*dot->left_, env, edepth),
+                Symbol_Expr{str_expr});
+        }
+        throw Exception(At_Phrase(*dot->right_, env),
+            "invalid expression after '.'");
+    }
+    throw Exception(At_Phrase(ph, env), "not a locative");
+}
+
 Shared<Meaning>
 Assignment_Phrase::analyse(Environ& env, unsigned edepth) const
 {
-    auto id = cast<Identifier>(left_);
-    if (id == nullptr)
-        throw Exception(At_Phrase(*left_, env), "not a variable name");
-    auto lvar = env.lookup_lvar(*id, edepth);
+    auto lvar = analyse_locative(*left_, env, edepth);
     auto expr = analyse_op(*right_, env);
     return make<Assignment_Action>(share(*this), lvar, expr);
 }

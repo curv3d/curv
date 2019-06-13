@@ -672,6 +672,13 @@ Local_Locative::sc_print(SC_Frame& f) const
 }
 
 void
+Dot_Locative::sc_print(SC_Frame& f) const
+{
+    throw Exception(At_SC_Phrase(syntax_, f),
+        "dot expression is not assignable yet");
+}
+
+void
 Assignment_Action::sc_exec(SC_Frame& f) const
 {
     SC_Value val = sc_eval_op(f, *expr_);

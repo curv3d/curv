@@ -534,7 +534,6 @@ struct Locative : public Shared_Base
 // A Locative representing a local variable. Closely related to Data_Ref.
 struct Local_Locative : public Locative
 {
-    Shared<const Phrase> syntax_;
     Local_Locative(Shared<const Phrase> syntax, slot_t slot)
     :
         Locative(std::move(syntax)),
@@ -957,6 +956,26 @@ struct Dot_Expr : public Just_Expression
     {}
 
     virtual Value eval(Frame&) const override;
+};
+
+// A Locative representing <locative>.fieldname
+struct Dot_Locative : public Locative
+{
+    Shared<Locative> base_;
+    Symbol_Expr selector_;
+
+    Dot_Locative(
+        Shared<const Phrase> syntax,
+        Shared<Locative> base,
+        Symbol_Expr selector)
+    :
+        Locative(std::move(syntax)),
+        base_(std::move(base)),
+        selector_(std::move(selector))
+    {}
+
+    virtual void store(Frame& f, Value v) const override;
+    virtual void sc_print(SC_Frame& f) const override;
 };
 
 struct Assoc : public Operation
