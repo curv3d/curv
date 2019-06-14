@@ -70,9 +70,9 @@ struct Ref_Value : public Shared_Base
 /// with the data stored in the low order 48 bits of the NaN. This is called
 /// "NaN boxing", a technique also used by LuaJIT and JavaScriptCore.
 ///
-/// Null, Boolean and Number values are "immediate" values, stored entirely
+/// Boolean and Number values are "immediate" values, stored entirely
 /// in the 64 bit pattern of a Value. There are 3 special immediate values
-/// which aren't numbers: k_null, k_false and k_true.
+/// which aren't numbers: missing, false and true.
 ///
 /// String, List, Object and Function values are "reference" values:
 /// a Ref_Value* pointer is stored in the low order 48 bits of the Value.
