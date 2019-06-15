@@ -539,6 +539,8 @@ struct Strcat_Function : public Legacy_Function
             for (auto val : *list) {
                 if (auto str = val.dycast<const String_or_Symbol>())
                     sb << *str;
+                else if (val.is_bool())
+                    sb << (val.get_bool_unsafe() ? "true" : "false");
                 else
                     sb << val;
             }

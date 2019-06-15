@@ -466,6 +466,7 @@ in assert(strcat[a]=="{baz:1,'foo bar':0}");
 let '_' = 1 in assert('_' == 1);
 
 assert(#foo == #'foo');
+assert(#true == #'true');
 assert(#foo != #bar);
 assert(#foo != "foo");
 assert(fields{'':0, 'a b':1, 'foo':2} == [#'', #'a b', #foo]);
@@ -476,7 +477,9 @@ let f = match [ /*0->#zero,*/ #one->1 ]; in (
     assert(f #one == 1);
 );
 assert(strcat[#foo] == "foo" && repr #foo == "#foo");
+assert(strcat[#true] == "true" && repr #true == "#true");
 assert("${#foo} $(#bar)" == "foo #bar");
+assert("${#true} $(#false)" == "true #false");
 
 // script return value:
 in null
