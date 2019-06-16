@@ -1,8 +1,18 @@
+Rendering Control:
+* REPL has a `render` variable, initialized from config with -O overrides.
+  Can be modified (but variable has a static type which is enforced).
+  This provides defaults for the Viewer window.
+* REPL assignment statement:
+  * render := {...render, aa: 2} /* must be := not = to avoid recursion */
+  * render.aa := 2
+* Shape has an optional `render` field, which specifies overrides to
+  config, -O options and the REPL `render` variable.
+
 Symbols:
 * SC support for symbols
 * variant_picker[#foo, #bar]
 * align{x: #centre}
-* make_symbol("foo") == #foo
+* make_symbol("foo") == #foo. Rationale: normalize JSON import.
 Structures:
 * struct!index, where struct is a list, string or record. Eg, {a:1}!#a
 * 'symbol-expr => expr' as a field generator

@@ -1,0 +1,110 @@
+Application Data Types
+======================
+
+Simple Generic Data Types
+-------------------------
+The philosophy of Curv, so far, is to provide a small, fixed set of universal
+data structures, then use "duck typing" for application data types.
+Application logic is not encoded in the data, it is kept separate, in functions.
+The goal is simplicity and easy generic programming.
+All data is compatible with a wide variety of code.
+It can be searched, traversed, etc, similar to how a Unix file system can be
+searched and traversed.
+No hidden properties: when you print a datum, what you see is all there is.
+If two data print the same, they are operationally equivalent.
+Related ideas:
+* XML, everything is an element.
+* JSON
+* Unix, everything is text.
+* Early Lisp, everything is a list or an atom.
+  (Except that: pairs have hidden object identity.)
+* http://cell-lang.net/data.html
+* Data oriented design (an alternative to OOP).
+  It uses simple data that isn't mixed up with application logic.
+  It doesn't seem to require shared mutable state, seems compatible with FP.
+
+I have a preference to just using simple, generic data for all purposes.
+99% of the complexity of GP programming languages are in the type systems.
+
+Tagged Application Data Types
+-----------------------------
+If we allow values to be tagged with application type tags and type constraints,
+then such data must print differently from generic data.
+
+The `render` variable
+---------------------
+The REPL has a magic variable called `render`, which is a statically typed
+record variable containing an instance of curv::Render_Opts.
+You can modify this variable:
+   render.background := lib.web_colour.sky_blue;
+   render := {...render, background: lib.web_colour.sky_blue};
+But, you cannot add new fields, remove existing fields, or violate the type
+constraints of existing fields.
+
+How does this work? Is the Render_Opts type attached to the variable,
+or to the value?
+* To enforce type constraints on `render := ...`, we need type constraints
+  on the variable.
+* To enforce type constraints on `render.background := ...`, it might seem
+  easier to put the type constraint into the record value. Imagine a module
+  value whose field dictionary contains field types. But that seems wrong.
+  What if you assign a generic record to `render`, like this:
+    render := {background: white, ...the remaining fields}
+  If that assignment is a straight copy, then the value of `render` no longer
+  has its field type constraints. What actually happens is that the assigned
+  record value is converted internally into a C++ Render_Opt structure.
+* If I print `render`, I prefer to see a generic record value. I think it is
+  cleaner to say that the constraints are attached entirely to the variable,
+  and not to the value.
+
+[What happens if you type `render = ...`? Logically, the original typed
+variable that configures rendering becomes inaccessible. You can also type
+`true = false`. No big deal.]
+
+1. The Render_Opts type is attached to the `render` variable.
+
+See above for reasons to not attach the Render_Opts type to the value.
+
+Seems best for now. An initial solution is to isolate the magic in `render`,
+and treat it as a special case, not as a specific instance of a general
+mechanism that is available to users.
+
+But, we do have this syntax:
+    let
+        x :: pred = initial_value;
+    in do
+        x := new_value;
+It kind of makes sense to enforce the `pred` constraint when `x` is assigned.
+What are the consequences of this design change?
+
+* It calls into question, what does this pattern mean: `(x,y) :: pred`?
+  Seems like `<ident> :: <pred>` is treated differently from other predicate
+  patterns, for placing type constraints on an assignment statement.
+
+2. The Render_Opts type is attached to the `render` value.
+
+------
+Things to ponder:
+* The REPL has a typed record variable called `render`.
+  You can mutate the variable, but the new value must conform to the type.
+* Image import brings in a typed matrix of colours.
+  Internally, it has a compact typed representation.
+
+Are application data types attached to variables (and function parameters,
+and function results), or are they attached to values?
+
+1. Attached to variables.
+
+Javascript and Python (both dynamically typed) have typed arrays.
+A typed array is not compatible with an untyped array of the same dimensions,
+because the element update operation fails if you attempt to store a value of
+the wrong type. K uses typed arrays internally, for efficiency, but they are
+not exposed in the semantics. So an array may switch representations when you
+update it. It's the same rationale for Curv having just numbers, rather than
+integers and floats as separate value types.
+
+2. Attached to values.
+
+I keep thinking about introducing 'tagged' values, where the tag adds extra
+semantics to some otherwise vanilla structure. See: the Term proposal, the
+Context proposal.

@@ -32,11 +32,11 @@ Level 3
 -------
 In REPL mode, it would be nice if you could modify this parameter
 interactively. Here we are setting a global variable that affects all future
-viewer invocations.
+viewer invocations. If Viewer window is open, it modifies the behaviour
+of the existing Viewer: requires a reload of the current shape.
 * `aa=4` seems like the obvious gesture.
-* If this is for some reason unacceptable, maybe an action: `set "aa" 4`,
-  where `set` is a REPL only binding. Plus a way to view current render
-  parameters.
+* `render.aa := 4`, then use `render` to view render options,
+  where `render` is a REPL only binding.
 
 Level 4
 -------
@@ -50,7 +50,8 @@ to set them in the model's source code.
 
 Given the way Curv works, a shape program needs to return a value containing
 both the geometry to be rendered, plus the render parameters.
-* Add render parameters to the shape value.
-  These parameters would be discarded if shape operators are applied.
-* Return a Rendered_Shape object that contains a shape and render parameters.
-  This is not itself a shape.
+* Add `render` field to the shape value.
+  These parameters will usually be discarded if shape operators are applied.
+* Return a Rendered_Shape or Scene value that contains a shape and render
+  parameters. This is not itself a shape. Problem: adding render parameters to
+  an existing public shape can break existing clients that expect a Shape value.

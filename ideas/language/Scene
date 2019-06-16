@@ -1,0 +1,193 @@
+It would be simpler for a Shape to have a `render` field containing rendering
+parameters. Then,
+* All of the render parameters are in one record, not mixed with other elements.
+* You can add render parameters to an existing public shape without breaking
+  existing clients.
+* Fewer code changes, it looks like.
+
+some field names:
+* render.shading=#phong
+* render.tracing=#sphere
+
+In which contexts are render parameters used when interpreting a Shape?
+* export PNG (frag parameters)
+* the Viewer (viewer parameters, includes #lazy)
+* export GPU (frag parameters)
+
+'Frag' parameters are renamed to 'render' parameters.
+
+Render parameters can now be specified in a source file & on the command line.
+Which takes precedence?
+* `curv -opng -Obg=blue shape.curv`
+  (a) Source takes precedence. export_png parses render export parameters, then
+      passes them to shape.recognize(value, render_params), which copies data
+      from Shape::render to render_params.
+  (b) CLI takes precedence. export_png parses render config, then passes them to
+      shape.recognize to selectively override config, then parses CLI opts to
+      selectively override that.
+* `curv -Obg=blue shape.gpu`
+  In this case, -O parameters are ignored, and all render parameters are
+  specified in the GPU file. Source-precedence is already implemented here.
+Source-precedence requires fewer code changes.
+
+------
+A Scene is a shape combined with Viewer parameters.
+
+Two designs:
+ 1. The shape has a `scene` field containing Viewer parameters.
+     * Are any shape operators expected to preserve the `scene` field?
+ 2. There is a new visual data type called Scene; it's a record containing
+    a `shape` field and Viewer parameters.
+     * Are any shape operators expected to be polymorphic on scenes and shapes?
+       Maybe: `show_axes`.
+     * If you convert an existing public package that formerly exported a shape,
+       to now export a scene, you may break existing clients.
+
+Based on this, I think option #1.
+------
+The following discussion makes a case that a Shape record should not contain
+low level code specific to a particular Viewer implementation,
+only abstract, high level information relevant to a particular shape.
+
+Ideas:
+  // Add a `material` function to Shape.
+  make_shape {
+    ...
+    material p = {
+      specular_reflectivity = 0.2;
+      ...
+    };
+  }
+  // A Viewer is a Curv value that encapsulates the configuration variables
+  // and the logic of the viewer window. Maybe it's a parametric record where
+  // the parameters are the config variables.
+  make_viewer {
+    model // usually the camera state
+    view // config -> model -> viewport_size -> (x,y,t) -> pixel_colour
+    controller // (model, event) -> model
+  }
+  // A Scene is a Curv value that combines a shape with viewer configuration.
+  // If we support multiple viewers (eg, the standard viewer, and Phillip's
+  // Phong shading viewer), then the viewer itself needs to be specified.
+  // Eg, using Phillip's new Phong renderer:
+  make_scene {
+    shape = ...;
+    viewer = #phong;
+    // the viewer parameters depend on the viewer:
+    camera = {...};
+    lights = [...];
+  }
+
+What's the best way to describe the viewer and the viewer parameters?
+Because the viewer parameters depend on the viewer, maybe it's one of these:
+    S1 = make_scene {
+        shape = ...;
+        viewer = {phong: {
+            camera = {...};
+            lights = [...];
+        }};
+    }
+    S2 = make_scene {
+        shape = ...;
+        viewer = lib.viewer.phong {
+            camera = {...};
+            lights = [...];
+        };
+    }
+    S3 = make_scene {
+        shape = ...;
+        viewer = lib.viewer.phong; // or #phong
+        config = {
+            camera = {...};
+            lights = [...];
+        };
+    }
+I think we want a Scene to be GUI editable and introspectable. The config
+fields need to be accessible as record fields. In S2, that only happens if the
+viewer is a parametric record.
+
+Sebastien wants to save multiple 'versions' of a shape with different
+parameter values. How are shape parameters stored in a Scene?
+
+A nice thing about viewer=#phong is that it works well on the command line,
+as -Oviewer=#phong.
+
+------
+Issue #74 Control Phong shading material properties
+p-e-w:
+  make_shape {
+    ..
+    material p = {
+      specular_reflectivity = 0.2;
+      ...
+    };
+  }
+sebastien:
+  Pure Curv implementation of (sphere tracing) render function?
+  * default view() function
+  * a 'sketch' can implement a view() function
+
+Issue #73: Control perspective and lighting from the program
+p-e-w:
+  make_shape {
+    ...
+    view = {
+      camera = {...};
+      lights = [...];
+    };
+  }
+doug-moen:
+  I don't want to put view parameters inside a shape.
+  Begs the question, are view parameters preserved by transformations
+  and CSG ops.
+  New graphical value, "view" values
+    make_view {
+      camera = {...};
+      lights = [...];
+      shape = cube;
+    }
+sebastien:
+  Has *.curved package format that contains *.curv source file
+  plus metadata including camera controls.
+  Want a way to override frag shader, giving a function from (shape,[x,y,z,t])
+  to (r,g,b).
+  Plus p-e-w's lighting/camera parameters.
+  Might want to save multiple presets for one Curv sketch.
+
+Issue #74
+doug:
+  Add render() function field to View record.
+  vec3 render(vec3 raydir, vec3 normal, vec3 colour, float occ) // returns colour
+sebastien:
+  `make_view` looks more like `make_scene`. Lights, materials, camera, objects
+  are typically part of a scene graph.
+doug:
+  Move some code from the Viewer window into a Curv `Viewer` value.
+  Viewer record contains {model, view, controller}.
+  * The `view` function is
+      config -> model -> viewport_size -> (x,y,t) -> pixel_colour
+    The `config` parameter is a record of -O options.
+  * The `model` is a record. Its fields are compiled to uniform variables.
+    It is normally the camera state, but this is determined by the Viewer record.
+    <Viewer>.model is the initial model value.
+  * The `controller` transforms the model based on mouse & keyboard events.
+sebastien:
+  Leave the controller part out of Curv and delegate it to the host program:
+  either the curv CLI program or the curved app. Reason: conflict with/
+  redundancy with parts of CurvEd.
+
+  agrees with: The high level building blocks that are composed to create
+  a Viewer are put into a Curv library.
+
+  agrees with: the `view` function interface
+    config -> model -> viewport_size -> (x,y,t) -> pixel_colour
+  
+  Also need a default rendering function that makes use of lower-level
+  primitives like raymarching, lighting model/shading.
+p-e-w:
+  This scope expansion is problematic.
+  * Curv becomes less abstract, more tied to how GLSL frag shaders work.
+    Curv programs become incompatible with raytracing software, 3D printing
+    ecosystem, virtual reality, etc.
+  * Performance problems relative to hand written GLSL?
+  * Too low level for professional 3D artists.

@@ -1,4 +1,6 @@
 The data model of the Cell programming language is very Curvy.
+http://cell-lang.net/data.html
+
 If we use Cell as an inspiration, we get a more general set of primitive
 data types:
 
