@@ -181,7 +181,7 @@ public:
 
     /// Allocate an instance. Copy array elements from another array.
     template<typename... Rest>
-    static std::unique_ptr<Tail_Array> make_copy(_value_type* a, size_t size, Rest&&... rest)
+    static std::unique_ptr<Tail_Array> make_copy(const _value_type* a, size_t size, Rest&&... rest)
     {
         // allocate the object
         void* mem = malloc(sizeof(Tail_Array) + size*sizeof(_value_type));

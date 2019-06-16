@@ -672,10 +672,9 @@ Local_Locative::sc_print(SC_Frame& f) const
 }
 
 void
-Dot_Locative::sc_print(SC_Frame& f) const
+Locative::sc_print(SC_Frame& f) const
 {
-    throw Exception(At_SC_Phrase(syntax_, f),
-        "dot expression is not assignable yet");
+    throw Exception(At_SC_Phrase(syntax_, f), "expression is not assignable");
 }
 
 void

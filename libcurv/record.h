@@ -41,6 +41,9 @@ struct Record : public Ref_Value
     // compare two record values for equality
     bool equal(const Record&, const Context&) const;
 
+    virtual Shared<Record> clone() const = 0;
+    virtual Value* ref_field(Symbol_Ref, bool need_value, const Context&) = 0;
+
     static const char name[];
 
     // Each Record subclass defines a subclass of Iter.
@@ -91,15 +94,13 @@ struct DRecord : public Record
     {
     }
 
-    Shared<const DRecord> clone() const
-    {
-        return make<const DRecord>(fields_);
-    }
-
     virtual void print(std::ostream&) const override;
     virtual Value find_field(Symbol_Ref, const Context&) const override;
     virtual bool hasfield(Symbol_Ref) const override;
     virtual size_t size() const override { return fields_.size(); }
+    virtual Shared<Record> clone() const override;
+    virtual Value* ref_field(Symbol_Ref, bool need_value, const Context&)
+        override;
 
     class Iter : public Record::Iter
     {

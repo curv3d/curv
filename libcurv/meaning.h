@@ -519,51 +519,6 @@ struct Scope_Executable
     void sc_exec(SC_Frame&) const;
 };
 
-// A Locative is the phrase on the left side of an assignment statement.
-struct Locative : public Shared_Base
-{
-    Shared<const Phrase> syntax_;
-    Locative(Shared<const Phrase> syntax)
-    :
-        syntax_(std::move(syntax))
-    {}
-    virtual void store(Frame& f, Value v) const = 0;
-    virtual void sc_print(SC_Frame& f) const = 0;
-};
-
-// A Locative representing a local variable. Closely related to Data_Ref.
-struct Local_Locative : public Locative
-{
-    Local_Locative(Shared<const Phrase> syntax, slot_t slot)
-    :
-        Locative(std::move(syntax)),
-        slot_(slot)
-    {}
-    slot_t slot_;
-    virtual void store(Frame& f, Value v) const override;
-    virtual void sc_print(SC_Frame& f) const override;
-};
-
-// 'locative := expression'
-struct Assignment_Action : public Operation
-{
-    Shared<Locative> locative_;
-    Shared<Operation> expr_;
-
-    Assignment_Action(
-        Shared<const Phrase> syntax,
-        Shared<Locative> locative,
-        Shared<Operation> expr)
-    :
-        Operation(std::move(syntax)),
-        locative_(std::move(locative)),
-        expr_(std::move(expr))
-    {}
-
-    virtual void exec(Frame&, Executor&) const override;
-    void sc_exec(SC_Frame&) const override;
-};
-
 struct Module_Expr : public Just_Expression
 {
     using Just_Expression::Just_Expression;
@@ -958,26 +913,6 @@ struct Dot_Expr : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
-// A Locative representing <locative>.fieldname
-struct Dot_Locative : public Locative
-{
-    Shared<Locative> base_;
-    Symbol_Expr selector_;
-
-    Dot_Locative(
-        Shared<const Phrase> syntax,
-        Shared<Locative> base,
-        Symbol_Expr selector)
-    :
-        Locative(std::move(syntax)),
-        base_(std::move(base)),
-        selector_(std::move(selector))
-    {}
-
-    virtual void store(Frame& f, Value v) const override;
-    virtual void sc_print(SC_Frame& f) const override;
-};
-
 struct Assoc : public Operation
 {
     Symbol_Expr name_;
@@ -1021,6 +956,85 @@ struct Recursive_Definition_Op : public Operation
     // These functions are called during evaluation.
     virtual Value eval(Frame&) const override;
     virtual void exec(Frame&, Executor&) const override;
+};
+
+// A Locative is the phrase on the left side of an assignment statement.
+struct Locative : public Shared_Base
+{
+    Shared<const Phrase> syntax_;
+    Locative(Shared<const Phrase> syntax)
+    :
+        syntax_(std::move(syntax))
+    {}
+    virtual void store(Frame& f, Value v) const = 0;
+    virtual Shared<Locative> get_field(Shared<const Phrase>, Symbol_Expr) = 0;
+    virtual void sc_print(SC_Frame& f) const;
+};
+
+// A Boxed Locative represents its state as a mutable object of type Value.
+// And reference() returns a pointer to this object.
+struct Boxed_Locative : public Locative
+{
+    using Locative::Locative;
+    virtual void store(Frame& f, Value v) const override;
+    virtual Shared<Locative> get_field(Shared<const Phrase>, Symbol_Expr)
+        override;
+    // reference: get a pointer to the locative's state.
+    // need_value is false if we are just going to immediately overwrite the
+    // value without looking at it, or true if we need the value.
+    virtual Value* reference(Frame&, bool need_value) const = 0;
+};
+
+// A Locative representing a boxed local variable. Closely related to Data_Ref.
+struct Local_Locative : public Boxed_Locative
+{
+    Local_Locative(Shared<const Phrase> syntax, slot_t slot)
+    :
+        Boxed_Locative(std::move(syntax)),
+        slot_(slot)
+    {}
+    slot_t slot_;
+    virtual void sc_print(SC_Frame& f) const override;
+    virtual Value* reference(Frame&,bool) const override;
+};
+
+// A Locative representing <boxed-locative>.fieldname
+struct Dot_Locative : public Boxed_Locative
+{
+    Shared<Boxed_Locative> base_;
+    Symbol_Expr selector_;
+
+    Dot_Locative(
+        Shared<const Phrase> syntax,
+        Shared<Boxed_Locative> base,
+        Symbol_Expr selector)
+    :
+        Boxed_Locative(std::move(syntax)),
+        base_(std::move(base)),
+        selector_(std::move(selector))
+    {}
+
+    virtual Value* reference(Frame&,bool) const override;
+};
+
+// 'locative := expression'
+struct Assignment_Action : public Operation
+{
+    Shared<Locative> locative_;
+    Shared<Operation> expr_;
+
+    Assignment_Action(
+        Shared<const Phrase> syntax,
+        Shared<Locative> locative,
+        Shared<Operation> expr)
+    :
+        Operation(std::move(syntax)),
+        locative_(std::move(locative)),
+        expr_(std::move(expr))
+    {}
+
+    virtual void exec(Frame&, Executor&) const override;
+    void sc_exec(SC_Frame&) const override;
 };
 
 } // namespace curv

@@ -481,5 +481,11 @@ assert(strcat[#true] == "true" && repr #true == "#true");
 assert("${#foo} $(#bar)" == "foo #bar");
 assert("${#true} $(#false)" == "true #false");
 
+assert( let r = {a:1,b:2} in do r.a := 42 in r == {a:42,b:2} );
+assert( let r={a=1;b=2} in do r.a:=17 in r == {a:17,b:2} );
+assert( let r=file "dir" in do r.n:=0 in r == {n:0,d:{b:#true}} );
+assert( let r=file "dir" in do r.d:=0 in r == {n:42,d:0} );
+assert( let r=file "dir" in do r.d.b:=0 in r == {n:42,d:{b:0}} );
+
 // script return value:
 in null

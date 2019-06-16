@@ -24,11 +24,16 @@ struct Dir_Record : public Record
     Symbol_Map<File> fields_;
 
     Dir_Record(Filesystem::path dir, const Context&);
+    Dir_Record(Filesystem::path dir, Symbol_Map<File> fields);
 
     virtual void print(std::ostream&) const override;
     virtual Value find_field(Symbol_Ref, const Context&) const override;
     virtual bool hasfield(Symbol_Ref) const override;
     virtual size_t size() const override;
+    virtual Shared<Record> clone() const override;
+    virtual Value* ref_field(Symbol_Ref, bool need_value, const Context&)
+        override;
+
     class Iter : public Record::Iter
     {
     protected:

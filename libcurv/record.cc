@@ -97,4 +97,20 @@ DRecord::hasfield(Symbol_Ref name) const
     return (fp != fields_.end());
 }
 
+Shared<Record>
+DRecord::clone() const
+{
+    return make<DRecord>(fields_);
+}
+
+Value*
+DRecord::ref_field(Symbol_Ref name, bool need_value, const Context& cx)
+{
+    auto fp = fields_.find(name);
+    if (fp != fields_.end())
+        return &fp->second;
+    throw Exception(cx, stringify(Value{share(*this)},
+        " has no field named ", name));
+}
+
 } // namespace curv

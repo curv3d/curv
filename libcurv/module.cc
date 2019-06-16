@@ -4,6 +4,7 @@
 
 #include <libcurv/module.h>
 #include <libcurv/function.h>
+#include <libcurv/exception.h>
 
 namespace curv {
 
@@ -54,6 +55,23 @@ Module_Base::hasfield(Symbol_Ref name) const
 {
     auto b = dictionary_->find(name);
     return (b != dictionary_->end());
+}
+
+Shared<Record>
+Module_Base::clone() const
+{
+    return Module::make_copy(&array_[0], size(), dictionary_);
+}
+
+Value*
+Module_Base::ref_field(Symbol_Ref name, bool need_value, const Context& cx)
+{
+    auto b = dictionary_->find(name);
+    // WARNING: array_[i] can be a Closure, which is not a proper value.
+    if (b != dictionary_->end())
+        return &array_[b->second];
+    throw Exception(cx, stringify(Value{share(*this)},
+        " has no field named ", name));
 }
 
 } // namespace curv

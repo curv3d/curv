@@ -712,15 +712,36 @@ Scope_Executable::exec(Frame& f) const
 }
 
 void
-Local_Locative::store(Frame& f, Value v) const
+Boxed_Locative::store(Frame& f, Value v) const
 {
-    f[slot_] = v;
+    *reference(f,false) = v;
 }
 
-void
-Dot_Locative::store(Frame& f, Value v) const
+Shared<Locative>
+Boxed_Locative::get_field(
+    Shared<const Phrase> syntax,
+    Symbol_Expr selector)
 {
-    throw Exception(At_Phrase(*syntax_, f), "dot expression is not assignable yet");
+    return make<Dot_Locative>(syntax, share(*this), selector);
+}
+
+Value*
+Local_Locative::reference(Frame& f,bool) const
+{
+    return &f[slot_];
+}
+
+Value*
+Dot_Locative::reference(Frame& f, bool need_value) const
+{
+    Value* base = base_->reference(f,true);
+    Shared<Record> base_rec = base->to<Record>(At_Phrase(*base_->syntax_, f));
+    if (base_rec->use_count > 1) {
+        base_rec = base_rec->clone();
+        *base = {base_rec};
+    }
+    Symbol_Ref id = selector_.eval(f);
+    return base_rec->ref_field(id, need_value, At_Phrase(*syntax_, f));
 }
 
 void

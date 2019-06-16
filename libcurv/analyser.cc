@@ -682,19 +682,18 @@ analyse_locative(const Phrase& ph, Environ& env, unsigned edepth)
         return env.lookup_lvar(*id, edepth);
     auto dot = dynamic_cast<const Dot_Phrase*>(&ph);
     if (dot != nullptr) {
+        auto base = analyse_locative(*dot->left_, env, edepth);
         // TODO: copypasta from Dot_Phrase::analyse
         // But, edepth is handled differently.
         if (auto id = cast<const Identifier>(dot->right_)) {
-            return make<Dot_Locative>(
+            return base->get_field(
                 share(ph),
-                analyse_locative(*dot->left_, env, edepth),
                 Symbol_Expr{id});
         }
         if (auto string = cast<const String_Phrase>(dot->right_)) {
             auto str_expr = string->analyse_string(env);
-            return make<Dot_Locative>(
+            return base->get_field(
                 share(ph),
-                analyse_locative(*dot->left_, env, edepth),
                 Symbol_Expr{str_expr});
         }
         throw Exception(At_Phrase(*dot->right_, env),

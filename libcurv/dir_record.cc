@@ -68,6 +68,14 @@ Dir_Record::Dir_Record(Filesystem::path dir, const Context& cx)
     }
 }
 
+Dir_Record::Dir_Record(Filesystem::path dir, Symbol_Map<File> fields)
+:
+    Record(Ref_Value::sty_dir_record),
+    dir_(dir),
+    fields_(fields)
+{
+}
+
 void Dir_Record::print(std::ostream& out) const
 {
     out << "{";
@@ -98,6 +106,27 @@ bool Dir_Record::hasfield(Symbol_Ref sym) const
 size_t Dir_Record::size() const
 {
     return fields_.size();
+}
+
+Shared<Record>
+Dir_Record::clone() const
+{
+    return make<Dir_Record>(dir_, fields_);
+}
+
+Value*
+Dir_Record::ref_field(Symbol_Ref name, bool need_value, const Context& cx)
+{
+    auto p = fields_.find(name);
+    if (p == fields_.end()) {
+        throw Exception(cx, stringify(Value{share(*this)},
+            " has no field named ", name));
+    }
+    if (p->second.value_.is_missing()) {
+        if (need_value)
+            p->second.value_ = p->second.importer_(p->second.path_, cx);
+    }
+    return &p->second.value_;
 }
 
 /*
