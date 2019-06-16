@@ -1,0 +1,51 @@
+In Curved, we can automatically assign a picker type to literal subexpressions.
+We can distinguish colours from 3D points.
+We can print colour values specially, displaying colour swatches.
+How does this work?
+
+In the IDE, when you create an operation node, there is a point where
+you have specified the operation but not yet specified arguments.
+There is some kind of context that allows us to know the allowable types or
+kinds of the arguments, so that we can provide assistance in filling in the
+argument holes.
+How does this work?
+
+The conventional wisdom is:
+* a static type system
+* a dynamic type system
+
+I don't want a programming style where there are hundreds of opaque ADTs,
+each with a bespoke, specialized API that isn't compatible with anything else.
+Curv has 6 data types and no ADT support because I want a small number
+of simple, universal data APIs, to maximize the possibilities for
+interoperability and generic code. OOP is an anti-pattern here.
+APL and early Lisp/Scheme (pre OOP) are inspirations.
+
+* I'll give Haskell some credit for attempting to maximize the possibilities
+  for generic code, by organizing types into a set of very general type classes.
+
+I also don't want a massive increase in the complexity of the core language,
+caused by a complex built in type system. Haskell is an anti-pattern here.
+
+More ideas:
+
+Intrinsic Context
+-----------------
+* We recognize shape values as records containing certain fields.
+  Colour values could be represented as {colour: [r,g,b]}.
+* Maybe lists can have optional metadata specifying a tag like #colour,
+  similar to the record metadata proposed for Terms. Lists with metadata
+  would remain lists. Which raises a question: do some list operations
+  preserve tag metadata in the result?
+
+Extrinsic Context
+-----------------
+* Naming conventions. If an operation has an argument record with a
+  `colour` field, then the IDE assumes the argument is a colour.
+* The IDE uses predicate patterns in a function parameter declaration to
+  constrain argument types and provide assistance in filling argument holes.
+  Even if a colour value is represented by a vec3, with no intrinsic metadata,
+  a predicate can contain picker metadata. Eg,
+    colour (c :: colour_picker) shape =
+  Ditto for local variables/record bindings,
+  and for function return types (function body is a predicate assertion).

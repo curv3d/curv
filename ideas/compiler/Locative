@@ -24,19 +24,28 @@ So use choice 1.
 
 Typed Locatives
 ---------------
-The SC should assign a type to a locative, then ensure that the right side
-of := has the same type as the left side.
+A Locative can be typed, and can enforce that the right side of := has the
+same type as the left side.
+* I need this for the magic `render` variable in the REPL.
+* The Shape Compiler already does this, since SubCurv variables are typed.
+  The type is inferred from the variable's initial value.
 
+Should we make typed locatives a general feature of Curv?
 This syntax:
     let x :: is_num = 3;
     in do x := x + 1;
     in x
-should produce a variable 'x' with predicate 'is_num', and the predicate
-should be enforced by assignment statements.
+seems to be a syntax for defining a typed variable.
 
 All assignments of the same local variable should contain the same Locative
 object, which carries the variable's type and location.
 Which means Environ::lvar_lookup should return a Locative.
+
+Do record values contain field types, enforced when a field is updated?
+Given `a = {x :: is_num = 3}`,
+does `a.x := y` enforce the `is_num` constraint on `y`?
+This means a module dictionary contains field types. And these field types
+will need to be shown when a module value is printed.
 
 Locative Patterns
 -----------------

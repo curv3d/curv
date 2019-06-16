@@ -1,5 +1,10 @@
-`match` should be a keyword
----------------------------
+`match` should be a keyword or metafunction
+===========================================
+Maybe it is a metafunction (a Meaning) that recognizes special syntax in a
+call, but promotes to a value (via to_operation) outside of that context.
+
+1. `colour`
+-----------
 The `colour` operator is currently defined like this:
 
     colour c shape = c >> match [
@@ -61,6 +66,8 @@ The lambdas in the match argument list should inherit the name 'colour',
 so that partial applications print better and we get better error messages.
 That also requires `match` to be magic.
 
+2. piecewise parametric records
+-------------------------------
 If a piecewise function definition (like the second form of `colour`)
 is declared `parametric`, then the parametric property should be inherited
 by the lambdas in the match argument list. Also requires `match` to be magic.
@@ -68,3 +75,24 @@ by the lambdas in the match argument list. Also requires `match` to be magic.
 In the Picker and Prototypes proposals, perhaps
     parametric match [...]
 is an anonymous parametric function. This works if `match` is a keyword.
+
+...more thought is required...
+
+3. switch statement
+-------------------
+How do I write a switch statement over a symbol variable in SubCurv?
+Ideas:
+ * Generalize `match` so that a call to match can return a procedure
+   rather than a function.
+    * By introducing first-class procedure values, see Procedures.
+      But that requires procedure values that capture mutable variables,
+      and that is forbidden (Curv is a pure functional language).
+      Such procedures can't be mapped to GLSL values in any case.
+       * What about 'second-class' procedure values that don't violate purity?
+         aka Meanings.
+    * Special syntax. `match` is a keyword, or it is a metafunction that can
+      be promoted to a value. As a keyword/metafunction, it can handle an
+      argument of the form
+         match [pattern1->statement1,...]
+      which compiles into a piecewise procedure (which is not a value).
+ * Add a `switch` statement: switch (arg) [pattern1->statement1, ...]
