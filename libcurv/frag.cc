@@ -122,7 +122,7 @@ void export_frag_3d(
             << opts.bg_.y << ","
             << opts.bg_.z << ");\n"
         "const int ray_max_iter = " << opts.ray_max_iter_ << ";\n"
-        "const float ray_max_depth = " << opts.ray_max_depth_ << ";\n"
+        "const float ray_max_depth = " << dfmt(opts.ray_max_depth_, dfmt::EXPR) << ";\n"
         "#ifdef GLSLVIEWER\n"
         "uniform vec3 u_eye3d;\n"
         "uniform vec3 u_centre3d;\n"
