@@ -99,8 +99,8 @@ struct Module_Base : public Record
     virtual Value find_field(Symbol_Ref, const Context&) const override;
     virtual bool hasfield(Symbol_Ref) const override;
     virtual size_t size() const override { return size_; }
-    virtual Shared<Record> clone() const;
-    virtual Value* ref_field(Symbol_Ref, bool need_value, const Context&);
+    virtual Shared<Record> clone() const override;
+    virtual Value* ref_field(Symbol_Ref, bool need_value, const Context&) override;
 
     static const char name[];
 
