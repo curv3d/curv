@@ -1,0 +1,74 @@
+The REPL should be integrated with the live-edit editing window
+and with the viewer window.
+
+The magic REPL variable `render` is initialized with Render_Opts values
+from config and the -O program options. It is used to configure a Viewer
+window. When a Viewer is open, changing `render` from the REPL updates the
+Viewer configuration dynamically.
+    render.background := blue
+
+The magic REPL variable `parameters` is bound to the parameters in a parametric
+shape being displayed in the Viewer window. You can modify these parameters
+from the REPL.
+    parameters.angle := 90*deg
+This complicates my idea of opening multiple Viewer windows from the REPL.
+
+In live-edit mode, the REPL should have access to bindings defined in the
+current edit window.
+* In a module-oriented language, where the top level of a program is a set of
+  definitions, plus either a result expression or a 'main' binding, the
+  live-edit REPL will naturally have access to these top level bindings.
+  This is an important feature.
+* A Curv program is usually either a library or a shape program like this:
+    parametric <parameters> in let <top-level-bindings> in <shape-expression>
+* There is a REPL variable (`result`) that contains the result of evaluating
+  the source when the source code was last saved. This gives access to
+  library bindings and lets you inspect the shape value.
+* There is a REPL variable (`bindings`) that contains any top level local
+  bindings. If the top-level expression is a binding construct (parametric,
+  let, where), whose body is optionally another binding construct
+  (recursively), then all these bindings are collected into `bindings`.
+
+Assignment statements work in the REPL, because all statement types are
+supported. Executing statements in the REPL is a way of learning statement
+semantics.
+
+If assignment statements work in the REPL, then what variables can be assigned?
+* `render` and `parameters` are assignable.
+* `result` and `bindings` ought to be readonly.
+* Standard bindings ought to be readonly. In a function, non-local variables
+  are not assignable.
+* New variables defined within the REPL session by executing definitions
+  ought to be assignable, analogous to how local variables are assignable
+  within a function.
+
+The debugger will also be controlled from the REPL.
+
+In a bring-your-own-editor dev environment, how are PL REPLs integrated with
+your editor?
+* https://clojure.org/guides/repl/basic_usage
+  suggests copying and pasting definitions from your edit window to your REPL.
+  Multi-line definitions ought to be supported by the Curv REPL so that this
+  works.
+* Some editors have Clojure REPL integrations.
+* The live-edit REPL reads and evaluates the source file each time it is
+  saved, so this is when the REPL state is synched with the source state.
+  There is a REPL variable that contains the result of evaluating the source.
+
+REPL automation.
+* You can define bindings within the REPL for automating tasks.
+  Eg, data visualization functions, for visualizing data structures using a
+  Viewer window.
+* How do you get these bindings into the REPL?
+  * Include a library: `include lib.visualize`.
+  * Add configuration for specifying default REPL bindings.
+* Do we need user-defined REPL procedures for mutating REPL state?
+  * What, though? There's not much state you can usefully modify.
+    With the addition of a debugger, maybe that changes?
+  * Curv doesn't have user defined procedures, and if it did, they can't modify
+    non-local variables, according to the doctrine. Is there a way around this?
+    The doctrine states that mutable state must be explicitly passed in and out
+    of a function to effect state change.
+  * Maybe add syntax that simplifies stereotypical function calls that are
+    used for this purpose? Eg, `record!function` modifies fields within record,
+    is short for record := function record.
