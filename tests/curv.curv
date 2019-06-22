@@ -396,12 +396,12 @@ in sc_test {
 
 // assignment statement
 assert_error("foo: not defined", do foo := 1 in 42);
-assert_error("sin: not a local variable", do sin := 1 in 42);
-assert_error("local variable foo: not assignable from inside an expression",
+assert_error("sin: not assignable", do sin := 1 in 42);
+assert_error("foo: not assignable from inside an expression",
     let foo = 0 in 1 + (do foo := 2 in foo)
 );
 assert_error(
-  "x: not a local variable",
+  "x: not assignable",
   (
     let
         f x =
