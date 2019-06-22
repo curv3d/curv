@@ -125,48 +125,43 @@ Environ::lookup(const Identifier& id)
 }
 
 Shared<Locative>
+Environ::single_lvar_lookup(const Identifier& id)
+{
+    auto m = single_lookup(id);
+    if (m != nullptr) {
+        auto dref = cast<Data_Ref>(m);
+        auto lambda = dynamic_cast<Lambda_Scope*>(this);
+        if (dref == nullptr || lambda != nullptr) {
+            throw Exception(At_Phrase(id, *this),
+                stringify(id.symbol_,": not assignable"));
+        }
+        return make<Local_Locative>(share(id), dref->slot_);
+    }
+    return nullptr;
+}
+
+Shared<Locative>
 Environ::lookup_lvar(const Identifier& id, unsigned edepth)
 {
-    for (Environ* e = this; e != nullptr; e = e->parent_) {
+    Environ *env = this;
+    for (; env != nullptr; env = env->parent_) {
         if (edepth == 0)
             break;
         --edepth;
-        auto m = e->single_lookup(id);
-        if (m != nullptr) {
-            auto dref = cast<Data_Ref>(m);
-            if (dref == nullptr) {
-                // this should never happen
-                throw Exception(At_Phrase(*m->syntax_, *this),
-                    "compiler error: not an assignable variable name");
-            }
-            return make<Local_Locative>(share(id), dref->slot_);
-        }
+        auto loc = env->single_lvar_lookup(id);
+        if (loc != nullptr)
+            return loc;
     }
     // Figure out what went wrong and give a good error.
-    Shared<Meaning> m = nullptr;
-    Environ *env = nullptr;
-    for (Environ* e = this; e != nullptr; e = e->parent_) {
-        m = e->single_lookup(id);
-        if (m != nullptr) {
-            env = e;
-            break;
+    for (; env != nullptr; env = env->parent_) {
+        auto loc = env->single_lvar_lookup(id);
+        if (loc != nullptr) {
+            throw Exception(At_Phrase(id, *this), stringify(
+                id.symbol_,": not assignable from inside an expression"));
         }
     }
-    if (m == nullptr) {
-        throw Exception(At_Phrase(id, *this),
-            stringify(id.symbol_,": not defined"));
-    }
-    auto lambda = dynamic_cast<Lambda_Scope*>(env);
-    auto data = cast<Data_Ref>(m);
-    if (lambda || data == nullptr) {
-        // A lambda parameter is a Data_Ref, but is not classified as a local
-        // variable: see comment on Lambda_Scope for details.
-        throw Exception(At_Phrase(id, *this),
-            stringify(id.symbol_,": not a local variable"));
-    }
     throw Exception(At_Phrase(id, *this),
-        stringify("local variable ",id.symbol_,
-            ": not assignable from inside an expression"));
+        stringify(id.symbol_,": not defined"));
 }
 
 Shared<Meaning>

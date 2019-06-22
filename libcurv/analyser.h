@@ -65,6 +65,7 @@ struct Environ
     Shared<Meaning> lookup(const Identifier& id);
     Shared<Locative> lookup_lvar(const Identifier& id, unsigned edepth);
     virtual Shared<Meaning> single_lookup(const Identifier&) = 0;
+    virtual Shared<Locative> single_lvar_lookup(const Identifier&);
 };
 
 struct Builtin_Environ : public Environ
