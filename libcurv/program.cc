@@ -19,18 +19,16 @@ void
 Program::compile(const Namespace* names)
 {
     if (names == nullptr)
-        names_ = &scanner_.system_.std_namespace();
-    else
-        names_ = names;
+        names = &scanner_.system_.std_namespace();
 
     phrase_ = parse_program(scanner_);
 
     Analyser ana(scanner_.system_);
-    Builtin_Environ env{*names_, ana, scanner_.file_frame_};
+    Builtin_Environ env{*names, ana, scanner_.file_frame_};
     if (auto def = phrase_->as_definition(env)) {
         module_ = analyse_module(*def, env);
     } else {
-        meaning_ = phrase_->analyse(env, 0);
+        meaning_ = phrase_->analyse(env, edepth_);
     }
 
     frame_ = {Frame::make(env.frame_maxslots_,

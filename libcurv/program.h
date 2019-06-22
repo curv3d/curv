@@ -29,11 +29,11 @@ struct Program_Opts
 struct Program
 {
     Scanner scanner_;
-    const Namespace* names_ = nullptr;
     Shared<Phrase> phrase_ = nullptr;
     Shared<Meaning> meaning_ = nullptr;
     Shared<Module_Expr> module_ = nullptr;
     std::unique_ptr<Frame> frame_ = nullptr;
+    unsigned edepth_ = 0;
 
     Program(
         Shared<const Source> source,
