@@ -23,7 +23,7 @@ Shared<Operation>
 analyse_op(const Phrase& ph, Environ& env, unsigned edepth)
 {
     return ph.analyse(env, edepth)
-        ->to_operation(env.analyser_.system_, env.file_frame_);
+        ->to_operation(env.analyser_.system_, env.analyser_.file_frame_);
 }
 
 // Evaluate the phrase as a constant expression in the builtin environment.
@@ -31,10 +31,10 @@ Value
 std_eval(const Phrase& ph, Environ& env)
 {
     Builtin_Environ benv(
-        env.analyser_.system_.std_namespace(), env.analyser_, env.file_frame_);
+        env.analyser_.system_.std_namespace(), env.analyser_);
     auto op = analyse_op(ph, benv);
     auto frame = Frame::make(benv.frame_maxslots_,
-        env.analyser_.system_, env.file_frame_, nullptr, nullptr);
+        env.analyser_.system_, env.analyser_.file_frame_, nullptr, nullptr);
     return op->eval(*frame);
 }
 

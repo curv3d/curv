@@ -10,36 +10,40 @@
 
 namespace curv {
 
-// Global analysis state while analysing a whole program.
-struct Analyser
+// Shared analysis state while analysing a source file.
+struct File_Analyser
 {
     System& system_;
+
+    /// file_frame_ is nullptr, unless we are analysing a source file due to
+    /// an evaluation-time call to `file`. It's used by the Exception Context,
+    /// to add a stack trace to compile time errors.
+    Frame* file_frame_;
 
     // Have we already emitted a 'var deprecated' warning?
     // Used to prevent an avalanche of warning messages.
     bool var_deprecated_ = false;
 
-    Analyser(System& system) : system_(system) {}
+    File_Analyser(System& system, Frame* file_frame)
+    :
+        system_(system),
+        file_frame_(file_frame)
+    {}
 };
 
 // Local analysis state that changes when entering a new name-binding scope.
 struct Environ
 {
     Environ* parent_;
-    Analyser& analyser_;
-    /// file_frame_ is nullptr, unless we are analysing a source file due to
-    /// an evaluation-time call to `file`. It's used by the Exception Context,
-    /// to add a stack trace to compile time errors.
-    Frame* file_frame_;
+    File_Analyser& analyser_;
     slot_t frame_nslots_;
     slot_t frame_maxslots_;
 
-    // constructor for root environment
-    Environ(Analyser& analyser, Frame* file_frame)
+    // constructor for root environment of a source file
+    Environ(File_Analyser& analyser)
     :
         parent_(nullptr),
         analyser_(analyser),
-        file_frame_(file_frame),
         frame_nslots_(0),
         frame_maxslots_(0)
     {}
@@ -49,7 +53,6 @@ struct Environ
     :
         parent_(parent),
         analyser_(parent->analyser_),
-        file_frame_(parent->file_frame_),
         frame_nslots_(0),
         frame_maxslots_(0)
     {}
@@ -73,9 +76,9 @@ struct Builtin_Environ : public Environ
 protected:
     const Namespace& names;
 public:
-    Builtin_Environ(const Namespace& n, Analyser& a, Frame* f)
+    Builtin_Environ(const Namespace& n, File_Analyser& a)
     :
-        Environ(a, f),
+        Environ(a),
         names(n)
     {}
     virtual Shared<Meaning> single_lookup(const Identifier&);
