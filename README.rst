@@ -61,13 +61,16 @@ using the vendor supplied GPU driver.
   some Curv programs may not work correctly.
 * On Linux, the GPU needs to be modern enough to be supported
   by the latest driver version from the GPU vendor. Any GPU from 2012 or later
-  will work. Some older GPUs may work: check the list of supported hardware for the driver.
+  will work. Some older GPUs may work: check the list of supported hardware
+  for the driver.
 * On Windows 10, you should be able to use WSL to run Curv.
   I'm waiting for a volunteer to confirm this.
-* Raspberry Pi 3 is not supported. The Pi 3 has a Broadcom VC4 GPU,
+* Raspberry Pi 4 should work (it has a Broadcom VideoCore 6 GPU).
+  You'll need a Linux distro that includes Eric Anholt's Mesa based OpenGL
+  driver (OpenGL ES is a different API, not compatible with Curv).
+  I haven't had a chance to test this hardware/driver combo yet.
+  Raspberry Pi 3 is not supported: it has a Broadcom VC4 GPU,
   which only supports OpenGL 2.1, and Curv needs OpenGL 3.3.
-  The Broadcom VC5 GPU supports OpenGL ES 3.1, which has everything Curv needs.
-  It is hoped that the Raspberry Pi 4, with a possible release date of 2020, will have a VC5.
 
 * On Linux, you have 3 choices:
 
