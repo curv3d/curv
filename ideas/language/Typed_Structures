@@ -19,6 +19,7 @@ Related ideas:
 * Early Lisp, everything is a list or an atom.
   (Except that: pairs have hidden object identity.)
 * http://cell-lang.net/data.html
+* EDN https://github.com/edn-format/edn
 * Data oriented design (an alternative to OOP).
   It uses simple data that isn't mixed up with application logic.
   It doesn't seem to require shared mutable state, seems compatible with FP.
