@@ -65,10 +65,11 @@ using the vendor supplied GPU driver.
   for the driver.
 * On Windows 10, you should be able to use WSL to run Curv.
   I'm waiting for a volunteer to confirm this.
-* Raspberry Pi 4 should work, but I haven't tested it yet.
+* Raspberry Pi 4 should work, once an OpenGL 3.3 library is available.
   It has a Broadcom VideoCore 6 (VC6) GPU, and the default Raspian Linux distro
   has a new GPU driver, the open source Mesa “V3D” driver developed by
-  Eric Anholt at Broadcom.
+  Eric Anholt at Broadcom. Both of these support Curv. But, at launch,
+  the Pi 4 Raspbian version lacks OpenGL, although the Pi 3 version has it.
   Raspberry Pi 3 is not supported: it has a Broadcom VC4 GPU,
   which only supports OpenGL 2.1, and Curv needs OpenGL 3.3.
 
