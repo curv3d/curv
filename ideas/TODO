@@ -42,7 +42,7 @@ v0.5 Planning
   * alpha channel in colour functions
   * `time` is a global reactive variable
   * Ray-casting non-Lipschitz implicit surfaces
-* Smart STL export with edge detection: SHREC and/or libfive.
+* Smart STL export with edge detection: SHREC (libfive meshes are low quality)
   * SHREC uses NRRD voxel data as input. >Voxel i/o.
 * shape library
   * noise library, >SC piecewise functions.
@@ -60,7 +60,13 @@ v0.5 Planning
 * User defined lighting models can be written in Curv. >SC Refactor.
   'Viewer' value can override fragment shader, maybe other viewer behaviour.
 * Improved web site. cell-lang.org, hazel.org, racket-lang.org,
-* Interrupt a running program (in REPL)
+* REPL
+  * Interrupt a running program
+  * fix syntax colouring
+  * fix completion
+  * multi-line definitions (copypasta from a source file)
+  * REPL in live edit mode
+  * debugger
 
 * v0.4 leftovers:
   * Assignment statement:
@@ -83,8 +89,6 @@ v0.5 Planning
     * cli tests, curvc
     * detect console output from curv.curv
     * full sc_test suite
- * REPL language dialect
-   * Document it. Note, no global :=.
 
 Big Items
 * graphical value pickers in the viewer
@@ -114,7 +118,10 @@ TODO (value pickers impl)
 * Support all SC-compatible expressions over reactive values.
   * Should picker predicates restrict their range to something more precise
     than a SC_Type?
-* Support multiple viewer windows. 'cube;sphere' in CLI opens 2 Viewers.
+* Support multiple viewer windows.
+  * 'cube;sphere' in REPL opens 2 Viewers labelled REPL[0], REPL[1].
+  * The live edit mode has a REPL. There is a live-edit viewer (labelled with
+    source file name), and one or more REPL viewers.
 
 Current TODO List:
 * fix Power Saver button to work correctly
