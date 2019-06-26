@@ -67,6 +67,7 @@ You can execute a value generator directly from the REPL::
   9
   16
   25
+
   curv> [for (i in 1..5) i^2]
   [1,4,9,16,25]
 
@@ -78,6 +79,7 @@ You can execute a field generator directly from the REPL::
   curv> foo:17; bar:42
   foo:17
   bar:42
+
   curv> {foo:17; bar:42}
   {bar:42,foo:17}
 
