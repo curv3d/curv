@@ -70,8 +70,9 @@ You can execute a value constructor directly from the REPL::
 A `field generator`_ is normally found in a record constructor;
 it is a kind of statement that adds zero or more fields to the record being constructed.
 You can execute a field constructor directly from the REPL::
-  curv> foo: 42
-  foo:42
+  curv> foo:17; bar:42
+  foo:17
+  bar:42
 
 .. _`field generator`: language/Records.rst
 
