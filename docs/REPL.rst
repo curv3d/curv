@@ -40,7 +40,8 @@ to the REPL environment, and can be used in later commands.
 
 .. _`definition`: language/Blocks.rst
 
-mutually recursive
+..
+  mutually recursive definitions: `def1;def2`
 
 A `statement`_ is executed for its side effects, and may optionally print
 some results or output. There are three cases:
