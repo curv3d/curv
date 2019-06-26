@@ -29,7 +29,7 @@ If the value is a shape, then a Viewer window is opened to display the shape gra
 
 |viewer|
 
-.. |viewer| image:: images/viewer.png
+.. |viewer| image:: images/viewer2.png
 
 A `definition`_ binds one or more names to values. The bindings are added
 to the REPL environment, and can be used in later commands.
