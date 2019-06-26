@@ -48,6 +48,7 @@ struct Program
     void skip_prefix(unsigned len);
 
     void compile(const Namespace* names = nullptr);
+    void compile(Environ&);
 
     const Phrase& nub() const;
 

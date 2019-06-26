@@ -35,6 +35,7 @@ extern "C" {
 #include "shapes.h"
 #include "view_server.h"
 
+#include <libcurv/analyser.h>
 #include <libcurv/ansi_colour.h>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
@@ -54,21 +55,59 @@ void interrupt_handler(int)
     was_interrupted = true;
 }
 
-replxx::Replxx::completions_t get_completions(std::string const& context, int index, void* user_data)
+struct REPL_Namespace
 {
-    auto* names = static_cast<curv::Namespace*>(user_data);
-    replxx::Replxx::completions_t completions;
+    curv::Namespace names_;
+    REPL_Namespace(curv::System& sys) : names_(sys.std_namespace()) {}
 
-    std::string prefix {context.substr(index)};
-    for (auto const& n : *names) {
-        if (n.first.size() < prefix.size())
-            continue;
+    std::vector<std::string> completions(std::string prefix)
+    {
+        std::vector<std::string> result;
+        for (auto const& n : names_) {
+            if (n.first.size() < prefix.size())
+                continue;
 
-        if (prefix.compare(0, std::string::npos, n.first.c_str(), prefix.size()) == 0)
-            completions.emplace_back(n.first.c_str());
+            if (prefix.compare(0, std::string::npos, n.first.c_str(), prefix.size()) == 0)
+                result.emplace_back(n.first.c_str());
+        }
+
+        return result;
     }
 
-    return completions;
+    void set_last_value(curv::Value val)
+    {
+        static curv::Symbol_Ref lastval_key = curv::make_symbol("_");
+        names_[lastval_key] = curv::make<curv::Builtin_Value>(val);
+    }
+
+    void define(curv::Symbol_Ref name, curv::Value val)
+    {
+        names_[name] = curv::make<curv::Builtin_Value>(val);
+    }
+};
+
+struct REPL_Environ : public curv::Environ
+{
+    const REPL_Namespace& names_;
+    REPL_Environ(const REPL_Namespace& n, curv::File_Analyser& a)
+    :
+        curv::Environ(a),
+        names_(n)
+    {}
+    virtual curv::Shared<curv::Meaning> single_lookup(
+        const curv::Identifier& id)
+    {
+        auto p = names_.names_.find(id.symbol_);
+        if (p != names_.names_.end())
+            return p->second->to_meaning(id);
+        return nullptr;
+    }
+};
+
+replxx::Replxx::completions_t get_completions(std::string const& context, int index, void* user_data)
+{
+    auto* names = static_cast<REPL_Namespace*>(user_data);
+    return names->completions(context.substr(index));
 }
 
 void color_input(std::string const& context, replxx::Replxx::colors_t& colors, void* user_data)
@@ -181,11 +220,11 @@ void color_input(std::string const& context, replxx::Replxx::colors_t& colors, v
 // I don't know how reuse of already open viewer windows would work.
 struct REPL_Executor : public curv::Operation::Executor
 {
-    curv::Namespace& names_;
+    REPL_Namespace& names_;
     bool has_produced_output_ = false;
     curv::Value only_output_so_far_is_this_value_ = curv::missing;
 
-    REPL_Executor(curv::Namespace& n) : names_(n) {}
+    REPL_Executor(REPL_Namespace& n) : names_(n) {}
 
     void start_command()
     {
@@ -219,8 +258,7 @@ struct REPL_Executor : public curv::Operation::Executor
     {
         if (!only_output_so_far_is_this_value_.eq(curv::missing)) {
             curv::Value val = only_output_so_far_is_this_value_;
-            static curv::Symbol_Ref lastval_key = curv::make_symbol("_");
-            names_[lastval_key] = curv::make<curv::Builtin_Value>(val);
+            names_.set_last_value(val);
             curv::Shape_Program shape{prog};
             if (shape.recognize(val)) {
                 print_shape(shape);
@@ -244,7 +282,7 @@ void repl(curv::System* sys)
     }
 
     // top level definitions, extended by typing 'id = expr'
-    curv::Namespace names = sys->std_namespace();
+    REPL_Namespace names{*sys};
 
     replxx::Replxx rx;
     rx.set_completion_callback(get_completions, static_cast<void*>(&names));
@@ -266,13 +304,16 @@ void repl(curv::System* sys)
         try {
             auto source = curv::make<curv::String_Source>("", line);
             curv::Program prog{std::move(source), *sys};
-            prog.compile(&names);
+            //prog.edepth_ = 1;
+            curv::File_Analyser ana(*sys, nullptr);
+            REPL_Environ env(names, ana);
+            prog.compile(env);
             executor.start_command();
             auto bindings = prog.exec(executor);
             executor.end_command(prog);
             if (bindings) {
                 for (auto f : *bindings)
-                    names[f.first] = curv::make<curv::Builtin_Value>(f.second);
+                    names.define(f.first, f.second);
             }
         } catch (std::exception& e) {
             sys->error(e);
