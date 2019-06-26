@@ -858,9 +858,9 @@ Operation::call(const Call_Phrase& src, Environ& env)
 }
 
 Shared<Meaning>
-Program_Phrase::analyse(Environ& env, unsigned) const
+Program_Phrase::analyse(Environ& env, unsigned edepth) const
 {
-    return body_->analyse(env, 0);
+    return body_->analyse(env, edepth);
 }
 Shared<Definition>
 Program_Phrase::as_definition(Environ& env)

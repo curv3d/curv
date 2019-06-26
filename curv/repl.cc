@@ -46,6 +46,8 @@ extern "C" {
 #include <libcurv/shape.h>
 #include <libcurv/geom/viewer/viewer.h>
 
+using namespace curv;
+
 View_Server view_server;
 
 bool was_interrupted = false;
@@ -57,13 +59,19 @@ void interrupt_handler(int)
 
 struct REPL_Namespace
 {
-    curv::Namespace names_;
-    REPL_Namespace(curv::System& sys) : names_(sys.std_namespace()) {}
+    curv::Namespace global_;
+    curv::Symbol_Map<curv::Value> local_;
+    REPL_Namespace(curv::System& sys)
+    :
+        global_(sys.std_namespace()),
+        local_{}
+    {}
 
     std::vector<std::string> completions(std::string prefix)
     {
+        // TODO: match local variables as well
         std::vector<std::string> result;
-        for (auto const& n : names_) {
+        for (auto const& n : global_) {
             if (n.first.size() < prefix.size())
                 continue;
 
@@ -77,29 +85,58 @@ struct REPL_Namespace
     void set_last_value(curv::Value val)
     {
         static curv::Symbol_Ref lastval_key = curv::make_symbol("_");
-        names_[lastval_key] = curv::make<curv::Builtin_Value>(val);
+        local_[lastval_key] = val;
     }
 
     void define(curv::Symbol_Ref name, curv::Value val)
     {
-        names_[name] = curv::make<curv::Builtin_Value>(val);
+        local_[name] = val;
+    }
+};
+
+struct REPL_Locative : public Boxed_Locative
+{
+    Value* ptr_;
+    REPL_Locative(Shared<const Phrase> syntax, Value* ptr)
+    :
+        Boxed_Locative(syntax),
+        ptr_(ptr)
+    {}
+
+    virtual Value* reference(Frame&, bool need_value) const override
+    {
+        return ptr_;
     }
 };
 
 struct REPL_Environ : public curv::Environ
 {
-    const REPL_Namespace& names_;
-    REPL_Environ(const REPL_Namespace& n, curv::File_Analyser& a)
+    REPL_Namespace& names_;
+    REPL_Environ(REPL_Namespace& n, curv::File_Analyser& a)
     :
         curv::Environ(a),
         names_(n)
     {}
     virtual curv::Shared<curv::Meaning> single_lookup(
-        const curv::Identifier& id)
+        const curv::Identifier& id) override
     {
-        auto p = names_.names_.find(id.symbol_);
-        if (p != names_.names_.end())
-            return p->second->to_meaning(id);
+        auto pl = names_.local_.find(id.symbol_);
+        if (pl != names_.local_.end())
+            return curv::make<curv::Constant>(curv::share(id), pl->second);
+        auto pg = names_.global_.find(id.symbol_);
+        if (pg != names_.global_.end())
+            return pg->second->to_meaning(id);
+        return nullptr;
+    }
+    virtual Shared<Locative> single_lvar_lookup(const Identifier& id) override
+    {
+        auto pl = names_.local_.find(id.symbol_);
+        if (pl != names_.local_.end())
+            return make<REPL_Locative>(curv::share(id), &pl->second);
+        auto pg = names_.global_.find(id.symbol_);
+        if (pg != names_.global_.end())
+            throw Exception(At_Phrase(id, *this),
+                stringify(id.symbol_,": not assignable"));
         return nullptr;
     }
 };
@@ -304,7 +341,7 @@ void repl(curv::System* sys)
         try {
             auto source = curv::make<curv::String_Source>("", line);
             curv::Program prog{std::move(source), *sys};
-            //prog.edepth_ = 1;
+            prog.edepth_ = 1;
             curv::File_Analyser ana(*sys, nullptr);
             REPL_Environ env(names, ana);
             prog.compile(env);
