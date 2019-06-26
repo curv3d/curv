@@ -23,6 +23,7 @@ An `expression`_ is evaluated, yielding a value, which is printed.
 .. _`expression`: language/Expressions.rst
 
 If the value is a shape, then a Viewer window is opened to display the shape graphically::
+
   curv> cube
   3D shape 2×2×2
 
