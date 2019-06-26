@@ -59,9 +59,9 @@ void interrupt_handler(int)
 
 struct REPL_Namespace
 {
-    curv::Namespace global_;
-    curv::Symbol_Map<curv::Value> local_;
-    REPL_Namespace(curv::System& sys)
+    Namespace global_;
+    Symbol_Map<Value> local_;
+    REPL_Namespace(System& sys)
     :
         global_(sys.std_namespace()),
         local_{}
@@ -82,13 +82,13 @@ struct REPL_Namespace
         return result;
     }
 
-    void set_last_value(curv::Value val)
+    void set_last_value(Value val)
     {
-        static curv::Symbol_Ref lastval_key = curv::make_symbol("_");
+        static Symbol_Ref lastval_key = make_symbol("_");
         local_[lastval_key] = val;
     }
 
-    void define(curv::Symbol_Ref name, curv::Value val)
+    void define(Symbol_Ref name, Value val)
     {
         local_[name] = val;
     }
@@ -109,20 +109,20 @@ struct REPL_Locative : public Boxed_Locative
     }
 };
 
-struct REPL_Environ : public curv::Environ
+struct REPL_Environ : public Environ
 {
     REPL_Namespace& names_;
-    REPL_Environ(REPL_Namespace& n, curv::File_Analyser& a)
+    REPL_Environ(REPL_Namespace& n, File_Analyser& a)
     :
-        curv::Environ(a),
+        Environ(a),
         names_(n)
     {}
-    virtual curv::Shared<curv::Meaning> single_lookup(
-        const curv::Identifier& id) override
+    virtual Shared<Meaning> single_lookup(
+        const Identifier& id) override
     {
         auto pl = names_.local_.find(id.symbol_);
         if (pl != names_.local_.end())
-            return curv::make<curv::Constant>(curv::share(id), pl->second);
+            return make<Constant>(share(id), pl->second);
         auto pg = names_.global_.find(id.symbol_);
         if (pg != names_.global_.end())
             return pg->second->to_meaning(id);
@@ -132,7 +132,7 @@ struct REPL_Environ : public curv::Environ
     {
         auto pl = names_.local_.find(id.symbol_);
         if (pl != names_.local_.end())
-            return make<REPL_Locative>(curv::share(id), &pl->second);
+            return make<REPL_Locative>(share(id), &pl->second);
         auto pg = names_.global_.find(id.symbol_);
         if (pg != names_.global_.end())
             throw Exception(At_Phrase(id, *this),
@@ -149,19 +149,18 @@ replxx::Replxx::completions_t get_completions(std::string const& context, int in
 
 void color_input(std::string const& context, replxx::Replxx::colors_t& colors, void* user_data)
 {
-  auto* sys = static_cast<curv::System*>(user_data);
+  auto* sys = static_cast<System*>(user_data);
 
-  auto source = curv::make<curv::String_Source>("", context);
+  auto source = make<String_Source>("", context);
 
   try {
-    curv::Scanner scanner{std::move(source), *sys};
+    Scanner scanner{std::move(source), *sys};
 
     for (;;) {
       using Color = replxx::Replxx::Color;
-      using curv::Token;
 
       Color col;
-      curv::Token tok = scanner.get_token();
+      Token tok = scanner.get_token();
 
       switch (tok.kind_) {
         case Token::k_end:
@@ -244,7 +243,7 @@ void color_input(std::string const& context, replxx::Replxx::colors_t& colors, v
       auto start = colors.begin();
       std::fill(start + tok.first_, start + tok.last_, col);
     }
-  } catch (curv::Exception&) {}
+  } catch (Exception&) {}
 }
 
 // REPL_Executor is used to execute a command line program that is a statement.
@@ -255,48 +254,48 @@ void color_input(std::string const& context, replxx::Replxx::colors_t& colors, v
 //
 // Future: With multi-viewer support, 'cube;sphere' could open multiple Viewers.
 // I don't know how reuse of already open viewer windows would work.
-struct REPL_Executor : public curv::Operation::Executor
+struct REPL_Executor : public Operation::Executor
 {
     REPL_Namespace& names_;
     bool has_produced_output_ = false;
-    curv::Value only_output_so_far_is_this_value_ = curv::missing;
+    Value only_output_so_far_is_this_value_ = missing;
 
     REPL_Executor(REPL_Namespace& n) : names_(n) {}
 
     void start_command()
     {
         has_produced_output_ = false;
-        only_output_so_far_is_this_value_ = curv::missing;
+        only_output_so_far_is_this_value_ = missing;
     }
-    void push_value(curv::Value val, const curv::Context&) override
+    void push_value(Value val, const Context&) override
     {
         if (!has_produced_output_) {
             only_output_so_far_is_this_value_ = val;
             has_produced_output_ = true;
         } else {
-            if (!only_output_so_far_is_this_value_.eq(curv::missing)) {
+            if (!only_output_so_far_is_this_value_.eq(missing)) {
                 std::cout << only_output_so_far_is_this_value_ << "\n";
-                only_output_so_far_is_this_value_ = curv::missing;
+                only_output_so_far_is_this_value_ = missing;
             }
             std::cout << val << "\n";
         }
     }
-    void push_field(curv::Symbol_Ref name, curv::Value val, const curv::Context&)
+    void push_field(Symbol_Ref name, Value val, const Context&)
     override
     {
-        if (!only_output_so_far_is_this_value_.eq(curv::missing)) {
+        if (!only_output_so_far_is_this_value_.eq(missing)) {
             std::cout << only_output_so_far_is_this_value_ << "\n";
-            only_output_so_far_is_this_value_ = curv::missing;
+            only_output_so_far_is_this_value_ = missing;
         }
         std::cout << name << ":" << val << "\n";
         has_produced_output_ = true;
     }
-    void end_command(curv::Program& prog)
+    void end_command(Program& prog)
     {
-        if (!only_output_so_far_is_this_value_.eq(curv::missing)) {
-            curv::Value val = only_output_so_far_is_this_value_;
+        if (!only_output_so_far_is_this_value_.eq(missing)) {
+            Value val = only_output_so_far_is_this_value_;
             names_.set_last_value(val);
-            curv::Shape_Program shape{prog};
+            Shape_Program shape{prog};
             if (shape.recognize(val)) {
                 print_shape(shape);
                 view_server.display_shape(shape);
@@ -307,7 +306,7 @@ struct REPL_Executor : public curv::Operation::Executor
     }
 };
 
-void repl(curv::System* sys)
+void repl(System* sys)
 {
     // Catch keyboard interrupts, and set was_interrupted = true.
     // TODO: This will be used to interrupt the evaluator.
@@ -339,10 +338,10 @@ void repl(curv::System* sys)
             rx.history_add(line);
 
         try {
-            auto source = curv::make<curv::String_Source>("", line);
-            curv::Program prog{std::move(source), *sys};
+            auto source = make<String_Source>("", line);
+            Program prog{std::move(source), *sys};
             prog.edepth_ = 1;
-            curv::File_Analyser ana(*sys, nullptr);
+            File_Analyser ana(*sys, nullptr);
             REPL_Environ env(names, ana);
             prog.compile(env);
             executor.start_command();
@@ -360,7 +359,7 @@ void repl(curv::System* sys)
 }
 
 void interactive_mode(
-    curv::System& sys, const curv::geom::viewer::Viewer_Config& opts)
+    System& sys, const geom::viewer::Viewer_Config& opts)
 {
     sys.use_colour_ = true;
     std::thread repl_thread(repl, &sys);
