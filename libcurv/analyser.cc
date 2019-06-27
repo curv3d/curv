@@ -682,12 +682,14 @@ analyse_locative(const Phrase& ph, Environ& env, unsigned edepth)
         // But, edepth is handled differently.
         if (auto id = cast<const Identifier>(dot->right_)) {
             return base->get_field(
+                env,
                 share(ph),
                 Symbol_Expr{id});
         }
         if (auto string = cast<const String_Phrase>(dot->right_)) {
             auto str_expr = string->analyse_string(env);
             return base->get_field(
+                env,
                 share(ph),
                 Symbol_Expr{str_expr});
         }

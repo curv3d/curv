@@ -719,6 +719,7 @@ Boxed_Locative::store(Frame& f, const Operation& expr) const
 
 Shared<Locative>
 Boxed_Locative::get_field(
+    Environ& env,
     Shared<const Phrase> syntax,
     Symbol_Expr selector)
 {
