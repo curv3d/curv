@@ -966,7 +966,7 @@ struct Locative : public Shared_Base
     :
         syntax_(std::move(syntax))
     {}
-    virtual void store(Frame& f, Value v) const = 0;
+    virtual void store(Frame& f, const Operation&) const = 0;
     virtual Shared<Locative> get_field(Shared<const Phrase>, Symbol_Expr) = 0;
     virtual void sc_print(SC_Frame& f) const;
 };
@@ -976,7 +976,7 @@ struct Locative : public Shared_Base
 struct Boxed_Locative : public Locative
 {
     using Locative::Locative;
-    virtual void store(Frame& f, Value v) const override;
+    virtual void store(Frame& f, const Operation&) const override;
     virtual Shared<Locative> get_field(Shared<const Phrase>, Symbol_Expr)
         override;
     // reference: get a pointer to the locative's state.

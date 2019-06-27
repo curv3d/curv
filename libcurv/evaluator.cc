@@ -712,9 +712,9 @@ Scope_Executable::exec(Frame& f) const
 }
 
 void
-Boxed_Locative::store(Frame& f, Value v) const
+Boxed_Locative::store(Frame& f, const Operation& expr) const
 {
-    *reference(f,false) = v;
+    *reference(f,false) = expr.eval(f);
 }
 
 Shared<Locative>
@@ -747,7 +747,7 @@ Dot_Locative::reference(Frame& f, bool need_value) const
 void
 Assignment_Action::exec(Frame& f, Executor&) const
 {
-    locative_->store(f, expr_->eval(f));
+    locative_->store(f, *expr_);
 }
 
 Value
