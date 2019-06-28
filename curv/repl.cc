@@ -4,7 +4,7 @@
 
 //----------------------------------------------------------------------------
 // The REPL is the Read-Eval-Print Loop. It's the interactive command line
-// shell that lets you type Curv expressions, actions and definitions.
+// shell that lets you type Curv expressions, statements and definitions.
 //
 // It has two threads: a Repl thread that runs the REPL, and a Viewer thread
 // that displays shapes in a Viewer window, and runs the OpenGL frame loop.
@@ -38,6 +38,7 @@ extern "C" {
 #include <libcurv/analyser.h>
 #include <libcurv/ansi_colour.h>
 #include <libcurv/context.h>
+#include <libcurv/die.h>
 #include <libcurv/exception.h>
 #include <libcurv/program.h>
 #include <libcurv/source.h>
@@ -61,10 +62,12 @@ struct REPL_Namespace
 {
     Namespace global_;
     Symbol_Map<Value> local_;
-    REPL_Namespace(System& sys)
+    Render_Opts render_;
+    REPL_Namespace(const Render_Opts& render, System& sys)
     :
         global_(sys.std_namespace()),
-        local_{}
+        local_{},
+        render_{render}
     {}
 
     std::vector<std::string> completions(std::string prefix)
@@ -92,6 +95,56 @@ struct REPL_Namespace
     {
         local_[name] = val;
     }
+
+/*
+    // spatial anti-aliasing via supersampling. aa_==1 means it is turned off.
+    int aa_ = 1;
+    // temporal anti-aliasing.
+    int taa_ = 1;
+    // frame duration for animation, needed for TAA.
+    double fdur_ = 0.04; // 25 FPS
+    // background colour, defaults to white 
+    glm::dvec3 bg_ = glm::dvec3(1.0,1.0,1.0);
+    // max # of iterations in the ray-marcher
+    int ray_max_iter_ = 200;
+    // max ray-marching distance
+    double ray_max_depth_ = 400.0;
+*/
+    Value get_render()
+    {
+        auto r = make<DRecord>();
+        r->fields_[make_symbol("aa")] = {double(render_.aa_)};
+        r->fields_[make_symbol("taa")] = {double(render_.taa_)};
+        r->fields_[make_symbol("fdur")] = {render_.fdur_};
+        Shared<List> bg = List::make({
+            Value{render_.bg_.x},
+            Value{render_.bg_.y},
+            Value{render_.bg_.z}});
+        r->fields_[make_symbol("bg")] = {bg};
+        r->fields_[make_symbol("ray_max_iter")] = {double(render_.ray_max_iter_)};
+        r->fields_[make_symbol("ray_max_depth")] = {double(render_.ray_max_depth_)};
+        return {r};
+    }
+    void set_render(Value val, const Context& cx)
+    {
+        auto r = val.to<Record>(cx);
+        if (r->size() != 6)
+            throw Exception(cx, "not a Render record");
+        auto aa_val = r->getfield(make_symbol("aa"), cx);
+        auto taa_val = r->getfield(make_symbol("taa"), cx);
+        auto fdur_val = r->getfield(make_symbol("fdur"), cx);
+        auto bg_val = r->getfield(make_symbol("bg"), cx);
+        auto ray_max_iter_val = r->getfield(make_symbol("ray_max_iter"), cx);
+        auto ray_max_depth_val = r->getfield(make_symbol("ray_max_depth"), cx);
+      #if 0
+        int aa = aa_val.to_int(1, INT_MAX);
+        int taa = taa_val.to_int(1, INT_MAX);
+        double fdur = fdur_val.to_double();
+        glm::dvec3 bg = bg_val.to_vec3();
+        int ray_max_iter = ray_max_iter_val.to_int(1, INT_MAX);
+        double ray_max_depth = ray_max_depth_val.to_double();
+      #endif
+    }
 };
 
 struct REPL_Locative : public Boxed_Locative
@@ -109,6 +162,29 @@ struct REPL_Locative : public Boxed_Locative
     }
 };
 
+struct Render_Locative : public Locative
+{
+    REPL_Namespace& names_;
+    Render_Locative(Shared<const Phrase> syntax, REPL_Namespace& names)
+    :
+        Locative(syntax),
+        names_(names)
+    {}
+
+    virtual void store(Frame& f, const Operation& expr) const override
+    {
+        Value v = expr.eval(f);
+        names_.set_render(v, At_Phrase(*expr.syntax_, f));
+    }
+    virtual Shared<Locative>
+    get_field(Environ& env, Shared<const Phrase> syntax, Symbol_Expr) override
+    {
+        // TODO
+        throw Exception(At_Phrase(*syntax, env), "not assignable");
+        //die("render.foo not assignable");
+    }
+};
+
 struct REPL_Environ : public Environ
 {
     REPL_Namespace& names_;
@@ -123,6 +199,8 @@ struct REPL_Environ : public Environ
         auto pl = names_.local_.find(id.symbol_);
         if (pl != names_.local_.end())
             return make<Constant>(share(id), pl->second);
+        if (id.symbol_ == "render")
+            return make<Constant>(share(id), names_.get_render());
         auto pg = names_.global_.find(id.symbol_);
         if (pg != names_.global_.end())
             return pg->second->to_meaning(id);
@@ -133,6 +211,8 @@ struct REPL_Environ : public Environ
         auto pl = names_.local_.find(id.symbol_);
         if (pl != names_.local_.end())
             return make<REPL_Locative>(share(id), &pl->second);
+        if (id.symbol_ == "render")
+            return make<Render_Locative>(share(id), names_);
         auto pg = names_.global_.find(id.symbol_);
         if (pg != names_.global_.end())
             throw Exception(At_Phrase(id, *this),
@@ -306,7 +386,7 @@ struct REPL_Executor : public Operation::Executor
     }
 };
 
-void repl(System* sys)
+void repl(const Render_Opts* render, System* sys)
 {
     // Catch keyboard interrupts, and set was_interrupted = true.
     // TODO: This will be used to interrupt the evaluator.
@@ -318,7 +398,7 @@ void repl(System* sys)
     }
 
     // top level definitions, extended by typing 'id = expr'
-    REPL_Namespace names{*sys};
+    REPL_Namespace names{*render, *sys};
 
     replxx::Replxx rx;
     rx.set_completion_callback(get_completions, static_cast<void*>(&names));
@@ -358,11 +438,10 @@ void repl(System* sys)
     view_server.exit();
 }
 
-void interactive_mode(
-    System& sys, const geom::viewer::Viewer_Config& opts)
+void interactive_mode(System& sys, const geom::viewer::Viewer_Config& opts)
 {
     sys.use_colour_ = true;
-    std::thread repl_thread(repl, &sys);
+    std::thread repl_thread(repl, &opts, &sys);
     view_server.run(opts);
     if (repl_thread.joinable())
         repl_thread.join();
