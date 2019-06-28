@@ -1,6 +1,7 @@
-Rendering Control:
-* Shape has an optional `render` field, which specifies overrides to
-  config, -O options and the REPL `render` variable.
+Redesigned Rendering Parameters:
+* camera
+* shading
+* tracing
 
 Symbols:
 * SC support for symbols
@@ -36,7 +37,7 @@ v0.5 Planning
   * alpha channel in colour functions
   * `time` is a global reactive variable
   * Ray-casting non-Lipschitz implicit surfaces
-* Smart STL export with edge detection: SHREC (libfive meshes are low quality)
+* Smart STL export with edge detection: try SHREC, compare to Libfive
   * SHREC uses NRRD voxel data as input. >Voxel i/o.
 * shape library
   * noise library, >SC piecewise functions.
