@@ -109,9 +109,11 @@ public:
     // Called by client thread. If the viewer window is not open, then open it,
     // and display the shape. Otherwise, change the shape displayed in the
     // current viewer window.
-    void display_shape(const curv::Shape_Program& shape)
+    void display_shape(
+        const curv::Shape_Program& shape,
+        const curv::Render_Opts& opts)
     {
-        request_shape_ = curv::Viewed_Shape(shape, view_.config_);
+        request_shape_ = curv::Viewed_Shape(shape, opts);
         send(Request::k_display_shape);
         //assert(request_shape_.empty());
     }

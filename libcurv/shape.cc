@@ -8,8 +8,9 @@
 #include <libcurv/exception.h>
 #include <libcurv/frame.h>
 #include <libcurv/function.h>
-#include <libcurv/sc_context.h>
 #include <libcurv/program.h>
+#include <libcurv/render.h>
+#include <libcurv/sc_context.h>
 
 #include <cmath>
 
@@ -29,6 +30,17 @@ Shape_Program::Shape_Program(
 Location Shape_Program::location() const
 {
     return nub_->location();
+}
+
+Vec3 value_to_vec3(Value val, const Context& cx)
+{
+    auto list = val.to<List>(cx);
+    list->assert_size(3, cx);
+    Vec3 v;
+    v.x = list->at(0).to_num(At_Index(0, cx));
+    v.y = list->at(1).to_num(At_Index(1, cx));
+    v.z = list->at(2).to_num(At_Index(2, cx));
+    return v;
 }
 
 BBox
@@ -56,13 +68,14 @@ BBox::from_value(Value val, const Context& cx)
 }
 
 bool
-Shape_Program::recognize(Value val)
+Shape_Program::recognize(Value val, Render_Opts* opts)
 {
     static Symbol_Ref is_2d_key = make_symbol("is_2d");
     static Symbol_Ref is_3d_key = make_symbol("is_3d");
     static Symbol_Ref bbox_key = make_symbol("bbox");
     static Symbol_Ref dist_key = make_symbol("dist");
     static Symbol_Ref colour_key = make_symbol("colour");
+    static Symbol_Ref render_key = make_symbol("render");
 
     At_Program cx(*this);
 
@@ -98,6 +111,16 @@ Shape_Program::recognize(Value val)
             "colour is not a function");
     colour_frame_ = Frame::make(
         colour_fun_->nslots_, system_, nullptr, nullptr, nullptr);
+
+    Value render_val = r->find_field(render_key, cx);
+    if (!render_val.is_missing()) {
+        At_Field rcx("render", cx);
+        auto render = render_val.to<Record>(rcx);
+        if (opts != nullptr) {
+            // update *opts from fields in the render record
+            opts->update_from_record(*render, rcx);
+        }
+    }
 
     record_ = r;
     return true;

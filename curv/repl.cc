@@ -257,10 +257,15 @@ void color_input(std::string const& context, replxx::Replxx::colors_t& colors, v
 struct REPL_Executor : public Operation::Executor
 {
     REPL_Namespace& names_;
+    Render_Opts render_;
     bool has_produced_output_ = false;
     Value only_output_so_far_is_this_value_ = missing;
 
-    REPL_Executor(REPL_Namespace& n) : names_(n) {}
+    REPL_Executor(REPL_Namespace& n, Render_Opts r)
+    :
+        names_(n),
+        render_(r)
+    {}
 
     void start_command()
     {
@@ -296,9 +301,9 @@ struct REPL_Executor : public Operation::Executor
             Value val = only_output_so_far_is_this_value_;
             names_.set_last_value(val);
             Shape_Program shape{prog};
-            if (shape.recognize(val)) {
+            if (shape.recognize(val, &render_)) {
                 print_shape(shape);
-                view_server.display_shape(shape);
+                view_server.display_shape(shape, render_);
             } else {
                 std::cout << val << "\n";
             }
@@ -306,7 +311,7 @@ struct REPL_Executor : public Operation::Executor
     }
 };
 
-void repl(System* sys)
+void repl(System* sys, const Render_Opts* render)
 {
     // Catch keyboard interrupts, and set was_interrupted = true.
     // TODO: This will be used to interrupt the evaluator.
@@ -324,7 +329,7 @@ void repl(System* sys)
     rx.set_completion_callback(get_completions, static_cast<void*>(&names));
     rx.set_highlighter_callback(color_input, static_cast<void*>(sys));
 
-    REPL_Executor executor{names};
+    REPL_Executor executor{names, *render};
 
     for (;;) {
         was_interrupted = false;
@@ -362,7 +367,8 @@ void interactive_mode(
     System& sys, const geom::viewer::Viewer_Config& opts)
 {
     sys.use_colour_ = true;
-    std::thread repl_thread(repl, &sys);
+    const Render_Opts *render = &opts;
+    std::thread repl_thread(repl, &sys, render);
     view_server.run(opts);
     if (repl_thread.joinable())
         repl_thread.join();

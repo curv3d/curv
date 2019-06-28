@@ -19,9 +19,12 @@ struct Context;
 struct System;
 struct Program;
 struct Phrase;
+struct Render_Opts;
 
 struct Viewed_Shape;
+
 using Vec3 = glm::dvec3;
+Vec3 value_to_vec3(Value, const Context&);
 
 // axis aligned bounding box
 struct BBox
@@ -90,8 +93,10 @@ struct Shape_Program final : public Shape
     {}
 
     // If the value is a shape, fill in the shape fields and return true.
+    // The Render_Opts argument is modified using data from shape.render,
+    // if the recognized shape has a render field.
     // Used with the first constructor.
-    bool recognize(Value);
+    bool recognize(Value, Render_Opts*);
 
     // This is called from the Viewed_Shape constructor, after a
     // parametric shape has been recognized. We construct a Shape_Program

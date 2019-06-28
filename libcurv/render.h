@@ -9,6 +9,9 @@
 
 namespace curv {
 
+struct Record;
+struct Context;
+
 struct Render_Opts
 {
     // spatial anti-aliasing via supersampling. aa_==1 means it is turned off.
@@ -23,6 +26,8 @@ struct Render_Opts
     int ray_max_iter_ = 200;
     // max ray-marching distance
     double ray_max_depth_ = 400.0;
+
+    void update_from_record(Record&, const Context&);
 };
 
 } // namespace

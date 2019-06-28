@@ -234,7 +234,7 @@ void export_cpp(Value value,
         p.unknown_parameter();
     }
     Shape_Program shape(prog);
-    if (!shape.recognize(value)) {
+    if (!shape.recognize(value, nullptr)) {
         At_Program cx(prog);
         throw Exception(cx, "not a shape");
     }
@@ -356,7 +356,7 @@ void export_png(Value value,
 
     Shape_Program shape(prog);
     At_Program cx(prog);
-    if (!shape.recognize(value))
+    if (!shape.recognize(value, &ix))
         throw Exception(cx, "not a shape");
     if (shape.is_2d_) {
       #if 0

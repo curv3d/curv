@@ -28,7 +28,7 @@ GPU_Program::location() const
 }
 
 bool
-GPU_Program::recognize(Value val, const Render_Opts& opts)
+GPU_Program::recognize(Value val, Render_Opts opts)
 {
     if (location().source().type_ == Source::Type::gpu) {
         // Note: throw exception if val is not a GPU program.
@@ -83,7 +83,7 @@ GPU_Program::recognize(Value val, const Render_Opts& opts)
         return true;
     }
     Shape_Program shape(system_, nub_);
-    if (!shape.recognize(val))
+    if (!shape.recognize(val, &opts))
         return false;
     is_2d_ = shape.is_2d_;
     is_3d_ = shape.is_3d_;
