@@ -1,11 +1,13 @@
-Scriptable Camera Position
-==========================
+Programmable Camera Position
+============================
 * The GUI displays the camera position in the HUD.
 * You can copy these numbers and use them in the CLI to set the initial
   camera position in the viewer or in 3D image export using -Ocamera=...
-* You can specify the initial camera position using Curv code.
-  A 'View' is a record with 'shape' and 'camera' fields.
-  It's another kind of graphical value.
+* You can specify the initial camera position using the `render.camera`
+  field within a Shape.
+  * Can `render.camera` be parameterized using value pickers? Maybe not,
+    that conflicts with the existing Viewer GUI that provides mouse controls
+    for the camera. I don't know how to resolve that conflict.
 * The current camera position is available as a read-only reactive 'camera'
   record variable,
   like $vpr/$vpt/$vpd in OpenSCAD (ViewPort Rotation, Translation, Distance).
@@ -13,6 +15,30 @@ Scriptable Camera Position
 
 "arcball rotation" to replace my ad-hoc mouse rotation code.
 
+3D Camera Design
+----------------
+Changing the field of view, independent of the other parameters,
+results in dolly zoom.
+
+centre -- a point the camera is looking at
+radius -- define a sphere around the part of the scene that we are looking at
+eyedir -- unit vector from the camera location to the centre
+fov -- field of view, an angle, 0° to 180°. 0° gives orthographic view.
+up -- unit vector, orthogonal to eyedir
+
+Eyedir and radius can be combined into a single non-unit vector.
+
+2D Camera Design
+----------------
+centre -- 2D point the camera is looking at
+radius -- define a circle around the part of the scene that we are looking at
+up -- 2D unit vector
+
+The centre and radius define the focal circle. The focal circle is centred
+in the viewport and is the largest circle that fits in the viewport.
+
+Older Ideas
+-----------
 What are the components of a 3D camera position?
 Requirements:
  * arcball rotation: does this have a preferred camera representation?
