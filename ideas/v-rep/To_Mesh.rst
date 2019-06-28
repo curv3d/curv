@@ -7,11 +7,77 @@ that I could just link to and use. In this category, the closest I've found
 so far are:
 
 * libigl -- has a GPL'ed marching cubes
-* vcglib (the library underlying meshlab) also has a GPL'ed marching cubes
+* vcglib (the library underlying meshlab) has a GPL'ed marching cubes
+* openvdb -- has a marching cubes that outputs quads and triangles,
+  with no quality problems.
 
 Ideally, the meshing algorithm will create a mesh that looks good (is a good
 approximation of the original model), can be successfully used in OpenSCAD (no
 CGAL errors), and can be successfully 3D printed. And the algorithm is fast.
+
+Mesh Quality
+============
+For 3D printing, and especially for import to OpenSCAD, you want a defect free
+mesh. This means: watertight, 2-manifold, with no self-intersections,
+degenerate triangles, or flipped triangles*. 3D printing tools have the ability
+to repair at least some problems, but OpenSCAD has zero tolerance for defects.
+
+[*] 2-manifold implies no flipped triangles, but the first 4 properties are
+orthogonal. The most general definition of 2-manifold does not imply
+watertightness, but some authors restrict 2-manifold meshes to also be
+watertight. However, the 2-manifold property does not exclude self-intersection
+under any definition. Some people erroneously use 'manifold' as a synonym for
+defect-free.
+
+For 3D printing and OpenSCAD, you also want to minimize the number of triangles.
+Past a certain limit, STL files become impossible to process, and as you
+approach that limit, processing becomes unacceptably slow on a non-linear scale.
+This means you want adaptive mesh generation: triangle size decreases as
+local curvature increases. Triangles are as large as possible, consistent with
+approximating the surface within a specified error tolerance.
+
+Modern implementations of marching cubes produce defect-free meshes.
+However, the algorithm is not adaptive: triangle sizes are uniform.
+I haven't found an open source algorithm for simplifying a mesh that doesn't
+also introduce defects. Meshlab's Quadric Edge Collapse Decimation introduces
+self-intersections.
+
+Marching cubes also does not detect sharp features (vertices and edges).
+Instead, these features get rounded over. Unfortunately, algorithms that
+do perform edge detection (beginning with Dual Contouring) also produce
+defective meshes. The most common problem is self-intersection.
+
+This problem with edge detection and self-intersection is, in part, a result
+of working with floating point numbers. The CGAL project provides a good
+explanation for why this is: https://www.cgal.org/exact.html
+
+    The second and deeper problem is that numerical weapons are per se
+    less effective in geometric computing than they are in other fields.
+    In geometry, we don't compute numbers but structures: convex hulls,
+    triangulations, etc. In building these structures, the underlying
+    algorithms ask questions like "is a point to the left, to the right,
+    or on the line through two other points?" Such questions have no
+    answers that are "slightly off". Either you get it right, or you
+    don't. And if you don't, the algorithm might go completely astray.
+    Even the most fancy roundoff control techniques don't help here:
+    it's primarily a combinatorial problem, not a numerical one.
+
+Nobody has cracked the problem of writing a meshing algorith that does sharp
+feature detection and which also generates defect-free meshes, while using
+floating point (approximate) computation. The problem might well be impossible
+to solve. The SHREC algorithm appears to do the best job, so far, but even
+SHREC doesn't guarantee defect free output in all cases. But I haven't tested
+SHREC yet.
+
+Libfive provides three meshing algorithms. All are manifold and watertight,
+but they have other quality issues.
+https://github.com/libfive/libfive/issues/284
+* Manifold Dual Contouring: -> self intersections
+* Matt Keeter says: ISO and Hybrid both have wrinkles and issues preserving
+  sharp features. Both should be free of self-intersections, though may have
+  zero-area triangles and other questionable geometry (e.g. zero-volume cracks)
+  to keep the triangle graph manifold.
+  Michael Hoffer says ISO has self intersection.
 
 Marching Cubes
 ==============
