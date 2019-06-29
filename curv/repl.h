@@ -1,2 +1,2 @@
 void interactive_mode(
-    curv::System& sys, const curv::geom::viewer::Viewer_Config&);
+    curv::System& sys, const curv::viewer::Viewer_Config&);

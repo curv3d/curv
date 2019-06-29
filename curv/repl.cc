@@ -44,7 +44,7 @@ extern "C" {
 #include <libcurv/system.h>
 
 #include <libcurv/shape.h>
-#include <libcurv/geom/viewer/viewer.h>
+#include <libcurv/viewer/viewer.h>
 
 using namespace curv;
 
@@ -364,7 +364,7 @@ void repl(System* sys, const Render_Opts* render)
 }
 
 void interactive_mode(
-    System& sys, const geom::viewer::Viewer_Config& opts)
+    System& sys, const viewer::Viewer_Config& opts)
 {
     sys.use_colour_ = true;
     const Render_Opts *render = &opts;

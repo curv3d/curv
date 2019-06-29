@@ -6,7 +6,7 @@
 
 #include <libcurv/geom/compiled_shape.h>
 #include <libcurv/geom/png.h>
-#include <libcurv/geom/viewer/viewer.h>
+#include <libcurv/viewer/viewer.h>
 
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
@@ -452,7 +452,7 @@ std::map<std::string, Exporter> exporters = {
 
 void parse_viewer_config(
     const Export_Params& params,
-    geom::viewer::Viewer_Config& opts)
+    viewer::Viewer_Config& opts)
 {
     opts.verbose_ = params.verbose_;
     for (auto& i : params.map_) {

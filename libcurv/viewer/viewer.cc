@@ -7,7 +7,7 @@
 // Licensed under the 3-Clause BSD Licence:
 // https://opensource.org/licenses/BSD-3-Clause
 
-#include <libcurv/geom/viewer/viewer.h>
+#include <libcurv/viewer/viewer.h>
 
 #include <iostream>
 #include <sstream>
@@ -31,7 +31,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-namespace curv { namespace geom { namespace viewer {
+namespace curv { namespace viewer {
 
 Viewer::Viewer()
 {
@@ -527,7 +527,7 @@ void Viewer::initGL()
     }
 
     // Set window and context parameters.
-    glfw_set_context_parameters();
+    geom::glfw_set_context_parameters();
     if (headless_) {
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     }
@@ -541,7 +541,7 @@ void Viewer::initGL()
         exit(-1);
     }
     glfwMakeContextCurrent(window_);
-    if (!opengl_init()) {
+    if (!geom::opengl_init()) {
         std::cerr << "ABORT: Can't load OpenGL library\n";
         exit(-1);
     }
@@ -580,7 +580,7 @@ void Viewer::initGL()
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
     ImGui_ImplGlfw_InitForOpenGL(window_, false);
-    ImGui_ImplOpenGL3_Init(glsl_version);
+    ImGui_ImplOpenGL3_Init(geom::glsl_version);
     //ImGui::StyleColorsDark();
     //ImGui::StyleColorsClassic();
     ImGui::StyleColorsLight();
@@ -772,4 +772,4 @@ int Viewer::getWindowHeight()
     return viewport_.y*fPixelDensity_;
 }
 
-}}} // namespace
+}} // namespace

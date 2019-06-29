@@ -10,7 +10,7 @@
 
 #include <libcurv/die.h>
 #include <libcurv/viewed_shape.h>
-#include <libcurv/geom/viewer/viewer.h>
+#include <libcurv/viewer/viewer.h>
 
 #include "shapes.h"
 
@@ -75,7 +75,7 @@ private:
             // but have not replied?
         }
     };
-    curv::geom::viewer::Viewer view_;
+    curv::viewer::Viewer view_;
     bool lazy_;
     void send(Request r)
     {
@@ -135,7 +135,7 @@ public:
     // main thread. The server keeps running until the client calls exit().
     // If the user closes the window, the server keeps running, and the next
     // call to display_shape() reopens the window.
-    void run(const curv::geom::viewer::Viewer_Config& config)
+    void run(const curv::viewer::Viewer_Config& config)
     {
         view_.config_ = config;
         lazy_ = config.lazy_;

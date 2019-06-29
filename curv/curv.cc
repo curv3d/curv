@@ -30,7 +30,7 @@ extern "C" {
 #include <libcurv/geom/builtin.h>
 #include <libcurv/geom/import.h>
 #include <libcurv/geom/tempfile.h>
-#include <libcurv/geom/viewer/viewer.h>
+#include <libcurv/viewer/viewer.h>
 
 namespace fs = curv::Filesystem;
 
@@ -277,7 +277,7 @@ main(int argc, char** argv)
             oparams.format_ = exporter->first;
         oparams.verbose_ = verbose;
 
-        curv::geom::viewer::Viewer_Config viewer_config;
+        curv::viewer::Viewer_Config viewer_config;
         if (exporter == exporters.end())
             parse_viewer_config(oparams, viewer_config);
 
@@ -316,7 +316,7 @@ main(int argc, char** argv)
             curv::GPU_Program gpu_prog{prog};
             if (gpu_prog.recognize(value, viewer_config)) {
                 print_shape(gpu_prog);
-                curv::geom::viewer::Viewer viewer(viewer_config);
+                curv::viewer::Viewer viewer(viewer_config);
                 viewer.set_shape(std::move(gpu_prog.vshape_));
                 viewer.run();
             } else {

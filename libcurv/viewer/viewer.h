@@ -7,8 +7,8 @@
 // Licensed under the 3-Clause BSD Licence:
 // https://opensource.org/licenses/BSD-3-Clause
 
-#ifndef LIBCURV_GEOM_VIEWER_VIEWER_H
-#define LIBCURV_GEOM_VIEWER_VIEWER_H
+#ifndef LIBCURV_VIEWER_VIEWER_H
+#define LIBCURV_VIEWER_VIEWER_H
 
 #include <libcurv/render.h>
 #include <libcurv/viewed_shape.h>
@@ -18,8 +18,6 @@
 
 namespace curv {
 struct Shape_Program;
-
-namespace geom {
 
 namespace viewer {
 
@@ -132,5 +130,5 @@ struct Viewer
     int getWindowHeight();
 };
 
-}}} // namespace
+}} // namespace
 #endif // header guard

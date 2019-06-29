@@ -68,7 +68,7 @@ poll_editor()
 
 void
 poll_file(
-    curv::System* sys, curv::geom::viewer::Viewer_Config* opts,
+    curv::System* sys, curv::viewer::Viewer_Config* opts,
     const char* editor, const char* filename)
 {
     for (;;) {
@@ -113,7 +113,7 @@ poll_file(
 
 int
 live_mode(curv::System& sys, const char* editor, const char* filename,
-    curv::geom::viewer::Viewer_Config& opts)
+    curv::viewer::Viewer_Config& opts)
 {
     if (editor) {
         launch_editor(editor, filename);

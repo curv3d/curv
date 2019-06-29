@@ -16,9 +16,9 @@
 #include <map>
 #include <string>
 
-namespace curv { namespace geom { namespace viewer {
+namespace curv { namespace viewer {
 struct Viewer_Config;
-}}}
+}}
 
 struct Export_Params
 {
@@ -138,7 +138,7 @@ void describe_colour_mesh_opts(std::ostream&);
 
 void parse_viewer_config(
     const Export_Params& params,
-    curv::geom::viewer::Viewer_Config& opts);
+    curv::viewer::Viewer_Config& opts);
 void describe_viewer_options(std::ostream&, const char* prefix="");
 
 #endif // include guard

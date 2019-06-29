@@ -5,12 +5,12 @@
 #include <libcurv/geom/png.h>
 
 #include <libcurv/shape.h>
-#include <libcurv/geom/viewer/viewer.h>
+#include <libcurv/viewer/viewer.h>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/output_file.h>
 
-#include <libcurv/geom/viewer/texture.h>
+#include <libcurv/viewer/texture.h>
 
 #include <cerrno>
 #include <chrono>
