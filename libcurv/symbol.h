@@ -5,8 +5,9 @@
 #ifndef LIBCURV_SYMBOL_H
 #define LIBCURV_SYMBOL_H
 
-#include <map>
 #include <libcurv/string.h>
+#include <map>
+#include <vector>
 
 namespace curv {
 
@@ -116,6 +117,8 @@ Symbol_Ref value_to_symbol(Value);
 Symbol_Ref value_to_symbol(Value, const Context&);
 
 bool is_C_identifier(const char*);
+
+int value_to_enum(Value, const std::vector<const char*>&, const Context&);
 
 /// A Symbol_Map<T> is a map from Symbol_Ref to T.
 ///

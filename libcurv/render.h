@@ -6,6 +6,7 @@
 #define LIBCURV_RENDER_H
 
 #include <glm/vec3.hpp>
+#include <vector>
 
 namespace curv {
 
@@ -14,6 +15,9 @@ struct Context;
 
 struct Render_Opts
 {
+    enum Shader { standard, pew };
+    static const std::vector<const char*> shader_enum;
+
     // spatial anti-aliasing via supersampling. aa_==1 means it is turned off.
     int aa_ = 1;
     // temporal anti-aliasing.
@@ -26,6 +30,8 @@ struct Render_Opts
     int ray_max_iter_ = 200;
     // max ray-marching distance
     double ray_max_depth_ = 400.0;
+    // shader implementation
+    Shader shader_ = standard;
 
     void update_from_record(Record&, const Context&);
 };

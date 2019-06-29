@@ -72,6 +72,7 @@ struct Param : public curv::Context
     glm::dvec3 to_vec3();
     bool to_bool();
     curv::Symbol_Ref to_symbol();
+    int to_enum(const std::vector<const char*>& e);
 
     void unknown_parameter() const;
 

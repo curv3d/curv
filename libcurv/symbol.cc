@@ -3,6 +3,7 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/symbol.h>
+#include <libcurv/exception.h>
 #include <cctype>
 
 namespace curv {
@@ -110,6 +111,29 @@ void
 Symbol::print(std::ostream& out) const
 {
     out << "#" << Symbol_Ref(share(*this));
+}
+
+int
+value_to_enum(
+    Value val,
+    const std::vector<const char*>& e,
+    const Context& cx)
+{
+    auto sym = value_to_symbol(val, cx);
+    for (unsigned i = 0; i < e.size(); ++i) {
+        if (strcmp(sym.c_str(), e[i]) == 0)
+            return int(i);
+    }
+    String_Builder msg;
+    msg << val << " is not in [";
+    bool first = true;
+    for (unsigned i = 0; i < e.size(); ++i) {
+        if (!first) msg << ",";
+        first = false;
+        msg << "#" << e[i];
+    }
+    msg << "]";
+    throw Exception(cx, msg.get_string());
 }
 
 }

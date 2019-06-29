@@ -95,6 +95,12 @@ curv::Symbol_Ref Param::to_symbol()
     return value_to_symbol(val, *this);
 }
 
+int Param::to_enum(const std::vector<const char*>& e)
+{
+    auto val = eval();
+    return value_to_enum(val, e, *this);
+}
+
 void Param::unknown_parameter() const
 {
     if (value_.opt) {
@@ -186,6 +192,8 @@ void describe_render_options(std::ostream& out, const char*prefix)
   << prefix <<
   "-O ray_max_depth=<maximum ray-marching depth> (default "
     << opts.ray_max_depth_ << ")\n"
+  << prefix <<
+  "-O shader=#standard|#pew\n"
   ;
 }
 void describe_render_opts(std::ostream& out)
@@ -193,7 +201,7 @@ void describe_render_opts(std::ostream& out)
     describe_render_options(out, "");
 }
 
-bool parse_frag_param(
+bool parse_render_param(
     Param& p,
     Render_Opts& opts)
 {
@@ -219,6 +227,11 @@ bool parse_frag_param(
     }
     if (p.name_ == "ray_max_depth") {
         opts.ray_max_depth_ = p.to_double();
+        return true;
+    }
+    if (p.name_ == "shader") {
+        opts.shader_ = (Render_Opts::Shader)
+            p.to_enum(Render_Opts::shader_enum);
         return true;
     }
     return false;
@@ -262,7 +275,7 @@ void export_gpu(Value value,
     Render_Opts opts;
     for (auto& i : params.map_) {
         Param p{params, i};
-        if (!parse_frag_param(p, opts))
+        if (!parse_render_param(p, opts))
             p.unknown_parameter();
     }
 
@@ -339,7 +352,7 @@ void export_png(Value value,
     double animate = 0.0;
     for (auto& i : params.map_) {
         Param p{params, i};
-        if (parse_frag_param(p, ix)) {
+        if (parse_render_param(p, ix)) {
             ;
         } else if (p.name_ == "xsize") {
             xsize = p.to_int(1, INT_MAX);
@@ -446,7 +459,7 @@ void parse_viewer_config(
         Param p{params, i};
         if (p.name_ == "lazy")
             opts.lazy_ = p.to_bool();
-        else if (!parse_frag_param(p, opts))
+        else if (!parse_render_param(p, opts))
             p.unknown_parameter();
     }
 }

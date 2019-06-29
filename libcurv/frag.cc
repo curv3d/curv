@@ -205,8 +205,78 @@ void export_frag_3d(
        //"        dist(pos+eps.yyx) - dist(pos-eps.yyx) );\n"
        //"    return normalize(nor);\n"
        //"    */\n"
+       "}\n";
+
+    if (opts.shader_ == Render_Opts::standard) {
+       out <<
+       // Compute an ambient occlusion factor.
+       // pos: point on surface
+       // nor: normal of the surface at pos
+       // Yields a value clamped to [0,1] where 0 means no other surfaces
+       // around the point, and 1 means the point is occluded by other surfaces.
+       "float calcAO( in vec3 pos, in vec3 nor, float time )\n"
+       "{\n"
+       "    float occ = 0.0;\n"
+       "    float sca = 1.0;\n"
+       "    for( int i=0; i<5; i++ )\n"
+       "    {\n"
+       "        float hr = 0.01 + 0.12*float(i)/4.0;\n"
+       "        vec3 aopos =  nor * hr + pos;\n"
+       "        float dd = dist( vec4(aopos,time) );\n"
+       "        occ += -(dd-hr)*sca;\n"
+       "        sca *= 0.95;\n"
+       "    }\n"
+       "    return clamp( 1.0 - 3.0*occ, 0.0, 1.0 );    \n"
        "}\n"
 
+       "// in ro: ray origin\n"
+       "// in rd: ray direction\n"
+       "// out: rgb colour\n"
+       "vec3 render( in vec3 ro, in vec3 rd, float time )\n"
+       "{ \n"
+       "    //vec3 col = vec3(0.7, 0.9, 1.0) +rd.z*0.8;\n"
+       "    vec3 col = background_colour;\n"
+       "    vec4 res = castRay(ro,rd, time);\n"
+       "    float t = res.x;\n"
+       "    vec3 c = res.yzw;\n"
+       "    if( c.x>=0.0 )\n"
+       "    {\n"
+       "        vec3 pos = ro + t*rd;\n"
+       "        vec3 nor = calcNormal( pos, time );\n"
+       "        vec3 ref = reflect( rd, nor );\n"
+       "        \n"
+       "        // material        \n"
+       "        col = c;\n"
+       "\n"
+       "        // lighting        \n"
+       "        float occ = calcAO( pos, nor, time );\n"
+       "        vec3  lig = normalize( vec3(-0.4, 0.6, 0.7) );\n"
+       "        float amb = clamp( 0.5+0.5*nor.z, 0.0, 1.0 );\n"
+       "        float dif = clamp( dot( nor, lig ), 0.0, 1.0 );\n"
+       "        float bac = clamp( dot( nor, normalize(vec3(-lig.x,lig.y,0.0))), 0.0, 1.0 )*clamp( 1.0-pos.z,0.0,1.0);\n"
+       "        float dom = smoothstep( -0.1, 0.1, ref.z );\n"
+       "        float fre = pow( clamp(1.0+dot(nor,rd),0.0,1.0), 2.0 );\n"
+       "        float spe = pow(clamp( dot( ref, lig ), 0.0, 1.0 ),16.0);\n"
+       "        \n"
+       "        vec3 lin = vec3(0.0);\n"
+       "        lin += 1.30*dif*vec3(1.00,0.80,0.55);\n"
+       "        lin += 2.00*spe*vec3(1.00,0.90,0.70)*dif;\n"
+       "        lin += 0.40*amb*vec3(0.40,0.60,1.00)*occ;\n"
+       "        lin += 0.50*dom*vec3(0.40,0.60,1.00)*occ;\n"
+       "        lin += 0.50*bac*vec3(0.35,0.35,0.35)*occ;\n"
+       "        lin += 0.25*fre*vec3(1.00,1.00,1.00)*occ;\n"
+       "        vec3 iqcol = col*lin;\n"
+       "\n"
+       "        //col = mix( col, vec3(0.8,0.9,1.0), 1.0-exp( -0.0002*t*t*t ) );\n"
+       "        col = mix(col,iqcol, 0.5);\n" // adjust contrast
+       "    }\n"
+       "\n"
+       "    return vec3( clamp(col,0.0,1.0) );\n"
+       "}\n";
+    }
+
+    if (opts.shader_ == Render_Opts::pew) {
+       out <<
        "struct Light {\n"
        "    vec3 position;\n"
        "    // One component per color channel\n"
@@ -280,8 +350,10 @@ void export_frag_3d(
        "    }\n"
        "\n"
        "    return mix(color, clamp(color*illumination, 0.0, 1.0), 0.5);\n"
-       "}\n"
+       "}\n";
+    }
 
+    out <<
        "// Create a matrix to transform coordinates to look towards a given point.\n"
        "// * `eye` is the position of the camera.\n"
        "// * `centre` is the position to look towards.\n"

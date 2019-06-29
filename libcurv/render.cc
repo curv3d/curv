@@ -13,6 +13,9 @@
 
 namespace curv {
 
+const std::vector<const char*>
+Render_Opts::shader_enum { "standard", "pew" };
+
 void
 Render_Opts::update_from_record(
     Record& r,
@@ -43,6 +46,11 @@ Render_Opts::update_from_record(
     if (!ray_max_depth_val.is_missing()) {
         ray_max_depth_ = ray_max_depth_val.to_num(
             At_Field("ray_max_depth", cx));
+    }
+    auto shader_val = r.find_field(make_symbol("shader"), cx);
+    if (!shader_val.is_missing()) {
+        shader_ = (Render_Opts::Shader) value_to_enum(shader_val,
+            shader_enum, At_Field("shader", cx));
     }
 }
 
