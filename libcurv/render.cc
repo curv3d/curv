@@ -54,4 +54,62 @@ Render_Opts::update_from_record(
     }
 }
 
+void
+Render_Opts::describe_opts(std::ostream& out, const char* prefix)
+{
+  Render_Opts opts;
+  out
+  << prefix <<
+  "-O aa=<supersampling factor for antialiasing> (1 means disabled)\n"
+  << prefix <<
+  "-O taa=<supersampling factor for temporal antialiasing> (1 means disabled)\n"
+  << prefix <<
+  "-O fdur=<frame duration, in seconds> : Used with -Otaa and -Oanimate\n"
+  << prefix <<
+  "-O bg=<background colour>\n"
+  << prefix <<
+  "-O ray_max_iter=<maximum # of ray-march iterations> (default "
+    << opts.ray_max_iter_ << ")\n"
+  << prefix <<
+  "-O ray_max_depth=<maximum ray-marching depth> (default "
+    << opts.ray_max_depth_ << ")\n"
+  << prefix <<
+  "-O shader=#standard|#pew\n"
+  ;
+}
+
+bool
+Render_Opts::set_field(const std::string& name, Value val, const Context& cx)
+{
+    if (name == "aa") {
+        aa_ = val.to_int(1, INT_MAX, cx);
+        return true;
+    }
+    if (name == "taa") {
+        taa_ = val.to_int(1, INT_MAX, cx);
+        return true;
+    }
+    if (name == "fdur") {
+        fdur_ = val.to_num(cx);
+        return true;
+    }
+    if (name == "bg") {
+        bg_ = value_to_vec3(val, cx);
+        return true;
+    }
+    if (name == "ray_max_iter") {
+        ray_max_iter_ = val.to_int(1, INT_MAX, cx);
+        return true;
+    }
+    if (name == "ray_max_depth") {
+        ray_max_depth_ = val.to_num(cx);
+        return true;
+    }
+    if (name == "shader") {
+        shader_ = (Shader) value_to_enum(val, shader_enum, cx);
+        return true;
+    }
+    return false;
+}
+
 } // namespace curv

@@ -5,7 +5,9 @@
 #ifndef LIBCURV_RENDER_H
 #define LIBCURV_RENDER_H
 
+#include <libcurv/value.h>
 #include <glm/vec3.hpp>
+#include <ostream>
 #include <vector>
 
 namespace curv {
@@ -34,6 +36,8 @@ struct Render_Opts
     Shader shader_ = standard;
 
     void update_from_record(Record&, const Context&);
+    static void describe_opts(std::ostream&, const char*);
+    bool set_field(const std::string&, Value, const Context&);
 };
 
 } // namespace

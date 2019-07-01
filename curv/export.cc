@@ -173,68 +173,17 @@ void export_curv(Value value,
     ofile.open();
     ofile.ostream() << value << "\n";
 }
-
-void describe_render_options(std::ostream& out, const char*prefix)
-{
-  Render_Opts opts;
-  out
-  << prefix <<
-  "-O aa=<supersampling factor for antialiasing> (1 means disabled)\n"
-  << prefix <<
-  "-O taa=<supersampling factor for temporal antialiasing> (1 means disabled)\n"
-  << prefix <<
-  "-O fdur=<frame duration, in seconds> : Used with -Otaa and -Oanimate\n"
-  << prefix <<
-  "-O bg=<background colour>\n"
-  << prefix <<
-  "-O ray_max_iter=<maximum # of ray-march iterations> (default "
-    << opts.ray_max_iter_ << ")\n"
-  << prefix <<
-  "-O ray_max_depth=<maximum ray-marching depth> (default "
-    << opts.ray_max_depth_ << ")\n"
-  << prefix <<
-  "-O shader=#standard|#pew\n"
-  ;
-}
 void describe_render_opts(std::ostream& out)
 {
-    describe_render_options(out, "");
+    Render_Opts::describe_opts(out, "");
 }
 
 bool parse_render_param(
     Param& p,
     Render_Opts& opts)
 {
-    if (p.name_ == "aa") {
-        opts.aa_ = p.to_int(1, INT_MAX);
-        return true;
-    }
-    if (p.name_ == "taa") {
-        opts.taa_ = p.to_int(1, INT_MAX);
-        return true;
-    }
-    if (p.name_ == "fdur") {
-        opts.fdur_ = p.to_double();
-        return true;
-    }
-    if (p.name_ == "bg") {
-        opts.bg_ = p.to_vec3();
-        return true;
-    }
-    if (p.name_ == "ray_max_iter") {
-        opts.ray_max_iter_ = p.to_int(1, INT_MAX);
-        return true;
-    }
-    if (p.name_ == "ray_max_depth") {
-        opts.ray_max_depth_ = p.to_double();
-        return true;
-    }
-    if (p.name_ == "shader") {
-        opts.shader_ = (Render_Opts::Shader)
-            p.to_enum(Render_Opts::shader_enum);
-        return true;
-    }
-    return false;
+    Value val = p.eval();
+    return opts.set_field(p.name_, val, p);
 }
 
 void export_cpp(Value value,
@@ -465,7 +414,7 @@ void parse_viewer_config(
 }
 void describe_viewer_options(std::ostream& out, const char* prefix)
 {
-    describe_render_options(out, prefix);
+    Render_Opts::describe_opts(out, prefix);
     out
     << prefix <<
     "-O lazy : Redraw only on user input. Disables animation & FPS counter.\n"
