@@ -207,7 +207,7 @@ void export_frag_3d(
        //"    */\n"
        "}\n";
 
-    if (opts.shader_ == Render_Opts::standard) {
+    if (opts.shader_ == Render_Opts::Shader::standard) {
        out <<
        // Compute an ambient occlusion factor.
        // pos: point on surface
@@ -275,7 +275,57 @@ void export_frag_3d(
        "}\n";
     }
 
-    if (opts.shader_ == Render_Opts::pew) {
+    if (opts.shader_ == Render_Opts::Shader::sf1) {
+       out <<
+       // Only called if the ray struck a shape, returns pixel colour.
+       "vec3 sf1(vec3 pos, vec3 nor, vec3 rd, vec3 col)\n"
+       "{\n"
+       "    vec3 ref = reflect( rd, nor );\n"
+       "    \n"
+       "    // lighting        \n"
+       "    float occ = 1.0;\n"
+       "    vec3  lig = normalize( vec3(-0.4, 0.6, 0.7) );\n"
+       "    float amb = clamp( 0.5+0.5*nor.z, 0.0, 1.0 );\n"
+       "    float dif = clamp( dot( nor, lig ), 0.0, 1.0 );\n"
+       "    float bac = clamp( dot( nor, normalize(vec3(-lig.x,lig.y,0.0))), 0.0, 1.0 )*clamp( 1.0-pos.z,0.0,1.0);\n"
+       "    float dom = smoothstep( -0.1, 0.1, ref.z );\n"
+       "    float fre = pow( clamp(1.0+dot(nor,rd),0.0,1.0), 2.0 );\n"
+       "    float spe = pow(clamp( dot( ref, lig ), 0.0, 1.0 ),16.0);\n"
+       "    \n"
+       "    vec3 lin = vec3(0.0);\n"
+       "    lin += 1.30*dif*vec3(1.00,0.80,0.55);\n"
+       "    lin += 2.00*spe*vec3(1.00,0.90,0.70)*dif;\n"
+       "    lin += 0.40*amb*vec3(0.40,0.60,1.00)*occ;\n"
+       "    lin += 0.50*dom*vec3(0.40,0.60,1.00)*occ;\n"
+       "    lin += 0.50*bac*vec3(0.35,0.35,0.35)*occ;\n"
+       "    lin += 0.25*fre*vec3(1.00,1.00,1.00)*occ;\n"
+       "    vec3 iqcol = col*lin;\n"
+       "\n"
+       "    return mix(col,iqcol, 0.5);\n" // adjust contrast
+       "}\n"
+       "// in ro: ray origin\n"
+       "// in rd: ray direction\n"
+       "// out: rgb colour\n"
+       "vec3 render( in vec3 ro, in vec3 rd, float time )\n"
+       "{ \n"
+       "    //vec3 col = vec3(0.7, 0.9, 1.0) +rd.z*0.8;\n"
+       "    vec3 col = background_colour;\n"
+       "    vec4 res = castRay(ro,rd, time);\n"
+       "    float t = res.x;\n"
+       "    vec3 c = res.yzw;\n"
+       "    if( c.x>=0.0 )\n"
+       "    {\n"
+       "        vec3 pos = ro + t*rd;\n"
+       "        vec3 nor = calcNormal( pos, time );\n"
+       "        col = sf1(pos, nor, rd, c);\n"
+       "    }\n"
+       "\n"
+       "    return vec3( clamp(col,0.0,1.0) );\n"
+       "}\n";
+    }
+
+    if (opts.shader_ == Render_Opts::Shader::pew) {
+       // written by Philipp Emanuel Weidmann (@p-e-w on github)
        out <<
        "struct Light {\n"
        "    vec3 position;\n"

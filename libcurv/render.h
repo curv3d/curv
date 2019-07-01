@@ -5,19 +5,19 @@
 #ifndef LIBCURV_RENDER_H
 #define LIBCURV_RENDER_H
 
-#include <libcurv/value.h>
+#include <libcurv/function.h>
 #include <glm/vec3.hpp>
-#include <ostream>
 #include <vector>
 
 namespace curv {
 
 struct Record;
 struct Context;
+struct Function;
 
 struct Render_Opts
 {
-    enum Shader { standard, pew };
+    enum class Shader { standard, pew, sf1 };
     static const std::vector<const char*> shader_enum;
 
     // spatial anti-aliasing via supersampling. aa_==1 means it is turned off.
@@ -33,10 +33,13 @@ struct Render_Opts
     // max ray-marching distance
     double ray_max_depth_ = 400.0;
     // shader implementation
-    Shader shader_ = standard;
+    Shader shader_ = Shader::standard;
+    // sf1 shader function, configured as: shader={sf1:<function>}
+    Shared<const Function> sf1_ = nullptr;
 
     void update_from_record(Record&, const Context&);
     static void describe_opts(std::ostream&, const char*);
+    void set_shader(Value, const Context&);
     bool set_field(const std::string&, Value, const Context&);
 };
 
