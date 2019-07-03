@@ -5,6 +5,7 @@
 #include <libcurv/render.h>
 
 #include <libcurv/context.h>
+#include <libcurv/exception.h>
 #include <libcurv/function.h>
 #include <libcurv/record.h>
 #include <libcurv/shape.h>
@@ -14,7 +15,39 @@
 namespace curv {
 
 const std::vector<const char*>
-Render_Opts::shader_enum { "standard", "pew" };
+Render_Opts::shader_enum { "standard", "pew", "sf1" };
+
+void
+Render_Opts::set_shader(Value val, const Context& cx)
+{
+    auto v = value_to_variant(val, cx);
+    if (v.first == "standard") {
+        if (v.second.is_missing()) {
+            shader_ = Shader::standard;
+            return;
+        }
+        goto error;
+    }
+    if (v.first == "pew") {
+        if (v.second.is_missing()) {
+            shader_ = Shader::pew;
+            return;
+        }
+        goto error;
+    }
+    if (v.first == "sf1") {
+        shader_ = Shader::sf1;
+        if (!v.second.is_missing()) {
+            sf1_ = cast_to_function(v.second, cx);
+            if (sf1_ == nullptr)
+                goto error;
+        }
+        return;
+    }
+error:
+    throw Exception(cx,
+        stringify(val," is not #standard|#pew|{sf1:<function>}"));
+}
 
 void
 Render_Opts::update_from_record(
@@ -49,8 +82,7 @@ Render_Opts::update_from_record(
     }
     auto shader_val = r.find_field(make_symbol("shader"), cx);
     if (!shader_val.is_missing()) {
-        shader_ = (Render_Opts::Shader) value_to_enum(shader_val,
-            shader_enum, At_Field("shader", cx));
+        set_shader(shader_val, At_Field("shader", cx));
     }
 }
 
@@ -74,7 +106,7 @@ Render_Opts::describe_opts(std::ostream& out, const char* prefix)
   "-O ray_max_depth=<maximum ray-marching depth> (default "
     << opts.ray_max_depth_ << ")\n"
   << prefix <<
-  "-O shader=#standard|#pew\n"
+  "-O shader=#standard|#pew|{sf1:<function}\n"
   ;
 }
 
@@ -106,7 +138,7 @@ Render_Opts::set_field(const std::string& name, Value val, const Context& cx)
         return true;
     }
     if (name == "shader") {
-        shader_ = (Shader) value_to_enum(val, shader_enum, cx);
+        set_shader(val, cx);
         return true;
     }
     return false;

@@ -90,6 +90,12 @@ struct SC_Compiler
     void define_function(
         const char* name, SC_Type param_type, SC_Type result_type,
         Shared<const Function> func, const Context&);
+    void define_function(
+        const char* name,
+        std::vector<SC_Type> param_types,
+        SC_Type result_type,
+        Shared<const Function> func,
+        const Context& cx);
 
     void begin_function();
     void end_function();
