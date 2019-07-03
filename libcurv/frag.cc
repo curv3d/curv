@@ -7,6 +7,7 @@
 #include <libcurv/glsl.h>
 #include <libcurv/shape.h>
 
+#include <libcurv/context.h>
 #include <libcurv/die.h>
 #include <libcurv/dtostr.h>
 #include <libcurv/function.h>
@@ -108,6 +109,19 @@ void export_frag_2d(
         "    fragColour = vec4(pow(col, vec3(0.454545454545454545)),1.0);\n"
         "}\n"
         ;
+}
+
+void export_sf1(
+    const Shape_Program& shape, const Render_Opts& opts, std::ostream& out)
+{
+    SC_Compiler sc(out, SC_Target::glsl, shape.system());
+    sc.define_function(
+        "sf1",
+        std::vector<SC_Type>{
+            SC_Type::Vec(3),SC_Type::Vec(3),SC_Type::Vec(3),SC_Type::Vec(3)},
+        SC_Type::Vec(3),
+        opts.sf1_,
+        At_Program(shape));
 }
 
 void export_frag_3d(
@@ -276,6 +290,9 @@ void export_frag_3d(
     }
 
     if (opts.shader_ == Render_Opts::Shader::sf1) {
+       if (opts.sf1_) {
+           export_sf1(shape, opts, out);
+       } else {
        out <<
        // Only called if the ray struck a shape, returns pixel colour.
        "vec3 sf1(vec3 pos, vec3 nor, vec3 rd, vec3 col)\n"
@@ -302,7 +319,9 @@ void export_frag_3d(
        "    vec3 iqcol = col*lin;\n"
        "\n"
        "    return mix(col,iqcol, 0.5);\n" // adjust contrast
-       "}\n"
+       "}\n";
+       }
+       out <<
        "// in ro: ray origin\n"
        "// in rd: ray direction\n"
        "// out: rgb colour\n"

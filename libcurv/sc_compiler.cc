@@ -38,27 +38,74 @@ SC_Compiler::define_function(
     const char* name, SC_Type param_type, SC_Type result_type,
     Shared<const Function> func, const Context& cx)
 {
+    define_function(
+        name,
+        std::vector<SC_Type>{param_type},
+        result_type,
+        func,
+        cx);
+}
+
+void
+SC_Compiler::define_function(
+    const char* name,
+    std::vector<SC_Type> param_types,
+    SC_Type result_type,
+    Shared<const Function> func,
+    const Context& cx)
+{
     begin_function();
-    SC_Value param = newvalue(param_type);
-    if (target_ == SC_Target::cpp) {
-        out_
-            << "extern \"C\" void " << name
-            << "(const " << param_type << "* param, "
-            << result_type << "* result)\n"
-            "{\n"
-            "  " << param_type << " " << param << " = *param;\n";
-    } else {
-        out_ <<
-        result_type << " " << name << "(" << param_type << " " << param << ")\n"
-        "{\n";
+
+    // function prologue
+    if (target_ == SC_Target::cpp)
+        out_ << "extern \"C\" void " << name << "(";
+    else
+        out_ << result_type << " " << name << "(";
+    bool first = true;
+    std::vector<SC_Value> params;
+    int n = 0;
+    for (auto& ty : param_types) {
+        params.push_back(newvalue(ty));
+        if (!first) out_ << ", ";
+        first = false;
+        if (target_ == SC_Target::cpp)
+            out_ << "const " << ty << "* param" << n++;
+        else
+            out_ << ty << " " << params.back();
     }
+    if (target_ == SC_Target::cpp) {
+        if (!first) out_ << ", ";
+        out_ << result_type << "* result)\n";
+    } else
+        out_ << ")\n";
+    out_ << "{\n";
+    if (target_ == SC_Target::cpp) {
+        n = 0;
+        for (unsigned i = 0; i < params.size(); ++i) {
+            out_ << "  " << param_types[i] << " " << params[i]
+                 << " = *param" << n++ << ";\n";
+        }
+    }
+
+    // function body
     auto f = SC_Frame::make(0, *this, &cx, nullptr, nullptr);
-    auto param_ref = make<SC_Data_Ref>(nullptr, param);
-    auto result = func->sc_call_expr(*param_ref, nullptr, *f);
+    Shared<Operation> arg_expr;
+    if (params.size() == 1)
+        arg_expr = make<SC_Data_Ref>(nullptr, params[0]);
+    else {
+        auto param_list = List_Expr::make(params.size(),nullptr);
+        for (unsigned i = 0; i < params.size(); ++i) {
+            param_list->at(i) = make<SC_Data_Ref>(nullptr, params[i]);
+        }
+        arg_expr = std::move(param_list);
+    }
+    auto result = func->sc_call_expr(*arg_expr, nullptr, *f);
     if (result.type != result_type) {
         throw Exception(cx, stringify(name," function returns ",result.type));
     }
     end_function();
+
+    // function epilogue
     if (target_ == SC_Target::cpp) {
         out_ << "  *result = " << result << ";\n";
     } else {
