@@ -406,6 +406,9 @@ we use a different representation based on the symmetries of the shape.
 See the shape library code for examples. Can this idea be generalized?
 Yes: https://syntopia.github.io/Polytopia/polytopes.html
 
+Or, Wythoff polyhedron construction on Shadertoy:
+https://www.shadertoy.com/view/Md3yRB
+
 Polytope Operators
 ------------------
 A polytope is either a polygon or a polyhedron.

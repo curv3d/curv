@@ -1,6 +1,19 @@
+`render <render-record> <shape>` -- adds pickers for render params
+* depends on Abstract Value proposal
+
 Redesigned Rendering Parameters:
 * camera
-* shading
+* shading (towards a universal, parameterized shading model)
+  * sf1: apply lighting on ray hit
+  * background colour: solid colour, or pattern (2D & 3D cases)
+  * shadows: none, ambient or traced. Can traced be made orthogonal to sf1?
+    Perhaps ambient occlusion is an independent term.
+  * light sources.
+    * Point sources. How to optimize lighting code: 1 source or multiple,
+      white light or coloured?
+    * Ambient. This should just be a single value.
+  * open source, F-Rep/SDF, universal shading model, preferably PBM:
+    * mTec (PBM), FragM?, ...
 * tracing
 
 Symbols:
