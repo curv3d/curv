@@ -117,6 +117,8 @@ This is possible, but quite complicated.
 This is equivalent to converting a control flow graph (CFG) into high level
 structured control statements (if, while, for) using an algorithm like Relooper or Stackifier.
 Emscripten does this, but "The Relooper is the most complex module in Emscripten".
+Cheerp uses an improved version of Stackifier, which generates efficient code,
+faster than Relooper.
 
 References
 ----------
@@ -134,3 +136,5 @@ References
   `<https://github.com/kripken/emscripten/raw/master/docs/paper.pdf>`_.
 * The LLVM "Stackifier" algorithm.
   `<https://reviews.llvm.org/D12735>`_
+* Cheerp: improved Stackifier consistently produces faster code than Relooper.
+  `https://medium.com/leaningtech/solving-the-structured-control-flow-problem-once-and-for-all-5123117b1ee2`_
