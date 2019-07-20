@@ -30,13 +30,18 @@ First of all, via command line:
 
 Level 3
 -------
-In REPL mode, it would be nice if you could modify this parameter
-interactively. Here we are setting a global variable that affects all future
-viewer invocations. If Viewer window is open, it modifies the behaviour
-of the existing Viewer: requires a reload of the current shape.
-* `aa=4` seems like the obvious gesture.
-* `render.aa := 4`, then use `render` to view render options,
-  where `render` is a REPL only binding.
+In REPL mode, modify default render configuration interactively:
+* `render_opts.aa := 4`, then use `render_opts` to view render options.
+This change only takes effect the next time the viewer window is reloaded.
+
+`render_opts` is a typed variable that can only contain a curv::Render_Opts
+value. The contents of `render_opts` is an untyped record value. The type
+constraints are in the variable, not in the value.
+
+It would be cool if you could modify rendering behaviour in an already
+open Viewer window. However, that requires a separate variable, since a viewed
+shape may override some of the default settings in `render_opts`, and since
+we may support multiple viewer windows in the future.
 
 Level 4
 -------
@@ -55,3 +60,63 @@ both the geometry to be rendered, plus the render parameters.
 * Return a Rendered_Shape or Scene value that contains a shape and render
   parameters. This is not itself a shape. Problem: adding render parameters to
   an existing public shape can break existing clients that expect a Shape value.
+
+render_with opts shape =
+  @{
+    ... shape;
+    render:
+      {
+        if (defined(shape.render)) ... shape.render;
+        ... opts;
+      }
+  };
+
+Level 5
+-------
+Edit render parameters using value pickers in the Viewer. Design alternatives:
+
+5.1 Built in behaviour
+~~~~~~~~~~~~~~~~~~~~~~
+The Viewer provides a built-in set of value pickers for editing the
+(at present) built in render opts.
+
+5.2 Parametric render field
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The shape render field can be a parametric record with pickers.
+
+What happens if such a shape S is passed to `render_with` (as defined above)?
+It doesn't make sense. The picker parameters of S.render may be unrelated to
+the Render_Opt parameters: the parametric record specifies a one-way map
+from the picker parameters to the render parameters. So overriding the
+render parameters directly is not supported. So render_with should report
+an error if S.render is a module.
+
+5.3 ...
+~~~~~~~
+`render_with` displays value pickers for all render parameters,
+using configured default for parameters not overridden by either argument.
+
+render_with
+  { aa :: int_slider(1,8) = render_opts.aa,
+    taa :: int_slider(1,8) = render_opts.taa,
+  }
+  shape
+=
+  @{
+    ... shape;
+    render:
+      {
+        aa:aa;
+        taa:taa;
+        if (defined(shape.render)) ... shape.render;
+      }
+  };
+
+PROBLEM: This won't work as written. The value of render_opts is captured at
+the time that std.curv is loaded. Subsequent changes to render_opts in the REPL
+will not affect the render_with function, since it is a pure function. Ideas:
+ 1. Use a reactive variable, current_render_opts, that is replaced
+    by the current value of render_opts at the time the shape is viewed.
+ 2. If shape::render is a function instead of a record, then the current value
+    of render_opts is passed as an argument, and the result is a Render_Opts
+    record.

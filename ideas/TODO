@@ -56,7 +56,7 @@ v0.5 Planning
   * noise library, >SC piecewise functions.
   * fractals
   * polyhedra
-* WASM executable
+* WASM executable. Try Cheerp (faster smaller code than Emscripten)
 * language:
   * `pattern : expr`
   * `a[i] := x`, a[[X,Y]] := [x,y]
