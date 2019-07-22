@@ -164,7 +164,26 @@ Sets.
 
 Function Equality.
 ------------------
-Functions don't support proper equality. Semantics that I want:
+Currently, functions don't support useful equality. All functions are equal.
+This means, putting function values in Sets or using them in Map keys leads
+to meaningless results.
+
+It's impossible to support true extensional equality for function values.
+What are the alternatives?
+Basic requirements are:
+* Equality is an equivalence relation.
+* Function equality is referentially transparent. If a function expression is
+  copied within the same scope, both copies of the expression return values
+  that are equal.
+
+ 1. The Abstract Value proposal adds "nominative" equality to function values.
+ 2. Functions can't be compared for equality, so they can't be used
+    in Sets or as Map keys. See below.
+ 3. Support "intensional" function equality. See below.
+
+Functions are Incomparable
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Semantics that I want:
 1. You can't put a Function value in a Set or use it as a Map key (error).
    * Thus, you can't put Shapes into a Set, unless they are Terms.
 2. If you match a Function value against a non-Function pattern,
@@ -193,6 +212,8 @@ c. If two functions are compared, an error. If a function and non-function
 
 We will use 'c'.
 
+Intensional Function Equality
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ALTERNATIVELY, maybe we should support intensional function equality.
 
 Idris allows you to prove that two functions are equivalent,
@@ -227,6 +248,86 @@ Is a Record just a Map where the keys are Symbols?
   * In popular dynamic languages, maps are indexed using the same syntax
     as arrays: M[K]. A map with integer keys is like a sparse array.
 So Records are not Maps.
+
+Modules, Records, Dictionaries
+------------------------------
+* A Dictionary is a data structure mapping arbitrary key values to values.
+* A Record is a Dictionary where the keys are all symbols.
+* A Module is a record-like abstract value with 'under fields'.
+  A Module represents an API, where each field is a distinct entry point into
+  the API. Used to represent libraries and instances of abstract data types.
+  * A field name beginning with `_` is an 'under field'.
+    The semantics are similar to Python: this denotes a field that is
+    considered 'internal' or 'private'. Within an API, perhaps this field
+    is not intended for general use, and has an unstable interface.
+    Or perhaps this field is metadata.
+  * A field name beginning with `__` is a 'dunder field`.
+    Curv provides a set of special field names that modify the semantics of
+    the Curv language for this module, if they are defined. These are:
+    * __call : defines the meaning of function call for this module.
+    * __identity : the module is a named value (see Abstract Values).
+
+Here are some things I can't decide:
+* Is {a:1} a Record or a Module? This is the thing we pass as a function
+  argument to implement named parameters.
+* When you print a Module without an __identity field, do you see <module>,
+  or do you all the fields?
+* When you call a Module without a __call field, do you get an error, or
+  do you get the same result as calling a Dictionary? Eg, M[#foo] is M.foo.
+  Bad idea: adding a __call field to a module shouldn't break existing code.
+
+Two Alternatives:
+ 1. Function-like Modules
+    A module with no __identity is printed as <module>, and all such modules
+    compare equal. Not too useful, so almost all modules have identity, and
+    modules are constructed using @{fields}. {fields} is a record literal
+    and {key1=>val1,...} is a dictionary.
+    To deliberately construct a module with no __identity, use #null@@{fields}.
+    Configuration is a record. `R.id := newval` is legal for records, supports
+    the REPL render_opts variable. Module fields are not assignable, because
+    fields become out of sync with __identity.
+    In SubCurv, both records and modules potentially need mapping to structs.
+ 2. Record-like Modules
+    {fields} is a module literal (which has no __identity unless it was added
+    by one of the subphrases). @{fields} modifies a module or function to set
+    __identity. A module with no __identity prints all the fields.
+    #{fields} is a record, #{key1=>val1,...} is a dictionary. These are only
+    used when you just want a key/value map, with all keys having the
+    same status, not a record where each field is an API.
+    In fact, we can amp up the distinction between a dictionary and module:
+      D[key] indexes a dictionary.
+      M.id   indexes a module.
+        List.id can be a vectorization, == [List[0].id,...]
+      #{key1=>val1,...} is a dictionary literal.
+      {id1:val1,...} or {id1=val1,...} is a module literal.
+    Configuration is a module.
+    In SubCurv, only modules are mapped to structs.
+
+Criteria for choosing between these alternatives:
+* The algorithm for finding picker parameters in a term distinguishes between
+  record and shape arguments. Both alternatives work. With record-like modules,
+  make_shape yields a module with __identity, and is_shape tests for __identity.
+* `render_opts.aa := 4`?
+  * With function-like modules, field assignment is illegal, but render_opts
+    is a record, and this works.
+  * With record-like modules, field assignment is illegal if the module
+    has __identity.
+* Record-like seems simpler, more elegant. Only one kind of record-like data
+  structure indexed by dot notation, instead of two.
+* Syntax for indexing into a dictionary, record and module:
+  * Dictionaries: D[key], but no broadcasting, since lists can be keys.
+  * S!index where S is a string,list,module,record,dictionary.
+    Full broadcasting for lists and modules.
+    1-D broadcasting for strings.
+    No broadcasting for dictionaries.
+  * With Record-like modules, {a:1,b:2}![#a,#b] is supported.
+  * In most functional languages, there is a terse syntax for constructing a
+    function that selects a field from a record. You pass it as an argument
+    to combinators like `map`. Eg, in Elm, `.foo X` is an alias for `X.foo`.
+    Following Clojure, we can use `#foo X` as an alias for `X.foo`.
+
+The 2 alternatives have equal expressive power. It's down to esthetics.
+Decision: record-like modules.
 
 Maps.
 -----

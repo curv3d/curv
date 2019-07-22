@@ -124,7 +124,7 @@ How is the Viewer implemented?
   supports translucent picker widgets that float in front of the scene.
   * But: if GUI runs in same window as model, interactivity sucks when the
     frame rate goes down. Need progressive rendering?
-  * github.com/wjakob/nanogui. *2,000. GP retained mode GUI, no globals.
+  * github.com/wjakob/nanogui. *2,868. GP retained mode GUI, no globals.
     https://github.com/darrenmothersele/nanogui-test/blob/master/test.cpp
     At first glance, looks nice.
     * OpenGL 3.3 only. But is layered on nanovg, which has 3rd party support
@@ -136,7 +136,7 @@ How is the Viewer implemented?
       put in the effort to fix the holes.
     * If Nanovg is a 2D drawing API, then how do you implement a 3D widget,
       eg like the AntTweakBar 3D rotation widget?
-  * github.com/ocornut/imgui. *11,000.
+  * github.com/ocornut/imgui. *15,971.
     * Just good enough for MVP. Could implement editor and console window.
     * It uses global variables, only supports 1 window.
     * Actively supported, active community. The code is the documentation.
@@ -148,6 +148,11 @@ How is the Viewer implemented?
     * Supports OpenGL, Metal, Vulkan, DX12.
   * AntTweakBar. Project halted in 2013. Has some nice 3D widgets that I want,
     and don't see replicated elsewhere. No colour wheel picker, unlike ImGui.
+  * github.com/virtun/nuklear. *12,582.
+    Like ImGui, but no global variables. Boring colour picker.
+    Has a node editor demo! (Box & wire visual language editor.) In C.
+  * https://github.com/hugoam/two (renamed from mud, May 2019)
+    Provides portable graphics API + portable GUI. Uses BGFX for GPU.
 * Use QT.
   * Supports translucent widgets on top of an OpenGL scene:
     https://doc.qt.io/archives/qq/qq26-openglcanvas.html

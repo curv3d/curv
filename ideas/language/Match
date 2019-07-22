@@ -1,7 +1,22 @@
-`match` should be a keyword or metafunction
-===========================================
-Maybe it is a metafunction (a Meaning) that recognizes special syntax in a
-call, but promotes to a value (via to_operation) outside of that context.
+Special Syntax for `match`
+==========================
+A call to `match` has special properties if it has the form
+    match[f1,f2,...]
+where the function position is a literal constant (the `match` function)
+and the argument position is a list literal:
+
+ * You can define recursive piecewise functions.
+ * A match call like this is considered a function literal, for the purposes
+   of the Abstract Value proposal.
+ * The argument expressions f1, f2, ... are in tail positions if the match
+   literal is in a tail position. This is relevant to tail call optimization
+   and the Abstract Value proposal.
+
+How is this implemented?
+* Maybe `match` is a keyword. This prevents `match` from being used as
+  a normal function.
+* Maybe `match` is a metafunction (a Meaning) that recognizes special syntax in
+  a call, but promotes to a value (via to_operation) outside of that context.
 
 1. `colour`
 -----------
