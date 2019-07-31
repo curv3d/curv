@@ -887,6 +887,35 @@ Which is groovy, but what about the other use cases for the `@` operator?
         x -> func ...
 This is more readable than `@`.
 
+A further refinement of this syntax:
+* Within a pattern, @id specifies that the identifier 'id' is an opaque
+  binding. The argument value must be a function or module, and this value
+  is branded with 'id' plus the identity of the parent module, if available.
+  So, @x = body' is an opaque binding within a module, but a more complex
+  pattern like '(@x,@y)=abstract_pair' also works.
+* A module with opaque fields is printed as {@opaque_id, transparent_id=42}.
+* Using a symbol '@' instead of a keyword reads better because it doesn't
+  obscure the identifier that names the binding.
+* The value of an opaque field within an anonymous module prints as
+  <function id> or <module id>.
+* The 'named' qualifier can optionally appear at the head of a program or at
+  the head of a function body. So,
+    named {
+    ...
+    }
+  as a library program, or
+    f x = named { ... };
+Two optional extensions (neither seems like a good idea):
+* As an extension, these opaque or branded definitions can be used anywhere,
+  and the identity is {name: #id} in a non-module context.
+* As an extension, 'named expr' can appear in a wider range of contexts.
+  Eg, as a tail expression of a function body or program. This has limited
+  benefit. It allows a constructor function to conditionally return an
+  abstract value (why?).
+The REPL language: what syntax do you use to experiment with @ bindings?
+* Can you use a top-level @ definition in the REPL?
+* Or use a={@b={c:1}}
+
 If M is an anonymous module, and X is an opaque field, then do we assign
 identity to M.X?
  1. No, in this case, X behaves like a transparent field.

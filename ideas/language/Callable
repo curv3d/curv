@@ -1,9 +1,47 @@
-# Function/Record Equivalence.
+# Callable Values
 
 Using {call x = f x}, a record can behave like a function.
-So there is some sense in which 'function' is a subtype of 'record'.
-Work out the details and make it consistent.
+So is there a subtype relationship between 'function' and 'record'?
 
+Callable records should work in any context where a function would work.
+
+Should functions work in any context where a callable record would work?
+That is less clear. That would imply that functions have a `call` record
+(that returns the function itself, I guess). That cyclic reference would
+mess up general-purpose tree traversal code unless it uses a predicate to
+check for primitive functions and avoid descending into such nodes.
+So we at minimum need `is_callable` to be distinct from `is_function`.
+
+Some conclusions:
+* Functions cannot be indistinguishable from callable records.
+  is_function is a concrete type test, while is_callable is an abstract
+  type test (does the value support the 'function call' interface?).
+  is_callable is recommended for generic code (most cases), while is_function
+  is reserved for specialized code. I don't want `is_function` to be any
+  shorter than `is_callable`, to discourage its use in generic code.
+* Functions do not have a `call` record (to avoid confusing tree-walkers).
+* Therefore, functions print differently than callable records.
+  A callable record is {call:...,...} while an anonymous function is <function>.
+
+Open issues:
+* Are String and List callable values? is_callable "a" and is_callable [a]?
+  * Are there use cases for generic code that treats String and List as
+    callable? Or is my use of list[index] syntax ad-hoc overloading?
+    I think the latter. If strings and lists were callable for the purpose
+    of generic programming, then a more useful correspondence would treat them
+    as maps from single indices to values.
+* What generic operations should be available on a callable value C?
+  * function call
+  * compose[f1,f2,...]
+  * match[f1,f2,...]
+* Functions have fields? (Yes, but not `call`.)
+  So F.x and fields F work.
+* Functions are records: is_function implies is_record? (?)
+  Maybe has_fields is an abstract type predicate.
+* Use `include F` or `... F` to generically inherit from a callable value?
+  If inheriting from a function, synthesize a `call` field.
+
+--------------------
 Some possibilities:
  1. Functions and records are distinct.
     is_function and is_record are disjoint.
@@ -35,7 +73,7 @@ Two models for how built-in or primitive parametric records could work.
     and `is_record` is true for primitive functions. So Fun is a subtype of
     Record.
 
-A virtual Structure::call() allows easier creation of "parametric records".
+A virtual Record::call() allows easier creation of "parametric records".
 (As opposed to extracting the `call` field, and requiring it to be a Function,
 which when called returns another Structure.)
 * This has a subtle but funny effect on the data model. In effect, an image is
