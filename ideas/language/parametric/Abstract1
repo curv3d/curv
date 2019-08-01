@@ -1,0 +1,730 @@
+Abstract Values
+===============
+Curv values are printed as *constructor expressions*.
+Most constructor expressions can be evaluated to recreate the original value.
+If two values A and B have the same printed representation,
+then they test as equal (A == B).
+
+Curv has two kinds of values: data, and abstract values.
+
+The data types are Symbol, Number, String, List, and Record.
+Data is concrete and easy to understand: what you see is what you get.
+Data are printed as literal constants in which you see everything,
+nothing is hidden.
+
+Modules and Functions are abstract values (or A-values for short).
+The constructor expression for an A-value is abstract:
+it leaves out implementation details that are present in the Curv source code.
+When you print a function, you don't see the code.
+When you print an instance of an abstract data type,
+you don't see the internal representation of the abstract data type.
+A-value constructor expressions may contain
+global variable names, function calls, and dot expressions.
+
+A-values support modularity and data abstraction. This is an advanced feature,
+aimed at developers who want to create reusable library abstractions.
+
+The killer application for this feature is geometric shapes.
+* Shapes have a complex internal representation. If we represent shapes as
+  pure data, then when a shape is printed, you see a dump of this internal
+  representation, which is not user friendly: the output is hard to interpret.
+* The A-value feature allows a shape to remember the tree of high level
+  operations that was used to construct the shape (known as a CSG tree).
+  This CSG tree is used as the printed representation, and it can also be
+  used by the Curv compiler to optimize rendering, and for exporting shapes
+  to CSG file formats, of which there are many (for example, SVG).
+* The Viewer can extract construction parameters from the CSG tree of a shape,
+  and display value picker widgets for tweaking these parameter values.
+
+A-values contain metadata. Part of this metadata is used to implement
+the 'identity' semantics (the printed representation as a constructor
+expression, and the equality semantics). But we support arbitrary metadata.
+The plan is to embed additional metadata in abstract values to support
+the IDE and the visual programming environment.
+
+Metadata
+--------
+There are two kinds of A-values: modules and functions.
+* A module is a set of name/value pairs (fields),
+  with A-value semantics for printing and equality.
+* Functions also have fields. And a module with a `CALL` field can be
+  called like a function. So functions and modules are closely related.
+
+So A-values have named fields. Metadata fields are just ordinary fields
+that are distinguished by a naming convention. By convention,
+field names spelled entirely with uppercase characters are metadata.
+
+IDENTITY metadata
+-----------------
+An A-value remembers how it was constructed.
+It contains an `IDENTITY` field which describes
+the expression used to construct the A-value.
+The IDENTITY field is used to print the A-value.
+Two A-values X and Y of the same type
+compare equal (X==Y) if their IDENTITY fields are equal.
+
+When an A-value is constructed (by evaluating a module literal or function
+literal), the IDENTITY value is determined by context (details later).
+
+An IDENTITY value is a variant value, one of the following:
+* #anonymous
+* {field: {name: <symbol>, parent: <identity metadata of parent module>}}
+  The A-value was constructed using a dot expression, <parent-module>.<name>.
+  The `parent` field is not the parent module itself,
+  as that would create a cyclic reference.
+* {call: {constructor: <constructor>, argument: <value>}}
+  The A-value was constructed using a function call,
+  `<constructor> <argument>`.
+* {std: <symbol>}
+  Used for modules bound to variables in the standard library.
+
+The design for IDENTITY values of anonymous A-values is a work in progress.
+
+The simplest design is to use `#anonymous`, which implies that all anonymous
+A-values of the same type have the same printed representation and compare
+equal. Anonymous functions are printed as `<function>`, while anonymous
+modules are printed as `<module>`.
+
+Instead of storing an `IDENTITY: #anonymous` field, we could just omit this
+field. This changes the behaviour of `... some_module` within a module
+comprehension (for better or worse?). It could lead to redefining 'module'
+as 'record with an IDENTITY field'.
+
+Alternatively, we use `{anonymous: id}`.
+The compiler assigns an id to each function and module literal in a program.
+Each distinct(*) literal gets a different id.
+
+The definition of 'distinctness' for A-value literals is a work in progress.
+* Use sequential ids obtained from a counter.
+* Use curv::Location data, or Shared<const Phrase>.
+* Use cryptographic hashes.
+
+Right now, `{anonymous: id}` looks like overkill. Anonymous A-values are
+permitted, and no matter how we define their equality relation, it won't have
+appropriate application-level semantics. In situations where you care about the
+equality relation, it's easy to avoid creating anonymous A-values. Introducing
+ids for anonymous A-values seems like unnecessary complexity, and it also
+breaks referential transparency, unless we use cryptographic hashes.
+
+With this design, two A-values of the same type and with the same IDENTITY
+value will compare equal, even if they come from different literals.
+Is that good or bad?
+* Good: There is an argument from referential transparency, that if you copy
+  and paste a Curv expression, evaluating both in the same environment, then
+  both expressions should return the same value.
+* Bad: Perhaps this behaviour could lead to accidental value equivalence?
+  Probably that's just a bug that needs to be fixed in the user's code.
+  I don't have a good example of this problem that isn't a user bug.
+If it's bad, then another alternative is to store an id in every A-value,
+and make that id part of the equality relation.
+
+Implicitly assigning IDENTITY metadata from context
+---------------------------------------------------
+When an A-value literal is evaluated, it is assigned IDENTITY metadata
+based on its syntactic context, according to the following rules.
+If no identity is available, the default is #anonymous.
+
+We have the following syntax for A-value literals:
+* `#{ ... }` -- a module
+* `param -> body` -- a function
+* `match[param1->body1,param2->body2,...]` -- a piecewise function
+
+Consider a function literal `param -> body` whose value is F.
+When F is called with argument A, any A-value literal in tail position
+within the body of A will be assigned the IDENTITY metadata {call: (F,A)}
+when the literal is evaluated.
+
+Piecewise function literals are the same, except that there are multiple
+bodies. For arguments of match that are not function literals, nothing
+special happens.
+* Maybe the following. When the `match[...]` literal is evaluated, it is
+  assigned IDENTITY metadata ID based on its syntactic context. During this
+  evaluation, for each argument expression A within the list literal,
+  we assign ID to each A-value literal in tail position within A.
+
+Consider a module literal #{...} whose value is M.
+* When a definition of the form `name = definiens` is executed,
+  any A-value literal in tail position with the definiens
+  will be assigned the IDENTITY metadata {field: (name,M)}
+  when the literal is evaluated.
+  [More precisely, the left side of the definition is an identifier pattern,
+  one which binds the right side value to a unique identifier.]
+* If the left side of the definition is not an identifier pattern,
+  nothing special happens.
+
+Hopefully, these rules will allow code like the shape library to automagically
+produce shapes with useful IDENTITY metadata, with only small changes in
+coding style.
+
+make_shape
+----------
+A call to make_shape needs to be treated like a module literal,
+so that IDENTITY metadata is added based on the caller's context.
+So add a unary operator (called 'brand') which applies IDENTITY metadata
+to its argument, using implicit IDENTITY assignment.
+    * arg
+
+The argument to 'brand' could be: a record, an anonymous module,
+or a module with an identity that will be overwritten.
+
+The result returned by `make_shape` could be:
+* A record.
+* Can it be an anonymous module? The previous section doesn't make that
+  possible. However, an earlier design for this feature distinguished
+  between transparent functions, that don't brand their results, and
+  constructor functions, that do brand their results.
+* It could be a module, branded as a `make_shape` call. This branding isn't
+  useful, though.
+
+How can `make_shape` return an anonymous module?
+
+ 1. An earlier design distinguished between transparent functions,
+    that don't brand their results, and constructor functions, that do
+    brand their results. I don't like the distinction between transparent
+    and constructor functions. I want branded curried functions that are
+    also transparent, and the previous design added complexity to that.
+    I don't see much utility in unbranded functions, so I figure that function
+    literals should always be implicitly branded.
+
+ 2. An anonymous module is the same thing as a record with no IDENTITY field.
+    A branded module is the same thing as a record with an IDENTITY field.
+    This restores orthogonality and duck-typing to my account of modules.
+    The `@` operator takes a record argument, and adds IDENTITY based on
+    syntactic context. Function literals are implicitly branded, as per the
+    previous section. An anonymous function can be explicitly constructed
+    using `{CALL x = f x}` if needed. `#{...}` syntax is replaced by `@{...}`.
+
+Using design #2, make_shape returns a record with no IDENTITY field,
+and the shape library uses `@make_shape{...}` to construct branded shapes.
+
+`@R` overrides any previous IDENTITY field in `R`.
+
+In some cases, I want to define `name = @{a=A; b=B; ...c}`.
+I am mixing definitions and field generators in the same record literal.
+I need the definitions so that those fields are given an IDENTITY.
+I need the `...` operator for ad-hoc inheritance.
+In old TODO lists, this extension is called "mixed a=/a: record literals".
+* The semantics are: first, execute the definitions and perform IDENTITY
+  assignment. Then, execute the record as a sequence of field generators,
+  with definitions acting as field generators.
+* Do I need this as a language extension, or can I just write the same code
+  in long form? To do the latter, I need variable abstraction over @{...}.
+  So then I can write:
+    name = {...M, ...c}
+    where M = @{a=A; b=B};
+  And this means, I give up on constraining the contexts where the @ operator
+  can be used within a definiens or function body: instead of only being legal
+  in tail contexts, it can be used anywhere, and it's up the user to use this
+  power wisely.
+* With an unrestricted @ operator, plus the ability to forge IDENTITY values,
+  you have full expressive power over the identity of your abstract values,
+  and you can design an API around abstract value identities exactly as it needs
+  to be.
+* What about function abstraction over @{...}?
+  * Maybe f@ calls f with the identity value of the caller's scope.
+
+The `@` operator can be used anywhere within a definiens or function body.
+This permits variable abstraction over @{...}.
+
+The following low-level operations permit functional abstraction over @{...}:
+* f@ calls f with the identity value of the caller's scope.
+* id@@arg takes an identity value `id` as left argument,
+  and a record or function as right argument,
+  and returns a new version of `arg` that has an `IDENTITY: id` field.
+
+Optional feature: mixed a=/a: record literals.
+
+Transparent and opaque definitions
+----------------------------------
+In an earlier design, I supported a distinction between transparent and
+opaque definitions within a module, inspired by transparent and opaque type
+bindings in an SML module. Using a transparent binding, you can define a
+module member to be an alias for another abstract value, which might be
+necessary to preserve equality semantics across modules.
+There is a similar issue with transparent vs opaque functions.
+
+AFAIK the abstract value proposal has this covered. If you don't use
+the `@` operator then you get transparency in most cases: the exception
+is that anonymous functions absorb identity from their scope when it is
+available, but there's no problem with that.
+
+Top level IDENTITY metadata
+---------------------------
+Suppose you import a source file using `file "foo.curv"`. What is its identity?
+If the source file comprises an @X expression or a function literal,
+then the IDENTITY is overwritten with {call:(file,"foo.curv")}.
+Otherwise, the file import is transparent, and no file identity is assigned.
+
+Value Pickers in the Viewer
+---------------------------
+A prime motivation for the abstract value feature is to permit the Viewer
+to obtain sets of value pickers from multiple locations in the CSG tree
+of a shape. Eg, `render opts shape` has two sets of value pickers.
+
+Extract a list of value picker sets from an IDENTITY value `id`:
+getvp id =
+  [
+    if id matches {call:(ctor,arg)} then
+        if defined(ctor.IDENTITY)
+            ...getvp(ctor.IDENTITY));
+        if is_shape arg and defined(arg.IDENTITY) then
+            ...getvp(arg.IDENTITY));
+        else if is_record arg and is_record_pattern(ctor.param)
+            make_picker_set(id));
+    if id matches {dot:(parent,name)} then
+        ...getvp(parent);
+  ]
+
+Note: If a parametric record has parameter names that match all of the fields
+in a shape (dist,colour,bbox,is_2d,is_3d), the parameters will be mistaken
+for a shape.
+
+Parametric Records
+------------------
+`parametric <params> in <record-expression>` is a parametric record.
+
+A parametric record has IDENTITY:{call:(<constructor>,<argument>)}.
+
+The <argument> record must be in canonical form, for the purposes of
+printing and equality. My plan is that the <argument> record contains
+fields for every parameter (an alternate plan would be to suppress all fields
+set to their default values). The <constructor> function is responsible
+for converting its argument to canonical form and storing this canonical
+value in the IDENTITY field of the record it constructs.
+* Record patterns with default field values should convert the argument
+  to canonical form before it is stored in an IDENTITY field.
+* This suggests a motivation for adding the `>>` pattern, for converting
+  an argument to canonical form before it is stored in an IDENTITY field.
+
+The parametric syntax is equivalent to `({<params>} -> @<body>){}`.
+* It will print as `<function>{default-values}`.
+* I could change the printed rep to `parametric{default-values}` by
+  adding `IDENTITY:{std:#parametric}` to the constructor.
+  So the rep becomes:
+    `({std:#parametric}@@{<params>} -> @<body>){}`.
+* Any parametric record with the same argument record will compare equal.
+  But I don't think I need to 'fix' this.
+
+In this variant of the design, parametric records are not prototypes,
+they don't normally have a CALL record, and they aren't normally callable.
+Their reason for existence is to support pickers in the Viewer.
+* In the general case, the Viewer can identify pickers anywhere in a term,
+  eg, a.b{x,y}.c{z,w} could have 4 picker parameters. You generally have no
+  terse syntax for cloning a term with new parameters from anywhere in its body.
+
+Parametric Records are Prototypes
+---------------------------------
+Let's consider a design variant where parametric records are callable
+and have the semantics of prototypes.
+This leads to a lot of complexity, so it's optional.
+
+A parametric record has CALL:<constructor>, so it is a prototype,
+and the `parametric` syntax is sugar for constructing a prototype.
+
+A parametric record can be bound to a term using:
+    Cube = @parametric d :: scale_picker = 2 in box[d,d,d];
+What are the identity semantics?
+What I want, for proper equality, is for Cube to print as
+    M.Cube{d:2}
+and Cube{d:3} prints as
+    M.Cube{d:3}
+and Cube{d:3}{d:4} prints as
+    M.Cube{d:4}
+All Cubes print using the same canonical form.
+
+To get these identity semantics, the `M.Cube` identity must be applied
+to the constructor that is stored both in the CALL field and in the IDENTITY.
+So the `@` operator needs to recognize a prototype. How?
+
+ 1. Enhanced function equality for anonymous functions.
+    Recognize a prototype as a record with IDENTITY:{call:(f,arg)} and CALL:f,
+    where the two 'f's are equal.
+ 
+ 2. Special identity metadata for prototypes.
+    IDENTITY:{prototype:(f,arg)} and CALL:f.
+    The 'f' is stored redundantly: it needs to be in IDENTITY for equality
+    and picker extraction to work, and it needs to be in CALL for call to work.
+
+ 3. Special identity metadata and call semantics for prototypes.
+    IDENTITY:{prototype:(f,arg)}.
+    A record is callable if either it has a CALL field or it is a prototype.
+
+Wait, this is weird. The constructor function has identity M.Cube, which is
+clearly not == the actual M.Cube.
+
+I could avoid a lot of complexity by not implementing prototypes.
+I do not have prototypes right now.
+
+render
+------
+render opts shape =
+    @{
+        ... shape;
+        render:
+            if (defined(shape.render))
+                {...shape.render; ...opts}
+            else
+                opts;
+    };
+
+cube
+----
+To make `cube` return branded shapes, we must first decide what is the
+canonical constructor syntax for various cubes (eg, exact vs mitred).
+
+// cube0 D
+cube0 d = @box.exact(d,d,d);
+
+// cube1.exact D, cube1.mitred D
+cube1 = @{
+    exact d = @box.exact(d,d,d);
+    mitred d = @box.mitred(d,d,d);
+};
+
+// cube2 D is an alias for cube2.exact D.
+// terms: cube2.exact D, cube2.mitred D
+cube2 = @{
+    exact d = @box.exact(d,d,d);
+    mitred d = @box.mitred(d,d,d);
+    CALL = exact;
+    circumratio: sqrt 3,
+};
+
+// In the current design, `cube` is not the same as `cube.exact`,
+// because the former has circumratio, the latter does not. So they can't
+// have the same identity.
+
+current:
+    cube = {
+        ... cube_e 2,
+        call: cube_e,
+        circumratio: sqrt 3,
+        exact: {
+            ... cube_e 2,
+            call: cube_e
+        },
+        mitred: {
+            ... cube_m 2,
+            call: cube_m
+        },
+    }
+    where (
+        cube_m d =
+            let r = d / 2;
+            in make_shape {
+                dist(x,y,z,t) = max(abs(x,y,z) - r);
+                bbox = [[-r, -r, -r], [r,r,r]];
+                is_3d = true;
+            };
+        cube_e d = box.exact(d,d,d);
+    );
+new:
+    cube = *{
+        ... cube_e 2,
+        call: cube_e,
+        circumratio: sqrt 3,
+        exact: {
+            ... cube_e 2,
+            call: cube_e
+        },
+        mitred: {
+            ... cube_m 2,
+            call: cube_m
+        },
+    }
+    where (
+        cube_m d =
+            let r = d / 2;
+            in make_shape {
+                dist(x,y,z,t) = max(abs(x,y,z) - r);
+                bbox = [[-r, -r, -r], [r,r,r]];
+                is_3d = true;
+            };
+        cube_e d = box.exact(d,d,d);
+    );
+
+------------------------------------------------------------------------------
+A module is like a record, except that:
+* It has A-value semantics (for printing and equality)
+  instead of data semantics.
+* A module M can be called like a function: `M x` is interpreted as
+  `M.call x`.
+* You can't use assignment (:=) to modify the fields in a module,
+  because that would cause those fields to become out-of-sync with the
+  identity metadata.
+
+Modules
+-------
+A module is like a record with extra semantics and metadata.
+
+An ordinary record is a simple data structure, a map from symbols to values.
+* {a:1, b:2, ...r} is a record.
+* You can use assignment to modify a field binding or add a new one.
+* The syntax M[#foo] is supported for map indexing?
+* Records are a special case of maps. Map keys need not be symbols.
+  Eg, {1=>#a, 2=>#b}.
+* Records have simple extensional equality.
+  Two records are equal if they have the same field names and field values.
+
+A module is like a record, in that it has field names and values, accessed
+using dot notation. However, modules have additional semantics and metadata.
+
+A module remembers how it was constructed. (This subsumes the Parametric Record,
+Prototype, and Term proposals.)
+
+You can't use assignment (or `...`) to modify the fields in a module
+while preserving its metadata, because now the field values are out of
+sync with the metadata.
+
+Since modules have heavier semantics than records, module literals have a
+heavier syntax. Current proposal is:
+    #{ a = 1; b = 2; }
+Directory syntax: different extensions for record vs module: `foo` vs `foo.m`.
+
+Within a module literal, definitions have extra semantics:
+    name = definiens;
+If the nub of the definiens expression is a function or module literal,
+then the abstract value that results from evaluating definiens is annotated
+with name and parent metadata. The A-value knows its parent module, and knows
+its own name within its parent module. This affects the A-value's printed
+representation, and its equality relation to other values.
+
+There is a second form of definition within module literals:
+    name = ## definiens;
+The `##` operator is the *brand* operator. This works at run time: if the
+right argument is an A-value, then the identity of the A-value is modified
+to contain name/parent metadata, which replaces the prior identity. If the
+argument of `##` is not an A-value, then it is returned without modification.
+
+Fields within a module have optional documentation metadata.
+The syntax might look like this:
+  #{
+    /// help string
+    name = value;
+  }
+
+Functions
+---------
+All function values carry module-like identity metadata,
+which provides module-like term equality and term printing semantics.
+
+Consider a function literal:
+    x -> body
+or a function definition:
+    f x = body
+If the nub of the body expression is a function or module literal,
+then the abstract value that results from evaluating a function call is annotated
+with call metadata. The A-value knows the function used to construct it,
+and the argument that was passed.
+
+There is a second form of function literal or definition:
+    x -> ## body
+    f x = ## body
+As before, the `##` or *brand* operator adds call metadata to the result of
+evaluating `body`, if that result is an A-value.
+
+Piecewise Functions
+-------------------
+`match` expressions are treated as a kind of function literal, in the two
+contexts where we implicitly add identity metadata to anonymous A-value literals
+(implicitly means without using the `##` operator). If the nub of a definition
+within a module literal, or if the nub of a function body, is a match[...]
+expression, then for each element of the list literal passed to match as an
+argument, if the nub is a B-literal, then we implicitly add identity metadata
+to that B-literal.
+
+This rule avoids the need to use `##` explicitly in some common cases.
+
+Wait a minute, this implies an ability to add identity metadata conditionally,
+since some branches of a match call might not be syntactic B-literals.
+
+
+------
+
+Ordinary `name=value` definitions are now called 'transparent' definitions.
+You may wish to use transparent module bindings like
+    fieldname = M
+if M is a module imported from another library, and you don't wish to
+change the identity of M or modify its equality relation.
+
+
+
+Piecewise Constructors
+----------------------
+Two issues:
+ 1. Match doesn't return a constructor.
+ 2. When a piece function is applied after pattern matching,
+    * We want the name/parent metadata that has been applied to the whole
+      function by ::= to be applied to the result.
+    * Do we want the piece function to be stored as CONSTRUCTOR metadata?
+      Or do we want the whole function as CONSTRUCTOR? The latter stores more
+      information, with no loss of generality, since we can recover the piece
+      function by pattern matching the ARGUMENT.
+
+`#{CALL=match[pat1->expr1,pat2->expr2,...]}` addresses both issues.
+
+Better syntax:
+`f ::= a_normal_function` converts the function to a constructor.
+
+`cmatch flist = #{CALL=match flist}`?
+
+Standard Metadata
+-----------------
+Module metadata is represented by fields with uppercase names.
+* CALL in a constructor.
+* Identity metadata comprises two metadata fields called IDENTITY and SOURCE.
+  * IDENTITY is a module-id.
+    The compiler assigns a module-id to each #{...} literal in a program.
+    Each distinct(*) module literal gets a different module-id.
+    This field cannot be overridden.
+  * SOURCE is a variant value, which can be overridden by definitions or
+    field generators in the body of a #{...} literal:
+    * #anonymous is the default value of SOURCE within a module literal.
+    * {field: {name: <symbol>, parent: <identity metadata of parent module>}}
+      A ::= definition replaces the definiens module's SOURCE with the
+      field name and the identity of the parent module. The `parent` field is
+      not the parent module itself, as that would create a cyclic reference.
+    * {call: {constructor: <constructor>, argument: <value>}}
+      If a constructor call returns a module, the returned module has
+      its SOURCE replaced by the constructor and argument of the call.
+    * {std: <symbol>}
+      Used for modules bound to variables in the standard library.
+
+The definition of 'distinctness' for module literals is a work in progress.
+* use sequential ids obtained from a counter
+* use cryptographic hashes
+
+Printing
+--------
+Modules are printed as terms using identity metadata.
+* If SOURCE is #anonymous, print "<module $IDENTITY>".
+* If SOURCE is #field, print the .parent term, then ".", then .name as an
+  identifier.
+* If SOURCE is #call, print .constructor, then space, then .argument.
+* If SOURCE is #std, print the symbol as an identifier.
+
+Identity and Equality
+---------------------
+A key difference between records and modules is that records use
+simple extensional equality, while modules use weird intensional equality.
+* Two records are equal if they have the same name/value pairs.
+* Two modules are equal if they have the same identity metadata.
+
+The reason that modules use weird intensional equality is that modules
+are designed to contain functions, and it's technically impossible to
+define simple extensional equality for function values. So in Curv, if
+you have some data abstraction that contains functions, and you want to
+have a useful equality predicate, then you need to wrap those functions in
+a module and design the module's identity metadata so that it corresponds to
+your notion of equality.
+
+Parametric Modules
+------------------
+    parametric <params> in <module-expression>
+is sugar for
+    #{CALL <params> ::= <module-expression>} {<param-init-values>}
+
+How are pickers extracted from a shape module?
+The shape has an associated term expression, which is linear, and may
+contain multiple function calls. For each function call that has a record
+argument, the constructor value is examined to see if it uses a record pattern,
+and pickers are extracted from that record pattern. This leads to multiple
+groups of pickers, each arising from a different constructor. Each picker
+group is assigned a different label, taken from a constructor. The Viewer
+has a two-level picker hierarchy: first, a list of named picker groups,
+then pickers inside each group.
+
+Use Cases
+---------
+Modules are used to represent instances of abstract data types, in those
+cases where you want to abstract over the representation, and control
+the printed representation and equality.
+
+Shapes are modules.
+
+Libraries must be modules in cases where the library exports named
+modules and constructors.
+
+Packages (in the forthcoming package manager) are modules.
+
+Configuration is just name/value pairs, and is represented by records.
+The proposed `render` variable in the REPL is a configuration record with
+assignable fields, which means it is a record.
+
+Cube
+----
+
+Type predicates and subtype relationships
+-----------------------------------------
+* record is a subtype of dict, where all the keys are symbols.
+  * is_record implies is_dict.
+  * a record can be used in a dict context.
+  * All dict operations work on records: 'keys R', 'R!key', 'defined(R!key)',
+    '...R'
+  * Record has an additional operation: 'R.id'
+* Is there a subtype relation between record and module?
+  * Do all record operations work on modules?
+    * If so, we can't introduce R[#key].
+    * Field assignment doesn't work on modules.
+  * Do all module operations work on records?
+    * Not `M x` as an alias for `M.CALL x`.
+  So maybe not.
+
+------------
+There are two kinds of records with different semantics.
+* A 'map' is a data structure, mapping from symbols to values.
+  {a:1, b:2, ...r} is a map.
+  * You can use assignment to modify a field binding or add a new one.
+  * The syntax M[#foo] is supported for map indexing.
+  * Map keys need not be symbols. Eg, {1=>#a, 2=>#b}.
+* A 'module' is a unit of modularity or data abstraction.
+  * The `call` mechanism applies only to modules.
+  * Modules can have 'term' metadata, can be parametric or prototypes.
+  * You can't use assignment (or `...`) to modify the fields in a module
+    while preserving its metadata, because now the field values are out of
+    sync with the metadata.
+  * Terms can only be defined as members of modules.
+
+Terms change the meaning of equality in Curv. Terms introduce an element of
+nominal, as opposed to purely structural, equality. Terms can only be defined
+as members of modules. This leads to the idea that modules themselves do not
+use pure structural equality, but that each module literal has a unique
+identity. Module identity ensures that terms defined by different packages,
+that accidently have the same name, do not lead to unintended term equalities.
+* This provides a solution to the problem of function equality.
+* Does module identity conflict with referential transparency? If so, maybe
+  restrict modules so that they are always connected to the root module of a
+  package via a term path.
+
+The idea of modules and terms are rooted in the following ideas:
+* Term rewriting systems. A term is a hierarchical expression made of atoms,
+  which are names (symbols/operators and variables).
+* "Equational reasoning is an important component in symbolic algebra,
+  functional and logic programming languages... Reasoning with equations
+  involves deriving consequences of given equations and finding values for
+  variables that satisfy a given equation. Rewriting is a very powerful
+  method for dealing with equations."
+* "A term algebra is a freely generated algebraic structure over a given
+  signature."
+* "Term algebras play a role in the semantics of abstract data types,
+  where an abstract data type declaration provides the signature of
+  a multi-sorted algebraic structure and the term algebra is a concrete model
+  of the abstract declaration."
+* The SML module system, which has 'structures' and 'signatures'.
+
+Rationale
+---------
+Curv is a domain-specific language that has been deliberately kept simple.
+So why include as potentially complex a feature as data abstraction in the
+language? The killer application for this feature is shapes.
+
+General purpose languages have general purpose data abstraction mechanisms
+which tend to be extremely complex. For example, classes and inheritance in
+object-oriented languages, or the Haskell type system. These data abstraction
+mechanisms could be used to maintain a CSG tree within every shape, but the
+resulting code would be bloated by a lot of boilerplate.
+
+By contrast, the A-value feature of Curv is laser focused on minimizing the
+boilerplate required when defining new shape operations. The A-value feature
+is also extremely simple, involving only two new pieces of syntax:
+module literals (`#{...}`) and the branding operator (`##`).

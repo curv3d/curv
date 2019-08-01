@@ -1,0 +1,306 @@
+Modules and Constructors
+------------------------
+Modules and Constructors are the features of Curv that support modularity
+and data abstraction. These are advanced features, aimed at developers who
+want to create reusable library abstractions.
+
+Modules and Constructors are collectively referred to as modules.
+(A constructor is a special kind of module that behaves like a function.)
+
+Modules
+-------
+A module is like a record with extra semantics and metadata.
+
+An ordinary record is a simple data structure, a map from symbols to values.
+* {a:1, b:2, ...r} is a record.
+* You can use assignment to modify a field binding or add a new one.
+* The syntax M[#foo] is supported for map indexing?
+* Records are a special case of maps. Map keys need not be symbols.
+  Eg, {1=>#a, 2=>#b}.
+* Records have simple extensional equality.
+  Two records are equal if they have the same field names and field values.
+
+A module is like a record, in that it has field names and values, accessed
+using dot notation. However, modules have additional semantics and metadata.
+
+A module remembers how it was constructed. (This subsumes the Parametric Record,
+Prototype, and Term proposals.)
+
+You can't use assignment (or `...`) to modify the fields in a module
+while preserving its metadata, because now the field values are out of
+sync with the metadata.
+
+Since modules have heavier semantics than records, module literals have a
+heavier syntax. Current proposal is:
+    #{ a = 1; b = 2; }
+Directory syntax: different extensions for record vs module: `foo` vs `foo.m`.
+
+Within a module literal, there is an 'opaque' definition syntax:
+    fieldname ::= M
+is like 'fieldname=value', except that the module value M is annotated with
+name and parent metadata: the module value knows its parent module, and knows
+its own name within its parent module. The module M is given a new identity
+as a field in the parent module, and this changes its equality relation.
+The old identity of M is obscured, hence the term 'opaque definition'.
+If `M` is a plain function, it is converted to a constructor.
+Otherwise, it is an error if `M` does not evaluate to a module.
+
+Ordinary `name=value` definitions are now called 'transparent' definitions.
+You may wish to use transparent module bindings like
+    fieldname = M
+if M is a module imported from another library, and you don't wish to
+change the identity of M or modify its equality relation.
+
+Possible alternative syntaxes for opaque definitions:
+    new a = b
+    opaque a = b
+
+Fields within a module have optional documentation metadata.
+The syntax might look like this:
+  #{
+    /// help string
+    name = value;
+  }
+
+Functions and Constructors (Design 2)
+-------------------------------------
+Henceforth, all function values will carry module-like identity metadata,
+which will provide module-like term equality and term printing semantics.
+But by default, functions are transparent: unlike constructors, they do not
+automatically add identity metadata to modules that they return.
+The idea is this: within a module literal, a function definition such as
+  f x = body;
+  g x y = body;
+will add identity metadata to f and g. Also, `g x` will have identity metadata.
+But `g x y` just transparently returns <body>. This mimics the existing system
+of function metadata. To define a constructor, you'll instead use:
+  f x ::= body;
+  g x y ::= body;
+There are effectively two kinds of functions, which use different syntax for
+lambda expressions. Everything else is sugar on top of this basic syntax.
+Some syntax alternatives:
+  x -> f x      // function
+  x => f x      // constructor, conflicts with map proposal
+  x #-> f x     // constructor
+  x --> f x     // constructor  like
+  x #> f x      // constructor
+  x ::-> f x    // constructor
+
+Sugar:
+  f x = body    is  f ::= x -> body
+  g x y = body  is  g ::= x --> y -> body
+
+Constructors (Design 1)
+-----------------------
+A constructor is a function with extra semantics and metadata.
+When a constructor is called, and the result happens to be a module,
+the resulting module is given constructor/argument metadata
+(the module remembers how it was constructed).
+If the result isn't a module, the result is returned unchanged.
+This is the core feature of constructors. Ordinary functions don't do this,
+they are "transparent" (they don't annotate their output).
+
+A constructor is a special kind of module that behaves like a function.
+Why are constructors also modules?
+* First, constructors are required to have module metadata. They need to know
+  how they were constructed, so that they can include this metadata in their
+  results.
+* Second, constructors are modules so that they can have an arbitrary
+  set of fields. The `CALL` field is bound to a function, which is called when
+  a constructor is called using function call syntax. Additional fields can be
+  optionally defined to carry application-specific data. This is a secondary
+  feature of constructors: it's useful but I'm not sure it is mandatory.
+  See also: the Python `__CALL__` field and the C++ `operator()` class member.
+
+Since constructors are modules, the most primitive syntax for a constructor
+literal is
+    #{ CALL x = fx; }
+There is a more convenient syntax for named constructor definitions.
+    cons x y ::= body
+is an alias for
+    cons ::= #{CALL x y = body};
+
+I can't think of a use case for transparent function definitions within
+a module literal. The distinction between 'f x = body' and 'f x ::= body'
+becomes a point of confusion: a style guide would say never use the former.
+So maybe we should instead say that
+    cons x y = body
+is an alias for
+    cons ::= #{CALL x y = body};
+within a module literal. It could also be confusing that `=` is being used
+here to create an opaque definition.
+
+Constructors and Functions (Version 2)
+--------------------------------------
+I think we need two related concepts:
+ 1. Functions with identity metadata, which have the term equality and term
+    printing semantics of modules, but which are transparent, without the
+    constructor behaviour.
+ 2. Constructors, which are like (1), but with the addition of constructor
+    behaviour, which adds call identity metadata to the result returned by
+    the function.
+
+*All functions* should carry module-like identity metadata.
+
+Piecewise Constructors
+----------------------
+Two issues:
+ 1. Match doesn't return a constructor.
+ 2. When a piece function is applied after pattern matching,
+    * We want the name/parent metadata that has been applied to the whole
+      function by ::= to be applied to the result.
+    * Do we want the piece function to be stored as CONSTRUCTOR metadata?
+      Or do we want the whole function as CONSTRUCTOR? The latter stores more
+      information, with no loss of generality, since we can recover the piece
+      function by pattern matching the ARGUMENT.
+
+`#{CALL=match[pat1->expr1,pat2->expr2,...]}` addresses both issues.
+
+Better syntax:
+`f ::= a_normal_function` converts the function to a constructor.
+
+`cmatch flist = #{CALL=match flist}`?
+
+Standard Metadata
+-----------------
+Module metadata is represented by fields with uppercase names.
+* CALL in a constructor.
+* Identity metadata comprises two metadata fields called IDENTITY and SOURCE.
+  * IDENTITY is a module-id.
+    The compiler assigns a module-id to each #{...} literal in a program.
+    Each distinct(*) module literal gets a different module-id.
+    This field cannot be overridden.
+  * SOURCE is a variant value, which can be overridden by definitions or
+    field generators in the body of a #{...} literal:
+    * #anonymous is the default value of SOURCE within a module literal.
+    * {field: {name: <symbol>, parent: <identity metadata of parent module>}}
+      A ::= definition replaces the definiens module's SOURCE with the
+      field name and the identity of the parent module. The `parent` field is
+      not the parent module itself, as that would create a cyclic reference.
+    * {call: {constructor: <constructor>, argument: <value>}}
+      If a constructor call returns a module, the returned module has
+      its SOURCE replaced by the constructor and argument of the call.
+    * {std: <symbol>}
+      Used for modules bound to variables in the standard library.
+
+The definition of 'distinctness' for module literals is a work in progress.
+* use sequential ids obtained from a counter
+* use cryptographic hashes
+
+Printing
+--------
+Modules are printed as terms using identity metadata.
+* If SOURCE is #anonymous, print "<module $IDENTITY>".
+* If SOURCE is #field, print the .parent term, then ".", then .name as an
+  identifier.
+* If SOURCE is #call, print .constructor, then space, then .argument.
+* If SOURCE is #std, print the symbol as an identifier.
+
+Identity and Equality
+---------------------
+A key difference between records and modules is that records use
+simple extensional equality, while modules use weird intensional equality.
+* Two records are equal if they have the same name/value pairs.
+* Two modules are equal if they have the same identity metadata.
+
+The reason that modules use weird intensional equality is that modules
+are designed to contain functions, and it's technically impossible to
+define simple extensional equality for function values. So in Curv, if
+you have some data abstraction that contains functions, and you want to
+have a useful equality predicate, then you need to wrap those functions in
+a module and design the module's identity metadata so that it corresponds to
+your notion of equality.
+
+Parametric Modules
+------------------
+    parametric <params> in <module-expression>
+is sugar for
+    #{CALL <params> ::= <module-expression>} {<param-init-values>}
+
+How are pickers extracted from a shape module?
+The shape has an associated term expression, which is linear, and may
+contain multiple function calls. For each function call that has a record
+argument, the constructor value is examined to see if it uses a record pattern,
+and pickers are extracted from that record pattern. This leads to multiple
+groups of pickers, each arising from a different constructor. Each picker
+group is assigned a different label, taken from a constructor. The Viewer
+has a two-level picker hierarchy: first, a list of named picker groups,
+then pickers inside each group.
+
+Use Cases
+---------
+Modules are used to represent instances of abstract data types, in those
+cases where you want to abstract over the representation, and control
+the printed representation and equality.
+
+Shapes are modules.
+
+Libraries must be modules in cases where the library exports named
+modules and constructors.
+
+Packages (in the forthcoming package manager) are modules.
+
+Configuration is just name/value pairs, and is represented by records.
+The proposed `render` variable in the REPL is a configuration record with
+assignable fields, which means it is a record.
+
+Cube
+----
+
+Type predicates and subtype relationships
+-----------------------------------------
+* record is a subtype of dict, where all the keys are symbols.
+  * is_record implies is_dict.
+  * a record can be used in a dict context.
+  * All dict operations work on records: 'keys R', 'R!key', 'defined(R!key)',
+    '...R'
+  * Record has an additional operation: 'R.id'
+* Is there a subtype relation between record and module?
+  * Do all record operations work on modules?
+    * If so, we can't introduce R[#key].
+    * Field assignment doesn't work on modules.
+  * Do all module operations work on records?
+    * Not `M x` as an alias for `M.CALL x`.
+  So maybe not.
+
+------------
+There are two kinds of records with different semantics.
+* A 'map' is a data structure, mapping from symbols to values.
+  {a:1, b:2, ...r} is a map.
+  * You can use assignment to modify a field binding or add a new one.
+  * The syntax M[#foo] is supported for map indexing.
+  * Map keys need not be symbols. Eg, {1=>#a, 2=>#b}.
+* A 'module' is a unit of modularity or data abstraction.
+  * The `call` mechanism applies only to modules.
+  * Modules can have 'term' metadata, can be parametric or prototypes.
+  * You can't use assignment (or `...`) to modify the fields in a module
+    while preserving its metadata, because now the field values are out of
+    sync with the metadata.
+  * Terms can only be defined as members of modules.
+
+Terms change the meaning of equality in Curv. Terms introduce an element of
+nominal, as opposed to purely structural, equality. Terms can only be defined
+as members of modules. This leads to the idea that modules themselves do not
+use pure structural equality, but that each module literal has a unique
+identity. Module identity ensures that terms defined by different packages,
+that accidently have the same name, do not lead to unintended term equalities.
+* This provides a solution to the problem of function equality.
+* Does module identity conflict with referential transparency? If so, maybe
+  restrict modules so that they are always connected to the root module of a
+  package via a term path.
+
+The idea of modules and terms are rooted in the following ideas:
+* Term rewriting systems. A term is a hierarchical expression made of atoms,
+  which are names (symbols/operators and variables).
+* "Equational reasoning is an important component in symbolic algebra,
+  functional and logic programming languages... Reasoning with equations
+  involves deriving consequences of given equations and finding values for
+  variables that satisfy a given equation. Rewriting is a very powerful
+  method for dealing with equations."
+* "A term algebra is a freely generated algebraic structure over a given
+  signature."
+* "Term algebras play a role in the semantics of abstract data types,
+  where an abstract data type declaration provides the signature of
+  a multi-sorted algebraic structure and the term algebra is a concrete model
+  of the abstract declaration."
+* The SML module system, which has 'structures' and 'signatures'.
