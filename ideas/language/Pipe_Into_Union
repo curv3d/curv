@@ -52,6 +52,28 @@ And then you could write either
 or
     a >> into max b
 
+Here's a generalization of `into` which works well with monoid operations:
+    into f list a = f [a, ...list]
+So now you can write
+    a >> into union [s1, s2]
+as a synonym for
+    union [a, s1, s2]
+This has similar action to the Closure `->` operator.
+I think this is now an improvement over using `union` in shape pipelines.
+It seems more intuitive to me, because now the left argument is being inserted
+into the list argument, hence the word "into" is appropriate.
+    cone {d:2, h:3}
+    >> reflect Z_axis
+    >> move (0,0,3)
+    >> into (smooth 1 .union) [ellipsoid (3,3,2.5)]
+    >> into intersection [box {zmin: -1.1}]
+    >> shell .1
+    >> into intersection [box {zmax: 2.9}]
+    >> colour marble
+
+Another benefit of an `into` operator is that a call to `into` could be
+suggested by <tab> completion as a continuation of "shape >> ".
+
 Don't pipe into union
 ---------------------
 Instead of weird syntax or weird combinators, don't use pipelines for union.
