@@ -7,17 +7,14 @@ parametric
     Scale :: scale_picker = 0.7;
 in let
 plasma = make_texture ((x,y,z,t) ->
-    let px = x*Scale; py = y*Scale; pz = z*Scale;
+    let p = [x,y,z]*Scale;
     in do
         for (i in 1..Iter)
-            let oldx = px; oldy = py; oldz = pz; in (
-                px := px + Amp/i*sin(i*oldy + t + 0.3*i) + 1;
-                py := py + Amp/i*sin(i*oldz + t + 0.3*(i+10)) + 1;
-                pz := pz + Amp/i*sin(i*oldx + t + 0.3*(i+20)) + 1;
-            )
-    in sRGB[0.5*sin(px+py)+0.5,
-            0.5*sin(py+pz)+0.5,
-            0.5*sin(pz+px)+0.5]);
+            let f1 = p[[Y,Z,X]]; f2 = [i, i+10, i+20];
+            in p := p + Amp/i*sin(i*f1 + t + 0.3*f2) + 1;
+    in sRGB[0.5*sin(p[X]+p[Y])+0.5,
+            0.5*sin(p[Y]+p[Z])+0.5,
+            0.5*sin(p[Z]+p[X])+0.5]);
 gyroid_bones = gyroid >> offset (-1.2) >> lipschitz 1.5;
 gsphere = smooth 1 .intersection [gyroid_bones, sphere 20];
 in gsphere >> colour plasma
