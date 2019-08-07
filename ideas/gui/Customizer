@@ -148,9 +148,11 @@ How is the Viewer implemented?
     * Supports OpenGL, Metal, Vulkan, DX12.
   * AntTweakBar. Project halted in 2013. Has some nice 3D widgets that I want,
     and don't see replicated elsewhere. No colour wheel picker, unlike ImGui.
-  * github.com/virtun/nuklear. *12,582.
+  * github.com/vurtun/nuklear. *12,582.
     Like ImGui, but no global variables. Boring colour picker.
     Has a node editor demo! (Box & wire visual language editor.) In C.
+    * https://github.com/snuk182/nuklear-rust
+      has bindings for wgpu-rs
   * https://github.com/hugoam/two (renamed from mud, May 2019)
     Provides portable graphics API + portable GUI. Uses BGFX for GPU.
 * Use QT.
