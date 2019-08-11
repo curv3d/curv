@@ -53,7 +53,7 @@ on Ubuntu LTS and MacOS 10.11. Windows 10 with WSL might work, but isn't tested.
 
 Curv uses OpenGL 3.3.
 The recommended configuration is a GPU made by Intel, AMD or Nvidia,
-using the vendor supplied GPU driver.
+using a known working GPU driver (see below).
 
 * On Macintosh, you need MacOS 10.7 or later.
   If your system supports Metal, Curv is fully supported.
@@ -75,26 +75,21 @@ using the vendor supplied GPU driver.
 
 * On Linux, you have 3 choices:
 
-  * Nvidia has the best GPU hardware. I recommend the Nvidia closed source driver.
-    Any GPU supported by the latest Nvidia driver will
-    work with Curv.
+  * An Nvidia GPU, with the Nvidia closed source driver.
+    Any GPU supported by the latest Nvidia driver will work with Curv.
 
     The open source Nouveau driver is slow and buggy. Curv runs too slow,
     with visual glitches. If you don't mind driver hacking, there are some
     mitigations you can try. See `issue #78`_.
 
   * An Intel GPU, using the Intel supplied open source driver (based on Mesa).
-    Intel is your best choice if you want to use a driver that is free software.
     Any GPU supported by the latest Intel driver will work with Curv
     (this means: Intel HD Graphics or later).
 
-  * An AMD GPU. I recommend using the AMDGPU-PRO (closed source) driver,
-    which is only officially supported on Ubuntu LTS, Red Hat EL (not Fedora),
-    and SUSE. 
-
-    `The open source AMD driver has a bug`_ which prevents some Curv programs from running.
-    If you don't mind driver hacking, read the bug report and try some of the mitigations
-    suggested there. You might need to install a new driver version and/or install driver patches.
+  * An AMD GPU with the open source Mesa driver, version 19.x or later.
+    The AMDGPU-PRO (closed source) driver should work, but I have no testing reports for it.
+    
+    Mesa version 18.x or earlier has a bug on AMD (`issue #30`_) which prevents some Curv programs from running.
 
 * If Curv is invoked within a VNC session, then it might not have direct
   access to GPU hardware (a slow software renderer is used instead of the GPU).
@@ -116,4 +111,5 @@ may not be prepared to deal with.
 .. _`TurboVNC`: https://turbovnc.org/About/Introduction
 .. _`VirtualGL`: https://virtualgl.org/About/Introduction
 .. _`issue #78`: https://github.com/curv3d/curv/issues/78
+.. _`issue #30`: https://github.com/curv3d/curv/issues/30
 .. _`The open source AMD driver has a bug`: https://bugs.freedesktop.org/show_bug.cgi?id=105371
