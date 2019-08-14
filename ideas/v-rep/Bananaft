@@ -1,0 +1,127 @@
+@Bananaft (Gregory Ivanov) is building a game "Yedoma Globula"
+in a fractal environment using SDF.
+He has cool tech and infrastructure for this.
+
+Gave a talk at DevGAMM Moscow May 2019:
+"The Amazing New Alternative Rendering Methods"
+How to raymarch distance fields. Why they are cool and what interesting
+effects and solutions they can bring to the game.
+
+SDF debug visualizations:
+https://twitter.com/Bananaft/status/1154695965519097856
+
+1. The game, Yedoma Globula
+https://www.youtube.com/watch?v=tqgML7l8g8E
+
+2. SDF debug mode. Shows the cross-section of a 3d distance function. And a
+single ray-marched ray on it. You can clearly see that it takes much more steps
+if the ray slips close to the surface.
+[SDF visualization on the XY plane, a bit nicer than Curv, + overlaid ray-march
+visualization.]
+pic.twitter.com/6rKe4QdDxg
+
+reply @paniq: great visualization :) all viz are better once bloom ppfx is
+active :D
+* ReShade (https://reshade.me/) automatically injects shaders into a game.
+  Plugin architecture exposes depth and colour to shaders. Use cases are
+  ambient occlusion, real depth of field effects, color correction and more.
+* PPFX is a set of ReShade shaders. Bloom is one.
+  www.mediafire.com/file/8wuszra3alcd1u5/PPFX_for_ReShade_-_1.03.29b.rar/file
+
+reply @paniq: depth complexity is a problem with all ray based techniques. near
+misses slow down the search. it keeps me up at night.
+
+* @bananaft: Hierarchial trace/ cone-marching does a very good job of solving this for me.
+
+* @cupe_cupe: not so much for me. low res pre-passes is useful for suboptimal SDFs where skipping empty space is slow from underestimating. I found it almost useless for correct distances since the expensive silhouette is always only one pixel thin, which is never captured in the pre-pass
+
+* @paniq: hierarchical tracing does a good job of bundling the ray work that is 90% analog for all rays in a region, but only to the first contour. The closer rays are to a contour, the longer they will stay in the game, and depth complexity will eat their iterations.
+
+* @paniq: If @Bananaft has no problem with that, then only because his landscape has few pathological cases. Good: outdoorsy objects with lots of curvature. Not so good: tracing within (con)caves (no ray moves faster than the cave radius). Bad: lots of ray-parallel planes.
+
+* @cupe_cupe: plus, I found that a single pre-pass is best: it doesn't need to be high-res since pixels are traced grouped in 8x4 threads on nv (8x8 on amd), so going finer than that ruins execution coherency. and this low res can be done in a single pass in <0.3ms. so no need for hierarchy :)
+
+@cupe_cupe
+what are outdoorsy objects with lots of curvature? pine trees?
+
+@paniq
+his fractals would qualify. but also stuff like, a bunch of balls or other convex objects just floating about. nothing that globally restricts ray speed.
+
+@paniq
+for planes, affine arithmetic is pretty good (with a higher basic cost for marching). being close to a parallel surface has no effect, it is only sensitive to (possible) changes in first derivative. shadertoy.com/view/4sV3zm
+
+  Fast Reliable Interrogation of Procedurally Defined Implicit Surfaces
+  Using Extended Revised Affine Arithmetic
+  by Fryazinov, Pasko et al, 2010
+
+  Alternative to sphere-tracing that supports algebraic surfaces, etc.
+  "Here we deal with the most general form of procedurally defined implicit
+   surfaces, where the function f is evaluated by some procedure involving all
+   kinds of non-linear functions as well as loops and conditional operations."
+  But, it only works well for C1 continuous distance functions. Conditional
+  operator is discontinuous; this can be fixed only for special cases, and the
+  fix creates a big performance hole. Can't use min/max for union/intersection,
+  must use expensive R-functions.
+
+@paniq
+agreed. when i said hierarchy i was really only thinking of one or two steps or so. i'm also still a fan of upsampling.
+
+@paniq
+i think that an affine method which incorporates the second derivative (i.e. a degree 2 poly with error margin) would be optimal for most shapes, as it can approximate curves and even sharp discontinuities. pic.twitter.com/2fZxioVWdi
+
+@paniq
+unfortunately RAA is not easy to understand at first, but when it clicks, you'll be intrigued.
+
+@paniq
+another idea to deal with depth complexity: split frustum into 2 or more slices along Z, so you can restart big ray bundles at depth intervals. frontmost slices can provide occlusion culling. should particularly help with "sieve"-like structures
+
+@Bananaft
+I think Claybook @SebAaltonen finds several intersections along the ray in low-res pass.
+
+@paniq
+maybe it's possible to even do it in a single pass? simply don't stop your ray bundle until it has been 100% occluded, and dispatch per pixel rays for the z-ranges intersecting your bundle. i dub this the cannonball technique.
+
+@paniq
+hah, just as i was writing this. sounds like @SebAaltonen invented the cannonball technique first :( twitter.com/paniq/status/1…
+
+@Bananaft
+How can I check if it is 100% occluded? If it is deep inside negative space? Most fractals doesn't have deep negative space.
+
+@Bananaft
+24:20 https://www.youtube.com/watch?v=Xpf7Ua3UqOA&t=1458
+[techniques for SDF game rendering]
+
+3. Clip showing how awesome SDF modeling is. Tool is EditSDF.
+[Nice interaction in the video clip, dragging primitives around in a scene.]
+pic.twitter.com/Tb8NWSbjtp
+
+EditSDF is by Stéphane GINIER, author of SculptGL.
+https://twitter.com/stephomi, stephaneginier.com
+https://stephaneginier.com/archive/editSDF/
+Web based; needs a fast GPU; fairly primitive.
+
+4. Clip showing that in raymarching high geometrical complexity is ok as long as
+computational complexity is low. Infinity is trivial (but placing every object
+by hand is expensive). pic.twitter.com/SxfcSoMss5
+[I knew this already.]
+
+5. How to fix poor lipschitz continuity. pic.twitter.com/vxcuDQbpqU
+[He divides the distance estimate by 2. Same as 'shape >> lipschitz 2' in Curv.]
+
+@cupe_cupe
+noooooooo that's not how you fix it, nooooo it hurts!
+[What is the alternative?]
+
+@Bananaft
+hehe. In the talk I've told why it is bad, how it's degrading both quality and performance. But I also actually do it in the very first 1/64 pass. It does not affect performance, and hides rare overstepping artifacts that may appear in otherwise perfect formula.
+[The "1/64 pass" is a prepass, preprocessing each 8x8 square in the viewport.]
+
+6. Physics preview. That's it for now. pic.twitter.com/M2WOtYnYAY
+
+7. Prefiltering. Preventing aliasing, by not resolving details that are smaller than pixel. You'll still have jagged edges, but much less noise in depth and normals. Captured in low resolution. Left - off, right -on. (I'm afraid twitter compression will kill everything) pic.twitter.com/0RTebnjXZM
+
+@Bananaft
+Oh yeah. Almost like no difference at all. But believe me, left part is super noisy, and right is nice and smooth. Fractals are full of tiny geometric details (as you may know 😝), so this trick is very important.
+
+@Bananaft
+1. Calculate pixel size at current ray distance. 2. Use it to stop marching when distance to surface is smaller. 3. Use it for normal calculation offset. Also gives a noticeable performance boost, as you perform fewer steps. pic.twitter.com/5VRqkvdnhH
