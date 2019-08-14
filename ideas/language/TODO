@@ -1,6 +1,13 @@
 # TODO: Language Changes
 
-Recent Ideas (Jan 2018):
+(Aug 2019):
+* Get rid of `where`, just use `let` (simplification)
+* Block local variables with sequential scope. Easier imperative programming.
+* R.f := a, L[i] := b, V[[X,Y]] := vec2
+* Branded values
+* s >> into union [s1, s2]
+
+(Jan 2018):
 * for (<pattern> in <list> while <condition>) ...
   Bounded `while` or early exit `for`. An alternative to a `break` statement,
   useful for `mandelbrot.curv`.

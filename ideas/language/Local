@@ -1,0 +1,101 @@
+Block Local Variables
+=====================
+
+I want to streamline the syntax for imperative programming.
+I don't like this syntax:
+    while (condition)
+        let
+            def1
+        in do
+            stmt1
+        in let
+            def2
+        in
+            stmt2
+
+A 'block' or 'compound statement' is a sequence of statements and sequential
+definitions, which are all executed in sequence.
+
+The question is: what syntax to use for embedding sequential definitions in
+a compound statement.
+
+1. Local Keyword
+----------------
+`local pattern = expression` is a sequential definition that can be embedded
+in a compound statement.
+
+If we consider the `;` operator to be a right associative binary operator,
+then a compound statement is:
+  statements ::=
+    statement |
+    statement ; statements |
+    sequential-definition ; statements
+
+Resulting syntax:
+    while (condition) (
+        local def1;
+        stmt1;
+        local def2;
+        stmt2;
+    )
+
+In what contexts are compound statements used?
+    [ compound-statement ]
+    { compound-statement }
+    Imperative programming:
+      if (condition) (compound-statement)
+      while (condition) (compound-statement)
+      etc...
+
+The weirdest case is record comprehensions. Inside brace brackets,
+a regular definition signals a scoped record constructor.
+The keyword `local` signals that this definition is not defining a field.
+
+Should `local` definitions support recursive and mutually recursive definitions?
+Eg,
+    local def; stmts
+    local (def1; def2; ...); stmts
+is like
+    let def in (stmts)
+    let (def1; def2; ...) in (stmts)
+This shows that the main point of `local` is to get rid of the parentheses
+around (stmts). That's the streamlined syntax I want.
+
+Or should `local` definitions support parallel definitions, like Scheme's `let`?
+
+2. Modified Let
+---------------
+Change the syntax of `let` to support the streamlined syntax I want.
+
+  statements ::=
+    statement |
+    statement ; statements |
+    let definition ; statements |
+    let (definitions) ; statements
+  expression ::=
+    let definition in expression |
+    let (definitions) in expression
+
+Resulting syntax:
+    while (condition) (
+        let def1;
+        stmt1;
+        let def2;
+        stmt2;
+    )
+
+Although it seems economical to reuse the `let` keyword, now we have a kind
+of overloading, and you need to scan forward to find the `;` or `in`
+to determine the scope of the `let` definitions.
+
+3. Plain Definitions
+--------------------
+  statements ::=
+    statement |
+    statement ; statements |
+    definition ; statements
+
+I rejected this syntax during the original design of Curv 0.0 because an
+imperative programmer will mistake `x = 1` for an assignment statement if
+used in a statement context. This syntax is also incompatible with record
+comprehensions (although that's not the most important use case).
