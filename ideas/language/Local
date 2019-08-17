@@ -19,6 +19,18 @@ definitions, which are all executed in sequence.
 The question is: what syntax to use for embedding sequential definitions in
 a compound statement.
 
+0. Modified let/do
+------------------
+    while (condition)
+        let
+            def1
+        do
+            stmt1
+        let
+            def2
+        do
+            stmt2
+
 1. Local Keyword
 ----------------
 `local pattern = expression` is a sequential definition that can be embedded
@@ -62,6 +74,14 @@ This shows that the main point of `local` is to get rid of the parentheses
 around (stmts). That's the streamlined syntax I want.
 
 Or should `local` definitions support parallel definitions, like Scheme's `let`?
+This means that Curv `let` is like Scheme let-rec or ML let rec,
+while the equivalent of Scheme and ML `let` is:
+    do  local (a = 1; b = 2);
+    in expression
+and the equivalent of Scheme's let* is
+    do  local a = 1;
+        local b = a + 1;
+    in expression
 
 2. Modified Let
 ---------------
@@ -84,9 +104,27 @@ Resulting syntax:
         stmt2;
     )
 
+A nice thing about a `let x = 1` statement is that this syntax is found some
+well known languages: Javascript, Rust, Swift.
+
 Although it seems economical to reuse the `let` keyword, now we have a kind
 of overloading, and you need to scan forward to find the `;` or `in`
 to determine the scope of the `let` definitions.
+
+If I change `do` to work the same way, then we have:
+    statement ::= do ( statements... )
+    expression ::= do ( statements... ) in expression
+Right now, the only context where `,` and `;` are both allowed, and they
+have a different meaning, is inside parentheses. I could change that by
+using `do ( statements... )` as the compound statement syntax.
+    while (condition) do (
+        let a = x + y;
+        x := x + a;
+    )
+So now I have two ways to define local variables:
+    let x = 1 in statement
+    do (let x = 1; statement)
+This choice is a bit ugly/overly complex.
 
 3. Plain Definitions
 --------------------

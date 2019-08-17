@@ -99,6 +99,41 @@ Iterated escaping:
     "foo" => #""foo""# => ##"#""foo""#"##
  vs "foo" => "$=foo$=" => "$.=foo$.="
 
+## Alternate Fat String Literals
+As with `#"..."#` strings, the goal is to avoid having to use escape sequences
+in the body of a string, by providing an infinite family of string quotes.
+You choose a string quote that doesn't conflict with the string body.
+
+This syntax is intended to be more readable than the Swift syntax.
+    "foo"
+    ""|foo|""
+    """|foo|"""
+    """"|foo|""""
+    ...
+Within the body of a string, an escape sequence prefix is one of the following:
+    $
+    $$|
+    $$$|
+    $$$$|
+    ...
+
+This works well with multi-line string literals. Eg,
+    ""|first line
+      |second line
+      |last line|""
+
+Iterated escaping:
+    "foo" => ""|"foo"|"" => """|""|"foo"|""|"""
+ vs "foo" => #""foo""# => ##"#""foo""#"##
+ vs "foo" => "$=foo$=" => "$.=foo$.="
+
+Perhaps directional quotes would be more readable.
+    "foo" => ""<"foo">"" => """<""<"foo">"">"""
+
+    ""<first line
+      |second line with $$|foo interpolation
+      |last line>""
+
 ## Indentable Multi-Line String Literals
 It should be possible to indent a multi-line string literal
 without adding the indentation to the string content.

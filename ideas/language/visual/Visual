@@ -1,0 +1,186 @@
+Visual Curv
+===========
+Visual Curv is a dialect of Curv that supports visual programming.
+
+Visual Curv is based on Projectional Editing of source code.
+<https://martinfowler.com/bliki/ProjectionalEditing.html>
+* Curv programs are expressions. The source code for an expression is
+  represented internally as an Abstract Syntax Tree, and then edited using
+  a GUI based "projection" of the AST. These projections are called Editors.
+* An expression is evaluated to construct a value. In general, each Editor
+  will need a corresponding Viewer to display the results of running the program
+  during live coding. In some cases, the Editor and Viewer might be combined
+  into a single UI.
+
+The Visual Curv GUI supports multiple Editors.
+Although some editors are universal (they can edit any expression),
+most editors are domain specific and can only edit some expressions.
+
+Visual Curv supports multiple domain-specific sublanguages (DSLs) for
+specifying specific families of values, together with Editors for these DSLs.
+
+Here are some ideas for DSLs and their editors:
+* A noise editor. Maybe like the FastNoiseSIMD preview app:
+  <https://github.com/Auburns/FastNoiseSIMD>.
+* A fractal editor, like Mandelbulber:
+  <https://sourceforge.net/projects/mandelbulber/>.
+* A colour editor.
+* A 3D scene editor, like TinkerCAD or EditSDF:
+  <stephaneginier.com/archive/editSDF/>.
+* A 2D scene editor, like Inkscape.
+* A spline editor.
+* A grammar based shape generator, like <contextfreeart.org>.
+* An image editor.
+
+A multiplicity of domain-specific languages and editors will help make
+Curv more productive and easier to use. The ability to plug in new DSLs and
+new Editors will enable Curv to evolve to become a universal tool for creating
+any kind of shape or graphical object.
+
+For a simple image editor like MS Paint, the source code is a pixel array.
+In effect, the source code is restricted to being a constant expression.
+Adobe Photoshop supports named layers. This is like a let expression that
+binds each layer to a variable name, and whose body is an expression that
+composites the layers together. There are also procedural image editors that
+record the sequence of image operations that you apply, and let you edit this
+history, so you are in effect writing a program. All of these types of image
+editor can fit in to the Curv projectional editing framework.
+
+Curv expressions are composable. It follows that Editors are composable
+(one kind of editor can be embedded in another editor).
+
+Multiple Tiers, from Easy to Powerful
+-------------------------------------
+Curv is both an easy-to-use end-user programming environment, and it is a
+powerful tool for experts. It achieves these goals with tiered APIs.
+The highest tiers are easiest to use, at the cost of being more constained
+and having fewer degrees of freedom. The lowest tiers are the most powerful,
+by virtue of having the most degrees of freedom.
+
+For example, constructing shapes using high level CSG operations is a high
+level API. User defined functions (and especially recursion and tail recursion)
+is a more advanced feature. Constructing shapes by defining signed distance
+functions happens at the lowest tier.
+
+For ease of use, we associate high-level, constrained APIs with high level,
+constrained, domain-specific editors.
+
+A high level, easy to use editor doesn't just start with a blank page
+that you must fill in from memory. You start with some existing structure
+that is already on the screen: controls (API names, parameters, values)
+are either initially visible, or can be discovered by unfolding other visible
+controls, using direct manipulation.
+
+One example of a high level, constrained, easy-to-use editor is a set of
+value picker widgets for editing the parameters of a parameterized shape.
+
+In at least some cases, starting from a high level editor, you can "drill down"
+or "open the hood" to expose a lower level and more powerful editor.
+In the case of the value picker editor, that would mean opening an editor on
+the `parametric` expression that defines the parametric shape you are editing.
+
+What makes Curv powerful is that it contains a general purpose functional
+language with the usual abstraction mechanisms: variables, functions, data
+structures, etc. Once you have created a shape using a restricted but high
+level editor/DSL, you should always be able to enable the full power of the
+Curv language, and generalize your code using abstraction mechanisms. Eg,
+abstract out numeric constants and turn them into function parameters.
+
+Interactive Animations
+----------------------
+One of the goals of the Curv project is to support simple interactive
+animations. This feature can be similar to what is expressible in SVG
+(which also supports simple interactive animations), or what is expressible
+in ShaderToy. Use cases include interactive art projects, and interactive
+visualizations embedded in documentation (Wikipedia has a few of these).
+
+These interactive animations can be programmed using Curv. They are a great
+way to explore a parameter space of graphical objects, as part of the design
+and coding process. Also, I want Curv to have interactive documentation,
+partly inspired by Book of Shaders.
+
+A running interactive animation is like an editor session. In both cases,
+user interface gestures change the state of a graphical object.
+
+If we treat an interactive animation like an editor session, then we add the
+ability to save the state of an animation as "source code".
+
+Brain Storming and Implementation
+=================================
+Interactive Animations and Editors
+----------------------------------
+In Curv 0.4, interactive animations are represented by values. But Editors
+are used to edit source code. How to bring these ideas together?
+
+ 1. Interactive Animations are Values
+    Or, values can be treated as source code.
+
+    You can write code using variables, functions, loops, etc, to generate an
+    interactive animation value, which will then be treated like source code.
+    But, once you start editing this value, you may lose the ability to map
+    the changes back to the original program that generated the value.
+
+    The Branded Value mechanism can be used. A branded value contains a
+    constructor expression, which can be used as the initial source code.
+
+    If Curv has a weak distinction between values and expressions, then perhaps
+    it should become a term rewrite system (maybe like Mathematica or Pure),
+    where values and expressions are terms, and evaluation is term rewrite.
+
+ 2. Interactive Animations are Expressions
+
+    An interactive animation is expressed in code as an expression,
+    restricted to some DSL whose syntax is a subset of Curv syntax.
+    This guarantees that you can edit the expression (run the animation and
+    interact with it), then save changes back to the original source location.
+
+Parameterized Shapes
+--------------------
+How do parameterized shapes fit in to this framework? There is editing
+(when you tweak sliders), but parameterized shapes are values, not expressions.
+
+* You ought to be able to save a modified parameterized shape as source code.
+  Sebastien is planning such a feature for Curved.
+* A Branded Value contains a constructor expression, which is a kind of source
+  code. We could save the constructor expression and the argument record as
+  source code.
+* Curv has the idea of tiered APIs: easiest to use at the highest level,
+  more powerful and with more degrees of freedom at the lower levels.
+  If you open a parameterized shape in the GUI, then you initially get a
+  high level editing interface with only a few degrees of freedom: you can
+  modify parameters using value pickers. You can save multiple instances of
+  a parameterized shape, with different parameterizations. Then, you can
+  further open up one of these parameterized shapes, and edit the underlying
+  source code.
+
+Tagged Expressions
+------------------
+Expressions (and subexpressions) need to be able to be tagged to specify
+which editors they can be edited with.
+
+Ideas
+-----
+The future of language design is a set of compatible DSLs that can be
+composed together within the same framework. That was a key idea behind
+"the Unix philosophy", and like Racket's "language oriented programming".
+
+An Editor is used to edit an expression. For expressive power, you should be
+able to use abstraction mechanisms: name abstraction, function abstraction.
+
+To "launch an app", you clone an existing expression. Then you edit the
+expression (eg by tweaking sliders). The source code can be saved in a file.
+
+In the current design, a parameterized shape is a value.
+The Branded Value proposal will support generalized parameterized values with
+multiple picker sets. A library function like `render` can take a parameterized
+shape as an argument, and return another parameterized shape with an additional
+picker set. How does this align with the doctrine that apps edit expressions?
+
+A Branded Value contains a constructor expression, which is a kind of source
+code.
+
+In the PC world, apps edit data structures. Source is represented as text files,
+which are data structures, that are externally interpreted as source.
+
+In Visual Curv, source code is represented by a abstract syntax tree, which
+does not need to be serialized as text, other representations are available.

@@ -150,6 +150,7 @@ How is the Viewer implemented?
     and don't see replicated elsewhere. No colour wheel picker, unlike ImGui.
   * github.com/vurtun/nuklear. *12,582.
     Like ImGui, but no global variables. Boring colour picker.
+    Very small code, low memory overhead.
     Has a node editor demo! (Box & wire visual language editor.) In C.
     * https://github.com/snuk182/nuklear-rust
       has bindings for wgpu-rs

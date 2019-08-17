@@ -13,7 +13,7 @@ Redesigned Rendering Parameters:
       white light or coloured?
     * Ambient. This should just be a single value.
   * open source, F-Rep/SDF, universal shading model, preferably PBM:
-    * mTec (PBM), FragM?, ...
+    * mTec (PBM, 1 light source), FragM?, Mandelbulber, ...
 * tracing
 
 Symbols:
