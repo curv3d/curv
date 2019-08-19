@@ -148,7 +148,7 @@ Programs
 There are two kinds of programs.
 A source file is always interpreted as an expression.
 A command line (in the ``curv`` command line interpreter)
-can be an expression, an action, or a definition.
+can be an expression, a statement, or a definition.
 
 Phrase Abstraction
 ------------------
