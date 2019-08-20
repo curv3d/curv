@@ -1,0 +1,26 @@
+Types of collaboration:
+
+1. Publish your code. Other people (who you may not know) can discover your
+code, reuse it, remix it.
+
+Centralized version: github public repository. Decentralized version: IPFS,
+plus a discovery mechanism.
+
+2. Share your code with members of your team (but don't share it outside your
+team).
+
+Centralized version: github private repository. Less centralized version: Run
+your own git server, with authentication and a user account for each team
+member. Decentralized version: Each team member has their own git repository,
+shares patches with other team members.
+
+3. Real time collaboration. Several people editing the same code base at the
+same time.
+
+Centralized: The true version of the code exists on a central server.
+Decentralized: Each person has their own copy of the code, and a peer to peer
+protocol keeps them in sync.
+
+4. Collaborative live coding. Several people editing the same code base while
+the program is running. Or, in a video/music performance, outputs of one live
+coding session are taken as inputs to another live coding session, in real time.
