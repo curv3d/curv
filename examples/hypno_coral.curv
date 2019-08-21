@@ -4,15 +4,17 @@ parametric
     Iter :: int_slider(0,50) = 10;
     Amp :: slider(0,3) = 0.6;
     Scale :: scale_picker = 0.7;
-    Morph :: slider(0,1) = 1;
+    Morph :: slider(0,1) = 0.75;
+    Speed :: slider(0,4) = 1;
 in let
-plasma = make_texture ((x,y,z,t) ->
+plasma3D = make_texture ([x,y,z,t] ->
     let p = [x,y,z]*Scale;
+        pt = t*Speed;
     in do
         for (i in 1..Iter)
-            let prot = p[[Y,Z,X]]; phase = [0, tau/3, tau*(2/3)];
-            in p := p + Amp/i*sin(i*prot + t + phase) + 1;
-    in sRGB(0.5*sin(p*3)+0.5));
+            p := p + Amp/i*sin(i*p[[Y,Z,X]] + pt + [0,tau/3,tau*(2/3)]) + 1;
+    in  sRGB(0.5*sin(p*pi)+0.5));
+envelope = sphere 20;
 gyroid_bones = gyroid >> offset (-1.2) >> lipschitz 1.5;
-gsphere = smooth 1 .intersection [gyroid_bones, sphere 20];
-in morph Morph (sphere 20,gsphere) >> colour plasma
+gsphere = smooth 1 .intersection [gyroid_bones, envelope];
+in morph Morph [envelope, gsphere] >> colour plasma3D
