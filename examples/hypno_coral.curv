@@ -1,20 +1,18 @@
-// 3D plasma.
-// Inspired by: http://glslsandbox.com/e#8067.3
+// A 3D version of Liquid Paint.
 
 parametric
-    Iter :: int_slider(1,50) = 25;
-    Amp :: slider(0,2) = 0.6;
+    Iter :: int_slider(0,50) = 10;
+    Amp :: slider(0,3) = 0.6;
     Scale :: scale_picker = 0.7;
+    Morph :: slider(0,1) = 1;
 in let
 plasma = make_texture ((x,y,z,t) ->
     let p = [x,y,z]*Scale;
     in do
         for (i in 1..Iter)
-            let f1 = p[[Y,Z,X]]; f2 = [i, i+10, i+20];
-            in p := p + Amp/i*sin(i*f1 + t + 0.3*f2) + 1;
-    in sRGB[0.5*sin(p[X]+p[Y])+0.5,
-            0.5*sin(p[Y]+p[Z])+0.5,
-            0.5*sin(p[Z]+p[X])+0.5]);
+            let prot = p[[Y,Z,X]]; phase = [0, tau/3, tau*(2/3)];
+            in p := p + Amp/i*sin(i*prot + t + phase) + 1;
+    in sRGB(0.5*sin(p*3)+0.5));
 gyroid_bones = gyroid >> offset (-1.2) >> lipschitz 1.5;
 gsphere = smooth 1 .intersection [gyroid_bones, sphere 20];
-in gsphere >> colour plasma
+in morph Morph (sphere 20,gsphere) >> colour plasma
