@@ -6,18 +6,29 @@ Visual Curv is based on Projectional Editing of source code.
 <https://martinfowler.com/bliki/ProjectionalEditing.html>
 * Curv programs are expressions. The source code for an expression is
   represented internally as an Abstract Syntax Tree, and then edited using
-  a GUI based "projection" of the AST. These projections are called Editors.
+  a GUI based "projection" of the AST. This GUI is called an Editor.
 * An expression is evaluated to construct a value. In general, each Editor
   will need a corresponding Viewer to display the results of running the program
   during live coding. In some cases, the Editor and Viewer might be combined
   into a single UI.
 
 The Visual Curv GUI supports multiple Editors.
-Although some editors are universal (they can edit any expression),
-most editors are domain specific and can only edit some expressions.
+* Although some editors are universal (they can edit any expression),
+  most editors are domain specific and can only edit some expressions.
+* Some editors are *code editors*, which means they can edit expressions
+  containing non-constant free variables. All of the universal editors
+  are code editors.
+* Most editors are *value editors*, which means that they are restricted
+  to editing constant expressions. For example, a colour editor, if it
+  always displays a colour swatch for the colour you are editing,
+  is necessarily a value editor.
 
-Visual Curv supports multiple domain-specific sublanguages (DSLs) for
-specifying specific families of values, together with Editors for these DSLs.
+The set of expressions that can be edited by a domain specific editor
+is called a Domain Specific Language (DSL). A DSL will have an associated
+grammar that generates all of the expressions that the editor is capable
+of editing. For example, a simple RGB colour editor might be restricted to
+expressions like `sRGB[r,g,b]`, where the subexpressions `r`, `g` and `b`
+are literal constants.
 
 Here are some ideas for DSLs and their editors:
 * A noise editor. Maybe like the FastNoiseSIMD preview app:
@@ -74,10 +85,11 @@ controls, using direct manipulation.
 One example of a high level, constrained, easy-to-use editor is a set of
 value picker widgets for editing the parameters of a parameterized shape.
 
-In at least some cases, starting from a high level editor, you can "drill down"
+Starting from a high level editor, you can "drill down"
 or "open the hood" to expose a lower level and more powerful editor.
-In the case of the value picker editor, that would mean opening an editor on
-the `parametric` expression that defines the parametric shape you are editing.
+In the case of an editor that displays a shape and a set of value pickers,
+that would mean opening a code editor on the `parametric` expression that
+defines the parametric shape you are editing.
 
 What makes Curv powerful is that it contains a general purpose functional
 language with the usual abstraction mechanisms: variables, functions, data
@@ -104,83 +116,3 @@ user interface gestures change the state of a graphical object.
 
 If we treat an interactive animation like an editor session, then we add the
 ability to save the state of an animation as "source code".
-
-Brain Storming and Implementation
-=================================
-Interactive Animations and Editors
-----------------------------------
-In Curv 0.4, interactive animations are represented by values. But Editors
-are used to edit source code. How to bring these ideas together?
-
- 1. Interactive Animations are Values
-    Or, values can be treated as source code.
-
-    You can write code using variables, functions, loops, etc, to generate an
-    interactive animation value, which will then be treated like source code.
-    But, once you start editing this value, you may lose the ability to map
-    the changes back to the original program that generated the value.
-
-    The Branded Value mechanism can be used. A branded value contains a
-    constructor expression, which can be used as the initial source code.
-
-    If Curv has a weak distinction between values and expressions, then perhaps
-    it should become a term rewrite system (maybe like Mathematica or Pure),
-    where values and expressions are terms, and evaluation is term rewrite.
-
- 2. Interactive Animations are Expressions
-
-    An interactive animation is expressed in code as an expression,
-    restricted to some DSL whose syntax is a subset of Curv syntax.
-    This guarantees that you can edit the expression (run the animation and
-    interact with it), then save changes back to the original source location.
-
-Parameterized Shapes
---------------------
-How do parameterized shapes fit in to this framework? There is editing
-(when you tweak sliders), but parameterized shapes are values, not expressions.
-
-* You ought to be able to save a modified parameterized shape as source code.
-  Sebastien is planning such a feature for Curved.
-* A Branded Value contains a constructor expression, which is a kind of source
-  code. We could save the constructor expression and the argument record as
-  source code.
-* Curv has the idea of tiered APIs: easiest to use at the highest level,
-  more powerful and with more degrees of freedom at the lower levels.
-  If you open a parameterized shape in the GUI, then you initially get a
-  high level editing interface with only a few degrees of freedom: you can
-  modify parameters using value pickers. You can save multiple instances of
-  a parameterized shape, with different parameterizations. Then, you can
-  further open up one of these parameterized shapes, and edit the underlying
-  source code.
-
-Tagged Expressions
-------------------
-Expressions (and subexpressions) need to be able to be tagged to specify
-which editors they can be edited with.
-
-Ideas
------
-The future of language design is a set of compatible DSLs that can be
-composed together within the same framework. That was a key idea behind
-"the Unix philosophy", and like Racket's "language oriented programming".
-
-An Editor is used to edit an expression. For expressive power, you should be
-able to use abstraction mechanisms: name abstraction, function abstraction.
-
-To "launch an app", you clone an existing expression. Then you edit the
-expression (eg by tweaking sliders). The source code can be saved in a file.
-
-In the current design, a parameterized shape is a value.
-The Branded Value proposal will support generalized parameterized values with
-multiple picker sets. A library function like `render` can take a parameterized
-shape as an argument, and return another parameterized shape with an additional
-picker set. How does this align with the doctrine that apps edit expressions?
-
-A Branded Value contains a constructor expression, which is a kind of source
-code.
-
-In the PC world, apps edit data structures. Source is represented as text files,
-which are data structures, that are externally interpreted as source.
-
-In Visual Curv, source code is represented by a abstract syntax tree, which
-does not need to be serialized as text, other representations are available.
