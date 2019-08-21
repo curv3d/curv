@@ -4,18 +4,22 @@
 // https://www.youtube.com/watch?v=mCAozt4BkMM at 32:30
 // -- based on Lissajous curves.
 
-parametric Iter :: int_slider(1,50) = 50; Amp :: slider(0,2) = 0.6 in
+parametric
+    Iter :: int_slider(0,50) = 50;
+    Amp :: slider(0,3) = 0.6;
+in
 make_shape {
     colour (x,y,z,t) =
         let px = x; py = y;
         in do
             for (i in 1..Iter)
                 let oldx = px; oldy = py; in (
-                    px := px + Amp/i*sin(i*oldy + t + 0.3*i) + 1;
-                    py := py + Amp/i*sin(i*oldx + t + 0.3*(i+10)) + 1;
+                    px := px + Amp/i*sin(i*oldy + t) + 1;
+                    py := py + Amp/i*sin(i*oldx + t + pi) + 1;
                 )
         in sRGB[0.5*sin(3.0*px)+0.5,0.5*sin(3.0*py)+0.5,sin(px+py)];
     dist p = -inf;
     bbox = [[-1,-1,0],[1,1,0]];
     is_2d = true;
+    //render = { aa = 4 };
 }
