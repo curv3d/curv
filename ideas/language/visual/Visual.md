@@ -37,10 +37,10 @@ Here are some ideas for DSLs and their editors:
   <https://sourceforge.net/projects/mandelbulber/>.
 * A colour editor.
 * A 3D scene editor, like TinkerCAD or EditSDF:
-  <stephaneginier.com/archive/editSDF/>.
+  <https://stephaneginier.com/archive/editSDF/>.
 * A 2D scene editor, like Inkscape.
 * A spline editor.
-* A grammar based shape generator, like <contextfreeart.org>.
+* A grammar based shape generator, like <https://contextfreeart.org>.
 * An image editor.
 
 A multiplicity of domain-specific languages and editors will help make
