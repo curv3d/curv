@@ -133,7 +133,25 @@ This choice is a bit ugly/overly complex.
     statement ; statements |
     definition ; statements
 
-I rejected this syntax during the original design of Curv 0.0 because an
-imperative programmer will mistake `x = 1` for an assignment statement if
-used in a statement context. This syntax is also incompatible with record
-comprehensions (although that's not the most important use case).
+This has multiple problems. First, it is ambigous, and conflicts with
+the current grammar, where (definition1;definition2) is a compound definition,
+and (definition1;definition2;action) is also a compound definition, not a
+compound statement.
+
+If we introduce a special syntax for compound statements, such as
+   do (statement1; statement2; ...)
+and restrict this interpretation of definitions to the context
+   do (statements)
+and
+   do (statements) in phrase
+then it could work.
+
+Right now, the syntax for compound statements and the syntax for list and
+record comprehensions are orthogonal to each other. So we have
+    statement ::= statement1; statement2; ...
+    expr ::= [ statement ]
+    expr ::= { statement }
+But, this proposal breaks that orthogonality.
+
+Another problem is that an imperative programmer will mistake `x = 1` for an
+assignment statement if used in a statement context.
