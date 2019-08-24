@@ -1,3 +1,35 @@
+WebGPU transition plan.
+
+On the desktop, use the Dawn library. This provides a platform independent
+GPU API, in C, with Vulkan, Metal, DX12 and OpenGL on the back end.
+Dawn also provides a client/server protocol for accessing the GPU from
+inside a sandbox, which addresses a number of problems that users encounter
+trying to run Curv on Linux. Google also has a compact GLSL to SPIR-V
+translator, so I will continue to use GLSL with WebGPU.
+* Get 'hello triangle' running in WebGPU.
+* Create a Dawn binding for ImGui. Maybe use the experimental 'docking'
+  branch which supports multiple OS windows? Get an ImGUI example running.
+* Port Curv to Dawn. No new features.
+
+At this point, I'm using WebGPU on the desktop, but I'm using GLSL, and
+Curved is free to use WebGL. Curved won't break unless I use GLSL features
+not supported by WebGL.
+
+What new capabilities do I gain at this point? I can do anything that WebGL2
+does, even on the Mac, since I'll now be using Metal on the Mac. (But, I'm not
+sure if this gets me anything more than OpenGL 3.3.) Also, I'll have that
+client/server protocol for sandboxed Linux apps.
+
+Then, migrate Curved to WebGPU. Use Google's 138K WASM/JS package for
+translating GLSL to the WebGPU shader language.
+
+Then start using non-WebGL features like compute shaders.
+
+At this point, I should work on other things until WebGPU becomes available
+on browsers, or MacOS removes OpenGL, or I'm forced to switch to Dawn for
+other reasons.
+
+----------------
 Right now, Curv uses OpenGL. I am thinking about transitioning to WebGPU,
 once it is ready, since that offers more performance and power than I can
 get from OpenGL, plus it is a safe and easy to use API. I am particularly

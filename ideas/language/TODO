@@ -1,29 +1,25 @@
 # TODO: Language Changes
 
-(Aug 2019):
-* Get rid of `where`, just use `let` (simplification)
-* Block local variables with sequential scope. Easier imperative programming.
-* R.f := a, L[i] := b, V[[X,Y]] := vec2
-* Branded values
+High:
+* `local x = 2`: Block local variables with sequential scope.
+* L[i] := b, V[[X,Y]] := vec2
 * s >> into union [s1, s2]
+* Multipart function definitions, allows recursive piecewise functions,
+  which are wanted for lib.noise. OR: `match` is a keyword, see Match.
+* Picker predicates: implement the complete set
 
-(Jan 2018):
+Medium:
+* Get rid of `where`, just use `let` (simplification)
+* Branded values?
 * for (<pattern> in <list> while <condition>) ...
   Bounded `while` or early exit `for`. An alternative to a `break` statement,
   useful for `mandelbrot.curv`.
-* Multipart function definitions, allows recursive piecewise functions,
-  which are wanted for lib.noise. OR: `match` is a keyword, see Match.
-* Parametric Records and Terms
-  * If a parametric record is bound to a field, it becomes a term.
-  * Constructor terms, which can construct parametric records.
-* Picker predicates: implement the complete set
 * `== value` is a predicate, and it is an equality pattern.
 * Use _ as digit separator in numerals.
 * any, all
-* v[X] := x; v[[X,Y,Z]] := v3;
-  * `f x := expr` function definition syntax is *not* supported.
+
+Low:
 * mixed a=/a: record literals
-* maybe: >> `intersection` foo  --or--  >> into intersection (foo)
 * Issue #50: unintuitive operator precedence. My proposed solutions:
   * warn about inconsistent white space in expressions, eg: 'f -1' or 'f a.b'
   * Lua-like function call syntax. 'f 1' and 'f a' no longer supported,
@@ -40,7 +36,6 @@ Breaking changes:
 
 Extensions:
 * std
-* a[i] := item, i is an integer
 * compose -- function composition. Short form is 'co'?
   x >> compose[f,g,h] means x>>f>>g>>h ?
   * The function returned by compose reports a pattern match failure if any
@@ -48,7 +43,6 @@ Extensions:
     important for `match` and *cast* patterns.
   * This means that several of the constituent functions are called before a
     pattern match failure is detected. Is that okay?
-* any, all
 * Record constructors may combine definitions and field generators.
   Shorter definitions for shape constructors with .mitred/.exact members.
 
@@ -393,7 +387,7 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
   * Name is consistent with GLSL,HLSL,R,Julia,Python,Matlab.
   * Use some(pred)list, every(pred)list, name consistent with Javascript.
   * Haskell uses "and". Eg, a `any` b  vs  a `and` b
-* ifelse(cond,thenval,elseval)
+* ? ifelse(cond,thenval,elseval), vs if(cond)thenval else elseval
   * The name comes from R. In GLSL 4.5, this is mix(elseval,thenval,cond).
 * Rationale: vectorized boolean ops have different names than unvectorized ones.
   * x==y compares vectors and returns bool, unlike xs=='ys/xs `equal` ys.

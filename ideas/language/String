@@ -106,9 +106,9 @@ You choose a string quote that doesn't conflict with the string body.
 
 This syntax is intended to be more readable than the Swift syntax.
     "foo"
-    ""|foo|""
-    """|foo|"""
-    """"|foo|""""
+    ""[foo]""
+    """[foo]"""
+    """"[foo]""""
     ...
 Within the body of a string, an escape sequence prefix is one of the following:
     $
@@ -118,16 +118,16 @@ Within the body of a string, an escape sequence prefix is one of the following:
     ...
 
 This works well with multi-line string literals. Eg,
-    ""|first line
+    ""[first line
       |second line
-      |last line|""
+      |last line]""
 
 Iterated escaping:
-    "foo" => ""|"foo"|"" => """|""|"foo"|""|"""
+    "foo" => ""["foo"]"" => """[""["foo"]""]"""
  vs "foo" => #""foo""# => ##"#""foo""#"##
  vs "foo" => "$=foo$=" => "$.=foo$.="
 
-Perhaps directional quotes would be more readable.
+Perhaps `<>` is more readable than `[]`:
     "foo" => ""<"foo">"" => """<""<"foo">"">"""
 
     ""<first line
