@@ -19,6 +19,43 @@ definitions, which are all executed in sequence.
 The question is: what syntax to use for embedding sequential definitions in
 a compound statement.
 
+Answer:
+`local pattern = expression` is a local-definition that can be embedded
+in a compound statement, like this:
+
+  statements ::=
+    statement |
+    statement ; statements |
+    local-definition ; statements
+
+The scope of a local-definition begins at the following statement.
+This mimics the semantics of block local definitions in most imperative
+programming languages. It enables idioms like this:
+
+    f (x,y,z,t) =
+        do
+            local t = Speed * t;
+            ...
+        in
+            ...;
+
+where you define a local variable with the same name as a function parameter,
+and define it in terms of the function parameter. You can't do that with `let`,
+and the requirement comes up regularly.
+
+Local definitions can be used in any compound statement, including within
+list and record comprehensions. However, local definitions are forbidden
+within a scoped record constructor. Local definitions cannot be mixed with
+ordinary (recursive) definitions in the same semicolon-list.
+
+This language design is most similar to Scheme. Scheme's `letrec` is the same as
+Curv's `let`. Scheme supports internal definitions within compound statements
+using `define`, as a convenient alternative to `letrec`. Scheme supports
+sequential definitions using `let*`, and the corresponding syntax in Curv is
+`do` combined with local definitions.
+
+Older Ideas
+===========
 0. Modified let/do
 ------------------
     while (condition)
@@ -73,6 +110,11 @@ is like
 This shows that the main point of `local` is to get rid of the parentheses
 around (stmts). That's the streamlined syntax I want.
 
+[I think you should just use `let` if you want a recursive definition. `local`
+should introduce a sequential definition, for consistency with other imperative
+languages, since we are introducing this new syntax specifically to support a
+more natural imperative style.]
+
 Or should `local` definitions support parallel definitions, like Scheme's `let`?
 This means that Curv `let` is like Scheme let-rec or ML let rec,
 while the equivalent of Scheme and ML `let` is:
@@ -82,6 +124,10 @@ and the equivalent of Scheme's let* is
     do  local a = 1;
         local b = a + 1;
     in expression
+
+[Parallel definitions don't seem like a high priority. You can also write
+    local (a,b) = (1,2)
+]
 
 2. Modified Let
 ---------------
@@ -124,7 +170,10 @@ using `do ( statements... )` as the compound statement syntax.
 So now I have two ways to define local variables:
     let x = 1 in statement
     do (let x = 1; statement)
-This choice is a bit ugly/overly complex.
+This choice is a bit ugly/overly complex. F# does something similar with `let`
+and I don't like it there either. Compare:
+    let x = 1 in statement
+    (local x = 1; statement)
 
 3. Plain Definitions
 --------------------
@@ -133,10 +182,12 @@ This choice is a bit ugly/overly complex.
     statement ; statements |
     definition ; statements
 
-This has multiple problems. First, it is ambigous, and conflicts with
-the current grammar, where (definition1;definition2) is a compound definition,
-and (definition1;definition2;action) is also a compound definition, not a
-compound statement.
+This has multiple problems. First, an imperative programmer will mistake
+`x = 1` for an assignment statement if used in a statement context.
+
+Second, it is ambigous, and conflicts with the current grammar, where
+`(defn1;defn2)` is a compound definition, and `(def1;defn2;action)`
+is also a compound definition, not a compound statement.
 
 If we introduce a special syntax for compound statements, such as
    do (statement1; statement2; ...)
@@ -152,6 +203,5 @@ record comprehensions are orthogonal to each other. So we have
     expr ::= [ statement ]
     expr ::= { statement }
 But, this proposal breaks that orthogonality.
-
-Another problem is that an imperative programmer will mistake `x = 1` for an
-assignment statement if used in a statement context.
+Also, it breaks the semantics of `;` in the REPL language, which uses it for
+both compound statements and compound recursive definitions.
