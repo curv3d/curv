@@ -7,5 +7,5 @@ in
 union(rect{xmin:0} >> colour red, rect{xmax:0} >> colour(sRGB(1,1,.8)))
   >> repeat_radial 8
   >> swirl{strength: ss, d: sd}
-  `intersection` circle 8
+  >> into intersection [circle 8]
   >> pancake 2

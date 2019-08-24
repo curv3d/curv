@@ -2,4 +2,4 @@ make_shape {
     dist(x,y,z,_) : sin x * sin y * sin z,
     is_3d : true,
 }
-`intersection` dodecahedron 10
+>> into intersection [dodecahedron 10]

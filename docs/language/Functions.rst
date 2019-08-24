@@ -77,10 +77,36 @@ The data flows from left to right, through a series of transformations.
 Briefly, ``x >> f`` means ``f x``.
 There is also a reverse pipeline operator, ``f<<x``, which is less frequently used.
 
+``into``
+~~~~~~~~
+``into`` is a preposition for writing pipelines.
+
+``a >> into f [b, c]`` means ``f [a, b, c]``.
+
+More generally, ``a >> f list`` means ``f [a, ...list]``.
+
+``into`` is used for interjecting a call to ``union``, ``intersection``
+or ``difference`` into a shape pipeline.
+For example:
+
++--------------------------------+----------------+
+| ::                             | |dodeca-icosa| |
+|                                |                |
+|   dodecahedron                 |                |
+|    >> colour red               |                |
+|    >> into union [icosahedron] |                |
++--------------------------------+----------------+
+
+.. |dodeca-icosa| image:: ../images/dodeca-icosa.png
+
+
 Infixes
 ~~~~~~~
 ``a `f` b`` is an alternate syntax for ``f(a,b)``.
 
+Infixes are a way to extend Curv with more numeric operations
+that are written in infix form, just like the built in numeric operators
+such as ``+`` and ``-``.
 Some functions which look good when used in infix form:
 
 +--------------------------------------+-------------------------------------+
@@ -92,22 +118,6 @@ Some functions which look good when used in infix form:
 +--------------------------------------+-------------------------------------+
 | ``v1 `dot` v2``                      | ``dot(v1,v2)``                      |
 +--------------------------------------+-------------------------------------+
-| ``icosahedron `union` dodecahedron`` | ``union(icosahedron,dodecahedron)`` |
-+--------------------------------------+-------------------------------------+
-
-An infixed function name has the same precedence as the ``>>`` operator,
-and so can be used as a pipeline element:
-
-+------------------------+----------------+
-| ::                     | |dodeca-icosa| |
-|                        |                |
-|   dodecahedron         |                |
-|    >> colour red       |                |
-|    `union` icosahedron |                |
-+------------------------+----------------+
-
-.. |dodeca-icosa| image:: ../images/dodeca-icosa.png
-
 
 Match
 ~~~~~

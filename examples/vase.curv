@@ -1,10 +1,10 @@
 cone{d:2, h:3}
 >> reflect Z_axis
 >> move(0,0,3)
-`smooth 1 .union` ellipsoid(3,3,2.5)
-`intersection` box{zmin: -1.1}
+>> into (smooth 1 .union) [ellipsoid(3,3,2.5)]
+>> into intersection [box{zmin: -1.1}]
 >> shell .1
-`intersection` box{zmax: 2.9}
+>> into intersection [box{zmax: 2.9}]
 //>> colour (sRGB.HSV(.5,.5,.9))
 >> colour marble
 

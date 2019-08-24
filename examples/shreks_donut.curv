@@ -7,6 +7,6 @@ gyroid
 >> shell .75 >> lipschitz 2
 >> set_bbox [[-tau*5, -inf, -inf], [tau*6, 0, inf]]
 >> bend {d:0}
-`smooth .375 .intersection` torus {major: A, minor: B}
+>> into (smooth .375 .intersection) [torus {major: A, minor: B}]
 >> colour (sRGB.HSV (1/3, 1, .65))
 >> scale 2 // nice size for 3D printing

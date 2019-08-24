@@ -75,6 +75,8 @@ contains (list, x) =
             i := i + 1;
     in i < count list;
 
+into f rest first = f [first, ...rest];
+
 merge rs = {for (r in rs) ...r};
 
 ensure pred expr = do assert(pred expr) in expr;

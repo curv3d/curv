@@ -13,7 +13,7 @@ Redesigned Rendering Parameters:
       white light or coloured?
     * Ambient. This should just be a single value.
   * open source, F-Rep/SDF, universal shading model, preferably PBM:
-    * mTec (PBM, 1 light source), FragM?, Mandelbulber, ...
+    * mTec (PBM, 1 light source, GL4.3), FragM?, ...
 * tracing
 
 Symbols:
@@ -252,7 +252,6 @@ Intensity Fields:
 
 Language:
 * Packages
-* >> `intersection` foo
 
 # Release 0.1: "Mesh Export"
 

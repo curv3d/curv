@@ -10,7 +10,7 @@ menger n =
                 square(2/(3^(i+1))) >> extrude inf >> repeat_xy(2/(3^i),2/(3^i))
         ];
     in cube
-       `difference` cutout
-       `difference` reflect_yz cutout
-       `difference` reflect_xz cutout;
+       >> into difference [cutout]
+       >> into difference [reflect_yz cutout]
+       >> into difference [reflect_xz cutout];
 )

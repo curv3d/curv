@@ -3,7 +3,6 @@
 High:
 * `local x = 2`: Block local variables with sequential scope.
 * L[i] := b, V[[X,Y]] := vec2
-* s >> into union [s1, s2]
 * Multipart function definitions, allows recursive piecewise functions,
   which are wanted for lib.noise. OR: `match` is a keyword, see Match.
 * Picker predicates: implement the complete set
@@ -626,6 +625,10 @@ as a case in a simulated switch.
 
 This can't be extended to the arithmetic operators, since (+a) and (-a) already
 have a different meaning. Sections of the boolean ops && and || aren't useful.
+
+August 2019: 'into f [x]' is equivalent to the proposed (`f` x).
+`into` is my new solution to providing a more uniform syntax for shape
+pipelines.
 
 ## Indentation As Syntax
 The main problem that "indentation as syntax" solves is the redundancy between

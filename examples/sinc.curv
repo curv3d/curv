@@ -9,5 +9,5 @@ make_shape {
   is_3d = true;
 }
 >> lipschitz 5
-`intersection` box(40,40,40)
+>> into intersection [box(40,40,40)]
 //>> slice_xz >> show_dist
