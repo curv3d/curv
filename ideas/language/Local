@@ -19,7 +19,50 @@ definitions, which are all executed in sequence.
 The question is: what syntax to use for embedding sequential definitions in
 a compound statement.
 
-Answer:
+Current Design
+--------------
+A local definition has the syntax
+    local <definition>
+For example,
+    local x = 1
+    local include "foo.curv"
+
+Local definitions are used as items in compound statements.
+A local definition introduces local bindings whose scope begins at the
+next statement (following `;`) and extends to the end of the semicolon-list.
+
+Local definitions can be used in any purely sequential compound statement.
+For example,
+* Within a parenthesized compound statement, the scope of local bindings
+  ends at the closing `)`. This mimics the semantics of brace-enclosed
+  compound statements in C-like languages. For example,
+    while (condition) (
+        local def1;
+        stmt1;
+        local def2;
+        stmt2;
+    )
+* Within a compound statement in the REPL dialect:
+    local x = 1; print x
+  prints `1`, but does not create a global binding for `x`.
+* Within a `do` clause. Local bindings are not visible in the body of
+  a `do` phrase, after the `in`.
+* Within a list or record comprehension.
+
+Local definitions cannot be mixed with recursive definitions in the
+same semicolon-list. So they can't appear in a `let` clause or in a scoped
+record constructor.
+
+Local definitions are not standalone phrases with an independent meaning.
+They can't be parenthesized. They are part of the syntax of ;-lists.
+
+In the REPL dialect, a standalone local definition is an error.
+It must be followed by '; <statement>'.
+    ERROR: a local definition must be followed by '; <statement>'
+You get this same error if you try to parenthesize a local definition.
+
+Previous Design
+---------------
 `local pattern = expression` is a local-definition that can be embedded
 in a compound statement, like this:
 
@@ -53,6 +96,52 @@ Curv's `let`. Scheme supports internal definitions within compound statements
 using `define`, as a convenient alternative to `letrec`. Scheme supports
 sequential definitions using `let*`, and the corresponding syntax in Curv is
 `do` combined with local definitions.
+
+Details and Implementation
+--------------------------
+In Curv 0.4, you can parenthesize any meaningful phrase without changing its
+meaning. Recursive definitions like (x=1) can be parenthesized. There are
+compound recursive definitions like (x=1;y=2) that can be parenthesized, and
+phrase like this is also a definition.
+
+Is a local definition a phrase with a bottom up meaning? Can it be
+parenthesized? Are there compound local definitions?
+
+There are two contexts where local definitions can be used.
+ 1. A `do` clause is analogous to a `let` clause: the bindings are visible
+    in the body.
+     * `do local x = 1 in x` works. This `do` clause only contains a local
+       definition, no statements.
+     * `do local x = 1; local y=2 in x+y` works. Here we have a semicolon
+       list where the last item is a local definition.
+ 2. Outside of a do clause, a semicolon list containing local definitions
+    is a compound action. If such a semicolon list is parenthesized, then
+    the local bindings are confined inside the parentheses. It works like
+    a C `{...}` braced compound statement. The effect of the parentheses is
+    quite different from a parenthesized compound recursive definition.
+
+In the REPL, `x=1; print x` defines `x` globally.
+By contrast, `local x=1; print x` does not define `x`.
+
+It would be more consistent if local definitions do not escape a `do`
+clause: they are not visible in the body. You can use `let` if you
+want the latter behaviour. Note, this provides a forcing function
+concerning how you use let vs how you use local.
+
+    let f = 0;
+    in do
+        local p = rot(x,y,z);
+        f := f + 0.5000*noise(p); p := p*2.32;
+        f := f + 0.2500*noise(p); p := p*3.03;
+        f := f + 0.0625*noise(p);
+    in f/0.9375;
+
+    let p = [x,y,z]*Scale;
+    in do
+        local t = t*Speed;
+        for (i in 1..Iter)
+            p := p + Amp/i*sin(i*p[[Y,Z,X]] + t + [0,tau/3,tau*(2/3)]) + 1;
+    in  sRGB(0.5*sin(p*pi)+0.5));
 
 Older Ideas
 ===========
