@@ -63,6 +63,7 @@ struct Token
             k_in,
             k_include,
             k_let,
+            k_local,
             k_parametric,
             k_var,
             k_where,
