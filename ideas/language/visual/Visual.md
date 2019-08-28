@@ -2,6 +2,51 @@ Visual Curv
 ===========
 Visual Curv is a dialect of Curv that supports visual programming.
 
+Graphical Values
+----------------
+In Classic Curv, there are 6 fundamental data types (symbol, number, string,
+list, record and function), and all values are made from these types.
+All values have a textual presentation. There are 6 such representations,
+correponding to the 6 types: #foo, 42, "foo", [], {}, <function>.
+
+In Visual Curv, we want to go beyond the textual presentations of values.
+There will be a large repertoire of values that have a graphical, rather
+than a textual, presentation when they are displayed:
+* shapes
+* 2D images (loaded from a PNG file, or procedurally generated)
+* 3D voxel grids (loaded from a file, or procedurally generated)
+* colours
+* colour maps
+* intensity maps
+* colour fields
+* materials (for physically based rendering of 3D graphics)
+
+In Classic Curv, a colour is represented by an RGB triple: [r,g,b].
+Colours are represented by the same type used to represent 3D points and 3D
+vectors.
+
+In Visual Curv, we want a colour to be presented as a colour swatch,
+because that is a higher level, more user friendly presentation.
+For example, in the REPL, if you type `red` and hit enter, you will see
+a red colour swatch, instead of just the vector `[1,0,0]`.
+If you display a list of colours, you will see a list of colour swatches.
+
+From the user's perspective, "Colour" is now an abstract data type, disinct
+from a 3 element vector. This means: you must call a constructor function
+to construct a colour, (you can't just use a `[...]` list or `{...}` record
+literal), and when you print or display the value, you will see a high level
+graphical presentation, not just a list or record literal.
+
+So Visual Curv now has a collection of abstract data types with graphical
+presentations. The actual, internal representation of these "abstract data
+types" is still to be decided.
+
+Perhaps there is some mechanism for "plugging in" new graphical value types,
+using a "plugin" that is either Curv code, or a binary Shared Object
+/ DLL / WASM module, or a module written in some other programming language.
+
+Graphical Editors
+-----------------
 Visual Curv is based on Projectional Editing of source code.
 <https://martinfowler.com/bliki/ProjectionalEditing.html>
 * Curv programs are expressions. The source code for an expression is
@@ -104,7 +149,8 @@ One of the goals of the Curv project is to support simple interactive
 animations. This feature can be similar to what is expressible in SVG
 (which also supports simple interactive animations), or what is expressible
 in ShaderToy. Use cases include interactive art projects, and interactive
-visualizations embedded in documentation (Wikipedia has a few of these).
+visualizations embedded in documentation (Wikipedia has a few of these,
+or see Explorable Explanations).
 
 These interactive animations can be programmed using Curv. They are a great
 way to explore a parameter space of graphical objects, as part of the design
@@ -116,3 +162,17 @@ user interface gestures change the state of a graphical object.
 
 If we treat an interactive animation like an editor session, then we add the
 ability to save the state of an animation as "source code".
+
+Commentary / Literate Programming
+---------------------------------
+In Classic Curv, comments are restricted to ASCII text, and they are equivalent
+to white space (they do not appear in the grammar or in the syntax tree).
+
+In Visual Curv, commentary is part of the syntax of the language. Comments
+appear in the abstract syntax tree, so they can be viewed and edited by
+a projectional code editor.
+
+Also, Visual Curv comments are not restricted to being presented as fixed
+width ASCII. Instead, we support structured text, perhaps equivalent to
+Markdown. Plus, you can embed graphical values in commentary, including
+images, and interactive animations written in Curv.
