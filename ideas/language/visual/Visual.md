@@ -7,7 +7,7 @@ Graphical Values
 In Classic Curv, there are 6 fundamental data types (symbol, number, string,
 list, record and function), and all values are made from these types.
 All values have a textual presentation. There are 6 such representations,
-correponding to the 6 types: #foo, 42, "foo", [], {}, <function>.
+correponding to the 6 types: `#foo`, `42`, `"foo"`, `[]`, `{}`, `<function>`.
 
 In Visual Curv, we want to go beyond the textual presentations of values.
 There will be a large repertoire of values that have a graphical, rather
