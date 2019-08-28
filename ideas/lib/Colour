@@ -1,0 +1,111 @@
+Colour Representation
+---------------------
+Colours have an alpha component, to support Stratasys J750 3D printing.
+
+Colour values should print as colour swatches.
+I can do this on a terminal that supports 24 bit colour text (see: Pastel)
+ * Pastel checks the COLORTERM environment variable.
+ * gnome-terminal does not define COLORTERM because "COLORTERM is a long
+   obsolete slang-only variable used to work around broken termcap/terminfo
+   entries.": https://bugzilla.redhat.com/show_bug.cgi?id=1173688
+* Since ncurses-6.0-20180121, terminfo began to support the 24-bit True Color
+  capability under the name of "RGB". You need to use the "setaf" and "setab"
+  commands to set the foreground and background respectively.
+  https://gist.github.com/XVilka/8346728
+
+Abstract Colour Values
+----------------------
+A Colour is no longer a Vec3, it has additional structure to make it graphical.
+Either we use the strategy of shapes, and define a colour to be an ordinary
+record with a well known field pattern:
+    {linRGBA: [r,g,b,a]}
+or Colour is an abstract type:
+ * Using magic field names, some naming convention for representing instances
+   of abstract types;
+ * Using new language mechanisms for constructing instances of abstract types;
+ * Using a new built-in abstract Colour type.
+
+The user should call a constructor function to create a colour:
+    sRGB(vec3) -> colour
+    linRGB(vec3) -> colour
+    ...etc
+
+There are operations to extract the data as a vector.
+It would be nice to access either the sRGB or the linRGB representation.
+A function interface obviously works.
+    get_sRGB(colour)
+    get_linRGB(colour)
+
+Dot notation looks nicer:
+    colour.sRGB
+    colour.linRGB
+This works best if Colour is an abstract type.
+Currently, records are heavier than lists, and there is a per-instance cost
+for each field. That could be addressed: we could support fields whose
+values are computed each time they are referenced. Basically, decouple the
+state that represents a record from its fields. In SubCurv, we need to
+represent a Colour as a Vec4. Either the SC compiler handles Colours as a
+special case, or there is an abstract module facility that decouples state
+from interface.
+
+There is a predicate: is_colour(red) == #true
+
+How is a Colour value printed, when it is printed as an expression?
+* If Colours are records, "$orange" == "{linRGBA:[1,0.217637640824031,0,1]}"
+* If Colour is an abstract type, "$orange" == "sRGBA[1,0.5,0,1]".
+* Either of these representations could be followed by a colour swatch
+  on an RGB terminal.
+
+We will get a nicer interface if Colour is an abstract data type.
+
+------------
+If colours are abstract, with state decoupled from interface, then there
+are two colour "types": the concrete type, associated with a specific
+internal representation (the state), and the abstract type (any value that
+matches the interface). So, potentially two predicates.
+
+Do we need or want concrete colour types, as predicates?
+We certainly need concrete colour types internally.
+* SubCurv needs the shape colour function to return a specific concrete colour
+  type.
+* An image is a matrix of colours, but for efficiency we need a uniform matrix
+  of 8 bit RGB or RGBA.
+
+If I expose multiple concrete colour types, then do I also support a high
+level concept of colour equality that works across colour types?
+* I'm not happy with this, it sounds complicated.
+* It's better if only a single colour type is exposed to the user.
+  Eg, images use RGBA8 internally but the native image type converts to
+  the Colour type when pixels are queried or set.
+* All of the colour types must belong to a lattice, with the most general
+  colour type at Top. When comparing two colours of different type, they are
+  first implicitly converted to a common type higher up the lattice.
+
+To what degree do I want to Curv to support data abstraction?
+* Abstract modules are printed as constructor expressions.
+* State is decoupled from the field interface.
+* There is an is_colour predicate.
+  * It only recognizes Colours created using branded Colour constructors.
+
+At one extreme, a colour is a vec3, and you need some gesture like
+show_colour to view it graphically. This makes the language simple.
+At the other extreme, all the data abstraction features I listed above.
+
+Once the high level interface is established, the internals matter less.
+How are colours represented internally? How are graphical values recognized?
+ * The Viewer has a list of record patterns that it matches against,
+   to recognize graphical values. {rgba: [r,g,b,a]}
+   This is the simplest design, nothing fancier is needed right now.
+ * Named record types (eg, like Scheme, Julia). Record value has a type tag.
+   * Branded Values
+ * Graphical values have a 'viewer' field, which for now is a symbol.
+   {colour: [r,g,b,a], viewer: #colour}
+ * Some notion of tagged lists, so that Colour is a subtype of Vec3.
+   We still need a special constructor.
+   Vector arithmetic will destroy the tagging, so the constructor will need
+   to be reapplied after arithmetic. Using col.rgba makes the loss of tagging
+   more explicit, so maybe this is a better API?
+
+Colour Operations
+-----------------
+See Pastel: https://github.com/sharkdp/pastel

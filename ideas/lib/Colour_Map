@@ -1,0 +1,18 @@
+Colour Map Library
+==================
+Representation
+--------------
+Viewing a colour map should result in graphical output.
+This could be done on a terminal with 24 bit colour.
+
+Library of colour map constructors
+----------------------------------
+Google's "turbo" colour map.
+https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html
+https://gist.github.com/mikhailov-work/0d177465a8151eb6ede1768d51d476c7
+colourmap lookup table:
+https://gist.github.com/mikhailov-work/ee72ba4191942acecc03fe6da94fc73f
+
+A library of useful colour maps (for data visualization),
+with GLSL procedural code:
+https://github.com/kbinani/colormap-shaders
