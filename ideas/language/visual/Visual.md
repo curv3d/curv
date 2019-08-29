@@ -176,3 +176,15 @@ Also, Visual Curv comments are not restricted to being presented as fixed
 width ASCII. Instead, we support structured text, perhaps equivalent to
 Markdown. Plus, you can embed graphical values in commentary, including
 images, and interactive animations written in Curv.
+
+File Format
+-----------
+The file format for Curv source code doesn't change much.
+It's still a human readable and editable, text based programming language
+syntax. We aren't switching to XML or binary. I want Curv source files to
+continue to be compatible with old fashioned text editors and text based
+programming practices.
+
+Obviously the syntax for comments will change a lot. We will use a human
+friendly text syntax for structured text. My choice is Pandoc Markdown, with
+an extension for embedding graphical values as Curv constant expressions.
