@@ -1,3 +1,6 @@
+// A topologist is a mathematician who doesn't know the difference
+// between a coffee mug and a doughnut.
+
 parametric
     Morph :: slider(0,1) = 0;
 in let
