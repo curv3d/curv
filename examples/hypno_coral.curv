@@ -18,7 +18,6 @@ plasma3D = make_texture ([x,y,z,t] ->
         for (i in 1..Iter)
             p := p + Amp/i*sin(i*p[[Y,Z,X]] + pt + [0,tau/3,tau*(2/3)]) + 1;
     in  sRGB(0.5*sin(p*pi)+0.5));
-envelope = sphere 20;
-gyroid_bones = gyroid >> offset (Offset) >> lipschitz 1.5;
-gsphere = smooth Smooth .intersection [gyroid_bones, envelope];
+gyre = gyroid >> offset (Offset) >> lipschitz 1.5;
+gsphere = smooth Smooth .intersection [gyre, sphere 20];
 in gsphere >> colour plasma3D >> scale 2
