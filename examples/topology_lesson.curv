@@ -5,8 +5,9 @@ body = cylinder{d:.75, h:1} >> move[-0.375,0,0];
 handle = torus {minor: .1, major: .65} >> rotate {angle: 90*deg, axis: X_axis};
 mug = union [body, handle]
   >> colour (lib.web_colour.antique_white);
+chocolate = webRGB(123, 63, 0); // en.wikipedia.org/wiki/Chocolate_(color)
 donut = torus {minor: .3, major: .65}
   >> rotate {angle: 90*deg, axis: X_axis}
-  >> colour (lib.web_colour.chocolate);
+  >> colour (chocolate);
 in
 morph Morph [mug, donut]
