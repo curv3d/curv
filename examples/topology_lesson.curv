@@ -1,13 +1,20 @@
 parametric
     Morph :: slider(0,1) = 0;
 in let
-body = cylinder{d:.75, h:1} >> move[-0.375,0,0];
+wall_thickness = 0.075;
+solid_body = cylinder{d:.75, h:1} >> move[-0.375,0,0];
+cutout = cylinder{d:.75-wall_thickness, h:2}
+          >> move[-0.375,0,wall_thickness + .5];
 handle = torus {minor: .1, major: .65} >> rotate {angle: 90*deg, axis: X_axis};
-mug = union [body, handle]
+solid_mug = union [solid_body, handle]
   >> colour (lib.web_colour.antique_white);
 chocolate = webRGB(123, 63, 0); // en.wikipedia.org/wiki/Chocolate_(color)
 doughnut = torus {minor: .3, major: .65}
   >> rotate {angle: 90*deg, axis: X_axis}
   >> colour (chocolate);
 in
-morph Morph [mug, doughnut]
+difference [
+    morph Morph [solid_mug, doughnut],
+    morph Morph [cutout >> move[0,0,Morph*2], doughnut]
+]
+>> lipschitz 1.5
