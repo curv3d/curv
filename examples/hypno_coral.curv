@@ -1,11 +1,15 @@
 // A 3D version of Liquid Paint.
+// try: Iter=2, Amp=3
+// Inspired by: http://glslsandbox.com/e#8067.3
+// for 3D printing: curv -Ovsize=.15 -Ojit -o hypno_coral.{x3d,curv}
 
 parametric
     Iter :: int_slider(0,50) = 10;
     Amp :: slider(0,3) = 0.6;
     Scale :: scale_picker = 0.7;
-    Morph :: slider(0,1) = 0.75;
     Speed :: slider(0,4) = 1;
+    Offset :: slider(-1.5, 2) = 0;
+    Smooth :: slider(0,5) = 3.2;
 in let
 plasma3D = make_texture ([x,y,z,t] ->
     let p = [x,y,z]*Scale;
@@ -15,6 +19,6 @@ plasma3D = make_texture ([x,y,z,t] ->
             p := p + Amp/i*sin(i*p[[Y,Z,X]] + pt + [0,tau/3,tau*(2/3)]) + 1;
     in  sRGB(0.5*sin(p*pi)+0.5));
 envelope = sphere 20;
-gyroid_bones = gyroid >> offset (-1.2) >> lipschitz 1.5;
-gsphere = smooth 1 .intersection [gyroid_bones, envelope];
-in morph Morph [envelope, gsphere] >> colour plasma3D
+gyroid_bones = gyroid >> offset (Offset) >> lipschitz 1.5;
+gsphere = smooth Smooth .intersection [gyroid_bones, envelope];
+in gsphere >> colour plasma3D >> scale 2
