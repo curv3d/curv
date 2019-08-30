@@ -315,6 +315,9 @@ Unary_Phrase::analyse(Environ& env, unsigned) const
     case Token::k_include:
     case Token::k_var:
         throw Exception(At_Token(op_, *this, env), "syntax error");
+    case Token::k_local:
+        throw Exception(At_Phrase(*this, env),
+            "a local definition must be followed by '; <statement>'");
     default:
         die("Unary_Phrase::analyse: bad operator token type");
     }
@@ -381,7 +384,7 @@ analyse_assoc(Environ& env,
         return make<Assoc>(share(src), Symbol_Expr{string_expr}, right_expr);
     }
 
-    throw Exception(At_Phrase(left,  env), "invalid definiendum");
+    throw Exception(At_Phrase(left, env), "invalid definiendum");
 }
 
 /// In the grammar, a <list> phrase is zero or more constituent phrases
@@ -746,12 +749,40 @@ Sequential_Definition_Phrase::as_definition(Environ& env)
         Definition::k_sequential);
 }
 
+// Analyse one item in a compound statement, which could be either a
+// statement or a local definition.
+Shared<Operation>
+analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
+{
+    auto unary = cast<const Unary_Phrase>(stmt);
+    if (unary != nullptr) {
+        if (unary->op_.kind_ == Token::k_local) {
+            // Local definitions are part of the syntax of compound statements:
+            // they don't have a standalone meaning, and that's why
+            // the analysis of local definitions is inline coded here.
+            // TODO: support 'local include expr'.
+            auto defn = cast<const Recursive_Definition_Phrase>(unary->arg_);
+            if (defn == nullptr) {
+                throw Exception(At_Phrase(*stmt, scope),
+                    "syntax error in local definition (missing =)");
+            }
+            auto expr = analyse_op(*defn->right_, scope, edepth);
+            auto pat = make_pattern(*defn->left_, false, scope, 0);
+            pat->analyse(scope);
+            return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
+        }
+    }
+    return analyse_op(*stmt, scope, edepth);
+}
+
 Shared<Meaning>
 Semicolon_Phrase::analyse(Environ& env, unsigned edepth) const
 {
+    Scope scope(env);
     Shared<Compound_Op> compound = Compound_Op::make(args_.size(), share(*this));
     for (size_t i = 0; i < args_.size(); ++i)
-        compound->at(i) = analyse_op(*args_[i].expr_, env, edepth);
+        compound->at(i) = analyse_stmt(args_[i].expr_, scope, edepth+1);
+    env.frame_maxslots_ = scope.frame_maxslots_;
     return compound;
 }
 

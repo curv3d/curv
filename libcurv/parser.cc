@@ -236,6 +236,7 @@ is_ritem_end_token(Token::Kind k)
 // ritem : pipeline
 //  | ... ritem
 //  | 'include' ritem
+//  | 'local' ritem
 //  | pipeline = ritem
 //  | pipeline := ritem
 //  | pipeline :
@@ -256,6 +257,7 @@ parse_ritem(Scanner& scanner)
     switch (tok.kind_) {
     case Token::k_ellipsis:
     case Token::k_include:
+    case Token::k_local:
         return make<Unary_Phrase>(tok, parse_ritem(scanner));
     case Token::k_if:
       {

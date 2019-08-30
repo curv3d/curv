@@ -487,5 +487,16 @@ assert( let r=file "dir" in do r.n:=0 in r == {n:0,d:{b:#true}} );
 assert( let r=file "dir" in do r.d:=0 in r == {n:42,d:0} );
 assert( let r=file "dir" in do r.d.b:=0 in r == {n:42,d:{b:0}} );
 
+// local definitions
+let x = 0; in
+(
+    local x = x + 1;
+    assert(x == 1);
+);
+assert(
+    [local x=0; while(x<3)(x;x:=x+1);]
+    == [0,1,2]
+);
+
 // script return value:
 in null
