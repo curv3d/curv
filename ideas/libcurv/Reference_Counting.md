@@ -1,3 +1,22 @@
+https://arxiv.org/pdf/1908.05647.pdf
+Counting Immutable Beans
+Reference Counting Optimized for Purely Functional Programming
+    Most functional languages rely on some kind of garbage collection for
+    automatic memory management. They usually eschew reference counting in favor
+    of a tracing garbage collector, which has less bookkeeping overhead at
+    runtime. On the other hand, having an exact reference count of each value
+    can enable optimizations such as destructive updates. We explore these
+    optimization opportunities in the context of an eager, purely functional
+    programming language. We propose a new mechanism for efficiently reclaiming
+    memory used by nonshared values, reducing stress on the global memory
+    allocator. We describe an approach for minimizing the number of reference
+    counts updates using borrowed references and a heuristic for automatically
+    inferring borrow annotations. We implemented all these techniques in a new
+    compiler for an eager and purely functional programming language with
+    support for multi-threading. Our preliminary experimental results
+    demonstrate our approach is competitive and often outperforms
+    state-of-the-art compilers.
+---
 "A Unified Theory of Garbage Collection"
 * http://www.cs.virginia.edu/~cs415/reading/bacon-garbage.pdf
 * Tracing and reference counting GC are duals of each other, in their simple
