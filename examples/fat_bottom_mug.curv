@@ -1,0 +1,24 @@
+parametric
+    Morph :: slider(0,1) = 0;
+in let
+wall_thickness = 0.075;
+diam = 0.75;
+height = 1;
+handle =
+    torus {minor: .1, major: .65}
+    >> rotate {angle: 90*deg, axis: X_axis}
+    >> move [diam/2, 0, 0];
+cutout =
+    cylinder {d: (diam - wall_thickness), h: 2*height};
+body =
+    cylinder {d: diam, h: height}
+    >> into union [handle]
+    >> into difference [cutout];
+base =
+    cylinder {d: diam, h: wall_thickness}
+    >> move[0,0,-(height-wall_thickness)/2];
+mug =
+    smooth (Morph) .union [body, base]
+    >> colour (lib.web_colour.antique_white);
+in
+mug
