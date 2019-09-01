@@ -181,6 +181,12 @@ struct Binary_Phrase : public Phrase
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
 };
 
+struct Local_Phrase : public Unary_Phrase
+{
+    using Unary_Phrase::Unary_Phrase;
+    virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
+};
+
 struct Dot_Phrase : public Binary_Phrase
 {
     using Binary_Phrase::Binary_Phrase;

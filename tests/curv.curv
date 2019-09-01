@@ -497,6 +497,10 @@ assert(
     [local x=0; while(x<3)(x;x:=x+1);]
     == [0,1,2]
 );
+assert_error("a local definition must be followed by '; <statement>'",
+    local x = 1);
+assert_error("local definitions can't be mixed with recursive definitions",
+    let local x = 1; y = 2 in y);
 
 // script return value:
 in null

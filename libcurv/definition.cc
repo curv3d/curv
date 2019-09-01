@@ -194,6 +194,10 @@ void
 Recursive_Scope::analyse()
 {
     for (auto a : action_phrases_) {
+        if (isa<const Local_Phrase>(a)) {
+            throw Exception(At_Phrase(*a, *this),
+                "local definitions can't be mixed with recursive definitions");
+        }
         auto op = analyse_op(*a, *this);
         executable_.actions_.push_back(op);
     }

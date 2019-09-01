@@ -257,8 +257,9 @@ parse_ritem(Scanner& scanner)
     switch (tok.kind_) {
     case Token::k_ellipsis:
     case Token::k_include:
-    case Token::k_local:
         return make<Unary_Phrase>(tok, parse_ritem(scanner));
+    case Token::k_local:
+        return make<Local_Phrase>(tok, parse_ritem(scanner));
     case Token::k_if:
       {
         auto condition = parse_primary(scanner, "condition following 'if'");

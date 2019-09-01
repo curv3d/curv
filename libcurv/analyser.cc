@@ -315,13 +315,18 @@ Unary_Phrase::analyse(Environ& env, unsigned) const
     case Token::k_include:
     case Token::k_var:
         throw Exception(At_Token(op_, *this, env), "syntax error");
-    case Token::k_local:
-        throw Exception(At_Phrase(*this, env),
-            "a local definition must be followed by '; <statement>'");
     default:
         die("Unary_Phrase::analyse: bad operator token type");
     }
 }
+
+Shared<Meaning>
+Local_Phrase::analyse(Environ& env, unsigned) const
+{
+    throw Exception(At_Phrase(*this, env),
+        "a local definition must be followed by '; <statement>'");
+}
+
 Shared<Definition>
 Unary_Phrase::as_definition(Environ& env)
 {
@@ -754,23 +759,21 @@ Sequential_Definition_Phrase::as_definition(Environ& env)
 Shared<Operation>
 analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
 {
-    auto unary = cast<const Unary_Phrase>(stmt);
-    if (unary != nullptr) {
-        if (unary->op_.kind_ == Token::k_local) {
-            // Local definitions are part of the syntax of compound statements:
-            // they don't have a standalone meaning, and that's why
-            // the analysis of local definitions is inline coded here.
-            // TODO: support 'local include expr'.
-            auto defn = cast<const Recursive_Definition_Phrase>(unary->arg_);
-            if (defn == nullptr) {
-                throw Exception(At_Phrase(*stmt, scope),
-                    "syntax error in local definition (missing =)");
-            }
-            auto expr = analyse_op(*defn->right_, scope, edepth);
-            auto pat = make_pattern(*defn->left_, false, scope, 0);
-            pat->analyse(scope);
-            return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
+    auto local = cast<const Local_Phrase>(stmt);
+    if (local != nullptr) {
+        // Local definitions are part of the syntax of compound statements:
+        // they don't have a standalone meaning, and that's why
+        // the analysis of local definitions is inline coded here.
+        // TODO: support 'local include expr'.
+        auto defn = cast<const Recursive_Definition_Phrase>(local->arg_);
+        if (defn == nullptr) {
+            throw Exception(At_Phrase(*stmt, scope),
+                "syntax error in local definition (missing =)");
         }
+        auto expr = analyse_op(*defn->right_, scope, edepth);
+        auto pat = make_pattern(*defn->left_, false, scope, 0);
+        pat->analyse(scope);
+        return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
     }
     return analyse_op(*stmt, scope, edepth);
 }
