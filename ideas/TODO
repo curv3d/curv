@@ -26,6 +26,10 @@ Structures:
 * 'symbol-expr => expr' as a field generator
 * numeral patterns (positive, negative, infinite)
 
+Mesh export:
+* fix bug: treat Curv units as millimeters when generating X3D format.
+* add support for full colour WRL format.
+
 v0.5 Planning
 -------------
 * fix Intel GPU bug. v0.4.1

@@ -185,6 +185,14 @@ syntax. We aren't switching to XML or binary. I want Curv source files to
 continue to be compatible with old fashioned text editors and text based
 programming practices.
 
-Obviously the syntax for comments will change a lot. We will use a human
-friendly text syntax for structured text. My choice is Pandoc Markdown, with
-an extension for embedding graphical values as Curv constant expressions.
+The syntax for comments will change. We now need to represent structured text.
+So let's use Markdown.
+
+CML (Curv Markup Language) is Pandoc Markdown, with extensions for embedding
+Curv code, and for embedding graphical values as Curv constant expressions.
+
+I would like to redo the Curv documentation in the style of The Book of Shaders,
+with embedded Curv examples that you can modify, and with embedded interactive
+animations (Explorable Explanations). This documentation will be written in CML.
+
+CML is also the syntax for the text of comments in `*.curv` files.
