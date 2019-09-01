@@ -1,5 +1,8 @@
-// wanted: generic code for building a geodesic sphere
-// "geode" is the French word for "geodesic sphere".
+Wanted: Generic code for building a geodesic sphere.
+"geode" is the French word for "geodesic sphere".
+
+"Geodesic tiling" by tdhooper:
+https://www.shadertoy.com/view/llVXRd
 
 // http://en.wikipedia.org/wiki/Geodesic_dome
 
