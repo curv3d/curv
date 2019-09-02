@@ -1,0 +1,96 @@
+Large unions are expensive. Fix this.
+
+Consider this Curv program:
+```
+    let num=20;
+    in
+    union [
+      for (i in 0 ..< num)
+        circle 4
+        >> translate [10,0,0]
+        >> revolve
+        >> stretch [0.7, 1, 1]
+        >> rotate {angle: i*90*deg, axis: Y_axis}
+        >> translate [40,0,0]
+        >> rotate {angle: i*(tau/num), axis: Z_axis}
+    ]
+```
+It is a union of 20 toruses. It is very expensive to run in Curv 0.4.
+The dist function is 3145 lines of GLSL, the colour function is 33919 lines!
+The colour function is 10x larger because of this code in `union`:
+```
+    dist p : min(s1.dist p, s2.dist p),
+    colour p :
+        let d1 = s1.dist p;
+            d2 = s2.dist p;
+        in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p,
+```
+
+In general, what are the strategies for compiling/representing large unions,
+like the one shown above?
+
+ 1. Current design:
+    The for loop is evaluated by the interpreter, giving a list of shapes.
+    The dist function of union(list) is the minimum of each list element's
+    dist function. That's an O(N) computation. All the dist functions in the
+    list are separately inline expanded into the shader, even if (in the above
+    case) they are the same code differing only by a numeric parameter.
+
+    So we have massive code bloat. An optimizer could remove the code bloat.
+    It would be faster if we could avoid generating massive code in the first
+    place. Also, this approach does not permit `num` to be a parametric
+    parameter.
+
+ #. Change union.colour to reduce code size:
+        colour p :
+            if (func_equiv(s1.colour, s2.colour))
+                s1.colour
+            else
+                let d1 = s1.dist p;
+                    d2 = s2.dist p;
+                in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p,
+    `func_equiv` returns true if Curv can prove that the two functions
+    are equivalent, otherwise it is false. The definition of "equivalent"
+    is unstable, it changes as the compiler improves. This instability is
+    why we don't put this into the `==` operator.
+
+ 2. What if the `for (i in 0 ..< num)` loop happens in GLSL?
+    For the dist function, this would vastly reduce code size, and allow
+    the `num` variable to be parametric.
+
+    Lazy evaluation of list comprehensions. `union` returns a shape whose
+    dist function contains a lazy map over a lazy list, which compiles into
+    a GLSL for loop. It's still O(N). Could be faster if much smaller code
+    eliminates register spills.
+
+    How does the union.colour function work?
+    * How do I optimize for the case where all the shapes have the same colour?
+    * How can we share code between the colour and dist function in the case
+      where the colours are not all the same?
+
+ 3. The shapes are placed into a BVH, based on their bounding box.
+    The dist function uses a O(log N) tree search instead of an O(N) traversal.
+    Or we do tile based rendering/beam optimization, and construct a list of
+    shapes that intersect each tile.
+
+     *. Instead of making distinct shader code for each subshape, each item
+        in the BVH contains the value of `num`, and a single dist function
+        converts `num` to a dist in the shader. This is a VDS.
+ 
+ 4. The scene has radial symmetry. Use that to construct a cheaper dist func.
+    How about a `radial_union` function?
+        radial_union {
+            n: number of pie slices on XY plane,
+            f: (i,angle)->shape,
+            overlap = 0 //# of overlapping neighbours within a pie slice
+        }
+    How do we know if this is 2D or 3D? (There are SubCurv restrictions on the
+    function: it must statically return a shape record with constant values
+    for is_2d and is_3d.)
+
+I think this boils down to 3 alternatives, possibly with different APIs:
+* Atomic union: The union is an atomic shape: it's O(N), but the `for` loop in
+  the list comprehension compiles into a GLSL for loop, and the `num` variable
+  can be made parametric. Compact GLSL may be faster.
+* Tree union, O(log N): The union becomes a volume data structure with a BVH.
+* Repeat_radial, O(1).
