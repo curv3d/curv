@@ -759,21 +759,34 @@ Sequential_Definition_Phrase::as_definition(Environ& env)
 Shared<Operation>
 analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
 {
-    auto local = cast<const Local_Phrase>(stmt);
-    if (local != nullptr) {
+    if (auto local = cast<const Local_Phrase>(stmt)) {
         // Local definitions are part of the syntax of compound statements:
-        // they don't have a standalone meaning, and that's why
-        // the analysis of local definitions is inline coded here.
-        // TODO: support 'local include expr'.
-        auto defn = cast<const Recursive_Definition_Phrase>(local->arg_);
-        if (defn == nullptr) {
-            throw Exception(At_Phrase(*stmt, scope),
-                "syntax error in local definition (missing =)");
+        // they don't have a standalone meaning, and that's why we are
+        // pattern-matching the `local` keyword instead of calling a method
+        // on `stmt` that is implemented by Local_Phrase.
+        if (auto defn = local->arg_->as_definition(scope)) {
+            // This is nasty; we ought to be using the Definition protocol.
+            // TODO: support 'local include expr'.
+            // Should we support compound definitions like `local (x=1;y=2)`?
+            if (auto data_def = cast<const Data_Definition>(defn)) {
+                auto expr =
+                    analyse_op(*data_def->definiens_phrase_, scope, edepth);
+                auto pat =
+                    make_pattern(*data_def->definiendum_, false, scope, 0);
+                pat->analyse(scope);
+                return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
+            }
+            if (auto func_def = cast<const Function_Definition>(defn)) {
+                auto expr =
+                    analyse_op(*func_def->lambda_phrase_, scope, edepth);
+                auto pat =
+                    make_pattern(*func_def->name_, false, scope, 0);
+                pat->analyse(scope);
+                return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
+            }
         }
-        auto expr = analyse_op(*defn->right_, scope, edepth);
-        auto pat = make_pattern(*defn->left_, false, scope, 0);
-        pat->analyse(scope);
-        return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
+        throw Exception(At_Phrase(*stmt, scope),
+            "syntax error in local definition (missing =)");
     }
     return analyse_op(*stmt, scope, edepth);
 }

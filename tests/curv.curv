@@ -493,6 +493,11 @@ let x = 0; in
     local x = x + 1;
     assert(x == 1);
 );
+let a = 0
+in do
+    local f x = x + 1;
+    a := f a;
+in assert (a == 1);
 assert(
     [local x=0; while(x<3)(x;x:=x+1);]
     == [0,1,2]
