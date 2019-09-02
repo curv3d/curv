@@ -765,9 +765,9 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
         // pattern-matching the `local` keyword instead of calling a method
         // on `stmt` that is implemented by Local_Phrase.
         if (auto defn = local->arg_->as_definition(scope)) {
-            // This is nasty; we ought to be using the Definition protocol.
-            // TODO: support 'local include expr'.
-            // Should we support compound definitions like `local (x=1;y=2)`?
+            // We ought to be using the Definition protocol, especially if we
+            // want to support compound definitions like `local (x=1;y=2)`.
+            // What currently follows is a lot of code duplication.
             if (auto data_def = cast<const Data_Definition>(defn)) {
                 auto expr =
                     analyse_op(*data_def->definiens_phrase_, scope, edepth);
@@ -784,9 +784,73 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
                 pat->analyse(scope);
                 return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
             }
+            if (auto incl_def = cast<const Include_Definition>(defn)) {
+                // Evaluate the `include` argument in the builtin environment.
+                auto val = std_eval(*incl_def->arg_, scope);
+                At_Phrase cx(*incl_def->arg_, scope);
+                auto record = val.to<Record>(cx);
+
+                // construct an Include_Setter from the record argument.
+                auto setter = Include_Setter::make(record->size(), stmt);
+                size_t i = 0;
+                record->each_field(cx, [&](Symbol_Ref name, Value value)->void {
+                    slot_t slot = scope.add_binding(name, *stmt, 0);
+                    (*setter)[i++] = {slot, value};
+                });
+                return setter;
+            }
+          #if 0
+            To use Definition protocol, we need a Local_Scope class.
+            Local_Scope::analyse(defn) calls defn->analyse()
+            before defn->add_to_scope().
+
+            Definition protocol: [code for do <bindings> in <body>]
+            analyse_block(env, share(*this), bindings_, body_, edepth);
+            Shared<Meaning> analyse_block(
+                Environ& env,
+                Shared<const Phrase> syntax,
+                Shared<Phrase> bindings,
+                Shared<const Phrase> bodysrc,
+                unsigned edepth)
+            {
+                Shared<Definition> adef = bindings->as_definition(env);
+                if (adef == nullptr) {
+                    // no definitions, just actions.
+                    return make<Preaction_Op>(
+                        syntax,
+                        analyse_op(*bindings, env, edepth),
+                        analyse_op(*bodysrc, env, edepth));
+                }
+                if (adef->kind_ == Definition::k_sequential) {
+                    Sequential_Scope sscope(env, false, edepth);
+                    sscope.analyse(*adef);
+                    auto body = analyse_op(*bodysrc, sscope, edepth+1);
+                    env.frame_maxslots_ = sscope.frame_maxslots_;
+                    return make<Block_Op>(syntax,
+                        std::move(sscope.executable_), std::move(body));
+                }
+                bad_definition(*adef, env, "wrong style of definition for this block");
+            }
+            sscope.analyse(*adef):
+                def.add_to_scope(*this);
+                parent_->frame_maxslots_ = frame_maxslots_;
+            void Data_Definition::add_to_scope(Block_Scope& scope):
+                unsigned unitnum = scope.begin_unit(share(*this));
+                pattern_ = make_pattern(*definiendum_, true, scope, unitnum);
+                scope.end_unit(unitnum, share(*this));
+            Sequential_Scope::end_unit(unitno, Shared<Unitary_Definition> unit)
+                (void)unitno;
+                unit->analyse(*this);
+                executable_.actions_.push_back(
+                    unit->make_setter(executable_.module_slot_));
+                ++nunits_;
+            Data_Definition::analyse(Environ& env):
+                pattern_->analyse(env);
+                definiens_expr_ = analyse_op(*definiens_phrase_, env);
+          #endif
         }
         throw Exception(At_Phrase(*stmt, scope),
-            "syntax error in local definition (missing =)");
+            "syntax error in local definition");
     }
     return analyse_op(*stmt, scope, edepth);
 }

@@ -502,6 +502,10 @@ assert(
     [local x=0; while(x<3)(x;x:=x+1);]
     == [0,1,2]
 );
+(
+    local include {a:1};
+    assert(a == 1);
+);
 assert_error("a local definition must be followed by '; <statement>'",
     local x = 1);
 assert_error("local definitions can't be mixed with recursive definitions",
