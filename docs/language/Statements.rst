@@ -7,7 +7,7 @@ Statements encapsulate the idea of sequential evaluation in Curv.
 Simple statements, like the ``print`` statement and the assignment statement,
 are combined and sequenced using control structures:
 compound statements, ``if`` statements, ``for`` statements and ``while`` statements.
-Local variables are defined over statement scope using ``let`` clauses.
+Local variables are defined over statement scope using ``local`` definitions and ``let`` clauses.
 
 Rationale:
 
