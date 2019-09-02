@@ -41,9 +41,8 @@ So Visual Curv now has a collection of abstract data types with graphical
 presentations. The actual, internal representation of these "abstract data
 types" is still to be decided.
 
-Perhaps there is some mechanism for "plugging in" new graphical value types,
-using a "plugin" that is either Curv code, or a binary Shared Object
-/ DLL / WASM module, or a module written in some other programming language.
+Perhaps there is some mechanism for "plugging in" new graphical value types
+(see section on Plugins).
 
 Graphical Editors
 -----------------
@@ -104,6 +103,34 @@ editor can fit in to the Curv projectional editing framework.
 
 Curv expressions are composable. It follows that Editors are composable
 (one kind of editor can be embedded in another editor).
+
+Plugins and Packages
+--------------------
+I've mentioned the idea of being able to add "plugins" which define
+* new graphical value types,
+* new DSLs and new editors,
+
+rather than hardwiring these things into the Curv implementation.
+
+Now, I also want to add a package system to Curv, so that Curv programs
+can reference external dependencies using URLs. A built-in package manager
+will automatically load dependencies, so it is very easy to reference and
+use somebody elses code. You don't have to manage all of the other project's
+dependencies by hand.
+
+These so called "plugins" are dependencies that need to be managed
+automatically by the package manager. Whatever a plugin is, it needs to have
+a platform independent representation.
+
+I can think of 3 possible representations:
+* Curv -- perhaps at least some plugins are just Curv code. For example,
+  perhaps new graphical value types can be defined directly in Curv.
+* WebAssembly modules.
+* Source code written in some general purpose programming language that is
+  more powerful than Curv. The desktop and web implementations of Curv
+  will need to embed a compiler/interpreter for this language. Perhaps it
+  is Javascript (that makes sense for the web), and perhaps the desktop
+  implementation of Visual Curv is an electron app.
 
 Multiple Tiers, from Easy to Powerful
 -------------------------------------
