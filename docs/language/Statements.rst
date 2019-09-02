@@ -121,7 +121,7 @@ Compound statement with local variables:
   Local definitions may be interleaved with statements in a compound
   statement. A local definition defines variables whose scope begins at the
   next statement or definition (following ``;``) and extends to the end of
-  the compound statement. This is called "sequential scoping". Definitions
+  the compound statement. This is called "sequential scoping". Local definitions
   cannot be recursive. Statements and local definitions are executed in strict
   left-to-right order. Use ``let`` for recursively scoped local variables,
   and see `Blocks`_ for definition syntax.
