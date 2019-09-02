@@ -112,12 +112,12 @@ Compound statement: ``statement1; statement2; ...``
   are executed in sequence. An optional terminating semicolon may be added.
 
 Compound statement with local variables:
-  A local definition has the syntax ``local <definition>``. For example,
-  ```
-  local a = 1
-  local f x = x + 1
-  local include "foo.curv"
-  ```
+  A local definition has the syntax ``local <definition>``. For example::
+
+      local a = 1
+      local f x = x + 1
+      local include "foo.curv"
+
   Local definitions may be interleaved with statements in a compound
   statement. A local definition defines variables whose scope begins at the
   next statement or definition (following ``;``) and extends to the end of
