@@ -49,16 +49,15 @@ make_shape {
             i = 0;
             r = mag z;
         in do
-            while (r<Bailout && i<Iterations)
-                let zdr = powN1(z,r,dr);
-                in (
-                    z := zdr[[X,Y,Z]];
-                    dr := zdr[3];
-                    z := z + pos;
-                    r := mag z;
-                    z := z * rot;
-                    i := i + 1;
-                );
+            while (r<Bailout && i<Iterations) (
+                local zdr = powN1(z,r,dr);
+                z := zdr[[X,Y,Z]];
+                dr := zdr[3];
+                z := z + pos;
+                r := mag z;
+                z := z * rot;
+                i := i + 1;
+            );
         in if (r==0) 0 else 0.5*log(r)*r/dr;
     bbox = [[-1.1,-1.1,-1.1],[1.1,1.1,1.1]];
     is_3d = true;

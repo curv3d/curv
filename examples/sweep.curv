@@ -39,11 +39,11 @@ sweep (f, maxt, n) = make_shape {
             ratio = 0.2;
             d = mag(p);
         in do
-            for (i in 0 ..< n)
-                let a = i*maxt/n;
-                    b = ratio*f(a)-p;
-                in
-                    d := min(d, dot(b, b));
+            for (i in 0 ..< n) (
+                local a = i*maxt/n;
+                local b = ratio*f(a)-p;
+                d := min(d, dot(b, b));
+            );
             d := sqrt(d);
         in
             d - radius;

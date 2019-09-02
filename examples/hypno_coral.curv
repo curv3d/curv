@@ -13,10 +13,10 @@ parametric
 in let
 plasma3D = make_texture ([x,y,z,t] ->
     let p = [x,y,z]*Scale;
-        pt = t*Speed;
     in do
+        local t = t*Speed;
         for (i in 1..Iter)
-            p := p + Amp/i*sin(i*p[[Y,Z,X]] + pt + [0,tau/3,tau*(2/3)]) + 1;
+            p := p + Amp/i*sin(i*p[[Y,Z,X]] + t + [0,tau/3,tau*(2/3)]) + 1;
     in  sRGB(0.5*sin(p*pi)+0.5));
 gyre = gyroid >> offset (Offset) >> lipschitz 1.5;
 gsphere = smooth Smooth .intersection [gyre, sphere 20];

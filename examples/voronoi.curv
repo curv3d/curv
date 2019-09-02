@@ -9,11 +9,12 @@ voronoi(x,y) =
         res = 8;
     in do
         for (i in -1 .. 1)
-            for (j in -1 .. 1)
-                let b = (i,j);
-                    r = b - f + random2f(p+b);
-                    d = dot(r,r);
-                in  res := min(res, d);
+            for (j in -1 .. 1) (
+                local b = (i,j);
+                local r = b - f + random2f(p+b);
+                local d = dot(r,r);
+                res := min(res, d);
+            )
     in sqrt res;
 
 in
