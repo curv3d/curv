@@ -108,8 +108,23 @@ Parenthesized statement: ``(statement)``
   Any statement can be wrapped in parentheses without changing its meaning.
 
 Compound statement: ``statement1; statement2; ...``
-  Two or more statements of the same type, separated by semicolons, are executed in sequence.
-  An optional terminating semicolon may be added.
+  Two or more statements of the same type, separated by semicolons,
+  are executed in sequence. An optional terminating semicolon may be added.
+
+Compound statement with local variables:
+  A local definition has the syntax ``local <definition>``. For example,
+  ```
+  local a = 1
+  local f x = x + 1
+  local include "foo.curv"
+  ```
+  Local definitions may be interleaved with statements in a compound
+  statement. A local definition defines variables whose scope begins at the
+  next statement or definition (following ``;``) and extends to the end of
+  the compound statement. This is called "sequential scoping". Definitions
+  cannot be recursive. Statements and local definitions are executed in strict
+  left-to-right order. Use ``let`` for recursively scoped local variables,
+  and see `Blocks`_ for definition syntax.
 
 Single-arm conditional: ``if (condition) statement``
   The statement is only executed if the condition is true.
@@ -132,10 +147,11 @@ Unbounded iteration: ``while (condition) statement``
   more variables which are modified by assignments within
   the loop body on each iteration.
 
-Local variables: ``let definitions in statement``
-  Define local variables over the statement. See: `Blocks`_.
+Recursively scoped local variables: ``let definitions in statement``
+  Define local variables over the statement, using recursive scoping.
+  The order of definitions doesn't matter. See: `Blocks`_.
 
-Local variables: ``statement where definitions``
+Recursively scoped local variables: ``statement where definitions``
   An alternate syntax for defining local variables. See: `Blocks`_.
 
 Chained statements: ``do statements in statement2``

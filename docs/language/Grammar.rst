@@ -22,6 +22,7 @@ precedence and ``postfix`` being the highest precedence::
   ritem ::= pipeline
     | '...' ritem
     | 'include' ritem
+    | 'local' ritem
     | pipeline '=' ritem
     | pipeline ':=' ritem
     | pipeline ':'
@@ -73,7 +74,7 @@ precedence and ``postfix`` being the highest precedence::
   identifier ::= plain_id | quoted_id
     plain_id ::= /[a-zA-Z_] [a-zA-Z_0-9]*/, except for reserved words
       reserved_word ::= '_' | 'by' | 'do' | 'else' | 'for' | 'if' | 'in'
-        | 'include' | 'let' | 'parametric' | 'var' | 'where' | 'while'
+        | 'include' | 'let' | 'local' | 'parametric' | 'var' | 'where' | 'while'
     quoted_id ::= /['] id_segment* [']/
       id_segment ::= plain_char | id_escape
       plain_char ::= /[space or printable ASCII character, except ' or $]/
