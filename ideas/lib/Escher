@@ -1,2 +1,32 @@
 https://isohedral.ca/escher-like-spiral-tilings     // blog post
 https://isohedral.ca/other/Spirals/                 // web app
+https://news.ycombinator.com/item?id=20854644       // comments on blog post
+
+[quote]
+The exponential map shows up in Escher's "print gallery" too,
+which I tried to explain here:
+    http://roy.red/droste-.html
+And you can use it to make various interesting things:
+    http://roy.red/fractal-droste-images-.html
+I like this paper that extends the Mercator projection of the earth down
+a few inches so you can see what it does down right next to the South Pole:
+    http://archive.bridgesmathart.org/2013/bridges2013-217.pdf
+
+[quote]
+The article mentions a lot of interesting properties of the complex exponential
+map. I find it especially neat that horizontal and vertical translation map
+to uniform scaling and rotation. A mapping that shuffles transformations
+around like that can be used in creative ways.
+
+I'd like to add another interesting property, that naturally stems from the
+above: the mapping transforms regularly repeating shapes into self-similar
+shapes. Any geometry that repeats along the x axis (with a given period
+P) will be mapped to a geometry that is self-similar under scaling by the
+same value P. You can create mappings in more dimensions that have the same
+properties, for example in 3 dimensions:
+    https://www.osar.fr/notes/logspherical/ 
+
+Hyperbolic geometry: The math behind Escher's Circle Limit prints.
+Check out the animations in this slide show. I'd like to program these in Curv:
+    "Conformal Models of the Hyperbolic Geometry", Vladimir Bulatov.
+    http://bulatov.org/math/1001/
