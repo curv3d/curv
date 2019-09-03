@@ -25,21 +25,80 @@ The colour function is 10x larger because of this code in `union`:
             d2 = s2.dist p;
         in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p,
 ```
+The for loop is evaluated by the interpreter, giving a list of shapes.
+The dist function of union(list) is the minimum of each list element's
+dist function. That's an O(N) computation. All the dist functions in the
+list are separately inline expanded into the shader, even if (in the above
+case) they are the same code differing only by a numeric parameter.
 
+So we have massive code bloat. An optimizer could remove the code bloat.
+It would be faster if we could avoid generating massive code in the first
+place. Also, this approach does not permit `num` to be a parametric
+parameter.
+
+New Design
+----------
+Three alternatives, with different APIs:
+
+linear_union, O(N):
+  The union is recomputed each frame.
+   `num` can vary on each frame for no extra cost.
+
+union, O(log N):
+  The union is compiled into a volume data structure with a BVH.
+  The distance function traverses this BVH in O(log N) time.
+
+  Rebuilding the data structure is slower than traversing it, and happens in
+  the CPU, or in a different GPU kernel than the distance function evaluation.
+  It's okay to hook up `num` to a slider, but not to recompute `num` each frame.
+  As long as the BVH changes slowly, this is faster than linear_union.
+
+repeat_radial, O(1):
+  Fast but inflexible, not a general union.
+
+Linear Union
+~~~~~~~~~~~~
+The `for` loop in the list comprehension compiles into a GLSL for loop.
+This produces compact GLSL, which may be faster, if much smaller code
+eliminates register spills.
+
+How? Lazy evaluation of list comprehensions. `linear_union` returns a shape
+whose dist function contains a lazy reduce over a lazy list, which compiles
+into a GLSL for loop.
+
+How is the colour function compiled? Same way as the dist function.
+There's a compiler optimization that checks if both branches of an `if-else`
+are equivalent: if so, replace the `if` with one of the branches.
+
+(Tree) Union
+~~~~~~~~~~~~
+The shapes are placed into a BVH, based on their bounding box.
+The dist function uses a O(log N) tree search instead of an O(N) traversal.
+Or we do tile based rendering/beam optimization, and construct a list of
+shapes that intersect each tile.
+
+For our example, instead of making distinct shader code for each subshape,
+each item in the BVH contains the value of `num`, and a single dist function
+converts `num` to a dist in the shader. This is a VDS. Once again, we rely on
+lazy list comprehensions to preserve the `for` loop in union's list argument.
+
+Repeat Radial
+~~~~~~~~~~~~~
+```
+    repeat_radial {
+        n: number of pie slices on XY plane,
+        f: (i,angle)->shape,
+        overlap = 0 //# of overlapping neighbours within a pie slice
+    }
+```
+How do we know if this is 2D or 3D? (There are SubCurv restrictions on the
+function: it must statically return a shape record with constant values
+for is_2d and is_3d.)
+
+Brainstorming
+-------------
 In general, what are the strategies for compiling/representing large unions,
 like the one shown above?
-
- 1. Current design:
-    The for loop is evaluated by the interpreter, giving a list of shapes.
-    The dist function of union(list) is the minimum of each list element's
-    dist function. That's an O(N) computation. All the dist functions in the
-    list are separately inline expanded into the shader, even if (in the above
-    case) they are the same code differing only by a numeric parameter.
-
-    So we have massive code bloat. An optimizer could remove the code bloat.
-    It would be faster if we could avoid generating massive code in the first
-    place. Also, this approach does not permit `num` to be a parametric
-    parameter.
 
  #. Change union.colour to reduce code size:
         colour p :
@@ -59,7 +118,7 @@ like the one shown above?
     the `num` variable to be parametric.
 
     Lazy evaluation of list comprehensions. `union` returns a shape whose
-    dist function contains a lazy map over a lazy list, which compiles into
+    dist function contains a lazy reduce over a lazy list, which compiles into
     a GLSL for loop. It's still O(N). Could be faster if much smaller code
     eliminates register spills.
 
@@ -88,9 +147,13 @@ like the one shown above?
     function: it must statically return a shape record with constant values
     for is_2d and is_3d.)
 
-I think this boils down to 3 alternatives, possibly with different APIs:
-* Atomic union: The union is an atomic shape: it's O(N), but the `for` loop in
-  the list comprehension compiles into a GLSL for loop, and the `num` variable
-  can be made parametric. Compact GLSL may be faster.
-* Tree union, O(log N): The union becomes a volume data structure with a BVH.
-* Repeat_radial, O(1).
+I think this boils down to 3 alternatives, with different APIs:
+* Linear_union, O(N): The union is recomputed each frame. The `for` loop
+  in the list comprehension compiles into a GLSL for loop, and `num` can vary
+  on each frame for no extra cost. Compact GLSL may be faster.
+* Union, O(log N): The union becomes a volume data structure with a BVH.
+  Rebuilding the data structure is slower than traversing it, and happens in
+  the CPU, or in a different GPU kernel than the distance function evaluation.
+  It's okay to hook up `num` to a slider, but not to recompute `num` each frame.
+  As long as the BVH changes slowly, this is faster than linear union.
+* Repeat_radial, O(1). Fast but inflexible, not a general union.
