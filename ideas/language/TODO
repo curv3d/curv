@@ -18,6 +18,9 @@ Medium:
 * any, all
 
 Low:
+* Disallow actions in a `let` clause. However, there's a use case for
+  assertions in a scoped record constructor. Let's see how record literals
+  evolve.
 * mixed a=/a: record literals
 * Issue #50: unintuitive operator precedence. My proposed solutions:
   * warn about inconsistent white space in expressions, eg: 'f -1' or 'f a.b'
