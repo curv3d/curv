@@ -765,7 +765,7 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
         // pattern-matching the `local` keyword instead of calling a method
         // on `stmt` that is implemented by Local_Phrase.
         if (auto defn = local->arg_->as_definition(scope)) {
-            // We ought to be using the Definition protocol, especially if we
+            // Ideally, we would use the Definition protocol, especially if we
             // want to support compound definitions like `local (x=1;y=2)`.
             // What currently follows is a lot of code duplication.
             if (auto data_def = cast<const Data_Definition>(defn)) {
@@ -801,9 +801,13 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
                 return setter;
             }
           #if 0
+            The Definition protocol isn't designed for local definitions.
             To use Definition protocol, we need a Local_Scope class.
-            Local_Scope::analyse(defn) calls defn->analyse()
-            before defn->add_to_scope().
+            For each definition, we want to call defn->analyse() before
+            defn->add_to_scope(). However, Compound_Definition is not a
+            Unitary_Definition and doesn't define ::analyse().
+            The Definition protocol expects you to first call add_to_scope for
+            all definitions, and then you call analyse on all unitary defs.
 
             Definition protocol: [code for do <bindings> in <body>]
             analyse_block(env, share(*this), bindings_, body_, edepth);
