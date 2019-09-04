@@ -39,14 +39,18 @@ A function interface obviously works.
 Dot notation looks nicer:
     colour.sRGB
     colour.linRGB
-This works best if Colour is an abstract type.
-Currently, records are heavier than lists, and there is a per-instance cost
-for each field. That could be addressed: we could support fields whose
-values are computed each time they are referenced. Basically, decouple the
-state that represents a record from its fields. In SubCurv, we need to
-represent a Colour as a Vec4. Either the SC compiler handles Colours as a
-special case, or there is an abstract module facility that decouples state
-from interface.
+This could be implemented using an ordinary record
+(with multiple independent fields named sRGB, linRGB, etc).
+But it works best if Colour is an abstract type:
+* There is only one copy of the colour data, with the pseudo-fields `sRGB`
+  etc being views on this data.
+* Basically, decouple the state that represents a record from its fields.
+* Extra points if the fields in each view are assignable.
+* The SC compiler recognizes colour values and represents them as vec4.
+* Either Colour is a built-in type, or there is a language-level facility
+  for defining record-like abstract data types.
+  * What is a 'view' (term used above). Is it like a 'lens'? Can this idea
+    be incorporated into Curv?
 
 There is a predicate: is_colour(red) == #true
 
@@ -109,3 +113,21 @@ How are colours represented internally? How are graphical values recognized?
 Colour Operations
 -----------------
 See Pastel: https://github.com/sharkdp/pastel
+
+See D3.color:
+https://github.com/d3/d3-color
+https://github.com/d3/d3-interpolate    // colour interpolation
+
+In D3, a colour value has an associated colour space.
+Each colour space is represented by a subclass of d3.color,
+and you can use `instanceof` to test the colourspace.
+RGB colours have fields 'r', 'g', 'b', and so on, which are assignable.
+The operations `brighter` and `darker` have semantics that are specified
+by the colourspace.
+
+The interpolators, on the other hand, ignore a colour value's colourspace,
+and interpolate colours using a colourspace specified in the name:
+`interpolateRgb`, `interpolateHcl`, etc.
+
+See: https://github.com/gka/chroma.js
+See: https://python-colorspace.readthedocs.io/en/latest/
