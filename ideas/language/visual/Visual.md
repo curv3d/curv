@@ -204,6 +204,60 @@ width ASCII. Instead, we support structured text, perhaps equivalent to
 Markdown. Plus, you can embed graphical values in commentary, including
 images, and interactive animations written in Curv.
 
+Structured Comments
+-------------------
+### Sequence syntax:
+There are many parts of the Curv syntax that logically represent a sequence
+of zero or more subphrases, or a sequence of two or more subphrases.
+
+Some examples of the former:
+* a list constructor: [a, b, c]
+* a record constructor: {a:1, b:2, c:3}
+* a compound statement: (stmt1; stmt2; stmt3}
+* a compound definition: let def1; def2; def3 in subphrase
+
+Some examples of the latter (the sequence is created using infix operators):
+* `f a b c`
+* `a + b + c`
+* `a >> b >> c`
+
+### Commenting out code:
+We need a mechanism for disabling either individual items in a code sequence
+(as defined above), or disabling a contiguous subsequence.
+
+When coding in Curv, I use comments for this: ``// item`` if the
+item is entirely on one line (and I use a coding style that makes this more
+likely), or ``/* item */`` if the item spans multiple lines.
+
+We probably need a distinct syntax for disabling nodes, that is different from
+a comment containing structured text. In one case, the contents of the 'comment'
+is code, in the other case, it is Markdown: these are parsed differently,
+and they are formatted differently for display.
+
+During live coding, it's useful to have a quick way to disable/enable
+individual items in a code sequence.
+
+### Commenting a node:
+In the simplest and most generic case, a comment might provide commentary
+about the immediately following tree node.
+
+### Commenting a definition:
+It's pretty common to have a syntax for structured comments, for commenting
+a definition. Eg, in C++ we have a convention for "documentation comments",
+beginning with `///` or `/**`, and processed by Doxygen. In Curv, structured
+documentation for members of a library can be used to pull up online help while
+writing code.
+
+### Commenting a code sequence:
+When adding comments to a code sequence (as defined above), an individual
+comment might not apply only to the following tree node (eg, to the following
+statement, in a statement list). The comment might instead apply to a
+subsequence of nodes. Also, it is common to break up a long sequence of
+statements or definitions into subsections, and to put a section header
+at the beginning of each subsection.
+
+If this structure is made explicit, then it can be used for code folding.
+
 File Format
 -----------
 The file format for Curv source code doesn't change much.
