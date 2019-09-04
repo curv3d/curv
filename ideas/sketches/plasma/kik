@@ -1,14 +1,16 @@
+parametric
+    Iter :: int_slider(0, 50) = 7;
+in
 make_texture << [x,y,z,t]->
-    do
-        var u:=[x,y];
-        var a:=1; var b:=1; var c:=1; var d:=0;
-        for (i in 0..<7)
-            let o=sin(1.57*(1,0,2)+u[[Y,X,X]]*a-d+t/b)/c;
-            in (
-                u := u + o[[X,Y]]+o[[Z,X]]*.3;
-                a := a * 2;
-                b := b * 1.2;
-                c := c * 2;
-                d := d + .05 + .1*t*b;
-            );
+    let u=[x,y];
+    in do
+        local a=1; local b=1; local c=1; local d=0;
+        for (i in 0..<Iter) (
+            local o=sin(1.57*(1,0,2)+u[[Y,X,X]]*a-d+t/b)/c;
+            u := u + o[[X,Y]]+o[[Z,X]]*.3;
+            a := a * 2;
+            b := b * 1.2;
+            c := c * 2;
+            d := d + .05 + .1*t*b;
+        );
     in sin(u[X]-t, (u[X]+u[Y]+sin(t/2))/2, u[Y]+t)/2+.5
