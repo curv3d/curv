@@ -1,0 +1,190 @@
+## TODO:
+* `show_colour colour` -- maybe this is: `make_texture colour|cfield`
+* lib.texture: Primitives for making 2D and 3D procedural textures.
+
+## Intensity Fields, Texture Constructors
+I should test out two alternative APIs for constructing textures.
+ 1. A rich set of intensity field constructors & manipulators.
+    ifields are composed with cmaps to construct textures.
+ 2. Texture constructors that directly construct textures from cmaps.
+
+`i_log_spiral opts`
+
+## Intensity Fields and Transformations
+An ifield is represented by (a) a function, (b) a record containing an
+`intensity` field, which is a function. And other optional metadata?
+Like, the gradient of the ifield at a given point?
+
+Transformations of ifields. There should be a way to apply a stock
+transformation to an ifield.
+ 1. transform.f is a function mapping [x,y,z,t] to [x,y,z,t].
+    compose[transform.f, ifield]
+ 2. ifields are records.
+    A transform maps a shape-or-ifield to another shape-or-ifield.
+    This complicates the implementation of transforms, but maybe we introduce
+    a helper function to reduce the code.
+        make_transform {
+           f(x,y,z,t)=...;   // forward coordinate transform
+           inv(x,y,z,t)=...; // inverse coordinate transform
+           make_dist shape = ...; // optional; map shape to dist function
+           make_bbox shape = ...; // optional; map shape to bbox
+        }
+        make_transform warp shape =
+
+If we gonna generalize transformations, then how about:
+ * Apply a transformation to a point, or a list of points.
+ * Compose transformations.
+
+## Interpolators
+
+(An interpolator is a function that maps an intensity value between 0 and 1
+onto a value.)
+
+d3-interpolate is awesome:
+  https://github.com/d3/d3-interpolate
+
+Curried lerp: lerp (a,b) i
+
+## Colours
+
+Black is a unique, absolute colour (the absence of light).
+
+White is not a unique, absolute colour, either in physics, or in the
+physiology of human vision. Each colour space defines its own white point.
+
+An RGB colour space has 3 coordinates (R,G,B), meaning red, green and blue,
+and is specified by parameters: the absolute colours of the red, green and
+blue primaries, the white point, a gamma curve.
+
+Colour Space interface:
+  cspace(coordinates) -> colour
+  cspace.from colour -> (coordinates)
+
+Colour spaces:
+  linRGB
+    * The internal representation of colour used by Curv. Device dependent,
+      linear RGB.
+  sRGB
+  sRGB.HSV
+    * Old and popular, better than RGB for colour picking. I implemented it
+      because I've ported several pieces of GLSL code that use it.
+  sRGB.HSL
+    * No plan to implement it yet. But it's used on the web.
+  sRGB.HWB
+    * Planned for future, since it's the most intuitive RGB based coordinate
+      system for colour picking for artists. Part of CSS Level 4.
+  LAB
+    * Perceptually uniform.
+    * L is luminance (absolute brightness).
+    * A is the red-green axis.
+    * B is the blue-yellow axis.
+    * The LAB gamut covers all perceivable colours. When converting LAB
+      coordinates to internal representation, during the construction of
+      a colour value, we use linRGB coordinates outside the range 0...1,
+      and clamp during lighting calculations.
+    * Best overall choice for colour interpolation (linear gradients).
+      Subjectively, the gradients look good, and have a minimum of unexpected
+      behaviour.
+      http://howaboutanorange.com/blog/2011/08/10/color_interpolation/
+      * Brightness (luminance) increases or decreases monotonically and
+        uniformly across the gradient.
+        Neither property holds for RGB interpolation.
+      * You don't get unexpected hues when interpolating between colours
+        on opposite sides of the colour wheel. Eg, you don't get violet
+        when interpolating between blue and orange, you get neutral colours
+        instead.
+  HCL
+    * https://en.wikipedia.org/wiki/HCL_color_space
+    * https://bl.ocks.org/mbostock/3014589
+    * A simple transform of LAB coordinates, which is more logically organized
+      than LAB for the purpose of colour picking. All of the hues are on
+      the H axis.
+    * perceptually uniform.
+    * Useful for colour interpolation in cases where you prefer to cycle through
+      the colour wheel when interpolating between distant hues, rather than
+      pass through a neutral colour when interpolating between two relatively
+      more saturated colours. In HCL interpolation, unlike LAB,
+      the Chroma (saturation) increases or decreases monotonically.
+
+## Colour Maps
+
+gradient_cmap{cspace=LAB, range:(c1,c2)}
+  Simple gradient cmap between two colours.
+    = i -> cspace(lerp(cspace.from c1, cspace.from c2) i)
+
+  You get a choice of which colour space to perform the linear interpolation in.
+  * The default is LAB, since that usually produces the best looking results.
+  * Unlike other colour libraries, this API does not default to interpolation
+    in the same colour space used to pick the colours. LAB is the best
+    default colour space for interpolation, but it's not a good choice for
+    colour picking.
+  * linRGB is rarely a good choice, since it doesn't produce a perceptually
+    linear gradient. But you might need it for physically realistic
+    modelling of some system involving light mixing.
+  * sRGB might be appropriate if you are porting code from another language.
+
+  We don't want to linear interpolate between 2 colours in linear RGB space,
+  it doesn't produce a perceptually linear gradient. Better to do it in sRGB
+  space.
+
+  Maybe support HCL: https://en.wikipedia.org/wiki/HCL_color_space
+  https://bl.ocks.org/mbostock/3014589
+
+  LAB (properly written L*a*b* or CIELAB) and HCL are absolute colour spaces.
+  (Some parts of Wikipedia imply that you have to choose a white point first.)
+
+  This seemingly opens a can of worms.
+
+linear colour maps:
+ * CubeHelix: https://www.mrao.cam.ac.uk/~dag/CUBEHELIX/
+   Properties: Perceptually uniform, monotonically increasing luminance
+   from black to white. Maximum contrast between neighbouring colours, by
+   cycling through the hues. Designed for data visualization.
+
+``gradient_cmap clist``
+  Construct a colour map as a sequence of one or more colour gradients.
+  The ``clist`` is a list of two or more entries.
+  Each entry is ``(intensity,colour)``, ordered with monotonically increasing intensity values.
+  The first intensity must be ``0``, and the last must be ``1``.
+  A gradient is constructed between each pair of entries.
+
+``striped_cmap clist``
+  Construct a colour map as a sequence of constant-colour stripes.
+  The ``clist`` argument is the same as for ``gradient_cmap``,
+  except that the final entry has an intensity of < 1,
+  and one stripe is constructed for each entry.
+
+## Colour
+* sRGB.HWB(hue,whiteness,blackness)
+* 3 functions that take 'hue' arguments: sRGB.hue,sRGB.HSV,sRGB.HWB.
+  Maybe, provide named hue indexes: red,orange,yellow,...
+  These names overlap with the named colours, which exist for ease of use,
+  and must not be made complicated. Alternatives:
+  * Two naming conventions: red,yellow,... vs h_red,h_yellow,...
+    or hues.red, hues.yellow, ...
+* web_hue has an argument between 0 and 360
+* web_hwb(hue,whiteness,blackness): hue is between 0 and 360.
+* add an HTML colour picker to the Colour page.
+
+Colour Atlas Data Structures
+============================
+An Intensity is a number between 0 and 1 inclusive.
+
+A Colour comprises red, green and blue Intensities.
+* just an RGB triple; that's what colour functions return.
+
+A Colour Map is a function mapping an Intensity onto a Colour.
+* just a function value
+* {colour_map: f}
+* eg, rainbow i = sRGB.HSV(i,1,1);
+
+A 2D or 3D Intensity Field maps a point (x,y) or (x,y,z) to an Intensity.
+* Could be a function.
+* Could be a variant of Shape: {is_2d,is_3d,intensity}
+  This type is viewable as graphics.
+
+A 2D or 3D Colour Field maps a point (x,y) or (x,y,z) to a Colour.
+If you compose a Colour Map with an Intensity Field you get a Colour Field.
+* Could be a function.
+* Could be a supertype of Shape: {is_2d,is_3d,colour}
+  This type is viewable as graphics.

@@ -52,6 +52,17 @@ But it works best if Colour is an abstract type:
   * What is a 'view' (term used above). Is it like a 'lens'? Can this idea
     be incorporated into Curv?
 
+Maybe colour spaces are first class values. They have the following operations:
+* construct a colour value
+* lens: get/set the colour, viewed as a coordinate triple in some cspace
+* interpolate between two colours in a given cspace
+
+Examples of colour spaces: sRGB, linRGB LCh, ...
+Operation syntax:
+    sRGB(r,g,b) // construct a colour
+    c!sRGB    // get sRGB colour coordinates
+    c!sRGB
+
 There is a predicate: is_colour(red) == #true
 
 How is a Colour value printed, when it is printed as an expression?
@@ -130,4 +141,5 @@ and interpolate colours using a colourspace specified in the name:
 `interpolateRgb`, `interpolateHcl`, etc.
 
 See: https://github.com/gka/chroma.js
+See: https://www.w3.org/TR/css-color-4/
 See: https://python-colorspace.readthedocs.io/en/latest/
