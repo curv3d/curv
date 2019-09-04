@@ -1,0 +1,12 @@
+let num=20;
+in
+union [
+  for (i in 0 ..< num)
+    circle 4
+    >> translate [10,0,0]
+    >> revolve
+    >> stretch [0.7, 1, 1]
+    >> rotate {angle: i*90*deg, axis: Y_axis}
+    >> translate [40,0,0]
+    >> rotate {angle: i*(tau/num), axis: Z_axis}
+]
