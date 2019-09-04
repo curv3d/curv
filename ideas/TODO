@@ -13,7 +13,10 @@ Redesigned Rendering Parameters:
       white light or coloured?
     * Ambient. This should just be a single value.
   * open source, F-Rep/SDF, universal shading model, preferably PBM:
-    * mTec (PBM, 1 light source, GL4.3), FragM?, ...
+    * mTec (PBM, 1 light source, GL4.3), FragM?,
+    * Blender Eevee "Principled BSDF", aka PBM, compatible with Renderman,
+      Unreal Engine, etc. Real-time rendering. OpenGL 3.3.
+      https://docs.blender.org/manual/en/latest/render/shader_nodes/shader/principled.html
 * tracing
 
 Symbols:
