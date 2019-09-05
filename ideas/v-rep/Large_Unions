@@ -66,9 +66,28 @@ How? Lazy evaluation of list comprehensions. `linear_union` returns a shape
 whose dist function contains a lazy reduce over a lazy list, which compiles
 into a GLSL for loop.
 
+Or, `linear_union{n: nreps, f:i->shape}`
+is the union of `[for (i in 0..<n) f i]`.
+
 How is the colour function compiled? Same way as the dist function.
 There's a compiler optimization that checks if both branches of an `if-else`
 are equivalent: if so, replace the `if` with one of the branches.
+
+::
+    linear_union{n,f} = make_shape {
+        dist p =
+            let dist = inf;
+            do
+                for (i in 0..<n) (
+                    local d = f i .dist p;
+                    if (d < dist) dist := d;
+                )
+            in dist;
+    };
+
+The shape compiler needs to be extended so that ``f i .dist p`` will
+compile into a call to a distance function, discarding the other parts of
+the shape returned by ``f i``.
 
 (Tree) Union
 ~~~~~~~~~~~~
@@ -79,8 +98,12 @@ shapes that intersect each tile.
 
 For our example, instead of making distinct shader code for each subshape,
 each item in the BVH contains the value of `num`, and a single dist function
-converts `num` to a dist in the shader. This is a VDS. Once again, we rely on
-lazy list comprehensions to preserve the `for` loop in union's list argument.
+converts `num` to a dist in the shader. This is a VDS.
+
+Once again, we rely on lazy list comprehensions to preserve the `for` loop
+in union's list argument.
+Or, `union{n: nreps, f:i->shape}`
+is the union of `[for (i in 0..<n) f i]`.
 
 Repeat Radial
 ~~~~~~~~~~~~~
