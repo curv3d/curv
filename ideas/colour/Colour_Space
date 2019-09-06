@@ -25,11 +25,10 @@ and is specified by the absolute colours of the red, green and
 blue primaries, the white point, and a gamma curve.
 
 Colour spaces are denoted by named values in Curv.
-The following colour spaces either exist, or are proposed:
+Here is a curated list of the most useful colour spaces for Curv to support:
 * linRGB
 * sRGB
 * sRGB.HSV
-* sRGB.HWB
 * LAB
 * LAB.HCL
 
@@ -41,10 +40,10 @@ some cases where a colour space coordinate can be legitimately < 0 or > 1.
 Other colour space operations are noted here:
 * interpolation
 * constructing a gradient colour map
-* extracting colour space coordinates from a colour value???
+* extracting colour space coordinates from a colour value?
   * eg, cspace.get <colour> => <coordinates>
   * eg, cspace.from <colour> => <coordinates>
-* when importing an image, specify its colour space
+* when importing an image, specify its colour space?
 * TODO
 
 sRGB
@@ -122,17 +121,22 @@ to be more intuitive for colour picking than HSV or HSL, and to be faster
 to compute than the older standards.
 <http://alvyray.com/Papers/CG/HWB_JGTv208.pdf>
 
+The three coordinates are Hue (as in HSV), amount of White, and amount of Black.
+
 HWB has been included in CSS level 4, due to its superior ergonomics.
 <https://www.w3.org/TR/css-color-4/#the-hwb-notation>
 
-A circular colour picker for HWB is quite nice. There is a circular hue
-wheel, and inside that, a triangle filled with colour gradations,
-with the 3 vertices corresponding to the current hue, white, and black.
+Curv has an interactive colour picker that is based on HWB.
+
+It is not clear if HWB as a coordinate system is useful as an API.
+Is HWB useful for interpolating colours, creating gradients, etc?
 
 LAB
 ---
-* Perceptually uniform.
-* L is luminance (absolute brightness).
+This is the CIE LAB colour space. It is perceptually uniform: a given step size
+produces the same amount of perceptually change anywhere in the coordinate
+space.
+* L is lightness (absolute brightness).
 * A is the red-green axis.
 * B is the blue-yellow axis.
 * The LAB gamut covers all perceivable colours. When converting LAB
@@ -143,7 +147,7 @@ LAB
   Subjectively, the gradients look good, and have a minimum of unexpected
   behaviour.
   http://howaboutanorange.com/blog/2011/08/10/color_interpolation/
-  * Brightness (luminance) increases or decreases monotonically and
+  * Brightness (lightness) increases or decreases monotonically and
     uniformly across the gradient.
     Neither property holds for RGB interpolation.
   * You don't get unexpected hues when interpolating between colours
@@ -153,9 +157,9 @@ LAB
 
 HCL
 ---
-I want to include HCL, but there's a problem. There are 3 different colour
-spaces called HCL, and there is much confusion about which colour space is
-being referred to on different web sites that promote it.
+I want to include HCL, but there's a problem. There are 2 popular HCL colour
+spaces, and there is confusion about which colour space is
+being referred to on the different web sites that promote it.
 
 * HCL(uv)
   This is a version of the CIE LCh(uv) colour space, with the coordinates
@@ -176,13 +180,6 @@ being referred to on different web sites that promote it.
   * D3.js supports HCL(ab)
     <https://bl.ocks.org/mbostock/3014589>
   * chroma.js supports HCL(ab)
-* HCL(2005)
-  This is a much newer colour space described by Sarifuddin and Missaoui
-  in "A New Perceptually Uniform Color Space with Associated Color Similarity
-  Measure for Content-Based Image and Video Retrieval".
-  <https://pdfs.semanticscholar.org/206c/a4c4bb4a5b6c7b614b8a8f4461c0c6b87710.pdf?_ga=2.9335922.611436885.1505557968-1463367387.1505557968>
-  I don't think this paper is very influential. I only know about it because
-  of Wikipedia.
 
 Even though Ihaka claims that HCL(uv) is better than HCL(ab) for emissive
 displays, I think that the web community and the CSS standard are ultimately
@@ -193,13 +190,37 @@ more easily port code from other platforms.
 
 LAB.HCL
 -------
-This is the HCL(ab) colour space described above.
-* A simple transform of LAB coordinates, which is more logically organized
-  than LAB for the purpose of colour picking. All of the hues are on
-  the H axis.
-* Perceptually uniform.
-* Useful for colour interpolation in cases where you prefer to cycle through
-  the colour wheel when interpolating between distant hues, rather than
-  pass through a neutral colour when interpolating between two relatively
-  more saturated colours. In HCL interpolation, unlike LAB,
-  the Chroma (saturation) increases or decreases monotonically.
+This is the CIE HCL(ab) colour space described above.
+
+LAB.HCL is to LAB as sRGB.HSV is to sRGB.
+It is a simple transform of LAB coordinates: the AB axes are transposed into
+polar coordinates, giving Hue and Chroma axes which are more useful
+for colour picking. The H,C,L coordinates correspond closely
+to the H,S,V coordinates, but the HCL axes are perceptually uniform.
+
+* H is the Hue axis. Unlike HSV, the spacing of hues is perceptually uniform.
+  Red is 0, yellow is 1/4, green is 1/2, blue is 3/4, and 1 is red again.
+
+  In the HSV colour wheel, red and green are separated by 120°, green and
+  blue are separated by 120°, even though red and green are much farther
+  part perceptually (they are maximally contrasting, complementary hues),
+  while blue and green are perceptually much closer together. The HCL
+  colour wheel is more perceptually uniform. The complementary hues
+  red and green are separated by 180°; the complementary hues blue and
+  yellow are separated by 180°.
+
+* Chroma is the amount of colour, or distance from neutral. It's like
+  the S (saturation) axis of HSV, except that it is absolute and perceptually
+  uniform, instead of being relative to the hue and value.
+
+* L is the Lightness (brightness, distance from black). It's like the V (value)
+  axis of HSV, except that it is absolute and perceptually uniform (not relative
+  to hue). In HSV, yellow is brighter than green, which is brighter than blue,
+  all at the same value level, while in HCL, all colours with the same lightness
+  have the same perceived brightness.
+
+LAB.HCL is useful for colour interpolation in cases where you prefer to cycle
+through the colour wheel when interpolating between distant hues, rather than
+pass through a neutral colour when interpolating between two relatively
+more saturated colours. In HCL interpolation, unlike LAB,
+the Chroma (saturation) increases or decreases monotonically.
