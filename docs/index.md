@@ -28,3 +28,5 @@ Features:
   The X3D format supports full colour 3D printing (on Shapeways.com, at least).
   These meshes are defect free: watertight, manifold, with no self
   intersections, degenerate triangles, or flipped triangles.
+
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/H3Q-Sbxhrj8" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
