@@ -1,6 +1,6 @@
 Colours
 =======
-Colours are abstract values. This means that their representation is hidden
+In Visual Curv, Colours are abstract values. This means that their representation is hidden
 by the standard API. You call a function to construct a Colour. When a Colour
 is printed, in textual form you see a call to a Colour constructor function,
 not a list or record literal.
@@ -35,14 +35,18 @@ from the coordinate vector once you are ready.
 
 The Colour API
 --------------
-construct a colour:
+The minimum requirement for MVP is to provide colour constructors,
+a way to extract colour space coordinates, and a predicate.
+Everything else can be synthesized from these.
+
+Construct a colour:
 ```
     sRGB(vec3)
     linRGB(vec3)
     ...
 ```
 
-extract colour space coordinates from a colour:
+Extract colour space coordinates from a colour:
 ```
     sRGB.get col
     linRGB.get col
@@ -52,6 +56,7 @@ extract colour space coordinates from a colour:
 The set of known colour spaces is not "built in" to the Colour type, so user
 defined colour spaces have the same interface.
 
+There is a predicate for colour values:
 ```
 is_colour(red) == #true
 ```
@@ -67,6 +72,8 @@ Maybe you want to interpolate between two colours in a shape colour function.
         in
             sRGB(lerp(sRGB.get c1, sRGB.get c2, k));
 ```
+Colour libraries generally provide high level operations like:
+interpolate between two colours in a specified colour space. It isn't required for MVP.
 
 Colour Constants
 ----------------
