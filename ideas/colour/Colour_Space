@@ -11,19 +11,6 @@ In particular, Curv needs to have at least 2 RGB colour spaces: sRGB and linRGB.
 This means that an RGB triple is meaningless unless you specify which RGB
 colour space it belongs to. Colour is complicated. Sorry.
 
-Black is a unique, absolute colour (the absence of light).
-
-White is not a unique, absolute colour, either in physics, or in the physiology
-of human vision. Each colour space defines its own white point. Two popular
-definitions of white are Illuminant D50, with a colour temperature of 5000°K,
-and Illuminant D65, with a colour temperature of 6500°K. Both are approximations
-of daylight, defined by the CIE. D65 is a bit bluer, and D50 is a bit yellower.
-You can purchase both D50 and D65 "white" light bulbs.
-
-An RGB colour space has 3 coordinates (R,G,B), meaning red, green and blue,
-and is specified by the absolute colours of the red, green and
-blue primaries, the white point, and a gamma curve.
-
 Colour spaces are denoted by named values in Curv.
 Here is a curated list of the most useful colour spaces for Curv to support:
 * linRGB
@@ -54,21 +41,17 @@ colour space, unless there is metadata that specifies otherwise.
 By default, monitors are assumed to use the sRGB colour space,
 unless the device driver provides metadata that specifies otherwise.
 
-The "illuminant" white point of sRGB is D65, but the "ambient" white
-point (of the creation environment) is D50. I don't know what this means.
-If I display white on a calibrated sRGB monitor in a dark room, do I see D65
-or D50?
-
 linRGB
 ------
 linRGB is "linear RGB", and it is the colour space used internally by OpenGL
-for rendering and colour mixing. It is based on sRGB (same RGB primaries and
-same white point), but the gamma curve is linear. If you multiply a linRGB
+for 3D rendering and colour mixing. linRGB is also used for blending colours
+during alpha-compositing of 2D images. It is based on sRGB (same RGB primaries
+and same white point), but the gamma curve is linear. If you multiply a linRGB
 triple by *n*, then the number of photons emitted by the monitor will be
-increased by a factor of *n*. The effect of shining two light sources on
-an object is obtained by adding the linRGB triples of each light source.
-linRGB must be used if you want to model physically accurate colour mixing,
-and Curv uses it for rendering computations on the GPU.
+increased by a factor of *n*. The effect of shining two light sources on an
+object is obtained by adding the linRGB triples of each light source. linRGB
+must be used if you want to model physically accurate colour mixing, and Curv
+uses it for rendering computations on the GPU.
 
 sRGB exists because linRGB is not perceptually uniform. The human eye does not
 have a linear response to increasing light levels, it instead has an exponential
@@ -133,9 +116,8 @@ Is HWB useful for interpolating colours, creating gradients, etc?
 
 LAB
 ---
-This is the CIE LAB colour space. It is perceptually uniform: a given step size
-produces the same amount of perceptually change anywhere in the coordinate
-space.
+The CIE LAB colour space is perceptually uniform: a given step size produces
+the same amount of perceptually change anywhere in the coordinate space.
 * L is lightness (absolute brightness).
 * A is the red-green axis.
 * B is the blue-yellow axis.
@@ -155,43 +137,14 @@ space.
     when interpolating between blue and orange, you get neutral colours
     instead.
 
-HCL
----
-I want to include HCL, but there's a problem. There are 2 popular HCL colour
-spaces, and there is confusion about which colour space is
-being referred to on the different web sites that promote it.
-
-* HCL(uv)
-  This is a version of the CIE LCh(uv) colour space, with the coordinates
-  in HCL order. LCh(uv) is, in turn, a transformation of CIE LUV, with
-  better ergonomics for colour picking, similar to how HSV is a transformation
-  of RGB. <https://en.wikipedia.org/wiki/CIELUV#Cylindrical_representation>
-  * Ross Ihaka, "Colour for Presentation Graphics", 2003
-    <https://www.r-project.org/conferences/DSC-2003/Proceedings/Ihaka.pdf>
-  * The Colorspace library by Ihaka, for R and Python:
-    <http://colorspace.r-forge.r-project.org/>
-    <https://python-colorspace.readthedocs.io/en/latest/>
-  * <http://hclwizard.org/>
-* HCL(ab)
-  This is a version of CIE LCh(ab), which is a transformation of CIE LAB.
-  <https://en.wikipedia.org/wiki/CIELAB_color_space#Cylindrical_representation:_CIELCh_or_CIEHLC>
-  * CSS Level 4 specifies HCL(ab) as a supported colour space.
-    <https://www.w3.org/TR/css-color-4/#lab-colors>
-  * D3.js supports HCL(ab)
-    <https://bl.ocks.org/mbostock/3014589>
-  * chroma.js supports HCL(ab)
-
-Even though Ihaka claims that HCL(uv) is better than HCL(ab) for emissive
-displays, I think that the web community and the CSS standard are ultimately
-more influential than the R/Python communities. If you are picking or generating
-HCL colours to display in a web page, you better use HCL(ab). So I'm going to
-support HCL(ab). It's all about supporting a common standard, so that you can
-more easily port code from other platforms.
+There are other perceptually uniform colour spaces (eg, CIE LUV), but the
+graphics industry has standardized on LAB. By 'graphics industry', I mean
+photography, cinema, computer graphics, printmaking, image editors like
+Photoshop (which offer LAB editing), and colorimetry hardware. Curv wants to be
+interoperable with this large ecosystem.
 
 LAB.HCL
 -------
-This is the CIE HCL(ab) colour space described above.
-
 LAB.HCL is to LAB as sRGB.HSV is to sRGB.
 It is a simple transform of LAB coordinates: the AB axes are transposed into
 polar coordinates, giving Hue and Chroma axes which are more useful
@@ -224,3 +177,36 @@ through the colour wheel when interpolating between distant hues, rather than
 pass through a neutral colour when interpolating between two relatively
 more saturated colours. In HCL interpolation, unlike LAB,
 the Chroma (saturation) increases or decreases monotonically.
+
+LAB.HCL is heavily promoted on the web, is supported by many Javascript
+libraries, and is a standard colourspace in CSS Level 4.
+
+NOTE: There is a competing colour space, also called HCL, but based on the
+CIE LUV colourspace. I will call this HCL(uv). It is implemented by the
+`colorspace` library, which is available for R and Python. The web site
+<http://hclwizard.org/> promotes this version of HCL, without making it clear
+that it is different from the LAB version of HCL.
+
+Notes on White
+--------------
+Black is a unique, absolute colour (the absence of light).
+
+White is not a unique, absolute colour, either in physics, or in the physiology
+of human vision. What we perceive as "white" depends on the ambient lighting
+environment, and on what colours are nearby. For the purposes of colour
+classification, there are a range of "white" colours. "Warmer" whites are
+on the yellow side, while "cooler" whites are on the blue side.
+
+Each colour space has a defined "white point".
+
+The white point of sRGB is CIE illuminant D65, which has a colour temperature
+of 6500°K, and is markedly on the blue side of white. I think this was a forced
+choice, since sRGB was designed to be compatible with the television standards
+of the mid 20th century, and the phosphors used in television CRTs resulted in
+this very blueish white.
+
+The graphics industry has settled on illuminant D50 as the standard for "white",
+and uses D50 as the white point for the LAB colour space. D50 is warmer (or
+yellower) than D65. "Daylight" light bulbs sold in North America are roughly
+equivalent to D50. CSS level 4 defines a `gray` function, and the grey colours
+it generates are based on D50, even though sRGB has a D65 white point.
