@@ -598,7 +598,6 @@ parse_power(Scanner& scanner)
 // postfix : primary
 //  | postfix primary
 //  | postfix . primary
-//  | postfix ' primary
 Shared<Phrase>
 parse_postfix(Scanner& scanner)
 {
