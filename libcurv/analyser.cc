@@ -680,11 +680,9 @@ Sequential_Definition_Phrase::analyse(Environ& env, unsigned) const
 Shared<Locative>
 analyse_locative(const Phrase& ph, Environ& env, unsigned edepth)
 {
-    auto id = dynamic_cast<const Identifier*>(&ph);
-    if (id != nullptr)
+    if (auto id = dynamic_cast<const Identifier*>(&ph))
         return env.lookup_lvar(*id, edepth);
-    auto dot = dynamic_cast<const Dot_Phrase*>(&ph);
-    if (dot != nullptr) {
+    if (auto dot = dynamic_cast<const Dot_Phrase*>(&ph)) {
         auto base = analyse_locative(*dot->left_, env, edepth);
         // TODO: copypasta from Dot_Phrase::analyse
         // But, edepth is handled differently.
@@ -703,6 +701,11 @@ analyse_locative(const Phrase& ph, Environ& env, unsigned edepth)
         }
         throw Exception(At_Phrase(*dot->right_, env),
             "invalid expression after '.'");
+    }
+    if (auto call = dynamic_cast<const Call_Phrase*>(&ph)) {
+        auto base = analyse_locative(*call->function_, env, edepth);
+        auto index = analyse_op(*call->arg_, env);
+        return base->get_element(env, share(ph), index);
     }
     throw Exception(At_Phrase(ph, env), "not a locative");
 }
@@ -800,6 +803,7 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
                 });
                 return setter;
             }
+          /*
           #if 0
             The Definition protocol isn't designed for local definitions.
             To use Definition protocol, we need a Local_Scope class.
@@ -853,6 +857,7 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
                 pattern_->analyse(env);
                 definiens_expr_ = analyse_op(*definiens_phrase_, env);
           #endif
+          */
         }
         throw Exception(At_Phrase(*stmt, scope),
             "syntax error in local definition");

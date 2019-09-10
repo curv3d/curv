@@ -13,6 +13,14 @@
 namespace curv {
 
 struct Context;
+struct List_Base;
+
+/// Representation of lists in the Curv runtime.
+///
+/// This is a variable length object: the size and the value array
+/// are in the same object. This is very efficient for small lists:
+/// only a single cache hit is required to access both the size and the data.
+using List = Tail_Array<List_Base>;
 
 struct List_Base : public Ref_Value
 {
@@ -20,6 +28,9 @@ struct List_Base : public Ref_Value
     virtual void print(std::ostream&) const;
     bool equal(const List_Base&, const Context&) const;
     void assert_size(size_t sz, const Context& cx) const;
+
+    Shared<List> clone() const;
+    Value* ref_element(Value, bool need_value, const Context&);
 
     static const char name[];
     TAIL_ARRAY_MEMBERS(Value)
@@ -31,13 +42,6 @@ operator<<(std::ostream& out, const List_Base& list)
     list.print(out);
     return out;
 }
-
-/// Representation of lists in the Curv runtime.
-///
-/// This is a variable length object: the size and the value array
-/// are in the same object. This is very efficient for small lists:
-/// only a single cache hit is required to access both the size and the data.
-using List = Tail_Array<List_Base>;
 
 inline Shared<List> make_list(size_t size)
 {

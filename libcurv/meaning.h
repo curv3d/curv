@@ -969,6 +969,8 @@ struct Locative : public Shared_Base
     virtual void store(Frame& f, const Operation&) const = 0;
     virtual Shared<Locative> get_field(
         Environ&, Shared<const Phrase>, Symbol_Expr) = 0;
+    virtual Shared<Locative> get_element(
+        Environ&, Shared<const Phrase>, Shared<Operation>) = 0;
     virtual void sc_print(SC_Frame& f) const;
 };
 
@@ -980,6 +982,8 @@ struct Boxed_Locative : public Locative
     virtual void store(Frame& f, const Operation&) const override;
     virtual Shared<Locative> get_field(
         Environ&, Shared<const Phrase>, Symbol_Expr) override;
+    virtual Shared<Locative> get_element(
+        Environ&, Shared<const Phrase>, Shared<Operation>) override;
     // reference: get a pointer to the locative's state.
     // need_value is false if we are just going to immediately overwrite the
     // value without looking at it, or true if we need the value.
@@ -1013,6 +1017,25 @@ struct Dot_Locative : public Boxed_Locative
         Boxed_Locative(std::move(syntax)),
         base_(std::move(base)),
         selector_(std::move(selector))
+    {}
+
+    virtual Value* reference(Frame&,bool) const override;
+};
+
+// A Locative representing <boxed-locative> <index>
+struct Indexed_Locative : public Boxed_Locative
+{
+    Shared<Boxed_Locative> base_;
+    Shared<Operation> index_;
+
+    Indexed_Locative(
+        Shared<const Phrase> syntax,
+        Shared<Boxed_Locative> base,
+        Shared<Operation> index)
+    :
+        Boxed_Locative(std::move(syntax)),
+        base_(std::move(base)),
+        index_(std::move(index))
     {}
 
     virtual Value* reference(Frame&,bool) const override;

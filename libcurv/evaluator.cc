@@ -726,6 +726,15 @@ Boxed_Locative::get_field(
     return make<Dot_Locative>(syntax, share(*this), selector);
 }
 
+Shared<Locative>
+Boxed_Locative::get_element(
+    Environ& env,
+    Shared<const Phrase> syntax,
+    Shared<Operation> index)
+{
+    return make<Indexed_Locative>(syntax, share(*this), index);
+}
+
 Value*
 Local_Locative::reference(Frame& f,bool) const
 {
@@ -743,6 +752,19 @@ Dot_Locative::reference(Frame& f, bool need_value) const
     }
     Symbol_Ref id = selector_.eval(f);
     return base_rec->ref_field(id, need_value, At_Phrase(*syntax_, f));
+}
+
+Value*
+Indexed_Locative::reference(Frame& f, bool need_value) const
+{
+    Value* base = base_->reference(f,true);
+    Shared<List> base_list = base->to<List>(At_Phrase(*base_->syntax_, f));
+    if (base_list->use_count > 1) {
+        base_list = base_list->clone();
+        *base = {base_list};
+    }
+    auto ix = index_->eval(f);
+    return base_list->ref_element(ix, need_value, At_Phrase(*syntax_, f));
 }
 
 void

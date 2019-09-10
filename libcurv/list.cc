@@ -47,4 +47,18 @@ auto List_Builder::get_list()
     return List::make_elements(*this);
 }
 
+Shared<List> List_Base::clone() const
+{
+    return List::make_copy(array_, size_);
+}
+
+Value* List_Base::ref_element(Value index, bool need_value, const Context& cx)
+{
+    auto index_list = index.to<List>(cx);
+    index_list->assert_size(1, cx);
+    int i = index_list->at(0).to_int(0, int(size_)-1, cx);
+    (void)need_value;
+    return &array_[i];
+}
+
 } // namespace curv
