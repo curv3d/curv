@@ -1,9 +1,6 @@
 # TODO: Language Changes
 
 High:
-* ERROR: illegal escape sequence in quoted identifier
-  1| 'foo$$bar'
-         ^^
 * L[i] := b in SubCurv
 * V[[X,Y]] := vec2 in Curv, SubCurv
 * M[i,j] := a

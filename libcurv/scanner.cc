@@ -52,7 +52,7 @@ Scanner::get_token()
                 tok.kind_ = Token::k_bad_token;
                 ptr_ = p;
                 throw Exception(At_Token(tok, *this),
-                    "\"\" is no longer a valid escape sequence.\n"
+                    "\"\" is not a valid escape sequence.\n"
                     "Use ${quot} or $="
                       " to interpolate a \" character into a string.");
             }
@@ -72,7 +72,7 @@ Scanner::get_token()
                 tok.kind_ = Token::k_bad_token;
                 ptr_ = p;
                 throw Exception(At_Token(tok, *this),
-                    "$$ is no longer a valid escape sequence.\n"
+                    "$$ is not a valid escape sequence.\n"
                     "Use ${dol} or $."
                       " to interpolate a $ character into a string.");
             }
@@ -294,7 +294,13 @@ quoted_identifier:
                     ++p;
                     continue;
                 }
-                goto error;
+                ++p;
+                tok.first_ = p - 2 - first;
+                tok.last_ = p - first;
+                tok.kind_ = Token::k_bad_token;
+                ptr_ = p;
+                throw Exception(At_Token(tok, *this),
+                    "illegal escape sequence in quoted identifier");
             }
             if (*p >= ' ' && *p <= '~') {
                 ++p;
