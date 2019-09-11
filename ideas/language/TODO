@@ -1,8 +1,18 @@
 # TODO: Language Changes
 
 High:
-* `local x = 2`: Block local variables with sequential scope.
-* L[i] := b, V[[X,Y]] := vec2
+* ERROR: illegal escape sequence in quoted identifier
+  1| 'foo$$bar'
+         ^^
+* L[i] := b in SubCurv
+* V[[X,Y]] := vec2 in Curv, SubCurv
+* M[i,j] := a
+* replace foo."bar" with
+  * foo!#bar, foo!#bar := newval
+  * fetch [i1,i2,i3] S, amend path newvalue S
+  * S >> at[i], S >> at[i] := newval
+* replace {"foo":bar} with {#foo => bar}.
+* {pattern : value}
 * Multipart function definitions, allows recursive piecewise functions,
   which are wanted for lib.noise. OR: `match` is a keyword, see Match.
 * Picker predicates: implement the complete set
@@ -26,6 +36,7 @@ Low:
   * warn about inconsistent white space in expressions, eg: 'f -1' or 'f a.b'
   * Lua-like function call syntax. 'f 1' and 'f a' no longer supported,
     but 'f(x)', 'f[x]' and 'f{a:b}' are still supported.
+* missing features: Str[i] := c, for (c in Str)
 
 Breaking changes:
 * file.foo and package. Remove 'file pathname'.
