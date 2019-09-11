@@ -56,6 +56,15 @@ Extensions:
 * Record constructors may combine definitions and field generators.
   Shorter definitions for shape constructors with .mitred/.exact members.
 
+## Terse Function Literals
+For function literals with a single argument, and a short body (suggested max 12
+characters),
+    (_+1) is an abbreviation of (x->x+1)
+Inside of a parenthesized expression, `_` is an implicit function parameter.
+Doesn't work if the parameter is used inside nested parens, but does work if the
+parameter is used inside of [] or {}. Should not be used for large functions
+for style reasons.
+
 ## Quoted Identifiers and DFNs (Dynamic Field Names)
 ### Quoted Identifiers
 `'hello world'` is a quoted identifier.
