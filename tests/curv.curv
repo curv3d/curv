@@ -442,6 +442,12 @@ sc_test{
     else
         a
   ) == 2;
+"vector-element-assign": _->
+  (
+    let a = [1,2,3];
+    in do a[0] := 17;
+    in a
+  ) == [17,2,3];
 };
 assert(
   [
