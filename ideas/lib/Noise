@@ -86,6 +86,11 @@ https://github.com/Auburns/FastNoiseSIMD
 
 GLM has noise functions.
 
+Blender has a significant noise library implemented in GLSL, under an open
+source licence. Blender uses OpenGL 3.3 (the same as Curv), and it uses a
+hash function that performs bit manipulation on floating point representations.
+So I should be able to use this code fairly directly.
+
 Bitwise Operations in Curv
 --------------------------
 Several GPU hashing algorithms use uint32 bitwise and arithmetic operations.
@@ -122,4 +127,4 @@ to convert between integers/floats and bits32, which is a list of 32 bools.
 
 If I solve this problem, I still have the issue of writing bithacking code
 that converts between floats and bitvectors, and that is portable between
-Curv and CurvGL -- Curv has 64 bit floats, CurvGL has 32 bit floats.
+Curv and SubCurv -- Curv has 64 bit floats, SubCurv has 32 bit floats.
