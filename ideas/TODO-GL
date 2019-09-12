@@ -1,7 +1,0 @@
-`round` function
-----------------
- * on CPU, round to nearest even
- * on GPU, GLSL 1.3 and later have both `round` and `roundEven`
- * for < GLSL 1.3, I could define round a = floor(a + 0.5)
-   #if __VERSION__ < 130
- * for >= GLSL 1.3, should I define Curv `round` as GLSL `round` or `roundEven`?

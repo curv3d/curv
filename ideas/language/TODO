@@ -1,13 +1,16 @@
 # TODO: Language Changes
 
 High:
-* L[i] := b in SubCurv
 * V[[X,Y]] := vec2 in Curv, SubCurv
 * M[i,j] := a
 * replace foo."bar" with
-  * foo!#bar, foo!#bar := newval
+  * foo!#bar, foo!#bar := newval, defined(foo!#bar)
+  * foo >> at[#bar]
+    foo >> at[#bar] := newval ?
+    defined(foo >> at[#bar]) ?
+    This is okay as a replacement for `!`, if dictionaries are distinct
+    from modules and support dict[key] syntax.
   * fetch [i1,i2,i3] S, amend path newvalue S
-  * S >> at[i], S >> at[i] := newval
 * replace {"foo":bar} with {#foo => bar}.
 * {pattern : value}
 * Multipart function definitions, allows recursive piecewise functions,
