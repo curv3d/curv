@@ -395,7 +395,8 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
                 less_than, less_than_or_equal_to
                 equal_to
     * Mathematica: equal, unequal, greater, greater_equal, less, less_equal
-    * TensorFlow: equal, not_equal, greater, greater_equal, less, less_equal
+    * numpy: equal, not_equal, greater, greater_equal, less, less_equal
+      Also, <, <=, >, >= work elementwise on ndarrays.
     * eg, a `greater` b, a `gt` b, a `greater_than` b
           a `less_equal` b, a `less_or_equal` b, a `not_greater` b, a `le` b
           a `less_than_or_equal_to` b
@@ -404,6 +405,9 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
       * ne, not_equal, unequal, not_equal_to
       * lt, less, less_than
       * le, less_equal, less_or_equal, less_than_or_equal_to
+    * A proposal:
+        <, <=, >, >= work elementwise on arrays
+        equal(a,b), unequal(a,b) are elementwise variants of a==b, a!=b
 * `not` is vectorized version of `!`.
 * `all` and `any` are vectorized boolean monoids for && and ||.
   * Name is consistent with GLSL,HLSL,R,Julia,Python,Matlab.
