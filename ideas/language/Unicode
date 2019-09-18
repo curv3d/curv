@@ -146,6 +146,9 @@ Combining characters, jamo, etc are forbidden. With this restriction,
   not try to merge with the preceding quote character into a single glyph.
 
 ## Unicode Strings
+An excellent analysis of unicode string length:
+https://hsivonen.fi/string-length/
+
 A string is a sequence of characters, but what is a character in Unicode?
  1. Character boundaries.
     * In Swift, a character is an "extended grapheme cluster". Eg, an emoji
