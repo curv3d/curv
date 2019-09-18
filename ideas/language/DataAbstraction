@@ -1,6 +1,70 @@
-Data Abstraction and Generic Programming
-========================================
+Data Abstraction
+================
 
+Tar Pit or Virtue?
+------------------
+The modern practice of OOP leads to code with thousands of classes, an
+explosion of specialized ADTs, bloated code that is mostly boilerplate,
+and a huge tower of abstraction, code built on top of deeply nested giant
+libraries that nobody understands. Data abstraction mechanisms in OOP languages
+are incredibly complex and account for most of the language complexity.
+
+Haskell isn't OOP, but it is 'typeful programming', where the coding task is
+dominated by defining and using large numbers of ADTs. There's a high learning
+curve due to the complexity of the type system and the libraries.
+
+The opposite of this is the practice of programming in APL/J/K, where there
+are no data abstraction mechanisms, and you encode most data as nested arrays
+of numbers. You make little or no use of libraries; you just apply the very
+powerful language primitives to your arrays of numbers to get things done.
+Curiously, this leads to much shorter code, and much lower overall program
+complexity due to the absence of dependencies. Eg, look at the co-dfns project:
+an optimizing APL compiler in 750 lines with no dependencies. Down side: the
+code is opaque.
+
+Clojure is a less extreme reaction against the excesses of OOP. Being a
+pragmatic language that integrates with the JVM, it doesn't entirely eliminate
+data abstraction, and Rich Hickey admits that ADTs still have a small role to
+play. Clojure tries to remove much of the complexity of OOP. There are still
+classes, but no information hiding, and no implementation inheritance. Instead,
+genericity is obtained by implementing interfaces/protocols. There are still
+nominal types, but most data should be stored in generic collections and maps.
+
+Curv needs to find a middle ground between the no-abstraction Turing tar pit
+and the typeful programming/OOP tar pit. If "no-abstraction" is taken to its
+logical conclusion, you get shadertoy.com, where you code in raw GLSL and
+there are no reusable libraries. This coding style is just too difficult.
+We need higher level abstractions, including data abstractions. We need
+libraries of reusable code. We need the ability to define DSLs within Curv
+to simplify the use of various artistic techniques, eg like L-systems.
+But the language needs to be kept very simple.
+
+What Curv Needs
+---------------
+Curv has informal data types like Shape, Colour, Intensity Field, etc.
+There already is data abstraction; the question is what language support do I
+need? The language must be kept simple, so what are the minimum requirements?
+
+The data model should be simple: when you print a datum, what you see
+is all there is. However, Out Of The Tar Pit advocates a separation between
+"essential" and "accidental" data, to reduce complexity. In a Shape value,
+the 'essential' data is really the constructor and constructor arguments,
+while the 'accidental' data are all the fields generated from the constructor
+arguments. Printing a shape with all of its fields is already a confusing mess,
+which is why I have a kludge to suppress that information.
+
+There will be no OOP classes: no information hiding, and no implementation
+inheritance.
+
+I might want a concept of tagged values. Provisional syntax:
+    #tag:primary_expr
+The payload can be any (untagged?) value. A tagged value behaves just like
+its payload when passed to most primitive operations. Possible use case:
+use #colour:[r,g,b] to tag a colour value, so that colours are graphical values,
+and so that a colour picker is invoked to edit the value in the visual editor.
+
+Data Abstraction and Generic Programming
+----------------------------------------
 Data Abstraction means several things to me:
 * The act of coding a generic algorithm, which involves specifying the
   minimum requirements on the data that the algorithm acts on.
