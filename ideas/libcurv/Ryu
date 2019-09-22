@@ -1,0 +1,4 @@
+Fastest available correct float->string conversion.
+https://github.com/ulfjack/ryu
+
+double-conversion will not be changed to use ryu. No dev resources for it.
