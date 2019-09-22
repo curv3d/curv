@@ -1,3 +1,11 @@
+Big Themes:
+1. language, subcurv, libraries
+2. shape rep: pixl/voxl, v-rep, alg surf, exact offset, non-affine xforms
+3. rendering: camera, shading, materials
+4. export
+5. visual programming: web GUI, WASM, graphical values
+6. user engagement: documentation, web site, prebuilt exes
+
 `render <render-record> <shape>` -- adds pickers for render params
 * depends on Abstract Value proposal
 
