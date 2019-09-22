@@ -1,0 +1,9 @@
+https://www.youtube.com/watch?v=Xpf7Ua3UqOA
+
+Claybook is a game that simulates clay using SDFs. No triangles.
+Physics & fluid simulation on GPU. No baked lighting or shadows, all real time.
+
+F-Rep based SDFs can be really slow (as distance function gets complex).
+Solve problem using discrete SDFs using volume textures.
+Volume textures can be huge, but are sampled sparsely, which kills the GPU
+texture cache, so use mip maps to sample areas not close to a surface.
