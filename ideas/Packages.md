@@ -307,3 +307,6 @@ How do you use these features, as a user?
   Use `include file.param` and `include file.lib`.
 * The curv/examples directory will change: it gains a `.curvroot` file,
   and uses `file.lib.experimental` to reference the library.
+
+## Bibilography
+https://medium.com/@sdboyer/so-you-want-to-write-a-package-manager-4ae9c17d9527

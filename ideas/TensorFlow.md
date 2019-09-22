@@ -41,3 +41,6 @@ SDF for a desired shape.
 Generative Adversarial Networks (GAN): two networks trained on the same
 family of shapes or images. One network generates candidates, the other network
 accepts/rejects the candidates.
+
+On using machine learning to approximate functions (to create 3D animations)
+http://theorangeduck.com/page/machine-learning-kolmogorov-complexity-squishy-bunnies
