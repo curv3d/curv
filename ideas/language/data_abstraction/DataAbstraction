@@ -39,23 +39,261 @@ libraries of reusable code. We need the ability to define DSLs within Curv
 to simplify the use of various artistic techniques, eg like L-systems.
 But the language needs to be kept very simple.
 
-What Curv Needs
----------------
+Requirements
+------------
 Curv has informal data types like Shape, Colour, Intensity Field, etc.
-There already is data abstraction; the question is what language support do I
-need? The language must be kept simple, so what are the minimum requirements?
+There is already informal data abstraction: what further language support is
+needed? The language must be kept simple, so what are the minimum requirements?
+
+There is a need for "abstract values": instances of application data types
+where the representation is abstracted out of the interface.
+* An abstract value is constructed by calling a high level constructor function
+  associated with the application type. The user is not required to
+  know the internal representation (usually as a record).
+* Abstract values are displayed using a high level representation (as calls
+  to constructor functions, or graphically, for some types in Visual Curv).
+  This is in contrast to displaying the internal representation of an abstract
+  value (as a pure text [...] or {...} literal).
+* Out Of The Tar Pit advocates a separation between "essential" and
+  "accidental" data, to reduce complexity. In a Shape value, the 'essential'
+  data is really the constructor name and arguments, while the 'accidental'
+  data are all the fields generated from the constructor arguments. Printing
+  a shape record with all of its fields is confusing and low level,
+  which is why the REPL has a kludge to suppress that information.
+* Visual Curv has a requirement for an extensible set of graphical value types.
+
+Language enforced information hiding, wherein the user is prohibited from
+accessing the underlying representation of an abstract value, is not a
+requirement.
+
+Not all application data types should be abstract. If no confusion is caused
+by identifying the type with its representation as a list or record, and there
+is no requirement for graphical values, then it is better to just use a plain
+list or record. For some application types, it's best to just use a numeric
+array as the representation: then you can perform arithmetic on the value
+without explicitly converting between abstract and array representation.
+In Clojure culture, most application types are just plain maps or records.
+
+The distinction between abstract and concrete values is in how they
+are printed. Curv values are printed as *constructor expressions*, which
+usually can be evaluated to recreate the original value. The Curv equality
+predicate works on any pair of values. Two values A and B compare as equal
+(A == B) if and only if they have the same printed representation.
+
+Abstract Values
+---------------
+What is the simplest design that supports abstract values? How are they encoded?
+What code do you write?
+
+ a) Abstract values are *not* tagged. An abstract value is recognized using
+    record patterns. There is an external registry that maps patterns onto
+    instructions for how to display a value. For a user defined package to
+    define a new abstract type, it requires extending the registry. Kind of
+    like defining a generic function in CLOS.
+    
+It's possible to have conflicts between packages, if they try to register
+the same pattern. A conflict could occur if two independent packages A and
+B are loading different versions of a third package C.
+
+A more general kind of conflict occurs if two packages accidently pick the
+same internal representation (the same set of record fields) for different
+abstract types, which in any case are advertised to the user in terms of
+the constructor functions you call, not the representation.
+
+In general, there's no simple reliable way to resolve these conflicts.
+This seems bad.
+
+ b) Abstract values are somehow tagged with application type information
+    that is distinct between packages (or at least cannot conflict).
+
+The failure mode for (b) is much less catastrophic than (a): It is that
+two versions of the same package will generate distinct abstract types.
+
+So, abstract values will contain type information. And it seems I have chosen
+'nominal' type equivalence in preference to 'structural' type equivalence.
+
+Let's characterize that type information.
+* Type `Colour` is a simple abstract type. There is a single constructor
+  function used to print colours: `sRGB(r,g,b)`. There is one internal
+  representation: as a linear sRGB triple. `sRGB` is a constructor function
+  that constructs an instance of `Colour`.
+* Type `Shape` is more like an abstract OOP class with multiple concrete
+  subclasses, each with their own constructor function. So `cube` is a
+  constructor function that constructs a cube, which is also a Shape.
+  So there is a type hierarchy.
+
+In the Branded Value proposal, only leaf node ADTs have nominal types (brands),
+and Shape is a structural type. Here, I seem to have concluded that Shape is
+also a nominal type. Does this follow from requirements?
+
+If Shape is a structural type (there's no tagging to identify a Shape)
+then we need a record pattern registry to hook up the code that makes Shape
+a graphical value. (What I have now but generalized.) I've argued above that
+this approach has problems for user-defined graphical types in packages.
+
+I've previously considered that Shape *should* be a structural type,
+on the general principle that structural/duck typing is more flexible
+than nominal typing. Structural typing lets you induct existing types
+into a new interface/protocol type without modifying existing constructors.
+* The real question, then, is whether we need the ability to create new
+  ad-hoc 'abstract' types from existing code, changing the way those values
+  are printed or making them graphical, without changing their constructors.
+  I don't think we *need* this. The remaining question: what's simpler?
+
+Abstract Values with Nominal Types
+----------------------------------
+What language features are provided? This design is OOP inspired,
+only simplified, with no classes and no mutable objects. Inspiration is
+derived from Self, OCaml, and other OOP languages that have anonymous classless
+object literals.
+
+A Module is an immutable Record with some extra features. A Module can be
+branded with the identity of the Constructor that created it, which is a
+proxy for application type information, in which case it represents an instance
+of an abstract type. It's analogous to an OOP object.
+
+A Constructor is a function that returns a branded Module. It's analogous to
+an OOP class, in that it represents an abstract data type,
+by virtue of being the only way to construct instances of such a type.
+
+And there's subtyping, so that `cube` can be a subtype of `Shape`.
+So `cube` and `Shape` are constructors, and `cube` is a subconstructor
+of `Shape`. So `cube?` and `Shape?` are type predicates, and `cube?`
+implies `Shape?`. These are nominal types.
+
+What's missing from the Branded Values proposal is subtyping: a Constructor can
+apply its own brand to an already branded module, and the brands nest.
+
+In Julia, "all concrete types are final and may only have abstract types
+as their supertypes". This is a restricted variant of OOP that avoids some
+of the well known problems. Curv abstract value types are consistent with
+this philosophy.
+
+There are two kinds of constructors, corresponding to concrete, final classes
+and abstract classes in OOP.
+* 'mixin constructors' correspond to abstract OOP classes.
+  A mixin constructor takes a module as an argument, and returns a copy of the
+  module, modified to contain all of the fields required by the mixin.
+  * Required fields with default values will be added if missing.
+  * If a required field doesn't have a default, and it is missing, then raise
+    a domain error.
+  * Required fields with bad values will raise a domain error.
+  * Unrecognized fields will pass through without change (these unrecognized
+    fields belong to other types, not known to the mixin).
+  * A brand is added to the module certifying that the required fields are
+    present and have appropriate values.
+* 'final constructors' correspond to concrete, final OOP classes.
+
+A module can have 0 or 1 final constructors. It can have 0 or more mixin
+constructors. There is a total ordering on the constructors. The outermost
+constructor (the final constructor, if present) is used when printing the value.
+
+Signatures
+----------
+A 'mixin constructor' is actually a representation for a module interface or
+signature. A signature is a set of named fields that any conforming module
+must possess, plus constraints that specify the meanings of those fields.
+The constraints can include type constraints, and axioms. A signature S can
+inherit structure from 'super' signatures. S can define additional fields,
+or it can further constrain inherited fields.
+
+Curv doesn't have a logic system for reasoning about and proving axioms.
+Instead, the axioms are in the documentation. Conforming modules are given
+a 'brand' (or type tag) that certifies that the module conforms to the
+signature (which includes upholding the documented axioms).
+
+In abstract algebra, the only difference between a Magma and a Monoid is that
+the monoid has additional axioms like associativity. Monoid <: Magma.
+So that's an example of a situation where the set of field names alone
+are not enough to distinguish two signatures. It's another argument for adding
+branding (branded modules) to the language.
+
+If I'm adding branded signatures to Curv, I want to use this feature
+consistently, rather than use a mishmash of structural and nominal signature
+matching. Shape becomes a branded signature, so does Callable.
+
+Syntax
+------
+As a straw-man, I'll use the @ style syntax from Branded Values.
+    f x = @...;     // final constructor
+    g x = @@...;    // mixin constructor
+It's cryptic, but it's more important to get the semantics right first.
+
+This implies that constructor-ness and branded-ness are orthogonal.
+* I do use anonymous final constructors in the `parametric` construction.
+* Anonymous mixin constructors are useless, I think. So we don't need syntax
+  for them.
+
+The Branded Value proposal allows a module to be re-branded.
+This entails changing the brand on each branded field.
+I wonder if there is a problem with something like
+    {
+        @ctor x = ...;
+        y = ctor 0;
+    }
+If we retroactively rebrand this module, then how does the brand of `y`
+get updated?
+
+------
+Maybe the syntax for this is:
+    cube d = @@Shape { ... };
+The @@ operator can only be applied to the body expression of a function,
+and it creates a nested brand.
+
+What this effectively gives us is single inheritance. "Multiple inheritance",
+or interfaces, or protocols, can be accomplished using duck typing.
+Hmm, well, this also gives us mixin inheritance, which is basically ordered
+multiple inheritance.
+
+Why do we need both @ and @@ style constructor functions?
+Consider
+    cube d = @box[d,d,d];
+We use @ instead of @@ because in this case, we don't want cube to be
+a subtype of box.
+
+It's evident that Shape is designed to be subtyped, and box isn't.
+Perhaps this distinction should encoded in the Shape and box values,
+instead of encoded in the choice of @ or @@ when invoking Shape or box.
+
+We will call Shape a mixin constructor and design syntax for it. Shape takes
+a record argument, and returns a modified version of that record. The result
+record R is marked as being a Shape (Shape? R is true). A pure Shape is
+printed as `Shape {...}`.
+
+Previous Notes
+--------------
+What code do you write to define an abstract value constructor function?
+
+So, abstract values will contain type information, but what kind?
+* A pointer to a 'type' object that contains all of the necessary information.
+  Abstract values are self contained.
+* A GUID that is distinct across packages, a type tag.
+  The code that interprets these tags is stored outside of the value.
+
+-----
+There will be no OOP classes: no information hiding, and no implementation
+inheritance. (Clojure also omits these features.)
+
+There may be a requirement for values that are tagged with application data
+types. (There are many ways to do this: requirements first.)
 
 The data model should be simple: when you print a datum, what you see
-is all there is. However, Out Of The Tar Pit advocates a separation between
-"essential" and "accidental" data, to reduce complexity. In a Shape value,
-the 'essential' data is really the constructor and constructor arguments,
-while the 'accidental' data are all the fields generated from the constructor
-arguments. Printing a shape with all of its fields is already a confusing mess,
-which is why I have a kludge to suppress that information.
+is all there is.
+* Therefore, we may have a requirement for "abstract" data, which are
+  printed as constructor expressions, rather than as [...] or {...} literals.
 
-There will be no OOP classes: no information hiding, and no implementation
-inheritance.
+Visual Curv has a requirement for an extensible set of graphical value types,
+which are displayed graphically, rather than as pure text [...] or {...}.
 
+So much for displaying abstract values. There is also a need for predicates
+and pattern matching on abstract values.
+* Colour is a single concrete type with a fixed (R,G,B) internal representation.
+  All colours are printed the same way, using a single constructor.
+* Shape is a family of concrete types that share a common set of fields.
+  There are multiple constructors. I need a predicate that recognizes all
+  shapes, regardless of the constructor.
+
+---------
 I might want a concept of tagged values. Provisional syntax:
     #tag:primary_expr
 The payload can be any (untagged?) value. A tagged value behaves just like
