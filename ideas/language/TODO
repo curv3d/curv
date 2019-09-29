@@ -406,8 +406,10 @@ Multidimensional Array Slice Assignment `a[i,j,k] := x`.
       * lt, less, less_than
       * le, less_equal, less_or_equal, less_than_or_equal_to
     * A proposal:
-        <, <=, >, >= work elementwise on arrays
+        <, <=, >, >= work elementwise on arrays.
+          This is APL semantics. It precludes Python semantics, [0,1]<[1,2].
         equal(a,b), unequal(a,b) are elementwise variants of a==b, a!=b
+          APL semantics: only non-list elements are compared for equality.
 * `not` is vectorized version of `!`.
 * `all` and `any` are vectorized boolean monoids for && and ||.
   * Name is consistent with GLSL,HLSL,R,Julia,Python,Matlab.

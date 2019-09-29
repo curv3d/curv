@@ -170,6 +170,12 @@ A string is a sequence of characters, but what is a character in Unicode?
       changed, after emoji flag characters had already been released. It was
       a bug fix, but it impacted the Swift language by changing the meaning
       of the string length and index operators.
+    * Given the instability of EGCs, are they worth it? Do they provide any
+      worthwhile guarantees? English speakers might think that an EGC
+      corresponds to a glyph, or to the unit of character selection,
+      but I don't think that's true in general. In some Asian scripts,
+      a single glyph may be constructed from multiple EGCs.
+      https://gankra.github.io/blah/text-hates-you/
     * Or, a character is a code point. This has many technical advantages.
       * The Unicode standard is unstable. EGC boundaries change from one
         release to the next. Eg, when new compound emoji classes are added.
