@@ -1,0 +1,43 @@
+Implementation
+--------------
+Naively, it appears that Minkowski sum ought to be implementable as a
+Nested Distance Field operation on shapes with exact distance fields,
+analogous to ``perimeter_extrude``. But it's not that simple, and an actual
+implementation is likely to be expensive.
+
+Why is this? I figured this out years ago, but I don't remember the reasoning.
+* How about Minkowski sum of convex shapes? That's the fast case for OpenSCAD.
+  Is it any more tractable? Nope.
+* A very simple case of Minkowski sum is sweeping a 3D shape along a line
+  segment. I tried (and failed) to implement this as a nested distance field
+  operation (it only works for spheres, not for other convex shapes).
+  The boundary of the swept volume, in spots near the middle of the sweep,
+  is determined by the points on the swept shape that are farthest away from
+  the sweep axis. And how do you find those points using a distance field?
+  A proper implementation would require iterative numerical methods.
+* If we used directed distance fields, where the input is a point and a
+  direction vector, and the output is the distance along that vector,
+  then would Minkowski sum be more tractable? No, that's just using the same
+  incorrect intuition as before. This doesn't help with sweeping a convex
+  shape along a line segment.
+* I vaguely recall thinking that Minkowski sum in 2D could be formulated by
+  constructing the distance field for a 4D shape, then projecting that back
+  down to 2D. The projection would be expensive, requiring numerical methods.
+  I don't remember the details, and this may not be accurate.
+* Maybe it is easier with voxels?
+
+Use Cases
+---------
+An OpenSCAD operation that is difficult/expensive to implement in F-Rep.
+I personally like Minkowski sum, but there is a learning curve in understanding
+how it works. It's not intuitive to people who first encounter it.
+
+The most common Minkowski sum idioms have cheaper direct implementations
+in F-Rep which are also easier to understand.
+
+* Rounded offset at distance d: Minkowski sum with a sphere of radius d,
+  or ``offset d`` of a shape with an exact distance field.
+* Shell: in Curv, ``shell``.
+* Morph between two shapes: in Curv, ``morph``.
+* Sweep a 3D solid along a 3D curve: This has its own entry in the TODO list,
+  and might be easier than a general Minkowski sum implementation.
