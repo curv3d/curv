@@ -1,0 +1,110 @@
+Traits
+------
+A record trait is a set of named fields that any conforming record must possess,
+plus constraints that specify the meanings of those fields. The constraints
+can include type constraints, assertions, and axioms. A trait T can inherit
+structure from super-traits. T can define additional fields, or it can
+further constrain inherited fields.
+
+A function trait specifies constraints on a function's domain and range.
+
+As a special case, Callable is a primitive trait implemented by all functions:
+it denotes a value that can be used on the left side of a function call.
+Records that implement Callable must have a `call` field that is bound
+to a Callable value.
+
+Curv doesn't have a logic system for reasoning about and proving axioms.
+Instead, the axioms are in the documentation. Conforming values are given
+a 'brand' (or type tag) that certifies that the value conforms to the
+trait (which includes upholding the axioms in the documention).
+
+In abstract algebra, the only difference between a Magma and a Monoid is that
+the monoid has additional axioms like associativity. Monoid <: Magma.
+So that's an example of a situation where the set of field names alone
+are not enough to distinguish two traits. It's another argument for adding
+branding (branded records) to the language.
+
+If I'm adding branded traits to Curv, I want to use this feature
+consistently, rather than use a mishmash of structural and nominal trait
+matching. Shape becomes a branded trait, so does Callable.
+
+Operations on a trait:
+* Record constructor: Take a record R. Return a copy of R, modified to contain
+  all of the fields required by the trait.
+  * Required fields with default values will be added if missing.
+  * If a required field doesn't have a default, and it is missing, then raise
+    a domain error.
+  * Required fields with bad values will raise a domain error.
+  * Unrecognized fields will pass through without change (these unrecognized
+    fields belong to other types, not known to the mixin).
+  * A brand is added to the record certifying that the required fields are
+    present and have appropriate values.
+* Record predicate. Test if a record implements the trait.
+
+If T is a trait, then
+* `T R` is the record constructor
+* `T? R` is the record predicate.
+* `is_trait T` is true.
+
+Is there a way for a record constructor to 'inherit' from another record R
+(inheriting R's fields *and* traits)?
+* No. That would be OOP style inheritance, inheriting both implementation and
+  interface from the same source. This is a part of OOP that is considered
+  harmful. You should only inherit from interfaces, not concrete classes.
+
+Where does a trait's brand come from?
+* The naive design is that make_trait (or whatever it's called) is an
+  impure function that creates a unique new brand as a side effect.
+  * That violates the functional purity of Curv.
+  * This kind of trait doesn't have a meaningful name, suitable for printing.
+* A better plan is to use the Branded Value mechanism to create the brand.
+  This implies: you construct an anonymous trait value, then you apply
+  a brand to it when binding it to a branded record field.
+    @name = make_trait(...);
+    f x = @make_trait(...);
+  `make_trait` constructs an unbranded trait value. This is orthogonal design:
+  the binding construct is orthogonal to the constructor. A benefit is that
+  you can use abstraction mechanisms to compute the trait value.
+  *Maybe* trait values are useful outside this context, but I don't know.
+* Provide a special field binding construct for defining branded traits.
+  There are no anonymous traits. This matches how most GP languages work.
+    `trait <id> <opt-param-seq> = <trait-spec>`
+  where <trait-spec> is *not* an expression. There's no abstraction over
+  trait-specs, but this syntax has explicit provision for defining a function
+  that constructs a trait.
+
+How is a record trait specified?
+* As a user-supplied function that maps a record onto a record.
+  * If there are super-traits, they are buried inside the function and not
+    accessible.
+  * If multiple traits are applied to a record, they must be fully ordered,
+    since there's no internal structure and no restrictions on what the
+    function can do.
+* Use a declarative DSL syntax. It's more structured and declarative.
+  make_trait (super_traits...) {fields and assertions}
+  Eg,
+    @Shape = make_trait () {
+        is_2d = false;
+        is_3d = false;
+        assert(is_2d || is_3d);
+        bbox :: is_bbox3 = [[-inf,-inf,-inf],[inf,inf,inf]];
+        colour p = sRGB[.8, .8, .5];
+        distance :: is_func;
+    }
+  We can specify that the set of supertraits is unordered.
+  Can two supertraits specify the same field?
+  * Are unrelated fields with the same name simply merged?
+  * Or do we require diamond inheritance in this case, where a given field
+    name is ultimately derived from a single trait.
+  If two supertraits provide a default value for the same field, then the
+  base trait must also provide a default for that field.
+
+How is a function trait specified?
+
+Names for this concept:
+* trait
+* concept
+* contract
+* protocol (not like clojure protocols, which are extrinsic, not intrinsic)
+* interface
+* signature

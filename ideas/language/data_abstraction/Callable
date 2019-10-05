@@ -24,6 +24,10 @@ Some conclusions:
   A callable record is {call:...,...} while an anonymous function is <function>.
 
 Open issues:
+* If we have tagged traits, then Callable is a trait that must be
+  applied to a record to make it callable (the record must also have a `call`
+  field). The predicate Callable? is true both for callable records, and for
+  functions.
 * Are String and List callable values? is_callable "a" and is_callable [a]?
   * Are there use cases for generic code that treats String and List as
     callable? Or is my use of list[index] syntax ad-hoc overloading?

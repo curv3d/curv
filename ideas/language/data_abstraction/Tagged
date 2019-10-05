@@ -1,0 +1,110 @@
+Tagged Application Data
+=======================
+No Tagging
+----------
+In this scenario, data has no tagging to indicate how it is interpreted
+by the application. Instead, we rely entirely on functions to determine
+what the data means.
+
+For example, numbers can represent a lot of different things.
+* A natural number can be cardinal (count a number of items)
+  or ordinal (eg, an array index). In languages descended from C, a Nat can
+  represent a bit array, and you use operations like `&` and `<<` to manipulate
+  the bits.
+* A float can represent a physical quantity or measurement.
+  If it's a distance, the unit is implicit (meters, feet, etc).
+
+Curv 0.4 uses lists of numbers to represent 'vectors' (rank 1 tensors),
+and a 'vector' can represent a geometric point, a geometric vector,
+a normal vector, a complex number, etc.
+
+Weak (Relative) Tagging
+-----------------------
+Sometimes we need polymorphic data. Weak or relative tagging means that
+there is tagging, but it is just a local convention interpreted
+by a small number of functions. Similar to "duck typing" and "structural
+type equivalence". No language extensions required.
+
+In Curv 0.4, we have a weak tagging convention for representing algebraic
+types (discriminated unions): #foo and {bar: val}.
+
+The tagging for Shape values (via `is_shape`) is based on a record pattern,
+and that is also weak tagging.
+
+Classless OOP
+-------------
+Another way to create polymorphic data. Just use records that contain behaviour
+(function fields). Like 'shapes'. Again, no language extensions are required.
+
+Strong (Absolute) Tagging
+-------------------------
+Strong tagging is a programming language mechanism that ensures
+globally unique tagging. This can be done using a static type system,
+dynamic type tags, or a hybrid. Similar to "nominal type equivalence".
+
+I've considered both 'concrete tags' (constructors)
+and 'abstract tags' (traits).
+
+This can add significant language complexity. So it is important
+to identify the real requirements (goals vs non-goals), and design
+a simple mechanism that doesn't add unneeded complexity.
+
+Requirements
+------------
+### Abstract data
+Some application data types have a simple construction API, but a complex
+internal representation (eg, due to classless OOP). To simplify things for
+users, this representation is hidden as long as you stick to the high level API:
+* You only use constructor functions for constructing values.
+* When the value is printed, it prints as a high-level constructor expression
+  (instead of printing the internal rep).
+* You use a predicate function associated with the constructor to match
+  instances of the type (instead of a pattern matching the internal rep.).
+* Equality tests (a==b) test if two values have the same printed representation:
+  same constructor and same constructor arguments. Equality is broken for
+  'classless OOP' objects like shapes in Curv 0.4: comparing internal reps
+  doesn't work due to not having meaningful support for function equality.
+  So this means we have meaningful and correct equality for abstract values.
+  This feature also supports meaningful, high level "nominal" function equality.
+
+I've tried designing this feature using classless OOP and a set of magic record
+field names that have special interpretations, but it's too complicated to use
+such an API directly: we would want special syntax for defining constructors
+of abstract values, etc.
+
+### Graphical Values
+* A graphical value is an abstract value that is displayed graphically
+  instead of textually.
+* A graphical expression is an expression that constructs an abstract value,
+  and which may be edited graphically, instead of textually.
+
+Curv defines a number of graphical value types. For each type, there is an
+interface/contract that such a value must implement.
+
+Curv can recognize graphical values and determine their graphical value type.
+If there are subtype relationships within the graphical value types,
+then any pattern that matches a supertype should also match a subtype.
+ 1. Implicit. Graphical values are records. A graphical value interface/contract
+    is a set of field names and field types. Curv uses record patterns to
+    recognize each contract.
+ 2. Explicit/bespoke. Bind a `__graphical_type` field to an enum value.
+ 3. Explicit/general. There is a standardized way to tag values with an
+    application type, and some of these type tags denote graphical types.
+    * Use 'enum' tagging: {<typename>: <value>}. Eg, {colour: [r,g,b]}
+      or {shape: {distance, colour, bounds, is_2d, is_3d}}.
+    * Use a 'strong tagging' solution. Constructor tags work for 'Colour',
+      we need Trait tags for 'Shape'.
+
+Recognizing Graphical Expressions:
+* A G.E. has a constructor, and an argument that is a literal constant.
+  During editing, the argument expression is overwritten by another literal
+  constant. The constructor is a constant expression containing free variables;
+  the constructor value contains structure that identifies it as a graphical
+  value constructor.
+
+### Shared Packages
+Versioned packages of Curv source code can be shared over the internet.
+What if two versions of the same package P are loaded in the same program?
+Independent packages B and C both depend on (different versions of) P.
+Let's say that P defines a public data type T, and that B and C both
+export functions that construct and return T values.
