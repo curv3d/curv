@@ -1,0 +1,19 @@
+https://aardvarkians.com/
+Open-source platform for visual computing, real-time graphics and visualization
+F# and .net, primary Windows, secondary Linux. OpenGL 4.3 & Vulkan.
+
+Aardvark.base
+Incremental computation, based on:
+  https://www.cs.umd.edu/~hammer/adapton/
+  Adapton: Composable, Demand-driven Incremental Computation (OCaml)
+  Incremental computation allows programs to be efficiently re-executed after
+  a small change to the input.
+Incremental JIT for AMD64 architecture.
+
+Aardvark.rendering
+Dependency-aware, high-performance rendering engine.
+Tracks all changes in the scene description and automatically updates
+affected parts in the incrementally maintained optimization datstructures.
+
+Aardvark.media
+Elm architecture UI framework
