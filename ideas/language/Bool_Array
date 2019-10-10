@@ -1,0 +1,127 @@
+## Proposal
+* vectorize `bit`
+* vectorize `!a`
+* `all` and `any` are vectorized boolean monoids for && and ||.
+  alternative: `and` and `or`
+* <, <=, >, >= work elementwise on arrays.
+* `are_equal(a,b)`: elementwise variant of a==b
+  * `are` is plural of `is`.
+  * Alt names: equal, equal_array, all_equal
+  * for a!=b use !are_equal(a,b). Or use are_unequal(a,b).
+* `select`: vectorized version of `if`
+  eg,
+    linRGB_to_sRGB rgb =
+      select(rgb < 0.0031308,
+             rgb * 12.92,
+             1.055 * rgb ^ (1.0 / 2.4) - 0.055);
+
+if (any(are_equal(a,b))) ...
+select(are_equal(a,b), a1, a2)
+
+## Vectorized boolean operations
+* Vectorized relations are:
+  * infix operators:
+    * <' <=' >' >=' ==' !='
+    * .< .<= .> .>= .== .!= (Julia)
+  * or n-ary functions, infixed using backtick:
+    * less, greater, equal, less_or_equal, greater_or_equal, not_equal (FLUENT)
+    * lt, gt, eq, le, ge, ne (TERSE, Matlab)
+    * less, greater, equal, not_less, not_greater, not_equal
+    * If f'g is function composition, then we can write not'less, not'greater,
+      not'equal? For binary, not ternary.
+    * Hamcrest: greater_than, greater_than_or_equal_to,
+                less_than, less_than_or_equal_to
+                equal_to
+    * Mathematica: equal, unequal, greater, greater_equal, less, less_equal
+    * numpy: equal, not_equal, greater, greater_equal, less, less_equal
+      Also, <, <=, >, >= work elementwise on ndarrays.
+    * eg, a `greater` b, a `gt` b, a `greater_than` b
+          a `less_equal` b, a `less_or_equal` b, a `not_greater` b, a `le` b
+          a `less_than_or_equal_to` b
+    * unified table of alternative spellings:
+      * eq, equal, equal_to
+      * ne, not_equal, unequal, not_equal_to
+      * lt, less, less_than
+      * le, less_equal, less_or_equal, less_than_or_equal_to
+    * In HLSL, comparison operators (<,>,<=,>=,==,!=) operate component-wise
+      when given a vector operand. If a whole vector equality or inequality is
+      desired, then all() or any() can be used on the resulting bool vector.
+    * A proposal:
+        <, <=, >, >= work elementwise on arrays.
+          This is APL semantics. It precludes Python semantics, [0,1]<[1,2].
+        equal(a,b), unequal(a,b) are elementwise variants of a==b, a!=b.
+        Or use !equal(a,b).
+          APL semantics: only non-list elements are compared for equality.
+* `not` is vectorized version of `!`.
+* `all` and `any` are vectorized boolean monoids for && and ||.
+  * Name is consistent with GLSL,HLSL,R,Julia,Python,Matlab.
+  * Use some(pred)list, every(pred)list, name consistent with Javascript.
+  * Haskell uses "and". Eg, a `any` b  vs  a `and` b
+* Rationale: vectorized boolean ops have different names than unvectorized ones.
+  * x==y compares vectors and returns bool, unlike xs=='ys/xs `equal` ys.
+  * a&&b short circuits if a==false, but all(a,b) must evaluate b if a==false
+    to implement broadcasting.
+  * ifelse(b,c,a) must evaluate all 3 arguments if b is an array.
+    But, in Dec2018 Curv, `if (a) b else c` evaluates all 3 arguments
+    if `a` is a reactive value. So, just use `if` syntax.
+  * The unvectorized relations are guaranteed to return Bool, or fail,
+    which is appropriate for the most common use case, which is to construct
+    an argument for if, &&, ||, which require a Bool argument.
+* Many languages represent boolean values as the numbers 0 and 1.
+  In an array language, an array of booleans represented as 0 and 1
+  is a useful representation, you can do arithmetic on it.
+  In Curv, booleans are not numbers, but you can convert between the two
+  representations using vectorized operations. Eg,
+  * enbool(i) = [false,true]'i;
+  * debool(b) = ifelse(b, 1, 0);
+  Or:
+  * tobool(i), frombool(b)
+  Or:
+  * idiom: i != 0, or i !=' 0
+  * bit(b) = ifelse(b, 1, 0);
+
+Vectorized `if` violates some of the algebraic properties of scalar `if`:
+* A vectorized ternary operator should implement 3-way broadcasting,
+  so that the shape of result is based on shapes of all 3 inputs.
+* Therefore, it must evaluate all 3 arguments.
+* Violates rules for identifying tail expressions.
+* Violates rules for edepth: hiding order of evaluation in expressions.
+
+Names for a vectorized `if` analogue:
+* HLSL:     cond ? thenval : elseval
+* GLSL 4.5: mix(elseval,thenval,cond)
+* R:        ifelse(cond,thenval,elseval)
+* numpy:    where(cond,thenval,elseval)
+
+Other names:
+    if_array
+    if_multi
+    all_if(cond,thenval,elseval)
+    if_else(cond,thenval,elseval)
+    cond(cond,thenval,elseval)
+    select(cond,thenval,elseval)
+
+I like `select` for vectorized `if`. In numpy, select is something related,
+but more complicated.
+    select(condlist, choicelist, default)
+    The output at position m is the m-th element of the array in choicelist
+    where the m-th element of the corresponding array in condlist is True.
+    >>> x = np.arange(10)
+    >>> condlist = [x<3, x>5]
+    >>> choicelist = [x, x**2]
+    >>> np.select(condlist, choicelist, 0)
+    array([ 0, 1, 2, 0, 0, 0, 36, 49, 64, 81])
+The example is a vectorized form of
+    if (x < 3) x else if (x > 5) x^2 else 0
+In Curv, you could theoretically use:
+    select (x < 3, x,
+        select (x > 5, x^2,
+            0))
+although the numpy code would be faster, unless the Curv code was optimized.
+The Curv `select` could be generalized along the lines of Scheme `if`:
+    select (x < 3, x,
+            x > 5, x^2,
+            0)
+
+In Mathematica, `select` is `filter`.
+The name `select` has no standard meaning across math/array languages.
