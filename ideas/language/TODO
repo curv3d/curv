@@ -1,6 +1,8 @@
 # TODO: Language Changes
 
 High:
+* for (pattern in list while condition) phrase
+  Because Structured Programming (break is a goto).
 * V[[X,Y]] := vec2 in Curv, SubCurv
 * M[i,j] := a
 * replace foo."bar" with
