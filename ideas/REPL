@@ -1,3 +1,10 @@
+The REPL should support:
+* a debugger.
+* examining and mutating the state of a running program.
+* examining and mutating all of the session state.
+* opening and managing multiple viewer windows.
+* live editing.
+
 The REPL should be integrated with the live-edit editing window
 and with the viewer window.
 
@@ -90,3 +97,7 @@ into a loop. So now Curv is a scripting language, which creates a need for
 user defined procedures, reading directories, a general Unix interface.
 This is pretty far out of scope of the original design. For security reasons,
 I don't want shape files to have these kind of side effects.
+
+Multiple viewer windows is blocked on ImGui:
+https://github.com/ocornut/imgui/issues/586
+https://github.com/ocornut/imgui/issues/1542 (in 'docking' branch)
