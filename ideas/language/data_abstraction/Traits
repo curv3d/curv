@@ -101,7 +101,60 @@ How is a record trait specified?
 
 How is a function trait specified?
 
-Names for this concept:
+Module Composition
+------------------
+Design a set of module composition operators.
+Incomplete module fragments can be composed to create modules.
+If a fragment is branded, then modules built from it will advertise the brand.
+
+Module fragments typically support:
+* Incomplete fields, with a name and possibly a type, but no value.
+* Late binding: within a field definition, references to other fields are not
+  bound until all of the fragments are composed into a module.
+
+Two styles of module composition:
+* Mixins. Are composed linearly: fields from later mixins override earlier of
+  same name. Late binding via self & super reference. It's single inheritance
+  semantics. This is the Jigsaw `override` operator (non-commutative).
+* Traits. Conflicts must be resolved explicitly, by overriding in the base.
+  Composition is commutative (unlike mixins). Is Jigsaw `merge` operator.
+
+Mixin composition is a source of complexity, due to order dependence.
+Late binding is a source of complexity, due to the way that it complects the
+two module fragments being composed. These two sources of complexity account
+for the complexity of object-oriented class inheritance. The campaign against
+the complexity of OOP offers alternatives: composition, not inheritance.
+Rust has traits, instead of class inheritance.
+
+Module Composition Research
+---------------------------
+* Mixins (Gilad Bracha). Mixins are composed linearly, fields from later
+  mixins override earlier of same name. There is self & super reference.
+  It's single inheritance semantics.
+  * jsonnet.org
+* Traits. Conflicts must be resolved explicitly, by overriding in the base.
+  Composition is commutative (unlike mixins).
+* Jigsaw, Gilad Bracha
+  * A module is a set of definitions and declarations. The latter has a name
+    and type but no value, and if present the module is abstract.
+  * `merge` combines modules. Duplicate definitions is an error.
+    Duplicate declarations are combined. Associative & commutative.
+  * `override(M1,M2)`: in a conflict, M2 has precedence.
+  * `M rename a to b`, distributes over `override`
+  * `M restrict a` converts definition to declaration.
+  * ... and a whole lot more
+* Units: Cool Modules for HOT Languages
+  * A module fragment is called a Program Unit, or Unit.
+
+2003 Traits paper: http://scg.unibe.ch/archive/papers/Scha03aTraits.pdf
+Contrasts Trait composition with Mixin inheritance.
+Mixins are composed linearly; this severely restricts one’s ability to specify
+the “glue code” that is necessary to adapt the mixins so that they fit together.
+
+Gilad Bracha, Jigsaw, module composition operators.
+
+Names for this concept
+----------------------
 * trait
 * concept
 * contract
