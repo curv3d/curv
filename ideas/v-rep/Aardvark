@@ -5,9 +5,12 @@ F# and .net, primary Windows, secondary Linux. OpenGL 4.3 & Vulkan.
 Aardvark.base
 Incremental computation, based on:
   https://www.cs.umd.edu/~hammer/adapton/
-  Adapton: Composable, Demand-driven Incremental Computation (OCaml)
+  Adapton: Composable, Demand-driven Incremental Computation
   Incremental computation allows programs to be efficiently re-executed after
   a small change to the input.
+  http://adapton.org/
+  The OCaml implementation was abandoned for Rust, which is much faster.
+  https://github.com/adapton/adapton.rust
 Incremental JIT for AMD64 architecture.
 
 Aardvark.rendering
