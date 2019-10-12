@@ -127,7 +127,7 @@ Dot_Expr::eval(Frame& f) const
 }
 
 Value
-eval_not(Value x, const Context& cx)
+eval_not(Value x, const At_Syntax& cx)
 {
     if (x.is_bool())
         return {!x.get_bool_unsafe()};
@@ -136,6 +136,16 @@ eval_not(Value x, const Context& cx)
         for (unsigned i = 0; i < xlist->size(); ++i)
             (*result)[i] = eval_not((*xlist)[i], cx);
         return {result};
+    }
+    auto re = x.dycast<Reactive_Value>();
+    if (re && re->sctype_ == SC_Type::Bool()) {
+        return {make<Reactive_Expression>(
+            SC_Type::Bool(),
+            make<Not_Expr>(
+                share(cx.syntax()),
+                make<Constant>(share(cx.syntax()), x)
+            ),
+            cx)};
     }
     throw Exception(cx, stringify("!",x,": domain error"));
 }
