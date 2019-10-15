@@ -1,0 +1,20 @@
+The Curv syntax supports "tail composition", a feature absent in Lisp, and
+present in varying degrees in Algol descendents.
+
+Tail Composition is the ability to extend an expression by appending clauses
+to the end, without causing parentheses to pile up at the end. As the
+expression grows, the final parenthesis would get further and further away
+from its mate at the start of the expression.
+
+curried function calls:
+    f x y z
+postfix expressions
+    a.b.c
+    f(x).g(y)
+infix arithmetic expressions
+    a + b + c
+pipelines
+    cube 3 >> rotate {axis: Z_axis, angle: 45*deg} >> colour red
+statement-like
+    let D in do A in E
+    if A then B else if C then D else E

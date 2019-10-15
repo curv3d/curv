@@ -1,0 +1,114 @@
+Minimal Syntax
+==============
+Support Visual Curv. There is a projectional editor that can present code
+in either of two formats:
+* A pure text format supporting copy, paste and easy sharing across internet.
+* A "visual" syntax, perhaps inspired by the node-and-wire languages that are
+  popular with artists for graphics processing (eg, Magic, Nuke, Blender).
+
+Traditionally, text syntax and node-and-wire syntax both require the user to
+manually perform layout. For text syntax, manual layout includes deciding
+where to add line breaks and how much to indent each line. For node-and-wire,
+manual layout includes specifying the X,Y position of each node in a 2D canvas.
+
+I want the editor to perform automated layout in both cases.
+The user doesn't manually lay out each node in a program tree, and layout
+metadata isn't stored. (If it were stored, it would have to be separately
+specified for each presentation mode, which is terrible.)
+By choosing automatic layout, and not storing detailed layout instructions
+in the source code, we are free to experiment with new visual syntaxes.
+
+Eliminating Syntactic Variability
+---------------------------------
+It makes sense to more generally eliminate syntactic variability, so that
+you are not maintaining syntactic distinctions in the text presentation
+that are not relevant in the graphical (node-and-wire) display.
+
+There is a formatting tool that converts Curv text syntax to canonical form,
+like gofmt and others. What kinds of syntactic variability are erased by the
+formatting tool? What are the implications for Curv syntax?
+
+ 1. No layout. Indentation & line breaks are not preserved.
+ 2. Yes parens. `(a + b) + c` is distinct from `a + (b + c)`.
+    Parens are preserved, so that we can display Curv using traditional
+    math notation. (And this ability is prioritized over the ability to
+    display Lisp notation.)
+
+brainstorming:
+ 3. (a,b) vs [a,b]. These are the same in Curv. That's a pretty rare language
+    feature. These syntaxes ought to be collapsed to [a,b]. This is at the
+    expense of "breaking" standard math notation, no `f(x,y)` function calls.
+    Use f[x,y] instead.
+ 4. [a,b] vs [a;b]. These are the same in Curv. 'a' and 'b' are interpreted
+    as statements in both cases. Logically I should pick [a;b], for consistency
+    with (a;b) compound statements. That leads to f[x;y] function calls.
+ 5. multi-branch 'if-then-elsif-then-else' vs tail-nested
+    'if-then-else if-then-else'. Curv uses the latter, it simplifies the
+    definition of 'if-then-else', and tail nesting is a nice form of composition
+    that works in a lot of situations. But, you lose the ability to choose
+    whether a trailing if-then-else ought to be indented, or is a continuation
+    of a multi-branch decision. Since we have no layout. This seems to be an
+    argument for a multi-branch if. Oh, actually, the solution is to add
+    parens around the trailing if. Problem solved.
+
+Optional Parentheses
+--------------------
+In most text-based languages, users choose whether or not to add parentheses
+to disambiguate infix expressions in languages with many precedence levels.
+In Lisp, there is no such choice to be made.
+
+Eliminating this choice from the syntax might make Curv more portable
+between visual presentations.
+
+The ParInfer text editor interface provides a nice UI for editing S-expressions.
+Looks and feels like Python, if Python consistently used prefix notation.
+
+Does this mean: use Lisp syntax?
+Here's what I would like to preserve from Curv's syntax:
+* Curried function calls: f x y z
+* Infix operators: a + b + c
+* Dot notation: a.b.c
+* Mixfix operators:
+    if a then b else c
+    let a in b
+    for a in b while c do d
+
+There is a conflict between eliminating optional parentheses, and infix
+arithmetic operators. Both are part of standard math notation, it's hard to
+have infix without the optional parens. Eg, to explain associativity, you say
+    (a + b) + c = a + (b + c)
+
+So, if the ability to display Curv programs using traditional math notation
+is important (I think it is) then we need optional parens in the syntax tree.
+
+FoC on Lisp Syntax
+------------------
+Konrad Hinsen:
+I couldn't write any Lisp code (mostly Scheme and Emacs Lisp these days)
+without paredit in Emacs, And like @Ivan Reese, I set parens to a faint color
+so they don't dominate visually. I am much more efficient writing this than e.g.
+Python, although I have probably written 10x more Python code than all Lisps
+taken together.
+
+Doug Moen:
+@Konrad Hinsen Why are you much more efficient writing Lisp than Python?
+Inquiring language designers need to know!
+
+William Taysom:
+@Doug Moen I'd say really getting a concrete syntax down cold takes a while.
+
+Konrad Hinsen:
+@Doug Moen Uniformity of syntax is one aspect. In Python you have parentheses,
+indentation, and square brackets being used in different concepts for the same
+purpose: establishing a tree structure.  The other aspect is tool support.
+With paredit in Emacs, I almost think in terms of paredit operations rather
+than in terms of characters. It goes a long way towards structural editing from
+my point of view.
+
+Stathis Sideris:
+Without adding anything new, I’d like to add myself as someone with long Lisp
+exposure (about 8 years of Clojure) who also feels much more efficient/at ease
+with the uniformity of Lisp syntax + paredit’s structural editing.
+
+(The learning curve for a complex new syntax could partially account for why
+node-and-wire is popular with visual arts programming tools.)
