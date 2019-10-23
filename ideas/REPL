@@ -3,7 +3,11 @@ The REPL should support:
 * examining and mutating the state of a running program.
 * examining and mutating all of the session state.
 * opening and managing multiple viewer windows.
+  * look at how <userland.org> visualizes pipeline stages.
 * live editing.
+* online documentation and contextual help.
+* inline graphics.
+* Advanced UI. Consider Jupyter, <userland.org>, Acme, ...
 
 The REPL should be integrated with the live-edit editing window
 and with the viewer window.
