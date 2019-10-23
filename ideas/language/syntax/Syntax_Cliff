@@ -1,0 +1,15 @@
+https://elm-lang.org/news/the-syntax-cliff
+
+Curv has a complex syntax. For somebody not familiar with this kind of language,
+making mistakes, understanding and fixing syntax errors could involve a steep
+learning curve. This seems to be the case for Elm, and Curv is not far from Elm.
+
+How can we mitigate this problem?
+* Can the syntax be made more beginner friendly?
+  There are languages designed for teaching, eg the Pyret language.
+* Can syntax error messages be more helpful? That's what Elm has done.
+* Provide an integrated programmer's assistant editor that makes it easier
+  to write code without syntax errors. For Lisp, we have ParEdit and ParInfer.
+  For an Elm-like syntax, investigate Hazel.
+  * Perhaps layout is fully automatic. Certain syntax errors will result in
+    unexpected layout, prompting you to fix the problem.
