@@ -402,6 +402,53 @@ struct Min_Function : public Legacy_Function
     }
 };
 
+/*
+Value do_and2(Value a, Value b, const At_Syntax& cx)
+{
+    if (a.is_bool()) {
+        if (b.is_bool())
+            return a.to_bool_unsafe() && b.to_bool_unsafe();
+}
+*/
+Value do_and(Value a, const At_Syntax& cx)
+{
+    if (auto alist = a.dycast<List>()) {
+        bool result = true;
+        for (unsigned i = 0; i < alist->size(); ++i)
+            result &= (*alist)[i].to_bool(cx);
+        return {result};
+        /*
+        Shared<List> result = List::make(xlist->size());
+        for (unsigned i = 0; i < xlist->size(); ++i)
+            (*result)[i] = eval_not((*xlist)[i], cx);
+        return {result};
+        */
+    }
+    /*
+    auto re = x.dycast<Reactive_Value>();
+    // check if re is Bool[2-4] or Bool32
+    if (re && re->sctype_ == SC_Type::Bool()) {
+        return {make<Reactive_Expression>(
+            SC_Type::Bool(),
+            make<Not_Expr>(
+                share(cx.syntax()),
+                make<Constant>(share(cx.syntax()), x)
+            ),
+            cx)};
+    }
+    */
+    throw Exception(cx, stringify(a," is not a boolean array"));
+}
+struct And_Function : public Legacy_Function
+{
+    static const char* name() { return "and"; }
+    And_Function() : Legacy_Function(1,name()) {}
+    Value call(Frame& args) override
+    {
+        return do_and(args[0], At_Arg(*this, args));
+    }
+};
+
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
 struct Dot_Function : public Legacy_Function
@@ -980,6 +1027,7 @@ builtin_namespace()
     FUNCTION(Atanh_Function),
     FUNCTION(Max_Function),
     FUNCTION(Min_Function),
+    FUNCTION(And_Function),
     FUNCTION(Dot_Function),
     FUNCTION(Mag_Function),
     FUNCTION(Count_Function),
