@@ -1,0 +1,33 @@
+What is the standard layout style for Curv code?
+
+The offside rule.
+It should look like Lisp or Python, ignoring punctuation.
+The goal is readability. The structure editor will take care of writability.
+
+Mixfix:
+  if ... then
+    ...
+  else if ... then
+    ...
+  else
+    ...
+
+  let
+    A
+  in do
+    B
+  in
+    C
+
+Lists and records
+  [ A,
+    B,
+    C ]
+or
+  [A,
+   B,
+   C]
+
+{x=1;
+ y=2;
+ z=3}

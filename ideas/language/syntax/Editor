@@ -1,0 +1,19 @@
+Due to technical advances, we want to use a structure editor for editing
+Curv source code. The editor is constantly parsing your code as you type,
+and providing assistance. The syntax of Curv needs to be designed with
+structure editing in mind.
+
+ParEdit and especially ParInfer are amazing structural editing UIs
+for S-expressions. This eliminates any problems caused by the parenthesized
+syntax, and turns it into an assset.
+
+Hazel is a structure editor for a language with Haskell-style syntax.
+Hazel "assigns meaning to every edit state", so you get assistance and
+evaluation as you type, regardless of syntax errors. This seems like the
+ultimate live coding experience. (How do you tune a language syntax to make
+this work better?)
+Google: live editing with typed holes
+
+Hazel also supports visual programming, of the kind I am designing for Curv.
+Livelits: Filling Typed Holes with Live GUIs
+http://web.eecs.umich.edu/~comar/livelits-tyde.pdf

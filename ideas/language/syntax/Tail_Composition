@@ -1,3 +1,5 @@
+Tail Composition, aka Tail Nesting, aka Chaining
+------------------------------------------------
 The Curv syntax supports "tail composition", a feature absent in Lisp, and
 present in varying degrees in Algol descendents.
 
@@ -18,3 +20,11 @@ pipelines
 statement-like
     let D in do A in E
     if A then B else if C then D else E
+
+Chained Lisp
+------------
+A variant of Lisp syntax that supports chains.
+(f x) is a function call.
+(f x y z) is a curried function call.
+(let (def1 def2) do (stmt1 stmt2) result)
+    wait, how does the third argument of 'let' work here?

@@ -126,6 +126,14 @@ for the complexity of object-oriented class inheritance. The campaign against
 the complexity of OOP offers alternatives: composition, not inheritance.
 Rust has traits, instead of class inheritance.
 
+But, if I don't want the complexity of inheritance/late binding/self reference,
+then I don't want module composition. I instead want 'protocols', which are
+branded module types (which enforce that a module has a particular set of
+fields).
+
+(This comes from Simple Made Easy, where "inheritance" is part of the
+"complexity toolkit", and "protocols" are part of the "simplicity toolkit".)
+
 Module Composition Research
 ---------------------------
 * Mixins (Gilad Bracha). Mixins are composed linearly, fields from later

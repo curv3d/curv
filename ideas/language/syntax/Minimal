@@ -18,9 +18,19 @@ specified for each presentation mode, which is terrible.)
 By choosing automatic layout, and not storing detailed layout instructions
 in the source code, we are free to experiment with new visual syntaxes.
 
+Second Thoughts
+---------------
+Projecting text and node&wire from the same source is really difficult.
+Let's consider something simpler, less ambitious. Text is fine, node&wire
+is not a requirement, but we still want a projectional editor, and there
+are still benefits to reducing syntactic variability in the abstract syntax
+tree. I really like the idea of automatic layout, which means the system
+is responsible for whitespace, not the programmmer. Just this change alone
+requires a lot of design work and possibly syntax redesign. So start there.
+
 Eliminating Syntactic Variability
 ---------------------------------
-It makes sense to more generally eliminate syntactic variability, so that
+It makes sense to generally reduce syntactic variability, so that
 you are not maintaining syntactic distinctions in the text presentation
 that are not relevant in the graphical (node-and-wire) display.
 
@@ -36,12 +46,17 @@ formatting tool? What are the implications for Curv syntax?
 
 brainstorming:
  3. (a,b) vs [a,b]. These are the same in Curv. That's a pretty rare language
-    feature. These syntaxes ought to be collapsed to [a,b]. This is at the
-    expense of "breaking" standard math notation, no `f(x,y)` function calls.
-    Use f[x,y] instead.
- 4. [a,b] vs [a;b]. These are the same in Curv. 'a' and 'b' are interpreted
-    as statements in both cases. Logically I should pick [a;b], for consistency
-    with (a;b) compound statements. That leads to f[x;y] function calls.
+    feature. These syntaxes ought to be collapsed to [a,b].
+    * This "breaks" standard math notation: no `f(x,y)` function calls.
+      Use f[x,y] instead.
+    * This eliminates the one context where , and ; have different meanings.
+ 4. comma vs semicolon.
+    * With the elimination of (a,b) list syntax, we can make `,` and `;`
+      equivalent in all contexts. That's easier to explain.
+    * But then, which syntax to standardize on? `f[x;y]` looks very weird.
+      `while (cond) (stmt1,stmt2)` looks weird.
+      * Could use `,` for sequencing, and `;` for compound recursive definitions
+        (where order doesn't matter).
  5. multi-branch 'if-then-elsif-then-else' vs tail-nested
     'if-then-else if-then-else'. Curv uses the latter, it simplifies the
     definition of 'if-then-else', and tail nesting is a nice form of composition
@@ -50,6 +65,8 @@ brainstorming:
     of a multi-branch decision. Since we have no layout. This seems to be an
     argument for a multi-branch if. Oh, actually, the solution is to add
     parens around the trailing if. Problem solved.
+ 6. Uniform mixfix syntax.
+ 7. Standard whitespace for postfix expressions.
 
 Optional Parentheses
 --------------------
@@ -110,5 +127,6 @@ Without adding anything new, I’d like to add myself as someone with long Lisp
 exposure (about 8 years of Clojure) who also feels much more efficient/at ease
 with the uniformity of Lisp syntax + paredit’s structural editing.
 
+------
 (The learning curve for a complex new syntax could partially account for why
 node-and-wire is popular with visual arts programming tools.)

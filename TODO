@@ -1,12 +1,31 @@
 Bool_Array : vectorized boolean operators
 - vectorize `!a`
-* `all` and `any` are vectorized boolean monoids for && and ||.
+* `and`, `or` and `xor` are vectorized boolean monoids.
 * <, <=, >, >= work elementwise on arrays.
 * `are_equal(a,b)`: elementwise variant of a==b
+* `are_unequal(a,b)`: elementwise variant of a!=b.
+  Elements are scalars (non-list values).
+  Equivalent to xor(a,b) when applied to boolean arrays.
 * `select`: vectorized version of `if`
-* vectorize `bit`
-* SubCurv supports bvec[2-4] and vectorized boolean ops
+* vectorize `bit`. Maybe `bit b = select(b, 1, 0)`.
+* SubCurv supports bool[2-4] and vectorized boolean ops
 * unit tests for operations on reactive values
+
+Bool32: ops on boolean vectors of size 32 -- for noise library
+* All of the Bool_Array ops, plus the `Bool32` module.
+* SubCurv supports bool32 type (represented as `unsigned`).
+
+Libcurv builtins API
+* Too much boilerplate to write this kind of code.
+* Do more experiments with C++ before abandoning C++ for another language.
+* Can builtins be implemented in Curv?
+* The `and` project. What's the shortest, simplest implementation?
+  * Implement "full boilerplate" version in C++.
+  * Add bool[2-4] to SubCurv.
+  * Add bool32 to SubCurv.
+  * Now simplify and generalize the code.
+    * Create a generalized `monoid` constructor.
+      A macro call expands to a template call expands to a class.
 
 Fix colour rendering (needs Bool_Array)
 ---------------------------------------

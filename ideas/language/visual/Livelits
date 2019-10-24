@@ -1,0 +1,111 @@
+Livelits: Filling Typed Holes with Live GUIs
+============================================
+http://web.eecs.umich.edu/~comar/livelits-tyde.pdf
+https://www.youtube.com/watch?v=OFAYcHyG_NI
+
+Note: the paper is an extended abstract. The video has more details.
+As of August 2019, they only have a mockup. Nothing in github.
+
+Livelits are graphical expressions encoding colors, animations, musical
+sequences, tabular data, plots, widgets, graphs, etc. They can be nested.
+
+"Livelits are also live: they can provide immediate feedback about the dynamic
+implications of the programmer’s choices, even when the subexpressions
+mention bound variables, because the livelit is given access to closures
+associated with the hole that the livelit is tasked with filling."
+* The words "live" and "dynamic" imply "at run time". How can a livelit inside
+  a function, whose value depends on function parameters, display live runtime
+  information, while residing inside the source code? It seems impossible.
+
+Eg, you use a colour picker to edit the value of a constant colour expression.
+But, livelits support composition and abstraction. So a GUI editable colour
+expression need not be limited to 3 numeric literals. You can have
+subexpressions and bound variables.
+
+The example contains the following Hazel code:
+* A type definition called `grade_cutoffs`.
+* A livelit definition called `$grade_cutoffs`.
+  This defines an interactive data structure using Elm architecture:
+  there's a model, a view, and a `to_exp` which converts the model to an AST.
+* `let cutoffs : grade_cutoffs = $grade_cutoffs;` embeds the GUI for viewing
+  and editing the cutoffs value on the following line.
+* The example GUI has a text edit pane denoting a typed hole (a list of data
+  values), and the user has entered `weighted_averages` (a variable ref).
+  * Must `weighted_averages` be a constant? It can be a non-constant value
+    containing 'hole closures', due to their partial evaluation magic.
+
+Reaction, so far:
+ 1. Awesome that the GUI is implemented in the language itself.
+ 2. Can values be displayed graphically? I see a map from the type to the GUI.
+ 3. Not as elegant as my conception, where a constructor expression
+    can be projected either as text or as a GUI. I don't see a map from the
+    expression AST to the model. (The model itself is stored in the AST.)
+ 4. Therefore you can't edit the text expression to introduce composition
+    or abstraction. This is done in the GUI using embedded typed holes.
+ My system is more powerful than Hazel/Livelits:
+ * Any constructor expression is eligible to be projected as a GUI as long
+   as it meets the requirements. An ineligible expression can be edited
+   into eligible form.
+ * The expressions that can be viewed visually are a superset of the
+   expressions that can be edited visually. Eg, a colour picker GUI can edit
+   an RGB triple if it is a literal constant, but the colour value can be viewed
+   graphically if it is any kind of constant (free variables permitted).
+
+GUI implementation: HTML.
+The GUI can contain typed holes, represented by the HtmlHole constructor.
+
+The main complication when dealing with open expressions relates to how live
+feedback is to be generated. Given just the symbolic expression in the hole,
+it would be impossible to plot (as orange dots) the actual data from the list
+that the variable refers to. To resolve this issue, the system evaluates the
+program as if it the livelits were empty holes, relying on the support for
+evaluating incomplete programs described recently by Omar et al.[2019].
+The result of evaluation is an expression containing hole closures, i.e.
+holes equipped with environments. The livelit can then evaluate the expression
+in the hole against the closure selected by the user (not shown) using Env.run.
+* What does this mean? Maybe constant expressions with variable refs will work?
+  And non-constant expressions will work if the non-constant 'holes' are not
+  required to be evaluated by the GUI?
+
+We follow the "reasoning principles" for literals with spliced sub-expressions
+established by Omar and Aldrich [2018]. It's a set of 6 design goals.
+    Reasonably Programmable Literal Notation.
+
+Reasonably Programmable Literal Notation
+----------------------------------------
+https://www.cs.cmu.edu/~aldrich/papers/icfp18-notation.pdf
+
+An extensible syntax for ad-hoc literal notation, in Reason.
+A robust alternative to "stringly-typed programming", where strings are used
+instead of data structures for notational convenience.
+
+General-purpose programming languages typically define literal notation
+for only a small number of common data structures, like lists. This
+is unsatisfying because there are many other data structures for which
+literal notation might be useful, e.g. finite maps, regular expressions,
+HTML elements, SQL queries, syntax trees for various languages and chemical
+structures. There may also be different implementations of each of these data
+structures behind a common interface that could all benefit from common literal
+notation. This paper introduces typed literal macros (TLMs), which allow
+library providers to define new literal notation of nearly arbitrary design
+at any specified type or parameterized family of types. Compared to existing
+approaches, TLMs are uniquely reasonable. TLM clients can reason abstractly,
+i.e. without examining grammars or generated expansions, about types and
+binding. The system only needs to convey to clients, via secondary notation,
+the inferred segmentation of each literal body, which gives the locations and
+types of spliced subterms. TLM providers can reason modularly about syntactic
+ambiguity and expansion correctness according to clear criteria. This paper
+incorporates TLMs into Reason, an emerging alternative front-end for OCaml,
+and demonstrates, through several non-trivial case studies, how TLMs integrate
+with the advanced features of OCaml, including pattern matching and the
+module system. We also discuss optional integration with MetaOCaml, which
+allows TLM providers to be more confident about type correctness. Finally,
+we establish these abstract reasoning principles formally with a detailed
+type-theoretic account of expression and pattern TLMs for "core ML".
+
+Citrus
+------
+Prior art:
+* Citrus, not user extensible, {Ko, Myers 2005}
+  Citrus: a language and toolkit for simplifying the creation of structured
+  editors for code and data.

@@ -1,0 +1,31 @@
+the Clojure type system
+
+nil
+numbers
+strings
+characters
+symbols
+  keywords -- symbolic identifiers that evaluate to themselves. eg, `:foo`.
+  symbols -- identifiers, eg `'foo`.
+collections
+  ordered collections
+    vector, list, seq, ...
+  unordered collections
+    maps
+      hashed
+      sorted
+      StructMap: record-like, have shared dictionary: use *records* instead
+      ArrayMap: preserves key order
+    sets
+data types
+  deftype and defrecord
+    Create a named class with a set of given fields,
+    and optionally methods, which implement protocols.
+    No information hiding. No implementation inheritance.
+  defrecord creates an extensible map class, that also supports type-driven
+    polymorphism (due to the type tag) and efficient field implementation.
+    This supports generically manipulable information, suitable for "information
+    processing" and representing most business-domain information.
+  deftype is for "programming constructs": values that aren't maps.
+  reify
+protocols

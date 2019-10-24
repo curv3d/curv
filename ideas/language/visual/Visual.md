@@ -237,6 +237,8 @@ and they are formatted differently for display.
 During live coding, it's useful to have a quick way to disable/enable
 individual items in a code sequence.
 
+Clojure uses `#_(foo)` to disable node `(foo)`.
+
 ### Commenting a node:
 In the simplest and most generic case, a comment might provide commentary
 about the immediately following tree node.
