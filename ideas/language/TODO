@@ -1,6 +1,7 @@
 # TODO: Language Changes
 
 High:
+* vectorized boolean operations: for noise, and colour conversion
 * for (pattern in list while condition) phrase
   Because Structured Programming (break is a goto).
 * V[[X,Y]] := vec2 in Curv, SubCurv
@@ -159,6 +160,8 @@ New New Pattern Design:
   Note that >> is left associative, so `pat >> f1 >> f2` is equivalent to
   `(pat >> f1) >> f2`, which should work. Fixes bug in previous cast syntax.
 * The `pat == val` syntax is consistent with the previous two.
+  * Um, there's little point in binding a variable after a successful equality
+    test. Why not just `== val`? For other relational ops, it makes more sense.
   In all three cases, you have variable names lining up in a column on the left.
 
 Equality Patterns:
@@ -174,16 +177,14 @@ I have considered several alternate proposals:
   * Which leads to range patterns. Suppose we add elem(val,list).
     And we add `f` x as a pattern. Then `elem` 1..10 is a range pattern.
 * Literal constant patterns. (Haskell has them.)
-  * Literals for true, false, null.
-    * Introduce a Symbol type, define true=#true, false=#false, null=#null.
-      Then '#true' is a pattern matching 'true'.
-    * Convert true, false, null to keywords.
+  * #true, #false, #null are literals for true, false, null. (Done.)
   * Negative numbers and infinity?
     * `-<numeral>` and `+<numeral>` are patterns.
     * There is a <numeral> for infinity.
-      * `inf` is a keyword.
+      * `inf` is a keyword. Simplest and best solution.
       * Use some other special syntax like `0inf` or `inf.0`.
         SFRI-70 uses `+inf.0` and `-inf.0` as infinite numerals.
+        Clojure uses ##Inf and ##-Inf.
       * I don't like `#inf`, I think that Symbol and Number types are disjoint.
   * String patterns currently conflict with "name":value field constructors.
     * The Map proposal defines a Record as a Map where the keys are Symbols.
@@ -191,9 +192,11 @@ I have considered several alternate proposals:
       longer overloaded, it's just `pattern:expr`.
     * The DFN proposal is `$foo:value` for dynamic field names.
     * Replace "name":value and foo."name" syntax with quoted identifier syntax:
-      'name':value and foo.'name'. Doesn't support dynamic field names.
+      'name':value and foo.'name'. Doesn't support dynamic field names. (Done.)
     * String literal patterns must be parenthesized in situations where they
       are ambiguous, such as `("foo"):value`.
+    * The Symbol proposal claims that string patterns aren't needed. If this
+      need arises, you should be using symbols instead.
 Yes to `== value` patterns. No to literal constant patterns.
   match [
     == 0 -> case zero;

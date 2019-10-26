@@ -1,0 +1,35 @@
+Pure Functional Effects in Curv.
+or, Effects without the Side Effects.
+
+The goals of Curv are:
+* A DSL for describing any kind of geometric shape.
+* A low level API that lets new shape operators be defined in Curv.
+* There is a REPL that uses Curv as the command language.
+
+With these goals, I foresee Curv evolving to be more general purpose.
+We already have statements and actions in the language; they have multiple uses.
+How can you define new actions from within Curv?
+
+Curv is a pure functional language. There are no side effects.
+We should create a pure functional semantic model of actions,
+similar to the role of monads in Haskell.
+
+With side effects in an imperative language, an imperative procedure call can
+do absolutely anything to the global state. It is an unsafe programming model:
+side effects are not under the control of the caller. This model of computing
+is the primary source of security holes in the current era. We are trying to
+patch this problem using sandboxes, and capability based security, where the
+caller of a function determines what state can be changed. In a capability
+system, you can't change state unless you have been passed a capability that
+gives you that power.
+
+Pure functional programming is the logical end point of consistently applying
+the principles of capability based security.
+
+An action is a function that is passed a 'capability' (a description of some
+external state that can be queried, modified, interacted with). The action
+does its thing, returning a modified form of the capability that describes the
+modified state.
+
+In the general case of functional i/o, you need a mechanism
+to prevent certain types of capabilities from being counterfeited or cloned.

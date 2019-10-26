@@ -1,10 +1,14 @@
 Tagged Application Data
 =======================
+In the long term, Curv needs to support strongly tagged data.
+This seems to be one of the minimum requirements for a general purpose pure
+functional language.
+
 No Tagging
 ----------
-In this scenario, data has no tagging to indicate how it is interpreted
-by the application. Instead, we rely entirely on functions to determine
-what the data means.
+In this scenario, there are only the 6 primitive value types.
+Data has no tagging to indicate how it is interpreted by the application.
+Instead, we rely entirely on functions to determine what the data means.
 
 For example, numbers can represent a lot of different things.
 * A natural number can be cardinal (count a number of items)
@@ -38,9 +42,11 @@ Another way to create polymorphic data. Just use records that contain behaviour
 
 Strong (Absolute) Tagging
 -------------------------
-Strong tagging is a programming language mechanism that ensures
-globally unique tagging. This can be done using a static type system,
-dynamic type tags, or a hybrid. Similar to "nominal type equivalence".
+Strong tagging is a language mechanism that ensures globally unique tagging.
+It prevents instances of application data types from being counterfeited:
+you have to call an approved constructor function.
+The tags are represented using a static type system, dynamic type tags,
+or a hybrid. Similar to "nominal type equivalence".
 
 I've considered both 'concrete tags' (constructors)
 and 'abstract tags' (traits).
@@ -71,6 +77,10 @@ I've tried designing this feature using classless OOP and a set of magic record
 field names that have special interpretations, but it's too complicated to use
 such an API directly: we would want special syntax for defining constructors
 of abstract values, etc.
+
+### Functional I/O
+A pure functional i/o system depends on passing around "capability" values
+that cannot be counterfeited. This requires strong tagging.
 
 ### Graphical Values
 * A graphical value is an abstract value that is displayed graphically

@@ -1,33 +1,133 @@
-Traits
-------
-A record trait is a set of named fields that any conforming record must possess,
-plus constraints that specify the meanings of those fields. The constraints
-can include type constraints, assertions, and axioms. A trait T can inherit
-structure from super-traits. T can define additional fields, or it can
-further constrain inherited fields.
+How can a collection of Curv values implement the same abstract interface,
+even if they have different internal representations/are created from multiple
+different constructors? The Shape interface is an example.
 
-A function trait specifies constraints on a function's domain and range.
+I want to associate a 'brand' with these values. There is a predicate that
+tests if a value implements the abstract interface. Why?
+* It allows new operations to be overloaded on the abstract interface type.
+* Shapes can be recognized as graphical values using the Shape brand.
 
-As a special case, Callable is a primitive trait implemented by all functions:
-it denotes a value that can be used on the left side of a function call.
-Records that implement Callable must have a `call` field that is bound
-to a Callable value.
+Apparently, I want to be able to extend the abstract interface with new
+operations without changing existing code that constructs the values.
+Deconstructing my motives here, it seems I want to solve the Expression Problem.
+
+Interfaces
+----------
+An 'interface' is a branded record or function type. Inheritance is supported.
+Record and function values are branded with the interfaces that they support.
+
+A record interface is a set of named fields that any conforming record must
+possess, plus constraints that specify the meanings of those fields. The
+constraints can include type constraints, assertions, and axioms. An interface T
+can inherit structure from super-interfaces. T can define additional fields, or
+it can further constrain inherited fields.
+
+A function interface specifies constraints on a function's domain and range.
+
+As a special case, Callable is a primitive interface implemented by all
+functions: it denotes a value that can be used on the left side of a function
+call. Records that implement Callable must have a `call` field that is bound to
+a Callable value.
 
 Curv doesn't have a logic system for reasoning about and proving axioms.
 Instead, the axioms are in the documentation. Conforming values are given
 a 'brand' (or type tag) that certifies that the value conforms to the
-trait (which includes upholding the axioms in the documention).
+interface (which includes upholding the axioms in the documention).
 
 In abstract algebra, the only difference between a Magma and a Monoid is that
 the monoid has additional axioms like associativity. Monoid <: Magma.
 So that's an example of a situation where the set of field names alone
-are not enough to distinguish two traits. It's another argument for adding
+are not enough to distinguish two interfaces. It's another argument for adding
 branding (branded records) to the language.
 
-If I'm adding branded traits to Curv, I want to use this feature
-consistently, rather than use a mishmash of structural and nominal trait
-matching. Shape becomes a branded trait, so does Callable.
+If I'm adding branded interfaces to Curv, I want to use this feature
+consistently, rather than use a mishmash of structural and nominal interface
+matching. Shape becomes a branded interface, so does Callable.
 
+Protocols (Clojure)
+-------------------
+Clojure provides both interfaces (due to JVM compatibility) and protocols
+(which it prefers). A protocol names a set of functions that implement an
+abstract interface, and contains no implementation. A protocol can be
+implemented for a specific type T, which overloads each of those functions
+with an implementation for T. You can test if a value implements a protocol.
+
+Protocols are extrinsic: you externally bind a protocol to an existing type.
+This helps solve the Expression Problem. Protocols are the single-dispatch
+case of generic functions (called multi-methods). They remind me of Haskell
+type classes.
+
+Protocol inheritance is *not* supported--it is considered bad, but why?
+* Due to a problem of how various features interact with Java?
+* Due to a misunderstanding: the idea that all inheritance is bad, not
+  distinguishing interface from implementation inheritance? Eg, this statement:
+  "Tying polymorphism to inheritance is bad: protocols free you from that".
+* I can find complaints about this limitation, but no good explanation.
+
+Using clojure's Reify, you can construct an object that implements a Protocol,
+without creating a separate type. There is an analogy with Curv Interfaces,
+which are used to construct anonymous records that satisfy an Interface.
+* https://david-mcneil.com/post/1475458103/implementation-inheritance-in-clojure
+  Use record composition operations in Clojure to construct a record (aka map),
+  simulating whatever implementation inheritance patterns you like, then
+  bind protocols to the record using Reify.
+
+Does this feature fit into, or make sense, in Curv?
+* If the Shape interface was a Protocol, then you'd be using
+  `Shape.distance S` rather than `S.dist`. This would permit us to use
+  shape fields for constructor parameters in parametric shapes. That's nice.
+* Binding a protocol has the side effect of modifying a table associated with
+  the protocol's functions. Two distinct packages can bind the same type to
+  the same protocol, and you have a conflict. It reminds me of monkeypatching,
+  although less risk of an actual conflict. Clojure apparently just exhibits
+  undefined behaviour and the answer is "don't do that", even though the problem
+  can be caused by transitive dependencies you aren't aware of. A proposed rule
+  is don't do it unless you own the protocol or you own the type. Maybe
+  enforce that rule to eliminate the possibility of conflict.
+
+The Expression Problem
+----------------------
+The main attraction of protocols is in solving the expression problem.
+What are the alternatives, and which alternative fits best into Curv?
+* Typed Tagless Final Interpreters by O. Kiselyov
+* Polymorphic Variants in OCaml and Reason
+
+Traits
+------
+A trait is a record interface combined with default field values.
+In Java, if you extend an existing interface with new fields, you break existing
+client classes, which now need to add definitions for the new fields.
+Java interfaces are being extended to traits: you can add a new field with a
+default value without breaking existing clients.
+
+`make_shape` provides default values for shape fields. Maybe Shape should be
+a trait. Or maybe Shape is an interface and it is make_shape that supplies
+default values and applies Shape branding. But, make_shape is a mixin, and
+trait composition is order independent.
+
+Design
+------
+I do not want to support inheritance, or any module composition calculus using
+late binding of variable references among the module fragments that are being
+combined. This injects too much complexity into the programming model.
+
+Mixins are composed linearly; this severely restricts one’s ability to specify
+the “glue code” that is necessary to adapt the mixins so that they fit together.
+Trait composition is order independent. Let's try traits instead.
+
+The prelude actually describes an interface type, maybe call that a protocol.
+Traits add the feature of default values for module fields. Conflicts must be
+resolved manually. Trait composition is a kind of module composition.
+* And the reason I'm considering default field values is because `make_shape`
+  provides default field values, and it's very convenient.
+
+Classic traits do have late binding of fields. The 'default field values' can
+refer to other fields; the references aren't resolved until all traits are
+composed into a record type. I said I don't want late binding or inheritance.
+So what do I want?
+
+Previous Thoughts
+-----------------
 Operations on a trait:
 * Record constructor: Take a record R. Return a copy of R, modified to contain
   all of the fields required by the trait.
