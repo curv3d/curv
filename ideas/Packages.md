@@ -20,6 +20,9 @@ File Syntax is a set of rules for interpreting a regular file as a Curv value
 
 Some file types that might be supported:
 * `*.curv` -- a Curv expression, which evaluates to an arbitrary value.
+* `*.cdef` -- a list of Curv definitions, which are textually included
+  by the parent directory module. Recursive dependencies allowed between
+  *.cdef files. Can't directly import this file type, it's not an expression.
 * `*.json`
 * `*.toml`
 * `*.rsdf` -- a Regularly Sampled Distance Field -- a voxel grid of distance

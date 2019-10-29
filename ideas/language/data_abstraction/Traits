@@ -1,15 +1,183 @@
-How can a collection of Curv values implement the same abstract interface,
-even if they have different internal representations/are created from multiple
-different constructors? The Shape interface is an example.
+Generic Programming
+-------------------
+A generic algorithm imposes a set of requirements on its arguments:
+* Which operations must be supported by each argument? This can be determined
+  by examining the source code of the algorithm.
+* What laws and axioms must these operations obey?
 
-I want to associate a 'brand' with these values. There is a predicate that
-tests if a value implements the abstract interface. Why?
-* It allows new operations to be overloaded on the abstract interface type.
-* Shapes can be recognized as graphical values using the Shape brand.
+Sets of requirements like this can be modelled as algebras. In the general
+case we need multi-sorted algebras. In the C++ literature, these requirement
+sets are called Concepts.
 
-Apparently, I want to be able to extend the abstract interface with new
-operations without changing existing code that constructs the values.
-Deconstructing my motives here, it seems I want to solve the Expression Problem.
+The requirements that an algorithm imposes on its arguments arise organically
+from the act of writing the code, and developers are typically unaware of the
+exact requirement set. In statically typed languages, developers are forced to
+specify type constraints on arguments using a type language, and this normally
+reduces the generality of algorithms. Type systems that don't artificially
+restrict the generality of generic algorithms are a research problem.
+In dynamically typed languages, you don't worry about this crap,
+and algorithms don't have artificial type restrictions on their arguments.
+The term 'duck typing' is often used to describe this.
+
+Data Abstraction
+----------------
+What is the syntax for invoking the operations of an Algebra, for interfacing
+our data with generic algorithms?
+
+1. OOP style.
+   value.opname arg
+
+   Data and operation names are mixed in the same namespace.
+   With classless OOP, data is complected with operations (operations are
+   closures that capture the data): this prevents data structure update.
+   With class OOP, another kind of complexity occurs: the operations
+   access the data and each other via 'self' reference. Finally, this style
+   privileges the first argument of an operation, which doesn't work well with
+   binary operations in an Algebra (Magmas, etc), or with multi-sorted Algebras.
+
+2. Functional style.
+   opname arg value --or-- value >> opname arg
+
+   The operations and the data are orthogonal to one another.
+   Works with binary operations and multi-sorted algebras.
+
+3. Namespaced functional style.
+   M.opname arg value --or-- value >> M.opname arg
+
+Overloading
+-----------
+How do we arrange for multiple different types, with different internal
+representations, to support the same abstract interface? In general we need
+different implementations of each operation for the different types.
+
+1. Piecewise functions.
+   An operation, that is part of an abstract interface, uses `match` to
+   pattern match an argument, and executes different code for different cases.
+
+   In order to support an existing interface on a new type, you have to edit the
+   source code for all of the operations in the interface to add cases for
+   the new type. The remaining alternatives will remove this limitation.
+
+2. Classless OOP.
+   Values are records, operations are record fields.
+
+   Now you can add new types to an algebra without modifying existing code.
+   As long as the new types are designed with this algebra in mind, since
+   values are records containing operation names. You can't retrofit an existing
+   type to interface it to a new algebra without modifying the existing type's
+   implementation. Next, we'll remove this limitation as well.
+
+3. Clojure Protocols.
+   A Clojure Protocol describes the interface to an algebra,
+   with no implementation code relating to data type representations
+   or operation implementations.
+
+   Now you can retrofit an existing type to interface to a new algebra, without
+   modifying the code for the existing type. As long as the algebra is
+   single-sorted. Next, we'll remove this limitation.
+
+4. Generic Functions/Multimethods.
+   Like protocols, but supporting multi-sorted algebras. In the classic design
+   from CLOS and Clojure, you no longer have a single entity that collects all
+   of the operations in the algebra together, and which requires you to
+   implement all of the operations at once. Is that a problem? Haskell type
+   classes have this property.
+
+   Note, you can't have two implementations of the same algebra for the same
+   type. The next method removes this limitation.
+
+5. Explicit Method Dictionaries.
+   A generic algorithm is passed an additional argument, a method dictionary,
+   which implements an algebra. Or, inspired by the SML module system,
+   a set of generic algorithms are exported by a module which is parameterized
+   by one or more algebras.
+
+Protocols/Multimethods: Spooky Action at a Distance?
+----------------------------------------------------
+Is this technique compatible with pure functional programming?
+Binding an implementation to an algebra looks like spooky action at a distance.
+* Loading a new package can fail due to conflict with an earlier loaded package?
+  (Or if not fail, then break an existing package due to monkey patching.)
+* Side effects: can you construct an impure function?
+* Defeats local reasoning: inspecting a value to determine what it is.
+  Defeats code completion? What ops are available with this value?
+
+### 1. Package Conflicts (Language Safety)
+We must eliminate package conflicts. This is not safe, functional, or local.
+A package can only bind an implementation of a type to a protocol or multimethod
+if it defines either the type or the protocol. If recursive dependencies are
+forbidden between packages, then the problem is solved.
+
+It's important that the protocol binding mechanism does not allow you modify
+the semantics of a "third party" namespace.
+
+Your project may use packages that you aren't aware of, due to transitive
+dependencies of the packages you directly dependent on. These "hidden" packages
+can add additional constructors to protocols that you use, and can add
+additional operations to constructors that you use. Can you accidently write
+code that depends on a hidden dependency, and can your code break if that
+hidden dependency goes away in a later package update? Maybe it's not a problem.
+The additional constructors and additional operations exist in namespaces
+that you aren't aware of and can't directly access from code, since you don't
+directly include those hidden packages into your namespace. This safety property
+follows from the prohibition on modifying semantics of third party namespaces.
+
+### How does this look in Curv?
+* Within a module,
+  * You can define a branded protocol, and optionally implement some branded
+    constructors (which can be from other modules) for that protocol.
+  * You can define a branded constructor, and optionally implement some branded
+    protocols (which can be from other modules) for that constructor.
+  * Protocol definitions, constructor definitions, and implement definitions,
+    are syntactically separate statements, order independent, but taken
+    together can constitute a distributed definition.
+* Suppose shape operations are generic functions. Then how do you construct
+  an anonymous shape, how does `make_shape` work? Like Clojure's `reify`?
+    fields
+        field1 = val1;
+        field2 = val2;
+    implementing
+        protocol1 (fun1 = impl1, ...)
+    end
+  returns a record that implements 1 or more protocols.
+* This works with protocols. It's trickier to construct an anonymous instance
+  of a type in a multi-sorted algebra. You'd have to say which type is
+  anonymous, and name the renamining types. Maybe not worthwhile.
+
+### 2. Side Effects?
+My imitation of `reify` looks not so different from classless OOP.
+I think it is pure.
+
+What about the more general constructs? We could define a pretend semantics
+that associates protocol implementations with either the constructor or
+the protocol, depending on how the binding was defined. Runtime dispatch
+would search both places. This makes everything into local definitions.
+So no side effects.
+
+### 3. Local Reasoning?
+With the safety restrictions in place, I think this comes down to a question
+of IDE support for examining and reasoning about values and their protocols.
+
+------
+A collection of Curv values, with different representations, implement the
+same abstract interface. There are different implementations of the operations
+in the abstract interface for each representation.
+* The Shape interface is an example.
+* There is conceptually a 'graphical value' interface, with different
+  implementations for shapes, colours, etc.
+
+There is a predicate that tests if a value implements an abstract interface.
+
+If this feature solves the Expression Problem, then:
+* You can add a new representation to an abstract interface without modifying
+  existing code. Similar to: object-oriented programming, where the AI is an
+  abstract class, and a 'new representation' is a subclass. (By contrast,
+  in FP you would need to modify an algebraic type to add a new variant.)
+* You can add new operations to the abstract interface without modifying
+  existing code. Similar to: functional programming, where the all of the
+  representations are contained in an algebraic data type T, and a new
+  operation is simply a new function of T. (By contrast, in OOP you would
+  need to modify the abstract class to add a new method.)
 
 Interfaces
 ----------
