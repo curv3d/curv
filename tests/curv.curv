@@ -531,7 +531,8 @@ assert_error("local definitions can't be mixed with recursive definitions",
 
 // and
 assert( and[] == true && and[true,false] == false );
-assert_error("argument #1 of and: #true is not a boolean array", and true);
+assert( and[[true,false],[true,true]] == [true,false] );
+assert_error("argument #1 of and: #true is not a list", and true);
 
 // script return value:
 in null

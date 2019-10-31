@@ -402,50 +402,39 @@ struct Min_Function : public Legacy_Function
     }
 };
 
-/*
-Value do_and2(Value a, Value b, const At_Syntax& cx)
-{
-    if (a.is_bool()) {
-        if (b.is_bool())
-            return a.to_bool_unsafe() && b.to_bool_unsafe();
-}
-*/
-Value do_and(Value a, const At_Syntax& cx)
-{
-    if (auto alist = a.dycast<List>()) {
-        bool result = true;
-        for (unsigned i = 0; i < alist->size(); ++i)
-            result &= (*alist)[i].to_bool(cx);
-        return {result};
-        /*
-        Shared<List> result = List::make(xlist->size());
-        for (unsigned i = 0; i < xlist->size(); ++i)
-            (*result)[i] = eval_not((*xlist)[i], cx);
-        return {result};
-        */
-    }
-    /*
-    auto re = x.dycast<Reactive_Value>();
-    // check if re is Bool[2-4] or Bool32
-    if (re && re->sctype_ == SC_Type::Bool()) {
-        return {make<Reactive_Expression>(
-            SC_Type::Bool(),
-            make<Not_Expr>(
-                share(cx.syntax()),
-                make<Constant>(share(cx.syntax()), x)
-            ),
-            cx)};
-    }
-    */
-    throw Exception(cx, stringify(a," is not a boolean array"));
-}
 struct And_Function : public Legacy_Function
 {
     static const char* name() { return "and"; }
     And_Function() : Legacy_Function(1,name()) {}
+    struct Scalar_Op {
+        typedef bool scalar;
+        static bool unbox(Value a, scalar& b)
+        {
+            if (a.is_bool()) {
+                b = a.get_bool_unsafe();
+                return true;
+            } else
+                return false;
+        }
+        static Value call(scalar x, scalar y) { return {x && y}; }
+        Shared<Operation> make_expr(
+            Shared<Operation> x, Shared<Operation> y) const
+        {
+            throw Exception(cx,
+                "Internal error: 'and' applied to a reactive value");
+            //return make<Divide_Expr>(share(syntax), std::move(x), std::move(y));
+        }
+        static const char* name() { return "and"; }
+        static Shared<const String> callstr(Value x, Value y) {
+            return stringify("[",x,",",y,"]");
+        }
+        At_Arg cx;
+        Scalar_Op(Function& func, Frame& args) : cx(func, args) {}
+    };
+    static Binary_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return do_and(args[0], At_Arg(*this, args));
+        return array_op.reduce(Scalar_Op(*this, args), Value{true}, args[0]);
     }
 };
 
