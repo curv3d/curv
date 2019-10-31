@@ -1,0 +1,81 @@
+Should data structure values carry around the types of their elements?
+
+I'm converging on the idea that this makes sense for abstract data types.
+It's helpful for: efficient memory representations of large structures,
+and, enforcing data structure invariants on element data in an abstract type
+(eg, in the context of efficiently updating a large structure).
+Efficient large structures are important if Curv is to evolve to support
+a more general representation of geometric shapes.
+
+No
+--
+On one hand, no. It adds complexity to the language.
+When you print plain old data, what you see is all there is.
+Typed plain old data structures would need to print types as well as values,
+and that type information would be part of the constructor expression, which
+you would also need to input when writing code.
+
+Typed Arrays
+------------
+A string is a typed list of characters. So that's already in the language.
+
+If I want to be completely consistent, I can reimplement strings
+as untyped character lists. A list that just happens to consist entirely of
+characters will be printed using quoted string syntax. There would be no
+distinction between "" and [], they would both print as [].
+
+In most APL dialects, there is more than one empty list. There are various
+typed empty lists. In K, a matrix is just a list of vectors, but that means
+you can't distinguish between a list of dimension [0], and a matrix of dimension
+[0,4]. Most APLs do make this distinction. We can model this by saying that
+an APL [m,n] matrix is a typed [m] list of typed [n] lists.
+
+In APL, there are semantic benefits for arrays to carry around their element
+types. Some operators rely on that extra information, especially in edge
+cases of empty arrays.
+
+A fully generic version of Curv's `concat` function would return [] for an
+empty list of lists, and "" for an empty list of strings. We could make
+that distinction if Curv was statically typed, or if lists carried their
+element type. Without that, Curv can't make `concat` fully generic. So Curv
+has `concat` for lists and `strcat` for strings.
+
+Image import is a coming feature. For efficiency reasons, image values must
+be represented in memory using a compact representation for colour values.
+So an image value is a typed array.
+
+So far, my two examples of typed lists are strings and images, which are both
+abstract types.
+
+Javascript and Python are both dynamic languages with typed arrays.
+In both cases, this feature was added years after the languages became popular.
+So that will happen to Curv if it becomes popular.
+
+Typed Records
+-------------
+I considered this idea when working on a prototype of a new REPL variable
+called `render_opts`, which contains an instance of the C++ Render_Opts
+structure. You can use `:=` to assign fields of `render_opts`, but I want the
+fields to be typed, and assignment to report type errors on bad field values.
+
+`render_opts` is a typed variable. You can only assign valid Render_Opts
+records to it. Are the values of `render_opts` also typed record values?
+I decided it was simpler if the values are just plain old untyped records
+that print as {background: [1,1,1], ...}. So all of the typing is in the
+variable, none is in the value.
+
+The purpose of this section is to consider whether we need typed record values,
+which have type constraints on the fields.
+
+I think that a typed record value is an instance of a named abstract type.
+You construct it by calling a constructor function (which enforces type
+constraints on the arguments). Such values are printed as constructor
+expressions.
+
+I'm on the fence whether to support field assignments for abstract types.
+If they are supported, then the assignment would fail unless the updated
+record was still a legal member of the abstract type. In the general case,
+perhaps not all fields of an abstract type will be updatable:
+* There might be edge cases where validating the new field value is difficult.
+* Perhaps not all of the field values are orthogonal, so one field can't be
+  updated without also updating another field.
