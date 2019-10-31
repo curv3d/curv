@@ -1,13 +1,25 @@
+Algebras
+--------
+An Algebra is an abstract interface to constructing and manipulating instances
+of one or more types. An algebra comprises one or more types (sets of values),
+constructors, operations, and the laws and axioms that define the semantics.
+
+A Theory is an algebraic type. There are subtype relations: Group is a subtheory
+of Monoid.
+
+An algebra with two or more types is called multi-sorted. A single-sorted
+algebra is also known as an abstract data type. The single-sorted case is the
+most common, and is usually treated as a special case by programming language
+features.
+
 Generic Programming
 -------------------
-A generic algorithm imposes a set of requirements on its arguments:
-* Which operations must be supported by each argument? This can be determined
-  by examining the source code of the algorithm.
-* What laws and axioms must these operations obey?
-
-Sets of requirements like this can be modelled as algebras. In the general
-case we need multi-sorted algebras. In the C++ literature, these requirement
-sets are called Concepts.
+A generic algorithm imposes a set of requirements on its arguments.
+These requirements can be modelled as full or partial algebras.
+For example, a "partial algebra" might not contain any constructors,
+simply because the algorithm as written doesn't invoke any constructors.
+In the general case, we need multi-sorted algebras.
+In the C++ literature, these requirement sets are called Concepts.
 
 The requirements that an algorithm imposes on its arguments arise organically
 from the act of writing the code, and developers are typically unaware of the
@@ -18,6 +30,19 @@ restrict the generality of generic algorithms are a research problem.
 In dynamically typed languages, you don't worry about this crap,
 and algorithms don't have artificial type restrictions on their arguments.
 The term 'duck typing' is often used to describe this.
+
+A generic algorithm that is in some way parameterized by an algebra containing
+constructors can sometimes be more general than a generic algorithm that selects
+an algebra implementation based on the dynamic types of its arguments.
+A generic algorithm that needs to invoke a constructor often imposes special
+requirements on language features. A fully generic version of Curv's `concat`
+function would return [] if the argument is an empty list of lists, and ""
+if the argument is an empty list of strings. If Curv was statically typed, we
+could make that distinction. The "array theory" underlying most APL dialects
+distinguishes between empty lists of different element types, even though APL
+is dynamically typed, but in Curv's dynamic type system, there is only one
+empty list, called [], and so Curv can't make `concat` fully generic.
+So Curv has `concat` for lists and `strcat` for strings.
 
 Data Abstraction
 ----------------
@@ -87,10 +112,25 @@ different implementations of each operation for the different types.
    type. The next method removes this limitation.
 
 5. Explicit Method Dictionaries.
-   A generic algorithm is passed an additional argument, a method dictionary,
-   which implements an algebra. Or, inspired by the SML module system,
+   A generic algorithm is passed an explicit argument, a method dictionary,
+   which implements an algebra. Or, in the SML module system,
    a set of generic algorithms are exported by a module which is parameterized
    by one or more algebras.
+
+6. Haskell Type Classes
+   Generic algorithms (functions) use a disciplined form of dynamic scoping
+   to obtain an algebra binding (type class method dictionary) from the
+   caller's lexical scope. This is a variant of #5, as opposed to performing
+   some kind of dynamic lookup on the values themselves (#1-#4).
+
+Modular Dynamic Dispatch
+------------------------
+There appears to be a fundamental conflict between modularity and dynamic
+dispatch (examining a value to find a method dictionary for some algebra).
+
+Overloading in Curv
+-------------------
+When I look at general purpose languages, I see a complex landscape...
 
 Protocols/Multimethods: Spooky Action at a Distance?
 ----------------------------------------------------
@@ -158,7 +198,34 @@ So no side effects.
 With the safety restrictions in place, I think this comes down to a question
 of IDE support for examining and reasoning about values and their protocols.
 
-------
+Protocols instead of OOP
+------------------------
+Here, I explore the idea of using Clojure-like Protocols as a replacement
+for the Curv 0.4 style of classless OOP. The advantages are:
+* You can add a protocol to an existing constructor, thereby adapting those
+  values to work with an existing generic algorithm, without modifying the code
+  for that constructor.
+* Operation names exist in namespaces. You can design a new constructor
+  to work with several different generic algorithms that use conflicting
+  operation names (the op names would conflict, except they are in different
+  namespaces).
+* Maybe this leads to a safe implementation of `R.f := a` for abstract data?
+
+By 'constructor', I mean a branded constructor for a record or function.
+A constructor maps a sequence of zero or more Curried arguments to a value
+that is marked as having been created using that constructor.
+Why support function constructors? Records and functions are the two cases
+supported by classless OOP and by the proposed Interface feature.
+
+Within a lexical scope, you can add a protocol to an existing constructor.
+The changes are only visible to code within that lexical scope.
+In Haskell, the analog is implementing a type class within a scope.
+In Ruby, the analog is implementing a refinement within a scope.
+There is "Classboxes: A Minimal Module Model Supporting Local Rebinding".
+  http://scg.unibe.ch/archive/papers/Berg03aClassboxes.pdf
+Can I demonstrate a design that is safe and has the same expressive power?
+
+-----------------------------------------------------------------------------
 A collection of Curv values, with different representations, implement the
 same abstract interface. There are different implementations of the operations
 in the abstract interface for each representation.
@@ -432,8 +499,9 @@ Gilad Bracha, Jigsaw, module composition operators.
 Names for this concept
 ----------------------
 * trait
+* algebra
 * concept
 * contract
-* protocol (not like clojure protocols, which are extrinsic, not intrinsic)
+* protocol
 * interface
 * signature
