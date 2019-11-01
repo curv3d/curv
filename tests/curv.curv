@@ -533,6 +533,11 @@ assert_error("local definitions can't be mixed with recursive definitions",
 assert( and[] == true && and[true,false] == false );
 assert( and[[true,false],[true,true]] == [true,false] );
 assert_error("argument #1 of and: #true is not a list", and true);
+assert( or[] == false && or[true,false] == true );
+assert( or[[true,true,false,false],[true,false,true,false]]
+        == [true,true,true,false] );
+assert( xor[[true,true,false,false],[true,false,true,false]]
+        == [false,true,true,false] );
 
 // script return value:
 in null

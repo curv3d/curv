@@ -406,35 +406,45 @@ struct And_Function : public Legacy_Function
 {
     static const char* name() { return "and"; }
     And_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op {
-        typedef bool scalar;
-        static bool unbox(Value a, scalar& b)
-        {
-            if (a.is_bool()) {
-                b = a.get_bool_unsafe();
-                return true;
-            } else
-                return false;
-        }
+    struct And_Op : public Boolean_Op
+    {
+        using Boolean_Op::Boolean_Op;
         static Value call(scalar x, scalar y) { return {x && y}; }
-        Shared<Operation> make_expr(
-            Shared<Operation> x, Shared<Operation> y) const
-        {
-            throw Exception(cx,
-                "Internal error: 'and' applied to a reactive value");
-            //return make<Divide_Expr>(share(syntax), std::move(x), std::move(y));
-        }
-        static const char* name() { return "and"; }
-        static Shared<const String> callstr(Value x, Value y) {
-            return stringify("[",x,",",y,"]");
-        }
-        At_Arg cx;
-        Scalar_Op(Function& func, Frame& args) : cx(func, args) {}
     };
-    static Binary_Array_Op<Scalar_Op> array_op;
+    static Binary_Array_Op<And_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.reduce(Scalar_Op(*this, args), Value{true}, args[0]);
+        return array_op.reduce(And_Op(*this, args), Value{true}, args[0]);
+    }
+};
+struct Or_Function : public Legacy_Function
+{
+    static const char* name() { return "or"; }
+    Or_Function() : Legacy_Function(1,name()) {}
+    struct Or_Op : public Boolean_Op
+    {
+        using Boolean_Op::Boolean_Op;
+        static Value call(scalar x, scalar y) { return {x || y}; }
+    };
+    static Binary_Array_Op<Or_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.reduce(Or_Op(*this, args), Value{false}, args[0]);
+    }
+};
+struct Xor_Function : public Legacy_Function
+{
+    static const char* name() { return "xor"; }
+    Xor_Function() : Legacy_Function(1,name()) {}
+    struct Xor_Op : public Boolean_Op
+    {
+        using Boolean_Op::Boolean_Op;
+        static Value call(scalar x, scalar y) { return {x != y}; }
+    };
+    static Binary_Array_Op<Xor_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.reduce(Xor_Op(*this, args), Value{false}, args[0]);
     }
 };
 
@@ -1017,6 +1027,8 @@ builtin_namespace()
     FUNCTION(Max_Function),
     FUNCTION(Min_Function),
     FUNCTION(And_Function),
+    FUNCTION(Or_Function),
+    FUNCTION(Xor_Function),
     FUNCTION(Dot_Function),
     FUNCTION(Mag_Function),
     FUNCTION(Count_Function),

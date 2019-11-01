@@ -120,11 +120,38 @@ struct Binary_Numeric_Array_Op
     }
 };
 
+struct Boolean_Op
+{
+    typedef bool scalar;
+    static bool unbox(Value a, scalar& b)
+    {
+        if (a.is_bool()) {
+            b = a.get_bool_unsafe();
+            return true;
+        } else
+            return false;
+    }
+    At_Arg cx;
+    Symbol_Ref name;
+    Boolean_Op(Function& func, Frame& args)
+    :
+        cx(func, args),
+        name(func.name_)
+    {}
+};
+
 template <class Scalar_Op>
 struct Binary_Array_Op
 {
     // TODO: optimize: move semantics. unique object reuse.
     // TODO: optimize: faster fast path in `op` for number case.
+
+    static Shared<const String> domain_error(
+        const Scalar_Op& f, Value x, Value y)
+    {
+        (void)f;
+        return stringify("[",x,",",y,"]: domain error");
+    }
 
     static Value
     reduce(const Scalar_Op& f, Value zero, Value arg)
@@ -176,8 +203,7 @@ struct Binary_Array_Op
                 return reactive_op(f, x, y);
             }
         }
-        throw Exception(f.cx,
-            stringify(f.callstr(x,y),": domain error"));
+        throw Exception(f.cx, domain_error(f, x, y));
     }
 
     static Value
@@ -203,7 +229,7 @@ struct Binary_Array_Op
     {
         if (xs.size() != ys.size())
             throw Exception(f.cx, stringify(
-                f.name(),
+                f.name,
                 ": mismatched list sizes (",
                 xs.size(),",",ys.size(),") in array operation"));
         Shared<List> result = List::make(xs.size());
@@ -216,6 +242,19 @@ struct Binary_Array_Op
     reactive_op(const Scalar_Op& f, Value x, Value y)
     {
     /*
+        // At least one of x and y is reactive. Cases:
+        //   list * list
+        //   scalar * list
+        //   list * scalar
+        //   scalar * scalar;
+        // where list and scalar are either constants or reactive.
+        // Need to compute the result SC_Type now, and thus I need to look at
+        // these cases right here.
+        Shared<const Reactive_Value> xr, yr;
+        SC_Type xt, yt;
+        f.get_expr(x, xr, xt);
+        f.get_expr(y, yr, yt);
+    //
         if (x.is_num()) {
             auto yre = y.dycast<Reactive_Value>();
             if (yre && yre->sctype_ == SC_Type::Num()) {
@@ -229,8 +268,7 @@ struct Binary_Array_Op
             }
         }
     */
-        throw Exception(f.cx,
-            stringify(f.callstr(x,y),": domain error"));
+        throw Exception(f.cx, domain_error(f, x, y));
     }
 };
 
