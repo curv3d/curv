@@ -539,6 +539,7 @@ assert( or[[true,true,false,false],[true,false,true,false]]
 assert( xor[[true,true,false,false],[true,false,true,false]]
         == [false,true,true,false] );
 assert( lshift[[true,true,false],1] == [#false,#true,#true] );
+assert( rshift[[true,false,true,false],1] == [#false,#true,#false,#false] );
 
 // script return value:
 in null

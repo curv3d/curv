@@ -454,14 +454,16 @@ struct Lshift_Function : public Legacy_Function
     struct Lshift_Op : public Shift_Op
     {
         using Shift_Op::Shift_Op;
-        Value call(Shared<const List> x, double y) const
+        Value call(Shared<const List> a, double b) const
         {
-            unsigned n = (unsigned) Value::num_to_int(y, 0, x->size()-1, cx);
-            Shared<List> result = List::make(x->size());
+            At_Index acx(0, cx);
+            At_Index bcx(1, cx);
+            unsigned n = (unsigned) Value::num_to_int(b, 0, a->size()-1, bcx);
+            Shared<List> result = List::make(a->size());
             for (unsigned i = 0; i < n; ++i)
                 result->at(i) = {false};
-            for (unsigned i = n; i < x->size(); ++i)
-                result->at(i) = x->at(i-n);
+            for (unsigned i = n; i < a->size(); ++i)
+                result->at(i) = {a->at(i-n).to_bool(acx)};
             return {result};
         }
     };
@@ -469,6 +471,32 @@ struct Lshift_Function : public Legacy_Function
     Value call(Frame& args) override
     {
         return array_op.op(Lshift_Op(*this, args), args[0], args[1]);
+    }
+};
+struct Rshift_Function : public Legacy_Function
+{
+    static const char* name() { return "rshift"; }
+    Rshift_Function() : Legacy_Function(2,name()) {}
+    struct Rshift_Op : public Shift_Op
+    {
+        using Shift_Op::Shift_Op;
+        Value call(Shared<const List> a, double b) const
+        {
+            At_Index acx(0, cx);
+            At_Index bcx(1, cx);
+            unsigned n = (unsigned) Value::num_to_int(b, 0, a->size()-1, bcx);
+            Shared<List> result = List::make(a->size());
+            for (unsigned i = a->size()-n; i < a->size(); ++i)
+                result->at(i) = {false};
+            for (unsigned i = 0; i < a->size()-n; ++i)
+                result->at(i) = {a->at(i+n).to_bool(acx)};
+            return {result};
+        }
+    };
+    static Binary_Array_Op<Rshift_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(Rshift_Op(*this, args), args[0], args[1]);
     }
 };
 
@@ -1054,6 +1082,7 @@ builtin_namespace()
     FUNCTION(Or_Function),
     FUNCTION(Xor_Function),
     FUNCTION(Lshift_Function),
+    FUNCTION(Rshift_Function),
     FUNCTION(Dot_Function),
     FUNCTION(Mag_Function),
     FUNCTION(Count_Function),
