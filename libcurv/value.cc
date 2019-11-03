@@ -41,11 +41,8 @@ Value::is_int() const noexcept
 }
 
 int
-Value::to_int(int lo, int hi, const Context& cx) const
+Value::num_to_int(double num, int lo, int hi, const Context& cx)
 {
-    if (!is_num())
-        throw Exception(cx, stringify(*this, " is not a number"));
-    double num = get_num_unsafe();
     double intf;
     double frac = modf(num, &intf);
     if (frac != 0.0)
@@ -54,6 +51,14 @@ Value::to_int(int lo, int hi, const Context& cx) const
         throw Exception(cx, stringify(
             intf, " is not in the range ",lo,"..",hi));
     return int(intf);
+}
+
+int
+Value::to_int(int lo, int hi, const Context& cx) const
+{
+    if (!is_num())
+        throw Exception(cx, stringify(*this, " is not a number"));
+    return num_to_int(get_num_unsafe(), lo, hi, cx);
 }
 
 void

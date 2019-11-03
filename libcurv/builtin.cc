@@ -406,10 +406,10 @@ struct And_Function : public Legacy_Function
 {
     static const char* name() { return "and"; }
     And_Function() : Legacy_Function(1,name()) {}
-    struct And_Op : public Boolean_Op
+    struct And_Op : public Binary_Boolean_Op
     {
-        using Boolean_Op::Boolean_Op;
-        static Value call(scalar x, scalar y) { return {x && y}; }
+        using Binary_Boolean_Op::Binary_Boolean_Op;
+        static Value call(bool x, bool y) { return {x && y}; }
     };
     static Binary_Array_Op<And_Op> array_op;
     Value call(Frame& args) override
@@ -421,10 +421,10 @@ struct Or_Function : public Legacy_Function
 {
     static const char* name() { return "or"; }
     Or_Function() : Legacy_Function(1,name()) {}
-    struct Or_Op : public Boolean_Op
+    struct Or_Op : public Binary_Boolean_Op
     {
-        using Boolean_Op::Boolean_Op;
-        static Value call(scalar x, scalar y) { return {x || y}; }
+        using Binary_Boolean_Op::Binary_Boolean_Op;
+        static Value call(bool x, bool y) { return {x || y}; }
     };
     static Binary_Array_Op<Or_Op> array_op;
     Value call(Frame& args) override
@@ -436,15 +436,39 @@ struct Xor_Function : public Legacy_Function
 {
     static const char* name() { return "xor"; }
     Xor_Function() : Legacy_Function(1,name()) {}
-    struct Xor_Op : public Boolean_Op
+    struct Xor_Op : public Binary_Boolean_Op
     {
-        using Boolean_Op::Boolean_Op;
-        static Value call(scalar x, scalar y) { return {x != y}; }
+        using Binary_Boolean_Op::Binary_Boolean_Op;
+        static Value call(bool x, bool y) { return {x != y}; }
     };
     static Binary_Array_Op<Xor_Op> array_op;
     Value call(Frame& args) override
     {
         return array_op.reduce(Xor_Op(*this, args), Value{false}, args[0]);
+    }
+};
+struct Lshift_Function : public Legacy_Function
+{
+    static const char* name() { return "lshift"; }
+    Lshift_Function() : Legacy_Function(2,name()) {}
+    struct Lshift_Op : public Shift_Op
+    {
+        using Shift_Op::Shift_Op;
+        Value call(Shared<const List> x, double y) const
+        {
+            unsigned n = (unsigned) Value::num_to_int(y, 0, x->size()-1, cx);
+            Shared<List> result = List::make(x->size());
+            for (unsigned i = 0; i < n; ++i)
+                result->at(i) = {false};
+            for (unsigned i = n; i < x->size(); ++i)
+                result->at(i) = x->at(i-n);
+            return {result};
+        }
+    };
+    static Binary_Array_Op<Lshift_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(Lshift_Op(*this, args), args[0], args[1]);
     }
 };
 
@@ -1029,6 +1053,7 @@ builtin_namespace()
     FUNCTION(And_Function),
     FUNCTION(Or_Function),
     FUNCTION(Xor_Function),
+    FUNCTION(Lshift_Function),
     FUNCTION(Dot_Function),
     FUNCTION(Mag_Function),
     FUNCTION(Count_Function),

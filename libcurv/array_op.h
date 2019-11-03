@@ -120,10 +120,22 @@ struct Binary_Numeric_Array_Op
     }
 };
 
-struct Boolean_Op
+struct Function_Op
 {
-    typedef bool scalar;
-    static bool unbox(Value a, scalar& b)
+    At_Arg cx;
+    Symbol_Ref name;
+    Function_Op(Function& func, Frame& args)
+    :
+        cx(func, args),
+        name(func.name_)
+    {}
+};
+
+struct Binary_Boolean_Op : public Function_Op
+{
+    using Function_Op::Function_Op;
+    typedef bool left_t, right_t;
+    static bool unbox_left(Value a, left_t& b)
     {
         if (a.is_bool()) {
             b = a.get_bool_unsafe();
@@ -131,13 +143,35 @@ struct Boolean_Op
         } else
             return false;
     }
-    At_Arg cx;
-    Symbol_Ref name;
-    Boolean_Op(Function& func, Frame& args)
-    :
-        cx(func, args),
-        name(func.name_)
-    {}
+    static bool unbox_right(Value a, right_t& b)
+    {
+        if (a.is_bool()) {
+            b = a.get_bool_unsafe();
+            return true;
+        } else
+            return false;
+    }
+};
+
+// The left operand is a non-empty list of booleans.
+// The right operand is an integer >= 0 and < the size of the left operand.
+// (These restrictions on the right operand conform to the definition
+// of << and >> in the C/C++/GLSL languages.)
+struct Shift_Op : public Function_Op
+{
+    using Function_Op::Function_Op;
+    typedef Shared<const List> left_t;
+    typedef double right_t;
+    static bool unbox_left(Value a, left_t& b)
+    {
+        b = a.dycast<const List>();
+        return b && !b->empty() && b->front().is_bool();
+    }
+    static bool unbox_right(Value a, right_t& b)
+    {
+        b = a.get_num_or_nan();
+        return b == b;
+    }
 };
 
 template <class Scalar_Op>
@@ -151,6 +185,13 @@ struct Binary_Array_Op
     {
         (void)f;
         return stringify("[",x,",",y,"]: domain error");
+    }
+
+    static Shared<const String> domain_error(
+        const Scalar_Op& f, Value x)
+    {
+        (void)f;
+        return stringify(x,": domain error");
     }
 
     static Value
@@ -167,20 +208,33 @@ struct Binary_Array_Op
     op(const Scalar_Op& f, Value x, Value y)
     {
         // fast path: both x and y are scalars
-        typename Scalar_Op::scalar sx, sy;
-        if (f.unbox(x, sx) && f.unbox(y, sy)) {
-            return f.call(sx, sy);
-        }
         // remaining cases:
-        // - x is a list, y is a scalar
         // - x is a scalar, y is a list
+        // - x is a list, y is a scalar
         // - x and y are lists
         // - either x, or y, or both, is reactive
-        if (x.is_ref()) {
+        typename Scalar_Op::left_t sx;
+        typename Scalar_Op::right_t sy;
+        if (f.unbox_left(x, sx)) {
+            if (f.unbox_right(y, sy))
+                return f.call(sx, sy);
+            if (y.is_ref()) {
+                Ref_Value& ry(y.get_ref_unsafe());
+                switch (ry.type_) {
+                case Ref_Value::ty_list:
+                    return broadcast_right(f, x, (List&)ry);
+                case Ref_Value::ty_reactive:
+                    return reactive_op(f, x, y);
+                }
+            }
+            throw Exception(At_Index(1,f.cx), domain_error(f, y));
+        } else if (x.is_ref()) {
             Ref_Value& rx(x.get_ref_unsafe());
             switch (rx.type_) {
             case Ref_Value::ty_list:
-                if (y.is_ref()) {
+                if (f.unbox_right(y, sy))
+                    return broadcast_left(f, (List&)rx, y);
+                else if (y.is_ref()) {
                     Ref_Value& ry(y.get_ref_unsafe());
                     switch (ry.type_) {
                     case Ref_Value::ty_list:
@@ -189,21 +243,12 @@ struct Binary_Array_Op
                         return reactive_op(f, x, y);
                     }
                 }
-                return broadcast_left(f, (List&)rx, y);
+                throw Exception(At_Index(1,f.cx), domain_error(f, y));
             case Ref_Value::ty_reactive:
                 return reactive_op(f, x, y);
             }
         }
-        if (y.is_ref()) {
-            Ref_Value& ry(y.get_ref_unsafe());
-            switch (ry.type_) {
-            case Ref_Value::ty_list:
-                return broadcast_right(f, x, (List&)ry);
-            case Ref_Value::ty_reactive:
-                return reactive_op(f, x, y);
-            }
-        }
-        throw Exception(f.cx, domain_error(f, x, y));
+        throw Exception(At_Index(0,f.cx), domain_error(f, x));
     }
 
     static Value
