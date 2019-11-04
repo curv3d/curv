@@ -518,6 +518,42 @@ struct Bool32_Add_Function : public Legacy_Function
         return array_op.op(Bool32_Add_Op(*this, args), args[0], args[1]);
     }
 };
+struct Bool32_To_Nat_Function : public Legacy_Function
+{
+    static const char* name() { return "bool32_to_nat"; }
+    Bool32_To_Nat_Function() : Legacy_Function(1,name()) {}
+    struct Scalar_Op : public Unary_Bool32_Op
+    {
+        using Unary_Bool32_Op::Unary_Bool32_Op;
+        Value call(unsigned n) const
+        {
+            return {double(n)};
+        }
+    };
+    static Unary_Array_Op<Scalar_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(Scalar_Op(*this, args), args[0]);
+    }
+};
+struct Nat_To_Bool32_Function : public Legacy_Function
+{
+    static const char* name() { return "nat_to_bool32"; }
+    Nat_To_Bool32_Function() : Legacy_Function(1,name()) {}
+    struct Scalar_Op : public Unary_Num_Op
+    {
+        using Unary_Num_Op::Unary_Num_Op;
+        Value call(double n) const
+        {
+            return {nat_to_bool32(num_to_nat(n, cx))};
+        }
+    };
+    static Unary_Array_Op<Scalar_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(Scalar_Op(*this, args), args[0]);
+    }
+};
 
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
@@ -1103,6 +1139,8 @@ builtin_namespace()
     FUNCTION(Lshift_Function),
     FUNCTION(Rshift_Function),
     FUNCTION(Bool32_Add_Function),
+    FUNCTION(Bool32_To_Nat_Function),
+    FUNCTION(Nat_To_Bool32_Function),
     FUNCTION(Dot_Function),
     FUNCTION(Mag_Function),
     FUNCTION(Count_Function),

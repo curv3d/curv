@@ -154,6 +154,20 @@ struct Binary_Boolean_Op : public Function_Op
     }
 };
 
+struct Unary_Num_Op : public Function_Op
+{
+    using Function_Op::Function_Op;
+    typedef double scalar_t;
+    bool unbox(Value a, scalar_t& b) const
+    {
+        if (a.is_num()) {
+            b = a.get_num_unsafe();
+            return true;
+        } else
+            return false;
+    }
+};
+
 // The left operand is a non-empty list of booleans.
 // The right operand is an integer >= 0 and < the size of the left operand.
 // (These restrictions on the right operand conform to the definition
@@ -187,6 +201,15 @@ struct Bool32_Op : public Function_Op
         return true;
     }
 };
+struct Unary_Bool32_Op : public Bool32_Op
+{
+    using Bool32_Op::Bool32_Op;
+    typedef unsigned scalar_t;
+    bool unbox(Value a, scalar_t& b) const
+    {
+        return unbox_bool32(a, b, cx);
+    }
+};
 struct Binary_Bool32_Op : public Bool32_Op
 {
     using Bool32_Op::Bool32_Op;
@@ -198,7 +221,7 @@ struct Binary_Bool32_Op : public Bool32_Op
     }
     bool unbox_right(Value a, right_t& b) const
     {
-        return unbox_bool32(a, b, At_Index(0, cx));
+        return unbox_bool32(a, b, At_Index(1, cx));
     }
 };
 
@@ -376,6 +399,52 @@ struct Unary_Numeric_Array_Op
         for (unsigned i = 0; i < xs->size(); ++i)
             (*result)[i] = op(f, (*xs)[i]);
         return result;
+    }
+};
+
+template <class Scalar_Op>
+struct Unary_Array_Op
+{
+    // TODO: optimize: move semantics. unique object reuse.
+
+    static Value
+    op(const Scalar_Op& f, Value x)
+    {
+        typename Scalar_Op::scalar_t sx;
+        if (f.unbox(x, sx)) {
+            return f.call(sx);
+        } else if (x.is_ref()) {
+            Ref_Value& rx(x.get_ref_unsafe());
+            switch (rx.type_) {
+            case Ref_Value::ty_list:
+                return element_wise_op(f, (List&)rx);
+            case Ref_Value::ty_reactive:
+                return reactive_op(f, x);
+            }
+        }
+        throw Exception(f.cx, domain_error(f, x));
+    }
+
+    static Value
+    element_wise_op(const Scalar_Op& f, List& xs)
+    {
+        Shared<List> result = List::make(xs.size());
+        for (unsigned i = 0; i < xs.size(); ++i)
+            (*result)[i] = op(f, xs[i]);
+        return {result};
+    }
+
+    static Value
+    reactive_op(const Scalar_Op& f, Value x)
+    {
+        throw Exception(f.cx, domain_error(f, x));
+    }
+
+    static Shared<const String> domain_error(
+        const Scalar_Op& f, Value x)
+    {
+        (void)f;
+        return stringify(x, ": domain error");
     }
 };
 
