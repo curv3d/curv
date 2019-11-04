@@ -3,14 +3,17 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/value.h>
+
 #include <libcurv/dtostr.h>
-#include <libcurv/string.h>
+#include <libcurv/exception.h>
 #include <libcurv/list.h>
 #include <libcurv/reactive.h>
 #include <libcurv/record.h>
-#include <libcurv/exception.h>
-#include <cmath>
+#include <libcurv/string.h>
+#include <libcurv/typeconv.h>
+
 #include <climits>
+#include <cmath>
 
 namespace curv {
 
@@ -38,19 +41,6 @@ Value::is_int() const noexcept
     return modf(number_, &intf) == 0.0
         && intf >= double(INT_MIN)
         && intf <= double(INT_MAX);
-}
-
-int
-Value::num_to_int(double num, int lo, int hi, const Context& cx)
-{
-    double intf;
-    double frac = modf(num, &intf);
-    if (frac != 0.0)
-        throw Exception(cx, stringify(num, " is not an integer"));
-    if (intf < double(lo) || intf > double(hi))
-        throw Exception(cx, stringify(
-            intf, " is not in the range ",lo,"..",hi));
-    return int(intf);
 }
 
 int

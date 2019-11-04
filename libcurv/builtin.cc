@@ -19,6 +19,7 @@
 #include <libcurv/program.h>
 #include <libcurv/source.h>
 #include <libcurv/system.h>
+#include <libcurv/typeconv.h>
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/filesystem.hpp>
@@ -458,7 +459,7 @@ struct Lshift_Function : public Legacy_Function
         {
             At_Index acx(0, cx);
             At_Index bcx(1, cx);
-            unsigned n = (unsigned) Value::num_to_int(b, 0, a->size()-1, bcx);
+            unsigned n = (unsigned) num_to_int(b, 0, a->size()-1, bcx);
             Shared<List> result = List::make(a->size());
             for (unsigned i = 0; i < n; ++i)
                 result->at(i) = {false};
@@ -484,7 +485,7 @@ struct Rshift_Function : public Legacy_Function
         {
             At_Index acx(0, cx);
             At_Index bcx(1, cx);
-            unsigned n = (unsigned) Value::num_to_int(b, 0, a->size()-1, bcx);
+            unsigned n = (unsigned) num_to_int(b, 0, a->size()-1, bcx);
             Shared<List> result = List::make(a->size());
             for (unsigned i = a->size()-n; i < a->size(); ++i)
                 result->at(i) = {false};
@@ -497,6 +498,24 @@ struct Rshift_Function : public Legacy_Function
     Value call(Frame& args) override
     {
         return array_op.op(Rshift_Op(*this, args), args[0], args[1]);
+    }
+};
+struct Bool32_Add_Function : public Legacy_Function
+{
+    static const char* name() { return "bool32_add"; }
+    Bool32_Add_Function() : Legacy_Function(2,name()) {}
+    struct Bool32_Add_Op : public Binary_Bool32_Op
+    {
+        using Binary_Bool32_Op::Binary_Bool32_Op;
+        Value call(unsigned a, unsigned b) const
+        {
+            return {nat_to_bool32(a + b)};
+        }
+    };
+    static Binary_Array_Op<Bool32_Add_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(Bool32_Add_Op(*this, args), args[0], args[1]);
     }
 };
 
@@ -1083,6 +1102,7 @@ builtin_namespace()
     FUNCTION(Xor_Function),
     FUNCTION(Lshift_Function),
     FUNCTION(Rshift_Function),
+    FUNCTION(Bool32_Add_Function),
     FUNCTION(Dot_Function),
     FUNCTION(Mag_Function),
     FUNCTION(Count_Function),

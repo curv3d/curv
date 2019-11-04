@@ -17,6 +17,7 @@
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/reactive.h>
+#include <libcurv/typeconv.h>
 
 namespace curv {
 
@@ -171,6 +172,33 @@ struct Shift_Op : public Function_Op
     {
         b = a.get_num_or_nan();
         return b == b;
+    }
+};
+
+struct Bool32_Op : public Function_Op
+{
+    using Function_Op::Function_Op;
+    static bool unbox_bool32(Value in, unsigned& out, const Context& c)
+    {
+        auto li = in.dycast<const List>();
+        if (!li || li->size() != 32 || !li->front().is_bool())
+            return false;
+        out = bool32_to_nat(li, c);
+        return true;
+    }
+};
+struct Binary_Bool32_Op : public Bool32_Op
+{
+    using Bool32_Op::Bool32_Op;
+    typedef unsigned left_t;
+    typedef unsigned right_t;
+    bool unbox_left(Value a, left_t& b) const
+    {
+        return unbox_bool32(a, b, At_Index(0, cx));
+    }
+    bool unbox_right(Value a, right_t& b) const
+    {
+        return unbox_bool32(a, b, At_Index(0, cx));
     }
 };
 

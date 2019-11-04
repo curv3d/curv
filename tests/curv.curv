@@ -540,6 +540,10 @@ assert( xor[[true,true,false,false],[true,false,true,false]]
         == [false,true,true,false] );
 assert( lshift[[true,true,false],1] == [#false,#true,#true] );
 assert( rshift[[true,false,true,false],1] == [#false,#true,#false,#false] );
+assert( bool32_add(
+            [true, true, for (i in 1..30) false],
+            [true, for (i in 1..31) false])
+        == [false, false, true, for (i in 1..29) false] );
 
 // script return value:
 in null

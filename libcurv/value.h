@@ -207,7 +207,6 @@ public:
     // Convert a Value to `int`.
     // Throw an exception if wrong type or out of range.
     int to_int(int lo, int hi, const Context&) const;
-    static int num_to_int(double n, int lo, int hi, const Context&);
 
     /// Construct a reference value.
     ///
