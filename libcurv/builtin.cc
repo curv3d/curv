@@ -555,6 +555,43 @@ struct Nat_To_Bool32_Function : public Legacy_Function
     }
 };
 
+struct Bool32_To_Float_Function : public Legacy_Function
+{
+    static const char* name() { return "bool32_to_float"; }
+    Bool32_To_Float_Function() : Legacy_Function(1,name()) {}
+    struct Scalar_Op : public Unary_Bool32_Op
+    {
+        using Unary_Bool32_Op::Unary_Bool32_Op;
+        Value call(unsigned n) const
+        {
+            return {nat_to_float(n)};
+        }
+    };
+    static Unary_Array_Op<Scalar_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(Scalar_Op(*this, args), args[0]);
+    }
+};
+struct Float_To_Bool32_Function : public Legacy_Function
+{
+    static const char* name() { return "float_to_bool32"; }
+    Float_To_Bool32_Function() : Legacy_Function(1,name()) {}
+    struct Scalar_Op : public Unary_Num_Op
+    {
+        using Unary_Num_Op::Unary_Num_Op;
+        Value call(double n) const
+        {
+            return {nat_to_bool32(float_to_nat(n))};
+        }
+    };
+    static Unary_Array_Op<Scalar_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(Scalar_Op(*this, args), args[0]);
+    }
+};
+
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
 struct Dot_Function : public Legacy_Function
@@ -1141,6 +1178,8 @@ builtin_namespace()
     FUNCTION(Bool32_Add_Function),
     FUNCTION(Bool32_To_Nat_Function),
     FUNCTION(Nat_To_Bool32_Function),
+    FUNCTION(Bool32_To_Float_Function),
+    FUNCTION(Float_To_Bool32_Function),
     FUNCTION(Dot_Function),
     FUNCTION(Mag_Function),
     FUNCTION(Count_Function),

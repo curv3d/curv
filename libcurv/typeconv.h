@@ -15,6 +15,8 @@ int num_to_int(double n, int lo, int hi, const Context&);
 unsigned num_to_nat(double n, const Context&);
 Shared<const List> nat_to_bool32(unsigned);
 unsigned bool32_to_nat(Shared<const List>, const Context&);
+unsigned float_to_nat(double);
+double nat_to_float(unsigned);
 
 } // namespace curv
 #endif // header guard

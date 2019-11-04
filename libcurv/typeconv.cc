@@ -57,4 +57,20 @@ bool32_to_nat(Shared<const List> li, const Context& cx)
     return out;
 }
 
+unsigned
+float_to_nat(double f)
+{
+    union { float f; unsigned n; } u;
+    u.f = float(f);
+    return u.n;
+}
+
+double
+nat_to_float(unsigned n)
+{
+    union { float f; unsigned n; } u;
+    u.n = n;
+    return double(u.f);
+}
+
 } // namespace curv
