@@ -106,7 +106,7 @@ Render_Opts::describe_opts(std::ostream& out, const char* prefix)
   "-O ray_max_depth=<maximum ray-marching depth> (default "
     << opts.ray_max_depth_ << ")\n"
   << prefix <<
-  "-O shader=#standard|#pew|{sf1:<function}\n"
+  "-O shader=#standard|#pew|{sf1:<function>}\n"
   ;
 }
 
