@@ -27,8 +27,11 @@ run_cpp_test(const Context& cx, Shared<const Function> func)
     bool arg = true;
     bool result = false;
     test(&arg, &result);
-    if (!result)
-        throw Exception(cx, "assertion failed in C++");
+    if (!result) {
+        cpp.preserve_tempfile();
+        throw Exception(cx, stringify(
+            "assertion failed in C++; see ",cpp.path_));
+    }
 }
 struct SC_Test_Action : public Operation
 {

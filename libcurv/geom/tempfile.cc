@@ -5,6 +5,8 @@
 #include <libcurv/geom/tempfile.h>
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
+#include <algorithm>
+#include <iostream>
 #include <vector>
 
 extern "C" {
@@ -21,35 +23,35 @@ namespace curv { namespace geom {
 namespace fs = Filesystem;
 
 std::vector<fs::path> tempfiles;
+unsigned tempfile_id = 0;
+
+unsigned
+make_tempfile_id()
+{
+    return tempfile_id++;
+}
 
 fs::path
-tempfile_name(const char* suffix)
+tempfile_name(unsigned id, const char* suffix)
 {
-    auto name = stringify(",curv",getpid(),suffix);
+    auto name = stringify(",curv-",getpid(),"-",id,suffix);
     return fs::current_path() / fs::path(name->c_str());
 }
 
-#if 0
 fs::path
-make_tempfile(const char* suffix)
+register_tempfile(unsigned id, const char* suffix)
 {
-    auto filename = tempfile_name(suffix);
-    int fd = creat(filename.c_str(), 0666);
-    if (fd == -1)
-        throw Exception(cx, stringify(
-            "Can't create ",filename.c_str(),": ",strerror(errno)));
-    close(fd);
+    auto filename = tempfile_name(id, suffix);
     tempfiles.push_back(filename);
     return filename;
 }
-#endif
 
-fs::path
-register_tempfile(const char* suffix)
+void
+deregister_tempfile(fs::path name)
 {
-    auto filename = tempfile_name(suffix);
-    tempfiles.push_back(filename);
-    return filename;
+    auto p = std::find(tempfiles.begin(), tempfiles.end(), name);
+    if (p != tempfiles.end())
+        tempfiles.erase(p);
 }
 
 void

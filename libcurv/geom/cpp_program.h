@@ -17,6 +17,7 @@ namespace curv { namespace geom {
 struct Cpp_Program
 {
     System& system_;
+    unsigned tempfile_id_;
     Filesystem::path path_;
     std::ofstream file_;
     SC_Compiler sc_;
@@ -33,6 +34,7 @@ struct Cpp_Program
     }
     void compile(const Context& cx);
     void* get_function(const char* name);
+    void preserve_tempfile();
 };
 
 }} // namespace

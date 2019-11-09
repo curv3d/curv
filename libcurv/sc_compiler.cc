@@ -200,6 +200,16 @@ SC_Value sc_eval_expr(SC_Frame& f, const Operation& op, SC_Type type)
     return arg;
 }
 
+SC_Value sc_eval_bool(SC_Frame& f, const Operation& op)
+{
+    SC_Value arg = sc_eval_op(f, op);
+    if (arg.type != SC_Type::Bool() && arg.type != SC_Type::Bool32()) {
+        throw Exception(At_SC_Phrase(op.syntax_, f), stringify(
+            "wrong argument type: expected Bool or Bool32, got ",arg.type));
+    }
+    return arg;
+}
+
 void
 sc_put_list(
     const List& list, SC_Type ty,
@@ -778,9 +788,11 @@ SC_Value List_Expr_Base::sc_eval(SC_Frame& f) const
 
 SC_Value Not_Expr::sc_eval(SC_Frame& f) const
 {
-    auto arg = sc_eval_expr(f, *arg_, SC_Type::Bool());
-    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
-    f.sc_.out() <<"  bool "<<result<<" = !"<<arg<<";\n";
+    auto arg = sc_eval_bool(f, *arg_);
+    SC_Value result = f.sc_.newvalue(arg.type);
+    f.sc_.out() << "  " << arg.type << " " << result << " = "
+        << (arg.type == SC_Type::Bool32() ? "~" : "!")
+        << arg << ";\n";
     return result;
 }
 SC_Value Or_Expr::sc_eval(SC_Frame& f) const

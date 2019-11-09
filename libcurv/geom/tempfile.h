@@ -9,9 +9,9 @@
 
 namespace curv { namespace geom {
 
-Filesystem::path tempfile_name(const char* suffix);
-Filesystem::path register_tempfile(const char* suffix);
-//Filesystem::path make_tempfile(const char* suffix);
+unsigned make_tempfile_id();
+Filesystem::path register_tempfile(unsigned id, const char* suffix);
+void deregister_tempfile(Filesystem::path name);
 void remove_all_tempfiles();
 
 }} // namespace

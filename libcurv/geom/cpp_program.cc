@@ -29,7 +29,8 @@ const char Cpp_Program::standard_header[] =
 Cpp_Program::Cpp_Program(System& sys)
 :
     system_{sys},
-    path_{register_tempfile(".cpp")},
+    tempfile_id_{make_tempfile_id()},
+    path_{register_tempfile(tempfile_id_,".cpp")},
     file_{path_.c_str()},
     sc_{file_, SC_Target::cpp, sys}
 {
@@ -58,8 +59,8 @@ Cpp_Program::compile(const Context& cx)
         throw Exception(cx, "c++ compile failed");
 
     // create shared object
-    auto obj_name = register_tempfile(".o");
-    auto so_name = register_tempfile(".so");
+    auto obj_name = register_tempfile(tempfile_id_,".o");
+    auto so_name = register_tempfile(tempfile_id_,".so");
     auto link_cmd = stringify("c++ -shared -o ", so_name.c_str(), " ", obj_name.c_str());
     if (system(link_cmd->c_str()) != 0)
         throw Exception(cx, "c++ link failed");
@@ -88,6 +89,12 @@ Cpp_Program::get_function(const char* name)
             stringify("can't load function ",name,": got null pointer"));
     }
     return object;
+}
+
+void
+Cpp_Program::preserve_tempfile()
+{
+    deregister_tempfile(path_);
 }
 
 }} // namespace
