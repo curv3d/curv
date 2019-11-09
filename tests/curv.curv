@@ -565,6 +565,12 @@ assert(bool32_to_float
      #false,#false,#false,#false,#false,#false,#false,#false,#false,#false,
      #false,#false,#false,#true,#true,#true,#true,#true,#true,#true,#false,
      #true] == -1);
+let
+    zero = [for (_ in 1..32) #false];
+in sc_test {
+    "nat_to_bool32": _->
+        nat_to_bool32 0 == zero;
+};
 
 // script return value:
 in null

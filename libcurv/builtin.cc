@@ -553,6 +553,22 @@ struct Nat_To_Bool32_Function : public Legacy_Function
     {
         return array_op.op(Scalar_Op(*this, args), args[0]);
     }
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    const override
+    {
+        At_SC_Phrase cx(ph, f);
+        if (auto k = dynamic_cast<const Constant*>(&argx)) {
+            unsigned n = num_to_nat(k->value_.to_num(cx), cx);
+            auto type = SC_Type::Bool32();
+            auto result = f.sc_.newvalue(type);
+            f.sc_.out() << "  " << type << " " << result << " = "
+                << n << ";\n";
+            return result;
+        }
+        else {
+            throw Exception(cx, "argument must be a constant");
+        }
+    }
 };
 
 struct Bool32_To_Float_Function : public Legacy_Function
