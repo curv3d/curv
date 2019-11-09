@@ -40,18 +40,6 @@ bool islist(Value a)
     return false;
 }
 
-bool isvec3(Value a)
-{
-    auto v = a.dycast<List>();
-    if (v && v->size() == 3
-          && v->at(0).is_num()
-          && v->at(1).is_num()
-          && v->at(2).is_num())
-        return true;
-    auto r = a.dycast<Reactive_Value>();
-    return r && r->sctype_ == SC_Type::Vec(3);
-}
-
 Value add(Value a, Value b, const At_Syntax& cx)
 {
     struct Scalar_Op {

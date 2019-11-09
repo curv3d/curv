@@ -19,6 +19,7 @@
 #include <libcurv/picker.h>
 #include <libcurv/reactive.h>
 #include <libcurv/system.h>
+#include <libcurv/typeconv.h>
 
 namespace curv {
 
@@ -167,32 +168,8 @@ SC_Value sc_eval_op(SC_Frame& f, const Operation& op)
 {
 #if OPTIMIZE
     if (!op.pure_) {
-      #if 0
-        bool previous = f.sc_.in_constants_;
-        f.sc_.in_constants_ = false;
-        auto k = f.sc_.valcount_;
-        f.sc_.out()
-            <<"/*in "<<k<<" IMPR "
-            <<boost::core::demangle(typeid(op).name())<<"*/\n";
-        SC_Value val;
-        try {
-            val = op.sc_eval(f);
-        } catch (...) {
-            f.sc_.out()
-                <<"/*except "<<k<<"/"<<f.sc_.valcount_<<" IMPR "
-                <<boost::core::demangle(typeid(op).name())<<"*/\n";
-            f.sc_.in_constants_ = previous;
-            throw;
-        }
-        f.sc_.out()
-            <<"/*out "<<k<<"/"<<f.sc_.valcount_<<" IMPR "
-            <<boost::core::demangle(typeid(op).name())<<"*/\n";
-        f.sc_.in_constants_ = previous;
-        return val;
-      #else
         Set_Purity pu(f.sc_, false);
         return op.sc_eval(f);
-      #endif
     }
     // 'op' is a uniform expression, consisting of pure operations at interior
     // nodes and Constants at leaf nodes. There can be no variable references
@@ -204,35 +181,10 @@ SC_Value sc_eval_op(SC_Frame& f, const Operation& op)
         if (cached != opcache.end())
             return cached->second;
     }
-  #if 0
-    bool previous = f.sc_.in_constants_;
-    f.sc_.in_constants_ = true;
-    auto k = f.sc_.valcount_;
-    f.sc_.out()
-        <<"/*in "<<k<<" PURE "
-        <<boost::core::demangle(typeid(op).name())<<"*/\n";
-    SC_Value val;
-    try {
-        val = op.sc_eval(f);
-    } catch (...) {
-        f.sc_.out()
-            <<"/*except "<<k<<"/"<<f.sc_.valcount_<<" PURE "
-            <<boost::core::demangle(typeid(op).name())<<"*/\n";
-        f.sc_.in_constants_ = previous;
-        throw;
-    }
-    f.sc_.out()
-        <<"/*out "<<k<<"/"<<f.sc_.valcount_<<" PURE "
-        <<boost::core::demangle(typeid(op).name())<<"*/\n";
-    f.sc_.in_constants_ = previous;
-    f.sc_.opcache_[share(op)] = val;
-    return val;
-  #else
     Set_Purity pu(f.sc_, true);
     auto val = op.sc_eval(f);
     f.sc_.opcaches_.back()[share(op)] = val;
     return val;
-  #endif
 #else
     return op.sc_eval(f);
 #endif
@@ -248,42 +200,68 @@ SC_Value sc_eval_expr(SC_Frame& f, const Operation& op, SC_Type type)
     return arg;
 }
 
-#if 0
-bool
-get_mat(List& list, int i, int j, double& elem)
+void
+sc_put_list(
+    const List& list, SC_Type ty,
+    const At_SC_Phrase& cx, std::ostream& out);
+
+// Write a value to 'out' as a GLSL/C++ initializer expression.
+// As a side effect, write GLSL code to f.out when evaluating reactive values.
+// At present, reactive values can occur anywhere in an array initializer.
+void
+sc_put_value(Value val, SC_Type ty, const At_SC_Phrase& cx, std::ostream& out)
 {
-    if (auto row = list[i].dycast<List>()) {
-        if (row->size() == list.size()) {
-            Value e = row->at(j);
-            if (e.is_num()) {
-                elem = e.get_num_unsafe();
-                return true;
-            }
-        }
+    if (auto re = val.dycast<Reactive_Expression>()) {
+        auto f2 = SC_Frame::make(0, cx.call_frame_.sc_, nullptr,
+            &cx.call_frame_, &*cx.phrase_);
+        auto result = sc_eval_op(*f2, *re->expr_);
+        out << result;
     }
-    return false;
+    else if (auto uv = val.dycast<Uniform_Variable>()) {
+        out << uv->identifier_;
+    }
+    else if (ty == SC_Type::Num()) {
+        double num = val.to_num(cx);
+        out << dfmt(num, dfmt::EXPR);
+    }
+    else if (ty == SC_Type::Bool()) {
+        bool b = val.to_bool(cx);
+        out << (b ? "true" : "false");
+    }
+    else if (ty == SC_Type::Bool32()) {
+        Shared<const List> bl = val.to<const List>(cx);
+        unsigned bn = bool32_to_nat(bl, cx);
+        out << bn;
+    }
+    else if (ty.is_vec()) {
+        auto list = val.to<List>(cx);
+        list->assert_size(ty.count(), cx);
+        out << ty << "(";
+        sc_put_list(*list, SC_Type::Num(), cx, out);
+        out << ")";
+    }
+    else if (ty.rank_ > 0) {
+        auto list = val.to<List>(cx);
+        list->assert_size(ty.dim1_, cx);
+        sc_put_list(*list, ty.abase(), cx, out);
+    }
+    else {
+        throw Exception(cx, stringify(
+            "internal error at sc_put_value: ", val, ": ", ty));
+    }
 }
-#endif
 
 void
-sc_put_num(Value val, const Context& cx, std::ostream& out)
+sc_put_list(
+    const List& list, SC_Type ety,
+    const At_SC_Phrase& cx, std::ostream& out)
 {
-    out << dfmt(val.to_num(cx), dfmt::EXPR);
-}
-
-void
-sc_put_vec(unsigned size, Value val, const Context& cx, std::ostream& out)
-{
-    auto list = val.to<List>(cx);
-    list->assert_size(size, cx);
-    out << SC_Type::Vec(size) << "(";
     bool first = true;
-    for (unsigned i = 0; i < size; ++i) {
+    for (auto e : list) {
         if (!first) out << ",";
         first = false;
-        sc_put_num(list->at(i), cx, out);
+        sc_put_value(e, ety, cx, out);
     }
-    out << ")";
 }
 
 SC_Value sc_eval_const(SC_Frame& f, Value val, const Phrase& syntax)
@@ -293,217 +271,37 @@ SC_Value sc_eval_const(SC_Frame& f, Value val, const Phrase& syntax)
     if (cached != f.sc_.valcache_.end())
         return cached->second;
 #endif
-
     Set_Purity pu(f.sc_, true);
     At_SC_Phrase cx(share(syntax), f);
-    if (val.is_num()) {
-        SC_Value result = f.sc_.newvalue(SC_Type::Num());
-        double num = val.get_num_unsafe();
-        f.sc_.out() << "  const float " << result << " = "
-            << dfmt(num, dfmt::EXPR) << ";\n";
-        f.sc_.valcache_[val] = result;
-        return result;
+
+    auto ty = sc_type_of(val);
+    if (ty == SC_Type::Any()) {
+        throw Exception(At_SC_Phrase(share(syntax), f),
+            stringify("value ",val," is not supported "));
     }
-    if (val.is_bool()) {
-        SC_Value result = f.sc_.newvalue(SC_Type::Bool());
-        bool b = val.get_bool_unsafe();
-        f.sc_.out() << "  const bool " << result << " = "
-            << (b ? "true" : "false") << ";\n";
-        f.sc_.valcache_[val] = result;
-        return result;
-    }
-    if (auto list = val.dycast<List>()) {
-        if (list->size() == 0 || list->size() > SC_Type::MAX_LIST) {
-            throw Exception(cx, stringify(
-                "list of size ",list->size(), " is not supported"));
+
+    String_Builder init;
+    sc_put_value(val, ty, cx, init);
+    auto initstr = init.get_string();
+    SC_Value result = f.sc_.newvalue(ty);
+    if (ty.rank_ == 0) {
+        f.sc_.out()
+            << "  " << ty << " " << result << " = "
+            << *initstr << ";\n";
+    } else {
+        SC_Type ety = ty;
+        ety.rank_ = 0;
+        if (f.sc_.target_ == SC_Target::cpp) {
+            f.sc_.out() << "  " << ety << " " << result << "[] = {"
+                << *initstr << "};\n";
+        } else {
+            f.sc_.out() << "  " << ty << " " << result << " = " << ty << "("
+                << *initstr << ");\n";
         }
-        if (isnum(list->front())) {
-            // It is a list of numbers. Size 2..4 is a vector.
-            if (list->size() >= 2 && list->size() <= 4) {
-                // vector
-                SC_Value values[4];
-                for (unsigned i = 0; i < list->size(); ++i) {
-                    values[i] = sc_eval_const(f, list->at(i), syntax);
-                    if (values[i].type != SC_Type::Num())
-                        goto error;
-                }
-                static SC_Type types[5] = {
-                    {}, {}, SC_Type::Vec(2), SC_Type::Vec(3), SC_Type::Vec(4)
-                };
-                SC_Value result = f.sc_.newvalue(types[list->size()]);
-                f.sc_.out() << "  " << result.type << " " << result
-                    << " = " << result.type << "(";
-                bool first = true;
-                for (unsigned i = 0; i < list->size(); ++i) {
-                    if (!first) f.sc_.out() << ",";
-                    first = false;
-                    f.sc_.out() << values[i];
-                }
-                f.sc_.out() << ");\n";
-                f.sc_.valcache_[val] = result;
-                return result;
-            }
-            // It is a float array.
-            SC_Value result = f.sc_.newvalue(SC_Type::Num(list->size()));
-            if (f.sc_.target_ == SC_Target::cpp) {
-                f.sc_.out() << "  static const float "<<result<<"[] = {";
-            } else {
-                f.sc_.out() << "  const " << result.type << " " << result
-                    << " = " << result.type << "(";
-            }
-            bool first = true;
-            for (unsigned i = 0; i < list->size(); ++i) {
-                if (!first) f.sc_.out() << ",";
-                first = false;
-                f.sc_.out() << dfmt(list->at(i).to_num(cx), dfmt::EXPR);
-            }
-            if (f.sc_.target_ == SC_Target::cpp) {
-                f.sc_.out() << "};\n";
-            } else {
-                f.sc_.out() << ");\n";
-            }
-            f.sc_.valcache_[val] = result;
-            return result;
-          #if 0
-            else {
-                // matrix
-                static SC_Type types[5] = {
-                    {}, {}, SC_Type::Mat(2), SC_Type::Mat(3), SC_Type::Mat(4)
-                };
-                SC_Value result = f.sc_.newvalue(types[list->size()]);
-                f.sc_.out() << "  " << result.type << " " << result
-                    << " = " << result.type << "(";
-                bool first = true;
-                for (size_t i = 0; i < list->size(); ++i) {
-                    for (size_t j = 0; j < list->size(); ++j) {
-                        double elem;
-                        if (get_mat(*list, j, i, elem)) {
-                            if (!first) f.sc_.out() << ",";
-                            first = false;
-                            f.sc_.out() << dfmt(elem, dfmt::EXPR);
-                        } else
-                            goto error;
-                    }
-                }
-                f.sc_.out() << ");\n";
-                return result;
-            }
-          #endif
-        }
-        if (auto list2 = list->front().dycast<List>()) {
-            if (list2->size() == 0 || list2->size() > SC_Type::MAX_LIST) {
-                throw Exception(cx, stringify(
-                    "list of size ",list2->size()," is not supported"));
-            }
-            if (isnum(list2->front())) {
-                // A list of lists of numbers...
-                if (list2->size() >= 2 && list2->size() <= 4) {
-                    // list of vectors
-                    SC_Value result =
-                        f.sc_.newvalue(
-                            SC_Type::Vec(list2->size(), list->size()));
-                    if (f.sc_.target_ == SC_Target::cpp) {
-                        f.sc_.out()
-                            << "  static const " << SC_Type::Vec(list2->size())
-                            << " "<<result<<"[] = {";
-                    } else {
-                        f.sc_.out() << "  const " << result.type << " " << result
-                            << " = " << result.type << "(";
-                    }
-                    bool first = true;
-                    for (unsigned i = 0; i < list->size(); ++i) {
-                        if (!first) f.sc_.out() << ",";
-                        first = false;
-                        sc_put_vec(list2->size(), list->at(i), cx, f.sc_.out());
-                    }
-                    if (f.sc_.target_ == SC_Target::cpp) {
-                        f.sc_.out() << "};\n";
-                    } else {
-                        f.sc_.out() << ");\n";
-                    }
-                    f.sc_.valcache_[val] = result;
-                    return result;
-                }
-                // 2D array of numbers
-                SC_Value result =
-                    f.sc_.newvalue(SC_Type::Num(list->size(), list2->size()));
-                if (f.sc_.target_ == SC_Target::cpp) {
-                    f.sc_.out() << "  static const float " <<result<<"[] = {";
-                } else {
-                    f.sc_.out() << "  const " << result.type << " " << result
-                        << " = " << result.type << "(";
-                }
-                bool first = true;
-                for (unsigned i = 0; i < list->size(); ++i) {
-                    auto l2 = list->at(i).to<List>(cx);
-                    if (l2->size() != list2->size())
-                        goto error;
-                    for (unsigned j = 0; j < l2->size(); ++j) {
-                        if (!first) f.sc_.out() << ",";
-                        first = false;
-                        sc_put_num(l2->at(j), cx, f.sc_.out());
-                    }
-                }
-                if (f.sc_.target_ == SC_Target::cpp) {
-                    f.sc_.out() << "};\n";
-                } else {
-                    f.sc_.out() << ");\n";
-                }
-                f.sc_.valcache_[val] = result;
-                return result;
-            }
-            if (auto list3 = list2->front().dycast<List>()) {
-                // A list of lists of lists: interpret as 2D array of vectors
-                if (list3->size() < 2 || list3->size() > 4) goto error;
-                SC_Value result =
-                    f.sc_.newvalue(SC_Type::Vec(list3->size(),
-                        list->size(), list2->size()));
-                if (f.sc_.target_ == SC_Target::cpp) {
-                    f.sc_.out() << "  static const "
-                        << SC_Type::Vec(list3->size())
-                        << " " <<result<<"[] = {";
-                } else {
-                    f.sc_.out() << "  const " << result.type << " " << result
-                        << " = " << result.type << "(";
-                }
-                bool first = true;
-                for (unsigned i = 0; i < list->size(); ++i) {
-                    auto l2 = list->at(i).to<List>(cx);
-                    if (l2->size() != list2->size())
-                        goto error;
-                    for (unsigned j = 0; j < l2->size(); ++j) {
-                        if (!first) f.sc_.out() << ",";
-                        first = false;
-                        sc_put_vec(list3->size(), l2->at(j), cx, f.sc_.out());
-                    }
-                }
-                if (f.sc_.target_ == SC_Target::cpp) {
-                    f.sc_.out() << "};\n";
-                } else {
-                    f.sc_.out() << ");\n";
-                }
-                f.sc_.valcache_[val] = result;
-                return result;
-            }
-        }
-        goto error;
     }
-    if (auto re = val.dycast<Reactive_Expression>()) {
-        auto f2 = SC_Frame::make(0, f.sc_, nullptr, &f, &syntax);
-        auto result = sc_eval_op(*f2, *re->expr_);
-        f.sc_.valcache_[val] = result;
-        return result;
-    }
-    if (auto uv = val.dycast<Uniform_Variable>()) {
-        SC_Value result = f.sc_.newvalue(uv->sctype_);
-        f.sc_.out() << "  " << uv->sctype_
-            << " " << result << " = " << uv->identifier_ << ";\n";
-        f.sc_.valcache_[val] = result;
-        return result;
-    }
-error:
-    throw Exception(At_SC_Phrase(share(syntax), f),
-        stringify("value ",val," is not supported "));
+
+    f.sc_.valcache_[val] = result;
+    return result;
 }
 
 SC_Value Operation::sc_eval(SC_Frame& f) const

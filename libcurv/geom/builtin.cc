@@ -22,7 +22,7 @@ run_cpp_test(const Context& cx, Shared<const Function> func)
 {
     Cpp_Program cpp{cx.system()};
     cpp.define_function("test", SC_Type::Bool(), SC_Type::Bool(), func, cx);
-    cpp.compile();
+    cpp.compile(cx);
     auto test = (void(*)(const bool*,bool*))cpp.get_function("test");
     bool arg = true;
     bool result = false;

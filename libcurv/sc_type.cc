@@ -3,6 +3,8 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/sc_type.h>
+
+#include <libcurv/die.h>
 #include <libcurv/math.h>
 #include <libcurv/reactive.h>
 
@@ -12,6 +14,7 @@ SC_Base_Type_Info sc_base_type_info_array[] =
 {
     {"Any",   0, 1, 1},
     {"bool",  0, 1, 1},
+    {"uint",  1, 32, 1},
     {"float", 0, 1, 1},
     {"vec2",  1, 2, 1},
     {"vec3",  1, 3, 1},
@@ -34,13 +37,42 @@ std::ostream& operator<<(std::ostream& out, SC_Type type)
 SC_Type
 sc_type_of(Value v)
 {
-    if (v.is_bool())
-        return SC_Type::Bool();
     if (v.is_num())
         return SC_Type::Num();
-    if (isvec3(v))
-        return SC_Type::Vec(3);
-    if (auto re = v.dycast<Reactive_Value>())
+    else if (v.is_bool())
+        return SC_Type::Bool();
+    else if (auto ls = v.dycast<List>()) {
+        if (ls->empty())
+            ;
+        else {
+            auto ty = sc_type_of(ls->front());
+            auto n = ls->size();
+            if (ty.is_numeric()) {
+                if (ty == SC_Type::Num()) {
+                    if (n >= 2 && n <= 4)
+                        return SC_Type::Vec(n);
+                    else if (n <= SC_Type::MAX_LIST)
+                        return SC_Type::Num(n);
+                }
+                else if (ty.rank_ == 0) {
+                    ty.rank_ = 1;
+                    ty.dim1_ = n;
+                    return ty;
+                }
+                else if (ty.rank_ == 1) {
+                    ty.rank_ = 2;
+                    ty.dim2_ = ty.dim1_;
+                    ty.dim1_ = n;
+                    return ty;
+                }
+            }
+            else if (ty == SC_Type::Bool()) {
+                if (n == 32)
+                    return SC_Type::Bool32();
+            }
+        }
+    }
+    else if (auto re = v.dycast<Reactive_Value>())
         return re->sctype_;
     return SC_Type::Any();
 }
@@ -50,6 +82,25 @@ sc_type_join(SC_Type t1, SC_Type t2)
 {
     if (t1 == t2) return t1;
     return SC_Type::Any();
+}
+
+SC_Type
+SC_Type::abase() const
+{
+    switch (rank_) {
+    case 0:
+        if (is_vec())
+            return Num();
+        if (base_type_ == Base_Type::Bool32)
+            return Bool();
+        return *this;
+    case 1:
+        return {base_type_};
+    case 2:
+        return {base_type_, dim2_};
+    default:
+        die("SC_Type::abase() bad rank");
+    }
 }
 
 } // namespace curv

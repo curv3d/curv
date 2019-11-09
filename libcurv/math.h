@@ -15,7 +15,6 @@ bool isnum(Value a);
 bool isbool(Value a);
 bool issymbol(Value a);
 bool islist(Value a);
-bool isvec3(Value a);
 
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)

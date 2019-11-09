@@ -27,13 +27,14 @@ struct SC_Type
     {
         Any = -1,
         Bool = 0,
-        Num = 1,
-        Vec2 = 2,
-        Vec3 = 3,
-        Vec4 = 4,
-        Mat2 = 5,
-        Mat3 = 6,
-        Mat4 = 7
+        Bool32 = 1,
+        Num =  2,
+        Vec2 = 3,
+        Vec3 = 4,
+        Vec4 = 5,
+        Mat2 = 6,
+        Mat3 = 7,
+        Mat4 = 8
     };
 
     // 4 shorts == 64 bit representation
@@ -56,6 +57,7 @@ struct SC_Type
     {}
     static constexpr inline SC_Type Any() { return {Base_Type::Any}; }
     static constexpr inline SC_Type Bool() { return {Base_Type::Bool}; }
+    static constexpr inline SC_Type Bool32() { return {Base_Type::Bool32}; }
     static constexpr inline SC_Type Num(unsigned dim1 = 0, unsigned dim2 = 0)
     {
         return {Base_Type::Num, dim1, dim2};
@@ -78,7 +80,9 @@ struct SC_Type
     inline bool is_numeric() const { return base_type_ >= Base_Type::Num; }
     inline bool is_list() const
     {
-        return base_type_ >= Base_Type::Vec2 || rank_ > 0;
+        return base_type_ == Base_Type::Bool32
+            || base_type_ >= Base_Type::Vec2
+            || rank_ > 0;
     }
     // number of dimensions: 0 means a scalar (Num or Bool or Any)
     inline unsigned rank() const
@@ -93,15 +97,11 @@ struct SC_Type
         return base_info().dim1;
     }
     // If this is an array, strip one dimension off of the type.
-    SC_Type abase()
-    {
-        if (is_vec())
-            return Num();
-        return {base_type_};
-    }
+    SC_Type abase() const;
     inline bool is_vec() const
     {
-        return rank_ == 0 && base_info().rank == 1;
+        return rank_ == 0
+            && base_type_ >= Base_Type::Vec2 && base_type_ <= Base_Type::Vec4;
     }
     inline bool is_mat() const
     {

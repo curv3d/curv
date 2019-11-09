@@ -24,7 +24,7 @@ Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
         rshape.dist_fun_, cx);
     cpp_.define_function("colour", SC_Type::Vec(4), SC_Type::Vec(3),
         rshape.colour_fun_, cx);
-    cpp_.compile();
+    cpp_.compile(cx);
     dist_ = (Cpp_Dist_Func) cpp_.get_function("dist");
     colour_ = (Cpp_Colour_Func) cpp_.get_function("colour");
 }

@@ -31,7 +31,7 @@ struct Cpp_Program
     {
         sc_.define_function(name, param_type, result_type, func, cx);
     }
-    void compile();
+    void compile(const Context& cx);
     void* get_function(const char* name);
 };
 

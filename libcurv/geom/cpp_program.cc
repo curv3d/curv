@@ -47,9 +47,8 @@ Cpp_Program::~Cpp_Program()
 }
 
 void
-Cpp_Program::compile()
+Cpp_Program::compile(const Context& cx)
 {
-    At_System cx{system_};
     file_.close();
 
     // compile C++ to optimized object code
