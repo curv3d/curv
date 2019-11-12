@@ -411,11 +411,26 @@ struct And_Function : public Legacy_Function
     {
         using Binary_Boolean_Op::Binary_Boolean_Op;
         static Value call(bool x, bool y) { return {x && y}; }
+        static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
+        {
+            auto result = f.sc_.newvalue(x.type);
+            f.sc_.out() << "  " << x.type << " " << result << " = " << x
+                << (x.type == SC_Type::Bool32() ? "&" : "&&")
+                << y << ";\n";
+            return result;
+        }
     };
     static Binary_Array_Op<And_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.reduce(And_Op(*this, args), Value{true}, args[0]);
+        return array_op.reduce(And_Op(*this, At_Arg(*this, args)),
+            Value{true}, args[0]);
+    }
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    const override
+    {
+        return array_op.sc_reduce(And_Op(*this, At_SC_Phrase(ph, f)),
+            Value{true}, argx, f);
     }
 };
 struct Or_Function : public Legacy_Function
@@ -430,7 +445,8 @@ struct Or_Function : public Legacy_Function
     static Binary_Array_Op<Or_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.reduce(Or_Op(*this, args), Value{false}, args[0]);
+        return array_op.reduce(Or_Op(*this, At_Arg(*this, args)),
+            Value{false}, args[0]);
     }
 };
 struct Xor_Function : public Legacy_Function
@@ -445,7 +461,8 @@ struct Xor_Function : public Legacy_Function
     static Binary_Array_Op<Xor_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.reduce(Xor_Op(*this, args), Value{false}, args[0]);
+        return array_op.reduce(Xor_Op(*this, At_Arg(*this, args)),
+            Value{false}, args[0]);
     }
 };
 struct Lshift_Function : public Legacy_Function
@@ -471,7 +488,8 @@ struct Lshift_Function : public Legacy_Function
     static Binary_Array_Op<Lshift_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Lshift_Op(*this, args), args[0], args[1]);
+        return array_op.op(Lshift_Op(*this, At_Arg(*this, args)),
+            args[0], args[1]);
     }
 };
 struct Rshift_Function : public Legacy_Function
@@ -497,7 +515,8 @@ struct Rshift_Function : public Legacy_Function
     static Binary_Array_Op<Rshift_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Rshift_Op(*this, args), args[0], args[1]);
+        return array_op.op(Rshift_Op(*this, At_Arg(*this, args)),
+            args[0], args[1]);
     }
 };
 struct Bool32_Add_Function : public Legacy_Function
@@ -515,7 +534,8 @@ struct Bool32_Add_Function : public Legacy_Function
     static Binary_Array_Op<Bool32_Add_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Bool32_Add_Op(*this, args), args[0], args[1]);
+        return array_op.op(Bool32_Add_Op(*this, At_Arg(*this, args)),
+            args[0], args[1]);
     }
 };
 struct Bool32_To_Nat_Function : public Legacy_Function
@@ -533,7 +553,7 @@ struct Bool32_To_Nat_Function : public Legacy_Function
     static Unary_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Scalar_Op(*this, args), args[0]);
+        return array_op.op(Scalar_Op(*this, At_Arg(*this, args)), args[0]);
     }
 };
 struct Nat_To_Bool32_Function : public Legacy_Function
@@ -551,7 +571,7 @@ struct Nat_To_Bool32_Function : public Legacy_Function
     static Unary_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Scalar_Op(*this, args), args[0]);
+        return array_op.op(Scalar_Op(*this, At_Arg(*this, args)), args[0]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
@@ -586,7 +606,7 @@ struct Bool32_To_Float_Function : public Legacy_Function
     static Unary_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Scalar_Op(*this, args), args[0]);
+        return array_op.op(Scalar_Op(*this, At_Arg(*this, args)), args[0]);
     }
 };
 struct Float_To_Bool32_Function : public Legacy_Function
@@ -604,7 +624,7 @@ struct Float_To_Bool32_Function : public Legacy_Function
     static Unary_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Scalar_Op(*this, args), args[0]);
+        return array_op.op(Scalar_Op(*this, At_Arg(*this, args)), args[0]);
     }
 };
 

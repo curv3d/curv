@@ -13,10 +13,12 @@
 //   [3,4] + [10,20] == [13,24]  -- element-wise addition
 //   1 + [10,20] == [11,21]      -- broadcasting
 
-#include <libcurv/list.h>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
+#include <libcurv/list.h>
 #include <libcurv/reactive.h>
+#include <libcurv/sc_compiler.h>
+#include <libcurv/sc_context.h>
 #include <libcurv/typeconv.h>
 
 namespace curv {
@@ -123,11 +125,11 @@ struct Binary_Numeric_Array_Op
 
 struct Function_Op
 {
-    At_Arg cx;
+    const At_Syntax& cx;
     Symbol_Ref name;
-    Function_Op(Function& func, Frame& args)
+    Function_Op(const Function& func, const At_Syntax& _cx)
     :
-        cx(func, args),
+        cx(_cx),
         name(func.name_)
     {}
 };
@@ -151,6 +153,30 @@ struct Binary_Boolean_Op : public Function_Op
             return true;
         } else
             return false;
+    }
+    void sc_check_arg(SC_Value a) const
+    {
+        if (a.type == SC_Type::Bool()) return;
+        if (a.type == SC_Type::Bool32()) return;
+        throw Exception(cx, "arguments must be Bool or Bool32");
+    }
+    void sc_check_args(SC_Frame& /*f*/, SC_Value& a, SC_Value& b) const
+    {
+        if (a.type == SC_Type::Bool()) {
+            if (b.type == SC_Type::Bool())
+                return;
+            if (b.type == SC_Type::Bool32()) {
+                // TODO: convert a to Bool32
+            }
+        }
+        else if (a.type == SC_Type::Bool32()) {
+            if (b.type == SC_Type::Bool32())
+                return;
+            if (b.type == SC_Type::Bool()) {
+                // TODO: convert b to Bool32
+            }
+        }
+        throw Exception(cx, "arguments must be Bool or Bool32");
     }
 };
 
@@ -253,6 +279,47 @@ struct Binary_Array_Op
         for (auto val : *list)
             result = op(f, result, val);
         return result;
+    }
+    static SC_Value
+    sc_reduce(const Scalar_Op& fn, Value zero, Operation& argx, SC_Frame& f)
+    {
+        auto list = dynamic_cast<List_Expr*>(&argx);
+        if (list) {
+            if (list->empty())
+                return sc_eval_const(f, zero, *argx.syntax_);
+            auto first = sc_eval_op(f, *list->at(0));
+            if (list->size() == 1) {
+                fn.sc_check_arg(first);
+                return first;
+            }
+            for (unsigned i = 1; i < list->size(); ++i) {
+                auto second = sc_eval_op(f, *list->at(i));
+                fn.sc_check_args(f, first, second);
+                first = fn.sc_eval(f, first, second);
+            }
+            return first;
+        }
+        else {
+            // Reduce an array value that exists at GPU run time.
+            // TODO: For a large 1D array, use a GPU loop and call a function.
+            // 2D arrays (SC_Type rank 2) are not supported, because you can't
+            // generate a rank 1 array at GPU runtime, for now at least.
+            // For a single Vec, this inline expansion of the loop is good.
+            auto arg = sc_eval_op(f, argx);
+            if (arg.type.is_vec()) {
+                auto first = sc_vec_element(f, arg, 0);
+                for (unsigned i = 1; i < arg.type.count(); ++i) {
+                    auto second = sc_vec_element(f, arg, 1);
+                    fn.sc_check_args(f, first, second);
+                    first = fn.sc_eval(f, first, second);
+                }
+                return first;
+            }
+            else {
+                throw Exception(At_SC_Phrase(argx.syntax_, f), stringify(
+                    fn.name,": argument is not a vector"));
+            }
+        }
     }
 
     static Value

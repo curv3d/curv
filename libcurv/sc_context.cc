@@ -57,6 +57,7 @@ At_SC_Phrase::get_locations(std::list<Location>& locs) const
 }
 System& At_SC_Phrase::system() const { return call_frame_.sc_.system_; }
 Frame* At_SC_Phrase::frame() const { return nullptr; }
+const Phrase& At_SC_Phrase::syntax() const { return *phrase_; }
 
 Shared<const String>
 At_SC_Phrase::rewrite_message(Shared<const String> msg) const

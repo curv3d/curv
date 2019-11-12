@@ -23,7 +23,7 @@ struct At_SC_Frame : public Context
 };
 
 /// Exception Context where we know the Phrase that contains the error.
-struct At_SC_Phrase : public Context
+struct At_SC_Phrase : public At_Syntax
 {
     Shared<const Phrase> phrase_;
     SC_Frame& call_frame_;
@@ -34,6 +34,7 @@ struct At_SC_Phrase : public Context
     Shared<const String> rewrite_message(Shared<const String>) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
+    virtual const Phrase& syntax() const override;
 };
 
 /// The exception context for the i'th argument in a function call.

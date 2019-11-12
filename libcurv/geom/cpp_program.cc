@@ -55,8 +55,10 @@ Cpp_Program::compile(const Context& cx)
     // compile C++ to optimized object code
     auto cc_cmd = stringify("c++ -fpic -O3 -c ", path_.c_str());
     //auto cc_cmd = stringify("c++ -fpic -c -g ", path_.c_str());
-    if (system(cc_cmd->c_str()) != 0)
-        throw Exception(cx, "c++ compile failed");
+    if (system(cc_cmd->c_str()) != 0) {
+        preserve_tempfile();
+        throw Exception(cx, stringify("c++ compile failed; see ", path_));
+    }
 
     // create shared object
     auto obj_name = register_tempfile(tempfile_id_,".o");
