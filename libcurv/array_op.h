@@ -113,8 +113,7 @@ struct Binary_Numeric_Array_Op
     {
         if (xs->size() != ys->size())
             throw Exception(f.cx, stringify(
-                f.name(),
-                ": mismatched list sizes (",
+                "mismatched list sizes (",
                 xs->size(),",",ys->size(),") in array operation"));
         Shared<List> result = List::make(xs->size());
         for (unsigned i = 0; i < xs->size(); ++i)
@@ -392,8 +391,7 @@ struct Binary_Array_Op
     {
         if (xs.size() != ys.size())
             throw Exception(f.cx, stringify(
-                f.name,
-                ": mismatched list sizes (",
+                "mismatched list sizes (",
                 xs.size(),",",ys.size(),") in array operation"));
         Shared<List> result = List::make(xs.size());
         for (unsigned i = 0; i < xs.size(); ++i)
