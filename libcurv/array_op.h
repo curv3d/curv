@@ -210,6 +210,17 @@ struct Shift_Op : public Function_Op
         b = a.to_num_or_nan();
         return b == b;
     }
+    void sc_check_args(SC_Frame& /*f*/, SC_Value& a, SC_Value& b) const
+    {
+        if (a.type != SC_Type::Bool32()) {
+            throw Exception(At_Index(0, cx),
+                stringify("expected argument of type Bool32, got ", a.type));
+        }
+        if (b.type != SC_Type::Num()) {
+            throw Exception(At_Index(1, cx),
+                stringify("expected argument of type Num, got ", b.type));
+        }
+    }
 };
 
 struct Bool32_Op : public Function_Op
@@ -363,6 +374,18 @@ struct Binary_Array_Op
             }
         }
         throw Exception(At_Index(0,f.cx), domain_error(f, x));
+    }
+    static SC_Value
+    sc_op(const Scalar_Op& fn, Operation& argx, SC_Frame& f)
+    {
+        auto list = dynamic_cast<List_Expr*>(&argx);
+        if (list && list->size() == 2) {
+            auto first = sc_eval_op(f, *list->at(0));
+            auto second = sc_eval_op(f, *list->at(1));
+            fn.sc_check_args(f, first, second);
+            return fn.sc_eval(f, first, second);
+        }
+        throw Exception(fn.cx, "expected a list of size 2");
     }
 
     static Value

@@ -514,12 +514,24 @@ struct Lshift_Function : public Legacy_Function
                 result->at(i) = {a->at(i-n).to_bool(acx)};
             return {result};
         }
+        static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
+        {
+            auto result = f.sc_.newvalue(x.type);
+            f.sc_.out() << "  " << x.type << " " << result << " = "
+                << x << " << int(" << y << ");\n";
+            return result;
+        }
     };
     static Binary_Array_Op<Lshift_Op> array_op;
     Value call(Frame& args) override
     {
         return array_op.op(Lshift_Op(At_Arg(*this, args)),
             args[0], args[1]);
+    }
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    const override
+    {
+        return array_op.sc_op(Lshift_Op(At_SC_Call(*this, ph, f)), argx, f);
     }
 };
 struct Rshift_Function : public Legacy_Function
@@ -541,12 +553,24 @@ struct Rshift_Function : public Legacy_Function
                 result->at(i) = {a->at(i+n).to_bool(acx)};
             return {result};
         }
+        static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
+        {
+            auto result = f.sc_.newvalue(x.type);
+            f.sc_.out() << "  " << x.type << " " << result << " = "
+                << x << " >> int(" << y << ");\n";
+            return result;
+        }
     };
     static Binary_Array_Op<Rshift_Op> array_op;
     Value call(Frame& args) override
     {
         return array_op.op(Rshift_Op(At_Arg(*this, args)),
             args[0], args[1]);
+    }
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    const override
+    {
+        return array_op.sc_op(Rshift_Op(At_SC_Call(*this, ph, f)), argx, f);
     }
 };
 struct Bool32_Add_Function : public Legacy_Function

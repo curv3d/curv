@@ -581,6 +581,10 @@ in sc_test {
     "xor": _-> xor[true,false] && !xor[] &&
             xor[nat_to_bool32 0xFF00FF00, nat_to_bool32 0xFF0000FF]
             == nat_to_bool32 0x0000FFFF;
+    "lshift": _-> lshift[nat_to_bool32 0xFF00FF00, 8]
+            == nat_to_bool32 0x00FF0000;
+    "rshift": _-> rshift[nat_to_bool32 0xFF00FF00, 8]
+            == nat_to_bool32 0x00FF00FF;
 };
 
 // script return value:
