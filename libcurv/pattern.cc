@@ -153,7 +153,7 @@ struct Predicate_Pattern : public Pattern
             if (!funv.is_ref())
                 throw Exception(At_Phrase(*predicate_phrase_, f),
                     stringify(funv,": not a function"));
-            Ref_Value& funp( funv.get_ref_unsafe() );
+            Ref_Value& funp( funv.to_ref_unsafe() );
             switch (funp.type_) {
             case Ref_Value::ty_function:
               {

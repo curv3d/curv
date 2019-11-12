@@ -155,7 +155,7 @@ public:
     /// Convert a boolean value to `bool`.
     ///
     /// Only defined if is_bool() is true.
-    inline bool get_bool_unsafe() const noexcept
+    inline bool to_bool_unsafe() const noexcept
     {
         return (bool)(bits_ & 1);
     }
@@ -186,9 +186,9 @@ public:
     /// Convert a number value to `double`.
     ///
     /// Only defined if `is_num()` is true.
-    /// Potentially faster than `get_num_or_nan()`,
+    /// Potentially faster than `to_num_or_nan()`,
     /// so call this version when guarded by `if(v.is_num())`.
-    inline double get_num_unsafe() const noexcept
+    inline double to_num_unsafe() const noexcept
     {
         return number_;
     }
@@ -196,7 +196,7 @@ public:
     /// Convert a number value to `double`.
     ///
     /// If is_num() is false then NaN is returned.
-    inline double get_num_or_nan() const noexcept
+    inline double to_num_or_nan() const noexcept
     {
         return number_;
     }
@@ -236,7 +236,7 @@ public:
     /// Another reason it's unsafe is that the returned reference becomes
     /// invalid if the original Value is destroyed.
     /// See `dycast` for a completely safe alternative.
-    inline Ref_Value& get_ref_unsafe() const noexcept
+    inline Ref_Value& to_ref_unsafe() const noexcept
     {
         #if UINTPTR_MAX == UINT64_MAX
             // 64 bit pointers.
@@ -283,7 +283,7 @@ public:
     inline Shared<T> dycast() const noexcept
     {
         if (is_ref()) {
-            T* p = dynamic_cast<T*>(&get_ref_unsafe());
+            T* p = dynamic_cast<T*>(&to_ref_unsafe());
             if (p != nullptr)
                 return share(*p);
         }
@@ -293,7 +293,7 @@ public:
     inline Shared<T> to(const Context& cx) const
     {
         if (is_ref()) {
-            T* p = dynamic_cast<T*>(&get_ref_unsafe());
+            T* p = dynamic_cast<T*>(&to_ref_unsafe());
             if (p != nullptr)
                 return share(*p);
         }
@@ -308,7 +308,7 @@ public:
     {
         bits_ = val.bits_;
         if (is_ref())
-            intrusive_ptr_add_ref(&get_ref_unsafe());
+            intrusive_ptr_add_ref(&to_ref_unsafe());
     }
 
     /// The move constructor.
@@ -343,7 +343,7 @@ public:
     ~Value()
     {
         if (is_ref())
-            intrusive_ptr_release(&get_ref_unsafe());
+            intrusive_ptr_release(&to_ref_unsafe());
     }
 
     /// Print a value like a Curv expression.

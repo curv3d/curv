@@ -41,15 +41,15 @@ void write_json_string(const char* str, std::ostream& out)
 void write_json_value(Value val, std::ostream& out)
 {
     if (val.is_bool()) {
-        out << (val.get_bool_unsafe() ? "true" : "false");
+        out << (val.to_bool_unsafe() ? "true" : "false");
         return;
     }
     if (val.is_num()) {
-        out << dfmt(val.get_num_unsafe(), dfmt::JSON);
+        out << dfmt(val.to_num_unsafe(), dfmt::JSON);
         return;
     }
     assert(val.is_ref());
-    auto& ref = val.get_ref_unsafe();
+    auto& ref = val.to_ref_unsafe();
     switch (ref.type_) {
     case Ref_Value::ty_symbol:
       {

@@ -33,7 +33,7 @@ TEST(curv, program)
     ASSERT_TRUE(isa<const Identifier>(nub("let i=0 in (foo)")));
     ASSERT_TRUE(isa<const Identifier>(nub("let i=0 in (foo) where j=0")));
 
-    ASSERT_TRUE(skip_prefix("-foo=42",5).get_num_or_nan() == 42.0);
+    ASSERT_TRUE(skip_prefix("-foo=42",5).to_num_or_nan() == 42.0);
 /*
     auto xp = List::make(2);
     auto x = Shared<List>{std::move(xp)};

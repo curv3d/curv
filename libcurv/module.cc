@@ -34,7 +34,7 @@ Module_Base::get(slot_t i) const
     // into proper Values. (This is a trick to avoid reference cycles in the
     // representation of function values, which would break reference counting.)
     if (val.is_ref()) {
-        auto& ref = val.get_ref_unsafe();
+        auto& ref = val.to_ref_unsafe();
         if (ref.type_ == Ref_Value::ty_lambda)
             return {make<Closure>((Lambda&)ref, *(Module*)this)};
     }

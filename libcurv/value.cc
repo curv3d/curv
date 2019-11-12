@@ -21,7 +21,7 @@ bool
 Value::to_bool(const Context& cx) const
 {
     if (is_bool())
-        return get_bool_unsafe();
+        return to_bool_unsafe();
     throw Exception(cx, stringify(*this, " is not a boolean"));
 }
 
@@ -29,7 +29,7 @@ double
 Value::to_num(const Context& cx) const
 {
     if (is_num())
-        return get_num_unsafe();
+        return to_num_unsafe();
     throw Exception(cx, stringify(*this, " is not a number"));
 }
 
@@ -48,7 +48,7 @@ Value::to_int(int lo, int hi, const Context& cx) const
 {
     if (!is_num())
         throw Exception(cx, stringify(*this, " is not a number"));
-    return num_to_int(get_num_unsafe(), lo, hi, cx);
+    return num_to_int(to_num_unsafe(), lo, hi, cx);
 }
 
 void
@@ -61,7 +61,7 @@ Value
 Value::at(Symbol_Ref field, const Context& cx) const
 {
     if (is_ref()) {
-        Record* s = dynamic_cast<Record*>(&get_ref_unsafe());
+        Record* s = dynamic_cast<Record*>(&to_ref_unsafe());
         if (s)
             return s->getfield(field, cx);
     }
@@ -75,11 +75,11 @@ const
     if (is_missing()) {
         out << "<missing>";
     } else if (is_bool()) {
-        out << (get_bool_unsafe() ? "#true" : "#false");
+        out << (to_bool_unsafe() ? "#true" : "#false");
     } else if (is_num()) {
-        out << dfmt(get_num_unsafe());
+        out << dfmt(to_num_unsafe());
     } else if (is_ref()) {
-        get_ref_unsafe().print(out);
+        to_ref_unsafe().print(out);
     } else {
         out << "???";
     }
@@ -105,8 +105,8 @@ bool Value::equal(Value v, const Context& cx) const
         return false;
 
     // both are reference values
-    const Ref_Value& r1{get_ref_unsafe()};
-    const Ref_Value& r2{v.get_ref_unsafe()};
+    const Ref_Value& r1{to_ref_unsafe()};
+    const Ref_Value& r2{v.to_ref_unsafe()};
 
     if (r1.type_ != r2.type_)
         return false;

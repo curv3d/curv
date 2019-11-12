@@ -42,7 +42,7 @@ struct Binary_Numeric_Array_Op
     op(const Scalar_Op& f, Value x, Value y)
     {
         // if both x and y are numbers
-        double r = f.call(x.get_num_or_nan(), y.get_num_or_nan());
+        double r = f.call(x.to_num_or_nan(), y.to_num_or_nan());
         if (r == r)
             return {r};
 
@@ -140,7 +140,7 @@ struct Binary_Boolean_Op : public Function_Op
     static bool unbox_left(Value a, left_t& b)
     {
         if (a.is_bool()) {
-            b = a.get_bool_unsafe();
+            b = a.to_bool_unsafe();
             return true;
         } else
             return false;
@@ -148,7 +148,7 @@ struct Binary_Boolean_Op : public Function_Op
     static bool unbox_right(Value a, right_t& b)
     {
         if (a.is_bool()) {
-            b = a.get_bool_unsafe();
+            b = a.to_bool_unsafe();
             return true;
         } else
             return false;
@@ -186,7 +186,7 @@ struct Unary_Num_Op : public Function_Op
     bool unbox(Value a, scalar_t& b) const
     {
         if (a.is_num()) {
-            b = a.get_num_unsafe();
+            b = a.to_num_unsafe();
             return true;
         } else
             return false;
@@ -209,7 +209,7 @@ struct Shift_Op : public Function_Op
     }
     static bool unbox_right(Value a, right_t& b)
     {
-        b = a.get_num_or_nan();
+        b = a.to_num_or_nan();
         return b == b;
     }
 };
@@ -336,7 +336,7 @@ struct Binary_Array_Op
             if (f.unbox_right(y, sy))
                 return f.call(sx, sy);
             if (y.is_ref()) {
-                Ref_Value& ry(y.get_ref_unsafe());
+                Ref_Value& ry(y.to_ref_unsafe());
                 switch (ry.type_) {
                 case Ref_Value::ty_list:
                     return broadcast_right(f, x, (List&)ry);
@@ -346,13 +346,13 @@ struct Binary_Array_Op
             }
             throw Exception(At_Index(1,f.cx), domain_error(f, y));
         } else if (x.is_ref()) {
-            Ref_Value& rx(x.get_ref_unsafe());
+            Ref_Value& rx(x.to_ref_unsafe());
             switch (rx.type_) {
             case Ref_Value::ty_list:
                 if (f.unbox_right(y, sy))
                     return broadcast_left(f, (List&)rx, y);
                 else if (y.is_ref()) {
-                    Ref_Value& ry(y.get_ref_unsafe());
+                    Ref_Value& ry(y.to_ref_unsafe());
                     switch (ry.type_) {
                     case Ref_Value::ty_list:
                         return element_wise_op(f, (List&)rx, (List&)ry);
@@ -441,7 +441,7 @@ struct Unary_Numeric_Array_Op
     static Value
     op(const Scalar_Op& f, Value x)
     {
-        double r = f.call(x.get_num_or_nan());
+        double r = f.call(x.to_num_or_nan());
         if (r == r)
             return {r};
         if (auto xlist = x.dycast<List>())
@@ -479,7 +479,7 @@ struct Unary_Array_Op
         if (f.unbox(x, sx)) {
             return f.call(sx);
         } else if (x.is_ref()) {
-            Ref_Value& rx(x.get_ref_unsafe());
+            Ref_Value& rx(x.to_ref_unsafe());
             switch (rx.type_) {
             case Ref_Value::ty_list:
                 return element_wise_op(f, (List&)rx);

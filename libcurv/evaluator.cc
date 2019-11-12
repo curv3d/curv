@@ -101,7 +101,7 @@ Symbolic_Ref::eval(Frame& f) const
 Value
 Module_Data_Ref::eval(Frame& f) const
 {
-    Module& m = (Module&)f[slot_].get_ref_unsafe();
+    Module& m = (Module&)f[slot_].to_ref_unsafe();
     assert(m.subtype_ == Ref_Value::sty_module);
     return m.at(index_);
 }
@@ -130,7 +130,7 @@ Value
 eval_not(Value x, const At_Syntax& cx)
 {
     if (x.is_bool())
-        return {!x.get_bool_unsafe()};
+        return {!x.to_bool_unsafe()};
     if (auto xlist = x.dycast<List>()) {
         Shared<List> result = List::make(xlist->size());
         for (unsigned i = 0; i < xlist->size(); ++i)
@@ -369,9 +369,9 @@ Less_Expr::eval(Frame& f) const
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
     // only 2 comparisons required to unbox two numbers and compare them, not 3
-    if (a.get_num_or_nan() < b.get_num_or_nan())
+    if (a.to_num_or_nan() < b.to_num_or_nan())
         return {true};
-    if (a.get_num_or_nan() >= b.get_num_or_nan())
+    if (a.to_num_or_nan() >= b.to_num_or_nan())
         return {false};
     throw Exception(At_Phrase(*syntax_, f),
         stringify(a," < ",b,": domain error"));
@@ -382,9 +382,9 @@ Greater_Expr::eval(Frame& f) const
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
     // only 2 comparisons required to unbox two numbers and compare them, not 3
-    if (a.get_num_or_nan() > b.get_num_or_nan())
+    if (a.to_num_or_nan() > b.to_num_or_nan())
         return {true};
-    if (a.get_num_or_nan() <= b.get_num_or_nan())
+    if (a.to_num_or_nan() <= b.to_num_or_nan())
         return {false};
     throw Exception(At_Phrase(*syntax_, f),
         stringify(a," > ",b,": domain error"));
@@ -395,9 +395,9 @@ Less_Or_Equal_Expr::eval(Frame& f) const
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
     // only 2 comparisons required to unbox two numbers and compare them, not 3
-    if (a.get_num_or_nan() <= b.get_num_or_nan())
+    if (a.to_num_or_nan() <= b.to_num_or_nan())
         return {true};
-    if (a.get_num_or_nan() > b.get_num_or_nan())
+    if (a.to_num_or_nan() > b.to_num_or_nan())
         return {false};
     throw Exception(At_Phrase(*syntax_, f),
         stringify(a," <= ",b,": domain error"));
@@ -408,9 +408,9 @@ Greater_Or_Equal_Expr::eval(Frame& f) const
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
     // only 2 comparisons required to unbox two numbers and compare them, not 3
-    if (a.get_num_or_nan() >= b.get_num_or_nan())
+    if (a.to_num_or_nan() >= b.to_num_or_nan())
         return {true};
-    if (a.get_num_or_nan() < b.get_num_or_nan())
+    if (a.to_num_or_nan() < b.to_num_or_nan())
         return {false};
     throw Exception(At_Phrase(*syntax_, f),
         stringify(a," >= ",b,": domain error"));
@@ -540,7 +540,7 @@ call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
         if (!funv.is_ref())
             throw Exception(At_Phrase(*func_part(call_phrase), f),
                 stringify(funv,": not a function"));
-        Ref_Value& funp( funv.get_ref_unsafe() );
+        Ref_Value& funp( funv.to_ref_unsafe() );
         switch (funp.type_) {
         case Ref_Value::ty_function:
           {
@@ -590,7 +590,7 @@ tail_call_func(
         if (!funv.is_ref())
             throw Exception(At_Phrase(*func_part(call_phrase), *f),
                 stringify(funv,": not a function"));
-        Ref_Value& funp( funv.get_ref_unsafe() );
+        Ref_Value& funp( funv.to_ref_unsafe() );
         switch (funp.type_) {
         case Ref_Value::ty_function:
           {
@@ -881,16 +881,16 @@ Range_Expr::eval(Frame& f) const
 {
     List_Builder lb;
     Value firstv = arg1_->eval(f);
-    double first = firstv.get_num_or_nan();
+    double first = firstv.to_num_or_nan();
 
     Value lastv = arg2_->eval(f);
-    double last = lastv.get_num_or_nan();
+    double last = lastv.to_num_or_nan();
 
     Value stepv;
     double step = 1.0;
     if (arg3_) {
         stepv = arg3_->eval(f);
-        step = stepv.get_num_or_nan();
+        step = stepv.to_num_or_nan();
     }
 
     double delta = round((last - first)/step);
@@ -963,7 +963,7 @@ Brace_Segment::generate(Frame& f, String_Builder& sb) const
         if (auto str = val.dycast<String_or_Symbol>())
             sb << *str;
         else if (val.is_bool())
-            sb << (val.get_bool_unsafe() ? "true" : "false");
+            sb << (val.to_bool_unsafe() ? "true" : "false");
         else
             sb << val;
     }
@@ -993,7 +993,7 @@ Data_Setter::exec(Frame& f, Executor&) const
         slots = &f[0];
     else {
         auto mval = f[module_slot_];
-        auto m = (Module*)&mval.get_ref_unsafe();
+        auto m = (Module*)&mval.to_ref_unsafe();
         assert(m->subtype_ == Ref_Value::sty_module);
         slots = &m->at(0);
     }
@@ -1009,7 +1009,7 @@ Function_Setter_Base::exec(Frame& f, Executor&) const
         slots = &f[0];
     else {
         auto mval = f[module_slot_];
-        auto m = (Module*)&mval.get_ref_unsafe();
+        auto m = (Module*)&mval.to_ref_unsafe();
         assert(m->subtype_ == Ref_Value::sty_module);
         slots = &m->at(0);
     }
@@ -1026,7 +1026,7 @@ Include_Setter_Base::exec(Frame& f, Executor&) const
         slots = &f[0];
     else {
         auto mval = f[module_slot_];
-        auto m = (Module*)&mval.get_ref_unsafe();
+        auto m = (Module*)&mval.to_ref_unsafe();
         assert(m->subtype_ == Ref_Value::sty_module);
         slots = &m->at(0);
     }

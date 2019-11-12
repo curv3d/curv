@@ -665,7 +665,7 @@ struct Mag_Function : public Legacy_Function
         // Fast path: assume we have a list of number, compute a result.
         double sum = 0.0;
         for (auto val : *list) {
-            double x = val.get_num_or_nan();
+            double x = val.to_num_or_nan();
             sum += x * x;
         }
         if (sum == sum)
@@ -766,7 +766,7 @@ struct Strcat_Function : public Legacy_Function
                 if (auto str = val.dycast<const String_or_Symbol>())
                     sb << *str;
                 else if (val.is_bool())
-                    sb << (val.get_bool_unsafe() ? "true" : "false");
+                    sb << (val.to_bool_unsafe() ? "true" : "false");
                 else
                     sb << val;
             }

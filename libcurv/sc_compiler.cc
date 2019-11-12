@@ -457,7 +457,7 @@ Value sc_constify(Operation& op, SC_Frame& f)
     } else if (auto neg = dynamic_cast<Negative_Expr*>(&op)) {
         Value arg = sc_constify(*neg->arg_, f);
         if (arg.is_num())
-            return Value(-arg.get_num_unsafe());
+            return Value(-arg.to_num_unsafe());
     }
     throw Exception(At_SC_Phrase(op.syntax_, f),
         "not a constant");
@@ -567,7 +567,7 @@ Data_Setter::sc_exec(SC_Frame& f) const
 
 char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
 {
-    auto num = k.get_num_or_nan();
+    auto num = k.to_num_or_nan();
     if (num == 0.0)
         return 'x';
     if (num == 1.0)
@@ -619,7 +619,7 @@ SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& f)
             return result;
         }
         const char* arg2 = nullptr;
-        auto num = k.get_num_or_nan();
+        auto num = k.to_num_or_nan();
         if (num == 0.0)
             arg2 = ".x";
         else if (num == 1.0)

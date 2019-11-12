@@ -44,7 +44,7 @@ TEST(curv, value)
     EXPECT_TRUE(v.is_bool());
     EXPECT_FALSE(v.is_num());
     EXPECT_FALSE(v.is_ref());
-    EXPECT_TRUE(v.get_bool_unsafe() == false);
+    EXPECT_TRUE(v.to_bool_unsafe() == false);
     EXPECT_TRUE(v.eq(false));
     EXPECT_TRUE(prints_as(v, "#false"));
 
@@ -53,7 +53,7 @@ TEST(curv, value)
     EXPECT_TRUE(v.is_bool());
     EXPECT_FALSE(v.is_num());
     EXPECT_FALSE(v.is_ref());
-    EXPECT_TRUE(v.get_bool_unsafe() == true);
+    EXPECT_TRUE(v.to_bool_unsafe() == true);
     EXPECT_TRUE(prints_as(v, "#true"));
 
     v = Value(0.0);
@@ -61,7 +61,7 @@ TEST(curv, value)
     EXPECT_FALSE(v.is_bool());
     EXPECT_TRUE(v.is_num());
     EXPECT_FALSE(v.is_ref());
-    EXPECT_TRUE(v.get_num_unsafe() == 0.0);
+    EXPECT_TRUE(v.to_num_unsafe() == 0.0);
     EXPECT_TRUE(prints_as(v, "0"));
 
     v = Value(-0.0);
@@ -69,7 +69,7 @@ TEST(curv, value)
     EXPECT_FALSE(v.is_bool());
     EXPECT_TRUE(v.is_num());
     EXPECT_FALSE(v.is_ref());
-    EXPECT_TRUE(v.get_num_unsafe() == 0.0);
+    EXPECT_TRUE(v.to_num_unsafe() == 0.0);
     EXPECT_TRUE(prints_as(v, "-0"));
 
     v = Value(1.0/0.0);
@@ -77,7 +77,7 @@ TEST(curv, value)
     EXPECT_FALSE(v.is_bool());
     EXPECT_TRUE(v.is_num());
     EXPECT_FALSE(v.is_ref());
-    EXPECT_TRUE(v.get_num_unsafe() == 1.0/0.0);
+    EXPECT_TRUE(v.to_num_unsafe() == 1.0/0.0);
     EXPECT_TRUE(prints_as(v, "inf"));
 
     v = Value(-1.0/0.0);
@@ -85,7 +85,7 @@ TEST(curv, value)
     EXPECT_FALSE(v.is_bool());
     EXPECT_TRUE(v.is_num());
     EXPECT_FALSE(v.is_ref());
-    EXPECT_EQ(v.get_num_unsafe(), -1.0/0.0);
+    EXPECT_EQ(v.to_num_unsafe(), -1.0/0.0);
     EXPECT_TRUE(prints_as(v, "-inf"));
 
     v = Value(0.0/0.0);
@@ -102,10 +102,10 @@ TEST(curv, value)
     EXPECT_FALSE(v.is_bool());
     EXPECT_FALSE(v.is_num());
     ASSERT_TRUE(v.is_ref());
-    EXPECT_TRUE(v.get_ref_unsafe().use_count == 2);
-    EXPECT_TRUE(v.get_ref_unsafe().type_ == Ref_Value::ty_string);
+    EXPECT_TRUE(v.to_ref_unsafe().use_count == 2);
+    EXPECT_TRUE(v.to_ref_unsafe().type_ == Ref_Value::ty_string);
     ptr = nullptr;
-    EXPECT_TRUE(v.get_ref_unsafe().use_count == 1);
+    EXPECT_TRUE(v.to_ref_unsafe().use_count == 1);
 
 #if 0
     v = make_ref_value<Ref_Value>(17);
@@ -113,8 +113,8 @@ TEST(curv, value)
     EXPECT_FALSE(v.is_bool());
     EXPECT_FALSE(v.is_num());
     ASSERT_TRUE(v.is_ref());
-    EXPECT_TRUE(v.get_ref_unsafe().use_count == 1);
-    EXPECT_TRUE(v.get_ref_unsafe().type_ == 17);
+    EXPECT_TRUE(v.to_ref_unsafe().use_count == 1);
+    EXPECT_TRUE(v.to_ref_unsafe().type_ == 17);
 #endif
 
     v = make_ref_value<Id_Function>();
@@ -122,9 +122,9 @@ TEST(curv, value)
     EXPECT_FALSE(v.is_bool());
     EXPECT_FALSE(v.is_num());
     ASSERT_TRUE(v.is_ref());
-    EXPECT_TRUE(v.get_ref_unsafe().use_count == 1);
-    EXPECT_TRUE(v.get_ref_unsafe().type_ == Ref_Value::ty_function);
-    Legacy_Function* f = (Legacy_Function*)&v.get_ref_unsafe();
+    EXPECT_TRUE(v.to_ref_unsafe().use_count == 1);
+    EXPECT_TRUE(v.to_ref_unsafe().type_ == Ref_Value::ty_function);
+    Legacy_Function* f = (Legacy_Function*)&v.to_ref_unsafe();
     EXPECT_TRUE(f->use_count == 1);
     EXPECT_TRUE(f->type_ == Ref_Value::ty_function);
     EXPECT_TRUE(f->nargs_ == 1);
@@ -133,13 +133,13 @@ TEST(curv, value)
     {
         Value v0(make<Id_Function>());
         ASSERT_TRUE(v0.is_ref());
-        Ref_Value& r0(v0.get_ref_unsafe());
+        Ref_Value& r0(v0.to_ref_unsafe());
         ASSERT_TRUE(r0.use_count == 1);
         ASSERT_TRUE(r0.type_ == Ref_Value::ty_function);
 
         Value v1(v0);
         ASSERT_TRUE(v1.is_ref());
-        Ref_Value& r1(v1.get_ref_unsafe());
+        Ref_Value& r1(v1.to_ref_unsafe());
         ASSERT_TRUE(&r1 == &r0);
         ASSERT_TRUE(r1.use_count == 2);
         ASSERT_TRUE(r1.type_ == Ref_Value::ty_function);
@@ -147,7 +147,7 @@ TEST(curv, value)
         Value v2(std::move(v1));
         ASSERT_TRUE(v1.is_missing());
         ASSERT_TRUE(v2.is_ref());
-        Ref_Value& r2(v2.get_ref_unsafe());
+        Ref_Value& r2(v2.to_ref_unsafe());
         ASSERT_TRUE(&r2 == &r0);
         ASSERT_TRUE(r2.use_count == 2);
         ASSERT_TRUE(r2.type_ == Ref_Value::ty_function);
