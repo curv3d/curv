@@ -37,11 +37,13 @@ struct At_SC_Phrase : public At_Syntax
     virtual const Phrase& syntax() const override;
 };
 
-/// The exception context for the i'th argument in a function call.
+// This is part of v1 of the API for builtin SC function call.
+// It is used by Legacy_Function::sc_call() in builtin.cc.
+// See At_SC_Call for the v2 version.
 struct At_SC_Arg : public Context
 {
     size_t arg_index_;
-    SC_Frame& call_frame_;
+    SC_Frame& call_frame_;  // frame for THIS function call
 
     At_SC_Arg(size_t i, SC_Frame& f) : arg_index_(i), call_frame_(f) {}
 
@@ -49,6 +51,33 @@ struct At_SC_Arg : public Context
     Shared<const String> rewrite_message(Shared<const String>) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
+};
+
+// This is part of v2 of the API for builtin SC function call.
+// It is used by Legacy_Function::sc_call_expr() in builtin.cc.
+// It closely models the semantics of At_Arg from context.h.
+// See At_SC_Arg for the v1 version.
+struct At_SC_Call : public At_Syntax
+{
+    At_SC_Call(
+        const Function& fn,
+        Shared<const Phrase> callphrase,
+        SC_Frame& parentframe)
+    :
+        func_(fn),
+        call_phrase_(callphrase),
+        parent_frame_(parentframe)
+    {}
+
+    const Function& func_;
+    Shared<const Phrase> call_phrase_;
+    SC_Frame& parent_frame_;    // The CALLER's frame. This call has no frame.
+
+    virtual void get_locations(std::list<Location>& locs) const override;
+    Shared<const String> rewrite_message(Shared<const String>) const override;
+    virtual System& system() const override;
+    virtual Frame* frame() const override;
+    virtual const Phrase& syntax() const override;
 };
 
 void get_sc_frame_locations(const SC_Frame* f, std::list<Location>& locs);

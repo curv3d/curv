@@ -125,11 +125,9 @@ struct Binary_Numeric_Array_Op
 struct Function_Op
 {
     const At_Syntax& cx;
-    Symbol_Ref name;
-    Function_Op(const Function& func, const At_Syntax& _cx)
+    Function_Op(const At_Syntax& _cx)
     :
-        cx(_cx),
-        name(func.name_)
+        cx(_cx)
     {}
 };
 
@@ -315,8 +313,7 @@ struct Binary_Array_Op
                 return first;
             }
             else {
-                throw Exception(At_SC_Phrase(argx.syntax_, f), stringify(
-                    fn.name,": argument is not a vector"));
+                throw Exception(fn.cx, "argument is not a vector");
             }
         }
     }
