@@ -572,9 +572,15 @@ in sc_test {
     "nat_to_bool32": _->
         nat_to_bool32 0 == none;
     "!": _-> !none == all;
-    "and": _-> !and[true,false] &&
+    "and": _-> !and[true,false] && and[] &&
             and[nat_to_bool32 0xFF00FF00, nat_to_bool32 0xFF0000FF]
             == nat_to_bool32 0xFF000000;
+    "or": _-> or[true,false] && !or[] &&
+            or[nat_to_bool32 0xFF00FF00, nat_to_bool32 0xFF0000FF]
+            == nat_to_bool32 0xFF00FFFF;
+    "xor": _-> xor[true,false] && !xor[] &&
+            xor[nat_to_bool32 0xFF00FF00, nat_to_bool32 0xFF0000FF]
+            == nat_to_bool32 0x0000FFFF;
 };
 
 // script return value:

@@ -443,12 +443,26 @@ struct Or_Function : public Legacy_Function
     {
         using Binary_Boolean_Op::Binary_Boolean_Op;
         static Value call(bool x, bool y) { return {x || y}; }
+        static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
+        {
+            auto result = f.sc_.newvalue(x.type);
+            f.sc_.out() << "  " << x.type << " " << result << " = " << x
+                << (x.type == SC_Type::Bool32() ? "|" : "||")
+                << y << ";\n";
+            return result;
+        }
     };
     static Binary_Array_Op<Or_Op> array_op;
     Value call(Frame& args) override
     {
         return array_op.reduce(Or_Op(At_Arg(*this, args)),
             Value{false}, args[0]);
+    }
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    const override
+    {
+        return array_op.sc_reduce(Or_Op(At_SC_Call(*this, ph, f)),
+            Value{false}, argx, f);
     }
 };
 struct Xor_Function : public Legacy_Function
@@ -459,12 +473,26 @@ struct Xor_Function : public Legacy_Function
     {
         using Binary_Boolean_Op::Binary_Boolean_Op;
         static Value call(bool x, bool y) { return {x != y}; }
+        static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
+        {
+            auto result = f.sc_.newvalue(x.type);
+            f.sc_.out() << "  " << x.type << " " << result << " = " << x
+                << (x.type == SC_Type::Bool32() ? "^" : "!=")
+                << y << ";\n";
+            return result;
+        }
     };
     static Binary_Array_Op<Xor_Op> array_op;
     Value call(Frame& args) override
     {
         return array_op.reduce(Xor_Op(At_Arg(*this, args)),
             Value{false}, args[0]);
+    }
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    const override
+    {
+        return array_op.sc_reduce(Xor_Op(At_SC_Call(*this, ph, f)),
+            Value{false}, argx, f);
     }
 };
 struct Lshift_Function : public Legacy_Function
