@@ -668,11 +668,23 @@ struct Bool32_To_Float_Function : public Legacy_Function
         {
             return {nat_to_float(n)};
         }
+        static SC_Value sc_eval(SC_Frame& f, SC_Value x)
+        {
+            auto result = f.sc_.newvalue(SC_Type::Num());
+            f.sc_.out() << "  " << result.type << " " << result
+                << " = uintBitsToFloat(" << x << ");\n";
+            return result;
+        }
     };
     static Unary_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
         return array_op.op(Scalar_Op(At_Arg(*this, args)), args[0]);
+    }
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    const override
+    {
+        return array_op.sc_op(Scalar_Op(At_SC_Call(*this, ph, f)), argx, f);
     }
 };
 struct Float_To_Bool32_Function : public Legacy_Function
@@ -686,11 +698,23 @@ struct Float_To_Bool32_Function : public Legacy_Function
         {
             return {nat_to_bool32(float_to_nat(n))};
         }
+        static SC_Value sc_eval(SC_Frame& f, SC_Value x)
+        {
+            auto result = f.sc_.newvalue(SC_Type::Bool32());
+            f.sc_.out() << "  " << result.type << " " << result
+                << " = floatBitsToUint(" << x << ");\n";
+            return result;
+        }
     };
     static Unary_Array_Op<Scalar_Op> array_op;
     Value call(Frame& args) override
     {
         return array_op.op(Scalar_Op(At_Arg(*this, args)), args[0]);
+    }
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    const override
+    {
+        return array_op.sc_op(Scalar_Op(At_SC_Call(*this, ph, f)), argx, f);
     }
 };
 

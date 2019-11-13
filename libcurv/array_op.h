@@ -189,6 +189,11 @@ struct Unary_Num_Op : public Function_Op
         } else
             return false;
     }
+    void sc_check_arg(SC_Value a) const
+    {
+        if (a.type != SC_Type::Num())
+            throw Exception(cx, "argument must be a Num");
+    }
 };
 
 // The left operand is a non-empty list of booleans.
@@ -242,6 +247,11 @@ struct Unary_Bool32_Op : public Bool32_Op
     bool unbox(Value a, scalar_t& b) const
     {
         return unbox_bool32(a, b, cx);
+    }
+    void sc_check_arg(SC_Value a) const
+    {
+        if (a.type != SC_Type::Bool32())
+            throw Exception(cx, "argument must be a Bool32");
     }
 };
 struct Binary_Bool32_Op : public Bool32_Op
@@ -519,6 +529,14 @@ struct Unary_Array_Op
             }
         }
         throw Exception(f.cx, domain_error(f, x));
+    }
+    static SC_Value
+    sc_op(const Scalar_Op& fn, Operation& argx, SC_Frame& f)
+    {
+        // TODO: add array support
+        auto a = sc_eval_op(f, argx);
+        fn.sc_check_arg(a);
+        return fn.sc_eval(f, a);
     }
 
     static Value

@@ -138,7 +138,8 @@ const
 SC_Value
 Legacy_Function::sc_call(SC_Frame& f) const
 {
-    throw Exception(At_SC_Frame(f), "this function is not supported");
+    throw Exception(At_SC_Phrase(func_part(f.call_phrase_), f),
+        "this function is not supported");
 }
 
 Value
