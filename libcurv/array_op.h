@@ -257,6 +257,17 @@ struct Binary_Bool32_Op : public Bool32_Op
     {
         return unbox_bool32(a, b, At_Index(1, cx));
     }
+    void sc_check_args(SC_Frame& /*f*/, SC_Value& a, SC_Value& b) const
+    {
+        if (a.type != SC_Type::Bool32()) {
+            throw Exception(At_Index(0, cx),
+                stringify("expected argument of type Bool32, got ", a.type));
+        }
+        if (b.type != SC_Type::Bool32()) {
+            throw Exception(At_Index(1, cx),
+                stringify("expected argument of type Bool32, got ", b.type));
+        }
+    }
 };
 
 template <class Scalar_Op>

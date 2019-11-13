@@ -584,12 +584,24 @@ struct Bool32_Add_Function : public Legacy_Function
         {
             return {nat_to_bool32(a + b)};
         }
+        static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
+        {
+            auto result = f.sc_.newvalue(x.type);
+            f.sc_.out() << "  " << x.type << " " << result << " = "
+                << x << " + " << y << ";\n";
+            return result;
+        }
     };
     static Binary_Array_Op<Bool32_Add_Op> array_op;
     Value call(Frame& args) override
     {
         return array_op.op(Bool32_Add_Op(At_Arg(*this, args)),
             args[0], args[1]);
+    }
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    const override
+    {
+        return array_op.sc_op(Bool32_Add_Op(At_SC_Call(*this, ph, f)), argx, f);
     }
 };
 struct Bool32_To_Nat_Function : public Legacy_Function

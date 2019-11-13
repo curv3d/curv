@@ -585,6 +585,8 @@ in sc_test {
             == nat_to_bool32 0x00FF0000;
     "rshift": _-> rshift[nat_to_bool32 0xFF00FF00, 8]
             == nat_to_bool32 0x00FF00FF;
+    "bool32_add": _-> bool32_add[nat_to_bool32 42, nat_to_bool32 1000]
+            == nat_to_bool32 1042;
 };
 
 // script return value:
