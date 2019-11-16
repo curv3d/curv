@@ -41,6 +41,33 @@ Builtin_Value::to_meaning(const Identifier& id) const
     return make<Constant>(share(id), value_);
 }
 
+//----------------------------------------------//
+// Templates for constructing builtin functions //
+//----------------------------------------------//
+
+template <class Prim>
+struct Monoid_Func final : public Legacy_Function
+{
+    static const char* name() { return Prim::name(); }
+    Monoid_Func() : Legacy_Function(1,name()) {}
+    static Binary_Array_Op<Prim> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.reduce(Prim(At_Arg(*this, args)),
+            Prim::zero(), args[0]);
+    }
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    const override
+    {
+        return array_op.sc_reduce(Prim(At_SC_Call(*this, ph, f)),
+            Prim::zero(), argx, f);
+    }
+};
+
+//-------------------//
+// Builtin Functions //
+//-------------------//
+
 struct Is_Bool_Function : public Legacy_Function
 {
     static const char* name() { return "is_bool"; }
@@ -405,96 +432,57 @@ struct Min_Function : public Legacy_Function
     }
 };
 
-struct And_Function : public Legacy_Function
+struct And_Prim : public Binary_Boolean_Op
 {
+    using Binary_Boolean_Op::Binary_Boolean_Op;
     static const char* name() { return "and"; }
-    And_Function() : Legacy_Function(1,name()) {}
-    struct And_Op : public Binary_Boolean_Op
+    static Value zero() { return {true}; }
+    static Value call(bool x, bool y) { return {x && y}; }
+    static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
     {
-        using Binary_Boolean_Op::Binary_Boolean_Op;
-        static Value call(bool x, bool y) { return {x && y}; }
-        static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
-        {
-            auto result = f.sc_.newvalue(x.type);
-            f.sc_.out() << "  " << x.type << " " << result << " = " << x
-                << (x.type == SC_Type::Bool32() ? "&" : "&&")
-                << y << ";\n";
-            return result;
-        }
-    };
-    static Binary_Array_Op<And_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.reduce(And_Op(At_Arg(*this, args)),
-            Value{true}, args[0]);
-    }
-    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
-    const override
-    {
-        return array_op.sc_reduce(And_Op(At_SC_Call(*this, ph, f)),
-            Value{true}, argx, f);
+        auto result = f.sc_.newvalue(x.type);
+        f.sc_.out() << "  " << x.type << " " << result << " = " << x
+            << (x.type == SC_Type::Bool32() ? "&" : "&&")
+            << y << ";\n";
+        return result;
     }
 };
-struct Or_Function : public Legacy_Function
+using And_Function = Monoid_Func<And_Prim>;
+
+struct Or_Prim : public Binary_Boolean_Op
 {
+    using Binary_Boolean_Op::Binary_Boolean_Op;
     static const char* name() { return "or"; }
-    Or_Function() : Legacy_Function(1,name()) {}
-    struct Or_Op : public Binary_Boolean_Op
+    static Value zero() { return {false}; }
+    static Value call(bool x, bool y) { return {x || y}; }
+    static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
     {
-        using Binary_Boolean_Op::Binary_Boolean_Op;
-        static Value call(bool x, bool y) { return {x || y}; }
-        static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
-        {
-            auto result = f.sc_.newvalue(x.type);
-            f.sc_.out() << "  " << x.type << " " << result << " = " << x
-                << (x.type == SC_Type::Bool32() ? "|" : "||")
-                << y << ";\n";
-            return result;
-        }
-    };
-    static Binary_Array_Op<Or_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.reduce(Or_Op(At_Arg(*this, args)),
-            Value{false}, args[0]);
-    }
-    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
-    const override
-    {
-        return array_op.sc_reduce(Or_Op(At_SC_Call(*this, ph, f)),
-            Value{false}, argx, f);
+        auto result = f.sc_.newvalue(x.type);
+        f.sc_.out() << "  " << x.type << " " << result << " = " << x
+            << (x.type == SC_Type::Bool32() ? "|" : "||")
+            << y << ";\n";
+        return result;
     }
 };
-struct Xor_Function : public Legacy_Function
+using Or_Function = Monoid_Func<Or_Prim>;
+
+struct Xor_Prim : public Binary_Boolean_Op
 {
+    using Binary_Boolean_Op::Binary_Boolean_Op;
     static const char* name() { return "xor"; }
-    Xor_Function() : Legacy_Function(1,name()) {}
-    struct Xor_Op : public Binary_Boolean_Op
+    static Value zero() { return {false}; }
+    static Value call(bool x, bool y) { return {x != y}; }
+    static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
     {
-        using Binary_Boolean_Op::Binary_Boolean_Op;
-        static Value call(bool x, bool y) { return {x != y}; }
-        static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
-        {
-            auto result = f.sc_.newvalue(x.type);
-            f.sc_.out() << "  " << x.type << " " << result << " = " << x
-                << (x.type == SC_Type::Bool32() ? "^" : "!=")
-                << y << ";\n";
-            return result;
-        }
-    };
-    static Binary_Array_Op<Xor_Op> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.reduce(Xor_Op(At_Arg(*this, args)),
-            Value{false}, args[0]);
-    }
-    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
-    const override
-    {
-        return array_op.sc_reduce(Xor_Op(At_SC_Call(*this, ph, f)),
-            Value{false}, argx, f);
+        auto result = f.sc_.newvalue(x.type);
+        f.sc_.out() << "  " << x.type << " " << result << " = " << x
+            << (x.type == SC_Type::Bool32() ? "^" : "!=")
+            << y << ";\n";
+        return result;
     }
 };
+using Xor_Function = Monoid_Func<Xor_Prim>;
+
 struct Lshift_Function : public Legacy_Function
 {
     static const char* name() { return "lshift"; }
