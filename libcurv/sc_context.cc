@@ -80,30 +80,30 @@ At_SC_Arg::rewrite_message(Shared<const String> msg) const
 }
 
 void
-At_SC_Call::get_locations(std::list<Location>& locs) const
+At_SC_Arg_Expr::get_locations(std::list<Location>& locs) const
 {
     locs.push_back(arg_part(call_phrase_)->location());
     get_sc_frame_locations(&parent_frame_, locs);
 }
 Shared<const String>
-At_SC_Call::rewrite_message(Shared<const String> msg) const
+At_SC_Arg_Expr::rewrite_message(Shared<const String> msg) const
 {
     if (func_.name_.empty())
         return stringify("function argument: ",msg);
     return stringify("argument #",func_.argpos_+1," of ",func_.name_,": ",msg);
 }
 System&
-At_SC_Call::system() const
+At_SC_Arg_Expr::system() const
 {
     return parent_frame_.sc_.system_;
 }
 Frame*
-At_SC_Call::frame() const
+At_SC_Arg_Expr::frame() const
 {
     return nullptr;
 }
 const Phrase&
-At_SC_Call::syntax() const
+At_SC_Arg_Expr::syntax() const
 {
     return *arg_part(call_phrase_);
 }

@@ -59,7 +59,7 @@ struct Monoid_Func final : public Legacy_Function
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_reduce(Prim(At_SC_Call(*this, ph, f)),
+        return array_op.sc_reduce(Prim(At_SC_Arg_Expr(*this, ph, f)),
             Prim::zero(), argx, f);
     }
 };
@@ -519,7 +519,7 @@ struct Lshift_Function : public Legacy_Function
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_op(Lshift_Op(At_SC_Call(*this, ph, f)), argx, f);
+        return array_op.sc_op(Lshift_Op(At_SC_Arg_Expr(*this, ph, f)), argx, f);
     }
 };
 struct Rshift_Function : public Legacy_Function
@@ -558,7 +558,7 @@ struct Rshift_Function : public Legacy_Function
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_op(Rshift_Op(At_SC_Call(*this, ph, f)), argx, f);
+        return array_op.sc_op(Rshift_Op(At_SC_Arg_Expr(*this, ph, f)), argx, f);
     }
 };
 struct Bool32_Add_Function : public Legacy_Function
@@ -589,7 +589,7 @@ struct Bool32_Add_Function : public Legacy_Function
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_op(Bool32_Add_Op(At_SC_Call(*this, ph, f)), argx, f);
+        return array_op.sc_op(Bool32_Add_Op(At_SC_Arg_Expr(*this, ph, f)), argx, f);
     }
 };
 struct Bool32_To_Nat_Function : public Legacy_Function
@@ -630,7 +630,7 @@ struct Nat_To_Bool32_Function : public Legacy_Function
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        At_SC_Call cx(*this, ph, f);
+        At_SC_Arg_Expr cx(*this, ph, f);
         if (auto k = dynamic_cast<const Constant*>(&argx)) {
             unsigned n = num_to_nat(k->value_.to_num(cx), cx);
             auto type = SC_Type::Bool32();
@@ -672,7 +672,7 @@ struct Bool32_To_Float_Function : public Legacy_Function
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_op(Scalar_Op(At_SC_Call(*this, ph, f)), argx, f);
+        return array_op.sc_op(Scalar_Op(At_SC_Arg_Expr(*this, ph, f)), argx, f);
     }
 };
 struct Float_To_Bool32_Function : public Legacy_Function
@@ -702,7 +702,7 @@ struct Float_To_Bool32_Function : public Legacy_Function
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_op(Scalar_Op(At_SC_Call(*this, ph, f)), argx, f);
+        return array_op.sc_op(Scalar_Op(At_SC_Arg_Expr(*this, ph, f)), argx, f);
     }
 };
 
