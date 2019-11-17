@@ -1,0 +1,95 @@
+Primitives
+==========
+What code do I write in order to implement a new primitive operation in Curv?
+I want to minimize boilerplate and case analysis.
+
+The "version 2" array_op API looks promising, in the way that it tries to
+migrate boilerplate up into generic code.
+
+// 15 Nov 2019
+struct And_Function : public Legacy_Function
+{
+    static const char* name() { return "and"; }
+    And_Function() : Legacy_Function(1,name()) {}
+    struct And_Op : public Binary_Boolean_Op
+    {
+        using Binary_Boolean_Op::Binary_Boolean_Op;
+        static Value call(bool x, bool y) { return {x && y}; }
+        static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
+        {
+            auto result = f.sc_.newvalue(x.type);
+            f.sc_.out() << "  " << x.type << " " << result << " = " << x
+                << (x.type == SC_Type::Bool32() ? "&" : "&&")
+                << y << ";\n";
+            return result;
+        }
+    };
+    static Binary_Array_Op<And_Op> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.reduce(And_Op(At_Arg(*this, args)),
+            Value{true}, args[0]);
+    }
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    const override
+    {
+        return array_op.sc_reduce(And_Op(At_SC_Call(*this, ph, f)),
+            Value{true}, argx, f);
+    }
+};
+
+// less boilerplate
+struct And_Prim : Binary_Boolean_Prim
+{
+    using Binary_Boolean_Prim::Binary_Boolean_Prim;
+    static const Symbol name() { return "and"; }
+    static Value zero() { return {true}; }
+    static Value call(bool x, bool y) { return {x && y}; }
+    static IR_Value ir_call(IR_Frame& f, IR_Value x, IR_Value y)
+    {
+        if (x.type() == IR_Type::Bool())
+            return Logical_And_IR(x,y);
+        else
+            return Bitwise_And_IR(x,y);
+    }
+}
+using And_Func = Monoid_Func<And_Prim>;
+
+I am separating language primitives from IR primitives.
+
+Consider 'equal[a,b]' vs 'a==b'? Two separate primitives, both binary,
+one is a function and one is an operator. The code for defining their essence
+as a primitive has the same form. One line of code is used to convert
+the primitive to a function or operator.
+
+There is a small set of generic converters. They need to know the # of
+arguments, that's it.
+    using And_Func = Monoid_Func<And_Prim>;
+    using Equal_Expr = Binary_Op<Equal_Prim>;
+    using Equal_Func = Binary_Func<Array_Equal_Prim>;
+
+Can I start using the IR interface incrementally with the new Primitives API,
+and have that code hook in to the old SC compiler? Will need 2 way conversion
+between IR_Value and SC_Value. SC_Type will be shared.
+
+Big Picture: Switch Languages?
+------------------------------
+I'm building a DSL for implementing language primitives in the most compact
+and generic way possible. Is C++ adequate? Can I take my DSL code and generate
+a bytecode compiler and interpreter without adding a lot of boilerplate?
+Has somebody already built the system I want?
+
+C++ templates
+Rust generics and traits and macros.
+    Compile time execution is a work in progress. 'const fn' exists but lags
+    behind C++. People claim that you can't reproduce Eigen in Rust,
+    but I don't know what the blockers are or when that was/will be resolved.
+Zig ...
+    At first glance, seems very advanced.
+Swift ...
+
+Language requirements:
+* compiles into native executable
+* compiles into WASM (hopefully compact & fast WASM)
+* not difficult to interface with C/C++ libraries
+* lets me build this DSL

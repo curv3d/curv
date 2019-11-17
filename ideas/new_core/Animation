@@ -1,0 +1,77 @@
+Animation
+=========
+One requirement for the new core is a high level interface for animating
+a shape. The approach that I have explored of providing animated variants
+of every shape constructor, is too burdensome on the authors of shape
+constructors. In OpenSCAD, you reference $t and it just works. I need a
+"just works" solution.
+
+Requirement 1: It is as simple and robust as the $t variable in OpenSCAD.
+Given any shape expression, you can reliably introduce time variable references
+into the expression, and get an animated shape.
+
+Requirement 2: Pure functional semantics. An animated shape is in some sense
+a function from time onto a shape, however it is encoded. It is possible to
+write time transformations, eg that speed up or slow down an animation,
+or space/time transformations, eg that add motion blur.
+
+Ideas:
+* animate (t->shape expression)
+* global reactive variable 'time'
+
+Global Reactive Time
+--------------------
+The special global variable `time` is a reactive variable that denotes the
+current time during an animation. The time is only available at GPU runtime,
+not at interpreter runtime. So at interpreter runtime, an expression that
+references `time` turns into a thunk (an implicit function of time), or it
+turns into a data structure containing such a thunk, or a function returning
+such a thunk. This idea comes from FRP.
+
+The danger is that the top level value returned by a program could be a time
+thunk, and that we would not recognize the value as a shape due to dynamic
+typing. For example,
+    if (time < 10) cube else sphere
+Requirement #1, reliability, asks that this or any similar program should
+yield a value that we can recognize as a shape.
+
+There is a similar problem with `parametric` shapes. The body of a parametric
+expression needs to be a shape constructor (not an `if` expression), and
+each shape constructor that is compatible with `parametric` needs to confine
+non-shape parameter references to inside of other shape constructor arguments.
+
+Animate Constructor
+-------------------
+If we are stuck with this restriction on animated shape expressions,
+then I'll vote for the `animate` constructor, so that we can document the
+restriction as part of the `animate` API.
+* Which means no global reactive `time` variable. See 'Reactive' for reasons
+  (simplicity of implementation) to dump the reactive variable feature.
+
+With the `animate` constructor, I think that the new_core SC compiler, with its
+partial evaluator and type checker, are responsible for extracting a shape
+from the time-parameterized shape expression. The evaluator is not responsible.
+I think we might be able to significantly ease this restriction, and produce
+good errors otherwise.
+
+The Animated Shape Expression time parameter restriction
+--------------------------------------------------------
+If we are stuck with the restriction, then I want a good error message
+that describes the problem when the restriction is violated.
+
+Alternatively, can we design a language where the restriction doesn't exist?
+* Static typing fixes the problem. We recognize a shape by the type of the
+  shape program, not by examining the dynamic type of its result value.
+* Static typing imposes restrictions on what programs are valid.
+  Maybe those same type restrictions are enforced by the code that constructs
+  time thunks, so that time thunks are always well typed, even if as a whole
+  the language is dynamically typed.
+
+The Judgement
+-------------
+No to global reactive `time`: it requires complex code in the interpreter for
+constructing typed time-thunks.
+
+Yes to the `animate` constructor. It moves this complexity to the new optimizing
+compiler, with its fancy partial evaluator and type checker. Any restrictions
+on expressiveness can be documented as part of the `animate` constructor.

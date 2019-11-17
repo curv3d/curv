@@ -1,5 +1,7 @@
 Minimal Syntax
 ==============
+Automated Layout
+----------------
 Support Visual Curv. There is a projectional editor that can present code
 in either of two formats:
 * A pure text format supporting copy, paste and easy sharing across internet.
@@ -21,6 +23,9 @@ in the source code, we are free to experiment with new visual syntaxes.
 Second Thoughts
 ---------------
 Projecting text and node&wire from the same source is really difficult.
+(Okay, but go look at lunalang.org, which claims this property, and is a
+Haskell inspired functional language.)
+
 Let's consider something simpler, less ambitious. Text is fine, node&wire
 is not a requirement, but we still want a projectional editor, and there
 are still benefits to reducing syntactic variability in the abstract syntax

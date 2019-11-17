@@ -123,14 +123,40 @@ different implementations of each operation for the different types.
    caller's lexical scope. This is a variant of #5, as opposed to performing
    some kind of dynamic lookup on the values themselves (#1-#4).
 
+   Haskell type classes are modular. Traditional class based OOP isn't modular,
+   but module systems for OOP like ClassBoxes or Ruby Refinements also use
+   dynamic scoping for dynamic dispatch to achieve modularity.
+
 Modular Dynamic Dispatch
 ------------------------
 There appears to be a fundamental conflict between modularity and dynamic
 dispatch (examining a value to find a method dictionary for some algebra).
 
-Overloading in Curv
--------------------
-When I look at general purpose languages, I see a complex landscape...
+Data Abstraction in Curv
+------------------------
+Data abstraction mechanisms are a source of great complexity in general
+purpose programming languages. There are typically many different mechanisms,
+and you encode abstract data types in different ways depending on how they
+will be used. It would be so cool if this could just be simple.
+
+Some ideas for Curv:
+* Functional, not OOP style: abs(x) instead of x.abs().
+* Don't solve every problem. Only single-sorted algebras. No OOP support.
+* To construct or operate on an ADT instance, you use an algebra.
+  An algebra is represented as a record. There is a predicate field.
+  The main constructor (if any) is in the `call` field.
+* An algebra can provide an interface to an existing type. You could have
+  several Monoid algebras for the same type, for example. A branded algebra
+  encapsulates a new ADT.
+* Dynamic dispatch is implemented using Theories, which are like Clojure
+  protocols. You define a Theory (which is a record of operation specs),
+  you bind branded algebras to the Theory, and you use the Theory value as
+  the interface to any of the algebras that are bound to it.
+* Generic algorithms can be explicitly parameterized by algebras (or theories):
+  no new features are necessary.
+* Modularity is important. Consider how protocols interact with modularity.
+
+The needed features are: branded values, and protocols.
 
 Protocols/Multimethods: Spooky Action at a Distance?
 ----------------------------------------------------

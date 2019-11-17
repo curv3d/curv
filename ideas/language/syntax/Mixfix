@@ -72,3 +72,24 @@ If we remove it, we get syntax like this:
          stmt2;
          stmt3;)
     result expr
+
+User Defined Mixfix Operators
+-----------------------------
+Curv 0.4 uses reserved words for mixfix keywords.
+What if we switch to a syntax where mixfix keywords are not reserved words,
+and allow user-defined mixfix operators?
+
+Alternatives for precedence:
+ A) Loose. Mixfix < Infix < Postfix. Kind of like smalltalk.
+    To avoid ambiguity, we need stropped keywords.
+      if: a < b then: a else: b
+ B) Tight. Mixfix arguments are primary expressions.
+    Function call syntax is changed so that adjacent identifiers aren't
+    allowed, "f(x)" replaces "f x". Mixfix arguments are function arguments,
+    except that the final argument may be primary or mixfix (chaining).
+    No stropping required for mixfix keywords.
+      if (a < b) then (a) else (b)
+    Adjacent identifiers occur in this context:
+      if (a == 0) then (x) else if (a == 1) then (y)
+    Mixfix operators have names like 'if then else'.
+      if (a) then (b) else (c) == 'if then else'(a,b,c)

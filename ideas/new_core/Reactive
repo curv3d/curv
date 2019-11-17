@@ -1,0 +1,22 @@
+At present, Curv has an internal concept of "reactive values", which right now
+are only used by the SubCurv compiler. Reactive values add a lot of boilerplate
+and case analysis complexity. And the support for reactive values is very
+sketchy. There's a ton of mindless boilerplate that still needs to be written.
+And I'm not highly motivated to write all of this crap code, so this problem
+has been dragging on for almost a year.
+The Agile approach would be to delete this code once the new compiler is ready.
+
+The psychological blocker to deleting the reactive value code is that I might
+need it later. I have plans for implementing 'time' as a global reactive
+variable, and for introducing new global reactive variables that are used
+for creating reactive models that respond to real time input, such as
+frequency bands in an audio input source, or live video input, or a freaking
+theramin.
+
+But the code is crap, so if I really want to do this live reactive programming
+stuff in the future, I need a different approach.
+
+Over in *Animation*, I've decided to abandon global reactive variables.
+Instead of a reactive 'time' variable, I'll have an 'animate' shape
+constructor, which will leverage the new SC compiler, and remove the current
+burden of creating reactive values from the evaluator.

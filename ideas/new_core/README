@@ -1,0 +1,22 @@
+This is the new (2019) compiler that translates a statically typed subset
+of Curv (SubCurv) into a low-level language or executable format.
+Possible targets include:
+ * GLSL, now, for rendering shapes in a preview window.
+ * The WebGL shader language (which might be either WSL or SPIR-V), later.
+ * C++, now, for converting shapes to a mesh.
+ * WASM, eg for generating meshes in a web browser, later
+ * LLVM IR code (very speculative)
+
+The main benefits of the new compiler:
+ * Simpler source code that is easier to maintain.
+   Eliminates massive boilerplate and massive case analyses.
+ * Supports a much larger subset of Curv. More supported types (records),
+   and partial evaluation of dynamic code that can't be statically typed.
+ * Optimization, producing smaller/faster GLSL code.
+
+The new compiler works by translating a Curv value (normally a function value)
+into low level intermediate representation (IR), which is a tree of nodes.
+The IR is optimized, then finally translated to the target language.
+
+I may implement this incrementally, as a new API that coexists with the old
+compiler, until the new compiler is complete.

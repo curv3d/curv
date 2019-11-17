@@ -28,3 +28,100 @@ A variant of Lisp syntax that supports chains.
 (f x y z) is a curried function call.
 (let (def1 def2) do (stmt1 stmt2) result)
     wait, how does the third argument of 'let' work here?
+
+Pipelines are the Thing
+-----------------------
+APL has right-to-left pipelines
+    atom op <everything-to-the-right>
+    op <everything-to-the-right>
+combined with very simple operator precedence.
+
+Curv has left-to-right pipelines. I don't need 13 levels of operator precedence,
+but I do need pipelines. Let's reduce Curv expression syntax to the essence.
+A simplified expr syntax will be easier to make graphical.
+
+    <pipeline> op                       -- unary case
+    <pipeline> op <arg>                 -- binary case
+    <pipeline> op <arg1> <arg2> ...     -- general case
+
+    'a + b + c' is a binary pipeline.
+
+To convert a pipeline into an argument, use parentheses for grouping.
+
+Simplified Operator Precedence
+------------------------------
+All left associative operators have the same precedence, like Smalltalk.
+New left associative operators can be invented at will, like Smalltalk.
+
+There are a small, fixed number of right associative operators, hard coded
+in the grammar. You can't define new ones (like Smalltalk).
+There are no precedence and associativity declarations--too complicated.
+
+All left associative operators can also be invoked in unary (prefix) position,
+and here the model is Lisp.
+    1 + 2 == +[1,2] == 3
+You quote an operator name to reference its value, eg '+' is a function.
+
+There is only a single '-' operator and it works like Lisp.
+    -5 == -5
+    3 - 1 == -[3,1] == 2
+Oops: This conflicts with broadcasting. We expect -[3,1] == [-3,-1].
+
+I am reminded of Haskell, which treats unary minus as a special case in the
+grammar: it's the only unary operator, and `-x` is sugar for `negate x`.
+Binary minus is the only Haskell operator that cannot be sectioned.
+APL treats unary minus as a special case (different symbol for
+negating a numeral). Smalltalk treats unary minus in a special way: -3 is a
+valid literal, but `x negate` for the general case. Ditto for Lisp, which has
+a special syntax for negated literals.
+
+Algebraic syntax has special treatment of the minus operator (unary and binary)
+because it is the inverse operation on a group, and (a - b) is sugar for
+(a + -b). Groups do not seem very common in programming, which is why all
+these languages treat unary minus as a unique case. In Curv, groups arise in
+symmetry operations. I do not yet have a DSL for describing complex symmetries.
+When I do, I might want other inverse group operators with unary and binary
+forms.
+
+So in general, prefix and infix operators should be user defineable,
+and should have different names. I have previously considered
+    *_
+    _*_
+as the true names of prefix and infix operators.
+
+There are cases where array semantics force us to have multiple versions
+of the same operator.
+    and[a,b]   vs a && b
+    equal[a,b] vs a == b
+And there are cases where we have two syntaxes for the same operator.
+    sum[a,b]     vs a + b
+    product[a,b] vs a * b
+    -- it would be cool to unify these --
+The issue with '-' is that it is used for two distinct operations, 'negate'
+and 'subtract', which are related by the additive group structure (it's not
+completely ad hoc overloading).
+
+Let's say we have user defined infix operators, which all have the same
+precedence and are all left-associative (for pipelining).
+Alternatives:
+ 1) 1 + 2 == +[1, 2]. '+' is the identifier form. +[1,2,3]==6, replacing 'sum'.
+    A) 3 - 1 == 3 + -1 == -[3,1], like Lisp.
+       'negate' is the array form of unary minus.
+    B) Unary minus is a special case. "-x" is sugar for "negate x".
+ 2) Infix and prefix operators have different identities.
+     3 - 1 == '-'[3, 1]     == infix- [3,1]
+     -x == '-_' x           == prefix- x
+
+How do you select an infix operator from a module using dot notation?
+    a `M.+` b       which by definition is equal to
+    M.+[a,b]
+
+Syntactically, is M.+ a postfix expression or a unary operator? What is the
+precedence? Eg, in M.+a.b[i]
+ A) Unary.  This precedence makes more sense for the common case where the
+    result of the operation is not a function, record or list.
+ B) Postfix.  M.+ is an expression.  Makes sense for "a `M.+` b".
+    If ".+" is buried in a postfix expression, it's easier to parse visually,
+    because it's hard to see the spot where the operator breaks the pipeline.
+    If the argument of M.+ is a postfix, it's better to write "M.+(a.b.c)"
+    than to write "M.+a.b.c"

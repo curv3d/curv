@@ -1,0 +1,18 @@
+IR_Value is a node in an IR expression tree, representing a value.
+The SC compiler compiles expressions into IR_Value trees.
+We optimize the tree, then finally output GLSL.
+
+During the initial implementation phase, there is a two way conversion between
+SC_Value and IR_Value. Finally, SC_Value is phased out.
+
+Optimizations:
+* common subexpression elimination CSE
+* constant evaluation
+* peephole optimizations, operation specific
+
+Methods:
+* type()
+* is it a constant? if so, what is the value?
+* hash(), for CSE
+* scope() index, for CSE
+* emit(): output GLSL or C++
