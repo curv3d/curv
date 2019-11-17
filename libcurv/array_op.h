@@ -324,7 +324,7 @@ struct Binary_Array_Op
             for (unsigned i = 1; i < list->size(); ++i) {
                 auto second = sc_eval_op(f, *list->at(i));
                 fn.sc_check_args(f, first, second);
-                first = fn.sc_eval(f, first, second);
+                first = fn.sc_call(f, first, second);
             }
             return first;
         }
@@ -340,7 +340,7 @@ struct Binary_Array_Op
                 for (unsigned i = 1; i < arg.type.count(); ++i) {
                     auto second = sc_vec_element(f, arg, 1);
                     fn.sc_check_args(f, first, second);
-                    first = fn.sc_eval(f, first, second);
+                    first = fn.sc_call(f, first, second);
                 }
                 return first;
             }
@@ -404,7 +404,7 @@ struct Binary_Array_Op
             auto first = sc_eval_op(f, *list->at(0));
             auto second = sc_eval_op(f, *list->at(1));
             fn.sc_check_args(f, first, second);
-            return fn.sc_eval(f, first, second);
+            return fn.sc_call(f, first, second);
         }
         throw Exception(fn.cx, "expected a list of size 2");
     }
@@ -536,7 +536,7 @@ struct Unary_Array_Op
         // TODO: add array support
         auto a = sc_eval_op(f, argx);
         fn.sc_check_arg(a);
-        return fn.sc_eval(f, a);
+        return fn.sc_call(f, a);
     }
 
     static Value

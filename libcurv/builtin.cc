@@ -438,7 +438,7 @@ struct And_Prim : public Binary_Boolean_Op
     static const char* name() { return "and"; }
     static Value zero() { return {true}; }
     static Value call(bool x, bool y) { return {x && y}; }
-    static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
     {
         auto result = f.sc_.newvalue(x.type);
         f.sc_.out() << "  " << x.type << " " << result << " = " << x
@@ -455,7 +455,7 @@ struct Or_Prim : public Binary_Boolean_Op
     static const char* name() { return "or"; }
     static Value zero() { return {false}; }
     static Value call(bool x, bool y) { return {x || y}; }
-    static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
     {
         auto result = f.sc_.newvalue(x.type);
         f.sc_.out() << "  " << x.type << " " << result << " = " << x
@@ -472,7 +472,7 @@ struct Xor_Prim : public Binary_Boolean_Op
     static const char* name() { return "xor"; }
     static Value zero() { return {false}; }
     static Value call(bool x, bool y) { return {x != y}; }
-    static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
     {
         auto result = f.sc_.newvalue(x.type);
         f.sc_.out() << "  " << x.type << " " << result << " = " << x
@@ -502,7 +502,7 @@ struct Lshift_Function : public Legacy_Function
                 result->at(i) = {a->at(i-n).to_bool(acx)};
             return {result};
         }
-        static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
+        static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
         {
             auto result = f.sc_.newvalue(x.type);
             f.sc_.out() << "  " << x.type << " " << result << " = "
@@ -541,7 +541,7 @@ struct Rshift_Function : public Legacy_Function
                 result->at(i) = {a->at(i+n).to_bool(acx)};
             return {result};
         }
-        static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
+        static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
         {
             auto result = f.sc_.newvalue(x.type);
             f.sc_.out() << "  " << x.type << " " << result << " = "
@@ -572,7 +572,7 @@ struct Bool32_Add_Function : public Legacy_Function
         {
             return {nat_to_bool32(a + b)};
         }
-        static SC_Value sc_eval(SC_Frame& f, SC_Value x, SC_Value y)
+        static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
         {
             auto result = f.sc_.newvalue(x.type);
             f.sc_.out() << "  " << x.type << " " << result << " = "
@@ -656,7 +656,7 @@ struct Bool32_To_Float_Function : public Legacy_Function
         {
             return {nat_to_float(n)};
         }
-        static SC_Value sc_eval(SC_Frame& f, SC_Value x)
+        static SC_Value sc_call(SC_Frame& f, SC_Value x)
         {
             auto result = f.sc_.newvalue(SC_Type::Num());
             f.sc_.out() << "  " << result.type << " " << result
@@ -686,7 +686,7 @@ struct Float_To_Bool32_Function : public Legacy_Function
         {
             return {nat_to_bool32(float_to_nat(n))};
         }
-        static SC_Value sc_eval(SC_Frame& f, SC_Value x)
+        static SC_Value sc_call(SC_Frame& f, SC_Value x)
         {
             auto result = f.sc_.newvalue(SC_Type::Bool32());
             f.sc_.out() << "  " << result.type << " " << result
