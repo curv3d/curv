@@ -38,7 +38,7 @@ struct At_SC_Phrase : public At_Syntax
 };
 
 // This is part of v1 of the API for builtin SC function call.
-// It is used by Legacy_Function::sc_call() in builtin.cc.
+// It is used by Legacy_Function::sc_call_legacy() in builtin.cc.
 // See At_SC_Arg_Expr for the v2 version.
 struct At_SC_Arg : public Context
 {
@@ -54,7 +54,7 @@ struct At_SC_Arg : public Context
 };
 
 // This is part of v2 of the API for builtin SC function call.
-// It is used by Legacy_Function::sc_call_expr() in builtin.cc.
+// It is used by Function::sc_call_expr() in builtin.cc.
 // It closely models the semantics of At_Arg from context.h.
 // See At_SC_Arg for the v1 version.
 struct At_SC_Arg_Expr : public At_Syntax

@@ -132,11 +132,11 @@ const
         for (unsigned i = 0; i < scarg.type.count(); ++i)
             (*f2)[i] = sc_vec_element(f, scarg, i);
     }
-    return sc_call(*f2);
+    return sc_call_legacy(*f2);
 }
 
 SC_Value
-Legacy_Function::sc_call(SC_Frame& f) const
+Legacy_Function::sc_call_legacy(SC_Frame& f) const
 {
     throw Exception(At_SC_Phrase(func_part(f.call_phrase_), f),
         "this function is not supported");

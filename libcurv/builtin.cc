@@ -140,7 +140,7 @@ struct Bit_Function : public Legacy_Function
     {
         return {double(args[0].to_bool(At_Arg(*this, args)))};
     }
-    SC_Value sc_call(SC_Frame& f) const override
+    SC_Value sc_call_legacy(SC_Frame& f) const override
     {
         auto arg = f[0];
         if (arg.type != SC_Type::Bool())
@@ -179,7 +179,7 @@ struct Class_Name : public Legacy_Function \
     { \
         return array_op.op(Scalar_Op(*this, args), args[0]); \
     } \
-    SC_Value sc_call(SC_Frame& f) const override \
+    SC_Value sc_call_legacy(SC_Frame& f) const override \
     { \
         return sc_call_unary_numeric(f, #glsl_name); \
     } \
@@ -254,7 +254,7 @@ struct Atan2_Function : public Legacy_Function
     {
         return array_op.op(Scalar_Op(*this, args), args[0], args[1]);
     }
-    SC_Value sc_call(SC_Frame& f) const override
+    SC_Value sc_call_legacy(SC_Frame& f) const override
     {
         auto x = f[0];
         auto y = f[1];
@@ -716,7 +716,7 @@ struct Dot_Function : public Legacy_Function
     {
         return dot(args[0], args[1], At_Arg(*this, args));
     }
-    SC_Value sc_call(SC_Frame& f) const override
+    SC_Value sc_call_legacy(SC_Frame& f) const override
     {
         auto a = f[0];
         auto b = f[1];
@@ -781,7 +781,7 @@ struct Mag_Function : public Legacy_Function
         throw Exception(At_Arg(*this, args),
             stringify(args[0],": domain error"));
     }
-    SC_Value sc_call(SC_Frame& f) const override
+    SC_Value sc_call_legacy(SC_Frame& f) const override
     {
         auto arg = f[0];
         if (!arg.type.is_vec())
@@ -810,7 +810,7 @@ struct Count_Function : public Legacy_Function
         }
         throw Exception(At_Arg(*this, args), "not a list or string");
     }
-    SC_Value sc_call(SC_Frame& f) const override
+    SC_Value sc_call_legacy(SC_Frame& f) const override
     {
         auto arg = f[0];
         if (!arg.type.is_list())

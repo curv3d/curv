@@ -73,6 +73,7 @@ Value call_func(
     Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f);
 
 /// A legacy function value. Only used for builtin functions.
+/// Deprecated. Builtin functions should be derived from Function.
 /// Legacy functions with 0, 1 and 2 arguments are called like this:
 /// f(), f(x), f(x,y). They have a single argument,
 /// which is a fixed size list of count `nargs` if `nargs` != 1.
@@ -104,7 +105,7 @@ struct Legacy_Function : public Function
     virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const override;
 
     // generate a call to the function during geometry compilation
-    virtual SC_Value sc_call(SC_Frame&) const;
+    virtual SC_Value sc_call_legacy(SC_Frame&) const;
 };
 
 /// The run-time representation of a compiled lambda expression.
