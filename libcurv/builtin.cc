@@ -53,13 +53,12 @@ struct Monoid_Func final : public Legacy_Function
     static Binary_Array_Op<Prim> array_op;
     Value call(Frame& args) override
     {
-        return array_op.reduce(Prim(At_Arg(*this, args)),
-            Prim::zero(), args[0]);
+        return array_op.reduce(At_Arg(*this, args), Prim::zero(), args[0]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_reduce(Prim(At_SC_Arg_Expr(*this, ph, f)),
+        return array_op.sc_reduce(At_SC_Arg_Expr(*this, ph, f),
             Prim::zero(), argx, f);
     }
 };
@@ -434,10 +433,9 @@ struct Min_Function : public Legacy_Function
 
 struct And_Prim : public Binary_Boolean_Prim
 {
-    using Binary_Boolean_Prim::Binary_Boolean_Prim;
     static const char* name() { return "and"; }
     static Value zero() { return {true}; }
-    static Value call(bool x, bool y) { return {x && y}; }
+    static Value call(bool x, bool y, const Context&) { return {x && y}; }
     static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
     {
         auto result = f.sc_.newvalue(x.type);
@@ -451,10 +449,9 @@ using And_Function = Monoid_Func<And_Prim>;
 
 struct Or_Prim : public Binary_Boolean_Prim
 {
-    using Binary_Boolean_Prim::Binary_Boolean_Prim;
     static const char* name() { return "or"; }
     static Value zero() { return {false}; }
-    static Value call(bool x, bool y) { return {x || y}; }
+    static Value call(bool x, bool y, const Context&) { return {x || y}; }
     static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
     {
         auto result = f.sc_.newvalue(x.type);
@@ -468,10 +465,9 @@ using Or_Function = Monoid_Func<Or_Prim>;
 
 struct Xor_Prim : public Binary_Boolean_Prim
 {
-    using Binary_Boolean_Prim::Binary_Boolean_Prim;
     static const char* name() { return "xor"; }
     static Value zero() { return {false}; }
-    static Value call(bool x, bool y) { return {x != y}; }
+    static Value call(bool x, bool y, const Context&) { return {x != y}; }
     static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
     {
         auto result = f.sc_.newvalue(x.type);
@@ -487,10 +483,9 @@ struct Lshift_Function : public Legacy_Function
 {
     static const char* name() { return "lshift"; }
     Lshift_Function() : Legacy_Function(2,name()) {}
-    struct Lshift_Op : public Shift_Prim
+    struct Lshift_Prim : public Shift_Prim
     {
-        using Shift_Prim::Shift_Prim;
-        Value call(Shared<const List> a, double b) const
+        static Value call(Shared<const List> a, double b, const Context &cx)
         {
             At_Index acx(0, cx);
             At_Index bcx(1, cx);
@@ -510,26 +505,24 @@ struct Lshift_Function : public Legacy_Function
             return result;
         }
     };
-    static Binary_Array_Op<Lshift_Op> array_op;
+    static Binary_Array_Op<Lshift_Prim> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Lshift_Op(At_Arg(*this, args)),
-            args[0], args[1]);
+        return array_op.op(At_Arg(*this, args), args[0], args[1]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_op(Lshift_Op(At_SC_Arg_Expr(*this, ph, f)), argx, f);
+        return array_op.sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
     }
 };
 struct Rshift_Function : public Legacy_Function
 {
     static const char* name() { return "rshift"; }
     Rshift_Function() : Legacy_Function(2,name()) {}
-    struct Rshift_Op : public Shift_Prim
+    struct Rshift_Prim : public Shift_Prim
     {
-        using Shift_Prim::Shift_Prim;
-        Value call(Shared<const List> a, double b) const
+        static Value call(Shared<const List> a, double b, const Context &cx)
         {
             At_Index acx(0, cx);
             At_Index bcx(1, cx);
@@ -549,26 +542,24 @@ struct Rshift_Function : public Legacy_Function
             return result;
         }
     };
-    static Binary_Array_Op<Rshift_Op> array_op;
+    static Binary_Array_Op<Rshift_Prim> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Rshift_Op(At_Arg(*this, args)),
-            args[0], args[1]);
+        return array_op.op(At_Arg(*this, args), args[0], args[1]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_op(Rshift_Op(At_SC_Arg_Expr(*this, ph, f)), argx, f);
+        return array_op.sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
     }
 };
 struct Bool32_Add_Function : public Legacy_Function
 {
     static const char* name() { return "bool32_add"; }
     Bool32_Add_Function() : Legacy_Function(2,name()) {}
-    struct Bool32_Add_Op : public Binary_Bool32_Prim
+    struct Bool32_Add_Prim : public Binary_Bool32_Prim
     {
-        using Binary_Bool32_Prim::Binary_Bool32_Prim;
-        Value call(unsigned a, unsigned b) const
+        static Value call(unsigned a, unsigned b, const Context&)
         {
             return {nat_to_bool32(a + b)};
         }
@@ -580,16 +571,15 @@ struct Bool32_Add_Function : public Legacy_Function
             return result;
         }
     };
-    static Binary_Array_Op<Bool32_Add_Op> array_op;
+    static Binary_Array_Op<Bool32_Add_Prim> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Bool32_Add_Op(At_Arg(*this, args)),
-            args[0], args[1]);
+        return array_op.op(At_Arg(*this, args), args[0], args[1]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_op(Bool32_Add_Op(At_SC_Arg_Expr(*this, ph, f)), argx, f);
+        return array_op.sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
     }
 };
 struct Bool32_To_Nat_Function : public Legacy_Function
@@ -598,8 +588,7 @@ struct Bool32_To_Nat_Function : public Legacy_Function
     Bool32_To_Nat_Function() : Legacy_Function(1,name()) {}
     struct Prim : public Unary_Bool32_Prim
     {
-        using Unary_Bool32_Prim::Unary_Bool32_Prim;
-        Value call(unsigned n) const
+        static Value call(unsigned n, const Context&)
         {
             return {double(n)};
         }
@@ -607,7 +596,7 @@ struct Bool32_To_Nat_Function : public Legacy_Function
     static Unary_Array_Op<Prim> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Prim(At_Arg(*this, args)), args[0]);
+        return array_op.op(At_Arg(*this, args), args[0]);
     }
 };
 struct Nat_To_Bool32_Function : public Legacy_Function
@@ -616,8 +605,7 @@ struct Nat_To_Bool32_Function : public Legacy_Function
     Nat_To_Bool32_Function() : Legacy_Function(1,name()) {}
     struct Prim : public Unary_Num_Prim
     {
-        using Unary_Num_Prim::Unary_Num_Prim;
-        Value call(double n) const
+        static Value call(double n, const Context& cx)
         {
             return {nat_to_bool32(num_to_nat(n, cx))};
         }
@@ -625,7 +613,7 @@ struct Nat_To_Bool32_Function : public Legacy_Function
     static Unary_Array_Op<Prim> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Prim(At_Arg(*this, args)), args[0]);
+        return array_op.op(At_Arg(*this, args), args[0]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
@@ -651,8 +639,7 @@ struct Bool32_To_Float_Function : public Legacy_Function
     Bool32_To_Float_Function() : Legacy_Function(1,name()) {}
     struct Prim : public Unary_Bool32_Prim
     {
-        using Unary_Bool32_Prim::Unary_Bool32_Prim;
-        Value call(unsigned n) const
+        static Value call(unsigned n, const Context&)
         {
             return {nat_to_float(n)};
         }
@@ -667,12 +654,12 @@ struct Bool32_To_Float_Function : public Legacy_Function
     static Unary_Array_Op<Prim> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Prim(At_Arg(*this, args)), args[0]);
+        return array_op.op(At_Arg(*this, args), args[0]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_op(Prim(At_SC_Arg_Expr(*this, ph, f)), argx, f);
+        return array_op.sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
     }
 };
 struct Float_To_Bool32_Function : public Legacy_Function
@@ -681,8 +668,7 @@ struct Float_To_Bool32_Function : public Legacy_Function
     Float_To_Bool32_Function() : Legacy_Function(1,name()) {}
     struct Prim : public Unary_Num_Prim
     {
-        using Unary_Num_Prim::Unary_Num_Prim;
-        Value call(double n) const
+        static Value call(double n, const Context&)
         {
             return {nat_to_bool32(float_to_nat(n))};
         }
@@ -697,12 +683,12 @@ struct Float_To_Bool32_Function : public Legacy_Function
     static Unary_Array_Op<Prim> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Prim(At_Arg(*this, args)), args[0]);
+        return array_op.op(At_Arg(*this, args), args[0]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_op(Prim(At_SC_Arg_Expr(*this, ph, f)), argx, f);
+        return array_op.sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
     }
 };
 
