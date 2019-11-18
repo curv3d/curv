@@ -41,13 +41,19 @@ struct Function : public Ref_Value
         name_ = make_symbol(name);
     }
 
+    Function(const char* name)
+    :
+        Function(0, name)
+    {
+    }
+
     // call the function during evaluation
     virtual Value call(Value, Frame&) = 0;
     virtual void tail_call(Value, std::unique_ptr<Frame>&);
 
     // Attempt a function call: return `missing` if the parameter pattern
     // doesn't match the value; otherwise call the function and return result.
-    virtual Value try_call(Value, Frame&) = 0;
+    virtual Value try_call(Value, Frame&);
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&);
 
     // Generate a call to the function during geometry compilation.

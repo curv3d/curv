@@ -46,6 +46,12 @@ Function::print(std::ostream& out) const
     out << ">";
 }
 
+Value
+Function::try_call(Value arg, Frame& f)
+{
+    return call(arg, f);
+}
+
 void
 Function::tail_call(Value arg, std::unique_ptr<Frame>& f)
 {

@@ -46,14 +46,14 @@ Builtin_Value::to_meaning(const Identifier& id) const
 //----------------------------------------------//
 
 template <class Prim>
-struct Monoid_Func final : public Legacy_Function
+struct Monoid_Func final : public Function
 {
     static const char* name() { return Prim::name(); }
-    Monoid_Func() : Legacy_Function(1,name()) {}
+    Monoid_Func() : Function(name()) {}
     static Binary_Array_Op<Prim> array_op;
-    Value call(Frame& args) override
+    Value call(Value arg, Frame& f) override
     {
-        return array_op.reduce(At_Arg(*this, args), Prim::zero(), args[0]);
+        return array_op.reduce(At_Arg(*this, f), Prim::zero(), arg);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
