@@ -131,7 +131,7 @@ struct Function_Op
     {}
 };
 
-struct Binary_Boolean_Op : public Function_Op
+struct Binary_Boolean_Prim : public Function_Op
 {
     using Function_Op::Function_Op;
     typedef bool left_t, right_t;
@@ -177,7 +177,7 @@ struct Binary_Boolean_Op : public Function_Op
     }
 };
 
-struct Unary_Num_Op : public Function_Op
+struct Unary_Num_Prim : public Function_Op
 {
     using Function_Op::Function_Op;
     typedef double scalar_t;
@@ -200,7 +200,7 @@ struct Unary_Num_Op : public Function_Op
 // The right operand is an integer >= 0 and < the size of the left operand.
 // (These restrictions on the right operand conform to the definition
 // of << and >> in the C/C++/GLSL languages.)
-struct Shift_Op : public Function_Op
+struct Shift_Prim : public Function_Op
 {
     using Function_Op::Function_Op;
     typedef Shared<const List> left_t;
@@ -228,7 +228,7 @@ struct Shift_Op : public Function_Op
     }
 };
 
-struct Bool32_Op : public Function_Op
+struct Bool32_Prim : public Function_Op
 {
     using Function_Op::Function_Op;
     static bool unbox_bool32(Value in, unsigned& out, const Context& c)
@@ -240,9 +240,9 @@ struct Bool32_Op : public Function_Op
         return true;
     }
 };
-struct Unary_Bool32_Op : public Bool32_Op
+struct Unary_Bool32_Prim : public Bool32_Prim
 {
-    using Bool32_Op::Bool32_Op;
+    using Bool32_Prim::Bool32_Prim;
     typedef unsigned scalar_t;
     bool unbox(Value a, scalar_t& b) const
     {
@@ -254,9 +254,9 @@ struct Unary_Bool32_Op : public Bool32_Op
             throw Exception(cx, "argument must be a Bool32");
     }
 };
-struct Binary_Bool32_Op : public Bool32_Op
+struct Binary_Bool32_Prim : public Bool32_Prim
 {
-    using Bool32_Op::Bool32_Op;
+    using Bool32_Prim::Bool32_Prim;
     typedef unsigned left_t;
     typedef unsigned right_t;
     bool unbox_left(Value a, left_t& b) const

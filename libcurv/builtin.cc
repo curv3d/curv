@@ -157,7 +157,7 @@ struct Class_Name : public Legacy_Function \
 { \
     static const char* name() { return #curv_name; } \
     Class_Name() : Legacy_Function(1,name()) {} \
-    struct Scalar_Op { \
+    struct Prim { \
         static double call(double x) { return c_name(x); } \
         Shared<Operation> make_expr(Shared<Operation> x) const \
         { \
@@ -172,12 +172,12 @@ struct Class_Name : public Legacy_Function \
             return stringify(x); \
         } \
         At_Arg cx; \
-        Scalar_Op(Function& func, Frame& args) : cx(func,args) {} \
+        Prim(Function& func, Frame& args) : cx(func,args) {} \
     }; \
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op; \
+    static Unary_Numeric_Array_Op<Prim> array_op; \
     Value call(Frame& args) override \
     { \
-        return array_op.op(Scalar_Op(*this, args), args[0]); \
+        return array_op.op(Prim(*this, args), args[0]); \
     } \
     SC_Value sc_call_legacy(SC_Frame& f) const override \
     { \
@@ -233,7 +233,7 @@ struct Atan2_Function : public Legacy_Function
     static const char* name() { return "atan2"; }
     Atan2_Function() : Legacy_Function(2,name()) {}
 
-    struct Scalar_Op {
+    struct Prim {
         static double call(double x, double y) { return atan2(x, y); }
         Shared<Operation> make_expr(
             Shared<Operation> x, Shared<Operation> y) const
@@ -247,12 +247,12 @@ struct Atan2_Function : public Legacy_Function
             return stringify("[",x,",",y,"]");
         }
         At_Arg cx;
-        Scalar_Op(Function& func, Frame& args) : cx(func, args) {}
+        Prim(Function& func, Frame& args) : cx(func, args) {}
     };
-    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
+    static Binary_Numeric_Array_Op<Prim> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Scalar_Op(*this, args), args[0], args[1]);
+        return array_op.op(Prim(*this, args), args[0], args[1]);
     }
     SC_Value sc_call_legacy(SC_Frame& f) const override
     {
@@ -349,7 +349,7 @@ struct Max_Function : public Legacy_Function
     static const char* name() { return "max"; }
     Max_Function() : Legacy_Function(1,name()) {}
 
-    struct Scalar_Op {
+    struct Prim {
         static double call(double x, double y) {
             // return NaN if either argument is NaN.
             if (x >= y) return x;
@@ -374,12 +374,12 @@ struct Max_Function : public Legacy_Function
             return stringify("[",x,",",y,"]");
         }
         At_Arg cx;
-        Scalar_Op(Function& func, Frame& args) : cx(func,args) {}
+        Prim(Function& func, Frame& args) : cx(func,args) {}
     };
-    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
+    static Binary_Numeric_Array_Op<Prim> array_op;
     Value call(Frame& args) override
     {
-        return array_op.reduce(Scalar_Op(*this, args), -INFINITY, args[0]);
+        return array_op.reduce(Prim(*this, args), -INFINITY, args[0]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase>, SC_Frame& f)
     const override
@@ -393,7 +393,7 @@ struct Min_Function : public Legacy_Function
     static const char* name() { return "min"; }
     Min_Function() : Legacy_Function(1,name()) {}
 
-    struct Scalar_Op {
+    struct Prim {
         static double call(double x, double y) {
             // return NaN if either argument is NaN
             if (x <= y) return x;
@@ -418,12 +418,12 @@ struct Min_Function : public Legacy_Function
             return stringify("[",x,",",y,"]");
         }
         At_Arg cx;
-        Scalar_Op(Function& func, Frame& args) : cx(func, args) {}
+        Prim(Function& func, Frame& args) : cx(func, args) {}
     };
-    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
+    static Binary_Numeric_Array_Op<Prim> array_op;
     Value call(Frame& args) override
     {
-        return array_op.reduce(Scalar_Op(*this, args), INFINITY, args[0]);
+        return array_op.reduce(Prim(*this, args), INFINITY, args[0]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase>, SC_Frame& f)
     const override
@@ -432,9 +432,9 @@ struct Min_Function : public Legacy_Function
     }
 };
 
-struct And_Prim : public Binary_Boolean_Op
+struct And_Prim : public Binary_Boolean_Prim
 {
-    using Binary_Boolean_Op::Binary_Boolean_Op;
+    using Binary_Boolean_Prim::Binary_Boolean_Prim;
     static const char* name() { return "and"; }
     static Value zero() { return {true}; }
     static Value call(bool x, bool y) { return {x && y}; }
@@ -449,9 +449,9 @@ struct And_Prim : public Binary_Boolean_Op
 };
 using And_Function = Monoid_Func<And_Prim>;
 
-struct Or_Prim : public Binary_Boolean_Op
+struct Or_Prim : public Binary_Boolean_Prim
 {
-    using Binary_Boolean_Op::Binary_Boolean_Op;
+    using Binary_Boolean_Prim::Binary_Boolean_Prim;
     static const char* name() { return "or"; }
     static Value zero() { return {false}; }
     static Value call(bool x, bool y) { return {x || y}; }
@@ -466,9 +466,9 @@ struct Or_Prim : public Binary_Boolean_Op
 };
 using Or_Function = Monoid_Func<Or_Prim>;
 
-struct Xor_Prim : public Binary_Boolean_Op
+struct Xor_Prim : public Binary_Boolean_Prim
 {
-    using Binary_Boolean_Op::Binary_Boolean_Op;
+    using Binary_Boolean_Prim::Binary_Boolean_Prim;
     static const char* name() { return "xor"; }
     static Value zero() { return {false}; }
     static Value call(bool x, bool y) { return {x != y}; }
@@ -487,9 +487,9 @@ struct Lshift_Function : public Legacy_Function
 {
     static const char* name() { return "lshift"; }
     Lshift_Function() : Legacy_Function(2,name()) {}
-    struct Lshift_Op : public Shift_Op
+    struct Lshift_Op : public Shift_Prim
     {
-        using Shift_Op::Shift_Op;
+        using Shift_Prim::Shift_Prim;
         Value call(Shared<const List> a, double b) const
         {
             At_Index acx(0, cx);
@@ -526,9 +526,9 @@ struct Rshift_Function : public Legacy_Function
 {
     static const char* name() { return "rshift"; }
     Rshift_Function() : Legacy_Function(2,name()) {}
-    struct Rshift_Op : public Shift_Op
+    struct Rshift_Op : public Shift_Prim
     {
-        using Shift_Op::Shift_Op;
+        using Shift_Prim::Shift_Prim;
         Value call(Shared<const List> a, double b) const
         {
             At_Index acx(0, cx);
@@ -565,9 +565,9 @@ struct Bool32_Add_Function : public Legacy_Function
 {
     static const char* name() { return "bool32_add"; }
     Bool32_Add_Function() : Legacy_Function(2,name()) {}
-    struct Bool32_Add_Op : public Binary_Bool32_Op
+    struct Bool32_Add_Op : public Binary_Bool32_Prim
     {
-        using Binary_Bool32_Op::Binary_Bool32_Op;
+        using Binary_Bool32_Prim::Binary_Bool32_Prim;
         Value call(unsigned a, unsigned b) const
         {
             return {nat_to_bool32(a + b)};
@@ -596,36 +596,36 @@ struct Bool32_To_Nat_Function : public Legacy_Function
 {
     static const char* name() { return "bool32_to_nat"; }
     Bool32_To_Nat_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op : public Unary_Bool32_Op
+    struct Prim : public Unary_Bool32_Prim
     {
-        using Unary_Bool32_Op::Unary_Bool32_Op;
+        using Unary_Bool32_Prim::Unary_Bool32_Prim;
         Value call(unsigned n) const
         {
             return {double(n)};
         }
     };
-    static Unary_Array_Op<Scalar_Op> array_op;
+    static Unary_Array_Op<Prim> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Scalar_Op(At_Arg(*this, args)), args[0]);
+        return array_op.op(Prim(At_Arg(*this, args)), args[0]);
     }
 };
 struct Nat_To_Bool32_Function : public Legacy_Function
 {
     static const char* name() { return "nat_to_bool32"; }
     Nat_To_Bool32_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op : public Unary_Num_Op
+    struct Prim : public Unary_Num_Prim
     {
-        using Unary_Num_Op::Unary_Num_Op;
+        using Unary_Num_Prim::Unary_Num_Prim;
         Value call(double n) const
         {
             return {nat_to_bool32(num_to_nat(n, cx))};
         }
     };
-    static Unary_Array_Op<Scalar_Op> array_op;
+    static Unary_Array_Op<Prim> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Scalar_Op(At_Arg(*this, args)), args[0]);
+        return array_op.op(Prim(At_Arg(*this, args)), args[0]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
@@ -649,9 +649,9 @@ struct Bool32_To_Float_Function : public Legacy_Function
 {
     static const char* name() { return "bool32_to_float"; }
     Bool32_To_Float_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op : public Unary_Bool32_Op
+    struct Prim : public Unary_Bool32_Prim
     {
-        using Unary_Bool32_Op::Unary_Bool32_Op;
+        using Unary_Bool32_Prim::Unary_Bool32_Prim;
         Value call(unsigned n) const
         {
             return {nat_to_float(n)};
@@ -664,24 +664,24 @@ struct Bool32_To_Float_Function : public Legacy_Function
             return result;
         }
     };
-    static Unary_Array_Op<Scalar_Op> array_op;
+    static Unary_Array_Op<Prim> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Scalar_Op(At_Arg(*this, args)), args[0]);
+        return array_op.op(Prim(At_Arg(*this, args)), args[0]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_op(Scalar_Op(At_SC_Arg_Expr(*this, ph, f)), argx, f);
+        return array_op.sc_op(Prim(At_SC_Arg_Expr(*this, ph, f)), argx, f);
     }
 };
 struct Float_To_Bool32_Function : public Legacy_Function
 {
     static const char* name() { return "float_to_bool32"; }
     Float_To_Bool32_Function() : Legacy_Function(1,name()) {}
-    struct Scalar_Op : public Unary_Num_Op
+    struct Prim : public Unary_Num_Prim
     {
-        using Unary_Num_Op::Unary_Num_Op;
+        using Unary_Num_Prim::Unary_Num_Prim;
         Value call(double n) const
         {
             return {nat_to_bool32(float_to_nat(n))};
@@ -694,15 +694,15 @@ struct Float_To_Bool32_Function : public Legacy_Function
             return result;
         }
     };
-    static Unary_Array_Op<Scalar_Op> array_op;
+    static Unary_Array_Op<Prim> array_op;
     Value call(Frame& args) override
     {
-        return array_op.op(Scalar_Op(At_Arg(*this, args)), args[0]);
+        return array_op.op(Prim(At_Arg(*this, args)), args[0]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_op(Scalar_Op(At_SC_Arg_Expr(*this, ph, f)), argx, f);
+        return array_op.sc_op(Prim(At_SC_Arg_Expr(*this, ph, f)), argx, f);
     }
 };
 
