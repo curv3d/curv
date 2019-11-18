@@ -84,67 +84,67 @@ struct Monoid_Func final : public Function
 // Builtin Functions //
 //-------------------//
 
-struct Is_Bool_Function : public Legacy_Function
+struct Is_Bool_Function : public Function
 {
     static const char* name() { return "is_bool"; }
-    Is_Bool_Function() : Legacy_Function(1,name()) {}
-    Value call(Frame& args) override
+    Is_Bool_Function() : Function(name()) {}
+    Value call(Value arg, Frame&) override
     {
-        return {isbool(args[0])};
+        return {isbool(arg)};
     }
 };
-struct Is_Symbol_Function : public Legacy_Function
+struct Is_Symbol_Function : public Function
 {
     static const char* name() { return "is_symbol"; }
-    Is_Symbol_Function() : Legacy_Function(1,name()) {}
-    Value call(Frame& args) override
+    Is_Symbol_Function() : Function(name()) {}
+    Value call(Value arg, Frame&) override
     {
-        return {issymbol(args[0])};
+        return {issymbol(arg)};
     }
 };
-struct Is_Num_Function : public Legacy_Function
+struct Is_Num_Function : public Function
 {
     static const char* name() { return "is_num"; }
-    Is_Num_Function() : Legacy_Function(1,name()) {}
-    Value call(Frame& args) override
+    Is_Num_Function() : Function(name()) {}
+    Value call(Value arg, Frame&) override
     {
-        return {isnum(args[0])};
+        return {isnum(arg)};
     }
 };
-struct Is_String_Function : public Legacy_Function
+struct Is_String_Function : public Function
 {
     static const char* name() { return "is_string"; }
-    Is_String_Function() : Legacy_Function(1,name()) {}
-    Value call(Frame& args) override
+    Is_String_Function() : Function(name()) {}
+    Value call(Value arg, Frame&) override
     {
-        return {args[0].dycast<String>() != nullptr};
+        return {arg.dycast<String>() != nullptr};
     }
 };
-struct Is_List_Function : public Legacy_Function
+struct Is_List_Function : public Function
 {
     static const char* name() { return "is_list"; }
-    Is_List_Function() : Legacy_Function(1,name()) {}
-    Value call(Frame& args) override
+    Is_List_Function() : Function(name()) {}
+    Value call(Value arg, Frame&) override
     {
-        return {islist(args[0])};
+        return {islist(arg)};
     }
 };
-struct Is_Record_Function : public Legacy_Function
+struct Is_Record_Function : public Function
 {
     static const char* name() { return "is_record"; }
-    Is_Record_Function() : Legacy_Function(1,name()) {}
-    Value call(Frame& args) override
+    Is_Record_Function() : Function(name()) {}
+    Value call(Value arg, Frame&) override
     {
-        return {args[0].dycast<Record>() != nullptr};
+        return {arg.dycast<Record>() != nullptr};
     }
 };
-struct Is_Fun_Function : public Legacy_Function
+struct Is_Fun_Function : public Function
 {
     static const char* name() { return "is_fun"; }
-    Is_Fun_Function() : Legacy_Function(1,name()) {}
-    Value call(Frame& args) override
+    Is_Fun_Function() : Function(name()) {}
+    Value call(Value arg, Frame&) override
     {
-        return {args[0].dycast<Function>() != nullptr};
+        return {arg.dycast<Function>() != nullptr};
     }
 };
 
