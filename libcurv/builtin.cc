@@ -46,6 +46,23 @@ Builtin_Value::to_meaning(const Identifier& id) const
 //----------------------------------------------//
 
 template <class Prim>
+struct Unary_Func : public Function
+{
+    static const char* name() { return Prim::name(); }
+    Unary_Func() : Function(name()) {}
+    static Unary_Array_Op<Prim> array_op;
+    Value call(Value arg, Frame& f) override
+    {
+        return array_op.op(At_Arg(*this, f), arg);
+    }
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    const override
+    {
+        return array_op.sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
+    }
+};
+
+template <class Prim>
 struct Monoid_Func final : public Function
 {
     static const char* name() { return Prim::name(); }
@@ -582,27 +599,31 @@ struct Bool32_Add_Function : public Legacy_Function
         return array_op.sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
     }
 };
-struct Bool32_To_Nat_Function : public Legacy_Function
+
+struct Bool32_To_Nat_Function : public Function
 {
     static const char* name() { return "bool32_to_nat"; }
-    Bool32_To_Nat_Function() : Legacy_Function(1,name()) {}
+    Bool32_To_Nat_Function() : Function(name()) {}
     struct Prim : public Unary_Bool32_Prim
     {
         static Value call(unsigned n, const Context&)
         {
             return {double(n)};
         }
+        // No SubCurv support because a Num (32 bit float)
+        // cannot hold a Nat (32 bit natural).
     };
     static Unary_Array_Op<Prim> array_op;
-    Value call(Frame& args) override
+    Value call(Value arg, Frame& f) override
     {
-        return array_op.op(At_Arg(*this, args), args[0]);
+        return array_op.op(At_Arg(*this, f), arg);
     }
 };
-struct Nat_To_Bool32_Function : public Legacy_Function
+
+struct Nat_To_Bool32_Function : public Function
 {
     static const char* name() { return "nat_to_bool32"; }
-    Nat_To_Bool32_Function() : Legacy_Function(1,name()) {}
+    Nat_To_Bool32_Function() : Function(name()) {}
     struct Prim : public Unary_Num_Prim
     {
         static Value call(double n, const Context& cx)
@@ -611,9 +632,9 @@ struct Nat_To_Bool32_Function : public Legacy_Function
         }
     };
     static Unary_Array_Op<Prim> array_op;
-    Value call(Frame& args) override
+    Value call(Value arg, Frame& f) override
     {
-        return array_op.op(At_Arg(*this, args), args[0]);
+        return array_op.op(At_Arg(*this, f), arg);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
@@ -633,64 +654,39 @@ struct Nat_To_Bool32_Function : public Legacy_Function
     }
 };
 
-struct Bool32_To_Float_Function : public Legacy_Function
+struct Bool32_To_Float_Prim : public Unary_Bool32_Prim
 {
     static const char* name() { return "bool32_to_float"; }
-    Bool32_To_Float_Function() : Legacy_Function(1,name()) {}
-    struct Prim : public Unary_Bool32_Prim
+    static Value call(unsigned n, const Context&)
     {
-        static Value call(unsigned n, const Context&)
-        {
-            return {nat_to_float(n)};
-        }
-        static SC_Value sc_call(SC_Frame& f, SC_Value x)
-        {
-            auto result = f.sc_.newvalue(SC_Type::Num());
-            f.sc_.out() << "  " << result.type << " " << result
-                << " = uintBitsToFloat(" << x << ");\n";
-            return result;
-        }
-    };
-    static Unary_Array_Op<Prim> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(At_Arg(*this, args), args[0]);
+        return {nat_to_float(n)};
     }
-    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
-    const override
+    static SC_Value sc_call(SC_Frame& f, SC_Value x)
     {
-        return array_op.sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
+        auto result = f.sc_.newvalue(SC_Type::Num());
+        f.sc_.out() << "  " << result.type << " " << result
+            << " = uintBitsToFloat(" << x << ");\n";
+        return result;
     }
 };
-struct Float_To_Bool32_Function : public Legacy_Function
+using Bool32_To_Float_Function = Unary_Func<Bool32_To_Float_Prim>;
+
+struct Float_To_Bool32_Prim : public Unary_Num_Prim
 {
     static const char* name() { return "float_to_bool32"; }
-    Float_To_Bool32_Function() : Legacy_Function(1,name()) {}
-    struct Prim : public Unary_Num_Prim
+    static Value call(double n, const Context&)
     {
-        static Value call(double n, const Context&)
-        {
-            return {nat_to_bool32(float_to_nat(n))};
-        }
-        static SC_Value sc_call(SC_Frame& f, SC_Value x)
-        {
-            auto result = f.sc_.newvalue(SC_Type::Bool32());
-            f.sc_.out() << "  " << result.type << " " << result
-                << " = floatBitsToUint(" << x << ");\n";
-            return result;
-        }
-    };
-    static Unary_Array_Op<Prim> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(At_Arg(*this, args), args[0]);
+        return {nat_to_bool32(float_to_nat(n))};
     }
-    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
-    const override
+    static SC_Value sc_call(SC_Frame& f, SC_Value x)
     {
-        return array_op.sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
+        auto result = f.sc_.newvalue(SC_Type::Bool32());
+        f.sc_.out() << "  " << result.type << " " << result
+            << " = floatBitsToUint(" << x << ");\n";
+        return result;
     }
 };
+using Float_To_Bool32_Function = Unary_Func<Float_To_Bool32_Prim>;
 
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
