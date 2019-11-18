@@ -46,14 +46,31 @@ Builtin_Value::to_meaning(const Identifier& id) const
 //----------------------------------------------//
 
 template <class Prim>
-struct Unary_Func : public Function
+struct Unary_Array_Func : public Function
 {
     static const char* name() { return Prim::name(); }
-    Unary_Func() : Function(name()) {}
+    Unary_Array_Func() : Function(name()) {}
     static Unary_Array_Op<Prim> array_op;
     Value call(Value arg, Frame& f) override
     {
         return array_op.op(At_Arg(*this, f), arg);
+    }
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    const override
+    {
+        return array_op.sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
+    }
+};
+
+template <class Prim>
+struct Binary_Array_Func : public Legacy_Function
+{
+    static const char* name() { return Prim::name(); }
+    Binary_Array_Func() : Legacy_Function(2,name()) {}
+    static Binary_Array_Op<Prim> array_op;
+    Value call(Frame& args) override
+    {
+        return array_op.op(At_Arg(*this, args), args[0], args[1]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
@@ -496,109 +513,72 @@ struct Xor_Prim : public Binary_Boolean_Prim
 };
 using Xor_Function = Monoid_Func<Xor_Prim>;
 
-struct Lshift_Function : public Legacy_Function
+struct Lshift_Prim : public Shift_Prim
 {
     static const char* name() { return "lshift"; }
-    Lshift_Function() : Legacy_Function(2,name()) {}
-    struct Lshift_Prim : public Shift_Prim
+    static Value call(Shared<const List> a, double b, const Context &cx)
     {
-        static Value call(Shared<const List> a, double b, const Context &cx)
-        {
-            At_Index acx(0, cx);
-            At_Index bcx(1, cx);
-            unsigned n = (unsigned) num_to_int(b, 0, a->size()-1, bcx);
-            Shared<List> result = List::make(a->size());
-            for (unsigned i = 0; i < n; ++i)
-                result->at(i) = {false};
-            for (unsigned i = n; i < a->size(); ++i)
-                result->at(i) = {a->at(i-n).to_bool(acx)};
-            return {result};
-        }
-        static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
-        {
-            auto result = f.sc_.newvalue(x.type);
-            f.sc_.out() << "  " << x.type << " " << result << " = "
-                << x << " << int(" << y << ");\n";
-            return result;
-        }
-    };
-    static Binary_Array_Op<Lshift_Prim> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(At_Arg(*this, args), args[0], args[1]);
+        At_Index acx(0, cx);
+        At_Index bcx(1, cx);
+        unsigned n = (unsigned) num_to_int(b, 0, a->size()-1, bcx);
+        Shared<List> result = List::make(a->size());
+        for (unsigned i = 0; i < n; ++i)
+            result->at(i) = {false};
+        for (unsigned i = n; i < a->size(); ++i)
+            result->at(i) = {a->at(i-n).to_bool(acx)};
+        return {result};
     }
-    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
-    const override
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
     {
-        return array_op.sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
+        auto result = f.sc_.newvalue(x.type);
+        f.sc_.out() << "  " << x.type << " " << result << " = "
+            << x << " << int(" << y << ");\n";
+        return result;
     }
 };
-struct Rshift_Function : public Legacy_Function
+using Lshift_Function = Binary_Array_Func<Lshift_Prim>;
+
+struct Rshift_Prim : public Shift_Prim
 {
     static const char* name() { return "rshift"; }
-    Rshift_Function() : Legacy_Function(2,name()) {}
-    struct Rshift_Prim : public Shift_Prim
+    static Value call(Shared<const List> a, double b, const Context &cx)
     {
-        static Value call(Shared<const List> a, double b, const Context &cx)
-        {
-            At_Index acx(0, cx);
-            At_Index bcx(1, cx);
-            unsigned n = (unsigned) num_to_int(b, 0, a->size()-1, bcx);
-            Shared<List> result = List::make(a->size());
-            for (unsigned i = a->size()-n; i < a->size(); ++i)
-                result->at(i) = {false};
-            for (unsigned i = 0; i < a->size()-n; ++i)
-                result->at(i) = {a->at(i+n).to_bool(acx)};
-            return {result};
-        }
-        static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
-        {
-            auto result = f.sc_.newvalue(x.type);
-            f.sc_.out() << "  " << x.type << " " << result << " = "
-                << x << " >> int(" << y << ");\n";
-            return result;
-        }
-    };
-    static Binary_Array_Op<Rshift_Prim> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(At_Arg(*this, args), args[0], args[1]);
+        At_Index acx(0, cx);
+        At_Index bcx(1, cx);
+        unsigned n = (unsigned) num_to_int(b, 0, a->size()-1, bcx);
+        Shared<List> result = List::make(a->size());
+        for (unsigned i = a->size()-n; i < a->size(); ++i)
+            result->at(i) = {false};
+        for (unsigned i = 0; i < a->size()-n; ++i)
+            result->at(i) = {a->at(i+n).to_bool(acx)};
+        return {result};
     }
-    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
-    const override
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
     {
-        return array_op.sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
+        auto result = f.sc_.newvalue(x.type);
+        f.sc_.out() << "  " << x.type << " " << result << " = "
+            << x << " >> int(" << y << ");\n";
+        return result;
     }
 };
-struct Bool32_Add_Function : public Legacy_Function
+using Rshift_Function = Binary_Array_Func<Rshift_Prim>;
+
+struct Bool32_Add_Prim : public Binary_Bool32_Prim
 {
     static const char* name() { return "bool32_add"; }
-    Bool32_Add_Function() : Legacy_Function(2,name()) {}
-    struct Bool32_Add_Prim : public Binary_Bool32_Prim
+    static Value call(unsigned a, unsigned b, const Context&)
     {
-        static Value call(unsigned a, unsigned b, const Context&)
-        {
-            return {nat_to_bool32(a + b)};
-        }
-        static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
-        {
-            auto result = f.sc_.newvalue(x.type);
-            f.sc_.out() << "  " << x.type << " " << result << " = "
-                << x << " + " << y << ";\n";
-            return result;
-        }
-    };
-    static Binary_Array_Op<Bool32_Add_Prim> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(At_Arg(*this, args), args[0], args[1]);
+        return {nat_to_bool32(a + b)};
     }
-    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
-    const override
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
     {
-        return array_op.sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
+        auto result = f.sc_.newvalue(x.type);
+        f.sc_.out() << "  " << x.type << " " << result << " = "
+            << x << " + " << y << ";\n";
+        return result;
     }
 };
+using Bool32_Add_Function = Binary_Array_Func<Bool32_Add_Prim>;
 
 struct Bool32_To_Nat_Function : public Function
 {
@@ -669,7 +649,7 @@ struct Bool32_To_Float_Prim : public Unary_Bool32_Prim
         return result;
     }
 };
-using Bool32_To_Float_Function = Unary_Func<Bool32_To_Float_Prim>;
+using Bool32_To_Float_Function = Unary_Array_Func<Bool32_To_Float_Prim>;
 
 struct Float_To_Bool32_Prim : public Unary_Num_Prim
 {
@@ -686,7 +666,7 @@ struct Float_To_Bool32_Prim : public Unary_Num_Prim
         return result;
     }
 };
-using Float_To_Bool32_Function = Unary_Func<Float_To_Bool32_Prim>;
+using Float_To_Bool32_Function = Unary_Array_Func<Float_To_Bool32_Prim>;
 
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
