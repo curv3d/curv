@@ -16,7 +16,6 @@ This is a large project to improve the SC compiler:
 * Secondary goal: better compile time error messages.
 * Secondary goal: visibility and control over SC compiler output.
 * Deferred goal: If time is not used, set -Olazy=true.
-* Deferred goal: Optimized GLSL code, to support the Mesa GPU driver.
 
 Research
 --------

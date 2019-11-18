@@ -65,9 +65,12 @@ Here are the platforms that I might want Curv to support:
   and I don't want to build a Metal or Vulkan backend. WebGPU may be available
   by the time Apple drops OpenGL. Mac support goes away if Apple makes it
   impossible to distribute Curv via HomeBrew. I'm not personally interested in
-  paying Apple to put signed binaries on the Mac app store.
+  paying Apple to put signed binaries on the Mac app store. Catalina adds new
+  barriers to installing non-app-store apps, which is hostile to indie devs.
+  But HomeBrew still works.
 * My initial Windows port will use Windows 10 + WSL. WIN32 won't happen unless
-  somebody volunteers to port it and maintain it.
+  somebody volunteers to port it and maintain it. WSL2 will eventually support
+  GPU, so maybe wait for that?
 
 And here are the APIs supported by these platforms:
 | Linux         | GL  EGL  Vulkan

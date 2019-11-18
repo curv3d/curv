@@ -1,0 +1,78 @@
+GPU programming languages
+=========================
+* AnyDSL/Impala: LLVM/CUDA/OpenCL partial evaluation; static types; imperative
+    http://compilers.cs.uni-saarland.de/papers/anydsl.pdf
+    https://anydsl.github.io/
+* Spiral: CUDA/Windows: partial evalution staged dynamic->static
+* Futhark: futhark-lang.org: CUDA&OpenCL; static types; pure functional
+
+Spiral
+------
+https://github.com/mrakgr/The-Spiral-Language
+
+GPUs for performance.
+Abstraction by heap allocation can't work on GPUs. Thus, need strong types.
+Control of inlining is of central importance, must be part of type system.
+Inlining expresses a tradeoff between speed and memory.
+
+A language good enough at propagating information so as to express inlining
+guarantees is also powerful enough to express other things, without abstraction
+overhead:
+ First class types; Structural reflection through pattern matching;
+ Interoperability between languages (F# and Cuda);
+ First class functions; Tuples as heterogenous lists; First class modules;
+ First class layout of data structures;
+
+Statically typed. Powerful type system gives expressiveness of dynamic languages
+and speed of C. Staged functional programming. Structural polymorphism and
+first class staging. For deep learning.
+
+Automatic type inference, inlining, other optimizations requires restrictions
+and heuristics to ensure termination. Languages that automate important parts
+of their internals invariably hamstring their expressiveness. Not Spiral.
+Spiral is a static language with no restrictions on type inference or
+optimizations.
+
+Inlineables; join points. Exposes optimizations as type system polymorphism.
+Ties these features together to support guaranteed program termination.
+Halting problem is obstacle to bridging expressiveness and performance.
+C is what high level languages regress to when they worry about performance.
+
+Inlining by hand is never necessary. The most abstract way of writing a
+program is also the optimal one. Spiral abstracts away optimization.
+
+Based on F#.
+
+'2' is a constant (type level)
+'dyn 2' is a dynamic value (term level); blocks compile time/partial evaluation
+    value is stored in a runtime variable.
+
+'Inlineables' are always inlined. 'inl' is like let but defines an inlineable.
+inl x = 2
+inl y = dyn 2
+inl add a b = a + b
+
+Inlineable functions are dynamically typed. He doesn't use these words though.
+This makes compile time evaluation simple and powerful, without the complexity
+of the Haskell type system (for example).
+
+met f x = x + 1
+'met' means 'method'. This is a non-inlined function? Methods are specialized
+to the arguments passed to them.
+
+### Join Points
+This is a key concept in Spiral. Nowhere is the term properly defined.
+
+The following are equivalent:
+    met f _ = 1
+    inl f _ = join 1
+
+Join points allow more fine grained control over inlining.
+Maybe 'join' means 'do not inline the following code' within an otherwise
+inlined function. This allows you to use 'if' statements to control which
+parts of a function are inlined/not inlined.
+
+inl sum l =
+    if forall lit_is l then foldl (+) 0 l
+    else join foldl (+) 0 (dyn l)
+

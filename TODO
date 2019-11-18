@@ -1,6 +1,18 @@
+* subcurv recognizes array of 32 bools as Bool32
+* support subcurv types Bool32x2, Bool32x3, Bool32x4
+* support subcurv types Bool2, Bool3, Bool4
+* fix TODOs in array_op.h
+* binary boolean op: mixed bool/bool32 operations
+
+Primitives API:
+* The Context describes the call syntax: 'f x', '-x', 'x `f` y', 'x + y'.
+  A more specific argument Location is extracted from the syntax when throwing
+  an exception concerning a bad argument.
+* Can builtins be implemented in Curv?
+* Will a macro simplify the definition of And_Prim?
+* define Operation classes using Prim?
+
 Bool_Array : vectorized boolean operators
-- vectorize `!a`
-* `and`, `or` and `xor` are vectorized boolean monoids.
 * <, <=, >, >= work elementwise on arrays.
 * `are_equal(a,b)`: elementwise variant of a==b
 * `are_unequal(a,b)`: elementwise variant of a!=b.
@@ -10,22 +22,12 @@ Bool_Array : vectorized boolean operators
 * vectorize `bit`. Maybe `bit b = select(b, 1, 0)`.
 * SubCurv supports bool[2-4] and vectorized boolean ops
 * unit tests for operations on reactive values
-
-Bool32: ops on boolean vectors of size 32 -- for noise library
-* All of the Bool_Array ops, plus the `Bool32` module.
-* SubCurv supports bool32 type (represented as `unsigned`).
-
-Libcurv builtins API
-* Too much boilerplate to write this kind of code.
-* Do more experiments with C++ before abandoning C++ for another language.
-* Can builtins be implemented in Curv?
-* The `and` project. What's the shortest, simplest implementation?
-  * Implement "full boilerplate" version in C++.
-  * Add bool[2-4] to SubCurv.
-  * Add bool32 to SubCurv.
-  * Now simplify and generalize the code.
-    * Create a generalized `monoid` constructor.
-      A macro call expands to a template call expands to a class.
+  * Right now, reactive values are only generated when compiling a parametric
+    shape to GLSL. I could create a builtin implementing the same logic.
+    * Take a parametric record as argument, compile the parameters to reactive
+      values, then call the record's main() function.
+    * A builtin that compiles a Curv value into machine code via C++.
+      Special handling for parametric records which tests reactive values.
 
 Fix colour rendering (needs Bool_Array)
 ---------------------------------------

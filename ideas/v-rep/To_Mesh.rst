@@ -36,6 +36,31 @@ This means you want adaptive mesh generation: triangle size decreases as
 local curvature increases. Triangles are as large as possible, consistent with
 approximating the surface within a specified error tolerance.
 
+My research into meshing algorithms suggests that producing a defect free mesh
+in the general case ranges from difficult to impossible. But there are ways out.
+* Mesh repair tools report an error for an STL file containing two cubes
+  touching at an edge. This is a proper polyhedron with a non-manifold surface.
+  STL is the only well known mesh format with no topology information.
+  No error is reported for the same model in other file formats.
+  Prusa Slicer deals with this model with no problem. (OpenSCAD could be
+  changed to accept the 2-cubes model if stored in a mesh with topology.)
+* The 3MF mesh format explicitly permits self-intersections. Slicers that
+  support 3MF should handle this. Mesh repair programs will still report a
+  problem.
+* libigl provides fast, robust mesh booleans that deal with both of the above
+  issues.
+* OpenSCAD is very sensitive to non-manifold and self-intersecting meshes.
+  The problem would go away if OpenSCAD were upgraded to use libigl.
+* Or, Curv could add a mesh library based on libigl, which would fix the
+  problem for me and other Curv users, since I wouldn't need OpenSCAD any more.
+
+We can accept some mesh defects, in most situations:
+* Non-manifold is okay, but only for a proper polyhedron. Otherwise,
+  it won't pass 3MF validation, breaks libigl booleans, and is unacceptable.
+* Self-intersection will pass 3MF validation and will work with libigl.
+  Self-intersection is worse than non-manifold proper polyhedron, since
+  mesh tools will report errors.
+
 Modern implementations of marching cubes produce defect-free meshes.
 However, the algorithm is not adaptive: triangle sizes are uniform.
 I haven't found an open source algorithm for simplifying a mesh that doesn't
@@ -134,6 +159,8 @@ Self intersection
   potentially intersecting polygons, which are then tessellated into smaller,
   non-intersecting triangles.
   Source (LGPL2.1+) https://sourceforge.net/projects/dualcontouring/
+  https://github.com/aewallin/dualcontouring
+  The output may contain non-manifold features. (But they are the safe kind?)
 * LibIGL has an algorithm (GPL3) to repair meshes with self intersection.
   ``include/igl/copyleft/cgal/remesh_self_intersections.h``
 * "Direct repair of self-intersecting meshes"
@@ -157,6 +184,30 @@ self intersections (which will cause OpenSCAD booleans to fail). There's
 signficant added complexity to fix this problem.  @Lin20 has implemented
 manifold dual contouring on github (in C#); he claims it's the only public
 implementation.
+
+Manifold and Non-Intersecting
+-----------------------------
+The following is crap, do not use:
+
+Watertight and 2-manifold Surface Meshes Using Dual Contouring with Tetrahedral Decomposition of Grid Cubes
+
+2-manifold Surface Meshing Using Dual Contouring with Tetrahedral Decomposition
+
+This 2016 paper claims to solve both problems. They claim the algorithm is
+simple. Limitations: Can't do adaptive meshing. Although the mesh is
+manifold, non-intersecting, and has high quality (non-sliver) triangles,
+it looks like crap. Very stairsteppy where it should be smooth.
+The suggestion is to perform a postprocessing step to smooth the mesh
+(but this introduces defects).
+
+Ugh, tradeoffs. Defect free == looks like crap.
+
+https://www.sciencedirect.com/science/article/pii/S1877705816333422
+
+2017, T. Rashid
+"Multi-Material Mesh Representation of Anatomical Structures for Deep Brain Stimulation Planning"
+
+Another version of the algorithm, this time supports multi-material.
 
 Dual Marching Cubes
 ===================
