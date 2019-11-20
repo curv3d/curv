@@ -19,7 +19,7 @@ Bool_Array : vectorized boolean operators
   Elements are scalars (non-list values).
   Equivalent to xor(a,b) when applied to boolean arrays.
 * `select`: vectorized version of `if`
-* vectorize `bit`. Maybe `bit b = select(b, 1, 0)`.
+* Maybe define `bit b = select(b, 1, 0)`.
 * SubCurv supports bool[2-4] and vectorized boolean ops
 * unit tests for operations on reactive values
   * Right now, reactive values are only generated when compiling a parametric

@@ -165,25 +165,21 @@ struct Is_Fun_Function : public Function
     }
 };
 
-struct Bit_Function : public Legacy_Function
+struct Bit_Prim : public Unary_Bool_Prim
 {
     static const char* name() { return "bit"; }
-    Bit_Function() : Legacy_Function(1,name()) {}
-    Value call(Frame& args) override
+    static Value call(bool b, const Context&)
     {
-        return {double(args[0].to_bool(At_Arg(*this, args)))};
+        return {double(b)};
     }
-    SC_Value sc_call_legacy(SC_Frame& f) const override
+    static SC_Value sc_call(SC_Frame& f, SC_Value arg)
     {
-        auto arg = f[0];
-        if (arg.type != SC_Type::Bool())
-            throw Exception(At_SC_Arg(0, f),
-                stringify(name(),": argument is not a bool"));
         auto result = f.sc_.newvalue(SC_Type::Num());
         f.sc_.out() << "  float "<<result<<" = float("<<arg<<");\n";
         return result;
     }
 };
+using Bit_Function = Unary_Array_Func<Bit_Prim>;
 
 #define UNARY_NUMERIC_FUNCTION(Class_Name,curv_name,c_name,glsl_name) \
 struct Class_Name : public Legacy_Function \

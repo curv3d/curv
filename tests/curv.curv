@@ -545,6 +545,8 @@ assert( bool32_add(
             [true, for (i in 1..31) false])
         == [false, false, true, for (i in 1..29) false] );
 assert((bool32_add(nat_to_bool32 17, nat_to_bool32 15) >> bool32_to_nat) == 32);
+assert((5 >> nat_to_bool32 >> bit) ==
+       [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
 assert(float_to_bool32 0 ==
     [#false,#false,#false,#false,#false,#false,#false,#false,#false,#false,
      #false,#false,#false,#false,#false,#false,#false,#false,#false,#false,

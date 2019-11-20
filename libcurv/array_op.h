@@ -122,6 +122,26 @@ struct Binary_Numeric_Array_Op
     }
 };
 
+// This Prim accepts Bool but not Bool32 arguments in SubCurv.
+struct Unary_Bool_Prim
+{
+    typedef bool scalar_t;
+    static bool unbox(Value a, scalar_t& b, const Context& cx)
+    {
+        if (a.is_bool()) {
+            b = a.to_bool_unsafe();
+            return true;
+        } else
+            return false;
+    }
+    static void sc_check_arg(SC_Value a, const Context& cx)
+    {
+        if (a.type == SC_Type::Bool()) return;
+        throw Exception(cx, "argument must be Bool");
+    }
+};
+
+// This Prim accepts Bool and Bool32 arguments in SubCurv.
 struct Binary_Boolean_Prim
 {
     typedef bool left_t, right_t;
