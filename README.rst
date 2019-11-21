@@ -49,7 +49,7 @@ Getting Started
 Hardware Requirements
 =====================
 Two platforms are currently supported: Linux and Macintosh. I currently test
-on Ubuntu LTS and MacOS 10.11. Windows 10 with WSL might work, but isn't tested.
+on Ubuntu LTS and MacOS 10.11. A Windows 10 port could happen in the future.
 
 Curv uses OpenGL 3.3.
 The recommended configuration is a GPU made by Intel, AMD or Nvidia,
@@ -63,15 +63,17 @@ using a known working GPU driver (see below).
   by the latest driver version from the GPU vendor. Any GPU from 2012 or later
   will work. Some older GPUs may work: check the list of supported hardware
   for the driver.
-* On Windows 10, you should be able to use WSL to run Curv.
-  I'm waiting for a volunteer to confirm this.
-* Raspberry Pi 4 should work, once an OpenGL 3.3 library is available.
-  It has a Broadcom VideoCore 6 (VC6) GPU, and the default Raspian Linux distro
-  has a new GPU driver, the open source Mesa “V3D” driver developed by
-  Eric Anholt at Broadcom. Both of these support Curv. But, at launch,
-  the Pi 4 Raspbian version lacks OpenGL, although the Pi 3 version has it.
-  Raspberry Pi 3 is not supported: it has a Broadcom VC4 GPU,
-  which only supports OpenGL 2.1, and Curv needs OpenGL 3.3.
+* On Windows 10, it might be possible to use WSL to run Curv. WSL 1 has no
+  official GUI or GPU support, but there appear to be 3rd party workarounds.
+  In the future, Microsoft has indicated interest in supporting the GPU
+  in WSL 2. A WIN32 port is possible, but I'd need a volunteer for this.
+* Raspberry Pi isn't supported.
+  * The Raspberry Pi 4 could be supported in the future. Curv uses OpenGL 3.3,
+    which will not be supported. As of Oct 2019, OpenGL ES 3.1 support is
+    "coming soon", and Curv could be modified to use that API instead.
+    https://www.raspberrypi.org/blog/vc4-and-v3d-opengl-drivers-for-raspberry-pi-an-update/
+  * Raspberry Pi 3 won't be supported. At best, it supports OpenGL ES 2.0
+    (not good enough).
 
 * On Linux, you have 3 choices:
 
@@ -87,9 +89,11 @@ using a known working GPU driver (see below).
     (this means: Intel HD Graphics or later).
 
   * An AMD GPU with the open source Mesa driver, version 19.x or later.
-    The AMDGPU-PRO (closed source) driver should work, but I have no testing reports for it.
+    The AMDGPU-PRO (closed source) driver should work, but I have no testing
+    reports for it.
     
-    Mesa version 18.x or earlier has a bug on AMD (`issue #30`_) which prevents some Curv programs from running.
+    Mesa version 18.x or earlier has a bug on AMD (`issue #30`_) which prevents
+    some Curv programs from running.
 
 * If Curv is invoked within a VNC session, then it might not have direct
   access to GPU hardware (a slow software renderer is used instead of the GPU).
@@ -98,15 +102,15 @@ using a known working GPU driver (see below).
 * If Curv is run inside a VM, then it might not have direct access to the GPU.
   You need to ensure that the VM is GPU accelerated.
 
-Why is Curv so picky about GPU drivers and hardware, when [some old 3D software] runs just fine?
-The answer is that old 3D software relies primarily on triangle meshes for representing
-and rendering 3D shapes, whereas Curv uses signed distance fields to represent shapes.
-Signed distance fields are a powerful, hot new technology that is only made practical
-by modern GPUs.
-Curv uses shader programs to render shapes, and uses larger and more complex shader
-programs than [some old 3D software]. This places a heavy and atypical load on
-the GPU driver and hardware, which old hardware and old, outdated driver software
-may not be prepared to deal with.
+Why is Curv so picky about GPU drivers and hardware, when [some old 3D
+software] runs just fine? The answer is that old 3D software relies primarily
+on triangle meshes for representing and rendering 3D shapes, whereas Curv
+uses signed distance fields to represent shapes. Signed distance fields are
+a powerful, hot new technology that is only made practical by modern GPUs.
+Curv uses shader programs to render shapes, and uses larger and more complex
+shader programs than [some old 3D software]. This places a heavy and atypical
+load on the GPU driver and hardware, which old hardware and old, outdated
+driver software may not be prepared to deal with.
 
 .. _`TurboVNC`: https://turbovnc.org/About/Introduction
 .. _`VirtualGL`: https://virtualgl.org/About/Introduction
