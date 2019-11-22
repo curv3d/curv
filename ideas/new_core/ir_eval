@@ -1,0 +1,44 @@
+To compile an expression, we'll call
+    Operation::ir_eval(IR_Frame&) -> IR_Expr
+
+In the case of a function call, or an invocation of a by-value operator,
+we will first evaluate the argument. If it is a constant (and if the function
+position also evaluates to a constant), then we will extract the function
+and argument values and call the function. This is constant folding.
+    func->call(Value arg, Frame&) -> Value
+The result value becomes an IR constant.
+
+There is an abstract frame class, used for the parent_frame_ field of a frame,
+and with the fields needed for dumping a stack trace or populating a Context.
+Evaluation frames and IR frames are subclasses of the abstract frame.
+
+If the function call doesn't have a constant argument, then we can call
+    func->ir_call(IR_Expr, IR_Frame&) -> IR_Expr
+
+For a builtin function, this will:
+* type check the argument.
+* perform function-specific optimizations, if available.
+  Eg, and[true,x] -> x
+* the fallback is to construct an IR_Call node.
+
+For a user function, this will:
+* Type check the argument by compile time evaluation of the parameter pattern.
+  If the pattern match can't be completed due to a predicate that can't be
+  resolved at compile time, that's an error.
+  * Note we are invoking a predicate function on an IR_Expr, using ir_call.
+    The result is expected to be an IR_Constant boolean.
+* If the function is piecewise, we'll check each branch and fail if we can't
+  select a branch at compile time. The function is replaced by the branch we
+  selected. This is actually an inline optimization.
+* Another simple inline optimization: if the body of the user function consists
+  of nothing but a function call, inline that function call.
+* Sophisticated inlining is not part of MVP.
+* The fallback strategy is to construct a call to a type-specialized version
+  of the function that is added to the IR_Module.
+* Sophisticated inlining and partial evaluation is post MVP.
+  Inlining everything creates so much code it can overwhelm the shader compiler.
+  This can also lead to non-termination in case of recursive functions.
+  Not inlining is okay as an MVP implementation because the shader compiler
+  does inlining: However, it misses the opportunity to perform domain specific
+  optimizations that the shader compiler might miss.
+* For MVP, you can't call a recursive function in SubCurv.

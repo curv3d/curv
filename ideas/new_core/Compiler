@@ -1,0 +1,8 @@
+The input to the compiler is either a function, or a record.
+If it's a record, we compile all of the functions referenced by record fields.
+By compiling multiple functions together, any external functions referenced
+by two target functions are compiled once into a shared representation.
+Eg, compile a dist function and a colour function.
+
+The output from the compiler is an IR module, a set of named functions and
+named external data definitions.

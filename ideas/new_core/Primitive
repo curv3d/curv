@@ -45,7 +45,7 @@ struct And_Prim : Binary_Boolean_Prim
     static const Symbol name() { return "and"; }
     static Value zero() { return {true}; }
     static Value call(bool x, bool y) { return {x && y}; }
-    static IR_Value ir_call(IR_Frame& f, IR_Value x, IR_Value y)
+    static IR_Expr ir_call(IR_Frame& f, IR_Expr x, IR_Expr y)
     {
         if (x.type() == IR_Type::Bool())
             return Logical_And_IR(x,y);
@@ -70,7 +70,7 @@ arguments, that's it.
 
 Can I start using the IR interface incrementally with the new Primitives API,
 and have that code hook in to the old SC compiler? Will need 2 way conversion
-between IR_Value and SC_Value. SC_Type will be shared.
+between IR_Expr and SC_Value. SC_Type will be shared.
 
 Big Picture: Switch Languages?
 ------------------------------

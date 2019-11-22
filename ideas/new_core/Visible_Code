@@ -1,0 +1,22 @@
+I want a way to visualize the output of the SubCurv compiler.
+1. The output is high level, and easy to map back to the original code.
+2. The output is low level enough that you can gauge the cost of execution.
+It's for testing the compiler, and for reasoning about the performance of
+programs.
+
+Req#1, the output uses Curv syntax. It is pretty printed. It is close in form
+to the original code. It uses the same identifiers, where available (with an
+affix to remove ambiguities).
+
+Req#2, the output is isomorphic to the final IR code (after optimization)
+which is isomorphic to the GLSL output.
+
+How to obtain this visualization:
+Compile a function or record into an IR module, then dump IR to a stream?
+Using `curv -o ir` from command line.
+Using an `ir_dump` action or function in the REPL.
+
+Code as Data
+------------
+A more ambitious plan is to reify IR, and Curv code in general, as values.
+This is post-MVP for the new compiler.
