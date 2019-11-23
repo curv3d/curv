@@ -26,15 +26,21 @@ struct SC_Type
     enum class Base_Type : short
     {
         Any = -1,
-        Bool = 0,
-        Bool32 = 1,
-        Num =  2,
-        Vec2 = 3,
-        Vec3 = 4,
-        Vec4 = 5,
-        Mat2 = 6,
-        Mat3 = 7,
-        Mat4 = 8
+        Bool,
+        Bool2,
+        Bool3,
+        Bool4,
+        Bool32,
+        Bool2x32,
+        Bool3x32,
+        Bool4x32,
+        Num,
+        Vec2,
+        Vec3,
+        Vec4,
+        Mat2,
+        Mat3,
+        Mat4
     };
 
     // 4 shorts == 64 bit representation
@@ -56,8 +62,21 @@ struct SC_Type
         dim2_(dim2)
     {}
     static constexpr inline SC_Type Any() { return {Base_Type::Any}; }
-    static constexpr inline SC_Type Bool() { return {Base_Type::Bool}; }
-    static constexpr inline SC_Type Bool32() { return {Base_Type::Bool32}; }
+    static constexpr inline SC_Type Bool(unsigned n = 1)
+    {
+        assert(n >= 1 && n <= 4);
+        return {Base_Type(int(Base_Type::Bool) + n-1)};
+    }
+    static constexpr inline SC_Type Bool32(unsigned n=1)
+    {
+        assert(n >= 1 && n <= 4);
+        return {Base_Type(int(Base_Type::Bool32) + n-1)};
+    }
+    static constexpr inline SC_Type Num_Or_Vec(unsigned n = 1)
+    {
+        assert(n >= 1 && n <= 4);
+        return {Base_Type(int(Base_Type::Num) + n-1)};
+    }
     static constexpr inline SC_Type Num(unsigned dim1 = 0, unsigned dim2 = 0)
     {
         return {Base_Type::Num, dim1, dim2};
@@ -76,12 +95,32 @@ struct SC_Type
     {
         return sc_base_type_info_array[int(base_type_) + 1];
     }
+    inline bool is_bool() const
+    {
+        return base_type_ >= Base_Type::Bool
+            && base_type_ <= Base_Type::Bool4;
+    }
+    inline bool is_bool32() const
+    {
+        return base_type_ >= Base_Type::Bool32
+            && base_type_ <= Base_Type::Bool4x32;
+    }
+    inline bool is_bool_or_bool32() const
+    {
+        return base_type_ >= Base_Type::Bool
+            && base_type_ <= Base_Type::Bool4x32;
+    }
     // is a number, a vector, or a matrix
-    inline bool is_numeric() const { return base_type_ >= Base_Type::Num; }
+    inline bool is_numeric() const
+    {
+        return base_type_ >= Base_Type::Num
+            && base_type_ <= Base_Type::Mat4;
+    }
     inline bool is_list() const
     {
-        return base_type_ == Base_Type::Bool32
-            || base_type_ >= Base_Type::Vec2
+        return (base_type_ >= Base_Type::Bool32
+                && base_type_ <= Base_Type::Bool4x32)
+            || (base_type_ >= Base_Type::Vec2 && base_type_ <= Base_Type::Mat4)
             || rank_ > 0;
     }
     // number of dimensions: 0 means a scalar (Num or Bool or Any)
@@ -89,7 +128,7 @@ struct SC_Type
     {
         return rank_ + base_info().rank;
     }
-    // first dimension, if type is a list
+    // First dimension, if type is a list, or 1 if type is a scalar.
     inline unsigned count() const
     {
         if (rank_)
@@ -98,6 +137,15 @@ struct SC_Type
     }
     // If this is an array, strip one dimension off of the type.
     SC_Type abase() const;
+    inline bool is_any_vec() const
+    {
+        return rank_ == 0 && (
+            (base_type_ >= Base_Type::Bool2 && base_type_ <= Base_Type::Bool4)
+            || (base_type_ >= Base_Type::Bool2x32
+                && base_type_ <= Base_Type::Bool4x32)
+            || (base_type_ >= Base_Type::Vec2 && base_type_ <= Base_Type::Vec4)
+        );
+    }
     inline bool is_vec() const
     {
         return rank_ == 0

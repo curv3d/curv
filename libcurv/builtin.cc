@@ -461,7 +461,7 @@ struct Min_Function : public Legacy_Function
     }
 };
 
-struct And_Prim : public Binary_Boolean_Prim
+struct And_Prim : public Binary_Bool_Or_Bool32_Prim
 {
     static const char* name() { return "and"; }
     static Value zero() { return {true}; }
@@ -470,14 +470,14 @@ struct And_Prim : public Binary_Boolean_Prim
     {
         auto result = f.sc_.newvalue(x.type);
         f.sc_.out() << "  " << x.type << " " << result << " = " << x
-            << (x.type == SC_Type::Bool32() ? "&" : "&&")
+            << (x.type.is_bool32() ? "&" : "&&")
             << y << ";\n";
         return result;
     }
 };
 using And_Function = Monoid_Func<And_Prim>;
 
-struct Or_Prim : public Binary_Boolean_Prim
+struct Or_Prim : public Binary_Bool_Or_Bool32_Prim
 {
     static const char* name() { return "or"; }
     static Value zero() { return {false}; }
@@ -486,14 +486,14 @@ struct Or_Prim : public Binary_Boolean_Prim
     {
         auto result = f.sc_.newvalue(x.type);
         f.sc_.out() << "  " << x.type << " " << result << " = " << x
-            << (x.type == SC_Type::Bool32() ? "|" : "||")
+            << (x.type.is_bool32() ? "|" : "||")
             << y << ";\n";
         return result;
     }
 };
 using Or_Function = Monoid_Func<Or_Prim>;
 
-struct Xor_Prim : public Binary_Boolean_Prim
+struct Xor_Prim : public Binary_Bool_Or_Bool32_Prim
 {
     static const char* name() { return "xor"; }
     static Value zero() { return {false}; }
@@ -502,7 +502,7 @@ struct Xor_Prim : public Binary_Boolean_Prim
     {
         auto result = f.sc_.newvalue(x.type);
         f.sc_.out() << "  " << x.type << " " << result << " = " << x
-            << (x.type == SC_Type::Bool32() ? "^" : "!=")
+            << (x.type.is_bool32() ? "^" : "!=")
             << y << ";\n";
         return result;
     }
@@ -621,7 +621,7 @@ struct Nat_To_Bool32_Function : public Function
             auto type = SC_Type::Bool32();
             auto result = f.sc_.newvalue(type);
             f.sc_.out() << "  " << type << " " << result << " = "
-                << n << ";\n";
+                << n << "u;\n";
             return result;
         }
         else {
@@ -639,7 +639,8 @@ struct Bool32_To_Float_Prim : public Unary_Bool32_Prim
     }
     static SC_Value sc_call(SC_Frame& f, SC_Value x)
     {
-        auto result = f.sc_.newvalue(SC_Type::Num());
+        unsigned count = x.type == SC_Type::Bool32() ? 1 : x.type.count();
+        auto result = f.sc_.newvalue(SC_Type::Num_Or_Vec(count));
         f.sc_.out() << "  " << result.type << " " << result
             << " = uintBitsToFloat(" << x << ");\n";
         return result;
@@ -656,7 +657,7 @@ struct Float_To_Bool32_Prim : public Unary_Num_Prim
     }
     static SC_Value sc_call(SC_Frame& f, SC_Value x)
     {
-        auto result = f.sc_.newvalue(SC_Type::Bool32());
+        auto result = f.sc_.newvalue(SC_Type::Bool32(x.type.count()));
         f.sc_.out() << "  " << result.type << " " << result
             << " = floatBitsToUint(" << x << ");\n";
         return result;

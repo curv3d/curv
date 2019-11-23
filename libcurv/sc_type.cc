@@ -14,7 +14,13 @@ SC_Base_Type_Info sc_base_type_info_array[] =
 {
     {"Any",   0, 1, 1},
     {"bool",  0, 1, 1},
+    {"bvec2", 1, 2, 1},
+    {"bvec3", 1, 3, 1},
+    {"bvec4", 1, 4, 1},
     {"uint",  1, 32, 1},
+    {"uvec2", 2, 2, 32},
+    {"uvec3", 2, 3, 32},
+    {"uvec4", 2, 4, 32},
     {"float", 0, 1, 1},
     {"vec2",  1, 2, 1},
     {"vec3",  1, 3, 1},
@@ -67,8 +73,14 @@ sc_type_of(Value v)
                 }
             }
             else if (ty == SC_Type::Bool()) {
+                if (n >= 2 && n <= 4)
+                    return SC_Type::Bool(n);
                 if (n == 32)
                     return SC_Type::Bool32();
+            }
+            else if (ty == SC_Type::Bool32()) {
+                if (n >= 2 && n <= 4)
+                    return SC_Type::Bool32(n);
             }
         }
     }
@@ -93,6 +105,11 @@ SC_Type::abase() const
             return Num();
         if (base_type_ == Base_Type::Bool32)
             return Bool();
+        if (base_type_ >= Base_Type::Bool2 && base_type_ <= Base_Type::Bool4)
+            return Bool();
+        if (base_type_ >= Base_Type::Bool2x32
+            && base_type_ <= Base_Type::Bool4x32)
+            return Bool32();
         return *this;
     case 1:
         return {base_type_};

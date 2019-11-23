@@ -241,7 +241,14 @@ sc_put_value(Value val, SC_Type ty, const At_SC_Phrase& cx, std::ostream& out)
     else if (ty == SC_Type::Bool32()) {
         Shared<const List> bl = val.to<const List>(cx);
         unsigned bn = bool32_to_nat(bl, cx);
-        out << bn;
+        out << bn << "u";
+    }
+    else if (ty.is_bool_or_bool32()) {
+        Shared<const List> list = val.to<const List>(cx);
+        list->assert_size(ty.count(), cx);
+        out << ty << "(";
+        sc_put_list(*list, ty.abase(), cx, out);
+        out << ")";
     }
     else if (ty.is_vec()) {
         auto list = val.to<List>(cx);
@@ -428,11 +435,11 @@ SC_Value Power_Expr::sc_eval(SC_Frame& f) const
 
 // Evaluate an expression to a constant at SC compile time,
 // or abort if it isn't a constant.
-Value sc_constify(Operation& op, SC_Frame& f)
+Value sc_constify(const Operation& op, SC_Frame& f)
 {
-    if (auto c = dynamic_cast<Constant*>(&op))
+    if (auto c = dynamic_cast<const Constant*>(&op))
         return c->value_;
-    else if (auto dot = dynamic_cast<Dot_Expr*>(&op)) {
+    else if (auto dot = dynamic_cast<const Dot_Expr*>(&op)) {
         Value base = sc_constify(*dot->base_, f);
         if (dot->selector_.id_ != nullptr)
             return base.at(dot->selector_.id_->symbol_,
@@ -441,20 +448,20 @@ Value sc_constify(Operation& op, SC_Frame& f)
             throw Exception(At_SC_Phrase(dot->selector_.string_->syntax_, f),
                 "not an identifier");
     }
-    else if (auto ref = dynamic_cast<Nonlocal_Data_Ref*>(&op))
+    else if (auto ref = dynamic_cast<const Nonlocal_Data_Ref*>(&op))
         return f.nonlocals_->at(ref->slot_);
-    else if (auto ref = dynamic_cast<Symbolic_Ref*>(&op)) {
+    else if (auto ref = dynamic_cast<const Symbolic_Ref*>(&op)) {
         auto b = f.nonlocals_->dictionary_->find(ref->name_);
         assert(b != f.nonlocals_->dictionary_->end());
         return f.nonlocals_->get(b->second);
     }
-    else if (auto list = dynamic_cast<List_Expr*>(&op)) {
+    else if (auto list = dynamic_cast<const List_Expr*>(&op)) {
         Shared<List> listval = List::make(list->size());
         for (size_t i = 0; i < list->size(); ++i) {
             (*listval)[i] = sc_constify(*(*list)[i], f);
         }
         return {listval};
-    } else if (auto neg = dynamic_cast<Negative_Expr*>(&op)) {
+    } else if (auto neg = dynamic_cast<const Negative_Expr*>(&op)) {
         Value arg = sc_constify(*neg->arg_, f);
         if (arg.is_num())
             return Value(-arg.to_num_unsafe());
@@ -756,34 +763,42 @@ SC_Value Symbolic_Ref::sc_eval(SC_Frame& f) const
 
 SC_Value List_Expr_Base::sc_eval(SC_Frame& f) const
 {
-    if (this->size() == 2) {
-        auto e1 = sc_eval_expr(f, *(*this)[0], SC_Type::Num());
-        auto e2 = sc_eval_expr(f, *(*this)[1], SC_Type::Num());
-        SC_Value result = f.sc_.newvalue(SC_Type::Vec(2));
-        f.sc_.out() << "  vec2 "<<result<<" = vec2("<<e1<<","<<e2<<");\n";
+    if (this->size() >= 2 && this->size() <= 4) {
+        SC_Value elem[4];
+        for (unsigned i = 0; i < this->size(); ++i) {
+            elem[i] = sc_eval_op(f, *this->at(i));
+            SC_Type etype = elem[i].type;
+            if (etype != SC_Type::Num() && etype != SC_Type::Bool()
+                && etype != SC_Type::Bool32())
+            {
+                throw Exception(At_SC_Phrase(this->at(0)->syntax_, f),
+                    "element of list must have type Num, Bool or Bool32");
+            }
+            if (i > 0 && etype != elem[0].type) {
+                throw Exception(At_SC_Phrase(this->at(i)->syntax_, f),
+                    "elements of list must have uniform type");
+            }
+        }
+        SC_Type atype;
+        if (elem[0].type == SC_Type::Num())
+            atype = SC_Type::Vec(this->size());
+        else if (elem[0].type == SC_Type::Bool())
+            atype = SC_Type::Bool(this->size());
+        else if (elem[0].type == SC_Type::Bool32())
+            atype = SC_Type::Bool32(this->size());
+        SC_Value result = f.sc_.newvalue(atype);
+        f.sc_.out() << "  " << atype << " " << result << " = " << atype << "(";
+        bool first = true;
+        for (unsigned i = 0; i < this->size(); ++i) {
+            if (!first) f.sc_.out() << ",";
+            first = false;
+            f.sc_.out() << elem[i];
+        }
+        f.sc_.out() << ");\n";
         return result;
     }
-    if (this->size() == 3) {
-        auto e1 = sc_eval_expr(f, *(*this)[0], SC_Type::Num());
-        auto e2 = sc_eval_expr(f, *(*this)[1], SC_Type::Num());
-        auto e3 = sc_eval_expr(f, *(*this)[2], SC_Type::Num());
-        SC_Value result = f.sc_.newvalue(SC_Type::Vec(3));
-        f.sc_.out() << "  vec3 "<<result<<" = vec3("
-            <<e1<<","<<e2<<","<<e3<<");\n";
-        return result;
-    }
-    if (this->size() == 4) {
-        auto e1 = sc_eval_expr(f, *(*this)[0], SC_Type::Num());
-        auto e2 = sc_eval_expr(f, *(*this)[1], SC_Type::Num());
-        auto e3 = sc_eval_expr(f, *(*this)[2], SC_Type::Num());
-        auto e4 = sc_eval_expr(f, *(*this)[3], SC_Type::Num());
-        SC_Value result = f.sc_.newvalue(SC_Type::Vec(4));
-        f.sc_.out() << "  vec4 "<<result<<" = vec4("
-            <<e1<<","<<e2<<","<<e3<<","<<e4<<");\n";
-        return result;
-    }
-    throw Exception(At_SC_Phrase(syntax_, f),
-        "this list constructor is not supported");
+    Value val = sc_constify(*this, f);
+    return sc_eval_const(f, val, *syntax_);
 }
 
 SC_Value Not_Expr::sc_eval(SC_Frame& f) const
@@ -955,8 +970,9 @@ SC_Value Greater_Or_Equal_Expr::sc_eval(SC_Frame& f) const
 
 SC_Value sc_vec_element(SC_Frame& f, SC_Value vec, int i)
 {
-    SC_Value r = f.sc_.newvalue(SC_Type::Num());
-    f.sc_.out() << "  float " << r << " = " << vec << "[" << i << "];\n";
+    SC_Value r = f.sc_.newvalue(vec.type.abase());
+    f.sc_.out() << "  " << r.type << " " << r << " = "
+        << vec << "[" << i << "];\n";
     return r;
 }
 

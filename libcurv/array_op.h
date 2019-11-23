@@ -136,13 +136,13 @@ struct Unary_Bool_Prim
     }
     static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        if (a.type == SC_Type::Bool()) return;
+        if (a.type.is_bool()) return;
         throw Exception(cx, "argument must be Bool");
     }
 };
 
 // This Prim accepts Bool and Bool32 arguments in SubCurv.
-struct Binary_Boolean_Prim
+struct Binary_Bool_Or_Bool32_Prim
 {
     typedef bool left_t, right_t;
     static bool unbox_left(Value a, left_t& b, const Context&)
@@ -163,28 +163,45 @@ struct Binary_Boolean_Prim
     }
     static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        if (a.type == SC_Type::Bool()) return;
-        if (a.type == SC_Type::Bool32()) return;
-        throw Exception(cx, "arguments must be Bool or Bool32");
+        if (a.type.is_bool_or_bool32()) return;
+        throw Exception(cx, "argument must be Bool or Bool32");
     }
     static void sc_check_args(
         SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
     {
-        if (a.type == SC_Type::Bool()) {
-            if (b.type == SC_Type::Bool())
+        if (a.type.is_bool()) {
+            if (b.type.is_bool()) {
+                if (a.type.count() != b.type.count()
+                    && a.type.count() > 1 && b.type.count() > 1)
+                {
+                    throw Exception(cx, stringify(
+                        "can't combine lists of different sizes (",
+                        a.type.count(), " and ", b.type.count(), ")"));
+                }
                 return;
-            if (b.type == SC_Type::Bool32()) {
+            }
+            else if (b.type.is_bool32()) {
                 // TODO: convert a to Bool32
             }
         }
-        else if (a.type == SC_Type::Bool32()) {
-            if (b.type == SC_Type::Bool32())
+        else if (a.type.is_bool32()) {
+            if (b.type.is_bool32()) {
+                if (a.type.count() != b.type.count()
+                    && a.type.count() > 1 && b.type.count() > 1)
+                {
+                    throw Exception(cx, stringify(
+                        "can't combine lists of different sizes (",
+                        a.type.count(), " and ", b.type.count(), ")"));
+                }
                 return;
-            if (b.type == SC_Type::Bool()) {
+            }
+            if (b.type.is_bool()) {
                 // TODO: convert b to Bool32
             }
         }
-        throw Exception(cx, "arguments must be Bool or Bool32");
+        throw Exception(cx, stringify(
+            "arguments must be Bool or Bool32 (got ",
+            a.type, " and ", b.type, " instead)"));
     }
 };
 
@@ -201,8 +218,8 @@ struct Unary_Num_Prim
     }
     static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        if (a.type != SC_Type::Num())
-            throw Exception(cx, "argument must be a Num");
+        if (!a.type.is_numeric())
+            throw Exception(cx, "argument must be a Num or Vec");
     }
 };
 
@@ -227,7 +244,7 @@ struct Shift_Prim
     static void sc_check_args(
         SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
     {
-        if (a.type != SC_Type::Bool32()) {
+        if (!a.type.is_bool32()) {
             throw Exception(At_Index(0, cx),
                 stringify("expected argument of type Bool32, got ", a.type));
         }
@@ -258,8 +275,8 @@ struct Unary_Bool32_Prim : public Bool32_Prim
     }
     static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        if (a.type != SC_Type::Bool32())
-            throw Exception(cx, "argument must be a Bool32");
+        if (!a.type.is_bool32())
+            throw Exception(cx, "argument must be a Bool32 or list of Bool32");
     }
 };
 struct Binary_Bool32_Prim : public Bool32_Prim
@@ -277,11 +294,11 @@ struct Binary_Bool32_Prim : public Bool32_Prim
     static void sc_check_args(
         SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
     {
-        if (a.type != SC_Type::Bool32()) {
+        if (!a.type.is_bool32()) {
             throw Exception(At_Index(0, cx),
                 stringify("expected argument of type Bool32, got ", a.type));
         }
-        if (b.type != SC_Type::Bool32()) {
+        if (!b.type.is_bool32()) {
             throw Exception(At_Index(1, cx),
                 stringify("expected argument of type Bool32, got ", b.type));
         }
@@ -339,7 +356,7 @@ struct Binary_Array_Op
             // generate a rank 1 array at GPU runtime, for now at least.
             // For a single Vec, this inline expansion of the loop is good.
             auto arg = sc_eval_op(f, argx);
-            if (arg.type.is_vec()) {
+            if (arg.type.is_any_vec()) {
                 auto first = sc_vec_element(f, arg, 0);
                 for (unsigned i = 1; i < arg.type.count(); ++i) {
                     auto second = sc_vec_element(f, arg, 1);
