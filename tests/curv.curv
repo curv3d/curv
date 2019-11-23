@@ -540,11 +540,14 @@ assert( xor[[true,true,false,false],[true,false,true,false]]
         == [false,true,true,false] );
 assert( lshift[[true,true,false],1] == [#false,#true,#true] );
 assert( rshift[[true,false,true,false],1] == [#false,#true,#false,#false] );
-assert( bool32_add(
+assert( bool32_sum(
             [true, true, for (i in 1..30) false],
             [true, for (i in 1..31) false])
         == [false, false, true, for (i in 1..29) false] );
-assert((bool32_add(nat_to_bool32 17, nat_to_bool32 15) >> bool32_to_nat) == 32);
+let
+    bits = nat_to_bool32
+in assert( bool32_product[bits 7, bits 5] == bits 35 );
+assert((bool32_sum(nat_to_bool32 17, nat_to_bool32 15) >> bool32_to_nat) == 32);
 assert((5 >> nat_to_bool32 >> bit) ==
        [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
 assert(float_to_bool32 0 ==
@@ -590,7 +593,8 @@ in sc_test {
             xor[bits 0xFF00FF00, bits 0xFF0000FF] == bits 0x0000FFFF;
     "lshift": _-> lshift[bits 0xFF00FF00, 8] == bits 0x00FF0000;
     "rshift": _-> rshift[bits 0xFF00FF00, 8] == bits 0x00FF00FF;
-    "bool32_add": _-> bool32_add[bits 42, bits 1000] == bits 1042;
+    "bool32_sum": _-> bool32_sum[bits 42, bits 1000] == bits 1042;
+    "bool32_product": _-> bool32_product[bits 7, bits 5] == bits 35;
     "bool32_to_float": _-> bool32_to_float(bits 1065353216) == 1;
     "float_to_bool32": _-> float_to_bool32 1 == bits 1065353216;
 };

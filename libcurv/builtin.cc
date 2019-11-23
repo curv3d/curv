@@ -541,9 +541,14 @@ struct Rshift_Prim : public Shift_Prim
 };
 using Rshift_Function = Binary_Array_Func<Rshift_Prim>;
 
-struct Bool32_Add_Prim : public Binary_Bool32_Prim
+struct Bool32_Sum_Prim : public Binary_Bool32_Prim
 {
-    static const char* name() { return "bool32_add"; }
+    static const char* name() { return "bool32_sum"; }
+    static Value zero()
+    {
+        static Value z = {nat_to_bool32(0)};
+        return z;
+    }
     static Value call(unsigned a, unsigned b, const Context&)
     {
         return {nat_to_bool32(a + b)};
@@ -556,7 +561,29 @@ struct Bool32_Add_Prim : public Binary_Bool32_Prim
         return result;
     }
 };
-using Bool32_Add_Function = Binary_Array_Func<Bool32_Add_Prim>;
+using Bool32_Sum_Function = Monoid_Func<Bool32_Sum_Prim>;
+
+struct Bool32_Product_Prim : public Binary_Bool32_Prim
+{
+    static const char* name() { return "bool32_product"; }
+    static Value zero()
+    {
+        static Value z = {nat_to_bool32(1)};
+        return z;
+    }
+    static Value call(unsigned a, unsigned b, const Context&)
+    {
+        return {nat_to_bool32(a * b)};
+    }
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
+    {
+        auto result = f.sc_.newvalue(x.type);
+        f.sc_.out() << "  " << x.type << " " << result << " = "
+            << x << " * " << y << ";\n";
+        return result;
+    }
+};
+using Bool32_Product_Function = Monoid_Func<Bool32_Product_Prim>;
 
 struct Bool32_To_Nat_Function : public Function
 {
@@ -1229,7 +1256,8 @@ builtin_namespace()
     FUNCTION(Xor_Function),
     FUNCTION(Lshift_Function),
     FUNCTION(Rshift_Function),
-    FUNCTION(Bool32_Add_Function),
+    FUNCTION(Bool32_Sum_Function),
+    FUNCTION(Bool32_Product_Function),
     FUNCTION(Bool32_To_Nat_Function),
     FUNCTION(Nat_To_Bool32_Function),
     FUNCTION(Bool32_To_Float_Function),

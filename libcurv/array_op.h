@@ -291,6 +291,11 @@ struct Binary_Bool32_Prim : public Bool32_Prim
     {
         return unbox_bool32(a, b, At_Index(1, cx));
     }
+    static void sc_check_arg(SC_Value a, const Context& cx)
+    {
+        if (!a.type.is_bool32())
+            throw Exception(cx, "argument must be a Bool32 or list of Bool32");
+    }
     static void sc_check_args(
         SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
     {

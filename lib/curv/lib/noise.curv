@@ -1,5 +1,5 @@
 let
-plus = bool32_add;
+plus = bool32_sum;
 bits = nat_to_bool32;
 in
 {
