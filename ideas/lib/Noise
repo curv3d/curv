@@ -37,12 +37,6 @@ operations, then use intBitsToFloat. Requires OpenGL 3.3 or OpenGL ES 3.0.
   * otherwise, int ops are generally the same speed as float ops.
   * but there may be more float arithmetic units than int arith units.
 
-Idea: new Curv primitive: fhash(num) maps an arbitrary float to another
-float in the range [0..1], using all of the bits in the input to construct
-the result. Essentially, it just XORs the mantissa bits with the non-mantissa
-bits. In GLSL, 3 integer ops, plus a fract() call.
-* It's useless by itself. I still need some non-obvious float hash code.
-
 Olano, 2005, https://www.csee.umbc.edu/~olano/papers/mNoise.pdf
     Improvements to Perlin noise on the GPU.
     Discusses the BBS or blumblumshub hash.

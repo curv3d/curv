@@ -12,16 +12,7 @@
 
 namespace curv {
 
-const char glsl_header[] =
-   "float fhash(float f)\n"
-   "{\n"
-   "    uint u = floatBitsToUint(f);\n"
-   "    u = ((u & 0x007FFFFFu)\n"
-   "        | 0x3F800000u)\n"
-   "        ^ (u >> 9);\n"
-   "    float f2 = uintBitsToFloat(u);\n"
-   "    return fract(f2);\n"
-   "}\n";
+const char glsl_header[] = "";
 
 void glsl_function_export(const Shape_Program& shape, std::ostream& out)
 {

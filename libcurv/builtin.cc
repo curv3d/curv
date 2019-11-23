@@ -239,24 +239,6 @@ UNARY_NUMERIC_FUNCTION(Acosh_Function, acosh, acosh, acosh)
 UNARY_NUMERIC_FUNCTION(Asinh_Function, asinh, asinh, asinh)
 UNARY_NUMERIC_FUNCTION(Atanh_Function, atanh, atanh, atanh)
 
-double fhash(double f)
-{
-    union {
-        double f;
-        uint64_t u;
-    } data;
-    data.f = f;
-    data.u =
-        ((data.u & 0x000F'FFFF'FFFF'FFFF) // strip sign bit and exponent
-        | 0x3FF0'0000'0000'0000) // set sign to 0 and exponent to 0
-        ^ (data.u >> 12) // xor exponent and sign on top of mantissa
-        ;
-    // If f is normalized, then 1 <= data.f < 2.
-    // If f is denormalized, then 0 <= data.f < 1. This includes f==0.
-    return data.f - floor(data.f);
-}
-UNARY_NUMERIC_FUNCTION(Fhash_Function, fhash, fhash, fhash)
-
 struct Atan2_Function : public Legacy_Function
 {
     static const char* name() { return "atan2"; }
@@ -1227,7 +1209,6 @@ builtin_namespace()
     FUNCTION(Trunc_Function),
     FUNCTION(Round_Function),
     FUNCTION(Frac_Function),
-    FUNCTION(Fhash_Function),
     FUNCTION(Sin_Function),
     FUNCTION(Cos_Function),
     FUNCTION(Tan_Function),
