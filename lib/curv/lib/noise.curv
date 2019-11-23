@@ -1,0 +1,45 @@
+let
+plus = bool32_add;
+bits = nat_to_bool32;
+in
+{
+// The 'rand' functions hash one or more arbitrary numbers
+// onto one or more uniformly distributed random numbers between 0 and 1.
+rand2x2 xy =
+    // Marc Olano, 2010, GPU Random Numbers via the Tiny Encryption Algorithm
+    // https://www.csee.umbc.edu/~olano/papers/GPUTEA.pdf
+    // https://umbcgaim.wordpress.com/2010/07/01/gpu-random-numbers/
+    // High quality output, scale independent.
+    let v = float_to_bool32 xy;
+    in do
+    // two rounds of TEA hashing
+    v[X] := v[X] `plus` xor[
+                v[Y] `lshift` 4 `plus` bits 0xA341316C,
+                v[Y] `plus` bits 0x9E3779B9,
+                v[Y] `rshift` 5 `plus` bits 0xC8013EA4
+            ];
+    v[Y] := v[Y] `plus` xor[
+                v[X] `lshift` 4 `plus` bits 0xAD90777D,
+                v[X] `plus` bits 0x9E3779B9,
+                v[X] `rshift` 5 `plus` bits 0x7E95761E
+            ];
+    v[X] := v[X] `plus` xor[
+                v[Y] `lshift` 4 `plus` bits 0xA341316C,
+                v[Y] `plus` bits 0x3C6EF372,
+                v[Y] `rshift` 5 `plus` bits 0xC8013EA4
+            ];
+    v[Y] := v[Y] `plus` xor[
+                v[X] `lshift` 4 `plus` bits 0xAD90777D,
+                v[X] `plus` bits 0x3C6EF372,
+                v[X] `rshift` 5 `plus` bits 0x7E95761E
+            ];
+    // get rid of NaN and infinity
+    v := v `and` [bits 0x007FFFFF,  // strip sign bit and exponent
+                  bits 0x007FFFFF]
+           `or` [bits 0x3F800000,   // set sign and exponent to 0
+                 bits 0x3F800000]
+           `xor` (v `rshift` 12);   // xor exponent and sign onto mantissa
+    // If v was normalized, then now 1 <= v < 2.
+    // If v was denormalized, then now 0 <= v < 1. This includes v==0.
+    in v >> bool32_to_float >> frac;
+}
