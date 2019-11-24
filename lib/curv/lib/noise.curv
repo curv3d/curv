@@ -3,8 +3,11 @@ plus = bool32_sum;
 bits = nat_to_bool32;
 in
 {
-// The 'rand' functions hash one or more arbitrary numbers
-// onto one or more uniformly distributed random numbers between 0 and 1.
+// The 'rand' functions hash one or more arbitrary numbers onto one or more
+// uniformly distributed random numbers in the range 0 <= x < 1.
+// These random numbers are meant to be high quality (no visual artifacts for
+// typical graphics operations), scale independent, and the same results across
+// different GPUs.
 
 rand2x2 xy =
     // Marc Olano, 2010, GPU Random Numbers via the Tiny Encryption Algorithm
@@ -34,15 +37,12 @@ rand2x2 xy =
                 v[X] `plus` bits 0x3C6EF372,
                 v[X] `rshift` 5 `plus` bits 0x7E95761E
             ];
-    // get rid of NaN and infinity
+    // Normalize to the range 1.0 <= v < 2.0:
     v := v `and` [bits 0x007FFFFF,  // strip sign bit and exponent
                   bits 0x007FFFFF]
            `or` [bits 0x3F800000,   // set sign and exponent to 0
-                 bits 0x3F800000]
-           `xor` (v `rshift` 12);   // xor exponent and sign onto mantissa
-    // If v was normalized, then now 1 <= v < 2.
-    // If v was denormalized, then now 0 <= v < 1. This includes v==0.
-    in v >> bool32_to_float >> frac;
+                 bits 0x3F800000];
+    in bool32_to_float(v) - 1;
 
 rand2x1 xy =
     // See rand2x2
@@ -64,8 +64,6 @@ rand2x1 xy =
                 v[Y] `rshift` 5 `plus` bits 0xC8013EA4
             ];
     in let
-    x = v[X] `and` bits 0x007FFFFF
-           `or` bits 0x3F800000
-           `xor` (v[X] `rshift` 12);
-    in x >> bool32_to_float >> frac;
+    x = v[X] `and` bits 0x007FFFFF `or` bits 0x3F800000;
+    in bool32_to_float(x) - 1;
 }

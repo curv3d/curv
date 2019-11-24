@@ -22,14 +22,16 @@ Solutions:
 
 random(seed): A good white-noise hash function for the GPU
 ----------------------------------------------------------
-To hash a 32 bit float to a uniformly distributed random number in [0..1].
+To hash a 32 bit float to a uniformly distributed random number in [0..1).
 
-Using standard float numeric operations seems to result in hashes that only
-work well in a restricted range--you need different magic numbers for different
-ranges.
+Old code uses trig and exponential operations for hashing, because bitwise
+operations aren't available in OpenGL 2.1 or WebGL 1. The resulting hashes
+only work well in a restricted range--you need different magic numbers for
+different ranges.
 
-To work well for most floats, I think we would use floatBitsToInt, use int
-operations, then use intBitsToFloat. Requires OpenGL 3.3 or OpenGL ES 3.0.
+For high quality, scale independent hashing, you need to convert the float
+to a bit array (floatBitsToUint), and use bitwise operators. This requires
+OpenGL 3.3, OpenGL ES 3.0 or WebGL 2. That's what I'll do.
 * Brian Sharpe says "Modern cards can also perform integer hashing which
   in some cases produce superior results but will often still run slower than
   floating point operations."
@@ -37,16 +39,18 @@ operations, then use intBitsToFloat. Requires OpenGL 3.3 or OpenGL ES 3.0.
   * otherwise, int ops are generally the same speed as float ops.
   * but there may be more float arithmetic units than int arith units.
 
+Marc Olano, TEA2 hashing
+------------------------
 Olano, 2005, https://www.csee.umbc.edu/~olano/papers/mNoise.pdf
     Improvements to Perlin noise on the GPU.
-    Discusses the BBS or blumblumshub hash.
+    Discusses the BBS or blumblumshub hash. -- now obsolete
     Note, Olano *invented the shader*.
 
 S Tzeng, 2008, Parallel White Noise Generation on a GPU via Cryptographic Hash
 http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.650.2121&rep=rep1&type=pdf
     They use MD5 with 64 rounds (!), and demonstrate that the output has
     excellent statistical properties. The output gets worse if you reduce
-    to 32 or 16 rounds. This sounds very slow.
+    to 32 or 16 rounds. This is very slow.
 
 Olano, 2010, GPU Random Numbers via the Tiny Encryption Algorithm
 https://www.csee.umbc.edu/~olano/papers/GPUTEA.pdf
@@ -65,15 +69,18 @@ https://umbcgaim.wordpress.com/2010/07/01/gpu-random-numbers/
     v.y += ((v.x<<4u)+0xAD90777Du)^(v.x+0x3C6EF372u)^((v.x>>5u)+0x7E95761Eu);
 Note: 2 32 bit inputs, 2 outputs, and 32 int operations.
 
+Other Hashes
+------------
 https://github.com/BrianSharpe/GPU-Noise-Lib/blob/master/gpu_noise_lib.glsl
     Implements the FAST_32 hash.
     Also implements BBS, and SGPP from Ashima.
     http://briansharpe.wordpress.com/2011/11/15/a-fast-and-simple-32bit-floating-point-hash-function/
     Looks good, esp. for generating lots of numbers in one call.
-    But it looks range restricted.
+    Uses + - * / floor fract, so results should be portable across GPUs.
+    It is scale sensitive.
 
 http://github.com/ashima/webgl-noise
-    Much referenced.
+    Much referenced. Old-style scale-dependent hashing.
 
 https://github.com/Auburns/FastNoiseSIMD
     SIMD C++ noise library.
@@ -89,6 +96,105 @@ So I should be able to use this code fairly directly.
   much of that code actually looks bad (roll your own bad code rather than use
   good code written by experts). Eg, dot+sin hash is low quality, Bob Jenkins
   hash is way too expensive on a GPU, and has needlessly high quality.
+
+Alexis Naveros hash functions
+-----------------------------
+http://amindforeverprogramming.blogspot.com/2013/07/random-floats-in-glsl-330.html
+
+Lee C uses one round of Bob Jenkin's OAT hash. That has to be worse than
+2 rounds of TEA. He doesn't properly test the output, but in the comments,
+Alexis Naveros complains about visual artifacts, and provides a better
+set of hash functions:
+
+    Note that the hash functions only need to care about the lowest 23 bits,
+    with a focus on good avalanche behavior in the higher bits of that range.
+
+    Here's what I use:
+
+    uint hashInt1D( uint x )
+    {
+    x += x >> 11;
+    x ^= x << 7;
+    x += x >> 15;
+    x ^= x << 5;
+    x += x >> 12;
+    x ^= x << 9;
+    return x;
+    }
+
+    uint hashInt2D( uint x, uint y )
+    {
+    x += x >> 11;
+    x ^= x << 7;
+    x += y;
+    x ^= x << 6;
+    x += x >> 15;
+    x ^= x << 5;
+    x += x >> 12;
+    x ^= x << 9;
+    return x;
+    }
+
+    uint hashInt3D( uint x, uint y, uint z )
+    {
+    x += x >> 11;
+    x ^= x << 7;
+    x += y;
+    x ^= x << 3;
+    x += z ^ ( x >> 14 );
+    x ^= x << 6;
+    x += x >> 15;
+    x ^= x << 5;
+    x += x >> 12;
+    x ^= x << 9;
+    return x;
+    }
+
+Converting a 32 Bit Hash to a Float in the range [0,1)
+------------------------------------------------------
+Code from A Mind Forever Programming:
+    const uint mantissaMask = 0x007FFFFFu;
+    const uint one          = 0x3F800000u;
+
+    uint h = hash( floatBitsToUint( f ) );
+    h &= mantissaMask;
+    h |= one;
+
+    float  r = uintBitsToFloat( h );
+    return r - 1.0;
+The conversion takes the low order 23 bits, discards the rest.
+That's okay if the hash function output is designed to be used this way.
+The final operation is r - 1. Let's run tests to show that 1 <= r < 2:
+      0x3F800000 == 1.0
+      0x3F800001 == 1.0000001192092896
+      0x3F800000 | 0x007FFFFF == 1.9999998807907104
+
+How do you write a good hash function?
+--------------------------------------
+In http://www.azillionmonkeys.com/qed/hash.html, Paul Hsieh cites Bob Jenkins
+<http://burtleburtle.net/bob/hash/doobs.html>, then builds a new hash function
+that performs better on more modern hardware. Here's an excerpt from the end
+of SuperFastHash that resembles the Alex Navaris hash:
+    /* Force "avalanching" of final 127 bits */
+    hash ^= hash << 3;
+    hash += hash >> 5;
+    hash ^= hash << 4;
+    hash += hash >> 17;
+    hash ^= hash << 25;
+    hash += hash >> 6;
+Here some 32-bit hash code from Bob Jenkins(2006), with instructions on how to
+generalize it to a variety of situations:
+    http://burtleburtle.net/bob/c/lookup3.c
+Jenkins uses many bit rotate operations, which don't seem to exist on GPUs.
+GPUs are in-order superscalar. We need to make explicit use of SIMD instructions
+where possible. Also, from the internet:
+   "on Nvidia hardware, there can only be 32 shifts executing at once,
+    where there can be 128 other bitwise operations."
+
+How do you test a hash function for making noise?
+-------------------------------------------------
+* Testing speed.
+* Testing quality. See Marc Olano.
 
 Bitwise Operations in Curv
 --------------------------
