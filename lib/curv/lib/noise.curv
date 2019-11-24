@@ -66,4 +66,21 @@ rand2x1 xy =
     in let
     x = v[X] `and` bits 0x007FFFFF `or` bits 0x3F800000;
     in bool32_to_float(x) - 1;
+
+rand3x1 xyz =
+    // after Alexis Naveros
+    let (x,y,z) = float_to_bool32 xyz; in do
+    x := x `plus` (x `rshift` 11);
+    x := x `xor` (x `lshift` 7);
+    x := x `plus` y;
+    x := x `xor` (x `lshift` 3);
+    x := x `plus` (z `xor` (x `rshift` 14));
+    x := x `xor` (x `lshift` 6);
+    x := x `plus` (x `rshift` 15);
+    x := x `xor` (x `lshift` 5);
+    x := x `plus` (x `rshift` 12);
+    x := x `xor` (x `lshift` 9);
+    x := x `and` bits 0x007FFFFF `or` bits 0x3F800000;
+    in bool32_to_float(x) - 1;
+
 }
