@@ -483,9 +483,16 @@ struct Xor_Prim : public Binary_Bool_Or_Bool32_Prim
     static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
     {
         auto result = f.sc_.newvalue(x.type);
-        f.sc_.out() << "  " << x.type << " " << result << " = " << x
-            << (x.type.is_bool32() ? "^" : "!=")
-            << y << ";\n";
+        f.sc_.out() << "  " << x.type << " " << result << " = ";
+        if (x.type.is_bool32())
+            f.sc_.out() << x << "^" << y;
+        else if (x.type == SC_Type::Bool())
+            f.sc_.out() << x << "!=" << y;
+        else if (x.type.is_bool())
+            f.sc_.out() << "notEqual(" << x << "," << y << ")";
+        else
+            die("Xor_Prim::sc_call: unknown type");
+        f.sc_.out() << ";\n";
         return result;
     }
 };

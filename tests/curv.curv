@@ -575,7 +575,9 @@ let
     all = [for (_ in 1..32) #true];
     f = #false;
     T = #true;
-    bits = nat_to_bool32
+    bits = nat_to_bool32;
+    ff = [f,f];
+    logic = [[f,f],[T,f],[f,T],[T,T]];
 in sc_test {
     "nat_to_bool32": _->
         nat_to_bool32 0 ==
@@ -597,6 +599,12 @@ in sc_test {
     "bool32_product": _-> bool32_product[bits 7, bits 5] == bits 35;
     "bool32_to_float": _-> bool32_to_float(bits 1065353216) == 1;
     "float_to_bool32": _-> float_to_bool32 1 == bits 1065353216;
+    "indexing": _->
+        let (ab,cd) = [ff,[f,T]]; in do
+        ab[0] := cd[1]; in let
+        (a,b) = ab;
+        (c,d) = cd;
+        in [a,b] == ab && [c,d] == cd && xor[ab,cd] == [T,T];
 };
 
 // script return value:

@@ -77,6 +77,11 @@ struct SC_Type
         assert(n >= 1 && n <= 4);
         return {Base_Type(int(Base_Type::Num) + n-1)};
     }
+    static constexpr inline SC_Type Any_Vec(SC_Type base, unsigned n)
+    {
+        assert(n >= 1 && n <= 4);
+        return {Base_Type(int(base.base_type_) + n-1)};
+    }
     static constexpr inline SC_Type Num(unsigned dim1 = 0, unsigned dim2 = 0)
     {
         return {Base_Type::Num, dim1, dim2};
@@ -120,6 +125,8 @@ struct SC_Type
     {
         return (base_type_ >= Base_Type::Bool32
                 && base_type_ <= Base_Type::Bool4x32)
+            || (base_type_ >= Base_Type::Bool2
+                && base_type_ <= Base_Type::Bool4)
             || (base_type_ >= Base_Type::Vec2 && base_type_ <= Base_Type::Mat4)
             || rank_ > 0;
     }

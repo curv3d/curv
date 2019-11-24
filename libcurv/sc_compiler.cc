@@ -243,18 +243,11 @@ sc_put_value(Value val, SC_Type ty, const At_SC_Phrase& cx, std::ostream& out)
         unsigned bn = bool32_to_nat(bl, cx);
         out << bn << "u";
     }
-    else if (ty.is_bool_or_bool32()) {
+    else if (ty.is_any_vec()) {
         Shared<const List> list = val.to<const List>(cx);
         list->assert_size(ty.count(), cx);
         out << ty << "(";
         sc_put_list(*list, ty.abase(), cx, out);
-        out << ")";
-    }
-    else if (ty.is_vec()) {
-        auto list = val.to<List>(cx);
-        list->assert_size(ty.count(), cx);
-        out << ty << "(";
-        sc_put_list(*list, SC_Type::Num(), cx, out);
         out << ")";
     }
     else if (ty.rank_ > 0) {
@@ -591,7 +584,7 @@ char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
 SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& f)
 {
     Value k;
-    if (array.type.is_vec() && sc_try_constify(index, f, k)) {
+    if (array.type.is_any_vec() && sc_try_constify(index, f, k)) {
         // A vector with a constant index. Swizzling is supported.
         if (auto list = k.dycast<List>()) {
             if (list->size() < 2 || list->size() > 4) {
@@ -605,7 +598,9 @@ SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& f)
                     array.type.count(),
                     At_Index(i, At_SC_Phrase(index.syntax_, f)));
             }
-            SC_Value result = f.sc_.newvalue(SC_Type::Vec(list->size()));
+            SC_Value result =
+                f.sc_.newvalue(
+                    SC_Type::Any_Vec(array.type.abase(), list->size()));
             f.sc_.out() << "  " << result.type << " "<< result<<" = ";
             if (f.sc_.target_ == SC_Target::glsl) {
                 // use GLSL swizzle syntax: v.xyz
@@ -640,8 +635,9 @@ SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& f)
                 stringify("got ",k,", expected 0..",
                     array.type.count()-1));
 
-        SC_Value result = f.sc_.newvalue(SC_Type::Num());
-        f.sc_.out() << "  float "<<result<<" = "<<array<<arg2<<";\n";
+        SC_Value result = f.sc_.newvalue(array.type.abase());
+        f.sc_.out() << "  " << result.type << " " << result << " = "
+            << array << arg2 <<";\n";
         return result;
     }
     // An array of numbers, indexed with a number.
