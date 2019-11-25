@@ -1,0 +1,52 @@
+IR Types are finite. There are no recursive types.
+(This makes type equivalence easy to compute.)
+
+Every Curv Value has an IR type.
+
+There are different *kinds* of types, depending on how easy the value is to
+represent in the GPU runtime environment.
+
+A singleton type contains a single value, and occupies no storage.
+Type equivalence is determined by IR value equality (which works on functions).
+
+A monomorphic type has a value that exists at GPU runtime.
+
+Values with polymorphic type only exist during IR evaluation.
+A polymorphic type is either a polymorphic function type, or a compound type
+containing an element with polymorphic type.
+
+Take a look at Apple's WSL language for some ideas about the type system.
+
+Bool
+Symbol
+Num
+String
+List
+Record
+Function
+
+Functions:
+* A monomorphic function value belongs to a singleton type.
+  The parameter and result both have monomorphic types.
+* How are monomorphic curried functions assigned types?
+  I want 'F :: mtype1 -> mtype2 -> mtype' to be a monomorphic type.
+  What is the type of 'F x', where 'x :: mtype1' is a GPU runtime nonconst
+  value? Logically, it has type 'mtype2 -> mtype', which is a monomorphic type
+  but not a singleton type. The state associated with an instance of this type
+  has type 'mtype1', and for the case of 'F x', the state is 'x'.
+* If F is the curried monomorphic function shown above, then the type of F
+  is Function[F,0], with state []. The type of 'F x' is Function[F,1] with
+  state [x].
+* A polymorphic function is one that can't be assigned a monomorphic type.
+
+Lists:
+* A list where all of the elements have the same monomorphic type
+  has type List(elemtype, count). Such a list can be indexed with a runtime
+  value.
+* A list where the elements have two or more distinct types
+  has type Tuple[etype1,etype2,...]. Such a list can only be indexed with a
+  compile time value.
+* As a special case, [] has type Tuple[]: a singleton type with no state.
+* What about lists where the number of elements varies at run time?
+  Image and Mesh values in Curv would have this property.
+  There are ways to model this on the GPU (textures and buffers).

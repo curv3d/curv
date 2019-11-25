@@ -90,9 +90,15 @@ Alexis Naveros hash functions
 http://amindforeverprogramming.blogspot.com/2013/07/random-floats-in-glsl-330.html
 
 Lee C uses one round of Bob Jenkin's OAT hash. That has to be worse than
-2 rounds of TEA. He doesn't properly test the output, but in the comments,
-Alexis Naveros complains about visual artifacts, and provides a better
-set of hash functions:
+2 rounds of TEA. He doesn't properly test the output.
+
+This hash is criticized on shadertoy: https://www.shadertoy.com/view/tstXWS
+octaviogood says:
+* Has the problem of being stuck at zero.
+* It also has a few noticeable patterns when you look at the different bits.
+
+In the comments of the blog post, Alexis Naveros complains about visual
+artifacts, and provides a better set of hash functions:
 
     Note that the hash functions only need to care about the lowest 23 bits,
     with a focus on good avalanche behavior in the higher bits of that range.
@@ -140,6 +146,14 @@ set of hash functions:
 
 Other Hashes
 ------------
+"Quality hashes collection WebGL2" by nimitz 2018 (twitter: @stormoid)
+12 hashes: 1-3D input x 1-4D output.
+Based on testing and improvement of other people's hashes.
+https://www.shadertoy.com/view/Xt3cDn
+Poor code for uint->float conversion.
+Output quality is criticized by antovsky, who responded with:
+https://www.shadertoy.com/view/WsfXWX
+
 https://github.com/BrianSharpe/GPU-Noise-Lib/blob/master/gpu_noise_lib.glsl
     Implements the FAST_32 hash.
     Also implements BBS (obsolete), and SGPP from Ashima.
@@ -172,7 +186,7 @@ So I should be able to use this code fairly directly.
 
 Converting a 32 Bit Hash to a Float in the range [0,1)
 ------------------------------------------------------
-Code from A Mind Forever Programming:
+The correct code is given by A Mind Forever Programming:
     const uint mantissaMask = 0x007FFFFFu;
     const uint one          = 0x3F800000u;
 
@@ -185,9 +199,33 @@ Code from A Mind Forever Programming:
 The conversion takes the low order 23 bits, discards the rest.
 That's okay if the hash function output is designed to be used this way.
 The final operation is r - 1. Let's run tests to show that 1 <= r < 2:
-      0x3F800000 == 1.0
-      0x3F800001 == 1.0000001192092896
-      0x3F800000 | 0x007FFFFF == 1.9999998807907104
+    0x3F800000 == 1.0
+    0x3F800001 == 1.0000001192092896
+    0x3F800000 | 0x007FFFFF == 1.9999998807907104
+
+Nimitz uses poor techniques:
+* from hash12: float(h)*(1.0/float(0xFFFFffffU))
+* from hash22: float((h>>1) & 0x7fffFFFFu)/float(0x7fffFFFF)
+  WTF? After h>>1, the high bit is 0, '& 0x7fffFFFFu' has no effect.
+The results are biased (see Antovsky below), and it's expensive.
+Maybe this poor code is a hangover from WebGL 1 which lacks uintBitsToFloat.
+
+From comments in Nimitz:
+* antovsky: when creating a float out of a uint, you're sometimes using
+    *(1.0/float(0xffffffffU))
+  and sometimes using
+     & uvec4(0x7fffffffU))/float(0x7fffffff).
+  Why the two different forms? Presumably you're masking off the sign bit for
+  some reason in one place but not the other? Also is creating a float out of
+  0xffffffff even valid? Isn't the max sane value for a 0.0 to 1.0 float 2^24
+  since it only has 24 bits of significand?
+* antovsky: The trouble with dividing by float(INT_MAX) is that it's biased
+  towards some bit patterns (since INT_MAX can't be exactly expressed in
+  float). This is easy to verify if you generate all valid float bit patterns
+  between 0-1, and then check how many times the conversion hits each one. Sadly
+  this "pedantic" conversion is a lot more expensive as you say, especially
+  because the divide is required (multiply by 1.0/constant produces a slightly
+  biased result as well).
 
 How do you write a good integer hash function?
 ----------------------------------------------
@@ -212,8 +250,7 @@ Here some 32-bit hash code from Bob Jenkins(2006), with instructions on how to
 generalize it to a variety of situations:
     http://burtleburtle.net/bob/c/lookup3.c
 Jenkins uses many bit rotate operations, which don't seem to exist on GPUs.
-GPUs are in-order superscalar. We need to make explicit use of SIMD instructions
-where possible.
+GPUs are in-order superscalar. We need to use SIMD instructions where possible.
 
 Hasher API
 ----------
@@ -226,5 +263,12 @@ to a noise function.
 
 How do you test a hash function for making noise?
 -------------------------------------------------
-* Testing speed.
-* Testing quality. See Marc Olano.
+* Measuring speed.
+* Measuring quality. See Marc Olano. Should be based on the degree of visual
+  artifacts created in typical graphics workloads, since the criteria for
+  cryptographic hashes are not relevant.
+
+Nimitz: testing using ENT (http://www.fourmilab.ch/random/)
+
+Octaviogood: a shadertoy for testing hashes:
+https://www.shadertoy.com/view/wljXDz

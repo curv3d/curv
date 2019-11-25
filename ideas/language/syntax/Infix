@@ -1,0 +1,157 @@
+Infix Operators
+===============
+In which we discuss:
+* simplified operator precedence
+* user defined infix operators
+
+Simplified Operator Precedence
+------------------------------
+All left associative operators have the same precedence, like Smalltalk.
+New left associative operators can be invented at will, like Smalltalk.
+
+There are a small, fixed number of right associative operators, hard coded
+in the grammar. You can't define new ones (like Smalltalk).
+There are no precedence and associativity declarations--too complicated.
+
+All left associative operators can also be invoked in unary (prefix) position,
+and here the model is Lisp.
+    1 + 2 == +[1,2] == 3
+You quote an operator name to reference its value, eg '+' is a function.
+
+There is only a single '-' operator and it works like Lisp.
+    -5 == -5
+    3 - 1 == -[3,1] == 2
+Oops: This conflicts with broadcasting. We expect -[3,1] == [-3,-1].
+
+I am reminded of Haskell, which treats unary minus as a special case in the
+grammar: it's the only unary operator, and `-x` is sugar for `negate x`.
+Binary minus is the only Haskell operator that cannot be sectioned.
+APL treats unary minus as a special case (different symbol for
+negating a numeral). Smalltalk treats unary minus in a special way: -3 is a
+valid literal, but `x negate` for the general case. Ditto for Lisp, which has
+a special syntax for negated literals.
+
+Algebraic syntax has special treatment of the minus operator (unary and binary)
+because it is the inverse operation on a group, and (a - b) is sugar for
+(a + -b). Groups do not seem very common in programming, which is why all
+these languages treat unary minus as a unique case. In Curv, groups arise in
+symmetry operations. I do not yet have a DSL for describing complex symmetries.
+When I do, I might want other inverse group operators with unary and binary
+forms.
+
+So in general, prefix and infix operators should be user defineable,
+and should have different names. I have previously considered
+    *_
+    _*_
+as the true names of prefix and infix operators.
+
+There are cases where array semantics force us to have multiple versions
+of the same operator.
+    and[a,b]   vs a && b
+    equal[a,b] vs a == b
+And there are cases where we have two syntaxes for the same operator.
+    sum[a,b]     vs a + b
+    product[a,b] vs a * b
+    -- it would be cool to unify these --
+The issue with '-' is that it is used for two distinct operations, 'negate'
+and 'subtract', which are related by the additive group structure (it's not
+completely ad hoc overloading).
+
+Let's say we have user defined infix operators, which all have the same
+precedence and are all left-associative (for pipelining).
+Alternatives:
+ 1) Infix and prefix variants of a given op name are combined in a single value.
+    Given just a bare operator name, you have a handle on all its meanings.
+    That's useful if the meanings are closely related (part of the same algebra)
+    and you need to abstract over multiple implementations of the operator.
+    '+' is the identifier form of an operator, and denotes the value containing
+    the prefix and infix meanings.
+    A) 1 + 2 == +[1, 2]. +[1,2,3]==6, replacing 'sum'.
+       3 - 1 == 3 + -1 == -[3,1], like Lisp.
+       'negate' is the array form of unary minus.
+    B) 1 - 2 == '-'.infix[1,2]; -x == '-'.prefix x
+ 2) Infix and prefix operators have different identities.
+    This allows different authors/different packages to independently specify
+    the meanings of infix and prefix operator variants. Ad hoc overloading?
+     3 - 1 == '-'[3, 1]     == infix- [3,1]
+     -x == '-_' x           == prefix- x
+ 3) Unary minus is a special case. "-x" is sugar for "negate x".
+    No general support for prefix operators.
+
+ X) If the infix and prefix variants are different function values,
+    as in #1B and #2, then we can write operator definitions like this:
+        -x = ...;
+        a-b = ...;
+ Y) If the infix and prefix syntax calls the same function, as in #1A, then:
+     '+' denotes that function, useful as a combinator argument.
+     This is possibly useful for monoid operations? Eg, b32.+ is the Bool32
+     monoid sum operation?  x `b32.+` y  vs  b32.+[a,b,c].
+     This follows the analogy of:  x `max` y  vs  max[a,b,c].
+     * Note that the builtin + operator doesn't work this way.
+     * There really aren't other languages that work this way.
+ Z) User defined prefix operators aren't supported. Haskell and Smalltalk
+    don't have them. Some operators are reserved words and follow special rules,
+    including '+' and '-', which have prefix forms. In this case, there is no
+    difference between alternatives X and Y.
+
+How do you select an operator from a module using dot notation?
+    a `M.+` b
+    M.+ a
+This can be made compatible with any of the operator treatments shown above.
+With the X alternatives, context is used to select the prefix or infix form
+of M.+.
+However, "a `M.+` b == M.+[a,b]" has the least extra syntax.
+
+Syntactically, is M.+ a postfix expression or a unary operator? What is the
+precedence? Eg, in M.+a.b[i]
+ A) Unary.  This precedence makes more sense for the common case where the
+    result of the operation is not a function, record or list.
+ B) Postfix.  M.+ is an expression.  Makes sense for "a `M.+` b".
+    If ".+" is buried in a postfix expression, it's easier to parse visually,
+    because it's hard to see the spot where the operator breaks the pipeline.
+    If the argument of M.+ is a postfix, it's better to write "M.+(a.b.c)"
+    than to write "M.+a.b.c"
+
+User Defined Infix Operators
+----------------------------
+This is a conservative extension to Curv. It gives:
+ * fewer precedence levels in the grammar
+ * user defined infix operators
+
+In the grammar, Pipeline, Disjunction and Conjunction are collapsed to a
+single category (Pipeline) of low-precedence, left-associative operators.
+Relation and Range precedence levels are also combined. This yields the
+following precedence levels:
+    item
+    ritem
+    pipeline
+    relation
+    sum
+    product
+    unary / power
+    postfix
+Maybe get rid of 'where' and fuse item/ritem. The recursion between 'power'
+and 'unary' is kind of tricky: can this be simplified?
+
+An operator name is a sequence of one or more characters from the set
+    ~!@%^&*-+=|\:<>?/
+
+All of the builtin non-pipeline operators are reserved words, with special
+parsing.
+
+Non-reserved operator names are available as user-defined infix operators.
+User defined operators are pipeline operators: the precedence and associativity
+is fixed. User-defined prefix operators are not supported.
+
+For example, you can define a :+ operator, using either of the following:
+    ':+' = <function>;
+    a :+ b = <body of function>;
+
+As a special case, you don't need to quote an operator name when selecting
+it from a module using dot notation. The following are equivalent:
+    M.':+'
+    M.:+
+
+Thus you can use abbreviated syntax for invoking an infix operator using
+dot notation:
+    a `M.:+` B

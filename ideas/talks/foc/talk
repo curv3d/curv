@@ -1,0 +1,32 @@
+Curv is a language for making procedurally generated art.
+The original focus was 3D modelling and 3D printing, but it is evolving
+to support all kinds of full colour, animated, interactive 2D and 3D graphics.
+
+Curv is not limited to CAD-style designs: it supports curved, organic looking
+shapes, 3D fractals, and randomized patterns based on fractal noise. Shapes
+are represented as mathematical functions. They can be infinitely detailed
+and infinitely large. Curved shapes and fractals can be represented exactly.
+
+Curv is an end-user language for programmer/artists. It is a live coding
+environment. Curv is dynamically typed, because when you are live coding,
+the code must continue to run even if it contains type errors.
+
+The API for making geometric shapes is based on CSG (Constructive Solid
+Geometry). There is a basic set of geometric primitives, and there is a rich
+set of operations that transform shapes into new shapes. This is a
+declarative API, and Curv is a pure functional programming language.
+
+Curv is easy to use for beginners, and powerful enough for advanced users.
+This is accomplished by a progressive API with different levels of difficulty
+and power. The CSG API is easy to use. All of the CSG primitives are
+implemented in Curv using the abstraction of signed distance fields,
+and that API is for experts.
+
+Curv programs are compiled into GPU fragment shaders for rendering on the
+display. This happens in two stages. First, a dynamically typed Curv
+program is interpreted, yielding a shape value. Then, the function values
+within the shape are compiled, via type inference, partial evaluation,
+and type specialization, into statically typed GPU code.
+
+Sebastien Pierre is working on an IDE and projectional editor for Curv.
+It will support visual programming.

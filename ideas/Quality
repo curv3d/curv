@@ -1,0 +1,39 @@
+The Quality Without A Name (Christopher Alexander)
+--------------------------------------------------
+* Usability - Will the feature make Curv more usable for novices? 
+  Is the feature something that developers will enjoy using? 
+  Would either group miss it if it was no longer available?
+* Readability - Is the intent of the feature clear and well presented?
+* Configurability - Can the user adapt the feature to his or her needs?
+* Profoundness - Does the feature strike the user as special or unique,
+  but at the same time, insightful and correct?
+
+Donald Norman
+-------------
+from John Hanacek's thesis "As We May Sketch":
+In Don Norman’s “The Design of Everyday Things” he provides ‘principles of good
+design,’ which are:
+
+* Visibility. By looking, the user can tell the state of the device and the
+  alternatives for action.
+* A good conceptual model. The designer provides a good conceptual model for
+  the user, with consistency in the presentation of operations and results and
+  a coherent, consistent system image.
+* Good mappings. It is possible to determine the relationships between actions
+  and results, between controls and their effects, and between the system state
+  and what is visible.
+* Feedback. The user receives full and continuous feedback about the results of
+  actions.
+
+Traditional “typed statement” programming environments live up to none
+of these criteria. In traditional programming it is often very difficult to
+determine relationships between operations and results. The feedback is not
+continuous and because of syntax constraints often a program being modified is
+not in a state where you can see the results. Systems like spreadsheets are
+better, since they offer easier to choose alternatives and usually allow you
+to see the results with just a click, providing a nice feedback loop. Norman
+concludes that with spreadsheets “it felt as if you were working directly
+on the problem, not on a computer.”
+
+Read Donald Norman, "Emotional Design: Why We Love or Hate Everyday Things".
+Compare to Alexander's QWAN or his concept of a design with "life".
