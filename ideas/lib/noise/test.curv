@@ -1,0 +1,6 @@
+// Scale independent white noise. Zoom in or out and you won't get artifacts.
+let
+    hash = file "hash.curv";
+in make_texture ([x,y,z,t]->
+    let c=hash.tea2x1[x,y];
+    in sRGB(c,c,c))

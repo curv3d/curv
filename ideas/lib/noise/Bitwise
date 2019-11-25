@@ -1,0 +1,73 @@
+Bitwise Operations in Curv
+--------------------------
+Several GPU hashing algorithms use uint32 bitwise and arithmetic operations.
+It would be cool if these algorithms could be prototyped in Curv.
+
+C, Python,etc, have integers and floats as separate types. So, for example,
+`1` and `1.0` are distinct values with different types. And then the
+bitwise operations are defined over integers, so that integers are used as
+a representation for bit vectors. I don't want to force casual users to
+understand the 1/1.0 distinction in Curv, solely for the benefit of a small
+amount of low level code in the noise library.
+
+What is actually needed are bitwise operations that operate on arrays of bits.
+Curv is an array language. The proper domain of bitwise operations is
+boolean arrays. So instead of inventing a new 'integer' type to represent
+boolean arrays, we will use actual boolean arrays, which are already in the
+language. Eg, `[true,true,false]` instead of `6`.
+
+We need the ability to convert between a float and a bit array. One potential
+problem: the CPU interpreter uses 64 bit floats, while SubCurv on the GPU
+uses 32 bit floats. But it's not actually a problem. We need shapes to
+render the same way on the CPU and on the GPU. The noise functions need to
+return consistent results, so they will operate on 32 bit floats, in both
+environments. On the CPU, 64 bit floats will be converted to 32 bit floats,
+before being converted to a 32 bit boolean array, and vice versa.
+
+So I'm defining a new type, Bool32, which is a list of 32 booleans, but is
+represented in SubCurv compiler output as a uint32.
+
+We need the ability to convert between an integer and a Bool32. On the CPU,
+32 bit integers and 32 bit natural numbers are embedded in the 64 bit float
+representation. On the GPU, this isn't true. It will be important for constant
+numbers to be converted to Bool32 at compile time, not at SubCurv run time.
+This will be an issue that noise library developers need to be aware of.
+
+Conversion between numbers and Bool32:
+    Bool32.from_int    Bool32.to_int
+    Bool32.from_nat    Bool32.to_nat
+    Bool32.from_float  Bool32.to_float
+Eg,
+    Bool32.from_int 6 ==> [false,false,false,...,false,true,true,false]
+It's unfortunate that the list syntax is so verbose, but as long as nobody
+has to type it or look at it, it's not a problem. Maybe, if the need ever
+arises, we could add a terse syntax like `0b101` ==> `[true,false,true]`.
+
+Vectorized boolean operations (monoids), that also work on Bool32:
+    and/or/xor
+        These names are well known, work well for infix: a `and` b.
+    all/any
+        These are the most popular names for the and/or monoids.
+        They are 'fluent' in prefix form, such as `if (any(are_equal(a,b)) ...`.
+        These names don't fit in with `xor`.
+
+`xor(a,b)` is also equivalent to `are_unequal(a,b)` (vectorized form of a!=b).
+However, `xor` is a monoid with identity `#false`.
+
+Bool32 operations:
+    Bool32.is x -- true if x is a list of 32 bools.
+    Bool32.lshift(a,n)
+    Bool32.rshift_signed(a,n)
+    Bool32.rshift(a,n)
+    Bool32.add(a,b)
+        Result is modulo 2^32, which is different from standard `+`.
+        Another good reason to not overload `+` for this op.
+    Bool32.subtract(a,b)
+    Bool32.negate(a)
+    ...
+
+The APL rotate operator, called `roll` in numpy, might be useful.
+
+The verbose names are not a problem. Curv is not C, and these operations are
+limited to a small amount of low level code.
+Maybe use `include Bool32` then (x `lshift` 4) and so on.
