@@ -1,0 +1,87 @@
+Current Status of Definition Syntax (Nov 2019)
+==============================================
+This design has evolved, and become somewhat crufty. Time to look at the
+big picture once again.
+
+Recursive Definitions
+---------------------
+A recursive definition has the syntax:
+    a = 1
+    f x = x + 1
+    include "foo.curv"
+
+Or you can use abstraction to compose recursive definitions:
+    (defn)
+    defn1; defn2; stmt; defn3
+It's weird, but sequentially executed statements are allowed within an
+order-independent list of recursive definitions so that you can include
+'debug actions', primarily assertions.
+
+This was intended to be the beginning of "definition abstraction",
+but the remaining ideas were never implemented.
+* I had considered allowing a definition to be qualified by a let or where
+  clause. This would be useful in writing function definitions with local
+  bindings that are visible in the parameter pattern.
+    f (x::pred) -> ... where pred = ...
+  Although these local bindings can be introduced in other ways:
+    f = let pred = ...
+        in (x::pred) -> ...
+  Although the above would not permit a recursive definition.
+* I had considered allowing conditional definitions. It's not that useful.
+
+A let phrase is
+    let <recursive def> in <phrase>
+A module literal is
+    { <recursive def> }
+A definition in the REPL is
+    <recursive def>
+
+Sequential Definitions
+----------------------
+A sequential definition has the syntax:
+    local a = 1
+    local f x = x + 1
+    local include "foo.curv"
+
+There is no abstraction over sequential definitions. Not even parentheses.
+There's a reason for that.
+
+Sequential definitions can be used in two contexts:
+1. In the head of a 'do' phrase, their scope extends to the 'do' tail or body.
+2. Within a semicolon phrase (a statement list) (which may be parenthesized),
+   they bind variables in a local scope (bounded by the parentheses).
+   Legal contexts:
+    * A REPL program. 'local x=1; x' prints x without introducing a global
+      binding for 'x'.
+    * A parenthesized statement list. This is very important for imperative
+      programming, equivalent to a C braced compound statement.
+    * A record comprehension.
+    * A list comprehension.
+
+Weirdness and Inconsistency
+---------------------------
+There's no current benefit to being able to parenthesize a recursive definition.
+Well, that could be useful if there were macros that take definitions as
+arguments. Or see below.
+
+The 'local' operator appears to take a recursive definition as an argument,
+but that argument cannot be parenthesized.
+
+In theory, 'local (x=1,y=2)' could be a parallel definition, equivalent
+to Scheme's 'let' (as distinct from let-rec and let*).
+
+Allowing a mixture of recursive definitions and statements in various
+contexts is weird (let head, module, REPL program). The intent is not to
+support general imperative programming in these contexts, but instead to
+support assertions. It's more like programming by contract: postconditions
+in Eiffel. Like Eiffel, it would be reasonable and perhaps clearer to
+separate the definitions from the assertions.
+* Note that in these contexts, you can't use local definitions, or assign
+  a variable that is defined in the same statement list. That limits weirdness.
+* With `let`, you can already write `let <defs> in do <asserts> in ...`.
+* With a module literal, I guess we'd need new syntax.
+* Let's see what syntax is used to define an algebra, which requires both
+  bindings and laws/axioms.
+
+Definition Protocol
+-------------------

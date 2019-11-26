@@ -1,6 +1,4 @@
-* subcurv recognizes array of 32 bools as Bool32
-* support subcurv types Bool32x2, Bool32x3, Bool32x4
-* support subcurv types Bool2, Bool3, Bool4
+* general arrays of bool and bool32
 * fix TODOs in array_op.h
 * binary boolean op: mixed bool/bool32 operations
 
