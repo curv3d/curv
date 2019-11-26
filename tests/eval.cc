@@ -482,7 +482,8 @@ TEST(curv, eval)
     EXPECT_EQ(sconsole.str(),
         "60\n");
 
-    FAILMSG("let var a:=2 in a", "wrong style of definition for this block");
+    FAILMSG("let var a:=2 in a",
+        "sequential definitions are not legal in this context");
     FAILMSG("do a=2 in a",
         "A recursive definition like 'x = 1' is not legal here.\n"
         "Try 'x := 1' if you want an assignment statement.\n"

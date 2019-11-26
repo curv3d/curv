@@ -3,7 +3,7 @@ assert((let a=2 in a) == 2);
 assert((let a=1;b=a+1 in b) == 2);
 assert((let b=a+1;a=1 in b) == 2);
 print "expected output: a then b";
-assert((let b=(let print "b" in a+1);a=(let print "a" in 1) in b) == 2);
+assert((let b=(do print "b" in a+1);a=(do print "a" in 1) in b) == 2);
 assert_error("illegal recursive reference", let x=x in null);
 let f x = x+1 in assert(f 2 == 3);
 let fact n = if (n==0) 1 else n*fact(n-1) in assert(fact 3 == 6);

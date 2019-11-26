@@ -881,7 +881,7 @@ scale (s :: is_num) shape =
 stretch _s shape =
     let s = if (is_num _s) [_s,1,1]
             else if (is_vec2 _s) [..._s, 1]
-            else let assert(is_vec3(_s) && shape.is_3d) in _s;
+            else do assert(is_vec3(_s) && shape.is_3d) in _s;
     in make_shape {
         // TODO: dist p : shape.dist(...p[[X,Y,Z]] / s, p[T]) * min(s),
         dist(x,y,z,t) : shape.dist(x/s[X], y/s[Y], z/s[Z], t) * min(s),
@@ -1069,8 +1069,8 @@ shear_x kx shape =
 
 // TODO: In `taper`, the Lipschitz compensation code seems like overkill.
 local_taper_x {range:(y0,y1), scale:(kx0, kx1)} shape =
-    let assert(kx0 > 0 && kx1 > 0);
-        assert(y0 < y1);
+    do assert(kx0 > 0 && kx1 > 0);
+       assert(y0 < y1);
     in make_shape {
         dist(x,y,z,t) =
             (if (y <= y0)
@@ -1094,8 +1094,8 @@ local_taper_x {range:(y0,y1), scale:(kx0, kx1)} shape =
         is_3d = shape.is_3d;
     };
 local_taper_xy {range:(z0,z1), scale:([kx0, ky0], [kx1, ky1])} shape =
-    let assert(kx0 > 0 && ky0 > 0 && kx1 > 0 && ky1 > 0);
-        assert(z0 < z1);
+    do assert(kx0 > 0 && ky0 > 0 && kx1 > 0 && ky1 > 0);
+       assert(z0 < z1);
     in make_shape {
         dist(x,y,z,t) =
             (if (z <= z0)

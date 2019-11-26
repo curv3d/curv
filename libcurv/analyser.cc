@@ -577,44 +577,31 @@ analyse_do(
     return make<Preaction_Op>(syntax, actions, body);
 }
 
+// Analyse a let or where phrase.
 Shared<Meaning>
 analyse_block(
     Environ& env,
     Shared<const Phrase> syntax,
-    Definition::Kind kind,
     Shared<Phrase> bindings,
     Shared<const Phrase> bodysrc,
     unsigned edepth)
 {
     Shared<Definition> adef = bindings->as_definition(env);
     if (adef == nullptr) {
-        // no definitions, just actions.
-        return make<Preaction_Op>(
-            syntax,
-            analyse_op(*bindings, env, edepth),
-            analyse_op(*bodysrc, env, edepth));
+        throw Exception(At_Phrase(*bindings, env), "no definitions found");
     }
-    if (adef->kind_ == Definition::k_sequential
-        && kind == Definition::k_sequential)
-    {
-        Sequential_Scope sscope(env, false, edepth);
-        sscope.analyse(*adef);
-        auto body = analyse_op(*bodysrc, sscope, edepth+1);
-        env.frame_maxslots_ = sscope.frame_maxslots_;
-        return make<Block_Op>(syntax,
-            std::move(sscope.executable_), std::move(body));
+    if (adef->kind_ == Definition::k_sequential) {
+        throw Exception(At_Phrase(*bindings, env),
+            "sequential definitions are not legal in this context");
     }
-    if (adef->kind_ == Definition::k_recursive
-        && kind == Definition::k_recursive)
-    {
-        Recursive_Scope rscope(env, false, adef->syntax_);
-        rscope.analyse(*adef);
-        auto body = analyse_op(*bodysrc, rscope, edepth+1);
-        env.frame_maxslots_ = rscope.frame_maxslots_;
-        return make<Block_Op>(syntax,
-            std::move(rscope.executable_), std::move(body));
-    }
-    bad_definition(*adef, env, "wrong style of definition for this block");
+    assert(adef->kind_ == Definition::k_recursive);
+
+    Recursive_Scope rscope(env, false, adef->syntax_);
+    rscope.analyse(*adef);
+    auto body = analyse_op(*bodysrc, rscope, edepth+1);
+    env.frame_maxslots_ = rscope.frame_maxslots_;
+    return make<Block_Op>(syntax,
+        std::move(rscope.executable_), std::move(body));
 }
 
 Shared<Meaning>
@@ -629,11 +616,10 @@ Let_Phrase::analyse(Environ& env, unsigned edepth) const
     if (let_.kind_ == Token::k_do) {
         return analyse_do(env, share(*this), bindings_, body_, edepth);
     }
-    Definition::Kind kind =
-        let_.kind_ == Token::k_let
-        ? Definition::k_recursive
-        : Definition::k_sequential;
-    return analyse_block(env, share(*this), kind, bindings_, body_, edepth);
+    if (let_.kind_ == Token::k_let) {
+        return analyse_block(env, share(*this), bindings_, body_, edepth);
+    }
+    die("Let_Phrase::analyse: bad kind_");
 }
 
 Shared<Meaning>
@@ -710,8 +696,7 @@ Where_Phrase::analyse(Environ& env, unsigned edepth) const
                 std::move(rscope.executable_), std::move(body));
         }
     }
-    return analyse_block(env, syntax,
-        Definition::k_recursive, bindings, bodysrc, edepth);
+    return analyse_block(env, syntax, bindings, bodysrc, edepth);
 }
 
 Shared<Meaning>
