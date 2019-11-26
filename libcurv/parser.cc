@@ -34,7 +34,6 @@ Shared<Phrase> parse_conjunction(Scanner&);
 Shared<Phrase> parse_relation(Scanner&);
 Shared<Phrase> parse_sum(Scanner&);
 Shared<Phrase> parse_product(Scanner&);
-Shared<Phrase> parse_unary(Scanner&);
 Shared<Phrase> parse_power(Scanner&);
 Shared<Phrase> parse_postfix(Scanner&);
 Shared<Phrase> parse_primary(Scanner&, const char* what);
@@ -528,18 +527,18 @@ parse_sum(Scanner& scanner)
     }
 }
 
-// product : unary | product * unary | product / unary
+// product : power | product * power | product / power
 Shared<Phrase>
 parse_product(Scanner& scanner)
 {
-    auto left = parse_unary(scanner);
+    auto left = parse_power(scanner);
     for (;;) {
         auto tok = scanner.get_token();
         switch (tok.kind_) {
         case Token::k_times:
         case Token::k_over:
             left = make<Binary_Phrase>(
-                std::move(left), tok, parse_unary(scanner));
+                std::move(left), tok, parse_power(scanner));
             continue;
         default:
             scanner.push_token(tok);
@@ -548,9 +547,17 @@ parse_product(Scanner& scanner)
     }
 }
 
-// unary : power | - unary | + unary | ! unary | 'var' unary
+// High precedence, right associative infix and prefix operators.
+//
+// power
+//  : postfix
+//  | - power
+//  | + power
+//  | ! power
+//  | 'var' power
+//  | postfix ^ power
 Shared<Phrase>
-parse_unary(Scanner& scanner)
+parse_power(Scanner& scanner)
 {
     auto tok = scanner.get_token();
     switch (tok.kind_) {
@@ -558,23 +565,17 @@ parse_unary(Scanner& scanner)
     case Token::k_minus:
     case Token::k_not:
     case Token::k_var:
-        return make<Unary_Phrase>(tok, parse_unary(scanner));
+        return make<Unary_Phrase>(tok, parse_power(scanner));
     default:
         scanner.push_token(tok);
-        return parse_power(scanner);
+        break;
     }
-}
 
-// power : postfix | postfix ^ unary
-Shared<Phrase>
-parse_power(Scanner& scanner)
-{
     auto postfix = parse_postfix(scanner);
-    auto tok = scanner.get_token();
+    tok = scanner.get_token();
     switch (tok.kind_) {
     case Token::k_power:
-        return make<Binary_Phrase>(
-            postfix, tok, parse_unary(scanner));
+        return make<Binary_Phrase>(postfix, tok, parse_power(scanner));
     default:
         scanner.push_token(tok);
         return postfix;
