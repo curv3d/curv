@@ -32,7 +32,6 @@ Shared<Phrase> parse_pipeline(Scanner&);
 Shared<Phrase> parse_disjunction(Scanner&);
 Shared<Phrase> parse_conjunction(Scanner&);
 Shared<Phrase> parse_relation(Scanner&);
-Shared<Phrase> parse_range(Scanner&);
 Shared<Phrase> parse_sum(Scanner&);
 Shared<Phrase> parse_product(Scanner&);
 Shared<Phrase> parse_unary(Scanner&);
@@ -465,14 +464,18 @@ parse_conjunction(Scanner& scanner)
     }
 }
 
-// relation : range
-//  | range == range | range != range
-//  | range < range | range > range
-//  | range <= range | range >= range
+// relation : sum
+//  | sum == sum | sum != sum
+//  | sum < sum | sum > sum
+//  | sum <= sum | sum >= sum
+//  | sum .. sum
+//  | sum .. sum `by` sum
+//  | sum ..< sum
+//  | sum ..< sum `by` sum
 Shared<Phrase>
 parse_relation(Scanner& scanner)
 {
-    auto left = parse_range(scanner);
+    auto left = parse_sum(scanner);
     auto tok = scanner.get_token();
     switch (tok.kind_) {
     case Token::k_equal:
@@ -482,24 +485,7 @@ parse_relation(Scanner& scanner)
     case Token::k_greater:
     case Token::k_greater_or_equal:
         return make<Binary_Phrase>(
-            std::move(left), tok, parse_range(scanner));
-    default:
-        scanner.push_token(tok);
-        return left;
-    }
-}
-
-// range : sum
-//  | sum .. sum
-//  | sum .. sum `by` sum
-//  | sum ..< sum
-//  | sum ..< sum `by` sum
-Shared<Phrase>
-parse_range(Scanner& scanner)
-{
-    auto left = parse_sum(scanner);
-    auto tok = scanner.get_token();
-    switch (tok.kind_) {
+            std::move(left), tok, parse_sum(scanner));
     case Token::k_range:
     case Token::k_open_range:
       {

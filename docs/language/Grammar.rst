@@ -7,7 +7,7 @@ The surface grammar is a simplified grammar that describes the hierarchical
 structure of Curv programs, but doesn't ascribe meaning to parse tree nodes.
 Not all program texts that have a parse tree are syntactically correct.
 
-There are 13 operator precedence levels, with ``list`` being the lowest
+There are 12 operator precedence levels, with ``list`` being the lowest
 precedence and ``postfix`` being the highest precedence::
 
   program ::= list
@@ -46,12 +46,10 @@ precedence and ``postfix`` being the highest precedence::
 
   conjunction ::= relation | conjunction '&&' relation
 
-  relation ::= range
-    | range '==' range | range '!=' range
-    | range '<' range  | range '>' range
-    | range '<=' range | range '>=' range
-
-  range ::= sum
+  relation ::= sum
+    | sum '==' sum | sum '!=' sum
+    | sum '<' sum  | sum '>' sum
+    | sum '<=' sum | sum '>=' sum
     | sum '..' sum
     | sum '..' sum 'by' sum
     | sum '..<' sum
