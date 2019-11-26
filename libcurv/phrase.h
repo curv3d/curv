@@ -37,7 +37,7 @@ struct Phrase : public Shared_Base
 {
     virtual ~Phrase() {}
     virtual Location location() const = 0;
-    virtual Shared<Definition> as_definition(Environ&);
+    virtual Shared<Definition> as_definition(Environ&) const;
     virtual Shared<Meaning> analyse(Environ&, unsigned edepth) const = 0;
 };
 
@@ -156,7 +156,7 @@ struct Unary_Phrase : public Phrase
     {
         return arg_->location().starting_at(op_);
     }
-    virtual Shared<Definition> as_definition(Environ&) override;
+    virtual Shared<Definition> as_definition(Environ&) const override;
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
 };
 
@@ -227,7 +227,7 @@ struct Recursive_Definition_Phrase : public Phrase
     {
         return left_->location().ending_at(right_->location().token());
     }
-    virtual Shared<Definition> as_definition(Environ&) override;
+    virtual Shared<Definition> as_definition(Environ&) const override;
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
 };
 struct Sequential_Definition_Phrase : public Phrase
@@ -248,7 +248,7 @@ struct Sequential_Definition_Phrase : public Phrase
     {
         return right_->location().starting_at(var_);
     }
-    virtual Shared<Definition> as_definition(Environ&) override;
+    virtual Shared<Definition> as_definition(Environ&) const override;
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
 };
 struct Assignment_Phrase : public Phrase
@@ -325,7 +325,7 @@ struct Semicolon_Phrase : public Separator_Phrase
 {
     using Separator_Phrase::Separator_Phrase;
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
-    virtual Shared<Definition> as_definition(Environ&) override;
+    virtual Shared<Definition> as_definition(Environ&) const override;
 };
 
 /// common implementation for `(...)`, `[...]` and `{...}` phrases.
@@ -349,7 +349,7 @@ struct Paren_Phrase : public Delimited_Phrase
 {
     using Delimited_Phrase::Delimited_Phrase;
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
-    virtual Shared<Definition> as_definition(Environ&) override;
+    virtual Shared<Definition> as_definition(Environ&) const override;
 };
 
 struct Bracket_Phrase : public Delimited_Phrase
@@ -379,7 +379,7 @@ struct Program_Phrase : public Phrase
     }
 
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
-    virtual Shared<Definition> as_definition(Environ&) override;
+    virtual Shared<Definition> as_definition(Environ&) const override;
 };
 
 /// A function call. Call_Phrase is the union of all syntaxes that denote

@@ -512,6 +512,7 @@ assert(
     [local x=0; while(x<3)(x;x:=x+1);]
     == [0,1,2]
 );
+assert([do local a=1; a in a+1] == [1,2]);
 (
     local include {a:1};
     assert(a == 1);

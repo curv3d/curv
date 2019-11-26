@@ -57,7 +57,7 @@ Operation::to_operation(System&, Frame*)
 }
 
 Shared<Definition>
-Phrase::as_definition(Environ&)
+Phrase::as_definition(Environ&) const
 {
     return nullptr;
 }
@@ -328,7 +328,7 @@ Local_Phrase::analyse(Environ& env, unsigned) const
 }
 
 Shared<Definition>
-Unary_Phrase::as_definition(Environ& env)
+Unary_Phrase::as_definition(Environ& env) const
 {
     switch (op_.kind_) {
     case Token::k_include:
@@ -413,6 +413,170 @@ each_item(Phrase& phrase, std::function<void(Phrase&)> func)
     func(phrase);
 }
 
+// Analyse one item in a compound statement, or in the head of a `do` phrase,
+// which could be either a statement or a local definition.
+Shared<Operation>
+analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
+{
+    if (auto local = cast<const Local_Phrase>(stmt)) {
+        // Local definitions are part of the syntax of compound statements:
+        // they don't have a standalone meaning, and that's why we are
+        // pattern-matching the `local` keyword instead of calling a method
+        // on `stmt` that is implemented by Local_Phrase.
+        if (auto defn = local->arg_->as_definition(scope)) {
+            // Ideally, we would use the Definition protocol, especially if we
+            // want to support compound definitions like `local (x=1;y=2)`.
+            // What currently follows is a lot of code duplication.
+            if (auto data_def = cast<const Data_Definition>(defn)) {
+                auto expr =
+                    analyse_op(*data_def->definiens_phrase_, scope, edepth);
+                auto pat =
+                    make_pattern(*data_def->definiendum_, false, scope, 0);
+                pat->analyse(scope);
+                return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
+            }
+            if (auto func_def = cast<const Function_Definition>(defn)) {
+                auto expr =
+                    analyse_op(*func_def->lambda_phrase_, scope, edepth);
+                auto pat =
+                    make_pattern(*func_def->name_, false, scope, 0);
+                pat->analyse(scope);
+                return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
+            }
+            if (auto incl_def = cast<const Include_Definition>(defn)) {
+                // Evaluate the `include` argument in the builtin environment.
+                auto val = std_eval(*incl_def->arg_, scope);
+                At_Phrase cx(*incl_def->arg_, scope);
+                auto record = val.to<Record>(cx);
+
+                // construct an Include_Setter from the record argument.
+                Shared<Include_Setter> setter =
+                    Include_Setter::make(record->size(), stmt);
+                size_t i = 0;
+                record->each_field(cx, [&](Symbol_Ref name, Value value)->void {
+                    slot_t slot = scope.add_binding(name, *stmt, 0);
+                    (*setter)[i++] = {slot, value};
+                });
+                return setter;
+            }
+          /*
+          #if 0
+            The Definition protocol isn't designed for local definitions.
+            To use Definition protocol, we need a Local_Scope class.
+            For each definition, we want to call defn->analyse() before
+            defn->add_to_scope(). However, Compound_Definition is not a
+            Unitary_Definition and doesn't define ::analyse().
+            The Definition protocol expects you to first call add_to_scope for
+            all definitions, and then you call analyse on all unitary defs.
+
+            Definition protocol: [code for do <bindings> in <body>]
+            analyse_block(env, share(*this), bindings_, body_, edepth);
+            Shared<Meaning> analyse_block(
+                Environ& env,
+                Shared<const Phrase> syntax,
+                Shared<Phrase> bindings,
+                Shared<const Phrase> bodysrc,
+                unsigned edepth)
+            {
+                Shared<Definition> adef = bindings->as_definition(env);
+                if (adef == nullptr) {
+                    // no definitions, just actions.
+                    return make<Preaction_Op>(
+                        syntax,
+                        analyse_op(*bindings, env, edepth),
+                        analyse_op(*bodysrc, env, edepth));
+                }
+                if (adef->kind_ == Definition::k_sequential) {
+                    Sequential_Scope sscope(env, false, edepth);
+                    sscope.analyse(*adef);
+                    auto body = analyse_op(*bodysrc, sscope, edepth+1);
+                    env.frame_maxslots_ = sscope.frame_maxslots_;
+                    return make<Block_Op>(syntax,
+                        std::move(sscope.executable_), std::move(body));
+                }
+                bad_definition(*adef, env, "wrong style of definition for this block");
+            }
+            sscope.analyse(*adef):
+                def.add_to_scope(*this);
+                parent_->frame_maxslots_ = frame_maxslots_;
+            void Data_Definition::add_to_scope(Block_Scope& scope):
+                unsigned unitnum = scope.begin_unit(share(*this));
+                pattern_ = make_pattern(*definiendum_, true, scope, unitnum);
+                scope.end_unit(unitnum, share(*this));
+            Sequential_Scope::end_unit(unitno, Shared<Unitary_Definition> unit)
+                (void)unitno;
+                unit->analyse(*this);
+                executable_.actions_.push_back(
+                    unit->make_setter(executable_.module_slot_));
+                ++nunits_;
+            Data_Definition::analyse(Environ& env):
+                pattern_->analyse(env);
+                definiens_expr_ = analyse_op(*definiens_phrase_, env);
+          #endif
+          */
+        }
+        throw Exception(At_Phrase(*stmt, scope),
+            "syntax error in local definition");
+    }
+    if (auto vardef = cast<const Sequential_Definition_Phrase>(stmt)) {
+        scope.analyser_.system_.warning(Exception{At_Phrase(*vardef, scope),
+            "'var pattern := expr' is deprecated.\n"
+            "Use 'local pattern = expr' instead."});
+        scope.analyser_.var_deprecated_ = true;
+        auto pat = make_pattern(*vardef->left_, false, scope, 0);
+        auto expr = analyse_op(*vardef->right_, scope, edepth);
+        pat->analyse(scope);
+        return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
+    }
+    if (auto recdef = cast<const Recursive_Definition_Phrase>(stmt)) {
+        throw Exception(At_Phrase(*recdef, scope),
+            "A recursive definition like 'x = 1' is not legal here.\n"
+            "Try 'x := 1' if you want an assignment statement.\n"
+            "Try 'local x = 1' if you want a local definition.");
+    }
+    if (auto defn = stmt->as_definition(scope)) {
+        throw Exception(At_Phrase(*stmt, scope),
+            "A recursive definition is not legal here.\n"
+            "Try 'local <definition>' instead.");
+    }
+    return analyse_op(*stmt, scope, edepth);
+}
+
+Shared<Meaning>
+analyse_do(
+    Environ& env,
+    Shared<const Phrase> syntax,
+    Shared<Phrase> bindings,
+    Shared<const Phrase> bodysrc,
+    unsigned edepth)
+{
+    Scope scope(env);
+    
+    Shared<Compound_Op> actions;
+    if (isa<const Empty_Phrase>(bindings))
+        actions = Compound_Op::make(0, bindings);
+    else if (auto commas = cast<const Comma_Phrase>(bindings)) {
+        throw Exception(
+            At_Token(commas->args_.front().separator_, *bindings, env),
+            "syntax error");
+    }
+    else if (auto semis = cast<const Semicolon_Phrase>(bindings)) {
+        actions = Compound_Op::make(semis->args_.size(), bindings);
+        for (size_t i = 0; i < semis->args_.size(); ++i) {
+            actions->at(i) =
+                analyse_stmt(semis->args_[i].expr_, scope, edepth+1);
+        }
+    }
+    else {
+        actions = Compound_Op::make(1, bindings);
+        actions->at(0) = analyse_stmt(bindings, scope, edepth+1);
+    }
+
+    auto body = analyse_op(*bodysrc, scope, edepth+1);
+    env.frame_maxslots_ = scope.frame_maxslots_;
+    return make<Preaction_Op>(syntax, actions, body);
+}
+
 Shared<Meaning>
 analyse_block(
     Environ& env,
@@ -461,6 +625,9 @@ Let_Phrase::analyse(Environ& env, unsigned edepth) const
             make<Brace_Phrase>(let_, bindings_, in_),
             body_);
         return make<Parametric_Expr>(share(*this), ctor);
+    }
+    if (let_.kind_ == Token::k_do) {
+        return analyse_do(env, share(*this), bindings_, body_, edepth);
     }
     Definition::Kind kind =
         let_.kind_ == Token::k_let
@@ -740,13 +907,13 @@ as_definition_iter(
         share(left), std::move(right));
 }
 Shared<Definition>
-Recursive_Definition_Phrase::as_definition(Environ& env)
+Recursive_Definition_Phrase::as_definition(Environ& env) const
 {
     return as_definition_iter(env, share(*this), *left_, right_,
         Definition::k_recursive);
 }
 Shared<Definition>
-Sequential_Definition_Phrase::as_definition(Environ& env)
+Sequential_Definition_Phrase::as_definition(Environ& env) const
 {
     if (!env.analyser_.var_deprecated_) {
         env.analyser_.system_.warning(Exception{At_Phrase(*this, env),
@@ -755,114 +922,6 @@ Sequential_Definition_Phrase::as_definition(Environ& env)
     }
     return as_definition_iter(env, share(*this), *left_, right_,
         Definition::k_sequential);
-}
-
-// Analyse one item in a compound statement, which could be either a
-// statement or a local definition.
-Shared<Operation>
-analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
-{
-    if (auto local = cast<const Local_Phrase>(stmt)) {
-        // Local definitions are part of the syntax of compound statements:
-        // they don't have a standalone meaning, and that's why we are
-        // pattern-matching the `local` keyword instead of calling a method
-        // on `stmt` that is implemented by Local_Phrase.
-        if (auto defn = local->arg_->as_definition(scope)) {
-            // Ideally, we would use the Definition protocol, especially if we
-            // want to support compound definitions like `local (x=1;y=2)`.
-            // What currently follows is a lot of code duplication.
-            if (auto data_def = cast<const Data_Definition>(defn)) {
-                auto expr =
-                    analyse_op(*data_def->definiens_phrase_, scope, edepth);
-                auto pat =
-                    make_pattern(*data_def->definiendum_, false, scope, 0);
-                pat->analyse(scope);
-                return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
-            }
-            if (auto func_def = cast<const Function_Definition>(defn)) {
-                auto expr =
-                    analyse_op(*func_def->lambda_phrase_, scope, edepth);
-                auto pat =
-                    make_pattern(*func_def->name_, false, scope, 0);
-                pat->analyse(scope);
-                return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
-            }
-            if (auto incl_def = cast<const Include_Definition>(defn)) {
-                // Evaluate the `include` argument in the builtin environment.
-                auto val = std_eval(*incl_def->arg_, scope);
-                At_Phrase cx(*incl_def->arg_, scope);
-                auto record = val.to<Record>(cx);
-
-                // construct an Include_Setter from the record argument.
-                Shared<Include_Setter> setter =
-                    Include_Setter::make(record->size(), stmt);
-                size_t i = 0;
-                record->each_field(cx, [&](Symbol_Ref name, Value value)->void {
-                    slot_t slot = scope.add_binding(name, *stmt, 0);
-                    (*setter)[i++] = {slot, value};
-                });
-                return setter;
-            }
-          /*
-          #if 0
-            The Definition protocol isn't designed for local definitions.
-            To use Definition protocol, we need a Local_Scope class.
-            For each definition, we want to call defn->analyse() before
-            defn->add_to_scope(). However, Compound_Definition is not a
-            Unitary_Definition and doesn't define ::analyse().
-            The Definition protocol expects you to first call add_to_scope for
-            all definitions, and then you call analyse on all unitary defs.
-
-            Definition protocol: [code for do <bindings> in <body>]
-            analyse_block(env, share(*this), bindings_, body_, edepth);
-            Shared<Meaning> analyse_block(
-                Environ& env,
-                Shared<const Phrase> syntax,
-                Shared<Phrase> bindings,
-                Shared<const Phrase> bodysrc,
-                unsigned edepth)
-            {
-                Shared<Definition> adef = bindings->as_definition(env);
-                if (adef == nullptr) {
-                    // no definitions, just actions.
-                    return make<Preaction_Op>(
-                        syntax,
-                        analyse_op(*bindings, env, edepth),
-                        analyse_op(*bodysrc, env, edepth));
-                }
-                if (adef->kind_ == Definition::k_sequential) {
-                    Sequential_Scope sscope(env, false, edepth);
-                    sscope.analyse(*adef);
-                    auto body = analyse_op(*bodysrc, sscope, edepth+1);
-                    env.frame_maxslots_ = sscope.frame_maxslots_;
-                    return make<Block_Op>(syntax,
-                        std::move(sscope.executable_), std::move(body));
-                }
-                bad_definition(*adef, env, "wrong style of definition for this block");
-            }
-            sscope.analyse(*adef):
-                def.add_to_scope(*this);
-                parent_->frame_maxslots_ = frame_maxslots_;
-            void Data_Definition::add_to_scope(Block_Scope& scope):
-                unsigned unitnum = scope.begin_unit(share(*this));
-                pattern_ = make_pattern(*definiendum_, true, scope, unitnum);
-                scope.end_unit(unitnum, share(*this));
-            Sequential_Scope::end_unit(unitno, Shared<Unitary_Definition> unit)
-                (void)unitno;
-                unit->analyse(*this);
-                executable_.actions_.push_back(
-                    unit->make_setter(executable_.module_slot_));
-                ++nunits_;
-            Data_Definition::analyse(Environ& env):
-                pattern_->analyse(env);
-                definiens_expr_ = analyse_op(*definiens_phrase_, env);
-          #endif
-          */
-        }
-        throw Exception(At_Phrase(*stmt, scope),
-            "syntax error in local definition");
-    }
-    return analyse_op(*stmt, scope, edepth);
 }
 
 Shared<Meaning>
@@ -877,7 +936,7 @@ Semicolon_Phrase::analyse(Environ& env, unsigned edepth) const
 }
 
 Shared<Definition>
-Semicolon_Phrase::as_definition(Environ& env)
+Semicolon_Phrase::as_definition(Environ& env) const
 {
     Shared<Compound_Definition> compound =
         Compound_Definition::make(args_.size(), share(*this));
@@ -940,7 +999,7 @@ Paren_Phrase::analyse(Environ& env, unsigned edepth) const
     }
 }
 Shared<Definition>
-Paren_Phrase::as_definition(Environ& env)
+Paren_Phrase::as_definition(Environ& env) const
 {
     return body_->as_definition(env);
 }
@@ -986,7 +1045,7 @@ Program_Phrase::analyse(Environ& env, unsigned edepth) const
     return body_->analyse(env, edepth);
 }
 Shared<Definition>
-Program_Phrase::as_definition(Environ& env)
+Program_Phrase::as_definition(Environ& env) const
 {
     return body_->as_definition(env);
 }

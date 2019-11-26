@@ -483,6 +483,9 @@ TEST(curv, eval)
         "60\n");
 
     FAILMSG("let var a:=2 in a", "wrong style of definition for this block");
-    FAILMSG("do a=2 in a", "wrong style of definition for this block");
+    FAILMSG("do a=2 in a",
+        "A recursive definition like 'x = 1' is not legal here.\n"
+        "Try 'x := 1' if you want an assignment statement.\n"
+        "Try 'local x = 1' if you want a local definition.");
   }
 }
