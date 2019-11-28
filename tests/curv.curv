@@ -273,12 +273,14 @@ in (
     assert(f{just:42} == "just 42");
 );
 
-do
-    var a := 42;
-    for (i in 1..3)
-        let n = i;
-        in a := a + n;
-in assert(a == 48);
+(
+    local a = 42;
+    for (i in 1..3) (
+        local n = i;
+        a := a + n;
+    );
+    assert(a == 48);
+);
 
 assert(
     {for ((i,j) in 1..3>>map(x->(x,x^2))) "$i":j}
@@ -466,11 +468,6 @@ assert(
     == [0,1,2]
 );
 
-// generalized do
-assert(
-    [do 1 in 2] == [1,2]
-);
-
 let 'a'= {'foo bar'=0;'baz'=1};
 in assert(strcat[a]=="{baz:1,'foo bar':0}");
 let '_' = 1 in assert('_' == 1);
@@ -503,16 +500,11 @@ let x = 0; in
     local x = x + 1;
     assert(x == 1);
 );
-let a = 0
-in do
-    local f x = x + 1;
-    a := f a;
-in assert (a == 1);
 assert(
     [local x=0; while(x<3)(x;x:=x+1);]
     == [0,1,2]
 );
-assert([do local a=1; a in a+1] == [1,2]);
+assert([local a=1; a; a+1] == [1,2]);
 (
     local include {a:1};
     assert(a == 1);

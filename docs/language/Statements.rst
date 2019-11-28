@@ -156,12 +156,6 @@ Recursively scoped local variables: ``let definitions in statement``
 Recursively scoped local variables: ``statement where definitions``
   An alternate syntax for defining local variables. See: `Blocks`_.
 
-Chained statements: ``do statements in statement2``
-  First execute the statements, then execute statement2.
-  This is a variant syntax, equivalent to a compound statement.
-  It is useful in the context of ``do statements in let definitions in statement``
-  since it avoids adding a trailing parenthesis.
-
 .. _`Boolean Values`: Boolean_Values.rst
 .. _`Lists`: Lists.rst
 .. _`Records`: Records.rst

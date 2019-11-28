@@ -481,7 +481,7 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
                 Shared<Definition> adef = bindings->as_definition(env);
                 if (adef == nullptr) {
                     // no definitions, just actions.
-                    return make<Preaction_Op>(
+                    return make<Do_Expr>(
                         syntax,
                         analyse_op(*bindings, env, edepth),
                         analyse_op(*bodysrc, env, edepth));
@@ -574,7 +574,7 @@ analyse_do(
 
     auto body = analyse_op(*bodysrc, scope, edepth+1);
     env.frame_maxslots_ = scope.frame_maxslots_;
-    return make<Preaction_Op>(syntax, actions, body);
+    return make<Do_Expr>(syntax, actions, body);
 }
 
 // Analyse a let or where phrase.

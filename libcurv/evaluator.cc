@@ -825,24 +825,18 @@ Block_Op::exec(Frame& f, Executor& ex) const
 }
 
 Value
-Preaction_Op::eval(Frame& f) const
+Do_Expr::eval(Frame& f) const
 {
     Action_Executor aex;
     actions_->exec(f, aex);
     return body_->eval(f);
 }
 void
-Preaction_Op::tail_eval(std::unique_ptr<Frame>& f) const
+Do_Expr::tail_eval(std::unique_ptr<Frame>& f) const
 {
     Action_Executor aex;
     actions_->exec(*f, aex);
     body_->tail_eval(f);
-}
-void
-Preaction_Op::exec(Frame& f, Executor& ex) const
-{
-    actions_->exec(f, ex);
-    body_->exec(f, ex);
 }
 
 void

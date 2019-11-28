@@ -665,28 +665,25 @@ struct Compound_Op_Base : public Operation
 };
 using Compound_Op = Tail_Array<Compound_Op_Base>;
 
-// Execute some actions, then execute the body.
-// This is a restricted form of block with no definitions.
-struct Preaction_Op : public Operation
+// Execute a statement list, then evaluate the body, which is an expression.
+struct Do_Expr : public Just_Expression
 {
     Shared<const Operation> actions_;
     Shared<const Operation> body_;
 
-    Preaction_Op(
+    Do_Expr(
         Shared<const Phrase> syntax,
         Shared<const Operation> a,
         Shared<const Operation> body)
     :
-        Operation(std::move(syntax)),
+        Just_Expression(std::move(syntax)),
         actions_(std::move(a)),
         body_(std::move(body))
     {}
 
     virtual Value eval(Frame&) const override;
     virtual void tail_eval(std::unique_ptr<Frame>&) const override;
-    virtual void exec(Frame&, Executor&) const override;
     virtual SC_Value sc_eval(SC_Frame&) const override;
-    virtual void sc_exec(SC_Frame&) const override;
 };
 
 struct Block_Op : public Operation

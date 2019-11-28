@@ -494,15 +494,10 @@ void Block_Op::sc_exec(SC_Frame& f) const
     body_->sc_exec(f);
 }
 
-SC_Value Preaction_Op::sc_eval(SC_Frame& f) const
+SC_Value Do_Expr::sc_eval(SC_Frame& f) const
 {
     actions_->sc_exec(f);
     return sc_eval_op(f, *body_);
-}
-void Preaction_Op::sc_exec(SC_Frame& f) const
-{
-    actions_->sc_exec(f);
-    body_->sc_exec(f);
 }
 
 void Compound_Op_Base::sc_exec(SC_Frame& f) const
