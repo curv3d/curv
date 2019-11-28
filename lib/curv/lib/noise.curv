@@ -51,6 +51,10 @@ rand3x1 xyz = do
     x := x `and` bits 0x007FFFFF `or` bits 0x3F800000;
     in bool32_to_float(x) - 1;
 
+rand4x1 (a,b,c,d) =
+    // TODO: Optimize, in the style of rand3x1. Or using SIMD.
+    rand2x1(rand2x1(a,b),rand2x1(c,d));
+
 rand2x2 xy = do
     // Marc Olano, 2010, GPU Random Numbers via the Tiny Encryption Algorithm
     // https://www.csee.umbc.edu/~olano/papers/GPUTEA.pdf
