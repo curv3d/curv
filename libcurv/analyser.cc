@@ -1023,14 +1023,18 @@ Program_Phrase::as_definition(Environ& env) const
 }
 
 Shared<Meaning>
-Brace_Phrase::analyse(Environ& env, unsigned) const
+Brace_Phrase::analyse(Environ& env, unsigned edepth) const
 {
     Shared<Definition> adef = body_->as_definition(env);
     if (adef == nullptr) {
+        // record comprehension
+        Scope scope(env);
         auto record = make<Record_Expr>(share(*this));
         each_item(*body_, [&](Phrase& item)->void {
-            record->fields_.push_back(analyse_op(item, env));
+            auto stmt = analyse_stmt(share(item), scope, edepth+1);
+            record->fields_.push_back(stmt);
         });
+        env.frame_maxslots_ = scope.frame_maxslots_;
         return record;
     }
     return analyse_module(*adef, env);
