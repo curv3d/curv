@@ -38,6 +38,7 @@ struct Phrase : public Shared_Base
     virtual ~Phrase() {}
     virtual Location location() const = 0;
     virtual Shared<Definition> as_definition(Environ&) const;
+    virtual bool is_definition() const;
     virtual Shared<Meaning> analyse(Environ&, unsigned edepth) const = 0;
 };
 
@@ -156,7 +157,6 @@ struct Unary_Phrase : public Phrase
     {
         return arg_->location().starting_at(op_);
     }
-    virtual Shared<Definition> as_definition(Environ&) const override;
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
 };
 
@@ -185,6 +185,13 @@ struct Local_Phrase : public Unary_Phrase
 {
     using Unary_Phrase::Unary_Phrase;
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
+};
+struct Include_Phrase : public Unary_Phrase
+{
+    using Unary_Phrase::Unary_Phrase;
+    virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
+    virtual bool is_definition() const override;
+    virtual Shared<Definition> as_definition(Environ&) const override;
 };
 
 struct Dot_Phrase : public Binary_Phrase
@@ -228,11 +235,13 @@ struct Recursive_Definition_Phrase : public Phrase
         return left_->location().ending_at(right_->location().token());
     }
     virtual Shared<Definition> as_definition(Environ&) const override;
+    virtual bool is_definition() const override;
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
 };
-struct Sequential_Definition_Phrase : public Phrase
+// This is 'var x := y'. DEPRECATED. Use 'local x = y' instead.
+struct Var_Definition_Phrase : public Phrase
 {
-    Sequential_Definition_Phrase(
+    Var_Definition_Phrase(
         Token var,
         Shared<Phrase> left,
         Token op,
@@ -248,7 +257,6 @@ struct Sequential_Definition_Phrase : public Phrase
     {
         return right_->location().starting_at(var_);
     }
-    virtual Shared<Definition> as_definition(Environ&) const override;
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
 };
 struct Assignment_Phrase : public Phrase

@@ -124,6 +124,7 @@ make_shape r =
             colour p : [.8, .8, .5]^2.2,
             ... r,
         };
+    in do
         assert (shape.is_2d || shape.is_3d);
         assert (is_bbox3(shape.bbox));
         assert (is_fun(shape.colour));
@@ -855,6 +856,7 @@ chamfer r = {
 move = translate;
 translate _delta shape =
     let delta = if (count _delta == 2) [_delta[X],_delta[Y],0] else _delta;
+    in do
         if (shape.is_2d) assert(delta[Z] == 0);
     in make_shape {
         // TODO: dist(x,y,z,t) : shape.dist(...[x,y,z]-delta, t),
@@ -946,8 +948,10 @@ rotate arg shape =
             is_3d : shape.is_3d,
         };
     {angle, axis: a} ->
-        let axis = normalize a;
+        do
             assert(shape.is_3d);
+        in let
+            axis = normalize a;
             rot3(a,axis,p) =
                     p * cos(a)
                     - cross(axis, p) * sin(a)

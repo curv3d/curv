@@ -61,6 +61,11 @@ Phrase::as_definition(Environ&) const
 {
     return nullptr;
 }
+bool
+Phrase::is_definition() const
+{
+    return false;
+}
 
 // Scope object for analysing a Lambda body. Contains both parameters and
 // nonlocals. We don't classify function parameters as 'local variables' that
@@ -312,7 +317,6 @@ Unary_Phrase::analyse(Environ& env, unsigned) const
         return make<Spread_Op>(
             share(*this),
             analyse_op(*arg_, env));
-    case Token::k_include:
     case Token::k_var:
         throw Exception(At_Token(op_, *this, env), "syntax error");
     default:
@@ -327,15 +331,20 @@ Local_Phrase::analyse(Environ& env, unsigned) const
         "a local definition must be followed by '; <statement>'");
 }
 
-Shared<Definition>
-Unary_Phrase::as_definition(Environ& env) const
+Shared<Meaning>
+Include_Phrase::analyse(Environ& env, unsigned) const
 {
-    switch (op_.kind_) {
-    case Token::k_include:
-        return make<Include_Definition>(share(*this), arg_);
-    default:
-        return nullptr;
-    }
+    throw Exception(At_Token(op_, *this, env), "syntax error");
+}
+Shared<Definition>
+Include_Phrase::as_definition(Environ& env) const
+{
+    return make<Include_Definition>(share(*this), arg_);
+}
+bool
+Include_Phrase::is_definition() const
+{
+    return true;
 }
 
 Shared<Lambda_Expr>
@@ -413,16 +422,12 @@ each_item(Phrase& phrase, std::function<void(Phrase&)> func)
     func(phrase);
 }
 
-// Analyse one item in a compound statement, or in the head of a `do` phrase,
+// Analyse one item in a compound statement, or in the head of a `do` expr,
 // which could be either a statement or a local definition.
 Shared<Operation>
 analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
 {
     if (auto local = cast<const Local_Phrase>(stmt)) {
-        // Local definitions are part of the syntax of compound statements:
-        // they don't have a standalone meaning, and that's why we are
-        // pattern-matching the `local` keyword instead of calling a method
-        // on `stmt` that is implemented by Local_Phrase.
         if (auto defn = local->arg_->as_definition(scope)) {
             // Ideally, we would use the Definition protocol, especially if we
             // want to support compound definitions like `local (x=1;y=2)`.
@@ -459,66 +464,11 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
                 });
                 return setter;
             }
-          /*
-          #if 0
-            The Definition protocol isn't designed for local definitions.
-            To use Definition protocol, we need a Local_Scope class.
-            For each definition, we want to call defn->analyse() before
-            defn->add_to_scope(). However, Compound_Definition is not a
-            Unitary_Definition and doesn't define ::analyse().
-            The Definition protocol expects you to first call add_to_scope for
-            all definitions, and then you call analyse on all unitary defs.
-
-            Definition protocol: [code for do <bindings> in <body>]
-            analyse_block(env, share(*this), bindings_, body_, edepth);
-            Shared<Meaning> analyse_block(
-                Environ& env,
-                Shared<const Phrase> syntax,
-                Shared<Phrase> bindings,
-                Shared<const Phrase> bodysrc,
-                unsigned edepth)
-            {
-                Shared<Definition> adef = bindings->as_definition(env);
-                if (adef == nullptr) {
-                    // no definitions, just actions.
-                    return make<Do_Expr>(
-                        syntax,
-                        analyse_op(*bindings, env, edepth),
-                        analyse_op(*bodysrc, env, edepth));
-                }
-                if (adef->kind_ == Definition::k_sequential) {
-                    Sequential_Scope sscope(env, false, edepth);
-                    sscope.analyse(*adef);
-                    auto body = analyse_op(*bodysrc, sscope, edepth+1);
-                    env.frame_maxslots_ = sscope.frame_maxslots_;
-                    return make<Block_Op>(syntax,
-                        std::move(sscope.executable_), std::move(body));
-                }
-                bad_definition(*adef, env, "wrong style of definition for this block");
-            }
-            sscope.analyse(*adef):
-                def.add_to_scope(*this);
-                parent_->frame_maxslots_ = frame_maxslots_;
-            void Data_Definition::add_to_scope(Block_Scope& scope):
-                unsigned unitnum = scope.begin_unit(share(*this));
-                pattern_ = make_pattern(*definiendum_, true, scope, unitnum);
-                scope.end_unit(unitnum, share(*this));
-            Sequential_Scope::end_unit(unitno, Shared<Unitary_Definition> unit)
-                (void)unitno;
-                unit->analyse(*this);
-                executable_.actions_.push_back(
-                    unit->make_setter(executable_.module_slot_));
-                ++nunits_;
-            Data_Definition::analyse(Environ& env):
-                pattern_->analyse(env);
-                definiens_expr_ = analyse_op(*definiens_phrase_, env);
-          #endif
-          */
         }
         throw Exception(At_Phrase(*stmt, scope),
             "syntax error in local definition");
     }
-    if (auto vardef = cast<const Sequential_Definition_Phrase>(stmt)) {
+    if (auto vardef = cast<const Var_Definition_Phrase>(stmt)) {
         scope.analyser_.system_.warning(Exception{At_Phrase(*vardef, scope),
             "'var pattern := expr' is deprecated.\n"
             "Use 'local pattern = expr' instead."});
@@ -534,10 +484,11 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
             "Try 'x := 1' if you want an assignment statement.\n"
             "Try 'local x = 1' if you want a local definition.");
     }
-    if (auto defn = stmt->as_definition(scope)) {
+    if (auto incl = cast<const Include_Phrase>(stmt)) {
         throw Exception(At_Phrase(*stmt, scope),
-            "A recursive definition is not legal here.\n"
-            "Try 'local <definition>' instead.");
+            "'include filename' is a recursive definition.\n"
+            "In this context, only local definitions are permitted.\n"
+            "Try 'local include filename' instead.");
     }
     return analyse_op(*stmt, scope, edepth);
 }
@@ -577,6 +528,20 @@ analyse_do(
     return make<Do_Expr>(syntax, actions, body);
 }
 
+void
+require_recursive_definition(Shared<const Phrase> syntax, Environ& env)
+{
+    if (isa<const Local_Phrase>(syntax)) {
+        throw Exception(At_Phrase(*syntax, env),
+            "Local definitions can't be used in this context.\n"
+            "Try removing the 'local' keyword.");
+    }
+    if (isa<const Var_Definition_Phrase>(syntax)) {
+        throw Exception(At_Phrase(*syntax, env), "syntax error");
+    }
+    throw Exception(At_Phrase(*syntax, env), "expected a definition");
+}
+
 // Analyse a let or where phrase.
 Shared<Meaning>
 analyse_block(
@@ -586,16 +551,42 @@ analyse_block(
     Shared<const Phrase> bodysrc,
     unsigned edepth)
 {
+    // Enforce that the bindings are a list of zero or more recursive
+    // definitions, and report a meaningful error otherwise.
+    // The Definition Protocol doesn't enforce these restrictions.
+    if (isa<const Empty_Phrase>(bindings)) {
+        // If you comment out all the definitions in a let clause,
+        // you do not get a syntax error.
+        return analyse_op(*bodysrc, env, edepth);
+    }
+    else if (auto commas = cast<const Comma_Phrase>(bindings)) {
+        throw Exception(
+            At_Token(commas->args_.front().separator_, *bindings, env),
+            "syntax error");
+    }
+    else if (auto semis = cast<const Semicolon_Phrase>(bindings)) {
+        for (auto item : semis->args_) {
+            if (isa<const Empty_Phrase>(item.expr_))
+                ;
+            else if (!item.expr_->is_definition())
+                require_recursive_definition(item.expr_, env);
+        }
+    }
+    else {
+        if (!bindings->is_definition())
+            require_recursive_definition(bindings, env);
+    }
+
+    // Now use the Definition Protocol to analyse the phrase.
     Shared<Definition> adef = bindings->as_definition(env);
     if (adef == nullptr) {
-        throw Exception(At_Phrase(*bindings, env), "no definitions found");
-    }
-    if (adef->kind_ == Definition::k_sequential) {
         throw Exception(At_Phrase(*bindings, env),
-            "sequential definitions are not legal in this context");
+            "Internal Error: no definitions found");
     }
-    assert(adef->kind_ == Definition::k_recursive);
-
+    if (adef->kind_ != Definition::k_recursive) {
+        throw Exception(At_Phrase(*bindings, env),
+            "Internal Error: recursive definition not found");
+    }
     Recursive_Scope rscope(env, false, adef->syntax_);
     rscope.analyse(*adef);
     auto body = analyse_op(*bodysrc, rscope, edepth+1);
@@ -696,6 +687,8 @@ Where_Phrase::analyse(Environ& env, unsigned edepth) const
                 std::move(rscope.executable_), std::move(body));
         }
     }
+    if (auto p = cast<const Paren_Phrase>(bindings))
+        bindings = p->body_;
     return analyse_block(env, syntax, bindings, bodysrc, edepth);
 }
 
@@ -824,7 +817,7 @@ Recursive_Definition_Op::exec(Frame& f, Executor&) const
 }
 
 Shared<Meaning>
-Sequential_Definition_Phrase::analyse(Environ& env, unsigned) const
+Var_Definition_Phrase::analyse(Environ& env, unsigned) const
 {
     throw Exception(At_Phrase(*this, env), "not an expression or statement");
 }
@@ -897,16 +890,10 @@ Recursive_Definition_Phrase::as_definition(Environ& env) const
     return as_definition_iter(env, share(*this), *left_, right_,
         Definition::k_recursive);
 }
-Shared<Definition>
-Sequential_Definition_Phrase::as_definition(Environ& env) const
+bool
+Recursive_Definition_Phrase::is_definition() const
 {
-    if (!env.analyser_.var_deprecated_) {
-        env.analyser_.system_.warning(Exception{At_Phrase(*this, env),
-            "`var` definitions are deprecated"});
-        env.analyser_.var_deprecated_ = true;
-    }
-    return as_definition_iter(env, share(*this), *left_, right_,
-        Definition::k_sequential);
+    return true;
 }
 
 Shared<Meaning>

@@ -254,8 +254,9 @@ parse_ritem(Scanner& scanner)
     auto tok = scanner.get_token();
     switch (tok.kind_) {
     case Token::k_ellipsis:
-    case Token::k_include:
         return make<Unary_Phrase>(tok, parse_ritem(scanner));
+    case Token::k_include:
+        return make<Include_Phrase>(tok, parse_ritem(scanner));
     case Token::k_local:
         return make<Local_Phrase>(tok, parse_ritem(scanner));
     case Token::k_if:
@@ -348,7 +349,7 @@ parse_ritem(Scanner& scanner)
     case Token::k_assign:
         if (auto unary = cast<Unary_Phrase>(left)) {
             if (unary->op_.kind_ == Token::k_var) {
-                return make<Sequential_Definition_Phrase>(
+                return make<Var_Definition_Phrase>(
                     unary->op_, std::move(unary->arg_), tok,
                     parse_ritem(scanner));
             }

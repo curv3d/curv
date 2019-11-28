@@ -511,7 +511,9 @@ assert([local a=1; a; a+1] == [1,2]);
 );
 assert_error("a local definition must be followed by '; <statement>'",
     local x = 1);
-assert_error("local definitions can't be mixed with recursive definitions",
+assert_error(
+    "Local definitions can't be used in this context.
+    |Try removing the 'local' keyword.",
     let local x = 1; y = 2 in y);
 
 // list assignment

@@ -411,8 +411,8 @@ TEST(curv, eval)
     SUCCESS("...[1,2,3]", "1\n2\n3");
 
     // let operator
-    SUCCESS("(let a=1; print \"$(a)\" in a)+1", "2");
-    EXPECT_EQ(sconsole.str(), "1\n");
+    //SUCCESS("(let a=1; print \"$(a)\" in a)+1", "2");
+    //EXPECT_EQ(sconsole.str(), "1\n");
 
     // print action
     SUCCESS("print \"$(17,42)\"", "");
@@ -483,7 +483,7 @@ TEST(curv, eval)
         "60\n");
 
     FAILMSG("let var a:=2 in a",
-        "sequential definitions are not legal in this context");
+        "syntax error");
     FAILMSG("do a=2 in a",
         "A recursive definition like 'x = 1' is not legal here.\n"
         "Try 'x := 1' if you want an assignment statement.\n"
