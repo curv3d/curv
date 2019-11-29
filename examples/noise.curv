@@ -1,2 +1,8 @@
 // Scale independent white noise. Zoom in or out and you won't get artifacts.
-make_texture ([x,y,z,t]->let c=lib.noise.rand2x1[x,y]; in sRGB(c,c,c))
+parametric
+    animate :: checkbox = true;
+in
+make_texture ([x,y,z,t]->
+    [x, y, t * bit animate]
+     >> lib.noise.rand3x1
+     >> sRGB.grey)
