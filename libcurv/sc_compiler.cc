@@ -898,6 +898,10 @@ void For_Op::sc_exec(SC_Frame& f) const
              << i << "+=" << dfmt(step, dfmt::EXPR) << ") {\n";
   #endif
     pattern_->sc_exec(i, At_SC_Phrase(list_->syntax_, f), f);
+    if (cond_) {
+        auto cond = sc_eval_expr(f, *cond_, SC_Type::Bool());
+        f.sc_.out() << "  if (!"<<cond<<") break;\n";
+    }
     body_->sc_exec(f);
     f.sc_.out() << "  }\n";
     f.sc_.opcaches_.pop_back();
