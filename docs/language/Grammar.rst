@@ -32,6 +32,7 @@ precedence and ``postfix`` being the highest precedence::
     | 'if' parens ritem
     | 'if' parens ritem 'else' ritem
     | 'for' '(' ritem 'in' ritem ')' ritem
+    | 'for' '(' ritem 'in' ritem 'while' ritem ')' ritem
     | 'while' parens ritem
     | 'do' list 'in' ritem
     | 'let' list 'in' ritem
