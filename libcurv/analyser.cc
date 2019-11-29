@@ -1065,10 +1065,13 @@ For_Phrase::analyse(Environ& env, unsigned edepth) const
     auto pat = make_pattern(*pattern_, false, scope, 0);
     pat->analyse(scope);
     auto list = analyse_op(*listexpr_, env);
+    Shared<Operation> cond;
+    if (condition_)
+        cond = analyse_op(*condition_, scope, edepth+1);
     auto body = analyse_op(*body_, scope, edepth+1);
 
     env.frame_maxslots_ = scope.frame_maxslots_;
-    return make<For_Op>(share(*this), pat, list, body);
+    return make<For_Op>(share(*this), pat, list, cond, body);
 }
 
 Shared<Meaning>

@@ -712,17 +712,20 @@ struct For_Op : public Operation
 {
     Shared<const Pattern> pattern_;
     Shared<const Operation> list_;
+    Shared<const Operation> cond_;
     Shared<const Operation> body_;
 
     For_Op(
         Shared<const Phrase> syntax,
         Shared<const Pattern> pattern,
         Shared<const Operation> list,
+        Shared<const Operation> cond,
         Shared<const Operation> body)
     :
         Operation(std::move(syntax)),
         pattern_(std::move(pattern)),
         list_(std::move(list)),
+        cond_(std::move(cond)),
         body_(std::move(body))
     {}
 

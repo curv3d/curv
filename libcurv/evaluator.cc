@@ -866,6 +866,8 @@ For_Op::exec(Frame& f, Executor& ex) const
     for (size_t i = 0; i < list->size(); ++i) {
         icx.index_ = i;
         pattern_->exec(f.array_, list->at(i), icx, f);
+        if (cond_ && !cond_->eval(f).to_bool(At_Phrase{*cond_->syntax_,f}))
+            break;
         body_->exec(f, ex);
     }
 }

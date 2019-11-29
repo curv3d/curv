@@ -602,5 +602,7 @@ in sc_test {
         in [a,b] == ab && [c,d] == cd && xor[ab,cd] == [T,T];
 };
 
+assert([for (i in 1..10 while i <= 3) i] == [1,2,3]);
+
 // script return value:
 in null

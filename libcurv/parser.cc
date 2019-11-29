@@ -294,31 +294,41 @@ parse_ritem(Scanner& scanner)
       }
     case Token::k_for:
       {
-        Token tok2 = scanner.get_token();
-        if (tok2.kind_ != Token::k_lparen) {
-            throw Exception(At_Token(tok2, scanner),
+        Token toklp = scanner.get_token();
+        if (toklp.kind_ != Token::k_lparen) {
+            throw Exception(At_Token(toklp, scanner),
                 "syntax error: expecting '(' after 'for'");
         }
 
         auto pat = parse_primary(scanner, "'for' pattern");
 
-        Token tok3 = scanner.get_token();
-        if (tok3.kind_ != Token::k_in) {
-            throw Exception(At_Token(tok3, scanner),
+        Token tokin = scanner.get_token();
+        if (tokin.kind_ != Token::k_in) {
+            throw Exception(At_Token(tokin, scanner),
                 "syntax error: expecting 'in'");
         }
 
         auto listexpr = parse_ritem(scanner);
 
-        Token tok4 = scanner.get_token();
-        if (tok4.kind_ != Token::k_rparen) {
-            throw Exception(At_Token(tok4, scanner),
+        Token tokw = scanner.get_token();
+        Shared<const Phrase> cond;
+        if (tokw.kind_ == Token::k_while) {
+            cond = parse_ritem(scanner);
+        } else {
+            scanner.push_token(tokw);
+            tokw = Token();
+        }
+
+        Token tokrp = scanner.get_token();
+        if (tokrp.kind_ != Token::k_rparen) {
+            throw Exception(At_Token(tokrp, scanner),
                 "syntax error: expecting ')'");
         }
 
         auto body = parse_ritem(scanner);
 
-        return make<For_Phrase>(tok, tok2, pat, tok3, listexpr, tok4, body);
+        return make<For_Phrase>(
+            tok, toklp, pat, tokin, listexpr, tokw, cond, tokrp, body);
       }
     case Token::k_while:
       {

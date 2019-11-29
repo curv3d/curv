@@ -501,6 +501,8 @@ struct For_Phrase : public Phrase
     Shared<const Phrase> pattern_;
     Token in_;
     Shared<const Phrase> listexpr_;
+    Token while_;
+    Shared<const Phrase> condition_;
     Token rparen_;
     Shared<const Phrase> body_;
 
@@ -510,6 +512,8 @@ struct For_Phrase : public Phrase
         Shared<const Phrase> pattern,
         Token in,
         Shared<const Phrase> listexpr,
+        Token While,
+        Shared<const Phrase> condition,
         Token rparen,
         Shared<const Phrase> body)
     :
@@ -518,6 +522,8 @@ struct For_Phrase : public Phrase
         pattern_(pattern),
         in_(in),
         listexpr_(listexpr),
+        while_(While),
+        condition_(condition),
         rparen_(rparen),
         body_(body)
     {}
