@@ -51,10 +51,8 @@ precedence and ``postfix`` being the highest precedence::
     | sum '==' sum | sum '!=' sum
     | sum '<' sum  | sum '>' sum
     | sum '<=' sum | sum '>=' sum
-    | sum '..' sum
-    | sum '..' sum 'by' sum
-    | sum '..<' sum
-    | sum '..<' sum 'by' sum
+    | sum '..' sum | sum '..' sum 'by' sum
+    | sum '..<' sum | sum '..<' sum 'by' sum
 
   sum ::= product | sum '+' product | sum '-' product
 
