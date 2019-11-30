@@ -2,8 +2,6 @@
 
 High:
 * vectorized boolean operations: for noise, and colour conversion
-* for (pattern in list while condition) phrase
-  Because Structured Programming (break is a goto).
 * V[[X,Y]] := vec2 in Curv, SubCurv
 * M[i,j] := a
 * replace foo."bar" with
@@ -23,9 +21,6 @@ High:
 Medium:
 * Get rid of `where`, just use `let` (simplification)
 * Branded values?
-* for (<pattern> in <list> while <condition>) ...
-  Bounded `while` or early exit `for`. An alternative to a `break` statement,
-  useful for `mandelbrot.curv`.
 * `== value` is a predicate, and it is an equality pattern.
 * Use _ as digit separator in numerals.
 * any, all
