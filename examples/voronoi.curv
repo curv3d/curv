@@ -1,21 +1,21 @@
 let
-random2f(x,y) =
-    let t = sin(x+y*1e3);
-    in (frac(t*1e4), frac(t*1e6));
+    random2f[x,y] =
+        let t = sin(x+y*1e3);
+        in [frac(t*1e4), frac(t*1e6)];
 
-voronoi(x,y) =
-    let p = floor(x,y);
-        f = frac(x,y);
-        res = 8;
-    in do
-        for (i in -1 .. 1)
-            for (j in -1 .. 1) (
-                local b = (i,j);
-                local r = b - f + random2f(p+b);
-                local d = dot(r,r);
-                res := min(res, d);
-            )
-    in sqrt res;
+    voronoi[x,y] =
+        do
+            local p = floor[x,y];
+            local f = frac[x,y];
+            local res = 8;
+            for (i in -1 .. 1)
+                for (j in -1 .. 1) (
+                    local b = [i,j];
+                    local r = b - f + random2f(p+b);
+                    local d = dot[r,r];
+                    res := min[res, d];
+                )
+        in sqrt res;
 
 in
-make_texture ((x,y,_,_) -> sRGB.grey(voronoi(x,y)))
+make_texture ([x,y,_,_] -> sRGB.grey(voronoi[x,y]))

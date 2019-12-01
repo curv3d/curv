@@ -1,6 +1,6 @@
 make_shape {
-    dist : everything.dist,
-    colour (x,y,_,_) :
+    dist = everything.dist;
+    colour [x,y,_,_] =
         do
             local z = [x,y];
             local color = [0,0,0];
@@ -13,7 +13,7 @@ make_shape {
                     done := true;
                 )
             );
-        in sRGB.HSV color,
-    bbox : [[-2.5,-2,-2],[1.5,2,2]],
-    is_2d : true,
+        in sRGB.HSV color;
+    bbox = [[-2.5,-2,-2],[1.5,2,2]];
+    is_2d = true;
 }

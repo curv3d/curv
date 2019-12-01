@@ -1,10 +1,10 @@
 // demo of 'swirl' transformation
 
 parametric
-    Swirl_Strength: ss :: slider(-10,10) = 4;
-    Swirl_Diameter: sd :: slider(4,40) = 16;
+    Swirl_Strength: ss :: slider[-10,10] = 4;
+    Swirl_Diameter: sd :: slider[4,40] = 16;
 in
-union(rect{xmin:0} >> colour red, rect{xmax:0} >> colour(sRGB(1,1,.8)))
+union[rect{xmin:0} >> colour red, rect{xmax:0} >> colour(sRGB[1,1,.8])]
   >> repeat_radial 8
   >> swirl{strength: ss, d: sd}
   >> into intersection [circle 8]

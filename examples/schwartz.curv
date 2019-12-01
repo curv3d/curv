@@ -2,25 +2,25 @@
 // https://en.wikipedia.org/wiki/Schwarz_minimal_surface#Schwarz_P_.28.22Primitive.22.29
 
 let
-schwartz_p = make_shape {
-    dist p: -(cos(p[X]) + cos(p[Y]) + cos(p[Z])),
-    is_3d: true
-};
+    schwartz_p = make_shape {
+        dist p = -(cos(p[X]) + cos(p[Y]) + cos(p[Z]));
+        is_3d = true;
+    };
 
-schwartz_bones = schwartz_p >> offset (-1) >> lipschitz 2;
-schwartz_bones2 = complement schwartz_p >> offset (-1) >> lipschitz 2;
-double_schwartz_bones = union(
-    colour blue schwartz_bones,
-    colour green schwartz_bones2,
-);
+    schwartz_bones = schwartz_p >> offset (-1) >> lipschitz 2;
+    schwartz_bones2 = complement schwartz_p >> offset (-1) >> lipschitz 2;
+    double_schwartz_bones = union [
+        colour blue schwartz_bones,
+        colour green schwartz_bones2,
+    ];
 
-schwartz_surface = shell (.2) schwartz_p >> lipschitz 2;
+    schwartz_surface = shell (.2) schwartz_p >> lipschitz 2;
 
-schwartzize t shape = morph t (shape, intersection(shape, schwartz_surface));
+    schwartzize t shape = morph t [shape, intersection[shape, schwartz_surface]];
 
 in
-row 5 (
+row 5 [
     schwartz_surface `intersection` sphere(tau*3),
-    schwartz_surface >> colour (sRGB.HSV(0,.7,.8)) `intersection` cube(tau*3),
+    schwartz_surface >> colour (sRGB.HSV[0,.7,.8]) `intersection` cube(tau*3),
     schwartzize(.1) (cube 20),
-)
+]

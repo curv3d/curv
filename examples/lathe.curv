@@ -1,8 +1,8 @@
 let
-function(f) = make_shape {
-    dist p : p[Y] - f(p[X]),
-    is_2d : true,
-};
+    function(f) = make_shape {
+        dist p = p[Y] - f(p[X]);
+        is_2d = true;
+    };
 
 in
 function(x->sin x + 2)

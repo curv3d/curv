@@ -1,2 +1,2 @@
 // Stella Octangula
-union (tetrahedron, reflect X_axis tetrahedron)
+union [tetrahedron, reflect X_axis tetrahedron]

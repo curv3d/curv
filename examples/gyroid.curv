@@ -1,16 +1,15 @@
+let
+    gyroid_bones = gyroid >> offset (-1.2) >> lipschitz 1.5;
+    gyroid_bones2 = complement gyroid >> offset (-1.2) >> lipschitz 1.5;
+    double_gyroid_bones = union[
+        colour (sRGB.HSV[2/3,.7,1]) gyroid_bones,
+        colour (sRGB.HSV[1/3,.7,.7]) gyroid_bones2,
+    ];
+
+    gyroid_surface = shell .2 gyroid >> lipschitz 1.5;
+in
 row [
-    smooth .5 .intersection (double_gyroid_bones, sphere 20),
-    intersection (gyroid_surface, sphere 20),
-    sphere 20 >> texture (i_gyroid, sRGB.grey)
+    smooth .5 .intersection [double_gyroid_bones, sphere 20],
+    intersection [gyroid_surface, sphere 20],
+    sphere 20 >> texture [i_gyroid, sRGB.grey]
 ]
-
-where (
-gyroid_bones = gyroid >> offset (-1.2) >> lipschitz 1.5;
-gyroid_bones2 = complement gyroid >> offset (-1.2) >> lipschitz 1.5;
-double_gyroid_bones = union(
-    colour (sRGB.HSV(2/3,.7,1)) gyroid_bones,
-    colour (sRGB.HSV(1/3,.7,.7)) gyroid_bones2,
-);
-
-gyroid_surface = shell (.2) gyroid >> lipschitz 1.5;
-)

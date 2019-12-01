@@ -1,10 +1,10 @@
 let
-cubic_lattice =
-    let R a = abs(a - floor(a+.5));
-    in make_shape {
-        dist(x,y,z,_) = min(mag(R y,R z),mag(R x,R z),mag(R x,R y));
-        is_3d = true;
-    };
+    cubic_lattice =
+        let R a = abs(a - floor(a+.5));
+        in make_shape {
+            dist[x,y,z,_] = min[mag[R y,R z], mag[R x,R z], mag[R x,R y]];
+            is_3d = true;
+        };
 
 in
 cubic_lattice

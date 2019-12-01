@@ -3,23 +3,23 @@
 // https://en.wikipedia.org/wiki/Stereographic_projection
 
 let
-stereographic_projection plane = sphere 2 >> colour
-    ((x,y,z,t)->plane.colour(x/(1-z), y/(1-z), 0, t));
+    stereographic_projection plane = sphere 2 >> colour
+        ([x,y,z,t]->plane.colour[x/(1-z), y/(1-z), 0, t]);
 
-log_spiral(a,b) = make_shape {
-    dist(x,y,z,t) =
-        let r = mag[x,y,z];
-            t = phase[x,y,z];
-        in if (r == 0)
-            0
-        else
-            let n = (log(r/a)/b - t) / tau;
-                upper_r = a * e^(b*(t+tau*ceil n));
-                lower_r = a * e^(b*(t+tau*floor n));
-            in min(abs(upper_r-r), abs(r-lower_r)) - r*b;
-    is_2d = true;
-};
-spiral = union(colour red everything, log_spiral(1,.2));
+    log_spiral [a,b] = make_shape {
+        dist [x,y,z,t] =
+            let r = mag[x,y,z];
+                t = phase[x,y,z];
+            in if (r == 0)
+                0
+            else
+                let n = (log(r/a)/b - t) / tau;
+                    upper_r = a * e^(b*(t+tau*ceil n));
+                    lower_r = a * e^(b*(t+tau*floor n));
+                in min[abs(upper_r-r), abs(r-lower_r)] - r*b;
+        is_2d = true;
+    };
+    spiral = union[colour red everything, log_spiral[1,.2]];
 
 in
 spiral >> stereographic_projection
