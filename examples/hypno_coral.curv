@@ -4,20 +4,20 @@
 // for 3D printing: curv -Ovsize=.15 -Ojit -o hypno_coral.{x3d,curv}
 
 parametric
-    Iter :: int_slider(0,50) = 10;
-    Amp :: slider(0,3) = 0.6;
+    Iter :: int_slider[0,50] = 10;
+    Amp :: slider[0,3] = 0.6;
     Scale :: scale_picker = 0.7;
-    Speed :: slider(0,4) = 1;
-    Offset :: slider(-1.5, 2) = 0;
-    Smooth :: slider(0,5) = 3.2;
+    Speed :: slider[0,4] = 1;
+    Offset :: slider[-1.5, 2] = 0;
+    Smooth :: slider[0,5] = 3.2;
 in let
-plasma3D = make_texture ([x,y,z,t] ->
-    let p = [x,y,z]*Scale;
-    in do
-        local t = t*Speed;
-        for (i in 1..Iter)
-            p := p + Amp/i*sin(i*p[[Y,Z,X]] + t + [0,tau/3,tau*(2/3)]) + 1;
-    in  sRGB(0.5*sin(p*pi)+0.5));
-gyre = gyroid >> offset (Offset) >> lipschitz 1.5;
-gsphere = smooth Smooth .intersection [gyre, sphere 20];
+    plasma3D = make_texture ([x,y,z,t] ->
+        let p = [x,y,z]*Scale;
+        in do
+            local t = t*Speed;
+            for (i in 1..Iter)
+                p := p + Amp/i*sin(i*p[[Y,Z,X]] + t + [0,tau/3,tau*(2/3)]) + 1;
+        in  sRGB(0.5*sin(p*pi)+0.5));
+    gyre = gyroid >> offset (Offset) >> lipschitz 1.5;
+    gsphere = smooth Smooth .intersection [gyre, sphere 20];
 in gsphere >> colour plasma3D >> scale 2

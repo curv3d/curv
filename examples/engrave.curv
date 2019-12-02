@@ -1,20 +1,17 @@
 let
-target = cube 18;
-pattern = gyroid >> shell .3 >> lipschitz 1.5;
+    target = cube 18;
+    pattern = gyroid >> shell .3 >> lipschitz 1.5;
 
+    engrave depth pattern target =
+        difference [target,
+            intersection [
+                target >> shell depth,
+                pattern]
+        ];
+
+    emboss i pat shape = morph i [shape, intersection[shape, pat]];
 in
 row [
     engrave .2 pattern target,
     emboss .2 pattern target
 ]
-
-where (
-engrave depth pattern target =
-    difference (target,
-        intersection (
-            target >> shell depth,
-            pattern)
-    );
-
-emboss i pat shape = morph i (shape, intersection(shape, pat));
-)

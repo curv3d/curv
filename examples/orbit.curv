@@ -1,11 +1,10 @@
 // try changing "cube.mitred" to "cube.exact"
 
-smooth 1 .union (
-  cube.mitred 1 >> a_move {f t: (cos t, sin t, 0), bbox: bb},
-  sphere 1 >> a_move {f t: (cos t, -sin t, 0), bbox: bb},
-)
-
-where (
-include file "lib/animate.curv";
-bb = [[-1,-1,0], [1,1,0]];
-)
+let
+    include file "lib/animate.curv";
+    bb = [[-1,-1,0], [1,1,0]];
+in
+smooth 1 .union [
+  cube.mitred 1 >> a_move {f t: [cos t, sin t, 0], bbox: bb},
+  sphere 1 >> a_move {f t: [cos t, -sin t, 0], bbox: bb},
+]

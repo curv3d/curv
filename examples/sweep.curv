@@ -32,35 +32,25 @@
 // * "Implicit Sweep Objects" 1996
 
 let
-sweep (f, maxt, n) = make_shape {
-    dist(x,y,z,t) =
-        let p = (x,y,z);
-            radius = 0.1;
-            ratio = 0.2;
-            d = mag(p);
-        in do
-            for (i in 0 ..< n) (
-                local a = i*maxt/n;
-                local b = ratio*f(a)-p;
-                d := min(d, dot(b, b));
-            );
-            d := sqrt(d);
-        in
-            d - radius;
+    sweep [f, maxt, n] = make_shape {
+        dist [x,y,z,t] =
+            let p = [x,y,z];
+                radius = 0.1;
+                ratio = 0.2;
+                d = mag p;
+            in do
+                for (i in 0 ..< n) (
+                    local a = i*maxt/n;
+                    local b = ratio*f(a)-p;
+                    d := min[d, dot[b, b]];
+                );
+                d := sqrt d;
+            in
+                d - radius;
 
-        /*
-        var range := [3.0, 3.0, 1.0];
-        var eps := 0.001;
-        // boundingBox
-        var bb := ratio*range+radius;
-        //if (any(greaterThan(abs(p), bb))) return length(max(abs(p)-bb,0.0)) + eps;
-        if (p[X]>bb[X] || p[Y]>bb[Y] || p[Z]>bb[Z])
-            mag(max(abs p - bb, 0)) + eps
-        else
-        */
-    is_3d = true;
-};
+        is_3d = true;
+    };
 
 in
-sweep(t->[sin(t) + 2*sin(2*t), cos(t) - 2*cos(2*t), -sin(3*t)], tau, 50)
+sweep[t->[sin(t) + 2*sin(2*t), cos(t) - 2*cos(2*t), -sin(3*t)], tau, 50]
 >> set_bbox [[-1,-1,-1],[1,1,1]]

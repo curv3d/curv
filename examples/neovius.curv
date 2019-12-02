@@ -1,10 +1,10 @@
 // the Neovius surface: https://en.wikipedia.org/wiki/Neovius_surface
 
 let
-neovius = make_shape {
-    dist(x,y,z,t): -(3*(cos x+cos y+cos z) + 4*cos x*cos y*cos z),
-    is_3d: true
-};
+    neovius = make_shape {
+        dist[x,y,z,_] = -(3*(cos x+cos y+cos z) + 4*cos x*cos y*cos z);
+        is_3d = true;
+    };
 
 in
 neovius >> shell .2 >> lipschitz 10 `intersection` cube 20

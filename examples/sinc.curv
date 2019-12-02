@@ -1,13 +1,13 @@
 // 3D plot of the 'sinc', or 'cardinal sine' function.
 // https://en.wikipedia.org/wiki/Sinc_function
 let
-sinc x = if (x == 0) 1 else sin x / x;
+    sinc x = if (x == 0) 1 else sin x / x;
 
 in
 make_shape {
-  dist(x,y,z,t) = abs(z - sinc(mag[x,y])*10) - 1;
+  dist[x,y,z,t] = abs(z - sinc(mag[x,y])*10) - 1;
   is_3d = true;
 }
 >> lipschitz 5
->> into intersection [box(40,40,40)]
+>> into intersection [box[40,40,40]]
 //>> slice_xz >> show_dist

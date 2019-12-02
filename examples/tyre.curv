@@ -1,13 +1,13 @@
 let
-w = 5;
-c = 99.2;
+    w = 5;
+    c = 99.2;
 
 in
-rect(1,inf)
+rect[1,inf]
 >> repeat_x 2
 >> rotate(60*deg)
 >> repeat_mirror_x
->> into intersection [rect(w,c)]
+>> into intersection [rect[w,c]]
 >> extrude 1
 >> rotate {angle: 90*deg, axis: X_axis}
 >> bend{d:20,angle:tau/4}

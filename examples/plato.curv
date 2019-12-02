@@ -1,7 +1,7 @@
-union (
-    difference(
+union [
+    difference[
         dodecahedron 2,
         sphere 2.1,
-    ),
+    ],
     colour red (cube .5),
-)
+]
