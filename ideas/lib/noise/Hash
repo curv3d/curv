@@ -45,6 +45,8 @@ For high quality, scale independent hashing, you need to convert the float
 to a bit array (floatBitsToUint), and use bitwise operators. This requires
 OpenGL 3.3, OpenGL ES 3.0 or WebGL 2. That's how the default hasher works.
 
+Performance of integer hashes
+-----------------------------
 This approach may not be the fastest:
 * Brian Sharpe says "Modern cards can also perform integer hashing which
   in some cases produce superior results but will often still run slower than
@@ -54,6 +56,28 @@ This approach may not be the fastest:
   * but there may be more float arithmetic units than int arith units.
 * "on Nvidia hardware, there can only be 32 shifts executing at once,
   where there can be 128 other bitwise operations." -- the internet
+
+Do GPUs have SIMD? Nvidia: no. AMD: no. Intel? seems unlikely.
+SIMD parallelism in Curv code will benefit CPU execution for mesh export.
+* Nvidia CUDA is SIMT (single instruction, multiple threads). It isn't SIMD,
+  meaning there are no SIMD operations that can be executed by a thread
+  on vectors of 2-4 32 bit floats or ints. So the SIMD types in GLSL don't
+  provide additional parallelism.
+* AMD is also SIMT. Their current ISA is GCN (Graphics Core Next).
+  Here is the GCN3 ISA reference (2016):
+  http://gpuopen.com/wp-content/uploads/2016/08/AMD_GCN3_Instruction_Set_Architecture_rev1.1.pdf
+  Quote: "GCN programs consist of scalar instructions that operate on one value
+  per wavefront, and vector instructions that operate on one value per thread."
+* SIMT makes sense on a GPU. You have massive thread parallelism, meaning few
+  transistors per thread execution unit. Per-thread SIMD registers would be a
+  waste.
+
+How fast are float vs int instructions (32 bit)?
+On all architectures, nothing is faster than floating point add/mul.
+* Nvidia: int and/or/xor same speed as FP mul, but shift is 1/2 speed.
+* AMD: in GCN 1 (2012), int32 operations are slower than float32.
+* Intel: IDIV is faster than FDIV. fp add/mul is 4x faster than trig/exp.
+  No other information about ints.
 
 Marc Olano, TEA2 hashing
 ------------------------
@@ -229,6 +253,11 @@ From comments in Nimitz:
 
 How do you write a good integer hash function?
 ----------------------------------------------
+These look good:
+https://nullprogram.com/blog/2018/07/31/
+https://ticki.github.io/blog/designing-a-good-non-cryptographic-hash-function/
+
+------
 The two approaches are: bitwise operations (add, xor, shift), and multiply by
 primes. The bitwise approach is more widely discussed. Most of the attention
 has been on optimizing for the CPU; I don't trust that the same algorithms
@@ -272,3 +301,8 @@ Nimitz: testing using ENT (http://www.fourmilab.ch/random/)
 
 Octaviogood: a shadertoy for testing hashes:
 https://www.shadertoy.com/view/wljXDz
+
+Avalanche diagrams.
+
+SMHasher is the de-facto tool for testing non-cryptographic hashes.
+https://github.com/aappleby/smhasher

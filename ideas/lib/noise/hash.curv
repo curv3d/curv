@@ -9,13 +9,12 @@ in
 // typical graphics operations), scale independent, and the same results across
 // different GPUs.
 
-tea2x2 xy =
+tea2x2 xy = do
     // Marc Olano, 2010, GPU Random Numbers via the Tiny Encryption Algorithm
     // https://www.csee.umbc.edu/~olano/papers/GPUTEA.pdf
     // https://umbcgaim.wordpress.com/2010/07/01/gpu-random-numbers/
     // High quality output, scale independent.
-    let v = float_to_bool32 xy;
-    in do
+    local v = float_to_bool32 xy;
     // two rounds of TEA hashing
     v[X] := v[X] `plus` xor[
                 v[Y] `lshift` 4 `plus` bits 0xA341316C,
@@ -44,13 +43,9 @@ tea2x2 xy =
                  bits 0x3F800000];
     in bool32_to_float(v) - 1;
 
-tea2x1 xy =
+tea2x1 xy = do
     // Created by Doug, based on rand2x2.
-    // It's no good! nav2x1 is much better.
-    // Using test.curv, zoom in, then translate to the left, then zoom in more,
-    // and you get artifacts.
-    let v = float_to_bool32 xy;
-    in do
+    local v = float_to_bool32 xy;
     v[X] := v[X] `plus` xor[
                 v[Y] `lshift` 4 `plus` bits 0xA341316C,
                 v[Y] `plus` bits 0x9E3779B9,
@@ -66,13 +61,12 @@ tea2x1 xy =
                 v[Y] `plus` bits 0x3C6EF372,
                 v[Y] `rshift` 5 `plus` bits 0xC8013EA4
             ];
-    in let
-    x = v[X] `and` bits 0x007FFFFF `or` bits 0x3F800000;
+    local x = v[X] `and` bits 0x007FFFFF `or` bits 0x3F800000;
     in bool32_to_float(x) - 1;
 
-nav1x1 n =
+nav1x1 n = do
     // after Alexis Naveros
-    let x = float_to_bool32 n; in do
+    local x = float_to_bool32 n;
     x := x `plus` (x `rshift` 11);
     x := x `xor` (x `lshift` 7);
     x := x `plus` (x `rshift` 15);
@@ -82,9 +76,9 @@ nav1x1 n =
     x := x `and` bits 0x007FFFFF `or` bits 0x3F800000;
     in bool32_to_float(x) - 1;
 
-nav2x1 xy =
+nav2x1 xy = do
     // after Alexis Naveros
-    let (x,y) = float_to_bool32 xy; in do
+    local (x,y) = float_to_bool32 xy;
     x := x `plus` (x `rshift` 11);
     x := x `xor` (x `lshift` 7);
     x := x `plus` y;
@@ -96,9 +90,9 @@ nav2x1 xy =
     x := x `and` bits 0x007FFFFF `or` bits 0x3F800000;
     in bool32_to_float(x) - 1;
 
-nav3x1 xyz =
+nav3x1 xyz = do
     // after Alexis Naveros
-    let (x,y,z) = float_to_bool32 xyz; in do
+    local (x,y,z) = float_to_bool32 xyz;
     x := x `plus` (x `rshift` 11);
     x := x `xor` (x `lshift` 7);
     x := x `plus` y;
@@ -109,14 +103,6 @@ nav3x1 xyz =
     x := x `xor` (x `lshift` 5);
     x := x `plus` (x `rshift` 12);
     x := x `xor` (x `lshift` 9);
-    x := x `and` bits 0x007FFFFF `or` bits 0x3F800000;
-    in bool32_to_float(x) - 1;
-
-mul2x1 xy =
-    // just absolutely terrible.
-    let h = float_to_bool32 xy; in do
-    h := h `bool32_product` [bits 0xA341316C, bits 0x9E3779B9]; in let
-    x = h[0] `xor` h[1]; in do
     x := x `and` bits 0x007FFFFF `or` bits 0x3F800000;
     in bool32_to_float(x) - 1;
 

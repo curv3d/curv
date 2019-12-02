@@ -1,0 +1,50 @@
+Fractal Noise
+=============
+
+Some starting points:
+
+https://github.com/BrianSharpe/GPU-Noise-Lib/blob/master/gpu_noise_lib.glsl
+    Implements the FAST_32 hash.
+    Also implements BBS (obsolete), and SGPP from Ashima.
+    http://briansharpe.wordpress.com/2011/11/15/a-fast-and-simple-32bit-floating-point-hash-function/
+    Looks good, esp. for generating lots of numbers in one call.
+    Uses + - * / floor fract, so results should be portable across GPUs.
+    It is scale sensitive.
+
+http://github.com/ashima/webgl-noise
+    Much referenced. Old-style scale-dependent hashing.
+
+https://github.com/Auburns/FastNoiseSIMD
+    SIMD C++ noise library.
+    Interesting high level noise API.
+    White noise is generated using integer multiply by primes:
+    not ideal for GPU. In general, I expect the algorithms won't be optimal
+    for GPUs.
+
+Value Noise vs Gradient Noise
+-----------------------------
+Inigo Quilez distinguishes Value Noise from Gradient Noise (of which Perlin
+and Simplex noise are examples). They are similar but not the same. Why?
+ * https://iquilezles.org/www/articles/morenoise/morenoise.htm (Value)
+ * https://iquilezles.org/www/articles/gradientnoise/gradientnoise.htm
+
+Wikipedia: Gradient Noise. Examples are Perlin noise (the original),
+Simplex noise (improved variant by Perlin) and OpenSimplex.
+"Create a lattice of random gradients, dot products of which are then
+interpolated to obtain values between the lattices. Unlike value noise,
+gradient noise has more energy in the high frequencies."
+
+stack exchange: "each grid point, 𝑋, has a pseudo-random gradient associated
+with it, 𝑔(𝑋) - just a vector of unit length that appears random. When
+finding the noise value at a point 𝑃, for each grid point surrounding it,
+𝑄, the dot product 𝑔(𝑄)⋅(𝑃−𝑄) is found. Then these dot
+products are interpolated to find the noise value at point 𝑃."
+
+"value noise: each grid point has a scalar value rather than a gradient."
+
+"gradient noise produces higher quality noise"
+
+Why gradient noise looks better:
+https://math.stackexchange.com/questions/184121/why-is-gradient-noise-better-quality-than-value-noise
+
+"Gradient noise leads in general to more visual appealing textures because it cuts low frequencies and emphasizes frequencies around and above the grid spacing."
