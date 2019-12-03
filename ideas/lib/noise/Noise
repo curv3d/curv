@@ -1,0 +1,76 @@
+A Simple Noise Library
+======================
+Initially, I want value, simplex, fractal, and voronoi/worley/cellular noise.
+Just the basics. This is just the tip of the iceberg, of course.
+
+White Noise
+-----------
+I've got this mostly figured out: hash an arbitrary number onto the range [0,1).
+There are multiple algorithms that trade quality for speed.
+
+Smooth Noise
+------------
+This is Value and Gradient noise. It has a characteristic low frequency,
+and is used as an ingredient to make fractal noise.
+
+Value Noise
+-----------
+This looks like crap, with strong visual artifacts tied to grid spacing,
+but it is somewhat cheaper than gradient noise. The artifacts are less of
+a problem when it is mixed into fractal noise.
+
+Gradient Noise
+--------------
+There is the original Perlin Noise, aka Classic Noise.
+It is expensive, and has "visually-significant directional artifacts".
+It tends to align all of its features to the cardinal axes and to the diagonals.
+It's not easy to compute the gradient.
+It uses sequential interpolation along each dimension. This is expensive,
+and perhaps contributes to directional artifacts, but it also ensures that
+a 2D slice of 3D classic noise looks like 2D classic noise, which can be a
+useful property.
+
+Simplex Noise is Perlin's successor to Perlin noise.
+* Simplex noise has a lower computational complexity and requires fewer
+  multiplications.
+* Simplex noise scales to higher dimensions (4D, 5D and up) with much less
+  computational cost, the complexity is O(N) for N dimensions instead of the
+  O(2^N) of classic Noise.
+* Simplex noise has no noticeable directional artifacts.
+* Simplex noise has a well-defined and continuous gradient everywhere
+  that can be computed quite cheaply.
+From: "Simplex Noise Demystified"
+https://software.intel.com/sites/default/files/m/0/c/9/simplexnoise.pdf
+
+2D simplex noise is computed on a hex/triangular grid, while 3D simplex
+noise is computed on a tetrahedral grid (Tetragonal disphenoid honeycomb,
+a cube is subdivided into 6 tetras). A 2D slice of 3D simplex noise
+does not look like 2D simplex noise. Likewise for a 3D slice of 4D simplex.
+
+OpenSimplex Noise is a later competitor of Simplex noise.
+In 3D, it uses a tet-oct honeycomb.
+OpenSimplex noise uses a larger kernel size than Simplex noise.
+The result is a smoother appearance at the cost of performance.
+
+Other Libraries
+---------------
+Here are some other libraries that I can copy ideas from.
+
+noise.rs
+--------
+https://github.com/Razaekel/noise-rs
+https://docs.rs/noise/0.6.0/noise/
+
+Math functions that hash their arguments to generate pseudo-random numbers
+that represent different kinds of visual noise patterns. Eg,
+* white noise (uniformly distributed random numbers).
+* value noise.
+* gradient noise.
+* fractal noise (fractal brownian motion). Useful for smoke, clouds,
+  mountains, procedural textures.
+* cellular noise, aka Worley noise, aka Voronoi noise.
+This is a foundation for other library modules, such as fractal and texture.
+Resources:
+* http://github.com/ashima/webgl-noise
+* https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
+* https://www.shadertoy.com/results?query=tag%3Dnoise

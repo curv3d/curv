@@ -68,7 +68,7 @@ polyhedron
     * Is the Wythoff Construction relevant?
       See: https://en.wikipedia.org/wiki/Wythoff_construction
     Transform polyhedra into new polyhedra using Conway polyhedron notation.
-repetition & space folding
+symmetry (repetition & space folding)
     Eg, the Mercury space folding operators from http://mercury.sexy/hg_sdf/
     There might be overlap with the lattice and polyhedron modules:
     consider if APIs should be be integrated.

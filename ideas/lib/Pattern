@@ -1,0 +1,333 @@
+lib.pattern: Intensity Fields
+=============================
+A Pattern is actually an Intensity Field: it's a function that maps each point
+in space/time onto an Intensity, which is a number between 0 and 1 inclusive.
+
+Patterns can be 2D, 3D, or both, and they can optionally be animated (change
+over time). Patterns are infinite, but they may contain an optional bounding
+box, which is used to position the camera when viewing a pattern, and it is
+also used when exporting a rectangular section of the pattern as a monochrome
+image.
+
+Patterns have multiple uses:
+ * They can represent greyscale imagery. You can import a greyscale image as
+   a 2D pattern, or export a rectangular section of a 2D pattern
+   as a greyscale image.
+ * They can be composed with colour maps to create colour fields.
+ * They can be used as masks for image compositing. In the film industry, these
+   masks are called 'mattes', and in computer graphics, this process is called
+   'alpha compositing'.
+ * A 2D pattern can be used as a height field, for constructing a 3D shape.
+ * They can be used as displacement fields, for transforming colour fields
+   or shape boundaries, eg to add turbulence or roughness.
+
+Names for this concept:
+ * pattern
+ * density, intensity, value (colour theory), tone (colour theory), alpha
+
+An intensity value is a number in the range [0,1] inclusive.
+This is despite the fact that my hash functions have the range [0,1),
+and so does `frac`.
+ * RGB components use the range [0,1]
+ * sRGB.grey has domain [0,1]
+ * type unorm in graphics is [0,1]
+
+A Compositional Noise Library
+=============================
+libnoise is a compositional noise library. It is a set of primitives that
+can be composed to generate various kinds of noise-based intensity fields.
+I want to reproduce this API in the Curv pattern library.
+http://libnoise.sourceforge.net/glossary/index.html
+
+Modifiers:
+  clamp[lo,hi] pat
+  curve: compose a pat with a function from [0,1)->[0,1)
+         define that function as a spline.
+  exponent e pat: compose with (_^e)
+  invert pat: compose with (1-_)
+  ScaleBias [scale,bias] pat: compose with (_*scale+bias)
+  Terrace: compose with a terrace-forming curve (defn by control points)
+Combiners:
+  Add[df1,df2], Max, Min, Multiply, Power[df1,df2]
+Generators:
+  Billow{Frequency,Lacunarity,NoiseQuality,OctaveCount,Persistence,Seed}
+    -- gorgeous fractal noise, modifies each octave with abs()
+  Checkerboard
+  Const
+  Cylinders(freq) -- similar to Curv i_concentric
+  Perlin{OctaveCount,Frequency,Persistence,Lacunarity} -- fractal noise,
+    using gradient noise
+  RidgedMulti{Frequency,Lacunarity,NoiseQuality,OctaveCount,Seed}
+    -- gorgeous variant of fractal noise
+  Spheres(Frequency) -- concentric spheres
+  Voronoi{bool EnableDistance,Displacement,Frequency,Seed}
+    -- by default, all points within a cell have the same value
+Selectors:
+  Blend[a,b,k] -- a Lerp where all 3 inputs are pats
+  Select -- a variant of Blend where the control pat is remapped to
+    have a sharp transition from 0 to 1
+Transformers:
+  Rotate, Scale, Translate
+  Displace[x,y,z] pat -- x,y,z are pats,typically with range [-1,1]
+  Turbulence -- a Displace using Perlin as control fields
+    For creating more realistic terrains and textures.
+
+Mapping These Ideas into Curv
+=============================
+
+Important Data Types (for working with Patterns)
+------------------------------------------------
+An intensity value i is a number in the range 0 <= i <= 1.
+
+A pattern is an intensity field, as defined earlier.
+
+A pattern operator maps one or more patterns onto another pattern.
+ * Like the modifiers and combiners in libnoise.
+ * I considered the idea of an 'intensity function', which maps an intensity
+   onto another intensity. We could use a generic function composition operator
+   '>>>' to compose a pattern with an intensity operator to create another
+   pattern. The goal is to compose patterns directly with arbitrary numeric
+   functions. It turns out that intensity functions would need to be constructed
+   specially, so that they contain the type information needed for a generic
+   function composition operator to create a new pattern value.
+ * `pat_map unary_intensity_func pattern` is a specialized composition operator
+   for composing an arbitrary intensity function with a pattern, producing a new
+   pattern. There are no special requirements on the intensity function.
+ * `pat_map2 binary_intensity_func [pattern1,pattern2]` is the binary case:
+   it constructs a binary pattern operator.
+
+Likewise, we have colour values, colour fields (aka textures),
+and texture operators.
+
+tex_map and tex_map2 are used to construct new texture operators.
+ * There is code duplication here (with pat_map and pat_map2), because both
+   map a scalar operator onto a field. But I'll live with this, because it
+   produces a better user interface. Forcing the user to annotate intensity
+   functions so that `>>>` knows to create a pattern is worse.
+
+A colour map is a function that maps an intensity to a colour.
+
+There is a specialized operation for composing a cmap with a pattern
+to create a texture. I'm not going to use generic function composition
+for this right now.
+
+Patterns, colours, textures, and colour maps are all graphical values.
+
+Transformations are generalized. A transformation is a function that maps
+a point onto a point, a field onto a field, or a shape onto a shape.
+
+Fields
+------
+Two kinds of field: patterns and textures (intensity and colour fields).
+Transformations are generic across both kinds of field.
+
+A field is a record that contains:
+ * is_2d :: is_bool
+ * is_3d :: is_bool
+ * is_animated :: is_bool
+ * bounds -- bounding box, optional, for viewing and export
+ * call -- a raw function from [x,y,z,t] to an intensity or colour
+ * range -- either #intensity or #colour
+
+Why is_2d/is_3d/is_animated?
+We need to know how many dimensions a field has, because assuming everything
+is 3D/animated can be too expensive in some cases. Most 2D fields don't
+generalize to 3D in a useful way, so we don't want to accidently treat them
+as 3D and get bad results. However, constant fields are both 2D and 3D.
+
+It may not be feasible for all field operations to maintain the bounding
+box(es) of their argument(s), so I'm leaving it as optional.
+
+The Curv runtime interprets these records as graphical values, just as it
+currently does for shapes.
+
+Textures vs Shapes
+------------------
+Right now, a texture is represented as an infinite shape (which is then
+a graphical value).
+
+The proposal is for textures to be a distinct type, which is also a graphical
+value. So there is a subtle distinction between a texture, and an infinite
+shape containing the same colour function. In practice, we would no longer
+use the latter.
+
+What are the differences/ what is the benefit?
+* Textures are functions.
+* We can define transformations that work on patterns and textures, but
+  which don't work on shapes, because there's no way for the transformed
+  distance function to be Lipschitz(1).
+* Probably there are a lot more operations that can be defined on textures
+  that can't be defined on distance fields. Texture compositing?
+
+Now that they are distinct, to extract a texture from a shape,
+you use `get_texture myshape`.
+
+More Ambitious Ideas that I am Deferring or Rejecting
+=====================================================
+Stuff involving abstract data types, protocols with single or multiple
+dispatch, functions that carry type information about their domain & range.
+
+Shapes
+------
+Now that textures are no longer shapes, how do you extract a texture
+from a shape?
+ * `get_texture myshape` or `Shape.texture myshape`. Simple.
+ * Redesign the Shape type so that a Shape contains a Texture.
+   Then use `myshape.texture`. More radical.
+
+Why redesign the Shape type so that a Shape contains a Texture as a subfield?
+Is there a benefit?
+ * Perhaps we want distinct metadata (is_2d,is_3d,is_animated) for the distance
+   and the colour fields, so that `get_texture(myshape)` doesn't contain
+   constraints that only apply to the distance field, not the colour field.
+
+Perhaps the distance field is also packaged as a Field value? Why?
+ * Because then we can have 3 sets of field metadata: for the distance field,
+   for the colour field, and the union of these for the shape as a whole.
+   That way, if we apply a new texture to an existing shape, we don't
+   accidently end up with a shape that is marked 'is_animated', even though
+   neither the old distance field nor the new texture is, in fact, animated.
+ * Does this mean that distance fields are graphical values, distinct from
+   shape values? That's confusing and of limited value. What operations
+   apply to a distance field that don't apply to a shape? In what circumstances
+   would you choose one type over the other?
+
+This is complex, disruptive, and of limited value. There's no rush.
+
+For now, `get_texture` will work fine, and we don't need to change Shape.
+
+Transformations
+---------------
+We should have generalized transformation functions that operate on points,
+shapes, colour fields, intensity fields.
+
+There should be a transformation protocol that any abstract data type can
+implement.
+
+Generic Operator Protocol (Modifiers and Combiners)
+---------------------------------------------------
+Some of these are special versions of already available operations,
+like clamp and sum, except modified to operate on intensity fields.
+
+So what do I do?
+* The same abstract operation has multiple implementations, depending on what
+  data type it is operating on.
+* There are explicit operators used to apply a generic operation to a specific
+  data type.
+* Generic operators use a protocol that can be implemented by multiple
+  abstract data types.
+
+Which approach creates the least complexity, requires the least code?
+
+Generic Data Protocol (Abstract Types)
+--------------------------------------
+Is a intensity field a bare function (possibly with attributes),
+or is it an opaque ADT? What about colour fields?
+
+Function Composition
+--------------------
+Function composition: (f >>> g) x == (x >> f >> g) == g (f x)
+
+If you compose a density field with a colour map, you get a colour field.
+    dfield >>> cmap :: is_cfield
+
+If you compose a density field with a unary density operator, you get another
+density field. Likewise for colour fields and unary colour operators.
+    dfield >>> unary_dop :: is_dfield
+    cfield >>> unary_cop :: is_cfield
+
+I would like to similarly support composition of binary operators with 2 fields.
+(Point free programming.)
+    [dfield1, dfield2] >>> binary_dop :: is_dfield
+    [cfield1, cfield2] >>> binary_cop :: is_cfield
+
+    [f, g] >>> h
+    x -> [f x, g x] >> h
+    -- this is a fork from J, written (field1 binop field2)
+
+A transformation maps a field onto a field. Eg,
+    rotate 90° dfield :: is_dfield
+
+Transformations can be composed, yielding another transformation: t1 >>> t2
+
+Composable Functions with Extra Structure
+-----------------------------------------
+I would like density fields, colour fields and colour maps to be
+graphical values. Even though they are functions, and can be composed
+like functions.
+
+We need more structure if density/colour fields are graphical values.
+Mark the optional 'time' coordinate as special, distinct from 2 or 3 spatial
+coordinates. Provide a way to test if a field is animated.
+
+Transformations have extra structure, so that they can transform fields.
+
+Design (1)
+----------
+A field has:
+* is_2d :: is_bool
+* is_3d :: is_bool
+* is_animated :: is_bool
+* call -- a raw function
+* range -- #colour or #density
+
+Why is_2d/is_3d/is_animated?
+We need to know how many dimensions a field has, because assuming everything
+is 3D/animated can be too expensive in some cases. Most 2D fields don't
+generalize to 3D in a useful way, so we don't want to accidently treat them
+as 3D and get bad results. However, constant fields are both 2D and 3D.
+
+The range of a field is represented by a value, which in some way encodes
+the range's "type". For the cases described here, we could just use
+#colour and #density. A predicate function that supports equality testing
+would be more general. Function values need to optionally encode their
+domain and range in order for this to work:
+    dfield >>> cmap :: is_cfield
+
+A cmap has:
+* call -- a raw function
+* domain = #density -- not needed for the cases described above
+* range = #colour
+
+What about density operators like Invert and Clamp? These are numeric functions
+that are marked as having #density as their (domain and) range, so that
+composing a density field with a density operator produces a density field.
+Once again, only the range seems to matter for this project.
+
+How are density operators written?
+* d_sum = {range=#density, call=[x,y]->x+y}
+* d_sum = Density_Func ([x,y]->x+y)
+* Extend the syntax of function literals so that you can specify the
+  range as a predicate value. The range will be made accessible as a field
+  in the function value.
+  d_sum [x,y] => is_density = x+y;
+  is_colour and is_density are builtin predicates that support equality tests.
+
+A density field DF is value that meets the requirements:
+    is_function DF
+    DF.range == is_density
+    is_bool (DF.is_2d)
+    is_bool (DF.is_3d)
+    is_bool (DF.is_animated)
+
+Design (2)
+----------
+If a density operator must be specially coded, as in design (1), so that
+it can be used with the funny syntax [df1,df2]>>>dop, then why not use a
+simpler API, and just use dop[df1,df2]? No need for those extra mechanisms
+and syntax.
+
+However, fields and cmaps are graphical values, they still need to be special.
+We'll still have:
+
+Other Ideas
+-----------
+How does this work?
+* dfield, cfield and cmap are strongly tagged abstract types.
+  There is a "compose protocol" that they implement.
+
+Okay, but what's the protocol?
+
+Clearly, graphical fields are special.
+  field >>> f :: another field of the type of f's range
+  [field1,field2] >>> f
