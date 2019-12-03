@@ -83,6 +83,7 @@ Alternatives for precedence:
  A) Loose. Mixfix < Infix < Postfix. Kind of like smalltalk.
     To avoid ambiguity, we need stropped keywords.
       if: a < b then: a else: b
+      IF a < b THEN a ELSE b
  B) Tight. Mixfix arguments are primary expressions.
     Function call syntax is changed so that adjacent identifiers aren't
     allowed, "f(x)" replaces "f x". Mixfix arguments are function arguments,
@@ -93,3 +94,62 @@ Alternatives for precedence:
       if (a == 0) then (x) else if (a == 1) then (y)
     Mixfix operators have names like 'if then else'.
       if (a) then (b) else (c) == 'if then else'(a,b,c)
+
+The most promising syntax is loose precedence with UPPERCASE keywords.
+This syntax doesn't conflict with field constructors in record literals,
+and it doesn't conflict with Haskell-style 'f x' function call syntax.
+The UPPERCASE stropping is highly visible, and makes it easy to distinguish
+mixfix syntax from other possibilities. Algol 68 used boldface keywords for
+mixfix in the publication syntax of the language, and the use of uppercase is
+consistent with this visual style.
+
+A mixfix keyword consists of two or more uppercase ASCII characters.
+No lowercase, digits or underscores. A mixfix invocation like
+    IF a THEN b
+is equivalent to
+    'IF THEN'[a,b]
+
+Let's construct a grammar. The Curv 0.4 grammar permits
+    if (c1) if (c2) ritem else ritem
+There is a dangling else ambiguity. This doesn't work with user-defined mixfix,
+because all of the keywords at the same level are assumed to be part of the
+same mixfix operator. So we need a grammar that avoids this.
+If mixfix is an ritem, then interior arguments of a mixfix must be pipelines,
+not ritems. Only the final trailing argument can be an ritem.
+
+Here is a grammar:
+    ritem ::= pipeline
+        | '...' ritem
+        | [KEY pipeline]* KEY ritem
+        | pipeline '=' ritem
+        | pipeline ':=' ritem
+        | pipeline ':'
+        | pipeline ':' ritem
+        | pipeline '->' ritem
+        | pipeline '<<' ritem
+
+Indentation as Syntax
+---------------------
+Keyword based mixfix can be extended to support indentation-as-syntax,
+as follows:
+    if condition then (
+        stmt1;
+        stmt2;
+    ) else (
+        stmt3;
+        stmt4;
+    )
+<=>
+    if condition then:
+        stmt1
+        stmt2
+    else:
+        stmt3
+        stmt4
+
+There are some caveats:
+ * This doesn't eliminate semicolons from module literals.
+ * This doesn't work naturally for user-defined mixfix. When we see
+   a new `<keyword>:` at the same indentation as a previous mixfix keyword,
+   is this a continuation of the previous mixfix, or is it the beginning of
+   a new mixfix? It works if the keywords are all hard coded into the grammar.

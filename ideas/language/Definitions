@@ -1,6 +1,6 @@
-Current Status of Definition Syntax (Nov 2019)
-==============================================
-This design has evolved, and become somewhat crufty. Time to look at the
+Improvements to Definition Syntax (Nov 2019)
+============================================
+Curv has evolved, and become somewhat crufty. Time to look at the
 big picture once again.
 
 Recursive Definitions
@@ -83,5 +83,224 @@ separate the definitions from the assertions.
 * Let's see what syntax is used to define an algebra, which requires both
   bindings and laws/axioms.
 
+How about this:
+  { <module definitions> } :: (M->assertions about M)
+or
+  {
+    <definitions>
+  where
+    <assertion statements>
+  }
+
+Useless Generality
+------------------
+At the beginning of the project, 'orthogonality of features' was an important
+design principle. Everything should compose with everything else, without
+arbitrary restrictions. The goal was: ease of use and expressive power.
+
+Now, however, some of that generality seems useless, and may be a source
+of unneeded language complexity. The Python design principle 'there is only
+one way to do it' has merit, if properly applied.
+
+### Nested Definitions
+
+'Definition abstraction' seems useless. Particularly the ability to parenthesize
+a recursive definition, or a set of recursive definitions. It allows you to
+organize the definitions with a let head into a tree using parens, even though
+the tree is flattened for interpretation.
+
+The language design says that 'def1; def2; def3' is a compound definition,
+and is an example of definition abstraction. That works in a 'let' head.
+A 'do' head is a flat sequence of statements and definitions, no nesting.
+I don't want to explain this complexity to users. It's useless, and no other
+language works that way. Let should be more like 'do'.
+
+Right now, in a general context, (a;b) could denote either a recursive
+definition, or a statement list. If we eliminate the former case, by eliminating
+parenthesized definitions, then (a;b) can now only be a statement list.
+
+### Statements in a Let Head
+
+This is a useless and confusing feature that I'd rather eliminate.
+Instead of 'let def; stmt in phrase', it is cleaner to write:
+    let def in (stmt; phrase)
+in the statement case, or
+    let def in do stmt in phrase
+in the expression case.
+
+This feature is part of 'definition abstraction'.
+
+### Do Statements
+
+The 'do' phrase is generalized so that it can be either an expression or a
+statement. The statement form of 'do' is unnecessary.
+
+The original idea was that you can chain 'do' and 'let' phrases in any context,
+either expression or statement. In practice, I don't enjoy writing this style
+of code. I find it mentally painful. I've added local definitions to 'do'
+so that I can avoid it.
+
+In most cases, using 'do' in a statement context is useless complexity.
+Why write 'do stmts in stmts' when you can just write (stmts; stmts)?
+In the context of the original plan, you might want to write
+    do stmts in let defs in stmt
+and this is how you introduce some recursive definitions into the middle of
+a statement list, using chaining instead of nesting. The nesting would look
+like this:
+    (stmts; let defs in stmt)
+I think that's fine. No need for an alternative way of writing this,
+especially as it would only come up rarely.
+
+It's inconsistent to support 'let defs in stmt' while not supporting
+'do defs in stmt'? Well, too bad. The question is whether this inconsistency
+leads to user confusion. We will just use the term 'do expression' whenever
+referring to a 'do'. The various changes proposed here make 'do' and 'let'
+more distinct from each other, rather than attempting to make them duals of
+each other, and that's probably a better design.
+
+### Where
+
+There's a lot of ad-hoc syntactic complexity in parsing 'where'.
+I now favour getting rid of it.
+
+Local Definition Syntax
+-----------------------
+In Curv, 'x=1' is a recursive definition, and 'local x = 1' is a local (aka
+sequential) definition. You can't use a recursive definition in a compound
+statement or a do expression. You can't use a local definition in a let head
+or a module literal.
+
+I need to find a way to properly document this distinction, and issue clear
+error messages when the restrictions are violated. Or, change the syntax.
+(Can I use the same syntax in both contexts?)
+
+There are two contexts where both kinds of definitions can occur (although
+they are mutually exclusive): A record constructor, and a REPL program.
+  REPL:
+    recursive definition, and compound recursive definition:
+      x=1
+      x=1; y=2
+    ERROR: a local definition must be followed by '; <statement>'
+      local x = 1
+    ERROR: local definitions can't be mixed with recursive definitions
+      local x=1; y=2
+    compound statement. Here, 'local' means not global.
+      local x = 1; x + 1
+  Record constructor:
+    module:
+      {x=1}
+      {x=1; y=2}
+    ERROR: a local definition must be followed by '; <statement>'
+      {local x = 1}
+    ERROR: local definitions can't be mixed with recursive definitions
+      {local x=1; y=2}
+    record comprehension. Here, 'local' means not exported as a field.
+      {local x = 1; f: x}
+
+Alternative design: get rid of 'local':
+ * Get rid of the 'local' prefix, and use undecorated definitions in those
+   contexts where only local definitions are legal:
+   * In a 'do' head.
+   * In a compound statement: (s1;s2;s3)
+ * In those two contexts where both kinds of definitions can occur,
+   substitute the use of 'let' or 'do' or compound statements to bind
+   local variables.
+   REPL:
+      Compound recursive definition:
+          x=1; y=2
+      Local variable in statement list:
+          (x = 1; x + 1)    // compound statement
+          let x=1 in x+1
+          do x=1 in x+1
+   Record constructor:
+    module:
+      {x=1; y=2}
+    comprehension:
+      {(x=1; f:x)}
+      {do x=1 in f:x}
+      {let x=1 in f:x}
+I don't like the similarity of the code between
+    x=1; y=2        // compound recursive global definition
+    (x=1; x+1)      // compound statement with local variable
+
+Recursive Functions
+-------------------
+We should generalize the rules for defining recursive functions.
+We should allow recursion in the following cases:
+* f = match [...] -- this came up as a support issue.
+* f = let (defs) in param->body -- eg, local bindings for names referenced
+  in the param.
+
+Recursion can be permitted in a lambda expression, or in any expression
+where a recursive expression occurs in tail position:
+  match [R,R], if (cond) R else R, let defs in R, do stmts in R
+
+It would be better if recursive references were allowed in all contexts
+where they make sense. A big thing that's missing is combinator calls
+(pass a recursive lambda to a function that returns a function). Eg,
+    f = reduce (zero, x->expr(f));
+In theory, this could be compiled as
+    f a = reduce (zero, x->expr(f)) a;
+but without static type checking, we don't have the ability to distinguish
+between a valid case and an accident where we should report an error.
+
 Definition Protocol
 -------------------
+It needs to change.
+
+Removed from analyse_stmt:
+  /*
+  #if 0
+    The Definition protocol isn't designed for local definitions.
+    To use Definition protocol, we need a Local_Scope class.
+    For each definition, we want to call defn->analyse() before
+    defn->add_to_scope(). However, Compound_Definition is not a
+    Unitary_Definition and doesn't define ::analyse().
+    The Definition protocol expects you to first call add_to_scope for
+    all definitions, and then you call analyse on all unitary defs.
+
+    Definition protocol: [code for do <bindings> in <body>]
+    analyse_block(env, share(*this), bindings_, body_, edepth);
+    Shared<Meaning> analyse_block(
+        Environ& env,
+        Shared<const Phrase> syntax,
+        Shared<Phrase> bindings,
+        Shared<const Phrase> bodysrc,
+        unsigned edepth)
+    {
+        Shared<Definition> adef = bindings->as_definition(env);
+        if (adef == nullptr) {
+            // no definitions, just actions.
+            return make<Do_Expr>(
+                syntax,
+                analyse_op(*bindings, env, edepth),
+                analyse_op(*bodysrc, env, edepth));
+        }
+        if (adef->kind_ == Definition::k_sequential) {
+            Sequential_Scope sscope(env, false, edepth);
+            sscope.analyse(*adef);
+            auto body = analyse_op(*bodysrc, sscope, edepth+1);
+            env.frame_maxslots_ = sscope.frame_maxslots_;
+            return make<Block_Op>(syntax,
+                std::move(sscope.executable_), std::move(body));
+        }
+        bad_definition(*adef, env, "wrong style of definition for this block");
+    }
+    sscope.analyse(*adef):
+        def.add_to_scope(*this);
+        parent_->frame_maxslots_ = frame_maxslots_;
+    void Data_Definition::add_to_scope(Block_Scope& scope):
+        unsigned unitnum = scope.begin_unit(share(*this));
+        pattern_ = make_pattern(*definiendum_, true, scope, unitnum);
+        scope.end_unit(unitnum, share(*this));
+    Sequential_Scope::end_unit(unitno, Shared<Unitary_Definition> unit)
+        (void)unitno;
+        unit->analyse(*this);
+        executable_.actions_.push_back(
+            unit->make_setter(executable_.module_slot_));
+        ++nunits_;
+    Data_Definition::analyse(Environ& env):
+        pattern_->analyse(env);
+        definiens_expr_ = analyse_op(*definiens_phrase_, env);
+  #endif
+  */

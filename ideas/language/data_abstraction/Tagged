@@ -78,6 +78,25 @@ field names that have special interpretations, but it's too complicated to use
 such an API directly: we would want special syntax for defining constructors
 of abstract values, etc.
 
+### Triangle Meshes
+I want to add a 'triangle mesh' data type. Abstractly, it's just a record:
+    { points: [[0.1,3.2,6.8],...], faces: [[0,1,2],...] }
+However, I want an efficient internal representation that can be stored in
+GPU memory, and I want instances of this type to be internally valid and
+consistent (including manifold and oriented).
+
+This would require strong tagging. Instances can only be constructed using
+the constructor function, which performs all the validation and stores the
+data efficiently. (I'll use 32 bit floats and nats.)
+
+If meshes are always valid, then they must be immutable. You can't incrementally
+update one of the array elements. But I could copy the points and faces arrays
+into variables, modify them, then use them to build a new mesh. If you do this,
+then by default copying those arrays expands them into general arrays,
+which occupy a bit more than twice the memory. Should I worry about this
+inefficiency? I could have Kona-style typed arrays, which are invisible to the
+user. Or I could have Py/JS-style typed arrays, which complicate the data model.
+
 ### Functional I/O
 A pure functional i/o system depends on passing around "capability" values
 that cannot be counterfeited. This requires strong tagging.

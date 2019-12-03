@@ -114,24 +114,28 @@ precedence? Eg, in M.+a.b[i]
 
 User Defined Infix Operators
 ----------------------------
-This is a conservative extension to Curv. It gives:
+This is a conservative redesign of Curv syntax. It gives:
  * fewer precedence levels in the grammar
  * user defined infix operators
 
-In the grammar, Pipeline, Disjunction and Conjunction are collapsed to a
-single category (Pipeline) of low-precedence, left-associative operators.
-Relation and Range precedence levels are also combined. This yields the
-following precedence levels:
-    item
-    ritem
+Reduce the number of operator precedence levels:
+* Unite Pipeline, Disjunction and Conjunction into a single level (Pipeline)
+  of low-precedence, left-associative operators.
+* Get rid of `where` and unite Item with RItem.
+It's a 'conservative' change because little existing code would be broken.
+
+This yields the following precedence levels:
+    list        n-ary
+    item        right associative infix & prefix
     pipeline
-    relation
+    relation    non associative
     sum
     product
-    unary / power
+    power       right associative infix & prefix
     postfix
-Maybe get rid of 'where' and fuse item/ritem. The recursion between 'power'
-and 'unary' is kind of tricky: can this be simplified?
+Eight levels is right at my limits for comfortably memorizing the rules.
+By comparison, C has 16 levels of precedence, which is too many. F# has 26.
+A more radical redesign could get it down to five levels.
 
 An operator name is a sequence of one or more characters from the set
     ~!@%^&*-+=|\:<>?/
@@ -143,8 +147,15 @@ Non-reserved operator names are available as user-defined infix operators.
 User defined operators are pipeline operators: the precedence and associativity
 is fixed. User-defined prefix operators are not supported.
 
-For example, you can define a :+ operator, using either of the following:
+Suppose you define a :+ infix operator.
+Quoting an operator name turns it into an identifier that is bound to
+a function. The following are equivalent:
+    a :+ b
+    ':+'(a,b)
+
+You can define the :+ operator using any of the following:
     ':+' = <function>;
+    ':+'(a,b) = <body of function>;
     a :+ b = <body of function>;
 
 As a special case, you don't need to quote an operator name when selecting
@@ -152,6 +163,6 @@ it from a module using dot notation. The following are equivalent:
     M.':+'
     M.:+
 
-Thus you can use abbreviated syntax for invoking an infix operator using
-dot notation:
+Thus you can use abbreviated syntax for invoking an infix operator that
+is selected from a module using dot notation:
     a `M.:+` B
