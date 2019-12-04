@@ -36,8 +36,10 @@ A Compositional Noise Library
 =============================
 libnoise is a compositional noise library. It is a set of primitives that
 can be composed to generate various kinds of noise-based intensity fields.
+    http://libnoise.sourceforge.net/glossary/index.html
+noise-rs is a clone in Rust with some new features:
+    https://docs.rs/noise/0.6.0/noise/
 I want to reproduce this API in the Curv pattern library.
-http://libnoise.sourceforge.net/glossary/index.html
 
 Modifiers:
   clamp[lo,hi] pat

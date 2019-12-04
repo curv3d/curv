@@ -1,6 +1,7 @@
 A Simple Noise Library
 ======================
-Initially, I want value, simplex, fractal, and voronoi/worley/cellular noise.
+Initially, I want gradient noise (SuperSimplex, replaces value noise and older
+gradient noise algorithms), fractal, and voronoi/worley/cellular noise.
 Just the basics. This is just the tip of the iceberg, of course.
 
 White Noise
@@ -13,11 +14,28 @@ Smooth Noise
 This is Value and Gradient noise. It has a characteristic low frequency,
 and is used as an ingredient to make fractal noise.
 
+The best choice may be Super-Simplex Noise, based on speed and quality. But:
+ * No 4D implementation can be found on internet.
+ * No work on automatically computing the gradient can be found.
+ * It's not obvious who invented it. github.com/kelvin13 is the best
+   candidate so far. But his library is in Swift. Razaekel@github claims
+   the original algorithm is in Java.
+ * The algorithm uses a pseudo-randomly generated lookup table.
+   Kelvin13@github does not guarantee bounds for the max/min values output by
+   the algorithm. Adudney@github submitted the Rust port to noise-rs.
+   He generated a lookup table, then used Mathematica to determine the
+   maximum values and guarantee an exact output range.
+
 Value Noise
 -----------
 This looks like crap, with strong visual artifacts tied to grid spacing,
 but it is somewhat cheaper than gradient noise. The artifacts are less of
 a problem when it is mixed into fractal noise.
+
+Benchmarks show it's about 1.2–1.3× faster than Simplex noise. (noise-rs)
+
+SuperSimplex Noise is 25% faster than Simplex noise and higher quality.
+So... why bother with anything else?
 
 Gradient Noise
 --------------
@@ -51,12 +69,64 @@ OpenSimplex Noise is a later competitor of Simplex noise.
 In 3D, it uses a tet-oct honeycomb.
 OpenSimplex noise uses a larger kernel size than Simplex noise.
 The result is a smoother appearance at the cost of performance.
+Created by Kurt Spencer, 2014, in Java.
+https://gist.github.com/KdotJPG/b1270127455a94ac5d19
+
+Super Simplex Noise
+-------------------
+Super Simplex Noise is another modification of Simplex Noise.
+It is as fast as Value noise (the previous performance winner),
+and better quality than any previous competitor.
+
+https://github.com/kelvin13/noise/wiki/struct-SuperSimplexNoise2D
+   Super-simplex noise is an improved version of simplex noise which runs faster
+   and scales better to higher dimensions. In almost all cases, super-simplex
+   noise should be preferred over its predecessors. Super-simplex noise
+   runs about 25% faster than its simplex predecessor, and produces higher
+   quality gradient noise. (Some of this only applies to the 2D version, maybe)
+
+   Super Simplex Noise 3D generally looks somewhat better visually than its
+   two-dimensional counterpart, but runs about 20% slower. SuperSimplexNoise3D
+   is similar (but not identical) to Blender Perlin noise. The Scale of
+   Blender Perlin noise is approximately equivalent to 5/4 the frequency of
+   SuperSimplexNoise3D. The range of Blender Perlin noise is approximately
+   0.1875 ... 0.8125 in SuperSimplexNoise3D units.
+
+Issues:
+ * No 4D implementation can be found on internet.
+ * No work on automatically computing the gradient can be found.
+ * It's not obvious who invented it. github.com/kelvin13 is the best
+   candidate so far. But his library is in Swift. Razaekel@github claims
+   the original algorithm is in Java. (The original OpenSimplex was Java.)
+   See https://github.com/Razaekel/noise-rs/pull/168 for commentary
+ * The algorithm uses a pseudo-randomly generated lookup table.
+   Kelvin13@github does not guarantee bounds for the max/min values output by
+   the algorithm. Adudney@github submitted the Rust port to noise-rs.
+   He generated a lookup table, then used Mathematica to determine the
+   maximum values and guarantee an exact output range.
+   See https://github.com/Razaekel/noise-rs/pull/168 for commentary
+
+In the 2D case, SuperSimplex uses the same triangle lattice as OpenSimplex.
+In the 3D case, it doesn't use simplexes. It uses a tilted cubic lattice.
+https://github.com/kelvin13/noise/blob/master/sources/noise/gradient.swift
+
+Improved implementation in noise-rs (guaranteed bounds on output values)
+
+Benefits compared to OpenSimplex:
+ * https://github.com/Razaekel/noise-rs/issues/141
+   In noise-rs, open_simplex2 shows some triangular artifacts, ...
+   The noise function is not smooth at the edges of the open simplex triangle
+   grid. ... OpenSimplex is a very complicated algorithm, the fix is difficult
+   and makes the algorithm run slower. ...
+   At this point I'm considering just giving up and implementing Super Simplex
+   noise, it seems like a much simpler implementation and it handles
+   all this stuff in for loops rather than complex branching logic.
 
 Other Libraries
 ---------------
 Here are some other libraries that I can copy ideas from.
 
-noise.rs
+noise-rs
 --------
 https://github.com/Razaekel/noise-rs
 https://docs.rs/noise/0.6.0/noise/
@@ -74,3 +144,10 @@ Resources:
 * http://github.com/ashima/webgl-noise
 * https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
 * https://www.shadertoy.com/results?query=tag%3Dnoise
+
+kelvin13/noise
+--------------
+https://github.com/kelvin13/noise
+
+Has some cool features. Seems to be the earliest reference for Super Simplex
+Noise. Has an FBM noise composition framework. Tiled noise variants.
