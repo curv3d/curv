@@ -37,7 +37,7 @@ let
 
             // convert back to cartesian coordinates
             z2 = zr*[sin(theta2)*cos(phi2), sin(phi2)*sin(theta2), cos(theta2)];
-        in (z2[X], z2[Y], z2[Z], dr2);
+        in [z2[X], z2[Y], z2[Z], dr2];
 
 in
 make_shape {

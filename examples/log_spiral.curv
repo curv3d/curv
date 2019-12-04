@@ -25,7 +25,7 @@ let
                 let n = (log(r/s)/g - t) / tau;
                     upper_r = s * e^(g*(t+tau*ceil n));
                     lower_r = s * e^(g*(t+tau*floor n));
-                in (min(abs(upper_r-r), abs(r-lower_r)) - r*abs g)
+                in (min[abs(upper_r-r), abs(r-lower_r)] - r*abs g)
                     / 1.24; /* empirical Lipschitz factor for g=.2 */
         is_2d = true;
     };

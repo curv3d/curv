@@ -1,8 +1,8 @@
 // Wood grain finial
 // Created by Torleif Ceder, 2018.
 let
-    //arandom aseed = frac(sin(dot((aseed,aseed), (12.9898,78.233)))*43758.5453123);
-    //value_at (x,y,z) = arandom(arandom(arandom(x)+y)+z+2);
+    //arandom aseed = frac(sin(dot[[aseed,aseed], [12.9898,78.233]])*43758.5453123);
+    //value_at [x,y,z] = arandom(arandom(arandom(x)+y)+z+2);
     value_at = lib.noise.rand3x1;
 
     noise3d[x,y,z] =
@@ -33,7 +33,7 @@ let
 
     wood_grain [x,y,z,t] =
         noise3d[
-            mag(x+sin(2+z/3)*0.25,y+cos(0+z/4)*0.25)*5+sin(z)*0.2+sin(z/5)*0.1,
+            mag[x+sin(2+z/3)*0.25,y+cos(0+z/4)*0.25]*5+sin(z)*0.2+sin(z/5)*0.1,
             y/15,
             x/15];
 

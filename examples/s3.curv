@@ -1,5 +1,5 @@
 make_shape {
-    dist(x,y,z,_) = sin x * sin y * sin z;
+    dist[x,y,z,_] = sin x * sin y * sin z;
     is_3d = true;
 }
 >> into intersection [dodecahedron 10]
