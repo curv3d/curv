@@ -443,6 +443,21 @@ struct Min_Function : public Legacy_Function
     }
 };
 
+struct Sum_Prim : public Binary_Num_Prim
+{
+    static const char* name() { return "sum"; }
+    static Value zero() { return {0.0}; }
+    static Value call(double x, double y, const Context&) { return {x + y}; }
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
+    {
+        auto result = f.sc_.newvalue(x.type);
+        f.sc_.out() << "  " << result.type << " " << result << " = "
+            << x << "+" << y << ";\n";
+        return result;
+    }
+};
+using Sum_Function = Monoid_Func<Sum_Prim>;
+
 struct And_Prim : public Binary_Bool_Or_Bool32_Prim
 {
     static const char* name() { return "and"; }
@@ -1258,6 +1273,7 @@ builtin_namespace()
     FUNCTION(Atanh_Function),
     FUNCTION(Max_Function),
     FUNCTION(Min_Function),
+    FUNCTION(Sum_Function),
     FUNCTION(And_Function),
     FUNCTION(Or_Function),
     FUNCTION(Xor_Function),

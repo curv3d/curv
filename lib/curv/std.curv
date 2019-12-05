@@ -55,7 +55,7 @@ reduce (zero, f) list =
             for (i in 1..<count list)
                 r := f(r, list[i]);
         in r;
-sum = reduce(0, (x,y)->x+y);
+//sum = reduce(0, (x,y)->x+y);
 product = reduce(1, (x,y)->x*y);
 compose = reduce(x->x, (f,g)->x->g(f x));
 sort a =

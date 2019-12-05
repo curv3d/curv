@@ -223,6 +223,32 @@ struct Unary_Num_Prim
     }
 };
 
+struct Binary_Num_Prim : public Unary_Num_Prim
+{
+    typedef double left_t;
+    typedef double right_t;
+    static bool unbox_left(Value a, scalar_t& b, const Context& cx)
+    {
+        return unbox(a, b, cx);
+    }
+    static bool unbox_right(Value a, scalar_t& b, const Context& cx)
+    {
+        return unbox(a, b, cx);
+    }
+    static void sc_check_args(
+        SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
+    {
+        if (!a.type.is_numeric()) {
+            throw Exception(At_Index(0, cx),
+                stringify("argument expected to be Num or Vec, got ", a.type));
+        }
+        if (!b.type.is_numeric()) {
+            throw Exception(At_Index(1, cx),
+                stringify("argument expected to be Num or Vec, got ", a.type));
+        }
+    }
+};
+
 // The left operand is a non-empty list of booleans.
 // The right operand is an integer >= 0 and < the size of the left operand.
 // (These restrictions on the right operand conform to the definition
