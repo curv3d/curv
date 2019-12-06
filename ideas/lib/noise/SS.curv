@@ -1,0 +1,216 @@
+let
+TO_WORLD_CONSTANT_2D = (1 / sqrt(2 + 1) - 1) / 2;
+TO_SIMPLEX_CONSTANT_2D = (sqrt(2 + 1) - 1) / 2;
+TO_SIMPLEX_CONSTANT_3D = -2/3;
+
+// Determined using the Mathematica code listed in the super_simplex example and find_maximum_super_simplex.nb
+NORM_CONSTANT_2D = 1 / 0.05428295288661623;
+NORM_CONSTANT_3D = 1 / 0.0867664001655369;
+
+rand2x1 = lib.noise.rand2x1;
+
+DIAG = 1 / sqrt 2;
+// GRAD2[i `mod` 8] is the gradient of i.
+// Vectors are combinations of -1, 0, and 1
+// Precompute the normalized element
+GRAD2 = [
+    [  1.0,   0.0],
+    [ -1.0,   0.0],
+    [  0.0,   1.0],
+    [  0.0,  -1.0],
+    [ DIAG,  DIAG],
+    [-DIAG,  DIAG],
+    [ DIAG, -DIAG],
+    [-DIAG, -DIAG],
+];
+
+// Points taken into account for 2D:
+//              (-1,  0)
+//                 |    \
+//                 |      \
+//                 |        \
+// ( 0, -1) --- ( 0,  0) --- ( 1,  0)
+//         \       |    \       |    \
+//           \     |      \     |      \
+//             \   |        \   |        \
+//              ( 0,  1) --- ( 1,  1) --- ( 2,  1)
+//                      \       |
+//                        \     |
+//                          \   |
+//                           ( 1,  2)
+
+LATTICE_LOOKUP_2D = // [([i8; 2], [f64; 2]); 4 * 8]
+    [([0, 0], [0, 0]),
+     ([1, 1], [-0.577350269189626, -0.577350269189626]),
+     ([-1, 0], [0.788675134594813, -0.211324865405187]),
+     ([0, -1], [-0.211324865405187, 0.788675134594813]),
+
+     ([0, 0], [0, 0]),
+     ([1, 1], [-0.577350269189626, -0.577350269189626]),
+     ([0, 1], [0.211324865405187, -0.788675134594813]),
+     ([1, 0], [-0.788675134594813, 0.211324865405187]),
+
+     ([0, 0], [0, 0]),
+     ([1, 1], [-0.577350269189626, -0.577350269189626]),
+     ([1, 0], [-0.788675134594813, 0.211324865405187]),
+     ([0, -1], [-0.211324865405187, 0.788675134594813]),
+
+     ([0, 0], [0, 0]),
+     ([1, 1], [-0.577350269189626, -0.577350269189626]),
+     ([2, 1], [-1.366025403784439, -0.36602540378443904]),
+     ([1, 0], [-0.788675134594813, 0.211324865405187]),
+
+     ([0, 0], [0, 0]),
+     ([1, 1], [-0.577350269189626, -0.577350269189626]),
+     ([-1, 0], [0.788675134594813, -0.211324865405187]),
+     ([0, 1], [0.211324865405187, -0.788675134594813]),
+
+     ([0, 0], [0, 0]),
+     ([1, 1], [-0.577350269189626, -0.577350269189626]),
+     ([0, 1], [0.211324865405187, -0.788675134594813]),
+     ([1, 2], [-0.36602540378443904, -1.366025403784439]),
+
+     ([0, 0], [0, 0]),
+     ([1, 1], [-0.577350269189626, -0.577350269189626]),
+     ([1, 0], [-0.788675134594813, 0.211324865405187]),
+     ([0, 1], [0.211324865405187, -0.788675134594813]),
+
+     ([0, 0], [0, 0]),
+     ([1, 1], [-0.577350269189626, -0.577350269189626]),
+     ([2, 1], [-1.366025403784439, -0.36602540378443904]),
+     ([1, 2], [-0.36602540378443904, -1.366025403784439])];
+
+LATTICE_LOOKUP_3D = // [[i8; 3]; 4 * 16]
+    [[0, 0, 0],[1, 0, 0],[0, 1, 0],[0, 0, 1],
+     [1, 1, 1],[1, 0, 0],[0, 1, 0],[0, 0, 1],
+     [0, 0, 0],[0, 1, 1],[0, 1, 0],[0, 0, 1],
+     [1, 1, 1],[0, 1, 1],[0, 1, 0],[0, 0, 1],
+     [0, 0, 0],[1, 0, 0],[1, 0, 1],[0, 0, 1],
+     [1, 1, 1],[1, 0, 0],[1, 0, 1],[0, 0, 1],
+     [0, 0, 0],[0, 1, 1],[1, 0, 1],[0, 0, 1],
+     [1, 1, 1],[0, 1, 1],[1, 0, 1],[0, 0, 1],
+     [0, 0, 0],[1, 0, 0],[0, 1, 0],[1, 1, 0],
+     [1, 1, 1],[1, 0, 0],[0, 1, 0],[1, 1, 0],
+     [0, 0, 0],[0, 1, 1],[0, 1, 0],[1, 1, 0],
+     [1, 1, 1],[0, 1, 1],[0, 1, 0],[1, 1, 0],
+     [0, 0, 0],[1, 0, 0],[1, 0, 1],[1, 1, 0],
+     [1, 1, 1],[1, 0, 0],[1, 0, 1],[1, 1, 0],
+     [0, 0, 0],[0, 1, 1],[1, 0, 1],[1, 1, 0],
+     [1, 1, 1],[0, 1, 1],[1, 0, 1],[1, 1, 0]];
+
+/// 2-dimensional Super Simplex noise
+SuperSimplex2 point =
+    do
+        // Transform point from world space to simplex space
+        local spoint = point + sum(point) * TO_SIMPLEX_CONSTANT_2D;
+
+        // base point of simplex and barycentric coordinates in simplex space
+        local sbase = floor spoint;
+        local srel = spoint - sbase;
+
+        // Create index to lookup table from barycentric coordinates
+        local region_sum = sum(srel) >> floor;
+        local index = bit(region_sum >= 1) * 4
+            + bit(srel[0] - srel[1] * 0.5 + 1 - region_sum * 0.5 >= 1) * 8
+            + bit(srel[1] - srel[0] * 0.5 + 1 - region_sum * 0.5 >= 1) * 16;
+
+        // Transform barycentric coordinates to world space
+        local wrel = srel + sum(srel) * TO_WORLD_CONSTANT_2D;
+
+        local value = 0;
+        for (i in index..index+3) (
+            local dpos = wrel + LATTICE_LOOKUP_2D[i,1];
+            local attn = 2/3 - dot(dpos, dpos);
+            if (attn > 0) (
+                local lattice_point = sbase + LATTICE_LOOKUP_2D[i,0];
+                local gradient = GRAD2[rand2x1(lattice_point) * 8];
+                value := value + attn^4 * dot(gradient, dpos);
+            )
+        )
+    in value * NORM_CONSTANT_2D;
+
+/*
+/// 3-dimensional Super Simplex noise
+impl NoiseFn<[f64; 3]> for SuperSimplex {
+    fn get(&self, point: [f64; 3]) -> f64 {
+        let mut value = 0.0;
+
+        // Transform point from world space to simplex space
+        let to_simplex_offset = math::fold3(point, Add::add) * TO_SIMPLEX_CONSTANT_3D;
+        let simplex_point = math::map3(point, |v| -(v + to_simplex_offset));
+        let second_simplex_point = math::map3(simplex_point, |v| v + 512.5);
+
+        // Get base point of simplex and barycentric coordinates in simplex space
+        let simplex_base_point = math::map3(simplex_point, f64::floor);
+        let simplex_base_point_i = math::to_isize3(simplex_base_point);
+        let simplex_rel_coords = math::sub3(simplex_point, simplex_base_point);
+        let second_simplex_base_point = math::map3(second_simplex_point, f64::floor);
+        let second_simplex_base_point_i = math::to_isize3(second_simplex_base_point);
+        let second_simplex_rel_coords = math::sub3(second_simplex_point, second_simplex_base_point);
+
+        // Create indices to lookup table from barycentric coordinates
+        let index = ((simplex_rel_coords[0] + simplex_rel_coords[1] + simplex_rel_coords[2] >= 1.5)
+            as usize)
+            << 2
+            | ((-simplex_rel_coords[0] + simplex_rel_coords[1] + simplex_rel_coords[2] >= 0.5)
+                as usize)
+                << 3
+            | ((simplex_rel_coords[0] - simplex_rel_coords[1] + simplex_rel_coords[2] >= 0.5)
+                as usize)
+                << 4
+            | ((simplex_rel_coords[0] + simplex_rel_coords[1] - simplex_rel_coords[2] >= 0.5)
+                as usize)
+                << 5;
+        let second_index = ((second_simplex_rel_coords[0]
+            + second_simplex_rel_coords[1]
+            + second_simplex_rel_coords[2]
+            >= 1.5) as usize)
+            << 2
+            | ((-second_simplex_rel_coords[0]
+                + second_simplex_rel_coords[1]
+                + second_simplex_rel_coords[2]
+                >= 0.5) as usize)
+                << 3
+            | ((second_simplex_rel_coords[0] - second_simplex_rel_coords[1]
+                + second_simplex_rel_coords[2]
+                >= 0.5) as usize)
+                << 4
+            | ((second_simplex_rel_coords[0] + second_simplex_rel_coords[1]
+                - second_simplex_rel_coords[2]
+                >= 0.5) as usize)
+                << 5;
+
+        // Sum contributions from first lattice
+        for &lattice_lookup in &LATTICE_LOOKUP_3D[index..index + 4] {
+            let dpos = math::sub3(simplex_rel_coords, math::cast3(lattice_lookup));
+            let attn = 0.75 - math::dot3(dpos, dpos);
+            if attn > 0.0 {
+                let lattice_point = math::add3(simplex_base_point_i, math::cast3(lattice_lookup));
+                let gradient = gradient::get3(self.perm_table.get3(lattice_point));
+                value += attn.powi(4) * math::dot3(gradient, dpos);
+            }
+        }
+
+        // Sum contributions from second lattice
+        for &lattice_lookup in &LATTICE_LOOKUP_3D[second_index..second_index + 4] {
+            let dpos = math::sub3(second_simplex_rel_coords, math::cast3(lattice_lookup));
+            let attn = 0.75 - math::dot3(dpos, dpos);
+            if attn > 0.0 {
+                let lattice_point =
+                    math::add3(second_simplex_base_point_i, math::cast3(lattice_lookup));
+                let gradient = gradient::get3(self.perm_table.get3(lattice_point));
+                value += attn.powi(4) * math::dot3(gradient, dpos);
+            }
+        }
+
+        value * NORM_CONSTANT_3D
+    }
+}
+*/
+in
+make_texture ((x,y,_,_) ->
+    let n = SuperSimplex2(x,y);
+    in
+    //if (n <= 0) sRGB.grey (n+1) else sRGB.hue n
+    sRGB.grey((n+1)/2)
+)
