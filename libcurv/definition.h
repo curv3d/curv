@@ -13,17 +13,16 @@ struct Scope;
 struct Block_Scope;
 struct Pattern;
 
+// All Definitions are 'recursive' definitions. Sequential definitions
+// begin with the 'local' keyword and aren't part of the Definition protocol.
 struct Definition : public Shared_Base
 {
     Shared<const Phrase> syntax_;
-    enum Kind { k_recursive, k_sequential } kind_;
 
     Definition(
-        Shared<const Phrase> syntax,
-        Kind k)
+        Shared<const Phrase> syntax)
     :
-        syntax_(std::move(syntax)),
-        kind_(k)
+        syntax_(std::move(syntax))
     {}
 
     virtual void add_to_scope(Block_Scope&) = 0;
@@ -35,10 +34,9 @@ struct Definition : public Shared_Base
 struct Unitary_Definition : public Definition
 {
     Unitary_Definition(
-        Shared<const Phrase> syntax,
-        Kind k)
+        Shared<const Phrase> syntax)
     :
-        Definition(syntax, k)
+        Definition(syntax)
     {}
 
     virtual void analyse(Environ&) = 0;
@@ -61,7 +59,7 @@ struct Function_Definition : public Unitary_Definition
         Shared<const Identifier> name,
         Shared<Lambda_Phrase> lambda_phrase)
     :
-        Unitary_Definition(syntax, k_recursive),
+        Unitary_Definition(syntax),
         name_(std::move(name)),
         lambda_phrase_(std::move(lambda_phrase))
     {}
@@ -84,11 +82,10 @@ struct Data_Definition : public Unitary_Definition
 
     Data_Definition(
         Shared<const Phrase> syntax,
-        Kind k,
         Shared<const Phrase> definiendum,
         Shared<Phrase> definiens)
     :
-        Unitary_Definition(syntax, k),
+        Unitary_Definition(syntax),
         definiendum_(std::move(definiendum)),
         definiens_phrase_(std::move(definiens))
     {}
@@ -106,7 +103,7 @@ struct Include_Definition : public Unitary_Definition
         Shared<const Phrase> syntax,
         Shared<Phrase> arg)
     :
-        Unitary_Definition(syntax, k_recursive),
+        Unitary_Definition(syntax),
         arg_(std::move(arg))
     {}
 
@@ -126,7 +123,7 @@ struct Compound_Definition_Base : public Definition
     };
 
     Compound_Definition_Base(Shared<const Phrase> syntax)
-    : Definition(std::move(syntax), k_recursive) {}
+    : Definition(std::move(syntax)) {}
 
     virtual void add_to_scope(Block_Scope&) override;
 
@@ -181,25 +178,6 @@ struct Block_Scope : public Scope
     virtual void add_action(Shared<const Phrase>) = 0;
     virtual unsigned begin_unit(Shared<Unitary_Definition>) = 0;
     virtual void end_unit(unsigned, Shared<Unitary_Definition>) = 0;
-};
-
-struct Sequential_Scope : public Block_Scope
-{
-    unsigned edepth_;
-    unsigned nunits_ = 0;
-
-    Sequential_Scope(Environ& parent, bool target_is_module, unsigned edepth)
-    :
-        Block_Scope(parent, target_is_module),
-        edepth_(edepth)
-    {
-    }
-
-    virtual Shared<Meaning> single_lookup(const Identifier&) override;
-    virtual void analyse(Definition&) override;
-    virtual void add_action(Shared<const Phrase>) override;
-    virtual unsigned begin_unit(Shared<Unitary_Definition>) override;
-    virtual void end_unit(unsigned, Shared<Unitary_Definition>) override;
 };
 
 struct Recursive_Scope : public Block_Scope
@@ -263,9 +241,6 @@ struct Recursive_Scope : public Block_Scope
 };
 
 Shared<Module_Expr> analyse_module(Definition&, Environ&);
-
-// Throw an exception to report the wrong kind of definition.
-[[noreturn]] void bad_definition(Definition&, Environ&, const char*);
 
 } // namespace
 #endif // header guard

@@ -19,7 +19,7 @@ void
 Data_Definition::add_to_scope(Block_Scope& scope)
 {
     unsigned unitnum = scope.begin_unit(share(*this));
-    pattern_ = make_pattern(*definiendum_, kind_==k_sequential, scope, unitnum);
+    pattern_ = make_pattern(*definiendum_, false, scope, unitnum);
     scope.end_unit(unitnum, share(*this));
 }
 void
@@ -135,58 +135,8 @@ Block_Scope::add_binding(Symbol_Ref name, const Phrase& unitsrc, unsigned unitno
 }
 
 void
-Sequential_Scope::analyse(Definition& def)
-{
-    assert(def.kind_ == Definition::k_sequential);
-    def.add_to_scope(*this);
-    parent_->frame_maxslots_ = frame_maxslots_;
-    if (target_is_module_) {
-        auto d = make<Module::Dictionary>();
-        for (auto b : dictionary_)
-            (*d)[b.first] = b.second.slot_index_;
-        executable_.module_dictionary_ = d;
-    }
-}
-Shared<Meaning>
-Sequential_Scope::single_lookup(const Identifier& id)
-{
-    auto b = dictionary_.find(id.symbol_);
-    if (b != dictionary_.end()) {
-        if (b->second.unit_index_ <= nunits_) {
-            if (target_is_module_) {
-                return make<Module_Data_Ref>(
-                    share(id), executable_.module_slot_, b->second.slot_index_);
-            } else {
-                return make<Data_Ref>(share(id), b->second.slot_index_);
-            }
-        }
-    }
-    return nullptr;
-}
-void
-Sequential_Scope::add_action(Shared<const Phrase> phrase)
-{
-    executable_.actions_.push_back(analyse_op(*phrase, *this, edepth_+1));
-}
-unsigned
-Sequential_Scope::begin_unit(Shared<Unitary_Definition> unit)
-{
-    return nunits_+1;
-}
-void
-Sequential_Scope::end_unit(unsigned unitno, Shared<Unitary_Definition> unit)
-{
-    (void)unitno;
-    unit->analyse(*this);
-    executable_.actions_.push_back(
-        unit->make_setter(executable_.module_slot_));
-    ++nunits_;
-}
-
-void
 Recursive_Scope::analyse(Definition& def)
 {
-    assert(def.kind_ == Definition::k_recursive);
     def.add_to_scope(*this);
     analyse();
 }
@@ -400,17 +350,10 @@ Recursive_Scope::end_unit(unsigned unitno, Shared<Unitary_Definition> unit)
 Shared<Module_Expr>
 analyse_module(Definition& def, Environ& env)
 {
-    if (def.kind_ == Definition::k_sequential) {
-        bad_definition(def, env,
-            "'var' definition not legal in a record constructor");
-    }
-    if (def.kind_ == Definition::k_recursive) {
-        Recursive_Scope scope(env, true, def.syntax_);
-        scope.analyse(def);
-        return make<Scoped_Module_Expr>(def.syntax_,
-            std::move(scope.executable_));
-    }
-    die("analyse_module: bad definition type");
+    Recursive_Scope scope(env, true, def.syntax_);
+    scope.analyse(def);
+    return make<Scoped_Module_Expr>(def.syntax_,
+        std::move(scope.executable_));
 }
 
 Function_Setter_Base::Element::Element(slot_t s, Shared<Lambda> l)
@@ -419,37 +362,5 @@ Function_Setter_Base::Element::Element(slot_t s, Shared<Lambda> l)
 {}
 
 Function_Setter_Base::Element::Element() noexcept {}
-
-// Throw an exception to report the wrong kind of definition.
-void
-bad_definition(Definition& def, Environ& env, const char* msg)
-{
-    struct Bad_Scope : public Block_Scope
-    {
-        const char* msg_;
-
-        Bad_Scope(Environ& env, const char* msg)
-        : Block_Scope(env, false), msg_(msg)
-        {}
-
-        virtual Shared<Meaning> single_lookup(const Identifier&) override
-        {
-            return nullptr;
-        }
-        virtual void analyse(Definition&) override {}
-        virtual void add_action(Shared<const Phrase>) override {}
-        virtual unsigned begin_unit(Shared<Unitary_Definition> unit) override
-        {
-            throw Exception(At_Phrase(*unit->syntax_, *parent_), msg_);
-        }
-        virtual slot_t add_binding(Symbol_Ref, const Phrase&, unsigned) override
-        {
-            return 0;
-        }
-        virtual void end_unit(unsigned, Shared<Unitary_Definition>) override {}
-    } badscope(env, msg);
-    def.add_to_scope(badscope); // throws an exception
-    die("bad_definition: add_to_scope failed to throw an exception");
-}
 
 } // namespace curv

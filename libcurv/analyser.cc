@@ -583,10 +583,6 @@ analyse_block(
         throw Exception(At_Phrase(*bindings, env),
             "Internal Error: no definitions found");
     }
-    if (adef->kind_ != Definition::k_recursive) {
-        throw Exception(At_Phrase(*bindings, env),
-            "Internal Error: recursive definition not found");
-    }
     Recursive_Scope rscope(env, false, adef->syntax_);
     rscope.analyse(*adef);
     auto body = analyse_op(*bodysrc, rscope, edepth+1);
@@ -674,8 +670,7 @@ Where_Phrase::analyse(Environ& env, unsigned edepth) const
     {
         Shared<Definition> adef1 = let->bindings_->as_definition(env);
         Shared<Definition> adef2 = bindings->as_definition(env);
-        if (adef1 && adef1->kind_ == Definition::k_recursive
-            && adef2 && adef2->kind_ == Definition::k_recursive)
+        if (adef1 && adef2)
         {
             Recursive_Scope rscope(env, false, syntax);
             adef1->add_to_scope(rscope);
@@ -866,29 +861,28 @@ Assignment_Phrase::analyse(Environ& env, unsigned edepth) const
 Shared<Definition>
 as_definition_iter(
     Environ& env, Shared<const Phrase> syntax,
-    Phrase& left, Shared<Phrase> right, Definition::Kind kind)
+    Phrase& left, Shared<Phrase> right)
 {
     if (auto id = dynamic_cast<const Identifier*>(&left)) {
         auto lambda = cast<Lambda_Phrase>(right);
-        if (lambda && kind == Definition::k_recursive)
+        if (lambda)
             return make<Function_Definition>(std::move(syntax),
                 share(*id), std::move(lambda));
         else
-            return make<Data_Definition>(std::move(syntax), kind,
+            return make<Data_Definition>(std::move(syntax),
                 share(*id), std::move(right));
     }
     if (auto call = dynamic_cast<const Call_Phrase*>(&left))
         if (call->op_.kind_ == Token::k_missing)
             return as_definition_iter(env, std::move(syntax), *call->function_,
-                make<Lambda_Phrase>(call->arg_, Token(), right), kind);
-    return make<Data_Definition>(std::move(syntax), kind,
+                make<Lambda_Phrase>(call->arg_, Token(), right));
+    return make<Data_Definition>(std::move(syntax),
         share(left), std::move(right));
 }
 Shared<Definition>
 Recursive_Definition_Phrase::as_definition(Environ& env) const
 {
-    return as_definition_iter(env, share(*this), *left_, right_,
-        Definition::k_recursive);
+    return as_definition_iter(env, share(*this), *left_, right_);
 }
 bool
 Recursive_Definition_Phrase::is_definition() const
@@ -912,23 +906,16 @@ Semicolon_Phrase::as_definition(Environ& env) const
 {
     Shared<Compound_Definition> compound =
         Compound_Definition::make(args_.size(), share(*this));
-    bool have_kind = false;
+    bool isdef = false;
     for (size_t i = 0; i < args_.size(); ++i) {
         auto phrase = args_[i].expr_;
         compound->at(i).phrase_ = phrase;
         auto def = args_[i].expr_->as_definition(env);
-        if (def) {
-            if (!have_kind) {
-                compound->kind_ = def->kind_;
-                have_kind = true;
-            } else if (compound->kind_ != def->kind_) {
-                throw Exception(At_Phrase(*phrase, env),
-                "conflicting definition types in the same compound definition");
-            }
-        }
+        if (def)
+            isdef = true;
         compound->at(i).definition_ = def;
     }
-    if (have_kind)
+    if (isdef)
         return compound;
     else
         return nullptr;
