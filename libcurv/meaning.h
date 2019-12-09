@@ -203,6 +203,7 @@ struct Null_Action : public Operation
     virtual void sc_exec(SC_Frame&) const override;
 };
 
+// Nonlocal variable reference: in a recursively bound named function.
 struct Symbolic_Ref : public Just_Expression
 {
     Symbol_Ref name_;
@@ -217,6 +218,7 @@ struct Symbolic_Ref : public Just_Expression
     virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 
+// Variable reference: module member, in init code for a module literal.
 struct Module_Data_Ref : public Just_Expression
 {
     slot_t slot_;
@@ -229,7 +231,7 @@ struct Module_Data_Ref : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
-/// reference to a strict nonlocal slot (nonrecursive lambda nonlocal)
+// Nonlocal variable reference: in an anonymous or sequentially bound lambda.
 struct Nonlocal_Data_Ref : public Just_Expression
 {
     slot_t slot_;
@@ -242,6 +244,7 @@ struct Nonlocal_Data_Ref : public Just_Expression
     virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 
+// Local variable reference: function parameter, let/where/local/for variable.
 struct Data_Ref : public Just_Expression
 {
     slot_t slot_;
