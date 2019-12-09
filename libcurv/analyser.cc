@@ -357,7 +357,7 @@ analyse_lambda(
 {
     Lambda_Scope scope(env, shared_nonlocals);
 
-    auto pattern = make_pattern(*left, false, scope, 0);
+    auto pattern = make_pattern(*left, scope, 0);
     pattern->analyse(scope);
     auto expr = analyse_op(*right, scope, 0);
     auto nonlocals = make<Enum_Module_Expr>(src,
@@ -435,16 +435,14 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
             if (auto data_def = cast<const Data_Definition>(defn)) {
                 auto expr =
                     analyse_op(*data_def->definiens_phrase_, scope, edepth);
-                auto pat =
-                    make_pattern(*data_def->definiendum_, false, scope, 0);
+                auto pat = make_pattern(*data_def->definiendum_, scope, 0);
                 pat->analyse(scope);
                 return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
             }
             if (auto func_def = cast<const Function_Definition>(defn)) {
                 auto expr =
                     analyse_op(*func_def->lambda_phrase_, scope, edepth);
-                auto pat =
-                    make_pattern(*func_def->name_, false, scope, 0);
+                auto pat = make_pattern(*func_def->name_, scope, 0);
                 pat->analyse(scope);
                 return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
             }
@@ -473,7 +471,7 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
             "'var pattern := expr' is deprecated.\n"
             "Use 'local pattern = expr' instead."});
         scope.analyser_.var_deprecated_ = true;
-        auto pat = make_pattern(*vardef->left_, false, scope, 0);
+        auto pat = make_pattern(*vardef->left_, scope, 0);
         auto expr = analyse_op(*vardef->right_, scope, edepth);
         pat->analyse(scope);
         return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
@@ -1049,7 +1047,7 @@ For_Phrase::analyse(Environ& env, unsigned edepth) const
 {
     Scope scope(env);
 
-    auto pat = make_pattern(*pattern_, false, scope, 0);
+    auto pat = make_pattern(*pattern_, scope, 0);
     pat->analyse(scope);
     auto list = analyse_op(*listexpr_, env);
     Shared<Operation> cond;

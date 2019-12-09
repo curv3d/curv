@@ -36,7 +36,7 @@ struct Pattern : public Shared_Base
     virtual void sc_exec(Operation& expr, SC_Frame& caller, SC_Frame& callee) const;
 };
 
-Shared<Pattern> make_pattern(const Phrase&, bool mut, Scope&, unsigned unitno);
+Shared<Pattern> make_pattern(const Phrase&, Scope&, unsigned unitno);
 
 Shared<Record> record_pattern_default_value(const Pattern&, Frame&);
 
