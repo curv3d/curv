@@ -96,15 +96,15 @@ bool Constant::hash_eq(const Operation& rhs) const noexcept
     return false;
 }
 
-size_t Data_Ref::hash() const noexcept
+size_t Local_Data_Ref::hash() const noexcept
 {
     size_t result = slot_;
-    boost::hash_combine(result, "Data_Ref");
+    boost::hash_combine(result, "Local_Data_Ref");
     return result;
 }
-bool Data_Ref::hash_eq(const Operation& rhs) const noexcept
+bool Local_Data_Ref::hash_eq(const Operation& rhs) const noexcept
 {
-    auto r = dynamic_cast<const Data_Ref*>(&rhs);
+    auto r = dynamic_cast<const Local_Data_Ref*>(&rhs);
     if (r)
         return slot_ == r->slot_;
     return false;

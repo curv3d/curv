@@ -119,7 +119,7 @@ Scope::single_lookup(const Identifier& id)
 {
     auto b = dictionary_.find(id.symbol_);
     if (b != dictionary_.end())
-        return make<Data_Ref>(share(id), b->second.slot_index_);
+        return make<Local_Data_Ref>(share(id), b->second.slot_index_);
     return nullptr;
 }
 
@@ -312,7 +312,7 @@ Recursive_Scope::single_lookup(const Identifier& id)
             return make<Module_Data_Ref>(
                 share(id), executable_.module_slot_, b->second.slot_index_);
         } else {
-            return make<Data_Ref>(share(id), b->second.slot_index_);
+            return make<Local_Data_Ref>(share(id), b->second.slot_index_);
         }
     }
     return nullptr;

@@ -99,7 +99,7 @@ struct Lambda_Scope : public Scope
     {
         auto b = dictionary_.find(id.symbol_);
         if (b != dictionary_.end())
-            return make<Data_Ref>(share(id), b->second.slot_index_);
+            return make<Local_Data_Ref>(share(id), b->second.slot_index_);
         if (shared_nonlocals_)
             return parent_->single_lookup(id);
         auto n = nonlocal_dictionary_->find(id.symbol_);
@@ -134,13 +134,13 @@ Environ::single_lvar_lookup(const Identifier& id)
 {
     auto m = single_lookup(id);
     if (m != nullptr) {
-        auto dref = cast<Data_Ref>(m);
+        auto local = cast<Local_Data_Ref>(m);
         auto lambda = dynamic_cast<Lambda_Scope*>(this);
-        if (dref == nullptr || lambda != nullptr) {
+        if (local == nullptr || lambda != nullptr) {
             throw Exception(At_Phrase(id, *this),
                 stringify(id.symbol_,": not assignable"));
         }
-        return make<Local_Locative>(share(id), dref->slot_);
+        return make<Local_Locative>(share(id), local->slot_);
     }
     return nullptr;
 }

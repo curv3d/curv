@@ -173,7 +173,7 @@ SC_Value sc_eval_op(SC_Frame& f, const Operation& op)
     }
     // 'op' is a uniform expression, consisting of pure operations at interior
     // nodes and Constants at leaf nodes. There can be no variable references
-    // (eg, no Data_Ref ops), other than uniform variables in reactive values.
+    // (eg, no Local_Data_Ref ops), other than uniform variables in reactive values.
     // What follows is a limited form of common subexpression elimination
     // which reduces code size when reactive values are used.
     for (Op_Cache& opcache : f.sc_.opcaches_) {
@@ -735,7 +735,7 @@ SC_Value Call_Expr::sc_eval(SC_Frame& f) const
         stringify("",val," is not an array or function"));
 }
 
-SC_Value Data_Ref::sc_eval(SC_Frame& f) const
+SC_Value Local_Data_Ref::sc_eval(SC_Frame& f) const
 {
     return f[slot_];
 }

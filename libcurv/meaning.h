@@ -245,11 +245,11 @@ struct Nonlocal_Data_Ref : public Just_Expression
 };
 
 // Local variable reference: function parameter, let/where/local/for variable.
-struct Data_Ref : public Just_Expression
+struct Local_Data_Ref : public Just_Expression
 {
     slot_t slot_;
 
-    Data_Ref(Shared<const Phrase> syntax, slot_t slot)
+    Local_Data_Ref(Shared<const Phrase> syntax, slot_t slot)
     :
         Just_Expression(std::move(syntax)),
         slot_(slot)
@@ -993,7 +993,7 @@ struct Boxed_Locative : public Locative
     virtual Value* reference(Frame&, bool need_value) const = 0;
 };
 
-// A Locative representing a boxed local variable. Closely related to Data_Ref.
+// A Locative representing a boxed local variable. Closely related to Local_Data_Ref.
 struct Local_Locative : public Boxed_Locative
 {
     Local_Locative(Shared<const Phrase> syntax, slot_t slot)

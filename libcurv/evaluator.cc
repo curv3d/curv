@@ -113,7 +113,7 @@ Nonlocal_Data_Ref::eval(Frame& f) const
 }
 
 Value
-Data_Ref::eval(Frame& f) const
+Local_Data_Ref::eval(Frame& f) const
 {
     return f[slot_];
 }
