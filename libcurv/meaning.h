@@ -244,7 +244,7 @@ struct Nonlocal_Data_Ref : public Just_Expression
     virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 
-// Metadata concerning a local variable. The information is updated in phases.
+// Metadata concerning a variable. The information is updated in phases.
 //  0. The object is created when a variable is added to a Scope object,
 //     and it is initialized to default values.
 //  1. During analysis, if an assignment statement (:=) is used to mutate the
@@ -252,7 +252,7 @@ struct Nonlocal_Data_Ref : public Just_Expression
 //  2. During IR tree generation, when the variable definition is processed,
 //     if the variable has an initialization expression (an IR_Expr), then it
 //     is stored in ir_init_value_.
-struct Local_Variable : public Shared_Base
+struct Scoped_Variable : public Shared_Base
 {
     bool is_mutable_ = false;
     // Shared<const IR_Expr> ir_init_value_ = nullptr;
@@ -262,10 +262,10 @@ struct Local_Variable : public Shared_Base
 struct Local_Data_Ref : public Just_Expression
 {
     slot_t slot_;
-    Shared<const Local_Variable> variable_;
+    Shared<const Scoped_Variable> variable_;
 
     Local_Data_Ref(Shared<const Phrase> syntax, slot_t slot,
-        Shared<const Local_Variable> var)
+        Shared<const Scoped_Variable> var)
     :
         Just_Expression(std::move(syntax)),
         slot_(slot),

@@ -9,7 +9,6 @@
 
 namespace curv {
 
-struct Scope;
 struct Block_Scope;
 struct Pattern;
 
@@ -131,18 +130,19 @@ struct Compound_Definition_Base : public Definition
 };
 using Compound_Definition = Tail_Array<Compound_Definition_Base>;
 
+// A Scope is set of user-defined variables defined over a lexical scope.
 struct Scope : public Environ
 {
     struct Binding {
         slot_t slot_index_;
         unsigned unit_index_;
-        Shared<Local_Variable> variable_;
+        Shared<Scoped_Variable> variable_;
 
         Binding(slot_t slot, unsigned unit)
         :
             slot_index_(slot),
             unit_index_(unit),
-            variable_(make<Local_Variable>())
+            variable_(make<Scoped_Variable>())
         {}
     };
 
