@@ -26,7 +26,8 @@ void
 Function_Definition::add_to_scope(Block_Scope& scope)
 {
     unsigned unitnum = scope.begin_unit(share(*this));
-    slot_ = scope.add_binding(name_->symbol_, *syntax_, unitnum);
+    auto b = scope.add_binding(name_->symbol_, *syntax_, unitnum);
+    slot_ = b.first;
     scope.end_unit(unitnum, share(*this));
 }
 void
@@ -77,8 +78,8 @@ Include_Definition::add_to_scope(Block_Scope& scope)
     setter_ = {Include_Setter::make(record->size(), syntax_)};
     size_t i = 0;
     record->each_field(cx, [&](Symbol_Ref name, Value value)->void {
-        slot_t slot = scope.add_binding(name, *syntax_, unit);
-        (*setter_)[i++] = {slot, value};
+        auto b = scope.add_binding(name, *syntax_, unit);
+        (*setter_)[i++] = {b.first, value};
     });
     scope.end_unit(unit, share(*this));
 }
@@ -104,15 +105,16 @@ Compound_Definition_Base::add_to_scope(Block_Scope& scope)
     }
 }
 
-slot_t
+std::pair<slot_t, Shared<const Scoped_Variable>>
 Scope::add_binding(Symbol_Ref name, const Phrase& unitsrc, unsigned unitno)
 {
     if (dictionary_.find(name) != dictionary_.end())
         throw Exception(At_Phrase(unitsrc, *parent_),
             stringify(name, ": multiply defined"));
     slot_t slot = make_slot();
-    dictionary_.emplace(std::make_pair(name, Binding{slot, unitno}));
-    return slot;
+    auto var = make<Scoped_Variable>();
+    dictionary_.emplace(std::make_pair(name, Binding{slot, unitno, var}));
+    return std::make_pair(slot,var);
 }
 Shared<Meaning>
 Scope::single_lookup(const Identifier& id)
@@ -134,15 +136,16 @@ Scope::single_lvar_lookup(const Identifier& id)
     return nullptr;
 }
 
-slot_t
+std::pair<slot_t, Shared<const Scoped_Variable>>
 Block_Scope::add_binding(Symbol_Ref name, const Phrase& unitsrc, unsigned unitno)
 {
     if (dictionary_.find(name) != dictionary_.end())
         throw Exception(At_Phrase(unitsrc, *parent_),
             stringify(name, ": multiply defined"));
     slot_t slot = (target_is_module_ ? dictionary_.size() : make_slot());
-    dictionary_.emplace(std::make_pair(name, Binding{slot, unitno}));
-    return slot;
+    auto var = make<Scoped_Variable>();
+    dictionary_.emplace(std::make_pair(name, Binding{slot, unitno, var}));
+    return std::make_pair(slot,var);
 }
 
 void

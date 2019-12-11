@@ -41,16 +41,15 @@ struct Skip_Pattern : public Pattern
 
 struct Id_Pattern : public Pattern
 {
-    // TODO: Determine if the identifier is bound to a local variable.
-    // Either in the constructor, or in Id_Pattern::analyse(), we should
-    // capture a reference `lvar_` to the local variable object, if it is one.
-    // We'll use the variable reference in sc_exec to test if the variable
-    // is mutable.
     slot_t slot_;
+    Shared<const Scoped_Variable> var_;
 
-    Id_Pattern(Shared<const Phrase> s, slot_t i)
+    Id_Pattern(
+        Shared<const Phrase> ph,
+        slot_t n,
+        Shared<const Scoped_Variable> v)
     :
-        Pattern(s), slot_(i)
+        Pattern(ph), slot_(n), var_(v)
     {}
 
     virtual void analyse(Environ&) override
@@ -76,11 +75,7 @@ struct Id_Pattern : public Pattern
     const override
     {
         SC_Value val = sc_eval_op(caller, expr);
-        // TODO: Use the variable reference captured earlier
-        // to emit different code for a mutable variable.
-        // Note that this is a minor optimization.
-        bool is_mutable = val.type.rank_ == 0;
-        if (is_mutable) {
+        if (var_->is_mutable_) {
             // This is a mutable variable, so create a new var and initialize
             // it with val. But, arrays are not supported.
             if (val.type.rank_ > 0) {
@@ -457,8 +452,8 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
         if (id->symbol_ == "_" && !id->quoted())
             return make<Skip_Pattern>(share(ph));
         else {
-            slot_t slot = scope.add_binding(id->symbol_, ph, unitno);
-            return make<Id_Pattern>(share(ph), slot);
+            auto b = scope.add_binding(id->symbol_, ph, unitno);
+            return make<Id_Pattern>(share(ph), b.first, b.second);
         }
     }
     if (auto call = dynamic_cast<const Call_Phrase*>(&ph)) {

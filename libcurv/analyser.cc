@@ -457,8 +457,8 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
                     Include_Setter::make(record->size(), stmt);
                 size_t i = 0;
                 record->each_field(cx, [&](Symbol_Ref name, Value value)->void {
-                    slot_t slot = scope.add_binding(name, *stmt, 0);
-                    (*setter)[i++] = {slot, value};
+                    auto b = scope.add_binding(name, *stmt, 0);
+                    (*setter)[i++] = {b.first, value};
                 });
                 return setter;
             }

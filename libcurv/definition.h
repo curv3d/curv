@@ -138,11 +138,11 @@ struct Scope : public Environ
         unsigned unit_index_;
         Shared<Scoped_Variable> variable_;
 
-        Binding(slot_t slot, unsigned unit)
+        Binding(slot_t slot, unsigned unit, Shared<Scoped_Variable> var)
         :
             slot_index_(slot),
             unit_index_(unit),
-            variable_(make<Scoped_Variable>())
+            variable_(var)
         {}
     };
 
@@ -158,7 +158,8 @@ struct Scope : public Environ
 
     virtual Shared<Meaning> single_lookup(const Identifier&) override;
     virtual Shared<Locative> single_lvar_lookup(const Identifier&) override;
-    virtual slot_t add_binding(Symbol_Ref, const Phrase&, unsigned unit);
+    virtual std::pair<slot_t,Shared<const Scoped_Variable>> add_binding(
+        Symbol_Ref, const Phrase&, unsigned unit);
 };
 
 struct Block_Scope : public Scope
@@ -175,8 +176,8 @@ struct Block_Scope : public Scope
             executable_.module_slot_ = make_slot();
     }
 
-    virtual slot_t add_binding(Symbol_Ref, const Phrase&, unsigned unit) override;
-
+    virtual std::pair<slot_t,Shared<const Scoped_Variable>> add_binding(
+        Symbol_Ref, const Phrase&, unsigned unit) override;
     virtual void analyse(Definition&) = 0;
     virtual void add_action(Shared<const Phrase>) = 0;
     virtual unsigned begin_unit(Shared<Unitary_Definition>) = 0;
