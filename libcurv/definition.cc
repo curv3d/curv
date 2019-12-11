@@ -119,7 +119,18 @@ Scope::single_lookup(const Identifier& id)
 {
     auto b = dictionary_.find(id.symbol_);
     if (b != dictionary_.end())
-        return make<Local_Data_Ref>(share(id), b->second.slot_index_);
+        return make<Local_Data_Ref>(share(id), b->second.slot_index_,
+            b->second.variable_);
+    return nullptr;
+}
+Shared<Locative>
+Scope::single_lvar_lookup(const Identifier& id)
+{
+    auto b = dictionary_.find(id.symbol_);
+    if (b != dictionary_.end()) {
+        b->second.variable_->is_mutable_ = true;
+        return make<Local_Locative>(share(id), b->second.slot_index_);
+    }
     return nullptr;
 }
 
@@ -223,7 +234,8 @@ Recursive_Scope::analyse_unit(Unit& unit, const Identifier* id)
     case Unit::k_analysed:
         return;
     }
-    if (unit.scc_lowlink_ == unit.scc_ord_ /*&& unit.state_ != Unit::k_analysed*/) {
+    assert(unit.state_ == Unit::k_analysis_in_progress);
+    if (unit.scc_lowlink_ == unit.scc_ord_) {
         // `unit` is the lowest unit in its SCC. All members of this SCC
         // are on the SCC stack. Output an initialization action for unit's SCC.
         if (!unit.is_function()) {
@@ -312,7 +324,23 @@ Recursive_Scope::single_lookup(const Identifier& id)
             return make<Module_Data_Ref>(
                 share(id), executable_.module_slot_, b->second.slot_index_);
         } else {
-            return make<Local_Data_Ref>(share(id), b->second.slot_index_);
+            return make<Local_Data_Ref>(share(id), b->second.slot_index_,
+                b->second.variable_);
+        }
+    }
+    return nullptr;
+}
+Shared<Locative>
+Recursive_Scope::single_lvar_lookup(const Identifier& id)
+{
+    auto b = dictionary_.find(id.symbol_);
+    if (b != dictionary_.end()) {
+        if (target_is_module_) {
+            throw Exception(At_Phrase(id, *this),
+                stringify(id.symbol_,": not assignable"));
+        } else {
+            b->second.variable_->is_mutable_ = true;
+            return make<Local_Locative>(share(id), b->second.slot_index_);
         }
     }
     return nullptr;

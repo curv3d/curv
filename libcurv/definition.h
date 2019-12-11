@@ -136,11 +136,13 @@ struct Scope : public Environ
     struct Binding {
         slot_t slot_index_;
         unsigned unit_index_;
+        Shared<Local_Variable> variable_;
 
         Binding(slot_t slot, unsigned unit)
         :
             slot_index_(slot),
-            unit_index_(unit)
+            unit_index_(unit),
+            variable_(make<Local_Variable>())
         {}
     };
 
@@ -155,6 +157,7 @@ struct Scope : public Environ
     }
 
     virtual Shared<Meaning> single_lookup(const Identifier&) override;
+    virtual Shared<Locative> single_lvar_lookup(const Identifier&) override;
     virtual slot_t add_binding(Symbol_Ref, const Phrase&, unsigned unit);
 };
 
@@ -234,6 +237,7 @@ struct Recursive_Scope : public Block_Scope
     void analyse();
 
     virtual Shared<Meaning> single_lookup(const Identifier&) override;
+    virtual Shared<Locative> single_lvar_lookup(const Identifier&) override;
     virtual void analyse(Definition&) override;
     virtual void add_action(Shared<const Phrase>) override;
     virtual unsigned begin_unit(Shared<Unitary_Definition>) override;
