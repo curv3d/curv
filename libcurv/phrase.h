@@ -202,9 +202,10 @@ struct Dot_Phrase : public Binary_Phrase
 
 struct Lambda_Phrase : public Binary_Phrase
 {
-    /// Normally false, this is set to true prior to analysis if the lambda
-    /// occurs in the definiens position of a definition. All of the function
-    /// definitions in the same block or module share a single nonlocals list.
+    // Normally false, this is set to true prior to analysis if the
+    // lambda occurs in the definiens position of a recursive definition.
+    // All of the function definitions in the same recursion group
+    // share a single nonlocals object.
     bool shared_nonlocals_ = false;
 
     using Binary_Phrase::Binary_Phrase;
