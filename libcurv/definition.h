@@ -68,8 +68,7 @@ struct Function_Definition : public Unitary_Definition
     virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
 
-// A data definition is `pattern = expression` or `var pattern := expression`
-// or a `var f x:=expr` style function definition.
+// A data definition is `pattern = expr` where `expr` is not a lambda.
 // Data definitions cannot be recursive, and they can use pattern matching
 // to bind multiple names.
 struct Data_Definition : public Unitary_Definition
