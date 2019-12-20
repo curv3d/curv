@@ -153,3 +153,27 @@ There are some caveats:
    a new `<keyword>:` at the same indentation as a previous mixfix keyword,
    is this a continuation of the previous mixfix, or is it the beginning of
    a new mixfix? It works if the keywords are all hard coded into the grammar.
+
+This idea works with user-defined mixfix if we syntactically distinguish
+initial keywords from interior keywords. (Note, we are eliminating semicolons
+at the cost of adding lexical distinctions elsewhere.)
+
+Possible alternatives:
+(1)
+    IF primary then primary else primary
+    IF primary then:
+        statements
+    else: if primary then:
+        statements
+    else:
+        statements
+(2)
+    IF pipeline THEN pipeline ELSE pipeline
+    IF pipeline THEN:
+        statements
+    :ELSE IF primary THEN:
+        statements
+    :ELSE:
+        statements
+
+I like #2.
