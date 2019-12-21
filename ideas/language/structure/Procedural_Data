@@ -1,0 +1,77 @@
+Procedural Data Modelling
+=========================
+
+Lazy Infinite Data Structures
+-----------------------------
+Haskell has lazy infinite data structures. This is one of the two principal
+features of Haskell that make pure functional programming great, according to
+"Why Functional Programming Matters" by John Hughes.
+
+| Functional languages provide two new, very important kinds of glue.
+| We shall give some examples of programs that can be modularized in new
+| ways and can thereby be simplified. This is the key to functional
+| programming’s power — it allows improved modularization.
+
+| 1. Higher Order Functions: gluing functions together. 
+|    Functional languages allow functions that are indivisible in conventional
+|    programming languages to be expressed as a combinations of parts
+|    — a general higher-order function and some particular specializing
+|    functions. Once defined, such higher-order functions allow many operations
+|    to be programmed very easily.
+ 
+| 2. Lazy Evaluation: gluing programs together.
+|    Lazy data structures are the most important piece.
+|    Hughes argues that lazy data structures are not enough. The full power
+|    of lazy evaluation comes with making everything lazy.
+
+Lazy Evaluation vs Curv
+-----------------------
+Haskell's pure functional programming was one of the inspirations for Curv.
+
+Curv has higher order functions. This is a core feature of the high level
+Shape API. You can't implement this directly on a GPU, but that's okay,
+we eliminate higher order functions via partial evaluation, which yields
+code that can be run on a GPU.
+
+Curv does not have lazy evaluation or lazy data structures. Why?
+ * So far, I haven't found the need for lazy data structures.
+   Curv programming has so far consisted of gluing together shape
+   combinators (at the high level) and writing low level imperative code
+   that operates on numbers and and vectors (at the low level).
+ * Lazy evaluation seems impossible to implement on the GPU.
+ * It's notable that Haskell is almost alone in using lazy evaluation as
+   the default for function call arguments. This default causes many
+   technical difficulties. It impairs understanding of the execution and
+   performance semantics of a program. It is notable that other pure
+   functional languages, like Idris and Elm, use strict function call
+   evaluation, Haskell & the arguments given by Hughes notwithstanding.
+   It's a bad idea for Curv too, independent of not being able to implement it.
+
+There is still Hughes' argument for lazy data structures. Would these be
+useful? Maybe there is a way to compile such data structures into GPU code?
+Perhaps two functions glued together using a lazy stream can be transformed
+into non-lazy code. It's a bit like coroutines. I can imagine a limited
+implementation involving a state machine at the interface between the two
+functions being glued together, a bit like Rob Pike's Squeak language, and
+maybe with some similarity to Rust's await/async. It seems very difficult
+to implement, and there would be limitations on the GPU: you can't have
+a stack of arbitrary depth, you must have a fixed set of state variables.
+
+The counterargument is that Haskell-style lazy data is rooted in a single
+threaded model of computation. Curv is designed for data-parallel computation.
+
+Procedural Data Modelling
+-------------------------
+Haskell-style lazy data structures have embedded code that runs as you access
+the elements of the data structure.
+
+I'm going to call this "procedural data modelling". The metaphor comes from
+computer graphics, in the distinction between ordinary textures (which are
+pure data) and procedural textures (which run code as you access elements
+of the texture). But note: procedural textures are data-parallel.
+
+So I propose that, instead of Haskell-style single-threaded lazy data,
+Curv should instead provide analogous structures that provide similar
+benefits, but are data parallel. I feel this kind of facility would map
+much more directly onto the problems of modeling geometry using signed
+distance fields, etc.

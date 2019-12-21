@@ -1,4 +1,5 @@
 Typed arrays provide efficient representations for large uniform arrays.
+Typed arrays may also provide semantic benefits.
 
 Examples:
 * strings (of characters), possibly with UTF8 encoding.
@@ -7,23 +8,52 @@ Examples:
 * triangle meshes (which contain arrays of 32 bit natural numbers, and
   arrays of 32 bit floats).
 
-Two approaches to typed arrays.
+Requirements
+------------
+Typed arrays have special representations for scalars, more compact than
+general boxed scalars. There may also be compression schemes, eg UTF-8
+or image compression or VDB.
 
-1. Explicit. We provide explicit constructors for typed arrays.
-   The dynamic type of a typed array includes its element type.
-   There are multiple distinct empty lists, one for each element type.
+There are traditional operations/constructors for creating typed arrays.
+Eg, UTF-8 string literals "abc", or `file "foo.png"`.
 
-   The amend and concat operations on typed arrays are restricted: the
-   element type of the result must be preserved.
-   Binary concat requires both argument arrays to have the same element type.
-   The concat monoid doesn't know what to return for `concat[]`, unless:
-    * An element type is passed as an extra argument.
-    * The element type of the argument determines the element type of the
-      result: concat of an empty list returns the argument.
+Support a general set of functional operations over typed arrays:
+ * concat
+ * amend
+ * map from a typed array
+ * map to a typed array
 
-2. Implicit. There is only one list type and one list constructor.
-   There is only one empty list.
+Two Approaches to Efficient Representation of Large Uniform Arrays
+------------------------------------------------------------------
+### 1. Explicit (typed arrays)
+We provide explicit constructors for typed arrays.
+The dynamic type of a typed array includes its element type.
+There are multiple distinct empty lists, one for each element type.
 
-   We use efficient compact representations for uniform arrays,
-   but we don't restrict the amend and concat operations, which means a
-   uniform array can be transformed into a general array via amend or concat.
+The amend and concat operations on typed arrays are restricted: the
+element type of the result must be preserved.
+Binary concat requires both argument arrays to have the same element type.
+The concat monoid doesn't know what to return for `concat[]`, unless:
+ * An element type is passed as an extra argument.
+ * The element type of the argument determines the element type of the
+   result: concat of an empty list returns the argument.
+
+### 2. Implicit
+There is only one list type and one list constructor.
+There is only one empty list.
+
+Internally, we use efficient compact representations for uniform arrays.
+Certain operations generate these compact representations.
+Amend and concat represent these compact representations, if they can.
+
+We don't restrict the amend and concat operations, which means a
+uniform array can be transformed into a general array via amend or concat.
+
+A string literal "abc" is sugar for a list constructor [#\a, #\b, #\c].
+So we need a character type.
+
+Semantics of Typed Arrays
+-------------------------
+
+Relation to Data Abstraction
+----------------------------

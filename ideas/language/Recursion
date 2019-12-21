@@ -1,10 +1,16 @@
 Expand the circumstances where recursive definitions are legal.
 
 Goals:
- 1) Recursive (infinite) lists.
- 2) Recursive function definitions, where you call a combinator to
+
+ 1) Recursive function definitions, where you call a combinator to
     construct a function, and the recursive references are within lambda
     abstractions passed as arguments. Eg, `match` (see Match), or `reduce`.
+
+ 2) Recursive (infinite) lists. Maybe?
+    Haskell-style lazy infinite data structures arose in the 1970's from
+    a culture of single-threaded computation. This kind of code can't run
+    on a GPU. I would rather explore designs for procedurally encoded data
+    that are inherently data-parallel.
 
 It's tricky, there are two challenges.
 * Representation: because runtime objects are reference counted, and cannot
@@ -36,8 +42,7 @@ of a legal recursive list or function definition, then we construct the
 appropriate recursive data structure.
 
 That is pretty complicated. But eventually I'll have all of the necessary
-mechanisms in place for other reasons (to support GPU compilation), and then
-maybe I can revisit this idea.
+mechanisms in place for other reasons, and then maybe I can revisit this idea.
 
 General Recursive Function Definitions
 --------------------------------------
@@ -118,6 +123,11 @@ the initial value for the frame slot 'f'.
    all of the bindings in the recursion group. The ThunkLambdas can be captured
    by closures but an error is reported if they are evaluated.
  * After 'expr' is evaluated, we unpoison the ThunkLambdas.
+
+With this scheme, in `pat = expr`, `pat` can be 'identifier'
+or 'identifier :: predicate'. A further generalization to support arbitrary
+patterns could work by prefixing 'let pat = expr in' to each closure body
+that references any of those variables, then optimizing from there.
 
 Optimization:
  * Instead of storing ThunkLambda and Lambda in the nonlocals dictionary
