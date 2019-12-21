@@ -1,0 +1,4 @@
+let
+rand xy = frac(sin(dot(xy, (12.9898,78.233)))*43758.5453123);
+in
+make_texture ([x,y,z,t]->let c=rand[x,y]; in sRGB(c,c,c))

@@ -72,6 +72,9 @@ The result is a smoother appearance at the cost of performance.
 Created by Kurt Spencer, 2014, in Java.
 https://gist.github.com/KdotJPG/b1270127455a94ac5d19
 
+Super-simplex noise runs about 25% faster than Simplex, and produces higher
+quality noise. No 4D version.
+
 Super Simplex Noise
 -------------------
 Super Simplex Noise is another modification of Simplex Noise.
@@ -93,18 +96,32 @@ https://github.com/kelvin13/noise/wiki/struct-SuperSimplexNoise2D
    0.1875 ... 0.8125 in SuperSimplexNoise3D units.
 
 Issues:
- * No 4D implementation can be found on internet.
- * No work on automatically computing the gradient can be found.
- * It's not obvious who invented it. github.com/kelvin13 is the best
-   candidate so far. But his library is in Swift. Razaekel@github claims
-   the original algorithm is in Java. (The original OpenSimplex was Java.)
-   See https://github.com/Razaekel/noise-rs/pull/168 for commentary
+ * There is no 4D implementation.
+ * There is a version with analytical derivatives from the original author.
+   https://www.reddit.com/r/proceduralgeneration/comments/97lnvp/is_analytical_integration_of_perlin_noise_possible/e4i64pi/
  * The algorithm uses a pseudo-randomly generated lookup table.
    Kelvin13@github does not guarantee bounds for the max/min values output by
    the algorithm. Adudney@github submitted the Rust port to noise-rs.
    He generated a lookup table, then used Mathematica to determine the
    maximum values and guarantee an exact output range.
    See https://github.com/Razaekel/noise-rs/pull/168 for commentary
+
+Super Simplex Noise was invented by Kurt Spencer, 2017, @KdotJPG.
+https://github.com/Boethie/Very-Old-Genesis/blob/master/src/main/java/genesis/util/noise/SuperSimplexNoise.java
+
+Some background on this:
+    https://github.com/Razaekel/noise-rs/issues/141
+    @adudney
+    SuperSimplex is not described in a blog post or anything, it was merely
+    another algorithm from the same person behind OpenSimplex, that as far as I
+    recall, doesn't have the same triangular artifacts.
+
+    The only source for SuperSimplex is a single java file linked in their
+    reddit history:
+
+    https://www.reddit.com/r/proceduralgeneration/comments/dfs9fv/procedural_rivers_4km_8km_long_that_change/f35x9pr/
+
+    https://www.reddit.com/r/proceduralgeneration/comments/97lnvp/is_analytical_integration_of_perlin_noise_possible/e4i64pi/
 
 In the 2D case, SuperSimplex uses the same triangle lattice as OpenSimplex.
 In the 3D case, it doesn't use simplexes. It uses a tilted cubic lattice.
