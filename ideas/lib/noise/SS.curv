@@ -8,21 +8,14 @@ NORM_CONSTANT_2D = 1 / 0.05428295288661623;
 NORM_CONSTANT_3D = 1 / 0.0867664001655369;
 
 rand2x1 = lib.noise.rand2x1;
+rand2(pt,n) = rand2x1(pt) * n;
+//rand2(pt,n) = sum(pt*1103515245+12345) `mod` n;
+//rand2(pt,n) = 0;
+//rand2(pt,n) = pt[0] `mod` n;
 
-DIAG = 1 / sqrt 2;
-// GRAD2[i `mod` 8] is the gradient of i.
-// Vectors are combinations of -1, 0, and 1
-// Precompute the normalized element
-GRAD2 = [
-    [  1.0,   0.0],
-    [ -1.0,   0.0],
-    [  0.0,   1.0],
-    [  0.0,  -1.0],
-    [ DIAG,  DIAG],
-    [-DIAG,  DIAG],
-    [ DIAG, -DIAG],
-    [-DIAG, -DIAG],
-];
+// Each vertex in the grid is assigned a normalized gradient vector,
+// selected at random from this list.
+GRAD2 = [ for (theta in 0..<tau by tau/13) cis theta ];
 
 // Points taken into account for 2D:
 //              (-1,  0)
@@ -123,7 +116,7 @@ SuperSimplex2 point =
             local attn = 2/3 - dot(dpos, dpos);
             if (attn > 0) (
                 local lattice_point = sbase + LATTICE_LOOKUP_2D[i,0];
-                local gradient = GRAD2[rand2x1(lattice_point) * 8];
+                local gradient = GRAD2[rand2(lattice_point, count GRAD2)];
                 value := value + attn^4 * dot(gradient, dpos);
             )
         )
@@ -211,6 +204,8 @@ in
 make_texture ((x,y,_,_) ->
     let n = SuperSimplex2(x,y);
     in
-    //if (n <= 0) sRGB.grey (n+1) else sRGB.hue n
-    sRGB.grey((n+1)/2)
+    if (n <= 0) sRGB.grey (n+1) else sRGB.hue n
+    //sRGB.hue((n+1)/2)
+    //sRGB.grey((n+1)/2)
+    //sRGB.grey(bit(n>0))
 )
