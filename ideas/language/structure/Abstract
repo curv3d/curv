@@ -1,0 +1,37 @@
+Abstract Structures
+===================
+What is the pure functional analogue of C++ iterator concepts?
+
+This is a way of classifying collections of values, at the very highest level
+of abstraction, based on how the data is accessed by algorithms.
+
+A reified collection has all of its values laid out in memory at once.
+Collections can also be procedurally generated, in a variety of ways, and
+this also allows for infinite collections.
+
+Ordered collections:
+
+ Sequential: elements are accessed sequentially.
+   Lazy list: corecursive codata: initial element v0 is the base case,
+              v1 = f v0, v2 = f(f(v0)), etc.
+   Compressed/variable length reified data, such as UTF-8.
+   Supports sequential computation.
+
+ Parallel: 'random access' elements, retrieved by index.
+   Computed list: element v[i] is f(i).
+   Reified array of fixed size elements.
+   Supports data parallelism.
+
+An ordered collection may be finite or infinite.
+
+Multi-dimensional collection: index is a vector.
+Computed, or a reified array.
+ * nested or curried: vector elements applied one at a time
+ * strict: vector index applied all at once (vector is a structure)
+
+Labelled Tensors. Dimensions have names, rather than ordinals.
+Easier to work with when using tensors with a large number of dimensions.
+ * fetch an element: T{a:i,b:j}
+ * `dim T`: {a:40,b:50}
+ * `rank T`: 2 -- this implies that count{a:40,:50} == 2.
+ * Reified or procedural.

@@ -57,21 +57,27 @@ maybe with some similarity to Rust's await/async. It seems very difficult
 to implement, and there would be limitations on the GPU: you can't have
 a stack of arbitrary depth, you must have a fixed set of state variables.
 
-The counterargument is that Haskell-style lazy data is rooted in a single
-threaded model of computation. Curv is designed for data-parallel computation.
+Lazy data is useful for modularizing code that integrates data over a sequence
+of steps, or that integrates data over time. Maybe this would be useful for:
+ * Gluing code together to make iterative numerical algorithms (as in Hughes).
+ * Making interactive animations (eg, see Squeak by Pike).
+ * Certain graphical algorithms, like diffusion-reaction.
 
-Procedural Data Modelling
--------------------------
+Procedural Data
+---------------
 Haskell-style lazy data structures have embedded code that runs as you access
 the elements of the data structure.
 
-I'm going to call this "procedural data modelling". The metaphor comes from
-computer graphics, in the distinction between ordinary textures (which are
-pure data) and procedural textures (which run code as you access elements
-of the texture). But note: procedural textures are data-parallel.
+I'm going to call this "procedural data". The term doesn't imply memoization
+the way "lazy data" does. The metaphor comes from computer graphics, in the
+distinction between ordinary textures (which are pure data) and procedural
+textures (which run code as you access elements of the texture). But note:
+procedural textures are data-parallel.
 
-So I propose that, instead of Haskell-style single-threaded lazy data,
-Curv should instead provide analogous structures that provide similar
-benefits, but are data parallel. I feel this kind of facility would map
-much more directly onto the problems of modeling geometry using signed
-distance fields, etc.
+Haskell-style lazy data is rooted in a single threaded model of computation.
+But Curv is designed for data-parallel computation.
+
+Let's consider `[for (i in list) f i]` as "procedural data".
+Because all of the elements can be computed independently, this lazy list
+is data parallel. This kind of data-parallel procedural data maps directly
+onto the problems of modelling geometry, texture and pattern using fields.
