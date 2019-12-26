@@ -1,0 +1,22 @@
+inspect id action expr = let $id = $expr; $action in $id;
+
+Use cases:
+ * Add debug actions to the middle of a pipeline:
+        stuff
+        >> inspect x (print x)
+        >> more stuff
+ * Add assertions to a module without mixing actions and definitions
+   in the same context:
+        {
+            definitions
+        }
+        >> inspect m (
+            assert(m.whatever :: some_predicate);
+        )
+
+The principle motivation is to change the syntax to disentangle statements
+and recursive definitions, in order to simplify the language and its
+implementation.
+
+This is deferred until I see how assertions (axioms) are specified
+when defining an Algebra.

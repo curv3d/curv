@@ -84,13 +84,15 @@ separate the definitions from the assertions.
   bindings and laws/axioms.
 
 How about this:
-  { <module definitions> } :: (M->assertions about M)
+  { <definitions> } :: (M->assertions about M)
 or
   {
     <definitions>
   where
     <assertion statements>
   }
+or
+  { <definitions> } >> inspect M (statements; assertions over M;)
 
 Useless Generality
 ------------------
