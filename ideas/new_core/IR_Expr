@@ -26,3 +26,38 @@ Methods:
 * emit(): output GLSL or C++
 * print(IR_Printer&): pretty-print the IR using Curv syntax, for testing and
   debugging.
+
+Should IR_Expr be merged with Operation?
+* It will eliminate some code duplication between methods that are identical
+  between the IR_Expr and Operation version of the same operation, such
+  as print() and hash().
+* There is elegance and code compactness in using the same representation
+  for multiple passes of the compiler. It might enable new uses of the semantic
+  tree representation in the future. It's a step closer to modelling Curv as
+  a term rewrite system, where values and operations are both terms.
+Challenges:
+* It works against strong typing. Only a subset of Operations will be used as
+  IR_Exprs, but these Operation classes are not distinguished by static typing.
+  An IR_Expr contains zero or more Operation subnodes, which are known
+  dynamically to be IR_Expr nodes.
+* Adds a type field to Operation which isn't needed by non-expressions,
+  or at runtime.
+* Yeah, but Operation already works this way. There's no type distinction
+  between an expression and an action. It's OOP disease, or it's dynamically
+  typed code, take your pick. If I want fine grained type distinctions, I'll
+  need to write extra boilerplate code to get it.
+
+emit
+----
+ir_emit_stmts() and ir_emit_expr()
+* For an action, use ir_emit_stmts() alone.
+* For an expression, use ir_emit_stmts() followed by ir_emit_expr().
+* In an expression class, ir_emit_stmts() calls x->ir_emit_stmts() on each
+  argument expression x. ir_emit_expr() emits an expression, composed from the
+  expressions printed by x->ir_emit_expr() for each argument x.
+
+In some cases, ir_emit_expr() prints a compound expression containing one or
+more operations. In other cases, ir_emit_expr() emits a variable name or
+a literal numeric constant, where there is no need to assign the result to a
+variable before using it. We should provide a predicate to distinguish these
+cases. `bool ir_is_simple_expr()`.

@@ -1,0 +1,22 @@
+Version 1 of my "SC builtin function call" API is Legacy_Function::sc_call,
+together with At_SC_Arg. Not compatible with the array_op framework.
+THE PROBLEM with this API is that the arguments are converted to SC_Values
+before sc_call() is called, and that is incompatible with the Array_Op
+framework, which has special case code for a List_Expr argument that can't
+be converted to an SC_Value.
+
+Version 2 of my "SC builtin function call" API is Legacy_Function::sc_call_expr,
+At_SC_Call, and the array_op framework.
+
+Version 3 is the new IR, not designed yet.
+
+We need a generalization of SC_Value that can describe arbitrary
+uniform arrays, even ones that aren't compilable to GLSL right now.
+There are other features I need:
+* Can check if an SC_Value is constant, and then get the value.
+* Constant folding and other optimizations.
+* Common subexpression elimination during SC compile. Currently this is done
+  in a really inadequate way using Operation nodes.
+I need to replace my use of SC_Value and Operation with a new IR representation.
+IR nodes are created and destroyed and optimized, before GLSL is output.
+Outputting GLSL during the creation of an SC_Value is not acceptable.

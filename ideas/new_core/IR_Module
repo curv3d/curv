@@ -1,0 +1,5 @@
+The output of the compiler is an IR_Module,
+which is a set of named function and data definitions.
+
+emit(): output GLSL or C++ code
+print(): pretty-print using Curv syntax.

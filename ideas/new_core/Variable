@@ -1,0 +1,56 @@
+Variables
+=========
+A variable reference can't just contain a slot. It has to contain a
+pointer to a shared Variable object, which contains:
+* The definiens.
+* A mutable flag, set if there are any assignments to the variable.
+  This is initialized to false, then set to true when an assignment statement
+  is analysed.
+
+During ir_eval(), a reference to an immutable variable (with a definiens)
+is replaced by the result of ir_eval_op(definiens).
+
+kinds of variable references:
+* function parameter (no definiens; immutable)
+* let/where/local variable (definiens; mutable or immutable)
+* for variable (no definiens; mutable or immutable)
+* module member (definiens; immutable)
+
+classes:
+  Symbolic_Ref(name)
+    nonlocal data in a recursively bound named function
+  Module_Data_Ref(slot,index)
+    module member, in the initialization code for a module literal
+  Nonlocal_Data_Ref(slot)
+    nonlocal data in an anonymous or sequentially bound lambda expr
+  Local_Data_Ref(slot)
+    local variable reference: function parameter, let/where/local/for variable
+
+Environ classes that produce Local_Data_Refs:
+  Scope -- sequential scopes, for
+  Lambda_Scope -- top level scope of lambda expression (params, nonlocals)
+  Recursive_Scope -- let/where/module literal
+
+Design 0
+--------
+struct Local_Variable
+{
+    bool is_mutable_ = false;
+    Shared<const IR_Expr> ir_expr_ = nullptr;
+};
+
+Scope::Binding(definition.h) contains a Shared<Local_Variable>,
+which is added when the binding is first created.
+* Initially it contains false/null.
+* During analysis, if the variable is mutated using an assignment (:=),
+  then is_mutable is set true.
+* During ir_eval, when the variable definition is processed (eg, by
+  pattern->ir_exec()), ir_expr_ is set. This initialization happens before
+  any Local_Data_Refs that reference the Local_Variable are processed.
+
+Local_Data_Ref(meaning.h) contains a Shared<const Local_Variable>.
+Id_Pattern(pattern.cc) contains an optional Shared<const Local_Variable>.
+
+Id_Pattern denotes a variable reference (local or module).
+It has a slot (which is used in all cases) plus an optional Local_Variable
+pointer (which is only used in the local variable case).

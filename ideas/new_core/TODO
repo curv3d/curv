@@ -1,0 +1,2 @@
+Implement the IR node concept: construct an IR tree before emitting code.
+Use Operation to represent an IR node.

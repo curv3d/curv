@@ -16,6 +16,27 @@ A polymorphic type is either a polymorphic function type, or a compound type
 containing an element with polymorphic type.
 
 Take a look at Apple's WSL language for some ideas about the type system.
+https://gpuweb.github.io/WSL/
+ * shader entry point arguments:
+    * no structs.
+    * opaque texture, opaque sampler, slices holding scalars, vectors, matrices
+      or structs of these (recursively).
+    * specialization constants: scalar; declared as 'specialized'
+ * each type has an addressSpace, one of: constant, device, threadgroup, thread
+ * WSL data types:
+   * pointers (no pointer arithmetic)
+   * array references (bounds-checked fat pointer to an array)
+   * array, which has type and size
+   * struct
+   * bool
+   * 32 bit numbers: uint, int, float
+   * vector types: vector<basetype, size> where basetype is bool|uint|int|float
+     and size is 2|3|4
+   * matrix types: matrix<basetype,rows,cols> where basetype is bool|float,
+     rows is 2|3|4, cols is 2|3|4. Note, no int or uint matrix types (could be
+     added later).
+   * samplers, type 'sampler'
+   * textures: 1D|2D|3D, only in constant|device address space.
 
 Bool
 Symbol

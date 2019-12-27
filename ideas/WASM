@@ -1,0 +1,11 @@
+Emscripten
+Cheerp
+Rust
+
+How to interoperate between WASM and Javascript. You need some way to
+translate WASM objects to Javascript objects, and vice versa.
+A framework is needed for this:
+ * Rust: https://rustwasm.github.io/docs/wasm-bindgen/
+ * C++/Emscripten:
+   https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html
+ * Cheerp has one as well.

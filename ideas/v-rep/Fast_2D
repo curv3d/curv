@@ -38,6 +38,33 @@ in the demo part of the talk (https://vimeo.com/83732058), plus he is showing
 an SDF of a page of text and performing all sorts of transformations on the SDF
 at 60 FPS.
 
+"Random-Access rendering of general Vector Graphics"
+http://hhoppe.com/proj/ravg/
+
+This interprets an SVG as something very close to a Curv SDF/colour field,
+with GPU rendering in a fragment shader: given [x,y], return pixel colour.
+It uses the familiar approach of beam optimization: partition the viewport
+into equal size rectangular cells, and within a cell, render only those
+primitives that intersect the cell, by constructing a display list for each
+cell.
+
+Windows, closed source, binary only.
+
+We introduce a novel representation for random-access rendering of antialiased
+vector graphics on the GPU, along with efficient encoding and rendering
+algorithms. The representation supports a broad class of vector primitives,
+including multiple layers of semitransparent filled and stroked shapes, with
+quadratic outlines and color gradients. Our approach is to create a coarse
+lattice in which each cell contains a variable-length encoding of the graphics
+primitives it overlaps. These cell-specialized encodings are interpreted at
+runtime within a pixel shader. Advantages include localized memory access
+and the ability to map vector graphics onto arbitrary surfaces, or under
+arbitrary deformations. Most importantly, we perform both prefiltering
+and supersampling within a single pixel shader invocation, achieving
+inter-primitive antialiasing at no added memory bandwidth cost. We present
+an efficient encoding algorithm, and demonstrate high-quality real-time
+rendering of complex, real-world examples.
+
 https://ultralig.ht
 Ultralight: a lightweight, pure-GPU, HTML UI renderer for native apps
 https://github.com/ultralight-ux/ultralight

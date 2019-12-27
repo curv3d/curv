@@ -1,0 +1,73 @@
+Curv changes at version 1a53c1c1, Thu Nov 28 2019
+-------------------------------------------------
+local definitions:
+    in a 'do' expression, visible in body
+    in record comprehensions
+let:
+    only definitions are permitted in the head of a `let`
+Remove 'generalized do'. Only 'do' expressions are supported.
+    vec[i] := newval -- also in SubCurv
+    `record.field := newvalue`
+    
+noise library, rand[1-4]x1
+
+fewer levels of operator precedence:
+  unite Power with Unary; not a breaking change; grammar becomes more liberal.
+  unite Relation with Range, breaking change, parse error for '1..3==[1,2,3]'
+
+Boolean array operators.
+  SubCurv supports Bool32, Bool[2-4], Bool[2-4]x32
+  new boolean array operations (also in SubCurv):
+    float_to_bool32, bool32_to_float
+    nat_to_bool32 (in SubCurv, argument must be a constant)
+    bool32_to_nat (not in SubCurv)
+    bool32_sum, bool32_product
+    lshift, rshift
+    and, or, xor
+  enhanced operations:
+    bit is vectorized
+    ! <bool32> in subcurv
+
+`a >> into union [b, c]` means `union [a, b, c]`
+
+AMD Mesa 19.x driver works
+
+'sf1' render function
+`shader` render parameter is #standard or #pew
+Shape has optional `render` field (rendering parameters)
+
+REPL: support := statement
+REPL now supports Field Generator statements
+REPL.rst doc
+
+curv: rename -Ocolour= to -Ocolouring=
+
+user config: is a record containing {viewer,export} fields
+Config.rst doc
+
+Add Symbol data type.
+* There are now 6 fundamental types, down from 7.
+  They are: Symbol, Number, String, List, Record, Function.
+* syntax: #foo or #'hello world'
+* true, false, null are now just aliases for #true, #false, #null
+* JSON export exports #true, #false, #null as JSON true, false, null.
+* Add 'is_symbol' predicate.
+* Remove `is_null` predicate (breaking change).
+* Symbol patterns.
+
+  All -O option values are now specified as Curv expressions.
+  symbols in -O options: -Ocolouring=#vertex or -Ocolouring=#face
+
+JSON export no longer tries hard to distinguish JSON from non-JSON data.
+Non-JSON data is now just exported as a string.
+`#foo` exports as `"foo"`. `sin` exports as `"<function sin>"`.
+
+'_' (with quotes) is an identifier pattern, not a skip pattern
+
+-Oray_max_iter, -Oray_max_depth : bug #78
+
+add quoted identifiers
+
+add `make upgrade` command
+
+tail call optimization

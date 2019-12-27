@@ -1,0 +1,68 @@
+Localize parameter parsing and Value <-> native C++ conversion code
+for Render_Opts in libcurv/render.
+
+First idea:
+-----------
+There is a table of Render_Opts field descriptors:
+    Symbol_Ref name;
+    const char* synopsis;
+    Value get(const Render_Opts&);
+    void set(Render_Opts&, Value, const Context&);
+
+But: can this scheme be extended to support Image_Export?
+There is a table of Image_Export field descriptors:
+    Symbol_Ref name;
+    const char* synopsis;
+    Value get(const Image_Export&);
+    void set(Image_Export&, Value, const Context&);
+
+We want to inherit the Render_Opts field descriptors.
+Unfortunately, the types of the Render_Opts get() and set() functions
+is incompatible with the Image_Export table.
+
+Second idea
+-----------
+Maybe field descriptors are class instances.
+class Render_Opts_Field has
+    Symbol_Ref name;
+    const char* synopsis;
+    Value get() const;
+    void set(Value, const Context&);
+Image_Export_Field inherits from Render_Opts_Field.
+
+No, wait, how does the Render_Opts structure accessed by the Field object?
+You would have to instantiate an instance of the Field object containing
+a structure reference.
+
+Third idea
+----------
+Better to do that object instantiation only once during parsing, instead of
+once per field.
+
+class Boxed_Render_Opts contains
+    Render_Opts& data_
+plus a static table of field descriptors that you can iterate over.
+It is static because I don't want to instantiate all of the field descriptors
+each time we parse a record.
+
+How does this help? The static field descriptors must contain functions that
+take a Boxed_Render_Opts& object as an argument, and we are back to #1.
+
+Okay, what if we use the visitor pattern to iterate the field table.
+Boxed_Render_Opts contains
+    accept(Render_Opts_Field_Visitor&)
+
+put code in methods, not in the field table
+-------------------------------------------
+There is a field table, but it doesn't contain get/set functions.
+There are multiple methods for getting/setting fields: each takes a Symbol_Ref
+argument, and calls the method for its record superstruct if symbol not found.
+This approach is compatible with the C++ type system, which lacks the
+contravariant function types required for the field table approach.
+
+Maybe Render_Opts implements the Record interface.
+This means actual instances of Render_Opts can be used as Curv record values.
+This means assigning a field of one of these records will fail if the new
+value doesn't have the correct type. This violates the semantics of Curv,
+especially if these records print the same as generic records that don't have
+field type restrictions.

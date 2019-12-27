@@ -156,7 +156,7 @@ to the H,S,V coordinates, but the HCL axes are perceptually uniform.
 
   In the HSV colour wheel, red and green are separated by 120°, green and
   blue are separated by 120°, even though red and green are much farther
-  part perceptually (they are maximally contrasting, complementary hues),
+  apart perceptually (they are maximally contrasting, complementary hues),
   while blue and green are perceptually much closer together. The HCL
   colour wheel is more perceptually uniform. The complementary hues
   red and green are separated by 180°; the complementary hues blue and
@@ -186,6 +186,23 @@ CIE LUV colourspace. I will call this HCL(uv). It is implemented by the
 `colorspace` library, which is available for R and Python. The web site
 <http://hclwizard.org/> promotes this version of HCL, without making it clear
 that it is different from the LAB version of HCL.
+
+Compositing
+-----------
+Compositing should always be done in the linRGB colour space.
+
+Quote from Random Access Vector Graphics:
+When compositing, it is vital to distinguish between the two sources of a
+layer’s transparency: the intrinsic transparency from its color specification
+(alpha component), and the partial coverage opacity near primitive boundaries.
+Partial coverage must be dealt with in a linear color-space, lest dark
+primitives appear thicker than they should [Blinn 1998] (see Figure 3a-b).
+Unfortunately, most content creation tools represent colors in a nonlinear,
+gamma-adjusted space (e.g. sRGB [Stokes et al. 1996]), and perform compositing
+in this space. Misguided by this feedback, artists select transparency
+parameters that would look entirely different if linearly composited (see
+Figure 3c-d). Caught between the hammer and the anvil, we must resort to a
+hybrid blending operation that independently treats each source of transparency.
 
 Notes on White
 --------------

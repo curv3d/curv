@@ -1,0 +1,42 @@
+Common Subexpression Elimination
+================================
+During ir_eval() we perform common subexpression elimination.
+
+There is a set of scopes, labeled by natural numbers.
+Each scope is an abstraction of a value lifetime.
+
+Scope 0 is constants. The values are known a-priori.
+Scope 1 is top-level bindings. It's different from 0, because uniform variables
+are top level bindings: their values are available at the beginning of a frame.
+Scope 2 is the parameter scope of a function.
+Scope 3 is an outermost scope in the body of a function (there could be several)
+... and so on for nested scopes
+
+The scope of an IR_Expr is the highest scope of any of its subexpressions.
+
+IR nodes that define a scope also contain a cache:
+it's a hash table containing IR_Exprs.
+
+IR_Expr ir_eval_op(IR_Frame&, const Operation&)
+This is a wrapper around op->ir_eval() that performs CSE.
+After calling op->ir_eval(), we look up the resulting IR_Expr in the
+appropriate scope cache, and if there is already an identical IR_Expr,
+we merge them into a single object.
+
+An IR_Expr is a DAG, not a tree.
+An IR_Expr with scope N contains subnodes whose scope is <= N.
+
+ir_eval() performs other optimizations, which can discard IR_Expr nodes after
+they have been cached. Eg, replacing 0*x with 0.
+
+How do we remove discarded IR_Expr nodes from the caches?
+* We can wait until the full IR tree has been constructed. Then we perform a
+  top-down depth-first traversal of the IR tree. After reaching maximum depth,
+  on the way back to the root, at each IR node that represents a scope and
+  contains a cache, we traverse the cache, removing nodes whose use_count == 1.
+  If any nodes were removed, we traverse the cache again. We use a post-order
+  traversal since cached IR nodes may contain references to nodes closer to
+  the root, but not to nodes higher up. Removing a node may reduce the reference
+  count of nodes in this cache, and nodes lower down.
+* But there's no need for a separate pass. This post-order traversal logic
+  can be integrated into ir_eval() for a scope node.

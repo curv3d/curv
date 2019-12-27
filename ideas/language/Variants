@@ -1,0 +1,53 @@
+Curv now has 6 fundamental types, instead of 7.
+The original null and boolean types have been subsumed
+by the more general concept of symbol values.
+
+This is just boring plumbing, but it makes Curv better for representing
+certain kinds of data structures, and I'll be using it in the future to
+implement some useful new features, such as an optional Curv configuration
+file stored under your home directory, and drop-down menus in value pickers.
+
+Phillip's new renderer, which supports multiple light sources and shadows,
+and which is currently stuck in a PR, will be enabled using configuration,
+and you'll use the config file to enable it by default.
+
+A quick summary of the language change:
+
+Symbols are simple, abstract values with no internal structure.
+#foo is a symbol; it prints as #foo; it is only equal to itself.
+
+The special values `null`, `true` and `false` are now predefined variables
+that are bound to symbol values: `#null`, `#true`, `#false`.
+These variables are needed for backward compatibility.
+But you can now also write `#null`, `#true`, `#false`, and the benefit
+is that symbol literals also work as patterns.
+
+If you try to export a .X3D mesh file, you will find that the syntax of
+the `-Ocolour=` command line option has changed to:
+   -Ocolour=#face
+   -Ocolour=#vertex
+Command line option values are now always parsed as Curv expressions.
+Configuration is now uniformly represented as Curv data, and the forthcoming
+config file syntax will be a Curv program.
+
+Variant types are a tool for organizing and modelling data.
+A variant type consists of a fixed set of alternatives.
+Each alternative has a name, and optionally a value.
+To construct an instance of a variant type, you specify the name of one
+of the alternatives, plus a value, if that alternative carries a value.
+
+Variant types are a feature of modern statically typed programming
+languages, where they have many names: discriminated unions, enumerated
+types, variant types, and algebraic data types.
+
+In Curv, you don't declare a variant type before you construct a variant value. Instead, variants are constructed directly:
+
+ * A variant with just a name is a symbol. Eg, #foo.
+ * A variant with a name and a value is a record with a single field.
+   Eg, {bar: x}.
+
+Right now I just use variants internally for representing picker configuration,
+but in the future there will be new library APIs that use variants.
+
+More information here:
+https://github.com/curv3d/curv/blob/master/docs/language/Variant.rst
