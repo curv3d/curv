@@ -226,8 +226,7 @@ struct Recursive_Scope : public Scope
     // Recursive_Scope (add_to_scope protocol)
     void analyse(Definition&);
     void add_action(Shared<const Phrase>);
-    unsigned begin_unit(Shared<Unitary_Definition>);
-    void end_unit(unsigned, Shared<Unitary_Definition>);
+    unsigned add_unit(Shared<Unitary_Definition>);
 
     void analyse();
 private:

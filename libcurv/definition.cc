@@ -18,17 +18,15 @@ namespace curv
 void
 Data_Definition::add_to_scope(Recursive_Scope& scope)
 {
-    unsigned unitnum = scope.begin_unit(share(*this));
+    unsigned unitnum = scope.add_unit(share(*this));
     pattern_ = make_pattern(*definiendum_, scope, unitnum);
-    scope.end_unit(unitnum, share(*this));
 }
 void
 Function_Definition::add_to_scope(Recursive_Scope& scope)
 {
-    unsigned unitnum = scope.begin_unit(share(*this));
+    unsigned unitnum = scope.add_unit(share(*this));
     auto b = scope.add_binding(name_->symbol_, *syntax_, unitnum);
     slot_ = b.first;
-    scope.end_unit(unitnum, share(*this));
 }
 void
 Data_Definition::analyse(Environ& env)
@@ -74,14 +72,13 @@ Include_Definition::add_to_scope(Recursive_Scope& scope)
     auto record = val.to<Record>(cx);
 
     // construct an Include_Setter from the record argument.
-    unsigned unit = scope.begin_unit(share(*this));
+    unsigned unit = scope.add_unit(share(*this));
     setter_ = {Include_Setter::make(record->size(), syntax_)};
     size_t i = 0;
     record->each_field(cx, [&](Symbol_Ref name, Value value)->void {
         auto b = scope.add_binding(name, *syntax_, unit);
         (*setter_)[i++] = {b.first, value};
     });
-    scope.end_unit(unit, share(*this));
 }
 void
 Include_Definition::analyse(Environ&)
@@ -367,16 +364,10 @@ Recursive_Scope::add_action(Shared<const Phrase> phrase)
     action_phrases_.push_back(phrase);
 }
 unsigned
-Recursive_Scope::begin_unit(Shared<Unitary_Definition> def)
+Recursive_Scope::add_unit(Shared<Unitary_Definition> def)
 {
     units_.emplace_back(def);
     return units_.size() - 1;
-}
-void
-Recursive_Scope::end_unit(unsigned unitno, Shared<Unitary_Definition> unit)
-{
-    (void)unitno;
-    (void)unit;
 }
 
 Shared<Module_Expr>
