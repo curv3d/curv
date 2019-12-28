@@ -9,8 +9,8 @@
 
 namespace curv {
 
-struct Block_Scope;
 struct Pattern;
+struct Recursive_Scope;
 
 // All Definitions are 'recursive' definitions. Sequential definitions
 // begin with the 'local' keyword and aren't part of the Definition protocol.
@@ -24,7 +24,7 @@ struct Definition : public Shared_Base
         syntax_(std::move(syntax))
     {}
 
-    virtual void add_to_scope(Block_Scope&) = 0;
+    virtual void add_to_scope(Recursive_Scope&) = 0;
 };
 
 // A unitary definition is one that occupies a single node in the dependency
@@ -63,7 +63,7 @@ struct Function_Definition : public Unitary_Definition
         lambda_phrase_(std::move(lambda_phrase))
     {}
 
-    virtual void add_to_scope(Block_Scope&) override;
+    virtual void add_to_scope(Recursive_Scope&) override;
     virtual void analyse(Environ&) override;
     virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
@@ -88,7 +88,7 @@ struct Data_Definition : public Unitary_Definition
         definiens_phrase_(std::move(definiens))
     {}
 
-    virtual void add_to_scope(Block_Scope&) override;
+    virtual void add_to_scope(Recursive_Scope&) override;
     virtual void analyse(Environ&) override;
     virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
@@ -105,7 +105,7 @@ struct Include_Definition : public Unitary_Definition
         arg_(std::move(arg))
     {}
 
-    virtual void add_to_scope(Block_Scope&) override;
+    virtual void add_to_scope(Recursive_Scope&) override;
     virtual void analyse(Environ&) override;
     virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
@@ -123,7 +123,7 @@ struct Compound_Definition_Base : public Definition
     Compound_Definition_Base(Shared<const Phrase> syntax)
     : Definition(std::move(syntax)) {}
 
-    virtual void add_to_scope(Block_Scope&) override;
+    virtual void add_to_scope(Recursive_Scope&) override;
 
     TAIL_ARRAY_MEMBERS(Element)
 };
@@ -161,29 +161,7 @@ struct Scope : public Environ
         Symbol_Ref, const Phrase&, unsigned unit);
 };
 
-struct Block_Scope : public Scope
-{
-    bool target_is_module_;
-    Scope_Executable executable_ = {};
-
-    Block_Scope(Environ& parent, bool target_is_module)
-    :
-        Scope(parent),
-        target_is_module_(target_is_module)
-    {
-        if (target_is_module)
-            executable_.module_slot_ = make_slot();
-    }
-
-    virtual std::pair<slot_t,Shared<const Scoped_Variable>> add_binding(
-        Symbol_Ref, const Phrase&, unsigned unit) override;
-    virtual void analyse(Definition&) = 0;
-    virtual void add_action(Shared<const Phrase>) = 0;
-    virtual unsigned begin_unit(Shared<Unitary_Definition>) = 0;
-    virtual void end_unit(unsigned, Shared<Unitary_Definition>) = 0;
-};
-
-struct Recursive_Scope : public Block_Scope
+struct Recursive_Scope : public Scope
 {
     struct Unit {
         enum State {
@@ -218,6 +196,8 @@ struct Recursive_Scope : public Block_Scope
     };
 
     Shared<const Phrase> syntax_;
+    bool target_is_module_;
+    Scope_Executable executable_ = {};
     std::vector<Shared<const Phrase>> action_phrases_ = {};
     std::vector<Unit> units_ = {};
     int scc_count_ = 0;
@@ -227,21 +207,32 @@ struct Recursive_Scope : public Block_Scope
     Recursive_Scope(
         Environ& parent, bool target_is_module, Shared<const Phrase> syntax)
     :
-        Block_Scope(parent, target_is_module),
-        syntax_(std::move(syntax))
+        Scope(parent),
+        syntax_(std::move(syntax)),
+        target_is_module_(target_is_module)
     {
+        if (target_is_module)
+            executable_.module_slot_ = make_slot();
     }
 
-    void analyse_unit(Unit&, const Identifier*);
-    Shared<Operation> make_function_setter(size_t nunits, Unit** units);
-    void analyse();
-
+    // Environ
     virtual Shared<Meaning> single_lookup(const Identifier&) override;
     virtual Shared<Locative> single_lvar_lookup(const Identifier&) override;
-    virtual void analyse(Definition&) override;
-    virtual void add_action(Shared<const Phrase>) override;
-    virtual unsigned begin_unit(Shared<Unitary_Definition>) override;
-    virtual void end_unit(unsigned, Shared<Unitary_Definition>) override;
+
+    // Scope
+    virtual std::pair<slot_t,Shared<const Scoped_Variable>> add_binding(
+        Symbol_Ref, const Phrase&, unsigned unit) override;
+
+    // Recursive_Scope (add_to_scope protocol)
+    void analyse(Definition&);
+    void add_action(Shared<const Phrase>);
+    unsigned begin_unit(Shared<Unitary_Definition>);
+    void end_unit(unsigned, Shared<Unitary_Definition>);
+
+    void analyse();
+private:
+    void analyse_unit(Unit&, const Identifier*);
+    Shared<Operation> make_function_setter(size_t nunits, Unit** units);
 };
 
 Shared<Module_Expr> analyse_module(Definition&, Environ&);

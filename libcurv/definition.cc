@@ -16,14 +16,14 @@ namespace curv
 {
 
 void
-Data_Definition::add_to_scope(Block_Scope& scope)
+Data_Definition::add_to_scope(Recursive_Scope& scope)
 {
     unsigned unitnum = scope.begin_unit(share(*this));
     pattern_ = make_pattern(*definiendum_, scope, unitnum);
     scope.end_unit(unitnum, share(*this));
 }
 void
-Function_Definition::add_to_scope(Block_Scope& scope)
+Function_Definition::add_to_scope(Recursive_Scope& scope)
 {
     unsigned unitnum = scope.begin_unit(share(*this));
     auto b = scope.add_binding(name_->symbol_, *syntax_, unitnum);
@@ -66,7 +66,7 @@ Function_Definition::make_setter(slot_t module_slot)
 }
 
 void
-Include_Definition::add_to_scope(Block_Scope& scope)
+Include_Definition::add_to_scope(Recursive_Scope& scope)
 {
     // Evaluate the argument to `include` in the builtin environment.
     auto val = std_eval(*arg_, scope);
@@ -95,7 +95,7 @@ Include_Definition::make_setter(slot_t module_slot)
 }
 
 void
-Compound_Definition_Base::add_to_scope(Block_Scope& scope)
+Compound_Definition_Base::add_to_scope(Recursive_Scope& scope)
 {
     for (auto &e : *this) {
         if (e.definition_ == nullptr)
@@ -137,7 +137,8 @@ Scope::single_lvar_lookup(const Identifier& id)
 }
 
 std::pair<slot_t, Shared<const Scoped_Variable>>
-Block_Scope::add_binding(Symbol_Ref name, const Phrase& unitsrc, unsigned unitno)
+Recursive_Scope::add_binding(
+    Symbol_Ref name, const Phrase& unitsrc, unsigned unitno)
 {
     if (dictionary_.find(name) != dictionary_.end())
         throw Exception(At_Phrase(unitsrc, *parent_),
