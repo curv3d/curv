@@ -288,13 +288,7 @@ perimeter_extrude perimeter cross_section =
 ///////////////
 
 half_space =
-    match [
-    {d, normal: n} -> impl(d*n,n);
-    [a, b, c] -> impl(a, normalize(cross(b-a,c-b)));
-    {at: a, normal: n} -> impl(a,n);
-    ]
-where (
-    impl(a,n) = // a is point on boundary, n is unit normal
+    let impl(a,n) = // a is point on boundary, n is unit normal
         make_shape {
             dist(x,y,z,_) = dot(-n, a-[x,y,z]);
             bbox = [ [ if (n[Y]==0 && n[Z]==0 && n[X]<0) a[X] else -inf,
@@ -305,16 +299,14 @@ where (
                        if (n[X]==0 && n[Y]==0 && n[Z]>0) a[Z] else inf, ] ];
             is_3d = true;
         };
-);
+    in match [
+        {d, normal: n} -> impl(d*n,n);
+        [a, b, c] -> impl(a, normalize(cross(b-a,c-b)));
+        {at: a, normal: n} -> impl(a,n);
+    ];
 
 half_plane =
-    match [
-    {d, normal: n} -> impl(d*n,n);
-    [a, b] -> impl(a, normalize(perp(b-a)));
-    {at: a, normal: n} -> impl(a,n);
-    ]
-where (
-    impl(a,n) = // a is point on boundary, n is unit normal
+    let impl(a,n) = // a is point on boundary, n is unit normal
         make_shape {
             dist(x,y,_,_) = dot(-n, a-[x,y]);
             bbox = [ [ if (n[Y]==0 && n[X]<0) a[X] else -inf,
@@ -325,10 +317,23 @@ where (
                        0, ], ];
             is_2d = true;
         };
-);
+    in match [
+        {d, normal: n} -> impl(d*n,n);
+        [a, b] -> impl(a, normalize(perp(b-a)));
+        {at: a, normal: n} -> impl(a,n);
+    ];
 
 square =
-    {
+    let
+        square_m d =
+            let r = d / 2;
+            in make_shape {
+                dist(x,y,z,t) = max(abs(x,y) - r);
+                bbox = [[-r,-r,0], [r,r,0]];
+                is_2d = true;
+            };
+        square_e d = rect.exact(d,d);
+    in {
         ... square_e 2,
         call : square_e,
         circumratio : sqrt 2,
@@ -340,16 +345,7 @@ square =
             ... square_m 2,
             call : square_m,
         },
-    } where (
-        square_m d =
-            let r = d / 2;
-            in make_shape {
-                dist(x,y,z,t) = max(abs(x,y) - r);
-                bbox = [[-r,-r,0], [r,r,0]];
-                is_2d = true;
-            };
-        square_e d = rect.exact(d,d);
-    );
+    };
 
 // rect: an axis aligned rectangle.
 rect = {
@@ -427,16 +423,15 @@ rect = {
 
 // regular_polygon: n is # of sides, d is incircle diameter
 regular_polygon n =
-    {
+    let angle = tau / n;
+        mitred d = half_plane{d: d/2, normal: [0,-1]}
+                   >> repeat_radial n;
+    in {
         ... mitred 2,
         call: mitred,
         mitred: mitred,
         circumratio : 1 / cos(angle/2),
-    } where (
-        angle = tau / n;
-        mitred d = half_plane{d: d/2, normal: [0,-1]}
-                   >> repeat_radial n;
-    );
+    };
 
 // convex polygon: vertices are in counterclockwise order.
 convex_polygon = {
@@ -450,90 +445,78 @@ convex_polygon = {
 };
 
 // box: an axis aligned cuboid.
-box = {
-    call : exact;
-    mitred : mitred;
-    exact : exact;
-    ... exact [2,2,2];
-} where (
-    mitred a =
-        a >> match [
-        b :: is_vec3 ->
-            let r = b / 2;
-            in make_shape {
-                dist(x,y,z,t) = max(abs(x,y,z) - r);
-                bbox = [-r, r];
-                is_3d = true;
-            };
-        b :: is_bbox3 ->
-            let lo = b[MIN];
-                hi = b[MAX];
-            in make_shape {
-                dist(x,y,z,t) = max(max(lo-[x,y,z]), max([x,y,z]-hi));
-                bbox = b;
-                is_3d = true;
-            };
-        {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf} ->
-            mitred((xmin,ymin,zmin),(xmax,ymax,zmax));
-        ];
-    exact a =
-        a >> match [
-        b :: is_vec3 ->
-            let r = b / 2;
-            in make_shape {
-                dist(x,y,z,t) =
-                    let d = abs(x,y,z) - r;
-                    in min(max d, 0) + mag(max(d,0));
-                bbox = [-r, r];
-                is_3d = true;
-            };
-        b :: is_bbox3 ->
-            let lo = b[MIN];
-                hi = b[MAX];
-                outsideness(a,amin,amax) =
-                    if (a < amin) amin - a
-                    else if (a > amax) a - amax
-                    else 0;
-            in make_shape {
-                dist(x,y,z,t) =
-                    let ind = max[max(lo-[x,y,z]), max([x,y,z]-hi)];
-                        outd = mag(outsideness(x,lo[X],hi[X]),
-                                   outsideness(y,lo[Y],hi[Y]),
-                                   outsideness(z,lo[Z],hi[Z]));
-                    in if (ind <= 0) ind else outd;
-                bbox = b;
-                is_3d = true;
-            };
-        {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf} ->
-            exact((xmin,ymin,zmin),(xmax,ymax,zmax));
-        ];
-);
+box =
+    let mitred a = a >> match [
+            b :: is_vec3 ->
+                let r = b / 2;
+                in make_shape {
+                    dist(x,y,z,t) = max(abs(x,y,z) - r);
+                    bbox = [-r, r];
+                    is_3d = true;
+                };
+            b :: is_bbox3 ->
+                let lo = b[MIN];
+                    hi = b[MAX];
+                in make_shape {
+                    dist(x,y,z,t) = max(max(lo-[x,y,z]), max([x,y,z]-hi));
+                    bbox = b;
+                    is_3d = true;
+                };
+            {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf} ->
+                mitred((xmin,ymin,zmin),(xmax,ymax,zmax));
+            ];
+        exact a = a >> match [
+            b :: is_vec3 ->
+                let r = b / 2;
+                in make_shape {
+                    dist(x,y,z,t) =
+                        let d = abs(x,y,z) - r;
+                        in min(max d, 0) + mag(max(d,0));
+                    bbox = [-r, r];
+                    is_3d = true;
+                };
+            b :: is_bbox3 ->
+                let lo = b[MIN];
+                    hi = b[MAX];
+                    outsideness(a,amin,amax) =
+                        if (a < amin) amin - a
+                        else if (a > amax) a - amax
+                        else 0;
+                in make_shape {
+                    dist(x,y,z,t) =
+                        let ind = max[max(lo-[x,y,z]), max([x,y,z]-hi)];
+                            outd = mag(outsideness(x,lo[X],hi[X]),
+                                       outsideness(y,lo[Y],hi[Y]),
+                                       outsideness(z,lo[Z],hi[Z]));
+                        in if (ind <= 0) ind else outd;
+                    bbox = b;
+                    is_3d = true;
+                };
+            {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf} ->
+                exact((xmin,ymin,zmin),(xmax,ymax,zmax));
+            ];
+    in {
+        call : exact;
+        mitred : mitred;
+        exact : exact;
+        ... exact [2,2,2];
+    };
 
-prism n = {
-    ... prism_m {d: 2, h: 2},
-    call : prism_m,
-    mitred : {
+prism n =
+    let prism_m {d,h} = regular_polygon n .mitred d >> extrude.mitred h;
+    in {
         ... prism_m {d: 2, h: 2},
         call : prism_m,
-    },
-} where (
-    prism_m {d,h} = regular_polygon n .mitred d >> extrude.mitred h;
-);
+        mitred : {
+            ... prism_m {d: 2, h: 2},
+            call : prism_m,
+        },
+    };
 
 // TODO: pyramid(n,d,h)
 
 tetrahedron =
-    {
-        ... tetrahedron_m 2,
-        call : tetrahedron_m,
-        mitred : {
-            ... tetrahedron_m 2,
-            call : tetrahedron_m,
-        },
-        // radius of circumscribed sphere / radius of inscribed sphere
-        circumratio : (sqrt(3/2)/2) / (1/(2*sqrt 6)),
-    } where (
-        tetrahedron_m d =
+    let tetrahedron_m d =
             let r = d / 2;
                 // vertices of a tetrahedron
                 v1 = [1,1,1];
@@ -542,7 +525,7 @@ tetrahedron =
                 v4 = [-1,1,-1];
 
                 // faces: (1,2,3) (1,4,2) (2,4,3) (1,3,4)
-                // vertices listed in CCW order viewed from outside (right hand rule)
+                // vertices in CCW order viewed from outside (right hand rule)
 
                 // face normals
                 n1 = normalize(cross(v1-v3,v2-v3));
@@ -560,7 +543,16 @@ tetrahedron =
                 is_3d : true,
                 bbox : sqrt(3) * [[-r,-r,-r], [r,r,r]],
             };
-    );
+    in {
+        ... tetrahedron_m 2,
+        call : tetrahedron_m,
+        mitred : {
+            ... tetrahedron_m 2,
+            call : tetrahedron_m,
+        },
+        // radius of circumscribed sphere / radius of inscribed sphere
+        circumratio : (sqrt(3/2)/2) / (1/(2*sqrt 6)),
+    };
 
 cube =
     {
