@@ -467,10 +467,12 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
             "syntax error in local definition");
     }
     if (auto vardef = cast<const Var_Definition_Phrase>(stmt)) {
-        scope.analyser_.system_.warning(Exception{At_Phrase(*vardef, scope),
-            "'var pattern := expr' is deprecated.\n"
-            "Use 'local pattern = expr' instead."});
-        scope.analyser_.var_deprecated_ = true;
+        if (!scope.analyser_.var_deprecated_) {
+            scope.analyser_.system_.warning(Exception{At_Phrase(*vardef, scope),
+                "'var pattern := expr' is deprecated.\n"
+                "Use 'local pattern = expr' instead."});
+            scope.analyser_.var_deprecated_ = true;
+        }
         auto pat = make_pattern(*vardef->left_, scope, 0);
         auto expr = analyse_op(*vardef->right_, scope, edepth);
         pat->analyse(scope);
@@ -940,9 +942,24 @@ List_Expr_Base::init()
 Shared<Meaning>
 Paren_Phrase::analyse(Environ& env, unsigned edepth) const
 {
-    if (cast<const Empty_Phrase>(body_))
+    if (cast<const Empty_Phrase>(body_)) {
+      #if 0 // TODO: enable once I have 'curv --fix' to automatically fix source
+        if (!env.analyser_.paren_list_deprecated_) {
+            env.analyser_.system_.warning(Exception{At_Phrase(*this, env),
+                "'()' is deprecated. Use '[]' instead."});
+            env.analyser_.paren_list_deprecated_ = true;
+        }
+      #endif
         return List_Expr::make(0, share(*this));
+    }
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
+      #if 0 // TODO: enable once I have 'curv --fix' to automatically fix source
+        if (!env.analyser_.paren_list_deprecated_) {
+            env.analyser_.system_.warning(Exception{At_Phrase(*this, env),
+                "'(a,b,c)' is deprecated. Use '[a,b,c]' instead."});
+            env.analyser_.paren_list_deprecated_ = true;
+        }
+      #endif
         auto& items = commas->args_;
         Shared<List_Expr> list = List_Expr::make(items.size(), share(*this));
         for (size_t i = 0; i < items.size(); ++i)

@@ -24,6 +24,8 @@ struct File_Analyser
     // Used to prevent an avalanche of warning messages.
     bool var_deprecated_ = false;
 
+    bool paren_list_deprecated_ = false;
+
     File_Analyser(System& system, Frame* file_frame)
     :
         system_(system),
