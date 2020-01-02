@@ -19,7 +19,11 @@ High:
 * Picker predicates: implement the complete set
 
 Medium:
-* Get rid of `where`, just use `let` (simplification)
+* Simplified syntax:
+  * deprecate `where` in favour of `let`
+  * deprecate () (a,b,c) and [a;b;c] in favour of [] [a,b,c]
+  * deprecate {a:1;b:2} in favour of {a:1,b:2}
+  * `curv --fix foo.curv` rewrites deprecated syntax
 * Branded values?
 * `== value` is a predicate, and it is an equality pattern.
 * Use _ as digit separator in numerals.
@@ -29,7 +33,7 @@ Low:
 * Disallow actions in a `let` clause. However, there's a use case for
   assertions in a scoped record constructor. Let's see how record literals
   evolve.
-* mixed a=/a: record literals
+* Mixed a=/a: record literals. This now conflicts with simplified syntax.
 * Issue #50: unintuitive operator precedence. My proposed solutions:
   * warn about inconsistent white space in expressions, eg: 'f -1' or 'f a.b'
   * Lua-like function call syntax. 'f 1' and 'f a' no longer supported,

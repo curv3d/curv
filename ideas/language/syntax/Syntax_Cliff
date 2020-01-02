@@ -13,3 +13,11 @@ How can we mitigate this problem?
   For an Elm-like syntax, investigate Hazel.
   * Perhaps layout is fully automatic. Certain syntax errors will result in
     unexpected layout, prompting you to fix the problem.
+* I have a plan to simplify the syntax by reducing syntactic variability.
+  * Deprecate 'where' in favour of 'let'.
+  * Deprecate all of the redundant cases of ',' vs ';', leaving only:
+      [a,b] {a:1,b:2} {a=1;b=2} (stmt1;stmt2)
+    Now commas are used only in list and record comprehensions, while
+    semicolons are used in modules and compound statements.
+  Will this help beginners? I once had a tech support request asking me
+  to explain: when should you use commas, when should you use semicolons?

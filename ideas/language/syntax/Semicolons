@@ -21,19 +21,28 @@ comprehension, while semicolons are used for:
 * separating definitions in a scoped record constructor or in a `let` clause;
 * separating statements in a compound statement or in a `do` clause.
 
+I would also like to deprecate (a,b) in favour of [a,b].
+This is a change from my former coding style, but after trying it, I like it.
+Lists are now easier to see in a complex expression, since parentheses can now
+only be used for grouping.
+
 This leaves us with:
-* [a, b] or (a, b) is a list comprehension.
+* [a, b] is a list comprehension.
 * {a:1, b:2} is a record comprehension, used for labeled arguments to a
   function call, such as `make_shape`.
 * {a=1; b=2} is a scoped record constructor, used to construct a library.
 * (a; b; c) is a compound statement. It is used in list and record
   comprehensions, and in `do` clauses.
 
-Note: In my usual coding style, I use `;` in list and record comprehensions if
+With these changes, Curv is now closer to conventional language syntax.
+One remaining surprise is using full statement syntax in a list comprehension,
+wherein (a;b;c) is a compound value generator, even though commas must be used
+to separate value generators at the top level of the comprehension.
+
+In my previous coding style, I use `;` in list and record comprehensions if
 they are "code like", and `,` if they are "data like". By "code like", I mean
 "contains multi-line functions". Eg, the argument to `match` is code-like,
-and the argument to `make_shape` is code-like. So I actually the syntax the
-way it is.
+and the argument to `make_shape` is code-like.
 
 Semicolons
 ----------

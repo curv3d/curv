@@ -20,6 +20,40 @@ I'd like to get rid of manually specified layout. Indentation as syntax is
 not my preferred solution to the problem. (Must be Lisp editors that work
 this way. Investigate?)
 
+Pyret
+-----
+The Pyret language (pyret.org) has the same opinion, except that they also have
+a Python inspired syntax with no semicolons. Quote:
+
+    We believe indentation is critical for readable code, but we don't want the
+    whitespace of the program to determine its meaning. Rather, the meaning
+    of the program should determine its indentation structure. Indentation
+    becomes just another context-sensitive rule.
+
+    Unambiguous syntax (the reason for explicit end delimiters) means you
+    can copy-and-paste code from email or the Web, and its meaning won't
+    change. Your IDE can help you reindent code without worrying that doing
+    so will change the meaning of the program.
+
+Pyret doesn't have significant indentation. I suspect newlines are also
+insignificant, just like Turing. Turing has a semicolon-free syntax with no
+significant newlines, which it achieves by designing the statement syntax
+so that separator tokens aren't needed between statements.
+
+Strangely, the hatred some people have for semicolons does not extend to commas.
+Only Lisp has comma-free list syntax, and Clojure lets you optionally type the
+commas for people who miss them. Note, there's no way to eliminate commas
+from a list syntax that uses traditional Algol-like expressions. For one,
+you get ambiguity from prefix vs infix minus: [a,-b] vs [a-b].
+
+Curv can't shed its semicolons without going the Haskell route and introducing
+a mode where newlines are significant. I might be able to design an action
+syntax that doesn't need separators. The problem is in list comprehensions,
+where a compound statement (a;b;c) is a compound value generator, meaning that
+the items can be general expressions.
+
+Other Stuff
+-----------
 let:
   x=1
   y=2
