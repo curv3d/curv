@@ -1,3 +1,108 @@
+Typed Structures
+================
+Efficient large structures are important if Curv is to evolve to support
+a more general representation of geometric shapes (volumetric data structures).
+We will use typed structures to represent images, voxel grids, triangle meshes,
+as well as user-defined data structures.
+
+Abstractly, a typed structure is composed hierarchically of the 5 fundamental
+data types: symbols, numbers, strings, lists and records. However, an efficient
+unboxed representation is used that makes the structure faster and more memory
+efficient. This representation is described using a type. A type denotes a
+subset of the universal set of all values, together with an efficient way to
+represent this subset in memory. For example, we might have a type Int32 that
+represents a subset of the numbers, together with an efficient representation
+(a 32 bit machine word interpreted as a signed integer). This type language is
+constrained so that typed structures can be represented on the GPU.
+
+Within the interpreter, on the CPU, typed structures mostly(*) behave as if the
+value is just constructed from the 5 data types. Data structure access using
+array indexing and field selection works as expected. The entire structure,
+and any of its components, are automatically converted to boxed representation
+as needed.
+
+When a typed structure is boxed for use on the CPU, the representation contains
+the unboxed rep + a type schema. On the GPU, there is no boxing or dynamic type
+tagging. Instead, statically typed expressions denote unboxed values.
+
+Implicit vs Explicit Typed Value Construction
+---------------------------------------------
+It would be great if the system would automatically infer efficient unboxed
+representations with no user involvement. Less complexity for the user.
+That's "implicit" typed value construction.
+
+At present, the SubCurv compiler uses bottom up type inference to infer types
+of variables by assigning unboxed types to values. It's convenient, it works.
+The code is complicated, and we only have a small set of types.
+The code currently will not use the GLSL 'int' and 'uint' types for numeric
+variables, it will only use 'float'.
+
+This gets considerably more complicated when we have a rich set of
+representation types, with subtype relationships.
+
+We will also need to construct typed structures at run time. Doing it all
+implicitly is too much magic. There is code complexity, and run time complexity.
+(But great if it were practical.)
+
+So we will need some explicit constructions, where user supplied type names
+are required for the construction. It's okay, because this happens in the
+"deep magic" low level tier of Curv, where developers expect to write code
+this way.
+
+How does explicit construction affect the high level experience?
+
+In SubCurv, we could use type annotations on function parameters and local
+variables, if present, to specify unboxed types for those variables.
+    a :: Int32 = 0;
+    b :: MyArrayType = [x,y,z];
+
+So representation types are predicates with additional structure.
+
+By extension, these constructor expressions should also work:
+    0::Int32
+    [x,y,z]::MyArrayType
+
+So then we might expect the following to be equivalent:
+    a :: Int32 = 0;
+    a = 0::Int32
+
+Type Annotations and Value Construction
+---------------------------------------
+In SubCurv, we could use type annotations on function parameters and local
+variables, if present, to select unboxed types for those variables. Right now,
+we just use bottom up type inference, and that has worked fine so far.
+However, our type inference scheme won't use GLSL 'int' and 'uint' types
+for a numeric variable, it will only use 'float'.
+
+If a scoped record constructor contains fields with type annotations, do
+we use unboxed field representations to represent the record value?
+
+How is a typed array constructed?
+Explicit:
+* 'MyArrayType[a,b,c]' is a plausible value constructor expression.
+* What about the definition 'm :: MyArrayType = [a,b,c]'?
+  Conceptually, the type annotation is just restricting the domain of the
+  variable, to a domain for which an efficient unboxed representation exists.
+* That implies '[a,b,c]::MyArrayType' would be a constructor.
+Implicit:
+  Perhaps we can do away with the need for a type name in the value constructor.
+  K/Kona automatically selects typed array representations based on the types
+  of the values within the array. There are 5 vector types: symbol, character,
+  float, integer, general, based on the 4 scalar types. K/Kona distinguishes
+  between 1 and 1.0: the former is an int, the latter is a float.
+  This doesn't really work for me.
+  * What about typed empty arrays?
+  * Curv doesn't distinguish '1' and '1.0' for good reason. Curv is organized
+    in tiers of increasing complexity. At the simplest level, there are only
+    numbers.
+  * In order to implicitly construct typed arrays (without using a special
+    constructor), we must use typed scalars, which possibly do need special
+    constructors. So we haven't eliminated the need for these constructors.
+  * Too much magic. We'll have cases where there are multiple unboxed types
+    T1, T2 corresponding to the same boxed values. Maybe T1 <: T2.
+
+EndoTypes
+---------
 Should data structure values carry around the types of their elements?
 
 I'm converging on the idea that this makes sense for abstract data types.
