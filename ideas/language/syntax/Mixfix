@@ -55,6 +55,23 @@ fire i =
     else
         (lerp(orange, yellow, i*4-3));
 
+fire i =
+    LET:
+        yellow = [1.7, 1.3, 1.0];
+        orange = [1.0, 0.6, 0.0];
+        red = [1.0, 0.0, 0.0];
+        darkgray = [0.2, 0.2, 0.2];
+        gray = [0.4, 0.4, 0.4];
+    IN
+    IF i < .25 THEN
+        lerp[gray, darkgray, i*4]
+    ELSE IF i < .5 THEN
+        lerp[darkgray, red, i*4-1]
+    ELSE IF i < .75 THEN
+        lerp[red, orange, i*4-2]
+    ELSE
+        lerp[orange, yellow, i*4-3];
+
 When choosing a syntax, I need to consider how it is presented and how it is
 edited using a structure editor. Layout conventions designed around dumb editors
 are not the future.
@@ -176,4 +193,30 @@ Possible alternatives:
     :ELSE:
         statements
 
-I like #2.
+Another way to remove the ambiguity:
+A mixfix expression is optionally terminated by the END keyword.
+The END is mandatory if the previous keyword was 'KEY:'.
+    IF pipeline THEN pipeline ELSE pipeline
+    IF pipeline THEN:
+        statements
+    ELSE IF primary THEN:
+        statements
+    ELSE:
+        statements
+    END
+This syntax also works for introducing conditionals and loops into a text
+templating language. For example,
+    $IF condition THEN:
+    some text
+    $ELSE:
+    alternate text
+    $END
+or in a string comprehension:
+    "$IF condition THEN:
+    |some text
+    |$ELSE:
+    |alternate text
+    |$END
+    "
+The uppercase mixfix keyword syntax makes it possible to distinguish
+$identifier from $KEYWORD in a multiline string literal.
