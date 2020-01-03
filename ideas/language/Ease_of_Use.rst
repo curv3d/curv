@@ -85,3 +85,11 @@ The high level API is based on Constructive Solid Geometry (CSG).
 
 3. Semantics
 ------------
+
+Bibliography
+------------
+* Recursion is a difficult concept for beginners to learn.
+  "Conversations about Software Engineering":
+  Stefan Tilkov interviews Felienne Hermans,
+  leader of the Programming Education Research Lab at Leiden University.
+  `<https://www.case-podcast.org/27-felienne-hermans-on-programming-education/transcript>`_

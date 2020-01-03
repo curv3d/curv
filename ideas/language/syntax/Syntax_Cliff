@@ -21,3 +21,31 @@ How can we mitigate this problem?
     semicolons are used in modules and compound statements.
   Will this help beginners? I once had a tech support request asking me
   to explain: when should you use commas, when should you use semicolons?
+
+https://www.case-podcast.org/27-felienne-hermans-on-programming-education/transcript
+From research on how people learn how to program.
+
+> One of the skills that programmers need is to absolutely memorize the syntax
+> of their programming language by heart.
+[And this knowledge must be acquired early in the learning process.]
+
+So how do we make this easier, in the context of Curv?
+* Simplify the syntax.
+  Make the grammar smaller and more regular.
+  Fewer levels of precedence (I never managed to fully memorize the C operator
+  precedence table).
+* Most Curv users will all know some other programming language.
+  Making Curv syntax similar to other languages might help reduce the
+  memorization load, although it depends on what other languages you know.
+
+On the other hand, I also want to make Curv friendlier for artists who
+might never learn a language like C.
+
+> Computer science has a higher drop-out rate than programs that are
+> typically seen as very hard, like physics. So why is that? Probably
+> because some of the students just never reach the level where that
+> algorithmic explanation makes sense to them, because they're still
+> struggling with "How does the syntax work? How will the compiler interpret
+> this program?"
+
+So the syntax cliff is real.
