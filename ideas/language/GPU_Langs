@@ -3,10 +3,25 @@ GPU programming languages
 * AnyDSL/Impala: LLVM/CUDA/OpenCL partial evaluation; static types; imperative
     http://compilers.cs.uni-saarland.de/papers/anydsl.pdf
     https://anydsl.github.io/
-* Spiral: CUDA/Windows: partial evalution staged dynamic->static
+* Spiral: CUDA/Windows: partial evaluation staged dynamic->static
 * Futhark: futhark-lang.org: CUDA&OpenCL; static types; pure functional
 * Scopes: https://scopes.readthedocs.io/en/latest/
     multi-stage compilation. LLVM, SPIR-V, GLSL output. Static types; imperative
+* Taichi: data abstraction for sparse arrays. automatic differentiation.
+  LLVM to CPU or CUDA. Embedded in Python: GPU kernels are written as Python
+  code but are statically typed and data parallel.
+  https://github.com/yuanming-hu/taichi
+  http://taichi.graphics/wp-content/uploads/2019/09/taichi_lang.pdf
+
+Ideas for Curv:
+* staged computation: a dynamically typed language (with first class module
+  and type values) is partially evaluated into a statically typed language.
+* JIT: statically typed code can be JIT compiled into optimized functions and
+  efficient, optimized data structures. If done on the CPU, dynamically typed
+  code can call into compiled functions and use compiled data structures.
+* Target WebGPU, not CUDA.
+* WASM port of Curv? Compile dynamically typed code into WASM modules.
+  Which are 1.5-2.1x slower (in V8) than LLVM output.
 
 Spiral
 ------

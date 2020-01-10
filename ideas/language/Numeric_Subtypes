@@ -12,6 +12,8 @@ In the future, I may want to use multiple numeric representations.
  2. However, it might be cool to be able to use `int` variables and expressions
     in GL code. For some algorithms, this could lead to better performance,
     and more portability from GLSL. This is not required for v1.0.
+     * On the GPU, float arithmetic is always as fast or faster than int arith.
+     * On the GPU, a uint32 can represent 0..2^32-1, but a float32 cannot.
 
     Add a new type predicate `is_int`, and add Int to the static type system.
     (Note this doesn't change the language semantics, in the way that #3 might.)
