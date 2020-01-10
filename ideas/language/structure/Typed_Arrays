@@ -1,18 +1,12 @@
 Typed arrays provide efficient representations for large uniform arrays.
-Typed arrays may also provide semantic benefits.
 
 Examples:
-* strings (of characters), possibly with UTF8 encoding.
-* image: a 2D array of Colour, where Colour may have a 24 bit representation,
+* character strings, possibly with UTF8 encoding (a kind of compression).
+* image: a 2D array of Colour, where Colour may have a 24 bit representation
+  (8 bit gamma encoded intensity values are a kind of lossy compression),
   or a Colour is three 32 bit floats (both reps are available on GPUs).
-* triangle meshes (which contain arrays of 32 bit natural numbers, and
-  arrays of 32 bit floats).
-
-"Scalar types", corresponding to examples:
- * Char : ASCII character or Unicode code point
- * RGB24 : 24 bit RGB colour
- * Float32
- * Nat32
+* triangle meshes, which contain arrays of 32 bit natural numbers, and
+  arrays of 32 bit floats. Using 32 bit floats is a form of lossy compression.
 
 Requirements
 ------------
@@ -20,97 +14,195 @@ Typed arrays have special representations for scalars, more compact than
 general boxed scalars. There may also be compression schemes, eg UTF-8
 or image compression or VDB.
 
-There are traditional operations/constructors for creating typed arrays.
-Eg, UTF-8 string literals "abc", or `file "foo.png"`.
+Support generic programming: generic algorithms over typed arrays.
 
-Support a general set of functional operations over typed arrays:
+Provide a general set of functional operations over typed arrays:
  * concat
  * amend
  * map from a typed array
  * map to a typed array
  * generic list comprehensions
 
-Identity of Indiscernables
+The complexities of "typeful programming" are restricted to the low levels
+of the language, and do not impose themselves on users of high level APIs.
+
+Operational Equivalence to Simple Data
+--------------------------------------
+In Curv, all data is composed from 5 primitive data types. With typed arrays,
+a string becomes a list of characters. So the 5 primitive data types are now:
+characters, symbols, numbers, lists and records.
+
+The intent of the typed array and typed structure features is to provide more
+efficient representations for large structures (rather than to impose semantic
+type constraints on these structures). These efficient representations
+are intended to be isomorphic and operationally equivalent to structures built
+using generic operations from the 5 data types.
+
+We don't impose additional "semantic type constraints" on typed arrays, relative
+to simple arrays, because at Tier 1, we don't want to complicate the data model.
+
+Implicit vs Explicit Typing
+---------------------------
+It would be nice if these efficient representations could be implicitly
+constructed, with no ceremony. It would simplify the language. But that would
+not be flexible enough.
+ * We need explicit type annotations to force the use of lossy compression
+   (eg, storing numbers as Float32).
+ * We need explicit types if we wish to support unboxed enum types,
+   eg as in Rust, where the compiler needs to see all of the enum alternatives
+   in order to compute the size of an unboxed value.
+So we'll need to use explicit type names to construct typed arrays,
+at least in the general case.
+
+The design challenge is to minimize the complexity that this introduces for
+high level programming: when you are specifying the contents of a typed array
+(for an argument to a high level API), or when you are consuming typed arrays
+that are returned from high level APIs.
+
+Constructing a Typed Array
 --------------------------
-Under this principle, the number 42 is the same value regardless of
-whether it is represented as a boxed Num, or as a 32 bit nat, or as a
-32 bit float. The alternative is to have many different values, of
-different types, all of which represent 42. I have avoided this so far,
-because I want to avoid incidental complexity.
+There are named scalar types, such as:
+ * Bool : can be represented as a single bit
+ * Char : ASCII character or Unicode code point
+ * Gamma8 : 0 to 1 encoded in 8 bits using sRGB gamma curve
+ * Float32
+ * Nat32
 
-The "scalar types" Float32 and Nat32 can be interpreted as predicates on
-the set of all values, or as value sets. Nat32 is a subset of Num.
-Less obviously, Float32 could also be interpreted as a subset of Num,
-if by Num we mean 64 bit floats.
+What are these scalar types?
+ * Predicate, with extra structure (a compact unboxed representation).
+ * The predicate selects values that map onto the representation.
+   For example, `Float32` is a predicate that returns true for any number.
+ * In the case of lossy compression (eg, Gamma8 or Float32), the predicate
+   recognizes multiple general values (numbers, in this case) that map to
+   a single representation value.
 
-If we apply the same principle to lists and arrays, then there is only
-one empty list `[]`, instead of many empty lists with different element types.
-(I didn't follow this principle perfectly: instead of a Character type,
-Curv has strings and lists, so "" and [] are distinct.)
+An array element can be an array or record, so we need array and record types:
+ * Vec = List{count: 3, of: Float32}
+ * Point = Record{x: Float3, y: Float3, z: Float32}
 
-Two Approaches to Efficient Representation of Large Uniform Arrays
-------------------------------------------------------------------
-### 1. Explicit (typed arrays)
-We provide explicit constructors for typed arrays.
-The dynamic type of a typed array includes its element type.
-There are multiple distinct empty lists, one for each element type.
+Tuple[T1,T2,T2]
+    A fixed-count list with variable element types.
+List{of: T, count: N}
+    A fixed-count list with a fixed element type.
+List{of: T}
+    A variable-count list with a fixed element type.
 
-The amend and concat operations on typed arrays are restricted: the
-element type of the result must be preserved.
-Binary concat requires both argument arrays to have the same element type.
-The concat monoid doesn't know what to return for `concat[]`, unless:
- * An element type is passed as an extra argument.
- * The element type of the argument determines the element type of the
-   result: concat of an empty list returns the argument.
+The above List type constructors do not support a multi-dimensional rectangular
+array with a fixed number of dimensions but a variable size for each dimension.
+This is needed for image and voxel arrays, for example.
+So:
+    Array{of: T, rank: N}
 
-### 2. Implicit
-There is only one list type and one list constructor.
-There is only one empty list.
+We may also want unboxed enum types, eg:
+ * Optional_Num = Enum[#nothing, {just: Float32}]
 
-Internally, we use efficient compact representations for uniform arrays.
-Certain operations generate these compact representations.
-Amend and concat represent these compact representations, if they can.
+To construct a typed list or a typed record, maybe use
+    make Vec [1,2,3]
+    make Point {x: 1, y: 2, z: 3}
 
-We don't restrict the amend and concat operations, which means a
-uniform array can be transformed into a general array via amend or concat.
+This is a straw man API. Other designs may be more fluent. For example,
+ * A type name T is a constructor function, and T? is the predicate.
+ * 'val :: T' is a constructor expression (:: now performs coercion).
 
-A string literal "abc" is sugar for a list constructor [#\a, #\b, #\c].
-So we need a character type.
+Coercions: The user passes a general unboxed array as a function argument,
+and it is automatically coerced to a typed array. My old syntax for this is:
+ * let f (v >> make Vec) = ...v...; in f[1,2,3]
+ * v >> make Vec = [1,2,3]
+ * constructor function is idempotent
+
+List of Numbers
+---------------
+Consider A=[1,2,3] and B=make Vec [1,2,3].
+
+The main difference between A and B is that the latter occupies 12 bytes.
+Otherwise, we would like them to be as operationally equivalent as can be.
+Consider, for efficiency reasons, switching an API from using unboxed to typed
+arrays, which are exposed to the user. We don't want to break existing code.
+
+Printing.
+Equality.
+Element access.
+
+List of Characters
+------------------
+Characters are a new primitive data type.
+`#/a/` is a character literal.
+`#"a"` ? Unless I decide to use Swift-style fat quoted string literals.
+`"a"[0]` ?
+
+String = List{of: Char}
+A = [#/f/,#/o/,#/o/]
+B = make String [#/f/,#/o/,#/o/]
+C = "foo"
+    What a nightmare. At Tier 1, the only thing you should need to understand
+    is "foo", not the rest of it.
+
+"" == []: true or false?
+"foo" == [#/f/,#/o/,#/o/]
+  In Haskell and the APL languages, they are both true.
+  [Seems to be needed for generic programming, but may violate the principle
+  that 'two values are equal if and only if they print the same'.]
+
+It would be a very good idea if [#/f/,#/o/,#/o/] prints as "foo".
+
+If ""==[], then should "" print as "" or as []?
+ * 'equality of printables' suggests it should print as [].
+ * Are there any operations which distinguish "" from [], other than reflection?
+   Ideally, no.
+ * Principle of least surprise. Is it more surprising that "" is sugar for [],
+   or that "" and [] are distinct values that compare equal? The latter.
+Therefore, "" is syntax that evaluates to [].
+
+More generally, there is only one empty list.
+
+++ is the infix concatenate operator.
+[0,1]++[2,3] prints as [0,1,2,3].
+"ab"++"cd" prints as "abcd".
+"ab"++[2,3] prints as "ab"++[2,3].
+"" prints as [] -- This is less mysterious, in the bigger context that a string
+is actually just a list of characters, and that heterogenous lists can exist.
+
+Number Types
+------------
+Consider:
+    x :: Nat32 = 42;
+In SubCurv, I would expect this to define 'x' as a GLSL 'uint'.
+Consequences for Curv:
+ * Nat32 is a predicate that tests for an integer from 0 to 2^32-1. Required.
+ * Whenever a := assignment to 'x' occurs, the ':: Nat32' assertion should
+   be applied to the value that is being assigned. Optional.
+
+What is 'make Float32 x'?
+ * It aborts if x is not a number. 
+ * Otherwise it converts x to a 32 bit float, which is lossy compression.
+ * Then it returns a boxed value equivalent to this 32 bit float.
+ * There is no advantage (in storage size) to retaining the 'Float32' type
+   in the boxed representation. Just use a regular boxed number.
+
+Concat
+------
+concat[] returns [].
+
+concat[A,B] tests if A and B are typed lists with the same element type T.
+If so, the result is List{of:T}. Otherwise, it is a general list, or some
+other representation such as a 'concat node' in a tree-structured list rep.
+
+Amend
+-----
+`amend i val list`
+If `list` has type List{of:T}, and val isa T, then amend the list in place,
+if we can, and return List{of:T}. Otherwise, return a general list.
 
 Generic List Comprehensions
 ---------------------------
-How does this work?
+A list constructor [a,b,c] containing only expressions is evaluated eagerly.
+Other list comprehensions (containing statements) are evaluated lazily.
 
-Explicit:
-   An explicit array type must be used to specify the type of value
-   generated by the list comprehension. An error is reported if any of the
-   scalars are the wrong type for the array type.
-      'array type'[generators...]
+A 'typed list comprehension' is
+    make list_type [list_comprehension]
+Laziness ensures that any for loops in the list_comprehension don't result
+in a huge intermediate list being generated.
 
-   Benefits: document and enforce assumptions within the program.
-
-Implicit:
-   Each array type is characterized by a distinct scalar type.
-   An ordinary list comprehension generates a sequence of values possessing
-   this scalar type. We examine the scalars being generated by a comprehension,
-   and if they have a type for which there is a corresponding special array
-   type, then we attempt to construct an instance of that array type. If the
-   initial run of scalars of the same type is followed by a scalar of a
-   different type, we abandon this attempt and construct a generic list.
-
-   Benefits:
-    * No ceremony.
-    * Less accidental complexity: identity of indiscernables.
-    * Less complex generic programming.
-
-   What about those "distinct scalar types"?
-    * Char : ASCII character or Unicode code point
-    * RGB24 : 24 bit RGB colour
-    * Float32
-    * Nat32
-
-Semantics of Typed Arrays
--------------------------
-
-Relation to Data Abstraction
-----------------------------
+This laziness means that a list comprehension can be passed as an argument
+to a high level API, and the construction of a typed array occurs elsewhere
+in the low level code that implements the API.
