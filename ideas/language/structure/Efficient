@@ -1,3 +1,19 @@
+Curv needs better support for huge structures: eg, multidimensional arrays
+with potentially hundreds of millions of elements. The main use case is
+for volumetric data structures: representing shapes (and colour fields) using
+data structures instead of functions. The goal is to make these efficient,
+without making high level APIs and the high level language harder to use.
+
+In this design study, the secondary goal is to preserve the illusion that all
+Curv data structures are recursively composed of 5 primitive data types.
+To make huge data structures efficient, we will support multiple internal
+representations for the same abstract structure. These internal representations
+are hidden from high level code (Tier 1 of the Curv language). Low level code
+(Tier 2) will use 'representation hints' together with the form of the data
+constructor to select which internal representation to use.
+
+Typed Arrays
+------------
 Typed arrays provide efficient representations for large uniform arrays.
 
 Examples:
@@ -10,9 +26,12 @@ Examples:
 
 Requirements
 ------------
-Typed arrays have special representations for scalars, more compact than
-general boxed scalars. There may also be compression schemes, eg UTF-8
-or image compression or VDB.
+Reduce the storage requirements of huge arrays, make them faster to process:
+ * Use compact unboxed scalar representations.
+ * Compression schemes such as UTF-8 or image compression or VDB.
+ * Eliminate the need for creating huge temporary arrays (especially unboxed
+   temporary arrays, which are much larger) when constructing or transforming
+   huge arrays.
 
 Support generic programming: generic algorithms over typed arrays.
 
@@ -61,6 +80,9 @@ that are returned from high level APIs.
 
 Constructing a Typed Array
 --------------------------
+I call these "types", but they are actually "representation hints", since the
+goal is not static or run-time type checking.
+
 There are named scalar types, such as:
  * Bool : can be represented as a single bit
  * Char : ASCII character or Unicode code point
@@ -206,3 +228,21 @@ in a huge intermediate list being generated.
 This laziness means that a list comprehension can be passed as an argument
 to a high level API, and the construction of a typed array occurs elsewhere
 in the low level code that implements the API.
+
+Generic Algorithms
+------------------
+An algorithm that maps one array onto another while preserving the array
+representation type of the input can be written in a simple and generic way.
+
+head n list = [for (i in 0..<(max[n,count list]) list[i]];
+    // How do we infer that the result is a typed array with the same type
+    // as list?
+head n list = make (typeof list) [for (i in 0..<(max[n,count list]) list[i]];
+
+SoA: Struct of Arrays
+---------------------
+
+Ranges
+------
+We need an internal 'range' type to efficiently represent huge ranges,
+so that indexing over a huge array doesn't create a huge intermediate list.
