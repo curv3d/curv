@@ -140,8 +140,11 @@ the same amount of perceptually change anywhere in the coordinate space.
 There are other perceptually uniform colour spaces (eg, CIE LUV), but the
 graphics industry has standardized on LAB. By 'graphics industry', I mean
 photography, cinema, computer graphics, printmaking, image editors like
-Photoshop (which offer LAB editing), and colorimetry hardware. Curv wants to be
-interoperable with this large ecosystem.
+Photoshop (which offer LAB editing), and colorimetry hardware. Curv wants
+to be interoperable with this large ecosystem.
+
+Accurate sRGB-XYZ colour conversion matrices:
+https://lobste.rs/s/1xvuxw/rgb_xyz_conversion_matrix_accuracy
 
 LAB.HCL
 -------
