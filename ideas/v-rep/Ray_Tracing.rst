@@ -134,6 +134,17 @@ More Methods
 Real-Time Ray-Tracing of Implicit Surfaces on the GPU
 http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.417.5616&rep=rep1&type=pdf
 
+Our adaptive marching points algorithm can ray-trace arbitrary implicit surfaces
+without multiple roots, by sampling the ray at selected points till a root is
+found. Adapting the sampling step size based on a proximity measure and a
+horizon measure delivers high speed. The sign-test can handle any surface
+without multiple roots. The Taylor-test that uses ideas from interval analysis
+can ray-trace many surfaces with complex roots. Overall, a simple algorithm that
+fits the SIMD architecture of the GPU results in high performance. We
+demonstrate the ray-tracing of algebraic surfaces up to order 50 and
+non-algebraic surfaces including a Blinn’s blobby with 75 spheres at better than
+interactive framerates.
+
 Hybrid V-Rep
 ------------
 Since interval arithmetic is usually slower than sphere tracing, I intend to
