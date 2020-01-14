@@ -63,7 +63,7 @@ namespace curv {
 ///   systems with 8 bit processors are a different problem space, and not
 ///   supported by this software).
 /// * The what() string is no longer valid after the Exception_Base is destroyed.
-///   That is permitted by the C standard for std::exception. But I can imagine
+///   That is permitted by the C++ standard for std::exception. But I can imagine
 ///   somebody writing code that captures the what() pointer and preserves it
 ///   after the exception handler goes out of scope. That won't work here.
 struct Exception_Base : public std::exception
