@@ -164,27 +164,13 @@ as follows:
         stmt3
         stmt4
 
-There are some caveats:
- * This doesn't eliminate semicolons from module literals.
- * This doesn't work naturally for user-defined mixfix. When we see
-   a new `<keyword>:` at the same indentation as a previous mixfix keyword,
-   is this a continuation of the previous mixfix, or is it the beginning of
-   a new mixfix? It works if the keywords are all hard coded into the grammar.
+How do we extend this syntax for user-defined mixfix?
+When we see a new `<keyword>:` at the same indentation as a previous mixfix
+keyword, is this a continuation of the previous mixfix, or is it the beginning
+of a new mixfix?
 
-This idea works with user-defined mixfix if we syntactically distinguish
-initial keywords from interior keywords. (Note, we are eliminating semicolons
-at the cost of adding lexical distinctions elsewhere.)
-
-Possible alternatives:
-(1)
-    IF primary then primary else primary
-    IF primary then:
-        statements
-    else: if primary then:
-        statements
-    else:
-        statements
-(2)
+Idea 1.
+':keyword' continues a mixfix, if the previous keyword was 'keyword:'.
     IF pipeline THEN pipeline ELSE pipeline
     IF pipeline THEN:
         statements
@@ -193,7 +179,7 @@ Possible alternatives:
     :ELSE:
         statements
 
-Another way to remove the ambiguity:
+Idea 2.
 A mixfix expression is optionally terminated by the END keyword.
 The END is mandatory if the previous keyword was 'KEY:'.
     IF pipeline THEN pipeline ELSE pipeline
@@ -220,3 +206,15 @@ or in a string comprehension:
     "
 The uppercase mixfix keyword syntax makes it possible to distinguish
 $identifier from $KEYWORD in a multiline string literal.
+
+How do we eliminate semicolons from module literals?
+    MODULE:
+        x = 1
+        y = 2
+    END
+eg,
+    sphere r =
+        make_shape MODULE:
+            distance [x,y,z,_] = mag[x,y,z] - r
+            bounds = [[-r,-r,-r],[r,r,r]]
+        END
