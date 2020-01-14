@@ -1,3 +1,10 @@
+Finish imperative:
+* document local
+* unit tests
+* Imperative.rst
+
+Finish boolean arrays:
+* SubCurv: unit tests for 3 cases of and/or
 * general arrays of bool and bool32
 * fix TODOs in array_op.h
 * binary boolean op: mixed bool/bool32 operations
@@ -36,6 +43,9 @@ Fix colour rendering (needs Bool_Array)
   https://stackoverflow.com/questions/56204242/do-i-need-output-gamma-correction-in-a-fragment-shader
   glEnable(GL_FRAMEBUFFER_SRGB);
   https://www.khronos.org/opengl/wiki/Framebuffer#Colorspace
+
+linRGB_to_sRGB c =
+    select [c < 0.0031308, c * 12.92, 1.055 * c^(1/2.4) - 0.055];
 
 // from Blender (GLSL)
 float linearrgb_to_srgb(float c)
