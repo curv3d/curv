@@ -347,9 +347,15 @@ struct Binary_Array_Op
         return stringify("[",x,",",y,"]: domain error");
     }
 
-    static Shared<const String> domain_error(Value x)
+    static Exception domain_error(
+        const Context& cx, unsigned i, Value x, Value y)
     {
-        return stringify(x,": domain error");
+        if (dynamic_cast<const At_Arg*>(&cx))
+            return Exception(At_Index(i,cx),
+                stringify(i==0?x:y,": domain error"));
+        else
+            return Exception(cx,
+                stringify(x," ",Prim::name()," ",y,": domain error"));
     }
 
     static Value
@@ -425,7 +431,7 @@ struct Binary_Array_Op
                     return reactive_op(cx, x, y);
                 }
             }
-            throw Exception(At_Index(1,cx), domain_error(y));
+            throw domain_error(cx,1,x,y);
         } else if (x.is_ref()) {
             Ref_Value& rx(x.to_ref_unsafe());
             switch (rx.type_) {
@@ -441,12 +447,12 @@ struct Binary_Array_Op
                         return reactive_op(cx, x, y);
                     }
                 }
-                throw Exception(At_Index(1,cx), domain_error(y));
+                throw domain_error(cx,1,x,y);
             case Ref_Value::ty_reactive:
                 return reactive_op(cx, x, y);
             }
         }
-        throw Exception(At_Index(0,cx), domain_error(x));
+        throw domain_error(cx,0,x,y);
     }
     static SC_Value
     sc_op(const Context& cx, Operation& argx, SC_Frame& f)

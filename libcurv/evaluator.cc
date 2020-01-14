@@ -368,6 +368,15 @@ Not_Equal_Expr::eval(Frame& f) const
 Value \
 Class::eval(Frame& f) const \
 { \
+    struct Prim : public Binary_Num_Prim \
+    { \
+        static const char* name() { return #LT; } \
+        static Value call(double a, double b, const Context& cx) \
+        { \
+            return {a LT b}; \
+        } \
+    }; \
+    static Binary_Array_Op<Prim> array_op; \
     Value a = arg1_->eval(f); \
     Value b = arg2_->eval(f); \
     /* 2 comparisons required to unbox two numbers and compare them, not 3 */ \
@@ -375,8 +384,7 @@ Class::eval(Frame& f) const \
         return {true}; \
     if (a.to_num_or_nan() GE b.to_num_or_nan()) \
         return {false}; \
-    throw Exception(At_Phrase(*syntax_, f), \
-        stringify(a," " #LT " ",b,": domain error")); \
+    return array_op.op(At_Phrase(*syntax_,f), a, b); \
 }
 RELATION(Less_Expr, <, >=)
 RELATION(Greater_Expr, >, <=)

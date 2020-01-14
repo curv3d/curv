@@ -612,5 +612,7 @@ sc_test {
         in x == 6;
 };
 
+assert( ([1,2,3] < 2) == [#true,#false,#false] );
+
 // script return value:
 in null
