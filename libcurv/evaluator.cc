@@ -363,58 +363,26 @@ Not_Equal_Expr::eval(Frame& f) const
     Value b = arg2_->eval(f);
     return {!a.equal(b, At_Phrase(*syntax_, f))};
 }
-Value
-Less_Expr::eval(Frame& f) const
-{
-    Value a = arg1_->eval(f);
-    Value b = arg2_->eval(f);
-    // only 2 comparisons required to unbox two numbers and compare them, not 3
-    if (a.to_num_or_nan() < b.to_num_or_nan())
-        return {true};
-    if (a.to_num_or_nan() >= b.to_num_or_nan())
-        return {false};
-    throw Exception(At_Phrase(*syntax_, f),
-        stringify(a," < ",b,": domain error"));
+
+#define RELATION(Class,LT,GE) \
+Value \
+Class::eval(Frame& f) const \
+{ \
+    Value a = arg1_->eval(f); \
+    Value b = arg2_->eval(f); \
+    /* 2 comparisons required to unbox two numbers and compare them, not 3 */ \
+    if (a.to_num_or_nan() LT b.to_num_or_nan()) \
+        return {true}; \
+    if (a.to_num_or_nan() GE b.to_num_or_nan()) \
+        return {false}; \
+    throw Exception(At_Phrase(*syntax_, f), \
+        stringify(a," " #LT " ",b,": domain error")); \
 }
-Value
-Greater_Expr::eval(Frame& f) const
-{
-    Value a = arg1_->eval(f);
-    Value b = arg2_->eval(f);
-    // only 2 comparisons required to unbox two numbers and compare them, not 3
-    if (a.to_num_or_nan() > b.to_num_or_nan())
-        return {true};
-    if (a.to_num_or_nan() <= b.to_num_or_nan())
-        return {false};
-    throw Exception(At_Phrase(*syntax_, f),
-        stringify(a," > ",b,": domain error"));
-}
-Value
-Less_Or_Equal_Expr::eval(Frame& f) const
-{
-    Value a = arg1_->eval(f);
-    Value b = arg2_->eval(f);
-    // only 2 comparisons required to unbox two numbers and compare them, not 3
-    if (a.to_num_or_nan() <= b.to_num_or_nan())
-        return {true};
-    if (a.to_num_or_nan() > b.to_num_or_nan())
-        return {false};
-    throw Exception(At_Phrase(*syntax_, f),
-        stringify(a," <= ",b,": domain error"));
-}
-Value
-Greater_Or_Equal_Expr::eval(Frame& f) const
-{
-    Value a = arg1_->eval(f);
-    Value b = arg2_->eval(f);
-    // only 2 comparisons required to unbox two numbers and compare them, not 3
-    if (a.to_num_or_nan() >= b.to_num_or_nan())
-        return {true};
-    if (a.to_num_or_nan() < b.to_num_or_nan())
-        return {false};
-    throw Exception(At_Phrase(*syntax_, f),
-        stringify(a," >= ",b,": domain error"));
-}
+RELATION(Less_Expr, <, >=)
+RELATION(Greater_Expr, >, <=)
+RELATION(Less_Or_Equal_Expr, <=, >)
+RELATION(Greater_Or_Equal_Expr, >=, <)
+
 Value
 Power_Expr::eval(Frame& f) const
 {
