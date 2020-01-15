@@ -2,17 +2,18 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/meaning.h>
-#include <libcurv/string.h>
+#include <libcurv/array_op.h>
+#include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
 #include <libcurv/list.h>
-#include <libcurv/record.h>
-#include <libcurv/module.h>
-#include <libcurv/context.h>
-#include <libcurv/array_op.h>
-#include <cmath>
 #include <libcurv/math.h>
+#include <libcurv/meaning.h>
+#include <libcurv/module.h>
+#include <libcurv/record.h>
+#include <libcurv/sc_compiler.h>
+#include <libcurv/string.h>
+#include <cmath>
 
 namespace curv {
 
@@ -385,6 +386,15 @@ Class::eval(Frame& f) const \
     if (a.to_num_or_nan() GE b.to_num_or_nan()) \
         return {false}; \
     return array_op.op(At_Phrase(*syntax_,f), a, b); \
+} \
+SC_Value \
+Class::sc_eval(SC_Frame& f) const \
+{ \
+    auto arg1 = sc_eval_expr(f, *arg1_, SC_Type::Num()); \
+    auto arg2 = sc_eval_expr(f, *arg2_, SC_Type::Num()); \
+    SC_Value result = f.sc_.newvalue(SC_Type::Bool()); \
+    f.sc_.out() <<"  bool "<<result<<" =("<<arg1<<" "#LT" "<<arg2<<");\n"; \
+    return result; \
 }
 RELATION(Less_Expr, <, >=)
 RELATION(Greater_Expr, >, <=)

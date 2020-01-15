@@ -930,38 +930,6 @@ SC_Value Not_Equal_Expr::sc_eval(SC_Frame& f) const
     f.sc_.out() <<"  bool "<<result<<" =("<<a<<" != "<<b<<");\n";
     return result;
 }
-SC_Value Less_Expr::sc_eval(SC_Frame& f) const
-{
-    auto arg1 = sc_eval_expr(f, *arg1_, SC_Type::Num());
-    auto arg2 = sc_eval_expr(f, *arg2_, SC_Type::Num());
-    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
-    f.sc_.out() <<"  bool "<<result<<" =("<<arg1<<" < "<<arg2<<");\n";
-    return result;
-}
-SC_Value Greater_Expr::sc_eval(SC_Frame& f) const
-{
-    auto arg1 = sc_eval_expr(f, *arg1_, SC_Type::Num());
-    auto arg2 = sc_eval_expr(f, *arg2_, SC_Type::Num());
-    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
-    f.sc_.out() <<"  bool "<<result<<" =("<<arg1<<" > "<<arg2<<");\n";
-    return result;
-}
-SC_Value Less_Or_Equal_Expr::sc_eval(SC_Frame& f) const
-{
-    auto arg1 = sc_eval_expr(f, *arg1_, SC_Type::Num());
-    auto arg2 = sc_eval_expr(f, *arg2_, SC_Type::Num());
-    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
-    f.sc_.out() <<"  bool "<<result<<" =("<<arg1<<" <= "<<arg2<<");\n";
-    return result;
-}
-SC_Value Greater_Or_Equal_Expr::sc_eval(SC_Frame& f) const
-{
-    auto arg1 = sc_eval_expr(f, *arg1_, SC_Type::Num());
-    auto arg2 = sc_eval_expr(f, *arg2_, SC_Type::Num());
-    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
-    f.sc_.out() <<"  bool "<<result<<" =("<<arg1<<" >= "<<arg2<<");\n";
-    return result;
-}
 
 SC_Value sc_vec_element(SC_Frame& f, SC_Value vec, int i)
 {
