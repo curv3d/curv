@@ -696,6 +696,57 @@ struct Float_To_Bool32_Prim : public Unary_Num_Prim
 };
 using Float_To_Bool32_Function = Unary_Array_Func<Float_To_Bool32_Prim>;
 
+Value
+select(Value a, Value b, Value c, const Context& cx)
+{
+    if (a.is_bool())
+        return a.to_bool_unsafe() ? b : c;
+    if (auto alist = a.dycast<List>()) {
+        auto blist = b.dycast<List>();
+        if (blist) blist->assert_size(alist->size(), At_Index(1, cx));
+        auto clist = c.dycast<List>();
+        if (clist) clist->assert_size(alist->size(), At_Index(2, cx));
+        Shared<List> r = List::make(alist->size());
+        for (unsigned i = 0; i < alist->size(); ++i) {
+            r->at(i) = select(alist->at(i),
+                              blist ? blist->at(i) : b,
+                              clist ? clist->at(i) : c,
+                              cx);
+        }
+        return {r};
+    }
+    throw Exception(At_Index(0, cx), stringify(a, " is not a Bool or a List"));
+}
+
+// `select[a,b,c]` is a vectorized version of `if` in which the condition is
+// an array of booleans.
+// * If `a` is boolean, then the result is `if (a) b else c`.
+// * If `a` is an array of booleans, then the result is an array with the same
+//   shape as `a`. The elements of the result are selected from the arrays `b`
+//   and `c` based on whether the corresponding element of `a` is true or false.
+//   For example, `select[[false,true], [1,2], [10,20]] == [10,2]`.
+// * Broadcasting is supported between `a` and `b` and between `a` and `c`,
+//   so for example, `select[[false,true], 1, 0] == [0,1]`.
+// * Broadcasting is not supported between `b` and `c`, so for example,
+//   `select[true, 1, [1,2,3]]` yields `1`, and not `[1,1,1]`.
+// The SubCurv version of `select` restricts the arguments `b` and `c`
+// to have the same type.
+//
+// `select` has a different name from `if` because it violates some of the
+// laws of `if`: it always evaluates all 3 arguments, and it can't be involved
+// in tail recursion optimization.
+//
+// Similar to: numpy.where, R `ifelse`
+struct Select_Function : public Legacy_Function
+{
+    static const char* name() { return "select"; }
+    Select_Function() : Legacy_Function(3,name()) {}
+    Value call(Frame& args) override
+    {
+        return select(args[0], args[1], args[2], At_Arg(*this, args));
+    }
+};
+
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
 struct Dot_Function : public Legacy_Function
@@ -1285,6 +1336,7 @@ builtin_namespace()
     FUNCTION(Nat_To_Bool32_Function),
     FUNCTION(Bool32_To_Float_Function),
     FUNCTION(Float_To_Bool32_Function),
+    FUNCTION(Select_Function),
     FUNCTION(Dot_Function),
     FUNCTION(Mag_Function),
     FUNCTION(Count_Function),

@@ -613,6 +613,8 @@ sc_test {
 };
 
 assert( ([1,2,3] < 2) == [#true,#false,#false] );
+assert( select[[false,true], [1,2], [10,20]] == [10,2] );
+assert( select[[false,true], 1, 0] == [0,1] );
 
 // script return value:
 in null
