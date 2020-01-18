@@ -115,11 +115,31 @@ struct SC_Type
         return base_type_ >= Base_Type::Bool
             && base_type_ <= Base_Type::Bool4x32;
     }
-    // is a number, a vector, or a matrix
-    inline bool is_numeric() const
+    // is a number, a vector, or a matrix, or an array of same
+    inline bool is_multi_numeric() const
     {
         return base_type_ >= Base_Type::Num
             && base_type_ <= Base_Type::Mat4;
+    }
+    // is a single number, vector, or matrix
+    inline bool is_numeric() const
+    {
+        return base_type_ >= Base_Type::Num
+            && base_type_ <= Base_Type::Mat4
+            && rank_ == 0;
+    }
+    // is a single number or vector
+    inline bool is_num_or_vec() const
+    {
+        return base_type_ >= Base_Type::Num
+            && base_type_ <= Base_Type::Vec4
+            && rank_ == 0;
+    }
+    // is a single number. Conforms to Value::is_num().
+    inline bool is_num() const
+    {
+        return base_type_ == Base_Type::Num
+            && rank_ == 0;
     }
     inline bool is_list() const
     {

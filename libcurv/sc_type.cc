@@ -53,7 +53,7 @@ sc_type_of(Value v)
         else {
             auto ty = sc_type_of(ls->front());
             auto n = ls->size();
-            if (ty.is_numeric()) {
+            if (ty.is_multi_numeric()) {
                 if (ty == SC_Type::Num()) {
                     if (n >= 2 && n <= 4)
                         return SC_Type::Vec(n);
