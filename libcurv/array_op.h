@@ -136,8 +136,8 @@ struct Unary_Bool_Prim
     }
     static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        if (a.type.is_bool()) return;
-        throw Exception(cx, "argument must be Bool");
+        if (a.type.is_bool_or_vec()) return;
+        throw Exception(cx, "argument must be Bool or BVec");
     }
 };
 
@@ -163,14 +163,14 @@ struct Binary_Bool_Or_Bool32_Prim
     }
     static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        if (a.type.is_bool_or_bool32()) return;
+        if (a.type.is_bool_struc()) return;
         throw Exception(cx, "argument must be Bool or Bool32");
     }
     static void sc_check_args(
         SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
     {
-        if (a.type.is_bool()) {
-            if (b.type.is_bool()) {
+        if (a.type.is_bool_or_vec()) {
+            if (b.type.is_bool_or_vec()) {
                 if (a.type.count() != b.type.count()
                     && a.type.count() > 1 && b.type.count() > 1)
                 {
@@ -180,12 +180,12 @@ struct Binary_Bool_Or_Bool32_Prim
                 }
                 return;
             }
-            else if (b.type.is_bool32()) {
-                // TODO: convert a to Bool32
+            else if (b.type.is_bool32_or_vec()) {
+                // TODO: convert a to Bool32 via broadcasting
             }
         }
-        else if (a.type.is_bool32()) {
-            if (b.type.is_bool32()) {
+        else if (a.type.is_bool32_or_vec()) {
+            if (b.type.is_bool32_or_vec()) {
                 if (a.type.count() != b.type.count()
                     && a.type.count() > 1 && b.type.count() > 1)
                 {
@@ -196,7 +196,7 @@ struct Binary_Bool_Or_Bool32_Prim
                 return;
             }
             if (b.type.is_bool()) {
-                // TODO: convert b to Bool32
+                // TODO: convert b to Bool32 via broadcasting?
             }
         }
         throw Exception(cx, stringify(
@@ -218,8 +218,8 @@ struct Unary_Num_Prim
     }
     static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        if (!a.type.is_numeric())
-            throw Exception(cx, "argument must be a Num or Vec");
+        if (!a.type.is_num_struc())
+            throw Exception(cx, "argument must be a Num, Vec or Mat");
     }
 };
 
@@ -238,13 +238,15 @@ struct Binary_Num_Prim : public Unary_Num_Prim
     static void sc_check_args(
         SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
     {
-        if (!a.type.is_numeric()) {
+        if (!a.type.is_num_struc()) {
             throw Exception(At_Index(0, cx),
-                stringify("argument expected to be Num or Vec, got ", a.type));
+                stringify("argument expected to be Num, Vec or Mat; got ",
+                    a.type));
         }
-        if (!b.type.is_numeric()) {
+        if (!b.type.is_num_struc()) {
             throw Exception(At_Index(1, cx),
-                stringify("argument expected to be Num or Vec, got ", a.type));
+                stringify("argument expected to be Num, Vec or Mat; got ",
+                    a.type));
         }
     }
 };
@@ -270,7 +272,7 @@ struct Shift_Prim
     static void sc_check_args(
         SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
     {
-        if (!a.type.is_bool32()) {
+        if (!a.type.is_bool32_or_vec()) {
             throw Exception(At_Index(0, cx),
                 stringify("expected argument of type Bool32, got ", a.type));
         }
@@ -301,7 +303,7 @@ struct Unary_Bool32_Prim : public Bool32_Prim
     }
     static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        if (!a.type.is_bool32())
+        if (!a.type.is_bool32_or_vec())
             throw Exception(cx, "argument must be a Bool32 or list of Bool32");
     }
 };
@@ -319,17 +321,17 @@ struct Binary_Bool32_Prim : public Bool32_Prim
     }
     static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        if (!a.type.is_bool32())
+        if (!a.type.is_bool32_or_vec())
             throw Exception(cx, "argument must be a Bool32 or list of Bool32");
     }
     static void sc_check_args(
         SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
     {
-        if (!a.type.is_bool32()) {
+        if (!a.type.is_bool32_or_vec()) {
             throw Exception(At_Index(0, cx),
                 stringify("expected argument of type Bool32, got ", a.type));
         }
-        if (!b.type.is_bool32()) {
+        if (!b.type.is_bool32_or_vec()) {
             throw Exception(At_Index(1, cx),
                 stringify("expected argument of type Bool32, got ", b.type));
         }

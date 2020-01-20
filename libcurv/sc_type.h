@@ -100,32 +100,57 @@ struct SC_Type
     {
         return sc_base_type_info_array[int(base_type_) + 1];
     }
+
+    /*
+     * Boolean predicates
+     */
+    // Is a single Bool value. Consistent with Value::is_bool().
     inline bool is_bool() const
     {
-        return base_type_ >= Base_Type::Bool
-            && base_type_ <= Base_Type::Bool4;
+        return base_type_ == Base_Type::Bool
+            && rank_ == 0;
     }
+    // Is a single Bool or vector of Bool (count 2-4). Not an array.
+    inline bool is_bool_or_vec() const
+    {
+        return base_type_ >= Base_Type::Bool
+            && base_type_ <= Base_Type::Bool4
+            && rank_ == 0;
+    }
+    // Is a single Bool32. Not an array.
     inline bool is_bool32() const
     {
-        return base_type_ >= Base_Type::Bool32
-            && base_type_ <= Base_Type::Bool4x32;
+        return base_type_ == Base_Type::Bool32
+            && rank_ == 0;
     }
-    inline bool is_bool_or_bool32() const
+    // Is a single Bool32 or vector of Bool32. Not an array.
+    inline bool is_bool32_or_vec() const
+    {
+        return base_type_ >= Base_Type::Bool32
+            && base_type_ <= Base_Type::Bool4x32
+            && rank_ == 0;
+    }
+    // Is a bool, a bool vec, a bool32, or a bool32 vec. Not an array.
+    inline bool is_bool_struc() const
+    {
+        return base_type_ >= Base_Type::Bool
+            && base_type_ <= Base_Type::Bool4x32
+            && rank_ == 0;
+    }
+    // Is a bool, a bool vec, a bool32, a bool32 vec, or array of same.
+    inline bool is_bool_tensor() const
     {
         return base_type_ >= Base_Type::Bool
             && base_type_ <= Base_Type::Bool4x32;
     }
-    // is a number, a vector, or a matrix, or an array of same
-    inline bool is_multi_numeric() const
+
+    /*
+     * Numeric predicates
+     */
+    // Is a single number. Conforms to Value::is_num().
+    inline bool is_num() const
     {
-        return base_type_ >= Base_Type::Num
-            && base_type_ <= Base_Type::Mat4;
-    }
-    // is a single number, vector, or matrix
-    inline bool is_numeric() const
-    {
-        return base_type_ >= Base_Type::Num
-            && base_type_ <= Base_Type::Mat4
+        return base_type_ == Base_Type::Num
             && rank_ == 0;
     }
     // is a single number or vector
@@ -135,12 +160,30 @@ struct SC_Type
             && base_type_ <= Base_Type::Vec4
             && rank_ == 0;
     }
-    // is a single number. Conforms to Value::is_num().
-    inline bool is_num() const
+    // Is a single number, vector, or matrix. Not an array.
+    inline bool is_num_struc() const
     {
-        return base_type_ == Base_Type::Num
+        return base_type_ >= Base_Type::Num
+            && base_type_ <= Base_Type::Mat4
             && rank_ == 0;
     }
+    // Is a number, a vector, a matrix, or an array of same.
+    inline bool is_num_tensor() const
+    {
+        return base_type_ >= Base_Type::Num
+            && base_type_ <= Base_Type::Mat4;
+    }
+    inline bool is_vec() const
+    {
+        return rank_ == 0
+            && base_type_ >= Base_Type::Vec2 && base_type_ <= Base_Type::Vec4;
+    }
+    inline bool is_mat() const
+    {
+        return rank_ == 0
+            && base_type_ >= Base_Type::Mat2 && base_type_ <= Base_Type::Mat4;
+    }
+
     inline bool is_list() const
     {
         return (base_type_ >= Base_Type::Bool32
@@ -172,15 +215,6 @@ struct SC_Type
                 && base_type_ <= Base_Type::Bool4x32)
             || (base_type_ >= Base_Type::Vec2 && base_type_ <= Base_Type::Vec4)
         );
-    }
-    inline bool is_vec() const
-    {
-        return rank_ == 0
-            && base_type_ >= Base_Type::Vec2 && base_type_ <= Base_Type::Vec4;
-    }
-    inline bool is_mat() const
-    {
-        return rank_ == 0 && base_info().rank == 2;
     }
     inline bool operator==(SC_Type rhs) const
     {

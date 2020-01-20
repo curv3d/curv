@@ -48,39 +48,48 @@ sc_type_of(Value v)
     else if (v.is_bool())
         return SC_Type::Bool();
     else if (auto ls = v.dycast<List>()) {
-        if (ls->empty())
+        auto n = ls->size();
+        if (n == 0 || n > SC_Type::MAX_LIST)
             ;
         else {
             auto ty = sc_type_of(ls->front());
-            auto n = ls->size();
-            if (ty.is_multi_numeric()) {
-                if (ty == SC_Type::Num()) {
+            if (ty.is_num_tensor()) {
+                // Try to upgrade to a larger numeric struc.
+                if (ty.is_num()) {
                     if (n >= 2 && n <= 4)
                         return SC_Type::Vec(n);
-                    else if (n <= SC_Type::MAX_LIST)
-                        return SC_Type::Num(n);
                 }
-                else if (ty.rank_ == 0) {
-                    ty.rank_ = 1;
-                    ty.dim1_ = n;
-                    return ty;
+                else if (ty.is_vec()) {
+                    if (n == ty.count())
+                        return SC_Type::Mat(n);
                 }
-                else if (ty.rank_ == 1) {
-                    ty.rank_ = 2;
+                // Try to construct a general numeric array type.
+                if (ty.rank_ < 2) {
+                    ++ty.rank_;
                     ty.dim2_ = ty.dim1_;
                     ty.dim1_ = n;
                     return ty;
                 }
             }
-            else if (ty == SC_Type::Bool()) {
-                if (n >= 2 && n <= 4)
-                    return SC_Type::Bool(n);
-                if (n == 32)
-                    return SC_Type::Bool32();
-            }
-            else if (ty == SC_Type::Bool32()) {
-                if (n >= 2 && n <= 4)
-                    return SC_Type::Bool32(n);
+            else if (ty.is_bool_tensor()) {
+                // Try to upgrade to a larger boolean struc.
+                if (ty.is_bool()) {
+                    if (n >= 2 && n <= 4)
+                        return SC_Type::Bool(n);
+                    if (n == 32)
+                        return SC_Type::Bool32();
+                }
+                else if (ty.is_bool32()) {
+                    if (n >= 2 && n <= 4)
+                        return SC_Type::Bool32(n);
+                }
+                // Try to construct a general boolean array type.
+                if (ty.rank_ < 2) {
+                    ++ty.rank_;
+                    ty.dim2_ = ty.dim1_;
+                    ty.dim1_ = n;
+                    return ty;
+                }
             }
         }
     }
@@ -103,6 +112,8 @@ SC_Type::abase() const
     case 0:
         if (is_vec())
             return Num();
+        if (is_mat())
+            return Vec(count());
         if (base_type_ == Base_Type::Bool32)
             return Bool();
         if (base_type_ >= Base_Type::Bool2 && base_type_ <= Base_Type::Bool4)

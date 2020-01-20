@@ -174,8 +174,9 @@ struct Bit_Prim : public Unary_Bool_Prim
     }
     static SC_Value sc_call(SC_Frame& f, SC_Value arg)
     {
-        auto result = f.sc_.newvalue(SC_Type::Num());
-        f.sc_.out() << "  float "<<result<<" = float("<<arg<<");\n";
+        auto result = f.sc_.newvalue(SC_Type::Num_Or_Vec(arg.type.count()));
+        f.sc_.out() << "  " << result.type << " " << result << " = "
+            << result.type << "(" << arg << ");\n";
         return result;
     }
 };
@@ -458,37 +459,39 @@ struct Sum_Prim : public Binary_Num_Prim
 };
 using Sum_Function = Monoid_Func<Sum_Prim>;
 
-struct And_Prim : public Binary_Bool_Or_Bool32_Prim
-{
-    static const char* name() { return "and"; }
-    static Value zero() { return {true}; }
-    static Value call(bool x, bool y, const Context&) { return {x && y}; }
-    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
-    {
-        auto result = f.sc_.newvalue(x.type);
-        f.sc_.out() << "  " << x.type << " " << result << " = " << x
-            << (x.type.is_bool32() ? "&" : "&&")
-            << y << ";\n";
-        return result;
-    }
-};
-using And_Function = Monoid_Func<And_Prim>;
+#define BOOL_OP(CppName,CurvName,Zero,LogOp,BitOp)\
+struct CppName##_Prim : public Binary_Bool_Or_Bool32_Prim\
+{\
+    static const char* name() { return #CurvName; }\
+    static Value zero() { return {Zero}; }\
+    static Value call(bool x, bool y, const Context&) { return {x LogOp y}; }\
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)\
+    {\
+        auto result = f.sc_.newvalue(x.type);\
+        f.sc_.out() << "  " << x.type << " " << result << " = ";\
+        if (x.type.is_bool())\
+            f.sc_.out() << x << #LogOp << y << ";\n";\
+        else if (x.type.is_bool_or_vec()) {\
+            bool first = true;\
+            f.sc_.out() << x.type << "(";\
+            for (unsigned i = 0; i < x.type.count(); ++i) {\
+                if (!first) f.sc_.out() << ",";\
+                first = false;\
+                f.sc_.out() << x << "[" << i << "]"\
+                    << #LogOp << y << "[" << i << "]";\
+            }\
+            f.sc_.out() << ")";\
+        }\
+        else\
+            f.sc_.out() << x << #BitOp << y << ";\n";\
+        f.sc_.out() << ";\n";\
+        return result;\
+    }\
+};\
+using CppName##_Function = Monoid_Func<CppName##_Prim>;\
 
-struct Or_Prim : public Binary_Bool_Or_Bool32_Prim
-{
-    static const char* name() { return "or"; }
-    static Value zero() { return {false}; }
-    static Value call(bool x, bool y, const Context&) { return {x || y}; }
-    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
-    {
-        auto result = f.sc_.newvalue(x.type);
-        f.sc_.out() << "  " << x.type << " " << result << " = " << x
-            << (x.type.is_bool32() ? "|" : "||")
-            << y << ";\n";
-        return result;
-    }
-};
-using Or_Function = Monoid_Func<Or_Prim>;
+BOOL_OP(And,and,true,&&,&)
+BOOL_OP(Or,or,false,||,|)
 
 struct Xor_Prim : public Binary_Bool_Or_Bool32_Prim
 {
@@ -498,15 +501,13 @@ struct Xor_Prim : public Binary_Bool_Or_Bool32_Prim
     static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
     {
         auto result = f.sc_.newvalue(x.type);
-        f.sc_.out() << "  " << x.type << " " << result << " = ";
-        if (x.type.is_bool32())
-            f.sc_.out() << x << "^" << y;
-        else if (x.type == SC_Type::Bool())
+        f.sc_.out() << "  " << result.type << " " << result << " = ";
+        if (x.type.is_bool())
             f.sc_.out() << x << "!=" << y;
-        else if (x.type.is_bool())
+        else if (x.type.is_bool_or_vec())
             f.sc_.out() << "notEqual(" << x << "," << y << ")";
-        else
-            die("Xor_Prim::sc_call: unknown type");
+        else // bool32 or vector of bool32
+            f.sc_.out() << x << "^" << y;
         f.sc_.out() << ";\n";
         return result;
     }

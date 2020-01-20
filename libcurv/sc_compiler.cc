@@ -138,7 +138,7 @@ SC_Compiler::end_function()
 SC_Value sc_call_unary_numeric(SC_Frame& f, const char* name)
 {
     auto arg = f[0];
-    if (!arg.type.is_numeric())
+    if (!arg.type.is_num_struc())
         throw Exception(At_SC_Arg(0, f),
             stringify(name,": argument is not numeric"));
     auto result = f.sc_.newvalue(arg.type);
@@ -200,10 +200,10 @@ SC_Value sc_eval_expr(SC_Frame& f, const Operation& op, SC_Type type)
     return arg;
 }
 
-SC_Value sc_eval_bool(SC_Frame& f, const Operation& op)
+SC_Value sc_eval_bool_struc(SC_Frame& f, const Operation& op)
 {
     SC_Value arg = sc_eval_op(f, op);
-    if (arg.type != SC_Type::Bool() && arg.type != SC_Type::Bool32()) {
+    if (!arg.type.is_bool_struc()) {
         throw Exception(At_SC_Phrase(op.syntax_, f), stringify(
             "wrong argument type: expected Bool or Bool32, got ",arg.type));
     }
@@ -243,7 +243,7 @@ sc_put_value(Value val, SC_Type ty, const At_SC_Phrase& cx, std::ostream& out)
         unsigned bn = bool32_to_nat(bl, cx);
         out << bn << "u";
     }
-    else if (ty.is_any_vec()) {
+    else if (ty.is_any_vec() || ty.is_mat()) {
         Shared<const List> list = val.to<const List>(cx);
         list->assert_size(ty.count(), cx);
         out << ty << "(";
@@ -336,7 +336,7 @@ SC_Value Constant::sc_eval(SC_Frame& f) const
 SC_Value Negative_Expr::sc_eval(SC_Frame& f) const
 {
     auto x = sc_eval_op(f, *arg_);
-    if (!x.type.is_numeric())
+    if (!x.type.is_num_struc())
         throw Exception(At_SC_Phrase(arg_->syntax_, f),
             "argument not numeric");
     SC_Value result = f.sc_.newvalue(x.type);
@@ -763,11 +763,15 @@ SC_Value List_Expr_Base::sc_eval(SC_Frame& f) const
                 && etype != SC_Type::Bool32())
             {
                 throw Exception(At_SC_Phrase(this->at(0)->syntax_, f),
-                    "element of list must have type Num, Bool or Bool32");
+                    stringify(
+                        "elements of list must have type Num, Bool or Bool32;"
+                        " got type: ",etype));
             }
             if (i > 0 && etype != elem[0].type) {
                 throw Exception(At_SC_Phrase(this->at(i)->syntax_, f),
-                    "elements of list must have uniform type");
+                    stringify(
+                        "elements of list must have uniform type;"
+                        " got types ",elem[0].type," and ",etype));
             }
         }
         SC_Type atype;
@@ -794,11 +798,16 @@ SC_Value List_Expr_Base::sc_eval(SC_Frame& f) const
 
 SC_Value Not_Expr::sc_eval(SC_Frame& f) const
 {
-    auto arg = sc_eval_bool(f, *arg_);
+    auto arg = sc_eval_bool_struc(f, *arg_);
     SC_Value result = f.sc_.newvalue(arg.type);
-    f.sc_.out() << "  " << arg.type << " " << result << " = "
-        << (arg.type == SC_Type::Bool32() ? "~" : "!")
-        << arg << ";\n";
+    f.sc_.out() << "  " << arg.type << " " << result << " = ";
+    if (arg.type.is_bool())
+        f.sc_.out() << "!" << arg;
+    else if (arg.type.is_bool_or_vec())
+        f.sc_.out() << "not(" << arg << ")";
+    else
+        f.sc_.out() << "~" << arg;
+    f.sc_.out() << ";\n";
     return result;
 }
 SC_Value Or_Expr::sc_eval(SC_Frame& f) const
