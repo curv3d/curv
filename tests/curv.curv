@@ -600,6 +600,8 @@ in sc_test {
         (a,b) = ab;
         (c,d) = cd;
         in [a,b] == ab && [c,d] == cd && xor[ab,cd] == [T,T];
+    "<": _->
+        ([0,1,2] < [1, 1, 1]) == [T,f,f];
 };
 
 assert([for (i in 1..10 while i <= 3) i] == [1,2,3]);

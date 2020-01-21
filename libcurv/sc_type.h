@@ -173,7 +173,7 @@ struct SC_Type
         return base_type_ >= Base_Type::Num
             && base_type_ <= Base_Type::Mat4;
     }
-    inline bool is_vec() const
+    inline bool is_num_vec() const
     {
         return rank_ == 0
             && base_type_ >= Base_Type::Vec2 && base_type_ <= Base_Type::Vec4;

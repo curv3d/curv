@@ -59,7 +59,7 @@ sc_type_of(Value v)
                     if (n >= 2 && n <= 4)
                         return SC_Type::Vec(n);
                 }
-                else if (ty.is_vec()) {
+                else if (ty.is_num_vec()) {
                     if (n == ty.count())
                         return SC_Type::Mat(n);
                 }
@@ -110,7 +110,7 @@ SC_Type::abase() const
 {
     switch (rank_) {
     case 0:
-        if (is_vec())
+        if (is_num_vec())
             return Num();
         if (is_mat())
             return Vec(count());

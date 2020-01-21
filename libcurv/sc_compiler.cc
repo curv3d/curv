@@ -210,6 +210,16 @@ SC_Value sc_eval_bool_struc(SC_Frame& f, const Operation& op)
     return arg;
 }
 
+SC_Value sc_eval_num_or_vec(SC_Frame& f, const Operation& op)
+{
+    SC_Value arg = sc_eval_op(f, op);
+    if (!arg.type.is_num_or_vec()) {
+        throw Exception(At_SC_Phrase(op.syntax_, f), stringify(
+            "wrong argument type: expected number or vector; got ", arg.type));
+    }
+    return arg;
+}
+
 void
 sc_put_list(
     const List& list, SC_Type ty,
@@ -364,6 +374,34 @@ void sc_put_as(SC_Frame& f, SC_Value val, const Context& cx, SC_Type type)
         }
     }
     throw Exception(cx, stringify("can't convert ",val.type," to ",type));
+}
+
+SC_Value sc_convert_num_to_vec(SC_Frame& f, SC_Value val, SC_Type ty)
+{
+    SC_Value result = f.sc_.newvalue(ty);
+    f.sc_.out() << "  "<<ty<<" "<<result<<" = "<<ty<<"("<<val<<");\n";
+    return result;
+}
+
+void sc_conform_numeric(
+    SC_Frame& f, SC_Value& x, SC_Value& y, const Context& cx)
+{
+    if (x.type == y.type)
+        return;
+    else if (x.type.is_num()) {
+        if (y.type.is_num_vec()) {
+            x = sc_convert_num_to_vec(f, x, y.type);
+            return;
+        }
+    }
+    else if (y.type.is_num()) {
+        if (x.type.is_num_vec()) {
+            y = sc_convert_num_to_vec(f, y, x.type);
+            return;
+        }
+    }
+    throw Exception(cx, stringify(
+        "Can't convert ",x.type," and ",y.type," to a common type"));
 }
 
 SC_Value

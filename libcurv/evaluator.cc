@@ -365,7 +365,7 @@ Not_Equal_Expr::eval(Frame& f) const
     return {!a.equal(b, At_Phrase(*syntax_, f))};
 }
 
-#define RELATION(Class,LT,GE) \
+#define RELATION(Class,LT,GE,lessThan) \
 Value \
 Class::eval(Frame& f) const \
 { \
@@ -390,16 +390,21 @@ Class::eval(Frame& f) const \
 SC_Value \
 Class::sc_eval(SC_Frame& f) const \
 { \
-    auto arg1 = sc_eval_expr(f, *arg1_, SC_Type::Num()); \
-    auto arg2 = sc_eval_expr(f, *arg2_, SC_Type::Num()); \
-    SC_Value result = f.sc_.newvalue(SC_Type::Bool()); \
-    f.sc_.out() <<"  bool "<<result<<" =("<<arg1<<" "#LT" "<<arg2<<");\n"; \
+    auto arg1 = sc_eval_num_or_vec(f, *arg1_); \
+    auto arg2 = sc_eval_num_or_vec(f, *arg2_); \
+    sc_conform_numeric(f, arg1, arg2, At_SC_Phrase(syntax_,f)); \
+    SC_Value result = f.sc_.newvalue(SC_Type::Bool(arg1.type.count())); \
+    f.sc_.out() <<"  "<<result.type<<" "<<result<<" = "; \
+    if (arg1.type.is_num()) \
+        f.sc_.out() <<"("<<arg1<<" "#LT" "<<arg2<<");\n"; \
+    else \
+        f.sc_.out() <<#lessThan"("<<arg1<<","<<arg2<<");\n"; \
     return result; \
 }
-RELATION(Less_Expr, <, >=)
-RELATION(Greater_Expr, >, <=)
-RELATION(Less_Or_Equal_Expr, <=, >)
-RELATION(Greater_Or_Equal_Expr, >=, <)
+RELATION(Less_Expr, <, >=, lessThan)
+RELATION(Greater_Expr, >, <=, greaterThan)
+RELATION(Less_Or_Equal_Expr, <=, >, lessThanEqual)
+RELATION(Greater_Or_Equal_Expr, >=, <, greaterThanEqual)
 
 Value
 Power_Expr::eval(Frame& f) const
@@ -488,7 +493,7 @@ value_at_path(Value a, const List& path, Shared<const Phrase> callph, Frame& f)
             continue;
         }
         auto re = a.dycast<Reactive_Value>();
-        if (re && re->sctype_.is_vec()) {
+        if (re && re->sctype_.is_num_vec()) {
             if (i < path.size()-1)
                 goto domain_error;
             Value b = path[i];

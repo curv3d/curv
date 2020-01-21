@@ -303,7 +303,7 @@ SC_Value sc_minmax(const char* name, Operation& argx, SC_Frame& f)
             args.push_back(val);
             if (val.type == SC_Type::Num())
                 ;
-            else if (val.type.is_vec()) {
+            else if (val.type.is_num_vec()) {
                 if (type == SC_Type::Num())
                     type = val.type;
                 else if (type != val.type)
@@ -762,7 +762,7 @@ struct Dot_Function : public Legacy_Function
     {
         auto a = f[0];
         auto b = f[1];
-        if (!a.type.is_vec())
+        if (!a.type.is_num_vec())
             throw Exception(At_SC_Arg(0, f), "dot: argument is not a vector");
         if (a.type != b.type)
             throw Exception(At_SC_Arg(1, f), "dot: arguments have different types");
@@ -826,7 +826,7 @@ struct Mag_Function : public Legacy_Function
     SC_Value sc_call_legacy(SC_Frame& f) const override
     {
         auto arg = f[0];
-        if (!arg.type.is_vec())
+        if (!arg.type.is_num_vec())
             throw Exception(At_SC_Arg(0, f), "mag: argument is not a vector");
         auto result = f.sc_.newvalue(SC_Type::Num());
         f.sc_.out() << "  float "<<result<<" = length("<<arg<<");\n";
