@@ -216,6 +216,14 @@ struct SC_Type
             || (base_type_ >= Base_Type::Vec2 && base_type_ <= Base_Type::Vec4)
         );
     }
+    SC_Type scalar_to_vec(unsigned n) const
+    {
+        assert(base_type_ == Base_Type::Bool || base_type_ == Base_Type::Num);
+        assert(n >= 2 && n <= 4);
+        SC_Type rtype = *this;
+        rtype.base_type_ = Base_Type(unsigned(rtype.base_type_) + n - 1);
+        return rtype;
+    }
     inline bool operator==(SC_Type rhs) const
     {
         return base_type_ == rhs.base_type_ && rank_ == rhs.rank_

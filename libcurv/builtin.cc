@@ -472,6 +472,8 @@ struct CppName##_Prim : public Binary_Bool_Or_Bool32_Prim\
         if (x.type.is_bool())\
             f.sc_.out() << x << #LogOp << y << ";\n";\
         else if (x.type.is_bool_or_vec()) {\
+            /* In GLSL 4.6, I *think* you can use '&' and '|' instead. */ \
+            /* TODO: SubCurv: more efficient and|or in bvec case */ \
             bool first = true;\
             f.sc_.out() << x.type << "(";\
             for (unsigned i = 0; i < x.type.count(); ++i) {\
@@ -745,6 +747,76 @@ struct Select_Function : public Legacy_Function
     Value call(Frame& args) override
     {
         return select(args[0], args[1], args[2], At_Arg(*this, args));
+    }
+    SC_Value sc_call_legacy(SC_Frame& f) const override
+    {
+        auto cond = f[0];
+        auto consequent = f[1];
+        auto alternate = f[2];
+        if (!cond.type.is_bool_or_vec()) {
+            throw Exception(At_SC_Arg(0,f), stringify(
+                "argument is not bool or bool vector; it has type ",
+                cond.type));
+        }
+        if (consequent.type != alternate.type) {
+            throw Exception(At_SC_Arg(1,f), stringify(
+                "2nd and 3rd argument of 'select' have different types: ",
+                consequent.type, " and ", alternate.type));
+        }
+        SC_Value result;
+        if (cond.type.is_bool()) {
+            result = f.sc_.newvalue(consequent.type);
+            f.sc_.out() << "  " << result.type << " " << result << " = ";
+            f.sc_.out() << cond << "?" << consequent << ":" << alternate;
+        } else {
+            // 'cond' is a boolean vector.
+            if (consequent.type.count() == 1) {
+                // Consequent & alternate are scalars. Convert them to vectors.
+                consequent =
+                    sc_convert_scalar_to_vec(f, consequent, cond.type.count());
+                alternate =
+                    sc_convert_scalar_to_vec(f, alternate, cond.type.count());
+            }
+            else if (!consequent.type.is_any_vec()) {
+                throw Exception(At_SC_Arg(1,f), stringify(
+                    "Must be a scalar or vector to match condition argument."
+                    " Instead, type is ", consequent.type));
+            }
+            else if (cond.type.count() != consequent.type.count()) {
+                throw Exception(At_SC_Arg(1,f), stringify(
+                    "Vector length ",consequent.type.count()," does not match"
+                    " length of condition vector (", cond.type.count(),")"));
+            }
+            result = f.sc_.newvalue(consequent.type);
+            f.sc_.out() << "  " << result.type << " " << result << " = ";
+            // In GLSL 4.5, this is `mix(alt,cons,cond)` (all args are vectors).
+            // Right now, we are locked to GLSL 3.3, so we can't use this.
+            // TODO: SubCurv: more efficient `select` for vector case
+            if (result.type.is_num_vec()) {
+                // This version of 'mix' is linear interpolation: it works by
+                // multiplication and addition of all 3 arguments. Which is
+                // different from the boolean vector 'mix' in GLSL 4.5 (which
+                // produces exact results even when linear interpolation would
+                // fail due to floating point approximation). But I saw IQ use
+                // linear interpolation of vectors to implement a 'select' in
+                // WebGL, so maybe this is efficient code.
+                f.sc_.out() << "mix(" << alternate << "," << consequent
+                    << ",vec" << cond.type.count() << "(" << cond << "))";
+            } else {
+                f.sc_.out() << result.type << "(";
+                bool atfirst = true;
+                for (unsigned i = 0; i < result.type.count(); ++i) {
+                    if (!atfirst) f.sc_.out() << ",";
+                    atfirst = false;
+                    f.sc_.out() << cond << "[" << i << "] ? "
+                                << consequent << "[" << i << "] : "
+                                << alternate << "[" << i << "]";
+                }
+                f.sc_.out() << ")";
+            }
+        }
+        f.sc_.out() << ";\n";
+        return result;
     }
 };
 

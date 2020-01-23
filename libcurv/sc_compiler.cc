@@ -376,10 +376,11 @@ void sc_put_as(SC_Frame& f, SC_Value val, const Context& cx, SC_Type type)
     throw Exception(cx, stringify("can't convert ",val.type," to ",type));
 }
 
-SC_Value sc_convert_num_to_vec(SC_Frame& f, SC_Value val, SC_Type ty)
+SC_Value sc_convert_scalar_to_vec(SC_Frame& f, SC_Value val, unsigned count)
 {
-    SC_Value result = f.sc_.newvalue(ty);
-    f.sc_.out() << "  "<<ty<<" "<<result<<" = "<<ty<<"("<<val<<");\n";
+    SC_Type rtype = val.type.scalar_to_vec(count);
+    SC_Value result = f.sc_.newvalue(rtype);
+    f.sc_.out() << "  "<<rtype<<" "<<result<<" = "<<rtype<<"("<<val<<");\n";
     return result;
 }
 
@@ -390,13 +391,13 @@ void sc_conform_numeric(
         return;
     else if (x.type.is_num()) {
         if (y.type.is_num_vec()) {
-            x = sc_convert_num_to_vec(f, x, y.type);
+            x = sc_convert_scalar_to_vec(f, x, y.type.count());
             return;
         }
     }
     else if (y.type.is_num()) {
         if (x.type.is_num_vec()) {
-            y = sc_convert_num_to_vec(f, y, x.type);
+            y = sc_convert_scalar_to_vec(f, y, x.type.count());
             return;
         }
     }
