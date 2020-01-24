@@ -954,30 +954,6 @@ void For_Op::sc_exec(SC_Frame& f) const
     f.sc_.out() << "  }\n";
     f.sc_.opcaches_.pop_back();
 }
-SC_Value Equal_Expr::sc_eval(SC_Frame& f) const
-{
-    auto a = sc_eval_op(f, *arg1_);
-    auto b = sc_eval_op(f, *arg2_);
-    if (a.type != b.type || a.type.rank_ > 0) {
-        throw Exception(At_SC_Phrase(syntax_, f),
-            stringify("domain error: ",a.type," == ",b.type));
-    }
-    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
-    f.sc_.out() <<"  bool "<<result<<" =("<<a<<" == "<<b<<");\n";
-    return result;
-}
-SC_Value Not_Equal_Expr::sc_eval(SC_Frame& f) const
-{
-    auto a = sc_eval_op(f, *arg1_);
-    auto b = sc_eval_op(f, *arg2_);
-    if (a.type != b.type || a.type.rank_ > 0) {
-        throw Exception(At_SC_Phrase(syntax_, f),
-            stringify("domain error: ",a.type," != ",b.type));
-    }
-    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
-    f.sc_.out() <<"  bool "<<result<<" =("<<a<<" != "<<b<<");\n";
-    return result;
-}
 
 SC_Value sc_vec_element(SC_Frame& f, SC_Value vec, int i)
 {

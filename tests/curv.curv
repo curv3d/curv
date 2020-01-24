@@ -615,9 +615,13 @@ sc_test {
     "select": _->
         select[[1,2] >= 2, [1,2], [10,20]] == [10,2] &&
         select[[false,true], 1, 0] == [0,1];
+    "<": _->
+        ([1,2,3] < 2) == [#true,#false,#false];
+    "equal": _->
+        equal[1,1] &&
+        //equal[[1,2,3],2] == [false,true,false] &&
+        equal[[1,2,3],[2,2,2]] == [false,true,false];
 };
-
-assert( ([1,2,3] < 2) == [#true,#false,#false] );
 
 // script return value:
 in null

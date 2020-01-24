@@ -820,6 +820,73 @@ struct Select_Function : public Legacy_Function
     }
 };
 
+struct Equal_Prim : public Binary_Scalar_Prim
+{
+    static const char* name() { return "equal"; }
+    static Value call(Value a, Value b, const Context &cx)
+    {
+        return {a.equal(b, cx)};
+    }
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
+    {
+        auto result = f.sc_.newvalue(SC_Type::Bool(x.type.count()));
+        f.sc_.out() << "  " << result.type << " " << result << " = ";
+        if (x.type.is_any_vec()) {
+            f.sc_.out() << "equal(" << x << "," << y << ")";
+        } else {
+            f.sc_.out() << x << "==" << y;
+        }
+        f.sc_.out() << ";\n";
+        return result;
+    }
+};
+using Equal_Function = Binary_Array_Func<Equal_Prim>;
+struct Unequal_Prim : public Binary_Scalar_Prim
+{
+    static const char* name() { return "unequal"; }
+    static Value call(Value a, Value b, const Context &cx)
+    {
+        return {!a.equal(b, cx)};
+    }
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
+    {
+        auto result = f.sc_.newvalue(SC_Type::Bool(x.type.count()));
+        f.sc_.out() << "  " << result.type << " " << result << " = ";
+        if (x.type.is_any_vec()) {
+            f.sc_.out() << "notEqual(" << x << "," << y << ")";
+        } else {
+            f.sc_.out() << x << "!=" << y;
+        }
+        f.sc_.out() << ";\n";
+        return result;
+    }
+};
+using Unequal_Function = Binary_Array_Func<Unequal_Prim>;
+SC_Value Equal_Expr::sc_eval(SC_Frame& f) const
+{
+    auto a = sc_eval_op(f, *arg1_);
+    auto b = sc_eval_op(f, *arg2_);
+    if (a.type != b.type || a.type.rank_ > 0) {
+        throw Exception(At_SC_Phrase(syntax_, f),
+            stringify("domain error: ",a.type," == ",b.type));
+    }
+    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
+    f.sc_.out() <<"  bool "<<result<<" =("<<a<<" == "<<b<<");\n";
+    return result;
+}
+SC_Value Not_Equal_Expr::sc_eval(SC_Frame& f) const
+{
+    auto a = sc_eval_op(f, *arg1_);
+    auto b = sc_eval_op(f, *arg2_);
+    if (a.type != b.type || a.type.rank_ > 0) {
+        throw Exception(At_SC_Phrase(syntax_, f),
+            stringify("domain error: ",a.type," != ",b.type));
+    }
+    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
+    f.sc_.out() <<"  bool "<<result<<" =("<<a<<" != "<<b<<");\n";
+    return result;
+}
+
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
 struct Dot_Function : public Legacy_Function
@@ -1410,6 +1477,8 @@ builtin_namespace()
     FUNCTION(Bool32_To_Float_Function),
     FUNCTION(Float_To_Bool32_Function),
     FUNCTION(Select_Function),
+    FUNCTION(Equal_Function),
+    FUNCTION(Unequal_Function),
     FUNCTION(Dot_Function),
     FUNCTION(Mag_Function),
     FUNCTION(Count_Function),

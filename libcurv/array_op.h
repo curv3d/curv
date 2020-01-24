@@ -122,6 +122,49 @@ struct Binary_Numeric_Array_Op
     }
 };
 
+// This Prim accepts non-List arguments.
+struct Unary_Scalar_Prim
+{
+    typedef Value scalar_t;
+    static bool unbox(Value a, scalar_t& b, const Context&)
+    {
+        if (a.dycast<List>()) {
+            return false;
+        } else {
+            b = a;
+            return true;
+        }
+    }
+    static void sc_check_arg(SC_Value /*a*/, const Context& /*cx*/)
+    {
+        //if (a.type.is_bool_or_vec()) return;
+        //throw Exception(cx, "argument must be Bool or BVec");
+    }
+};
+
+// This Prim accepts non-List arguments.
+struct Binary_Scalar_Prim : public Unary_Scalar_Prim
+{
+    typedef Value left_t, right_t;
+    static bool unbox_left(Value a, left_t& b, const Context& cx)
+    {
+        return unbox(a, b, cx);
+    }
+    static bool unbox_right(Value a, right_t& b, const Context& cx)
+    {
+        return unbox(a, b, cx);
+    }
+    static void sc_check_args(
+        SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
+    {
+        if (a.type != b.type) {
+            throw Exception(cx, stringify(
+                "arguments must have the same type (got ",
+                a.type, " and ", b.type, " instead)"));
+        }
+    }
+};
+
 // This Prim accepts Bool but not Bool32 arguments in SubCurv.
 struct Unary_Bool_Prim
 {
