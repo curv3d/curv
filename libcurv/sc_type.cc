@@ -131,4 +131,27 @@ SC_Type::abase() const
     }
 }
 
+SC_Type
+SC_Type::List(SC_Type etype, unsigned n)
+{
+    switch (etype.rank_) {
+    case 0:
+        if (etype.is_num()) {
+            if (n >= 2 && n <= 4) return Vec(n);
+        } else if (etype.is_num_vec()) {
+            if (etype.count() == n) return Mat(n);
+        } else if (etype.is_bool()) {
+            if (n == 32) return Bool32();
+            if (n >= 2 && n <= 4) return Bool(n);
+        } else if (etype.is_bool32()) {
+            if (n >= 2 && n <= 4) return Bool32(n);
+        }
+        return SC_Type{etype.base_type_, n};
+    case 1:
+        return SC_Type{etype.base_type_, n, etype.dim1_};
+    default:
+        die("SC_Type::List() bad rank");
+    }
+}
+
 } // namespace curv

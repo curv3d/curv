@@ -392,7 +392,7 @@ Class::sc_eval(SC_Frame& f) const \
 { \
     auto arg1 = sc_eval_num_or_vec(f, *arg1_); \
     auto arg2 = sc_eval_num_or_vec(f, *arg2_); \
-    sc_conform_numeric(f, arg1, arg2, At_SC_Phrase(syntax_,f)); \
+    sc_struc_unify(f, arg1, arg2, At_SC_Phrase(syntax_,f)); \
     SC_Value result = f.sc_.newvalue(SC_Type::Bool(arg1.type.count())); \
     f.sc_.out() <<"  "<<result.type<<" "<<result<<" = "; \
     if (arg1.type.is_num()) \

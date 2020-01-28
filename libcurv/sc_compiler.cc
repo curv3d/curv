@@ -376,33 +376,59 @@ void sc_put_as(SC_Frame& f, SC_Value val, const Context& cx, SC_Type type)
     throw Exception(cx, stringify("can't convert ",val.type," to ",type));
 }
 
-SC_Value sc_convert_scalar_to_vec(SC_Frame& f, SC_Value val, unsigned count)
+// Type 'rtype' is a list of T, 'val' contains a value of type T.
+// Construct a new value of type 'rtype' whose elements are the value 'val'.
+SC_Value sc_fill(SC_Frame& f, SC_Type rtype, SC_Value val)
 {
-    SC_Type rtype = val.type.scalar_to_vec(count);
     SC_Value result = f.sc_.newvalue(rtype);
-    f.sc_.out() << "  "<<rtype<<" "<<result<<" = "<<rtype<<"("<<val<<");\n";
+    f.sc_.out() << "  "<<rtype<<" "<<result<<" = "<<rtype<<"(";
+    if (rtype.is_bool32()) {
+        f.sc_.out() << "-int("<<val<<")";
+    } else if (rtype.is_any_vec()) {
+        f.sc_.out() << val;
+    } else if (rtype.is_mat()) {
+        unsigned n = rtype.count();
+        for (unsigned i = 0; i < n; ++i) {
+            if (i > 0) f.sc_.out() << ",";
+            f.sc_.out() << val;
+        }
+    } else
+        die("sc_fill: unsupported list type");
+    f.sc_.out() << ");\n";
     return result;
 }
 
-void sc_conform_numeric(
-    SC_Frame& f, SC_Value& x, SC_Value& y, const Context& cx)
+// If 'b' is an array of values with the type of 'a', then convert 'a' to
+// type 'b' by replicating a's value across the elements of an array (aka
+// broadcasting). If this can be done, then update variable 'a' in place
+// with a new value of type 'b' and return true.
+bool sc_broadcast(SC_Frame& f, SC_Value& a, SC_Type b)
 {
-    if (x.type == y.type)
+    if (a.type == b) return true;
+    if (b.is_list() && sc_broadcast(f, a, b.abase())) {
+        a = sc_fill(f, b, a);
+        return true;
+    }
+    return false;
+}
+
+// Error if a or b is not a struc.
+// Succeed if a and b have the same (struc) type, or they can be converted
+// to a common type using broadcasting.
+void sc_struc_unify(SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
+{
+    if (!a.type.is_struc())
+        throw Exception(cx,
+            stringify("argument with type ",a.type," is not a Struc"));
+    if (!b.type.is_struc())
+        throw Exception(cx,
+            stringify("argument with type ",b.type," is not a Struc"));
+    if (sc_broadcast(f, a, b.type))
         return;
-    else if (x.type.is_num()) {
-        if (y.type.is_num_vec()) {
-            x = sc_convert_scalar_to_vec(f, x, y.type.count());
-            return;
-        }
-    }
-    else if (y.type.is_num()) {
-        if (x.type.is_num_vec()) {
-            y = sc_convert_scalar_to_vec(f, y, x.type.count());
-            return;
-        }
-    }
+    if (sc_broadcast(f, b, a.type))
+        return;
     throw Exception(cx, stringify(
-        "Can't convert ",x.type," and ",y.type," to a common type"));
+        "Can't convert ",a.type," and ",b.type," to a common type"));
 }
 
 SC_Value

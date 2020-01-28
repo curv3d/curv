@@ -122,7 +122,7 @@ struct Binary_Numeric_Array_Op
     }
 };
 
-// This Prim accepts non-List arguments.
+// This Prim accepts arbitrary non-List arguments.
 struct Unary_Scalar_Prim
 {
     typedef Value scalar_t;
@@ -135,14 +135,14 @@ struct Unary_Scalar_Prim
             return true;
         }
     }
-    static void sc_check_arg(SC_Value /*a*/, const Context& /*cx*/)
+    static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        //if (a.type.is_bool_or_vec()) return;
-        //throw Exception(cx, "argument must be Bool or BVec");
+        if (!a.type.is_struc())
+            throw Exception(cx, "argument must be a Struc");
     }
 };
 
-// This Prim accepts non-List arguments.
+// This Prim accepts a pair of arbitrary non-List arguments.
 struct Binary_Scalar_Prim : public Unary_Scalar_Prim
 {
     typedef Value left_t, right_t;
@@ -155,13 +155,9 @@ struct Binary_Scalar_Prim : public Unary_Scalar_Prim
         return unbox(a, b, cx);
     }
     static void sc_check_args(
-        SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
+        SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
     {
-        if (a.type != b.type) {
-            throw Exception(cx, stringify(
-                "arguments must have the same type (got ",
-                a.type, " and ", b.type, " instead)"));
-        }
+        sc_struc_unify(f, a, b, cx);
     }
 };
 
@@ -434,6 +430,7 @@ struct Binary_Array_Op
         else {
             // Reduce an array value that exists at GPU run time.
             // TODO: For a large 1D array, use a GPU loop and call a function.
+            // TODO: Binary_Array_Op::sc_reduce: reduce a matrix.
             // 2D arrays (SC_Type rank 2) are not supported, because you can't
             // generate a rank 1 array at GPU runtime, for now at least.
             // For a single Vec, this inline expansion of the loop is good.
@@ -509,6 +506,7 @@ struct Binary_Array_Op
             Prim::sc_check_args(f, first, second, cx);
             return Prim::sc_call(f, first, second);
         }
+        // TODO: Binary_Array_Op::sc_op: accept a 2-vector, 2-array or mat2.
         throw Exception(cx, "expected a list of size 2");
     }
 

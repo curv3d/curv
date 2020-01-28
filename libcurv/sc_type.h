@@ -95,6 +95,7 @@ struct SC_Type
     {
         return {Base_Type(int(Base_Type::Mat2) + n - 2)};
     }
+    static SC_Type List(SC_Type etype, unsigned n);
 
     inline const SC_Base_Type_Info& base_info() const
     {
@@ -182,6 +183,10 @@ struct SC_Type
     {
         return rank_ == 0
             && base_type_ >= Base_Type::Mat2 && base_type_ <= Base_Type::Mat4;
+    }
+    inline bool is_struc() const
+    {
+        return rank_ == 0;
     }
 
     inline bool is_list() const

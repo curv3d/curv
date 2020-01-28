@@ -772,10 +772,9 @@ struct Select_Function : public Legacy_Function
             // 'cond' is a boolean vector.
             if (consequent.type.count() == 1) {
                 // Consequent & alternate are scalars. Convert them to vectors.
-                consequent =
-                    sc_convert_scalar_to_vec(f, consequent, cond.type.count());
-                alternate =
-                    sc_convert_scalar_to_vec(f, alternate, cond.type.count());
+                auto T = SC_Type::List(consequent.type, cond.type.count());
+                sc_broadcast(f, consequent, T);
+                sc_broadcast(f, alternate, T);
             }
             else if (!consequent.type.is_any_vec()) {
                 throw Exception(At_SC_Arg(1,f), stringify(

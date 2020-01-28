@@ -140,9 +140,8 @@ SC_Value sc_eval_const(SC_Frame& f, Value val, const Phrase&);
 SC_Value sc_call_unary_numeric(SC_Frame&, const char*);
 void sc_put_as(SC_Frame& f, SC_Value val, const Context&, SC_Type type);
 SC_Value sc_vec_element(SC_Frame&, SC_Value, int);
-SC_Value sc_convert_scalar_to_vec(SC_Frame& f, SC_Value val, unsigned count);
-void sc_conform_numeric(
-    SC_Frame& f, SC_Value& x, SC_Value& y, const Context& cx);
+void sc_struc_unify(SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx);
+bool sc_broadcast(SC_Frame& f, SC_Value& a, SC_Type b);
 
 } // namespace
 #endif // header guard
