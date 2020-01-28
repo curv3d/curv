@@ -1,0 +1,21 @@
+A 'Procedure' is a function that returns an 'Action' when called.
+An 'Action' is a value that describes a set of 'Effects',
+which are changes to state within some domain.
+
+At some point, the Action value needs to be 'executed' in some domain
+in order to bring about the state changes that it describes.
+But that's an implementation detail.
+
+This is a pure functional system that describes Effects declaratively.
+It is an alternative to imperative procedures, which cause side effects
+when called. In Curv, there are no side effects. There are Effects,
+but they don't occur "on the side".
+
+In an imperative language, a function can have arbitrary side effects,
+modifying state anywhere in the program, with no limitations.
+This is an inherently unsafe programming model.
+
+In Curv, an Action is limited to causing state changes within a specific
+domain, which is controlled by the caller. Any attempt to perform state
+changes that are not supported by the domain will cause an error.
+This is a safe programming model.

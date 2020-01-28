@@ -18,6 +18,9 @@
 if (any(are_equal(a,b))) ...
 select(are_equal(a,b), a1, a2)
 
+if (or(equal(a,b)) ...
+select(equal(a,b), a1, a2)
+
 ## Vectorized boolean operations
 * Vectorized relations are:
   * infix operators:

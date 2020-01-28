@@ -1,0 +1,131 @@
+Dynamic Typing
+==============
+Curv is dynamically typed. Why?
+
+Curv is intended for live programming of graphical objects. It's intended
+for visual artists. But it is also its own extension language, so people
+with developer skills can use it to define new graphics primitives. To
+make Curv suitable for these two different audiences, it has a "tiered"
+structure. "High Curv" is a high level subset that contains everything you
+need for high level coding: procedural generation of graphical objects. "Low
+Curv" adds additional features that developers can use to define new library
+APIs with an easy to use interface and an efficient implementation. I want
+users to be able to develop libraries of new Curv graphics primitives and
+distribute them across the internet, without forking the project and hacking
+the C++ runtime. In particular, Low Curv supports GPU programming.
+
+High Curv is for end user programming. It needs to be easy to learn. From
+empirical studies I have read, the two big barriers to learning a programming
+language are learning the syntax, and learning the type system. High Curv
+supports live programming, which requires dynamic typing. And it has a very
+simple type system with a short learning curve. It is unacceptable in High
+Curv for a user to get a static type error that can only be fixed by adding
+type annotations. This also requires dynamic typing.
+
+Low Curv supports GPU programming: a Curv function can be compiled into a
+statically typed GPU kernel. To make this possible, there is a statically
+typed subset of Curv available within Low Curv.
+
+What is dynamic typing?
+-----------------------
+First, let's talk philosophy.
+* The ideal of a "statically typed" language is that all programs are
+  guaranteed to be sound via compile time checking. "Sound" means that that
+  "type errors" cannot occur at runtime, or it means that "undefined behaviour"
+  cannot occur at runtime, or it means that the program cannot crash at
+  runtime, depending on the language community.
+* But there is an engineering tradeoff.
+   1. A sound static type system reduces the expressiveness of the language.
+      It means there are situations where you cannot eliminate boilerplate
+      using functional abstraction.
+      * That's because functions in a general purpose programming language
+        are Turing complete, and a static type checker cannot in general prove
+        arbitrary properties about the run-time results of an expression in a
+        Turing complete language (such as: whether the expression halts).
+        That's why statically typed languages contain a sublanguage of type
+        expressions which are not Turing complete.
+   2. At the same time, static type systems add a lot of complexity.
+      You have to learn the type system, and you have to learn a restricted
+      form of programming that avoids errors from the static type checker.
+* The ideal of a "dynamically typed language" is that there are no restrictions
+  on functional abstraction. Anything can be composed with anything else,
+  as long as it makes sense to do so. The language is simpler and more
+  powerful than a statically typed language.
+* The engineering tradeoff here is that not all type errors can be detected
+  at compile time. In general, each value must carry around run-time type
+  information, and type errors are often not detected until run-time.
+
+Dynamic Type Systems are Inherently More Open
+---------------------------------------------
+From comments by Corbin in:
+https://lobste.rs/s/qqlkk0/no_dynamic_type_systems_are_not
+
+First recall that while Haskell’s types don’t form a category[1], we
+can imagine a “platonic” Hask whose objects are types, whose arrows are
+functions, and where undefined and friends have been removed.
+
+Now, consider that platonic Hask is but one object of Cat. From size
+issues, it is immediate that Cat cannot be a subcategory of Hask; that is,
+that Hask cannot describe all of Cat’s objects. It follows that Haskell
+typeclasses like Functor are not arrows in Cat, but endofunctors on Hask,
+and that Control.Category[2] does not capture objects in Cat, but the internal
+category objects[3] in Hask.
+
+Finally, pick just about any 2-category, indeed say Cat, and then ask whether
+Hask can represent it faithfully: The answer is a clear, resounding, and
+obvious “no”. Going further, pick any ∞-category, say Tomb, and then
+ask whether Hask can even represent a portion of any object; an ∞-object
+is like a row of objects, one per level, but Haskell’s type system could
+only see one single level of types at a time. (This is not just theoretical;
+I have tried to embed Tomb into Haskell, Idris, and Coq, and each time I am
+limited by the relatively weak type system’s upper limits.)
+
+[1] https://wiki.haskell.org/Hask
+[2] https://hackage.haskell.org/package/base/docs/Control-Category.html
+[3] https://ncatlab.org/nlab/show/internal+category
+
+My argument ought to follow readily for any ML, and we can see the scars it
+causes in the design of many MLs. Idris, for example, uses a hierarchy of
+universes[4] to avoid universe-inconsistency paradoxes[5] as it climbs this
+tower that I’m talking about. Haskell and Elm don’t bother trying to
+climb the tower at all. SML and OCaml have exactly one tier, adding on the
+module system, and strict rules governing the maps between modules and values.
+
+I’m not removing the word “obviously”. Cat obviously contains Hask, Set,
+and many other common type systems as objects; the size issues around Cat are
+usually one of the first things mentioned about it. (Third paragraph in WP[6]
+and nCat[7], for example.) And Cat is one of the first categories taught to
+neophytes, too; for example, in the recent series of programmer-oriented
+lectures on category theory, Programming with Categories[8], Cat is the
+second category defined, after Set.
+
+My refutation is of the article’s title: Yes indeed, dynamic type systems are
+more open, simply because there are certain sorts of infinite objects that,
+when we represent them symbolically, still have infinite components. Haskell
+can represent any finite row of components with multi-parameter typeclasses[9]
+but that is not sufficient for an ∞-category. By contrast, when we use
+dynamic type systems, especially object-based systems, our main concern is
+not about the representation of data, since that is pretty easy, but the
+representation of structures. For categories, for example, there are many
+different ways to give the data of a category, depending on what the category
+should do; we can emphasize the graph-theoretic parts, or the set-theoretic
+parts, or even transform the category into something like a Chu space[10].
+
+Finally, if static type systems are so great, why isn’t your metatheory,
+the one you use for metaphysics and navigating the world, a static type
+system? Probably because you have some sort of open-world assumption[11]
+built into the logic that you use for day-to-day reasoning. This assumption
+is the “open” that we are talking about when we talk about how “open”
+a type system is! Just like how we want a metatheory in our daily lives that
+is open, we all too often want to represent this same sort of open reasoning
+in our programming languages, and in order to do that, we have to have ways
+to either subvert and ignore, or entirely remove, limited static types.
+
+[4] http://docs.idris-lang.org/en/latest/faq/faq.html#does-idris-have-universe-polymorphism-what-is-the-type-of-type
+[5] https://stackoverflow.com/questions/37898566/is-there-a-non-trivial-example-with-universe-inconsistency-in-idris
+[6] https://en.wikipedia.org/wiki/Category_of_small_categories
+[7] https://ncatlab.org/nlab/show/Cat
+[8] https://www.youtube.com/user/youdsp/videos
+[9] https://wiki.haskell.org/Multi-parameter_type_class
+[10] http://chu.stanford.edu/
+[11] https://en.wikipedia.org/wiki/Open-world_assumption

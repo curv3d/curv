@@ -1,9 +1,9 @@
 Typed Structures
 ================
-Efficient large structures are important if Curv is to evolve to support
+Efficient large structures are important if Curv is to support
 a more general representation of geometric shapes (volumetric data structures).
 We will use typed structures to represent images, voxel grids, triangle meshes,
-as well as user-defined data structures.
+as well as user-defined data structures. Plus, there are strings.
 
 Abstractly, a typed structure is composed hierarchically of the 5 fundamental
 data types: symbols, numbers, strings, lists and records. However, an efficient
@@ -25,6 +25,17 @@ When a typed structure is boxed for use on the CPU, the representation contains
 the unboxed rep + a type schema. On the GPU, there is no boxing or dynamic type
 tagging. Instead, statically typed expressions denote unboxed values.
 
+Alternatives
+------------
+* implicit vs explicit construction
+* explicit construction syntax:
+  * <variable> :: <type> = <value>      // coercion
+  * <value> :: <type>                   // print format?
+  * <type-ctor> <value>                 // print format?
+    And you can bind the ctor as a branded ctor.
+* updating an element: is the type constraint enforced, or do we create a more
+  general structure with that constraint removed?
+
 Implicit vs Explicit Typed Value Construction
 ---------------------------------------------
 It would be great if the system would automatically infer efficient unboxed
@@ -33,9 +44,9 @@ That's "implicit" typed value construction.
 
 At present, the SubCurv compiler uses bottom up type inference to infer types
 of variables by assigning unboxed types to values. It's convenient, it works.
-The code is complicated, and we only have a small set of types.
-The code currently will not use the GLSL 'int' and 'uint' types for numeric
-variables, it will only use 'float'.
+The code is complicated, and we only have a small set of types. There is
+no subtyping. The code currently will not use the GLSL 'int' and 'uint'
+types for numeric variables, it will only use 'float'.
 
 This gets considerably more complicated when we have a rich set of
 representation types, with subtype relationships.
@@ -44,6 +55,16 @@ We will also need to construct typed structures at run time. Doing it all
 implicitly is too much magic. There is code complexity, and run time complexity.
 (But great if it were practical.)
 
+Implicit construction doesn't work for images using the 24 bit RGB
+representation of colours, where we compress a number in the range 0 to 1
+down to 8 bits using gamma encoding. This is lossy compression, so it has to
+happen explicity. But I still want this typed structure to be interoperable
+with an array of ordinary (uncompressed) Colour values.
+
+Finally, the idea falls apart for compact, fixed size represention of disjoint
+unions, such as the Rust 'enum' types. These would need to be declared, because
+you don't know the representation until you have seen all of the alternatives.
+
 So we will need some explicit constructions, where user supplied type names
 are required for the construction. It's okay, because this happens in the
 "deep magic" low level tier of Curv, where developers expect to write code
@@ -51,6 +72,8 @@ this way.
 
 How does explicit construction affect the high level experience?
 
+Explicit Typed Value Construction
+---------------------------------
 In SubCurv, we could use type annotations on function parameters and local
 variables, if present, to specify unboxed types for those variables.
     a :: Int32 = 0;
@@ -66,6 +89,42 @@ So then we might expect the following to be equivalent:
     a :: Int32 = 0;
     a = 0::Int32
 
+Typed Value Semantics
+---------------------
+In SubCurv, the following may as well be equivalent. The type annotations
+are interpreted as part of type checking, they have no dynamic effect:
+    a :: Int32 = 0;
+    a = 0::Int32
+
+In the Curv interpreter, what does this code do? It seems logical for
+    <value> :: <type>
+to yield a boxed pair containing the unboxed representation of <value>
+as specified by <type>, plus <type>. This has two purposes:
+ 1. During the interpretation phase, we keep track of the <type> so that
+    variable and function abstraction can be applied to code with type
+    annotations. The types are used during the SubCurv compilation phase.
+ 2. It is a way to construct efficient unboxed representations in the
+    interpreter so that we can efficiently manipulate large structures.
+
+If we were using implicit construction of typed structures, then there
+would be no semantic differences between a fully boxed structure S and the
+equivalent typed structure T with a more efficient representation.
+S and T would be equal, they would print the same, and all operations on
+these values would yield operationally equivalent results (modulo the
+efficiency improvements: faster, less memory).
+
+That's a model for how the value in a <type,value> pair could be treated.
+But there is also a type, which becomes a static expression type later during
+SubCurv compilation. What semantics does this type have in the interpreter?
+
+Consider '2::Int32 + 2::Int32'. Should this yield '4::Int32'?
+* What if the result of the addition is outside the range of an Int32?
+  Throw an error, or return a plain number?
+* What about mixed mode arithmetic?
+This is not what I want. Selecting a number from a typed structure should
+not have this result.
+
+----------------------------------------------------------------------------
 Type Annotations and Value Construction
 ---------------------------------------
 In SubCurv, we could use type annotations on function parameters and local
@@ -170,7 +229,7 @@ that print as {background: [1,1,1], ...}. So all of the typing is in the
 variable, none is in the value.
 
 The purpose of this section is to consider whether we need typed record values,
-which have type constraints on the fields.
+which enforce type constraints on field update.
 
 I think that a typed record value is an instance of a named abstract type.
 You construct it by calling a constructor function (which enforces type

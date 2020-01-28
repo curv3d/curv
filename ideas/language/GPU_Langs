@@ -12,6 +12,10 @@ GPU programming languages
   code but are statically typed and data parallel.
   https://github.com/yuanming-hu/taichi
   http://taichi.graphics/wp-content/uploads/2019/09/taichi_lang.pdf
+* Lift: a functional data-parallel IR for high performance GPU code generation
+* Rise: successor to Lift, using MLIR
+  https://michel.steuwer.info/files/publications/2020/accML.pdf
+  statically typed, high level, pure functional.
 
 Ideas for Curv:
 * staged computation: a dynamically typed language (with first class module

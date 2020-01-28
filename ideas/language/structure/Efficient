@@ -8,9 +8,9 @@ In this design study, the secondary goal is to preserve the illusion that all
 Curv data structures are recursively composed of 5 primitive data types.
 To make huge data structures efficient, we will support multiple internal
 representations for the same abstract structure. These internal representations
-are hidden from high level code (Tier 1 of the Curv language). Low level code
-(Tier 2) will use 'representation hints' together with the form of the data
-constructor to select which internal representation to use.
+are hidden from high level code (High Curv, aka Tier 1 of the Curv language).
+Low level code (Low Curv, Tier 2) will use 'representation hints' together with
+the form of the data constructor to select which internal representation to use.
 
 Typed Arrays
 ------------
@@ -58,7 +58,7 @@ are intended to be isomorphic and operationally equivalent to structures built
 using generic operations from the 5 data types.
 
 We don't impose additional "semantic type constraints" on typed arrays, relative
-to simple arrays, because at Tier 1, we don't want to complicate the data model.
+to simple arrays, because in High Curv, we don't want to complicate the data model.
 
 Implicit vs Explicit Typing
 ---------------------------
@@ -77,6 +77,21 @@ The design challenge is to minimize the complexity that this introduces for
 high level programming: when you are specifying the contents of a typed array
 (for an argument to a high level API), or when you are consuming typed arrays
 that are returned from high level APIs.
+
+I'm impressed by how the K7 language uses a simple data model like High Curv,
+yet is able to implicitly use efficient representations for bulk data, without
+introducing C-like type expressions, as I'm proposing here.
+
+One insight is that operations that return bulk data provide guarantees on
+the structure of their result, which can be used to select an efficient
+representation. Other bulk operations can be designed to use these efficient
+representations on input, etc, and developers can reason about efficiency.
+There are tons of examples of this in APL like languages.
+Eg, transpose in K returns a rectangular matrix.
+
+These 'type expressions' could be represented in the language as identity
+functions that abort on invalid inputs, and convert valid inputs to efficient
+representations (without changing equality, modulo lossy compression).
 
 Constructing a Typed Array
 --------------------------
@@ -156,7 +171,7 @@ String = List{of: Char}
 A = [#/f/,#/o/,#/o/]
 B = make String [#/f/,#/o/,#/o/]
 C = "foo"
-    What a nightmare. At Tier 1, the only thing you should need to understand
+    What a nightmare. In High Curv, the only thing you should need to understand
     is "foo", not the rest of it.
 
 "" == []: true or false?
