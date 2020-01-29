@@ -1,0 +1,32 @@
+Euclidean Offset
+================
+
+General implementations that works for any SDF
+----------------------------------------------
+* for a Lipschitz(1) function rep -- dunno!
+* for a C1 function rep -- not sure...
+* for function rep with interval extension -- maybe?
+* for a discretized SDF (voxels) -- I bet the Shapeways AbFab thing does it
+
+Special case implementations
+----------------------------
+Each shape operator provides its own implementation of offset.
+May need different implementations for +ve and -ve offset.
+
+I've already solved this for many nilary operators: sphere, cube, etc.
+If the SDF is exact, then offset is easy.
+
+Some operators don't provide a exact SDF, even if the inputs are exact.
+But there can still be a way to generate an exact offset at a specific value.
+
+Ellipse
+    I think I read about this somewhere. It requires iterative numeric
+    approximation. The offset of an ellipse is not an ellipse, and doesn't
+    have an algebraic solution.
+
+complement.offset Off Shape =
+    Shape.offset (-Off) >> complement
+union
+intersection
+difference.offset [s1,s2] =
+ 1. I found a solution involving smooth blending.

@@ -1,0 +1,23 @@
+Approximating Parametric Curves with Strip Trees using Affine Arithmetic
+------------------------------------------------------------------------
+http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.69.835&rep=rep1&type=pdf
+
+We show how to compute a strip tree representation for a general parametric
+curve, using affine arithmetic2 to find good bounding rectangles. Then
+we show how to compute approximate distance fields for parametric curves.
+
+A strip tree is a chain of bounding rectangles that enclose and approximate
+a curve.
+
+Strip trees were introduced by Ballard as a multi-resolution data structure for
+representing polygonal curves. The main concept in strip trees is to represent
+each piece of the curve by a bounding rectangle that contains the piece. When
+this is done in a hierarchical fashion —starting from the whole curve,
+subdividing the curve at suitable points, and going down to individual edges
+—we get a tree of rectangles, each rectangle containing a piece of the curve.
+
+Ballard described how the multi-resolution representation provided by strip
+trees can be used to solve several practical problems efficiently, including
+displaying a curve at a given resolution, intersecting two curves, computing
+the length of a curve at a given resolution, testing the proximity of a point
+to a curve, and testing whether a point is inside a region bounded by a curve.

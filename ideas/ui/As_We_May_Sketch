@@ -1,0 +1,43 @@
+John Hanacek
+https://www.johnhanacek.net
+
+High level musing with links:
+https://www.johnhanacek.net/along-the-curve/2017/10/25/art-math-math-art-toward-a-boundless-grounded-infinity
+
+from "As We May Sketch":
+---
+In Don Norman’s “The Design of Everyday Things” he provides ‘principles of
+good design,’ which are:
+
+* Visibility. By looking, the user can tell the state of the device and the
+  alternatives for action.
+* A good conceptual model. The designer provides a good conceptual model for
+  the user, with consistency in the presentation of operations and results and
+  a coherent, consistent system image.
+* Good mappings. It is possible to determine the relationships between actions
+  and results, between controls and their effects, and between the system state
+  and what is visible.
+* Feedback. The user receives full and continuous feedback about the results of
+  actions.
+
+Traditional “typed statement” programming environments live up to none
+of these criteria. In traditional programming it is often very difficult to
+determine relationships between operations and results. The feedback is not
+continuous and because of syntax constraints often a program being modified is
+not in a state where you can see the results. Systems like spreadsheets are
+better, since they offer easier to choose alternatives and usually allow you
+to see the results with just a click, providing a nice feedback loop. Norman
+concludes that with spreadsheets “it felt as if you were working directly
+on the problem, not on a computer.”
+
+• Could I have a development environment that would let me get my ideas into
+  code much faster so that I can focus on trying more complicated logic through
+  the manipulation of visuals that provide constant feedback?
+• Can we drive this environment with pen input to use interactive sketching
+  to help elucidate the concepts of programming?
+• Can we create visual metaphors for programming concepts, like objects and
+  dependencies, that users can manipulate in a direct way such as in software
+  with similar affordances of Adobe Illustrator?
+• Could such an environment allow younger children to organically discover how
+  to realize their imaginations using computers?
+---

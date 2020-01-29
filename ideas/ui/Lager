@@ -1,0 +1,11 @@
+Lager: C++17 UI Framework based on immutable values & pure functions.
+https://sinusoid.es/lager/introduction.html
+
+Lager is a C++ library to assist value-oriented design by implementing the
+unidirectional data-flow architecture. It is heavily inspired by Elm and
+Redux, and enables composable designs by promoting the use of simple value
+types and testable application logic via pure functions.
+
+Both data and the call graph are acyclic.
+Immutable values + acyclic data means you can take snapshots and time travel
+debugging, undo are easy to implement.
