@@ -54,3 +54,28 @@ Boolean (Set Theoretic) Operations
 
 ``row shapes``
   Same as ``row d shapes`` except that the gap distance is provided for you.
+
+Distance Field Behaviour
+------------------------
+The boolean shape operations create shapes where the distance field class of the outside of the shape
+can be different from the distance field class of the inside of the shape.
+
+``complement s``
+  * The outside distance field of the result has the same class (exact, mitred, approximate, etc)
+    as the inside of ``s``.
+  * The inside distance field of the result has the same class
+    as the outside of ``s``.
+
+``union``
+  If the input shapes have exact distance fields,
+  then the outside of the result is exact, and the inside is approximate.
+
+``intersection``
+  If the input shapes have exact distance fields,
+  then the outside of the result is mitred, and the inside is exact.
+
+``difference[s1,s2]``
+  ``difference [s1, s2] = intersection [s1, complement s2]``. As a consequence of this,
+  
+  * The outside distance field of the result is mitred if the outside of ``s1`` is exact and the inside of ``s2`` is exact.
+  * The inside distance field of the result is exact if the inside of ``s1`` is exact and the outside of ``s2`` is exact.
