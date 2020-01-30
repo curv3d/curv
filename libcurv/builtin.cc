@@ -444,6 +444,54 @@ struct Min_Function : public Legacy_Function
     }
 };
 
+/*
+TODO: refactor/unify the code for binary +
+> static Binary_Array_Op<Add_Prim> op_add;
+This will support: op_add(Value,Value,cx) via operator().
+
+Problem: Prim::name() is referenced when constructing an Exception message.
+We don't want this, as op_add can be used to define both '+' and 'sum'.
+Instead, get the operation name from the Context.
+
+The function name "sum" is not contained in the op_add, it is only supplied
+when constructing the function class using Monoid_Func. Eg,
+> using Sum_Function = Monoid_Func<"sum", op_add>;
+This is very complex to achieve. It is simpler to specify the name string
+in the initializer of the builtins table.
+ */
+Value add(Value a, Value b, const At_Syntax& cx)
+{
+    struct Scalar_Op {
+        static double call(double x, double y) { return x + y; }
+        Shared<Operation> make_expr(
+            Shared<Operation> x, Shared<Operation> y) const
+        {
+            return make<Add_Expr>(share(cx.syntax()),
+                std::move(x), std::move(y));
+        }
+        static const char* name() { return "+"; }
+        static Shared<const String> callstr(Value x, Value y) {
+            return stringify(x," + ",y);
+        }
+        const At_Syntax& cx;
+        Scalar_Op(const At_Syntax& as) : cx(as) {}
+    };
+    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
+    return array_op.op(Scalar_Op(cx), a, b);
+}
+Value
+Add_Expr::eval(Frame& f) const
+{
+    Value a = arg1_->eval(f);
+    Value b = arg2_->eval(f);
+    return add(a,b, At_Phrase(*syntax_, f));
+}
+#if 0
+SC_Value Add_Expr::sc_eval(SC_Frame& f) const
+{
+    return sc_arith_expr(f, *syntax_, *arg1_, "+", *arg2_);
+}
+#endif
 struct Sum_Prim : public Binary_Num_Prim
 {
     static const char* name() { return "sum"; }

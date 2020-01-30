@@ -15,10 +15,8 @@ extern "C" {
 namespace curv { namespace geom {
 
 const char Cpp_Program::standard_header[] =
-    "#include <glm/vec2.hpp>\n"
-    "#include <glm/vec3.hpp>\n"
-    "#include <glm/vec4.hpp>\n"
     "#include <glm/common.hpp>\n"
+    "#include <glm/matrix.hpp>\n"
     "#include <glm/geometric.hpp>\n"
     "#include <glm/trigonometric.hpp>\n"
     "#include <glm/exponential.hpp>\n"

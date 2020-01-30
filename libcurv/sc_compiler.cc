@@ -466,10 +466,12 @@ sc_arith_expr(SC_Frame& f, const Phrase& syntax,
     return result;
 }
 
+#if 1
 SC_Value Add_Expr::sc_eval(SC_Frame& f) const
 {
     return sc_arith_expr(f, *syntax_, *arg1_, "+", *arg2_);
 }
+#endif
 
 SC_Value Subtract_Expr::sc_eval(SC_Frame& f) const
 {
@@ -824,28 +826,22 @@ SC_Value List_Expr_Base::sc_eval(SC_Frame& f) const
         for (unsigned i = 0; i < this->size(); ++i) {
             elem[i] = sc_eval_op(f, *this->at(i));
             SC_Type etype = elem[i].type;
-            if (etype != SC_Type::Num() && etype != SC_Type::Bool()
-                && etype != SC_Type::Bool32())
+            if (!etype.is_num() && !etype.is_bool() && !etype.is_bool32()
+                && !etype.is_num_vec())
             {
                 throw Exception(At_SC_Phrase(this->at(0)->syntax_, f),
                     stringify(
-                        "elements of list must have type Num, Bool or Bool32;"
+                        "vector elements must be Num, Bool, Bool32 or Num_Vec;"
                         " got type: ",etype));
             }
             if (i > 0 && etype != elem[0].type) {
                 throw Exception(At_SC_Phrase(this->at(i)->syntax_, f),
                     stringify(
-                        "elements of list must have uniform type;"
+                        "vector elements must have uniform type;"
                         " got types ",elem[0].type," and ",etype));
             }
         }
-        SC_Type atype;
-        if (elem[0].type == SC_Type::Num())
-            atype = SC_Type::Vec(this->size());
-        else if (elem[0].type == SC_Type::Bool())
-            atype = SC_Type::Bool(this->size());
-        else if (elem[0].type == SC_Type::Bool32())
-            atype = SC_Type::Bool32(this->size());
+        SC_Type atype = SC_Type::List(elem[0].type, this->size());
         SC_Value result = f.sc_.newvalue(atype);
         f.sc_.out() << "  " << atype << " " << result << " = " << atype << "(";
         bool first = true;

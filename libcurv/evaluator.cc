@@ -190,13 +190,6 @@ Negative_Expr::eval(Frame& f) const
 }
 
 Value
-Add_Expr::eval(Frame& f) const
-{
-    Value a = arg1_->eval(f);
-    Value b = arg2_->eval(f);
-    return add(a,b, At_Phrase(*syntax_, f));
-}
-Value
 Subtract_Expr::eval(Frame& f) const
 {
     struct Scalar_Op {

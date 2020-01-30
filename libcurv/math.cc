@@ -40,27 +40,6 @@ bool islist(Value a)
     return false;
 }
 
-Value add(Value a, Value b, const At_Syntax& cx)
-{
-    struct Scalar_Op {
-        static double call(double x, double y) { return x + y; }
-        Shared<Operation> make_expr(
-            Shared<Operation> x, Shared<Operation> y) const
-        {
-            return make<Add_Expr>(share(cx.syntax()),
-                std::move(x), std::move(y));
-        }
-        static const char* name() { return "+"; }
-        static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x," + ",y);
-        }
-        const At_Syntax& cx;
-        Scalar_Op(const At_Syntax& as) : cx(as) {}
-    };
-    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(Scalar_Op(cx), a, b);
-}
-
 Value multiply(Value a, Value b, const At_Syntax& cx)
 {
     struct Scalar_Op {
