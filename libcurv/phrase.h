@@ -178,6 +178,10 @@ struct Binary_Phrase : public Phrase
     {
         return left_->location().ending_at(right_->location().token());
     }
+    Range<const char*> opname() const
+    {
+        return left_->location().starting_at(op_).ending_at(op_).range();
+    }
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
 };
 

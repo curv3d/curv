@@ -391,12 +391,16 @@ struct Binary_Array_Op
     static Exception domain_error(
         const Context& cx, unsigned i, Value x, Value y)
     {
-        if (dynamic_cast<const At_Arg*>(&cx))
+        if (dynamic_cast<const At_Arg*>(&cx)) {
             return Exception(At_Index(i,cx),
                 stringify(i==0?x:y,": domain error"));
-        else
-            return Exception(cx,
-                stringify(x," ",Prim::name()," ",y,": domain error"));
+        }
+        if (auto ap = dynamic_cast<const At_Phrase*>(&cx)) {
+            if (auto bin = dynamic_cast<const Binary_Phrase*>(&ap->phrase_))
+                return Exception(cx,
+                    stringify(x," ",bin->opname()," ",y,": domain error"));
+        }
+        return Exception(cx, stringify(i==0?x:y,": domain error"));
     }
 
     static Value

@@ -157,7 +157,6 @@ struct Is_Fun_Function : public Function
 
 struct Bit_Prim : public Unary_Bool_Prim
 {
-    static const char* name() { return "bit"; }
     static Value call(bool b, const Context&)
     {
         return {double(b)};
@@ -242,7 +241,6 @@ struct Atan2_Function : public Legacy_Function
                 "Internal error: atan2 applied to a reactive value");
             //return make<Divide_Expr>(share(syntax), std::move(x), std::move(y));
         }
-        static const char* name() { return "atan2"; }
         static Shared<const String> callstr(Value x, Value y) {
             return stringify("[",x,",",y,"]");
         }
@@ -368,7 +366,6 @@ struct Max_Function : public Legacy_Function
                     Value{share(cx.func_)}),
                 args);
         }
-        static const char* name() { return "max"; }
         static Shared<const String> callstr(Value x, Value y) {
             return stringify("[",x,",",y,"]");
         }
@@ -389,7 +386,6 @@ struct Max_Function : public Legacy_Function
 
 struct Min_Function : public Legacy_Function
 {
-    static const char* name() { return "min"; }
     Min_Function(const char* nm) : Legacy_Function(1,nm) {}
 
     struct Prim {
@@ -412,7 +408,6 @@ struct Min_Function : public Legacy_Function
                     Value{share(cx.func_)}),
                 args);
         }
-        static const char* name() { return "min"; }
         static Shared<const String> callstr(Value x, Value y) {
             return stringify("[",x,",",y,"]");
         }
@@ -456,7 +451,6 @@ Value add(Value a, Value b, const At_Syntax& cx)
             return make<Add_Expr>(share(cx.syntax()),
                 std::move(x), std::move(y));
         }
-        static const char* name() { return "+"; }
         static Shared<const String> callstr(Value x, Value y) {
             return stringify(x," + ",y);
         }
@@ -481,7 +475,6 @@ SC_Value Add_Expr::sc_eval(SC_Frame& f) const
 #endif
 struct Sum_Prim : public Binary_Num_Prim
 {
-    static const char* name() { return "sum"; }
     static Value zero() { return {0.0}; }
     static Value call(double x, double y, const Context&) { return {x + y}; }
     static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
@@ -494,10 +487,9 @@ struct Sum_Prim : public Binary_Num_Prim
 };
 using Sum_Function = Monoid_Func<Sum_Prim>;
 
-#define BOOL_OP(CppName,CurvName,Zero,LogOp,BitOp)\
+#define BOOL_OP(CppName,Zero,LogOp,BitOp)\
 struct CppName##_Prim : public Binary_Bool_Or_Bool32_Prim\
 {\
-    static const char* name() { return #CurvName; }\
     static Value zero() { return {Zero}; }\
     static Value call(bool x, bool y, const Context&) { return {x LogOp y}; }\
     static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)\
@@ -527,12 +519,11 @@ struct CppName##_Prim : public Binary_Bool_Or_Bool32_Prim\
 };\
 using CppName##_Function = Monoid_Func<CppName##_Prim>;\
 
-BOOL_OP(And,and,true,&&,&)
-BOOL_OP(Or,or,false,||,|)
+BOOL_OP(And,true,&&,&)
+BOOL_OP(Or,false,||,|)
 
 struct Xor_Prim : public Binary_Bool_Or_Bool32_Prim
 {
-    static const char* name() { return "xor"; }
     static Value zero() { return {false}; }
     static Value call(bool x, bool y, const Context&) { return {x != y}; }
     static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
@@ -553,7 +544,6 @@ using Xor_Function = Monoid_Func<Xor_Prim>;
 
 struct Lshift_Prim : public Shift_Prim
 {
-    static const char* name() { return "lshift"; }
     static Value call(Shared<const List> a, double b, const Context &cx)
     {
         At_Index acx(0, cx);
@@ -578,7 +568,6 @@ using Lshift_Function = Binary_Array_Func<Lshift_Prim>;
 
 struct Rshift_Prim : public Shift_Prim
 {
-    static const char* name() { return "rshift"; }
     static Value call(Shared<const List> a, double b, const Context &cx)
     {
         At_Index acx(0, cx);
@@ -603,7 +592,6 @@ using Rshift_Function = Binary_Array_Func<Rshift_Prim>;
 
 struct Bool32_Sum_Prim : public Binary_Bool32_Prim
 {
-    static const char* name() { return "bool32_sum"; }
     static Value zero()
     {
         static Value z = {nat_to_bool32(0)};
@@ -625,7 +613,6 @@ using Bool32_Sum_Function = Monoid_Func<Bool32_Sum_Prim>;
 
 struct Bool32_Product_Prim : public Binary_Bool32_Prim
 {
-    static const char* name() { return "bool32_product"; }
     static Value zero()
     {
         static Value z = {nat_to_bool32(1)};
@@ -699,7 +686,6 @@ struct Nat_To_Bool32_Function : public Function
 
 struct Bool32_To_Float_Prim : public Unary_Bool32_Prim
 {
-    static const char* name() { return "bool32_to_float"; }
     static Value call(unsigned n, const Context&)
     {
         return {nat_to_float(n)};
@@ -717,7 +703,6 @@ using Bool32_To_Float_Function = Unary_Array_Func<Bool32_To_Float_Prim>;
 
 struct Float_To_Bool32_Prim : public Unary_Num_Prim
 {
-    static const char* name() { return "float_to_bool32"; }
     static Value call(double n, const Context&)
     {
         return {nat_to_bool32(float_to_nat(n))};
@@ -853,7 +838,6 @@ struct Select_Function : public Legacy_Function
 
 struct Equal_Prim : public Binary_Scalar_Prim
 {
-    static const char* name() { return "equal"; }
     static Value call(Value a, Value b, const Context &cx)
     {
         return {a.equal(b, cx)};
@@ -874,7 +858,6 @@ struct Equal_Prim : public Binary_Scalar_Prim
 using Equal_Function = Binary_Array_Func<Equal_Prim>;
 struct Unequal_Prim : public Binary_Scalar_Prim
 {
-    static const char* name() { return "unequal"; }
     static Value call(Value a, Value b, const Context &cx)
     {
         return {!a.equal(b, cx)};
