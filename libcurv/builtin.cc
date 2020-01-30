@@ -48,8 +48,7 @@ Builtin_Value::to_meaning(const Identifier& id) const
 template <class Prim>
 struct Unary_Array_Func : public Function
 {
-    static const char* name() { return Prim::name(); }
-    Unary_Array_Func() : Function(name()) {}
+    using Function::Function;
     static Unary_Array_Op<Prim> array_op;
     Value call(Value arg, Frame& f) override
     {
@@ -65,8 +64,7 @@ struct Unary_Array_Func : public Function
 template <class Prim>
 struct Binary_Array_Func : public Legacy_Function
 {
-    static const char* name() { return Prim::name(); }
-    Binary_Array_Func() : Legacy_Function(2,name()) {}
+    Binary_Array_Func(const char* nm) : Legacy_Function(2,nm) {}
     static Binary_Array_Op<Prim> array_op;
     Value call(Frame& args) override
     {
@@ -82,8 +80,7 @@ struct Binary_Array_Func : public Legacy_Function
 template <class Prim>
 struct Monoid_Func final : public Function
 {
-    static const char* name() { return Prim::name(); }
-    Monoid_Func() : Function(name()) {}
+    using Function::Function;
     static Binary_Array_Op<Prim> array_op;
     Value call(Value arg, Frame& f) override
     {
@@ -103,8 +100,7 @@ struct Monoid_Func final : public Function
 
 struct Is_Bool_Function : public Function
 {
-    static const char* name() { return "is_bool"; }
-    Is_Bool_Function() : Function(name()) {}
+    using Function::Function;
     Value call(Value arg, Frame&) override
     {
         return {isbool(arg)};
@@ -112,8 +108,7 @@ struct Is_Bool_Function : public Function
 };
 struct Is_Symbol_Function : public Function
 {
-    static const char* name() { return "is_symbol"; }
-    Is_Symbol_Function() : Function(name()) {}
+    using Function::Function;
     Value call(Value arg, Frame&) override
     {
         return {issymbol(arg)};
@@ -121,8 +116,7 @@ struct Is_Symbol_Function : public Function
 };
 struct Is_Num_Function : public Function
 {
-    static const char* name() { return "is_num"; }
-    Is_Num_Function() : Function(name()) {}
+    using Function::Function;
     Value call(Value arg, Frame&) override
     {
         return {isnum(arg)};
@@ -130,8 +124,7 @@ struct Is_Num_Function : public Function
 };
 struct Is_String_Function : public Function
 {
-    static const char* name() { return "is_string"; }
-    Is_String_Function() : Function(name()) {}
+    using Function::Function;
     Value call(Value arg, Frame&) override
     {
         return {arg.dycast<String>() != nullptr};
@@ -139,8 +132,7 @@ struct Is_String_Function : public Function
 };
 struct Is_List_Function : public Function
 {
-    static const char* name() { return "is_list"; }
-    Is_List_Function() : Function(name()) {}
+    using Function::Function;
     Value call(Value arg, Frame&) override
     {
         return {islist(arg)};
@@ -148,8 +140,7 @@ struct Is_List_Function : public Function
 };
 struct Is_Record_Function : public Function
 {
-    static const char* name() { return "is_record"; }
-    Is_Record_Function() : Function(name()) {}
+    using Function::Function;
     Value call(Value arg, Frame&) override
     {
         return {arg.dycast<Record>() != nullptr};
@@ -157,8 +148,7 @@ struct Is_Record_Function : public Function
 };
 struct Is_Fun_Function : public Function
 {
-    static const char* name() { return "is_fun"; }
-    Is_Fun_Function() : Function(name()) {}
+    using Function::Function;
     Value call(Value arg, Frame&) override
     {
         return {arg.dycast<Function>() != nullptr};
@@ -182,11 +172,10 @@ struct Bit_Prim : public Unary_Bool_Prim
 };
 using Bit_Function = Unary_Array_Func<Bit_Prim>;
 
-#define UNARY_NUMERIC_FUNCTION(Class_Name,curv_name,c_name,glsl_name) \
+#define UNARY_NUMERIC_FUNCTION(Class_Name,c_name,glsl_name) \
 struct Class_Name : public Legacy_Function \
 { \
-    static const char* name() { return #curv_name; } \
-    Class_Name() : Legacy_Function(1,name()) {} \
+    Class_Name(const char* nm) : Legacy_Function(1,nm) {} \
     struct Prim { \
         static double call(double x) { return c_name(x); } \
         Shared<Operation> make_expr(Shared<Operation> x) const \
@@ -215,35 +204,34 @@ struct Class_Name : public Legacy_Function \
     } \
 }; \
 
-UNARY_NUMERIC_FUNCTION(Sqrt_Function, sqrt, sqrt, sqrt)
-UNARY_NUMERIC_FUNCTION(Log_Function, log, log, log)
-UNARY_NUMERIC_FUNCTION(Abs_Function, abs, abs, abs)
-UNARY_NUMERIC_FUNCTION(Floor_Function, floor, floor, floor)
-UNARY_NUMERIC_FUNCTION(Ceil_Function, ceil, ceil, ceil)
-UNARY_NUMERIC_FUNCTION(Trunc_Function, trunc, trunc, trunc)
-UNARY_NUMERIC_FUNCTION(Round_Function, round, rint, roundEven)
+UNARY_NUMERIC_FUNCTION(Sqrt_Function, sqrt, sqrt)
+UNARY_NUMERIC_FUNCTION(Log_Function, log, log)
+UNARY_NUMERIC_FUNCTION(Abs_Function, abs, abs)
+UNARY_NUMERIC_FUNCTION(Floor_Function, floor, floor)
+UNARY_NUMERIC_FUNCTION(Ceil_Function, ceil, ceil)
+UNARY_NUMERIC_FUNCTION(Trunc_Function, trunc, trunc)
+UNARY_NUMERIC_FUNCTION(Round_Function, rint, roundEven)
 
 inline double frac(double n) { return n - floor(n); }
-UNARY_NUMERIC_FUNCTION(Frac_Function, frac, frac, fract)
+UNARY_NUMERIC_FUNCTION(Frac_Function, frac, fract)
 
-UNARY_NUMERIC_FUNCTION(Sin_Function, sin, sin, sin)
-UNARY_NUMERIC_FUNCTION(Cos_Function, cos, cos, cos)
-UNARY_NUMERIC_FUNCTION(Tan_Function, tan, tan, tan)
-UNARY_NUMERIC_FUNCTION(Acos_Function, acos, acos, acos)
-UNARY_NUMERIC_FUNCTION(Asin_Function, asin, asin, asin)
-UNARY_NUMERIC_FUNCTION(Atan_Function, atan, atan, atan)
+UNARY_NUMERIC_FUNCTION(Sin_Function, sin, sin)
+UNARY_NUMERIC_FUNCTION(Cos_Function, cos, cos)
+UNARY_NUMERIC_FUNCTION(Tan_Function, tan, tan)
+UNARY_NUMERIC_FUNCTION(Acos_Function, acos, acos)
+UNARY_NUMERIC_FUNCTION(Asin_Function, asin, asin)
+UNARY_NUMERIC_FUNCTION(Atan_Function, atan, atan)
 
-UNARY_NUMERIC_FUNCTION(Sinh_Function, sinh, sinh, sinh)
-UNARY_NUMERIC_FUNCTION(Cosh_Function, cosh, cosh, cosh)
-UNARY_NUMERIC_FUNCTION(Tanh_Function, tanh, tanh, tanh)
-UNARY_NUMERIC_FUNCTION(Acosh_Function, acosh, acosh, acosh)
-UNARY_NUMERIC_FUNCTION(Asinh_Function, asinh, asinh, asinh)
-UNARY_NUMERIC_FUNCTION(Atanh_Function, atanh, atanh, atanh)
+UNARY_NUMERIC_FUNCTION(Sinh_Function, sinh, sinh)
+UNARY_NUMERIC_FUNCTION(Cosh_Function, cosh, cosh)
+UNARY_NUMERIC_FUNCTION(Tanh_Function, tanh, tanh)
+UNARY_NUMERIC_FUNCTION(Acosh_Function, acosh, acosh)
+UNARY_NUMERIC_FUNCTION(Asinh_Function, asinh, asinh)
+UNARY_NUMERIC_FUNCTION(Atanh_Function, atanh, atanh)
 
 struct Atan2_Function : public Legacy_Function
 {
-    static const char* name() { return "atan2"; }
-    Atan2_Function() : Legacy_Function(2,name()) {}
+    Atan2_Function(const char* nm) : Legacy_Function(2,nm) {}
 
     struct Prim {
         static double call(double x, double y) { return atan2(x, y); }
@@ -358,8 +346,7 @@ SC_Value sc_minmax(const char* name, Operation& argx, SC_Frame& f)
 
 struct Max_Function : public Legacy_Function
 {
-    static const char* name() { return "max"; }
-    Max_Function() : Legacy_Function(1,name()) {}
+    Max_Function(const char* nm) : Legacy_Function(1,nm) {}
 
     struct Prim {
         static double call(double x, double y) {
@@ -396,14 +383,14 @@ struct Max_Function : public Legacy_Function
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase>, SC_Frame& f)
     const override
     {
-        return sc_minmax(name(),argx,f);
+        return sc_minmax(name_.c_str(),argx,f);
     }
 };
 
 struct Min_Function : public Legacy_Function
 {
     static const char* name() { return "min"; }
-    Min_Function() : Legacy_Function(1,name()) {}
+    Min_Function(const char* nm) : Legacy_Function(1,nm) {}
 
     struct Prim {
         static double call(double x, double y) {
@@ -660,8 +647,7 @@ using Bool32_Product_Function = Monoid_Func<Bool32_Product_Prim>;
 
 struct Bool32_To_Nat_Function : public Function
 {
-    static const char* name() { return "bool32_to_nat"; }
-    Bool32_To_Nat_Function() : Function(name()) {}
+    using Function::Function;
     struct Prim : public Unary_Bool32_Prim
     {
         static Value call(unsigned n, const Context&)
@@ -680,8 +666,7 @@ struct Bool32_To_Nat_Function : public Function
 
 struct Nat_To_Bool32_Function : public Function
 {
-    static const char* name() { return "nat_to_bool32"; }
-    Nat_To_Bool32_Function() : Function(name()) {}
+    using Function::Function;
     struct Prim : public Unary_Num_Prim
     {
         static Value call(double n, const Context& cx)
@@ -790,8 +775,7 @@ select(Value a, Value b, Value c, const Context& cx)
 // Similar to: numpy.where, R `ifelse`
 struct Select_Function : public Legacy_Function
 {
-    static const char* name() { return "select"; }
-    Select_Function() : Legacy_Function(3,name()) {}
+    Select_Function(const char* nm) : Legacy_Function(3,nm) {}
     Value call(Frame& args) override
     {
         return select(args[0], args[1], args[2], At_Arg(*this, args));
@@ -938,8 +922,7 @@ SC_Value Not_Equal_Expr::sc_eval(SC_Frame& f) const
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
 struct Dot_Function : public Legacy_Function
 {
-    static const char* name() { return "dot"; }
-    Dot_Function() : Legacy_Function(2,name()) {}
+    Dot_Function(const char* nm) : Legacy_Function(2,nm) {}
     Value call(Frame& args) override
     {
         return dot(args[0], args[1], At_Arg(*this, args));
@@ -960,8 +943,7 @@ struct Dot_Function : public Legacy_Function
 
 struct Mag_Function : public Legacy_Function
 {
-    static const char* name() { return "mag"; }
-    Mag_Function() : Legacy_Function(1,name()) {}
+    Mag_Function(const char* nm) : Legacy_Function(1,nm) {}
     Value call(Frame& args) override
     {
         // TODO: use hypot() or BLAS DNRM2 or Eigen stableNorm/blueNorm?
@@ -1022,8 +1004,7 @@ struct Mag_Function : public Legacy_Function
 
 struct Count_Function : public Legacy_Function
 {
-    static const char* name() { return "count"; }
-    Count_Function() : Legacy_Function(1,name()) {}
+    Count_Function(const char* nm) : Legacy_Function(1,nm) {}
     Value call(Frame& args) override
     {
         if (auto list = args[0].dycast<const List>())
@@ -1050,8 +1031,7 @@ struct Count_Function : public Legacy_Function
 };
 struct Fields_Function : public Legacy_Function
 {
-    static const char* name() { return "fields"; }
-    Fields_Function() : Legacy_Function(1,name()) {}
+    Fields_Function(const char* nm) : Legacy_Function(1,nm) {}
     Value call(Frame& args) override
     {
         if (auto record = args[0].dycast<const Record>())
@@ -1062,8 +1042,7 @@ struct Fields_Function : public Legacy_Function
 
 struct Strcat_Function : public Legacy_Function
 {
-    static const char* name() { return "strcat"; }
-    Strcat_Function() : Legacy_Function(1,name()) {}
+    Strcat_Function(const char* nm) : Legacy_Function(1,nm) {}
     Value call(Frame& args) override
     {
         if (auto list = args[0].dycast<const List>()) {
@@ -1083,8 +1062,7 @@ struct Strcat_Function : public Legacy_Function
 };
 struct Repr_Function : public Legacy_Function
 {
-    static const char* name() { return "repr"; }
-    Repr_Function() : Legacy_Function(1,name()) {}
+    Repr_Function(const char* nm) : Legacy_Function(1,nm) {}
     Value call(Frame& args) override
     {
         String_Builder sb;
@@ -1094,8 +1072,7 @@ struct Repr_Function : public Legacy_Function
 };
 struct Decode_Function : public Legacy_Function
 {
-    static const char* name() { return "decode"; }
-    Decode_Function() : Legacy_Function(1,name()) {}
+    Decode_Function(const char* nm) : Legacy_Function(1,nm) {}
     Value call(Frame& f) override
     {
         String_Builder sb;
@@ -1108,8 +1085,7 @@ struct Decode_Function : public Legacy_Function
 };
 struct Encode_Function : public Legacy_Function
 {
-    static const char* name() { return "encode"; }
-    Encode_Function() : Legacy_Function(1,name()) {}
+    Encode_Function(const char* nm) : Legacy_Function(1,nm) {}
     Value call(Frame& f) override
     {
         List_Builder lb;
@@ -1123,8 +1099,7 @@ struct Encode_Function : public Legacy_Function
 
 struct Match_Function : public Legacy_Function
 {
-    static const char* name() { return "match"; }
-    Match_Function() : Legacy_Function(1,name()) {}
+    Match_Function(const char* nm) : Legacy_Function(1,nm) {}
     Value call(Frame& f) override
     {
         At_Arg ctx0(*this, f);
@@ -1471,7 +1446,8 @@ struct Defined_Metafunction : public Metafunction
 const Namespace&
 builtin_namespace()
 {
-    #define FUNCTION(f) {make_symbol(f::name()), make<Builtin_Value>(Value{make<f>()})}
+    #define FUNCTION(nm,f) \
+        {make_symbol(nm), make<Builtin_Value>(Value{make<f>(nm)})}
 
     static const Namespace names = {
     {make_symbol("pi"), make<Builtin_Value>(pi)},
@@ -1480,61 +1456,61 @@ builtin_namespace()
     {make_symbol("false"), make<Builtin_Value>(Value(false))},
     {make_symbol("true"), make<Builtin_Value>(Value(true))},
 
-    FUNCTION(Is_Bool_Function),
-    FUNCTION(Is_Symbol_Function),
-    FUNCTION(Is_Num_Function),
-    FUNCTION(Is_String_Function),
-    FUNCTION(Is_List_Function),
-    FUNCTION(Is_Record_Function),
-    FUNCTION(Is_Fun_Function),
-    FUNCTION(Bit_Function),
-    FUNCTION(Sqrt_Function),
-    FUNCTION(Log_Function),
-    FUNCTION(Abs_Function),
-    FUNCTION(Floor_Function),
-    FUNCTION(Ceil_Function),
-    FUNCTION(Trunc_Function),
-    FUNCTION(Round_Function),
-    FUNCTION(Frac_Function),
-    FUNCTION(Sin_Function),
-    FUNCTION(Cos_Function),
-    FUNCTION(Tan_Function),
-    FUNCTION(Asin_Function),
-    FUNCTION(Acos_Function),
-    FUNCTION(Atan_Function),
-    FUNCTION(Atan2_Function),
-    FUNCTION(Sinh_Function),
-    FUNCTION(Cosh_Function),
-    FUNCTION(Tanh_Function),
-    FUNCTION(Asinh_Function),
-    FUNCTION(Acosh_Function),
-    FUNCTION(Atanh_Function),
-    FUNCTION(Max_Function),
-    FUNCTION(Min_Function),
-    FUNCTION(Sum_Function),
-    FUNCTION(And_Function),
-    FUNCTION(Or_Function),
-    FUNCTION(Xor_Function),
-    FUNCTION(Lshift_Function),
-    FUNCTION(Rshift_Function),
-    FUNCTION(Bool32_Sum_Function),
-    FUNCTION(Bool32_Product_Function),
-    FUNCTION(Bool32_To_Nat_Function),
-    FUNCTION(Nat_To_Bool32_Function),
-    FUNCTION(Bool32_To_Float_Function),
-    FUNCTION(Float_To_Bool32_Function),
-    FUNCTION(Select_Function),
-    FUNCTION(Equal_Function),
-    FUNCTION(Unequal_Function),
-    FUNCTION(Dot_Function),
-    FUNCTION(Mag_Function),
-    FUNCTION(Count_Function),
-    FUNCTION(Fields_Function),
-    FUNCTION(Strcat_Function),
-    FUNCTION(Repr_Function),
-    FUNCTION(Decode_Function),
-    FUNCTION(Encode_Function),
-    FUNCTION(Match_Function),
+    FUNCTION("is_bool", Is_Bool_Function),
+    FUNCTION("is_symbol", Is_Symbol_Function),
+    FUNCTION("is_num", Is_Num_Function),
+    FUNCTION("is_string", Is_String_Function),
+    FUNCTION("is_list", Is_List_Function),
+    FUNCTION("is_record", Is_Record_Function),
+    FUNCTION("is_fun", Is_Fun_Function),
+    FUNCTION("bit", Bit_Function),
+    FUNCTION("sqrt", Sqrt_Function),
+    FUNCTION("log", Log_Function),
+    FUNCTION("abs", Abs_Function),
+    FUNCTION("floor", Floor_Function),
+    FUNCTION("ceil", Ceil_Function),
+    FUNCTION("trunc", Trunc_Function),
+    FUNCTION("round", Round_Function),
+    FUNCTION("frac", Frac_Function),
+    FUNCTION("sin", Sin_Function),
+    FUNCTION("cos", Cos_Function),
+    FUNCTION("tan", Tan_Function),
+    FUNCTION("asin", Asin_Function),
+    FUNCTION("acos", Acos_Function),
+    FUNCTION("atan", Atan_Function),
+    FUNCTION("atan2", Atan2_Function),
+    FUNCTION("sinh", Sinh_Function),
+    FUNCTION("cosh", Cosh_Function),
+    FUNCTION("tanh", Tanh_Function),
+    FUNCTION("asinh", Asinh_Function),
+    FUNCTION("acosh", Acosh_Function),
+    FUNCTION("atanh", Atanh_Function),
+    FUNCTION("max", Max_Function),
+    FUNCTION("min", Min_Function),
+    FUNCTION("sum", Sum_Function),
+    FUNCTION("and", And_Function),
+    FUNCTION("or", Or_Function),
+    FUNCTION("xor", Xor_Function),
+    FUNCTION("lshift", Lshift_Function),
+    FUNCTION("rshift", Rshift_Function),
+    FUNCTION("bool32_sum", Bool32_Sum_Function),
+    FUNCTION("bool32_product", Bool32_Product_Function),
+    FUNCTION("bool32_to_nat", Bool32_To_Nat_Function),
+    FUNCTION("nat_to_bool32", Nat_To_Bool32_Function),
+    FUNCTION("bool32_to_float", Bool32_To_Float_Function),
+    FUNCTION("float_to_bool32", Float_To_Bool32_Function),
+    FUNCTION("select", Select_Function),
+    FUNCTION("equal", Equal_Function),
+    FUNCTION("unequal", Unequal_Function),
+    FUNCTION("dot", Dot_Function),
+    FUNCTION("mag", Mag_Function),
+    FUNCTION("count", Count_Function),
+    FUNCTION("fields", Fields_Function),
+    FUNCTION("strcat", Strcat_Function),
+    FUNCTION("repr", Repr_Function),
+    FUNCTION("decode", Decode_Function),
+    FUNCTION("encode", Encode_Function),
+    FUNCTION("match", Match_Function),
 
     {make_symbol("file"), make<Builtin_Meaning<File_Metafunction>>()},
     {make_symbol("print"), make<Builtin_Meaning<Print_Metafunction>>()},
