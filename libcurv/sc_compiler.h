@@ -142,6 +142,8 @@ void sc_put_as(SC_Frame& f, SC_Value val, const Context&, SC_Type type);
 SC_Value sc_vec_element(SC_Frame&, SC_Value, int);
 void sc_struc_unify(SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx);
 bool sc_broadcast(SC_Frame& f, SC_Value& a, SC_Type b);
+SC_Value sc_binop(
+    SC_Frame& f, SC_Type rtype, SC_Value x, const char* op, SC_Value y);
 
 } // namespace
 #endif // header guard

@@ -49,15 +49,15 @@ template <class Prim>
 struct Unary_Array_Func : public Function
 {
     using Function::Function;
-    static Unary_Array_Op<Prim> array_op;
+    using Op = Unary_Array_Op<Prim>;
     Value call(Value arg, Frame& f) override
     {
-        return array_op.op(At_Arg(*this, f), arg);
+        return Op::op(At_Arg(*this, f), arg);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
+        return Op::sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
     }
 };
 
@@ -65,15 +65,15 @@ template <class Prim>
 struct Binary_Array_Func : public Legacy_Function
 {
     Binary_Array_Func(const char* nm) : Legacy_Function(2,nm) {}
-    static Binary_Array_Op<Prim> array_op;
+    using Op = Binary_Array_Op<Prim>;
     Value call(Frame& args) override
     {
-        return array_op.op(At_Arg(*this, args), args[0], args[1]);
+        return Op::op(At_Arg(*this, args), args[0], args[1]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
+        return Op::sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
     }
 };
 
@@ -81,15 +81,15 @@ template <class Prim>
 struct Monoid_Func final : public Function
 {
     using Function::Function;
-    static Binary_Array_Op<Prim> array_op;
+    using Op = Binary_Array_Op<Prim>;
     Value call(Value arg, Frame& f) override
     {
-        return array_op.reduce(At_Arg(*this, f), Prim::zero(), arg);
+        return Op::reduce(At_Arg(*this, f), Prim::zero(), arg);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
     {
-        return array_op.sc_reduce(At_SC_Arg_Expr(*this, ph, f),
+        return Op::sc_reduce(At_SC_Arg_Expr(*this, ph, f),
             Prim::zero(), argx, f);
     }
 };
@@ -427,20 +427,19 @@ struct Min_Function : public Legacy_Function
 };
 
 /*
-TODO: refactor/unify the code for binary +
+TODO: refactor/unify the code for binary '+' with 'sum'
 > static Binary_Array_Op<Add_Prim> op_add;
 This will support: op_add(Value,Value,cx) via operator().
-
-Problem: Prim::name() is referenced when constructing an Exception message.
-We don't want this, as op_add can be used to define both '+' and 'sum'.
-Instead, get the operation name from the Context.
-
-The function name "sum" is not contained in the op_add, it is only supplied
-when constructing the function class using Monoid_Func. Eg,
-> using Sum_Function = Monoid_Func<"sum", op_add>;
-This is very complex to achieve. It is simpler to specify the name string
-in the initializer of the builtins table.
  */
+struct Add_Prim : public Binary_Num_Prim
+{
+    static Value zero() { return {0.0}; }
+    static Value call(double x, double y, const Context&) { return {x + y}; }
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
+    {
+        return sc_binop(f, x.type, x, "+", y);
+    }
+};
 Value add(Value a, Value b, const At_Syntax& cx)
 {
     struct Scalar_Op {
@@ -473,19 +472,7 @@ SC_Value Add_Expr::sc_eval(SC_Frame& f) const
     return sc_arith_expr(f, *syntax_, *arg1_, "+", *arg2_);
 }
 #endif
-struct Sum_Prim : public Binary_Num_Prim
-{
-    static Value zero() { return {0.0}; }
-    static Value call(double x, double y, const Context&) { return {x + y}; }
-    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
-    {
-        auto result = f.sc_.newvalue(x.type);
-        f.sc_.out() << "  " << result.type << " " << result << " = "
-            << x << "+" << y << ";\n";
-        return result;
-    }
-};
-using Sum_Function = Monoid_Func<Sum_Prim>;
+using Sum_Function = Monoid_Func<Add_Prim>;
 
 #define BOOL_OP(CppName,Zero,LogOp,BitOp)\
 struct CppName##_Prim : public Binary_Bool_Or_Bool32_Prim\

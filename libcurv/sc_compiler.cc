@@ -985,4 +985,13 @@ SC_Value sc_vec_element(SC_Frame& f, SC_Value vec, int i)
     return r;
 }
 
+SC_Value sc_binop(
+    SC_Frame& f, SC_Type rtype, SC_Value x, const char* op, SC_Value y)
+{
+    auto result = f.sc_.newvalue(rtype);
+    f.sc_.out() << "  " << rtype << " " << result << " = "
+        << x << op << y << ";\n";
+    return result;
+}
+
 } // namespace curv
