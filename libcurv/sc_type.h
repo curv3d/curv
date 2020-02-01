@@ -23,6 +23,7 @@ extern struct SC_Base_Type_Info
 struct SC_Type
 {
     static constexpr unsigned MAX_LIST = 65535; // max size of an array dimension
+    static constexpr unsigned MAX_MAT_COUNT = 4; // max first dim of a matrix
     enum class Base_Type : short
     {
         Any = -1,

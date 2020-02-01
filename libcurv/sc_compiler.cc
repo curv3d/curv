@@ -376,10 +376,15 @@ void sc_put_as(SC_Frame& f, SC_Value val, const Context& cx, SC_Type type)
     throw Exception(cx, stringify("can't convert ",val.type," to ",type));
 }
 
-// Type 'rtype' is a list of T, 'val' contains a value of type T.
-// Construct a new value of type 'rtype' whose elements are the value 'val'.
-SC_Value sc_fill(SC_Frame& f, SC_Type rtype, SC_Value val)
+bool sc_try_extend(SC_Frame& f, SC_Value& a, SC_Type rtype);
+
+// val is a scalar. rtype is an array type: could be a vec or a matrix.
+// Convert 'val' to type 'rtype' by replicating the value across the elements
+// of an array (aka broadcasting). If this can be done, then update variable
+// 'val' in place with a new value of type 'rtype' and return true.
+bool sc_try_broadcast(SC_Frame& f, SC_Value& val, SC_Type rtype)
 {
+    if (!sc_try_extend(f, val, rtype.abase())) return false;
     SC_Value result = f.sc_.newvalue(rtype);
     f.sc_.out() << "  "<<rtype<<" "<<result<<" = "<<rtype<<"(";
     if (rtype.is_bool32()) {
@@ -393,28 +398,98 @@ SC_Value sc_fill(SC_Frame& f, SC_Type rtype, SC_Value val)
             f.sc_.out() << val;
         }
     } else
-        die("sc_fill: unsupported list type");
+        die("sc_try_broadcast: unsupported list type");
     f.sc_.out() << ");\n";
-    return result;
+    val = result;
+    return true;
 }
 
-// If 'b' is an array of values with the type of 'a', then convert 'a' to
-// type 'b' by replicating a's value across the elements of an array (aka
-// broadcasting). If this can be done, then update variable 'a' in place
-// with a new value of type 'b' and return true.
-bool sc_broadcast(SC_Frame& f, SC_Value& a, SC_Type b)
+// 'a' is a list, 'rtype' is a list type, both have the same count.
+bool sc_try_elementwise(SC_Frame& f, SC_Value& a, SC_Type rtype)
 {
-    if (a.type == b) return true;
-    if (b.is_list() && sc_broadcast(f, a, b.abase())) {
-        a = sc_fill(f, b, a);
-        return true;
+    unsigned count = rtype.count();
+    SC_Type etype = rtype.abase();
+    SC_Value elem[SC_Type::MAX_MAT_COUNT];
+    for (unsigned i = 0; i < count; ++i) {
+        elem[i] = sc_vec_element(f, a, i);
+        if (!sc_try_extend(f, elem[i], etype))
+            return false;
     }
+    SC_Value result = f.sc_.newvalue(rtype);
+    f.sc_.out() << "  "<<rtype<<" "<<result<<" = "<<rtype<<"(";
+    for (unsigned i = 0; i < count; ++i) {
+        if (i > 0) f.sc_.out() << ",";
+        f.sc_.out() << elem[i];
+    }
+    f.sc_.out() << ");\n";
+    a = result;
+    return true;
+}
+
+// 'val' is a scalar or array. 'rtype' is a type with a rank >= rank of 'val'.
+// Try to extend the value 'val' to have type 'rtype' using broadcasting and
+// elementwise extension. If this is successful (the types are compatible),
+// then update the variable 'val' with the new value and return true.
+bool sc_try_extend(SC_Frame& f, SC_Value& a, SC_Type rtype)
+{
+    if (a.type == rtype) return true;
+    if (a.type.is_list() && rtype.is_list()) {
+        if (a.type.count() != rtype.count()) return false;
+        return sc_try_elementwise(f, a, rtype);
+    }
+    if (rtype.is_list())
+        return sc_try_broadcast(f, a, rtype);
     return false;
+}
+
+bool sc_try_unify(SC_Frame& f, SC_Value& a, SC_Value& b)
+{
+    if (a.type == b.type) return true;
+    if (a.type.is_list() && b.type.is_list()) {
+        if (a.type.count() != b.type.count()) return false;
+        if (a.type.rank() < b.type.rank())
+            return sc_try_elementwise(f, a, b.type);
+        if (a.type.rank() > b.type.rank())
+            return sc_try_elementwise(f, b, a.type);
+    }
+    else if (a.type.is_list())
+        return sc_try_broadcast(f, b, a.type);
+    else if (b.type.is_list())
+        return sc_try_broadcast(f, a, b.type);
+    return false;
+  #if 0
+    if (a.type.is_list()) {
+    } else {
+        // a is scalar
+        if (b.type.is_list()) {
+            // broadcast a over b
+        }
+    }
+    if (a.type.is_list() && b.type.is_list()) {
+        // element-wise unification
+        if (a.type.count() != b.type.count())
+            throw Exception(cx, stringify(
+                "Argument types ",a.type," and ",b.type,
+                " are incompatible: they have different counts");
+        if (a.type.rank() > b.type.rank()) {
+            sc_elementwise_over(f, b, a.type);
+            return;
+        }
+        if (b.type.rank() > a.type.rank()) {
+            sc_elementwise_over(f, a, b.type);
+            return;
+        }
+    }
+    if (sc_broadcast(f, a, b.type))
+        return;
+    if (sc_broadcast(f, b, a.type))
+        return;
+  #endif
 }
 
 // Error if a or b is not a struc.
 // Succeed if a and b have the same (struc) type, or they can be converted
-// to a common type using broadcasting.
+// to a common type using broadcasting and elementwise extension.
 void sc_struc_unify(SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
 {
     if (!a.type.is_struc())
@@ -423,9 +498,7 @@ void sc_struc_unify(SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
     if (!b.type.is_struc())
         throw Exception(cx,
             stringify("argument with type ",b.type," is not a Struc"));
-    if (sc_broadcast(f, a, b.type))
-        return;
-    if (sc_broadcast(f, b, a.type))
+    if (sc_try_unify(f, a, b))
         return;
     throw Exception(cx, stringify(
         "Can't convert ",a.type," and ",b.type," to a common type"));
@@ -465,13 +538,6 @@ sc_arith_expr(SC_Frame& f, const Phrase& syntax,
     f.sc_.out() << ";\n";
     return result;
 }
-
-#if 1
-SC_Value Add_Expr::sc_eval(SC_Frame& f) const
-{
-    return sc_arith_expr(f, *syntax_, *arg1_, "+", *arg2_);
-}
-#endif
 
 SC_Value Subtract_Expr::sc_eval(SC_Frame& f) const
 {

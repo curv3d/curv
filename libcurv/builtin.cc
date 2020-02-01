@@ -440,6 +440,7 @@ struct Add_Prim : public Binary_Num_Prim
         return sc_binop(f, x.type, x, "+", y);
     }
 };
+using Add_Op = Binary_Array_Op<Add_Prim>;
 Value add(Value a, Value b, const At_Syntax& cx)
 {
     struct Scalar_Op {
@@ -466,12 +467,10 @@ Add_Expr::eval(Frame& f) const
     Value b = arg2_->eval(f);
     return add(a,b, At_Phrase(*syntax_, f));
 }
-#if 0
 SC_Value Add_Expr::sc_eval(SC_Frame& f) const
 {
-    return sc_arith_expr(f, *syntax_, *arg1_, "+", *arg2_);
+    return Add_Op::sc_call(f, *arg1_, *arg2_, syntax_);
 }
-#endif
 using Sum_Function = Monoid_Func<Add_Prim>;
 
 #define BOOL_OP(CppName,Zero,LogOp,BitOp)\
@@ -777,8 +776,8 @@ struct Select_Function : public Legacy_Function
             if (consequent.type.count() == 1) {
                 // Consequent & alternate are scalars. Convert them to vectors.
                 auto T = SC_Type::List(consequent.type, cond.type.count());
-                sc_broadcast(f, consequent, T);
-                sc_broadcast(f, alternate, T);
+                sc_try_extend(f, consequent, T);
+                sc_try_extend(f, alternate, T);
             }
             else if (!consequent.type.is_any_vec()) {
                 throw Exception(At_SC_Arg(1,f), stringify(
