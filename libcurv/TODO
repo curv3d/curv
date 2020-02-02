@@ -1,0 +1,428 @@
+new-core Prim API:
+  * It separates 'analysis' (type inference and optimization) from emitting
+    GLSL/C++ code.
+  * The analysis code can be automated. Eg, Binary_Num_Prim provides generic
+    analysis code, so Add_Prim can leave it out. What remains is sc_emit().
+  * sc_emit() produces an expression, not a statement.
+  * The result type is needed in type inference and in code generation.
+    It is part of the Prim superclass (eg, Binary_Num_Prim).
+
+vectorized 'equal', 'unequal'
+ * support broadcasting in SubCurv: scalar->vector, bool->bool32, vec->mat
+
+SubCurv:
+* Add matrix support to `dot`
+* transpose
+* a[i] if a is bool32 or matrix
+
+SubCurv tests for dyadic primitives:
+  op[a,b] -- list literal
+  op A -- two element array
+  op M -- mat2
+  op V -- vec2
+
+SubCurv tests for the following:
+    `bit`: support bool vectors
+    `and`, `or`: bool vectors work now (fix bad codegen)
+    `!`: support bool and bool32 vectors
+    Constructing SC typed values from Curv const values:
+    * matrixes are now constructed
+    * general boolean arrays are now constructed
+    vectorized relations
+    select
+
+internals, maybe:
+    SC_Type::Array(base, d1, d2)?
+    rename Vec(n) -> Num_Vec(n) or -> Num_Or_Vec(n)
+
+document the changes to SubCurv.
+
+synonyms for struc:
+* A 'struc' is a first class value in SubCurv: it can be passed as an argument
+  to a function, returned as a result, stored in a variable, compared for
+  equality. A struc is a scalar (a number or boolean), or it is a small array
+  of scalars. Strucs must be small for efficiency reasons: because they have to
+  fit in GPU register memory, and because they have copy semantics; there is
+  no support for dynamic memory allocation or general pointers in SubCurv.
+* Other names for 'struc':
+  * element
+  * base value (base type)
+  * small value (small type)
+  * local value (large arrays are stored in global memory and are accessed
+    by reference, pulling parts of the array into the local processor cache).
+Names that use 'struc' or refer to it:
+    is_struc()
+    is_num_struc()
+    is_bool_struc()
+    sc_struc_unify()
+    sc_eval_bool_struc()
+    sc_struc_unify()
+    sc_convert_scalar_to_struc()
+    SC_Type::Base_Type
+
+Generalized Recursive Functions
+===============================
+TODO
+----
+* Every data definition has a thunk. Nonlocal refs in the definiens
+  compile into nonlocal refs to the thunk nonlocals dict. (No semantic change)
+  * Definiens_Scope builds the nonlocals dictionary.
+  * Data_Definition::make_setter now sets up for thunk evaluation.
+
+Theory
+------
+A recursive data definition (`f = expr` where expr is not a lambda)
+defines a recursive function 'f', or a non-recursive data structure containing
+recursive functions (eg, a callable record).
+
+Recursive references must be contained within lambda expressions,
+or an error is reported, so that we can report an error on `x = x + 1`.
+
+Recursive references are not supported in definitions like `pat = expr`
+where `pat` is not an identifier.
+
+When we compile the `expr` in `f = expr`,
+ 0. If the nub of `expr` contains no lambda expressions, it is a "data
+    definition", otherwise it is a "function definition". We need to build
+    a nonlocals dictionary for the latter. All of the nonlocal references in
+    `expr` are placed in this nonlocals dictionary. All top level lambdas in
+    the nub of a "function definition" share the same nonlocals dictionary,
+    which is also used by a thunk that we may need to build for `expr`.
+ 1. Any recursive reference (eg, to `f`) outside of a lambda is an error:
+    "illegal recursive reference".
+ 2. Recursive references are permitted inside lambda expressions.
+    Each top-level lambda within `expr` is marked as having shared-nonlocals.
+    Initially, each definition belongs to its own recursion group.
+    Tarjan's SCC algorithm unifies mutually recursive groups.
+    After unification, each recursion group has a nonlocals dictionary that
+    contains the union of the nonlocal references of each definition
+    in the group.
+
+Requires changes to Recursive_Scope::analyse_unit(unit, id).
+
+If a data definition definiens contains no lambda expressions, it is
+compiled normally. If it contains lambdas, then all nonlocal references,
+inside and outside of lambdas, are collected in a single nonlocals dictionary
+that is shared with all members of the recursion group.
+
+How are shared nonlocals dictionaries created now?
+* every Unit has `Symbol_Map<Shared<Operation>> nonlocals_`
+* make_function_setter() combines the nonlocals_ of a set of Units into the
+  shared dict for the recursion group.
+
+New design. Create a nonlocals dictionary for every data definition.
+ 1. One pass. Every data definition has a thunk. Nonlocal refs in the definiens
+    compile into nonlocal refs to the thunk nonlocals dict.
+ 2. Two pass. Optimize the output of the first pass for more efficient nonlocal
+    references.
+
+How do we mark a lambda as using a shared nonlocals dictionary?
+ * Perhaps Lambda_Phrase::analyse(env) queries the environment to see if it
+   is embedded in the definiens of a simple data definition (simple means
+   the pattern is an identifier).
+ * The flag is called `bool Environ::lambda_inherits_shared_nonlocals_`.
+ * By default, it is false for a root environment, or is inherited from the
+   parent environment.
+ * Definiens_Scope sets it to true.
+ * Lambda_Scope sets it to false.
+
+How does Recursive_Scope::analyse_unit know if an identifier is an illegal
+recursive reference (is this inside or outside a lambda)?
+ * Perhaps a bool argument passed to analyse_unit makes this distinction.
+ * How is the `recursion_ok` argument value computed?
+   unit is function definition
+   || (unit is simple data def && reference is inside lambda)
+ * How do we know the reference is inside a lambda?
+   * Env::lookup is passed a bool argument `is_nonlocal`.
+
+------------------------------------------------------------------------------
+Run time representation of a set of recursive definitions.
+ * There is a set of binding slots, one for each variable.
+   These are initialized one recursion group at a time, in dependency order.
+ * Within a recursive nonlocals dictionary, a recursive reference to a binding B
+   within the same definition set has a special representation.
+    * The general representation is a Thunk_Lambda. The definiens for B is
+      compiled into a thunk. A Thunk_Lambda is a thunk without nonlocals.
+      Note, the thunk uses the closure's nonlocals object for its nonlocals.
+    * As an optimization, in the case where the definiens for B is a lambda,
+      we store a Lambda object (a closure without the nonlocals).
+
+During the evaluation of 'expr', the function 'f' must not be called.
+ * We guarantee there will be no attempt to fetch the value of frame slot 'f'
+   because references outside of lambdas have already generated compile errors.
+ * Within a lambda, a reference to 'f' is actually a reference to the closure's
+   nonlocals object at f. This is a ThunkLambda. This is converted to a value
+   by evaluating the thunk. But when evaluating the definiens, we expect to
+   construct the closure (that references f) but we don't want to call the
+   resulting closure.
+This is only enforced during the first evaluation of 'expr', when we obtain
+the initial value for the frame slot 'f'.
+ * There is a single ThunkLambda object shared by all closures that have
+   captured a nonlocal reference to 'f'.
+ * Prior to the first evaluation of 'expr', we 'poison' the ThunkLambdas for
+   all of the bindings in the recursion group. The ThunkLambdas can be captured
+   by closures but an error is reported if they are evaluated.
+ * After 'expr' is evaluated, we unpoison the ThunkLambdas.
+
+With this scheme, in `pat = expr`, `pat` can be 'identifier'
+or 'identifier :: predicate'. A further generalization to support arbitrary
+patterns could work by prefixing 'let pat = expr in' to each closure body
+that references any of those variables, then optimizing from there.
+
+Optimization:
+ * Instead of storing ThunkLambda and Lambda in the nonlocals dictionary
+   and referencing them using Symbol_Ref (these are compile time constants),
+   use special opcodes Nonlocal_Thunk and Nonlocal_Lambda, which contain the
+   ThunkLambda or the Lambda. Then perform optimizations over these opcodes.
+
+### Alternative A0
+When we compile the `expr` in `f = expr`,
+ 1. Any reference to `f` outside of a lambda is an error:
+    "illegal recursive reference".
+ 2. Any reference to `f` inside a lambda causes that lambda to use the shared
+    nonlocals object NL that belongs to f's recursion group. Such a lambda is
+    called a 'recursive lambda', and is marked as such.
+
+If `expr` contains recursive lambdas, then we compile `expr` into a thunk.
+All of the nonlocals in `expr` are added to NL.
+During thunk evaluation, the thunk frame's nonlocals_ is set to NL.
+When a recursive lambda is evaluated into a closure, it uses this NL as the
+nonlocals_ field of the closure.
+
+### Alternative T
+A function closure (value) contains a 'nonlocals' data structure, which contains
+the values of all non-local bindings captured by the closure. In the case of
+a recursive function 'f', the nonlocals structure should logically contain the
+value of 'f'. However, that creates a cyclic data structure, which breaks
+reference counting (it causes a storage leak).
+
+To break the cycle, we use a special representation for recursive nonlocal
+bindings. Instead of storing the full closure value for 'f' within its own
+nonlocals structure, we just store a Lambda object, which consists of everything
+that a closure has, minus the nonlocals. Then we combine the Lambda with f's
+nonlocals structure (which is already in hand) when we need to reconstruct f's
+value from its nonlocals entry.
+
+In the case of a general recursive function definition ('f = expr' where 'expr'
+is not recognized as a special case (ie, as a lambda expression), then 'expr'
+can potentially evaluate to any kind of function value, not just a closure.
+It could also evaluate to a Piecewise_Function, or a module with a 'call' field.
+So we need a more general representation for recursive value references
+within the nonlocals structure.
+
+The following solution using thunks is quite general. `f` can be a function,
+or a callable record, or a more general data structure containing functions.
+
+Recursive references must be contained within lambda expressions, or an
+error is reported, so that we can report an error on `x = x + 1`.
+
+Ensuring that recursive references are wrapped in lambda expressions is not
+enough to be able to report errors on all illegal recursive forms.
+Here's an infinite loop:
+    f = (()->f)();
+Here's a loop that will exhaust memory building an infinite data structure:
+    f = [(()->f)()];
+(NB: Lazy infinite data structures are out of scope for this investigation.)
+A requirement I wrote above:
+ * During the evaluation of 'expr', the function 'f' must not be called.
+   If it is called, then an error is reported at the site where 'f' is called
+   (illegal recursive reference to 'f').
+It's simple. `f = expr` is implemented by converting `expr` to a thunk.
+Normally we expect to evaluate the thunk and get back a function, or callable
+record. Or a more general data structure containing functions.
+If the thunk invokes itself recursively at runtime, we report an error.
+
+Here's an earlier description of this approach:
+  If a recursive definiens isn't a lambda expression, then it is made into 
+  a call-by-name thunk that is evaluated on every reference from inside the 
+  recursion group. From outside the group, it's a proper value in a slot. 
+
+A Thunk is a kind of parameterless function. A Thunk object has:
+    Shared<const Operation> body_;
+    Shared<const Module> nonlocals_;
+    unsigned nslots_;
+    bool evaluating_ = false;
+A Thunk_Lambda is missing the nonlocals:
+    Shared<const Operation> body_;
+    unsigned nslots_;
+
+Implementation of 'f = expr':
+
+  When we compile recursive data definition 'f = expr', we compile 'expr' as a
+  ThunkLambda TL. All of the nonlocal references within 'expr', including 'f'
+  itself, will be included in NL, the nonlocals object for f's recursion group.
+
+  At runtime, when we initialize the bindings in f's recursion group:
+   * We set NL.f to the ThunkLambda TL. Can't store a Thunk because that's
+     a reference cycle through NL.
+   * We set f's frame slot to the result F of evaluating the thunk.
+     The thunk is evaluated by creating a thunk_frame whose nonlocals is NL,
+     and calling thunk.body->eval(thunk_frame) yielding F.
+     No cycle: F will reference NL, but NL won't reference F.
+
+  During that initial thunk evaluation,
+   * If we reference a nonlocal containing a ThunkLambda, outside the context
+     of capturing a nonlocal while building a closure (see below), then that
+     is an error: "illegal recursive reference". This handles the case of
+     a recursive reference to 'f' within 'expr' that is not wrapped in a lambda.
+   * While constructing a closure, if we capture a non-local variable reference
+     that contains a ThunkLambda, then we construct a Thunk from the ThunkLambda
+     and the Frame::nonlocals. We store that Thunk in the closure's nonlocals.
+     This handles the case of a recursive reference to 'f' within 'expr' that
+     is wrapped in a lambda.
+   * While evaluating a closure call, if the closure body fetches a nonlocal X
+     that contains a Thunk T, then we evaluate the Thunk as follows:
+      * If T.evaluating is true, then throw an error:
+        "illegal recursive reference".
+      * Otherwise, set T.evaluating = true;
+      * Construct a thunk_frame for evaluating the Thunk T, whose size
+        is T.nslots and whose nonlocals is T.nonlocals.
+      * Evaluate the thunk's body in thunk_frame and get the resulting value:
+        T.body.eval(thunk_frame)
+      * Reset T.evaluating_ back to false.
+
+This implementation could be optimized, but it's a nontrivial subject.
+  * As a performance optimization, should we store the thunk result back in
+    the closure's nonlocals? I don't think this causes a reference loop.
+    I think it causes memory bloat.
+
+---
+   * When we capture a non-local variable reference to f (when constructing a
+     closure), we construct a thunk from the thunklambda, and store the thunk.
+     * The thunk will additionally contain a reference to NL, but that doesn't
+       introduce a cycle, because NL will not refer to the closure.
+     * Suppose that, instead of storing the thunk, we instead evaluated the
+       thunk and directly stored the resulting value in the closure. That
+       could create an infinite loop, building an infinite data structure.
+           f=[(()->f)()];
+     * Can we store the result of evaluating the thunk in the closure?
+       Can it create a cycle? Can it create an infinite data structure?
+     * Can we lazily replace the thunk with its value on first reference,
+       or will that create a cycle?
+   * While executing a thunk, when we reference a nonlocal that contains a
+     ThunkLambda (which is different from capturing a nonlocal, see above),
+     then we report an error: "illegal recursive reference".
+   * When a nonlocal slot NL.s contains a Thunk, we convert it to a value:
+     * We set NL.s.evaluating_ = true. If a Thunk is referenced when evaluating_
+       == true, we throw an error: "illegal recursive reference".
+     * We construct a frame for evaluating the Thunk T, whose size is T.nslots,
+       and whose nonlocals is NL.
+     * We evaluate the thunk's body in the frame and get the resulting value.
+     * We reset NL.s.evaluating_ back to false.
+
+Implementation of 'f = expr':
+ * When we compile recursive data definition 'f = expr', we compile 'expr' as a
+   ThunkLambda TL. Recursive references to 'f' are an error unless nested in a
+   lambda expr. All of the nonlocal references within 'expr', including 'f'
+   itself, will be included in NL, the nonlocals object for f's recursion group.
+ * At runtime, when we initialize the bindings in f's recursion group:
+   * We set NL.f to the ThunkLambda TL. Can't store a Thunk because that's
+     a reference cycle through NL.
+   * When we capture a non-local variable reference to f (when constructing a
+     closure), we construct a thunk from the thunklambda, and store the thunk.
+     * The thunk will additionally contain a reference to NL, but that doesn't
+       introduce a cycle, because NL will not refer to the closure.
+     * Suppose that, instead of storing the thunk, we instead evaluated the
+       thunk and directly stored the resulting value in the closure. That
+       could create an infinite loop, building an infinite data structure.
+           f=[(()->f)()];
+     * Can we store the result of evaluating the thunk in the closure?
+       Can it create a cycle? Can it create an infinite data structure?
+     * Can we lazily replace the thunk with its value on first reference,
+       or will that create a cycle?
+   * When a nonlocal slot NL.s contains a Thunk, we convert it to a value:
+     * We set NL.s.evaluating_ = true. If a Thunk is referenced when evaluating_
+       == true, we throw an error: "illegal recursive reference".
+     * We construct a frame for evaluating the Thunk T, whose size is T.nslots,
+       and whose nonlocals is NL.
+     * We evaluate the thunk's body in the frame and get the resulting value.
+     * We reset NL.s.evaluating_ back to false.
+   * We set f's frame slot to the result R of evaluating the thunk T.
+
+### Implementation of 'f = expr':
+ * When we compile 'f = expr', we compile 'expr' as if it were the body
+   of 'x -> expr x', yielding an operation tree E. This means that all nonlocal
+   references within 'expr', including 'f' itself, will be included in NL,
+   the nonlocals object for f's recursion group.
+ * At runtime, when we initialize the bindings in f's recursion group:
+   * Phase 1, initialize NL. We set NL.f to a magic value that throws an error
+     on reference: "illegal recursive reference" at the reference to 'f'.
+   * Phase 2, evaluate 'expr' using a Frame whose nonlocals object is NL.
+     The result C must be a callable value, or we report an error.
+     A definition like 'x = x' will report an error at this point.
+     Without this evaluation step, 'x = x' would turn into an infinite loop.
+     Store C in a temporary variable Ctemp.
+   * Report an error if C is not a function. C cannot be a record with a
+     `call` field, because phase 3 won't expose the extra record fields.
+     * Okay, but what remedial action should the user take to fix the error?
+       Suppose a library combinator starts returning a record callable,
+       thereby breaking existing code?
+   * Note that C cannot be stored in NL.f, because that will create a cyclic
+     data graph, which breaks reference counting. Phase 3 fixes that.
+   * Phase 3. Set f's frame slot to Ctemp. Set NL.f to a lambda object
+     that contains the operation tree E and is equivalent to 'x -> expr x'.
+     This means we re-evaluate expr on each recursive call to f, which is
+     heavier than a recursive function in a garbage collected language.
+     I don't see a way to use the value of C to initialize NL.f.
+
+
+
+
+Implementation of 'f = expr':
+ * Within the nonlocals object NL, the slot for 'f' is initialized to a thunk
+   that reports an error if it is called.
+ * 'expr' is evaluated. If the evaluation succeeds without an error,
+   yielding a value C, then an error is reported if C is not a function.
+   If C is a function, then we expect that the value of 'f' has been captured
+   by one or more closures contained somewhere within C. However, all of
+   those closures share the same nonlocals object NL, which we have at hand.
+ * If `NL.f` is set to the value C, then we have a cyclic data graph,
+   which breaks reference counting. So we have to break that cycle.
+ * Let's require the value C to be a Closure. This closure consists of
+   two parts: a Lambda plus a Nonlocals object (C.lambda and C.nonlocals).
+   * We ignore the case where C is a general callable value, like a record
+     with a 'call' member, or a non-closure function like a Piecewise_Function.
+ * In the standard implementation of recursive functions, we store a Lambda
+   in NL.f, and when 'f' is referenced, we reconstruct the closure by
+   combining the lambda NL.f with the nonlocals NL. That won't work here,
+   since we normally expect C.nonlocals != NL.
+ * What does work is the standard workaround for this design flaw.
+   Instead of writing `f = expr`, write `f = x -> expr x`.
+   So let's duplicate that logic.
+ * It is not good enough to simply rewrite a recursive data definition
+   'f = expr` to `f = x -> expr x` because it fails to do the error checking
+   done by the first few steps. Eg, `x = x` would be equivalent to `x a = x a`
+   and would be an infinite loop rather than an error.
+ * When we compile 'f = expr', let's compile 'expr' as if it were the body
+   of 'x -> expr x'. This means that all nonlocal references within 'expr'
+   will be included in NL (including 'f' itself).
+ * Then, we evaluate 'expr' using a special Frame whose nonlocals object
+   is NL. Before evaluation, we set NL.f to a magic value that fails on
+   reference. After evaluation, we check the result C is a function.
+ * Then we set NL.f to the Lambda of 'x -> expr x', substituting in the
+   Operation tree for expr.
+
+------
+This is a generalization of special case handling for recursive 'match'
+definitions. If we build the necessary machinery, we don't need to put a
+lot of special case code into the compilation of 'match' calls.
+
+is compiled into `f x = x >> expr`.
+Note this aborts at runtime if expr does not return a function.
+
+But this means
+    x = x
+compiles to
+    x a = x a
+which is wrong. Either the definition is a compile time error, or 'x'
+is a thunk that runs in an infinite loop.
+
+Maybe there is a restricted subset of definitions for which that design
+will work.
+
+Thunkification
+--------------
+Recursive data definitions should be compiled into thunks.
+All the definitions in a mutual recursion group compile into
+* a slot containing a shared nonlocals module
+* 
