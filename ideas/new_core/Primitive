@@ -41,8 +41,6 @@ struct And_Function : public Legacy_Function
 // less boilerplate
 struct And_Prim : Binary_Boolean_Prim
 {
-    using Binary_Boolean_Prim::Binary_Boolean_Prim;
-    static const Symbol name() { return "and"; }
     static Value zero() { return {true}; }
     static Value call(bool x, bool y) { return {x && y}; }
     static IR_Expr ir_call(IR_Frame& f, IR_Expr x, IR_Expr y)

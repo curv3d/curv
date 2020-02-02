@@ -57,11 +57,11 @@ fire i =
 
 fire i =
     LET:
-        yellow = [1.7, 1.3, 1.0];
-        orange = [1.0, 0.6, 0.0];
-        red = [1.0, 0.0, 0.0];
-        darkgray = [0.2, 0.2, 0.2];
-        gray = [0.4, 0.4, 0.4];
+        yellow = [1.7, 1.3, 1.0]
+        orange = [1.0, 0.6, 0.0]
+        red = [1.0, 0.0, 0.0]
+        darkgray = [0.2, 0.2, 0.2]
+        gray = [0.4, 0.4, 0.4]
     IN
     IF i < .25 THEN
         lerp[gray, darkgray, i*4]
@@ -101,6 +101,8 @@ Alternatives for precedence:
     To avoid ambiguity, we need stropped keywords.
       if: a < b then: a else: b
       IF a < b THEN a ELSE b
+    A statement-list argument needs to be parenthesized.
+      LET (x=1; y=2) IN x+y
  B) Tight. Mixfix arguments are primary expressions.
     Function call syntax is changed so that adjacent identifiers aren't
     allowed, "f(x)" replaces "f x". Mixfix arguments are function arguments,
@@ -111,6 +113,10 @@ Alternatives for precedence:
       if (a == 0) then (x) else if (a == 1) then (y)
     Mixfix operators have names like 'if then else'.
       if (a) then (b) else (c) == 'if then else'(a,b,c)
+ C) Super loose. Statement list arguments don't need to be parenthesized.
+    We need syntax to distinguish the start and end of a mixfix phrase.
+      (LET x=1; y=2 IN x+y)
+      (IF a == 0 THEN x ELSE IF a == 1 THEN y ELSE z)
 
 The most promising syntax is loose precedence with UPPERCASE keywords.
 This syntax doesn't conflict with field constructors in record literals,
@@ -147,8 +153,12 @@ Here is a grammar:
 
 Indentation as Syntax
 ---------------------
+This may conflict with my goals for a structured editor, which frees users
+from maintaining indentation and line endings, and which reflows program text
+automatically as the window width is adjusted.
+
 Keyword based mixfix can be extended to support indentation-as-syntax,
-as follows:
+with no semicolons, as follows:
     if condition then (
         stmt1;
         stmt2;

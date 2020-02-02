@@ -17,8 +17,12 @@ be distinguished using punctuation.
 
 This means that, instead of getting rid of manually specified punctuation,
 I'd like to get rid of manually specified layout. Indentation as syntax is
-not my preferred solution to the problem. (Must be Lisp editors that work
-this way. Investigate?)
+not my preferred solution to the problem. (Structured Lisp editors work this
+way: ParEdit and ParInfer.)
+
+The consequence of this to Curv, especially in the generalized Mixfix operator
+proposal, is that statement lists are delimited by ( ), not indentation,
+and statements are terminated by ;, not newline.
 
 Pyret
 -----
@@ -35,10 +39,14 @@ a Python inspired syntax with no semicolons. Quote:
     change. Your IDE can help you reindent code without worrying that doing
     so will change the meaning of the program.
 
-Pyret doesn't have significant indentation. I suspect newlines are also
-insignificant, just like Turing. Turing has a semicolon-free syntax with no
-significant newlines, which it achieves by designing the statement syntax
-so that separator tokens aren't needed between statements.
+Pyret achieves a Python-like appearance without significant indentation or
+significant newlines using this strategy:
+ * Mixfix forms are self-delimiting: they end with the 'end' keyword.
+ * Mixfix forms are hard coded into the grammar, and mixfix keywords are
+   reserved words. Thus, when encountering a mixfix keyword inside a mixfix
+   statement list argument, we know if it continues the outer mixfix or if it
+   begins an inner mixfix, from the grammar.
+ * Non-mixfix statements are self-delimiting, like Turing.
 
 Strangely, the hatred some people have for semicolons does not extend to commas.
 Only Lisp has comma-free list syntax, and Clojure lets you optionally type the

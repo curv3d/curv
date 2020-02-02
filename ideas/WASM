@@ -1,6 +1,14 @@
-Emscripten
-Cheerp
-Rust
+WASM can be used for:
+* running Curv programs in a web browser
+* sandboxed, platform independent binaries
+  * distribution format for compiled Curv binaries and plugins?
+  * distribution format for the Curv program?
+
+Emscripten : compile C++ to WASM
+Cheerp : Emscripten competitor
+Rust : easy generation of WASM code, wasm-bindgen
+LLVM/Clang 8 : has a WASM target. Rust moved from Emscripten to LLVM for WASM.
+Wasmer : run WASM outside browser (github.com/wasmerio/wasmer)
 
 How to interoperate between WASM and Javascript. You need some way to
 translate WASM objects to Javascript objects, and vice versa.
