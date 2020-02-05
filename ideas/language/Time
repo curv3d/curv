@@ -3,15 +3,10 @@ Referencing Time in an Animated Shape
 Animated shapes and colours are represented by distance and colour functions
 that take [x,y,z,t] arguments. Time is passed as a 4th vector element.
 
-UPDATE: In ../new_core/Animate, I've decided to use an `animate` shape
-constructor, instead of a global reactive `time` variable.
-I want to construct reactive values using an explicit constructor,
-rather than implicitly, to address technical/implementation issues.
-This seems best for the next major revision of the evaluator/compiler.
-After that we'll see.
+More details in ../new_core/Animate
 
-Reactive Time Variable (old)
-----------------------------
+Reactive Time Variable
+----------------------
 Using the new Reactive Values feature, it is now possible to represent
 time as a global reactive variable. This means that distance and colour
 functions could be represented as functions with [x,y,z] arguments,

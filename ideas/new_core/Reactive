@@ -20,3 +20,7 @@ Over in *Animation*, I've decided to abandon global reactive variables.
 Instead of a reactive 'time' variable, I'll have an 'animate' shape
 constructor, which will leverage the new SC compiler, and remove the current
 burden of creating reactive values from the evaluator.
+
+Feb 2020: I think that the global reactive `time` variable is an important
+feature, and I think I've overcome the code bloat/boilerplate problems
+using the new Prim/Op API. It's "just" a matter of DRY (Don't Repeat Yourself).

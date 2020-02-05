@@ -22,6 +22,10 @@ This is a wrapper around op->ir_eval() that performs CSE.
 After calling op->ir_eval(), we look up the resulting IR_Expr in the
 appropriate scope cache, and if there is already an identical IR_Expr,
 we merge them into a single object.
+ * Alternatively, for efficiency, we compute the hash of an IR node before
+   constructing it. We check the cache to see if the desired IR node already
+   exists. If it exists, we avoid allocating memory to create a new node
+   that we will immediately discard.
 
 An IR_Expr is a DAG, not a tree.
 An IR_Expr with scope N contains subnodes whose scope is <= N.

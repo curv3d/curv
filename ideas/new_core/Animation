@@ -15,10 +15,111 @@ a function from time onto a shape, however it is encoded. It is possible to
 write time transformations, eg that speed up or slow down an animation,
 or space/time transformations, eg that add motion blur.
 
-Ideas:
-* animate (t->shape expression)
+Interface
+---------
+Expressions for constructing animated values:
+* animate (t->expression)
 * global reactive variable 'time'
 
+These interfaces are largely equivalent:
+    time = animate (t -> t)
+    animate f = f time
+Minor differences:
+* The body of `animate` can be a function, eg `animate(t->x->x+t)`. Does this
+  yield an animated value wrapped around a function? Such values can't be
+  constructed using `time`, because `x->x+time` is a function value.
+* If we use early type checking (see Implementation), then the type restrictions
+  can be documented as part of the interface to `animate`.
+
+How is an animated value printed?
+* Ideally, if you print `time`, then you see an animated number whose value
+  is updated every frame. This fits a future UI & REPL where all values are
+  graphical and the entire UI is rendered by the GPU using Curv logic.
+* As a compromise for the current UI, if the value is recognized as a graphical
+  value (eg, a Shape), then it is rendered graphically and with animation.
+  Otherwise, it is rendered as static text: `animate (t -> expr)` or as an
+  expression of `time`.
+
+An animated value is essentially a thunk containing an unevaluated expression
+over `time`. This thunk contains constants, operators, and `time` references.
+
+You can do arithmetic on animated numbers. Eg,
+    1 + animate(t->t)        1 + time
+gives
+    animate(t->1 + t)        1 + time
+
+Instantiate an animated value at a specific time.
+ * Original proposal: animated@{time=2}. This supports multiple primitive
+   reactive variables, of which one is `time`. This particular syntax requires
+   all primitive reactive variables to have unique names within a shared
+   namespace.
+ * Primitive reactive variables like `time` are abstract, branded values that
+   compare equal only to themselves. These values have identity, let's use the
+   values themselves as keys.
+        instantiate(time+1, time, 2) == 2+1 == 3
+        substitute(time+1, time, 2) == 2+1 == 3
+        replace(time+1, {time => 2}) == 2+1 == 3  // use a dictionary.
+                                                  // like Mathematica.
+
+Test a shape's distance function to see if it is animated.
+This test need not be available in the evaluator; the information needs to
+be available after compiling a distance function to GLSL, to optimize GPU
+execution in the Viewer.
+
+Implementation
+--------------
+Equality: same as function equality
+
+Type checking: When does `"foo" + time` fail?
+ * Perhaps an animated value carries a type. `time` is a Number.
+   `time + #foo` fails at construction time because <Number>+<Symbol>
+   does not type check. Requires type checking in the evaluator.
+ * Perhaps type checking is delayed until SubCurv needs the type.
+   Uses the IR analyser/type checker which is already required.
+
+Late type checking seems easier and "more dynamic"?
+
+I didn't do this in the current Reactive Values implementation because,
+in the implementation of `parametric`, I construct a Uniform_Variable value
+for each parameter, then pass a record of these uniform variables as the
+argument to the parametric body function. Each formal parameter has a predicate
+constraint (eg, :: slider(x,y)), and so I wanted each Uniform_Variable value
+to carry a type, so that predicate checking would not fail. Thus it came to be
+that all Reactive_Values have a type, and there is all this Reactive_Value
+type inference code in the evaluator. The new_core provides a better way to
+compile a parametric record. The evaluator no longer requires type inference
+code.
+
+However, the principal use case where animated values are actually executed is
+in a shader or GPU kernel, and in this case, the animated value must conform
+to SubCurv type restrictions. So early type checking is acceptable.
+
+Which gives the best compile time performance, early or late type checking?
+If we first build an untyped expression tree (to represent an animated value),
+and then we later assign types to it, is that faster or slower than building
+a typed expression tree directly?
+ * We would like to avoid copying the animated value expression tree during
+   ir_eval (SubCurv type checking).
+ * ir_eval includes CSE. For efficiency, we avoid creating a tree if the
+   same tree already exists in the cache. We could do this work during
+   evaluation (and avoid repeating the work in ir_eval) if we maintain an
+   IR level #0 and level #1 expression cache during program evaluation.
+
+So, we construct a typed, CSE'd IR tree during evaluation, then use that
+IR tree during ir_eval with no additional overhead. Any downside?
+ * We may be caching IR nodes that aren't referenced by the compiled program,
+   which might be extra work.
+
+Consider this code:
+    let x = f time;
+    in ...many references to x...
+In the current implementation of Reactive Values, the evaluator binds a
+reactive value to x, then substitutes that value multiple times when
+evaluating the let body, creating a DAG. Common subexpression elimination
+was added to the compiler to reduce code bloat.
+
+Old Stuff
+=========
 Global Reactive Time
 --------------------
 The special global variable `time` is a reactive variable that denotes the
@@ -66,12 +167,3 @@ Alternatively, can we design a language where the restriction doesn't exist?
   Maybe those same type restrictions are enforced by the code that constructs
   time thunks, so that time thunks are always well typed, even if as a whole
   the language is dynamically typed.
-
-The Judgement
--------------
-No to global reactive `time`: it requires complex code in the interpreter for
-constructing typed time-thunks.
-
-Yes to the `animate` constructor. It moves this complexity to the new optimizing
-compiler, with its fancy partial evaluator and type checker. Any restrictions
-on expressiveness can be documented as part of the `animate` constructor.
