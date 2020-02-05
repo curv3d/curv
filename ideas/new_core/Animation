@@ -92,7 +92,23 @@ code.
 
 However, the principal use case where animated values are actually executed is
 in a shader or GPU kernel, and in this case, the animated value must conform
-to SubCurv type restrictions. So early type checking is acceptable.
+to SubCurv type restrictions. So early type checking is acceptable?
+
+Consider `if (time > 10) sphere else cube`. How can this be rendered?
+ * With early type checking and a strict SubCurv type system, this is an error.
+ * Given a type system that covers all of Curv, we could determine, using
+   type inference, that this is a shape expression, then compile to a shader.
+   First, we need to determine whether the shape is 2D or 3D.
+   If the type system contains 'constant' types containing a single value,
+   then we can test if <shape>.is_3d has type constant(true) or constant(false),
+   and report an error otherwise.
+   Then we can compile the distance function using code transformations:
+        pt->(if (time > 10) sphere else cube).dist pt
+            => pt->(if (time > 10) sphere.dist else cube.dist) pt
+            => pt->if (time > 10) sphere.dist pt else cube.dist pt
+            then inline `sphere.dist pt` and `cube.dist pt`.
+ * Rendering logic could be split between CPU and GPU. This would allow the
+   two branches of the `if` to have different types.
 
 Which gives the best compile time performance, early or late type checking?
 If we first build an untyped expression tree (to represent an animated value),

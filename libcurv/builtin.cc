@@ -428,17 +428,16 @@ struct Min_Function : public Legacy_Function
 
 /*
 TODO: refactor/unify the code for binary '+' with 'sum'
-> static Binary_Array_Op<Add_Prim> op_add;
-This will support: op_add(Value,Value,cx) via operator().
+ * Support reactive values in Binary_Array_Op using Binary_Op_Expr.
+ * Replace add(a,b,cx) with Add_Op::op(a,b,cx).
+ * Replace Add_Expr with Binary_Op_Expr<Add_Op>
  */
 struct Add_Prim : public Binary_Num_Prim
 {
     static Value zero() { return {0.0}; }
     static Value call(double x, double y, const Context&) { return {x + y}; }
     static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
-    {
-        return sc_binop(f, x.type, x, "+", y);
-    }
+        { return sc_binop(f, x.type, x, "+", y); }
 };
 using Add_Op = Binary_Array_Op<Add_Prim>;
 Value add(Value a, Value b, const At_Syntax& cx)
@@ -460,8 +459,7 @@ Value add(Value a, Value b, const At_Syntax& cx)
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     return array_op.op(Scalar_Op(cx), a, b);
 }
-Value
-Add_Expr::eval(Frame& f) const
+Value Add_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);

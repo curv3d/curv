@@ -3,9 +3,16 @@ new-core Prim API:
     GLSL/C++ code.
   * The analysis code can be automated. Eg, Binary_Num_Prim provides generic
     analysis code, so Add_Prim can leave it out. What remains is sc_emit().
-  * sc_emit() produces an expression, not a statement.
+  * sc_emit() outputs an expression, not a statement.
+    Do this later, once we are building the IR tree.
   * The result type is needed in type inference and in code generation.
     It is part of the Prim superclass (eg, Binary_Num_Prim).
+  * The old Prim API has `make_expr()`, which encodes the Operation class of
+    an operator like `+` (aka Add_Expr). This shouldn't be needed.
+      * It is used by Binary_Array_Op::op and Unary_Array_Op::op to generate
+        reactive values.
+      * From this context, given a Prim, we should be able to construct
+        a unary or binary expression class. Eg, Binary_Op_Expr<Op>.
 
 vectorized 'equal', 'unequal'
  * support broadcasting in SubCurv: scalar->vector, bool->bool32, vec->mat
