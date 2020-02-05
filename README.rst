@@ -69,11 +69,11 @@ using a known working GPU driver (see below).
   in WSL 2. A WIN32 port is possible, but I'd need a volunteer for this.
 * Raspberry Pi isn't supported.
   * The Raspberry Pi 4 could be supported in the future. Curv uses OpenGL 3.3,
-    which will not be supported. As of Oct 2019, OpenGL ES 3.1 support is
-    "coming soon", and Curv could be modified to use that API instead.
-    https://www.raspberrypi.org/blog/vc4-and-v3d-opengl-drivers-for-raspberry-pi-an-update/
-  * Raspberry Pi 3 won't be supported. At best, it supports OpenGL ES 2.0
-    (not good enough).
+    which will not be supported. As of Jan 2020, OpenGL ES 3.1 is implemented,
+    and Curv could be modified to use that API instead.
+    https://blogs.igalia.com/itoral/2020/01/17/raspberry-pi-4-v3d-driver-gets-opengl-es-3-1-conformance/
+  * Raspberry Pi 3 won't be supported. At best, it supports OpenGL ES 2.0,
+    which is not good enough: APIs used by Curv are missing.
 
 * On Linux, you have 3 choices:
 
