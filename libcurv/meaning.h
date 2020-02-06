@@ -434,32 +434,24 @@ struct Add_Expr : public Infix_Expr_Base
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
     virtual SC_Value sc_eval(SC_Frame&) const override;
-    virtual size_t hash() const noexcept override;
-    virtual bool hash_eq(const Operation&) const noexcept override;
 };
 struct Subtract_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
     virtual SC_Value sc_eval(SC_Frame&) const override;
-    virtual size_t hash() const noexcept override;
-    virtual bool hash_eq(const Operation&) const noexcept override;
 };
 struct Multiply_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
     virtual SC_Value sc_eval(SC_Frame&) const override;
-    virtual size_t hash() const noexcept override;
-    virtual bool hash_eq(const Operation&) const noexcept override;
 };
 struct Divide_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
     virtual SC_Value sc_eval(SC_Frame&) const override;
-    virtual size_t hash() const noexcept override;
-    virtual bool hash_eq(const Operation&) const noexcept override;
 };
 struct Power_Expr : public Infix_Expr_Base
 {
