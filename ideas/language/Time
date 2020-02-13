@@ -1,8 +1,9 @@
 Referencing Time in an Animated Shape
 =====================================
-Animated shapes and colours are represented by distance and colour functions
-that take [x,y,z,t] arguments. Time is passed as a 4th vector element.
+Previously, animated shapes and colours are represented by distance and colour
+functions that take [x,y,z,t] arguments. Time is passed as a 4th vector element.
 
+The new plan is to represent time as a global reactive variable.
 More details in ../new_core/Animate
 
 Reactive Time Variable
