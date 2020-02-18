@@ -65,7 +65,7 @@ struct Binary_Numeric_Array_Op
                     SC_Type::Num(),
                     f.make_expr(
                         make<Constant>(share(syn), x),
-                        yre->expr(syn)),
+                        yre->expr()),
                     f.cx)};
             }
         }
@@ -75,14 +75,14 @@ struct Binary_Numeric_Array_Op
             if (y.is_num())
                 return {make<Reactive_Expression>(
                     SC_Type::Num(),
-                    f.make_expr(xre->expr(syn),
+                    f.make_expr(xre->expr(),
                         make<Constant>(share(syn), y)),
                     f.cx)};
             auto yre = y.dycast<Reactive_Value>();
             if (yre && yre->sctype_ == SC_Type::Num())
                 return {make<Reactive_Expression>(
                     SC_Type::Num(),
-                    f.make_expr(xre->expr(syn), yre->expr(syn)),
+                    f.make_expr(xre->expr(), yre->expr()),
                     f.cx)};
         }
 
@@ -579,7 +579,7 @@ struct Binary_Array_Op
                     SC_Type::Num(),
                     f.make_expr(
                         make<Constant>(share(syn), x),
-                        yre->expr(syn)),
+                        yre->expr()),
                     f.cx)};
             }
         }
@@ -605,7 +605,7 @@ struct Unary_Numeric_Array_Op
         if (xre && xre->sctype_ == SC_Type::Num()) {
             return {make<Reactive_Expression>(
                 SC_Type::Num(),
-                f.make_expr(xre->expr(f.cx.syntax())),
+                f.make_expr(xre->expr()),
                 f.cx)};
         }
         throw Exception(f.cx,

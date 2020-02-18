@@ -188,17 +188,24 @@ Picker::State::State(Picker::Type ptype, Value val, const Context& cx)
     throw Exception{cx, stringify("bad picker type ", int(ptype))};
 }
 
-Uniform_Variable::Uniform_Variable(Symbol_Ref name, std::string id, SC_Type sctype)
+Uniform_Variable::Uniform_Variable(
+    Symbol_Ref name, std::string id, SC_Type sctype, Shared<const Phrase> ph)
 :
     Reactive_Value(Ref_Value::sty_uniform_variable, sctype),
     name_(std::move(name)),
-    identifier_(std::move(id))
+    identifier_(std::move(id)),
+    namephrase_(std::move(ph))
 {
 }
 
 void Uniform_Variable::print(std::ostream& out) const
 {
     out << "<uniform " << name_ << ">";
+}
+
+Shared<Operation> Uniform_Variable::expr() const
+{
+    return make<Constant>(namephrase_, Value{share(*this)});
 }
 
 } // namespace curv

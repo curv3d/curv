@@ -273,10 +273,12 @@ struct Record_Pattern : public Pattern
     {
         Shared<const Phrase> syntax_;
         Shared<Pattern> pat_;
-        Shared<Phrase> dsrc_;
+        Shared<const Phrase> dsrc_;
         Shared<Operation> dexpr_;
-        Field(Shared<const Phrase> syntax, Shared<Pattern> p, Shared<Phrase> d)
-        : syntax_(std::move(syntax)), pat_(p), dsrc_(d) {}
+        Shared<const Phrase> fieldname_;
+        Field(Shared<const Phrase> syntax, Shared<Pattern> p,
+            Shared<const Phrase> d, Shared<const Phrase> n)
+        : syntax_(std::move(syntax)), pat_(p), dsrc_(d), fieldname_(n) {}
         Field() {}
     };
     Symbol_Map<Field> fields_;
@@ -493,7 +495,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
                 return;
             if (auto id = identifier_pattern(item)) {
                 auto pat = make_pattern(item, scope, unitno);
-                fields[id->symbol_] = {share(item), pat, nullptr};
+                fields[id->symbol_] = {share(item), pat, nullptr, id};
                 return;
             }
             if (auto bin = dynamic_cast<const Binary_Phrase*>(&item)) {
@@ -511,7 +513,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
                     } else {
                         pat = make_pattern(*bin->right_, scope, unitno);
                     }
-                    fields[name] = {share(item), pat, dfl_src};
+                    fields[name] = {share(item), pat, dfl_src, bin->left_};
                     return;
                 }
             }
@@ -523,7 +525,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
                     throw Exception(At_Phrase(*def->left_, scope),
                         "not an identifier pattern");
                 auto pat = make_pattern(*def->left_, scope, unitno);
-                fields[id->symbol_] = {share(item), pat, def->right_};
+                fields[id->symbol_] = {share(item), pat, def->right_, id};
                 return;
             }
             throw Exception(At_Phrase(item, scope), "not a field pattern");
@@ -565,7 +567,8 @@ record_pattern_default_value(const Pattern& pat, Frame& f)
 
 void
 record_pattern_each_parameter(
-    Closure& call, System& sys, std::function<void(Symbol_Ref, Value, Value)> f)
+    Closure& call, System& sys,
+    std::function<void(Symbol_Ref, Value, Value, Shared<const Phrase>)> f)
 {
     auto frame = Frame::make(call.nslots_, sys, nullptr, nullptr, nullptr);
     auto rpat = dynamic_cast<const Record_Pattern*>(&*call.pattern_);
@@ -583,7 +586,7 @@ record_pattern_each_parameter(
         else
             throw Exception(At_Phrase(*i.second.syntax_, *frame),
                 "field pattern has no default value");
-        f(i.first, pred, val);
+        f(i.first, pred, val, i.second.fieldname_);
     }
 }
 

@@ -24,20 +24,12 @@ Reactive_Expression::Reactive_Expression(
     }
 }
 
-void
-Reactive_Value::print(std::ostream& out) const
+void Reactive_Value::print(std::ostream& out) const
 {
     out << "<reactive>";
 }
 
-Shared<Operation>
-Reactive_Value::expr(const Phrase& syntax)
-{
-    return make<Constant>(share(syntax), Value{share(*this)});
-}
-
-Shared<Operation>
-Reactive_Expression::expr(const Phrase& syntax)
+Shared<Operation> Reactive_Expression::expr() const
 {
     return expr_;
 }

@@ -75,7 +75,9 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
         // We have a parametric shape.
         auto cparams = make<DRecord>();
         record_pattern_each_parameter(*sh_constructor, shape.system_,
-            [&](Symbol_Ref name, Value pred, Value value) -> void {
+            [&](Symbol_Ref name, Value pred, Value value,
+                Shared<const Phrase> nameph) -> void
+            {
                 auto pred_record = pred.dycast<Record>();
                 if (pred_record && pred_record->hasfield(picker_key)) {
                     auto picker = pred_record->getfield(picker_key,cx);
@@ -94,8 +96,8 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
                     param_.insert(std::pair<const std::string,Parameter>{
                         name.c_str(),
                         Parameter{id, config, state}});
-                    cparams->fields_[name] =
-                        {make<Uniform_Variable>(name, id, config.sctype_)};
+                    cparams->fields_[name] = {make<Uniform_Variable>(
+                        name, id, config.sctype_, nameph)};
                 } else {
                     cparams->fields_[name] = value;
                 }
