@@ -29,7 +29,7 @@ struct Infix_Op_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame& f) const override
-      { return Op::op(At_Phrase(*syntax_, f), arg1_->eval(f), arg2_->eval(f)); }
+      {return Op::call(At_Phrase(*syntax_, f), arg1_->eval(f), arg2_->eval(f));}
     virtual SC_Value sc_eval(SC_Frame& f) const override
       { return Op::sc_call(f, *arg1_, *arg2_, syntax_); }
     static bool idchr(char c)
@@ -456,7 +456,7 @@ struct Binary_Array_Op
             return list->front();
         Value result = list->front();
         for (unsigned i = 1; i < n; ++i)
-            result = op(cx, result, list->at(i));
+            result = call(cx, result, list->at(i));
         return result;
     }
     static SC_Value
@@ -502,7 +502,7 @@ struct Binary_Array_Op
     }
 
     static Value
-    op(const At_Syntax& cx, Value x, Value y)
+    call(const At_Syntax& cx, Value x, Value y)
     {
         // fast path: both x and y are scalars
         // remaining cases:
@@ -574,7 +574,7 @@ struct Binary_Array_Op
     {
         Shared<List> result = List::make(xlist.size());
         for (unsigned i = 0; i < xlist.size(); ++i)
-            (*result)[i] = op(cx, xlist[i], y);
+            (*result)[i] = call(cx, xlist[i], y);
         return {result};
     }
 
@@ -583,7 +583,7 @@ struct Binary_Array_Op
     {
         Shared<List> result = List::make(ylist.size());
         for (unsigned i = 0; i < ylist.size(); ++i)
-            (*result)[i] = op(cx, x, ylist[i]);
+            (*result)[i] = call(cx, x, ylist[i]);
         return {result};
     }
 
@@ -596,7 +596,7 @@ struct Binary_Array_Op
                 xs.size(),",",ys.size(),") in array operation"));
         Shared<List> result = List::make(xs.size());
         for (unsigned i = 0; i < xs.size(); ++i)
-            (*result)[i] = op(cx, xs[i], ys[i]);
+            (*result)[i] = call(cx, xs[i], ys[i]);
         return {result};
     }
 
@@ -677,7 +677,7 @@ struct Unary_Array_Op
     // TODO: optimize: move semantics. unique object reuse.
 
     static Value
-    op(const At_Syntax& cx, Value x)
+    call(const At_Syntax& cx, Value x)
     {
         typename Prim::scalar_t sx;
         if (Prim::unbox(x, sx, cx)) {
@@ -707,7 +707,7 @@ struct Unary_Array_Op
     {
         Shared<List> result = List::make(xs.size());
         for (unsigned i = 0; i < xs.size(); ++i)
-            (*result)[i] = op(cx, xs[i]);
+            (*result)[i] = call(cx, xs[i]);
         return {result};
     }
 

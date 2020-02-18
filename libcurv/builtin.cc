@@ -16,6 +16,7 @@
 #include <libcurv/math.h>
 #include <libcurv/pattern.h>
 #include <libcurv/picker.h>
+#include <libcurv/prim.h>
 #include <libcurv/program.h>
 #include <libcurv/source.h>
 #include <libcurv/system.h>
@@ -52,7 +53,7 @@ struct Unary_Array_Func : public Function
     using Op = Unary_Array_Op<Prim>;
     Value call(Value arg, Frame& f) override
     {
-        return Op::op(At_Arg(*this, f), arg);
+        return Op::call(At_Arg(*this, f), arg);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
@@ -68,7 +69,7 @@ struct Binary_Array_Func : public Legacy_Function
     using Op = Binary_Array_Op<Prim>;
     Value call(Frame& args) override
     {
-        return Op::op(At_Arg(*this, args), args[0], args[1]);
+        return Op::call(At_Arg(*this, args), args[0], args[1]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
@@ -342,49 +343,6 @@ SC_Value sc_minmax(const char* name, Operation& argx, SC_Frame& f)
     }
 }
 
-#if 0
-struct Max_Function : public Legacy_Function
-{
-    Max_Function(const char* nm) : Legacy_Function(1,nm) {}
-
-    struct Prim {
-        static double call(double x, double y) {
-            // return NaN if either argument is NaN.
-            if (x >= y) return x;
-            if (x < y) return y;
-            return 0.0/0.0;
-        }
-        Shared<Operation> make_expr(
-            Shared<Operation> x, Shared<Operation> y) const
-        {
-            Shared<List_Expr> args =
-                List_Expr::make({x, y}, arg_part(cx.call_frame_.call_phrase_));
-            args->init();
-            return make<Call_Expr>(
-                cx.call_frame_.call_phrase_,
-                make<Constant>(
-                    func_part(cx.call_frame_.call_phrase_),
-                    Value{share(cx.func_)}),
-                args);
-        }
-        static Shared<const String> callstr(Value x, Value y) {
-            return stringify("[",x,",",y,"]");
-        }
-        At_Arg cx;
-        Prim(Function& func, Frame& args) : cx(func,args) {}
-    };
-    static Binary_Numeric_Array_Op<Prim> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.reduce(Prim(*this, args), -INFINITY, args[0]);
-    }
-    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase>, SC_Frame& f)
-    const override
-    {
-        return sc_minmax(name_.c_str(),argx,f);
-    }
-};
-#else
 struct Max_Prim : public Binary_Num_Prim
 {
     static const char* name() { return "max"; }
@@ -395,51 +353,7 @@ struct Max_Prim : public Binary_Num_Prim
         { return sc_bincall(f, x.type, "max", x, y); }
 };
 using Max_Function = Monoid_Func<Max_Prim>;
-#endif
 
-#if 0
-struct Min_Function : public Legacy_Function
-{
-    Min_Function(const char* nm) : Legacy_Function(1,nm) {}
-
-    struct Prim {
-        static double call(double x, double y) {
-            // return NaN if either argument is NaN
-            if (x <= y) return x;
-            if (x > y) return y;
-            return 0.0/0.0;
-        }
-        Shared<Operation> make_expr(
-            Shared<Operation> x, Shared<Operation> y) const
-        {
-            Shared<List_Expr> args =
-                List_Expr::make({x, y}, arg_part(cx.call_frame_.call_phrase_));
-            args->init();
-            return make<Call_Expr>(
-                cx.call_frame_.call_phrase_,
-                make<Constant>(
-                    func_part(cx.call_frame_.call_phrase_),
-                    Value{share(cx.func_)}),
-                args);
-        }
-        static Shared<const String> callstr(Value x, Value y) {
-            return stringify("[",x,",",y,"]");
-        }
-        At_Arg cx;
-        Prim(Function& func, Frame& args) : cx(func, args) {}
-    };
-    static Binary_Numeric_Array_Op<Prim> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.reduce(Prim(*this, args), INFINITY, args[0]);
-    }
-    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase>, SC_Frame& f)
-    const override
-    {
-        return sc_minmax("min",argx,f);
-    }
-};
-#else
 struct Min_Prim : public Binary_Num_Prim
 {
     static const char* name() { return "min"; }
@@ -450,56 +364,7 @@ struct Min_Prim : public Binary_Num_Prim
         { return sc_bincall(f, x.type, "min", x, y); }
 };
 using Min_Function = Monoid_Func<Min_Prim>;
-#endif
 
-/*
-TODO: refactor/unify the code for binary '+' with 'sum'
- * Support reactive values in Binary_Array_Op using Binary_Op_Expr.
- * Replace add(a,b,cx) with Add_Op::op(a,b,cx).
- * Replace Add_Expr with Binary_Op_Expr<Add_Op>
- */
-struct Add_Prim : public Binary_Num_Prim
-{
-    static const char* name() {return "+";};
-    static Value zero() { return {0.0}; }
-    static Value call(double x, double y, const Context&) { return {x + y}; }
-    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
-        { return sc_binop(f, x.type, x, "+", y); }
-};
-using Add_Op = Binary_Array_Op<Add_Prim>;
-Value add(Value a, Value b, const At_Syntax& cx)
-{
-#if 0
-    struct Scalar_Op {
-        static double call(double x, double y) { return x + y; }
-        Shared<Operation> make_expr(
-            Shared<Operation> x, Shared<Operation> y) const
-        {
-            return make<Add_Expr>(share(cx.syntax()),
-                std::move(x), std::move(y));
-        }
-        static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x," + ",y);
-        }
-        const At_Syntax& cx;
-        Scalar_Op(const At_Syntax& as) : cx(as) {}
-    };
-    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(Scalar_Op(cx), a, b);
-#else
-    return Add_Op::op(cx, a, b);
-#endif
-}
-Value Add_Expr::eval(Frame& f) const
-{
-    Value a = arg1_->eval(f);
-    Value b = arg2_->eval(f);
-    return add(a,b, At_Phrase(*syntax_, f));
-}
-SC_Value Add_Expr::sc_eval(SC_Frame& f) const
-{
-    return Add_Op::sc_call(f, *arg1_, *arg2_, syntax_);
-}
 using Sum_Function = Monoid_Func<Add_Prim>;
 
 #define BOOL_OP(CppName,Name,Zero,LogOp,BitOp)\
@@ -668,7 +533,7 @@ struct Bool32_To_Nat_Function : public Function
     static Unary_Array_Op<Prim> array_op;
     Value call(Value arg, Frame& f) override
     {
-        return array_op.op(At_Arg(*this, f), arg);
+        return array_op.call(At_Arg(*this, f), arg);
     }
 };
 
@@ -685,7 +550,7 @@ struct Nat_To_Bool32_Function : public Function
     static Unary_Array_Op<Prim> array_op;
     Value call(Value arg, Frame& f) override
     {
-        return array_op.op(At_Arg(*this, f), arg);
+        return array_op.call(At_Arg(*this, f), arg);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override

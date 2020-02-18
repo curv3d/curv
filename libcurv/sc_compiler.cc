@@ -457,34 +457,6 @@ bool sc_try_unify(SC_Frame& f, SC_Value& a, SC_Value& b)
     else if (b.type.is_list())
         return sc_try_broadcast(f, a, b.type);
     return false;
-  #if 0
-    if (a.type.is_list()) {
-    } else {
-        // a is scalar
-        if (b.type.is_list()) {
-            // broadcast a over b
-        }
-    }
-    if (a.type.is_list() && b.type.is_list()) {
-        // element-wise unification
-        if (a.type.count() != b.type.count())
-            throw Exception(cx, stringify(
-                "Argument types ",a.type," and ",b.type,
-                " are incompatible: they have different counts");
-        if (a.type.rank() > b.type.rank()) {
-            sc_elementwise_over(f, b, a.type);
-            return;
-        }
-        if (b.type.rank() > a.type.rank()) {
-            sc_elementwise_over(f, a, b.type);
-            return;
-        }
-    }
-    if (sc_broadcast(f, a, b.type))
-        return;
-    if (sc_broadcast(f, b, a.type))
-        return;
-  #endif
 }
 
 // Error if a or b is not a struc.

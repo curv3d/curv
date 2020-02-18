@@ -4,9 +4,9 @@
 
 #include <libcurv/math.h>
 
-#include <libcurv/array_op.h>
 #include <libcurv/context.h>
 #include <libcurv/meaning.h>
+#include <libcurv/prim.h>
 #include <libcurv/reactive.h>
 
 namespace curv {
@@ -91,25 +91,6 @@ Value list_elem(Value val, size_t i, const At_Syntax& cx)
 
 Value multiply(Value a, Value b, const At_Syntax& cx)
 {
-#if 0
-    struct Scalar_Op {
-        static double call(double x, double y) { return x * y; }
-        Shared<Operation> make_expr(
-            Shared<Operation> x, Shared<Operation> y) const
-        {
-            return make<Multiply_Expr>(share(cx.syntax()),
-                std::move(x), std::move(y));
-        }
-        static const char* name() { return "*"; }
-        static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x," * ",y);
-        }
-        const At_Syntax& cx;
-        Scalar_Op(const At_Syntax& as) : cx(as) {}
-    };
-    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(Scalar_Op(cx), a, b);
-#else
     struct Mul_Prim : public Binary_Num_Prim
     {
         static const char* name() { return "*"; }
@@ -124,8 +105,7 @@ Value multiply(Value a, Value b, const At_Syntax& cx)
         }
     };
     using Mul_Op = Binary_Array_Op<Mul_Prim>;
-    return Mul_Op::op(cx, a, b);
-#endif
+    return Mul_Op::call(cx, a, b);
 }
 
 // Generalized dot product that includes vector dot product and matrix product.
@@ -151,7 +131,8 @@ Value dot(Value a, Value b, const At_Syntax& cx)
                 " can't be multiplied by list of size ",bv->size()));
         Value result = {0.0};
         for (size_t i = 0; i < av->size(); ++i)
-            result = add(result, multiply(av->at(i), bv->at(i), cx), cx);
+            result = Add_Op::call(cx, result,
+                multiply(av->at(i), bv->at(i), cx));
         return result;
     }
 }

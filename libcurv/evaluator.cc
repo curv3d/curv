@@ -403,7 +403,7 @@ Value Class::eval(Frame& f) const \
         return {true}; \
     if (a.to_num_or_nan() GE b.to_num_or_nan()) \
         return {false}; \
-    return array_op.op(At_Phrase(*syntax_,f), a, b); \
+    return array_op.call(At_Phrase(*syntax_,f), a, b); \
 } \
 SC_Value Class::sc_eval(SC_Frame& f) const \
 { \
