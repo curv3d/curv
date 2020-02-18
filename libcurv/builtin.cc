@@ -135,7 +135,7 @@ struct Is_List_Function : public Function
     using Function::Function;
     Value call(Value arg, Frame&) override
     {
-        return {islist(arg)};
+        return {is_list(arg)};
     }
 };
 struct Is_Record_Function : public Function
@@ -963,7 +963,7 @@ struct Mag_Function : public Legacy_Function
             }
             auto r = val.dycast<Reactive_Value>();
             if (r && r->sctype_ == SC_Type::Num()) {
-                rlist->at(i) = r->expr(*arg_part(args.call_phrase_));
+                rlist->at(i) = r->expr();
                 continue;
             }
             rlist = nullptr;

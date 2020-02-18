@@ -3,10 +3,12 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/pattern.h>
-#include <libcurv/phrase.h>
+
+#include <libcurv/context.h>
 #include <libcurv/definition.h>
 #include <libcurv/exception.h>
-#include <libcurv/context.h>
+#include <libcurv/math.h>
+#include <libcurv/phrase.h>
 #include <libcurv/sc_compiler.h>
 #include <libcurv/sc_context.h>
 
@@ -211,27 +213,41 @@ struct List_Pattern : public Pattern
         for (auto& p : items_)
             p->analyse(env);
     }
-    virtual void exec(Value* slots, Value val, const Context& valcx, Frame& f)
+    virtual void exec(Value* slots, Value arg, const Context& argcx, Frame& f)
     const override
     {
-        auto list = val.to<List>(valcx);
-        list->assert_size(items_.size(), valcx);
-        for (size_t i = 0; i < items_.size(); ++i)
-            items_[i]->exec(slots, list->at(i), At_Index(i, valcx), f);
+        if (is_list(arg)) {
+            size_t n = list_count(arg);
+            if (items_.size() == n) {
+                for (size_t i = 0; i < n; ++i) {
+                    items_[i]->exec(
+                        slots,
+                        list_elem(arg, i, At_Phrase(*items_[i]->syntax_,f)),
+                        At_Index(i, argcx), f);
+                }
+                return;
+            }
+        }
+        throw Exception(argcx,
+            stringify(arg," is not a list of ",items_.size()," items"));
     }
     virtual bool try_exec(Value* slots, Value val, const Context& cx, Frame& f)
     const override
     {
-        auto list = val.dycast<List>();
-        if (list == nullptr)
-            return false;
-        if (list->size() != items_.size())
-            return false;
-        for (size_t i = 0; i < items_.size(); ++i)
-            if (!items_[i]->try_exec(slots, list->at(i), cx, f))
-                return false;
+        if (!is_list(val)) return false;
+        size_t n = list_count(val);
+        if (items_.size() != n) return false;
+        for (size_t i = 0; i < n; ++i) {
+            bool matched = items_[i]->try_exec(
+                slots,
+                list_elem(val, i, At_Phrase(*items_[i]->syntax_,f)),
+                At_Index(i, cx),
+                f);
+            if (!matched) return false;
+        }
         return true;
     }
+
     virtual void sc_exec(Operation& expr, SC_Frame& caller, SC_Frame& callee)
     const override
     {
@@ -273,10 +289,12 @@ struct Record_Pattern : public Pattern
     {
         Shared<const Phrase> syntax_;
         Shared<Pattern> pat_;
-        Shared<Phrase> dsrc_;
+        Shared<const Phrase> dsrc_;
         Shared<Operation> dexpr_;
-        Field(Shared<const Phrase> syntax, Shared<Pattern> p, Shared<Phrase> d)
-        : syntax_(std::move(syntax)), pat_(p), dsrc_(d) {}
+        Shared<const Phrase> fieldname_;
+        Field(Shared<const Phrase> syntax, Shared<Pattern> p,
+            Shared<const Phrase> d, Shared<const Phrase> n)
+        : syntax_(std::move(syntax)), pat_(p), dsrc_(d), fieldname_(n) {}
         Field() {}
     };
     Symbol_Map<Field> fields_;
@@ -493,7 +511,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
                 return;
             if (auto id = identifier_pattern(item)) {
                 auto pat = make_pattern(item, scope, unitno);
-                fields[id->symbol_] = {share(item), pat, nullptr};
+                fields[id->symbol_] = {share(item), pat, nullptr, id};
                 return;
             }
             if (auto bin = dynamic_cast<const Binary_Phrase*>(&item)) {
@@ -511,7 +529,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
                     } else {
                         pat = make_pattern(*bin->right_, scope, unitno);
                     }
-                    fields[name] = {share(item), pat, dfl_src};
+                    fields[name] = {share(item), pat, dfl_src, bin->left_};
                     return;
                 }
             }
@@ -523,7 +541,7 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
                     throw Exception(At_Phrase(*def->left_, scope),
                         "not an identifier pattern");
                 auto pat = make_pattern(*def->left_, scope, unitno);
-                fields[id->symbol_] = {share(item), pat, def->right_};
+                fields[id->symbol_] = {share(item), pat, def->right_, id};
                 return;
             }
             throw Exception(At_Phrase(item, scope), "not a field pattern");
@@ -565,7 +583,8 @@ record_pattern_default_value(const Pattern& pat, Frame& f)
 
 void
 record_pattern_each_parameter(
-    Closure& call, System& sys, std::function<void(Symbol_Ref, Value, Value)> f)
+    Closure& call, System& sys,
+    std::function<void(Symbol_Ref, Value, Value, Shared<const Phrase>)> f)
 {
     auto frame = Frame::make(call.nslots_, sys, nullptr, nullptr, nullptr);
     auto rpat = dynamic_cast<const Record_Pattern*>(&*call.pattern_);
@@ -583,7 +602,7 @@ record_pattern_each_parameter(
         else
             throw Exception(At_Phrase(*i.second.syntax_, *frame),
                 "field pattern has no default value");
-        f(i.first, pred, val);
+        f(i.first, pred, val, i.second.fieldname_);
     }
 }
 

@@ -41,7 +41,8 @@ Shared<Pattern> make_pattern(const Phrase&, Scope&, unsigned unitno);
 Shared<Record> record_pattern_default_value(const Pattern&, Frame&);
 
 void record_pattern_each_parameter(
-    Closure&, System&, std::function<void(Symbol_Ref, Value, Value)>);
+    Closure&, System&,
+    std::function<void(Symbol_Ref, Value, Value, Shared<const Phrase>)>);
 
 } // namespace
 #endif // header guard

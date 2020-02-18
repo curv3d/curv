@@ -60,8 +60,11 @@ struct Uniform_Variable : public Reactive_Value
 {
     Symbol_Ref name_;
     std::string identifier_;
-    Uniform_Variable(Symbol_Ref name, std::string id, SC_Type);
+    Shared<const Phrase> namephrase_;
+    Uniform_Variable(Symbol_Ref name, std::string id, SC_Type,
+        Shared<const Phrase> namephrase);
     virtual void print(std::ostream&) const override;
+    virtual Shared<Operation> expr() const override;
 };
 
 } // namespace curv

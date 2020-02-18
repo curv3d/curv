@@ -25,7 +25,7 @@ struct Reactive_Value : public Ref_Value
     {}
 
     virtual void print(std::ostream&) const override;
-    virtual Shared<Operation> expr(const Phrase&);
+    virtual Shared<Operation> expr() const = 0;
 };
 
 // An expression over one or more reactive variables. Essentially, this is a
@@ -39,7 +39,8 @@ struct Reactive_Expression : public Reactive_Value
 
     Reactive_Expression(SC_Type, Shared<Operation> expr, const Context&);
 
-    virtual Shared<Operation> expr(const Phrase&) override;
+    virtual void print(std::ostream&) const override;
+    virtual Shared<Operation> expr() const override;
 
     size_t hash() const noexcept
     {

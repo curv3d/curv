@@ -159,7 +159,16 @@ struct Operation : public Meaning
     // Called when using a pure Operation as a key to an unordered_map.
     virtual size_t hash() const noexcept;
     virtual bool hash_eq(const Operation&) const noexcept;
+
+    virtual void print(std::ostream&) const;
 };
+
+inline std::ostream&
+operator<<(std::ostream& out, const Operation& op)
+{
+    op.print(out);
+    return out;
+}
 
 /// `Just_Expression` is an implementation class, inherited by Operation classes
 /// whose instances are always expressions. It provides a sensible default
@@ -200,6 +209,7 @@ struct Constant : public Just_Expression
     virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
+    virtual void print(std::ostream&) const override;
 };
 
 struct Null_Action : public Operation
@@ -307,6 +317,7 @@ struct Call_Expr : public Just_Expression
     virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
+    virtual void print(std::ostream&) const;
 };
 
 struct Prefix_Expr_Base : public Just_Expression
@@ -500,6 +511,7 @@ struct List_Expr_Base : public Just_Expression
     virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
+    virtual void print(std::ostream&) const;
     TAIL_ARRAY_MEMBERS(Shared<Operation>)
 };
 using List_Expr = Tail_Array<List_Expr_Base>;
