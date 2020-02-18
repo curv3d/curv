@@ -1060,4 +1060,13 @@ SC_Value sc_binop(
     return result;
 }
 
+SC_Value sc_bincall(
+    SC_Frame& f, SC_Type rtype, const char* fn, SC_Value x, SC_Value y)
+{
+    auto result = f.sc_.newvalue(rtype);
+    f.sc_.out() << "  " << rtype << " " << result << " = "
+        << fn << "(" << x << "," << y << ");\n";
+    return result;
+}
+
 } // namespace curv

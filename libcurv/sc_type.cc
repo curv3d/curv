@@ -154,4 +154,26 @@ SC_Type::List(SC_Type etype, unsigned n)
     }
 }
 
+bool sc_unified_list_type(SC_Type a, SC_Type b, unsigned n, SC_Type& r)
+{
+    SC_Type etype;
+    if (!sc_unify_tensor_types(a, b, etype)) return false;
+    r = SC_Type::List(etype, n);
+    return true;
+}
+
+bool sc_unify_tensor_types(SC_Type a, SC_Type b, SC_Type& r)
+{
+    if (a == b) { r = a; return true; }
+    if (a.is_list() && b.is_list()) {
+        if (a.count() != b.count()) return false;
+        return sc_unified_list_type(a.abase(), b.abase(), a.count(), r);
+    }
+    else if (a.is_list())
+        return sc_unified_list_type(a.abase(), b, a.count(), r);
+    else if (b.is_list())
+        return sc_unified_list_type(a, b.abase(), b.count(), r);
+    return false;
+}
+
 } // namespace curv

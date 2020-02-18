@@ -254,5 +254,7 @@ SC_Type sc_type_of(Value);
 // The smallest type that includes both t1 and t2.
 SC_Type sc_type_join(SC_Type t1, SC_Type t2);
 
+bool sc_unify_tensor_types(SC_Type a, SC_Type b, SC_Type& r);
+
 } // namespace
 #endif // header guard

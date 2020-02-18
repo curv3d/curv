@@ -358,19 +358,44 @@ Not_Equal_Expr::eval(Frame& f) const
     return {!a.equal(b, At_Phrase(*syntax_, f))};
 }
 
+struct Relation_Prim : public Binary_Num_Prim
+{
+    static void sc_check_args(
+        SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
+    {
+        if (!a.type.is_num_or_vec()) {
+            throw Exception(At_Index(0, cx),
+                stringify("argument expected to be Num or Vec; got ", a.type));
+        }
+        if (!b.type.is_num_or_vec()) {
+            throw Exception(At_Index(1, cx),
+                stringify("argument expected to be Num or Vec; got ", a.type));
+        }
+        sc_struc_unify(f, a, b, cx);
+    }
+};
 #define RELATION(Class,LT,GE,lessThan) \
-Value \
-Class::eval(Frame& f) const \
+struct Class##Prim : public Relation_Prim \
 { \
-    struct Prim : public Binary_Num_Prim \
+    static const char* name() { return #LT; } \
+    static Value call(double a, double b, const Context& cx) \
     { \
-        static const char* name() { return #LT; } \
-        static Value call(double a, double b, const Context& cx) \
-        { \
-            return {a LT b}; \
-        } \
-    }; \
-    static Binary_Array_Op<Prim> array_op; \
+        return {a LT b}; \
+    } \
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y) \
+    { \
+        SC_Value result = f.sc_.newvalue(SC_Type::Bool(x.type.count())); \
+        f.sc_.out() <<"  "<<result.type<<" "<<result<<" = "; \
+        if (x.type.is_num()) \
+            f.sc_.out() <<"("<<x<<" "#LT" "<<y<<");\n"; \
+        else \
+            f.sc_.out() <<#lessThan"("<<x<<","<<y<<");\n"; \
+        return result; \
+    } \
+}; \
+Value Class::eval(Frame& f) const \
+{ \
+    static Binary_Array_Op<Class##Prim> array_op; \
     Value a = arg1_->eval(f); \
     Value b = arg2_->eval(f); \
     /* 2 comparisons required to unbox two numbers and compare them, not 3 */ \
@@ -380,8 +405,7 @@ Class::eval(Frame& f) const \
         return {false}; \
     return array_op.op(At_Phrase(*syntax_,f), a, b); \
 } \
-SC_Value \
-Class::sc_eval(SC_Frame& f) const \
+SC_Value Class::sc_eval(SC_Frame& f) const \
 { \
     auto arg1 = sc_eval_num_or_vec(f, *arg1_); \
     auto arg2 = sc_eval_num_or_vec(f, *arg2_); \
@@ -849,7 +873,8 @@ For_Op::exec(Frame& f, Executor& ex) const
     auto list = list_->eval(f).to<List>(cx);
     for (size_t i = 0; i < list->size(); ++i) {
         icx.index_ = i;
-        pattern_->exec(f.array_, list->at(i), icx, f);
+        // TODO: For_Op::exec: can't use icx in pattern_->exec(), not At_Syntax
+        pattern_->exec(f.array_, list->at(i), cx, f);
         if (cond_ && !cond_->eval(f).to_bool(At_Phrase{*cond_->syntax_,f}))
             break;
         body_->exec(f, ex);

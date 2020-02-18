@@ -16,12 +16,31 @@
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/list.h>
+#include <libcurv/meaning.h>
 #include <libcurv/reactive.h>
 #include <libcurv/sc_compiler.h>
 #include <libcurv/sc_context.h>
 #include <libcurv/typeconv.h>
 
 namespace curv {
+
+template <class Op>
+struct Infix_Op_Expr : public Infix_Expr_Base
+{
+    using Infix_Expr_Base::Infix_Expr_Base;
+    virtual Value eval(Frame& f) const override
+      { return Op::op(At_Phrase(*syntax_, f), arg1_->eval(f), arg2_->eval(f)); }
+    virtual SC_Value sc_eval(SC_Frame& f) const override
+      { return Op::sc_call(f, *arg1_, *arg2_, syntax_); }
+    static bool idchr(char c)
+        { return (c>='a'&&c<='z')||(c>='A'&&c<='Z')||c=='_'; }
+    virtual void print(std::ostream& out) const override {
+        if (idchr(Op::Prim::name()[0]))
+            out<<Op::Prim::name()<<"["<<*arg1_<<","<<*arg2_<<"]";
+        else
+            out<<"("<<*arg1_<<Op::Prim::name()<<*arg2_<<")";
+    }
+};
 
 template <class Scalar_Op>
 struct Binary_Numeric_Array_Op
@@ -32,9 +51,14 @@ struct Binary_Numeric_Array_Op
     reduce(const Scalar_Op& f, double zero, Value arg)
     {
         auto list = arg.to<List>(f.cx);
-        Value result = {zero};
-        for (auto val : *list)
-            result = op(f, result, val);
+        unsigned n = list->size();
+        if (n == 0)
+            return {zero};
+        if (n == 1)
+            return list->front();
+        Value result = list->front();
+        for (unsigned i = 1; i < n; ++i)
+            result = op(f, result, list->at(i));
         return result;
     }
 
@@ -122,6 +146,11 @@ struct Binary_Numeric_Array_Op
     }
 };
 
+struct Binary_Prim
+{
+    static bool result_type(SC_Type, SC_Type, SC_Type&) { return false; }
+};
+
 // This Prim accepts arbitrary non-List arguments.
 struct Unary_Scalar_Prim
 {
@@ -143,7 +172,7 @@ struct Unary_Scalar_Prim
 };
 
 // This Prim accepts a pair of arbitrary non-List arguments.
-struct Binary_Scalar_Prim : public Unary_Scalar_Prim
+struct Binary_Scalar_Prim : public Unary_Scalar_Prim, public Binary_Prim
 {
     typedef Value left_t, right_t;
     static bool unbox_left(Value a, left_t& b, const Context& cx)
@@ -181,7 +210,7 @@ struct Unary_Bool_Prim
 };
 
 // This Prim accepts Bool and Bool32 arguments in SubCurv.
-struct Binary_Bool_Or_Bool32_Prim
+struct Binary_Bool_Or_Bool32_Prim : public Binary_Prim
 {
     typedef bool left_t, right_t;
     static bool unbox_left(Value a, left_t& b, const Context&)
@@ -262,7 +291,7 @@ struct Unary_Num_Prim
     }
 };
 
-struct Binary_Num_Prim : public Unary_Num_Prim
+struct Binary_Num_Prim : public Unary_Num_Prim, public Binary_Prim
 {
     typedef double left_t;
     typedef double right_t;
@@ -289,13 +318,17 @@ struct Binary_Num_Prim : public Unary_Num_Prim
         }
         sc_struc_unify(f, a, b, cx);
     }
+    static bool result_type(SC_Type a, SC_Type b, SC_Type& r)
+    {
+        return sc_unify_tensor_types(a, b, r);
+    }
 };
 
 // The left operand is a non-empty list of booleans.
 // The right operand is an integer >= 0 and < the size of the left operand.
 // (These restrictions on the right operand conform to the definition
 // of << and >> in the C/C++/GLSL languages.)
-struct Shift_Prim
+struct Shift_Prim : public Binary_Prim
 {
     typedef Shared<const List> left_t;
     typedef double right_t;
@@ -347,7 +380,7 @@ struct Unary_Bool32_Prim : public Bool32_Prim
             throw Exception(cx, "argument must be a Bool32 or list of Bool32");
     }
 };
-struct Binary_Bool32_Prim : public Bool32_Prim
+struct Binary_Bool32_Prim : public Bool32_Prim, public Binary_Prim
 {
     typedef unsigned left_t;
     typedef unsigned right_t;
@@ -378,19 +411,16 @@ struct Binary_Bool32_Prim : public Bool32_Prim
     }
 };
 
-template <class Prim>
+template <class PRIM>
 struct Binary_Array_Op
 {
     // TODO: optimize: move semantics. unique object reuse.
     // TODO: optimize: faster fast path in `op` for number case.
 
-    static Shared<const String> domain_error(Value x, Value y)
-    {
-        return stringify("[",x,",",y,"]: domain error");
-    }
+    using Prim = PRIM;
 
     static Exception domain_error(
-        const Context& cx, unsigned i, Value x, Value y)
+        const At_Syntax& cx, unsigned i, Value x, Value y)
     {
         if (dynamic_cast<const At_Arg*>(&cx)) {
             return Exception(At_Index(i,cx),
@@ -404,17 +434,33 @@ struct Binary_Array_Op
         return Exception(cx, stringify(i==0?x:y,": domain error"));
     }
 
+    static Exception domain_error(
+        const At_Syntax& cx, Value x, Value y)
+    {
+        if (auto ap = dynamic_cast<const At_Phrase*>(&cx)) {
+            if (auto bin = dynamic_cast<const Binary_Phrase*>(&ap->phrase_))
+                return Exception(cx,
+                    stringify(x," ",bin->opname()," ",y,": domain error"));
+        }
+        return Exception(cx, stringify("[",x,",",y,"]: domain error"));
+    }
+
     static Value
-    reduce(const Context& cx, Value zero, Value arg)
+    reduce(const At_Syntax& cx, Value zero, Value arg)
     {
         auto list = arg.to<List>(cx);
-        Value result = zero;
-        for (auto val : *list)
-            result = op(cx, result, val);
+        unsigned n = list->size();
+        if (n == 0)
+            return {zero};
+        if (n == 1)
+            return list->front();
+        Value result = list->front();
+        for (unsigned i = 1; i < n; ++i)
+            result = op(cx, result, list->at(i));
         return result;
     }
     static SC_Value
-    sc_reduce(const Context& cx, Value zero, Operation& argx, SC_Frame& f)
+    sc_reduce(const At_Syntax& cx, Value zero, Operation& argx, SC_Frame& f)
     {
         auto list = dynamic_cast<List_Expr*>(&argx);
         if (list) {
@@ -456,7 +502,7 @@ struct Binary_Array_Op
     }
 
     static Value
-    op(const Context& cx, Value x, Value y)
+    op(const At_Syntax& cx, Value x, Value y)
     {
         // fast path: both x and y are scalars
         // remaining cases:
@@ -502,7 +548,7 @@ struct Binary_Array_Op
         throw domain_error(cx,0,x,y);
     }
     static SC_Value
-    sc_op(const Context& cx, Operation& argx, SC_Frame& f)
+    sc_op(const At_Syntax& cx, Operation& argx, SC_Frame& f)
     {
         auto list = dynamic_cast<List_Expr*>(&argx);
         if (list && list->size() == 2) {
@@ -524,7 +570,7 @@ struct Binary_Array_Op
     }
 
     static Value
-    broadcast_left(const Context& cx, List& xlist, Value y)
+    broadcast_left(const At_Syntax& cx, List& xlist, Value y)
     {
         Shared<List> result = List::make(xlist.size());
         for (unsigned i = 0; i < xlist.size(); ++i)
@@ -533,7 +579,7 @@ struct Binary_Array_Op
     }
 
     static Value
-    broadcast_right(const Context& cx, Value x, List& ylist)
+    broadcast_right(const At_Syntax& cx, Value x, List& ylist)
     {
         Shared<List> result = List::make(ylist.size());
         for (unsigned i = 0; i < ylist.size(); ++i)
@@ -542,7 +588,7 @@ struct Binary_Array_Op
     }
 
     static Value
-    element_wise_op(const Context& cx, List& xs, List& ys)
+    element_wise_op(const At_Syntax& cx, List& xs, List& ys)
     {
         if (xs.size() != ys.size())
             throw Exception(cx, stringify(
@@ -554,37 +600,40 @@ struct Binary_Array_Op
         return {result};
     }
 
+    // At least one of x and y is reactive. Construct a Reactive_Expression.
     static Value
-    reactive_op(const Context& cx, Value x, Value y)
+    reactive_op(const At_Syntax& cx, Value x, Value y)
     {
-    /*
-        // At least one of x and y is reactive. Cases:
-        //   list * list
-        //   scalar * list
-        //   list * scalar
-        //   scalar * scalar;
-        // where list and scalar are either constants or reactive.
-        // Need to compute the result SC_Type now, and thus I need to look at
-        // these cases right here.
-        Shared<const Reactive_Value> xr, yr;
-        SC_Type xt, yt;
-        f.get_expr(x, xr, xt);
-        f.get_expr(y, yr, yt);
-    //
-        if (x.is_num()) {
-            auto yre = y.dycast<Reactive_Value>();
-            if (yre && yre->sctype_ == SC_Type::Num()) {
-                auto& syn = f.cx.syntax();
-                return {make<Reactive_Expression>(
-                    SC_Type::Num(),
-                    f.make_expr(
-                        make<Constant>(share(syn), x),
-                        yre->expr(syn)),
-                    f.cx)};
-            }
+        Shared<Operation> x_expr;
+        SC_Type x_type;
+        if (auto xr = x.dycast<Reactive_Value>()) {
+            x_expr = xr->expr(cx.syntax());
+            x_type = xr->sctype_;
+        } else {
+            x_expr = make<Constant>(share(cx.syntax()), x);
+            x_type = sc_type_of(x);
         }
-    */
-        throw Exception(cx, domain_error(x, y));
+
+        Shared<Operation> y_expr;
+        SC_Type y_type;
+        if (auto yr = y.dycast<Reactive_Value>()) {
+            y_expr = yr->expr(cx.syntax());
+            y_type = yr->sctype_;
+        } else {
+            y_expr = make<Constant>(share(cx.syntax()), y);
+            y_type = sc_type_of(y);
+        }
+
+        SC_Type rtype;
+        if (Prim::result_type(x_type, y_type, rtype)) {
+            return {make<Reactive_Expression>(
+                rtype,
+                make<Infix_Op_Expr<Binary_Array_Op>>(
+                    share(cx.syntax()), x_expr, y_expr),
+                cx)};
+        } else {
+            throw domain_error(cx, x, y);
+        }
     }
 };
 
@@ -628,7 +677,7 @@ struct Unary_Array_Op
     // TODO: optimize: move semantics. unique object reuse.
 
     static Value
-    op(const Context& cx, Value x)
+    op(const At_Syntax& cx, Value x)
     {
         typename Prim::scalar_t sx;
         if (Prim::unbox(x, sx, cx)) {
@@ -645,7 +694,7 @@ struct Unary_Array_Op
         throw Exception(cx, domain_error(x));
     }
     static SC_Value
-    sc_op(const Context& cx, Operation& argx, SC_Frame& f)
+    sc_op(const At_Syntax& cx, Operation& argx, SC_Frame& f)
     {
         // TODO: add array support
         auto a = sc_eval_op(f, argx);
@@ -654,7 +703,7 @@ struct Unary_Array_Op
     }
 
     static Value
-    element_wise_op(const Context& cx, List& xs)
+    element_wise_op(const At_Syntax& cx, List& xs)
     {
         Shared<List> result = List::make(xs.size());
         for (unsigned i = 0; i < xs.size(); ++i)
@@ -663,7 +712,7 @@ struct Unary_Array_Op
     }
 
     static Value
-    reactive_op(const Context& cx, Value x)
+    reactive_op(const At_Syntax& cx, Value x)
     {
         throw Exception(cx, domain_error(x));
     }

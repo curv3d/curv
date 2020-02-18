@@ -42,6 +42,7 @@ bool islist(Value a)
 
 Value multiply(Value a, Value b, const At_Syntax& cx)
 {
+#if 0
     struct Scalar_Op {
         static double call(double x, double y) { return x * y; }
         Shared<Operation> make_expr(
@@ -59,6 +60,23 @@ Value multiply(Value a, Value b, const At_Syntax& cx)
     };
     static Binary_Numeric_Array_Op<Scalar_Op> array_op;
     return array_op.op(Scalar_Op(cx), a, b);
+#else
+    struct Mul_Prim : public Binary_Num_Prim
+    {
+        static const char* name() { return "*"; }
+        static Value zero() { return {1.0}; }
+        static Value call(double x, double y, const Context&)
+            { return {x * y}; }
+        static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y) {
+            if (x.type.is_mat() && y.type.is_mat())
+                return sc_bincall(f, x.type, "matrixCompMult", x, y);
+            else
+                return sc_binop(f, x.type, x, "*", y);
+        }
+    };
+    using Mul_Op = Binary_Array_Op<Mul_Prim>;
+    return Mul_Op::op(cx, a, b);
+#endif
 }
 
 // Generalized dot product that includes vector dot product and matrix product.

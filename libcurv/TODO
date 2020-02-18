@@ -1,3 +1,259 @@
+WRITER'S BLOCK
+I'm stuck on List_Pattern::exec(), extending it to reactive lists.
+    virtual void exec(Value* slots, Value arg, const Context& argcx, Frame& f)
+    const override
+    {
+        if (is_list(arg)) {
+            unsigned n = list_count(arg);
+            if (items_.size() == n) {
+                for (unsigned i = 0; i < n; ++i) {
+                    items_[i]->exec(
+                        slots,
+                        list_elem(arg, i, At_Phrase(*items_[i]->syntax_,f)),
+                        At_Index(i, argcx), f);
+                }
+                return;
+            }
+        }
+        throw Exception(argcx,
+            stringify(arg," is not a list of ",items_.size()," items"));
+    }
+    Value list_elem(Value val, unsigned i, const Phrase& syntax)
+    {
+        if (val.is_ref()) {
+            auto ref = val.to_ref_unsafe();
+            switch (ref->type_) {
+            case Ref_Value::ty_list:
+              {
+                auto list = (List*)ref;
+                return list->at(i);
+              }
+            case Ref_Value::ty_reactive:
+              {
+                auto rx = (Reactive_Value*)ref;
+                return {make<Reactive_Expression>(
+                    rx->sctype_.abase(),
+                    make<Call_Expr>(share(syntax), rx->expr(),
+                        make<Constant>(share(syntax),
+                            Value{List::make({Value(double(i))})})))};
+              }
+            }
+        }
+        return {};
+    }
+ISSUES:
+ * rx->expr() makes more logical sense than rx->expr(ph). That's in curv5.
+   The 'ph' argument is used when a Uniform Variable value is converted to an
+   expression operand, but that isn't the same as the source location where
+   the Uniform Variable was initially referenced by name.
+ * list_elem() takes an At_Syntax& cx argument. Which affects upstream APIs.
+   How is it used? What are the actual requirements?
+    * syntax_ of Call_Expr: it's a call site, needs to be passed as argument.
+    * syntax_ of Constant '[i]'. This should be provided by the caller,
+      explaining what the index is, or where it was computed.
+    * cx argument of Reactive_Expression constructor. It's used to throw an
+      exception if Operation arg isn't 'pure', but that's an internal compiler
+      error. Maybe we don't need this: call 'die' instead?
+ * The List_Pattern::exec() call to list_elem():
+    * The result call_site:
+    * The index call_site:
+    * I think these are both satisfied by the syntax_ of the List_Pattern
+      element being matched. So, list_elem(val,i,const Phrase& syntax).
+   List_Pattern::exec() has an 'argcx' argument that describes the argument
+   value to be decomposed as a list. Does this context have any relevance to
+   the information we must pass to list_elem()? If an error is reported later,
+   when the result of list_elem() is used as an argument, what information
+   should that error/stack trace contain?
+ * At_Index does not return an At_Syntax, affecting List_Pattern::exec().
+A Reactive_Expression contains an Operation which has a syntax_ field.
+ * The syntax_ is the call site from which the Operation was invoked: either
+   a location in Curv source code (the analytic case), or a description of the
+   call site in C++ native code (the synthetic case).
+ * For an expression, the syntax_ shows where the value was computed, and the
+   context in which it was being used. What if these are different? The value
+   is computed, stored in a variable/data structure, then used in an argument
+   context that throws an error? The site where the argument is computed is
+   valuable information: nice if we can show that in error messages.
+ * The purpose of syntax_ is to be included in a stack trace, so we can see
+   where an error occurred. The only proper use is syntax_.location(), when
+   a Phrase inside a Context is converted to a stack trace.
+ * Due to the way that Reactive_Expressions are constructed, each Operation
+   in the expression tree may have a call site that is disjoint from its parent
+   or its children. (This doesn't happen in the analytic case.)
+ * Therefore, we shouldn't make too many assumptions about syntax_ objects.
+   We shouldn't assume they were constructed analytically.
+
+
+At present, Reactive_Value::expr(ph) requires a Phrase argument. Hence we need
+a Phrase during general expression evaluation. Ideas:
+ 1. In Pattern::exec(Value*,Value,Context&cx,Frame&), change
+    'Context&cx' to 'At_Syntax&cx' so I can use cx.syntax(). Code impact:
+    Initially it requires At_Index and At_Field to be derived from At_Syntax.
+ 2. In Pattern::exec, add 'const Phrase& valph' argument.
+The underlying problem is that a Uniform_Variable value requires a Phrase for
+conversion to a Constant each time it is referenced in an arithmetic expression.
+ * When will this Phrase be used? What is the best choice of Phrase?
+I think the Phrase could be used if an arithmetic expression fails to compile
+in the Shape Compiler, in which case the Phrase points to the bad operand.
+But this shouldn't happen, we do type checking right now when we construct
+a reactive expression. It seems like the Phrase won't be used.
+ 3. Store the parameter name Identifier phrase in the Uniform_Variable when it
+    is constructed. Looks practical, changes are local.
+
+Operations on abstract list values (Lists and Reactive_Values).
+    bool is_list(val) -- already called islist(val) in math.h
+    unsigned list_count(val)
+    Value list_elem(val, unsigned i, const Context& cx)
+    Value list_elem_unsafe(val, unsigned i)
+No virtual functions (for cache locality) in the fast case of a List.
+This should be faster than virtual functions in Ref_Value.
+
+list_elem(val,i) may construct an Operation, if the list is reactive.
+What syntax object(s) do I use? The syntax_ member of an Operation denotes the
+call site for that operation, either in Curv source code, or in C++ native code.
+    Consider this API: list_elem(val,i,const At_Syntax& cx)
+    where 'cx' is the call site for the 'val[i]' expression.
+    If val is a reactive list, then we need to synthesize a call site
+    for the index 'i' as well.
+
+Old answer:
+    Synthetic operation nodes are generated by Curv primitives written in C++.
+    Their syntax object encodes the name of this primitive. `Synthetic_Phrase`
+    is a subclass of Phrase: so you can test if a Meaning is synthetic.
+Why is this okay?
+    In a reactive value, the source location of each node can potentially be
+    different and disconnected from the locations of the parent and children.
+Who will access these synthetic phrases? Is this just a placeholder to avoid
+storing a null pointer, or will it be used?
+What about errors and stack traces?
+    Using the `time` global reactive variable, you can evaluate a reactive value
+    in the interpreter, substituting a time value. Even though the reactive
+    operation tree is type checked, run time errors can still occur.
+    Eg, 0/0 throws an error. A reactive value could contain the subexpression
+    `time/0`, or `(time-1)/0`. What does the error and stack trace look like?
+        ERROR: 0 / 0: domain error
+        at reactive value:
+        1| (time-1)/0
+        at file "foo":
+        42| ...<some expression yielding a reactive value>...
+    With the above design, reactive values don't need source locations.
+But synthetic phrases might still be useful in the debugger?
+    Perhaps Value::list_elem and List_Pattern::match are native primitives
+    that should each have their own Frame? Or, their own VM opcode?
+Who will call Value::list_elem(), and what does the op tree look like?
+    List_Pattern::exec(). The argument A being matched is a reactive list, and
+    we have an At_Syntax for the argument expression. The pattern is `[a,b]`,
+    so `a` is bound to `A[0]`. What is the syntax object for `A[0]`?
+    What is the syntax object for `[0]` and `0`?
+The syntax_ member of an Operation specifies where the Operation is being
+called from. If Value::list_elem is a primitive Operation, called from
+List_Pattern::match, then the former Op needs a syntax_ describing the call
+site within the latter. Therefore, Value::list_elem(i) needs an additional
+argument that describes the caller, from which a Phrase can be derived.
+I figure this additional argument has type At_Syntax or Frame.
+
+
+Value::list_elem(i) may construct an Operation, if the list is reactive.
+What syntax object do I use?
+ 1. Synthetic operation nodes encode the name of the C++ function that
+    generates them in the Phrase object. `Synthetic_Phrase` is a subclass
+    of Phrase: so you can test if a Meaning is synthetic.
+        static auto origin = make<Synthetic_Phrase>(__func__);
+        make<Some_Expr>(origin, ...)
+ 2. API is list_elem(unsigned, At_Syntax).
+ 3. Copy the syntax from the reactive list.
+In what circumstances is a reactive value's syntax object used?
+ * In the design for the `time` global reactive variable, you can evaluate a
+   reactive value in the interpreter, substituting a time value. Even though
+   the reactive operation tree is type checked, run time errors can still occur.
+   Eg, 0/0 throws an error. A reactive value could contain the subexpression
+   `time/0`, or `(time-1)/0`. What does the error and stack trace look like?
+        ERROR: 0 / 0: domain error
+        at reactive value:
+        1| (time-1)/0
+        at file "foo":
+        42| ...<some expression yielding a reactive value>...
+   With the above design, reactive values don't need source locations.
+ * In a reactive value, the source location of each node can potentially be
+   different and disconnected from the locations of the parent and children.
+   Some of the nodes are synthetic. For these, we could encode the name of the
+   C++ function (__func__) that generates them, in the Phrase object.
+ * Who will call Value::list_elem(), and what At_Syntax info is available?
+   * List_Pattern::exec(). The argument A being matched is a reactive list, and
+     we have an At_Syntax for the argument expression. The pattern is `[a,b]`,
+     so `a` is bound to `A[0]`. What is the syntax object for `A[0]`?
+     What is the syntax object for `[0]` and `0`?
+
+Changing `add()` to use Binary_Array_Op instead of Binary_Numeric_Array_Op
+creates a behaviour change that is breaking tests. Reactive values are
+appearing where they didn't appear before. Approaches:
+ 1. Find out what is causing the behaviour change. Maybe there is a bug?
+    * reduce test case to minimal form
+    * debug with GDB
+    * print reactive values as expressions
+    * found it: we used to evaluate [inf,inf,inf]+<uniform Offset>
+      to [inf+Offset,inf+Offset,inf+Offset], now to [inf,inf,inf]+Offset.
+      It's not a bug, but many tests that previously saw a list of reactive
+      values now see a reactive value, and that is triggering bugs.
+      * The previous code screwed up listconst+reactivelist.
+      * The new code preserves high level vector operations.
+ 2. Fix all the bugs that the new behaviour is revealing.
+
+refactor/unify the code for binary '+' with 'sum'
+ * Add_Op is used to generate both Add_Expr and Sum_Function. Add_Op doesn't
+   know the name of the operation (+ or sum), it is an anonymous function class.
+   The plan is:
+      using Add_Expr = Infix_Op_Expr<Add_Op>;
+      using Sum_Function = Monoid_Func<Add_Op>;
+   * Since the Add_Expr class doesn't hard code the name of the add operator,
+     any method that prints it needs to get the information from a Context
+     argument or the syntax_ instance variable.
+   * I want to add a method for printing an expression tree. How does it work?
+      1. Infix phrases like 'x+y' are analysed as function calls. Call_Expr
+         prints func_ then arg_. A Constant branded function value has a name.
+         Operators like binary '+' are given bindings in the standard prelude.
+      2. Infix Prim classes define a `name` member.
+             static constexpr char name[] = "+";
+         Binary_Array_Op::Prim is the template class argument.
+         Infix_Op_Expr<Op>::print() references Op::Prim::name.
+         Non-operator builtin function prims do not need to define a name.
+      3. Infix_Op_Expr<Op>::print() uses its syntax_ member.
+         For op trees created by Phrase::analyse, it will be a Binary_Phrase.
+         Then you can use the op_ as the infix operator name.
+     These all work for op trees created by Phrase::analyse. However, if the
+     tree is created by evaluating an expression over uniform variables, then:
+      1. No good, because Infix_Op_Expr and Binary_Array_Op do not have access
+         to a function object, only a Prim class. A func object has a name.
+      2. Works.
+      3. Probably not. In the case of 'sum' generating a reactive expression,
+         syntax_ will be a call to 'sum', and thus a Call_Phrase. The func_ of
+         the Call_Phrase could be any syntax that evaluates to a function value,
+         so we might not want to print that.
+         In general, it's hard to guarantee correctness for future use cases.
+         There are cases where I procedurally generate an op tree and there's
+         no isomorphic parse tree, so the syntax_ member is whatever is on hand.
+   * Binary_Array_Op::domain_error uses the Context to decide how to format a
+     domain error. An At_Phrase containing a Binary_Phrase is treated specially.
+     This works if the op tree was created by analysis. It may be wrong if the
+     op tree is synthetic, since the Phrase in the context may be unrelated to
+     the Operation?
+     * Perhaps Meaning has an analytic/synthetic two-state field?
+     * So if the Operation is synthetic, I must use the op name to describe
+       the operation that has gone wrong? Or, I always do that in the array_op
+       code.
+     * This implies that At_Index and At_Field are unreliable. They only
+       produce expected results for analytic Contexts, not synthetic ones.
+
+ * Support reactive values in Binary_Array_Op using Infix_Op_Expr.
+   * This will require defining Add_Expr = Infix_Op_Expr<Add_Op>.
+     Same class is used everywhere, so that + expressions hash consistently.
+   * So now, Binary_Array_Op::reactive_op hard codes Infix_Op_Expr<Add_Op>
+     as the expression form of the binary add operation.
+ * Replace add(a,b,cx) with Add_Op::op(a,b,cx).
+ * Replace Add_Expr with Infix_Op_Expr<Add_Op>
+
+Add Operation::print(), for printing function and reactive values.
+
 new-core Prim API:
   * It separates 'analysis' (type inference and optimization) from emitting
     GLSL/C++ code.
