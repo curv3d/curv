@@ -135,7 +135,7 @@ struct Is_List_Function : public Function
     using Function::Function;
     Value call(Value arg, Frame&) override
     {
-        return {islist(arg)};
+        return {is_list(arg)};
     }
 };
 struct Is_Record_Function : public Function

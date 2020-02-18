@@ -14,7 +14,11 @@ struct At_Syntax;
 bool isnum(Value a);
 bool isbool(Value a);
 bool issymbol(Value a);
-bool islist(Value a);
+
+// abstract list API (works for List and Reactive_Value)
+bool is_list(Value a);
+size_t list_count(Value);
+Value list_elem(Value, size_t, const At_Syntax&);
 
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)

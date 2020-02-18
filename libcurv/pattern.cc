@@ -3,10 +3,12 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/pattern.h>
-#include <libcurv/phrase.h>
+
+#include <libcurv/context.h>
 #include <libcurv/definition.h>
 #include <libcurv/exception.h>
-#include <libcurv/context.h>
+#include <libcurv/math.h>
+#include <libcurv/phrase.h>
 #include <libcurv/sc_compiler.h>
 #include <libcurv/sc_context.h>
 
@@ -211,27 +213,41 @@ struct List_Pattern : public Pattern
         for (auto& p : items_)
             p->analyse(env);
     }
-    virtual void exec(Value* slots, Value val, const Context& valcx, Frame& f)
+    virtual void exec(Value* slots, Value arg, const Context& argcx, Frame& f)
     const override
     {
-        auto list = val.to<List>(valcx);
-        list->assert_size(items_.size(), valcx);
-        for (size_t i = 0; i < items_.size(); ++i)
-            items_[i]->exec(slots, list->at(i), At_Index(i, valcx), f);
+        if (is_list(arg)) {
+            size_t n = list_count(arg);
+            if (items_.size() == n) {
+                for (size_t i = 0; i < n; ++i) {
+                    items_[i]->exec(
+                        slots,
+                        list_elem(arg, i, At_Phrase(*items_[i]->syntax_,f)),
+                        At_Index(i, argcx), f);
+                }
+                return;
+            }
+        }
+        throw Exception(argcx,
+            stringify(arg," is not a list of ",items_.size()," items"));
     }
     virtual bool try_exec(Value* slots, Value val, const Context& cx, Frame& f)
     const override
     {
-        auto list = val.dycast<List>();
-        if (list == nullptr)
-            return false;
-        if (list->size() != items_.size())
-            return false;
-        for (size_t i = 0; i < items_.size(); ++i)
-            if (!items_[i]->try_exec(slots, list->at(i), cx, f))
-                return false;
+        if (!is_list(val)) return false;
+        size_t n = list_count(val);
+        if (items_.size() != n) return false;
+        for (size_t i = 0; i < n; ++i) {
+            bool matched = items_[i]->try_exec(
+                slots,
+                list_elem(val, i, At_Phrase(*items_[i]->syntax_,f)),
+                At_Index(i, cx),
+                f);
+            if (!matched) return false;
+        }
         return true;
     }
+
     virtual void sc_exec(Operation& expr, SC_Frame& caller, SC_Frame& callee)
     const override
     {
