@@ -26,7 +26,12 @@ Reactive_Expression::Reactive_Expression(
 
 void Reactive_Value::print(std::ostream& out) const
 {
-    out << "<reactive>";
+    out << "<reactive:" << sctype_ << ">";
+}
+
+void Reactive_Expression::print(std::ostream& out) const
+{
+    out << *expr_;
 }
 
 Shared<Operation> Reactive_Expression::expr() const

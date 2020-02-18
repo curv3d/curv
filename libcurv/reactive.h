@@ -39,6 +39,7 @@ struct Reactive_Expression : public Reactive_Value
 
     Reactive_Expression(SC_Type, Shared<Operation> expr, const Context&);
 
+    virtual void print(std::ostream&) const override;
     virtual Shared<Operation> expr() const override;
 
     size_t hash() const noexcept
