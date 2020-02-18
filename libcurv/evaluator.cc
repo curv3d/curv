@@ -510,20 +510,12 @@ value_at_path(Value a, const List& path, Shared<const Phrase> callph, Frame& f)
             continue;
         }
         auto re = a.dycast<Reactive_Value>();
-        if (re && re->sctype_.is_num_vec()) {
+        if (re && re->sctype_.is_list()) {
             if (i < path.size()-1)
                 goto domain_error;
-            Value b = path[i];
-            if (isnum(b)) {
-                return {make<Reactive_Expression>(
-                    SC_Type::Num(),
-                    make<Call_Expr>(
-                        callph,
-                        make<Constant>(func_part(callph), a),
-                        make<Constant>(arg_part(callph), b)),
-                    icx)};
-            }
-            // TODO: reactive: handle more cases
+            int j = path[i].to_int(0, int(re->sctype_.count()-1), icx);
+            return list_elem(a, size_t(j), At_Phrase(*callph, f));
+            // TODO: reactive: handle more complex paths
         }
         goto domain_error;
     }

@@ -342,6 +342,7 @@ SC_Value sc_minmax(const char* name, Operation& argx, SC_Frame& f)
     }
 }
 
+#if 0
 struct Max_Function : public Legacy_Function
 {
     Max_Function(const char* nm) : Legacy_Function(1,nm) {}
@@ -383,6 +384,18 @@ struct Max_Function : public Legacy_Function
         return sc_minmax(name_.c_str(),argx,f);
     }
 };
+#else
+struct Max_Prim : public Binary_Num_Prim
+{
+    static const char* name() { return "max"; }
+    static Value zero() { return {-INFINITY}; }
+    static Value call(double x, double y, const Context&)
+        { return {std::max(x,y)}; }
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
+        { return sc_bincall(f, x.type, "max", x, y); }
+};
+using Max_Function = Monoid_Func<Max_Prim>;
+#endif
 
 #if 0
 struct Min_Function : public Legacy_Function
