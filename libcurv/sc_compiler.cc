@@ -516,11 +516,6 @@ SC_Value Subtract_Expr::sc_eval(SC_Frame& f) const
     return sc_arith_expr(f, *syntax_, *arg1_, "-", *arg2_);
 }
 
-SC_Value Multiply_Expr::sc_eval(SC_Frame& f) const
-{
-    return sc_arith_expr(f, *syntax_, *arg1_, "*", *arg2_);
-}
-
 SC_Value Divide_Expr::sc_eval(SC_Frame& f) const
 {
     return sc_arith_expr(f, *syntax_, *arg1_, "/", *arg2_);

@@ -213,13 +213,6 @@ Subtract_Expr::eval(Frame& f) const
     return array_op.op(Scalar_Op(*syntax_, f), a, b);
 }
 Value
-Multiply_Expr::eval(Frame& f) const
-{
-    Value a = arg1_->eval(f);
-    Value b = arg2_->eval(f);
-    return multiply(a,b, At_Phrase(*syntax_, f));
-}
-Value
 Divide_Expr::eval(Frame& f) const
 {
     struct Scalar_Op {

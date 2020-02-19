@@ -89,25 +89,6 @@ Value list_elem(Value val, size_t i, const At_Syntax& cx)
     return {};
 }
 
-Value multiply(Value a, Value b, const At_Syntax& cx)
-{
-    struct Mul_Prim : public Binary_Num_Prim
-    {
-        static const char* name() { return "*"; }
-        static Value zero() { return {1.0}; }
-        static Value call(double x, double y, const Context&)
-            { return {x * y}; }
-        static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y) {
-            if (x.type.is_mat() && y.type.is_mat())
-                return sc_bincall(f, x.type, "matrixCompMult", x, y);
-            else
-                return sc_binop(f, x.type, x, "*", y);
-        }
-    };
-    using Mul_Op = Binary_Array_Op<Mul_Prim>;
-    return Mul_Op::call(cx, a, b);
-}
-
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
 //  dot(a,b) =
@@ -132,7 +113,7 @@ Value dot(Value a, Value b, const At_Syntax& cx)
         Value result = {0.0};
         for (size_t i = 0; i < av->size(); ++i)
             result = Add_Op::call(cx, result,
-                multiply(av->at(i), bv->at(i), cx));
+                Multiply_Op::call(cx, av->at(i), bv->at(i)));
         return result;
     }
 }

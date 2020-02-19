@@ -452,12 +452,6 @@ struct Subtract_Expr : public Infix_Expr_Base
     virtual Value eval(Frame&) const override;
     virtual SC_Value sc_eval(SC_Frame&) const override;
 };
-struct Multiply_Expr : public Infix_Expr_Base
-{
-    using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval(Frame&) const override;
-    virtual SC_Value sc_eval(SC_Frame&) const override;
-};
 struct Divide_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;

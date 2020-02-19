@@ -24,7 +24,5 @@ Value list_elem(Value, size_t, const At_Syntax&);
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
 Value dot(Value a, Value b, const At_Syntax& cx);
 
-Value multiply(Value a, Value b, const At_Syntax& cx);
-
 } // namespace curv
 #endif // header guard

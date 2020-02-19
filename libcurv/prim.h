@@ -22,5 +22,20 @@ struct Add_Prim : public Binary_Num_Prim
 using Add_Op = Binary_Array_Op<Add_Prim>;
 using Add_Expr = Infix_Op_Expr<Add_Op>;
 
+struct Multiply_Prim : public Binary_Num_Prim
+{
+    static const char* name() { return "*"; }
+    static Value zero() { return {1.0}; }
+    static Value call(double x, double y, const Context&) { return {x * y}; }
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y) {
+        if (x.type.is_mat() && y.type.is_mat())
+            return sc_bincall(f, x.type, "matrixCompMult", x, y);
+        else
+            return sc_binop(f, x.type, x, "*", y);
+    }
+};
+using Multiply_Op = Binary_Array_Op<Multiply_Prim>;
+using Multiply_Expr = Infix_Op_Expr<Multiply_Op>;
+
 } // namespace
 #endif // header guard
