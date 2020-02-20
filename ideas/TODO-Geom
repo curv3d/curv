@@ -1,5 +1,10 @@
 # Redesign Shape API
 
+## Scalar Fields
+A scalar field maps [x,y] or [x,y,z] onto a number.
+(Like a generalized intensity field.)
+Scalar fields can replace numbers as arguments to shape operators.
+
 ## TODO:
 * repeat_x repeat_xy repeat_xyz
   * Fix distance field. Evaluate cell field *2 for _x, *4 for _xy, *8 for _xyz.

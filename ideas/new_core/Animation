@@ -29,11 +29,18 @@ rather than a reactive value containing unevaluated `time` references.
 To instantiate an animated record R at a specific time, it is similar to
 customizing a parametric record. Eg, R{time: 0}.
 
-An advantage is that `animate` and `parametric` could be implemented at compile
-time, without extending the interpreter to support reactive values, which are
-proving to be a challenge. The downside is that generalized animated values
-(with reactive values in the interpreter) are a much more exciting feature,
-with great support for live programming and FRP.
+Benefits:
+ * `animate` and `parametric` could be implemented at compile time, without
+   extending the interpreter to support reactive values, which are
+   proving to be a challenge.
+ * With the `time` proposal, time expressions are subject to static type
+   checking using the SubCurv type system. With this design, the weirdness of
+   these type restrictions only occurs inside an `animate` body, which is
+   helpful for documentation and error messages.
+Drawbacks:
+   Generalized animated values (with reactive values in the interpreter)
+   are a much more exciting feature, with great support for live programming
+   and FRP.
 
 So I'm shelving the restriction to only animated records.
 
