@@ -135,17 +135,6 @@ SC_Compiler::end_function()
     out_ << body_.str();
 }
 
-SC_Value sc_call_unary_numeric(SC_Frame& f, const char* name)
-{
-    auto arg = f[0];
-    if (!arg.type.is_num_struc())
-        throw Exception(At_SC_Arg(0, f),
-            stringify(name,": argument is not numeric"));
-    auto result = f.sc_.newvalue(arg.type);
-    f.sc_.out()<<"  "<<arg.type<<" "<<result<<" = "<<name<<"("<<arg<<");\n";
-    return result;
-}
-
 struct Set_Purity
 {
     SC_Compiler& sc_;
@@ -983,6 +972,14 @@ SC_Value sc_bincall(
     auto result = f.sc_.newvalue(rtype);
     f.sc_.out() << "  " << rtype << " " << result << " = "
         << fn << "(" << x << "," << y << ");\n";
+    return result;
+}
+
+SC_Value sc_unary_call(SC_Frame& f, SC_Type rtype, const char* fn, SC_Value x)
+{
+    auto result = f.sc_.newvalue(rtype);
+    f.sc_.out() << "  " << rtype << " " << result << " = "
+        << fn << "(" << x << ");\n";
     return result;
 }
 

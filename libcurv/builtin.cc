@@ -158,10 +158,7 @@ struct Is_Fun_Function : public Function
 
 struct Bit_Prim : public Unary_Bool_Prim
 {
-    static Value call(bool b, const Context&)
-    {
-        return {double(b)};
-    }
+    static Value call(bool b, const Context&) { return {double(b)}; }
     static SC_Value sc_call(SC_Frame& f, SC_Value arg)
     {
         auto result = f.sc_.newvalue(SC_Type::Num_Or_Vec(arg.type.count()));
@@ -172,37 +169,14 @@ struct Bit_Prim : public Unary_Bool_Prim
 };
 using Bit_Function = Unary_Array_Func<Bit_Prim>;
 
-#define UNARY_NUMERIC_FUNCTION(Class_Name,c_name,glsl_name) \
-struct Class_Name : public Legacy_Function \
+#define UNARY_NUMERIC_FUNCTION(Func_Name,c_name,glsl_name) \
+struct Func_Name##Prim : public Unary_Num_SCVec_Prim \
 { \
-    Class_Name(const char* nm) : Legacy_Function(1,nm) {} \
-    struct Prim { \
-        static double call(double x) { return c_name(x); } \
-        Shared<Operation> make_expr(Shared<Operation> x) const \
-        { \
-            return make<Call_Expr>( \
-                cx.call_frame_.call_phrase_, \
-                make<Constant>( \
-                    func_part(cx.call_frame_.call_phrase_), \
-                    Value{share(cx.func_)}), \
-                x); \
-        } \
-        static Shared<const String> callstr(Value x) { \
-            return stringify(x); \
-        } \
-        At_Arg cx; \
-        Prim(Function& func, Frame& args) : cx(func,args) {} \
-    }; \
-    static Unary_Numeric_Array_Op<Prim> array_op; \
-    Value call(Frame& args) override \
-    { \
-        return array_op.op(Prim(*this, args), args[0]); \
-    } \
-    SC_Value sc_call_legacy(SC_Frame& f) const override \
-    { \
-        return sc_call_unary_numeric(f, #glsl_name); \
-    } \
+    static Value call(double x, const Context&) { return {c_name(x)}; } \
+    static SC_Value sc_call(SC_Frame& f, SC_Value arg) \
+        { return sc_unary_call(f, arg.type, #glsl_name, arg); } \
 }; \
+using Func_Name = Unary_Array_Func<Func_Name##Prim>; \
 
 UNARY_NUMERIC_FUNCTION(Sqrt_Function, sqrt, sqrt)
 UNARY_NUMERIC_FUNCTION(Log_Function, log, log)
