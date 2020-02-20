@@ -304,24 +304,8 @@ Not_Equal_Expr::eval(Frame& f) const
     return {!a.equal(b, At_Phrase(*syntax_, f))};
 }
 
-struct Relation_Prim : public Binary_Num_Prim
-{
-    static void sc_check_args(
-        SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
-    {
-        if (!a.type.is_num_or_vec()) {
-            throw Exception(At_Index(0, cx),
-                stringify("argument expected to be Num or Vec; got ", a.type));
-        }
-        if (!b.type.is_num_or_vec()) {
-            throw Exception(At_Index(1, cx),
-                stringify("argument expected to be Num or Vec; got ", a.type));
-        }
-        sc_struc_unify(f, a, b, cx);
-    }
-};
 #define RELATION(Class,LT,GE,lessThan) \
-struct Class##Prim : public Relation_Prim \
+struct Class##Prim : public Binary_Num_SCVec_Prim \
 { \
     static const char* name() { return #LT; } \
     static Value call(double a, double b, const Context& cx) \

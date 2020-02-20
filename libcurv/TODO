@@ -1,7 +1,18 @@
+SubCurv: what happens with GenType operations when you feed them a matrix?
+    x+y works with scalar, vec, mat
+    max(x,y) only works with scalar, vec
+    The easy fix:
+     * Binary_Num_Prim -> Binary_Num_SCVec_Prim, Binary_Num_SCMat_Prim
+     * Binary_Num_SCVec_Prim::sc_check_args will not accept matrix arguments.
+    A more general fix involves elementwise/broadcasting within sc_call,
+    so that all numeric operations accept matrix arguments.
 Binary_Array_Op::domain_error: use Prim::name rather than dig into cx.syntax
     is_C_identifier in symbol.h
-remove sc_put_as
-get rid of Binary_Numeric_Array_Op
+    ERROR: max[2,#blue]: invalid argument
+    ERROR: 2 + #blue: invalid argument
+replace Atan2 with Phase, implemented with Prim
+    remove sc_put_as
+    get rid of Binary_Numeric_Array_Op
 get rid of Unary_Numeric_Array_Op
 rename sc_vec_element -> sc_list_elem
     fix internals to support general struc list
@@ -13,6 +24,8 @@ and[...] and or[...] implement custom reduction code for bool32 and bvec.
 add Reactive_Value::at(i,cx), call from list_elem and list_at
 maybe refactor that list_at code in evaluator
 matrix multiply
+Rename Legacy_Function to Tuple_Function, since it isn't going away.
+Update copyright years.
 
 ISSUES:
  * rx->expr() makes more logical sense than rx->expr(ph). That's in curv5.

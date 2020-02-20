@@ -273,7 +273,9 @@ struct Binary_Bool_Or_Bool32_Prim : public Binary_Prim
     }
 };
 
-struct Unary_Num_Prim
+// A scalar numeric operation.
+// The corresponding GLSL primitive accepts a number, vector or matrix.
+struct Unary_Num_SCMat_Prim
 {
     typedef double scalar_t;
     static bool unbox(Value a, scalar_t& b, const Context&)
@@ -291,7 +293,20 @@ struct Unary_Num_Prim
     }
 };
 
-struct Binary_Num_Prim : public Unary_Num_Prim, public Binary_Prim
+// A scalar numeric operation.
+// The corresponding GLSL primitive accepts a number or vector.
+struct Unary_Num_SCVec_Prim : public Unary_Num_SCMat_Prim
+{
+    static void sc_check_arg(SC_Value a, const Context& cx)
+    {
+        if (!a.type.is_num_or_vec())
+            throw Exception(cx, "argument must be a Num or Vec");
+    }
+};
+
+// A scalar numeric operation.
+// The corresponding GLSL primitive accepts number, vector or matrix arguments.
+struct Binary_Num_SCMat_Prim : public Unary_Num_SCMat_Prim, public Binary_Prim
 {
     typedef double left_t;
     typedef double right_t;
@@ -315,6 +330,39 @@ struct Binary_Num_Prim : public Unary_Num_Prim, public Binary_Prim
             throw Exception(At_Index(1, cx),
                 stringify("argument expected to be Num, Vec or Mat; got ",
                     a.type));
+        }
+        sc_struc_unify(f, a, b, cx);
+    }
+    static bool result_type(SC_Type a, SC_Type b, SC_Type& r)
+    {
+        return sc_unify_tensor_types(a, b, r);
+    }
+};
+
+// A scalar numeric operation.
+// The corresponding GLSL primitive accepts number or vector arguments.
+struct Binary_Num_SCVec_Prim : public Unary_Num_SCVec_Prim, public Binary_Prim
+{
+    typedef double left_t;
+    typedef double right_t;
+    static bool unbox_left(Value a, scalar_t& b, const Context& cx)
+    {
+        return unbox(a, b, cx);
+    }
+    static bool unbox_right(Value a, scalar_t& b, const Context& cx)
+    {
+        return unbox(a, b, cx);
+    }
+    static void sc_check_args(
+        SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
+    {
+        if (!a.type.is_num_or_vec()) {
+            throw Exception(At_Index(0, cx),
+                stringify("argument expected to be Num or Vec; got ", a.type));
+        }
+        if (!b.type.is_num_or_vec()) {
+            throw Exception(At_Index(1, cx),
+                stringify("argument expected to be Num or Vec; got ", a.type));
         }
         sc_struc_unify(f, a, b, cx);
     }
@@ -452,8 +500,6 @@ struct Binary_Array_Op
         unsigned n = list->size();
         if (n == 0)
             return {zero};
-        if (n == 1)
-            return list->front();
         Value result = list->front();
         for (unsigned i = 1; i < n; ++i)
             result = call(cx, result, list->at(i));

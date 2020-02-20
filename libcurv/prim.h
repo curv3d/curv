@@ -12,7 +12,7 @@
 
 namespace curv {
 
-struct Add_Prim : public Binary_Num_Prim
+struct Add_Prim : public Binary_Num_SCMat_Prim
 {
     static const char* name() {return "+";};
     static Value zero() { return {0.0}; }
@@ -23,7 +23,7 @@ struct Add_Prim : public Binary_Num_Prim
 using Add_Op = Binary_Array_Op<Add_Prim>;
 using Add_Expr = Infix_Op_Expr<Add_Op>;
 
-struct Multiply_Prim : public Binary_Num_Prim
+struct Multiply_Prim : public Binary_Num_SCMat_Prim
 {
     static const char* name() { return "*"; }
     static Value zero() { return {1.0}; }
@@ -38,7 +38,7 @@ struct Multiply_Prim : public Binary_Num_Prim
 using Multiply_Op = Binary_Array_Op<Multiply_Prim>;
 using Multiply_Expr = Infix_Op_Expr<Multiply_Op>;
 
-struct Subtract_Prim : public Binary_Num_Prim
+struct Subtract_Prim : public Binary_Num_SCMat_Prim
 {
     static const char* name() {return "-";};
     static Value call(double x, double y, const Context&) { return {x - y}; }
@@ -48,7 +48,7 @@ struct Subtract_Prim : public Binary_Num_Prim
 using Subtract_Op = Binary_Array_Op<Subtract_Prim>;
 using Subtract_Expr = Infix_Op_Expr<Subtract_Op>;
 
-struct Divide_Prim : public Binary_Num_Prim
+struct Divide_Prim : public Binary_Num_SCMat_Prim
 {
     static const char* name() {return "/";};
     static Value call(double x, double y, const Context&) { return {x / y}; }
@@ -58,7 +58,7 @@ struct Divide_Prim : public Binary_Num_Prim
 using Divide_Op = Binary_Array_Op<Divide_Prim>;
 using Divide_Expr = Infix_Op_Expr<Divide_Op>;
 
-struct Power_Prim : public Binary_Num_Prim
+struct Power_Prim : public Binary_Num_SCVec_Prim
 {
     static const char* name() {return "^";};
     static Value call(double x, double y, const Context&) { return {pow(x,y)}; }

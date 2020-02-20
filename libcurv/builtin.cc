@@ -343,7 +343,7 @@ SC_Value sc_minmax(const char* name, Operation& argx, SC_Frame& f)
     }
 }
 
-struct Max_Prim : public Binary_Num_Prim
+struct Max_Prim : public Binary_Num_SCVec_Prim
 {
     static const char* name() { return "max"; }
     static Value zero() { return {-INFINITY}; }
@@ -354,7 +354,7 @@ struct Max_Prim : public Binary_Num_Prim
 };
 using Max_Function = Monoid_Func<Max_Prim>;
 
-struct Min_Prim : public Binary_Num_Prim
+struct Min_Prim : public Binary_Num_SCVec_Prim
 {
     static const char* name() { return "min"; }
     static Value zero() { return {INFINITY}; }
@@ -540,7 +540,7 @@ struct Bool32_To_Nat_Function : public Function
 struct Nat_To_Bool32_Function : public Function
 {
     using Function::Function;
-    struct Prim : public Unary_Num_Prim
+    struct Prim : public Unary_Num_SCVec_Prim
     {
         static Value call(double n, const Context& cx)
         {
@@ -587,7 +587,7 @@ struct Bool32_To_Float_Prim : public Unary_Bool32_Prim
 };
 using Bool32_To_Float_Function = Unary_Array_Func<Bool32_To_Float_Prim>;
 
-struct Float_To_Bool32_Prim : public Unary_Num_Prim
+struct Float_To_Bool32_Prim : public Unary_Num_SCVec_Prim
 {
     static Value call(double n, const Context&)
     {
