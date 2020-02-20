@@ -8,6 +8,7 @@
 // Curv primitive operations which are implemented using the Prim framework.
 
 #include <libcurv/array_op.h>
+#include <cmath>
 
 namespace curv {
 
@@ -36,6 +37,36 @@ struct Multiply_Prim : public Binary_Num_Prim
 };
 using Multiply_Op = Binary_Array_Op<Multiply_Prim>;
 using Multiply_Expr = Infix_Op_Expr<Multiply_Op>;
+
+struct Subtract_Prim : public Binary_Num_Prim
+{
+    static const char* name() {return "-";};
+    static Value call(double x, double y, const Context&) { return {x - y}; }
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
+        { return sc_binop(f, x.type, x, "-", y); }
+};
+using Subtract_Op = Binary_Array_Op<Subtract_Prim>;
+using Subtract_Expr = Infix_Op_Expr<Subtract_Op>;
+
+struct Divide_Prim : public Binary_Num_Prim
+{
+    static const char* name() {return "/";};
+    static Value call(double x, double y, const Context&) { return {x / y}; }
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
+        { return sc_binop(f, x.type, x, "/", y); }
+};
+using Divide_Op = Binary_Array_Op<Divide_Prim>;
+using Divide_Expr = Infix_Op_Expr<Divide_Op>;
+
+struct Power_Prim : public Binary_Num_Prim
+{
+    static const char* name() {return "^";};
+    static Value call(double x, double y, const Context&) { return {pow(x,y)}; }
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
+        { return sc_bincall(f, x.type, "pow", x, y); }
+};
+using Power_Op = Binary_Array_Op<Power_Prim>;
+using Power_Expr = Infix_Op_Expr<Power_Op>;
 
 } // namespace
 #endif // header guard

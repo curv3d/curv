@@ -1,46 +1,19 @@
-WRITER'S BLOCK
-I'm stuck on List_Pattern::exec(), extending it to reactive lists.
-    virtual void exec(Value* slots, Value arg, const Context& argcx, Frame& f)
-    const override
-    {
-        if (is_list(arg)) {
-            unsigned n = list_count(arg);
-            if (items_.size() == n) {
-                for (unsigned i = 0; i < n; ++i) {
-                    items_[i]->exec(
-                        slots,
-                        list_elem(arg, i, At_Phrase(*items_[i]->syntax_,f)),
-                        At_Index(i, argcx), f);
-                }
-                return;
-            }
-        }
-        throw Exception(argcx,
-            stringify(arg," is not a list of ",items_.size()," items"));
-    }
-    Value list_elem(Value val, unsigned i, const Phrase& syntax)
-    {
-        if (val.is_ref()) {
-            auto ref = val.to_ref_unsafe();
-            switch (ref->type_) {
-            case Ref_Value::ty_list:
-              {
-                auto list = (List*)ref;
-                return list->at(i);
-              }
-            case Ref_Value::ty_reactive:
-              {
-                auto rx = (Reactive_Value*)ref;
-                return {make<Reactive_Expression>(
-                    rx->sctype_.abase(),
-                    make<Call_Expr>(share(syntax), rx->expr(),
-                        make<Constant>(share(syntax),
-                            Value{List::make({Value(double(i))})})))};
-              }
-            }
-        }
-        return {};
-    }
+Binary_Array_Op::domain_error: use Prim::name rather than dig into cx.syntax
+    is_C_identifier in symbol.h
+remove sc_put_as
+get rid of Binary_Numeric_Array_Op
+get rid of Unary_Numeric_Array_Op
+rename sc_vec_element -> sc_list_elem
+    fix internals to support general struc list
+    fix callers to support general struc list
+update sc_eval_index*_expr() functions to support all struc types
+sc index an array using a struc index value
+replace sc_call_unary_numeric
+and[...] and or[...] implement custom reduction code for bool32 and bvec.
+add Reactive_Value::at(i,cx), call from list_elem and list_at
+maybe refactor that list_at code in evaluator
+matrix multiply
+
 ISSUES:
  * rx->expr() makes more logical sense than rx->expr(ph). That's in curv5.
    The 'ph' argument is used when a Uniform Variable value is converted to an

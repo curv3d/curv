@@ -306,6 +306,7 @@ TEST(curv, eval)
     SUCCESS("4^0.5", "2");
     SUCCESS("4^-1", "0.25");
     SUCCESS("-2^2", "-4");
+    FAILMSG("(-1)^0.5","-1 ^ 0.5: domain error");
     SUCCESS("[1,2,3][1]","2");
     FAILALL("[1,2,3][1.1]",
         "at index [0]: 1.1 is not an integer\n"

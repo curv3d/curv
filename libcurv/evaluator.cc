@@ -190,53 +190,6 @@ Negative_Expr::eval(Frame& f) const
 }
 
 Value
-Subtract_Expr::eval(Frame& f) const
-{
-    struct Scalar_Op {
-        static double call(double x, double y) { return x - y; }
-        Shared<Operation> make_expr(
-            Shared<Operation> x, Shared<Operation> y) const
-        {
-            return make<Subtract_Expr>(share(cx.syntax()),
-                std::move(x), std::move(y));
-        }
-        static const char* name() { return "-"; }
-        static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x," - ",y);
-        }
-        At_Phrase cx;
-        Scalar_Op(const Phrase& ph, Frame& fr) : cx(ph,fr) {}
-    };
-    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value a = arg1_->eval(f);
-    Value b = arg2_->eval(f);
-    return array_op.op(Scalar_Op(*syntax_, f), a, b);
-}
-Value
-Divide_Expr::eval(Frame& f) const
-{
-    struct Scalar_Op {
-        static double call(double x, double y) { return x / y; }
-        Shared<Operation> make_expr(
-            Shared<Operation> x, Shared<Operation> y) const
-        {
-            return make<Divide_Expr>(share(cx.syntax()),
-                std::move(x), std::move(y));
-        }
-        static const char* name() { return "/"; }
-        static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x," / ",y);
-        }
-        At_Phrase cx;
-        Scalar_Op(const Phrase& ph, Frame& fr) : cx(ph,fr) {}
-    };
-    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
-    Value a = arg1_->eval(f);
-    Value b = arg2_->eval(f);
-    return array_op.op(Scalar_Op(*syntax_, f), a, b);
-}
-
-Value
 Or_Expr::eval(Frame& f) const
 {
     bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
@@ -415,28 +368,6 @@ RELATION(Less_Expr, <, >=, lessThan)
 RELATION(Greater_Expr, >, <=, greaterThan)
 RELATION(Less_Or_Equal_Expr, <=, >, lessThanEqual)
 RELATION(Greater_Or_Equal_Expr, >=, <, greaterThanEqual)
-
-Value
-Power_Expr::eval(Frame& f) const
-{
-    struct Scalar_Op {
-        static double call(double x, double y) { return pow(x,y); }
-        Shared<Operation> make_expr(
-            Shared<Operation> x, Shared<Operation> y) const
-        {
-            return make<Power_Expr>(share(cx.syntax()),
-                std::move(x), std::move(y));
-        }
-        static const char* name() { return "^"; }
-        static Shared<const String> callstr(Value x, Value y) {
-            return stringify(x," ^ ",y);
-        }
-        At_Phrase cx;
-        Scalar_Op(const Phrase& ph, Frame& fr) : cx(ph, fr) {}
-    };
-    static Binary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(Scalar_Op(*syntax_, f), arg1_->eval(f), arg2_->eval(f));
-}
 
 Value
 list_at(const List& list, Value index, const Context& cx)

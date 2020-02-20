@@ -513,9 +513,11 @@ struct Binary_Array_Op
         typename Prim::left_t sx;
         typename Prim::right_t sy;
         if (Prim::unbox_left(x, sx, cx)) {
-            if (Prim::unbox_right(y, sy, cx))
-                return Prim::call(sx, sy, cx);
-            if (y.is_ref()) {
+            if (Prim::unbox_right(y, sy, cx)) {
+                Value r = Prim::call(sx, sy, cx);
+                if (!r.is_missing()) return r;
+            }
+            else if (y.is_ref()) {
                 Ref_Value& ry(y.to_ref_unsafe());
                 switch (ry.type_) {
                 case Ref_Value::ty_list:
@@ -524,7 +526,7 @@ struct Binary_Array_Op
                     return reactive_op(cx, x, y);
                 }
             }
-            throw domain_error(cx,1,x,y);
+            throw domain_error(cx,x,y);
         } else if (x.is_ref()) {
             Ref_Value& rx(x.to_ref_unsafe());
             switch (rx.type_) {
@@ -681,7 +683,8 @@ struct Unary_Array_Op
     {
         typename Prim::scalar_t sx;
         if (Prim::unbox(x, sx, cx)) {
-            return Prim::call(sx, cx);
+            Value r = Prim::call(sx, cx);
+            if (!r.is_missing()) return r;
         } else if (x.is_ref()) {
             Ref_Value& rx(x.to_ref_unsafe());
             switch (rx.type_) {

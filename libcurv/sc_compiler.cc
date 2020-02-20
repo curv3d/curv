@@ -476,56 +476,6 @@ void sc_struc_unify(SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
         "Can't convert ",a.type," and ",b.type," to a common type"));
 }
 
-SC_Value
-sc_arith_expr(SC_Frame& f, const Phrase& syntax,
-    const Operation& xexpr, const char* op, const Operation& yexpr)
-{
-    auto x = sc_eval_op(f, xexpr);
-    auto y = sc_eval_op(f, yexpr);
-
-    SC_Type rtype = SC_Type::Bool();
-    if (x.type == y.type)
-        rtype = x.type;
-    else if (x.type == SC_Type::Num())
-        rtype = y.type;
-    else if (y.type == SC_Type::Num())
-        rtype = x.type;
-    if (rtype == SC_Type::Bool())
-        throw Exception(At_SC_Phrase(share(syntax), f),
-            stringify("domain error: ",x.type,op,y.type));
-
-    SC_Value result = f.sc_.newvalue(rtype);
-    f.sc_.out() <<"  "<<rtype<<" "<<result<<" = ";
-    if (isalpha(*op)) {
-        f.sc_.out() << op << "(";
-        sc_put_as(f, x, At_SC_Phrase(xexpr.syntax_, f), rtype);
-        f.sc_.out() << ",";
-        sc_put_as(f, y, At_SC_Phrase(yexpr.syntax_, f), rtype);
-        f.sc_.out() << ")";
-    } else {
-        sc_put_as(f, x, At_SC_Phrase(xexpr.syntax_, f), rtype);
-        f.sc_.out() << op;
-        sc_put_as(f, y, At_SC_Phrase(yexpr.syntax_, f), rtype);
-    }
-    f.sc_.out() << ";\n";
-    return result;
-}
-
-SC_Value Subtract_Expr::sc_eval(SC_Frame& f) const
-{
-    return sc_arith_expr(f, *syntax_, *arg1_, "-", *arg2_);
-}
-
-SC_Value Divide_Expr::sc_eval(SC_Frame& f) const
-{
-    return sc_arith_expr(f, *syntax_, *arg1_, "/", *arg2_);
-}
-
-SC_Value Power_Expr::sc_eval(SC_Frame& f) const
-{
-    return sc_arith_expr(f, *syntax_, *arg1_, "pow", *arg2_);
-}
-
 // Evaluate an expression to a constant at SC compile time,
 // or abort if it isn't a constant.
 Value sc_constify(const Operation& op, SC_Frame& f)
