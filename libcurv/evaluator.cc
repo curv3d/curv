@@ -157,39 +157,6 @@ Not_Expr::eval(Frame& f) const
 }
 
 Value
-Positive_Expr::eval(Frame& f) const
-{
-    struct Scalar_Op {
-        static double call(double x) { return +x; }
-        Shared<Operation> make_expr(Shared<Operation> x) const
-        {
-            return make<Positive_Expr>(share(cx.syntax()), std::move(x));
-        }
-        static auto callstr(Value x) { return stringify("+",x); }
-        At_Phrase cx;
-        Scalar_Op(const Phrase& ph, Frame& f) : cx(ph,f) {}
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(Scalar_Op(*syntax_, f), arg_->eval(f));
-}
-Value
-Negative_Expr::eval(Frame& f) const
-{
-    struct Scalar_Op {
-        static double call(double x) { return -x; }
-        Shared<Operation> make_expr(Shared<Operation> x) const
-        {
-            return make<Negative_Expr>(share(cx.syntax()), std::move(x));
-        }
-        static auto callstr(Value x) { return stringify("-",x); }
-        At_Phrase cx;
-        Scalar_Op(const Phrase& ph, Frame& f) : cx(ph,f) {}
-    };
-    static Unary_Numeric_Array_Op<Scalar_Op> array_op;
-    return array_op.op(Scalar_Op(*syntax_, f), arg_->eval(f));
-}
-
-Value
 Or_Expr::eval(Frame& f) const
 {
     bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));

@@ -342,17 +342,6 @@ struct Not_Expr : public Prefix_Expr_Base
     virtual Value eval(Frame&) const override;
     virtual SC_Value sc_eval(SC_Frame&) const override;
 };
-struct Positive_Expr : public Prefix_Expr_Base
-{
-    using Prefix_Expr_Base::Prefix_Expr_Base;
-    virtual Value eval(Frame&) const override;
-};
-struct Negative_Expr : public Prefix_Expr_Base
-{
-    using Prefix_Expr_Base::Prefix_Expr_Base;
-    virtual Value eval(Frame&) const override;
-    virtual SC_Value sc_eval(SC_Frame&) const override;
-};
 
 struct Spread_Op : public Operation
 {

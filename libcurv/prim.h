@@ -12,6 +12,26 @@
 
 namespace curv {
 
+struct Positive_Prim : public Unary_Num_SCMat_Prim
+{
+    static const char* name() {return "+";};
+    static Value call(double x, const Context&) { return {+x}; }
+    static SC_Value sc_call(SC_Frame& f, SC_Value x)
+        { return sc_unary_call(f, x.type, "+", x); }
+};
+using Positive_Op = Unary_Array_Op<Positive_Prim>;
+using Positive_Expr = Prefix_Op_Expr<Positive_Op>;
+
+struct Negative_Prim : public Unary_Num_SCMat_Prim
+{
+    static const char* name() {return "-";};
+    static Value call(double x, const Context&) { return {-x}; }
+    static SC_Value sc_call(SC_Frame& f, SC_Value x)
+        { return sc_unary_call(f, x.type, "-", x); }
+};
+using Negative_Op = Unary_Array_Op<Negative_Prim>;
+using Negative_Expr = Prefix_Op_Expr<Negative_Op>;
+
 struct Add_Prim : public Binary_Num_SCMat_Prim
 {
     static const char* name() {return "+";};

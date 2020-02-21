@@ -17,6 +17,7 @@
 #include <libcurv/meaning.h>
 #include <libcurv/optimizer.h>
 #include <libcurv/picker.h>
+#include <libcurv/prim.h>
 #include <libcurv/reactive.h>
 #include <libcurv/system.h>
 #include <libcurv/typeconv.h>
@@ -330,17 +331,6 @@ void Operation::sc_exec(SC_Frame& f) const
 SC_Value Constant::sc_eval(SC_Frame& f) const
 {
     return sc_eval_const(f, value_, *syntax_);
-}
-
-SC_Value Negative_Expr::sc_eval(SC_Frame& f) const
-{
-    auto x = sc_eval_op(f, *arg_);
-    if (!x.type.is_num_struc())
-        throw Exception(At_SC_Phrase(arg_->syntax_, f),
-            "argument not numeric");
-    SC_Value result = f.sc_.newvalue(x.type);
-    f.sc_.out()<<"  "<<x.type<<" "<<result<<" = -"<<x<< ";\n";
-    return result;
 }
 
 void sc_put_as(SC_Frame& f, SC_Value val, const Context& cx, SC_Type type)

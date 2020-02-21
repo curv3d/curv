@@ -24,6 +24,22 @@
 
 namespace curv {
 
+//----------------------------------------------------------------------//
+// Templates for converting an Array_Op to a unary or binary Expression //
+//----------------------------------------------------------------------//
+
+template <class Op>
+struct Prefix_Op_Expr : public Prefix_Expr_Base
+{
+    using Prefix_Expr_Base::Prefix_Expr_Base;
+    virtual Value eval(Frame& f) const override
+      { return Op::call(At_Phrase(*syntax_, f), arg_->eval(f)); }
+    virtual SC_Value sc_eval(SC_Frame& f) const override
+      { return Op::sc_op(At_SC_Phrase(syntax_,f), *arg_, f); }
+    virtual void print(std::ostream& out) const override
+      { out<<Op::Prim::name()<<"("<<*arg_<<")"; }
+};
+
 template <class Op>
 struct Infix_Op_Expr : public Infix_Expr_Base
 {
@@ -42,420 +58,72 @@ struct Infix_Op_Expr : public Infix_Expr_Base
     }
 };
 
-template <class Scalar_Op>
-struct Binary_Numeric_Array_Op
+//---------------------------------------------------------------//
+// Templates for converting a Prim to a unary or binary Array_Op //
+//---------------------------------------------------------------//
+
+template <class PRIM>
+struct Unary_Array_Op
 {
     // TODO: optimize: move semantics. unique object reuse.
 
-    static Value
-    reduce(const Scalar_Op& f, double zero, Value arg)
-    {
-        auto list = arg.to<List>(f.cx);
-        unsigned n = list->size();
-        if (n == 0)
-            return {zero};
-        if (n == 1)
-            return list->front();
-        Value result = list->front();
-        for (unsigned i = 1; i < n; ++i)
-            result = op(f, result, list->at(i));
-        return result;
-    }
+    using Prim = PRIM;
 
     static Value
-    op(const Scalar_Op& f, Value x, Value y)
+    call(const At_Syntax& cx, Value x)
     {
-        // if both x and y are numbers
-        double r = f.call(x.to_num_or_nan(), y.to_num_or_nan());
-        if (r == r)
-            return {r};
-
-        // if x, y, or both, are lists
-        if (auto xlist = x.dycast<List>()) {
-            if (auto ylist = y.dycast<List>())
-                return {element_wise_op(f, xlist, ylist)};
-            return {broadcast_left(f, xlist, y)};
-        }
-        if (auto ylist = y.dycast<List>())
-            return {broadcast_right(f, x, ylist)};
-
-        // One of x or y is reactive, the other is a number.
-        // Both x and y are reactive.
-        if (x.is_num()) {
-            auto yre = y.dycast<Reactive_Value>();
-            if (yre && yre->sctype_ == SC_Type::Num()) {
-                auto& syn = f.cx.syntax();
-                return {make<Reactive_Expression>(
-                    SC_Type::Num(),
-                    f.make_expr(
-                        make<Constant>(share(syn), x),
-                        yre->expr()),
-                    f.cx)};
+        typename Prim::scalar_t sx;
+        if (Prim::unbox(x, sx, cx)) {
+            Value r = Prim::call(sx, cx);
+            if (!r.is_missing()) return r;
+        } else if (x.is_ref()) {
+            Ref_Value& rx(x.to_ref_unsafe());
+            switch (rx.type_) {
+            case Ref_Value::ty_list:
+                return element_wise_op(cx, (List&)rx);
+            case Ref_Value::ty_reactive:
+                return reactive_op(cx, (Reactive_Value&)rx);
             }
         }
-        auto xre = x.dycast<Reactive_Value>();
-        if (xre && xre->sctype_ == SC_Type::Num()) {
-            auto& syn = f.cx.syntax();
-            if (y.is_num())
-                return {make<Reactive_Expression>(
-                    SC_Type::Num(),
-                    f.make_expr(xre->expr(),
-                        make<Constant>(share(syn), y)),
-                    f.cx)};
-            auto yre = y.dycast<Reactive_Value>();
-            if (yre && yre->sctype_ == SC_Type::Num())
-                return {make<Reactive_Expression>(
-                    SC_Type::Num(),
-                    f.make_expr(xre->expr(), yre->expr()),
-                    f.cx)};
-        }
-
-        throw Exception(f.cx,
-            stringify(f.callstr(x,y),": domain error"));
+        throw Exception(cx, domain_error(x));
+    }
+    static SC_Value
+    sc_op(const At_Syntax& cx, Operation& argx, SC_Frame& f)
+    {
+        // TODO: add array support
+        auto a = sc_eval_op(f, argx);
+        Prim::sc_check_arg(a, cx);
+        return Prim::sc_call(f, a);
     }
 
-    static Shared<List>
-    broadcast_left(const Scalar_Op& f, Shared<List> xlist, Value y)
+    static Value
+    element_wise_op(const At_Syntax& cx, List& xs)
     {
-        Shared<List> result = List::make(xlist->size());
-        for (unsigned i = 0; i < xlist->size(); ++i)
-            (*result)[i] = op(f, (*xlist)[i], y);
-        return result;
+        Shared<List> result = List::make(xs.size());
+        for (unsigned i = 0; i < xs.size(); ++i)
+            (*result)[i] = call(cx, xs[i]);
+        return {result};
     }
 
-    static Shared<List>
-    broadcast_right(const Scalar_Op& f, Value x, Shared<List> ylist)
+    // Argument x is reactive. Construct a Reactive_Expression.
+    static Value
+    reactive_op(const At_Syntax& cx, Reactive_Value &rx)
     {
-        Shared<List> result = List::make(ylist->size());
-        for (unsigned i = 0; i < ylist->size(); ++i)
-            (*result)[i] = op(f, x, (*ylist)[i]);
-        return result;
-    }
-
-    static Shared<List>
-    element_wise_op(const Scalar_Op& f, Shared<List> xs, Shared<List> ys)
-    {
-        if (xs->size() != ys->size())
-            throw Exception(f.cx, stringify(
-                "mismatched list sizes (",
-                xs->size(),",",ys->size(),") in array operation"));
-        Shared<List> result = List::make(xs->size());
-        for (unsigned i = 0; i < xs->size(); ++i)
-            (*result)[i] = op(f, (*xs)[i], (*ys)[i]);
-        return result;
-    }
-};
-
-struct Binary_Prim
-{
-    static bool result_type(SC_Type, SC_Type, SC_Type&) { return false; }
-};
-
-// This Prim accepts arbitrary non-List arguments.
-struct Unary_Scalar_Prim
-{
-    typedef Value scalar_t;
-    static bool unbox(Value a, scalar_t& b, const Context&)
-    {
-        if (a.dycast<List>()) {
-            return false;
+        SC_Type rtype = Prim::sc_result_type(rx.sctype_);
+        if (rtype) {
+            return {make<Reactive_Expression>(
+                rtype,
+                make<Prefix_Op_Expr<Unary_Array_Op>>(
+                    share(cx.syntax()), rx.expr()),
+                cx)};
         } else {
-            b = a;
-            return true;
+            throw domain_error({share(rx)});
         }
     }
-    static void sc_check_arg(SC_Value a, const Context& cx)
-    {
-        if (!a.type.is_struc())
-            throw Exception(cx, "argument must be a Struc");
-    }
-};
 
-// This Prim accepts a pair of arbitrary non-List arguments.
-struct Binary_Scalar_Prim : public Unary_Scalar_Prim, public Binary_Prim
-{
-    typedef Value left_t, right_t;
-    static bool unbox_left(Value a, left_t& b, const Context& cx)
+    static Shared<const String> domain_error(Value x)
     {
-        return unbox(a, b, cx);
-    }
-    static bool unbox_right(Value a, right_t& b, const Context& cx)
-    {
-        return unbox(a, b, cx);
-    }
-    static void sc_check_args(
-        SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
-    {
-        sc_struc_unify(f, a, b, cx);
-    }
-};
-
-// This Prim accepts Bool but not Bool32 arguments in SubCurv.
-struct Unary_Bool_Prim
-{
-    typedef bool scalar_t;
-    static bool unbox(Value a, scalar_t& b, const Context& cx)
-    {
-        if (a.is_bool()) {
-            b = a.to_bool_unsafe();
-            return true;
-        } else
-            return false;
-    }
-    static void sc_check_arg(SC_Value a, const Context& cx)
-    {
-        if (a.type.is_bool_or_vec()) return;
-        throw Exception(cx, "argument must be Bool or BVec");
-    }
-};
-
-// This Prim accepts Bool and Bool32 arguments in SubCurv.
-struct Binary_Bool_Or_Bool32_Prim : public Binary_Prim
-{
-    typedef bool left_t, right_t;
-    static bool unbox_left(Value a, left_t& b, const Context&)
-    {
-        if (a.is_bool()) {
-            b = a.to_bool_unsafe();
-            return true;
-        } else
-            return false;
-    }
-    static bool unbox_right(Value a, right_t& b, const Context&)
-    {
-        if (a.is_bool()) {
-            b = a.to_bool_unsafe();
-            return true;
-        } else
-            return false;
-    }
-    static void sc_check_arg(SC_Value a, const Context& cx)
-    {
-        if (a.type.is_bool_struc()) return;
-        throw Exception(cx, "argument must be Bool or Bool32");
-    }
-    static void sc_check_args(
-        SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
-    {
-        if (a.type.is_bool_or_vec()) {
-            if (b.type.is_bool_or_vec()) {
-                if (a.type.count() != b.type.count()
-                    && a.type.count() > 1 && b.type.count() > 1)
-                {
-                    throw Exception(cx, stringify(
-                        "can't combine lists of different sizes (",
-                        a.type.count(), " and ", b.type.count(), ")"));
-                }
-                return;
-            }
-            else if (b.type.is_bool32_or_vec()) {
-                // TODO: convert a to Bool32 via broadcasting
-            }
-        }
-        else if (a.type.is_bool32_or_vec()) {
-            if (b.type.is_bool32_or_vec()) {
-                if (a.type.count() != b.type.count()
-                    && a.type.count() > 1 && b.type.count() > 1)
-                {
-                    throw Exception(cx, stringify(
-                        "can't combine lists of different sizes (",
-                        a.type.count(), " and ", b.type.count(), ")"));
-                }
-                return;
-            }
-            if (b.type.is_bool()) {
-                // TODO: convert b to Bool32 via broadcasting?
-            }
-        }
-        throw Exception(cx, stringify(
-            "arguments must be Bool or Bool32 (got ",
-            a.type, " and ", b.type, " instead)"));
-    }
-};
-
-// A scalar numeric operation.
-// The corresponding GLSL primitive accepts a number, vector or matrix.
-struct Unary_Num_SCMat_Prim
-{
-    typedef double scalar_t;
-    static bool unbox(Value a, scalar_t& b, const Context&)
-    {
-        if (a.is_num()) {
-            b = a.to_num_unsafe();
-            return true;
-        } else
-            return false;
-    }
-    static void sc_check_arg(SC_Value a, const Context& cx)
-    {
-        if (!a.type.is_num_struc())
-            throw Exception(cx, "argument must be a Num, Vec or Mat");
-    }
-};
-
-// A scalar numeric operation.
-// The corresponding GLSL primitive accepts a number or vector.
-struct Unary_Num_SCVec_Prim : public Unary_Num_SCMat_Prim
-{
-    static void sc_check_arg(SC_Value a, const Context& cx)
-    {
-        if (!a.type.is_num_or_vec())
-            throw Exception(cx, "argument must be a Num or Vec");
-    }
-};
-
-// A scalar numeric operation.
-// The corresponding GLSL primitive accepts number, vector or matrix arguments.
-struct Binary_Num_SCMat_Prim : public Unary_Num_SCMat_Prim, public Binary_Prim
-{
-    typedef double left_t;
-    typedef double right_t;
-    static bool unbox_left(Value a, scalar_t& b, const Context& cx)
-    {
-        return unbox(a, b, cx);
-    }
-    static bool unbox_right(Value a, scalar_t& b, const Context& cx)
-    {
-        return unbox(a, b, cx);
-    }
-    static void sc_check_args(
-        SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
-    {
-        if (!a.type.is_num_struc()) {
-            throw Exception(At_Index(0, cx),
-                stringify("argument expected to be Num, Vec or Mat; got ",
-                    a.type));
-        }
-        if (!b.type.is_num_struc()) {
-            throw Exception(At_Index(1, cx),
-                stringify("argument expected to be Num, Vec or Mat; got ",
-                    a.type));
-        }
-        sc_struc_unify(f, a, b, cx);
-    }
-    static bool result_type(SC_Type a, SC_Type b, SC_Type& r)
-    {
-        return sc_unify_tensor_types(a, b, r);
-    }
-};
-
-// A scalar numeric operation.
-// The corresponding GLSL primitive accepts number or vector arguments.
-struct Binary_Num_SCVec_Prim : public Unary_Num_SCVec_Prim, public Binary_Prim
-{
-    typedef double left_t;
-    typedef double right_t;
-    static bool unbox_left(Value a, scalar_t& b, const Context& cx)
-    {
-        return unbox(a, b, cx);
-    }
-    static bool unbox_right(Value a, scalar_t& b, const Context& cx)
-    {
-        return unbox(a, b, cx);
-    }
-    static void sc_check_args(
-        SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
-    {
-        if (!a.type.is_num_or_vec()) {
-            throw Exception(At_Index(0, cx),
-                stringify("argument expected to be Num or Vec; got ", a.type));
-        }
-        if (!b.type.is_num_or_vec()) {
-            throw Exception(At_Index(1, cx),
-                stringify("argument expected to be Num or Vec; got ", a.type));
-        }
-        sc_struc_unify(f, a, b, cx);
-    }
-    static bool result_type(SC_Type a, SC_Type b, SC_Type& r)
-    {
-        return sc_unify_tensor_types(a, b, r);
-    }
-};
-
-// The left operand is a non-empty list of booleans.
-// The right operand is an integer >= 0 and < the size of the left operand.
-// (These restrictions on the right operand conform to the definition
-// of << and >> in the C/C++/GLSL languages.)
-struct Shift_Prim : public Binary_Prim
-{
-    typedef Shared<const List> left_t;
-    typedef double right_t;
-    static bool unbox_left(Value a, left_t& b, const Context&)
-    {
-        b = a.dycast<const List>();
-        return b && !b->empty() && b->front().is_bool();
-    }
-    static bool unbox_right(Value a, right_t& b, const Context&)
-    {
-        b = a.to_num_or_nan();
-        return b == b;
-    }
-    static void sc_check_args(
-        SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
-    {
-        if (!a.type.is_bool32_or_vec()) {
-            throw Exception(At_Index(0, cx),
-                stringify("expected argument of type Bool32, got ", a.type));
-        }
-        if (b.type != SC_Type::Num()) {
-            throw Exception(At_Index(1, cx),
-                stringify("expected argument of type Num, got ", b.type));
-        }
-    }
-};
-
-struct Bool32_Prim
-{
-    static bool unbox_bool32(Value in, unsigned& out, const Context& cx)
-    {
-        auto li = in.dycast<const List>();
-        if (!li || li->size() != 32 || !li->front().is_bool())
-            return false;
-        out = bool32_to_nat(li, cx);
-        return true;
-    }
-};
-struct Unary_Bool32_Prim : public Bool32_Prim
-{
-    typedef unsigned scalar_t;
-    static bool unbox(Value a, scalar_t& b, const Context& cx)
-    {
-        return unbox_bool32(a, b, cx);
-    }
-    static void sc_check_arg(SC_Value a, const Context& cx)
-    {
-        if (!a.type.is_bool32_or_vec())
-            throw Exception(cx, "argument must be a Bool32 or list of Bool32");
-    }
-};
-struct Binary_Bool32_Prim : public Bool32_Prim, public Binary_Prim
-{
-    typedef unsigned left_t;
-    typedef unsigned right_t;
-    static bool unbox_left(Value a, left_t& b, const Context& cx)
-    {
-        return unbox_bool32(a, b, At_Index(0, cx));
-    }
-    static bool unbox_right(Value a, right_t& b, const Context& cx)
-    {
-        return unbox_bool32(a, b, At_Index(1, cx));
-    }
-    static void sc_check_arg(SC_Value a, const Context& cx)
-    {
-        if (!a.type.is_bool32_or_vec())
-            throw Exception(cx, "argument must be a Bool32 or list of Bool32");
-    }
-    static void sc_check_args(
-        SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
-    {
-        if (!a.type.is_bool32_or_vec()) {
-            throw Exception(At_Index(0, cx),
-                stringify("expected argument of type Bool32, got ", a.type));
-        }
-        if (!b.type.is_bool32_or_vec()) {
-            throw Exception(At_Index(1, cx),
-                stringify("expected argument of type Bool32, got ", b.type));
-        }
+        return stringify(x, ": domain error");
     }
 };
 
@@ -685,90 +353,463 @@ struct Binary_Array_Op
     }
 };
 
-template <class Scalar_Op>
-struct Unary_Numeric_Array_Op
+//----------------------------------------------------------------------------//
+// Base types for Prim classes.                                               //
+// Each Prim class defines the semantics of a primitive operator or function. //
+// Each base class defines the argument and result types of a set of Prims.   //
+//----------------------------------------------------------------------------//
+
+struct Binary_Prim
 {
-    // TODO: optimize: move semantics. unique object reuse.
+    static bool result_type(SC_Type, SC_Type, SC_Type&) { return false; }
+};
 
-    static Value
-    op(const Scalar_Op& f, Value x)
+// This Prim accepts arbitrary non-List arguments.
+struct Unary_Scalar_Prim
+{
+    typedef Value scalar_t;
+    static bool unbox(Value a, scalar_t& b, const Context&)
     {
-        double r = f.call(x.to_num_or_nan());
-        if (r == r)
-            return {r};
-        if (auto xlist = x.dycast<List>())
-            return {element_wise_op(f, xlist)};
-        auto xre = x.dycast<Reactive_Value>();
-        if (xre && xre->sctype_ == SC_Type::Num()) {
-            return {make<Reactive_Expression>(
-                SC_Type::Num(),
-                f.make_expr(xre->expr()),
-                f.cx)};
+        if (a.dycast<List>()) {
+            return false;
+        } else {
+            b = a;
+            return true;
         }
-        throw Exception(f.cx,
-            stringify(f.callstr(x),": domain error"));
     }
-
-    static Shared<List>
-    element_wise_op(const Scalar_Op& f, Shared<List> xs)
+    static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        Shared<List> result = List::make(xs->size());
-        for (unsigned i = 0; i < xs->size(); ++i)
-            (*result)[i] = op(f, (*xs)[i]);
-        return result;
+        if (!a.type.is_struc())
+            throw Exception(cx, "argument must be a Struc");
     }
 };
 
-template <class Prim>
-struct Unary_Array_Op
+// This Prim accepts a pair of arbitrary non-List arguments.
+struct Binary_Scalar_Prim : public Unary_Scalar_Prim, public Binary_Prim
+{
+    typedef Value left_t, right_t;
+    static bool unbox_left(Value a, left_t& b, const Context& cx)
+    {
+        return unbox(a, b, cx);
+    }
+    static bool unbox_right(Value a, right_t& b, const Context& cx)
+    {
+        return unbox(a, b, cx);
+    }
+    static void sc_check_args(
+        SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
+    {
+        sc_struc_unify(f, a, b, cx);
+    }
+};
+
+// A primitive mapping Bool -> Num.
+// In SubCurv, argument types are Bool or Bvec but not Bool32.
+struct Unary_Bool_To_Num_Prim
+{
+    typedef bool scalar_t;
+    static bool unbox(Value a, scalar_t& b, const Context& cx)
+    {
+        if (a.is_bool()) {
+            b = a.to_bool_unsafe();
+            return true;
+        } else
+            return false;
+    }
+    static void sc_check_arg(SC_Value a, const Context& cx)
+    {
+        if (a.type.is_bool_or_vec()) return;
+        throw Exception(cx, "argument must be Bool or BVec");
+    }
+    static SC_Type sc_result_type(SC_Type a)
+    {
+        if (a.is_bool_or_vec())
+            return SC_Type::Num_Or_Vec(a.count());
+        else
+            return {};
+    }
+};
+
+// This Prim accepts Bool and Bool32 arguments in SubCurv.
+struct Binary_Bool_Or_Bool32_Prim : public Binary_Prim
+{
+    typedef bool left_t, right_t;
+    static bool unbox_left(Value a, left_t& b, const Context&)
+    {
+        if (a.is_bool()) {
+            b = a.to_bool_unsafe();
+            return true;
+        } else
+            return false;
+    }
+    static bool unbox_right(Value a, right_t& b, const Context&)
+    {
+        if (a.is_bool()) {
+            b = a.to_bool_unsafe();
+            return true;
+        } else
+            return false;
+    }
+    static void sc_check_arg(SC_Value a, const Context& cx)
+    {
+        if (a.type.is_bool_struc()) return;
+        throw Exception(cx, "argument must be Bool or Bool32");
+    }
+    static void sc_check_args(
+        SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
+    {
+        if (a.type.is_bool_or_vec()) {
+            if (b.type.is_bool_or_vec()) {
+                if (a.type.count() != b.type.count()
+                    && a.type.count() > 1 && b.type.count() > 1)
+                {
+                    throw Exception(cx, stringify(
+                        "can't combine lists of different sizes (",
+                        a.type.count(), " and ", b.type.count(), ")"));
+                }
+                return;
+            }
+            else if (b.type.is_bool32_or_vec()) {
+                // TODO: convert a to Bool32 via broadcasting
+            }
+        }
+        else if (a.type.is_bool32_or_vec()) {
+            if (b.type.is_bool32_or_vec()) {
+                if (a.type.count() != b.type.count()
+                    && a.type.count() > 1 && b.type.count() > 1)
+                {
+                    throw Exception(cx, stringify(
+                        "can't combine lists of different sizes (",
+                        a.type.count(), " and ", b.type.count(), ")"));
+                }
+                return;
+            }
+            if (b.type.is_bool()) {
+                // TODO: convert b to Bool32 via broadcasting?
+            }
+        }
+        throw Exception(cx, stringify(
+            "arguments must be Bool or Bool32 (got ",
+            a.type, " and ", b.type, " instead)"));
+    }
+};
+
+// A primitive mapping number -> number.
+// The corresponding GLSL primitive accepts a number, vector or matrix.
+struct Unary_Num_SCMat_Prim
+{
+    typedef double scalar_t;
+    static bool unbox(Value a, scalar_t& b, const Context&)
+    {
+        if (a.is_num()) {
+            b = a.to_num_unsafe();
+            return true;
+        } else
+            return false;
+    }
+    static void sc_check_arg(SC_Value a, const Context& cx)
+    {
+        if (!a.type.is_num_struc())
+            throw Exception(cx, "argument must be a Num, Vec or Mat");
+    }
+    static SC_Type sc_result_type(SC_Type a)
+    {
+        return a.is_num_struc() ? a : SC_Type{};
+    }
+};
+
+// A primitive mapping number -> number.
+// The corresponding GLSL primitive accepts a number or vector.
+struct Unary_Num_SCVec_Prim : public Unary_Num_SCMat_Prim
+{
+    static void sc_check_arg(SC_Value a, const Context& cx)
+    {
+        if (!a.type.is_num_or_vec())
+            throw Exception(cx, "argument must be a Num or Vec");
+    }
+    static SC_Type sc_result_type(SC_Type a)
+    {
+        return a.is_num_or_vec() ? a : SC_Type{};
+    }
+};
+
+// A primitive mapping number -> bool32.
+// The corresponding GLSL primitive accepts a number or vector.
+struct Unary_Num_To_Bool32_Prim : public Unary_Num_SCVec_Prim
+{
+    static SC_Type sc_result_type(SC_Type a)
+    {
+        return a.is_num_or_vec() ? SC_Type::Bool32(a.count()) : SC_Type{};
+    }
+};
+
+// A scalar numeric operation.
+// The corresponding GLSL primitive accepts number, vector or matrix arguments.
+struct Binary_Num_SCMat_Prim : public Unary_Num_SCMat_Prim, public Binary_Prim
+{
+    typedef double left_t;
+    typedef double right_t;
+    static bool unbox_left(Value a, scalar_t& b, const Context& cx)
+    {
+        return unbox(a, b, cx);
+    }
+    static bool unbox_right(Value a, scalar_t& b, const Context& cx)
+    {
+        return unbox(a, b, cx);
+    }
+    static void sc_check_args(
+        SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
+    {
+        if (!a.type.is_num_struc()) {
+            throw Exception(At_Index(0, cx),
+                stringify("argument expected to be Num, Vec or Mat; got ",
+                    a.type));
+        }
+        if (!b.type.is_num_struc()) {
+            throw Exception(At_Index(1, cx),
+                stringify("argument expected to be Num, Vec or Mat; got ",
+                    a.type));
+        }
+        sc_struc_unify(f, a, b, cx);
+    }
+    static bool result_type(SC_Type a, SC_Type b, SC_Type& r)
+    {
+        return sc_unify_tensor_types(a, b, r);
+    }
+};
+
+// A scalar numeric operation.
+// The corresponding GLSL primitive accepts number or vector arguments.
+struct Binary_Num_SCVec_Prim : public Unary_Num_SCVec_Prim, public Binary_Prim
+{
+    typedef double left_t;
+    typedef double right_t;
+    static bool unbox_left(Value a, scalar_t& b, const Context& cx)
+    {
+        return unbox(a, b, cx);
+    }
+    static bool unbox_right(Value a, scalar_t& b, const Context& cx)
+    {
+        return unbox(a, b, cx);
+    }
+    static void sc_check_args(
+        SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
+    {
+        if (!a.type.is_num_or_vec()) {
+            throw Exception(At_Index(0, cx),
+                stringify("argument expected to be Num or Vec; got ", a.type));
+        }
+        if (!b.type.is_num_or_vec()) {
+            throw Exception(At_Index(1, cx),
+                stringify("argument expected to be Num or Vec; got ", a.type));
+        }
+        sc_struc_unify(f, a, b, cx);
+    }
+    static bool result_type(SC_Type a, SC_Type b, SC_Type& r)
+    {
+        return sc_unify_tensor_types(a, b, r);
+    }
+};
+
+// The left operand is a non-empty list of booleans.
+// The right operand is an integer >= 0 and < the size of the left operand.
+// (These restrictions on the right operand conform to the definition
+// of << and >> in the C/C++/GLSL languages.)
+struct Shift_Prim : public Binary_Prim
+{
+    typedef Shared<const List> left_t;
+    typedef double right_t;
+    static bool unbox_left(Value a, left_t& b, const Context&)
+    {
+        b = a.dycast<const List>();
+        return b && !b->empty() && b->front().is_bool();
+    }
+    static bool unbox_right(Value a, right_t& b, const Context&)
+    {
+        b = a.to_num_or_nan();
+        return b == b;
+    }
+    static void sc_check_args(
+        SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
+    {
+        if (!a.type.is_bool32_or_vec()) {
+            throw Exception(At_Index(0, cx),
+                stringify("expected argument of type Bool32, got ", a.type));
+        }
+        if (b.type != SC_Type::Num()) {
+            throw Exception(At_Index(1, cx),
+                stringify("expected argument of type Num, got ", b.type));
+        }
+    }
+};
+
+struct Bool32_Prim
+{
+    static bool unbox_bool32(Value in, unsigned& out, const Context& cx)
+    {
+        auto li = in.dycast<const List>();
+        if (!li || li->size() != 32 || !li->front().is_bool())
+            return false;
+        out = bool32_to_nat(li, cx);
+        return true;
+    }
+};
+struct Unary_Bool32_To_Num_Prim : public Bool32_Prim
+{
+    typedef unsigned scalar_t;
+    static bool unbox(Value a, scalar_t& b, const Context& cx)
+    {
+        return unbox_bool32(a, b, cx);
+    }
+    static void sc_check_arg(SC_Value a, const Context& cx)
+    {
+        if (!a.type.is_bool32_or_vec())
+            throw Exception(cx, "argument must be a Bool32 or list of Bool32");
+    }
+    static SC_Type sc_result_type(SC_Type a)
+    {
+        if (a.is_bool32_or_vec())
+            return SC_Type::Num_Or_Vec(a.count());
+        else
+            return {};
+    }
+};
+struct Binary_Bool32_Prim : public Bool32_Prim, public Binary_Prim
+{
+    typedef unsigned left_t;
+    typedef unsigned right_t;
+    static bool unbox_left(Value a, left_t& b, const Context& cx)
+    {
+        return unbox_bool32(a, b, At_Index(0, cx));
+    }
+    static bool unbox_right(Value a, right_t& b, const Context& cx)
+    {
+        return unbox_bool32(a, b, At_Index(1, cx));
+    }
+    static void sc_check_arg(SC_Value a, const Context& cx)
+    {
+        if (!a.type.is_bool32_or_vec())
+            throw Exception(cx, "argument must be a Bool32 or list of Bool32");
+    }
+    static void sc_check_args(
+        SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
+    {
+        if (!a.type.is_bool32_or_vec()) {
+            throw Exception(At_Index(0, cx),
+                stringify("expected argument of type Bool32, got ", a.type));
+        }
+        if (!b.type.is_bool32_or_vec()) {
+            throw Exception(At_Index(1, cx),
+                stringify("expected argument of type Bool32, got ", b.type));
+        }
+    }
+};
+
+//--------------------//
+// Historical Baggage //
+//--------------------//
+
+template <class Scalar_Op>
+struct Binary_Numeric_Array_Op
 {
     // TODO: optimize: move semantics. unique object reuse.
 
     static Value
-    call(const At_Syntax& cx, Value x)
+    reduce(const Scalar_Op& f, double zero, Value arg)
     {
-        typename Prim::scalar_t sx;
-        if (Prim::unbox(x, sx, cx)) {
-            Value r = Prim::call(sx, cx);
-            if (!r.is_missing()) return r;
-        } else if (x.is_ref()) {
-            Ref_Value& rx(x.to_ref_unsafe());
-            switch (rx.type_) {
-            case Ref_Value::ty_list:
-                return element_wise_op(cx, (List&)rx);
-            case Ref_Value::ty_reactive:
-                return reactive_op(cx, x);
+        auto list = arg.to<List>(f.cx);
+        unsigned n = list->size();
+        if (n == 0)
+            return {zero};
+        if (n == 1)
+            return list->front();
+        Value result = list->front();
+        for (unsigned i = 1; i < n; ++i)
+            result = op(f, result, list->at(i));
+        return result;
+    }
+
+    static Value
+    op(const Scalar_Op& f, Value x, Value y)
+    {
+        // if both x and y are numbers
+        double r = f.call(x.to_num_or_nan(), y.to_num_or_nan());
+        if (r == r)
+            return {r};
+
+        // if x, y, or both, are lists
+        if (auto xlist = x.dycast<List>()) {
+            if (auto ylist = y.dycast<List>())
+                return {element_wise_op(f, xlist, ylist)};
+            return {broadcast_left(f, xlist, y)};
+        }
+        if (auto ylist = y.dycast<List>())
+            return {broadcast_right(f, x, ylist)};
+
+        // One of x or y is reactive, the other is a number.
+        // Both x and y are reactive.
+        if (x.is_num()) {
+            auto yre = y.dycast<Reactive_Value>();
+            if (yre && yre->sctype_ == SC_Type::Num()) {
+                auto& syn = f.cx.syntax();
+                return {make<Reactive_Expression>(
+                    SC_Type::Num(),
+                    f.make_expr(
+                        make<Constant>(share(syn), x),
+                        yre->expr()),
+                    f.cx)};
             }
         }
-        throw Exception(cx, domain_error(x));
-    }
-    static SC_Value
-    sc_op(const At_Syntax& cx, Operation& argx, SC_Frame& f)
-    {
-        // TODO: add array support
-        auto a = sc_eval_op(f, argx);
-        Prim::sc_check_arg(a, cx);
-        return Prim::sc_call(f, a);
+        auto xre = x.dycast<Reactive_Value>();
+        if (xre && xre->sctype_ == SC_Type::Num()) {
+            auto& syn = f.cx.syntax();
+            if (y.is_num())
+                return {make<Reactive_Expression>(
+                    SC_Type::Num(),
+                    f.make_expr(xre->expr(),
+                        make<Constant>(share(syn), y)),
+                    f.cx)};
+            auto yre = y.dycast<Reactive_Value>();
+            if (yre && yre->sctype_ == SC_Type::Num())
+                return {make<Reactive_Expression>(
+                    SC_Type::Num(),
+                    f.make_expr(xre->expr(), yre->expr()),
+                    f.cx)};
+        }
+
+        throw Exception(f.cx,
+            stringify(f.callstr(x,y),": domain error"));
     }
 
-    static Value
-    element_wise_op(const At_Syntax& cx, List& xs)
+    static Shared<List>
+    broadcast_left(const Scalar_Op& f, Shared<List> xlist, Value y)
     {
-        Shared<List> result = List::make(xs.size());
-        for (unsigned i = 0; i < xs.size(); ++i)
-            (*result)[i] = call(cx, xs[i]);
-        return {result};
+        Shared<List> result = List::make(xlist->size());
+        for (unsigned i = 0; i < xlist->size(); ++i)
+            (*result)[i] = op(f, (*xlist)[i], y);
+        return result;
     }
 
-    static Value
-    reactive_op(const At_Syntax& cx, Value x)
+    static Shared<List>
+    broadcast_right(const Scalar_Op& f, Value x, Shared<List> ylist)
     {
-        throw Exception(cx, domain_error(x));
+        Shared<List> result = List::make(ylist->size());
+        for (unsigned i = 0; i < ylist->size(); ++i)
+            (*result)[i] = op(f, x, (*ylist)[i]);
+        return result;
     }
 
-    static Shared<const String> domain_error(Value x)
+    static Shared<List>
+    element_wise_op(const Scalar_Op& f, Shared<List> xs, Shared<List> ys)
     {
-        return stringify(x, ": domain error");
+        if (xs->size() != ys->size())
+            throw Exception(f.cx, stringify(
+                "mismatched list sizes (",
+                xs->size(),",",ys->size(),") in array operation"));
+        Shared<List> result = List::make(xs->size());
+        for (unsigned i = 0; i < xs->size(); ++i)
+            (*result)[i] = op(f, (*xs)[i], (*ys)[i]);
+        return result;
     }
 };
 

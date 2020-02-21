@@ -1,3 +1,5 @@
+Unary_X_Prim_Type::sc_result_type() replaces sc_check_arg(). DRY.
+Binary_X_Prim_Type: remove global stub for result_type(), fix code to work.
 Binary_Array_Op::domain_error: use Prim::name rather than dig into cx.syntax
     is_C_identifier in symbol.h
     ERROR: max[2,#blue]: invalid argument
@@ -5,7 +7,6 @@ Binary_Array_Op::domain_error: use Prim::name rather than dig into cx.syntax
 replace Atan2 with Phase, implemented with Prim
     remove sc_put_as
     get rid of Binary_Numeric_Array_Op
-get rid of Unary_Numeric_Array_Op
 rename sc_vec_element -> sc_list_elem
     fix internals to support general struc list
     fix callers to support general struc list
@@ -16,6 +17,9 @@ add Reactive_Value::at(i,cx), call from list_elem and list_at
 maybe refactor that list_at code in evaluator
 dot: matrix multiply
 Rename Legacy_Function to Tuple_Function, since it isn't going away.
+replace idchr() -- use is_C_identifier()?
+rename Prefix_Op_Expr->Unary_Op_Expr, Infix_Op_Expr->Binary_Op_Expr
+Array_Op and Prim should export the same interface.
 
 ISSUES:
  * rx->expr() makes more logical sense than rx->expr(ph). That's in curv5.

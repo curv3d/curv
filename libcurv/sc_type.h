@@ -239,6 +239,10 @@ struct SC_Type
     {
         return !(*this == rhs);
     }
+    explicit operator bool () const noexcept
+    {
+        return base_type_ != Base_Type::Any;
+    }
 };
 
 // if numeric, how many numbers are stored.

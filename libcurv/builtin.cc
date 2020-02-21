@@ -156,8 +156,9 @@ struct Is_Fun_Function : public Function
     }
 };
 
-struct Bit_Prim : public Unary_Bool_Prim
+struct Bit_Prim : public Unary_Bool_To_Num_Prim
 {
+    static const char* name() { return "bit"; }
     static Value call(bool b, const Context&) { return {double(b)}; }
     static SC_Value sc_call(SC_Frame& f, SC_Value arg)
     {
@@ -169,39 +170,40 @@ struct Bit_Prim : public Unary_Bool_Prim
 };
 using Bit_Function = Unary_Array_Func<Bit_Prim>;
 
-#define UNARY_NUMERIC_FUNCTION(Func_Name,c_name,glsl_name) \
+#define UNARY_NUMERIC_FUNCTION(Func_Name,curv_name,c_name,glsl_name) \
 struct Func_Name##Prim : public Unary_Num_SCVec_Prim \
 { \
+    static const char* name() { return #curv_name; } \
     static Value call(double x, const Context&) { return {c_name(x)}; } \
     static SC_Value sc_call(SC_Frame& f, SC_Value arg) \
         { return sc_unary_call(f, arg.type, #glsl_name, arg); } \
 }; \
 using Func_Name = Unary_Array_Func<Func_Name##Prim>; \
 
-UNARY_NUMERIC_FUNCTION(Sqrt_Function, sqrt, sqrt)
-UNARY_NUMERIC_FUNCTION(Log_Function, log, log)
-UNARY_NUMERIC_FUNCTION(Abs_Function, abs, abs)
-UNARY_NUMERIC_FUNCTION(Floor_Function, floor, floor)
-UNARY_NUMERIC_FUNCTION(Ceil_Function, ceil, ceil)
-UNARY_NUMERIC_FUNCTION(Trunc_Function, trunc, trunc)
-UNARY_NUMERIC_FUNCTION(Round_Function, rint, roundEven)
+UNARY_NUMERIC_FUNCTION(Sqrt_Function, sqrt, sqrt, sqrt)
+UNARY_NUMERIC_FUNCTION(Log_Function, log, log, log)
+UNARY_NUMERIC_FUNCTION(Abs_Function, abs, abs, abs)
+UNARY_NUMERIC_FUNCTION(Floor_Function, floor, floor, floor)
+UNARY_NUMERIC_FUNCTION(Ceil_Function, ceil, ceil, ceil)
+UNARY_NUMERIC_FUNCTION(Trunc_Function, trunc, trunc, trunc)
+UNARY_NUMERIC_FUNCTION(Round_Function, round, rint, roundEven)
 
 inline double frac(double n) { return n - floor(n); }
-UNARY_NUMERIC_FUNCTION(Frac_Function, frac, fract)
+UNARY_NUMERIC_FUNCTION(Frac_Function, frac, frac, fract)
 
-UNARY_NUMERIC_FUNCTION(Sin_Function, sin, sin)
-UNARY_NUMERIC_FUNCTION(Cos_Function, cos, cos)
-UNARY_NUMERIC_FUNCTION(Tan_Function, tan, tan)
-UNARY_NUMERIC_FUNCTION(Acos_Function, acos, acos)
-UNARY_NUMERIC_FUNCTION(Asin_Function, asin, asin)
-UNARY_NUMERIC_FUNCTION(Atan_Function, atan, atan)
+UNARY_NUMERIC_FUNCTION(Sin_Function, sin, sin, sin)
+UNARY_NUMERIC_FUNCTION(Cos_Function, cos, cos, cos)
+UNARY_NUMERIC_FUNCTION(Tan_Function, tan, tan, tan)
+UNARY_NUMERIC_FUNCTION(Acos_Function, acos, acos, acos)
+UNARY_NUMERIC_FUNCTION(Asin_Function, asin, asin, asin)
+UNARY_NUMERIC_FUNCTION(Atan_Function, atan, atan, atan)
 
-UNARY_NUMERIC_FUNCTION(Sinh_Function, sinh, sinh)
-UNARY_NUMERIC_FUNCTION(Cosh_Function, cosh, cosh)
-UNARY_NUMERIC_FUNCTION(Tanh_Function, tanh, tanh)
-UNARY_NUMERIC_FUNCTION(Acosh_Function, acosh, acosh)
-UNARY_NUMERIC_FUNCTION(Asinh_Function, asinh, asinh)
-UNARY_NUMERIC_FUNCTION(Atanh_Function, atanh, atanh)
+UNARY_NUMERIC_FUNCTION(Sinh_Function, sinh, sinh, sinh)
+UNARY_NUMERIC_FUNCTION(Cosh_Function, cosh, cosh, cosh)
+UNARY_NUMERIC_FUNCTION(Tanh_Function, tanh, tanh, tanh)
+UNARY_NUMERIC_FUNCTION(Acosh_Function, acosh, acosh, acosh)
+UNARY_NUMERIC_FUNCTION(Asinh_Function, asinh, asinh, asinh)
+UNARY_NUMERIC_FUNCTION(Atanh_Function, atanh, atanh, atanh)
 
 struct Atan2_Function : public Legacy_Function
 {
@@ -495,14 +497,21 @@ using Bool32_Product_Function = Monoid_Func<Bool32_Product_Prim>;
 struct Bool32_To_Nat_Function : public Function
 {
     using Function::Function;
-    struct Prim : public Unary_Bool32_Prim
+    struct Prim : public Unary_Bool32_To_Num_Prim
     {
+        static const char* name() { return "bool32_to_nat"; }
         static Value call(unsigned n, const Context&)
         {
             return {double(n)};
         }
         // No SubCurv support because a Num (32 bit float)
         // cannot hold a Nat (32 bit natural).
+        static SC_Type sc_result_type(SC_Type) { return {}; }
+        static SC_Value sc_call(SC_Frame& f, SC_Value x)
+        {
+            throw Exception(At_SC_Frame(f),
+                "bool32_to_nat is not supported by SubCurv");
+        }
     };
     static Unary_Array_Op<Prim> array_op;
     Value call(Value arg, Frame& f) override
@@ -514,11 +523,18 @@ struct Bool32_To_Nat_Function : public Function
 struct Nat_To_Bool32_Function : public Function
 {
     using Function::Function;
-    struct Prim : public Unary_Num_SCVec_Prim
+    struct Prim : public Unary_Num_To_Bool32_Prim
     {
+        static const char* name() { return "nat_to_bool32"; }
         static Value call(double n, const Context& cx)
         {
             return {nat_to_bool32(num_to_nat(n, cx))};
+        }
+        static SC_Value sc_call(SC_Frame& f, SC_Value x)
+        {
+            throw Exception(At_SC_Frame(f),
+                "nat_to_bool32 can't be called in this context: "
+                "argument must be a constant");
         }
     };
     static Unary_Array_Op<Prim> array_op;
@@ -544,8 +560,9 @@ struct Nat_To_Bool32_Function : public Function
     }
 };
 
-struct Bool32_To_Float_Prim : public Unary_Bool32_Prim
+struct Bool32_To_Float_Prim : public Unary_Bool32_To_Num_Prim
 {
+    static const char* name() { return "bool32_to_float"; }
     static Value call(unsigned n, const Context&)
     {
         return {nat_to_float(n)};
@@ -561,8 +578,9 @@ struct Bool32_To_Float_Prim : public Unary_Bool32_Prim
 };
 using Bool32_To_Float_Function = Unary_Array_Func<Bool32_To_Float_Prim>;
 
-struct Float_To_Bool32_Prim : public Unary_Num_SCVec_Prim
+struct Float_To_Bool32_Prim : public Unary_Num_To_Bool32_Prim
 {
+    static const char* name() { return "bool32_to_float"; }
     static Value call(double n, const Context&)
     {
         return {nat_to_bool32(float_to_nat(n))};
