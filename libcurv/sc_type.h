@@ -185,20 +185,10 @@ struct SC_Type
         return rank_ == 0
             && base_type_ >= Base_Type::Mat2 && base_type_ <= Base_Type::Mat4;
     }
-    inline bool is_struc() const
-    {
-        return rank_ == 0;
-    }
 
-    inline bool is_list() const
-    {
-        return (base_type_ >= Base_Type::Bool32
-                && base_type_ <= Base_Type::Bool4x32)
-            || (base_type_ >= Base_Type::Bool2
-                && base_type_ <= Base_Type::Bool4)
-            || (base_type_ >= Base_Type::Vec2 && base_type_ <= Base_Type::Mat4)
-            || rank_ > 0;
-    }
+    inline bool is_struc() const { return rank_ == 0; }
+    inline bool is_list() const { return rank() > 0; }
+
     // number of dimensions: 0 means a scalar (Num or Bool or Any)
     inline unsigned rank() const
     {
