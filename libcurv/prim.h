@@ -20,7 +20,7 @@ struct Positive_Prim : public Unary_Num_SCMat_Prim
         { return sc_unary_call(f, x.type, "+", x); }
 };
 using Positive_Op = Unary_Array_Op<Positive_Prim>;
-using Positive_Expr = Prefix_Op_Expr<Positive_Op>;
+using Positive_Expr = Unary_Op_Expr<Positive_Op>;
 
 struct Negative_Prim : public Unary_Num_SCMat_Prim
 {
@@ -30,7 +30,7 @@ struct Negative_Prim : public Unary_Num_SCMat_Prim
         { return sc_unary_call(f, x.type, "-", x); }
 };
 using Negative_Op = Unary_Array_Op<Negative_Prim>;
-using Negative_Expr = Prefix_Op_Expr<Negative_Op>;
+using Negative_Expr = Unary_Op_Expr<Negative_Op>;
 
 struct Add_Prim : public Binary_Num_SCMat_Prim
 {
@@ -41,7 +41,7 @@ struct Add_Prim : public Binary_Num_SCMat_Prim
         { return sc_binop(f, x.type, x, "+", y); }
 };
 using Add_Op = Binary_Array_Op<Add_Prim>;
-using Add_Expr = Infix_Op_Expr<Add_Op>;
+using Add_Expr = Binary_Op_Expr<Add_Op>;
 
 struct Multiply_Prim : public Binary_Num_SCMat_Prim
 {
@@ -56,7 +56,7 @@ struct Multiply_Prim : public Binary_Num_SCMat_Prim
     }
 };
 using Multiply_Op = Binary_Array_Op<Multiply_Prim>;
-using Multiply_Expr = Infix_Op_Expr<Multiply_Op>;
+using Multiply_Expr = Binary_Op_Expr<Multiply_Op>;
 
 struct Subtract_Prim : public Binary_Num_SCMat_Prim
 {
@@ -66,7 +66,7 @@ struct Subtract_Prim : public Binary_Num_SCMat_Prim
         { return sc_binop(f, x.type, x, "-", y); }
 };
 using Subtract_Op = Binary_Array_Op<Subtract_Prim>;
-using Subtract_Expr = Infix_Op_Expr<Subtract_Op>;
+using Subtract_Expr = Binary_Op_Expr<Subtract_Op>;
 
 struct Divide_Prim : public Binary_Num_SCMat_Prim
 {
@@ -76,7 +76,7 @@ struct Divide_Prim : public Binary_Num_SCMat_Prim
         { return sc_binop(f, x.type, x, "/", y); }
 };
 using Divide_Op = Binary_Array_Op<Divide_Prim>;
-using Divide_Expr = Infix_Op_Expr<Divide_Op>;
+using Divide_Expr = Binary_Op_Expr<Divide_Op>;
 
 struct Power_Prim : public Binary_Num_SCVec_Prim
 {
@@ -86,7 +86,7 @@ struct Power_Prim : public Binary_Num_SCVec_Prim
         { return sc_bincall(f, x.type, "pow", x, y); }
 };
 using Power_Op = Binary_Array_Op<Power_Prim>;
-using Power_Expr = Infix_Op_Expr<Power_Op>;
+using Power_Expr = Binary_Op_Expr<Power_Op>;
 
 } // namespace
 #endif // header guard

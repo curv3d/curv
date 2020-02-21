@@ -29,7 +29,7 @@ namespace curv {
 //----------------------------------------------------------------------//
 
 template <class Op>
-struct Prefix_Op_Expr : public Prefix_Expr_Base
+struct Unary_Op_Expr : public Prefix_Expr_Base
 {
     using Prefix_Expr_Base::Prefix_Expr_Base;
     virtual Value eval(Frame& f) const override
@@ -41,7 +41,7 @@ struct Prefix_Op_Expr : public Prefix_Expr_Base
 };
 
 template <class Op>
-struct Infix_Op_Expr : public Infix_Expr_Base
+struct Binary_Op_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame& f) const override
@@ -113,7 +113,7 @@ struct Unary_Array_Op
         if (rtype) {
             return {make<Reactive_Expression>(
                 rtype,
-                make<Prefix_Op_Expr<Unary_Array_Op>>(
+                make<Unary_Op_Expr<Unary_Array_Op>>(
                     share(cx.syntax()), rx.expr()),
                 cx)};
         } else {
@@ -344,7 +344,7 @@ struct Binary_Array_Op
         if (Prim::result_type(x_type, y_type, rtype)) {
             return {make<Reactive_Expression>(
                 rtype,
-                make<Infix_Op_Expr<Binary_Array_Op>>(
+                make<Binary_Op_Expr<Binary_Array_Op>>(
                     share(cx.syntax()), x_expr, y_expr),
                 cx)};
         } else {
