@@ -1,14 +1,33 @@
 WASM can be used for:
-* running Curv programs in a web browser
-* sandboxed, platform independent binaries
-  * distribution format for compiled Curv binaries and plugins?
-  * distribution format for the Curv program?
+* Running the Curv IDE in a web browser.
+* Compiling Curv code to WASM for faster execution (than interpreter),
+  eg for mesh export. Firefox will use Cranelift for WASM code gen, which
+  prioritizes code gen speed over optimization. I won't get LLVM performance
+  in a web browser. Native Curv will always win.
+* Sandboxed, platform independent binaries.
+  * Distribution format for compiled Curv binaries and plugins?
+  * Distribution format for the Curv program?
+
+In the future, could I JIT compile Curv programs into WASM and then run them
+as efficiently as native code? I would need LLVM quality code generation,
+a vectorized implementation of the GLM and/or Eigen library APIs,
+and multi-threaded data parallelism primitives. WASM needs SIMD and threads.
+I'll need an LLVM based WASM to native JIT compiler.
 
 Emscripten : compile C++ to WASM
 Cheerp : Emscripten competitor
 Rust : easy generation of WASM code, wasm-bindgen
 LLVM/Clang 8 : has a WASM target. Rust moved from Emscripten to LLVM for WASM.
-Wasmer : run WASM outside browser (github.com/wasmerio/wasmer)
+Wasmer : Run WASM outside browser (github.com/wasmerio/wasmer)
+WebIDL : High level type system for interoperation between WASM modules and:
+         other WASM modules, Javascript, native code, etc.
+         https://github.com/WebAssembly/interface-types
+WASI : Portable operating system API for WASM modules: Posix, WebGPU, and more.
+Bytecode Alliance .org:
+ * Wasmtime : standalone WASM runtime.
+ * Cranelift : WASM -> portable SSA IR -> native code; fast code generator.
+ * WASI common : standalone implementation of WASI.
+inNative : C library for compiling WASM to C compatible binary: DLL or EXE.
 
 How to interoperate between WASM and Javascript. You need some way to
 translate WASM objects to Javascript objects, and vice versa.
@@ -17,3 +36,14 @@ A framework is needed for this:
  * C++/Emscripten:
    https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html
  * Cheerp has one as well.
+
+https://innative.dev/
+inNative is an AOT compiler for WASM that creates C compatible binaries,
+either as sandboxed plugins you can dynamically load, or as stand-alone
+executables that interface directly with the operating system. This allows
+webassembly modules to participate in C linking and the build process, either
+statically, dynamically, or with access to the host operating system. The
+runtime can be installed standalone on a user’s machine, or it can be
+embedded inside your program.
+ * open source Apache 2.0 https://github.com/innative-sdk/innative
+ * uses a fork of LLVM 9.x stable
