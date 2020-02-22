@@ -344,7 +344,7 @@ using Min_Function = Monoid_Func<Min_Prim>;
 using Sum_Function = Monoid_Func<Add_Prim>;
 
 #define BOOL_OP(CppName,Name,Zero,LogOp,BitOp)\
-struct CppName##_Prim : public Binary_Bool_Or_Bool32_Prim\
+struct CppName##_Prim : public Binary_Bool_Prim\
 {\
     static const char* name() { return Name; } \
     static Value zero() { return {Zero}; }\
@@ -379,7 +379,7 @@ using CppName##_Function = Monoid_Func<CppName##_Prim>;\
 BOOL_OP(And,"and",true,&&,&)
 BOOL_OP(Or,"or",false,||,|)
 
-struct Xor_Prim : public Binary_Bool_Or_Bool32_Prim
+struct Xor_Prim : public Binary_Bool_Prim
 {
     static const char* name() { return "xor"; }
     static Value zero() { return {false}; }
@@ -714,7 +714,7 @@ struct Select_Function : public Legacy_Function
     }
 };
 
-struct Equal_Prim : public Binary_Scalar_Prim
+struct Equal_Prim : public Binary_Scalar_To_Bool_Prim
 {
     static const char* name() { return "equal"; }
     static Value call(Value a, Value b, const Context &cx)
@@ -735,7 +735,8 @@ struct Equal_Prim : public Binary_Scalar_Prim
     }
 };
 using Equal_Function = Binary_Array_Func<Equal_Prim>;
-struct Unequal_Prim : public Binary_Scalar_Prim
+
+struct Unequal_Prim : public Binary_Scalar_To_Bool_Prim
 {
     static const char* name() { return "unequal"; }
     static Value call(Value a, Value b, const Context &cx)
@@ -756,6 +757,7 @@ struct Unequal_Prim : public Binary_Scalar_Prim
     }
 };
 using Unequal_Function = Binary_Array_Func<Unequal_Prim>;
+
 SC_Value Equal_Expr::sc_eval(SC_Frame& f) const
 {
     auto a = sc_eval_op(f, *arg1_);

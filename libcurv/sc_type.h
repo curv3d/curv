@@ -11,7 +11,7 @@
 namespace curv {
 
 // an array indexed by SC_Type::Base_Type
-extern struct SC_Base_Type_Info
+extern const struct SC_Base_Type_Info
 {
     const char* name;
     unsigned rank;
@@ -188,6 +188,9 @@ struct SC_Type
 
     inline bool is_struc() const { return rank_ == 0; }
     inline bool is_list() const { return rank() > 0; }
+    inline bool is_scalar_or_vec() const {
+        return rank_ == 0 && base_info().rank <= 1 && base_info().dim1 <= 4;
+    }
 
     // number of dimensions: 0 means a scalar (Num or Bool or Error)
     inline unsigned rank() const

@@ -1,7 +1,7 @@
-SubCurv: if expr is always well typed. then & else types match.
+Binary_X_Prim_Type: remove global stub for result_type(), fix code to work.
+sc_unify_tensor_types(a,b) returns Error() on failure. More convenient.
 SubCurv: use SC contexts for reporting SC type errors when evaluating reactive
     expressions.
-Binary_X_Prim_Type: remove global stub for result_type(), fix code to work.
 Unary_X_Prim_Type::sc_result_type() replaces sc_check_arg(). DRY.
 replace Atan2 with Phase, implemented with Prim
     remove sc_put_as
@@ -18,6 +18,8 @@ dot: matrix multiply
 replace idchr() -- use is_C_identifier()?
 Array_Op and Prim should export the same interface.
 
+Standardize format of Prim error messages
+-----------------------------------------
 Binary_Array_Op::domain_error: use Prim::name rather than dig into cx.syntax
     is_C_identifier in symbol.h
 +        if (is_C_identifier(Prim::name())) {
@@ -35,6 +37,10 @@ Binary_Array_Op::domain_error: use Prim::name rather than dig into cx.syntax
       <points at Binary_Prim_Expr or Call_Expr>
     ERROR: argument #1 of max: [2,#blue]: invalid argument pair
       <points at argument of Call_Expr>
+* Errors produced by sc_check_args, from 2 SC_Values and a cx... what do they
+  look like? In some cases I use At_Index(cx, 0 or 1) but does that work in
+  all cases?
+* Errors resulting from sc_result_type() failures.
 
 Rename Legacy_Function to Tuple_Function, since it isn't going away.
     Tuple_Function(nargs, name)

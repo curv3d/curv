@@ -340,8 +340,8 @@ struct Binary_Array_Op
             y_type = sc_type_of(y);
         }
 
-        SC_Type rtype;
-        if (Prim::result_type(x_type, y_type, rtype)) {
+        SC_Type rtype = Prim::sc_result_type(x_type, y_type);
+        if (rtype) {
             return {make<Reactive_Expression>(
                 rtype,
                 make<Binary_Op_Expr<Binary_Array_Op>>(
@@ -358,11 +358,6 @@ struct Binary_Array_Op
 // Each Prim class defines the semantics of a primitive operator or function. //
 // Each base class defines the argument and result types of a set of Prims.   //
 //----------------------------------------------------------------------------//
-
-struct Binary_Prim
-{
-    static bool result_type(SC_Type, SC_Type, SC_Type&) { return false; }
-};
 
 // This Prim accepts arbitrary non-List arguments.
 struct Unary_Scalar_Prim
@@ -384,8 +379,9 @@ struct Unary_Scalar_Prim
     }
 };
 
-// This Prim accepts a pair of arbitrary non-List arguments.
-struct Binary_Scalar_Prim : public Unary_Scalar_Prim, public Binary_Prim
+// A primitive that maps [scalar,scalar] -> Bool
+// In SubCurv, each argument is a scalar or vec[2-4].
+struct Binary_Scalar_To_Bool_Prim : public Unary_Scalar_Prim
 {
     typedef Value left_t, right_t;
     static bool unbox_left(Value a, left_t& b, const Context& cx)
@@ -399,7 +395,25 @@ struct Binary_Scalar_Prim : public Unary_Scalar_Prim, public Binary_Prim
     static void sc_check_args(
         SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
     {
+        if (!a.type.is_scalar_or_vec()) {
+            throw Exception(cx, stringify(
+                "first argument must be a scalar or vec; instead got ",
+                a.type));
+        }
+        if (!b.type.is_scalar_or_vec()) {
+            throw Exception(cx, stringify(
+                "second argument must be a scalar or vec; instead got ",
+                b.type));
+        }
         sc_struc_unify(f, a, b, cx);
+    }
+    static SC_Type sc_result_type(SC_Type a, SC_Type b)
+    {
+        SC_Type r;
+        if (sc_unify_tensor_types(a, b, r) && r.is_scalar_or_vec())
+            return SC_Type::Bool(r.count());
+        else
+            return {};
     }
 };
 
@@ -430,8 +444,9 @@ struct Unary_Bool_To_Num_Prim
     }
 };
 
-// This Prim accepts Bool and Bool32 arguments in SubCurv.
-struct Binary_Bool_Or_Bool32_Prim : public Binary_Prim
+// Maps [bool,bool] -> bool.
+// In SubCurv, accepts Bool and Bool32 arguments, and vec of same.
+struct Binary_Bool_Prim
 {
     typedef bool left_t, right_t;
     static bool unbox_left(Value a, left_t& b, const Context&)
@@ -492,6 +507,16 @@ struct Binary_Bool_Or_Bool32_Prim : public Binary_Prim
             "arguments must be Bool or Bool32 (got ",
             a.type, " and ", b.type, " instead)"));
     }
+    static SC_Type sc_result_type(SC_Type a, SC_Type b)
+    {
+        SC_Type r;
+        if (a.is_bool_struc() && b.is_bool_struc()
+            && sc_unify_tensor_types(a,b,r))
+        {
+            return r;
+        } else
+            return {};
+    }
 };
 
 // A primitive mapping number -> number.
@@ -545,7 +570,7 @@ struct Unary_Num_To_Bool32_Prim : public Unary_Num_SCVec_Prim
 
 // A scalar numeric operation.
 // The corresponding GLSL primitive accepts number, vector or matrix arguments.
-struct Binary_Num_SCMat_Prim : public Unary_Num_SCMat_Prim, public Binary_Prim
+struct Binary_Num_SCMat_Prim : public Unary_Num_SCMat_Prim
 {
     typedef double left_t;
     typedef double right_t;
@@ -572,15 +597,16 @@ struct Binary_Num_SCMat_Prim : public Unary_Num_SCMat_Prim, public Binary_Prim
         }
         sc_struc_unify(f, a, b, cx);
     }
-    static bool result_type(SC_Type a, SC_Type b, SC_Type& r)
+    static SC_Type sc_result_type(SC_Type a, SC_Type b)
     {
-        return sc_unify_tensor_types(a, b, r);
+        SC_Type r;
+        if (sc_unify_tensor_types(a, b, r)) return r; else return {};
     }
 };
 
 // A scalar numeric operation.
 // The corresponding GLSL primitive accepts number or vector arguments.
-struct Binary_Num_SCVec_Prim : public Unary_Num_SCVec_Prim, public Binary_Prim
+struct Binary_Num_SCVec_Prim : public Unary_Num_SCVec_Prim
 {
     typedef double left_t;
     typedef double right_t;
@@ -605,17 +631,19 @@ struct Binary_Num_SCVec_Prim : public Unary_Num_SCVec_Prim, public Binary_Prim
         }
         sc_struc_unify(f, a, b, cx);
     }
-    static bool result_type(SC_Type a, SC_Type b, SC_Type& r)
+    static SC_Type sc_result_type(SC_Type a, SC_Type b)
     {
-        return sc_unify_tensor_types(a, b, r);
+        SC_Type r;
+        if (sc_unify_tensor_types(a, b, r)) return r; else return {};
     }
 };
 
 // The left operand is a non-empty list of booleans.
 // The right operand is an integer >= 0 and < the size of the left operand.
+// The result has the same type as the left operand.
 // (These restrictions on the right operand conform to the definition
 // of << and >> in the C/C++/GLSL languages.)
-struct Shift_Prim : public Binary_Prim
+struct Shift_Prim
 {
     typedef Shared<const List> left_t;
     typedef double right_t;
@@ -640,6 +668,13 @@ struct Shift_Prim : public Binary_Prim
             throw Exception(At_Index(1, cx),
                 stringify("expected argument of type Num, got ", b.type));
         }
+    }
+    static SC_Type sc_result_type(SC_Type a, SC_Type b)
+    {
+        if (a.is_bool32_or_vec() && b.is_num())
+            return a;
+        else
+            return {};
     }
 };
 
@@ -674,7 +709,8 @@ struct Unary_Bool32_To_Num_Prim : public Bool32_Prim
             return {};
     }
 };
-struct Binary_Bool32_Prim : public Bool32_Prim, public Binary_Prim
+// maps [bool32,bool32] -> bool32
+struct Binary_Bool32_Prim : public Bool32_Prim
 {
     typedef unsigned left_t;
     typedef unsigned right_t;
@@ -702,6 +738,19 @@ struct Binary_Bool32_Prim : public Bool32_Prim, public Binary_Prim
             throw Exception(At_Index(1, cx),
                 stringify("expected argument of type Bool32, got ", b.type));
         }
+        if (a.type != b.type) {
+            // Note, it's impossible to unify types of a and b
+            // with the current palette of struc types.
+            throw Exception(cx,
+                stringify("mismatched argument types ",a.type," and ",b.type));
+        }
+    }
+    static SC_Type sc_result_type(SC_Type a, SC_Type b)
+    {
+        if (a.is_bool32_or_vec() && b.is_bool32_or_vec() && a == b)
+            return a;
+        else
+            return {};
     }
 };
 

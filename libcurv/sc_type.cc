@@ -10,7 +10,7 @@
 
 namespace curv {
 
-SC_Base_Type_Info sc_base_type_info_array[] =
+const SC_Base_Type_Info sc_base_type_info_array[] =
 {
     {"Error", 0, 1, 1},
     {"bool",  0, 1, 1},
