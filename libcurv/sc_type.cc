@@ -12,7 +12,7 @@ namespace curv {
 
 SC_Base_Type_Info sc_base_type_info_array[] =
 {
-    {"Any",   0, 1, 1},
+    {"Error", 0, 1, 1},
     {"bool",  0, 1, 1},
     {"bvec2", 1, 2, 1},
     {"bvec3", 1, 3, 1},
@@ -95,14 +95,7 @@ sc_type_of(Value v)
     }
     else if (auto re = v.dycast<Reactive_Value>())
         return re->sctype_;
-    return SC_Type::Any();
-}
-
-SC_Type
-sc_type_join(SC_Type t1, SC_Type t2)
-{
-    if (t1 == t2) return t1;
-    return SC_Type::Any();
+    return SC_Type::Error();
 }
 
 SC_Type

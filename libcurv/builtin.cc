@@ -877,8 +877,6 @@ struct Count_Function : public Legacy_Function
         if (auto re = args[0].dycast<const Reactive_Value>()) {
             if (re->sctype_.is_list())
                 return {double(re->sctype_.count())};
-            //TODO:
-            //if (re->sctype_ == SC_Type::Any())
         }
         throw Exception(At_Arg(*this, args), "not a list or string");
     }

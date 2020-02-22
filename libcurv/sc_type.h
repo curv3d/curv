@@ -26,7 +26,7 @@ struct SC_Type
     static constexpr unsigned MAX_MAT_COUNT = 4; // max first dim of a matrix
     enum class Base_Type : short
     {
-        Any = -1,
+        Error = -1,
         Bool,
         Bool2,
         Bool3,
@@ -54,7 +54,7 @@ struct SC_Type
     unsigned short dim1_ = 0;
     unsigned short dim2_ = 0;
 
-    constexpr SC_Type() : base_type_(Base_Type::Any) {}
+    constexpr SC_Type() : base_type_(Base_Type::Error) {}
     constexpr SC_Type(Base_Type bt, unsigned dim1 = 0, unsigned dim2 = 0)
     :
         base_type_(bt),
@@ -62,7 +62,7 @@ struct SC_Type
         dim1_(dim1),
         dim2_(dim2)
     {}
-    static constexpr inline SC_Type Any() { return {Base_Type::Any}; }
+    static constexpr inline SC_Type Error() { return {Base_Type::Error}; }
     static constexpr inline SC_Type Bool(unsigned n = 1)
     {
         assert(n >= 1 && n <= 4);
@@ -189,7 +189,7 @@ struct SC_Type
     inline bool is_struc() const { return rank_ == 0; }
     inline bool is_list() const { return rank() > 0; }
 
-    // number of dimensions: 0 means a scalar (Num or Bool or Any)
+    // number of dimensions: 0 means a scalar (Num or Bool or Error)
     inline unsigned rank() const
     {
         return rank_ + base_info().rank;
@@ -231,7 +231,7 @@ struct SC_Type
     }
     explicit operator bool () const noexcept
     {
-        return base_type_ != Base_Type::Any;
+        return base_type_ != Base_Type::Error;
     }
 };
 
@@ -244,9 +244,6 @@ inline unsigned sc_type_count(SC_Type type)
 std::ostream& operator<<(std::ostream& out, SC_Type);
 
 SC_Type sc_type_of(Value);
-
-// The smallest type that includes both t1 and t2.
-SC_Type sc_type_join(SC_Type t1, SC_Type t2);
 
 bool sc_unify_tensor_types(SC_Type a, SC_Type b, SC_Type& r);
 

@@ -285,7 +285,7 @@ SC_Value sc_eval_const(SC_Frame& f, Value val, const Phrase& syntax)
     At_SC_Phrase cx(share(syntax), f);
 
     auto ty = sc_type_of(val);
-    if (ty == SC_Type::Any()) {
+    if (ty == SC_Type::Error()) {
         throw Exception(At_SC_Phrase(share(syntax), f),
             stringify("value ",val," is not supported "));
     }

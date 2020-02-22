@@ -204,15 +204,22 @@ If_Else_Op::eval(Frame& f) const
     if (re && re->sctype_ == SC_Type::Bool()) {
         Value a2 = arg2_->eval(f);
         Value a3 = arg3_->eval(f);
-        return {make<Reactive_Expression>(
-            sc_type_join(sc_type_of(a2), sc_type_of(a3)),
-            make<If_Else_Op>(
-                share(*syntax_),
-                make<Constant>(share(*arg1_->syntax_), cond),
-                make<Constant>(share(*arg2_->syntax_), a2),
-                make<Constant>(share(*arg3_->syntax_), a3)
-            ),
-            At_Phrase(*syntax_, f))};
+        SC_Type t2 = sc_type_of(a2);
+        SC_Type t3 = sc_type_of(a3);
+        if (t2 == t3) {
+            return {make<Reactive_Expression>(
+                t2,
+                make<If_Else_Op>(
+                    share(*syntax_),
+                    make<Constant>(share(*arg1_->syntax_), cond),
+                    make<Constant>(share(*arg2_->syntax_), a2),
+                    make<Constant>(share(*arg3_->syntax_), a3)
+                ),
+                At_Phrase(*syntax_, f))};
+        }
+        throw Exception(At_Phrase(*syntax_, f),
+            stringify("then and else expressions have mismatched types: ",
+                t2," and ",t3));
     }
     throw Exception(cx, stringify(cond, " is not a boolean"));
 }
@@ -232,17 +239,24 @@ If_Else_Op::tail_eval(std::unique_ptr<Frame>& f) const
     if (re && re->sctype_ == SC_Type::Bool()) {
         Value a2 = arg2_->eval(*f);
         Value a3 = arg3_->eval(*f);
-        f->result_ = Value{make<Reactive_Expression>(
-            sc_type_join(sc_type_of(a2), sc_type_of(a3)),
-            make<If_Else_Op>(
-                share(*syntax_),
-                make<Constant>(share(*arg1_->syntax_), cond),
-                make<Constant>(share(*arg2_->syntax_), a2),
-                make<Constant>(share(*arg3_->syntax_), a3)
-            ),
-            At_Phrase(*syntax_, *f))};
-        f->next_op_ = nullptr;
-        return;
+        SC_Type t2 = sc_type_of(a2);
+        SC_Type t3 = sc_type_of(a3);
+        if (t2 == t3) {
+            f->result_ = Value{make<Reactive_Expression>(
+                t2,
+                make<If_Else_Op>(
+                    share(*syntax_),
+                    make<Constant>(share(*arg1_->syntax_), cond),
+                    make<Constant>(share(*arg2_->syntax_), a2),
+                    make<Constant>(share(*arg3_->syntax_), a3)
+                ),
+                At_Phrase(*syntax_, *f))};
+            f->next_op_ = nullptr;
+            return;
+        }
+        throw Exception(At_Phrase(*syntax_, *f),
+            stringify("then and else expressions have mismatched types: ",
+                t2," and ",t3));
     }
     throw Exception(cx, stringify(cond, " is not a boolean"));
 }
