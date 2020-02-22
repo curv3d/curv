@@ -203,7 +203,7 @@ struct Binary_Array_Op
             if (arg.type.is_any_vec()) {
                 auto first = sc_vec_element(f, arg, 0);
                 for (unsigned i = 1; i < arg.type.count(); ++i) {
-                    auto second = sc_vec_element(f, arg, 1);
+                    auto second = sc_vec_element(f, arg, i);
                     Prim::sc_check_args(f, first, second, cx);
                     first = Prim::sc_call(f, first, second);
                 }
