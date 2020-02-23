@@ -5,19 +5,18 @@
 #include <libcurv/builtin.h>
 
 #include <libcurv/analyser.h>
-#include <libcurv/array_op.h>
 #include <libcurv/die.h>
 #include <libcurv/dir_record.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
-#include <libcurv/sc_compiler.h>
-#include <libcurv/sc_context.h>
 #include <libcurv/import.h>
 #include <libcurv/math.h>
 #include <libcurv/pattern.h>
 #include <libcurv/picker.h>
 #include <libcurv/prim_expr.h>
 #include <libcurv/program.h>
+#include <libcurv/sc_compiler.h>
+#include <libcurv/sc_context.h>
 #include <libcurv/source.h>
 #include <libcurv/system.h>
 #include <libcurv/typeconv.h>

@@ -7,7 +7,7 @@
 
 // Curv primitive expressions which are implemented using the Prim framework.
 
-#include <libcurv/array_op.h>
+#include <libcurv/prim.h>
 #include <cmath>
 
 namespace curv {
