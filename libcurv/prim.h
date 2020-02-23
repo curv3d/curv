@@ -88,5 +88,27 @@ struct Power_Prim : public Binary_Num_SCVec_Prim
 using Power_Op = Binary_Array_Op<Power_Prim>;
 using Power_Expr = Binary_Op_Expr<Power_Op>;
 
+#define RELATION(Class,LT,lessThan) \
+struct Class##_Prim : public Binary_Num_To_Bool_Prim \
+{ \
+    static const char* name() { return #LT; } \
+    static Value call(double a, double b, const Context& cx) \
+        { return {a LT b}; } \
+    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y) \
+    { \
+        if (x.type.is_num()) \
+            return sc_binop(f, SC_Type::Bool(), x, #LT, y); \
+        else \
+            return sc_bincall(f,SC_Type::Bool(x.type.count()),#lessThan,x,y); \
+    } \
+}; \
+using Class##_Op = Binary_Array_Op<Class##_Prim>; \
+using Class##_Expr = Binary_Op_Expr<Class##_Op>;
+RELATION(Less, <, lessThan)
+RELATION(Greater, >, greaterThan)
+RELATION(Less_Or_Equal, <=, lessThanEqual)
+RELATION(Greater_Or_Equal, >=, greaterThanEqual)
+#undef RELATION
+
 } // namespace
 #endif // header guard

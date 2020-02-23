@@ -409,8 +409,8 @@ struct Binary_Scalar_To_Bool_Prim : public Unary_Scalar_Prim
     }
     static SC_Type sc_result_type(SC_Type a, SC_Type b)
     {
-        SC_Type r;
-        if (sc_unify_tensor_types(a, b, r) && r.is_scalar_or_vec())
+        SC_Type r = sc_unify_tensor_types(a, b);
+        if (r && r.is_scalar_or_vec())
             return SC_Type::Bool(r.count());
         else
             return {};
@@ -509,12 +509,9 @@ struct Binary_Bool_Prim
     }
     static SC_Type sc_result_type(SC_Type a, SC_Type b)
     {
-        SC_Type r;
-        if (a.is_bool_struc() && b.is_bool_struc()
-            && sc_unify_tensor_types(a,b,r))
-        {
-            return r;
-        } else
+        if (a.is_bool_struc() && b.is_bool_struc())
+            return sc_unify_tensor_types(a,b);
+        else
             return {};
     }
 };
@@ -568,7 +565,7 @@ struct Unary_Num_To_Bool32_Prim : public Unary_Num_SCVec_Prim
     }
 };
 
-// A scalar numeric operation.
+// Maps [num,num] -> num.
 // The corresponding GLSL primitive accepts number, vector or matrix arguments.
 struct Binary_Num_SCMat_Prim : public Unary_Num_SCMat_Prim
 {
@@ -599,12 +596,14 @@ struct Binary_Num_SCMat_Prim : public Unary_Num_SCMat_Prim
     }
     static SC_Type sc_result_type(SC_Type a, SC_Type b)
     {
-        SC_Type r;
-        if (sc_unify_tensor_types(a, b, r)) return r; else return {};
+        if (a.is_num_tensor() && b.is_num_tensor())
+            return sc_unify_tensor_types(a, b);
+        else
+            return {};
     }
 };
 
-// A scalar numeric operation.
+// Maps [Num,Num] -> Num.
 // The corresponding GLSL primitive accepts number or vector arguments.
 struct Binary_Num_SCVec_Prim : public Unary_Num_SCVec_Prim
 {
@@ -633,8 +632,23 @@ struct Binary_Num_SCVec_Prim : public Unary_Num_SCVec_Prim
     }
     static SC_Type sc_result_type(SC_Type a, SC_Type b)
     {
-        SC_Type r;
-        if (sc_unify_tensor_types(a, b, r)) return r; else return {};
+        if (a.is_num_tensor() && b.is_num_tensor())
+            return sc_unify_tensor_types(a, b);
+        else
+            return {};
+    }
+};
+
+// maps [num,num] -> bool
+struct Binary_Num_To_Bool_Prim : public Binary_Num_SCVec_Prim
+{
+    static SC_Type sc_result_type(SC_Type a, SC_Type b)
+    {
+        if (a.is_num_or_vec() && b.is_num_or_vec()) {
+            SC_Type r = sc_unify_tensor_types(a,b);
+            if (r) return SC_Type::Bool(r.count());
+        }
+        return {};
     }
 };
 

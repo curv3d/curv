@@ -411,31 +411,6 @@ struct Not_Equal_Expr : public Infix_Expr_Base
     virtual Value eval(Frame&) const override;
     virtual SC_Value sc_eval(SC_Frame&) const override;
 };
-struct Less_Expr : public Infix_Expr_Base
-{
-    using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval(Frame&) const override;
-    virtual SC_Value sc_eval(SC_Frame&) const override;
-};
-struct Greater_Expr : public Infix_Expr_Base
-{
-    using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval(Frame&) const override;
-    virtual SC_Value sc_eval(SC_Frame&) const override;
-};
-struct Less_Or_Equal_Expr : public Infix_Expr_Base
-{
-    using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval(Frame&) const override;
-    virtual SC_Value sc_eval(SC_Frame&) const override;
-};
-struct Greater_Or_Equal_Expr : public Infix_Expr_Base
-{
-    using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval(Frame&) const override;
-    virtual SC_Value sc_eval(SC_Frame&) const override;
-};
-
 struct Range_Expr : public Just_Expression
 {
     Shared<Operation> arg1_;

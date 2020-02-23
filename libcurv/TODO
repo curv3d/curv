@@ -1,8 +1,16 @@
-Binary_X_Prim_Type: remove global stub for result_type(), fix code to work.
-sc_unify_tensor_types(a,b) returns Error() on failure. More convenient.
-SubCurv: use SC contexts for reporting SC type errors when evaluating reactive
-    expressions.
-Unary_X_Prim_Type::sc_result_type() replaces sc_check_arg(). DRY.
+Assignment of types to reactive expressions uses "soft typing", where type
+conflicts produce an Error type and don't automatically cause the program to
+abort. sc_result_type computes a soft type for the reactive expression, it
+is not as restrictive as sc_check_args. Figure out the type system and then
+fix this.
+    Here's a bbox value:
+        [[x0,y0,z0],[x1,y1,z1]] * reactive_num
+    It is given the type Array[2]Vec3. Notice this isn't a struc type.
+    Binary_Num_SCMat_Prim::sc_result_type() is rigged to return non-struc types
+    so that this case won't generate a compile error. Non-struc values aren't
+    supported by SubCurv, but this case works out because it is a bbox value,
+    and we aren't compiling this expression into GLSL.
+
 replace Atan2 with Phase, implemented with Prim
     remove sc_put_as
     get rid of Binary_Numeric_Array_Op
@@ -17,6 +25,7 @@ maybe refactor that list_at code in evaluator
 dot: matrix multiply
 replace idchr() -- use is_C_identifier()?
 Array_Op and Prim should export the same interface.
+Remove boilerplate and duplication from PrimType classes.
 
 Standardize format of Prim error messages
 -----------------------------------------
@@ -40,7 +49,8 @@ Binary_Array_Op::domain_error: use Prim::name rather than dig into cx.syntax
 * Errors produced by sc_check_args, from 2 SC_Values and a cx... what do they
   look like? In some cases I use At_Index(cx, 0 or 1) but does that work in
   all cases?
-* Errors resulting from sc_result_type() failures.
+* Errors resulting from sc_result_type() failures? Maybe there should be no
+  errors.
 
 Rename Legacy_Function to Tuple_Function, since it isn't going away.
     Tuple_Function(nargs, name)

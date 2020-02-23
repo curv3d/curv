@@ -248,7 +248,7 @@ std::ostream& operator<<(std::ostream& out, SC_Type);
 
 SC_Type sc_type_of(Value);
 
-bool sc_unify_tensor_types(SC_Type a, SC_Type b, SC_Type& r);
+SC_Type sc_unify_tensor_types(SC_Type a, SC_Type b);
 
 } // namespace
 #endif // header guard

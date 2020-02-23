@@ -147,26 +147,24 @@ SC_Type::List(SC_Type etype, unsigned n)
     }
 }
 
-bool sc_unified_list_type(SC_Type a, SC_Type b, unsigned n, SC_Type& r)
+SC_Type sc_unified_list_type(SC_Type a, SC_Type b, unsigned n)
 {
-    SC_Type etype;
-    if (!sc_unify_tensor_types(a, b, etype)) return false;
-    r = SC_Type::List(etype, n);
-    return true;
+    SC_Type etype = sc_unify_tensor_types(a, b);
+    if (etype) return SC_Type::List(etype, n); else return {};
 }
 
-bool sc_unify_tensor_types(SC_Type a, SC_Type b, SC_Type& r)
+SC_Type sc_unify_tensor_types(SC_Type a, SC_Type b)
 {
-    if (a == b) { r = a; return true; }
+    if (a == b) { return a; }
     if (a.is_list() && b.is_list()) {
-        if (a.count() != b.count()) return false;
-        return sc_unified_list_type(a.abase(), b.abase(), a.count(), r);
+        if (a.count() != b.count()) return {};
+        return sc_unified_list_type(a.abase(), b.abase(), a.count());
     }
     else if (a.is_list())
-        return sc_unified_list_type(a.abase(), b, a.count(), r);
+        return sc_unified_list_type(a.abase(), b, a.count());
     else if (b.is_list())
-        return sc_unified_list_type(a, b.abase(), b.count(), r);
-    return false;
+        return sc_unified_list_type(a, b.abase(), b.count());
+    return {};
 }
 
 } // namespace curv

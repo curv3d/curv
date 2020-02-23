@@ -285,55 +285,6 @@ Not_Equal_Expr::eval(Frame& f) const
     return {!a.equal(b, At_Phrase(*syntax_, f))};
 }
 
-#define RELATION(Class,LT,GE,lessThan) \
-struct Class##Prim : public Binary_Num_SCVec_Prim \
-{ \
-    static const char* name() { return #LT; } \
-    static Value call(double a, double b, const Context& cx) \
-    { \
-        return {a LT b}; \
-    } \
-    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y) \
-    { \
-        SC_Value result = f.sc_.newvalue(SC_Type::Bool(x.type.count())); \
-        f.sc_.out() <<"  "<<result.type<<" "<<result<<" = "; \
-        if (x.type.is_num()) \
-            f.sc_.out() <<"("<<x<<" "#LT" "<<y<<");\n"; \
-        else \
-            f.sc_.out() <<#lessThan"("<<x<<","<<y<<");\n"; \
-        return result; \
-    } \
-}; \
-Value Class::eval(Frame& f) const \
-{ \
-    static Binary_Array_Op<Class##Prim> array_op; \
-    Value a = arg1_->eval(f); \
-    Value b = arg2_->eval(f); \
-    /* 2 comparisons required to unbox two numbers and compare them, not 3 */ \
-    if (a.to_num_or_nan() LT b.to_num_or_nan()) \
-        return {true}; \
-    if (a.to_num_or_nan() GE b.to_num_or_nan()) \
-        return {false}; \
-    return array_op.call(At_Phrase(*syntax_,f), a, b); \
-} \
-SC_Value Class::sc_eval(SC_Frame& f) const \
-{ \
-    auto arg1 = sc_eval_num_or_vec(f, *arg1_); \
-    auto arg2 = sc_eval_num_or_vec(f, *arg2_); \
-    sc_struc_unify(f, arg1, arg2, At_SC_Phrase(syntax_,f)); \
-    SC_Value result = f.sc_.newvalue(SC_Type::Bool(arg1.type.count())); \
-    f.sc_.out() <<"  "<<result.type<<" "<<result<<" = "; \
-    if (arg1.type.is_num()) \
-        f.sc_.out() <<"("<<arg1<<" "#LT" "<<arg2<<");\n"; \
-    else \
-        f.sc_.out() <<#lessThan"("<<arg1<<","<<arg2<<");\n"; \
-    return result; \
-}
-RELATION(Less_Expr, <, >=, lessThan)
-RELATION(Greater_Expr, >, <=, greaterThan)
-RELATION(Less_Or_Equal_Expr, <=, >, lessThanEqual)
-RELATION(Greater_Or_Equal_Expr, >=, <, greaterThanEqual)
-
 Value
 list_at(const List& list, Value index, const Context& cx)
 {
