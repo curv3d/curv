@@ -35,6 +35,11 @@ Which SDF representations? Voxels. Curv programs.
   https://arxiv.org/pdf/1901.05103v1.pdf
   https://www.youtube.com/watch?v=LILRJzMQw5o
 
+Sphere tracing a DeepSDF neural network is super slow.
+But you can speed it up to 1 frame/s at low resolution on a high end GPU
+if you use specialized techniques:
+    https://www.groundai.com/project/dist-rendering-deep-implicit-signed-distance-function-with-differentiable-sphere-tracing/1
+
 Maybe we can use AI to search for optimized code for generating a Euclidean
 SDF for a desired shape.
 
