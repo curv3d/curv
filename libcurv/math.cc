@@ -6,7 +6,7 @@
 
 #include <libcurv/context.h>
 #include <libcurv/meaning.h>
-#include <libcurv/prim.h>
+#include <libcurv/prim_expr.h>
 #include <libcurv/reactive.h>
 
 namespace curv {

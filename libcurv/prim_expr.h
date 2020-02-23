@@ -2,10 +2,10 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef LIBCURV_PRIM_H
-#define LIBCURV_PRIM_H
+#ifndef LIBCURV_PRIM_EXPR_H
+#define LIBCURV_PRIM_EXPR_H
 
-// Curv primitive operations which are implemented using the Prim framework.
+// Curv primitive expressions which are implemented using the Prim framework.
 
 #include <libcurv/array_op.h>
 #include <cmath>

@@ -16,7 +16,7 @@
 #include <libcurv/math.h>
 #include <libcurv/pattern.h>
 #include <libcurv/picker.h>
-#include <libcurv/prim.h>
+#include <libcurv/prim_expr.h>
 #include <libcurv/program.h>
 #include <libcurv/source.h>
 #include <libcurv/system.h>

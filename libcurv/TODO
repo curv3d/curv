@@ -1,3 +1,51 @@
+replace Atan2 with Phase, implemented with Prim
+    remove sc_put_as
+    get rid of Binary_Numeric_Array_Op
+rename sc_vec_element -> sc_list_elem
+    fix internals to support general struc list
+    fix callers to support general struc list
+update sc_eval_index*_expr() functions to support all struc types
+sc index an array using a struc index value
+add Reactive_Value::at(i,cx), call from list_elem and list_at
+maybe refactor that list_at code in evaluator
+dot: matrix multiply
+replace idchr() -- use is_C_identifier()?
+Array_Op and Prim should export the same interface.
+Remove boilerplate and duplication from PrimType classes.
+_Prim and _PrimType classes (different names for different signatures)
+
+and[...] and or[...] implement custom reduction code for bool32 and bvec. How?
+ 1. Define And_Function directly. Define ::sc_call_expr() to handle
+    special cases first before invoking the general case. It calls sc_reduce,
+    but this contains an if that handles a List_Expr arg before evaluating
+    the arg and handling the value. It's at the value handling point that I want
+    to insert code.
+  * Maybe sc_reduce_expr calls sc_reduce_value. I want to override
+    sc_reduce_value to execute my code then call the default version.
+ 2. It is cleaner to define the reducer in And_Prim.
+  * Maybe And_Prim inherits sc_reduce_value from Binary_Prim, then overrides it
+    while calling the default version. Yeah, but the default sc_reduce_value
+    needs to call Prim::sc_check_args and Prim::sc_call. That's recursive, so we
+    need to tie the knot and use OOP + a vtable.
+      * Or tie the knot by passing the default sc_reducer as a function argument
+        to Prim::sc_reduce_value.
+  * Maybe And_Prim defines sc_try_reduce, which defaults to do nothing,
+    inherited from Binary_PrimType.
+      * A procedural interface, returns true on success, mutates a SC_Value& r
+        to return a result.
+            bool sc_try_reduce(SC_Frame& f, SC_Value& a, const Context& cx)
+                if (a.type.is_bool32())
+                    a = ...;
+                    return true;
+                return false;
+      * A functional interface, returns an optional SC_Value.
+            SC_Value sc_try_reduce(SC_Frame& f, SC_Value a, const Context& cx)
+                if (a.type.is_bool32())
+                    return ...;
+                return {};
+
+Soft Typing
+-----------
 Assignment of types to reactive expressions uses "soft typing", where type
 conflicts produce an Error type and don't automatically cause the program to
 abort. sc_result_type computes a soft type for the reactive expression, it
@@ -10,22 +58,6 @@ fix this.
     so that this case won't generate a compile error. Non-struc values aren't
     supported by SubCurv, but this case works out because it is a bbox value,
     and we aren't compiling this expression into GLSL.
-
-replace Atan2 with Phase, implemented with Prim
-    remove sc_put_as
-    get rid of Binary_Numeric_Array_Op
-rename sc_vec_element -> sc_list_elem
-    fix internals to support general struc list
-    fix callers to support general struc list
-update sc_eval_index*_expr() functions to support all struc types
-sc index an array using a struc index value
-and[...] and or[...] implement custom reduction code for bool32 and bvec.
-add Reactive_Value::at(i,cx), call from list_elem and list_at
-maybe refactor that list_at code in evaluator
-dot: matrix multiply
-replace idchr() -- use is_C_identifier()?
-Array_Op and Prim should export the same interface.
-Remove boilerplate and duplication from PrimType classes.
 
 Standardize format of Prim error messages
 -----------------------------------------

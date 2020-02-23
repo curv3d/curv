@@ -17,7 +17,7 @@
 #include <libcurv/meaning.h>
 #include <libcurv/optimizer.h>
 #include <libcurv/picker.h>
-#include <libcurv/prim.h>
+#include <libcurv/prim_expr.h>
 #include <libcurv/reactive.h>
 #include <libcurv/system.h>
 #include <libcurv/typeconv.h>

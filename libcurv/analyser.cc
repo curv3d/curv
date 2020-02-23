@@ -10,7 +10,7 @@
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
 #include <libcurv/phrase.h>
-#include <libcurv/prim.h>
+#include <libcurv/prim_expr.h>
 #include <libcurv/shared.h>
 #include <libcurv/symbol.h>
 #include <libcurv/system.h>
