@@ -13,6 +13,8 @@ replace idchr() -- use is_C_identifier()?
 Array_Op and Prim should export the same interface.
 Remove boilerplate and duplication from PrimType classes.
 _Prim and _PrimType classes (different names for different signatures)
+migrate all array primitives with operator syntax to Prim
+migrate all array primitives with function syntax to Prim
 
 and[...] and or[...] implement custom reduction code for bool32 and bvec. How?
  1. Define And_Function directly. Define ::sc_call_expr() to handle

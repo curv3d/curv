@@ -444,6 +444,32 @@ struct Unary_Bool_To_Num_Prim
     }
 };
 
+// maps bool -> bool
+struct Unary_Bool_Prim
+{
+    typedef bool scalar_t;
+    static bool unbox(Value a, scalar_t& b, const Context& cx)
+    {
+        if (a.is_bool()) {
+            b = a.to_bool_unsafe();
+            return true;
+        } else
+            return false;
+    }
+    static void sc_check_arg(SC_Value a, const Context& cx)
+    {
+        if (a.type.is_bool_struc()) return;
+        throw Exception(cx, stringify("expected Bool or Bool32, got ",a.type));
+    }
+    static SC_Type sc_result_type(SC_Type a)
+    {
+        if (a.is_bool_struc())
+            return a;
+        else
+            return {};
+    }
+};
+
 // Maps [bool,bool] -> bool.
 // In SubCurv, accepts Bool and Bool32 arguments, and vec of same.
 struct Binary_Bool_Prim

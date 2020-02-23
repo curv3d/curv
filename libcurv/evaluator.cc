@@ -128,35 +128,6 @@ Dot_Expr::eval(Frame& f) const
 }
 
 Value
-eval_not(Value x, const At_Syntax& cx)
-{
-    if (x.is_bool())
-        return {!x.to_bool_unsafe()};
-    if (auto xlist = x.dycast<List>()) {
-        Shared<List> result = List::make(xlist->size());
-        for (unsigned i = 0; i < xlist->size(); ++i)
-            (*result)[i] = eval_not((*xlist)[i], cx);
-        return {result};
-    }
-    auto re = x.dycast<Reactive_Value>();
-    if (re && re->sctype_ == SC_Type::Bool()) {
-        return {make<Reactive_Expression>(
-            SC_Type::Bool(),
-            make<Not_Expr>(
-                share(cx.syntax()),
-                make<Constant>(share(cx.syntax()), x)
-            ),
-            cx)};
-    }
-    throw Exception(cx, stringify("!",x,": domain error"));
-}
-Value
-Not_Expr::eval(Frame& f) const
-{
-    return eval_not(arg_->eval(f), At_Phrase(*syntax_, f));
-}
-
-Value
 Or_Expr::eval(Frame& f) const
 {
     bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));

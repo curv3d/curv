@@ -190,26 +190,6 @@ SC_Value sc_eval_expr(SC_Frame& f, const Operation& op, SC_Type type)
     return arg;
 }
 
-SC_Value sc_eval_bool_struc(SC_Frame& f, const Operation& op)
-{
-    SC_Value arg = sc_eval_op(f, op);
-    if (!arg.type.is_bool_struc()) {
-        throw Exception(At_SC_Phrase(op.syntax_, f), stringify(
-            "wrong argument type: expected Bool or Bool32, got ",arg.type));
-    }
-    return arg;
-}
-
-SC_Value sc_eval_num_or_vec(SC_Frame& f, const Operation& op)
-{
-    SC_Value arg = sc_eval_op(f, op);
-    if (!arg.type.is_num_or_vec()) {
-        throw Exception(At_SC_Phrase(op.syntax_, f), stringify(
-            "wrong argument type: expected number or vector; got ", arg.type));
-    }
-    return arg;
-}
-
 void
 sc_put_list(
     const List& list, SC_Type ty,
@@ -819,20 +799,6 @@ SC_Value List_Expr_Base::sc_eval(SC_Frame& f) const
     return sc_eval_const(f, val, *syntax_);
 }
 
-SC_Value Not_Expr::sc_eval(SC_Frame& f) const
-{
-    auto arg = sc_eval_bool_struc(f, *arg_);
-    SC_Value result = f.sc_.newvalue(arg.type);
-    f.sc_.out() << "  " << arg.type << " " << result << " = ";
-    if (arg.type.is_bool())
-        f.sc_.out() << "!" << arg;
-    else if (arg.type.is_bool_or_vec())
-        f.sc_.out() << "not(" << arg << ")";
-    else
-        f.sc_.out() << "~" << arg;
-    f.sc_.out() << ";\n";
-    return result;
-}
 SC_Value Or_Expr::sc_eval(SC_Frame& f) const
 {
     // TODO: change Or to use lazy evaluation.

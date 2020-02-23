@@ -135,7 +135,6 @@ struct SC_Compiler
 
 SC_Value sc_eval_op(SC_Frame& f, const Operation& op);
 SC_Value sc_eval_expr(SC_Frame&, const Operation& op, SC_Type);
-SC_Value sc_eval_num_or_vec(SC_Frame&, const Operation& op);
 SC_Value sc_eval_const(SC_Frame& f, Value val, const Phrase&);
 void sc_put_as(SC_Frame& f, SC_Value val, const Context&, SC_Type type);
 SC_Value sc_vec_element(SC_Frame&, SC_Value, int);

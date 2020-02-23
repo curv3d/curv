@@ -32,6 +32,21 @@ struct Negative_Prim : public Unary_Num_SCMat_Prim
 using Negative_Op = Unary_Array_Op<Negative_Prim>;
 using Negative_Expr = Unary_Op_Expr<Negative_Op>;
 
+struct Not_Prim : public Unary_Bool_Prim
+{
+    static const char* name() {return "!";};
+    static Value call(bool x, const Context&) { return {!x}; }
+    static SC_Value sc_call(SC_Frame& f, SC_Value x) {
+        if (x.type.is_bool())
+            return sc_unary_call(f, x.type, "!", x);
+        if (x.type.is_bool_or_vec())
+            return sc_unary_call(f, x.type, "not", x);
+        return sc_unary_call(f, x.type, "~", x);
+    }
+};
+using Not_Op = Unary_Array_Op<Not_Prim>;
+using Not_Expr = Unary_Op_Expr<Not_Op>;
+
 struct Add_Prim : public Binary_Num_SCMat_Prim
 {
     static const char* name() {return "+";};
