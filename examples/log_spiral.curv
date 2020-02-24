@@ -16,9 +16,9 @@
 
 let
     log_spiral [s, g] = make_shape {
-        dist [x,y,z,_] =
-            let r = mag[x,y,z];
-                t = phase[x,y,z];
+        dist [x,y,_,_] =
+            let r = mag[x,y];
+                t = phase[x,y];
             in if (r == 0)
                 0
             else

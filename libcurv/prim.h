@@ -2,8 +2,8 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef LIBCURV_ARRAY_OP_H
-#define LIBCURV_ARRAY_OP_H
+#ifndef LIBCURV_PRIM_H
+#define LIBCURV_PRIM_H
 
 // Curv is an array language, following APL and its successors.
 // This means that scalar operations (on numbers and booleans)
@@ -21,6 +21,7 @@
 #include <libcurv/sc_compiler.h>
 #include <libcurv/sc_context.h>
 #include <libcurv/typeconv.h>
+#include <libcurv/vec.h>
 
 namespace curv {
 
@@ -718,6 +719,26 @@ struct Shift_Prim
     }
 };
 
+struct Unary_Vec2_To_Num_Prim
+{
+    typedef Vec2 scalar_t;
+    static bool unbox(Value a, scalar_t& b, const Context&)
+        { return unbox_vec2(a, b); }
+    static void sc_check_arg(SC_Value a, const Context& cx)
+    {
+        if (a.type != SC_Type::Vec(2)) {
+            throw Exception(cx, stringify("expected a Vec2; got ", a.type));
+        }
+    }
+    static SC_Type sc_result_type(SC_Type a)
+    {
+        if (a == SC_Type::Vec(2))
+            return SC_Type::Num();
+        else
+            return {};
+    }
+};
+
 struct Bool32_Prim
 {
     static bool unbox_bool32(Value in, unsigned& out, const Context& cx)
@@ -791,114 +812,6 @@ struct Binary_Bool32_Prim : public Bool32_Prim
             return a;
         else
             return {};
-    }
-};
-
-//--------------------//
-// Historical Baggage //
-//--------------------//
-
-template <class Scalar_Op>
-struct Binary_Numeric_Array_Op
-{
-    // TODO: optimize: move semantics. unique object reuse.
-
-    static Value
-    reduce(const Scalar_Op& f, double zero, Value arg)
-    {
-        auto list = arg.to<List>(f.cx);
-        unsigned n = list->size();
-        if (n == 0)
-            return {zero};
-        if (n == 1)
-            return list->front();
-        Value result = list->front();
-        for (unsigned i = 1; i < n; ++i)
-            result = op(f, result, list->at(i));
-        return result;
-    }
-
-    static Value
-    op(const Scalar_Op& f, Value x, Value y)
-    {
-        // if both x and y are numbers
-        double r = f.call(x.to_num_or_nan(), y.to_num_or_nan());
-        if (r == r)
-            return {r};
-
-        // if x, y, or both, are lists
-        if (auto xlist = x.dycast<List>()) {
-            if (auto ylist = y.dycast<List>())
-                return {element_wise_op(f, xlist, ylist)};
-            return {broadcast_left(f, xlist, y)};
-        }
-        if (auto ylist = y.dycast<List>())
-            return {broadcast_right(f, x, ylist)};
-
-        // One of x or y is reactive, the other is a number.
-        // Both x and y are reactive.
-        if (x.is_num()) {
-            auto yre = y.dycast<Reactive_Value>();
-            if (yre && yre->sctype_ == SC_Type::Num()) {
-                auto& syn = f.cx.syntax();
-                return {make<Reactive_Expression>(
-                    SC_Type::Num(),
-                    f.make_expr(
-                        make<Constant>(share(syn), x),
-                        yre->expr()),
-                    f.cx)};
-            }
-        }
-        auto xre = x.dycast<Reactive_Value>();
-        if (xre && xre->sctype_ == SC_Type::Num()) {
-            auto& syn = f.cx.syntax();
-            if (y.is_num())
-                return {make<Reactive_Expression>(
-                    SC_Type::Num(),
-                    f.make_expr(xre->expr(),
-                        make<Constant>(share(syn), y)),
-                    f.cx)};
-            auto yre = y.dycast<Reactive_Value>();
-            if (yre && yre->sctype_ == SC_Type::Num())
-                return {make<Reactive_Expression>(
-                    SC_Type::Num(),
-                    f.make_expr(xre->expr(), yre->expr()),
-                    f.cx)};
-        }
-
-        throw Exception(f.cx,
-            stringify(f.callstr(x,y),": domain error"));
-    }
-
-    static Shared<List>
-    broadcast_left(const Scalar_Op& f, Shared<List> xlist, Value y)
-    {
-        Shared<List> result = List::make(xlist->size());
-        for (unsigned i = 0; i < xlist->size(); ++i)
-            (*result)[i] = op(f, (*xlist)[i], y);
-        return result;
-    }
-
-    static Shared<List>
-    broadcast_right(const Scalar_Op& f, Value x, Shared<List> ylist)
-    {
-        Shared<List> result = List::make(ylist->size());
-        for (unsigned i = 0; i < ylist->size(); ++i)
-            (*result)[i] = op(f, x, (*ylist)[i]);
-        return result;
-    }
-
-    static Shared<List>
-    element_wise_op(const Scalar_Op& f, Shared<List> xs, Shared<List> ys)
-    {
-        if (xs->size() != ys->size())
-            throw Exception(f.cx, stringify(
-                "mismatched list sizes (",
-                xs->size(),",",ys->size(),") in array operation"));
-        Shared<List> result = List::make(xs->size());
-        for (unsigned i = 0; i < xs->size(); ++i)
-            (*result)[i] = op(f, (*xs)[i], (*ys)[i]);
-        return result;
     }
 };
 

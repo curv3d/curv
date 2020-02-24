@@ -32,17 +32,6 @@ Location Shape_Program::location() const
     return nub_->location();
 }
 
-Vec3 value_to_vec3(Value val, const Context& cx)
-{
-    auto list = val.to<List>(cx);
-    list->assert_size(3, cx);
-    Vec3 v;
-    v.x = list->at(0).to_num(At_Index(0, cx));
-    v.y = list->at(1).to_num(At_Index(1, cx));
-    v.z = list->at(2).to_num(At_Index(2, cx));
-    return v;
-}
-
 BBox
 BBox::from_value(Value val, const Context& cx)
 {

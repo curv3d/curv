@@ -1,6 +1,3 @@
-replace Atan2 with Phase, implemented with Prim
-    remove sc_put_as
-    get rid of Binary_Numeric_Array_Op
 rename sc_vec_element -> sc_list_elem
     fix internals to support general struc list
     fix callers to support general struc list

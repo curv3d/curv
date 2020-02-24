@@ -7,9 +7,9 @@ let
         ([x,y,z,t]->plane.colour[x/(1-z), y/(1-z), 0, t]);
 
     log_spiral [a,b] = make_shape {
-        dist [x,y,z,t] =
-            let r = mag[x,y,z];
-                t = phase[x,y,z];
+        dist [x,y,_,_] =
+            let r = mag[x,y];
+                t = phase[x,y];
             in if (r == 0)
                 0
             else

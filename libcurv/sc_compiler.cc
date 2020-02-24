@@ -313,28 +313,6 @@ SC_Value Constant::sc_eval(SC_Frame& f) const
     return sc_eval_const(f, value_, *syntax_);
 }
 
-void sc_put_as(SC_Frame& f, SC_Value val, const Context& cx, SC_Type type)
-{
-    if (val.type == type) {
-        f.sc_.out() << val;
-        return;
-    }
-    if (val.type == SC_Type::Num()) {
-        if (sc_type_count(type) > 1) {
-            f.sc_.out() << type << "(";
-            bool first = true;
-            for (unsigned i = 0; i < sc_type_count(type); ++i) {
-                if (!first) f.sc_.out() << ",";
-                f.sc_.out() << val;
-                first = false;
-            }
-            f.sc_.out() << ")";
-            return;
-        }
-    }
-    throw Exception(cx, stringify("can't convert ",val.type," to ",type));
-}
-
 bool sc_try_extend(SC_Frame& f, SC_Value& a, SC_Type rtype);
 
 // val is a scalar. rtype is an array type: could be a vec or a matrix.

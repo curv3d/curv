@@ -204,119 +204,18 @@ UNARY_NUMERIC_FUNCTION(Acosh_Function, acosh, acosh, acosh)
 UNARY_NUMERIC_FUNCTION(Asinh_Function, asinh, asinh, asinh)
 UNARY_NUMERIC_FUNCTION(Atanh_Function, atanh, atanh, atanh)
 
-struct Atan2_Function : public Legacy_Function
+struct Phase_Prim : public Unary_Vec2_To_Num_Prim
 {
-    Atan2_Function(const char* nm) : Legacy_Function(2,nm) {}
-
-    struct Prim {
-        static double call(double x, double y) { return atan2(x, y); }
-        Shared<Operation> make_expr(
-            Shared<Operation> x, Shared<Operation> y) const
-        {
-            throw Exception(cx,
-                "Internal error: atan2 applied to a reactive value");
-            //return make<Divide_Expr>(share(syntax), std::move(x), std::move(y));
-        }
-        static Shared<const String> callstr(Value x, Value y) {
-            return stringify("[",x,",",y,"]");
-        }
-        At_Arg cx;
-        Prim(Function& func, Frame& args) : cx(func, args) {}
-    };
-    static Binary_Numeric_Array_Op<Prim> array_op;
-    Value call(Frame& args) override
-    {
-        return array_op.op(Prim(*this, args), args[0], args[1]);
-    }
-    SC_Value sc_call_legacy(SC_Frame& f) const override
-    {
-        auto x = f[0];
-        auto y = f[1];
-
-        SC_Type rtype = SC_Type::Bool();
-        if (x.type == y.type)
-            rtype = x.type;
-        else if (x.type == SC_Type::Num())
-            rtype = y.type;
-        else if (y.type == SC_Type::Num())
-            rtype = x.type;
-        if (rtype == SC_Type::Bool())
-            throw Exception(At_SC_Phrase(f.call_phrase_, f),
-                "domain error");
-
-        SC_Value result = f.sc_.newvalue(rtype);
-        f.sc_.out() <<"  "<<rtype<<" "<<result<<" = atan(";
-        sc_put_as(f, x, At_SC_Arg(0, f), rtype);
-        f.sc_.out() << ",";
-        sc_put_as(f, y, At_SC_Arg(1, f), rtype);
-        f.sc_.out() << ");\n";
+    static const char* name() { return "phase"; }
+    static Value call(Vec2 v, const Context&) { return {atan2(v.y,v.x)}; }
+    static SC_Value sc_call(SC_Frame& f, SC_Value arg) {
+        auto result = f.sc_.newvalue(SC_Type::Num());
+        f.sc_.out() << "  " << result.type << " " << result << " = "
+            << "atan(" << arg << ".y," << arg << ".x);\n";
         return result;
     }
 };
-
-SC_Value sc_minmax(const char* name, Operation& argx, SC_Frame& f)
-{
-    auto list = dynamic_cast<List_Expr*>(&argx);
-    if (list) {
-        std::list<SC_Value> args;
-        SC_Type type = SC_Type::Num();
-        for (auto op : *list) {
-            auto val = sc_eval_op(f, *op);
-            args.push_back(val);
-            if (val.type == SC_Type::Num())
-                ;
-            else if (val.type.is_num_vec()) {
-                if (type == SC_Type::Num())
-                    type = val.type;
-                else if (type != val.type)
-                    throw Exception(At_SC_Phrase(op->syntax_, f), stringify(
-                        name, ": vector arguments of different lengths"));
-            } else {
-                throw Exception(At_SC_Phrase(op->syntax_, f), stringify(
-                    name,": argument has bad type"));
-            }
-        }
-        auto result = f.sc_.newvalue(type);
-        if (args.size() == 0) {
-            // TODO: BUG: this only works for 'max'. min requires +inf.
-            f.sc_.out() << "  " << type << " " << result << " = -0.0/0.0;\n";
-        }
-        else if (args.size() == 1)
-            return args.front();
-        else {
-            f.sc_.out() << "  " << type << " " << result << " = ";
-            int rparens = 0;
-            while (args.size() > 2) {
-                f.sc_.out() << name << "(" << args.front() << ",";
-                args.pop_front();
-                ++rparens;
-            }
-            f.sc_.out() << name << "(" << args.front() << "," << args.back() << ")";
-            while (rparens > 0) {
-                f.sc_.out() << ")";
-                --rparens;
-            }
-            f.sc_.out() << ";\n";
-        }
-        return result;
-    } else {
-        auto arg = sc_eval_op(f, argx);
-        auto result = f.sc_.newvalue(SC_Type::Num());
-        f.sc_.out() << "  float "<<result<<" = ";
-        if (arg.type == SC_Type::Vec(2))
-            f.sc_.out() << name <<"("<<arg<<".x,"<<arg<<".y);\n";
-        else if (arg.type == SC_Type::Vec(3))
-            f.sc_.out() << name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
-                <<arg<<".z);\n";
-        else if (arg.type == SC_Type::Vec(4))
-            f.sc_.out() << name<<"("<<name<<"("<<name<<"("<<arg<<".x,"<<arg<<".y),"
-                <<arg<<".z),"<<arg<<".w);\n";
-        else
-            throw Exception(At_SC_Phrase(argx.syntax_, f), stringify(
-                name,": argument is not a vector"));
-        return result;
-    }
-}
+using Phase_Function = Unary_Array_Func<Phase_Prim>;
 
 struct Max_Prim : public Binary_Num_SCVec_Prim
 {
@@ -1340,7 +1239,7 @@ builtin_namespace()
     FUNCTION("asin", Asin_Function),
     FUNCTION("acos", Acos_Function),
     FUNCTION("atan", Atan_Function),
-    FUNCTION("atan2", Atan2_Function),
+    FUNCTION("phase", Phase_Function),
     FUNCTION("sinh", Sinh_Function),
     FUNCTION("cosh", Cosh_Function),
     FUNCTION("tanh", Tanh_Function),

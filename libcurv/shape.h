@@ -8,8 +8,7 @@
 #include <libcurv/frame.h>
 #include <libcurv/sc_compiler.h>
 #include <libcurv/location.h>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
+#include <libcurv/vec.h>
 #include <cmath>
 
 namespace curv {
@@ -22,9 +21,6 @@ struct Phrase;
 struct Render_Opts;
 
 struct Viewed_Shape;
-
-using Vec3 = glm::dvec3;
-Vec3 value_to_vec3(Value, const Context&);
 
 // axis aligned bounding box
 struct BBox
