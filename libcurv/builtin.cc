@@ -709,38 +709,51 @@ struct Mag_Function : public Legacy_Function
     Mag_Function(const char* nm) : Legacy_Function(1,nm) {}
     Value call(Frame& args) override
     {
-        // TODO: use hypot() or BLAS DNRM2 or Eigen stableNorm/blueNorm?
+        // Use hypot() or BLAS DNRM2 or Eigen stableNorm/blueNorm?
         // Avoids overflow/underflow due to squaring of large/small values.
         // Slower.  https://forum.kde.org/viewtopic.php?f=74&t=62402
-        auto list = args[0].to<List>(At_Arg(*this, args));
-        // Fast path: assume we have a list of number, compute a result.
-        double sum = 0.0;
-        for (auto val : *list) {
-            double x = val.to_num_or_nan();
-            sum += x * x;
-        }
-        if (sum == sum)
-            return {sqrt(sum)};
-        // The computation failed. Second fastest path: assume a mix of numbers
-        // and reactive numbers, try to return a reactive result.
-        Shared<List_Expr> rlist =
-            List_Expr::make(list->size(),arg_part(args.call_phrase_));
-        for (unsigned i = 0; i < list->size(); ++i) {
-            Value val = list->at(i);
-            if (val.is_num()) {
-                rlist->at(i) = make<Constant>(arg_part(args.call_phrase_), val);
-                continue;
+
+        // Fast path: assume we have a list of numbers, compute a result.
+        auto list = args[0].dycast<List>();
+        if (list) {
+            double sum = 0.0;
+            for (auto val : *list) {
+                double x = val.to_num_or_nan();
+                sum += x * x;
             }
-            auto r = val.dycast<Reactive_Value>();
-            if (r && r->sctype_ == SC_Type::Num()) {
-                rlist->at(i) = r->expr();
-                continue;
-            }
-            rlist = nullptr;
-            break;
+            if (sum == sum)
+                return {sqrt(sum)};
         }
-        if (rlist) {
-            rlist->init();
+
+        // Slow path, return a reactive value or abort.
+        Shared<Operation> arg_op = nullptr;
+        auto rx = args[0].dycast<Reactive_Value>();
+        if (rx) {
+            if (rx->sctype_.is_num_vec())
+                arg_op = rx->expr();
+        } else {
+            list = args[0].to<List>(At_Arg(*this, args));
+            Shared<List_Expr> rlist =
+                List_Expr::make(list->size(),arg_part(args.call_phrase_));
+            arg_op = rlist;
+            for (unsigned i = 0; i < list->size(); ++i) {
+                Value val = list->at(i);
+                if (val.is_num()) {
+                    rlist->at(i) =
+                        make<Constant>(arg_part(args.call_phrase_), val);
+                    continue;
+                }
+                auto r = val.dycast<Reactive_Value>();
+                if (r && r->sctype_ == SC_Type::Num()) {
+                    rlist->at(i) = r->expr();
+                    continue;
+                }
+                arg_op = nullptr;
+                break;
+            }
+            if (arg_op) rlist->init();
+        }
+        if (arg_op) {
             return {make<Reactive_Expression>(
                 SC_Type::Num(),
                 make<Call_Expr>(
@@ -748,7 +761,7 @@ struct Mag_Function : public Legacy_Function
                     make<Constant>(
                         func_part(args.call_phrase_),
                         Value{share(*this)}),
-                    rlist),
+                    arg_op),
                 At_Arg(*this, args))};
         }
         throw Exception(At_Arg(*this, args),
