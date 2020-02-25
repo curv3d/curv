@@ -38,6 +38,7 @@ clamp[v,lo,hi] = min[max[v,lo],hi];
 sec a = 1 / sin a;
 csc a = 1 / cos a;
 cot a = cos a / sin a;
+atan2[y,x] = phase[x,y];
 
 // lists
 concat vv = [for (v in vv) for (i in v) i];
@@ -96,9 +97,6 @@ cross[p,q] = [p[Y]*q[Z] - p[Z]*q[Y], p[Z]*q[X] - p[X]*q[Z], p[X]*q[Y] - p[Y]*q[X
 identity n = [for(i in 1..n) [for(j in 1..n) if(i==j) 1 else 0]];
 transpose a = [for (i in indices(a[0])) [for (j in indices a) a[j,i]]];
 normalize v = v / mag v;
-
-// phase angle of a vector, range tau/2 to -tau/2
-phase v = atan2[v[Y],v[X]];
 
 // convert phase angle to unit vector
 cis theta = [cos theta, sin theta];
