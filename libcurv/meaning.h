@@ -317,7 +317,7 @@ struct Call_Expr : public Just_Expression
     virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
-    virtual void print(std::ostream&) const;
+    virtual void print(std::ostream&) const override;
 };
 
 struct Prefix_Expr_Base : public Just_Expression
@@ -439,7 +439,7 @@ struct List_Expr_Base : public Just_Expression
     virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
-    virtual void print(std::ostream&) const;
+    virtual void print(std::ostream&) const override;
     TAIL_ARRAY_MEMBERS(Shared<Operation>)
 };
 using List_Expr = Tail_Array<List_Expr_Base>;
