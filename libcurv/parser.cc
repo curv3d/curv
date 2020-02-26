@@ -243,7 +243,8 @@ is_ritem_end_token(Token::Kind k)
 //  | pipeline << ritem
 //  | 'if' primary ritem
 //  | 'if' primary ritem 'else' ritem
-//  | 'for' '(' ritem 'in' ritem ')' ritem
+//  | 'for' '(' primary 'in' ritem ')' ritem
+//  | 'for' '(' primary 'in' ritem 'while' ritem ')' ritem
 //  | 'while' parens ritem
 //  | 'do' list 'in' ritem
 //  | 'let' list 'in' ritem
