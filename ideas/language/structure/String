@@ -1,0 +1,218 @@
+From the perspective of Curv as an array language, is a string considered to
+be an array, or a scalar?
+ * In Curv 0.4, strings are halfway between scalars and arrays: some array
+   operations work, some fail, and it's pretty arbitrary. That's not
+   acceptable for an array language: I need consistency. Scalar or array?
+
+Here are some approaches:
+
+ 1. A string is a scalar. 'String' is one of the 5 primitive data types.
+    List operations don't work on strings. `strcat` concatenates strings:
+    `concat` doesn't work. `strcat` doesn't obey strict list semantics, in
+    the case where you are viewing a string as a list of EGCs, because two
+    adjacent EGCs can merge into one during catenation. Three levels of
+    increasing functionality:
+     a. A string is an unintepreted blob. You can construct a string with
+        a literal, you can concatenate, you can print, nothing else. You can't
+        decompose a string. There is no string equality: comparing strings or
+        using them as map keys is a code smell: use Symbols instead.
+        Curv is not a string processing language.
+     b. Equality (S1 == S2) follows Unicode semantics: two strings are equal
+        if they normalize to the same sequence under NFC.
+     c. If you want to view a string as a list of characters, then you must use
+        an explicit conversion to a list of code points, or a list of extended
+        grapheme clusters. A code point is an integer. An EGC could be
+        represented as a string: I'm not sure we need a separate EGC type.
+
+ 2. A string is a list of characters. 'Char' is one of the 5 primitive data
+    types, replacing 'String'. All list operations work as expected on strings,
+    with no exceptions or limitations.
+    
+    Equality (S1 == S2) follows list semantics. Unicode string equality is
+    provided by a separate string library. If you want to compare two *names*
+    for equality using ==, or you want to use them as map keys, you should use
+    Symbols instead.
+    
+    Strings are concatenated with `concat` or `++`, which use list semantics.
+    Therefore, a character value is a unicode code point, not an EGC. (This
+    is because two adjacent EGCs can merge during concatenation.) If you
+    want to view a string as a sequence of EGCs, you use the string library,
+    just as in approach #1.
+
+    Heterogenous lists of characters and non-characters are supported, and will
+    be used in the representation of rich text, when Curv becomes a visual
+    programming language.
+
+Both approaches have the same technical power.
+
+If I'm using ASCII, then I should use #2: a string is a list of characters.
+All of the confusion and complexity comes from Unicode, and this can't be
+eliminated, it can only be moved from one part of the language to another.
+
+In approach #1, only a minimal set of string operations is provided in the core
+language. All the Unicode complexity is quarantined in the string library.
+So you need to climb the Unicode cliff to decompose a string, count the
+characters. Which is fine if string manipulation is considered to be a low
+level, tier 2 concern.
+
+Approach #2 is consistent with pure functional and array languages.
+Treating a string as a list of characters will be familiar to most users.
+Symbols can fill the role of "scalar string values".
+This is my current preference.
+
+A String is a List of Characters
+--------------------------------
+In this section, I will consider that a string is a list of characters
+(strings are arrays). This has benefits and drawbacks.
+
+The benefits are:
+* By considering a string to be a list of characters, we get simplicity and
+  uniformity. All of the machinery for operating on arrays also operates on
+  strings, with the same semantics as lists (no surprises as found in Curv 0.4).
+* Since Curv is dynamically typed, this leads to heterogenous list of characters
+  and non-characters, which can be used to represent rich text. A rich text
+  data type is needed when Curv becomes a visual programming language.
+
+The problems arise if Curv transitions from ASCII to Unicode:
+* String equality uses list semantics, not Unicode semantics. Use symbols
+  instead.
+* String concatenation (via `concat` or `++`) uses list semantics.
+  NFC is not preserved by list concatenation (use `strcat` instead).
+* A character will be a Unicode code point. It is not an extended grapheme
+  cluster (EGC), because:
+  * The definition of EGC changes across Unicode releases. We don't want a
+    valid character literal to become a syntax error due to a change in the
+    Unicode standard, as happened to the Swift language.
+  * String concatenation doesn't have array semantics if EGCs are characters.
+    Two adjacent EGCs can merge on concatenation.
+
+#"a" is a character literal. #|a| and #<a> are alternate designs.
+
+With Unicode, a character literal can contain two or more code points,
+if that sequence of code points normalizes to a single code point in NFC.
+This is safe, because NFC is guaranteed to be stable across Unicode versions:
+http://www.unicode.org/reports/tr15/#Stability_of_Normalized_Forms
+
+With Unicode, the syntax for a character literal needs a leading and trailing
+delimiter. If the 'character' being quoted is a "combining character", then
+it may be rendered above or below one of the delimiters.
+The syntax used by Lisp and Scheme (`#\a`) is not suitable.
+
+`[#"a", #"b", #"c"] == "abc"`
+    These two expressions evaluate to the same value, and both print as `"abc"`.
+
+`"" == []`
+    A string is nothing more than a list of characters. The empty string is
+    the same value as the empty list. An empty string prints as `[]`.
+    `is_string []` is true.
+
+String equality is list equality.
+    Two strings are equal if they consist of the same sequence of characters.
+    This works great for ASCII. However, by identifying characters with code
+    points, we get the result that two strings that differ only in their
+    normalization form compare unequal with respect to `==`. To get proper
+    Unicode string equality semantics, we'll need a separate `strequal`
+    function.
+
+By considering a string to be a list of characters, we get simplicity and
+uniformity. All of the machinery for operating on arrays also operates on
+strings, with the same semantics as lists (no surprises as found in Curv 0.4).
+
+`count S`
+    If S is a string, then `count S` is the number of characters in the string.
+
+`[for (c in S) c]`
+    If S is a string, then this evaluates to the string S. This is useful for
+    generic programming. However, note that in Unicode, there aren't a lot of
+    high level operations on Unicode code points. There is equality. There is
+    conversion between integer and character. Each code point has a set of
+    properties, but it's mostly low level technical stuff. Conversion between
+    lower and upper case can't be done at the code point level, for example,
+    unlike in ASCII. If Curv ever needs to support unicode string processing,
+    it will need a separate string library that applies Unicode semantics to
+    Curv string values.
+
+++ is the infix concatenate operator.
+[0,1]++[2,3] prints as [0,1,2,3].
+"ab"++"cd" prints as "abcd".
+"ab"++[2,3] prints as "ab"++[2,3].
+
+Heterogenous lists of characters and other values may be a useful representation
+for rich text (eg, like markdown text). I'll need a representation of rich text
+when Curv becomes a visual programming language.
+
+Character Constructors
+----------------------
+#|a|  [#|a|,#|b|]   // harder to type, easier to read?
+#"a"  [#"a",#"b"]
+#<a>  [#<a>,#<b>]
+
+#| |, #|!|, #|"|, #|#|, #|$|, #|%|, #|&|, #|'|, 
+#|(|, #|)|, #|*|, #|+|, #|,|, #|-|, #|.|, #|/|, 
+#|0|, #|1|, #|2|, #|3|, #|4|, #|5|, #|6|, #|7|, 
+
+#" ", #"!", #""", #"#", #"$", #"%", #"&", #"'", 
+#"(", #")", #"*", #"+", #",", #"-", #".", #"/", 
+#"0", #"1", #"2", #"3", #"4", #"5", #"6", #"7", 
+
+#< >, #<!>, #<">, #<#>, #<$>, #<%>, #<&>, #<'>, 
+#<(>, #<)>, #<*>, #<+>, #<,>, #<->, #<.>, #</>, 
+#<0>, #<1>, #<2>, #<3>, #<4>, #<5>, #<6>, #<7>, 
+
+The #<x> syntax is less ambiguous in the case of #<#> vs #|#|.
+See also #<<> #<>> vs #|<| #|>| #|||.
+
+The #<x> syntax might look better if x is a combining character which is
+rendered above or below one of the delimiters?
+
+ !"#$%&'
+()*+,-./
+01234567
+
+char 97         =>  #|a|
+char[97,98,99]  =>  "abc"
+
+ucode #|a|   => 97
+ucode "abc"  => [97,98,99]
+
+Control characters (like newline) print as `char 10`.
+Printable characters print as `#|a|`.
+
+Compact String Representation
+-----------------------------
+A Char value has a 64 bit pointerless NaN boxed representation.
+The most general representation of a string is a list of boxed characters.
+We can keep the compact curv::String representation, to be generated by
+string literals and `strcat`.
+
+The "efficient array" proposal will provide a mechanism for directly
+constructing compact strings (ASCII or UTF-8) in the general case.
+
+Characters are Symbols
+----------------------
+Instead of introducing a distinct character type, and a distinct syntax
+for character literals, we could define a character value to be a symbol
+whose name is a single character.
+
+"abc" == [#a,#b,#c]
+is_symbol(#a) == #true
+is_char(#a) == #true
+
+It is already the case that "${#a}" == "a".
+
+So there are actually 4 fundamental data types: symbol, number, list, record.
+
+Any downside?
+* You probably don't want to use single-character symbols for many uses
+  outside of characters, unless you want [#x,#y,#z] to print as "xyz".
+* `fields{d:1,height:3}` returns "d"++[#height].
+
+Nah, maybe not.
+
+Other Character Literal Syntaxes
+--------------------------------
+$a  $' '
+\a          Clojure
+#\a         Lisp, Scheme
+(string-to-char "a")    Emacs Lisp
+$a  $\n     Erlang

@@ -1,9 +1,18 @@
 # TODO: Language Changes
 
-High:
-* vectorized boolean operations: for noise, and colour conversion
+Functional Programming:
+* generalized recursive definitions
+* reduce {call:[x,y]->x+y, zero:0} list
+
+Array Programming:
+* multidimensional array slicing
+* a string is a list of characters (see structure/String)
+
+Imperative Programming:
 * V[[X,Y]] := vec2 in Curv, SubCurv
 * M[i,j] := a
+
+Symbols:
 * replace foo."bar" with
   * foo!#bar, foo!#bar := newval, defined(foo!#bar)
   * foo >> at[#bar]
@@ -14,8 +23,9 @@ High:
   * fetch [i1,i2,i3] S, amend path newvalue S
 * replace {"foo":bar} with {#foo => bar}.
 * {pattern : value}
-* Multipart function definitions, allows recursive piecewise functions,
-  which are wanted for lib.noise. OR: `match` is a keyword, see Match.
+
+High:
+* vectorized boolean operations: for noise, and colour conversion
 * Picker predicates: implement the complete set
 
 Medium:
@@ -27,7 +37,6 @@ Medium:
 * Branded values?
 * `== value` is a predicate, and it is an equality pattern.
 * Use _ as digit separator in numerals.
-* any, all
 
 Low:
 * Disallow actions in a `let` clause. However, there's a use case for
@@ -38,7 +47,6 @@ Low:
   * warn about inconsistent white space in expressions, eg: 'f -1' or 'f a.b'
   * Lua-like function call syntax. 'f 1' and 'f a' no longer supported,
     but 'f(x)', 'f[x]' and 'f{a:b}' are still supported.
-* missing features: Str[i] := c, for (c in Str)
 
 Breaking changes:
 * file.foo and package. Remove 'file pathname'.

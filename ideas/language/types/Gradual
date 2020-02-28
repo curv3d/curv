@@ -1,0 +1,35 @@
+Gradual Typing
+==============
+How does Gradual Typing work? How does it differ from the "soft typing" that
+I want to implement, to support reactive values, live coding and type-directed
+programmer assistance?
+
+https://wphomes.soic.indiana.edu/jsiek/what-is-gradual-typing/
+
+Gradual typing allows parts of a program to be dynamically typed and other
+parts to be statically typed. The programmer controls which parts are which
+by either leaving out type annotations or by adding them in.
+
+In the parts of the program that are statically typed, you may get compile
+time type errors for code that would run fine, without any errors, if run
+using dynamic typing. This is different from my initial conception of
+soft typing, although I don't fundamentally object to the idea of
+explicit annotations that cause this kind of static type checking.
+
+The gradual type checker deals with unannotated variables by giving them
+the unknown type (also called the dynamic type in the literature), which we
+abbreviate as “?” and by allowing implicit conversions from any type to
+? and also from ? to any other type. There are implicit conversions between
+structured types, eg between the tuple types ?*int and int*int.
+
+These implicit conversions are not the result of subtype rules.
+If the dynamic type is treated as both the top and the bottom of the subtype
+lattice (allowing both implicit up-casts and down-casts), then the lattice
+collapses to one point because subtyping is transitive. In other words,
+every type is a subtype of every other type and the type system no longer
+rejects any program, even ones with obvious type errors.
+
+By contrast, the goal of my soft type system is to make partial evaluation
+more powerful, not to generate compile time type errors. A soft type is an
+abstract interpretation of an expression, telling us what range of values
+that expression can take on.

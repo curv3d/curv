@@ -1,0 +1,79 @@
+A Type System for Reactive Values
+=================================
+
+1. The "reactive values" feature of Curv introduces "reactive variables",
+which are variables like `time` that do not have a value during the initial
+evaluation phase in the CPU. During evaluation, we know that `time` is a number
+(so we know its type), but we don't know its value.
+
+An expression like `time + 1` cannot be reduced at evaluation time, although we
+can deduce its type (number). The result is a reactive expression, which is an
+unreduced expression tree.
+
+2. We want to assign types to reactive expressions during evaluation, so that
+we can do run-time partial evaluation based on the type. We can evaluate type
+predicates (which may return true or false when applied to a reactive value,
+rather than always returning another reactive value). If we know that a value
+definitely is a list of known size, or definitely is not a list, then we can
+do pattern matching with list patterns. This means we can evaluate function
+calls, at least in some cases, when a function is applied to a reactive value.
+
+We need the ability to evaluate function calls on reactive values, so that
+we can construct shape values (that depend on `time` and are animated), so that
+we can recognize shape animated values and render them.
+
+3. This process of applying types to reactive values cannot be strict
+application of the SubCurv monomorphic type system, where we report an
+error during evaluation if a SubCurv type can't be assigned to an expression.
+That doesn't work.
+    Example: an animated type may have an animated bbox expression.
+    A bbox is a 2x3 array of numbers, and that is not currently a valid Struc
+    type in SubCurv. It shouldn't matter, because even though we must construct
+    this bbox expression when constructing the shape, we don't evaluate the bbox
+    expression in the viewer. So it's this expression with a "bad" type, which
+    could be evaluated in Curv, but can't be evaluated in SubCurv.
+
+4. It turns out that I want a "soft" type system, which is tolerant of
+potential type errors.
+
+What does "error tolerance" mean in a soft type system?
+ * The run-time evaluation of an expression containing reactive values
+   aborts with an error if it can be proven that all possible values
+   of the reactive variables in the expression would result in an error.
+   For example, `time+#foo` can fail with an error when evaluated.
+ * Type errors in the body of a function that isn't being called, do not
+   result in an evaluation error. In normal Curv semantics, `()->1+#foo`
+   returns a function value (does not report an evaluation error),
+   so `()->time+#foo` also cannot fail.
+ * It's useful to record the location of unevaluated type errors, so that we can
+   report them to the user. Eg, the printed representation of `()->time+#foo`
+   could underline the bad expression `time+#foo` in red, and there could be a
+   facility for searching through a large value looking for known type errors.
+
+5. What are the applications for this soft type system?
+ * Reactive values.
+ * Live programming: unevaluated type errors can be reported
+   without crashing out of the live evaluation session.
+ * Interactive type-directed programmer assistance.
+ * Optimization: monomorphic code could be compiled into fast VM code.
+   (Run-time type-directed JIT, as practiced in Self & Javascript, is a more
+   flexible alternative, so this optimization strategy is not a priority.)
+
+6. How does the type system work?
+
+My first thought is that types are sets of values. The `Error` type is a set
+containing no values. The `Any` type contains all values. Obviously there is
+a lattice of types.
+
+Gradual Typing doesn't work this way. It has a dynamic or unknown type, "?",
+which lives outside of the type lattice and is not the same as "Any".
+Gradual typing supports static typing, in which type errors are reported for
+dynamically correct code, and "?"  is used to suppress these compile-time
+errors. So it's not the same as soft typing, since soft types exist to guide
+partial or abstract evaluation. Soft types only specify the values that an
+expression can take on.
+
+I know that Hazel uses a form of gradual typing for its "typed holes" approach
+to live programming. Since my type system provides the same benefits as Hazel,
+I should understand how Hazel works and incorporate any relevant ideas into
+my type system.

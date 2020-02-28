@@ -31,6 +31,25 @@ A bit inconsistent about when list phrases need to be parenthesized.
 * an intermediate mixfix argument is <item>
 Problem: what about 'f x = mixfix', 'a = mixfix', 'x->mixfix'?
 Are these items, and do the mixfix arguments need to be parenthesized?
+ * Maybe 'x = <mixfix>' is a <mixfix> phrase?
+   That introduces the dangling else ambiguity, unless this is restricted
+   to the final mixfix argument, or unless there is an alternate mixfix form
+   terminated by END which has different precedence.
+How about this:
+ * a mixfix phrase is an <item>
+ * a final mixfix argument is an <item>
+ * an intermediate mixfix argument is a <pipeline>, so the following
+   intermediate mixfix arguments need to be parenthesized:
+      mixfix
+      ... item
+      pipeline = item
+      pipeline := item
+      pipeline :
+      pipeline : item
+      pipeline -> item
+      pipeline << item
+   Most expression arguments don't need parens, while most statementy syntax
+   does need parens.
 
 "Tight" mixfix. An intermediate argument is <primary>, final arg is <mixfix>.
 Almost all statement arguments are parenthesized, so it has that go/rust/swift
@@ -56,12 +75,13 @@ fire i =
         (lerp(orange, yellow, i*4-3));
 
 fire i =
-    LET:
-        yellow = [1.7, 1.3, 1.0]
-        orange = [1.0, 0.6, 0.0]
-        red = [1.0, 0.0, 0.0]
-        darkgray = [0.2, 0.2, 0.2]
-        gray = [0.4, 0.4, 0.4]
+    LET (
+        yellow = [1.7, 1.3, 1.0];
+        orange = [1.0, 0.6, 0.0];
+        red = [1.0, 0.0, 0.0];
+        darkgray = [0.2, 0.2, 0.2];
+        gray = [0.4, 0.4, 0.4];
+    )
     IN
     IF i < .25 THEN
         lerp[gray, darkgray, i*4]

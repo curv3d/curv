@@ -1,0 +1,75 @@
+K Language
+==========
+Borrow useful operations from K?
+
+implementations: ngn.bitbucket.io/k.html
+
+K7 Language
+-----------
+(The latest version of K.)
+partial docs: https://kparc.github.io/ref/
+What does K7 have that is missing from Curv?
+
+monadic + : flip; transpose a matrix (depth-2 list)
+  convert between list of records (whose keysets are identical) -- a DB table
+              and record of lists (whose counts are identical)
+monadic % : inverse; 1/x
+monadic * : first; first element of list
+monadic & : where; &0 0 1 0 3 yields 2 4 4 4
+monadic | : reverse; reverse a list
+monadic <,> : grade up, grade down; indices of sorted list
+
+K3 Language (kona)
+------------------
++ monadic  flip. transpose a matrix (a depth-2 list)
++ dyadic   plus. add numbers together
+- monadic  negate. invert sign
+- dyadic   minus. subtraction
+* monadic  first. first element from the list
+* dyadic   times. multiply two numbers
+% monadic  reciprocal. 1 over x
+% dyadic   divide. x divided by y (not mod)
+| monadic  reverse. reverse order of list
+| dyadic   max/or. MAX(x,y) or OR(x,y)
+& monadic  where. &0 0 1 0 3 yields 2 4 4 4.
+    &x takes a list of ints and returns the ints from 0 to (length of x-1),
+    each repeated as many times as x[i].
+& dyadic   min/and. MIN(x,y) or AND(x,y)
+^ monadic  shape. #elts at each depth (min over)
+^ dyadic   power. x to the exponent y
+! monadic  enumerate. !4 yields 0 1 2 3
+! dyadic   mod/rotate. 5!3 yields 2;  1 ! 4 5 6 yields 5 6 4
+< monadic  grade up. indices of list sorted ascending
+< dyadic   less. boolean is x less than y
+> monadic  grade down. indices of list sorted descending
+> dyadic   more. boolean is x greater than y
+= monadic  group. =3 4 3 4 4 yields (0 2;1 3 4)
+    =x: group like values' indexes into sub-lists, in the order their first
+    value is encountered.
+= dyadic   equals. 1 2 3 = 1 2 4 yields 1 1 0 (tolerantly)
+~ monadic  not. ~ 0 1 0 2 0 yields 1 0 1 0 1
+~ dyadic   match. 1 2 ~ 1 2 yields 1 (types must match)
+@ monadic  atom. boolean is arg an atom (as opposed to a list)
+@ dyadic   at. elts from x at indices y
+@ triadic  monadic amend. see \.
+@ tetradic dyadic amend. see \.
+? monadic  unique. distinct elts from a list
+? dyadic   draw. n?m yields n numbers < m
+? dyadic   deal. -n?m yields n ints < m without replacement
+? dyadic   sample. n?y yields n random elements from list y (-n for no replacement)
+? dyadic   find. x?y yields index of y in list x (or #x)
+? dyadic   invert. {x^2} ? 2 yields sqrt(2)
+? triadic  invert-guess. secant method with clues ?[{2^x};17;4]
+_ monadic  floor. tolerant floor function
+_ dyadic   drop/cut. lose x elts from list y / separate into pieces
+, monadic  enlist. put x inside a 1-element list
+, dyadic   join. "ab","cd" yields "abcd"
+# monadic  count. number of elements in list
+# dyadic   take/reshape. fill x elts from y
+$ monadic  format. cast to string
+$ dyadic   form/format. cast
+. monadic  execute/make dictionary. ."1+1" yields 2
+. dyadic   value. 1 2 3 . ,2 yields 3. see \.
+. triadic  monadic amend. see \.
+. tetradic dyadic amend. see \.
+

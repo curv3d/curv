@@ -130,6 +130,11 @@ This is needed for image and voxel arrays, for example.
 So:
     Array{of: T, rank: N}
 
+Alternative syntax for list and array types:
+    Array R T -- R is a rank, T is a base type
+    Array [I,J,K] T -- I,J,K are positive integers
+Note that Array 0 T == Array [] T == T.
+
 We may also want unboxed enum types, eg:
  * Optional_Num = Enum[#nothing, {just: Float32}]
 
@@ -162,42 +167,7 @@ Element access.
 
 List of Characters
 ------------------
-Characters are a new primitive data type.
-`#/a/` is a character literal.
-`#"a"` ? Unless I decide to use Swift-style fat quoted string literals.
-`"a"[0]` ?
-
-String = List{of: Char}
-A = [#/f/,#/o/,#/o/]
-B = make String [#/f/,#/o/,#/o/]
-C = "foo"
-    What a nightmare. In High Curv, the only thing you should need to understand
-    is "foo", not the rest of it.
-
-"" == []: true or false?
-"foo" == [#/f/,#/o/,#/o/]
-  In Haskell and the APL languages, they are both true.
-  [Seems to be needed for generic programming, but may violate the principle
-  that 'two values are equal if and only if they print the same'.]
-
-It would be a very good idea if [#/f/,#/o/,#/o/] prints as "foo".
-
-If ""==[], then should "" print as "" or as []?
- * 'equality of printables' suggests it should print as [].
- * Are there any operations which distinguish "" from [], other than reflection?
-   Ideally, no.
- * Principle of least surprise. Is it more surprising that "" is sugar for [],
-   or that "" and [] are distinct values that compare equal? The latter.
-Therefore, "" is syntax that evaluates to [].
-
-More generally, there is only one empty list.
-
-++ is the infix concatenate operator.
-[0,1]++[2,3] prints as [0,1,2,3].
-"ab"++"cd" prints as "abcd".
-"ab"++[2,3] prints as "ab"++[2,3].
-"" prints as [] -- This is less mysterious, in the bigger context that a string
-is actually just a list of characters, and that heterogenous lists can exist.
+See document `String` for details.
 
 Number Types
 ------------

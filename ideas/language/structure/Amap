@@ -4,15 +4,30 @@ amap rank func args
 generalizing it so that each argument can be a multi-dimensional array
 of values, instead of a single value.
 
-If the function takes one argument, then `args` is that argument, containing
-either a single argument value, or an array of argument values.
-In this case, `rank` is a natural number, which is the array rank of a
-single argument value. A rank of 0 means that the function is applied to
-each scalar in the array `args`.
+Not all operations can be vectorized. In order for `amap` to work, a valid
+argument must be distinguishable from a list of arguments, in all cases.
+If a unary operation F can be vectorized, then it has a rank N, which is a
+natural number:
+ * Rank 0 means that every valid argument is a scalar.
+ * Rank 1 means that every valid argument is a non-empty list of scalars.
+ * Rank 2 means that every valid argument is a non-empty list of non-empty
+   lists of scalars.
+ * ...and so on.
 
-If the function takes N arguments, then `args` is a list of N elements.
-`rank` is a list of N natural numbers: the i'th rank is the array rank
-of the i'th argument value.
+And then `amap N F args` will replace every subarray A of rank N within args
+with `F A`.
+
+We can think of the rank argument N as a pattern for matching arguments
+within the `args` array.
+
+Another case is that the function F takes, as its argument, a fixed size
+tuple of argument arrays. In that case, the `rank` argument is a tuple of
+rank values. This case is important for binary infix operators.
+
+We could extend this further, with more patterns. If the function F takes
+a record as its argument, then the `rank` argument could be a record whose
+field values are rank patterns. We could allow rank patterns to be arbitrarily
+nested.
 
 `amap` is closely related to the Rank operator in APL.
 
@@ -20,6 +35,21 @@ numpy.vectorize is similar (although the API is a mess).
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.vectorize.html
 
 ------
+The `rank` argument duplicates information contained in a function's
+parameter pattern. Can we leverage this?
+ * validity checking
+ * default field values in record patterns
+ * Just obtain the rank pattern directly from a function value.
+   Then you code the function specifically to work with amap,
+   and invoke using `amap func args`.
+ * Or maybe the amap feature is built in to parameter pattern syntax.
+   Then invoke using `func args`.
+
 What if a 'rank' ordinal is replaced by a type value, and types contain
 a rank, or the predicate is used to identify type instances?
 That seems more abstract/higher level.
+
+What if the rank & func arguments of amap are placed in a record:
+    amap {call: func, rank: R} arg
+This means that a function F with a `rank` field could be used directly:
+    amap F arg
