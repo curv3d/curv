@@ -15,7 +15,38 @@ You can use gcc 5.4 (or later), or clang 3.4 (or later).
 
 # Installing 
 
-## Ubuntu Linux 16.04 build instructions
+## Windows 10 using WSL
+Note that 3D rendering will be slow, because WSL does not support GPU access.
+All 3D rendering is done in software. See `issue #88`_ for details.
+.. _`issue #88`: https://github.com/curv3d/curv/issues/88
+
+Install WSL (Windows Services for Linux) + Ubuntu 18.04 LTS:
+ * https://docs.microsoft.com/en-us/windows/wsl/install-win10
+
+Launch the "Ubuntu 18.04 LTS" app. A terminal window will open.
+ * sudo apt-get update
+ * sudo apt install ubuntu-desktop mesa-utils
+
+Then follow the Ubuntu 18.04 build instructions, installing *all* of the
+mentioned packages, including "dev packages for your GPU".
+
+At this point, Curv will run but you won't be able to open a graphics window.
+For that you need an X11 window server. Install VcXsrv:
+ * https://sourceforge.net/projects/vcxsrv/
+
+Start VcXsrv using the XLaunch utility. Use these configuration settings:
+ * multiple windows
+ * display 0
+ * start no client
+ * disable native opengl
+
+Back in the Ubuntu terminal window:
+ * export DISPLAY=localhost:0
+ * curv -x cube
+
+For troubleshooting, look at `issue #88`_.
+
+## Ubuntu Linux 18.04 build instructions
 * Open the Terminal application and run the following commands:
   * Install the relevant dependencies used to build `curv`:
   
