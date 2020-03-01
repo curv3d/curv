@@ -63,17 +63,19 @@ using a known working GPU driver (see below).
   by the latest driver version from the GPU vendor. Any GPU from 2012 or later
   will work. Some older GPUs may work: check the list of supported hardware
   for the driver.
-* On Windows 10, it might be possible to use WSL to run Curv. WSL 1 has no
-  official GUI or GPU support, but there appear to be 3rd party workarounds.
-  In the future, Microsoft has indicated interest in supporting the GPU
-  in WSL 2. A WIN32 port is possible, but I'd need a volunteer for this.
-* Raspberry Pi isn't supported.
-  * The Raspberry Pi 4 could be supported in the future. Curv uses OpenGL 3.3,
-    which will not be supported. As of Jan 2020, OpenGL ES 3.1 is implemented,
-    and Curv could be modified to use that API instead.
-    https://blogs.igalia.com/itoral/2020/01/17/raspberry-pi-4-v3d-driver-gets-opengl-es-3-1-conformance/
+* On Windows 10, you can use WSL to run Curv. However, WSL has no GPU support,
+  so 3D rendering happens in software, which is slow. See issue #88 for details.
+  Microsoft has indicated intent to support the GPU in a future release
+  of WSL 2. A WIN32 port is possible, but I'd need a volunteer for this.
+* Raspberry Pi isn't supported yet.
+  * Raspberry Pi 4 support is planned. I believe that Curv could be ported
+    without a great effort. Curv uses X11 and GLX to create an OpenGL context.
+    Curv requests an OpenGL 3.3 context, which isn't supported, but OpenGL ES
+    3.1 is supported. It might just be a matter of changing the context type,
+    and possibly other small changes. The Raspberry Pi 4 hardware supports
+    all of the features that I plan to use in future releases of Curv.
   * Raspberry Pi 3 won't be supported. At best, it supports OpenGL ES 2.0,
-    which is not good enough: APIs used by Curv are missing.
+    which is not good enough: APIs currently used by Curv are missing.
 
 * On Linux, you have 3 choices:
 
