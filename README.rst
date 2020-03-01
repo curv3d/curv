@@ -64,10 +64,11 @@ using a known working GPU driver (see below).
   will work. Some older GPUs may work: check the list of supported hardware
   for the driver.
 * On Windows 10, you can use WSL to run Curv. However, WSL has no GPU support,
-  so 3D rendering happens in software, which is slow. See issue #88 for details.
+  so 3D rendering happens in software, which is slow. See `issue #88`_ for details.
   Microsoft has indicated intent to support the GPU in a future release
   of WSL 2. A WIN32 port is possible, but I'd need a volunteer for this.
 * Raspberry Pi isn't supported yet.
+
   * Raspberry Pi 4 support is planned. I believe that Curv could be ported
     without a great effort. Curv uses X11 and GLX to create an OpenGL context.
     Curv requests an OpenGL 3.3 context, which isn't supported, but OpenGL ES
@@ -117,5 +118,6 @@ driver software may not be prepared to deal with.
 .. _`TurboVNC`: https://turbovnc.org/About/Introduction
 .. _`VirtualGL`: https://virtualgl.org/About/Introduction
 .. _`issue #78`: https://github.com/curv3d/curv/issues/78
+.. _`issue #88`: https://github.com/curv3d/curv/issues/88
 .. _`issue #30`: https://github.com/curv3d/curv/issues/30
 .. _`The open source AMD driver has a bug`: https://bugs.freedesktop.org/show_bug.cgi?id=105371
