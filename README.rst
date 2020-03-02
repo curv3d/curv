@@ -49,7 +49,7 @@ Getting Started
 Hardware Requirements
 =====================
 Two platforms are currently supported: Linux and Macintosh. I currently test
-on Ubuntu LTS and MacOS 10.11. A Windows 10 port could happen in the future.
+on Ubuntu LTS and MacOS 10.11. Windows 10 only works with WSL.
 
 Curv uses OpenGL 3.3.
 The recommended configuration is a GPU made by Intel, AMD or Nvidia,
