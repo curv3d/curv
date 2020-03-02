@@ -150,7 +150,7 @@ struct String_Builder : public std::stringstream
     void write_all() {}
 };
 
-/// Print floating point numbers accurately (to a String_Builder)
+// Print floating point numbers accurately (to a String_Builder)
 inline String_Builder&
 operator<<(String_Builder& b, double n)
 {
@@ -158,56 +158,76 @@ operator<<(String_Builder& b, double n)
     return b;
 }
 
+// Can't overload on 'double' (see above)
+// without overloading on *all* the integral types.
+inline String_Builder&
+operator<<(String_Builder& b, long long n)
+{
+    (std::stringstream&)b << n;
+    return b;
+}
+inline String_Builder&
+operator<<(String_Builder& b, unsigned long long n)
+{
+    (std::stringstream&)b << n;
+    return b;
+}
 inline String_Builder&
 operator<<(String_Builder& b, long n)
 {
     (std::stringstream&)b << n;
     return b;
 }
-
 inline String_Builder&
 operator<<(String_Builder& b, unsigned long n)
 {
     (std::stringstream&)b << n;
     return b;
 }
-
 inline String_Builder&
 operator<<(String_Builder& b, int n)
 {
     (std::stringstream&)b << n;
     return b;
 }
-
 inline String_Builder&
 operator<<(String_Builder& b, unsigned n)
 {
     (std::stringstream&)b << n;
     return b;
 }
-
 inline String_Builder&
 operator<<(String_Builder& b, short n)
 {
     (std::stringstream&)b << n;
     return b;
 }
-
 inline String_Builder&
 operator<<(String_Builder& b, unsigned short n)
 {
     (std::stringstream&)b << n;
     return b;
 }
-
 inline String_Builder&
 operator<<(String_Builder& b, char c)
 {
     (std::stringstream&)b << c;
     return b;
 }
+inline String_Builder&
+operator<<(String_Builder& b, signed char c)
+{
+    (std::stringstream&)b << c;
+    return b;
+}
+inline String_Builder&
+operator<<(String_Builder& b, unsigned char c)
+{
+    (std::stringstream&)b << c;
+    return b;
+}
 
-/// Variadic function that converts its arguments into a curv String.
+// Variadic function that converts its arguments into a curv String.
 template<typename... Args>
 Shared<String> stringify(Args&&... args)
 {
