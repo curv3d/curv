@@ -86,19 +86,18 @@ The problems arise if Curv transitions from ASCII to Unicode:
   * String concatenation doesn't have array semantics if EGCs are characters.
     Two adjacent EGCs can merge on concatenation.
 
-#"a" is a character literal. #|a| and #<a> are alternate designs.
+This design is consistent with the Efficient Arrays proposal.
+Specifically, there is only one abstract List type. A list of numbers
+and a list of characters can be concatenated (you don't get a type error).
+There is only one empty list value: `[]`, which means that `""` is syntactic
+sugar for `[]. Internally, there are multiple list representations specialized
+for holding different types of scalars, but this is a performance optimization
+that doesn't complicate the Tier 1 semantics.
 
-With Unicode, a character literal can contain two or more code points,
-if that sequence of code points normalizes to a single code point in NFC.
-This is safe, because NFC is guaranteed to be stable across Unicode versions:
-http://www.unicode.org/reports/tr15/#Stability_of_Normalized_Forms
+There are no character literals, we use function calls: `char 97 == char #a`.
+Alternate designs for character literals look weird: #"a", #|a| and #<a>.
 
-With Unicode, the syntax for a character literal needs a leading and trailing
-delimiter. If the 'character' being quoted is a "combining character", then
-it may be rendered above or below one of the delimiters.
-The syntax used by Lisp and Scheme (`#\a`) is not suitable.
-
-`[#"a", #"b", #"c"] == "abc"`
+`[char #a, char #b, char #c] == "abc"`
     These two expressions evaluate to the same value, and both print as `"abc"`.
 
 `"" == []`
@@ -110,9 +109,11 @@ String equality is list equality.
     Two strings are equal if they consist of the same sequence of characters.
     This works great for ASCII. However, by identifying characters with code
     points, we get the result that two strings that differ only in their
-    normalization form compare unequal with respect to `==`. To get proper
-    Unicode string equality semantics, we'll need a separate `strequal`
-    function.
+    normalization form compare unequal with respect to `==`. You need Unicode
+    equality semantics when comparing two names for equality, but to represent
+    names you should use symbols, which have these equality semantics.
+    Alternatively, we can have additional Unicode operations in a string
+    library, and maybe there is a `strequal` function.
 
 By considering a string to be a list of characters, we get simplicity and
 uniformity. All of the machinery for operating on arrays also operates on
@@ -141,11 +142,78 @@ Heterogenous lists of characters and other values may be a useful representation
 for rich text (eg, like markdown text). I'll need a representation of rich text
 when Curv becomes a visual programming language.
 
+strcat and string
+-----------------
+Historically, `strcat` had two functions: to concatenate strings (you could
+not use `concat`), and to convert values to strings.
+
+In the new design, these functions are separated into two orthogonal bindings.
+`concat` concatenates a list of strings, and `string` converts an arbitrary
+value to a string. `strcat(L)` is replaced by `concat(map string L)`.
+
+A ${expr} string substitution is replaced by string(expr).
+
+`string` fits in to a larger pattern of value constructor/predicate functions:
+    string      is_string   -- string converts arbitrary value, not vectorized
+    symbol      is_symbol   -- symbol converts a string or value, not vectorized
+    bool        is_bool     -- bool converts 0/1 to false/true, is vectorized
+    char        is_char     -- char converts scalar to char, is vectorized
+
+`string` is idempotent. Should the other constructors be idempotent?
+Maybe: it fits with a model of types as idempotent constructor functions,
+and it fits with the proposed `pat >> ctor` pattern type.
+Eg, then bool(symbol(S)) converts a string to a bool, with an error if S is
+not "true" or "false".
+But, that example could also be written as `symbol S :: is_bool`.
+
+This larger design has implications for the `char` constructor:
+    char (C :: is_char) = C
+    char (N :: is_nat) = convert code point to character
+    char (S :: is_symbol) = convert single-character symbol to char
+
+string V
+    if V is a string, return V.
+    if V is a char, return [V].
+    if V is a symbol, return the name of V as a string, without # or quotes.
+    if V is a general list, then maximal contiguous sublists of non-characters
+        are printed as lists using `repr`, with leading and trailing [ ]
+        and commas separating the values. Any characters in between these
+        non-character values are represented as themselves, without quotation.
+    Otherwise, return `repr V`.
+
+++ vs &
+-------
+An alternate syntax idea:
+ * Use `&` as the infix concatenation operator.
+ * Use `&` instead of `$` as the string escape prefix.
+Then, "f("&a&")="&b is abbreviated as
+      "f(&a)=&b"
+This is "notation as a tool of thought" territory: the short form is derived
+from the long form by omitting characters, in a kind of algebraic manipulation.
+
 Character Constructors
 ----------------------
+Here we consider syntax for character literals. All the alternatives will look
+weird to most people, since the popular 'a' syntax is not available. We need
+a `char` constructor function regardless, and Curv is not a text processing
+language, so I currently plan to not implement character literals, and see
+how usable that is.
+
+With Unicode, a character literal can contain two or more code points,
+if that sequence of code points normalizes to a single code point in NFC.
+This is safe, because NFC is guaranteed to be stable across Unicode versions:
+http://www.unicode.org/reports/tr15/#Stability_of_Normalized_Forms
+[Curv source code is converted to NFC before being parsed.]
+
+With Unicode, the syntax for a character literal needs a leading and trailing
+delimiter. If the 'character' being quoted is a "combining character", then
+it may be rendered above or below one of the delimiters.
+The syntax used by Lisp and Scheme (`#\a`) is not suitable.
+
 #|a|  [#|a|,#|b|]   // harder to type, easier to read?
 #"a"  [#"a",#"b"]
 #<a>  [#<a>,#<b>]
+#`a`  [#`a`,#`b`]
 
 #| |, #|!|, #|"|, #|#|, #|$|, #|%|, #|&|, #|'|, 
 #|(|, #|)|, #|*|, #|+|, #|,|, #|-|, #|.|, #|/|, 
@@ -169,6 +237,12 @@ rendered above or below one of the delimiters?
 ()*+,-./
 01234567
 
+Should there be a kind of character literal containing a numeric escape
+sequence, similar to C's `'\1'`? Or should we use `char 1` instead?
+I prefer the latter, because it is more general: the argument can be an
+arbitrary expression. The numeric escape syntax is not just duplicate
+functionality, but it is also a syntax that is not composable.
+
 char 97         =>  #|a|
 char[97,98,99]  =>  "abc"
 
@@ -178,12 +252,63 @@ ucode "abc"  => [97,98,99]
 Control characters (like newline) print as `char 10`.
 Printable characters print as `#|a|`.
 
+The boolean equivalents of `char` and `ucode` are `bool` and `bit`.
+
+No Special Syntax for Character Literals
+----------------------------------------
+Instead we construct character values using a function call.
+    char 97
+    char #a
+    char #'>'
+
+>>> "abc"[0]
+char #a
+
+With no character literal syntax, how do you pattern match a character?
+Using `== expression` patterns.
+    match [
+        == char #a -> 
+        == char 127 ->
+        == nl ->
+        ]
+
+So, a string literal "abc" is sugar for [char #a, char #b, char #c],
+hence symbols are a more fundamental concept than characters or strings.
+
+Every character literal is a call to 'char'.
+ * This is a uniform syntax.
+ * It is reasonably obvious what the syntax means (we are constructing
+   a character). You can look up the meaning of 'char' if it isn't clear.
+   With any of my weird bespoke character literal syntaxes, the meaning is
+   less clear.
+ * It is a composable syntax. A numeric argument can be replaced with a
+   more complex expression. Can't do that with a numeric escape sequence
+   inside a C character literal.
+ * We need the `char` function anyway, so there is less duplication
+   of syntax/concepts.
+ * In the future, there will be many more abstract data types whose
+   constructors and print-syntax are function calls.
+
 Compact String Representation
 -----------------------------
 A Char value has a 64 bit pointerless NaN boxed representation.
 The most general representation of a string is a list of boxed characters.
 We can keep the compact curv::String representation, to be generated by
 string literals and `strcat`.
+
+So that means we may need to convert a compact string to a general list,
+which requires 64 bits per character.
+Eg,
+    concat("abc"/*compact*/,[1,2,3]/*general*/) => a general list
+Eg,
+    local s = "abc";    // s has compact representation
+    s[1] := 17;         // s converted to general representation
+    print s;
+    // "a"++[1]++"c"
+
+A more sophisticated "general list" representation would allow lists to be
+represented as trees, eg similar to the "rope" representation of strings.
+I won't attempt this just yet, as it complicates the implementation further.
 
 The "efficient array" proposal will provide a mechanism for directly
 constructing compact strings (ASCII or UTF-8) in the general case.
@@ -206,6 +331,8 @@ Any downside?
 * You probably don't want to use single-character symbols for many uses
   outside of characters, unless you want [#x,#y,#z] to print as "xyz".
 * `fields{d:1,height:3}` returns "d"++[#height].
+* This requires the existence of symbols containing non-printable characters,
+  which opens a (small) can of worms.
 
 Nah, maybe not.
 
@@ -216,3 +343,5 @@ $a  $' '
 #\a         Lisp, Scheme
 (string-to-char "a")    Emacs Lisp
 $a  $\n     Erlang
+#"a"        Standard ML, Red
+Character("a")    Swift

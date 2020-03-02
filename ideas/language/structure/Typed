@@ -1,3 +1,6 @@
+This document is an incoherent "stream of consciousness".
+It inspired the Efficient Arrays proposal.
+
 Typed Structures
 ================
 Efficient large structures are important if Curv is to support

@@ -1,0 +1,13 @@
+Awkward Arrays
+==============
+old: https://github.com/scikit-hep/awkward-array
+new: https://github.com/scikit-hep/awkward-1.0
+
+Generalizes the array-language operations on uniform rectangle arrays
+to also operate on ragged arrays and tables (list of records).
+A bit like APL for JSON.
+
+Supports efficient bulk operations on heterogenous data.
+A GPU accelerated implementation is in the works.
+The old version is Python.
+The new version has a C++ core with no Python dependencies.

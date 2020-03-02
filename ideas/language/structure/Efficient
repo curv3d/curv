@@ -226,6 +226,8 @@ head n list = make (typeof list) [for (i in 0..<(max[n,count list]) list[i]];
 
 SoA: Struct of Arrays
 ---------------------
+Some systems automatically convert an array of structs into a struct of arrays
+as an internal data structure optimization. That seems appropriate for Curv.
 
 Ranges
 ------

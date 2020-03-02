@@ -7,6 +7,11 @@ WASM can be used for:
 * Sandboxed, platform independent binaries.
   * Distribution format for compiled Curv binaries and plugins?
   * Distribution format for the Curv program?
+* WebAssembly graphics demos: http://cliffle.com/p/web-demos/
+  Export a Curv program to WASM for execution in a web page.
+  * Bitbanging a 2D image in WASM (Curv 2D animated colour field): see above.
+  * Use WebGL 2 via Emscripten.
+  * In future, use WASI WebGPU API.
 
 In the future, could I JIT compile Curv programs into WASM and then run them
 as efficiently as native code? I would need LLVM quality code generation,
@@ -22,10 +27,12 @@ Wasmer : Run WASM outside browser (github.com/wasmerio/wasmer)
 WebIDL : High level type system for interoperation between WASM modules and:
          other WASM modules, Javascript, native code, etc.
          https://github.com/WebAssembly/interface-types
-WASI : Portable operating system API for WASM modules: Posix, WebGPU, and more.
+WASI : Portable POSIX-like capability-based system API for WASM modules.
+       May eventually support WebGPU.
 Bytecode Alliance .org:
  * Wasmtime : standalone WASM runtime.
  * Cranelift : WASM -> portable SSA IR -> native code; fast code generator.
+ * Lightbeam : optimizing one-pass streaming compiler WASM -> native code.
  * WASI common : standalone implementation of WASI.
 inNative : C library for compiling WASM to C compatible binary: DLL or EXE.
 
