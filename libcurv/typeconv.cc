@@ -58,7 +58,7 @@ bool32_to_nat(Shared<const List> li, const Context& cx)
 }
 
 unsigned
-float_to_nat(double f)
+bitcast_float_to_nat(double f)
 {
     union { float f; unsigned n; } u;
     u.f = float(f);
@@ -66,7 +66,7 @@ float_to_nat(double f)
 }
 
 double
-nat_to_float(unsigned n)
+bitcast_nat_to_float(unsigned n)
 {
     union { float f; unsigned n; } u;
     u.n = n;

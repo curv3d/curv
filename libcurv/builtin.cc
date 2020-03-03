@@ -463,7 +463,7 @@ struct Bool32_To_Float_Prim : public Unary_Bool32_To_Num_Prim
     static const char* name() { return "bool32_to_float"; }
     static Value call(unsigned n, const Context&)
     {
-        return {nat_to_float(n)};
+        return {bitcast_nat_to_float(n)};
     }
     static SC_Value sc_call(SC_Frame& f, SC_Value x)
     {
@@ -481,7 +481,7 @@ struct Float_To_Bool32_Prim : public Unary_Num_To_Bool32_Prim
     static const char* name() { return "bool32_to_float"; }
     static Value call(double n, const Context&)
     {
-        return {nat_to_bool32(float_to_nat(n))};
+        return {nat_to_bool32(bitcast_float_to_nat(n))};
     }
     static SC_Value sc_call(SC_Frame& f, SC_Value x)
     {
