@@ -104,7 +104,7 @@ struct Is_Bool_Function : public Function
     using Function::Function;
     Value call(Value arg, Frame&) override
     {
-        return {isbool(arg)};
+        return {is_bool(arg)};
     }
 };
 struct Is_Symbol_Function : public Function
@@ -120,7 +120,7 @@ struct Is_Num_Function : public Function
     using Function::Function;
     Value call(Value arg, Frame&) override
     {
-        return {isnum(arg)};
+        return {is_num(arg)};
     }
 };
 struct Is_String_Function : public Function

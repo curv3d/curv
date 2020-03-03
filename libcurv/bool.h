@@ -11,6 +11,7 @@ namespace curv {
 
 struct Context;
 
+bool is_bool(Value a);
 Shared<const List> nat_to_bool32(unsigned);
 unsigned bool32_to_nat(Shared<const List>, const Context&);
 

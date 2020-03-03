@@ -5,12 +5,20 @@
 #include <libcurv/num.h>
 
 #include <libcurv/exception.h>
+#include <libcurv/reactive.h>
 #include <libcurv/string.h>
 
 #include <climits>
 #include <cmath>
 
 namespace curv {
+
+bool is_num(Value a)
+{
+    if (a.is_num()) return true;
+    auto r = a.dycast<Reactive_Value>();
+    return r && r->sctype_ == SC_Type::Num();
+}
 
 int
 num_to_int(double num, int lo, int hi, const Context& cx)

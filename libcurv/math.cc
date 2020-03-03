@@ -11,20 +11,6 @@
 
 namespace curv {
 
-bool isnum(Value a)
-{
-    if (a.is_num()) return true;
-    auto r = a.dycast<Reactive_Value>();
-    return r && r->sctype_ == SC_Type::Num();
-}
-
-bool isbool(Value a)
-{
-    if (a.is_bool()) return true;
-    auto r = a.dycast<Reactive_Value>();
-    return r && r->sctype_ == SC_Type::Bool();
-}
-
 bool issymbol(Value a)
 {
     if (a.is_bool()) return true;

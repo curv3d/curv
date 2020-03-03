@@ -4,7 +4,16 @@
 
 #include <libcurv/bool.h>
 
+#include <libcurv/reactive.h>
+
 namespace curv {
+
+bool is_bool(Value a)
+{
+    if (a.is_bool()) return true;
+    auto r = a.dycast<Reactive_Value>();
+    return r && r->sctype_ == SC_Type::Bool();
+}
 
 Shared<const List>
 nat_to_bool32(unsigned n)
