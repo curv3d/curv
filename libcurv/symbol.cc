@@ -3,10 +3,21 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/symbol.h>
+
 #include <libcurv/exception.h>
+#include <libcurv/reactive.h>
+
 #include <cctype>
 
 namespace curv {
+
+bool is_symbol(Value a)
+{
+    if (a.is_bool()) return true;
+    if (a.dycast<Symbol>() != nullptr) return true;
+    auto r = a.dycast<Reactive_Value>();
+    return r && r->sctype_ == SC_Type::Bool();
+}
 
 const char Symbol::name[] = "symbol";
 

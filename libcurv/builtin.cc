@@ -112,7 +112,7 @@ struct Is_Symbol_Function : public Function
     using Function::Function;
     Value call(Value arg, Frame&) override
     {
-        return {issymbol(arg)};
+        return {is_symbol(arg)};
     }
 };
 struct Is_Num_Function : public Function

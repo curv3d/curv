@@ -11,6 +11,8 @@
 
 namespace curv {
 
+bool is_symbol(Value a);
+
 struct Symbol_Ref;
 
 struct Symbol : public String_or_Symbol

@@ -11,8 +11,6 @@ namespace curv {
 
 struct At_Syntax;
 
-bool issymbol(Value a);
-
 // abstract list API (works for List and Reactive_Value)
 bool is_list(Value a);
 size_t list_count(Value);
