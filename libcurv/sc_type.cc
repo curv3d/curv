@@ -5,7 +5,6 @@
 #include <libcurv/sc_type.h>
 
 #include <libcurv/die.h>
-#include <libcurv/math.h>
 #include <libcurv/reactive.h>
 
 namespace curv {

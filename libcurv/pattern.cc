@@ -7,7 +7,6 @@
 #include <libcurv/context.h>
 #include <libcurv/definition.h>
 #include <libcurv/exception.h>
-#include <libcurv/math.h>
 #include <libcurv/phrase.h>
 #include <libcurv/sc_compiler.h>
 #include <libcurv/sc_context.h>

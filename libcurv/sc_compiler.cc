@@ -13,7 +13,6 @@
 #include <libcurv/dtostr.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
-#include <libcurv/math.h>
 #include <libcurv/num.h>
 #include <libcurv/meaning.h>
 #include <libcurv/optimizer.h>

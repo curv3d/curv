@@ -11,7 +11,6 @@
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
 #include <libcurv/import.h>
-#include <libcurv/math.h>
 #include <libcurv/num.h>
 #include <libcurv/pattern.h>
 #include <libcurv/picker.h>
@@ -684,6 +683,32 @@ SC_Value Not_Equal_Expr::sc_eval(SC_Frame& f) const
 
 // Generalized dot product that includes vector dot product and matrix product.
 // Same as Mathematica Dot[A,B]. Like APL A+.×B, Python numpy.dot(A,B)
+//  dot(a,b) =
+//    if (count a > 0 && is_list(a[0]))
+//      [for (row in a) dot(row,b)]  // matrix*...
+//    else
+//      sum(a*b)                     // vector*...
+Value dot(Value a, Value b, const At_Syntax& cx)
+{
+    auto av = a.to<List>(cx);
+    auto bv = b.to<List>(cx);
+    if (av->size() > 0 && av->at(0).dycast<List>()) {
+        Shared<List> result = List::make(av->size());
+        for (size_t i = 0; i < av->size(); ++i) {
+            result->at(i) = dot(av->at(i), b, cx);
+        }
+        return {result};
+    } else {
+        if (av->size() != bv->size())
+            throw Exception(cx, stringify("list of size ",av->size(),
+                " can't be multiplied by list of size ",bv->size()));
+        Value result = {0.0};
+        for (size_t i = 0; i < av->size(); ++i)
+            result = Add_Op::call(cx, result,
+                Multiply_Op::call(cx, av->at(i), bv->at(i)));
+        return result;
+    }
+}
 struct Dot_Function : public Legacy_Function
 {
     Dot_Function(const char* nm) : Legacy_Function(2,nm) {}

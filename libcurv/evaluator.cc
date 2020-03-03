@@ -6,7 +6,6 @@
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
 #include <libcurv/list.h>
-#include <libcurv/math.h>
 #include <libcurv/meaning.h>
 #include <libcurv/module.h>
 #include <libcurv/prim.h>
