@@ -1,3 +1,26 @@
+bool x -- x is 0 or 1 -- convert to #false or #true -- vectorized
+symbol s -- s is printable string -- convert to symbol -- vectorized
+A string is a list of characters (ideas/language/structure/String).
+
+All builtin numeric/boolean operations are now vectorized. Document this.
+    fields -- although, it isn't numeric/boolean
+    Call_Expr -- could vectorize the function argument. Q'NIAL, FP
+    Dot_Expr
+All expression types supported by SubCurv also support reactive arguments.
+Expressions that don't support reactive arguments:
+    Or_Expr
+    And_Expr
+    Equal_Expr
+    Not_Equal_Expr
+    Range_Expr
+    select[a,b,c]
+    dot[a,b]
+dot: matrix multiply
+and[...] and or[...] implement custom reduction code for bool32 and bvec. How?
+  * A functional Prim interface, returns an optional SC_Value.
+        SC_Value sc_try_reduce(SC_Frame& f, SC_Value a, const Context& cx)
+SubCurv: sum[a,b,c,d] is t=[a,b]+[c,d];t[X]+t[Y], not (a+b+c+d)?
+
 rename sc_vec_element -> sc_list_elem
     fix internals to support general struc list
     fix callers to support general struc list
@@ -5,7 +28,6 @@ update sc_eval_index*_expr() functions to support all struc types
 sc index an array using a struc index value
 add Reactive_Value::at(i,cx), call from list_elem and list_at
 maybe refactor that list_at code in evaluator
-dot: matrix multiply
 replace idchr() -- use is_C_identifier()?
 Array_Op and Prim should export the same interface.
 Remove boilerplate and duplication from PrimType classes.
@@ -231,66 +253,6 @@ In what circumstances is a reactive value's syntax object used?
      we have an At_Syntax for the argument expression. The pattern is `[a,b]`,
      so `a` is bound to `A[0]`. What is the syntax object for `A[0]`?
      What is the syntax object for `[0]` and `0`?
-
-Changing `add()` to use Binary_Array_Op instead of Binary_Numeric_Array_Op
-creates a behaviour change that is breaking tests. Reactive values are
-appearing where they didn't appear before. Approaches:
- 1. Find out what is causing the behaviour change. Maybe there is a bug?
-    * reduce test case to minimal form
-    * debug with GDB
-    * print reactive values as expressions
-    * found it: we used to evaluate [inf,inf,inf]+<uniform Offset>
-      to [inf+Offset,inf+Offset,inf+Offset], now to [inf,inf,inf]+Offset.
-      It's not a bug, but many tests that previously saw a list of reactive
-      values now see a reactive value, and that is triggering bugs.
-      * The previous code screwed up listconst+reactivelist.
-      * The new code preserves high level vector operations.
- 2. Fix all the bugs that the new behaviour is revealing.
-
-refactor/unify the code for binary '+' with 'sum'
- * Add_Op is used to generate both Add_Expr and Sum_Function. Add_Op doesn't
-   know the name of the operation (+ or sum), it is an anonymous function class.
-   The plan is:
-      using Add_Expr = Infix_Op_Expr<Add_Op>;
-      using Sum_Function = Monoid_Func<Add_Op>;
-   * Since the Add_Expr class doesn't hard code the name of the add operator,
-     any method that prints it needs to get the information from a Context
-     argument or the syntax_ instance variable.
-   * I want to add a method for printing an expression tree. How does it work?
-      1. Infix phrases like 'x+y' are analysed as function calls. Call_Expr
-         prints func_ then arg_. A Constant branded function value has a name.
-         Operators like binary '+' are given bindings in the standard prelude.
-      2. Infix Prim classes define a `name` member.
-             static constexpr char name[] = "+";
-         Binary_Array_Op::Prim is the template class argument.
-         Infix_Op_Expr<Op>::print() references Op::Prim::name.
-         Non-operator builtin function prims do not need to define a name.
-      3. Infix_Op_Expr<Op>::print() uses its syntax_ member.
-         For op trees created by Phrase::analyse, it will be a Binary_Phrase.
-         Then you can use the op_ as the infix operator name.
-     These all work for op trees created by Phrase::analyse. However, if the
-     tree is created by evaluating an expression over uniform variables, then:
-      1. No good, because Infix_Op_Expr and Binary_Array_Op do not have access
-         to a function object, only a Prim class. A func object has a name.
-      2. Works.
-      3. Probably not. In the case of 'sum' generating a reactive expression,
-         syntax_ will be a call to 'sum', and thus a Call_Phrase. The func_ of
-         the Call_Phrase could be any syntax that evaluates to a function value,
-         so we might not want to print that.
-         In general, it's hard to guarantee correctness for future use cases.
-         There are cases where I procedurally generate an op tree and there's
-         no isomorphic parse tree, so the syntax_ member is whatever is on hand.
-   * Binary_Array_Op::domain_error uses the Context to decide how to format a
-     domain error. An At_Phrase containing a Binary_Phrase is treated specially.
-     This works if the op tree was created by analysis. It may be wrong if the
-     op tree is synthetic, since the Phrase in the context may be unrelated to
-     the Operation?
-     * Perhaps Meaning has an analytic/synthetic two-state field?
-     * So if the Operation is synthetic, I must use the op name to describe
-       the operation that has gone wrong? Or, I always do that in the array_op
-       code.
-     * This implies that At_Index and At_Field are unreliable. They only
-       produce expected results for analytic Contexts, not synthetic ones.
 
  * Support reactive values in Binary_Array_Op using Infix_Op_Expr.
    * This will require defining Add_Expr = Infix_Op_Expr<Add_Op>.
