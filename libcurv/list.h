@@ -12,8 +12,14 @@
 
 namespace curv {
 
+struct At_Syntax;
 struct Context;
 struct List_Base;
+
+// abstract list API (works for List and Reactive_Value)
+bool is_list(Value a);
+size_t list_count(Value);
+Value list_elem(Value, size_t, const At_Syntax&);
 
 /// Representation of lists in the Curv runtime.
 ///

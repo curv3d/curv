@@ -3,9 +3,68 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/list.h>
+
+#include <libcurv/context.h>
 #include <libcurv/exception.h>
+#include <libcurv/reactive.h>
 
 namespace curv {
+
+bool is_list(Value a)
+{
+    if (a.dycast<List>())
+        return true;
+    if (auto r = a.dycast<Reactive_Value>())
+        return r->sctype_.is_list();
+    return false;
+}
+size_t list_count(Value val)
+{
+    if (val.is_ref()) {
+        auto& ref = val.to_ref_unsafe();
+        switch (ref.type_) {
+        case Ref_Value::ty_list:
+          {
+            auto list = (List*)&ref;
+            return list->size();
+          }
+        case Ref_Value::ty_reactive:
+          {
+            auto rx = (Reactive_Value*)&ref;
+            if (rx->sctype_.is_list())
+                return rx->sctype_.count();
+          }
+        }
+    }
+    return 1;
+}
+Value list_elem(Value val, size_t i, const At_Syntax& cx)
+{
+    if (val.is_ref()) {
+        auto& ref = val.to_ref_unsafe();
+        switch (ref.type_) {
+        case Ref_Value::ty_list:
+          {
+            auto list = (List*)&ref;
+            return list->at(i);
+          }
+        case Ref_Value::ty_reactive:
+          {
+            auto rx = (Reactive_Value*)&ref;
+            auto ph = share(cx.syntax());
+            Shared<List_Expr> index = List_Expr::make(
+                {make<Constant>(ph, Value(double(i)))},
+                ph);
+            index->init();
+            return {make<Reactive_Expression>(
+                rx->sctype_.abase(),
+                make<Call_Expr>(ph, rx->expr(), index),
+                cx)};
+          }
+        }
+    }
+    return {};
+}
 
 const char List_Base::name[] = "list";
 
