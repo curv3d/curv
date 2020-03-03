@@ -13,14 +13,15 @@
 //   [3,4] + [10,20] == [13,24]  -- element-wise addition
 //   1 + [10,20] == [11,21]      -- broadcasting
 
+#include <libcurv/bool.h>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/list.h>
 #include <libcurv/meaning.h>
+#include <libcurv/num.h>
 #include <libcurv/reactive.h>
 #include <libcurv/sc_compiler.h>
 #include <libcurv/sc_context.h>
-#include <libcurv/typeconv.h>
 #include <libcurv/vec.h>
 
 namespace curv {

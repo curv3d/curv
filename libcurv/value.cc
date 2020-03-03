@@ -7,10 +7,10 @@
 #include <libcurv/dtostr.h>
 #include <libcurv/exception.h>
 #include <libcurv/list.h>
+#include <libcurv/num.h>
 #include <libcurv/reactive.h>
 #include <libcurv/record.h>
 #include <libcurv/string.h>
-#include <libcurv/typeconv.h>
 
 #include <climits>
 #include <cmath>

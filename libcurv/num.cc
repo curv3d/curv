@@ -2,7 +2,7 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/typeconv.h>
+#include <libcurv/num.h>
 
 #include <libcurv/exception.h>
 #include <libcurv/string.h>
@@ -36,25 +36,6 @@ num_to_nat(double num, const Context& cx)
         throw Exception(cx, stringify(
             intf, " is not in the range 0..", UINT_MAX));
     return unsigned(intf);
-}
-
-Shared<const List>
-nat_to_bool32(unsigned n)
-{
-    Shared<List> result = List::make(32);
-    for (unsigned i = 0; i < 32; ++i)
-        result->at(i) = {(n & (1 << i)) != 0};
-    return result;
-}
-
-unsigned
-bool32_to_nat(Shared<const List> li, const Context& cx)
-{
-    unsigned out = 0;
-    for (unsigned i = 0; i < 32; ++i) {
-        out |= unsigned(li->at(i).to_bool(cx)) << i;
-    }
-    return out;
 }
 
 unsigned

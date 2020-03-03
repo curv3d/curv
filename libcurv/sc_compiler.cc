@@ -6,21 +6,23 @@
 #include <iostream>
 #include <typeinfo>
 #include <boost/core/demangle.hpp>
+
+#include <libcurv/bool.h>
 #include <libcurv/context.h>
 #include <libcurv/die.h>
 #include <libcurv/dtostr.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
-#include <libcurv/sc_compiler.h>
-#include <libcurv/sc_context.h>
 #include <libcurv/math.h>
+#include <libcurv/num.h>
 #include <libcurv/meaning.h>
 #include <libcurv/optimizer.h>
 #include <libcurv/picker.h>
 #include <libcurv/prim_expr.h>
 #include <libcurv/reactive.h>
+#include <libcurv/sc_compiler.h>
+#include <libcurv/sc_context.h>
 #include <libcurv/system.h>
-#include <libcurv/typeconv.h>
 
 namespace curv {
 
