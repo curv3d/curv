@@ -51,7 +51,7 @@ struct SC_Test_Action : public Operation
         Value nil = Value{List::make(0)};
         rec->each_field(cx, [&](Symbol_Ref name, Value val)->void {
             At_Field test_cx{name.c_str(), cx};
-            auto func = cast_to_function(val, test_cx);
+            auto func = maybe_function(val, test_cx);
             if (func == nullptr)
                 throw Exception(test_cx, stringify(val," is not a function"));
             bool test_result =

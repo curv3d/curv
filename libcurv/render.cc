@@ -38,7 +38,7 @@ Render_Opts::set_shader(Value val, const Context& cx)
     if (v.first == "sf1") {
         shader_ = Shader::sf1;
         if (!v.second.is_missing()) {
-            sf1_ = cast_to_function(v.second, cx);
+            sf1_ = maybe_function(v.second, cx);
             if (sf1_ == nullptr)
                 goto error;
         }

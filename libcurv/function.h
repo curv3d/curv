@@ -67,11 +67,11 @@ struct Function : public Ref_Value
 };
 
 // Returns nullptr if argument is not a function.
-// If the Value is a record with a `call` field, then we cast the value
-// of the `call` field to a function by recursively calling `cast_to_function`.
+// If the Value is a record with a `call` field, then we convert the value
+// of the `call` field to a function by recursively calling `maybe_function`.
 // May throw an exception if fetching the `call` field fails (currently
 // only happens for directory records).
-Shared<const Function> cast_to_function(Value, const Context&);
+Shared<const Function> maybe_function(Value, const Context&);
 
 // Call a function or index into a list or string.
 // Implements the Curv juxtaposition operator: `func arg`.

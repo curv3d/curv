@@ -11,7 +11,7 @@
 namespace curv {
 
 Shared<const Function>
-cast_to_function(Value funv, const Context& cx)
+maybe_function(Value funv, const Context& cx)
 {
     static Symbol_Ref callkey = make_symbol("call");
     static Symbol_Ref conskey = make_symbol("constructor");
