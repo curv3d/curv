@@ -17,6 +17,12 @@ value_to_string(Value val, const Context& cx)
     return val.to<const String>(cx);
 }
 
+Shared<const String>
+maybe_string(Value val, const Context& cx)
+{
+    return val.maybe<const String>();
+}
+
 const char String::name[] = "string";
 
 Shared<String>
