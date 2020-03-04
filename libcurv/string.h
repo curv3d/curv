@@ -108,6 +108,9 @@ make_string(const std::string& str)
     return make_string(str.data(), str.size());
 }
 
+// convert Value to String using Value::print_string()
+Shared<const String> make_string(Value);
+
 struct String_Ref : public Shared<const String>
 {
     String_Ref(const char* str)

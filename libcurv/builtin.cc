@@ -847,14 +847,8 @@ struct Strcat_Function : public Legacy_Function
     {
         if (auto list = args[0].dycast<const List>()) {
             String_Builder sb;
-            for (auto val : *list) {
-                if (auto str = val.dycast<const String_or_Symbol>())
-                    sb << *str;
-                else if (val.is_bool())
-                    sb << (val.to_bool_unsafe() ? "true" : "false");
-                else
-                    sb << val;
-            }
+            for (auto val : *list)
+                val.print_string(sb);
             return {sb.get_string()};
         }
         throw Exception(At_Arg(*this, args), "not a list");
@@ -978,9 +972,7 @@ struct Print_Action : public Operation
     virtual void exec(Frame& f, Executor&) const override
     {
         Value arg = arg_->eval(f);
-        auto str = arg.dycast<String>();
-        if (str == nullptr)
-            str = stringify(arg);
+        auto str = make_string(arg);
         f.system_.print(str->c_str());
     }
 };
@@ -1007,11 +999,7 @@ struct Warning_Action : public Operation
     virtual void exec(Frame& f, Executor&) const override
     {
         Value arg = arg_->eval(f);
-        Shared<String> msg;
-        if (auto str = arg.dycast<String>())
-            msg = str;
-        else
-            msg = stringify(arg);
+        auto msg = make_string(arg);
         Exception exc{At_Phrase(*syntax_, f), msg};
         f.system_.warning(exc);
     }
@@ -1040,11 +1028,7 @@ struct Error_Operation : public Operation
     [[noreturn]] void run(Frame& f) const
     {
         Value val = arg_->eval(f);
-        Shared<const String> msg;
-        if (auto s = val.dycast<String>())
-            msg = s;
-        else
-            msg = stringify(val);
+        auto msg = make_string(val);
         throw Exception{At_Phrase(*syntax_, f), msg};
     }
     virtual void exec(Frame& f, Executor&) const override

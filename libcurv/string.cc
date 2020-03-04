@@ -19,6 +19,16 @@ make_string(const char* str, size_t len)
     return String::make<String>(Ref_Value::ty_string, str, len);
 }
 
+Shared<const String>
+make_string(Value val)
+{
+    auto s = val.dycast<const String>();
+    if (s) return s;
+    String_Builder sb;
+    val.print_string(sb);
+    return sb.get_string();
+}
+
 Shared<String>
 String_Builder::get_string()
 {
