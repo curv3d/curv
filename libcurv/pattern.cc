@@ -419,7 +419,7 @@ symbolize(const Phrase& ph, Scope& scope)
         return id->symbol_;
     if (auto strph = dynamic_cast<const String_Phrase*>(&ph)) {
         auto val = std_eval(*strph, scope);
-        auto str = val.to<const String>(At_Phrase(ph, scope));
+        auto str = value_to_string(val, At_Phrase(ph, scope));
         return make_symbol(str->data(), str->size());
     }
     throw Exception(At_Phrase(ph, scope),

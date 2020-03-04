@@ -11,6 +11,12 @@ bool is_string(Value val)
     return val.dycast<String>() != nullptr;
 }
 
+Shared<const String>
+value_to_string(Value val, const Context& cx)
+{
+    return val.to<const String>(cx);
+}
+
 const char String::name[] = "string";
 
 Shared<String>

@@ -279,7 +279,7 @@ record_at(const Record& ref, Value index, const Context& cx)
             (*result)[j++] = record_at(ref, i, cx);
         return {result};
     }
-    Symbol_Ref a = index.to<const String>(cx);
+    Symbol_Ref a = index.to<const Symbol>(cx);
     return ref.getfield(a, cx);
 }
 #endif

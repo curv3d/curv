@@ -111,6 +111,9 @@ make_string(const std::string& str)
 // convert Value to String using Value::print_string()
 Shared<const String> make_string(Value);
 
+// throw error if value is not a string
+Shared<const String> value_to_string(Value, const Context&);
+
 struct String_Ref : public Shared<const String>
 {
     String_Ref(const char* str)

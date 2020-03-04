@@ -884,7 +884,7 @@ struct Encode_Function : public Legacy_Function
     {
         List_Builder lb;
         At_Arg cx(*this, f);
-        auto str = f[0].to<String>(cx);
+        auto str = value_to_string(f[0], cx);
         for (size_t i = 0; i < str->size(); ++i)
             lb.push_back({(double)(int)str->at(i)});
         return {lb.get_list()};
@@ -935,7 +935,7 @@ struct File_Expr : public Just_Expression
 
         // construct file pathname from argument
         Value arg = arg_->eval(f);
-        auto argstr = arg.to<String>(cx);
+        auto argstr = value_to_string(arg, cx);
         namespace fs = boost::filesystem;
         fs::path filepath;
         auto caller_filename = syntax_->location().source().name_;
@@ -1125,8 +1125,9 @@ struct Assert_Error_Action : public Operation
     virtual void exec(Frame& f, Executor&) const override
     {
         Value expected_msg_val = expected_message_->eval(f);
-        auto expected_msg_str = expected_msg_val.to<const String>(
-            At_Phrase(*expected_message_->syntax_, f));
+        auto expected_msg_str =
+            value_to_string(expected_msg_val,
+                At_Phrase(*expected_message_->syntax_, f));
 
         if (actual_message_ != nullptr) {
             if (*actual_message_ != *expected_msg_str)

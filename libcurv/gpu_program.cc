@@ -56,20 +56,23 @@ GPU_Program::recognize(Value val, Render_Opts opts)
             At_Field("bbox", cx));
 
         vshape_.frag_ =
-            r->getfield(shader_key, cx)
-            .to<String>(At_Field("shader",cx))->c_str();
+            value_to_string(r->getfield(shader_key,cx), At_Field("shader",cx))
+            ->c_str();
 
         At_Field pcx("parameters",cx);
         auto parameters = r->getfield(parameters_key, cx).to<List>(pcx);
         At_Index picx(0, pcx);
         for (auto p : *parameters) {
             auto prec = p.to<Record>(picx);
-            auto name = prec->getfield(name_key, picx)
-                .to<String>(At_Field("name",picx))->c_str();
-            auto label = prec->getfield(label_key, picx)
-                .to<String>(At_Field("label",picx))->c_str();
-            Picker::Config config(
-                prec->getfield(config_key, picx),
+            auto name =
+                value_to_string(prec->getfield(name_key, picx),
+                    At_Field("name",picx))
+                ->c_str();
+            auto label =
+                value_to_string(prec->getfield(label_key, picx),
+                    At_Field("label",picx))
+                ->c_str();
+            Picker::Config config(prec->getfield(config_key, picx),
                 At_Field("config", picx));
             auto state_val = prec->getfield(value_key, picx);
             Picker::State state(config.type_, state_val, At_Field("value",picx));
