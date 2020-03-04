@@ -13,6 +13,8 @@
 
 namespace curv {
 
+bool is_string(Value);
+
 /// Representation of strings and symbols in the Curv runtime.
 ///
 /// This is a variable length object: the size and the character array
@@ -43,6 +45,7 @@ private:
     size_t size_;
     char data_[1];
 public:
+    virtual void print_string(std::ostream&) const;
     // interface is based on std::string and the STL container concept
     size_t size() const { return size_; }
     bool empty() const { return size_ == 0; }
@@ -62,7 +65,7 @@ struct String : public String_or_Symbol
 {
     using String_or_Symbol::String_or_Symbol;
     friend Shared<String> make_string(const char*, size_t);
-    virtual void print(std::ostream&) const;
+    virtual void print_repr(std::ostream&) const;
     static const char name[];
 };
 

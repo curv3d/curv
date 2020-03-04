@@ -69,7 +69,7 @@ Value::at(Symbol_Ref field, const Context& cx) const
 }
 
 void
-Value::print(std::ostream& out)
+Value::print_repr(std::ostream& out)
 const
 {
     if (is_missing()) {
@@ -79,10 +79,34 @@ const
     } else if (is_num()) {
         out << dfmt(to_num_unsafe());
     } else if (is_ref()) {
-        to_ref_unsafe().print(out);
+        to_ref_unsafe().print_repr(out);
     } else {
         out << "???";
     }
+}
+
+void
+Value::print_string(std::ostream& out)
+const
+{
+    if (is_missing()) {
+        out << "<missing>";
+    } else if (is_bool()) {
+        out << (to_bool_unsafe() ? "true" : "false");
+    } else if (is_num()) {
+        out << dfmt(to_num_unsafe());
+    } else if (is_ref()) {
+        to_ref_unsafe().print_string(out);
+    } else {
+        out << "???";
+    }
+}
+
+void
+Ref_Value::print_string(std::ostream& out)
+const
+{
+    print_repr(out);
 }
 
 bool Value::equal(Value v, const Context& cx) const

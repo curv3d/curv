@@ -11,7 +11,7 @@ namespace curv {
 const char Module_Base::name[] = "module";
 
 void
-Module_Base::print(std::ostream& out) const
+Module_Base::print_repr(std::ostream& out) const
 {
     out << "{";
     bool first = true;
@@ -19,7 +19,7 @@ Module_Base::print(std::ostream& out) const
         if (!first) out << ",";
         first = false;
         out << i.first << ":";
-        i.second.print(out);
+        i.second.print_repr(out);
     }
     out << "}";
 }

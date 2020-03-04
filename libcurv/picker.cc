@@ -197,7 +197,7 @@ Uniform_Variable::Uniform_Variable(
 {
 }
 
-void Uniform_Variable::print(std::ostream& out) const
+void Uniform_Variable::print_repr(std::ostream& out) const
 {
     out << "<uniform " << name_ << ">";
 }

@@ -68,7 +68,7 @@ value_to_variant(Value val, const Context& cx)
 }
 
 void
-DRecord::print(std::ostream& out) const
+DRecord::print_repr(std::ostream& out) const
 {
     out << "{";
     bool first = true;
@@ -76,7 +76,7 @@ DRecord::print(std::ostream& out) const
         if (!first) out << ",";
         first = false;
         out << i.first << ":";
-        i.second.print(out);
+        i.second.print_repr(out);
     }
     out << "}";
 }

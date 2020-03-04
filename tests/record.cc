@@ -10,7 +10,7 @@ using namespace curv;
 static bool prints_as(Value val, const char* expect)
 {
     std::stringstream ss;
-    val.print(ss);
+    val.print_repr(ss);
     if (ss.str() == expect)
         return true;
     else {

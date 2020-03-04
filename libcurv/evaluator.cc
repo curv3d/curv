@@ -743,10 +743,7 @@ void
 Ident_Segment::generate(Frame& f, String_Builder& sb) const
 {
     Value val = expr_->eval(f);
-    if (auto str = val.dycast<String>())
-        sb << *str;
-    else
-        sb << val;
+    val.print_string(sb);
 }
 void
 Paren_Segment::generate(Frame& f, String_Builder& sb) const
@@ -766,14 +763,8 @@ Brace_Segment::generate(Frame& f, String_Builder& sb) const
 {
     At_Phrase cx(*expr_->syntax_, f);
     auto list = expr_->eval(f).to<List>(cx);
-    for (auto val : *list) {
-        if (auto str = val.dycast<String_or_Symbol>())
-            sb << *str;
-        else if (val.is_bool())
-            sb << (val.to_bool_unsafe() ? "true" : "false");
-        else
-            sb << val;
-    }
+    for (auto val : *list)
+        val.print_string(sb);
 }
 Value
 String_Expr_Base::eval(Frame& f) const

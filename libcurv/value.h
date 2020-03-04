@@ -60,7 +60,10 @@ struct Ref_Value : public Shared_Base
     {}
 
     /// Print a value like a Curv expression.
-    virtual void print(std::ostream&) const = 0;
+    virtual void print_repr(std::ostream&) const = 0;
+
+    /// Print a value like a string.
+    virtual void print_string(std::ostream&) const;
 };
 
 /// A boxed, dynamically typed value in the Curv runtime.
@@ -347,7 +350,10 @@ public:
     }
 
     /// Print a value like a Curv expression.
-    void print(std::ostream&) const;
+    void print_repr(std::ostream&) const;
+
+    /// Print a value like a string.
+    void print_string(std::ostream&) const;
 
     // Deep equality, which traverses the value tree and forces thunks.
     // May throw an Exception if forcing a thunk fails.
@@ -386,7 +392,7 @@ extern const Value missing;
 inline std::ostream&
 operator<<(std::ostream& out, Value val)
 {
-    val.print(out);
+    val.print_repr(out);
     return out;
 }
 

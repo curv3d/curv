@@ -20,7 +20,7 @@ struct Symbol : public String_or_Symbol
     using String_or_Symbol::String_or_Symbol;
     // you must call make_symbol() to construct a Symbol.
     friend Symbol_Ref make_symbol(const char*, size_t);
-    virtual void print(std::ostream&) const;
+    virtual void print_repr(std::ostream&) const;
     static const char name[];
 };
 
@@ -43,7 +43,7 @@ struct Symbol_Ref : private Shared<const Symbol>
 private:
     using Base = Shared<const Symbol>;
     inline Symbol_Ref(Base sym) : Base(sym) {}
-    friend void Symbol::print(std::ostream& out) const;
+    friend void Symbol::print_repr(std::ostream& out) const;
 public:
     using Shared<const Symbol>::Shared;
 

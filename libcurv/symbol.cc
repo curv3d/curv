@@ -119,7 +119,7 @@ std::ostream& operator<<(std::ostream& out, Symbol_Ref a)
 }
 
 void
-Symbol::print(std::ostream& out) const
+Symbol::print_repr(std::ostream& out) const
 {
     out << "#" << Symbol_Ref(share(*this));
 }

@@ -6,6 +6,11 @@
 
 namespace curv {
 
+bool is_string(Value val)
+{
+    return val.dycast<String>() != nullptr;
+}
+
 const char String::name[] = "string";
 
 Shared<String>
@@ -22,7 +27,13 @@ String_Builder::get_string()
 }
 
 void
-String::print(std::ostream& out) const
+String_or_Symbol::print_string(std::ostream& out) const
+{
+    out << c_str();
+}
+
+void
+String::print_repr(std::ostream& out) const
 {
     write_curv_string(c_str(), 0, out);
 }

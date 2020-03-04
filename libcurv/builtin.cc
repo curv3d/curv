@@ -127,7 +127,7 @@ struct Is_String_Function : public Function
     using Function::Function;
     Value call(Value arg, Frame&) override
     {
-        return {arg.dycast<String>() != nullptr};
+        return {is_string(arg)};
     }
 };
 struct Is_List_Function : public Function

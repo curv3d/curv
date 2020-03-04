@@ -78,12 +78,12 @@ const
 }
 
 void
-List_Base::print(std::ostream& out) const
+List_Base::print_repr(std::ostream& out) const
 {
     out << "[";
     for (size_t i = 0; i < size(); ++i) {
         if (i > 0) out << ",";
-        array_[i].print(out);
+        array_[i].print_repr(out);
     }
     out << "]";
 }

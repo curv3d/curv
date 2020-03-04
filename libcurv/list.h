@@ -31,7 +31,7 @@ using List = Tail_Array<List_Base>;
 struct List_Base : public Ref_Value
 {
     List_Base() : Ref_Value(ty_list) {}
-    virtual void print(std::ostream&) const;
+    virtual void print_repr(std::ostream&) const;
     bool equal(const List_Base&, const Context&) const;
     void assert_size(size_t sz, const Context& cx) const;
 
@@ -45,7 +45,7 @@ struct List_Base : public Ref_Value
 inline std::ostream&
 operator<<(std::ostream& out, const List_Base& list)
 {
-    list.print(out);
+    list.print_repr(out);
     return out;
 }
 

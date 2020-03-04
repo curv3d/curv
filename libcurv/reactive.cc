@@ -24,12 +24,12 @@ Reactive_Expression::Reactive_Expression(
     }
 }
 
-void Reactive_Value::print(std::ostream& out) const
+void Reactive_Value::print_repr(std::ostream& out) const
 {
     out << "<reactive:" << sctype_ << ">";
 }
 
-void Reactive_Expression::print(std::ostream& out) const
+void Reactive_Expression::print_repr(std::ostream& out) const
 {
     out << *expr_;
 }
