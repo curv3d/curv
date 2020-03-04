@@ -154,7 +154,7 @@ bool Value::equal(Value v, const Context& cx) const
 
 size_t Value::hash() const noexcept
 {
-    auto re = this->dycast<const Reactive_Expression>();
+    auto re = this->maybe<const Reactive_Expression>();
     if (re) return re->hash();
     return bits_;
 }
@@ -162,9 +162,9 @@ size_t Value::hash() const noexcept
 bool Value::hash_eq(Value rhs) const noexcept
 {
     if (bits_ == rhs.bits_) return true;
-    auto re = this->dycast<const Reactive_Expression>();
+    auto re = this->maybe<const Reactive_Expression>();
     if (re) {
-        auto re2 = rhs.dycast<const Reactive_Expression>();
+        auto re2 = rhs.maybe<const Reactive_Expression>();
         if (re2)
             return re->hash_eq(*re2);
     }

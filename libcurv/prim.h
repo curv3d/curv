@@ -324,7 +324,7 @@ struct Binary_Array_Op
     {
         Shared<Operation> x_expr;
         SC_Type x_type;
-        if (auto xr = x.dycast<Reactive_Value>()) {
+        if (auto xr = x.maybe<Reactive_Value>()) {
             x_expr = xr->expr();
             x_type = xr->sctype_;
         } else {
@@ -334,7 +334,7 @@ struct Binary_Array_Op
 
         Shared<Operation> y_expr;
         SC_Type y_type;
-        if (auto yr = y.dycast<Reactive_Value>()) {
+        if (auto yr = y.maybe<Reactive_Value>()) {
             y_expr = yr->expr();
             y_type = yr->sctype_;
         } else {
@@ -367,7 +367,7 @@ struct Unary_Scalar_Prim
     typedef Value scalar_t;
     static bool unbox(Value a, scalar_t& b, const Context&)
     {
-        if (a.dycast<List>()) {
+        if (a.maybe<List>()) {
             return false;
         } else {
             b = a;
@@ -691,7 +691,7 @@ struct Shift_Prim
     typedef double right_t;
     static bool unbox_left(Value a, left_t& b, const Context&)
     {
-        b = a.dycast<const List>();
+        b = a.maybe<const List>();
         return b && !b->empty() && b->front().is_bool();
     }
     static bool unbox_right(Value a, right_t& b, const Context&)
@@ -744,7 +744,7 @@ struct Bool32_Prim
 {
     static bool unbox_bool32(Value in, unsigned& out, const Context& cx)
     {
-        auto li = in.dycast<const List>();
+        auto li = in.maybe<const List>();
         if (!li || li->size() != 32 || !li->front().is_bool())
             return false;
         out = bool32_to_nat(li, cx);

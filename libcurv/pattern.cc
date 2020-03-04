@@ -363,7 +363,7 @@ struct Record_Pattern : public Pattern
     const override
     {
         // TODO: Rewrite using a Record iterator.
-        auto record = value.dycast<Record>();
+        auto record = value.maybe<Record>();
         if (record == nullptr)
             return false;
         auto p = fields_.begin();

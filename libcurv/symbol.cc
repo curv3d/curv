@@ -14,8 +14,8 @@ namespace curv {
 bool is_symbol(Value a)
 {
     if (a.is_bool()) return true;
-    if (a.dycast<Symbol>() != nullptr) return true;
-    auto r = a.dycast<Reactive_Value>();
+    if (a.maybe<Symbol>() != nullptr) return true;
+    auto r = a.maybe<Reactive_Value>();
     return r && r->sctype_ == SC_Type::Bool();
 }
 
@@ -87,7 +87,7 @@ Symbol_Ref value_to_symbol(Value val)
         return true_sym;
     if (val.eq(Value{false}))
         return false_sym;
-    return val.dycast<Symbol>();
+    return val.maybe<Symbol>();
 }
 Value Symbol_Ref::to_value() const
 {

@@ -202,13 +202,13 @@ sc_put_list(
 void
 sc_put_value(Value val, SC_Type ty, const At_SC_Phrase& cx, std::ostream& out)
 {
-    if (auto re = val.dycast<Reactive_Expression>()) {
+    if (auto re = val.maybe<Reactive_Expression>()) {
         auto f2 = SC_Frame::make(0, cx.call_frame_.sc_, nullptr,
             &cx.call_frame_, &*cx.phrase_);
         auto result = sc_eval_op(*f2, *re->expr_);
         out << result;
     }
-    else if (auto uv = val.dycast<Uniform_Variable>()) {
+    else if (auto uv = val.maybe<Uniform_Variable>()) {
         out << uv->identifier_;
     }
     else if (ty == SC_Type::Num()) {
@@ -569,7 +569,7 @@ SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& f)
     Value k;
     if (array.type.is_any_vec() && sc_try_constify(index, f, k)) {
         // A vector with a constant index. Swizzling is supported.
-        if (auto list = k.dycast<List>()) {
+        if (auto list = k.maybe<List>()) {
             if (list->size() < 2 || list->size() > 4) {
                 throw Exception(At_SC_Phrase(index.syntax_, f),
                     "list index vector must have between 2 and 4 elements");
@@ -707,10 +707,10 @@ SC_Value Call_Expr::sc_eval(SC_Frame& f) const
     Value val = sc_constify(*func_, f);
     Value v = val;
     for (;;) {
-        if (auto func = v.dycast<Function>()) {
+        if (auto func = v.maybe<Function>()) {
             return func->sc_call_expr(*arg_, syntax_, f);
         }
-        if (auto r = v.dycast<Record>()) {
+        if (auto r = v.maybe<Record>()) {
             static Symbol_Ref call_key = make_symbol("call");
             if (r->hasfield(call_key)) {
                 v = r->getfield(call_key,At_SC_Phrase(func_->syntax_,f));

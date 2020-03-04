@@ -78,7 +78,7 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
             [&](Symbol_Ref name, Value pred, Value value,
                 Shared<const Phrase> nameph) -> void
             {
-                auto pred_record = pred.dycast<Record>();
+                auto pred_record = pred.maybe<Record>();
                 if (pred_record && pred_record->hasfield(picker_key)) {
                     auto picker = pred_record->getfield(picker_key,cx);
                     std::string id{"rv_"};
@@ -108,7 +108,7 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
         Value result = sh_constructor->call({cparams}, *f2);
         //std::cerr << "parametric shape: " << result << "\n";
 
-        auto r = result.dycast<Record>();
+        auto r = result.maybe<Record>();
         if (r == nullptr)
             throw Exception{cx, stringify(
                 "bad parametric shape: call function returns non-record: ",

@@ -16,7 +16,7 @@ namespace curv {
 bool is_num(Value a)
 {
     if (a.is_num()) return true;
-    auto r = a.dycast<Reactive_Value>();
+    auto r = a.maybe<Reactive_Value>();
     return r && r->sctype_ == SC_Type::Num();
 }
 

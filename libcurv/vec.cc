@@ -10,7 +10,7 @@ namespace curv {
 
 bool unbox_vec2(Value val, Vec2& out)
 {
-    auto list = val.dycast<List>();
+    auto list = val.maybe<List>();
     if (list) {
         if (list->size() == 2) {
             double e0 = list->at(0).to_num_or_nan();

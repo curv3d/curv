@@ -59,7 +59,7 @@ value_to_variant(Value val, const Context& cx)
     if (!sym.empty()) {
         return std::pair<Symbol_Ref,Value>{sym, missing};
     }
-    Shared<Record> rec = val.dycast<Record>();
+    Shared<Record> rec = val.maybe<Record>();
     if (rec && rec->size() == 1) {
         auto i = rec->iter();
         return std::pair<Symbol_Ref,Value>{i->key(), i->value(cx)};

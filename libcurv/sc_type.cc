@@ -46,7 +46,7 @@ sc_type_of(Value v)
         return SC_Type::Num();
     else if (v.is_bool())
         return SC_Type::Bool();
-    else if (auto ls = v.dycast<List>()) {
+    else if (auto ls = v.maybe<List>()) {
         auto n = ls->size();
         if (n == 0 || n > SC_Type::MAX_LIST)
             ;
@@ -92,7 +92,7 @@ sc_type_of(Value v)
             }
         }
     }
-    else if (auto re = v.dycast<Reactive_Value>())
+    else if (auto re = v.maybe<Reactive_Value>())
         return re->sctype_;
     return SC_Type::Error();
 }

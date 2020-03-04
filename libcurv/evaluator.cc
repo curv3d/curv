@@ -170,7 +170,7 @@ If_Else_Op::eval(Frame& f) const
         else
             return arg3_->eval(f);
     }
-    auto re = cond.dycast<Reactive_Value>();
+    auto re = cond.maybe<Reactive_Value>();
     if (re && re->sctype_ == SC_Type::Bool()) {
         Value a2 = arg2_->eval(f);
         Value a3 = arg3_->eval(f);
@@ -205,7 +205,7 @@ If_Else_Op::tail_eval(std::unique_ptr<Frame>& f) const
             f->next_op_ = &*arg3_;
         return;
     }
-    auto re = cond.dycast<Reactive_Value>();
+    auto re = cond.maybe<Reactive_Value>();
     if (re && re->sctype_ == SC_Type::Bool()) {
         Value a2 = arg2_->eval(*f);
         Value a3 = arg3_->eval(*f);
@@ -258,7 +258,7 @@ Not_Equal_Expr::eval(Frame& f) const
 Value
 list_at(const List& list, Value index, const Context& cx)
 {
-    if (auto indices = index.dycast<List>()) {
+    if (auto indices = index.maybe<List>()) {
         Shared<List> result = List::make(indices->size());
         int j = 0;
         for (auto i : *indices)
@@ -272,7 +272,7 @@ list_at(const List& list, Value index, const Context& cx)
 Value
 record_at(const Record& ref, Value index, const Context& cx)
 {
-    if (auto indices = index.dycast<List>()) {
+    if (auto indices = index.maybe<List>()) {
         Shared<List> result = List::make(indices->size());
         int j = 0;
         for (auto i : *indices)
@@ -287,7 +287,7 @@ Value
 string_at(const String& string, Value index, const Context& cx)
 {
     // TODO: this code only works for ASCII strings.
-    if (auto indices = index.dycast<List>()) {
+    if (auto indices = index.maybe<List>()) {
         String_Builder sb;
         for (auto ival : *indices) {
             int i = ival.to_int(0, (int)(string.size()-1), cx);
@@ -306,12 +306,12 @@ value_at_path(Value a, const List& path, Shared<const Phrase> callph, Frame& f)
     size_t i = 0;
     for (; i < path.size(); ++i) {
         icx.index_ = i;
-        if (auto string = a.dycast<String>()) {
+        if (auto string = a.maybe<String>()) {
             if (i < path.size()-1)
                 goto domain_error;
             return string_at(*string, path[i], icx);
         }
-        if (auto list = a.dycast<List>()) {
+        if (auto list = a.maybe<List>()) {
             if (i < path.size()-1) {
                 int j = path[i].to_int(0, (int)(list->size()-1), icx);
                 a = list->at(j);
@@ -319,7 +319,7 @@ value_at_path(Value a, const List& path, Shared<const Phrase> callph, Frame& f)
                 a = list_at(*list, path[i], icx);
             continue;
         }
-        auto re = a.dycast<Reactive_Value>();
+        auto re = a.maybe<Reactive_Value>();
         if (re && re->sctype_.is_list()) {
             if (i < path.size()-1)
                 goto domain_error;
@@ -475,12 +475,12 @@ Spread_Op::exec(Frame& f, Executor& ex) const
     At_Phrase cstmt(*syntax_, f);
     At_Phrase carg(*arg_->syntax_, f);
     auto arg = arg_->eval(f);
-    if (auto list = arg.dycast<const List>()) {
+    if (auto list = arg.maybe<const List>()) {
         for (size_t i = 0; i < list->size(); ++i)
             ex.push_value(list->at(i), cstmt);
         return;
     }
-    if (auto rec = arg.dycast<const Record>()) {
+    if (auto rec = arg.maybe<const Record>()) {
         for (auto i = rec->iter(); !i->empty(); i->next())
             ex.push_field(i->key(), i->value(carg), cstmt);
         return;
@@ -850,7 +850,7 @@ Parametric_Expr::eval(Frame& f) const
 {
     At_Phrase cx(*syntax_, f);
     Value func = ctor_->eval(f);
-    auto closure = func.dycast<Closure>();
+    auto closure = func.maybe<Closure>();
     if (closure == nullptr)
         throw Exception(cx, "internal error in Parametric_Expr");
     Shared<const Phrase> call_phrase = syntax_; // TODO?

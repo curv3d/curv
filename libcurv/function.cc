@@ -16,10 +16,10 @@ cast_to_function(Value funv, const Context& cx)
     static Symbol_Ref callkey = make_symbol("call");
     static Symbol_Ref conskey = make_symbol("constructor");
     for (;;) {
-        auto func = funv.dycast<const Function>();
+        auto func = funv.maybe<const Function>();
         if (func)
             return func;
-        auto rec = funv.dycast<const Record>();
+        auto rec = funv.maybe<const Record>();
         if (rec->hasfield(callkey)) {
             funv = rec->getfield(callkey, cx);
             continue;
@@ -101,7 +101,7 @@ Legacy_Function::try_call(Value arg, Frame& f)
         f[0] = arg;
         return call(f);
     }
-    auto list = arg.dycast<const List>();
+    auto list = arg.maybe<const List>();
     if (list && list->size() == nargs_) {
         for (size_t i = 0; i < list->size(); ++i)
             f[i] = (*list)[i];

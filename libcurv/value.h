@@ -238,7 +238,7 @@ public:
     /// causing memory corruption or a crash if dereferenced.
     /// Another reason it's unsafe is that the returned reference becomes
     /// invalid if the original Value is destroyed.
-    /// See `dycast` for a completely safe alternative.
+    /// See `maybe` for a completely safe alternative.
     inline Ref_Value& to_ref_unsafe() const noexcept
     {
         #if UINTPTR_MAX == UINT64_MAX
@@ -283,7 +283,7 @@ public:
 
     /// Like dynamic_cast for a Value.
     template <class T>
-    inline Shared<T> dycast() const noexcept
+    inline Shared<T> maybe() const noexcept
     {
         if (is_ref()) {
             T* p = dynamic_cast<T*>(&to_ref_unsafe());

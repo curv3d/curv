@@ -143,7 +143,7 @@ struct Is_Record_Function : public Function
     using Function::Function;
     Value call(Value arg, Frame&) override
     {
-        return {arg.dycast<Record>() != nullptr};
+        return {arg.maybe<Record>() != nullptr};
     }
 };
 struct Is_Fun_Function : public Function
@@ -151,7 +151,7 @@ struct Is_Fun_Function : public Function
     using Function::Function;
     Value call(Value arg, Frame&) override
     {
-        return {arg.dycast<Function>() != nullptr};
+        return {arg.maybe<Function>() != nullptr};
     }
 };
 
@@ -498,10 +498,10 @@ select(Value a, Value b, Value c, const Context& cx)
 {
     if (a.is_bool())
         return a.to_bool_unsafe() ? b : c;
-    if (auto alist = a.dycast<List>()) {
-        auto blist = b.dycast<List>();
+    if (auto alist = a.maybe<List>()) {
+        auto blist = b.maybe<List>();
         if (blist) blist->assert_size(alist->size(), At_Index(1, cx));
-        auto clist = c.dycast<List>();
+        auto clist = c.maybe<List>();
         if (clist) clist->assert_size(alist->size(), At_Index(2, cx));
         Shared<List> r = List::make(alist->size());
         for (unsigned i = 0; i < alist->size(); ++i) {
@@ -692,7 +692,7 @@ Value dot(Value a, Value b, const At_Syntax& cx)
 {
     auto av = a.to<List>(cx);
     auto bv = b.to<List>(cx);
-    if (av->size() > 0 && av->at(0).dycast<List>()) {
+    if (av->size() > 0 && av->at(0).maybe<List>()) {
         Shared<List> result = List::make(av->size());
         for (size_t i = 0; i < av->size(); ++i) {
             result->at(i) = dot(av->at(i), b, cx);
@@ -740,7 +740,7 @@ struct Mag_Function : public Legacy_Function
         // Slower.  https://forum.kde.org/viewtopic.php?f=74&t=62402
 
         // Fast path: assume we have a list of numbers, compute a result.
-        auto list = args[0].dycast<List>();
+        auto list = args[0].maybe<List>();
         if (list) {
             double sum = 0.0;
             for (auto val : *list) {
@@ -753,7 +753,7 @@ struct Mag_Function : public Legacy_Function
 
         // Slow path, return a reactive value or abort.
         Shared<Operation> arg_op = nullptr;
-        auto rx = args[0].dycast<Reactive_Value>();
+        auto rx = args[0].maybe<Reactive_Value>();
         if (rx) {
             if (rx->sctype_.is_num_vec())
                 arg_op = rx->expr();
@@ -769,7 +769,7 @@ struct Mag_Function : public Legacy_Function
                         make<Constant>(arg_part(args.call_phrase_), val);
                     continue;
                 }
-                auto r = val.dycast<Reactive_Value>();
+                auto r = val.maybe<Reactive_Value>();
                 if (r && r->sctype_ == SC_Type::Num()) {
                     rlist->at(i) = r->expr();
                     continue;
@@ -809,11 +809,11 @@ struct Count_Function : public Legacy_Function
     Count_Function(const char* nm) : Legacy_Function(1,nm) {}
     Value call(Frame& args) override
     {
-        if (auto list = args[0].dycast<const List>())
+        if (auto list = args[0].maybe<const List>())
             return {double(list->size())};
-        if (auto string = args[0].dycast<const String>())
+        if (auto string = args[0].maybe<const String>())
             return {double(string->size())};
-        if (auto re = args[0].dycast<const Reactive_Value>()) {
+        if (auto re = args[0].maybe<const Reactive_Value>()) {
             if (re->sctype_.is_list())
                 return {double(re->sctype_.count())};
         }
@@ -834,7 +834,7 @@ struct Fields_Function : public Legacy_Function
     Fields_Function(const char* nm) : Legacy_Function(1,nm) {}
     Value call(Frame& args) override
     {
-        if (auto record = args[0].dycast<const Record>())
+        if (auto record = args[0].maybe<const Record>())
             return {record->fields()};
         throw Exception(At_Arg(*this, args), "not a record");
     }
@@ -845,7 +845,7 @@ struct Strcat_Function : public Legacy_Function
     Strcat_Function(const char* nm) : Legacy_Function(1,nm) {}
     Value call(Frame& args) override
     {
-        if (auto list = args[0].dycast<const List>()) {
+        if (auto list = args[0].maybe<const List>()) {
             String_Builder sb;
             for (auto val : *list)
                 val.print_string(sb);
@@ -1204,7 +1204,7 @@ struct Defined_Expression : public Just_Expression
     virtual Value eval(Frame& f) const override
     {
         auto val = expr_->eval(f);
-        auto s = val.dycast<Record>();
+        auto s = val.maybe<Record>();
         if (s) {
             auto id = selector_.eval(f);
             return {s->hasfield(id)};

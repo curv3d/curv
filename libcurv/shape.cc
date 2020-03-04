@@ -68,7 +68,7 @@ Shape_Program::recognize(Value val, Render_Opts* opts)
 
     At_Program cx(*this);
 
-    auto r = val.dycast<Record>();
+    auto r = val.maybe<Record>();
     if (r == nullptr) return false;
     Value is_2d_val = r->find_field(is_2d_key, cx);
     if (is_2d_val.is_missing()) return false;
@@ -88,13 +88,13 @@ Shape_Program::recognize(Value val, Render_Opts* opts)
             "at least one of is_2d and is_3d must be true");
     bbox_ = BBox::from_value(bbox_val, At_Field("bbox", cx));
 
-    dist_fun_ = dist_val.dycast<Function>();
+    dist_fun_ = dist_val.maybe<Function>();
     if (dist_fun_ == nullptr)
         throw Exception(At_Field("dist", cx), "dist is not a function");
     dist_frame_ = Frame::make(
         dist_fun_->nslots_, system_, nullptr, nullptr, nullptr);
 
-    colour_fun_ = colour_val.dycast<Function>();
+    colour_fun_ = colour_val.maybe<Function>();
     if (colour_fun_ == nullptr)
         throw Exception(At_Field("colour", cx),
             "colour is not a function");

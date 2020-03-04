@@ -8,7 +8,7 @@ namespace curv {
 
 bool is_string(Value val)
 {
-    return val.dycast<String>() != nullptr;
+    return val.maybe<String>() != nullptr;
 }
 
 Shared<const String>
@@ -28,7 +28,7 @@ make_string(const char* str, size_t len)
 Shared<const String>
 make_string(Value val)
 {
-    auto s = val.dycast<const String>();
+    auto s = val.maybe<const String>();
     if (s) return s;
     String_Builder sb;
     val.print_string(sb);

@@ -12,9 +12,9 @@ namespace curv {
 
 bool is_list(Value a)
 {
-    if (a.dycast<List>())
+    if (a.maybe<List>())
         return true;
-    if (auto r = a.dycast<Reactive_Value>())
+    if (auto r = a.maybe<Reactive_Value>())
         return r->sctype_.is_list();
     return false;
 }
