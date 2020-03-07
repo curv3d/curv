@@ -1,0 +1,71 @@
+"Type" values in Curv
+=====================
+A type denotes a set of values. In the general case, a type is a predicate.
+A type may have additional structure that enables additional operations.
+
+What are type values used for?
+ * Predicate: test if arg belongs to value set, yield #true or #false.
+ * Validate: report an error if predicate test fails; provided detailed
+   information about what part of a structured value fails to validate.
+ * Optimize: validate the argument, and convert it to a more compact,
+   efficient representation (that compares equal). From Compact Array proposal.
+
+A SubCurv type maps a set of values onto a SubCurv representation that can exist
+within a GPU program.
+
+A Picker type is a SubCurv type that specifies a UI for modifying
+a parameter value.
+
+Types are useful for mapping between Curv values and GPU data types (SubCurv).
+They might also be useful in other situations where Curv values are imported
+or exported from some other externally defined representation. Like JSON,
+or a WASM FFI. For example a json_import function could use a type to map
+JSON values to Curv values. Eg, `String` maps a JSON string to a Curv string,
+while `Symbol` maps a JSON string to a Curv symbol.
+
+Vocabulary of Type Constructors
+-------------------------------
+Here we will use the straw-man syntax `Foo` to name a type.
+
+Value -- the set of all values
+Num, Symbol, Char, List, Record, Function
+Bool, String, Callable
+Nat32, Bool32
+
+Tuple[T1,T2,...]
+Array R T
+    R is a rank: 0, 1, 2, ...; T is a type
+    Eg, `List = Array 1 Value`.
+    Eg, `String = Array 1 Char` is a character string.
+    Eg, `Array 2 Colour` is a 2D pixel array.
+    Note, Array 0 T == T
+Array Dims T
+    Dims is a list of dimensions.
+    Eg, Array [3] Char is a string containing 3 characters.
+Record {fieldname1:type1, ...}
+    Only matches records with the exact fields specified.
+Has_Fields {fieldname1:type1, ...}
+    Eg, Callable = Function | Has_Fields{call: Callable};
+
+Enum types,
+    Eg, Optional_Num = Enum[#nothing, {just: Num}]
+
+Operations on Types
+-------------------
+Every type has an associated predicate that tests if the argument is contained
+in the type's value set.
+
+Syntax
+------
+Given a type Foo (using straw-man syntax), here are possible syntaxes.
+
+is_foo X, make_foo X
+ + Compatible with is_shape, make_shape. It's obvious how to define a user
+   defined type (it is a pair of functions).
+ - Given one function, you can't derive the other.
+
+is Foo X, make Foo X
+
+Foo is a constructor, Foo? is a predicate
+
+Foo is a predicate, some operation on Foo is a constructor.

@@ -41,11 +41,38 @@ Here are some approaches:
 
     Heterogenous lists of characters and non-characters are supported, and will
     be used in the representation of rich text, when Curv becomes a visual
-    programming language.
+    programming language. Could introduce Racket/Scribble style markup as
+    string escapes to embed rich text structures in strings.
 
-Both approaches have the same technical power.
+    This approach has the best semantics: the most compatibility with
+    equational reasoning.
 
-If I'm using ASCII, then I should use #2: a string is a list of characters.
+    This approach complicates JSON export (`-o json` and `curvc`):
+    we no longer distinguish "" and [], and "" is exported to JSON as [].
+    Although you can currently use #'' to export an empty string.
+    Curv v0.4 contains the JSON data model as a strict subset, allowing
+    straightforward JSON import/export. With the introduction of symbols
+    and especially with "string is a list of characters", the Curv data model
+    no longer has a subset that is straightforwardly bijective with JSON.
+     * Can use data patterns/schemas/specs to map between data models.
+       Another example of moving complexity from one place to another.
+     * Even with schemas, if there is a JSON value that can be either "" or []
+       and the distinction is important, then how to we encode this?
+
+ 3. Typed lists. A string is a typed list of characters. "" != [].
+    Apparently also [char #a] != "a" and map id "abc" != "abc"?
+    This is compatible with JSON, but it opens a different can of worms.
+    It is not compatible with the Compact Array proposal. It may be more
+    compatible with the data models of other programming languages.
+
+ 4. A static type system like Haskell.
+
+All dynamically typed approaches have the same technical power.
+
+Approach #2 is easiest, if you are dealing with ASCII text, or with a subset
+of Unicode where EGCs are code points. And that's 99% of the time. Outside of
+that, if your code needs an EGC list, you must use more complex APIs.
+
 All of the confusion and complexity comes from Unicode, and this can't be
 eliminated, it can only be moved from one part of the language to another.
 
@@ -86,7 +113,7 @@ The problems arise if Curv transitions from ASCII to Unicode:
   * String concatenation doesn't have array semantics if EGCs are characters.
     Two adjacent EGCs can merge on concatenation.
 
-This design is consistent with the Efficient Arrays proposal.
+This design is consistent with the Compact Arrays proposal.
 Specifically, there is only one abstract List type. A list of numbers
 and a list of characters can be concatenated (you don't get a type error).
 There is only one empty list value: `[]`, which means that `""` is syntactic

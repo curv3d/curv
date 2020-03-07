@@ -1,0 +1,29 @@
+Import and Export of Curv Values
+================================
+In the most recent release (0.4), the Curv data model was bijective with JSON.
+String and List were two distinct data types.
+
+In the current prototype, the data model is not bijective with JSON.
+ * Symbols are added, which are abstract named values.
+ * JSON true, false, null are now symbols
+ * Symbols are also like string scalars. A symbol is exported JSON as a string
+   (modulo true, false, null). When a JSON string is imported, should it be
+   imported as a string or as a symbol? Symbols are not bijective with strings,
+   because they can't contain control characters, and I'm not sure if empty
+   symbols will continue to be supported. So JSON strings are imported as
+   strings, even if they logically should be symbols.
+
+The "strings are lists of characters" proposal diverges further from JSON,
+in that there is no distinction between "" and []. So what do we map JSON ""
+to on import? An empty symbol (if that concept is supported) or an empty
+list? If we want to export an empty string to JSON, how is that represented
+in Curv?
+
+The future addition of abstract values, and efficient large arrays, will cause
+further divergence with the JSON data model.
+
+To mitigate this, use data schemas to map between different data models.
+
+A noteworthy issue with "strings are lists of characters" is that with it,
+Curv no longer contains the JSON data model as a strict subset. This impacts
+the ease of importing/exporting JSON at tier 1.

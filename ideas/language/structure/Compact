@@ -5,7 +5,7 @@ data structures instead of functions. The goal is to make these efficient,
 without making high level APIs and the high level language harder to use.
 
 In this design study, the secondary goal is to preserve the illusion that all
-Curv data structures are recursively composed of 5 primitive data types.
+Curv data structures are recursively composed of 6 primitive data types.
 To make huge data structures efficient, we will support multiple internal
 representations for the same abstract structure. These internal representations
 are hidden from high level code (High Curv, aka Tier 1 of the Curv language).
