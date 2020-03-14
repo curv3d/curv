@@ -1,20 +1,91 @@
-"Type" values in Curv
-=====================
-A type denotes a set of values. In the general case, a type is a predicate.
-A type may have additional structure that enables additional operations.
+Curv Type Theory
+================
+Curv is a dynamically typed language. There are reasons for this.
+ * For beginners, a dynamically typed language has an easier learning curve.
+ * Live coding requires dynamic typing. In live coding, you edit a program
+   while it runs. The effects of any errors you introduce during editing are
+   localized as well as possible, so that the program can continue to run.
+ * Dynamic typing maximizes simplicity and expressive power.
+   It allows everything to be a first class value. You can always eliminate
+   code duplication using functions, because anything can be passed as a
+   function argument or returned as a result.
+ * Dynamic typing is best for exploratory programming, where you are trying
+   to create an artistic effect. The added complexity of statically typed
+   languages doesn't add cognitive burden or get in your way.
 
-What are type values used for?
- * Predicate: test if arg belongs to value set, yield #true or #false.
- * Validate: report an error if predicate test fails; provided detailed
-   information about what part of a structured value fails to validate.
- * Optimize: validate the argument, and convert it to a more compact,
-   efficient representation (that compares equal). From Compact Array proposal.
+Dynamic typing means that every value carries around its "type" at run time,
+and that it is always possible to defer "type checking" until run time.
 
-A SubCurv type maps a set of values onto a SubCurv representation that can exist
-within a GPU program.
+I put the word "type" in quotes because it means different things in different
+contexts.
 
-A Picker type is a SubCurv type that specifies a UI for modifying
-a parameter value.
+When I say that "every value carries its type at run time", I mean that
+every value remembers how it was constructed. Every value can be printed as
+a constructor expression that, when evaluated, returns the original value.
+These run time type tags are actually constructor names, plus additional
+metadata for reconstructing the value's constructor arguments.
+
+Separate from this, Curv has first class type values. A type is a set of values.
+Type values are used for "type checking" (eg, ensuring that function arguments
+have the correct type) and for specifying efficient value representations in
+Curv functions that are compiled into GPU code.
+
+Separate from this, Curv has Algebras. An Algebra bundles a type together with
+its constructors and operations, in a record value.
+
+Types
+-----
+A type is a set of values.
+ * A type predicate `T?` is a function that returns true if its argument is
+   contained within `T`'s value set and false otherwise.
+ * A type assertion `x :: T` aborts if `T? x` is false, returns `x` otherwise.
+   On error, it should provide detailed information about what part of a
+   structured value failed to validate.
+
+Types form a lattice, with a top and bottom. The partial evaluator needs
+the ability to compute least upper bound, greatest lower bound, of two types.
+ * 'if (<Bool>) <T1> else <T2>' has type LUB(T1,T2)
+ * match[x::T1->...,...](<T>) is abstractly evaluated by computing GLB(T,Tn)
+   for the n'th branch, and skipping branches until the GLB is not bottom.
+
+Types may be constructed using set union, set intersection and set difference.
+Hypothetically, I could use the syntax
+   T1|T2, T1&T2, T1--T2 or T1~T2
+
+There is a set constructor syntax, #[a,b,c], and set comprehensions,
+which construct a data structure representation of a type.
+
+A predicate type contains a function that maps an argument to #true if the
+argument is in the type's value set, or #false otherwise?
+Could use `predicate(func)` to construct a predicate type.
+ * This makes it impossible to support exact type equality.
+
+A SubCurv type maps a set of values onto a SubCurv representation that can
+exist within a GPU program. This includes selected data types from GLSL/WGSL
+and selected OpenGL/WebGPU image/buffer types. Not all types are SubCurv types.
+ * The SubCurv compiler assigns a static type to every variable and
+   expression. Previously, every Curv value either mapped to a unique
+   type, or was not supported by SubCurv. Soon, there will additional
+   types for numbers (eg, Int32, Nat32, and probably others), and static
+   type declarations will be required to construct variables and
+   expressions of these additional types. For example,
+      x :: Int32 = 0
+   will represent `x` using the GLSL `int` type.
+ * If T is a SubCurv type, then `x :: T` optimizes x: it validates x, and
+   converts it to a more compact, efficient representation (that compares
+   equal, since the value has not changed, only the representation).
+   Used to construct compact arrays (from Compact Array proposal).
+ * A Picker type is a SubCurv type that specifies a UI for modifying
+   a parameter value.
+
+Reactive values contain a type. Previously I used SubCurv types.
+If I switch to general types, Curv becomes more expressive (more
+expressions can be recognized as shapes and displayed graphically).
+
+The New_core will have a partial evaluator, which will use types as
+abstract values (abstract interpretation). With more information available
+in these abstract values (a richer type system), the partial evaluator
+can reduce more subexpressions, which makes Curv more expressive.
 
 Types are useful for mapping between Curv values and GPU data types (SubCurv).
 They might also be useful in other situations where Curv values are imported
@@ -23,11 +94,44 @@ or a WASM FFI. For example a json_import function could use a type to map
 JSON values to Curv values. Eg, `String` maps a JSON string to a Curv string,
 while `Symbol` maps a JSON string to a Curv symbol.
 
+Algebras
+--------
+An Algebra bundles a type together with its primary operations into a record.
+In this concept, there is a single named value representing the type, and it
+is a record containing operations. Benefits:
+ * Neatly organize operation names into a hierarchy.
+ * When multiple Algebras support the same interface, this enables a form
+   of generic programming, where you pass Algebras as arguments.
+
+An Algebra is a record containing a `type` field, plus some optional constructor
+fields (variables bound to instances of the type, and functions that construct
+an instance of the type), plus some optional operation fields (functions that
+take instances of the type as arguments). This is directly inspired by the
+concept of a single-sorted algebra in mathematics.
+
+The `type` field is the only required field in an Algebra.
+
+An algebra can be used interchangely with a type with any primitive operation
+that has a type argument. For example, if A is an algebra, then
+ * `A?` is equivalent to `A.type?`.
+ * `x :: A` is equivalent to `x :: A.type`.
+
+It is very common for an Algebra to contain a single constructor function bound
+to `call`. For example, `char` is an Algebra with a `call` field:
+ * `char 97` or `char #'a'` constructs a character value.
+ * `char? x` returns `#true` if `x` is a character.
+
+The constructor functions in the Abstract Value proposal will be represented
+as algebras.
+
 Vocabulary of Type Constructors
 -------------------------------
 Here we will use the straw-man syntax `Foo` to name a type.
 
-Value -- the set of all values
+All or Always or Value -- the set of all values
+None or Never or Empty or Error -- the empty set
+==x or Singleton(x) or Constant(x)
+
 Num, Symbol, Char, List, Record, Function
 Bool, String, Callable
 Nat32, Bool32
@@ -47,14 +151,69 @@ Record {fieldname1:type1, ...}
 Has_Fields {fieldname1:type1, ...}
     Eg, Callable = Function | Has_Fields{call: Callable};
 
-Enum types,
+Enum[member1,...]
+    Each member is a symbol or a singleton record with a type value.
     Eg, Optional_Num = Enum[#nothing, {just: Num}]
+x|y or Union[x,y,z,...]
+    Recursive definitions can make sense,
+    Eg, Tensor = Num | Array 1 Tensor
 
-Operations on Types
--------------------
-Every type has an associated predicate that tests if the argument is contained
-in the type's value set.
+SubCurv generic types
+---------------------
+I need to give good SubCurv error messages when an argument has the wrong type.
+What notation do I use for 'Num or Vec2 of Num or Vec3 of Num or Vec4 of Num'?
+And is that notation needed in Curv for writing SubCurv code?
 
+SubCurv Compiler
+----------------
+In libcurv, SC_Type is used for type inference and type checking during
+code generation. Should SC_Type be unified with user-level type values?
+In what contexts would a user-level type constant be imported into the compiler
+for use as an SC_Type?
+ * `parametric`: 'picker' type assertions are used by the SC_Compiler.
+ * Right now you cannot generate 'int' or 'uint' variables in GLSL.
+   But an ':: Int32' type assertion on a variable definition or expression
+   could be compiled to a GLSL 'int' variable or expression.
+    * Is this a can of worms? What are the semantics of SubCurv arithmetic
+      expressions, and how do those semantics differ from Curv?
+       * In SubCurv, we could do this:
+           I+J, I-J, I*J, map Int32 arguments onto an Int32 result.
+           I/J returns a Num.
+           I//J is the Smalltalk integer division operator, returns an integer.
+         The result is undefined if the result doesn't fit in an Int32.
+       * In Curv, the result on over/underflow of integer arithmetic is a float.
+         This is a fundmentally more accurate result than mod 2^32 arithmetic.
+         If one of these out-of-range float results is assigned to an Int32
+         variable, you will get an error showing the actual numeric value that
+         could not be represented.
+
+Typed Variables
+---------------
+In the code generated by SubCurv, each mutable variable has a type,
+and assignments are restricted by the variable's type.
+By default, a type is inferred from the variable's initial value.
+ * Not a singleton type, though. Only an SC_Type, which is a subset of the
+   possible type values discussed in this document.
+
+Reactive Type Inference
+-----------------------
+Reactive values have types. Each primitive operation on reactive values
+infers a result type from the argument types. Types are sets, there is a
+lattice of types with a top and bottom. This is a "soft typing" system.
+The goal is not to report type errors, but to provide extra information to
+the partial evaluator and make it more powerful.
+
+A type that is *just* a predicate function has no structure that tells us
+how it relates to other types in the lattice. So perhaps a type is not a
+predicate, but we provide idioms for defining types using predicates.
+
+What extra structure is needed? A Prime type that contains prime integers
+is a subset of Num. Perhaps we represent it using a predicate function,
+plus upper and lower bounds within the type lattice. The upper bound is Num.
+When would we have a useful lower bound on a type?
+
+Older Ideas
+===========
 Syntax
 ------
 Given a type Foo (using straw-man syntax), here are possible syntaxes.
@@ -64,8 +223,25 @@ is_foo X, make_foo X
    defined type (it is a pair of functions).
  - Given one function, you can't derive the other.
 
+Goal: given a single name, 'Foo', you can derive all of the operations on Foo.
+In some cases, 'Foo' is an Algebra (a record).
+
 is Foo X, make Foo X
 
-Foo is a constructor, Foo? is a predicate
+Is Foo a callable value? If so, does calling Foo give you a predicate or a
+constructor?
+ * predicate: All types have a predicate, but not all types have a constructor.
+   If we choose 'predicate', then an ordinary predicate function is also a type.
+ * constructor: This allows constructors from the Abstract Value proposal to
+   be classified as types.
 
-Foo is a predicate, some operation on Foo is a constructor.
+Foo is a predicate, some operation on Foo is a constructor (eg, make Foo).
+    Not compatible with Abstract Value constructors.
+    Not in the spirit of "types are not predicates".
+
+Foo is a constructor, Foo? is a predicate
+    We can make it convenient to invoke or define the predicate of Foo.
+    'Foo? x' is sugar for 'Foo.predicate x'
+    'Foo? x = x >= 0' is sugar for 'Foo = {predicate x = x >= 0}`
+    Or maybe we provide idioms for constructing predicates that contain
+    extra type structure so we know how the predicate relates to other types.

@@ -206,6 +206,7 @@ I have considered several alternate proposals:
           if numbers and symbols are disjoint.
       * `1/0` is the numeral for infinity. It is the pattern that matches
         infinity, and it is also how infinity is printed.
+    * Or, use `==inf`. There is no numeral for infinity.
   * String patterns currently conflict with "name":value field constructors.
     * The Map proposal defines a Record as a Map where the keys are Symbols.
       A record may be written as {#foo=>1, #bar=>2}. The `:` statement is no

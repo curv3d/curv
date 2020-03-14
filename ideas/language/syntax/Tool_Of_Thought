@@ -1,0 +1,17 @@
+Notation as a Tool of Thought
+=============================
+
+Why Haskell notation is better than Lisp notation.
+https://www.cs.kent.ac.uk/people/staff/dat/miranda/wadler87.pdf
+"A critique of Abelson and Sussman -or- Why calculating is better than scheming"
+ * Infix is better than prefix for equational reasoning.
+ * Pattern matching is better than conditionals.
+ * Type declarations organize your thoughts around how your data is structured
+   and which cases you need to handle in algorithms over those types.
+ * "The difference between (1 2 3) and (quote (1 2 3)) is subtle, and it
+   inevitably confuses students. In particular, it plays havoc with the
+   substitution model of evaluation." Wadler's problem is that the printed
+   representation of a list is not a constructor expression that evaluates
+   to the list. Whereas in Curv, all values print as constructor expressions:
+   [1,2,3] prints as [1,2,3].
+ * Lazy lists are easier to use, have better mathematical properties in Haskell.

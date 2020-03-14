@@ -57,4 +57,7 @@ bend (k,s0,sb,se) shape =
     };
 
 in
-bend(tau/16,0,-1,1) (rect(5,1)) >> show_dist
+parametric
+    t :: slider(0,pi) = tau/16;
+in
+bend(t,0,-1,1) (box(5,1,1))

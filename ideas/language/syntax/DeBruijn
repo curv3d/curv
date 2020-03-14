@@ -1,0 +1,25 @@
+De Bruijn notation
+==================
+De Bruijn notation is an alternative to lambda calculus notation,
+which has benefits for algebraic manipulation and equational reasoning
+in the domains of lambda calculus and type theory.
+
+a function call is: <x>f   -- like 'x >> f' in Curv
+a function is: [x]body     -- like 'x->body' in Curv
+
+The <x> and [x] elements are called 'wagons', and are the unit of equational
+reasoning in this notation.
+
+A call to a function literal is written
+    <x>[a]body
+Note that the argument wagon <x> is adjacent to the abstractor wagon [a]:
+data flows left to right from the argument into the abstractor.
+
+It would be interesting to extend these ideas into a full programming language.
+Just forget conventional syntax, focus on left-to-right data flow and
+equational reasoning.
+
+Perhaps such a design would also work as a nodes+boxes visual dataflow language.
+
+cond THEN x ELSE y
+list EACH [x] body

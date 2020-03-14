@@ -33,3 +33,10 @@ By contrast, the goal of my soft type system is to make partial evaluation
 more powerful, not to generate compile time type errors. A soft type is an
 abstract interpretation of an expression, telling us what range of values
 that expression can take on.
+
+"Efficient Gradual Typing" Jan 2017
+* Gradual Typing creates tensions between efficiency, soundness, and
+  interoperability between typed and untyped code.
+* Typed Racket is sound and interoperable but not efficient.
+* Grift uses AOT compilation to machine code, carefully chosen runtime
+  representations with space efficient coercions, and monotonic references.

@@ -12,6 +12,14 @@ WASM can be used for:
   * Bitbanging a 2D image in WASM (Curv 2D animated colour field): see above.
   * Use WebGL 2 via Emscripten.
   * In future, use WASI WebGPU API.
+* Safely extend the Curv language with WASM modules written in other languages?
+  `file "foo.wasm"` returns a record value.
+  * Although we can sandbox the WASM module and prevent mischief such as making
+    a network connection or accessing the file system, we can't ensure that
+    functions are pure, because the WASM module can change its state during a
+    function call.
+  * The fact that WASM modules contain a fixed size block of non-shared memory
+    used for function calls, temporaries, etc, seems not optimal.
 
 In the future, could I JIT compile Curv programs into WASM and then run them
 as efficiently as native code? I would need LLVM quality code generation,
