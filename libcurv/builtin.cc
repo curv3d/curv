@@ -720,13 +720,24 @@ struct Dot_Function : public Legacy_Function
     {
         auto a = f[0];
         auto b = f[1];
-        if (!a.type.is_num_vec())
-            throw Exception(At_SC_Arg(0, f), "dot: argument is not a vector");
-        if (a.type != b.type)
-            throw Exception(At_SC_Arg(1, f), "dot: arguments have different types");
-        auto result = f.sc_.newvalue(SC_Type::Num());
-        f.sc_.out() << "  float "<<result<<" = dot("<<a<<","<<b<<");\n";
-        return result;
+        if (a.type.is_num_vec() && a.type == b.type)
+            return sc_bincall(f, SC_Type::Num(), "dot", a, b);
+        if (a.type.is_num_vec() && b.type.is_mat()
+            && a.type.count() == b.type.count())
+        {
+            return sc_binop(f, a.type, b, "*", a);
+        }
+        if (a.type.is_mat() && b.type.is_num_vec()
+            && a.type.count() == b.type.count())
+        {
+            return sc_binop(f, b.type, b, "*", a);
+        }
+        if (a.type.is_mat() && b.type.is_mat()
+            && a.type.count() == b.type.count())
+        {
+            return sc_binop(f, a.type, b, "*", a);
+        }
+        throw Exception(At_SC_Frame(f), "dot: invalid arguments");
     }
 };
 

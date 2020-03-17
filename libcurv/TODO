@@ -11,7 +11,6 @@ Expressions that don't support reactive arguments:
     Range_Expr
     select[a,b,c]
     dot[a,b]
-dot: matrix multiply
 and[...] and or[...] implement custom reduction code for bool32 and bvec. How?
   * A functional Prim interface, returns an optional SC_Value.
         SC_Value sc_try_reduce(SC_Frame& f, SC_Value a, const Context& cx)
