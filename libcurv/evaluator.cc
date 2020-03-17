@@ -686,7 +686,6 @@ For_Op::exec(Frame& f, Executor& ex) const
 Value
 Range_Expr::eval(Frame& f) const
 {
-    List_Builder lb;
     Value firstv = arg1_->eval(f);
     double first = firstv.to_num_or_nan();
 
@@ -706,19 +705,42 @@ Range_Expr::eval(Frame& f) const
     // integer. It could be a float integer too large to increment (for large
     // float i, i==i+1). So we impose a limit on the count.
     if (countd < 1'000'000'000.0) {
+        List_Builder lb;
         unsigned count = (unsigned) countd;
         for (unsigned i = 0; i < count; ++i)
             lb.push_back(Value{first + step*i});
-    } else {
-        const char* err =
-            (countd == countd ? "too many elements in range" : "domain error");
-        const char* dots = (half_open_ ? " ..< " : " .. ");
-        throw Exception(At_Phrase(*syntax_, f),
-            arg3_
-                ? stringify(firstv,dots,lastv," by ",stepv,": ", err)
-                : stringify(firstv,dots,lastv,": ", err));
+        return {lb.get_list()};
     }
-    return {lb.get_list()};
+
+    // Fast path failed (assuming Num arguments).
+    // Next check for the reactive case.
+    if (first==first && last==last && step==step) {
+        // all arguments are Num, therefore not a reactive expression
+    }
+    else if (is_num(firstv) && is_num(lastv)
+             && (stepv.is_missing() || is_num(stepv)))
+    {
+        // For now, this is almost useless: it's triggered when
+        // a reactive range value is a parameter to a shape constructor.
+        return {make<Reactive_Expression>(
+            SC_Type::Error(), // TODO: should be 'Array 1 Num'
+            make<Range_Expr>(
+                share(*syntax_),
+                make<Constant>(share(*arg1_->syntax_), firstv),
+                make<Constant>(share(*arg2_->syntax_), lastv),
+                !arg3_? nullptr: make<Constant>(share(*arg3_->syntax_), stepv),
+                half_open_),
+            At_Phrase(*syntax_, f))};
+    }
+    
+    // Report error.
+    const char* err =
+        (countd == countd ? "too many elements in range" : "domain error");
+    const char* dots = (half_open_ ? " ..< " : " .. ");
+    throw Exception(At_Phrase(*syntax_, f),
+        arg3_
+            ? stringify(firstv,dots,lastv," by ",stepv,": ", err)
+            : stringify(firstv,dots,lastv,": ", err));
 }
 
 Value

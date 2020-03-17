@@ -8,7 +8,6 @@ Expressions that don't support reactive arguments:
     And_Expr
     Equal_Expr
     Not_Equal_Expr
-    Range_Expr
     select[a,b,c]
     dot[a,b]
 and[...] and or[...] implement custom reduction code for bool32 and bvec. How?
