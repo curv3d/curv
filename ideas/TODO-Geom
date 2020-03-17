@@ -1,4 +1,9 @@
 # Redesign Shape API
+## New Shape Type
+`make_shape` is superceded by `Shape` which has a new interface.
+  dist[x,y,z,t] is replaced by distance[x,y,z]  // reactive time variable
+  colour[x,y,z,t] is replaced by colour[x,y,z]  // reactive time variable
+  bbox is replaced by bounds                    // more legible name
 
 ## Scalar Fields
 A scalar field maps [x,y] or [x,y,z] onto a number.

@@ -1,9 +1,9 @@
 Colours
 =======
-In Visual Curv, Colours are abstract values. This means that their representation is hidden
-by the standard API. You call a function to construct a Colour. When a Colour
-is printed, in textual form you see a call to a Colour constructor function,
-not a list or record literal.
+In Visual Curv, Colours are abstract values. This means their representation
+is hidden by the standard API. You call a function to construct a Colour. When
+a Colour is printed, in textual form you see a call to a Colour constructor
+function, not a list or record literal.
 
 Colours are graphical values. When a colour is displayed as console output,
 or in a value browser, either alone or as part of a data structure, we attempt
@@ -52,14 +52,31 @@ Extract colour space coordinates from a colour:
     linRGB.get col
     ...
 ```
+The word `get` is inspired by `get`/`put` in a future Lens abstraction.
+For example, sRGB is a lens (abstract field accessor) with get/put fields,
+and you can write `c@sRGB` on the left or right of an assignment.
+An alternative is `from`, eg `sRGB.from col`.
 
 The set of known colour spaces is not "built in" to the Colour type, so user
 defined colour spaces have the same interface.
 
-There is a predicate for colour values:
+Under the old design, there would be a predicate for colour values:
 ```
 is_colour(red) == #true
 ```
+
+Under the new Types proposal,
+ * There is a general `Colour` type, represented as 3 floats in linearRGB.
+ * `Colour?` is the predicate.
+ * There are some additional colour types, used for pixel values in an image.
+   Eg, `sRGB8`. These types have the same value set as Colour but a more
+   compact representation.
+
+Colours are abstract values that are printed as constructor expressions:
+```
+sRGB[r,g,b]
+```
+followed by a colour swatch on an RGB terminal.
 
 What does the colour API look like when in use?
 Maybe you want to interpolate between two colours in a shape colour function.
@@ -72,8 +89,8 @@ Maybe you want to interpolate between two colours in a shape colour function.
         in
             sRGB(lerp(sRGB.get c1, sRGB.get c2, k));
 ```
-Colour libraries generally provide high level operations like:
-interpolate between two colours in a specified colour space. It isn't required for MVP.
+Colour libraries generally provide high level operations like: interpolate
+between two colours in a specified colour space. It isn't required for MVP.
 
 Colour Constants
 ----------------
@@ -136,6 +153,10 @@ might need to be marked as 'translucent' for performance reasons.
 A plausible alternative is an optional separate 'opacity' function, if that
 didn't lead to code bloat.
 
+I want to import images containing an alpha channel, then access and interpret
+the alpha channel. What type do we assign to the pixel values of such an image?
+No answers yet.
+
 This is deferred until the material model is designed. Maybe there is a
 'material' function that returns a Material value that contains an 'opacity'
 field along with other material properties.
@@ -145,9 +166,9 @@ Colour Swatches on a Text Terminal
 Colour values should print as colour swatches.
 I can do this on a terminal that supports 24 bit colour text (see: Pastel)
  * Since ncurses-6.0-20180121, terminfo began to support the 24-bit True Color
-  capability under the name of "RGB". You need to use the "setaf" and "setab"
-  commands to set the foreground and background respectively.
-  https://gist.github.com/XVilka/8346728
+   capability under the name of "RGB". You need to use the "setaf" and "setab"
+   commands to set the foreground and background respectively.
+   https://gist.github.com/XVilka/8346728
  * A lot of systems don't have an updated terminfo, and/or don't set the
    TERM variable to a name that defines the RGB flag. So if RGB isn't defined,
    you check the COLORTERM environment variable.
@@ -155,3 +176,26 @@ I can do this on a terminal that supports 24 bit colour text (see: Pastel)
  * gnome-terminal does not define COLORTERM because "COLORTERM is a long
    obsolete slang-only variable used to work around broken termcap/terminfo
    entries.": https://bugzilla.redhat.com/show_bug.cgi?id=1173688
+
+Additional Colour Operations
+----------------------------
+See Pastel: https://github.com/sharkdp/pastel
+
+See D3.color:
+https://github.com/d3/d3-color
+https://github.com/d3/d3-interpolate    // colour interpolation
+
+In D3, a colour value has an associated colour space.
+Each colour space is represented by a subclass of d3.color,
+and you can use `instanceof` to test the colourspace.
+RGB colours have fields 'r', 'g', 'b', and so on, which are assignable.
+The operations `brighter` and `darker` have semantics that are specified
+by the colourspace.
+
+The interpolators, on the other hand, ignore a colour value's colourspace,
+and interpolate colours using a colourspace specified in the name:
+`interpolateRgb`, `interpolateHcl`, etc.
+
+See: https://github.com/gka/chroma.js
+See: https://www.w3.org/TR/css-color-4/
+See: https://python-colorspace.readthedocs.io/en/latest/

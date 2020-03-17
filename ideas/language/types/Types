@@ -35,12 +35,21 @@ its constructors and operations, in a record value.
 
 Types
 -----
-A type is a set of values.
+A type is a set of values, together with a representation (indicating how to
+efficiently represent a memory location restricted to just those values).
+For example, type `Bool` contains the values `#true` and `#false`, and the
+representation part indicates that a Bool can be representing using 1 bit.
+
+If `T` is a Type, then
  * A type predicate `T?` is a function that returns true if its argument is
    contained within `T`'s value set and false otherwise.
+    * `is T` is another possible syntax.
  * A type assertion `x :: T` aborts if `T? x` is false, returns `x` otherwise.
    On error, it should provide detailed information about what part of a
-   structured value failed to validate.
+   structured value failed to validate. A type assertion may also optimize the
+   argument, converting it to a more efficient representation, without changing
+   the value (the argument and the result compare equal).
+    * `make T x` is another possible syntax for value optimization.
 
 Types form a lattice, with a top and bottom. The partial evaluator needs
 the ability to compute least upper bound, greatest lower bound, of two types.
@@ -116,25 +125,94 @@ that has a type argument. For example, if A is an algebra, then
  * `A?` is equivalent to `A.type?`.
  * `x :: A` is equivalent to `x :: A.type`.
 
-It is very common for an Algebra to contain a single constructor function bound
-to `call`. For example, `char` is an Algebra with a `call` field:
- * `char 97` or `char #'a'` constructs a character value.
- * `char? x` returns `#true` if `x` is a character.
+It is common for an Algebra to contain a single constructor function bound
+to `call`. For example, `Char` is an Algebra with a `call` field:
+ * `Char 97` or `Char #'a'` constructs a character value.
+ * `Char? x` returns `#true` if `x` is a character.
+
+Repackage the bool32 operations into an Algebra?
+   nat_to_bool32    Bool32.from_nat    // constructor
+   float_to_bool32  Bool32.from_float  // constructor
+   bool32_to_nat    Bool32.to_nat
+   bool32_to_float  Bool32.to_float
+   bool32_sum       Bool32.sum
+   bool32_product   Bool32.product
 
 The constructor functions in the Abstract Value proposal will be represented
 as algebras.
 
-Vocabulary of Type Constructors
--------------------------------
-Here we will use the straw-man syntax `Foo` to name a type.
+Pickers
+-------
+old:
+    slider(lo,hi) =
+      { call = is_num;
+        picker = {slider:[lo,hi]};
+      };
+    int_slider(lo,hi) =
+      { call = is_num;
+        picker = {int_slider:[lo,hi]};
+      };
+    scale_picker =
+      { call = is_num;
+        picker = #scale_picker;
+      };
+    checkbox =
+      { call = is_bool;
+        picker = #checkbox;
+      };
+    colour_picker =
+      { call = is_vec3;
+        picker = #colour_picker;
+      };
+new:
+    slider(lo,hi) =
+      { type = Num;
+        picker = {slider:[lo,hi]};
+      };
+    int_slider(lo,hi) =
+      { type = Int32;
+        picker = {int_slider:[lo,hi]};
+      };
+    scale_picker =
+      { type = Num;
+        picker = #scale_picker;
+      };
+    checkbox =
+      { type = Bool;
+        picker = #checkbox;
+      };
+    colour_picker =
+      { type = Colour;
+        picker = #colour_picker;
+      };
+The type of int_slider changes from Num to Int32.
+The type of colour_picker changes from Vec3 to Colour.
 
-All or Always or Value -- the set of all values
-None or Never or Empty or Error -- the empty set
-==x or Singleton(x) or Constant(x)
+Structural, not nominal, typing of picker values.
+My preference is structural typing whenever the record values used are
+high level enough to be easily understood. Nominal types add a layer of
+abstraction, which is a kind of complexity: don't pay that complexity cost
+unless it's worth it.
 
-Num, Symbol, Char, List, Record, Function
+Type Constructor Brainstorming
+------------------------------
+Should I use mixed case `Foo` or lower case `foo` in type and algebra names?
+ * There is no absolute prohibition on mixed/upper case in the std namespace.
+   For example I have `X` and `sRGB`.
+ * Mixed case avoids conflict with using a type name as a parameter name or a
+   local variable.
+ * A `colour` type would conflict with `colour` functions in a shape,
+   and with the `colour` shape constructor in the std namespace.
+It appears I should use mixed case.
+
+All or Always or Value or Any_Value -- the set of all values
+None or Never or Empty or No_Value or Error or #[] -- the empty set
+#[x] or Singleton(x) or Constant(x)
+
+Num, Symbol, Char, List, Record, Function, Type
 Bool, String, Callable
-Nat32, Bool32
+Int32, Nat32, Bool32
+Colour, sRGB8
 
 Tuple[T1,T2,...]
 Array R T
@@ -157,6 +235,69 @@ Enum[member1,...]
 x|y or Union[x,y,z,...]
     Recursive definitions can make sense,
     Eg, Tensor = Num | Array 1 Tensor
+
+domain <Function> => <Type>
+
+Simplified Types
+----------------
+Types are abstract values of type `Type`.
+
+How are types printed? Which constructors are primitive and which are aliases
+for other constructors? This determines type equality (==).
+ * Two types with the same value set but different representation are not equal.
+   An example is `Colour` and `sRGB8`.
+ * Two types with the same value set and representation should be equal, but
+   ensuring this is easier if I restrict the set of constructors to those that
+   I absolutely need.
+    * What does "same representation" mean? It should mean "same bit layout in
+      SubCurv", which is structural. It could be interpreted as nominal (Bool
+      and Enum[#false,#true] have different representations because the first
+      happens to map to 'bool' and the second happens to map to 'uint' in GLSL).
+      But that's not desirable, because Curv typing is as structural as
+      possible, and because this just leads to arbitrary type equality
+      distinctions (whatever the implementation does) rather than principled
+      distinctions. So, if we are going to provide an Enum constructor,
+      then Bool=Enum[#false,#true].
+    * The set constructor #[...] is difficult, because it can alias any other
+      finite type. And it's not a first tier requirement, so leave it out.
+
+For MVP, just create type constructors for thoses cases where `std` needs:
+ * a type predicate (replacing is_bool, is_string, etc)
+ * a constructor (replacing char, bool, string, symbol, make_shape)
+ * an Algebra (eg, Bool32, Shape)
+ * all SubCurv types have type constructors
+All these constructors are initially opaque, and they are mostly disjoint.
+
+For backwards compatibility, in x::T, the T argument is either a type or
+a predicate. The fact that the type values don't form a lattice will not be
+a problem initially. The partial evaluator can maintain a richer set of types
+than what we initially expose.
+
+Colour
+------
+The current colour proposal defines Colour as an abtract type.
+The predicate is `is_colour`, colour space values are used as constructors
+(eg, `sRGB[r,g,b]`, `LAB[l,a,b]`, etc). The printed representation
+is `sRGB[r,g,b]`.
+
+Translated to this new Type proposal, I will need a general `Colour` type
+that contains all colour values, and derive the predicate function from that.
+The SubCurv representation will be a `vec3` using the linear RGB colour space.
+Converting a Colour value `c` to linear RGB using `linRGB.get c` emits no
+additional GLSL instructions.
+ * It is difficult to call it `colour`. Shapes contain `colour` functions
+   and an unqualified reference to this type will look like a recursive function
+   reference. You could be required to use std.colour inside a colour function,
+   but it's a bad design. There is already a `colour` function that assigns a
+   colour to a shape, after OpenSCAD. I would want to rename these existing
+   features.
+ * I could call it `Colour` and use the mixed case type naming convention.
+
+So the predicate is `Colour?` and you declare variables as `c :: Colour`,
+but the constructors are colour space names. It's a bit odd, but fine.
+
+To support compact pixel arrays of image data, I will need some "efficient
+representation" Colour types. Eg, `sRGB8`, like GL_SRGB8 image format?
 
 SubCurv generic types
 ---------------------

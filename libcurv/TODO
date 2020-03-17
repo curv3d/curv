@@ -1,7 +1,3 @@
-bool x -- x is 0 or 1 -- convert to #false or #true -- vectorized
-symbol s -- s is printable string -- convert to symbol -- vectorized
-A string is a list of characters (ideas/language/structure/String).
-
 All builtin numeric/boolean operations are now vectorized. Document this.
     fields -- although, it isn't numeric/boolean
     Call_Expr -- could vectorize the function argument. Q'NIAL, FP
