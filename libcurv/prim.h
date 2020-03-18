@@ -367,7 +367,7 @@ struct Unary_Scalar_Prim
     typedef Value scalar_t;
     static bool unbox(Value a, scalar_t& b, const Context&)
     {
-        if (a.maybe<List>()) {
+        if (a.maybe<List>() || a.maybe<Reactive_Value>) {
             return false;
         } else {
             b = a;
