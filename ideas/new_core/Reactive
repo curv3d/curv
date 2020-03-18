@@ -1,0 +1,73 @@
+Deferred Type Inference?
+------------------------
+Right now I attach a SubCurv type to each reactive value during evaluation.
+For reactive expressions, I'm doing type inference during evaluation,
+deriving a result type from argument types.
+
+What if I defer this type inference work until SubCurv compile time?
+Benefits and drawbacks?
+
+Lazy Boolean Operations?
+------------------------
+How to evaluate
+   C && X
+   C || X
+   if (C) X else Y
+when C is reactive Bool? Approaches:
+
+## 1. Strictly evaluate X and Y.
+But then they may abort or diverge unnecessarily?
+ * Is this true, or does divergence necessarily depend on the values of the
+   reactive variables which forced the creation of a reactive expression?
+ * Example: `is_list x && count x > 0`. The `is_list` in the left expr
+   is needed to prevent the right expr from aborting. But if `x` is reactive
+   then the second argument will also be reactive and eager evaluation
+   of the second argument won't cause a bug.
+ * Counter-example: `if (reactive-bool) consequent else error("abort")`.
+   I can fix this problem by capturing the error in a Reactive_Error value.
+    * The Reactive_Error will be reported at the correct time if the reactive
+      expression is later evaluated by the interpreter.
+    * Errors aren't supported in the GPU.
+ * `(<reactive Bool> && is_list x) && count x > 0`
+   => `(<reactive Bool> && #false) && count x > 0`
+   => `<reactive: <reactive Bool> && #false> && <abort>`
+   That isn't great. We need to ensure that `<reactive Bool> && false`
+   evaluates to false, and not to a reactive expression.
+ * X and Y could also diverge (infinite loop). But only if there is no
+   data dependence on the reactive variable that causes C to be reactive.
+ * Counter-example: `if (x == nonzero && divergeifzero x)`, where `nonzero` is
+   a reactive variable.
+
+## 2. Convert X and Y into reactive thunks.
+What is the code for creating a reactive thunk at run time?
+We need to capture local and non-local variables referenced by the expression
+arguments. Is any compiler support needed?
+ * The data is in the Frame, and the X/Y expression contains Ref exprs that
+   reference the frame.
+ * It is forbidden for a Value to reference a Frame, because that could create
+   a reference cycle. Give a concrete example of how this could happen here.
+    * The Reactive_Expr value created by a&&b could be stored in a Frame slot.
+      That creates a cyclic reference.
+ * However, if we copy the Frame and reference this unique copy from the
+   Reactive_Expr, there is no cycle. The Frame copy has no refcount, it is
+   unique.
+ * If I use this implementation, how does SC_Compiler compile the Reactive_Expr?
+    * The X and Y expressions are partially evaluated. The residue must consist
+      of SubCurv compatible primitive operations and values and reactive
+      variables.
+    * But we can't partially evaluate the X and Y expressions, because they
+      might abort unnecessarily, or diverge.
+       * Is this true, or does divergence necessarily depend on the values
+         of the reactive variables which forced the creation of a reactive
+         expression? Can I construct an example or counterexample?
+    * Use a more limited form of partial evaluation on total functions that
+      is safe. Or conservatively don't perform partial evaluation at all,
+      which further limits the diversity of expressions supported for X and Y.
+
+What are the semantic differences between these approaches (as distinct from,
+a change in the evaluation order can have a performance impact)?
+ * At first glance, Curv is a pure functional language, so the best semantics
+   are normal order evaluation, because that maximizes the number of programs
+   that will evaluate without aborting or diverging. So, thunk X and Y.
+ * But, Curv uses 2-phase evaluation. Partially evaluating X and Y
+   maximizes the number of programs that will compile into GLSL.

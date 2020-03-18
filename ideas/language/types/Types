@@ -33,6 +33,30 @@ Curv functions that are compiled into GPU code.
 Separate from this, Curv has Algebras. An Algebra bundles a type together with
 its constructors and operations, in a record value.
 
+Goals for MVP
+-------------
+I plan to implement a simplified subset of the Type values proposal (the MVP),
+which will provide the following benefits:
+ * Required by the Compact Array proposal, which permits us to efficiently
+   represent and construct large pixel, voxel and triangle arrays.
+ * It's now possible to generate GLSL variables and expressions of type Int32
+   and Nat32. `Bool32.from_nat` with non-constant argument is now supported
+   by SubCurv.
+ * Type names like 'Bool' that appear in SC compiler error messages will now
+   be Curv type expressions with documented semantics.
+ * An Algebra value can bundle a type constructor and a type predicate into a
+   single value. Eg, the proposed `char` constructor and `is_char` predicate
+   from the new String proposal is replaced by `Char`. Supports generic
+   programming by passing Algebra values as arguments.
+
+Future Goals
+------------
+A Type describes a schema for data. Type definitions support the features
+of regular expressions and BNF grammars. There is alternation (T1|T2),
+recursive definitions, tuple type concatenation, record type concatenation.
+Look at Clojure Spec. Can these grammars be used for generative art, eg
+L-systems?
+
 Types
 -----
 A type is a set of values, together with a representation (indicating how to
