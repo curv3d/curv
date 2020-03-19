@@ -4,8 +4,6 @@ All builtin numeric/boolean operations are now vectorized. Document this.
     Dot_Expr
 All expression types supported by SubCurv also support reactive arguments.
 Expressions that don't support reactive arguments:
-    Or_Expr
-    And_Expr
     Equal_Expr
     Not_Equal_Expr
     select[a,b,c]

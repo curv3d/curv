@@ -39,4 +39,13 @@ Shared<Operation> Reactive_Expression::expr() const
     return expr_;
 }
 
+Shared<Operation> to_expr(Value val, const Phrase& syn)
+{
+    auto rx = val.maybe<Reactive_Value>();
+    if (rx)
+        return rx->expr();
+    else
+        return make<Constant>(share(syn), val);
+}
+
 } // namespace curv

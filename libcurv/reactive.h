@@ -52,5 +52,7 @@ struct Reactive_Expression : public Reactive_Value
     }
 };
 
+Shared<Operation> to_expr(Value, const Phrase&);
+
 } // namespace curv
 #endif // header guard

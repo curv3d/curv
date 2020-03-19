@@ -126,24 +126,39 @@ Dot_Expr::eval(Frame& f) const
     return basev.at(id, At_Phrase(*base_->syntax_, f));
 }
 
-Value
-Or_Expr::eval(Frame& f) const
-{
-    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
-    if (a)
-        return {true};
-    bool b = arg2_->eval(f).to_bool(At_Phrase(*arg2_->syntax_, f));
-    return {b};
+#define BOOL_EXPR_EVAL(AND_EXPR, NOT, FALSE) \
+Value AND_EXPR::eval(Frame& f) const \
+{ \
+    Value av = arg1_->eval(f); \
+    if (av.is_bool()) { \
+        /* fast path */ \
+        if (NOT av.to_bool_unsafe()) \
+            return {FALSE}; \
+        Value bv = arg2_->eval(f); \
+        assert_bool(bv, At_Phrase(*arg2_->syntax_, f)); \
+        return bv; \
+    } \
+    /* slow path, handle case where arg1 is a reactive Bool */ \
+    assert_bool(av, At_Phrase(*arg1_->syntax_, f)); \
+    /* TODO: if arg2_->eval aborts, construct Error value and continue. */ \
+    Value bv = arg2_->eval(f); \
+    if (bv.is_bool()) { \
+        /* The 'return {false}' case is importance for correctness; */ \
+        /* see new_core/Reactive "Lazy Boolean Operators" */ \
+        bool b = bv.to_bool_unsafe(); \
+        if (NOT b) return {FALSE}; else return av; \
+    } \
+    assert_bool(bv, At_Phrase(*arg2_->syntax_, f)); \
+    return {make<Reactive_Expression>( \
+        SC_Type::Bool(), \
+        make<AND_EXPR>( \
+            share(*syntax_), \
+            to_expr(av, *arg1_->syntax_), \
+            to_expr(bv, *arg2_->syntax_)), \
+        At_Phrase(*syntax_, f))}; \
 }
-Value
-And_Expr::eval(Frame& f) const
-{
-    bool a = arg1_->eval(f).to_bool(At_Phrase(*arg1_->syntax_, f));
-    if (!a)
-        return {false};
-    bool b = arg2_->eval(f).to_bool(At_Phrase(*arg2_->syntax_, f));
-    return {b};
-}
+BOOL_EXPR_EVAL(And_Expr, !, false)
+BOOL_EXPR_EVAL(Or_Expr, , true)
 
 Value
 If_Op::eval(Frame& f) const
@@ -181,10 +196,9 @@ If_Else_Op::eval(Frame& f) const
                 t2,
                 make<If_Else_Op>(
                     share(*syntax_),
-                    make<Constant>(share(*arg1_->syntax_), cond),
-                    make<Constant>(share(*arg2_->syntax_), a2),
-                    make<Constant>(share(*arg3_->syntax_), a3)
-                ),
+                    to_expr(cond, *arg1_->syntax_),
+                    to_expr(a2, *arg2_->syntax_),
+                    to_expr(a3, *arg3_->syntax_)),
                 At_Phrase(*syntax_, f))};
         }
         throw Exception(At_Phrase(*syntax_, f),
@@ -216,10 +230,9 @@ If_Else_Op::tail_eval(std::unique_ptr<Frame>& f) const
                 t2,
                 make<If_Else_Op>(
                     share(*syntax_),
-                    make<Constant>(share(*arg1_->syntax_), cond),
-                    make<Constant>(share(*arg2_->syntax_), a2),
-                    make<Constant>(share(*arg3_->syntax_), a3)
-                ),
+                    to_expr(cond, *arg1_->syntax_),
+                    to_expr(a2, *arg2_->syntax_),
+                    to_expr(a3, *arg3_->syntax_)),
                 At_Phrase(*syntax_, *f))};
             f->next_op_ = nullptr;
             return;
@@ -726,9 +739,9 @@ Range_Expr::eval(Frame& f) const
             SC_Type::Error(), // TODO: should be 'Array 1 Num'
             make<Range_Expr>(
                 share(*syntax_),
-                make<Constant>(share(*arg1_->syntax_), firstv),
-                make<Constant>(share(*arg2_->syntax_), lastv),
-                !arg3_? nullptr: make<Constant>(share(*arg3_->syntax_), stepv),
+                to_expr(firstv, *arg1_->syntax_),
+                to_expr(lastv, *arg2_->syntax_),
+                !arg3_ ? nullptr : to_expr(stepv, *arg3_->syntax_),
                 half_open_),
             At_Phrase(*syntax_, f))};
     }

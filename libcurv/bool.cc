@@ -4,6 +4,7 @@
 
 #include <libcurv/bool.h>
 
+#include <libcurv/exception.h>
 #include <libcurv/reactive.h>
 
 namespace curv {
@@ -13,6 +14,12 @@ bool is_bool(Value a)
     if (a.is_bool()) return true;
     auto r = a.maybe<Reactive_Value>();
     return r && r->sctype_ == SC_Type::Bool();
+}
+
+void assert_bool(Value a, const Context& cx)
+{
+    if (!is_bool(a))
+        throw Exception(cx, stringify(a," is not a boolean"));
 }
 
 Shared<const List>
