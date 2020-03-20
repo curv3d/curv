@@ -64,16 +64,35 @@ efficiently represent a memory location restricted to just those values).
 For example, type `Bool` contains the values `#true` and `#false`, and the
 representation part indicates that a Bool can be representing using 1 bit.
 
-If `T` is a Type, then
- * A type predicate `T?` is a function that returns true if its argument is
-   contained within `T`'s value set and false otherwise.
-    * `is T` is another possible syntax.
- * A type assertion `x :: T` aborts if `T? x` is false, returns `x` otherwise.
-   On error, it should provide detailed information about what part of a
-   structured value failed to validate. A type assertion may also optimize the
-   argument, converting it to a more efficient representation, without changing
-   the value (the argument and the result compare equal).
-    * `make T x` is another possible syntax for value optimization.
+A type predicate `is T` is a function that returns true if its argument is
+contained within `T`'s value set and false otherwise.
+ * `is_num x` replaced by `is Num x` in new design.
+ * `T?` is another possible syntax, from Abstract Value proposal.
+   It is a postfix operator, and there isn't a sufficient justification for
+   introducing a fundamentally new syntax. It's not compatible with the
+   simplified syntax proposal including user defined symbolic infix operators.
+
+A type restriction `as T x` aborts if `is T x` is false, returns `x` otherwise.
+On error, it should provide detailed information about what part of a
+structured value failed to validate. A type restriction may also optimize the
+argument, converting it to a more efficient representation, without changing
+the value (the argument and the result compare equal).
+ * eg, syntax for specifying a function return type:
+      f (x :: Num) = as Num << x + 1
+      x :: Num -> as Num << x + 1
+      x :: Num -> as Num (x + 1)
+ * eg, within a pipeline, `x >> as T >> ...`
+ * alternate syntaxes:
+    * `x :: T` -- no, lacks the syntactic flexibility of curried `as`.
+    * `cast T x` -- no, the word 'cast' has multiple meanings. It can also mean
+      "construct an instance of the type from a value that is not in the
+      type's value set", eg like Bool(1)==#true. Curv distinguishes constructors
+      and type assertions.
+    * `make T x` -- no, sounds too much like a constructor.
+
+A type pattern, `<pattern> :: T`, only matches the argument value A
+if `is T A`. If the pattern matches, then any representation conversion
+implied by `as T A` is performed.
 
 Types form a lattice, with a top and bottom. The partial evaluator needs
 the ability to compute least upper bound, greatest lower bound, of two types.
@@ -104,7 +123,8 @@ and selected OpenGL/WebGPU image/buffer types. Not all types are SubCurv types.
    expressions of these additional types. For example,
       x :: Int32 = 0
    will represent `x` using the GLSL `int` type.
- * If T is a SubCurv type, then `x :: T` optimizes x: it validates x, and
+ * If T is a SubCurv type, then the pattern `x :: T` and the expression
+   `as T x` optimizes x: it validates x, and
    converts it to a more compact, efficient representation (that compares
    equal, since the value has not changed, only the representation).
    Used to construct compact arrays (from Compact Array proposal).
@@ -146,13 +166,14 @@ The `type` field is the only required field in an Algebra.
 
 An algebra can be used interchangely with a type with any primitive operation
 that has a type argument. For example, if A is an algebra, then
- * `A?` is equivalent to `A.type?`.
+ * `is A` is equivalent to `is (A.type)`.
+ * `as A` is equivalent to `as (A.type)`.
  * `x :: A` is equivalent to `x :: A.type`.
 
 It is common for an Algebra to contain a single constructor function bound
 to `call`. For example, `Char` is an Algebra with a `call` field:
  * `Char 97` or `Char #'a'` constructs a character value.
- * `Char? x` returns `#true` if `x` is a character.
+ * `is Char x` returns `#true` if `x` is a character.
 
 Repackage the bool32 operations into an Algebra?
    nat_to_bool32    Bool32.from_nat    // constructor
@@ -317,7 +338,7 @@ additional GLSL instructions.
    features.
  * I could call it `Colour` and use the mixed case type naming convention.
 
-So the predicate is `Colour?` and you declare variables as `c :: Colour`,
+So the predicate is `is Colour` and you declare variables as `c :: Colour`,
 but the constructors are colour space names. It's a bit odd, but fine.
 
 To support compact pixel arrays of image data, I will need some "efficient
@@ -337,8 +358,8 @@ In what contexts would a user-level type constant be imported into the compiler
 for use as an SC_Type?
  * `parametric`: 'picker' type assertions are used by the SC_Compiler.
  * Right now you cannot generate 'int' or 'uint' variables in GLSL.
-   But an ':: Int32' type assertion on a variable definition or expression
-   could be compiled to a GLSL 'int' variable or expression.
+   But an ':: Int32' type assertion on a variable definition
+   could be compiled to a GLSL 'int' variable.
     * Is this a can of worms? What are the semantics of SubCurv arithmetic
       expressions, and how do those semantics differ from Curv?
        * In SubCurv, we could do this:
