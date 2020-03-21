@@ -88,16 +88,17 @@ List_Base::print_repr(std::ostream& out) const
     out << "]";
 }
 
-auto List_Base::equal(const List_Base& list, const Context& cx) const
--> bool
+Ternary List_Base::equal(const List_Base& list, const Context& cx) const
 {
     if (size() != list.size())
-        return false;
+        return Ternary::False;
+    Ternary result = Ternary::True;
     for (size_t i = 0; i < size(); ++i) {
-        if (!array_[i].equal(list.array_[i], cx))
-            return false;
+        Ternary ter = array_[i].equal(list.array_[i], cx);
+        if (ter == Ternary::False) return Ternary::False;
+        result &= ter;
     }
-    return true;
+    return result;
 }
 
 auto List_Builder::get_list()

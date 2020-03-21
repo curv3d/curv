@@ -111,14 +111,24 @@ struct Const_Pattern : public Pattern
     virtual void exec(Value* slots, Value value, const Context& cx, Frame& f)
     const override
     {
-        if (!value.equal(value_,cx))
+        Ternary ter = value.equal(value_, cx);
+        if (ter == Ternary::False)
             throw Exception(cx,
                 stringify("argument ",value, " does not equal ", value_));
+        if (ter == Ternary::Unknown)
+            throw Exception(cx,
+                stringify("argument ",value, " cannot be proven equal to ",
+                          value_));
     }
     virtual bool try_exec(Value* slots, Value value, const Context& cx, Frame& f)
     const override
     {
-        return value.equal(value_,cx);
+        Ternary ter = value.equal(value_, cx);
+        if (ter == Ternary::Unknown)
+            throw Exception(cx,
+                stringify("argument ",value, " cannot be proven equal to ",
+                          value_));
+        return ter.to_bool();
     }
 };
 

@@ -32,7 +32,7 @@ struct List_Base : public Ref_Value
 {
     List_Base() : Ref_Value(ty_list) {}
     virtual void print_repr(std::ostream&) const;
-    bool equal(const List_Base&, const Context&) const;
+    Ternary equal(const List_Base&, const Context&) const;
     void assert_size(size_t sz, const Context& cx) const;
 
     Shared<List> clone() const;

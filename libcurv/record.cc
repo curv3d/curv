@@ -18,18 +18,21 @@ Record::getfield(Symbol_Ref field, const Context& cx) const
     return val;
 }
 
-bool
+Ternary
 Record::equal(const Record& rhs, const Context& cx) const
 {
     if (this->size() != rhs.size())
-        return false;
+        return Ternary::False;
+    Ternary result = Ternary::True;
     for (auto i = iter(); !i->empty(); i->next()) {
         if (!rhs.hasfield(i->key()))
-            return false;
-        if (!i->value(cx).equal(rhs.getfield(i->key(),cx),cx))
-            return false;
+            return Ternary::False;
+        Ternary ter = i->value(cx).equal(rhs.getfield(i->key(),cx),cx);
+        if (ter == Ternary::False)
+            return Ternary::False;
+        result &= ter;
     }
-    return true;
+    return result;
 }
 
 void

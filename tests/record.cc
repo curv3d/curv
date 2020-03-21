@@ -32,13 +32,13 @@ TEST(curv, record)
     // at first field
     ASSERT_FALSE(i->empty());
     ASSERT_EQ(i->key(), make_symbol("a"));
-    ASSERT_TRUE(i->value(cx).equal({1.0},cx));
+    ASSERT_TRUE(i->value(cx).equal({1.0},cx).to_bool());
     i->next();
 
     // at second field
     ASSERT_FALSE(i->empty());
     ASSERT_EQ(i->key(), make_symbol("b"));
-    ASSERT_TRUE(i->value(cx).equal({true},cx));
+    ASSERT_TRUE(i->value(cx).equal({true},cx).to_bool());
     i->next();
 
     // at end

@@ -26,6 +26,7 @@ struct Reactive_Value : public Ref_Value
 
     virtual void print_repr(std::ostream&) const override;
     virtual Shared<Operation> expr() const = 0;
+    Ternary equal(Value) const;
 };
 
 // An expression over one or more reactive variables. Essentially, this is a

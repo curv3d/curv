@@ -109,46 +109,52 @@ const
     print_repr(out);
 }
 
-bool Value::equal(Value v, const Context& cx) const
+Ternary Value::equal(Value v, const Context& cx) const
 {
+    const Ref_Value* r2 = nullptr;
+    if (v.is_ref()) {
+        r2 = &v.to_ref_unsafe();
+        if (r2->type_ == Ref_Value::ty_reactive)
+            return ((Reactive_Value&)*r2).equal(*this);
+    }
+
     // Numeric equality is the fast path, so it is handled first.
     // If both are numbers, this computes floating point equality:
     // true if they are the same number, with -0==+0.
     // If v is not a number, then it's NaN, so we'll return false.
     if (is_num())
-        return number_ == v.number_;
+        return Ternary(number_ == v.number_);
 
     if (!is_ref()) {
-        // *this is a non-numeric immediate value: boolean or null.
-        return bits_ == v.bits_;
+        // `*this` is a non-numeric immediate value: boolean or missing.
+        return Ternary(bits_ == v.bits_);
     }
 
-    // at this point, *this is a reference value.
-
-    if (!v.is_ref())
-        return false;
-
-    // both are reference values
+    // At this point, `*this` is a reference value.
     const Ref_Value& r1{to_ref_unsafe()};
-    const Ref_Value& r2{v.to_ref_unsafe()};
+    if (r1.type_ == Ref_Value::ty_reactive)
+        return ((Reactive_Value&)r1).equal(v);
+    if (r2 == nullptr)
+        return Ternary::False;
 
-    if (r1.type_ != r2.type_)
-        return false;
+    // Both are reference values.
+    if (r1.type_ != r2->type_)
+        return Ternary::False;
 
-    // two reference values with the same type
+    // Two reference values with the same type.
     switch (r1.type_) {
     case Ref_Value::ty_symbol:
-        return (Symbol&)r1 == (Symbol&)r2;
+        return Ternary((Symbol&)r1 == (Symbol&)*r2);
     case Ref_Value::ty_string:
-        return (String&)r1 == (String&)r2;
+        return Ternary((String&)r1 == (String&)*r2);
     case Ref_Value::ty_list:
-        return ((List&)r1).equal((List&)r2, cx);
+        return ((List&)r1).equal((List&)*r2, cx);
     case Ref_Value::ty_record:
-        return ((Record&)r1).equal((Record&)r2, cx);
+        return ((Record&)r1).equal((Record&)*r2, cx);
     default:
         // Outside of the 6 data types, two values are equal if they have
         // the same type.
-        return true;
+        return Ternary::True;
     }
 }
 

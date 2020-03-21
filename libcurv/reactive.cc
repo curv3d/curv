@@ -8,6 +8,24 @@
 
 namespace curv {
 
+Ternary Reactive_Value::equal(Value val) const
+{
+#if 0
+    if (val.is_ref()) {
+        Reactive_Value &rx = val.to_ref_unsafe();
+        if (type_.intersects(rx.type_))
+            return Ternary::Unknown;
+        else
+            return Ternary::False;
+    }
+    if (type_.contains(val))
+        return Ternary::Unknown;
+    else
+        return Ternary::False;
+#endif
+    return Ternary::Unknown;
+}
+
 Reactive_Expression::Reactive_Expression(
     SC_Type sctype,
     Shared<Operation> expr,

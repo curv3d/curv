@@ -39,7 +39,7 @@ struct Record : public Ref_Value
     void each_field(const Context&, std::function<void(Symbol_Ref,Value)>) const;
 
     // compare two record values for equality
-    bool equal(const Record&, const Context&) const;
+    Ternary equal(const Record&, const Context&) const;
 
     virtual Shared<Record> clone() const = 0;
     virtual Value* ref_field(Symbol_Ref, bool need_value, const Context&) = 0;

@@ -816,5 +816,25 @@ struct Binary_Bool32_Prim : public Bool32_Prim
     }
 };
 
+// --------- //
+// Utilities //
+// --------- //
+
+// convert the result of Value::equal() from Ternary to Value
+template <class Expr>
+Value eqval(Ternary tr, Value a, Value b, const At_Syntax& cx)
+{
+    if (tr != Ternary::Unknown)
+        return {tr.to_bool()};
+    else
+        return {make<Reactive_Expression>(
+            SC_Type::Bool(),
+            make<Expr>(
+                share(cx.syntax()),
+                to_expr(a, cx.syntax()),
+                to_expr(b, cx.syntax())),
+            cx)};
+}
+
 } // namespace
 #endif // header guard

@@ -615,9 +615,10 @@ struct Select_Function : public Legacy_Function
 struct Equal_Prim : public Binary_Scalar_To_Bool_Prim
 {
     static const char* name() { return "equal"; }
-    static Value call(Value a, Value b, const Context &cx)
+    static Value call(Value a, Value b, const At_Syntax &cx)
     {
-        return {a.equal(b, cx)};
+        return eqval<Binary_Op_Expr<Binary_Array_Op<Equal_Prim>>>(
+            a.equal(b, cx), a, b, cx);
     }
     static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
     {
@@ -637,9 +638,10 @@ using Equal_Function = Binary_Array_Func<Equal_Prim>;
 struct Unequal_Prim : public Binary_Scalar_To_Bool_Prim
 {
     static const char* name() { return "unequal"; }
-    static Value call(Value a, Value b, const Context &cx)
+    static Value call(Value a, Value b, const At_Syntax &cx)
     {
-        return {!a.equal(b, cx)};
+        return eqval<Binary_Op_Expr<Binary_Array_Op<Unequal_Prim>>>(
+            !a.equal(b, cx), a, b, cx);
     }
     static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
     {

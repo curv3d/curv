@@ -6,6 +6,7 @@
 #define LIBCURV_VALUE_H
 
 #include <libcurv/shared.h>
+#include <libcurv/ternary.h>
 #include <cstdint>
 #include <ostream>
 
@@ -357,9 +358,10 @@ public:
 
     // Deep equality, which traverses the value tree and forces thunks.
     // May throw an Exception if forcing a thunk fails.
+    // May return Ternary::Unknown when comparing reactive values.
     // Used to implement `a == b` in the Curv language.
     // Optimized for numbers, may be expensive for lists and records.
-    bool equal(Value, const Context&) const;
+    Ternary equal(Value, const Context&) const;
 
     // Shallow equality, compares the bit patterns of two Values. Fast.
     bool eq(Value rhs) const

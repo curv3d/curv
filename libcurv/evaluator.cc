@@ -258,14 +258,16 @@ Equal_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return {a.equal(b, At_Phrase(*syntax_, f))};
+    At_Phrase cx(*syntax_, f);
+    return eqval<Equal_Expr>(a.equal(b, cx), a, b, cx);
 }
 Value
 Not_Equal_Expr::eval(Frame& f) const
 {
     Value a = arg1_->eval(f);
     Value b = arg2_->eval(f);
-    return {!a.equal(b, At_Phrase(*syntax_, f))};
+    At_Phrase cx(*syntax_, f);
+    return eqval<Not_Equal_Expr>(!a.equal(b, cx), a, b, cx);
 }
 
 Value
