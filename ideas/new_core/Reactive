@@ -1,3 +1,60 @@
+Design Alternatives for Reactive Values
+---------------------------------------
+Are reactive values typed or untyped?
+
+ a. Untyped. This simplifies the evaluator; the tradeoff is that we
+    lose most of the evaluator's ability to return definite results given
+    reactive arguments. So we lose a lot of opportunities to simplify reactive
+    expressions. This will be evident when reactive expressions are printed.
+    It will reduce the # of cases where a reactive expression is simplified to
+    a Shape value that can be graphically displayed (in the current design).
+
+ b. Statically Typed (using SubCurv types). Imposes more restrictive semantics
+    on reactive expressions than are imposed by the interpreted language: both
+    branches of a 'if' must have the same type.
+
+ c. Richly Typed. A rich type system, which covers all Curv values, and includes
+    union types, is used to annotate reactive values. The evaluator uses these
+    types to simplify (partially evaluate) reactive expressions. The types
+    follow the semantics of interpreted Curv. The result of an 'if' expr is a
+    union type. This seems like the most expressive one.
+
+How is 'if (C) X else Y' implemented for reactive C?
+ 1. The X and Y are captured as thunks, and one of them is executed once the
+    value of C is known.
+     a. Untyped. Easy.
+     b. Statically typed. We need to perform type inference on the thunks.
+        It's SubCurv typing. Calls to recursive functions are illegal.
+        It's bottom up typing using only finite SubCurv types. Not too hard.
+     c. Richly typed. Requires a full-blown type system. Research project.
+ 2. We evaluate X and Y right away, if they aren't also reactive (meaning no
+    direct data dependency on C). This evaluation could abort with an error
+    (we could capture the error as an error thunk value). This evaluation
+    could diverge (this seems bad?). Once we have a value, the typing is easy.
+     b. SubCurv expressions should never diverge (or abort). So eager evaluation
+        is maybe not a problem. Maybe we apply a SubCurv interpreter to X and Y,
+        and abort on a call to a recursive function.
+
+This last bit has me thinking about Dhall, in which all functions are total.
+This seems appropriate for SubCurv, where functions must not diverge, and they
+cannot throw an exception. (Dhall is too limited to write shader functions:
+no division operator.)
+
+Soft Typing
+-----------
+Assignment of types to reactive expressions uses "soft typing", where type
+conflicts produce an Error type and don't automatically cause the program to
+abort. sc_result_type computes a soft type for the reactive expression, it
+is not as restrictive as sc_check_args. Figure out the type system and then
+fix this.
+    Here's a bbox value:
+        [[x0,y0,z0],[x1,y1,z1]] * reactive_num
+    It is given the type Array[2]Vec3. Notice this isn't a struc type.
+    Binary_Num_SCMat_Prim::sc_result_type() is rigged to return non-struc types
+    so that this case won't generate a compile error. Non-struc values aren't
+    supported by SubCurv, but this case works out because it is a bbox value,
+    and we aren't compiling this expression into GLSL.
+
 Deferred Type Inference?
 ------------------------
 Right now I attach a SubCurv type to each reactive value during evaluation.
@@ -6,6 +63,13 @@ deriving a result type from argument types.
 
 What if I defer this type inference work until SubCurv compile time?
 Benefits and drawbacks?
+
+With deferred type inference:
+ * Reactive values have no type.
+ * Pattern matching gets stuck.
+ * Most function calls get stuck (because no pattern matching).
+ * A pattern matching definition can get stuck. That's new. How do we represent
+   that?
 
 Lazy Boolean Operations?
 ------------------------
@@ -35,8 +99,8 @@ But then they may abort or diverge unnecessarily?
    evaluates to false, and not to a reactive expression.
  * X and Y could also diverge (infinite loop). But only if there is no
    data dependence on the reactive variable that causes C to be reactive.
- * Counter-example: `if (x == nonzero && divergeifzero x)`, where `nonzero` is
-   a reactive variable.
+ * Counter-example: `(x == nonzero && divergeifzero x)`, where `nonzero` is
+   a reactive variable. This seems bad.
 
 ## 2. Convert X and Y into reactive thunks.
 What is the code for creating a reactive thunk at run time?
@@ -71,3 +135,16 @@ a change in the evaluation order can have a performance impact)?
    that will evaluate without aborting or diverging. So, thunk X and Y.
  * But, Curv uses 2-phase evaluation. Partially evaluating X and Y
    maximizes the number of programs that will compile into GLSL.
+
+Can Reactive Variables be Hidden from User?
+-------------------------------------------
+`animate(t->expr)`: Partially evaluate `expr` with `t` as a reactive
+variable of type Num. Partial evaluation is type directed, assigning a type
+to each expression. Possible results:
+ * A typed reactive value.
+ * A plain value, not a reactive value, and with no accessible reactive
+   components, except those captured by function closures. But even those
+   captured reactive values are accessible. If S is an animated shape,
+   `S.distance[x,y,z]` is an animated distance, which is a reactive number.
+
+I'm not pursuing this idea.
