@@ -1247,7 +1247,7 @@ struct Builtin_Time : public Builtin
     {
         return make<Constant>(share(id), Value{make<Uniform_Variable>(
             make_symbol("time"),
-            std::string("time"),
+            std::string("u_time"),
             SC_Type::Num(),
             share(id))});
     }
