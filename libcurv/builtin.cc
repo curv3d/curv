@@ -1241,6 +1241,18 @@ struct Defined_Metafunction : public Metafunction
     }
 };
 
+struct Builtin_Time : public Builtin
+{
+    virtual Shared<Meaning> to_meaning(const Identifier& id) const
+    {
+        return make<Constant>(share(id), Value{make<Uniform_Variable>(
+            make_symbol("time"),
+            std::string("time"),
+            SC_Type::Num(),
+            share(id))});
+    }
+};
+
 const Namespace&
 builtin_namespace()
 {
@@ -1253,6 +1265,7 @@ builtin_namespace()
     {make_symbol("inf"), make<Builtin_Value>(INFINITY)},
     {make_symbol("false"), make<Builtin_Value>(Value(false))},
     {make_symbol("true"), make<Builtin_Value>(Value(true))},
+    {make_symbol("time"), make<Builtin_Time>()},
 
     FUNCTION("is_bool", Is_Bool_Function),
     FUNCTION("is_symbol", Is_Symbol_Function),
