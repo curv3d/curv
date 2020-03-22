@@ -2,6 +2,9 @@ Rename `is_fun` to `is_func`.
 Rationale: 'func' is an unambiguous abbreviation for 'function',
 and will be less confusing for some people.
 
+Made obsolete by the Types proposal, which uses `is Function` as the predicate,
+or `is Mapping` as a more general predicate for mapping values.
+
 Prefix function definitions with the `func` keyword.
     func f x = x + 1;
 New rationale: this may be more readable.
@@ -9,6 +12,7 @@ New rationale: this may be more readable.
   A bunch of others use `def`. So a keyword to introduce a function definition
   is familiar from other languages.
 * Swift and Go have a `func` keyword that prefixes function definitions.
+* (Rust uses `fn` and that is now picking up momentum. Clojure has `defn`.)
 
 I'm proposing `func` instead of the more popular `function`, and `is_func`
 instead of `is_function`, just to be terse.  I think `func` is readable enough,

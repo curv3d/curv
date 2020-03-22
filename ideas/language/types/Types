@@ -239,17 +239,34 @@ high level enough to be easily understood. Nominal types add a layer of
 abstraction, which is a kind of complexity: don't pay that complexity cost
 unless it's worth it.
 
-Type Constructor Brainstorming
-------------------------------
+Type Naming Conventions
+-----------------------
 Should I use mixed case `Foo` or lower case `foo` in type and algebra names?
- * There is no absolute prohibition on mixed/upper case in the std namespace.
-   For example I have `X` and `sRGB`.
+These mixed case names will often be used both in type assertions and as
+constructor functions. Eg,
+    c::Char   and  Char 97
+    s::Shape  and  Shape{dist p=...;is_3d=true}
+
+Considerations:
  * Mixed case avoids conflict with using a type name as a parameter name or a
    local variable.
+ * I originally chose `make_shape` over `shape` as a constructor name because I
+   did not want to create a conflict over the use of `shape` as a parameter or
+   local variable. Turns out that I use `shape` as a parameter name in a zillion
+   places.
  * A `colour` type would conflict with `colour` functions in a shape,
    and with the `colour` shape constructor in the std namespace.
-It appears I should use mixed case.
+ * In the abstract value proposal, shape constructors like `cube` will become
+   algebras. But, I do not want to rename `cube` as `Cube`.
 
+Resolution:
+   Use mixed case for type names, and for algebras that are primarily used as
+   types (like `Char`), as opposed to branded constructor functions like `cube`.
+   If an algebra is primarily used as a type, then it will be common to have
+   local variables and parameters of that type.
+
+Type Constructor Brainstorming
+------------------------------
 All or Always or Value or Any_Value -- the set of all values
 None or Never or Empty or No_Value or Error or #[] -- the empty set
 #[x] or Singleton(x) or Constant(x)

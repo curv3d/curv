@@ -109,6 +109,9 @@ We could also do this in reverse: a piecewise function over variant values
 could export field names for each tag. So,
     pfun #foo  => pfun.foo => pfun!#foo
     pfun {a:b} => pfun.a b => pfun!{a:b}
+This idea is inconsistent with callable records and Algebras. It is ambiguous
+if the piecewise function has patterns matching both #foo and {foo: x} --
+the first such pattern would match, I guess.
 
 Also the cube:
     cube .mitred 5

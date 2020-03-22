@@ -1,3 +1,7 @@
+This is partially superceded by `structure/Mapping`.
+Functions and callable records are both instances of Mapping, but there is
+no subtype relationship between the two.
+
 # Callable Values
 
 Using {call x = f x}, a record can behave like a function.

@@ -1,0 +1,102 @@
+A Mapping is a value that maps one value onto another value.
+It is a generalized function. From Mathworld:
+    A map is a way of associating unique objects to every element in a given
+    set. So a map f:A|->B from A to B is a function f such that for every a
+    in A, there is a unique object f(a) in B. The terms function and mapping
+    are synonymous for map.
+The term 'mapping' does not conflict with the 'map' function.
+
+We support both procedural mappings, and data structure mappings.
+ * A function is a procedural mapping.
+ * A dictionary is a data structure mapping.
+ * The postfix `!` operator converts a record to a mapping from symbols to
+   values, and converts a list to a mapping from indexes to element values.
+ * A record R, with a `call` field bound to a mapping, is itself a mapping:
+   `R x` is equivalent to `R.call x`.
+
+The proposed `is_callable` predicate can be replaced with the `Mapping` type.
+
+Both kinds of mappings have a common interface:
+    M x
+    domain M -- returns a Type whose value set is the domain of M
+
+`is (domain M) x` tests if x is in the domain of M.
+The word `is` is clumsy in this context. `in` would be better (but is now a
+keyword). So consider: `in (domain M) x`, `in Char c`, `filter(in Char)`.
+
+A Dictionary is a data structure mapping arbitrary key values to values.
+
+A Dictionary is both a Mapping (it shares an API with functions)
+and a Structure (it shares an API with lists and records).
+
+Dictionary constructors:
+ * #{ key1 => value1, ... }
+   Like Ruby syntax but with a #, so that #{} is the empty dictionary.
+ * The syntax `<symbol> => <value>` is also available in record comprehensions,
+   replacing the old `"string": <value>` syntax.
+ * The need for => to construct record fields with computed names is
+   questionable, once dictionaries are added. Exception for the principle
+   of composability: every semantically meaningful part of an expression
+   should be replaceable by a parameter.
+
+Dictionary patterns:
+ * Each binding in a dictionary pattern is `expr => pattern`. All of the keys
+   in the map value being matched must match one of the keys in the bindings.
+ * If that's a thing, then `symbol => pattern` also makes sense in record
+   patterns. Does it, in fact, make sense?
+ * Not a high priority. Wait for use cases.
+
+A record is not a dictionary, because that conflicts with callable records.
+In a record, each field is an API with a distinct interface, whereas a
+dictionary is just a key/value map with all keys having the same status.
+ * `R.id` selects a field from a record (the '.' operator signals that we are
+   using an API). This syntax doesn't work on dictionaries.
+ * The `!` operator converts a record to a mapping (see below).
+ * Most functional languages have a way to construct a function that selects
+   a specific field from a record. This is consistent with the field==API
+   nature of records. You can pass it as an argument to combinators like `map`.
+   Eg, in Elm, `.foo X` is an alias for `X.foo`. Following Clojure, we can use
+   `#foo X` as an alias for `X.foo`. There is less need for a similar operation
+   on dictionaries.
+
+We use `D key` and not `D[key]` to index into a dictionary, which is different
+from lists and from some popular programming languages.
+ * Note that L[index] (the list operation) is vectorized, and is generalized to
+   multi-dimensional arrays, whereas `D key` (the dictionary operation) is not
+   vectorized. It might be confusing if we used the `D[key]` syntax without
+   having the same semantics.
+ * The `!` operator converts a list to an index map (see below).
+
+`S!I` indexes into a list, record or dictionary (which are collectively called
+structures).
+ * list!integer | list![ix0,ix1,...]
+ * record!symbol
+   * vectorized indexing for records? Wait for more requirements.
+      * Maybe: record!symbol_list -> a record; it slices a record.
+        Eg, `include my_module![#field1,#field2]`.
+      * Or maybe: record!set_of_symbols -> record
+        and record!list_of_symbols -> list_of_values
+ * dictionary!key
+   * vectorized indexing is not possible: key can be a list.
+ * It's a locative: `struct!index := newval`.
+ * `S!` converts a structure to a mapping from index to value.
+ * Motivations for this unusual syntax:
+   * It's consistent across list, record and dictionary.
+     Might be useful for polymorphic operations like `fetch` or lenses?
+   * Also, the `S!` syntax is potentially useful.
+   * Unlike `fetch[i]S`, we can use `S!i` as a locative: `S!i := val`.
+
+fetch [i1,i2,i3] S      or S >> fetch path
+amend path newvalue S   or S >> amend path newvalue
+
+Note on currying:
+* path must be a separate argument so that fetch and amend can be used
+  to construct lenses (see below).
+* S must be a separate argument so that amend can be part of a structure
+  pipeline.
+
+Do fetch and amend support multi-d array slicing?
+Better, can multi-d array slicing be composed with fetch/amend?
+
+A more general discussion of generic structure traversal and update
+should be placed in 'Optics'.
