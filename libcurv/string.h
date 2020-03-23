@@ -85,21 +85,37 @@ operator<<(std::ostream& out, Shared<const String> str)
     return out;
 }
 
-/// Make a curv::String from an array of characters
+// Make a curv::String from an array of characters
 Shared<String> make_string(const char* str, size_t len);
 
-/// Make a curv::String from a character Range
+// Make a curv::String from a character Range
 inline Shared<String> make_string(Range<const char*> r)
 {
     return make_string(r.begin(), r.size());
 }
 
-/// Make a curv::String from a C string
+
+// Make a curv::String from a C string
 inline Shared<String>
 make_string(const char*str)
 {
     return make_string(str, strlen(str));
 }
+
+// Deleted overload, use other overloads!
+//
+// If you wish to convert a boost::filesystem::path to Shared<String>,
+// call make_string(path.string().c_str()).
+//
+// If you really have a pure wchar_t* string (e.g. from Windows API),
+// use the conversion function from <libcurv/win32.h> to convert it to
+// a char* string.
+//
+// Rationale for explicit deletion: without deletion, calling
+// make_string(wchar_t*) would use the `make_string(Value);` overload --
+// which is wrong since the implicit cast to Value makes the string "true"
+// (literally "true") out of wchar_t* strings, independent of their contents.
+Shared<String> make_string(const wchar_t*) = delete;
 
 /// Make a curv::String from a std::string
 inline Shared<String>

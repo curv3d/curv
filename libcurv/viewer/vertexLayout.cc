@@ -92,7 +92,7 @@ std::string VertexLayout::getDefaultVertShader() {
 "uniform vec2 u_resolution;\n"
 "\n";
 
-    for (uint i = 0; i < m_attribs.size(); i++) {
+    for (unsigned int i = 0; i < m_attribs.size(); i++) {
         int size = m_attribs[i].size;
         if (m_positionAttribIndex == int(i)) {
             size = 4;
@@ -105,7 +105,7 @@ std::string VertexLayout::getDefaultVertShader() {
 "void main(void) {\n"
 "\n";
 
-    for (uint i = 0; i < m_attribs.size(); i++) {
+    for (unsigned int i = 0; i < m_attribs.size(); i++) {
         rta += "    v_" + m_attribs[i].name + " = a_" + m_attribs[i].name + ";\n";
     }
 
@@ -135,7 +135,7 @@ std::string VertexLayout::getDefaultFragShader() {
 "uniform vec2 u_resolution;\n"
 "\n";
 
-    for (uint i = 0; i < m_attribs.size(); i++) {
+    for (unsigned int i = 0; i < m_attribs.size(); i++) {
         int size = m_attribs[i].size;
         if (m_positionAttribIndex == int(i)) {
             size = 4;

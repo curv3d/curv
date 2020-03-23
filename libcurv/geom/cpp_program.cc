@@ -8,9 +8,13 @@
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 extern "C" {
-#include <dlfcn.h>
+#ifndef _WIN32
+    #include <dlfcn.h>
+#endif
 }
 #include <iostream>
+
+// TODO: Add Windows support by means of LoadLibrary() and friends
 
 namespace curv { namespace geom {
 
@@ -41,13 +45,18 @@ Cpp_Program::Cpp_Program(System& sys)
 
 Cpp_Program::~Cpp_Program()
 {
+#ifndef _WIN32
     if (dll_ != nullptr)
         dlclose(dll_);
+#endif
 }
 
 void
 Cpp_Program::compile(const Context& cx)
 {
+#ifdef _WIN32
+    throw curv::Exception_Base("Cpp_Program::compile called, but unsupported on Windows");
+#else
     file_.close();
 
     // compile C++ to optimized object code
@@ -72,11 +81,15 @@ Cpp_Program::compile(const Context& cx)
     dll_ = dlopen(so_name.c_str(), RTLD_NOW|RTLD_LOCAL);
     if (dll_ == nullptr)
         throw Exception(cx, stringify("can't load shared object: ", dlerror()));
+#endif
 }
 
 void*
 Cpp_Program::get_function(const char* name)
 {
+#ifdef _WIN32
+    throw curv::Exception_Base("Cpp_Program::get_function called, but unsupported on Windows");
+#else
     dlerror(); // Clear previous error.
     void* object = dlsym(dll_, name);
     const char* err = dlerror();
@@ -89,6 +102,7 @@ Cpp_Program::get_function(const char* name)
             stringify("can't load function ",name,": got null pointer"));
     }
     return object;
+#endif
 }
 
 void

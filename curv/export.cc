@@ -249,7 +249,7 @@ void export_all_png(
         return;
     }
 
-    const char* ipath = ofile.path_.c_str();
+    const char* ipath = ofile.path_.string().c_str();
     const char* p = strchr(ipath, '*');
     if (p == nullptr) {
         throw Exception(At_System(shape.system_),

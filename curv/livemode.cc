@@ -12,7 +12,10 @@ extern "C" {
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
+
+#ifndef _WIN32
+    #include <sys/wait.h>
+#endif
 }
 #include <iostream>
 #include <fstream>
@@ -21,6 +24,7 @@ extern "C" {
 #include "shapes.h"
 #include "view_server.h"
 #include <libcurv/context.h>
+#include <libcurv/exception.h>
 #include <libcurv/program.h>
 #include <libcurv/source.h>
 #include <libcurv/system.h>
@@ -33,12 +37,14 @@ pid_t editor_pid = pid_t(-1);
 void
 launch_editor(const char* editor, const char* filename)
 {
+#ifdef _WIN32
+    throw curv::Exception_Base("launch_editor called, but unsupported on Windows");
+#else
     pid_t pid = fork();
     if (pid == 0) {
         // in child process
-        auto cmd = curv::stringify(editor, " ", filename);
         int r =
-            execl("/bin/sh", "sh", "-c", cmd->c_str(), (char*)0);
+            execl("/bin/sh", "sh", "-c", editor_commandline, (char*)0);
         std::cerr << "can't exec $CURV_EDITOR\n"; // TODO: why?
         (void) r; // TODO
         exit(1);
@@ -47,11 +53,16 @@ launch_editor(const char* editor, const char* filename)
     } else {
         editor_pid = pid;
     }
+#endif
 }
 
 bool
 poll_editor()
 {
+#ifdef _WIN32
+    // fork not available under MinGW for building on Windows
+    throw curv::Exception_Base("poll_editor called, but unsupported on Windows");
+#else
     if (editor_pid == pid_t(-1))
         return false;
     else {
@@ -64,6 +75,8 @@ poll_editor()
         } else
             return true;
     }
+    return false;
+#endif
 }
 
 void

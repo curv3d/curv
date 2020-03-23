@@ -49,13 +49,13 @@ make_system(const char* argv0, std::list<const char*>& libs, std::ostream& out)
             if (CURV_LIBDIR != nullptr) {
                 if (CURV_LIBDIR[0] != '\0') {
                     fs::path stdlib_path = fs::path(CURV_LIBDIR) / "std.curv";
-                    stdlib = curv::make_string(stdlib_path.c_str());
+                    stdlib = curv::make_string(stdlib_path.string().c_str());
                 } else
                     stdlib = nullptr;
             } else {
                 fs::path stdlib_path = fs::canonical(
                     curv::progdir(argv0) / "../lib/curv/std.curv");
-                stdlib = curv::make_string(stdlib_path.c_str());
+                stdlib = curv::make_string(stdlib_path.string().c_str());
             }
             sys.load_library(stdlib);
         }
