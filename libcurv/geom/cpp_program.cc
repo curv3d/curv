@@ -7,11 +7,16 @@
 #include <libcurv/geom/tempfile.h>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
-extern "C" {
-#ifndef _WIN32
+
+// Functions to load shared libraries
+#ifdef _WIN32
+    #include <libcurv/win32.h>
+#else
+    extern "C" {
     #include <dlfcn.h>
+    }
 #endif
-}
+
 #include <iostream>
 
 // TODO: Add Windows support by means of LoadLibrary() and friends
@@ -38,14 +43,17 @@ Cpp_Program::Cpp_Program(System& sys)
 {
     if (file_.fail()) {
         throw Exception{At_System{system_},
-            stringify("cannot open file ",path_.c_str())};
+            stringify("cannot open file ",path_.string())};
     }
     file_ << standard_header;
 }
 
 Cpp_Program::~Cpp_Program()
 {
-#ifndef _WIN32
+#ifdef _WIN32
+    if (dll_ != NULL)
+        FreeLibrary(dll_);
+#else
     if (dll_ != nullptr)
         dlclose(dll_);
 #endif
@@ -54,13 +62,10 @@ Cpp_Program::~Cpp_Program()
 void
 Cpp_Program::compile(const Context& cx)
 {
-#ifdef _WIN32
-    throw curv::Exception_Base("Cpp_Program::compile called, but unsupported on Windows");
-#else
     file_.close();
 
     // compile C++ to optimized object code
-    auto cc_cmd = stringify("c++ -fpic -O3 -c ", path_.c_str());
+    auto cc_cmd = stringify("c++ -fpic -O3 -c ", path_.string());
     //auto cc_cmd = stringify("c++ -fpic -c -g ", path_.c_str());
     if (system(cc_cmd->c_str()) != 0) {
         preserve_tempfile();
@@ -69,13 +74,25 @@ Cpp_Program::compile(const Context& cx)
 
     // create shared object
     auto obj_name = register_tempfile(tempfile_id_,".o");
-    auto so_name = register_tempfile(tempfile_id_,".so");
-    auto link_cmd = stringify("c++ -shared -o ", so_name.c_str(), " ", obj_name.c_str());
+#ifdef _WIN32
+    auto lib_name = register_tempfile(tempfile_id_,".dll");
+#else
+    auto lib_name = register_tempfile(tempfile_id_,".so");
+#endif
+    auto link_cmd = stringify("c++ -shared -o ", lib_name.string(), " ", obj_name.string());
     if (system(link_cmd->c_str()) != 0)
         throw Exception(cx, "c++ link failed");
 
     // load shared object
-    // TODO: so_name should contain a / character to prevent PATH search.
+#ifdef _WIN32
+    dll_ = LoadLibraryW(lib_name.c_str()); // use ANSI variant to avoid the need to convert char* to wchar_t*
+    if (dll_ == NULL)
+    {
+        DWORD error = GetLastError();
+        throw Exception(cx, stringify("can't load shared object: ", win_strerror(error)));
+    }
+#else
+    // TODO: lib_name should contain a / character to prevent PATH search.
     // On macOS with a code-signed curv executable, so_name may need to be an
     // absolute pathname.
     dll_ = dlopen(so_name.c_str(), RTLD_NOW|RTLD_LOCAL);
@@ -88,20 +105,27 @@ void*
 Cpp_Program::get_function(const char* name)
 {
 #ifdef _WIN32
-    throw curv::Exception_Base("Cpp_Program::get_function called, but unsupported on Windows");
+    void* function = (void*) GetProcAddress(dll_, name);
+    if (!function)
+    {
+        DWORD error = GetLastError();
+        throw Exception(At_System{system_},
+            stringify("can't load function ", name, ": ", win_strerror(error)));
+    }
+    return function;
 #else
     dlerror(); // Clear previous error.
-    void* object = dlsym(dll_, name);
+    void* function = dlsym(dll_, name);
     const char* err = dlerror();
     if (err != nullptr) {
         throw Exception(At_System{system_},
-            stringify("can't load function ",name,": ",err));
+            stringify("can't load function ", name, ": ", err));
     }
-    if (object == nullptr) {
+    if (function == nullptr) {
         throw Exception(At_System{system_},
-            stringify("can't load function ",name,": got null pointer"));
+            stringify("can't load function ", name, ": got null pointer"));
     }
-    return object;
+    return function;
 #endif
 }
 

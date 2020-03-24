@@ -8,6 +8,9 @@
 #include <libcurv/filesystem.h>
 #include <libcurv/sc_compiler.h>
 #include <libcurv/system.h>
+#ifdef _WIN32
+    #include <libcurv/win32.h>
+#endif
 #include <fstream>
 
 namespace curv { namespace geom {
@@ -21,7 +24,14 @@ struct Cpp_Program
     Filesystem::path path_;
     std::ofstream file_;
     SC_Compiler sc_;
+
+#ifdef _WIN32
+    // Store the handle to the loaded library via LoadLibrary
+    HMODULE dll_ = NULL;
+#else
+    // Store the handle to the loaded library via dlopen
     void* dll_ = nullptr;
+#endif
 
     Cpp_Program(System&);
     ~Cpp_Program();
