@@ -186,7 +186,13 @@ main(int argc, char** argv)
         case 'e':
             editor = getenv("CURV_EDITOR");
             if (editor == nullptr)
+            {
+#ifdef _WIN32
+                editor = "notepad";
+#else
                 editor = "gedit --new-window --wait";
+#endif
+            }
             break;
         case 'v':
             verbose = true;

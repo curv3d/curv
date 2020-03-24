@@ -7,6 +7,10 @@
 
 #include <libcurv/system.h>
 
+// Start Curv's livemode
+//
+// For editor, you may either pass a (file)name (e.g. "gedit", "notepad++") or
+// nullptr in case no editor instance should be opened.
 int live_mode(curv::System& sys, const char* editor, const char* filename,
     curv::viewer::Viewer_Config&);
 
