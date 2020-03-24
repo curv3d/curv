@@ -27,7 +27,15 @@
 
 3. Build curv and dependencies: `make`
 
-3. Run:
+     As a result, you get `./release/curv.exe` -- a **native** Windows executable. You should be a able to run this executable on every Windows system, even without MSYS, granted that you ship the required DLLs from the MSYS system, e.g. by putting them in the same directory.
 
-    - `./release/curv.exe --version` -- this should mention your graphics card, if not, you only get software rendering without hardware acceleration
-    - `./release/curv.exe ./examples/kaboom.curv`
+3. Test
+
+    - Graphics card detection: `./release/curv.exe --version`
+
+        This should mention your graphics card, if not, you only get software rendering without hardware acceleration.
+    - Simple rendering: `./release/curv.exe ./examples/kaboom.curv`
+    - Livemode with editor: `CURV_EDITOR=notepad ./release/curv.exe -le ./examples/liquid_paint.curv`
+    - Fast 3D rendering with C++ compiler: `./release/curv.exe ./examples/mesh_only/klein.curv -o mesh.obj -O jit`
+
+        This command assumes a C++ compiler available as `c++` on PATH. If you run it in the same MSYS environment as set up above, you already have `c++` available.
