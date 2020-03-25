@@ -96,6 +96,17 @@ inline Shared<String> make_string(Range<const char*> r)
 
 
 // Make a curv::String from a C string
+//
+// If you wish to convert a `boost::filesystem::path to Shared<String>`,
+// call `make_string(path.string().c_str())`.
+// In particular, `make_string(path.c_str())` is not enough and fails
+// compilation on Windows as `path.c_str()` will return a wchar_t* string.
+//
+// If you really have a pure wchar_t* string (this should only happen on Windows,
+// e.g. from Windows API), do the following:
+//
+//    1. add `#ifdef _WIN32 #include <libcurv/win32.h> #endif`,
+//    2. and use `make_string(wstr_to_string(my_str).c_str())`.
 inline Shared<String>
 make_string(const char*str)
 {
@@ -104,12 +115,7 @@ make_string(const char*str)
 
 // Deleted overload, use other overloads!
 //
-// If you wish to convert a boost::filesystem::path to Shared<String>,
-// call make_string(path.string().c_str()).
-//
-// If you really have a pure wchar_t* string (e.g. from Windows API),
-// use the conversion function from <libcurv/win32.h> to convert it to
-// a char* string.
+
 //
 // Rationale for explicit deletion: without deletion, calling
 // make_string(wchar_t*) would use the `make_string(Value);` overload --
@@ -125,7 +131,7 @@ make_string(const std::string& str)
 }
 
 // convert Value to String using Value::print_string()
-Shared<const String> make_string(Value);
+Shared<const String> to_print_string(Value);
 
 // throw error if value is not a string
 Shared<const String> value_to_string(Value, const Context&);
