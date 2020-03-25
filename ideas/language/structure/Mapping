@@ -1,4 +1,4 @@
-A Mapping is a value that maps one value onto another value.
+A Mapping `M` maps a value `x` onto another value `M x`.
 It is a generalized function. From Mathworld:
     A map is a way of associating unique objects to every element in a given
     set. So a map f:A|->B from A to B is a function f such that for every a
@@ -9,20 +9,36 @@ The term 'mapping' does not conflict with the 'map' function.
 We support both procedural mappings, and data structure mappings.
  * A function is a procedural mapping.
  * A dictionary is a data structure mapping.
- * The postfix `!` operator converts a record to a mapping from symbols to
-   values, and converts a list to a mapping from indexes to element values.
  * A record R, with a `call` field bound to a mapping, is itself a mapping:
    `R x` is equivalent to `R.call x`.
+ * The postfix `!` operator converts a record to a mapping from symbols to
+   values, and converts a list to a mapping from indexes to element values.
 
-The proposed `is_callable` predicate can be replaced with the `Mapping` type.
+The proposed `is_callable` predicate is replaced with the `Mapping` type.
 
-Both kinds of mappings have a common interface:
+All mappings support a common interface:
     M x
-    domain M -- returns a Type whose value set is the domain of M
+    M x := y
+    compose [M1,M2,...]
+    match [M1,M2,...]
+    map M [e1,e2,...] => [M e1, M e2, ...]
+    domain M => a Type whose value set is the domain of M
 
-`is (domain M) x` tests if x is in the domain of M.
-The word `is` is clumsy in this context. `in` would be better (but is now a
-keyword). So consider: `in (domain M) x`, `in Char c`, `filter(in Char)`.
+`domain` requires we extend the Type proposal to support sets of values
+as a 'set' data structure.
+
+    `domain` could also be named `dom` as per standard math notation.
+
+    `is (domain M) x` tests if x is in the domain of M.
+    The word `is` is clumsy in this context.
+     * `in` would be better (but is now a keyword).
+        `in (domain M) x`, `in Char c`, `filter(in Char)`.
+     * The `?` operator is better: `domain M? x`
+
+    Relation of `domain` to the older `defined(R.x)` operator:
+        defined (M x) == domain M? x
+        defined (R.x) == domain R!? #x == fields R? #x
+    That last assumes `fields` returns a type (ie, a set of symbols).
 
 A Dictionary is a data structure mapping arbitrary key values to values.
 

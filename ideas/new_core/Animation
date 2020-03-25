@@ -87,8 +87,17 @@ Instantiate an animated value at a specific time.
    values themselves as keys.
         instantiate(time+1, time, 2) == 2+1 == 3
         substitute(time+1, time, 2) == 2+1 == 3
-        replace(time+1, {time => 2}) == 2+1 == 3  // use a dictionary.
+        replace(time+1, #{time => 2}) == 2+1 == 3  // use a dictionary.
                                                   // like Mathematica.
+        with #{time=>2} value  --or--  value >> with #{time=>2}
+    Note: `time==time` is #true, it is not a reactive expression.
+     * This means we are extending equality to include structural equivalence
+       of unevaluated expressions. This will also affect function equality.
+       Functions will print as lambda expressions, and two functions are equal
+       if their printed representation is equal.
+    Note: the `with` operator is "vectorized": it is distributed over elements
+    of a compound value. So `with #{time=>0} shape` replaces all references to
+    `time` with `0` inside a shape value.
 
 Test a shape's distance function to see if it is animated.
 This test need not be available in the evaluator; the information needs to

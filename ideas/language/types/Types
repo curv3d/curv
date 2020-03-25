@@ -51,6 +51,15 @@ which will provide the following benefits:
 
 Future Goals
 ------------
+There is a 'set data structure' kind of type value:
+ * Constructed using #[val1,val2].
+ * `fields <record>` returns a set of symbols (as a type)
+ * `domain <mapping>` returns a type
+     * `domain <dictionary>` returns a key set, analogous to `fields`
+ * `T? x` tests if x is an element of T's value set, aka it tests for
+   set membership.
+ * We have set union, set intersection operators.
+
 A Type describes a schema for data. Type definitions support the features
 of regular expressions and BNF grammars. There is alternation (T1|T2),
 recursive definitions, tuple type concatenation, record type concatenation.
@@ -71,6 +80,9 @@ contained within `T`'s value set and false otherwise.
    It is a postfix operator, and there isn't a sufficient justification for
    introducing a fundamentally new syntax. It's not compatible with the
    simplified syntax proposal including user defined symbolic infix operators.
+ * `domain M? x` reads better than `is (domain M) x`.
+ * `is myset x` doesn't read well if types are being used as sets, and you are
+   testing set membership.
 
 A type restriction `as T x` aborts if `is T x` is false, returns `x` otherwise.
 On error, it should provide detailed information about what part of a
