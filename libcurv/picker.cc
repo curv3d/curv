@@ -199,7 +199,10 @@ Uniform_Variable::Uniform_Variable(
 
 void Uniform_Variable::print_repr(std::ostream& out) const
 {
-    out << "<uniform " << name_ << ">";
+    if (identifier_ == "u_time") // TODO this is a kludge
+        out << "time";
+    else
+        out << "<param " << name_ << ">";
 }
 
 Shared<Operation> Uniform_Variable::expr() const

@@ -126,7 +126,7 @@ Dot_Expr::eval(Frame& f) const
     return basev.at(id, At_Phrase(*base_->syntax_, f));
 }
 
-#define BOOL_EXPR_EVAL(AND_EXPR, NOT, FALSE) \
+#define BOOL_EXPR_EVAL(AND_EXPR, AND, NOT, FALSE) \
 Value AND_EXPR::eval(Frame& f) const \
 { \
     Value av = arg1_->eval(f); \
@@ -156,9 +156,11 @@ Value AND_EXPR::eval(Frame& f) const \
             to_expr(av, *arg1_->syntax_), \
             to_expr(bv, *arg2_->syntax_)), \
         At_Phrase(*syntax_, f))}; \
-}
-BOOL_EXPR_EVAL(And_Expr, !, false)
-BOOL_EXPR_EVAL(Or_Expr, , true)
+} \
+void AND_EXPR::print(std::ostream& out) const \
+  { out<<"("<<*arg1_<<#AND<<*arg2_<<")"; }
+BOOL_EXPR_EVAL(And_Expr, &&, !, false)
+BOOL_EXPR_EVAL(Or_Expr, ||, , true)
 
 Value
 If_Op::eval(Frame& f) const
@@ -261,6 +263,8 @@ Equal_Expr::eval(Frame& f) const
     At_Phrase cx(*syntax_, f);
     return eqval<Equal_Expr>(a.equal(b, cx), a, b, cx);
 }
+void Equal_Expr::print(std::ostream& out) const
+  { out<<"("<<*arg1_<<"=="<<*arg2_<<")"; }
 Value
 Not_Equal_Expr::eval(Frame& f) const
 {
@@ -269,6 +273,8 @@ Not_Equal_Expr::eval(Frame& f) const
     At_Phrase cx(*syntax_, f);
     return eqval<Not_Equal_Expr>(!a.equal(b, cx), a, b, cx);
 }
+void Not_Equal_Expr::print(std::ostream& out) const
+  { out<<"("<<*arg1_<<"!="<<*arg2_<<")"; }
 
 Value
 list_at(const List& list, Value index, const Context& cx)
