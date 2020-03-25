@@ -342,11 +342,9 @@ value_at_path(Value a, const List& path, Shared<const Phrase> callph, Frame& f)
         }
         auto re = a.maybe<Reactive_Value>();
         if (re && re->sctype_.is_list()) {
-            if (i < path.size()-1)
-                goto domain_error;
             int j = path[i].to_int(0, int(re->sctype_.count()-1), icx);
-            return list_elem(a, size_t(j), At_Phrase(*callph, f));
-            // TODO: reactive: handle more complex paths
+            a = list_elem(a, size_t(j), At_Phrase(*callph, f));
+            continue;
         }
         goto domain_error;
     }
