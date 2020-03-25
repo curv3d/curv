@@ -48,25 +48,27 @@ Getting Started
 
 Hardware Requirements
 =====================
-Two platforms are currently supported: Linux and Macintosh. I currently test
-on Ubuntu LTS and MacOS 10.11. Windows 10 only works with WSL.
+Linux, MacOS and Windows are supported.
+
+Precisely, Ubuntu LTS and MacOS 10.11 are currently tested by me, `@doug-moen <https://github.com/doug-moen>`_.
+The Windows port is tested by `@ComFreek <https://github.com/ComFreek>`_.
 
 Curv uses OpenGL 3.3.
 The recommended configuration is a GPU made by Intel, AMD or Nvidia,
 using a known working GPU driver (see below).
 
-* On Macintosh, you need MacOS 10.7 or later.
-  If your system supports Metal, Curv is fully supported.
-  On a pre-Metal system (hardware from 2011 or earlier),
-  some Curv programs may not work correctly.
 * On Linux, the GPU needs to be modern enough to be supported
   by the latest driver version from the GPU vendor. Any GPU from 2012 or later
   will work. Some older GPUs may work: check the list of supported hardware
   for the driver.
-* On Windows 10, you can use WSL to run Curv. However, WSL has no GPU support,
-  so 3D rendering happens in software, which is slow. See `issue #88`_ for details.
-  Microsoft has indicated intent to support the GPU in a future release
-  of WSL 2. A WIN32 port is possible, but I'd need a volunteer for this.
+* On Macintosh, you need MacOS 10.7 or later.
+  If your system supports Metal, Curv is fully supported.
+  On a pre-Metal system (hardware from 2011 or earlier),
+  some Curv programs may not work correctly.
+* On Windows, you can use `MSYS <https://www.msys2.org/>`_ to build and run a native executable.
+  Alternatively, you can use `Windows Subystem for Linux (WSL) <https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux>`
+  for building and running non-natively. However, this alternative is vastly inferior to MSYS since WSL has no GPU support so far,
+  which forces us to fall back to software rendering. See `issue #88`_ for details.
 * Raspberry Pi isn't supported yet.
 
   * Raspberry Pi 4 support is planned. I believe that Curv could be ported
@@ -94,7 +96,7 @@ using a known working GPU driver (see below).
   * An AMD GPU with the open source Mesa driver, version 19.x or later.
     The AMDGPU-PRO (closed source) driver should work, but I have no testing
     reports for it.
-    
+
     Mesa version 18.x or earlier has a bug on AMD (`issue #30`_) which prevents
     some Curv programs from running.
 

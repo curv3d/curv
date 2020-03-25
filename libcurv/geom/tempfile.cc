@@ -6,8 +6,10 @@
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
 #include <algorithm>
+#include <boost/filesystem.hpp>
 #include <iostream>
 #include <vector>
+
 
 extern "C" {
 #include <sys/types.h>
@@ -15,7 +17,6 @@ extern "C" {
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdio.h>
 }
 
 namespace curv { namespace geom {
@@ -58,7 +59,14 @@ void
 remove_all_tempfiles()
 {
     for (auto& file : tempfiles)
-        remove(file.c_str());
+    {
+        boost::system::error_code error;
+        fs::remove(file, error);
+        if (error)
+        {
+            std::cerr << "Error while removing temporary file: " << error.message() << "\nIgnoring...\n";
+        }
+    }
 }
 
 }} // namespace

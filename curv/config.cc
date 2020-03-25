@@ -30,7 +30,7 @@ struct At_Path : public Context
 
     virtual void get_locations(std::list<Location>& locs) const override
     {
-        locs.emplace_back(make<Source>(path_.c_str()), Token{});
+        locs.emplace_back(make<Source>(path_.string().c_str()), Token{});
     }
     virtual System& system() const override
     {
@@ -45,7 +45,7 @@ struct At_Path : public Context
 Shared<const Record>
 load_config(const At_Path& cx)
 {
-    int r = access(cx.path_.c_str(), R_OK);
+    int r = access(cx.path_.string().c_str(), R_OK);
     if (r == 0)
         return import(cx.path_, cx).to<Record>(cx);
     if (errno == ENOENT)
@@ -76,7 +76,7 @@ get_config(System& sys, Symbol_Ref branchname)
     fs::path cpath = config_dir / "curv.curv";
     auto config = load_config(cpath, cx);
     if (config != nullptr) {
-        cpath_out = make_string(cpath.c_str());
+        cpath_out = make_string(cpath.string().c_str());
         return config;
     }
   #endif
@@ -87,7 +87,7 @@ get_config(System& sys, Symbol_Ref branchname)
         Value branchval = root->find_field(branchname, cx);
         if (!branchval.is_missing()) {
             auto branch = branchval.to<Record>(At_Field(branchname.c_str(), cx));
-            return Config{root, branch, cpath.c_str(), branchname};
+            return Config{root, branch, cpath.string(), branchname};
         }
     }
     return Config{};

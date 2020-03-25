@@ -985,7 +985,7 @@ struct Print_Action : public Operation
     virtual void exec(Frame& f, Executor&) const override
     {
         Value arg = arg_->eval(f);
-        auto str = make_string(arg);
+        auto str = to_print_string(arg);
         f.system_.print(str->c_str());
     }
 };
@@ -1012,7 +1012,7 @@ struct Warning_Action : public Operation
     virtual void exec(Frame& f, Executor&) const override
     {
         Value arg = arg_->eval(f);
-        auto msg = make_string(arg);
+        auto msg = to_print_string(arg);
         Exception exc{At_Phrase(*syntax_, f), msg};
         f.system_.warning(exc);
     }
@@ -1041,7 +1041,7 @@ struct Error_Operation : public Operation
     [[noreturn]] void run(Frame& f) const
     {
         Value val = arg_->eval(f);
-        auto msg = make_string(val);
+        auto msg = to_print_string(val);
         throw Exception{At_Phrase(*syntax_, f), msg};
     }
     virtual void exec(Frame& f, Executor&) const override

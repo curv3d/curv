@@ -12,7 +12,7 @@ std::string getLower(const std::string& _string) {
 
 void purifyString(std::string& _string) {
     for (std::string::iterator it = _string.begin(), itEnd = _string.end(); it!=itEnd; ++it) {
-        if (static_cast<uint>(*it) < 32 || static_cast<uint>(*it) > 127) {
+        if (static_cast<unsigned int>(*it) < 32 || static_cast<unsigned int>(*it) > 127) {
             (*it) = ' ';
         }
     }
@@ -138,7 +138,7 @@ std::vector<std::string> split(const std::string &_string, char _sep) {
 }
 
 bool beginsWith(const std::string &_stringA, const std::string &_stringB) {
-    for (uint i = 0; i < _stringB.size(); i++) {
+    for (unsigned int i = 0; i < _stringB.size(); i++) {
         if (_stringB[i] != _stringA[i]) {
             return false;
         }

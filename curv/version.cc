@@ -5,7 +5,9 @@
 #include "version.h"
 #include <libcurv/version.h>
 extern "C" {
-#include <sys/utsname.h>
+#ifndef _WIN32
+    #include <sys/utsname.h>
+#endif
 #include <stdlib.h>
 }
 #include <libcurv/geom/glfw.h>
@@ -100,10 +102,16 @@ print_os(std::ostream& out)
     // On macOS (os.sysname=="Darwin"), use
     //   /System/Library/CoreServices/SystemVersion.plist
 
+#ifdef _WIN32
+    // TODO Get version on Windows, see also
+    // https://docs.microsoft.com/en-US/windows/win32/sysinfo/targeting-your-application-at-windows-8-1
+    out << "Windows\n";
+#else
     struct utsname os;
     uname(&os);
     out << "Kernel: " << os.sysname << " " << os.release
         << " " << os.machine << "\n";
+#endif
 }
 
 void

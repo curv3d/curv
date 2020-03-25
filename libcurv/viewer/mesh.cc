@@ -28,7 +28,7 @@ void Mesh::setDrawMode(GLenum _drawMode) {
 
 void Mesh::setColor(const glm::vec4 &_color) {
     m_colors.clear();
-    for (uint i = 0; i < m_vertices.size(); i++) {
+    for (unsigned int i = 0; i < m_vertices.size(); i++) {
         m_colors.push_back(_color);
     }
 }
@@ -101,7 +101,7 @@ void Mesh::add(const Mesh &_mesh){
     addNormals(_mesh.getNormals());
     addTexCoords(_mesh.getTexCoords());
 
-    for (uint i = 0; i < _mesh.getIndices().size(); i++) {
+    for (unsigned int i = 0; i < _mesh.getIndices().size(); i++) {
         addIndex(indexOffset+_mesh.getIndices()[i]);
     }
 }
@@ -256,7 +256,7 @@ Vbo* Mesh::getVbo() {
     tmpMesh->setDrawMode(getDrawMode());
 
     std::vector<GLfloat> data;
-    for(uint i = 0; i < m_vertices.size(); i++){
+    for(unsigned int i = 0; i < m_vertices.size(); i++){
         data.push_back(m_vertices[i].x);
         data.push_back(m_vertices[i].y);
         data.push_back(m_vertices[i].z);
@@ -281,11 +281,11 @@ Vbo* Mesh::getVbo() {
 
     if(getIndices().size()==0){
         if ( getDrawMode() == GL_LINES ) {
-            for (uint i = 0; i < getVertices().size(); i++){
+            for (unsigned int i = 0; i < getVertices().size(); i++){
                 addIndex(i);
             }
         } else if ( getDrawMode() == GL_LINE_STRIP ) {
-            for (uint i = 1; i < getVertices().size(); i++){
+            for (unsigned int i = 1; i < getVertices().size(); i++){
                 addIndex(i-1);
                 addIndex(i);
             }

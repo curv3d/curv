@@ -129,7 +129,7 @@ export_png(
         std::chrono::duration<double> render_time = end_time - start_time;
         std::cerr << "image render time: " << render_time.count() << "s\n";
     }
-    write_png_rgb(ofile.path().c_str(), pixels.get(), p.size.x, p.size.y,
+    write_png_rgb(ofile.path().string(), pixels.get(), p.size.x, p.size.y,
         ofile.system_);
 }
 

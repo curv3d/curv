@@ -85,21 +85,43 @@ operator<<(std::ostream& out, Shared<const String> str)
     return out;
 }
 
-/// Make a curv::String from an array of characters
+// Make a curv::String from an array of characters
 Shared<String> make_string(const char* str, size_t len);
 
-/// Make a curv::String from a character Range
+// Make a curv::String from a character Range
 inline Shared<String> make_string(Range<const char*> r)
 {
     return make_string(r.begin(), r.size());
 }
 
-/// Make a curv::String from a C string
+
+// Make a curv::String from a C string
+//
+// If you wish to convert a `boost::filesystem::path to Shared<String>`,
+// call `make_string(path.string().c_str())`.
+// In particular, `make_string(path.c_str())` is not enough and fails
+// compilation on Windows as `path.c_str()` will return a wchar_t* string.
+//
+// If you really have a pure wchar_t* string (this should only happen on Windows,
+// e.g. from Windows API), do the following:
+//
+//    1. add `#ifdef _WIN32 #include <libcurv/win32.h> #endif`,
+//    2. and use `make_string(wstr_to_string(my_str).c_str())`.
 inline Shared<String>
 make_string(const char*str)
 {
     return make_string(str, strlen(str));
 }
+
+// Deleted overload, use other overloads!
+//
+
+//
+// Rationale for explicit deletion: without deletion, calling
+// make_string(wchar_t*) would use the `make_string(Value);` overload --
+// which is wrong since the implicit cast to Value makes the string "true"
+// (literally "true") out of wchar_t* strings, independent of their contents.
+Shared<String> make_string(const wchar_t*) = delete;
 
 /// Make a curv::String from a std::string
 inline Shared<String>
@@ -109,7 +131,7 @@ make_string(const std::string& str)
 }
 
 // convert Value to String using Value::print_string()
-Shared<const String> make_string(Value);
+Shared<const String> to_print_string(Value);
 
 // throw error if value is not a string
 Shared<const String> value_to_string(Value, const Context&);

@@ -52,10 +52,14 @@ View_Server view_server;
 
 bool was_interrupted = false;
 
-void interrupt_handler(int)
-{
-    was_interrupted = true;
-}
+#ifndef _WIN32
+    // Interrupt (signal) handler (e.g. for Ctrl-C breaks) in the REPL set up by the function `repl` below.
+    // So far interrupt handling has only been implemented for *nix-based OSes.
+    void interrupt_handler(int)
+    {
+        was_interrupted = true;
+    }
+#endif
 
 struct REPL_Namespace
 {
@@ -313,6 +317,7 @@ struct REPL_Executor : public Operation::Executor
 
 void repl(System* sys, const Render_Opts* render)
 {
+#ifndef _WIN32
     // Catch keyboard interrupts, and set was_interrupted = true.
     // TODO: This will be used to interrupt the evaluator.
     if (isatty(0)) {
@@ -321,6 +326,7 @@ void repl(System* sys, const Render_Opts* render)
         interrupt_action.sa_handler = interrupt_handler;
         sigaction(SIGINT, &interrupt_action, nullptr);
     }
+#endif
 
     // top level definitions, extended by typing 'id = expr'
     REPL_Namespace names{*sys};

@@ -32,7 +32,7 @@ make_string(const char* str, size_t len)
 }
 
 Shared<const String>
-make_string(Value val)
+to_print_string(Value val)
 {
     auto s = val.maybe<const String>();
     if (s) return s;

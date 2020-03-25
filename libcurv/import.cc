@@ -42,7 +42,7 @@ Value import(const Filesystem::path& path, const Context& cx)
 Value curv_import(const Filesystem::path& path, const Context& cx)
 {
     System& sys{cx.system()};
-    auto source = make<File_Source>(make_string(path.c_str()), cx);
+    auto source = make<File_Source>(make_string(path.string().c_str()), cx);
     Program prog{std::move(source), sys,
         Program_Opts().file_frame(cx.frame())};
     auto filekey = Filesystem::canonical(path);
