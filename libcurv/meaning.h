@@ -761,6 +761,7 @@ struct If_Else_Op : public Operation
     virtual void sc_exec(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
+    virtual void print(std::ostream&) const override;
 };
 
 struct Lambda_Expr : public Just_Expression

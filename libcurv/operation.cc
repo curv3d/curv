@@ -32,5 +32,9 @@ void List_Expr_Base::print(std::ostream& out) const
     }
     out << "]";
 }
+void If_Else_Op::print(std::ostream& out) const
+{
+    out << "(if (" << *arg1_ << ") " << *arg2_ << " else " << *arg3_ << ")";
+}
 
 } // namespace curv

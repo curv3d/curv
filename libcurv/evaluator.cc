@@ -359,6 +359,9 @@ domain_error:
         msg << path[i];
     }
     msg << "]: domain error";
+    if (auto re = a.maybe<Reactive_Value>()) {
+        msg << " (at list of type " << re->sctype_ << ")";
+    }
     throw Exception(At_Phrase(*callph, f), msg.str());
 }
 Value
