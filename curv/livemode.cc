@@ -155,7 +155,6 @@ poll_editor(editor_handle_t editor_handle)
         return false;
     } else
         return true;
-    }
 #endif
 }
 

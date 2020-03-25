@@ -105,8 +105,8 @@ else ()
     set( LibOpenVDB "openvdb_static" )
 endif ()
 
-# Boost library
-find_package(Boost 1.72 REQUIRED COMPONENTS iostreams filesystem system)
+# Boost library (Windows port required 1.72, 1.65 is latest for Ubuntu 18.04)
+find_package(Boost 1.65 REQUIRED COMPONENTS iostreams filesystem system)
 
 # imdemo, broken in v1.65 of ImGui, need to upgrade to headrev
 #add_executable(imdemo

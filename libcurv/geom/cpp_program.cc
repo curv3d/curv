@@ -95,7 +95,7 @@ Cpp_Program::compile(const Context& cx)
     // TODO: lib_name should contain a / character to prevent PATH search.
     // On macOS with a code-signed curv executable, so_name may need to be an
     // absolute pathname.
-    dll_ = dlopen(so_name.c_str(), RTLD_NOW|RTLD_LOCAL);
+    dll_ = dlopen(lib_name.c_str(), RTLD_NOW|RTLD_LOCAL);
     if (dll_ == nullptr)
         throw Exception(cx, stringify("can't load shared object: ", dlerror()));
 #endif
