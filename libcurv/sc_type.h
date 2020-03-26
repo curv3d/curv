@@ -238,12 +238,6 @@ struct SC_Type
     }
 };
 
-// if numeric, how many numbers are stored.
-inline unsigned sc_type_count(SC_Type type)
-{
-    const SC_Base_Type_Info &ta = type.base_info();
-    return ta.dim1 * ta.dim2;
-}
 std::ostream& operator<<(std::ostream& out, SC_Type);
 
 SC_Type sc_type_of(Value);
