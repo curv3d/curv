@@ -307,6 +307,8 @@ TEST(curv, eval)
     SUCCESS("4^-1", "0.25");
     SUCCESS("-2^2", "-4");
     FAILMSG("(-1)^0.5","-1 ^ 0.5: domain error");
+
+    // list index operator L[i,j,k]
     SUCCESS("[1,2,3][1]","2");
     FAILALL("[1,2,3][1.1]",
         "at index [0]: 1.1 is not an integer\n"
@@ -314,6 +316,14 @@ TEST(curv, eval)
         "          ^^^^^");
     SUCCESS("(0..10)[3..1 by -1]", "[3,2,1]");
     SUCCESS("[false,true][[[0,1],[1,0]]]", "[[#false,#true],[#true,#false]]");
+    SUCCESS("let a=[[1,2,3],[4,5,6],[7,8,9]] in a[[0,1],[1,2]]",
+            "[[2,3],[5,6]]");
+    SUCCESS("[\"abc\",\"def\",\"ghi\"][[0,1],[1,2]]",
+            "[\"bc\",\"ef\"]");
+    SUCCESS("[1,2,3][]", "[1,2,3]");
+    // The following test matches the semantics of Kona (K3) and Shakti K
+    SUCCESS("[[0,1,2],[3,4,5],[6,7,8]] [[0,[1,2]],0]", "[0,[3,6]]");
+
     SUCCESS("let x=1;y=2; in x+y", "3");
     SUCCESS("let a=c+1;b=1;c=b+1; in a", "3");
     SUCCESS("let x=1 in let y=2 in let z=3 in x+y+z", "6");

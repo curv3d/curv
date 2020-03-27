@@ -276,79 +276,126 @@ Not_Equal_Expr::eval(Frame& f) const
 void Not_Equal_Expr::print(std::ostream& out) const
   { out<<"("<<*arg1_<<"!="<<*arg2_<<")"; }
 
-Value
-list_at(const List& list, Value index, const Context& cx)
+struct Index_State
 {
-    if (auto indices = index.maybe<List>()) {
+    Shared<const Phrase> callph_;
+    At_Phrase cx;
+    At_Phrase arg_cx;
+    At_Index icx;
+
+    Index_State(
+        Shared<const Phrase> callph,
+        Frame& f)
+    :
+        callph_(callph),
+        cx(*callph, f),
+        arg_cx(*arg_part(callph), f),
+        icx(0, arg_cx)
+    {}
+
+    Shared<const Phrase> ph() { return callph_; }
+    Shared<const Phrase> iph() { return arg_part(callph_); }
+    Shared<const Phrase> lph() { return func_part(callph_); }
+};
+Value at_path(Value, const Value*, const Value*, Index_State&);
+Value list_at_path(const List& list, Value index,
+    const Value* path, const Value* endpath, Index_State& state)
+{
+    if (index.is_num()) {
+        int i = index.to_int(0, int(list.size()-1), state.icx);
+        return at_path(list.at(i), path, endpath, state);
+    }
+    else if (auto indices = index.maybe<List>()) {
         Shared<List> result = List::make(indices->size());
         int j = 0;
-        for (auto i : *indices)
-            (*result)[j++] = list_at(list, i, cx);
+        for (auto ival : *indices)
+            (*result)[j++] = list_at_path(list, ival, path, endpath, state);
         return {result};
     }
-    int i = index.to_int(0, (int)(list.size()-1), cx);
-    return list[i];
-}
-#if 0
-Value
-record_at(const Record& ref, Value index, const Context& cx)
-{
-    if (auto indices = index.maybe<List>()) {
-        Shared<List> result = List::make(indices->size());
-        int j = 0;
-        for (auto i : *indices)
-            (*result)[j++] = record_at(ref, i, cx);
-        return {result};
-    }
-    Symbol_Ref a = index.to<const Symbol>(cx);
-    return ref.getfield(a, cx);
-}
-#endif
-Value
-string_at(const String& string, Value index, const Context& cx)
-{
-    // TODO: this code only works for ASCII strings.
-    if (auto indices = index.maybe<List>()) {
-        String_Builder sb;
-        for (auto ival : *indices) {
-            int i = ival.to_int(0, (int)(string.size()-1), cx);
-            sb << string[i];
+    else if (auto ri = index.maybe<Reactive_Value>()) {
+        if (ri->sctype_.is_num()) {
+            Value val = {share(list)};
+            auto type = sc_type_of(val);
+            if (type.is_list()) {
+                Shared<List_Expr> index =
+                    List_Expr::make({ri->expr()}, state.iph());
+                index->init();
+                Value rx = {make<Reactive_Expression>(
+                    type.abase(),
+                    make<Call_Expr>(
+                        state.ph(),
+                        make<Constant>(state.lph(), val),
+                        index),
+                    state.cx)};
+                return at_path(rx, path+1, endpath, state);
+            }
         }
-        return {sb.get_string()};
+        /* TODO: add general support for A[[i,j,k]] to SubCurv
+        else if (ri->sc_type_.is_num_vec()) {
+            ...
+        }
+        */
     }
-    int i = index.to_int(0, (int)(string.size()-1), cx);
-    return {make_string(string.data()+i, 1)};
+    throw Exception(state.cx, "indexing error");
+}
+Value at_path(Value val, const Value* path, const Value* endpath,
+    Index_State& state)
+{
+    if (path == endpath) return val;
+    Value index = path[0];
+    if (auto list = val.maybe<List>()) {
+        return list_at_path(*list, index, path+1, endpath, state);
+    }
+    else if (auto string = val.maybe<String>()) {
+        if (path+1 == endpath) {
+            // TODO: this code only works for ASCII strings.
+            if (index.is_num()) {
+                int i = index.to_int(0, int(string->size()-1), state.icx);
+                return {make_string(string->data()+i, 1)};
+            }
+            else if (auto indices = index.maybe<List>()) {
+                String_Builder sb;
+                for (auto ival : *indices) {
+                    int i = ival.to_int(0, int(string->size()-1), state.icx);
+                    sb << string->at(i);
+                }
+                return {sb.get_string()};
+            }
+            // reactive index not supported because String is not in SubCurv
+        }
+    }
+    else if (auto rx = val.maybe<Reactive_Value>()) {
+        // TODO: what to do for pathsize > 1? punt for now.
+        if (path+1 == endpath && is_num(index)) {
+            auto iph = state.iph();
+            auto lph = state.lph();
+            Shared<List_Expr> ix = List_Expr::make({to_expr(index,*iph)}, iph);
+            ix->init();
+            return {make<Reactive_Expression>(
+                rx->sctype_.abase(),
+                make<Call_Expr>(state.ph(), to_expr(val,*lph), ix),
+                state.cx)};
+        }
+    }
+    throw Exception(state.cx, "indexing error");
 }
 Value
 value_at_path(Value a, const List& path, Shared<const Phrase> callph, Frame& f)
 {
-    At_Phrase cx(*arg_part(callph), f);
-    At_Index icx(0, cx);
+    Index_State state(callph, f);
+#if 0
     size_t i = 0;
+    unsigned depth = 0;
     for (; i < path.size(); ++i) {
-        icx.index_ = i;
-        if (auto string = a.maybe<String>()) {
-            if (i < path.size()-1)
-                goto domain_error;
-            return string_at(*string, path[i], icx);
-        }
-        if (auto list = a.maybe<List>()) {
-            if (i < path.size()-1) {
-                int j = path[i].to_int(0, (int)(list->size()-1), icx);
-                a = list->at(j);
-            } else
-                a = list_at(*list, path[i], icx);
-            continue;
-        }
-        auto re = a.maybe<Reactive_Value>();
-        if (re && re->sctype_.is_list()) {
-            int j = path[i].to_int(0, int(re->sctype_.count()-1), icx);
-            a = list_elem(a, size_t(j), At_Phrase(*callph, f));
-            continue;
-        }
-        goto domain_error;
+        state.icx.index_ = i;
+        a = value_at(a, depth, path[i], state);
+        if (is_list(path[i])) ++depth;
     }
     return a;
+#else
+    return at_path(a, path.begin(), path.end(), state);
+#endif
+/*
 domain_error:
     String_Builder msg;
     msg << a << "[";
@@ -361,6 +408,7 @@ domain_error:
         msg << " (at list of type " << re->sctype_ << ")";
     }
     throw Exception(At_Phrase(*callph, f), msg.str());
+ */
 }
 Value
 call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
