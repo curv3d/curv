@@ -205,7 +205,7 @@ struct SC_Type
         return base_info().dim1;
     }
     // If this is an array, strip one dimension off of the type.
-    SC_Type abase() const;
+    SC_Type elem_type() const;
     inline bool is_any_vec() const
     {
         return rank_ == 0 && (

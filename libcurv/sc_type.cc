@@ -98,7 +98,7 @@ sc_type_of(Value v)
 }
 
 SC_Type
-SC_Type::abase() const
+SC_Type::elem_type() const
 {
     switch (rank_) {
     case 0:
@@ -119,7 +119,7 @@ SC_Type::abase() const
     case 2:
         return {base_type_, dim2_};
     default:
-        die("SC_Type::abase() bad rank");
+        die("SC_Type::elem_type() bad rank");
     }
 }
 
@@ -157,12 +157,12 @@ SC_Type sc_unify_tensor_types(SC_Type a, SC_Type b)
     if (a == b) { return a; }
     if (a.is_list() && b.is_list()) {
         if (a.count() != b.count()) return {};
-        return sc_unified_list_type(a.abase(), b.abase(), a.count());
+        return sc_unified_list_type(a.elem_type(), b.elem_type(), a.count());
     }
     else if (a.is_list())
-        return sc_unified_list_type(a.abase(), b, a.count());
+        return sc_unified_list_type(a.elem_type(), b, a.count());
     else if (b.is_list())
-        return sc_unified_list_type(a, b.abase(), b.count());
+        return sc_unified_list_type(a, b.elem_type(), b.count());
     return {};
 }
 

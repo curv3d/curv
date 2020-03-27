@@ -228,13 +228,13 @@ sc_put_value(Value val, SC_Type ty, const At_SC_Phrase& cx, std::ostream& out)
         Shared<const List> list = val.to<const List>(cx);
         list->assert_size(ty.count(), cx);
         out << ty << "(";
-        sc_put_list(*list, ty.abase(), cx, out);
+        sc_put_list(*list, ty.elem_type(), cx, out);
         out << ")";
     }
     else if (ty.rank_ > 0) {
         auto list = val.to<List>(cx);
         list->assert_size(ty.dim1_, cx);
-        sc_put_list(*list, ty.abase(), cx, out);
+        sc_put_list(*list, ty.elem_type(), cx, out);
     }
     else {
         throw Exception(cx, stringify(
@@ -322,7 +322,7 @@ bool sc_try_extend(SC_Frame& f, SC_Value& a, SC_Type rtype);
 // 'val' in place with a new value of type 'rtype' and return true.
 bool sc_try_broadcast(SC_Frame& f, SC_Value& val, SC_Type rtype)
 {
-    if (!sc_try_extend(f, val, rtype.abase())) return false;
+    if (!sc_try_extend(f, val, rtype.elem_type())) return false;
     SC_Value result = f.sc_.newvalue(rtype);
     f.sc_.out() << "  "<<rtype<<" "<<result<<" = "<<rtype<<"(";
     if (rtype.is_bool32()) {
@@ -346,7 +346,7 @@ bool sc_try_broadcast(SC_Frame& f, SC_Value& val, SC_Type rtype)
 bool sc_try_elementwise(SC_Frame& f, SC_Value& a, SC_Type rtype)
 {
     unsigned count = rtype.count();
-    SC_Type etype = rtype.abase();
+    SC_Type etype = rtype.elem_type();
     SC_Value elem[SC_Type::MAX_MAT_COUNT];
     for (unsigned i = 0; i < count; ++i) {
         elem[i] = sc_vec_element(f, a, i);
@@ -583,7 +583,7 @@ SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& f)
             }
             SC_Value result =
                 f.sc_.newvalue(
-                    SC_Type::Any_Vec(array.type.abase(), list->size()));
+                    SC_Type::Any_Vec(array.type.elem_type(), list->size()));
             f.sc_.out() << "  " << result.type << " "<< result<<" = ";
             if (f.sc_.target_ == SC_Target::glsl) {
                 // use GLSL swizzle syntax: v.xyz
@@ -618,7 +618,7 @@ SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& f)
                 stringify("got ",k,", expected 0..",
                     array.type.count()-1));
 
-        SC_Value result = f.sc_.newvalue(array.type.abase());
+        SC_Value result = f.sc_.newvalue(array.type.elem_type());
         f.sc_.out() << "  " << result.type << " " << result << " = "
             << array << arg2 <<";\n";
         return result;
@@ -630,7 +630,7 @@ SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& f)
             SC_Type(array.type.base_type_), " with a single index"));
     }
     auto ix = sc_eval_expr(f, index, SC_Type::Num());
-    SC_Value result = f.sc_.newvalue(array.type.abase());
+    SC_Value result = f.sc_.newvalue(array.type.elem_type());
     f.sc_.out() << "  " << result.type << " " << result << " = "
              << array << "[int(" << ix << ")];\n";
     return result;
@@ -886,7 +886,7 @@ void For_Op::sc_exec(SC_Frame& f) const
 
 SC_Value sc_vec_element(SC_Frame& f, SC_Value vec, int i)
 {
-    SC_Value r = f.sc_.newvalue(vec.type.abase());
+    SC_Value r = f.sc_.newvalue(vec.type.elem_type());
     f.sc_.out() << "  " << r.type << " " << r << " = "
         << vec << "[" << i << "];\n";
     return r;

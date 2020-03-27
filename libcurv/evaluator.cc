@@ -321,7 +321,7 @@ Value list_at_path(const List& list, Value index,
                     List_Expr::make({ri->expr()}, state.iph());
                 index->init();
                 Value rx = {make<Reactive_Expression>(
-                    type.abase(),
+                    type.elem_type(),
                     make<Call_Expr>(
                         state.ph(),
                         make<Constant>(state.lph(), val),
@@ -372,7 +372,7 @@ Value at_path(Value val, const Value* path, const Value* endpath,
             Shared<List_Expr> ix = List_Expr::make({to_expr(index,*iph)}, iph);
             ix->init();
             return {make<Reactive_Expression>(
-                rx->sctype_.abase(),
+                rx->sctype_.elem_type(),
                 make<Call_Expr>(state.ph(), to_expr(val,*lph), ix),
                 state.cx)};
         }

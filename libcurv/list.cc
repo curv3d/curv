@@ -57,7 +57,7 @@ Value list_elem(Value val, size_t i, const At_Syntax& cx)
                 ph);
             index->init();
             return {make<Reactive_Expression>(
-                rx->sctype_.abase(),
+                rx->sctype_.elem_type(),
                 make<Call_Expr>(ph, rx->expr(), index),
                 cx)};
           }
