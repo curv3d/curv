@@ -1,0 +1,91 @@
+TODO:
+ * value_at(): fully support reactive values (both list and index position)
+ * A[i,j,k] := ... in full generality
+ * unit tests for the above
+
+How to construct a reactive vec2 from a reactive num (unit testing):
+  let v=if (time==time) [time,time] else [0,0] in v
+
+Assignment to an Array Slice
+----------------------------
+(It would be more accurate to call this "tree slicing", since this works on
+jagged, non-rectangular arrays.)
+
+A primary goal is to support GLSL swizzle semantics. In SubCurv,
+   A[[X,X,Y]] is a legal rvalue. Note, duplicate indices.
+   A[[Z,X]] is a legal rvalue. Note, non-contiguous slice, indices are not
+   required to be in ascending order.
+Vector slices are also assignable. For a constant index vector, duplicate
+index values are not allowed. For a runtime index vector, duplicate index
+values can't be excluded, so updates are processed left to right, and the
+last assignment wins.
+
+In Python, a list slice that denotes a contiguous subsequence, with indices in
+ascending order, can be replaced by a new sublist with a different length.
+If the index value (range) is not contiguous or not ascending, this is an error.
+In SubCurv, you can't change the size of an array at runtime, and we report this
+at compile time. We don't support this in Curv, it's not an important use case.
+It's an error in K.
+
+We will use K assignment semantics. It's a generalization of the semantics we
+need for GLSL, and it works on arbitrary trees.
+ * An index tree can contain multiple instances of the same index number.
+   We update indexed locations depth first, left to right, and the last update
+   wins.
+ * You can't change the shape of a tree (in the sense of Python).
+
+In `A[Ix] := B`,
+  Ix is an index value: a tree of Nats, where each Nat < count A.
+  We traverse `Ix` depth first, left to right, and for each Nat `i` in Ix,
+  we update A!i with the corresponding element of B, which has the same shape
+  as Ix.
+
+`A x .y z := B` is internally equivalent to
+   A := A >> update [x, #y, z] B
+so I need to define how ternary update works. I think the full path after A
+needs to be a data structure traversed at runtime. For the purposes of this
+internal primitive, I think it makes sense to flatten the path into
+   x ++ [#y] ++ z
+The path is a list of index values.
+
+update [] B A => B
+For a non-empty path whose head is index value Ix and whose tail is P,
+  If A is a list, Ix is a Nat or a tree of Nats.
+  If A is a record, Ix is a Symbol or a tree of Symbols.
+  Traverse `Ix` depth first, left to right, and for each scalar `i` in Ix,
+    Select E, the corresponding element of B, which has the same shape as Ix.
+    Update A!i with: update P E (A!i)
+  Return the updated value of A.
+
+Generalized Array Slicing
+-------------------------
+A[i,j,k]
+Current semantics are the same as K's A[i;j;k], supports jagged arrays.
+Indexing with a path is an operation on trees:
+  i is a tree of natural numbers, each in the range 0..<count A
+  for each n in i, replace it with A!n[j,k].
+  Base case: A[] => A.
+  So this is a recursive operation.
+
+What I don't currently support:
+ * negative indices, slice notation with negative indices (Python, Mathematica)
+ * special index range notation, eg: `..`, `A..`, `..B` (Python, Mathematica)
+   In K, `..` is specified by an empty argument, eg A[i;;k]
+These notations are useful when the end of a range index is relative to the
+size of that dimension. Right now you need to use `count A`, `count(A[0])`,
+`count(A[0,0])` etc to compute the end of a range.
+
+I could leverage the reactive variables mechanism and introduce an 'end'
+variable that only has a value in an indexing context. Then,
+    `..`  is `0..end`
+    `A..` is `A..end`
+    `..B` is `0..B`
+No need for negative indices, you can write `end-2` or whatever.
+
+Awkward Arrays supports a much fancier design for array slicing.
+It's also a complicated mess, but there might be good ideas to copy.
+https://github.com/scikit-hep/awkward-array#slicing-with-square-brackets
+
+Awkward allows indexing using a boolean list. APL supports this using a
+separate compress verb, and K has a where verb that converts a boolean list
+to an index list. K's `where` verb replaces a multiplicity of APL verbs.
