@@ -280,8 +280,7 @@ struct Index_State
 {
     Shared<const Phrase> callph_;
     At_Phrase cx;
-    At_Phrase arg_cx;
-    At_Index icx;
+    At_Phrase icx;
 
     Index_State(
         Shared<const Phrase> callph,
@@ -289,21 +288,37 @@ struct Index_State
     :
         callph_(callph),
         cx(*callph, f),
-        arg_cx(*arg_part(callph), f),
-        icx(0, arg_cx)
+        icx(*arg_part(callph), f)
     {}
 
     Shared<const Phrase> ph() { return callph_; }
     Shared<const Phrase> iph() { return arg_part(callph_); }
     Shared<const Phrase> lph() { return func_part(callph_); }
+
+    Shared<const String> err(Value list, Value index,
+        const Value* path, const Value* endpath)
+    {
+        String_Builder msg;
+        msg << "indexing error\n";
+        msg << "left side: " << list;
+        if (auto rx = list.maybe<Reactive_Value>())
+            msg << " (type " << rx->sctype_ << ")";
+        msg << "\nright side: [" << index;
+        while (path < endpath) {
+            msg << "," << *path;
+            ++path;
+        }
+        msg << "]";
+        return msg.get_string();
+    }
 };
-Value at_path(Value, const Value*, const Value*, Index_State&);
+Value value_at_path(Value, const Value*, const Value*, Index_State&);
 Value list_at_path(const List& list, Value index,
     const Value* path, const Value* endpath, Index_State& state)
 {
     if (index.is_num()) {
         int i = index.to_int(0, int(list.size()-1), state.icx);
-        return at_path(list.at(i), path, endpath, state);
+        return value_at_path(list.at(i), path, endpath, state);
     }
     else if (auto indices = index.maybe<List>()) {
         Shared<List> result = List::make(indices->size());
@@ -327,7 +342,7 @@ Value list_at_path(const List& list, Value index,
                         make<Constant>(state.lph(), val),
                         index),
                     state.cx)};
-                return at_path(rx, path+1, endpath, state);
+                return value_at_path(rx, path+1, endpath, state);
             }
         }
         /* TODO: add general support for A[[i,j,k]] to SubCurv
@@ -336,9 +351,9 @@ Value list_at_path(const List& list, Value index,
         }
         */
     }
-    throw Exception(state.cx, "indexing error");
+    throw Exception(state.cx, state.err({share(list)}, index, path, endpath));
 }
-Value at_path(Value val, const Value* path, const Value* endpath,
+Value value_at_path(Value val, const Value* path, const Value* endpath,
     Index_State& state)
 {
     if (path == endpath) return val;
@@ -377,39 +392,16 @@ Value at_path(Value val, const Value* path, const Value* endpath,
                 state.cx)};
         }
     }
-    throw Exception(state.cx, "indexing error");
+    throw Exception(state.cx, state.err(val, index, path+1, endpath));
 }
-Value
-value_at_path(Value a, const List& path, Shared<const Phrase> callph, Frame& f)
+Value value_at(Value list, Value index, Shared<const Phrase> callph, Frame& f)
 {
     Index_State state(callph, f);
-#if 0
-    size_t i = 0;
-    unsigned depth = 0;
-    for (; i < path.size(); ++i) {
-        state.icx.index_ = i;
-        a = value_at(a, depth, path[i], state);
-        if (is_list(path[i])) ++depth;
-    }
-    return a;
-#else
-    return at_path(a, path.begin(), path.end(), state);
-#endif
-/*
-domain_error:
-    String_Builder msg;
-    msg << a << "[";
-    for (size_t j = i; j < path.size(); ++j) {
-        if (j > i) msg << ",";
-        msg << path[i];
-    }
-    msg << "]: domain error";
-    if (auto re = a.maybe<Reactive_Value>()) {
-        msg << " (at list of type " << re->sctype_ << ")";
-    }
-    throw Exception(At_Phrase(*callph, f), msg.str());
- */
+    // TODO: support reactive index
+    auto path = index.to<List>(state.icx);
+    return value_at_path(list, path->begin(), path->end(), state);
 }
+
 Value
 call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
 {
@@ -449,9 +441,7 @@ call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
         case Ref_Value::ty_list:
         case Ref_Value::ty_reactive:
           {
-            At_Phrase cx(*arg_part(call_phrase), f);
-            auto path = arg.to<List>(cx);
-            return value_at_path(funv, *path, call_phrase, f);
+            return value_at(funv, arg, call_phrase, f);
           }
         }
         throw Exception(At_Phrase(*func_part(call_phrase), f),
@@ -499,9 +489,7 @@ tail_call_func(
         case Ref_Value::ty_list:
         case Ref_Value::ty_reactive:
           {
-            At_Phrase cx(*arg_part(call_phrase), *f);
-            auto path = arg.to<List>(cx);
-            f->result_ = value_at_path(funv, *path, call_phrase, *f);
+            f->result_ = value_at(funv, arg, call_phrase, *f);
             f->next_op_ = nullptr;
             return;
           }

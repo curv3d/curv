@@ -311,7 +311,7 @@ TEST(curv, eval)
     // list index operator L[i,j,k]
     SUCCESS("[1,2,3][1]","2");
     FAILALL("[1,2,3][1.1]",
-        "at index [0]: 1.1 is not an integer\n"
+        "1.1 is not an integer\n"
         "1| [1,2,3][1.1]\n"
         "          ^^^^^");
     SUCCESS("(0..10)[3..1 by -1]", "[3,2,1]");
