@@ -1,11 +1,87 @@
 Infix Operators
 ===============
-In which we discuss:
-* simplified operator precedence
-* user defined infix operators
+This is a conservative redesign of Curv syntax. It gives:
+ * fewer precedence levels in the grammar;
+ * user defined infix operators, without too much complexity;
+ * partial application of infix operators, like Haskell sections.
 
-Simplified Operator Precedence
-------------------------------
+Reduce the number of operator precedence levels:
+* Unite Pipeline, Disjunction and Conjunction into a single level (Pipeline)
+  of low-precedence, left-associative operators.
+* Get rid of `where` and unite Item with RItem.
+It's a 'conservative' change because little existing code would be broken.
+
+This yields the following precedence levels:
+    list        n-ary
+    item        right associative infix & prefix
+    pipeline
+    relation    non associative
+    sum         user-defined operators go here
+    product
+    power       right associative infix & prefix
+    postfix
+Eight levels is right at my limits for comfortably memorizing the rules.
+By comparison, C has 16 levels of precedence, which is too many. F# has 26.
+
+An operator name is a sequence of one or more characters from the set
+    ~!@%^&*-+=|\:<>?/
+
+All of the builtin operators are reserved words, with special parsing.
+
+Non-reserved operator names are available as user-defined infix operators.
+User defined operators and backtick operators have fixed <sum> precedence.
+ * There are no precedence and associativity declarations.
+ * There are no user defined prefix operators, hence no extra syntax is
+   required to give different names to the prefix and infix cases of the
+   same operator. Just use regular identifiers for prefix operations.
+
+The reasons for assigning <sum> precedence to user-defined and backtick
+operators are:
+ * It's higher than <pipeline>, which is useful for operators that return
+   functions.
+ * It's higher than <relation>, which is useful if you want an equality
+   comparison on the result. Eg, x `mod` m == 0 now works.
+
+Suppose you define a :+ infix operator.
+Quoting an operator name turns it into an identifier that is bound to
+a function. The following are equivalent:
+    a :+ b
+    ':+'[a,b]
+
+You can define the :+ operator using any of the following:
+    ':+' = <function>;
+    ':+'[a,b] = <body of function>;
+    a :+ b = <body of function>;
+
+The built-in binary operators (except for && and ||) can be referenced as
+quoted identifiers. Eg, '-' is the binary subtract operator -- note that the
+unary negate operator is magic, and can't be referenced using this name.
+
+As a special case, you don't need to quote an operator name when selecting
+it from a module using dot notation. The following are equivalent:
+    M.':+'
+    M.:+
+Note that these are both expressions.
+
+You can use the following syntax to invoke an infix operator that
+is selected from a module using dot notation:
+    a `M.:+` B
+
+Backtick operators are now used for partial application of infix operators
+(what Haskell calls 'sections').
+    `mod` m     -- precedence is: `foo` <power>
+    x `mod`     -- precedence is: <sum> `foo`
+
+In a shape pipeline, the `union` operator no longer has pipeline precedence,
+but you can write: shape1 >>`union` shape2 >>...
+
+A symbolic operator name can be placed in backticks, to create a section,
+or to change its precedence to <sum>. For example,
+    map(`-`1)
+Note, no conflict with the syntax '-1', unlike Haskell.
+
+Older Ideas
+-----------
 All left associative operators have the same precedence, like Smalltalk.
 New left associative operators can be invented at will, like Smalltalk.
 
@@ -17,6 +93,7 @@ All left associative operators can also be invoked in unary (prefix) position,
 and here the model is Lisp.
     1 + 2 == +[1,2] == 3
 You quote an operator name to reference its value, eg '+' is a function.
+Oops, this conflicts with unary minus (negate).
 
 There is only a single '-' operator and it works like Lisp.
     -5 == -5
@@ -111,58 +188,3 @@ precedence? Eg, in M.+a.b[i]
     because it's hard to see the spot where the operator breaks the pipeline.
     If the argument of M.+ is a postfix, it's better to write "M.+(a.b.c)"
     than to write "M.+a.b.c"
-
-User Defined Infix Operators
-----------------------------
-This is a conservative redesign of Curv syntax. It gives:
- * fewer precedence levels in the grammar
- * user defined infix operators
-
-Reduce the number of operator precedence levels:
-* Unite Pipeline, Disjunction and Conjunction into a single level (Pipeline)
-  of low-precedence, left-associative operators.
-* Get rid of `where` and unite Item with RItem.
-It's a 'conservative' change because little existing code would be broken.
-
-This yields the following precedence levels:
-    list        n-ary
-    item        right associative infix & prefix
-    pipeline
-    relation    non associative
-    sum
-    product
-    power       right associative infix & prefix
-    postfix
-Eight levels is right at my limits for comfortably memorizing the rules.
-By comparison, C has 16 levels of precedence, which is too many. F# has 26.
-A more radical redesign could get it down to five levels.
-
-An operator name is a sequence of one or more characters from the set
-    ~!@%^&*-+=|\:<>?/
-
-All of the builtin non-pipeline operators are reserved words, with special
-parsing.
-
-Non-reserved operator names are available as user-defined infix operators.
-User defined operators are pipeline operators: the precedence and associativity
-is fixed. User-defined prefix operators are not supported.
-
-Suppose you define a :+ infix operator.
-Quoting an operator name turns it into an identifier that is bound to
-a function. The following are equivalent:
-    a :+ b
-    ':+'(a,b)
-
-You can define the :+ operator using any of the following:
-    ':+' = <function>;
-    ':+'(a,b) = <body of function>;
-    a :+ b = <body of function>;
-
-As a special case, you don't need to quote an operator name when selecting
-it from a module using dot notation. The following are equivalent:
-    M.':+'
-    M.:+
-
-Thus you can use abbreviated syntax for invoking an infix operator that
-is selected from a module using dot notation:
-    a `M.:+` B

@@ -1,3 +1,6 @@
+* test Windows port, then announce
+* auto detection of c++ compiler for '-O jit' default value
+
 Finish imperative:
 * document local
 * unit tests

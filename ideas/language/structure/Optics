@@ -13,13 +13,19 @@ The ! operator (abstracting over different structure types):
   R!#foo => R.foo   // not vectorized yet. R![#a,#b] is a record or list?
   D!key  => D key   // D!key is a locative: D!key := newval
 Alternate syntax: S@key
+Rationale:
+ * It's generic across list, record and dictionary. Generic programming, lenses?
+ * `S!` converts a structure to a mapping from index to value.
+ * It's the only way to index a record with a runtime symbol value.
+   R."${foo}" is deprecated. R.(foo) could be a replacement?
 
 L[i,j,k] is not equivalent to L!i!j!k unless i,j are numbers.
 In general, L[i,j,k] is an array or tree slice.
 
 Locatives:
-  L[i,j,k] := ...       // in a funcall locative, L must be a list
+  L[i,j,k] := ...
   R.fieldname := ...
+  D key := ...
   S!x := ...            // S is a list, record or dictionary
 
 Abstracting over access paths

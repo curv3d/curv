@@ -1,15 +1,25 @@
 * `list[i1,i2,...]` support reactive args
 * `list[i1,i2,...] := ...` in full generality
 * design a general set of adverbs for pipeline programming
+  * Add each_left and each_right from K. What names do I choose?
 * '`foo` y' is equivalent to 'x->foo[x,y]', as a form of partial application.
   Use cases: A>>`foo`B, map(`foo`B), etc.
-  * Infix `foo` should have <plus> precedence, so that A `mod` B == 0 works.
-    Use A>>`union`B in a shape pipeline.
+  * Infix `foo` should have <sum> precedence, so that A `mod` B == 0 works.
+    Use A>>`union`B in a shape pipeline instead of A`union`B.
   * Prefix `foo` must have higher precedence than <pipeline> (for pipelines),
     lower precedence than <postfix>, higher precedence than <sum> (for
     consistency with infix having precedence <sum>). Best option is <power>,
     which contains the other high precedence prefix operators.
-  * I would also like postfix `foo`, also for partial application.
+  * I would also like postfix `foo`, also for partial application. Precedence?
+    It's probably '<sum> `foo`'.
+
+Functions:
+ * `id` is the identity function, domain is All.
+   * Rename `identity` to `idmatrix`.
+ * `error`, when referenced in an expression context (outside a function call)
+   is the error function, domain is None.
+ * `compose` is a primitive, so that the following works:
+   in_domain F = match[compose[F,_->true],_->false]
 
 All builtin numeric/boolean operations are now vectorized. Document this.
     fields -- although, it isn't numeric/boolean

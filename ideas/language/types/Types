@@ -159,6 +159,22 @@ or a WASM FFI. For example a json_import function could use a type to map
 JSON values to Curv values. Eg, `String` maps a JSON string to a Curv string,
 while `Symbol` maps a JSON string to a Curv symbol.
 
+Constructors
+------------
+You cannot ask "what is the type of X", because every value belongs to an
+infinite number of types. Types are sets. In theory, it makes sense to ask
+"what is the constructor of X?". You can see the constructor by printing X.
+
+But there is no operation to query the constructor. It has no use for high
+level programming. Given an unknown constructor function, you do not know how
+to call it, because each constructor has a bespoke API. Comparing constructors
+for equality is a bad idea: types are the correct way to classify values.
+
+In the debugger, you'll want a way to examine the representation of a value,
+so that you can reason about storage costs and performance. That's low level
+information that can change from one version to the next, not something that
+should be part of the high level language API.
+
 Algebras
 --------
 An Algebra bundles a type together with its primary operations into a record.

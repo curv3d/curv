@@ -104,6 +104,10 @@ We could unify these approaches by extending `record!` to take a variant
 value as argument, like so:
     record!#foo    => record.foo
     record!{bar:a} => record.bar a
+This would allow you to write
+    smooth 0.5 !{union: [a,b]}
+which would allow {union: [a,b]} to be passed as a parameter then given
+to smooth 0.5.
 
 We could also do this in reverse: a piecewise function over variant values
 could export field names for each tag. So,

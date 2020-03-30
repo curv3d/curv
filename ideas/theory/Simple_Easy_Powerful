@@ -26,6 +26,9 @@ cycle.
 Fortunately, there are tricks for designing languages that are simple and
 powerful.
 
+Denotative semantics enables algebraic structure, which supports equational
+reasoning and improves simplicity-power.
+
 Simple, Compositional Semantics
 -------------------------------
 An important design goal for Curv is that it has simple, compositional
