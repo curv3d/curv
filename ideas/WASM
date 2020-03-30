@@ -6,6 +6,8 @@ WASM can be used for:
   in a web browser. Native Curv will always win.
 * Sandboxed, platform independent binaries.
   * Distribution format for compiled Curv binaries and plugins?
+    WASM modules can import other WASM modules via `dlopen`.
+    `file "foo.wasm"` returns a record value. (Problem: ensuring safety.)
   * Distribution format for the Curv program?
 * WebAssembly graphics demos: http://cliffle.com/p/web-demos/
   Export a Curv program to WASM for execution in a web page.
@@ -13,13 +15,10 @@ WASM can be used for:
   * Use WebGL 2 via Emscripten.
   * In future, use WASI WebGPU API.
 * Safely extend the Curv language with WASM modules written in other languages?
-  `file "foo.wasm"` returns a record value.
-  * Although we can sandbox the WASM module and prevent mischief such as making
-    a network connection or accessing the file system, we can't ensure that
-    functions are pure, because the WASM module can change its state during a
-    function call.
-  * The fact that WASM modules contain a fixed size block of non-shared memory
-    used for function calls, temporaries, etc, seems not optimal.
+  * I don't know how to ensure the safety of an imported WASM module.
+    Although we can sandbox the WASM module and prevent network connections
+    and file system access, we can't ensure that functions are pure, because
+    the WASM module can change its state during a function call.
 
 In the future, could I JIT compile Curv programs into WASM and then run them
 as efficiently as native code? I would need LLVM quality code generation,
@@ -27,8 +26,11 @@ a vectorized implementation of the GLM and/or Eigen library APIs,
 and multi-threaded data parallelism primitives. WASM needs SIMD and threads.
 I'll need an LLVM based WASM to native JIT compiler.
 
-Emscripten : compile C++ to WASM
-Cheerp : Emscripten competitor
+Emscripten : compile C++ to WASM. Exception handling results in bulky slow
+    WASM so disabled by default. Rust error handling avoids the problem.
+Avoid Emscripten: http://schellcode.github.io/webassembly-without-emscripten
+Binaryen: WASM->WASM optimizer: https://github.com/WebAssembly/binaryen/
+Cheerp : Emscripten competitor: faster smaller code, up to C++14, no exceptions
 Rust : easy generation of WASM code, wasm-bindgen
 LLVM/Clang 8 : has a WASM target. Rust moved from Emscripten to LLVM for WASM.
 Wasmer : Run WASM outside browser (github.com/wasmerio/wasmer)
