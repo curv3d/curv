@@ -1,0 +1,89 @@
+Optics: access and update of data structure elements
+====================================================
+3 data structures: list, record, dictionary
+
+accessing elements:
+  L[i,j,k]
+  R.fieldname
+  D key
+  #foo R => R.foo
+
+The ! operator (abstracting over different structure types):
+  L!i    => L[i]
+  R!#foo => R.foo   // not vectorized yet. R![#a,#b] is a record or list?
+  D!key  => D key   // D!key is a locative: D!key := newval
+Alternate syntax: S@key
+
+L[i,j,k] is not equivalent to L!i!j!k unless i,j are numbers.
+In general, L[i,j,k] is an array or tree slice.
+
+Locatives:
+  L[i,j,k] := ...       // in a funcall locative, L must be a list
+  R.fieldname := ...
+  S!x := ...            // S is a list, record or dictionary
+
+Abstracting over access paths
+-----------------------------
+fetch [i1,i2,i3] S      or S >> fetch path
+amend path newvalue S   or S >> amend path newvalue
+
+Note on currying:
+* path must be a separate argument so that fetch and amend can be used
+  to construct lenses (see below).
+* S must be a separate argument so that amend can be part of a structure
+  pipeline.
+
+Two variants:
+ 1. fetch [k1,k2,k3] S  => S!k1!k2!k3
+ 2. A path specifies a slice, generalized from L[i1,i2,i3].
+The slicing version is more useful.
+
+Do fetch and amend support multi-d array slicing?
+Can multi-d array slicing be composed with fetch/amend?
+
+K language amend/dmend applies a function to transform each selected element.
+  amend: @[s; i; f]
+  dmend: .[s; i; f]
+Dot Amend is a more powerful version of At Amend. An At Amend @[a;b;c;d] can
+be simulated by the Dot Amend .[a;,b;c;d] with the second argument enlisted.
+In Curv terms, I think L!i is the @ form and L[i,j] is the . form.
+
+Lenses
+------
+A Lens is a getter and a putter, bound together in a single data structure.
+Like a combination of `fetch path` and `amend path` in Curv.
+    data Lens struc item 
+      = Lens { get :: struc -> item
+             , put :: item -> struc -> struc
+             }
+or,
+    lens path = {get: fetch path, put: amend path};
+    l = lens mypath; l.get, l.put
+
+More convenient if we replace #get with #call.
+If we do this, sRGB is no longer a Lens with a #get field.
+Instead, sRGB.from is the Lens.
+
+Eg, `slice path` is the slicing version of fetch/amend.
+    S >> slice[i,j,k]
+    S >> slice[i,j,k].put newval
+
+We need a full set of Lens constructors.
+ * Is `!K` or equivalent a Lens constructor? It doesn't encode a structure
+   type, so the interpretation of K isn't known until the structure is seen.
+ * Is `#foo` a Lens constructor? It has #call and #put fields.
+ * `slice path` is the slicing version of fetch/amend.
+ * composition: lcomp[L1,L2] | Lens[L1,L2] | Lens.compose[L1,L2] | L1 >- L2
+
+Lens Composition.
+    -- | Lens composition
+    (>-) :: Lens a b -> Lens b c -> Lens a c
+    la >- lb = Lens (get lb . get la) $ \part whole ->
+      put la (put lb part (get la whole)) whole
+semantics:
+* Get the original middle part from the original big part
+* Update the middle part with the new little part
+* Update the big part with the new middle part
+
+Generalized Lenses.
+https://www.schoolofhaskell.com/user/tel/lenses-from-scratch

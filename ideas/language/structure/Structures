@@ -357,8 +357,8 @@ This frees up string literals to be used as literal patterns.
 * The need for => to construct fields with computed names is questionable,
   once maps are added.
 
-Indexing Operations.
---------------------
+Indexing Operations (See Optics)
+--------------------------------
 S!I
 * list!integer | list![ix0,ix1,...]
 * string!integer | string![ix0,ix1,...]
@@ -382,49 +382,3 @@ S[i,j,k,...]
 * list[i,j,k] indexes a multidimensional array, can extract n-d slices.
 * string[i] is same as string!i, map[k] is same as map!k.
   The reason for this redundancy is that this is the conventional syntax.
-
-fetch [i1,i2,i3] S      or S >> fetch path
-amend path newvalue S   or S >> amend path newvalue
-
-Note on currying:
-* path must be a separate argument so that fetch and amend can be used
-  to construct lenses (see below).
-* S must be a separate argument so that amend can be part of a structure
-  pipeline.
-
-Do fetch and amend support multi-d array slicing?
-
-The old record indexing syntax is R."string-ctor", eg R."$a".
-This syntax needs to go away.
-But, R.(#foo) or R.(a) seems like a possible replacement.
-
-Lenses.
--------
-Simple Lens.
-A Lens is a getter and a setter, bound together in a single data structure.
-Like a combination of `fetch path` and `amend path` in Curv.
-    data Lens struc item 
-      = Lens { get :: struc -> item
-             , set :: item -> struc -> struc
-             }
-or,
-    lens path = {get: fetch path, set: amend path};
-    l = lens mypath; l.get, l.set
-
-Lens Composition.
-    -- | Lens composition
-    (>-) :: Lens a b -> Lens b c -> Lens a c
-    la >- lb = Lens (get lb . get la) $ \part whole ->
-      set la (set lb part (get la whole)) whole
-semantics:
-* Get the original middle part from the original big part
-* Update the middle part with the new little part
-* Update the big part with the new middle part
-In Curv:
-    lcomp(lens1,lens2) =
-      { get:
-      , set:
-      };
-
-Generalized Lenses.
-https://www.schoolofhaskell.com/user/tel/lenses-from-scratch

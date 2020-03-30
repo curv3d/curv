@@ -1,0 +1,132 @@
+Simple, Easy, Powerful
+======================
+The primary design goals for the Curv programming language are that it should
+be simple, easy to use, and powerful. How do we make these goals precise,
+and how do we achieve them? The issues are subtle and require deep analysis.
+
+Simple is not the same as easy.
+    See: "Simple Made Easy" -- Rich Hickey
+    https://www.youtube.com/watch?v=oytL881p-nQ
+
+Expressive power is tricky. In general, more power means more complexity.
+    See: "On The Expressive Power of Programming Languages"
+    https://www.youtube.com/watch?v=43XaZEn2aLc
+The most powerful programming language is also the most complex: assembly
+language. But most of us do not want that.
+
+In general, there is a power vs complexity curve where greater power means
+greater complexity (less simplicity). However, most programming languages
+do not reside on this curve. Most languages are weaker and more complicated
+than necessary, due to extrinsic factors. One is: popular languages become
+weak and flabby over time by the accretion of features while maintaining
+backward compatibility. Another is: new languages are designed by copying
+popular, yet weak and flabby languages. This gives rise to a self-perpetuating
+cycle.
+
+Fortunately, there are tricks for designing languages that are simple and
+powerful.
+
+Simple, Compositional Semantics
+-------------------------------
+An important design goal for Curv is that it has simple, compositional
+semantics. The meaning of a compound expression is determined by the meanings
+of the subexpressions and by the rules used to combine them, in a simple way,
+with a minimum of "spooky action at a distance".
+
+That last bit means we want to minimize the ability of the context in which
+an expression is written or executed to change its meaning in unexpected
+and non-intuitive ways. This improves the effectiveness of local reasoning
+about the meaning of a program.
+
+The goal is to have semantics that are an order of magnitude simpler and
+easier to understand than in conventional programming languages.
+
+P. J. Landin coined the term "denotative semantics" to describe this goal.
+
+    The commonplace expressions of arithmetic and algebra have a certain
+    simplicity that most communications to computers lack. In particular,
+    (a) each expression has a nesting subexpression structure, (b) each
+    subexpression denotes something (usually a number, truth value or numerical
+    function), (c) the thing an expression denotes, i.e., its "value", depends
+    only on the values of its sub-expressions, not on other properties of them.
+
+    An important distinction is the one between indicating what behavior,
+    step-by-step, you want the machine to perform, and merely indicating
+    what outcome you want. Put that way, the distinction will not stand up to
+    close investigation. I suggest that the conditions (a-c) in Section 8 are
+    a necessary part of "merely indicating what outcome you want." The word
+    "denotative" seems more appropriate than nonprocedural, declarative or
+    functional. The antithesis of denotative is "imperative." Effectively
+    "denotative" means "can be mapped into ISWIM without using jumping or
+    assignment," given appropriate primitives.
+
+Here is Christopher Strachey, quoted in the same paper:
+
+    The important characteristic of DLs is that it is possible to produce
+    equivalence relations, particularly the rule for substitution which
+    Peter Landin describes as β in his paper. That equivalance relation,
+    which appears to be essential in almost every proof, does not hold if you
+    allow assignment statements. The great advantage then of DLs is that they
+    give you some hope of proving the equivalence of program transformations
+    and to begin to have a calculus for combining and manipulating them.
+
+Composability and Orthogonality
+-------------------------------
+A related idea is composability.
+
+P.J. Landin made a persuasive case for composability
+in his famous paper "The Next 700 Programming Languages", in 1964.
+This paper also marked the beginning of the functional programming movement.
+
+In Landin's analysis, a programming language consists of a basic set of
+given things, plus a set of mechanisms for defining new things in terms of
+existing things. These "mechanisms" are abstraction mechanisms, and they
+include:
+ * The ability to give a name to a thing.
+ * The ability to define a functional abstraction.
+
+Landin pointed out that typical programming languages tend to have many
+different incompatible naming mechanisms,
+and many different incompatible functional abstraction mechanisms,
+each of which only applies to a narrow domain.
+What was true in 1964 continues to be true today.
+
+Programming languages could be much simpler and more powerful if there
+was just a single naming mechanism, that could be used with any kind of thing,
+and just a single functional abstraction mechanism, that could take any kind
+of thing as an argument and return any kind of thing as a result!
+
+The original designers of the Scheme programming language took up this
+challenge. They wrote, in R3RS (1986):
+
+    Programming languages should be designed not by piling feature on top
+    of feature, but by removing the weaknesses and restrictions that make
+    additional features appear necessary. Scheme demonstrates that a very
+    small number of rules for forming expressions, with no restrictions
+    on how they are composed, suffice to form a practical and efficient
+    programming language that is flexible enough to support most of the
+    major programming paradigms in use today.
+
+This is also a primary design goal for Curv.
+
+The R2RS Scheme report (1985) used more poetic language:
+
+    Data and procedures and the values they amass,
+    Higher-order functions to combine and mix and match,
+    Objects with their local state, the messages they pass,
+    A property, a package, the control point for a catch--
+    In the Lambda Order they are all first class.
+    One Thing to name them all, One Thing to define them,
+    One Thing to place them in environments and bind them,
+    In the Lambda Order they are all first-class.
+
+Curv is a simple yet powerful language with a small number of orthogonal
+building blocks that can be composed together in many ways.
+
+Orthogonality means:
+ * Unify features that are almost the same, but with unnecessary differences.
+ * Split up features that do two two things at once into separate features
+   that can be composed.
+
+Composability means that every feature can be composed with every other
+feature, with no restrictions other than logical or mathematical necessity.

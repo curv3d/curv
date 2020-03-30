@@ -4,7 +4,9 @@ It is a generalized function. From Mathworld:
     set. So a map f:A|->B from A to B is a function f such that for every a
     in A, there is a unique object f(a) in B. The terms function and mapping
     are synonymous for map.
-The term 'mapping' does not conflict with the 'map' function.
+
+I chose the term 'mapping' because it does not conflict with the 'map' function.
+Alternatively, I could rename 'map' to 'each' (from K/APL), then use 'Map'.
 
 We support both procedural mappings, and data structure mappings.
  * A function is a procedural mapping.
