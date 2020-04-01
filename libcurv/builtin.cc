@@ -1214,16 +1214,23 @@ struct Defined_Expression : public Just_Expression
     {
     }
 
+    static Value defined_at(Value val, Symbol_Ref id)
+    {
+        if (auto rec = val.maybe<Record>())
+            return {rec->hasfield(id)};
+        else if (auto list = val.maybe<List>()) {
+            Shared<List> result = List::make(list->size());
+            for (unsigned i = 0; i < list->size(); ++i)
+                result->at(i) = defined_at(list->at(i), id);
+            return {result};
+        } else
+            return {false};
+    }
     virtual Value eval(Frame& f) const override
     {
         auto val = expr_->eval(f);
-        auto s = val.maybe<Record>();
-        if (s) {
-            auto id = selector_.eval(f);
-            return {s->hasfield(id)};
-        } else {
-            return {false};
-        }
+        auto id = selector_.eval(f);
+        return defined_at(val, id);
     }
 };
 struct Defined_Metafunction : public Metafunction

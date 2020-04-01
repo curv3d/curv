@@ -637,6 +637,7 @@ sc_test {
 };
 
 assert([{a:1},{a:2}].a == [1,2]);
+assert(defined([{a:1},{a:2},{}].a) == [#true,#true,#false]);
 
 // script return value:
 in null
