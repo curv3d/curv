@@ -636,5 +636,7 @@ sc_test {
         equal[[1,2,3],[2,2,2]] == [false,true,false];
 };
 
+assert([{a:1},{a:2}].a == [1,2]);
+
 // script return value:
 in null

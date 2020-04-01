@@ -24,7 +24,6 @@ Functions:
 All builtin numeric/boolean operations are now vectorized. Document this.
     fields -- although, it isn't numeric/boolean
     Call_Expr -- could vectorize the function argument. Q'NIAL, FP
-    Dot_Expr
 All expression types supported by SubCurv also support reactive arguments.
 Expressions that don't support reactive arguments:
     select[a,b,c]

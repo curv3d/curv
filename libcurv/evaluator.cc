@@ -118,12 +118,23 @@ Local_Data_Ref::eval(Frame& f) const
     return f[slot_];
 }
 
+Value record_at(Value rec, Symbol_Ref id, const Context& cx)
+{
+    if (auto list = rec.maybe<const List>()) {
+        Shared<List> result = List::make(list->size());
+        for (unsigned i = 0; i < list->size(); ++i)
+            result->at(i) = record_at(list->at(i), id, cx);
+        return {result};
+    } else {
+        return rec.at(id, cx);
+    }
+}
 Value
 Dot_Expr::eval(Frame& f) const
 {
     Value basev = base_->eval(f);
     Symbol_Ref id = selector_.eval(f);
-    return basev.at(id, At_Phrase(*base_->syntax_, f));
+    return record_at(basev, id, At_Phrase(*base_->syntax_, f));
 }
 
 #define BOOL_EXPR_EVAL(AND_EXPR, AND, NOT, FALSE) \
