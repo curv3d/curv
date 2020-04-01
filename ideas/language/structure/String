@@ -169,37 +169,28 @@ Heterogenous lists of characters and other values may be a useful representation
 for rich text (eg, like markdown text). I'll need a representation of rich text
 when Curv becomes a visual programming language.
 
-strcat and string
+strcat and String
 -----------------
 Historically, `strcat` had two functions: to concatenate strings (you could
 not use `concat`), and to convert values to strings.
 
 In the new design, these functions are separated into two orthogonal bindings.
-`concat` concatenates a list of strings, and `string` converts an arbitrary
-value to a string. `strcat(L)` is replaced by `concat(map string L)`.
+ * `concat` concatenates a list of strings
+ * `String` converts an arbitrary value to a string (using print_string format).
+ * `strcat(L)` is replaced by `concat(map String L)`.
+Note, `repr` does not change (convert to string using print_repr format).
 
-A ${expr} string substitution is replaced by string(expr).
+A ${expr} string substitution is replaced by String(expr).
 
-`string` fits in to a larger pattern of value constructor/predicate functions:
-    string      is_string   -- string converts arbitrary value, not vectorized
-    symbol      is_symbol   -- symbol converts a string or value, not vectorized
-    bool        is_bool     -- bool converts 0/1 to false/true, is vectorized
-    char        is_char     -- char converts scalar to char, is vectorized
+`String` fits in to a larger pattern of type algebras (constructor/predicate):
+    String      -- String converts arbitrary value, not vectorized
+    Symbol      -- Symbol converts a string or value, not vectorized
+    Bool        -- Bool converts 0/1 to false/true, is vectorized
+    Char        -- Char converts scalar to char, is vectorized
 
-`string` is idempotent. Should the other constructors be idempotent?
-Maybe: it fits with a model of types as idempotent constructor functions,
-and it fits with the proposed `pat >> ctor` pattern type.
-Eg, then bool(symbol(S)) converts a string to a bool, with an error if S is
-not "true" or "false".
-But, that example could also be written as `symbol S :: is_bool`.
-
-This larger design has implications for the `char` constructor:
-    char (C :: is_char) = C
-    char (N :: is_nat) = convert code point to character
-    char (S :: is_symbol) = convert single-character symbol to char
-
-string V
-    if V is a string, return V.
+String V
+    if V is the empty list, return V (aka ""/[]).
+    if V is a list of characters, return V.
     if V is a char, return [V].
     if V is a symbol, return the name of V as a string, without # or quotes.
     if V is a general list, then maximal contiguous sublists of non-characters
@@ -207,6 +198,8 @@ string V
         and commas separating the values. Any characters in between these
         non-character values are represented as themselves, without quotation.
     Otherwise, return `repr V`.
+
+The String constructor is idempotent, but that's not typical for constructors.
 
 ++ vs &
 -------

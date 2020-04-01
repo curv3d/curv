@@ -1,0 +1,5 @@
+User defined bracket operators.
+(.a,b,c.) <=> '(..)'[a,b,c]
+For the outer characters, there is a choice of () [] {}
+For the inner characters, there is a choice of
+    ~~ @@ $$ %% ^^ && ** == || \/ /\ :: ;; <> >< ,, .. ??

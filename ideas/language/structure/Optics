@@ -28,11 +28,109 @@ Locatives:
   D key := ...
   S!x := ...            // S is a list, record or dictionary
 
+Compound Locatives
+------------------
+What does the following do?
+    [{a:1},{a:2}] [[0,1]] .a
+* Using "compositional semantics", the locative is processed left to right.
+  Each selector is applied to the left argument, which produces a value,
+  which becomes the left argument for the following selector. So we get
+    [{a:1},{a:2}] .a
+  which is currently an error.
+* Using "slice semantics", a selector produce a single item, or a group of
+  items in a tree. The next selector is applied to each item, producing another
+  singleton or group. So we get
+    [1,2]
+
+The problem with slice semantics is that they are non-compositional.
+
+We can get much the same results as slice semantics while preserving
+compositional semantics if we vectorize the '.' operator. At each step, we
+are discarding the information about what items were selected. However,
+in order for '.' to work, all of those items *must* be records, or an error
+is reported. With a vectorized '.', we descend the tree looking for records,
+and we get the same result.
+
+How does this work for dicts/maps? Since records, dicts and maps are all
+scalars, we just need left-vectorized indexing operators for records, dicts
+and maps, which need to be distinct from the list indexing operator that
+extracts slices. That leads to a different design for locatives:
+    R.name  A left-vectorized record indexing operation.
+    S@key   A left-vectorized indexing operation for maps and records.
+            In the record case, key is a symbol.
+            In the map case, key is a dict key or function argument.
+    L!path  A slicing operation for lists.
+
+So '!' is now the slicing operator.
+
+At this point, I'd like to get rid of the L[i] operator, for uniformity.
+ * It's ad-hoc overloading.
+ * It's inconsistent that 'D x' has a single index value as an argument,
+   but 'L x' has an index list as an argument.
+ * Avoids awkward questions about what 'R x := y' means when R is a record.
+ * It would be nice to get rid of it, because it eliminates any justification
+   for classifying lists as mapping values, which I have not wanted to do,
+   due to the fact that the right argument is a list, not an index value.
+ * Also, note that the new @ operator requires mapping values to be scalar.
+I could deprecate the syntax, but keep it around for a while.
+
+Structure slices
+----------------
+S![i,j,k] is a general operation for extracting a slice of a compound structure
+comprised of nested lists, records and dicts, using a path that is a list
+of index values. This is a generalization of list slicing.
+
+S![i,j,k] is a locative, you can assign to it.
+
+Slicing does not have compositional semantics, in the sense that
+  S![i,j,k]
+is not generally equivalent to
+  S![i]![j]![k]
+So we don't want slicing to be the only way to index into a structure.
+But it's a powerful operation on bulk data.
+
 Abstracting over access paths
 -----------------------------
-fetch [i1,i2,i3] S      or S >> fetch path
-amend path newvalue S   or S >> amend path newvalue
+Now we have a rich set of locative forms for indexing into structures.
+    S!slicepath@key.field
+I'd like to be able to abstract over a locative path such as
+    !slicepath@key.field
+In other words, represent this as a value. I originally thought the abstraction
+should be a list of index values, with compositional semantics. But slicing
+complicates this story. Now, it seems that Lens values are the more general way
+to encapsulate an access path.
 
+A Lens is a getter and a putter, bound together in a single data structure.
+In Curv, a Lens is a record with #call, #put and #defined fields.
+    data Lens struct item
+      = Lens { call :: struct -> item            -- getter
+             , put :: item -> struct -> struct   -- setter
+             , defined :: struct -> bool
+             }
+
+Using a Lens, you can update a data structure functionally, without using
+imperative assignment notation.
+
+Using #call as the getter is for convenience.
+If we do this, sRGB is no longer a Lens with a #get field.
+Instead, sRGB.from is the Lens.
+
+Lens constructors:
+ * (at I) S <=> S@I
+ * (at_path IndexList) S    -- compositional semantics; iterated 'at'
+ * (slice Path) S <=> S!Path
+ * sRGB.from, LAB.from
+ * Is `#foo` a Lens constructor? With #call, #put and #defined fields?
+ * composition: lcomp[L1,L2] | Lens[L1,L2] | Lens.compose[L1,L2] | L1 >- L2
+
+I can also use Lenses internally as the compiled representation of compound
+locatives.
+
+Older Ideas
+-----------
+I've considered a function based interface:
+    fetch [i1,i2,i3] S      or S >> fetch path
+    amend path newvalue S   or S >> amend path newvalue
 Note on currying:
 * path must be a separate argument so that fetch and amend can be used
   to construct lenses (see below).
@@ -58,9 +156,9 @@ Lenses
 ------
 A Lens is a getter and a putter, bound together in a single data structure.
 Like a combination of `fetch path` and `amend path` in Curv.
-    data Lens struc item 
-      = Lens { get :: struc -> item
-             , put :: item -> struc -> struc
+    data Lens struct item
+      = Lens { get :: struct -> item
+             , put :: item -> struct -> struct
              }
 or,
     lens path = {get: fetch path, put: amend path};

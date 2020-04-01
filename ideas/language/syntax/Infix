@@ -6,7 +6,7 @@ This is a conservative redesign of Curv syntax. It gives:
  * partial application of infix operators, like Haskell sections.
 
 Reduce the number of operator precedence levels:
-* Unite Pipeline, Disjunction and Conjunction into a single level (Pipeline)
+* Unite Pipeline, Disjunction and Conjunction into a single level (Junction)
   of low-precedence, left-associative operators.
 * Get rid of `where` and unite Item with RItem.
 It's a 'conservative' change because little existing code would be broken.
@@ -14,7 +14,7 @@ It's a 'conservative' change because little existing code would be broken.
 This yields the following precedence levels:
     list        n-ary
     item        right associative infix & prefix
-    pipeline
+    junction    && || >>
     relation    non associative
     sum         user-defined operators go here
     product
@@ -25,6 +25,7 @@ By comparison, C has 16 levels of precedence, which is too many. F# has 26.
 
 An operator name is a sequence of one or more characters from the set
     ~!@%^&*-+=|\:<>?/
+Note that $ is omitted, for now.
 
 All of the builtin operators are reserved words, with special parsing.
 
@@ -37,7 +38,7 @@ User defined operators and backtick operators have fixed <sum> precedence.
 
 The reasons for assigning <sum> precedence to user-defined and backtick
 operators are:
- * It's higher than <pipeline>, which is useful for operators that return
+ * It's higher than <junction>, which is useful for operators that return
    functions.
  * It's higher than <relation>, which is useful if you want an equality
    comparison on the result. Eg, x `mod` m == 0 now works.
@@ -79,6 +80,17 @@ A symbolic operator name can be placed in backticks, to create a section,
 or to change its precedence to <sum>. For example,
     map(`-`1)
 Note, no conflict with the syntax '-1', unlike Haskell.
+
+Radically Fewer Precedence Levels
+---------------------------------
+All left associative operators have the same precedence, like Smalltalk.
+New left associative operators can be invented at will, like Smalltalk.
+This yields 5 precedence levels:
+    list        , ;
+    item        right associative prefix, infix & mixfix
+    infix       left associative infix
+    prefix      right associative infix, needed for -x
+    postfix
 
 Older Ideas
 -----------

@@ -29,6 +29,17 @@ powerful.
 Denotative semantics enables algebraic structure, which supports equational
 reasoning and improves simplicity-power.
 
+Syntax is part of power. Iverson's "Notation as a Tool of Thought".
+A well designed notation makes certain relationships more apparent: it makes
+it easier to reason about the meaning of an expression, and it enables you
+to perform algebraic symbol manipulation. Good syntax needs to be backed up
+with algebraic structure at the semantic level. Enables algebraic reasoning
+(also called equational reasoning). Some syntax examples:
+ * infix notation aids in algebraic reasoning, especially the associative law.
+ * De Bruijn notation enables reasoning and proofs about lambda expressions
+   that are difficult to carry out using lambda notation (but you don't want
+   to use De Bruijn notation all the time).
+
 Simple, Compositional Semantics
 -------------------------------
 An important design goal for Curv is that it has simple, compositional
