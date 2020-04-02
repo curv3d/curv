@@ -1,8 +1,7 @@
 Mixfix Notation
----------------
-I want a more uniform mixfix notation, not a hybrid of C and Haskell.
-
-How about this:
+===============
+A more uniform mixfix notation, consisting of alternating keywords and
+arguments, similar to this:
     let A in B
     do A in B
     parametric A in B
@@ -10,10 +9,79 @@ How about this:
     while A do B
     for A in B while C do D
 
-Chaining is supported, eg
+Chaining is supported. It is indicated by two adjacent mixfix keywords.
+There is no dangling else ambiguity.
     if A then B else if C then D else E
     let A in do B in C
 
+Extensibility. New mixfix operators can be defined without adding new reserved
+words and breaking backwards compatibility. User defined mixfix operators.
+
+Current Proposal
+----------------
+We use a new syntax where mixfix keywords are lexically distinct from
+identifiers. There are several ways to achieve this. In this proposal,
+a mixfix keyword consists of two or more uppercase ASCII characters,
+with no lowercase, digits or underscores.
+
+Every proposal I've looked at either takes away valuable syntax that Curv
+already uses for other purposes, or is even uglier than uppercase keywords.
+The nice thing about this proposal is that uppercase identifiers are the least
+valuable of those 'valuable syntactic assets' that I would need to repurpose.
+
+The grammar is:
+ * An initial mixfix keyword is either KEY or <postfix>.KEY
+ * a mixfix phrase is an <item>
+ * a final mixfix argument is an <item>
+ * an intermediate mixfix argument is a <junction>
+
+IF a THEN b ELSE c <=> 'IF THEN ELSE'[a,b,c]
+
+    colour [x,y,_,_] =
+        DO (
+            LOCAL z = [x,y];
+            LOCAL color = [0,0,0];
+            LOCAL done = false;
+            FOR i IN 0 ..< 100 WHILE !done DO (
+                z := csqr(z) + [x,y];
+                IF dot[z,z] > 4 THEN (
+                    LOCAL cr = (i-1)-log(log(dot[z,z])/log 2)/log 2;
+                    color := [0.95+.012*cr, 1, .2+.4*(1+sin(.3*cr))];
+                    done := true;
+                );
+            );
+        )
+        IN srgb.hsv color;
+
+Comments:
+ * The uppercase keywords are "shouty" and will need to be subdued using
+   syntax colouring.
+ * Statement or definition arguments need to be parenthesized. But this
+   at least happens consistently.
+ * Can introduce this new syntax mostly without breaking backward compatibility.
+   I will rename sRGB.HSV to srgb.hsv. The old reserved words are deprecated.
+
+Alternative Ways to Distinguish Keywords
+----------------------------------------
+ 1. Mixfix non-final arguments are primary expressions, which must be
+    parenthesized if they are bare identifiers.
+        if (a) then (b) else (c)
+    The same applies to function call arguments, which destroys the look
+    of curried function calls: we go from 'f x y' to 'f(x)(y)'.
+
+ 2. Mixfix keywords are suffixed with ':', inspired by Smalltalk.
+        if: a then: b else: c
+    This interferes with record literals, for which I don't have an alt syntax.
+
+ 3. Mixfix keywords are reserved. No user-defined mixfix operators.
+    Can't add new mixfix syntax without breaking changes.
+    Complicates the surface grammar. Keywords aren't visually distinct,
+    so we use syntax colouring to make them distinct.  if a then b else c
+
+ 4. Ugly: %if x %then y %else z
+
+Previous Ideas
+--------------
 "Loose" mixfix: arguments are items. Mixfix expr is an item.
 A bit like C. List arguments need to be parenthesized.
 * We have the dangling `else` ambiguity. Maybe fix that?
@@ -56,7 +124,7 @@ Almost all statement arguments are parenthesized, so it has that go/rust/swift
 feeling where you don't need to add parens when one statement turns into two.
 
 So what layout conventions do I use?
-    
+
 fire i =
     let
       ( yellow = (1.7, 1.3, 1.0);
