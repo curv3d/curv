@@ -1,3 +1,5 @@
+Update Array documentation: definition of ranked array, ranked function.
+
 * `list[i1,i2,...]` support reactive args
 * `list[i1,i2,...] := ...` in full generality
 * design a general set of adverbs for pipeline programming
@@ -22,7 +24,6 @@ Functions:
    in_domain F = match[compose[F,_->true],_->false]
 
 All builtin numeric/boolean operations are now vectorized. Document this.
-    fields -- although, it isn't numeric/boolean
     Call_Expr -- could vectorize the function argument. Q'NIAL, FP
 All expression types supported by SubCurv also support reactive arguments.
 Expressions that don't support reactive arguments:

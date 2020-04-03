@@ -164,7 +164,8 @@ assert( asin 1 == 1.5707963267948966 && acos 1 == 0 );
 
 assert( round 0.5 == 0 && round 1.5 == 2 );
 
-assert( indices(1,2) == [0,1] && fields{a:1} == [#a] );
+assert( indices(1,2) == [0,1] && fields{a:1} == [#a]
+    && fields[{},{b:2}] == [[],[#b]]);
 
 assert(
     let a = {x:1, y:2};

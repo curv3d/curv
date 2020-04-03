@@ -845,11 +845,22 @@ struct Count_Function : public Legacy_Function
 struct Fields_Function : public Legacy_Function
 {
     Fields_Function(const char* nm) : Legacy_Function(1,nm) {}
+    static Value fields(Value arg, const Context& cx)
+    {
+        if (auto record = arg.maybe<const Record>())
+            return {record->fields()};
+        else if (auto list = arg.maybe<List>()) {
+            Shared<List> result = List::make(list->size());
+            for (unsigned i = 0; i < list->size(); ++i)
+                result->at(i) = fields(list->at(i), cx);
+            return {result};
+        }
+        else
+            throw Exception(cx, stringify(arg, " is not a record"));
+    }
     Value call(Frame& args) override
     {
-        if (auto record = args[0].maybe<const Record>())
-            return {record->fields()};
-        throw Exception(At_Arg(*this, args), "not a record");
+        return fields(args[0], At_Arg(*this, args));
     }
 };
 
