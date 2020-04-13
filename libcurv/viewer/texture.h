@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include <libcurv/geom/glfw.h>
+#include <libcurv/viewer/glfw.h>
 
 class Texture {
 public:

@@ -10,7 +10,7 @@ extern "C" {
 #endif
 #include <stdlib.h>
 }
-#include <libcurv/geom/glfw.h>
+#include <libcurv/viewer/glfw.h>
 
 #define USE_X11 0
 #if USE_X11
