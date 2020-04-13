@@ -1,5 +1,5 @@
-Simple, Easy, Powerful
-======================
+Simple and Powerful
+===================
 The primary design goals for the Curv programming language are that it should
 be simple, easy to use, and powerful. How do we make these goals precise,
 and how do we achieve them? The issues are subtle and require deep analysis.
@@ -7,29 +7,64 @@ and how do we achieve them? The issues are subtle and require deep analysis.
 Simple is not the same as easy.
     See: "Simple Made Easy" -- Rich Hickey
     https://www.youtube.com/watch?v=oytL881p-nQ
+Ease of use is discussed in another essay.
+Here, we discuss simplicity and expressive power.
 
 Expressive power is tricky. In general, more power means more complexity.
     See: "On The Expressive Power of Programming Languages"
     https://www.youtube.com/watch?v=43XaZEn2aLc
 The most powerful programming language is also the most complex: assembly
-language. But most of us do not want that.
+language.
+
+Curv should have a complexity budget. If a feature adds both power and
+complexity to the language, then we need to find a balance between various
+concerns:
+ * The added complexity in learning the language initially.
+ * The added complexity in using the language, in understanding the meaning
+   of programs, given that this feature exists.
+ * The amount of complexity that can be removed from programs by using the
+   feature.
 
 In general, there is a power vs complexity curve where greater power means
-greater complexity (less simplicity). However, most programming languages
-do not reside on this curve. Most languages are weaker and more complicated
-than necessary, due to extrinsic factors. One is: popular languages become
-weak and flabby over time by the accretion of features while maintaining
-backward compatibility. Another is: new languages are designed by copying
-popular, yet weak and flabby languages. This gives rise to a self-perpetuating
-cycle.
+greater complexity (less simplicity).
+
+  P |         *
+  o |       *
+  w |     *
+  e |   *
+  r | *
+    +----------
+     Complexity
+
+This curve represents the sweet spots in language design space.
+Most programming languages do not reside on this curve, but rather under it.
+Most languages are weaker and more complicated than necessary.
+ * The main culprit is this: If you are trying to fix a problem, it is easier
+   to design a feature that just addresses the one specific use case you have
+   in mind, without worrying about how it integrates with other features.
+ * Popular languages become weaker and flabbier over time by the accretion of
+   features while maintaining backward compatibility.
+ * New languages are designed by copying popular, yet weak and flabby languages.
+   This gives rise to a self-perpetuating cycle.
 
 Fortunately, there are tricks for designing languages that are simple and
 powerful.
 
 Denotative semantics enables algebraic structure, which supports equational
 reasoning and improves simplicity-power.
+ * An algebra of programs: John Backus, "Can Programming be Liberated from
+   the von Neumann Style?".
+ * By designing an algebra of programs, the language designer is forced to
+   make everything compose properly, and get all of the edge cases correct.
+   This benefits developers even if they don't study the algebra
+   or use it to reason formally.
 
-Syntax is part of power. Iverson's "Notation as a Tool of Thought".
+Syntax is part of power.
+ * “By relieving the brain of all unnecessary work, a good notation sets it
+   free to concentrate on more advanced problems and in effect increases
+   our mental power.” A. N. Whitehead
+ * Kenneth E. Iverson, "Notation as a Tool of Thought".
+
 A well designed notation makes certain relationships more apparent: it makes
 it easier to reason about the meaning of an expression, and it enables you
 to perform algebraic symbol manipulation. Good syntax needs to be backed up
