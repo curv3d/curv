@@ -849,12 +849,14 @@ struct Fields_Function : public Legacy_Function
     {
         if (auto record = arg.maybe<const Record>())
             return {record->fields()};
+      #if 0
         else if (auto list = arg.maybe<List>()) {
             Shared<List> result = List::make(list->size());
             for (unsigned i = 0; i < list->size(); ++i)
                 result->at(i) = fields(list->at(i), cx);
             return {result};
         }
+      #endif
         else
             throw Exception(cx, stringify(arg, " is not a record"));
     }
