@@ -1,0 +1,63 @@
+Ensure that there is correct conversion between sRGB and linearRGB, everywhere.
+
+ 1. colour_picker: convert between sRGB in the uniform variable,
+    and linear RGB in the Curv parameter.
+
+ 2. Use mathematically correct conversion from linRGB to sRGB in shader prog.
+    Right now, GLSL conversion code in export_frag_2d, export_frag_3d. Fix that.
+    Or, fragment shader outputs linear RGB, OpenGL converts to sRGB in hardware.
+    https://stackoverflow.com/questions/56204242/do-i-need-output-gamma-correction-in-a-fragment-shader
+    glEnable(GL_FRAMEBUFFER_SRGB);
+    https://www.khronos.org/opengl/wiki/Framebuffer#Colorspace
+
+ 3. Curv `sRGB` func uses mathematically correct conversion to linRGB.
+
+sRGB <-> linRGB conversion code
+-------------------------------
+linRGB_to_sRGB c =
+    select [c < 0.0031308, c * 12.92, 1.055 * c^(1/2.4) - 0.055];
+
+// from Blender (GLSL)
+float linearrgb_to_srgb(float c)
+{
+  if (c < 0.0031308) {
+    return (c < 0.0) ? 0.0 : c * 12.92;
+  }
+  else {
+    return 1.055 * pow(c, 1.0 / 2.4) - 0.055;
+  }
+}
+
+//// stack exchange:
+float sRGB(float x) {
+    if (x <= 0.00031308)
+        return 12.92 * x;
+    else
+        return 1.055*pow(x,(1.0 / 2.4) ) - 0.055;
+}
+vec3 sRGB_v3(vec3 c) {
+    return vec3(sRGB(c.x),sRGB(c.y),sRGB(c.z));
+}
+
+//// stack exchange:
+// Converts a color from linear light gamma to sRGB gamma
+vec4 fromLinear(vec4 linearRGB)
+{
+    bvec4 cutoff = lessThan(linearRGB, vec4(0.0031308));
+    vec4 higher = vec4(1.055)*pow(linearRGB, vec4(1.0/2.4)) - vec4(0.055);
+    vec4 lower = linearRGB * vec4(12.92);
+
+    return mix(higher, lower, cutoff);
+}
+// Converts a color from sRGB gamma to linear light gamma
+vec4 toLinear(vec4 sRGB)
+{
+    bvec4 cutoff = lessThan(sRGB, vec4(0.04045));
+    vec4 higher = pow((sRGB + vec4(0.055))/vec4(1.055), vec4(2.4));
+    vec4 lower = sRGB/vec4(12.92);
+
+    return mix(higher, lower, cutoff);
+}
+
+lessThan: all versions of GLSL
+mix with bvec4 3rd argument: GLSL 4.5

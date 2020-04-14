@@ -1,0 +1,3 @@
+Make it easier for Windows users to install Curv.
+ * Current plan: a powershell install script. See cmake/install_curv.ps1
+Then, announce Windows port is ready on Curv mailing list.

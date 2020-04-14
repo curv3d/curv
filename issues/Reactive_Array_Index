@@ -1,0 +1,4 @@
+Support reactive values in array indexing
+ * both list and index position
+ * rvalue and assignment
+ * scalar index and slicing

@@ -1,10 +1,47 @@
-TODO:
- * value_at(): fully support reactive values (both list and index position)
- * A[i,j,k] := ... in full generality
- * unit tests for the above
+Array slice assignment `a[i,j] := x` works in all cases.
+ * Assignment to a string variable. Single element or slice, interpreter only.
+ * Assignment to a list variable in interpreter.
+ * Assignment to a list variable in SubCurv.
 
+Reactive values are not supported in this work item. Do that later.
+
+Implementation
+--------------
 How to construct a reactive vec2 from a reactive num (unit testing):
   let v=if (time==time) [time,time] else [0,0] in v
+
+Analyse a postfix phrase as a Locative, regardless of context?
+That will require a lot of refactoring. Not worthwhile.
+As today, only analyse a phrase as a Locative on the left side of ':='.
+
+old:
+  void Assignment_Action::exec(Frame& f, Executor&) const
+    { locative_->store(f, *expr_); }
+  Locative -- it's an AST with the arrows pointing down toward the leaves
+  Local_Locative    // local variable
+  Dot_Locative      // x.s
+  Indexed_Locative  // x i
+new:
+  Need a path that can be traversed from the leaf out to the top level and
+  contains the index values. The old Locative AST is backwards.
+   * Linked list of Dot_Index, Bang_Index and Call_Index, both contain index
+     value and next. Construct linked list while traversing Locative tree.
+     Dot_Index contains Symbol_Ref, Bang_Index and Call_Index contain Value.
+     Path iterator contains Index ptr, Index type, position in Call_Index path
+     if the Call_Index is indexing a list, rather than a dict.
+      * There is a design alternative where S I := X is not legal when S is a
+        Dict, and you must use S!I := X instead. In that case Call_Index
+        contains a Shared<const List>.
+  This design is tightly linked to the (somewhat arbitrary) indexing syntax
+  I chose. That's okay for a purely internal API. However, there is also a
+  proposal for a Curv API for traversing a data structure using a path. How
+  are the two related and do they share code? A simple path-based Curv API
+  would just use a list of index values, without partitioning the list into
+  call/dot/bang segments and type-checking each segment.
+new:
+  A Lens takes a structure and: returns a substructure (get); or: sets that
+  substructure to a specified value (put). We can convert _[i,j] and _.foo
+  locatives into lenses.
 
 Assignment to an Array Slice
 ----------------------------
@@ -56,36 +93,3 @@ For a non-empty path whose head is index value Ix and whose tail is P,
     Select E, the corresponding element of B, which has the same shape as Ix.
     Update A!i with: update P E (A!i)
   Return the updated value of A.
-
-Generalized Array Slicing
--------------------------
-A[i,j,k]
-Current semantics are the same as K's A[i;j;k], supports jagged arrays.
-Indexing with a path is an operation on trees:
-  i is a tree of natural numbers, each in the range 0..<count A
-  for each n in i, replace it with A!n[j,k].
-  Base case: A[] => A.
-  So this is a recursive operation.
-
-What I don't currently support:
- * negative indices, slice notation with negative indices (Python, Mathematica)
- * special index range notation, eg: `..`, `A..`, `..B` (Python, Mathematica)
-   In K, `..` is specified by an empty argument, eg A[i;;k]
-These notations are useful when the end of a range index is relative to the
-size of that dimension. Right now you need to use `count A`, `count(A[0])`,
-`count(A[0,0])` etc to compute the end of a range.
-
-I could leverage the reactive variables mechanism and introduce an 'end'
-variable that only has a value in an indexing context. Then,
-    `..`  is `0..end`
-    `A..` is `A..end`
-    `..B` is `0..B`
-No need for negative indices, you can write `end-2` or whatever.
-
-Awkward Arrays supports a much fancier design for array slicing.
-It's also a complicated mess, but there might be good ideas to copy.
-https://github.com/scikit-hep/awkward-array#slicing-with-square-brackets
-
-Awkward allows indexing using a boolean list. APL supports this using a
-separate compress verb, and K has a where verb that converts a boolean list
-to an index list. K's `where` verb replaces a multiplicity of APL verbs.

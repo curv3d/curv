@@ -1,5 +1,7 @@
 Generalized Recursive Functions
 ===============================
+Recursive references are legal in any lambda expression.
+
 TODO
 ----
 * Every data definition has a thunk. Nonlocal refs in the definiens
