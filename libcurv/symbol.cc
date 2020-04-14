@@ -78,7 +78,7 @@ Symbol_Ref value_to_symbol(Value val, const Context& cx)
         return false_sym;
     return val.to<Symbol>(cx);
 }
-Symbol_Ref value_to_symbol(Value val)
+Symbol_Ref maybe_symbol(Value val)
 {
     static Symbol_Ref true_sym = make_symbol("true");
     static Symbol_Ref false_sym = make_symbol("false");

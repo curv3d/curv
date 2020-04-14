@@ -58,7 +58,7 @@ Record::fields() const
 std::pair<Symbol_Ref, Value>
 value_to_variant(Value val, const Context& cx)
 {
-    auto sym = value_to_symbol(val);
+    auto sym = maybe_symbol(val);
     if (!sym.empty()) {
         return std::pair<Symbol_Ref,Value>{sym, missing};
     }
