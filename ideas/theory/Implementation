@@ -29,11 +29,32 @@ There are 3 libraries in the libcurv directory:
 
 LibCurv
 -------
-This is the biggest and most complex piece of code.
+This is the biggest and most complex block of code.
+All names are in the curv:: namespace.
+
+No Global Variables
+~~~~~~~~~~~~~~~~~~~
+There are no mutable global variables in libcurv.
+Any state needed by a function must be passed in as an argument.
+This leads to a distinctive coding style, inspired by functional programming.
+
+The console output stream is not a global variable. Instead, there is a
+System object that contains global state needed at any time (compile time
+or run time), such as the console (where we write error messages).
+
+The following types are used to represent "global" state associated with
+a particular phase of program translation or execution. Each of these contains
+a System reference. A reference to one of these objects is passed to each
+function associated with that phase.
+
+  Scanner -- parsing
+  Environ -- semantic analysis
+  Frame -- evaluation
+  SC_Frame -- SubCurv compiler
 
 Pervasive Types
 ~~~~~~~~~~~~~~~
-Shared<T> is a referenced counted smart pointer to an object of type T.
+Shared<T> is a reference counted smart pointer to an object of type T.
 It is faster and more compact than std::shared_ptr<T> in the C++ standard.
 The limitation is that Shared<T> is not thread safe.
 make<T>(constructor-arguments) allocates an object of type T and returns
@@ -46,10 +67,11 @@ fails if the object graph contains cycles, we ensure that all objects in the
 Curv language runtime are acyclic. Very few programming languages can
 guarantee that all objects are acyclic, but Curv is designed for this.
 
-Shared<const String> is the representation of character strings used by
+Shared<const String> is the representation of character strings in
 the Curv language runtime (see: Value). It is a UTF-8 format string.
 
-stringify(arg1,arg2,...) converts a list of arguments to a Shared<const String>.
+stringify(arg1,arg2,...) converts a list of arguments of arbitrary type
+to a Shared<const String>.
 
 `const String_Ref&` is used to declare a function parameter which is a
 character string. Valid arguments include a C++ string literal like "foo",
@@ -60,30 +82,50 @@ is the syntax for throwing an exception. This is used for reporting all
 compile time and run time errors. When an error is printed, it includes a
 stack trace: the stack trace information is in the Context object.
 
+Any function that can throw an error will either have a 'const& Context'
+argument, or it will have another argument from which a Context can be
+constructed (the aforementioned Scanner, Environ, Frame and SC_Frame types).
+
 Values
 ~~~~~~
+The Curv language has 6 fundamental data types: Number, Symbol, String,
+List, Record and Function. The mapping between these abstract types and
+libcurv types is not 1-1. For example, in Curv, there is no fundamental
+boolean type: instead, the symbols #true and #false are used to represent
+boolean values. In libcurv, the symbols #true and #false are represented
+specially as type 'bool', and non-boolean symbol values are represented as
+type Symbol_Ref.
+
 All values in the Curv language runtime are represented by type Value,
 which is always passed by value. A Value occupies 64 bits. Numbers and booleans
 are stored directly. Other types (Symbol, String, List, Record, Function, etc)
 are stored as a pointer to a dynamically allocated object of type Ref_Value,
 which has a reference count.
 
-Instances of subclasses of Ref_Value are dynamically allocated and referenced
-using Shared pointers. For example, a Shared<const String> can be directly
-converted to a Value, and value.maybe<String>() returns a Shared<String>
-which is non-null if the value is actually a string.
+Here's how to convert between type Value and type bool:
+    Value{a_bool}
+        Convert a bool to a Value.
+    value.is_bool()
+        Returns bool: true if the value is a bool.
+    value.to_bool(const Context& cx)
+        Convert value to a bool, throw an error if it isn't a bool.
+        The 'cx' argument is needed for throwing an exception.
+
+Here's how to convert between type Value and type Shared<const String>:
+    Value{a_string}
+        Convert a string to a Value.
+    is_string(value)
+        Returns bool: true if value is a string.
+    maybe_string(value)
+        Returns Shared<const String>: nullptr if value is not a string.
+    value_to_string(value, const Context& cx)
+        Returns a non-null Shared<const String>, or throws an exception
+        if value is not a string.
 
 Curv Programs
 ~~~~~~~~~~~~~
 A Curv program is represented by a Source object, which contains the
 program text (an array of characters) plus the filename (optional).
-
-A System is an object that contains global state needed at compile time
-and run time, such as the console (where we write error messages).
-Note that libcurv does not have any mutable global variables.
-This makes the code reentrant (multiple threads can run different instances
-of libcurv with any conflict due to global variables), plus it is an exercise
-in quasi functional programming style.
 
 To compile a Curv program into executable form, then to evaluate it into a
 Value, you can:
@@ -92,17 +134,13 @@ Value, you can:
  * call program.eval()
 
 Here's what Program::compile() does:
-
  * The Source is converted to a sequence of tokens using a Scanner object.
-
  * A recursive descent parser called `parse_program` reads tokens from a Scanner
    and returns a Phrase, which is a parse tree.
-
  * Conceptually, the Curv grammar is divided into a Surface Grammar and a Deep
    Grammar. See docs/language/Grammar.rst. The Surface Grammar is simple,
    and just explains how to parse source code into a tree, even if the tree
    isn't a valid program. `parse_program` just uses the Surface Grammar.
-
  * The parse tree then undergoes semantic analysis by the analyser, whose
    main data structure is an Environ. So we call phrase->analyse(environ),
    and that returns a Meaning.
