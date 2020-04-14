@@ -120,14 +120,16 @@ Local_Data_Ref::eval(Frame& f) const
 
 Value record_at(Value rec, Symbol_Ref id, const Context& cx)
 {
+#if 0
     if (auto list = rec.maybe<const List>()) {
         Shared<List> result = List::make(list->size());
         for (unsigned i = 0; i < list->size(); ++i)
             result->at(i) = record_at(list->at(i), id, cx);
         return {result};
-    } else {
-        return rec.at(id, cx);
     }
+    else
+#endif
+        return rec.at(id, cx);
 }
 Value
 Dot_Expr::eval(Frame& f) const
