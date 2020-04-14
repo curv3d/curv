@@ -1229,12 +1229,15 @@ struct Defined_Expression : public Just_Expression
     {
         if (auto rec = val.maybe<Record>())
             return {rec->hasfield(id)};
+      #if 0
         else if (auto list = val.maybe<List>()) {
             Shared<List> result = List::make(list->size());
             for (unsigned i = 0; i < list->size(); ++i)
                 result->at(i) = defined_at(list->at(i), id);
             return {result};
-        } else
+        }
+      #endif
+        else
             return {false};
     }
     virtual Value eval(Frame& f) const override
