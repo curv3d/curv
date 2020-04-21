@@ -1,0 +1,41 @@
+A function call can have the following results:
+ * success: returns a value.
+ * fail: the argument is not a member of the function's domain.
+   By default, the failure is converted into an error, and the program aborts
+   with an error message. But the caller can choose to handle the failure.
+   The domain is designed as part of the function's API.
+ * error: An error is detected, and the program is aborted with an error
+   message. A call to function F can abort for reasons other than a failure
+   (argument is not in F's domain). For example, F can call another function
+   G, which fails, and F has not made provisions to handle the failure.
+ * loop: the function call loops forever.
+
+Since it is possible to handle a failure in a function call, without aborting
+the program, we can say that Curv supports exception handling. But it is
+*denotative* exception handling, it isn't the C++/Python model of a non-local
+transfer of control.
+
+The `match` function is used to handle a failed function call.
+    x >> match[f,g]
+calls `f x`. If this fails, then `g x` is called instead.
+
+This is a very embryonic feature. I've never felt the need for exception
+handling in Curv, so the feature isn't developed. `match` is the fundamental
+conditional construct in Curv (if/then/else is really just sugar for match),
+and because of the way Curv is designed, with the uncompromising focus on
+simplicity, orthogonality and expressive power, it turns out that exception
+handling just "falls out" from the conditional construct.
+
+How to derive if/then/else from match:
+    if A then B else C
+      => A >> match[#true->B, #false->C]
+If we implement the extensible mixfix operator proposal, and then add a
+macro facility, then if/then/else can be defined in user space.
+
+TODO: develop the idioms for using `match` to write functions that handle
+exceptions, and for writing functions that define their own domain.
+Maybe this will involve creating some higher level operations, like I defined
+'if' in terms of 'match'.
+
+The Patterns proposal contains a lot of new syntax for doing this. I bet a lot
+of it is redundant. What is the core?

@@ -1,0 +1,8 @@
+A "Module" is a branded record, or an anonymous record with branded fields.
+
+Elsewhere, I considered the idea that modules need to be a distinct type from
+records & dictionaries, which can be integrated into a single type called Dict.
+
+A possible syntax for a module constructor is {|a=1;b=2|}.
+
+Here are the differences between Modules and Dicts:

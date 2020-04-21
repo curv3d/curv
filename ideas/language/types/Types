@@ -305,11 +305,42 @@ distinctions between `String` and `repr`, `Char` and `ucode`, `Bool` and `bit`.
    Eg, in Swift, Double(1) => 1.0 and String(0) => "0".
 So I'm still good.
 
+MVP Type Constructors
+---------------------
+Just enough to replace is_num, is_list etc.
+Before I start implementing GPU scalar types.
+
+Any -- the set of all values
+Error -- the empty set (domain and range of the `error` function)
+
+Num, Symbol, Char, Bool, Type
+
+Function
+Mapping or Callable
+
+List T -- List Any? replaces is_list
+String = List Char
+Tuple[T1,T2,...]
+Array R T
+    R is a rank: 0, 1, 2, ...; T is a type
+    Eg, `List = Array 1 Value`.
+    Eg, `String = Array 1 Char` is a character string.
+    Eg, `Array 2 Colour` is a 2D pixel array.
+    Note, Array 0 T == T
+Array Dims T
+    Dims is a list of dimensions.
+    Eg, Array [3] Char is a string containing 3 characters.
+
+Record min_required_fields -- Record{} replaces is_record
+Struct required_fields -- a record with a fixed set of fields
+
+If predicate
+
 Type Constructor Brainstorming
 ------------------------------
-All or Always or Value or Any_Value or Any -- the set of all values
-None or Never or Empty or No_Value or Error or #[] -- the empty set
-#[x] or Singleton(x) or Constant(x)
+Any or Value or Any_Value -- the set of all values
+Empty or Error or No_Value or #[] -- the empty set, domain/range of `error`
+#[x] or Singleton(x) or Unit(x)
 
 Num, Symbol, Char, List, Record, Function, Type
 Bool, String, Callable

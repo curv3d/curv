@@ -1,0 +1,88 @@
+All Curv values are printed as *constructor expressions*,
+which can be evaluated to recreate the original value.
+(This is the string returned by the `repr` function.)
+
+If two values have the same printed representation, then they are
+operationally equivalent. They cannot be distinguished in any way.
+This is implied by the guarantee that the constructor expression evaluates
+to recreate the original value.
+
+Ideally, Curv should have a universal equality predicate, which works on any
+pair of values. Two values A and B compare as equal (A == B) if and only if
+they have the same printed representation.
+
+On further reflection, equality is more complicated than this.
+Runtime equality tests cannot determine operational equivalence in the general
+case, it's technically impossible. And there is floating point imprecision.
+So I need some exceptions to this rule:
+ * 0 == -0, for compatibility with the IEEE float standard.
+ * It is an error to compare an anonymous function for equality.
+   (Because comparing two expressions structurally for equality is wrong.)
+ * When you compare a reactive expression for equality, the result is a
+   reactive equality expression, not an immediate boolean value.
+   (Because comparing two expressions structurally for equality is wrong.)
+
+When specifying axioms to define the algebra of programs,
+I need 3 notions of equality in my metalanguage. I will need:
+    ==        Equality, as implemented by the == operator.
+              For simple types, equality is operational equivalence.
+    ~=        approximate equality, to deal with floating point approximations.
+    === or ≡  Operational equivalence, eg for functions.
+
+Number Equality
+---------------
+In Curv 0.4, negative and positive zero print as `-0` and `0`, but they
+compare equal. This violates the design principle, but it is an equivalence
+relation. It conforms to the IEEE float standard, which is important
+from the perspective of porting existing float algorithms to Curv.
+
+Perhaps the IEEE floating point semantics of 0 and -0 are an abomination that
+must be corrected by the Curv language. After all, this problem has been cited
+as one reason why floating point numbers are not an equality type in SML.
+It breaks certain algebraic axioms that Curv is designed to uphold.
+
+But first, let's examine the rationale: "Branch cuts for complex elementary
+functions, or much ado about nothing’s sign bit" by William Kahan.
+https://homes.cs.washington.edu/~ztatlock/599z-17sp/papers/branch-cuts-kahan-87.pdf
+
+I'm willing to accept this rationale, and make an exception for -0 == +0.
+
+Function Equality
+-----------------
+Anonymous functions are required to use intensional equality, comparing if the
+code is the same (as opposed to extensional equality that tests operational
+equivalence, which is impossible). Branded functions use brand equality.
+
+Problems with intensional equality:
+ * It probably violates the algebra of programs. Eg, a+b == b+a in all contexts,
+   so that requires a->a+b == a->b+a.
+ * The definition of function equality could change from release to release,
+   due to compiler changes.
+Alternatives:
+ * All functions compare equal in Curv 0.4. This is an equivalence relation,
+   so it satisfies the equality axioms. It means that == does not return a
+   meaningful result when comparing shapes, since a shape record is a mix
+   of functions and data. This particular problem is fixed with branded shapes.
+ * In K9, a=b is an error if either a or b is a function. In Curv, that means
+   shape equality, at present, is an error, rather than returning a meaningless
+   result.
+So, report an error, or return an arbitrary and useless result? Hmmm.
+Either way, the code can be fixed to use branded values.
+
+With the introduction of abstract values and brand equality, function equality
+can now have useful semantics. Two named functions compare equal if they denote
+the same API, or unequal if they denote different APIs, regardless of whether
+two distinct APIs happen to have the same implementation under the covers.
+After all, the implementation of the API could change in the next release, and
+you don't want your equality test to expose implementation details.
+
+So I'm arguing that operational equivalence for functions, aside from being
+impossible to implement, is actually undesirable for software engineering.
+(It is desirable to talk about operational equivalence when specifying
+the algebraic axioms for an API, though.)
+
+The K9 semantics are fine for anonymous functions. If you plan to use a
+function with an equality test, then give it a name.
+
+In conclusion, I'll take K9 error semantics for anonymous function equality
+plus branded equality for named functions.

@@ -1,0 +1,1088 @@
+Implementation Details
+======================
+A proposed implementation of Branded Values.
+
+Internal Fields
+---------------
+A record field whose name begins with `_` is an "internal field".
+By convention, this field is not considered part of the "public API"
+provided by the record. Perhaps this field is not intended for general use,
+and has an unstable interface (it might change or go away in
+the next library release). Perhaps this field is metadata.
+
+Special Fields
+--------------
+The Curv language supports some "special" field names, which, if defined in
+a record, change the semantics of the record value. These special field names
+are prefixed with `__`.
+
+`__call`
+  If defined, the record can be called using function call syntax.
+  If R is a record, then `R x` is equivalent to `R.__call x`.
+`__brand`
+  The Brand data inside a branded record or function can be directly accessed
+  by referencing the `__brand` field. Unbranded values don't have this field.
+
+The `__brand` field is the only field that primitive functions can have.
+If you want a function with user defined fields, you can create a record
+with a `__call` field.
+
+TODO: Explicitly defining a `__brand` field in a record literal might lead to
+difficulties: any reference to `__brand` within the record literal must
+keep in sync with changes to the brand using the `@` operator. Use cases?
+
+The `__brand` field is a kind of metadata, which encodes how a branded
+value was constructed. The plan is to eventually add additional special fields
+and metadata to functions and records to support the IDE and the visual
+programming environment.
+
+Autocomplete semantics
+----------------------
+In the REPL and the IDE, <tab> autocompletion of a dot expression, as in:
+    record_expression .<tab>
+will ignore internal fields. If you want to see internal fields during
+autocomplete, you need to type an explicit initial `_`, like this:
+    record_expression ._<tab>
+
+If you perform this autocomplete action:
+    expression <tab>
+then you will see a list of non-internal field names prefixed with `.`,
+if the expression denotes a record. If the expression denotes a function, or
+a record with a `__call` field, then you will (additionally) see a completion
+with a function call argument. If the function is a piecewise function returned
+by `match`, then there will be multiple function call completions, one for
+each case in the `match`.
+
+Include semantics
+-----------------
+The `include` statement is meant for including libraries,
+and it ignores internal fields.
+This is inspired by the Python `import` statement, but it has another purpose.
+By convention, libraries are branded records, which means they all have a
+`__brand` field. If you include two disjoint libraries into the same scope,
+you should not get an error due to conflicting definitions of `__brand`.
+
+The `...` statement is used for pure field inheritance, and it does not
+ignore internal fields.
+
+TODO: Using a record comprehension to modify the fields in a branded record,
+while preserving the `__brand` field, might lead to difficulties. The fields
+may get out of sync with the brand. Examine use cases for this.
+
+Field Assignment Semantics
+--------------------------
+I intend to extend the assignment operator (:=) to allow list elements and
+record fields to be updated:
+    list[i] := foo;
+    record.f := bar;
+Record field updates are part of the design for programmable rendering.
+But they interact with branded records. If a field is modified within a
+branded record, the field becomes out-of-sync with the brand, causing
+semantic difficulties. TODO: resolve this issue. Possibilities:
+ 1. It is illegal to assign a field of a branded record.
+ 2. Find a way to update the brand after modifying a field (hard).
+ 3. The brand is erased. R.x:=a is R:={...R,x:a}.
+
+TODO: What happens if you modify a branded field in an unbranded record?
+ 1. Maybe the branded/unbranded status is preserved. You can only assign
+    a record or function to a branded field. The value that is assigned may
+    be modified (by acquiring the module's brand).
+ 2. Maybe the branded field status is erased. You can assign any value.
+    R.x:=a is R:={...R,x:a}.
+ 3. A record containing either a brand or branded fields is considered
+    "not plain data", and you can't assign fields. (From an earlier design.)
+ 4. Modules and records are distinct. Module fields are not assignable.
+    Records cannot be branded or possess branded fields.
+    This is an extension of #3. (From an earlier design.)
+
+Note, branded fields are for static APIs, not for dynamic data.
+Branded fields are only used in records that are about to be branded.
+Assignment seems surprising and out of place.
+
+Comment:
+#3 + #4 are very "static".
+'R.x:=a is R:={...R,x:a}' is very "dynamic".
+
+Let's consider the semantics of real cases where we update shape fields.
+* colour c shape
+* render opts shape
+* set_bbox bbox shape
+In all these cases, we rebrand the shape.
+
+Brand Values
+------------
+The `__brand` field describes the expression used to construct a branded
+record or function. A __brand value is a variant value, one of the following:
+* `{field: {name: <symbol>, parent: <identity of parent record>}}`
+  The value was constructed using a dot expression, <parent-record>.<name>,
+  selecting an abstract field from a named record.
+  The `parent` field is not the parent record itself,
+  as that would create a cyclic reference.
+* `{call: {constructor: <constructor>, argument: <value>}}`
+  The value was constructed using a function call,
+  `<constructor> <argument>`.
+* `{global: <symbol>}`
+  Used for values bound to variables in the standard library.
+  TODO: Or in the top level REPL environment?
+
+Printed Representation
+----------------------
+An unbranded function is printed as `"<function@>"` if it is a constructor,
+or as `"<function>"` otherwise.
+
+An unbranded record is printed as a comma-separated list of field descriptors,
+surrounded by braces. Branded fields are prefixed with `@`.
+
+A branded function or record is printed by outputting the `__brand` field
+in the form of a constructor expression.
+* `{field: {name: <symbol>, parent: <identity of parent record>}}`
+  is printed as `"${parent constructor expression}.$fieldname"`.
+* `{call: {constructor: <function>, argument: <argval>}}`
+  is printed as `"${function.__brand constructor expression} $argval"`.
+* `{global: <symbol>}`
+  is printed as an identifier, the name of the global variable.
+
+Equality
+--------
+Two values X and Y are equal (X==Y) if and only if they have the same printed
+representation.
+
+The `@` Operator
+----------------
+When you construct a branded value, the brand is automatically constructed
+from the lexical and runtime context, using the following rules:
+
+ 1. Within a record literal, a branded field definition such as
+        @name = value
+    will abort if `value` is not a function or record.
+    
+    If R is a branded record and B is a branded field within the record,
+    then R.B assigns a Field Brand to the field value, based on the field name B
+    and the brand of R.
+
+    If R is an unbranded record and B is a branded field within the record,
+    then R.B just returns the field value of B, without assigning a brand.
+    * TODO: If there is an operation for removing the brand from a record, then
+      does the record need to preserve the original values of branded fields?
+      Because otherwise, it's more efficient to apply Field Brands to branded
+      fields once, then cache the result.
+
+ 2. A constructor function is denoted by a function literal of the form
+        <parameter> -> <function literal>
+    or
+        <parameter> -> @ <expression>
+    Note that constructor functions are distinguished from non-constructors
+    at parse time.
+    When the constructor function is called, the return value is assigned
+    a Call Brand containing the function and argument values.
+
+ 3. Given a program of the form
+        <function literal>
+    or
+        @ <expression>
+    then if the process that loaded and evaluated the program has supplied
+    a brand, then that brand is applied to the program result.
+    If no brand value was supplied, then no brand is assigned.
+    For example, if the program is evaluated using
+    `file "filename"`, then the program brand is a Call Brand:
+    `{call: {constructor: file, argument: "filename"}}`.
+
+The precedence of `@` is 'unary', same as '-' and '+'.
+
+I don't see much utility in unbranded functions, so I figure that function
+literals should always be implicitly branded (in programs & function bodies).
+
+Alternative designs:
+* Special treatment for `match[param1->body1,param2->body2,...]`
+* In a program or function body, the `@` operator can appear in any
+  tail position, not just at the head of the expression.
+
+The `match` Operator
+--------------------
+The `match` operator returns a piecewise function, which contains a list
+of member functions.
+
+If a piecewise function is branded, then the piecewise function's Call Brand 
+is applied to the result of calling one of the member functions. Individual
+member functions can be branded, but those brands are ignored.
+
+make_shape and is_shape
+-----------------------
+make_shape returns a branded record, so that the Viewer can distinguish
+a shape argument from a parametric shape's record argument in the CSG tree.
+
+is_shape should only match branded records containing the required shape
+fields.
+
+Under the 'Type Records' proposal, make_shape is renamed to Shape,
+and is_shape becomes Shape?.
+
+Within the shape library, the result returned by make_shape is normally
+renamed by standard shape operators.
+    @everything = Shape{...};
+    @cube d = @Shape{...};
+
+NOTE: One annoying thing about this syntax is that = is followed by @
+in one case but not the other case.
+
+Parametric Shapes
+-----------------
+A parametric shape expression (`parametric <parameter defs> in <shape>`)
+evaluates to a record containing parametric metadata:
+* constructor: An unbranded constructor function, which maps a record of
+  parameter values to a shape.
+* argument: a record of parameter values.
+
+The <argument> must be in canonical form, for the purposes of printing and
+equality. My plan is that <argument> contains fields for every parameter.
+(An alternate plan is to suppress all fields set to their default values.)
+The <constructor> is responsible for converting its argument to canonical form
+before storing parametric metadata in the resulting shape.
+
+[Can you construct a parametric shape without using the `parametric` keyword?]
+
+How is the parametric metadata represented?
+ 1. As a Call Brand. A parametric shape record prints as:
+        <function@>{param1:val1,...}
+    If a parametric shape is rebranded, then it loses its parameters.
+ 2. Orthogonally to __brand, as __call, __argument.
+    An unbranded parametric record prints as `parametric{arguments}`.
+    A branded parametric record prints as `brand{arguments}`.
+
+Design #2 meets the requirements of the "Prototype" proposal.
+I can use this to define "cube" as a prototype in the shape library:
+
+    @cube = parametric d = 2 in {
+        ... box.exact(d,d,d);
+        circumratio: sqrt 3;
+        @mitred: parametric d = d in {
+            ... box.mitred(d,d,d);
+            circumratio: sqrt 3;
+        };
+    };
+
+`cube` prints as `cube{d:2}`.
+
+Records
+-------
+There are two use cases for record values:
+* Pure Data: sets of configuration variables, named arguments in function calls.
+  It's a collection of named values that can be independently specified, and
+  any constraints or invariants on the values are enforced later.
+  For function call arguments, we want the syntax {foo: 0, bar: 1}.
+  Fields are assignable.
+* Modules: Libraries, and ADTs like shapes and blending kernels.
+  Modules are typically branded, and have branded fields.
+  The magic __call field permits a module to be called like a function.
+  Fields are *not* assignable: at a low level, this causes field values to be
+  out of sync with the brand, and at a high level, it breaks ADT invariants
+  in an already constructed and verified ADT instance.
+  A module can be converted to a record, but then it loses the special
+  properties that cause it to be recognized as an ADT instance.
+  A module can be rebranded--the shape library does this a lot. Shapes are
+  modules that are recognized by duck typing, and shapes must be distinct
+  from pure-data records.
+
+Brands
+------
+Brands are similar to dynamic language type tags, although they have a richer
+structure. A Brand implies a particular set of fields with specific type
+and value constraints, and/or a specific call interface. Like type tags,
+two distinct brands can have the same interface. Brands are nominal types
+tied to a specific implementation, they are not structural types.
+
+If we want abstract or polymorphic or structural types, we use duck typing.
+
+* The use cases for shape brands are what you would otherwise represent as
+  instances of a specific concrete class in OOP.
+* Curv is to become a visual programming language. Values tagged with
+  application type tags are needed so that each tagged type can have its
+  own visual appearance and UI.
+* We could have a concrete Colour type, perhaps branded as `sRGB[r,g,b]`.
+
+All this implies pattern matching on brands.
+A constructor function F has an associated predicate, `F? x`.
+Eg, `if (union? shape) ...` or `if (cube? shape) ...`
+or `if (shape == everything)`.
+
+Record Literals
+---------------
+There are two types: record comprehensions, and scoped record constructors.
+
+In either case, we individually mark each field as either branded or unbranded.
+We need this because a branded record can be rebranded.
+This is a common use case in the shape library. When we rebrand a record, we
+apply the new brand to each branded field, but leave the unbranded fields alone.
+
+In a record comprehension, we use field generators to add fields.
+* `pattern : value` is the standard field generator.
+  Any identifier pattern can be prefixed with `@`, to construct a branded field.
+* `... R` adds all of the fields in record R.
+  PROBLEM: importing a __brand field from R would cause semantic problems.
+  The brand would be out-of-sync with the other fields.
+  The same problem arises with importing __call,__argument fields from a
+  parametric record.
+  SOLUTION: I don't see a use case for importing and preserving these
+  automatically generated fields. There are lots of cases in the shape library
+  where we modify an existing shape record, by adding or overriding fields,
+  but in those cases, we immediately rebrand the resulting record, and the
+  original record is preserved in our brand metadata. So, `...` ignores such
+  fields. Perhaps it ignores all special fields.
+
+A record R is represented internally as a map from field names to values.
+There is also a pointer to the brand (null if the record is unbranded).
+Each binding in this map has two flags: branded, and brand_applied.
+* When a record is initially constructed by a record literal, it is
+  unbranded. The brand is null, and all of the brand_applied flags are true.
+* The @R operation is implemented by setting the brand slot, and clearing
+  the brand_applied flags. Use copy-on-write.
+* R.x is implemented by looking up 'x' in the field map.
+  If 'brand' is true and 'brand_applied' is false (slow path), then we use
+  copy-on-write to modify the field value and apply the brand.
+  Finally, we return the field value.
+
+Type Records
+------------
+Branded values are like instances of concrete user-defined data types (the
+names are like type tags or class names). Abstract classes, aka interfaces
+or protocols, are implemented using duck typing: values do not store the
+names of the abstract interfaces that they implement, because that idea
+has been proven to be too inflexible. It's better if you can invent a new
+abstract interface and retroactively consider existing values to implement
+that interface, without modifying existing code.
+
+A "type record" is a record that represents a concrete type, and contains
+operations on that type: it contains a constructor, a type predicate, and
+perhaps other operations on instances of the type. It serves a purpose
+similar to classes or type classes in other languages. It could be passed
+around as an explicit 'type' argument to simulate various styles of generic
+programming (eg, SML modules and functors, C++ templates, Haskell type classes).
+
+SML modules have the concept of opaque vs transparent type members.
+Opaque type members are analogous to branded fields, while unbranded fields
+are transparent. This might be relevant to simulating type & module based
+generic programming in Curv using records.
+
+Eg, introduce `Shape` as a type record that represents the Shape base class.
+Eg, Bool, Symbol, Number, String, List, Record, Function are type records.
+
+T is the constructor (via T.__call), and T? is the predicate (via T.__isa).
+Eg, if (Bool? x) ..., f(b :: Bool?) = ...
+    Bool(x) converts x to a Bool.
+
+If instances of T are named records, then their names will have the form
+`T(constructor_arguments)`.
+    @T = {
+        __call x = @ {...};
+        ...
+    };
+`T? x` is true if x was constructed using T.
+It's an abbreviation of `T.__isa x`, and __isa is automatically defined.
+A constructor is a Callable that stamps its brand on its result.
+The predicate field __isa is automatically added to a constructor literal,
+defined like this:
+    __isa = match [
+        {__brand: {call: (ctor,_)},...} && ctor == __brand -> true,
+        _ -> false ];
+Note __brand is in scope of a scoped record literal? Only if we handle the
+case where a record is rebranded using @.
+Note __isa can be overridden by an explicit definition: `Shape` will do this.
+
+make_shape and is_shape are replaced by:
+@Shape = {
+    __call r = make_shape r;
+    __isa x = is_shape s;
+};
+
+Value Pickers in the Viewer
+---------------------------
+A prime motivation for branded values is to permit the Viewer
+to obtain sets of value pickers from multiple locations in the CSG tree
+of a shape. Eg, `render opts shape` has two sets of value pickers.
+
+By convention, shape operators have arguments that match one of the following
+cases:
+* A shape, which may contain zero or more picker sets in its CSG tree.
+* A list of shapes.
+* A record containing non-shape arguments: if some of these fields have pickers,
+  then this record turns into a picker set.
+
+Note that a shape is a branded record, while a shape operation record parameter
+is an unbranded record. This is how we keep the two cases distinct.
+
+The Viewer walks the CSG tree accumulating picker sets.
+
+render
+------
+@render opts shape =
+    @{
+        ... shape;
+        render:
+            if (defined(shape.render))
+                {...shape.render; ...opts}
+            else
+                opts;
+    };
+
+,----------------------------------------------------------------------------
+
+cube
+----
+To make `cube` return branded shapes, we must first decide what is the
+canonical constructor syntax for various cubes (eg, exact vs mitred).
+
+// cube0 D
+cube0 d = @box.exact(d,d,d);
+
+// cube1.exact D, cube1.mitred D
+cube1 = @{
+    exact d = @box.exact(d,d,d);
+    mitred d = @box.mitred(d,d,d);
+};
+
+// cube2 D is an alias for cube2.exact D.
+// terms: cube2.exact D, cube2.mitred D
+cube2 = @{
+    exact d = @box.exact(d,d,d);
+    mitred d = @box.mitred(d,d,d);
+    CALL = exact;
+    circumratio = sqrt 3;
+};
+
+// No aliases, for simplicity.
+cube3 = @{
+    __call d = @box(d,d,d);
+    mitred d = @box.mitred(d,d,d);
+    circumratio = sqrt 3;
+};
+
+// In the current design, `cube` is not the same as `cube.exact`,
+// because the former has circumratio, the latter does not. So they can't
+// have the same identity.
+
+current:
+    cube = {
+        ... cube_e 2,
+        call: cube_e,
+        circumratio: sqrt 3,
+        exact: {
+            ... cube_e 2,
+            call: cube_e
+        },
+        mitred: {
+            ... cube_m 2,
+            call: cube_m
+        },
+    }
+    where (
+        cube_m d =
+            let r = d / 2;
+            in make_shape {
+                dist(x,y,z,t) = max(abs(x,y,z) - r);
+                bbox = [[-r, -r, -r], [r,r,r]];
+                is_3d = true;
+            };
+        cube_e d = box.exact(d,d,d);
+    );
+new:
+    cube = *{
+        ... cube_e 2,
+        call: cube_e,
+        circumratio: sqrt 3,
+        exact: {
+            ... cube_e 2,
+            call: cube_e
+        },
+        mitred: {
+            ... cube_m 2,
+            call: cube_m
+        },
+    }
+    where (
+        cube_m d =
+            let r = d / 2;
+            in make_shape {
+                dist(x,y,z,t) = max(abs(x,y,z) - r);
+                bbox = [[-r, -r, -r], [r,r,r]];
+                is_3d = true;
+            };
+        cube_e d = box.exact(d,d,d);
+    );
+
+------------------------------------------------------------------------------
+
+Modules
+-------
+A module is like a record with extra semantics and metadata.
+
+An ordinary record is a simple data structure, a map from symbols to values.
+* {a:1, b:2, ...r} is a record.
+* You can use assignment to modify a field binding or add a new one.
+* The syntax M[#foo] is supported for map indexing?
+* Records are a special case of maps. Map keys need not be symbols.
+  Eg, {1=>#a, 2=>#b}.
+* Records have simple extensional equality.
+  Two records are equal if they have the same field names and field values.
+
+A module is like a record, in that it has field names and values, accessed
+using dot notation. However, modules have additional semantics and metadata.
+
+A module remembers how it was constructed. (This subsumes the Parametric Record,
+Prototype, and Term proposals.)
+
+You can't use assignment (or `...`) to modify the fields in a module
+while preserving its metadata, because now the field values are out of
+sync with the metadata.
+
+Since modules have heavier semantics than records, module literals have a
+heavier syntax. Current proposal is:
+    #{ a = 1; b = 2; }
+Directory syntax: different extensions for record vs module: `foo` vs `foo.m`.
+
+Within a module literal, definitions have extra semantics:
+    name = definiens;
+If the nub of the definiens expression is a function or module literal,
+then the abstract value that results from evaluating definiens is annotated
+with name and parent metadata. The A-value knows its parent module, and knows
+its own name within its parent module. This affects the A-value's printed
+representation, and its equality relation to other values.
+
+There is a second form of definition within module literals:
+    name = ## definiens;
+The `##` operator is the *brand* operator. This works at run time: if the
+right argument is an A-value, then the identity of the A-value is modified
+to contain name/parent metadata, which replaces the prior identity. If the
+argument of `##` is not an A-value, then it is returned without modification.
+
+Fields within a module have optional documentation metadata.
+The syntax might look like this:
+  #{
+    /// help string
+    name = value;
+  }
+
+Functions
+---------
+All function values carry module-like identity metadata,
+which provides module-like term equality and term printing semantics.
+
+Consider a function literal:
+    x -> body
+or a function definition:
+    f x = body
+If the nub of the body expression is a function or module literal,
+then the abstract value that results from evaluating a function call is annotated
+with call metadata. The A-value knows the function used to construct it,
+and the argument that was passed.
+
+There is a second form of function literal or definition:
+    x -> ## body
+    f x = ## body
+As before, the `##` or *brand* operator adds call metadata to the result of
+evaluating `body`, if that result is an A-value.
+
+Piecewise Functions
+-------------------
+`match` expressions are treated as a kind of function literal, in the two
+contexts where we implicitly add identity metadata to anonymous A-value literals
+(implicitly means without using the `##` operator). If the nub of a definition
+within a module literal, or if the nub of a function body, is a match[...]
+expression, then for each element of the list literal passed to match as an
+argument, if the nub is a B-literal, then we implicitly add identity metadata
+to that B-literal.
+
+This rule avoids the need to use `##` explicitly in some common cases.
+
+Wait a minute, this implies an ability to add identity metadata conditionally,
+since some branches of a match call might not be syntactic B-literals.
+
+
+------
+
+Ordinary `name=value` definitions are now called 'transparent' definitions.
+You may wish to use transparent module bindings like
+    fieldname = M
+if M is a module imported from another library, and you don't wish to
+change the identity of M or modify its equality relation.
+
+
+
+Piecewise Constructors
+----------------------
+Two issues:
+ 1. Match doesn't return a constructor.
+ 2. When a piece function is applied after pattern matching,
+    * We want the name/parent metadata that has been applied to the whole
+      function by ::= to be applied to the result.
+    * Do we want the piece function to be stored as CONSTRUCTOR metadata?
+      Or do we want the whole function as CONSTRUCTOR? The latter stores more
+      information, with no loss of generality, since we can recover the piece
+      function by pattern matching the ARGUMENT.
+
+`#{CALL=match[pat1->expr1,pat2->expr2,...]}` addresses both issues.
+
+Better syntax:
+`f ::= a_normal_function` converts the function to a constructor.
+
+`cmatch flist = #{CALL=match flist}`?
+
+Standard Metadata
+-----------------
+Module metadata is represented by fields with uppercase names.
+* CALL in a constructor.
+* Identity metadata comprises two metadata fields called IDENTITY and SOURCE.
+  * IDENTITY is a module-id.
+    The compiler assigns a module-id to each #{...} literal in a program.
+    Each distinct(*) module literal gets a different module-id.
+    This field cannot be overridden.
+  * SOURCE is a variant value, which can be overridden by definitions or
+    field generators in the body of a #{...} literal:
+    * #anonymous is the default value of SOURCE within a module literal.
+    * {field: {name: <symbol>, parent: <identity metadata of parent module>}}
+      A ::= definition replaces the definiens module's SOURCE with the
+      field name and the identity of the parent module. The `parent` field is
+      not the parent module itself, as that would create a cyclic reference.
+    * {call: {constructor: <constructor>, argument: <value>}}
+      If a constructor call returns a module, the returned module has
+      its SOURCE replaced by the constructor and argument of the call.
+    * {std: <symbol>}
+      Used for modules bound to variables in the standard library.
+
+The definition of 'distinctness' for module literals is a work in progress.
+* use sequential ids obtained from a counter
+* use cryptographic hashes
+
+Printing
+--------
+Modules are printed as terms using identity metadata.
+* If SOURCE is #anonymous, print "<module $IDENTITY>".
+* If SOURCE is #field, print the .parent term, then ".", then .name as an
+  identifier.
+* If SOURCE is #call, print .constructor, then space, then .argument.
+* If SOURCE is #std, print the symbol as an identifier.
+
+Identity and Equality
+---------------------
+A key difference between records and modules is that records use
+simple extensional equality, while modules use weird intensional equality.
+* Two records are equal if they have the same name/value pairs.
+* Two modules are equal if they have the same identity metadata.
+
+The reason that modules use weird intensional equality is that modules
+are designed to contain functions, and it's technically impossible to
+define simple extensional equality for function values. So in Curv, if
+you have some data abstraction that contains functions, and you want to
+have a useful equality predicate, then you need to wrap those functions in
+a module and design the module's identity metadata so that it corresponds to
+your notion of equality.
+
+Parametric Modules
+------------------
+    parametric <params> in <module-expression>
+is sugar for
+    #{CALL <params> ::= <module-expression>} {<param-init-values>}
+
+How are pickers extracted from a shape module?
+The shape has an associated term expression, which is linear, and may
+contain multiple function calls. For each function call that has a record
+argument, the constructor value is examined to see if it uses a record pattern,
+and pickers are extracted from that record pattern. This leads to multiple
+groups of pickers, each arising from a different constructor. Each picker
+group is assigned a different label, taken from a constructor. The Viewer
+has a two-level picker hierarchy: first, a list of named picker groups,
+then pickers inside each group.
+
+Use Cases
+---------
+Modules are used to represent instances of abstract data types, in those
+cases where you want to abstract over the representation, and control
+the printed representation and equality.
+
+Shapes are modules.
+
+Libraries must be modules in cases where the library exports named
+modules and constructors.
+
+Packages (in the forthcoming package manager) are modules.
+
+Configuration is just name/value pairs, and is represented by records.
+The proposed `render` variable in the REPL is a configuration record with
+assignable fields, which means it is a record.
+
+Cube
+----
+
+Type predicates and subtype relationships
+-----------------------------------------
+* record is a subtype of dict, where all the keys are symbols.
+  * is_record implies is_dict.
+  * a record can be used in a dict context.
+  * All dict operations work on records: 'keys R', 'R!key', 'defined(R!key)',
+    '...R'
+  * Record has an additional operation: 'R.id'
+* Is there a subtype relation between record and module?
+  * Do all record operations work on modules?
+    * If so, we can't introduce R[#key].
+    * Field assignment doesn't work on modules.
+  * Do all module operations work on records?
+    * Not `M x` as an alias for `M.CALL x`.
+  So maybe not.
+
+------------
+There are two kinds of records with different semantics.
+* A 'map' is a data structure, mapping from symbols to values.
+  {a:1, b:2, ...r} is a map.
+  * You can use assignment to modify a field binding or add a new one.
+  * The syntax M[#foo] is supported for map indexing.
+  * Map keys need not be symbols. Eg, {1=>#a, 2=>#b}.
+* A 'module' is a unit of modularity or data abstraction.
+  * The `call` mechanism applies only to modules.
+  * Modules can have 'term' metadata, can be parametric or prototypes.
+  * You can't use assignment (or `...`) to modify the fields in a module
+    while preserving its metadata, because now the field values are out of
+    sync with the metadata.
+  * Terms can only be defined as members of modules.
+
+Terms change the meaning of equality in Curv. Terms introduce an element of
+nominal, as opposed to purely structural, equality. Terms can only be defined
+as members of modules. This leads to the idea that modules themselves do not
+use pure structural equality, but that each module literal has a unique
+identity. Module identity ensures that terms defined by different packages,
+that accidently have the same name, do not lead to unintended term equalities.
+* This provides a solution to the problem of function equality.
+* Does module identity conflict with referential transparency? If so, maybe
+  restrict modules so that they are always connected to the root module of a
+  package via a term path.
+
+The idea of modules and terms are rooted in the following ideas:
+* Term rewriting systems. A term is a hierarchical expression made of atoms,
+  which are names (symbols/operators and variables).
+* "Equational reasoning is an important component in symbolic algebra,
+  functional and logic programming languages... Reasoning with equations
+  involves deriving consequences of given equations and finding values for
+  variables that satisfy a given equation. Rewriting is a very powerful
+  method for dealing with equations."
+* "A term algebra is a freely generated algebraic structure over a given
+  signature."
+* "Term algebras play a role in the semantics of abstract data types,
+  where an abstract data type declaration provides the signature of
+  a multi-sorted algebraic structure and the term algebra is a concrete model
+  of the abstract declaration."
+* The SML module system, which has 'structures' and 'signatures'.
+
+Rationale
+---------
+Curv is a domain-specific language that has been deliberately kept simple.
+So why include as potentially complex a feature as data abstraction in the
+language? The killer application for this feature is shapes.
+
+General purpose languages have general purpose data abstraction mechanisms
+which tend to be extremely complex. For example, classes and inheritance in
+object-oriented languages, or the Haskell type system. These data abstraction
+mechanisms could be used to maintain a CSG tree within every shape, but the
+resulting code would be bloated by a lot of boilerplate.
+
+By contrast, the A-value feature of Curv is laser focused on minimizing the
+boilerplate required when defining new shape operations. The A-value feature
+is also extremely simple, involving only two new pieces of syntax:
+module literals (`#{...}`) and the branding operator (`##`).
+
+Anonymous functions TODO
+------------------------
+Anonymous functions are the only case of abstract values that don't have
+a name. Maybe I should reconsider this. What if anonymous functions are data,
+and they are printed as source code + nonlocal variable bindings?
+Since library functions are named functions, the nonlocal variable bindings
+will not recursively include the entire dependency tree as inline code.
+* This is a non-trival change.
+  * A lot of work to implement.
+  * If anonymous functions are now considered a valuable use case, then the
+    current Abstract Value semantics--that function literals always absorb
+    identity from their defining scope if available--will need to be
+    reconsidered, and things could get more complicated.
+* What is the point/what are the use cases for this?
+  * It means all values have a printed representation that can be used
+    for data exchange.
+  * A `simplify` function that optimizes a function. You can print the
+    code of the simplified function and see the changes.
+
+__identity metadata (alternate designs)
+---------------------------------------
+The __identity of an anonymous function is #null (or maybe #anonymous).
+Simplifies some rules:
+* All abstract values have an __identity.
+* Two abstract values X and Y of the same type
+  compare equal (X==Y) if their __identity fields are equal.
+* The __identity field is used to print the abstract value.
+
+Does this change have any semantic effect elsewhere in the design?
+* Maybe if `... function` is supported (as generating a __call field),
+  then it has an effect, because now we also generate an __identity field.
+  Does this change make things better or worse?
+  * It would make primitive functions behave more consistently with
+    named records?
+  * It could result in a named record having __identity == #anonymous,
+    which is not something I planned to support.
+  * In fact, I think my earlier idea was to make anonymous records and
+    anonymous functions consistent in not having an __identity field.
+    Note that @{...} could result in an anonymous record if the context
+    doesn't support an identity.
+
+I considered whether all anonymous functions should be equal, or whether
+we should generate some kind of GUID (per function literal) to keep them
+distinct.
+* You see this kind of fine grained function equality in other
+  dynamically typed languages. In those other languages, it's poorly
+  implemented, in a way that breaks referential transparency.
+* No, it just adds useless complexity. If you want function equality that has
+  meaningful application-level semantics, then use named functions.
+
+R.x and @R
+----------
+If R is a named record variable, then how is R.x implemented?
+A related issue is, how is @R implemented?
+
+Alternative 1: Anonymous Modules
+''''''''''''''''''''''''''''''''
+A module M has two orthogonal properties:
+* Whether it has a name;
+* Whether each field is opaque or transparent.
+  * An opaque field X is bound to a function or module.
+    M.X is assigned an identity made from the name of M plus #X.
+  * A transparent field is bound to any type of value.
+An anonymous module with all transparent fields is equivalent to a record.
+A module is abstract if it has a name, or if it has opaque fields.
+
+To construct a named module,
+* First, construct an anonymous module using {...} syntax, using a dynamic
+  algorithm (conditionals, name abstraction, function abstraction).
+* Then, bring the module value M into a syntactic context where it is assigned
+  a name: @M as the definiens of an opaque field, as the body of a constructor
+  function, or at the top level of a program.
+
+A named module M can be renamed using @M. This renames all of its opaque fields,
+but transparent fields (which may also have named abstract values) are
+unaffected. This illustrates the importance of recording the opaque/transparent
+status of fields independent of identity metadata.
+
+How do we determine the opacity of a field within a module literal?
+* Scoped module:
+  * Function definitions `f x = y` are opaque.
+  * `<identifier-pattern> = @ expression` is opaque.
+  * `include <module>`: field transparency is inherited from included module.
+  * All other cases are transparent.
+* Module comprehension: follows same pattern as scoped module.
+  * `name : value` is transparent.
+  * `f x : value` is opaque. Why?
+    Consider a function call with named parameters: `f{g x : value}`.
+    Within the body of `f`, what is the parameter `g` bound to?
+    * If transparent, g is an anonymous function that prints as <function>.
+    * If opaque, g is a named function that prints as <function g>.
+      This is better.
+
+When we print an anonymous module, we print a pseudo module literal that
+shows which fields are opaque and which are transparent.
+It might look like this:
+    { opaque, transparent = 42 }
+This implies: equality of abstract anonymous modules compares the values of
+transparent fields and the names of opaque fields.
+Except that, I want to tag opaque fields with their type (function or module).
+So maybe:
+    { <function opaque_f>, <module opaque_m>, transparent = 42 }
+
+This suggests an alternate syntax for opaque field definitions:
+  M = {
+    func f x = body;     // f x = body is transparent? Or remove this syntax.
+    func g = function_expression; // same as f = @function_expr from prev design
+    module m = {...};    // same as m = @{...} from previous design
+  }
+Which is printed as {func f, func g, module m}.
+M is an anonymous module, its fields print as:
+    M.f => "<func f>"
+    M.m => "<module m>"
+Which is groovy, but what about the other use cases for the `@` operator?
+    Top level of a source file:
+        module {...}
+        func some_function_expression
+    Body of a function
+        x -> module ...
+        x -> func ...
+This is more readable than `@`.
+
+A further refinement of this syntax:
+* Within a pattern, @id specifies that the identifier 'id' is an opaque
+  binding. The argument value must be a function or module, and this value
+  is branded with 'id' plus the identity of the parent module, if available.
+  So, @x = body' is an opaque binding within a module, but a more complex
+  pattern like '(@x,@y)=abstract_pair' also works.
+* A module with opaque fields is printed as {@opaque_id, transparent_id=42}.
+* Using a symbol '@' instead of a keyword reads better because it doesn't
+  obscure the identifier that names the binding.
+* The value of an opaque field within an anonymous module prints as
+  <function id> or <module id>.
+* The 'named' qualifier can optionally appear at the head of a program or at
+  the head of a function body. So,
+    named {
+    ...
+    }
+  as a library program, or
+    f x = named { ... };
+Two optional extensions (neither seems like a good idea):
+* As an extension, these opaque or branded definitions can be used anywhere,
+  and the identity is {name: #id} in a non-module context.
+* As an extension, 'named expr' can appear in a wider range of contexts.
+  Eg, as a tail expression of a function body or program. This has limited
+  benefit. It allows a constructor function to conditionally return an
+  abstract value (why?).
+The REPL language: what syntax do you use to experiment with @ bindings?
+* Can you use a top-level @ definition in the REPL?
+* Or use a={@b={c:1}}
+
+If M is an anonymous module, and X is an opaque field, then do we assign
+identity to M.X?
+ 1. No, in this case, X behaves like a transparent field.
+ 2. Yes. It's analogous to an anonymous constructor function, which assigns
+    identity to its results so that the 'parametric record' mechanism works.
+    Since it has identity, it is an abstract value that hides its representation
+    when printed. What identity is assigned? How is it printed?
+      * If M.X is a function, print <function .X> or <function X>.
+      * If M.X is a module, print <module .X> or <module X>.
+    Rejected designs:
+     1. As a pseudo constructor expression: `.X`
+        This design is consistent with printing opaque fields as just a name
+        when an anonymous module is printed.
+        Note, all values that print as `.X` will compare equal.
+        So, weirdly, this is like a symbol with extra structure (fields),
+        and bad equality semantics.
+     2. As `<module>.X`. There's less reason to see this as an ersatz
+        symbol.
+     3. As `<module a7c07d1f>.X`, where `a7c07d1f` is a digest of the
+        module literal. The digest is also printed as part of the parent
+        module. This is part of an alternate design for anonymous
+        functions/modules where I suspect the cost outweighs the benefits.
+
+Idea 1
+''''''
+Each field in a named record is either transparent or opaque.
+An opaque field has an abstract value which inherits its __identity from
+its parent record. A transparent field has any kind of value, even an abstract
+value, but there is no __identity inheritance.
+
+In an anonymous record, all fields are transparent.
+
+A named record is represented internally as a map from field names to values.
+Each binding in this map has a flag indicating whether the binding is
+opaque or transparent.
+
+Given a named record R,
+* R.x is implemented by fetching the value of x out of the field map,
+  and if the field is opaque, then stamping the field value with
+  the identity value {field: {parent: R.__identity, name: #x}}.
+* @R is implemented by stamping R with a new identity. The fields don't need
+  to be changed.
+
+The R.x operation is expensive, since 'stamping a field value with an identity'
+requires copying the field value (COW). We could optimize this by caching
+the R.x value in R. The cache would be invalidated by @R (which anyway needs
+to shallow copy R). Instead of storing a per-field bit (transparent/opaque),
+store a trit (transparent/opaque-unbranded/opaque-branded).
+
+How does @{...} work?
+
+ 1. @ and {...} are orthogonal; @ is only legal in limited contexts.
+    First evaluate {...}, yielding a potentially anonymous record R.
+    Then stamp R with an identity, yielding R'. Variable and function
+    abstraction of @{...} is done on the {...} part.
+    * I said 'potentially anonymous' because R might use `...` to inherit
+      identity from a named record.
+    * If R is anonymous, it must remember which fields were marked
+      as opaque, even though functionally, they are all transparent.
+      (Just use the same record representation as above, and mark all opaque
+      fields as opaque-branded.) This means, the result of evaluating each
+      definiens has two parts: the value, and the transparent/opaque flag.
+      How is the latter represented within the definition?
+      * Maybe it is a syntactic property of the definition: `name = @body`.
+        You can only use @ in a few restricted syntactic locations:
+        head of definiens, head of function body, head of file.
+    * If R is named,
+
+    Problem: `match[pat1->@body1,pat2->body2]`. This is a function that
+    conditionally constructs an abstract value (didn't I just rule that out?).
+    Contrast these two definitions:
+        f = pat1->@body1;
+    which should be equivalent to
+        f pat1 = @body1;
+    vs
+        f = match[pat1->@body1,pat2->body2];
+
+ 2. @{...} is special syntax, but it can appear anywhere.
+    You can't convert an anonymous record to a named record.
+    Say the body of a definiens or function is @{...} and you need to abstract
+    it into a variable or function call. Use `let var = @{...}`,
+    or use `f@` and `context@@{...}` for function abstraction.
+
+    A definiens is determined to be 'opaque' during evaluation if the
+    resulting value was obtained by evaluating the @R, f@arg or cx@@R operators.
+    I don't see how this works, though, if the determination is dynamic, and if
+    we can't store the flag in the value during evaluation.
+
+Option #1, '@ and {...}' are orthogonal is the winner.
+Is it expressive enough?
+* A definiens or function body is statically determined to be either opaque
+  or transparent at compile time, we can't make the choice dynamically
+  based on runtime data. (Why do we need this?)
+* There's no restriction on variable and function abstraction over abstract
+  value constructors.
+
+Branded Values
+--------------
+Curv values are printed as *constructor expressions*.
+Most constructor expressions can be evaluated to recreate the original value.
+If two values A and B have the same printed representation,
+then they compare as equal (A == B).
+
+There are two important subcases: pure data, and branded values.
+
+Pure data values are symbols, numbers, strings, and lists and records that
+contain pure data.
+Pure data is concrete and easy to understand: what you see is what you get.
+Data are printed as literal constants in which you see everything,
+nothing is hidden.
+
+When you print a branded value, you see its name (aka its Brand),
+you don't see its internal representation.
+A Brand is a constructor expression
+that may contain global variable names, function calls, and dot expressions.
+
+There are two kinds of abstract values: functions and modules.
+Modules are a generalization of records: a module may have a name, and it
+may have "abstract fields" which are bound to abstract values.
+A module with no name and no abstract fields is a record.
+Modules are used to represent libraries and instances of abstract
+data types, and in particular, geometric shapes.
+
+For example, if we print the built-in `sin` function, we get::
+
+  sin
+
+The blending library (`lib .blend`) is a named module.
+If we print it, then we get::
+
+  lib .blend
+
+Finally, if we print the value of `cube 2`, we get a constructor expression
+for that cube, in canonical form::
+
+  cube {d: 2}
+
+The killer application for this feature is geometric shapes.
+* Shapes have a complex internal representation. If we represent shapes as
+  pure data, then when a shape is printed, you see a dump of this internal
+  representation, which is not user friendly: the output is hard to interpret.
+* Named modules allow a shape to remember the tree of high level
+  operations that was used to construct the shape (known as a CSG tree).
+  This CSG tree is used as the printed representation, and it can also be
+  used by the Curv compiler to optimize rendering, and for exporting shapes
+  to CSG file formats, of which there are many (for example, SVG).
+* The Viewer can extract construction parameters from the CSG tree of a shape,
+  and display value picker widgets for tweaking these parameter values.

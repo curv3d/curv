@@ -1,10 +1,22 @@
 ## Patterns
 
+Proposal:
+* `pat :: type` is a type assertion pattern,
+  which fails if `type ? arg` is false, otherwise matches pat.
+* `pat :: If predicate` is a unary predicate assertion pattern:
+  `If` converts a predicate to a type.
+* `pat <infix> expr` is an infix predicate assertion pattern,
+  which fails if the predicate returns false, otherwise matches pat.
+  Eg, _==42, (x::Num)>=0, _`elem`0..10 is a range pattern.
+* `<infix> expr` is an infix predicate assertion pattern, where the left
+  pattern argument defaults to `_`. Eg, `==42` is an equality pattern.
+* `pat >> cast` is a cast pattern. Pipe the argument into `cast`.
+  Fail if `cast arg` fails. Otherwise match `cast arg` against pat.
+* Numeral patterns: <numeral>, -<numeral>, +<numeral>
+
 New New Pattern Design:
 * `val :: predicate` is a predicate assertion expression,
   which aborts if `predicate val` is false, otherwise returns val.
-* `pat :: predicate` is a predicate assertion pattern,
-  which fails if `predicate val` is false, otherwise matches pat.
 * `pat >> cast` is the new syntax for a cast pattern.
   Note that `pat :: predicate` is equivalent to `pat >> ensure predicate`.
   Note that >> is left associative, so `pat >> f1 >> f2` is equivalent to
@@ -76,6 +88,8 @@ Constructor patterns:
 Haskell has them, and I will be adding abstract value constructors.
 They have the form of a juxtaposition function call, where the
 function is an identifier constant, and the arguments are patterns.
+Or, whatever token is used to prefix a constructor definition is also
+used in a pattern to prefix a constructor pattern.
 
 Predicate patterns:
 The syntax `<pat> :: <predicate>` is being changed to `<pat> :: <type>`.
@@ -84,6 +98,12 @@ and test for a function second, since a type could be an algebra with a
 constructor. So what is the new syntax for predicate patterns? Cases to support:
   <prefix-predicate> <pattern>
   <pattern> <infix-predicate> <argvalue>
+  <infix-predicate> <argvalue>
+Suppose we define elem(val,list). Then `elem` 1..10 is a range pattern.
+Also, `==`42 is an equality pattern, short for _`==`42.
+Assuming that a regular function call is a predicate pattern, and that
+I'm using '<pattern> :: <type>' for type patterns and 'ctor <func><pattern>'
+for constructor patterns.
 
 New Pattern Types:
 * '<pattern> if <condition>' -- conditional pattern. The pattern is matched,

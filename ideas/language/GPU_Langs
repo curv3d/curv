@@ -16,6 +16,22 @@ GPU programming languages
 * Rise: successor to Lift, using MLIR
   https://michel.steuwer.info/files/publications/2020/accML.pdf
   statically typed, high level, pure functional.
+* Halide: a DSL layered on C++ for image processing, computational photography
+* Co-dfns: based on Dyalog APL. Compiler is written in Co-dfns, runs on GPU!
+* Julia: layered on CUDA, can execute code on the GPU from the REPL
+* MLIR has a SPIR-V dialect
+
+Raph Linus wants a high level (functional) GPU language
+that lets you to control how the problem is mapped onto hardware.
+He doesn't trust the mythical "sufficiently smart compiler".
+ * SPIR-V is the portable machine code for GPUs. SPIR-V 1.2 now has a memory
+   model, so it's mature and ready. The ecosystem is large.
+ * WebGPU is the portable GPU programming API. Drivers are buggy, which makes it
+   hard to write GPU code, but WebGPU has a test suite and driver writers will
+   have a big incentive to pass that test suite.
+
+https://raphlinus.github.io/gpu/2020/02/12/gpu-resources.html
+follow #gpu on xi.zulipchat.com (github login)
 
 Ideas for Curv:
 * staged computation: a dynamically typed language (with first class module
@@ -26,6 +42,7 @@ Ideas for Curv:
 * Target WebGPU, not CUDA.
 * WASM port of Curv? Compile dynamically typed code into WASM modules.
   Which are 1.5-2.1x slower (in V8) than LLVM output.
+* Can construct a GPU compute pipeline using Curv.
 
 Spiral
 ------

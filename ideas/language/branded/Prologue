@@ -1,0 +1,137 @@
+Branded Values
+==============
+Prologue
+--------
+The chief motivation for the Branded Value feature is to augment shape
+values with metadata describing the "CSG Tree" used to construct the shape.
+CSG metadata is an important feature that supports the core mission of Curv:
+3D solid modelling. This metadata will be used for a number of purposes:
+* exporting shapes to various CSG file formats, such as SVG;
+* rendering optimizations performed by the shape compiler;
+* visual programming: the ability to interact with elements of the CSG tree
+  and modify CSG parameters.
+
+CSG metadata should be automatically generated, with only small changes to
+the shape library. If we were to implement the CSG metadata feature in a
+conventional programming language (eg, using a Shape class in an OOP language),
+then it would require a lot of boilerplate code whenever a shape operation is
+defined. Instead, we solve the problem by inventing domain-specific syntax
+(the `@` operator). This allows us to minimize the amount of code required:
+basically, we sprinkle a few `@` characters into the standard library.
+
+The Branded Value feature also provides an elegant solution to a problem
+that is unsolved in other dynamically-typed languages. It supports meaningful,
+application-level semantics for equality tests on function values. And again,
+this happens without writing a ton of boilerplate code. This is relevant because
+I'm interested in adding "dictionary" and "set" data structures to Curv.
+These features only work if there are meaningful equality comparisons on
+dictionary keys and set elements. The Branded Value feature fixes the equality
+operator so that it produces meaningful results for any kind of value.
+
+Branded values support modularity and data abstraction.
+This is an advanced feature, aimed at developers who want to create
+reusable library abstractions.
+
+Concepts
+--------
+Value
+    Everything in Curv is represented by a value. All values are first-class
+    entities that can be bound to variables, passed as arguments to functions,
+    and returned as results. There are no non-Value entities in the language,
+    such as the modules, classes or types found in some other languages.
+
+    There are 6 kinds of Value: Symbols, Numbers, Strings, Lists, Records,
+    and Functions. There are literal constructor expressions for constructing
+    anonymous instances of each kind of value.
+
+    Functions and records are powerful enough to satisfy the requirements
+    fulfilled by modules, classes and types in other languages,
+    at least for the purposes of Curv. Branded Values are part of this story.
+
+    Most Curv values are printed as *constructor expressions*,
+    which can be evaluated to recreate the original value.
+    The exception is unbranded function values, which print
+    as "<function>" or "<function@>".
+
+    Curv has a universal equality predicate, which works on any pair of values.
+    Two values A and B compare as equal (A == B)
+    if and only if they have the same printed representation.
+
+Branded Value
+    A value imprinted with a Brand, which is metadata describing how the value
+    was constructed. Only records and functions can be branded.
+
+    Pure data values are symbols, numbers, strings, and lists and records
+    of pure data. When you print pure data, you see the full representation:
+    nothing is hidden.
+
+    By contrast, when you print a branded value, you see its name (aka its
+    Brand), you don't see its internal representation. So branded values
+    are a kind of data abstraction. A Brand is a constructor expression that
+    may contain global variable names, function calls, and dot expressions.
+
+    Two branded values are equal if they have the same brand. This provides
+    a good story for function equality: we support "nominal" equality
+    for branded functions.
+
+    Shapes constructed using high-level shape operations in the standard library
+    are branded values. For example, if we evaluate this program:
+        cube (2*5) >> colour red
+    then the result is printed as:
+        colour [1,0,0] (cube 10)
+    This printed output is a "CSG tree": it is a constructor expression for
+    the shape, in canonical form, with the original program evaluated down to
+    literal constants and primitive shape operations.
+
+Branded Global Variable
+    Some of the variables in the standard library are branded.
+    All of the standard functions and most of the standard records are branded.
+    Their values are imprinted with a Global Variable Brand,
+    which contains the variable name.
+
+    For example, `colour` is a standard function which prints as `colour`,
+    and `lib` is a standard record that prints as `lib`.
+
+Branded Field
+    Each field in a record is either branded or unbranded.
+    When you select a branded field B from a branded record R using R.B,
+    the resulting value is imprinted with a Field Brand, consisting of the
+    brand of R together with the field name B.
+
+    For example, all of the fields in `lib` (which represent libraries)
+    are branded fields. The Blending library `lib.blend` is a record that
+    prints as `lib.blend`.
+
+    An unbranded record is printed as a comma-separated list of field
+    descriptors, surrounded by braces. Branded fields are prefixed with `@`.
+
+Constructor Function
+    When a constructor function F is called with an argument A (F A),
+    the resulting value is imprinted with a Call Brand,
+    containing the values F and A.
+
+    An ordinary unbranded function prints as "<function>".
+    An unbranded constructor function prints as "<function@>".
+    By convention, library constructor functions are branded.
+
+    For example, `colour` is a constructor function in the standard library.
+    * `colour` prints as `colour` (it is a branded function).
+    * `colour red` prints as `colour [1,0,0]`, and this result is another
+      branded constructor function (`colour` is a curried function).
+    * `colour red cube` prints as `colour [1,0,0] (cube 2)`.
+
+`@` operator
+    The `@` operator is the branding operator.
+    * To define a branded field within a scoped record literal,
+      use `@name = value`.
+    * A constructor function is constructed using `f x = @body` for a named
+      function definition, or `x -> @body` for an anonymous function.
+      Constructor functions are normally branded as well, so the actual idiom
+      is to write `@f x = @body` within a scoped record literal.
+    * If the top-level expression in a `*.curv` source file is prefixed with
+      `@`, and if the process that reads and evaluates the source file provides
+      a brand, then the resulting value will be branded.
+      * By convention, libraries are branded records, and a library program
+        in a `*.curv` file has the form `@{ <definitions> }`.
+      * A `file "filename.curv"` expression will supply a Call brand,
+        `file "filename.curv"`, to the program being evaluated.

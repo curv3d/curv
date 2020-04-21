@@ -1,0 +1,38 @@
+All Curv values are printed as *constructor expressions*,
+which can be evaluated to recreate the original value.
+(This is the string returned by the `repr` function.)
+
+Printing Functions
+------------------
+In order to implement `repr`, I need to print anonymous functions as lambda
+expressions, and branded functions as names that point to the original
+definition.
+
+How are nonlocal variables (in a lambda expression) handled?
+What about recursive functions?
+
+At a first approximation, we could print lambda expressions as
+    let nonlocal1 = val1;
+        nonlocal2 = val2;
+        ...
+    in param -> body
+
+This would currently result in
+    let sin = sin;
+        ...
+for a reference to the 'sin' function in stdlib.
+
+To fix this, add a reserved word 'std' which denotes the standard library,
+and cannot be shadowed by a local definition. The sine function now prints
+as `std.sin`. All branded functions print as absolute pathnames beginning
+with `std.`.
+
+Printing Records
+----------------
+If you print a library record, containing functions that reference each
+other, there will be code duplication, as references to other components
+of the same module will be printed multiple times.
+
+So print records as {name1=val1, ...} and when adding nonlocal references to
+a `let` clause, check if that nonlocal is already in the surrounding lexical
+environment (with the same name and value).
