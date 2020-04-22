@@ -1,0 +1,236 @@
+Optics: access and update of data structure elements
+====================================================
+A Curv data structure is a tree where the interior nodes are lists, records,
+and possibly dictionaries and sets.
+
+I want operations for indexing into a tree: select a field from a record,
+select the i'th element of a list. I want array slices, to support vector
+swizzling in GLSL. I want indexing abstraction: to select colour space
+coordinates from a Colour, for an arbitrary colour space. And I want locatives
+for updating data structures using an assignment statement.
+
+Lenses support modularity and composability by providing an abstraction
+by which a module can query and update a data structure without knowing
+anything about the data structure. Lenses will be useful for defining
+composable, hierarchical interactive animations in a pure functional style,
+without using shared mutable state and event callback functions that mutate
+state. They provide a way for UI logic (a widget, or a view and a controller)
+to query and access a model.
+
+I've experienced a lot of design churn, trying to define these indexing
+operations. I don't know which design is best.
+
+To clarify the problems, I am going to separate out the semantics from the
+syntax. First I'll design a clear, powerful and composable semantic model,
+without worrying about syntax. Then I'll consider syntax proposals in the
+light of this semantic model.
+
+It turns out that most array languages and imperative languages do not have a
+composable algebra underlying their locative expressions. It's quite a bit of
+work to derive such an algebra, expose it to the user, and implement it.
+
+The Lens Abstraction
+--------------------
+A Lens (L) is a value for accessing or updating a subset of a tree.
+In this section, I will describe only the abstract properties of lenses.
+Implementation details and a convenient syntax will come later.
+
+A Collection (C) is a mapping from Key values (K) onto Element values.
+A collection is indexed by a key value.
+A list L is indexed using a natural number: 0 <= key < count L.
+A record R is indexed using a Symbol, naming a field of R.
+A Dictionary is indexed using an arbitrary value.
+
+A Tree (T) is recursively defined as either an arbitrarily element value E,
+or as a collection of trees. Any node in a Tree is also an Element.
+Interior nodes are lists, records and dictionaries.
+ * In the general case, a Tree is an arbitrary value. It need not contain a
+   collection. The identity lens, named `path[]`, maps an arbitrary value
+   onto itself, just like the identity function. `get(path[])X == X` for all X.
+
+get L T
+    Retrieve one or more elements of the tree T.
+    If it's a single element, just return it.
+    If it's multiple elements, return a tree of elements.
+
+put L Elems T
+    Return a copy of T in which the elements of T indexed by L
+    have been replaced by Elems.
+
+over L F T
+    Return a copy of T in which each E of T indexed by L
+    have been replaced by F E.
+
+Note: When the features of other programming languages are interpreted in terms
+of the Lens abstraction, it is common to restrict the set of lenses that can be
+used with updates (put and over) relative to queries (get). For example, in
+GLSL vector swizzles, duplicate indices are allowed for read but not for write.
+
+Each Lens has a shape.
+A simple Lens accesses a single element E.
+A compound Lens can access multiple elements, and returns these as a tree.
+The structure of the result tree is the shape of the Lens.
+
+at K
+    This constructs a simple Lens for accessing a single element from
+    a collection, indexed by the key value K.
+    For example, `get (at 0) [3,4,5]` returns element 0 of the list, which is 3.
+
+path [L1,L2,L3,...]
+    This is the Lens composition operator.
+    `get (path[L1,L2,L3]) C` means `C >> get L1 >> get L2 >> get L3`.
+    `path[]` is the identity Lens: `get (path[]) T` is just T.
+    `path` is an associative binary operator, such that
+    path[L1,path[L2,L3]] == path[path[L1,L2],L3]` == path[L1,L2,L3].
+    `path` is a monoid: it is an associative binary operator `path[L1,L2]`
+    whose identity element is `path[]`.
+    A path is simple if it is empty, or all of its element lenses are simple.
+
+pick C
+    pick maps a collection of lenses C onto a compound lens that applies
+    each element of C to the same tree, and gathers all the results into
+    a collection of elements with the same shape as C. For example,
+     * [3,4,5] >> get(pick[at 0,at 1]) => [3,4]
+     * [3,4,5] >> get(pick{a:at 0,b:at 1}) => {a:3,b:4}
+
+    A pick constructs a compound lens. A nested pick constructs a nested lens
+    with a deeper shape.
+     * If C is a list, then this is standard vector swizzling,
+       needed for SubCurv and GLSL. It's a standard part of K indexing.
+     * If C is a record, then it's like enhanced indexing in K9.
+
+    `pick` requires C to be ordered. All collections are ordered now.
+    The problem is: a pick may contain duplicate key values. This
+    complicates updates, because the same element may be updated multiple
+    times with different values. To handle this case, we have to define
+    the order of updates for a pick. The pick is traversed depth first,
+    left to right (K9 semantics). So the collection must be ordered.
+
+    Record picks seem useful as a way to extract fields from a tuple and
+    present them as a record; or, to extract fields from a record and present
+    them as another record with different field names.
+
+just KeyList
+    Map a record or dict onto a copy containing only the specified key values.
+    The KeyList should have no duplicates, to ensure that duplicate updates
+    do not occur (see `pick`). If we have a 'Set' data type, this should
+    accept a Set argument.
+
+slice [L1,L2,L3,...]
+    This is a cross-product of lenses.
+    If all of the lenses L1,L2,L3 are simple, then it's the same as path.
+
+    If the tree being indexed is a rectangular array (represented by nested
+    lists), then a slice of vector swizzles can represent traditional APL
+    array slicing: extract a rectangular subarray. This is part of every
+    linear algebra language. I don't need this now, but I might later when
+    I learn more linear algebra.
+
+    In the more general case of indexing a tree of lists using a slice of
+    vector swizzles, this is equivalent to K indexing.
+
+    Not the same as string slicing. put(slice X) will not allow you
+    to change the number of elements in an array.
+
+Abstract data types can provide lenses for indexing into ADT instances.
+
+Lens as a Function
+------------------
+In order to create a good syntax for lenses, we may wish to treat lens
+values as functions, so that `get L T` is written as `L T`.
+This has some possible benefits.
+
+A Lens S can be passed as an argument to `map` and other general
+purpose combinators, without the need to `get L`. This is more
+convenient, perhaps.
+
+Lens combinators are also function combinators, which is parsimonious
+and powerful.
+ * Lens composition is function composition.
+ * `swizzle [L1,L2]` becomes a function combinator equivalent to
+   the Atlas in Q'Nial, or the constructor functional in FP/FL (called `cons`).
+
+A colour space lens like sRGB would need to be repackaged
+as `sRGB.from` (since sRGB is already a function).
+
+Lens Representation
+-------------------
+What is the low-level API for user defined lens types?
+Eg, this would be used to define colour space lenses.
+
+How are Lens values represented in Curv? As records, I guess?
+
+I considered defining a Lens to be a record containing #get and #put
+functions, but I don't think that covers the full range of Lens semantics.
+In Haskell:
+    data Lens tree item
+      = Lens { get :: tree -> item
+             , put :: item -> tree -> tree
+             }
+
+Syntax: Bang-Index
+------------------
+A convenient backwards compatible syntax with full Lens semantics.
+Rename Lens to Index. Tentatively, Index = Record{get: Function, set: Function}
+
+Index application:
+    tree!index        a locative
+    put index newval tree
+    over index mapping tree
+Explicit index value constructors:
+    at(key) -- works on lists, records, dicts
+    path[ix1,ix2,ix3] index composition and explicit conversion
+        S!i!j <=> S!path[i,j]
+    pick[ix1,ix2,...] -- maps T to [T!ix1,T!ix2,...]
+    pick{a:ix1,b:ix2,...} -- map T to {a:T!ix1,b:T!ix2,...}
+    just(key_list) -- map a dict or record to a copy with only those keys
+    slice(index_list) cross-product indexing
+    `..` all elements of a list, record, dict, same as 'path[]'
+    `last`: reactive nat, for constructing a list pick like 1..last
+Backwards compatible syntax:
+    record.fieldname    same as record!#fieldname
+    list[ix]            same as list!ix
+    list[ix1,ix2,ix3]   same as list!slice[ix1,ix2,ix3]
+Terse indexing: implicit conversion to index values
+    #foo is at(#foo): record!#foo <=> record.foo
+    A nat, 0 is at(0): list!0 <=> list[0]
+    A list L of indices is pick(L): vec![X,Y] <=> vec[[X,Y]]
+
+Note: A record R of indices does not abbreviate pick(R) because Index
+values are records.
+
+Note: Index values are not functions because it conflicts with x![i,j]
+as an abbreviation of x!pick[i,j] -- lists are already functions.
+If Index <: Function, then it would violate Reynold's Law to have an implicit
+conversion from [i,j] to pick[i,j].
+
+Note: Other backward-compatible syntax considered for generalized indexing:
+  a@ix  a.[ix]
+
+The ! operator binds looser than postfix to support R!just[#foo] etc,
+and is left-associative. The ! operator is used when you want to abstract
+over an index expression, and the existing shortcuts don't suffice.
+So you probably want a postfix expression as right argument in many cases.
+ * Probably this eliminates more parentheses than the alternative, which is
+   to give `!` and `.` the same precedence. Otherwise we write R!(just[#foo]).
+ * No need to apply `.foo` to the end of a ! expr, just use !#foo.
+ * Little need to apply an argument to the end of a ! expr,
+   so (a!i!j) arg should be okay.
+The ! operator binds tighter than arithmetic operators so that
+    vec!X + vec![Y,Z]
+can be used for array indexing of arithmetic terms.
+
+Bang-Index Implementation
+-------------------------
+Rewrite `a.foo` as `a!#foo`.
+Rewrite `a(ix)` as `a!list_slice(ix)`.
+    list_slice is a specialized version of slice only used for this rewrite.
+Rewrite `a!ix1!ix2!ix3` as `a!path[ix1,ix2,ix3]`.
+Rewrite `a!ix := b` as `a := put ix b a`.
+
+Consider:
+    `a!ix := b` => `a := put ix b a`
+I want data structure update (using assignment) to use COW. The compiler sees
+that `a` is being assigned in `a := x`. If there is a single reference
+to `a` in `x`, then we can MOVE the value of `a` into the corresponding
+parameter slot (without changing the Value's use_count).

@@ -1,0 +1,38 @@
+Trees
+=====
+Trees are an opinionated way of thinking about hierarchical data.
+
+An interior node of a tree is a collection: a list, record or dictionary.
+Nested collections can model many important compound data types:
+ * a vector is a list of numbers
+ * a matrix is a list of vectors of the same count
+ * a table is a list of records with the same fields
+
+Array theory (derived from APL) is a powerful framework for parallel
+transformation of bulk data. However, tree theory is distinct from array
+theory: all collections have the same status (records and dictionaries are
+not scalars), so tree operations are not vectorized over lists of records
+and dictionaries.
+
+There are two approaches to data transformation. You can query and update a
+tree using lenses, or transform it using a pipeline of bulk operations.
+ * Some tree transformations are reversible: you can link the elements of the
+   output tree back to the corresponding elements of the input tree. Thus the
+   transformation is a lens, and you can use it to update the input tree.
+ * Some tree transformations are not reversible: they are functions but
+   not lenses.
+
+Tree theory supports both approaches.
+ * Lenses support imperative style interfaces for incremental tree update.
+   Eg, assignment statements like 'R.foo := x' and 'A[i] := x'.
+   We need these interfaces for mapping imperative-style GPU programming
+   languages, APIs and frameworks onto Curv.
+ * Lenses support modular, composable pure functional GUIs. A lens is a
+   modular data access and update abstraction that connects a model with
+   a view and controller.
+ * Data transformation pipelines, inspired either by APL or by functional
+   programming (map, reduce, filter), are well known and popular, and are
+   also being used for GPU programming. Tree theory also supports this style.
+
+In order to integrate the two approaches, it would be good if Lenses can be
+modelled as functions with additional structure.

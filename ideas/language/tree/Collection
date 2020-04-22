@@ -1,0 +1,120 @@
+Collections
+===========
+Collections are an opinionated way of thinking about hierarchical data.
+Lists, records and dictionaries are all collections.
+There are generic operations on collections.
+
+Collection theory is distinct from APL-derived array theory.
+Records are not scalars, they are collections. Arrays are also collections.
+Therefore, collection operations are not vectorized.
+
+A Collection (C) is a mapping from Key values (K) onto Element values.
+A collection is a set of items, which are key/element pairs.
+A collection is indexed by a key value.
+ * A list L is indexed using a natural number: 0 <= key < count L.
+ * A record R is indexed using a Symbol, naming a field of R.
+ * A Dictionary is indexed using an arbitrary value.
+ * If sets are added, then they will be modelled as lists with no duplicates.
+   So they will be ordered, and will be indexed just like lists.
+
+Nested collections can model many important compound data types:
+ * a vector is a list of numbers
+ * a matrix is a list of vectors of the same count
+ * a table is a list of records with the same fields
+
+A Lens (L) is a value for querying or updating a subset of a collection.
+C!L gets the subset of C described by L, and C!L := X updates it.
+
+Collections are Ordered
+-----------------------
+A list [x,y,z] is ordered by key values.
+
+A record {a:1,b:2} is ordered by key values (symbols have lexicographic order).
+Two records are equal if they have the same keys and the same mapping
+from key to element values. So {a:1,b:2} == {b:2,a:1}.
+
+A dictionary {|#a=>1,#b=>2|} is ordered by insertion order, similar to
+dictionaries in Python 3.7 and Maps in Javascript. Dictionary equality takes
+field ordering into account, so {|#a=>1,#b=>2|} /= {|#b=>2,#a=>1|}.
+
+Rationale:
+ * Collections must be printed in some order.
+ * It is good to be able to iterate over any collection, without arbitrary
+   restrictions rooted in the idea that certain collections aren't ordered
+   (as sets are not ordered in math).
+ * When you iterate over a collection, it is good to have the iteration order
+   specified by the language semantics.
+ * When you are building abstractions on top of dictionaries, sometimes you
+   care about field ordering. When iterating over a dictionary, what order do
+   you see the fields? The simplest rule, easiest to explain, is that you see
+   the fields in the same order that they are written in the dictionary literal.
+   This is the rationale for ordering by insertion order in Python.
+ * Ordering dictionaries by key value doesn't work, because keys are arbitrary
+   values, and I don't want to specify a total ordering on values in Curv.
+ * Likewise, ordering sets by element value doesn't work.
+ * Ordering maps by insertion order doesn't work, because that can't be
+   implemented for directory records.
+ * In Techne, I added the Codex type because I needed dictionaries with ordered
+   fields to represent documents with ordered, titled subsections.
+ * In Curv, I preserve the order of parameters in a `parametric` value.
+ * In the Lens proposal, the `pick` operator can only work on collections that
+   have a defined field order.
+
+Sets
+----
+If I add Sets [|x,y,z|], then they will be ordered by insertion order,
+like Set in Javascript. So a Set is a list with no duplicates.
+ * Can I index into a set, eg, S[i], treating a Set like a List? Yes.
+   Not in Python or Javascript. However, it makes logical sense, and it ensures
+   that all collections are key/element mappings (it makes things uniform).
+But,
+ * `set[i] := x` doesn't make sense. Are there read-only lenses?
+ * `map` is tricky on a set, because it may introduce duplicates.
+
+Sets aren't too important. Maybe the cost/benefit ratio is poor. Use lists.
+Add a `uniq` function to remove duplicates from a list. (Like K ? monad, etc.)
+Just as I have a `sort` function rather than a sorted list type.
+
+Indexing a Collection with a Key
+--------------------------------
+Even though a collection C is a mapping from keys to values, you can't use
+the syntax 'C K' to select the K'th element of C. The Mapping proposal uses
+this syntax for dictionaries; we shall see.
+
+Rationale:
+ * Records are functions if they have a `call` field.
+ * Lists are functions so that L[i] works for indexing.
+
+In the Lens proposal, you use C!at(K) in the general case.
+You can use C!K if K is a number or symbol.
+You can use C.foo instead of C!#foo
+
+I have considered the syntaxes C@K and C.[K] as terse indexing syntaxes that
+work uniformly for all collections.
+
+I have considered C@ as a curried form of C@K to convert a collection to
+a function over key values. Eg, as in map(C@).
+
+Generic operations on collections
+---------------------------------
+count C
+    The number of elements in a collection.
+keys C
+    The keys of a collection, in iteration order. The result could be a list
+    (if I have no sets) or a set (because there are no duplicates).
+items C
+    The key/element pairs of a collection, in iteration order, as a set or list.
+sort S
+    If S is a list, return a sorted list.
+    If S is a set, return a sorted set.
+map F C
+    Return a copy of collection C in which each element x is replaced by F x.
+filter F C
+    Return a copy of collection C from which elements x for which F x is false
+    have been removed.
+
+There are 3 kinds of iteration: over elements, over keys, over key/element pairs
+(items, aka fields or associations or entries).
+    for <pattern> in <collection> do <action> -- over elements
+    for <pattern> in keys <collection> do <action> -- over keys
+    for <pattern> in items <collection> do <action> -- over items

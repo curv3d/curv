@@ -1,0 +1,49 @@
+Jq (the JSON Query language) has a nice syntax.
+It looks like object-level expressions in a Javascript-like language,
+but semantically, it is function composition and combinator programming.
+In this respect, it reminds me of FP/FL.
+
+Maybe I can translate these ideas, and some of the syntax benefits,
+into a good syntax for Curv.
+
+Analysis
+--------
+Jq works by piping JSON data through 'filters', which are pure functions.
+As the data flows through the pipeline, it is transformed to the final result.
+This differs from the Lens proposal, in that some filters are Lenses, and
+some are not (some filters only work for 'get', and not for 'put').
+
+Filters are constructed using expressions that look like object-level
+expressions, but which are lifted into combinators. For example, '2'
+is actually the function 'x->2', and '[f,g]' is actually the function
+'x->[f x,g x]'.
+
+--- Old ---
+Jq works by piping JSON data through 'filters', which are pure functions.
+And there is a rich syntax for constructing these functions.
+I'll just invent new syntax for Jq that doesn't conflict with Curv.
+Jq filters output streams, but I will replace streams with arrays,
+and I'll use explicit map operators to replace the implicit behaviour of
+iterating a filter over each element of a stream.
+
+a|b => a>>b
+. => id         -- x->x: identity function
+.foo => .foo    -- x->x.foo
+.foo.bar => .foo>>.bar
+.foo? -- outputs 0 or 1 values -- not sure how to model it
+.[i]            -- x->x[i]
+a,b => $[f1,f2,f3] -- x->[f1 x,f2 x,f3 x]
+42 => $42       -- x->42
+
+structure selector functions:
+.foo   -- x->x.foo
+!foo   -- x->x!foo
+@foo   -- x->x@foo
+
+=expr  -- _->expr, where occurrences of _ in expr are the formal parameter
+Eg, =0 means x->0
+    =(_+1) means x->x+1
+
+structure constructors:
+${a: f1, b: f2}  -- x->{a: f1 x, b: f2 x}
+$[f1,f2]         -- x->[f1 x, f2 x]
