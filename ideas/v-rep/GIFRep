@@ -1,0 +1,61 @@
+Generalized Implicit Function Representation
+============================================
+Lipshitz(1) implicit functions are a simple shape representation, and
+sphere-tracing is simple and efficient for a wide range of shapes. However,
+the range of applicability is not as wide as I want: some useful operations
+aren't available, operations don't always compose well, and you fall off
+performance cliffs in too many situations.
+
+To fix this, we need a more complex, hybrid representation, and more complex
+rendering. I envision an optimizing compiler that runs over a CSG tree and
+picks optimal representations from among multiple alternatives.
+
+A leaf node in the CSG tree consists of an implicit function,
+and two kinds are supported:
+  * Lipshitz(1), need not be C1 continuous -- Supports fractals, and anything
+    with a sharp vertex or edge: eg, polyhedra, unions and intersections.
+  * C1 continuous, need not be Lipschitz -- Supports algebraic surfaces
+    and a large family of non-affine transformations.
+
+An interior node in the CSG tree (shape operation with shape arguments)
+may provide a Lipschitz or C1 SDF, but it is not required to. However,
+it must provide derivations of the following three auxiliary fields.
+There are multiple implementations of each auxiliary field.
+
+ray-casting field:
+    Maps a ray (point + direction vector) onto the point on the closest surface
+    along the ray. Needed for rasterizing a 3D shape.
+
+offset field:
+    Maps a point onto the Euclidean signed distance to the closest surface.
+    Needed for exact offset, blending, other level-set ops.
+
+direction field:
+    Maps a point onto a vector that points away from the closest point on the
+    surface. If the point is on the surface, this is an inverse surface normal.
+    The direction can be ambiguous or undefined.
+    Use cases:
+      * Surface normal for rendering.
+      * Morphing between two convex objects that don't overlap: separate
+        linear interpolation on the length and angle of the direction vector
+        from the point to the closest surface point.
+      * Special blends...
+
+GIFRep supports a rich and composable collection of shape operations.
+A shape operator knows how to derive the 3 fields from its shape arguments.
+  * nilary: primitive shapes
+  * unary:
+      * CSG: complement
+      * general non-affine transformations (invertible)
+      * deform a generalized cylinder to conform to a parametric curve
+      * offset, shell
+      * repetition
+  * binary:
+      * CSG: union, intersection, difference
+      * blending
+
+Implementation
+--------------
+Union of Lipschitz and C1 shapes:
+* max of the two SDFs is neither Lipschitz nor C1
+* convert C1 to Lipschitz

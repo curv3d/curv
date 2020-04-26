@@ -1,0 +1,142 @@
+Use WebGPU, or build my own portability framework based on ultra-modern GPU
+compute? Raph Linus is using ultra-modern GPU for 2D rendering, which is a
+subset of what Curv needs to do. This means: better and more performant graphics
+but it won't run in a web browser.
+
+https://raphlinus.github.io/rust/graphics/gpu/2019/05/08/modern-2d.html
+https://www.youtube.com/watch?v=eqkAaplKBc4
+
+Skia: old school GPU rendering; fixed function pipeline.
+Tradeoff: works on old GPUs, but you lose performance and quality.
+Blending/soft masking is expensive. Anti-aliasing is difficult. 
+
+Piet-Metal: new style; do all the work in GPU compute. Retained-mode (not
+immediate mode). Scene graph is a GPU (not CPU) data structure. Conceptually,
+the imaging code is a function that computes a pixel value: the final pixel
+value is written only once. (As opposed to rasterization, where you iterate
+over objects back-to-front or using a Z-buffer and paint into the buffer.)
+
+Simplified model (from video):
+ * Scene is a tree of objects; scene!path is a leaf node.
+ * Each object has a render method obj.render[x,y]
+ * Each pixel is a reduction of Porter-Duff 'over' operator.
+   over[src,dest] = src;
+   (0..width)×(0..height) >> map (x,y->
+       objects >> treemap(obj->obj.render[x,y]) >> reduce(fold)
+'reduction of over' is the same as 'union' in Curv. This is the union of a
+list of shapes. Hmm, except he says this is alpha compositing.
+Scorecard:
+ * Excellent parallelism (each pixel computed in parallel)
+ * Excellent write bandwidth (each pixel written once)
+ * Terrible work factor and read bandwidth. Problem (same as Curv):
+   every object is rendered at every pixel position.
+   
+Fix this by taking advantage of locality. Start with bounding boxes.
+Straw man (sequential)
+    buffer = [for [x,y] in [0..width, 0..height] 0];
+    for obj in objects:
+        for [x,y] in obj.bbox:
+            buf[x,y] := over(obj.render[x,y], buf[x,y]);
+Terrible parallelism (it's fully sequential).
+Write bandwidth not great (each pixel written multiple times).
+Excellent work factor and read bandwidth.
+
+We map a functional program onto a 2-stage GPU compute pipeline.
+data: scene graph
+compute: One thread for each 16x16 tile in the image buffer.
+         Make a list of all objects whose bbox intersects the tile.
+data: per-tile command lists
+compute: Each thread renders one pixel in a tile.
+         Render all objects in the command list, output pixel value.
+
+This 2-stage tiling pipeline is well known, has been used for years.
+At 36m in the video (pub. 15 Apr 2020) he discusses a modified version
+that should be more performant, but he hasn't implemented yet, and it
+requires tricky GPU programming (a matrix transpose that crosses lanes
+in a compute shader workgroup).
+
+Could we actually implement this GPU pipeline by writing code in a pure
+functional language? Maybe even Curv?
+ * Look at Futhark
+
+Metal 2.1 (2018) finally lets us program a GPU as if it were a big SIMD
+computer, which is basically what it’s been under the hood for a long
+time. Looking at newer features in, for example, CUDA 10, I don’t see
+anything that would profoundly change the way I would approach this problem.
+
+The prototype I built strongly resembles a software renderer, just running on
+an outsized multicore GPU with wide SIMD vectors, much more so than
+rasterization-based pipelines.
+
+Rendering starts with a “scene graph,” which is an on-GPU serialization
+of 2D drawing operations. It has a tree structure, in that operations like
+clipping are represented as a node with children; in the case of clipping,
+one child for the clip mask and another for the contents being clipped. It
+also has a graph structure, in that multiple instances can be shared by
+reference (with appropriate transform nodes to change their position).
+
+The imaging model allows per-pixel operations only; operations like blur are
+purposefully excluded. Thus, a simplistic approach to parallel rendering
+would be for each pixel in the target framebuffer to traverse the scene
+graph, applying the computation at each node (each of which can be seen as
+a small functional program), and finally writing the pixel color computed
+at the root node. That approach is of course quite inefficient, but forms
+the basis of what the code actually does.
+
+    This is conceptually how Curv works. Curv just needs to be optimized.
+
+To achieve performance, the code divides the target framebuffer into fixed
+size tiles, currently 16x16 pixels each. There are two passes, a tiling
+pass that creates a command list for each tile, and a rendering pass that
+consumes the command list, evaluating all 256 pixels of the tile in parallel,
+each pixel sequentially evaluating the commands for the tile.
+
+    This is also how mTec works.
+
+Note that the approach to tiling is similar to PathFinder, but with important
+differences in the details. PathFinder renders intermediate alpha masks to a
+mask texture buffer, requiring a write and a read of global device memory,
+but I do all the blending in local memory in the rendering shader, as in
+MPVG. Minimizing global memory traffic is a major shared theme.
+  MPVG: http://w3.impa.br/~diego/projects/GanEtAl14/
+        Massively-Parallel Vector Graphics 
+
+A 16x16 tile should be close to the sweet spot. It’s possible to tune, but
+it’s not reasonable to expect big wins. MPVG uses a quadtree structure, which
+amounts to adapting tile size to the workload. There are potential savings,
+but I think it adds a lot to their overall complexity.
+
+The rendering kernel (similar to a fragment shader) is computing signed area
+coverage for fills, distance fields for strokes, texture sampling for images
+and pre-rendered glyphs, and blends for clipping and compositing. The functional
+program represented by the scene graph is flattened into a linear sequence of
+operations, filtered to only those elements that touch the tile. For blend
+groups, nesting in the scene graph is represented by push/pop operations,
+with an explicit, local stack.
+
+Tiling is a key concern: to efficiently traverse the scene graph, quickly
+skipping over parts of the graph that don’t touch the tile being generated.
+
+Similar to the simplistic rendering strategy above, a simple approach to
+tile generation would be to have a thread per tile (~12k threads), each of
+which sequentially traverses the scene graph. That’s a lot less work than
+doing a per-pixel traversal, but is still not great. As I’ll describe in
+the next section, the key to performance is a good serialization format for
+the scene graph, and SIMD techniques for extracting more parallelism from
+the traversal. The basic structure is there, though; the traversal of the
+scene graph and generation of tiles is at heart sequential, not relying on
+tricky GPU-compute techniques such as sorting.
+
+Most data structures are bad at GPU. Linked lists are terrible. What is
+efficient on GPU is a structure-of-arrays. The tiling phase spends a lot of
+time looking at bounding boxes, to decide what belongs in each tile. Each
+group node in the graph has an array of bounding boxes of its children,
+8 bytes each, and a separate array for the child contents. The core of the
+tiling pass is consuming those bounding box arrays, only dropping down to
+traverse the child when there’s an intersection.
+
+This data structure is similar to serialization formats like FlatBuffers or
+Cap’n Proto.
+
+Generating the scene graph in parallel means multi-thread friendly allocations:
+https://nical.github.io/posts/rust-2d-graphics-02.html

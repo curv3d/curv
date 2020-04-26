@@ -1,3 +1,220 @@
 Alex Evans, "Learning from Failure", 2015
 SDF tech behind Dreams video game by Media Molecule
-https://www.youtube.com/watch?v=u9KNtnCZDMI
+https://www.mediamolecule.com/blog/article/siggraph_2015
+-> http://media.lolrus.mediamolecule.com/AlexEvans_SIGGRAPH-2015.pdf
+-> https://www.youtube.com/watch?v=u9KNtnCZDMI
+
+Points of interest:
+ 1. SDF evaluator converts functional SDF to voxel SDF: 54,000 primitives
+    unioned/differenced in 0.227 seconds. Complex, "compute shader of doom",
+    octree culling, interval arithmetic.
+ 2. The Brick engine: renders voxel SDF fast & accurately, simple to implement.
+
+Page 5: primitives
+------------------
+cubic strokes -- needed for Curv
+cylinders
+cones
+cuboids
+ellipsoids -- distance field is less bad than Curv
+triangular prisms
+donuts
+biscuits
+markoids -- super ellipsoids with variable power for x,y,z
+pyramids -- needed for Curv
+
+Ellipsoid: https://www.shadertoy.com/view/ldsGWX
+Spline: https://www.shadertoy.com/view/XssGWl
+
+Page 29:
+The Max Norm produces better distance fields than the L2 Norm for ellipsoids,
+and is simpler/faster to evaluate.
+
+So evaluator works in max norm i.e. d = max(|x|,|y|,|z|).
+The shape of something distance ‘d’ away from a central origin in max norm
+is a cube, which nicely matches the shape of nodes in our (octree) hierarchy.
+
+"Efficient Max-Norm Distance Computation and Reliable Voxelization"
+http://gamma.cs.unc.edu/RECONS/maxnorm.pdf
+Many non-uniform primitives have much simpler distance fields under max norm,
+usually just have to solve some quadratics! Need to be careful when changing
+basis as max norm is not rotation-invariant, but a valid distance field is
+just a scaling factor away.
+
+Page 7: each primitive is an "edit".
+------------------------------------
+A model is a list of 1..100,000 edits, with add, subtract, soft blend & colour
+
+Page 11: an early representation:
+The compound SDF function was stored in 83^3 fp16 volume texture blocks,
+incrementally updated as new edits arrived. Each block was independently
+meshed using marching cubes on the compute shader.
+
+Page 12: not like Z-brush
+The editor does *not* use classic z-brush style pull/smear/bend modifications
+of the field. That was not the right path. Animation is done by animating the
+edits themselves, and it produces compelling results. But how to re-evaluate
+the SDFs in every frame?
+
+Page 22: Restricting the problem makes a fast evaluator more feasible.
+We had limited the set of edits to exclude domain deformation or any non-local
+effects like blur (much to the chagrin of z-brush experienced artists),
+and our CSG trees were entirely right leaning, meaning they were a simple
+list. Simple is good! so in *theory* we had an embarrassingly parallel problem
+on our hands. Take a large list of 100k edits, evaluate them at every point
+in a ~1000^3 grid, mesh the result, voila! one object! Alas, that is 100
+billion evaluations, which is too many.
+
+Page 24: Hierarchy?
+Use an octree to cull edits and speed up rendering.
+Each node has a list of edits that intersect the node.
+
+Page 30: Soft blend breaks ALL THE CULLING:
+* Soft min/max needs to revert to hard min/max once distance fields are
+  sufficiently far apart (otherwise you can never cull either side)
+* Ours is for some radius r:
+    soft_min(a, b, r) {
+      float e = max(r - abs(a - b), 0);
+      return min(a, b) - e*e*0.25/r; },
+  credit to Dave Smith @ media molecule
+* Has no effect once abs(a - b) > r
+* Need to consider the amount of ‘future soft blend’ when culling, as soft
+  blend increases the range at which primitives can influence the final
+  surface (skipping over lots of implementation details!)
+* Because our distance fields are good quality, we can use interval arithmetic
+  for additional culling (skipping over lots of implementation details!)
+
+Simon’s interval-arithmetic and careful-maxnorm-bounds was a tour-de-force
+of maths/engineering/long dependent compute shader chains.
+Simon Brown @sjb3d
+
+The evaluator hierarchically refines lists of primitives to get close to
+voxels on the surface of the SDF. The last refinement pass deals in 4x4x4
+blocks of SDF to match GCN wavefronts of 64 threads.
+
+This evaluator survives, is used in all the renderer implementations.
+
+Page 40: converting SDF to mesh for rendering is hard, produces bad results
+Anton Kirczenow wrote code to convert SDF to mesh
+* Marching cubes: Well it works but the meshes are dense and the edges are
+  mushy and there are slivers and the output makes for asymmetrical code
+  in a GPU implementation.
+* Dual Contouring: Hey this is easy on GPU.
+  * Oh but it’s kind of hard to keep sharp edges sharp and smooth things smooth
+    and it doesn’t really align to features for edge flow either. Occasionally
+    what should be  a straight edge ends up wobbly because it can't decide if
+    this should be smooth or straight. VERY tricky to tune the hard/soft
+    heuristics in the general case for UGC user generated content.
+  * Self intersections! This makes the lighting look glitched - fix em:
+    http://www.cs.wustl.edu/~taoju/research/interfree_paper_final.pdf
+    ‘Intersection-free Contouring on An Octree Grid’
+  * It's not manifold -- what he doesn't say is: why do they care?
+    With Dual Contouring, either no self intersections, or manifold, pick one.
+  * LOD is hard.
+  * They generate huge meshes. Hilbert-ordered dual-contouring avoids vertex
+    cache thrashing. Made possible by a special GPU feature in AMD GCN:
+    The ability to accumulate to an ‘append buffer’ via DS_ORDERED_COUNT
+    *where the results are magically in deterministic order based on wavefront
+    dispatch index*
+
+Page 54: polygons suck
+Mesh generator artefacts look bad, and it's too difficult to automatically
+get right (without a human artist in the loop).
+What's better: voxels and grids and filterable representations. Plus, I have a
+real thing for noise, grain, ‘texture’ (in the non texture-mapping sense), and
+I loved the idea of a high resolution volumetric representation being at the
+heart of Dreams. It’s what we are evaluating, after all. Why not try rendering
+it directly?
+
+Page 56: Volumetric Billboards
+http://phildec.users.sourceforge.net/Research/VolumetricBillboards.php
+by Philippe Decaudin, Fabrice Neyret.
+It's the spiritual precursor to gigavoxels, SVOs, and their even more recent
+work on prefiltered voxels. I became convinced around this time that there
+was huge visual differentiation to be had, in having a renderer based not
+on hard surfaces, but on clouds of prefiltered, possibly gassy looking,
+models. And our SDF based evaluator, interpreting the distances around 0
+as opacities, seemed perfect. This paper still makes me excited looking at it.
+Look at the geometric density, the soft anti-aliased look, the prefiltered
+LODs. It all fitted!
+
+  SVO = sparse voxel octree
+  http://www.nvidia.com/docs/IO/88972/nvr-2010-001.pdf
+  render by raycasting into an octree
+
+Simple rendering: Take each rigid object, slice it screen-aligned along
+exponentially spaced z slices, and composite front to back or back to
+front. It's a scatter-based, painters algorithm style volume renderer. They
+exploit the rasterizer to handle sparse scenes with overlapping objects. They
+also are pre-filtered and can handle transparent & volumetric effects. This
+is quite rare - unique? - among published techniques. It’s tantalising.
+
+Page 59: Volumetric Billboards But Simpler
+... (fill in later)
+
+Page 64: Gigavoxels
+http://maverick.inria.fr/Members/Cyril.Crassin/
+Cyril Crassin, Fabrice Neyret, Sylvain Lefebvre
+
+This is the next precursor to SVOs.
+Seen through the lens of the earlier VB work, I loved that it kept that
+pre-filtered look, the geometric density from having a densely sampled
+field. It layered on top a heirarchical, sparse representation - matching
+very well the structure of our evaluator. Hooray! However it dispensed with
+the large number of overlapping objects, which makes it less immediately
+applicable to Dreams/games
+
+Supports some advanced SDF techniques, but not suited for very complex scenes.
+
+Page 67: Engine 2: The brick engine
+-----------------------------------
+Hybrid of Volumetric Billboards with rasterized Gigavoxel cubes.
+It traces each 8x8x8 rasterised brick for the 0 crossing
+and outputs raw pixels which are forward lit. Simple to implement.
+
+This was the main engine a lot of the artists used for a couple of years.
+It produces a "hard edge" look, like an untextured polygon engine.
+"Too hard to render OIT overlaps." OIT = Order-independent transparency.
+
+The main problem is the look, which isn't the painterly Dreams esthetic.
+For our particular application of UGC, it was *brutal* that you saw your
+exact sculpture crisply rendered, it was really hard to texture & model it
+using just CSG shapes. We could have changed the modelling primitives to
+include texturing or more noise type setups, but the sculpting UI was so
+loved that it was not movable.
+
+The idea is to take the brick tree from gigavoxels, but instead of marching
+rays from the eye, directly choose a ‘cut’ through the tree of bricks based
+on view distance (to get nice LOD), then rasterise each brick individually.
+The pixel shader then only has to trace rays from the edge of the bricks to
+any surface. As an added advantage, the bricks are stored in an atlas, but
+there is no virtual-texturing style indirection needed in the inner loop
+(as it is in gigavoxels), because each rastered cube explicitly bounds each
+individual brick, so we know which bit of the atlas to fetch from at VS level.
+
+Atlas: related to "texture atlas"?
+
+Page 72: not good enough
+I wanted to keep that pre-filtered look from Volumetric Billboards.
+I felt that if we pursued just hard z buffered surfaces, we might as well
+just do polys, or at least, the means didn’t lead to a visual result
+that was different enough.
+
+Page 81: Engine 3: Refinement Renderer
+...
+prettier looking output, but poor performance.
+Also struggling with memory for gigavoxel bricks.
+Problems might be fixable.
+
+The nail in the coffin was actually to do with art direction. Directly
+rendering the distance field sculptures was leaving very little to the
+imagination. So it was very hard to create ‘good looking’ sculptures.
+Lots of designers were creating content that basically looked like untextured
+unreal-engine, or ‘crap’ versions of what traditional poly engines would give
+you, but slower.
+
+Page 109: Engine 4: The Splats
+------------------------------
+So! now the plan is: generate a nice dense point cloud on the surface of our
+CSG sculpts. EVERYTHING is going to be a point cloud. the SDF becomes an
+intermediate representation, we use it to spawn the points at evaluation time.

@@ -1,4 +1,11 @@
-WebGPU transition plan.
+OpenGL to WebGPU transition plan.
+
+Some dates:
+ * WebGPU is expected to attain a minimum-viable-product version of the spec
+   and implementations by the end of 2020.
+   https://hacks.mozilla.org/2020/04/experimental-webgpu-in-firefox/
+ * Apple is reported to be releasing ARM based Macs in 2021. I expect that
+   OpenGL will not be supported on the new hardware.
 
 On the desktop, use the Dawn library. This provides a platform independent
 GPU API, in C, with Vulkan, Metal, DX12 and OpenGL on the back end.

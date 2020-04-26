@@ -1,0 +1,56 @@
+github.com/xx3000/mTec
+----------------------
+Let's try some ideas from mTec. For simplicity, use the simplest and fastest
+lighting model, just Blinn/Phong shading.
+
+Sphere Tracing and Shading/Lighting go in separate kernels.
+The distance function is in the Sphere Tracing kernel.
+The colour function is in the Shading/Lighting kernel.
+
+There is a top-level union of shapes.
+Each shape (leaf node) in the top-level union has a AABB.
+Each shape is assigned to a node in a BVH (bounding volume hierarchy).
+* In mTec, all of the shapes in this structure are textures, which are
+  expensive.
+* In Curv, my idea is to assign F-Rep shapes to different BVH nodes if they are
+  too expensive to be computed together. This requires an optimizing compiler
+  that measures the cost of a distance function. The stupid version of this
+  provides an explicit operator for wrapping a shape in a BVH node.
+  Eg, `isolate shape`.
+
+Culling.
+* The culling step is run in 1/8 of the screen size in both dimensions,
+  resulting in 8x8 pixel tiles.
+* For each of these tiles a ray is intersected with each shape and a list
+  is created containing intersecting fields.
+* When the spheretracing algorithm checks the distance field, only the actual
+  shapes in the culling list for this pixel need to be checked.
+  Big win if the shape happens to be a texture (these are expensive).
+* A BVH (bounding volume hierarchy) or similar structure can speed this up?
+* Culling speeds up sphere tracing by a much greater factor than any other
+  mTec optimization.
+  ======= ======= =======
+  #shapes no opt. culling
+  ======= ======= =======
+       20   44.54    5.92
+       40  449.01    7.46
+       60 1477.26    8.81
+       80 2513.91   13.73
+  ======= ======= =======
+* mTec has this massively nonlinear performance hit for large unions of
+  discrete SDFs, probably due to thrashing the texture cache.
+  I'm adding discrete SDFs to Curv, so culling will help.
+  How much does culling help for large unions of continuous SDFs? Measure.
+
+World Distance Field
+mTec precomputes a low resolution discrete World Distance Field for the entire
+scene. It is "updated in small portions during run time"--does this work for
+Curv?
+
+Single triangle covering the viewport, instead of a 2-triangle quad.
+Good for 5% performance increase.
+
+Rasterized Sphere Tracing.
+Each isolated shape in the top level union is rendered separately into the
+depth buffer. Speed up for very large unions, can also be slower. Maybe an
+optimizing GL compiler can pick a rendering strategy.
