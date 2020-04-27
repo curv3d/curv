@@ -4,12 +4,52 @@ https://www.mediamolecule.com/blog/article/siggraph_2015
 -> http://media.lolrus.mediamolecule.com/AlexEvans_SIGGRAPH-2015.pdf
 -> https://www.youtube.com/watch?v=u9KNtnCZDMI
 
-Points of interest:
+Dreams: Under the Hood with Alex Evans! 19 June 2019
+part 1: https://www.youtube.com/watch?v=1Gce4l5orts
+part 2: https://www.youtube.com/watch?v=CiA3uBydzzs
+
  1. SDF evaluator converts functional SDF to voxel SDF: 54,000 primitives
     unioned/differenced in 0.227 seconds. Complex, "compute shader of doom",
     octree culling, interval arithmetic.
  2. The Brick engine: renders voxel SDF fast & accurately, simple to implement.
+    Declared abandoned in 2015, but used in the production version of the game
+    for performance reasons.
 
+2019 Part 1
+===========
+A Dream consists of:
+ * Things, which reside in the Soup. Entities that can change every frame.
+   If you can change it, it is a Thing.
+   Almost everything that can be clicked on is a Thing.
+   Sculpts, Sounds, ...
+ * Wires: a source ThingRef, a dest ThingRef, and some properties
+ * Immutable stuff: SOPages. SharedObjectPages. Each page is 512 bytes.
+   UCC: A sculpt (list of edits), an animation, music (notes, not samples), ...
+   These objects are shared. Multiple copies are represented by a single
+   in memory object if they have the same hash.
+   Content addressed B-tree (Merkle tree of hashes).
+   Eg, multiple Sculpt Things can reference the same edit list.
+ * Waves (audio samples); runtime PCM buffer, most sample data kept on disk
+
+An edit list is converted (by the SDF evaluator) to bricks of voxel data.
+Each brick is 8x8x8 voxels. Each voxel contains an RGB colour and a distance.
+You can control the "tightness" of a sculpt (amount of detail), more tightness
+increases # of voxels. There are different bricks for different level of detail.
+There is a single brick that represents the entire object from very far away.
+Then there are 8 bricks at the next level down, then 64 (so it's an octree).
+The only leaf nodes that are kept are the ones near the surface (the crust).
+So it's a sparse octree. A 3D sparse mipmap. Bricks consume most of the memory
+(gigabytes of GPU memory)
+
+Bricks are used directly for tight rendering. When your thing doesn't look
+painterly, you are probably looking directly at bricks. They use sphere
+tracing: this is the Bricks engine that was abandoned in the 2015 talk.
+The splat engine made all objects translucent, unless you splatted enough
+points to fix this, in which case the frame rate tanks. There is still
+splatting going on, it's a hybrid now.
+
+2015 PDF
+========
 Page 5: primitives
 ------------------
 cubic strokes -- needed for Curv
