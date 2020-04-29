@@ -1,0 +1,103 @@
+Tagged Data: a representation for Application Data Types
+========================================================
+Haskell discriminated union
+    data T = Foo | Bar a
+represented in Curv as
+    #Foo
+    {Bar: a}
+
+In general, we can use singleton records to represent tagged data,
+where the singleton field name denotes some application data type.
+
+For shapes, we can use
+  { shape:
+      { distance: Function,
+        colour: Function,
+        bounds: [Vec3,Vec3],
+        is_2d: Bool,
+        is_3d: Bool
+      }
+  }
+For colours,
+  { colour: Vec3 }
+For lenses,
+  { lens:
+      { get: Function,
+        set: Function
+      }
+  }
+
+For characters, we could use:
+  { char: 97 }
+And our list of primitive data types becomes:
+  number, symbol, list, record, function
+
+For complex application data types that support multiple interfaces,
+we can use multiple top-level fields in the tagged data representation.
+For example, the result of `cube` contains:
+  { call: Function,
+    shape:
+      { distance: Function,
+        colour: Function,
+        bounds: Tuple[Vec3,Vec3],
+        is_2d: Bool,
+        is_3d: Bool
+      }
+  }
+
+Rationale
+---------
+This is much simpler than other proposals. No new language mechanisms.
+
+The shape and colour types can initially be graphical types using the
+current mechanism: the Curv core recognizes the tags. Later, an extensible
+mechanism involving a #graphical tag could be invented.
+
+To examine the fields of a graphical value, use `...cube` in the REPL.
+
+The type name tags make ADT records easier to understand on inspection,
+and they also make the ADT representation more extensible. It's easier to
+add user metadata to a shape, with less concern for name conflicts.
+
+If this representation proves to be inefficient, it can be fixed at a lower
+level without disturbing the abstract value space. Singleton records could have
+a more efficient representation. The new Type mechanism could be used to provide
+an efficient representation for ADTs. And so on.
+
+That seems to be a Curv design principle now. Design the abstract values
+so that they make sense at a high level, then design a fast and efficient
+memory representation separate from that.
+
+System Types
+------------
+A "system type" is a type that is treated specially by the core.
+Any type that is printed or displayed differently.
+    Shape
+    Colour
+    Char
+
+Some types are "open", equivalent to non-final classes or interfaces in an
+OOP language, or equivalent to a Haskell type class. They are Record types;
+You can extend the type by adding new record fields, creating a subtype.
+
+Some types are "closed": they are Struct types and cannot be extended.
+
+From the above list, Shape is open while Colour and Char are closed.
+
+If we have multiple open system types, then we will need a global ordering
+on these types to determine which special display logic is used. This handles
+the case of a weird value that contains the union of fields from two open
+system types. This problem is resolved by adding a trait (top level field)
+called #display or #graphical to open system types.
+
+Characters
+----------
+Right now, the legal range for supported unicode code points is 1..127.
+So any singleton 'char' record whose element is not an integer in 1..127
+will not be recognized as a character. The 'Char' constructor will report
+an error, but you can create a 'counterfeit' char record that isn't recognized
+as a character value. Eg, Char 0 is an error, but {char:0} is {char:0}.
+This is a consequence of not branding ADT instances with their constructor.
+There is less structure imposed on values, which simplifies the language
+design, and simplifies the mental model of what a value is, but also provides
+less "assistance" to users.
