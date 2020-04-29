@@ -1,0 +1,6 @@
+It would be interesting if lenses were functions;
+if every tree transformation function that could be a lens, is a lens;
+if every combinator that can work on lenses, does work on lenses.
+
+That way, we'd avoid duplication: having lens and function versions of
+a bunch of abstractions. And we would have a richer supply of lenses.

@@ -60,6 +60,30 @@ Rationale:
  * In the Lens proposal, the `pick` operator can only work on collections that
    have a defined field order.
 
+Ordered and Keyed Collections
+-----------------------------
+The item ordering of a dictionary is distinct from its key-element mapping.
+You can write a function that reverses a dictionary, without changing the
+mapping. Eg, rev_dict d = {| for i in reverse(items d) do i[0]=>i[1] |}.
+Shouldn't the `reverse` function do this? K9 has ordered dictionaries, and
+its reverse function does this.
+
+If I take this idea seriously, it suggests a different collection taxonomy,
+and a different set of operations on collections.
+ * list and dictionary are ordered collections. C!0 is the first element.
+   `reverse` works.
+ * record and dictionary are keyed collections. C@key indexes by key.
+Indexing an element by position is different from looking up an element by key.
+This might interfere with using dictionaries to model sparse arrays, which I
+need for GPU programming.
+
+Alternatively, I could extend the existing model without breaking compatibility.
+Add two new lenses that work on lists and dictionaries:
+    C!pos(i::Nat)  -- element at position 'i' in list or dictionary C
+    C!swizzle(list_of_nat)  -- return a copy of a list or dictionary C in which
+        the order of elements is changed.
+Then define `reverse = swizzle(last..0)`.
+
 Sets
 ----
 If I add Sets [|x,y,z|], then they will be ordered by insertion order,

@@ -1,0 +1,17 @@
+Clojure.Spec
+============
+This is a mechanism to specify the structure of data, for data validation,
+destructuring of compound data, and generative testing.
+https://clojure.org/about/spec
+
+Spec is more expressive than a static type system, because it isn't limited
+to describing things that can be proved by a static type checker. Specs can
+be constructed by composing predicate functions.
+
+Writing a spec enables automatic:
+  * Validation
+  * Error reporting
+  * Destructuring
+  * Instrumentation
+  * Test-data generation
+  * Generative test generation

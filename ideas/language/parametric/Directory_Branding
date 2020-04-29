@@ -1,0 +1,26 @@
+Directory syntax. The root directory of a `file "dirname"` expression will be
+or can be branded with an identity of `file "dirname"`. Is this branding
+optional? When do we want to read an anonymous record from a file? Notes:
+* The root of a package is a named module.
+* In the future, intra-package file references will be `file .ident`.
+  The syntax `file "path"` will be deprecated.
+  Package member identities will be `package "url" .sub1 .sub2`
+  rather than `file "path/sub1/sub2"`.
+* In my original design, directory syntax is nothing but syntax for nested
+  record literals, {...; f={...}; ...}. The distinction between named and
+  anonymous records didn't exist.
+* Now, however, the package system has no way to distinguish {name={...};...}
+  from {name=@{...};...} where the inner {...} is a directory.
+* A naming convention would solve this. For directories:
+  * `foo` vs `foo@` would be mneumonic.
+    But the output of `ls -F` would be ambiguous.
+  * `foo` vs `@foo` would be mneumonic, but doesn't sort as nicely.
+  * `foo` vs `foo.n`.
+  * `foo` vs `foo.@`.
+  For *.curv files, the file contents is {...} or @{...} so no problem.
+Alternatives:
+ 1. Could use a naming convention: `dir` vs `dir.m`
+ 2. Could use an option in the `file` function.
+Providing two ways to import a directory, with subtly different semantics,
+adds complexity and cognitive load. Better if there is only one way to do it.
+For now, a directory is equivalent to @{...}.

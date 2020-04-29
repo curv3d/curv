@@ -1,0 +1,32 @@
+Domain Specific Languages
+=========================
+A DSL (Domain Specific Language) is a class of Curv expressions that can be
+displayed and edited (via an Editor) using a domain specific visual syntax.
+
+A DSE (Domain Specific Expression) is one of the legal expressions within
+a DSL.
+
+A DSE, of course, evaluates to a Value (a DSV?). We could use Branded Values
+to ensure that DSVs are branded with a constructor expression corresponding
+to the DSE that constructed them. This means you can display these values
+using Visual Viewers and edit them using Visual Editors: the values carry
+the metadata that identifies the appropriate viewer or editor to use.
+
+Maybe Curv should have a more generic syntax that is more suited to DSLs.
+Lisp S-Expressions are the original example of a simple, generic syntax
+that is highly moldable, but I want:
+ * function calls as juxtaposition (for curried functions),
+ * [...] and {...} list and record literals,
+ * infix symbolic operations like 2+2,
+ * foo.bar dot notation.
+What's left? if else for while do let where parametric. I could provide a
+generic syntax for these kinds of expressions. Smalltalk for inspiration?
+Eliminate reserved words, like Scheme eliminates reserved words, by replacing
+this hard-coded syntax with some variant of function call syntax. The reserved
+words are replaced by built-in bindings (which might be macros).
+
+Second, maybe I need Scheme-like user-defined macros? Let's see what the
+requirements are for DSLs. I might not need new name-binding constructs.
+
+contextfreeart.org
+------------------

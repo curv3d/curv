@@ -1,0 +1,105 @@
+Sparse Arrays
+=============
+Taichi: data abstraction for sparse arrays. automatic differentiation.
+LLVM to CPU or CUDA. Embedded in Python: GPU kernels are written as Python
+code but are statically typed and data parallel.
+
+https://github.com/yuanming-hu/taichi
+http://taichi.graphics/wp-content/uploads/2019/09/taichi_lang.pdf
+
+Notes
+-----
+The high level abstraction is sparse voxel arrays, with multiple low level
+representations. Representations are constructed by composing primitives.
+* Users write computation code using a high-level and data-structure-agnostic
+  interface, as if they are operating on a dense multi-dimensional array.
+* The internal data arrangement and the associated sparsity are specified
+  independently from the computation code by composing elementary components
+  such as dense arrays and hash tables to form a hierarchy.
+
+Limitation: We assume the hierarchy is known at compile-time to facilitate
+compiler optimization, therefore we do not directly model structures with
+variable depth such as k-d trees, octrees, or bounding volume hierarchies
+with dynamic depth. VDB can be modeled, it has a fixed depth.
+
+### 3.1 Defining Computation
+
+We abstract data structures as mappings from multi-dimensional indices to
+the actual value. For example, access to the 2D scalar field u is always done
+through indexing, i.e. u[i, j], no matter what the internal data structure is.
+
+A Taichi sparse array is a multi-dimensional array indexed by a list of ints.
+A parallel sparse each-index loop iterates over all of the active index vectors
+in a sparse array. Accessing an element u[i,j]: On read, if the element is not
+active, then an ambient value like 0 is returned. On write, if the element is
+not active, then the data structure is updated to create a new active element.
+
+### 3.2 Describing Internal Structures Hierarchically
+
+Specifying a data structure includes choices at both the macro level,
+dictating how the data structure components nest with each other and the
+way they represent sparsity, and the micro level, dictating how data are
+grouped together (e.g. structure of arrays vs. array of structures).
+
+Structural nodes compose the hierarchy:
+ dense: A fixed-length contiguous array.
+ hash: Use a hash table to maintain the mapping from active coordinates to data
+    addresses in memory. Suitable for high sparsity. Indices are not restricted
+    to a small range.
+ dynamic: Variable-length array, with a predefined maximum length. It serves the
+    role of std::vector, and can be used to maintain objects (e.g. particles)
+    contained in a block.
+
+Decorators provide structural nodes with particular properties:
+ morton: Reorder the data in memory using a Z-order curve (Morton coding),
+    for potentially higher spatial locality. For dense only.
+ bitmasked: Use a mask to maintain sparsity information, one bit per child.
+    For dense only.
+ pointer: Store pointers instead of the whole structure to save memory and
+    maintain sparsity. For dense and dynamic.
+
+Language
+--------
+* A struct-for loop iterates over all of the elements of a tensor.
+  It is abstract: tensors may have many different representations.
+  It is data parallel, and forms the body of a GPU compute kernel: one thread
+  per tensor element.
+  It will only iterate over active elements of a sparse tensor.
+  This is the key to sparse computation.
+
+* There is a language for defining hierarchical sparse data structures.
+  It can describe VDB structures and many others.
+
+Taichi Abstract
+---------------
+Taichi: A Language for High-Performance Computation on Spatially Sparse Data Structures
+
+3D visual computing data are often spatially sparse. To exploit such sparsity,
+people have developed hierarchical sparse data structures, such as multi-level
+sparse voxel grids, particles, and 3D hash tables. However, developing and
+using these high-performance sparse data structures is challenging, due to
+their intrinsic complexity and overhead. We propose Taichi, a new data-oriented
+programming language for efficiently authoring, accessing,and maintaining such
+data structures. The language offers a high-level, data structure-agnostic
+interface for writing computation code. The user independently specifies
+the data structure. We provide several elementary components with different
+sparsity properties that can be arbitrarily composed to create a wide range
+of multi-level sparse data structures. This decoupling of data structures from
+computation makes it easy to experiment with different data structures without
+changing computation code, and allows users to write computation as if they
+are working with a dense array. Our compiler then uses the semantics of the
+data structure and index analysis to automatically optimize for locality,
+remove redundant operations for coherent accesses, maintain sparsity and
+memory allocations, and generate efficient parallel and vectorized instructions
+for CPUs and GPUs.
+
+Our approach yields competitive performance on common computational kernels
+such as stencil applications, neighbor lookups, and particle scattering. We
+demonstrate our language by implementing simulation, rendering, and vision
+tasks including a material point method simulation, finite element analysis,
+a multigrid Poisson solver for pressure projection, volumetric path tracing,
+and 3D convolution on sparse grids. Our computation-datastructure decoupling
+allows us to quickly experiment with different data arrangements, and to
+develop high-performance data structures tailored for specific computational
+tasks. With 1/10th as many lines of code, we achieve 4.55× higher performance
+on average, compared to hand-optimized reference implementations.

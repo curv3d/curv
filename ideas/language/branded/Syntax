@@ -1,0 +1,33 @@
+Syntax for defining branded values
+==================================
+Most statically typed languages have syntax for 'branded' and 'unbranded'
+type definitions. A "branded type definition" is a new type with nominal
+type equivalence. An "unbranded type definition" is a type alias.
+What makes Curv different is that everything is a value, and a "branded value
+definition" defines a named value constructor for values with nominal equality.
+The Curv concept of branding is largely orthogonal to other language features.
+This makes it difficult to find a "traditional syntax" for this Curv concept.
+
+Haskell
+-------
+-- a branded type declaration:
+data Color = Red | Green | Blue | Indigo | Violet
+-- an unbranded type synonym:
+type Colour = Color
+
+Standard ML
+-----------
+Standard ML modules have two forms of signature ascription, transparent and
+opaque. Transparent:
+    structure <strid> : <sigexp> = <strexp>
+Opaque:
+    structure <strid> :> <sigexp> = <strexp>
+
+Modula 3
+--------
+(* transparent type declaration *)
+TYPE Foo = INTEGER;
+(* opaque type declaration *)
+TYPE Foo <: T
+(* branded type declaration *)
+TYPE Foo = BRANDED REF INTEGER;

@@ -90,6 +90,14 @@ the case of a weird value that contains the union of fields from two open
 system types. This problem is resolved by adding a trait (top level field)
 called #display or #graphical to open system types.
 
+Equality
+--------
+The branded value proposal provides reasonable semantics for equality to
+ADTs. With this proposal, closed types like Colour and Char (with a fixed
+set of non-function data fields) have meaningful equality, but open types
+like Shape do not. The Shape type doesn't need equality, and in the general
+case, open types don't need equality. So this is not a big problem.
+
 Characters
 ----------
 Right now, the legal range for supported unicode code points is 1..127.

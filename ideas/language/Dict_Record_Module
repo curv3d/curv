@@ -1,0 +1,88 @@
+Across the entire "Curv2" design project, I have identified a number of
+different roles and design requirements for map-like data structures.
+I have been using the names Dictionary, Record, Module to distinguish them.
+This is an attempt to bring all of those requirements together and find out
+how many distinct data types that I will need.
+
+In short, Record is the simple data type that Curv started with.
+Dictionary is heavier weight and supports arbitrary values as keys.
+Module is heavier weight and supports various metadata and extra structure
+for building APIs (libraries, instances of abstract data types).
+
+Dictionary and Record do not have a subtype relationship, due to a conflicting
+definition of equality. Module is a subtype of Record.
+
+There are two use cases for record values:
+* Plain Old Data: sets of configuration variables, named arguments in function
+  calls. It's a collection of named values that can be independently specified,
+  and any constraints or invariants on the values are enforced later.
+  For function call arguments, we want the syntax {foo: 0, bar: 1}.
+  Fields are assignable.
+* Modules: Libraries, and ADTs like shapes and blending kernels.
+  Modules are typically branded, and have branded fields.
+  The magic __call field permits a module to be called like a function.
+  Fields are *not* assignable: at a low level, this causes field values to be
+  out of sync with the brand, and at a high level, it breaks ADT invariants
+  in an already constructed and verified ADT instance.
+  A module can be converted to a record, but then it loses the special
+  properties that cause it to be recognized as an ADT instance.
+  A module can be rebranded--the shape library does this a lot. Shapes are
+  modules that are recognized by duck typing, and shapes must be distinct
+  from pure-data records.
+
+<Tree> Dictionary
+* A key is an arbitrary value.
+* The Lens design requires that Dictionaries are ordered by insertion order,
+  like Dicts in Python 3.7 and Maps in Javascript.
+* Two dictionaries compare equal if they contain the same mapping from keys
+  to elements *and* they have the same field insertion order.
+* Individual fields can be updated independently.
+
+<Mapping> Dictionary
+A key is an arbitrary value.
+'dict key' uses function call notation to look up an element, given a key.
+Equality based on insertion order doesn't make sense, but the Mapping
+abstraction doesn't support equality anyways.
+
+<Tree> Record
+A key is a symbol.
+Records are ordered by lexicographic order of symbols.
+Two records compare equal if they have the same keys and the same mapping
+from keys to elements.
+
+<Function> Record
+A key is a symbol.
+A set of keyword arguments for a function call is written as {a:1,b:2}
+and two records are equal if they have the same mapping from keys to elements.
+
+<Config> Record
+A record is a set of symbol/value pairs.
+Record fields are individually and independently updatable.
+
+<ADT> alternatives
+ 1. Branded Record
+    * An ADT instance is typically constructed using a constructor function.
+    * Fields are not directly assignable (while preserving the brand), because
+      that would violate invariants guaranteed by the constructor.
+    * `... R` discards the brand of R.
+    * `R.a:=b` is equivalent to `R:={...R,a:b}`. The brand is discarded.
+      I dunno, this might be a source of surprise or error.
+    * Updating an ADT field while preserving the brand requires a custom lens.
+ 2. Tagged Record
+
+<Module> Branded Record with Branded Fields
+* A key is a symbol.
+* A module represents an API.
+* The syntax 'module.field' is used for indexing.
+* If the `call` field is defined, the module can be called like a function.
+* If the `type` field is defined, the module is an Algebra.
+* A Theory is a kind of module with special metadata.
+* A module can be defined using a set of recursive definitions: this is used
+  to represent libraries.
+* A 'directory record' is a kind of module.
+  * It receives a brand, and it applies brands to those fields that will
+    accept one.
+  * Equality can't be based on insertion order, but can be defined based on
+    having the same map from keys to elements.
+* A module can be branded. Each field can be either branded or unbranded.
+* Other metadata might be needed. Eg, per-field documentation strings, etc.

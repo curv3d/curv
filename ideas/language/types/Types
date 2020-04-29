@@ -335,6 +335,11 @@ Record min_required_fields -- Record{} replaces is_record
 Struct required_fields -- a record with a fixed set of fields
 
 If predicate
+    Contains values that are in the domain of the predicate, and for which
+    the predicate returns true. The representation is taken from the domain
+    of the predicate. Thus, the predicate argument is likely to be a partial
+    function, different from the general is_* predicates of Curv 0.4
+    which have domain Any.
 
 Type Constructor Brainstorming
 ------------------------------

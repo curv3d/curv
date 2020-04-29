@@ -1,0 +1,70 @@
+Tagged Application Data Types
+=============================
+I'm trying to decide whether Curv should have tagged application data types.
+This means that records and functions would have optional dynamic type tags
+which would identify the record as having a particular set of typed fields
+obeying specific axioms, or which would identify the function as having a
+particular domain, range and specification.
+
+It's a tradeoff between language simplicity and expressive power.
+All modern general purpose programming languages have typed data using
+application data types. But Curv is supposed to be simple, so does this
+belong in Curv?
+
+Design criteria (Quality Without a Name):
+* Usability - Will the feature make Curv more usable for novices?
+  Is the feature something that developers will enjoy using?
+  Would either group miss it if it was no longer available?
+* Readability - Is the intent of the feature clear and well presented?
+* Configurability - Can the user adapt the feature to his or her needs?
+* Profoundness - Does the feature strike the user as special or unique,
+  but at the same time, insightful and correct?
+
+Tagged types are like nominal types. Without them, we rely solely on structural
+types to classify values.
+
+Simple Generic Data Types
+-------------------------
+The philosophy of Curv, so far, is to provide a small, fixed set of universal
+data structures, then use "duck typing" for application data types.
+Application logic is not encoded in the data, it is kept separate, in functions.
+The goal is simplicity and easy generic programming.
+All data is compatible with a wide variety of code.
+It can be searched, traversed, etc, similar to how a Unix file system can be
+searched and traversed.
+No hidden properties: when you print a datum, what you see is all there is.
+If two data print the same, they are operationally equivalent.
+Related ideas:
+* XML, everything is an element.
+* JSON
+* Unix, everything is text.
+* Early Lisp, everything is a list or an atom.
+  (Except that: pairs have hidden object identity.)
+* http://cell-lang.net/data.html
+* EDN https://github.com/edn-format/edn
+* Data oriented design (an alternative to OOP).
+  It uses simple data that isn't mixed up with application logic.
+  It doesn't seem to require shared mutable state, seems compatible with FP.
+
+I have a preference to just using simple, generic data for all purposes.
+99% of the complexity of GP programming languages are in the type systems.
+
+Benefits of Tagged Application Data Types
+-----------------------------------------
+### Abstract data
+
+### Graphical Values
+
+### Equality
+
+### Avoiding accidental type equivalence?
+This is often given as an advantage of nominal type equivalence.
+The following are benefits to developers. For example,
+* I've considered using the name `__call` to indicate the call function for a
+  callable record, with the `__` prefix used to indicate "system" fields and
+  avoid accidental name collisions. The alternative is to require a tagged
+  signature Callable to be applied to callable records, and the call field
+  is just `call`.
+* In the tagged signature proposal, the tag is a proxy for the axioms that
+  aren't represented in the language but which can differ from one signature
+  to another, even if the fields have the same names.

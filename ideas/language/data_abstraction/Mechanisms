@@ -1,0 +1,107 @@
+Data Abstraction Mechanisms
+===========================
+How is application data represented?
+
+An ADT or "Application Data Type" is a set of values that has a particular
+interpretation given to it by application code.
+
+Is this interpretation implicit (understood only by the developer)
+or is it explicit (modelled in the programming language itself)?
+The former leads to a simpler programming language.
+The latter has benefits:
+ * for the Curv IDE to act as a programmer's assistant;
+ * to allow library developers to create higher level abstractions that are
+   easier to use in "High Curv", at the cost of more complexity in "Low Curv";
+ * to allow library developers to create high level abstractions that are
+   executed efficiently, leading to fast, responsive, interactive graphics,
+   at the cost of more complexity in "Low Curv".
+I don't want these "Low Curv" benefits to increase the complexity and steepen
+the learning curve of "High Curv".
+
+What do you see when you examine an ADT value? Can you determine what role an
+ADT value has by examining it, or do you simply have to know what it means
+based on context? Is there an automated way to discover what operations
+are available on the value?
+
+0. Implicit or Relative Encoding
+--------------------------------
+ADTs are encoded in a way that is only understood by APIs that consume those
+ADT values. A classic example is assigning special meanings to integers.
+
+The Lens abstraction works like this:
+  0         is a list index
+  #foo      is a record index
+  {get,put} is a general Lens value
+
+If we had nothing more than this, then we would have no graphical data types.
+There could be a `view_shape` REPL command that displays a shape graphically.
+
+1. Record Values with Methods
+-----------------------------
+This is an OOP inspired programming model (classless OOP) where record
+values are used to represent instances of application data types, and
+function members provide OOP-style behaviour. An ADT is specified as a
+required set of record members, and you can extend its behaviour by
+using different function values for function members.
+
+The 'Shape' ADT works like this in Curv 0.4.
+
+The Lens ADT might have 'get', 'put' and 'over' methods.
+
+This approach supports "single sorted algebras" or "single dispatch".
+Method code is inside the ADT values.
+
+2. Tagged Record Encoding
+-------------------------
+Same as above, except a set of conventions is used to encode ADT values as
+records. The pattern is easily recognized, and reduces the chance of conflict
+between different ADT encodings. See `Tagged`. No additional language features
+are needed to encode ADTs, just plain records.
+
+Examples are:
+  {char: 97}
+  {lens: {get,put,over}}
+  {shape: {distance,colour,bounds,is_2d,is_3d}}
+  {colour: [lr,lg,lb]}
+
+Top level field names in an ADT instance are "trait names". For an "open" ADT,
+the instances can have multiple traits. Eg, `cube` returns
+  {call, shape:{distance,colour,bounds,is_2d,is_3d}}
+
+Some of these conventions are hard-coded into the core engine.
+ * the `call` trait
+ * the `shape` trait (graphical values)
+ * the `char` type (displayed differently in a list)
+
+This approach might be "good enough" for now.
+
+What's missing is a constructor tag whose presence guarantees that the data
+upholds data structure invariants.
+
+3. Tagged Values with Centralized Dispatch
+------------------------------------------
+ADT instances are tagged with a constructor that implies the meaning and role
+of the value. The "branded" or "abstract" value proposal supports these tags.
+
+It is possible to define "abstract interfaces" and implement the same
+interface for multiple ADTs, using different code for each ADT.
+The method code is not inside the ADT value.
+
+Using 'match', you can implement a generic function with multiple
+implementations for different ADTs, but all the methods are inside a single
+function.
+
+4. Tagged Values with Distributed Dispatch
+------------------------------------------
+You can also put the methods outside of the value and outside of the
+dispatch function. This can be done with Rust Traits, Haskell Type Classes
+and CLOS Generic Functions.
+
+How does it work, though? Some big questions.
+ * A centralized CLOS-style global dispatch table has problems with modularity.
+   How do we restrict this monkey-patch semantics so that unrelated
+   modules don't clobber each other?
+ * Can I simulate Haskell Type Class semantics, where generic functions are
+   passed method tables from the caller environment? A kind of dynamic scoping.
+
+Kominsky Method TV

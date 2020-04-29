@@ -1,0 +1,104 @@
+Constructing Branded Values
+===========================
+Values:
+ * Functions and records can be branded. A branded value prints as its brand.
+ * A brand is a constructor expression:
+      brand ::= global_variable_name   // global variable brand
+              | brand '.' fieldname    // field brand
+              | brand arg_expr         // call brand
+Records:
+ * Each field of a record is branded or unbranded.
+   Orthogonal to this, a record is branded or unbranded.
+ * A branded field constrains its value to be a function or record.
+ * In addition, if a branded field B is selected from a branded record R
+   using R.B, the result is imprinted with a Field Brand, consisting of R's
+   brand and the field name B. No result branding occurs if you select a branded
+   field from an unbranded record.
+ * Within a scoped record literal, `@name=expr` defines a branded field,
+   where expr must yield a function or record. If the pattern on the left of =
+   contains multiple variables, each may be separately prefixed with @ if it
+   is to create a branded field.
+ * Unbranded records print as a comma-separated list of field descriptors,
+   surrounded by braces; branded fields are prefixed with '@'.
+Functions:
+ * A function is ordinary or is a constructor.
+   Orthogonal to this, a function is branded or unbranded.
+ * A constructor function constrains its result to be a function or record.
+ * In addition, if a branded constructor F is called with an argument A,
+   the result is imprinted with a Call Brand: F's brand + the value A.
+ * No result branding occurs when an unbranded constructor is called,
+   or when a branded non-constructor is called.
+ * A constructor function is constructed using `f x = @body` for a named
+   function definition, or `x -> @body` for an anonymous function.
+   Constructor functions are normally branded as well, so the common idiom
+   is to write `@f x = @body` within a scoped record literal.
+ * An unbranded ordinary function prints as <function>.
+   An unbranded constructor function prints as <function@>.
+Programs:
+ * If the top-level expression in a `*.curv` source file is prefixed with
+   `@`, and if the process that reads and evaluates the source file provides
+   a brand, then the resulting value will be branded.
+   * By convention, libraries are branded records, and a library program
+     in a `*.curv` file has the form `@{ <definitions> }`.
+   * A `file "filename.curv"` expression will supply a Call brand,
+     `file "filename.curv"`, to the program being evaluated.
+
+Additional semantics in original doc:
+ * 'include R' ignores the brand of R. Used for including libraries.
+ * '... R' includes the brand of R. Used for inheritance.
+   Problem: fields in the new record become out of sync with the brand.
+   Data structure invariants guaranteed by the original constructor may no
+   longer be honoured, but the constructor brand is still there.
+   Maybe we should ignore the brand, and rebrand the new record if needed.
+ * Does {...R} ignore or preserve field brands?
+   * Maybe the field values preserve their brands, but the fields become
+     unbranded.
+ * Record field assignment R.F:=X for a branded record R: same problem as above.
+   Field values become out of sync with constructor axioms. Solutions:
+    * It works. If F is branded, then X must be function or record, X is
+      imprinted with a field brand.
+    * Illegal to assign a field of a branded record. This is hard to reconcile
+      with operations that change record fields (colour etc).
+    * The record brand is erased. (But field brands remain?)
+    * Use a custom lens that is part of the constructor's ADT to safely update
+      the field while preserving the brand. TODO: design API for this.
+ * Either way, R.F:=X === R:={...R,F:X}.
+ * We do actually update (branded) shape fields in practice:
+     colour c shape
+     render opts shape
+     set_bbox bbox shape
+   but in these cases we rebrand the result.
+ * If changing a record field voids the brand, what's the semantic effect
+   on real code? Any unpleasant surprises?
+
+Branded records and branded fields are for libraries & modules: entities that
+are static, type-level, not value-level, in statically typed languages.
+Therefore, update semantics are not a big concern. Here's what I think works:
+ * The Module concept includes a brand on the module value itself (a module
+   brand), plus field brands. The Record concept does not include branding.
+   Module is a subtype of Record.
+ * 'include R' and '... R' ignore module and field brands. The module argument
+   is upcast to a record.
+ * The question of which fields are branded in a module literal is answered
+   statically by looking at the syntax, not dynamically by looking at the
+   record arguments of 'include' and '...'.
+ * R.F:=X === R:={...R,F:X}, meaning that updating a module converts it to a
+   record containing no module or field brands.
+Abstract ADT instances are represented by branded modules, but to update one,
+the result needs to run through a constructor, so a custom Lens must be used.
+
+Syntax Idea: Implicit Branding
+------------------------------
+We introduce module literals, which are distinct from record literals.
+  {= ... =}
+At the program level, function and module literals are automatically branded
+if the program is read using the `file` primitive. No `@` required.
+Within a module literal, some field definitions are automatically branded,
+based on syntax.
+  f x = ...;       -- a function definition, field f is branded
+  f = x->...;      -- a function definition, field f is branded
+  m = {= ... =};   -- a module definition, field m is branded
+  f x = {= ... =}; -- a branded constructor function
+This doesn't eliminate all of the use cases for @ because I also have code
+that rebrands existing branded values. Eg,
+    @cube n = @box[n,n,n];
