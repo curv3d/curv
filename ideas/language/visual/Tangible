@@ -1,0 +1,184 @@
+Tangible Functional Programming
+Conal Elliott
+
+Can Curv incorporate Conal's idea of "tangible values"?
+ * All values are tangible? This is closely related to my earlier batch of
+   ideas about visual programming languages.
+ * Semantic composability of the GUIs associated with various kinds of
+   graphical values.
+ * Rework "parametric records" into a more elegant and composable abstraction?
+ * Eros has an "output oriented" user interface, where the final result of the
+   program is always shown: like vi instead of ed. Like a spreadsheet, where
+   the result value of a cell is always shown, and the expression is usually
+   hidden. This is appropriate for a 3D modelling program.
+ * Eros is a block-based visual code editor. You put data blocks and function
+   blocks in the workspace. Put a block in a function block's arg position,
+   and you get a function call block, with a result displayed if the arg is
+   constant. So blocks are expressions, with integrated evaluation results.
+
+http://conal.net/blog/posts/tangible-functional-programming-a-modern-marriage-of-usability-and-composability
+video: https://www.youtube.com/watch?v=faJ8N0giqzw
+paper: http://conal.net/papers/Eros/
+slides: 
+
+Tangible Functional Programming by Conal Elliott
+ * apps are user-friendly (usable, concrete, visual) but limit functionality,
+   aren't composable
+ * software libraries are programmer-friendly (composable, abstract, syntactic)
+The dream is: unlimited access to functionality, usably and composably. How?
+ * Unix pipes are a composable text-mode UI, but we lose the GUI.
+ * A Tangible Value is a typed value (model) paired with a GUI (view,
+   controller). GUIs are composable whenever their underlying values are
+   composable: eg unix-like pipelines, function composition.
+
+There's been lots of research on GUI layout mechanisms (you might call this spatial composability), and on ways to mitigate callback hell in the original imperative GUI frameworks. But Conor is asking us to think about a new topic: semantic composability. When you compose two "meanings" (denotations, values), a new GUI is generated for viewing/editing/invoking this composite meaning.
+
+I didn't have the proper vocabulary for even thinking about this issue before.
+
+How can GUI apps compose? Using the pipe idea.
+ * Feed output of one piece to input of next. (like visual programming)
+ * Hide the intermediate data. (reduces complexity)
+ * Plus: Loosely couple interface & content. (new idea)
+
+Eros is a GUI with the slider interface of the Curv Viewer, but tangible
+values are composable. So what is the Eros data model, and can I implement
+that data model in Curv? What about the UI model?
+
+Types: numbers, images, pairs, functions
+A GUI is a visualization of a typed value.
+ * GUI structure (the part that doesn't change) follows type
+ * GUI content (the part that changes over time) presents value
+ * Functions visualize as interactive GUIs. Interaction & parameterization
+   map to each other. An interactive GUI is a function?
+ * a Tangible Value is a GUI interface + content/value.
+
+The numeral "3" is a visualization of the mathematical concept of three.
+
+Question: when a GUI presentation changes, what actually is changing in
+the underlying Eros model? Is the value itself changing?
+How does this relate to "loosely couple interface & content"?
+
+Aside: Can I design the first simple Curv GUI to be a Tangible Value?
+This GUI, whatever it is, is a visualization of a typed value.
+The GUI structure is determined by the value's type.
+
+Or, less ambitiously, can I generalize the Viewer to visualize and animate
+a Tangible Value, so that you can construct an interactive, composable GUI?
+
+In Eros,
+* An atomic value (bool, number, image) maps to a widget that displays an image
+  that visualizes the value. Plus you can edit the value (he shows a text box
+  for Bool, a text box for Num). He also shows sliders for numbers. You can
+  use any visualization you want as an input style or an output style for
+  a given type.
+* A pair maps to a widget that displays the two values horizontally, side by
+  side, separated by a vertical divider. (A pair is a horizontal juxtaposition
+  of GUIs.)
+* A function is laid out vertically: input on top, output on bottom.
+  * A curried function of 2 arguments has 3 rows: arg, arg, output.
+  * An uncurried function of 2 arguments has 2 rows: pair, output.
+
+A function is a static unchanging value: mathematically it is a set of
+(argument, result) pairs. The GUI visualization of a function lets you view
+different elements of this set: tweak a slider to change the input, and you
+see a different output. So you use a GUI to explore a large value.
+The entire value may not fit on the screen at the same time.
+
+Questions:
+ * Where does the input value come from in a plain function? Or is there a
+   distinction between functions without an example input value, and functions
+   with an example input value?
+ * How is the changing state that we see on the screen modelled?
+
+You can create a new tangible value by fusing two existing TVs.
+ * If you fuse two functions, it composes the functions and creates another
+   function.
+ * If you fuse an input value with a function, you get the output value.
+   If the function is higher order, the input value is a function. The fuse
+   API knows the type of the input value, and only lets you pick inputs of the
+   correct type.
+
+After composing two functions, you can't see or edit the program.
+Conor says this is a benefit: no node+wire spaghetti.
+What about editing large programs? Can you open up and edit a function
+composition?
+
+Node+wire visual programming is inherently first order, makes a hard syntactic
+distinction between functions and values. Not Eros.
+
+The Eros GUI displays a set of overlapping windows, each window represents
+a TV.
+
+Reference to Fudgets (an incredibly rich functional programming GUI system).
+You write very short combinator programs to build GUIs. Apparently an
+inspiration for FRP. Not Tangible, though.
+
+Mechanics:
+  Keep visualization & value combined & separable
+    type TV a = (Out a, a)
+  Two kinds of typed GUI, In t and Out t. The former is a function parameter
+  and is editable.
+
+A Tangible Value of type T is a pair: (value of type T, GUI of type T).
+There can be multiple GUIs of type T to choose from.
+You can decompose a TV, extract the value, replace the GUI, etc.
+
+Tangible Values in Curv
+-----------------------
+If Curv is redesigned so that every value is a Tangible Value, then each
+Curv value has an associated GUI, which is replaceable. There's no way to
+remove the GUI, because every value can be displayed, but you can revert the
+GUI to default.
+
+Every Curv value has 3 aspects:
+ * An abstract mathematical value, like the number 1 or boolean value true.
+ * A representation. There is a 64 bit "boxed" representation that can
+   represent any value. But if a value is stored in a location that is
+   restricted to a small set of values, then a more compact and efficient
+   represention can be used. Boolean values can be represented using a single
+   bit. The representation isn't part of the value, per se. Instead, the
+   representation is a property of the context where the value is stored.
+   A local variable or function parameter can have a Type associated with it,
+   and a Type is a set of values + a representation. A boxed array can have
+   an associated array representation that uses a compact representation for
+   the array elements.
+ * A user interface, which specifies the value's visual representation,
+   and optionally, an interface for editing the value. Once again, UIs are
+   associated with types, and values do not have a baked-in principal type
+   in Curv. This is because the UI depends on the set of values that a variable
+   can take on, and this is even more true for an editing UI. For example,
+   the number 1 could be an integer, or it could be a real number, depending
+   on the context. In the former case, you might use an int_slider, and in
+   the latter case, you might use a continuous slider.
+
+In Curv2 you can combine a Type with a GUI in a single Algebra value
+(eg, `slider`) and use it to declare a variable. That mechanism is inherited
+from parametric records, but it still makes sense. For example,
+    (my_int_variable :: Int_Slider[0,10]) -> ...
+
+We may also want a mechanism that combines a value and a GUI in a single 'box',
+as a dynamic value. For example,
+    my_int_expression :: Int_Slider[0,10]
+
+We may also want constant expressions in source code that statically specify
+a GUI, so that this GUI can be used by the editor for editing the expression.
+That's part of visual programming. Eg,
+    my_int_expression :: Int_Slider[0,10]
+
+What is a 'GUI value' called in Curv? A Visual.
+    Slider[lo,hi] = {
+        type: Num,
+        visual: {slider: [lo, hi]}
+    };
+
+Constructing tangible values is half the job. They also need to be composable.
+GUIs need to compose when values compose.
+ * The experimental `render` field of a Shape is not composable.
+   Not likely fixable. In the Tagged Record proposal, should `render` be
+   a separate trait from `shape`?
+ * Parametric records have a GUI, but are not composable.
+   Branded records was in part a way to fix this.
+
+Eros has an equivalent to parametric records. Some of the functions shown in
+the video have example arguments, which are transformed to show an example
+result. How do these things fit in the Eros ontology?

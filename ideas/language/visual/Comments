@@ -1,0 +1,14 @@
+Comments are documentation embedded in source code.
+
+Requirements for Curv:
+* Comments preserved in parse tree, for a projectional editor.
+* Module documentation.
+* Function documentation.
+* Ability to query documentation for a software component from the REPL.
+  Show help, autocomplete.
+* Composable documentation.
+  If a function returns a documented module or function, what is the
+  documentation for the result? Eg, dynamic documentation for a partially
+  applied function.
+* Rich text documentation. Markdown or Scribble format.
+* Conversion of module and function documentation to HTML.

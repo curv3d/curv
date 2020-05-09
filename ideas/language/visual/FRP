@@ -1,0 +1,11 @@
+# Functional Reactive Programming
+invented by Conal Elliott ~1995
+
+"The Essence and Origins of FRP" LambdaJam 2015 keynote
+This seems like the best and most recent summary of FRP from Conal.
+github.com/conal/talk-2015-essence-and-origins-of-frp#readme
+
+github.com/conal/talk-2015-more-elegant-frp/blob/lambdajam-2015/README.md
+"A More Elegant Specification for FRP" 2015
+www.youtube.com/watch?v=teRC_Lf61Gw
+Technical details for the topics in the keynote.

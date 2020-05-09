@@ -1,0 +1,118 @@
+Brain Storming and Implementation
+=================================
+
+Tagged Expressions
+------------------
+Expressions (and subexpressions) need to be able to be tagged to specify
+which editors they can be edited with. If there are several choices, we'll tag
+the current choice.
+
+A tag could simply be an identifier, which identifies a particular "type" or
+"DSL", plus an optional second identifier which specifies an editor that is
+compatible with that type. An external table maps these type names onto
+descriptions which include a list of editors that are registered to edit that
+particular type. The expression itself could be a constant, it could be a
+complex expression in some DSL with its own grammar.
+
+In Curv, there is only one namespace, so a "type name" or "DSL name" is
+actually a variable name, bound to a value.
+* What kind of value? A constructor value: either a function, or a macro,
+  that interprets the 'expression' as an argument. This constructor value
+  could have metadata fields specifying the editors that are available?
+* The constructor name is not restricted to an identifier. It could be a
+  dot expression (the constructor might be defined within a library).
+  Or more generally, it is a constructor expression of the kind supported
+  by Branded Values.
+* The existing syntax 'red :: colour_picker' is also suggestive.
+
+DSLs? Tell me more!
+-------------------
+First, I wonder if Curv should have a more generic syntax that is more suited
+to defining DSLs. Lisp S-Expressions are the original example of a simple,
+generic syntax that is highly moldable, but I want:
+ * function calls as juxtaposition (for curried functions),
+ * [...] and {...} list and record literals,
+ * infix symbolic operations like 2+2,
+ * foo.bar dot notation.
+What's left? if else for while do let where parametric. I could provide a
+generic syntax for these kinds of expressions. Smalltalk for inspiration?
+Eliminate reserved words, like Scheme eliminates reserved words, by replacing
+this hard-coded syntax with some variant of function call syntax. The reserved
+words are replaced by built-in bindings (which might be macros).
+
+Second, maybe I need Scheme-like user-defined macros? Let's see what the
+requirements are for DSLs. I might not need new name-binding constructs.
+
+Interactive Animations and Editors
+----------------------------------
+In Curv 0.4, interactive animations are represented by values. But Editors
+are used to edit source code. How to bring these ideas together?
+
+ 1. Interactive Animations are Values
+    Or, values can be treated as source code.
+
+    You can write code using variables, functions, loops, etc, to generate an
+    interactive animation value, which will then be treated like source code.
+    But, once you start editing this value, you may lose the ability to map
+    the changes back to the original program that generated the value.
+
+    The Branded Value mechanism can be used. A branded value contains a
+    constructor expression, which can be used as the initial source code.
+
+    If Curv has a weak distinction between values and expressions, then perhaps
+    it should become a term rewrite system (maybe like Mathematica or Pure),
+    where values and expressions are terms, and evaluation is term rewrite.
+
+ 2. Interactive Animations are Expressions
+
+    An interactive animation is expressed in code as an expression,
+    restricted to some DSL whose syntax is a subset of Curv syntax.
+    This guarantees that you can edit the expression (run the animation and
+    interact with it), then save changes back to the original source location.
+
+Parameterized Shapes
+--------------------
+How do parameterized shapes fit in to this framework? There is editing
+(when you tweak sliders), but parameterized shapes are values, not expressions.
+
+* You ought to be able to save a modified parameterized shape as source code.
+  Sebastien is planning such a feature for Curved.
+* A Branded Value contains a constructor expression, which is a kind of source
+  code. We could save the constructor expression and the argument record as
+  source code.
+* Curv has the idea of tiered APIs: easiest to use at the highest level,
+  more powerful and with more degrees of freedom at the lower levels.
+  If you open a parameterized shape in the GUI, then you initially get a
+  high level editing interface with only a few degrees of freedom: you can
+  modify parameters using value pickers. You can save multiple instances of
+  a parameterized shape, with different parameterizations. Then, you can
+  further open up one of these parameterized shapes, and edit the underlying
+  source code.
+
+
+Ideas
+-----
+The future of language design is a set of compatible DSLs that can be
+composed together within the same framework. That was a key idea behind
+"the Unix philosophy", and like Racket's "language oriented programming".
+
+An Editor is used to edit an expression. For expressive power, you should be
+able to use abstraction mechanisms: name abstraction, function abstraction.
+
+To "launch an app", you clone an existing expression. Then you edit the
+expression (eg by tweaking sliders). The source code can be saved in a file.
+
+In the current design, a parameterized shape is a value.
+The Branded Value proposal will support generalized parameterized values with
+multiple picker sets. A library function like `render` can take a parameterized
+shape as an argument, and return another parameterized shape with an additional
+picker set. How does this align with the doctrine that apps edit expressions?
+
+A Branded Value contains a constructor expression, which is a kind of source
+code.
+
+In the PC world, apps edit data structures. Source is represented as text files,
+which are data structures, that are externally interpreted as source.
+
+In Visual Curv, source code is represented by a abstract syntax tree, which
+does not need to be serialized as text, other representations are available.

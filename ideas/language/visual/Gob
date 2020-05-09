@@ -1,0 +1,7 @@
+A Gob is a graphical object. It lives on the screen, it occupies pixels, maybe
+it can change, maybe you can interact with it. There is a Gob hierarchy:
+some gobs are containers for other Gobs. Characters in a text document are
+Gobs, and so on up. Glamorous Toolkit might be a model for the Gob hierarchy.
+
+Gobs are expressions in a programming language. When you modify state,
+you are editing code.

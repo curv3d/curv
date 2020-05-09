@@ -1,0 +1,22 @@
+Functional Interactive Graphics
+===============================
+This is a malleable software environment, loosely inspired by Smalltalk.
+It is:
+ * fun & easy to use
+ * small, simple, lo fi
+ * completely malleable
+
+There is a programming language:
+ * simple regular syntax
+ * simple data model
+ * simple, powerful, orthogonal, composable
+ * dynamically typed
+ * denotative (pure functional)
+ * a simple set of core primitives, everything else built on top
+
+Everything is done from inside an interactive graphical environment, written
+in the language itself.
+
+Your "image" is hierarchical persistent data, backed up on the file system
+using a directory hierarchy. Directories are records, images are *.png files,
+etc. Use git for version control.
