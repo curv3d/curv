@@ -757,6 +757,7 @@ For_Op::exec(Frame& f, Executor& ex) const
 Value
 Range_Expr::eval(Frame& f) const
 {
+    const char* errmsg;
     Value firstv = arg1_->eval(f);
     double first = firstv.to_num_or_nan();
 
@@ -769,9 +770,12 @@ Range_Expr::eval(Frame& f) const
         stepv = arg3_->eval(f);
         step = stepv.to_num_or_nan();
     }
-
     double delta = round((last - first)/step);
     double countd = delta < 0.0 ? 0.0 : delta + (half_open_ ? 0.0 : 1.0);
+    if (step != step || step == 0.0 || std::isinf(step)) {
+        errmsg = "bad step value";
+        goto error;
+    }
     // Note: countd could be infinity. It could be too large to fit in an
     // integer. It could be a float integer too large to increment (for large
     // float i, i==i+1). So we impose a limit on the count.
@@ -805,13 +809,13 @@ Range_Expr::eval(Frame& f) const
     }
     
     // Report error.
-    const char* err =
-        (countd == countd ? "too many elements in range" : "domain error");
+    errmsg = (countd == countd ? "too many elements in range" : "domain error");
+error:
     const char* dots = (half_open_ ? " ..< " : " .. ");
     throw Exception(At_Phrase(*syntax_, f),
         arg3_
-            ? stringify(firstv,dots,lastv," by ",stepv,": ", err)
-            : stringify(firstv,dots,lastv,": ", err));
+            ? stringify(firstv,dots,lastv," by ",stepv,": ", errmsg)
+            : stringify(firstv,dots,lastv,": ", errmsg));
 }
 
 Value
