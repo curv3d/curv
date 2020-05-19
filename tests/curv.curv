@@ -641,5 +641,10 @@ sc_test {
 //assert([{a:1},{a:2}].a == [1,2]);
 //assert(defined([{a:1},{a:2},{}].a) == [#true,#true,#false]);
 
+assert([1,2,3]@0 == 1);
+assert({a:1,b:2}@#b == 2);
+assert({a:1,b:2}@[#b,#a] == [2,1]);
+assert(42@[] == []);
+
 // script return value:
 in null

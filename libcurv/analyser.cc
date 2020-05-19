@@ -757,6 +757,11 @@ Binary_Phrase::analyse(Environ& env, unsigned) const
             share(*this),
             analyse_op(*left_, env),
             analyse_op(*right_, env));
+    case Token::k_at:
+        return make<Apply_Lens_Expr>(
+            share(*this),
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_in:
         throw Exception(At_Token(op_, *this, env), "syntax error");
     case Token::k_colon:

@@ -609,6 +609,10 @@ parse_postfix(Scanner& scanner)
             postfix = make<Dot_Phrase>(postfix, tok,
                 parse_primary(scanner, "expression following ."));
             continue;
+        case Token::k_at:
+            postfix = make<Binary_Phrase>(postfix, tok,
+                parse_primary(scanner, "expression following @"));
+            continue;
         default:
             scanner.push_token(tok);
             auto primary = parse_primary(scanner, nullptr);

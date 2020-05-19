@@ -63,6 +63,10 @@ public:
     {
         return this->get() == nullptr;
     }
+    explicit operator bool () const noexcept
+    {
+        return this->get() != nullptr;
+    }
 
     int cmp(Symbol_Ref a) const noexcept
     {
