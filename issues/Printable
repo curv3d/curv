@@ -1,0 +1,94 @@
+All Curv values print as an expression that, when evaluated, exactly
+reproduces the original value (the two values are operationally equivalent).
+
+What's missing: functions print as function literals.
+
+TODO:
+ * Curv expression pretty-printer. Used initially for printing reactive exprs.
+ * Initial 80% solution:
+    * Print builtin functions as just their names, as it works today.
+    * Print closures as function literals, ignoring the environment, using the
+      expression printer. Ignoring the environment is a stopgap measure.
+    * Print piecewise functions as 'match' expressions.
+ * Print the environment of a closure using a `let` clause. A large task.
+
+printing nonlocal bindings
+--------------------------
+How are nonlocal variables (in a lambda expression) handled?
+As a first approximation, we can print non-recursive lambda expressions as
+    let nonlocal1 = val1;
+        nonlocal2 = val2;
+        ...
+    in param -> body
+
+This would currently result in
+    let sin = sin;
+        ...
+for a reference to the 'sin' function in stdlib.
+
+To fix this, add a reserved word 'std' which denotes the standard library,
+and cannot be shadowed by a local definition. The sine function now prints
+as `std.sin`, and we now have:
+    let sin = std.sin;
+        ...
+
+To print a recursive function, print a let clause containing all of the bindings
+in the function's recursion group. The let body is just the name of the
+recursive function.
+
+To summarize, there are initially four cases:
+ * builtin functions (eg `std.sin`)
+ * non-recursive closure
+ * recursive closure
+ * piecewise (a `match` expression)
+
+printing builtin functions
+--------------------------
+Add a new keyword, `std`, which cannot be used as a variable name (unless
+quoted). Initially, the `std` keyword can only be used in one context, which
+is phrases of the form `std.foo`, where `foo` is a standard binding.
+
+Builtin functions like `sin` print as `std.sin`, an expression which means
+the same thing regardless of the environment in which it is evaluated.
+
+Standard functions defined as closures in `std.curv` can initially be
+printed as closure values, but we eventually need to do better than that.
+
+Later, we want `std` to denote a record containing all standard bindings.
+But what about non-value bindings like `print` and `file`?
+This is a research problem. The following ideas are for a future issue.
+ * Note that these bindings will not be found in a closure value's
+   environment.
+ * Initially, these are omitted from the `std` record value, until such time
+   as we support metavalues as first class values. A phrase like `std.print`
+   will work, because it is handled specially, but (std).print will fail,
+   because it treats `std` as an expression.
+ * This is not composable.
+ * With `file`, it's not a value because it is inherently noncomposable.
+   It implicitly depends on the name of the source file from which it is
+   invoked. So in what circumstances can abstracting over a reference to
+   `file` ever work?
+ * All standard metavalues except `file` will go away or become values in the
+   Effects proposal. Could convert `file` to a keyword and populate `std` with
+   only value bindings.
+
+printing standard closures
+--------------------------
+The main problem is that printing such functions might result in an explosion
+of code, as all dependencies are dragged in, with multiple independent copies
+of dependencies being printed as the dag is converted to a tree.
+
+In a naive implementation, a reference to lib.blend.chamfer will result in
+a let clause with `lib={the entire library}`, which is huge. Imagine multiple
+copies of this, one for each dependency that references `lib`.
+
+We can avoid the biggest problems by implementing a subset of branded values,
+so that we print `std.lib.blend.chamfer` and `std.file"abs_pathname".foo`.
+This means that external dependencies, outside the source file that defines
+a function, are printed as names rather than as function bodies.
+
+referencing sibling functions
+-----------------------------
+Within a module, if a function references sibling functions, possibly with
+recursion, we want all those siblings to be bound once in the top level let
+clause, and not be duplicated in nested let clauses.
